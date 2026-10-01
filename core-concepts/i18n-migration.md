@@ -85,6 +85,37 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - The optional third argument of `createMatStepHandle` (and so of `CngxMatStepHandleFactory` overrides) is now `Signal<CngxStepperI18n>`. An override that delegates to `createMatStepHandle` forwards the Signal unchanged; the last-resort `Step <id>` label then follows a language switch.
 
+### @cngx/ui/feedback
+
+- `CNGX_FEEDBACK_I18N` is now `InjectionToken<Signal<CngxFeedbackI18n>>`, and `injectFeedbackI18n()` returns `Signal<CngxFeedbackI18n>`. Call the Signal where you read a label, inside a `computed()`, a template or a handler: `inject(CNGX_FEEDBACK_I18N).alertsRegionLabel` becomes `inject(CNGX_FEEDBACK_I18N)().alertsRegionLabel`.
+- A direct `{ provide: CNGX_FEEDBACK_I18N, useValue: bundle }` must supply a Signal. Prefer `provideFeedbackI18n(overrides)`, which merges over the English defaults, `announcements` key by key. `provideFeedbackI18n` and `withFeedbackI18nLabels` now also accept a `Signal<CngxFeedbackI18nOverrides>` for runtime switching, and `provideFeedbackI18n` returns a plain `Provider` (it used to return `{ provide, useValue }`).
+- The copy inputs `CngxLoadingIndicator.label`, `CngxLoadingOverlay.label` and `CngxProgress.label` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `loadingLabel` / `progressLabel` default. Template bindings are unchanged; the rendered `aria-label` follows a language switch while the input is unbound. Code that reads the input programmatically (`indicator.label()`) gets `undefined` when nothing is bound; read the rendered `aria-label` instead.
+
+### @cngx/ui/data-grid-accordion
+
+- The copy inputs `CngxDgaCount.singular` / `.plural`, `CngxDgaFilter.ariaLabel`, `CngxDgaFilterField.label`, `CngxDataGridRow.errorMessage` and `CngxDgaSortHeader.notSortedLabel` / `.ascendingLabel` / `.descendingLabel` / `.ascendingAnnouncement` / `.descendingAnnouncement` / `.clearedAnnouncement` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `withDataGridAccordionLabels` default. Template bindings and attribute values are unchanged; the rendered text follows a language switch while the input is unbound. Code that reads the input programmatically (`sortHeader.notSortedLabel()`) gets `undefined` when nothing is bound; read the rendered text instead.
+- `CngxDgaCount`: a bound `cngxDgaCountSingular` or `cngxDgaCountPlural` now always composes `<count> <noun>`, also when it happens to equal the `countSingular` / `countPlural` default, and an unbound noun falls back to its label. Leave both unbound to use a custom `count` formatter.
+
+### @cngx/ui/sidenav
+
+- The copy input `CngxSidenav.resizeLabel` is now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `withSidenavLabels` `resizeHandle` default. Template bindings are unchanged; the rendered resize-handle `aria-label` follows a language switch while the input is unbound. Code that reads `sidenav.resizeLabel()` programmatically gets `undefined` when nothing is bound.
+
+### @cngx/ui/speak
+
+- The copy inputs `CngxSpeakButton.readAloudLabel` / `.stopLabel` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `CNGX_SPEAK_I18N` default. Template bindings are unchanged; the rendered button `aria-label` follows a language switch while the input is unbound. Code that reads the input programmatically gets `undefined` when nothing is bound.
+
+### @cngx/ui/command-palette
+
+- The copy keys of `CngxCommandPaletteConfig` (`searchPlaceholder`, `listboxLabel`, `emptyLabel`, `loadingLabel`, `errorLabel`, `retryLabel`, `paletteLabel`, `resultCount`, `footerLegend`) are typed `T | Signal<T>`, and once a `Signal` was passed to a feature they hold a `Signal`. Code that reads a key off `injectCommandPaletteConfig()` or `CNGX_COMMAND_PALETTE_CONFIG` wraps it once, in a field: `private readonly emptyLabel = coerceSignal(injectCommandPaletteConfig().emptyLabel);` (`coerceSignal` from `@cngx/core/utils`), then `this.emptyLabel()` inside a `computed()`, a template or a handler. A hand-written `CngxCommandPaletteConfigFeature` keeps working; one that reads a copy key wraps it the same way.
+- `withCommandPaletteLabels` now also accepts a `Signal` of the label overrides: a key the Signal sets wins, an unset key follows the inherited value. `withResultCountFormatter` and `withKeyboardLegend` accept a value or a `Signal`. Plain values keep their merge rules.
+- `CngxCommandPalette.ariaLabel` is now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `paletteLabel` default. Template bindings are unchanged; the rendered dialog name follows a language switch while the input is unbound.
+
+### @cngx/ui/paginator
+
+- `CngxPaginatorConfig.ariaLabels`, `.announcements` and `.formats` are typed `L | Signal<L>`, and once a `with*` feature ran they hold a `Signal`. Code that reads them off `injectPaginatorConfig()` or `CNGX_PAGINATOR_CONFIG` reads the resolved bundle through the new accessors instead: `injectPaginatorConfig().ariaLabels.next` becomes `injectPaginatorAriaLabels()().next`, likewise `injectPaginatorAnnouncements()` and `injectPaginatorFormats()` (the latter fills the optional readout formatters), each called inside a `computed()`, a template or a handler. `CNGX_PAGINATOR_DEFAULTS` keeps its plain bundles.
+- `withPaginatorAriaLabels` and `withPaginatorAnnouncements` now also accept a `Signal` of the partial bundle, and `withPaginatorRangeFormat`, `withPaginatorPageStatusFormat`, `withPaginatorPageOfPagesFormat` and `withPaginatorLoadMoreFormat` accept a formatter or a `Signal` of one. Plain values keep their merge rules; `provideCngxPaginatorConfigAt` still merges over the parent scope. A hand-built `CngxPaginatorConfigFeature` payload may be a `Signal` as well.
+- `@cngx/ui/mat-paginator`: the bridge reads `announcements.pageChange` and a bound `[announceLabel]` formatter untracked, so a language switch does not re-speak the current page; the next page change speaks the new language.
+
 ### @cngx/forms/select
 
 - `CngxSelectConfig.ariaLabels`, `.fallbackLabels` and `.announcer` accept a value or a `Signal`, and once `withAriaLabels` / `withFallbackLabels` / `withAnnouncer` ran the key holds a `Signal`. Code that reads a key off `CNGX_SELECT_CONFIG` or a `makeSelectConfig(...)` result wraps it once, in a field: with a module-level `const NO_ARIA_LABELS: CngxSelectAriaLabels = {};`, write `private readonly ariaLabels = coerceSignal(config.ariaLabels ?? NO_ARIA_LABELS);` (`coerceSignal` from `@cngx/core/utils`) and read `this.ariaLabels().clearButton` inside a `computed()`, a template or a handler, where you used to read `config.ariaLabels?.clearButton`. A fresh `{}` per call would create a new Signal on every read.

@@ -87,4 +87,25 @@ describe('CngxBannerOutlet', () => {
     fixture.detectChanges();
     expect(errorText()).toBe('Aktion fehlgeschlagen');
   });
+
+  it('does not re-announce on a language flip', () => {
+    const copy = signal<Partial<CngxFeedbackI18n>>({});
+    TestBed.overrideProvider(CNGX_FEEDBACK_I18N, { useValue: copy });
+    const { fixture, outletEl, banner } = setup();
+    banner.show({ id: 'offline', message: 'Offline', severity: 'warning' });
+    fixture.detectChanges();
+    const dismissLabels = (): (string | null)[] =>
+      Array.from(outletEl.querySelectorAll('.cngx-banner__dismiss button')).map((b) =>
+        b.getAttribute('aria-label'),
+      );
+    expect(dismissLabels()).toEqual(['Dismiss']);
+
+    copy.set({ dismissLabel: 'Schliessen' });
+    fixture.detectChanges();
+    expect(dismissLabels()).toEqual(['Dismiss']);
+
+    banner.show({ id: 'update', message: 'Update ready', severity: 'info' });
+    fixture.detectChanges();
+    expect(dismissLabels()).toEqual(['Schliessen', 'Schliessen']);
+  });
 });

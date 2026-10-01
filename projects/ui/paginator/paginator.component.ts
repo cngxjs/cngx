@@ -16,7 +16,11 @@ import { CngxPaginate, connectPaginateEmit, connectPaginateResetOn } from '@cngx
 import { CngxProgress } from '@cngx/ui/feedback';
 
 import { CNGX_PAGINATOR_ANNOUNCER_FACTORY } from './paginator-announcer';
-import { injectPaginatorConfig } from './paginator-config';
+import {
+  injectPaginatorAnnouncements,
+  injectPaginatorAriaLabels,
+  injectPaginatorConfig,
+} from './paginator-config';
 import { CNGX_PAGINATOR_HOST } from './paginator-host.token';
 import { CngxPaginatorLoading } from './paginator-loading.directive';
 
@@ -154,7 +158,9 @@ export class CngxPaginator {
   readonly pageSizeChange = output<number>();
 
   protected readonly paginate = inject(CngxPaginate);
-  protected readonly config = injectPaginatorConfig();
+  private readonly config = injectPaginatorConfig();
+  private readonly ariaLabels = injectPaginatorAriaLabels();
+  protected readonly announcements = injectPaginatorAnnouncements();
 
   /**
    * Live-region message source - mounted onto the `cngxLiveRegion` span in the
@@ -164,7 +170,7 @@ export class CngxPaginator {
   protected readonly announcer = inject(CNGX_PAGINATOR_ANNOUNCER_FACTORY)();
 
   protected readonly resolvedAriaLabel = computed(
-    () => this.ariaLabel() ?? this.config.ariaLabels.label,
+    () => this.ariaLabel() ?? this.ariaLabels().label,
   );
 
   // Loading-slot cascade: instance *cngxPaginatorLoading -> config default ->

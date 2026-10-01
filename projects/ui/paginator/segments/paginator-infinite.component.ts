@@ -9,7 +9,7 @@ import {
 
 import { CngxInfiniteScroll } from '@cngx/common/layout';
 
-import { injectPaginatorConfig } from '../paginator-config';
+import { injectPaginatorAnnouncements, injectPaginatorAriaLabels } from '../paginator-config';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
 /**
@@ -80,7 +80,8 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 })
 export class CngxPaginatorInfinite {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
-  private readonly config = injectPaginatorConfig();
+  private readonly ariaLabels = injectPaginatorAriaLabels();
+  private readonly announcements = injectPaginatorAnnouncements();
 
   /**
    * CSS selector for the scroll container the sentinel is watched within.
@@ -107,8 +108,8 @@ export class CngxPaginatorInfinite {
    * segment so both append modes speak the same "all N loaded" end state rather
    * than leaving the tail implicit.
    */
-  protected readonly endLabel = computed(() => this.config.ariaLabels.allLoaded(this.host.total()));
+  protected readonly endLabel = computed(() => this.ariaLabels().allLoaded(this.host.total()));
 
   /** Status text shown beside the spinner while more pages remain. */
-  protected readonly busyLabel = computed(() => this.config.announcements.loading);
+  protected readonly busyLabel = computed(() => this.announcements().loading);
 }

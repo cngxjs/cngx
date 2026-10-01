@@ -59,4 +59,21 @@ describe('CNGX_SPEAK_I18N', () => {
     const button = (fixture.nativeElement as HTMLElement).querySelector('button')!;
     expect(button.getAttribute('aria-label')).toBe('Vorlesen');
   });
+
+  it('relabels an unbound speak button on a language switch', () => {
+    const overrides = signal<Partial<CngxSpeakI18n>>({});
+    TestBed.configureTestingModule({
+      imports: [CngxSpeakButton],
+      providers: [provideSpeakI18n(withSpeakI18nLabels(overrides))],
+    });
+    const fixture = TestBed.createComponent(CngxSpeakButton);
+    fixture.componentRef.setInput('speakRef', idleSpeak as unknown as CngxSpeak);
+    fixture.detectChanges();
+    const button = (fixture.nativeElement as HTMLElement).querySelector('button')!;
+    expect(button.getAttribute('aria-label')).toBe('Read aloud');
+
+    overrides.set({ readAloud: 'Vorlesen' });
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-label')).toBe('Vorlesen');
+  });
 });

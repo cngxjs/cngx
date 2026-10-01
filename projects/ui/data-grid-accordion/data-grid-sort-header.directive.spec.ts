@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CngxSort } from '@cngx/common/data';
 
+import type { CngxDataGridAccordionLabels } from './config/data-grid-accordion.config';
 import { withDataGridAccordionLabels } from './config/features';
 import { provideDataGridAccordionConfig } from './config/provide-data-grid-accordion-config';
 import { CngxDataGridAccordion } from './data-grid-accordion.component';
@@ -181,10 +182,41 @@ describe('CngxDgaSortHeader', () => {
         ),
       ],
     });
-    const { nameDir } = setup();
-    expect(nameDir.notSortedLabel()).toBe('nicht sortiert');
-    expect(nameDir.ascendingAnnouncement()).toBe('{label} aufsteigend sortiert');
-    expect(nameDir.descendingLabel()).toBe('sorted descending, activate to sort ascending');
+    const spy = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce').mockImplementation(() => {});
+    const { fixture, nameEl } = setup();
+    const status = (): string | null =>
+      document.getElementById(nameEl.getAttribute('aria-describedby')!)!.textContent;
+    expect(status()).toBe('nicht sortiert');
+
+    nameEl.click();
+    fixture.detectChanges();
+    expect(spy).toHaveBeenLastCalledWith('name aufsteigend sortiert');
+
+    nameEl.click();
+    fixture.detectChanges();
+    expect(status()).toBe('sorted descending, activate to sort ascending');
+  });
+
+  it('follows a live labels bundle for the unbound status and announcement', () => {
+    const labels = signal<Partial<CngxDataGridAccordionLabels>>({});
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [provideDataGridAccordionConfig(withDataGridAccordionLabels(labels))],
+    });
+    const spy = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce').mockImplementation(() => {});
+    const { fixture, nameEl } = setup();
+    const status = (): string | null =>
+      document.getElementById(nameEl.getAttribute('aria-describedby')!)!.textContent;
+
+    labels.set({ sortNone: 'nicht sortiert', sortAnnouncedAscending: '{label} aufsteigend' });
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(status()).toBe('nicht sortiert');
+
+    nameEl.click();
+    fixture.detectChanges();
+    expect(spy).toHaveBeenLastCalledWith('name aufsteigend');
   });
 });
 

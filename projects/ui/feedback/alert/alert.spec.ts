@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createManualState } from '@cngx/common/data';
 import type { ManualAsyncState } from '@cngx/common/data';
 
+import { provideFeedbackI18n, type CngxFeedbackI18nOverrides } from '../config/feedback-i18n';
 import { CngxAlert, CngxAlertAction, type AlertSeverity } from './alert';
 
 // ── Helpers ─────────────────────────────────────────────────────
@@ -557,5 +558,37 @@ describe('CngxAlert', () => {
       .map((node) => node.textContent ?? '')
       .join('\n');
     expect(styleText).toMatch(/\.cngx-alert__dismiss\s*\{[^}]*flex-shrink:\s*0/);
+  });
+
+  it('does not re-announce on a language flip', () => {
+    const copy = signal<CngxFeedbackI18nOverrides>({});
+    TestBed.configureTestingModule({ providers: [provideFeedbackI18n(copy)] });
+    const { fixture, alert, host } = setup();
+    host.closable.set(true);
+    host.autoDismissDelay.set(undefined);
+    host.when.set(true);
+    flushAll(fixture);
+    const dismissLabel = (): string | null =>
+      alert.querySelector('.cngx-alert__dismiss button')!.getAttribute('aria-label');
+    expect(dismissLabel()).toBe('Dismiss');
+
+    copy.set({ dismissLabel: 'Schliessen', announcements: { alertDismissed: 'Verworfen' } });
+    flushAll(fixture);
+    expect(dismissLabel()).toBe('Dismiss');
+
+    host.when.set(false);
+    flushAll(fixture);
+    host.when.set(true);
+    flushAll(fixture);
+    expect(dismissLabel()).toBe('Schliessen');
+
+    (alert.querySelector('.cngx-alert__dismiss button') as HTMLButtonElement).click();
+    flushAll(fixture);
+    const live = alert.querySelector('[aria-live="polite"]')!;
+    expect(live.textContent!.trim()).toBe('Verworfen');
+
+    copy.set({});
+    flushAll(fixture);
+    expect(live.textContent!.trim()).toBe('Verworfen');
   });
 });

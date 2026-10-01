@@ -1,3 +1,4 @@
+import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -5,6 +6,7 @@ import {
   CNGX_COMMAND_PALETTE_CONFIG,
   injectCommandPaletteConfig,
   provideCommandPaletteConfig,
+  resolveCommandPaletteCopy,
   withCommandPaletteLabels,
   withKeyboardLegend,
   withPaletteShortcut,
@@ -12,7 +14,7 @@ import {
 } from './command-palette-config';
 
 function resolve() {
-  return TestBed.runInInjectionContext(() => injectCommandPaletteConfig());
+  return TestBed.runInInjectionContext(() => resolveCommandPaletteCopy(injectCommandPaletteConfig()))();
 }
 
 describe('command palette config cascade', () => {
@@ -64,5 +66,64 @@ describe('command palette config cascade', () => {
   it('is available on the token with the default factory', () => {
     TestBed.configureTestingModule({});
     expect(TestBed.inject(CNGX_COMMAND_PALETTE_CONFIG).listboxLabel).toBe('Commands');
+  });
+
+  it('follows a Signal of label overrides and keeps unset labels inherited', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideCommandPaletteConfig(
+          withCommandPaletteLabels({ retryLabel: 'Try again' }),
+          withCommandPaletteLabels(
+            computed(() => (lang() === 'en' ? {} : { emptyLabel: 'Keine Treffer.' })),
+          ),
+        ),
+      ],
+    });
+    const copy = TestBed.runInInjectionContext(() =>
+      resolveCommandPaletteCopy(injectCommandPaletteConfig()),
+    );
+    expect(copy().emptyLabel).toBe('No matching commands.');
+    expect(copy().retryLabel).toBe('Try again');
+
+    lang.set('de');
+    expect(copy().emptyLabel).toBe('Keine Treffer.');
+    expect(copy().retryLabel).toBe('Try again');
+  });
+
+  it('keeps the resolved copy reference on an equal recompute', () => {
+    const labels = signal<{ emptyLabel?: string }>({});
+    TestBed.configureTestingModule({
+      providers: [provideCommandPaletteConfig(withCommandPaletteLabels(labels))],
+    });
+    const copy = TestBed.runInInjectionContext(() =>
+      resolveCommandPaletteCopy(injectCommandPaletteConfig()),
+    );
+    const first = copy();
+    labels.set({});
+    expect(copy()).toBe(first);
+  });
+
+  it('switches the count formatter and the legend through Signals', () => {
+    const de = signal(false);
+    TestBed.configureTestingModule({
+      providers: [
+        provideCommandPaletteConfig(
+          withResultCountFormatter(
+            computed(() => (de() ? (n: number) => `${n} Treffer` : (n: number) => `${n} hits`)),
+          ),
+          withKeyboardLegend(
+            computed(() => [{ keys: 'enter', label: de() ? 'Ausführen' : 'Run' }]),
+          ),
+        ),
+      ],
+    });
+    const copy = TestBed.runInInjectionContext(() =>
+      resolveCommandPaletteCopy(injectCommandPaletteConfig()),
+    );
+    expect(copy().resultCount(2)).toBe('2 hits');
+    de.set(true);
+    expect(copy().resultCount(2)).toBe('2 Treffer');
+    expect(copy().footerLegend).toEqual([{ keys: 'enter', label: 'Ausführen' }]);
   });
 });

@@ -7,6 +7,7 @@ import {
   type ElementRef,
   inject,
   input,
+  untracked,
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -80,7 +81,7 @@ import { CngxLoadingIndicator } from './loading-indicator';
           #spinnerEl
           tabindex="-1"
           role="status"
-          [attr.aria-label]="label()"
+          [attr.aria-label]="resolvedLabel()"
         >
           <cngx-loading-indicator [loading]="true" variant="spinner" />
         </div>
@@ -101,10 +102,10 @@ export class CngxLoadingOverlay {
   readonly loading = input<boolean>(false);
 
   /**
-   * Screen reader label for the spinner. Defaults to
-   * `CNGX_FEEDBACK_I18N.loadingLabel`, read at construction.
+   * Screen reader label for the spinner. Unbound,
+   * `CNGX_FEEDBACK_I18N.loadingLabel` applies.
    */
-  readonly label = input<string>(this.i18n().loadingLabel);
+  readonly label = input<string | undefined>(undefined);
 
   /** Delay in ms before showing the overlay. Defaults to `CNGX_LOADING_CONFIG.showDelay`. */
   readonly delay = input<number>(this.loadingConfig.showDelay);
@@ -139,6 +140,17 @@ export class CngxLoadingOverlay {
 
   /** @internal - debounced visibility via shared gate factory. */
   protected readonly visible = createVisibilityGate(this.isActive, this.delay, this.effectiveMinDwell);
+
+  /**
+   * @internal - accessible name of the spinner status region. A bound `label`
+   * applies at once; the i18n default is read untracked and keyed on
+   * visibility, so a language switch never renames a showing spinner.
+   */
+  protected readonly resolvedLabel = computed(() => {
+    const own = this.label();
+    this.visible();
+    return own ?? untracked(() => this.i18n().loadingLabel);
+  });
 
   // Plain field, not a signal: written and read only inside effects/microtasks,
   // never by templates or computeds - a signal here would put focus bookkeeping

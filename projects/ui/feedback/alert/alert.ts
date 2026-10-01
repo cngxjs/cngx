@@ -174,7 +174,7 @@ export class CngxAlertAction {}
     </div>
     @if (effectiveClosable()) {
       <cngx-close-button
-        [label]="i18n().dismissLabel"
+        [label]="dismissLabel()"
         class="cngx-alert__dismiss"
         (click)="handleDismiss()"
       />
@@ -185,7 +185,7 @@ export class CngxAlertAction {}
 })
 export class CngxAlert {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
-  protected readonly i18n = injectResolvedFeedbackI18n();
+  private readonly i18n = injectResolvedFeedbackI18n();
   private readonly destroyRef = inject(DestroyRef);
 
   /** Alert severity - determines visual style, default icon, and ARIA role. */
@@ -324,6 +324,17 @@ export class CngxAlert {
   /** @internal - collapsed state (read-only public view). */
   protected readonly collapsed = this.collapsedState.asReadonly();
 
+  /**
+   * @internal - dismiss-button name inside the alert/status host. Visibility is
+   * the only tracked source; the copy is read untracked, so a language switch
+   * never rewrites a shown alert and its next appearance speaks the new
+   * language.
+   */
+  protected readonly dismissLabel = computed(() => {
+    this.isVisible();
+    return untracked(() => this.i18n().dismissLabel);
+  });
+
   /** @internal - SR announcement text for state transitions. */
   protected readonly announcement = this.announcementState.asReadonly();
 
@@ -446,7 +457,7 @@ export class CngxAlert {
     this.manualDismissed.set(true);
     this.autoDismissTimer.clear();
     this.collapseTimer.clear();
-    this.announcementState.set(this.i18n().announcements.alertDismissed);
+    this.announcementState.set(untracked(() => this.i18n().announcements.alertDismissed));
     this.dismissed.emit();
   }
 

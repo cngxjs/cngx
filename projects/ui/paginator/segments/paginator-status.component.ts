@@ -6,7 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import { injectPaginatorConfig } from '../paginator-config';
+import { injectPaginatorFormats } from '../paginator-config';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
 /**
@@ -36,10 +36,10 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 })
 export class CngxPaginatorStatus {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
-  private readonly config = injectPaginatorConfig();
+  private readonly formats = injectPaginatorFormats();
 
   /** Formatted "Page n of m" readout from the config formatter (1-based page). */
   protected readonly text = computed<string>(() =>
-    this.config.formats.pageStatus(this.host.pageIndex() + 1, this.host.totalPages()),
+    this.formats().pageStatus(this.host.pageIndex() + 1, this.host.totalPages()),
   );
 }

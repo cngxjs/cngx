@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { provideFeedbackI18n } from '../config/feedback-i18n';
+import { provideFeedbackI18n, type CngxFeedbackI18nOverrides } from '../config/feedback-i18n';
 import { CngxLoadingIndicator, type LoadingIndicatorVariant } from './loading-indicator';
 import { CngxLoadingOverlay } from './loading-overlay';
 
@@ -228,27 +228,77 @@ describe('CngxLoadingIndicator', () => {
 
   describe('default label from CNGX_FEEDBACK_I18N', () => {
     @Component({
-      template: `<cngx-loading-indicator /><cngx-loading-overlay />`,
+      template: `
+        <cngx-loading-indicator [loading]="loading()" [delay]="0" [minDwell]="0" />
+        <cngx-loading-overlay [loading]="loading()" [delay]="0" [minDwell]="0" />
+      `,
       imports: [CngxLoadingIndicator, CngxLoadingOverlay],
     })
-    class UnlabelledHost {}
+    class UnlabelledHost {
+      readonly loading = signal(true);
+    }
 
-    const labels = (): string[] => {
+    const render = () => {
       const fixture = TestBed.createComponent(UnlabelledHost);
-      fixture.detectChanges();
-      return fixture.debugElement.children.map((el) =>
-        (el.componentInstance as CngxLoadingIndicator | CngxLoadingOverlay).label(),
-      );
+      const settle = (): void => {
+        fixture.detectChanges();
+        TestBed.flushEffects();
+        vi.advanceTimersByTime(1);
+        fixture.detectChanges();
+      };
+      settle();
+      const root = fixture.nativeElement as HTMLElement;
+      const labels = (): (string | null)[] => [
+        root.querySelector('cngx-loading-indicator')!.getAttribute('aria-label'),
+        root.querySelector('.cngx-loading-overlay__spinner-wrapper')?.getAttribute('aria-label') ??
+          null,
+      ];
+      return { fixture, settle, labels };
     };
 
     it('defaults both labels to the English loadingLabel', () => {
-      expect(labels()).toEqual(['Loading', 'Loading']);
+      expect(render().labels()).toEqual(['Loading', 'Loading']);
     });
 
     it('defaults both labels to a translated loadingLabel', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({ providers: [provideFeedbackI18n({ loadingLabel: 'Laedt' })] });
-      expect(labels()).toEqual(['Laedt', 'Laedt']);
+      expect(render().labels()).toEqual(['Laedt', 'Laedt']);
+    });
+
+    it('does not re-announce on a language flip', () => {
+      const copy = signal<CngxFeedbackI18nOverrides>({});
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ providers: [provideFeedbackI18n(copy)] });
+      const { fixture, settle } = render();
+      const el = (fixture.nativeElement as HTMLElement).querySelector('cngx-loading-indicator')!;
+      expect(el.getAttribute('aria-label')).toBe('Loading');
+
+      copy.set({ loadingLabel: 'Laedt' });
+      settle();
+      expect(el.getAttribute('aria-label')).toBe('Loading');
+
+      fixture.componentInstance.loading.set(false);
+      settle();
+      expect(el.getAttribute('aria-label')).toBeNull();
+
+      fixture.componentInstance.loading.set(true);
+      settle();
+      expect(el.getAttribute('aria-label')).toBe('Laedt');
+    });
+
+    it('applies a bound label change at once', () => {
+      const { fixture, el } = setup();
+      fixture.componentInstance.loading.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(200);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-label')).toBe('Loading');
+
+      fixture.componentInstance.label.set('Fetching');
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-label')).toBe('Fetching');
     });
   });
 });

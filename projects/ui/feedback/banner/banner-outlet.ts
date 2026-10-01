@@ -102,7 +102,7 @@ import { CngxBanner, type BannerState } from './banner.service';
         }
         @if (banner.config.dismissible && !banner.actionPending) {
           <cngx-close-button
-            [label]="i18n().dismissLabel"
+            [label]="dismissLabel()"
             class="cngx-banner__dismiss"
             (click)="service.dismiss(banner.id)"
           />
@@ -115,7 +115,7 @@ import { CngxBanner, type BannerState } from './banner.service';
 export class CngxBannerOutlet {
   protected readonly service = inject(CngxBanner);
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
-  protected readonly i18n = injectResolvedFeedbackI18n();
+  private readonly i18n = injectResolvedFeedbackI18n();
 
   /**
    * @internal - action-error copy for the `role="alert"` slot. The banner list is the
@@ -125,6 +125,15 @@ export class CngxBannerOutlet {
   protected readonly actionFailedCopy = computed(() => {
     this.service.banners();
     return untracked(() => this.i18n().bannerActionFailed);
+  });
+
+  /**
+   * @internal - dismiss-button name inside the banner live regions, keyed on the
+   * banner list like {@link actionFailedCopy}.
+   */
+  protected readonly dismissLabel = computed(() => {
+    this.service.banners();
+    return untracked(() => this.i18n().dismissLabel);
   });
 
   /**

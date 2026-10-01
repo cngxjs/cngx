@@ -1,5 +1,5 @@
 import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
+import { coerceSignal, createNestedOverrideMerge, createOverrideMerge } from '@cngx/core/utils';
 
 import type { FeedbackFeature } from './feedback-config';
 
@@ -82,14 +82,14 @@ export interface CngxFeedbackI18n {
    */
   readonly toastRepeatCount?: (count: number) => string;
   /**
-   * Default accessible name of `CngxLoadingIndicator` and `CngxLoadingOverlay`.
-   * Read once at construction as the default of their `label` input. Optional
-   * for the same compatibility reason as {@link CngxFeedbackI18n.dismissLabel}.
+   * Default accessible name of `CngxLoadingIndicator` and `CngxLoadingOverlay`
+   * while their `label` input is unbound. Optional for the same compatibility
+   * reason as {@link CngxFeedbackI18n.dismissLabel}.
    */
   readonly loadingLabel?: string;
   /**
-   * Default accessible name of `CngxProgress`, read once at construction as the
-   * default of its `label` input. Optional for the same compatibility reason as
+   * Default accessible name of `CngxProgress` while its `label` input is
+   * unbound. Optional for the same compatibility reason as
    * {@link CngxFeedbackI18n.dismissLabel}.
    */
   readonly progressLabel?: string;
@@ -138,8 +138,10 @@ export const FEEDBACK_I18N_DEFAULTS: Required<CngxFeedbackI18n> & {
 };
 
 /**
- * DI token for the feedback i18n bundle. `providedIn: 'root'` with English
- * defaults, so a consumer who provides nothing still gets named regions.
+ * DI token for the feedback i18n bundle, a `Signal` so region names, labels
+ * and announcements follow a runtime language switch. `providedIn: 'root'`
+ * with English defaults, so a consumer who provides nothing still gets named
+ * regions.
  *
  * @category ui/feedback/i18n
  * @wcag AA
@@ -147,14 +149,18 @@ export const FEEDBACK_I18N_DEFAULTS: Required<CngxFeedbackI18n> & {
  * @since 0.1.0
  * @relatedTo CngxAlertStack, CngxToastOutlet
  */
-export const CNGX_FEEDBACK_I18N = new InjectionToken<CngxFeedbackI18n>('CngxFeedbackI18n', {
-  providedIn: 'root',
-  factory: () => FEEDBACK_I18N_DEFAULTS,
-});
+export const CNGX_FEEDBACK_I18N = new InjectionToken<Signal<CngxFeedbackI18n>>(
+  'CngxFeedbackI18n',
+  {
+    providedIn: 'root',
+    factory: () => coerceSignal<CngxFeedbackI18n>(FEEDBACK_I18N_DEFAULTS),
+  },
+);
 
 /**
  * Override the feedback region names from inside `provideFeedback()`. Unset
- * keys keep the English default.
+ * keys keep the English default, and `announcements` merges key by key. Pass
+ * a `Signal` to switch the language at runtime.
  *
  * ```ts
  * provideFeedback(
@@ -170,7 +176,9 @@ export const CNGX_FEEDBACK_I18N = new InjectionToken<CngxFeedbackI18n>('CngxFeed
  *
  * @category ui/feedback/i18n
  */
-export function withFeedbackI18nLabels(overrides: CngxFeedbackI18nOverrides): FeedbackFeature {
+export function withFeedbackI18nLabels(
+  overrides: CngxFeedbackI18nOverrides | Signal<CngxFeedbackI18nOverrides>,
+): FeedbackFeature {
   return {
     _apply: (config) => config,
     _providers: [provideFeedbackI18n(overrides)],
@@ -182,7 +190,9 @@ export function withFeedbackI18nLabels(overrides: CngxFeedbackI18nOverrides): Fe
  * `provideFeedback()`. This is the entry point a consumer-composed language
  * file uses - `provideFeedback()` replaces the whole `CNGX_FEEDBACK_CONFIG`
  * value, so routing a translation through it would reset unrelated feedback
- * defaults the app set elsewhere.
+ * defaults the app set elsewhere. Unset keys keep the English default,
+ * `announcements` merges key by key, and a `Signal` switches the language at
+ * runtime.
  *
  * @example
  * ```ts
@@ -205,17 +215,17 @@ export function withFeedbackI18nLabels(overrides: CngxFeedbackI18nOverrides): Fe
  * @category ui/feedback/i18n
  * @since 0.1.0
  */
-export function provideFeedbackI18n(overrides: CngxFeedbackI18nOverrides): Provider {
+export function provideFeedbackI18n(
+  overrides: CngxFeedbackI18nOverrides | Signal<CngxFeedbackI18nOverrides>,
+): Provider {
   return {
     provide: CNGX_FEEDBACK_I18N,
-    useValue: {
-      ...FEEDBACK_I18N_DEFAULTS,
-      ...overrides,
-      announcements: {
-        ...FEEDBACK_I18N_DEFAULTS.announcements,
-        ...overrides.announcements,
-      },
-    },
+    useFactory: () =>
+      createNestedOverrideMerge<CngxFeedbackI18n, 'announcements'>(
+        FEEDBACK_I18N_DEFAULTS,
+        overrides,
+        'announcements',
+      ),
   };
 }
 
@@ -224,7 +234,7 @@ export function provideFeedbackI18n(overrides: CngxFeedbackI18nOverrides): Provi
  *
  * @category ui/feedback/i18n
  */
-export function injectFeedbackI18n(): CngxFeedbackI18n {
+export function injectFeedbackI18n(): Signal<CngxFeedbackI18n> {
   return inject(CNGX_FEEDBACK_I18N);
 }
 
@@ -236,6 +246,6 @@ export function injectFeedbackI18n(): CngxFeedbackI18n {
 export function injectResolvedFeedbackI18n(): Signal<Required<CngxFeedbackI18n>> {
   return createOverrideMerge<Required<CngxFeedbackI18n>>(
     FEEDBACK_I18N_DEFAULTS,
-    coerceSignal(injectFeedbackI18n()),
+    injectFeedbackI18n(),
   );
 }

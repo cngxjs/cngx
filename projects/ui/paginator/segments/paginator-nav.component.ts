@@ -10,7 +10,7 @@ import {
 import { CngxIcon } from '@cngx/common/display';
 import { CngxRipple } from '@cngx/common/interactive';
 
-import { injectPaginatorConfig, type CngxPaginatorAriaLabels } from '../paginator-config';
+import { injectPaginatorAriaLabels, type CngxPaginatorAriaLabels } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
 import { CNGX_PAGINATOR_HOST, type CngxPaginatorHost } from '../paginator-host.token';
 
@@ -39,9 +39,9 @@ interface NavCore {
  */
 function createPaginatorNavCore(options: NavCoreOptions): NavCore {
   const host = inject(CNGX_PAGINATOR_HOST);
-  const config = injectPaginatorConfig();
+  const labels = injectPaginatorAriaLabels();
   const disabled = computed(() => host.isBusy() || options.atBound(host));
-  const ariaLabel = computed(() => config.ariaLabels[options.ariaKey]);
+  const ariaLabel = computed(() => labels()[options.ariaKey]);
   return {
     disabled,
     ariaLabel,

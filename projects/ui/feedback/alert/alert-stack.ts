@@ -98,7 +98,7 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
   host: {
     class: 'cngx-alert-stack',
     role: 'region',
-    '[attr.aria-label]': 'regionLabel',
+    '[attr.aria-label]': 'regionLabel()',
     '[class.cngx-alert-stack--reserve-space]': 'reserveSpace()',
   },
   template: `
@@ -138,7 +138,7 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
         </div>
         @if (entry.state.config.dismissible) {
           <cngx-close-button
-            [label]="i18n().dismissLabel"
+            [label]="dismissLabel()"
             class="cngx-alert-stack__dismiss"
             (click)="entry.owner.dismiss(entry.state.id)"
           />
@@ -171,13 +171,10 @@ export class CngxAlertStack {
 
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
 
-  protected readonly i18n = injectResolvedFeedbackI18n();
+  private readonly i18n = injectResolvedFeedbackI18n();
 
-  /**
-   * Region name, resolved once from the i18n bundle at construction: it is a
-   * static host attribute, not a reactive binding.
-   */
-  protected readonly regionLabel = this.i18n().alertsRegionLabel;
+  /** @internal - region name of the plain `role="region"` host; follows a switch at once. */
+  protected readonly regionLabel = computed(() => this.i18n().alertsRegionLabel);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
 
@@ -239,6 +236,17 @@ export class CngxAlertStack {
     },
     { equal: entriesEqual },
   );
+
+  /**
+   * @internal - dismiss-button name inside the alert/status items. The visible
+   * entries are the only tracked source; the copy is read untracked, so a
+   * language switch never rewrites a shown item and the next stack change
+   * picks it up.
+   */
+  protected readonly dismissLabel = computed(() => {
+    this.visibleEntries();
+    return untracked(() => this.i18n().dismissLabel);
+  });
 
   /** @internal - number of hidden overflow alerts. */
   protected readonly overflowCount = computed(() => {

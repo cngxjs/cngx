@@ -14,7 +14,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatPaginator, type PageEvent } from '@angular/material/paginator';
 import { CngxPaginate, connectPaginateEmit, connectPaginateResetOn } from '@cngx/common/data';
-import { injectPaginatorConfig } from '@cngx/ui/paginator';
+import { injectPaginatorAnnouncements } from '@cngx/ui/paginator';
 
 /**
  * Context handed to {@link CngxMatPaginator.announceLabel} to build the
@@ -157,7 +157,7 @@ export class CngxMatPaginator {
    * settle phrases stay unspoken here: the bridge communicates the updating
    * state via `aria-busy` on the host instead of a spoken transition.
    */
-  private readonly config = injectPaginatorConfig();
+  private readonly announcements = injectPaginatorAnnouncements();
 
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly renderer = inject(Renderer2);
@@ -169,12 +169,12 @@ export class CngxMatPaginator {
     const totalPages = this.paginate.totalPages();
     const custom = this.announceLabel();
     if (!custom) {
-      return this.config.announcements.pageChange(page, totalPages);
+      return untracked(() => this.announcements().pageChange(page, totalPages));
     }
     const total = this.paginate.total();
     const start = total === 0 ? 0 : this.paginate.clampedRange()[0] + 1;
     const end = this.paginate.clampedRange()[1];
-    return custom({ page, totalPages, start, end, total });
+    return untracked(() => custom({ page, totalPages, start, end, total }));
   });
 
   private liveRegion: HTMLElement | null = null;

@@ -16,8 +16,10 @@ import {
 import {
   CNGX_PAGINATOR_DEFAULTS,
   provideCngxPaginatorConfig,
+  withPaginatorAnnouncements,
   withPaginatorAriaLabels,
   withPaginatorRangeFormat,
+  type CngxPaginatorAnnouncements,
 } from './paginator-config';
 import { CNGX_PAGINATOR_HOST } from './paginator-host.token';
 import { CngxPaginator } from './paginator.component';
@@ -68,6 +70,28 @@ describe('CNGX_PAGINATOR_ANNOUNCER_FACTORY', () => {
     const paginatorEl = await render();
     const live = paginatorEl.querySelector('[aria-live]');
     expect(live?.textContent?.trim()).toBe('Page 1 of 10');
+  });
+
+  test('does not re-announce on a language flip; the next page change speaks it', async () => {
+    const phrases = signal<Partial<CngxPaginatorAnnouncements>>({});
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxPaginatorConfig(withPaginatorAnnouncements(phrases)),
+      ],
+    });
+    const fixture = TestBed.createComponent(SegmentsHost);
+    await settle(fixture);
+    const live = (fixture.nativeElement as HTMLElement).querySelector('cngx-paginator [aria-live]')!;
+    expect(live.textContent?.trim()).toBe('Page 1 of 10');
+
+    phrases.set({ pageChange: (page, total) => `Seite ${page} von ${total}` });
+    await settle(fixture);
+    expect(live.textContent?.trim()).toBe('Page 1 of 10');
+
+    fixture.componentInstance.total.set(120);
+    await settle(fixture);
+    expect(live.textContent?.trim()).toBe('Seite 1 von 12');
   });
 
   test('an override swaps the announcer derivation the shell mounts', async () => {

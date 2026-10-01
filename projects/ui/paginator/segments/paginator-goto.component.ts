@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from '@angular/core';
 
-import { injectPaginatorConfig } from '../paginator-config';
+import { injectPaginatorAriaLabels } from '../paginator-config';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
 /**
@@ -32,7 +32,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
       min="1"
       [max]="host.totalPages()"
       [value]="host.pageIndex() + 1"
-      [attr.aria-label]="config.ariaLabels.goToPage"
+      [attr.aria-label]="ariaLabels().goToPage"
       [attr.aria-disabled]="host.isBusy() ? 'true' : null"
       (keydown.enter)="commit($event)"
       (blur)="commit($event)"
@@ -42,7 +42,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 })
 export class CngxPaginatorGoto {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
-  protected readonly config = injectPaginatorConfig();
+  protected readonly ariaLabels = injectPaginatorAriaLabels();
 
   /**
    * Commit the typed page (Enter / blur). Navigation is commit-only: a

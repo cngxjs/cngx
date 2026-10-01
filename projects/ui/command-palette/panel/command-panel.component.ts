@@ -29,7 +29,10 @@ import { CngxListbox, CngxOption, CngxSearch } from '@cngx/common/interactive';
 import { CngxHighlight } from '@cngx/common/layout';
 import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
 
-import { injectCommandPaletteConfig } from '../config/command-palette-config';
+import {
+  injectCommandPaletteConfig,
+  resolveCommandPaletteCopy,
+} from '../config/command-palette-config';
 import type {
   CngxCommandGroupHeaderContext,
   CngxCommandPaletteEmptyContext,
@@ -103,8 +106,8 @@ interface RawRenderGroup {
         [attr.aria-expanded]="true"
         [attr.aria-controls]="listboxId"
         [attr.aria-activedescendant]="lb.ad.activeId()"
-        [attr.aria-label]="config.searchPlaceholder"
-        [placeholder]="config.searchPlaceholder"
+        [attr.aria-label]="copy().searchPlaceholder"
+        [placeholder]="copy().searchPlaceholder"
         [debounceMs]="debounceMs()"
         (searchChange)="onTerm($event, lb)"
         (keydown)="onKeydown($event, lb)"
@@ -116,7 +119,7 @@ interface RawRenderGroup {
       #lb="cngxListbox"
       [id]="listboxId"
       class="cngx-command-panel-listbox"
-      [label]="config.listboxLabel"
+      [label]="copy().listboxLabel"
       [autoHighlightFirst]="true"
       [externalActivation]="true"
     >
@@ -174,7 +177,7 @@ interface RawRenderGroup {
       @if (emptyTpl(); as tpl) {
         <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ term: term() }" />
       } @else {
-        <div class="cngx-command-state cngx-command-state--empty">{{ config.emptyLabel }}</div>
+        <div class="cngx-command-state cngx-command-state--empty">{{ copy().emptyLabel }}</div>
       }
     }
 
@@ -203,7 +206,7 @@ export class CngxCommandPanel {
    */
   readonly emptyTpl = input<TemplateRef<CngxCommandPaletteEmptyContext> | null>(null);
 
-  protected readonly config = injectCommandPaletteConfig();
+  protected readonly copy = resolveCommandPaletteCopy(injectCommandPaletteConfig());
   protected readonly listboxId = nextUid('cngx-command-listbox');
 
   private readonly commands = injectCommands();
@@ -276,9 +279,15 @@ export class CngxCommandPanel {
   /** Number of results across every group. Exposed for the consumer. */
   readonly resultCount = computed<number>(() => this.flatItems().length);
 
-  protected readonly countMessage = computed<string>(() =>
-    this.config.resultCount(this.resultCount()),
-  );
+  /**
+   * @internal - polite live-region text. The count is the only tracked source; the
+   * formatter is read and called untracked, so a language switch never re-speaks
+   * the shown count and the next count change speaks the new language.
+   */
+  protected readonly countMessage = computed<string>(() => {
+    const count = this.resultCount();
+    return untracked(() => this.copy().resultCount(count));
+  });
 
   /** The command id the user last saw highlighted; `null` after a term reset. */
   private lastHighlightedId: string | null = null;

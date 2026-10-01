@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
-import { provideFeedbackI18n } from '../config/feedback-i18n';
+import { provideFeedbackI18n, type CngxFeedbackI18nOverrides } from '../config/feedback-i18n';
 import { CngxAlerter } from './alerter.service';
 import { CngxAlertStack } from './alert-stack';
 
@@ -402,5 +402,27 @@ describe('CngxAlertStack', () => {
       expect(warn).toHaveBeenCalledTimes(1);
       expect(String(warn.mock.calls[0][0])).toContain('WCAG 2.5.3');
     });
+  });
+
+  it('does not re-announce on a language flip', () => {
+    const copy = signal<CngxFeedbackI18nOverrides>({});
+    TestBed.configureTestingModule({ providers: [provideFeedbackI18n(copy)] });
+    const { fixture, stackEl, alerter } = setup();
+    alerter.show({ message: 'Saved', severity: 'success', scope: 'test', dismissible: true });
+    fixture.detectChanges();
+    const dismissLabels = (): (string | null)[] =>
+      Array.from(stackEl.querySelectorAll('.cngx-alert-stack__dismiss button')).map((b) =>
+        b.getAttribute('aria-label'),
+      );
+    expect(dismissLabels()).toEqual(['Dismiss']);
+
+    copy.set({ dismissLabel: 'Schliessen', alertsRegionLabel: 'Hinweise' });
+    fixture.detectChanges();
+    expect(dismissLabels()).toEqual(['Dismiss']);
+    expect(stackEl.getAttribute('aria-label')).toBe('Hinweise');
+
+    alerter.show({ message: 'Failed', severity: 'error', scope: 'test', dismissible: true });
+    fixture.detectChanges();
+    expect(dismissLabels()).toEqual(['Schliessen', 'Schliessen']);
   });
 });

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, ViewEncapsulation } from '@angular/core';
 import { type CngxSpeak } from '@cngx/common';
 
 import { injectSpeakI18n } from './speak-i18n';
@@ -50,7 +50,7 @@ import { injectSpeakI18n } from './speak-i18n';
     <button
       type="button"
       class="cngx-speak-button__btn"
-      [attr.aria-label]="speakRef().speaking() ? stopLabel() : readAloudLabel()"
+      [attr.aria-label]="resolvedLabel()"
       (click)="speakRef().toggle()"
     >
       @if (speakRef().speaking()) {
@@ -88,15 +88,21 @@ export class CngxSpeakButton {
   readonly speakRef = input.required<CngxSpeak>();
 
   /**
-   * Accessible label while idle - the action the button offers. Defaults to
-   * `CNGX_SPEAK_I18N.readAloud`, read at construction.
+   * Accessible label while idle - the action the button offers. Unbound,
+   * `CNGX_SPEAK_I18N.readAloud` applies.
    */
-  readonly readAloudLabel = input(this.i18n().readAloud);
+  readonly readAloudLabel = input<string | undefined>(undefined);
 
   /**
    * Accessible label while speaking - the action the button offers to
-   * interrupt playback. Defaults to `CNGX_SPEAK_I18N.stopSpeaking`, read at
-   * construction.
+   * interrupt playback. Unbound, `CNGX_SPEAK_I18N.stopSpeaking` applies.
    */
-  readonly stopLabel = input(this.i18n().stopSpeaking);
+  readonly stopLabel = input<string | undefined>(undefined);
+
+  /** @internal - the label for the current playback state. */
+  protected readonly resolvedLabel = computed(() =>
+    this.speakRef().speaking()
+      ? (this.stopLabel() ?? this.i18n().stopSpeaking)
+      : (this.readAloudLabel() ?? this.i18n().readAloud),
+  );
 }

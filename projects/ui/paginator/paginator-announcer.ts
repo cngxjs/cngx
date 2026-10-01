@@ -1,6 +1,13 @@
-import { computed, inject, InjectionToken, linkedSignal, type Signal } from '@angular/core';
+import {
+  computed,
+  inject,
+  InjectionToken,
+  linkedSignal,
+  untracked,
+  type Signal,
+} from '@angular/core';
 
-import { injectPaginatorConfig } from './paginator-config';
+import { injectPaginatorAnnouncements } from './paginator-config';
 import { CNGX_PAGINATOR_HOST } from './paginator-host.token';
 
 /**
@@ -47,7 +54,7 @@ interface AnnouncerSource {
  */
 export function createPaginatorAnnouncer(): CngxPaginatorAnnouncer {
   const host = inject(CNGX_PAGINATOR_HOST);
-  const config = injectPaginatorConfig();
+  const phrases = injectPaginatorAnnouncements();
 
   // Sample the three drivers together so a transition is atomic. The field-wise
   // `equal` keeps the source reference stable across a recompute that yields an
@@ -64,17 +71,19 @@ export function createPaginatorAnnouncer(): CngxPaginatorAnnouncer {
 
   const message = linkedSignal<AnnouncerSource, string>({
     source,
-    computation: (current, previous) => {
-      const { announcements } = config;
-      if (current.busy) {
-        return announcements.loading;
-      }
-      // Just left a busy state: announce the settle once, before page phrasing.
-      if (previous?.source.busy) {
-        return announcements.updated;
-      }
-      return announcements.pageChange(current.page + 1, current.totalPages);
-    },
+    // The phrasing is read untracked: a language switch never re-speaks the
+    // current message; the next page or busy transition speaks the new language.
+    computation: (current, previous) =>
+      untracked(() => {
+        if (current.busy) {
+          return phrases().loading;
+        }
+        // Just left a busy state: announce the settle once, before page phrasing.
+        if (previous?.source.busy) {
+          return phrases().updated;
+        }
+        return phrases().pageChange(current.page + 1, current.totalPages);
+      }),
   });
 
   return { message };

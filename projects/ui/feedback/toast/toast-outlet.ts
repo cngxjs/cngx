@@ -67,7 +67,7 @@ export type ToastPosition =
     class: 'cngx-toast-outlet',
     '[class]': 'positionClass()',
     role: 'region',
-    '[attr.aria-label]': 'regionLabel',
+    '[attr.aria-label]': 'regionLabel()',
   },
   template: `
     @for (toast of visibleToasts(); track toast.id) {
@@ -127,7 +127,7 @@ export type ToastPosition =
         </div>
         @if (toast.config.dismissible) {
           <cngx-close-button
-            [label]="i18n().dismissLabel"
+            [label]="dismissLabel()"
             class="cngx-toast__dismiss"
             (click)="service.dismiss(toast.id)"
           />
@@ -141,7 +141,7 @@ export class CngxToastOutlet {
   protected readonly service = inject(CngxToaster);
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
 
-  protected readonly i18n = injectResolvedFeedbackI18n();
+  private readonly i18n = injectResolvedFeedbackI18n();
 
   /**
    * @internal - repeat-marker formatter for toasts, which are live regions. The toast
@@ -154,10 +154,16 @@ export class CngxToastOutlet {
   });
 
   /**
-   * Region name, resolved once from the i18n bundle at construction: it is a
-   * static host attribute, not a reactive binding.
+   * @internal - dismiss-button name inside the toast live regions, keyed on the
+   * toast list like {@link repeatCount}.
    */
-  protected readonly regionLabel = this.i18n().notificationsRegionLabel;
+  protected readonly dismissLabel = computed(() => {
+    this.service.toasts();
+    return untracked(() => this.i18n().dismissLabel);
+  });
+
+  /** @internal - region name of the plain `role="region"` host; follows a switch at once. */
+  protected readonly regionLabel = computed(() => this.i18n().notificationsRegionLabel);
 
   /** Stack position. */
   readonly position = input<ToastPosition>('bottom-end');

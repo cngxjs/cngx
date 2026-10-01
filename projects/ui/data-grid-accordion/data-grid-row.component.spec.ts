@@ -281,6 +281,30 @@ describe('CngxDataGridRow async state', () => {
     expect(alert.textContent).toContain('custom: Failed to load');
   });
 
+  it('does not re-announce on a language flip', () => {
+    const labels = signal<Partial<CngxDataGridAccordionLabels>>({});
+    TestBed.configureTestingModule({
+      imports: [StateHost],
+      providers: [provideDataGridAccordionConfig(withDataGridAccordionLabels(labels))],
+    });
+    const fixture = TestBed.createComponent(StateHost);
+    fixture.componentInstance.state.set('error');
+    fixture.detectChanges();
+    const alertText = (): string | undefined =>
+      region(fixture).querySelector('[role="alert"]')?.textContent?.trim();
+    expect(alertText()).toBe('Failed to load');
+
+    labels.set({ rowLoadFailed: 'Laden fehlgeschlagen' });
+    fixture.detectChanges();
+    expect(alertText()).toBe('Failed to load');
+
+    fixture.componentInstance.state.set('success');
+    fixture.detectChanges();
+    fixture.componentInstance.state.set('error');
+    fixture.detectChanges();
+    expect(alertText()).toBe('Laden fehlgeschlagen');
+  });
+
   it('names the error region by the cells row when no cell is primary, alert reachable', () => {
     TestBed.configureTestingModule({ imports: [NoPrimaryStateHost] });
     const fixture = TestBed.createComponent(NoPrimaryStateHost);

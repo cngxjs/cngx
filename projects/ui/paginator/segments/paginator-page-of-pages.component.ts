@@ -9,7 +9,7 @@ import {
 import { CngxListbox, CngxListboxTrigger, CngxOption } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
-import { CNGX_PAGINATOR_READOUT_DEFAULTS, injectPaginatorConfig } from '../paginator-config';
+import { injectPaginatorAriaLabels, injectPaginatorFormats } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
@@ -43,7 +43,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
       [cngxPopoverTrigger]="pop"
       [haspopup]="'listbox'"
       [popover]="pop"
-      [attr.aria-label]="config.ariaLabels.pageOfPages"
+      [attr.aria-label]="ariaLabels().pageOfPages"
       [disabled]="host.isBusy()"
       (click)="pop.toggle()"
     >
@@ -55,7 +55,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
         cngxListbox
         class="cngx-paginator__overflow-panel"
         tabindex="0"
-        [label]="config.ariaLabels.pageOfPages"
+        [label]="ariaLabels().pageOfPages"
         [value]="host.pageIndex() + 1"
         (activated)="onSelect($event, pop, trigger)"
         #lb="cngxListbox"
@@ -70,18 +70,17 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 })
 export class CngxPaginatorPageOfPages {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
-  protected readonly config = injectPaginatorConfig();
+  protected readonly ariaLabels = injectPaginatorAriaLabels();
+  private readonly formats = injectPaginatorFormats();
   protected readonly glyphs = CNGX_PAGINATOR_GLYPHS;
 
   /**
    * Trigger readout from the config formatter (EN default `<b>page</b> / total`),
    * rendered as sanitised HTML like the range segment.
    */
-  protected readonly readout = computed(() => {
-    const format =
-      this.config.formats.pageOfPagesReadout ?? CNGX_PAGINATOR_READOUT_DEFAULTS.pageOfPagesReadout;
-    return format(this.host.pageIndex() + 1, this.host.totalPages());
-  });
+  protected readonly readout = computed(() =>
+    this.formats().pageOfPagesReadout(this.host.pageIndex() + 1, this.host.totalPages()),
+  );
 
   /**
    * The 1-based page numbers `1..totalPages`. Length-keyed `equal` keeps the

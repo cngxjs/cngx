@@ -4,6 +4,10 @@ import type { CngxCommandGroup } from '@cngx/common/command';
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import {
+  provideCommandPaletteConfig,
+  withCommandPaletteLabels,
+} from '../config/command-palette-config';
 import { CngxCommandPanelShell } from './command-panel-shell.component';
 
 function makeState(
@@ -85,5 +89,31 @@ describe('CngxCommandPanelShell', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.projected')).not.toBeNull();
     expect(html()).not.toContain('cngx-command-state--empty');
+  });
+
+  it('does not re-announce on a language flip', () => {
+    TestBed.resetTestingModule();
+    const labels = signal<{ errorLabel?: string; retryLabel?: string }>({});
+    TestBed.configureTestingModule({
+      providers: [provideCommandPaletteConfig(withCommandPaletteLabels(labels))],
+    });
+    fixture = TestBed.createComponent(Host);
+    host = fixture.componentInstance;
+    host.state.set(makeState('error', true, []));
+    fixture.detectChanges();
+    const alertText = (): string =>
+      (fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement).textContent!.trim();
+    expect(alertText()).toContain('Could not load commands.');
+
+    labels.set({ errorLabel: 'Laden fehlgeschlagen.', retryLabel: 'Erneut' });
+    fixture.detectChanges();
+    expect(alertText()).toContain('Could not load commands.');
+
+    host.state.set(makeState('success', false, NON_EMPTY));
+    fixture.detectChanges();
+    host.state.set(makeState('error', true, []));
+    fixture.detectChanges();
+    expect(alertText()).toContain('Laden fehlgeschlagen.');
+    expect(alertText()).toContain('Erneut');
   });
 });

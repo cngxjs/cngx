@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { DestroyRef, Directive, effect, ElementRef, inject, input } from '@angular/core';
+import { computed, DestroyRef, Directive, effect, ElementRef, inject, input } from '@angular/core';
 
 import { injectDataGridAccordionLabels } from './config/data-grid-accordion.config.defaults';
 import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
@@ -43,7 +43,7 @@ import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
   host: {
     role: 'searchbox',
     class: 'cngx-dga-filter',
-    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-label]': 'resolvedAriaLabel()',
     '(input)': 'handleInput($event)',
     '(blur)': 'handleBlur()',
   },
@@ -51,10 +51,15 @@ import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
 export class CngxDgaFilter {
   private readonly labels = injectDataGridAccordionLabels();
 
-  /** Accessible name for the filter box. Defaults to the `filterRows` label, read once. */
-  readonly ariaLabel = input(this.labels().filterRows, { alias: 'cngxDgaFilterLabel' });
+  /** Accessible name for the filter box. Unbound, the `filterRows` label applies. */
+  readonly ariaLabel = input<string | undefined>(undefined, { alias: 'cngxDgaFilterLabel' });
   /** Debounce in ms between the last keystroke and writing `grid.filterTerm`. */
   readonly debounce = input(200, { alias: 'cngxDgaFilterDebounce' });
+
+  /** @internal */
+  protected readonly resolvedAriaLabel = computed(
+    () => this.ariaLabel() ?? this.labels().filterRows,
+  );
 
   private readonly grid = inject(CNGX_DATA_GRID_ACCORDION);
   private readonly document = inject(DOCUMENT);
