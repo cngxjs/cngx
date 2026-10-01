@@ -5,6 +5,7 @@ import {
   effect,
   type ElementRef,
   input,
+  type Signal,
   signal,
   viewChild,
   ViewEncapsulation,
@@ -97,10 +98,14 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
            second range change is not invited into an in-flight one. The cluster
            stays in the DOM and in the a11y tree; only the state flips (Pillar
            2). Deliberately not inert: that would hide the actions from AT
-           entirely and the aria-disabled would never be announced. -->
+           entirely and the aria-disabled would never be announced. A group,
+           since aria-disabled is not allowed on a generic container; it
+           covers any projected content, while each [cngxChartPanelActions]
+           control also carries the state and the reason itself. -->
       <div
         #actionSlot
         class="cngx-chart-panel__action-slot"
+        role="group"
         [attr.aria-disabled]="panelBusy() || null"
         [attr.aria-describedby]="panelBusy() ? busyDescriptionId : null"
       >
@@ -167,11 +172,14 @@ export class CngxChartPanel implements CngxChartPanelRegistry {
   /** @internal Panel-level busy, never the chart's data-loading state. */
   protected readonly panelBusy = computed(() => this.state()?.isBusy() ?? false);
 
+  /** {@inheritDoc CngxChartPanelRegistry.busy} */
+  readonly busy: Signal<boolean> = this.panelBusy;
+
   /** @internal Announced through the hidden status region while panel-busy runs. */
   protected readonly busyLabel = computed(() => this.config.ariaLabels?.busy ?? 'Updating');
 
-  /** @internal Names why the action cluster is disabled while busy. */
-  protected readonly busyDescriptionId = `${nextUid('cngx-chart-panel')}-busy`;
+  /** {@inheritDoc CngxChartPanelRegistry.busyDescriptionId} */
+  readonly busyDescriptionId = `${nextUid('cngx-chart-panel')}-busy`;
 
   private readonly actionSlot = viewChild.required<ElementRef<HTMLElement>>('actionSlot');
 

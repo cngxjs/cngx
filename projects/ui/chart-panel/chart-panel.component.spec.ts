@@ -142,6 +142,8 @@ describe('CngxChartPanel chrome', () => {
   it('marks the action cluster aria-disabled only while the panel is busy', () => {
     const { fixture, panel } = setup();
     const slot = panel.querySelector('.cngx-chart-panel__action-slot')!;
+    // aria-disabled is not allowed on a generic; the slot is a group.
+    expect(slot.getAttribute('role')).toBe('group');
     expect(slot.getAttribute('aria-disabled')).toBeNull();
 
     state.set({ status: 'refreshing', firstLoad: false });
@@ -280,6 +282,27 @@ describe('CngxChartPanel chrome', () => {
     expect(panel.querySelector(`#${describedBy}`)).not.toBeNull();
   });
 
+  it('puts the disabled state and its reason on the projected action itself while busy', () => {
+    const { fixture, panel } = setup();
+    const button = panel.querySelector<HTMLButtonElement>('[cngxChartPanelActions]')!;
+    const reasonId = panel.querySelector('.cngx-chart-panel__busy-description')!.id;
+    expect(button.getAttribute('aria-disabled')).toBeNull();
+    expect(button.getAttribute('aria-describedby')).toBeNull();
+
+    state.set({ status: 'pending', firstLoad: false });
+    fixture.detectChanges();
+    // Focusing the action announces "unavailable, Updating" on the focus target.
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    expect(button.getAttribute('aria-describedby')).toBe(reasonId);
+    // Still focusable: the slot blocks activation, the control is not native-disabled.
+    expect(button.disabled).toBe(false);
+
+    state.set({ status: 'success', firstLoad: false });
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-disabled')).toBeNull();
+    expect(button.getAttribute('aria-describedby')).toBeNull();
+  });
+
   it('owns no async view switch of its own', () => {
     const { fixture, panel } = setup();
     state.set({ status: 'error', firstLoad: true });
@@ -288,5 +311,90 @@ describe('CngxChartPanel chrome', () => {
     // An error on the panel state must not replace the body - the chart decides
     // what an error looks like for its own data.
     expect(panel.querySelector('.fake-chart')).not.toBeNull();
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxChartPanel, CngxChartPanelActions],
+  template: `
+    <cngx-chart-panel [state]="state()">
+      <span id="own-hint">Opens the range picker</span>
+      <button
+        cngxChartPanelActions
+        type="button"
+        class="own"
+        aria-describedby="own-hint"
+        aria-disabled="true"
+      >
+        Range
+      </button>
+      <button cngxChartPanelActions type="button" class="native-off" disabled>Export</button>
+      <div cngxChartPanelActions class="wrapper">
+        <button type="button">Refresh</button>
+      </div>
+    </cngx-chart-panel>
+  `,
+})
+class ConsumerActionsHost {
+  state = signal<CngxAsyncState<unknown> | undefined>(undefined);
+}
+
+describe('CngxChartPanelActions busy semantics', () => {
+  let state: AsyncStateMock;
+
+  beforeEach(() => {
+    state = createAsyncStateMock();
+    TestBed.configureTestingModule({ imports: [ConsumerActionsHost] });
+  });
+
+  function setup() {
+    const fixture = TestBed.createComponent(ConsumerActionsHost);
+    fixture.componentInstance.state.set(state);
+    fixture.detectChanges();
+    const panel: HTMLElement = fixture.nativeElement.querySelector('cngx-chart-panel');
+    const reasonId = panel.querySelector('.cngx-chart-panel__busy-description')!.id;
+    const busy = (on: boolean): void => {
+      state.set({ status: on ? 'refreshing' : 'success', firstLoad: false });
+      fixture.detectChanges();
+    };
+    return { panel, reasonId, busy };
+  }
+
+  it("keeps the consumer's own aria-describedby and aria-disabled, appending the reason", () => {
+    const { panel, reasonId, busy } = setup();
+    const own = panel.querySelector('.own')!;
+    expect(own.getAttribute('aria-describedby')).toBe('own-hint');
+    expect(own.getAttribute('aria-disabled')).toBe('true');
+
+    busy(true);
+    expect(own.getAttribute('aria-describedby')).toBe(`own-hint ${reasonId}`);
+    expect(own.getAttribute('aria-disabled')).toBe('true');
+
+    busy(false);
+    expect(own.getAttribute('aria-describedby')).toBe('own-hint');
+    expect(own.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('leaves a natively disabled action disabled', () => {
+    const { panel, reasonId, busy } = setup();
+    const off = panel.querySelector<HTMLButtonElement>('.native-off')!;
+    busy(true);
+    expect(off.disabled).toBe(true);
+    expect(off.getAttribute('aria-describedby')).toBe(reasonId);
+    busy(false);
+    expect(off.disabled).toBe(true);
+    expect(off.getAttribute('aria-disabled')).toBeNull();
+  });
+
+  it('adds nothing to a generic wrapper marker; the slot group carries the state', () => {
+    const { panel, busy } = setup();
+    busy(true);
+    const wrapper = panel.querySelector('.wrapper')!;
+    expect(wrapper.getAttribute('aria-disabled')).toBeNull();
+    expect(wrapper.getAttribute('aria-describedby')).toBeNull();
+    const slot = wrapper.closest('.cngx-chart-panel__action-slot')!;
+    expect(slot.getAttribute('role')).toBe('group');
+    expect(slot.getAttribute('aria-disabled')).toBe('true');
   });
 });
