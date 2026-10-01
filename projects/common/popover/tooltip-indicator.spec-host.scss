@@ -1,0 +1,5 @@
+// Test-only entry for tooltip-indicator.geometry.spec.ts: compiles the opt-in
+// mixin the way a consumer stylesheet would. Not shipped.
+@use './tooltip-indicator' as indicator;
+
+@include indicator.always();
