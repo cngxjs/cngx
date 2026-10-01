@@ -264,11 +264,12 @@
  * without the opt-out the text backplate paints Canvas over the glyph cell.
  * Unlayered + direct selectors (outside @scope) to beat the layered rule. */
 @media (forced-colors: active) {
-  /* forced-color-adjust is inherited: inside a row that opts out of forcing (a
-   * selected option or chip paints its own Highlight pair) the primary fill
-   * would leak through. Paint a checked box in the row ink instead - a
-   * currentColor stroke and glyph on a clear box - which reads CanvasText on a
-   * plain row and HighlightText on a selected one, the same as a forced box. */
+  /* forced-color-adjust is inherited: inside a row that opts out of forcing to
+   * paint its own Highlight pair (a selected option or chip) the primary fill
+   * and the white glyph would leak through unforced. A checked box draws the
+   * row colour instead - a currentColor stroke and glyph on a clear box - which
+   * is the forced colour on a plain row (CanvasText, or GrayText on a disabled
+   * one) and the HighlightText a selected row sets on itself. */
   .cngx-checkbox-indicator:is(.cngx-checkbox-indicator--checked, .cngx-checkbox-indicator--indeterminate)
     .cngx-checkbox-indicator__box {
     background: transparent;

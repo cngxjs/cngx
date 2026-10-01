@@ -581,8 +581,11 @@
     color: HighlightText !important;
     border-color: Highlight !important;
     /* Chromium paints a Canvas backplate behind the label text; without the
-     * opt-out the HighlightText label sits on that plate and vanishes. */
+     * opt-out the HighlightText label sits on that plate and vanishes. The
+     * opt-out is inherited, so the chip declares its ink for nested
+     * indicators. */
     forced-color-adjust: none;
+    --_cngx-forced-ink: HighlightText;
   }
   /* Disabled is painted by colour, which the forced palette overrides;
    * re-signal it with GrayText, as a GrayText fill when selected. */

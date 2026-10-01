@@ -147,6 +147,9 @@ describe.each(SCHEMES)('disabled chip, %s', (scheme) => {
     expect(computedValue(at(root, '.chip-off'), 'color')).toBe(gray);
     expect(computedValue(at(root, '.chip-off-selected'), 'background-color')).toBe(gray);
     expect(computedValue(at(root, '.chip-on-selected'), 'forced-color-adjust')).toBe('none');
+    expect(getComputedStyle(at(root, '.chip-on-selected')).getPropertyValue('--_cngx-forced-ink').trim()).toBe(
+      'HighlightText',
+    );
     expect(computedValue(at(root, '.chip-on-selected'), 'color')).not.toBe(gray);
   });
 });

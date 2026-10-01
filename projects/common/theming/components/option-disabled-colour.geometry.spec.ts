@@ -120,6 +120,9 @@ describe.each(SCHEMES)('disabled option and menu item, %s', (scheme) => {
     expect(computedValue(at(root, '.opt-off'), 'color')).toBe(gray);
     expect(computedValue(at(root, '.opt-off-selected'), 'background-color')).toBe(gray);
     expect(computedValue(at(root, '.opt-selected'), 'forced-color-adjust')).toBe('none');
+    expect(getComputedStyle(at(root, '.opt-selected')).getPropertyValue('--_cngx-forced-ink').trim()).toBe(
+      'HighlightText',
+    );
     expect(computedValue(at(root, '.item-off'), 'color')).toBe(gray);
     expect(computedValue(at(root, '.item-off-cursor'), 'color')).toBe(gray);
   });

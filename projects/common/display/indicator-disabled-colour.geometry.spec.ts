@@ -64,10 +64,14 @@ const SCHEMES = ['light', 'dark'] as const;
     <span class="probe-gray" style="color: GrayText"></span>
     <span class="probe-canvastext" style="color: CanvasText"></span>
     <span class="probe-highlighttext" style="color: HighlightText"></span>
-    <span class="cngx-radio-indicator cngx-radio-indicator--md cngx-radio-indicator--checked plain-radio">
+    <!-- A non-system author colour on the plain row: the forced ink must not inherit it. -->
+    <span class="cngx-radio-indicator cngx-radio-indicator--md cngx-radio-indicator--checked plain-radio" style="color: rgb(200, 0, 0)">
       <span class="cngx-radio-indicator__circle"><span class="cngx-radio-indicator__dot"></span></span>
     </span>
-    <div class="opted-out" style="forced-color-adjust: none; background: Highlight; color: HighlightText">
+    <div
+      class="opted-out"
+      style="forced-color-adjust: none; background: Highlight; color: HighlightText; --_cngx-forced-ink: HighlightText"
+    >
       <span class="cngx-checkbox-indicator cngx-checkbox-indicator--md cngx-checkbox-indicator--checked">
         <span class="cngx-checkbox-indicator__box"><span class="cngx-checkbox-indicator__check">✓</span></span>
       </span>
