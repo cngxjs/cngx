@@ -16,8 +16,7 @@
 //
 //   --cngx-tooltip-indicator-size      (default: 14px)
 //   --cngx-tooltip-indicator-gap       (default: 4px)
-//   --cngx-tooltip-indicator-color     (default: currentColor)
-//   --cngx-tooltip-indicator-opacity   (default: 0.5)
+//   --cngx-tooltip-indicator-color     (default: --cngx-color-text-muted)
 //   --cngx-tooltip-indicator-icon      (default: info circle SVG)
 
 // Info circle icon (Heroicons 20/solid - MIT)
@@ -31,11 +30,11 @@ $_default-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
     height: var(--cngx-tooltip-indicator-size, 14px);
     margin-inline-start: var(--cngx-tooltip-indicator-gap, 4px);
     vertical-align: middle;
-    background: var(--cngx-tooltip-indicator-color, currentColor);
+    // Quiet by colour, never opacity: the muted text colour.
+    background: var(--cngx-tooltip-indicator-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
     mask-image: var(--cngx-tooltip-indicator-icon, #{$_default-icon});
     mask-size: contain;
     mask-repeat: no-repeat;
-    opacity: var(--cngx-tooltip-indicator-opacity, 0.5);
     pointer-events: none;
   }
 }

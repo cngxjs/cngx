@@ -1,0 +1,34 @@
+@use '@angular/material' as mat;
+@use './bridge' as bridge;
+
+// Material bridge for CngxSegmentedProgress. Maps the neutral todo track, the
+// done and active fills and the error fill onto Material 3 surface-variant,
+// primary and error tokens so the bar reads native beside Material controls.
+// The component mixes the active fill toward --cngx-color-surface itself, so
+// the bridge hands it the plain primary.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/segmented-progress-theme' as segmented;
+//   html { @include segmented.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-segmented-progress-todo-color: var(--mat-sys-surface-variant);
+    --cngx-segmented-progress-done-color: var(--mat-sys-primary);
+    --cngx-segmented-progress-active-color: var(--mat-sys-primary);
+    --cngx-segmented-progress-error-color: var(--mat-sys-error);
+  } @else {
+    --cngx-segmented-progress-todo-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.12)};
+    --cngx-segmented-progress-done-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-segmented-progress-active-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-segmented-progress-error-color: #{mat.get-theme-color($theme, warn)};
+  }
+}
+
+@mixin theme($theme) {
+  // Colour tokens are not registered, so setting them on the host cascades
+  // into the segment spans.
+  @include bridge.on(cngx-segmented-progress, '.cngx-segmented-progress') {
+    @include color($theme);
+  }
+}

@@ -81,6 +81,7 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   'projects/common/display/radio-indicator/radio-indicator.component.css',
   'projects/common/theming/components/cngx-badge.css',
   'projects/common/theming/components/cngx-divider.css',
+  'projects/common/display/segmented-progress/segmented-progress.css',
   // @cngx/common/interactive (Phase B) - box-shadow / tint state breaks
   'projects/common/interactive/checkbox/checkbox.component.css',
   'projects/common/interactive/radio/radio.component.css',
@@ -290,7 +291,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(40);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(41);
   });
 });
 
