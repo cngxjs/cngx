@@ -91,6 +91,13 @@
   color: var(--cngx-command-row-active-color, inherit);
 }
 
+/* Disabled by colour, never opacity (the field recipe); the match highlight
+   and a shortcut chip inherit it. */
+.cngx-command-row.cngx-option--disabled {
+  cursor: not-allowed;
+  color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+}
+
 @media (forced-colors: active) {
   /* The keyboard-active row signals only with a background tint, which
      collapses to Canvas under WHCM; re-signal with the system Highlight pair
@@ -112,11 +119,17 @@
   .cngx-command-row.cngx-option--highlighted mark {
     text-decoration: underline;
   }
-}
 
-.cngx-command-row.cngx-option--disabled {
-  cursor: not-allowed;
-  opacity: var(--cngx-command-row-disabled-opacity, 0.5);
+  /* A disabled row reads GrayText. GrayText on the system Mark fill is
+     faint, so its match highlight drops the fill and underlines instead. */
+  .cngx-command-row.cngx-option--disabled {
+    color: GrayText;
+  }
+  .cngx-command-row.cngx-option--disabled mark {
+    background: transparent;
+    color: inherit;
+    text-decoration: underline;
+  }
 }
 
 .cngx-command-row-label mark {

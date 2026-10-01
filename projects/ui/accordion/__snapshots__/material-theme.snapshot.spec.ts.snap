@@ -25,7 +25,6 @@ exports[`Material accordion-theme bridge baseline > theme() - base organism (shi
   "--cngx-accordion-border-color": "rgba(0, 0, 0, 0.12)",
   "--cngx-accordion-focus-color": "#3f51b5",
   "--cngx-accordion-header-color": "rgba(0, 0, 0, 0.87)",
-  "--cngx-accordion-header-disabled-color": "rgba(0, 0, 0, 0.38)",
   "--cngx-accordion-subtitle-color": "rgba(0, 0, 0, 0.6)",
   "--cngx-color-text-muted": "rgba(0, 0, 0, 0.6)",
 }
@@ -36,7 +35,6 @@ exports[`Material accordion-theme bridge baseline > theme() - base organism (shi
   "--cngx-accordion-border-color": "var(--mat-sys-outline-variant)",
   "--cngx-accordion-focus-color": "var(--mat-sys-primary)",
   "--cngx-accordion-header-color": "var(--mat-sys-on-surface)",
-  "--cngx-accordion-header-disabled-color": "var(--mat-sys-on-surface-variant)",
   "--cngx-accordion-subtitle-color": "var(--mat-sys-on-surface-variant)",
   "--cngx-color-text-muted": "var(--mat-sys-on-surface-variant)",
 }
@@ -47,7 +45,6 @@ exports[`Material accordion-theme bridge baseline > theme() - base organism (shi
   "--cngx-accordion-border-color": "var(--mat-sys-outline-variant)",
   "--cngx-accordion-focus-color": "var(--mat-sys-primary)",
   "--cngx-accordion-header-color": "var(--mat-sys-on-surface)",
-  "--cngx-accordion-header-disabled-color": "var(--mat-sys-on-surface-variant)",
   "--cngx-accordion-subtitle-color": "var(--mat-sys-on-surface-variant)",
   "--cngx-color-text-muted": "var(--mat-sys-on-surface-variant)",
 }

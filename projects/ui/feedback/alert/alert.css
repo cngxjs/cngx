@@ -669,9 +669,13 @@
       outline-offset: 2px;
     }
 
+    /* Disabled by colour, never opacity (the field recipe); the border
+     * follows. A native disabled button reads GrayText under forced
+     * colors from the UA. */
     .cngx-alert__action:disabled {
       cursor: not-allowed;
-      opacity: 0.6;
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+      border-color: currentColor;
     }
 
     .cngx-alert__dismiss {

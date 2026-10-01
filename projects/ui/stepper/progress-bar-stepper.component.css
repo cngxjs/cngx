@@ -36,8 +36,11 @@
 
 .cngx-progress-bar-stepper__caption {
   font-size: var(--cngx-progress-bar-stepper-caption-font-size, 0.8125rem);
-  color: var(--cngx-progress-bar-stepper-caption-color, currentColor);
-  opacity: var(--cngx-progress-bar-stepper-caption-opacity, 0.75);
+  /* De-emphasis by colour (muted text), never opacity. */
+  color: var(
+    --cngx-progress-bar-stepper-caption-color,
+    var(--cngx-color-text-muted, oklch(0.5 0.01 250))
+  );
 }
 
 /* Error state re-aims the embedded bar fill onto the danger token - the

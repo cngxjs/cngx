@@ -137,7 +137,6 @@ describe('feedback Material bridge', () => {
     '--cngx-toast-bg',
     '--cngx-toast-border-radius',
     '--cngx-toast-color',
-    '--cngx-toast-count-opacity',
     '--cngx-toast-description-color',
     '--cngx-toast-error-accent',
     '--cngx-toast-font-size',

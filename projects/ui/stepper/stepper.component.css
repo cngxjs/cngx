@@ -1821,6 +1821,16 @@
       box-shadow: inset 0 0 0 2px var(--cngx-color-primary, oklch(0.66 0.19 50));
     }
   }
+
+  /* Disabled by colour in every skin. The skins above paint the step colour
+     in this layer, which outranks the stepper-base rule (cngx.components), so
+     the field recipe repeats here; the attribute beats their single-class
+     step selectors. */
+  @scope (.cngx-stepper) {
+    .cngx-stepper__step[aria-disabled='true'] {
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+    }
+  }
 }
 
 @keyframes cngx-stepper-spin {
@@ -1948,8 +1958,13 @@
     transform var(--cngx-duration-fast, 150ms) ease-out;
 }
 
+/* A disabled dot is a hollow ring in the disabled field colour: the inset
+   shadow keeps the dot's box, so nothing shifts. */
 .cngx-stepper__mobile-dot[aria-disabled='true'] {
   cursor: not-allowed;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
 }
 
 /* Inert dot (headerNavigation 'none'): pure indicator, not a control. */
@@ -2020,12 +2035,12 @@
 
 /* Focus-driven group collapse (groupCollapse: 'expand-active'). A
    collapsed non-active group renders its header alone; the de-emphasis
-   reads as "this branch is folded". The opacity transition animates the
-   fold only when motion is allowed - unlayered with a direct selector
-   so it stays outside @scope (consistent cascade ordering across
-   engines). All values flow through --cngx-stepper-* custom properties. */
+   (muted text colour, never opacity) reads as "this branch is folded". The
+   colour transition animates the fold only when motion is allowed -
+   unlayered with a direct selector so it stays outside @scope (consistent
+   cascade ordering across engines). */
 .cngx-stepper__group-header--collapsed {
-  opacity: var(--cngx-stepper-collapsed-group-opacity, 0.65);
+  color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
 }
 
 /* A collapsed header that navigates into its branch (headerNavigation
@@ -2061,8 +2076,6 @@
 @media (prefers-reduced-motion: no-preference) {
   .cngx-stepper__group-header {
     transition:
-      opacity var(--cngx-stepper-collapse-duration, var(--cngx-duration-fast, 150ms))
-        var(--cngx-stepper-collapse-easing, ease),
       background-color var(--cngx-stepper-collapse-duration, var(--cngx-duration-fast, 150ms))
         var(--cngx-stepper-collapse-easing, ease),
       border-color var(--cngx-stepper-collapse-duration, var(--cngx-duration-fast, 150ms))
@@ -2294,5 +2307,39 @@
     /* Chromium paints a Canvas backplate behind the text; without the opt-out
      * the HighlightText label sits on that plate and vanishes. */
     forced-color-adjust: none;
+  }
+
+  /* Disabled step: the field colour is forced away, so it reads GrayText;
+     the indicator number follows currentColor. No ring on the indicator: a
+     GrayText outline would frame a disabled step more than an enabled one. */
+  .cngx-stepper__step[aria-disabled='true'] {
+    color: GrayText;
+  }
+
+  /* Dots are background-only, and the fill is forced to Canvas, so every dot
+     vanished. An inset outline (not a border: no layout shift) in CanvasText
+     draws each dot; a disabled dot draws it in GrayText. */
+  .cngx-stepper__mobile-dot {
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
+
+  .cngx-stepper__mobile-dot[aria-disabled='true'] {
+    outline-color: GrayText;
+  }
+
+  /* The current dot keeps a Highlight fill: it opts out of forcing (the
+     backplate would otherwise eat it) and declares the row ink, which its
+     error glyph follows. The repeated class outranks the error fill
+     ([data-state='error']), which would otherwise leak unforced. */
+  .cngx-stepper__mobile-dot.cngx-stepper__mobile-dot--active {
+    --_cngx-forced-ink: HighlightText;
+    forced-color-adjust: none;
+    background: Highlight;
+    outline-color: Highlight;
+  }
+
+  .cngx-stepper__mobile-dot--active::after {
+    color: var(--_cngx-forced-ink, CanvasText);
   }
 }

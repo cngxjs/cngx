@@ -9,8 +9,8 @@
  *
  * - `.cngx-empty-state__icon-slot` - consumer-projected icon; the
  *   default glyph next to it is hidden when this slot is non-empty
- * - `.cngx-empty-state__default-icon` - fallback glyph (50% opacity)
- *   when no custom icon is projected
+ * - `.cngx-empty-state__default-icon` - fallback glyph (muted text
+ *   colour) when no custom icon is projected
  * - `.cngx-empty-state__title` - h1-style header
  * - `.cngx-empty-state__description` - body copy, capped at 40ch
  * - `.cngx-empty-state__actions` - trailing action row
@@ -23,7 +23,7 @@
  * light/dark distinction:
  *
  * - `--cngx-empty-color` -> `--cngx-color-text`
- * - `--cngx-empty-icon-color` -> `--cngx-color-text`
+ * - `--cngx-empty-icon-color` -> `--cngx-color-text-muted`
  * - `--cngx-empty-title-color` -> `--cngx-color-text`
  *
  * **Pair with**
@@ -120,15 +120,16 @@
   }
 
   /*
-   * Default-theme palette pass. All three text colors delegate to
-   * the foundation `--cngx-color-text` so the empty-state's body /
-   * title / icon all flip together with the document's color scheme.
-   * No 4-block needed - the foundation token already carries the
+   * Default-theme palette pass. Body and title delegate to the
+   * foundation `--cngx-color-text`, the default icon to the muted
+   * `--cngx-color-text-muted` (de-emphasis by colour, never opacity),
+   * so all three flip together with the document's color scheme.
+   * No 4-block needed - the foundation tokens already carry the
    * light/dark distinction.
    */
   :root {
     --cngx-empty-color: var(--cngx-color-text, oklch(0.34 0.005 290));
-    --cngx-empty-icon-color: var(--cngx-color-text, oklch(0.34 0.005 290));
+    --cngx-empty-icon-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
     --cngx-empty-title-color: var(--cngx-color-text, oklch(0.18 0.005 290));
   }
 }
@@ -167,8 +168,7 @@
     }
 
     .cngx-empty-state__default-icon {
-      color: var(--cngx-empty-icon-color, var(--cngx-color-text, oklch(0.34 0.005 290)));
-      opacity: 0.5;
+      color: var(--cngx-empty-icon-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
     }
 
     .cngx-empty-state__icon-slot:empty {

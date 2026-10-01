@@ -67,9 +67,21 @@
   outline-offset: var(--cngx-accordion-focus-offset, -2px);
 }
 
+/* Disabled by colour: the field recipe unless a theme sets the token. */
 .cngx-accordion-item__header[aria-disabled='true'] {
-  color: var(--cngx-accordion-header-disabled-color, #9ca3af);
+  color: var(
+    --cngx-accordion-header-disabled-color,
+    color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent)
+  );
   cursor: not-allowed;
+}
+
+/* Forced colors force the disabled colour to CanvasText, the same as an
+   enabled header; GrayText keeps the disabled header apart. */
+@media (forced-colors: active) {
+  .cngx-accordion-item__header[aria-disabled='true'] {
+    color: GrayText;
+  }
 }
 
 .cngx-accordion-item__text {
@@ -106,7 +118,8 @@
   border-inline-end: var(--cngx-accordion-chevron-stroke, 2px solid currentColor);
   border-block-end: var(--cngx-accordion-chevron-stroke, 2px solid currentColor);
   transform: rotate(45deg);
-  transition: transform var(--cngx-accordion-chevron-transition, var(--cngx-duration-fast, 150ms) ease);
+  transition: transform
+    var(--cngx-accordion-chevron-transition, var(--cngx-duration-fast, 150ms) ease);
 }
 
 .cngx-accordion-item[data-expanded] .cngx-accordion-item__chevron {
@@ -161,7 +174,8 @@
 
   .cngx-accordion-item__chevron::after {
     transform: translate(-50%, -50%) rotate(90deg);
-    transition: opacity var(--cngx-accordion-chevron-transition, var(--cngx-duration-fast, 150ms) ease);
+    transition: opacity
+      var(--cngx-accordion-chevron-transition, var(--cngx-duration-fast, 150ms) ease);
   }
 
   /* The vertical bar collapses on open: plus morphs to minus. */
@@ -186,8 +200,8 @@
   block-size: var(--cngx-accordion-skeleton-height, 3rem);
   border-radius: var(--cngx-accordion-skeleton-radius, 0.25rem);
   background: var(--cngx-accordion-skeleton-bg, #e5e7eb);
-  animation: cngx-accordion-skeleton-pulse
-    var(--cngx-accordion-skeleton-duration, 1.5s) ease-in-out infinite;
+  animation: cngx-accordion-skeleton-pulse var(--cngx-accordion-skeleton-duration, 1.5s) ease-in-out
+    infinite;
 }
 
 /* Refreshing keeps the body mounted; a thin primary bar rides the region top. */
@@ -197,8 +211,8 @@
   inset-inline: 0;
   block-size: var(--cngx-accordion-refresh-height, 2px);
   background: var(--cngx-accordion-refresh-color, var(--cngx-color-primary, #1d4ed8));
-  animation: cngx-accordion-skeleton-pulse
-    var(--cngx-accordion-refresh-duration, 1.2s) ease-in-out infinite;
+  animation: cngx-accordion-skeleton-pulse var(--cngx-accordion-refresh-duration, 1.2s) ease-in-out
+    infinite;
 }
 
 .cngx-accordion-item__error {
