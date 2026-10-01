@@ -6,6 +6,7 @@ import {
   inject,
   input,
   TemplateRef,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
@@ -110,12 +111,19 @@ export class CngxFormErrors {
       if (!state.invalid()) {
         return [];
       }
-      return state.errors().map((err) => ({
-        fieldName: state.name(),
-        message: (this.errorMap[err.kind] ?? (() => err.message ?? err.kind))(err),
-        kind: err.kind,
-        focus: () => state.focusBoundControl(),
-      }));
+      const errors = state.errors();
+      const fieldName = state.name();
+      // Copy is read untracked: a language flip must not re-voice the polite
+      // region; the next error change speaks the new language.
+      return untracked(() => {
+        const map = this.errorMap();
+        return errors.map((err) => ({
+          fieldName,
+          message: (map[err.kind] ?? (() => err.message ?? err.kind))(err),
+          kind: err.kind,
+          focus: () => state.focusBoundControl(),
+        }));
+      });
     });
   });
 

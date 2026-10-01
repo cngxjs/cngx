@@ -9,7 +9,7 @@ import { CngxInput } from '@cngx/forms/input';
 import { CngxHint } from './hint.directive';
 import { CngxError } from './error.directive';
 import { CngxFieldErrors } from './field-errors.component';
-import { CNGX_ERROR_MESSAGES } from './form-field.token';
+import { provideErrorMessages } from './form-field.token';
 import { createMockField, mockValidationError, type MockFieldRef } from './testing/mock-field';
 import type { CngxFieldAccessor, ErrorMessageMap } from './models';
 
@@ -132,7 +132,7 @@ describe('CngxFormField', () => {
 
       TestBed.configureTestingModule({
         imports: [FullHost],
-        providers: [{ provide: CNGX_ERROR_MESSAGES, useValue: MESSAGES }],
+        providers: [provideErrorMessages(MESSAGES)],
       });
       fixture = TestBed.createComponent(FullHost);
       fixture.componentInstance.field.set(mock.accessor);

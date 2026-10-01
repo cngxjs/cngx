@@ -13,6 +13,7 @@ import {
   type CngxFieldSkin,
   type CngxFormFieldHostContract,
 } from '@cngx/core/tokens';
+import { coerceSignal } from '@cngx/core/utils';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
 import {
   CNGX_FORM_FIELD_CONFIG,
@@ -77,6 +78,7 @@ function buildHint(
 })
 export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
   private readonly config = inject(CNGX_FORM_FIELD_CONFIG);
+  private readonly hintFormatters = coerceSignal(this.config.constraintHints);
   private readonly fieldReveal = inject(CNGX_FORM_FIELD_REVEAL, { optional: true });
 
   /**
@@ -258,7 +260,7 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
    * Returns an array of hint strings derived from `minLength`/`maxLength` and `min`/`max`.
    */
   readonly constraintHints = computed<string[]>(() => {
-    const fmt = this.config.constraintHints;
+    const fmt = this.hintFormatters();
     if (!fmt) {
       return [];
     }

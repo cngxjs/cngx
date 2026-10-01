@@ -13,7 +13,7 @@ import { CngxFormField } from './form-field.component';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CngxInput, CngxNumericInput } from '@cngx/forms/input';
 import { CngxFieldErrors } from './field-errors.component';
-import { CNGX_ERROR_MESSAGES } from './form-field.token';
+import { provideErrorMessages } from './form-field.token';
 import type { CngxFieldAccessor } from './models';
 
 function adapt(control: AbstractControl, name: string): CngxFieldAccessor {
@@ -102,7 +102,7 @@ describe('adaptFormControl', () => {
   it('works inside cngx-form-field', () => {
     TestBed.configureTestingModule({
       imports: [TestHost],
-      providers: [{ provide: CNGX_ERROR_MESSAGES, useValue: { required: () => 'Required.' } }],
+      providers: [provideErrorMessages({ required: () => 'Required.' })],
     });
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();

@@ -631,69 +631,6 @@ export const RATCHET = [
     closesIn: 5,
   },
   {
-    file: 'projects/forms/field/field-errors.component.ts',
-    member: 'CngxFieldErrors.resolvedErrors',
-    rule: 'R3',
-    token: 'CNGX_ERROR_MESSAGES',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/field/field-errors.component.ts',
-    member: 'CngxFieldErrors.resolvedErrors',
-    rule: 'R4',
-    token: 'CNGX_ERROR_MESSAGES',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/field/form-errors.component.ts',
-    member: 'CngxFormErrors.errorItems',
-    rule: 'R3',
-    token: 'CNGX_ERROR_MESSAGES',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/field/form-errors.component.ts',
-    member: 'CngxFormErrors.errorItems',
-    rule: 'R4',
-    token: 'CNGX_ERROR_MESSAGES',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/field/form-errors.component.ts',
-    member: 'CngxFormErrors.tplContext',
-    rule: 'R4',
-    token: 'CNGX_ERROR_MESSAGES',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/field/form-field-presenter.ts',
-    member: 'CngxFormFieldPresenter.constraintHints',
-    rule: 'R3',
-    token: 'CNGX_FORM_FIELD_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/field/form-field.token.ts',
-    member: 'withConstraintHints',
-    rule: 'R3',
-    token: 'CNGX_FORM_FIELD_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/field/form-field.token.ts',
-    member: 'withErrorMessages',
-    rule: 'R3',
-    token: 'CNGX_ERROR_MESSAGES',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/field/form-field.token.ts',
-    member: 'withErrorMessages',
-    rule: 'R3',
-    token: 'CNGX_FORM_FIELD_CONFIG',
-    closesIn: 5,
-  },
-  {
     file: 'projects/forms/filter-builder/filter-builder-announcer.ts',
     member: 'createFilterBuilderAnnouncer',
     rule: 'R3',
@@ -1598,7 +1535,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 141;
+export const RATCHET_CEILING = 132;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 4;

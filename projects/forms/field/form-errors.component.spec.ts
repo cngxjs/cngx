@@ -1,9 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 import { CngxFormErrors } from './form-errors.component';
-import { CNGX_ERROR_MESSAGES } from './form-field.token';
+import { provideErrorMessages } from './form-field.token';
 import { createMockField, mockValidationError } from './testing/mock-field';
 import type { CngxFieldAccessor, ErrorMessageMap } from './models';
 
@@ -40,13 +40,16 @@ class CustomTplHost {
 }
 
 describe('CngxFormErrors', () => {
-  function setup(HostClass: typeof TestHost | typeof CustomTplHost = TestHost) {
+  function setup(
+    HostClass: typeof TestHost | typeof CustomTplHost = TestHost,
+    messages: ErrorMessageMap | Signal<ErrorMessageMap> = MESSAGES,
+  ) {
     const emailMock = createMockField({ name: 'email' });
     const pwMock = createMockField({ name: 'password' });
 
     TestBed.configureTestingModule({
       imports: [HostClass],
-      providers: [{ provide: CNGX_ERROR_MESSAGES, useValue: MESSAGES }],
+      providers: [provideErrorMessages(messages)],
     });
     const fixture = TestBed.createComponent(HostClass);
     fixture.componentInstance.fields.set([emailMock.accessor, pwMock.accessor]);
@@ -158,5 +161,32 @@ describe('CngxFormErrors', () => {
     expect(el.querySelector('.custom-item')?.textContent).toContain(
       'email: This field is required.',
     );
+  });
+
+  describe('language switch', () => {
+    it('does not re-announce on a language flip', () => {
+      const lang = signal<'en' | 'de'>('en');
+      const { fixture, emailMock } = setup(
+        TestHost,
+        computed<ErrorMessageMap>(() => ({
+          required: () => (lang() === 'de' ? 'Pflichtfeld.' : 'This field is required.'),
+        })),
+      );
+      fixture.componentInstance.show.set(true);
+      emailMock.ref.invalid.set(true);
+      emailMock.ref.errors.set([mockValidationError('required')]);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.directive(CngxFormErrors))
+        .nativeElement as HTMLElement;
+      expect(el.querySelector('li')?.textContent).toContain('This field is required.');
+
+      lang.set('de');
+      fixture.detectChanges();
+      expect(el.querySelector('li')?.textContent).toContain('This field is required.');
+
+      emailMock.ref.errors.set([mockValidationError('required')]);
+      fixture.detectChanges();
+      expect(el.querySelector('li')?.textContent).toContain('Pflichtfeld.');
+    });
   });
 });
