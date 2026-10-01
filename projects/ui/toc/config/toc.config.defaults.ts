@@ -26,7 +26,9 @@ export const CNGX_TOC_ARIA_LABELS_DEFAULTS: Required<CngxTocAriaLabels> = {
  *
  * @internal
  */
-export const CNGX_TOC_DEFAULTS: CngxTocConfig = {
+export const CNGX_TOC_DEFAULTS: CngxTocConfig & {
+  readonly ariaLabels: Required<CngxTocAriaLabels>;
+} = {
   ariaLabels: CNGX_TOC_ARIA_LABELS_DEFAULTS,
   scrollBehavior: 'smooth',
   spy: {

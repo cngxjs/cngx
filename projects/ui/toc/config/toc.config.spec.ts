@@ -144,4 +144,8 @@ describe('CNGX_TOC_CONFIG', () => {
     });
     expect(navLabel()).toBe('On this page');
   });
+
+  it('keeps the plain labels bundle on the exported defaults', () => {
+    expect(CNGX_TOC_DEFAULTS.ariaLabels.nav).toBe('On this page');
+  });
 });
