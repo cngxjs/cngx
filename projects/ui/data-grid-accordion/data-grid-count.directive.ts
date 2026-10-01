@@ -55,22 +55,17 @@ export class CngxDgaCount {
   /** The visible-row count the consumer derived. */
   readonly count = input.required<number>({ alias: 'cngxDgaCount' });
   private readonly labels = injectDataGridAccordionLabels();
-  /** Construction-time noun defaults; an input still equal to them is treated as unbound. */
-  private readonly nounSnapshot = {
-    singular: this.labels().countSingular,
-    plural: this.labels().countPlural,
-  };
 
   /**
-   * Singular noun for a count of 1. Defaults to the `countSingular` label, read at
-   * construction; binding a different noun switches to `<count> <noun>` composition.
+   * Singular noun for a count of 1. Unbound, the `countSingular` label applies;
+   * binding either noun switches to `<count> <noun>` composition.
    */
-  readonly singular = input(this.nounSnapshot.singular, { alias: 'cngxDgaCountSingular' });
+  readonly singular = input<string | undefined>(undefined, { alias: 'cngxDgaCountSingular' });
   /**
-   * Plural noun for any other count. Defaults to the `countPlural` label, read at
-   * construction; binding a different noun switches to `<count> <noun>` composition.
+   * Plural noun for any other count. Unbound, the `countPlural` label applies;
+   * binding either noun switches to `<count> <noun>` composition.
    */
-  readonly plural = input(this.nounSnapshot.plural, { alias: 'cngxDgaCountPlural' });
+  readonly plural = input<string | undefined>(undefined, { alias: 'cngxDgaCountPlural' });
 
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly renderer = inject(Renderer2);
@@ -84,18 +79,16 @@ export class CngxDgaCount {
       const singular = this.singular();
       const plural = this.plural();
       const text = untracked(() => {
-        const unbound =
-          singular === this.nounSnapshot.singular && plural === this.nounSnapshot.plural;
-        if (!unbound) {
-          return `${count} ${count === 1 ? singular : plural}`;
-        }
         const labels = this.labels();
+        const unbound = singular === undefined && plural === undefined;
         // A consumer `count` formatter owns word order and plurals; otherwise the
         // resolved noun labels compose, so a nouns-only override still reaches AT.
-        if (labels.count !== CNGX_DATA_GRID_ACCORDION_LABELS_DEFAULTS.count) {
+        if (unbound && labels.count !== CNGX_DATA_GRID_ACCORDION_LABELS_DEFAULTS.count) {
           return labels.count(count);
         }
-        return `${count} ${count === 1 ? labels.countSingular : labels.countPlural}`;
+        const noun =
+          count === 1 ? (singular ?? labels.countSingular) : (plural ?? labels.countPlural);
+        return `${count} ${noun}`;
       });
       this.renderer.setProperty(this.element, 'textContent', text);
     });

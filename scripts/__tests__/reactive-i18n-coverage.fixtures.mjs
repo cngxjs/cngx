@@ -848,97 +848,6 @@ export const RATCHET = [
     closesIn: 6,
   },
   {
-    file: 'projects/ui/data-grid-accordion/data-grid-count.directive.ts',
-    member: 'CngxDgaCount.nounSnapshot',
-    rule: 'R2',
-    token: 'CNGX_DATA_GRID_ACCORDION_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-count.directive.ts',
-    member: 'CngxDgaCount.plural',
-    rule: 'R1',
-    token: 'CNGX_DATA_GRID_ACCORDION_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-count.directive.ts',
-    member: 'CngxDgaCount.singular',
-    rule: 'R1',
-    token: 'CNGX_DATA_GRID_ACCORDION_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-filter-field.component.ts',
-    member: 'CngxDgaFilterField.label',
-    rule: 'R1',
-    token: 'CNGX_DATA_GRID_ACCORDION_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-filter.directive.ts',
-    member: 'CngxDgaFilter.ariaLabel',
-    rule: 'R1',
-    token: 'CNGX_DATA_GRID_ACCORDION_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-row.component.ts',
-    member: 'CngxDataGridRow.errorMessage',
-    rule: 'R1',
-    token: 'CNGX_DATA_GRID_ACCORDION_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-row.component.ts',
-    member: 'CngxDataGridRow.errorMessage',
-    rule: 'R4',
-    token: 'CNGX_DATA_GRID_ACCORDION_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    member: 'CngxDgaSortHeader.ascendingAnnouncement',
-    rule: 'R1',
-    token: 'CNGX_DATA_GRID_ACCORDION_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    member: 'CngxDgaSortHeader.ascendingLabel',
-    rule: 'R1',
-    token: 'CNGX_DATA_GRID_ACCORDION_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    member: 'CngxDgaSortHeader.clearedAnnouncement',
-    rule: 'R1',
-    token: 'CNGX_DATA_GRID_ACCORDION_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    member: 'CngxDgaSortHeader.descendingAnnouncement',
-    rule: 'R1',
-    token: 'CNGX_DATA_GRID_ACCORDION_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    member: 'CngxDgaSortHeader.descendingLabel',
-    rule: 'R1',
-    token: 'CNGX_DATA_GRID_ACCORDION_CONFIG',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    member: 'CngxDgaSortHeader.notSortedLabel',
-    rule: 'R1',
-    token: 'CNGX_DATA_GRID_ACCORDION_CONFIG',
-    closesIn: 6,
-  },
-  {
     file: 'projects/ui/mat-paginator/mat-paginator-bridge.directive.ts',
     member: 'CngxMatPaginator.announceMessage',
     rule: 'R3',
@@ -1220,7 +1129,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 87;
+export const RATCHET_CEILING = 74;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 5;
@@ -1561,7 +1470,7 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/ui/data-grid-accordion/data-grid-row.component.ts',
-    region: 'CngxDataGridRow.div(errorMessage,errorTemplate)',
+    region: 'CngxDataGridRow.div(errorTemplate,resolvedErrorMessage)',
     spec: 'projects/ui/data-grid-accordion/data-grid-row.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,

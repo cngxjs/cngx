@@ -40,10 +40,10 @@
         @if (errorTemplate(); as tpl) {
           <ng-container
             [ngTemplateOutlet]="tpl"
-            [ngTemplateOutletContext]="{ $implicit: 'error', message: errorMessage() }"
+            [ngTemplateOutletContext]="{ $implicit: 'error', message: resolvedErrorMessage() }"
           />
         } @else {
-          <span class="cngx-dga-row__error-default">{{ errorMessage() }}</span>
+          <span class="cngx-dga-row__error-default">{{ resolvedErrorMessage() }}</span>
         }
       </div>
     }

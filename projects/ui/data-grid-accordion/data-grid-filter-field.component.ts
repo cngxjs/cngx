@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  ViewEncapsulation,
+} from '@angular/core';
 
 import { nextUid } from '@cngx/core/utils';
 
@@ -53,10 +59,13 @@ export class CngxDgaFilterField {
   private readonly labels = injectDataGridAccordionLabels();
 
   /**
-   * Visible label text; also drives the input's accessible name. Defaults to the
-   * `filter` label, read at construction.
+   * Visible label text; also drives the input's accessible name. Unbound, the
+   * `filter` label applies.
    */
-  readonly label = input(this.labels().filter);
+  readonly label = input<string | undefined>(undefined);
+
+  /** @internal */
+  protected readonly resolvedLabel = computed(() => this.label() ?? this.labels().filter);
   /** Optional placeholder shown inside the input. */
   readonly placeholder = input<string | undefined>(undefined);
   /** Debounce in ms forwarded to the hosted `cngxDgaFilter`. */

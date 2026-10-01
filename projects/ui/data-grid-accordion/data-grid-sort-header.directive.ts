@@ -86,14 +86,16 @@ export class CngxDgaSortHeader {
 
   private readonly labels = injectDataGridAccordionLabels();
 
-  /** SR status while unsorted. Defaults to the `sortNone` label, read once. */
-  readonly notSortedLabel = input(this.labels().sortNone, { alias: 'cngxDgaSortStatusNotSorted' });
-  /** SR status while sorted ascending. Defaults to the `sortAscending` label, read once. */
-  readonly ascendingLabel = input(this.labels().sortAscending, {
+  /** SR status while unsorted. Unbound, the `sortNone` label applies. */
+  readonly notSortedLabel = input<string | undefined>(undefined, {
+    alias: 'cngxDgaSortStatusNotSorted',
+  });
+  /** SR status while sorted ascending. Unbound, the `sortAscending` label applies. */
+  readonly ascendingLabel = input<string | undefined>(undefined, {
     alias: 'cngxDgaSortStatusAscending',
   });
-  /** SR status while sorted descending. Defaults to the `sortDescending` label, read once. */
-  readonly descendingLabel = input(this.labels().sortDescending, {
+  /** SR status while sorted descending. Unbound, the `sortDescending` label applies. */
+  readonly descendingLabel = input<string | undefined>(undefined, {
     alias: 'cngxDgaSortStatusDescending',
   });
 
@@ -104,23 +106,23 @@ export class CngxDgaSortHeader {
   readonly label = input<string | undefined>(undefined, { alias: 'cngxDgaSortLabel' });
   /**
    * Live announcement fired when this column becomes sorted ascending. `{label}` is
-   * replaced. Defaults to the `sortAnnouncedAscending` label, read at construction.
+   * replaced. Unbound, the `sortAnnouncedAscending` label applies.
    */
-  readonly ascendingAnnouncement = input(this.labels().sortAnnouncedAscending, {
+  readonly ascendingAnnouncement = input<string | undefined>(undefined, {
     alias: 'cngxDgaSortAnnounceAscending',
   });
   /**
    * Live announcement fired when this column becomes sorted descending. `{label}` is
-   * replaced. Defaults to the `sortAnnouncedDescending` label, read at construction.
+   * replaced. Unbound, the `sortAnnouncedDescending` label applies.
    */
-  readonly descendingAnnouncement = input(this.labels().sortAnnouncedDescending, {
+  readonly descendingAnnouncement = input<string | undefined>(undefined, {
     alias: 'cngxDgaSortAnnounceDescending',
   });
   /**
    * Live announcement fired when this column's sort is cleared. `{label}` is replaced.
-   * Defaults to the `sortAnnouncedCleared` label, read at construction.
+   * Unbound, the `sortAnnouncedCleared` label applies.
    */
-  readonly clearedAnnouncement = input(this.labels().sortAnnouncedCleared, {
+  readonly clearedAnnouncement = input<string | undefined>(undefined, {
     alias: 'cngxDgaSortAnnounceCleared',
   });
 
@@ -148,13 +150,14 @@ export class CngxDgaSortHeader {
   readonly priority = this.state.priority;
 
   private readonly statusText = computed(() => {
+    const labels = this.labels();
     if (this.isAsc()) {
-      return this.ascendingLabel();
+      return this.ascendingLabel() ?? labels.sortAscending;
     }
     if (this.isDesc()) {
-      return this.descendingLabel();
+      return this.descendingLabel() ?? labels.sortDescending;
     }
-    return this.notSortedLabel();
+    return this.notSortedLabel() ?? labels.sortNone;
   });
 
   // A visually-hidden, aria-hidden description node the host `aria-describedby` names.
@@ -192,11 +195,12 @@ export class CngxDgaSortHeader {
 
   private announcementText(): string {
     const label = this.label() ?? this.field();
+    const labels = this.labels();
     const template = this.isAsc()
-      ? this.ascendingAnnouncement()
+      ? (this.ascendingAnnouncement() ?? labels.sortAnnouncedAscending)
       : this.isDesc()
-        ? this.descendingAnnouncement()
-        : this.clearedAnnouncement();
+        ? (this.descendingAnnouncement() ?? labels.sortAnnouncedDescending)
+        : (this.clearedAnnouncement() ?? labels.sortAnnouncedCleared);
     return template.replace('{label}', label);
   }
 

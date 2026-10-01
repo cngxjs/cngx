@@ -7,6 +7,7 @@ import {
   contentChildren,
   inject,
   input,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -96,10 +97,10 @@ export class CngxDataGridRow {
    */
   readonly state = input<AsyncStatus | CngxAsyncState<unknown> | undefined>(undefined);
   /**
-   * Error message announced in the error state. Defaults to the `rowLoadFailed`
-   * label, read at construction.
+   * Error message announced in the error state. Unbound, the `rowLoadFailed`
+   * label applies.
    */
-  readonly errorMessage = input(this.labels().rowLoadFailed);
+  readonly errorMessage = input<string | undefined>(undefined);
 
   private readonly accordion = inject(CNGX_ACCORDION);
   protected readonly grid = inject(CNGX_DATA_GRID_ACCORDION);
@@ -158,6 +159,17 @@ export class CngxDataGridRow {
       return undefined;
     }
     return typeof state === 'string' ? state : state.status();
+  });
+  /**
+   * @internal - text of the `role="alert"` error region. A bound `errorMessage`
+   * applies at once; the label default is read untracked and keyed on the status,
+   * so a language switch never re-speaks a shown error and the next error speaks
+   * the new language.
+   */
+  protected readonly resolvedErrorMessage = computed(() => {
+    const own = this.errorMessage();
+    this.status();
+    return own ?? untracked(() => this.labels().rowLoadFailed);
   });
   /**
    * `aria-busy` driver. Mirrors `CngxAsyncState.isBusy` (loading|refreshing|pending)
