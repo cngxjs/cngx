@@ -71,7 +71,7 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
     '[attr.aria-valuemax]': 'isDeterminate() ? 100 : null',
     '[attr.aria-valuenow]': 'ariaValueNow()',
     '[attr.aria-valuetext]': 'ariaValueText()',
-    '[attr.aria-label]': 'label()',
+    '[attr.aria-label]': 'resolvedLabel()',
   },
   template: `
     @if (variant() === 'linear') {
@@ -130,10 +130,13 @@ export class CngxProgress {
   readonly showLabel = input<boolean>(false);
 
   /**
-   * Screen reader label describing *what* is progressing. Defaults to
-   * `CNGX_FEEDBACK_I18N.progressLabel`, read at construction.
+   * Screen reader label describing *what* is progressing. Unbound,
+   * `CNGX_FEEDBACK_I18N.progressLabel` applies.
    */
-  readonly label = input<string>(this.i18n().progressLabel);
+  readonly label = input<string | undefined>(undefined);
+
+  /** @internal */
+  protected readonly resolvedLabel = computed(() => this.label() ?? this.i18n().progressLabel);
 
   /** @internal */
   protected readonly effectiveProgress = computed(() => {

@@ -5,6 +5,7 @@ import {
   computed,
   inject,
   input,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import { createVisibilityGate, injectLoadingConfig, type CngxAsyncState } from '@cngx/core/utils';
@@ -64,7 +65,7 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
     '[class.cngx-loading-indicator--spinner]': 'variant() === "spinner"',
     '[class.cngx-loading-indicator--bar]': 'variant() === "bar"',
     '[attr.role]': '"status"',
-    '[attr.aria-label]': 'visible() ? label() : null',
+    '[attr.aria-label]': 'visible() ? resolvedLabel() : null',
     '[attr.aria-busy]': 'isActive() || null',
   },
   template: `
@@ -118,8 +119,8 @@ export class CngxLoadingIndicator {
   /** Visual variant. */
   readonly variant = input<LoadingIndicatorVariant>('spinner');
 
-  /** Screen reader label. Defaults to `CNGX_FEEDBACK_I18N.loadingLabel`, read at construction. */
-  readonly label = input<string>(this.i18n().loadingLabel);
+  /** Screen reader label. Unbound, `CNGX_FEEDBACK_I18N.loadingLabel` applies. */
+  readonly label = input<string | undefined>(undefined);
 
   /** Delay in ms before showing the indicator. Defaults to `CNGX_LOADING_CONFIG.showDelay`. */
   readonly delay = input<number>(this.loadingConfig.showDelay);
@@ -144,4 +145,16 @@ export class CngxLoadingIndicator {
 
   /** @internal - final visibility after delay + minDwell. */
   readonly visible = createVisibilityGate(this.isActive, this.delay, this.effectiveMinDwell);
+
+  /**
+   * @internal - accessible name of the status host. A bound `label` applies at
+   * once; the i18n default is read untracked and keyed on visibility, so a
+   * language switch never renames a showing indicator and its next appearance
+   * speaks the new language.
+   */
+  protected readonly resolvedLabel = computed(() => {
+    const own = this.label();
+    this.visible();
+    return own ?? untracked(() => this.i18n().loadingLabel);
+  });
 }

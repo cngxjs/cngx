@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { Component } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { CngxAlert } from '../alert/alert';
@@ -9,9 +9,11 @@ import { CngxToaster, provideToasts } from '../toast/toast.service';
 import { provideFeedback, withAlerts, withToasts } from './feedback-config';
 import {
   CNGX_FEEDBACK_I18N,
+  FEEDBACK_I18N_DEFAULTS,
   injectFeedbackI18n,
   injectResolvedFeedbackI18n,
   provideFeedbackI18n,
+  type CngxFeedbackI18nOverrides,
   withFeedbackI18nLabels,
 } from './feedback-i18n';
 
@@ -86,12 +88,12 @@ describe('CNGX_FEEDBACK_I18N', () => {
       providers: [provideFeedbackI18n({ alertsRegionLabel: 'Hinweise' })],
     });
     const bundle = TestBed.runInInjectionContext(() => injectFeedbackI18n());
-    expect(bundle.alertsRegionLabel).toBe('Hinweise');
-    expect(bundle.notificationsRegionLabel).toBe('Notifications');
+    expect(bundle().alertsRegionLabel).toBe('Hinweise');
+    expect(bundle().notificationsRegionLabel).toBe('Notifications');
   });
 
   it('resolves the token without a provider', () => {
-    const bundle = TestBed.inject(CNGX_FEEDBACK_I18N);
+    const bundle = TestBed.inject(CNGX_FEEDBACK_I18N)();
     expect(bundle.alertsRegionLabel).toBe('Alerts');
     expect(bundle.notificationsRegionLabel).toBe('Notifications');
     expect(bundle.announcements.asyncLoading).toBe('Loading content');
@@ -101,7 +103,7 @@ describe('CNGX_FEEDBACK_I18N', () => {
     TestBed.configureTestingModule({
       providers: [provideFeedbackI18n({ announcements: { asyncLoaded: 'Inhalt geladen' } })],
     });
-    const { announcements } = TestBed.inject(CNGX_FEEDBACK_I18N);
+    const { announcements } = TestBed.inject(CNGX_FEEDBACK_I18N)();
     expect(announcements.asyncLoaded).toBe('Inhalt geladen');
     expect(announcements.asyncLoading).toBe('Loading content');
     expect(announcements.alertOverflow(3)).toBe('+ 3 more alerts');
@@ -115,9 +117,78 @@ describe('CNGX_FEEDBACK_I18N', () => {
         }),
       ],
     });
-    const { announcements } = TestBed.inject(CNGX_FEEDBACK_I18N);
+    const { announcements } = TestBed.inject(CNGX_FEEDBACK_I18N)();
     expect(announcements.alertDismissed).toBe('Hinweis verworfen');
     expect(announcements.alertOverflow(2)).toBe('2 weitere');
+  });
+
+  it('resolves plain overrides to the same bundle as the eager merge did', () => {
+    const overrides: CngxFeedbackI18nOverrides = {
+      alertsRegionLabel: 'Hinweise',
+      dismissLabel: 'Schliessen',
+      announcements: { asyncLoaded: 'Inhalt geladen' },
+    };
+    TestBed.configureTestingModule({ providers: [provideFeedbackI18n(overrides)] });
+    expect(TestBed.inject(CNGX_FEEDBACK_I18N)()).toEqual({
+      ...FEEDBACK_I18N_DEFAULTS,
+      ...overrides,
+      announcements: { ...FEEDBACK_I18N_DEFAULTS.announcements, ...overrides.announcements },
+    });
+  });
+
+  it('follows a Signal override and keeps its reference on an equal recompute', () => {
+    const lang = signal<'en' | 'de' | 'de-AT'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideFeedbackI18n(
+          computed<CngxFeedbackI18nOverrides>(() =>
+            lang() === 'en'
+              ? {}
+              : { alertsRegionLabel: 'Hinweise', announcements: { asyncLoaded: 'Geladen' } },
+          ),
+        ),
+      ],
+    });
+    const bundle = TestBed.inject(CNGX_FEEDBACK_I18N);
+    expect(bundle().alertsRegionLabel).toBe('Alerts');
+
+    lang.set('de');
+    const german = bundle();
+    expect(german.alertsRegionLabel).toBe('Hinweise');
+    expect(german.announcements.asyncLoaded).toBe('Geladen');
+    expect(german.announcements.asyncLoading).toBe('Loading content');
+
+    lang.set('de-AT');
+    expect(bundle()).toBe(german);
+  });
+
+  it('keeps the other announcement defaults on a partial Signal override', () => {
+    const copy = signal<CngxFeedbackI18nOverrides>({});
+    TestBed.configureTestingModule({
+      providers: [provideFeedback(withFeedbackI18nLabels(copy))],
+    });
+    const bundle = TestBed.inject(CNGX_FEEDBACK_I18N);
+    copy.set({ announcements: { alertDismissed: 'Verworfen' } });
+    expect(bundle().announcements.alertDismissed).toBe('Verworfen');
+    expect(bundle().announcements.asyncRefreshed).toBe('Content refreshed');
+    expect(bundle().announcements.alertOverflow(2)).toBe('+ 2 more alerts');
+  });
+
+  it('renames both regions on a language switch', () => {
+    const copy = signal<CngxFeedbackI18nOverrides>({});
+    TestBed.configureTestingModule({
+      providers: [provideFeedback(withAlerts(), withToasts()), provideFeedbackI18n(copy)],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const label = (selector: string): string | null =>
+      (fixture.nativeElement as HTMLElement).querySelector(selector)!.getAttribute('aria-label');
+    expect(label('cngx-alert-stack')).toBe('Alerts');
+
+    copy.set({ alertsRegionLabel: 'Hinweise', notificationsRegionLabel: 'Meldungen' });
+    fixture.detectChanges();
+    expect(label('cngx-alert-stack')).toBe('Hinweise');
+    expect(label('cngx-toast-outlet')).toBe('Meldungen');
   });
 
   describe('dismiss, banner and repeat copy', () => {
@@ -133,7 +204,7 @@ describe('CNGX_FEEDBACK_I18N', () => {
         providers: [
           {
             provide: CNGX_FEEDBACK_I18N,
-            useValue: {
+            useValue: signal({
               alertsRegionLabel: 'Hinweise',
               notificationsRegionLabel: 'Meldungen',
               announcements: {
@@ -146,7 +217,7 @@ describe('CNGX_FEEDBACK_I18N', () => {
                 asyncRefreshed: 'Aktuell',
                 asyncRefreshFailed: 'Aktualisierung fehlgeschlagen',
               },
-            },
+            }),
           },
         ],
       });

@@ -939,90 +939,6 @@ export const RATCHET = [
     closesIn: 6,
   },
   {
-    file: 'projects/ui/feedback/alert/alert-stack.ts',
-    member: 'CngxAlertStack.i18n',
-    rule: 'R4',
-    token: 'CNGX_FEEDBACK_I18N',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/feedback/alert/alert-stack.ts',
-    member: 'CngxAlertStack.regionLabel',
-    rule: 'R2',
-    token: 'CNGX_FEEDBACK_I18N',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/feedback/alert/alert.ts',
-    member: 'CngxAlert.handleDismiss',
-    rule: 'R4',
-    token: 'CNGX_FEEDBACK_I18N',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/feedback/alert/alert.ts',
-    member: 'CngxAlert.i18n',
-    rule: 'R4',
-    token: 'CNGX_FEEDBACK_I18N',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/feedback/banner/banner-outlet.ts',
-    member: 'CngxBannerOutlet.i18n',
-    rule: 'R4',
-    token: 'CNGX_FEEDBACK_I18N',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/feedback/loading/loading-indicator.ts',
-    member: 'CngxLoadingIndicator.label',
-    rule: 'R1',
-    token: 'CNGX_FEEDBACK_I18N',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/feedback/loading/loading-indicator.ts',
-    member: 'CngxLoadingIndicator.label',
-    rule: 'R4',
-    token: 'CNGX_FEEDBACK_I18N',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/feedback/loading/loading-overlay.ts',
-    member: 'CngxLoadingOverlay.label',
-    rule: 'R1',
-    token: 'CNGX_FEEDBACK_I18N',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/feedback/loading/loading-overlay.ts',
-    member: 'CngxLoadingOverlay.label',
-    rule: 'R4',
-    token: 'CNGX_FEEDBACK_I18N',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/feedback/loading/progress.ts',
-    member: 'CngxProgress.label',
-    rule: 'R1',
-    token: 'CNGX_FEEDBACK_I18N',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/feedback/toast/toast-outlet.ts',
-    member: 'CngxToastOutlet.i18n',
-    rule: 'R4',
-    token: 'CNGX_FEEDBACK_I18N',
-    closesIn: 6,
-  },
-  {
-    file: 'projects/ui/feedback/toast/toast-outlet.ts',
-    member: 'CngxToastOutlet.regionLabel',
-    rule: 'R2',
-    token: 'CNGX_FEEDBACK_I18N',
-    closesIn: 6,
-  },
-  {
     file: 'projects/ui/mat-paginator/mat-paginator-bridge.directive.ts',
     member: 'CngxMatPaginator.announceMessage',
     rule: 'R3',
@@ -1304,7 +1220,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 99;
+export const RATCHET_CEILING = 87;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 5;
@@ -1652,7 +1568,7 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/ui/feedback/alert/alert-stack.ts',
-    region: 'CngxAlertStack.div(i18n,iconFor)',
+    region: 'CngxAlertStack.div(dismissLabel,iconFor)',
     spec: 'projects/ui/feedback/alert/alert-stack.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,
@@ -1667,7 +1583,7 @@ export const LIVE_REGIONS = [
   {
     file: 'projects/ui/feedback/banner/banner-outlet.ts',
     region:
-      'CngxBannerOutlet.div(actionFailedCopy,i18n,iconFor,pastFirstRender,service.dismiss,service.executeAction)',
+      'CngxBannerOutlet.div(actionFailedCopy,dismissLabel,iconFor,pastFirstRender,service.dismiss,service.executeAction)',
     spec: 'projects/ui/feedback/banner/banner-outlet.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,
@@ -1688,7 +1604,7 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/ui/feedback/loading/loading-overlay.ts',
-    region: 'CngxLoadingOverlay.div(label)',
+    region: 'CngxLoadingOverlay.div(resolvedLabel)',
     spec: 'projects/ui/feedback/loading/loading-overlay.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,
@@ -1696,7 +1612,7 @@ export const LIVE_REGIONS = [
   {
     file: 'projects/ui/feedback/toast/toast-outlet.ts',
     region:
-      'CngxToastOutlet.div(i18n,iconFor,repeatCount,service.dismiss,service.pauseTimer,service.resumeTimer)',
+      'CngxToastOutlet.div(dismissLabel,iconFor,repeatCount,service.dismiss,service.pauseTimer,service.resumeTimer)',
     spec: 'projects/ui/feedback/toast/toast-outlet.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 6,

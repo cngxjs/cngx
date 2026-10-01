@@ -85,6 +85,12 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - The optional third argument of `createMatStepHandle` (and so of `CngxMatStepHandleFactory` overrides) is now `Signal<CngxStepperI18n>`. An override that delegates to `createMatStepHandle` forwards the Signal unchanged; the last-resort `Step <id>` label then follows a language switch.
 
+### @cngx/ui/feedback
+
+- `CNGX_FEEDBACK_I18N` is now `InjectionToken<Signal<CngxFeedbackI18n>>`, and `injectFeedbackI18n()` returns `Signal<CngxFeedbackI18n>`. Call the Signal where you read a label, inside a `computed()`, a template or a handler: `inject(CNGX_FEEDBACK_I18N).alertsRegionLabel` becomes `inject(CNGX_FEEDBACK_I18N)().alertsRegionLabel`.
+- A direct `{ provide: CNGX_FEEDBACK_I18N, useValue: bundle }` must supply a Signal. Prefer `provideFeedbackI18n(overrides)`, which merges over the English defaults, `announcements` key by key. `provideFeedbackI18n` and `withFeedbackI18nLabels` now also accept a `Signal<CngxFeedbackI18nOverrides>` for runtime switching, and `provideFeedbackI18n` returns a plain `Provider` (it used to return `{ provide, useValue }`).
+- The copy inputs `CngxLoadingIndicator.label`, `CngxLoadingOverlay.label` and `CngxProgress.label` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `loadingLabel` / `progressLabel` default. Template bindings are unchanged; the rendered `aria-label` follows a language switch while the input is unbound. Code that reads the input programmatically (`indicator.label()`) gets `undefined` when nothing is bound; read the rendered `aria-label` instead.
+
 ### @cngx/forms/select
 
 - `CngxSelectConfig.ariaLabels`, `.fallbackLabels` and `.announcer` accept a value or a `Signal`, and once `withAriaLabels` / `withFallbackLabels` / `withAnnouncer` ran the key holds a `Signal`. Code that reads a key off `CNGX_SELECT_CONFIG` or a `makeSelectConfig(...)` result wraps it once, in a field: with a module-level `const NO_ARIA_LABELS: CngxSelectAriaLabels = {};`, write `private readonly ariaLabels = coerceSignal(config.ariaLabels ?? NO_ARIA_LABELS);` (`coerceSignal` from `@cngx/core/utils`) and read `this.ariaLabels().clearButton` inside a `computed()`, a template or a handler, where you used to read `config.ariaLabels?.clearButton`. A fresh `{}` per call would create a new Signal on every read.

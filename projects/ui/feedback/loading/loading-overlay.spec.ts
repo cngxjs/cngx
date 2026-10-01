@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { CngxAsyncState, AsyncStatus } from '@cngx/core/utils';
 
+import { provideFeedbackI18n, type CngxFeedbackI18nOverrides } from '../config/feedback-i18n';
 import { CngxLoadingOverlay } from './loading-overlay';
 
 // ── Mock async state helper ────────────────────────────────────────────
@@ -305,5 +306,33 @@ describe('CngxLoadingOverlay', () => {
       const wrapper = el.querySelector('.cngx-loading-overlay__content') as HTMLElement;
       expect(wrapper.getAttribute('inert')).not.toBeNull();
     });
+  });
+
+  it('does not re-announce on a language flip', () => {
+    const copy = signal<CngxFeedbackI18nOverrides>({});
+    TestBed.configureTestingModule({ providers: [provideFeedbackI18n(copy)] });
+    const { fixture, host, el } = setupBool({ delay: 0, minDuration: 0 });
+    const settle = (): void => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(1);
+      fixture.detectChanges();
+    };
+    const label = (): string | null =>
+      el.querySelector('.cngx-loading-overlay__spinner-wrapper')?.getAttribute('aria-label') ??
+      null;
+    host.loading.set(true);
+    settle();
+    expect(label()).toBe('Loading');
+
+    copy.set({ loadingLabel: 'Laedt' });
+    settle();
+    expect(label()).toBe('Loading');
+
+    host.loading.set(false);
+    settle();
+    host.loading.set(true);
+    settle();
+    expect(label()).toBe('Laedt');
   });
 });

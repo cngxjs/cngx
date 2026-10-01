@@ -47,7 +47,9 @@ provideFeedback(
 `provideFeedbackI18n({ ... })` sets the same bundle on its own, which is what a
 consumer-composed language file uses: `provideFeedback(...)` replaces the whole
 `CNGX_FEEDBACK_CONFIG` value, so routing a translation through it would reset
-unrelated feedback defaults.
+unrelated feedback defaults. Both accept a `Signal` of the overrides to switch
+the language at runtime; `CNGX_FEEDBACK_I18N` itself is a `Signal` of the
+resolved bundle.
 
 ## See also
 

@@ -66,4 +66,27 @@ describe('CngxToastOutlet', () => {
     fixture.detectChanges();
     expect(countText()).toBe('3-mal');
   });
+
+  it('does not re-announce on a language flip', () => {
+    const copy = signal<Partial<CngxFeedbackI18n>>({});
+    TestBed.overrideProvider(CNGX_FEEDBACK_I18N, { useValue: copy });
+    const { fixture, outletEl } = setup();
+    const toaster = fixture.debugElement.children[0].injector.get(CngxToaster);
+    const dismissLabels = (): (string | null)[] =>
+      Array.from(outletEl.querySelectorAll('.cngx-toast__dismiss button')).map((b) =>
+        b.getAttribute('aria-label'),
+      );
+    toaster.show({ message: 'Saved' });
+    fixture.detectChanges();
+    expect(dismissLabels()).toEqual(['Dismiss']);
+
+    copy.set({ dismissLabel: 'Schliessen', notificationsRegionLabel: 'Meldungen' });
+    fixture.detectChanges();
+    expect(dismissLabels()).toEqual(['Dismiss']);
+    expect(outletEl.getAttribute('aria-label')).toBe('Meldungen');
+
+    toaster.show({ message: 'Sent' });
+    fixture.detectChanges();
+    expect(dismissLabels()).toEqual(['Schliessen', 'Schliessen']);
+  });
 });
