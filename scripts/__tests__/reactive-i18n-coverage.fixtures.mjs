@@ -643,30 +643,9 @@ export const RATCHET = [
     token: 'CNGX_A11Y_PANEL_CONFIG',
     closesIn: 7,
   },
-  {
-    file: 'projects/ui/toc/config/provide-toc-config.ts',
-    member: 'mergeConfig',
-    rule: 'R3',
-    token: 'CNGX_TOC_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/toc/config/provide-toc-config.ts',
-    member: 'reduceFeatures',
-    rule: 'R3',
-    token: 'CNGX_TOC_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/toc/toc.component.ts',
-    member: 'CngxToc.navLabel',
-    rule: 'R3',
-    token: 'CNGX_TOC_CONFIG',
-    closesIn: 7,
-  },
 ];
 
-export const RATCHET_CEILING = 7;
+export const RATCHET_CEILING = 4;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 6;

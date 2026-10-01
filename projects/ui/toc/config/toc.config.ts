@@ -1,6 +1,18 @@
-import type { TemplateRef } from '@angular/core';
+import type { Signal, TemplateRef } from '@angular/core';
 
 import type { CngxTocItemContext } from '../toc.types';
+
+/**
+ * Accessible names the toc renders. Every key is optional; an unset key keeps
+ * the English default.
+ *
+ * @category ui/toc
+ * @since 0.1.0
+ */
+export interface CngxTocAriaLabels {
+  /** Accessible name of the `nav` landmark (default `'On this page'`). */
+  readonly nav?: string;
+}
 
 /**
  * App-wide cascade for the table-of-contents organism's ARIA label, its
@@ -24,12 +36,11 @@ export interface CngxTocConfig {
   /**
    * ARIA-string fallback for the `nav` landmark. A per-instance
    * `[navLabel]`-equivalent binding is not exposed; the landmark name always
-   * comes from this cascade, English by default.
+   * comes from this cascade, English by default. Accepts a `Signal` so the
+   * name follows a runtime language switch; read the resolved bundle through
+   * {@link injectTocAriaLabels}.
    */
-  readonly ariaLabels?: {
-    /** Accessible name of the `nav` landmark that wraps the link list. */
-    readonly nav?: string;
-  };
+  readonly ariaLabels?: CngxTocAriaLabels | Signal<CngxTocAriaLabels>;
 
   /**
    * Scroll behaviour used when a link is activated and the section is

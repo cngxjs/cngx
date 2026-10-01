@@ -19,7 +19,7 @@ import {
 import { arrayEqual } from '@cngx/utils';
 import { CngxScrollSpy, injectMediaQuery } from '@cngx/common/layout';
 
-import { injectTocConfig } from './config/inject-toc-config';
+import { injectTocAriaLabels, injectTocConfig } from './config/inject-toc-config';
 import { CngxTocItemSlot } from './toc-item-slot';
 import { CNGX_TOC, type CngxTocContract } from './toc-token';
 import type { CngxTocItem } from './toc.types';
@@ -95,6 +95,7 @@ function itemsEqual(a: readonly CngxTocItem[], b: readonly CngxTocItem[]): boole
 export class CngxToc implements CngxTocContract {
   private readonly doc = inject(DOCUMENT);
   private readonly cfg = injectTocConfig();
+  private readonly ariaLabels = injectTocAriaLabels();
   private readonly reducedMotion = injectMediaQuery('(prefers-reduced-motion: reduce)');
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
@@ -139,8 +140,8 @@ export class CngxToc implements CngxTocContract {
     this.autoDiscover() ? this.discovered() : this.items(),
   );
 
-  /** Accessible name of the `nav` landmark, from the config cascade. */
-  protected readonly navLabel = computed(() => this.cfg.ariaLabels?.nav ?? 'On this page');
+  /** Accessible name of the `nav` landmark, from the config cascade; follows a language switch. */
+  protected readonly navLabel = computed(() => this.ariaLabels().nav);
 
   /**
    * Depth-first flat id list feeding `[cngxScrollSpy]`. `equal: arrayEqual`
