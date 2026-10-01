@@ -1,4 +1,5 @@
 import { computed, InjectionToken, type Signal, type TemplateRef } from '@angular/core';
+import { coerceSignal } from '@cngx/core/utils';
 import { arrayEqual } from '@cngx/utils';
 
 import { isExpressionValueEmpty } from './filter-builder-internal';
@@ -202,6 +203,7 @@ export type CngxFilterRowControllerFactory = (
 export function createFilterRowController(
   deps: CngxFilterRowControllerDeps,
 ): CngxFilterRowController {
+  const i18n = coerceSignal(deps.config.i18n);
   const fieldMap: Signal<ReadonlyMap<string, FilterFieldDef>> =
     deps.fieldMap ??
     computed<ReadonlyMap<string, FilterFieldDef>>(
@@ -230,7 +232,7 @@ export function createFilterRowController(
   }
 
   function operatorLabel(operator: string): string {
-    return resolveOperatorLabel(operator, deps.config.i18n.operators, deps.config.operators);
+    return resolveOperatorLabel(operator, i18n().operators, deps.config.operators);
   }
 
   function writeValue(next: unknown): void {
@@ -289,11 +291,11 @@ export function createFilterRowController(
     ariaLabel: computed<string>(() => {
       const expression = deps.node();
       if (!expression) {
-        return deps.config.i18n.unboundFilterLabel;
+        return i18n().unboundFilterLabel;
       }
       const fieldDef = fieldMap().get(expression.field);
       const fieldLabel = fieldDef?.label ?? expression.field;
-      return deps.config.i18n.expressionLabel({
+      return i18n().expressionLabel({
         fieldLabel,
         operator: expression.operator,
         operatorLabel: operatorLabel(expression.operator),
@@ -337,7 +339,7 @@ export function createFilterRowController(
     removeButtonContext: computed<CngxFilterRowRemoveButtonContext>(
       () => ({
         path: path(),
-        label: deps.config.i18n.removeFilter,
+        label: i18n().removeFilter,
         remove,
       }),
       { equal: (a, b) => a.label === b.label && arrayEqual(a.path, b.path) },

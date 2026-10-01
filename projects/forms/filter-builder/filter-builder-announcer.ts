@@ -27,7 +27,7 @@ export interface CngxFilterBuilderAnnouncer {
 export interface CngxFilterBuilderAnnouncerSources<TValue = unknown> {
   readonly lastMutation: Signal<FilterMutationEvent | null>;
   readonly fieldMap: Signal<ReadonlyMap<string, FilterFieldDef<TValue>>>;
-  readonly i18n: CngxFilterBuilderI18n;
+  readonly i18n: Signal<CngxFilterBuilderI18n>;
   /**
    * Locale numeric filter values are spoken in. Read untracked, so a locale
    * flip never re-speaks the last mutation. Omitted: `String(value)`.
@@ -92,52 +92,62 @@ export function createFilterBuilderAnnouncer<TValue>(
     if (!event) {
       return '';
     }
-    const ctx = event.context;
-    const i18n = sources.i18n;
-    const announce = i18n.announcement;
-    const locale = untracked(() => sources.locale?.());
-    const operator = ctx?.operator ?? '';
-    const operatorLabel = resolveOperatorLabel(operator, i18n.operators, sources.operators);
-
-    const fieldLabel = ctx?.fieldKey
-      ? (untracked(() => sources.fieldMap().get(ctx.fieldKey!)?.label) ?? ctx.fieldKey)
-      : '';
-
-    switch (event.kind) {
-      case 'add-filter':
-        return announce.filterAdded({ fieldLabel });
-      case 'remove-filter':
-        return announce.filterRemoved({
-          fieldLabel,
-          operator,
-          operatorLabel,
-          value: renderValueForAnnouncement(ctx?.value, i18n, locale),
-        });
-      case 'add-group':
-        return announce.groupAdded();
-      case 'remove-group':
-        return announce.groupRemoved();
-      case 'set-logic': {
-        const logic = ctx?.logic ?? 'and';
-        return announce.logicChanged({ logic, logicLabel: i18n[logic] });
-      }
-      case 'toggle-negated':
-        return ctx?.negated ? announce.groupNegated() : announce.groupUnnegated();
-      case 'set-field':
-        return announce.fieldChanged({ fieldLabel });
-      case 'set-operator':
-        return announce.operatorChanged({ operator, operatorLabel });
-      case 'set-value':
-        return announce.valueChanged({
-          value: renderValueForAnnouncement(ctx?.value, i18n, locale),
-        });
-      case 'clear':
-        return announce.filtersCleared();
-      default:
-        return '';
-    }
+    // Copy, locale and field labels are read untracked: a language flip must
+    // not re-speak the last mutation; the next mutation speaks the new language.
+    return untracked(() => formatMutation(event, sources));
   });
   return { announcement };
+}
+
+/** @internal */
+function formatMutation<TValue>(
+  event: FilterMutationEvent,
+  sources: CngxFilterBuilderAnnouncerSources<TValue>,
+): string {
+  const ctx = event.context;
+  const i18n = sources.i18n();
+  const announce = i18n.announcement;
+  const locale = sources.locale?.();
+  const operator = ctx?.operator ?? '';
+  const operatorLabel = resolveOperatorLabel(operator, i18n.operators, sources.operators);
+
+  const fieldLabel = ctx?.fieldKey
+    ? (sources.fieldMap().get(ctx.fieldKey)?.label ?? ctx.fieldKey)
+    : '';
+
+  switch (event.kind) {
+    case 'add-filter':
+      return announce.filterAdded({ fieldLabel });
+    case 'remove-filter':
+      return announce.filterRemoved({
+        fieldLabel,
+        operator,
+        operatorLabel,
+        value: renderValueForAnnouncement(ctx?.value, i18n, locale),
+      });
+    case 'add-group':
+      return announce.groupAdded();
+    case 'remove-group':
+      return announce.groupRemoved();
+    case 'set-logic': {
+      const logic = ctx?.logic ?? 'and';
+      return announce.logicChanged({ logic, logicLabel: i18n[logic] });
+    }
+    case 'toggle-negated':
+      return ctx?.negated ? announce.groupNegated() : announce.groupUnnegated();
+    case 'set-field':
+      return announce.fieldChanged({ fieldLabel });
+    case 'set-operator':
+      return announce.operatorChanged({ operator, operatorLabel });
+    case 'set-value':
+      return announce.valueChanged({
+        value: renderValueForAnnouncement(ctx?.value, i18n, locale),
+      });
+    case 'clear':
+      return announce.filtersCleared();
+    default:
+      return '';
+  }
 }
 
 /**

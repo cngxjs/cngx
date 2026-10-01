@@ -106,6 +106,12 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `InputConfig.numericLocale` is typed `string | Signal<string>`. Code that reads it off the config wraps it the same way: `coerceSignal(injectInputConfig().numericLocale)()`. `withNumericDefaults({ locale })` and `withCurrency({ locale })` now also accept a `Signal<string>`; `CngxNumericInput` follows a switch while blurred and applies it on blur while focused, as it already does for `CNGX_LOCALE`.
 - `CngxPhoneInput.countries` is now `input<readonly Country[] | undefined>`, and an unbound input reads `undefined` instead of the built-in list named in the construction-time locale. Template bindings are unchanged. Unbound, the picker lists the built-in regions named in the live `CNGX_LOCALE` and relabels them on a switch; code that read the list programmatically (`phone.countries()`) gets `undefined` and reads the picker's options instead. `country` keeps its construction-time default object; the picker still shows the live-locale row with the same region.
 
+### @cngx/forms/filter-builder
+
+- `CngxFilterBuilderConfig.i18n` is typed `CngxFilterBuilderI18n | Signal<CngxFilterBuilderI18n>`, and once `withFilterBuilderI18n` ran it holds a `Signal`. Code that reads it off `injectFilterBuilderConfig()`, `CNGX_FILTER_BUILDER_CONFIG` or `CNGX_FILTER_BUILDER_DEFAULTS` wraps the key once, in a field: `private readonly i18n = coerceSignal(injectFilterBuilderConfig().i18n);` (`coerceSignal` from `@cngx/core/utils`), then `this.i18n().addFilter` inside a `computed()`, a template or a handler. A hand-written `CngxFilterBuilderConfigFeature` that spreads `config.i18n` merges through `createNestedOverrideMerge(config.i18n, overrides, 'operators')` instead, which keeps the per-operator merge.
+- `withFilterBuilderI18n` now also accepts a `Signal<Partial<CngxFilterBuilderI18n>>` for runtime switching. Plain partials keep their merge rules: top-level keys and `operators` merge key by key across features, `announcement` is replaced as a whole.
+- `CngxFilterBuilderAnnouncerSources.i18n` is now `Signal<CngxFilterBuilderI18n>`. A custom `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY` reads it as `sources.i18n()`, inside `untracked` where it builds the live-region text, so a language switch does not re-speak the last mutation.
+
 ---
 
 ## Behaviour changes

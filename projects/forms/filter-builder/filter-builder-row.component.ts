@@ -10,6 +10,7 @@ import {
   untracked,
   ViewEncapsulation,
 } from '@angular/core';
+import { coerceSignal } from '@cngx/core/utils';
 import { CngxToggle } from '@cngx/common/interactive';
 import { CngxInput } from '@cngx/forms/input';
 import { CngxSelect } from '@cngx/forms/select';
@@ -69,6 +70,7 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
 })
 export class CngxFilterRow {
   protected readonly config = injectFilterBuilderConfig();
+  protected readonly i18n = coerceSignal(this.config.i18n);
   protected readonly editors = injectFilterEditors();
   protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
   protected readonly isNativeEditor = isNativeEditor;

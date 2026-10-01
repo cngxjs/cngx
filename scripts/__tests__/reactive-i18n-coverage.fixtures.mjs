@@ -631,97 +631,6 @@ export const RATCHET = [
     closesIn: 5,
   },
   {
-    file: 'projects/forms/filter-builder/filter-builder-announcer.ts',
-    member: 'createFilterBuilderAnnouncer',
-    rule: 'R3',
-    token: 'CNGX_FILTER_BUILDER_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/filter-builder/filter-builder-body.component.ts',
-    member: 'CngxFilterBuilderBody.addFilterButtonContext',
-    rule: 'R3',
-    token: 'CNGX_FILTER_BUILDER_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/filter-builder/filter-builder-body.component.ts',
-    member: 'CngxFilterBuilderBody.addGroupButtonContext',
-    rule: 'R3',
-    token: 'CNGX_FILTER_BUILDER_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/filter-builder/filter-builder-body.component.ts',
-    member: 'CngxFilterBuilderBody.logicJoinerLabel',
-    rule: 'R3',
-    token: 'CNGX_FILTER_BUILDER_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/filter-builder/filter-builder-body.component.ts',
-    member: 'CngxFilterBuilderBody.negationToggleContext',
-    rule: 'R3',
-    token: 'CNGX_FILTER_BUILDER_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/filter-builder/filter-builder-body.component.ts',
-    member: 'CngxFilterBuilderBody.template:config',
-    rule: 'R3',
-    token: 'CNGX_FILTER_BUILDER_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/filter-builder/filter-builder-expression-row.component.ts',
-    member: 'CngxFilterExpressionRow.template:config',
-    rule: 'R3',
-    token: 'CNGX_FILTER_BUILDER_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/filter-builder/filter-builder-expression.directive.ts',
-    member: 'CngxFilterExpression.expressionLabel',
-    rule: 'R3',
-    token: 'CNGX_FILTER_BUILDER_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/filter-builder/filter-builder-group.directive.ts',
-    member: 'CngxFilterGroup.groupLabel',
-    rule: 'R3',
-    token: 'CNGX_FILTER_BUILDER_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/filter-builder/filter-builder-presenter.directive.ts',
-    member: 'CngxFilterBuilderPresenter.announcer',
-    rule: 'R2',
-    token: 'CNGX_FILTER_BUILDER_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/filter-builder/filter-builder-row-controller.ts',
-    member: 'createFilterRowController',
-    rule: 'R3',
-    token: 'CNGX_FILTER_BUILDER_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/filter-builder/filter-builder-row.component.ts',
-    member: 'CngxFilterRow.template:config',
-    rule: 'R3',
-    token: 'CNGX_FILTER_BUILDER_CONFIG',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/filter-builder/filter-builder.config.ts',
-    member: 'withFilterBuilderI18n',
-    rule: 'R3',
-    token: 'CNGX_FILTER_BUILDER_CONFIG',
-    closesIn: 5,
-  },
-  {
     file: 'projects/ui/a11y/a11y-panel.component.ts',
     member: 'CngxA11yPanel.buildAxisViews',
     rule: 'R3',
@@ -1416,7 +1325,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 115;
+export const RATCHET_CEILING = 102;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 4;

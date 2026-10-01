@@ -1,4 +1,5 @@
 import { signal } from '@angular/core';
+import { coerceSignal } from '@cngx/core/utils';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -289,7 +290,9 @@ describe('createFilterRowController - derivations', () => {
     const { controller, node } = createHarness(null);
 
     expect(controller.isIncomplete()).toBe(true);
-    expect(controller.ariaLabel()).toBe(CNGX_FILTER_BUILDER_DEFAULTS.i18n.unboundFilterLabel);
+    expect(controller.ariaLabel()).toBe(
+      coerceSignal(CNGX_FILTER_BUILDER_DEFAULTS.i18n)().unboundFilterLabel,
+    );
 
     node.set(createFilterExpression('name', 'eq', 'foo'));
     expect(controller.isIncomplete()).toBe(false);

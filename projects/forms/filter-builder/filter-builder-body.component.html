@@ -2,7 +2,7 @@
   @if (templates().empty(); as emptyTpl) {
     <ng-container *ngTemplateOutlet="emptyTpl; context: emptyContext"></ng-container>
   } @else {
-    <p class="cngx-filter-builder__empty">{{ config.i18n.emptyState }}</p>
+    <p class="cngx-filter-builder__empty">{{ i18n().emptyState }}</p>
     <div class="cngx-filter-builder__actions">
       <ng-container *ngTemplateOutlet="addFilterButtonTpl; context: { path: rootPath }"></ng-container>
       <ng-container *ngTemplateOutlet="addGroupButtonTpl; context: { path: rootPath }"></ng-container>
@@ -28,7 +28,7 @@
       (click)="addFilterAt(path)"
     >
       <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.addFilter }}</span>
-      {{ config.i18n.addFilter }}
+      {{ i18n().addFilter }}
     </button>
   }
 </ng-template>
@@ -44,7 +44,7 @@
       (click)="addGroupAt(path)"
     >
       <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.addGroup }}</span>
-      {{ config.i18n.addGroup }}
+      {{ i18n().addGroup }}
     </button>
   }
 </ng-template>
@@ -71,7 +71,7 @@
     <button
       type="button"
       class="cngx-filter-builder__logic-joiner"
-      [attr.aria-label]="config.i18n.logicLabel"
+      [attr.aria-label]="i18n().logicLabel"
       (click)="cycleLogic(path, group.logic)"
     >
       {{ logicJoinerLabel(group.logic) }}
@@ -94,7 +94,7 @@
               [checked]="group.negated"
               (change)="host.toggleNegated(path)"
             />
-            <span aria-hidden="true">{{ glyphs.negate }}</span> {{ config.i18n.negate }}
+            <span aria-hidden="true">{{ glyphs.negate }}</span> {{ i18n().negate }}
           </label>
         }
       </div>
@@ -134,7 +134,7 @@
       <ng-container *ngTemplateOutlet="addGroupButtonTpl; context: { path }"></ng-container>
       @if (path.length > 0) {
         <ng-container
-          *ngTemplateOutlet="removeButtonTpl; context: { path, label: config.i18n.removeGroup }"
+          *ngTemplateOutlet="removeButtonTpl; context: { path, label: i18n().removeGroup }"
         ></ng-container>
       }
     </div>

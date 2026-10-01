@@ -1,4 +1,5 @@
 import { computed, Directive, inject, input } from '@angular/core';
+import { coerceSignal } from '@cngx/core/utils';
 
 import type { FilterExpression } from './filter-builder.types';
 import { injectFilterBuilderConfig } from './filter-builder.config';
@@ -49,6 +50,7 @@ export class CngxFilterExpression {
 
   private readonly host = inject(CNGX_FILTER_BUILDER_HOST);
   private readonly config = injectFilterBuilderConfig();
+  private readonly i18n = coerceSignal(this.config.i18n);
 
   readonly node = computed<FilterExpression | null>(
     () => {
@@ -97,19 +99,15 @@ export class CngxFilterExpression {
   readonly expressionLabel = computed(() => {
     const expr = this.node();
     if (!expr) {
-      return this.config.i18n.unboundFilterLabel;
+      return this.i18n().unboundFilterLabel;
     }
     const def = this.fieldDef();
     const fieldLabel = def?.label ?? expr.field;
     const operator = expr.operator;
-    return this.config.i18n.expressionLabel({
+    return this.i18n().expressionLabel({
       fieldLabel,
       operator,
-      operatorLabel: resolveOperatorLabel(
-        operator,
-        this.config.i18n.operators,
-        this.config.operators,
-      ),
+      operatorLabel: resolveOperatorLabel(operator, this.i18n().operators, this.config.operators),
     });
   });
 }
