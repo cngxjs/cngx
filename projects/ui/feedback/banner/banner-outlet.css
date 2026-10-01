@@ -33,7 +33,8 @@
  * - `.cngx-banner__error` - inline-error sub-line; color delegates
  *   to `--cngx-color-danger`
  * - `.cngx-banner__action` - projected action button tinted by
- *   `--cngx-banner-accent` (padding-based hit-target, no min-size
+ *   `--cngx-banner-action-color`, derived from `--cngx-banner-accent`
+ *   (padding-based hit-target, no min-size
  *   floor so the button does not stand taller than the banner)
  * - `.cngx-banner__dismiss` - dismiss control
  *
@@ -285,8 +286,8 @@
   }
 
   /**
-   * Accent color used by the action button border / foreground.
-   * Pinned by each severity rule.
+   * Severity accent the action button color derives from (see
+   * `--cngx-banner-action-color`). Pinned by each severity rule.
    * @group Surface
    */
   @property --cngx-banner-accent {
@@ -395,6 +396,20 @@
     syntax: '<number>';
     inherits: false;
     initial-value: 600;
+  }
+
+  /**
+   * Label and border color of the action button. Unset by default, so
+   * the use site derives it from `--cngx-banner-accent` mixed 60% into
+   * the text color: the pure accent misses 4.5:1 on the light tint. Pin
+   * it to `--cngx-banner-accent` to paint the action in the pure accent
+   * again (the Material bridge does).
+   * @group State / Action
+   * @default color-mix(in oklab, var(--cngx-banner-accent) 60%, var(--cngx-color-text))
+   */
+  @property --cngx-banner-action-color {
+    syntax: '*';
+    inherits: true;
   }
 
   /**
@@ -604,7 +619,7 @@
     .cngx-banner__action {
       appearance: none;
       background: var(--cngx-banner-action-bg, transparent);
-      border: 1px solid var(--cngx-banner-accent, currentColor);
+      border: 1px solid currentColor;
       border-radius: var(--cngx-banner-action-radius, 4px);
       padding: var(--cngx-banner-action-padding, 4px 10px);
       /* Floor the action-row height to the pointer-derived target on a coarse
@@ -613,7 +628,14 @@
       cursor: pointer;
       font-size: var(--cngx-banner-action-font-size, 0.875rem);
       font-weight: var(--cngx-banner-action-font-weight, 600);
-      color: var(--cngx-banner-accent, currentColor);
+      color: var(
+        --cngx-banner-action-color,
+        color-mix(
+          in oklab,
+          var(--cngx-banner-accent, currentColor) 60%,
+          var(--cngx-color-text, oklch(0.2 0.01 250))
+        )
+      );
       white-space: nowrap;
       flex-shrink: 0;
     }

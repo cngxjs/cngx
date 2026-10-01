@@ -280,9 +280,12 @@
   }
 
   /**
-   * Label color of the active-branch chip.
+   * Label color of the active-branch chip. Neutral text by default: the
+   * primary accent lives on the chip border and tint (primary as text
+   * misses 4.5:1 on the light tint), like the tab and nav-link active
+   * labels. The Material bridge maps it to `--mat-sys-primary`.
    * @group Group chip
-   * @default var(--cngx-color-primary)
+   * @default var(--cngx-color-text)
    */
   @property --cngx-stepper-group-chip-active-color {
     syntax: '*';
@@ -2054,10 +2057,12 @@
 /* Active-branch chip: the group that owns the current step. An accent
    tint + border lifts it above the resting outline chips (shape in
    stepper-base.css), so "the branch I am in" reads at a glance whether
-   or not the other groups are collapsed. Colours flow through the chip
-   tokens, falling back to --cngx-color-primary like the rest of the
-   active-step theming. Unlayered direct selector to match the collapsed/
-   navigable rules above (consistent cascade ordering across engines). */
+   or not the other groups are collapsed. Border and tint flow through the
+   chip tokens, falling back to --cngx-color-primary like the rest of the
+   active-step theming; the label stays neutral text, since primary as text
+   misses 4.5:1 on the tint. Unlayered direct selector to match the
+   collapsed/navigable rules above (consistent cascade ordering across
+   engines). */
 .cngx-stepper__group-header--active {
   border-color: var(
     --cngx-stepper-group-chip-active-border,
@@ -2067,10 +2072,7 @@
     --cngx-stepper-group-chip-active-bg,
     color-mix(in srgb, var(--cngx-color-primary, oklch(0.55 0.18 264)) 14%, transparent)
   );
-  color: var(
-    --cngx-stepper-group-chip-active-color,
-    var(--cngx-color-primary, oklch(0.55 0.18 264))
-  );
+  color: var(--cngx-stepper-group-chip-active-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -2341,5 +2343,14 @@
 
   .cngx-stepper__mobile-dot--active::after {
     color: var(--_cngx-forced-ink, CanvasText);
+  }
+
+  /* Active-branch chip: border and tint are forced to the same CanvasText
+     outline and Canvas fill as every resting chip, so the branch the current
+     step lives in no longer stood out. A 2px Highlight edge marks it; inset
+     (an outline, not a border) so the chip keeps its size. */
+  .cngx-stepper__group-header--active {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
   }
 }
