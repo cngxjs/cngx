@@ -722,20 +722,6 @@ export const RATCHET = [
     closesIn: 5,
   },
   {
-    file: 'projects/forms/input/phone-input/phone-input.component.ts',
-    member: 'CngxPhoneInput.countries',
-    rule: 'R1',
-    token: 'CNGX_LOCALE',
-    closesIn: 5,
-  },
-  {
-    file: 'projects/forms/input/phone-input/phone-input.component.ts',
-    member: 'CngxPhoneInput.localeCountries',
-    rule: 'R2',
-    token: 'CNGX_LOCALE',
-    closesIn: 5,
-  },
-  {
     file: 'projects/ui/a11y/a11y-panel.component.ts',
     member: 'CngxA11yPanel.buildAxisViews',
     rule: 'R3',
@@ -1430,7 +1416,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 117;
+export const RATCHET_CEILING = 115;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 4;
