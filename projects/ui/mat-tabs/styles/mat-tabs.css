@@ -18,8 +18,9 @@
  *   ring, font-weight bump. Specificity bump `.mat-mdc-tab.cngx-
  *   mat-tab--error` is load-bearing - Material 21's `.mdc-tab` sets
  *   `outline: none` at (0,1,0)
- * - `.cngx-mat-tab--error` + `.mat-mdc-tab-disabled` - fades the
- *   rejection signal so it does not pass for a healthy disabled tab
+ * - `.cngx-mat-tab--error` + `.mat-mdc-tab-disabled` - no extra rule:
+ *   Material paints the disabled label colour and the error outline
+ *   stays, so it does not pass for a healthy disabled tab
  * - `.cngx-mat-tab--has-errors` - form-validation errors present;
  *   renders a `::before` red disc with an `!` glyph at the trailing
  *   corner. Distinct semantic from `--error` and the two coexist
@@ -272,13 +273,11 @@
     font-weight: var(--cngx-mat-tab-error-font-weight, 600);
   }
 
-  .mat-mdc-tab-disabled.cngx-mat-tab--error {
-    /*
-     * A disabled-and-rejected tab keeps the rejection signal but
-     * fades to disambiguate it from a healthy disabled tab.
-     */
-    opacity: 0.7;
-  }
+  /*
+   * A disabled-and-rejected tab takes no fade: Material paints the
+   * disabled label colour, and the error outline above keeps it apart
+   * from a healthy disabled tab. Disabled is colour, never opacity.
+   */
 
   /*
    * Per-tab form-error aggregation badge. Distinct semantic from
