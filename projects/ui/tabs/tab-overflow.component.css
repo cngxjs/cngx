@@ -20,8 +20,8 @@
  * - `:hover` - tints via `--cngx-tab-overflow-item-hover-bg`
  * - `--active` - APG combobox highlighted-option signal; tints
  *   background and draws an inset outline ring
- * - `[aria-disabled="true"]` - cursor + opacity dim via
- *   `--cngx-tab-disabled-opacity`
+ * - `[aria-disabled="true"]` - cursor + 38% text (the disabled field
+ *   recipe), never opacity; GrayText under forced colors
  *
  * **Slots**
  *
@@ -282,9 +282,20 @@
       outline-offset: var(--cngx-tab-overflow-item-active-outline-offset, -2px);
     }
 
+    /* Disabled by colour, never opacity (the field recipe), like a tab. */
     .cngx-tab-overflow__item[aria-disabled='true'] {
       cursor: not-allowed;
-      opacity: var(--cngx-tab-disabled-opacity, 0.55);
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
     }
+  }
+}
+
+/* forced-colors (WHCM): disabled is painted by colour, and an author colour is
+ * forced to CanvasText, so a disabled overflow item would read as enabled.
+ * Re-signal it with GrayText. Unlayered + direct selector (outside @scope) to
+ * beat the layered rule. */
+@media (forced-colors: active) {
+  .cngx-tab-overflow__item[aria-disabled='true'] {
+    color: GrayText;
   }
 }

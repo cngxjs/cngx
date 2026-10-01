@@ -12,7 +12,8 @@
  * **State modifiers** (driven by ARIA the organism sets)
  *
  * - `[aria-current="page"]` - the active page button
- * - `[aria-disabled="true"]` - dimmed, `cursor: not-allowed` (bound nav buttons / busy)
+ * - `[aria-disabled="true"]` - 38% text (the disabled field recipe), never opacity, `cursor: not-allowed` (bound nav
+ *   buttons / busy); GrayText under forced colors
  * - `:focus-visible` - focus ring via `--cngx-paginator-focus-ring`
  *
  * **Size preset** - `[data-paginator-size="compact" | "comfortable"]` (the
@@ -198,10 +199,11 @@
     outline-offset: var(--cngx-paginator-focus-offset, 2px);
   }
 
+  /* Disabled by colour, never opacity (the field recipe). */
   .cngx-paginator__button[aria-disabled='true'],
   .cngx-paginator__button:disabled {
     cursor: not-allowed;
-    opacity: var(--cngx-paginator-disabled-opacity, 0.45);
+    color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
   }
 
   .cngx-paginator__page[aria-current='page'] {
@@ -315,7 +317,8 @@
     display: inline-flex;
     font-size: var(--cngx-paginator-caret-size, 1em);
     line-height: 1;
-    opacity: var(--cngx-paginator-caret-opacity, 0.55);
+    /* Quieter than the value by colour (the hint colour), not opacity. */
+    color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
   }
 
   /* The listbox panel inside the popover. */
@@ -563,7 +566,7 @@
 
   .cngx-paginator__dot[aria-disabled='true'] {
     cursor: not-allowed;
-    opacity: var(--cngx-paginator-disabled-opacity, 0.45);
+    color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
   }
 
   /*
@@ -732,5 +735,11 @@
     background: Highlight;
     color: HighlightText;
     border-color: Highlight;
+  }
+  /* Disabled is painted by colour. A native :disabled button gets GrayText from
+   * the UA, an aria-disabled one does not, so restate it. */
+  .cngx-paginator__button[aria-disabled='true'],
+  .cngx-paginator__dot[aria-disabled='true'] {
+    color: GrayText;
   }
 }

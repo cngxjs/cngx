@@ -10,7 +10,8 @@
  * - `--interactive` - hover shadow + touch-active opacity
  * - `--selected` - accent border, tinted background, inset bar
  *   (non-color signal per WCAG 1.4.1)
- * - `--disabled` - opacity dim + `pointer-events: none`
+ * - `--disabled` - 38% text (the disabled field recipe), never opacity,
+ *   dashed border, `pointer-events: none`; GrayText under forced colors
  * - `--loading` - shimmer overlay (static fallback under
  *   `prefers-reduced-motion`)
  *
@@ -224,16 +225,6 @@
     syntax: '<length>';
     inherits: false;
     initial-value: 3px;
-  }
-
-  /**
-   * Opacity multiplier applied by `.cngx-card--disabled`.
-   * @group State / Disabled
-   */
-  @property --cngx-card-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
   }
 
   /**
@@ -728,8 +719,14 @@
       border-radius: 999px;
     }
 
+    /* Disabled by colour, never opacity (the field recipe): body, title and
+     * subtitle take 38% text through their tokens, and the border turns
+     * dashed so the state reads without colour. */
     :scope.cngx-card--disabled {
-      opacity: var(--cngx-card-disabled-opacity, 0.5);
+      --cngx-card-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+      --cngx-card-title-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+      --cngx-card-subtitle-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+      border-style: dashed;
       pointer-events: none;
     }
 
@@ -1024,5 +1021,12 @@
   }
   .cngx-card.cngx-card--selected::before {
     background: Highlight !important;
+  }
+  /* Disabled is painted by colour, which the forced palette overrides;
+   * re-signal it with GrayText on the text and the dashed border. */
+  .cngx-card.cngx-card--disabled,
+  .cngx-card.cngx-card--disabled :is(.cngx-card__title, .cngx-card__subtitle) {
+    color: GrayText;
+    border-color: GrayText;
   }
 }
