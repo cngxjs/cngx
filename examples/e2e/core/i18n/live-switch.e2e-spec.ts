@@ -255,4 +255,35 @@ test.describe('live language switch', () => {
     await next.click();
     await expect(liveRegion).toHaveText('Seite 3 von 10');
   });
+
+  test('accordion and breadcrumb copy switch labels at once and keep a shown section error', async ({
+    page,
+  }) => {
+    const route = 'core/i18n/language-pack/live-switch-ui-b';
+    expect(routesIn('core', 'i18n', 'language-pack').map((r) => r.path)).toContain(route);
+    await gotoDemo(page, route);
+
+    const trail = page.locator('cngx-breadcrumb nav');
+    const alert = page.locator('cngx-accordion-item [role="alert"]');
+    const lockedHeader = page.locator('cngx-accordion-item button[aria-disabled="true"]');
+
+    // (1) EN baseline: the failed section speaks its error.
+    await expect(trail).toHaveAttribute('aria-label', 'Breadcrumb');
+    await expect(alert).toHaveText('This section could not be loaded.');
+    await expect(lockedHeader).toHaveAccessibleDescription('This section is currently unavailable.');
+
+    // (2) Flip to German, no reload: labels switch, the shown error stays.
+    await page.getByRole('button', { name: 'DE', exact: true }).click();
+    await expect(trail).toHaveAttribute('aria-label', 'Brotkrumenpfad');
+    await expect(lockedHeader).toHaveAccessibleDescription(
+      'Dieser Abschnitt ist derzeit nicht verfügbar.',
+    );
+    await expect(alert).toHaveText('This section could not be loaded.');
+
+    // (3) The next failure speaks German.
+    await page.getByRole('button', { name: 'Recover invoices' }).click();
+    await expect(alert).toHaveCount(0);
+    await page.getByRole('button', { name: 'Fail invoices' }).click();
+    await expect(alert).toHaveText('Dieser Abschnitt konnte nicht geladen werden.');
+  });
 });
