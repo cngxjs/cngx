@@ -147,6 +147,11 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - `CngxTocConfig.ariaLabels` is typed `CngxTocAriaLabels | Signal<CngxTocAriaLabels>`, and once `withTocAriaLabels` ran it holds a `Signal`. Code that reads it off `injectTocConfig()` or `CNGX_TOC_CONFIG` reads the resolved bundle through the new accessor instead: `injectTocConfig().ariaLabels?.nav` becomes `injectTocAriaLabels()().nav`, called inside a `computed()`, a template or a handler. `withTocAriaLabels` now also accepts a `Signal<CngxTocAriaLabels>`; plain objects still merge key by key, and `provideTocConfigAt` still merges over the parent scope.
 
+### @cngx/ui/a11y
+
+- `CngxA11yPanelConfig.labels` is typed `CngxA11yPanelLabels | Signal<CngxA11yPanelLabels>` and `.axes` is typed `readonly CngxA11yPanelAxisSpec[] | Signal<readonly CngxA11yPanelAxisSpec[]>`; once a feature ran, `labels` holds a `Signal`. Code that reads them off `injectA11yPanelConfig()` or `CNGX_A11Y_PANEL_CONFIG` reads them through the new accessors instead: `injectA11yPanelConfig().labels.heading` becomes `injectA11yPanelLabels()().heading`, and `injectA11yPanelConfig().axes` becomes `injectA11yPanelAxes()()`, each called inside a `computed()`, a template or a handler. `CNGX_A11Y_PANEL_DEFAULTS` keeps its plain values.
+- `withA11yPanelLabels` now also accepts a `Signal<CngxA11yPanelLabelsOverride>` (the `axes` record still merges key by key), and `withA11yPanelAxes` accepts a `Signal` of the axis list, so translated option labels follow a switch. Plain values keep their merge rules; `provideA11yPanelConfigAt` still merges over the parent scope.
+
 ### @cngx/forms/select
 
 - `CngxSelectConfig.ariaLabels`, `.fallbackLabels` and `.announcer` accept a value or a `Signal`, and once `withAriaLabels` / `withFallbackLabels` / `withAnnouncer` ran the key holds a `Signal`. Code that reads a key off `CNGX_SELECT_CONFIG` or a `makeSelectConfig(...)` result wraps it once, in a field: with a module-level `const NO_ARIA_LABELS: CngxSelectAriaLabels = {};`, write `private readonly ariaLabels = coerceSignal(config.ariaLabels ?? NO_ARIA_LABELS);` (`coerceSignal` from `@cngx/core/utils`) and read `this.ariaLabels().clearButton` inside a `computed()`, a template or a handler, where you used to read `config.ariaLabels?.clearButton`. A fresh `{}` per call would create a new Signal on every read.

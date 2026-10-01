@@ -614,38 +614,9 @@ export const HELPERS = [
 ];
 
 /** @type {readonly RatchetRow[]} */
-export const RATCHET = [
-  {
-    file: 'projects/ui/a11y/a11y-panel.component.ts',
-    member: 'CngxA11yPanel.buildAxisViews',
-    rule: 'R3',
-    token: 'CNGX_A11Y_PANEL_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/a11y/a11y-panel.component.ts',
-    member: 'CngxA11yPanel.reset',
-    rule: 'R3',
-    token: 'CNGX_A11Y_PANEL_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/a11y/a11y-panel.component.ts',
-    member: 'CngxA11yPanel.template:config',
-    rule: 'R3',
-    token: 'CNGX_A11Y_PANEL_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/a11y/a11y-panel.config.ts',
-    member: 'applyFeatures',
-    rule: 'R3',
-    token: 'CNGX_A11Y_PANEL_CONFIG',
-    closesIn: 7,
-  },
-];
+export const RATCHET = [];
 
-export const RATCHET_CEILING = 4;
+export const RATCHET_CEILING = 0;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 6;

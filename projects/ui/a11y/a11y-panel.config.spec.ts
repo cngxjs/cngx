@@ -1,28 +1,35 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
-import { Component } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 
 import {
   CNGX_A11Y_PANEL_CONFIG,
   CNGX_A11Y_PANEL_DEFAULTS,
+  injectA11yPanelAxes,
   injectA11yPanelConfig,
+  injectA11yPanelLabels,
   provideA11yPanelConfig,
   provideA11yPanelConfigAt,
   withA11yPanelAxes,
   withA11yPanelLabels,
+  type CngxA11yPanelLabelsOverride,
 } from './a11y-panel.config';
+
+const labelsOf = () => TestBed.runInInjectionContext(() => injectA11yPanelLabels())();
+const axesOf = () => TestBed.runInInjectionContext(() => injectA11yPanelAxes())();
 
 describe('a11y-panel config cascade', () => {
   it('resolves the English library defaults when nothing is provided', () => {
     const cfg = TestBed.runInInjectionContext(() => injectA11yPanelConfig());
 
     expect(cfg).toBe(CNGX_A11Y_PANEL_DEFAULTS);
-    expect(cfg.labels.heading).toBe('Accessibility');
-    expect(cfg.labels.reset).toBe('Reset to defaults');
-    expect(cfg.labels.resetMessage).toBe('Preferences reset to defaults');
-    expect(cfg.labels.axes.density).toBe('Spacing');
-    expect(cfg.axes.map((a) => a.axis)).toEqual(['density', 'textScale', 'motion', 'contrast']);
+    const labels = labelsOf();
+    expect(labels.heading).toBe('Accessibility');
+    expect(labels.reset).toBe('Reset to defaults');
+    expect(labels.resetMessage).toBe('Preferences reset to defaults');
+    expect(labels.axes.density).toBe('Spacing');
+    expect(axesOf().map((a) => a.axis)).toEqual(['density', 'textScale', 'motion', 'contrast']);
   });
 
   it('merges withA11yPanelLabels key-by-key, leaving unspecified text at default', () => {
@@ -36,15 +43,21 @@ describe('a11y-panel config cascade', () => {
         ),
       ],
     });
-    const cfg = TestBed.inject(CNGX_A11Y_PANEL_CONFIG);
+    const labels = labelsOf();
 
-    expect(cfg.labels.heading).toBe('Barrierefreiheit');
-    expect(cfg.labels.axes.motion).toBe('Bewegung');
+    expect(labels.heading).toBe('Barrierefreiheit');
+    expect(labels.axes.motion).toBe('Bewegung');
     // Untouched keys keep the library default.
-    expect(cfg.labels.axes.density).toBe('Spacing');
-    expect(cfg.labels.reset).toBe('Reset to defaults');
+    expect(labels.axes.density).toBe('Spacing');
+    expect(labels.reset).toBe('Reset to defaults');
     // The axis list is untouched by a labels-only override.
-    expect(cfg.axes.map((a) => a.axis)).toEqual(['density', 'textScale', 'motion', 'contrast']);
+    expect(axesOf().map((a) => a.axis)).toEqual(['density', 'textScale', 'motion', 'contrast']);
+    // Static equivalence: the same bundle the eager nested spread produced.
+    expect(labels).toEqual({
+      ...CNGX_A11Y_PANEL_DEFAULTS.labels,
+      heading: 'Barrierefreiheit',
+      axes: { ...CNGX_A11Y_PANEL_DEFAULTS.labels.axes, motion: 'Bewegung' },
+    });
   });
 
   it('replaces the axis list with the withA11yPanelAxes subset', () => {
@@ -64,13 +77,13 @@ describe('a11y-panel config cascade', () => {
         ),
       ],
     });
-    const cfg = TestBed.inject(CNGX_A11Y_PANEL_CONFIG);
+    const axes = axesOf();
 
-    expect(cfg.axes).toHaveLength(1);
-    expect(cfg.axes[0].axis).toBe('textScale');
-    expect(cfg.axes[0].options.map((o) => o.value)).toEqual(['md', 'lg']);
+    expect(axes).toHaveLength(1);
+    expect(axes[0].axis).toBe('textScale');
+    expect(axes[0].options.map((o) => o.value)).toEqual(['md', 'lg']);
     // Labels stay at their defaults when only axes are overridden.
-    expect(cfg.labels.heading).toBe('Accessibility');
+    expect(labelsOf().heading).toBe('Accessibility');
   });
 
   it('keeps the root default reference stable for an empty feature list', () => {
@@ -86,19 +99,45 @@ describe('a11y-panel config cascade', () => {
       viewProviders: [provideA11yPanelConfigAt(withA11yPanelLabels({ reset: 'Scoped reset' }))],
     })
     class ScopedHost {
-      readonly cfg = injectA11yPanelConfig();
+      readonly labels = injectA11yPanelLabels();
     }
 
     TestBed.configureTestingModule({
       providers: [provideA11yPanelConfig(withA11yPanelLabels({ heading: 'Root heading' }))],
     });
-    const { cfg } = TestBed.createComponent(ScopedHost).componentInstance;
+    const { labels } = TestBed.createComponent(ScopedHost).componentInstance;
 
     // Component-scope override wins for `reset`...
-    expect(cfg.labels.reset).toBe('Scoped reset');
+    expect(labels().reset).toBe('Scoped reset');
     // ...while the root-provided `heading` still cascades through the parent merge.
-    expect(cfg.labels.heading).toBe('Root heading');
+    expect(labels().heading).toBe('Root heading');
     // Untouched keys fall back to the library default.
-    expect(cfg.labels.axes.density).toBe('Spacing');
+    expect(labels().axes.density).toBe('Spacing');
+  });
+
+  it('follows Signal labels, keeps other nested axis labels and the bundle reference', () => {
+    const lang = signal<'en' | 'de' | 'de-AT'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideA11yPanelConfig(
+          withA11yPanelLabels(
+            computed<CngxA11yPanelLabelsOverride>(() =>
+              lang() === 'en' ? {} : { heading: 'Barrierefreiheit', axes: { motion: 'Bewegung' } },
+            ),
+          ),
+        ),
+      ],
+    });
+    const labels = TestBed.runInInjectionContext(() => injectA11yPanelLabels());
+    expect(labels().heading).toBe('Accessibility');
+
+    lang.set('de');
+    const german = labels();
+    expect(german.heading).toBe('Barrierefreiheit');
+    expect(german.axes.motion).toBe('Bewegung');
+    expect(german.axes.density).toBe('Spacing');
+
+    lang.set('de-AT');
+    expect(labels()).toBe(german);
   });
 });

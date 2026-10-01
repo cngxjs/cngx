@@ -1,13 +1,18 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { injectA11yPreferences, provideA11yPreferences } from '@cngx/core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxA11yPanel } from './a11y-panel.component';
-import { provideA11yPanelConfig, withA11yPanelLabels } from './a11y-panel.config';
+import {
+  provideA11yPanelConfig,
+  withA11yPanelLabels,
+  type CngxA11yPanelLabelsOverride,
+} from './a11y-panel.config';
 
 const attr = (name: string) => document.documentElement.getAttribute(name);
 
@@ -73,6 +78,40 @@ describe('CngxA11yPanel', () => {
       (fixture.nativeElement as HTMLElement).querySelectorAll('.cngx-a11y-panel__axis-label'),
     ).map((el) => el.textContent?.trim());
     expect(labels).toContain('Bewegung');
+  });
+
+  it('relabels the heading, axis groups and Reset when Signal labels flip', () => {
+    const labels = signal<CngxA11yPanelLabelsOverride>({});
+    const announce = vi.fn();
+    TestBed.configureTestingModule({
+      providers: [
+        provideA11yPreferences(),
+        provideA11yPanelConfig(withA11yPanelLabels(labels)),
+        { provide: CngxLiveAnnouncer, useValue: { announce } },
+      ],
+    });
+    const fixture = TestBed.createComponent(CngxA11yPanel);
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+    const text = (selector: string) => host.querySelector(selector)?.textContent?.trim();
+    const groupLabel = groups(fixture)[2] as HTMLElement;
+    const labelId = groupLabel.getAttribute('aria-labelledby');
+
+    labels.set({
+      heading: 'Barrierefreiheit',
+      reset: 'Zuruecksetzen',
+      resetMessage: 'Einstellungen zurueckgesetzt',
+      axes: { motion: 'Bewegung' },
+    });
+    fixture.detectChanges();
+    expect(text('.cngx-a11y-panel__heading')).toBe('Barrierefreiheit');
+    expect(text('.cngx-a11y-panel__reset')).toBe('Zuruecksetzen');
+    expect(text(`#${labelId}`)).toBe('Bewegung');
+    expect(text('.cngx-a11y-panel__axis-label')).toBe('Spacing');
+    // A switch announces nothing; only a Reset does, in the current language.
+    expect(announce).not.toHaveBeenCalled();
+    (host.querySelector('.cngx-a11y-panel__reset') as HTMLButtonElement).click();
+    expect(announce).toHaveBeenCalledWith('Einstellungen zurueckgesetzt');
   });
 
   it('writes the axis signal and reflects onto <html> when a toggle is picked', () => {
