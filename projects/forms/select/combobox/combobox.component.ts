@@ -307,12 +307,18 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly clearable = input<boolean>(false);
 
   /** A11y label for the clear-all button. */
-  readonly clearButtonAriaLabel = input<string>(
-    this.config.ariaLabels?.clearButton ?? 'Reset selection',
+  readonly clearButtonAriaLabel = input<string | undefined>(undefined);
+  /** @internal Bound value, else the config copy; follows a language switch. */
+  protected readonly resolvedClearButtonAriaLabel = computed<string>(
+    () => this.clearButtonAriaLabel() ?? this.config.ariaLabels().clearButton ?? 'Reset selection',
   );
 
   /** A11y label prefix for the per-chip remove button. */
-  readonly chipRemoveAriaLabel = input<string>(this.config.ariaLabels?.chipRemove ?? 'Remove');
+  readonly chipRemoveAriaLabel = input<string | undefined>(undefined);
+  /** @internal Bound value, else the config copy; follows a language switch. */
+  protected readonly resolvedChipRemoveAriaLabel = computed<string>(
+    () => this.chipRemoveAriaLabel() ?? this.config.ariaLabels().chipRemove ?? 'Remove',
+  );
 
   /** Loading state inside the panel. */
   readonly loading = input<boolean>(false);

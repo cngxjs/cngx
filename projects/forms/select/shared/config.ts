@@ -2,11 +2,13 @@ import {
   InjectionToken,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
   type TemplateRef,
   makeEnvironmentProviders,
 } from '@angular/core';
 
 import type { PopoverPlacement } from '@cngx/common/popover';
+import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxSelectCommitErrorDisplay } from './commit-action.types';
 import type { CngxCommitErrorAnnouncePolicy } from './commit-error-announcer';
@@ -279,12 +281,18 @@ export interface CngxSelectConfig {
   readonly dismissOn?: 'outside' | 'escape' | 'both';
   /** Open strategy: click, focus, or both. */
   readonly openOn?: 'click' | 'focus' | 'click+focus';
-  /** Live-region announcer config. */
-  readonly announcer?: CngxSelectAnnouncerConfig;
-  /** ARIA-label overrides. Partial. Per-instance input wins. */
-  readonly ariaLabels?: CngxSelectAriaLabels;
-  /** Panel-shell async-view fallback labels. Per-instance template wins. */
-  readonly fallbackLabels?: CngxSelectFallbackLabels;
+  /**
+   * Live-region announcer config. A `Signal` swaps the formatter on a
+   * language flip; the next announcement uses it.
+   */
+  readonly announcer?: CngxSelectAnnouncerConfig | Signal<CngxSelectAnnouncerConfig>;
+  /** ARIA-label overrides. Partial, value or `Signal`. Per-instance input wins. */
+  readonly ariaLabels?: CngxSelectAriaLabels | Signal<CngxSelectAriaLabels>;
+  /**
+   * Panel-shell async-view fallback labels, value or `Signal`. Per-instance
+   * template wins.
+   */
+  readonly fallbackLabels?: CngxSelectFallbackLabels | Signal<CngxSelectFallbackLabels>;
   /** Default template overrides applied when no per-instance slot is projected. */
   readonly templates?: {
     readonly check?: TemplateRef<CngxSelectCheckContext> | null;
@@ -316,7 +324,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   readonly announcer: Required<Omit<CngxSelectAnnouncerConfig, 'format'>> & {
     readonly format: NonNullable<CngxSelectAnnouncerConfig['format']>;
   };
-  readonly ariaLabels: CngxSelectAriaLabels;
+  readonly ariaLabels: Required<Omit<CngxSelectAriaLabels, 'clearButton' | 'chipRemove'>>;
   readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
 } = {
   panelWidth: 'trigger',
@@ -574,7 +582,8 @@ export function withVirtualization(
 
 /**
  * Sets the panel-shell visible-fallback labels. Partial. Per-instance
- * template projection wins.
+ * template projection wins. Pass a `Signal` to follow a runtime language
+ * switch. A later `withFallbackLabels` replaces an earlier one.
  *
  * ```ts
  * bootstrapApplication(App, {
@@ -590,7 +599,9 @@ export function withVirtualization(
  * });
  * ```
  */
-export function withFallbackLabels(labels: CngxSelectFallbackLabels): CngxSelectConfigFeature {
+export function withFallbackLabels(
+  labels: CngxSelectFallbackLabels | Signal<CngxSelectFallbackLabels>,
+): CngxSelectConfigFeature {
   return feature({ fallbackLabels: labels });
 }
 
@@ -669,14 +680,18 @@ export function withOpenOn(mode: CngxSelectConfig['openOn']): CngxSelectConfigFe
 }
 
 /**
- * Configure the live-region announcer used for selection changes.
+ * Configure the live-region announcer used for selection changes. Pass a
+ * `Signal` to swap the formatter on a runtime language switch.
  */
-export function withAnnouncer(config: CngxSelectAnnouncerConfig): CngxSelectConfigFeature {
+export function withAnnouncer(
+  config: CngxSelectAnnouncerConfig | Signal<CngxSelectAnnouncerConfig>,
+): CngxSelectConfigFeature {
   return feature({ announcer: config });
 }
 
 /**
- * Sets ARIA-label overrides. Partial. Per-instance inputs win.
+ * Sets ARIA-label overrides. Partial. Per-instance inputs win. Pass a
+ * `Signal` to follow a runtime language switch.
  *
  * ```ts
  * bootstrapApplication(App, {
@@ -691,7 +706,9 @@ export function withAnnouncer(config: CngxSelectAnnouncerConfig): CngxSelectConf
  * });
  * ```
  */
-export function withAriaLabels(labels: CngxSelectAriaLabels): CngxSelectConfigFeature {
+export function withAriaLabels(
+  labels: CngxSelectAriaLabels | Signal<CngxSelectAriaLabels>,
+): CngxSelectConfigFeature {
   return feature({ ariaLabels: labels });
 }
 
@@ -737,6 +754,9 @@ export function withTemplates(
   return feature({ templates });
 }
 
+const NO_ANNOUNCER: CngxSelectAnnouncerConfig = {};
+const NO_ARIA_LABELS: CngxSelectAriaLabels = {};
+
 /**
  * Pure merge of `with*` features into a `CngxSelectConfig` value - the
  * exact merge `provideSelectConfig` / `provideSelectConfigAt` apply.
@@ -755,14 +775,18 @@ export function makeSelectConfig(...features: CngxSelectConfigFeature[]): CngxSe
     const { announcer, templates, ariaLabels, ...flat } = f.config;
     Object.assign(merged, flat);
     if (announcer) {
-      merged.announcer = { ...merged.announcer, ...announcer };
+      merged.announcer = createOverrideMerge(merged.announcer ?? NO_ANNOUNCER, announcer);
     }
     if (templates) {
       merged.templates = { ...merged.templates, ...templates };
     }
     if (ariaLabels) {
-      merged.ariaLabels = { ...merged.ariaLabels, ...ariaLabels };
+      merged.ariaLabels = createOverrideMerge(merged.ariaLabels ?? NO_ARIA_LABELS, ariaLabels);
     }
+  }
+  // Replaced, not merged, across features; a Signal like the other copy keys.
+  if (merged.fallbackLabels) {
+    merged.fallbackLabels = coerceSignal(merged.fallbackLabels);
   }
   return merged;
 }

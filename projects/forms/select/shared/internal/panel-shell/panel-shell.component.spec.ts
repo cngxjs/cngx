@@ -10,14 +10,20 @@ import { TestBed } from '@angular/core/testing';
 import { type AsyncView } from '@cngx/common/data';
 import { describe, expect, it, vi } from 'vitest';
 import type { CngxSelectCommitErrorDisplay } from '../../commit-action.types';
-import type { CngxSelectLoadingVariant, CngxSelectRefreshingVariant } from '../../config';
+import type {
+  CngxSelectFallbackLabels,
+  CngxSelectLoadingVariant,
+  CngxSelectRefreshingVariant,
+} from '../../config';
 import {
   CNGX_SELECT_PANEL_HOST,
   CNGX_SELECT_PANEL_VIEW_HOST,
   type CngxSelectActionCallbacks,
   type CngxSelectPanelHost,
 } from '../../panel-host';
+import { provideActionSelectConfig, withActionAriaLabel } from '../../action-select-config';
 import { CngxSelectAction } from '../../template-slots';
+import type { CngxResolvedSelectAriaLabels } from '../resolve-labels';
 import { CngxSelectPanelShell } from './panel-shell.component';
 
 /**
@@ -34,7 +40,32 @@ interface MockHostControls {
   showCommitError: WritableSignal<boolean>;
   showRefreshIndicator: WritableSignal<boolean>;
   handleRetry: ReturnType<typeof vi.fn>;
+  fallbackLabels: WritableSignal<Required<CngxSelectFallbackLabels>>;
+  ariaLabels: WritableSignal<CngxResolvedSelectAriaLabels>;
 }
+
+const EN_FALLBACK: Required<CngxSelectFallbackLabels> = {
+  loading: 'Loading…',
+  empty: 'No Options',
+  loadFailed: 'Loading failed',
+  loadFailedRetry: 'Retry',
+  refreshFailed: 'Refresh failed',
+  refreshFailedRetry: 'Try again',
+  searchPlaceholder: 'Search…',
+  commitFailed: 'Save failed',
+  commitFailedRetry: 'Try again',
+};
+
+const EN_ARIA: CngxResolvedSelectAriaLabels = {
+  treeExpand: 'Expand node',
+  treeCollapse: 'Collapse node',
+  statusLoading: 'Loading options',
+  statusRefreshing: 'Refreshing options',
+  fieldLabelFallback: 'Selection',
+  commitFailedMessage: 'Save failed',
+  searchInput: 'Search options',
+  listboxFallback: 'Options',
+};
 
 function createMockHost(): {
   host: CngxSelectPanelHost;
@@ -48,6 +79,8 @@ function createMockHost(): {
   const showCommitError = signal(false);
   const showRefreshIndicator = signal(false);
   const handleRetry = vi.fn();
+  const fallbackLabels = signal(EN_FALLBACK);
+  const ariaLabels = signal(EN_ARIA);
 
   const nullTpl = signal<null>(null);
 
@@ -76,25 +109,8 @@ function createMockHost(): {
     commitErrorDisplay,
     panelClassList: signal(null),
     panelWidthCss: signal(null),
-    fallbackLabels: {
-      loading: 'Loading…',
-      empty: 'No Options',
-      loadFailed: 'Loading failed',
-      loadFailedRetry: 'Retry',
-      refreshFailed: 'Refresh failed',
-      refreshFailedRetry: 'Try again',
-      searchPlaceholder: 'Search…',
-      commitFailed: 'Save failed',
-      commitFailedRetry: 'Try again',
-    },
-    ariaLabels: {
-      treeExpand: 'Expand node',
-      treeCollapse: 'Collapse node',
-      statusLoading: 'Loading options',
-      statusRefreshing: 'Refreshing options',
-      fieldLabelFallback: 'Selection',
-      commitFailedMessage: 'Save failed',
-    },
+    fallbackLabels,
+    ariaLabels,
     resolvedListboxLabel: signal(''),
     resolvedShowSelectionIndicator: signal(true),
     resolvedSelectionIndicatorVariant: signal('checkbox'),
@@ -145,6 +161,8 @@ function createMockHost(): {
       showCommitError,
       showRefreshIndicator,
       handleRetry,
+      fallbackLabels,
+      ariaLabels,
     },
   };
 }
@@ -229,6 +247,210 @@ describe('CngxSelectPanelShell', () => {
     expect(root.querySelector('.cngx-select__refreshing')).toBeTruthy();
     // Body still projected underneath the banners.
     expect(root.querySelector('.projected-body')).toBeTruthy();
+  });
+});
+
+describe('CngxSelectPanelShell - language flip', () => {
+  const DE_FALLBACK: Required<CngxSelectFallbackLabels> = {
+    ...EN_FALLBACK,
+    loading: 'Lädt…',
+    empty: 'Keine Optionen',
+    loadFailed: 'Laden fehlgeschlagen',
+    loadFailedRetry: 'Erneut versuchen',
+    refreshFailed: 'Aktualisieren fehlgeschlagen',
+    refreshFailedRetry: 'Nochmal versuchen',
+    commitFailed: 'Speichern fehlgeschlagen',
+    commitFailedRetry: 'Nochmal speichern',
+  };
+  const DE_ARIA: CngxResolvedSelectAriaLabels = {
+    ...EN_ARIA,
+    statusLoading: 'Lade Optionen',
+    statusRefreshing: 'Aktualisiere Optionen',
+  };
+
+  /** A live region: how to show it, how to cycle its status, how to read its copy. */
+  interface RegionCase {
+    readonly arrange?: (c: MockHostControls) => void;
+    readonly show: (c: MockHostControls) => void;
+    readonly hide: (c: MockHostControls) => void;
+    readonly read: (root: HTMLElement) => string | null | undefined;
+    readonly en: string;
+    readonly de: string;
+  }
+
+  // The region keeps its copy over a flip and speaks the new language only
+  // after its own status cycles.
+  function expectKeepsCopyUntilStatus(region: RegionCase): void {
+    const { fixture, controls } = setup();
+    region.arrange?.(controls);
+    region.show(controls);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(region.read(root)).toBe(region.en);
+
+    controls.fallbackLabels.set(DE_FALLBACK);
+    controls.ariaLabels.set(DE_ARIA);
+    fixture.detectChanges();
+    expect(region.read(root)).toBe(region.en);
+
+    region.hide(controls);
+    fixture.detectChanges();
+    region.show(controls);
+    fixture.detectChanges();
+    expect(region.read(root)).toBe(region.de);
+  }
+
+  const label = (selector: string) => (root: HTMLElement) =>
+    root.querySelector(selector)?.getAttribute('aria-label');
+  const text = (selector: string) => (root: HTMLElement) =>
+    root.querySelector(selector)?.textContent?.trim();
+  const messageAndRetry = (selector: string) => (root: HTMLElement) => {
+    const region = root.querySelector(selector);
+    const message = region?.querySelector('.cngx-select__error-message')?.textContent?.trim();
+    const retry = region?.querySelector('.cngx-select__error-retry')?.textContent?.trim();
+    return `${message} | ${retry}`;
+  };
+  const loading = (variant: CngxSelectLoadingVariant) => ({
+    arrange: (c: MockHostControls) => c.loadingVariant.set(variant),
+    show: (c: MockHostControls) => c.activeView.set('skeleton'),
+    hide: (c: MockHostControls) => c.activeView.set('content'),
+  });
+  const refreshing = (variant: CngxSelectRefreshingVariant) => ({
+    arrange: (c: MockHostControls) => c.refreshingVariant.set(variant),
+    show: (c: MockHostControls) => c.showRefreshIndicator.set(true),
+    hide: (c: MockHostControls) => c.showRefreshIndicator.set(false),
+  });
+
+  it('keeps the spinner loading label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      ...loading('spinner'),
+      read: label('.cngx-select__spinner-wrap'),
+      en: 'Loading options',
+      de: 'Lade Optionen',
+    });
+  });
+
+  it('keeps the bar loading label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      ...loading('bar'),
+      read: label('.cngx-select__loading-bar'),
+      en: 'Loading options',
+      de: 'Lade Optionen',
+    });
+  });
+
+  it('keeps the text loading message on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      ...loading('text'),
+      read: text('.cngx-select__loading'),
+      en: 'Loading…',
+      de: 'Lädt…',
+    });
+  });
+
+  it('keeps the skeleton loading label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      ...loading('skeleton'),
+      read: label('.cngx-select__skeleton'),
+      en: 'Loading options',
+      de: 'Lade Optionen',
+    });
+  });
+
+  it('keeps the first-load error and its retry label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      show: (c) => c.activeView.set('error'),
+      hide: (c) => c.activeView.set('content'),
+      read: messageAndRetry('.cngx-select__error'),
+      en: 'Loading failed | Retry',
+      de: 'Laden fehlgeschlagen | Erneut versuchen',
+    });
+  });
+
+  it('keeps the inline refresh error and its retry label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      show: (c) => c.showInlineError.set(true),
+      hide: (c) => c.showInlineError.set(false),
+      read: messageAndRetry('.cngx-select__error--inline'),
+      en: 'Refresh failed | Try again',
+      de: 'Aktualisieren fehlgeschlagen | Nochmal versuchen',
+    });
+  });
+
+  it('keeps the commit-error banner and its retry label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      show: (c) => c.showCommitError.set(true),
+      hide: (c) => c.showCommitError.set(false),
+      read: messageAndRetry('.cngx-select__commit-error'),
+      en: 'Save failed | Try again',
+      de: 'Speichern fehlgeschlagen | Nochmal speichern',
+    });
+  });
+
+  it('keeps the spinner refreshing label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      ...refreshing('spinner'),
+      read: label('.cngx-select__refreshing-spinner'),
+      en: 'Refreshing options',
+      de: 'Aktualisiere Optionen',
+    });
+  });
+
+  it('keeps the dots refreshing label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      ...refreshing('dots'),
+      read: label('.cngx-select__refreshing-dots'),
+      en: 'Refreshing options',
+      de: 'Aktualisiere Optionen',
+    });
+  });
+
+  it('keeps the bar refreshing label on a language flip', () => {
+    expectKeepsCopyUntilStatus({
+      ...refreshing('bar'),
+      read: label('.cngx-select__refreshing'),
+      en: 'Refreshing options',
+      de: 'Aktualisiere Optionen',
+    });
+  });
+
+  it('gives a loading region swapped in by a variant change the current language', () => {
+    const { fixture, controls } = setup();
+    controls.loadingVariant.set('spinner');
+    controls.activeView.set('skeleton');
+    fixture.detectChanges();
+    controls.ariaLabels.set(DE_ARIA);
+    fixture.detectChanges();
+
+    controls.loadingVariant.set('bar');
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(label('.cngx-select__loading-bar')(root)).toBe('Lade Optionen');
+  });
+
+  it('gives a refreshing region swapped in by a variant change the current language', () => {
+    const { fixture, controls } = setup();
+    controls.refreshingVariant.set('spinner');
+    controls.showRefreshIndicator.set(true);
+    fixture.detectChanges();
+    controls.ariaLabels.set(DE_ARIA);
+    fixture.detectChanges();
+
+    controls.refreshingVariant.set('dots');
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(label('.cngx-select__refreshing-dots')(root)).toBe('Aktualisiere Optionen');
+  });
+
+  it('flips the non-live empty message immediately', () => {
+    const { fixture, controls } = setup();
+    controls.activeView.set('empty');
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+
+    controls.fallbackLabels.set(DE_FALLBACK);
+    fixture.detectChanges();
+    expect(root.querySelector('.cngx-select__empty')?.textContent).toBe('Keine Optionen');
   });
 });
 
@@ -343,6 +565,22 @@ function setupAction() {
 }
 
 describe('CngxSelectPanelShell - action slot', () => {
+  it('names the action slot as a group from the action-select config', () => {
+    const label = signal('Inline action');
+    TestBed.configureTestingModule({
+      providers: [provideActionSelectConfig(withActionAriaLabel(label))],
+    });
+    const { fixture } = setupAction();
+    const root = fixture.nativeElement as HTMLElement;
+    const group = root.querySelector('.cngx-select__action--bottom');
+    expect(group?.getAttribute('role')).toBe('group');
+    expect(group?.getAttribute('aria-label')).toBe('Inline action');
+
+    label.set('Schnellaktion');
+    fixture.detectChanges();
+    expect(group?.getAttribute('aria-label')).toBe('Schnellaktion');
+  });
+
   it("renders the action template above the projected body when position='top'", () => {
     const { fixture } = setupAction();
     fixture.componentInstance.actionPosition.set('top');

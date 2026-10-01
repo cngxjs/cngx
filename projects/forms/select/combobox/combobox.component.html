@@ -51,7 +51,7 @@
           } @else {
             <cngx-chip
               [removable]="!disabled()"
-              [removeAriaLabel]="chipRemoveAriaLabel() + ': ' + opt.label"
+              [removeAriaLabel]="resolvedChipRemoveAriaLabel() + ': ' + opt.label"
               (remove)="handleChipRemoveClick($event, opt)"
             >
               {{ opt.label }}
@@ -131,7 +131,7 @@
         <button
           type="button"
           class="cngx-combobox__clear-all"
-          [attr.aria-label]="clearButtonAriaLabel()"
+          [attr.aria-label]="resolvedClearButtonAriaLabel()"
           (click)="handleClearAllClick($event)"
         >
           @if (clearGlyph(); as glyph) {

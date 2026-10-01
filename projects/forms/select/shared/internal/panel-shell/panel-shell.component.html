@@ -1,6 +1,6 @@
 @if (showActionTop()) {
   @if (host.tpl.action(); as tpl) {
-    <div class="cngx-select__action cngx-select__action--top">
+    <div class="cngx-select__action cngx-select__action--top" role="group" [attr.aria-label]="actionLabel()">
       <ng-container *ngTemplateOutlet="tpl; context: actionContext()" />
     </div>
   }
@@ -12,7 +12,7 @@
     } @else {
       @switch (host.loadingVariant()) {
         @case ('spinner') {
-          <div class="cngx-select__spinner-wrap" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusLoading ?? 'Loading options'">
+          <div class="cngx-select__spinner-wrap" role="status" aria-live="polite" [attr.aria-label]="viewCopy().statusLoading">
             @if (host.tpl.loadingGlyph(); as glyph) {
               <ng-container *ngTemplateOutlet="glyph" />
             } @else {
@@ -21,17 +21,17 @@
           </div>
         }
         @case ('bar') {
-          <div class="cngx-select__loading-bar" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusLoading ?? 'Loading options'">
+          <div class="cngx-select__loading-bar" role="status" aria-live="polite" [attr.aria-label]="viewCopy().statusLoading">
             @if (host.tpl.loadingGlyph(); as glyph) {
               <ng-container *ngTemplateOutlet="glyph" />
             }
           </div>
         }
         @case ('text') {
-          <div class="cngx-select__loading" role="status" aria-live="polite">{{ host.fallbackLabels.loading }}</div>
+          <div class="cngx-select__loading" role="status" aria-live="polite">{{ viewCopy().loading }}</div>
         }
         @default {
-          <div class="cngx-select__skeleton" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusLoading ?? 'Loading options'">
+          <div class="cngx-select__skeleton" role="status" aria-live="polite" [attr.aria-label]="viewCopy().statusLoading">
             @for (i of host.skeletonIndices(); track i) {
               <div aria-hidden="true" class="cngx-select__skeleton-row"></div>
             }
@@ -44,14 +44,14 @@
     @if (host.tpl.empty(); as tpl) {
       <ng-container *ngTemplateOutlet="tpl; context: emptyContext()" />
     } @else {
-      <div class="cngx-select__empty">{{ host.fallbackLabels.empty }}</div>
+      <div class="cngx-select__empty">{{ host.fallbackLabels().empty }}</div>
     }
   }
   @case ('none') {
     @if (host.tpl.empty(); as tpl) {
       <ng-container *ngTemplateOutlet="tpl; context: emptyContext()" />
     } @else {
-      <div class="cngx-select__empty">{{ host.fallbackLabels.empty }}</div>
+      <div class="cngx-select__empty">{{ host.fallbackLabels().empty }}</div>
     }
   }
   @case ('error') {
@@ -59,7 +59,7 @@
       <ng-container *ngTemplateOutlet="tpl; context: host.errorContext()" />
     } @else {
       <div class="cngx-select__error" role="alert">
-        <span class="cngx-select__error-message">{{ host.fallbackLabels.loadFailed }}</span>
+        <span class="cngx-select__error-message">{{ viewCopy().loadFailed }}</span>
         @if (host.tpl.retryButton(); as retryT) {
           <ng-container
             *ngTemplateOutlet="
@@ -69,13 +69,13 @@
                 retry: host.handleRetry.bind(host),
                 error: host.errorContext().error,
                 disabled: false,
-                label: host.fallbackLabels.loadFailedRetry
+                label: viewCopy().loadFailedRetry
               }
             "
           />
         } @else {
           <button type="button" class="cngx-select__error-retry" (click)="host.handleRetry()">
-            {{ host.fallbackLabels.loadFailedRetry }}
+            {{ viewCopy().loadFailedRetry }}
           </button>
         }
       </div>
@@ -87,7 +87,7 @@
         <ng-container *ngTemplateOutlet="tpl; context: host.errorContext()" />
       } @else {
         <div class="cngx-select__error cngx-select__error--inline" role="alert">
-          <span class="cngx-select__error-message">{{ host.fallbackLabels.refreshFailed }}</span>
+          <span class="cngx-select__error-message">{{ inlineErrorCopy().message }}</span>
           @if (host.tpl.retryButton(); as retryT) {
             <ng-container
               *ngTemplateOutlet="
@@ -97,13 +97,13 @@
                   retry: host.handleRetry.bind(host),
                   error: host.errorContext().error,
                   disabled: false,
-                  label: host.fallbackLabels.refreshFailedRetry
+                  label: inlineErrorCopy().retry
                 }
               "
             />
           } @else {
             <button type="button" class="cngx-select__error-retry" (click)="host.handleRetry()">
-              {{ host.fallbackLabels.refreshFailedRetry }}
+              {{ inlineErrorCopy().retry }}
             </button>
           }
         </div>
@@ -114,7 +114,7 @@
         <ng-container *ngTemplateOutlet="tpl; context: host.commitErrorContext()" />
       } @else {
         <div class="cngx-select__commit-error" role="alert">
-          <span class="cngx-select__error-message">{{ host.fallbackLabels.commitFailed }}</span>
+          <span class="cngx-select__error-message">{{ commitErrorCopy().message }}</span>
           @if (host.tpl.retryButton(); as retryT) {
             <ng-container
               *ngTemplateOutlet="
@@ -124,13 +124,13 @@
                   retry: host.commitErrorContext().retry,
                   error: host.commitErrorContext().error,
                   disabled: false,
-                  label: host.fallbackLabels.commitFailedRetry
+                  label: commitErrorCopy().retry
                 }
               "
             />
           } @else {
             <button type="button" class="cngx-select__error-retry" (click)="host.commitErrorContext().retry()">
-              {{ host.fallbackLabels.commitFailedRetry }}
+              {{ commitErrorCopy().retry }}
             </button>
           }
         </div>
@@ -143,7 +143,7 @@
         @switch (host.refreshingVariant()) {
           @case ('none') { <!-- suppressed --> }
           @case ('spinner') {
-            <div class="cngx-select__refreshing-spinner" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusRefreshing ?? 'Refreshing options'">
+            <div class="cngx-select__refreshing-spinner" role="status" aria-live="polite" [attr.aria-label]="refreshingLabel()">
               @if (host.tpl.loadingGlyph(); as glyph) {
                 <ng-container *ngTemplateOutlet="glyph" />
               } @else {
@@ -152,7 +152,7 @@
             </div>
           }
           @case ('dots') {
-            <div class="cngx-select__refreshing-dots" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusRefreshing ?? 'Refreshing options'">
+            <div class="cngx-select__refreshing-dots" role="status" aria-live="polite" [attr.aria-label]="refreshingLabel()">
               @if (host.tpl.loadingGlyph(); as glyph) {
                 <ng-container *ngTemplateOutlet="glyph" />
               } @else {
@@ -163,7 +163,7 @@
             </div>
           }
           @default {
-            <div class="cngx-select__refreshing" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusRefreshing ?? 'Refreshing options'">
+            <div class="cngx-select__refreshing" role="status" aria-live="polite" [attr.aria-label]="refreshingLabel()">
               @if (host.tpl.loadingGlyph(); as glyph) {
                 <ng-container *ngTemplateOutlet="glyph" />
               }
@@ -177,7 +177,7 @@
 }
 @if (showActionBottom()) {
   @if (host.tpl.action(); as tpl) {
-    <div class="cngx-select__action cngx-select__action--bottom">
+    <div class="cngx-select__action cngx-select__action--bottom" role="group" [attr.aria-label]="actionLabel()">
       <ng-container *ngTemplateOutlet="tpl; context: actionContext()" />
     </div>
   }

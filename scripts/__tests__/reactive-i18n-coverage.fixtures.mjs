@@ -904,188 +904,6 @@ export const RATCHET = [
     closesIn: 5,
   },
   {
-    file: 'projects/forms/select/action-multi-select/action-multi-select.component.ts',
-    member: 'CngxActionMultiSelect.chipRemoveAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/action-multi-select/action-multi-select.component.ts',
-    member: 'CngxActionMultiSelect.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/action-select/action-select.component.ts',
-    member: 'CngxActionSelect.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/combobox/combobox.component.ts',
-    member: 'CngxCombobox.chipRemoveAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/combobox/combobox.component.ts',
-    member: 'CngxCombobox.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/declarative/select-search.component.ts',
-    member: 'CngxSelectSearch.placeholder',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/declarative/select-search.component.ts',
-    member: 'CngxSelectSearch.resolvedAriaLabel',
-    rule: 'R3',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/multi-select/multi-select.component.ts',
-    member: 'CngxMultiSelect.chipRemoveAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/multi-select/multi-select.component.ts',
-    member: 'CngxMultiSelect.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts',
-    member: 'CngxReorderableMultiSelect.chipRemoveAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts',
-    member: 'CngxReorderableMultiSelect.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/select-shell/select-shell.component.ts',
-    member: 'CngxSelectShell.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/shared/action-select-config.ts',
-    member: 'resolveActionSelectConfig',
-    rule: 'R3',
-    token: 'CNGX_ACTION_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/shared/config.ts',
-    member: 'makeSelectConfig',
-    rule: 'R3',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    member: 'CngxSelectPanelShell.host',
-    rule: 'R4',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    member: 'CngxSelectPanelShell.template:host',
-    rule: 'R3',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/shared/internal/select-core.ts',
-    member: 'createSelectCore',
-    rule: 'R3',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/shared/reorderable-select-config.ts',
-    member: 'resolveReorderableSelectConfig',
-    rule: 'R3',
-    token: 'CNGX_REORDERABLE_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/single-select/select.component.ts',
-    member: 'CngxSelect.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/tree-select/tree-select.component.ts',
-    member: 'CngxTreeSelect.announce',
-    rule: 'R3',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/tree-select/tree-select.component.ts',
-    member: 'CngxTreeSelect.chipRemoveAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/tree-select/tree-select.component.ts',
-    member: 'CngxTreeSelect.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/tree-select/tree-select.component.ts',
-    member: 'CngxTreeSelect.commitErrorMessage',
-    rule: 'R3',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/tree-select/tree-select.component.ts',
-    member: 'CngxTreeSelect.twistyCollapseLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/tree-select/tree-select.component.ts',
-    member: 'CngxTreeSelect.twistyExpandLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/typeahead/typeahead.component.ts',
-    member: 'CngxTypeahead.clearButtonAriaLabel',
-    rule: 'R1',
-    token: 'CNGX_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
     file: 'projects/ui/a11y/a11y-panel.component.ts',
     member: 'CngxA11yPanel.buildAxisViews',
     rule: 'R3',
@@ -1780,10 +1598,10 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 167;
+export const RATCHET_CEILING = 141;
 
 /** The last phase whose closing commit has landed. */
-export const COMPLETED_PHASE = 3;
+export const COMPLETED_PHASE = 4;
 
 /**
  * The sorted row keys of `RATCHET` at the end of Phase 1, frozen in
@@ -2002,74 +1820,72 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.skeletonIndices)',
+    region: 'CngxSelectPanelShell.div(commitErrorCopy,host.commitErrorContext,host.tpl)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'does not re-announce on a language flip',
+    testName: 'keeps the commit-error banner and its retry label on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)',
+    region: 'CngxSelectPanelShell.div(host.errorContext,host.handleRetry,host.tpl,inlineErrorCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'does not re-announce on a language flip',
+    testName: 'keeps the inline refresh error and its retry label on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)#2',
+    region: 'CngxSelectPanelShell.div(host.errorContext,host.handleRetry,host.tpl,viewCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'does not re-announce on a language flip',
+    testName: 'keeps the first-load error and its retry label on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)#3',
+    region: 'CngxSelectPanelShell.div(host.skeletonIndices,viewCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'does not re-announce on a language flip',
+    testName: 'keeps the skeleton loading label on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)#4',
+    region: 'CngxSelectPanelShell.div(host.tpl,refreshingLabel)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'does not re-announce on a language flip',
+    testName: 'keeps the spinner refreshing label on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.ariaLabels,host.tpl)#5',
+    region: 'CngxSelectPanelShell.div(host.tpl,refreshingLabel)#2',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'does not re-announce on a language flip',
+    testName: 'keeps the dots refreshing label on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.commitErrorContext,host.fallbackLabels,host.tpl)',
+    region: 'CngxSelectPanelShell.div(host.tpl,refreshingLabel)#3',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'does not re-announce on a language flip',
+    testName: 'keeps the bar refreshing label on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region:
-      'CngxSelectPanelShell.div(host.errorContext,host.fallbackLabels,host.handleRetry,host.tpl)',
+    region: 'CngxSelectPanelShell.div(host.tpl,viewCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'does not re-announce on a language flip',
+    testName: 'keeps the spinner loading label on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region:
-      'CngxSelectPanelShell.div(host.errorContext,host.fallbackLabels,host.handleRetry,host.tpl)#2',
+    region: 'CngxSelectPanelShell.div(host.tpl,viewCopy)#2',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'does not re-announce on a language flip',
+    testName: 'keeps the bar loading label on a language flip',
     closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
-    region: 'CngxSelectPanelShell.div(host.fallbackLabels)',
+    region: 'CngxSelectPanelShell.div(viewCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
-    testName: 'does not re-announce on a language flip',
+    testName: 'keeps the text loading message on a language flip',
     closesIn: 4,
   },
   {
@@ -2570,6 +2386,30 @@ export class R4BoundHost {
  * In-memory sources, the copy model they run against, and the rows each file
  * must produce (`member rule token`).
  */
+const R4_INTERSECTION = `
+import { Component, computed, input, signal, untracked, type Signal } from '@angular/core';
+import type { DemoLabels } from './tokens';
+
+type ResolvedDemoLabels = DemoLabels & Required<Pick<DemoLabels, 'clear'>>;
+
+@Component({
+  selector: 'r4-intersection',
+  template: \`
+    <p aria-live="polite">{{ tracked() }}</p>
+    <span role="status">{{ keyed() }}</span>
+  \`,
+})
+export class R4Intersection {
+  protected readonly labels: Signal<ResolvedDemoLabels> = signal({ clear: 'Clear', more: 'More' });
+  readonly status = input(false);
+  protected readonly tracked = computed(() => this.labels().clear);
+  protected readonly keyed = computed(() => {
+    this.status();
+    return untracked(() => this.labels().clear);
+  });
+}
+`;
+
 export const RULE_FIXTURES = {
   sources: {
     'tokens.ts': TOKENS,
@@ -2583,6 +2423,7 @@ export const RULE_FIXTURES = {
     'r4.ts': R4,
     'r4-pass.ts': R4_PASS,
     'r4-shapes.ts': R4_SHAPES,
+    'r4-intersection.ts': R4_INTERSECTION,
   },
   /** @type {readonly CopyTokenEntry[]} */
   copyTokens: [
@@ -2637,6 +2478,7 @@ export const RULE_FIXTURES = {
       'R4BoundHost.label R4 DEMO_SIGNAL_I18N',
       'mountDemoAnnouncer R4 DEMO_I18N',
     ],
+    'r4-intersection.ts': ['R4Intersection.tracked R4 DEMO_CONFIG'],
   },
   expectedRegions: [
     'r4.ts R4Tracked.host',
@@ -2649,5 +2491,7 @@ export const RULE_FIXTURES = {
     'r4-shapes.ts R4Shapes.p(spoken)',
     'r4-shapes.ts R4BoundHost.host',
     'r4-shapes.ts mountDemoAnnouncer:effect#1',
+    'r4-intersection.ts R4Intersection.p(tracked)',
+    'r4-intersection.ts R4Intersection.span(keyed)',
   ],
 };

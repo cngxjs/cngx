@@ -1,5 +1,6 @@
-import { Injector, runInInjectionContext, type TemplateRef } from '@angular/core';
+import { Injector, isSignal, runInInjectionContext, signal, type TemplateRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { coerceSignal } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -7,9 +8,14 @@ import {
   makeSelectConfig,
   provideSelectConfig,
   provideSelectConfigAt,
+  withAnnouncer,
   withAriaLabels,
+  withFallbackLabels,
   withPanelWidth,
   withTemplates,
+  type CngxSelectAnnouncerConfig,
+  type CngxSelectAriaLabels,
+  type CngxSelectFallbackLabels,
 } from './config';
 import { resolveSelectConfig } from './internal/resolve-config';
 import type { CngxMultiSelectChipContext } from './template-slots';
@@ -25,25 +31,25 @@ describe('withAriaLabels', () => {
     const config = resolveIn([]);
     // Variant-defaulted keys (clearButton, chipRemove) intentionally
     // stay undefined so per-variant input fallbacks remain authoritative.
-    expect(config.ariaLabels.clearButton).toBeUndefined();
-    expect(config.ariaLabels.chipRemove).toBeUndefined();
+    expect(config.ariaLabels().clearButton).toBeUndefined();
+    expect(config.ariaLabels().chipRemove).toBeUndefined();
     // Library-defaulted keys are populated up-front so panel-shell,
     // select-core, and tree-select can read them directly.
-    expect(config.ariaLabels.treeExpand).toBe('Expand node');
-    expect(config.ariaLabels.treeCollapse).toBe('Collapse node');
-    expect(config.ariaLabels.statusLoading).toBe('Loading options');
-    expect(config.ariaLabels.statusRefreshing).toBe('Refreshing options');
-    expect(config.ariaLabels.fieldLabelFallback).toBe('Selection');
-    expect(config.ariaLabels.commitFailedMessage).toBe('Save failed');
-    expect(config.ariaLabels.listboxFallback).toBe('Options');
+    expect(config.ariaLabels().treeExpand).toBe('Expand node');
+    expect(config.ariaLabels().treeCollapse).toBe('Collapse node');
+    expect(config.ariaLabels().statusLoading).toBe('Loading options');
+    expect(config.ariaLabels().statusRefreshing).toBe('Refreshing options');
+    expect(config.ariaLabels().fieldLabelFallback).toBe('Selection');
+    expect(config.ariaLabels().commitFailedMessage).toBe('Save failed');
+    expect(config.ariaLabels().listboxFallback).toBe('Options');
   });
 
   it('carries a listboxFallback override into the resolved config', () => {
     const config = resolveIn([
       provideSelectConfig(withAriaLabels({ listboxFallback: 'Auswahlmöglichkeiten' })),
     ]);
-    expect(config.ariaLabels.listboxFallback).toBe('Auswahlmöglichkeiten');
-    expect(config.ariaLabels.searchInput).toBe('Search options');
+    expect(config.ariaLabels().listboxFallback).toBe('Auswahlmöglichkeiten');
+    expect(config.ariaLabels().searchInput).toBe('Search options');
   });
 
   it('populates ariaLabels from withAriaLabels feature', () => {
@@ -55,19 +61,19 @@ describe('withAriaLabels', () => {
         }),
       ),
     ]);
-    expect(config.ariaLabels.clearButton).toBe('Clear all');
-    expect(config.ariaLabels.chipRemove).toBe('Delete');
+    expect(config.ariaLabels().clearButton).toBe('Clear all');
+    expect(config.ariaLabels().chipRemove).toBe('Delete');
     // Library defaults preserved for unset keys.
-    expect(config.ariaLabels.treeExpand).toBe('Expand node');
+    expect(config.ariaLabels().treeExpand).toBe('Expand node');
   });
 
   it('preserves non-overridden keys when partial ariaLabels are supplied', () => {
     const config = resolveIn([
       provideSelectConfig(withAriaLabels({ chipRemove: 'Delete' })),
     ]);
-    expect(config.ariaLabels.clearButton).toBeUndefined();
-    expect(config.ariaLabels.chipRemove).toBe('Delete');
-    expect(config.ariaLabels.treeExpand).toBe('Expand node');
+    expect(config.ariaLabels().clearButton).toBeUndefined();
+    expect(config.ariaLabels().chipRemove).toBe('Delete');
+    expect(config.ariaLabels().treeExpand).toBe('Expand node');
   });
 
   it('merges multiple withAriaLabels calls in feature list order', () => {
@@ -77,9 +83,9 @@ describe('withAriaLabels', () => {
         withAriaLabels({ chipRemove: 'Delete' }),
       ),
     ]);
-    expect(config.ariaLabels.clearButton).toBe('Clear');
-    expect(config.ariaLabels.chipRemove).toBe('Delete');
-    expect(config.ariaLabels.treeExpand).toBe('Expand node');
+    expect(config.ariaLabels().clearButton).toBe('Clear');
+    expect(config.ariaLabels().chipRemove).toBe('Delete');
+    expect(config.ariaLabels().treeExpand).toBe('Expand node');
   });
 
   it('routes tree/status/fallback keys through a DE locale override roundtrip', () => {
@@ -95,12 +101,12 @@ describe('withAriaLabels', () => {
         }),
       ),
     ]);
-    expect(config.ariaLabels.treeExpand).toBe('Knoten erweitern');
-    expect(config.ariaLabels.treeCollapse).toBe('Knoten reduzieren');
-    expect(config.ariaLabels.statusLoading).toBe('Lade Optionen');
-    expect(config.ariaLabels.statusRefreshing).toBe('Aktualisiere Optionen');
-    expect(config.ariaLabels.fieldLabelFallback).toBe('Auswahl');
-    expect(config.ariaLabels.commitFailedMessage).toBe('Speichern fehlgeschlagen');
+    expect(config.ariaLabels().treeExpand).toBe('Knoten erweitern');
+    expect(config.ariaLabels().treeCollapse).toBe('Knoten reduzieren');
+    expect(config.ariaLabels().statusLoading).toBe('Lade Optionen');
+    expect(config.ariaLabels().statusRefreshing).toBe('Aktualisiere Optionen');
+    expect(config.ariaLabels().fieldLabelFallback).toBe('Auswahl');
+    expect(config.ariaLabels().commitFailedMessage).toBe('Speichern fehlgeschlagen');
   });
 
   it('coexists with other features without bleed (withPanelWidth + withAriaLabels)', () => {
@@ -111,7 +117,7 @@ describe('withAriaLabels', () => {
       ),
     ]);
     expect(config.panelWidth).toBe(480);
-    expect(config.ariaLabels.clearButton).toBe('Clear');
+    expect(config.ariaLabels().clearButton).toBe('Clear');
   });
 
   it('survives provideSelectConfigAt (component-scoped)', () => {
@@ -122,7 +128,89 @@ describe('withAriaLabels', () => {
     });
     const injector = TestBed.inject(Injector);
     const config = runInInjectionContext(injector, () => resolveSelectConfig());
-    expect(config.ariaLabels.clearButton).toBe('Leeren');
+    expect(config.ariaLabels().clearButton).toBe('Leeren');
+  });
+});
+
+describe('runtime language switch', () => {
+  it('follows a Signal of ariaLabels and keeps the defaults for unset keys', () => {
+    const labels = signal<CngxSelectAriaLabels>({ statusLoading: 'Loading options' });
+    const config = resolveIn([provideSelectConfig(withAriaLabels(labels))]);
+    labels.set({ statusLoading: 'Lade Optionen' });
+    expect(config.ariaLabels().statusLoading).toBe('Lade Optionen');
+    expect(config.ariaLabels().treeExpand).toBe('Expand node');
+  });
+
+  it('merges a static and a Signal withAriaLabels key by key', () => {
+    const labels = signal<CngxSelectAriaLabels>({ chipRemove: 'Remove' });
+    const config = resolveIn([
+      provideSelectConfig(withAriaLabels({ clearButton: 'Clear' }), withAriaLabels(labels)),
+    ]);
+    labels.set({ chipRemove: 'Entfernen' });
+    expect(config.ariaLabels().clearButton).toBe('Clear');
+    expect(config.ariaLabels().chipRemove).toBe('Entfernen');
+  });
+
+  it('follows a Signal of fallbackLabels over the defaults', () => {
+    const labels = signal<CngxSelectFallbackLabels>({ empty: 'No Options' });
+    const config = resolveIn([provideSelectConfig(withFallbackLabels(labels))]);
+    labels.set({ empty: 'Keine Optionen' });
+    expect(config.fallbackLabels().empty).toBe('Keine Optionen');
+    expect(config.fallbackLabels().loadFailedRetry).toBe('Retry');
+  });
+
+  it('keeps replace semantics for fallbackLabels across features', () => {
+    const config = resolveIn([
+      provideSelectConfig(
+        withFallbackLabels({ empty: 'Nothing', loading: 'Wait' }),
+        withFallbackLabels({ empty: 'Keine Optionen' }),
+      ),
+    ]);
+    expect(config.fallbackLabels().empty).toBe('Keine Optionen');
+    expect(config.fallbackLabels().loading).toBe('Loading…');
+  });
+
+  it('swaps the announcer formatter through a Signal and keeps the default without one', () => {
+    const announcer = signal<CngxSelectAnnouncerConfig>({ politeness: 'assertive' });
+    const config = resolveIn([provideSelectConfig(withAnnouncer(announcer))]);
+    const input = { selectedLabel: 'Red', fieldLabel: 'Color', multi: false };
+    expect(config.announcer().politeness).toBe('assertive');
+    expect(config.announcer().format(input)).toBe('Color: Red selected');
+
+    announcer.set({
+      politeness: 'assertive',
+      format: (i) => `${i.fieldLabel}: ${i.selectedLabel} gewählt`,
+    });
+    expect(config.announcer().format(input)).toBe('Color: Red gewählt');
+    expect(config.announcer().enabled).toBe(true);
+  });
+
+  it('fills a defaulted key an override sets to undefined', () => {
+    const config = resolveIn([
+      provideSelectConfig(
+        withAriaLabels({ statusLoading: undefined }),
+        withFallbackLabels({ empty: undefined }),
+      ),
+    ]);
+    expect(config.ariaLabels().statusLoading).toBe('Loading options');
+    expect(config.fallbackLabels().empty).toBe('No Options');
+    expect(config.ariaLabels().clearButton).toBeUndefined();
+  });
+
+  it('shares one Signal per config and keeps its reference on an equal recompute', () => {
+    const labels = signal<CngxSelectAriaLabels>({ statusLoading: 'Lade Optionen' });
+    TestBed.configureTestingModule({ providers: [provideSelectConfig(withAriaLabels(labels))] });
+    const [a, b] = TestBed.runInInjectionContext(() => [
+      resolveSelectConfig(),
+      resolveSelectConfig(),
+    ]);
+    expect(a.ariaLabels).toBe(b.ariaLabels);
+    expect(a.fallbackLabels).toBe(b.fallbackLabels);
+    expect(a.announcer).toBe(b.announcer);
+
+    const before = a.ariaLabels();
+    labels.set({ statusLoading: 'Lade Optionen' });
+    expect(a.ariaLabels()).toBe(before);
   });
 });
 
@@ -194,7 +282,20 @@ describe('makeSelectConfig', () => {
     );
     expect(config.panelWidth).toBe(240);
     expect(config.templates?.empty).toBe(emptyTpl);
-    expect(config.ariaLabels?.chipRemove).toBe('Delete');
+    expect(coerceSignal(config.ariaLabels ?? {})().chipRemove).toBe('Delete');
+  });
+
+  it('stores every copy key as a Signal', () => {
+    const config = makeSelectConfig(
+      withAriaLabels({ chipRemove: 'Delete' }),
+      withFallbackLabels({ empty: 'Nothing' }),
+      withFallbackLabels({ empty: 'Keine Optionen' }),
+      withAnnouncer({ politeness: 'assertive' }),
+    );
+    expect(isSignal(config.ariaLabels)).toBe(true);
+    expect(isSignal(config.announcer)).toBe(true);
+    expect(isSignal(config.fallbackLabels)).toBe(true);
+    expect(coerceSignal(config.fallbackLabels ?? {})()).toEqual({ empty: 'Keine Optionen' });
   });
 
   it('produces the same resolved config as provideSelectConfig when provided via useFactory', () => {
@@ -214,7 +315,7 @@ describe('makeSelectConfig', () => {
 describe('default announcer format - reordered action', () => {
   it('speaks the new 1-based position when toIndex is supplied', () => {
     const config = resolveIn([]);
-    const message = config.announcer.format({
+    const message = config.announcer().format({
       selectedLabel: 'Admins',
       fieldLabel: 'Recipients',
       multi: true,
@@ -228,7 +329,7 @@ describe('default announcer format - reordered action', () => {
 
   it('falls back to a positionless message when toIndex is omitted', () => {
     const config = resolveIn([]);
-    const message = config.announcer.format({
+    const message = config.announcer().format({
       selectedLabel: 'Admins',
       fieldLabel: 'Recipients',
       multi: true,
@@ -241,7 +342,7 @@ describe('default announcer format - reordered action', () => {
   it('leaves existing added/removed messages unchanged (backward compat)', () => {
     const config = resolveIn([]);
     expect(
-      config.announcer.format({
+      config.announcer().format({
         selectedLabel: 'Red',
         fieldLabel: 'Color',
         multi: true,
@@ -250,7 +351,7 @@ describe('default announcer format - reordered action', () => {
       }),
     ).toBe('Color: Red added, 1 selected');
     expect(
-      config.announcer.format({
+      config.announcer().format({
         selectedLabel: null,
         fieldLabel: 'Color',
         multi: true,
@@ -263,7 +364,7 @@ describe('default announcer format - reordered action', () => {
 describe('default announcer format - created action', () => {
   it("speaks 'created and selected' for single-select when a label is supplied", () => {
     const config = resolveIn([]);
-    const message = config.announcer.format({
+    const message = config.announcer().format({
       selectedLabel: 'Violet',
       fieldLabel: 'Color',
       multi: false,
@@ -274,7 +375,7 @@ describe('default announcer format - created action', () => {
 
   it("speaks the same sentence for multi-select ('created' short-circuits the multi branch)", () => {
     const config = resolveIn([]);
-    const message = config.announcer.format({
+    const message = config.announcer().format({
       selectedLabel: 'Design',
       fieldLabel: 'Topics',
       multi: true,
@@ -286,7 +387,7 @@ describe('default announcer format - created action', () => {
 
   it("falls back to a labelless 'created' sentence when no label is available", () => {
     const config = resolveIn([]);
-    const message = config.announcer.format({
+    const message = config.announcer().format({
       selectedLabel: null,
       fieldLabel: 'Color',
       multi: false,

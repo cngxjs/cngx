@@ -69,7 +69,7 @@ function makeShellHost(): CngxSelectPanelHost {
     commitErrorDisplay: signal('banner'),
     panelClassList: signal(null),
     panelWidthCss: signal(null),
-    fallbackLabels: {
+    fallbackLabels: signal({
       loading: 'Loading…',
       empty: 'No Options',
       loadFailed: 'Loading failed',
@@ -79,15 +79,17 @@ function makeShellHost(): CngxSelectPanelHost {
       searchPlaceholder: 'Search…',
       commitFailed: 'Save failed',
       commitFailedRetry: 'Try again',
-    },
-    ariaLabels: {
+    }),
+    ariaLabels: signal({
       treeExpand: 'Expand node',
       treeCollapse: 'Collapse node',
       statusLoading: 'Loading options',
       statusRefreshing: 'Refreshing options',
       fieldLabelFallback: 'Selection',
       commitFailedMessage: 'Save failed',
-    },
+      searchInput: 'Search options',
+      listboxFallback: 'Options',
+    }),
     resolvedListboxLabel: signal(''),
     resolvedShowSelectionIndicator: signal(true),
     resolvedSelectionIndicatorVariant: signal('checkbox'),
@@ -157,8 +159,8 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly twistyOpenGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
   readonly checkGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
   readonly dashGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
-  readonly twistyExpandLabel = signal('Expand').asReadonly();
-  readonly twistyCollapseLabel = signal('Collapse').asReadonly();
+  readonly resolvedTwistyExpandLabel = signal('Expand').asReadonly();
+  readonly resolvedTwistyCollapseLabel = signal('Collapse').asReadonly();
   close(): void {
     /* no-op in the spec harness */
   }

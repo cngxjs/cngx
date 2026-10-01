@@ -41,9 +41,9 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
   readonly twistyOpenGlyph: Signal<TemplateRef<void> | null>;
   readonly checkGlyph: Signal<TemplateRef<void> | null>;
   readonly dashGlyph: Signal<TemplateRef<void> | null>;
-  /** Localised aria-labels for the twisty button. */
-  readonly twistyExpandLabel: Signal<string>;
-  readonly twistyCollapseLabel: Signal<string>;
+  /** Localised aria-labels for the twisty button; follow a language switch. */
+  readonly resolvedTwistyExpandLabel: Signal<string>;
+  readonly resolvedTwistyCollapseLabel: Signal<string>;
   /** Whether the value is selected. */
   isSelected(value: T): boolean;
   /** Whether the value is partially selected via cascade descendants. */

@@ -85,8 +85,20 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - The optional third argument of `createMatStepHandle` (and so of `CngxMatStepHandleFactory` overrides) is now `Signal<CngxStepperI18n>`. An override that delegates to `createMatStepHandle` forwards the Signal unchanged; the last-resort `Step <id>` label then follows a language switch.
 
+### @cngx/forms/select
+
+- `CngxSelectConfig.ariaLabels`, `.fallbackLabels` and `.announcer` accept a value or a `Signal`, and once `withAriaLabels` / `withFallbackLabels` / `withAnnouncer` ran the key holds a `Signal`. Code that reads a key off `CNGX_SELECT_CONFIG` or a `makeSelectConfig(...)` result wraps it once, in a field: with a module-level `const NO_ARIA_LABELS: CngxSelectAriaLabels = {};`, write `private readonly ariaLabels = coerceSignal(config.ariaLabels ?? NO_ARIA_LABELS);` (`coerceSignal` from `@cngx/core/utils`) and read `this.ariaLabels().clearButton` inside a `computed()`, a template or a handler, where you used to read `config.ariaLabels?.clearButton`. A fresh `{}` per call would create a new Signal on every read.
+- `injectSelectConfig()` returns `ariaLabels`, `fallbackLabels` and `announcer` as `Signal`s over the library defaults: `injectSelectConfig().fallbackLabels.empty` becomes `injectSelectConfig().fallbackLabels().empty`, and `injectSelectConfig().announcer.format` becomes `injectSelectConfig().announcer().format`. Read them where the text is used, not in a field initializer, so a language switch reaches your composite. The settings keys (`panelWidth`, `loadingVariant`, ...) are unchanged.
+- `withAriaLabels`, `withFallbackLabels` and `withAnnouncer` now also accept a `Signal` for runtime switching. Plain values keep their merge rules: `withAriaLabels` and `withAnnouncer` merge key by key across features, a later `withFallbackLabels` replaces an earlier one.
+- The `fallbackLabels` and `ariaLabels` members of every select component (`CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxTreeSelect`, `CngxReorderableMultiSelect`, `CngxActionSelect`, `CngxActionMultiSelect`, `CngxSelectShell`) are now `Signal`s. A custom panel that reads them off the component calls them: `select.fallbackLabels.empty` becomes `select.fallbackLabels().empty`.
+- `CngxActionSelectConfig.ariaLabel` and `CngxReorderableSelectConfig.ariaLabel` accept a `string` or a `Signal<string>`, and `withActionAriaLabel` / `withReorderAriaLabel` accept either. `injectActionSelectConfig().ariaLabel` and `injectReorderableSelectConfig().ariaLabel` are now `Signal<string>`: `config.ariaLabel` becomes `config.ariaLabel()`, read where the label is rendered. Code that reads the key off `CNGX_ACTION_SELECT_CONFIG` / `CNGX_REORDERABLE_SELECT_CONFIG` wraps it in `coerceSignal(...)`.
+- The copy inputs `clearButtonAriaLabel` (every select component), `chipRemoveAriaLabel` (`CngxMultiSelect`, `CngxCombobox`, `CngxTreeSelect`, `CngxReorderableMultiSelect`, `CngxActionMultiSelect`), `twistyExpandLabel` / `twistyCollapseLabel` (`CngxTreeSelect`), `reorderAriaLabel` (`CngxReorderableMultiSelect`) and `CngxSelectSearch.placeholder` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `CNGX_SELECT_CONFIG` default. Template bindings are unchanged; the rendered label follows a language switch while the input is unbound. Code that reads the input programmatically (`select.clearButtonAriaLabel()`) gets `undefined` when nothing is bound; read the rendered `aria-label` instead.
+
 ---
 
 ## Behaviour changes
 
-No behaviour changes yet.
+### @cngx/forms/select
+
+- The `*cngxSelectAction` slot wrapper in every select panel is now a named group: `role="group"` with `aria-label` from `CngxActionSelectConfig.ariaLabel` (English default `'Inline action'`, set it with `withActionAriaLabel`). Screen readers announce the group name when focus enters the action slot. Before, the key was accepted but never rendered.
+- A defaulted copy key that an override sets to `undefined` now resolves to its English default instead of `undefined`. `withFallbackLabels({ empty: undefined })` renders `'No Options'` where it rendered an empty message before; the same holds for every `ariaLabels` key except `clearButton` and `chipRemove`, whose fallback is per variant. To clear a label, set it to an empty string.

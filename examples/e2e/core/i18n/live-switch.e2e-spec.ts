@@ -156,4 +156,34 @@ test.describe('live language switch', () => {
     await card.click();
     await expect(cardRegion).toHaveText('Abgewählt');
   });
+
+  test('select copy switches labels at once and keeps a shown announcement', async ({ page }) => {
+    const route = 'core/i18n/language-pack/live-switch-select';
+    expect(routesIn('core', 'i18n', 'language-pack').map((r) => r.path)).toContain(route);
+    await gotoDemo(page, route);
+
+    const select = page.locator('cngx-multi-select');
+    const clearAll = select.locator('.cngx-multi-select__clear-all');
+    const chipRemove = (label: string) =>
+      select.locator(`cngx-chip button[aria-label$=": ${label}"]`);
+    const liveRegion = page.locator('body > span.cngx-sr-only[aria-live="polite"]');
+
+    // (1) EN baseline.
+    await expect(clearAll).toHaveAttribute('aria-label', 'Reset selection');
+    await expect(chipRemove('Red')).toHaveAttribute('aria-label', 'Remove: Red');
+
+    // (2) An announcement in English.
+    await chipRemove('Blue').click();
+    await expect(liveRegion).toHaveText('Colors: Blue removed, 2 selected');
+
+    // (3) Flip to German, no reload: labels switch, the announcement stays.
+    await page.getByRole('button', { name: 'DE', exact: true }).click();
+    await expect(clearAll).toHaveAttribute('aria-label', 'Auswahl zurücksetzen');
+    await expect(chipRemove('Red')).toHaveAttribute('aria-label', 'Entfernen: Red');
+    await expect(liveRegion).toHaveText('Colors: Blue removed, 2 selected');
+
+    // (4) The next change speaks German.
+    await chipRemove('Green').click();
+    await expect(liveRegion).toHaveText('Colors: Green entfernt, 1 ausgewählt');
+  });
 });

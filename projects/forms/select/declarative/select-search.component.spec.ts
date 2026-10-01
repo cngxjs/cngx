@@ -3,7 +3,12 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 
-import { provideSelectConfig, withAriaLabels, withFallbackLabels } from '../shared/config';
+import {
+  provideSelectConfig,
+  withAriaLabels,
+  withFallbackLabels,
+  type CngxSelectFallbackLabels,
+} from '../shared/config';
 import { CngxSelectSearch } from './select-search.component';
 import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
 
@@ -103,6 +108,20 @@ describe('CngxSelectSearch - placeholder cascade', () => {
       providers: [provideSelectConfig(withFallbackLabels({ searchPlaceholder: 'Suchen…' }))],
     });
     const { input } = setup(HostUnbound);
+    expect(input.placeholder).toBe('Suchen…');
+  });
+
+  it('follows a Signal of fallbackLabels while unbound', () => {
+    const labels = signal<CngxSelectFallbackLabels>({ searchPlaceholder: 'Search…' });
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withFallbackLabels(labels))],
+    });
+    const fixture = TestBed.createComponent(HostUnbound);
+    fixture.detectChanges();
+    labels.set({ searchPlaceholder: 'Suchen…' });
+    fixture.detectChanges();
+    const input = fixture.debugElement.query(By.css('input[type=search]'))
+      .nativeElement as HTMLInputElement;
     expect(input.placeholder).toBe('Suchen…');
   });
 

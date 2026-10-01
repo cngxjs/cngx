@@ -45,7 +45,7 @@ import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
       (input)="handleInput($event)"
       (keydown)="handleKeydown($event)"
       [attr.aria-label]="resolvedAriaLabel()"
-      [placeholder]="placeholder()"
+      [placeholder]="resolvedPlaceholder()"
       autocomplete="off"
     />
   `,
@@ -56,10 +56,14 @@ export class CngxSelectSearch {
 
   /**
    * Placeholder text on the input. Default:
-   * `CNGX_SELECT_CONFIG.fallbackLabels.searchPlaceholder` (EN `'Search…'`), read
-   * once at construction.
+   * `CNGX_SELECT_CONFIG.fallbackLabels.searchPlaceholder` (EN `'Search…'`), which
+   * follows a runtime language switch while unbound.
    */
-  readonly placeholder = input<string>(this.config.fallbackLabels.searchPlaceholder);
+  readonly placeholder = input<string | undefined>(undefined);
+  /** @internal Bound value, else the config copy; follows a language switch. */
+  protected readonly resolvedPlaceholder = computed<string>(
+    () => this.placeholder() ?? this.config.fallbackLabels().searchPlaceholder,
+  );
 
   /**
    * ARIA label override. Cascade: per-instance `[aria-label]` →
@@ -79,7 +83,7 @@ export class CngxSelectSearch {
    * @internal
    */
   protected readonly resolvedAriaLabel = computed<string | null>(
-    () => this.ariaLabel() ?? this.config.ariaLabels?.searchInput ?? null,
+    () => this.ariaLabel() ?? this.config.ariaLabels().searchInput,
   );
 
   /** @internal */

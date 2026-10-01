@@ -44,7 +44,7 @@
               class="cngx-tree-select__twisty"
               [class.cngx-tree-select__twisty--open]="isOpen"
               tabindex="-1"
-              [attr.aria-label]="isOpen ? host.twistyCollapseLabel() : host.twistyExpandLabel()"
+              [attr.aria-label]="isOpen ? host.resolvedTwistyCollapseLabel() : host.resolvedTwistyExpandLabel()"
               (click)="toggleExpand($event, node)"
             >
               @if (isOpen) {

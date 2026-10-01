@@ -229,10 +229,16 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly clearable = input<boolean>(false);
-  readonly clearButtonAriaLabel = input<string>(
-    this.config.ariaLabels?.clearButton ?? 'Reset selection',
+  readonly clearButtonAriaLabel = input<string | undefined>(undefined);
+  /** @internal Bound value, else the config copy; follows a language switch. */
+  protected readonly resolvedClearButtonAriaLabel = computed<string>(
+    () => this.clearButtonAriaLabel() ?? this.config.ariaLabels().clearButton ?? 'Reset selection',
   );
-  readonly chipRemoveAriaLabel = input<string>(this.config.ariaLabels?.chipRemove ?? 'Remove');
+  readonly chipRemoveAriaLabel = input<string | undefined>(undefined);
+  /** @internal Bound value, else the config copy; follows a language switch. */
+  protected readonly resolvedChipRemoveAriaLabel = computed<string>(
+    () => this.chipRemoveAriaLabel() ?? this.config.ariaLabels().chipRemove ?? 'Remove',
+  );
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);

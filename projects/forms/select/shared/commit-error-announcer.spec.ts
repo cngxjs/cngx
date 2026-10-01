@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { effect, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -97,5 +97,37 @@ describe('createCommitErrorAnnouncer', () => {
     callback(new Error('second'));
     expect(live).toHaveBeenCalledTimes(1);
     expect(softAnnounce).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not re-announce on a language flip when called from an effect', () => {
+    const copy = signal('Save failed');
+    const failure = signal<unknown>(null);
+    const callback = createCommitErrorAnnouncer({
+      deps: {
+        announcer,
+        commitErrorMessage: () => copy(),
+        softAnnounce: makeMockSoftAnnounce(),
+      },
+      policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'verbose', severity: 'polite' }),
+    });
+    TestBed.runInInjectionContext(() =>
+      effect(() => {
+        const err = failure();
+        if (err) {
+          callback(err);
+        }
+      }),
+    );
+    failure.set('boom');
+    TestBed.tick();
+    expect(live).toHaveBeenCalledExactlyOnceWith('Save failed', 'polite');
+
+    copy.set('Speichern fehlgeschlagen');
+    TestBed.tick();
+    expect(live).toHaveBeenCalledTimes(1);
+
+    failure.set('again');
+    TestBed.tick();
+    expect(live).toHaveBeenLastCalledWith('Speichern fehlgeschlagen', 'polite');
   });
 });

@@ -4,9 +4,11 @@ import {
   makeEnvironmentProviders,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
 } from '@angular/core';
 
 import type { PopoverPlacement } from '@cngx/common/popover';
+import { coerceSignal } from '@cngx/core/utils';
 
 /**
  * Focus-trap policy for the action-slot workflow:
@@ -35,8 +37,11 @@ export type CngxActionPosition = 'top' | 'bottom' | 'both' | 'none';
 export interface CngxActionSelectConfig {
   /** When the panel-shell's `CngxFocusTrap` activates. Default `'dirty'`. */
   readonly focusTrapBehavior?: CngxActionFocusTrapBehavior;
-  /** ARIA label on the action-slot wrapper. Localisation hook. */
-  readonly ariaLabel?: string;
+  /**
+   * Accessible name of the action-slot group (`role="group"`) in every select
+   * panel, value or `Signal`. Default `'Inline action'`. Localisation hook.
+   */
+  readonly ariaLabel?: string | Signal<string>;
   /**
    * Forces `closeOnCreate` across both organisms. `null` (default) keeps
    * the variant baselines: single closes, multi keeps open.
@@ -59,7 +64,9 @@ export interface CngxActionSelectConfig {
  *
  * @internal
  */
-export const CNGX_ACTION_SELECT_DEFAULTS: Required<CngxActionSelectConfig> = {
+export const CNGX_ACTION_SELECT_DEFAULTS: Required<Omit<CngxActionSelectConfig, 'ariaLabel'>> & {
+  readonly ariaLabel: string;
+} = {
   focusTrapBehavior: 'dirty',
   ariaLabel: 'Inline action',
   closeOnCreate: null,
@@ -121,11 +128,12 @@ export function withFocusTrapBehavior(
 }
 
 /**
- * Sets the action-slot ARIA label.
+ * Sets the action-slot ARIA label. Pass a `Signal` to follow a runtime
+ * language switch.
  *
  * @category forms/select/config
  */
-export function withActionAriaLabel(label: string): CngxActionSelectConfigFeature {
+export function withActionAriaLabel(label: string | Signal<string>): CngxActionSelectConfigFeature {
   return feature({ ariaLabel: label });
 }
 
@@ -220,14 +228,18 @@ export function provideActionSelectConfigAt(
 
 /**
  * Effective config for the current injector. Injection context required.
+ * `ariaLabel` is a `Signal`, read where the label is rendered so a runtime
+ * language switch reaches it.
  *
  * @internal
  */
-export function resolveActionSelectConfig(): Required<CngxActionSelectConfig> {
+export function resolveActionSelectConfig(): Required<Omit<CngxActionSelectConfig, 'ariaLabel'>> & {
+  readonly ariaLabel: Signal<string>;
+} {
   const user = inject(CNGX_ACTION_SELECT_CONFIG, { optional: true }) ?? {};
   return {
     focusTrapBehavior: user.focusTrapBehavior ?? CNGX_ACTION_SELECT_DEFAULTS.focusTrapBehavior,
-    ariaLabel: user.ariaLabel ?? CNGX_ACTION_SELECT_DEFAULTS.ariaLabel,
+    ariaLabel: coerceSignal(user.ariaLabel ?? CNGX_ACTION_SELECT_DEFAULTS.ariaLabel),
     closeOnCreate:
       user.closeOnCreate === undefined
         ? CNGX_ACTION_SELECT_DEFAULTS.closeOnCreate

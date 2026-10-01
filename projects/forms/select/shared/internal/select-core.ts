@@ -3,6 +3,7 @@ import {
   DestroyRef,
   inject,
   signal,
+  untracked,
   type Signal,
   type WritableSignal,
 } from '@angular/core';
@@ -24,11 +25,7 @@ import {
   type CngxCommitController,
 } from '../commit-controller.token';
 import type { CngxSelectCommitAction, CngxSelectCommitErrorDisplay } from '../commit-action.types';
-import {
-  type CngxSelectAnnouncerConfig,
-  type CngxSelectAriaLabels,
-  type CngxSelectFallbackLabels,
-} from '../config';
+import { type CngxSelectAnnouncerConfig, type CngxSelectFallbackLabels } from '../config';
 import {
   flattenSelectOptions,
   isCngxSelectOptionGroupDef,
@@ -38,6 +35,7 @@ import {
   type CngxSelectOptionsInput,
 } from '../option.model';
 import { resolveSelectConfig } from './resolve-config';
+import type { CngxResolvedSelectAriaLabels } from './resolve-labels';
 import type { CngxSelectCommitErrorContext, CngxSelectErrorContext } from '../template-slots';
 
 /**
@@ -154,10 +152,10 @@ export interface CngxSelectCore<T, TCommit> {
   readonly skeletonIndices: Signal<number[]>;
   readonly panelClassList: Signal<string | readonly string[] | null>;
   readonly panelWidthCss: Signal<string | null>;
-  /** Plain object - config is resolved per-injector and immutable. */
-  readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
-  /** Mirrors `CNGX_SELECT_CONFIG.ariaLabels`. Forwarded onto the panel host. */
-  readonly ariaLabels: CngxSelectAriaLabels;
+  /** Resolved `CNGX_SELECT_CONFIG.fallbackLabels`; follows a language flip. */
+  readonly fallbackLabels: Signal<Required<CngxSelectFallbackLabels>>;
+  /** Resolved `CNGX_SELECT_CONFIG.ariaLabels`. Forwarded onto the panel host. */
+  readonly ariaLabels: Signal<CngxResolvedSelectAriaLabels>;
 
   readonly resolvedId: Signal<string>;
   readonly resolvedAriaLabel: Signal<string | null>;
@@ -468,7 +466,7 @@ export function createSelectCore<T, TCommit>(
     if (placeholder.length > 0) {
       return placeholder;
     }
-    return config.ariaLabels?.listboxFallback ?? 'Options';
+    return config.ariaLabels().listboxFallback;
   });
 
   const resolvedShowSelectionIndicator = computed<boolean>(() => !deps.hideSelectionIndicator());
@@ -644,11 +642,13 @@ export function createSelectCore<T, TCommit>(
     return flatOptions().find((o) => eq(o.value, value)) ?? null;
   }
 
+  // Read untracked by the commit-error announcer, so a language flip never
+  // re-runs the effect that announced it.
   function commitErrorMessage(err: unknown): string {
     const label = deps.label();
     const aria = deps.ariaLabel();
-    const fieldFallback = config.ariaLabels.fieldLabelFallback ?? 'Selection';
-    const failedMessage = config.ariaLabels.commitFailedMessage ?? 'Save failed';
+    const fieldFallback = config.ariaLabels().fieldLabelFallback;
+    const failedMessage = config.ariaLabels().commitFailedMessage;
     const labelText = label !== '' ? label : (aria ?? fieldFallback);
     const detail = err instanceof Error ? err.message : undefined;
     return detail ? `${labelText}: ${failedMessage} - ${detail}` : `${labelText}: ${failedMessage}`;
@@ -671,31 +671,34 @@ export function createSelectCore<T, TCommit>(
     fromIndex?: number,
     toIndex?: number,
   ): void {
-    const announcerConfig = config.announcer;
-    const perInstance = announcerInputs.announceChanges();
-    const enabled = perInstance ?? announcerConfig.enabled ?? true;
-    if (!enabled) {
-      return;
-    }
-    const format = announcerInputs.announceTemplate() ?? announcerConfig.format;
-    const label = deps.label();
-    const aria = deps.ariaLabel();
-    let fieldLabel = config.ariaLabels.fieldLabelFallback ?? 'Selection';
-    if (label.length > 0) {
-      fieldLabel = label;
-    } else if (aria && aria.length > 0) {
-      fieldLabel = aria;
-    }
-    const message = format({
-      selectedLabel: option?.label ?? null,
-      fieldLabel,
-      multi,
-      action,
-      count,
-      fromIndex,
-      toIndex,
+    // Announcing is a side effect: nothing read here may subscribe a reactive
+    // caller, so a language flip (copy or a consumer formatter) never re-runs
+    // the effect that announced.
+    untracked(() => {
+      const enabled = announcerInputs.announceChanges() ?? config.announcer().enabled ?? true;
+      if (!enabled) {
+        return;
+      }
+      const format = announcerInputs.announceTemplate() ?? config.announcer().format;
+      const label = deps.label();
+      const aria = deps.ariaLabel();
+      let fieldLabel = config.ariaLabels().fieldLabelFallback;
+      if (label.length > 0) {
+        fieldLabel = label;
+      } else if (aria && aria.length > 0) {
+        fieldLabel = aria;
+      }
+      const message = format({
+        selectedLabel: option?.label ?? null,
+        fieldLabel,
+        multi,
+        action,
+        count,
+        fromIndex,
+        toIndex,
+      });
+      announcer.announce(message, config.announcer().politeness);
     });
-    announcer.announce(message, announcerConfig.politeness);
   }
 
   return {

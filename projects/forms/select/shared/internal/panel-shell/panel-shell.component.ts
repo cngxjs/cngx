@@ -5,10 +5,13 @@ import {
   computed,
   inject,
   input,
+  untracked,
 } from '@angular/core';
 
 import { CngxFocusTrap } from '@cngx/common/a11y';
+import { recordEqual } from '@cngx/utils';
 
+import { resolveActionSelectConfig } from '../../action-select-config';
 import {
   CNGX_SELECT_PANEL_VIEW_HOST,
   type CngxSelectActionCallbacks,
@@ -74,6 +77,12 @@ export class CngxSelectPanelShell<T = unknown> {
 
   /** Default `'bottom'`. */
   readonly actionPosition = input<CngxSelectPanelActionPosition>('bottom');
+
+  /**
+   * @internal Accessible name of the action-slot group, from
+   * `CNGX_ACTION_SELECT_CONFIG.ariaLabel`; follows a language switch.
+   */
+  protected readonly actionLabel = resolveActionSelectConfig().ariaLabel;
 
   /** @internal */
   protected readonly showActionTop = computed<boolean>(() => {
@@ -161,4 +170,63 @@ export class CngxSelectPanelShell<T = unknown> {
     }),
     { equal: (a, b) => a.previousCount === b.previousCount },
   );
+
+  // Live-region copy. Each region reads its copy untracked and re-reads it
+  // only when its own status changes, so a language flip never re-speaks a
+  // shown region; the next time it appears it speaks the new language.
+
+  /**
+   * @internal Loading and first-load error regions, keyed on `activeView` and
+   * `loadingVariant` (a variant swap renders a new region element).
+   */
+  protected readonly viewCopy = computed(
+    () => {
+      this.host.activeView();
+      this.host.loadingVariant();
+      return untracked(() => {
+        const fallback = this.host.fallbackLabels();
+        return {
+          statusLoading: this.host.ariaLabels().statusLoading,
+          loading: fallback.loading,
+          loadFailed: fallback.loadFailed,
+          loadFailedRetry: fallback.loadFailedRetry,
+        };
+      });
+    },
+    { equal: recordEqual },
+  );
+
+  /** @internal Inline refresh-error region, keyed on `showInlineError`. */
+  protected readonly inlineErrorCopy = computed(
+    () => {
+      this.host.showInlineError();
+      return untracked(() => {
+        const fallback = this.host.fallbackLabels();
+        return { message: fallback.refreshFailed, retry: fallback.refreshFailedRetry };
+      });
+    },
+    { equal: recordEqual },
+  );
+
+  /** @internal Commit-error banner region, keyed on `showCommitError`. */
+  protected readonly commitErrorCopy = computed(
+    () => {
+      this.host.showCommitError();
+      return untracked(() => {
+        const fallback = this.host.fallbackLabels();
+        return { message: fallback.commitFailed, retry: fallback.commitFailedRetry };
+      });
+    },
+    { equal: recordEqual },
+  );
+
+  /**
+   * @internal Refreshing indicator region, keyed on `showRefreshIndicator` and
+   * `refreshingVariant`.
+   */
+  protected readonly refreshingLabel = computed(() => {
+    this.host.showRefreshIndicator();
+    this.host.refreshingVariant();
+    return untracked(() => this.host.ariaLabels().statusRefreshing);
+  });
 }

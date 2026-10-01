@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -25,6 +25,7 @@ import {
   withPanelWidth,
   withLoadingVariant,
   withAriaLabels,
+  type CngxSelectAriaLabels,
 } from '../shared/config';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../shared/option.model';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from '../shared/commit-action.types';
@@ -470,7 +471,7 @@ describe('inject helpers', () => {
       const config = injectSelectConfig();
       expect(config.panelWidth).toBeDefined();
       expect(config.typeaheadDebounceInterval).toBeTypeOf('number');
-      expect(config.announcer.format).toBeTypeOf('function');
+      expect(config.announcer().format).toBeTypeOf('function');
     });
   });
 
@@ -1281,6 +1282,70 @@ describe('CngxSelect - config cascade (input > component-scope > app-scope > def
 });
 
 @Component({
+  template: `<cngx-select [options]="options" [clearable]="true" [(value)]="value" />`,
+  imports: [CngxSelect],
+})
+class UnboundClearHost {
+  readonly options = OPTIONS;
+  readonly value = signal<string | undefined>('red');
+}
+
+@Component({
+  template: `
+    <cngx-select
+      [options]="options"
+      [clearable]="true"
+      [clearButtonAriaLabel]="'Wipe'"
+      [(value)]="value"
+    />
+  `,
+  imports: [CngxSelect],
+})
+class BoundClearHost {
+  readonly options = OPTIONS;
+  readonly value = signal<string | undefined>('red');
+}
+
+describe('CngxSelect clear button label', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.resetTestingModule();
+  });
+
+  function clearLabel(fixture: ComponentFixture<unknown>): string | null {
+    return fixture.nativeElement.querySelector('.cngx-select__clear')?.getAttribute('aria-label');
+  }
+
+  it('follows a Signal of ariaLabels while unbound', () => {
+    const labels = signal<CngxSelectAriaLabels>({ clearButton: 'Clear selection' });
+    TestBed.configureTestingModule({ providers: [provideSelectConfig(withAriaLabels(labels))] });
+    const fixture = TestBed.createComponent(UnboundClearHost);
+    flush(fixture);
+    expect(clearLabel(fixture)).toBe('Clear selection');
+
+    labels.set({ clearButton: 'Auswahl löschen' });
+    flush(fixture);
+    expect(clearLabel(fixture)).toBe('Auswahl löschen');
+  });
+
+  it('keeps a bound clearButtonAriaLabel over the config', () => {
+    const labels = signal<CngxSelectAriaLabels>({ clearButton: 'Clear selection' });
+    TestBed.configureTestingModule({ providers: [provideSelectConfig(withAriaLabels(labels))] });
+    const fixture = TestBed.createComponent(BoundClearHost);
+    flush(fixture);
+    labels.set({ clearButton: 'Auswahl löschen' });
+    flush(fixture);
+    expect(clearLabel(fixture)).toBe('Wipe');
+  });
+
+  it('falls back to the variant default when the config sets no clearButton', () => {
+    const fixture = TestBed.createComponent(UnboundClearHost);
+    flush(fixture);
+    expect(clearLabel(fixture)).toBe('Clear selection');
+  });
+});
+
+@Component({
   // No label, no aria-label, no placeholder - the three names the panel
   // normally borrows before the fallback fires.
   template: `<cngx-select [options]="options" />`,
@@ -1296,7 +1361,7 @@ describe('CngxSelect listbox fallback label', () => {
     TestBed.resetTestingModule();
   });
 
-  function openedListboxLabel(): string | null {
+  function openUnnamed(): { fixture: ComponentFixture<UnnamedHost>; label: () => string | null } {
     const fixture = TestBed.createComponent(UnnamedHost);
     fixture.detectChanges();
     flush(fixture);
@@ -1305,8 +1370,13 @@ describe('CngxSelect listbox fallback label', () => {
       .nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
     trigger.click();
     flush(fixture);
-    const listbox = fixture.nativeElement.querySelector('[role="listbox"]') as Element | null;
-    return listbox?.getAttribute('aria-label') ?? null;
+    const label = (): string | null =>
+      fixture.nativeElement.querySelector('[role="listbox"]')?.getAttribute('aria-label') ?? null;
+    return { fixture, label };
+  }
+
+  function openedListboxLabel(): string | null {
+    return openUnnamed().label();
   }
 
   it('names an otherwise unlabeled panel in English', () => {
@@ -1318,6 +1388,15 @@ describe('CngxSelect listbox fallback label', () => {
       providers: [provideSelectConfig(withAriaLabels({ listboxFallback: 'Optionen' }))],
     });
     expect(openedListboxLabel()).toBe('Optionen');
+  });
+
+  it('follows a Signal of ariaLabels on a language flip', () => {
+    const labels = signal<CngxSelectAriaLabels>({ listboxFallback: 'Options' });
+    TestBed.configureTestingModule({ providers: [provideSelectConfig(withAriaLabels(labels))] });
+    const { fixture, label } = openUnnamed();
+    labels.set({ listboxFallback: 'Optionen' });
+    flush(fixture);
+    expect(label()).toBe('Optionen');
   });
 });
 

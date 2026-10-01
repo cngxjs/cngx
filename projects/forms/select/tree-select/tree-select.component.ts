@@ -287,15 +287,27 @@ export class CngxTreeSelect<T = unknown>
    * Falls back to English. Ignored when `*cngxTreeSelectNode` is
    * projected.
    */
-  readonly twistyExpandLabel = input<string>(this.config.ariaLabels?.treeExpand ?? 'Expand node');
-  readonly twistyCollapseLabel = input<string>(
-    this.config.ariaLabels?.treeCollapse ?? 'Collapse node',
+  readonly twistyExpandLabel = input<string | undefined>(undefined);
+  /** @internal Bound value, else the config copy; panel-host contract. */
+  readonly resolvedTwistyExpandLabel = computed<string>(
+    () => this.twistyExpandLabel() ?? this.config.ariaLabels().treeExpand,
+  );
+  readonly twistyCollapseLabel = input<string | undefined>(undefined);
+  /** @internal Bound value, else the config copy; panel-host contract. */
+  readonly resolvedTwistyCollapseLabel = computed<string>(
+    () => this.twistyCollapseLabel() ?? this.config.ariaLabels().treeCollapse,
   );
   readonly clearable = input<boolean>(false);
-  readonly clearButtonAriaLabel = input<string>(
-    this.config.ariaLabels?.clearButton ?? 'Reset selection',
+  readonly clearButtonAriaLabel = input<string | undefined>(undefined);
+  /** @internal Bound value, else the config copy; follows a language switch. */
+  protected readonly resolvedClearButtonAriaLabel = computed<string>(
+    () => this.clearButtonAriaLabel() ?? this.config.ariaLabels().clearButton ?? 'Reset selection',
   );
-  readonly chipRemoveAriaLabel = input<string>(this.config.ariaLabels?.chipRemove ?? 'Remove');
+  readonly chipRemoveAriaLabel = input<string | undefined>(undefined);
+  /** @internal Bound value, else the config copy; follows a language switch. */
+  protected readonly resolvedChipRemoveAriaLabel = computed<string>(
+    () => this.chipRemoveAriaLabel() ?? this.config.ariaLabels().chipRemove ?? 'Remove',
+  );
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
@@ -448,29 +460,31 @@ export class CngxTreeSelect<T = unknown>
     action: 'added' | 'removed',
     count: number,
   ): void {
-    const announcerConfig = this.config.announcer;
-    const perInstance = this.announceChanges();
-    const enabled = perInstance ?? announcerConfig.enabled ?? true;
-    if (!enabled) {
-      return;
-    }
-    const format = this.announceTemplate() ?? announcerConfig.format;
-    const label = this.label();
-    const aria = this.ariaLabel();
-    let fieldLabel = this.config.ariaLabels?.fieldLabelFallback ?? 'Selection';
-    if (label.length > 0) {
-      fieldLabel = label;
-    } else if (aria && aria.length > 0) {
-      fieldLabel = aria;
-    }
-    const message = format({
-      selectedLabel: item?.label ?? null,
-      fieldLabel,
-      multi: true,
-      action,
-      count,
+    // Announcing is a side effect: nothing read here may subscribe a reactive
+    // caller, so a language flip never re-runs the effect that announced.
+    untracked(() => {
+      const enabled = this.announceChanges() ?? this.config.announcer().enabled ?? true;
+      if (!enabled) {
+        return;
+      }
+      const format = this.announceTemplate() ?? this.config.announcer().format;
+      const label = this.label();
+      const aria = this.ariaLabel();
+      let fieldLabel = this.config.ariaLabels().fieldLabelFallback;
+      if (label.length > 0) {
+        fieldLabel = label;
+      } else if (aria && aria.length > 0) {
+        fieldLabel = aria;
+      }
+      const message = format({
+        selectedLabel: item?.label ?? null,
+        fieldLabel,
+        multi: true,
+        action,
+        count,
+      });
+      this.announcer.announce(message, this.config.announcer().politeness);
     });
-    this.announcer.announce(message, announcerConfig.politeness);
   }
 
   /**
@@ -499,8 +513,8 @@ export class CngxTreeSelect<T = unknown>
   private commitErrorMessage(err: unknown): string {
     const label = this.label();
     const aria = this.ariaLabel();
-    const fieldFallback = this.config.ariaLabels.fieldLabelFallback ?? 'Selection';
-    const failedMessage = this.config.ariaLabels.commitFailedMessage ?? 'Save failed';
+    const fieldFallback = this.config.ariaLabels().fieldLabelFallback;
+    const failedMessage = this.config.ariaLabels().commitFailedMessage;
     const labelText = label !== '' ? label : (aria ?? fieldFallback);
     const detail = err instanceof Error ? err.message : undefined;
     return detail ? `${labelText}: ${failedMessage} - ${detail}` : `${labelText}: ${failedMessage}`;
