@@ -3,19 +3,20 @@
  * Default visuals for `CngxCloseButton`. The host carries
  * `.cngx-close-button` and renders with `display: contents` so the
  * inner `.cngx-close-button__btn` carries the box; the glyph projects
- * into `.cngx-close-button__icon`. Idle state is muted via opacity;
- * hover lifts to full opacity plus a subtle neutral wash.
+ * into `.cngx-close-button__icon`. Idle state is quieted by colour (the
+ * hint colour, never opacity); hover lifts to the surrounding text colour
+ * plus a subtle neutral wash.
  *
  * **State modifiers**
  *
  * State is driven by pseudo-classes on the inner button rather than
  * host modifier classes:
  *
- * - `:hover` - opacity to `--cngx-close-button-hover-opacity` plus
- *   `--cngx-close-button-hover-bg` wash
+ * - `:hover` - surrounding text colour plus `--cngx-close-button-hover-bg`
+ *   wash
  * - `:focus-visible` - outline via `--cngx-close-button-focus-outline`
- *   + offset, opacity forced to 1
- * - `:active` - opacity to `--cngx-close-button-active-opacity`
+ *   + offset, surrounding text colour
+ * - `:active` - 80% of the surrounding text colour
  *
  * **Slots**
  *
@@ -87,23 +88,14 @@
   }
 
   /**
-   * Glyph color. Defaults to `currentColor`.
+   * Resting glyph color. Defaults to `--cngx-color-text-muted` (set below);
+   * hover and focus lift the glyph to the surrounding text colour.
    * @group Surface
    */
   @property --cngx-close-button-color {
     syntax: '*';
     inherits: true;
     initial-value: currentColor;
-  }
-
-  /**
-   * Resting opacity. The hover state lifts to full opacity.
-   * @group State / Idle
-   */
-  @property --cngx-close-button-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
   }
 
   /**
@@ -117,7 +109,7 @@
   }
 
   /**
-   * Transition duration for opacity / background changes.
+   * Transition duration for colour changes.
    *
    * Derives from the `--cngx-duration-fast` rung of the motion scale; a
    * `--cngx-duration-*` brand override re-times it library-wide.
@@ -133,20 +125,13 @@
   /* Derive from the motion scale (motion-accepted-debt.md section 2). The
    * registered initial-value wins over the read-site var() fallback, so the
    * token must be SET from the scale for a --cngx-duration-* brand override to
-   * reach the opacity transition. Host SET (read on the .cngx-close-button
+   * reach the colour transition. Host SET (read on the .cngx-close-button
    * host). Layer cngx.tokens keeps a Material bridge winning. 150ms -> fast. */
   :where(.cngx-close-button) {
     --cngx-close-button-transition: var(--cngx-duration-fast);
-  }
-
-  /**
-   * Opacity multiplier applied on hover.
-   * @group State / Hover
-   */
-  @property --cngx-close-button-hover-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 1;
+    /* Quiet at rest by colour, never opacity: the hint colour clears 4.5:1 on
+     * the page (half-opacity currentColor sat at 3.05:1 in light). */
+    --cngx-close-button-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
   }
 
   /**
@@ -179,16 +164,6 @@
     syntax: '<length>';
     inherits: false;
     initial-value: 2px;
-  }
-
-  /**
-   * Opacity applied during the active (pressed) state.
-   * @group State / Active
-   */
-  @property --cngx-close-button-active-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.8;
   }
 
   /**
@@ -246,24 +221,23 @@
       padding: var(--cngx-close-button-padding, var(--cngx-space-sm, 8px));
       cursor: pointer;
       color: var(--cngx-close-button-color, inherit);
-      opacity: var(--cngx-close-button-opacity, 0.5);
       border-radius: var(--cngx-close-button-radius, var(--cngx-radius-sm, 4px));
-      transition: opacity var(--cngx-close-button-transition, 150ms) ease;
+      transition: color var(--cngx-close-button-transition, 150ms) ease;
     }
 
     .cngx-close-button__btn:hover {
-      opacity: var(--cngx-close-button-hover-opacity, 1);
+      color: inherit;
       background: var(--cngx-close-button-hover-bg, oklch(0 0 0 / 0.04));
     }
 
     .cngx-close-button__btn:focus-visible {
       outline: var(--cngx-close-button-focus-outline, 2px solid currentColor);
       outline-offset: var(--cngx-close-button-focus-offset, 2px);
-      opacity: 1;
+      color: inherit;
     }
 
     .cngx-close-button__btn:active {
-      opacity: var(--cngx-close-button-active-opacity, 0.8);
+      color: color-mix(in oklab, currentColor 80%, transparent);
     }
 
     .cngx-close-button__icon {

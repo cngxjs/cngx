@@ -88,10 +88,10 @@ effect. No wrapper element is required to corner-pin the close button.
 Renders an X icon with:
 
 - 32px min size
-- 0.5 opacity resting
-- Hover: 1 opacity + light background
-- Focus: 2px outline with 2px offset
-- Active: 0.8 opacity
+- Muted text colour at rest (`--cngx-color-text-muted`), never opacity
+- Hover: surrounding text colour + light background
+- Focus: 2px outline with 2px offset, surrounding text colour
+- Active: 80% of the surrounding text colour
 
 All properties are customizable via CSS custom properties:
 
@@ -152,7 +152,6 @@ bootstrapApplication(AppComponent, {
 
     cngx-close-button {
       --cngx-close-button-color: inherit;
-      --cngx-close-button-opacity: 0.6;
     }
   `],
 })
@@ -195,7 +194,6 @@ export class AlertComponent {
       top: 8px;
       right: 8px;
       --cngx-close-button-size: 28px;
-      --cngx-close-button-opacity: 0.4;
     }
   `],
 })
@@ -234,8 +232,7 @@ export class DismissibleCardComponent {
     }
 
     cngx-close-button {
-      --cngx-close-button-opacity: 0.5;
-      --cngx-close-button-hover-opacity: 1;
+      --cngx-close-button-color: var(--color-text-muted);
     }
   `],
 })
