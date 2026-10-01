@@ -11,6 +11,7 @@ import {
   output,
   type Signal,
   TemplateRef,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -23,11 +24,13 @@ import {
   type RecyclerI18n,
   resolveAsyncView,
 } from '@cngx/common/data';
-import { coerceSignal } from '@cngx/core/utils';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 import { CngxProgress } from '@cngx/ui/feedback';
 
-import { injectIncrementalListConfig } from './incremental-list-config';
+import {
+  injectIncrementalListAriaLabels,
+  injectIncrementalListConfig,
+} from './incremental-list-config';
 import { CNGX_PAGINATOR_HOST } from './incremental-list-host.token';
 import { CngxIncrementalVirtualizedBody } from './incremental-list-virtualized-body.component';
 import {
@@ -39,6 +42,16 @@ import {
   CngxIncrementalLoading,
 } from './incremental-list-slots';
 
+
+/**
+ * The recycler's view-state phrases stay silent inside the organism: its own
+ * `statusMessage` live region owns those, so only `loaded` carries text.
+ */
+const SILENT_RECYCLER_I18N: Omit<RecyclerI18n, 'loaded'> = {
+  filtered: () => '',
+  empty: () => '',
+  error: () => '',
+};
 /**
  * Visual skin. Paint-only - structure, ARIA, and keyboard behaviour are
  * identical across values; each is reflected onto `[data-skin]`.
@@ -121,13 +134,11 @@ export type CngxIncrementalListSkin = 'plain' | 'divided' | 'card';
       // never calls filtered()/error() anyway.
       provide: CNGX_RECYCLER_I18N,
       useFactory: (): Signal<RecyclerI18n> => {
-        const config = injectIncrementalListConfig();
-        return coerceSignal<RecyclerI18n>({
-          loaded: (count, total) => config.ariaLabels.loadedMore(count, total),
-          filtered: () => '',
-          empty: () => '',
-          error: () => '',
-        });
+        const ariaLabels = injectIncrementalListAriaLabels();
+        return computed<RecyclerI18n>(() => ({
+          ...SILENT_RECYCLER_I18N,
+          loaded: ariaLabels().loadedMore,
+        }));
       },
     },
   ],
@@ -183,6 +194,7 @@ export class CngxIncrementalList<T = unknown> {
   protected readonly paginate = inject(CngxPaginate);
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly config = injectIncrementalListConfig();
+  private readonly ariaLabels = injectIncrementalListAriaLabels();
 
   // View slot resolvers. Direct contentChild field initialisers (AOT NG8110
   // rejects them from a helper); read as TemplateRef so the cascade computeds
@@ -253,12 +265,14 @@ export class CngxIncrementalList<T = unknown> {
 
   // Built-in view labels, resolved through the config cascade (EN library
   // defaults). Consumers re-phrase or localise via provideIncrementalListConfig.
-  protected readonly loadingLabel = computed(() => this.config.ariaLabels.loading);
-  protected readonly emptyLabel = computed(() => this.config.ariaLabels.empty);
-  protected readonly errorLabel = computed(() => this.config.ariaLabels.error);
-  protected readonly pageErrorLabel = computed(() => this.config.ariaLabels.pageError);
-  protected readonly retryLabel = computed(() => this.config.ariaLabels.retry);
-  protected readonly endLabel = computed(() => this.config.ariaLabels.endReached(this.paginate.total()));
+  // They follow a language switch at once; the live region below reads them
+  // untracked.
+  protected readonly loadingLabel = computed(() => this.ariaLabels().loading);
+  protected readonly emptyLabel = computed(() => this.ariaLabels().empty);
+  protected readonly errorLabel = computed(() => this.ariaLabels().error);
+  protected readonly pageErrorLabel = computed(() => this.ariaLabels().pageError);
+  protected readonly retryLabel = computed(() => this.ariaLabels().retry);
+  protected readonly endLabel = computed(() => this.ariaLabels().endReached(this.paginate.total()));
 
   /**
    * Error text for the active error view - the distinct `pageError` phrasing
@@ -273,19 +287,40 @@ export class CngxIncrementalList<T = unknown> {
   /**
    * Polite live-region message - communicated on every settle through the same
    * labels the visible views use, so a config or slot override stays in sync.
+   * The view state is tracked, the labels are read untracked: a language switch
+   * does not re-speak the current message, the next settle speaks the new
+   * language.
    */
   protected readonly statusMessage = computed(() => {
+    const status = this.statusKey();
+    if (status === null) {
+      return '';
+    }
+    const total = this.paginate.total();
+    return untracked(() => {
+      const labels = this.ariaLabels();
+      return status === 'end' ? labels.endReached(total) : labels[status];
+    });
+  });
+
+  /** Which message the live region speaks for the current view, if any. */
+  private readonly statusKey = computed<
+    'loading' | 'empty' | 'error' | 'pageError' | 'end' | null
+  >(() => {
     if (this.paginate.isBusy()) {
-      return this.loadingLabel();
+      return 'loading';
     }
     const view = this.view();
     if (view === 'empty') {
-      return this.emptyLabel();
+      return 'empty';
     }
-    if (view === 'error' || view === 'content+error') {
-      return this.errorViewLabel();
+    if (view === 'error') {
+      return 'error';
     }
-    return this.exhausted() ? this.endLabel() : '';
+    if (view === 'content+error') {
+      return 'pageError';
+    }
+    return this.exhausted() ? 'end' : null;
   });
 
   /** Stable retry callback - emits the `retry` output; shared by the built-in button and the error slot context. */

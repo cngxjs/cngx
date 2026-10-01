@@ -644,69 +644,6 @@ export const RATCHET = [
     closesIn: 7,
   },
   {
-    file: 'projects/ui/collection/incremental-list-config.ts',
-    member: 'applyFeatures',
-    rule: 'R3',
-    token: 'CNGX_INCREMENTAL_LIST_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/collection/incremental-list.component.ts',
-    member: 'CngxIncrementalList.@Component',
-    rule: 'R3',
-    token: 'CNGX_INCREMENTAL_LIST_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/collection/incremental-list.component.ts',
-    member: 'CngxIncrementalList.emptyLabel',
-    rule: 'R3',
-    token: 'CNGX_INCREMENTAL_LIST_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/collection/incremental-list.component.ts',
-    member: 'CngxIncrementalList.endLabel',
-    rule: 'R3',
-    token: 'CNGX_INCREMENTAL_LIST_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/collection/incremental-list.component.ts',
-    member: 'CngxIncrementalList.errorLabel',
-    rule: 'R3',
-    token: 'CNGX_INCREMENTAL_LIST_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/collection/incremental-list.component.ts',
-    member: 'CngxIncrementalList.loadingLabel',
-    rule: 'R3',
-    token: 'CNGX_INCREMENTAL_LIST_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/collection/incremental-list.component.ts',
-    member: 'CngxIncrementalList.pageErrorLabel',
-    rule: 'R3',
-    token: 'CNGX_INCREMENTAL_LIST_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/collection/incremental-list.component.ts',
-    member: 'CngxIncrementalList.retryLabel',
-    rule: 'R3',
-    token: 'CNGX_INCREMENTAL_LIST_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/collection/incremental-list.component.ts',
-    member: 'CngxIncrementalList.statusMessage',
-    rule: 'R4',
-    token: 'CNGX_INCREMENTAL_LIST_CONFIG',
-    closesIn: 7,
-  },
-  {
     file: 'projects/ui/stat-card/config/provide-stat-card-config.ts',
     member: 'mergeConfig',
     rule: 'R3',
@@ -813,7 +750,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 28;
+export const RATCHET_CEILING = 19;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 6;

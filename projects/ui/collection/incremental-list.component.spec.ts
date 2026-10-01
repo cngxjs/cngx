@@ -9,8 +9,10 @@ import type { CngxAsyncState } from '@cngx/core/utils';
 import { CngxPaginatorLoadMore } from '@cngx/ui/paginator';
 
 import {
+  provideIncrementalListConfig,
   provideIncrementalListConfigAt,
   withIncrementalListAriaLabels,
+  type CngxIncrementalListAriaLabels,
 } from './incremental-list-config';
 import { CngxIncrementalList, type CngxIncrementalListSkin } from './incremental-list.component';
 import { CNGX_PAGINATOR_HOST } from './incremental-list-host.token';
@@ -366,6 +368,38 @@ describe('CngxIncrementalList', () => {
     const sr = listEl.querySelector('.cngx-incremental-list__sr');
     expect(sr?.getAttribute('aria-live')).toBe('polite');
     expect(sr?.textContent?.trim()).toBe('Nothing here yet');
+  });
+
+  test('does not re-announce on a language flip', async () => {
+    const labels = signal<Partial<CngxIncrementalListAriaLabels>>({});
+    TestBed.configureTestingModule({
+      providers: [provideIncrementalListConfig(withIncrementalListAriaLabels(labels))],
+    });
+    const { fixture, host, listEl } = await setup();
+    const manual = createManualState<number[]>();
+    host.state.set(manual);
+    host.total.set(2);
+    host.size.set(2);
+    manual.setSuccess([]);
+    await settle(fixture);
+    const sr = (): string | undefined =>
+      listEl.querySelector('.cngx-incremental-list__sr')?.textContent?.trim();
+    const emptyTitle = (): string | null | undefined =>
+      listEl.querySelector('cngx-empty-state.cngx-incremental-list__empty')?.textContent;
+    expect(sr()).toBe('Nothing here yet');
+
+    labels.set({ empty: 'Noch nichts hier', loading: 'Wird geladen' });
+    await settle(fixture);
+    // The visible empty view is not a live region and follows the switch at once.
+    expect(emptyTitle()).toContain('Noch nichts hier');
+    expect(sr()).toBe('Nothing here yet');
+
+    manual.set('refreshing');
+    await settle(fixture);
+    expect(sr()).toBe('Wird geladen');
+    manual.setSuccess([]);
+    await settle(fixture);
+    expect(sr()).toBe('Noch nichts hier');
   });
 
   test('a projected item slot renders each accumulated row with its context', async () => {
