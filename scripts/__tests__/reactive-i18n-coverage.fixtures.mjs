@@ -1601,7 +1601,7 @@ export const RATCHET = [
 export const RATCHET_CEILING = 141;
 
 /** The last phase whose closing commit has landed. */
-export const COMPLETED_PHASE = 3;
+export const COMPLETED_PHASE = 4;
 
 /**
  * The sorted row keys of `RATCHET` at the end of Phase 1, frozen in

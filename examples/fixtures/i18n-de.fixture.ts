@@ -8,7 +8,13 @@ import { provideInteractiveI18n, withInteractiveI18nLabels } from '@cngx/common/
 import { provideTreetableAt, withTreetableLabels } from '@cngx/data-display/treetable';
 import { provideFilterBuilderConfigAt, withFilterBuilderI18n } from '@cngx/forms/filter-builder';
 import { provideInputConfigAt, withInputAriaLabels } from '@cngx/forms/input';
-import { provideSelectConfigAt, withFallbackLabels } from '@cngx/forms/select';
+import {
+  provideSelectConfigAt,
+  withFallbackLabels,
+  type CngxSelectAnnouncerConfig,
+  type CngxSelectAriaLabels,
+  type CngxSelectFallbackLabels,
+} from '@cngx/forms/select';
 import { provideFeedbackI18n } from '@cngx/ui/feedback';
 
 // German reference pack for the examples app. Not a shipped translation: it
@@ -127,6 +133,48 @@ export const TABS_FALLBACK_DE: CngxTabsFallbackLabels = {
   tabPanelRoleDescription: 'Reiterinhalt',
 };
 
+export const SELECT_ARIA_DE: CngxSelectAriaLabels = {
+  clearButton: 'Auswahl zurücksetzen',
+  chipRemove: 'Entfernen',
+  treeExpand: 'Knoten aufklappen',
+  treeCollapse: 'Knoten zuklappen',
+  statusLoading: 'Optionen werden geladen',
+  statusRefreshing: 'Optionen werden aktualisiert',
+  fieldLabelFallback: 'Auswahl',
+  commitFailedMessage: 'Speichern fehlgeschlagen',
+  searchInput: 'Optionen durchsuchen',
+  listboxFallback: 'Optionen',
+};
+export const SELECT_FALLBACK_DE: CngxSelectFallbackLabels = {
+  loading: 'Wird geladen…',
+  empty: 'Keine Optionen',
+  loadFailed: 'Laden fehlgeschlagen',
+  loadFailedRetry: 'Erneut versuchen',
+  refreshFailed: 'Aktualisierung fehlgeschlagen',
+  refreshFailedRetry: 'Erneut versuchen',
+  searchPlaceholder: 'Suchen…',
+  commitFailed: 'Speichern fehlgeschlagen',
+  commitFailedRetry: 'Erneut versuchen',
+};
+const SELECT_VERBS_DE = {
+  added: 'hinzugefügt',
+  removed: 'entfernt',
+  reordered: 'verschoben',
+  created: 'erstellt',
+};
+export const SELECT_ANNOUNCER_DE: CngxSelectAnnouncerConfig = {
+  format: ({ selectedLabel, fieldLabel, multi, action, count }) => {
+    if (selectedLabel == null) {
+      return `${fieldLabel}: Auswahl gelöscht`;
+    }
+    const verb = action ? SELECT_VERBS_DE[action] : 'ausgewählt';
+    if (multi && typeof count === 'number') {
+      return `${fieldLabel}: ${selectedLabel} ${verb}, ${count} ausgewählt`;
+    }
+    return `${fieldLabel}: ${selectedLabel} ${verb}`;
+  },
+};
+
 /**
  * Language of the live-switch story, flipped by its EN / DE toggle. The
  * computed sources below feed the reactive-from-birth tokens, so the flip
@@ -175,6 +223,16 @@ export const DEMO_TABS_LABELS = computed<Partial<CngxTabsI18n>>(() => (isDe() ? 
 export const DEMO_TABS_ARIA_LABELS = computed<CngxTabsAriaLabels>(() => (isDe() ? TABS_ARIA_DE : {}));
 export const DEMO_TABS_FALLBACK_LABELS = computed<CngxTabsFallbackLabels>(() =>
   isDe() ? TABS_FALLBACK_DE : {},
+);
+
+export const DEMO_SELECT_ARIA_LABELS = computed<CngxSelectAriaLabels>(() =>
+  isDe() ? SELECT_ARIA_DE : {},
+);
+export const DEMO_SELECT_FALLBACK_LABELS = computed<CngxSelectFallbackLabels>(() =>
+  isDe() ? SELECT_FALLBACK_DE : {},
+);
+export const DEMO_SELECT_ANNOUNCER = computed<CngxSelectAnnouncerConfig>(() =>
+  isDe() ? SELECT_ANNOUNCER_DE : {},
 );
 
 /** The German pack, spread into the root providers by `?lang=de`. */
