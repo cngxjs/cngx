@@ -175,10 +175,14 @@ export class CngxSelectPanelShell<T = unknown> {
   // only when its own status changes, so a language flip never re-speaks a
   // shown region; the next time it appears it speaks the new language.
 
-  /** @internal Loading and first-load error regions, keyed on `activeView`. */
+  /**
+   * @internal Loading and first-load error regions, keyed on `activeView` and
+   * `loadingVariant` (a variant swap renders a new region element).
+   */
   protected readonly viewCopy = computed(
     () => {
       this.host.activeView();
+      this.host.loadingVariant();
       return untracked(() => {
         const fallback = this.host.fallbackLabels();
         return {
@@ -216,9 +220,13 @@ export class CngxSelectPanelShell<T = unknown> {
     { equal: recordEqual },
   );
 
-  /** @internal Refreshing indicator region, keyed on `showRefreshIndicator`. */
+  /**
+   * @internal Refreshing indicator region, keyed on `showRefreshIndicator` and
+   * `refreshingVariant`.
+   */
   protected readonly refreshingLabel = computed(() => {
     this.host.showRefreshIndicator();
+    this.host.refreshingVariant();
     return untracked(() => this.host.ariaLabels().statusRefreshing ?? 'Refreshing options');
   });
 }

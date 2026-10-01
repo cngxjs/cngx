@@ -412,6 +412,34 @@ describe('CngxSelectPanelShell - language flip', () => {
     });
   });
 
+  it('gives a loading region swapped in by a variant change the current language', () => {
+    const { fixture, controls } = setup();
+    controls.loadingVariant.set('spinner');
+    controls.activeView.set('skeleton');
+    fixture.detectChanges();
+    controls.ariaLabels.set(DE_ARIA);
+    fixture.detectChanges();
+
+    controls.loadingVariant.set('bar');
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(label('.cngx-select__loading-bar')(root)).toBe('Lade Optionen');
+  });
+
+  it('gives a refreshing region swapped in by a variant change the current language', () => {
+    const { fixture, controls } = setup();
+    controls.refreshingVariant.set('spinner');
+    controls.showRefreshIndicator.set(true);
+    fixture.detectChanges();
+    controls.ariaLabels.set(DE_ARIA);
+    fixture.detectChanges();
+
+    controls.refreshingVariant.set('dots');
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(label('.cngx-select__refreshing-dots')(root)).toBe('Aktualisiere Optionen');
+  });
+
   it('flips the non-live empty message immediately', () => {
     const { fixture, controls } = setup();
     controls.activeView.set('empty');
