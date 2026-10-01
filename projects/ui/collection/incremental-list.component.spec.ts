@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createResizeObserverMock } from '@cngx/testing';
 
-import { CngxPaginate, createManualState } from '@cngx/common/data';
+import { CNGX_RECYCLER_I18N, CngxPaginate, createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { CngxPaginatorLoadMore } from '@cngx/ui/paginator';
 
@@ -368,6 +368,26 @@ describe('CngxIncrementalList', () => {
     const sr = listEl.querySelector('.cngx-incremental-list__sr');
     expect(sr?.getAttribute('aria-live')).toBe('polite');
     expect(sr?.textContent?.trim()).toBe('Nothing here yet');
+  });
+
+  test('shares one recycler i18n per cascade and keeps it on an equal recompute', async () => {
+    const labels = signal<Partial<CngxIncrementalListAriaLabels>>({});
+    TestBed.configureTestingModule({
+      providers: [provideIncrementalListConfig(withIncrementalListAriaLabels(labels))],
+    });
+    const recyclerI18n = (fixture: ComponentFixture<HostCmp>) =>
+      fixture.debugElement.query(By.directive(CngxIncrementalList)).injector.get(CNGX_RECYCLER_I18N);
+    const first = TestBed.createComponent(HostCmp);
+    const second = TestBed.createComponent(HostCmp);
+    await settle(first);
+    await settle(second);
+    expect(recyclerI18n(first)).toBe(recyclerI18n(second));
+
+    const i18n = recyclerI18n(first);
+    const before = i18n();
+    labels.set({ empty: 'Noch nichts hier' });
+    expect(i18n()).toBe(before);
+    expect(before.loaded(2, 4)).toBe('2 more loaded. 4 total.');
   });
 
   test('does not re-announce on a language flip', async () => {

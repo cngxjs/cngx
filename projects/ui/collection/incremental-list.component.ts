@@ -24,12 +24,14 @@ import {
   type RecyclerI18n,
   resolveAsyncView,
 } from '@cngx/common/data';
+import { recordEqual } from '@cngx/utils';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 import { CngxProgress } from '@cngx/ui/feedback';
 
 import {
   injectIncrementalListAriaLabels,
   injectIncrementalListConfig,
+  type CngxIncrementalListAriaLabels,
 } from './incremental-list-config';
 import { CNGX_PAGINATOR_HOST } from './incremental-list-host.token';
 import { CngxIncrementalVirtualizedBody } from './incremental-list-virtualized-body.component';
@@ -42,7 +44,6 @@ import {
   CngxIncrementalLoading,
 } from './incremental-list-slots';
 
-
 /**
  * The recycler's view-state phrases stay silent inside the organism: its own
  * `statusMessage` live region owns those, so only `loaded` carries text.
@@ -52,6 +53,26 @@ const SILENT_RECYCLER_I18N: Omit<RecyclerI18n, 'loaded'> = {
   empty: () => '',
   error: () => '',
 };
+
+const RECYCLER_I18N = new WeakMap<Signal<CngxIncrementalListAriaLabels>, Signal<RecyclerI18n>>();
+
+/**
+ * The recycler's i18n over the list labels, memoized per labels Signal so every
+ * list under one cascade shares one `computed()`.
+ */
+function recyclerI18nFor(ariaLabels: Signal<CngxIncrementalListAriaLabels>): Signal<RecyclerI18n> {
+  const cached = RECYCLER_I18N.get(ariaLabels);
+  if (cached) {
+    return cached;
+  }
+  const i18n = computed<RecyclerI18n>(
+    () => ({ ...SILENT_RECYCLER_I18N, loaded: ariaLabels().loadedMore }),
+    { equal: recordEqual },
+  );
+  RECYCLER_I18N.set(ariaLabels, i18n);
+  return i18n;
+}
+
 /**
  * Visual skin. Paint-only - structure, ARIA, and keyboard behaviour are
  * identical across values; each is reflected onto `[data-skin]`.
@@ -133,13 +154,7 @@ export type CngxIncrementalListSkin = 'plain' | 'divided' | 'card';
       // owner of view-state (no double-announce). The no-state recycler branch
       // never calls filtered()/error() anyway.
       provide: CNGX_RECYCLER_I18N,
-      useFactory: (): Signal<RecyclerI18n> => {
-        const ariaLabels = injectIncrementalListAriaLabels();
-        return computed<RecyclerI18n>(() => ({
-          ...SILENT_RECYCLER_I18N,
-          loaded: ariaLabels().loadedMore,
-        }));
-      },
+      useFactory: (): Signal<RecyclerI18n> => recyclerI18nFor(injectIncrementalListAriaLabels()),
     },
   ],
   host: {
