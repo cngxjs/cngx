@@ -21,7 +21,11 @@ import {
 } from '@cngx/forms/field';
 import { CngxSelect, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxInputMask } from '../input-mask.directive';
-import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from '../input-config';
+import {
+  CNGX_INPUT_CONFIG,
+  DEFAULT_INPUT_ARIA_LABELS,
+  injectInputAriaLabels,
+} from '../input-config';
 import { CNGX_PHONE_METADATA } from '../phone-metadata';
 import { createPhoneCountries, type Country } from './countries';
 
@@ -127,21 +131,30 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
   /** The masked phone number (raw digits the mask accepted). Two-way bindable. */
   readonly value = model<string>('');
 
+  private readonly locale = injectLocale();
+
   /**
    * Default country list, labelled in the app locale (`CNGX_LOCALE`, default the
-   * nearest `LOCALE_ID`) once at construction; a later locale flip does not
-   * relabel it.
+   * nearest `LOCALE_ID`); a locale flip relabels it. One shared list per locale.
    */
-  private readonly localeCountries = createPhoneCountries(injectLocale()());
+  private readonly localeCountries = computed(() => createPhoneCountries(this.locale()));
 
   /**
    * The selected country. Two-way bindable; defaults to the `phoneDefaultRegion`
-   * row of `countries`, else the first entry.
+   * row of `countries`, else the first entry. The unbound default is taken in the
+   * construction-time locale; the picker still shows the row of the live list
+   * with the same region, so its name follows a locale flip.
    */
-  readonly country = model<Country>(this.localeCountries[0]);
+  readonly country = model<Country>(createPhoneCountries(this.locale())[0]);
 
-  /** Overrides the picker's country list. Default: the built-in regions, named in the app locale. */
-  readonly countries = input<readonly Country[]>(this.localeCountries);
+  /**
+   * Overrides the picker's country list. Unbound, the picker lists the built-in
+   * regions named in the app locale, and follows a locale flip.
+   */
+  readonly countries = input<readonly Country[] | undefined>(undefined);
+
+  /** @internal The bound `countries`, else the built-in list in the live locale. */
+  protected readonly resolvedCountries = computed(() => this.countries() ?? this.localeCountries());
 
   /**
    * Which mask alternate to use. `'auto'` (default) picks landline vs mobile by
@@ -168,6 +181,7 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly ariaLabels = injectInputAriaLabels();
   private readonly metadata = inject(CNGX_PHONE_METADATA);
 
   private readonly fallbackId = nextUid('cngx-phone-input-');
@@ -185,13 +199,13 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
   private readonly defaultCountry = this.country();
 
   /**
-   * @internal The active row of `countries()`: the row whose region matches
+   * @internal The active row of `resolvedCountries()`: the row whose region matches
    * the selected country, else the first row. Matching by region keeps a
    * localized `[countries]` list in charge of the picked object; a bound
    * `country` whose region the list lacks falls back to the first row.
    */
   protected readonly resolvedCountry = computed(() => {
-    const list = this.countries();
+    const list = this.resolvedCountries();
     const selected = this.country();
     return list.find((c) => c.region === selected.region) ?? list[0] ?? selected;
   });
@@ -245,10 +259,11 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
 
   /** @internal Country options for the inner select, keyed by the country ref. */
   protected readonly selectOptions = computed<CngxSelectOptionDef<Country>[]>(
-    () => this.countries().map((c) => ({ value: c, label: `${c.dialCode} ${c.label}` })),
+    () => this.resolvedCountries().map((c) => ({ value: c, label: `${c.dialCode} ${c.label}` })),
     {
       equal: (a, b) =>
-        a.length === b.length && a.every((o, i) => o.value === b[i].value && o.label === b[i].label),
+        a.length === b.length &&
+        a.every((o, i) => o.value === b[i].value && o.label === b[i].label),
     },
   );
 
@@ -277,7 +292,7 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
     if (explicit !== '') {
       return explicit;
     }
-    return this.config.ariaLabels?.phoneCountry ?? DEFAULT_INPUT_ARIA_LABELS.phoneCountry;
+    return this.ariaLabels().phoneCountry ?? DEFAULT_INPUT_ARIA_LABELS.phoneCountry;
   });
 
   constructor() {
@@ -315,7 +330,7 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
     if (!region || this.country() !== this.defaultCountry) {
       return;
     }
-    const match = this.countries().find((c) => c.region === region);
+    const match = this.resolvedCountries().find((c) => c.region === region);
     if (match) {
       this.country.set(match);
     }

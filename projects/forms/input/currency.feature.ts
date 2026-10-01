@@ -1,3 +1,4 @@
+import type { Signal } from '@angular/core';
 import type { InputConfigFeature } from './input-config';
 
 /**
@@ -11,9 +12,9 @@ export interface CurrencyOptions {
   /**
    * Locale override for currency formatting. Falls back to the numeric locale
    * (`withNumericDefaults`) and then the app locale (`CNGX_LOCALE`, default the
-   * nearest `LOCALE_ID`).
+   * nearest `LOCALE_ID`). Pass a `Signal` to switch it at runtime.
    */
-  readonly locale?: string;
+  readonly locale?: string | Signal<string>;
 }
 
 /**

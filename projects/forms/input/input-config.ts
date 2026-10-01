@@ -1,4 +1,5 @@
-import { inject, InjectionToken, type Provider } from '@angular/core';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
 import type { MaskTokenMap } from './input-mask.directive';
 
 /**
@@ -23,8 +24,11 @@ export interface InputConfig {
   readonly maskGuide?: boolean;
   /** Custom mask tokens available globally. */
   readonly customTokens?: MaskTokenMap;
-  /** Default locale for `CngxNumericInput` (overrides the app locale: `CNGX_LOCALE`, default the nearest `LOCALE_ID`). */
-  readonly numericLocale?: string;
+  /**
+   * Default locale for `CngxNumericInput` (overrides the app locale: `CNGX_LOCALE`,
+   * default the nearest `LOCALE_ID`). Pass a `Signal` to switch it at runtime.
+   */
+  readonly numericLocale?: string | Signal<string>;
   /** Default decimal places for `CngxNumericInput`. */
   readonly numericDecimals?: number;
   /** Default step for `CngxNumericInput`. Default: `1` */
@@ -45,9 +49,10 @@ export interface InputConfig {
   readonly phoneDefaultRegion?: string;
   /**
    * Consumer overrides for the built-in ARIA label strings. Unset keys fall
-   * back to {@link DEFAULT_INPUT_ARIA_LABELS}.
+   * back to {@link DEFAULT_INPUT_ARIA_LABELS}. Holds a `Signal` once
+   * `withInputAriaLabels` ran, so the labels follow a runtime language switch.
    */
-  readonly ariaLabels?: Partial<InputAriaLabels>;
+  readonly ariaLabels?: Partial<InputAriaLabels> | Signal<Partial<InputAriaLabels>>;
 }
 
 /**
@@ -127,6 +132,9 @@ export const DEFAULT_INPUT_ARIA_LABELS: Required<InputAriaLabels> = {
  * @internal
  */
 const DEFAULT_INPUT_CONFIG: InputConfig = {};
+
+/** @internal - shared empty bundle, so every unconfigured reader shares one Signal. */
+const NO_INPUT_ARIA_LABELS: Partial<InputAriaLabels> = {};
 
 /**
  * DI token holding the resolved `InputConfig` for the `@cngx/forms/input`
@@ -422,6 +430,7 @@ export function withCustomTokens(tokens: MaskTokenMap): InputConfigFeature {
  * Sets app-wide defaults for `CngxNumericInput`.
  *
  * - `locale` overrides the app locale (`CNGX_LOCALE`, default the nearest `LOCALE_ID`) for numeric inputs only.
+ *   Pass a `Signal` to switch it at runtime.
  * - `decimals` and `step` set formatting (`step` default `1`).
  * - Each key applies only when supplied; a partial override leaves the rest at
  *   the directive's defaults.
@@ -436,7 +445,7 @@ export function withCustomTokens(tokens: MaskTokenMap): InputConfigFeature {
  * @category forms/input
  */
 export function withNumericDefaults(defaults: {
-  locale?: string;
+  locale?: string | Signal<string>;
   decimals?: number;
   step?: number;
 }): InputConfigFeature {
@@ -521,6 +530,8 @@ export function withPhoneDefaultRegion(region: string): InputConfigFeature {
  *   override is safe.
  * - Library defaults are English; German (or any locale) is consumer-supplied
  *   here. Mirrors the select family's `withAriaLabels`.
+ * - Pass a `Signal` to switch the labels at runtime; later features still
+ *   merge over earlier ones key by key.
  * - `clear` -> `CngxInputClear` button label.
  * - `copySuccess` / `copyError` -> `CngxCopyValue` live-region announcements.
  * - `otpGroup` / `otpSlot(index, length)` / `otpComplete` -> `CngxOtpInput`
@@ -542,9 +553,22 @@ export function withPhoneDefaultRegion(region: string): InputConfigFeature {
  * @see {@link provideInputConfig}
  * @category forms/input
  */
-export function withInputAriaLabels(labels: Partial<InputAriaLabels>): InputConfigFeature {
+export function withInputAriaLabels(
+  labels: Partial<InputAriaLabels> | Signal<Partial<InputAriaLabels>>,
+): InputConfigFeature {
   return (config) => ({
     ...config,
-    ariaLabels: { ...config.ariaLabels, ...labels },
+    ariaLabels: createOverrideMerge(config.ariaLabels ?? NO_INPUT_ARIA_LABELS, labels),
   });
+}
+
+/**
+ * Reads the configured aria labels as a `Signal`, so a reader follows a
+ * runtime language switch. Unset keys stay `undefined`; the reader falls back
+ * to `DEFAULT_INPUT_ARIA_LABELS` per key.
+ *
+ * @internal
+ */
+export function injectInputAriaLabels(): Signal<Partial<InputAriaLabels>> {
+  return coerceSignal(inject(CNGX_INPUT_CONFIG).ariaLabels ?? NO_INPUT_ARIA_LABELS);
 }

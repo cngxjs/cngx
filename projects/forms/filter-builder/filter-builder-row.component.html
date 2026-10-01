@@ -4,7 +4,7 @@
     <cngx-select
       class="cngx-filter-builder__field-select"
       [options]="fieldOptions()"
-      [placeholder]="config.i18n.addFilter"
+      [placeholder]="i18n().addFilter"
       [value]="undefined"
       (valueChange)="handleFieldChange($event)"
     ></cngx-select>
@@ -85,7 +85,7 @@
       <button
         type="button"
         class="cngx-filter-builder__action-button cngx-filter-builder__action-button--remove"
-        [attr.aria-label]="config.i18n.removeFilter"
+        [attr.aria-label]="i18n().removeFilter"
         (click)="handleRemove()"
       >
         <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.remove }}</span>

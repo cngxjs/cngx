@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
+import { coerceSignal } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -22,7 +23,7 @@ function buildSources(event: FilterMutationEvent | null): CngxFilterBuilderAnnou
   return {
     lastMutation: signal<FilterMutationEvent | null>(event),
     fieldMap: signal<ReadonlyMap<string, FilterFieldDef>>(FIELDS),
-    i18n: CNGX_FILTER_BUILDER_DEFAULTS.i18n,
+    i18n: coerceSignal(CNGX_FILTER_BUILDER_DEFAULTS.i18n),
   };
 }
 
@@ -82,17 +83,17 @@ describe('createFilterBuilderAnnouncer', () => {
 
   it('lets an i18n entry win over the operator definition label', () => {
     const operators = new Map([['near', { label: 'Near', evaluate: () => true }]]);
-    const base = CNGX_FILTER_BUILDER_DEFAULTS.i18n;
+    const base = coerceSignal(CNGX_FILTER_BUILDER_DEFAULTS.i18n)();
     const announcer = createFilterBuilderAnnouncer({
       ...buildSources({ kind: 'set-operator', path: [0], context: { operator: 'near' } }),
-      i18n: { ...base, operators: { ...base.operators, near: 'In der Nähe' } },
+      i18n: signal({ ...base, operators: { ...base.operators, near: 'In der Nähe' } }),
       operators,
     });
     expect(announcer.announcement()).toBe('Operator changed to In der Nähe');
   });
 
   it('passes translated operator, logic and boolean words to the formatters', () => {
-    const base = CNGX_FILTER_BUILDER_DEFAULTS.i18n;
+    const base = coerceSignal(CNGX_FILTER_BUILDER_DEFAULTS.i18n)();
     const i18n = {
       ...base,
       or: 'ODER',
@@ -111,12 +112,36 @@ describe('createFilterBuilderAnnouncer', () => {
       path: [0],
       context: { operator: 'gte' },
     });
-    const announcer = createFilterBuilderAnnouncer({ ...buildSources(null), lastMutation, i18n });
+    const announcer = createFilterBuilderAnnouncer({
+      ...buildSources(null),
+      lastMutation,
+      i18n: signal(i18n),
+    });
     expect(announcer.announcement()).toBe('Operator geändert zu Größer oder gleich');
     lastMutation.set({ kind: 'set-logic', path: [], context: { logic: 'or' } });
     expect(announcer.announcement()).toBe('Logik: ODER');
     lastMutation.set({ kind: 'set-value', path: [0], context: { value: true } });
     expect(announcer.announcement()).toBe('Wert: wahr');
+  });
+
+  it('does not re-announce on a language flip', () => {
+    const base = coerceSignal(CNGX_FILTER_BUILDER_DEFAULTS.i18n)();
+    const i18n = signal(base);
+    const lastMutation = signal<FilterMutationEvent | null>({
+      kind: 'clear',
+      path: [],
+    });
+    const announcer = createFilterBuilderAnnouncer({ ...buildSources(null), lastMutation, i18n });
+    expect(announcer.announcement()).toBe('Filters cleared');
+
+    i18n.set({
+      ...base,
+      announcement: { ...base.announcement, filtersCleared: () => 'Filter entfernt' },
+    });
+    expect(announcer.announcement()).toBe('Filters cleared');
+
+    lastMutation.set({ kind: 'clear', path: [] });
+    expect(announcer.announcement()).toBe('Filter entfernt');
   });
 
   it('keeps numbers as String(value) when no locale is passed', () => {
@@ -180,7 +205,7 @@ describe('createFilterBuilderAnnouncer', () => {
     const announcer = createFilterBuilderAnnouncer({
       lastMutation,
       fieldMap,
-      i18n: CNGX_FILTER_BUILDER_DEFAULTS.i18n,
+      i18n: coerceSignal(CNGX_FILTER_BUILDER_DEFAULTS.i18n),
     });
 
     expect(announcer.announcement()).toBe('Filter added: First name');

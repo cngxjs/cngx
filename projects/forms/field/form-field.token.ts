@@ -7,6 +7,7 @@ import {
   type Signal,
 } from '@angular/core';
 import type { CngxFieldSkin } from '@cngx/core/tokens';
+import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
 import type { ErrorMessageMap } from './models';
 
 /**
@@ -61,6 +62,9 @@ export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealCont
   'CngxFormFieldReveal',
 );
 
+/** @internal - shared empty map, so every unprovided scope reads one Signal. */
+const NO_ERROR_MESSAGES: ErrorMessageMap = {};
+
 /**
  * Maps each validation error `kind` to the function that renders its message.
  * `CngxFieldErrors` and `CngxFormErrors` resolve their text against it.
@@ -71,8 +75,10 @@ export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealCont
  * - the raw `kind` string
  *
  * Populated by `withErrorMessages(...)` through `provideFormField`, or by the
- * `provideErrorMessages(...)` shortcut. The default factory returns an empty
- * map, so without a provider every error renders by its fallback string.
+ * `provideErrorMessages(...)` shortcut. The token holds a `Signal`, so the
+ * messages follow a runtime language switch; read it inside a `computed()`,
+ * a template or a handler. The default factory returns an empty map, so
+ * without a provider every error renders by its fallback string.
  *
  * ```ts
  * providers: [provideFormField(withErrorMessages({
@@ -87,9 +93,12 @@ export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealCont
  * @since 0.1.0
  * @relatedTo withErrorMessages, provideErrorMessages, CngxFieldErrors, CngxFormErrors
  */
-export const CNGX_ERROR_MESSAGES = new InjectionToken<ErrorMessageMap>('CngxErrorMessages', {
-  factory: () => ({}),
-});
+export const CNGX_ERROR_MESSAGES = new InjectionToken<Signal<ErrorMessageMap>>(
+  'CngxErrorMessages',
+  {
+    factory: () => coerceSignal(NO_ERROR_MESSAGES),
+  },
+);
 
 /**
  * Application-wide configuration for cngx form fields.
@@ -97,14 +106,17 @@ export const CNGX_ERROR_MESSAGES = new InjectionToken<ErrorMessageMap>('CngxErro
  * @category forms/field
  */
 export interface FormFieldConfig {
-  /** Error message map for auto-rendering. */
-  errorMessages?: ErrorMessageMap;
+  /**
+   * Error message map for auto-rendering. Holds a `Signal` once
+   * `withErrorMessages()` ran, so the messages follow a runtime language switch.
+   */
+  errorMessages?: ErrorMessageMap | Signal<ErrorMessageMap>;
   /**
    * When set, auto-generated constraint hints are shown (e.g. "8–64 characters").
-   * Contains the resolved formatters (merged with English defaults by `withConstraintHints()`).
-   * `undefined` means disabled.
+   * Contains the resolved formatters (merged with English defaults by `withConstraintHints()`),
+   * as a `Signal` once that feature ran. `undefined` means disabled.
    */
-  constraintHints?: ConstraintHintFormatters;
+  constraintHints?: ConstraintHintFormatters | Signal<ConstraintHintFormatters>;
   /**
    * Maps field names to `autocomplete` attribute values.
    * Merged with built-in defaults by `withAutocompleteMappings()`.
@@ -271,7 +283,8 @@ function resolveFormFieldProviders(features: readonly FormFieldFeature[]): Provi
   const providers: Provider[] = [{ provide: CNGX_FORM_FIELD_CONFIG, useValue: config }];
 
   if (config.errorMessages) {
-    providers.push({ provide: CNGX_ERROR_MESSAGES, useValue: config.errorMessages });
+    const messages = config.errorMessages;
+    providers.push({ provide: CNGX_ERROR_MESSAGES, useFactory: () => coerceSignal(messages) });
   }
 
   return providers;
@@ -328,6 +341,8 @@ export function injectFormFieldConfig(): FormFieldConfig {
  * environment injector (app bootstrap or a route's `providers`), never a
  * component.
  *
+ * Pass a `Signal` to switch the messages at runtime.
+ *
  * ```ts
  * providers: [provideErrorMessages({ required: () => 'Required.' })]
  * ```
@@ -335,8 +350,12 @@ export function injectFormFieldConfig(): FormFieldConfig {
  * @category forms/field
  * @relatedTo provideFormField, withErrorMessages, CNGX_ERROR_MESSAGES
  */
-export function provideErrorMessages(messages: ErrorMessageMap): EnvironmentProviders {
-  return makeEnvironmentProviders([{ provide: CNGX_ERROR_MESSAGES, useValue: messages }]);
+export function provideErrorMessages(
+  messages: ErrorMessageMap | Signal<ErrorMessageMap>,
+): EnvironmentProviders {
+  return makeEnvironmentProviders([
+    { provide: CNGX_ERROR_MESSAGES, useFactory: () => coerceSignal(messages) },
+  ]);
 }
 
 /**
@@ -345,7 +364,8 @@ export function provideErrorMessages(messages: ErrorMessageMap): EnvironmentProv
  * and `CngxFormErrors` resolve messages against it.
  *
  * Merges into any messages already on the config, so later features add to or
- * override earlier ones by `kind`.
+ * override earlier ones by `kind`. Pass a `Signal` to switch the messages at
+ * runtime; the merge then follows it.
  *
  * ```ts
  * provideFormField(withErrorMessages({
@@ -357,8 +377,15 @@ export function provideErrorMessages(messages: ErrorMessageMap): EnvironmentProv
  * @category forms/field
  * @relatedTo provideFormField, provideErrorMessages, CNGX_ERROR_MESSAGES
  */
-export function withErrorMessages(messages: ErrorMessageMap): FormFieldFeature {
-  return { _apply: (c) => ({ ...c, errorMessages: { ...c.errorMessages, ...messages } }) };
+export function withErrorMessages(
+  messages: ErrorMessageMap | Signal<ErrorMessageMap>,
+): FormFieldFeature {
+  return {
+    _apply: (c) => ({
+      ...c,
+      errorMessages: createOverrideMerge(c.errorMessages ?? NO_ERROR_MESSAGES, messages),
+    }),
+  };
 }
 
 /**
@@ -434,9 +461,9 @@ export function withErrorStrategy(strategy: ErrorStrategyName | ErrorStrategyFn)
  * @relatedTo provideFormField, CngxFormFieldPresenter, CngxHint
  */
 export function withConstraintHints(
-  formatters?: Partial<ConstraintHintFormatters>,
+  formatters?: Partial<ConstraintHintFormatters> | Signal<Partial<ConstraintHintFormatters>>,
 ): FormFieldFeature {
-  const resolved: ConstraintHintFormatters = { ...DEFAULT_HINT_FORMATTERS, ...formatters };
+  const resolved = createOverrideMerge(DEFAULT_HINT_FORMATTERS, formatters);
   return { _apply: (c) => ({ ...c, constraintHints: resolved }) };
 }
 

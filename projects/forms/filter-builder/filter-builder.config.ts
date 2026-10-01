@@ -4,8 +4,10 @@ import {
   makeEnvironmentProviders,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
   type Type,
 } from '@angular/core';
+import { createNestedOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxFilterEditorComponent } from './filter-builder-editor.contract';
 import {
@@ -132,7 +134,7 @@ export interface CngxFilterBuilderI18n {
  */
 export interface CngxFilterBuilderConfig {
   readonly templates: CngxFilterBuilderTemplates;
-  readonly i18n: CngxFilterBuilderI18n;
+  readonly i18n: CngxFilterBuilderI18n | Signal<CngxFilterBuilderI18n>;
   readonly maxNestingDepth: number;
   readonly defaultOperators: Readonly<Record<FilterEditorType, readonly string[]>>;
   readonly operators: ReadonlyMap<string, CngxFilterOperatorDef>;
@@ -293,19 +295,16 @@ function feature(
 
 /**
  * Override any subset of the i18n bundle. `operators` is shallow-merged.
+ * Pass a `Signal` to switch the copy at runtime; the merge then follows it.
  *
  * @category forms/filter-builder/config
  */
 export function withFilterBuilderI18n(
-  partial: Partial<CngxFilterBuilderI18n>,
+  partial: Partial<CngxFilterBuilderI18n> | Signal<Partial<CngxFilterBuilderI18n>>,
 ): CngxFilterBuilderConfigFeature {
   return feature((config) => ({
     ...config,
-    i18n: {
-      ...config.i18n,
-      ...partial,
-      operators: { ...config.i18n.operators, ...(partial.operators ?? {}) },
-    },
+    i18n: createNestedOverrideMerge(config.i18n, partial, 'operators'),
   }));
 }
 

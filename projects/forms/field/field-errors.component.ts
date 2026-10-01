@@ -5,6 +5,7 @@ import {
   contentChild,
   inject,
   TemplateRef,
+  untracked,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { CngxFormFieldPresenter } from './form-field-presenter';
@@ -99,17 +100,23 @@ export class CngxFieldErrors {
       return [];
     }
 
-    return errors.map((err, i) => {
-      const fn = this.errorMap[err.kind];
-      return {
-        $implicit: fn ? fn(err) : (err.message ?? err.kind),
-        message: fn ? fn(err) : (err.message ?? err.kind),
-        kind: err.kind,
-        error: err,
-        index: i,
-        first: i === 0,
-        last: i === errors.length - 1,
-      };
+    // Copy is read untracked: a language flip must not re-voice the polite
+    // region; the next error change speaks the new language.
+    return untracked(() => {
+      const map = this.errorMap();
+      return errors.map((err, i) => {
+        const fn = map[err.kind];
+        const message = fn ? fn(err) : (err.message ?? err.kind);
+        return {
+          $implicit: message,
+          message,
+          kind: err.kind,
+          error: err,
+          index: i,
+          first: i === 0,
+          last: i === errors.length - 1,
+        };
+      });
     });
   });
 

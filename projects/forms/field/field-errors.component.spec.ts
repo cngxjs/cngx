@@ -1,10 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CngxFormField } from './form-field.component';
 import { CngxFieldErrors } from './field-errors.component';
-import { CNGX_ERROR_MESSAGES } from './form-field.token';
+import { provideErrorMessages } from './form-field.token';
 import { createMockField, mockValidationError, type MockFieldRef } from './testing/mock-field';
 import type { CngxFieldAccessor, ErrorMessageMap } from './models';
 
@@ -48,13 +48,13 @@ describe('CngxFieldErrors', () => {
   let errorsEl: HTMLElement;
   let ref: MockFieldRef;
 
-  function setup(messages: ErrorMessageMap = ERROR_MESSAGES) {
+  function setup(messages: ErrorMessageMap | Signal<ErrorMessageMap> = ERROR_MESSAGES) {
     const mock = createMockField({ name: 'email' });
     ref = mock.ref;
 
     TestBed.configureTestingModule({
       imports: [TestHost],
-      providers: [{ provide: CNGX_ERROR_MESSAGES, useValue: messages }],
+      providers: [provideErrorMessages(messages)],
     });
     fixture = TestBed.createComponent(TestHost);
     host = fixture.componentInstance;
@@ -206,7 +206,7 @@ describe('CngxFieldErrors', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         imports: [CustomTplHost],
-        providers: [{ provide: CNGX_ERROR_MESSAGES, useValue: ERROR_MESSAGES }],
+        providers: [provideErrorMessages(ERROR_MESSAGES)],
       });
       const fix = TestBed.createComponent(CustomTplHost);
       fix.componentInstance.field.set(mock.accessor);
@@ -225,6 +225,32 @@ describe('CngxFieldErrors', () => {
       expect(items[0].textContent).toContain('required');
       expect(items[0].textContent).toContain('This field is required.');
       expect(items[1].textContent).toContain('email');
+    });
+  });
+
+  // ── Language switch ────────────────────────────────────────────
+
+  describe('language switch', () => {
+    it('does not re-announce on a language flip', () => {
+      const lang = signal<'en' | 'de'>('en');
+      setup(
+        computed<ErrorMessageMap>(() => ({
+          required: () => (lang() === 'de' ? 'Pflichtfeld.' : 'This field is required.'),
+        })),
+      );
+      ref.touched.set(true);
+      ref.invalid.set(true);
+      ref.errors.set([mockValidationError('required')]);
+      fixture.detectChanges();
+      expect(errorsEl.textContent?.trim()).toBe('This field is required.');
+
+      lang.set('de');
+      fixture.detectChanges();
+      expect(errorsEl.textContent?.trim()).toBe('This field is required.');
+
+      ref.errors.set([mockValidationError('required')]);
+      fixture.detectChanges();
+      expect(errorsEl.textContent?.trim()).toBe('Pflichtfeld.');
     });
   });
 });

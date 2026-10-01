@@ -14,6 +14,8 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
 import {
   CNGX_FORM_FIELD_CONFIG,
   DEFAULT_HINT_FORMATTERS,
+  provideFormField,
+  withConstraintHints,
   type ErrorStrategyContext,
   type ErrorStrategyFn,
 } from './form-field.token';
@@ -656,6 +658,36 @@ describe('CngxFormFieldPresenter', () => {
         .injector.get(CngxFormFieldPresenter);
 
       expect(presenter.constraintHints()).toEqual(['18–99']);
+    });
+
+    it('follows a language flip of the hint formatters', () => {
+      const lang = signal<'en' | 'de'>('en');
+      TestBed.configureTestingModule({
+        imports: [TestHost],
+        providers: [
+          provideFormField(
+            withConstraintHints(
+              computed(() =>
+                lang() === 'de'
+                  ? { lengthRange: (min: number, max: number) => `${min} bis ${max} Zeichen` }
+                  : {},
+              ),
+            ),
+          ),
+        ],
+      });
+      const mock = createMockField({ name: 'pw', minLength: 8, maxLength: 64 });
+      fixture = TestBed.createComponent(TestHost);
+      host = fixture.componentInstance;
+      host.field.set(mock.accessor);
+      fixture.detectChanges();
+      presenter = fixture.debugElement
+        .query(By.directive(CngxFormFieldPresenter))
+        .injector.get(CngxFormFieldPresenter);
+      expect(presenter.constraintHints()).toEqual(['8–64 characters']);
+
+      lang.set('de');
+      expect(presenter.constraintHints()).toEqual(['8 bis 64 Zeichen']);
     });
   });
 

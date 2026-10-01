@@ -1,4 +1,6 @@
+import { computed, isSignal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { coerceSignal } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
 import {
   CNGX_ERROR_MESSAGES,
@@ -13,6 +15,7 @@ import {
   withRequiredMarker,
 } from './form-field.token';
 import type { ErrorMessageMap } from './models';
+import { mockValidationError } from './testing/mock-field';
 
 describe('form-field tokens', () => {
   // ── CNGX_ERROR_MESSAGES ────────────────────────────────────────
@@ -21,7 +24,8 @@ describe('form-field tokens', () => {
     it('has an empty object as default', () => {
       TestBed.configureTestingModule({});
       const messages = TestBed.inject(CNGX_ERROR_MESSAGES);
-      expect(messages).toEqual({});
+      expect(isSignal(messages)).toBe(true);
+      expect(messages()).toEqual({});
     });
   });
 
@@ -52,7 +56,7 @@ describe('form-field tokens', () => {
       });
       const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
       expect(config.constraintHints).toBeTruthy();
-      expect(config.constraintHints?.lengthRange(8, 64)).toBe('8–64 characters');
+      expect(coerceSignal(config.constraintHints)()?.lengthRange(8, 64)).toBe('8–64 characters');
     });
 
     it('applies withConstraintHints with custom formatters', () => {
@@ -61,9 +65,10 @@ describe('form-field tokens', () => {
         providers: [provideFormField(withConstraintHints(custom))],
       });
       const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
-      expect(config.constraintHints?.lengthRange(8, 64)).toBe('8 to 64');
+      const hints = coerceSignal(config.constraintHints)();
+      expect(hints?.lengthRange(8, 64)).toBe('8 to 64');
       // Non-overridden formatters fall back to English defaults
-      expect(config.constraintHints?.minLength(8)).toBe('Min. 8 characters');
+      expect(hints?.minLength(8)).toBe('Min. 8 characters');
     });
 
     it('applies withErrorMessages and provides CNGX_ERROR_MESSAGES', () => {
@@ -72,10 +77,10 @@ describe('form-field tokens', () => {
         providers: [provideFormField(withErrorMessages(msgs))],
       });
       const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
-      expect(config.errorMessages).toEqual(msgs);
+      expect(coerceSignal(config.errorMessages)()).toEqual(msgs);
 
       const errorMsgs = TestBed.inject(CNGX_ERROR_MESSAGES);
-      expect(errorMsgs).toEqual(msgs);
+      expect(errorMsgs()).toEqual(msgs);
     });
 
     it('composes multiple features', () => {
@@ -84,7 +89,7 @@ describe('form-field tokens', () => {
         providers: [provideFormField(withErrorMessages(msgs), withConstraintHints())],
       });
       const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
-      expect(config.errorMessages).toEqual(msgs);
+      expect(coerceSignal(config.errorMessages)()).toEqual(msgs);
       expect(config.constraintHints).toBeTruthy();
     });
 
@@ -98,7 +103,69 @@ describe('form-field tokens', () => {
         ],
       });
       const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
-      expect(Object.keys(config.errorMessages!)).toEqual(['required', 'email']);
+      expect(Object.keys(coerceSignal(config.errorMessages)()!)).toEqual(['required', 'email']);
+    });
+
+    it('lets a later withErrorMessages override an earlier kind', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideFormField(
+            withErrorMessages({ required: () => 'Required', email: () => 'Invalid' }),
+            withErrorMessages({ required: () => 'Needed' }),
+          ),
+        ],
+      });
+      const map = TestBed.inject(CNGX_ERROR_MESSAGES)();
+      expect(map['required']?.(mockValidationError('required'))).toBe('Needed');
+      expect(map['email']?.(mockValidationError('email'))).toBe('Invalid');
+    });
+
+    it('follows a Signal passed to withErrorMessages', () => {
+      const lang = signal<'en' | 'de'>('en');
+      const messages = computed(() => ({
+        required: () => (lang() === 'de' ? 'Pflichtfeld' : 'Required'),
+      }));
+      TestBed.configureTestingModule({
+        providers: [
+          provideFormField(
+            withErrorMessages({ email: () => 'Invalid' }),
+            withErrorMessages(messages),
+          ),
+        ],
+      });
+      const map = TestBed.inject(CNGX_ERROR_MESSAGES);
+      expect(map()['required']?.(mockValidationError('required'))).toBe('Required');
+      lang.set('de');
+      expect(map()['required']?.(mockValidationError('required'))).toBe('Pflichtfeld');
+      expect(map()['email']?.(mockValidationError('email'))).toBe('Invalid');
+    });
+
+    it('follows a Signal passed to withConstraintHints and keeps the other defaults', () => {
+      const lang = signal<'en' | 'de'>('en');
+      const formatters = computed(() =>
+        lang() === 'de' ? { lengthRange: (min: number, max: number) => `${min} bis ${max}` } : {},
+      );
+      TestBed.configureTestingModule({
+        providers: [provideFormField(withConstraintHints(formatters))],
+      });
+      const hints = coerceSignal(TestBed.inject(CNGX_FORM_FIELD_CONFIG).constraintHints);
+      expect(hints()?.lengthRange(8, 64)).toBe('8–64 characters');
+      lang.set('de');
+      expect(hints()?.lengthRange(8, 64)).toBe('8 bis 64');
+      expect(hints()?.minLength(8)).toBe('Min. 8 characters');
+    });
+
+    it('keeps the merged messages reference on an equal recompute', () => {
+      const tick = signal(0);
+      const required = () => 'Required';
+      const messages = computed(() => (tick(), { required }));
+      TestBed.configureTestingModule({
+        providers: [provideFormField(withErrorMessages(messages))],
+      });
+      const map = TestBed.inject(CNGX_ERROR_MESSAGES);
+      const first = map();
+      tick.set(1);
+      expect(map()).toBe(first);
     });
 
     it('applies withFieldSkin', () => {
@@ -127,7 +194,17 @@ describe('form-field tokens', () => {
         providers: [provideErrorMessages(msgs)],
       });
       const errorMsgs = TestBed.inject(CNGX_ERROR_MESSAGES);
-      expect(errorMsgs).toEqual(msgs);
+      expect(errorMsgs()).toEqual(msgs);
+    });
+
+    it('follows a Signal map', () => {
+      const msgs = signal<ErrorMessageMap>({ required: () => 'Required' });
+      TestBed.configureTestingModule({
+        providers: [provideErrorMessages(msgs)],
+      });
+      const errorMsgs = TestBed.inject(CNGX_ERROR_MESSAGES);
+      msgs.set({ required: () => 'Pflichtfeld' });
+      expect(errorMsgs()['required']?.(mockValidationError('required'))).toBe('Pflichtfeld');
     });
   });
 
@@ -148,7 +225,7 @@ describe('form-field tokens', () => {
       TestBed.configureTestingModule({
         providers: [provideFormFieldAt(withErrorMessages(msgs))],
       });
-      expect(TestBed.inject(CNGX_ERROR_MESSAGES)).toEqual(msgs);
+      expect(TestBed.inject(CNGX_ERROR_MESSAGES)()).toEqual(msgs);
     });
 
     it('shadows an app-wide provideFormField rather than merging into it', () => {

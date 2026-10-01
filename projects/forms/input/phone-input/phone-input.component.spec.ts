@@ -1,4 +1,4 @@
-import { Component, LOCALE_ID, viewChild } from '@angular/core';
+import { Component, LOCALE_ID, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CngxFormField } from '@cngx/forms/field';
@@ -539,6 +539,53 @@ describe('CngxPhoneInput', () => {
     it.runIf(FULL_ICU)('names the countries in CNGX_LOCALE', () => {
       TestBed.configureTestingModule({ providers: [provideLocale('de')] });
       expect(labelFor('AT')).toBe('+43 Österreich');
+    });
+
+    it.runIf(FULL_ICU)('relabels the unbound list on a locale flip and keeps the country region', () => {
+      const locale = signal('en-US');
+      TestBed.configureTestingModule({ providers: [provideLocale(locale)] });
+      const fixture = TestBed.createComponent(BareHost);
+      fixture.detectChanges();
+      const select = fixture.debugElement.query(By.directive(CngxSelect))
+        .componentInstance as CngxSelect<Country>;
+      const phone = fixture.componentInstance.phone();
+      const before = phone.country();
+      const labelOf = (region: string) => {
+        const option = (select.options() ?? []).find(
+          (o) => 'value' in o && (o.value as Country).region === region,
+        );
+        return option && 'label' in option ? option.label : undefined;
+      };
+      expect(labelOf('AT')).toBe('+43 Austria');
+
+      locale.set('de');
+      fixture.detectChanges();
+      expect(labelOf('AT')).toBe('+43 Österreich');
+      expect(phone.country()).toBe(before);
+      expect(select.value()?.region).toBe(before.region);
+      expect(select.value()).toBe(createPhoneCountries('de').find((c) => c.region === before.region));
+    });
+
+    it('keeps a bound [countries] list on a locale flip', () => {
+      const locale = signal('en-US');
+      TestBed.configureTestingModule({ providers: [provideLocale(locale)] });
+      const localized: readonly Country[] = [{ region: 'AT', dialCode: '+43', label: 'Österreich' }];
+
+      @Component({
+        template: `<cngx-phone-input [countries]="countries" />`,
+        imports: [CngxPhoneInput],
+      })
+      class ListHost {
+        readonly countries = localized;
+      }
+
+      const fixture = TestBed.createComponent(ListHost);
+      fixture.detectChanges();
+      locale.set('de');
+      fixture.detectChanges();
+      const select = fixture.debugElement.query(By.directive(CngxSelect))
+        .componentInstance as CngxSelect<Country>;
+      expect(select.value()).toBe(localized[0]);
     });
   });
 });

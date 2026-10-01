@@ -8,6 +8,7 @@ import {
   input,
   untracked,
 } from '@angular/core';
+import { coerceSignal } from '@cngx/core/utils';
 
 import { injectFilterBuilderConfig } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
@@ -64,7 +65,8 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
 })
 export class CngxFilterBuilderBody {
   protected readonly host = inject(CNGX_FILTER_BUILDER_HOST);
-  protected readonly config = injectFilterBuilderConfig();
+  private readonly config = injectFilterBuilderConfig();
+  protected readonly i18n = coerceSignal(this.config.i18n);
 
   readonly templates = input.required<CngxFilterBuilderTemplateRegistry>();
 
@@ -108,7 +110,7 @@ export class CngxFilterBuilderBody {
   protected addFilterButtonContext(path: readonly number[]): AddFilterButtonCtx {
     return {
       add: () => this.addFilterAt(path),
-      label: this.config.i18n.addFilter,
+      label: this.i18n().addFilter,
       disabled: false,
     };
   }
@@ -116,7 +118,7 @@ export class CngxFilterBuilderBody {
   protected addGroupButtonContext(path: readonly number[]): AddGroupButtonCtx {
     return {
       add: () => this.addGroupAt(path),
-      label: this.config.i18n.addGroup,
+      label: this.i18n().addGroup,
       disabled: !this.canAddGroupAt(path),
     };
   }
@@ -145,7 +147,7 @@ export class CngxFilterBuilderBody {
     return {
       negated: group.negated,
       toggle: () => this.host.toggleNegated(path),
-      label: this.config.i18n.negate,
+      label: this.i18n().negate,
     };
   }
 
@@ -253,6 +255,6 @@ export class CngxFilterBuilderBody {
   }
 
   protected logicJoinerLabel(logic: FilterLogic): string {
-    return this.config.i18n[logic];
+    return this.i18n()[logic];
   }
 }

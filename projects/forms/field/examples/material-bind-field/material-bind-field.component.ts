@@ -9,7 +9,8 @@ import {
   CngxFieldErrors,
   CngxBindField,
   adaptFormControl,
-  CNGX_ERROR_MESSAGES,
+  provideFormFieldAt,
+  withErrorMessages,
 } from '@cngx/forms/field';
 
 /**
@@ -30,7 +31,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ReactiveFormsModule, MatSelectModule, CngxFormField, CngxLabel, CngxFieldErrors, CngxBindField],
-  providers: [{ provide: CNGX_ERROR_MESSAGES, useValue: { required: () => 'Please choose a size' } }],
+  providers: [provideFormFieldAt(withErrorMessages({ required: () => 'Please choose a size' }))],
   styleUrl: './material-bind-field.component.scss',
   template: `
     <div class="demo">

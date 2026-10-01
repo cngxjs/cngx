@@ -10,7 +10,7 @@ import {
   type Signal,
 } from '@angular/core';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
-import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
+import { DEFAULT_INPUT_ARIA_LABELS, injectInputAriaLabels } from './input-config';
 
 /**
  * Marks a single input slot within a `[cngxOtpInput]` container.
@@ -54,11 +54,11 @@ export class CngxOtpSlot {
   readonly index = input.required<number>({ alias: 'cngxOtpSlot' });
 
   private readonly parent = inject(CngxOtpInput);
-  private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly ariaLabels = injectInputAriaLabels();
 
   /** Per-slot accessible label, e.g. `'Digit 1 of 6'`. Config-driven, EN default. */
   protected readonly slotLabel = computed(() => {
-    const factory = this.config.ariaLabels?.otpSlot ?? DEFAULT_INPUT_ARIA_LABELS.otpSlot;
+    const factory = this.ariaLabels().otpSlot ?? DEFAULT_INPUT_ARIA_LABELS.otpSlot;
     return factory(this.index(), this.parent.length());
   });
 
@@ -178,7 +178,7 @@ export class CngxOtpInput {
   /** Input type for each slot: `'text'` (default), `'number'` (numeric keyboard), or `'password'` (masked). */
   readonly inputType = input<'text' | 'number' | 'password'>('text');
 
-  private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly ariaLabels = injectInputAriaLabels();
   private readonly announcer = inject(CngxLiveAnnouncer);
 
   private readonly slots = contentChildren(CngxOtpSlot);
@@ -186,7 +186,7 @@ export class CngxOtpInput {
 
   /** Group label announcing the boxes as one control. Config-driven, EN default. */
   protected readonly groupLabel = computed(
-    () => this.config.ariaLabels?.otpGroup ?? DEFAULT_INPUT_ARIA_LABELS.otpGroup,
+    () => this.ariaLabels().otpGroup ?? DEFAULT_INPUT_ARIA_LABELS.otpGroup,
   );
 
   /** Array of indices for `@for` rendering. */
@@ -271,9 +271,7 @@ export class CngxOtpInput {
 
   /** Announces OTP completion to assistive tech. Config-driven, EN default. */
   private announceComplete(): void {
-    this.announcer.announce(
-      this.config.ariaLabels?.otpComplete ?? DEFAULT_INPUT_ARIA_LABELS.otpComplete,
-    );
+    this.announcer.announce(this.ariaLabels().otpComplete ?? DEFAULT_INPUT_ARIA_LABELS.otpComplete);
   }
 
   /** Focuses the input at the given index. */

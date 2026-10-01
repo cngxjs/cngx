@@ -1,10 +1,11 @@
-import { Component, computed, signal, viewChild } from '@angular/core';
+import { Component, computed, signal, viewChild, type EnvironmentProviders } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import type { FilterFieldDef, FilterGroup, FilterNode } from './filter-builder.types';
 import { CNGX_FILTER_BUILDER_HOST, type CngxFilterBuilderHost } from './filter-builder-host.token';
 import { CngxFilterExpression } from './filter-builder-expression.directive';
+import { provideFilterBuilderConfig, withFilterBuilderI18n } from './filter-builder.config';
 
 const FIELD_NAME: FilterFieldDef = { key: 'name', label: 'Name', editorType: 'string' };
 const FIELD_AGE: FilterFieldDef = { key: 'age', label: 'Age', editorType: 'number' };
@@ -72,9 +73,13 @@ function setup(
   initial: FilterGroup,
   fieldList: readonly FilterFieldDef[],
   path: readonly number[] = [0],
+  extraProviders: EnvironmentProviders[] = [],
 ): { directive: CngxFilterExpression } {
   TestBed.configureTestingModule({
-    providers: [{ provide: CNGX_FILTER_BUILDER_HOST, useValue: buildMockHost(initial, fieldList) }],
+    providers: [
+      { provide: CNGX_FILTER_BUILDER_HOST, useValue: buildMockHost(initial, fieldList) },
+      ...extraProviders,
+    ],
   });
   const fixture = TestBed.createComponent(Host);
   fixture.componentInstance.path.set(path);
@@ -144,6 +149,27 @@ describe('CngxFilterExpression', () => {
     };
     const { directive } = setup(tree, [FIELD_NAME]);
     expect(directive.expressionLabel()).toBe('Filter: Name Contains');
+  });
+
+  it('follows a language flip of the operator label in expressionLabel', () => {
+    const lang = signal<'en' | 'de'>('en');
+    const tree: FilterGroup = {
+      type: 'group',
+      id: 'root',
+      logic: 'and',
+      negated: false,
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'contains', value: 'foo' }],
+    };
+    const { directive } = setup(tree, [FIELD_NAME], [0], [
+      provideFilterBuilderConfig(
+        withFilterBuilderI18n(
+          computed(() => (lang() === 'de' ? { operators: { contains: 'Enthält' } } : {})),
+        ),
+      ),
+    ]);
+    expect(directive.expressionLabel()).toBe('Filter: Name Contains');
+    lang.set('de');
+    expect(directive.expressionLabel()).toBe('Filter: Name Enthält');
   });
 
   it('returns null node when path addresses a group instead of an expression', () => {

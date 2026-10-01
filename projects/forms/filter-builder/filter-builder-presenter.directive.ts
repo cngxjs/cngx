@@ -13,7 +13,7 @@ import {
   untracked,
   type Signal,
 } from '@angular/core';
-import { injectLocale, nextUid } from '@cngx/core/utils';
+import { coerceSignal, injectLocale, nextUid } from '@cngx/core/utils';
 import { CngxFormFieldPresenter, type CngxFormFieldControl } from '@cngx/forms/field';
 
 import type {
@@ -90,7 +90,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   private readonly announcer = this.announcerFactory<TValue>({
     lastMutation: this.lastMutation,
     fieldMap: this.fieldMap,
-    i18n: this.config.i18n,
+    i18n: coerceSignal(this.config.i18n),
     locale: injectLocale(),
     operators: this.config.operators,
   });

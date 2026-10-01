@@ -10,7 +10,11 @@ import {
   type Signal,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
+import {
+  CNGX_INPUT_CONFIG,
+  DEFAULT_INPUT_ARIA_LABELS,
+  injectInputAriaLabels,
+} from './input-config';
 
 /**
  * Describes a file that was rejected during drop/browse validation.
@@ -90,6 +94,7 @@ export class CngxFileDrop {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly ariaLabels = injectInputAriaLabels();
 
   /** Accepted MIME types (e.g. `'image/*'`, `'.pdf'`). Empty = all. */
   readonly accept = input<string[]>([]);
@@ -114,7 +119,8 @@ export class CngxFileDrop {
   readonly ariaLabel = input<string | undefined>(undefined);
 
   protected readonly resolvedAriaLabel = computed(
-    () => this.ariaLabel() ?? this.config.ariaLabels?.fileDropZone ?? DEFAULT_INPUT_ARIA_LABELS.fileDropZone,
+    () =>
+      this.ariaLabel() ?? this.ariaLabels().fileDropZone ?? DEFAULT_INPUT_ARIA_LABELS.fileDropZone,
   );
 
   /**
@@ -266,10 +272,8 @@ export class CngxFileDrop {
     const overflow: FileRejection[] = fresh.slice(room).map((file) => ({ file, reason: 'count' }));
 
     const nextFiles = [...retainedFiles, ...accepted];
-    const nextRejected = this.mergeUnique(
-      retainedRejected,
-      [...rejected, ...overflow],
-      (r) => fileKey(r.file),
+    const nextRejected = this.mergeUnique(retainedRejected, [...rejected, ...overflow], (r) =>
+      fileKey(r.file),
     );
 
     this.filesState.set(nextFiles);
@@ -283,7 +287,11 @@ export class CngxFileDrop {
     }
   }
 
-  private mergeUnique<T>(existing: readonly T[], incoming: readonly T[], keyOf: (item: T) => string): T[] {
+  private mergeUnique<T>(
+    existing: readonly T[],
+    incoming: readonly T[],
+    keyOf: (item: T) => string,
+  ): T[] {
     const seen = new Set(existing.map(keyOf));
     const merged = [...existing];
     for (const item of incoming) {

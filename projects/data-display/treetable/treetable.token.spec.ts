@@ -1,5 +1,6 @@
-import { Injector } from '@angular/core';
+import { computed, Injector, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { coerceSignal } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -46,9 +47,26 @@ describe('CNGX_TREETABLE_CONFIG cascade', () => {
         ),
       ],
     });
-    expect(injectConfig()).toEqual({
-      labels: { loading: 'Loading rows', emptyFallback: 'Nothing here' },
+    expect(coerceSignal(injectConfig().labels)()).toEqual({
+      loading: 'Loading rows',
+      emptyFallback: 'Nothing here',
     });
+  });
+
+  it('withTreetableLabels follows a Signal and keeps the earlier keys', () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideTreetable(
+          withTreetableLabels({ emptyFallback: 'Nothing here' }),
+          withTreetableLabels(computed(() => (lang() === 'de' ? { loading: 'Lädt' } : {}))),
+        ),
+      ],
+    });
+    const labels = coerceSignal(injectConfig().labels);
+    expect(labels()?.loading).toBeUndefined();
+    lang.set('de');
+    expect(labels()).toEqual({ emptyFallback: 'Nothing here', loading: 'Lädt' });
   });
 
   it('folds features left to right - the later feature wins on the same key', () => {

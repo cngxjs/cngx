@@ -13,9 +13,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { coerceSignal } from '@cngx/core/utils';
 import { CngxFormFieldPresenter } from '@cngx/forms/field';
-import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
+import { DEFAULT_INPUT_ARIA_LABELS, injectInputAriaLabels } from './input-config';
 
 /**
  * Live character counter for text inputs inside a `cngx-form-field`.
@@ -78,7 +77,7 @@ export class CngxCharCount {
   private readonly presenter = inject(CngxFormFieldPresenter);
   private readonly el = inject(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly config = coerceSignal(inject(CNGX_INPUT_CONFIG));
+  private readonly ariaLabels = injectInputAriaLabels();
 
   /** Optional custom template. */
   protected readonly customTpl = contentChild<TemplateRef<CngxCharCountContext>>(TemplateRef);
@@ -134,15 +133,15 @@ export class CngxCharCount {
 
   /** @internal - default readout text, `null` when neither max nor min applies. */
   protected readonly readout = computed(() => {
-    const labels = this.config().ariaLabels;
+    const labels = this.ariaLabels();
     const current = this.currentLength();
     const max = this.resolvedMax();
     if (max != null) {
-      return (labels?.charCountMax ?? DEFAULT_INPUT_ARIA_LABELS.charCountMax)(current, max);
+      return (labels.charCountMax ?? DEFAULT_INPUT_ARIA_LABELS.charCountMax)(current, max);
     }
     const min = this.resolvedMin();
     if (min != null) {
-      return (labels?.charCountMin ?? DEFAULT_INPUT_ARIA_LABELS.charCountMin)(current, min);
+      return (labels.charCountMin ?? DEFAULT_INPUT_ARIA_LABELS.charCountMin)(current, min);
     }
     return null;
   });

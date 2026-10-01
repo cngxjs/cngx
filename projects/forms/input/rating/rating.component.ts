@@ -20,7 +20,7 @@ import {
   createFieldSync,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
-import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from '../input-config';
+import { DEFAULT_INPUT_ARIA_LABELS, injectInputAriaLabels } from '../input-config';
 import { CngxRatingItem, type CngxRatingItemContext } from './rating-item.directive';
 
 /**
@@ -149,7 +149,7 @@ export class CngxRating implements CngxFormFieldControl {
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
-  private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly ariaLabels = injectInputAriaLabels();
   private readonly announcer = inject(CngxLiveAnnouncer);
   private readonly roving = viewChild(CngxRovingTabindex);
 
@@ -251,7 +251,7 @@ export class CngxRating implements CngxFormFieldControl {
    */
   protected readonly itemLabels = computed<string[]>(
     () => {
-      const factory = this.config.ariaLabels?.ratingItem ?? DEFAULT_INPUT_ARIA_LABELS.ratingItem;
+      const factory = this.ariaLabels().ratingItem ?? DEFAULT_INPUT_ARIA_LABELS.ratingItem;
       const max = this.max();
       return this.steps().map((step) => factory(step, max));
     },
@@ -313,7 +313,7 @@ export class CngxRating implements CngxFormFieldControl {
       return;
     }
     this.value.set(step);
-    const factory = this.config.ariaLabels?.ratingValue ?? DEFAULT_INPUT_ARIA_LABELS.ratingValue;
+    const factory = this.ariaLabels().ratingValue ?? DEFAULT_INPUT_ARIA_LABELS.ratingValue;
     this.announcer.announce(factory(step, this.max()));
   }
 }

@@ -9,7 +9,11 @@ import {
   type Signal,
 } from '@angular/core';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
-import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
+import {
+  CNGX_INPUT_CONFIG,
+  DEFAULT_INPUT_ARIA_LABELS,
+  injectInputAriaLabels,
+} from './input-config';
 
 /**
  * Clipboard copy behavior for input fields, tokens, API keys.
@@ -46,6 +50,7 @@ import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
 export class CngxCopyValue {
   private readonly destroyRef = inject(DestroyRef);
   private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly ariaLabels = injectInputAriaLabels();
   private readonly announcer = inject(CngxLiveAnnouncer);
 
   /** The value to copy. Falls back to `source` element's value if not provided. */
@@ -97,7 +102,7 @@ export class CngxCopyValue {
 
       this.copiedState.set(true);
       this.announcer.announce(
-        this.config.ariaLabels?.copySuccess ?? DEFAULT_INPUT_ARIA_LABELS.copySuccess,
+        this.ariaLabels().copySuccess ?? DEFAULT_INPUT_ARIA_LABELS.copySuccess,
       );
       this.didCopy.emit(text);
 
@@ -118,7 +123,7 @@ export class CngxCopyValue {
       // Clipboard write failed (permission denied, etc.). Announce assertively
       // so the failure is not a silent state change (Pillar 2).
       this.announcer.announce(
-        this.config.ariaLabels?.copyError ?? DEFAULT_INPUT_ARIA_LABELS.copyError,
+        this.ariaLabels().copyError ?? DEFAULT_INPUT_ARIA_LABELS.copyError,
         'assertive',
       );
     }

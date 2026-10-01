@@ -94,9 +94,35 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxActionSelectConfig.ariaLabel` and `CngxReorderableSelectConfig.ariaLabel` accept a `string` or a `Signal<string>`, and `withActionAriaLabel` / `withReorderAriaLabel` accept either. `injectActionSelectConfig().ariaLabel` and `injectReorderableSelectConfig().ariaLabel` are now `Signal<string>`: `config.ariaLabel` becomes `config.ariaLabel()`, read where the label is rendered. Code that reads the key off `CNGX_ACTION_SELECT_CONFIG` / `CNGX_REORDERABLE_SELECT_CONFIG` wraps it in `coerceSignal(...)`.
 - The copy inputs `clearButtonAriaLabel` (every select component), `chipRemoveAriaLabel` (`CngxMultiSelect`, `CngxCombobox`, `CngxTreeSelect`, `CngxReorderableMultiSelect`, `CngxActionMultiSelect`), `twistyExpandLabel` / `twistyCollapseLabel` (`CngxTreeSelect`), `reorderAriaLabel` (`CngxReorderableMultiSelect`) and `CngxSelectSearch.placeholder` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `CNGX_SELECT_CONFIG` default. Template bindings are unchanged; the rendered label follows a language switch while the input is unbound. Code that reads the input programmatically (`select.clearButtonAriaLabel()`) gets `undefined` when nothing is bound; read the rendered `aria-label` instead.
 
+### @cngx/forms/field
+
+- `CNGX_ERROR_MESSAGES` is now `InjectionToken<Signal<ErrorMessageMap>>`. Call the Signal where you read a message, inside a `computed()`, a template or a handler: `inject(CNGX_ERROR_MESSAGES)[kind]` becomes `inject(CNGX_ERROR_MESSAGES)()[kind]`.
+- A direct `{ provide: CNGX_ERROR_MESSAGES, useValue: map }` must supply a Signal. Prefer `provideErrorMessages(map)` at an environment injector, or `provideFormFieldAt(withErrorMessages(map))` on a component. `provideErrorMessages` and `withErrorMessages` now also accept a `Signal<ErrorMessageMap>` for runtime switching; `withErrorMessages` still merges key by key across features.
+- `FormFieldConfig.errorMessages` and `.constraintHints` are typed `T | Signal<T>`, and once `withErrorMessages` / `withConstraintHints` ran they hold a `Signal`. Code that reads them off `injectFormFieldConfig()` or `CNGX_FORM_FIELD_CONFIG` wraps the key once, in a field: `private readonly hints = coerceSignal(injectFormFieldConfig().constraintHints);` (`coerceSignal` from `@cngx/core/utils`), then `this.hints()?.lengthRange(8, 64)` inside a `computed()`, a template or a handler. `withConstraintHints` now also accepts a `Signal<Partial<ConstraintHintFormatters>>`; unset formatters keep the English defaults.
+
+### @cngx/forms/input
+
+- `InputConfig.ariaLabels` is typed `Partial<InputAriaLabels> | Signal<Partial<InputAriaLabels>>`, and once `withInputAriaLabels` ran it holds a `Signal`. Code that reads it off `injectInputConfig()` or `CNGX_INPUT_CONFIG` wraps the key once, in a field: with a module-level `const NO_LABELS: Partial<InputAriaLabels> = {};`, write `private readonly labels = coerceSignal(injectInputConfig().ariaLabels ?? NO_LABELS);` (`coerceSignal` from `@cngx/core/utils`) and read `this.labels().clear ?? DEFAULT_INPUT_ARIA_LABELS.clear` inside a `computed()`, a template or a handler. `withInputAriaLabels` now also accepts a `Signal<Partial<InputAriaLabels>>`; plain partials still merge key by key across features.
+- `InputConfig.numericLocale` is typed `string | Signal<string>`. Code that reads it off the config wraps it the same way: `coerceSignal(injectInputConfig().numericLocale)()`. `withNumericDefaults({ locale })` and `withCurrency({ locale })` now also accept a `Signal<string>`; `CngxNumericInput` follows a switch while blurred and applies it on blur while focused, as it already does for `CNGX_LOCALE`.
+- `CngxPhoneInput.countries` is now `input<readonly Country[] | undefined>`, and an unbound input reads `undefined` instead of the built-in list named in the construction-time locale. Template bindings are unchanged. Unbound, the picker lists the built-in regions named in the live `CNGX_LOCALE` and relabels them on a switch; code that read the list programmatically (`phone.countries()`) gets `undefined` and reads the picker's options instead. `country` keeps its construction-time default object; the picker still shows the live-locale row with the same region.
+
+### @cngx/forms/filter-builder
+
+- `CngxFilterBuilderConfig.i18n` is typed `CngxFilterBuilderI18n | Signal<CngxFilterBuilderI18n>`, and once `withFilterBuilderI18n` ran it holds a `Signal`. Code that reads it off `injectFilterBuilderConfig()`, `CNGX_FILTER_BUILDER_CONFIG` or `CNGX_FILTER_BUILDER_DEFAULTS` wraps the key once, in a field: `private readonly i18n = coerceSignal(injectFilterBuilderConfig().i18n);` (`coerceSignal` from `@cngx/core/utils`), then `this.i18n().addFilter` inside a `computed()`, a template or a handler. A hand-written `CngxFilterBuilderConfigFeature` that spreads `config.i18n` merges through `createNestedOverrideMerge(config.i18n, overrides, 'operators')` instead, which keeps the per-operator merge.
+- `withFilterBuilderI18n` now also accepts a `Signal<Partial<CngxFilterBuilderI18n>>` for runtime switching. Plain partials keep their merge rules: top-level keys and `operators` merge key by key across features, `announcement` is replaced as a whole.
+- `CngxFilterBuilderAnnouncerSources.i18n` is now `Signal<CngxFilterBuilderI18n>`. A custom `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY` reads it as `sources.i18n()`, inside `untracked` where it builds the live-region text, so a language switch does not re-speak the last mutation.
+
+### @cngx/data-display/treetable
+
+- `TreetableConfig.labels` is typed `Partial<TreetableLabels> | Signal<Partial<TreetableLabels>>`, and once `withTreetableLabels` ran it holds a `Signal`. Code that reads it off `CNGX_TREETABLE_CONFIG` wraps the key once, in a field: with a module-level `const NO_LABELS: Partial<TreetableLabels> = {};`, write `private readonly labels = coerceSignal(inject(CNGX_TREETABLE_CONFIG).labels ?? NO_LABELS);` (`coerceSignal` from `@cngx/core/utils`) and read `this.labels().loading` inside a `computed()`, a template or a handler. `withTreetableLabels` now also accepts a `Signal<Partial<TreetableLabels>>`; plain partials still merge key by key across features.
+
 ---
 
 ## Behaviour changes
+
+### All libraries
+
+- A live region keeps its text when the language switches, and speaks the new language with its next status change. This also holds when a consumer formatter reads a language Signal itself, such as `withErrorMessages({ required: () => translate('required') })` or a `format` function on a select announcer or a stepper count: CNGX now calls these formatters untracked inside the live region, so a switch no longer re-renders the region at once. Shown validation messages in `cngx-field-errors` and `cngx-form-errors` therefore stay in the old language until the field's errors change. Labels outside live regions follow the switch immediately.
 
 ### @cngx/forms/select
 
