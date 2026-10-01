@@ -1,4 +1,4 @@
-import { Injector, runInInjectionContext } from '@angular/core';
+import { Injector, runInInjectionContext, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -19,7 +19,7 @@ describe('provideActionSelectConfig', () => {
       resolveActionSelectConfig(),
     );
     expect(resolved.focusTrapBehavior).toBe('dirty');
-    expect(resolved.ariaLabel).toBe('Inline action');
+    expect(resolved.ariaLabel()).toBe('Inline action');
   });
 
   it('merges withFocusTrapBehavior + withActionAriaLabel app-wide', () => {
@@ -36,7 +36,7 @@ describe('provideActionSelectConfig', () => {
       resolveActionSelectConfig(),
     );
     expect(resolved.focusTrapBehavior).toBe('always');
-    expect(resolved.ariaLabel).toBe('Quick action');
+    expect(resolved.ariaLabel()).toBe('Quick action');
   });
 
   it('honours provideActionSelectConfigAt in component-scoped providers', () => {
@@ -52,7 +52,7 @@ describe('provideActionSelectConfig', () => {
     );
     expect(resolved.focusTrapBehavior).toBe('never');
     // Unspecified keys still fall back to library defaults.
-    expect(resolved.ariaLabel).toBe('Inline action');
+    expect(resolved.ariaLabel()).toBe('Inline action');
   });
 });
 
@@ -63,7 +63,25 @@ describe('injectActionSelectConfig', () => {
       providers: [provideActionSelectConfig(withActionAriaLabel('Quick action'))],
     });
     const resolved = TestBed.runInInjectionContext(() => injectActionSelectConfig());
-    expect(resolved.ariaLabel).toBe('Quick action');
+    expect(resolved.ariaLabel()).toBe('Quick action');
     expect(resolved.focusTrapBehavior).toBe('dirty');
+  });
+});
+
+describe('resolveActionSelectConfig - runtime language switch', () => {
+  it('follows a Signal of ariaLabel', () => {
+    const label = signal('Reorder');
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideActionSelectConfig(withActionAriaLabel(label))] });
+    const resolved = TestBed.runInInjectionContext(() => resolveActionSelectConfig());
+    label.set('Neu anordnen');
+    expect(resolved.ariaLabel()).toBe('Neu anordnen');
+  });
+
+  it('shares one Signal for equal plain labels', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideActionSelectConfig(withActionAriaLabel('Reorder'))] });
+    const [a, b] = TestBed.runInInjectionContext(() => [resolveActionSelectConfig(), resolveActionSelectConfig()]);
+    expect(a.ariaLabel).toBe(b.ariaLabel);
   });
 });

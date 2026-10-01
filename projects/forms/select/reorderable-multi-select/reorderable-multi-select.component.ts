@@ -272,7 +272,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * ARIA label on the chip-strip region. Announced when the user tabs
    * in so they understand they've entered a reorderable widget.
    */
-  readonly reorderAriaLabel = input<string>(this.reorderableConfig.ariaLabel);
+  readonly reorderAriaLabel = input<string>(this.reorderableConfig.ariaLabel());
 
   /**
    * Optional drag-handle template. By default no grip renders and the

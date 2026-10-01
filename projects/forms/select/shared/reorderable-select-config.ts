@@ -4,10 +4,12 @@ import {
   makeEnvironmentProviders,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
   type TemplateRef,
 } from '@angular/core';
 
 import type { CngxReorderModifier } from '@cngx/common/interactive';
+import { coerceSignal } from '@cngx/core/utils';
 
 /**
  * App-wide config for reorder-aware select variants. Cascade:
@@ -19,8 +21,8 @@ import type { CngxReorderModifier } from '@cngx/common/interactive';
 export interface CngxReorderableSelectConfig {
   /** Forwarded to inner `CngxReorder`. Default `'alt'`. */
   readonly keyboardModifier?: CngxReorderModifier;
-  /** ARIA label on the chip-strip `role="group"`. Localisation hook. */
-  readonly ariaLabel?: string;
+  /** ARIA label on the chip-strip `role="group"`, value or `Signal`. Localisation hook. */
+  readonly ariaLabel?: string | Signal<string>;
   /**
    * Drag-handle glyph. `null` keeps the six-dot grip. Per-instance
    * `[chipDragHandle]` wins.
@@ -35,8 +37,8 @@ export interface CngxReorderableSelectConfig {
 
 /** Library defaults. Required-shape so resolution stays `??`-friendly. @internal */
 export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
-  Omit<CngxReorderableSelectConfig, 'dragHandle'>
-> & { readonly dragHandle: TemplateRef<void> | null } = {
+  Omit<CngxReorderableSelectConfig, 'dragHandle' | 'ariaLabel'>
+> & { readonly dragHandle: TemplateRef<void> | null; readonly ariaLabel: string } = {
   keyboardModifier: 'alt',
   ariaLabel: 'Reorder with Alt + arrow keys',
   dragHandle: null,
@@ -96,11 +98,14 @@ export function withReorderKeyboardModifier(
 }
 
 /**
- * Sets the chip-strip ARIA label.
+ * Sets the chip-strip ARIA label. Pass a `Signal` to follow a runtime
+ * language switch.
  *
  * @category forms/select/reorderable-multi-select
  */
-export function withReorderAriaLabel(label: string): CngxReorderableSelectConfigFeature {
+export function withReorderAriaLabel(
+  label: string | Signal<string>,
+): CngxReorderableSelectConfigFeature {
   return feature({ ariaLabel: label });
 }
 
@@ -175,16 +180,18 @@ export function provideReorderableSelectConfigAt(
 
 /**
  * Effective config for the current injector. Injection context required.
+ * `ariaLabel` is a `Signal`, read where the label is rendered so a runtime
+ * language switch reaches it.
  *
  * @internal
  */
 export function resolveReorderableSelectConfig(): Required<
-  Omit<CngxReorderableSelectConfig, 'dragHandle'>
-> & { readonly dragHandle: TemplateRef<void> | null } {
+  Omit<CngxReorderableSelectConfig, 'dragHandle' | 'ariaLabel'>
+> & { readonly dragHandle: TemplateRef<void> | null; readonly ariaLabel: Signal<string> } {
   const user = inject(CNGX_REORDERABLE_SELECT_CONFIG, { optional: true }) ?? {};
   return {
     keyboardModifier: user.keyboardModifier ?? CNGX_REORDERABLE_SELECT_DEFAULTS.keyboardModifier,
-    ariaLabel: user.ariaLabel ?? CNGX_REORDERABLE_SELECT_DEFAULTS.ariaLabel,
+    ariaLabel: coerceSignal(user.ariaLabel ?? CNGX_REORDERABLE_SELECT_DEFAULTS.ariaLabel),
     dragHandle:
       user.dragHandle === undefined ? CNGX_REORDERABLE_SELECT_DEFAULTS.dragHandle : user.dragHandle,
     freezeStripOnCommit:

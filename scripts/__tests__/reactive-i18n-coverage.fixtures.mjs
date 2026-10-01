@@ -981,20 +981,6 @@ export const RATCHET = [
     closesIn: 4,
   },
   {
-    file: 'projects/forms/select/shared/action-select-config.ts',
-    member: 'resolveActionSelectConfig',
-    rule: 'R3',
-    token: 'CNGX_ACTION_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
-    file: 'projects/forms/select/shared/reorderable-select-config.ts',
-    member: 'resolveReorderableSelectConfig',
-    rule: 'R3',
-    token: 'CNGX_REORDERABLE_SELECT_CONFIG',
-    closesIn: 4,
-  },
-  {
     file: 'projects/forms/select/single-select/select.component.ts',
     member: 'CngxSelect.clearButtonAriaLabel',
     rule: 'R1',
@@ -1731,7 +1717,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 160;
+export const RATCHET_CEILING = 158;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 3;
