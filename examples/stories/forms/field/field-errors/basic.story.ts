@@ -11,11 +11,11 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: ['CngxFieldErrors', 'CngxFormField', 'CngxLabel'],
   moduleImports: [
-    'import { form, schema, required } from \'@angular/forms/signals\';',
+    'import { form, schema, required, FormField } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxFieldErrors } from \'@cngx/forms/field\';',
     'import { CngxInput } from \'@cngx/forms/input\';',
   ],
-  imports: ['FormsModule', 'CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxInput'],
+  imports: ['FormField', 'CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxInput'],
   references: [
     { label: 'WCAG 3.3.1 Error Identification', href: 'https://www.w3.org/WAI/WCAG21/Understanding/error-identification.html' },
   ],
@@ -32,7 +32,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:16px;max-width:360px">
     <cngx-form-field [field]="profile.email">
       <label cngxLabel>Email</label>
-      <input cngxInput type="email" [(ngModel)]="profile.email().value" />
+      <input cngxInput type="email" [formField]="profile.email" />
       <cngx-field-errors />
     </cngx-form-field>
   </div>`,
