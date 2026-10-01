@@ -219,4 +219,40 @@ test.describe('live language switch', () => {
     await input.fill('abc');
     await expect(errors).toHaveText('Mindestens 6 Zeichen.');
   });
+
+  test('feedback and paginator copy switch labels at once and keep a spoken page change', async ({
+    page,
+  }) => {
+    const route = 'core/i18n/language-pack/live-switch-ui-a';
+    expect(routesIn('core', 'i18n', 'language-pack').map((r) => r.path)).toContain(route);
+    await gotoDemo(page, route);
+
+    const stack = page.locator('cngx-alert-stack');
+    const paginator = page.locator('cngx-paginator');
+    const next = paginator.locator('cngx-pgn-next button');
+    const status = paginator.locator('cngx-pgn-status');
+    const liveRegion = paginator.locator('.cngx-paginator__sr');
+
+    // (1) EN baseline.
+    await expect(stack).toHaveAttribute('aria-label', 'Alerts');
+    await expect(paginator).toHaveAttribute('aria-label', 'Pagination');
+    await expect(next).toHaveAccessibleName('Next page');
+    await expect(status).toHaveText('Page 1 of 10');
+
+    // (2) A spoken page change in English.
+    await next.click();
+    await expect(liveRegion).toHaveText('Page 2 of 10');
+
+    // (3) Flip to German, no reload: labels switch, the spoken page stays.
+    await page.getByRole('button', { name: 'DE', exact: true }).click();
+    await expect(stack).toHaveAttribute('aria-label', 'Hinweise');
+    await expect(paginator).toHaveAttribute('aria-label', 'Seitennavigation');
+    await expect(next).toHaveAccessibleName('Nächste Seite');
+    await expect(status).toHaveText('Seite 2 von 10');
+    await expect(liveRegion).toHaveText('Page 2 of 10');
+
+    // (4) The next page change speaks German.
+    await next.click();
+    await expect(liveRegion).toHaveText('Seite 3 von 10');
+  });
 });

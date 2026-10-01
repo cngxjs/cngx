@@ -20,7 +20,8 @@ import {
   type CngxSelectAriaLabels,
   type CngxSelectFallbackLabels,
 } from '@cngx/forms/select';
-import { provideFeedbackI18n } from '@cngx/ui/feedback';
+import { provideFeedbackI18n, type CngxFeedbackI18nOverrides } from '@cngx/ui/feedback';
+import type { CngxPaginatorAnnouncements, CngxPaginatorAriaLabels } from '@cngx/ui/paginator';
 
 // German reference pack for the examples app. Not a shipped translation: it
 // proves that every surface the i18n residue pages render is reachable from
@@ -191,6 +192,36 @@ export const ERROR_MESSAGES_DE: ErrorMessageMap = {
   minLength: (e) => `Mindestens ${minLengthOf(e)} Zeichen.`,
 };
 export const INPUT_ARIA_DE: Partial<InputAriaLabels> = { clear: 'Leeren' };
+export const FEEDBACK_DE: CngxFeedbackI18nOverrides = {
+  alertsRegionLabel: 'Hinweise',
+  notificationsRegionLabel: 'Benachrichtigungen',
+  dismissLabel: 'Schließen',
+  bannerActionFailed: 'Aktion fehlgeschlagen',
+  toastRepeatCount: (count) => `(${count}-mal)`,
+  loadingLabel: 'Wird geladen',
+  progressLabel: 'Fortschritt',
+  announcements: {
+    alertDismissed: 'Hinweis geschlossen',
+    alertOverflow: (count) => `+ ${count} weitere Meldungen`,
+    alertOverflowVisible: (count) => `+ ${count} weitere`,
+    asyncLoading: 'Inhalt wird geladen',
+    asyncLoaded: 'Inhalt geladen',
+    asyncError: 'Fehler beim Laden',
+    asyncRefreshing: 'Inhalt wird aktualisiert',
+    asyncRefreshed: 'Inhalt aktualisiert',
+    asyncRefreshFailed: 'Aktualisierung fehlgeschlagen',
+  },
+};
+export const PAGINATOR_ARIA_DE: Partial<CngxPaginatorAriaLabels> = {
+  label: 'Seitennavigation',
+  previous: 'Vorherige Seite',
+  next: 'Nächste Seite',
+};
+export const PAGINATOR_ANNOUNCEMENTS_DE: Partial<CngxPaginatorAnnouncements> = {
+  pageChange: (page, totalPages) => `Seite ${page} von ${totalPages}`,
+  loading: 'Wird geladen',
+  updated: 'Aktualisiert',
+};
 export const TREETABLE_DE: Partial<TreetableLabels> = {
   loading: 'Wird geladen',
   refreshing: 'Wird aktualisiert',
@@ -273,29 +304,24 @@ export const DEMO_INPUT_ARIA_LABELS = computed<Partial<InputAriaLabels>>(() =>
 export const DEMO_TREETABLE_LABELS = computed<Partial<TreetableLabels>>(() =>
   isDe() ? TREETABLE_DE : {},
 );
+export const DEMO_FEEDBACK_LABELS = computed<CngxFeedbackI18nOverrides>(() =>
+  isDe() ? FEEDBACK_DE : {},
+);
+export const DEMO_PAGINATOR_ARIA_LABELS = computed<Partial<CngxPaginatorAriaLabels>>(() =>
+  isDe() ? PAGINATOR_ARIA_DE : {},
+);
+export const DEMO_PAGINATOR_ANNOUNCEMENTS = computed<Partial<CngxPaginatorAnnouncements>>(() =>
+  isDe() ? PAGINATOR_ANNOUNCEMENTS_DE : {},
+);
+export const DEMO_PAGINATOR_STATUS_FORMAT = computed(() =>
+  isDe()
+    ? (page: number, totalPages: number) => `Seite <b>${page}</b> von ${totalPages}`
+    : (page: number, totalPages: number) => `Page <b>${page}</b> of ${totalPages}`,
+);
 
 /** The German pack, spread into the root providers by `?lang=de`. */
 export const DE_PACK: Provider[] = [
-  provideFeedbackI18n({
-    alertsRegionLabel: 'Hinweise',
-    notificationsRegionLabel: 'Benachrichtigungen',
-    dismissLabel: 'Schließen',
-    bannerActionFailed: 'Aktion fehlgeschlagen',
-    toastRepeatCount: (count) => `(${count}-mal)`,
-    loadingLabel: 'Wird geladen',
-    progressLabel: 'Fortschritt',
-    announcements: {
-      alertDismissed: 'Hinweis geschlossen',
-      alertOverflow: (count) => `+ ${count} weitere Meldungen`,
-      alertOverflowVisible: (count) => `+ ${count} weitere`,
-      asyncLoading: 'Inhalt wird geladen',
-      asyncLoaded: 'Inhalt geladen',
-      asyncError: 'Fehler beim Laden',
-      asyncRefreshing: 'Inhalt wird aktualisiert',
-      asyncRefreshed: 'Inhalt aktualisiert',
-      asyncRefreshFailed: 'Aktualisierung fehlgeschlagen',
-    },
-  }),
+  provideFeedbackI18n(FEEDBACK_DE),
   ...provideTreetableAt(withTreetableLabels(TREETABLE_DE)),
   ...provideFilterBuilderConfigAt(
     withFilterBuilderI18n({
