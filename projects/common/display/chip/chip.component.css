@@ -17,8 +17,9 @@
  * - `:focus-visible` - brand-primary outline ring
  * - `[aria-selected="true"]` / `[aria-pressed="true"]` - darker
  *   primary-tinted fill
- * - `[aria-disabled="true"]` / `:disabled` - opacity 0.38, no
- *   pointer events
+ * - `[aria-disabled="true"]` / `:disabled` - painted by colour, never
+ *   opacity: 38% text on a faint text tint (stronger when selected), no
+ *   pointer events; GrayText under forced colors
  *
  * **Color variants**
  *
@@ -33,8 +34,9 @@
  * **Slots**
  *
  * - `.cngx-chip__label` - the text, ellipsis-truncates
- * - `.cngx-chip__remove` - inline button, fades in / out via
- *   `--cngx-chip-remove-opacity` + `:focus-visible` ring; its hit box is
+ * - `.cngx-chip__remove` - inline button, quieter than the label at rest
+ *   (70% of the chip colour) and full strength on hover, plus a
+ *   `:focus-visible` ring; its hit box is
  *   at least `--cngx-chip-remove-target` (default `1.5rem`, the WCAG 2.5.8
  *   floor) on every pointer without changing the chip height
  *
@@ -223,16 +225,6 @@
   }
 
   /**
-   * Opacity multiplier applied by `[aria-disabled=true]` and `:disabled`.
-   * @group State / Disabled
-   */
-  @property --cngx-chip-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.38;
-  }
-
-  /**
    * Background of the selected state (`[aria-selected=true]` /
    * `[aria-pressed=true]`).
    * @group State / Selected
@@ -335,26 +327,6 @@
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.5 0.2 25);
-  }
-
-  /**
-   * Resting opacity of the inline remove button.
-   * @group State / Remove
-   */
-  @property --cngx-chip-remove-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.7;
-  }
-
-  /**
-   * Hover opacity of the inline remove button.
-   * @group State / Remove
-   */
-  @property --cngx-chip-remove-opacity-hover {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 1;
   }
 
   /**
@@ -496,13 +468,6 @@
       background: var(--cngx-chip-selected-bg, oklch(0.66 0.19 50 / 0.32));
       color: var(--cngx-chip-selected-color, inherit);
     }
-    :scope[aria-disabled='true'],
-    :scope:disabled {
-      opacity: var(--cngx-chip-disabled-opacity, 0.38);
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
     /* Variant palette via [data-color] attribute (open-string so consumers
      * can add their own families on top of the four built-in ones). */
     :scope[data-color='info'] {
@@ -522,6 +487,22 @@
       color: var(--cngx-chip-danger-color);
     }
 
+    /* Disabled by colour, never opacity (the field recipe): 38% text on a
+     * faint text tint, a stronger tint when selected so the selection stays
+     * readable. After the colour variants so a disabled variant chip fades
+     * too (same specificity, source order decides). */
+    :scope[aria-disabled='true'],
+    :scope:disabled {
+      background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent);
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    :scope:is([aria-disabled='true'], :disabled):is([aria-selected='true'], [aria-pressed='true']) {
+      background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 16%, transparent);
+    }
+
     .cngx-chip__label {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -539,7 +520,9 @@
       font: inherit;
       line-height: 1;
       flex: 0 0 auto;
-      opacity: var(--cngx-chip-remove-opacity, 0.7);
+      /* Quieter than the label at rest, keeping the chip's hue (a variant
+       * chip keeps its colour family). */
+      color: color-mix(in oklab, currentColor 70%, transparent);
       border-radius: var(--cngx-chip-remove-radius, var(--cngx-radius-sm, 2px));
 
       /* Touch-target floor - the remove button is its own tap target,
@@ -566,7 +549,7 @@
       );
     }
     .cngx-chip__remove:hover {
-      opacity: var(--cngx-chip-remove-opacity-hover, 1);
+      color: inherit;
     }
     .cngx-chip__remove:focus-visible {
       outline: var(--cngx-chip-remove-focus-width, 2px) solid
@@ -597,5 +580,19 @@
     background: Highlight !important;
     color: HighlightText !important;
     border-color: Highlight !important;
+    /* Chromium paints a Canvas backplate behind the label text; without the
+     * opt-out the HighlightText label sits on that plate and vanishes. */
+    forced-color-adjust: none;
+  }
+  /* Disabled is painted by colour, which the forced palette overrides;
+   * re-signal it with GrayText, as a GrayText fill when selected. */
+  .cngx-chip:is([aria-disabled='true'], :disabled) {
+    color: GrayText;
+    border-color: GrayText;
+  }
+  .cngx-chip:is([aria-disabled='true'], :disabled):is([aria-selected='true'], [aria-pressed='true']) {
+    background: GrayText !important;
+    color: Canvas !important;
+    border-color: GrayText !important;
   }
 }
