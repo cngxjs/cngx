@@ -644,34 +644,6 @@ export const RATCHET = [
     closesIn: 7,
   },
   {
-    file: 'projects/ui/chart-panel/chart-panel.component.ts',
-    member: 'CngxChartPanel.busyLabel',
-    rule: 'R3',
-    token: 'CNGX_CHART_PANEL_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/chart-panel/chart-panel.component.ts',
-    member: 'CngxChartPanel.busyLabel',
-    rule: 'R4',
-    token: 'CNGX_CHART_PANEL_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/chart-panel/config/provide-chart-panel-config.ts',
-    member: 'mergeConfig',
-    rule: 'R3',
-    token: 'CNGX_CHART_PANEL_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/chart-panel/config/provide-chart-panel-config.ts',
-    member: 'reduceFeatures',
-    rule: 'R3',
-    token: 'CNGX_CHART_PANEL_CONFIG',
-    closesIn: 7,
-  },
-  {
     file: 'projects/ui/collection/incremental-list-config.ts',
     member: 'applyFeatures',
     rule: 'R3',
@@ -841,7 +813,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 32;
+export const RATCHET_CEILING = 28;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 6;
@@ -1147,7 +1119,7 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/ui/chart-panel/chart-panel.component.ts',
-    region: 'CngxChartPanel.span(busyLabel,panelBusy)',
+    region: 'CngxChartPanel.span(busyStatus)',
     spec: 'projects/ui/chart-panel/chart-panel.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 7,

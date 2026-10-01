@@ -1,6 +1,16 @@
 import { InjectionToken } from '@angular/core';
 
-import type { CngxChartPanelConfig } from './chart-panel.config';
+import type { CngxChartPanelAriaLabels, CngxChartPanelConfig } from './chart-panel.config';
+
+/**
+ * English strings of the chart-panel, the base every `ariaLabels` override
+ * merges onto.
+ *
+ * @internal
+ */
+export const CNGX_CHART_PANEL_ARIA_LABELS_DEFAULTS: Required<CngxChartPanelAriaLabels> = {
+  busy: 'Updating',
+};
 
 /**
  * Library defaults for the chart-panel configuration cascade. English by
@@ -15,9 +25,7 @@ import type { CngxChartPanelConfig } from './chart-panel.config';
  * @internal
  */
 export const CNGX_CHART_PANEL_DEFAULTS: CngxChartPanelConfig = {
-  ariaLabels: {
-    busy: 'Updating',
-  },
+  ariaLabels: CNGX_CHART_PANEL_ARIA_LABELS_DEFAULTS,
   legendPosition: 'bottom',
 };
 
