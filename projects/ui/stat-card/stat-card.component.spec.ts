@@ -10,6 +10,9 @@ import {
 import { createAsyncStateMock, type AsyncStateMock } from '@cngx/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { CngxStatCardAriaLabels } from './config/stat-card.config';
+import { withStatCardAriaLabels } from './config/features';
+import { provideStatCardConfig } from './config/provide-stat-card-config';
 import { CngxStatCard } from './stat-card.component';
 import { CngxStatCardFooter, CngxStatCardViz } from './stat-card-slots';
 
@@ -375,6 +378,30 @@ describe('CngxStatCard live region', () => {
     host.live.set('polite');
     fixture.detectChanges();
     expect(region.getAttribute('aria-live')).toBe('polite');
+  });
+
+  it('does not re-announce on a language flip', () => {
+    const labels = signal<CngxStatCardAriaLabels>({});
+    TestBed.configureTestingModule({
+      providers: [provideStatCardConfig(withStatCardAriaLabels(labels))],
+    });
+    const { fixture, region, host } = setup();
+    host.live.set('polite');
+    state.set({ status: 'error', firstLoad: true });
+    fixture.detectChanges();
+    const errorText = (): string | null | undefined =>
+      region.querySelector('cngx-empty-state')?.textContent;
+    expect(errorText()).toContain('Could not load');
+
+    labels.set({ errorFallback: 'Nicht verfügbar' });
+    fixture.detectChanges();
+    expect(errorText()).toContain('Could not load');
+
+    state.set({ status: 'loading', firstLoad: true });
+    fixture.detectChanges();
+    state.set({ status: 'error', firstLoad: true });
+    fixture.detectChanges();
+    expect(errorText()).toContain('Nicht verfügbar');
   });
 
   it('drops the accessible name while the stat is not rendered', () => {

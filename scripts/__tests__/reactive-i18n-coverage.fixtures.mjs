@@ -644,90 +644,6 @@ export const RATCHET = [
     closesIn: 7,
   },
   {
-    file: 'projects/ui/stat-card/config/provide-stat-card-config.ts',
-    member: 'mergeConfig',
-    rule: 'R3',
-    token: 'CNGX_STAT_CARD_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/stat-card/config/provide-stat-card-config.ts',
-    member: 'reduceFeatures',
-    rule: 'R3',
-    token: 'CNGX_STAT_CARD_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/stat-card/stat-card.component.ts',
-    member: 'CngxStatCard.busyLabel',
-    rule: 'R1',
-    token: 'CNGX_STAT_CARD_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/stat-card/stat-card.component.ts',
-    member: 'CngxStatCard.busyLabel',
-    rule: 'R4',
-    token: 'CNGX_STAT_CARD_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/stat-card/stat-card.component.ts',
-    member: 'CngxStatCard.emptyText',
-    rule: 'R1',
-    token: 'CNGX_STAT_CARD_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/stat-card/stat-card.component.ts',
-    member: 'CngxStatCard.emptyText',
-    rule: 'R4',
-    token: 'CNGX_STAT_CARD_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/stat-card/stat-card.component.ts',
-    member: 'CngxStatCard.errorDescription',
-    rule: 'R1',
-    token: 'CNGX_STAT_CARD_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/stat-card/stat-card.component.ts',
-    member: 'CngxStatCard.errorDescription',
-    rule: 'R4',
-    token: 'CNGX_STAT_CARD_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/stat-card/stat-card.component.ts',
-    member: 'CngxStatCard.errorText',
-    rule: 'R1',
-    token: 'CNGX_STAT_CARD_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/stat-card/stat-card.component.ts',
-    member: 'CngxStatCard.errorText',
-    rule: 'R4',
-    token: 'CNGX_STAT_CARD_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/stat-card/stat-card.component.ts',
-    member: 'CngxStatCard.staleText',
-    rule: 'R1',
-    token: 'CNGX_STAT_CARD_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/stat-card/stat-card.component.ts',
-    member: 'CngxStatCard.staleText',
-    rule: 'R4',
-    token: 'CNGX_STAT_CARD_CONFIG',
-    closesIn: 7,
-  },
-  {
     file: 'projects/ui/toc/config/provide-toc-config.ts',
     member: 'mergeConfig',
     rule: 'R3',
@@ -750,7 +666,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 19;
+export const RATCHET_CEILING = 7;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 6;
@@ -1157,7 +1073,7 @@ export const LIVE_REGIONS = [
   {
     file: 'projects/ui/stat-card/stat-card.component.ts',
     region:
-      'CngxStatCard.cngx-card(activeView,busyLabel,cardLabelledBy,emptyText,errorDescription,errorText,live,resolvedTreatment,showRefreshIndicator,skeletonSlots,staleText)',
+      'CngxStatCard.cngx-card(activeView,cardLabelledBy,live,resolvedBusyLabel,resolvedEmptyText,resolvedErrorDescription,resolvedErrorText,resolvedStaleText,resolvedTreatment,showRefreshIndicator,skeletonSlots)',
     spec: 'projects/ui/stat-card/stat-card.component.spec.ts',
     testName: 'does not re-announce on a language flip',
     closesIn: 7,

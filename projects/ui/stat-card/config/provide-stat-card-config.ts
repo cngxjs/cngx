@@ -3,10 +3,14 @@ import {
   makeEnvironmentProviders,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
 } from '@angular/core';
+import { createOverrideMerge } from '@cngx/core/utils';
 
-import type { CngxStatCardConfig } from './stat-card.config';
+import type { CngxStatCardAriaLabels, CngxStatCardConfig } from './stat-card.config';
 import { CNGX_STAT_CARD_CONFIG, CNGX_STAT_CARD_DEFAULTS } from './stat-card.config.defaults';
+
+const NO_ARIA_LABELS: CngxStatCardAriaLabels = {};
 
 /**
  * Discriminated-union shape returned by the stat-card config features -
@@ -22,7 +26,7 @@ import { CNGX_STAT_CARD_CONFIG, CNGX_STAT_CARD_DEFAULTS } from './stat-card.conf
 export type CngxStatCardConfigFeature =
   | {
       readonly kind: 'ariaLabels';
-      readonly payload: NonNullable<CngxStatCardConfig['ariaLabels']>;
+      readonly payload: CngxStatCardAriaLabels | Signal<CngxStatCardAriaLabels>;
     }
   | {
       readonly kind: 'loadingTreatment';
@@ -46,7 +50,7 @@ function reduceFeatures(
   for (const f of features) {
     switch (f.kind) {
       case 'ariaLabels':
-        out.ariaLabels = { ...out.ariaLabels, ...f.payload };
+        out.ariaLabels = createOverrideMerge(out.ariaLabels ?? NO_ARIA_LABELS, f.payload);
         break;
       case 'loadingTreatment':
         out.loadingTreatment = f.payload.loadingTreatment;
@@ -68,7 +72,7 @@ function mergeConfig(
   partial: Partial<CngxStatCardConfig>,
 ): CngxStatCardConfig {
   return {
-    ariaLabels: { ...base.ariaLabels, ...partial.ariaLabels },
+    ariaLabels: createOverrideMerge(base.ariaLabels ?? NO_ARIA_LABELS, partial.ariaLabels),
     loadingTreatment: partial.loadingTreatment ?? base.loadingTreatment,
   };
 }
