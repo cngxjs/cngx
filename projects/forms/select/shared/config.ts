@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 
 import type { PopoverPlacement } from '@cngx/common/popover';
-import { createOverrideMerge } from '@cngx/core/utils';
+import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxSelectCommitErrorDisplay } from './commit-action.types';
 import type { CngxCommitErrorAnnouncePolicy } from './commit-error-announcer';
@@ -783,6 +783,10 @@ export function makeSelectConfig(...features: CngxSelectConfigFeature[]): CngxSe
     if (ariaLabels) {
       merged.ariaLabels = createOverrideMerge(merged.ariaLabels ?? NO_ARIA_LABELS, ariaLabels);
     }
+  }
+  // Replaced, not merged, across features; a Signal like the other copy keys.
+  if (merged.fallbackLabels) {
+    merged.fallbackLabels = coerceSignal(merged.fallbackLabels);
   }
   return merged;
 }

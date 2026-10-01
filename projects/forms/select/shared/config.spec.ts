@@ -1,4 +1,4 @@
-import { Injector, runInInjectionContext, signal, type TemplateRef } from '@angular/core';
+import { Injector, isSignal, runInInjectionContext, signal, type TemplateRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { coerceSignal } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
@@ -283,6 +283,19 @@ describe('makeSelectConfig', () => {
     expect(config.panelWidth).toBe(240);
     expect(config.templates?.empty).toBe(emptyTpl);
     expect(coerceSignal(config.ariaLabels ?? {})().chipRemove).toBe('Delete');
+  });
+
+  it('stores every copy key as a Signal', () => {
+    const config = makeSelectConfig(
+      withAriaLabels({ chipRemove: 'Delete' }),
+      withFallbackLabels({ empty: 'Nothing' }),
+      withFallbackLabels({ empty: 'Keine Optionen' }),
+      withAnnouncer({ politeness: 'assertive' }),
+    );
+    expect(isSignal(config.ariaLabels)).toBe(true);
+    expect(isSignal(config.announcer)).toBe(true);
+    expect(isSignal(config.fallbackLabels)).toBe(true);
+    expect(coerceSignal(config.fallbackLabels ?? {})()).toEqual({ empty: 'Keine Optionen' });
   });
 
   it('produces the same resolved config as provideSelectConfig when provided via useFactory', () => {
