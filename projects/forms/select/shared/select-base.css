@@ -1024,6 +1024,10 @@
     color: var(--cngx-select-check-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
     font-weight: 700;
   }
+  /* An 'after' indicator sits at the row end, not right behind the label. */
+  .cngx-select__option--indicator-after > .cngx-select__check {
+    margin-inline-start: auto;
+  }
 
   .cngx-select__loading,
   .cngx-select__empty {

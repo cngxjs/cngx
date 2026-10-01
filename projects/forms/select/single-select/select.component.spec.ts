@@ -260,6 +260,23 @@ describe('CngxSelect - standalone', () => {
     expect(listbox.options().length).toBe(3);
   });
 
+  it('renders the selection indicator after the label, at the row end, by default', () => {
+    const { fixture } = setup();
+    const option = (fixture.nativeElement as HTMLElement).ownerDocument.querySelector<HTMLElement>(
+      '.cngx-select__option',
+    );
+    if (!option) {
+      throw new Error('no option rendered');
+    }
+    const nodes = Array.from(option.childNodes);
+    const check = option.querySelector('.cngx-select__check');
+    const labelIndex = nodes.findIndex((n) => n.nodeType === Node.TEXT_NODE && !!n.textContent?.trim());
+    expect(option.classList).toContain('cngx-select__option--indicator-after');
+    expect(check).toBeTruthy();
+    expect(labelIndex).toBeGreaterThanOrEqual(0);
+    expect(nodes.indexOf(check as ChildNode)).toBeGreaterThan(labelIndex);
+  });
+
   it('trigger label reflects initial value', () => {
     const { fixture, triggerBtn } = setup();
     fixture.componentInstance.value.set('red');
