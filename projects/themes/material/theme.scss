@@ -64,6 +64,7 @@
 @use './popover-panel-theme' as popover-panel;
 @use './rating-theme' as rating;
 @use './ripple-theme' as ripple;
+@use './segmented-progress-theme' as segmented-progress;
 @use './select-theme' as select;
 @use './sidenav-theme' as sidenav;
 @use './skeleton-theme' as skeleton;
@@ -131,6 +132,7 @@
   @include popover-panel.theme($theme);
   @include rating.theme($theme);
   @include ripple.theme($theme);
+  @include segmented-progress.theme($theme);
   @include select.theme($theme);
   @include sidenav.theme($theme);
   @include skeleton.theme($theme);
