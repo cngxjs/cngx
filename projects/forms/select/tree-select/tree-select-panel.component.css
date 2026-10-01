@@ -363,6 +363,11 @@
   .cngx-tree-select__node.cngx-tree-select__node--active {
     background: Highlight;
     color: HighlightText;
+    /* Chromium paints a Canvas backplate behind the label text; without the
+     * opt-out the HighlightText label sits on that plate and vanishes. The
+     * opt-out is inherited, so the node declares its ink for its checkbox. */
+    forced-color-adjust: none;
+    --_cngx-forced-ink: HighlightText;
   }
 
   /* The faded disabled colour is forced to CanvasText; GrayText keeps the

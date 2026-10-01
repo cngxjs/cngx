@@ -1822,6 +1822,12 @@
   .cngx-select__option.cngx-option--highlighted {
     background: Highlight;
     color: HighlightText;
+    /* Chromium paints a Canvas backplate behind the label text; without the
+     * opt-out the HighlightText label sits on that plate and vanishes. The
+     * opt-out is inherited, so the row declares its ink for nested indicators
+     * (checkbox, radio), which would otherwise paint unforced author colours. */
+    forced-color-adjust: none;
+    --_cngx-forced-ink: HighlightText;
   }
   .cngx-select__option.cngx-option--highlighted .cngx-select__check {
     color: HighlightText;
