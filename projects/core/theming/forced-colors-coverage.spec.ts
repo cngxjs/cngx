@@ -154,6 +154,9 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // its 1px border self-heals; the forced-colors block re-draws the
   // background-drawn divider hairline that would otherwise collapse to Canvas.
   'projects/ui/context-menu/context-menu.component.css',
+  // @cngx/ui/accordion - the disabled header fades by colour, which WHCM forces
+  // to CanvasText like an enabled header; it re-signals with GrayText.
+  'projects/ui/accordion/accordion-item.component.css',
 ];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
@@ -284,7 +287,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(38);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(39);
   });
 });
 
