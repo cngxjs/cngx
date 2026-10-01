@@ -104,6 +104,10 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 ## Behaviour changes
 
+### All libraries
+
+- A live region keeps its text when the language switches, and speaks the new language with its next status change. This also holds when a consumer formatter reads a language Signal itself, such as `withErrorMessages({ required: () => translate('required') })` or a `format` function on a select announcer or a stepper count: CNGX now calls these formatters untracked inside the live region, so a switch no longer re-renders the region at once. Shown validation messages in `cngx-field-errors` and `cngx-form-errors` therefore stay in the old language until the field's errors change. Labels outside live regions follow the switch immediately.
+
 ### @cngx/forms/select
 
 - The `*cngxSelectAction` slot wrapper in every select panel is now a named group: `role="group"` with `aria-label` from `CngxActionSelectConfig.ariaLabel` (English default `'Inline action'`, set it with `withActionAriaLabel`). Screen readers announce the group name when focus enters the action slot. Before, the key was accepted but never rendered.
