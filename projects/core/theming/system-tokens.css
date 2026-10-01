@@ -417,6 +417,18 @@
   }
 
   /**
+   * Match highlight fill - pale amber in light, a dark amber in dark so the
+   * light body text keeps 4.5:1 on it. Drives search-match `<mark>` fills
+   * (e.g. the command palette).
+   * @group Surface
+   */
+  @property --cngx-color-highlight {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.92 0.115 96);
+  }
+
+  /**
    * Font-size - small (0.8125rem). `syntax: '*'` because CSS
    * `@property` forbids `rem` in `<length>` initial-value (must be
    * "computationally independent"). The tradeoff is no animation
@@ -521,6 +533,7 @@
     --cngx-color-success: oklch(0.6 0.15 145);
     --cngx-color-warning: oklch(0.72 0.15 75);
     --cngx-color-info: oklch(0.65 0.12 240);
+    --cngx-color-highlight: oklch(0.92 0.115 96);
     accent-color: var(--cngx-color-primary);
   }
 
@@ -543,6 +556,7 @@
       --cngx-color-success: oklch(0.68 0.14 145);
       --cngx-color-warning: oklch(0.78 0.14 75);
       --cngx-color-info: oklch(0.72 0.11 240);
+      --cngx-color-highlight: oklch(0.45 0.08 95);
     }
   }
 
@@ -567,6 +581,7 @@
     --cngx-color-success: oklch(0.68 0.14 145);
     --cngx-color-warning: oklch(0.78 0.14 75);
     --cngx-color-info: oklch(0.72 0.11 240);
+    --cngx-color-highlight: oklch(0.45 0.08 95);
   }
 
   /* Block 4 - explicit light. Mirror of Block 3 so a light island
@@ -588,6 +603,7 @@
     --cngx-color-success: oklch(0.6 0.15 145);
     --cngx-color-warning: oklch(0.72 0.15 75);
     --cngx-color-info: oklch(0.65 0.12 240);
+    --cngx-color-highlight: oklch(0.92 0.115 96);
   }
 
   /* Touch-target floor - env-derived default plus explicit opt-in /
