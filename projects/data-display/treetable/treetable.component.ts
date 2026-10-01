@@ -316,7 +316,9 @@ export class CngxTreetable<T = unknown> {
    */
   readonly retry = output<void>();
 
-  private readonly config = coerceSignal(inject(CNGX_TREETABLE_CONFIG));
+  private readonly configValue = inject(CNGX_TREETABLE_CONFIG);
+  private readonly config = coerceSignal(this.configValue);
+  private readonly labelOverrides = coerceSignal(this.configValue.labels ?? NO_TREETABLE_LABELS);
 
   /**
    * @internal Resolved copy for every built-in string: app-wide
@@ -326,7 +328,7 @@ export class CngxTreetable<T = unknown> {
   protected readonly labels = computed<Required<TreetableLabels>>(
     () => ({
       ...TREETABLE_DEFAULT_LABELS,
-      ...coerceSignal(this.config().labels ?? NO_TREETABLE_LABELS)(),
+      ...this.labelOverrides(),
     }),
     { equal: recordEqual },
   );
