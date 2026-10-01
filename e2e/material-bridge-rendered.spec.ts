@@ -1,9 +1,10 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 import {
   compileBridge,
   compileEntry,
   computedValue,
+  MAT_SYS_STANDINS,
   matSys,
   matSysExtra,
   renderFixture,
@@ -209,11 +210,6 @@ test.describe('material-bridge rendered values: rating', () => {
     <button id="star-idle" type="button" class="cngx-rating__item" role="radio" aria-checked="false">&#9733;</button>
     <button id="star-active" type="button" class="cngx-rating__item" role="radio" aria-checked="true">&#9733;</button>
   </span>
-</cngx-rating>
-<cngx-rating id="rating-disabled" class="cngx-rating--disabled">
-  <span class="cngx-rating__items">
-    <button id="star-disabled" type="button" class="cngx-rating__item" role="radio" aria-checked="false">&#9733;</button>
-  </span>
 </cngx-rating>`;
 
   test.beforeEach(async ({ page }) => {
@@ -236,9 +232,84 @@ test.describe('material-bridge rendered values: rating', () => {
       matSys('primary'),
     );
   });
+});
 
-  test('a disabled rating dims to the Material 38% convention', async ({ page }) => {
-    expect(await computedValue(page, '#star-disabled', 'opacity')).toBe('0.38');
+test.describe('material-bridge rendered values: rating, disabled on the real component', () => {
+  // The disabled class sits on the cngx-rating host, so the disabled rule is
+  // a :host() selector that a static fixture cannot match (an unencapsulated
+  // fixture once kept a dead descendant selector green). This block runs the
+  // real story route, where the stylesheet is encapsulated as shipped, and
+  // layers the system bridge, the rating bridge and the stand-ins on top.
+  const SYSTEM_CSS = compileEntry(`
+@use '@angular/material' as mat;
+@use 'material/system-bridge' as cngx-system;
+
+$theme: mat.define-theme((
+  color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+));
+
+html { @include cngx-system.theme($theme); }
+`);
+  const BRIDGE_CSS = compileBridge('rating-theme');
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/#/forms/input/rating/disabled');
+    await page.locator('cngx-rating.cngx-rating--disabled').waitFor();
+    await page.addStyleTag({ content: SYSTEM_CSS + BRIDGE_CSS });
+    await page.addStyleTag({ content: MAT_SYS_STANDINS });
+    await page.addStyleTag({
+      content:
+        '*, *::before, *::after { transition: none !important; animation: none !important; }',
+    });
+  });
+
+  // Colour of a probe span appended next to the rating, so it resolves in the
+  // same cascade context as the stars.
+  async function probeColour(page: Page, color: string): Promise<string> {
+    return page
+      .locator('cngx-rating')
+      .first()
+      .evaluate((host, value) => {
+        const probe = document.createElement('span');
+        probe.style.color = value;
+        host.parentElement!.appendChild(probe);
+        const resolved = getComputedStyle(probe).color;
+        probe.remove();
+        return resolved;
+      }, color);
+  }
+
+  async function starColours(page: Page): Promise<{ color: string; opacity: string }[]> {
+    return page.locator('cngx-rating .cngx-rating__item').evaluateAll((items) =>
+      items.map((item) => {
+        let opacity = 1;
+        for (let node: Element | null = item; node; node = node.parentElement) {
+          opacity *= parseFloat(getComputedStyle(node).opacity);
+        }
+        return { color: getComputedStyle(item).color, opacity: String(opacity) };
+      }),
+    );
+  }
+
+  test('every star paints 38% of on-surface, not an opacity', async ({ page }) => {
+    const expected = await probeColour(
+      page,
+      `color-mix(in oklab, ${matSys('on-surface')} 38%, transparent)`,
+    );
+    const stars = await starColours(page);
+    expect(stars).toHaveLength(5);
+    for (const star of stars) {
+      expect(star).toEqual({ color: expected, opacity: '1' });
+    }
+  });
+
+  test('every star reads GrayText under forced colors', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' });
+    const gray = await probeColour(page, 'GrayText');
+    expect(gray).not.toBe(await probeColour(page, 'CanvasText'));
+    for (const star of await starColours(page)) {
+      expect(star.color).toBe(gray);
+    }
   });
 });
 

@@ -41,9 +41,13 @@
   border-radius: var(--cngx-rating-focus-ring-radius, 0.125rem);
 }
 
-.cngx-rating--disabled .cngx-rating__item {
+/* The disabled class sits on the host, so the selector has to go through
+   :host(); a plain descendant selector never matches under emulated
+   encapsulation. Filled and empty stars take the disabled field recipe
+   (38% of the text colour), which also outranks the checked-star colour. */
+:host(.cngx-rating--disabled) .cngx-rating__item {
   cursor: not-allowed;
-  opacity: var(--cngx-rating-disabled-opacity, 0.5);
+  color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
 }
 
 .cngx-rating__disabled-reason {
@@ -56,4 +60,14 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* Forced colors paint the disabled star colour as CanvasText, the colour of
+   an enabled star, and an aria-disabled button gets no UA GrayText; GrayText
+   keeps the disabled state visible. Unlayered, like every forced-colors
+   block. */
+@media (forced-colors: active) {
+  :host(.cngx-rating--disabled) .cngx-rating__item {
+    color: GrayText;
+  }
 }

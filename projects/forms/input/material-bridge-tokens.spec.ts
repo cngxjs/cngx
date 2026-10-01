@@ -49,7 +49,6 @@ describe('rating Material bridge', () => {
   const CONSUMED = [
     '--cngx-rating-color',
     '--cngx-rating-color-active',
-    '--cngx-rating-disabled-opacity',
     '--cngx-rating-focus-ring',
   ];
 

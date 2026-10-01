@@ -5,8 +5,9 @@
 // visuals read the --cngx-rating-* tokens with literal fallbacks; this file
 // re-points the tone tokens at Material so a rating reads native next to
 // Material form controls: muted on-surface-variant idle stars, primary
-// active stars, a primary focus ring (>= 3:1 against surface in both M3
-// schemes), and Material's 38% disabled opacity (option-theme precedent).
+// active stars and a primary focus ring (>= 3:1 against surface in both M3
+// schemes). A disabled star needs no line: it paints 38% of
+// --cngx-color-text, which the system bridge maps to on-surface.
 //
 // Minimal-mapping discipline (3.6 lesson): a bridge line exists only where
 // the Material default genuinely differs. --cngx-rating-size and the
@@ -27,12 +28,10 @@
     --cngx-rating-color: var(--mat-sys-on-surface-variant);
     --cngx-rating-color-active: var(--mat-sys-primary);
     --cngx-rating-focus-ring: var(--mat-sys-primary);
-    --cngx-rating-disabled-opacity: 0.38;
   } @else {
     --cngx-rating-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
     --cngx-rating-color-active: #{mat.get-theme-color($theme, primary)};
     --cngx-rating-focus-ring: #{mat.get-theme-color($theme, primary)};
-    --cngx-rating-disabled-opacity: 0.38;
   }
 }
 
