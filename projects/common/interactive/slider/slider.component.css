@@ -225,3 +225,30 @@ cngx-slider[aria-orientation='vertical'] .cngx-slider__value {
   inset-inline-end: calc(100% + 0.5rem);
   translate: 0 -50%;
 }
+
+/* forced-colors (WHCM): track and fill are painted only with background (the
+ * range band is a gradient), which the forced palette flattens to Canvas - the
+ * value and range vanish and only the thumb rings remain. Opt the track and
+ * fill out of forcing and feed the existing colour tokens system keywords, so
+ * every orientation keeps its own geometry: CanvasText track, Highlight value.
+ * A disabled slider reads GrayText on a Canvas track with a GrayText edge, so
+ * the value stays visible. Unlayered, after the base rules. */
+@media (forced-colors: active) {
+  cngx-slider {
+    --cngx-slider-track-color: CanvasText;
+    --cngx-slider-fill-color: Highlight;
+  }
+  cngx-slider :is(.cngx-slider__track, .cngx-slider__fill) {
+    forced-color-adjust: none;
+  }
+  cngx-slider[aria-disabled='true'] {
+    --cngx-slider-track-color: Canvas;
+    --cngx-slider-fill-color: GrayText;
+    --cngx-slider-thumb-border-color: GrayText;
+    color: GrayText;
+  }
+  cngx-slider[aria-disabled='true'] .cngx-slider__track {
+    outline: 1px solid GrayText;
+    outline-offset: -1px;
+  }
+}

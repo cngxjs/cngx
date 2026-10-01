@@ -122,6 +122,10 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // Disabled painted by colour, re-signalled with GrayText (an aria-disabled
   // control gets no UA GrayText).
   'projects/common/popover/popover-action.component.css',
+  // Slider track + fill are background-only (range: a gradient) and flatten.
+  'projects/common/interactive/slider/slider.component.css',
+  'projects/common/interactive/slider/range-slider.component.css',
+  'projects/common/theming/components/cngx-slider.css',
   'projects/ui/tabs/tab-overflow.component.css',
   // @cngx/ui/feedback (Phase D) - the toast overlay's only edge is its
   // box-shadow elevation (plus a one-sided accent); re-drawn with ButtonBorder.
@@ -280,7 +284,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(35);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(38);
   });
 });
 
