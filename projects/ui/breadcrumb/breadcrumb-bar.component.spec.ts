@@ -11,7 +11,7 @@ import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive
 import { CngxBreadcrumbSiblings } from './breadcrumb-siblings.component';
 import { CngxBreadcrumbSiblingsRouterSync } from './breadcrumb-siblings-router-sync.directive';
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
-import type { CngxBreadcrumbSkin } from './config/breadcrumb.config';
+import type { CngxBreadcrumbAriaLabels, CngxBreadcrumbSkin } from './config/breadcrumb.config';
 import { withBreadcrumbAriaLabels, withBreadcrumbSkin } from './config/features';
 import { provideBreadcrumbConfig } from './config/provide-breadcrumb-config';
 import type { CngxBreadcrumbCrumb, CngxBreadcrumbSibling } from './breadcrumb.types';
@@ -625,6 +625,28 @@ describe('CngxBreadcrumbBar config cascade', () => {
     fixture.detectChanges();
     const nav = (fixture.nativeElement as HTMLElement).querySelector('nav') as HTMLElement;
     expect(nav.getAttribute('aria-label')).toBe('Explicit trail');
+  });
+});
+
+describe('CngxBreadcrumbBar language switch', () => {
+  it('renames the nav landmark when Signal labels flip while [label] is unbound', () => {
+    TestBed.resetTestingModule();
+    stubPopoverApi();
+    const labels = signal<CngxBreadcrumbAriaLabels>({});
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideBreadcrumbConfig(withBreadcrumbAriaLabels(labels)),
+      ],
+    });
+    const fixture = TestBed.createComponent(BarCascadeHost);
+    fixture.detectChanges();
+    const nav = (fixture.nativeElement as HTMLElement).querySelector('nav') as HTMLElement;
+    expect(nav.getAttribute('aria-label')).toBe('Breadcrumb');
+
+    labels.set({ bar: 'Brotkrumenpfad' });
+    fixture.detectChanges();
+    expect(nav.getAttribute('aria-label')).toBe('Brotkrumenpfad');
   });
 });
 

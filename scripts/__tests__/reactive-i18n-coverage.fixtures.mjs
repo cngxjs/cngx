@@ -644,55 +644,6 @@ export const RATCHET = [
     closesIn: 7,
   },
   {
-    file: 'projects/ui/breadcrumb/breadcrumb-bar.component.ts',
-    member: 'CngxBreadcrumbBar.label',
-    rule: 'R1',
-    token: 'CNGX_BREADCRUMB_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/breadcrumb/breadcrumb-overflow.component.ts',
-    member: 'CngxBreadcrumbOverflow.menuLabel',
-    rule: 'R1',
-    token: 'CNGX_BREADCRUMB_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/breadcrumb/breadcrumb-overflow.component.ts',
-    member: 'CngxBreadcrumbOverflow.triggerLabel',
-    rule: 'R1',
-    token: 'CNGX_BREADCRUMB_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/breadcrumb/breadcrumb-siblings.component.ts',
-    member: 'CngxBreadcrumbSiblings.menuLabel',
-    rule: 'R1',
-    token: 'CNGX_BREADCRUMB_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/breadcrumb/breadcrumb-siblings.component.ts',
-    member: 'CngxBreadcrumbSiblings.triggerLabel',
-    rule: 'R1',
-    token: 'CNGX_BREADCRUMB_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/breadcrumb/config/provide-breadcrumb-config.ts',
-    member: 'mergeConfig',
-    rule: 'R3',
-    token: 'CNGX_BREADCRUMB_CONFIG',
-    closesIn: 7,
-  },
-  {
-    file: 'projects/ui/breadcrumb/config/provide-breadcrumb-config.ts',
-    member: 'reduceFeatures',
-    rule: 'R3',
-    token: 'CNGX_BREADCRUMB_CONFIG',
-    closesIn: 7,
-  },
-  {
     file: 'projects/ui/chart-panel/chart-panel.component.ts',
     member: 'CngxChartPanel.busyLabel',
     rule: 'R3',
@@ -890,7 +841,7 @@ export const RATCHET = [
   },
 ];
 
-export const RATCHET_CEILING = 39;
+export const RATCHET_CEILING = 32;
 
 /** The last phase whose closing commit has landed. */
 export const COMPLETED_PHASE = 6;

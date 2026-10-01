@@ -2,6 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   contentChild,
   inject,
   input,
@@ -17,7 +18,7 @@ import {
   CngxBreadcrumbOverflowItem,
   type CngxBreadcrumbOverflowItemContext,
 } from './breadcrumb-overflow-item.directive';
-import { injectBreadcrumbConfig } from './config/inject-breadcrumb-config';
+import { injectBreadcrumbAriaLabels } from './config/inject-breadcrumb-config';
 
 /**
  * Drop-in overflow menu for {@link CngxBreadcrumbBar}. Presents the crumbs the
@@ -68,12 +69,19 @@ export class CngxBreadcrumbOverflow {
   /** Collapse-set contract, provided by the surrounding `cngxBreadcrumb`. */
   protected readonly breadcrumb = inject(CNGX_BREADCRUMB);
 
-  private readonly cfg = injectBreadcrumbConfig();
+  private readonly ariaLabels = injectBreadcrumbAriaLabels();
 
-  /** Accessible name of the ellipsis trigger. Falls back through the config cascade to the EN default. */
-  readonly triggerLabel = input(this.cfg.ariaLabels?.overflowTrigger ?? 'Show collapsed breadcrumbs');
-  /** Accessible name of the collapsed-crumb menu. Falls back through the config cascade to the EN default. */
-  readonly menuLabel = input(this.cfg.ariaLabels?.overflowMenu ?? 'Collapsed breadcrumbs');
+  /** Accessible name of the ellipsis trigger. Unbound (`undefined`), it falls back through the config cascade to the EN default. */
+  readonly triggerLabel = input<string | undefined>(undefined);
+  /** Accessible name of the collapsed-crumb menu. Unbound (`undefined`), it falls back through the config cascade to the EN default. */
+  readonly menuLabel = input<string | undefined>(undefined);
+
+  protected readonly resolvedTriggerLabel = computed(
+    () => this.triggerLabel() ?? this.ariaLabels().overflowTrigger,
+  );
+  protected readonly resolvedMenuLabel = computed(
+    () => this.menuLabel() ?? this.ariaLabels().overflowMenu,
+  );
 
   /**
    * Per-row template forwarded by {@link CngxBreadcrumbBar}. Lets the bar pass a

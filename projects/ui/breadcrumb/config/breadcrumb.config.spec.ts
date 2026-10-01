@@ -1,13 +1,15 @@
-import { Component, Directive, viewChild } from '@angular/core';
+import { Component, computed, Directive, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
+import type { CngxBreadcrumbAriaLabels } from './breadcrumb.config';
 import {
+  CNGX_BREADCRUMB_ARIA_LABELS_DEFAULTS,
   CNGX_BREADCRUMB_CONFIG,
   CNGX_BREADCRUMB_DEFAULTS,
 } from './breadcrumb.config.defaults';
 import { withBreadcrumbAriaLabels, withBreadcrumbDataKey } from './features';
-import { injectBreadcrumbConfig } from './inject-breadcrumb-config';
+import { injectBreadcrumbAriaLabels, injectBreadcrumbConfig } from './inject-breadcrumb-config';
 import {
   provideBreadcrumbConfig,
   provideBreadcrumbConfigAt,
@@ -19,7 +21,10 @@ import {
 @Directive({ selector: '[cfgProbe]' })
 class CfgProbe {
   readonly cfg = injectBreadcrumbConfig();
+  readonly labels = injectBreadcrumbAriaLabels();
 }
+
+const resolvedLabels = () => TestBed.runInInjectionContext(() => injectBreadcrumbAriaLabels())();
 
 @Component({
   imports: [CfgProbe],
@@ -33,12 +38,13 @@ class AtHost {
 describe('CNGX_BREADCRUMB_CONFIG', () => {
   it('resolves to the EN library defaults with no provider present', () => {
     const cfg = TestBed.inject(CNGX_BREADCRUMB_CONFIG);
+    const labels = resolvedLabels();
 
-    expect(cfg.ariaLabels?.bar).toBe('Breadcrumb');
-    expect(cfg.ariaLabels?.overflowTrigger).toBe('Show collapsed breadcrumbs');
-    expect(cfg.ariaLabels?.overflowMenu).toBe('Collapsed breadcrumbs');
-    expect(cfg.ariaLabels?.siblingsTrigger).toBe('Show sibling pages');
-    expect(cfg.ariaLabels?.siblingsMenu).toBe('Sibling pages');
+    expect(labels.bar).toBe('Breadcrumb');
+    expect(labels.overflowTrigger).toBe('Show collapsed breadcrumbs');
+    expect(labels.overflowMenu).toBe('Collapsed breadcrumbs');
+    expect(labels.siblingsTrigger).toBe('Show sibling pages');
+    expect(labels.siblingsMenu).toBe('Sibling pages');
     expect(cfg.router?.dataKey).toBe('breadcrumb');
   });
 
@@ -47,10 +53,11 @@ describe('CNGX_BREADCRUMB_CONFIG', () => {
       providers: [provideBreadcrumbConfig(withBreadcrumbAriaLabels({ bar: 'Brotkrumen' }))],
     });
     const cfg = TestBed.inject(CNGX_BREADCRUMB_CONFIG);
+    const labels = resolvedLabels();
 
-    expect(cfg.ariaLabels?.bar).toBe('Brotkrumen');
+    expect(labels.bar).toBe('Brotkrumen');
     // sibling keys keep the defaults (deep-merge, not replace)
-    expect(cfg.ariaLabels?.overflowTrigger).toBe('Show collapsed breadcrumbs');
+    expect(labels.overflowTrigger).toBe('Show collapsed breadcrumbs');
     expect(cfg.router?.dataKey).toBe('breadcrumb');
   });
 
@@ -61,7 +68,7 @@ describe('CNGX_BREADCRUMB_CONFIG', () => {
     const cfg = TestBed.inject(CNGX_BREADCRUMB_CONFIG);
 
     expect(cfg.router?.dataKey).toBe('crumb');
-    expect(cfg.ariaLabels?.bar).toBe('Breadcrumb');
+    expect(resolvedLabels().bar).toBe('Breadcrumb');
   });
 
   it('provideBreadcrumbConfig() with zero features preserves the CNGX_BREADCRUMB_DEFAULTS reference', () => {
@@ -79,9 +86,48 @@ describe('CNGX_BREADCRUMB_CONFIG', () => {
     });
     const fixture = TestBed.createComponent(AtHost);
     fixture.detectChanges();
-    const cfg = fixture.componentInstance.probe().cfg;
+    const { cfg, labels } = fixture.componentInstance.probe();
 
     expect(cfg.router?.dataKey).toBe('crumb'); // At override wins
-    expect(cfg.ariaLabels?.bar).toBe('Root label'); // inherited from root via skipSelf merge
+    expect(labels().bar).toBe('Root label'); // inherited from root via skipSelf merge
+  });
+
+  it('resolves plain labels to the same bundle as the eager merge did', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideBreadcrumbConfig(
+          withBreadcrumbAriaLabels({ bar: 'Brotkrumen' }),
+          withBreadcrumbAriaLabels({ siblingsMenu: 'Geschwister' }),
+        ),
+      ],
+    });
+    expect(resolvedLabels()).toEqual({
+      ...CNGX_BREADCRUMB_ARIA_LABELS_DEFAULTS,
+      bar: 'Brotkrumen',
+      siblingsMenu: 'Geschwister',
+    });
+  });
+
+  it('follows Signal labels and keeps the bundle reference on an equal recompute', () => {
+    const lang = signal<'en' | 'de' | 'de-AT'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideBreadcrumbConfig(
+          withBreadcrumbAriaLabels(
+            computed<CngxBreadcrumbAriaLabels>(() => (lang() === 'en' ? {} : { bar: 'Brotkrumen' })),
+          ),
+        ),
+      ],
+    });
+    const labels = TestBed.runInInjectionContext(() => injectBreadcrumbAriaLabels());
+    expect(labels().bar).toBe('Breadcrumb');
+
+    lang.set('de');
+    const german = labels();
+    expect(german.bar).toBe('Brotkrumen');
+    expect(german.overflowMenu).toBe('Collapsed breadcrumbs');
+
+    lang.set('de-AT');
+    expect(labels()).toBe(german);
   });
 });
