@@ -460,29 +460,31 @@ export class CngxTreeSelect<T = unknown>
     action: 'added' | 'removed',
     count: number,
   ): void {
-    // Copy read untracked: a language flip must not re-announce.
-    const perInstance = this.announceChanges();
-    const enabled = perInstance ?? untracked(() => this.config.announcer().enabled) ?? true;
-    if (!enabled) {
-      return;
-    }
-    const format = this.announceTemplate() ?? untracked(() => this.config.announcer().format);
-    const label = this.label();
-    const aria = this.ariaLabel();
-    let fieldLabel = untracked(() => this.config.ariaLabels().fieldLabelFallback) ?? 'Selection';
-    if (label.length > 0) {
-      fieldLabel = label;
-    } else if (aria && aria.length > 0) {
-      fieldLabel = aria;
-    }
-    const message = format({
-      selectedLabel: item?.label ?? null,
-      fieldLabel,
-      multi: true,
-      action,
-      count,
+    // Announcing is a side effect: nothing read here may subscribe a reactive
+    // caller, so a language flip never re-runs the effect that announced.
+    untracked(() => {
+      const enabled = this.announceChanges() ?? this.config.announcer().enabled ?? true;
+      if (!enabled) {
+        return;
+      }
+      const format = this.announceTemplate() ?? this.config.announcer().format;
+      const label = this.label();
+      const aria = this.ariaLabel();
+      let fieldLabel = this.config.ariaLabels().fieldLabelFallback ?? 'Selection';
+      if (label.length > 0) {
+        fieldLabel = label;
+      } else if (aria && aria.length > 0) {
+        fieldLabel = aria;
+      }
+      const message = format({
+        selectedLabel: item?.label ?? null,
+        fieldLabel,
+        multi: true,
+        action,
+        count,
+      });
+      this.announcer.announce(message, this.config.announcer().politeness);
     });
-    this.announcer.announce(message, untracked(() => this.config.announcer().politeness));
   }
 
   /**

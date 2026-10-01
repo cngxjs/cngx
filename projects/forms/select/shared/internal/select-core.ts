@@ -674,33 +674,34 @@ export function createSelectCore<T, TCommit>(
     fromIndex?: number,
     toIndex?: number,
   ): void {
-    const perInstance = announcerInputs.announceChanges();
-    const enabled = perInstance ?? untracked(() => config.announcer().enabled) ?? true;
-    if (!enabled) {
-      return;
-    }
-    const format = announcerInputs.announceTemplate() ?? untracked(() => config.announcer().format);
-    const label = deps.label();
-    const aria = deps.ariaLabel();
-    let fieldLabel = untracked(() => config.ariaLabels().fieldLabelFallback) ?? 'Selection';
-    if (label.length > 0) {
-      fieldLabel = label;
-    } else if (aria && aria.length > 0) {
-      fieldLabel = aria;
-    }
-    const message = format({
-      selectedLabel: option?.label ?? null,
-      fieldLabel,
-      multi,
-      action,
-      count,
-      fromIndex,
-      toIndex,
+    // Announcing is a side effect: nothing read here may subscribe a reactive
+    // caller, so a language flip (copy or a consumer formatter) never re-runs
+    // the effect that announced.
+    untracked(() => {
+      const enabled = announcerInputs.announceChanges() ?? config.announcer().enabled ?? true;
+      if (!enabled) {
+        return;
+      }
+      const format = announcerInputs.announceTemplate() ?? config.announcer().format;
+      const label = deps.label();
+      const aria = deps.ariaLabel();
+      let fieldLabel = config.ariaLabels().fieldLabelFallback ?? 'Selection';
+      if (label.length > 0) {
+        fieldLabel = label;
+      } else if (aria && aria.length > 0) {
+        fieldLabel = aria;
+      }
+      const message = format({
+        selectedLabel: option?.label ?? null,
+        fieldLabel,
+        multi,
+        action,
+        count,
+        fromIndex,
+        toIndex,
+      });
+      announcer.announce(message, config.announcer().politeness);
     });
-    announcer.announce(
-      message,
-      untracked(() => config.announcer().politeness),
-    );
   }
 
   return {
