@@ -530,7 +530,9 @@
     }
 
     .cngx-banner--animate {
-      animation: cngx-banner-enter var(--cngx-banner-enter-duration, 200ms) ease-out both;
+      /* Fill backwards only: a forwards fill would pin the keyframe opacity
+       * after the slide and override the `--pending` dim. */
+      animation: cngx-banner-enter var(--cngx-banner-enter-duration, 200ms) ease-out backwards;
     }
 
     .cngx-banner--info {
@@ -625,9 +627,13 @@
       outline-offset: 2px;
     }
 
+    /* Disabled by colour, never opacity (the field recipe); the accent
+     * border follows. A native disabled button reads GrayText under
+     * forced colors from the UA. */
     .cngx-banner__action:disabled {
       cursor: not-allowed;
-      opacity: 0.6;
+      color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+      border-color: currentColor;
     }
 
     .cngx-banner__dismiss {

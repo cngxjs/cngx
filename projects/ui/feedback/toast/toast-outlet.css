@@ -35,7 +35,7 @@
  * - `.cngx-toast__title` - bold header
  * - `.cngx-toast__description` - secondary copy, line-clamped via
  *   `--cngx-toast-description-max-lines` (default 3)
- * - `.cngx-toast__count` - trailing message-count badge (60% opacity)
+ * - `.cngx-toast__count` - trailing message-count badge (muted text colour)
  * - `.cngx-toast__action` - underlined inline action button
  * - `.cngx-toast__dismiss` - dismiss control
  *
@@ -348,16 +348,6 @@
   }
 
   /**
-   * Opacity of the trailing message-count badge.
-   * @group State / Overflow
-   */
-  @property --cngx-toast-count-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.6;
-  }
-
-  /**
    * Padding shorthand of the inline action button.
    * @group Layout
    */
@@ -574,8 +564,9 @@
       margin-top: 2px;
     }
 
+    /* De-emphasis by colour (muted text), never opacity. */
     .cngx-toast__count {
-      opacity: var(--cngx-toast-count-opacity, 0.6);
+      color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
       font-size: var(--cngx-toast-description-font-size, 0.8125rem);
     }
 
