@@ -115,6 +115,9 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // @cngx/forms/field - the disabled label fades by colour only, which the
   // forced palette paints as CanvasText; re-signalled with GrayText.
   'projects/forms/theming/components/cngx-field-text.css',
+  // @cngx/forms/input - a disabled rating fades its stars by colour only, and
+  // an aria-disabled button gets no UA GrayText; re-signalled with GrayText.
+  'projects/forms/input/rating/rating.component.css',
   // @cngx/forms/filter-builder - the pill rows draw their segment dividers
   // with box-shadow, which WHCM strips; redrawn as ButtonBorder borders.
   'projects/forms/filter-builder/filter-builder-expression-row.component.css',
@@ -284,7 +287,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(38);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(39);
   });
 });
 

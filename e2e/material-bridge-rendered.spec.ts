@@ -1,9 +1,10 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 import {
   compileBridge,
   compileEntry,
   computedValue,
+  MAT_SYS_STANDINS,
   matSys,
   matSysExtra,
   renderFixture,
@@ -209,11 +210,6 @@ test.describe('material-bridge rendered values: rating', () => {
     <button id="star-idle" type="button" class="cngx-rating__item" role="radio" aria-checked="false">&#9733;</button>
     <button id="star-active" type="button" class="cngx-rating__item" role="radio" aria-checked="true">&#9733;</button>
   </span>
-</cngx-rating>
-<cngx-rating id="rating-disabled" class="cngx-rating--disabled">
-  <span class="cngx-rating__items">
-    <button id="star-disabled" type="button" class="cngx-rating__item" role="radio" aria-checked="false">&#9733;</button>
-  </span>
 </cngx-rating>`;
 
   test.beforeEach(async ({ page }) => {
@@ -236,38 +232,165 @@ test.describe('material-bridge rendered values: rating', () => {
       matSys('primary'),
     );
   });
-
-  test('a disabled rating dims to the Material 38% convention', async ({ page }) => {
-    expect(await computedValue(page, '#star-disabled', 'opacity')).toBe('0.38');
-  });
 });
 
-test.describe('material-bridge rendered values: phone-input', () => {
-  const PHONE_CSS = ['projects/forms/input/phone-input/phone-input.component.css'] as const;
-  const BRIDGE_CSS = compileBridge('phone-input-theme');
+test.describe('material-bridge rendered values: rating, disabled on the real component', () => {
+  // The disabled class sits on the cngx-rating host, so the disabled rule is
+  // a :host() selector that a static fixture cannot match (an unencapsulated
+  // fixture once kept a dead descendant selector green). This block runs the
+  // real story route, where the stylesheet is encapsulated as shipped, and
+  // layers the system bridge, the rating bridge and the stand-ins on top.
+  const SYSTEM_CSS = compileEntry(`
+@use '@angular/material' as mat;
+@use 'material/system-bridge' as cngx-system;
 
-  const PHONE_HTML = `
-<cngx-phone-input id="phone" class="cngx-phone-input cngx-phone-input--disabled">
-  <select class="cngx-phone-input__country" aria-label="Country code"><option>+43</option></select>
-  <input class="cngx-phone-input__number" type="tel" aria-label="Phone number" />
-</cngx-phone-input>`;
+$theme: mat.define-theme((
+  color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+));
+
+html { @include cngx-system.theme($theme); }
+`);
+  const BRIDGE_CSS = compileBridge('rating-theme');
 
   test.beforeEach(async ({ page }) => {
-    await renderFixture(page, {
-      componentCss: PHONE_CSS,
-      bridgeCss: BRIDGE_CSS,
-      html: PHONE_HTML,
+    await page.goto('/#/forms/input/rating/disabled');
+    await page.locator('cngx-rating.cngx-rating--disabled').waitFor();
+    await page.addStyleTag({ content: SYSTEM_CSS + BRIDGE_CSS });
+    await page.addStyleTag({ content: MAT_SYS_STANDINS });
+    await page.addStyleTag({
+      content:
+        '*, *::before, *::after { transition: none !important; animation: none !important; }',
     });
   });
 
-  test('the disabled-opacity token lands on its read element', async ({ page }) => {
-    // The read site IS the host (:host(.cngx-phone-input--disabled) reads
-    // it), but that rule sits behind emulated encapsulation and cannot
-    // match in a static fixture - the landing proof is the token value
-    // computing on the host element itself.
-    expect(await computedValue(page, '#phone', '--cngx-phone-input-disabled-opacity')).toBe(
-      '0.38',
+  // Colour of a probe span appended next to the rating, so it resolves in the
+  // same cascade context as the stars.
+  async function probeColour(page: Page, color: string): Promise<string> {
+    return page
+      .locator('cngx-rating')
+      .first()
+      .evaluate((host, value) => {
+        const probe = document.createElement('span');
+        probe.style.color = value;
+        host.parentElement!.appendChild(probe);
+        const resolved = getComputedStyle(probe).color;
+        probe.remove();
+        return resolved;
+      }, color);
+  }
+
+  async function starColours(page: Page): Promise<{ color: string; opacity: string }[]> {
+    return page.locator('cngx-rating .cngx-rating__item').evaluateAll((items) =>
+      items.map((item) => {
+        let opacity = 1;
+        for (let node: Element | null = item; node; node = node.parentElement) {
+          opacity *= parseFloat(getComputedStyle(node).opacity);
+        }
+        return { color: getComputedStyle(item).color, opacity: String(opacity) };
+      }),
     );
+  }
+
+  test('every star paints 38% of on-surface, not an opacity', async ({ page }) => {
+    const expected = await probeColour(
+      page,
+      `color-mix(in oklab, ${matSys('on-surface')} 38%, transparent)`,
+    );
+    const stars = await starColours(page);
+    expect(stars).toHaveLength(5);
+    for (const star of stars) {
+      expect(star).toEqual({ color: expected, opacity: '1' });
+    }
+  });
+
+  test('every star reads GrayText under forced colors', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' });
+    const gray = await probeColour(page, 'GrayText');
+    expect(gray).not.toBe(await probeColour(page, 'CanvasText'));
+    for (const star of await starColours(page)) {
+      expect(star.color).toBe(gray);
+    }
+  });
+});
+
+test.describe('material-bridge rendered values: phone-input, disabled on the real component', () => {
+  // The phone-input bridge is an intentional no-op: a disabled phone input
+  // fades its country select and number input by the disabled field recipe,
+  // which the system bridge maps to on-surface. The group host adds no fade
+  // on top, so each part paints 38% on-surface at full opacity. Runs the real
+  // story route, where the component styles are encapsulated as shipped.
+  const SYSTEM_CSS = compileEntry(`
+@use '@angular/material' as mat;
+@use 'material/system-bridge' as cngx-system;
+
+$theme: mat.define-theme((
+  color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+));
+
+html { @include cngx-system.theme($theme); }
+`);
+  const PARTS = [
+    'cngx-phone-input .cngx-phone-input__number',
+    'cngx-phone-input .cngx-phone-input__country .cngx-field-trigger',
+  ];
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/#/forms/input/phone/disabled');
+    await page.locator('cngx-phone-input.cngx-phone-input--disabled').waitFor();
+    await page.addStyleTag({ content: SYSTEM_CSS + compileBridge('phone-input-theme') });
+    await page.addStyleTag({ content: MAT_SYS_STANDINS });
+    await page.addStyleTag({
+      content:
+        '*, *::before, *::after { transition: none !important; animation: none !important; }',
+    });
+  });
+
+  // Colour of a probe span appended next to the phone input, so it resolves
+  // in the same cascade context as the parts.
+  async function probeColour(page: Page, color: string): Promise<string> {
+    return page
+      .locator('cngx-phone-input')
+      .first()
+      .evaluate((host, value) => {
+        const probe = document.createElement('span');
+        probe.style.color = value;
+        host.parentElement!.appendChild(probe);
+        const resolved = getComputedStyle(probe).color;
+        probe.remove();
+        return resolved;
+      }, color);
+  }
+
+  async function paint(page: Page, selector: string): Promise<{ color: string; opacity: string }> {
+    return page
+      .locator(selector)
+      .first()
+      .evaluate((el) => {
+        let opacity = 1;
+        for (let node: Element | null = el; node; node = node.parentElement) {
+          opacity *= parseFloat(getComputedStyle(node).opacity);
+        }
+        return { color: getComputedStyle(el).color, opacity: String(opacity) };
+      });
+  }
+
+  test('both parts paint 38% of on-surface once, not an opacity', async ({ page }) => {
+    const expected = await probeColour(
+      page,
+      `color-mix(in oklab, ${matSys('on-surface')} 38%, transparent)`,
+    );
+    for (const part of PARTS) {
+      expect(await paint(page, part)).toEqual({ color: expected, opacity: '1' });
+    }
+  });
+
+  test('both parts read GrayText under forced colors', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' });
+    const gray = await probeColour(page, 'GrayText');
+    expect(gray).not.toBe(await probeColour(page, 'CanvasText'));
+    for (const part of PARTS) {
+      expect((await paint(page, part)).color).toBe(gray);
+    }
   });
 });
 

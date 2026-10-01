@@ -49,7 +49,6 @@ describe('rating Material bridge', () => {
   const CONSUMED = [
     '--cngx-rating-color',
     '--cngx-rating-color-active',
-    '--cngx-rating-disabled-opacity',
     '--cngx-rating-focus-ring',
   ];
 
@@ -67,19 +66,10 @@ describe('rating Material bridge', () => {
 });
 
 describe('phone-input Material bridge', () => {
-  // the single tone-specific name; gap (space-derived) and
-  // number-min-width (content geometry) are documented no-ops
-  const CONSUMED = ['--cngx-phone-input-disabled-opacity'];
-
-  it('emits only consumed token names (M3)', () => {
-    expect(emittedTokenNames('phone-input-theme', 'v1')).toEqual(CONSUMED);
-  });
-
-  it('emits a consumed-name subset (M2)', () => {
-    const names = emittedTokenNames('phone-input-theme', 'v0');
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect(CONSUMED).toContain(name);
-    }
+  // an intentional no-op: gap (space-derived) and number-min-width (content
+  // geometry) have no Material counterpart, and the disabled parts fade by
+  // the system-bridged field recipe
+  it.each(['v1', 'v0'] as const)('emits no token names (%s)', (version) => {
+    expect(emittedTokenNames('phone-input-theme', version)).toEqual([]);
   });
 });
