@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cdp } from 'vitest/browser';
 
 import { CngxAxis } from '../axis/axis.component';
+import { CngxChartLegend } from '../legend/legend.component';
 import { CngxChart } from '../chart/chart.component';
 import { CngxArea } from './area.component';
 import { CngxBand } from './band.component';
@@ -27,7 +28,17 @@ const SCHEMES = ['light', 'dark'] as const;
 @Component({
   selector: 'cngx-chart-series-forced-host',
   standalone: true,
-  imports: [CngxChart, CngxAxis, CngxArea, CngxBand, CngxBar, CngxLine, CngxScatter, CngxThreshold],
+  imports: [
+    CngxChart,
+    CngxAxis,
+    CngxArea,
+    CngxBand,
+    CngxBar,
+    CngxLine,
+    CngxScatter,
+    CngxThreshold,
+    CngxChartLegend,
+  ],
   styleUrls: ['../../../core/theming/system-tokens.css'],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -67,6 +78,21 @@ const SCHEMES = ['light', 'dark'] as const;
       <svg:g cngxBand [from]="2" [to]="4" label="zone" [color]="'rgb(200, 0, 0)'"></svg:g>
       <svg:g cngxThreshold [value]="6" [label]="'limit'" [dashed]="true" [color]="'rgb(200, 0, 0)'"></svg:g>
     </cngx-chart>
+    <div class="paired">
+      <cngx-chart [data]="[4, 6, 5]" [width]="240" [height]="120" aria-label="paired">
+        <svg:g cngxAxis position="bottom" type="band" [domain]="['a', 'b', 'c']"></svg:g>
+        <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]" [grid]="true"></svg:g>
+        <svg:g cngxBand [from]="1" [to]="2"></svg:g>
+        <svg:g cngxBar></svg:g>
+        <svg:g cngxArea [data]="[6, 7, 6]" [xAccessor]="band"></svg:g>
+        <svg:g cngxLine [data]="[6, 7, 6]" [xAccessor]="band"></svg:g>
+        <svg:g cngxThreshold [value]="9"></svg:g>
+        <svg:g cngxBar [data]="[2, 3, 2]"></svg:g>
+        <svg:g cngxLine [data]="[8, 8, 9]" [xAccessor]="band"></svg:g>
+        <svg:g cngxLine [data]="[1, 2, 1]" [xAccessor]="band"></svg:g>
+      </cngx-chart>
+      <cngx-chart-legend [items]="legend" />
+    </div>
     <span class="plain" style="color: rgb(200, 0, 0)">plain</span>
     <span class="probe-canvastext" style="color: CanvasText"></span>
     <span class="probe-canvas" style="color: Canvas"></span>
@@ -75,6 +101,11 @@ const SCHEMES = ['light', 'dark'] as const;
 class SeriesHost {
   protected readonly index = (_: unknown, i: number): number => i;
   protected readonly value = (d: unknown): number => Number(d);
+  protected readonly band = (_: unknown, i: number): string => ['a', 'b', 'c'][i];
+  protected readonly legend = ['bars', 'trend', 'target', 'peak', 'floor'].map((label) => ({
+    label,
+    color: 'rgb(200, 0, 0)',
+  }));
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -249,6 +280,44 @@ describe.each(SCHEMES)('chart series under forced colors, %s', (scheme) => {
       const grid = one(root, '.lines .cngx-axis__grid-line');
       expect(computedValue(grid, 'stroke')).toBe(ink);
       expect(computedValue(grid, 'stroke-opacity')).toBe('0.35');
+    });
+  });
+
+  describe('legend and series', () => {
+    // A step is the position in the four-step cycle, read from the paint.
+    const swatchStep = (el: Element, canvas: string): number => {
+      const image = computedValue(el, 'background-image');
+      if (image.includes('45deg')) {
+        return 2;
+      }
+      if (image.includes('repeating-linear-gradient')) {
+        return 4;
+      }
+      return computedValue(el, 'background-color') === canvas ? 3 : 1;
+    };
+    const seriesStep = (layer: Element, canvas: string): number => {
+      const line = layer.querySelector('.cngx-line');
+      if (line) {
+        const dashes = ['none', '6px, 3px', '0.1px, 4px', '8px, 3px, 0.1px, 3px'];
+        return dashes.indexOf(computedValue(line, 'stroke-dasharray')) + 1;
+      }
+      const fill = computedValue(one(layer, '.cngx-bar, .cngx-scatter'), 'fill');
+      if (fill.includes('-diagonal')) {
+        return 2;
+      }
+      if (fill.includes('-horizontal')) {
+        return 4;
+      }
+      return fill === canvas ? 3 : 1;
+    };
+
+    it('give legend entry N and series N the same step, whatever the series kind', async () => {
+      const root = await mountForced();
+      const canvas = probe(root, 'canvas');
+      const swatches = all(root, '.paired .cngx-chart-legend__swatch').map((s) => swatchStep(s, canvas));
+      const series = all(root, '.paired .cngx-chart-series').map((g) => seriesStep(g, canvas));
+      expect(swatches).toEqual([1, 2, 3, 4, 1]);
+      expect(series).toEqual(swatches);
     });
   });
 });
