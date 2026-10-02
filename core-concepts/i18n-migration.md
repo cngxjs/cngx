@@ -84,7 +84,8 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/common/display
 
 - The copy inputs `CngxAvatarGroup.label` and `CngxChip.removeAriaLabel` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `CNGX_DISPLAY_I18N` default. Template bindings are unchanged; the rendered `aria-label` follows a language switch.
-- `CngxAvatarGroup`: a bound `label` now always composes the English `<total> <noun>` summary, also when it happens to equal the `avatarGroupNoun` default. Leave `label` unbound to use a custom `avatarGroupLabel` formatter.
+- `CngxAvatarGroup`: a bound `label` now always composes the `<total> <noun>` summary of the language's `avatarGroupLabel` message, also when it happens to equal the `avatarGroupNoun` default. Leave `label` unbound to use a custom `avatarGroupLabel` formatter.
+- `CngxDisplayI18n` has three new required keys: `avatarGroupLabelFor(total, hidden, noun)` (the summary for a given noun), `avatarGroupOverflow(count)` (the visible `+N` pill) and `badgeOverflow(max)` (English `'99+'`). A hand-built `Signal<CngxDisplayI18n>` supplies them; `withDisplayI18nLabels` overrides are unaffected.
 
 ### @cngx/common/layout
 
@@ -231,6 +232,11 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxGoal` formats `now` and `max` in its default `aria-valuetext` with the app locale (`1,234.5 of 2,000`, before `1234.5 of 2000`).
 - `CngxDelta` lets the locale draw the plus sign of a positive magnitude (`Intl` `signDisplay`), so a locale with its own plus sign or spacing gets it.
 - A `CngxMetric` without a value announces `No value` (with its unit, if any) instead of the dash glyph; the glyph still shows. A pack can place the unit before the value through `metricValueWithUnit`.
+
+### @cngx/common/display
+
+- `CngxBadge` formats a numeric value with the app locale (`1,200`) and renders a count above `max` through `badgeOverflow`. The `CngxAvatarGroup` `+N` pill formats its count the same way.
+- A `CngxAvatarGroup` with a bound `label` noun builds its summary from the language's `avatarGroupLabel` message instead of a fixed English composition; English output is unchanged. Its noun is bidi-isolated.
 
 ### @cngx/common/interactive
 

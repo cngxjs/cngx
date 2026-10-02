@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxAvatar } from '../avatar/avatar.component';
 import { CngxAvatarGroup } from './avatar-group.component';
+import { stripBidiIsolates } from '@cngx/testing';
 
 @Component({
   template: `<cngx-avatar-group [max]="max()" [label]="label()" [labelFormat]="labelFormat()">
@@ -57,7 +58,7 @@ describe('CngxAvatarGroup', () => {
 
   it('summarises total and hidden counts in aria-label', () => {
     const { groupEl } = setup();
-    expect(groupEl.getAttribute('aria-label')).toBe('5 avatars, 2 not shown');
+    expect(stripBidiIsolates(groupEl.getAttribute('aria-label'))).toBe('5 avatars, 2 not shown');
   });
 
   it('renders no pill and hides nothing when max >= total', () => {
@@ -68,7 +69,7 @@ describe('CngxAvatarGroup', () => {
     fixture.detectChanges();
     expect(pill(groupEl)).toBeNull();
     expect(avatarEls(groupEl).every((el) => !el.hasAttribute('hidden'))).toBe(true);
-    expect(groupEl.getAttribute('aria-label')).toBe('5 avatars');
+    expect(stripBidiIsolates(groupEl.getAttribute('aria-label'))).toBe('5 avatars');
   });
 
   it('collapses every avatar when max is 0', () => {
@@ -80,7 +81,7 @@ describe('CngxAvatarGroup', () => {
     const els = avatarEls(groupEl);
     expect(els.filter((el) => !el.hasAttribute('hidden')).length).toBe(0);
     expect(pill(groupEl)?.textContent).toBe('+5');
-    expect(groupEl.getAttribute('aria-label')).toBe('5 avatars, 5 not shown');
+    expect(stripBidiIsolates(groupEl.getAttribute('aria-label'))).toBe('5 avatars, 5 not shown');
   });
 
   it('clamps a negative max to 0 (no overcounting aria-label)', () => {
@@ -90,7 +91,7 @@ describe('CngxAvatarGroup', () => {
     TestBed.flushEffects();
     fixture.detectChanges();
     expect(pill(groupEl)?.textContent).toBe('+5');
-    expect(groupEl.getAttribute('aria-label')).toBe('5 avatars, 5 not shown');
+    expect(stripBidiIsolates(groupEl.getAttribute('aria-label'))).toBe('5 avatars, 5 not shown');
   });
 
   it('routes the aria-label through labelFormat when set', () => {
