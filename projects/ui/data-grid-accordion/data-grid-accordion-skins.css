@@ -955,3 +955,14 @@
 }
 
 
+
+/* forced-colors (WHCM): the log-stream severity edge is a background-only 3px
+ * strip and flattens into Canvas. Draw it CanvasText for every severity; the
+ * LEVEL column text carries which one, so the edge only marks that the row has
+ * a severity. Unlayered direct selector outside @scope: its specificity beats
+ * the scoped edge rules. */
+@media (forced-colors: active) {
+  .cngx-data-grid-accordion[data-skin='log-stream'] .cngx-dga-row[data-severity] .cngx-dga-row__summary::before {
+    background: CanvasText;
+  }
+}

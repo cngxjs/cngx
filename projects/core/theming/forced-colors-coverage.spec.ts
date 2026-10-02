@@ -176,6 +176,9 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // timeline rail and nodes are background-only paint; re-drawn with system
   // colours (the card elevation box-shadows stay decorative).
   'projects/ui/accordion/accordion-skins.css',
+  // @cngx/ui/data-grid-accordion - the log-stream severity edge is a
+  // background-only strip; drawn in CanvasText (the LEVEL text names it).
+  'projects/ui/data-grid-accordion/data-grid-accordion-skins.css',
 ];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
@@ -224,10 +227,6 @@ const EXCLUDED_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   },
   // @cngx/ui (Phase D) - box-shadow hosts whose boundary survives WHCM another
   // way, so a re-draw would be redundant (Success-Kriterium: 0 redundant blocks).
-  {
-    file: 'projects/ui/data-grid-accordion/data-grid-accordion-skins.css',
-    note: 'the inset box-shadow is a decorative primary-zone accent on the detail region, which keeps a self-healing border-block-start; expand state is communicated via aria-expanded',
-  },
   {
     file: 'projects/ui/tabs/tab-group.component.css',
     note: 'the selected tab re-signals via the common tabs-base.css Highlight underline (.cngx-tabs__tab[aria-selected=true]); the box-shadows here are decorative skin ink-bars and base-ink-bar suppressions',
@@ -302,7 +301,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(48);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(49);
   });
 });
 
