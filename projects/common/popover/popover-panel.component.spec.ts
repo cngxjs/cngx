@@ -1,5 +1,11 @@
 import { Component, signal, TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopoverPanel } from './popover-panel.component';
@@ -260,6 +266,36 @@ describe('CngxPopoverPanel', () => {
     labels.set({});
     fixture.detectChanges();
     expect(btn?.getAttribute('aria-label')).toBe('Close');
+  });
+
+  it('names the close button from the popover section of the active pack', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    const { fixture, panelEl } = setup(CloseButtonHost, [
+      provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+    ]);
+    const btn = panelEl.querySelector('.cngx-popover-panel__close button');
+    expect(btn?.getAttribute('aria-label')).toBe('Close');
+
+    pack.set({ locale: 'de', popover: { close: 'Schließen' } });
+    fixture.detectChanges();
+    expect(btn?.getAttribute('aria-label')).toBe('Schließen');
+  });
+
+  it('applies withPopoverPanelLabels on top of the active pack', () => {
+    const labels = signal<{ close?: string }>({ close: 'Zu' });
+    const { fixture, panelEl } = setup(CloseButtonHost, [
+      provideCngxI18n(
+        withPartialPack({ locale: 'de', popover: { close: 'Schließen' } }),
+        withDocumentLanguage('off'),
+      ),
+      providePopoverPanel(withPopoverPanelLabels(labels)),
+    ]);
+    const btn = panelEl.querySelector('.cngx-popover-panel__close button');
+    expect(btn?.getAttribute('aria-label')).toBe('Zu');
+
+    labels.set({});
+    fixture.detectChanges();
+    expect(btn?.getAttribute('aria-label')).toBe('Schließen');
   });
 
   it('should hide close button when showClose is false', () => {

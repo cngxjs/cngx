@@ -17,7 +17,7 @@ import type { CngxAsyncState } from '@cngx/core/utils';
 import { createOverrideMerge, nextUid } from '@cngx/core/utils';
 
 import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
-import { CNGX_POPOVER_PANEL_CONFIG, POPOVER_PANEL_LABELS_DEFAULTS } from './popover-panel.config';
+import { CNGX_POPOVER_PANEL_CONFIG, injectPopoverPanelLanguage } from './popover-panel.config';
 import {
   CngxPopoverArrow,
   type CngxPopoverArrowContext,
@@ -226,8 +226,8 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   /** Show an arrow. Falls back to global config from `providePopoverPanel(withArrow())`. */
   readonly showArrowInput = input<boolean | undefined>(undefined, { alias: 'showArrow' });
 
-  /** Panel copy: `config.labels` over the English defaults, one shared merge per config object. */
-  private readonly labels = createOverrideMerge(POPOVER_PANEL_LABELS_DEFAULTS, this.config.labels);
+  /** Panel copy: `config.labels` over the popover section of the active language pack. */
+  private readonly labels = createOverrideMerge(injectPopoverPanelLanguage(), this.config.labels);
 
   /** Accessible name of the built-in close button. */
   protected readonly closeLabel = computed(() => this.labels().close);
