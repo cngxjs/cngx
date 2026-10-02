@@ -13,6 +13,7 @@ export {
   provideCardI18n,
   injectCardI18n,
 } from './i18n/card-i18n';
+export type { CngxCardLanguageSection } from './i18n/card-language-section';
 export { CngxCardHeader } from './card-header.directive';
 export { CngxCardTitle } from './card-title.directive';
 export { CngxCardSubtitle } from './card-subtitle.directive';
