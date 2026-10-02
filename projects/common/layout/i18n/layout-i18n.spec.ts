@@ -1,6 +1,12 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
 import { createResizeObserverMock } from '@cngx/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -34,6 +40,38 @@ describe('CNGX_LAYOUT_I18N', () => {
   });
 
   afterEach(() => vi.unstubAllGlobals());
+
+  it('reads the layout section of the active pack, with English for what it leaves out', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+    });
+    const bundle = TestBed.inject(CNGX_LAYOUT_I18N);
+    pack.set({ locale: 'de', layout: { expandableTextMore: 'Mehr anzeigen' } });
+    expect(bundle()).toEqual({
+      expandableTextMore: 'Mehr anzeigen',
+      expandableTextLess: 'Show less',
+    });
+  });
+
+  it('lets provideLayoutI18n override single keys on top of the active pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({
+            locale: 'de',
+            layout: { expandableTextMore: 'Mehr anzeigen', expandableTextLess: 'Weniger anzeigen' },
+          }),
+          withDocumentLanguage('off'),
+        ),
+        provideLayoutI18n(withLayoutI18nLabels({ expandableTextLess: 'Einklappen' })),
+      ],
+    });
+    expect(TestBed.inject(CNGX_LAYOUT_I18N)()).toEqual({
+      expandableTextMore: 'Mehr anzeigen',
+      expandableTextLess: 'Einklappen',
+    });
+  });
 
   it('ships the English labels without a provider', () => {
     expect(TestBed.inject(CNGX_LAYOUT_I18N)()).toEqual({

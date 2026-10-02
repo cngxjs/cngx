@@ -1,5 +1,8 @@
-import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
+import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { injectLanguageSection } from '@cngx/core/i18n';
+import { createOverrideMerge } from '@cngx/core/utils';
+
+import { CNGX_LAYOUT_LANGUAGE_EN } from './layout-language-section';
 
 /**
  * Layout i18n surface. Library defaults are English; consumers override via
@@ -21,15 +24,21 @@ export interface CngxLayoutI18n {
   readonly expandableTextLess: string;
 }
 
-const LAYOUT_I18N_DEFAULTS: CngxLayoutI18n = {
-  expandableTextMore: 'Show more',
-  expandableTextLess: 'Show less',
-};
+const NO_SECTION: Partial<CngxLayoutI18n> = {};
+
+/** @internal The English section with the active pack's layout section on top. */
+function layoutBundleFromPack(): Signal<CngxLayoutI18n> {
+  const section = injectLanguageSection('layout');
+  return createOverrideMerge(
+    CNGX_LAYOUT_LANGUAGE_EN,
+    computed(() => section() ?? NO_SECTION),
+  );
+}
 
 /**
- * DI token for the layout i18n bundle. `providedIn: 'root'` with English
- * defaults; the value is a `Signal`, shared by every reader under one
- * injector.
+ * DI token for the layout i18n bundle. `providedIn: 'root'`: the layout
+ * section of the active language pack over the English defaults; the value
+ * is a `Signal`, shared by every reader under one injector.
  *
  * @category common/layout/i18n
  * @wcag AA
@@ -39,7 +48,7 @@ const LAYOUT_I18N_DEFAULTS: CngxLayoutI18n = {
  */
 export const CNGX_LAYOUT_I18N = new InjectionToken<Signal<CngxLayoutI18n>>('CngxLayoutI18n', {
   providedIn: 'root',
-  factory: () => coerceSignal(LAYOUT_I18N_DEFAULTS),
+  factory: layoutBundleFromPack,
 });
 
 /**
@@ -60,9 +69,9 @@ function defineLayoutI18nFeature(
 }
 
 /**
- * Override layout labels via a partial bundle - unset keys keep the English
- * default. Pass a `Signal` of a partial bundle to switch languages at
- * runtime.
+ * Override layout labels via a partial bundle - unset keys keep the
+ * language pack's copy, or the English default. Pass a `Signal` of a partial
+ * bundle to switch languages at runtime.
  *
  * @category common/layout/i18n
  * @since 0.1.0
@@ -75,7 +84,8 @@ export function withLayoutI18nLabels(
 
 /**
  * Provider for the layout i18n bundle. Returns a plain `Provider`, so it
- * also scopes a subtree through `viewProviders`.
+ * also scopes a subtree through `viewProviders`. The features apply on top
+ * of the active language pack.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -96,7 +106,7 @@ export function provideLayoutI18n(...features: readonly CngxLayoutI18nFeature[])
     useFactory: () =>
       features.reduce<Signal<CngxLayoutI18n>>(
         (bundle, feat) => feat(bundle),
-        coerceSignal(LAYOUT_I18N_DEFAULTS),
+        layoutBundleFromPack(),
       ),
   };
 }
