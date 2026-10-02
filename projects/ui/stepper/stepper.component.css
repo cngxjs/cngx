@@ -2339,6 +2339,17 @@
     forced-color-adjust: none;
   }
 
+  /* The error badge sits inside the indicator, so it inherits the current
+     step's opt-out and painted its unforced author red. Opt it out on purpose
+     and paint system colours: a CanvasText disc with a Canvas glyph stands out
+     on the Highlight disc and on a Canvas one alike. A *cngxStepBadge slot
+     inherits the opt-out either way, so its art should paint currentColor. */
+  .cngx-stepper .cngx-stepper__badge {
+    forced-color-adjust: none;
+    background: CanvasText;
+    color: Canvas;
+  }
+
   /* Disabled step: the field colour is forced away, so it reads GrayText;
      the indicator number follows currentColor and its disc ring follows suit. */
   .cngx-stepper__step[aria-disabled='true'] {
