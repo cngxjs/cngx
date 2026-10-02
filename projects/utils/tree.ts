@@ -225,13 +225,26 @@ export function filterTree<T>(
   return out;
 }
 
+function compareKeys(a: string | number, b: string | number): number {
+  if (a < b) {
+    return -1;
+  }
+  if (a > b) {
+    return 1;
+  }
+  return 0;
+}
+
 /**
  * Return a new tree where each level's siblings are sorted independently by
  * the `by` extractor. Child ordering is stable within its own level only -
  * the relative position of nodes across different parents is irrelevant.
  *
- * The treetable keeps its own numeric-aware `localeCompare` collation - this
- * comparator (`<` / `>` on the extractor output) is not a drop-in
+ * Without `compare`, keys compare with `<` / `>` - code-unit order for
+ * strings, with no locale. Pass a comparator for anything else, e.g. a
+ * locale collation: `sortTree(nodes, by, 'asc', new Intl.Collator('de').compare)`.
+ * `direction` applies on top of it. The treetable keeps its own numeric-aware
+ * `localeCompare` collation; the default comparator is not a drop-in
  * replacement for it.
  *
  * @category utils/tree
@@ -240,25 +253,17 @@ export function sortTree<T>(
   nodes: readonly CngxTreeNode<T>[],
   by: (value: T) => string | number,
   direction: 'asc' | 'desc' = 'asc',
+  compare: (a: string | number, b: string | number) => number = compareKeys,
 ): CngxTreeNode<T>[] {
   const mult = direction === 'desc' ? -1 : 1;
-  const cmp = (a: CngxTreeNode<T>, b: CngxTreeNode<T>): number => {
-    const av = by(a.value);
-    const bv = by(b.value);
-    if (av < bv) {
-      return -1 * mult;
-    }
-    if (av > bv) {
-      return 1 * mult;
-    }
-    return 0;
-  };
+  const cmp = (a: CngxTreeNode<T>, b: CngxTreeNode<T>): number =>
+    compare(by(a.value), by(b.value)) * mult;
   const sorted = [...nodes].sort(cmp);
   return sorted.map((node) => ({
     ...node,
     children:
       node.children && node.children.length > 0
-        ? sortTree(node.children, by, direction)
+        ? sortTree(node.children, by, direction, compare)
         : node.children,
   }));
 }

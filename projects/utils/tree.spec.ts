@@ -228,4 +228,34 @@ describe('sortTree', () => {
     expect(input.map((n) => n.value.id)).toEqual(['z', 'a']);
     expect(input[0]!.children!.map((n) => n.value.id)).toEqual(['z2', 'z1']);
   });
+
+  it('keeps code-unit order for strings without a comparator', () => {
+    const data: CngxTreeNode<Row>[] = [
+      { value: { id: 'z', name: 'Zebra' } },
+      { value: { id: 'a', name: 'Äpfel' } },
+    ];
+    expect(sortTree(data, (v) => v.name).map((n) => n.value.name)).toEqual(['Zebra', 'Äpfel']);
+  });
+
+  it('sorts every level with the given comparator and applies direction on top', () => {
+    const collator = new Intl.Collator('de');
+    const collate = (a: string | number, b: string | number): number =>
+      collator.compare(String(a), String(b));
+    const data: CngxTreeNode<Row>[] = [
+      {
+        value: { id: 'z', name: 'Zebra' },
+        children: [
+          { value: { id: 'z2', name: 'zwei' } },
+          { value: { id: 'z1', name: 'ähnlich' } },
+        ],
+      },
+      { value: { id: 'a', name: 'Äpfel' } },
+    ];
+    const asc = sortTree(data, (v) => v.name, 'asc', collate);
+    expect(asc.map((n) => n.value.name)).toEqual(['Äpfel', 'Zebra']);
+    expect(asc[1].children!.map((n) => n.value.name)).toEqual(['ähnlich', 'zwei']);
+    const desc = sortTree(data, (v) => v.name, 'desc', collate);
+    expect(desc.map((n) => n.value.name)).toEqual(['Zebra', 'Äpfel']);
+    expect(desc[0].children!.map((n) => n.value.name)).toEqual(['zwei', 'ähnlich']);
+  });
 });
