@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use '@angular/material' as mat;
 @use './bridge' as bridge;
 
@@ -76,21 +77,6 @@
   --cngx-alert-title-weight: 600;
   --cngx-alert-title-gap: 4px;
   --cngx-alert-actions-gap: 8px;
-
-  // Severity defaults (standalone, non-Material)
-  --cngx-alert-bg: #f8fafc;
-  --cngx-alert-info-bg: #eff6ff;
-  --cngx-alert-info-border: #bfdbfe;
-  --cngx-alert-info-icon: #3b82f6;
-  --cngx-alert-success-bg: #f0fdf4;
-  --cngx-alert-success-border: #bbf7d0;
-  --cngx-alert-success-icon: #22c55e;
-  --cngx-alert-warning-bg: #fffbeb;
-  --cngx-alert-warning-border: #fde68a;
-  --cngx-alert-warning-icon: #f59e0b;
-  --cngx-alert-error-bg: #fef2f2;
-  --cngx-alert-error-border: #fecaca;
-  --cngx-alert-error-icon: #ef4444;
 }
 
 @mixin alert-color($theme) {
@@ -116,16 +102,35 @@
     --cngx-alert-error-bg: color-mix(in srgb, var(--mat-sys-error) 8%, var(--mat-sys-surface));
     --cngx-alert-error-border: color-mix(in srgb, var(--mat-sys-error) 30%, transparent);
     --cngx-alert-error-icon: var(--mat-sys-error);
-  } @else {
-    --cngx-alert-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-alert-info-icon: #{mat.get-theme-color($theme, primary)};
-    --cngx-alert-error-icon: #{mat.get-theme-color($theme, warn)};
-  }
 
-  // Keep the Material look: the action paints in the pure severity accent,
-  // not the cngx text-mixed default (the M3 accents clear 4.5:1 on their 8%
-  // tint).
-  --cngx-alert-action-color: var(--cngx-alert-icon-color);
+    // Keep the Material look: the action paints in the pure severity accent,
+    // not the cngx text-mixed default (the M3 accents clear 4.5:1 on their 8%
+    // tint).
+    --cngx-alert-action-color: var(--cngx-alert-icon-color);
+  } @else {
+    @include _m2-severity($theme, alert);
+  }
+}
+
+// M2 severity palette for the alert family (alert, alert stack) and the
+// banner. Info and error follow the M3 recipe on the M2 primary / warn: an 8%
+// tint into the card, a 30% border, the palette colour as the icon. M2 has no
+// success / warning role, so those tokens are not declared and the cngx
+// defaults apply (the core semantic colour mixed into the surface and text).
+// The action keeps the cngx text-mixed default: the raw warn 500 on its tint
+// misses 4.5:1 as a label.
+@mixin _m2-severity($theme, $family) {
+  $primary: mat.get-theme-color($theme, primary);
+  $warn: mat.get-theme-color($theme, warn);
+  $card: mat.get-theme-color($theme, background, card);
+
+  --cngx-#{$family}-bg: #{$card};
+  --cngx-#{$family}-info-bg: color-mix(in srgb, #{$primary} 8%, #{$card});
+  --cngx-#{$family}-info-border: color-mix(in srgb, #{$primary} 30%, transparent);
+  --cngx-#{$family}-info-icon: #{$primary};
+  --cngx-#{$family}-error-bg: color-mix(in srgb, #{$warn} 8%, #{$card});
+  --cngx-#{$family}-error-border: color-mix(in srgb, #{$warn} 30%, transparent);
+  --cngx-#{$family}-error-icon: #{$warn};
 }
 
 @mixin toast-base() {
@@ -172,6 +177,11 @@
     --cngx-toast-title-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-toast-description-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
     --cngx-toast-info-accent: #{mat.get-theme-color($theme, primary)};
+    // M2 has no success / warning role: keep the cngx semantic colours (the
+    // system bridge leaves them unmapped too) instead of the base hex, which
+    // missed 3:1 on the card.
+    --cngx-toast-success-accent: var(--cngx-color-success);
+    --cngx-toast-warning-accent: var(--cngx-color-warning);
     --cngx-toast-error-accent: #{mat.get-theme-color($theme, warn)};
   }
 }
@@ -183,8 +193,6 @@
   --cngx-alert-stack-reserve-height: 56px;
   --cngx-alert-stack-overflow-padding: 8px 16px;
   --cngx-alert-stack-overflow-size: 0.8125rem;
-  --cngx-alert-stack-overflow-color: #64748b;
-  --cngx-alert-stack-overflow-border: #cbd5e1;
 }
 
 @mixin alert-stack-color($theme) {
@@ -200,7 +208,6 @@
   --cngx-banner-z-index: 900;
   --cngx-banner-gap: 12px;
   --cngx-banner-padding: 10px 16px;
-  --cngx-banner-bg: #f8fafc;
   --cngx-banner-color: inherit;
   --cngx-banner-icon-size: 20px;
   --cngx-banner-font-size: 0.9375rem;
@@ -211,21 +218,6 @@
   --cngx-banner-action-font-size: 0.875rem;
   --cngx-banner-action-font-weight: 600;
   --cngx-banner-pending-opacity: 0.85;
-
-  // Severity defaults (standalone, non-Material)
-  --cngx-banner-info-bg: #eff6ff;
-  --cngx-banner-info-border: #bfdbfe;
-  --cngx-banner-info-icon: #3b82f6;
-  --cngx-banner-success-bg: #f0fdf4;
-  --cngx-banner-success-border: #bbf7d0;
-  --cngx-banner-success-icon: #22c55e;
-  --cngx-banner-warning-bg: #fffbeb;
-  --cngx-banner-warning-border: #fde68a;
-  --cngx-banner-warning-icon: #f59e0b;
-  --cngx-banner-error-bg: #fef2f2;
-  --cngx-banner-error-border: #fecaca;
-  --cngx-banner-error-icon: #ef4444;
-  --cngx-banner-error-color: #ef4444;
 }
 
 @mixin banner-color($theme) {
@@ -257,17 +249,26 @@
     --cngx-banner-error-border: color-mix(in srgb, var(--mat-sys-error) 30%, transparent);
     --cngx-banner-error-icon: var(--mat-sys-error);
     --cngx-banner-error-color: var(--mat-sys-error);
-  } @else {
-    --cngx-banner-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-banner-info-icon: #{mat.get-theme-color($theme, primary)};
-    --cngx-banner-error-icon: #{mat.get-theme-color($theme, warn)};
-    --cngx-banner-error-color: #{mat.get-theme-color($theme, warn)};
-  }
 
-  // Keep the Material look: the action paints in the pure severity accent,
-  // not the cngx text-mixed default (the M3 accents clear 4.5:1 on their 8%
-  // tint).
-  --cngx-banner-action-color: var(--cngx-banner-accent);
+    // Keep the Material look: the action paints in the pure severity accent,
+    // not the cngx text-mixed default (the M3 accents clear 4.5:1 on their 8%
+    // tint).
+    --cngx-banner-action-color: var(--cngx-banner-accent);
+  } @else {
+    @include _m2-severity($theme, banner);
+    // The warn 500 is a fill colour (red 3.7:1 on white); step it toward the
+    // text colour until the inline error clears 4.5:1 on the card and on the
+    // info / error tints it can sit on.
+    $warn: mat.get-theme-color($theme, warn);
+    $card: mat.get-theme-color($theme, background, card);
+    $tints: (
+      $card,
+      color.mix($warn, $card, 8%),
+      color.mix(mat.get-theme-color($theme, primary), $card, 8%)
+    );
+    $text: color.change(mat.get-theme-color($theme, foreground, text), $alpha: 1);
+    --cngx-banner-error-color: #{bridge.readable-on($warn, $text, $tints)};
+  }
 }
 
 // Shared density presets for the CngxCloseButton atom that alert,

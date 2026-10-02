@@ -20,6 +20,7 @@ const SEVERITIES = ['info', 'success', 'warning', 'error'] as const;
   standalone: true,
   styleUrls: [
     '../../core/theming/system-tokens.css',
+    './styles/feedback-severity.css',
     './alert/alert.css',
     './banner/banner-outlet.css',
   ],

@@ -135,7 +135,7 @@ export type ToastPosition =
       </div>
     }
   `,
-  styleUrls: ['./toast-outlet.css'],
+  styleUrls: ['../styles/feedback-severity.css', './toast-outlet.css'],
 })
 export class CngxToastOutlet {
   protected readonly service = inject(CngxToaster);

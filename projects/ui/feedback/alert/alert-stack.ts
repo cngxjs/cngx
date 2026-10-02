@@ -156,7 +156,7 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
       </button>
     }
   `,
-  styleUrls: ['./alert-stack.css'],
+  styleUrls: ['../styles/feedback-severity.css', './alert-stack.css'],
 })
 export class CngxAlertStack {
   /** The scoped alerter instance - use to add/dismiss alerts programmatically. */

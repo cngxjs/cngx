@@ -1,0 +1,204 @@
+/**
+ * @overview
+ * Shared severity palette of the feedback family. `CngxAlert`,
+ * `CngxAlertStack`, `CngxBannerOutlet` and `CngxToastOutlet` all load
+ * this stylesheet first, so a severity is painted the same way in each:
+ * the `--cngx-alert-*`, `--cngx-banner-*` and `--cngx-toast-*` severity
+ * tokens default to the `--cngx-feedback-{info,success,warning,error}-*`
+ * set declared here and stay the per-component override hooks.
+ *
+ * - `--cngx-feedback-{severity}-bg` / `-border` - the pale tint and its
+ *   border. Relative colour syntax, `oklch(from <core colour> L C h)`:
+ *   the lightness and chroma are the hand-picked pastel values, the hue
+ *   comes from `--cngx-color-{info,success,warning,danger}`, so a brand
+ *   override of the core colour re-hues the tint. A color-mix of the core
+ *   colour and the surface cannot reach that chroma (every mix lies on the
+ *   line between the two, about half as saturated) and reads grey.
+ * - `--cngx-feedback-{severity}-icon` - the severity glyph: the core
+ *   colour mixed 90% into `--cngx-color-text` in oklab, so it clears 3:1
+ *   on the tint wherever the core colour clears 3:1 on the surface.
+ *
+ * Declared in all four scheme blocks (OS dark, explicit dark / light
+ * islands) because a custom property resolves where it is set; the
+ * component blocks that read these sit on the same selectors.
+ */
+
+@layer cngx.tokens {
+  :root {
+    --cngx-feedback-info-bg: oklch(from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.96 0.025 h);
+    --cngx-feedback-info-border: oklch(
+      from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.85 0.07 h
+    );
+    --cngx-feedback-info-icon: color-mix(
+      in oklab,
+      var(--cngx-color-info, oklch(0.65 0.12 240)) 90%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+    --cngx-feedback-success-bg: oklch(
+      from var(--cngx-color-success, oklch(0.6 0.15 145)) 0.96 0.04 h
+    );
+    --cngx-feedback-success-border: oklch(
+      from var(--cngx-color-success, oklch(0.6 0.15 145)) 0.85 0.1 h
+    );
+    --cngx-feedback-success-icon: color-mix(
+      in oklab,
+      var(--cngx-color-success, oklch(0.6 0.15 145)) 90%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+    --cngx-feedback-warning-bg: oklch(
+      from var(--cngx-color-warning, oklch(0.72 0.15 75)) 0.97 0.04 h
+    );
+    --cngx-feedback-warning-border: oklch(
+      from var(--cngx-color-warning, oklch(0.72 0.15 75)) 0.86 0.1 h
+    );
+    --cngx-feedback-warning-icon: color-mix(
+      in oklab,
+      var(--cngx-color-warning, oklch(0.72 0.15 75)) 90%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+    --cngx-feedback-error-bg: oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.96 0.025 h);
+    --cngx-feedback-error-border: oklch(
+      from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.85 0.08 h
+    );
+    --cngx-feedback-error-icon: color-mix(
+      in oklab,
+      var(--cngx-color-danger, oklch(0.6 0.18 25)) 90%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-feedback-info-bg: oklch(from var(--cngx-color-info, oklch(0.72 0.11 240)) 0.3 0.05 h);
+      --cngx-feedback-info-border: oklch(
+        from var(--cngx-color-info, oklch(0.72 0.11 240)) 0.5 0.08 h
+      );
+      --cngx-feedback-info-icon: color-mix(
+        in oklab,
+        var(--cngx-color-info, oklch(0.72 0.11 240)) 90%,
+        var(--cngx-color-text, oklch(0.95 0.01 250))
+      );
+      --cngx-feedback-success-bg: oklch(
+        from var(--cngx-color-success, oklch(0.68 0.14 145)) 0.3 0.06 h
+      );
+      --cngx-feedback-success-border: oklch(
+        from var(--cngx-color-success, oklch(0.68 0.14 145)) 0.5 0.1 h
+      );
+      --cngx-feedback-success-icon: color-mix(
+        in oklab,
+        var(--cngx-color-success, oklch(0.68 0.14 145)) 90%,
+        var(--cngx-color-text, oklch(0.95 0.01 250))
+      );
+      --cngx-feedback-warning-bg: oklch(
+        from var(--cngx-color-warning, oklch(0.78 0.14 75)) 0.32 0.06 h
+      );
+      --cngx-feedback-warning-border: oklch(
+        from var(--cngx-color-warning, oklch(0.78 0.14 75)) 0.55 0.1 h
+      );
+      --cngx-feedback-warning-icon: color-mix(
+        in oklab,
+        var(--cngx-color-warning, oklch(0.78 0.14 75)) 90%,
+        var(--cngx-color-text, oklch(0.95 0.01 250))
+      );
+      --cngx-feedback-error-bg: oklch(
+        from var(--cngx-color-danger, oklch(0.68 0.17 25)) 0.3 0.05 h
+      );
+      --cngx-feedback-error-border: oklch(
+        from var(--cngx-color-danger, oklch(0.68 0.17 25)) 0.5 0.1 h
+      );
+      --cngx-feedback-error-icon: color-mix(
+        in oklab,
+        var(--cngx-color-danger, oklch(0.68 0.17 25)) 90%,
+        var(--cngx-color-text, oklch(0.95 0.01 250))
+      );
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-feedback-info-bg: oklch(from var(--cngx-color-info, oklch(0.72 0.11 240)) 0.3 0.05 h);
+    --cngx-feedback-info-border: oklch(
+      from var(--cngx-color-info, oklch(0.72 0.11 240)) 0.5 0.08 h
+    );
+    --cngx-feedback-info-icon: color-mix(
+      in oklab,
+      var(--cngx-color-info, oklch(0.72 0.11 240)) 90%,
+      var(--cngx-color-text, oklch(0.95 0.01 250))
+    );
+    --cngx-feedback-success-bg: oklch(
+      from var(--cngx-color-success, oklch(0.68 0.14 145)) 0.3 0.06 h
+    );
+    --cngx-feedback-success-border: oklch(
+      from var(--cngx-color-success, oklch(0.68 0.14 145)) 0.5 0.1 h
+    );
+    --cngx-feedback-success-icon: color-mix(
+      in oklab,
+      var(--cngx-color-success, oklch(0.68 0.14 145)) 90%,
+      var(--cngx-color-text, oklch(0.95 0.01 250))
+    );
+    --cngx-feedback-warning-bg: oklch(
+      from var(--cngx-color-warning, oklch(0.78 0.14 75)) 0.32 0.06 h
+    );
+    --cngx-feedback-warning-border: oklch(
+      from var(--cngx-color-warning, oklch(0.78 0.14 75)) 0.55 0.1 h
+    );
+    --cngx-feedback-warning-icon: color-mix(
+      in oklab,
+      var(--cngx-color-warning, oklch(0.78 0.14 75)) 90%,
+      var(--cngx-color-text, oklch(0.95 0.01 250))
+    );
+    --cngx-feedback-error-bg: oklch(from var(--cngx-color-danger, oklch(0.68 0.17 25)) 0.3 0.05 h);
+    --cngx-feedback-error-border: oklch(
+      from var(--cngx-color-danger, oklch(0.68 0.17 25)) 0.5 0.1 h
+    );
+    --cngx-feedback-error-icon: color-mix(
+      in oklab,
+      var(--cngx-color-danger, oklch(0.68 0.17 25)) 90%,
+      var(--cngx-color-text, oklch(0.95 0.01 250))
+    );
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-feedback-info-bg: oklch(from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.96 0.025 h);
+    --cngx-feedback-info-border: oklch(
+      from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.85 0.07 h
+    );
+    --cngx-feedback-info-icon: color-mix(
+      in oklab,
+      var(--cngx-color-info, oklch(0.65 0.12 240)) 90%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+    --cngx-feedback-success-bg: oklch(
+      from var(--cngx-color-success, oklch(0.6 0.15 145)) 0.96 0.04 h
+    );
+    --cngx-feedback-success-border: oklch(
+      from var(--cngx-color-success, oklch(0.6 0.15 145)) 0.85 0.1 h
+    );
+    --cngx-feedback-success-icon: color-mix(
+      in oklab,
+      var(--cngx-color-success, oklch(0.6 0.15 145)) 90%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+    --cngx-feedback-warning-bg: oklch(
+      from var(--cngx-color-warning, oklch(0.72 0.15 75)) 0.97 0.04 h
+    );
+    --cngx-feedback-warning-border: oklch(
+      from var(--cngx-color-warning, oklch(0.72 0.15 75)) 0.86 0.1 h
+    );
+    --cngx-feedback-warning-icon: color-mix(
+      in oklab,
+      var(--cngx-color-warning, oklch(0.72 0.15 75)) 90%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+    --cngx-feedback-error-bg: oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.96 0.025 h);
+    --cngx-feedback-error-border: oklch(
+      from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.85 0.08 h
+    );
+    --cngx-feedback-error-icon: color-mix(
+      in oklab,
+      var(--cngx-color-danger, oklch(0.6 0.18 25)) 90%,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
+  }
+}

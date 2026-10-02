@@ -4,10 +4,12 @@
  * and renders `__icon`, `__body`, `__title`, `__collapsible`,
  * `__actions`, `__action`, and `__dismiss` children. Severity
  * tokens use a tinted-surface family (`--cngx-alert-{severity}-bg /
- * border / icon`) visually distinct from `--cngx-color-{success /
- * danger / warning / info}` which are solid brand colors unsuitable
- * for alert surfaces - brand-wide overrides target the severity
- * tokens directly.
+ * border / icon`), all three derived from the matching core colour
+ * `--cngx-color-{info / success / warning / danger}`: the bg and
+ * border take its hue at a fixed pastel lightness and chroma
+ * (relative colour syntax), the icon mixes it 90% into the text
+ * colour in oklab so the glyph clears 3:1 on its tint. Brand-wide overrides target the core colours or the
+ * severity tokens directly.
  *
  * **State modifiers**
  *
@@ -121,37 +123,48 @@
   }
 
   /**
-   * Background tint of the info severity.
+   * Background tint of the info severity. Derives from
+   * `--cngx-color-info` hue at L 0.96 C 0.025 (dark L 0.3 C
+   * 0.05).
+   * Defaults to the shared `--cngx-feedback-info-bg`.
    * @group Variant / Info
    */
   @property --cngx-alert-info-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.96 0.025 250);
+    initial-value: oklch(0.96 0.025 240);
   }
 
   /**
-   * Border color of the info severity.
+   * Border color of the info severity. Derives from
+   * `--cngx-color-info` hue at L 0.85 C 0.07 (dark L 0.5 C
+   * 0.08).
+   * Defaults to the shared `--cngx-feedback-info-border`.
    * @group Variant / Info
    */
   @property --cngx-alert-info-border {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.85 0.07 250);
+    initial-value: oklch(0.85 0.07 240);
   }
 
   /**
-   * Icon color of the info severity.
+   * Icon color of the info severity. Derives from
+   * `--cngx-color-info`, 90% into the text colour.
+   * Defaults to the shared `--cngx-feedback-info-icon`.
    * @group Variant / Info
    */
   @property --cngx-alert-info-icon {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.62 0.2 250);
+    initial-value: oklch(0.6 0.11 240);
   }
 
   /**
-   * Background tint of the success severity.
+   * Background tint of the success severity. Derives from
+   * `--cngx-color-success` hue at L 0.96 C 0.04 (dark L 0.3 C
+   * 0.06).
+   * Defaults to the shared `--cngx-feedback-success-bg`.
    * @group Variant / Success
    */
   @property --cngx-alert-success-bg {
@@ -161,7 +174,10 @@
   }
 
   /**
-   * Border color of the success severity.
+   * Border color of the success severity. Derives from
+   * `--cngx-color-success` hue at L 0.85 C 0.1 (dark L 0.5 C
+   * 0.1).
+   * Defaults to the shared `--cngx-feedback-success-border`.
    * @group Variant / Success
    */
   @property --cngx-alert-success-border {
@@ -171,47 +187,60 @@
   }
 
   /**
-   * Icon color of the success severity.
+   * Icon color of the success severity. Derives from
+   * `--cngx-color-success`, 90% into the text colour.
+   * Defaults to the shared `--cngx-feedback-success-icon`.
    * @group Variant / Success
    */
   @property --cngx-alert-success-icon {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.65 0.15 145);
+    initial-value: oklch(0.56 0.135 145);
   }
 
   /**
-   * Background tint of the warning severity.
+   * Background tint of the warning severity. Derives from
+   * `--cngx-color-warning` hue at L 0.97 C 0.04 (dark L 0.32 C
+   * 0.06).
+   * Defaults to the shared `--cngx-feedback-warning-bg`.
    * @group Variant / Warning
    */
   @property --cngx-alert-warning-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.97 0.04 80);
+    initial-value: oklch(0.97 0.04 75);
   }
 
   /**
-   * Border color of the warning severity.
+   * Border color of the warning severity. Derives from
+   * `--cngx-color-warning` hue at L 0.86 C 0.1 (dark L 0.55 C
+   * 0.1).
+   * Defaults to the shared `--cngx-feedback-warning-border`.
    * @group Variant / Warning
    */
   @property --cngx-alert-warning-border {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.86 0.1 80);
+    initial-value: oklch(0.86 0.1 75);
   }
 
   /**
-   * Icon color of the warning severity.
+   * Icon color of the warning severity. Derives from
+   * `--cngx-color-warning`, 90% into the text colour.
+   * Defaults to the shared `--cngx-feedback-warning-icon`.
    * @group Variant / Warning
    */
   @property --cngx-alert-warning-icon {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.72 0.18 70);
+    initial-value: oklch(0.67 0.135 75);
   }
 
   /**
-   * Background tint of the error severity.
+   * Background tint of the error severity. Derives from
+   * `--cngx-color-danger` hue at L 0.96 C 0.025 (dark L 0.3 C
+   * 0.05).
+   * Defaults to the shared `--cngx-feedback-error-bg`.
    * @group Variant / Error
    */
   @property --cngx-alert-error-bg {
@@ -221,7 +250,10 @@
   }
 
   /**
-   * Border color of the error severity.
+   * Border color of the error severity. Derives from
+   * `--cngx-color-danger` hue at L 0.85 C 0.08 (dark L 0.5 C
+   * 0.1).
+   * Defaults to the shared `--cngx-feedback-error-border`.
    * @group Variant / Error
    */
   @property --cngx-alert-error-border {
@@ -231,13 +263,15 @@
   }
 
   /**
-   * Icon color of the error severity.
+   * Icon color of the error severity. Derives from
+   * `--cngx-color-danger`, 90% into the text colour.
+   * Defaults to the shared `--cngx-feedback-error-icon`.
    * @group Variant / Error
    */
   @property --cngx-alert-error-icon {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.62 0.22 25);
+    initial-value: oklch(0.56 0.16 25);
   }
 
   /**
@@ -465,28 +499,35 @@
     initial-value: 8px;
   }
 
-  /* Color-scheme defaults - alert ships its own tinted-surface family
-   * (per the @overview) so severity tokens do NOT delegate to
-   * `--cngx-color-{info,success,warning,danger}`; the brand semantic
-   * colors are saturated and unsuitable as full-bleed alert
-   * backgrounds. Each severity flips its bg / border / icon triplet
-   * between a near-white tint (L 0.96-0.97) and a tinted dark surface
-   * (L 0.30-0.32). The collapsed-hover overlay flips alpha-on-black
-   * to alpha-on-white. */
+  /* Color-scheme defaults - the tinted-surface family (per the
+   * @overview) reads the shared `--cngx-feedback-{severity}-*` set
+   * (styles/feedback-severity.css, shared with the banner and the toast
+   * glyph), which derives from `--cngx-color-{info,success,warning,danger}`
+   * through relative colour syntax: `oklch(from <core> L C h)` keeps
+   * the hand-picked pastel lightness and chroma of each tint and takes
+   * only the hue from the core colour, so a brand override of the core
+   * colour still re-hues the tint. color-mix cannot do this: every mix
+   * of the core colour and the surface lies on the line between them,
+   * which carries about half the chroma of these pastels and reads
+   * grey. The icon mixes 90% into the text colour in oklab so it
+   * clears 3:1 on the tint. All follow a
+   * brand swap; declared per block because the registered colour
+   * resolves where it is set. The collapsed-hover overlay flips
+   * alpha-on-black to alpha-on-white. */
   :root {
     --cngx-alert-bg: oklch(0.98 0.005 250);
-    --cngx-alert-info-bg: oklch(0.96 0.025 250);
-    --cngx-alert-info-border: oklch(0.85 0.07 250);
-    --cngx-alert-info-icon: oklch(0.62 0.2 250);
-    --cngx-alert-success-bg: oklch(0.96 0.04 145);
-    --cngx-alert-success-border: oklch(0.85 0.1 145);
-    --cngx-alert-success-icon: oklch(0.65 0.15 145);
-    --cngx-alert-warning-bg: oklch(0.97 0.04 80);
-    --cngx-alert-warning-border: oklch(0.86 0.1 80);
-    --cngx-alert-warning-icon: oklch(0.72 0.18 70);
-    --cngx-alert-error-bg: oklch(0.96 0.025 25);
-    --cngx-alert-error-border: oklch(0.85 0.08 25);
-    --cngx-alert-error-icon: oklch(0.62 0.22 25);
+    --cngx-alert-info-bg: var(--cngx-feedback-info-bg, oklch(0.96 0.025 240));
+    --cngx-alert-info-border: var(--cngx-feedback-info-border, oklch(0.85 0.07 240));
+    --cngx-alert-info-icon: var(--cngx-feedback-info-icon, oklch(0.6 0.11 240));
+    --cngx-alert-success-bg: var(--cngx-feedback-success-bg, oklch(0.96 0.04 145));
+    --cngx-alert-success-border: var(--cngx-feedback-success-border, oklch(0.85 0.1 145));
+    --cngx-alert-success-icon: var(--cngx-feedback-success-icon, oklch(0.56 0.135 145));
+    --cngx-alert-warning-bg: var(--cngx-feedback-warning-bg, oklch(0.97 0.04 75));
+    --cngx-alert-warning-border: var(--cngx-feedback-warning-border, oklch(0.86 0.1 75));
+    --cngx-alert-warning-icon: var(--cngx-feedback-warning-icon, oklch(0.67 0.135 75));
+    --cngx-alert-error-bg: var(--cngx-feedback-error-bg, oklch(0.96 0.025 25));
+    --cngx-alert-error-border: var(--cngx-feedback-error-border, oklch(0.85 0.08 25));
+    --cngx-alert-error-icon: var(--cngx-feedback-error-icon, oklch(0.56 0.16 25));
     --cngx-alert-collapsed-hover-bg: oklch(0 0 0 / 0.02);
     --cngx-alert-action-hover-bg: oklch(0 0 0 / 0.04);
   }
@@ -494,18 +535,18 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
       --cngx-alert-bg: oklch(0.22 0.01 250);
-      --cngx-alert-info-bg: oklch(0.3 0.05 250);
-      --cngx-alert-info-border: oklch(0.5 0.08 250);
-      --cngx-alert-info-icon: oklch(0.78 0.14 250);
-      --cngx-alert-success-bg: oklch(0.3 0.06 145);
-      --cngx-alert-success-border: oklch(0.5 0.1 145);
-      --cngx-alert-success-icon: oklch(0.78 0.14 145);
-      --cngx-alert-warning-bg: oklch(0.32 0.06 80);
-      --cngx-alert-warning-border: oklch(0.55 0.1 80);
-      --cngx-alert-warning-icon: oklch(0.82 0.15 70);
-      --cngx-alert-error-bg: oklch(0.3 0.05 25);
-      --cngx-alert-error-border: oklch(0.5 0.1 25);
-      --cngx-alert-error-icon: oklch(0.78 0.16 25);
+      --cngx-alert-info-bg: var(--cngx-feedback-info-bg, oklch(0.3 0.05 240));
+      --cngx-alert-info-border: var(--cngx-feedback-info-border, oklch(0.5 0.08 240));
+      --cngx-alert-info-icon: var(--cngx-feedback-info-icon, oklch(0.74 0.1 240));
+      --cngx-alert-success-bg: var(--cngx-feedback-success-bg, oklch(0.3 0.06 145));
+      --cngx-alert-success-border: var(--cngx-feedback-success-border, oklch(0.5 0.1 145));
+      --cngx-alert-success-icon: var(--cngx-feedback-success-icon, oklch(0.71 0.126 145));
+      --cngx-alert-warning-bg: var(--cngx-feedback-warning-bg, oklch(0.32 0.06 75));
+      --cngx-alert-warning-border: var(--cngx-feedback-warning-border, oklch(0.55 0.1 75));
+      --cngx-alert-warning-icon: var(--cngx-feedback-warning-icon, oklch(0.8 0.125 75));
+      --cngx-alert-error-bg: var(--cngx-feedback-error-bg, oklch(0.3 0.05 25));
+      --cngx-alert-error-border: var(--cngx-feedback-error-border, oklch(0.5 0.1 25));
+      --cngx-alert-error-icon: var(--cngx-feedback-error-icon, oklch(0.71 0.152 25));
       --cngx-alert-collapsed-hover-bg: oklch(1 0 0 / 0.04);
       --cngx-alert-action-hover-bg: oklch(1 0 0 / 0.06);
     }
@@ -514,18 +555,18 @@
   [data-color-scheme='dark'],
   .dark {
     --cngx-alert-bg: oklch(0.22 0.01 250);
-    --cngx-alert-info-bg: oklch(0.3 0.05 250);
-    --cngx-alert-info-border: oklch(0.5 0.08 250);
-    --cngx-alert-info-icon: oklch(0.78 0.14 250);
-    --cngx-alert-success-bg: oklch(0.3 0.06 145);
-    --cngx-alert-success-border: oklch(0.5 0.1 145);
-    --cngx-alert-success-icon: oklch(0.78 0.14 145);
-    --cngx-alert-warning-bg: oklch(0.32 0.06 80);
-    --cngx-alert-warning-border: oklch(0.55 0.1 80);
-    --cngx-alert-warning-icon: oklch(0.82 0.15 70);
-    --cngx-alert-error-bg: oklch(0.3 0.05 25);
-    --cngx-alert-error-border: oklch(0.5 0.1 25);
-    --cngx-alert-error-icon: oklch(0.78 0.16 25);
+    --cngx-alert-info-bg: var(--cngx-feedback-info-bg, oklch(0.3 0.05 240));
+    --cngx-alert-info-border: var(--cngx-feedback-info-border, oklch(0.5 0.08 240));
+    --cngx-alert-info-icon: var(--cngx-feedback-info-icon, oklch(0.74 0.1 240));
+    --cngx-alert-success-bg: var(--cngx-feedback-success-bg, oklch(0.3 0.06 145));
+    --cngx-alert-success-border: var(--cngx-feedback-success-border, oklch(0.5 0.1 145));
+    --cngx-alert-success-icon: var(--cngx-feedback-success-icon, oklch(0.71 0.126 145));
+    --cngx-alert-warning-bg: var(--cngx-feedback-warning-bg, oklch(0.32 0.06 75));
+    --cngx-alert-warning-border: var(--cngx-feedback-warning-border, oklch(0.55 0.1 75));
+    --cngx-alert-warning-icon: var(--cngx-feedback-warning-icon, oklch(0.8 0.125 75));
+    --cngx-alert-error-bg: var(--cngx-feedback-error-bg, oklch(0.3 0.05 25));
+    --cngx-alert-error-border: var(--cngx-feedback-error-border, oklch(0.5 0.1 25));
+    --cngx-alert-error-icon: var(--cngx-feedback-error-icon, oklch(0.71 0.152 25));
     --cngx-alert-collapsed-hover-bg: oklch(1 0 0 / 0.04);
     --cngx-alert-action-hover-bg: oklch(1 0 0 / 0.06);
   }
@@ -533,18 +574,18 @@
   [data-color-scheme='light'],
   .light {
     --cngx-alert-bg: oklch(0.98 0.005 250);
-    --cngx-alert-info-bg: oklch(0.96 0.025 250);
-    --cngx-alert-info-border: oklch(0.85 0.07 250);
-    --cngx-alert-info-icon: oklch(0.62 0.2 250);
-    --cngx-alert-success-bg: oklch(0.96 0.04 145);
-    --cngx-alert-success-border: oklch(0.85 0.1 145);
-    --cngx-alert-success-icon: oklch(0.65 0.15 145);
-    --cngx-alert-warning-bg: oklch(0.97 0.04 80);
-    --cngx-alert-warning-border: oklch(0.86 0.1 80);
-    --cngx-alert-warning-icon: oklch(0.72 0.18 70);
-    --cngx-alert-error-bg: oklch(0.96 0.025 25);
-    --cngx-alert-error-border: oklch(0.85 0.08 25);
-    --cngx-alert-error-icon: oklch(0.62 0.22 25);
+    --cngx-alert-info-bg: var(--cngx-feedback-info-bg, oklch(0.96 0.025 240));
+    --cngx-alert-info-border: var(--cngx-feedback-info-border, oklch(0.85 0.07 240));
+    --cngx-alert-info-icon: var(--cngx-feedback-info-icon, oklch(0.6 0.11 240));
+    --cngx-alert-success-bg: var(--cngx-feedback-success-bg, oklch(0.96 0.04 145));
+    --cngx-alert-success-border: var(--cngx-feedback-success-border, oklch(0.85 0.1 145));
+    --cngx-alert-success-icon: var(--cngx-feedback-success-icon, oklch(0.56 0.135 145));
+    --cngx-alert-warning-bg: var(--cngx-feedback-warning-bg, oklch(0.97 0.04 75));
+    --cngx-alert-warning-border: var(--cngx-feedback-warning-border, oklch(0.86 0.1 75));
+    --cngx-alert-warning-icon: var(--cngx-feedback-warning-icon, oklch(0.67 0.135 75));
+    --cngx-alert-error-bg: var(--cngx-feedback-error-bg, oklch(0.96 0.025 25));
+    --cngx-alert-error-border: var(--cngx-feedback-error-border, oklch(0.85 0.08 25));
+    --cngx-alert-error-icon: var(--cngx-feedback-error-icon, oklch(0.56 0.16 25));
     --cngx-alert-collapsed-hover-bg: oklch(0 0 0 / 0.02);
     --cngx-alert-action-hover-bg: oklch(0 0 0 / 0.04);
   }
@@ -579,27 +620,27 @@
     }
 
     :scope.cngx-alert--info {
-      --cngx-alert-bg: var(--cngx-alert-info-bg, oklch(0.96 0.025 250));
-      --cngx-alert-border-color: var(--cngx-alert-info-border, oklch(0.85 0.07 250));
-      --cngx-alert-icon-color: var(--cngx-alert-info-icon, oklch(0.62 0.2 250));
+      --cngx-alert-bg: var(--cngx-alert-info-bg, oklch(0.96 0.025 240));
+      --cngx-alert-border-color: var(--cngx-alert-info-border, oklch(0.85 0.07 240));
+      --cngx-alert-icon-color: var(--cngx-alert-info-icon, oklch(0.6 0.11 240));
     }
 
     :scope.cngx-alert--success {
       --cngx-alert-bg: var(--cngx-alert-success-bg, oklch(0.96 0.04 145));
       --cngx-alert-border-color: var(--cngx-alert-success-border, oklch(0.85 0.1 145));
-      --cngx-alert-icon-color: var(--cngx-alert-success-icon, oklch(0.65 0.15 145));
+      --cngx-alert-icon-color: var(--cngx-alert-success-icon, oklch(0.56 0.135 145));
     }
 
     :scope.cngx-alert--warning {
-      --cngx-alert-bg: var(--cngx-alert-warning-bg, oklch(0.97 0.04 80));
-      --cngx-alert-border-color: var(--cngx-alert-warning-border, oklch(0.86 0.1 80));
-      --cngx-alert-icon-color: var(--cngx-alert-warning-icon, oklch(0.72 0.18 70));
+      --cngx-alert-bg: var(--cngx-alert-warning-bg, oklch(0.97 0.04 75));
+      --cngx-alert-border-color: var(--cngx-alert-warning-border, oklch(0.86 0.1 75));
+      --cngx-alert-icon-color: var(--cngx-alert-warning-icon, oklch(0.67 0.135 75));
     }
 
     :scope.cngx-alert--error {
       --cngx-alert-bg: var(--cngx-alert-error-bg, oklch(0.96 0.025 25));
       --cngx-alert-border-color: var(--cngx-alert-error-border, oklch(0.85 0.08 25));
-      --cngx-alert-icon-color: var(--cngx-alert-error-icon, oklch(0.62 0.22 25));
+      --cngx-alert-icon-color: var(--cngx-alert-error-icon, oklch(0.56 0.16 25));
     }
 
     .cngx-alert__icon {
