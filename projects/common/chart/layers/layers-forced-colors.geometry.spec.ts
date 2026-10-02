@@ -12,6 +12,7 @@ import { CngxArea } from './area.component';
 import { CngxBar } from './bar.component';
 import { CngxThreshold } from './threshold.component';
 import { CngxLine } from './line.component';
+import { CngxScatter } from './scatter.component';
 
 // Runs in a real Chromium (the `test-geometry` target). Chromium keeps author
 // fill and stroke inside SVG under forced colors (preserve-parent-color), so
@@ -25,7 +26,7 @@ const SCHEMES = ['light', 'dark'] as const;
 @Component({
   selector: 'cngx-chart-series-forced-host',
   standalone: true,
-  imports: [CngxChart, CngxAxis, CngxArea, CngxBar, CngxLine, CngxThreshold],
+  imports: [CngxChart, CngxAxis, CngxArea, CngxBar, CngxLine, CngxScatter, CngxThreshold],
   styleUrls: ['../../../core/theming/system-tokens.css'],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -53,12 +54,22 @@ const SCHEMES = ['light', 'dark'] as const;
       <svg:g cngxBar [data]="[2, 2, 3]"></svg:g>
       <svg:g cngxBar [data]="[1, 1, 1]"></svg:g>
     </cngx-chart>
+    <cngx-chart class="points" [data]="[1, 3, 2]" [width]="240" [height]="120" aria-label="points">
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+      <svg:g cngxScatter [x]="index" [y]="value" [radius]="5"></svg:g>
+      <svg:g cngxLine [data]="[2, 4, 3]"></svg:g>
+      <svg:g cngxScatter [data]="[3, 5, 4]" [x]="index" [y]="value" [radius]="5" [color]="'rgb(200, 0, 0)'"></svg:g>
+      <svg:g cngxScatter [data]="[4, 6, 5]" [x]="index" [y]="value" [radius]="5"></svg:g>
+    </cngx-chart>
     <span class="plain" style="color: rgb(200, 0, 0)">plain</span>
     <span class="probe-canvastext" style="color: CanvasText"></span>
     <span class="probe-canvas" style="color: Canvas"></span>
   `,
 })
-class SeriesHost {}
+class SeriesHost {
+  protected readonly index = (_: unknown, i: number): number => i;
+  protected readonly value = (d: unknown): number => Number(d);
+}
 
 let mountedRoot: HTMLElement | null = null;
 
@@ -185,6 +196,24 @@ describe.each(SCHEMES)('chart series under forced colors, %s', (scheme) => {
       expect(otherIds.some((id) => ownIds.includes(id))).toBe(false);
     });
   });
+
+  describe('scatter', () => {
+    it('cycles with lines and bars by series index: solid, hatch, hollow, hatch', async () => {
+      const root = await mountForced();
+      const ink = probe(root, 'canvastext');
+      const series = all(root, '.points .cngx-chart-series');
+      expect(series).toHaveLength(4);
+      const dot = (i: number): Element => one(series[i], '.cngx-scatter');
+
+      expect(computedValue(dot(0), 'fill')).toBe(ink);
+      expect(computedValue(one(series[1], '.cngx-line'), 'stroke-dasharray')).toBe('6px, 3px');
+      expect(computedValue(dot(2), 'fill')).toBe(probe(root, 'canvas'));
+      expect(computedValue(dot(2), 'stroke')).toBe(ink);
+      expect(computedValue(dot(3), 'fill')).toMatch(/^url\(".*-horizontal"\)$/);
+      expect(computedValue(dot(3), 'stroke')).toBe(ink);
+      expect(new Set(all(series[2], '.cngx-scatter').map((d) => computedValue(d, 'fill'))).size).toBe(1);
+    });
+  });
 });
 
 describe('chart series without forced colors', () => {
@@ -198,5 +227,8 @@ describe('chart series without forced colors', () => {
     expect(computedValue(bars[1], 'fill')).toBe('rgb(200, 0, 0)');
     expect(bars.map((b) => computedValue(b, 'fill')).some((f) => f.startsWith('url('))).toBe(false);
     expect(computedValue(bars[2], 'stroke')).toBe('none');
+    const dots = all(root, '.points .cngx-scatter');
+    expect(computedValue(dots[3], 'fill')).toBe('rgb(200, 0, 0)');
+    expect(dots.some((d) => computedValue(d, 'fill').startsWith('url('))).toBe(false);
   });
 });
