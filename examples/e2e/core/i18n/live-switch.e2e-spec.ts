@@ -305,4 +305,27 @@ test.describe('live language switch', () => {
     await expect(trend).toHaveAttribute('aria-label', '+5.3% up');
     await expect(progress).toHaveAttribute('aria-valuetext', '42%');
   });
+
+  // The unbound-defaults story provides nothing itself, so only the root
+  // `?lang=de` pack can localise it; hash navigation keeps the document, and
+  // with it the language signal, alive between the two stories.
+  test('the root ?lang=de pack follows the language signal', async ({ page }) => {
+    const unbound = 'core/i18n/language-pack/unbound-defaults';
+    expect(routesIn('core', 'i18n', 'language-pack').map((r) => r.path)).toContain(unbound);
+    await gotoDemoLang(page, unbound, 'de');
+
+    const indicator = page.locator(
+      'cngx-loading-indicator:not(cngx-loading-overlay cngx-loading-indicator)',
+    );
+    const progress = page.locator('cngx-progress');
+    await expect(indicator).toHaveAttribute('aria-label', 'Wird geladen');
+    await expect(progress).toHaveAttribute('aria-label', 'Fortschritt');
+
+    await page.evaluate((route) => (location.hash = `#/${route}`), ROUTE);
+    await page.getByRole('button', { name: 'EN', exact: true }).click();
+    await page.evaluate((route) => (location.hash = `#/${route}`), unbound);
+
+    await expect(indicator).toHaveAttribute('aria-label', 'Loading');
+    await expect(progress).toHaveAttribute('aria-label', 'Progress');
+  });
 });
