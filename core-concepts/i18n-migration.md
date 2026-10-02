@@ -205,3 +205,18 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - The `*cngxSelectAction` slot wrapper in every select panel is now a named group: `role="group"` with `aria-label` from `CngxActionSelectConfig.ariaLabel` (English default `'Inline action'`, set it with `withActionAriaLabel`). Screen readers announce the group name when focus enters the action slot. Before, the key was accepted but never rendered.
 - A defaulted copy key that an override sets to `undefined` now resolves to its English default instead of `undefined`. `withFallbackLabels({ empty: undefined })` renders `'No Options'` where it rendered an empty message before; the same holds for every `ariaLabels` key except `clearButton` and `chipRemove`, whose fallback is per variant. To clear a label, set it to an empty string.
+
+---
+
+## Checklist
+
+Work through it once per app; each step points back to the bullets above.
+
+- [ ] Replace every `{ provide: CNGX_*_I18N, useValue: bundle }` with the area's `provide*I18n(with*I18nLabels(...))`, or supply a `Signal`.
+- [ ] Call the Signal wherever you read a dedicated token directly: `inject(CNGX_X_I18N).key` becomes `inject(CNGX_X_I18N)().key`, inside a `computed()`, a template or a handler.
+- [ ] Wrap config copy keys you read off an `inject*Config()` in `coerceSignal(...)` before reading them; they may now hold a `Signal`.
+- [ ] Rewrite hand-written `*Feature` functions that spread a copy bundle to `createOverrideMerge` (or `createNestedOverrideMerge` for `announcements`, `statusLabels`, `operators` and the timeline `labels.status`).
+- [ ] Replace programmatic reads of a copy input (`instance.label()`) that expected the default; an unbound copy input now reads `undefined`, and the rendered text comes from the token.
+- [ ] Reshape the formatter keys you override: stepper `stepRolledBack`, tabs `previousTab` / `nextTab`, timeline `groupLabel` (now receives the locale), select `commitFailedMessage`; move `stepCompleted` / `stepErrored` overrides to `statusLabels`.
+- [ ] Forward the stepper i18n Signal in custom `createMatStepHandle` overrides.
+- [ ] Optional: drive your language file from one Signal and `provideLocale(signal)` to switch at runtime, as shown in [Runtime language switching](./i18n.md#runtime-language-switching).
