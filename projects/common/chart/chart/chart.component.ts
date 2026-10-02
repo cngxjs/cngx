@@ -182,6 +182,9 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     '[style.--cngx-chart-plot-block-end]': 'plotVars().blockEnd',
     '[style.--cngx-chart-plot-inline-start]': 'plotVars().inlineStart',
     '[style.--cngx-chart-plot-inline-end]': 'plotVars().inlineEnd',
+    // Hatch fills the bar and scatter layers reference in forced colors.
+    '[style.--_cngx-chart-hatch-diagonal]': 'hatchFill.diagonal',
+    '[style.--_cngx-chart-hatch-horizontal]': 'hatchFill.horizontal',
   },
   hostDirectives: [CngxResizeObserver],
   providers: [{ provide: CNGX_CHART_CONTEXT, useExisting: CngxChart }],
@@ -223,6 +226,22 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
       @default {
         <svg [attr.viewBox]="viewBox()" [attr.preserveAspectRatio]="preserveAspectRatio()">
           <svg:title>{{ ariaLabelText() }}</svg:title>
+          <svg:defs>
+            <svg:pattern
+              [attr.id]="hatchId + '-diagonal'"
+              width="4"
+              height="4"
+              patternUnits="userSpaceOnUse"
+              patternTransform="rotate(45)"
+            >
+              <svg:rect class="cngx-chart__hatch-gap" width="4" height="4" />
+              <svg:rect class="cngx-chart__hatch-ink" width="4" height="2" />
+            </svg:pattern>
+            <svg:pattern [attr.id]="hatchId + '-horizontal'" width="4" height="4" patternUnits="userSpaceOnUse">
+              <svg:rect class="cngx-chart__hatch-gap" width="4" height="4" />
+              <svg:rect class="cngx-chart__hatch-ink" width="4" height="2" />
+            </svg:pattern>
+          </svg:defs>
           <ng-content />
         </svg>
         @if (overlayTpl(); as tpl) {
@@ -277,6 +296,15 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
   styleUrls: ['../chart-tokens.css'],
   styles: [
     `
+      /* Hatch fills for the forced-colors series cycle (bar, scatter), the
+         SVG counterpart of the legend's hatched swatches. Inert until a layer
+         references them; system colours so they follow the user palette. */
+      cngx-chart .cngx-chart__hatch-ink {
+        fill: CanvasText;
+      }
+      cngx-chart .cngx-chart__hatch-gap {
+        fill: Canvas;
+      }
       cngx-chart {
         display: inline-block;
         /* Positioning context for the SR-only cngx-chart-data-table (a
@@ -527,6 +555,11 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly layers = contentChildren(CNGX_CHART_LAYER, { descendants: true });
   protected readonly i18n = injectChartI18n();
   protected readonly dataTableId = nextUid('cngx-chart-data-table');
+  protected readonly hatchId = nextUid('cngx-chart-hatch');
+  protected readonly hatchFill = {
+    diagonal: `url(#${this.hatchId}-diagonal)`,
+    horizontal: `url(#${this.hatchId}-horizontal)`,
+  };
 
   private readonly loadingSlot = contentChild(CngxChartLoading);
   private readonly emptySlot = contentChild(CngxChartEmpty);

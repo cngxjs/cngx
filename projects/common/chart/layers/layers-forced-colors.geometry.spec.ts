@@ -9,6 +9,7 @@ import { cdp } from 'vitest/browser';
 import { CngxAxis } from '../axis/axis.component';
 import { CngxChart } from '../chart/chart.component';
 import { CngxArea } from './area.component';
+import { CngxBar } from './bar.component';
 import { CngxThreshold } from './threshold.component';
 import { CngxLine } from './line.component';
 
@@ -24,7 +25,7 @@ const SCHEMES = ['light', 'dark'] as const;
 @Component({
   selector: 'cngx-chart-series-forced-host',
   standalone: true,
-  imports: [CngxChart, CngxAxis, CngxArea, CngxLine, CngxThreshold],
+  imports: [CngxChart, CngxAxis, CngxArea, CngxBar, CngxLine, CngxThreshold],
   styleUrls: ['../../../core/theming/system-tokens.css'],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -41,6 +42,16 @@ const SCHEMES = ['light', 'dark'] as const;
       <svg:g cngxArea [color]="'rgb(200, 0, 0)'" [points]="'always'"></svg:g>
       <svg:g cngxLine></svg:g>
       <svg:g cngxLine [data]="[2, 4, 3, 5]"></svg:g>
+    </cngx-chart>
+    <cngx-chart class="bars" [data]="[8, 6, 9]" [width]="240" [height]="120" aria-label="bars">
+      <svg:g cngxAxis position="bottom" type="band" [domain]="['a', 'b', 'c']"></svg:g>
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+      <svg:g cngxBar></svg:g>
+      <svg:g cngxBar [data]="[6, 5, 7]" [color]="'rgb(200, 0, 0)'"></svg:g>
+      <svg:g cngxThreshold [value]="9"></svg:g>
+      <svg:g cngxBar [data]="[4, 3, 5]"></svg:g>
+      <svg:g cngxBar [data]="[2, 2, 3]"></svg:g>
+      <svg:g cngxBar [data]="[1, 1, 1]"></svg:g>
     </cngx-chart>
     <span class="plain" style="color: rgb(200, 0, 0)">plain</span>
     <span class="probe-canvastext" style="color: CanvasText"></span>
@@ -131,6 +142,49 @@ describe.each(SCHEMES)('chart series under forced colors, %s', (scheme) => {
       expect(dashes).toEqual(['none', '6px, 3px']);
     });
   });
+
+  describe('bars', () => {
+    const barsOf = (root: HTMLElement, layer: number): Element[] =>
+      all(all(root, '.bars .cngx-chart-series')[layer], '.cngx-bar');
+    const firstBars = (root: HTMLElement): Element[] =>
+      all(root, '.bars .cngx-chart-series').map((g) => one(g, '.cngx-bar'));
+
+    it('cycle solid, 45deg hatch, hollow, 0deg hatch by series index, skipping the threshold', async () => {
+      const root = await mountForced();
+      const ink = probe(root, 'canvastext');
+      const bars = firstBars(root);
+      expect(bars).toHaveLength(5);
+
+      expect(computedValue(bars[0], 'fill')).toBe(ink);
+      expect(computedValue(bars[1], 'fill')).toMatch(/^url\(".*-diagonal"\)$/);
+      expect(computedValue(bars[1], 'stroke')).toBe(ink);
+      expect(computedValue(bars[2], 'fill')).toBe(probe(root, 'canvas'));
+      expect(computedValue(bars[2], 'stroke')).toBe(ink);
+      expect(computedValue(bars[2], 'stroke-width')).toBe('1.5px');
+      expect(computedValue(bars[3], 'fill')).toMatch(/^url\(".*-horizontal"\)$/);
+      expect(computedValue(bars[4], 'fill')).toBe(ink);
+      const second = barsOf(root, 1);
+      expect(second).toHaveLength(3);
+      expect(new Set(second.map((b) => computedValue(b, 'fill')))).toEqual(new Set([computedValue(bars[1], 'fill')]));
+    });
+
+    it('reference hatch patterns of their own chart, with ink stripes on a Canvas gap', async () => {
+      const root = await mountForced();
+      const chart = one(root, '.bars');
+      const bars = firstBars(root);
+      for (const bar of [bars[1], bars[3]]) {
+        const id = /url\("#(.+)"\)/.exec(computedValue(bar, 'fill'))?.[1] ?? '';
+        const pattern = chart.querySelector(`svg > defs > pattern[id="${id}"]`);
+        expect(pattern).not.toBeNull();
+        expect(computedValue(one(pattern as Element, '.cngx-chart__hatch-ink'), 'fill')).toBe(probe(root, 'canvastext'));
+        expect(computedValue(one(pattern as Element, '.cngx-chart__hatch-gap'), 'fill')).toBe(probe(root, 'canvas'));
+      }
+      const otherIds = all(root, '.lines svg > defs > pattern').map((p) => p.id);
+      const ownIds = all(chart, 'svg > defs > pattern').map((p) => p.id);
+      expect(ownIds).toHaveLength(2);
+      expect(otherIds.some((id) => ownIds.includes(id))).toBe(false);
+    });
+  });
 });
 
 describe('chart series without forced colors', () => {
@@ -140,5 +194,9 @@ describe('chart series without forced colors', () => {
     expect(computedValue(lines[1], 'stroke')).toBe('rgb(200, 0, 0)');
     expect(lines.map((l) => computedValue(l, 'stroke-dasharray'))).toEqual(Array(5).fill('none'));
     expect(computedValue(one(root, '.areas .cngx-area'), 'fill')).toBe('rgb(200, 0, 0)');
+    const bars = all(root, '.bars .cngx-chart-series').map((g) => one(g, '.cngx-bar'));
+    expect(computedValue(bars[1], 'fill')).toBe('rgb(200, 0, 0)');
+    expect(bars.map((b) => computedValue(b, 'fill')).some((f) => f.startsWith('url('))).toBe(false);
+    expect(computedValue(bars[2], 'stroke')).toBe('none');
   });
 });
