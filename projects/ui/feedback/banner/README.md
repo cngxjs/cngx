@@ -89,7 +89,7 @@ export class AppComponent {}
 
 #### CSS Custom Properties
 
-- `--cngx-banner-{severity}-bg` / `-border` / `-icon` - Per-severity palette
+- `--cngx-banner-{severity}-bg` / `-border` / `-icon` - Per-severity palette; the icon defaults to the core `--cngx-color-{info,success,warning,danger}` mixed 90% into `--cngx-color-text`
 - `--cngx-banner-action-color` (default the severity accent mixed 60% into `--cngx-color-text`) - Action label and border color; pin it to `--cngx-banner-accent` for the pure accent
 
 ### CngxBannerOn

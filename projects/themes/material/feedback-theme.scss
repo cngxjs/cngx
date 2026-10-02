@@ -172,6 +172,11 @@
     --cngx-toast-title-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-toast-description-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
     --cngx-toast-info-accent: #{mat.get-theme-color($theme, primary)};
+    // M2 has no success / warning role: keep the cngx semantic colours (the
+    // system bridge leaves them unmapped too) instead of the base hex, which
+    // missed 3:1 on the card.
+    --cngx-toast-success-accent: var(--cngx-color-success);
+    --cngx-toast-warning-accent: var(--cngx-color-warning);
     --cngx-toast-error-accent: #{mat.get-theme-color($theme, warn)};
   }
 }

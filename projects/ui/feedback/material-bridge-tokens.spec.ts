@@ -182,6 +182,16 @@ describe('feedback Material bridge', () => {
     }
   });
 
+  it('maps the M2 toast success and warning accents to the cngx semantic colours', () => {
+    // M2 has no success / warning role; the base hex (#22c55e / #f59e0b)
+    // missed 3:1 on the card. The last declaration in the rule wins.
+    const css = compiledTheme('v0');
+    const last = (name: string): string | undefined =>
+      [...css.matchAll(new RegExp(`${name}: ([^;]+);`, 'g'))].map((m) => m[1]).at(-1);
+    expect(last('--cngx-toast-success-accent')).toBe('var(--cngx-color-success)');
+    expect(last('--cngx-toast-warning-accent')).toBe('var(--cngx-color-warning)');
+  });
+
   it('does not resurrect the dead dismiss families', () => {
     for (const themeVersion of ['v1', 'v0'] as const) {
       for (const name of emittedTokenNames(themeVersion)) {
