@@ -11,7 +11,11 @@ import {
   type TreetableLabels,
 } from '@cngx/data-display/treetable';
 import type { ErrorMessageMap } from '@cngx/forms/field';
-import { provideFilterBuilderConfigAt, withFilterBuilderI18n } from '@cngx/forms/filter-builder';
+import {
+  provideFilterBuilderConfigAt,
+  withFilterBuilderI18n,
+  type CngxFilterBuilderI18n,
+} from '@cngx/forms/filter-builder';
 import { provideInputConfigAt, withInputAriaLabels, type InputAriaLabels } from '@cngx/forms/input';
 import {
   provideSelectConfigAt,
@@ -25,10 +29,11 @@ import type { CngxPaginatorAnnouncements, CngxPaginatorAriaLabels } from '@cngx/
 import type { CngxBreadcrumbAriaLabels } from '@cngx/ui/breadcrumb';
 
 // German reference pack for the examples app. Not a shipped translation: it
-// proves that every surface the i18n residue pages render is reachable from
-// one language file. Plain `Provider`s only, so the pack also fits a story's
-// `viewProviders` (the root `provideTreetable` / `provideSelectConfig`
-// variants return `EnvironmentProviders`, hence the `*At` forms).
+// proves that every surface the i18n pages render is reachable from one
+// language file driven by one language Signal (`DEMO_LANG`). Plain
+// `Provider`s only, so the pack also fits a story's `viewProviders` (the root
+// `provideTreetable` / `provideSelectConfig` variants return
+// `EnvironmentProviders`, hence the `*At` forms).
 
 const OPERATORS_DE: Readonly<Record<string, string>> = {
   contains: 'Enthält',
@@ -193,7 +198,47 @@ export const ERROR_MESSAGES_DE: ErrorMessageMap = {
   required: () => 'Pflichtfeld.',
   minLength: (e) => `Mindestens ${minLengthOf(e)} Zeichen.`,
 };
-export const INPUT_ARIA_DE: Partial<InputAriaLabels> = { clear: 'Leeren' };
+export const INPUT_ARIA_DE: Partial<InputAriaLabels> = {
+  clear: 'Leeren',
+  charCountMax: (current, max) => `${current} von ${max}`,
+  charCountMin: (current, min) => `${current} (mindestens ${min})`,
+};
+export const FILTER_BUILDER_DE: Partial<CngxFilterBuilderI18n> = {
+  addFilter: 'Filter hinzufügen',
+  addGroup: 'Gruppe hinzufügen',
+  removeFilter: 'Filter entfernen',
+  removeGroup: 'Filtergruppe entfernen',
+  and: 'UND',
+  or: 'ODER',
+  xor: 'XODER',
+  logicLabel: 'Filter verknüpfen mit',
+  negate: 'Negieren',
+  emptyState: 'Keine Filter definiert',
+  unboundFilterLabel: 'Ungebundener Filter',
+  negatedTag: 'negiert',
+  booleanTrue: 'wahr',
+  booleanFalse: 'falsch',
+  operators: OPERATORS_DE,
+  groupLabel: ({ logic, negated, isRoot, logicLabel, negatedTag }) =>
+    `${isRoot ? 'Oberste Filtergruppe' : 'Filtergruppe'} (${logicLabel ?? logic}${negated ? `, ${negatedTag}` : ''})`,
+  expressionLabel: ({ fieldLabel, operator, operatorLabel }) =>
+    `Filter: ${fieldLabel} ${(operatorLabel ?? operator) || '(kein Operator)'}`,
+  announcement: {
+    filterAdded: ({ fieldLabel }) => `Filter hinzugefügt: ${fieldLabel}`,
+    filterRemoved: ({ fieldLabel, operator, operatorLabel, value }) =>
+      `Filter entfernt: ${fieldLabel} ${operatorLabel ?? operator} ${value}`.trim(),
+    groupAdded: () => 'Filtergruppe hinzugefügt',
+    groupRemoved: () => 'Filtergruppe entfernt',
+    logicChanged: ({ logic, logicLabel }) => `Verknüpfung geändert zu ${logicLabel ?? logic}`,
+    groupNegated: () => 'Gruppe negiert',
+    groupUnnegated: () => 'Negierung aufgehoben',
+    fieldChanged: ({ fieldLabel }) => `Feld geändert zu ${fieldLabel}`,
+    operatorChanged: ({ operator, operatorLabel }) =>
+      `Operator geändert zu ${operatorLabel ?? operator}`,
+    valueChanged: ({ value }) => (value ? `Wert geändert zu ${value}` : 'Wert geändert'),
+    filtersCleared: () => 'Filter zurückgesetzt',
+  },
+};
 export const FEEDBACK_DE: CngxFeedbackI18nOverrides = {
   alertsRegionLabel: 'Hinweise',
   notificationsRegionLabel: 'Benachrichtigungen',
@@ -314,6 +359,9 @@ export const DEMO_ERROR_MESSAGES = computed<ErrorMessageMap>(() =>
 export const DEMO_INPUT_ARIA_LABELS = computed<Partial<InputAriaLabels>>(() =>
   isDe() ? INPUT_ARIA_DE : {},
 );
+export const DEMO_FILTER_BUILDER_LABELS = computed<Partial<CngxFilterBuilderI18n>>(() =>
+  isDe() ? FILTER_BUILDER_DE : {},
+);
 export const DEMO_TREETABLE_LABELS = computed<Partial<TreetableLabels>>(() =>
   isDe() ? TREETABLE_DE : {},
 );
@@ -341,59 +389,21 @@ export const DEMO_BREADCRUMB_ARIA_LABELS = computed<CngxBreadcrumbAriaLabels>(()
   isDe() ? BREADCRUMB_ARIA_DE : {},
 );
 
-/** The German pack, spread into the root providers by `?lang=de`. */
+/**
+ * The root language pack over the same `DEMO_LANG` computeds the live-switch
+ * stories read. `?lang=de` spreads it into the root providers and starts
+ * `DEMO_LANG` in German; nothing in it is a German snapshot.
+ */
 export const DE_PACK: Provider[] = [
-  provideFeedbackI18n(FEEDBACK_DE),
-  ...provideTreetableAt(withTreetableLabels(TREETABLE_DE)),
-  ...provideFilterBuilderConfigAt(
-    withFilterBuilderI18n({
-      addFilter: 'Filter hinzufügen',
-      addGroup: 'Gruppe hinzufügen',
-      removeFilter: 'Filter entfernen',
-      removeGroup: 'Filtergruppe entfernen',
-      and: 'UND',
-      or: 'ODER',
-      xor: 'XODER',
-      logicLabel: 'Filter verknüpfen mit',
-      negate: 'Negieren',
-      emptyState: 'Keine Filter definiert',
-      unboundFilterLabel: 'Ungebundener Filter',
-      negatedTag: 'negiert',
-      booleanTrue: 'wahr',
-      booleanFalse: 'falsch',
-      operators: OPERATORS_DE,
-      groupLabel: ({ logic, negated, isRoot, logicLabel, negatedTag }) =>
-        `${isRoot ? 'Oberste Filtergruppe' : 'Filtergruppe'} (${logicLabel ?? logic}${negated ? `, ${negatedTag}` : ''})`,
-      expressionLabel: ({ fieldLabel, operator, operatorLabel }) =>
-        `Filter: ${fieldLabel} ${(operatorLabel ?? operator) || '(kein Operator)'}`,
-      announcement: {
-        filterAdded: ({ fieldLabel }) => `Filter hinzugefügt: ${fieldLabel}`,
-        filterRemoved: ({ fieldLabel, operator, operatorLabel, value }) =>
-          `Filter entfernt: ${fieldLabel} ${operatorLabel ?? operator} ${value}`.trim(),
-        groupAdded: () => 'Filtergruppe hinzugefügt',
-        groupRemoved: () => 'Filtergruppe entfernt',
-        logicChanged: ({ logic, logicLabel }) => `Verknüpfung geändert zu ${logicLabel ?? logic}`,
-        groupNegated: () => 'Gruppe negiert',
-        groupUnnegated: () => 'Negierung aufgehoben',
-        fieldChanged: ({ fieldLabel }) => `Feld geändert zu ${fieldLabel}`,
-        operatorChanged: ({ operator, operatorLabel }) =>
-          `Operator geändert zu ${operatorLabel ?? operator}`,
-        valueChanged: ({ value }) => (value ? `Wert geändert zu ${value}` : 'Wert geändert'),
-        filtersCleared: () => 'Filter zurückgesetzt',
-      },
-    }),
-  ),
-  ...provideInputConfigAt(
-    withInputAriaLabels({
-      charCountMax: (current, max) => `${current} von ${max}`,
-      charCountMin: (current, min) => `${current} (mindestens ${min})`,
-    }),
-  ),
-  ...provideSelectConfigAt(withFallbackLabels({ searchPlaceholder: 'Suchen…' })),
-  provideKpiI18n(withKpiI18nLabels(KPI_DE)),
-  provideInteractiveI18n(withInteractiveI18nLabels(INTERACTIVE_DE)),
-  provideDisplayI18n(withDisplayI18nLabels(DISPLAY_DE)),
-  ...provideLocaleAt('de-DE'),
+  provideFeedbackI18n(DEMO_FEEDBACK_LABELS),
+  ...provideTreetableAt(withTreetableLabels(DEMO_TREETABLE_LABELS)),
+  ...provideFilterBuilderConfigAt(withFilterBuilderI18n(DEMO_FILTER_BUILDER_LABELS)),
+  ...provideInputConfigAt(withInputAriaLabels(DEMO_INPUT_ARIA_LABELS)),
+  ...provideSelectConfigAt(withFallbackLabels(DEMO_SELECT_FALLBACK_LABELS)),
+  provideKpiI18n(withKpiI18nLabels(DEMO_KPI_LABELS)),
+  provideInteractiveI18n(withInteractiveI18nLabels(DEMO_INTERACTIVE_LABELS)),
+  provideDisplayI18n(withDisplayI18nLabels(DEMO_DISPLAY_LABELS)),
+  ...provideLocaleAt(DEMO_LOCALE),
 ];
 
 export { EN_RESIDUE_STRINGS } from './i18n-en-residue.fixture';

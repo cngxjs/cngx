@@ -1,12 +1,11 @@
 import { expect, test } from '@playwright/test';
 
-import { gotoDemo } from '../../_helpers';
+import { gotoDemo, gotoDemoLang } from '../../_helpers';
 import { routesIn } from '../../_routes';
 
-// Proves the reactive i18n surfaces switch EN -> DE without a reload,
-// and the flip rule for live regions: the shown text stays until the next
-// status change, which then speaks German. Only the surfaces listed here are
-// claimed live; static-by-necessity inputs and older tokens are not.
+// Proves every cngx i18n surface switches EN -> DE without a reload over one
+// language Signal (`DEMO_LANG`), and the flip rule for live regions: the shown
+// text stays until the next status change, which then speaks German.
 
 const ROUTE = 'core/i18n/language-pack/live-switch';
 
@@ -285,5 +284,25 @@ test.describe('live language switch', () => {
     await expect(alert).toHaveCount(0);
     await page.getByRole('button', { name: 'Fail invoices' }).click();
     await expect(alert).toHaveText('Dieser Abschnitt konnte nicht geladen werden.');
+  });
+
+  test('the ?lang=de pack starts the same language signal in German and switches back', async ({
+    page,
+  }) => {
+    await gotoDemoLang(page, ROUTE, 'de');
+
+    const trend = page.locator('cngx-trend');
+    const progress = page.locator('cngx-progress');
+    const de = page.getByRole('button', { name: 'DE', exact: true });
+
+    // (1) Bootstrapped in German, and the story's toggle reads the same signal.
+    await expect(de).toHaveAttribute('aria-pressed', 'true');
+    await expect(trend).toHaveAttribute('aria-label', /^\+5,3 % aufwärts$/);
+    await expect(progress).toHaveAttribute('aria-valuetext', '42 %');
+
+    // (2) Back to English, no reload.
+    await page.getByRole('button', { name: 'EN', exact: true }).click();
+    await expect(trend).toHaveAttribute('aria-label', '+5.3% up');
+    await expect(progress).toHaveAttribute('aria-valuetext', '42%');
   });
 });

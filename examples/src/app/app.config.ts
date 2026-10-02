@@ -16,7 +16,7 @@ import {
   withToasts,
 } from '@cngx/ui/feedback';
 
-import { DE_PACK } from '../../fixtures/i18n-de.fixture';
+import { DE_PACK, DEMO_LANG } from '../../fixtures/i18n-de.fixture';
 import { routes } from './app.routes';
 import { CngxExamplesTitleStrategy } from './cngx-examples-title-strategy';
 
@@ -55,12 +55,17 @@ function initialFieldSkin(): Exclude<CngxFieldSkin, 'outline'> | null {
 
 const fieldSkin = initialFieldSkin();
 
-// `?lang=de` (before the hash, so the hash router never sees it) swaps in the
-// German reference pack. LOCALE_ID is left alone, so Angular pipes in demo
-// chrome need no registerLocaleData; cngx formats through CNGX_LOCALE.
+// `?lang=de` (before the hash, so the hash router never sees it) installs the
+// reference language pack and starts its language Signal in German.
+// LOCALE_ID is left alone, so Angular pipes in demo chrome need no
+// registerLocaleData; cngx formats through CNGX_LOCALE.
 function initialLanguagePack(): Provider[] {
   try {
-    return new URLSearchParams(location.search).get('lang') === 'de' ? DE_PACK : [];
+    if (new URLSearchParams(location.search).get('lang') !== 'de') {
+      return [];
+    }
+    DEMO_LANG.set('de');
+    return DE_PACK;
   } catch {
     // location may be unavailable; fall back to the English defaults.
   }
