@@ -179,6 +179,9 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // @cngx/ui/data-grid-accordion - the log-stream severity edge is a
   // background-only strip; drawn in CanvasText (the LEVEL text names it).
   'projects/ui/data-grid-accordion/data-grid-accordion-skins.css',
+  // @cngx/ui/stepper - CngxDotStepper dots are background-only circles; ringed
+  // and filled in system colours like the stepper mobile dots.
+  'projects/ui/stepper/dot-stepper.component.css',
 ];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
@@ -301,7 +304,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(49);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(50);
   });
 });
 

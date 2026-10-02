@@ -189,3 +189,34 @@
     transition: none;
   }
 }
+
+/* forced-colors (WHCM): every default dot is a background-only circle and
+ * flattens into Canvas, the current and completed ones with it. Mirror the
+ * stepper mobile dots: each dot opts out and draws an inset CanvasText ring,
+ * a completed dot fills CanvasText, the active dot fills Highlight. Each dot
+ * declares the ink its error glyph (::after) follows, so the glyph stays
+ * readable on all three fills. :empty skips consumer-slot dots, which keep
+ * their own art. */
+@media (forced-colors: active) {
+  .cngx-dot-stepper .cngx-dot-stepper__dot:empty {
+    --_cngx-forced-ink: CanvasText;
+    forced-color-adjust: none;
+    background: Canvas;
+    box-shadow: inset 0 0 0 1px CanvasText;
+  }
+
+  .cngx-dot-stepper .cngx-dot-stepper__dot--completed:empty {
+    --_cngx-forced-ink: Canvas;
+    background: CanvasText;
+  }
+
+  .cngx-dot-stepper .cngx-dot-stepper__dot--active:empty {
+    --_cngx-forced-ink: HighlightText;
+    background: Highlight;
+    box-shadow: none;
+  }
+
+  .cngx-dot-stepper__dot--error::after {
+    color: var(--_cngx-forced-ink, CanvasText);
+  }
+}
