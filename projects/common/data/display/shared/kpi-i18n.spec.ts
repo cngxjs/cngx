@@ -12,6 +12,7 @@ import {
   withKpiI18nLabels,
   type CngxKpiI18n,
 } from './kpi-i18n';
+import { stripBidiIsolates } from '@cngx/testing';
 
 @Component({
   template: `
@@ -45,21 +46,21 @@ describe('CNGX_KPI_I18N', () => {
 
   it('ships the English copy without a provider', () => {
     const bundle = TestBed.inject(CNGX_KPI_I18N)();
-    expect(bundle.deltaLabel('+5.3%', 'positive')).toBe('+5.3% improved');
-    expect(bundle.deltaLabel('2.1%', 'negative')).toBe('2.1% declined');
-    expect(bundle.deltaLabel('0.0%', 'neutral')).toBe('0.0% unchanged');
-    expect(bundle.trendLabel('+5.3%', 'up')).toBe('+5.3% up');
-    expect(bundle.trendLabel('2.1%', 'down')).toBe('2.1% down');
-    expect(bundle.trendLabel('0.0%', 'flat')).toBe('0.0% unchanged');
-    expect(bundle.goalValueText(73, 100)).toBe('73 of 100');
+    expect(stripBidiIsolates(bundle.deltaLabel('+5.3%', 'positive'))).toBe('+5.3% improved');
+    expect(stripBidiIsolates(bundle.deltaLabel('2.1%', 'negative'))).toBe('2.1% declined');
+    expect(stripBidiIsolates(bundle.deltaLabel('0.0%', 'neutral'))).toBe('0.0% unchanged');
+    expect(stripBidiIsolates(bundle.trendLabel('+5.3%', 'up'))).toBe('+5.3% up');
+    expect(stripBidiIsolates(bundle.trendLabel('2.1%', 'down'))).toBe('2.1% down');
+    expect(stripBidiIsolates(bundle.trendLabel('0.0%', 'flat'))).toBe('0.0% unchanged');
+    expect(stripBidiIsolates(bundle.goalValueText(73, 100))).toBe('73 of 100');
   });
 
   it('renders the English defaults on the KPI atoms', () => {
     TestBed.configureTestingModule({ imports: [Host] });
     const { delta, trend, goal } = render();
-    expect(delta.getAttribute('aria-label')).toBe('2.1% improved');
-    expect(trend.getAttribute('aria-label')).toBe('+5.3% up');
-    expect(goal.getAttribute('aria-valuetext')).toBe('73 of 100');
+    expect(stripBidiIsolates(delta.getAttribute('aria-label'))).toBe('2.1% improved');
+    expect(stripBidiIsolates(trend.getAttribute('aria-label'))).toBe('+5.3% up');
+    expect(stripBidiIsolates(goal.getAttribute('aria-valuetext'))).toBe('73 of 100');
   });
 
   it('keeps unset keys English on a static partial override', () => {
@@ -70,7 +71,7 @@ describe('CNGX_KPI_I18N', () => {
     });
     const bundle = TestBed.runInInjectionContext(() => injectKpiI18n());
     expect(bundle().goalValueText(1, 2)).toBe('1 von 2');
-    expect(bundle().trendLabel('+1.0%', 'up')).toBe('+1.0% up');
+    expect(stripBidiIsolates(bundle().trendLabel('+1.0%', 'up'))).toBe('+1.0% up');
   });
 
   it('flips every KPI label live through a Signal override', () => {
@@ -80,7 +81,7 @@ describe('CNGX_KPI_I18N', () => {
       providers: [provideKpiI18n(withKpiI18nLabels(overrides))],
     });
     const { fixture, delta, trend, goal } = render();
-    expect(trend.getAttribute('aria-label')).toBe('+5.3% up');
+    expect(stripBidiIsolates(trend.getAttribute('aria-label'))).toBe('+5.3% up');
 
     overrides.set({
       deltaLabel: (formatted, sentiment) =>

@@ -1,6 +1,8 @@
-import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
+import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createOverrideMerge, injectLocale, numberFormatterFor } from '@cngx/core/utils';
 
+import { CNGX_KPI_LANGUAGE_EN, type CngxKpiLanguageSection } from '../../i18n/kpi-language-section';
 import type { DeltaDirection, DeltaSentiment } from './delta-format';
 
 /**
@@ -24,29 +26,67 @@ export interface CngxKpiI18n {
   readonly trendLabel: (formatted: string, direction: DeltaDirection) => string;
   /** `CngxGoal` `aria-valuetext`: clamped value and target. */
   readonly goalValueText: (now: number, max: number) => string;
+  /**
+   * `CngxMetric` order of value and unit: `{value}` and `{unit}` in reading
+   * order, a plain template the metric renders as two elements. English
+   * `'{value} {unit}'`.
+   */
+  readonly metricValueWithUnit: string;
+  /** Shown in place of a `CngxMetric` without a value. English: the U+2014 glyph. */
+  readonly metricPlaceholder: string;
+  /** Accessible name of a `CngxMetric` without a value. English `No value`. */
+  readonly metricNoValue: string;
 }
 
-const SENTIMENT_WORD: Record<DeltaSentiment, string> = {
-  positive: 'improved',
-  negative: 'declined',
-  neutral: 'unchanged',
-};
+const GOAL_NUMBER: Intl.NumberFormatOptions = {};
 
-const DIRECTION_WORD: Record<DeltaDirection, string> = {
-  up: 'up',
-  down: 'down',
-  flat: 'unchanged',
-};
+/** @internal Turns a kpi section into the token's keys for a locale. */
+function kpiBundleFrom(section: CngxKpiLanguageSection, locale: string): CngxKpiI18n {
+  const sentiment: Record<DeltaSentiment, string> = {
+    positive: section.deltaImproved,
+    negative: section.deltaDeclined,
+    neutral: section.deltaUnchanged,
+  };
+  const direction: Record<DeltaDirection, string> = {
+    up: section.trendUp,
+    down: section.trendDown,
+    flat: section.trendFlat,
+  };
+  const goalNumber = numberFormatterFor(locale, GOAL_NUMBER);
+  return {
+    deltaLabel: (value, s) =>
+      formatMessage(section.deltaLabel, { value, sentiment: sentiment[s] }, locale),
+    trendLabel: (value, d) =>
+      formatMessage(section.trendLabel, { value, direction: direction[d] }, locale),
+    goalValueText: (now, max) =>
+      formatMessage(
+        section.goalValueText,
+        { now: goalNumber.format(now), max: goalNumber.format(max) },
+        locale,
+      ),
+    metricValueWithUnit: section.metricValueWithUnit,
+    metricPlaceholder: section.metricPlaceholder,
+    metricNoValue: section.metricNoValue,
+  };
+}
 
-const KPI_I18N_DEFAULTS: CngxKpiI18n = {
-  deltaLabel: (formatted, sentiment) => `${formatted} ${SENTIMENT_WORD[sentiment]}`,
-  trendLabel: (formatted, direction) => `${formatted} ${DIRECTION_WORD[direction]}`,
-  goalValueText: (now, max) => `${now} of ${max}`,
-};
+const NO_SECTION: Partial<CngxKpiLanguageSection> = {};
+
+/** @internal The kpi section of the active pack over English, mapped for the app locale. */
+function kpiBundleFromPack(): Signal<CngxKpiI18n> {
+  const pack = injectLanguageSection('kpi');
+  const locale = injectLocale();
+  const section = createOverrideMerge(
+    CNGX_KPI_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+  );
+  return computed(() => kpiBundleFrom(section(), locale()));
+}
 
 /**
- * DI token for the KPI i18n bundle. `providedIn: 'root'` with English
- * defaults; the value is a `Signal`, shared by every reader under one
+ * DI token for the KPI i18n bundle. `providedIn: 'root'`: the kpi section
+ * of the active language pack over the English defaults, formatted for the
+ * app locale; the value is a `Signal`, shared by every reader under one
  * injector.
  *
  * @category common/data/i18n
@@ -57,7 +97,7 @@ const KPI_I18N_DEFAULTS: CngxKpiI18n = {
  */
 export const CNGX_KPI_I18N = new InjectionToken<Signal<CngxKpiI18n>>('CngxKpiI18n', {
   providedIn: 'root',
-  factory: () => coerceSignal(KPI_I18N_DEFAULTS),
+  factory: kpiBundleFromPack,
 });
 
 /**
@@ -78,8 +118,8 @@ function defineKpiI18nFeature(
 }
 
 /**
- * Override KPI labels via a partial bundle - unset keys keep the English
- * default. Pass a `Signal` of a partial bundle to switch languages at
+ * Override KPI labels via a partial bundle - unset keys keep the language
+ * pack's copy, or the English default. Pass a `Signal` of a partial bundle to switch languages at
  * runtime.
  *
  * @category common/data/i18n
@@ -93,7 +133,8 @@ export function withKpiI18nLabels(
 
 /**
  * Provider for the KPI i18n bundle. Returns a plain `Provider`, so it also
- * scopes a subtree through `viewProviders`.
+ * scopes a subtree through `viewProviders`. The features apply on top of the
+ * active language pack.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -114,10 +155,7 @@ export function provideKpiI18n(...features: readonly CngxKpiI18nFeature[]): Prov
   return {
     provide: CNGX_KPI_I18N,
     useFactory: () =>
-      features.reduce<Signal<CngxKpiI18n>>(
-        (bundle, feat) => feat(bundle),
-        coerceSignal(KPI_I18N_DEFAULTS),
-      ),
+      features.reduce<Signal<CngxKpiI18n>>((bundle, feat) => feat(bundle), kpiBundleFromPack()),
   };
 }
 

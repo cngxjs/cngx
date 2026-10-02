@@ -121,3 +121,8 @@ export {
   type CngxMaterialBidirectionalSyncOptions,
   type CngxMaterialBidirectionalSyncHandle,
 } from './material-bridge/bidirectional-sync';
+export { CNGX_KPI_LANGUAGE_EN, type CngxKpiLanguageSection } from './i18n/kpi-language-section';
+export {
+  CNGX_RECYCLER_LANGUAGE_EN,
+  type CngxRecyclerLanguageSection,
+} from './i18n/recycler-language-section';

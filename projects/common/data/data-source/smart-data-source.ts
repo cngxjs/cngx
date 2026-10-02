@@ -1,7 +1,7 @@
 import { DataSource } from '@angular/cdk/collections';
 import { computed, inject, Injector, type Signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { injectLocale, memoize, type CngxAsyncState } from '@cngx/core/utils';
 import { arrayEqual } from '@cngx/utils';
 import type { Observable } from 'rxjs';
 import { CngxPaginate } from '../paginate/paginate.directive';
@@ -20,15 +20,27 @@ function defaultSearchFn<T>(item: T, term: string): boolean {
   );
 }
 
-function defaultSortFn<T>(a: T, b: T, field: string, dir: 'asc' | 'desc'): number {
+const collatorFor = memoize(
+  (locale: string) => new Intl.Collator(locale, { numeric: true, sensitivity: 'base' }),
+  { cacheLimit: 32 },
+);
+
+/** @internal The default comparator: field values as text, collated in `locale`. */
+function defaultSortFnFor<T>(
+  locale: string,
+): (a: T, b: T, field: string, dir: 'asc' | 'desc') => number {
+  const collator = collatorFor(locale);
   const toStr = (v: unknown): string =>
     v === null || v === undefined || typeof v === 'object'
       ? ''
       : String(v as string | number | boolean | bigint);
-  const av = toStr((a as Record<string, unknown>)[field]);
-  const bv = toStr((b as Record<string, unknown>)[field]);
-  const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
-  return dir === 'asc' ? cmp : -cmp;
+  return (a, b, field, dir) => {
+    const cmp = collator.compare(
+      toStr((a as Record<string, unknown>)[field]),
+      toStr((b as Record<string, unknown>)[field]),
+    );
+    return dir === 'asc' ? cmp : -cmp;
+  };
 }
 
 /**
@@ -45,7 +57,8 @@ export interface CngxSmartDataSourceOptions<T> {
   searchFn?: (item: T, term: string) => boolean;
   /**
    * Custom sort comparator. Receives two items, the active field key, and
-   * direction. Defaults to a locale-aware string comparison.
+   * direction. Defaults to a string comparison collated in the app locale
+   * (`CNGX_LOCALE`), numeric-aware and case- and accent-insensitive.
    */
   sortFn?: (a: T, b: T, field: string, direction: 'asc' | 'desc') => number;
   /**
@@ -126,6 +139,7 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
   // matching options thunk instead.
   private readonly injectedSearch = inject(CngxSearch, { optional: true });
   private readonly injectedPaginate = inject(CngxPaginate, { optional: true });
+  private readonly locale = injectLocale();
 
   /**
    * Items after filter and search are applied, before sort and pagination.
@@ -218,7 +232,7 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
       () => {
         const sort = this.options?.sort?.() ?? this.injectedSort;
         const sorts = sort?.sorts() ?? [];
-        const sortFn = this.options?.sortFn ?? defaultSortFn<T>;
+        const sortFn = this.options?.sortFn ?? defaultSortFnFor<T>(this.locale());
 
         const sorted =
           sorts.length > 0

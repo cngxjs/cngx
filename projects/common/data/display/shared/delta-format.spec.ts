@@ -76,3 +76,13 @@ describe('delta-format', () => {
     });
   });
 });
+
+describe('formatDelta sign', () => {
+  it('lets the locale draw the plus sign and prints a negative unsigned', () => {
+    expect(formatDelta(5.3, 'percent', 'en-US')).toBe('+5.3%');
+    expect(formatDelta(5.3, 'percent', 'de')).toBe('+5,3\u00a0%');
+    expect(formatDelta(-5.3, 'percent', 'de')).toBe('5,3\u00a0%');
+    expect(formatDelta(1200, 'absolute', 'de')).toBe('+1.200');
+    expect(formatDelta(0, 'absolute', 'en-US')).toBe('0');
+  });
+});

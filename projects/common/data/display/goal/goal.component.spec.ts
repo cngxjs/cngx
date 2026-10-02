@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CngxGoal } from './goal.component';
+import { stripBidiIsolates } from '@cngx/testing';
 
 @Component({
   template: `<cngx-goal [value]="value()" [max]="max()" [valueTextFormat]="fmt()" />`,
@@ -65,7 +66,7 @@ describe('CngxGoal', () => {
 
   it('defaults aria-valuetext to "now of max"', () => {
     const { el } = setup();
-    expect(el.getAttribute('aria-valuetext')).toBe('73 of 100');
+    expect(stripBidiIsolates(el.getAttribute('aria-valuetext'))).toBe('73 of 100');
   });
 
   it('uses the valueTextFormat closure when supplied', () => {

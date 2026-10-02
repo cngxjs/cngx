@@ -58,7 +58,9 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/common/data
 
 - `CNGX_RECYCLER_I18N` is now `InjectionToken<Signal<RecyclerI18n>>`. Call the Signal where you read a phrase, inside a `computed()`, an effect or a handler: `inject(CNGX_RECYCLER_I18N).empty()` becomes `inject(CNGX_RECYCLER_I18N)().empty()`.
-- A direct `{ provide: CNGX_RECYCLER_I18N, useValue: bundle }` must supply a Signal. Prefer `provideRecyclerI18n(bundle)`, which still replaces the whole bundle; it now also accepts a `Signal<RecyclerI18n>` for runtime switching, and returns a plain `Provider`.
+- A direct `{ provide: CNGX_RECYCLER_I18N, useValue: bundle }` must supply a Signal. Prefer `provideRecyclerI18n(bundle)`; it accepts a `Signal` for runtime switching and returns a plain `Provider`.
+- `provideRecyclerI18n` takes a partial bundle and merges it over the language pack's recycler section: keys you leave out keep their translated or English text instead of being required.
+- `CngxKpiI18n` has three new required keys: `metricValueWithUnit` (English `'{value} {unit}'`, the order of a metric's value and unit), `metricPlaceholder` (the glyph a metric without a value shows) and `metricNoValue` (English `'No value'`, its accessible name). A hand-built `Signal<CngxKpiI18n>` supplies them; `withKpiI18nLabels` overrides are unaffected.
 
 ### @cngx/common/dialog
 
@@ -212,6 +214,14 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxChartI18n` has two new optional keys: `indexColumnLabel` (the data table's index header, English `#`) and `stackedBarSegmentTitle(label, value)` (the stacked-bar segment tooltip, English `label: value`). A full override keeps compiling; the keys it leaves out read the language pack, then English.
 - The data table's row numbers and a number `value` in `cngx-chart-legend` format with the app locale (`6,6` in German). A non-finite chart number renders as `∞` / `-∞` / `NaN` in the locale instead of `Infinity`. A legend `value` that is not a number renders as text, as before.
 - The words, order and list separator of the default `summary` and `stackedBarSummary` come from the chart section of the language pack, so a German pack can write `Minimum 1,5; Maximum 9` instead of the ambiguous `Min 1,5, max 9`.
+
+### @cngx/common/data
+
+- `CngxSmartDataSource` sorts string fields with a collator of the app locale (`CNGX_LOCALE`) instead of the runtime's default locale, so `Ä` sorts after `Z` in Swedish and next to `A` in German.
+- The recycler announcements use the singular for one item (`1 more item loaded`, `1 result found`) and format counts in the app locale (`1,200`).
+- `CngxGoal` formats `now` and `max` in its default `aria-valuetext` with the app locale (`1,234.5 of 2,000`, before `1234.5 of 2000`).
+- `CngxDelta` lets the locale draw the plus sign of a positive magnitude (`Intl` `signDisplay`), so a locale with its own plus sign or spacing gets it.
+- A `CngxMetric` without a value announces `No value` (with its unit, if any) instead of the dash glyph; the glyph still shows. A pack can place the unit before the value through `metricValueWithUnit`.
 
 ### @cngx/common/stepper
 

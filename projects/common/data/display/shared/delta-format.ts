@@ -69,16 +69,16 @@ export function formatDelta(
   format?: Intl.NumberFormatOptions,
 ): string {
   const abs = Math.abs(value);
-  const prefix = value > 0 ? '+' : '';
+  // The locale places and draws the plus sign; a negative prints unsigned.
+  const signDisplay = value > 0 ? 'exceptZero' : 'never';
   if (mode === 'percent') {
     // The input is already in percent units; Intl's percent style multiplies
-    // by 100, so scale down first and let the locale place the sign.
-    const num = new Intl.NumberFormat(locale, {
+    // by 100, so scale down first.
+    return new Intl.NumberFormat(locale, {
       ...(format ?? { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
       style: 'percent',
+      signDisplay,
     }).format(abs / 100);
-    return `${prefix}${num}`;
   }
-  const num = format ? new Intl.NumberFormat(locale, format).format(abs) : abs.toLocaleString(locale);
-  return `${prefix}${num}`;
+  return new Intl.NumberFormat(locale, { ...format, signDisplay }).format(abs);
 }

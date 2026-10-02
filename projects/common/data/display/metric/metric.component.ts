@@ -5,7 +5,18 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
+import { formatMessage } from '@cngx/core/i18n';
 import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
+
+import { injectKpiI18n } from '../shared/kpi-i18n';
+
+const UNIT_PLACEHOLDER = /\{(value|unit)\}/;
+
+/** @internal `true` when the language reads the unit before the value. */
+function unitFirst(message: string): boolean {
+  const [, first] = UNIT_PLACEHOLDER.exec(message) ?? [];
+  return first === 'unit';
+}
 
 /**
  * Displays a formatted numeric value with optional unit.
@@ -59,8 +70,11 @@ import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
     '[attr.aria-label]': 'accessibleValue()',
   },
   template: `
+    @if (unit() && unitFirst()) {
+      <span class="cngx-metric__unit">{{ unit() }}</span>
+    }
     <span class="cngx-metric__value">{{ formattedValue() }}</span>
-    @if (unit()) {
+    @if (unit() && !unitFirst()) {
       <span class="cngx-metric__unit">{{ unit() }}</span>
     }
   `,
@@ -68,8 +82,12 @@ import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
 })
 export class CngxMetric {
   private readonly locale = injectLocale();
+  private readonly i18n = injectKpiI18n();
 
-  /** Numeric or string value. `null` renders as a placeholder hyphen. */
+  /**
+   * Numeric or string value. `null` renders the `metricPlaceholder` glyph of
+   * the kpi language section and is announced as its `metricNoValue` text.
+   */
   readonly value = input.required<number | string | null>();
 
   /** Unit suffix (e.g. "bpm", "h", "%", "kg"). */
@@ -82,7 +100,7 @@ export class CngxMetric {
   readonly formattedValue = computed(() => {
     const v = this.value();
     if (v === null) {
-      return '\u2014';
+      return this.i18n().metricPlaceholder;
     }
     if (typeof v === 'string') {
       return v;
@@ -90,10 +108,14 @@ export class CngxMetric {
     return numberFormatterFor(this.locale(), this.format() ?? {}).format(v);
   });
 
+  /** @internal Unit before value, per the `metricValueWithUnit` message. */
+  protected readonly unitFirst = computed(() => unitFirst(this.i18n().metricValueWithUnit));
+
   /** @internal Full accessible description including unit. */
   readonly accessibleValue = computed(() => {
-    const v = this.formattedValue();
-    const u = this.unit();
-    return u ? `${v} ${u}` : v;
+    const i18n = this.i18n();
+    const value = this.value() === null ? i18n.metricNoValue : this.formattedValue();
+    const unit = this.unit();
+    return unit ? formatMessage(i18n.metricValueWithUnit, { value, unit }, this.locale()) : value;
   });
 }

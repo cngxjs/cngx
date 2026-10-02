@@ -2,6 +2,7 @@ import { Component, type Injector, runInInjectionContext, signal } from '@angula
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { provideLocale } from '@cngx/core/utils';
 import { createManualState } from '../async-state/create-manual-state';
 import { CngxFilter } from '../filter/filter.directive';
 import { CngxPaginate } from '../paginate/paginate.directive';
@@ -411,5 +412,33 @@ describe('CngxSmartDataSource - reactivity equality', () => {
       expect(values.length).toBe(1);
       sub.unsubscribe();
     });
+  });
+});
+
+describe('CngxSmartDataSource - locale collation', () => {
+  const names = ['Zebra', 'Äpfel', 'apple'];
+
+  function sortedIn(locale: string): string[] {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [WithDirectivesHost],
+      providers: [provideLocale(locale)],
+    });
+    const fixture = TestBed.createComponent(WithDirectivesHost);
+    fixture.detectChanges();
+    const injector: Injector = fixture.debugElement.query(By.directive(CngxSort)).injector;
+    const data = signal(names.map((name, age) => ({ name, age })));
+    const ds = runInInjectionContext(injector, () => injectSmartDataSource(data));
+    injector.get(CngxSort).setSort('name');
+    const values: Item[][] = [];
+    const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+    TestBed.flushEffects();
+    sub.unsubscribe();
+    return values.at(-1)!.map((i) => i.name);
+  }
+
+  it('collates string keys in the app locale', () => {
+    expect(sortedIn('de')).toEqual(['Äpfel', 'apple', 'Zebra']);
+    expect(sortedIn('sv')).toEqual(['apple', 'Zebra', 'Äpfel']);
   });
 });
