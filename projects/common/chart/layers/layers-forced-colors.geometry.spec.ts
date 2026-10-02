@@ -32,7 +32,7 @@ const SCHEMES = ['light', 'dark'] as const;
   encapsulation: ViewEncapsulation.None,
   template: `
     <cngx-chart class="lines" [data]="[1, 3, 2, 4]" [width]="240" [height]="120" aria-label="lines">
-      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]" [grid]="true" label="Units"></svg:g>
       <svg:g cngxLine></svg:g>
       <svg:g cngxLine [data]="[2, 4, 3, 5]" [color]="'rgb(200, 0, 0)'"></svg:g>
       <svg:g cngxThreshold [value]="8" [dashed]="true"></svg:g>
@@ -235,6 +235,22 @@ describe.each(SCHEMES)('chart series under forced colors, %s', (scheme) => {
       expect(computedValue(one(root, '.marks .cngx-band__label'), 'fill')).toBe(ink);
     });
   });
+
+  describe('axes', () => {
+    it('paint rules and labels CanvasText and the grid CanvasText at reduced opacity', async () => {
+      const root = await mountForced();
+      const ink = probe(root, 'canvastext');
+      for (const sel of ['.cngx-axis__line', '.cngx-axis__tick-line']) {
+        expect(computedValue(one(root, `.lines ${sel}`), 'stroke')).toBe(ink);
+      }
+      for (const sel of ['.cngx-axis__tick-label', '.cngx-axis__axis-label']) {
+        expect(computedValue(one(root, `.lines ${sel}`), 'fill')).toBe(ink);
+      }
+      const grid = one(root, '.lines .cngx-axis__grid-line');
+      expect(computedValue(grid, 'stroke')).toBe(ink);
+      expect(computedValue(grid, 'stroke-opacity')).toBe('0.35');
+    });
+  });
 });
 
 describe('chart series without forced colors', () => {
@@ -250,6 +266,7 @@ describe('chart series without forced colors', () => {
     expect(computedValue(bars[2], 'stroke')).toBe('none');
     expect(computedValue(one(root, '.marks .cngx-threshold__line'), 'stroke')).toBe('rgb(200, 0, 0)');
     expect(computedValue(one(root, '.marks .cngx-band__rect'), 'fill')).toBe('rgb(200, 0, 0)');
+    expect(computedValue(one(root, '.lines .cngx-axis__grid-line'), 'stroke-opacity')).toBe('0.6');
     const dots = all(root, '.points .cngx-scatter');
     expect(computedValue(dots[3], 'fill')).toBe('rgb(200, 0, 0)');
     expect(dots.some((d) => computedValue(d, 'fill').startsWith('url('))).toBe(false);
