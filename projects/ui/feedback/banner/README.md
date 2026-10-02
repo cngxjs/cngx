@@ -89,7 +89,7 @@ export class AppComponent {}
 
 #### CSS Custom Properties
 
-- `--cngx-banner-{severity}-bg` / `-border` / `-icon` - Per-severity palette derived from the core `--cngx-color-{info,success,warning,danger}`: bg and border mixed into `--cngx-color-surface` at the alert's per-severity shares (lab light, srgb-linear dark), icon 90% into `--cngx-color-text`
+- `--cngx-banner-{severity}-bg` / `-border` / `-icon` - Per-severity palette derived from the core `--cngx-color-{info,success,warning,danger}`: bg and border take the core hue at the alert's fixed pastel lightness and chroma (`oklch(from <core> L C h)`), icon 90% into `--cngx-color-text`
 - `--cngx-banner-error-color` (default `--cngx-color-danger-text`) - Inline-error sub-line color
 - `--cngx-banner-action-color` (default the severity accent mixed 60% into `--cngx-color-text`) - Action label and border color; pin it to `--cngx-banner-accent` for the pure accent
 

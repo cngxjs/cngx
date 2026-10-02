@@ -12,29 +12,27 @@ import { cdp } from 'vitest/browser';
 // literals: the toast stripe and icon paint the core colour on the toast
 // surface, the alert / banner icon mixes it 90% into the text colour so it
 // still clears 3:1 on the pale severity tint. The alert, stack and banner bg
-// and border tints mix the same core colour into the surface at a
-// per-severity share fitted to the earlier hand-picked palette (lab in light,
-// srgb-linear in dark) and stay close to it, and the banner inline error reads
-// the danger text rung. A brand override of the core colour therefore reaches every
+// and border tints keep the earlier hand-picked pastel lightness and chroma
+// and take only the hue from the same core colour (relative colour syntax),
+// and the banner inline error reads the danger text rung. A brand override of the core colour therefore reaches every
 // family. Schemes are emulated page-wide: the toast surface resolves at the
 // root, so a scheme island would not reach it.
 
 const SCHEMES = ['light', 'dark'] as const;
-// Mix space and core-colour share [bg, border] of each severity tint.
+// Lightness and chroma [bg, border] of each severity tint; the hue is the
+// core colour's.
 const TINT = {
   light: {
-    space: 'lab',
-    info: [12, 44],
-    success: [12, 41],
-    warning: [14, 51],
-    error: [11, 39],
+    info: ['0.96 0.025', '0.85 0.07'],
+    success: ['0.96 0.04', '0.85 0.1'],
+    warning: ['0.97 0.04', '0.86 0.1'],
+    error: ['0.96 0.025', '0.85 0.08'],
   },
   dark: {
-    space: 'srgb-linear',
-    info: [5, 31],
-    success: [7, 38],
-    warning: [6, 34],
-    error: [6, 37],
+    info: ['0.3 0.05', '0.5 0.08'],
+    success: ['0.3 0.06', '0.5 0.1'],
+    warning: ['0.32 0.06', '0.55 0.1'],
+    error: ['0.3 0.05', '0.5 0.1'],
   },
 } as const;
 // The hand-picked palette the tints replaced, [bg, border].
@@ -248,14 +246,11 @@ describe.each(SCHEMES)('feedback severity colour, %s', (scheme) => {
 
     it('derives the alert, stack and banner bg and border tints from the core colour', () => {
       const root = mount();
-      const [bgShare, borderShare] = TINT[scheme][severity];
-      const tint = (share: number): [number, number, number] =>
-        resolve(
-          root,
-          `color-mix(in ${TINT[scheme].space}, var(--cngx-color-${CORE[severity]}) ${share}%, var(--cngx-color-surface))`,
-        );
-      const bg = tint(bgShare);
-      const border = tint(borderShare);
+      const [bgLc, borderLc] = TINT[scheme][severity];
+      const tint = (lc: string): [number, number, number] =>
+        resolve(root, `oklch(from var(--cngx-color-${CORE[severity]}) ${lc} h)`);
+      const bg = tint(bgLc);
+      const border = tint(borderLc);
       for (const [host, edge] of [
         [`.alert-${severity}`, 'border-top-color'],
         [`.stack-${severity}`, 'border-top-color'],
@@ -267,22 +262,22 @@ describe.each(SCHEMES)('feedback severity colour, %s', (scheme) => {
       }
     });
 
-    // A mix of the core colour and the surface cannot reach the chroma of
-    // the light success border (oklch C 0.1 at L 0.85); every other tint
-    // lands within 2.5.
+    // Lightness and chroma are the previous ones, so only a hue offset
+    // remains: the previous info tints sat at hue 250, the core info is 240,
+    // which leaves the info border (and the dark info bg) at about 1.4.
     it('stays close to the previous hand-picked tint', () => {
       const root = mount();
       const [oldBg, oldBorder] = PREVIOUS[scheme][severity];
-      const borderCap = scheme === 'light' && severity === 'success' ? 4.5 : 2.5;
+      const cap = severity === 'info' ? 1.5 : 1;
       const alert = at(root, `.alert-${severity}`);
       expect(
         distance(paint('#fff', computedValue(alert, 'background-color')), resolve(root, oldBg)),
         'bg',
-      ).toBeLessThanOrEqual(2.5);
+      ).toBeLessThan(cap);
       expect(
         distance(paint('#fff', computedValue(alert, 'border-top-color')), resolve(root, oldBorder)),
         'border',
-      ).toBeLessThanOrEqual(borderCap);
+      ).toBeLessThan(cap);
     });
 
     it('keeps body text at 4.5:1 on every tint', () => {
