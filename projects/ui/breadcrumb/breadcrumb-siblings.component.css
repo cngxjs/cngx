@@ -41,7 +41,7 @@
     --cngx-breadcrumb-siblings-trigger-open-bg,
     color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%, transparent)
   );
-  color: var(--cngx-breadcrumb-siblings-trigger-open-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  color: var(--cngx-breadcrumb-siblings-trigger-open-color, var(--cngx-color-primary-text, color-mix(in oklab, var(--cngx-color-primary, oklch(0.66 0.19 50)) 70%, var(--cngx-color-text, oklch(0.2 0.01 250)))));
   transform: rotate(180deg);
 }
 
@@ -79,11 +79,26 @@
 }
 
 .cngx-breadcrumb__siblings-item[aria-current='page'] {
-  color: var(--cngx-breadcrumb-siblings-item-current-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  color: var(--cngx-breadcrumb-siblings-item-current-color, var(--cngx-color-primary-text, color-mix(in oklab, var(--cngx-color-primary, oklch(0.66 0.19 50)) 70%, var(--cngx-color-text, oklch(0.2 0.01 250)))));
   font-weight: 600;
 }
 
 .cngx-breadcrumb__siblings-link {
   color: var(--cngx-breadcrumb-siblings-link-color, inherit);
   text-decoration: var(--cngx-breadcrumb-siblings-link-decoration, none);
+}
+
+/* Forced-colors (WHCM): the current sibling differs from its neighbours only by
+   colour and weight, and the forced palette paints every row CanvasText. Mark it
+   with Highlight like the bar's current crumb. The row opts out so Chromium's
+   Canvas backplate cannot swallow the HighlightText label; it declares the ink
+   (`--_cngx-forced-ink`) that a projected row template's nested content should
+   follow, since an opted-out subtree sees unforced author colours. Unlayered. */
+@media (forced-colors: active) {
+  .cngx-breadcrumb__siblings-item[aria-current='page'] {
+    --_cngx-forced-ink: HighlightText;
+    forced-color-adjust: none;
+    background: Highlight;
+    color: var(--_cngx-forced-ink, HighlightText);
+  }
 }

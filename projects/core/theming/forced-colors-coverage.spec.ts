@@ -140,6 +140,9 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // @cngx/ui/breadcrumb (Phase D) - the current-page item signals with a
   // borderless background tint (+ pill shadow); re-signalled with Highlight.
   'projects/ui/breadcrumb/breadcrumb-bar.component.css',
+  // The siblings dropdown's current row differs from its neighbours only by
+  // colour and weight, both lost under WHCM; re-signalled with Highlight.
+  'projects/ui/breadcrumb/breadcrumb-siblings.component.css',
   // @cngx/ui/toc - the UA forces every link's transparent rail to the link
   // colour, so all links drew the active rail; rest rail pinned to Canvas,
   // active rail re-drawn in Highlight.
@@ -295,7 +298,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(42);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(43);
   });
 });
 
