@@ -490,6 +490,31 @@ describe('CngxMultiSelect - commit action producer', () => {
     announceSpy.mockRestore();
   });
 
+  it('lets a commitFailedMessage formatter own the commit-error sentence', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideSelectConfig(
+          withAriaLabels({
+            commitFailedMessage: (label, detail) => `${detail ?? 'unknown'} - ${label} not saved`,
+          }),
+        ),
+      ],
+    });
+    const { fixture, host, triggerBtn, optionAt } = setup();
+    const announceSpy = vi.spyOn(TestBed.inject(CngxSelectAnnouncer), 'announce');
+
+    triggerBtn.click();
+    flush(fixture);
+    optionAt(0).click();
+    flush(fixture);
+
+    host.pending!.error(new Error('server down'));
+    flush(fixture);
+
+    expect(announceSpy.mock.calls.at(-1)![0]).toBe('server down - Farben not saved');
+    announceSpy.mockRestore();
+  });
+
   it('pessimistic: panel stays open, togglingOption drives per-row spinner, values deferred', () => {
     const { fixture, host, multi, triggerBtn, optionAt } = setup();
     host.mode.set('pessimistic');

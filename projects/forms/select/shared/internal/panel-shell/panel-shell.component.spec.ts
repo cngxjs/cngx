@@ -62,7 +62,7 @@ const EN_ARIA: CngxResolvedSelectAriaLabels = {
   statusLoading: 'Loading options',
   statusRefreshing: 'Refreshing options',
   fieldLabelFallback: 'Selection',
-  commitFailedMessage: 'Save failed',
+  commitFailedMessage: (label: string) => `${label}: Save failed`,
   searchInput: 'Search options',
   listboxFallback: 'Options',
 };

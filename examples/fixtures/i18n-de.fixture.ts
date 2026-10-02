@@ -148,7 +148,8 @@ export const SELECT_ARIA_DE: CngxSelectAriaLabels = {
   statusLoading: 'Optionen werden geladen',
   statusRefreshing: 'Optionen werden aktualisiert',
   fieldLabelFallback: 'Auswahl',
-  commitFailedMessage: 'Speichern fehlgeschlagen',
+  commitFailedMessage: (label, detail) =>
+    detail ? `${label}: Speichern fehlgeschlagen - ${detail}` : `${label}: Speichern fehlgeschlagen`,
   searchInput: 'Optionen durchsuchen',
   listboxFallback: 'Optionen',
 };
