@@ -42,6 +42,7 @@
   // re-interpretation of Material's palette.
   --cngx-color-primary: var(--mat-sys-primary);
   --cngx-color-primary-strong: var(--mat-sys-primary);
+  --cngx-color-primary-text: var(--mat-sys-primary);
   --cngx-color-danger: var(--mat-sys-error);
   --cngx-color-danger-text: var(--mat-sys-error);
   --cngx-color-info: var(--mat-sys-primary);
@@ -84,6 +85,7 @@
   --cngx-color-border: #{rgba($divider, 0.12)};
   --cngx-color-primary: #{$primary};
   --cngx-color-primary-strong: #{$primary};
+  --cngx-color-primary-text: #{bridge.m2-primary-text($theme)};
   // danger stays the raw warn (a fill colour); the text rung is derived
   --cngx-color-danger: #{$warn};
   --cngx-color-danger-text: #{bridge.m2-warn-text($theme)};

@@ -224,15 +224,17 @@ html { @include bridge.theme($theme); }
     ).css;
   }
 
-  it('maps the strong primary and danger text rungs (M3)', () => {
+  it('maps the strong primary, primary text and danger text rungs (M3)', () => {
     const css = systemCss('v1');
     expect(css).toContain('--cngx-color-primary-strong: var(--mat-sys-primary)');
+    expect(css).toContain('--cngx-color-primary-text: var(--mat-sys-primary)');
     expect(css).toContain('--cngx-color-danger-text: var(--mat-sys-error)');
   });
 
-  it('maps the strong primary and danger text rungs (M2)', () => {
+  it('maps the strong primary, primary text and danger text rungs (M2)', () => {
     const css = systemCss('v0');
     expect(css).toMatch(/--cngx-color-primary-strong: #[0-9a-f]{3,6}/);
+    expect(css).toMatch(/--cngx-color-primary-text: #[0-9a-f]{3,6}/);
     expect(css).toMatch(/--cngx-color-danger-text: #[0-9a-f]{3,6}/);
   });
 });
@@ -240,7 +242,7 @@ html { @include bridge.theme($theme); }
 // danger stays the raw warn (fill colour); only the text rung is derived,
 // against the page and the card the system surface maps to.
 describe('system Material bridge M2 danger text contrast', () => {
-  function m2(scheme: 'light' | 'dark', warn: string): Record<string, string> {
+  function m2(scheme: 'light' | 'dark', warn: string, primary = 'indigo'): Record<string, string> {
     const css = compileString(
       `
 @use 'sass:color';
@@ -248,7 +250,7 @@ describe('system Material bridge M2 danger text contrast', () => {
 @use 'material/system-bridge' as bridge;
 
 $theme: mat.m2-define-${scheme}-theme((color: (
-  primary: mat.m2-define-palette(mat.$m2-indigo-palette),
+  primary: mat.m2-define-palette(mat.$m2-${primary}-palette),
   accent: mat.m2-define-palette(mat.$m2-pink-palette),
   warn: mat.m2-define-palette(mat.$m2-${warn}-palette),
 )));
@@ -256,6 +258,7 @@ $theme: mat.m2-define-${scheme}-theme((color: (
 html { @include bridge.theme($theme); }
 probe {
   --warn: #{color.ie-hex-str(mat.get-theme-color($theme, warn))};
+  --primary: #{color.ie-hex-str(mat.get-theme-color($theme, primary))};
   --page: #{color.ie-hex-str(mat.get-theme-color($theme, background, background))};
   --card: #{color.ie-hex-str(mat.get-theme-color($theme, background, card))};
 }
@@ -273,7 +276,9 @@ probe {
     return {
       danger: pick(/--cngx-color-danger: (#[0-9a-f]{6})/),
       dangerText: pick(/--cngx-color-danger-text: (#[0-9a-f]{6})/),
+      primaryText: pick(/--cngx-color-primary-text: (#[0-9a-f]{6})/),
       warn: probe('warn'),
+      primary: probe('primary'),
       page: probe('page'),
       card: probe('card'),
     };
@@ -299,6 +304,19 @@ probe {
           expect(contrast(t['dangerText'], surface)).toBeGreaterThanOrEqual(4.5);
         }
         expect(t['danger']).toBe(t['warn']);
+      });
+    }
+    // The primary text rung derives the same way; a primary that already
+    // passes on both surfaces ships unchanged.
+    for (const primary of ['indigo', 'teal', 'orange', 'cyan']) {
+      it(`${scheme} ${primary}: primary text 4.5:1 on page and card`, () => {
+        const t = m2(scheme, 'red', primary);
+        for (const surface of [t['page'], t['card']]) {
+          expect(contrast(t['primaryText'], surface)).toBeGreaterThanOrEqual(4.5);
+        }
+        if ([t['page'], t['card']].every((surface) => contrast(t['primary'], surface) >= 4.5)) {
+          expect(t['primaryText']).toBe(t['primary']);
+        }
       });
     }
   }
