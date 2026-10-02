@@ -219,7 +219,7 @@ export const TIMELINE_NO_LABELS: CngxTimelineLabels = {};
  *   withTimelineLabels({
  *     retry: 'Erneut versuchen',
  *     emptyFallback: 'Noch keine Ereignisse.',
- *     groupLabel: (group) => group.start.toLocaleDateString('de-AT'),
+ *     groupLabel: (group, locale) => group.start.toLocaleDateString(locale, { dateStyle: 'medium' }),
  *   }),
  * )
  * ```
