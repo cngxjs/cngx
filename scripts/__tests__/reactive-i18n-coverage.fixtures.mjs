@@ -2,8 +2,8 @@
  * Manifests for `reactive-i18n-coverage.test.mjs`.
  *
  * Kept beside the guard for the same reason as the string-coverage manifests:
- * the classification, the ratchet and the live-region manifest are the
- * auditable artefact of the reactive-i18n program and change on a different
+ * the classification, the exempt list and the live-region manifest are the
+ * auditable artefact of runtime language switching and change on a different
  * cadence than the scanner.
  *
  * Rows are keyed by `file` + `member` + `rule` + `token`, never by line. A
@@ -12,20 +12,16 @@
  * declaration.
  */
 
-import { readFileSync } from 'node:fs';
-
 /**
  * A copy token: its strings reach users or assistive technology. `copyKeys`
  * is `'*'` for a dedicated i18n token (the whole value is copy); for a config
  * token, `copyKeys` and `settingsKeys` partition the interface keys exactly.
- * `closesIn` is the phase that makes the token follow a live flip.
  *
  * @typedef {object} CopyTokenEntry
  * @property {string} token
  * @property {'dedicated' | 'config' | 'locale'} kind
  * @property {'*' | readonly string[]} copyKeys
  * @property {readonly string[]} settingsKeys
- * @property {number} closesIn
  * @property {string} [note]
  */
 
@@ -37,7 +33,6 @@ import { readFileSync } from 'node:fs';
  * @property {string} member
  * @property {'R1' | 'R2' | 'R3' | 'R4'} rule
  * @property {string} token
- * @property {number} closesIn
  */
 
 /**
@@ -54,8 +49,8 @@ import { readFileSync } from 'node:fs';
  */
 
 /**
- * A live region that renders copy. `spec` + `testName` name the no-respeak
- * test, enforced from `COMPLETED_PHASE >= closesIn`. A region that only ever
+ * A live region that renders copy. `spec` + `testName` name the test that
+ * proves it does not re-speak on a language flip. A region that only ever
  * renders consumer text is `kind: 'consumer-text'` with a `reason`.
  *
  * @typedef {object} LiveRegionEntry
@@ -63,7 +58,6 @@ import { readFileSync } from 'node:fs';
  * @property {string} region
  * @property {string} [spec]
  * @property {string} [testName]
- * @property {number} [closesIn]
  * @property {'consumer-text'} [kind]
  * @property {string} [reason]
  */
@@ -92,14 +86,12 @@ export const COPY_TOKENS = [
       'mobileSwipe',
       'templates',
     ],
-    closesIn: 2,
   },
   {
     token: 'CNGX_STEPPER_I18N',
     kind: 'dedicated',
     copyKeys: '*',
     settingsKeys: [],
-    closesIn: 2,
   },
   {
     token: 'CNGX_TABS_CONFIG',
@@ -124,63 +116,54 @@ export const COPY_TOKENS = [
       'overflowMaxDeferMs',
       'templates',
     ],
-    closesIn: 2,
   },
   {
     token: 'CNGX_TABS_I18N',
     kind: 'dedicated',
     copyKeys: '*',
     settingsKeys: [],
-    closesIn: 2,
   },
   {
     token: 'CNGX_CARD_I18N',
     kind: 'dedicated',
     copyKeys: '*',
     settingsKeys: [],
-    closesIn: 3,
   },
   {
     token: 'CNGX_CHART_I18N',
     kind: 'dedicated',
     copyKeys: '*',
     settingsKeys: [],
-    closesIn: 3,
   },
   {
     token: 'CNGX_KPI_I18N',
     kind: 'dedicated',
     copyKeys: '*',
     settingsKeys: [],
-    closesIn: 3,
   },
   {
     token: 'CNGX_RECYCLER_I18N',
     kind: 'dedicated',
     copyKeys: '*',
     settingsKeys: [],
-    closesIn: 3,
   },
   {
     token: 'CNGX_DIALOG_DEFAULTS',
     kind: 'config',
     copyKeys: ['labels'],
     settingsKeys: [],
-    closesIn: 3,
   },
   {
     token: 'CNGX_DISPLAY_I18N',
     kind: 'dedicated',
     copyKeys: '*',
     settingsKeys: [],
-    closesIn: 3,
   },
   {
     token: 'CNGX_INTERACTIVE_I18N',
     kind: 'dedicated',
     copyKeys: '*',
     settingsKeys: [],
-    closesIn: 3,
   },
   {
     token: 'CNGX_MENU_CONFIG',
@@ -195,14 +178,12 @@ export const COPY_TOKENS = [
       'dismissOnScroll',
       'dismissOnBlur',
     ],
-    closesIn: 3,
   },
   {
     token: 'CNGX_LAYOUT_I18N',
     kind: 'dedicated',
     copyKeys: '*',
     settingsKeys: [],
-    closesIn: 3,
   },
   {
     token: 'CNGX_POPOVER_PANEL_CONFIG',
@@ -216,14 +197,12 @@ export const COPY_TOKENS = [
       'showArrow',
       'templates',
     ],
-    closesIn: 3,
   },
   {
     token: 'CNGX_TIMELINE_CONFIG',
     kind: 'config',
     copyKeys: ['labels'],
     settingsKeys: ['templates'],
-    closesIn: 3,
   },
   {
     token: 'CNGX_SELECT_CONFIG',
@@ -254,7 +233,6 @@ export const COPY_TOKENS = [
       'openOn',
       'templates',
     ],
-    closesIn: 4,
     note: 'announcer carries the live-region formatter next to enabled / politeness',
   },
   {
@@ -268,21 +246,18 @@ export const COPY_TOKENS = [
       'liveInputFallback',
       'popoverPlacement',
     ],
-    closesIn: 4,
   },
   {
     token: 'CNGX_REORDERABLE_SELECT_CONFIG',
     kind: 'config',
     copyKeys: ['ariaLabel'],
     settingsKeys: ['keyboardModifier', 'dragHandle', 'freezeStripOnCommit'],
-    closesIn: 4,
   },
   {
     token: 'CNGX_ERROR_MESSAGES',
     kind: 'dedicated',
     copyKeys: '*',
     settingsKeys: [],
-    closesIn: 5,
   },
   {
     token: 'CNGX_FORM_FIELD_CONFIG',
@@ -295,7 +270,6 @@ export const COPY_TOKENS = [
       'errorStrategy',
       'skin',
     ],
-    closesIn: 5,
   },
   {
     token: 'CNGX_FILTER_BUILDER_CONFIG',
@@ -310,7 +284,6 @@ export const COPY_TOKENS = [
       'logicOptions',
       'negationEnabled',
     ],
-    closesIn: 5,
     note: 'operators are consumer operator definitions; built-in operator labels ride i18n.operators',
   },
   {
@@ -333,7 +306,6 @@ export const COPY_TOKENS = [
       'fileMaxFiles',
       'phoneDefaultRegion',
     ],
-    closesIn: 5,
     note: 'numericLocale outranks CNGX_LOCALE for numeric inputs, so it is locale copy',
   },
   {
@@ -341,35 +313,30 @@ export const COPY_TOKENS = [
     kind: 'config',
     copyKeys: ['labels'],
     settingsKeys: ['highlightRowOnHover', 'capitaliseHeader', 'templates'],
-    closesIn: 5,
   },
   {
     token: 'CNGX_FEEDBACK_I18N',
     kind: 'dedicated',
     copyKeys: '*',
     settingsKeys: [],
-    closesIn: 6,
   },
   {
     token: 'CNGX_DATA_GRID_ACCORDION_CONFIG',
     kind: 'config',
     copyKeys: ['labels'],
     settingsKeys: ['skin'],
-    closesIn: 6,
   },
   {
     token: 'CNGX_SIDENAV_CONFIG',
     kind: 'config',
     copyKeys: ['labels'],
     settingsKeys: ['dimensions', 'hover', 'routerSync', 'shortcut'],
-    closesIn: 6,
   },
   {
     token: 'CNGX_SPEAK_I18N',
     kind: 'dedicated',
     copyKeys: '*',
     settingsKeys: [],
-    closesIn: 6,
   },
   {
     token: 'CNGX_COMMAND_PALETTE_CONFIG',
@@ -386,63 +353,54 @@ export const COPY_TOKENS = [
       'footerLegend',
     ],
     settingsKeys: ['openShortcut', 'templates'],
-    closesIn: 6,
   },
   {
     token: 'CNGX_PAGINATOR_CONFIG',
     kind: 'config',
     copyKeys: ['ariaLabels', 'announcements', 'formats'],
     settingsKeys: ['pageSizeOptions', 'templates'],
-    closesIn: 6,
   },
   {
     token: 'CNGX_ACCORDION_CONFIG',
     kind: 'config',
     copyKeys: ['disabledReason', 'errorMessage'],
     settingsKeys: ['headingLevel', 'skin', 'templates'],
-    closesIn: 7,
   },
   {
     token: 'CNGX_BREADCRUMB_CONFIG',
     kind: 'config',
     copyKeys: ['ariaLabels'],
     settingsKeys: ['router', 'skin'],
-    closesIn: 7,
   },
   {
     token: 'CNGX_CHART_PANEL_CONFIG',
     kind: 'config',
     copyKeys: ['ariaLabels'],
     settingsKeys: ['legendPosition'],
-    closesIn: 7,
   },
   {
     token: 'CNGX_INCREMENTAL_LIST_CONFIG',
     kind: 'config',
     copyKeys: ['ariaLabels'],
     settingsKeys: ['templates'],
-    closesIn: 7,
   },
   {
     token: 'CNGX_STAT_CARD_CONFIG',
     kind: 'config',
     copyKeys: ['ariaLabels'],
     settingsKeys: ['loadingTreatment'],
-    closesIn: 7,
   },
   {
     token: 'CNGX_TOC_CONFIG',
     kind: 'config',
     copyKeys: ['ariaLabels'],
     settingsKeys: ['scrollBehavior', 'spy', 'templates'],
-    closesIn: 7,
   },
   {
     token: 'CNGX_A11Y_PANEL_CONFIG',
     kind: 'config',
     copyKeys: ['labels', 'axes'],
     settingsKeys: [],
-    closesIn: 7,
     note: 'axes carries the option labels next to their values',
   },
   {
@@ -450,7 +408,6 @@ export const COPY_TOKENS = [
     kind: 'locale',
     copyKeys: '*',
     settingsKeys: [],
-    closesIn: 3,
     note: 'copy-equivalent source; a locale row closes with the lib that reads it',
   },
 ];
@@ -613,115 +570,14 @@ export const HELPERS = [
   'resolveAccordionCopy',
 ];
 
-/** @type {readonly RatchetRow[]} */
+/**
+ * Findings that are neither fixed nor exempt. Permanently empty: a new copy
+ * input, snapshot, raw dereference or tracked live-region read is fixed in the
+ * commit that introduces it, or settled as accepted debt on `EXEMPT`.
+ *
+ * @type {readonly RatchetRow[]}
+ */
 export const RATCHET = [];
-
-export const RATCHET_CEILING = 0;
-
-/** The last phase whose closing commit has landed. */
-export const COMPLETED_PHASE = 8;
-
-/**
- * The sorted row keys of `RATCHET` at the end of Phase 1, frozen in
- * `reactive-i18n-coverage.phase1.json`; no row may join the ratchet after
- * that, not even in exchange for a fixed one.
- *
- * @type {readonly string[]}
- */
-export const PHASE_1_KEYS = JSON.parse(
-  readFileSync(new URL('./reactive-i18n-coverage.phase1.json', import.meta.url), 'utf-8'),
-);
-
-/**
- * Calibration: the members the guard must have found at the end of Phase 1 -
- * the A2 residue plan's static-by-necessity sites 1-37 (site 31 is the
- * `EXEMPT` phone-input `country`) and the chart factory snapshot. Checked
- * against the frozen Phase 1 snapshot, so closing a row later keeps it green.
- *
- * @type {readonly (readonly [file: string, member: string])[]}
- */
-export const CALIBRATION_MEMBERS = [
-  ['projects/ui/feedback/loading/loading-indicator.ts', 'CngxLoadingIndicator.label'],
-  ['projects/ui/feedback/loading/loading-overlay.ts', 'CngxLoadingOverlay.label'],
-  ['projects/ui/feedback/loading/progress.ts', 'CngxProgress.label'],
-  ['projects/ui/data-grid-accordion/data-grid-count.directive.ts', 'CngxDgaCount.singular'],
-  ['projects/ui/data-grid-accordion/data-grid-count.directive.ts', 'CngxDgaCount.plural'],
-  [
-    'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    'CngxDgaSortHeader.notSortedLabel',
-  ],
-  [
-    'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    'CngxDgaSortHeader.ascendingLabel',
-  ],
-  [
-    'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    'CngxDgaSortHeader.descendingLabel',
-  ],
-  [
-    'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    'CngxDgaSortHeader.ascendingAnnouncement',
-  ],
-  [
-    'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    'CngxDgaSortHeader.descendingAnnouncement',
-  ],
-  [
-    'projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts',
-    'CngxDgaSortHeader.clearedAnnouncement',
-  ],
-  [
-    'projects/ui/data-grid-accordion/data-grid-filter-field.component.ts',
-    'CngxDgaFilterField.label',
-  ],
-  ['projects/ui/data-grid-accordion/data-grid-filter.directive.ts', 'CngxDgaFilter.ariaLabel'],
-  ['projects/ui/data-grid-accordion/data-grid-row.component.ts', 'CngxDataGridRow.errorMessage'],
-  ['projects/ui/speak/speak-button.ts', 'CngxSpeakButton.readAloudLabel'],
-  ['projects/ui/speak/speak-button.ts', 'CngxSpeakButton.stopLabel'],
-  ['projects/ui/sidenav/sidenav.ts', 'CngxSidenav.resizeLabel'],
-  [
-    'projects/ui/command-palette/palette/command-palette.component.ts',
-    'CngxCommandPalette.ariaLabel',
-  ],
-  [
-    'projects/common/interactive/async-click/async-click.directive.ts',
-    'CngxAsyncClick.succeededAnnouncement',
-  ],
-  [
-    'projects/common/interactive/async-click/async-click.directive.ts',
-    'CngxAsyncClick.failedAnnouncement',
-  ],
-  ['projects/common/display/avatar-group/avatar-group.component.ts', 'CngxAvatarGroup.label'],
-  ['projects/common/display/chip/chip.component.ts', 'CngxChip.removeAriaLabel'],
-  ['projects/common/interactive/copy/copy-block.ts', 'CngxCopyBlock.buttonLabel'],
-  ['projects/common/interactive/copy/copy-block.ts', 'CngxCopyBlock.copiedLabel'],
-  ['projects/common/interactive/copy/copy-block.ts', 'CngxCopyBlock.srAnnouncement'],
-  ['projects/common/interactive/slider/range-slider.component.ts', 'CngxRangeSlider.startLabel'],
-  ['projects/common/interactive/slider/range-slider.component.ts', 'CngxRangeSlider.endLabel'],
-  ['projects/common/interactive/breadcrumb/breadcrumb.directive.ts', 'CngxBreadcrumb.label'],
-  ['projects/common/layout/text/expandable-text.ts', 'CngxExpandableText.moreLabel'],
-  ['projects/common/layout/text/expandable-text.ts', 'CngxExpandableText.lessLabel'],
-  ['projects/forms/input/phone-input/phone-input.component.ts', 'CngxPhoneInput.country'],
-  ['projects/forms/input/phone-input/phone-input.component.ts', 'CngxPhoneInput.countries'],
-  ['projects/forms/select/declarative/select-search.component.ts', 'CngxSelectSearch.placeholder'],
-  ['projects/forms/filter-builder/filter-builder-announcer.ts', 'createFilterBuilderAnnouncer'],
-  ['projects/common/tabs/announcements/tab-group-announcements.ts', 'createTabGroupAnnouncements'],
-  ['projects/forms/input/numeric-input.directive.ts', 'CngxNumericInput.resolvedLocale'],
-  ['projects/common/chart/i18n/chart-i18n.ts', 'CNGX_CHART_I18N'],
-];
-
-/** Calibration for the copy surfaces the localisation guide missed. */
-export const CALIBRATION_TOKENS = ['CNGX_A11Y_PANEL_CONFIG', 'CNGX_ERROR_MESSAGES'];
-
-/**
- * Calibration for the error-message live regions.
- *
- * @type {readonly (readonly [file: string, region: string])[]}
- */
-export const CALIBRATION_REGIONS = [
-  ['projects/forms/field/field-errors.component.ts', 'CngxFieldErrors.host'],
-  ['projects/forms/field/form-errors.component.ts', 'CngxFormErrors.host'],
-];
 
 /** @type {readonly ExemptRow[]} */
 export const EXEMPT = [
@@ -743,238 +599,204 @@ export const LIVE_REGIONS = [
     region: 'CngxCard.span(liveAnnouncement,liveRegionId)',
     spec: 'projects/common/card/card.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 3,
   },
   {
     file: 'projects/common/chart/chart/chart-announcer.component.ts',
     region: 'CngxChartAnnouncer.span(assertiveAnnouncement)',
     spec: 'projects/common/chart/chart/chart-announcer.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 3,
   },
   {
     file: 'projects/common/chart/chart/chart-announcer.component.ts',
     region: 'CngxChartAnnouncer.span(politeAnnouncement)',
     spec: 'projects/common/chart/chart/chart-announcer.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 3,
   },
   {
     file: 'projects/common/chart/chart/chart.component.ts',
     region: 'CngxChart.div(connectionOverlayText)',
     spec: 'projects/common/chart/chart/chart.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 3,
   },
   {
     file: 'projects/common/chart/chart/chart.component.ts',
     region: 'CngxChart.div(connectionOverlayText)#2',
     spec: 'projects/common/chart/chart/chart.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 3,
   },
   {
     file: 'projects/common/chart/chart/chart.component.ts',
     region: 'CngxChart.span(connectionRestoredAnnouncement)',
     spec: 'projects/common/chart/chart/chart.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 3,
   },
   {
     file: 'projects/common/interactive/async-click/async-click.directive.ts',
     region: 'CngxAsyncClick.installAnnounceRegion:effect#1',
     spec: 'projects/common/interactive/async-click/async-click.directive.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 3,
   },
   {
     file: 'projects/common/interactive/copy/copy-block.ts',
     region: 'CngxCopyBlock.span(liveAnnouncement)',
     spec: 'projects/common/interactive/copy/copy-block.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 3,
   },
   {
     file: 'projects/common/interactive/menu/menu-item-submenu.directive.ts',
     region: 'CngxMenuItemSubmenu.constructor:effect#1',
     spec: 'projects/common/interactive/menu/menu-item-submenu.directive.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 3,
   },
   {
     file: 'projects/common/stepper/stepper-count.ts',
     region: 'CngxStepperCount.span(liveLabel)',
     spec: 'projects/common/stepper/stepper-count.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 2,
   },
   {
     file: 'projects/data-display/treetable/treetable.component.ts',
     region: 'CngxTreetable.span(stateAnnouncement)',
     spec: 'projects/data-display/treetable/treetable.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 5,
   },
   {
     file: 'projects/forms/field/field-errors.component.ts',
     region: 'CngxFieldErrors.host',
     spec: 'projects/forms/field/field-errors.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 5,
   },
   {
     file: 'projects/forms/field/form-errors.component.ts',
     region: 'CngxFormErrors.host',
     spec: 'projects/forms/field/form-errors.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 5,
   },
   {
     file: 'projects/forms/input/password-strength.directive.ts',
     region: 'CngxPasswordStrength.constructor:effect#1',
     spec: 'projects/forms/input/password-strength.directive.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 5,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
     region: 'CngxSelectPanelShell.div(commitErrorCopy,host.commitErrorContext,host.tpl)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'keeps the commit-error banner and its retry label on a language flip',
-    closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
     region: 'CngxSelectPanelShell.div(host.errorContext,host.handleRetry,host.tpl,inlineErrorCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'keeps the inline refresh error and its retry label on a language flip',
-    closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
     region: 'CngxSelectPanelShell.div(host.errorContext,host.handleRetry,host.tpl,viewCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'keeps the first-load error and its retry label on a language flip',
-    closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
     region: 'CngxSelectPanelShell.div(host.skeletonIndices,viewCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'keeps the skeleton loading label on a language flip',
-    closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
     region: 'CngxSelectPanelShell.div(host.tpl,refreshingLabel)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'keeps the spinner refreshing label on a language flip',
-    closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
     region: 'CngxSelectPanelShell.div(host.tpl,refreshingLabel)#2',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'keeps the dots refreshing label on a language flip',
-    closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
     region: 'CngxSelectPanelShell.div(host.tpl,refreshingLabel)#3',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'keeps the bar refreshing label on a language flip',
-    closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
     region: 'CngxSelectPanelShell.div(host.tpl,viewCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'keeps the spinner loading label on a language flip',
-    closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
     region: 'CngxSelectPanelShell.div(host.tpl,viewCopy)#2',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'keeps the bar loading label on a language flip',
-    closesIn: 4,
   },
   {
     file: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.ts',
     region: 'CngxSelectPanelShell.div(viewCopy)',
     spec: 'projects/forms/select/shared/internal/panel-shell/panel-shell.component.spec.ts',
     testName: 'keeps the text loading message on a language flip',
-    closesIn: 4,
   },
   {
     file: 'projects/ui/accordion/accordion-item.component.ts',
     region: 'CngxAccordionItem.div(errorTemplate,resolvedErrorMessage)',
     spec: 'projects/ui/accordion/accordion-item.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 7,
   },
   {
     file: 'projects/ui/action-button/action-button.ts',
     region: 'CngxActionButton.span(effectiveAnnouncement)',
     spec: 'projects/ui/action-button/action-button.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 3,
   },
   {
     file: 'projects/ui/chart-panel/chart-panel.component.ts',
     region: 'CngxChartPanel.span(busyStatus)',
     spec: 'projects/ui/chart-panel/chart-panel.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 7,
   },
   {
     file: 'projects/ui/collection/incremental-list.component.ts',
     region: 'CngxIncrementalList.span(statusMessage)',
     spec: 'projects/ui/collection/incremental-list.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 7,
   },
   {
     file: 'projects/ui/command-palette/panel/command-panel-shell.component.ts',
     region: 'CngxCommandPanelShell.div(errorText,retry.emit,retryText)',
     spec: 'projects/ui/command-palette/panel/command-panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 6,
   },
   {
     file: 'projects/ui/command-palette/panel/command-panel-shell.component.ts',
     region: 'CngxCommandPanelShell.div(errorText)',
     spec: 'projects/ui/command-palette/panel/command-panel-shell.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 6,
   },
   {
     file: 'projects/ui/command-palette/panel/command-panel.component.ts',
     region: 'CngxCommandPanel.span(countMessage)',
     spec: 'projects/ui/command-palette/panel/command-panel.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 6,
   },
   {
     file: 'projects/ui/data-grid-accordion/data-grid-row.component.ts',
     region: 'CngxDataGridRow.div(errorTemplate,resolvedErrorMessage)',
     spec: 'projects/ui/data-grid-accordion/data-grid-row.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 6,
   },
   {
     file: 'projects/ui/feedback/alert/alert-stack.ts',
     region: 'CngxAlertStack.div(dismissLabel,iconFor)',
     spec: 'projects/ui/feedback/alert/alert-stack.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 6,
   },
   {
     file: 'projects/ui/feedback/alert/alert.ts',
     region: 'CngxAlert.host',
     spec: 'projects/ui/feedback/alert/alert.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 6,
   },
   {
     file: 'projects/ui/feedback/banner/banner-outlet.ts',
@@ -982,28 +804,24 @@ export const LIVE_REGIONS = [
       'CngxBannerOutlet.div(actionFailedCopy,dismissLabel,iconFor,pastFirstRender,service.dismiss,service.executeAction)',
     spec: 'projects/ui/feedback/banner/banner-outlet.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 6,
   },
   {
     file: 'projects/ui/feedback/banner/banner-outlet.ts',
     region: 'CngxBannerOutlet.span(actionFailedCopy)',
     spec: 'projects/ui/feedback/banner/banner-outlet.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 6,
   },
   {
     file: 'projects/ui/feedback/loading/loading-indicator.ts',
     region: 'CngxLoadingIndicator.host',
     spec: 'projects/ui/feedback/loading/loading-indicator.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 6,
   },
   {
     file: 'projects/ui/feedback/loading/loading-overlay.ts',
     region: 'CngxLoadingOverlay.div(resolvedLabel)',
     spec: 'projects/ui/feedback/loading/loading-overlay.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 6,
   },
   {
     file: 'projects/ui/feedback/toast/toast-outlet.ts',
@@ -1011,14 +829,12 @@ export const LIVE_REGIONS = [
       'CngxToastOutlet.div(dismissLabel,iconFor,repeatCount,service.dismiss,service.pauseTimer,service.resumeTimer)',
     spec: 'projects/ui/feedback/toast/toast-outlet.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 6,
   },
   {
     file: 'projects/ui/mat-paginator/mat-paginator-bridge.directive.ts',
     region: 'CngxMatPaginator.constructor:effect#1',
     spec: 'projects/ui/mat-paginator/mat-paginator-bridge.directive.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 6,
   },
   {
     file: 'projects/ui/stat-card/stat-card.component.ts',
@@ -1026,63 +842,54 @@ export const LIVE_REGIONS = [
       'CngxStatCard.cngx-card(activeView,cardLabelledBy,live,resolvedBusyLabel,resolvedEmptyText,resolvedErrorDescription,resolvedErrorText,resolvedStaleText,resolvedTreatment,showRefreshIndicator,skeletonSlots)',
     spec: 'projects/ui/stat-card/stat-card.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 7,
   },
   {
     file: 'projects/ui/stepper/dot-stepper.component.ts',
     region: 'CngxDotStepper.span(errorText)',
     spec: 'projects/ui/stepper/dot-stepper.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 2,
   },
   {
     file: 'projects/ui/stepper/progress-bar-stepper.component.ts',
     region: 'CngxProgressBarStepper.span(errorText)',
     spec: 'projects/ui/stepper/progress-bar-stepper.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 2,
   },
   {
     file: 'projects/ui/stepper/stepper.component.ts',
     region: 'CngxStepper.span(announcement.liveAnnouncement)',
     spec: 'projects/ui/stepper/stepper.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 2,
   },
   {
     file: 'projects/ui/stepper/stepper.component.ts',
     region: 'CngxStepper.span(mobileErrorSummary)',
     spec: 'projects/ui/stepper/stepper.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 2,
   },
   {
     file: 'projects/ui/stepper/stepper.component.ts',
     region: 'CngxStepper.span(mobileErrorSummary)#2',
     spec: 'projects/ui/stepper/stepper.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 2,
   },
   {
     file: 'projects/ui/stepper/text-stepper.component.ts',
     region: 'CngxTextStepper.span(errorText)',
     spec: 'projects/ui/stepper/text-stepper.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 2,
   },
   {
     file: 'projects/ui/stepper/text-stepper.component.ts',
     region: 'CngxTextStepper.span(stepText)',
     spec: 'projects/ui/stepper/text-stepper.component.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 2,
   },
   {
     file: 'projects/ui/tabs/tab-group.component.ts',
     region: 'CngxTabGroup.span(announcements.liveAnnouncement)',
     spec: 'projects/common/tabs/announcements/tab-group-announcements.spec.ts',
     testName: 'does not re-announce on a language flip',
-    closesIn: 2,
   },
 ];
 
@@ -1445,16 +1252,15 @@ export const RULE_FIXTURES = {
   },
   /** @type {readonly CopyTokenEntry[]} */
   copyTokens: [
-    { token: 'DEMO_I18N', kind: 'dedicated', copyKeys: '*', settingsKeys: [], closesIn: 2 },
-    { token: 'DEMO_SIGNAL_I18N', kind: 'dedicated', copyKeys: '*', settingsKeys: [], closesIn: 2 },
+    { token: 'DEMO_I18N', kind: 'dedicated', copyKeys: '*', settingsKeys: [] },
+    { token: 'DEMO_SIGNAL_I18N', kind: 'dedicated', copyKeys: '*', settingsKeys: [] },
     {
       token: 'DEMO_CONFIG',
       kind: 'config',
       copyKeys: ['ariaLabels', 'title'],
       settingsKeys: ['delay'],
-      closesIn: 2,
     },
-    { token: 'DEMO_LOCALE', kind: 'locale', copyKeys: '*', settingsKeys: [], closesIn: 2 },
+    { token: 'DEMO_LOCALE', kind: 'locale', copyKeys: '*', settingsKeys: [] },
   ],
   settingsTokens: ['DEMO_DELAY', 'DEMO_FORMAT'],
   helpers: ['injectDemoPrevious'],

@@ -26,17 +26,11 @@ import {
   walkSources,
 } from './_i18n-ast.mjs';
 import {
-  CALIBRATION_MEMBERS,
-  CALIBRATION_REGIONS,
-  CALIBRATION_TOKENS,
-  COMPLETED_PHASE,
   COPY_TOKENS,
   EXEMPT,
   HELPERS,
   LIVE_REGIONS,
-  PHASE_1_KEYS,
   RATCHET,
-  RATCHET_CEILING,
   RULE_FIXTURES,
   SETTINGS_TOKENS,
 } from './reactive-i18n-coverage.fixtures.mjs';
@@ -46,7 +40,7 @@ import {
 // compiler forces the readers of a retyped token to change, but it cannot see
 // a construction-time snapshot of a value that stays a plain string, and it
 // cannot see a live region that re-announces when its copy flips. This guard
-// does, and it builds the worklist instead of trusting a hand list:
+// does, over the whole surface instead of a hand list:
 //
 //   discovery  every exported `InjectionToken` is classified copy or settings
 //              in the fixtures; an unclassified token fails. For a copy token
@@ -65,9 +59,10 @@ import {
 //
 // Copy reads are found through the type checker, not through names: a value
 // is copy when its type is a copy token's type, a copy key's value type, or a
-// Signal of either, and the locale counts as copy. Every finding is a ratchet
-// row with the phase that closes it; every live region that renders copy has a
-// manifest entry naming the spec that proves it does not re-speak on a flip.
+// Signal of either, and the locale counts as copy. A finding fails unless it
+// is an `EXEMPT` row backed by an accepted-debt entry; every live region that
+// renders copy has a manifest entry naming the spec that proves it does not
+// re-speak on a flip.
 
 /** Aliases that wrap a copy type without changing what it is. */
 const TRANSPARENT_ALIASES = new Set(['Partial', 'Readonly', 'Required']);
@@ -93,7 +88,6 @@ const ANNOUNCE_CALL = /^announce/i;
  * @property {'dedicated' | 'config' | 'locale'} kind
  * @property {'*' | readonly string[]} copyKeys
  * @property {readonly string[]} settingsKeys
- * @property {number} closesIn
  */
 
 /**
@@ -1537,42 +1531,14 @@ function analyzeClass(model, cls, sf, fileName, cache, add, regions, unscannable
 export const rowKey = (row) => `${row.file}\t${row.member}\t${row.rule}\t${row.token}`;
 
 /**
- * Ratchet assertions (a)-(d): exact ceiling, a closing phase per row, no row
- * that outlived its phase, and no row that was not there at the end of
- * Phase 1.
- *
- * @param {{ ratchet: readonly { file: string; member: string; rule: string; token: string; closesIn: number }[]; ceiling: number; completedPhase: number; phase1Keys: readonly string[] }} input
- * @returns {string[]}
- */
-export function ratchetViolations({ ratchet, ceiling, completedPhase, phase1Keys }) {
-  const out = [];
-  if (ratchet.length !== ceiling) {
-    out.push(`(a) RATCHET has ${ratchet.length} rows, RATCHET_CEILING is ${ceiling}`);
-  }
-  const frozen = new Set(phase1Keys);
-  for (const row of ratchet) {
-    if (!Number.isInteger(row.closesIn) || row.closesIn < 2 || row.closesIn > 8) {
-      out.push(`(b) ${rowKey(row)}: closesIn ${row.closesIn} is not a phase in 2..8`);
-    }
-    if (row.closesIn <= completedPhase) {
-      out.push(`(c) ${rowKey(row)}: closesIn ${row.closesIn} but phase ${completedPhase} is done`);
-    }
-    if (completedPhase >= 1 && !frozen.has(rowKey(row))) {
-      out.push(`(d) ${rowKey(row)}: not in the Phase 1 snapshot`);
-    }
-  }
-  return out;
-}
-
-/**
  * Live-region manifest assertions: every discovered copy-rendering region has
- * an entry, no entry is stale, and from its closing phase on every entry's
- * spec exists and contains its test name.
+ * an entry, no entry is stale, and every entry's spec exists and contains its
+ * test name.
  *
- * @param {{ discovered: readonly Region[]; manifest: readonly { file: string; region: string; spec?: string; testName?: string; closesIn?: number; kind?: string; reason?: string }[]; completedPhase: number; readSpec: (path: string) => string | null }} input
+ * @param {{ discovered: readonly Region[]; manifest: readonly { file: string; region: string; spec?: string; testName?: string; kind?: string; reason?: string }[]; readSpec: (path: string) => string | null }} input
  * @returns {string[]}
  */
-export function liveRegionViolations({ discovered, manifest, completedPhase, readSpec }) {
+export function liveRegionViolations({ discovered, manifest, readSpec }) {
   const out = [];
   const key = (r) => `${r.file}\t${r.region}`;
   const listed = new Map(manifest.map((e) => [key(e), e]));
@@ -1593,9 +1559,6 @@ export function liveRegionViolations({ discovered, manifest, completedPhase, rea
       if (!entry.reason || entry.reason.trim().length < 10) {
         out.push(`consumer-text entry ${entry.file} ${entry.region} needs a reason`);
       }
-      continue;
-    }
-    if (!Number.isInteger(entry.closesIn) || completedPhase < entry.closesIn) {
       continue;
     }
     const source = entry.spec ? readSpec(entry.spec) : null;
@@ -1750,91 +1713,27 @@ describe('reactive i18n rules', () => {
 });
 
 describe('reactive i18n manifest checks', () => {
-  const row = (member, closesIn) => ({ file: 'a.ts', member, rule: 'R1', token: 'T', closesIn });
-
-  it('(a) fails a ceiling that does not match the row count', () => {
-    const violations = ratchetViolations({
-      ratchet: [row('A.x', 3)],
-      ceiling: 2,
-      completedPhase: 0,
-      phase1Keys: [],
-    });
-    expect(violations.map((v) => v.slice(0, 3))).toEqual(['(a)']);
-  });
-
-  it('(b) fails a row without a closing phase in 2..8', () => {
-    const violations = ratchetViolations({
-      ratchet: [row('A.x', 9)],
-      ceiling: 1,
-      completedPhase: 0,
-      phase1Keys: [],
-    });
-    expect(violations.map((v) => v.slice(0, 3))).toEqual(['(b)']);
-  });
-
-  it('(c) fails a row that outlived its phase', () => {
-    const violations = ratchetViolations({
-      ratchet: [row('A.x', 3)],
-      ceiling: 1,
-      completedPhase: 3,
-      phase1Keys: [rowKey(row('A.x', 3))],
-    });
-    expect(violations.map((v) => v.slice(0, 3))).toEqual(['(c)']);
-  });
-
-  it('(d) fails a row swapped in after Phase 1, even at an unchanged count', () => {
-    const violations = ratchetViolations({
-      ratchet: [row('A.y', 3)],
-      ceiling: 1,
-      completedPhase: 1,
-      phase1Keys: [rowKey(row('A.x', 3))],
-    });
-    expect(violations.map((v) => v.slice(0, 3))).toEqual(['(d)']);
-  });
-
-  it('passes a consistent ratchet', () => {
-    const ratchet = [row('A.x', 2)];
-    expect(
-      ratchetViolations({
-        ratchet,
-        ceiling: 1,
-        completedPhase: 1,
-        phase1Keys: ratchet.map(rowKey),
-      }),
-    ).toEqual([]);
-  });
-
   const region = { file: 'a.ts', region: 'A.host', tokens: ['T'] };
-  const entry = {
-    file: 'a.ts',
-    region: 'A.host',
-    spec: 'a.spec.ts',
-    testName: 'keeps it',
-    closesIn: 3,
-  };
+  const entry = { file: 'a.ts', region: 'A.host', spec: 'a.spec.ts', testName: 'keeps it' };
 
   it('fails an unlisted live region and a stale entry', () => {
     const violations = liveRegionViolations({
       discovered: [region],
       manifest: [{ ...entry, region: 'A.gone' }],
-      completedPhase: 1,
       readSpec: () => null,
     });
     expect(violations.map((v) => v.split(' ')[0])).toEqual(['unlisted', 'stale']);
   });
 
-  it('skips the spec check before the closing phase and enforces it after', () => {
-    const input = { discovered: [region], manifest: [entry], readSpec: () => null };
-    expect(liveRegionViolations({ ...input, completedPhase: 2 })).toEqual([]);
-    expect(liveRegionViolations({ ...input, completedPhase: 3 })).toEqual([
+  it('fails a missing spec and a spec without the named test', () => {
+    const input = { discovered: [region], manifest: [entry] };
+    expect(liveRegionViolations({ ...input, readSpec: () => null })).toEqual([
       'a.ts A.host: spec a.spec.ts does not exist',
     ]);
-    expect(
-      liveRegionViolations({ ...input, completedPhase: 3, readSpec: () => "it('keeps it'" }),
-    ).toEqual([]);
-    expect(
-      liveRegionViolations({ ...input, completedPhase: 3, readSpec: () => "it('other'" }),
-    ).toEqual(['a.ts A.host: spec a.spec.ts has no test "keeps it"']);
+    expect(liveRegionViolations({ ...input, readSpec: () => "it('keeps it'" })).toEqual([]);
+    expect(liveRegionViolations({ ...input, readSpec: () => "it('other'" })).toEqual([
+      'a.ts A.host: spec a.spec.ts has no test "keeps it"',
+    ]);
   });
 
   it('accepts a consumer-text region with a reason instead of a spec', () => {
@@ -1845,12 +1744,7 @@ describe('reactive i18n manifest checks', () => {
       reason: 'renders the bound message only',
     };
     expect(
-      liveRegionViolations({
-        discovered: [region],
-        manifest: [consumer],
-        completedPhase: 8,
-        readSpec: () => null,
-      }),
+      liveRegionViolations({ discovered: [region], manifest: [consumer], readSpec: () => null }),
     ).toEqual([]);
   });
 
@@ -1871,9 +1765,7 @@ describe('reactive i18n manifest checks', () => {
   it('fails a copy-key partition that misses or invents a key', () => {
     const violations = classificationViolations({
       discovered: ['T'],
-      copyTokens: [
-        { token: 'T', kind: 'config', copyKeys: ['labels'], settingsKeys: ['ghost'], closesIn: 3 },
-      ],
+      copyTokens: [{ token: 'T', kind: 'config', copyKeys: ['labels'], settingsKeys: ['ghost'] }],
       settingsTokens: [],
       typeKeys: new Map([['T', ['labels', 'delay']]]),
     });
@@ -1898,9 +1790,6 @@ describe('reactive i18n manifest checks', () => {
 
 /** The accepted-debt registers are local-only; CI checks the reference shape. */
 const DEBT_DIR = resolve(REPO_ROOT, '.internal/architektur');
-
-/** The phase from which an `EXEMPT` row's `debtRef` must resolve. */
-const DEBT_REF_PHASE = 6;
 
 const SOURCES = walkSources('projects', /\.ts$/);
 const PROGRAM = createProgram(SOURCES.map((file) => resolve(REPO_ROOT, file)));
@@ -1935,15 +1824,6 @@ describe('reactive i18n coverage', () => {
     ).toEqual([]);
   });
 
-  // Tokens close in 2..7; a ratchet row may close as late as 8, the key-shape
-  // pass, which reshapes keys after their token already follows a flip.
-  it('closes every copy token in one of the phases 2..7', () => {
-    const outOfRange = COPY_TOKENS.filter((t) => t.closesIn < 2 || t.closesIn > 7).map(
-      (t) => t.token,
-    );
-    expect(outOfRange).toEqual([]);
-  });
-
   it('parses every template it meets', () => {
     expect(UNSCANNABLE).toEqual([]);
   });
@@ -1960,23 +1840,8 @@ describe('reactive i18n coverage', () => {
     expect(stale).toEqual([]);
   });
 
-  it('keeps the ratchet exact, phased and frozen', () => {
-    expect(
-      ratchetViolations({
-        ratchet: RATCHET,
-        ceiling: RATCHET_CEILING,
-        completedPhase: COMPLETED_PHASE,
-        phase1Keys: PHASE_1_KEYS,
-      }),
-    ).toEqual([]);
-  });
-
-  it('empties the ratchet once the key-shape pass has landed', () => {
-    if (COMPLETED_PHASE < 8) {
-      return;
-    }
+  it('keeps the ratchet empty', () => {
     expect(RATCHET).toEqual([]);
-    expect(EXEMPT.map((row) => row.member)).toEqual(['CngxPhoneInput.country']);
   });
 
   it('gives every exempt row a reason and an accepted-debt reference', () => {
@@ -1989,20 +1854,14 @@ describe('reactive i18n coverage', () => {
 
   // The registers are local-only: where they are absent (CI) the check reports
   // as skipped rather than passing without having looked.
-  it.skipIf(!existsSync(DEBT_DIR))(
-    'resolves every exempt debtRef once its register entry is due',
-    () => {
-      const unresolved = EXEMPT.filter((row) => {
-        const [register, heading] = row.debtRef.split('#');
-        const path = resolve(DEBT_DIR, register);
-        if (COMPLETED_PHASE < DEBT_REF_PHASE) {
-          return false;
-        }
-        return !existsSync(path) || !readFileSync(path, 'utf-8').includes(heading);
-      }).map((row) => row.debtRef);
-      expect(unresolved).toEqual([]);
-    },
-  );
+  it.skipIf(!existsSync(DEBT_DIR))('resolves every exempt debtRef', () => {
+    const unresolved = EXEMPT.filter((row) => {
+      const [register, heading] = row.debtRef.split('#');
+      const path = resolve(DEBT_DIR, register);
+      return !existsSync(path) || !readFileSync(path, 'utf-8').includes(heading);
+    }).map((row) => row.debtRef);
+    expect(unresolved).toEqual([]);
+  });
 
   it('lists exactly the copy tokens in the localisation guide table', () => {
     const guide = guideTableTokens(readRepoFile('core-concepts/i18n.md') ?? '').sort();
@@ -2012,27 +1871,11 @@ describe('reactive i18n coverage', () => {
     expect(guide).toEqual(copy);
   });
 
-  it('found every calibration site at the end of Phase 1', () => {
-    const frozen = [...PHASE_1_KEYS, ...EXEMPT.map(rowKey)].map((key) => key.split('\t'));
-    const missingMembers = CALIBRATION_MEMBERS.filter(
-      ([file, member]) => !frozen.some(([f, m]) => f === file && m === member),
-    ).map(([file, member]) => `${file} ${member}`);
-    const missingTokens = CALIBRATION_TOKENS.filter(
-      (token) => !frozen.some(([, , , t]) => t === token),
-    );
-    const listedRegions = new Set(LIVE_REGIONS.map((e) => `${e.file} ${e.region}`));
-    const missingRegions = CALIBRATION_REGIONS.map(([file, region]) => `${file} ${region}`).filter(
-      (key) => !listedRegions.has(key),
-    );
-    expect([...missingMembers, ...missingTokens, ...missingRegions]).toEqual([]);
-  });
-
-  it('lists every live region that renders copy, with its no-respeak spec when due', () => {
+  it('lists every live region that renders copy, with its no-respeak spec', () => {
     expect(
       liveRegionViolations({
         discovered: REGIONS,
         manifest: LIVE_REGIONS,
-        completedPhase: COMPLETED_PHASE,
         readSpec: readRepoFile,
       }),
     ).toEqual([]);
