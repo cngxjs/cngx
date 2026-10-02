@@ -1,4 +1,12 @@
-import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,6 +27,10 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
  * package from its real path, where `@cngx/core/i18n` is not resolvable, and
  * an unresolved augmentation in a `.d.ts` is dropped without a diagnostic.
  * Needs `npm run build:libs` first (CI restores `dist/` before `test:scripts`).
+ *
+ * Only a failing case discriminates: against the bare core interface every
+ * object literal compiles, so "complete" and "not imported" pass even when the
+ * augmentation is lost. The missing-key cases carry the proof.
  */
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -39,12 +51,13 @@ const COMPILER_OPTIONS = {
 let workDir;
 let caseIndex = 0;
 
-function compile(source) {
+function compile(source, options = {}) {
   const file = join(workDir, `consumer-${caseIndex++}.ts`);
   writeFileSync(file, source);
-  const program = ts.createProgram([file], COMPILER_OPTIONS);
+  const program = ts.createProgram([file], { ...COMPILER_OPTIONS, ...options });
   return ts.getPreEmitDiagnostics(program).map((d) => ({
     code: d.code,
+    file: d.file?.fileName,
     message: ts.flattenDiagnosticMessageText(d.messageText, '\n'),
   }));
 }
@@ -140,21 +153,33 @@ describe('language-pack augmentation against dist/', () => {
     expect(complete).toEqual([]);
   });
 
-  it('records whether @cngx/ui/stat-card makes card required transitively', () => {
+  it('requires card transitively once an imported entry loads @cngx/common/card types', () => {
+    // @cngx/ui/timeline -> @cngx/common/timeline -> @cngx/common/card: a pack
+    // needs the sections of every cngx entry in the consumer's type graph.
     const diagnostics = compile(`
       import type { CngxLanguagePack } from '@cngx/core/i18n';
-      import { CngxStatCard } from '@cngx/ui/stat-card';
-      export const statCard = CngxStatCard;
+      import { CngxTimeline } from '@cngx/ui/timeline';
+      export const timeline = CngxTimeline;
       export const pack: CngxLanguagePack = {};
     `);
-    const unrelated = diagnostics.filter((d) => !d.message.includes(`'card'`));
-    expect(unrelated).toEqual([]);
+    expect(diagnostics.map((d) => d.code)).toEqual([2741]);
+    expect(diagnostics[0].message).toContain(`'card'`);
+  });
 
-    const cardRequired = diagnostics.length > 0;
-    // Either outcome is a go; the result is reported for the Phase 2 design.
-    console.info(
-      `[language-pack] @cngx/ui/stat-card ${cardRequired ? 'requires' : 'does not require'} the card section transitively`,
+  it('loads the shipped d.ts files without a resolution error', () => {
+    // When a cngx d.ts cannot resolve its sibling @cngx imports (e.g. a
+    // symlinked dist/), TS reports TS2307 there and drops the augmentation
+    // without a diagnostic of its own; skipLibCheck hides even the TS2307,
+    // and the pack shrinks to {} and checks nothing.
+    const diagnostics = compile(
+      `
+      import type { CngxLanguagePack } from '@cngx/core/i18n';
+      import type { CngxCardLanguageSection } from '@cngx/common/card';
+      export type Section = CngxCardLanguageSection;
+      export const pack: CngxLanguagePack = { card: ${COMPLETE_CARD} };
+    `,
+      { skipLibCheck: false },
     );
-    expect(typeof cardRequired).toBe('boolean');
+    expect(diagnostics.filter((d) => d.file?.includes('/types/cngx-'))).toEqual([]);
   });
 });
