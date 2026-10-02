@@ -1,6 +1,12 @@
 import { Component, computed, LOCALE_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideLocale } from '@cngx/core/utils';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
 import { describe, expect, it } from 'vitest';
 import { CngxChartDataTable } from '../chart/data-table.component';
 import {
@@ -10,6 +16,7 @@ import {
   provideChartI18n,
   type CngxChartI18n,
 } from './chart-i18n';
+import { stripBidiIsolates } from '@cngx/testing';
 
 describe('CNGX_CHART_I18N', () => {
   it('resolves to English defaults when no override is provided', () => {
@@ -32,7 +39,9 @@ describe('CNGX_CHART_I18N', () => {
       current: 38,
       thresholds: [42],
     });
-    expect(text).toBe('Trending up. Min 5, max 50, current 38. One threshold crossing.');
+    expect(stripBidiIsolates(text)).toBe(
+      'Trending up. Min 5, max 50, current 38. One threshold crossing.',
+    );
   });
 
   it('strips float-arithmetic noise from summary and threshold numbers', () => {
@@ -45,9 +54,11 @@ describe('CNGX_CHART_I18N', () => {
       current: 2.2,
       thresholds: [],
     });
-    expect(text).toContain('Min 0.3, max 6.6, current 2.2');
+    expect(stripBidiIsolates(text)).toContain('Min 0.3, max 6.6, current 2.2');
     expect(text).not.toMatch(/\d{6,}/);
-    expect(i18n.thresholdAlert(6.6000000000000005)).toBe('Threshold 6.6 crossed');
+    expect(stripBidiIsolates(i18n.thresholdAlert(6.6000000000000005))).toBe(
+      'Threshold 6.6 crossed',
+    );
   });
 
   it('uses the singular threshold form for zero / one and plural for many', () => {
@@ -105,7 +116,7 @@ describe('CNGX_CHART_I18N', () => {
       { label: 'A', value: 2.2 },
       { label: 'B', value: 4.4000000000000004 },
     ]);
-    expect(text).toBe('Total 6.6. A: 2.2, B: 4.4.');
+    expect(stripBidiIsolates(text)).toBe('Total 6.6. A: 2.2, B: 4.4.');
   });
 
   it('returns English defaults for the connection-lifecycle keys', () => {
@@ -143,13 +154,15 @@ describe('injectChartI18n', () => {
     });
     const i18n = TestBed.runInInjectionContext(() => injectChartI18n());
     expect(i18n().dataTable()).toBe('Datentabelle');
-    expect(i18n().summary(noisy)).toContain('max 6,6');
-    expect(i18n().thresholdAlert(2.5)).toBe('Threshold 2,5 crossed');
+    expect(stripBidiIsolates(i18n().summary(noisy))).toContain('max 6,6');
+    expect(stripBidiIsolates(i18n().thresholdAlert(2.5))).toBe('Threshold 2,5 crossed');
   });
 
   it('formats the token factory default in the root locale', () => {
     TestBed.configureTestingModule({ providers: [{ provide: LOCALE_ID, useValue: 'de' }] });
-    expect(TestBed.inject(CNGX_CHART_I18N)().summary(noisy)).toContain('max 6,6');
+    expect(stripBidiIsolates(TestBed.inject(CNGX_CHART_I18N)().summary(noisy))).toContain(
+      'max 6,6',
+    );
   });
 
   it('re-formats omitted keys on a CNGX_LOCALE flip, rendered without re-creating the component', () => {
@@ -164,12 +177,12 @@ describe('injectChartI18n', () => {
     const table = fixture.nativeElement.querySelector('cngx-chart-data-table') as HTMLElement;
     const cell = (): string =>
       table.querySelector('tbody tr td:last-child')?.textContent?.trim() ?? '';
-    expect(i18n().summary(noisy)).toContain('max 6.6');
+    expect(stripBidiIsolates(i18n().summary(noisy))).toContain('max 6.6');
     expect(cell()).toBe('6.6');
 
     locale.set('de-DE');
     fixture.detectChanges();
-    expect(i18n().summary(noisy)).toContain('max 6,6');
+    expect(stripBidiIsolates(i18n().summary(noisy))).toContain('max 6,6');
     expect(fixture.nativeElement.querySelector('cngx-chart-data-table')).toBe(table);
     expect(cell()).toBe('6,6');
   });
@@ -223,6 +236,7 @@ describe('injectChartI18n', () => {
     const full: Required<CngxChartI18n> = {
       summary: () => 'S',
       dataTable: () => 'D',
+      indexColumnLabel: () => 'I',
       valueColumnLabel: () => 'V',
       trendChanged: () => 'T',
       thresholdAlert: () => 'A',
@@ -234,6 +248,7 @@ describe('injectChartI18n', () => {
       error: () => 'X',
       stackedBarEmpty: () => 'B',
       stackedBarSummary: () => 'M',
+      stackedBarSegmentTitle: () => 'W',
     };
     TestBed.configureTestingModule({
       providers: [provideChartI18n(full), provideLocale(locale)],
@@ -251,3 +266,72 @@ describe('injectChartI18n', () => {
   template: `<cngx-chart-data-table [values]="[6.6000000000000005]" [hidden]="false" />`,
 })
 class TableHost {}
+
+describe('CNGX_CHART_I18N language pack', () => {
+  const summaryInput = { trend: 'down' as const, min: 1.5, max: 9, current: 2, thresholds: [3, 7] };
+
+  it('derives the pre-section English copy from the English section', () => {
+    TestBed.configureTestingModule({ providers: [provideLocale('en-US')] });
+    const i18n = TestBed.runInInjectionContext(() => injectChartI18n())();
+    expect(stripBidiIsolates(i18n.summary(summaryInput))).toBe(
+      'Trending down. Min 1.5, max 9, current 2. 2 threshold crossings.',
+    );
+    expect(i18n.dataTable()).toBe('Data table');
+    expect(i18n.indexColumnLabel()).toBe('#');
+    expect(i18n.valueColumnLabel()).toBe('Value');
+    expect(i18n.trendChanged('flat')).toBe('Trend flattened');
+    expect(stripBidiIsolates(i18n.thresholdAlert(80))).toBe('Threshold 80 crossed');
+    expect(i18n.connectionReconnecting()).toBe('Reconnecting');
+    expect(i18n.error()).toBe('Error loading chart');
+    expect(i18n.stackedBarEmpty()).toBe('Empty stacked bar');
+    expect(stripBidiIsolates(i18n.stackedBarSegmentTitle('A', '2.2'))).toBe('A: 2.2');
+  });
+
+  it('takes the summary words, order and list separator from the pack', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+    });
+    const i18n = TestBed.runInInjectionContext(() => injectChartI18n());
+    pack.set({
+      locale: 'de',
+      chart: {
+        summary: '{trend}. Minimum {min}; Maximum {max}; aktuell {current}. {thresholds}',
+        summaryTrendDown: 'Fallend',
+        summaryThresholds: {
+          one: 'Ein Schwellenwert gekreuzt.',
+          other: '{count} Schwellenwerte gekreuzt.',
+        },
+        stackedBarSegmentTitle: '{label} {value}',
+        listSeparator: '; ',
+      },
+    });
+    expect(stripBidiIsolates(i18n().summary(summaryInput))).toBe(
+      'Fallend. Minimum 1,5; Maximum 9; aktuell 2. 2 Schwellenwerte gekreuzt.',
+    );
+    expect(
+      stripBidiIsolates(
+        i18n().stackedBarSummary(10, [
+          { label: 'A', value: 2.5 },
+          { label: 'B', value: 7.5 },
+        ]),
+      ),
+    ).toBe('Total 10. A 2,5; B 7,5.');
+    expect(i18n().empty()).toBe('No data');
+  });
+
+  it('keeps a provideChartI18n key over the active pack and resolves the rest from it', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', chart: { empty: 'Keine Daten', dataTable: 'Tabelle' } }),
+          withDocumentLanguage('off'),
+        ),
+        provideChartI18n({ dataTable: () => 'Datentabelle' }),
+      ],
+    });
+    const i18n = TestBed.runInInjectionContext(() => injectChartI18n())();
+    expect(i18n.dataTable()).toBe('Datentabelle');
+    expect(i18n.empty()).toBe('Keine Daten');
+  });
+});

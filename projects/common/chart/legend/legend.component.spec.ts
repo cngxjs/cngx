@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
+import { provideLocale } from '@cngx/core/utils';
 import { CngxChartLegend, type CngxChartLegendItem } from './legend.component';
 
 @Component({
@@ -48,5 +49,22 @@ describe('CngxChartLegend', () => {
     fixture.detectChanges();
     expect(legend.querySelector('.cngx-chart-legend__value')).toBeNull();
     expect(legend.querySelector('.cngx-chart-legend__label')?.textContent?.trim()).toBe('Traffic');
+  });
+});
+
+describe('CngxChartLegend locale', () => {
+  it('renders a number value in the app locale and any other value as text', () => {
+    TestBed.configureTestingModule({ imports: [TestHost], providers: [provideLocale('de')] });
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.items.set([
+      { label: 'Share', value: 6.6 },
+      { label: 'Layer', value: 'base' },
+    ]);
+    fixture.detectChanges();
+    const values = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('.cngx-chart-legend__value'),
+      (el) => el.textContent?.trim(),
+    );
+    expect(values).toEqual(['6,6', 'base']);
   });
 });

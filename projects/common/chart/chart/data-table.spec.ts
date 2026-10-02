@@ -8,6 +8,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
 import { CngxChartDataTable } from './data-table.component';
 import { provideChartI18n, type CngxChartI18n } from '../i18n/chart-i18n';
 
@@ -150,5 +151,32 @@ describe('CngxChartDataTable', () => {
     expect(idA).not.toBe('');
     expect(idB).not.toBe('');
     expect(idA).not.toBe(idB);
+  });
+});
+
+describe('CngxChartDataTable language pack', () => {
+  it('reads the index header from the chart section and formats the index in the locale', () => {
+    TestBed.configureTestingModule({
+      imports: [TestHost],
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'ar-EG', chart: { indexColumnLabel: 'رقم' } }),
+          withDocumentLanguage('off'),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    const table = fixture.nativeElement.querySelector('cngx-chart-data-table') as HTMLElement;
+    expect(table.querySelector('thead th')?.textContent?.trim()).toBe('رقم');
+    expect(table.querySelector('tbody th')?.textContent?.trim()).toBe('١');
+  });
+
+  it('keeps # as the English index header', () => {
+    TestBed.configureTestingModule({ imports: [TestHost] });
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    const table = fixture.nativeElement.querySelector('cngx-chart-data-table') as HTMLElement;
+    expect(table.querySelector('thead th')?.textContent?.trim()).toBe('#');
   });
 });

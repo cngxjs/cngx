@@ -207,6 +207,12 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - Copy that CNGX builds from a message with arguments wraps every inserted text argument in the Unicode isolates U+2068 / U+2069 and formats every inserted number with the active locale (`1,200`, `1.200` in German). A Latin name inside an Arabic sentence, or the reverse, keeps its own direction. Tests that compare such copy exactly strip the isolates first: `text.replace(/[\u2068\u2069]/g, '')`.
 - Type-to-find ignores accents and lowercases with the app locale, in `CngxActiveDescendant` and everything built on it (listbox, menu, select family) and in the `CngxTreeSelect` expand-to-reveal search: `u` now finds `Über`, and under `tr` an `I` finds `Istanbul` but not `İzmir`. `matchesTypeahead(label, term, locale?)` from `@cngx/core/utils` takes the locale as an optional third argument; without it, it lowercases as before and still ignores accents.
 
+### @cngx/common/chart
+
+- `CngxChartI18n` has two new optional keys: `indexColumnLabel` (the data table's index header, English `#`) and `stackedBarSegmentTitle(label, value)` (the stacked-bar segment tooltip, English `label: value`). A full override keeps compiling; the keys it leaves out read the language pack, then English.
+- The data table's row numbers and a number `value` in `cngx-chart-legend` format with the app locale (`6,6` in German). A non-finite chart number renders as `∞` / `-∞` / `NaN` in the locale instead of `Infinity`. A legend `value` that is not a number renders as text, as before.
+- The words, order and list separator of the default `summary` and `stackedBarSummary` come from the chart section of the language pack, so a German pack can write `Minimum 1,5; Maximum 9` instead of the ambiguous `Min 1,5, max 9`.
+
 ### @cngx/common/stepper
 
 - The collapsed-group screen-reader phrases use the singular for one step: `1 step`, `0 of 1 step complete` (before: `1 steps`).

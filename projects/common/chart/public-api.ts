@@ -97,6 +97,10 @@ export {
   type CngxChartI18n,
   type CngxChartSummary,
 } from './i18n/chart-i18n';
+export {
+  CNGX_CHART_LANGUAGE_EN,
+  type CngxChartLanguageSection,
+} from './i18n/chart-language-section';
 
 export { CngxSparkline } from './presets/sparkline.component';
 export { CngxMiniBar } from './presets/mini-bar.component';
