@@ -1,4 +1,5 @@
 import {
+  computed,
   type EnvironmentProviders,
   inject,
   InjectionToken,
@@ -9,7 +10,17 @@ import {
   SkipSelf,
   type TemplateRef,
 } from '@angular/core';
-import { createNestedOverrideMerge, dateTimeFormatterFor } from '@cngx/core/utils';
+import { formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import {
+  createNestedOverrideMerge,
+  dateTimeFormatterFor,
+  type CngxNestedOverrides,
+} from '@cngx/core/utils';
+
+import {
+  CNGX_TIMELINE_LANGUAGE_EN,
+  type CngxTimelineLanguageSection,
+} from './i18n/timeline-language-section';
 
 import type { TimelineGroup } from './grouping';
 import type { TimelineStatus } from './marker.component';
@@ -98,8 +109,8 @@ export interface CngxTimelineLabels {
    * count into the header. The second argument is the app locale
    * (`CNGX_LOCALE`, falling back to the nearest `LOCALE_ID`), read live,
    * so a formatter that uses it follows a locale switch. Defaults to the
-   * group's start date as a numeric date in that locale - a date, unlike
-   * the strings above, has no sensible English-only default.
+   * group's start date as a numeric date in that locale, placed by the
+   * `groupHeader` message of the timeline language section.
    */
   readonly groupLabel?: (group: TimelineGroup<unknown>, locale: string) => string;
 }
@@ -156,30 +167,54 @@ export interface CngxTimelineConfig {
   readonly templates?: CngxTimelineTemplates;
 }
 
+const DATE_FORMAT: Intl.DateTimeFormatOptions = {};
+
+/** @internal Turns a timeline section into the config labels. */
+function timelineLabelsFrom(section: CngxTimelineLanguageSection): CngxTimelineLabels {
+  return {
+    timelineRegion: section.timelineRegion,
+    retry: section.retry,
+    errorFallback: section.errorFallback,
+    emptyFallback: section.emptyFallback,
+    loading: section.loading,
+    refreshing: section.refreshing,
+    itemBusy: section.itemBusy,
+    itemErrorFallback: section.itemErrorFallback,
+    status: section.status,
+    groupLabel: (group, locale) =>
+      formatMessage(
+        section.groupHeader,
+        { date: dateTimeFormatterFor(locale, DATE_FORMAT).format(group.start) },
+        locale,
+      ),
+  };
+}
+
 const TIMELINE_CONFIG_DEFAULTS: Required<CngxTimelineConfig> = {
-  labels: {
-    timelineRegion: 'Timeline',
-    retry: 'Retry',
-    errorFallback: 'Could not load the timeline.',
-    emptyFallback: 'No events yet.',
-    loading: 'Loading timeline',
-    refreshing: 'Updating…',
-    itemBusy: 'Updating',
-    itemErrorFallback: 'Could not load this event.',
-    status: {
-      done: 'Completed',
-      active: 'In progress',
-      upcoming: 'Upcoming',
-      rejected: 'Rejected',
-    },
-    groupLabel: (group, locale) => dateTimeFormatterFor(locale, {}).format(group.start),
-  },
+  labels: timelineLabelsFrom(CNGX_TIMELINE_LANGUAGE_EN),
   templates: {},
 };
 
+const NO_SECTION: CngxNestedOverrides<CngxTimelineLanguageSection, 'status'> = {};
+
+/**
+ * @internal The defaults with `labels` read from the timeline section of the
+ * active language pack. Runs in an injection context.
+ */
+function timelineConfigDefaultsFromPack(): CngxTimelineConfig {
+  const pack = injectLanguageSection('timeline');
+  const section = createNestedOverrideMerge<CngxTimelineLanguageSection, 'status'>(
+    CNGX_TIMELINE_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+    'status',
+  );
+  return { ...TIMELINE_CONFIG_DEFAULTS, labels: computed(() => timelineLabelsFrom(section())) };
+}
+
 /**
  * DI token for the resolved timeline config. \
- * `providedIn: 'root'` with the library defaults; override via
+ * `providedIn: 'root'` with the library defaults, `labels` read from the
+ * timeline section of the active language pack; override via
  * {@link provideTimelineConfig} (root) or {@link provideTimelineConfigAt}
  * (component scope).
  *
@@ -192,7 +227,7 @@ const TIMELINE_CONFIG_DEFAULTS: Required<CngxTimelineConfig> = {
  */
 export const CNGX_TIMELINE_CONFIG = new InjectionToken<CngxTimelineConfig>('CngxTimelineConfig', {
   providedIn: 'root',
-  factory: () => TIMELINE_CONFIG_DEFAULTS,
+  factory: timelineConfigDefaultsFromPack,
 });
 
 /**
@@ -210,9 +245,9 @@ export type CngxTimelineConfigFeature = (config: CngxTimelineConfig) => CngxTime
 export const TIMELINE_NO_LABELS: CngxTimelineLabels = {};
 
 /**
- * Merge label overrides into the cascade. Keys left out keep their
- * English library default, so a consumer translates what they need and
- * nothing more. Pass a `Signal` to switch the language at runtime.
+ * Merge label overrides into the cascade. Keys left out keep the language
+ * pack's copy, or the English library default, so a consumer translates
+ * what they need and nothing more. Pass a `Signal` to switch the language at runtime.
  *
  * ```ts
  * provideTimelineConfig(
@@ -286,7 +321,7 @@ export function provideTimelineConfig(
   return makeEnvironmentProviders([
     {
       provide: CNGX_TIMELINE_CONFIG,
-      useValue: applyFeatures(TIMELINE_CONFIG_DEFAULTS, features),
+      useFactory: () => applyFeatures(timelineConfigDefaultsFromPack(), features),
     },
   ]);
 }
@@ -315,7 +350,7 @@ export function provideTimelineConfigAt(
     {
       provide: CNGX_TIMELINE_CONFIG,
       useFactory: (parent: CngxTimelineConfig | null) =>
-        applyFeatures(parent ?? TIMELINE_CONFIG_DEFAULTS, features),
+        applyFeatures(parent ?? timelineConfigDefaultsFromPack(), features),
       deps: [[new SkipSelf(), new Optional(), CNGX_TIMELINE_CONFIG]],
     },
   ];

@@ -342,6 +342,7 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
     dateAccessor: (item) => this.dateAccessor()(item),
     groupBy: this.groupBy,
     direction: this.direction,
+    locale: () => this.locale(),
   });
 
   /** The derived bands, in sort order. */
@@ -399,9 +400,12 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
   });
 
   /** @internal The body switch, the busy flag and the live-region text. */
+  // Empty from the items, not the bands: every item lands in a band (invalid
+  // dates included), and the bands re-split on a locale switch, which must not
+  // reach the live region.
   private readonly view = inject(CNGX_TIMELINE_VIEW_FACTORY)(
     this.state,
-    () => this.groups().length === 0,
+    () => this.resolvedItems().length === 0,
     this.labels,
   );
 

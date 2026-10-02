@@ -1,6 +1,13 @@
 import { coerceSignal } from '@cngx/core/utils';
 import { Component, computed, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
+import { stripBidiIsolates } from '@cngx/testing';
 import { describe, expect, it } from 'vitest';
 
 import type { TimelineGroup } from './grouping';
@@ -54,8 +61,8 @@ describe('timeline config cascade', () => {
       const format = lbl(readConfig()).groupLabel;
       const start = new Date(2026, 6, 20);
 
-      expect(format?.(group(start), 'en-US')).toBe('7/20/2026');
-      expect(format?.(group(start), 'de-DE')).toBe('20.7.2026');
+      expect(stripBidiIsolates(format?.(group(start), 'en-US'))).toBe('7/20/2026');
+      expect(stripBidiIsolates(format?.(group(start), 'de-DE'))).toBe('20.7.2026');
     });
 
     it('reserves an empty templates bag for the slot stage', () => {
@@ -228,5 +235,49 @@ describe('timeline config cascade', () => {
       expect(labels().status?.done).toBe('Erledigt');
       expect(labels().status?.active).toBe('In progress');
     });
+  });
+});
+
+describe('timeline config language pack', () => {
+  it('reads the labels from the timeline section of the active pack', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+    });
+    const labels = coerceSignal<CngxTimelineLabels>(readConfig().labels ?? {});
+    expect(labels().retry).toBe('Retry');
+
+    pack.set({
+      locale: 'de',
+      timeline: {
+        retry: 'Erneut versuchen',
+        groupHeader: 'Woche ab {date}',
+        status: { done: 'Erledigt', active: 'Läuft', upcoming: 'Geplant', rejected: 'Abgelehnt' },
+      },
+    });
+    expect(labels().retry).toBe('Erneut versuchen');
+    expect(labels().status?.done).toBe('Erledigt');
+    expect(labels().emptyFallback).toBe('No events yet.');
+    expect(stripBidiIsolates(labels().groupLabel?.(group(new Date(2026, 6, 20)), 'de'))).toBe(
+      'Woche ab 20.7.2026',
+    );
+  });
+
+  it('applies withTimelineLabels on top of the pack, also in provideTimelineConfigAt', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({
+            locale: 'de',
+            timeline: { retry: 'Erneut versuchen', loading: 'Lädt' },
+          }),
+          withDocumentLanguage('off'),
+        ),
+        ...provideTimelineConfigAt(withTimelineLabels({ loading: 'Wird geladen' })),
+      ],
+    });
+    const labels = lbl(readConfig());
+    expect(labels.retry).toBe('Erneut versuchen');
+    expect(labels.loading).toBe('Wird geladen');
   });
 });

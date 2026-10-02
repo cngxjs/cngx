@@ -97,6 +97,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `withTimelineLabels` now also accepts a `Signal<CngxTimelineLabels>` for runtime switching; plain bundles still merge over the inherited labels, `status` key by key.
 - `CngxTimelineLabels.groupLabel` is now `(group, locale: string) => string`. The timeline passes the app locale (`CNGX_LOCALE`, else `LOCALE_ID`) and re-calls the formatter when it switches. A one-argument formatter keeps compiling and renders as before; code that calls `labels.groupLabel(group)` itself passes the locale as the second argument.
 - `formatTimelineGroupDate` and `TIMELINE_DEFAULT_GROUP_LABEL` are no longer exported. They were marked internal; call the default `groupLabel` from `injectTimelineConfig()` with a locale instead.
+- `injectTimelineConfig().labels` now always holds a `Signal`, also without `withTimelineLabels`: its default comes from the timeline section of the language pack. `provideTimelineConfig` resolves its features when the token is first injected, not when the provider is created.
 
 ### @cngx/ui/timeline
 
@@ -244,6 +245,11 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The visible `CngxRangeSlider` value is one message (`rangeValue`, English `'{start} - {end}'`) and reads in the page direction; it is no longer forced `ltr`. Pin a left-to-right readout with `--cngx-slider-range-direction: ltr`.
 - `CngxNavLink` derives `data-initial` from the first full character of the link text, uppercased with the app locale (`İ` for Turkish `istanbul`, a whole emoji or accented letter).
 - `CngxSpeak` speaks in the app locale while `lang` is unbound, instead of the browser default voice language.
+
+### @cngx/common/timeline
+
+- `CngxTimeline` with `groupBy="week"` starts a week on the first day of the app locale (`Intl.Locale` week info): Sunday under `en-US`, Monday under `de` or `en-GB`. Before, weeks always started on Monday. Where the runtime has no week info, and for `createTimelineGrouping` without a `locale` option, weeks still start on Monday.
+- The default group header places the date through the `groupHeader` message; the date is bidi-isolated.
 
 ### @cngx/common/stepper
 
