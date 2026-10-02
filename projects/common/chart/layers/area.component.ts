@@ -58,7 +58,7 @@ import {
         class="cngx-area"
         [attr.d]="d()"
         [style.fill]="color()"
-        [attr.fill-opacity]="opacity()"
+        [style.fill-opacity]="opacity()"
       />
       @for (p of pointMarks(); track $index) {
         <svg:circle class="cngx-area__point" [attr.cx]="p.cx" [attr.cy]="p.cy" />
