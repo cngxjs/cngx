@@ -10,7 +10,8 @@
     "sourceMap": true,
     "types": [],
     "paths": {
-      "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"]
+      "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"],
+      "@cngx/core/utils": ["dist/core/types/cngx-core-utils.d.ts"]
     }
   },
   "include": ["*.ts", "tokens/**/*.ts", "utils/**/*.ts", "theming/**/*.ts", "bidi/**/*.ts", "nav/**/*.ts", "i18n/**/*.ts"],
