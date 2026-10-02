@@ -2,8 +2,10 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { LOCALE_ID } from '@angular/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
 import { CNGX_LOCALE } from '@cngx/core/utils';
 import { CngxCardTimestamp } from './card-timestamp.component';
+import { provideCardI18n, withCardI18nLabels } from './i18n/card-i18n';
 
 @Component({
   template: `<cngx-card-timestamp [date]="date()" [prefix]="prefix()" />`,
@@ -53,6 +55,48 @@ describe('CngxCardTimestamp', () => {
   it('hides prefix when not provided', () => {
     const { el } = setup();
     expect(el.querySelector('.cngx-card-timestamp__prefix')).toBeFalsy();
+  });
+
+  it('renders the prefix before the date in English', () => {
+    const { fixture, el, host } = setup();
+    host.prefix.set('Evaluated:');
+    fixture.detectChanges();
+    expect(Array.from(el.children, (child) => child.localName)).toEqual(['span', 'time']);
+    expect(el.textContent!.replace(/\s+/g, ' ').trim()).toBe('Evaluated: 03/15/2026');
+  });
+
+  it('orders the prefix and the date by the timestamp message, with its text', () => {
+    TestBed.configureTestingModule({
+      providers: [provideCardI18n(withCardI18nLabels({ timestamp: '{date} · {prefix}' }))],
+    });
+    const { fixture, el, host } = setup();
+    host.prefix.set('evaluated');
+    fixture.detectChanges();
+    expect(Array.from(el.children, (child) => child.localName)).toEqual(['time', 'span']);
+    expect(el.textContent!.replace(/\s+/g, '')).toBe('03/15/2026·evaluated');
+  });
+
+  it('renders only the date and no message text without a prefix', () => {
+    TestBed.configureTestingModule({
+      providers: [provideCardI18n(withCardI18nLabels({ timestamp: 'on {date} ({prefix})' }))],
+    });
+    const { el } = setup();
+    expect(el.textContent!.trim()).toBe('03/15/2026');
+  });
+
+  it('re-orders on a language pack switch', () => {
+    const pack = signal<{ locale: string; card?: { timestamp: string } } | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+    });
+    const { fixture, el, host } = setup();
+    host.prefix.set('Stand');
+    fixture.detectChanges();
+    expect(el.firstElementChild!.localName).toBe('span');
+
+    pack.set({ locale: 'en-US', card: { timestamp: '{date} {prefix}' } });
+    fixture.detectChanges();
+    expect(Array.from(el.children, (child) => child.localName)).toEqual(['time', 'span']);
   });
 
   it('renders empty, drops datetime, and dev-warns on an Invalid Date', () => {

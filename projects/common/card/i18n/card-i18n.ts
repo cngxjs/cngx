@@ -1,14 +1,19 @@
-import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
+import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { injectLanguageSection } from '@cngx/core/i18n';
+import { createOverrideMerge } from '@cngx/core/utils';
+
+import { CNGX_CARD_LANGUAGE_EN } from './card-language-section';
 
 /**
  * Card i18n surface. Library defaults are English; consumers override via
  * {@link provideCardI18n}. Sibling to `CNGX_STEPPER_I18N`, `CNGX_TABS_I18N`
  * and `CNGX_CHART_I18N`.
  *
- * All three keys are live-region copy. A selectable card announces the
- * transition it just made, never the state it is standing in - so these are
- * armed phrases, spent once per change, not a label the card carries.
+ * `selected`, `deselected` and `loading` are live-region copy. A selectable
+ * card announces the transition it just made, never the state it is standing
+ * in - so these are armed phrases, spent once per change, not a label the
+ * card carries. `timestamp` orders a {@link CngxCardTimestamp} prefix and its
+ * date.
  *
  * @category common/card/i18n
  */
@@ -19,17 +24,25 @@ export interface CngxCardI18n {
   readonly deselected: string;
   /** Owns the live region while the card loads, pre-empting the selection phrase. */
   readonly loading: string;
+  /** `{prefix}` and `{date}` of a timestamp, in reading order. */
+  readonly timestamp: string;
 }
 
-const CARD_I18N_DEFAULTS: CngxCardI18n = {
-  selected: 'Selected',
-  deselected: 'Deselected',
-  loading: 'Loading',
-};
+const NO_SECTION: Partial<CngxCardI18n> = {};
+
+/** @internal The English section with the active pack's card section on top. */
+function cardBundleFromPack(): Signal<CngxCardI18n> {
+  const section = injectLanguageSection('card');
+  return createOverrideMerge(
+    CNGX_CARD_LANGUAGE_EN,
+    computed(() => section() ?? NO_SECTION),
+  );
+}
 
 /**
  * DI token for the card i18n bundle, a `Signal` so the phrases follow a
- * runtime language switch. `providedIn: 'root'` with English defaults.
+ * runtime language switch. `providedIn: 'root'`: the card section of the
+ * active language pack over the English defaults.
  *
  * @category common/card/i18n
  * @wcag AA
@@ -39,7 +52,7 @@ const CARD_I18N_DEFAULTS: CngxCardI18n = {
  */
 export const CNGX_CARD_I18N = new InjectionToken<Signal<CngxCardI18n>>('CngxCardI18n', {
   providedIn: 'root',
-  factory: () => coerceSignal(CARD_I18N_DEFAULTS),
+  factory: cardBundleFromPack,
 });
 
 /**
@@ -59,8 +72,9 @@ function defineCardI18nFeature(
 }
 
 /**
- * Override i18n labels via a partial bundle - unset keys keep the English
- * default. Pass a `Signal` to switch the language at runtime.
+ * Override i18n labels via a partial bundle - unset keys keep the language
+ * pack's phrase, or the English default. Pass a `Signal` to switch the
+ * language at runtime.
  *
  * @category common/card/i18n
  */
@@ -71,7 +85,8 @@ export function withCardI18nLabels(
 }
 
 /**
- * Provider for the card i18n bundle.
+ * Provider for the card i18n bundle. The features apply on top of the active
+ * language pack, so a subtree can override single keys of the app's language.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -87,10 +102,7 @@ export function provideCardI18n(...features: readonly CngxCardI18nFeature[]): Pr
   return {
     provide: CNGX_CARD_I18N,
     useFactory: () =>
-      features.reduce<Signal<CngxCardI18n>>(
-        (bundle, feat) => feat(bundle),
-        coerceSignal(CARD_I18N_DEFAULTS),
-      ),
+      features.reduce<Signal<CngxCardI18n>>((bundle, feat) => feat(bundle), cardBundleFromPack()),
   };
 }
 

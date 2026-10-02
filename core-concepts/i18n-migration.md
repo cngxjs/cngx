@@ -45,6 +45,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CNGX_CARD_I18N` is now `InjectionToken<Signal<CngxCardI18n>>`, and `injectCardI18n()` returns `Signal<CngxCardI18n>`. Call the Signal where you read a phrase, inside a `computed()`, a template or a handler: `inject(CNGX_CARD_I18N).selected` becomes `inject(CNGX_CARD_I18N)().selected`.
 - A direct `{ provide: CNGX_CARD_I18N, useValue: bundle }` must supply a Signal. Prefer `provideCardI18n(withCardI18nLabels(overrides))`; `withCardI18nLabels` now also accepts a `Signal<Partial<CngxCardI18n>>`.
 - `CngxCardI18nFeature` maps `Signal<CngxCardI18n>` to `Signal<CngxCardI18n>`. A hand-written feature returns a derived Signal, best through `createOverrideMerge` from `@cngx/core/utils`: `(bundle) => createOverrideMerge(bundle, { loading: 'Lädt' })`.
+- `CngxCardI18n` has a new required key `timestamp` (English `'{prefix} {date}'`): it sets the order of a `cngx-card-timestamp` prefix and its date. A complete bundle you provide directly adds it; `withCardI18nLabels` overrides are unaffected.
 
 ### @cngx/common/chart
 
@@ -200,6 +201,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### All libraries
 
 - A live region keeps its text when the language switches, and speaks the new language with its next status change. This also holds when a consumer formatter reads a language Signal itself, such as `withErrorMessages({ required: () => translate('required') })` or a `format` function on a select announcer or a stepper count: CNGX now calls these formatters untracked inside the live region, so a switch no longer re-renders the region at once. Shown validation messages in `cngx-field-errors` and `cngx-form-errors` therefore stay in the old language until the field's errors change. Labels outside live regions follow the switch immediately.
+- Copy that CNGX builds from a message with arguments wraps every inserted text argument in the Unicode isolates U+2068 / U+2069 and formats every inserted number with the active locale (`1,200`, `1.200` in German). A Latin name inside an Arabic sentence, or the reverse, keeps its own direction. Tests that compare such copy exactly strip the isolates first: `text.replace(/[\u2068\u2069]/g, '')`.
 
 ### @cngx/forms/select
 
