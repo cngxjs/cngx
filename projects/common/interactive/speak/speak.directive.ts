@@ -9,6 +9,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { injectLocale } from '@cngx/core/utils';
 
 /**
  * Headless text-to-speech directive using the browser's SpeechSynthesis API.
@@ -77,8 +78,9 @@ export class CngxSpeak {
   readonly pitch = input(1);
   /** Speech volume (0–1, default 1). */
   readonly volume = input(1);
-  /** BCP 47 language tag (e.g. `'de-DE'`). Empty string uses the browser default. */
+  /** BCP 47 language tag (e.g. `'de-DE'`). Empty string uses the app locale. */
   readonly lang = input('');
+  private readonly locale = injectLocale();
   /** Controls auto-speak on text changes. Does NOT affect `speak()` or `cancel()`. */
   readonly enabled = input(true);
 
@@ -163,7 +165,7 @@ export class CngxSpeak {
     utterance.rate = this.rate();
     utterance.pitch = this.pitch();
     utterance.volume = this.volume();
-    const lang = this.lang();
+    const lang = this.lang() || this.locale();
     if (lang) {
       utterance.lang = lang;
     }

@@ -10,10 +10,14 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
+import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
+
 import { injectResolvedInteractiveI18n } from '../i18n/interactive-i18n';
 import { CngxRangeSliderTrack } from './range-slider.directive';
 import { CngxSliderThumb } from './slider-thumb.directive';
 import { createSliderTicks } from './slider-ticks';
+
+const NUMBER_FORMAT: Intl.NumberFormatOptions = {};
 
 /**
  * Finished two-thumb (range) slider. Drop it in, bind `[(value)]` to a
@@ -99,13 +103,14 @@ import { createSliderTicks } from './slider-ticks';
         aria-hidden="true"
         [style.--cngx-slider-mid-fraction]="midFraction()"
       >
-        {{ format(brain.value()[0]) }} - {{ format(brain.value()[1]) }}
+        {{ rangeValueText() }}
       </span>
     }
   `,
 })
 export class CngxRangeSlider {
   private readonly i18n = injectResolvedInteractiveI18n();
+  private readonly locale = injectLocale();
 
   /**
    * Accessible name of the start (minimum) thumb. Unbound, it follows
@@ -149,8 +154,20 @@ export class CngxRangeSlider {
     labels: this.showTickLabels,
   });
 
+  /** The visible `start - end` value, ordered and joined by the `rangeValue` message. */
+  protected readonly rangeValueText = computed(() => {
+    const [start, end] = this.brain.value();
+    return this.i18n().rangeValue(this.format(start), this.format(end));
+  });
+
+  /**
+   * Format a value through the bound `valueText` (so tick labels match the
+   * thumbs), else with the app locale's number format.
+   */
   protected format(value: number): string {
     const formatter = this.brain.valueText();
-    return formatter ? formatter(value) : String(value);
+    return formatter
+      ? formatter(value)
+      : numberFormatterFor(this.locale(), NUMBER_FORMAT).format(value);
   }
 }

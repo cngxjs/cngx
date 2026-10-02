@@ -46,13 +46,7 @@ export const ALREADY_COVERED = [];
  *
  * @type {readonly StringManifestEntry[]}
  */
-export const EXCLUDED = [
-  {
-    file: 'projects/common/interactive/guard/can-deactivate.ts',
-    value: 'You have unsaved changes. Leave anyway?',
-    note: 'design reason: canDeactivateWhenClean(message) takes the caller copy, this is its fallback',
-  },
-];
+export const EXCLUDED = [];
 
 /**
  * The only `localeCompare` call sites the locale-source guard accepts. Sort

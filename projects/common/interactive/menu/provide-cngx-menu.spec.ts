@@ -10,7 +10,9 @@ import { withAriaLabels, withTypeaheadDebounce } from './menu-config-features';
 describe('provideCngxMenu', () => {
   it('provides the menu-config defaults with no features', () => {
     TestBed.configureTestingModule({ providers: [provideCngxMenu()] });
-    expect(TestBed.inject(CNGX_MENU_CONFIG)).toEqual(DEFAULT_MENU_CONFIG);
+    const config = TestBed.inject(CNGX_MENU_CONFIG);
+    expect(config).toEqual({ ...DEFAULT_MENU_CONFIG, ariaLabels: expect.any(Function) });
+    expect(coerceSignal(config.ariaLabels)()).toEqual(DEFAULT_MENU_CONFIG.ariaLabels);
   });
 
   it('dispatches config features to CNGX_MENU_CONFIG', () => {

@@ -1,5 +1,11 @@
-import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
+import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createOverrideMerge, injectLocale } from '@cngx/core/utils';
+
+import {
+  CNGX_INTERACTIVE_LANGUAGE_EN,
+  type CngxInteractiveLanguageSection,
+} from './interactive-language-section';
 
 /**
  * Interactive i18n surface. Library defaults are English; consumers override
@@ -34,23 +40,54 @@ export interface CngxInteractiveI18n {
   readonly rangeMaximum?: string;
   /** Default of the `CngxBreadcrumb` `label` input (landmark name). */
   readonly breadcrumb?: string;
+  /** Default confirmation of `canDeactivateWhenClean`. */
+  readonly unsavedChanges?: string;
+  /**
+   * Visible `start - end` value of `CngxRangeSlider`. Receives both values
+   * already formatted; one message, so a locale owns the order and the joiner.
+   */
+  readonly rangeValue?: (start: string, end: string) => string;
 }
 
-const INTERACTIVE_I18N_DEFAULTS: Required<CngxInteractiveI18n> = {
-  asyncClickSucceeded: 'Action succeeded',
-  asyncClickFailed: 'Action failed',
-  copy: 'Copy',
-  copied: 'Copied!',
-  copiedAnnouncement: 'Copied to clipboard',
-  rangeMinimum: 'Minimum',
-  rangeMaximum: 'Maximum',
-  breadcrumb: 'Breadcrumb',
-};
+/** @internal Turns an interactive section into the token's keys for a locale. */
+function interactiveBundleFrom(
+  section: CngxInteractiveLanguageSection,
+  locale: string,
+): Required<CngxInteractiveI18n> {
+  return {
+    asyncClickSucceeded: section.asyncClickSucceeded,
+    asyncClickFailed: section.asyncClickFailed,
+    copy: section.copy,
+    copied: section.copied,
+    copiedAnnouncement: section.copiedAnnouncement,
+    rangeMinimum: section.rangeMinimum,
+    rangeMaximum: section.rangeMaximum,
+    breadcrumb: section.breadcrumb,
+    unsavedChanges: section.unsavedChanges,
+    rangeValue: (start, end) => formatMessage(section.rangeValue, { start, end }, locale),
+  };
+}
+
+/** @internal English for every key, filling keys a directly provided bundle predates. */
+const INTERACTIVE_I18N_DEFAULTS = interactiveBundleFrom(CNGX_INTERACTIVE_LANGUAGE_EN, 'en');
+
+const NO_SECTION: Partial<CngxInteractiveLanguageSection> = {};
+
+/** @internal The interactive section of the active pack over English, mapped for the locale. */
+function interactiveBundleFromPack(): Signal<CngxInteractiveI18n> {
+  const pack = injectLanguageSection('interactive');
+  const locale = injectLocale();
+  const section = createOverrideMerge(
+    CNGX_INTERACTIVE_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+  );
+  return computed(() => interactiveBundleFrom(section(), locale()));
+}
 
 /**
- * DI token for the interactive i18n bundle. `providedIn: 'root'` with English
- * defaults; the value is a `Signal`, shared by every reader under one
- * injector.
+ * DI token for the interactive i18n bundle. `providedIn: 'root'`: the
+ * interactive section of the active language pack over the English defaults;
+ * the value is a `Signal`, shared by every reader under one injector.
  *
  * @category common/interactive/i18n
  * @wcag AA
@@ -62,7 +99,7 @@ export const CNGX_INTERACTIVE_I18N = new InjectionToken<Signal<CngxInteractiveI1
   'CngxInteractiveI18n',
   {
     providedIn: 'root',
-    factory: () => coerceSignal(INTERACTIVE_I18N_DEFAULTS),
+    factory: interactiveBundleFromPack,
   },
 );
 
@@ -86,8 +123,8 @@ function defineInteractiveI18nFeature(
 }
 
 /**
- * Override i18n labels via a partial bundle - unset keys keep the English
- * default. Pass a `Signal` of a partial bundle to switch languages at
+ * Override i18n labels via a partial bundle - unset keys keep the language
+ * pack's copy, or the English default. Pass a `Signal` of a partial bundle to switch languages at
  * runtime.
  *
  * @category common/interactive/i18n
@@ -101,7 +138,8 @@ export function withInteractiveI18nLabels(
 
 /**
  * Provider for the interactive i18n bundle. Returns a plain `Provider`, so it
- * also scopes a subtree through `viewProviders`.
+ * also scopes a subtree through `viewProviders`. The features apply on top of
+ * the active language pack.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -124,7 +162,7 @@ export function provideInteractiveI18n(
     useFactory: () =>
       features.reduce<Signal<CngxInteractiveI18n>>(
         (bundle, feat) => feat(bundle),
-        coerceSignal(INTERACTIVE_I18N_DEFAULTS),
+        interactiveBundleFromPack(),
       ),
   };
 }

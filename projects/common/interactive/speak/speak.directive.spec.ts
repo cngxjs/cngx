@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { provideLocale } from '@cngx/core/utils';
 import { CngxSpeak } from './speak.directive';
 
 class MockUtterance {
@@ -70,6 +71,15 @@ describe('CngxSpeak', () => {
     const dir = el.injector.get(CngxSpeak);
     return { fixture, dir };
   }
+
+  it('speaks in the app locale while no lang is bound', () => {
+    TestBed.configureTestingModule({ providers: [provideLocale('de-AT')] });
+    const { fixture } = setup();
+    fixture.componentInstance.message.set('Hallo');
+    TestBed.flushEffects();
+    const utterance = vi.mocked(speechSynthesis.speak).mock.calls[0][0] as unknown as MockUtterance;
+    expect(utterance.lang).toBe('de-AT');
+  });
 
   it('does not speak on initial render', () => {
     setup();

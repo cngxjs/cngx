@@ -1,6 +1,13 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
 import { provideLocale } from '@cngx/core/utils';
+import { stripBidiIsolates } from '@cngx/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxAsyncClick } from '../async-click/async-click.directive';
@@ -31,8 +38,9 @@ describe('CNGX_INTERACTIVE_I18N', () => {
     TestBed.resetTestingModule();
   });
 
-  it('ships the English phrases without a provider', () => {
-    expect(TestBed.inject(CNGX_INTERACTIVE_I18N)()).toEqual({
+  it('derives the pre-section English phrases from the English section', () => {
+    const bundle = TestBed.inject(CNGX_INTERACTIVE_I18N)();
+    expect(bundle).toEqual({
       asyncClickSucceeded: 'Action succeeded',
       asyncClickFailed: 'Action failed',
       copy: 'Copy',
@@ -41,7 +49,42 @@ describe('CNGX_INTERACTIVE_I18N', () => {
       rangeMinimum: 'Minimum',
       rangeMaximum: 'Maximum',
       breadcrumb: 'Breadcrumb',
+      unsavedChanges: 'You have unsaved changes. Leave anyway?',
+      rangeValue: expect.any(Function),
     });
+    expect(stripBidiIsolates(bundle.rangeValue?.('20', '80'))).toBe('20 - 80');
+  });
+
+  it('reads the interactive section of the pack, with English for what it leaves out', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+    });
+    const bundle = TestBed.inject(CNGX_INTERACTIVE_I18N);
+    expect(bundle().copy).toBe('Copy');
+
+    pack.set({
+      locale: 'de',
+      interactive: { copy: 'Kopieren', rangeValue: '{start} bis {end}' },
+    });
+    expect(bundle().copy).toBe('Kopieren');
+    expect(stripBidiIsolates(bundle().rangeValue?.('20', '80'))).toBe('20 bis 80');
+    expect(bundle().copied).toBe('Copied!');
+  });
+
+  it('lets provideInteractiveI18n override single keys on top of the active pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', interactive: { copy: 'Kopieren', copied: 'Kopiert' } }),
+          withDocumentLanguage('off'),
+        ),
+        provideInteractiveI18n(withInteractiveI18nLabels({ copied: 'Erledigt' })),
+      ],
+    });
+    const bundle = TestBed.inject(CNGX_INTERACTIVE_I18N)();
+    expect(bundle.copy).toBe('Kopieren');
+    expect(bundle.copied).toBe('Erledigt');
   });
 
   it('keeps unset keys English on a static partial override', () => {

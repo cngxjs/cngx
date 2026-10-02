@@ -9,8 +9,12 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
+import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
+
 import { CngxSliderTrack } from './slider.directive';
 import { createSliderTicks } from './slider-ticks';
+
+const NUMBER_FORMAT: Intl.NumberFormatOptions = {};
 
 /**
  * Finished single-thumb slider. The 90% API: drop it in, bind `[(value)]`, done -
@@ -120,9 +124,16 @@ export class CngxSlider {
     labels: this.showTickLabels,
   });
 
-  /** Format a value through the bound `valueText` (so tick labels match the thumb). */
+  private readonly locale = injectLocale();
+
+  /**
+   * Format a value through the bound `valueText` (so tick labels match the
+   * thumb), else with the app locale's number format.
+   */
   protected format(value: number): string {
     const formatter = this.brain.valueText();
-    return formatter ? formatter(value) : String(value);
+    return formatter
+      ? formatter(value)
+      : numberFormatterFor(this.locale(), NUMBER_FORMAT).format(value);
   }
 }

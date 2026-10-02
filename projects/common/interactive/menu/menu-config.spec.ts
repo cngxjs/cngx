@@ -1,3 +1,9 @@
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
 import { coerceSignal } from '@cngx/core/utils';
 import { TestBed } from '@angular/core/testing';
 import { computed, Injector, runInInjectionContext, signal } from '@angular/core';
@@ -8,6 +14,7 @@ import {
   DEFAULT_MENU_CONFIG,
   injectMenuConfig,
   provideMenuConfig,
+  provideMenuConfigAt,
 } from './menu-config';
 import {
   withAriaLabels,
@@ -36,7 +43,8 @@ describe('CNGX_MENU_CONFIG', () => {
     expect(config.dismissOnOutsideClick).toBe(true);
     expect(config.dismissOnScroll).toBe(false);
     expect(config.dismissOnBlur).toBe(true);
-    expect(config).toEqual(DEFAULT_MENU_CONFIG);
+    expect(config).toEqual({ ...DEFAULT_MENU_CONFIG, ariaLabels: expect.any(Function) });
+    expect(coerceSignal(config.ariaLabels)()).toEqual(DEFAULT_MENU_CONFIG.ariaLabels);
   });
 
   it('withDismissOn* features override their individual booleans', () => {
@@ -139,5 +147,41 @@ describe('CNGX_MENU_CONFIG', () => {
     lang.set('de');
     expect(labels().itemActivated).toBe('Aktiviert');
     expect(labels().itemDisabled).toBe('Item disabled');
+  });
+});
+
+describe('CNGX_MENU_CONFIG language pack', () => {
+  it('reads the announcements from the menu section of the active pack', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+    });
+    const labels = coerceSignal(TestBed.inject(CNGX_MENU_CONFIG).ariaLabels);
+    expect(labels().submenuOpened).toBe('Submenu opened');
+
+    pack.set({ locale: 'de', menu: { submenuOpened: 'Untermenü geöffnet' } });
+    expect(labels().submenuOpened).toBe('Untermenü geöffnet');
+    expect(labels().menuDismissed).toBe('Menu dismissed');
+  });
+
+  it('applies withAriaLabels on top of the active pack, also in provideMenuConfigAt', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({
+            locale: 'de',
+            menu: {
+              submenuOpened: 'Untermenü geöffnet',
+              submenuClosed: 'Untermenü geschlossen',
+            },
+          }),
+          withDocumentLanguage('off'),
+        ),
+        ...provideMenuConfigAt(withAriaLabels({ submenuClosed: 'Zu' })),
+      ],
+    });
+    const labels = coerceSignal(TestBed.inject(CNGX_MENU_CONFIG).ariaLabels);
+    expect(labels().submenuOpened).toBe('Untermenü geöffnet');
+    expect(labels().submenuClosed).toBe('Zu');
   });
 });

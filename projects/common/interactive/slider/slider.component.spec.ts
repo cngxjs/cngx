@@ -1,6 +1,9 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
+import { provideLocale } from '@cngx/core/utils';
+import { stripBidiIsolates } from '@cngx/testing';
 import { describe, expect, it } from 'vitest';
 
 import { CngxSlider } from './slider.component';
@@ -196,5 +199,68 @@ describe('CngxRangeSlider component', () => {
     const { el } = setup();
     expect(el.style.getPropertyValue('--cngx-slider-start-fraction')).toBe('0.2');
     expect(el.style.getPropertyValue('--cngx-slider-end-fraction')).toBe('0.8');
+  });
+});
+
+describe('slider copy in the app locale', () => {
+  @Component({
+    template: `
+      <cngx-slider
+        aria-label="Amount"
+        [(value)]="v"
+        [min]="0"
+        [max]="2000"
+        [step]="1000"
+        showTickLabels
+      />
+    `,
+    imports: [CngxSlider],
+  })
+  class TickHost {
+    v = signal(1000);
+  }
+
+  @Component({
+    template: `
+      <cngx-range-slider
+        aria-label="Price"
+        [(value)]="v"
+        [min]="0"
+        [max]="10000"
+        [step]="100"
+        showValue
+      />
+    `,
+    imports: [CngxRangeSlider],
+  })
+  class RangeHost {
+    v = signal<[number, number]>([1200, 8000]);
+  }
+
+  it('formats tick labels with the app locale', () => {
+    TestBed.configureTestingModule({ providers: [provideLocale('de')] });
+    const fixture = TestBed.createComponent(TickHost);
+    fixture.detectChanges();
+    const labels = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('.cngx-slider__tick-label'),
+      (label) => label.textContent?.trim(),
+    );
+    expect(labels).toEqual(['0', '1.000', '2.000']);
+  });
+
+  it('renders the range value as one message with locale numbers', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', interactive: { rangeValue: '{start} bis {end}' } }),
+          withDocumentLanguage('off'),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(RangeHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const value = root.querySelector('.cngx-slider__value--range');
+    expect(stripBidiIsolates(value?.textContent?.trim())).toBe('1.200 bis 8.000');
   });
 });

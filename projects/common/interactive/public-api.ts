@@ -12,6 +12,11 @@ export {
   type CngxInteractiveI18nFeature,
 } from './i18n/interactive-i18n';
 export {
+  CNGX_INTERACTIVE_LANGUAGE_EN,
+  type CngxInteractiveLanguageSection,
+} from './i18n/interactive-language-section';
+export { CNGX_MENU_LANGUAGE_EN, type CngxMenuLanguageSection } from './i18n/menu-language-section';
+export {
   CngxAsyncStatus,
   reflectAsyncDisplayStatus,
   type CngxAsyncDisplayStatus,

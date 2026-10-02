@@ -135,12 +135,12 @@ cngx-range-slider .cngx-slider__value--range {
   color: var(--cngx-color-text, oklch(0.2 0.01 250));
   pointer-events: none;
   white-space: nowrap;
-  /* `20 - 80` is two number groups joined by a neutral `-`; under RTL the box
-     inherits direction:rtl and the run reorders to `80 - 20`, inverting the
-     range meaning. isolate fences the boundary; direction:ltr pins the `a - b`
-     order. Consumer opt-out: --cngx-slider-range-bidi / -direction. */
+  /* The value is translated text (the `rangeValue` message): isolate fences it
+     from the surrounding text, and it reads in the page direction, start
+     first. A consumer that wants a fixed left-to-right `a - b` sets
+     --cngx-slider-range-direction: ltr. */
   unicode-bidi: var(--cngx-slider-range-bidi, isolate);
-  direction: var(--cngx-slider-range-direction, ltr);
+  direction: var(--cngx-slider-range-direction, inherit);
 }
 
 /* Bubble variant: a primary pill shown only while a thumb is focused / dragged. */

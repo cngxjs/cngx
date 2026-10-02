@@ -1,6 +1,7 @@
 import { EnvironmentInjector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
 import { canDeactivateWhenClean } from './can-deactivate';
 
 describe('canDeactivateWhenClean', () => {
@@ -31,6 +32,29 @@ describe('canDeactivateWhenClean', () => {
     const guard = canDeactivateWhenClean(() => true);
 
     expect(runGuard(guard)).toBe(false);
+    confirmSpy.mockRestore();
+  });
+
+  it('asks with the unsavedChanges phrase of the active language when no message is given', () => {
+    TestBed.configureTestingModule({});
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    runGuard(canDeactivateWhenClean(() => true));
+    expect(confirmSpy).toHaveBeenLastCalledWith('You have unsaved changes. Leave anyway?');
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({
+            locale: 'de',
+            interactive: { unsavedChanges: 'Ungespeichert. Trotzdem gehen?' },
+          }),
+          withDocumentLanguage('off'),
+        ),
+      ],
+    });
+    runGuard(canDeactivateWhenClean(() => true));
+    expect(confirmSpy).toHaveBeenLastCalledWith('Ungespeichert. Trotzdem gehen?');
     confirmSpy.mockRestore();
   });
 });

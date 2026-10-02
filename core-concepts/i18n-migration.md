@@ -74,6 +74,8 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxMenuConfig.ariaLabels` is typed `CngxMenuAriaLabels | Signal<CngxMenuAriaLabels>`, and once `withAriaLabels` ran it holds a `Signal`. Code that reads it off `injectMenuConfig()` or `CNGX_MENU_CONFIG` wraps the key: `injectMenuConfig().ariaLabels.itemActivated` becomes `coerceSignal(injectMenuConfig().ariaLabels)().itemActivated` (`coerceSignal` from `@cngx/core/utils`), read inside a `computed()`, a template or a handler. A hand-written `CngxMenuConfigFeature` that spreads `cfg.ariaLabels` merges through `createOverrideMerge(cfg.ariaLabels, overrides)` instead.
 - `withAriaLabels` now also accepts a `Signal<Partial<CngxMenuAriaLabels>>` for runtime switching; plain partials still merge over the inherited labels.
 - The copy inputs `CngxAsyncClick.succeededAnnouncement` / `.failedAnnouncement`, `CngxBreadcrumb.label`, `CngxCopyBlock.buttonLabel` / `.copiedLabel` / `.srAnnouncement` and `CngxRangeSlider.startLabel` / `.endLabel` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `CNGX_INTERACTIVE_I18N` default. Template bindings and attribute values are unchanged. Code that reads the input programmatically (`directive.succeededAnnouncement()`) gets `undefined` when nothing is bound; read the rendered result instead, for `CngxAsyncClick` its `announcement()`.
+- `injectMenuConfig().ariaLabels` now always holds a `Signal`, also without `withAriaLabels`: its default comes from the menu section of the language pack. `DEFAULT_MENU_CONFIG.ariaLabels` stays the plain English object.
+- `canDeactivateWhenClean(isDirty, message?)` no longer has an English default in its signature: without `message` it asks with `CNGX_INTERACTIVE_I18N.unsavedChanges`, read when the guard runs.
 
 ### @cngx/common/display
 
@@ -224,6 +226,13 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxGoal` formats `now` and `max` in its default `aria-valuetext` with the app locale (`1,234.5 of 2,000`, before `1234.5 of 2000`).
 - `CngxDelta` lets the locale draw the plus sign of a positive magnitude (`Intl` `signDisplay`), so a locale with its own plus sign or spacing gets it.
 - A `CngxMetric` without a value announces `No value` (with its unit, if any) instead of the dash glyph; the glyph still shows. A pack can place the unit before the value through `metricValueWithUnit`.
+
+### @cngx/common/interactive
+
+- `CngxSlider` and `CngxRangeSlider` format tick labels and the visible value with the app locale when no `valueText` is bound (`1,000`, `1.000` in German; before `1000`).
+- The visible `CngxRangeSlider` value is one message (`rangeValue`, English `'{start} - {end}'`) and reads in the page direction; it is no longer forced `ltr`. Pin a left-to-right readout with `--cngx-slider-range-direction: ltr`.
+- `CngxNavLink` derives `data-initial` from the first full character of the link text, uppercased with the app locale (`İ` for Turkish `istanbul`, a whole emoji or accented letter).
+- `CngxSpeak` speaks in the app locale while `lang` is unbound, instead of the browser default voice language.
 
 ### @cngx/common/stepper
 
