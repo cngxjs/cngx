@@ -11,11 +11,17 @@ import { cdp } from 'vitest/browser';
 // `--cngx-color-{info,success,warning,danger}` instead of carrying their own
 // literals: the toast stripe and icon paint the core colour on the toast
 // surface, the alert / banner icon mixes it 90% into the text colour so it
-// still clears 3:1 on the pale severity tint. A brand override of the core
-// colour therefore reaches every family. Schemes are emulated page-wide: the
-// toast surface resolves at the root, so a scheme island would not reach it.
+// still clears 3:1 on the pale severity tint. The alert, stack and banner bg
+// and border tints mix the same core colour into the surface (bg 12% / 22%
+// dark, border 40% / 60% dark), and the banner inline error reads the danger
+// text rung. A brand override of the core colour therefore reaches every
+// family. Schemes are emulated page-wide: the toast surface resolves at the
+// root, so a scheme island would not reach it.
 
 const SCHEMES = ['light', 'dark'] as const;
+// Core-colour share of the bg / border tint per scheme.
+const TINT = { light: { bg: 12, border: 40 }, dark: { bg: 22, border: 60 } } as const;
+const SHARES = [12, 22, 40, 60] as const;
 const SEVERITIES = ['info', 'success', 'warning', 'error'] as const;
 const CORE: Record<(typeof SEVERITIES)[number], string> = {
   info: 'info',
@@ -60,6 +66,7 @@ const CORE: Record<(typeof SEVERITIES)[number], string> = {
         @for (severity of severities; track severity) {
           <div [class]="'cngx-banner cngx-banner--' + severity + ' banner-' + severity">
             <span class="cngx-banner__icon">!</span>
+            <span class="cngx-banner__error">Retry failed</span>
           </div>
         }
       </cngx-banner-outlet>
@@ -83,14 +90,29 @@ const CORE: Record<(typeof SEVERITIES)[number], string> = {
             ') 90%, var(--cngx-color-text))'
           "
         ></span>
+        @for (share of shares; track share) {
+          <span
+            [class]="'probe-tint-' + severity + '-' + share"
+            [style.color]="
+              'color-mix(in oklab, var(--cngx-color-' +
+              core[severity] +
+              ') ' +
+              share +
+              '%, var(--cngx-color-surface))'
+            "
+          ></span>
+        }
       }
       <span class="probe-surface" style="color: var(--cngx-color-surface)"></span>
+      <span class="probe-text" style="color: var(--cngx-color-text)"></span>
+      <span class="probe-danger-text" style="color: var(--cngx-color-danger-text)"></span>
     </div>
   `,
 })
 class SeverityColourHost {
   readonly severities = SEVERITIES;
   readonly core = CORE;
+  readonly shares = SHARES;
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -175,6 +197,39 @@ describe.each(SCHEMES)('feedback severity colour, %s', (scheme) => {
       expect(ink(at(root, `.alert-${severity} .cngx-alert__icon`))).toEqual(mixed);
       expect(ink(at(root, `.stack-${severity} .cngx-alert-stack__icon`))).toEqual(mixed);
       expect(ink(at(root, `.banner-${severity} .cngx-banner__icon`))).toEqual(mixed);
+    });
+
+    it('derives the alert, stack and banner bg and border tints from the core colour', () => {
+      const root = mount();
+      const bg = ink(at(root, `.probe-tint-${severity}-${TINT[scheme].bg}`));
+      const border = ink(at(root, `.probe-tint-${severity}-${TINT[scheme].border}`));
+      for (const [host, edge] of [
+        [`.alert-${severity}`, 'border-top-color'],
+        [`.stack-${severity}`, 'border-top-color'],
+        [`.banner-${severity}`, 'border-bottom-color'],
+      ] as const) {
+        const el = at(root, host);
+        expect(paint('#fff', computedValue(el, 'background-color')), host).toEqual(bg);
+        expect(paint('#fff', computedValue(el, edge)), host).toEqual(border);
+      }
+    });
+
+    it('keeps body text at 4.5:1 on every tint', () => {
+      const root = mount();
+      const text = ink(at(root, '.probe-text'));
+      for (const host of [`.alert-${severity}`, `.stack-${severity}`, `.banner-${severity}`]) {
+        const tint = paint('#fff', computedValue(at(root, host), 'background-color'));
+        expect(contrast(text, tint), host).toBeGreaterThanOrEqual(4.5);
+      }
+    });
+
+    it('paints the banner inline error in the danger text rung at 4.5:1 on the tint', () => {
+      const root = mount();
+      const banner = at(root, `.banner-${severity}`);
+      const error = one(banner, '.cngx-banner__error');
+      expect(ink(error)).toEqual(ink(at(root, '.probe-danger-text')));
+      const tint = paint('#fff', computedValue(banner, 'background-color'));
+      expect(contrast(ink(error), tint)).toBeGreaterThanOrEqual(4.5);
     });
 
     // The glyph identifies the severity (1.4.11). The derivation keeps 3:1

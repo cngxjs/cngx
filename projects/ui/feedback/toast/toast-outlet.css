@@ -237,7 +237,7 @@
   @property --cngx-toast-warning-accent {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.67 0.14 75);
+    initial-value: oklch(0.72 0.15 75);
   }
 
   /**
@@ -397,7 +397,7 @@
     --cngx-toast-shadow: 0 4px 12px oklch(0 0 0 / 0.15);
     --cngx-toast-info-accent: var(--cngx-color-info, oklch(0.65 0.12 240));
     --cngx-toast-success-accent: var(--cngx-color-success, oklch(0.6 0.15 145));
-    --cngx-toast-warning-accent: var(--cngx-color-warning, oklch(0.67 0.14 75));
+    --cngx-toast-warning-accent: var(--cngx-color-warning, oklch(0.72 0.15 75));
     --cngx-toast-error-accent: var(--cngx-color-danger, oklch(0.6 0.18 25));
     --cngx-toast-description-color: oklch(0.5 0.01 250);
   }
@@ -428,7 +428,7 @@
     --cngx-toast-shadow: 0 4px 12px oklch(0 0 0 / 0.15);
     --cngx-toast-info-accent: var(--cngx-color-info, oklch(0.65 0.12 240));
     --cngx-toast-success-accent: var(--cngx-color-success, oklch(0.6 0.15 145));
-    --cngx-toast-warning-accent: var(--cngx-color-warning, oklch(0.67 0.14 75));
+    --cngx-toast-warning-accent: var(--cngx-color-warning, oklch(0.72 0.15 75));
     --cngx-toast-error-accent: var(--cngx-color-danger, oklch(0.6 0.18 25));
     --cngx-toast-description-color: oklch(0.5 0.01 250);
   }
@@ -511,7 +511,7 @@
     }
     .cngx-toast--warning {
       border-inline-start: var(--cngx-toast-accent-width, 3px) solid
-        var(--cngx-toast-warning-accent, oklch(0.67 0.14 75));
+        var(--cngx-toast-warning-accent, oklch(0.72 0.15 75));
     }
     .cngx-toast--error {
       border-inline-start: var(--cngx-toast-accent-width, 3px) solid
@@ -529,7 +529,7 @@
       color: var(--cngx-toast-success-accent, oklch(0.6 0.15 145));
     }
     .cngx-toast--warning .cngx-toast__icon {
-      color: var(--cngx-toast-warning-accent, oklch(0.67 0.14 75));
+      color: var(--cngx-toast-warning-accent, oklch(0.72 0.15 75));
     }
     .cngx-toast--error .cngx-toast__icon {
       color: var(--cngx-toast-error-accent, oklch(0.6 0.18 25));
