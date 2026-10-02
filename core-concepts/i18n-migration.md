@@ -30,6 +30,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxStepperI18n.stepFallbackLabel` is now required. Bundles built through `provideStepperI18n(withStepperI18nLabels(...))` already carry the English default; a hand-built `Signal<CngxStepperI18n>` supplies the key, for example ``stepFallbackLabel: (id) => `Schritt ${id}` ``.
 - `resolveStepFallbackLabel` is no longer exported. It was marked internal; read `injectStepperI18n()().stepFallbackLabel(id)` instead.
 - `CngxStepperI18n` has four new required keys: `groupRoleDescription` (English `'step group'`), `stepWithDetail(step, detail)` (English `'{step}: {detail}'`, the joiner of a step name and its status or label), `groupSummaryCountShort(total)` and `groupSummaryProgressShort(completed, total)` (the visible collapsed-group badge, English `'4'` and `'1/4'`). A hand-built `Signal<CngxStepperI18n>` supplies them; `withStepperI18nLabels` overrides are unaffected.
+- `injectStepperConfig().ariaLabels` and `.fallbackLabels` now always hold a `Signal`, also without `withStepperAriaLabels` / `withStepperFallbackLabels`: their defaults come from the stepper section of the language pack. `provideStepperConfig` and `provideStepperConfigAt` resolve their features when the token is first injected, not when the provider is created.
 
 ### @cngx/common/tabs
 

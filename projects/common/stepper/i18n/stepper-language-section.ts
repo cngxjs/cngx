@@ -16,16 +16,21 @@ export interface CngxStepperStatusLanguage {
 /**
  * The stepper section of a {@link CngxLanguagePack}: the copy of
  * `@cngx/common/stepper` and of the steppers in `@cngx/ui/stepper` and
- * `@cngx/ui/mat-stepper`. Messages use `{name}` placeholders; a plural
- * message picks its form from `{count}`.
+ * `@cngx/ui/mat-stepper`. It feeds `CNGX_STEPPER_I18N` and the copy keys of
+ * `CNGX_STEPPER_CONFIG` (`ariaLabels`, `fallbackLabels`). Messages use
+ * `{name}` placeholders; a plural message picks its form from `{count}`.
  *
  * @category common/stepper/i18n
  * @since 0.1.0
- * @relatedTo CNGX_STEPPER_I18N
+ * @relatedTo CNGX_STEPPER_I18N, CNGX_STEPPER_CONFIG
  */
 export interface CngxStepperLanguageSection {
-  /** Landmark label and role description of the stepper. */
+  /** Accessible name of the stepper landmark. */
+  readonly stepperRegion: string;
+  /** Last-tier landmark label and role description, used when the config keys are unset. */
   readonly stepperLabel: string;
+  /** `aria-roledescription` of the stepper organism. */
+  readonly stepRoleDescription: string;
   /** Role description of compact step indicators (dot stepper, mobile dots). */
   readonly stepIndicatorRoleDescription: string;
   /** Role description of a step group header. */
@@ -62,14 +67,16 @@ export interface CngxStepperLanguageSection {
 
 /**
  * The English stepper section: the single source of the stepper's English
- * copy. `CNGX_STEPPER_I18N` defaults to it.
+ * copy. `CNGX_STEPPER_I18N` and the `CNGX_STEPPER_CONFIG` labels default to it.
  *
  * @category common/stepper/i18n
  * @since 0.1.0
  * @relatedTo CNGX_STEPPER_I18N
  */
 export const CNGX_STEPPER_LANGUAGE_EN: CngxStepperLanguageSection = {
+  stepperRegion: 'Stepper',
   stepperLabel: 'Stepper',
+  stepRoleDescription: 'stepper',
   stepIndicatorRoleDescription: 'Step indicator',
   groupRoleDescription: 'step group',
   selectedStep: 'Step {position} of {count}: {label}',

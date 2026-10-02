@@ -352,7 +352,7 @@ export class CngxStepper implements CngxStepPanelHost {
     return this.stateView.hasError(node) ? `${base}: ${i18n.statusLabels.errored}` : base;
   }
   protected readonly groupRoleDescription = computed<string>(
-    () => this.fallbackLabels()?.groupRoleDescription ?? 'step group',
+    () => this.fallbackLabels()?.groupRoleDescription ?? this.i18n().groupRoleDescription,
   );
 
   /**

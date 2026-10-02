@@ -1,4 +1,5 @@
 import {
+  computed,
   type EnvironmentProviders,
   inject,
   InjectionToken,
@@ -9,6 +10,10 @@ import {
 } from '@angular/core';
 
 import { createOverrideMerge } from '@cngx/core/utils';
+import { recordEqual } from '@cngx/utils';
+
+import { injectStepperLanguage } from './i18n/stepper-i18n';
+import { CNGX_STEPPER_LANGUAGE_EN } from './i18n/stepper-language-section';
 
 import type { CngxDotStepperDotContext } from './slots/dot-stepper-dot.directive';
 import type { CngxStepBadgeContext } from './slots/step-badge.directive';
@@ -284,11 +289,11 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   mobileIndicatorPosition: 'top',
   mobileSwipe: true,
   ariaLabels: {
-    stepperRegion: 'Stepper',
+    stepperRegion: CNGX_STEPPER_LANGUAGE_EN.stepperRegion,
   },
   fallbackLabels: {
-    groupRoleDescription: 'step group',
-    stepRoleDescription: 'stepper',
+    groupRoleDescription: CNGX_STEPPER_LANGUAGE_EN.groupRoleDescription,
+    stepRoleDescription: CNGX_STEPPER_LANGUAGE_EN.stepRoleDescription,
   },
   templates: {},
 };
@@ -308,7 +313,7 @@ const NO_LABELS: object = {};
  */
 export const CNGX_STEPPER_CONFIG = new InjectionToken<CngxStepperConfig>('CngxStepperConfig', {
   providedIn: 'root',
-  factory: () => STEPPER_CONFIG_DEFAULTS,
+  factory: () => resolveFeatures([]),
 });
 
 /**
@@ -687,9 +692,33 @@ export function withDotStepperDotTemplate(
   }));
 }
 
-/** @internal */
+/**
+ * @internal The defaults with the copy keys read from the stepper section of
+ * the active language pack. Runs in an injection context.
+ */
+function stepperConfigDefaultsFromPack(): CngxStepperConfig {
+  const language = injectStepperLanguage();
+  return {
+    ...STEPPER_CONFIG_DEFAULTS,
+    ariaLabels: computed(() => ({ stepperRegion: language().stepperRegion }), {
+      equal: recordEqual,
+    }),
+    fallbackLabels: computed(
+      () => ({
+        groupRoleDescription: language().groupRoleDescription,
+        stepRoleDescription: language().stepRoleDescription,
+      }),
+      { equal: recordEqual },
+    ),
+  };
+}
+
+/** @internal Runs in an injection context; features apply on top of the pack. */
 function resolveFeatures(features: readonly CngxStepperConfigFeature[]): CngxStepperConfig {
-  return features.reduce<CngxStepperConfig>((cfg, feat) => feat(cfg), STEPPER_CONFIG_DEFAULTS);
+  return features.reduce<CngxStepperConfig>(
+    (cfg, feat) => feat(cfg),
+    stepperConfigDefaultsFromPack(),
+  );
 }
 
 /**
@@ -703,7 +732,7 @@ export function provideStepperConfig(
   ...features: readonly CngxStepperConfigFeature[]
 ): EnvironmentProviders {
   return makeEnvironmentProviders([
-    { provide: CNGX_STEPPER_CONFIG, useValue: resolveFeatures(features) },
+    { provide: CNGX_STEPPER_CONFIG, useFactory: () => resolveFeatures(features) },
   ]);
 }
 
@@ -727,7 +756,7 @@ export function provideStepperConfig(
 export function provideStepperConfigAt(
   ...features: readonly CngxStepperConfigFeature[]
 ): Provider[] {
-  return [{ provide: CNGX_STEPPER_CONFIG, useValue: resolveFeatures(features) }];
+  return [{ provide: CNGX_STEPPER_CONFIG, useFactory: () => resolveFeatures(features) }];
 }
 
 /**

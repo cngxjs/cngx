@@ -169,17 +169,23 @@ function stepperBundleFrom(section: CngxStepperLanguageSection, locale: string):
 }
 
 /**
- * @internal The English section with the active pack's stepper section on
- * top, mapped for the locale.
+ * @internal The English stepper section with the active pack's stepper
+ * section on top. Feeds both `CNGX_STEPPER_I18N` and the
+ * `CNGX_STEPPER_CONFIG` labels.
  */
-function stepperBundleFromPack(): Signal<CngxStepperI18n> {
+export function injectStepperLanguage(): Signal<CngxStepperLanguageSection> {
   const pack = injectLanguageSection('stepper');
-  const locale = injectLocale();
-  const section = createNestedOverrideMerge<CngxStepperLanguageSection, 'statusLabels'>(
+  return createNestedOverrideMerge<CngxStepperLanguageSection, 'statusLabels'>(
     CNGX_STEPPER_LANGUAGE_EN,
     computed(() => pack() ?? NO_SECTION),
     'statusLabels',
   );
+}
+
+/** @internal The stepper section of the active pack, mapped for the app locale. */
+function stepperBundleFromPack(): Signal<CngxStepperI18n> {
+  const section = injectStepperLanguage();
+  const locale = injectLocale();
   return computed(() => stepperBundleFrom(section(), locale()));
 }
 
