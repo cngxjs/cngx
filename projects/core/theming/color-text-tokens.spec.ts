@@ -95,3 +95,22 @@ describe('--cngx-color-highlight', () => {
     expect(BLOCKS[scheme]()).toContain(`--cngx-color-highlight: ${value};`);
   });
 });
+
+describe('--cngx-color-warning', () => {
+  // Amber is the brightest hue: the light rung sits low enough that a warning
+  // glyph or stripe clears 3:1 on the light surface (rendered in the forms
+  // target, color-semantic-graphic.geometry.spec.ts). Dark already clears it.
+  it('registers the light rung as initial', () => {
+    const block = schemeBlock(/@property --cngx-color-warning\s*{[^}]+}/);
+    expect(block).toContain('initial-value: oklch(0.67 0.14 75)');
+  });
+
+  it.each([
+    ['light', 'oklch(0.67 0.14 75)'],
+    ['os dark', 'oklch(0.78 0.14 75)'],
+    ['explicit dark', 'oklch(0.78 0.14 75)'],
+    ['explicit light', 'oklch(0.67 0.14 75)'],
+  ] as const)('is set in the %s block', (scheme, value) => {
+    expect(BLOCKS[scheme]()).toContain(`--cngx-color-warning: ${value};`);
+  });
+});
