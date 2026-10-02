@@ -58,6 +58,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxLine }],
+  host: { class: 'cngx-chart-series' },
   template: `
     @if (ctx.renderSvg()) {
       <svg:path
@@ -100,6 +101,31 @@ import {
         .cngx-line,
         .cngx-line__point {
           animation: none;
+        }
+      }
+      /* forced-colors (WHCM): Chromium keeps author fill and stroke inside
+         SVG (preserve-parent-color), so the line kept its colour while the
+         legend swatches turn into patterns. The line follows the user palette
+         and takes the legend's four-step cycle by series index: solid, dashed,
+         dotted, dash-dot. The index counts the .cngx-chart-series layers
+         (line, bar, scatter) of one chart, so legend entry N and the Nth such
+         layer share a step. !important beats the inline [style.stroke] of the
+         [color] input. */
+      @media (forced-colors: active) {
+        .cngx-line {
+          stroke: CanvasText !important;
+        }
+        .cngx-line__point {
+          fill: CanvasText;
+        }
+        cngx-chart > svg > :nth-child(4n + 2 of .cngx-chart-series) > .cngx-line {
+          stroke-dasharray: 6 3;
+        }
+        cngx-chart > svg > :nth-child(4n + 3 of .cngx-chart-series) > .cngx-line {
+          stroke-dasharray: 0.1 4;
+        }
+        cngx-chart > svg > :nth-child(4n + 4 of .cngx-chart-series) > .cngx-line {
+          stroke-dasharray: 8 3 0.1 3;
         }
       }
     `,

@@ -150,8 +150,8 @@
  * **Forced colors**
  *
  * The div-based presets (mini-bar, bullet, deviation-bar, stacked-bar)
- * load this file, so their shared forced-colors block lives at the end
- * of it rather than as a `:root` token.
+ * and the donut load this file, so their shared forced-colors block
+ * lives at the end of it rather than as a `:root` token.
  */
 :root {
   --cngx-chart-primary: var(--accent, var(--cngx-color-primary, oklch(0.66 0.19 50)));
@@ -238,5 +238,17 @@
   }
   cngx-stacked-bar.cngx-stacked-bar .cngx-stacked-bar__segment:nth-child(4n + 4) {
     background: repeating-linear-gradient(0deg, CanvasText 0 2px, Canvas 2px 4px) !important;
+  }
+  /* The donut is SVG, where Chromium keeps author strokes (preserve-parent-color),
+   * so it kept its accent colour and a faint track. The value arc paints solid
+   * CanvasText; the track is a dashed CanvasText ring, so arc and track differ
+   * by shape, not by colour. */
+  cngx-donut.cngx-donut .cngx-donut__fill {
+    stroke: CanvasText;
+  }
+  cngx-donut.cngx-donut .cngx-donut__track {
+    stroke: CanvasText;
+    stroke-opacity: 0.6;
+    stroke-dasharray: 2 3;
   }
 }

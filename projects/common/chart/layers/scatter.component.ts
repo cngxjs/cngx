@@ -56,6 +56,7 @@ interface ScatterCircle {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   providers: [{ provide: CNGX_CHART_LAYER, useExisting: CngxScatter }],
+  host: { class: 'cngx-chart-series' },
   template: `
     @if (ctx.renderSvg()) {
       @for (c of circles(); track c.key) {
@@ -91,6 +92,32 @@ interface ScatterCircle {
       @media (prefers-reduced-motion: reduce) {
         .cngx-scatter {
           animation: none;
+        }
+      }
+      /* forced-colors (WHCM): Chromium keeps author fill inside SVG
+         (preserve-parent-color). Points follow the user palette and take the
+         legend's four-step cycle by series index, the same cycle CngxBar
+         uses: solid, 45deg hatch, hollow, 0deg hatch, each patterned dot
+         ringed so its edge reads. !important beats the inline [style.fill]
+         of the [color] input. */
+      @media (forced-colors: active) {
+        .cngx-scatter {
+          fill: CanvasText !important;
+        }
+        cngx-chart > svg > :nth-child(4n + 2 of .cngx-chart-series) > .cngx-scatter {
+          fill: var(--_cngx-chart-hatch-diagonal, CanvasText) !important;
+          stroke: CanvasText;
+          stroke-width: 1px;
+        }
+        cngx-chart > svg > :nth-child(4n + 3 of .cngx-chart-series) > .cngx-scatter {
+          fill: Canvas !important;
+          stroke: CanvasText;
+          stroke-width: 1.5px;
+        }
+        cngx-chart > svg > :nth-child(4n + 4 of .cngx-chart-series) > .cngx-scatter {
+          fill: var(--_cngx-chart-hatch-horizontal, CanvasText) !important;
+          stroke: CanvasText;
+          stroke-width: 1px;
         }
       }
     `,

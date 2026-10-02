@@ -251,6 +251,25 @@ interface TickRendering {
         font-size: var(--cngx-axis-axis-label-font-size, 12px);
         font-weight: var(--cngx-axis-axis-label-font-weight, 500);
       }
+      /* forced-colors (WHCM): Chromium keeps author stroke and fill inside
+         SVG (preserve-parent-color), so the axes kept their greys while the
+         series follow the user palette. Rules and labels paint CanvasText;
+         the grid is CanvasText at a reduced opacity (GrayText is a loud hue
+         in several contrast themes and would compete with the series). */
+      @media (forced-colors: active) {
+        .cngx-axis__line,
+        .cngx-axis__tick-line,
+        .cngx-axis__grid-line {
+          stroke: CanvasText;
+        }
+        .cngx-axis__grid-line {
+          stroke-opacity: 0.35;
+        }
+        .cngx-axis__tick-label,
+        .cngx-axis__axis-label {
+          fill: CanvasText;
+        }
+      }
     `,
   ],
 })

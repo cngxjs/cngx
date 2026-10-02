@@ -55,6 +55,14 @@ export interface CngxChartLegendItem<T = unknown> {
  * and column; `[align]` aligns along the main axis (`start`, `center`,
  * `end`).
  *
+ * Under forced colors the swatches turn into a four-step pattern by
+ * entry index (solid, 45deg hatch, hollow, 0deg hatch). The stacked-bar
+ * segments and the chart series carry the same step by index: lines as
+ * solid, dashed, dotted, dash-dot; bars and scatter points as the swatch
+ * patterns. Series count line, bar and scatter layers in source order
+ * (areas, thresholds, bands and axes do not count), so list the entries
+ * in the order of those layers.
+ *
  * @category common/chart/legend
  * @docsKind primary
  * @wcag AA
@@ -118,7 +126,8 @@ export interface CngxChartLegendItem<T = unknown> {
       /* forced-colors (WHCM): the swatch is a background-only fill and
          flattens into Canvas. Swatches cycle by index through solid, 45deg
          hatch, hollow and 0deg hatch - the same cycle the stacked-bar preset
-         gives its segments - so an entry still points at its series.
+         gives its segments and the chart series their dashes and fills - so
+         an entry still points at its series.
          !important beats the inline [style.background] binding. */
       @media (forced-colors: active) {
         cngx-chart-legend .cngx-chart-legend__swatch {
