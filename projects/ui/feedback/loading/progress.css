@@ -327,3 +327,29 @@
     opacity: 1;
   }
 }
+
+/* forced-colors (WHCM): the linear track and fill are background-only and
+ * flatten into Canvas, so a determinate and an indeterminate bar both vanish.
+ * The track stays Canvas under an inset CanvasText ring and the fill paints
+ * CanvasText; both system colours survive forcing without an opt-out. The
+ * ring is an overlay above the fill (the indeterminate fill is transformed,
+ * so it would paint over the track's own outline). Unlayered + direct
+ * selectors outside @scope to beat the layered component rules. */
+@media (forced-colors: active) {
+  .cngx-progress.cngx-progress--linear .cngx-progress__track {
+    position: relative;
+    background: Canvas;
+  }
+  .cngx-progress.cngx-progress--linear .cngx-progress__track::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    forced-color-adjust: none;
+    box-shadow: inset 0 0 0 1px CanvasText;
+  }
+  .cngx-progress.cngx-progress--linear .cngx-progress__fill {
+    background: CanvasText;
+  }
+}

@@ -410,3 +410,37 @@
     }
   }
 }
+
+/* forced-colors (WHCM): the plate and every status dot are painted with
+ * background only, so the plate vanishes (initials float) and the four presence
+ * states collapse into four identical rings. The plate keeps its shape with an
+ * inset outline; the dot opts out of forcing and encodes presence by shape in
+ * system colours: online filled, offline hollow, away half filled, busy filled
+ * with a horizontal do-not-disturb bar. The dot grows to at least 0.8em so the
+ * shapes stay legible; a larger consumer size is kept. Unlayered + direct selectors to beat the layered @scope rules. */
+@media (forced-colors: active) {
+  .cngx-avatar {
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
+  .cngx-avatar .cngx-avatar__status {
+    width: max(var(--cngx-avatar-status-size, 0.65em), 0.8em);
+    height: max(var(--cngx-avatar-status-size, 0.65em), 0.8em);
+    forced-color-adjust: none;
+    border-color: Canvas;
+    background: CanvasText;
+  }
+  .cngx-avatar .cngx-avatar__status--offline {
+    background: Canvas;
+    box-shadow: inset 0 0 0 1.5px CanvasText;
+  }
+  .cngx-avatar .cngx-avatar__status--away {
+    background: linear-gradient(90deg, CanvasText 50%, Canvas 50%);
+    box-shadow: inset 0 0 0 1.5px CanvasText;
+  }
+  .cngx-avatar .cngx-avatar__status--busy {
+    background:
+      linear-gradient(Canvas 0 0) center / 60% 22% no-repeat,
+      CanvasText;
+  }
+}

@@ -220,3 +220,14 @@
     }
   }
 }
+
+/* forced-colors (WHCM): a bare dot ([glyph]="false", so the dot is :empty) is
+ * painted with background only and flattens into Canvas. Keep it present as a
+ * CanvasText disc; the tone travels in the visible label, which a bare dot
+ * requires. A dot with a glyph needs nothing: the glyph is forced to
+ * CanvasText and carries the tone. Unlayered to beat the layered @scope rule. */
+@media (forced-colors: active) {
+  .cngx-status .cngx-status__dot:empty {
+    background: CanvasText;
+  }
+}

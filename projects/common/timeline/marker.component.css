@@ -168,4 +168,23 @@
     box-sizing: border-box;
     border: var(--cngx-timeline-connector-width, 2px) solid CanvasText;
   }
+  /* A bare marker (:empty - no projected glyph) has nothing but the ring, so
+   * done / active / rejected would read alike. Encode the status by shape:
+   * done filled CanvasText, active filled Highlight, rejected a double ring,
+   * upcoming a dashed ring. A marker with a glyph keeps the plain ring above;
+   * the glyph carries its status. */
+  .cngx-timeline-marker[data-status='done']:empty {
+    background: CanvasText;
+  }
+  .cngx-timeline-marker[data-status='active']:empty {
+    background: Highlight;
+    border-color: Highlight;
+  }
+  .cngx-timeline-marker[data-status='rejected']:empty {
+    border: 3px double CanvasText;
+  }
+  .cngx-timeline-marker[data-status='upcoming']:empty {
+    box-sizing: border-box;
+    border: var(--cngx-timeline-connector-width, 2px) dashed CanvasText;
+  }
 }

@@ -146,6 +146,12 @@
  * Grid + skeleton surfaces use a `color-mix(currentColor)` overlay
  * so they paint at consistent contrast against any body background:
  * a dark overlay on light surfaces, a light overlay on dark surfaces.
+ *
+ * **Forced colors**
+ *
+ * The div-based presets (mini-bar, bullet, deviation-bar, stacked-bar)
+ * load this file, so their shared forced-colors block lives at the end
+ * of it rather than as a `:root` token.
  */
 :root {
   --cngx-chart-primary: var(--accent, var(--cngx-color-primary, oklch(0.66 0.19 50)));
@@ -168,4 +174,69 @@
      consumer range label on threshold/band escalates - isolate fences the run
      against surrounding RTL text. Consumer opt-out: set to normal. */
   --cngx-chart-numeric-bidi: isolate;
+}
+
+/* forced-colors (WHCM): the div presets paint track, value, ranges, target,
+ * baseline and segments with background only, so every one of them flattens
+ * into Canvas. Tracks become Canvas with an inset CanvasText ring, values
+ * become CanvasText (both system colours survive forcing without an opt-out),
+ * bullet ranges are Canvas with a GrayText end tick, and stacked segments cycle
+ * by index through solid, 45deg hatch, hollow and 0deg hatch with a 2px Canvas
+ * gap between them - the same cycle CngxChartLegend gives its swatches, so a
+ * legend entry still points at its segment. Element + host class outranks the
+ * presets' component styles; !important only where the template binds an inline
+ * background (ranges, segments). */
+@media (forced-colors: active) {
+  cngx-mini-bar.cngx-mini-bar .cngx-mini-bar__track,
+  cngx-bullet.cngx-bullet .cngx-bullet__track,
+  cngx-deviation-bar.cngx-deviation-bar .cngx-deviation-bar__track,
+  cngx-stacked-bar.cngx-stacked-bar .cngx-stacked-bar__track {
+    background: Canvas;
+  }
+  /* The ring is an overlay, not the track's own outline: the positioned
+   * ranges and segments would paint over an outline. */
+  cngx-mini-bar.cngx-mini-bar .cngx-mini-bar__track::after,
+  cngx-bullet.cngx-bullet .cngx-bullet__track::after,
+  cngx-deviation-bar.cngx-deviation-bar .cngx-deviation-bar__track::after,
+  cngx-stacked-bar.cngx-stacked-bar .cngx-stacked-bar__track::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    forced-color-adjust: none;
+    box-shadow: inset 0 0 0 1px CanvasText;
+  }
+  cngx-mini-bar.cngx-mini-bar .cngx-mini-bar__fill,
+  cngx-bullet.cngx-bullet .cngx-bullet__actual,
+  cngx-bullet.cngx-bullet .cngx-bullet__target,
+  cngx-deviation-bar.cngx-deviation-bar .cngx-deviation-bar__fill,
+  cngx-deviation-bar.cngx-deviation-bar .cngx-deviation-bar__baseline {
+    background: CanvasText;
+    opacity: 1;
+  }
+  cngx-bullet.cngx-bullet .cngx-bullet__range {
+    forced-color-adjust: none;
+    background: Canvas !important;
+    box-shadow: inset -1px 0 0 GrayText;
+    opacity: 1;
+  }
+  cngx-stacked-bar.cngx-stacked-bar .cngx-stacked-bar__segment {
+    forced-color-adjust: none;
+    background: CanvasText !important;
+    box-shadow: inset -2px 0 0 Canvas;
+  }
+  cngx-stacked-bar.cngx-stacked-bar .cngx-stacked-bar__segment:nth-child(4n + 2) {
+    background: repeating-linear-gradient(45deg, CanvasText 0 2px, Canvas 2px 4px) !important;
+  }
+  cngx-stacked-bar.cngx-stacked-bar .cngx-stacked-bar__segment:nth-child(4n + 3) {
+    background: Canvas !important;
+    box-shadow:
+      inset -2px 0 0 Canvas,
+      inset -3px 0 0 CanvasText,
+      inset 0 0 0 1px CanvasText;
+  }
+  cngx-stacked-bar.cngx-stacked-bar .cngx-stacked-bar__segment:nth-child(4n + 4) {
+    background: repeating-linear-gradient(0deg, CanvasText 0 2px, Canvas 2px 4px) !important;
+  }
 }

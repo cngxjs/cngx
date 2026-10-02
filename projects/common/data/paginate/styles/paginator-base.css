@@ -742,4 +742,21 @@
   .cngx-paginator__dot[aria-disabled='true'] {
     color: GrayText;
   }
+  /* The dots are background-only circles (::before) and flatten into Canvas,
+   * the current page with them. Ring every dot with an inset CanvasText shadow
+   * and fill the current one with Highlight. The shadow needs the opt-out; it
+   * sits on the pseudo-element alone, so the button keeps its forced colours.
+   * A disabled dot rings in GrayText to match its forced colour above. */
+  .cngx-paginator__dot::before {
+    forced-color-adjust: none;
+    background: Canvas;
+    box-shadow: inset 0 0 0 1px CanvasText;
+  }
+  .cngx-paginator__dot[aria-disabled='true']::before {
+    box-shadow: inset 0 0 0 1px GrayText;
+  }
+  .cngx-paginator__dot.cngx-paginator__dot--current::before {
+    background: Highlight;
+    box-shadow: none;
+  }
 }

@@ -115,6 +115,27 @@ export interface CngxChartLegendItem<T = unknown> {
         background: var(--cngx-chart-primary, currentColor);
         border-radius: var(--cngx-chart-legend-swatch-radius, 2px);
       }
+      /* forced-colors (WHCM): the swatch is a background-only fill and
+         flattens into Canvas. Swatches cycle by index through solid, 45deg
+         hatch, hollow and 0deg hatch - the same cycle the stacked-bar preset
+         gives its segments - so an entry still points at its series.
+         !important beats the inline [style.background] binding. */
+      @media (forced-colors: active) {
+        cngx-chart-legend .cngx-chart-legend__swatch {
+          forced-color-adjust: none;
+          background: CanvasText !important;
+        }
+        cngx-chart-legend .cngx-chart-legend__item:nth-child(4n + 2) .cngx-chart-legend__swatch {
+          background: repeating-linear-gradient(45deg, CanvasText 0 2px, Canvas 2px 4px) !important;
+        }
+        cngx-chart-legend .cngx-chart-legend__item:nth-child(4n + 3) .cngx-chart-legend__swatch {
+          background: Canvas !important;
+          box-shadow: inset 0 0 0 1px CanvasText;
+        }
+        cngx-chart-legend .cngx-chart-legend__item:nth-child(4n + 4) .cngx-chart-legend__swatch {
+          background: repeating-linear-gradient(0deg, CanvasText 0 2px, Canvas 2px 4px) !important;
+        }
+      }
       cngx-chart-legend .cngx-chart-legend__value {
         color: var(--cngx-chart-legend-value-color, inherit);
         font-weight: var(--cngx-chart-legend-value-font-weight, 600);

@@ -9,8 +9,8 @@ import { cdp } from 'vitest/browser';
 // Runs in a real Chromium (the `test-geometry` target). A disabled step fades
 // by colour (the 38% text recipe of a disabled field), never opacity, in the
 // default strip and in a skin that paints its own step colour; the indicator
-// number follows. Under forced colors it reads GrayText with no ring on the
-// indicator. In dots mode a disabled dot is a hollow ring; under forced colors
+// number follows. Under forced colors it reads GrayText, the indicator ring
+// included. In dots mode a disabled dot is a hollow ring; under forced colors
 // every dot draws an inset outline, the current dot keeps a Highlight fill.
 // The collapsed group header and the progress-bar caption de-emphasise with
 // the muted text colour instead of opacity.
@@ -191,7 +191,7 @@ describe.each(SCHEMES)('disabled stepper, %s', (scheme) => {
     }
   });
 
-  it('reads GrayText for a disabled step under forced colors, with no ring', async () => {
+  it('reads GrayText for a disabled step under forced colors, ring included', async () => {
     await forceColors(scheme);
     const root = mount();
     expect(matchMedia('(forced-colors: active)').matches).toBe(true);
@@ -210,8 +210,9 @@ describe.each(SCHEMES)('disabled stepper, %s', (scheme) => {
       expect(computedValue(at(root, sel), 'color'), sel).toBe(gray);
     }
     expect(computedValue(at(root, '.step-off .cngx-stepper__indicator'), 'outline-style')).toBe(
-      'none',
+      'solid',
     );
+    expect(computedValue(at(root, '.step-off .cngx-stepper__indicator'), 'outline-color')).toBe(gray);
     expect(computedValue(at(root, '.step-idle'), 'color')).toBe(canvasText);
   });
 

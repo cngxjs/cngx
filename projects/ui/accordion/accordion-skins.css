@@ -830,3 +830,58 @@
   );
   outline-offset: var(--cngx-accordion-focus-offset, 2px);
 }
+
+/* forced-colors (WHCM): three skins draw structure with background only, which
+ * the forced palette flattens into Canvas. Unlayered direct selectors outside
+ * @scope: their specificity beats the scoped skin rules, so no !important.
+ *
+ * severity-spine - the column is an empty strip when closed and the severity
+ * colour when open; both vanish, and nothing separates the column from the
+ * row. The column stays Canvas with a CanvasText end rule (border-box, so the
+ * fixed-width pseudo does not grow), fills CanvasText when open, and the P
+ * stamp turns Canvas on it. The stamp opts out of forcing so no Canvas
+ * backplate covers the fill behind it, so projected stamp art should paint
+ * currentColor. The stamp text carries the severity.
+ *
+ * plus-minus - the +/- bars are currentColor backgrounds and vanish; paint
+ * them CanvasText.
+ *
+ * timeline - the rail and the nodes are backgrounds and the node ring is a
+ * box-shadow; the rail turns CanvasText, the node opts out to keep its ring
+ * (Canvas halo, CanvasText inset ring) and the open node fills Highlight. */
+@media (forced-colors: active) {
+  .cngx-accordion-group[data-skin='severity-spine'] .cngx-accordion-item::before {
+    box-sizing: border-box;
+    background: Canvas;
+    border-inline-end: 1px solid CanvasText;
+  }
+  .cngx-accordion-group[data-skin='severity-spine'] .cngx-accordion-item[data-expanded]::before {
+    background: CanvasText;
+  }
+  .cngx-accordion-group[data-skin='severity-spine'] .cngx-accordion-item[data-expanded] .cngx-accordion-item__leading {
+    forced-color-adjust: none;
+    color: Canvas;
+  }
+
+  .cngx-accordion-group[data-skin='plus-minus'] .cngx-accordion-item__chevron::before,
+  .cngx-accordion-group[data-skin='plus-minus'] .cngx-accordion-item__chevron::after {
+    background: CanvasText;
+  }
+
+  .cngx-accordion-group[data-skin='timeline'] .cngx-accordion-item::before {
+    background: CanvasText;
+  }
+  .cngx-accordion-group[data-skin='timeline'] .cngx-accordion-item::after {
+    forced-color-adjust: none;
+    background: Canvas;
+    box-shadow:
+      0 0 0 0.1875rem Canvas,
+      inset 0 0 0 2px CanvasText;
+  }
+  .cngx-accordion-group[data-skin='timeline'] .cngx-accordion-item[data-expanded]::after {
+    background: Highlight;
+    box-shadow:
+      0 0 0 0.1875rem Canvas,
+      inset 0 0 0 2px Highlight;
+  }
+}
