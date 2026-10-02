@@ -27,6 +27,17 @@ describe('CngxStepperI18n', () => {
     expect(i18n.stepRolledBackSuffix).toBe('This step was rolled back.');
   });
 
+  it('ships no deprecated stepCompleted / stepErrored keys', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const i18n = TestBed.inject(CNGX_STEPPER_I18N)();
+    expect(Object.keys(i18n)).not.toContain('stepCompleted');
+    expect(Object.keys(i18n)).not.toContain('stepErrored');
+    expect(i18n.statusLabels.done).toBe('Done');
+    expect(i18n.statusLabels.errored).toBe('Errored');
+  });
+
   it('withStepperI18nLabels can override commitInFlight + commitRolledBackTo', () => {
     TestBed.configureTestingModule({
       providers: [

@@ -25,6 +25,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The `i18n` option of `createStepperAnnouncementBuilders`, `createStepperSlotContextBuilders`, `createStepperAccname` and `createStepperGroupSummary` is now a `Signal`. Pass `injectStepperI18n()` as is.
 - Note: the stepper landmark name resolves `CngxStepperConfig.ariaLabels.stepperRegion` (default `'Stepper'`) before `CngxStepperI18n.stepperLabel`, and the role description resolves `fallbackLabels.stepRoleDescription` first. A language Signal on `withStepperI18nLabels` alone therefore leaves the landmark in English; switch it through `withStepperAriaLabels` / `withStepperFallbackLabels` as well. This precedence is unchanged.
 - `CngxStepperConfig.ariaLabels` and `.fallbackLabels` are typed `L | Signal<L>`, and once `withStepperAriaLabels` / `withStepperFallbackLabels` ran they hold a `Signal`. Code that reads them off `injectStepperConfig()` wraps the key: `config.ariaLabels?.stepperRegion` becomes `coerceSignal(config.ariaLabels)()?.stepperRegion` (`coerceSignal` from `@cngx/core/utils`), read inside a `computed()` or template. Both features now also accept a `Signal`.
+- `CngxStepperI18n.stepCompleted` and `.stepErrored` are removed. They were deprecated and no CNGX surface read them. Use `statusLabels.done` and `statusLabels.errored` instead: `withStepperI18nLabels({ stepCompleted: 'Erledigt' })` becomes `withStepperI18nLabels({ statusLabels: { done: 'Erledigt' } })`.
 
 ### @cngx/common/tabs
 

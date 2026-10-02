@@ -54,7 +54,7 @@ Resolution priority: per-instance Input → `viewProviders` → root provider �
 |-|-|
 | `provideStepperI18n(bundle)` | Provide a localised i18n bundle (defaults are English). |
 | `injectStepperI18n()` | Read the resolved i18n bundle as a `Signal` in directives / components; call it inside a `computed()` or template so a language switch reaches the label. |
-| `CngxStepperI18n` | The bundle interface (`stepperLabel`, `selectedStep(label, idx, count)`, `stepCompleted`, `stepErrored`, …). |
+| `CngxStepperI18n` | The bundle interface (`stepperLabel`, `selectedStep(label, idx, count)`, `statusLabels`, …). |
 
 ### Utilities
 

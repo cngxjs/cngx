@@ -43,10 +43,6 @@ export interface CngxStepperI18n {
    */
   readonly stepIndicatorRoleDescription: string;
   readonly selectedStep: (label: string, position: number, count: number) => string;
-  /** @deprecated Superseded by `statusLabels.done` - the announcement surface converged on the pill labels. Kept one release. */
-  readonly stepCompleted: string;
-  /** @deprecated Superseded by `statusLabels.errored`. Kept one release. */
-  readonly stepErrored: string;
   readonly stepHasErrors: (count: number) => string;
   readonly previousStep: string;
   readonly nextStep: string;
@@ -124,8 +120,6 @@ const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
   stepperLabel: 'Stepper',
   stepIndicatorRoleDescription: 'Step indicator',
   selectedStep: (label, position, count) => `Step ${position} of ${count}: ${label}`,
-  stepCompleted: 'Completed',
-  stepErrored: 'Has errors',
   stepHasErrors: (count) => `${count} error${count === 1 ? '' : 's'}`,
   previousStep: 'Previous step',
   nextStep: 'Next step',
