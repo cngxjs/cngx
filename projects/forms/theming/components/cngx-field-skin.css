@@ -412,6 +412,24 @@
     box-shadow: none;
   }
 
+  /* An invalid fill field signals with a danger underline (box-shadow, gone)
+     and a danger text tint (forced to CanvasText), so it read exactly like a
+     valid one. A resting invalid field draws an inset 2px CanvasText ring; on
+     focus the Highlight ring above takes over, offset outside the box, so the
+     two never read alike. */
+  :is(input, textarea, select)[data-skin='fill']:not(.cngx-field-box > *):is(
+      [aria-invalid='true'],
+      [data-invalid]
+    ):not(:focus-within),
+  .cngx-field-box[data-skin='fill']:is(
+      [aria-invalid='true'],
+      [data-invalid],
+      :has(> :is(input, textarea, select)[aria-invalid='true'])
+    ):not(:focus-within) {
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
+  }
+
   /* Bare paints no border, so under forced colours a resting bare field
      would have no edge at all. */
   :is(input, textarea, select)[data-skin='bare']:not(.cngx-field-box > *),
