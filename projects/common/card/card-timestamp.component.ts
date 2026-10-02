@@ -98,7 +98,10 @@ export class CngxCardTimestamp {
   /** Date to display. Accepts Date objects or ISO strings. */
   readonly date = input.required<Date | string>();
 
-  /** Optional prefix text before the date (e.g. "Evaluierung am:"). */
+  /**
+   * Optional prefix text (e.g. "Evaluierung am:"). Placed before or after the
+   * date by the `timestamp` message of the card language section.
+   */
   readonly prefix = input<string | undefined>(undefined);
 
   /** `Intl.DateTimeFormatOptions` for the date. */

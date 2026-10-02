@@ -2,11 +2,12 @@
  * @overview
  * Default visuals for `CngxCardTimestamp`. The host carries
  * `.cngx-card-timestamp` - a lightweight inline-flex container that
- * renders an optional label slot before a muted timestamp string.
+ * renders an optional label slot and a muted timestamp string, in the
+ * order of the card language section's `timestamp` message.
  *
  * **Slots**
  *
- * - `.cngx-card-timestamp__prefix` - optional label before the date
+ * - `.cngx-card-timestamp__prefix` - optional label, placed by the `timestamp` message
  *
  * **Inheritance**
  *

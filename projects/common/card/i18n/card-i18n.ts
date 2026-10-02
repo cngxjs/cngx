@@ -24,7 +24,10 @@ export interface CngxCardI18n {
   readonly deselected: string;
   /** Owns the live region while the card loads, pre-empting the selection phrase. */
   readonly loading: string;
-  /** `{prefix}` and `{date}` of a timestamp, in reading order. */
+  /**
+   * `{prefix}` and `{date}` of a timestamp, in reading order; see
+   * {@link CngxCardLanguageSection.timestamp}.
+   */
   readonly timestamp: string;
 }
 

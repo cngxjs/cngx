@@ -19,7 +19,11 @@ export interface CngxCardLanguageSection {
   readonly loading: string;
   /**
    * Places a timestamp's prefix and its date: `{prefix}` and `{date}`, in the
-   * order the language reads them. Text around them renders as written.
+   * order the language reads them. Text around them renders as written, as a
+   * piece of its own with the host's gap on both sides - use it for words,
+   * not for punctuation that has to touch the prefix or the date. A plain
+   * string only: the timestamp renders the placeholders as elements, so a
+   * function value cannot place them.
    */
   readonly timestamp: string;
 }

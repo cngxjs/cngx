@@ -66,6 +66,21 @@ describe('CNGX_CARD_I18N', () => {
     expect(bundle().selected).toBe('Selected');
   });
 
+  it('reads English for a pack key set to undefined', () => {
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', card: { selected: undefined, loading: 'Lädt' } }),
+          withDocumentLanguage('off'),
+        ),
+      ],
+    });
+    const bundle = TestBed.inject(CNGX_CARD_I18N);
+    expect(bundle().selected).toBe('Selected');
+    expect(bundle().loading).toBe('Lädt');
+  });
+
   it('lets a provideCardI18n subtree override single keys on top of the active pack', () => {
     @Component({
       selector: 'cngx-card-subtree',
