@@ -9,6 +9,7 @@ import { cdp } from 'vitest/browser';
 import { CngxChartLegend } from './legend/legend.component';
 import { CngxBullet } from './presets/bullet.component';
 import { CngxDeviationBar } from './presets/deviation-bar.component';
+import { CngxDonut } from './presets/donut.component';
 import { CngxMiniBar } from './presets/mini-bar.component';
 import { CngxStackedBar } from './presets/stacked-bar.component';
 
@@ -36,7 +37,7 @@ const RANGES = [
 @Component({
   selector: 'cngx-chart-forced-host',
   standalone: true,
-  imports: [CngxMiniBar, CngxBullet, CngxDeviationBar, CngxStackedBar, CngxChartLegend],
+  imports: [CngxMiniBar, CngxBullet, CngxDeviationBar, CngxDonut, CngxStackedBar, CngxChartLegend],
   styleUrls: ['../../core/theming/system-tokens.css'],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -45,6 +46,7 @@ const RANGES = [
     <cngx-deviation-bar class="dv" [value]="30" />
     <cngx-stacked-bar class="sb" [segments]="segments" />
     <cngx-chart-legend class="lg" [items]="segments" />
+    <cngx-donut class="dn" [value]="40" style="--cngx-donut-color: rgb(200, 0, 0)" />
     <span class="plain" style="color: rgb(200, 0, 0)">plain</span>
     <span class="probe-canvastext" style="color: CanvasText"></span>
     <span class="probe-canvas" style="color: Canvas"></span>
@@ -182,6 +184,17 @@ describe.each(SCHEMES)('chart presets under forced colors, %s', (scheme) => {
     expect(computedValue(swatches[2], 'background-color')).toBe(canvas);
     expect(computedValue(swatches[2], 'box-shadow')).toContain(ink);
   });
+
+  it('draws the donut arc solid CanvasText over a dashed CanvasText track', async () => {
+    const root = await mountForced();
+    const ink = probe(root, 'canvastext');
+    const arc = one(root, '.dn .cngx-donut__fill');
+    const track = one(root, '.dn .cngx-donut__track');
+    expect(computedValue(arc, 'stroke')).toBe(ink);
+    expect(computedValue(track, 'stroke')).toBe(ink);
+    expect(computedValue(track, 'stroke-dasharray')).toBe('2px, 3px');
+    expect(computedValue(track, 'stroke-opacity')).toBe('0.6');
+  });
 });
 
 describe('chart presets without forced colors', () => {
@@ -192,5 +205,7 @@ describe('chart presets without forced colors', () => {
     expect(computedValue(one(root, '.sb .cngx-stacked-bar__segment'), 'box-shadow')).toBe('none');
     expect(computedValue(one(root, '.lg .cngx-chart-legend__swatch'), 'background-color')).toBe('rgb(210, 69, 47)');
     expect(computedValue(one(root, '.bl .cngx-bullet__range'), 'opacity')).toBe('0.35');
+    expect(computedValue(one(root, '.dn .cngx-donut__fill'), 'stroke')).toBe('rgb(200, 0, 0)');
+    expect(computedValue(one(root, '.dn .cngx-donut__track'), 'stroke-dasharray')).toBe('none');
   });
 });
