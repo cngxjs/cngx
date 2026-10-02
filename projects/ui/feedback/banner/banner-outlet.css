@@ -156,24 +156,26 @@
 
   /**
    * Background tint of the info severity. Derives from
-   * `--cngx-color-info`, 12% into the surface (22% dark).
+   * `--cngx-color-info`, 12% into the surface in lab (5% in
+   * srgb-linear dark).
    * @group Variant / Info
    */
   @property --cngx-banner-info-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.96 0.014 240);
+    initial-value: oklch(0.96 0.014 248);
   }
 
   /**
    * Border color of the info severity. Derives from
-   * `--cngx-color-info`, 40% into the surface (60% dark).
+   * `--cngx-color-info`, 44% into the surface in lab (31% in
+   * srgb-linear dark).
    * @group Variant / Info
    */
   @property --cngx-banner-info-border {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.86 0.048 240);
+    initial-value: oklch(0.85 0.049 247);
   }
 
   /**
@@ -189,24 +191,26 @@
 
   /**
    * Background tint of the success severity. Derives from
-   * `--cngx-color-success`, 12% into the surface (22% dark).
+   * `--cngx-color-success`, 12% into the surface in lab (7% in
+   * srgb-linear dark).
    * @group Variant / Success
    */
   @property --cngx-banner-success-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.95 0.018 145);
+    initial-value: oklch(0.95 0.02 143);
   }
 
   /**
    * Border color of the success severity. Derives from
-   * `--cngx-color-success`, 40% into the surface (60% dark).
+   * `--cngx-color-success`, 41% into the surface in lab (38% in
+   * srgb-linear dark).
    * @group Variant / Success
    */
   @property --cngx-banner-success-border {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.84 0.06 145);
+    initial-value: oklch(0.83 0.063 144);
   }
 
   /**
@@ -222,24 +226,26 @@
 
   /**
    * Background tint of the warning severity. Derives from
-   * `--cngx-color-warning`, 12% into the surface (22% dark).
+   * `--cngx-color-warning`, 14% into the surface in lab (6% in
+   * srgb-linear dark).
    * @group Variant / Warning
    */
   @property --cngx-banner-warning-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.97 0.018 75);
+    initial-value: oklch(0.96 0.027 75);
   }
 
   /**
    * Border color of the warning severity. Derives from
-   * `--cngx-color-warning`, 40% into the surface (60% dark).
+   * `--cngx-color-warning`, 51% into the surface in lab (34% in
+   * srgb-linear dark).
    * @group Variant / Warning
    */
   @property --cngx-banner-warning-border {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.89 0.06 75);
+    initial-value: oklch(0.86 0.091 75);
   }
 
   /**
@@ -255,24 +261,26 @@
 
   /**
    * Background tint of the error severity. Derives from
-   * `--cngx-color-danger`, 12% into the surface (22% dark).
+   * `--cngx-color-danger`, 11% into the surface in lab (6% in
+   * srgb-linear dark).
    * @group Variant / Error
    */
   @property --cngx-banner-error-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.95 0.022 25);
+    initial-value: oklch(0.96 0.02 29);
   }
 
   /**
    * Border color of the error severity. Derives from
-   * `--cngx-color-danger`, 40% into the surface (60% dark).
+   * `--cngx-color-danger`, 39% into the surface in lab (37% in
+   * srgb-linear dark).
    * @group Variant / Error
    */
   @property --cngx-banner-error-border {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.84 0.072 25);
+    initial-value: oklch(0.84 0.073 27);
   }
 
   /**
@@ -448,9 +456,9 @@
   /* Banner shares the alert family's tinted-surface palette but
    * ships its own token namespace so banners can be themed
    * independently. The bg / border tints and the icon (and the accent
-   * that follows it) derive from the core colour like the alert's:
-   * bg 12% into the surface (22% dark), border 40% (60% dark), icon
-   * 90% into the text colour. The inline-error sub-line reads
+   * that follows it) derive from the core colour like the alert's,
+   * with the same per-severity shares (lab in light, srgb-linear in
+   * dark); the icon mixes 90% into the text colour. The inline-error sub-line reads
    * `--cngx-color-danger-text`, the danger text rung (the raw danger
    * is a fill colour, under 4.5:1 as text on the light tints);
    * declared per block so a dark island re-derives it. The
@@ -458,17 +466,17 @@
   :root {
     --cngx-banner-error-color: var(--cngx-color-danger-text, oklch(0.5 0.133 24));
     --cngx-banner-bg: oklch(0.98 0.005 250);
-    --cngx-banner-info-bg: color-mix(in oklab, var(--cngx-color-info, oklch(0.65 0.12 240)) 12%, var(--cngx-color-surface, oklch(1 0 0)));
-    --cngx-banner-info-border: color-mix(in oklab, var(--cngx-color-info, oklch(0.65 0.12 240)) 40%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-info-bg: color-mix(in lab, var(--cngx-color-info, oklch(0.65 0.12 240)) 12%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-info-border: color-mix(in lab, var(--cngx-color-info, oklch(0.65 0.12 240)) 44%, var(--cngx-color-surface, oklch(1 0 0)));
     --cngx-banner-info-icon: color-mix(in oklab, var(--cngx-color-info, oklch(0.65 0.12 240)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
-    --cngx-banner-success-bg: color-mix(in oklab, var(--cngx-color-success, oklch(0.6 0.15 145)) 12%, var(--cngx-color-surface, oklch(1 0 0)));
-    --cngx-banner-success-border: color-mix(in oklab, var(--cngx-color-success, oklch(0.6 0.15 145)) 40%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-success-bg: color-mix(in lab, var(--cngx-color-success, oklch(0.6 0.15 145)) 12%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-success-border: color-mix(in lab, var(--cngx-color-success, oklch(0.6 0.15 145)) 41%, var(--cngx-color-surface, oklch(1 0 0)));
     --cngx-banner-success-icon: color-mix(in oklab, var(--cngx-color-success, oklch(0.6 0.15 145)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
-    --cngx-banner-warning-bg: color-mix(in oklab, var(--cngx-color-warning, oklch(0.72 0.15 75)) 12%, var(--cngx-color-surface, oklch(1 0 0)));
-    --cngx-banner-warning-border: color-mix(in oklab, var(--cngx-color-warning, oklch(0.72 0.15 75)) 40%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-warning-bg: color-mix(in lab, var(--cngx-color-warning, oklch(0.72 0.15 75)) 14%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-warning-border: color-mix(in lab, var(--cngx-color-warning, oklch(0.72 0.15 75)) 51%, var(--cngx-color-surface, oklch(1 0 0)));
     --cngx-banner-warning-icon: color-mix(in oklab, var(--cngx-color-warning, oklch(0.72 0.15 75)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
-    --cngx-banner-error-bg: color-mix(in oklab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 12%, var(--cngx-color-surface, oklch(1 0 0)));
-    --cngx-banner-error-border: color-mix(in oklab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 40%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-error-bg: color-mix(in lab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 11%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-error-border: color-mix(in lab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 39%, var(--cngx-color-surface, oklch(1 0 0)));
     --cngx-banner-error-icon: color-mix(in oklab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
     --cngx-banner-action-hover-bg: oklch(0 0 0 / 0.04);
   }
@@ -477,17 +485,17 @@
     :root:not([data-color-scheme='light']):not(.light) {
       --cngx-banner-error-color: var(--cngx-color-danger-text, oklch(0.75 0.126 24));
       --cngx-banner-bg: oklch(0.22 0.01 250);
-      --cngx-banner-info-bg: color-mix(in oklab, var(--cngx-color-info, oklch(0.72 0.11 240)) 22%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
-      --cngx-banner-info-border: color-mix(in oklab, var(--cngx-color-info, oklch(0.72 0.11 240)) 60%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+      --cngx-banner-info-bg: color-mix(in srgb-linear, var(--cngx-color-info, oklch(0.72 0.11 240)) 5%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+      --cngx-banner-info-border: color-mix(in srgb-linear, var(--cngx-color-info, oklch(0.72 0.11 240)) 31%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
       --cngx-banner-info-icon: color-mix(in oklab, var(--cngx-color-info, oklch(0.72 0.11 240)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
-      --cngx-banner-success-bg: color-mix(in oklab, var(--cngx-color-success, oklch(0.68 0.14 145)) 22%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
-      --cngx-banner-success-border: color-mix(in oklab, var(--cngx-color-success, oklch(0.68 0.14 145)) 60%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+      --cngx-banner-success-bg: color-mix(in srgb-linear, var(--cngx-color-success, oklch(0.68 0.14 145)) 7%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+      --cngx-banner-success-border: color-mix(in srgb-linear, var(--cngx-color-success, oklch(0.68 0.14 145)) 38%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
       --cngx-banner-success-icon: color-mix(in oklab, var(--cngx-color-success, oklch(0.68 0.14 145)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
-      --cngx-banner-warning-bg: color-mix(in oklab, var(--cngx-color-warning, oklch(0.78 0.14 75)) 22%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
-      --cngx-banner-warning-border: color-mix(in oklab, var(--cngx-color-warning, oklch(0.78 0.14 75)) 60%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+      --cngx-banner-warning-bg: color-mix(in srgb-linear, var(--cngx-color-warning, oklch(0.78 0.14 75)) 6%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+      --cngx-banner-warning-border: color-mix(in srgb-linear, var(--cngx-color-warning, oklch(0.78 0.14 75)) 34%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
       --cngx-banner-warning-icon: color-mix(in oklab, var(--cngx-color-warning, oklch(0.78 0.14 75)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
-      --cngx-banner-error-bg: color-mix(in oklab, var(--cngx-color-danger, oklch(0.68 0.17 25)) 22%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
-      --cngx-banner-error-border: color-mix(in oklab, var(--cngx-color-danger, oklch(0.68 0.17 25)) 60%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+      --cngx-banner-error-bg: color-mix(in srgb-linear, var(--cngx-color-danger, oklch(0.68 0.17 25)) 6%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+      --cngx-banner-error-border: color-mix(in srgb-linear, var(--cngx-color-danger, oklch(0.68 0.17 25)) 37%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
       --cngx-banner-error-icon: color-mix(in oklab, var(--cngx-color-danger, oklch(0.68 0.17 25)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
       --cngx-banner-action-hover-bg: oklch(1 0 0 / 0.04);
     }
@@ -497,17 +505,17 @@
   .dark {
     --cngx-banner-error-color: var(--cngx-color-danger-text, oklch(0.75 0.126 24));
     --cngx-banner-bg: oklch(0.22 0.01 250);
-    --cngx-banner-info-bg: color-mix(in oklab, var(--cngx-color-info, oklch(0.72 0.11 240)) 22%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
-    --cngx-banner-info-border: color-mix(in oklab, var(--cngx-color-info, oklch(0.72 0.11 240)) 60%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+    --cngx-banner-info-bg: color-mix(in srgb-linear, var(--cngx-color-info, oklch(0.72 0.11 240)) 5%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+    --cngx-banner-info-border: color-mix(in srgb-linear, var(--cngx-color-info, oklch(0.72 0.11 240)) 31%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
     --cngx-banner-info-icon: color-mix(in oklab, var(--cngx-color-info, oklch(0.72 0.11 240)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
-    --cngx-banner-success-bg: color-mix(in oklab, var(--cngx-color-success, oklch(0.68 0.14 145)) 22%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
-    --cngx-banner-success-border: color-mix(in oklab, var(--cngx-color-success, oklch(0.68 0.14 145)) 60%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+    --cngx-banner-success-bg: color-mix(in srgb-linear, var(--cngx-color-success, oklch(0.68 0.14 145)) 7%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+    --cngx-banner-success-border: color-mix(in srgb-linear, var(--cngx-color-success, oklch(0.68 0.14 145)) 38%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
     --cngx-banner-success-icon: color-mix(in oklab, var(--cngx-color-success, oklch(0.68 0.14 145)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
-    --cngx-banner-warning-bg: color-mix(in oklab, var(--cngx-color-warning, oklch(0.78 0.14 75)) 22%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
-    --cngx-banner-warning-border: color-mix(in oklab, var(--cngx-color-warning, oklch(0.78 0.14 75)) 60%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+    --cngx-banner-warning-bg: color-mix(in srgb-linear, var(--cngx-color-warning, oklch(0.78 0.14 75)) 6%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+    --cngx-banner-warning-border: color-mix(in srgb-linear, var(--cngx-color-warning, oklch(0.78 0.14 75)) 34%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
     --cngx-banner-warning-icon: color-mix(in oklab, var(--cngx-color-warning, oklch(0.78 0.14 75)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
-    --cngx-banner-error-bg: color-mix(in oklab, var(--cngx-color-danger, oklch(0.68 0.17 25)) 22%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
-    --cngx-banner-error-border: color-mix(in oklab, var(--cngx-color-danger, oklch(0.68 0.17 25)) 60%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+    --cngx-banner-error-bg: color-mix(in srgb-linear, var(--cngx-color-danger, oklch(0.68 0.17 25)) 6%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
+    --cngx-banner-error-border: color-mix(in srgb-linear, var(--cngx-color-danger, oklch(0.68 0.17 25)) 37%, var(--cngx-color-surface, oklch(0.2 0.01 250)));
     --cngx-banner-error-icon: color-mix(in oklab, var(--cngx-color-danger, oklch(0.68 0.17 25)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
     --cngx-banner-action-hover-bg: oklch(1 0 0 / 0.04);
   }
@@ -516,17 +524,17 @@
   .light {
     --cngx-banner-error-color: var(--cngx-color-danger-text, oklch(0.5 0.133 24));
     --cngx-banner-bg: oklch(0.98 0.005 250);
-    --cngx-banner-info-bg: color-mix(in oklab, var(--cngx-color-info, oklch(0.65 0.12 240)) 12%, var(--cngx-color-surface, oklch(1 0 0)));
-    --cngx-banner-info-border: color-mix(in oklab, var(--cngx-color-info, oklch(0.65 0.12 240)) 40%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-info-bg: color-mix(in lab, var(--cngx-color-info, oklch(0.65 0.12 240)) 12%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-info-border: color-mix(in lab, var(--cngx-color-info, oklch(0.65 0.12 240)) 44%, var(--cngx-color-surface, oklch(1 0 0)));
     --cngx-banner-info-icon: color-mix(in oklab, var(--cngx-color-info, oklch(0.65 0.12 240)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
-    --cngx-banner-success-bg: color-mix(in oklab, var(--cngx-color-success, oklch(0.6 0.15 145)) 12%, var(--cngx-color-surface, oklch(1 0 0)));
-    --cngx-banner-success-border: color-mix(in oklab, var(--cngx-color-success, oklch(0.6 0.15 145)) 40%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-success-bg: color-mix(in lab, var(--cngx-color-success, oklch(0.6 0.15 145)) 12%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-success-border: color-mix(in lab, var(--cngx-color-success, oklch(0.6 0.15 145)) 41%, var(--cngx-color-surface, oklch(1 0 0)));
     --cngx-banner-success-icon: color-mix(in oklab, var(--cngx-color-success, oklch(0.6 0.15 145)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
-    --cngx-banner-warning-bg: color-mix(in oklab, var(--cngx-color-warning, oklch(0.72 0.15 75)) 12%, var(--cngx-color-surface, oklch(1 0 0)));
-    --cngx-banner-warning-border: color-mix(in oklab, var(--cngx-color-warning, oklch(0.72 0.15 75)) 40%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-warning-bg: color-mix(in lab, var(--cngx-color-warning, oklch(0.72 0.15 75)) 14%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-warning-border: color-mix(in lab, var(--cngx-color-warning, oklch(0.72 0.15 75)) 51%, var(--cngx-color-surface, oklch(1 0 0)));
     --cngx-banner-warning-icon: color-mix(in oklab, var(--cngx-color-warning, oklch(0.72 0.15 75)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
-    --cngx-banner-error-bg: color-mix(in oklab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 12%, var(--cngx-color-surface, oklch(1 0 0)));
-    --cngx-banner-error-border: color-mix(in oklab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 40%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-error-bg: color-mix(in lab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 11%, var(--cngx-color-surface, oklch(1 0 0)));
+    --cngx-banner-error-border: color-mix(in lab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 39%, var(--cngx-color-surface, oklch(1 0 0)));
     --cngx-banner-error-icon: color-mix(in oklab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
     --cngx-banner-action-hover-bg: oklch(0 0 0 / 0.04);
   }
@@ -572,29 +580,29 @@
     }
 
     .cngx-banner--info {
-      --cngx-banner-bg: var(--cngx-banner-info-bg, oklch(0.96 0.014 240));
-      --cngx-banner-border-color: var(--cngx-banner-info-border, oklch(0.86 0.048 240));
+      --cngx-banner-bg: var(--cngx-banner-info-bg, oklch(0.96 0.014 248));
+      --cngx-banner-border-color: var(--cngx-banner-info-border, oklch(0.85 0.049 247));
       --cngx-banner-icon-color: var(--cngx-banner-info-icon, oklch(0.6 0.11 240));
       --cngx-banner-accent: var(--cngx-banner-info-icon, oklch(0.6 0.11 240));
     }
 
     .cngx-banner--success {
-      --cngx-banner-bg: var(--cngx-banner-success-bg, oklch(0.95 0.018 145));
-      --cngx-banner-border-color: var(--cngx-banner-success-border, oklch(0.84 0.06 145));
+      --cngx-banner-bg: var(--cngx-banner-success-bg, oklch(0.95 0.02 143));
+      --cngx-banner-border-color: var(--cngx-banner-success-border, oklch(0.83 0.063 144));
       --cngx-banner-icon-color: var(--cngx-banner-success-icon, oklch(0.56 0.135 145));
       --cngx-banner-accent: var(--cngx-banner-success-icon, oklch(0.56 0.135 145));
     }
 
     .cngx-banner--warning {
-      --cngx-banner-bg: var(--cngx-banner-warning-bg, oklch(0.97 0.018 75));
-      --cngx-banner-border-color: var(--cngx-banner-warning-border, oklch(0.89 0.06 75));
+      --cngx-banner-bg: var(--cngx-banner-warning-bg, oklch(0.96 0.027 75));
+      --cngx-banner-border-color: var(--cngx-banner-warning-border, oklch(0.86 0.091 75));
       --cngx-banner-icon-color: var(--cngx-banner-warning-icon, oklch(0.67 0.135 75));
       --cngx-banner-accent: var(--cngx-banner-warning-icon, oklch(0.67 0.135 75));
     }
 
     .cngx-banner--error {
-      --cngx-banner-bg: var(--cngx-banner-error-bg, oklch(0.95 0.022 25));
-      --cngx-banner-border-color: var(--cngx-banner-error-border, oklch(0.84 0.072 25));
+      --cngx-banner-bg: var(--cngx-banner-error-bg, oklch(0.96 0.02 29));
+      --cngx-banner-border-color: var(--cngx-banner-error-border, oklch(0.84 0.073 27));
       --cngx-banner-icon-color: var(--cngx-banner-error-icon, oklch(0.56 0.16 25));
       --cngx-banner-accent: var(--cngx-banner-error-icon, oklch(0.56 0.16 25));
     }

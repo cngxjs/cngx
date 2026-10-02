@@ -12,16 +12,46 @@ import { cdp } from 'vitest/browser';
 // literals: the toast stripe and icon paint the core colour on the toast
 // surface, the alert / banner icon mixes it 90% into the text colour so it
 // still clears 3:1 on the pale severity tint. The alert, stack and banner bg
-// and border tints mix the same core colour into the surface (bg 12% / 22%
-// dark, border 40% / 60% dark), and the banner inline error reads the danger
-// text rung. A brand override of the core colour therefore reaches every
+// and border tints mix the same core colour into the surface at a
+// per-severity share fitted to the earlier hand-picked palette (lab in light,
+// srgb-linear in dark) and stay close to it, and the banner inline error reads
+// the danger text rung. A brand override of the core colour therefore reaches every
 // family. Schemes are emulated page-wide: the toast surface resolves at the
 // root, so a scheme island would not reach it.
 
 const SCHEMES = ['light', 'dark'] as const;
-// Core-colour share of the bg / border tint per scheme.
-const TINT = { light: { bg: 12, border: 40 }, dark: { bg: 22, border: 60 } } as const;
-const SHARES = [12, 22, 40, 60] as const;
+// Mix space and core-colour share [bg, border] of each severity tint.
+const TINT = {
+  light: {
+    space: 'lab',
+    info: [12, 44],
+    success: [12, 41],
+    warning: [14, 51],
+    error: [11, 39],
+  },
+  dark: {
+    space: 'srgb-linear',
+    info: [5, 31],
+    success: [7, 38],
+    warning: [6, 34],
+    error: [6, 37],
+  },
+} as const;
+// The hand-picked palette the tints replaced, [bg, border].
+const PREVIOUS = {
+  light: {
+    info: ['oklch(0.96 0.025 250)', 'oklch(0.85 0.07 250)'],
+    success: ['oklch(0.96 0.04 145)', 'oklch(0.85 0.1 145)'],
+    warning: ['oklch(0.97 0.04 80)', 'oklch(0.86 0.1 80)'],
+    error: ['oklch(0.96 0.025 25)', 'oklch(0.85 0.08 25)'],
+  },
+  dark: {
+    info: ['oklch(0.3 0.05 250)', 'oklch(0.5 0.08 250)'],
+    success: ['oklch(0.3 0.06 145)', 'oklch(0.5 0.1 145)'],
+    warning: ['oklch(0.32 0.06 80)', 'oklch(0.55 0.1 80)'],
+    error: ['oklch(0.3 0.05 25)', 'oklch(0.5 0.1 25)'],
+  },
+} as const;
 const SEVERITIES = ['info', 'success', 'warning', 'error'] as const;
 const CORE: Record<(typeof SEVERITIES)[number], string> = {
   info: 'info',
@@ -90,18 +120,6 @@ const CORE: Record<(typeof SEVERITIES)[number], string> = {
             ') 90%, var(--cngx-color-text))'
           "
         ></span>
-        @for (share of shares; track share) {
-          <span
-            [class]="'probe-tint-' + severity + '-' + share"
-            [style.color]="
-              'color-mix(in oklab, var(--cngx-color-' +
-              core[severity] +
-              ') ' +
-              share +
-              '%, var(--cngx-color-surface))'
-            "
-          ></span>
-        }
       }
       <span class="probe-surface" style="color: var(--cngx-color-surface)"></span>
       <span class="probe-text" style="color: var(--cngx-color-text)"></span>
@@ -112,7 +130,6 @@ const CORE: Record<(typeof SEVERITIES)[number], string> = {
 class SeverityColourHost {
   readonly severities = SEVERITIES;
   readonly core = CORE;
-  readonly shares = SHARES;
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -167,6 +184,36 @@ function contrast(a: [number, number, number], b: [number, number, number]): num
 const ink = (el: HTMLElement): [number, number, number] =>
   paint('#fff', computedValue(el, 'color'));
 
+// A colour resolved in the page's scheme, through a throwaway probe span.
+function resolve(root: HTMLElement, color: string): [number, number, number] {
+  const span = document.createElement('span');
+  span.style.color = color;
+  one(root, '.page').appendChild(span);
+  const rgb = ink(span);
+  span.remove();
+  return rgb;
+}
+
+// Euclidean distance in oklab x100: about 2 is a just-noticeable step.
+function distance(a: [number, number, number], b: [number, number, number]): number {
+  const oklab = (rgb: [number, number, number]): number[] => {
+    const [r, g, bl] = rgb.map((v) => {
+      const c = v / 255;
+      return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * bl);
+    const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * bl);
+    const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * bl);
+    return [
+      0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+      1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+      0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+    ];
+  };
+  const [x, y] = [oklab(a), oklab(b)];
+  return 100 * Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]);
+}
+
 afterEach(async () => {
   mountedRoot?.remove();
   mountedRoot = null;
@@ -201,8 +248,14 @@ describe.each(SCHEMES)('feedback severity colour, %s', (scheme) => {
 
     it('derives the alert, stack and banner bg and border tints from the core colour', () => {
       const root = mount();
-      const bg = ink(at(root, `.probe-tint-${severity}-${TINT[scheme].bg}`));
-      const border = ink(at(root, `.probe-tint-${severity}-${TINT[scheme].border}`));
+      const [bgShare, borderShare] = TINT[scheme][severity];
+      const tint = (share: number): [number, number, number] =>
+        resolve(
+          root,
+          `color-mix(in ${TINT[scheme].space}, var(--cngx-color-${CORE[severity]}) ${share}%, var(--cngx-color-surface))`,
+        );
+      const bg = tint(bgShare);
+      const border = tint(borderShare);
       for (const [host, edge] of [
         [`.alert-${severity}`, 'border-top-color'],
         [`.stack-${severity}`, 'border-top-color'],
@@ -212,6 +265,24 @@ describe.each(SCHEMES)('feedback severity colour, %s', (scheme) => {
         expect(paint('#fff', computedValue(el, 'background-color')), host).toEqual(bg);
         expect(paint('#fff', computedValue(el, edge)), host).toEqual(border);
       }
+    });
+
+    // A mix of the core colour and the surface cannot reach the chroma of
+    // the light success border (oklch C 0.1 at L 0.85); every other tint
+    // lands within 2.5.
+    it('stays close to the previous hand-picked tint', () => {
+      const root = mount();
+      const [oldBg, oldBorder] = PREVIOUS[scheme][severity];
+      const borderCap = scheme === 'light' && severity === 'success' ? 4.5 : 2.5;
+      const alert = at(root, `.alert-${severity}`);
+      expect(
+        distance(paint('#fff', computedValue(alert, 'background-color')), resolve(root, oldBg)),
+        'bg',
+      ).toBeLessThanOrEqual(2.5);
+      expect(
+        distance(paint('#fff', computedValue(alert, 'border-top-color')), resolve(root, oldBorder)),
+        'border',
+      ).toBeLessThanOrEqual(borderCap);
     });
 
     it('keeps body text at 4.5:1 on every tint', () => {
