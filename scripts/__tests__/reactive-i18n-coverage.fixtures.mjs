@@ -578,6 +578,18 @@ export const HELPERS = [
 ];
 
 /**
+ * Reader functions that return a locale-kind token's Signal, by name, mapped
+ * to that token. A call is treated exactly like `inject(<token>)`, so a
+ * snapshot of it (R2) or a tracked read in a live region (R4) is a finding.
+ *
+ * @type {Readonly<Record<string, string>>}
+ */
+export const LOCALE_READERS = {
+  injectLocale: 'CNGX_LOCALE',
+  injectLanguageSection: 'CNGX_LANGUAGE_PACK',
+};
+
+/**
  * Findings that are neither fixed nor exempt. Permanently empty: a new copy
  * input, snapshot, raw dereference or tracked live-region read is fixed in the
  * commit that introduces it, or settled as accepted debt on `EXEMPT`.
@@ -905,7 +917,7 @@ export const LIVE_REGIONS = [
 // rule. The prescribed shapes from the plan are the passing files.
 
 const TOKENS = `
-import { InjectionToken, inject, signal, type Signal } from '@angular/core';
+import { InjectionToken, computed, inject, signal, type Signal } from '@angular/core';
 
 export interface DemoI18n {
   readonly previous: string;
@@ -960,6 +972,21 @@ export const DEMO_DELAY = new InjectionToken<number>('DemoDelay');
 
 export function injectLocale(): Signal<string> {
   return inject(DEMO_LOCALE);
+}
+
+export interface DemoSection {
+  readonly title: string;
+  readonly saved: string;
+}
+
+export const DEMO_PACK = new InjectionToken<Signal<{ readonly demo?: DemoSection }>>('DemoPack', {
+  providedIn: 'root',
+  factory: () => signal({}).asReadonly(),
+});
+
+export function injectLanguageSection(key: 'demo'): Signal<DemoSection | undefined> {
+  const pack = inject(DEMO_PACK);
+  return computed(() => pack()[key]);
 }
 
 export function injectDemoPrevious(): string {
@@ -1128,6 +1155,39 @@ export class R4Tracked {
 }
 `;
 
+const R_PACK = `
+import { Component, computed } from '@angular/core';
+import { injectLanguageSection } from './tokens';
+
+@Component({ selector: 'r-pack', template: '<p aria-live="polite">{{ status() }}</p>' })
+export class RPackTracked {
+  protected readonly section = injectLanguageSection('demo');
+  protected readonly snapshot = injectLanguageSection('demo')();
+  protected readonly status = computed(() => this.section()?.saved);
+}
+`;
+
+const R_PACK_PASS = `
+import { Component, computed, input, untracked } from '@angular/core';
+import { injectLanguageSection } from './tokens';
+
+@Component({
+  selector: 'r-pack-pass',
+  template: '<p aria-live="polite">{{ status() }}</p><span>{{ title() }}</span>',
+})
+export class RPackUntracked {
+  protected readonly section = injectLanguageSection('demo');
+  readonly saved = input(false);
+  protected readonly title = computed(() => this.section()?.title);
+  protected readonly status = computed(() => {
+    if (!this.saved()) {
+      return '';
+    }
+    return untracked(() => this.section()?.saved);
+  });
+}
+`;
+
 const R4_PASS = `
 import { Component, computed, inject, input, untracked } from '@angular/core';
 import { DEMO_SIGNAL_I18N } from './tokens';
@@ -1256,6 +1316,8 @@ export const RULE_FIXTURES = {
     'r4-pass.ts': R4_PASS,
     'r4-shapes.ts': R4_SHAPES,
     'r4-intersection.ts': R4_INTERSECTION,
+    'r-pack.ts': R_PACK,
+    'r-pack-pass.ts': R_PACK_PASS,
   },
   /** @type {readonly CopyTokenEntry[]} */
   copyTokens: [
@@ -1268,7 +1330,9 @@ export const RULE_FIXTURES = {
       settingsKeys: ['delay'],
     },
     { token: 'DEMO_LOCALE', kind: 'locale', copyKeys: '*', settingsKeys: [] },
+    { token: 'DEMO_PACK', kind: 'locale', copyKeys: '*', settingsKeys: [] },
   ],
+  localeReaders: { injectLocale: 'DEMO_LOCALE', injectLanguageSection: 'DEMO_PACK' },
   settingsTokens: ['DEMO_DELAY', 'DEMO_FORMAT'],
   helpers: ['injectDemoPrevious'],
   expected: {
@@ -1310,8 +1374,12 @@ export const RULE_FIXTURES = {
       'mountDemoAnnouncer R4 DEMO_I18N',
     ],
     'r4-intersection.ts': ['R4Intersection.tracked R4 DEMO_CONFIG'],
+    'r-pack.ts': ['RPackTracked.snapshot R2 DEMO_PACK', 'RPackTracked.status R4 DEMO_PACK'],
+    'r-pack-pass.ts': [],
   },
   expectedRegions: [
+    'r-pack.ts RPackTracked.p(status)',
+    'r-pack-pass.ts RPackUntracked.p(status)',
     'r4.ts R4Tracked.host',
     'r4.ts R4Tracked.p(message)',
     'r4.ts R4Tracked.constructor:effect#1',

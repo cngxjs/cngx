@@ -30,6 +30,7 @@ import {
   EXEMPT,
   HELPERS,
   LIVE_REGIONS,
+  LOCALE_READERS,
   RATCHET,
   RULE_FIXTURES,
   SETTINGS_TOKENS,
@@ -210,6 +211,7 @@ const isFlatValue = (checker, type) => {
  * @property {ts.TypeChecker} checker
  * @property {Map<ts.Symbol, { kind: 'value' | 'config'; token: string; copyKeys: ReadonlySet<string> | null }>} types
  * @property {ReadonlySet<string>} localeTokens
+ * @property {ReadonlyMap<string, string>} localeReaders reader function name to its locale token
  * @property {ReadonlySet<string>} helpers
  * @property {Map<string, readonly string[]>} typeKeys every copy token's interface keys
  */
@@ -257,9 +259,10 @@ const isOwnSymbol = (symbol) =>
  * @param {ReturnType<typeof discoverTokens>} tokens
  * @param {readonly CopyTokenSpec[]} copyTokens
  * @param {readonly string[]} helpers
+ * @param {Readonly<Record<string, string>>} [localeReaders]
  * @returns {CopyModel}
  */
-export function buildCopyModel(program, tokens, copyTokens, helpers) {
+export function buildCopyModel(program, tokens, copyTokens, helpers, localeReaders = {}) {
   const checker = program.getTypeChecker();
   /** @type {CopyModel['types']} */
   const types = new Map();
@@ -312,6 +315,7 @@ export function buildCopyModel(program, tokens, copyTokens, helpers) {
     checker,
     types,
     localeTokens,
+    localeReaders: new Map(Object.entries(localeReaders)),
     helpers: new Set(helpers),
     typeKeys,
     liveAttributes: discoverLiveAttributes(ownFiles),
@@ -525,8 +529,9 @@ function computeOrigin(model, rawNode, cache, visiting) {
   if (ts.isCallExpression(node)) {
     const callee = unwrapExpression(node.expression);
     const name = ts.isIdentifier(callee) ? callee.text : '';
-    if (name === 'injectLocale') {
-      return { kind: 'locale', token: [...model.localeTokens][0] ?? 'CNGX_LOCALE' };
+    const readerToken = model.localeReaders.get(name);
+    if (readerToken !== undefined) {
+      return { kind: 'locale', token: readerToken };
     }
     const tokenArg = node.arguments[0];
     if (
@@ -1658,6 +1663,7 @@ const FIXTURE_MODEL = buildCopyModel(
   FIXTURE_TOKENS,
   RULE_FIXTURES.copyTokens,
   RULE_FIXTURES.helpers,
+  RULE_FIXTURES.localeReaders,
 );
 
 /** @param {string} name */
@@ -1795,7 +1801,7 @@ const SOURCES = walkSources('projects', /\.ts$/);
 const PROGRAM = createProgram(SOURCES.map((file) => resolve(REPO_ROOT, file)));
 const SOURCE_FILES = SOURCES.map((file) => PROGRAM.getSourceFile(resolve(REPO_ROOT, file)));
 const TOKENS = discoverTokens(SOURCE_FILES);
-const MODEL = buildCopyModel(PROGRAM, TOKENS, COPY_TOKENS, HELPERS);
+const MODEL = buildCopyModel(PROGRAM, TOKENS, COPY_TOKENS, HELPERS, LOCALE_READERS);
 const SCAN = SOURCES.map((file, i) => analyzeFile(MODEL, SOURCE_FILES[i], file));
 const FINDINGS = SCAN.flatMap((result) => result.findings);
 const REGIONS = SCAN.flatMap((result) => result.regions);
