@@ -384,12 +384,16 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
 
   private readonly locale = injectLocale();
 
+  // Narrowed so an unrelated label change (retry, loading) leaves the header
+  // formatter, which only depends on `groupLabel` and the locale, untouched.
+  private readonly groupFormatter = computed(() => this.labels().groupLabel);
+
   /**
    * @internal Group header formatter: `labels.groupLabel` bound to the live
    * app locale, so a `CNGX_LOCALE` flip re-formats the headers.
    */
   protected readonly groupHeaderLabel = computed<(group: TimelineGroup<unknown>) => string>(() => {
-    const format = this.labels().groupLabel;
+    const format = this.groupFormatter();
     const locale = this.locale();
     return (group) => format(group, locale);
   });

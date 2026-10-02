@@ -374,6 +374,28 @@ describe('CngxTimeline', () => {
       expect(text(header)).toBe(dayLabel(2026, 6, 21, 'de-DE'));
     });
 
+    it('re-runs a consumer groupLabel with the new locale on a CNGX_LOCALE flip', () => {
+      const locale = signal('en-US');
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [Host],
+        providers: [
+          { provide: CNGX_LOCALE, useValue: locale.asReadonly() },
+          provideTimelineConfig(
+            withTimelineLabels({ groupLabel: (g, current) => `${current}:${g.key}` }),
+          ),
+        ],
+      });
+      const { el, detect } = mount();
+      const header = el.querySelector('.cngx-timeline__date-header');
+      expect(text(header)).toBe('en-US:2026-07-21');
+
+      locale.set('de-DE');
+      detect();
+      expect(el.querySelector('.cngx-timeline__date-header')).toBe(header);
+      expect(text(header)).toBe('de-DE:2026-07-21');
+    });
+
     it('falls back to the band key and no region name when the config carries no labels', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
