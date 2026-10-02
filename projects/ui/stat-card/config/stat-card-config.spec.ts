@@ -1,16 +1,23 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, runInInjectionContext, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { CngxStatCard } from '../stat-card.component';
 import { withStatCardAriaLabels, withStatCardLoadingTreatment } from './features';
-import { injectStatCardConfig } from './inject-stat-card-config';
+import { injectStatCardAriaLabels, injectStatCardConfig } from './inject-stat-card-config';
 import { provideStatCardConfig, provideStatCardConfigAt } from './provide-stat-card-config';
-import { CNGX_STAT_CARD_DEFAULTS } from './stat-card.config.defaults';
+import type { CngxStatCardAriaLabels } from './stat-card.config';
+import {
+  CNGX_STAT_CARD_ARIA_LABELS_DEFAULTS,
+  CNGX_STAT_CARD_DEFAULTS,
+} from './stat-card.config.defaults';
 
 describe('CNGX_STAT_CARD_CONFIG cascade', () => {
   function read() {
     return TestBed.runInInjectionContext(() => injectStatCardConfig());
+  }
+  function labels() {
+    return TestBed.runInInjectionContext(() => injectStatCardAriaLabels());
   }
 
   it('exposes the English library defaults without any provider', () => {
@@ -34,10 +41,9 @@ describe('CNGX_STAT_CARD_CONFIG cascade', () => {
     TestBed.configureTestingModule({
       providers: [provideStatCardConfig(withStatCardAriaLabels({ errorFallback: 'Nicht da' }))],
     });
-    const cfg = read();
-    expect(cfg.ariaLabels?.errorFallback).toBe('Nicht da');
-    expect(cfg.ariaLabels?.busy).toBe('Loading');
-    expect(cfg.loadingTreatment).toBe('auto');
+    expect(labels()().errorFallback).toBe('Nicht da');
+    expect(labels()().busy).toBe('Loading');
+    expect(read().loadingTreatment).toBe('auto');
   });
 
   it('overrides the flat loadingTreatment scalar', () => {
@@ -45,7 +51,7 @@ describe('CNGX_STAT_CARD_CONFIG cascade', () => {
       providers: [provideStatCardConfig(withStatCardLoadingTreatment('skeleton'))],
     });
     expect(read().loadingTreatment).toBe('skeleton');
-    expect(read().ariaLabels?.busy).toBe('Loading');
+    expect(labels()().busy).toBe('Loading');
   });
 
   it('lets a later feature win over an earlier one', () => {
@@ -58,6 +64,53 @@ describe('CNGX_STAT_CARD_CONFIG cascade', () => {
       ],
     });
     expect(read().loadingTreatment).toBe('skeleton');
+  });
+
+  it('resolves plain labels to the same bundle as the eager merge did', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideStatCardConfig(
+          withStatCardAriaLabels({ errorFallback: 'Nicht da' }),
+          withStatCardAriaLabels({ errorDescription: 'Später erneut versuchen' }),
+        ),
+      ],
+    });
+    expect(labels()()).toEqual({
+      ...CNGX_STAT_CARD_ARIA_LABELS_DEFAULTS,
+      errorFallback: 'Nicht da',
+      errorDescription: 'Später erneut versuchen',
+    });
+  });
+
+  it('falls back to the default for a label an override sets to undefined', () => {
+    TestBed.configureTestingModule({
+      providers: [provideStatCardConfig(withStatCardAriaLabels({ busy: undefined }))],
+    });
+    expect(labels()().busy).toBe('Loading');
+    expect(labels()().errorDescription).toBeUndefined();
+  });
+
+  it('follows Signal labels and keeps the bundle reference on an equal recompute', () => {
+    const lang = signal<'en' | 'de' | 'de-AT'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideStatCardConfig(
+          withStatCardAriaLabels(
+            computed<CngxStatCardAriaLabels>(() => (lang() === 'en' ? {} : { busy: 'Lädt' })),
+          ),
+        ),
+      ],
+    });
+    const resolved = labels();
+    expect(resolved().busy).toBe('Loading');
+
+    lang.set('de');
+    const german = resolved();
+    expect(german.busy).toBe('Lädt');
+    expect(german.emptyFallback).toBe('No data');
+
+    lang.set('de-AT');
+    expect(resolved()).toBe(german);
   });
 });
 
@@ -92,13 +145,13 @@ describe('stat-card config resolution order', () => {
     const fixture = TestBed.createComponent(ScopedHost);
     fixture.detectChanges();
 
-    const card = fixture.debugElement
-      .query((node) => node.name === 'cngx-stat-card')
-      .componentInstance as CngxStatCard;
+    const cardInjector = fixture.debugElement.query((node) => node.name === 'cngx-stat-card')
+      .injector;
+    const resolved = runInInjectionContext(cardInjector, () => injectStatCardAriaLabels());
 
     // At-scope wins for the key it sets; the root value survives for the rest.
-    expect(card.errorText()).toBe('Scoped');
-    expect(card.busyLabel()).toBe('Root busy');
+    expect(resolved().errorFallback).toBe('Scoped');
+    expect(resolved().busy).toBe('Root busy');
   });
 
   it('gives a per-instance input precedence over both provider levels', () => {

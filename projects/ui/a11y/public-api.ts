@@ -12,6 +12,8 @@ export {
   withA11yPanelLabels,
   withA11yPanelAxes,
   injectA11yPanelConfig,
+  injectA11yPanelLabels,
+  injectA11yPanelAxes,
 } from './a11y-panel.config';
 export type {
   CngxA11yPanelConfig,

@@ -11,6 +11,7 @@ import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMatchMediaMock } from '@cngx/testing';
 
+import type { CngxTocAriaLabels } from './config/toc.config';
 import { CNGX_TOC_CONFIG, CNGX_TOC_DEFAULTS } from './config/toc.config.defaults';
 import { CngxToc } from './toc.component';
 import { CngxTocItemSlot } from './toc-item-slot';
@@ -240,6 +241,20 @@ describe('CngxToc', () => {
     const { fixture } = setup();
     const nav = fixture.nativeElement.querySelector('.cngx-toc__nav');
     expect(nav.textContent).toContain('CFG:Intro');
+  });
+
+  it('renames the nav landmark when Signal labels flip', () => {
+    const labels = signal<CngxTocAriaLabels>({});
+    TestBed.overrideProvider(CNGX_TOC_CONFIG, {
+      useValue: { ...CNGX_TOC_DEFAULTS, ariaLabels: labels },
+    });
+    const { fixture } = setup();
+    const nav: HTMLElement = fixture.nativeElement.querySelector('.cngx-toc__nav');
+    expect(nav.getAttribute('aria-label')).toBe('On this page');
+
+    labels.set({ nav: 'Auf dieser Seite' });
+    fixture.detectChanges();
+    expect(nav.getAttribute('aria-label')).toBe('Auf dieser Seite');
   });
 
   it('provides CNGX_TOC, resolvable from a host-scoped injector', () => {

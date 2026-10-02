@@ -3,7 +3,11 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { coerceSignal } from './coerce.util';
-import { createNestedOverrideMerge, createOverrideMerge } from './override-merge';
+import {
+  createDefaultsFill,
+  createNestedOverrideMerge,
+  createOverrideMerge,
+} from './override-merge';
 
 interface Labels {
   readonly a: string;
@@ -165,5 +169,48 @@ describe('createNestedOverrideMerge', () => {
     const first = merged();
     source.set({ statusLabels: { errored: 'Fehler' } });
     expect(merged()).not.toBe(first);
+  });
+});
+
+describe('createDefaultsFill', () => {
+  interface Labels {
+    readonly bar?: string;
+    readonly menu?: string;
+    readonly hint?: string;
+  }
+  const DEFAULTS = { bar: 'Breadcrumb', menu: 'Menu' };
+
+  it('falls back to the default for a key the override sets to undefined', () => {
+    const merged = createOverrideMerge<Labels>(DEFAULTS, { bar: undefined, menu: 'Liste' });
+    const filled = createDefaultsFill<Labels>(merged, DEFAULTS);
+    expect(merged().bar).toBeUndefined();
+    expect(filled()).toEqual({ bar: 'Breadcrumb', menu: 'Liste' });
+  });
+
+  it('leaves keys without a default as merged', () => {
+    const merged = createOverrideMerge<Labels>(DEFAULTS, { hint: 'Tipp' });
+    expect(createDefaultsFill<Labels>(merged, DEFAULTS)().hint).toBe('Tipp');
+  });
+
+  it('returns the same signal for the same merged signal', () => {
+    const merged = createOverrideMerge<Labels>(DEFAULTS, {});
+    expect(createDefaultsFill<Labels>(merged, DEFAULTS)).toBe(
+      createDefaultsFill<Labels>(merged, DEFAULTS),
+    );
+  });
+
+  it('follows a live flip and keeps the reference on an equal recompute', () => {
+    const source = signal<Partial<Labels>>({});
+    const filled = createDefaultsFill<Labels>(createOverrideMerge<Labels>(DEFAULTS, source), DEFAULTS);
+    source.set({ bar: 'Brotkrumen' });
+    const german = filled();
+    expect(german.bar).toBe('Brotkrumen');
+
+    // Clearing the key falls back, and an equal result keeps the reference.
+    source.set({ bar: undefined });
+    const fallback = filled();
+    expect(fallback.bar).toBe('Breadcrumb');
+    source.set({});
+    expect(filled()).toBe(fallback);
   });
 });

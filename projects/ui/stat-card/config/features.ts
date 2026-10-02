@@ -1,6 +1,7 @@
+import type { Signal } from '@angular/core';
 import type { CngxLoadingTreatment } from '@cngx/core/utils';
 
-import type { CngxStatCardConfig } from './stat-card.config';
+import type { CngxStatCardAriaLabels } from './stat-card.config';
 import type { CngxStatCardConfigFeature } from './provide-stat-card-config';
 
 /**
@@ -8,7 +9,9 @@ import type { CngxStatCardConfigFeature } from './provide-stat-card-config';
  * first-load error message, and the stale-data note. Per-instance
  * `[busyLabel]` / `[errorText]` / `[staleText]` bindings still win.
  *
- * Library defaults are English; this is the hook a localised app uses.
+ * Library defaults are English; this is the hook a localised app uses. Pass a
+ * `Signal` to switch the language at runtime; a tile with a live region speaks
+ * the new language with its next state change.
  *
  * ```ts
  * provideStatCardConfig(
@@ -20,7 +23,7 @@ import type { CngxStatCardConfigFeature } from './provide-stat-card-config';
  * @since 0.1.0
  */
 export function withStatCardAriaLabels(
-  labels: NonNullable<CngxStatCardConfig['ariaLabels']>,
+  labels: CngxStatCardAriaLabels | Signal<CngxStatCardAriaLabels>,
 ): CngxStatCardConfigFeature {
   return { kind: 'ariaLabels', payload: labels };
 }

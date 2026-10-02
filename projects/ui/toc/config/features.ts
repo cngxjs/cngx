@@ -1,9 +1,12 @@
-import type { CngxTocConfig } from './toc.config';
+import type { Signal } from '@angular/core';
+
+import type { CngxTocAriaLabels, CngxTocConfig } from './toc.config';
 import type { CngxTocConfigFeature } from './provide-toc-config';
 
 /**
  * Override the toc's ARIA-string fallback - the accessible name of the `nav`
- * landmark that wraps the link list (default `'On this page'`).
+ * landmark that wraps the link list (default `'On this page'`). Pass a
+ * `Signal` to switch the language at runtime.
  *
  * ```ts
  * provideTocConfig(withTocAriaLabels({ nav: 'Auf dieser Seite' }));
@@ -13,7 +16,7 @@ import type { CngxTocConfigFeature } from './provide-toc-config';
  * @since 0.1.0
  */
 export function withTocAriaLabels(
-  payload: NonNullable<CngxTocConfig['ariaLabels']>,
+  payload: CngxTocAriaLabels | Signal<CngxTocAriaLabels>,
 ): CngxTocConfigFeature {
   return { kind: 'ariaLabels', payload };
 }

@@ -1,3 +1,5 @@
+import type { Signal } from '@angular/core';
+
 /**
  * Selectable visual skin for `CngxBreadcrumbBar`. Every skin keeps the same
  * `nav` / list / crumb / separator structure with identical ARIA and collapse
@@ -33,6 +35,27 @@ export type CngxBreadcrumbSkin =
   | 'record';
 
 /**
+ * Accessible names the breadcrumb family renders: the bar landmark and the
+ * overflow / siblings triggers and lists. Every key is optional; an unset key
+ * keeps the English default.
+ *
+ * @category ui/breadcrumb
+ * @since 0.1.0
+ */
+export interface CngxBreadcrumbAriaLabels {
+  /** Accessible name of the `nav` landmark on `CngxBreadcrumbBar`. */
+  readonly bar?: string;
+  /** Accessible name of the overflow ellipsis trigger. */
+  readonly overflowTrigger?: string;
+  /** Accessible name of the collapsed-crumb menu. */
+  readonly overflowMenu?: string;
+  /** Accessible name of the siblings chevron trigger. */
+  readonly siblingsTrigger?: string;
+  /** Accessible name of the sibling list. */
+  readonly siblingsMenu?: string;
+}
+
+/**
  * App-wide cascade for the breadcrumb family's ARIA labels, the router
  * `dataKey`, and the default visual `skin`.
  *
@@ -53,20 +76,11 @@ export interface CngxBreadcrumbConfig {
   /**
    * ARIA-string fallbacks for the bar landmark and the overflow/siblings
    * dropdown triggers and lists. Per-instance `[label]`/`[triggerLabel]`/
-   * `[menuLabel]` bindings still win over these.
+   * `[menuLabel]` bindings still win over these. Accepts a `Signal` so the
+   * labels follow a runtime language switch; read the resolved bundle through
+   * {@link injectBreadcrumbAriaLabels}.
    */
-  readonly ariaLabels?: {
-    /** Accessible name of the `nav` landmark on `CngxBreadcrumbBar`. */
-    readonly bar?: string;
-    /** Accessible name of the overflow ellipsis trigger. */
-    readonly overflowTrigger?: string;
-    /** Accessible name of the collapsed-crumb menu. */
-    readonly overflowMenu?: string;
-    /** Accessible name of the siblings chevron trigger. */
-    readonly siblingsTrigger?: string;
-    /** Accessible name of the sibling list. */
-    readonly siblingsMenu?: string;
-  };
+  readonly ariaLabels?: CngxBreadcrumbAriaLabels | Signal<CngxBreadcrumbAriaLabels>;
 
   /**
    * Router-sync defaults shared by the trail (`CngxBreadcrumbRouterSync`)

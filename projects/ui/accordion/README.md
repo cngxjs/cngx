@@ -41,7 +41,8 @@ collapsed item un-hides its region so the alert is announced.
 `withAccordionLabels({ disabledReason, errorMessage })`,
 `withDefaultHeadingLevel(n)`, `withAccordionSkin(name)`, and
 `withAccordionTemplates({ icon, busySpinner, error })`. Library defaults are
-English.
+English. Both label keys accept a `Signal<string>`, so the accordion follows a
+runtime language switch.
 
 ## Skins
 

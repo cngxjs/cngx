@@ -1,6 +1,16 @@
 import { InjectionToken } from '@angular/core';
 
-import type { CngxTocConfig } from './toc.config';
+import type { CngxTocAriaLabels, CngxTocConfig } from './toc.config';
+
+/**
+ * English accessible names of the toc, the base every `ariaLabels` override
+ * merges onto.
+ *
+ * @internal
+ */
+export const CNGX_TOC_ARIA_LABELS_DEFAULTS: Required<CngxTocAriaLabels> = {
+  nav: 'On this page',
+};
 
 /**
  * Library defaults for the toc configuration cascade. English by default per
@@ -16,10 +26,10 @@ import type { CngxTocConfig } from './toc.config';
  *
  * @internal
  */
-export const CNGX_TOC_DEFAULTS: CngxTocConfig = {
-  ariaLabels: {
-    nav: 'On this page',
-  },
+export const CNGX_TOC_DEFAULTS: CngxTocConfig & {
+  readonly ariaLabels: Required<CngxTocAriaLabels>;
+} = {
+  ariaLabels: CNGX_TOC_ARIA_LABELS_DEFAULTS,
   scrollBehavior: 'smooth',
   spy: {
     rootMargin: '0px',

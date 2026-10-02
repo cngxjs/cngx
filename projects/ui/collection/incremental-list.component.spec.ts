@@ -4,13 +4,15 @@ import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createResizeObserverMock } from '@cngx/testing';
 
-import { CngxPaginate, createManualState } from '@cngx/common/data';
+import { CNGX_RECYCLER_I18N, CngxPaginate, createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { CngxPaginatorLoadMore } from '@cngx/ui/paginator';
 
 import {
+  provideIncrementalListConfig,
   provideIncrementalListConfigAt,
   withIncrementalListAriaLabels,
+  type CngxIncrementalListAriaLabels,
 } from './incremental-list-config';
 import { CngxIncrementalList, type CngxIncrementalListSkin } from './incremental-list.component';
 import { CNGX_PAGINATOR_HOST } from './incremental-list-host.token';
@@ -366,6 +368,59 @@ describe('CngxIncrementalList', () => {
     const sr = listEl.querySelector('.cngx-incremental-list__sr');
     expect(sr?.getAttribute('aria-live')).toBe('polite');
     expect(sr?.textContent?.trim()).toBe('Nothing here yet');
+  });
+
+  test('shares one recycler i18n per cascade and keeps it on an equal recompute', async () => {
+    const labels = signal<Partial<CngxIncrementalListAriaLabels>>({});
+    TestBed.configureTestingModule({
+      providers: [provideIncrementalListConfig(withIncrementalListAriaLabels(labels))],
+    });
+    const recyclerI18n = (fixture: ComponentFixture<HostCmp>) =>
+      fixture.debugElement.query(By.directive(CngxIncrementalList)).injector.get(CNGX_RECYCLER_I18N);
+    const first = TestBed.createComponent(HostCmp);
+    const second = TestBed.createComponent(HostCmp);
+    await settle(first);
+    await settle(second);
+    expect(recyclerI18n(first)).toBe(recyclerI18n(second));
+
+    const i18n = recyclerI18n(first);
+    const before = i18n();
+    labels.set({ empty: 'Noch nichts hier' });
+    expect(i18n()).toBe(before);
+    expect(before.loaded(2, 4)).toBe('2 more loaded. 4 total.');
+  });
+
+  test('does not re-announce on a language flip', async () => {
+    const labels = signal<Partial<CngxIncrementalListAriaLabels>>({});
+    TestBed.configureTestingModule({
+      providers: [provideIncrementalListConfig(withIncrementalListAriaLabels(labels))],
+    });
+    const { fixture, host, listEl } = await setup();
+    const manual = createManualState<number[]>();
+    host.state.set(manual);
+    host.total.set(2);
+    host.size.set(2);
+    manual.setSuccess([]);
+    await settle(fixture);
+    const sr = (): string | undefined =>
+      listEl.querySelector('.cngx-incremental-list__sr')?.textContent?.trim();
+    const emptyTitle = (): string | null | undefined =>
+      listEl.querySelector('cngx-empty-state.cngx-incremental-list__empty')?.textContent;
+    expect(sr()).toBe('Nothing here yet');
+
+    labels.set({ empty: 'Noch nichts hier', loading: 'Wird geladen' });
+    await settle(fixture);
+    // The empty state is a status region of its own and keeps its title too.
+    expect(emptyTitle()).toContain('Nothing here yet');
+    expect(sr()).toBe('Nothing here yet');
+
+    manual.set('refreshing');
+    await settle(fixture);
+    expect(sr()).toBe('Wird geladen');
+    manual.setSuccess([]);
+    await settle(fixture);
+    expect(sr()).toBe('Noch nichts hier');
+    expect(emptyTitle()).toContain('Noch nichts hier');
   });
 
   test('a projected item slot renders each accumulated row with its context', async () => {

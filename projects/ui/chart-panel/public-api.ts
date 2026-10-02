@@ -6,7 +6,10 @@ export {
   CngxChartPanel,
   type CngxChartPanelLegendPosition,
 } from './chart-panel.component';
-export { type CngxChartPanelConfig } from './config/chart-panel.config';
+export {
+  type CngxChartPanelAriaLabels,
+  type CngxChartPanelConfig,
+} from './config/chart-panel.config';
 export { CNGX_CHART_PANEL_CONFIG } from './config/chart-panel.config.defaults';
 export {
   provideChartPanelConfig,
@@ -14,7 +17,10 @@ export {
   type CngxChartPanelConfigFeature,
 } from './config/provide-chart-panel-config';
 export { withChartPanelAriaLabels, withChartPanelLegendPosition } from './config/features';
-export { injectChartPanelConfig } from './config/inject-chart-panel-config';
+export {
+  injectChartPanelAriaLabels,
+  injectChartPanelConfig,
+} from './config/inject-chart-panel-config';
 export {
   CngxChartPanelTitle,
   CngxChartPanelSubtitle,

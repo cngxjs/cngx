@@ -190,7 +190,9 @@ Root, or scoped to a subtree with `provideBreadcrumbConfigAt` in
 `viewProviders`, where features deep-merge onto the parent config. Resolution:
 per-instance input, then the scoped provider, then root, then the library
 defaults (English; supply your locale through the cascade). Read the resolved
-config with `injectBreadcrumbConfig()`.
+config with `injectBreadcrumbConfig()` and the resolved labels with
+`injectBreadcrumbAriaLabels()`. `withBreadcrumbAriaLabels` also takes a
+`Signal`, so the labels follow a runtime language switch.
 
 ## Accessibility
 

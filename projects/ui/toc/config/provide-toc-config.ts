@@ -3,10 +3,14 @@ import {
   makeEnvironmentProviders,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
 } from '@angular/core';
+import { createOverrideMerge } from '@cngx/core/utils';
 
-import type { CngxTocConfig } from './toc.config';
+import type { CngxTocAriaLabels, CngxTocConfig } from './toc.config';
 import { CNGX_TOC_CONFIG, CNGX_TOC_DEFAULTS } from './toc.config.defaults';
+
+const NO_ARIA_LABELS: CngxTocAriaLabels = {};
 
 /**
  * Discriminated-union shape returned by the toc config features -
@@ -23,7 +27,7 @@ import { CNGX_TOC_CONFIG, CNGX_TOC_DEFAULTS } from './toc.config.defaults';
 export type CngxTocConfigFeature =
   | {
       readonly kind: 'ariaLabels';
-      readonly payload: NonNullable<CngxTocConfig['ariaLabels']>;
+      readonly payload: CngxTocAriaLabels | Signal<CngxTocAriaLabels>;
     }
   | {
       readonly kind: 'scrollBehavior';
@@ -47,7 +51,7 @@ export type CngxTocConfigFeature =
  */
 function reduceFeatures(features: readonly CngxTocConfigFeature[]): Partial<CngxTocConfig> {
   const out: {
-    ariaLabels?: NonNullable<CngxTocConfig['ariaLabels']>;
+    ariaLabels?: CngxTocAriaLabels | Signal<CngxTocAriaLabels>;
     scrollBehavior?: NonNullable<CngxTocConfig['scrollBehavior']>;
     spy?: NonNullable<CngxTocConfig['spy']>;
     templates?: NonNullable<CngxTocConfig['templates']>;
@@ -55,7 +59,7 @@ function reduceFeatures(features: readonly CngxTocConfigFeature[]): Partial<Cngx
   for (const f of features) {
     switch (f.kind) {
       case 'ariaLabels':
-        out.ariaLabels = { ...out.ariaLabels, ...f.payload };
+        out.ariaLabels = createOverrideMerge(out.ariaLabels ?? NO_ARIA_LABELS, f.payload);
         break;
       case 'scrollBehavior':
         out.scrollBehavior = f.payload.scrollBehavior;
@@ -85,7 +89,7 @@ function mergeConfig(
   partial: Partial<CngxTocConfig>,
 ): CngxTocConfig {
   return {
-    ariaLabels: { ...base.ariaLabels, ...partial.ariaLabels },
+    ariaLabels: createOverrideMerge(base.ariaLabels ?? NO_ARIA_LABELS, partial.ariaLabels),
     scrollBehavior: partial.scrollBehavior ?? base.scrollBehavior,
     spy: { ...base.spy, ...partial.spy },
     templates: { ...base.templates, ...partial.templates },

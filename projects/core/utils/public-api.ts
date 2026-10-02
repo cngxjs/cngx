@@ -3,6 +3,7 @@
  */
 export { coerceBooleanProperty, coerceNumberProperty, coerceSignal } from './coerce.util';
 export {
+  createDefaultsFill,
   createNestedOverrideMerge,
   createOverrideMerge,
   type CngxNestedOverrides,

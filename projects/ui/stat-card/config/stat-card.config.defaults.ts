@@ -1,6 +1,19 @@
 import { InjectionToken } from '@angular/core';
 
-import type { CngxStatCardConfig } from './stat-card.config';
+import type { CngxStatCardConfig, CngxStatCardResolvedAriaLabels } from './stat-card.config';
+
+/**
+ * English strings of the stat-card, the base every `ariaLabels` override
+ * merges onto.
+ *
+ * @internal
+ */
+export const CNGX_STAT_CARD_ARIA_LABELS_DEFAULTS: CngxStatCardResolvedAriaLabels = {
+  busy: 'Loading',
+  errorFallback: 'Could not load',
+  staleFallback: 'Showing last known value',
+  emptyFallback: 'No data',
+};
 
 /**
  * Library defaults for the stat-card configuration cascade. English by
@@ -17,12 +30,7 @@ import type { CngxStatCardConfig } from './stat-card.config';
  * @internal
  */
 export const CNGX_STAT_CARD_DEFAULTS: CngxStatCardConfig = {
-  ariaLabels: {
-    busy: 'Loading',
-    errorFallback: 'Could not load',
-    staleFallback: 'Showing last known value',
-    emptyFallback: 'No data',
-  },
+  ariaLabels: CNGX_STAT_CARD_ARIA_LABELS_DEFAULTS,
   loadingTreatment: 'auto',
 };
 

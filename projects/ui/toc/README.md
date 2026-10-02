@@ -158,6 +158,8 @@ Root, or scoped to a subtree with `provideTocConfigAt` in `viewProviders`, where
 features merge onto the parent config rather than replacing it. Resolution runs
 per-instance input, then the scoped provider, then root, then the library
 default. Defaults are English; supply your locale through the cascade.
+`withTocAriaLabels` also takes a `Signal`, so the landmark name follows a runtime
+language switch; read the resolved labels with `injectTocAriaLabels()`.
 
 ## Material Theme
 

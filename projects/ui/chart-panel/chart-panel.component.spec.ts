@@ -5,6 +5,9 @@ import { createAsyncStateMock, type AsyncStateMock } from '@cngx/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxChartPanel, type CngxChartPanelLegendPosition } from './chart-panel.component';
+import type { CngxChartPanelAriaLabels } from './config/chart-panel.config';
+import { withChartPanelAriaLabels } from './config/features';
+import { provideChartPanelConfig } from './config/provide-chart-panel-config';
 import {
   CngxChartPanelActions,
   CngxChartPanelFooter,
@@ -202,6 +205,31 @@ describe('CngxChartPanel chrome', () => {
     state.set({ status: 'success', firstLoad: false });
     fixture.detectChanges();
     expect(sr.textContent?.trim()).toBe('');
+  });
+
+  it('does not re-announce on a language flip', () => {
+    const labels = signal<CngxChartPanelAriaLabels>({});
+    TestBed.configureTestingModule({
+      providers: [provideChartPanelConfig(withChartPanelAriaLabels(labels))],
+    });
+    const { fixture, panel } = setup();
+    const sr = panel.querySelector('.cngx-chart-panel__status')!;
+    const description = panel.querySelector('.cngx-chart-panel__busy-description')!;
+    state.set({ status: 'refreshing', firstLoad: false });
+    fixture.detectChanges();
+    expect(sr.textContent?.trim()).toBe('Updating');
+
+    labels.set({ busy: 'Wird aktualisiert' });
+    fixture.detectChanges();
+    // The described-by reason is not a live region and follows the switch at once.
+    expect(description.textContent?.trim()).toBe('Wird aktualisiert');
+    expect(sr.textContent?.trim()).toBe('Updating');
+
+    state.set({ status: 'success', firstLoad: false });
+    fixture.detectChanges();
+    state.set({ status: 'refreshing', firstLoad: false });
+    fixture.detectChanges();
+    expect(sr.textContent?.trim()).toBe('Wird aktualisiert');
   });
 
   it('blocks Enter/Space activation in the action cluster while busy', () => {

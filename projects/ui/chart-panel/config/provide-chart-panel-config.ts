@@ -3,10 +3,14 @@ import {
   makeEnvironmentProviders,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
 } from '@angular/core';
+import { createOverrideMerge } from '@cngx/core/utils';
 
-import type { CngxChartPanelConfig } from './chart-panel.config';
+import type { CngxChartPanelAriaLabels, CngxChartPanelConfig } from './chart-panel.config';
 import { CNGX_CHART_PANEL_CONFIG, CNGX_CHART_PANEL_DEFAULTS } from './chart-panel.config.defaults';
+
+const NO_ARIA_LABELS: CngxChartPanelAriaLabels = {};
 
 /**
  * Discriminated-union shape returned by the chart-panel config features. The
@@ -19,7 +23,7 @@ import { CNGX_CHART_PANEL_CONFIG, CNGX_CHART_PANEL_DEFAULTS } from './chart-pane
 export type CngxChartPanelConfigFeature =
   | {
       readonly kind: 'ariaLabels';
-      readonly payload: NonNullable<CngxChartPanelConfig['ariaLabels']>;
+      readonly payload: CngxChartPanelAriaLabels | Signal<CngxChartPanelAriaLabels>;
     }
   | {
       readonly kind: 'legendPosition';
@@ -44,7 +48,7 @@ function reduceFeatures(
   for (const f of features) {
     switch (f.kind) {
       case 'ariaLabels':
-        out.ariaLabels = { ...out.ariaLabels, ...f.payload };
+        out.ariaLabels = createOverrideMerge(out.ariaLabels ?? NO_ARIA_LABELS, f.payload);
         break;
       case 'legendPosition':
         out.legendPosition = f.payload.legendPosition;
@@ -65,7 +69,7 @@ function mergeConfig(
   partial: Partial<CngxChartPanelConfig>,
 ): CngxChartPanelConfig {
   return {
-    ariaLabels: { ...base.ariaLabels, ...partial.ariaLabels },
+    ariaLabels: createOverrideMerge(base.ariaLabels ?? NO_ARIA_LABELS, partial.ariaLabels),
     legendPosition: partial.legendPosition ?? base.legendPosition,
   };
 }

@@ -4,6 +4,7 @@ import {
   computed,
   inject,
   input,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import { CngxCard } from '@cngx/common/card';
@@ -24,7 +25,7 @@ import {
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 import { CngxLoadingIndicator } from '@cngx/ui/feedback';
 
-import { injectStatCardConfig } from './config/inject-stat-card-config';
+import { injectStatCardAriaLabels, injectStatCardConfig } from './config/inject-stat-card-config';
 
 /** Placeholder shape for a card whose consumer projected no stat slots at all. */
 const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', 'caption'];
@@ -99,7 +100,7 @@ const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', '
           class="cngx-stat-card__refresh"
           [loading]="true"
           variant="spinner"
-          [label]="busyLabel()"
+          [label]="resolvedBusyLabel()"
         />
       }
 
@@ -135,15 +136,15 @@ const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', '
             </div>
           } @else {
             <div class="cngx-stat-card__spinner">
-              <cngx-loading-indicator [loading]="true" variant="spinner" [label]="busyLabel()" />
+              <cngx-loading-indicator [loading]="true" variant="spinner" [label]="resolvedBusyLabel()" />
             </div>
           }
         }
         @case ('error') {
           <cngx-empty-state
             class="cngx-stat-card__error"
-            [title]="errorText()"
-            [description]="errorDescription()"
+            [title]="resolvedErrorText()"
+            [description]="resolvedErrorDescription()"
           >
             <!-- The stock empty-state glyph is an archive box, which reads
                  "nothing here" rather than "this failed". Projecting into the
@@ -168,7 +169,7 @@ const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', '
         @case ('empty') {
           <!-- A settle with no data is its own message, not blank metric
                slots pretending to be a figure. -->
-          <cngx-empty-state class="cngx-stat-card__empty" [title]="emptyText()" />
+          <cngx-empty-state class="cngx-stat-card__empty" [title]="resolvedEmptyText()" />
         }
         @case ('none') {
           <!-- Idle first load: nothing was asked for yet, so the tile shows
@@ -188,7 +189,7 @@ const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', '
           <ng-content select="[cngxStatCardViz]" />
 
           @if (activeView() === 'content+error') {
-            <p class="cngx-stat-card__stale">{{ staleText() }}</p>
+            <p class="cngx-stat-card__stale">{{ resolvedStaleText() }}</p>
           }
         }
       }
@@ -203,6 +204,7 @@ export class CngxStatCard {
   protected readonly coordinator = inject(CngxStatCoordinator, { host: true });
 
   private readonly config = injectStatCardConfig();
+  private readonly ariaLabels = injectStatCardAriaLabels();
 
   /**
    * The tile's async envelope. Every view decision derives from it; there are
@@ -222,24 +224,24 @@ export class CngxStatCard {
    */
   readonly loadingTreatment = input<CngxLoadingTreatment>(this.config.loadingTreatment ?? 'auto');
 
-  /** Accessible label announced while the card is loading. */
-  readonly busyLabel = input<string>(this.config.ariaLabels?.busy ?? 'Loading');
+  /**
+   * Accessible label announced while the card is loading. Unbound
+   * (`undefined`), each copy input falls back to the config cascade and its
+   * English default.
+   */
+  readonly busyLabel = input<string | undefined>(undefined);
 
   /** Headline of the error state shown instead of the stat when the first load failed. */
-  readonly errorText = input<string>(this.config.ariaLabels?.errorFallback ?? 'Could not load');
+  readonly errorText = input<string | undefined>(undefined);
 
   /** Supporting detail under {@link errorText}. Omitted when unset. */
-  readonly errorDescription = input<string | undefined>(
-    this.config.ariaLabels?.errorDescription,
-  );
+  readonly errorDescription = input<string | undefined>(undefined);
 
   /** Note appended below the stat when a refresh failed but stale data is still shown. */
-  readonly staleText = input<string>(
-    this.config.ariaLabels?.staleFallback ?? 'Showing last known value',
-  );
+  readonly staleText = input<string | undefined>(undefined);
 
   /** Headline of the empty state shown when a load settled with no data. */
-  readonly emptyText = input<string>(this.config.ariaLabels?.emptyFallback ?? 'No data');
+  readonly emptyText = input<string | undefined>(undefined);
 
   /**
    * Politeness of the tile's live region. `off` (default) for a static KPI;
@@ -325,4 +327,37 @@ export class CngxStatCard {
     }
     return view;
   });
+
+  protected readonly resolvedBusyLabel = computed(() => {
+    this.trackPhase();
+    return this.busyLabel() ?? untracked(() => this.ariaLabels().busy);
+  });
+  protected readonly resolvedErrorText = computed(() => {
+    this.trackPhase();
+    return this.errorText() ?? untracked(() => this.ariaLabels().errorFallback);
+  });
+  protected readonly resolvedErrorDescription = computed(() => {
+    this.trackPhase();
+    return this.errorDescription() ?? untracked(() => this.ariaLabels().errorDescription);
+  });
+  protected readonly resolvedStaleText = computed(() => {
+    this.trackPhase();
+    return this.staleText() ?? untracked(() => this.ariaLabels().staleFallback);
+  });
+  protected readonly resolvedEmptyText = computed(() => {
+    this.trackPhase();
+    return this.emptyText() ?? untracked(() => this.ariaLabels().emptyFallback);
+  });
+
+  /**
+   * Keys the untracked cascade reads above on the view and busy phase, read
+   * straight from the signals the template polls (so a phase that returns to an
+   * earlier value still re-reads). The whole card can be a live region, so a
+   * language switch must not re-render its text; the next view or busy change
+   * speaks the new language. A bound input stays tracked.
+   */
+  private trackPhase(): void {
+    this.activeView();
+    this.busy();
+  }
 }

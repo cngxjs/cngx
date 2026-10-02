@@ -1,6 +1,6 @@
 import { computed, type Signal } from '@angular/core';
 
-import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
+import { coerceSignal, createDefaultsFill, createOverrideMerge } from '@cngx/core/utils';
 import { recordEqual } from '@cngx/utils';
 
 import {
@@ -39,8 +39,6 @@ const DEFAULT_ANNOUNCER = coerceSignal(CNGX_SELECT_DEFAULTS.announcer);
 
 const ANNOUNCERS = new WeakMap<object, Signal<CngxResolvedSelectAnnouncer>>();
 
-const FILLED = new WeakMap<Signal<object>, Signal<object>>();
-
 /**
  * Resolves the copy keys of a select config lazily. `ariaLabels` and
  * `fallbackLabels` spread over the defaults, and a defaulted key an override
@@ -53,11 +51,11 @@ const FILLED = new WeakMap<Signal<object>, Signal<object>>();
  */
 export function resolveSelectLabels(user: CngxSelectConfig): CngxResolvedSelectLabels {
   return {
-    ariaLabels: fillDefaults<CngxResolvedSelectAriaLabels>(
+    ariaLabels: createDefaultsFill<CngxResolvedSelectAriaLabels>(
       createOverrideMerge<CngxSelectAriaLabels>(CNGX_SELECT_DEFAULTS.ariaLabels, user.ariaLabels),
       CNGX_SELECT_DEFAULTS.ariaLabels,
     ),
-    fallbackLabels: fillDefaults(
+    fallbackLabels: createDefaultsFill(
       createOverrideMerge<Required<CngxSelectFallbackLabels>>(
         CNGX_SELECT_DEFAULTS.fallbackLabels,
         user.fallbackLabels,
@@ -66,26 +64,6 @@ export function resolveSelectLabels(user: CngxSelectConfig): CngxResolvedSelectL
     ),
     announcer: resolveAnnouncer(user.announcer),
   };
-}
-
-function fillDefaults<T extends object>(merged: Signal<Partial<T>>, defaults: T): Signal<T> {
-  const cached = FILLED.get(merged) as Signal<T> | undefined;
-  if (cached) {
-    return cached;
-  }
-  const keys = Object.keys(defaults) as (keyof T)[];
-  const filled = computed<T>(
-    () => {
-      const value = { ...merged() } as T;
-      for (const key of keys) {
-        value[key] ??= defaults[key];
-      }
-      return value;
-    },
-    { equal: recordEqual },
-  );
-  FILLED.set(merged, filled);
-  return filled;
 }
 
 function resolveAnnouncer(

@@ -22,6 +22,7 @@ import {
 } from '@cngx/forms/select';
 import { provideFeedbackI18n, type CngxFeedbackI18nOverrides } from '@cngx/ui/feedback';
 import type { CngxPaginatorAnnouncements, CngxPaginatorAriaLabels } from '@cngx/ui/paginator';
+import type { CngxBreadcrumbAriaLabels } from '@cngx/ui/breadcrumb';
 
 // German reference pack for the examples app. Not a shipped translation: it
 // proves that every surface the i18n residue pages render is reachable from
@@ -222,6 +223,17 @@ export const PAGINATOR_ANNOUNCEMENTS_DE: Partial<CngxPaginatorAnnouncements> = {
   loading: 'Wird geladen',
   updated: 'Aktualisiert',
 };
+export const ACCORDION_DE = {
+  disabledReason: 'Dieser Abschnitt ist derzeit nicht verfügbar.',
+  errorMessage: 'Dieser Abschnitt konnte nicht geladen werden.',
+} as const;
+export const BREADCRUMB_ARIA_DE: CngxBreadcrumbAriaLabels = {
+  bar: 'Brotkrumenpfad',
+  overflowTrigger: 'Ausgeblendete Ebenen anzeigen',
+  overflowMenu: 'Ausgeblendete Ebenen',
+  siblingsTrigger: 'Geschwisterseiten anzeigen',
+  siblingsMenu: 'Geschwisterseiten',
+};
 export const TREETABLE_DE: Partial<TreetableLabels> = {
   loading: 'Wird geladen',
   refreshing: 'Wird aktualisiert',
@@ -317,6 +329,15 @@ export const DEMO_PAGINATOR_STATUS_FORMAT = computed(() =>
   isDe()
     ? (page: number, totalPages: number) => `Seite <b>${page}</b> von ${totalPages}`
     : (page: number, totalPages: number) => `Page <b>${page}</b> of ${totalPages}`,
+);
+export const DEMO_ACCORDION_DISABLED_REASON = computed(() =>
+  isDe() ? ACCORDION_DE.disabledReason : 'This section is currently unavailable.',
+);
+export const DEMO_ACCORDION_ERROR_MESSAGE = computed(() =>
+  isDe() ? ACCORDION_DE.errorMessage : 'This section could not be loaded.',
+);
+export const DEMO_BREADCRUMB_ARIA_LABELS = computed<CngxBreadcrumbAriaLabels>(() =>
+  isDe() ? BREADCRUMB_ARIA_DE : {},
 );
 
 /** The German pack, spread into the root providers by `?lang=de`. */

@@ -5,14 +5,14 @@
     [cngxPopoverTrigger]="panel.popover"
     [haspopup]="'none'"
     [restoreFocus]="true"
-    [attr.aria-label]="triggerLabel()"
+    [attr.aria-label]="resolvedTriggerLabel()"
     (click)="panel.popover.toggle()"
   >
     <ng-content select=":not([cngxBreadcrumbSiblingItem])">&#9662;</ng-content>
   </button>
 
   <cngx-popover-panel #panel mode="auto" placement="bottom-start">
-    <ul class="cngx-breadcrumb__siblings-menu" role="list" [attr.aria-label]="menuLabel()">
+    <ul class="cngx-breadcrumb__siblings-menu" role="list" [attr.aria-label]="resolvedMenuLabel()">
       @for (sib of items(); track sib; let i = $index) {
         <li
           class="cngx-breadcrumb__siblings-item"

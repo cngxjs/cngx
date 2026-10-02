@@ -18,6 +18,7 @@ export {
   CNGX_INCREMENTAL_LIST_DEFAULTS,
   provideIncrementalListConfig,
   provideIncrementalListConfigAt,
+  injectIncrementalListAriaLabels,
   injectIncrementalListConfig,
   withIncrementalListAriaLabels,
   withIncrementalListTemplates,

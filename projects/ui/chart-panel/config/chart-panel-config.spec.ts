@@ -1,16 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { CngxChartPanel } from '../chart-panel.component';
+import type { CngxChartPanelAriaLabels } from './chart-panel.config';
 import { CNGX_CHART_PANEL_DEFAULTS } from './chart-panel.config.defaults';
 import { withChartPanelAriaLabels, withChartPanelLegendPosition } from './features';
-import { injectChartPanelConfig } from './inject-chart-panel-config';
+import { injectChartPanelAriaLabels, injectChartPanelConfig } from './inject-chart-panel-config';
 import { provideChartPanelConfig, provideChartPanelConfigAt } from './provide-chart-panel-config';
 
 describe('CNGX_CHART_PANEL_CONFIG cascade', () => {
   function read() {
     return TestBed.runInInjectionContext(() => injectChartPanelConfig());
+  }
+  function labels() {
+    return TestBed.runInInjectionContext(() => injectChartPanelAriaLabels());
   }
 
   it('exposes the English library defaults without any provider', () => {
@@ -31,15 +35,53 @@ describe('CNGX_CHART_PANEL_CONFIG cascade', () => {
     });
     const cfg = read();
     expect(cfg.legendPosition).toBe('top');
-    expect(cfg.ariaLabels?.busy).toBe('Updating');
+    expect(labels()().busy).toBe('Updating');
   });
 
   it('deep-merges a partial ariaLabels override', () => {
     TestBed.configureTestingModule({
       providers: [provideChartPanelConfig(withChartPanelAriaLabels({ busy: 'Aktualisiert' }))],
     });
-    expect(read().ariaLabels?.busy).toBe('Aktualisiert');
+    expect(labels()().busy).toBe('Aktualisiert');
     expect(read().legendPosition).toBe('bottom');
+  });
+
+  it('resolves plain labels to the same bundle as the eager merge did', () => {
+    TestBed.configureTestingModule({
+      providers: [provideChartPanelConfig(withChartPanelAriaLabels({ busy: 'Aktualisiert' }))],
+    });
+    expect(labels()()).toEqual({ busy: 'Aktualisiert' });
+  });
+
+  it('falls back to the default for a label an override sets to undefined', () => {
+    TestBed.configureTestingModule({
+      providers: [provideChartPanelConfig(withChartPanelAriaLabels({ busy: undefined }))],
+    });
+    expect(labels()().busy).toBe('Updating');
+  });
+
+  it('follows Signal labels and keeps the bundle reference on an equal recompute', () => {
+    const lang = signal<'en' | 'de' | 'de-AT'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideChartPanelConfig(
+          withChartPanelAriaLabels(
+            computed<CngxChartPanelAriaLabels>(() =>
+              lang() === 'en' ? {} : { busy: 'Wird aktualisiert' },
+            ),
+          ),
+        ),
+      ],
+    });
+    const resolved = labels();
+    expect(resolved().busy).toBe('Updating');
+
+    lang.set('de');
+    const german = resolved();
+    expect(german.busy).toBe('Wird aktualisiert');
+
+    lang.set('de-AT');
+    expect(resolved()).toBe(german);
   });
 });
 

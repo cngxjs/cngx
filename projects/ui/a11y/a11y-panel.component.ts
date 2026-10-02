@@ -16,7 +16,10 @@ import { nextUid } from '@cngx/core/utils';
 import {
   type CngxA11yPanelAxis,
   type CngxA11yPanelAxisOption,
-  injectA11yPanelConfig,
+  type CngxA11yPanelAxisSpec,
+  type CngxA11yPanelLabels,
+  injectA11yPanelAxes,
+  injectA11yPanelLabels,
 } from './a11y-panel.config';
 
 /**
@@ -32,6 +35,20 @@ interface CngxA11yPanelAxisView {
   readonly options: readonly CngxA11yPanelAxisOption[];
   readonly value: Signal<string>;
   readonly commit: (next: string | undefined) => void;
+}
+
+/** Views are equal when every group keeps its axis, label and options. */
+function sameAxisViews(
+  a: readonly CngxA11yPanelAxisView[],
+  b: readonly CngxA11yPanelAxisView[],
+): boolean {
+  return (
+    a.length === b.length &&
+    a.every(
+      (view, i) =>
+        view.axis === b[i].axis && view.label === b[i].label && view.options === b[i].options,
+    )
+  );
 }
 
 /**
@@ -86,22 +103,29 @@ interface CngxA11yPanelAxisView {
 export class CngxA11yPanel {
   private readonly announcer = inject(CngxLiveAnnouncer);
   private readonly prefs = injectA11yPreferences();
-  protected readonly config = injectA11yPanelConfig();
+  protected readonly labels = injectA11yPanelLabels();
+  private readonly axes = injectA11yPanelAxes();
   private readonly uid = nextUid('cngx-a11y-panel');
 
   /**
-   * The axis groups to render. Resolved once from the config: the axis list is
-   * static, so this is a plain field (no equality concern). Each view's `value`
-   * is its own one-axis `computed`, so a change to one axis re-renders only its
-   * group's bound value, not the whole list.
+   * The axis groups to render, rebuilt when the axis list or the labels change
+   * so both follow a language switch. A rebuild that yields the same axes,
+   * labels and options keeps the previous array. Each view's `value` is the
+   * axis preference itself, so picking an option re-renders only that group.
    */
-  protected readonly axisViews: readonly CngxA11yPanelAxisView[] = this.buildAxisViews();
+  protected readonly axisViews = computed(
+    () => this.buildAxisViews(this.axes(), this.labels()),
+    { equal: sameAxisViews },
+  );
 
   // Kept as a method, not an inline `.map()` field initializer: compodocx's
   // property-default serializer catastrophically backtracks on a `.map` that
   // returns object literals with nested arrow functions, hanging docs:json.
-  private buildAxisViews(): readonly CngxA11yPanelAxisView[] {
-    return this.config.axes.map((spec) => {
+  private buildAxisViews(
+    axes: readonly CngxA11yPanelAxisSpec[],
+    labels: CngxA11yPanelLabels,
+  ): readonly CngxA11yPanelAxisView[] {
+    return axes.map((spec) => {
       // `CngxA11yPanelAxisSpec` is a discriminated union whose options/reset are
       // typed to each axis' value union, so every value reaching this write is
       // compile-checked valid. Erasing the invariant signal type to `string`
@@ -110,10 +134,10 @@ export class CngxA11yPanel {
       const sig = this.prefs[spec.axis] as unknown as WritableSignal<string>;
       return {
         axis: spec.axis,
-        label: this.config.labels.axes[spec.axis],
+        label: labels.axes[spec.axis],
         labelId: `${this.uid}-${spec.axis}`,
         options: spec.options,
-        value: computed(() => sig()),
+        value: sig.asReadonly(),
         commit: (next: string | undefined) => {
           // `CngxButtonToggleGroup.value` is `model<T | undefined>`; this group
           // never deselects, so `undefined` is never emitted, but the guard
@@ -127,11 +151,11 @@ export class CngxA11yPanel {
   }
 
   protected reset(): void {
-    for (const spec of this.config.axes) {
+    for (const spec of this.axes()) {
       (this.prefs[spec.axis] as unknown as WritableSignal<string>).set(spec.reset);
     }
     // Bulk multi-axis change with focus staying on Reset: announce it (Pillar 2)
     // through the shared root live region rather than a private one.
-    this.announcer.announce(this.config.labels.resetMessage);
+    this.announcer.announce(this.labels().resetMessage);
   }
 }

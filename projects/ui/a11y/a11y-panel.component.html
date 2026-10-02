@@ -1,12 +1,12 @@
 <cngx-card class="cngx-a11y-panel">
   <header cngxCardHeader class="cngx-a11y-panel__header">
     <ng-content select="[cngxA11yPanelHeader]">
-      <h2 class="cngx-a11y-panel__heading">{{ config.labels.heading }}</h2>
+      <h2 class="cngx-a11y-panel__heading">{{ labels().heading }}</h2>
     </ng-content>
   </header>
 
   <div cngxCardBody class="cngx-a11y-panel__body">
-    @for (axis of axisViews; track axis.axis) {
+    @for (axis of axisViews(); track axis.axis) {
       <div class="cngx-a11y-panel__axis">
         <span class="cngx-a11y-panel__axis-label" [id]="axis.labelId">{{ axis.label }}</span>
         <cngx-button-toggle-group
@@ -25,7 +25,7 @@
 
   <footer cngxCardFooter class="cngx-a11y-panel__footer">
     <button type="button" class="cngx-a11y-panel__reset" (click)="reset()">
-      {{ config.labels.reset }}
+      {{ labels().reset }}
     </button>
   </footer>
 </cngx-card>

@@ -1,8 +1,9 @@
-import { Component, Directive, type TemplateRef, viewChild } from '@angular/core';
+import { Component, computed, Directive, signal, type TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import type { CngxTocItemContext } from '../toc.types';
+import type { CngxTocAriaLabels } from './toc.config';
 import { CNGX_TOC_CONFIG, CNGX_TOC_DEFAULTS } from './toc.config.defaults';
 import {
   withTocAriaLabels,
@@ -10,7 +11,7 @@ import {
   withTocSpy,
   withTocTemplates,
 } from './features';
-import { injectTocConfig } from './inject-toc-config';
+import { injectTocAriaLabels, injectTocConfig } from './inject-toc-config';
 import { provideTocConfig, provideTocConfigAt } from './provide-toc-config';
 
 // A sentinel standing in for a real TemplateRef - the config cascade only
@@ -24,7 +25,10 @@ const itemTpl = {} as unknown as TemplateRef<CngxTocItemContext>;
 @Directive({ selector: '[cfgProbe]' })
 class CfgProbe {
   readonly cfg = injectTocConfig();
+  readonly labels = injectTocAriaLabels();
 }
+
+const navLabel = () => TestBed.runInInjectionContext(() => injectTocAriaLabels())().nav;
 
 @Component({
   imports: [CfgProbe],
@@ -39,7 +43,7 @@ describe('CNGX_TOC_CONFIG', () => {
   it('resolves to the EN library defaults with no provider present', () => {
     const cfg = TestBed.inject(CNGX_TOC_CONFIG);
 
-    expect(cfg.ariaLabels?.nav).toBe('On this page');
+    expect(navLabel()).toBe('On this page');
     expect(cfg.scrollBehavior).toBe('smooth');
     expect(cfg.spy?.rootMargin).toBe('0px');
     expect(cfg.spy?.threshold).toBe(0.3);
@@ -51,7 +55,7 @@ describe('CNGX_TOC_CONFIG', () => {
     });
     const cfg = TestBed.inject(CNGX_TOC_CONFIG);
 
-    expect(cfg.ariaLabels?.nav).toBe('Auf dieser Seite');
+    expect(navLabel()).toBe('Auf dieser Seite');
     // sibling keys keep the defaults (deep-merge, not replace)
     expect(cfg.scrollBehavior).toBe('smooth');
     expect(cfg.spy?.threshold).toBe(0.3);
@@ -64,7 +68,7 @@ describe('CNGX_TOC_CONFIG', () => {
     const cfg = TestBed.inject(CNGX_TOC_CONFIG);
 
     expect(cfg.scrollBehavior).toBe('auto');
-    expect(cfg.ariaLabels?.nav).toBe('On this page');
+    expect(navLabel()).toBe('On this page');
   });
 
   it('withTocSpy overrides the spy defaults and deep-merges the untouched key', () => {
@@ -76,7 +80,7 @@ describe('CNGX_TOC_CONFIG', () => {
     expect(cfg.spy?.threshold).toBe(0.5);
     // rootMargin keeps the default (deep-merge, not replace)
     expect(cfg.spy?.rootMargin).toBe('0px');
-    expect(cfg.ariaLabels?.nav).toBe('On this page');
+    expect(navLabel()).toBe('On this page');
   });
 
   it('withTocTemplates carries the item template through the cascade', () => {
@@ -87,7 +91,7 @@ describe('CNGX_TOC_CONFIG', () => {
 
     expect(cfg.templates?.item).toBe(itemTpl);
     // untouched keys survive the merge
-    expect(cfg.ariaLabels?.nav).toBe('On this page');
+    expect(navLabel()).toBe('On this page');
     expect(cfg.scrollBehavior).toBe('smooth');
   });
 
@@ -106,9 +110,42 @@ describe('CNGX_TOC_CONFIG', () => {
     });
     const fixture = TestBed.createComponent(AtHost);
     fixture.detectChanges();
-    const cfg = fixture.componentInstance.probe().cfg;
+    const { cfg, labels } = fixture.componentInstance.probe();
 
     expect(cfg.scrollBehavior).toBe('auto'); // At override wins
-    expect(cfg.ariaLabels?.nav).toBe('Root label'); // inherited from root via skipSelf merge
+    expect(labels().nav).toBe('Root label'); // inherited from root via skipSelf merge
+  });
+
+  it('follows Signal labels and keeps the bundle reference on an equal recompute', () => {
+    const lang = signal<'en' | 'de' | 'de-AT'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideTocConfig(
+          withTocAriaLabels(
+            computed<CngxTocAriaLabels>(() => (lang() === 'en' ? {} : { nav: 'Auf dieser Seite' })),
+          ),
+        ),
+      ],
+    });
+    const labels = TestBed.runInInjectionContext(() => injectTocAriaLabels());
+    expect(labels().nav).toBe('On this page');
+
+    lang.set('de');
+    const german = labels();
+    expect(german.nav).toBe('Auf dieser Seite');
+
+    lang.set('de-AT');
+    expect(labels()).toBe(german);
+  });
+
+  it('falls back to the default for a label an override sets to undefined', () => {
+    TestBed.configureTestingModule({
+      providers: [provideTocConfig(withTocAriaLabels({ nav: undefined }))],
+    });
+    expect(navLabel()).toBe('On this page');
+  });
+
+  it('keeps the plain labels bundle on the exported defaults', () => {
+    expect(CNGX_TOC_DEFAULTS.ariaLabels.nav).toBe('On this page');
   });
 });

@@ -7,13 +7,17 @@ import {
   input,
   type Signal,
   signal,
+  untracked,
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import { CngxLiveRegion } from '@cngx/common/a11y';
 import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
 
-import { injectChartPanelConfig } from './config/inject-chart-panel-config';
+import {
+  injectChartPanelAriaLabels,
+  injectChartPanelConfig,
+} from './config/inject-chart-panel-config';
 import { CNGX_CHART_PANEL, type CngxChartPanelRegistry } from './chart-panel.token';
 
 /**
@@ -141,7 +145,7 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
          aria-busy header on purpose: a live region inside a busy container
          has its announcements suppressed. -->
     <span cngxLiveRegion class="cngx-chart-panel__sr cngx-chart-panel__status">{{
-      panelBusy() ? busyLabel() : ''
+      busyStatus()
     }}</span>
   `,
   styleUrls: ['./chart-panel.component.css'],
@@ -149,6 +153,7 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
 export class CngxChartPanel implements CngxChartPanelRegistry {
   private readonly titleId = signal<string | undefined>(undefined);
   private readonly config = injectChartPanelConfig();
+  private readonly ariaLabels = injectChartPanelAriaLabels();
 
   /**
    * Panel-level async envelope - the one driving the header chrome, not the
@@ -175,8 +180,17 @@ export class CngxChartPanel implements CngxChartPanelRegistry {
   /** {@inheritDoc CngxChartPanelRegistry.busy} */
   readonly busy: Signal<boolean> = this.panelBusy;
 
-  /** @internal Announced through the hidden status region while panel-busy runs. */
-  protected readonly busyLabel = computed(() => this.config.ariaLabels?.busy ?? 'Updating');
+  /** @internal Names why the action cluster is disabled while busy; follows a language switch. */
+  protected readonly busyLabel = computed(() => this.ariaLabels().busy);
+
+  /**
+   * @internal Text of the hidden status region. The label is read untracked, so
+   * a language switch does not re-announce a running busy phase; the next one
+   * speaks the new language.
+   */
+  protected readonly busyStatus = computed(() =>
+    this.panelBusy() ? untracked(() => this.ariaLabels().busy) : '',
+  );
 
   /** {@inheritDoc CngxChartPanelRegistry.busyDescriptionId} */
   readonly busyDescriptionId = `${nextUid('cngx-chart-panel')}-busy`;

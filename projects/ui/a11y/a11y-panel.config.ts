@@ -6,6 +6,7 @@ import {
   SkipSelf,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
 } from '@angular/core';
 import type {
   CngxContrastPreference,
@@ -13,6 +14,7 @@ import type {
   CngxMotionPreference,
   CngxTextScaleValue,
 } from '@cngx/core';
+import { coerceSignal, createNestedOverrideMerge } from '@cngx/core/utils';
 
 /**
  * The four accessibility axes the panel can render a control group for.
@@ -104,13 +106,17 @@ export interface CngxA11yPanelLabels {
  * Merged from the library defaults and any `with*` features by the reducer in
  * {@link provideA11yPanelConfig}.
  *
+ * Both keys accept a value or a `Signal`, so the panel follows a runtime
+ * language switch (`axes` carries the option labels). Read them through
+ * {@link injectA11yPanelLabels} and {@link injectA11yPanelAxes}.
+ *
  * @category ui/a11y
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
  */
 export interface CngxA11yPanelConfig {
-  readonly labels: CngxA11yPanelLabels;
-  readonly axes: readonly CngxA11yPanelAxisSpec[];
+  readonly labels: CngxA11yPanelLabels | Signal<CngxA11yPanelLabels>;
+  readonly axes: readonly CngxA11yPanelAxisSpec[] | Signal<readonly CngxA11yPanelAxisSpec[]>;
 }
 
 /**
@@ -131,7 +137,10 @@ export interface CngxA11yPanelLabelsOverride {
 }
 
 /** Library defaults - English. Override via {@link provideA11yPanelConfig}. */
-export const CNGX_A11Y_PANEL_DEFAULTS: CngxA11yPanelConfig = {
+export const CNGX_A11Y_PANEL_DEFAULTS: CngxA11yPanelConfig & {
+  readonly labels: CngxA11yPanelLabels;
+  readonly axes: readonly CngxA11yPanelAxisSpec[];
+} = {
   labels: {
     axes: {
       density: 'Spacing',
@@ -212,8 +221,14 @@ export const CNGX_A11Y_PANEL_CONFIG = new InjectionToken<CngxA11yPanelConfig>(
  * @since 0.1.0
  */
 export type CngxA11yPanelConfigFeature =
-  | { readonly kind: 'labels'; readonly payload: CngxA11yPanelLabelsOverride }
-  | { readonly kind: 'axes'; readonly payload: readonly CngxA11yPanelAxisSpec[] };
+  | {
+      readonly kind: 'labels';
+      readonly payload: CngxA11yPanelLabelsOverride | Signal<CngxA11yPanelLabelsOverride>;
+    }
+  | {
+      readonly kind: 'axes';
+      readonly payload: readonly CngxA11yPanelAxisSpec[] | Signal<readonly CngxA11yPanelAxisSpec[]>;
+    };
 
 /** Reduce a feature list onto a base config, merging text and axes in isolation. */
 function applyFeatures(
@@ -224,11 +239,7 @@ function applyFeatures(
   let axes = base.axes;
   for (const feature of features) {
     if (feature.kind === 'labels') {
-      labels = {
-        ...labels,
-        ...feature.payload,
-        axes: { ...labels.axes, ...feature.payload.axes },
-      };
+      labels = createNestedOverrideMerge(labels, feature.payload, 'axes');
     } else {
       axes = feature.payload;
     }
@@ -239,7 +250,8 @@ function applyFeatures(
 /**
  * Override any subset of the panel text - axis group labels, the Reset label,
  * the default heading, or the Reset announcement. The `axes` record merges
- * key-by-key, so a single axis can be relabelled in isolation.
+ * key-by-key, so a single axis can be relabelled in isolation. Pass a `Signal`
+ * to switch the language at runtime.
  *
  * ```ts
  * provideA11yPanelConfig(
@@ -257,7 +269,7 @@ function applyFeatures(
  * @since 0.1.0
  */
 export function withA11yPanelLabels(
-  payload: CngxA11yPanelLabelsOverride,
+  payload: CngxA11yPanelLabelsOverride | Signal<CngxA11yPanelLabelsOverride>,
 ): CngxA11yPanelConfigFeature {
   return { kind: 'labels', payload };
 }
@@ -265,6 +277,7 @@ export function withA11yPanelLabels(
 /**
  * Replace the rendered axis list - reorder groups, drop an axis, or restrict
  * the options a group offers. Supplying a subset renders only those groups.
+ * Pass a `Signal` to relabel the options on a runtime language switch.
  *
  * ```ts
  * provideA11yPanelConfig(
@@ -283,7 +296,7 @@ export function withA11yPanelLabels(
  * @since 0.1.0
  */
 export function withA11yPanelAxes(
-  payload: readonly CngxA11yPanelAxisSpec[],
+  payload: readonly CngxA11yPanelAxisSpec[] | Signal<readonly CngxA11yPanelAxisSpec[]>,
 ): CngxA11yPanelConfigFeature {
   return { kind: 'axes', payload };
 }
@@ -369,4 +382,32 @@ export function provideA11yPanelConfigAt(
  */
 export function injectA11yPanelConfig(): CngxA11yPanelConfig {
   return inject(CNGX_A11Y_PANEL_CONFIG);
+}
+
+/**
+ * The resolved text bundle of the panel config in scope, as a Signal that
+ * follows a runtime language switch. Runs in an injection context; read it
+ * inside a `computed()`, a template or a handler.
+ *
+ * @category ui/a11y
+ * @relatedTo withA11yPanelLabels
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
+ * @since 0.1.0
+ */
+export function injectA11yPanelLabels(): Signal<CngxA11yPanelLabels> {
+  return coerceSignal(injectA11yPanelConfig().labels);
+}
+
+/**
+ * The resolved axis list of the panel config in scope (values, option labels
+ * and reset targets), as a Signal that follows a runtime language switch. Runs
+ * in an injection context.
+ *
+ * @category ui/a11y
+ * @relatedTo withA11yPanelAxes
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
+ * @since 0.1.0
+ */
+export function injectA11yPanelAxes(): Signal<readonly CngxA11yPanelAxisSpec[]> {
+  return coerceSignal(injectA11yPanelConfig().axes);
 }

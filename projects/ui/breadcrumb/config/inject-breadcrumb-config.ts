@@ -1,7 +1,11 @@
-import { inject } from '@angular/core';
+import { inject, type Signal } from '@angular/core';
+import { createDefaultsFill, createOverrideMerge } from '@cngx/core/utils';
 
-import type { CngxBreadcrumbConfig } from './breadcrumb.config';
-import { CNGX_BREADCRUMB_CONFIG } from './breadcrumb.config.defaults';
+import type { CngxBreadcrumbAriaLabels, CngxBreadcrumbConfig } from './breadcrumb.config';
+import {
+  CNGX_BREADCRUMB_ARIA_LABELS_DEFAULTS,
+  CNGX_BREADCRUMB_CONFIG,
+} from './breadcrumb.config.defaults';
 
 /**
  * Convenience accessor for the breadcrumb configuration cascade. Runs in
@@ -11,10 +15,13 @@ import { CNGX_BREADCRUMB_CONFIG } from './breadcrumb.config.defaults';
  * exists so consumers don't import the token directly. Mirrors
  * `injectTagConfig` in `@cngx/common/display`.
  *
+ * `ariaLabels` may hold a `Signal`; read the resolved bundle through
+ * {@link injectBreadcrumbAriaLabels}.
+ *
  * ```ts
- * export class CngxBreadcrumbBar {
+ * export class MyTrail {
  *   private readonly cfg = injectBreadcrumbConfig();
- *   readonly label = input<string>(this.cfg.ariaLabels?.bar ?? 'Breadcrumb');
+ *   protected readonly skin = computed(() => this.cfg.skin ?? 'classic');
  * }
  * ```
  *
@@ -23,4 +30,28 @@ import { CNGX_BREADCRUMB_CONFIG } from './breadcrumb.config.defaults';
  */
 export function injectBreadcrumbConfig(): CngxBreadcrumbConfig {
   return inject(CNGX_BREADCRUMB_CONFIG);
+}
+
+/**
+ * The resolved accessible names of the breadcrumb config in scope, every key
+ * filled from the English defaults (also a key an override sets to
+ * `undefined`), as a Signal that follows a runtime
+ * language switch. Runs in injection context; read it inside a `computed()`,
+ * a template or a handler.
+ *
+ * ```ts
+ * export class MyTrail {
+ *   private readonly labels = injectBreadcrumbAriaLabels();
+ *   protected readonly name = computed(() => this.labels().bar);
+ * }
+ * ```
+ *
+ * @category ui/breadcrumb
+ * @since 0.1.0
+ */
+export function injectBreadcrumbAriaLabels(): Signal<Required<CngxBreadcrumbAriaLabels>> {
+  return createDefaultsFill(
+    createOverrideMerge(CNGX_BREADCRUMB_ARIA_LABELS_DEFAULTS, injectBreadcrumbConfig().ariaLabels),
+    CNGX_BREADCRUMB_ARIA_LABELS_DEFAULTS,
+  );
 }

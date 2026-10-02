@@ -7,6 +7,7 @@ import {
   inject,
   input,
   linkedSignal,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -20,7 +21,7 @@ import { CngxAccordionItemContent } from './accordion-item-content.directive';
 import { CngxAccordionItemError } from './accordion-item-error.directive';
 import { CngxAccordionItemIcon } from './accordion-item-icon.directive';
 import { CngxAccordionItemSubtitle } from './accordion-item-subtitle.directive';
-import { injectAccordionConfig } from './config/inject-accordion-config';
+import { injectAccordionConfig, resolveAccordionCopy } from './config/inject-accordion-config';
 
 /**
  * Accordion item organism. Renders the APG-correct trio a headless consumer
@@ -67,9 +68,8 @@ import { injectAccordionConfig } from './config/inject-accordion-config';
   },
 })
 export class CngxAccordionItem {
-  // Config cascade source. Declared first so the disabledReason input default
-  // below can read the resolved value (field initialisers run top-to-bottom).
   private readonly config = injectAccordionConfig();
+  private readonly copy = resolveAccordionCopy(this.config);
 
   /**
    * Disabled item: the header reports `tabindex="-1"` + `aria-disabled="true"`,
@@ -88,18 +88,19 @@ export class CngxAccordionItem {
    * Reason announced to assistive tech when the item is disabled, bound through
    * the always-present `aria-describedby` reason element. Resolves
    * `input ?? CNGX_ACCORDION_CONFIG.disabledReason ?? EN default`: an unbound
-   * input falls back to the app-wide config (English out of the box, overridden
-   * via `withAccordionLabels`).
+   * input (`undefined`) falls back to the app-wide config (English out of the
+   * box, overridden via `withAccordionLabels`) and follows a language switch.
    */
-  readonly disabledReason = input<string>(this.config.disabledReason);
+  readonly disabledReason = input<string | undefined>(undefined);
   /**
    * Message announced through a `role="alert"` when `[state]` is error and no
    * `*cngxAccordionItemError` slot is provided. Resolves
    * `input ?? CNGX_ACCORDION_CONFIG.errorMessage ?? EN default`, mirroring
    * {@link disabledReason}: a spoken default so the error state is never silent
-   * to assistive tech. The error slot, when present, wins over this string.
+   * to assistive tech. The error slot, when present, wins over this string. An
+   * unbound input reads `undefined`.
    */
-  readonly errorMessage = input<string>(this.config.errorMessage);
+  readonly errorMessage = input<string | undefined>(undefined);
   /**
    * Stable id this item registers under in the coordinator's open-set. Defaults
    * to a generated id; bind `[panelId]` to a stable consumer value to address
@@ -125,6 +126,11 @@ export class CngxAccordionItem {
   protected readonly titleId = nextUid('cngx-accordion-title-');
   protected readonly subtitleId = nextUid('cngx-accordion-subtitle-');
   protected readonly reasonId = nextUid('cngx-accordion-reason-');
+
+  /** The disabled reason: the bound input, else the cascade default. */
+  protected readonly resolvedDisabledReason = computed(
+    () => this.disabledReason() ?? this.copy().disabledReason,
+  );
   /**
    * The button's `aria-describedby`: subtitle first (an informative secondary
    * line the title-only name-pin would otherwise hide from AT), then the
@@ -136,7 +142,7 @@ export class CngxAccordionItem {
   protected readonly describedBy = computed(() => {
     const ids = [
       this.subtitleSlot() ? this.subtitleId : null,
-      this.disabled() && this.disabledReason() ? this.reasonId : null,
+      this.disabled() && this.resolvedDisabledReason() ? this.reasonId : null,
     ].filter((id): id is string => id !== null);
     return ids.length > 0 ? ids.join(' ') : null;
   });
@@ -200,6 +206,17 @@ export class CngxAccordionItem {
   protected readonly busy = computed(() => {
     const status = this.status();
     return status === 'loading' || status === 'refreshing' || status === 'pending';
+  });
+  /**
+   * Text of the `role="alert"`. A bound `[errorMessage]` is tracked; the cascade
+   * default is read untracked and re-read on a status change, so a language
+   * switch does not re-announce a shown error - the next error speaks the new
+   * language.
+   */
+  protected readonly resolvedErrorMessage = computed(() => {
+    const own = this.errorMessage();
+    this.status();
+    return own ?? untracked(() => this.copy().errorMessage);
   });
 
   /** Whether this item's region is open, derived from the coordinator's open-set. */

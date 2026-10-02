@@ -1,11 +1,14 @@
-import type { CngxBreadcrumbConfig, CngxBreadcrumbSkin } from './breadcrumb.config';
+import type { Signal } from '@angular/core';
+
+import type { CngxBreadcrumbAriaLabels, CngxBreadcrumbSkin } from './breadcrumb.config';
 import type { CngxBreadcrumbConfigFeature } from './provide-breadcrumb-config';
 
 /**
  * Override the breadcrumb family's ARIA-string fallbacks - the bar landmark
  * name and the overflow/siblings trigger + list labels. Per-instance
  * `[label]` / `[triggerLabel]` / `[menuLabel]` bindings still win over the
- * cascade; this only sets the fallback.
+ * cascade; this only sets the fallback. Pass a `Signal` to switch the
+ * language at runtime.
  *
  * ```ts
  * provideBreadcrumbConfig(
@@ -17,7 +20,7 @@ import type { CngxBreadcrumbConfigFeature } from './provide-breadcrumb-config';
  * @since 0.1.0
  */
 export function withBreadcrumbAriaLabels(
-  payload: NonNullable<CngxBreadcrumbConfig['ariaLabels']>,
+  payload: CngxBreadcrumbAriaLabels | Signal<CngxBreadcrumbAriaLabels>,
 ): CngxBreadcrumbConfigFeature {
   return { kind: 'ariaLabels', payload };
 }

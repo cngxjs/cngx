@@ -150,3 +150,53 @@ export function createNestedOverrideMerge<T extends object, K extends RecordKeys
   byKey.set(key, merged);
   return merged;
 }
+
+const FILLED = new WeakMap<Signal<object>, Signal<object>>();
+
+/**
+ * Fills every key of `defaults` that a merged bundle leaves `undefined`, so a
+ * defaulted copy key an override sets to `undefined` falls back to its default
+ * instead of rendering nothing. Pair it with {@link createOverrideMerge}, whose
+ * plain spread lets an explicit `undefined` win: the merge keeps the override
+ * rules, this restores the default for keys that have one. Keys absent from
+ * `defaults` stay as merged.
+ *
+ * Memoized per merged signal, and the result keeps its reference while the
+ * filled values are key-wise equal (`recordEqual`), so an accessor that fills
+ * the same merge for every instance allocates nothing after the first.
+ *
+ * ```ts
+ * export function injectTrailLabels(): Signal<Required<TrailLabels>> {
+ *   return createDefaultsFill(
+ *     createOverrideMerge(TRAIL_DEFAULTS, injectTrailConfig().labels),
+ *     TRAIL_DEFAULTS,
+ *   );
+ * }
+ * ```
+ *
+ * @category core/utils
+ * @since 0.1.0
+ * @relatedTo createOverrideMerge, createNestedOverrideMerge
+ */
+export function createDefaultsFill<T extends object>(
+  merged: Signal<Partial<T>>,
+  defaults: T,
+): Signal<T> {
+  const cached = FILLED.get(merged) as Signal<T> | undefined;
+  if (cached) {
+    return cached;
+  }
+  const keys = Object.keys(defaults) as (keyof T)[];
+  const filled = computed<T>(
+    () => {
+      const value = { ...merged() } as T;
+      for (const key of keys) {
+        value[key] ??= defaults[key];
+      }
+      return value;
+    },
+    { equal: recordEqual },
+  );
+  FILLED.set(merged, filled);
+  return filled;
+}

@@ -3,13 +3,17 @@ import {
   makeEnvironmentProviders,
   type EnvironmentProviders,
   type Provider,
+  type Signal,
 } from '@angular/core';
+import { createOverrideMerge } from '@cngx/core/utils';
 
-import type { CngxBreadcrumbConfig } from './breadcrumb.config';
+import type { CngxBreadcrumbAriaLabels, CngxBreadcrumbConfig } from './breadcrumb.config';
 import {
   CNGX_BREADCRUMB_CONFIG,
   CNGX_BREADCRUMB_DEFAULTS,
 } from './breadcrumb.config.defaults';
+
+const NO_ARIA_LABELS: CngxBreadcrumbAriaLabels = {};
 
 /**
  * Discriminated-union shape returned by the breadcrumb config features -
@@ -27,7 +31,7 @@ import {
 export type CngxBreadcrumbConfigFeature =
   | {
       readonly kind: 'ariaLabels';
-      readonly payload: NonNullable<CngxBreadcrumbConfig['ariaLabels']>;
+      readonly payload: CngxBreadcrumbAriaLabels | Signal<CngxBreadcrumbAriaLabels>;
     }
   | {
       readonly kind: 'router';
@@ -56,7 +60,7 @@ function reduceFeatures(
   for (const f of features) {
     switch (f.kind) {
       case 'ariaLabels':
-        out.ariaLabels = { ...out.ariaLabels, ...f.payload };
+        out.ariaLabels = createOverrideMerge(out.ariaLabels ?? NO_ARIA_LABELS, f.payload);
         break;
       case 'router':
         out.router = { ...out.router, ...f.payload };
@@ -85,7 +89,7 @@ function mergeConfig(
   partial: Partial<CngxBreadcrumbConfig>,
 ): CngxBreadcrumbConfig {
   return {
-    ariaLabels: { ...base.ariaLabels, ...partial.ariaLabels },
+    ariaLabels: createOverrideMerge(base.ariaLabels ?? NO_ARIA_LABELS, partial.ariaLabels),
     router: { ...base.router, ...partial.router },
     skin: partial.skin ?? base.skin,
   };

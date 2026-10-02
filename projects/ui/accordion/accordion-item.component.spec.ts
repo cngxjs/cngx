@@ -15,6 +15,8 @@ import { CngxAccordionItemLeading } from './accordion-item-leading.directive';
 import { CngxAccordionItemMeta } from './accordion-item-meta.directive';
 import { CngxAccordionItemSubtitle } from './accordion-item-subtitle.directive';
 import { CngxAccordionItemTitle } from './accordion-item-title.directive';
+import { withAccordionLabels } from './config/features';
+import { provideAccordionConfig } from './config/provide-accordion-config';
 
 @Component({
   template: `<cngx-accordion-group [headingLevel]="level()">
@@ -131,6 +133,18 @@ class ErrorDefaultHost {}
 })
 class ErrorMessageHost {
   readonly msg = signal('Custom failure.');
+}
+
+@Component({
+  template: `<cngx-accordion-group>
+    <cngx-accordion-item [state]="state()" [disabled]="true">
+      <span cngxAccordionItemTitle>R</span>
+    </cngx-accordion-item>
+  </cngx-accordion-group>`,
+  imports: [CngxAccordionGroup, CngxAccordionItem, CngxAccordionItemTitle],
+})
+class LanguageFlipHost {
+  readonly state = signal<AsyncStatus>('error');
 }
 
 @Component({
@@ -475,6 +489,35 @@ describe('CngxAccordionItem', () => {
     const root = fixture.nativeElement as HTMLElement;
     const alert = root.querySelector<HTMLElement>('[role="alert"]');
     expect(alert?.textContent?.trim()).toBe('Custom failure.');
+  });
+
+  it('does not re-announce on a language flip', () => {
+    const disabledReason = signal('This section is currently unavailable.');
+    const errorMessage = signal('This section could not be loaded.');
+    TestBed.configureTestingModule({
+      providers: [provideAccordionConfig(withAccordionLabels({ disabledReason, errorMessage }))],
+    });
+    const fixture = TestBed.createComponent(LanguageFlipHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const alertText = (): string | undefined =>
+      root.querySelector('[role="alert"]')?.textContent?.trim();
+    const reasonText = (): string | undefined =>
+      root.querySelector('.cngx-visually-hidden')?.textContent?.trim();
+    expect(alertText()).toBe('This section could not be loaded.');
+
+    disabledReason.set('Dieser Abschnitt ist nicht verfügbar.');
+    errorMessage.set('Dieser Abschnitt konnte nicht geladen werden.');
+    fixture.detectChanges();
+    // The described-by reason is not a live region and follows the switch at once.
+    expect(reasonText()).toBe('Dieser Abschnitt ist nicht verfügbar.');
+    expect(alertText()).toBe('This section could not be loaded.');
+
+    fixture.componentInstance.state.set('success');
+    fixture.detectChanges();
+    fixture.componentInstance.state.set('error');
+    fixture.detectChanges();
+    expect(alertText()).toBe('Dieser Abschnitt konnte nicht geladen werden.');
   });
 
   it('hands the busy slot its status and the error slot the resolved message', () => {

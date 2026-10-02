@@ -78,4 +78,7 @@ Project `[cngxA11yPanelHeader]` to replace the default heading:
 
 - `CngxA11yPanel` - the placeable card.
 - `CNGX_A11Y_PANEL_CONFIG` / `provideA11yPanelConfig` / `withA11yPanelLabels` /
-  `withA11yPanelAxes` / `injectA11yPanelConfig` - the config cascade.
+  `withA11yPanelAxes` / `injectA11yPanelConfig` - the config cascade. Both
+  features also take a `Signal`, so the panel follows a runtime language switch.
+- `injectA11yPanelLabels` / `injectA11yPanelAxes` - the resolved labels and axis
+  list as Signals.

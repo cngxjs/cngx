@@ -26,7 +26,10 @@ import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive
 import { CngxBreadcrumbSiblings } from './breadcrumb-siblings.component';
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
 import type { CngxBreadcrumbSkin } from './config/breadcrumb.config';
-import { injectBreadcrumbConfig } from './config/inject-breadcrumb-config';
+import {
+  injectBreadcrumbAriaLabels,
+  injectBreadcrumbConfig,
+} from './config/inject-breadcrumb-config';
 import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
 
 /**
@@ -105,8 +108,13 @@ export class CngxBreadcrumbBar {
 
   private readonly cfg = injectBreadcrumbConfig();
 
-  /** Accessible name of the `nav` landmark. Falls back through the config cascade to the EN default. */
-  readonly label = input<string>(this.cfg.ariaLabels?.bar ?? 'Breadcrumb');
+  private readonly ariaLabels = injectBreadcrumbAriaLabels();
+
+  /**
+   * Accessible name of the `nav` landmark. Unbound (`undefined`), it falls back
+   * through the config cascade to the EN default and follows a language switch.
+   */
+  readonly label = input<string | undefined>(undefined);
   /**
    * Visual skin, reflected onto `[data-skin]`. Cascade `input ?? config.skin ??
    * 'classic'`, resolved by {@link resolvedSkin}. Pure thematic concern -
@@ -143,6 +151,8 @@ export class CngxBreadcrumbBar {
   /** The rendered trail: a provided source wins over the `[items]` input (controlled/uncontrolled). */
   protected readonly items = createControlledSource(this.itemsSource?.crumbs, this.itemsInput);
 
+  /** Resolved landmark name (`input ?? config.ariaLabels.bar ?? EN default`). */
+  protected readonly resolvedLabel = computed(() => this.label() ?? this.ariaLabels().bar);
   /** Resolved skin (`input ?? config.skin ?? 'classic'`), reflected onto `[data-skin]`. */
   protected readonly resolvedSkin = computed<CngxBreadcrumbSkin>(
     () => this.skin() ?? this.cfg.skin ?? 'classic',

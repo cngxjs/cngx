@@ -1,7 +1,11 @@
-import { inject } from '@angular/core';
+import { inject, type Signal } from '@angular/core';
+import { createDefaultsFill, createOverrideMerge } from '@cngx/core/utils';
 
-import type { CngxStatCardConfig } from './stat-card.config';
-import { CNGX_STAT_CARD_CONFIG } from './stat-card.config.defaults';
+import type { CngxStatCardConfig, CngxStatCardResolvedAriaLabels } from './stat-card.config';
+import {
+  CNGX_STAT_CARD_ARIA_LABELS_DEFAULTS,
+  CNGX_STAT_CARD_CONFIG,
+} from './stat-card.config.defaults';
 
 /**
  * Convenience accessor for the stat-card configuration cascade. Runs in
@@ -22,4 +26,20 @@ import { CNGX_STAT_CARD_CONFIG } from './stat-card.config.defaults';
  */
 export function injectStatCardConfig(): CngxStatCardConfig {
   return inject(CNGX_STAT_CARD_CONFIG);
+}
+
+/**
+ * The resolved strings of the stat-card config in scope, filled from the
+ * English defaults (also a key an override sets to `undefined`), as a Signal that follows a runtime language switch. Runs
+ * in injection context; read it inside a `computed()`, a template or a
+ * handler, and untracked where it builds live-region text.
+ *
+ * @category ui/stat-card
+ * @since 0.1.0
+ */
+export function injectStatCardAriaLabels(): Signal<CngxStatCardResolvedAriaLabels> {
+  return createDefaultsFill(
+    createOverrideMerge(CNGX_STAT_CARD_ARIA_LABELS_DEFAULTS, injectStatCardConfig().ariaLabels),
+    CNGX_STAT_CARD_ARIA_LABELS_DEFAULTS,
+  );
 }
