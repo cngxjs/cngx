@@ -39,7 +39,12 @@
     --cngx-breadcrumb-link-color: var(--mat-sys-primary);
     --cngx-breadcrumb-current-color: var(--mat-sys-on-surface);
     --cngx-breadcrumb-separator-color: var(--mat-sys-on-surface-variant);
+    // The pill / ribbon / icononly current crumb fills with --cngx-color-primary
+    // (system-bridged) and labels it with --cngx-color-on-primary, falling back
+    // to a dark ink that suits the cngx primary but not a dark Material one.
+    --cngx-color-on-primary: var(--mat-sys-on-primary);
   } @else {
+    --cngx-color-on-primary: #{mat.get-theme-color($theme, primary, default-contrast)};
     --cngx-breadcrumb-link-color: #{mat.get-theme-color($theme, primary)};
     --cngx-breadcrumb-current-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-breadcrumb-separator-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};

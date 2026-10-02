@@ -50,6 +50,31 @@
   --cngx-breadcrumb-separator: '\2039';
 }
 
+/* Ink for the filled current crumb (pill, ribbon, icononly). The fill stays
+   the raw primary, which is too light for a white label in either scheme
+   (3.3:1 light, 2.6:1 dark), so the label takes the scheme's dark neutral:
+   the text colour in light, the surface colour in dark (5.5:1 / 6.9:1 on the
+   default primary; the icononly glyph is currentColor). Declared per scheme
+   block because a custom property resolves where it is set, so a dark island
+   re-derives it. A theme that declares --cngx-color-on-primary still wins at
+   the skin use-site. */
+:root,
+[data-color-scheme='light'],
+.light {
+  --_cngx-breadcrumb-fill-ink: var(--cngx-color-text, oklch(0.2 0.01 250));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme='light']):not(.light) {
+    --_cngx-breadcrumb-fill-ink: var(--cngx-color-surface, oklch(0.2 0.01 250));
+  }
+}
+
+[data-color-scheme='dark'],
+.dark {
+  --_cngx-breadcrumb-fill-ink: var(--cngx-color-surface, oklch(0.2 0.01 250));
+}
+
 .cngx-breadcrumb__list {
   display: flex;
   flex-wrap: wrap;
@@ -198,14 +223,14 @@
 @property --cngx-breadcrumb-pill-active-bg {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(0.52 0.13 50);
+  initial-value: oklch(0.66 0.19 50);
 }
 
 /** Active-segment label colour under the `pill` skin. @group Skin */
 @property --cngx-breadcrumb-pill-active-color {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(1 0 0);
+  initial-value: oklch(0.2 0.01 250);
 }
 
 /** Segment font size under the `pill` skin. @group Skin */
@@ -258,8 +283,8 @@
       transparent
     );
     --cngx-breadcrumb-pill-hover-color: var(--cngx-color-text, oklch(0.2 0.01 250));
-    --cngx-breadcrumb-pill-active-bg: var(--cngx-color-primary-text, color-mix(in oklab, var(--cngx-color-primary, oklch(0.66 0.19 50)) 70%, var(--cngx-color-text, oklch(0.2 0.01 250))));
-    --cngx-breadcrumb-pill-active-color: var(--cngx-color-surface, oklch(1 0 0));
+    --cngx-breadcrumb-pill-active-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-breadcrumb-pill-active-color: var(--cngx-color-on-primary, var(--_cngx-breadcrumb-fill-ink, oklch(0.2 0.01 250)));
     --cngx-breadcrumb-pill-font-size: var(--cngx-font-size-sm, 0.875rem);
   }
 
@@ -334,12 +359,12 @@
 @property --cngx-breadcrumb-ribbon-active-bg {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(0.52 0.13 50);
+  initial-value: oklch(0.66 0.19 50);
 }
 @property --cngx-breadcrumb-ribbon-active-color {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(1 0 0);
+  initial-value: oklch(0.2 0.01 250);
 }
 @property --cngx-breadcrumb-ribbon-font-size {
   syntax: '*';
@@ -366,8 +391,8 @@
       transparent
     );
     --cngx-breadcrumb-ribbon-hover-color: var(--cngx-color-text, oklch(0.2 0.01 250));
-    --cngx-breadcrumb-ribbon-active-bg: var(--cngx-color-primary-text, color-mix(in oklab, var(--cngx-color-primary, oklch(0.66 0.19 50)) 70%, var(--cngx-color-text, oklch(0.2 0.01 250))));
-    --cngx-breadcrumb-ribbon-active-color: var(--cngx-color-surface, oklch(1 0 0));
+    --cngx-breadcrumb-ribbon-active-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-breadcrumb-ribbon-active-color: var(--cngx-color-on-primary, var(--_cngx-breadcrumb-fill-ink, oklch(0.2 0.01 250)));
     --cngx-breadcrumb-ribbon-font-size: var(--cngx-font-size-sm, 0.875rem);
     --cngx-breadcrumb-ribbon-radius: var(--cngx-radius-sm, 4px);
   }
@@ -1250,12 +1275,12 @@
 @property --cngx-breadcrumb-icononly-active-bg {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(0.52 0.13 50);
+  initial-value: oklch(0.66 0.19 50);
 }
 @property --cngx-breadcrumb-icononly-active-color {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(1 0 0);
+  initial-value: oklch(0.2 0.01 250);
 }
 @property --cngx-breadcrumb-icononly-tip-bg {
   syntax: '<color>';
@@ -1287,8 +1312,8 @@
       var(--cngx-color-surface, oklch(1 0 0))
     );
     --cngx-breadcrumb-icononly-hover-color: var(--cngx-color-text, oklch(0.2 0.01 250));
-    --cngx-breadcrumb-icononly-active-bg: var(--cngx-color-primary-text, color-mix(in oklab, var(--cngx-color-primary, oklch(0.66 0.19 50)) 70%, var(--cngx-color-text, oklch(0.2 0.01 250))));
-    --cngx-breadcrumb-icononly-active-color: var(--cngx-color-surface, oklch(1 0 0));
+    --cngx-breadcrumb-icononly-active-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-breadcrumb-icononly-active-color: var(--cngx-color-on-primary, var(--_cngx-breadcrumb-fill-ink, oklch(0.2 0.01 250)));
     --cngx-breadcrumb-icononly-tip-bg: var(--cngx-color-text, oklch(0.2 0.01 250));
     --cngx-breadcrumb-icononly-tip-color: var(--cngx-color-surface, oklch(1 0 0));
     --cngx-breadcrumb-icononly-radius: var(--cngx-radius-sm, 4px);
