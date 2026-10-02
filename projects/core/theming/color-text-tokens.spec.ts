@@ -2,10 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-// Source-CSS contract for the two derived colour rungs. The rendered ratios
-// are asserted in the Chromium tier (`cngx-field-skin.geometry.spec.ts`).
+// Source-CSS contract for the derived colour rungs. The rendered ratios are
+// asserted in the Chromium tier (`cngx-field-skin.geometry.spec.ts`,
+// `color-primary-text.geometry.spec.ts` in the forms target).
 
 const css = readFileSync(resolve(__dirname, 'system-tokens.css'), 'utf-8');
+
+const PRIMARY_TEXT =
+  '--cngx-color-primary-text: color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text));';
 
 const DANGER_TEXT =
   '--cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));';
@@ -40,6 +44,21 @@ describe('--cngx-color-primary-strong', () => {
   ] as const)('is set in the %s block', (scheme, value) => {
     expect(BLOCKS[scheme]()).toContain(`--cngx-color-primary-strong: ${value};`);
   });
+});
+
+describe('--cngx-color-primary-text', () => {
+  // Same reason as the danger rung: a registration would pin a literal and
+  // the derivation from a consumer's --cngx-color-primary would never apply.
+  it('is not registered', () => {
+    expect(css).not.toMatch(/@property --cngx-color-primary-text/);
+  });
+
+  it.each(Object.keys(BLOCKS) as (keyof typeof BLOCKS)[])(
+    'derives from primary and text in oklab in the %s block',
+    (scheme) => {
+      expect(BLOCKS[scheme]()).toContain(PRIMARY_TEXT);
+    },
+  );
 });
 
 describe('--cngx-color-danger-text', () => {
