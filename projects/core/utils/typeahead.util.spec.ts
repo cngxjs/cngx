@@ -22,4 +22,24 @@ describe('matchesTypeahead', () => {
     expect(matchesTypeahead('', 'a')).toBe(false);
     expect(matchesTypeahead('Zebra', 'a')).toBe(false);
   });
+
+  it('ignores accents on either side', () => {
+    expect(matchesTypeahead('Über', 'u')).toBe(true);
+    expect(matchesTypeahead('Uber', 'ü')).toBe(true);
+    expect(matchesTypeahead('Éclair', 'ecl')).toBe(true);
+    expect(matchesTypeahead('Ålesund', 'A')).toBe(true);
+    expect(matchesTypeahead('Ölfass', 'e')).toBe(false);
+  });
+
+  it('lowercases with the locale before folding accents', () => {
+    expect(matchesTypeahead('İzmir', 'i', 'tr')).toBe(true);
+    expect(matchesTypeahead('Istanbul', 'ı', 'tr')).toBe(true);
+    expect(matchesTypeahead('Istanbul', 'i', 'tr')).toBe(false);
+    expect(matchesTypeahead('Istanbul', 'I', 'tr')).toBe(true);
+  });
+
+  it('keeps plain lowercasing without a locale', () => {
+    expect(matchesTypeahead('Istanbul', 'i')).toBe(true);
+    expect(matchesTypeahead('İzmir', 'i')).toBe(true);
+  });
 });

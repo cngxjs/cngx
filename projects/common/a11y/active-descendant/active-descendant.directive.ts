@@ -18,7 +18,7 @@ import {
   resolveInlineStep,
   resolveStepFrom,
 } from '@cngx/core';
-import { matchesTypeahead } from '@cngx/core/utils';
+import { injectLocale, matchesTypeahead } from '@cngx/core/utils';
 
 import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from './ad-item.token';
 
@@ -125,6 +125,7 @@ export class CngxActiveDescendant {
   readonly typeaheadMissed = output<string>();
 
   private readonly hostEl = inject(ElementRef<HTMLElement>);
+  private readonly locale = injectLocale();
   private readonly registered = contentChildren(CNGX_AD_ITEM, { descendants: true });
 
   /** Document writing direction - flips the horizontal-arrow steps under `rtl` (APG). */
@@ -435,7 +436,8 @@ export class CngxActiveDescendant {
   }
 
   private handleTypeahead(ch: string): void {
-    const next = this.typeaheadBuffer() + ch.toLowerCase();
+    const locale = this.locale();
+    const next = this.typeaheadBuffer() + ch.toLocaleLowerCase(locale);
     this.typeaheadBuffer.set(next);
 
     if (this.typeaheadTimer !== null) {
@@ -471,7 +473,7 @@ export class CngxActiveDescendant {
       if (skip && candidate.disabled) {
         continue;
       }
-      if (matchesTypeahead(candidate.label, term)) {
+      if (matchesTypeahead(candidate.label, term, locale)) {
         this.activeIndexState.set(rel + windowOffset);
         return;
       }

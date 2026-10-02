@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { provideDirection } from '@cngx/core';
+import { provideLocale } from '@cngx/core/utils';
 
 import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from './ad-item.token';
 import { CngxActiveDescendant } from './active-descendant.directive';
@@ -357,6 +358,32 @@ describe('CngxActiveDescendant - typeahead', () => {
     // Next key starts a fresh buffer
     key('a');
     expect(dir.activeItem()?.value).toBe('a');
+  });
+
+  it('matches accent-tolerant and lowercases with the app locale', () => {
+    TestBed.configureTestingModule({ providers: [provideLocale('tr')] });
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.options.set([
+      { value: 'is', label: 'Istanbul' },
+      { value: 'iz', label: 'İzmir' },
+      { value: 'u', label: 'Üsküdar' },
+    ]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    const press = (k: string): void => {
+      container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: k }));
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(400);
+    };
+    press('i');
+    expect(dir.activeItem()?.value).toBe('iz');
+    press('I');
+    expect(dir.activeItem()?.value).toBe('is');
+    press('u');
+    expect(dir.activeItem()?.value).toBe('u');
   });
 
   it('skips typeahead when typeahead=false', () => {

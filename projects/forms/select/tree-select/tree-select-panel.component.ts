@@ -12,7 +12,7 @@ import {
   type ElementRef,
 } from '@angular/core';
 import { CngxActiveDescendant } from '@cngx/common/a11y';
-import { matchesTypeahead } from '@cngx/core/utils';
+import { injectLocale, matchesTypeahead } from '@cngx/core/utils';
 import { CngxHierarchicalNav, createTreeAdItems } from '@cngx/common/interactive';
 import { CngxCheckboxIndicator } from '@cngx/common/display';
 import type { FlatTreeNode } from '@cngx/utils';
@@ -80,6 +80,7 @@ export class CngxTreeSelectPanel<T = unknown> {
 
   /** For the one-shot afterNextRender in the typeahead-miss handler. */
   private readonly injector = inject(Injector);
+  private readonly locale = injectLocale();
 
   constructor() {
     // Move DOM focus to the tree container on open. AD only reacts to
@@ -257,12 +258,13 @@ export class CngxTreeSelectPanel<T = unknown> {
     const activeId = ad.activeItem()?.id ?? null;
     const activeIdx = activeId === null ? -1 : flat.findIndex((n) => n.id === activeId);
     const skip = ad.skipDisabled();
+    const locale = this.locale();
     for (let step = 1; step <= count; step++) {
       const node = flat[(activeIdx + step + count) % count];
       if (skip && node.disabled) {
         continue;
       }
-      if (matchesTypeahead(node.label, term)) {
+      if (matchesTypeahead(node.label, term, locale)) {
         this.host.treeController.reveal(node.id);
         afterNextRender(() => ad.highlightByValue(node.value), { injector: this.injector });
         return;
