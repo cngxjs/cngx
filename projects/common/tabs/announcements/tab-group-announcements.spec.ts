@@ -352,3 +352,38 @@ describe('createTabGroupAnnouncements - consumer-translated tab labels', () => {
     expect(bundle.liveAnnouncement()).toBe('Could not save changes - reverted to "Profile".');
   });
 });
+
+describe('createTabGroupAnnouncements - direction formatters', () => {
+  it('lets previousTab / nextTab own the order of the commit-success sentence', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsI18n(
+          withTabsI18nLabels({
+            nextTab: (phrase) => `${phrase} (weiter)`,
+            previousTab: (phrase) => `${phrase} (zurück)`,
+          }),
+        ),
+      ],
+    });
+    const { presenter, current, previous } = makeCommitPresenter();
+    const tabs = presenter.tabs as ReturnType<typeof signal<readonly CngxTabHandle[]>>;
+    tabs.set([
+      { ...makeHandle(), id: 'a', label: signal('Profile') },
+      { ...makeHandle(), id: 'b', label: signal('Account') },
+    ]);
+    const bundle = createTabGroupAnnouncements({
+      presenter,
+      i18n: TestBed.inject(CNGX_TABS_I18N),
+      config: {},
+      ariaLabel: signal<string | undefined>(undefined),
+      ariaLabelledBy: signal<string | undefined>(undefined),
+    });
+    const host = presenter as unknown as { activeIndex: ReturnType<typeof signal<number>> };
+    host.activeIndex.set(1);
+    previous.set('pending');
+    current.set('success');
+    expect(bundle.liveAnnouncement()).toBe('Tab 2 of 2: Account (weiter)');
+  });
+});

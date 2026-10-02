@@ -22,8 +22,8 @@ describe('CngxTabsI18n', () => {
     });
     const i18n = TestBed.inject(CNGX_TABS_I18N)();
     expect(i18n.tabsLabel).toBe('Tabs');
-    expect(i18n.previousTab).toBe('Previous tab');
-    expect(i18n.nextTab).toBe('Next tab');
+    expect(i18n.previousTab('Tab 1 of 3: A')).toBe('Previous tab: Tab 1 of 3: A');
+    expect(i18n.nextTab('Tab 3 of 3: C')).toBe('Next tab: Tab 3 of 3: C');
     expect(i18n.commitFailedRetry).toBe('Tab change refused - retry?');
     expect(i18n.commitInFlight).toBe('Switching tab…');
     expect(i18n.commitRolledBackTo('Profile')).toBe(
@@ -63,16 +63,16 @@ describe('CngxTabsI18n', () => {
         provideTabsI18n(
           withTabsI18nLabels({
             tabsLabel: 'Reiter',
-            previousTab: 'Vorheriger Reiter',
-            nextTab: 'Nächster Reiter',
+            previousTab: (phrase) => `Vorheriger Reiter: ${phrase}`,
+            nextTab: (phrase) => `${phrase} (weiter)`,
           }),
         ),
       ],
     });
     const i18n = TestBed.inject(CNGX_TABS_I18N)();
     expect(i18n.tabsLabel).toBe('Reiter');
-    expect(i18n.previousTab).toBe('Vorheriger Reiter');
-    expect(i18n.nextTab).toBe('Nächster Reiter');
+    expect(i18n.previousTab('Reiter 1')).toBe('Vorheriger Reiter: Reiter 1');
+    expect(i18n.nextTab('Reiter 2')).toBe('Reiter 2 (weiter)');
     // Unset keys keep their English defaults.
     expect(i18n.commitInFlight).toBe('Switching tab…');
     expect(i18n.tabHasErrors(2)).toBe('2 errors');
@@ -166,7 +166,7 @@ describe('CngxTabsI18n', () => {
       TestBed.resetTestingModule();
 
       const first: Partial<CngxTabsI18n> = { tabsLabel: 'Reiter', addTab: 'Neu' };
-      const second: Partial<CngxTabsI18n> = { tabsLabel: 'Bereiche', nextTab: 'Weiter' };
+      const second: Partial<CngxTabsI18n> = { tabsLabel: 'Bereiche', addTab: 'Weiter' };
       TestBed.configureTestingModule({
         providers: [
           provideZonelessChangeDetection(),

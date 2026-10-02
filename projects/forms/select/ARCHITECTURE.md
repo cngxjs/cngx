@@ -352,7 +352,8 @@ provideCngxSelect(
     statusLoading: 'Lade Optionen',
     statusRefreshing: 'Aktualisiere Optionen',
     fieldLabelFallback: 'Auswahl',
-    commitFailedMessage: 'Speichern fehlgeschlagen',
+    commitFailedMessage: (label, detail) =>
+      detail ? `${label}: Speichern fehlgeschlagen - ${detail}` : `${label}: Speichern fehlgeschlagen`,
     treeExpand: 'Knoten erweitern',
     treeCollapse: 'Knoten reduzieren',
   }),

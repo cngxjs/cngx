@@ -36,7 +36,7 @@ export interface CngxStepperAnnouncementBuilders {
   readonly liveAnnouncement: Signal<string>;
   /**
    * SR descriptor phrase. Aggregator-announced or "Step N of M: <label>";
-   * appends `stepRolledBackSuffix` on the rejected row.
+   * routes the rejected row through `stepRolledBack(base)`.
    */
   readonly statusPhrase: (node: CngxStepNode) => string;
   /** Group descriptor - rolls up children's aggregated status. */
@@ -125,7 +125,7 @@ export function createStepperAnnouncementBuilders(
       return '';
     }
     return node.kind === 'step' && node.flatIndex === presenter.lastFailedIndex()
-      ? `${base} ${i18n.stepRolledBackSuffix}`
+      ? i18n.stepRolledBack(base)
       : base;
   };
 

@@ -21,7 +21,7 @@ export interface CngxTimelineFallbackCopy {
   readonly emptyFallback: string;
   readonly loading: string;
   readonly refreshing: string;
-  readonly groupLabel: (group: TimelineGroup<unknown>) => string;
+  readonly groupLabel: (group: TimelineGroup<unknown>, locale: string) => string;
 }
 
 /**
@@ -50,7 +50,8 @@ export function createTimelineFallbackCopy(
   const formatter = computed(() => source().groupLabel);
   const groupLabel = computed(() => {
     const format = formatter();
-    return (group: TimelineGroup<unknown>): string => format?.(group) ?? group.key;
+    return (group: TimelineGroup<unknown>, locale: string): string =>
+      format?.(group, locale) ?? group.key;
   });
   return computed(
     () => {

@@ -12,7 +12,6 @@ import {
   withTimelineLabels,
   type CngxTimelineConfig,
   type CngxTimelineLabels,
-  formatTimelineGroupDate,
 } from './timeline-config';
 
 const lbl = (config: CngxTimelineConfig): CngxTimelineLabels =>
@@ -50,15 +49,13 @@ describe('timeline config cascade', () => {
       });
     });
 
-    it('formats a group header from its start date (en-US on a direct call)', () => {
+    it('formats a group header from its start date in the passed locale', () => {
       TestBed.configureTestingModule({});
+      const format = lbl(readConfig()).groupLabel;
       const start = new Date(2026, 6, 20);
 
-      expect(lbl(readConfig()).groupLabel?.(group(start))).toBe('7/20/2026');
-    });
-
-    it('formats a group date in a given locale', () => {
-      expect(formatTimelineGroupDate(group(new Date(2026, 6, 20)), 'de-DE')).toBe('20.7.2026');
+      expect(format?.(group(start), 'en-US')).toBe('7/20/2026');
+      expect(format?.(group(start), 'de-DE')).toBe('20.7.2026');
     });
 
     it('reserves an empty templates bag for the slot stage', () => {
@@ -103,7 +100,7 @@ describe('timeline config cascade', () => {
         ],
       });
 
-      expect(lbl(readConfig()).groupLabel?.(group(new Date(2026, 6, 20)))).toBe('Week of 2026');
+      expect(lbl(readConfig()).groupLabel?.(group(new Date(2026, 6, 20)), 'en-US')).toBe('Week of 2026');
     });
 
     it('leaves the library defaults untouched for the next injector', () => {

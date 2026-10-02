@@ -105,7 +105,7 @@ export interface CngxTimelineDateHeaderContext<T> {
 /**
  * The per-group header. Falls back to
  * `CNGX_TIMELINE_CONFIG.labels.groupLabel`, which formats the group's
- * start date in the browser locale.
+ * start date in the app locale.
  *
  * The element this renders into is what the group's `aria-labelledby`
  * points at, so a header that renders nothing leaves the group unnamed.

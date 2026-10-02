@@ -517,7 +517,7 @@ export class CngxTreeSelect<T = unknown>
     const failedMessage = this.config.ariaLabels().commitFailedMessage;
     const labelText = label !== '' ? label : (aria ?? fieldFallback);
     const detail = err instanceof Error ? err.message : undefined;
-    return detail ? `${labelText}: ${failedMessage} - ${detail}` : `${labelText}: ${failedMessage}`;
+    return failedMessage(labelText, detail);
   }
 
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({

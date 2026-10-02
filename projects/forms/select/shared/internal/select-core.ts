@@ -651,7 +651,7 @@ export function createSelectCore<T, TCommit>(
     const failedMessage = config.ariaLabels().commitFailedMessage;
     const labelText = label !== '' ? label : (aria ?? fieldFallback);
     const detail = err instanceof Error ? err.message : undefined;
-    return detail ? `${labelText}: ${failedMessage} - ${detail}` : `${labelText}: ${failedMessage}`;
+    return failedMessage(labelText, detail);
   }
 
   // Stable identities for the core's lifetime. Adapter unwraps

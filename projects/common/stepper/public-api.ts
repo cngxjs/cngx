@@ -123,11 +123,6 @@ export {
   provideStepperI18n,
   withStepperI18nLabels,
 } from './i18n/stepper-i18n';
-// `@internal`: exported so the sibling `@cngx/ui/mat-stepper` bridge can
-// resolve the `<mat-step>` fallback label across the secondary-entry
-// boundary (precedent: the `@internal` factory-helper blocks below).
-export { resolveStepFallbackLabel } from './i18n/stepper-i18n';
-
 export { resolveStepperStatusLabel } from './status-label';
 
 export { createStepperDisplayMode, injectStepperCollapse } from './display-mode';

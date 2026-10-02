@@ -58,7 +58,3 @@ export {
   type CngxTimelineLabels,
   type CngxTimelineTemplates,
 } from './timeline-config';
-// `@internal` helpers exported so the sibling `@cngx/ui/timeline` organism
-// can recognise and re-format the default group header across the
-// secondary-entry boundary (precedent: `createTabsHostAttrs`).
-export { formatTimelineGroupDate, TIMELINE_DEFAULT_GROUP_LABEL } from './timeline-config';

@@ -26,8 +26,17 @@ export interface CngxTabsI18n {
   readonly tabLabelWithDetail: (label: string, detail: string) => string;
   readonly tabHasErrors: (count: number) => string;
   readonly moreTabsLabel: (count: number) => string;
-  readonly previousTab: string;
-  readonly nextTab: string;
+  /**
+   * Commit-success announcement after a move to an earlier tab. Receives
+   * the position phrase from {@link selectedTab} and owns the whole
+   * sentence, so a locale can reorder it or drop the separator, e.g.
+   * `Previous tab: Tab 1 of 3: Profile`. Unlike the stepper's
+   * `previousStep` / `nextStep`, which are button labels, this key returns
+   * the full live-region sentence.
+   */
+  readonly previousTab: (positionPhrase: string) => string;
+  /** Sibling of {@link previousTab} after a move to a later tab. */
+  readonly nextTab: (positionPhrase: string) => string;
   /**
    * Accessible name for a tab's close button. Receives the tab label
    * (or a generic fallback when unlabeled) and yields the button's
@@ -66,8 +75,8 @@ const TABS_I18N_DEFAULTS: CngxTabsI18n = {
   tabLabelWithDetail: (label, detail) => `${label}, ${detail}`,
   tabHasErrors: (count) => `${count} error${count === 1 ? '' : 's'}`,
   moreTabsLabel: (count) => `${count} more`,
-  previousTab: 'Previous tab',
-  nextTab: 'Next tab',
+  previousTab: (positionPhrase) => `Previous tab: ${positionPhrase}`,
+  nextTab: (positionPhrase) => `Next tab: ${positionPhrase}`,
   closeTab: (label) => `Close "${label}"`,
   addTab: 'Add tab',
   closedTab: (label) => (label ? `Closed "${label}"` : 'Tab closed'),
@@ -138,7 +147,7 @@ export function withTabsI18nLabels(
  * bootstrapApplication(AppComponent, {
  *   providers: [
  *     provideTabsI18n(
- *       withTabsI18nLabels({ tabsLabel: 'Reiter', previousTab: 'Vorheriger' }),
+ *       withTabsI18nLabels({ tabsLabel: 'Reiter', addTab: 'Neuer Reiter' }),
  *     ),
  *   ],
  * });

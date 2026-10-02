@@ -43,10 +43,6 @@ export interface CngxStepperI18n {
    */
   readonly stepIndicatorRoleDescription: string;
   readonly selectedStep: (label: string, position: number, count: number) => string;
-  /** @deprecated Superseded by `statusLabels.done` - the announcement surface converged on the pill labels. Kept one release. */
-  readonly stepCompleted: string;
-  /** @deprecated Superseded by `statusLabels.errored`. Kept one release. */
-  readonly stepErrored: string;
   readonly stepHasErrors: (count: number) => string;
   readonly previousStep: string;
   readonly nextStep: string;
@@ -67,13 +63,15 @@ export interface CngxStepperI18n {
    */
   readonly commitRolledBackTo: (originLabel: string) => string;
   /**
-   * Persistent suffix on the per-step `aria-describedby` while
-   * `presenter.lastFailedIndex()` matches the step. Distinct from
-   * {@link commitRolledBackTo} (transient live-region phrase) - this
-   * suffix is reachable when AT users navigate back to the rejected
-   * step after the announcement has faded. Pillar 2.
+   * Per-step `aria-describedby` text while `presenter.lastFailedIndex()`
+   * matches the step. Receives the step's base description (e.g.
+   * `Step 2 of 3: Shipping`) and owns the whole sentence, so a locale can
+   * place the rolled-back note before, after or inside it. Distinct from
+   * {@link commitRolledBackTo} (transient live-region phrase) - this text
+   * is reachable when AT users navigate back to the rejected step after
+   * the announcement has faded. Pillar 2.
    */
-  readonly stepRolledBackSuffix: string;
+  readonly stepRolledBack: (base: string) => string;
   /**
    * Per-state pill labels surfaced by the `stripe-status-rich` skin
    * (and any future skin / variant that paints a state pill). English
@@ -97,11 +95,10 @@ export interface CngxStepperI18n {
   /**
    * Last-resort label of a Material `<mat-step>` instrumented by
    * `[cngxMatStepper]` when it has no `label`, `ariaLabel` or static
-   * `matStepLabel` text. Receives the cngx handle id. Optional so a bundle
-   * built before it existed keeps compiling; the English default
-   * (`Step <id>`) fills it.
+   * `matStepLabel` text. Receives the cngx handle id. English default
+   * `Step <id>`.
    */
-  readonly stepFallbackLabel?: (id: string) => string;
+  readonly stepFallbackLabel: (id: string) => string;
 }
 
 /**
@@ -117,22 +114,17 @@ export type CngxStepperI18nOverrides = Omit<Partial<CngxStepperI18n>, 'statusLab
 };
 
 /** @internal */
-const DEFAULT_STEP_FALLBACK_LABEL = (id: string): string => `Step ${id}`;
-
-/** @internal */
 const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
   stepperLabel: 'Stepper',
   stepIndicatorRoleDescription: 'Step indicator',
   selectedStep: (label, position, count) => `Step ${position} of ${count}: ${label}`,
-  stepCompleted: 'Completed',
-  stepErrored: 'Has errors',
   stepHasErrors: (count) => `${count} error${count === 1 ? '' : 's'}`,
   previousStep: 'Previous step',
   nextStep: 'Next step',
   commitFailedRetry: 'Commit failed - retry?',
   commitInFlight: 'Committing step…',
   commitRolledBackTo: (originLabel) => `Reverted to step "${originLabel}".`,
-  stepRolledBackSuffix: 'This step was rolled back.',
+  stepRolledBack: (base) => `${base} This step was rolled back.`,
   statusLabels: {
     done: 'Done',
     inProgress: 'In progress',
@@ -142,17 +134,8 @@ const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
   textStepperFormat: (current, total) => `Step ${current} of ${total}`,
   groupSummaryCount: (total) => `${total} steps`,
   groupSummaryProgress: (completed, total) => `${completed} of ${total} steps complete`,
-  stepFallbackLabel: DEFAULT_STEP_FALLBACK_LABEL,
+  stepFallbackLabel: (id) => `Step ${id}`,
 };
-
-/**
- * @internal - the `<mat-step>` fallback label from a stepper bundle, or the
- * English default when the bundle omits the optional key (a directly
- * provided value that predates it).
- */
-export function resolveStepFallbackLabel(i18n: CngxStepperI18n | undefined, id: string): string {
-  return (i18n?.stepFallbackLabel ?? DEFAULT_STEP_FALLBACK_LABEL)(id);
-}
 
 /**
  * DI token for the resolved stepper i18n bundle, as a `Signal` so a

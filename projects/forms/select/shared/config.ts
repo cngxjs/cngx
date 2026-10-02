@@ -138,8 +138,15 @@ export interface CngxSelectAriaLabels {
   readonly statusRefreshing?: string;
   /** Announcer `fieldLabel` last-resort fallback. Default `'Selection'`. */
   readonly fieldLabelFallback?: string;
-  /** `[commitAction]` rejection fallback. Default `'Save failed'`. */
-  readonly commitFailedMessage?: string;
+  /**
+   * Assertive announcement when a `[commitAction]` rejects. Receives the
+   * field label (or `fieldLabelFallback`) and the rejection's
+   * `Error.message`, `undefined` when the rejection is not an `Error`, and
+   * returns the whole sentence. Default
+   * `` (label, detail) => `${label}: Save failed - ${detail}` ``, without
+   * the ` - ${detail}` part when there is no detail.
+   */
+  readonly commitFailedMessage?: (label: string, detail: string | undefined) => string;
   /** `<cngx-select-search>` input. Default `'Search options'`. */
   readonly searchInput?: string;
   /**
@@ -413,7 +420,8 @@ export const CNGX_SELECT_DEFAULTS: Required<
     statusLoading: 'Loading options',
     statusRefreshing: 'Refreshing options',
     fieldLabelFallback: 'Selection',
-    commitFailedMessage: 'Save failed',
+    commitFailedMessage: (label, detail) =>
+      detail ? `${label}: Save failed - ${detail}` : `${label}: Save failed`,
     searchInput: 'Search options',
     listboxFallback: 'Options',
   },

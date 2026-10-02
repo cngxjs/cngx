@@ -40,7 +40,10 @@ describe('withAriaLabels', () => {
     expect(config.ariaLabels().statusLoading).toBe('Loading options');
     expect(config.ariaLabels().statusRefreshing).toBe('Refreshing options');
     expect(config.ariaLabels().fieldLabelFallback).toBe('Selection');
-    expect(config.ariaLabels().commitFailedMessage).toBe('Save failed');
+    expect(config.ariaLabels().commitFailedMessage('Colours', 'server down')).toBe(
+      'Colours: Save failed - server down',
+    );
+    expect(config.ariaLabels().commitFailedMessage('Colours', undefined)).toBe('Colours: Save failed');
     expect(config.ariaLabels().listboxFallback).toBe('Options');
   });
 
@@ -97,7 +100,8 @@ describe('withAriaLabels', () => {
           statusLoading: 'Lade Optionen',
           statusRefreshing: 'Aktualisiere Optionen',
           fieldLabelFallback: 'Auswahl',
-          commitFailedMessage: 'Speichern fehlgeschlagen',
+          commitFailedMessage: (label, detail) =>
+            `Speichern von ${label} fehlgeschlagen${detail ? ` (${detail})` : ''}`,
         }),
       ),
     ]);
@@ -106,7 +110,9 @@ describe('withAriaLabels', () => {
     expect(config.ariaLabels().statusLoading).toBe('Lade Optionen');
     expect(config.ariaLabels().statusRefreshing).toBe('Aktualisiere Optionen');
     expect(config.ariaLabels().fieldLabelFallback).toBe('Auswahl');
-    expect(config.ariaLabels().commitFailedMessage).toBe('Speichern fehlgeschlagen');
+    expect(config.ariaLabels().commitFailedMessage('Farben', 'Timeout')).toBe(
+      'Speichern von Farben fehlgeschlagen (Timeout)',
+    );
   });
 
   it('coexists with other features without bleed (withPanelWidth + withAriaLabels)', () => {

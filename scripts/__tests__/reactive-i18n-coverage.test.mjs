@@ -1971,6 +1971,14 @@ describe('reactive i18n coverage', () => {
     ).toEqual([]);
   });
 
+  it('empties the ratchet once the key-shape pass has landed', () => {
+    if (COMPLETED_PHASE < 8) {
+      return;
+    }
+    expect(RATCHET).toEqual([]);
+    expect(EXEMPT.map((row) => row.member)).toEqual(['CngxPhoneInput.country']);
+  });
+
   it('gives every exempt row a reason and an accepted-debt reference', () => {
     const malformed = EXEMPT.filter(
       (row) =>

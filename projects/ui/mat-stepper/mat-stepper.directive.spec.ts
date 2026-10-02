@@ -361,8 +361,8 @@ describe('CngxMatStepper instrumentation directive', () => {
 
   test('axis 11: CNGX_MAT_STEP_HANDLE_FACTORY swap - viewProviders override is honoured', async () => {
     const calls: string[] = [];
-    const wrappedFactory: CngxMatStepHandleFactory = (step, idSeed) => {
-      const setup = createMatStepHandle(step, idSeed);
+    const wrappedFactory: CngxMatStepHandleFactory = (step, idSeed, i18n) => {
+      const setup = createMatStepHandle(step, idSeed, i18n);
       calls.push(setup.handle.id);
       return setup;
     };

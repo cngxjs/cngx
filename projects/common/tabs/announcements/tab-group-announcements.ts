@@ -72,7 +72,7 @@ export interface CngxTabGroupAnnouncements {
    * Error arm: `commitRolledBackTo(originLabel)` when origin
    * resolves; otherwise `commitFailedRetry`.
    *
-   * Success arm: `${previousTab|nextTab}: selectedTab(...)` when
+   * Success arm: `previousTab|nextTab(selectedTab(...))` when
    * the index moved; bare `selectedTab(...)` when it didn't (initial
    * mount, or commit-success that lands on the same tab).
    */
@@ -223,10 +223,10 @@ export function createTabGroupAnnouncements(
         const copy = i18n();
         const positionPhrase = copy.selectedTab(label, idx + 1, count);
         if (idx > prevIdx) {
-          return `${copy.nextTab}: ${positionPhrase}`;
+          return copy.nextTab(positionPhrase);
         }
         if (idx < prevIdx) {
-          return `${copy.previousTab}: ${positionPhrase}`;
+          return copy.previousTab(positionPhrase);
         }
         return positionPhrase;
       });

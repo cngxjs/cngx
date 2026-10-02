@@ -124,7 +124,7 @@ provideTimelineConfig(
   withTimelineLabels({
     retry: 'Erneut versuchen',
     emptyFallback: 'Noch keine Ereignisse.',
-    groupLabel: (group) => group.start.toLocaleDateString('de-AT'),
+    groupLabel: (group, locale) => group.start.toLocaleDateString(locale, { dateStyle: 'medium' }),
   }),
   withTimelineTemplates({ empty: myEmptyTemplate }),
 );
@@ -133,7 +133,7 @@ provideTimelineConfig(
 - Defaults are English; a missing translation shows English text, never a blank surface. `labels.status` merges key by key, so renaming one status keeps the other three.
 - `provideTimelineConfigAt(...)` returns `Provider[]` for `viewProviders` and merges onto the enclosing config, so a region re-phrases one label without resetting the rest.
 - `injectTimelineConfig()` reads the resolved config in an injection context; `CNGX_TIMELINE_CONFIG` is the raw token.
-- `CngxTimelineLabels` covers `timelineRegion`, `retry`, `errorFallback`, `emptyFallback`, `loading`, `refreshing`, `itemBusy`, `itemErrorFallback`, the `status` map and `groupLabel`.
+- `CngxTimelineLabels` covers `timelineRegion`, `retry`, `errorFallback`, `emptyFallback`, `loading`, `refreshing`, `itemBusy`, `itemErrorFallback`, the `status` map and `groupLabel`. `groupLabel` receives the app locale as its second argument and re-runs when `CNGX_LOCALE` switches.
 
 ## Accessibility
 

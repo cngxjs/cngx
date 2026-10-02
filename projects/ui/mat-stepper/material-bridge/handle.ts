@@ -3,7 +3,6 @@ import type { MatStep } from '@angular/material/stepper';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 import {
-  resolveStepFallbackLabel,
   type CngxStepperI18n,
   type CngxStepRegistration,
   type CngxStepStatus,
@@ -95,8 +94,8 @@ function readMatStepLabelTemplateText(template: TemplateRef<unknown>): string | 
  *   4. `CNGX_STEPPER_I18N.stepFallbackLabel(id)` (English default
  *      `Step <id>`) - deterministic, derived from the cngx handle id.
  *      Always non-empty. The `[cngxMatStepper]` directive passes its
- *      injected bundle Signal as `i18n`; without one the English default
- *      applies. This tier follows a runtime language switch.
+ *      injected bundle Signal as `i18n`. This tier follows a runtime
+ *      language switch.
  *   Documented limitation: runtime changes of tiers 1-3 do not propagate.
  *   CDK's `CdkStep` does not expose a `_stateChanges` Subject
  *   analogous to `MatTab._stateChanges`, so cngx cannot re-trigger
@@ -128,14 +127,14 @@ function readMatStepLabelTemplateText(template: TemplateRef<unknown>): string | 
 export function createMatStepHandle(
   matStep: MatStep,
   idSeed: () => string,
-  i18n?: Signal<CngxStepperI18n>,
+  i18n: Signal<CngxStepperI18n>,
 ): CngxMatStepHandleSetup {
   const id = idSeed();
   const labelText = resolveMaterialStepLabel(matStep);
   const label =
     labelText !== null
       ? signal<string>(labelText).asReadonly()
-      : computed<string>(() => resolveStepFallbackLabel(i18n?.(), id));
+      : computed<string>(() => i18n().stepFallbackLabel(id));
   const disabled = signal<boolean>(false).asReadonly();
   const state = computed<CngxStepStatus>(() => {
     if (matStep.hasError) {
@@ -191,9 +190,7 @@ function resolveMaterialStepLabel(matStep: MatStep): string | null {
  * this exact shape - overrides match it identically.
  *
  * The third argument is the stepper i18n Signal the directive injected;
- * it carries the last-resort label (`stepFallbackLabel`). An override
- * that declares only `(matStep, idSeed)` still type-checks, but its
- * unlabelled steps lose the localized fallback - forward `i18n` when
+ * it carries the last-resort label (`stepFallbackLabel`). Forward it when
  * delegating to {@link createMatStepHandle}.
  *
  * @category ui/mat-stepper
@@ -224,8 +221,8 @@ export type CngxMatStepHandleFactory = typeof createMatStepHandle;
  * providers: [
  *   {
  *     provide: CNGX_MAT_STEP_HANDLE_FACTORY,
- *     useValue: ((step, idSeed) => {
- *       const setup = createMatStepHandle(step, idSeed);
+ *     useValue: ((step, idSeed, i18n) => {
+ *       const setup = createMatStepHandle(step, idSeed, i18n);
  *       reportStepRegistered(setup.handle.id);
  *       return setup;
  *     }) satisfies CngxMatStepHandleFactory,

@@ -60,7 +60,7 @@ describe('createMatStepHandle - Phase 6.2 label fallback ladder', () => {
       providers: [provideZonelessChangeDetection()],
     });
     const matSteps = await renderLabels();
-    const setup = createMatStepHandle(matSteps[0], seedId);
+    const setup = createMatStepHandle(matSteps[0], seedId, TestBed.inject(CNGX_STEPPER_I18N));
     expect(setup.handle.label()).toBe('Plain');
   });
 
@@ -70,7 +70,7 @@ describe('createMatStepHandle - Phase 6.2 label fallback ladder', () => {
     });
     const matSteps = await renderLabels();
     // matSteps[1] declares only `aria-label="Aria fallback"`, no string label.
-    const setup = createMatStepHandle(matSteps[1], seedId);
+    const setup = createMatStepHandle(matSteps[1], seedId, TestBed.inject(CNGX_STEPPER_I18N));
     expect(setup.handle.label()).toBe('Aria fallback');
   });
 
@@ -82,7 +82,7 @@ describe('createMatStepHandle - Phase 6.2 label fallback ladder', () => {
     // matSteps[2] declares only `<ng-template matStepLabel>Template Static Label</ng-template>`;
     // no string label, no aria-label. The fallback walks the detached
     // embedded view and snapshots its textContent.
-    const setup = createMatStepHandle(matSteps[2], seedId);
+    const setup = createMatStepHandle(matSteps[2], seedId, TestBed.inject(CNGX_STEPPER_I18N));
     expect(setup.handle.label()).toBe('Template Static Label');
   });
 
@@ -91,7 +91,7 @@ describe('createMatStepHandle - Phase 6.2 label fallback ladder', () => {
       providers: [provideZonelessChangeDetection()],
     });
     const matSteps = await renderLabels();
-    const handle = createMatStepHandle(matSteps[3], seedId).handle;
+    const handle = createMatStepHandle(matSteps[3], seedId, TestBed.inject(CNGX_STEPPER_I18N)).handle;
     expect(handle.label()).toBe(`Step ${handle.id}`);
     expect(handle.label().length).toBeGreaterThan('Step '.length);
   });
@@ -108,13 +108,6 @@ describe('createMatStepHandle - Phase 6.2 label fallback ladder', () => {
       computed(() => ({ ...i18n(), stepFallbackLabel: (id: string) => `Schritt ${id}` })),
     ).handle;
     expect(handle.label()).toBe(`Schritt ${handle.id}`);
-
-    const legacy = createMatStepHandle(
-      matSteps[3],
-      seedId,
-      computed(() => ({ ...i18n(), stepFallbackLabel: undefined })),
-    ).handle;
-    expect(legacy.label()).toBe(`Step ${legacy.id}`);
   });
 
   test('axis L4c: the tier-4 fallback label follows a language flip', async () => {
@@ -148,7 +141,7 @@ describe('createMatStepHandle - Phase 6.2 label fallback ladder', () => {
     );
     const matStepper = matStepperEl.componentInstance as MatStepper;
     const [matStep] = matStepper.steps.toArray();
-    const handle = createMatStepHandle(matStep, seedId).handle;
+    const handle = createMatStepHandle(matStep, seedId, TestBed.inject(CNGX_STEPPER_I18N)).handle;
     expect(handle.state()).toBe('idle');
     // Drive Material's typical error-state-matcher write pattern:
     // `hasError = true; completed = true` - the second line writes
