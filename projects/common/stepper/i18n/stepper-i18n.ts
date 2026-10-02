@@ -95,11 +95,10 @@ export interface CngxStepperI18n {
   /**
    * Last-resort label of a Material `<mat-step>` instrumented by
    * `[cngxMatStepper]` when it has no `label`, `ariaLabel` or static
-   * `matStepLabel` text. Receives the cngx handle id. Optional so a bundle
-   * built before it existed keeps compiling; the English default
-   * (`Step <id>`) fills it.
+   * `matStepLabel` text. Receives the cngx handle id. English default
+   * `Step <id>`.
    */
-  readonly stepFallbackLabel?: (id: string) => string;
+  readonly stepFallbackLabel: (id: string) => string;
 }
 
 /**
@@ -113,9 +112,6 @@ export interface CngxStepperI18n {
 export type CngxStepperI18nOverrides = Omit<Partial<CngxStepperI18n>, 'statusLabels'> & {
   readonly statusLabels?: Partial<CngxStepperStatusLabels>;
 };
-
-/** @internal */
-const DEFAULT_STEP_FALLBACK_LABEL = (id: string): string => `Step ${id}`;
 
 /** @internal */
 const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
@@ -138,17 +134,8 @@ const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
   textStepperFormat: (current, total) => `Step ${current} of ${total}`,
   groupSummaryCount: (total) => `${total} steps`,
   groupSummaryProgress: (completed, total) => `${completed} of ${total} steps complete`,
-  stepFallbackLabel: DEFAULT_STEP_FALLBACK_LABEL,
+  stepFallbackLabel: (id) => `Step ${id}`,
 };
-
-/**
- * @internal - the `<mat-step>` fallback label from a stepper bundle, or the
- * English default when the bundle omits the optional key (a directly
- * provided value that predates it).
- */
-export function resolveStepFallbackLabel(i18n: CngxStepperI18n | undefined, id: string): string {
-  return (i18n?.stepFallbackLabel ?? DEFAULT_STEP_FALLBACK_LABEL)(id);
-}
 
 /**
  * DI token for the resolved stepper i18n bundle, as a `Signal` so a

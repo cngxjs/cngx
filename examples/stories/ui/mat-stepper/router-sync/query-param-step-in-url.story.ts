@@ -16,7 +16,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['MatStepperModule', 'CngxMatStepper', 'CngxStepperRouterSync'],
   viewProviders: [
-    "{ provide: CNGX_MAT_STEP_HANDLE_FACTORY, useValue: ((step) => createMatStepHandle(step, () => String(step.label ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))) satisfies CngxMatStepHandleFactory }",
+    "{ provide: CNGX_MAT_STEP_HANDLE_FACTORY, useValue: ((step, _idSeed, i18n) => createMatStepHandle(step, () => String(step.label ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''), i18n)) satisfies CngxMatStepHandleFactory }",
   ],
   setup: `protected readonly active = signal(0);`,
   template: `  <mat-stepper

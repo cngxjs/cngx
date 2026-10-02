@@ -30,8 +30,8 @@ export const appConfig: ApplicationConfig = {
   providers: [
     {
       provide: CNGX_MAT_STEP_HANDLE_FACTORY,
-      useValue: ((step, idSeed) => {
-        const setup = createMatStepHandle(step, idSeed);
+      useValue: ((step, idSeed, i18n) => {
+        const setup = createMatStepHandle(step, idSeed, i18n);
         reportStepRegistered(setup.handle.id);
         return setup;
       }) satisfies CngxMatStepHandleFactory,
@@ -40,7 +40,7 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-The supplied `idSeed` defaults to `() => nextUid('cngx-mat-step-')`. An override is free to call it, ignore it, or replace it with a server-synced / deterministic id strategy.
+The supplied `idSeed` defaults to `() => nextUid('cngx-mat-step-')`. An override is free to call it, ignore it, or replace it with a server-synced / deterministic id strategy. Forward `i18n` (the stepper i18n Signal) unchanged; it carries the localized label of a step that has none.
 
 ## What the bridge wires
 

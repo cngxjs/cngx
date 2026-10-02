@@ -27,6 +27,8 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxStepperConfig.ariaLabels` and `.fallbackLabels` are typed `L | Signal<L>`, and once `withStepperAriaLabels` / `withStepperFallbackLabels` ran they hold a `Signal`. Code that reads them off `injectStepperConfig()` wraps the key: `config.ariaLabels?.stepperRegion` becomes `coerceSignal(config.ariaLabels)()?.stepperRegion` (`coerceSignal` from `@cngx/core/utils`), read inside a `computed()` or template. Both features now also accept a `Signal`.
 - `CngxStepperI18n.stepCompleted` and `.stepErrored` are removed. They were deprecated and no CNGX surface read them. Use `statusLabels.done` and `statusLabels.errored` instead: `withStepperI18nLabels({ stepCompleted: 'Erledigt' })` becomes `withStepperI18nLabels({ statusLabels: { done: 'Erledigt' } })`.
 - `CngxStepperI18n.stepRolledBackSuffix: string` is replaced by `stepRolledBack: (base: string) => string`, which receives the step's description and returns the whole sentence. `withStepperI18nLabels({ stepRolledBackSuffix: 'Zurückgesetzt.' })` becomes ``withStepperI18nLabels({ stepRolledBack: (base) => `${base} Zurückgesetzt.` })``. The English default renders the same text as before.
+- `CngxStepperI18n.stepFallbackLabel` is now required. Bundles built through `provideStepperI18n(withStepperI18nLabels(...))` already carry the English default; a hand-built `Signal<CngxStepperI18n>` supplies the key, for example ``stepFallbackLabel: (id) => `Schritt ${id}` ``.
+- `resolveStepFallbackLabel` is no longer exported. It was marked internal; read `injectStepperI18n()().stepFallbackLabel(id)` instead.
 
 ### @cngx/common/tabs
 
@@ -86,6 +88,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/ui/mat-stepper
 
 - The optional third argument of `createMatStepHandle` (and so of `CngxMatStepHandleFactory` overrides) is now `Signal<CngxStepperI18n>`. An override that delegates to `createMatStepHandle` forwards the Signal unchanged; the last-resort `Step <id>` label then follows a language switch.
+- The third argument of `createMatStepHandle`, the stepper i18n Signal, is now required. An override that declared only `(step, idSeed)` used to type-check and silently lost the localized label of an unlabelled step; it now fails to compile. Forward the argument: `(step, idSeed) => createMatStepHandle(step, idSeed)` becomes `(step, idSeed, i18n) => createMatStepHandle(step, idSeed, i18n)`.
 
 ### @cngx/ui/feedback
 
