@@ -172,6 +172,10 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // @cngx/ui/accordion - the disabled header fades by colour, which WHCM forces
   // to CanvasText like an enabled header; it re-signals with GrayText.
   'projects/ui/accordion/accordion-item.component.css',
+  // @cngx/ui/accordion - the severity-spine column, the plus-minus bars and the
+  // timeline rail and nodes are background-only paint; re-drawn with system
+  // colours (the card elevation box-shadows stay decorative).
+  'projects/ui/accordion/accordion-skins.css',
 ];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
@@ -220,10 +224,6 @@ const EXCLUDED_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   },
   // @cngx/ui (Phase D) - box-shadow hosts whose boundary survives WHCM another
   // way, so a re-draw would be redundant (Success-Kriterium: 0 redundant blocks).
-  {
-    file: 'projects/ui/accordion/accordion-skins.css',
-    note: 'the box-shadows are decorative card elevation, a self-healing focus-glow ring, and leading-tile chrome; every accordion item keeps a self-healing 1px border and expand state is communicated via aria-expanded + chevron',
-  },
   {
     file: 'projects/ui/data-grid-accordion/data-grid-accordion-skins.css',
     note: 'the inset box-shadow is a decorative primary-zone accent on the detail region, which keeps a self-healing border-block-start; expand state is communicated via aria-expanded',
@@ -302,7 +302,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(47);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(48);
   });
 });
 
