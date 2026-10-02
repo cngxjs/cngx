@@ -106,7 +106,7 @@ export const STEPPER_DE: CngxStepperI18nOverrides = {
   nextStep: 'Nächster Schritt',
   commitInFlight: 'Schritt wird gespeichert…',
   commitRolledBackTo: (originLabel) => `Zurück zu Schritt „${originLabel}".`,
-  stepRolledBackSuffix: 'Dieser Schritt wurde zurückgesetzt.',
+  stepRolledBack: (base) => `${base} Dieser Schritt wurde zurückgesetzt.`,
   statusLabels: { done: 'Erledigt', inProgress: 'In Arbeit', upNext: 'Als Nächstes', errored: 'Fehler' },
   textStepperFormat: (current, total) => `Schritt ${current} von ${total}`,
   groupSummaryCount: (total) => `${total} Schritte`,

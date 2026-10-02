@@ -63,13 +63,15 @@ export interface CngxStepperI18n {
    */
   readonly commitRolledBackTo: (originLabel: string) => string;
   /**
-   * Persistent suffix on the per-step `aria-describedby` while
-   * `presenter.lastFailedIndex()` matches the step. Distinct from
-   * {@link commitRolledBackTo} (transient live-region phrase) - this
-   * suffix is reachable when AT users navigate back to the rejected
-   * step after the announcement has faded. Pillar 2.
+   * Per-step `aria-describedby` text while `presenter.lastFailedIndex()`
+   * matches the step. Receives the step's base description (e.g.
+   * `Step 2 of 3: Shipping`) and owns the whole sentence, so a locale can
+   * place the rolled-back note before, after or inside it. Distinct from
+   * {@link commitRolledBackTo} (transient live-region phrase) - this text
+   * is reachable when AT users navigate back to the rejected step after
+   * the announcement has faded. Pillar 2.
    */
-  readonly stepRolledBackSuffix: string;
+  readonly stepRolledBack: (base: string) => string;
   /**
    * Per-state pill labels surfaced by the `stripe-status-rich` skin
    * (and any future skin / variant that paints a state pill). English
@@ -126,7 +128,7 @@ const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
   commitFailedRetry: 'Commit failed - retry?',
   commitInFlight: 'Committing step…',
   commitRolledBackTo: (originLabel) => `Reverted to step "${originLabel}".`,
-  stepRolledBackSuffix: 'This step was rolled back.',
+  stepRolledBack: (base) => `${base} This step was rolled back.`,
   statusLabels: {
     done: 'Done',
     inProgress: 'In progress',

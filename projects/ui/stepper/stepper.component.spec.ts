@@ -1125,7 +1125,7 @@ describe('CngxStepper organism', () => {
       });
     });
 
-    it('per-step aria-describedby surfaces stepRolledBackSuffix when lastFailedIndex matches its flatIndex', () => {
+    it('per-step aria-describedby routes through stepRolledBack when lastFailedIndex matches its flatIndex', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
@@ -1147,6 +1147,30 @@ describe('CngxStepper organism', () => {
       const aDescId = buttons[0].getAttribute('aria-describedby')!;
       const aDesc = fixture.nativeElement.querySelector(`#${aDescId}`) as HTMLElement;
       expect(aDesc.textContent?.trim()).toBe('Step 1 of 3: A');
+    });
+
+    it('a stepRolledBack formatter owns the order of the rolled-back description', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperI18n(
+            withStepperI18nLabels({ stepRolledBack: (base) => `Zurückgesetzt - ${base}` }),
+          ),
+        ],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      const descId = buttons[1].getAttribute('aria-describedby')!;
+      const desc = fixture.nativeElement.querySelector(`#${descId}`) as HTMLElement;
+      expect(desc.textContent?.trim()).toBe('Zurückgesetzt - Step 2 of 3: B');
     });
 
     it('default rejection-icon outlet renders CNGX_STEPPER_GLYPHS.rejectionIcon (single source of truth)', () => {

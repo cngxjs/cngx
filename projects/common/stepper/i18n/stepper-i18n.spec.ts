@@ -24,7 +24,9 @@ describe('CngxStepperI18n', () => {
     expect(i18n.commitRolledBackTo('Customer')).toBe(
       'Reverted to step "Customer".',
     );
-    expect(i18n.stepRolledBackSuffix).toBe('This step was rolled back.');
+    expect(i18n.stepRolledBack('Step 2 of 3: Shipping')).toBe(
+      'Step 2 of 3: Shipping This step was rolled back.',
+    );
   });
 
   it('ships no deprecated stepCompleted / stepErrored keys', () => {
