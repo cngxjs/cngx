@@ -40,6 +40,10 @@ Vertical stack, end-aligned:
 
 The host renders `role="list"` and each entry renders `role="listitem"`. The swatch is `aria-hidden="true"` - colour alone is not announced, so the `label` text must carry the full meaning of the entry on its own. When the legend stands in for a series toggle, the toggle UI is the consumer's responsibility - this atom does not project interactive children.
 
+## Forced colors
+
+Under forced colors every swatch paints in the user palette with a pattern by entry index: solid, 45deg hatch, hollow, 0deg hatch, repeating. The stacked-bar segments and the chart series take the same step by index - lines as solid, dashed, dotted and dash-dot, bars and scatter points with the swatch patterns. A chart counts its line, bar and scatter layers in source order; areas, thresholds, bands and axes do not count. List the legend entries in that order and entry N keeps pointing at series N.
+
 ## See also
 
 - [API on compodocx](https://cngxjs.github.io/cngx/) for inputs and tokens.
