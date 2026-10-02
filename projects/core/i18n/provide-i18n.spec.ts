@@ -145,6 +145,43 @@ describe('provideCngxI18n locale and direction', () => {
     expect([locale(), direction()]).toEqual(['de-CH', 'ltr']);
   });
 
+  it('prefers getTextInfo and falls back to the RTL list without Intl text info', () => {
+    // Engines differ: Chromium has getTextInfo(), Node and Safari textInfo,
+    // others neither. Fresh tags only - directionOf memoizes per locale.
+    const proto = Intl.Locale.prototype;
+    const originals = ['getTextInfo', 'textInfo'].map(
+      (key) => [key, Object.getOwnPropertyDescriptor(proto, key)] as const,
+    );
+    const stub = (getTextInfo: (() => { direction: string }) | undefined) => {
+      Object.defineProperty(proto, 'getTextInfo', { configurable: true, value: getTextInfo });
+      Object.defineProperty(proto, 'textInfo', { configurable: true, get: () => undefined });
+    };
+    try {
+      const active = signal<CngxCompleteLanguagePack | undefined>(undefined);
+      const { direction } = setup([provideCngxI18n(withPack(active))]);
+
+      stub(() => ({ direction: 'rtl' }));
+      active.set({ ...DE, locale: 'en-ZZ' });
+      expect(direction()).toBe('rtl');
+
+      stub(undefined);
+      active.set({ ...DE, locale: 'ur-PK' });
+      expect(direction()).toBe('rtl');
+      active.set({ ...DE, locale: 'dv-MV' });
+      expect(direction()).toBe('rtl');
+      active.set({ ...DE, locale: 'sv-SE' });
+      expect(direction()).toBe('ltr');
+    } finally {
+      for (const [key, descriptor] of originals) {
+        if (descriptor) {
+          Object.defineProperty(proto, key, descriptor);
+        } else {
+          delete (proto as unknown as Record<string, unknown>)[key];
+        }
+      }
+    }
+  });
+
   it('derives rtl for other right-to-left scripts', () => {
     const active = signal<CngxCompleteLanguagePack | undefined>({ ...DE, locale: 'he-IL' });
     const { direction } = setup([provideCngxI18n(withPack(active))]);
