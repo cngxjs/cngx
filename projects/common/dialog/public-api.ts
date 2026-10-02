@@ -21,3 +21,7 @@ export {
 export { CngxDialogOpener, CngxDialogRef, provideDialog } from './dialog/dialog.service';
 export { CngxBottomSheet } from './bottom-sheet/bottom-sheet.directive';
 export { CngxDialogDraggable } from './draggable/dialog-draggable.directive';
+export {
+  CNGX_DIALOG_LANGUAGE_EN,
+  type CngxDialogLanguageSection,
+} from './i18n/dialog-language-section';

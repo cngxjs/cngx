@@ -66,6 +66,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - `CngxDialogDefaults.labels` is typed `CngxDialogLabels | Signal<CngxDialogLabels>`, and once `provideDialogConfig` / `provideDialogConfigAt` ran it holds a `Signal`. Code that reads it off `injectDialogConfig()` or `CNGX_DIALOG_DEFAULTS` wraps the key: `injectDialogConfig().labels.close` becomes `coerceSignal(injectDialogConfig().labels)().close` (`coerceSignal` from `@cngx/core/utils`), read inside a `computed()`, a template or a handler. A direct `{ provide: CNGX_DIALOG_DEFAULTS, useValue: { labels } }` with a plain bundle keeps compiling.
 - `withDialogLabels` now also accepts a `Signal<Partial<CngxDialogLabels>>` for runtime switching; plain partials still merge over the English defaults.
+- `CNGX_DIALOG_DEFAULTS.labels` now always holds a `Signal`, also without `provideDialogConfig`: the labels come from the dialog section of the language pack. Read them through `coerceSignal` as above.
 
 ### @cngx/common/interactive
 
