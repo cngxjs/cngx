@@ -100,6 +100,19 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
           animation: none;
         }
       }
+      /* forced-colors (WHCM): Chromium keeps author fill inside SVG
+         (preserve-parent-color). The band follows the user palette as a
+         CanvasText wash at its own fill-opacity, and its label as CanvasText.
+         A band is no legend entry and not a series, its label names it.
+         !important beats the inline [style.fill] of the [color] input. */
+      @media (forced-colors: active) {
+        .cngx-band__rect {
+          fill: CanvasText !important;
+        }
+        .cngx-band__label {
+          fill: CanvasText;
+        }
+      }
     `,
   ],
 })

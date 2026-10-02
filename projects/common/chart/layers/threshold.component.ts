@@ -102,6 +102,19 @@ import { CNGX_CHART_LAYER, type CngxChartLayer, type LayerGeometry } from './cha
           animation: none;
         }
       }
+      /* forced-colors (WHCM): Chromium keeps author stroke and fill inside
+         SVG (preserve-parent-color). The line and its label follow the user
+         palette; [dashed] keeps its dash. A threshold is no legend entry and
+         not a series, its label names it. !important beats the inline
+         [style.stroke] of the [color] input. */
+      @media (forced-colors: active) {
+        .cngx-threshold__line {
+          stroke: CanvasText !important;
+        }
+        .cngx-threshold__label {
+          fill: CanvasText;
+        }
+      }
     `,
   ],
 })

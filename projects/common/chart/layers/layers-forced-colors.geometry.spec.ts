@@ -9,6 +9,7 @@ import { cdp } from 'vitest/browser';
 import { CngxAxis } from '../axis/axis.component';
 import { CngxChart } from '../chart/chart.component';
 import { CngxArea } from './area.component';
+import { CngxBand } from './band.component';
 import { CngxBar } from './bar.component';
 import { CngxThreshold } from './threshold.component';
 import { CngxLine } from './line.component';
@@ -26,7 +27,7 @@ const SCHEMES = ['light', 'dark'] as const;
 @Component({
   selector: 'cngx-chart-series-forced-host',
   standalone: true,
-  imports: [CngxChart, CngxAxis, CngxArea, CngxBar, CngxLine, CngxScatter, CngxThreshold],
+  imports: [CngxChart, CngxAxis, CngxArea, CngxBand, CngxBar, CngxLine, CngxScatter, CngxThreshold],
   styleUrls: ['../../../core/theming/system-tokens.css'],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -60,6 +61,11 @@ const SCHEMES = ['light', 'dark'] as const;
       <svg:g cngxLine [data]="[2, 4, 3]"></svg:g>
       <svg:g cngxScatter [data]="[3, 5, 4]" [x]="index" [y]="value" [radius]="5" [color]="'rgb(200, 0, 0)'"></svg:g>
       <svg:g cngxScatter [data]="[4, 6, 5]" [x]="index" [y]="value" [radius]="5"></svg:g>
+    </cngx-chart>
+    <cngx-chart class="marks" [data]="[1, 3, 2]" [width]="240" [height]="120" aria-label="marks">
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+      <svg:g cngxBand [from]="2" [to]="4" label="zone" [color]="'rgb(200, 0, 0)'"></svg:g>
+      <svg:g cngxThreshold [value]="6" [label]="'limit'" [dashed]="true" [color]="'rgb(200, 0, 0)'"></svg:g>
     </cngx-chart>
     <span class="plain" style="color: rgb(200, 0, 0)">plain</span>
     <span class="probe-canvastext" style="color: CanvasText"></span>
@@ -214,6 +220,21 @@ describe.each(SCHEMES)('chart series under forced colors, %s', (scheme) => {
       expect(new Set(all(series[2], '.cngx-scatter').map((d) => computedValue(d, 'fill'))).size).toBe(1);
     });
   });
+
+  describe('thresholds and bands', () => {
+    it('follow the palette: CanvasText line, wash and labels, dash and opacity kept', async () => {
+      const root = await mountForced();
+      const ink = probe(root, 'canvastext');
+      const line = one(root, '.marks .cngx-threshold__line');
+      expect(computedValue(line, 'stroke')).toBe(ink);
+      expect(computedValue(line, 'stroke-dasharray')).toBe('4px, 3px');
+      expect(computedValue(one(root, '.marks .cngx-threshold__label'), 'fill')).toBe(ink);
+      const band = one(root, '.marks .cngx-band__rect');
+      expect(computedValue(band, 'fill')).toBe(ink);
+      expect(computedValue(band, 'fill-opacity')).toBe('0.12');
+      expect(computedValue(one(root, '.marks .cngx-band__label'), 'fill')).toBe(ink);
+    });
+  });
 });
 
 describe('chart series without forced colors', () => {
@@ -227,6 +248,8 @@ describe('chart series without forced colors', () => {
     expect(computedValue(bars[1], 'fill')).toBe('rgb(200, 0, 0)');
     expect(bars.map((b) => computedValue(b, 'fill')).some((f) => f.startsWith('url('))).toBe(false);
     expect(computedValue(bars[2], 'stroke')).toBe('none');
+    expect(computedValue(one(root, '.marks .cngx-threshold__line'), 'stroke')).toBe('rgb(200, 0, 0)');
+    expect(computedValue(one(root, '.marks .cngx-band__rect'), 'fill')).toBe('rgb(200, 0, 0)');
     const dots = all(root, '.points .cngx-scatter');
     expect(computedValue(dots[3], 'fill')).toBe('rgb(200, 0, 0)');
     expect(dots.some((d) => computedValue(d, 'fill').startsWith('url('))).toBe(false);
