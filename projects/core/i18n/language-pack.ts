@@ -61,7 +61,7 @@ export interface CngxPluralMessage {
  * @since 0.1.0
  */
 export type CngxPartialSections<T> = {
-  readonly [S in keyof T]?: { readonly [K in keyof T[S]]?: T[S][K] };
+  readonly [S in keyof T]?: { readonly [K in keyof NonNullable<T[S]>]?: NonNullable<T[S]>[K] };
 };
 
 /**

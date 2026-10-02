@@ -410,6 +410,13 @@ export const COPY_TOKENS = [
     settingsKeys: [],
     note: 'copy-equivalent source; a locale row closes with the lib that reads it',
   },
+  {
+    token: 'CNGX_LANGUAGE_PACK',
+    kind: 'locale',
+    copyKeys: '*',
+    settingsKeys: [],
+    note: 'copy-equivalent source like CNGX_LOCALE: the active pack feeds the area tokens through their sections',
+  },
 ];
 
 /** @type {readonly string[]} */

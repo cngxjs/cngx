@@ -14,3 +14,13 @@ export {
   type CngxMessageArgs,
   type CngxMessageFn,
 } from './format-message';
+export {
+  CNGX_LANGUAGE_PACK,
+  injectLanguageSection,
+  provideCngxI18n,
+  withPack,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+  type CngxCompleteLanguagePack,
+  type CngxI18nFeature,
+} from './provide-i18n';
