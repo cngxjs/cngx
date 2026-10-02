@@ -30,7 +30,9 @@ export interface CngxTabsI18n {
    * Commit-success announcement after a move to an earlier tab. Receives
    * the position phrase from {@link selectedTab} and owns the whole
    * sentence, so a locale can reorder it or drop the separator, e.g.
-   * `Previous tab: Tab 1 of 3: Profile`.
+   * `Previous tab: Tab 1 of 3: Profile`. Unlike the stepper's
+   * `previousStep` / `nextStep`, which are button labels, this key returns
+   * the full live-region sentence.
    */
   readonly previousTab: (positionPhrase: string) => string;
   /** Sibling of {@link previousTab} after a move to a later tab. */
