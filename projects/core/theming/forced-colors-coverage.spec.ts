@@ -182,6 +182,9 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // @cngx/ui/stepper - CngxDotStepper dots are background-only circles; ringed
   // and filled in system colours like the stepper mobile dots.
   'projects/ui/stepper/dot-stepper.component.css',
+  // @cngx/ui/feedback - the linear progress track and fill are background-only;
+  // ringed Canvas track, CanvasText fill.
+  'projects/ui/feedback/loading/progress.css',
 ];
 
 // Files the box-shadow scan flags but that legitimately do NOT need a
@@ -304,7 +307,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(50);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(51);
   });
 });
 
