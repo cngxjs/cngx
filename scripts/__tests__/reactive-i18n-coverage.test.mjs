@@ -1844,6 +1844,15 @@ describe('reactive i18n coverage', () => {
     expect(RATCHET).toEqual([]);
   });
 
+  // CI cannot read the local debt registers, so an exempt row with any
+  // well-formed debtRef would silence a finding. Pinning the keys here makes
+  // every new exemption a second, reviewable edit to the guard itself.
+  it('exempts exactly the pinned rows', () => {
+    expect(EXEMPT.map(rowKey)).toEqual([
+      'projects/forms/input/phone-input/phone-input.component.ts\tCngxPhoneInput.country\tR1\tCNGX_LOCALE',
+    ]);
+  });
+
   it('gives every exempt row a reason and an accepted-debt reference', () => {
     const malformed = EXEMPT.filter(
       (row) =>
