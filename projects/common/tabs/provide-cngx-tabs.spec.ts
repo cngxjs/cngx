@@ -78,7 +78,7 @@ describe('provideCngxTabs', () => {
     });
     const i18n = TestBed.inject(CNGX_TABS_I18N);
     expect(i18n().tabsLabel).toBe('Tabs');
-    expect(i18n().previousTab).toBe('Previous tab');
+    expect(i18n().previousTab('Tab 1 of 2: A')).toBe('Previous tab: Tab 1 of 2: A');
   });
 
   it('only-i18n features leave config at library defaults', () => {
