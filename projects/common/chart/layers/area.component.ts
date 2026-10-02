@@ -94,6 +94,20 @@ import {
           animation: none;
         }
       }
+      /* forced-colors (WHCM): Chromium keeps author fill inside SVG
+         (preserve-parent-color). The area follows the user palette as a
+         CanvasText wash at its own fill-opacity. It takes no pattern and does
+         not count as a series: an area is the fill under the line it pairs
+         with, which carries the series step. !important beats the inline
+         [style.fill] of the [color] input. */
+      @media (forced-colors: active) {
+        .cngx-area {
+          fill: CanvasText !important;
+        }
+        .cngx-area__point {
+          fill: CanvasText;
+        }
+      }
     `,
   ],
 })

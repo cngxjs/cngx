@@ -8,6 +8,7 @@ import { cdp } from 'vitest/browser';
 
 import { CngxAxis } from '../axis/axis.component';
 import { CngxChart } from '../chart/chart.component';
+import { CngxArea } from './area.component';
 import { CngxThreshold } from './threshold.component';
 import { CngxLine } from './line.component';
 
@@ -23,7 +24,7 @@ const SCHEMES = ['light', 'dark'] as const;
 @Component({
   selector: 'cngx-chart-series-forced-host',
   standalone: true,
-  imports: [CngxChart, CngxAxis, CngxLine, CngxThreshold],
+  imports: [CngxChart, CngxAxis, CngxArea, CngxLine, CngxThreshold],
   styleUrls: ['../../../core/theming/system-tokens.css'],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -35,6 +36,11 @@ const SCHEMES = ['light', 'dark'] as const;
       <svg:g cngxLine [data]="[3, 5, 4, 6]"></svg:g>
       <svg:g cngxLine [data]="[4, 6, 5, 7]"></svg:g>
       <svg:g cngxLine [data]="[5, 7, 6, 8]" [points]="'always'"></svg:g>
+    </cngx-chart>
+    <cngx-chart class="areas" [data]="[1, 3, 2, 4]" [width]="240" [height]="120" aria-label="area">
+      <svg:g cngxArea [color]="'rgb(200, 0, 0)'" [points]="'always'"></svg:g>
+      <svg:g cngxLine></svg:g>
+      <svg:g cngxLine [data]="[2, 4, 3, 5]"></svg:g>
     </cngx-chart>
     <span class="plain" style="color: rgb(200, 0, 0)">plain</span>
     <span class="probe-canvastext" style="color: CanvasText"></span>
@@ -109,6 +115,22 @@ describe.each(SCHEMES)('chart series under forced colors, %s', (scheme) => {
       expect(dashes).toEqual(['none', '6px, 3px', '0.1px, 4px', '8px, 3px, 0.1px, 3px', 'none']);
     });
   });
+
+  describe('areas', () => {
+    it('fill a CanvasText wash at their own opacity, the inline [color] included', async () => {
+      const root = await mountForced();
+      const area = one(root, '.areas .cngx-area');
+      expect(computedValue(area, 'fill')).toBe(probe(root, 'canvastext'));
+      expect(computedValue(area, 'fill-opacity')).toBe('0.18');
+      expect(computedValue(one(root, '.areas .cngx-area__point'), 'fill')).toBe(probe(root, 'canvastext'));
+    });
+
+    it('do not count as a series: the lines after an area start the cycle', async () => {
+      const root = await mountForced();
+      const dashes = all(root, '.areas .cngx-line').map((l) => computedValue(l, 'stroke-dasharray'));
+      expect(dashes).toEqual(['none', '6px, 3px']);
+    });
+  });
 });
 
 describe('chart series without forced colors', () => {
@@ -117,5 +139,6 @@ describe('chart series without forced colors', () => {
     const lines = all(root, '.lines .cngx-line');
     expect(computedValue(lines[1], 'stroke')).toBe('rgb(200, 0, 0)');
     expect(lines.map((l) => computedValue(l, 'stroke-dasharray'))).toEqual(Array(5).fill('none'));
+    expect(computedValue(one(root, '.areas .cngx-area'), 'fill')).toBe('rgb(200, 0, 0)');
   });
 });
