@@ -2289,6 +2289,34 @@
    beats the @layer cngx.components / cngx.skins base rules without !important
    (unlayered wins over any layer). */
 @media (forced-colors: active) {
+  /* Every disc is a background tint (forced to Canvas), so upcoming and
+     completed discs kept only their glyph and the linear-minimal dots lost
+     the completed fill. Ring each disc with an inset outline and fill a
+     completed one with CanvasText, its check glyph in Canvas (opt-out, so no
+     backplate eats the glyph). The fill needs the default glyph template: a
+     *cngxStepIndicator slot keeps only the ring, since the opt-out would let
+     its own author colours through. path-chevron and stripe-status-rich draw
+     their own segments and stay untouched. :where() keeps the guards at zero
+     specificity, so the current-step Highlight and the error ring below win. */
+  :where(.cngx-stepper:not([data-skin='path-chevron'], [data-skin='stripe-status-rich'])) .cngx-stepper__indicator {
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
+
+  :where(.cngx-stepper:not([data-skin='path-chevron'], [data-skin='stripe-status-rich']))
+    .cngx-stepper__indicator[data-state='success']:where(:has(.cngx-stepper__indicator-glyph)) {
+    forced-color-adjust: none;
+    background: CanvasText;
+    color: Canvas;
+  }
+
+  /* Wizard rails ([connectors]) are background-only bars between the discs. */
+  :where(.cngx-stepper[data-skin='classic'][data-connectors='true'])
+    .cngx-stepper__step
+    + .cngx-stepper__step::before {
+    background-color: CanvasText;
+  }
+
   /* Error step: the whole disc ring is an `inset 0 0 0 2px` box-shadow over a
      transparent background (forced to `none`), so the errored step loses its
      only outline. An `outline` with a negative offset is the exact,
@@ -2312,10 +2340,13 @@
   }
 
   /* Disabled step: the field colour is forced away, so it reads GrayText;
-     the indicator number follows currentColor. No ring on the indicator: a
-     GrayText outline would frame a disabled step more than an enabled one. */
+     the indicator number follows currentColor and its disc ring follows suit. */
   .cngx-stepper__step[aria-disabled='true'] {
     color: GrayText;
+  }
+
+  .cngx-stepper__step[aria-disabled='true'] .cngx-stepper__indicator {
+    outline-color: GrayText;
   }
 
   /* Dots are background-only, and the fill is forced to Canvas, so every dot
