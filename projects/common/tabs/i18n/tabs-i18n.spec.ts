@@ -2,6 +2,13 @@ import { computed, runInInjectionContext, EnvironmentInjector, signal } from '@a
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
+import { stripBidiIsolates } from '@cngx/testing';
 
 import {
   CNGX_TABS_I18N,
@@ -16,24 +23,74 @@ describe('CngxTabsI18n', () => {
     TestBed.resetTestingModule();
   });
 
-  it('library default ships English strings + callbacks', () => {
+  it('derives the pre-section English copy from the English section', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
     const i18n = TestBed.inject(CNGX_TABS_I18N)();
+    const plain = stripBidiIsolates;
     expect(i18n.tabsLabel).toBe('Tabs');
-    expect(i18n.previousTab('Tab 1 of 3: A')).toBe('Previous tab: Tab 1 of 3: A');
-    expect(i18n.nextTab('Tab 3 of 3: C')).toBe('Next tab: Tab 3 of 3: C');
+    expect(plain(i18n.previousTab('Tab 1 of 3: A'))).toBe('Previous tab: Tab 1 of 3: A');
+    expect(plain(i18n.nextTab('Tab 3 of 3: C'))).toBe('Next tab: Tab 3 of 3: C');
     expect(i18n.commitFailedRetry).toBe('Tab change refused - retry?');
     expect(i18n.commitInFlight).toBe('Switching tab…');
-    expect(i18n.commitRolledBackTo('Profile')).toBe(
+    expect(plain(i18n.commitRolledBackTo('Profile'))).toBe(
       'Could not save changes - reverted to "Profile".',
     );
-    expect(i18n.selectedTab('Settings', 2, 5)).toBe('Tab 2 of 5: Settings');
-    expect(i18n.tabLabelWithDetail('Bookmarks', '45')).toBe('Bookmarks, 45');
+    expect(plain(i18n.selectedTab('Settings', 2, 5))).toBe('Tab 2 of 5: Settings');
+    expect(plain(i18n.tabLabelWithDetail('Bookmarks', '45'))).toBe('Bookmarks, 45');
     expect(i18n.tabHasErrors(1)).toBe('1 error');
     expect(i18n.tabHasErrors(3)).toBe('3 errors');
     expect(i18n.moreTabsLabel(4)).toBe('4 more');
+    expect(plain(i18n.closeTab('Profile'))).toBe('Close "Profile"');
+    expect(i18n.addTab).toBe('Add tab');
+    expect(plain(i18n.closedTab('Profile'))).toBe('Closed "Profile"');
+    expect(i18n.closedTab('')).toBe('Tab closed');
+    expect(i18n.unlabeledTab(3)).toBe('Tab 3');
+  });
+
+  it('reads the tabs section of the active pack, with English for what it leaves out', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+      ],
+    });
+    const bundle = TestBed.inject(CNGX_TABS_I18N);
+    expect(bundle().addTab).toBe('Add tab');
+
+    pack.set({
+      locale: 'de',
+      tabs: {
+        addTab: 'Neuer Reiter',
+        moreTabsLabel: '{count} weitere',
+        unlabeledTab: 'Reiter {position}',
+      },
+    });
+    expect(bundle().addTab).toBe('Neuer Reiter');
+    expect(bundle().moreTabsLabel(1200)).toBe('1.200 weitere');
+    expect(bundle().unlabeledTab(2)).toBe('Reiter 2');
+    expect(bundle().commitInFlight).toBe('Switching tab…');
+  });
+
+  it('lets provideTabsI18n override single keys on top of the active pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(
+          withPartialPack({
+            locale: 'de',
+            tabs: { addTab: 'Neuer Reiter', tabsLabel: 'Reiter' },
+          }),
+          withDocumentLanguage('off'),
+        ),
+        provideTabsI18n(withTabsI18nLabels({ tabsLabel: 'Bereiche' })),
+      ],
+    });
+    const i18n = TestBed.inject(CNGX_TABS_I18N)();
+    expect(i18n.tabsLabel).toBe('Bereiche');
+    expect(i18n.addTab).toBe('Neuer Reiter');
   });
 
   it('provideTabsI18n can override commitRolledBackTo with a localised template', () => {
@@ -110,7 +167,7 @@ describe('CngxTabsI18n', () => {
     const i18n = TestBed.inject(CNGX_TABS_I18N)();
     expect(i18n.tabLabelWithDetail('Bookmarks', '45')).toBe('Bookmarks (45)');
     // Unset keys keep their English defaults.
-    expect(i18n.selectedTab('Settings', 2, 5)).toBe('Tab 2 of 5: Settings');
+    expect(stripBidiIsolates(i18n.selectedTab('Settings', 2, 5))).toBe('Tab 2 of 5: Settings');
   });
 
   it('injectTabsI18n returns the resolved bundle in an injection context', () => {
@@ -173,7 +230,10 @@ describe('CngxTabsI18n', () => {
           provideTabsI18n(withTabsI18nLabels(first), withTabsI18nLabels(second)),
         ],
       });
-      expect(TestBed.inject(CNGX_TABS_I18N)()).toEqual({ ...defaults, ...first, ...second });
+      const merged = TestBed.inject(CNGX_TABS_I18N)();
+      expect(merged.tabsLabel).toBe('Bereiche');
+      expect(merged.addTab).toBe('Weiter');
+      expect(merged.commitInFlight).toBe(defaults.commitInFlight);
     });
   });
 });

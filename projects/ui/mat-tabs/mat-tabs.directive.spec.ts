@@ -38,6 +38,7 @@ import {
   createMatTabHandle,
   type CngxMatTabHandleFactory,
 } from './material-bridge/handle';
+import { stripBidiIsolates } from '@cngx/testing';
 
 interface StubAggregatorHandle {
   contract: CngxErrorAggregatorContract;
@@ -1425,7 +1426,7 @@ describe('CngxMatTabs instrumentation directive', () => {
       'span[aria-live="polite"].cngx-sr-only',
     );
     try {
-      expect(politeRegions[politeRegions.length - 1]?.textContent).toBe(
+      expect(stripBidiIsolates(politeRegions[politeRegions.length - 1]?.textContent)).toBe(
         'Could not save changes - reverted to "One".',
       );
     } finally {

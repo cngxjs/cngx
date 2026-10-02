@@ -106,6 +106,10 @@ export {
   type CngxTabsI18nFeature,
 } from './i18n/tabs-i18n';
 export {
+  CNGX_TABS_LANGUAGE_EN,
+  type CngxTabsLanguageSection,
+} from './i18n/tabs-language-section';
+export {
   createTabsCommitHandler,
   CNGX_TABS_COMMIT_HANDLER_FACTORY,
   type CngxTabsCommitHandler,
