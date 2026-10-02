@@ -11,6 +11,7 @@ import {
   withDocumentLanguage,
   withPack,
   withPartialPack,
+  type CngxActiveLanguagePack,
   type CngxCompleteLanguagePack,
 } from './provide-i18n';
 
@@ -92,6 +93,20 @@ describe('provideCngxI18n', () => {
       provideCngxI18n(withPartialPack({ locale: 'de', __spec: { title: 'Titel' } })),
     ]);
     expect(section()).toEqual({ title: 'Titel' });
+  });
+
+  it('leaves keys set to undefined out, so they read English', () => {
+    const active = signal<CngxActiveLanguagePack | undefined>({
+      locale: 'de',
+      __spec: { title: 'Titel', close: undefined },
+    });
+    const { section } = setup([provideCngxI18n(withPartialPack(active))]);
+    expect(section()).toEqual({ title: 'Titel' });
+    expect(Object.keys(section()!)).toEqual(['title']);
+    const filtered = section();
+
+    active.set({ ...active()!, locale: 'de-CH' });
+    expect(Object.is(section(), filtered)).toBe(true);
   });
 
   it('lets the last pack feature win', () => {

@@ -231,9 +231,24 @@ export function provideCngxI18n(...features: readonly CngxI18nFeature[]): Enviro
 }
 
 /**
+ * @internal A section without its `undefined` keys, so a TS pack's
+ * `{ key: maybe }` reads English like a missing key instead of overriding it.
+ * Returns the section itself when every key is defined.
+ */
+function withoutUndefinedKeys<T extends object>(section: T | undefined): T | undefined {
+  if (!section || !Object.values(section).includes(undefined)) {
+    return section;
+  }
+  return Object.fromEntries(
+    Object.entries(section).filter(([, value]) => value !== undefined),
+  ) as T;
+}
+
+/**
  * Reads one section of the active language pack, in an injection context.
  * `undefined` while the pack has no such section - the lib then reads its
- * English defaults.
+ * English defaults. A key whose value is `undefined` is left out, so it reads
+ * English too.
  *
  * @category core/i18n
  * @since 0.1.0
@@ -243,5 +258,6 @@ export function injectLanguageSection<K extends keyof CngxLanguagePack>(
   key: K,
 ): Signal<CngxPartialLanguagePack[K] | undefined> {
   const pack = inject(CNGX_LANGUAGE_PACK);
-  return computed(() => pack()[key]);
+  const section = computed(() => pack()[key]);
+  return computed(() => withoutUndefinedKeys(section()));
 }
