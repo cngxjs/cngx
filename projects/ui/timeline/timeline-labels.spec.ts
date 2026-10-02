@@ -33,10 +33,10 @@ describe('createTimelineFallbackCopy', () => {
     const labels = signal<CngxTimelineLabels>({});
     const copy = createTimelineFallbackCopy({ labels });
     const bare = copy().groupLabel;
-    expect(bare(group)).toBe('k');
+    expect(bare(group, 'en-US')).toBe('k');
 
-    labels.set({ groupLabel: (g) => `Band ${g.key}` });
+    labels.set({ groupLabel: (g, locale) => `Band ${g.key} (${locale})` });
     expect(copy().groupLabel).not.toBe(bare);
-    expect(copy().groupLabel(group)).toBe('Band k');
+    expect(copy().groupLabel(group, 'de-DE')).toBe('Band k (de-DE)');
   });
 });

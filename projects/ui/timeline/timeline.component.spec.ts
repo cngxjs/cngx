@@ -399,6 +399,22 @@ describe('CngxTimeline', () => {
 
       expect(text(el.querySelector('.cngx-timeline__date-header'))).toBe('G:2026-07-21');
     });
+
+    it('passes the app locale to a consumer groupLabel', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [Host],
+        providers: [
+          { provide: LOCALE_ID, useValue: 'de' },
+          provideTimelineConfig(
+            withTimelineLabels({ groupLabel: (g, locale) => `${locale}:${g.key}` }),
+          ),
+        ],
+      });
+      const { el } = mount();
+
+      expect(text(el.querySelector('.cngx-timeline__date-header'))).toBe('de:2026-07-21');
+    });
   });
 
   describe('slot cascade', () => {

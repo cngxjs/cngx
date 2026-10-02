@@ -80,11 +80,14 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - `CngxTimelineConfig.labels` is typed `CngxTimelineLabels | Signal<CngxTimelineLabels>`, and once `withTimelineLabels` ran it holds a `Signal`. Code that reads it off `injectTimelineConfig()` or `CNGX_TIMELINE_CONFIG` wraps the key once, in a field: with a module-level `const NO_LABELS: CngxTimelineLabels = {};`, write `private readonly labels = coerceSignal(injectTimelineConfig().labels ?? NO_LABELS);` (`coerceSignal` from `@cngx/core/utils`) and read `this.labels().retry` inside a `computed()`, a template or a handler, where you used to read `injectTimelineConfig().labels?.retry`. A fresh `{}` per call would create a new Signal on every read. A hand-written `CngxTimelineConfigFeature` that spreads `config.labels` merges through `createNestedOverrideMerge(config.labels ?? NO_LABELS, overrides, 'status')` instead, which keeps the per-status merge.
 - `withTimelineLabels` now also accepts a `Signal<CngxTimelineLabels>` for runtime switching; plain bundles still merge over the inherited labels, `status` key by key.
+- `CngxTimelineLabels.groupLabel` is now `(group, locale: string) => string`. The timeline passes the app locale (`CNGX_LOCALE`, else `LOCALE_ID`) and re-calls the formatter when it switches. A one-argument formatter keeps compiling and renders as before; code that calls `labels.groupLabel(group)` itself passes the locale as the second argument.
+- `formatTimelineGroupDate` and `TIMELINE_DEFAULT_GROUP_LABEL` are no longer exported. They were marked internal; call the default `groupLabel` from `injectTimelineConfig()` with a locale instead.
 
 ### @cngx/ui/timeline
 
 - `createTimelineFallbackCopy(config)` now returns `Signal<CngxTimelineFallbackCopy>`. Call it where you read a string: `copy.retry` becomes `copy().retry`.
 - The `labels` argument of `createTimelineView` and of a `CngxTimelineViewFactory` override (`CNGX_TIMELINE_VIEW_FACTORY`) is now `Signal<CngxTimelineFallbackCopy>`. An override that builds the announcement reads the copy inside `untracked(() => labels().loading)`, so a language switch does not re-voice the live region.
+- `CngxTimelineFallbackCopy.groupLabel` is now `(group, locale: string) => string`, mirroring `CngxTimelineLabels.groupLabel`.
 
 ### @cngx/ui/mat-stepper
 
