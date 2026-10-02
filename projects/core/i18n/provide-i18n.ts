@@ -1,13 +1,19 @@
+import { DOCUMENT } from '@angular/common';
 import {
   computed,
+  effect,
   inject,
   InjectionToken,
   makeEnvironmentProviders,
+  provideEnvironmentInitializer,
   signal,
+  untracked,
   type EnvironmentProviders,
+  type Provider,
   type Signal,
 } from '@angular/core';
-import { coerceSignal } from '@cngx/core/utils';
+import { CNGX_DIRECTION, type CngxDirection } from '@cngx/core';
+import { CNGX_LOCALE, coerceSignal, memoize } from '@cngx/core/utils';
 
 import type {
   CngxLanguagePack,
@@ -54,10 +60,9 @@ export const CNGX_LANGUAGE_PACK = new InjectionToken<Signal<CngxActiveLanguagePa
  * @category core/i18n
  * @since 0.1.0
  */
-export interface CngxI18nFeature {
-  readonly _target: 'pack';
-  readonly source: Signal<CngxActiveLanguagePack | undefined>;
-}
+export type CngxI18nFeature =
+  | { readonly _target: 'pack'; readonly source: Signal<CngxActiveLanguagePack | undefined> }
+  | { readonly _target: 'documentLanguage'; readonly mode: 'on' | 'off' };
 
 /**
  * Sets the app's language pack. Pass a `Signal` to switch at runtime;
@@ -96,9 +101,86 @@ export function withPartialPack(
 }
 
 /**
+ * Whether {@link provideCngxI18n} writes `<html lang>` and `<html dir>` from
+ * the active pack. On by default. `'off'` leaves both attributes to the app;
+ * `CNGX_DIRECTION` then keeps reading `dir` from the DOM.
+ *
+ * @category core/i18n
+ * @since 0.1.0
+ * @relatedTo provideCngxI18n
+ */
+export function withDocumentLanguage(mode: 'on' | 'off'): CngxI18nFeature {
+  return { _target: 'documentLanguage', mode };
+}
+
+const RTL_LANGUAGES = new Set([
+  'ar',
+  'arc',
+  'ckb',
+  'dv',
+  'fa',
+  'he',
+  'iw',
+  'ks',
+  'ps',
+  'sd',
+  'syr',
+  'ug',
+  'ur',
+  'yi',
+]);
+
+interface TextInfoLocale {
+  readonly language: string;
+  readonly getTextInfo?: () => { readonly direction?: string };
+  readonly textInfo?: { readonly direction?: string };
+}
+
+const directionOf = memoize(
+  (locale: string): CngxDirection => {
+    let intlLocale: TextInfoLocale;
+    try {
+      intlLocale = new Intl.Locale(locale) as unknown as TextInfoLocale;
+    } catch {
+      return 'ltr';
+    }
+    const direction = (intlLocale.getTextInfo?.() ?? intlLocale.textInfo)?.direction;
+    if (direction) {
+      return direction === 'rtl' ? 'rtl' : 'ltr';
+    }
+    return RTL_LANGUAGES.has(intlLocale.language) ? 'rtl' : 'ltr';
+  },
+  { cacheLimit: 32 },
+);
+
+// The pack's own direction; CNGX_DIRECTION aliases it until a later
+// provideDirection() replaces the alias, while <html dir> keeps following the pack.
+const PACK_DIRECTION = new InjectionToken<Signal<CngxDirection>>('CngxPackDirection');
+
+function reflectDocumentLanguage(): void {
+  const root = inject(DOCUMENT).documentElement;
+  const direction = inject(PACK_DIRECTION);
+  const pack = inject(CNGX_LANGUAGE_PACK);
+  effect(() => {
+    const lang = pack().locale;
+    const dir = direction();
+    untracked(() => {
+      root.lang = lang;
+      root.dir = dir;
+    });
+  });
+}
+
+/**
  * Provides the app's language file: one call in the app config replaces the
  * per-token `provide*I18n` calls. Per-token providers still apply on top of
  * the pack, key by key. With several pack features the last one wins.
+ *
+ * The pack also drives the locale and the direction: `CNGX_LOCALE` is the
+ * pack's `locale`, `CNGX_DIRECTION` its `dir` (else derived from `locale`),
+ * and `<html lang>` / `<html dir>` follow it unless
+ * {@link withDocumentLanguage} is `'off'`. A `provideLocale()` or
+ * `provideDirection()` listed after this call wins.
  *
  * ```ts
  * bootstrapApplication(App, { providers: [provideCngxI18n(withPack(de))] });
@@ -106,19 +188,46 @@ export function withPartialPack(
  *
  * @category core/i18n
  * @since 0.1.0
- * @relatedTo withPack, withPartialPack, CNGX_LANGUAGE_PACK
+ * @relatedTo withPack, withPartialPack, withDocumentLanguage, CNGX_LANGUAGE_PACK
  */
 export function provideCngxI18n(...features: readonly CngxI18nFeature[]): EnvironmentProviders {
   let source: Signal<CngxActiveLanguagePack | undefined> | undefined;
+  let documentLanguage = true;
   for (const feature of features) {
-    source = feature.source;
+    if (feature._target === 'pack') {
+      source = feature.source;
+    } else {
+      documentLanguage = feature.mode === 'on';
+    }
   }
-  return makeEnvironmentProviders([
+
+  const providers: (Provider | EnvironmentProviders)[] = [
     {
       provide: CNGX_LANGUAGE_PACK,
       useFactory: () => (source ? computed(() => source() ?? ENGLISH) : ENGLISH_PACK),
     },
-  ]);
+    {
+      provide: CNGX_LOCALE,
+      useFactory: () => {
+        const pack = inject(CNGX_LANGUAGE_PACK);
+        return computed(() => pack().locale);
+      },
+    },
+  ];
+  if (documentLanguage) {
+    providers.push(
+      {
+        provide: PACK_DIRECTION,
+        useFactory: () => {
+          const pack = inject(CNGX_LANGUAGE_PACK);
+          return computed(() => pack().dir ?? directionOf(pack().locale));
+        },
+      },
+      { provide: CNGX_DIRECTION, useExisting: PACK_DIRECTION },
+      provideEnvironmentInitializer(reflectDocumentLanguage),
+    );
+  }
+  return makeEnvironmentProviders(providers);
 }
 
 /**

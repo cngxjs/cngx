@@ -20,6 +20,7 @@ export {
   provideCngxI18n,
   withPack,
   withPartialPack,
+  withDocumentLanguage,
   type CngxActiveLanguagePack,
   type CngxCompleteLanguagePack,
   type CngxI18nFeature,

@@ -19,12 +19,11 @@ const localeSignalFor = memoize((id: string): Signal<string> => signal(id).asRea
 });
 
 /**
- * The locale source cngx formatters read through {@link injectLocale}.
- * `CngxProgress`, `CngxTime`, `CngxMetric`, `CngxTrend`, `CngxDelta` and
- * `CngxCardTimestamp` format with it today. The atoms that still inject
- * `LOCALE_ID` directly (`CngxNumericInput`, `CngxInputMask`) follow the nearest
- * `LOCALE_ID` only and do not see a provided `CNGX_LOCALE` until they move onto
- * this token.
+ * The locale source cngx formatters read through {@link injectLocale}, among
+ * them `CngxProgress`, `CngxTime`, `CngxMetric`, `CngxTrend`, `CngxDelta`,
+ * `CngxCardTimestamp`, `CngxNumericInput`, `CngxInputMask` and
+ * `CngxPhoneInput`. `provideCngxI18n` from `@cngx/core/i18n` provides it from
+ * the active language pack's `locale`.
  *
  * Deliberately has no root factory: without a provider, {@link injectLocale}
  * falls back to the nearest `LOCALE_ID` at the call site, so a component-level
@@ -60,7 +59,7 @@ export function injectLocale(): Signal<string> {
  * Provide the locale cngx formats with, environment-scoped (bootstrap or route
  * `providers`). Pass a `Signal<string>` to switch the locale at runtime; a
  * plain string pins it. Outranks `LOCALE_ID` for every formatter that reads
- * {@link CNGX_LOCALE}; atoms that still inject `LOCALE_ID` directly ignore it.
+ * {@link CNGX_LOCALE}.
  * For a per-subtree override in a component's `viewProviders`, use
  * {@link provideLocaleAt}.
  *
