@@ -407,15 +407,13 @@
 
   /**
    * Semantic warning color - amber. Drives caution states,
-   * incomplete data, soft errors. The light rung sits at L 0.67 so a
-   * warning glyph or stripe clears 3:1 on the light surface (amber is the
-   * brightest hue; at L 0.72 it read 2.5:1).
+   * incomplete data, soft errors.
    * @group Surface
    */
   @property --cngx-color-warning {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.67 0.14 75);
+    initial-value: oklch(0.72 0.15 75);
   }
 
   /**
@@ -545,7 +543,7 @@
     --cngx-color-danger: oklch(0.6 0.18 25);
     --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
     --cngx-color-success: oklch(0.6 0.15 145);
-    --cngx-color-warning: oklch(0.67 0.14 75);
+    --cngx-color-warning: oklch(0.72 0.15 75);
     --cngx-color-info: oklch(0.65 0.12 240);
     --cngx-color-highlight: oklch(0.92 0.115 96);
     accent-color: var(--cngx-color-primary);
@@ -618,7 +616,7 @@
     --cngx-color-danger: oklch(0.6 0.18 25);
     --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
     --cngx-color-success: oklch(0.6 0.15 145);
-    --cngx-color-warning: oklch(0.67 0.14 75);
+    --cngx-color-warning: oklch(0.72 0.15 75);
     --cngx-color-info: oklch(0.65 0.12 240);
     --cngx-color-highlight: oklch(0.92 0.115 96);
   }
