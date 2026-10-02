@@ -15,6 +15,7 @@
     "theming/**/*.spec.ts",
     "theming/**/*.fixtures.ts",
     "bidi/**/*.spec.ts",
-    "nav/**/*.spec.ts"
+    "nav/**/*.spec.ts",
+    "i18n/**/*.spec.ts"
   ]
 }
