@@ -59,14 +59,30 @@ cngx-toc {
   outline-offset: 2px;
 }
 
-/* Exactly one link carries aria-current at a time (spec-asserted invariant). */
+/* Exactly one link carries aria-current at a time (spec-asserted invariant).
+   The primary rail marks it (a non-text indicator, 3:1), so the label stays in
+   the neutral text colour instead of primary-as-text (3.3:1 on light). */
 .cngx-toc__link[aria-current] {
   border-inline-start-color: var(--cngx-toc-rail-active, var(--cngx-color-primary, oklch(0.66 0.19 50)));
-  color: var(--cngx-toc-color-active, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  color: var(--cngx-toc-color-active, var(--cngx-color-text, oklch(0.2 0.01 250)));
   font-weight: var(--cngx-toc-weight-active, 600);
 }
 
 /* Ancestor links of the active leaf: a subtle styling hook, no ARIA. */
 .cngx-toc__item[data-active-trail] > .cngx-toc__link {
   color: var(--cngx-toc-color-trail, var(--cngx-color-text, oklch(0.2 0.01 250)));
+}
+
+/* Forced-colors (WHCM): the UA forces the rest links' transparent rail to the
+   link colour, so every link draws the same rail and the active one differs only
+   by weight. Hide the rest rail on Canvas and draw the active rail in Highlight.
+   Unlayered, like the other forced-colors blocks. */
+@media (forced-colors: active) {
+  .cngx-toc__link {
+    border-inline-start-color: Canvas;
+  }
+
+  .cngx-toc__link[aria-current] {
+    border-inline-start-color: Highlight;
+  }
 }
