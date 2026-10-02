@@ -221,8 +221,8 @@ export type CngxMatStepHandleFactory = typeof createMatStepHandle;
  * providers: [
  *   {
  *     provide: CNGX_MAT_STEP_HANDLE_FACTORY,
- *     useValue: ((step, idSeed) => {
- *       const setup = createMatStepHandle(step, idSeed);
+ *     useValue: ((step, idSeed, i18n) => {
+ *       const setup = createMatStepHandle(step, idSeed, i18n);
  *       reportStepRegistered(setup.handle.id);
  *       return setup;
  *     }) satisfies CngxMatStepHandleFactory,
