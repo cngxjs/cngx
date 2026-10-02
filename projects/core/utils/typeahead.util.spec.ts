@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { matchesTypeahead } from './typeahead.util';
+import { foldForMatching, matchesTypeahead } from './typeahead.util';
 
 describe('matchesTypeahead', () => {
   it('matches case-insensitively in both directions', () => {
@@ -41,5 +41,14 @@ describe('matchesTypeahead', () => {
   it('keeps plain lowercasing without a locale', () => {
     expect(matchesTypeahead('Istanbul', 'i')).toBe(true);
     expect(matchesTypeahead('İzmir', 'i')).toBe(true);
+  });
+});
+
+describe('foldForMatching', () => {
+  it('lowercases with the locale, then drops accents', () => {
+    expect(foldForMatching('Über')).toBe('uber');
+    expect(foldForMatching('İzmir', 'tr')).toBe('izmir');
+    expect(foldForMatching('ISTANBUL', 'tr')).toBe('ıstanbul');
+    expect(foldForMatching('Crème Brûlée')).toBe('creme brulee');
   });
 });

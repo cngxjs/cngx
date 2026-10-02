@@ -1,11 +1,22 @@
 const COMBINING_MARKS = /\p{M}/gu;
 
 /**
- * @internal Lowercases with the locale first, then drops combining marks:
- * the other order would decompose Turkish `İ` to `I` + dot and lowercase
- * that `I` to dotless `ı`.
+ * Folds text for case- and accent-tolerant matching: lowercases with
+ * `locale` (plain `toLowerCase()` without one), then NFD-normalises and drops
+ * combining marks. The order matters - the other way round decomposes Turkish
+ * `İ` to `I` + dot and lowercases that `I` to dotless `ı`. Fold both sides of
+ * a comparison with the same locale.
+ *
+ * ```typescript
+ * foldForMatching('Über');            // 'uber'
+ * foldForMatching('İzmir', 'tr');     // 'izmir'
+ * ```
+ *
+ * @category core/utils/typeahead
+ * @since 0.1.0
+ * @relatedTo matchesTypeahead
  */
-function foldForTypeahead(value: string, locale: string | undefined): string {
+export function foldForMatching(value: string, locale?: string): string {
   const lower = locale ? value.toLocaleLowerCase(locale) : value.toLowerCase();
   return lower.normalize('NFD').replace(COMBINING_MARKS, '');
 }
@@ -42,5 +53,5 @@ function foldForTypeahead(value: string, locale: string | undefined): string {
  * @relatedTo CngxActiveDescendant, CngxTreeSelect
  */
 export function matchesTypeahead(label: string, term: string, locale?: string): boolean {
-  return foldForTypeahead(label, locale).startsWith(foldForTypeahead(term, locale));
+  return foldForMatching(label, locale).startsWith(foldForMatching(term, locale));
 }

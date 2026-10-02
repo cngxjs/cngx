@@ -51,6 +51,10 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxCardI18nFeature` maps `Signal<CngxCardI18n>` to `Signal<CngxCardI18n>`. A hand-written feature returns a derived Signal, best through `createOverrideMerge` from `@cngx/core/utils`: `(bundle) => createOverrideMerge(bundle, { loading: 'Lädt' })`.
 - `CngxCardI18n` has a new required key `timestamp` (English `'{prefix} {date}'`): it sets the order of a `cngx-card-timestamp` prefix and its date. A complete bundle you provide directly adds it; `withCardI18nLabels` overrides are unaffected.
 
+### @cngx/common/command
+
+- The default `CNGX_COMMAND_MATCH_FACTORY` reads the app locale with `injectLocale()` when it is called, so call it in an injection context, as `CngxCommandPanel` does in a field initializer: `inject(CNGX_COMMAND_MATCH_FACTORY)()`. `createDefaultCommandMatcher(locale?)` itself still works anywhere.
+
 ### @cngx/common/chart
 
 - `CNGX_CHART_I18N` is now `InjectionToken<Signal<CngxChartI18n>>`. Call the Signal where you read a formatter, inside a `computed()`, a template or a handler: `inject(CNGX_CHART_I18N).summary(input)` becomes `inject(CNGX_CHART_I18N)().summary(input)`. The default factory reads the app locale live, so the default number formatting follows a `CNGX_LOCALE` switch.
@@ -212,6 +216,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - A live region keeps its text when the language switches, and speaks the new language with its next status change. This also holds when a consumer formatter reads a language Signal itself, such as `withErrorMessages({ required: () => translate('required') })` or a `format` function on a select announcer or a stepper count: CNGX now calls these formatters untracked inside the live region, so a switch no longer re-renders the region at once. Shown validation messages in `cngx-field-errors` and `cngx-form-errors` therefore stay in the old language until the field's errors change. Labels outside live regions follow the switch immediately.
 - Copy that CNGX builds from a message with arguments wraps every inserted text argument in the Unicode isolates U+2068 / U+2069 and formats every inserted number with the active locale (`1,200`, `1.200` in German). A Latin name inside an Arabic sentence, or the reverse, keeps its own direction. Tests that compare such copy exactly strip the isolates first: `text.replace(/[\u2068\u2069]/g, '')`.
 - Type-to-find ignores accents and lowercases with the app locale, in `CngxActiveDescendant` and everything built on it (listbox, menu, select family) and in the `CngxTreeSelect` expand-to-reveal search: `u` now finds `Über`, and under `tr` an `I` finds `Istanbul` but not `İzmir`. `matchesTypeahead(label, term, locale?)` from `@cngx/core/utils` takes the locale as an optional third argument; without it, it lowercases as before and still ignores accents.
+- The default command matcher (`CngxCommandPanel`, `createDefaultCommandMatcher`) compares query, labels and keywords case- and accent-tolerant in the app locale: `uber` finds `Über`, `cafe` finds the keyword `Café`. The fold is exported as `foldForMatching(value, locale?)` from `@cngx/core/utils`.
 
 ### @cngx/common/chart
 
