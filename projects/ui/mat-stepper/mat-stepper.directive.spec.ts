@@ -17,6 +17,8 @@ import {
   createMatStepHandle,
   type CngxMatStepHandleFactory,
 } from './material-bridge/handle';
+import { stripBidiIsolates } from '@cngx/testing';
+
 
 interface Plumbing {
   fixture: ReturnType<typeof TestBed.createComponent<HostCmp>>;
@@ -543,7 +545,7 @@ describe('CngxMatStepper instrumentation directive', () => {
       await fixture.whenStable();
       expect(presenter.commitTransition.current()).toBe('success');
       const landed = announce.mock.calls.at(-1)?.[0];
-      expect(landed).toMatch(/^Step 2 of 2: Step /);
+      expect(stripBidiIsolates(landed)).toMatch(/^Step 2 of 2: Step /);
       const callsBeforeFlip = announce.mock.calls.length;
 
       lang.set('de');

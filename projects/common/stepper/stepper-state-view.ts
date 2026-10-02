@@ -159,7 +159,9 @@ export function resolveStepperErrorSummary(
       return custom;
     }
     const label = node ? untracked(node.label) : undefined;
-    return label ? `${label}: ${i18n.statusLabels.errored}` : i18n.statusLabels.errored;
+    return label
+      ? i18n.stepWithDetail(label, i18n.statusLabels.errored)
+      : i18n.statusLabels.errored;
   }
   return i18n.stepHasErrors(count);
 }

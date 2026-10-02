@@ -7,10 +7,9 @@ import { CngxStepperCount, type CngxStepperCountHost } from './stepper-count';
 import { type CngxStepNode } from './stepper-host.token';
 
 // Runs in a real Chromium (the `test-geometry` target). Mounted under an RTL
-// root so the `N/M` ratio order-fix is actually exercised: the `/` between two
-// number groups swaps under `dir=rtl`, so the caption span must compute
-// `direction: ltr` on top of `unicode-bidi: isolate`. An ltr-mounted direction
-// read would be vacuous (a missing declaration also inherits ltr there).
+// root so the direction read discriminates: the caption is translated text and
+// must follow the page direction, while a bare `N/M` ratio stays pinnable to
+// ltr through --cngx-stepper-count-direction. An ltr mount would be vacuous.
 
 function stubHost(active: number, total: number): CngxStepperCountHost {
   const steps = Array.from(
@@ -51,15 +50,21 @@ afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
   document.documentElement.removeAttribute('dir');
+  document.documentElement.style.removeProperty('--cngx-stepper-count-direction');
 });
 
 describe('CngxStepperCount geometry (rtl)', () => {
-  it('pins the N/M ratio to isolate + direction:ltr under dir=rtl', () => {
+  it('isolates the caption and lets it follow dir=rtl', () => {
     document.documentElement.dir = 'rtl';
     const span = mount();
-    // `2 / 9 -> 9 / 2` is the reorder the direction:ltr guards; the rtl mount is
-    // what makes the direction assertion discriminating.
     expect(computedValue(span, 'unicode-bidi')).toBe('isolate');
+    expect(computedValue(span, 'direction')).toBe('rtl');
+  });
+
+  it('pins a ratio caption to ltr through the direction token', () => {
+    document.documentElement.dir = 'rtl';
+    document.documentElement.style.setProperty('--cngx-stepper-count-direction', 'ltr');
+    const span = mount();
     expect(computedValue(span, 'direction')).toBe('ltr');
   });
 });

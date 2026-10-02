@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createResizeObserverMock } from '@cngx/testing';
+import { createResizeObserverMock, stripBidiIsolates } from '@cngx/testing';
 
 import {
   CngxStep,
@@ -27,6 +27,7 @@ import {
 } from '@cngx/common/stepper';
 
 import { CngxStepper } from './stepper.component';
+
 
 @Component({
   standalone: true,
@@ -933,7 +934,7 @@ describe('CngxStepper organism', () => {
     ) as HTMLButtonElement;
     const descId = button.getAttribute('aria-describedby')!;
     const desc = fixture.nativeElement.querySelector(`#${descId}`) as HTMLElement;
-    expect(desc.textContent?.trim()).toBe('Step 1 of 3: A');
+    expect(stripBidiIsolates(desc.textContent?.trim())).toBe('Step 1 of 3: A');
   });
 
   describe('commit-action live region', () => {
@@ -1011,7 +1012,7 @@ describe('CngxStepper organism', () => {
       const region = fixture.nativeElement.querySelector(
         '.cngx-stepper__live-region',
       ) as HTMLElement;
-      expect(region.textContent?.trim()).toBe('Step 2 of 3: B');
+      expect(stripBidiIsolates(region.textContent?.trim())).toBe('Step 2 of 3: B');
     });
 
     it('optimistic async accept stays quiet - the step was announced at dispatch', async () => {
@@ -1061,7 +1062,7 @@ describe('CngxStepper organism', () => {
       const region = fixture.nativeElement.querySelector(
         '.cngx-stepper__live-region',
       ) as HTMLElement;
-      expect(region.textContent?.trim()).toBe('Reverted to step "A".');
+      expect(stripBidiIsolates(region.textContent?.trim())).toBe('Reverted to step "A".');
     });
 
     it('error transition falls back to commitFailedRetry when origin is unresolvable', () => {
@@ -1082,7 +1083,7 @@ describe('CngxStepper organism', () => {
         '.cngx-stepper__live-region',
       ) as HTMLElement;
       // Rich phrase first.
-      expect(region.textContent?.trim()).toBe('Reverted to step "A".');
+      expect(stripBidiIsolates(region.textContent?.trim())).toBe('Reverted to step "A".');
       // Dismiss the rejection - clearing lastFailedIndex collapses the
       // priority chain to the generic fallback. The organism exposes
       // `clearLastFailed()` as a public delegator so consumers using
@@ -1142,11 +1143,13 @@ describe('CngxStepper organism', () => {
       const descId = buttons[1].getAttribute('aria-describedby')!;
       const desc = fixture.nativeElement.querySelector(`#${descId}`) as HTMLElement;
       // Persistent suffix appended to the per-step descriptor.
-      expect(desc.textContent?.trim()).toBe('Step 2 of 3: B This step was rolled back.');
+      expect(stripBidiIsolates(desc.textContent?.trim())).toBe(
+        'Step 2 of 3: B This step was rolled back.',
+      );
       // Sibling steps keep the unmodified phrase.
       const aDescId = buttons[0].getAttribute('aria-describedby')!;
       const aDesc = fixture.nativeElement.querySelector(`#${aDescId}`) as HTMLElement;
-      expect(aDesc.textContent?.trim()).toBe('Step 1 of 3: A');
+      expect(stripBidiIsolates(aDesc.textContent?.trim())).toBe('Step 1 of 3: A');
     });
 
     it('a stepRolledBack formatter owns the order of the rolled-back description', () => {
@@ -1170,7 +1173,7 @@ describe('CngxStepper organism', () => {
       fixture.detectChanges();
       const descId = buttons[1].getAttribute('aria-describedby')!;
       const desc = fixture.nativeElement.querySelector(`#${descId}`) as HTMLElement;
-      expect(desc.textContent?.trim()).toBe('Zurückgesetzt - Step 2 of 3: B');
+      expect(stripBidiIsolates(desc.textContent?.trim())).toBe('Zurückgesetzt - Step 2 of 3: B');
     });
 
     it('default rejection-icon outlet renders CNGX_STEPPER_GLYPHS.rejectionIcon (single source of truth)', () => {
@@ -1910,17 +1913,17 @@ describe('CngxStepper language switch', () => {
     const stepper = fixture.debugElement.query(By.directive(CngxStepper))
       .componentInstance as CngxStepper;
     const summary = (): string => stepper['mobileErrorSummary']();
-    expect(summary()).toBe('B: Errored');
+    expect(stripBidiIsolates(summary())).toBe('B: Errored');
 
     lang.set('de');
-    expect(summary()).toBe('B: Errored');
+    expect(stripBidiIsolates(summary())).toBe('B: Errored');
 
     fixture.componentInstance.err.set(false);
     fixture.detectChanges();
     expect(summary()).toBe('');
     fixture.componentInstance.err.set(true);
     fixture.detectChanges();
-    expect(summary()).toBe('B: Fehler');
+    expect(stripBidiIsolates(summary())).toBe('B: Fehler');
   });
 });
 

@@ -29,6 +29,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxStepperI18n.stepRolledBackSuffix: string` is replaced by `stepRolledBack: (base: string) => string`, which receives the step's description and returns the whole sentence. `withStepperI18nLabels({ stepRolledBackSuffix: 'Zurückgesetzt.' })` becomes ``withStepperI18nLabels({ stepRolledBack: (base) => `${base} Zurückgesetzt.` })``. The English default renders the same text as before.
 - `CngxStepperI18n.stepFallbackLabel` is now required. Bundles built through `provideStepperI18n(withStepperI18nLabels(...))` already carry the English default; a hand-built `Signal<CngxStepperI18n>` supplies the key, for example ``stepFallbackLabel: (id) => `Schritt ${id}` ``.
 - `resolveStepFallbackLabel` is no longer exported. It was marked internal; read `injectStepperI18n()().stepFallbackLabel(id)` instead.
+- `CngxStepperI18n` has four new required keys: `groupRoleDescription` (English `'step group'`), `stepWithDetail(step, detail)` (English `'{step}: {detail}'`, the joiner of a step name and its status or label), `groupSummaryCountShort(total)` and `groupSummaryProgressShort(completed, total)` (the visible collapsed-group badge, English `'4'` and `'1/4'`). A hand-built `Signal<CngxStepperI18n>` supplies them; `withStepperI18nLabels` overrides are unaffected.
 
 ### @cngx/common/tabs
 
@@ -203,6 +204,12 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - A live region keeps its text when the language switches, and speaks the new language with its next status change. This also holds when a consumer formatter reads a language Signal itself, such as `withErrorMessages({ required: () => translate('required') })` or a `format` function on a select announcer or a stepper count: CNGX now calls these formatters untracked inside the live region, so a switch no longer re-renders the region at once. Shown validation messages in `cngx-field-errors` and `cngx-form-errors` therefore stay in the old language until the field's errors change. Labels outside live regions follow the switch immediately.
 - Copy that CNGX builds from a message with arguments wraps every inserted text argument in the Unicode isolates U+2068 / U+2069 and formats every inserted number with the active locale (`1,200`, `1.200` in German). A Latin name inside an Arabic sentence, or the reverse, keeps its own direction. Tests that compare such copy exactly strip the isolates first: `text.replace(/[\u2068\u2069]/g, '')`.
 - Type-to-find ignores accents and lowercases with the app locale, in `CngxActiveDescendant` and everything built on it (listbox, menu, select family) and in the `CngxTreeSelect` expand-to-reveal search: `u` now finds `Über`, and under `tr` an `I` finds `Istanbul` but not `İzmir`. `matchesTypeahead(label, term, locale?)` from `@cngx/core/utils` takes the locale as an optional third argument; without it, it lowercases as before and still ignores accents.
+
+### @cngx/common/stepper
+
+- The collapsed-group screen-reader phrases use the singular for one step: `1 step`, `0 of 1 step complete` (before: `1 steps`).
+- The visible collapsed-group badge formats its numbers with the app locale (`1.200` in German) and its order comes from `groupSummaryProgressShort`.
+- `cngx-stepper-count` no longer forces `direction: ltr`; the caption reads in the page direction. A `format` that renders a bare ratio such as `2/9` keeps its order under RTL with `--cngx-stepper-count-direction: ltr`.
 
 ### @cngx/forms/select
 
