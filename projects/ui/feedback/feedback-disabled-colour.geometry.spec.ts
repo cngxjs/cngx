@@ -20,6 +20,7 @@ const SCHEMES = ['light', 'dark'] as const;
   standalone: true,
   styleUrls: [
     '../../core/theming/system-tokens.css',
+    './styles/feedback-severity.css',
     './alert/alert.css',
     './banner/banner-outlet.css',
     './toast/toast-outlet.css',
@@ -67,7 +68,11 @@ class FeedbackHost {
 @Component({
   selector: 'cngx-banner-pending-host',
   standalone: true,
-  styleUrls: ['../../core/theming/system-tokens.css', './banner/banner-outlet.css'],
+  styleUrls: [
+    '../../core/theming/system-tokens.css',
+    './styles/feedback-severity.css',
+    './banner/banner-outlet.css',
+  ],
   encapsulation: ViewEncapsulation.None,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `

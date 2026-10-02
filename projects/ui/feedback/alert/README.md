@@ -55,7 +55,8 @@ readonly saveState = injectAsyncState(() => this.save$);
 - `--cngx-alert-border-color` (default severity-specific) - Border color
 - `--cngx-alert-bg` (default severity-specific) - Background color
 - `--cngx-alert-color` (default severity-specific) - Text color
-- `--cngx-alert-{severity}-bg` (default the hue of the core `--cngx-color-{info,success,warning,danger}` at a fixed pastel lightness and chroma, `oklch(from <core> L C h)`) - Per-severity background
+- `--cngx-feedback-{severity}-bg` / `-border` / `-icon` - Shared severity palette of alert, alert stack, banner and toast; every per-component severity token below defaults to it
+- `--cngx-alert-{severity}-bg` (default `--cngx-feedback-{severity}-bg`: the hue of the core `--cngx-color-{info,success,warning,danger}` at a fixed pastel lightness and chroma, `oklch(from <core> L C h)`) - Per-severity background
 - `--cngx-alert-{severity}-border` (default the core hue at a fixed lightness and chroma, like the background) - Per-severity border color
 - `--cngx-alert-{severity}-icon` (default the core `--cngx-color-{info,success,warning,danger}` mixed 90% into `--cngx-color-text`) - Per-severity icon color
 - `--cngx-alert-action-color` (default the severity accent mixed 60% into `--cngx-color-text`) - Action label and border color; pin it to `--cngx-alert-icon-color` for the pure accent

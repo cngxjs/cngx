@@ -191,76 +191,77 @@
    * tokens and fall through to the var() fallback (light values).
    * Custom properties without @property registration still inherit
    * by default, so duplicating the :root override here keeps the
-   * stack self-sufficient. Values are kept in lockstep with alert.css:
+   * stack self-sufficient. Values are kept in lockstep with alert.css
+   * and read the shared `--cngx-feedback-{severity}-*` set:
    * the tints take the core hue at a fixed pastel L / C through
    * relative colour syntax (a color-mix with the surface cannot reach
    * that chroma), so a brand override of the core colour re-hues them. */
   :root {
     --cngx-alert-bg: oklch(0.98 0.005 250);
-    --cngx-alert-info-bg: oklch(from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.96 0.025 h);
-    --cngx-alert-info-border: oklch(from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.85 0.07 h);
-    --cngx-alert-info-icon: color-mix(in oklab, var(--cngx-color-info, oklch(0.65 0.12 240)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
-    --cngx-alert-success-bg: oklch(from var(--cngx-color-success, oklch(0.6 0.15 145)) 0.96 0.04 h);
-    --cngx-alert-success-border: oklch(from var(--cngx-color-success, oklch(0.6 0.15 145)) 0.85 0.1 h);
-    --cngx-alert-success-icon: color-mix(in oklab, var(--cngx-color-success, oklch(0.6 0.15 145)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
-    --cngx-alert-warning-bg: oklch(from var(--cngx-color-warning, oklch(0.72 0.15 75)) 0.97 0.04 h);
-    --cngx-alert-warning-border: oklch(from var(--cngx-color-warning, oklch(0.72 0.15 75)) 0.86 0.1 h);
-    --cngx-alert-warning-icon: color-mix(in oklab, var(--cngx-color-warning, oklch(0.72 0.15 75)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
-    --cngx-alert-error-bg: oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.96 0.025 h);
-    --cngx-alert-error-border: oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.85 0.08 h);
-    --cngx-alert-error-icon: color-mix(in oklab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
+    --cngx-alert-info-bg: var(--cngx-feedback-info-bg, oklch(0.96 0.025 240));
+    --cngx-alert-info-border: var(--cngx-feedback-info-border, oklch(0.85 0.07 240));
+    --cngx-alert-info-icon: var(--cngx-feedback-info-icon, oklch(0.6 0.11 240));
+    --cngx-alert-success-bg: var(--cngx-feedback-success-bg, oklch(0.96 0.04 145));
+    --cngx-alert-success-border: var(--cngx-feedback-success-border, oklch(0.85 0.1 145));
+    --cngx-alert-success-icon: var(--cngx-feedback-success-icon, oklch(0.56 0.135 145));
+    --cngx-alert-warning-bg: var(--cngx-feedback-warning-bg, oklch(0.97 0.04 75));
+    --cngx-alert-warning-border: var(--cngx-feedback-warning-border, oklch(0.86 0.1 75));
+    --cngx-alert-warning-icon: var(--cngx-feedback-warning-icon, oklch(0.67 0.135 75));
+    --cngx-alert-error-bg: var(--cngx-feedback-error-bg, oklch(0.96 0.025 25));
+    --cngx-alert-error-border: var(--cngx-feedback-error-border, oklch(0.85 0.08 25));
+    --cngx-alert-error-icon: var(--cngx-feedback-error-icon, oklch(0.56 0.16 25));
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
       --cngx-alert-bg: oklch(0.22 0.01 250);
-      --cngx-alert-info-bg: oklch(from var(--cngx-color-info, oklch(0.72 0.11 240)) 0.3 0.05 h);
-      --cngx-alert-info-border: oklch(from var(--cngx-color-info, oklch(0.72 0.11 240)) 0.5 0.08 h);
-      --cngx-alert-info-icon: color-mix(in oklab, var(--cngx-color-info, oklch(0.72 0.11 240)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
-      --cngx-alert-success-bg: oklch(from var(--cngx-color-success, oklch(0.68 0.14 145)) 0.3 0.06 h);
-      --cngx-alert-success-border: oklch(from var(--cngx-color-success, oklch(0.68 0.14 145)) 0.5 0.1 h);
-      --cngx-alert-success-icon: color-mix(in oklab, var(--cngx-color-success, oklch(0.68 0.14 145)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
-      --cngx-alert-warning-bg: oklch(from var(--cngx-color-warning, oklch(0.78 0.14 75)) 0.32 0.06 h);
-      --cngx-alert-warning-border: oklch(from var(--cngx-color-warning, oklch(0.78 0.14 75)) 0.55 0.1 h);
-      --cngx-alert-warning-icon: color-mix(in oklab, var(--cngx-color-warning, oklch(0.78 0.14 75)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
-      --cngx-alert-error-bg: oklch(from var(--cngx-color-danger, oklch(0.68 0.17 25)) 0.3 0.05 h);
-      --cngx-alert-error-border: oklch(from var(--cngx-color-danger, oklch(0.68 0.17 25)) 0.5 0.1 h);
-      --cngx-alert-error-icon: color-mix(in oklab, var(--cngx-color-danger, oklch(0.68 0.17 25)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
+      --cngx-alert-info-bg: var(--cngx-feedback-info-bg, oklch(0.3 0.05 240));
+      --cngx-alert-info-border: var(--cngx-feedback-info-border, oklch(0.5 0.08 240));
+      --cngx-alert-info-icon: var(--cngx-feedback-info-icon, oklch(0.74 0.1 240));
+      --cngx-alert-success-bg: var(--cngx-feedback-success-bg, oklch(0.3 0.06 145));
+      --cngx-alert-success-border: var(--cngx-feedback-success-border, oklch(0.5 0.1 145));
+      --cngx-alert-success-icon: var(--cngx-feedback-success-icon, oklch(0.71 0.126 145));
+      --cngx-alert-warning-bg: var(--cngx-feedback-warning-bg, oklch(0.32 0.06 75));
+      --cngx-alert-warning-border: var(--cngx-feedback-warning-border, oklch(0.55 0.1 75));
+      --cngx-alert-warning-icon: var(--cngx-feedback-warning-icon, oklch(0.8 0.125 75));
+      --cngx-alert-error-bg: var(--cngx-feedback-error-bg, oklch(0.3 0.05 25));
+      --cngx-alert-error-border: var(--cngx-feedback-error-border, oklch(0.5 0.1 25));
+      --cngx-alert-error-icon: var(--cngx-feedback-error-icon, oklch(0.71 0.152 25));
     }
   }
 
   [data-color-scheme='dark'],
   .dark {
     --cngx-alert-bg: oklch(0.22 0.01 250);
-    --cngx-alert-info-bg: oklch(from var(--cngx-color-info, oklch(0.72 0.11 240)) 0.3 0.05 h);
-    --cngx-alert-info-border: oklch(from var(--cngx-color-info, oklch(0.72 0.11 240)) 0.5 0.08 h);
-    --cngx-alert-info-icon: color-mix(in oklab, var(--cngx-color-info, oklch(0.72 0.11 240)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
-    --cngx-alert-success-bg: oklch(from var(--cngx-color-success, oklch(0.68 0.14 145)) 0.3 0.06 h);
-    --cngx-alert-success-border: oklch(from var(--cngx-color-success, oklch(0.68 0.14 145)) 0.5 0.1 h);
-    --cngx-alert-success-icon: color-mix(in oklab, var(--cngx-color-success, oklch(0.68 0.14 145)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
-    --cngx-alert-warning-bg: oklch(from var(--cngx-color-warning, oklch(0.78 0.14 75)) 0.32 0.06 h);
-    --cngx-alert-warning-border: oklch(from var(--cngx-color-warning, oklch(0.78 0.14 75)) 0.55 0.1 h);
-    --cngx-alert-warning-icon: color-mix(in oklab, var(--cngx-color-warning, oklch(0.78 0.14 75)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
-    --cngx-alert-error-bg: oklch(from var(--cngx-color-danger, oklch(0.68 0.17 25)) 0.3 0.05 h);
-    --cngx-alert-error-border: oklch(from var(--cngx-color-danger, oklch(0.68 0.17 25)) 0.5 0.1 h);
-    --cngx-alert-error-icon: color-mix(in oklab, var(--cngx-color-danger, oklch(0.68 0.17 25)) 90%, var(--cngx-color-text, oklch(0.95 0.01 250)));
+    --cngx-alert-info-bg: var(--cngx-feedback-info-bg, oklch(0.3 0.05 240));
+    --cngx-alert-info-border: var(--cngx-feedback-info-border, oklch(0.5 0.08 240));
+    --cngx-alert-info-icon: var(--cngx-feedback-info-icon, oklch(0.74 0.1 240));
+    --cngx-alert-success-bg: var(--cngx-feedback-success-bg, oklch(0.3 0.06 145));
+    --cngx-alert-success-border: var(--cngx-feedback-success-border, oklch(0.5 0.1 145));
+    --cngx-alert-success-icon: var(--cngx-feedback-success-icon, oklch(0.71 0.126 145));
+    --cngx-alert-warning-bg: var(--cngx-feedback-warning-bg, oklch(0.32 0.06 75));
+    --cngx-alert-warning-border: var(--cngx-feedback-warning-border, oklch(0.55 0.1 75));
+    --cngx-alert-warning-icon: var(--cngx-feedback-warning-icon, oklch(0.8 0.125 75));
+    --cngx-alert-error-bg: var(--cngx-feedback-error-bg, oklch(0.3 0.05 25));
+    --cngx-alert-error-border: var(--cngx-feedback-error-border, oklch(0.5 0.1 25));
+    --cngx-alert-error-icon: var(--cngx-feedback-error-icon, oklch(0.71 0.152 25));
   }
 
   [data-color-scheme='light'],
   .light {
     --cngx-alert-bg: oklch(0.98 0.005 250);
-    --cngx-alert-info-bg: oklch(from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.96 0.025 h);
-    --cngx-alert-info-border: oklch(from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.85 0.07 h);
-    --cngx-alert-info-icon: color-mix(in oklab, var(--cngx-color-info, oklch(0.65 0.12 240)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
-    --cngx-alert-success-bg: oklch(from var(--cngx-color-success, oklch(0.6 0.15 145)) 0.96 0.04 h);
-    --cngx-alert-success-border: oklch(from var(--cngx-color-success, oklch(0.6 0.15 145)) 0.85 0.1 h);
-    --cngx-alert-success-icon: color-mix(in oklab, var(--cngx-color-success, oklch(0.6 0.15 145)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
-    --cngx-alert-warning-bg: oklch(from var(--cngx-color-warning, oklch(0.72 0.15 75)) 0.97 0.04 h);
-    --cngx-alert-warning-border: oklch(from var(--cngx-color-warning, oklch(0.72 0.15 75)) 0.86 0.1 h);
-    --cngx-alert-warning-icon: color-mix(in oklab, var(--cngx-color-warning, oklch(0.72 0.15 75)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
-    --cngx-alert-error-bg: oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.96 0.025 h);
-    --cngx-alert-error-border: oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.85 0.08 h);
-    --cngx-alert-error-icon: color-mix(in oklab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 90%, var(--cngx-color-text, oklch(0.2 0.01 250)));
+    --cngx-alert-info-bg: var(--cngx-feedback-info-bg, oklch(0.96 0.025 240));
+    --cngx-alert-info-border: var(--cngx-feedback-info-border, oklch(0.85 0.07 240));
+    --cngx-alert-info-icon: var(--cngx-feedback-info-icon, oklch(0.6 0.11 240));
+    --cngx-alert-success-bg: var(--cngx-feedback-success-bg, oklch(0.96 0.04 145));
+    --cngx-alert-success-border: var(--cngx-feedback-success-border, oklch(0.85 0.1 145));
+    --cngx-alert-success-icon: var(--cngx-feedback-success-icon, oklch(0.56 0.135 145));
+    --cngx-alert-warning-bg: var(--cngx-feedback-warning-bg, oklch(0.97 0.04 75));
+    --cngx-alert-warning-border: var(--cngx-feedback-warning-border, oklch(0.86 0.1 75));
+    --cngx-alert-warning-icon: var(--cngx-feedback-warning-icon, oklch(0.67 0.135 75));
+    --cngx-alert-error-bg: var(--cngx-feedback-error-bg, oklch(0.96 0.025 25));
+    --cngx-alert-error-border: var(--cngx-feedback-error-border, oklch(0.85 0.08 25));
+    --cngx-alert-error-icon: var(--cngx-feedback-error-icon, oklch(0.56 0.16 25));
   }
 }
 

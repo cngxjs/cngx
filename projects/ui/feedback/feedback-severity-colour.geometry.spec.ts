@@ -9,9 +9,10 @@ import { cdp } from 'vitest/browser';
 // Runs in a real Chromium (the `test-geometry` target). The severity glyphs
 // of alert, alert stack, banner and toast derive from the core
 // `--cngx-color-{info,success,warning,danger}` instead of carrying their own
-// literals: the toast stripe and icon paint the core colour on the toast
-// surface, the alert / banner icon mixes it 90% into the text colour so it
-// still clears 3:1 on the pale severity tint. The alert, stack and banner bg
+// literals, through one shared `--cngx-feedback-{severity}-*` set: the icon
+// (alert, stack, banner, and the toast stripe and icon) mixes the core colour
+// 90% into the text colour so it still clears 3:1 on the pale severity tint,
+// and a severity paints the same glyph colour in every family. The alert, stack and banner bg
 // and border tints keep the earlier hand-picked pastel lightness and chroma
 // and take only the hue from the same core colour (relative colour syntax),
 // and the banner inline error reads the danger text rung. A brand override of the core colour therefore reaches every
@@ -63,6 +64,7 @@ const CORE: Record<(typeof SEVERITIES)[number], string> = {
   standalone: true,
   styleUrls: [
     '../../core/theming/system-tokens.css',
+    './styles/feedback-severity.css',
     './alert/alert.css',
     './alert/alert-stack.css',
     './banner/banner-outlet.css',
@@ -228,12 +230,32 @@ describe.each(SCHEMES)('feedback severity colour, %s', (scheme) => {
   const at = one;
 
   describe.each(SEVERITIES)('%s', (severity) => {
-    it('paints the toast stripe and icon in the core colour', () => {
+    it('paints the toast stripe and icon in the shared glyph colour', () => {
       const root = mount();
       const toast = at(root, `.toast-${severity}`);
-      const core = ink(at(root, `.probe-core-${severity}`));
-      expect(paint('#fff', computedValue(toast, 'border-inline-start-color'))).toEqual(core);
-      expect(ink(one(toast, '.cngx-toast__icon'))).toEqual(core);
+      const glyph = ink(at(root, `.probe-mix-${severity}`));
+      expect(paint('#fff', computedValue(toast, 'border-inline-start-color'))).toEqual(glyph);
+      expect(ink(one(toast, '.cngx-toast__icon'))).toEqual(glyph);
+    });
+
+    it('resolves the same glyph and tints in alert, stack, banner and toast', () => {
+      const root = mount();
+      const shared = (kind: string): [number, number, number] =>
+        resolve(root, `var(--cngx-feedback-${severity}-${kind})`);
+      const glyph = shared('icon');
+      for (const sel of [
+        `.alert-${severity} .cngx-alert__icon`,
+        `.stack-${severity} .cngx-alert-stack__icon`,
+        `.banner-${severity} .cngx-banner__icon`,
+        `.toast-${severity} .cngx-toast__icon`,
+      ]) {
+        expect(ink(at(root, sel)), sel).toEqual(glyph);
+      }
+      for (const host of [`.alert-${severity}`, `.stack-${severity}`, `.banner-${severity}`]) {
+        expect(paint('#fff', computedValue(at(root, host), 'background-color')), host).toEqual(
+          shared('bg'),
+        );
+      }
     });
 
     it('paints the alert, stack and banner icon in the core colour 90% into the text', () => {

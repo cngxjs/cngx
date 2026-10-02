@@ -181,7 +181,7 @@ export class CngxAlertAction {}
     }
     <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">{{ announcement() }}</span>
   `,
-  styleUrls: ['./alert.css'],
+  styleUrls: ['../styles/feedback-severity.css', './alert.css'],
 })
 export class CngxAlert {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });

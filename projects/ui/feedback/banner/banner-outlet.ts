@@ -110,7 +110,7 @@ import { CngxBanner, type BannerState } from './banner.service';
       </div>
     }
   `,
-  styleUrls: ['./banner-outlet.css'],
+  styleUrls: ['../styles/feedback-severity.css', './banner-outlet.css'],
 })
 export class CngxBannerOutlet {
   protected readonly service = inject(CngxBanner);
