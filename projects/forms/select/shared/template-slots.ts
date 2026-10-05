@@ -221,6 +221,20 @@ export interface CngxComboboxChipContext<T = unknown> {
 }
 
 /**
+ * Overflow-badge context for the chip strips of `CngxMultiSelect`,
+ * `CngxCombobox` and `CngxActionMultiSelect` under
+ * `chipOverflow: 'truncate'`. `count` is the number of selected options the
+ * strip hides, `label` the badge text the host would render (the
+ * `chipOverflowBadge` copy of the active language pack, `+N` in English,
+ * the number in the reading locale's digits).
+ */
+export interface CngxSelectChipOverflowContext {
+  readonly $implicit: number;
+  readonly count: number;
+  readonly label: string;
+}
+
+/**
  * `*cngxSelectCheck` slot - overrides the default selection indicator.
  *
  * ```html
@@ -615,6 +629,41 @@ export class CngxMultiSelectChip<T = unknown> {
 })
 export class CngxMultiSelectChipHandle {
   readonly templateRef = inject<TemplateRef<void>>(TemplateRef);
+}
+
+/**
+ * `*cngxSelectChipOverflow` slot - replaces the `+N` badge that follows the
+ * visible chips when `chipOverflow` is `'truncate'` and selected options are
+ * hidden. Rendered by `CngxMultiSelect`, `CngxCombobox` and
+ * `CngxActionMultiSelect`; not rendered while a trigger-label slot replaces
+ * the chip strip. The default badge is `aria-hidden` because the selection is
+ * announced through the control; keep a projected badge `aria-hidden` unless
+ * it adds its own interaction.
+ *
+ * ```html
+ * <cngx-multi-select [options]="..." ...>
+ *   <ng-template cngxSelectChipOverflow let-count>
+ *     <span class="my-badge" aria-hidden="true">and {{ count }} more</span>
+ *   </ng-template>
+ * </cngx-multi-select>
+ * ```
+ *
+ * Directive-only: like the other chip-strip slots it has no
+ * `CNGX_SELECT_CONFIG.templates` default.
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxMultiSelect, CngxCombobox, CngxActionMultiSelect, CngxMultiSelectChip, CngxComboboxChip
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectChipOverflow]',
+  standalone: true,
+  exportAs: 'cngxSelectChipOverflow',
+})
+export class CngxSelectChipOverflow {
+  readonly templateRef = inject<TemplateRef<CngxSelectChipOverflowContext>>(TemplateRef);
 }
 
 /**

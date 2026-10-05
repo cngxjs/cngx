@@ -244,6 +244,7 @@ Variant-specific slots that complement the shared 17:
 - `*cngxMultiSelectTriggerLabel` (multi)
 - `*cngxComboboxChip` (combobox)
 - `*cngxComboboxTriggerLabel` (combobox)
+- `*cngxSelectChipOverflow` (multi + combobox + action-multi - `+N` overflow badge under `chipOverflow: 'truncate'`)
 - `*cngxTreeSelectNode` (tree - node row override)
 - `*cngxTreeSelectChip` (tree)
 - `*cngxTreeSelectTriggerLabel` (tree)

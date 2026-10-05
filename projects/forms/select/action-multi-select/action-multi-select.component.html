@@ -54,9 +54,22 @@
           }
         }
         @if (overflowBadgeCount() > 0) {
-          <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
-            {{ overflowBadgeText() }}
-          </span>
+          @if (chipOverflowTpl(); as overflowT) {
+            <ng-container
+              *ngTemplateOutlet="
+                overflowT;
+                context: {
+                  $implicit: overflowBadgeCount(),
+                  count: overflowBadgeCount(),
+                  label: overflowBadgeText(),
+                }
+              "
+            />
+          } @else {
+            <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
+              {{ overflowBadgeText() }}
+            </span>
+          }
         }
       </span>
     }

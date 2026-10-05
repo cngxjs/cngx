@@ -102,6 +102,8 @@ import {
 import {
   CngxComboboxChip,
   type CngxComboboxChipContext,
+  CngxSelectChipOverflow,
+  type CngxSelectChipOverflowContext,
   CngxComboboxTriggerLabel,
   type CngxComboboxTriggerLabelContext,
   CngxSelectCaret,
@@ -158,8 +160,8 @@ export interface CngxComboboxChange<T = unknown> {
  * `cngxSelectCommitError`, `cngxSelectClearButton`,
  * `cngxSelectOptionPending` and `cngxSelectOptionError` also take an
  * app-wide default through `CNGX_SELECT_CONFIG.templates` (`withTemplates`);
- * `cngxComboboxTriggerLabel`, `cngxComboboxChip`, `cngxSelectInputPrefix`
- * and `cngxSelectInputSuffix` are directive-only. `templates.loadingGlyph`
+ * `cngxComboboxTriggerLabel`, `cngxComboboxChip`, `cngxSelectChipOverflow`,
+ * `cngxSelectInputPrefix` and `cngxSelectInputSuffix` are directive-only. `templates.loadingGlyph`
  * replaces the loading and refresh glyph app-wide; this host has no
  * projected glyph slot. The placeholder is the input's own `placeholder`
  * text, so `cngxSelectPlaceholder` does not apply here.
@@ -181,6 +183,7 @@ export interface CngxComboboxChange<T = unknown> {
  * @slot cngxSelectLoading Replaces the panel's loading indicator during the first load of [state], or while [loading] is true without [state]; gets retry.
  * @slot cngxComboboxTriggerLabel Replaces the chip strip whenever projected, including with no selection, while the search input stays; gets selected, values, count.
  * @slot cngxComboboxChip Replaces each chip in the trigger strip unless cngxComboboxTriggerLabel is projected; gets option, remove, index.
+ * @slot cngxSelectChipOverflow Replaces the +N badge after the visible chips when chipOverflow is 'truncate' and selected options are hidden; gets count, label.
  * @slot cngxSelectOptionLabel Replaces the label content of each option row; gets option, selected, highlighted.
  * @slot cngxSelectError Replaces the panel's error block on a failed load and the inline error above the options on a failed refresh; gets error, retry.
  * @slot cngxSelectRetryButton Replaces the retry button inside the built-in load-error, inline-error and commit-error blocks; gets retry, error, disabled, label.
@@ -451,6 +454,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   private readonly triggerLabelDirective =
     contentChild<CngxComboboxTriggerLabel<T>>(CngxComboboxTriggerLabel);
   private readonly chipDirective = contentChild<CngxComboboxChip<T>>(CngxComboboxChip);
+  private readonly chipOverflowDirective =
+    contentChild<CngxSelectChipOverflow>(CngxSelectChipOverflow);
   private readonly optionLabelDirective =
     contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
@@ -494,6 +499,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Combobox-specific per-chip slot. @internal */
   protected readonly chipTpl = computed<TemplateRef<CngxComboboxChipContext<T>> | null>(
     () => this.chipDirective()?.templateRef ?? null,
+  );
+  /** @internal */
+  protected readonly chipOverflowTpl = computed<TemplateRef<CngxSelectChipOverflowContext> | null>(
+    () => this.chipOverflowDirective()?.templateRef ?? null,
   );
   /** @internal */
   protected readonly inputPrefixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(

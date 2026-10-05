@@ -110,6 +110,8 @@ import {
   type CngxComboboxTriggerLabelContext,
   CngxMultiSelectChip,
   type CngxMultiSelectChipContext,
+  CngxSelectChipOverflow,
+  type CngxSelectChipOverflowContext,
   CngxSelectAction,
   CngxSelectCaret,
   CngxSelectCheck,
@@ -170,7 +172,8 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  * `cngxSelectOptionPending`, `cngxSelectOptionError` and `cngxSelectAction`
  * also take an app-wide default through `CNGX_SELECT_CONFIG.templates`
  * (`withTemplates`); `cngxComboboxTriggerLabel`, `cngxMultiSelectChip`,
- * `cngxSelectInputPrefix` and `cngxSelectInputSuffix` are directive-only.
+ * `cngxSelectChipOverflow`, `cngxSelectInputPrefix` and
+ * `cngxSelectInputSuffix` are directive-only.
  * `templates.loadingGlyph` replaces the loading and refresh glyph app-wide;
  * this host has no projected glyph slot. The placeholder is the input's own
  * `placeholder` text, so `cngxSelectPlaceholder` does not apply here.
@@ -195,6 +198,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  * @slot cngxSelectRefreshing Replaces the refresh indicator shown above the options while a reload runs; previousCount is always 0 on this host.
  * @slot cngxSelectCommitError Replaces the panel's commit-error banner when a commit fails and commitErrorDisplay is 'banner'; gets error, option, retry.
  * @slot cngxMultiSelectChip Replaces each chip in the trigger strip unless cngxComboboxTriggerLabel is projected; gets option, remove.
+ * @slot cngxSelectChipOverflow Replaces the +N badge after the visible chips when chipOverflow is 'truncate' and selected options are hidden; gets count, label.
  * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled; gets clear, disabled.
  * @slot cngxSelectOptionPending Replaces the spinner on an option row while its commit is in flight; gets option.
  * @slot cngxSelectOptionError Replaces the error mark on selected rows when a commit fails and commitErrorDisplay is 'inline'; gets option, error.
@@ -399,6 +403,8 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   private readonly commitErrorDirective =
     contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
   private readonly chipDirective = contentChild<CngxMultiSelectChip<T>>(CngxMultiSelectChip);
+  private readonly chipOverflowDirective =
+    contentChild<CngxSelectChipOverflow>(CngxSelectChipOverflow);
   private readonly clearButtonDirective =
     contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly optionPendingDirective =
@@ -436,6 +442,10 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** @internal */
   protected readonly chipTpl = computed<TemplateRef<CngxMultiSelectChipContext<T>> | null>(
     () => this.chipDirective()?.templateRef ?? null,
+  );
+  /** @internal */
+  protected readonly chipOverflowTpl = computed<TemplateRef<CngxSelectChipOverflowContext> | null>(
+    () => this.chipOverflowDirective()?.templateRef ?? null,
   );
   /** @internal */
   protected readonly inputPrefixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
