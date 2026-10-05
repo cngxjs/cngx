@@ -234,7 +234,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The recycler announcements use the singular for one item (`1 more item loaded`, `1 result found`) and format counts in the app locale (`1,200`).
 - `CngxGoal` formats `now` and `max` in its default `aria-valuetext` with the app locale (`1,234.5 of 2,000`, before `1234.5 of 2000`).
 - `CngxDelta` lets the locale draw the plus sign of a positive magnitude (`Intl` `signDisplay`), so a locale with its own plus sign or spacing gets it.
-- A `CngxMetric` without a value announces `No value` (with its unit, if any) instead of the dash glyph; the glyph still shows. A pack can place the unit before the value through `metricValueWithUnit`.
+- A `CngxMetric` without a value announces `No value` instead of the dash glyph; the glyph still shows, and the unit is neither shown nor announced while there is no value. A pack can place the unit before the value through `metricValueWithUnit`.
 
 ### @cngx/common/display
 

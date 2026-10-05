@@ -23,7 +23,7 @@ function unitFirst(message: string): boolean {
  *
  * Uses `Intl.NumberFormat` with the app locale (`CNGX_LOCALE`, falling back to
  * the nearest `LOCALE_ID`) for locale-aware formatting; a locale flip
- * re-formats. Null values render as an em-dash.
+ * re-formats. A `null` value renders the placeholder glyph without its unit.
  *
  * Composable - works inside any card variant, header, body, or standalone.
  *
@@ -70,12 +70,12 @@ function unitFirst(message: string): boolean {
     '[attr.aria-label]': 'accessibleValue()',
   },
   template: `
-    @if (unit() && unitFirst()) {
-      <span class="cngx-metric__unit">{{ unit() }}</span>
+    @if (shownUnit() && unitFirst()) {
+      <span class="cngx-metric__unit">{{ shownUnit() }}</span>
     }
     <span class="cngx-metric__value">{{ formattedValue() }}</span>
-    @if (unit() && !unitFirst()) {
-      <span class="cngx-metric__unit">{{ unit() }}</span>
+    @if (shownUnit() && !unitFirst()) {
+      <span class="cngx-metric__unit">{{ shownUnit() }}</span>
     }
   `,
   styleUrls: ['./metric.component.css'],
@@ -108,14 +108,25 @@ export class CngxMetric {
     return numberFormatterFor(this.locale(), this.format() ?? {}).format(v);
   });
 
+  /**
+   * @internal The unit to render, `undefined` while there is no value: a
+   * missing reading has no unit, so "No value km" is never shown or spoken.
+   */
+  protected readonly shownUnit = computed(() =>
+    this.value() === null ? undefined : this.unit() || undefined,
+  );
+
   /** @internal Unit before value, per the `metricValueWithUnit` message. */
   protected readonly unitFirst = computed(() => unitFirst(this.i18n().metricValueWithUnit));
 
   /** @internal Full accessible description including unit. */
   readonly accessibleValue = computed(() => {
     const i18n = this.i18n();
-    const value = this.value() === null ? i18n.metricNoValue : this.formattedValue();
-    const unit = this.unit();
+    if (this.value() === null) {
+      return i18n.metricNoValue;
+    }
+    const value = this.formattedValue();
+    const unit = this.shownUnit();
     return unit ? formatMessage(i18n.metricValueWithUnit, { value, unit }, this.locale()) : value;
   });
 }

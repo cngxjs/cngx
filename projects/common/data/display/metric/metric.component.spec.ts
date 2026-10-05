@@ -115,11 +115,12 @@ describe('CngxMetric language pack', () => {
     return fixture.nativeElement.querySelector('cngx-metric') as HTMLElement;
   }
 
-  it('shows the placeholder glyph and announces the no-value text for null', () => {
+  it('shows the placeholder glyph and announces only the no-value text for null', () => {
     TestBed.configureTestingModule({ imports: [TestHost] });
     const el = mount(null, 'kg');
     expect(el.querySelector('.cngx-metric__value')?.textContent?.trim()).toBe('\u2014');
-    expect(stripBidiIsolates(el.getAttribute('aria-label'))).toBe('No value kg');
+    expect(el.querySelector('.cngx-metric__unit')).toBeNull();
+    expect(el.getAttribute('aria-label')).toBe('No value');
   });
 
   it('orders value and unit by the metricValueWithUnit message, visibly and in the name', () => {
