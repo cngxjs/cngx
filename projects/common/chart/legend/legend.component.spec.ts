@@ -25,6 +25,20 @@ describe('CngxChartLegend', () => {
     return { fixture, legend };
   }
 
+  it('keeps the display values when the items are re-set to equal values', () => {
+    const { fixture } = setup();
+    const legend = fixture.debugElement.children[0].componentInstance as CngxChartLegend;
+    fixture.componentInstance.items.set([{ label: 'Traffic', value: 100 }]);
+    fixture.detectChanges();
+    const first = legend['displayValues']();
+    fixture.componentInstance.items.set([{ label: 'Traffic', value: 100 }]);
+    fixture.detectChanges();
+    expect(legend['displayValues']()).toBe(first);
+    fixture.componentInstance.items.set([{ label: 'Traffic', value: 101 }]);
+    fixture.detectChanges();
+    expect(legend['displayValues']()).not.toBe(first);
+  });
+
   it('renders the value node with its text when value is present', () => {
     const { fixture, legend } = setup();
     fixture.componentInstance.items.set([{ label: 'Traffic', value: 100 }]);

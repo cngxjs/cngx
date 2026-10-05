@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { injectLocale } from '@cngx/core/utils';
+import { arrayEqual } from '@cngx/utils';
 
 import { formatChartNumber } from '../chart/format-number';
 
@@ -135,12 +136,15 @@ export class CngxChartLegend<T = unknown> {
   private readonly locale = injectLocale();
 
   /** @internal Each item's value as display text; numbers in the app locale. */
-  protected readonly displayValues = computed(() => {
-    const locale = this.locale();
-    return this.items().map(({ value }) =>
-      typeof value === 'number' ? formatChartNumber(value, locale) : String(value),
-    );
-  });
+  protected readonly displayValues = computed(
+    () => {
+      const locale = this.locale();
+      return this.items().map(({ value }) =>
+        typeof value === 'number' ? formatChartNumber(value, locale) : String(value),
+      );
+    },
+    { equal: arrayEqual },
+  );
 
   protected readonly flexAlign = computed(() => {
     switch (this.align()) {

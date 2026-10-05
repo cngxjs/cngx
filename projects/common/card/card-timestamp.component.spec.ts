@@ -84,6 +84,17 @@ describe('CngxCardTimestamp', () => {
     expect(el.textContent!.trim()).toBe('03/15/2026');
   });
 
+  it('keeps the segments when a different prefix needs the same layout', () => {
+    const { fixture, host } = setup();
+    const timestamp = fixture.debugElement.children[0].componentInstance as CngxCardTimestamp;
+    host.prefix.set('Evaluated:');
+    fixture.detectChanges();
+    const first = timestamp['segments']();
+    host.prefix.set('Updated:');
+    fixture.detectChanges();
+    expect(timestamp['segments']()).toBe(first);
+  });
+
   it('re-orders on a language pack switch', () => {
     const pack = signal<{ locale: string; card?: { timestamp: string } } | undefined>(undefined);
     TestBed.configureTestingModule({

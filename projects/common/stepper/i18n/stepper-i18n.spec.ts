@@ -95,6 +95,24 @@ describe('CngxStepperI18n', () => {
     expect(german.previousStep).toBe('Previous step');
   });
 
+  it('keeps the bundle while the pack keeps its sections and maps anew on a flip', () => {
+    const de = { locale: 'de', stepper: { stepperLabel: 'Schrittfolge' } };
+    const pack = signal<CngxActiveLanguagePack | undefined>(de);
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+      ],
+    });
+    const bundle = TestBed.inject(CNGX_STEPPER_I18N);
+    const first = bundle();
+    pack.set({ ...de });
+    expect(bundle()).toBe(first);
+    pack.set({ locale: 'de', stepper: { stepperLabel: 'Ablauf' } });
+    expect(bundle()).not.toBe(first);
+    expect(bundle().stepperLabel).toBe('Ablauf');
+  });
+
   it('lets withStepperI18nLabels override single keys on top of the active pack', () => {
     TestBed.configureTestingModule({
       providers: [

@@ -17,6 +17,13 @@ interface TimestampSegment {
   readonly text: string;
 }
 
+function segmentsEqual(a: readonly TimestampSegment[], b: readonly TimestampSegment[]): boolean {
+  return (
+    a.length === b.length &&
+    a.every((segment, i) => segment.kind === b[i].kind && segment.text === b[i].text)
+  );
+}
+
 const TIMESTAMP_PLACEHOLDER = /\{(prefix|date)\}/;
 const DATE_ONLY: readonly TimestampSegment[] = [{ kind: 'date', text: '' }];
 
@@ -108,8 +115,9 @@ export class CngxCardTimestamp {
   readonly format = input<Intl.DateTimeFormatOptions | undefined>(undefined);
 
   /** @internal Prefix, date and message text in the language's reading order. */
-  protected readonly segments = computed(() =>
-    this.prefix() ? timestampSegments(this.i18n().timestamp) : DATE_ONLY,
+  protected readonly segments = computed(
+    () => (this.prefix() ? timestampSegments(this.i18n().timestamp) : DATE_ONLY),
+    { equal: segmentsEqual },
   );
 
   /**
