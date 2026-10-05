@@ -33,6 +33,7 @@ import {
   CngxSelectClearButton,
   CngxSelectOptionError,
   CngxSelectOptionPending,
+  CngxSelectPlaceholder,
   CngxSelectTriggerLabel,
 } from '../shared/template-slots';
 import type {
@@ -1031,6 +1032,73 @@ describe('CngxSelectShell - trigger slot-cascade tier-1', () => {
     expect(custom).not.toBeNull();
     expect(custom!.textContent!.trim()).toBe('A!');
     expect(shellDe.nativeElement.querySelector('.cngx-select-shell__label')).toBeNull();
+  });
+
+  it('renders projected *cngxSelectPlaceholder while empty and the label once a value is picked', () => {
+    @Component({
+      template: `
+        <cngx-select-shell [label]="'PH'" [placeholder]="'Pick one'" [(value)]="value">
+          <cngx-option [value]="'a'">A</cngx-option>
+          <ng-template cngxSelectPlaceholder let-text let-ph="placeholder">
+            <span class="custom-placeholder">{{ text }}|{{ ph }}</span>
+          </ng-template>
+        </cngx-select-shell>
+      `,
+      imports: [CngxSelectShell, CngxSelectOption, CngxSelectPlaceholder],
+    })
+    class PlaceholderHost {
+      readonly value = signal<string | undefined>(undefined);
+    }
+
+    const fixture = TestBed.createComponent(PlaceholderHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const host: HTMLElement = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .nativeElement;
+    const custom = host.querySelector('.custom-placeholder');
+    expect(custom).not.toBeNull();
+    expect(custom!.textContent!.trim()).toBe('Pick one|Pick one');
+    expect(custom!.closest('.cngx-select-shell__label--placeholder')).not.toBeNull();
+
+    fixture.componentInstance.value.set('a');
+    flush(fixture);
+    expect(host.querySelector('.custom-placeholder')).toBeNull();
+    expect(host.querySelector('.cngx-select-shell__label')!.textContent!.trim()).toBe('A');
+  });
+
+  it('projected *cngxSelectPlaceholder takes precedence over *cngxSelectTriggerLabel while empty', () => {
+    @Component({
+      template: `
+        <cngx-select-shell [label]="'PT'" [placeholder]="'Pick one'" [(value)]="value">
+          <cngx-option [value]="'a'">A</cngx-option>
+          <ng-template cngxSelectPlaceholder let-text>
+            <span class="custom-placeholder">{{ text }}</span>
+          </ng-template>
+          <ng-template cngxSelectTriggerLabel let-sel>
+            <span class="custom-trigger-label">{{ sel ? sel.label : 'none' }}</span>
+          </ng-template>
+        </cngx-select-shell>
+      `,
+      imports: [CngxSelectShell, CngxSelectOption, CngxSelectPlaceholder, CngxSelectTriggerLabel],
+    })
+    class PlaceholderTriggerHost {
+      readonly value = signal<string | undefined>(undefined);
+    }
+
+    const fixture = TestBed.createComponent(PlaceholderTriggerHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const host: HTMLElement = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .nativeElement;
+    expect(host.querySelector('.custom-placeholder')).not.toBeNull();
+    expect(host.querySelector('.custom-trigger-label')).toBeNull();
+
+    fixture.componentInstance.value.set('a');
+    flush(fixture);
+    expect(host.querySelector('.custom-placeholder')).toBeNull();
+    expect(host.querySelector('.custom-trigger-label')!.textContent!.trim()).toBe('A');
   });
 
   it('renders projected *cngxSelectClearButton instead of the default ✕ button', () => {
