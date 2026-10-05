@@ -2,7 +2,7 @@ import { computed, inject, InjectionToken, type Provider, type Signal } from '@a
 import { injectLanguageSection } from '@cngx/core/i18n';
 import { createOverrideMerge } from '@cngx/core/utils';
 
-import { CNGX_CARD_LANGUAGE_EN } from './card-language-section';
+import { CNGX_CARD_LANGUAGE_EN, type CngxCardLanguageSection } from './card-language-section';
 
 /**
  * Card i18n surface. Library defaults are English; consumers override via
@@ -13,23 +13,12 @@ import { CNGX_CARD_LANGUAGE_EN } from './card-language-section';
  * card announces the transition it just made, never the state it is standing
  * in - so these are armed phrases, spent once per change, not a label the
  * card carries. `timestamp` orders a {@link CngxCardTimestamp} prefix and its
- * date.
+ * date. The same shape as the card section of a language pack, declared once
+ * as {@link CngxCardLanguageSection}.
  *
  * @category common/card/i18n
  */
-export interface CngxCardI18n {
-  /** Announced when a selectable card becomes selected. */
-  readonly selected: string;
-  /** Announced when a selectable card becomes deselected. */
-  readonly deselected: string;
-  /** Owns the live region while the card loads, pre-empting the selection phrase. */
-  readonly loading: string;
-  /**
-   * `{prefix}` and `{date}` of a timestamp, in reading order; see
-   * {@link CngxCardLanguageSection.timestamp}.
-   */
-  readonly timestamp: string;
-}
+export type CngxCardI18n = CngxCardLanguageSection;
 
 const NO_SECTION: Partial<CngxCardI18n> = {};
 

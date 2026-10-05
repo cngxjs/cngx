@@ -9,6 +9,7 @@ import {
 import {
   CNGX_STEPPER_LANGUAGE_EN,
   type CngxStepperLanguageSection,
+  type CngxStepperStatusLanguage,
 } from './stepper-language-section';
 
 /**
@@ -16,16 +17,12 @@ import {
  * future skin / variant that surfaces a per-step status pill). Sub-
  * bundle of {@link CngxStepperI18n}; consumers override partial keys
  * via {@link withStepperI18nLabels} - un-overridden keys keep their
- * English defaults.
+ * English defaults. The same shape as the section's status words, declared
+ * once as {@link CngxStepperStatusLanguage}.
  *
  * @category common/stepper/i18n
  */
-export interface CngxStepperStatusLabels {
-  readonly done: string;
-  readonly inProgress: string;
-  readonly upNext: string;
-  readonly errored: string;
-}
+export type CngxStepperStatusLabels = CngxStepperStatusLanguage;
 
 /**
  * Stepper i18n surface. Library defaults are English; locales come from
