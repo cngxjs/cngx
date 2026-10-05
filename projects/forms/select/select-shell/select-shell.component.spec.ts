@@ -23,6 +23,7 @@ import {
   type ProjectedOptionModel,
 } from '../shared/projected-option-model';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
+import { provideLocale } from '@cngx/core/utils';
 
 import { CngxSelectShell, type CngxSelectShellChange } from './select-shell.component';
 import type { CngxSelectOptionsInput } from '../shared/option.model';
@@ -1235,3 +1236,40 @@ describe('CngxSelectShell - trigger slot-cascade tier-1', () => {
 describeFieldSkinHost('CngxSelectShell', CngxSelectShell, 'cngx-select-shell', () =>
   createMockField({ name: 'pick' }).accessor,
 );
+
+@Component({
+  template: `
+    <cngx-select-shell [label]="'Stadt'" [(value)]="value">
+      <cngx-option [value]="'ank'">Ankara</cngx-option>
+      <cngx-option [value]="'ist'">Istanbul</cngx-option>
+    </cngx-select-shell>
+  `,
+  imports: [CngxSelectShell, CngxSelectOption],
+})
+class CityHost {
+  readonly value = signal<string | undefined>(undefined);
+}
+
+describe('CngxSelectShell - closed-trigger typeahead locale', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ providers: [provideLocale('tr')] });
+  });
+
+  it('folds labels in the app locale like the single select', () => {
+    const fixture = TestBed.createComponent(CityHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const trigger = fixture.debugElement
+      .query(By.directive(CngxSelectShell))
+      .nativeElement.querySelector('.cngx-select-shell__trigger') as HTMLElement;
+    trigger.focus();
+    // Turkish lowercases the capital I of 'Istanbul' to dotless ı, so the
+    // dotless key finds it only when the controller folds with 'tr'.
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'ı', bubbles: true }));
+    flush(fixture);
+
+    expect(fixture.componentInstance.value()).toBe('ist');
+  });
+});

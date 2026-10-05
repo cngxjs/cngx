@@ -683,6 +683,7 @@ export class CngxSelectShell<T = unknown>
     compareWith: this.compareWith,
     debounceMs: computed(() => this.config.typeaheadDebounceInterval),
     disabled: this.disabled,
+    locale: injectLocale(),
   });
 
   /**
