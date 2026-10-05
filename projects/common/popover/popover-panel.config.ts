@@ -1,14 +1,4 @@
-import {
-  computed,
-  InjectionToken,
-  type Provider,
-  type Signal,
-  type TemplateRef,
-} from '@angular/core';
-import { injectLanguageSection } from '@cngx/core/i18n';
-import { createOverrideMerge } from '@cngx/core/utils';
-
-import { CNGX_POPOVER_LANGUAGE_EN } from './i18n/popover-language-section';
+import { InjectionToken, type Provider, type Signal, type TemplateRef } from '@angular/core';
 
 import type { CngxPopoverArrowContext } from './popover-panel-slots';
 import type {
@@ -21,21 +11,6 @@ import type {
 const DEFAULT_CONFIG: CngxPopoverPanelConfig = {
   defaultVariant: 'default',
 };
-
-const NO_SECTION: Partial<CngxPopoverPanelLabels> = {};
-
-/**
- * @internal The popover section of the active language pack over the English
- * copy; `CngxPopoverPanel` merges `config.labels` over it. Runs in an
- * injection context.
- */
-export function injectPopoverPanelLanguage(): Signal<CngxPopoverPanelLabels> {
-  const pack = injectLanguageSection('popover');
-  return createOverrideMerge<CngxPopoverPanelLabels>(
-    CNGX_POPOVER_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
 
 /**
  * Injection token for popover panel configuration.

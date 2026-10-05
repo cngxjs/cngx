@@ -1,4 +1,4 @@
-import { Component, signal, TemplateRef, viewChild } from '@angular/core';
+import { Component, signal, TemplateRef, viewChild, viewChildren } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   provideCngxI18n,
@@ -90,6 +90,17 @@ class VariantHost {
 })
 class CloseButtonHost {
   readonly panel = viewChild.required(CngxPopoverPanel);
+}
+
+@Component({
+  template: `
+    <cngx-popover-panel [showClose]="true"><p cngxPopoverBody>One</p></cngx-popover-panel>
+    <cngx-popover-panel [showClose]="true"><p cngxPopoverBody>Two</p></cngx-popover-panel>
+  `,
+  imports: [CngxPopoverPanel, CngxPopoverBody],
+})
+class TwoPanelsHost {
+  readonly panels = viewChildren(CngxPopoverPanel);
 }
 
 @Component({
@@ -247,6 +258,13 @@ describe('CngxPopoverPanel', () => {
     const { panelEl } = setup(CloseButtonHost);
     const closeBtn = panelEl.querySelector('.cngx-popover-panel__close');
     expect(closeBtn).toBeTruthy();
+  });
+
+  it('shares one label merge between panels under the same config', () => {
+    const fixture = TestBed.createComponent(TwoPanelsHost);
+    fixture.detectChanges();
+    const [first, second] = fixture.componentInstance.panels();
+    expect(first['labels']).toBe(second['labels']);
   });
 
   it('names the close button with the English default', () => {
