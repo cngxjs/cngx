@@ -144,6 +144,19 @@ export interface CngxTreeSelectChange<T = unknown> {
  *   descendant atomically. Single `selectionChange` with
  *   `action: 'cascade-toggle'` carries aggregated `added`/`removed`.
  *
+ * Slot tiers: `cngxSelectCaret`, `cngxSelectPlaceholder`, `cngxSelectEmpty`,
+ * `cngxSelectLoading`, `cngxSelectError`, `cngxSelectRetryButton`,
+ * `cngxSelectRefreshing`, `cngxSelectCommitError` and
+ * `cngxSelectClearButton` also take an app-wide default through
+ * `CNGX_SELECT_CONFIG.templates` (`withTemplates`); `cngxTreeSelectNode`,
+ * `cngxTreeSelectChip` and `cngxTreeSelectTriggerLabel` are
+ * directive-only. `templates.loadingGlyph` replaces the loading and refresh
+ * glyph app-wide; this host has no projected glyph slot. Rows and their
+ * hard-coded checkbox are replaced through `cngxTreeSelectNode`; the
+ * option-level slots `cngxSelectCheck`, `cngxSelectOptgroup`,
+ * `cngxSelectOptionLabel`, `cngxSelectOptionPending` and
+ * `cngxSelectOptionError` do not apply to the tree.
+ *
  * @category forms/select/tree-select
  * @docsKind primary
  * @wcag AA
@@ -154,6 +167,18 @@ export interface CngxTreeSelectChange<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/tree-select/basic-single-level-toggle</example-url>
  * <example-url>http://localhost:4200/#/forms/select/tree-select/cascade-children-parent-toggle-selects-the-whole-subtree</example-url>
  * <example-url>http://localhost:4200/#/forms/select/tree-select/custom-cngxtreeselectnode-template</example-url>
+ * @slot cngxSelectCaret Replaces the trigger caret unless hideCaret is set; gets open.
+ * @slot cngxSelectPlaceholder Renders in the trigger while nothing is selected; gets placeholder.
+ * @slot cngxSelectEmpty Replaces the panel's empty message when the tree has no nodes; searchTerm is always '' on this host.
+ * @slot cngxSelectLoading Replaces the panel's loading indicator during the first load of [state], or while [loading] is true without [state]; gets retry.
+ * @slot cngxSelectError Replaces the panel's error block on a failed load and the inline error above the tree on a failed refresh; gets error, retry.
+ * @slot cngxSelectRetryButton Replaces the retry button inside the built-in load-error, inline-error and commit-error blocks; gets retry, error, disabled, label.
+ * @slot cngxSelectRefreshing Replaces the refresh indicator shown above the tree while a reload runs; previousCount is always 0 on this host.
+ * @slot cngxSelectCommitError Replaces the panel's commit-error banner when a commit fails and commitErrorDisplay is 'banner'; gets error and retry (option is always null on this host).
+ * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled; gets clear, disabled.
+ * @slot cngxTreeSelectNode Replaces each whole treeitem row, twisty and checkbox included, so the template owns the treeitem ARIA; gets node, depth, expanded, hasChildren, selected, indeterminate, disabled, toggleExpand, handleSelect.
+ * @slot cngxTreeSelectChip Replaces each chip in the trigger strip unless cngxTreeSelectTriggerLabel is projected; gets option, remove.
+ * @slot cngxTreeSelectTriggerLabel Replaces the whole chip strip while at least one value is selected; gets selected, values, count.
  */
 @Component({
   selector: 'cngx-tree-select',

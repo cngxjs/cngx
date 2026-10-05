@@ -123,6 +123,16 @@ export interface CngxMultiSelectChange<T = unknown> {
  * {@link createSelectCore}; keeps the multi-specific trigger template,
  * chip strip, AD-activated dispatch, keyboard, and Field↔sync.
  *
+ * Slot tiers: `cngxSelectCheck`, `cngxSelectCaret`, `cngxSelectOptgroup`,
+ * `cngxSelectPlaceholder`, `cngxSelectEmpty`, `cngxSelectLoading`,
+ * `cngxSelectOptionLabel`, `cngxSelectError`, `cngxSelectRetryButton`,
+ * `cngxSelectRefreshing`, `cngxSelectCommitError`, `cngxSelectClearButton`,
+ * `cngxSelectOptionPending` and `cngxSelectOptionError` also take an
+ * app-wide default through `CNGX_SELECT_CONFIG.templates` (`withTemplates`);
+ * `cngxMultiSelectTriggerLabel` and `cngxMultiSelectChip` are directive-only.
+ * `templates.loadingGlyph` replaces the loading and refresh glyph app-wide;
+ * this host has no projected glyph slot.
+ *
  * @category forms/select/multi-select
  * @docsKind primary
  * @wcag AA
@@ -134,6 +144,22 @@ export interface CngxMultiSelectChange<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-clearable</example-url>
  * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-custom-cngxmultiselectchip-template</example-url>
  * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-text-summary-via-cngxmultiselecttriggerlabel</example-url>
+ * @slot cngxSelectCheck Replaces the checkbox indicator on each option row unless hideSelectionIndicator is set; gets option, selected, variant, position, and indeterminate (always false here, absent under the radio variant).
+ * @slot cngxSelectCaret Replaces the trigger caret unless hideCaret is set; gets open.
+ * @slot cngxSelectOptgroup Replaces the header of each option group in the panel; gets group.
+ * @slot cngxSelectPlaceholder Renders in the trigger while nothing is selected; gets placeholder.
+ * @slot cngxSelectEmpty Replaces the panel's empty message when there are no options; searchTerm is always '' on this host.
+ * @slot cngxSelectLoading Replaces the panel's loading indicator during the first load of [state], or while [loading] is true without [state]; gets retry.
+ * @slot cngxMultiSelectTriggerLabel Replaces the whole chip strip while at least one value is selected; gets selected, values, count.
+ * @slot cngxSelectOptionLabel Replaces the label content of each option row; gets option, selected, highlighted.
+ * @slot cngxSelectError Replaces the panel's error block on a failed load and the inline error above the options on a failed refresh; gets error, retry.
+ * @slot cngxSelectRetryButton Replaces the retry button inside the built-in load-error, inline-error and commit-error blocks; gets retry, error, disabled, label.
+ * @slot cngxSelectRefreshing Replaces the refresh indicator shown above the options while a reload runs; previousCount is always 0 on this host.
+ * @slot cngxSelectCommitError Replaces the panel's commit-error banner when a commit fails and commitErrorDisplay is 'banner'; gets error, option, retry.
+ * @slot cngxMultiSelectChip Replaces each chip in the trigger strip unless cngxMultiSelectTriggerLabel is projected; gets option, remove.
+ * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled; gets clear, disabled.
+ * @slot cngxSelectOptionPending Replaces the spinner on an option row while its commit is in flight; gets option.
+ * @slot cngxSelectOptionError Replaces the error mark on selected rows when a commit fails and commitErrorDisplay is 'inline'; gets option, error.
  */
 @Component({
   selector: 'cngx-multi-select',

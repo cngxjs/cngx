@@ -81,6 +81,7 @@ function itemsEqual(a: readonly CngxTocItem[], b: readonly CngxTocItem[]): boole
  * @relatedTo CngxScrollSpy, CngxTocRouterSync, CngxSidenav
  * <example-url>http://localhost:4200/#/ui/toc/basic/on-this-page-rail</example-url>
  * <example-url>http://localhost:4200/#/ui/toc/auto/heading-auto-discovery</example-url>
+ * @slot cngxTocItem Replaces the plain label inside each item's link at every depth, ahead of CNGX_TOC_CONFIG.templates.item; gets the item as $implicit, plus active and the zero-based depth.
  */
 @Component({
   selector: 'cngx-toc',

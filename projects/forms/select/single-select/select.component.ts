@@ -114,6 +114,14 @@ export interface CngxSelectChange<T = unknown> {
  * view, option model, commit-controller surface) lives in
  * {@link createSelectCore}.
  *
+ * Every slot below also takes an app-wide default through
+ * `CNGX_SELECT_CONFIG.templates` (`withTemplates`); a projected template
+ * wins. `cngxSelectTriggerLabel` resolves its own `templates.triggerLabel`
+ * default, the other fourteen go through the shared template registry,
+ * which also applies `templates.loadingGlyph` to the loading and refresh
+ * glyph (config only, no projected slot on this host). No slot is
+ * directive-only here.
+ *
  * @category forms/select/single-select
  * @docsKind primary
  * @wcag AA
@@ -133,6 +141,21 @@ export interface CngxSelectChange<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
+ * @slot cngxSelectCheck Replaces the selection indicator on each option row unless [hideSelectionIndicator] is set; gets $implicit/option, selected, variant (radio, checkbox or checkmark), position, and indeterminate (always false here, absent on radio).
+ * @slot cngxSelectCaret Replaces the trigger caret unless [hideCaret] is set; gets $implicit/open.
+ * @slot cngxSelectOptgroup Replaces the header of each option group; gets $implicit/group.
+ * @slot cngxSelectPlaceholder Replaces the placeholder text in the trigger while nothing is selected; gets $implicit/placeholder.
+ * @slot cngxSelectEmpty Replaces the panel's empty message when there are no options; gets searchTerm (always ''), filtered (always false) and totalCount (always 0) on this host.
+ * @slot cngxSelectLoading Replaces the whole loading view during the first load of [state], or while [loading] is true without [state]; gets retry and progress (always undefined).
+ * @slot cngxSelectTriggerLabel Replaces the selected option's text in the trigger once a value is selected; gets $implicit/selected, disabled, panelOpen, focused.
+ * @slot cngxSelectOptionLabel Replaces the label text of each option row; gets $implicit/option, selected, highlighted.
+ * @slot cngxSelectError Replaces the load-error block, full panel on a failed first load and inline above the options on a failed refresh; gets $implicit/error, retry.
+ * @slot cngxSelectRetryButton Replaces the retry button inside the default load-error and commit-error blocks; gets $implicit/retry, error, disabled, label.
+ * @slot cngxSelectRefreshing Replaces the refresh indicator shown while [state] reloads with options already listed; gets previousCount (always 0 on this host).
+ * @slot cngxSelectCommitError Replaces the commit-error banner shown when a commit fails and commitErrorDisplay is 'banner'; gets $implicit/error, option, retry.
+ * @slot cngxSelectClearButton Replaces the clear button, shown when [clearable] is set, a value is selected and the control is enabled; gets $implicit/clear, disabled.
+ * @slot cngxSelectOptionPending Replaces the spinner on the option row whose commit is in flight; gets $implicit/option.
+ * @slot cngxSelectOptionError Replaces the ! glyph on the selected row when a commit fails and commitErrorDisplay is 'inline'; gets $implicit/option, error.
 
  */
 @Component({

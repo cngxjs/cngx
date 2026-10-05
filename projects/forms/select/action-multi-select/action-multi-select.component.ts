@@ -151,6 +151,18 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  * Dismiss-guard: Escape and click-outside intercepted while
  * `actionDirty()` is `true`; Escape fires `cancel()`.
  *
+ * Slot tiers: `cngxSelectCheck`, `cngxSelectCaret`, `cngxSelectOptgroup`,
+ * `cngxSelectEmpty`, `cngxSelectLoading`, `cngxSelectOptionLabel`,
+ * `cngxSelectError`, `cngxSelectRetryButton`, `cngxSelectRefreshing`,
+ * `cngxSelectCommitError`, `cngxSelectClearButton`,
+ * `cngxSelectOptionPending`, `cngxSelectOptionError` and `cngxSelectAction`
+ * also take an app-wide default through `CNGX_SELECT_CONFIG.templates`
+ * (`withTemplates`); `cngxComboboxTriggerLabel`, `cngxMultiSelectChip`,
+ * `cngxSelectInputPrefix` and `cngxSelectInputSuffix` are directive-only.
+ * `templates.loadingGlyph` replaces the loading and refresh glyph app-wide;
+ * this host has no projected glyph slot. The placeholder is the input's own
+ * `placeholder` text, so `cngxSelectPlaceholder` does not apply here.
+ *
  * @category forms/select/action-multi-select
  * @docsKind primary
  * @wcag AA
@@ -159,6 +171,24 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  * @relatedTo CngxMultiSelect, CngxActionSelect, CngxCombobox, CngxSelectAction
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>http://localhost:4200/#/forms/select/action-multi-select/basic</example-url>
+ * @slot cngxSelectCheck Replaces the checkbox indicator on each option row unless hideSelectionIndicator is set; gets option, selected, variant, position, and indeterminate (always false here, absent under the radio variant).
+ * @slot cngxSelectCaret Replaces the trigger caret unless hideCaret is set; gets open.
+ * @slot cngxSelectOptgroup Replaces the header of each option group in the panel; gets group.
+ * @slot cngxSelectEmpty Replaces the panel's empty message when no option exists or none matches the typed term; gets searchTerm, filtered.
+ * @slot cngxSelectLoading Replaces the panel's loading indicator during the first load of [state], or while [loading] is true without [state]; gets retry.
+ * @slot cngxComboboxTriggerLabel Replaces the chip strip whenever projected, including with no selection, while the search input stays; gets selected, values, count.
+ * @slot cngxSelectOptionLabel Replaces the label content of each option row; gets option, selected, highlighted.
+ * @slot cngxSelectError Replaces the panel's error block on a failed load and the inline error above the options on a failed refresh; gets error, retry.
+ * @slot cngxSelectRetryButton Replaces the retry button inside the built-in load-error, inline-error and commit-error blocks; gets retry, error, disabled, label.
+ * @slot cngxSelectRefreshing Replaces the refresh indicator shown above the options while a reload runs; previousCount is always 0 on this host.
+ * @slot cngxSelectCommitError Replaces the panel's commit-error banner when a commit fails and commitErrorDisplay is 'banner'; gets error, option, retry.
+ * @slot cngxMultiSelectChip Replaces each chip in the trigger strip unless cngxComboboxTriggerLabel is projected; gets option, remove.
+ * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled; gets clear, disabled.
+ * @slot cngxSelectOptionPending Replaces the spinner on an option row while its commit is in flight; gets option.
+ * @slot cngxSelectOptionError Replaces the error mark on selected rows when a commit fails and commitErrorDisplay is 'inline'; gets option, error.
+ * @slot cngxSelectInputPrefix Renders before the search input; gets disabled, focused, panelOpen.
+ * @slot cngxSelectInputSuffix Renders after the search input, before the clear button and caret; gets disabled, focused, panelOpen.
+ * @slot cngxSelectAction Renders the inline create workflow in the panel at actionPosition ('top', 'bottom' or 'both', hidden on 'none'); gets searchTerm, commit, close, isPending, dirty, setDirty, error, hasError, retry, value.
  */
 @Component({
   selector: 'cngx-action-multi-select',
