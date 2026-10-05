@@ -337,10 +337,21 @@ test.describe('timeline layout - the organism drives the raster', () => {
 
 test.describe('timeline layout - the skeleton does not reflow into content', () => {
   test('placeholder rows mirror the sides the content rows will take', async ({ page }) => {
+    // The skeleton shows after its 120ms show-delay and the slow load settles
+    // after 1200ms. Under parallel load that window closed before the first
+    // poll, so the page clock is paused and advanced to inside the window.
+    await page.clock.install();
     await page.goto(SKELETON);
+    const load = page.getByRole('button', { name: 'load', exact: false }).first();
+    // The chrome buttons render before the demo body; pause only once the
+    // timeline and its status readout are in, or the paused clock stalls them.
+    await expect(page.locator('cngx-timeline')).toBeAttached();
+    await expect(page.getByText('status: idle')).toBeVisible();
+    await page.clock.pauseAt(Date.now() + 60_000);
     // The story starts idle and loads on demand, so drive it the way a user
     // would rather than reaching into the component.
-    await page.getByRole('button', { name: 'load', exact: false }).first().click();
+    await load.click();
+    await page.clock.runFor(500);
 
     const placeholder = page.locator('.cngx-timeline__skeleton-row');
     await expect(placeholder.first()).toBeVisible();
