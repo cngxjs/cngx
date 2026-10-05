@@ -168,14 +168,19 @@ afterEach(() => {
 });
 
 describe('createCanvasRenderer under forced colors', () => {
-  it('paints every stroke and fill in the probed ink', () => {
+  it('paints every stroke in the probed ink and every fill in ink or canvas', () => {
     const renderer = mounted();
     renderer.paint([LINE, AREA, BAR, SCATTER, THRESHOLD, BAND]);
 
-    const all = [...styles('set:strokeStyle'), ...styles('set:fillStyle')];
-    expect(all.length).toBeGreaterThan(0);
-    for (const value of all) {
+    const strokes = styles('set:strokeStyle');
+    const fills = styles('set:fillStyle');
+    expect(strokes.length).toBeGreaterThan(0);
+    expect(fills.length).toBeGreaterThan(0);
+    for (const value of strokes) {
       expect(value).toBe(INK);
+    }
+    for (const value of fills) {
+      expect([INK, PAPER]).toContain(value);
     }
   });
 
@@ -301,5 +306,123 @@ describe('createCanvasRenderer forced-colors line dashes', () => {
     expect(forcedSeriesSteps(geometries)).toBe(first);
     expect(first).toEqual([0, null, 1]);
     expect(forcedSeriesSteps([...geometries])).not.toBe(first);
+  });
+});
+
+describe('createCanvasRenderer forced-colors bar and point patterns', () => {
+  interface FakePattern {
+    readonly id: number;
+    readonly setTransform: ReturnType<typeof vi.fn>;
+  }
+
+  class FakeDOMMatrix {
+    readonly ops: Array<[string, number]> = [];
+    scale(k: number): this {
+      this.ops.push(['scale', k]);
+      return this;
+    }
+    rotate(deg: number): this {
+      this.ops.push(['rotate', deg]);
+      return this;
+    }
+  }
+
+  let patterns: FakePattern[];
+  let tile: ReturnType<typeof makeRecorder>;
+
+  /**
+   * jsdom has no createPattern / DOMMatrix. Install both, and hand the
+   * hatch tile canvas its own recorder so its stripe fillRects stay out of
+   * the main recorded calls.
+   */
+  function installHatchStubs(): void {
+    patterns = [];
+    tile = makeRecorder();
+    (rec.ctx as unknown as Record<string, unknown>)['createPattern'] = vi.fn(() => {
+      const p: FakePattern = { id: patterns.length, setTransform: vi.fn() };
+      patterns.push(p);
+      return p;
+    });
+    vi.stubGlobal('DOMMatrix', FakeDOMMatrix);
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (
+      this: HTMLCanvasElement,
+    ) {
+      return this.className === 'cngx-chart__canvas' ? rec.ctx : tile.ctx;
+    } as unknown as HTMLCanvasElement['getContext']);
+  }
+
+  beforeEach(() => installHatchStubs());
+
+  it('maps four bar series onto solid, diagonal hatch, hollow, horizontal hatch', () => {
+    const renderer = mounted();
+    renderer.paint([BAR, BAR, BAR, BAR]);
+
+    expect(styles('set:fillStyle')).toEqual([INK, patterns[0], PAPER, patterns[1]]);
+    expect(rec.calls.filter((c) => c.op === 'strokeRect')).toHaveLength(3);
+    expect(rec.calls.filter((c) => c.op === 'set:lineWidth').map((c) => c.value)).toEqual([
+      1, 1.5, 1,
+    ]);
+    for (const value of styles('set:strokeStyle')) {
+      expect(value).toBe(INK);
+    }
+  });
+
+  it('maps four scatter series the same way, ringing the marks with a stroke', () => {
+    const renderer = mounted();
+    renderer.paint([SCATTER, SCATTER, SCATTER, SCATTER]);
+
+    expect(styles('set:fillStyle')).toEqual([INK, patterns[0], PAPER, patterns[1]]);
+    expect(rec.calls.filter((c) => c.op === 'stroke')).toHaveLength(3);
+  });
+
+  it('builds a device-pixel tile and scales the patterns back, the diagonal rotated 45deg', () => {
+    vi.stubGlobal('devicePixelRatio', 2);
+    const renderer = mounted();
+    renderer.paint([BAR, BAR]);
+
+    const tileFills = tile.calls.filter((c) => c.op === 'fillRect').map((c) => c.args);
+    expect(tileFills).toEqual([
+      [0, 0, 8, 8],
+      [0, 0, 8, 4],
+    ]);
+    expect(tile.calls.filter((c) => c.op === 'set:fillStyle').map((c) => c.value)).toEqual([
+      PAPER,
+      INK,
+    ]);
+    const [diagonal, horizontal] = patterns;
+    const diagonalOps = (diagonal.setTransform.mock.calls[0][0] as FakeDOMMatrix).ops;
+    const horizontalOps = (horizontal.setTransform.mock.calls[0][0] as FakeDOMMatrix).ops;
+    expect(diagonalOps).toEqual([
+      ['scale', 0.5],
+      ['rotate', 45],
+    ]);
+    expect(horizontalOps).toEqual([['scale', 0.5]]);
+  });
+
+  it('builds the hatches once across paints and again after invalidateColorCache', () => {
+    const renderer = mounted();
+    renderer.paint([BAR, BAR]);
+    renderer.paint([BAR, BAR]);
+    expect(patterns).toHaveLength(2);
+
+    renderer.invalidateColorCache?.();
+    renderer.paint([BAR, BAR]);
+    expect(patterns).toHaveLength(4);
+  });
+
+  it('falls back to an ink fill when the host cannot build a pattern', () => {
+    vi.stubGlobal('DOMMatrix', undefined);
+    const renderer = mounted();
+    renderer.paint([BAR, BAR]);
+    expect(styles('set:fillStyle')).toEqual([INK, INK]);
+  });
+
+  it('keeps the author fill per rect in normal mode', () => {
+    forced.set(false);
+    const renderer = mounted();
+    renderer.paint([BAR, BAR]);
+    expect(styles('set:fillStyle')).toEqual(['#0000ff', '#0000ff']);
+    expect(patterns).toHaveLength(0);
+    expect(rec.calls.some((c) => c.op === 'strokeRect')).toBe(false);
   });
 });

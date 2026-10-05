@@ -72,3 +72,53 @@ export function forcedSeriesSteps(
   stepMemo.set(geometries, steps);
   return steps;
 }
+
+/** @internal The two hatch fills of the forced cycle; `null` where the host cannot build one. */
+export interface ForcedHatches {
+  /** Step 1: 45deg stripes. */
+  readonly diagonal: CanvasPattern | null;
+  /** Step 3: 0deg stripes. */
+  readonly horizontal: CanvasPattern | null;
+}
+
+const NO_HATCHES: ForcedHatches = { diagonal: null, horizontal: null };
+
+/**
+ * @internal Build the hatch patterns the SVG chart draws as `<pattern>`
+ * defs: a 4px tile with a 2px ink stripe on a Canvas gap (the gap keeps a
+ * hatched mark readable where it overlaps another). The tile is drawn at
+ * device-pixel size and scaled back through the pattern transform, so the
+ * stripes stay crisp on a high-DPR screen instead of being resampled into
+ * off-palette greys. Returns nulls when the host lacks `createPattern` or
+ * `DOMMatrix`; the caller then fills with ink.
+ */
+export function createForcedHatches(
+  doc: Document,
+  target: CanvasRenderingContext2D,
+  colors: ForcedSystemColors,
+  dpr: number,
+): ForcedHatches {
+  if (typeof target.createPattern !== 'function' || typeof DOMMatrix !== 'function') {
+    return NO_HATCHES;
+  }
+  const size = Math.max(1, Math.round(4 * dpr));
+  const stripe = Math.max(1, Math.round(2 * dpr));
+  const tile = doc.createElement('canvas');
+  tile.width = size;
+  tile.height = size;
+  const t = tile.getContext('2d');
+  if (!t) {
+    return NO_HATCHES;
+  }
+  t.fillStyle = colors.canvas;
+  t.fillRect(0, 0, size, size);
+  t.fillStyle = colors.ink;
+  t.fillRect(0, 0, size, stripe);
+
+  const back = 4 / size;
+  const diagonal = target.createPattern(tile, 'repeat');
+  diagonal?.setTransform(new DOMMatrix().scale(back).rotate(45));
+  const horizontal = target.createPattern(tile, 'repeat');
+  horizontal?.setTransform(new DOMMatrix().scale(back));
+  return { diagonal, horizontal };
+}

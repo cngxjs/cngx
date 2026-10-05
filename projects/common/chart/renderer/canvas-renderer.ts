@@ -2,7 +2,9 @@ import { type CngxChartContext } from '../chart/chart-context';
 import { type LayerGeometry } from '../layers/chart-layer';
 import { type ChartRendererDeps, type CngxChartRenderer } from './chart-renderer';
 import {
+  createForcedHatches,
   FORCED_LINE_DASHES,
+  type ForcedHatches,
   type ForcedSeriesStep,
   forcedSeriesSteps,
   type ForcedSystemColors,
@@ -84,6 +86,9 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   let forcedNow = false;
   // Forced system palette; cleared with colorCache so a flip re-probes it.
   let sysColors: ForcedSystemColors | null = null;
+  // Hatch patterns for the forced cycle, per palette and DPR.
+  let hatches: ForcedHatches | null = null;
+  let hatchDpr = -1;
 
   function readVar(name: string): string {
     return hostEl ? getComputedStyle(hostEl).getPropertyValue(name).trim() : '';
@@ -113,6 +118,41 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   function systemColors(): ForcedSystemColors {
     sysColors ??= hostEl ? resolveSystemColors(hostEl) : { ink: 'CanvasText', canvas: 'Canvas' };
     return sysColors;
+  }
+
+  function forcedHatches(c: CanvasRenderingContext2D): ForcedHatches {
+    const dpr = globalThis.devicePixelRatio ?? 1;
+    if (!hatches || hatchDpr !== dpr) {
+      const doc = hostEl?.ownerDocument ?? document;
+      hatches = createForcedHatches(doc, c, systemColors(), dpr);
+      hatchDpr = dpr;
+    }
+    return hatches;
+  }
+
+  /**
+   * Set the fill of a bar / scatter mark at its forced step and return the
+   * ink ring width (0 = no ring): solid ink; diagonal hatch with a 1px ring;
+   * hollow Canvas with a 1.5px ring; horizontal hatch with a 1px ring. A
+   * missing pattern falls back to an ink fill. Mirrors the bar / scatter
+   * layers' forced-colors CSS.
+   */
+  function applyForcedMark(c: CanvasRenderingContext2D, step: ForcedSeriesStep): number {
+    const sys = systemColors();
+    switch (step) {
+      case 1:
+        c.fillStyle = forcedHatches(c).diagonal ?? sys.ink;
+        return 1;
+      case 2:
+        c.fillStyle = sys.canvas;
+        return 1.5;
+      case 3:
+        c.fillStyle = forcedHatches(c).horizontal ?? sys.ink;
+        return 1;
+      default:
+        c.fillStyle = sys.ink;
+        return 0;
+    }
   }
 
   function colorOf(color: string | null, kind: LayerGeometry['kind']): string {
@@ -294,18 +334,38 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
         break;
       }
       case 'bar': {
+        const ring = step === null ? 0 : applyForcedMark(c, step);
+        if (ring > 0) {
+          c.strokeStyle = systemColors().ink;
+          c.lineWidth = ring;
+        }
         for (const r of g.rects) {
-          c.fillStyle = colorOf(r.color, 'bar');
+          if (step === null) {
+            c.fillStyle = colorOf(r.color, 'bar');
+          }
           c.fillRect(r.x, r.y, r.w, r.h);
+          if (ring > 0) {
+            c.strokeRect(r.x, r.y, r.w, r.h);
+          }
         }
         break;
       }
       case 'scatter': {
+        const ring = step === null ? 0 : applyForcedMark(c, step);
+        if (ring > 0) {
+          c.strokeStyle = systemColors().ink;
+          c.lineWidth = ring;
+        }
         for (const m of g.marks) {
-          c.fillStyle = colorOf(m.color, 'scatter');
+          if (step === null) {
+            c.fillStyle = colorOf(m.color, 'scatter');
+          }
           c.beginPath();
           c.arc(m.cx, m.cy, m.r, 0, Math.PI * 2);
           c.fill();
+          if (ring > 0) {
+            c.stroke();
+          }
         }
         break;
       }
@@ -334,6 +394,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     colorCache.clear();
     numberCache.clear();
     sysColors = null;
+    hatches = null;
   }
 
   function destroy(): void {
@@ -349,6 +410,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     colorCache.clear();
     numberCache.clear();
     sysColors = null;
+    hatches = null;
   }
 
   return {
