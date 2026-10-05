@@ -128,6 +128,14 @@ export interface CngxTypeaheadChange<T = unknown> {
  * Stateless graph in {@link createSelectCore}; this component is a
  * thin scalar-value adapter.
  *
+ * Every slot below except `cngxSelectInputPrefix` and
+ * `cngxSelectInputSuffix` (directive-only) also takes an app-wide default
+ * through `CNGX_SELECT_CONFIG.templates` (`withTemplates`) via the shared
+ * template registry; a projected template wins. The registry also applies
+ * `templates.loadingGlyph` to the loading and refresh glyph (config only,
+ * no projected slot on this host). The placeholder is the input's own
+ * placeholder text, so `cngxSelectPlaceholder` does not apply.
+ *
  * @category forms/select/typeahead
  * @docsKind primary
  * @wcag AA
@@ -137,6 +145,21 @@ export interface CngxTypeaheadChange<T = unknown> {
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-bound-to-a-typed-form-field</example-url>
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-cngxselectoptionlabel-slot-override</example-url>
+ * @slot cngxSelectCheck Replaces the selection indicator on each option row unless [hideSelectionIndicator] is set; gets $implicit/option, selected, variant (radio, checkbox or checkmark), position, and indeterminate (always false here, absent on radio).
+ * @slot cngxSelectCaret Replaces the trigger caret unless [hideCaret] is set; gets $implicit/open.
+ * @slot cngxSelectOptgroup Replaces the header of each option group; gets $implicit/group.
+ * @slot cngxSelectEmpty Replaces the panel's empty message when there are no options or none matches the typed term; gets searchTerm, filtered and totalCount (always 0 on this host).
+ * @slot cngxSelectLoading Replaces the whole loading view during the first load of [state], or while [loading] is true without [state]; gets retry and progress (always undefined).
+ * @slot cngxSelectOptionLabel Replaces the label text of each option row; gets $implicit/option, selected, highlighted.
+ * @slot cngxSelectError Replaces the load-error block, full panel on a failed first load and inline above the options on a failed refresh; gets $implicit/error, retry.
+ * @slot cngxSelectRetryButton Replaces the retry button inside the default load-error and commit-error blocks; gets $implicit/retry, error, disabled, label.
+ * @slot cngxSelectRefreshing Replaces the refresh indicator shown while [state] reloads with options already listed; gets previousCount (always 0 on this host).
+ * @slot cngxSelectCommitError Replaces the commit-error banner shown when a commit fails and commitErrorDisplay is 'banner'; gets $implicit/error, option, retry.
+ * @slot cngxSelectClearButton Replaces the clear button, shown when [clearable] is set, a value is committed and the control is enabled; gets $implicit/clear, disabled.
+ * @slot cngxSelectOptionPending Replaces the spinner on the option row whose commit is in flight; gets $implicit/option.
+ * @slot cngxSelectOptionError Replaces the ! glyph on the selected row when a commit fails and commitErrorDisplay is 'inline'; gets $implicit/option, error.
+ * @slot cngxSelectInputPrefix Rendered before the <input> inside the trigger; gets disabled, focused, panelOpen.
+ * @slot cngxSelectInputSuffix Rendered after the <input>, before the clear button and caret; gets disabled, focused, panelOpen.
  */
 @Component({
   selector: 'cngx-typeahead',

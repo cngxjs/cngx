@@ -137,6 +137,18 @@ export interface CngxSelectShellChange<T = unknown> {
  * `Shell` here is the *projection-shell* that wraps consumer option
  * markup.
  *
+ * Option rows and group headers are the projected `<cngx-option>` /
+ * `<cngx-optgroup>` markup itself, so `cngxSelectCheck`,
+ * `cngxSelectOptgroup` and `cngxSelectOptionLabel` are queried for
+ * registry parity but render nothing on this host.
+ *
+ * Every slot below except `cngxSelectTriggerLabel` also takes an app-wide
+ * default through `CNGX_SELECT_CONFIG.templates` (`withTemplates`) via the
+ * shared template registry; a projected template wins. That includes
+ * `cngxSelectLoadingGlyph`, resolved from the directive first and
+ * `templates.loadingGlyph` second. `cngxSelectTriggerLabel` is
+ * directive-only here; `templates.triggerLabel` does not reach this host.
+ *
  * @category forms/select/shell
  * @docsKind primary
  * @wcag AA
@@ -150,6 +162,19 @@ export interface CngxSelectShellChange<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/select-shell/inside-cngx-form-field-reactive-forms</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/rich-content-option-plain-text-trigger</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/search-declarative-cngx-select-search</example-url>
+ * @slot cngxSelectCaret Replaces the trigger caret (inside an aria-hidden span) unless [hideCaret] is set; gets $implicit/open.
+ * @slot cngxSelectPlaceholder Replaces the trigger text while nothing is selected and wins over cngxSelectTriggerLabel there; gets $implicit/placeholder.
+ * @slot cngxSelectEmpty Replaces the panel's empty message when no option is projected or [state] resolves empty (a search only hides projected options, it never shows this); gets searchTerm, filtered, totalCount.
+ * @slot cngxSelectLoading Replaces the whole loading view during the first load of [state], or while [loading] is true without [state]; gets retry and progress (always undefined).
+ * @slot cngxSelectLoadingGlyph Replaces the inner glyph of the spinner or bar loading view and of the refresh indicator when no cngxSelectLoading / cngxSelectRefreshing template is set; no context.
+ * @slot cngxSelectTriggerLabel Replaces the trigger text once a value is selected, and while empty when no placeholder template is set (selected is then null); gets $implicit/selected, disabled, panelOpen, focused.
+ * @slot cngxSelectError Replaces the load-error block, full panel on a failed first load and inline above the options on a failed refresh; gets $implicit/error, retry.
+ * @slot cngxSelectRetryButton Replaces the retry button inside the default load-error and commit-error blocks; gets $implicit/retry, error, disabled, label.
+ * @slot cngxSelectRefreshing Replaces the refresh indicator shown while [state] reloads with options already listed; gets previousCount.
+ * @slot cngxSelectCommitError Replaces the commit-error banner shown when a commit fails and commitErrorDisplay is 'banner'; gets $implicit/error, option, retry.
+ * @slot cngxSelectClearButton Replaces the clear button, shown when [clearable] is set, a value is selected and the control is enabled; gets $implicit/clear, disabled.
+ * @slot cngxSelectOptionPending Rendered inside the projected <cngx-option> whose commit is in flight, with no built-in fallback; gets no context.
+ * @slot cngxSelectOptionError Rendered inside the projected <cngx-option> whose commit failed, regardless of commitErrorDisplay, with no built-in fallback; gets no context.
  */
 @Component({
   selector: 'cngx-select-shell',
