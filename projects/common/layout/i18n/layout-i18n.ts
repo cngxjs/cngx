@@ -10,10 +10,11 @@ import { CNGX_LAYOUT_LANGUAGE_EN, type CngxLayoutLanguageSection } from './layou
  * `Signal`, and {@link withLayoutI18nLabels} accepts a `Signal` of a partial
  * bundle.
  *
- * Both keys seed the `CngxExpandableText` `moreLabel` / `lessLabel` inputs
- * at construction, so a bound input still wins and an unbound one is static
- * per instance. The same shape as the layout section of a language pack,
- * declared once as {@link CngxLayoutLanguageSection}.
+ * Both keys are the fallback of the `CngxExpandableText` `moreLabel` /
+ * `lessLabel` inputs, resolved in a `computed()`: a bound input wins, and an
+ * unbound one follows a language switch. The same shape as the layout
+ * section of a language pack, declared once as
+ * {@link CngxLayoutLanguageSection}.
  *
  * @category common/layout/i18n
  * @since 0.1.0

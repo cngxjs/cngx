@@ -15,11 +15,11 @@ import {
  *
  * `asyncClickSucceeded` / `asyncClickFailed` are live-region copy:
  * `CngxAsyncClick` (and `CngxActionButton`, which wraps it) announces the
- * settle it just made, spent once per transition. The other keys seed
- * string inputs at construction (`CngxCopyBlock`, `CngxRangeSlider`,
- * `CngxBreadcrumb`), so a bound input still wins and an unbound one is
- * static per instance. They are optional so a bundle built before they
- * existed keeps compiling; the English defaults fill them.
+ * settle it just made, spent once per transition. The other keys are the
+ * fallback of string inputs (`CngxCopyBlock`, `CngxRangeSlider`,
+ * `CngxBreadcrumb`), resolved in a `computed()`: a bound input wins, and an
+ * unbound one follows a language switch. They are optional so a bundle
+ * built before they existed keeps compiling; the English defaults fill them.
  *
  * @category common/interactive/i18n
  */
