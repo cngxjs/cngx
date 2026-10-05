@@ -112,9 +112,10 @@ export class CngxMetric {
    * @internal The unit to render, `undefined` while there is no value: a
    * missing reading has no unit, so "No value km" is never shown or spoken.
    */
-  protected readonly shownUnit = computed(() =>
-    this.value() === null ? undefined : this.unit() || undefined,
-  );
+  protected readonly shownUnit = computed(() => {
+    const unit = this.unit();
+    return this.value() === null || unit === '' ? undefined : unit;
+  });
 
   /** @internal Unit before value, per the `metricValueWithUnit` message. */
   protected readonly unitFirst = computed(() => unitFirst(this.i18n().metricValueWithUnit));
