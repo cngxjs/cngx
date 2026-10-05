@@ -213,7 +213,23 @@ function resolveDateFormat(
 }
 
 const TIME_24 = '00:00';
-const TIME_12 = '00:00 AA';
+const TIME_12 = '00:00 PM';
+
+/**
+ * Meridiem slots of {@link TIME_12}: `P` takes `A` or `P`, `M` takes `M`, both
+ * uppercased. Scoped to the time presets (merged in `resolvedCustomTokens`) so
+ * a `P` / `M` literal in a consumer pattern keeps its meaning.
+ * @internal
+ */
+const MERIDIEM_TOKENS: MaskTokenMap = {
+  P: { pattern: /[ap]/i, transform: (c) => c.toUpperCase() },
+  M: { pattern: /m/i, transform: (c) => c.toUpperCase() },
+};
+
+/** @internal Tokens a resolved time pattern needs (12-hour only). */
+function timeTokens(pattern: string): MaskTokenMap | undefined {
+  return pattern.endsWith(TIME_12) ? MERIDIEM_TOKENS : undefined;
+}
 
 /**
  * The time mask of a locale's hour cycle: `h11` / `h12` locales (`en-US`) get
@@ -249,7 +265,7 @@ function resolvePreset(
   locale: string,
   tables: MaskPresetTables,
   config?: InputConfig,
-): { patterns: string[]; prefix?: string; suffix?: string } | null {
+): { patterns: string[]; tokens?: MaskTokenMap; prefix?: string; suffix?: string } | null {
   const parts = maskInput.split(':');
   const name = parts[0].toLowerCase();
   const regionHint = parts[1]?.toUpperCase();
@@ -273,15 +289,15 @@ function resolvePreset(
         };
       }
       return { patterns: [resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)] };
-    case 'time':
+    case 'time': {
       // `time:24` / `time:12` pin the cycle; bare `time` follows the locale.
-      return { patterns: [timePattern(parts[1], locale)] };
-    case 'datetime':
-      return {
-        patterns: [
-          `${resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)} ${localeTimePattern(locale)}`,
-        ],
-      };
+      const pattern = timePattern(parts[1], locale);
+      return { patterns: [pattern], tokens: timeTokens(pattern) };
+    }
+    case 'datetime': {
+      const pattern = `${resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)} ${localeTimePattern(locale)}`;
+      return { patterns: [pattern], tokens: timeTokens(pattern) };
+    }
     case 'phone': {
       const raw = phones[region] ?? PRESET_FALLBACKS.phone;
       const alts = raw.split('|');
@@ -538,14 +554,25 @@ export class CngxInputMask {
 
   private readonly resolvedGuide = computed(() => this.guide() ?? this.config.maskGuide ?? true);
 
+  /** Resolved preset, or `null` for a custom pattern. */
+  private readonly preset = computed(() =>
+    // Reading the signal makes this recompute when a lazily-imported table lands.
+    resolvePreset(this.mask(), this.locale(), maskPresetTables(), this.config),
+  );
+
   private readonly resolvedCustomTokens = computed(
     () => {
       const fromInput = this.customTokens();
       const fromConfig = this.config.customTokens;
-      if (fromInput && fromConfig) {
+      // Preset-scoped tokens win: the preset's pattern is written against them.
+      const fromPreset = this.preset()?.tokens;
+      if (!fromPreset && fromInput && fromConfig) {
         return { ...fromConfig, ...fromInput };
       }
-      return fromInput ?? fromConfig;
+      if (!fromPreset) {
+        return fromInput ?? fromConfig;
+      }
+      return { ...fromConfig, ...fromInput, ...fromPreset };
     },
     {
       equal: (a, b) => {
@@ -571,13 +598,11 @@ export class CngxInputMask {
   /** Resolved patterns (handles presets, config overrides, and `|` splitting). */
   private readonly resolvedPatterns = computed(
     () => {
-      const maskVal = this.mask();
-      // Reading the signal makes this recompute when a lazily-imported table lands.
-      const preset = resolvePreset(maskVal, this.locale(), maskPresetTables(), this.config);
+      const preset = this.preset();
       if (preset) {
         return preset.patterns.flatMap((p) => p.split('|'));
       }
-      return maskVal.split('|');
+      return this.mask().split('|');
     },
     { equal: (a, b) => a.length === b.length && a.every((p, i) => p === b[i]) },
   );
