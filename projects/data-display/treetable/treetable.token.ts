@@ -43,6 +43,14 @@ export interface TreetableConfig {
    */
   dateFormat?: Intl.DateTimeFormatOptions;
   /**
+   * `Intl.NumberFormat` options for a number in a default cell, formatted
+   * for the treetable's locale. Register via {@link withTreetableNumberFormat};
+   * set per-instance via `options.numberFormat` to override.
+   * @defaultValue `{}` (the `Intl.NumberFormat` defaults, at most three fraction digits)
+   * @since 0.1.0
+   */
+  numberFormat?: Intl.NumberFormatOptions;
+  /**
    * App-wide copy overrides for every built-in string the treetable
    * renders or announces. Unset keys fall back to the English library
    * defaults. Register via {@link withTreetableLabels}; holds a `Signal`
@@ -314,8 +322,33 @@ export function withTreetableTemplates(templates: TreetableTemplates): Treetable
  *
  * @category data-display/treetable
  * @since 0.1.0
- * @relatedTo CngxTreetable, provideTreetable, provideTreetableAt
+ * @relatedTo CngxTreetable, provideTreetable, provideTreetableAt, withTreetableNumberFormat
  */
 export function withTreetableDateFormat(options: Intl.DateTimeFormatOptions): TreetableFeature {
   return { _apply: (c) => ({ ...c, dateFormat: options }) };
+}
+
+/**
+ * Feature: how a default cell formats a number value. The options go to
+ * `Intl.NumberFormat` with the treetable's locale, so the output follows a
+ * locale switch; the formatter is cached per locale and options, not created
+ * per cell. The default is the `Intl.NumberFormat` defaults (`1,234.5` in
+ * English, at most three fraction digits). Pass `minimumFractionDigits`,
+ * `style: 'percent'`, `notation: 'compact'` or a unit to change it. A
+ * `*cngxCell` template still receives the raw value.
+ *
+ * ```ts
+ * provideTreetable(withTreetableNumberFormat({ minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+ * ```
+ *
+ * Per-instance `options.numberFormat` wins over this feature.
+ *
+ * @param options - The `Intl.NumberFormat` options for number cells.
+ *
+ * @category data-display/treetable
+ * @since 0.1.0
+ * @relatedTo CngxTreetable, provideTreetable, provideTreetableAt, withTreetableDateFormat
+ */
+export function withTreetableNumberFormat(options: Intl.NumberFormatOptions): TreetableFeature {
+  return { _apply: (c) => ({ ...c, numberFormat: options }) };
 }

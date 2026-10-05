@@ -106,6 +106,7 @@ interface TreetableOptions<T> {
   highlightRowOnHover?: boolean;              // Visual hover effect
   customColumnOrder?: readonly (keyof T & string)[]; // Column ordering
   dateFormat?: Intl.DateTimeFormatOptions;    // Date cell format (date-only default)
+  numberFormat?: Intl.NumberFormatOptions;    // Number cell format (Intl defaults)
 }
 ```
 
@@ -220,6 +221,7 @@ bootstrapApplication(AppComponent, {
 
 `provideTreetable(...features)` takes composable features, not an options
 object: `withHighlightOnHover()`, `withTreetableDateFormat({ ... })`,
+`withTreetableNumberFormat({ ... })`,
 `withTreetableLabels({ ... })` and `withTreetableTemplates({ ... })`.
 Per-instance `options` input overrides these defaults.
 
@@ -232,7 +234,9 @@ pass `withTreetableLabels({ unlabeledColumn: (position, column) => ... })`; a
 text as `let-label="label"`. Default cells format numbers and dates with
 the treetable's locale. Dates are date-only (`Oct 5, 2026`) unless
 `withTreetableDateFormat({ dateStyle: 'medium', timeStyle: 'short' })` or
-`options.dateFormat` passes other `Intl.DateTimeFormat` options. `sortTree(nodes, field, direction, locale)` collates
+`options.dateFormat` passes other `Intl.DateTimeFormat` options; numbers use the
+`Intl.NumberFormat` defaults unless `withTreetableNumberFormat({ minimumFractionDigits: 2 })`
+or `options.numberFormat` passes other options. `sortTree(nodes, field, direction, locale)` collates
 with the locale you pass.
 
 ## Controlled vs. Uncontrolled

@@ -22,6 +22,7 @@ import {
   provideTreetableAt,
   withTreetableDateFormat,
   withTreetableLabels,
+  withTreetableNumberFormat,
 } from '../treetable.token';
 import { injectTreetableLabels } from './treetable-i18n';
 import { CNGX_TREETABLE_LANGUAGE_EN } from './treetable-language-section';
@@ -433,6 +434,100 @@ describe('CngxTreetable header and cell copy', () => {
     expect(date).toBe('October');
   });
 
+  it('renders a number cell with the Intl.NumberFormat defaults by default', () => {
+    TestBed.configureTestingModule({ imports: [Host], providers: [provideLocale('en-US')] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    expect(cellTexts(fixture)[1]).toBe('1,234.5');
+  });
+
+  it('withTreetableNumberFormat formats number cells per locale', () => {
+    const format = withTreetableNumberFormat({
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [provideLocale('de'), provideTreetable(format)],
+    });
+    const german = TestBed.createComponent(Host);
+    german.detectChanges();
+    const de = cellTexts(german)[1];
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [provideLocale('en-US'), provideTreetable(format)],
+    });
+    const english = TestBed.createComponent(Host);
+    english.detectChanges();
+
+    expect(de).toBe('1.234,50');
+    expect(cellTexts(english)[1]).toBe('1,234.50');
+  });
+
+  it('a provideTreetableAt subtree overrides the app-wide number format', () => {
+    @Component({
+      selector: 'cngx-scoped-number-host',
+      template: `<cngx-treetable [tree]="tree" [options]="options" />`,
+      imports: [CngxTreetable],
+      viewProviders: [...provideTreetableAt(withTreetableNumberFormat({ useGrouping: false }))],
+    })
+    class ScopedHost {
+      readonly tree = data;
+      readonly options = { customColumnOrder: ['name', 'size', 'modified'] as const };
+    }
+
+    TestBed.configureTestingModule({
+      imports: [Host, ScopedHost],
+      providers: [
+        provideLocale('en-US'),
+        provideTreetable(withTreetableNumberFormat({ minimumFractionDigits: 2 })),
+      ],
+    });
+    const app = TestBed.createComponent(Host);
+    app.detectChanges();
+    const scoped = TestBed.createComponent(ScopedHost);
+    scoped.detectChanges();
+
+    expect(cellTexts(app)[1]).toBe('1,234.50');
+    const scopedNumber = scoped.debugElement
+      .queryAll(By.css('cdk-row cdk-cell'))
+      .map((cell) => (cell.nativeElement as HTMLElement).textContent?.trim() ?? '')
+      .at(-2);
+    expect(scopedNumber).toBe('1234.5');
+  });
+
+  it('per-instance options.numberFormat wins over the app-wide feature', () => {
+    @Component({
+      selector: 'cngx-instance-number-host',
+      template: `<cngx-treetable [tree]="tree" [options]="options" />`,
+      imports: [CngxTreetable],
+    })
+    class InstanceHost {
+      readonly tree = data;
+      readonly options = {
+        customColumnOrder: ['name', 'size', 'modified'] as const,
+        numberFormat: { maximumFractionDigits: 0 } as Intl.NumberFormatOptions,
+      };
+    }
+
+    TestBed.configureTestingModule({
+      imports: [InstanceHost],
+      providers: [
+        provideLocale('en-US'),
+        provideTreetable(withTreetableNumberFormat({ minimumFractionDigits: 2 })),
+      ],
+    });
+    const fixture = TestBed.createComponent(InstanceHost);
+    fixture.detectChanges();
+    const number = fixture.debugElement
+      .queryAll(By.css('cdk-row cdk-cell'))
+      .map((cell) => (cell.nativeElement as HTMLElement).textContent?.trim() ?? '')
+      .at(-2);
+    expect(number).toBe('1,235');
+  });
+
   it('renders an invalid date cell empty and leaves other values unchanged', () => {
     const en = cellFormattersFor('en');
     expect(formatCellValue(new Date(Number.NaN), en)).toBe('');
@@ -447,5 +542,14 @@ describe('CngxTreetable header and cell copy', () => {
     expect(second.number).toBe(first.number);
     expect(second.date).toBe(first.date);
     expect(cellFormattersFor('en').date).not.toBe(cellFormattersFor('de').date);
+  });
+
+  it('reuses the cached number formatter for the same locale and number format', () => {
+    const first = cellFormattersFor('de', undefined, { minimumFractionDigits: 2 });
+    const second = cellFormattersFor('de', undefined, { minimumFractionDigits: 2 });
+    expect(second.number).toBe(first.number);
+    expect(second.number.format(1.5)).toBe('1,50');
+    expect(cellFormattersFor('de').number).not.toBe(first.number);
+    expect(cellFormattersFor('de').number).toBe(cellFormattersFor('de').number);
   });
 });

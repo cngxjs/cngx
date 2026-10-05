@@ -153,7 +153,8 @@ export function sortTree<T>(
   }));
 }
 
-const CELL_NUMBER_FORMAT: Intl.NumberFormatOptions = {};
+/** @internal `Intl.NumberFormat` defaults for a number in a default cell. */
+export const CELL_NUMBER_FORMAT: Intl.NumberFormatOptions = {};
 /** @internal Date-only default for a `Date` in a default cell. */
 export const CELL_DATE_FORMAT: Intl.DateTimeFormatOptions = {
   year: 'numeric',
@@ -162,7 +163,8 @@ export const CELL_DATE_FORMAT: Intl.DateTimeFormatOptions = {
 };
 
 /**
- * The formatters a default cell uses for one locale and date format.
+ * The formatters a default cell uses for one locale, date format and number
+ * format.
  *
  * @internal
  */
@@ -173,16 +175,18 @@ export interface CellFormatters {
 
 /**
  * Resolves the default-cell formatters for `locale` (dates with `dateFormat`,
- * date-only by default). Resolve once per locale and format, not per cell.
+ * date-only by default; numbers with `numberFormat`, the `Intl.NumberFormat`
+ * defaults by default). Resolve once per locale and format, not per cell.
  *
  * @internal
  */
 export function cellFormattersFor(
   locale: string,
   dateFormat: Intl.DateTimeFormatOptions = CELL_DATE_FORMAT,
+  numberFormat: Intl.NumberFormatOptions = CELL_NUMBER_FORMAT,
 ): CellFormatters {
   return {
-    number: numberFormatterFor(locale, CELL_NUMBER_FORMAT),
+    number: numberFormatterFor(locale, numberFormat),
     date: dateTimeFormatterFor(locale, dateFormat),
   };
 }

@@ -80,6 +80,14 @@ export interface CngxTreetableOptions<T> {
    * @since 0.1.0
    */
   dateFormat?: Intl.DateTimeFormatOptions;
+  /**
+   * `Intl.NumberFormat` options for a number in a default cell, formatted
+   * for the treetable's locale. A `*cngxCell` template still gets the raw
+   * value.
+   * @defaultValue `{}` (the `Intl.NumberFormat` defaults)
+   * @since 0.1.0
+   */
+  numberFormat?: Intl.NumberFormatOptions;
 }
 
 /**

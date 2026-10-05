@@ -8,6 +8,7 @@ export {
   withTreetableLabels,
   withTreetableTemplates,
   withTreetableDateFormat,
+  withTreetableNumberFormat,
 } from './treetable.token';
 export {
   CngxCellTpl,

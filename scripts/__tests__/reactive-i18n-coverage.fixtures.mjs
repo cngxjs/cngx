@@ -319,7 +319,7 @@ export const COPY_TOKENS = [
     token: 'CNGX_TREETABLE_CONFIG',
     kind: 'config',
     copyKeys: ['labels'],
-    settingsKeys: ['highlightRowOnHover', 'dateFormat', 'templates'],
+    settingsKeys: ['highlightRowOnHover', 'dateFormat', 'numberFormat', 'templates'],
   },
   {
     token: 'CNGX_FEEDBACK_I18N',
