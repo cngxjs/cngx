@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopover } from './popover.directive';
+import { CngxPopoverAnchor } from './popover-anchor.directive';
 import { CngxPopoverTrigger } from './popover-trigger.directive';
 
 // ── Test helpers ────────────────────────────────────────────────────────
@@ -80,6 +81,24 @@ class RestoreFocusHost {
 class ConditionalTriggerHost {
   readonly popover = viewChild.required(CngxPopover);
   readonly showTrigger = signal(true);
+}
+
+@Component({
+  template: `
+    @if (showTrigger()) {
+      <button [cngxPopoverTrigger]="pop" id="trigger">Open</button>
+    }
+    @if (showAnchor()) {
+      <div id="anchor" [cngxPopoverAnchor]="pop"></div>
+    }
+    <div cngxPopover #pop="cngxPopover">Content</div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger, CngxPopoverAnchor],
+})
+class TriggerWithAnchorHost {
+  readonly showTrigger = signal(true);
+  readonly showAnchor = signal(true);
+  readonly popover = viewChild.required(CngxPopover);
 }
 
 function setup<T>(hostType: new () => T) {
@@ -269,6 +288,31 @@ describe('CngxPopoverTrigger', () => {
       host.showTrigger.set(false);
       fixture.detectChanges();
       expect(host.popover().anchorElement()).toBe(replacement);
+    });
+
+    it('keeps its implicit registration under an explicit anchor', () => {
+      const { fixture, triggerEl } = setup(TriggerWithAnchorHost);
+      const host = fixture.componentInstance as TriggerWithAnchorHost;
+      const anchorEl = fixture.nativeElement.querySelector('#anchor') as HTMLElement;
+      expect(host.popover().anchorElement()).toBe(anchorEl);
+
+      host.showAnchor.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(host.popover().anchorElement()).toBe(triggerEl);
+    });
+
+    it('releases its implicit registration on destroy while an explicit anchor holds the popover', () => {
+      const { fixture } = setup(TriggerWithAnchorHost);
+      const host = fixture.componentInstance as TriggerWithAnchorHost;
+
+      host.showTrigger.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      host.showAnchor.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(host.popover().anchorElement()).toBeNull();
     });
   });
 
