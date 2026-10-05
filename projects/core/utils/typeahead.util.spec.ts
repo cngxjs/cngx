@@ -51,4 +51,9 @@ describe('foldForMatching', () => {
     expect(foldForMatching('ISTANBUL', 'tr')).toBe('ıstanbul');
     expect(foldForMatching('Crème Brûlée')).toBe('creme brulee');
   });
+
+  it('folds away bidi isolates and other format characters', () => {
+    expect(matchesTypeahead('\u2068Anna\u2069 joined', 'an')).toBe(true);
+    expect(matchesTypeahead('a\u200db', 'ab')).toBe(true);
+  });
 });

@@ -1,9 +1,12 @@
-const COMBINING_MARKS = /\p{M}/gu;
+// Combining marks, plus format characters such as the U+2068 / U+2069 isolates
+// formatMessage wraps around inserted text.
+const FOLDED_AWAY = /[\p{M}\p{Cf}]/gu;
 
 /**
  * Folds text for case- and accent-tolerant matching: lowercases with
  * `locale` (plain `toLowerCase()` without one), then NFD-normalises and drops
- * combining marks. The order matters - the other way round decomposes Turkish
+ * combining marks and invisible format characters (bidi isolates, zero-width
+ * joiners). The order matters - the other way round decomposes Turkish
  * `İ` to `I` + dot and lowercases that `I` to dotless `ı`. Fold both sides of
  * a comparison with the same locale.
  *
@@ -18,7 +21,7 @@ const COMBINING_MARKS = /\p{M}/gu;
  */
 export function foldForMatching(value: string, locale?: string): string {
   const lower = locale ? value.toLocaleLowerCase(locale) : value.toLowerCase();
-  return lower.normalize('NFD').replace(COMBINING_MARKS, '');
+  return lower.normalize('NFD').replace(FOLDED_AWAY, '');
 }
 
 /**

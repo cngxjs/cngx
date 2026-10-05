@@ -7,6 +7,7 @@ import { createManualState } from '../async-state/create-manual-state';
 import { CngxFilter } from '../filter/filter.directive';
 import { CngxPaginate } from '../paginate/paginate.directive';
 import { CngxSort } from '../sort/sort.directive';
+import type { CngxSearch } from '@cngx/common/interactive';
 import { CngxSmartDataSource, injectSmartDataSource } from './smart-data-source';
 
 interface Item {
@@ -37,6 +38,23 @@ describe('CngxSmartDataSource - no directives', () => {
     TestBed.runInInjectionContext(() => {
       const ds = injectSmartDataSource(signal([]));
       expect(() => ds.disconnect()).not.toThrow();
+    });
+  });
+
+  it('searches ignoring case and accents in the app locale', () => {
+    TestBed.configureTestingModule({ providers: [provideLocale('tr')] });
+    TestBed.runInInjectionContext(() => {
+      const term = signal('uber');
+      const search = { term } as unknown as CngxSearch;
+      const people = signal([
+        { name: 'Über', age: 1 },
+        { name: 'Ida', age: 2 },
+        { name: 'İzmir', age: 3 },
+      ]);
+      const ds = injectSmartDataSource(people, { search: () => search });
+      expect(ds.filteredCount()).toBe(1);
+      term.set('\u2068i');
+      expect(ds.filteredCount()).toBe(1);
     });
   });
 

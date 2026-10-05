@@ -1,7 +1,7 @@
 import { DataSource } from '@angular/cdk/collections';
 import { computed, inject, Injector, type Signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { injectLocale, memoize, type CngxAsyncState } from '@cngx/core/utils';
+import { foldForMatching, injectLocale, memoize, type CngxAsyncState } from '@cngx/core/utils';
 import { arrayEqual } from '@cngx/utils';
 import type { Observable } from 'rxjs';
 import { CngxPaginate } from '../paginate/paginate.directive';
@@ -9,15 +9,16 @@ import { CngxFilter } from '../filter/filter.directive';
 import { CngxSort } from '../sort/sort.directive';
 import { CngxSearch } from '@cngx/common/interactive';
 
-function defaultSearchFn<T>(item: T, term: string): boolean {
-  const lower = term.toLowerCase();
-  return Object.values(item as Record<string, unknown>).some((v) =>
-    v === null || v === undefined || typeof v === 'object'
-      ? false
-      : String(v as string | number | boolean | bigint)
-          .toLowerCase()
-          .includes(lower),
-  );
+/** @internal The default search: primitive field values, case and accents ignored in `locale`. */
+function defaultSearchFnFor<T>(locale: string): (item: T, term: string) => boolean {
+  return (item, term) => {
+    const folded = foldForMatching(term, locale);
+    return Object.values(item as Record<string, unknown>).some((v) =>
+      v === null || v === undefined || typeof v === 'object'
+        ? false
+        : foldForMatching(String(v as string | number | boolean | bigint), locale).includes(folded),
+    );
+  };
 }
 
 const collatorFor = memoize(
@@ -51,8 +52,9 @@ function defaultSortFnFor<T>(
 export interface CngxSmartDataSourceOptions<T> {
   /**
    * Custom full-text search function. Receives an item and the current search
-   * term; return `true` to keep the item. Defaults to a case-insensitive match
-   * across all primitive-valued properties.
+   * term; return `true` to keep the item. Defaults to a substring match across
+   * all primitive-valued properties that ignores case and accents in the app
+   * locale.
    */
   searchFn?: (item: T, term: string) => boolean;
   /**
@@ -208,7 +210,7 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
         const search = this.options?.search?.() ?? this.injectedSearch;
         const predicate = filter?.predicate();
         const term = search?.term();
-        const searchFn = this.options?.searchFn ?? defaultSearchFn<T>;
+        const searchFn = this.options?.searchFn ?? defaultSearchFnFor<T>(this.locale());
 
         // Pipeline: raw → filter → search. Cast required: CngxFilter injected as unknown.
         return data()

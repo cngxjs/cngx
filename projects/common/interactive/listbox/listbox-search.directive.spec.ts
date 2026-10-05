@@ -76,4 +76,12 @@ describe('CngxListboxSearch', () => {
       ),
     ).toBe(false);
   });
+
+  it('ignores accents and invisible format characters in the default matchFn', () => {
+    const { search } = setup();
+    expect(search.matchFn()({ id: 'u', value: 'u', label: 'Über' }, 'uber')).toBe(true);
+    expect(search.matchFn()({ id: 'e', value: 'e', label: 'Éclair' }, 'ecl')).toBe(true);
+    const message = { id: 'm', value: 'm', label: '\u2068Anna\u2069 joined' };
+    expect(search.matchFn()(message, 'anna')).toBe(true);
+  });
 });
