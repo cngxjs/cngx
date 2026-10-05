@@ -1,6 +1,6 @@
 import { computed, type Signal } from '@angular/core';
 
-import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
+import { createDefaultsFill, createOverrideMerge } from '@cngx/core/utils';
 import { recordEqual } from '@cngx/utils';
 
 import {
@@ -37,50 +37,15 @@ export interface CngxResolvedSelectLabels {
   readonly announcer: Signal<CngxResolvedSelectAnnouncer>;
 }
 
-const MAPPED = new WeakMap<object, WeakMap<object, Signal<object>>>();
-
 /**
- * The override source passed through `map`, memoized per (map, source) so the
- * merge below sees one stable override signal per config object.
+ * The config copy merged over the site defaults; a key the config leaves
+ * `null` or `undefined` reads the default (`createDefaultsFill`).
  */
-function mappedOverrides<T extends object>(source: T | Signal<T>, map: (value: T) => T): Signal<T> {
-  const key: object = map;
-  let byMap = MAPPED.get(key);
-  if (!byMap) {
-    byMap = new WeakMap();
-    MAPPED.set(key, byMap);
-  }
-  let mapped = byMap.get(source) as Signal<T> | undefined;
-  if (!mapped) {
-    const overrides = coerceSignal(source);
-    mapped = computed(() => map(overrides()));
-    byMap.set(source, mapped);
-  }
-  return mapped;
-}
-
-/**
- * Drops every key the override sets to `null` or `undefined`, so a defaulted
- * key falls back to its default and readers need no literal of their own.
- */
-function withoutNullish<T extends object>(record: T): T {
-  return Object.fromEntries(Object.entries(record).filter(([, value]) => value != null)) as T;
-}
-
-/** Drops a nullish `format`, so the announcer keeps the section formatter. */
-function withoutNullishFormat<T extends object>(config: T): T {
-  return Object.fromEntries(
-    Object.entries(config).filter(([name, value]) => name !== 'format' || value != null),
-  ) as T;
-}
-
-/** The config copy merged over the site defaults, after `map`. */
-function mergeOver<T extends object>(
+function fillOver<T extends object>(
   defaults: Signal<T>,
   source: Partial<T> | Signal<Partial<T>> | undefined,
-  map: (value: Partial<T>) => Partial<T>,
 ): Signal<T> {
-  return createOverrideMerge<T>(defaults, source && mappedOverrides(source, map));
+  return createDefaultsFill(createOverrideMerge<T>(defaults, source), defaults);
 }
 
 interface SiteDefaults {
@@ -112,9 +77,9 @@ function siteDefaults(copy: Signal<CngxSelectCopy>): SiteDefaults {
  * Resolves the copy keys of a select config lazily, at the reading site. The
  * defaults are the active pack's select section (English by default) formatted
  * for the reader's locale; `ariaLabels` and `fallbackLabels` spread the config
- * over them, a defaulted key the config sets to `undefined` keeping its
- * default, and the announcer spreads too, a missing `format` keeping the
- * section formatter. Every result is memoized per config source and site, so
+ * over them, a defaulted key the config sets to `null` or `undefined` keeping
+ * its default, and the announcer spreads the same way, a missing `format`
+ * keeping the section formatter. Every result is memoized per config source and site, so
  * every select under one injector shares the same signals. Injection context
  * required.
  *
@@ -123,8 +88,8 @@ function siteDefaults(copy: Signal<CngxSelectCopy>): SiteDefaults {
 export function resolveSelectLabels(user: CngxSelectConfig): CngxResolvedSelectLabels {
   const site = siteDefaults(injectSelectCopy());
   return {
-    ariaLabels: mergeOver(site.ariaLabels, user.ariaLabels, withoutNullish),
-    fallbackLabels: mergeOver(site.fallbackLabels, user.fallbackLabels, withoutNullish),
-    announcer: mergeOver(site.announcer, user.announcer, withoutNullishFormat),
+    ariaLabels: fillOver(site.ariaLabels, user.ariaLabels),
+    fallbackLabels: fillOver(site.fallbackLabels, user.fallbackLabels),
+    announcer: fillOver(site.announcer, user.announcer),
   };
 }

@@ -151,19 +151,44 @@ export function createNestedOverrideMerge<T extends object, K extends RecordKeys
   return merged;
 }
 
-const FILLED = new WeakMap<Signal<object>, Signal<object>>();
+const FILLED = new WeakMap<Signal<object>, WeakMap<object, Map<PropertyKey, Signal<object>>>>();
+
+/** No nested key: the fill memo's map key for a flat fill. */
+const FLAT = Symbol('flat');
+
+/** `record` with every key of `base` that `record` leaves nullish taken from `base`. */
+function fillNullish<T extends object>(record: Partial<T>, base: T): T {
+  const value = { ...record } as T;
+  for (const name of Object.keys(base) as (keyof T)[]) {
+    value[name] ??= base[name];
+  }
+  return value;
+}
 
 /**
- * Fills every key of `defaults` that a merged bundle leaves `undefined`, so a
+ * Fills every key of `defaults` that a merged bundle leaves unset, so a
  * defaulted copy key an override sets to `undefined` falls back to its default
- * instead of rendering nothing. Pair it with {@link createOverrideMerge}, whose
- * plain spread lets an explicit `undefined` win: the merge keeps the override
- * rules, this restores the default for keys that have one. Keys absent from
- * `defaults` stay as merged.
+ * instead of rendering nothing. Pair it with {@link createOverrideMerge} or
+ * {@link createNestedOverrideMerge}, whose plain spread lets an explicit
+ * `undefined` win: the merge keeps the override rules, this restores the
+ * default for keys that have one. Keys absent from `defaults` stay as merged.
  *
- * Memoized per merged signal, and the result keeps its reference while the
- * filled values are key-wise equal (`recordEqual`), so an accessor that fills
- * the same merge for every instance allocates nothing after the first.
+ * The one rule for unset values: a key is unset when its merged value is
+ * `null` or `undefined` (`??`). Every other value, `''`, `0` and `false`
+ * included, is a set value and wins.
+ *
+ * `defaults` may be a plain value or a `Signal` (a language-pack section
+ * resolved at the reading site); the fill re-derives on either side's change.
+ * Pass `key` for a bundle with one nested record (the same `key` as the
+ * `createNestedOverrideMerge` it pairs with): the record is filled key by key
+ * against `defaults[key]`, so an override that sets one nested key to
+ * `undefined` reads that nested default.
+ *
+ * Memoized per (merged, defaults, key), and the result keeps its reference
+ * while the filled values are equal - key-wise `recordEqual`, the nested
+ * record compared key by key - so an accessor that fills the same merge for
+ * every instance allocates nothing after the first and an equal recompute
+ * does not re-run downstream readers.
  *
  * ```ts
  * export function injectTrailLabels(): Signal<Required<TrailLabels>> {
@@ -180,23 +205,47 @@ const FILLED = new WeakMap<Signal<object>, Signal<object>>();
  */
 export function createDefaultsFill<T extends object>(
   merged: Signal<Partial<T>>,
-  defaults: T,
+  defaults: T | Signal<T>,
+): Signal<T>;
+export function createDefaultsFill<T extends object, K extends RecordKeys<T>>(
+  merged: Signal<Partial<T>>,
+  defaults: T | Signal<T>,
+  key: true extends IsUnion<K> ? never : K,
+): Signal<T>;
+export function createDefaultsFill<T extends object>(
+  merged: Signal<Partial<T>>,
+  defaults: T | Signal<T>,
+  key?: keyof T,
 ): Signal<T> {
-  const cached = FILLED.get(merged) as Signal<T> | undefined;
+  let byDefaults = FILLED.get(merged);
+  if (!byDefaults) {
+    byDefaults = new WeakMap();
+    FILLED.set(merged, byDefaults);
+  }
+  let byKey = byDefaults.get(defaults);
+  if (!byKey) {
+    byKey = new Map();
+    byDefaults.set(defaults, byKey);
+  }
+  const cached = byKey.get(key ?? FLAT) as Signal<T> | undefined;
   if (cached) {
     return cached;
   }
-  const keys = Object.keys(defaults) as (keyof T)[];
-  const filled = computed<T>(
-    () => {
-      const value = { ...merged() } as T;
-      for (const key of keys) {
-        value[key] ??= defaults[key];
-      }
-      return value;
-    },
-    { equal: recordEqual },
-  );
-  FILLED.set(merged, filled);
+  const defaultsSignal = coerceSignal(defaults);
+  const filled =
+    key === undefined
+      ? computed<T>(() => fillNullish(merged(), defaultsSignal()), { equal: recordEqual })
+      : computed<T>(
+          () => {
+            const base = defaultsSignal();
+            const value = fillNullish(merged(), base);
+            return {
+              ...value,
+              [key]: fillNullish((merged()[key] ?? {}) as object, base[key] as object),
+            } as T;
+          },
+          { equal: nestedEqual<T>(key) },
+        );
+  byKey.set(key ?? FLAT, filled);
   return filled;
 }

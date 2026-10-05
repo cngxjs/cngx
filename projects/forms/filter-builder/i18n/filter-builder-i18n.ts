@@ -2,7 +2,7 @@ import { computed, inject, InjectionToken, type Signal } from '@angular/core';
 
 import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
 import {
-  coerceSignal,
+  createDefaultsFill,
   createNestedOverrideMerge,
   type CngxNestedOverrides,
 } from '@cngx/core/utils';
@@ -190,48 +190,23 @@ export function injectFilterBuilderSectionI18n(): Signal<CngxResolvedFilterBuild
   return filterBuilderBundle.resolve(inject(FILTER_BUILDER_SECTION_I18N));
 }
 
-type CngxFilterBuilderOverrides = CngxNestedOverrides<CngxResolvedFilterBuilderI18n, 'operators'>;
-
-/** @internal `record` without the keys it sets to `undefined`. */
-function withoutUndefined<T extends object>(record: T): T {
-  return Object.fromEntries(Object.entries(record).filter(([, value]) => value !== undefined)) as T;
-}
-
-const DEFINED = new WeakMap<object, Signal<CngxFilterBuilderOverrides>>();
-
-/**
- * @internal The override source without the keys it sets to `undefined`, at
- * the top level and inside `operators`, so the merge reads the section for
- * them. Memoized per source.
- */
-function definedOverrides(
-  source: Partial<CngxFilterBuilderI18n> | Signal<Partial<CngxFilterBuilderI18n>>,
-): Signal<CngxFilterBuilderOverrides> {
-  let defined = DEFINED.get(source);
-  if (!defined) {
-    const overrides = coerceSignal(source);
-    defined = computed(() => {
-      const { operators, ...rest } = overrides();
-      const top: CngxFilterBuilderOverrides = withoutUndefined(rest);
-      return operators ? { ...top, operators: withoutUndefined(operators) } : top;
-    });
-    DEFINED.set(source, defined);
-  }
-  return defined;
-}
-
 /**
  * @internal The filter-builder bundle at the reading site with the config
- * overrides on top. A key an override sets wins; a key it leaves unset or
- * `undefined` reads the section; `operators` merges key by key and
+ * overrides on top. A key an override sets wins; a key it leaves unset, `null`
+ * or `undefined` reads the section; `operators` merges key by key and
  * `announcement` is replaced as a whole. Injection context required.
  */
 export function injectFilterBuilderSiteI18n(
   overrides: Partial<CngxFilterBuilderI18n> | Signal<Partial<CngxFilterBuilderI18n>> | undefined,
 ): Signal<CngxResolvedFilterBuilderI18n> {
-  return createNestedOverrideMerge<CngxResolvedFilterBuilderI18n, 'operators'>(
-    injectFilterBuilderSectionI18n(),
-    overrides && definedOverrides(overrides),
+  const section = injectFilterBuilderSectionI18n();
+  return createDefaultsFill<CngxResolvedFilterBuilderI18n, 'operators'>(
+    createNestedOverrideMerge<CngxResolvedFilterBuilderI18n, 'operators'>(
+      section,
+      overrides,
+      'operators',
+    ),
+    section,
     'operators',
   );
 }

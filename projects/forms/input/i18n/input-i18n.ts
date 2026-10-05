@@ -2,7 +2,7 @@ import { computed, inject, InjectionToken, type Signal } from '@angular/core';
 
 import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
 import {
-  coerceSignal,
+  createDefaultsFill,
   createNestedOverrideMerge,
   createOverrideMerge,
   type CngxNestedOverrides,
@@ -88,36 +88,17 @@ export function injectInputSectionLabels(): Signal<CngxResolvedInputAriaLabels> 
   return inputBundle.resolve(inject(INPUT_SECTION_LABELS));
 }
 
-const DEFINED = new WeakMap<object, Signal<Partial<InputAriaLabels>>>();
-
-/**
- * @internal The override source without the keys it sets to `undefined`, so
- * the merge reads the section for them. Memoized per source.
- */
-function definedOverrides(
-  source: Partial<InputAriaLabels> | Signal<Partial<InputAriaLabels>>,
-): Signal<Partial<InputAriaLabels>> {
-  let defined = DEFINED.get(source);
-  if (!defined) {
-    const overrides = coerceSignal(source);
-    defined = computed(() =>
-      Object.fromEntries(Object.entries(overrides()).filter(([, value]) => value !== undefined)),
-    );
-    DEFINED.set(source, defined);
-  }
-  return defined;
-}
-
 /**
  * @internal The input labels at the reading site with the `CNGX_INPUT_CONFIG`
- * labels on top. A key the config sets wins; a key it leaves unset or
+ * labels on top. A key the config sets wins; a key it leaves unset, `null` or
  * `undefined` reads the section. Injection context required.
  */
 export function injectInputLabels(
   overrides: Partial<InputAriaLabels> | Signal<Partial<InputAriaLabels>> | undefined,
 ): Signal<CngxResolvedInputAriaLabels> {
-  return createOverrideMerge<CngxResolvedInputAriaLabels>(
-    injectInputSectionLabels(),
-    overrides && definedOverrides(overrides),
+  const section = injectInputSectionLabels();
+  return createDefaultsFill(
+    createOverrideMerge<CngxResolvedInputAriaLabels>(section, overrides),
+    section,
   );
 }
