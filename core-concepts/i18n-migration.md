@@ -29,6 +29,8 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxStepperI18n.stepRolledBackSuffix: string` is replaced by `stepRolledBack: (base: string) => string`, which receives the step's description and returns the whole sentence. `withStepperI18nLabels({ stepRolledBackSuffix: 'Zurückgesetzt.' })` becomes ``withStepperI18nLabels({ stepRolledBack: (base) => `${base} Zurückgesetzt.` })``. The English default renders the same text as before.
 - `CngxStepperI18n.stepFallbackLabel` is now required. Bundles built through `provideStepperI18n(withStepperI18nLabels(...))` already carry the English default; a hand-built `Signal<CngxStepperI18n>` supplies the key, for example ``stepFallbackLabel: (id) => `Schritt ${id}` ``.
 - `resolveStepFallbackLabel` is no longer exported. It was marked internal; read `injectStepperI18n()().stepFallbackLabel(id)` instead.
+- `CngxStepperI18n` has four new required keys: `groupRoleDescription` (English `'step group'`), `stepWithDetail(step, detail)` (English `'{step}: {detail}'`, the joiner of a step name and its status or label), `groupSummaryCountShort(total)` and `groupSummaryProgressShort(completed, total)` (the visible collapsed-group badge, English `'4'` and `'1/4'`). A hand-built `Signal<CngxStepperI18n>` supplies them; `withStepperI18nLabels` overrides are unaffected.
+- `injectStepperConfig().ariaLabels` and `.fallbackLabels` now always hold a `Signal`, also without `withStepperAriaLabels` / `withStepperFallbackLabels`: their defaults come from the stepper section of the language pack. `provideStepperConfig` and `provideStepperConfigAt` resolve their features when the token is first injected, not when the provider is created.
 
 ### @cngx/common/tabs
 
@@ -39,38 +41,52 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxTabsI18n.previousTab` and `.nextTab` change from `string` to `(positionPhrase: string) => string`. Each receives the `selectedTab(...)` phrase and returns the whole commit-success announcement, so a locale can reorder it. `withTabsI18nLabels({ nextTab: 'Nächster Reiter' })` becomes ``withTabsI18nLabels({ nextTab: (phrase) => `Nächster Reiter: ${phrase}` })``. The English default renders the same text as before.
 - Note: the tab-group landmark name resolves `CngxTabsConfig.ariaLabels.tabsRegion` (default `'Tabs'`) before `CngxTabsI18n.tabsLabel`. A language Signal on `withTabsI18nLabels` alone therefore leaves the landmark in English; switch it through `withTabsAriaLabels` as well. This precedence is unchanged.
 - `CngxTabsConfig.ariaLabels` and `.fallbackLabels` are typed `L | Signal<L>`, and once `withTabsAriaLabels` / `withTabsFallbackLabels` ran they hold a `Signal`. Code that reads them off `injectTabsConfig()` wraps the key: `config.ariaLabels?.tabsRegion` becomes `coerceSignal(config.ariaLabels)()?.tabsRegion` (`coerceSignal` from `@cngx/core/utils`), read inside a `computed()` or template. Both features now also accept a `Signal`.
+- `injectTabsConfig().ariaLabels` and `.fallbackLabels` now always hold a `Signal`, also without `withTabsAriaLabels` / `withTabsFallbackLabels`: their defaults come from the tabs section of the language pack. `provideTabsConfig` and `provideTabsConfigAt` resolve their features when the token is first injected, not when the provider is created.
+- `CngxTabsI18n` has a new required key `unlabeledTab(position)` (English `'Tab {position}'`), the name of a tab without a label. A hand-built `Signal<CngxTabsI18n>` supplies it; `withTabsI18nLabels` overrides are unaffected.
 
 ### @cngx/common/card
 
 - `CNGX_CARD_I18N` is now `InjectionToken<Signal<CngxCardI18n>>`, and `injectCardI18n()` returns `Signal<CngxCardI18n>`. Call the Signal where you read a phrase, inside a `computed()`, a template or a handler: `inject(CNGX_CARD_I18N).selected` becomes `inject(CNGX_CARD_I18N)().selected`.
 - A direct `{ provide: CNGX_CARD_I18N, useValue: bundle }` must supply a Signal. Prefer `provideCardI18n(withCardI18nLabels(overrides))`; `withCardI18nLabels` now also accepts a `Signal<Partial<CngxCardI18n>>`.
 - `CngxCardI18nFeature` maps `Signal<CngxCardI18n>` to `Signal<CngxCardI18n>`. A hand-written feature returns a derived Signal, best through `createOverrideMerge` from `@cngx/core/utils`: `(bundle) => createOverrideMerge(bundle, { loading: 'Lädt' })`.
+- `CngxCardI18n` has a new required key `timestamp` (English `'{prefix} {date}'`): it sets the order of a `cngx-card-timestamp` prefix and its date. A complete bundle you provide directly adds it; `withCardI18nLabels` overrides are unaffected.
+
+### @cngx/common/command
+
+- The default `CNGX_COMMAND_MATCH_FACTORY` reads the app locale with `injectLocale()` when it is called, so call it in an injection context, as `CngxCommandPanel` does in a field initializer: `inject(CNGX_COMMAND_MATCH_FACTORY)()`. `createDefaultCommandMatcher(locale?)` itself still works anywhere.
 
 ### @cngx/common/chart
 
 - `CNGX_CHART_I18N` is now `InjectionToken<Signal<CngxChartI18n>>`. Call the Signal where you read a formatter, inside a `computed()`, a template or a handler: `inject(CNGX_CHART_I18N).summary(input)` becomes `inject(CNGX_CHART_I18N)().summary(input)`. The default factory reads the app locale live, so the default number formatting follows a `CNGX_LOCALE` switch.
-- A direct `{ provide: CNGX_CHART_I18N, useValue: bundle }` must supply a Signal. Prefer `provideChartI18n(overrides)`, which merges over the English defaults. `provideChartI18n` now also accepts a `Signal<Partial<CngxChartI18n>>` for runtime switching, and returns a plain `Provider` (it used to return `{ provide, useValue }`).
+- A direct `{ provide: CNGX_CHART_I18N, useValue: bundle }` must supply a Signal. Prefer `provideChartI18n(withChartI18nLabels(overrides))`, which merges over the language pack and the English defaults; `withChartI18nLabels` also accepts a `Signal<Partial<CngxChartI18n>>` for runtime switching. `provideChartI18n` returns a plain `Provider` (it used to return `{ provide, useValue }`).
+- `provideChartI18n` takes features like its siblings: `provideChartI18n(overrides)` becomes `provideChartI18n(withChartI18nLabels(overrides))`.
 
 ### @cngx/common/data
 
 - `CNGX_RECYCLER_I18N` is now `InjectionToken<Signal<RecyclerI18n>>`. Call the Signal where you read a phrase, inside a `computed()`, an effect or a handler: `inject(CNGX_RECYCLER_I18N).empty()` becomes `inject(CNGX_RECYCLER_I18N)().empty()`.
-- A direct `{ provide: CNGX_RECYCLER_I18N, useValue: bundle }` must supply a Signal. Prefer `provideRecyclerI18n(bundle)`, which still replaces the whole bundle; it now also accepts a `Signal<RecyclerI18n>` for runtime switching, and returns a plain `Provider`.
+- A direct `{ provide: CNGX_RECYCLER_I18N, useValue: bundle }` must supply a Signal. Prefer `provideRecyclerI18n(withRecyclerI18nLabels(overrides))`; the feature accepts a `Signal` for runtime switching, and the provider returns a plain `Provider`.
+- `provideRecyclerI18n` takes features like its siblings: `provideRecyclerI18n(bundle)` becomes `provideRecyclerI18n(withRecyclerI18nLabels(bundle))`. The overrides are partial and merge over the language pack's recycler section: keys you leave out keep their translated or English text.
+- `CngxKpiI18n` has three new required keys: `metricValueWithUnit` (English `'{value} {unit}'`, the order of a metric's value and unit), `metricPlaceholder` (the glyph a metric without a value shows) and `metricNoValue` (English `'No value'`, its accessible name). A hand-built `Signal<CngxKpiI18n>` supplies them; `withKpiI18nLabels` overrides are unaffected.
 
 ### @cngx/common/dialog
 
 - `CngxDialogDefaults.labels` is typed `CngxDialogLabels | Signal<CngxDialogLabels>`, and once `provideDialogConfig` / `provideDialogConfigAt` ran it holds a `Signal`. Code that reads it off `injectDialogConfig()` or `CNGX_DIALOG_DEFAULTS` wraps the key: `injectDialogConfig().labels.close` becomes `coerceSignal(injectDialogConfig().labels)().close` (`coerceSignal` from `@cngx/core/utils`), read inside a `computed()`, a template or a handler. A direct `{ provide: CNGX_DIALOG_DEFAULTS, useValue: { labels } }` with a plain bundle keeps compiling.
 - `withDialogLabels` now also accepts a `Signal<Partial<CngxDialogLabels>>` for runtime switching; plain partials still merge over the English defaults.
+- `CNGX_DIALOG_DEFAULTS.labels` now always holds a `Signal`, also without `provideDialogConfig`: the labels come from the dialog section of the language pack. Read them through `coerceSignal` as above.
 
 ### @cngx/common/interactive
 
 - `CngxMenuConfig.ariaLabels` is typed `CngxMenuAriaLabels | Signal<CngxMenuAriaLabels>`, and once `withAriaLabels` ran it holds a `Signal`. Code that reads it off `injectMenuConfig()` or `CNGX_MENU_CONFIG` wraps the key: `injectMenuConfig().ariaLabels.itemActivated` becomes `coerceSignal(injectMenuConfig().ariaLabels)().itemActivated` (`coerceSignal` from `@cngx/core/utils`), read inside a `computed()`, a template or a handler. A hand-written `CngxMenuConfigFeature` that spreads `cfg.ariaLabels` merges through `createOverrideMerge(cfg.ariaLabels, overrides)` instead.
 - `withAriaLabels` now also accepts a `Signal<Partial<CngxMenuAriaLabels>>` for runtime switching; plain partials still merge over the inherited labels.
 - The copy inputs `CngxAsyncClick.succeededAnnouncement` / `.failedAnnouncement`, `CngxBreadcrumb.label`, `CngxCopyBlock.buttonLabel` / `.copiedLabel` / `.srAnnouncement` and `CngxRangeSlider.startLabel` / `.endLabel` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `CNGX_INTERACTIVE_I18N` default. Template bindings and attribute values are unchanged. Code that reads the input programmatically (`directive.succeededAnnouncement()`) gets `undefined` when nothing is bound; read the rendered result instead, for `CngxAsyncClick` its `announcement()`.
+- `injectMenuConfig().ariaLabels` now always holds a `Signal`, also without `withAriaLabels`: its default comes from the menu section of the language pack. `DEFAULT_MENU_CONFIG.ariaLabels` stays the plain English object.
+- `canDeactivateWhenClean(isDirty, message?)` no longer has an English default in its signature: without `message` it asks with `CNGX_INTERACTIVE_I18N.unsavedChanges`, read when the guard runs.
 
 ### @cngx/common/display
 
 - The copy inputs `CngxAvatarGroup.label` and `CngxChip.removeAriaLabel` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `CNGX_DISPLAY_I18N` default. Template bindings are unchanged; the rendered `aria-label` follows a language switch.
-- `CngxAvatarGroup`: a bound `label` now always composes the English `<total> <noun>` summary, also when it happens to equal the `avatarGroupNoun` default. Leave `label` unbound to use a custom `avatarGroupLabel` formatter.
+- `CngxAvatarGroup`: a bound `label` now always composes the `<total> <noun>` summary of the language's `avatarGroupLabel` message, also when it happens to equal the `avatarGroupNoun` default. Leave `label` unbound to use a custom `avatarGroupLabel` formatter.
+- `CngxDisplayI18n` has three new required keys: `avatarGroupLabelFor(total, hidden, noun)` (the summary for a given noun), `avatarGroupOverflow(count)` (the visible `+N` pill) and `badgeOverflow(max)` (English `'99+'`). A hand-built `Signal<CngxDisplayI18n>` supplies them; `withDisplayI18nLabels` overrides are unaffected.
 
 ### @cngx/common/layout
 
@@ -82,6 +98,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `withTimelineLabels` now also accepts a `Signal<CngxTimelineLabels>` for runtime switching; plain bundles still merge over the inherited labels, `status` key by key.
 - `CngxTimelineLabels.groupLabel` is now `(group, locale: string) => string`. The timeline passes the app locale (`CNGX_LOCALE`, else `LOCALE_ID`) and re-calls the formatter when it switches. A one-argument formatter keeps compiling and renders as before; code that calls `labels.groupLabel(group)` itself passes the locale as the second argument.
 - `formatTimelineGroupDate` and `TIMELINE_DEFAULT_GROUP_LABEL` are no longer exported. They were marked internal; call the default `groupLabel` from `injectTimelineConfig()` with a locale instead.
+- `injectTimelineConfig().labels` now always holds a `Signal`, also without `withTimelineLabels`: its default comes from the timeline section of the language pack. `provideTimelineConfig` resolves its features when the token is first injected, not when the provider is created.
 
 ### @cngx/ui/timeline
 
@@ -200,8 +217,79 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### All libraries
 
 - A live region keeps its text when the language switches, and speaks the new language with its next status change. This also holds when a consumer formatter reads a language Signal itself, such as `withErrorMessages({ required: () => translate('required') })` or a `format` function on a select announcer or a stepper count: CNGX now calls these formatters untracked inside the live region, so a switch no longer re-renders the region at once. Shown validation messages in `cngx-field-errors` and `cngx-form-errors` therefore stay in the old language until the field's errors change. Labels outside live regions follow the switch immediately.
+- Copy that CNGX builds from a message with arguments wraps every inserted text argument in the Unicode isolates U+2068 / U+2069 and formats every inserted number with the active locale (`1,200`, `1.200` in German). A Latin name inside an Arabic sentence, or the reverse, keeps its own direction. Tests that compare such copy exactly strip the isolates first: `text.replace(/[\u2068\u2069]/g, '')`.
+- Copy follows `provideLocaleAt` subtrees. Numbers and plural forms inside CNGX copy (badge overflow, stepper and tabs captions, KPI value text, chart summaries, recycler announcements) format in the locale of the component that shows them, not the root locale. A key you override through a `with*I18nLabels` feature keeps your value; every key you leave alone follows the subtree. A token value you provide directly keeps every key it sets, and the keys it leaves out follow the subtree too.
+- Type-to-find ignores accents and lowercases with the app locale, in `CngxActiveDescendant` and everything built on it (listbox, menu, select family) and in the `CngxTreeSelect` expand-to-reveal search: `u` now finds `Über`, and under `tr` an `I` finds `Istanbul` but not `İzmir`. `matchesTypeahead(label, term, locale?)` from `@cngx/core/utils` takes the locale as an optional third argument; without it, it lowercases as before and still ignores accents.
+- The default `CngxListboxSearch` matcher and the default `CngxSmartDataSource` search use the same folding: case, accents and invisible format characters (bidi isolates) are ignored in the app locale, so `uber` finds `Über`. A custom `matchFn` / `searchFn` is unaffected.
+- The default command matcher (`CngxCommandPanel`, `createDefaultCommandMatcher`) compares query, labels and keywords case- and accent-tolerant in the app locale: `uber` finds `Über`, `cafe` finds the keyword `Café`. The fold is exported as `foldForMatching(value, locale?)` from `@cngx/core/utils`.
+
+### @cngx/common/chart
+
+- `CngxChartI18n` has two new optional keys: `indexColumnLabel` (the data table's index header, English `#`) and `stackedBarSegmentTitle(label, value)` (the stacked-bar segment tooltip, English `label: value`). A full override keeps compiling; the keys it leaves out read the language pack, then English.
+- The data table's row numbers and a number `value` in `cngx-chart-legend` format with the app locale (`6,6` in German). A non-finite chart number renders as `∞` / `-∞` / `NaN` in the locale instead of `Infinity`. A legend `value` that is not a number renders as text, as before.
+- The words, order and list separator of the default `summary` and `stackedBarSummary` come from the chart section of the language pack, so a German pack can write `Minimum 1,5; Maximum 9` instead of the ambiguous `Min 1,5, max 9`.
+
+### @cngx/common/data
+
+- `CngxSmartDataSource` sorts string fields with a collator of the app locale (`CNGX_LOCALE`) instead of the runtime's default locale, so `Ä` sorts after `Z` in Swedish and next to `A` in German.
+- The recycler announcements use the singular for one item (`1 more item loaded`, `1 result found`) and format counts in the app locale (`1,200`).
+- `CngxGoal` formats `now` and `max` in its default `aria-valuetext` with the app locale (`1,234.5 of 2,000`, before `1234.5 of 2000`).
+- `CngxDelta` lets the locale draw the plus sign of a positive magnitude (`Intl` `signDisplay`), so a locale with its own plus sign or spacing gets it.
+- A `CngxMetric` without a value announces `No value` instead of the dash glyph; the glyph still shows, and the unit is neither shown nor announced while there is no value. A pack can place the unit before the value through `metricValueWithUnit`.
+
+### @cngx/common/display
+
+- `CngxBadge` formats a numeric value with the app locale (`1,200`) and renders a count above `max` through `badgeOverflow`. The `CngxAvatarGroup` `+N` pill formats its count the same way.
+- A `CngxAvatarGroup` with a bound `label` noun builds its summary from the language's `avatarGroupLabel` message instead of a fixed English composition; English output is unchanged. Its noun is bidi-isolated.
+
+### @cngx/common/interactive
+
+- `CngxSlider` and `CngxRangeSlider` format tick labels and the visible value with the app locale when no `valueText` is bound (`1,000`, `1.000` in German; before `1000`).
+- The visible `CngxRangeSlider` value is one message (`rangeValue`, English `'{start} - {end}'`) and reads in the page direction; it is no longer forced `ltr`. Pin a left-to-right readout with `--cngx-slider-range-direction: ltr`.
+- `CngxNavLink` derives `data-initial` from the first full character of the link text, uppercased with the app locale (`İ` for Turkish `istanbul`, a whole emoji or accented letter).
+- `CngxSpeak` speaks in the app locale while `lang` is unbound, in the order cngx formatters read it: a provided `CNGX_LOCALE` (`provideLocale`, `provideCngxI18n`), else a `LOCALE_ID` other than `en-US`, else `<html lang>`. With none of them, the browser's default voice language applies as before. `en-US` is Angular's `LOCALE_ID` when an app sets none and cannot be told apart from an explicit one, so it never picks the voice: German page text would otherwise be read with an English voice. Ask for American English speech with `provideLocale('en-US')`, `<html lang="en-US">` or `[lang]`.
+
+### @cngx/common/tabs
+
+- The close button of a tab without a label is named by its position through `unlabeledTab` (`Close "Tab 2"`), instead of `Close ""`.
+
+### @cngx/common/timeline
+
+- `CngxTimeline` with `groupBy="week"` starts a week on the first day of the app locale (`Intl.Locale` week info): Sunday under `en-US`, Monday under `de` or `en-GB`. Before, weeks always started on Monday. Where the runtime has no week info, and for `createTimelineGrouping` without a `locale` option, weeks still start on Monday.
+- The default group header places the date through the `groupHeader` message; the date is bidi-isolated.
+
+### @cngx/common/stepper
+
+- The collapsed-group screen-reader phrases use the singular for one step: `1 step`, `0 of 1 step complete` (before: `1 steps`).
+- The visible collapsed-group badge formats its numbers with the app locale (`1.200` in German) and its order comes from `groupSummaryProgressShort`.
+- `cngx-stepper-count` no longer forces `direction: ltr`; the caption reads in the page direction. A `format` that renders a bare ratio such as `2/9` keeps its order under RTL with `--cngx-stepper-count-direction: ltr`.
 
 ### @cngx/forms/select
 
 - The `*cngxSelectAction` slot wrapper in every select panel is now a named group: `role="group"` with `aria-label` from `CngxActionSelectConfig.ariaLabel` (English default `'Inline action'`, set it with `withActionAriaLabel`). Screen readers announce the group name when focus enters the action slot. Before, the key was accepted but never rendered.
 - A defaulted copy key that an override sets to `undefined` now resolves to its English default instead of `undefined`. `withFallbackLabels({ empty: undefined })` renders `'No Options'` where it rendered an empty message before; the same holds for every `ariaLabels` key except `clearButton` and `chipRemove`, whose fallback is per variant. To clear a label, set it to an empty string.
+
+---
+
+## Language files
+
+These apply once your app config calls `provideCngxI18n(...)` from `@cngx/core/i18n`. An app without it is not affected.
+
+- `provideCngxI18n` provides `CNGX_LOCALE` from the active pack's `locale`. A component-level `{ provide: LOCALE_ID, useValue: 'de-CH' }` no longer reaches CNGX formatters, because a provided `CNGX_LOCALE` outranks every `LOCALE_ID`. Use `provideLocaleAt('de-CH')` in that component's `viewProviders` instead.
+- `provideCngxI18n` writes `<html lang>` and `<html dir>` from the active pack, and `CNGX_DIRECTION` reports the pack's direction instead of reading `dir` from the DOM. An app that sets these attributes itself passes `withDocumentLanguage('off')`.
+- A pack `locale` that is not a BCP 47 tag (`'de_DE'`) reads as English for numbers, plurals, `CNGX_LOCALE` and `<html lang>`, with a warning in development. Write region tags with a hyphen: `'de-DE'`.
+
+---
+
+## Checklist
+
+Work through it once per app; each step points back to the bullets above.
+
+- [ ] Replace every `{ provide: CNGX_*_I18N, useValue: bundle }` with the area's `provide*I18n(with*I18nLabels(...))`, or supply a `Signal`.
+- [ ] Call the Signal wherever you read a dedicated token directly: `inject(CNGX_X_I18N).key` becomes `inject(CNGX_X_I18N)().key`, inside a `computed()`, a template or a handler.
+- [ ] Wrap config copy keys you read off an `inject*Config()` in `coerceSignal(...)` before reading them; they may now hold a `Signal`.
+- [ ] Rewrite hand-written `*Feature` functions that spread a copy bundle to `createOverrideMerge` (or `createNestedOverrideMerge` for `announcements`, `statusLabels`, `operators` and the timeline `labels.status`).
+- [ ] Replace programmatic reads of a copy input (`instance.label()`) that expected the default; an unbound copy input now reads `undefined`, and the rendered text comes from the token.
+- [ ] Reshape the formatter keys you override: stepper `stepRolledBack`, tabs `previousTab` / `nextTab`, timeline `groupLabel` (now receives the locale), select `commitFailedMessage`; move `stepCompleted` / `stepErrored` overrides to `statusLabels`.
+- [ ] Forward the stepper i18n Signal in custom `createMatStepHandle` overrides.
+- [ ] Optional: drive your language file from one Signal and `provideLocale(signal)` to switch at runtime, as shown in [Runtime language switching](./i18n.md#runtime-language-switching).

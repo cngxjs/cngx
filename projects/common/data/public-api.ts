@@ -80,7 +80,9 @@ export { CngxGoal } from './display/goal/goal.component';
 export {
   injectRecycler,
   provideRecyclerI18n,
+  withRecyclerI18nLabels,
   CNGX_RECYCLER_I18N,
+  type CngxRecyclerI18nFeature,
   type RecyclerConfig,
   type CngxRecycler,
   type RecyclerI18n,
@@ -121,3 +123,8 @@ export {
   type CngxMaterialBidirectionalSyncOptions,
   type CngxMaterialBidirectionalSyncHandle,
 } from './material-bridge/bidirectional-sync';
+export { CNGX_KPI_LANGUAGE_EN, type CngxKpiLanguageSection } from './i18n/kpi-language-section';
+export {
+  CNGX_RECYCLER_LANGUAGE_EN,
+  type CngxRecyclerLanguageSection,
+} from './i18n/recycler-language-section';

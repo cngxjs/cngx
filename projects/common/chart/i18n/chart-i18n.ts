@@ -1,8 +1,9 @@
 import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { createOverrideMerge, injectLocale, memoize } from '@cngx/core/utils';
-import { recordEqual } from '@cngx/utils';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createOverrideMerge } from '@cngx/core/utils';
 
 import { formatChartNumber } from '../chart/format-number';
+import { CNGX_CHART_LANGUAGE_EN, type CngxChartLanguageSection } from './chart-language-section';
 
 /**
  * Summary input describing the chart's current data shape. Consumed by
@@ -29,6 +30,11 @@ export interface CngxChartSummary {
 export interface CngxChartI18n {
   readonly summary: (input: CngxChartSummary) => string;
   readonly dataTable: () => string;
+  /**
+   * Header of the data table's index column. Optional so pre-existing full
+   * overrides keep compiling; English `#`.
+   */
+  readonly indexColumnLabel?: () => string;
   readonly valueColumnLabel: () => string;
   readonly trendChanged: (trend: 'up' | 'down' | 'flat') => string;
   readonly thresholdAlert: (threshold: number) => string;
@@ -54,83 +60,112 @@ export interface CngxChartI18n {
     total: number,
     segments: readonly { readonly label: string; readonly value: number }[],
   ) => string;
+  /**
+   * Tooltip of one stacked-bar segment. Receives the segment label and its
+   * value, already formatted for the app locale. Optional for the same
+   * compatibility reason as {@link CngxChartI18n.stackedBarEmpty}; English
+   * `label: value`.
+   */
+  readonly stackedBarSegmentTitle?: (label: string, value: string) => string;
 }
 
-/**
- * Every formatter a {@link createChartI18nDefaults} call produced. A token
- * key holding one of these is still a library default, so the use-site
- * resolver swaps it for the current locale's default.
- *
- * @internal
- */
-const DEFAULT_FORMATTERS = new WeakSet<object>();
+type ChartTrend = CngxChartSummary['trend'];
 
-const CHART_I18N_DEFAULTS_CACHE_LIMIT = 32;
+/** @internal The section word for each trend in the summary sentence. */
+const SUMMARY_TREND_KEY = {
+  up: 'summaryTrendUp',
+  down: 'summaryTrendDown',
+  flat: 'summaryTrendFlat',
+} as const satisfies Record<ChartTrend, keyof CngxChartLanguageSection>;
 
-/**
- * The English default strings for one number locale - the single source
- * every fallback path resolves against. Numbers inside the copy
- * (summary min / max / current, threshold, stacked-bar values) format in
- * `locale`; the words stay English. Memoized per locale, so every reader
- * of one locale shares the same function references.
- *
- * @internal
- */
-export const createChartI18nDefaults = memoize(
-  (locale: string): Required<CngxChartI18n> => {
-    const defaults = buildChartI18nDefaults(locale);
-    for (const fn of Object.values(defaults)) {
-      DEFAULT_FORMATTERS.add(fn);
-    }
-    return defaults;
-  },
-  { cacheLimit: CHART_I18N_DEFAULTS_CACHE_LIMIT },
-);
+/** @internal The section phrase announced when the trend changes. */
+const TREND_CHANGED_KEY = {
+  up: 'trendChangedUp',
+  down: 'trendChangedDown',
+  flat: 'trendFlattened',
+} as const satisfies Record<ChartTrend, keyof CngxChartLanguageSection>;
 
-/** @internal */
-function buildChartI18nDefaults(locale: string): Required<CngxChartI18n> {
+/** @internal Turns a chart section into the token's keys for a locale. */
+function chartBundleFrom(
+  section: CngxChartLanguageSection,
+  locale: string,
+): Required<CngxChartI18n> {
   const num = (v: number): string => formatChartNumber(v, locale);
+  const segmentTitle = (label: string, value: string): string =>
+    formatMessage(section.stackedBarSegmentTitle, { label, value }, locale);
   return {
     summary: ({ trend, min, max, current, thresholds }) => {
-      const trendText =
-        trend === 'up' ? 'Trending up' : trend === 'down' ? 'Trending down' : 'Flat';
+      const trendText = section[SUMMARY_TREND_KEY[trend]];
       const thresholdText =
         thresholds.length === 0
-          ? 'No thresholds.'
-          : thresholds.length === 1
-            ? 'One threshold crossing.'
-            : `${thresholds.length} threshold crossings.`;
-      return `${trendText}. Min ${num(min)}, max ${num(max)}, current ${num(current)}. ${thresholdText}`;
+          ? section.summaryNoThresholds
+          : formatMessage(section.summaryThresholds, { count: thresholds.length }, locale);
+      return formatMessage(
+        section.summary,
+        {
+          trend: trendText,
+          min: num(min),
+          max: num(max),
+          current: num(current),
+          thresholds: thresholdText,
+        },
+        locale,
+      );
     },
-    dataTable: () => 'Data table',
-    valueColumnLabel: () => 'Value',
-    trendChanged: (trend) =>
-      trend === 'up'
-        ? 'Trend changed to up'
-        : trend === 'down'
-          ? 'Trend changed to down'
-          : 'Trend flattened',
-    thresholdAlert: (threshold) => `Threshold ${num(threshold)} crossed`,
-    connectionLost: () => 'Connection lost',
-    connectionReconnecting: () => 'Reconnecting',
-    connectionRestored: () => 'Connection restored',
-    empty: () => 'No data',
-    loading: () => 'Loading',
-    error: () => 'Error loading chart',
-    stackedBarEmpty: () => 'Empty stacked bar',
+    dataTable: () => section.dataTable,
+    indexColumnLabel: () => section.indexColumnLabel,
+    valueColumnLabel: () => section.valueColumnLabel,
+    trendChanged: (trend) => section[TREND_CHANGED_KEY[trend]],
+    thresholdAlert: (threshold) =>
+      formatMessage(section.thresholdAlert, { threshold: num(threshold) }, locale),
+    connectionLost: () => section.connectionLost,
+    connectionReconnecting: () => section.connectionReconnecting,
+    connectionRestored: () => section.connectionRestored,
+    empty: () => section.empty,
+    loading: () => section.loading,
+    error: () => section.error,
+    stackedBarEmpty: () => section.stackedBarEmpty,
     stackedBarSummary: (total, segments) =>
-      `Total ${num(total)}. ${segments.map((s) => `${s.label}: ${num(s.value)}`).join(', ')}.`,
+      formatMessage(
+        section.stackedBarSummary,
+        {
+          total: num(total),
+          segments: segments
+            .map((s) => segmentTitle(s.label, num(s.value)))
+            .join(section.listSeparator),
+        },
+        locale,
+      ),
+    stackedBarSegmentTitle: segmentTitle,
   };
 }
 
 /**
- * The en-US defaults. Module-internal (not on `public-api.ts`):
- * {@link provideChartI18n} merges over it, and {@link injectChartI18n}
- * recognises its keys as defaults, so the English never exists twice.
+ * The default chart copy for one section and one number locale - the single
+ * source every fallback path resolves against. Numbers inside the copy
+ * (summary min / max / current, threshold, stacked-bar values) format in
+ * `locale`; the words come from `section`.
  *
  * @internal
  */
-export const CHART_I18N_EN: Required<CngxChartI18n> = createChartI18nDefaults('en-US');
+export const createChartI18nDefaults = chartBundleFrom;
+
+const NO_SECTION: Partial<CngxChartLanguageSection> = {};
+
+/** @internal The English chart section with the active pack's chart section on top. */
+function injectChartSection(): Signal<CngxChartLanguageSection> {
+  const pack = injectLanguageSection('chart');
+  return createOverrideMerge(
+    CNGX_CHART_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+  );
+}
+
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const chartBundle = createSectionBundle<CngxChartLanguageSection, CngxChartI18n>({
+  section: injectChartSection,
+  toBundle: chartBundleFrom,
+});
 
 /**
  * Injection token for chart i18n strings, a `Signal` so the copy follows a
@@ -147,83 +182,70 @@ export const CHART_I18N_EN: Required<CngxChartI18n> = createChartI18nDefaults('e
  */
 export const CNGX_CHART_I18N = new InjectionToken<Signal<CngxChartI18n>>('CngxChartI18n', {
   providedIn: 'root',
-  factory: (): Signal<CngxChartI18n> => {
-    const locale = injectLocale();
-    return computed(() => createChartI18nDefaults(locale()), { equal: recordEqual });
-  },
+  factory: () => chartBundle.build(),
 });
 
 /**
- * Provider helper for custom chart i18n strings. Overrides merge over
- * the English defaults, so a consumer localises only the keys they
- * care about and every key added to {@link CngxChartI18n} later keeps
- * its default instead of forcing an update. Passing a full object
- * still works - it simply overrides every key. Pass a `Signal` to switch
- * the language at runtime.
+ * Branded feature-fn for {@link provideChartI18n}.
+ *
+ * @category common/chart/i18n
+ */
+export type CngxChartI18nFeature = ((bundle: Signal<CngxChartI18n>) => Signal<CngxChartI18n>) & {
+  readonly _target: 'i18n';
+};
+
+/** @internal */
+function defineChartI18nFeature(
+  fn: (bundle: Signal<CngxChartI18n>) => Signal<CngxChartI18n>,
+): CngxChartI18nFeature {
+  return Object.assign(fn, { _target: 'i18n' as const });
+}
+
+/**
+ * Override chart copy via a partial bundle - unset keys keep the language
+ * pack's copy, or the English default, and keep following the app locale.
+ * Pass a `Signal` to switch the language at runtime.
+ *
+ * @category common/chart/i18n
+ */
+export function withChartI18nLabels(
+  overrides: Partial<CngxChartI18n> | Signal<Partial<CngxChartI18n>>,
+): CngxChartI18nFeature {
+  return defineChartI18nFeature((bundle) => createOverrideMerge(bundle, overrides));
+}
+
+/**
+ * Provider for the chart i18n bundle. The features apply on top of the
+ * active language pack, so a consumer localises only the keys they care
+ * about; every key left out keeps the pack's copy and follows the app locale.
  *
  * ```typescript
- * providers: [provideChartI18n({
- *   summary: ({ trend, min, max, current }) =>
- *     `${trend === 'up' ? 'Aufwärtstrend' : 'Abwärtstrend'}. Min ${min}, Max ${max}, aktuell ${current}.`,
- *   dataTable: () => 'Datentabelle',
- * })]
+ * providers: [
+ *   provideChartI18n(
+ *     withChartI18nLabels({
+ *       dataTable: () => 'Datentabelle',
+ *     }),
+ *   ),
+ * ]
  * ```
  *
  * @category common/chart/i18n
  */
-export function provideChartI18n(
-  i18n: Partial<CngxChartI18n> | Signal<Partial<CngxChartI18n>>,
-): Provider {
+export function provideChartI18n(...features: readonly CngxChartI18nFeature[]): Provider {
   return {
     provide: CNGX_CHART_I18N,
-    useFactory: (): Signal<CngxChartI18n> => createOverrideMerge<CngxChartI18n>(CHART_I18N_EN, i18n),
+    useFactory: (): Signal<CngxChartI18n> => chartBundle.build(features),
   };
 }
 
-/** @internal */
-type ChartI18nKey = keyof CngxChartI18n;
-
-/** @internal */
-const resolvedByToken = new WeakMap<
-  Signal<CngxChartI18n>,
-  WeakMap<Signal<string>, Signal<Required<CngxChartI18n>>>
->();
-
 /**
- * @internal - the chart i18n bundle as a locale-aware signal. Every key
- * that is absent from the token value, or still a library default (the
- * en-US bundle, the token factory's root-locale snapshot, or a
- * {@link provideChartI18n} merge that kept it), resolves to the current
- * `CNGX_LOCALE` default; a key the consumer passed stays theirs verbatim.
- * One `computed()` per (token value, locale signal) pair, so every chart
- * part under one injector shares it.
+ * @internal - the chart i18n bundle for the reading site. Every key the
+ * token value leaves out, or leaves at its default, follows the use site's
+ * pack section and locale; a key the consumer set stays theirs verbatim.
+ * One signal per (token value, pack section, locale), shared by every chart
+ * part under one injector.
  */
 export function injectChartI18n(): Signal<Required<CngxChartI18n>> {
-  const bundle = inject(CNGX_CHART_I18N);
-  const locale = injectLocale();
-  let byLocale = resolvedByToken.get(bundle);
-  if (!byLocale) {
-    byLocale = new WeakMap();
-    resolvedByToken.set(bundle, byLocale);
-  }
-  let resolved = byLocale.get(locale);
-  if (!resolved) {
-    resolved = computed(
-      () => {
-        const own = bundle();
-        const localized = createChartI18nDefaults(locale());
-        const out: Record<string, unknown> = { ...localized };
-        for (const key of Object.keys(localized) as ChartI18nKey[]) {
-          const value = own[key];
-          if (value !== undefined && !DEFAULT_FORMATTERS.has(value)) {
-            out[key] = value;
-          }
-        }
-        return out as Required<CngxChartI18n>;
-      },
-      { equal: recordEqual },
-    );
-    byLocale.set(locale, resolved);
-  }
-  return resolved;
+  // resolve() fills every key the value leaves out from the complete section bundle.
+  return chartBundle.resolve(inject(CNGX_CHART_I18N)) as Signal<Required<CngxChartI18n>>;
 }

@@ -43,3 +43,7 @@ export {
   type CngxLayoutI18n,
   type CngxLayoutI18nFeature,
 } from './i18n/layout-i18n';
+export {
+  CNGX_LAYOUT_LANGUAGE_EN,
+  type CngxLayoutLanguageSection,
+} from './i18n/layout-language-section';

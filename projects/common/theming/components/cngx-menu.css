@@ -351,13 +351,14 @@
    * get a filled dot (`●`) to mirror the standard form-control
    * vocabulary. The pseudo lives outside the slot grid so it doesn't
    * conflict with `[cngxMenuItemIcon]` content - `:has()` suppresses
-   * the pseudo when a projected icon is present.
+   * the pseudo when a projected icon is present. The empty alt text keeps
+   * the glyph out of the accessible name; `aria-checked` carries the state.
    */
   .cngx-menu-item--checked {
     font-weight: var(--cngx-menu-item-checked-font-weight, 600);
   }
   [cngxMenuItemCheckbox].cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before {
-    content: '✓';
+    content: '✓' / '';
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -366,7 +367,7 @@
     font-weight: 700;
   }
   [cngxMenuItemRadio].cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before {
-    content: '●';
+    content: '●' / '';
     display: inline-flex;
     align-items: center;
     justify-content: center;

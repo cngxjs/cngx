@@ -5,12 +5,17 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
+import { injectLocale } from '@cngx/core/utils';
+import { arrayEqual } from '@cngx/utils';
+
+import { formatChartNumber } from '../chart/format-number';
 
 /**
  * Single legend entry. `color` is optional - when omitted the swatch
  * falls back to the chart-level primary token. `value` is rendered as a
  * trailing `.cngx-chart-legend__value` node when present (`!= null`, so a
- * literal `0` still shows), turning a legend into a readout. It stays
+ * literal `0` still shows), turning a legend into a readout. A number value
+ * renders in the app locale (`6,6` in German); any other value as text. It stays
  * intentionally unconstrained so the same field a consumer weights in the
  * row can still carry their domain key (id, layer name, accessor return
  * type, ...) for later interactions without a second lookup.
@@ -83,7 +88,7 @@ export interface CngxChartLegendItem<T = unknown> {
     '[style.justify-content]': 'flexAlign()',
   },
   template: `
-    @for (item of items(); track $index) {
+    @for (item of items(); track $index; let i = $index) {
       <span class="cngx-chart-legend__item" role="listitem">
         <span
           class="cngx-chart-legend__swatch"
@@ -92,7 +97,7 @@ export interface CngxChartLegendItem<T = unknown> {
         ></span>
         <span class="cngx-chart-legend__label">{{ item.label }}</span>
         @if (item.value != null) {
-          <span class="cngx-chart-legend__value">{{ item.value }}</span>
+          <span class="cngx-chart-legend__value">{{ displayValues()[i] }}</span>
         }
       </span>
     }
@@ -157,6 +162,19 @@ export class CngxChartLegend<T = unknown> {
   readonly items = input.required<readonly CngxChartLegendItem<T>[]>();
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   readonly align = input<'start' | 'center' | 'end'>('start');
+
+  private readonly locale = injectLocale();
+
+  /** @internal Each item's value as display text; numbers in the app locale. */
+  protected readonly displayValues = computed(
+    () => {
+      const locale = this.locale();
+      return this.items().map(({ value }) =>
+        typeof value === 'number' ? formatChartNumber(value, locale) : String(value),
+      );
+    },
+    { equal: arrayEqual },
+  );
 
   protected readonly flexAlign = computed(() => {
     switch (this.align()) {

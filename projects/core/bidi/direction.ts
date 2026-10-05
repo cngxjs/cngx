@@ -33,7 +33,10 @@ export type CngxDirection = 'ltr' | 'rtl';
  * the app / Angular i18n / the user already owns on `<html dir>`. cngx
  * **reads** it and must not fight it: the token holds a read-only
  * `Signal`, and {@link provideDirection} overrides only what the signal
- * *reports*, never the DOM.
+ * *reports*, never the DOM. The one exception is `provideCngxI18n` from
+ * `@cngx/core/i18n`: when it manages the document language, it writes
+ * `<html dir>` from the active language pack and provides this token from
+ * the same pack instead of reading the DOM.
  *
  * Resolution reads `documentElement.dir` (falling back to `document.dir`)
  * and normalises via `d === 'rtl' ? 'rtl' : 'ltr'`. On a browser platform
@@ -96,7 +99,9 @@ export const CNGX_DIRECTION = new InjectionToken<Signal<CngxDirection>>('CNGX_DI
  * Read the document writing-direction signal in an injection context.
  * Returns `'rtl'` under `<html dir="rtl">` and re-signals on a runtime
  * root flip. The signal is read-only: cngx reports the direction the DOM
- * owns, it never sets it.
+ * owns and never sets it, unless `provideCngxI18n` manages the document
+ * language - then the signal is the active language pack's direction and
+ * flips in the same pass as the copy.
  *
  * @category core/bidi
  * @relatedTo CNGX_DIRECTION

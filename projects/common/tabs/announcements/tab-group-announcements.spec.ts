@@ -19,6 +19,7 @@ import {
 } from '../i18n/tabs-i18n';
 import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
 import { createTabGroupAnnouncements } from './tab-group-announcements';
+import { stripBidiIsolates } from '@cngx/testing';
 
 interface HandleOverrides {
   readonly hasError?: boolean;
@@ -92,31 +93,31 @@ describe('createTabGroupAnnouncements - closedAnnouncement priority chain', () =
 
   it('surfaces the landed-close phrase while the commit state is idle', () => {
     const { bundle, closed } = chainSetup();
-    expect(bundle.liveAnnouncement()).toBe('');
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe('');
     closed.set('Closed "B"');
-    expect(bundle.liveAnnouncement()).toBe('Closed "B"');
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe('Closed "B"');
   });
 
   it('a commit phrase wins over the close phrase', () => {
     const { bundle, closed, current } = chainSetup();
     closed.set('Closed "B"');
     current.set('pending');
-    expect(bundle.liveAnnouncement()).toBe(i18n().commitInFlight);
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe(i18n().commitInFlight);
   });
 
   it('a stale close phrase does not re-enter after commit activity returns to idle', () => {
     const { bundle, closed, current } = chainSetup();
     closed.set('Closed "B"');
-    expect(bundle.liveAnnouncement()).toBe('Closed "B"');
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe('Closed "B"');
     // Commit activity spends the phrase...
     current.set('pending');
-    expect(bundle.liveAnnouncement()).toBe(i18n().commitInFlight);
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe(i18n().commitInFlight);
     current.set('idle');
     // ...so returning to idle must not re-announce the old close.
-    expect(bundle.liveAnnouncement()).toBe('');
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe('');
     // A NEW landed close re-arms the chain.
     closed.set('Closed "C"');
-    expect(bundle.liveAnnouncement()).toBe('Closed "C"');
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe('Closed "C"');
   });
 });
 
@@ -245,13 +246,13 @@ describe('createTabGroupAnnouncements - language switch', () => {
   it('does not re-announce on a language flip', () => {
     const { lang, bundle, current } = switchSetup();
     current.set('pending');
-    expect(bundle.liveAnnouncement()).toBe('Switching tab…');
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe('Switching tab…');
 
     lang.set('de');
-    expect(bundle.liveAnnouncement()).toBe('Switching tab…');
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe('Switching tab…');
 
     current.set('error');
-    expect(bundle.liveAnnouncement()).toBe('Abgelehnt');
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe('Abgelehnt');
   });
 
   it('re-labels the non-live surfaces at once', () => {
@@ -335,10 +336,10 @@ describe('createTabGroupAnnouncements - consumer-translated tab labels', () => {
     host.activeIndex.set(1);
     previous.set('pending');
     current.set('success');
-    expect(bundle.liveAnnouncement()).toBe('Next tab: Tab 2 of 2: Account');
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe('Next tab: Tab 2 of 2: Account');
 
     lang.set('de');
-    expect(bundle.liveAnnouncement()).toBe('Next tab: Tab 2 of 2: Account');
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe('Next tab: Tab 2 of 2: Account');
   });
 
   it('does not re-announce the rollback origin on a language flip', () => {
@@ -346,10 +347,14 @@ describe('createTabGroupAnnouncements - consumer-translated tab labels', () => {
     host.lastFailedIndex.set(1);
     host.originIndexDuringCommit.set(0);
     current.set('error');
-    expect(bundle.liveAnnouncement()).toBe('Could not save changes - reverted to "Profile".');
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe(
+      'Could not save changes - reverted to "Profile".',
+    );
 
     lang.set('de');
-    expect(bundle.liveAnnouncement()).toBe('Could not save changes - reverted to "Profile".');
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe(
+      'Could not save changes - reverted to "Profile".',
+    );
   });
 });
 
@@ -384,6 +389,6 @@ describe('createTabGroupAnnouncements - direction formatters', () => {
     host.activeIndex.set(1);
     previous.set('pending');
     current.set('success');
-    expect(bundle.liveAnnouncement()).toBe('Tab 2 of 2: Account (weiter)');
+    expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe('Tab 2 of 2: Account (weiter)');
   });
 });

@@ -5,14 +5,25 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
+import { formatMessage } from '@cngx/core/i18n';
 import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
+
+import { injectKpiI18n } from '../shared/kpi-i18n';
+
+const UNIT_PLACEHOLDER = /\{(value|unit)\}/;
+
+/** @internal `true` when the language reads the unit before the value. */
+function readsUnitFirst(message: string): boolean {
+  const [, first] = UNIT_PLACEHOLDER.exec(message) ?? [];
+  return first === 'unit';
+}
 
 /**
  * Displays a formatted numeric value with optional unit.
  *
  * Uses `Intl.NumberFormat` with the app locale (`CNGX_LOCALE`, falling back to
  * the nearest `LOCALE_ID`) for locale-aware formatting; a locale flip
- * re-formats. Null values render as an em-dash.
+ * re-formats. A `null` value renders the placeholder glyph without its unit.
  *
  * Composable - works inside any card variant, header, body, or standalone.
  *
@@ -59,17 +70,24 @@ import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
     '[attr.aria-label]': 'accessibleValue()',
   },
   template: `
+    @if (shownUnit() && unitFirst()) {
+      <span class="cngx-metric__unit">{{ shownUnit() }}</span>
+    }
     <span class="cngx-metric__value">{{ formattedValue() }}</span>
-    @if (unit()) {
-      <span class="cngx-metric__unit">{{ unit() }}</span>
+    @if (shownUnit() && !unitFirst()) {
+      <span class="cngx-metric__unit">{{ shownUnit() }}</span>
     }
   `,
   styleUrls: ['./metric.component.css'],
 })
 export class CngxMetric {
   private readonly locale = injectLocale();
+  private readonly i18n = injectKpiI18n();
 
-  /** Numeric or string value. `null` renders as a placeholder hyphen. */
+  /**
+   * Numeric or string value. `null` renders the `metricPlaceholder` glyph of
+   * the kpi language section and is announced as its `metricNoValue` text.
+   */
   readonly value = input.required<number | string | null>();
 
   /** Unit suffix (e.g. "bpm", "h", "%", "kg"). */
@@ -82,7 +100,7 @@ export class CngxMetric {
   readonly formattedValue = computed(() => {
     const v = this.value();
     if (v === null) {
-      return '\u2014';
+      return this.i18n().metricPlaceholder;
     }
     if (typeof v === 'string') {
       return v;
@@ -90,10 +108,26 @@ export class CngxMetric {
     return numberFormatterFor(this.locale(), this.format() ?? {}).format(v);
   });
 
+  /**
+   * @internal The unit to render, `undefined` while there is no value: a
+   * missing reading has no unit, so "No value km" is never shown or spoken.
+   */
+  protected readonly shownUnit = computed(() => {
+    const unit = this.unit();
+    return this.value() === null || unit === '' ? undefined : unit;
+  });
+
+  /** @internal Unit before value, per the `metricValueWithUnit` message. */
+  protected readonly unitFirst = computed(() => readsUnitFirst(this.i18n().metricValueWithUnit));
+
   /** @internal Full accessible description including unit. */
   readonly accessibleValue = computed(() => {
-    const v = this.formattedValue();
-    const u = this.unit();
-    return u ? `${v} ${u}` : v;
+    const i18n = this.i18n();
+    if (this.value() === null) {
+      return i18n.metricNoValue;
+    }
+    const value = this.formattedValue();
+    const unit = this.shownUnit();
+    return unit ? formatMessage(i18n.metricValueWithUnit, { value, unit }, this.locale()) : value;
   });
 }

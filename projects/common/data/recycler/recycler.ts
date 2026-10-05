@@ -14,8 +14,17 @@ import {
 } from '@angular/core';
 import { clamp } from '@cngx/utils';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { coerceSignal, createTransitionTracker, createVisibilityGate } from '@cngx/core/utils';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import {
+  createOverrideMerge,
+  createTransitionTracker,
+  createVisibilityGate,
+} from '@cngx/core/utils';
 
+import {
+  CNGX_RECYCLER_LANGUAGE_EN,
+  type CngxRecyclerLanguageSection,
+} from '../i18n/recycler-language-section';
 import { computeRange } from './range-computer';
 import { createScrollObserver } from './scroll-observer';
 import { createSizeCache } from './size-cache';
@@ -37,10 +46,38 @@ export interface RecyclerI18n {
   error(): string;
 }
 
+const NO_SECTION: Partial<CngxRecyclerLanguageSection> = {};
+
+/** @internal Turns a recycler section into the token's keys for a locale. */
+function recyclerBundleFrom(section: CngxRecyclerLanguageSection, locale: string): RecyclerI18n {
+  return {
+    loaded: (count, total) => formatMessage(section.loaded, { count, total }, locale),
+    filtered: (count) => formatMessage(section.filtered, { count }, locale),
+    empty: () => section.empty,
+    error: () => section.error,
+  };
+}
+
+/** @internal The recycler section of the active pack over English. */
+function injectRecyclerSection(): Signal<CngxRecyclerLanguageSection> {
+  const pack = injectLanguageSection('recycler');
+  return createOverrideMerge(
+    CNGX_RECYCLER_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+  );
+}
+
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const recyclerBundle = createSectionBundle<CngxRecyclerLanguageSection, RecyclerI18n>({
+  section: injectRecyclerSection,
+  toBundle: recyclerBundleFrom,
+});
+
 /**
  * Injection token for recycler SR announcement texts, a `Signal` so the
- * texts follow a runtime language switch. Provides English defaults via
- * factory. Override with `provideRecyclerI18n()`.
+ * texts follow a runtime language switch. Defaults to the recycler section
+ * of the active language pack over English, counts formatted for the app
+ * locale. Override with `provideRecyclerI18n()`.
  *
  * @category common/data/recycler
  * @wcag AA
@@ -48,31 +85,60 @@ export interface RecyclerI18n {
  * @since 0.1.0
  */
 export const CNGX_RECYCLER_I18N = new InjectionToken<Signal<RecyclerI18n>>('CngxRecyclerI18n', {
-  factory: (): Signal<RecyclerI18n> =>
-    coerceSignal<RecyclerI18n>({
-      loaded: (n, t) => `${n} more items loaded. ${t} total.`,
-      filtered: (c) => `${c} results found.`,
-      empty: () => 'No results.',
-      error: () => 'Error loading data.',
-    }),
+  factory: () => recyclerBundle.build(),
 });
 
 /**
- * Provider function for custom recycler i18n texts.
+ * Branded feature-fn for {@link provideRecyclerI18n}.
+ *
+ * @category common/data/recycler
+ */
+export type CngxRecyclerI18nFeature = ((bundle: Signal<RecyclerI18n>) => Signal<RecyclerI18n>) & {
+  readonly _target: 'i18n';
+};
+
+/** @internal */
+function defineRecyclerI18nFeature(
+  fn: (bundle: Signal<RecyclerI18n>) => Signal<RecyclerI18n>,
+): CngxRecyclerI18nFeature {
+  return Object.assign(fn, { _target: 'i18n' as const });
+}
+
+/**
+ * Override recycler announcements via a partial bundle - keys you leave out
+ * keep the language pack's text, or the English default. Pass a `Signal` to
+ * switch the language at runtime.
+ *
+ * @category common/data/recycler
+ */
+export function withRecyclerI18nLabels(
+  overrides: Partial<RecyclerI18n> | Signal<Partial<RecyclerI18n>>,
+): CngxRecyclerI18nFeature {
+  return defineRecyclerI18nFeature((bundle) => createOverrideMerge(bundle, overrides));
+}
+
+/**
+ * Provider for the recycler announcement texts. The features apply on top of
+ * the active language pack.
  *
  * ```typescript
- * providers: [provideRecyclerI18n({
- *   loaded: (n, t) => `${n} weitere Einträge. ${t} gesamt.`,
- *   filtered: (c) => `${c} Ergebnisse.`,
- *   empty: () => 'Keine Ergebnisse.',
- *   error: () => 'Fehler beim Laden.',
- * })]
+ * providers: [
+ *   provideRecyclerI18n(
+ *     withRecyclerI18nLabels({
+ *       empty: () => 'Keine Ergebnisse.',
+ *       error: () => 'Fehler beim Laden.',
+ *     }),
+ *   ),
+ * ]
  * ```
  *
  * @category common/data/recycler
  */
-export function provideRecyclerI18n(i18n: RecyclerI18n | Signal<RecyclerI18n>): Provider {
-  return { provide: CNGX_RECYCLER_I18N, useFactory: () => coerceSignal(i18n) };
+export function provideRecyclerI18n(...features: readonly CngxRecyclerI18nFeature[]): Provider {
+  return {
+    provide: CNGX_RECYCLER_I18N,
+    useFactory: () => recyclerBundle.build(features),
+  };
 }
 
 /**
@@ -291,7 +357,7 @@ export interface CngxRecycler {
  */
 export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   const destroyRef = inject(DestroyRef);
-  const i18n = inject(CNGX_RECYCLER_I18N);
+  const i18n = recyclerBundle.resolve(inject(CNGX_RECYCLER_I18N));
   const overscan = config.overscan ?? 5;
   const isGrid = (config.layout ?? 'list') === 'grid';
 

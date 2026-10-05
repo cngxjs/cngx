@@ -11,10 +11,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { provideLocale } from '@cngx/core/utils';
 
-import { provideChartI18n } from '../i18n/chart-i18n';
+import { provideChartI18n, withChartI18nLabels } from '../i18n/chart-i18n';
 import { CngxChartAnnouncer } from './chart-announcer.component';
 import { type CngxChart } from './chart.component';
 import { type CngxSignificantChange } from './significant-change';
+import { stripBidiIsolates } from '@cngx/testing';
 
 @Component({
   standalone: true,
@@ -70,7 +71,7 @@ describe('CngxChartAnnouncer', () => {
   it('voices a threshold crossing in the assertive region only', () => {
     fixture.componentInstance.sig.set({ kind: 'threshold-cross', threshold: 80, direction: 'up' });
     fixture.detectChanges();
-    expect(assertive().textContent?.trim()).toBe('Threshold 80 crossed');
+    expect(stripBidiIsolates(assertive().textContent?.trim())).toBe('Threshold 80 crossed');
     expect(polite().textContent?.trim()).toBe('');
   });
 
@@ -120,15 +121,15 @@ describe('CngxChartAnnouncer - locale flip', () => {
     ) as HTMLElement;
     fixture.componentInstance.sig.set({ kind: 'threshold-cross', threshold: 2.5, direction: 'up' });
     fixture.detectChanges();
-    expect(assertive.textContent?.trim()).toBe('Threshold 2.5 crossed');
+    expect(stripBidiIsolates(assertive.textContent?.trim())).toBe('Threshold 2.5 crossed');
 
     locale.set('de-DE');
     fixture.detectChanges();
-    expect(assertive.textContent?.trim()).toBe('Threshold 2.5 crossed');
+    expect(stripBidiIsolates(assertive.textContent?.trim())).toBe('Threshold 2.5 crossed');
 
     fixture.componentInstance.sig.set({ kind: 'threshold-cross', threshold: 3.5, direction: 'up' });
     fixture.detectChanges();
-    expect(assertive.textContent?.trim()).toBe('Threshold 3,5 crossed');
+    expect(stripBidiIsolates(assertive.textContent?.trim())).toBe('Threshold 3,5 crossed');
   });
 });
 
@@ -139,13 +140,15 @@ describe('CngxChartAnnouncer - copy flip', () => {
       imports: [Host],
       providers: [
         provideChartI18n(
-          computed(() =>
-            lang() === 'de'
-              ? {
-                  trendChanged: (t: 'up' | 'down' | 'flat') => `Trend jetzt ${t}`,
-                  thresholdAlert: (v: number) => `Schwelle ${v} überschritten`,
-                }
-              : {},
+          withChartI18nLabels(
+            computed(() =>
+              lang() === 'de'
+                ? {
+                    trendChanged: (t: 'up' | 'down' | 'flat') => `Trend jetzt ${t}`,
+                    thresholdAlert: (v: number) => `Schwelle ${v} überschritten`,
+                  }
+                : {},
+            ),
           ),
         ),
       ],

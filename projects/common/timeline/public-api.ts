@@ -58,3 +58,7 @@ export {
   type CngxTimelineLabels,
   type CngxTimelineTemplates,
 } from './timeline-config';
+export {
+  CNGX_TIMELINE_LANGUAGE_EN,
+  type CngxTimelineLanguageSection,
+} from './i18n/timeline-language-section';

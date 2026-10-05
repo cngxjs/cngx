@@ -1,4 +1,6 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideLocale } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
 
 import type { CngxCommand } from './command';
@@ -45,16 +47,48 @@ describe('createDefaultCommandMatcher', () => {
     ];
     expect(match(commands, 'alpha', 'files').map((r) => r.command.id)).toEqual(['a']);
   });
+
+  it('matches label and keywords accent- and case-tolerant', () => {
+    const commands = [
+      cmd('u', { label: 'Über uns' }),
+      cmd('c', { label: 'Contact', keywords: ['Café'] }),
+    ];
+    expect(match(commands, 'uber').map((r) => r.command.id)).toEqual(['u']);
+    expect(match(commands, 'CAFE').map((r) => r.command.id)).toEqual(['c']);
+    expect(match(commands, 'ÜBER UNS')[0].score).toBe(100);
+  });
+
+  it('ranks the same across keystrokes and follows a relabelled command object', () => {
+    const save = cmd('save', { label: 'Save', keywords: ['store'] });
+    const open = cmd('open', { label: 'Open' });
+    const commands = [save, open];
+    expect(match(commands, 'sa').map((r) => r.command.id)).toEqual(['save']);
+    expect(match(commands, 'sav').map((r) => r.command.id)).toEqual(['save']);
+    expect(match(commands, 'sto').map((r) => r.command.id)).toEqual(['save']);
+    (save as { label: string }).label = 'Speichern';
+    expect(match(commands, 'sp').map((r) => r.command.id)).toEqual(['save']);
+    expect(match(commands, 'sa')).toEqual([]);
+  });
 });
 
 describe('CNGX_COMMAND_MATCH_FACTORY', () => {
   it('defaults to the label/keyword ranker', () => {
     TestBed.configureTestingModule({});
-    const factory = TestBed.runInInjectionContext(() => TestBed.inject(CNGX_COMMAND_MATCH_FACTORY));
-    const match = factory();
+    const match = TestBed.runInInjectionContext(() => TestBed.inject(CNGX_COMMAND_MATCH_FACTORY)());
     const commands = [cmd('a', { label: 'zzz' }), cmd('b', { label: 'open' })];
 
     expect(match(commands, 'open').map((r) => r.command.id)).toEqual(['b']);
+  });
+
+  it('matches in the app locale and re-ranks when it switches', () => {
+    const locale = signal('en');
+    TestBed.configureTestingModule({ providers: [provideLocale(locale)] });
+    const match = TestBed.runInInjectionContext(() => TestBed.inject(CNGX_COMMAND_MATCH_FACTORY)());
+    const commands = [cmd('i', { label: 'Istanbul' }), cmd('z', { label: 'İzmir' })];
+
+    expect(match(commands, 'i').map((r) => r.command.id)).toEqual(['i', 'z']);
+    locale.set('tr');
+    expect(match(commands, 'i').map((r) => r.command.id)).toEqual(['z']);
   });
 
   it('is overridable, swapping the ranking with zero consumer-site edits', () => {

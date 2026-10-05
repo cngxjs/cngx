@@ -35,6 +35,7 @@
       "@cngx/common/stepper": ["projects/common/stepper/public-api.ts"],
       "@cngx/common/timeline": ["projects/common/timeline/public-api.ts"],
       "@cngx/core": ["projects/core/public-api.ts"],
+      "@cngx/core/i18n": ["projects/core/i18n/public-api.ts"],
       "@cngx/core/tokens": ["projects/core/tokens/public-api.ts"],
       "@cngx/core/utils": ["projects/core/utils/public-api.ts"],
       "@cngx/forms": ["projects/forms/public-api.ts"],

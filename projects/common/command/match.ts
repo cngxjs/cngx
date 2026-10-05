@@ -1,3 +1,6 @@
+import type { Signal } from '@angular/core';
+import { foldForMatching } from '@cngx/core/utils';
+
 import type { CngxCommand } from './command';
 
 /**
@@ -45,20 +48,51 @@ export type CngxCommandMatcher = (
  * label-exact > label-prefix > label-substring > keyword. The optional scope
  * filters to commands whose `group` equals it.
  *
+ * Query, labels and keywords are compared case- and accent-tolerant
+ * ({@link foldForMatching}): `uber` finds `Über`. Pass the app locale (the
+ * default `CNGX_COMMAND_MATCH_FACTORY` passes `injectLocale()`) so case folds
+ * by its rules, e.g. Turkish `I` / `ı`; read inside a `computed()`, a locale
+ * switch re-ranks.
+ *
  * @category common/command
  * @since 0.1.0
  */
-export function createDefaultCommandMatcher(): CngxCommandMatcher {
+export function createDefaultCommandMatcher(locale?: Signal<string>): CngxCommandMatcher {
+  // Folded label and keywords per command, re-folded only when the label, the
+  // keywords array or the locale changes - not on every keystroke.
+  const folded = new WeakMap<CngxCommand, FoldedCommand>();
+  const foldedFor = (command: CngxCommand, activeLocale: string | undefined): FoldedCommand => {
+    const hit = folded.get(command);
+    if (
+      hit !== undefined &&
+      hit.locale === activeLocale &&
+      hit.sourceLabel === command.label &&
+      hit.sourceKeywords === command.keywords
+    ) {
+      return hit;
+    }
+    const entry: FoldedCommand = {
+      locale: activeLocale,
+      sourceLabel: command.label,
+      sourceKeywords: command.keywords,
+      label: foldForMatching(command.label, activeLocale),
+      keywords: (command.keywords ?? []).map((keyword) => foldForMatching(keyword, activeLocale)),
+    };
+    folded.set(command, entry);
+    return entry;
+  };
+
   return (commands, term, scope) => {
     const scoped = scope ? commands.filter((command) => command.group === scope) : commands;
-    const query = term.trim().toLowerCase();
+    const activeLocale = locale?.();
+    const query = foldForMatching(term.trim(), activeLocale);
     if (query.length === 0) {
       return scoped.map((command) => ({ command, score: 0 }));
     }
 
     const ranked: CngxRankedCommand[] = [];
     for (const command of scoped) {
-      const score = scoreCommand(command, query);
+      const score = scoreCommand(foldedFor(command, activeLocale), query);
       if (score > 0) {
         ranked.push({ command, score });
       }
@@ -70,9 +104,17 @@ export function createDefaultCommandMatcher(): CngxCommandMatcher {
   };
 }
 
-/** @internal Scores one command against a lower-cased query; `0` means no match. */
-function scoreCommand(command: CngxCommand, query: string): number {
-  const label = command.label.toLowerCase();
+/** @internal A command's label and keywords, folded for one locale. */
+interface FoldedCommand {
+  readonly locale: string | undefined;
+  readonly sourceLabel: string;
+  readonly sourceKeywords: CngxCommand['keywords'];
+  readonly label: string;
+  readonly keywords: readonly string[];
+}
+
+/** @internal Scores one folded command against a folded query; `0` means no match. */
+function scoreCommand({ label, keywords }: FoldedCommand, query: string): number {
   if (label === query) {
     return 100;
   }
@@ -82,8 +124,7 @@ function scoreCommand(command: CngxCommand, query: string): number {
   if (label.includes(query)) {
     return 60;
   }
-  for (const keyword of command.keywords ?? []) {
-    const value = keyword.toLowerCase();
+  for (const value of keywords) {
     if (value === query) {
       return 50;
     }

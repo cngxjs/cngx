@@ -1,5 +1,8 @@
-import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
+import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createOverrideMerge } from '@cngx/core/utils';
+
+import { CNGX_TABS_LANGUAGE_EN, type CngxTabsLanguageSection } from './tabs-language-section';
 
 /**
  * Tabs i18n surface. Library defaults are English; consumers
@@ -26,6 +29,11 @@ export interface CngxTabsI18n {
   readonly tabLabelWithDetail: (label: string, detail: string) => string;
   readonly tabHasErrors: (count: number) => string;
   readonly moreTabsLabel: (count: number) => string;
+  /**
+   * Name of a tab without a label, e.g. a row of the overflow list.
+   * Receives the 1-based position; English `Tab 3`.
+   */
+  readonly unlabeledTab: (position: number) => string;
   /**
    * Commit-success announcement after a move to an earlier tab. Receives
    * the position phrase from {@link selectedTab} and owns the whole
@@ -69,26 +77,59 @@ export interface CngxTabsI18n {
   readonly commitRolledBackTo: (originLabel: string) => string;
 }
 
-const TABS_I18N_DEFAULTS: CngxTabsI18n = {
-  tabsLabel: 'Tabs',
-  selectedTab: (label, position, count) => `Tab ${position} of ${count}: ${label}`,
-  tabLabelWithDetail: (label, detail) => `${label}, ${detail}`,
-  tabHasErrors: (count) => `${count} error${count === 1 ? '' : 's'}`,
-  moreTabsLabel: (count) => `${count} more`,
-  previousTab: (positionPhrase) => `Previous tab: ${positionPhrase}`,
-  nextTab: (positionPhrase) => `Next tab: ${positionPhrase}`,
-  closeTab: (label) => `Close "${label}"`,
-  addTab: 'Add tab',
-  closedTab: (label) => (label ? `Closed "${label}"` : 'Tab closed'),
-  commitFailedRetry: 'Tab change refused - retry?',
-  commitInFlight: 'Switching tab…',
-  commitRolledBackTo: (originLabel) => `Could not save changes - reverted to "${originLabel}".`,
-};
+const NO_SECTION: Partial<CngxTabsLanguageSection> = {};
+
+/**
+ * @internal The English tabs section with the active pack's tabs section on
+ * top. Feeds both `CNGX_TABS_I18N` and the `CNGX_TABS_CONFIG` labels.
+ */
+export function injectTabsLanguage(): Signal<CngxTabsLanguageSection> {
+  const pack = injectLanguageSection('tabs');
+  return createOverrideMerge(
+    CNGX_TABS_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+  );
+}
+
+/** @internal Turns a tabs section into the token's keys for a locale. */
+function tabsBundleFrom(section: CngxTabsLanguageSection, locale: string): CngxTabsI18n {
+  return {
+    tabsLabel: section.tabsLabel,
+    selectedTab: (label, position, count) =>
+      formatMessage(section.selectedTab, { label, position, count }, locale),
+    tabLabelWithDetail: (label, detail) =>
+      formatMessage(section.tabLabelWithDetail, { label, detail }, locale),
+    tabHasErrors: (count) => formatMessage(section.tabHasErrors, { count }, locale),
+    moreTabsLabel: (count) => formatMessage(section.moreTabsLabel, { count }, locale),
+    unlabeledTab: (position) => formatMessage(section.unlabeledTab, { position }, locale),
+    previousTab: (tab) => formatMessage(section.previousTab, { tab }, locale),
+    nextTab: (tab) => formatMessage(section.nextTab, { tab }, locale),
+    closeTab: (label) => formatMessage(section.closeTab, { label }, locale),
+    addTab: section.addTab,
+    closedTab: (label) =>
+      label ? formatMessage(section.closedTab, { label }, locale) : section.closedUnlabeledTab,
+    commitFailedRetry: section.commitFailedRetry,
+    commitInFlight: section.commitInFlight,
+    commitRolledBackTo: (origin) => formatMessage(section.commitRolledBackTo, { origin }, locale),
+  };
+}
+
+/** @internal The tabs section of the active pack over English. */
+function injectTabsSection(): Signal<CngxTabsLanguageSection> {
+  return injectTabsLanguage();
+}
+
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const tabsBundle = createSectionBundle<CngxTabsLanguageSection, CngxTabsI18n>({
+  section: injectTabsSection,
+  toBundle: tabsBundleFrom,
+});
 
 /**
  * DI token for the tabs i18n bundle, as a `Signal` so a runtime language
- * switch re-renders every label it feeds. `providedIn: 'root'` with English
- * defaults. Provide it through {@link provideTabsI18n}; a
+ * switch re-renders every label it feeds. `providedIn: 'root'`: the tabs
+ * section of the active language pack over the English defaults, formatted
+ * for the app locale. Provide it through {@link provideTabsI18n}; a
  * `{ provide, useValue }` entry must supply a `Signal<CngxTabsI18n>`.
  *
  * @category common/tabs/i18n
@@ -98,7 +139,7 @@ const TABS_I18N_DEFAULTS: CngxTabsI18n = {
  */
 export const CNGX_TABS_I18N = new InjectionToken<Signal<CngxTabsI18n>>('CngxTabsI18n', {
   providedIn: 'root',
-  factory: () => coerceSignal(TABS_I18N_DEFAULTS),
+  factory: () => tabsBundle.build(),
 });
 
 /**
@@ -126,7 +167,7 @@ function defineTabsI18nFeature(
 
 /**
  * Override i18n labels via a partial bundle - unset keys keep the
- * English default. Same shape as `withTabsAriaLabels` /
+ * language pack's copy, or the English default. Same shape as `withTabsAriaLabels` /
  * `withTabsFallbackLabels` so `provideCngxTabs` composes both
  * surfaces uniformly. Pass a `Signal` to switch the language at runtime.
  *
@@ -141,7 +182,7 @@ export function withTabsI18nLabels(
 /**
  * Provider for the tabs i18n bundle. Compose `withTabsI18nLabels(...)`
  * (and future i18n `with*` features); unset keys fall back to the
- * English default.
+ * language pack, then English. The features apply on top of the active pack.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -158,11 +199,7 @@ export function withTabsI18nLabels(
 export function provideTabsI18n(...features: readonly CngxTabsI18nFeature[]): Provider {
   return {
     provide: CNGX_TABS_I18N,
-    useFactory: () =>
-      features.reduce<Signal<CngxTabsI18n>>(
-        (bundle, feat) => feat(bundle),
-        coerceSignal(TABS_I18N_DEFAULTS),
-      ),
+    useFactory: () => tabsBundle.build(features),
   };
 }
 
@@ -173,5 +210,5 @@ export function provideTabsI18n(...features: readonly CngxTabsI18nFeature[]): Pr
  * @category common/tabs/i18n
  */
 export function injectTabsI18n(): Signal<CngxTabsI18n> {
-  return inject(CNGX_TABS_I18N);
+  return tabsBundle.resolve(inject(CNGX_TABS_I18N));
 }

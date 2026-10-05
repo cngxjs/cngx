@@ -76,16 +76,15 @@ export interface CngxStepperCountHost {
       <span>{{ label() }}</span>
     }
   `,
-  // The `N/M` shapes (`N/M`, `N/M complete`, `round(c/t*100)%`) are two number
-  // groups joined by a neutral `/` that swaps under RTL. isolate fences the
-  // boundary; direction:ltr pins the `current/total` order (the CngxDelta
-  // composite pattern). The declaration lands on the same span that carries
-  // aria-live, but bidi is visual-only - AT reads DOM order, so the announced
-  // string is unchanged. Consumer opt-out: --cngx-stepper-count-bidi / -direction.
+  // isolate fences the caption from the surrounding text. The direction is
+  // inherited: the default caption is translated text and reads in the
+  // language's direction. A consumer `format` that renders a bare `N / M`
+  // ratio can pin it with --cngx-stepper-count-direction: ltr. Bidi is
+  // visual-only - AT reads DOM order, so the announced string is unchanged.
   styles: `
     .cngx-stepper-count span {
       unicode-bidi: var(--cngx-stepper-count-bidi, isolate);
-      direction: var(--cngx-stepper-count-direction, ltr);
+      direction: var(--cngx-stepper-count-direction, inherit);
     }
   `,
   host: {

@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Component, computed, ElementRef, signal, viewChild } from '@angular/core';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
 import { coerceSignal } from '@cngx/core/utils';
 import { TestBed } from '@angular/core/testing';
 
@@ -11,6 +17,7 @@ import {
   CNGX_DIALOG_DEFAULTS,
   injectDialogConfig,
   provideDialogConfig,
+  provideDialogConfigAt,
   withDialogLabels,
 } from './dialog-config';
 
@@ -193,5 +200,49 @@ describe('CNGX_DIALOG_DEFAULTS', () => {
       await Promise.resolve();
       expect(live.textContent).toBe('Ein Fehler ist aufgetreten');
     });
+  });
+});
+
+describe('CNGX_DIALOG_DEFAULTS language pack', () => {
+  beforeEach(() => TestBed.resetTestingModule());
+
+  it('derives the pre-section English labels from the English section', () => {
+    expect(coerceSignal(TestBed.inject(CNGX_DIALOG_DEFAULTS).labels)()).toEqual({
+      close: 'Close dialog',
+      errorFallback: 'An error occurred',
+      dragHandle: 'Move dialog',
+      dragHandleRoleDescription: 'draggable',
+      dragInstructions: 'Use arrow keys to move the dialog; Shift for larger steps',
+    });
+  });
+
+  it('reads the dialog section of the active pack, English for what it leaves out', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+    });
+    const labels = coerceSignal(TestBed.inject(CNGX_DIALOG_DEFAULTS).labels);
+    expect(labels().close).toBe('Close dialog');
+    pack.set({ locale: 'de', dialog: { close: 'Dialog schließen' } });
+    expect(labels().close).toBe('Dialog schließen');
+    expect(labels().dragHandle).toBe('Move dialog');
+  });
+
+  it('applies provideDialogConfigAt labels on top of the active pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({
+            locale: 'de',
+            dialog: { close: 'Dialog schließen', dragHandle: 'Dialog verschieben' },
+          }),
+          withDocumentLanguage('off'),
+        ),
+        ...provideDialogConfigAt(withDialogLabels({ dragHandle: 'Fenster verschieben' })),
+      ],
+    });
+    const labels = coerceSignal(TestBed.inject(CNGX_DIALOG_DEFAULTS).labels)();
+    expect(labels.close).toBe('Dialog schließen');
+    expect(labels.dragHandle).toBe('Fenster verschieben');
   });
 });

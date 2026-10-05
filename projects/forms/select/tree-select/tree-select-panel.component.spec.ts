@@ -11,6 +11,7 @@ import {
   createTreeController,
   type CngxTreeController,
 } from '@cngx/common/interactive';
+import { provideLocale } from '@cngx/core/utils';
 import type { CngxTreeNode, FlatTreeNode } from '@cngx/utils';
 import { describe, expect, it, vi } from 'vitest';
 import {
@@ -439,6 +440,30 @@ describe('CngxTreeSelectPanel - expand-to-reveal type-to-find', () => {
     type('c');
     expect(host.treeController.isExpanded('f')()).toBe(true);
     expect(tree.getAttribute('aria-activedescendant')).toBe('c');
+  });
+
+  it('reveals a hidden match accent-tolerant and with the app locale', () => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ providers: [provideLocale('tr')] });
+    const { fixture, host, tree, type } = setupDeep();
+    host.nodes.set([
+      {
+        value: { id: 'c', name: 'Cities' },
+        children: [
+          { value: { id: 'is', name: 'Istanbul' } },
+          { value: { id: 'iz', name: 'İzmir' } },
+        ],
+      },
+      { value: { id: 'w', name: 'Words' }, children: [{ value: { id: 'u', name: 'Über' } }] },
+    ]);
+    host.expandToReveal.set(true);
+    fixture.detectChanges();
+    type('i');
+    expect(tree.getAttribute('aria-activedescendant')).toBe('iz');
+    vi.advanceTimersByTime(1000);
+    type('u');
+    expect(host.treeController.isExpanded('w')()).toBe(true);
+    expect(tree.getAttribute('aria-activedescendant')).toBe('u');
   });
 
   it('skips a disabled hidden match while skipDisabled=true (AD default)', () => {

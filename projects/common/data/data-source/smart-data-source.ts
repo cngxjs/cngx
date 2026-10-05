@@ -1,7 +1,7 @@
 import { DataSource } from '@angular/cdk/collections';
 import { computed, inject, Injector, type Signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { foldForMatching, injectLocale, memoize, type CngxAsyncState } from '@cngx/core/utils';
 import { arrayEqual } from '@cngx/utils';
 import type { Observable } from 'rxjs';
 import { CngxPaginate } from '../paginate/paginate.directive';
@@ -9,26 +9,84 @@ import { CngxFilter } from '../filter/filter.directive';
 import { CngxSort } from '../sort/sort.directive';
 import { CngxSearch } from '@cngx/common/interactive';
 
-function defaultSearchFn<T>(item: T, term: string): boolean {
-  const lower = term.toLowerCase();
-  return Object.values(item as Record<string, unknown>).some((v) =>
-    v === null || v === undefined || typeof v === 'object'
-      ? false
-      : String(v as string | number | boolean | bigint)
-          .toLowerCase()
-          .includes(lower),
-  );
+interface FoldedFields {
+  readonly locale: string;
+  readonly raw: readonly string[];
+  readonly folded: readonly string[];
 }
 
-function defaultSortFn<T>(a: T, b: T, field: string, dir: 'asc' | 'desc'): number {
+/**
+ * @internal Folded field values per row object. Keyed by the row, so it
+ * cannot thrash and is collected with the rows; the raw strings are compared
+ * on every read, so a row mutated in place is folded again.
+ */
+const FOLDED_FIELDS = new WeakMap<object, FoldedFields>();
+
+function rawFieldsOf(item: object): string[] {
+  const raw: string[] = [];
+  for (const v of Object.values(item)) {
+    if (v !== null && v !== undefined && typeof v !== 'object') {
+      raw.push(String(v as string | number | boolean | bigint));
+    }
+  }
+  return raw;
+}
+
+function foldedFieldsOf(item: object, locale: string): readonly string[] {
+  const raw = rawFieldsOf(item);
+  const cached = FOLDED_FIELDS.get(item);
+  if (cached?.locale === locale && arrayEqual(cached.raw, raw)) {
+    return cached.folded;
+  }
+  const folded = raw.map((value) => foldForMatching(value, locale));
+  FOLDED_FIELDS.set(item, { locale, raw, folded });
+  return folded;
+}
+
+/**
+ * @internal The default search: primitive field values, case and accents
+ * ignored in `locale`. The term is folded once per term, each row's field
+ * values once per row and locale, not on every keystroke.
+ */
+const defaultSearchFnFor = memoize(
+  (locale: string): ((item: unknown, term: string) => boolean) => {
+    let lastTerm = '';
+    let lastFolded = '';
+    return (item, term) => {
+      if (term !== lastTerm) {
+        lastTerm = term;
+        lastFolded = foldForMatching(term, locale);
+      }
+      if (typeof item !== 'object' || item === null) {
+        return foldForMatching(String(item), locale).includes(lastFolded);
+      }
+      return foldedFieldsOf(item, locale).some((value) => value.includes(lastFolded));
+    };
+  },
+  { cacheLimit: 8 },
+);
+
+const collatorFor = memoize(
+  (locale: string) => new Intl.Collator(locale, { numeric: true, sensitivity: 'base' }),
+  { cacheLimit: 32 },
+);
+
+/** @internal The default comparator: field values as text, collated in `locale`. */
+function defaultSortFnFor<T>(
+  locale: string,
+): (a: T, b: T, field: string, dir: 'asc' | 'desc') => number {
+  const collator = collatorFor(locale);
   const toStr = (v: unknown): string =>
     v === null || v === undefined || typeof v === 'object'
       ? ''
       : String(v as string | number | boolean | bigint);
-  const av = toStr((a as Record<string, unknown>)[field]);
-  const bv = toStr((b as Record<string, unknown>)[field]);
-  const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
-  return dir === 'asc' ? cmp : -cmp;
+  return (a, b, field, dir) => {
+    const cmp = collator.compare(
+      toStr((a as Record<string, unknown>)[field]),
+      toStr((b as Record<string, unknown>)[field]),
+    );
+    return dir === 'asc' ? cmp : -cmp;
+  };
 }
 
 /**
@@ -39,13 +97,15 @@ function defaultSortFn<T>(a: T, b: T, field: string, dir: 'asc' | 'desc'): numbe
 export interface CngxSmartDataSourceOptions<T> {
   /**
    * Custom full-text search function. Receives an item and the current search
-   * term; return `true` to keep the item. Defaults to a case-insensitive match
-   * across all primitive-valued properties.
+   * term; return `true` to keep the item. Defaults to a substring match across
+   * all primitive-valued properties that ignores case and accents in the app
+   * locale.
    */
   searchFn?: (item: T, term: string) => boolean;
   /**
    * Custom sort comparator. Receives two items, the active field key, and
-   * direction. Defaults to a locale-aware string comparison.
+   * direction. Defaults to a string comparison collated in the app locale
+   * (`CNGX_LOCALE`), numeric-aware and case- and accent-insensitive.
    */
   sortFn?: (a: T, b: T, field: string, direction: 'asc' | 'desc') => number;
   /**
@@ -126,6 +186,7 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
   // matching options thunk instead.
   private readonly injectedSearch = inject(CngxSearch, { optional: true });
   private readonly injectedPaginate = inject(CngxPaginate, { optional: true });
+  private readonly locale = injectLocale();
 
   /**
    * Items after filter and search are applied, before sort and pagination.
@@ -194,7 +255,7 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
         const search = this.options?.search?.() ?? this.injectedSearch;
         const predicate = filter?.predicate();
         const term = search?.term();
-        const searchFn = this.options?.searchFn ?? defaultSearchFn<T>;
+        const searchFn = this.options?.searchFn ?? defaultSearchFnFor(this.locale());
 
         // Pipeline: raw → filter → search. Cast required: CngxFilter injected as unknown.
         return data()
@@ -218,7 +279,7 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
       () => {
         const sort = this.options?.sort?.() ?? this.injectedSort;
         const sorts = sort?.sorts() ?? [];
-        const sortFn = this.options?.sortFn ?? defaultSortFn<T>;
+        const sortFn = this.options?.sortFn ?? defaultSortFnFor<T>(this.locale());
 
         const sorted =
           sorts.length > 0

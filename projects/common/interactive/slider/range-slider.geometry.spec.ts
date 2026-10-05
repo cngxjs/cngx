@@ -6,9 +6,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { CngxRangeSlider } from './range-slider.component';
 
 // Runs in a real Chromium (the `test-geometry` target). Mounted under an RTL
-// root so the `a - b` order-fix is exercised: `20 - 80` inherits direction:rtl
-// and reorders to `80 - 20`, inverting the range meaning. The combined readout
-// must compute `direction: ltr` on top of `unicode-bidi: isolate`. An ltr mount
+// root so the direction read discriminates: the readout is the translated
+// `rangeValue` message and follows the page direction, while
+// --cngx-slider-range-direction still pins a fixed ltr `a - b`. An ltr mount
 // would make the direction read vacuous.
 
 @Component({
@@ -36,15 +36,21 @@ afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
   document.documentElement.removeAttribute('dir');
+  document.documentElement.style.removeProperty('--cngx-slider-range-direction');
 });
 
 describe('CngxRangeSlider geometry (rtl)', () => {
-  it('pins the a - b range readout to isolate + direction:ltr under dir=rtl', () => {
+  it('isolates the range readout and lets it follow dir=rtl', () => {
     document.documentElement.dir = 'rtl';
     const readout = mount();
-    // `20 - 80 -> 80 - 20` is the reorder direction:ltr guards; the rtl mount is
-    // what makes the direction assertion discriminating.
     expect(computedValue(readout, 'unicode-bidi')).toBe('isolate');
+    expect(computedValue(readout, 'direction')).toBe('rtl');
+  });
+
+  it('pins the readout to ltr through the direction token', () => {
+    document.documentElement.dir = 'rtl';
+    document.documentElement.style.setProperty('--cngx-slider-range-direction', 'ltr');
+    const readout = mount();
     expect(computedValue(readout, 'direction')).toBe('ltr');
   });
 });

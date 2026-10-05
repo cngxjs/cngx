@@ -18,6 +18,8 @@ import {
 } from '@cngx/common/stepper';
 
 import { CngxDotStepper } from './dot-stepper.component';
+import { stripBidiIsolates } from '@cngx/testing';
+
 
 @Component({
   standalone: true,
@@ -163,8 +165,8 @@ describe('CngxDotStepper', () => {
     const dots = Array.from(
       fixture.nativeElement.querySelectorAll('.cngx-dot-stepper__dot'),
     ) as HTMLElement[];
-    expect(dots[0].getAttribute('aria-label')).toBe('Step 1 of 4: One');
-    expect(dots[3].getAttribute('aria-label')).toBe('Step 4 of 4: Four');
+    expect(stripBidiIsolates(dots[0].getAttribute('aria-label'))).toBe('Step 1 of 4: One');
+    expect(stripBidiIsolates(dots[3].getAttribute('aria-label'))).toBe('Step 4 of 4: Four');
   });
 
   it('renders the per-instance *cngxDotStepperDot slot inside every dot when provided', () => {
@@ -492,17 +494,17 @@ describe('CngxDotStepper language switch', () => {
     fixture.detectChanges();
     const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
     const error = fixture.nativeElement.querySelector('.cngx-dot-stepper__error') as HTMLElement;
-    expect(error.textContent?.trim()).toContain('Two: Errored');
+    expect(stripBidiIsolates(error.textContent?.trim())).toContain('Two: Errored');
 
     lang.set('de');
     fixture.detectChanges();
     expect(host.getAttribute('aria-roledescription')).toBe('Schrittanzeige');
-    expect(error.textContent?.trim()).toContain('Two: Errored');
+    expect(stripBidiIsolates(error.textContent?.trim())).toContain('Two: Errored');
 
     fixture.componentInstance.err.set(false);
     fixture.detectChanges();
     fixture.componentInstance.err.set(true);
     fixture.detectChanges();
-    expect(error.textContent?.trim()).toContain('Two: Fehler');
+    expect(stripBidiIsolates(error.textContent?.trim())).toContain('Two: Fehler');
   });
 });

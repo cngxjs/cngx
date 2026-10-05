@@ -130,6 +130,49 @@ describe('createTimelineGrouping', () => {
       expect(groups()[1].start.getDay()).toBe(1);
     });
 
+    it('starts a week on the first day of the locale, ISO Monday without week info', () => {
+      // Engines differ: getWeekInfo(), a weekInfo getter, or neither. Fresh
+      // tags only - the first day is memoized per locale.
+      const proto = Intl.Locale.prototype;
+      const originals = ['getWeekInfo', 'weekInfo'].map(
+        (key) => [key, Object.getOwnPropertyDescriptor(proto, key)] as const,
+      );
+      const stub = (getWeekInfo: (() => { firstDay: number }) | undefined) => {
+        Object.defineProperty(proto, 'getWeekInfo', { configurable: true, value: getWeekInfo });
+        Object.defineProperty(proto, 'weekInfo', { configurable: true, get: () => undefined });
+      };
+      // 2026-07-20 is a Monday, the 26th a Sunday, the 27th a Monday.
+      const items = signal([
+        entry(1, new Date(2026, 6, 20, 9)),
+        entry(2, new Date(2026, 6, 26, 21)),
+        entry(3, new Date(2026, 6, 27, 9)),
+      ]);
+      const locale = signal('en-x-sunday');
+      try {
+        stub(() => ({ firstDay: 7 }));
+        const { groups } = createTimelineGrouping({
+          items,
+          dateAccessor: (e) => e.at,
+          groupBy: () => 'week',
+          locale,
+        });
+        expect(groups().map((g) => g.key)).toEqual(['W2026-07-26', 'W2026-07-19']);
+        expect(groups()[0].start.getDay()).toBe(0);
+
+        stub(undefined);
+        locale.set('en-x-noinfo');
+        expect(groups().map((g) => g.key)).toEqual(['W2026-07-27', 'W2026-07-20']);
+      } finally {
+        for (const [key, descriptor] of originals) {
+          if (descriptor) {
+            Object.defineProperty(proto, key, descriptor);
+          } else {
+            delete (proto as unknown as Record<string, unknown>)[key];
+          }
+        }
+      }
+    });
+
     it('groups by month, anchored on the first', () => {
       const items = signal([
         entry(1, new Date(2026, 6, 1, 9)),

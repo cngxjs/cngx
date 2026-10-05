@@ -1,5 +1,15 @@
-import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
+import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import {
+  createNestedOverrideMerge,
+  createOverrideMerge,
+  type CngxNestedOverrides,
+} from '@cngx/core/utils';
+
+import {
+  CNGX_DISPLAY_LANGUAGE_EN,
+  type CngxDisplayLanguageSection,
+} from './display-language-section';
 
 /**
  * Presence states `CngxAvatar` renders a status dot for.
@@ -16,9 +26,9 @@ export type CngxAvatarStatus = 'online' | 'offline' | 'busy' | 'away';
  * bundle, so a runtime language switch re-derives every read.
  *
  * Per-instance inputs (`statusLabel`, `labelFormat`, `valueTextFormat`, a bound
- * `label` / `removeAriaLabel`) still win over the bundle. `avatarGroupNoun`
- * and `chipRemove` seed string inputs at construction, so they are static per
- * instance; the formatter keys are read reactively.
+ * `label` / `removeAriaLabel`) still win over the bundle. Every key is read
+ * reactively while its input is unbound, `avatarGroupNoun` and `chipRemove`
+ * included, so a language switch reaches each atom without re-creating it.
  *
  * @category common/display/i18n
  * @since 0.1.0
@@ -30,34 +40,84 @@ export interface CngxDisplayI18n {
   readonly avatarGroupNoun: string;
   /** `CngxAvatarGroup` accessible summary; `hidden` is `0` when nothing is collapsed. */
   readonly avatarGroupLabel: (total: number, hidden: number) => string;
+  /**
+   * The avatar-group summary for a given noun - the language's message with a
+   * consumer-bound `label` noun or an overridden `avatarGroupNoun`.
+   */
+  readonly avatarGroupLabelFor: (total: number, hidden: number, noun: string) => string;
+  /** Visible `+N` pill of `CngxAvatarGroup`. */
+  readonly avatarGroupOverflow: (count: number) => string;
   /** `CngxSegmentedProgress` `aria-valuetext`: completed and total segment count. */
   readonly segmentedProgressValueText: (now: number, max: number) => string;
   /** Default of the `CngxChip` `removeAriaLabel` input. */
   readonly chipRemove: string;
+  /** `CngxBadge` text for a count above its `max`, e.g. `99+`. */
+  readonly badgeOverflow: (max: number) => string;
 }
 
 /**
- * @internal - the English avatar-group summary for a given noun. Shared by the
- * default formatter and by `CngxAvatarGroup` when a consumer binds its own
- * noun or overrides only `avatarGroupNoun`.
+ * @internal Marks an `avatarGroupLabel` built from a language section, not by
+ * a consumer. The mark travels on the function itself, non-enumerable, so no
+ * global registry is written.
  */
-export function composeAvatarGroupLabel(total: number, hidden: number, noun: string): string {
-  return hidden > 0 ? `${total} ${noun}, ${hidden} not shown` : `${total} ${noun}`;
-}
-
-/** @internal */
-export const DISPLAY_I18N_DEFAULTS: CngxDisplayI18n = {
-  avatarStatus: (status) => status,
-  avatarGroupNoun: 'avatars',
-  avatarGroupLabel: (total, hidden) => composeAvatarGroupLabel(total, hidden, 'avatars'),
-  segmentedProgressValueText: (now, max) => `${now} of ${max}`,
-  chipRemove: 'Remove',
-};
+const SECTION_AVATAR_GROUP_LABEL = Symbol('cngxSectionAvatarGroupLabel');
 
 /**
- * DI token for the display i18n bundle. `providedIn: 'root'` with English
- * defaults; the value is a `Signal`, shared by every reader under one
- * injector.
+ * @internal Whether an `avatarGroupLabel` came from a language section. Such a
+ * formatter composes from `avatarGroupLabelFor` and the resolved noun, so a
+ * noun-only override still reaches AT; a consumer formatter owns the phrase.
+ */
+export function isSectionAvatarGroupLabel(format: CngxDisplayI18n['avatarGroupLabel']): boolean {
+  return SECTION_AVATAR_GROUP_LABEL in format;
+}
+
+/** @internal Turns a display section into the token's keys for a locale. */
+function displayBundleFrom(section: CngxDisplayLanguageSection, locale: string): CngxDisplayI18n {
+  const avatarGroupLabelFor = (count: number, hidden: number, noun: string): string =>
+    formatMessage(
+      hidden > 0 ? section.avatarGroupLabelHidden : section.avatarGroupLabel,
+      { count, hidden, noun },
+      locale,
+    );
+  const avatarGroupLabel = (total: number, hidden: number): string =>
+    avatarGroupLabelFor(total, hidden, section.avatarGroupNoun);
+  Object.defineProperty(avatarGroupLabel, SECTION_AVATAR_GROUP_LABEL, { value: true });
+  return {
+    avatarStatus: (status) => section.avatarStatus[status],
+    avatarGroupNoun: section.avatarGroupNoun,
+    avatarGroupLabel,
+    avatarGroupLabelFor,
+    avatarGroupOverflow: (count) => formatMessage(section.avatarGroupOverflow, { count }, locale),
+    segmentedProgressValueText: (now, max) =>
+      formatMessage(section.segmentedProgressValueText, { now, max }, locale),
+    chipRemove: section.chipRemove,
+    badgeOverflow: (max) => formatMessage(section.badgeOverflow, { max }, locale),
+  };
+}
+
+const NO_SECTION: CngxNestedOverrides<CngxDisplayLanguageSection, 'avatarStatus'> = {};
+
+/** @internal The display section of the active pack over English. */
+function injectDisplaySection(): Signal<CngxDisplayLanguageSection> {
+  const pack = injectLanguageSection('display');
+  return createNestedOverrideMerge<CngxDisplayLanguageSection, 'avatarStatus'>(
+    CNGX_DISPLAY_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+    'avatarStatus',
+  );
+}
+
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const displayBundle = createSectionBundle<CngxDisplayLanguageSection, CngxDisplayI18n>({
+  section: injectDisplaySection,
+  toBundle: displayBundleFrom,
+});
+
+/**
+ * DI token for the display i18n bundle. `providedIn: 'root'`: the display
+ * section of the active language pack over the English defaults, formatted
+ * for the app locale; the value is a `Signal`, shared by every reader under
+ * one injector.
  *
  * @category common/display/i18n
  * @wcag AA
@@ -67,7 +127,7 @@ export const DISPLAY_I18N_DEFAULTS: CngxDisplayI18n = {
  */
 export const CNGX_DISPLAY_I18N = new InjectionToken<Signal<CngxDisplayI18n>>('CngxDisplayI18n', {
   providedIn: 'root',
-  factory: () => coerceSignal(DISPLAY_I18N_DEFAULTS),
+  factory: () => displayBundle.build(),
 });
 
 /**
@@ -90,9 +150,9 @@ function defineDisplayI18nFeature(
 }
 
 /**
- * Override display labels via a partial bundle - unset keys keep the English
- * default. Pass a `Signal` of a partial bundle to switch languages at
- * runtime.
+ * Override display labels via a partial bundle - unset keys keep the
+ * language pack's copy, or the English default. Pass a `Signal` of a partial
+ * bundle to switch languages at runtime.
  *
  * @category common/display/i18n
  * @since 0.1.0
@@ -105,7 +165,8 @@ export function withDisplayI18nLabels(
 
 /**
  * Provider for the display i18n bundle. Returns a plain `Provider`, so it also
- * scopes a subtree through `viewProviders`.
+ * scopes a subtree through `viewProviders`. The features apply on top of the
+ * active language pack.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -126,11 +187,7 @@ export function withDisplayI18nLabels(
 export function provideDisplayI18n(...features: readonly CngxDisplayI18nFeature[]): Provider {
   return {
     provide: CNGX_DISPLAY_I18N,
-    useFactory: () =>
-      features.reduce<Signal<CngxDisplayI18n>>(
-        (bundle, feat) => feat(bundle),
-        coerceSignal(DISPLAY_I18N_DEFAULTS),
-      ),
+    useFactory: () => displayBundle.build(features),
   };
 }
 
@@ -142,5 +199,5 @@ export function provideDisplayI18n(...features: readonly CngxDisplayI18nFeature[
  * @since 0.1.0
  */
 export function injectDisplayI18n(): Signal<CngxDisplayI18n> {
-  return inject(CNGX_DISPLAY_I18N);
+  return displayBundle.resolve(inject(CNGX_DISPLAY_I18N));
 }

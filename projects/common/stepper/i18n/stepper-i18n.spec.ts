@@ -1,6 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { computed, provideZonelessChangeDetection, signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
+import { provideLocale, provideLocaleAt } from '@cngx/core/utils';
+import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 
 import {
   CNGX_STEPPER_I18N,
@@ -11,22 +19,126 @@ import {
 } from './stepper-i18n';
 
 describe('CngxStepperI18n', () => {
-  it('library default is English', () => {
+  it('derives the pre-section English copy from the English section', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
     const i18n = TestBed.inject(CNGX_STEPPER_I18N)();
     expect(i18n.stepperLabel).toBe('Stepper');
-    expect(i18n.selectedStep('Customer', 1, 3)).toBe('Step 1 of 3: Customer');
+    expect(i18n.stepIndicatorRoleDescription).toBe('Step indicator');
+    expect(i18n.groupRoleDescription).toBe('step group');
+    expect(stripBidiIsolates(i18n.selectedStep('Customer', 1, 3))).toBe('Step 1 of 3: Customer');
+    expect(stripBidiIsolates(i18n.stepWithDetail('Step 2 of 3: Shipping', 'Errored'))).toBe(
+      'Step 2 of 3: Shipping: Errored',
+    );
     expect(i18n.stepHasErrors(1)).toBe('1 error');
     expect(i18n.stepHasErrors(2)).toBe('2 errors');
+    expect(i18n.previousStep).toBe('Previous step');
+    expect(i18n.nextStep).toBe('Next step');
+    expect(i18n.commitFailedRetry).toBe('Commit failed - retry?');
     expect(i18n.commitInFlight).toBe('Committing step…');
-    expect(i18n.commitRolledBackTo('Customer')).toBe(
+    expect(stripBidiIsolates(i18n.commitRolledBackTo('Customer'))).toBe(
       'Reverted to step "Customer".',
     );
-    expect(i18n.stepRolledBack('Step 2 of 3: Shipping')).toBe(
+    expect(stripBidiIsolates(i18n.stepRolledBack('Step 2 of 3: Shipping'))).toBe(
       'Step 2 of 3: Shipping This step was rolled back.',
     );
+    expect(i18n.textStepperFormat(2, 5)).toBe('Step 2 of 5');
+    expect(i18n.groupSummaryCount(4)).toBe('4 steps');
+    expect(i18n.groupSummaryProgress(1, 4)).toBe('1 of 4 steps complete');
+    expect(i18n.groupSummaryCountShort(4)).toBe('4');
+    expect(i18n.groupSummaryProgressShort(1, 4)).toBe('1/4');
+    expect(stripBidiIsolates(i18n.stepFallbackLabel('cdk-step-0'))).toBe('Step cdk-step-0');
+  });
+
+  it('fixes the singular group summaries and formats numbers with the locale', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideLocale('de')],
+    });
+    const i18n = TestBed.inject(CNGX_STEPPER_I18N)();
+    expect(i18n.groupSummaryCount(1)).toBe('1 step');
+    expect(i18n.groupSummaryProgress(0, 1)).toBe('0 of 1 step complete');
+    expect(i18n.groupSummaryCountShort(1200)).toBe('1.200');
+    expect(i18n.textStepperFormat(1, 1200)).toBe('Step 1 of 1.200');
+  });
+
+  it('reads the stepper section of the active pack, with English for what it leaves out', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+      ],
+    });
+    const bundle = TestBed.inject(CNGX_STEPPER_I18N);
+    expect(bundle().stepperLabel).toBe('Stepper');
+
+    pack.set({
+      locale: 'de',
+      stepper: {
+        stepperLabel: 'Schrittfolge',
+        selectedStep: 'Schritt {position} von {count}: {label}',
+        groupSummaryCount: { one: '{count} Schritt', other: '{count} Schritte' },
+        statusLabels: {
+          done: 'Erledigt',
+          inProgress: 'Läuft',
+          upNext: 'Als Nächstes',
+          errored: 'Fehler',
+        },
+      },
+    });
+    const german = bundle();
+    expect(german.stepperLabel).toBe('Schrittfolge');
+    expect(stripBidiIsolates(german.selectedStep('Kunde', 1, 3))).toBe('Schritt 1 von 3: Kunde');
+    expect(german.groupSummaryCount(1)).toBe('1 Schritt');
+    expect(german.statusLabels.errored).toBe('Fehler');
+    expect(german.previousStep).toBe('Previous step');
+  });
+
+  it('keeps the bundle while the pack keeps its sections and maps anew on a flip', () => {
+    const de = { locale: 'de', stepper: { stepperLabel: 'Schrittfolge' } };
+    const pack = signal<CngxActiveLanguagePack | undefined>(de);
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+      ],
+    });
+    const bundle = TestBed.inject(CNGX_STEPPER_I18N);
+    const first = bundle();
+    pack.set({ ...de });
+    expect(bundle()).toBe(first);
+    pack.set({ locale: 'de', stepper: { stepperLabel: 'Ablauf' } });
+    expect(bundle()).not.toBe(first);
+    expect(bundle().stepperLabel).toBe('Ablauf');
+  });
+
+  it('lets withStepperI18nLabels override single keys on top of the active pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(
+          withPartialPack({
+            locale: 'de',
+            stepper: {
+              previousStep: 'Zurück',
+              statusLabels: {
+          done: 'Erledigt',
+          inProgress: 'Läuft',
+          upNext: 'Als Nächstes',
+          errored: 'Fehler',
+        },
+            },
+          }),
+          withDocumentLanguage('off'),
+        ),
+        provideStepperI18n(withStepperI18nLabels({ statusLabels: { done: 'Fertig' } })),
+      ],
+    });
+    const i18n = TestBed.inject(CNGX_STEPPER_I18N)();
+    expect(i18n.previousStep).toBe('Zurück');
+    expect(i18n.statusLabels.done).toBe('Fertig');
+    expect(i18n.statusLabels.errored).toBe('Fehler');
   });
 
   it('ships no deprecated stepCompleted / stepErrored keys', () => {
@@ -196,9 +308,11 @@ describe('CngxStepperI18n', () => {
           provideStepperI18n(withStepperI18nLabels({ stepperLabel: 'A' })),
         ],
       });
-      const first = TestBed.inject(CNGX_STEPPER_I18N);
+      const first = TestBed.runInInjectionContext(() => injectStepperI18n());
       const second = TestBed.runInInjectionContext(() => injectStepperI18n());
       expect(second).toBe(first);
+      // Same reading locale as the provider: the token's own bundle, no copy.
+      expect(first()).toBe(TestBed.inject(CNGX_STEPPER_I18N)());
     });
 
     it('keeps the bundle reference when an override is re-set to an equal object', () => {
@@ -231,11 +345,14 @@ describe('CngxStepperI18n', () => {
           provideStepperI18n(withStepperI18nLabels(first), withStepperI18nLabels(second)),
         ],
       });
-      expect(TestBed.inject(CNGX_STEPPER_I18N)()).toEqual({
-        ...defaults,
-        ...first,
-        ...second,
-        statusLabels: { ...defaults.statusLabels, ...first.statusLabels, ...second.statusLabels },
+      const merged = TestBed.inject(CNGX_STEPPER_I18N)();
+      expect(merged.stepperLabel).toBe('Schrittfolge');
+      expect(merged.previousStep).toBe('Vor');
+      expect(merged.nextStep).toBe(defaults.nextStep);
+      expect(merged.statusLabels).toEqual({
+        ...defaults.statusLabels,
+        ...first.statusLabels,
+        ...second.statusLabels,
       });
     });
 
@@ -253,5 +370,18 @@ describe('CngxStepperI18n', () => {
         errored: 'Errored',
       });
     });
+  });
+});
+
+describe('CngxStepperI18n in a provideLocaleAt subtree', () => {
+  it('formats numbers and plurals in the subtree locale while the root stays English', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideLocale('en')],
+    });
+    const root = TestBed.runInInjectionContext(() => injectStepperI18n());
+    const german = runInSubtree([provideLocaleAt('de')], () => injectStepperI18n());
+    expect(root().textStepperFormat(1, 1200)).toBe('Step 1 of 1,200');
+    expect(german().textStepperFormat(1, 1200)).toBe('Step 1 of 1.200');
+    expect(german().groupSummaryCount(1)).toBe('1 step');
   });
 });

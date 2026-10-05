@@ -1,10 +1,25 @@
-import { computed, provideZonelessChangeDetection, signal, type WritableSignal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  Injector,
+  provideZonelessChangeDetection,
+  runInInjectionContext,
+  signal,
+  type WritableSignal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { createResizeObserverMock } from '@cngx/testing';
-import type { CngxAsyncState, AsyncStatus } from '@cngx/core/utils';
+import { createResizeObserverMock, stripBidiIsolates } from '@cngx/testing';
+import { provideLocaleAt, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
 
-import { injectRecycler, provideRecyclerI18n, type CngxRecycler, type RecyclerI18n } from './recycler';
+import {
+  injectRecycler,
+  provideRecyclerI18n,
+  withRecyclerI18nLabels,
+  type CngxRecycler,
+  type RecyclerI18n,
+} from './recycler';
 
 function createMockState(
   overrides?: Partial<{
@@ -227,6 +242,32 @@ describe('injectRecycler', () => {
 
       expect(recycler.announcement()).toBe('3 results found.');
     });
+
+    it('formats the announced count in the locale of a provideLocaleAt subtree', () => {
+      @Component({ template: '', providers: [provideLocaleAt('de')] })
+      class GermanSubtree {
+        readonly injector = inject(Injector);
+      }
+      const status = signal<AsyncStatus>('refreshing');
+      const total = signal(1300);
+      const { injector } = TestBed.createComponent(GermanSubtree).componentInstance;
+      let recycler!: CngxRecycler;
+      runInInjectionContext(injector, () => {
+        recycler = injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => total(),
+          estimateSize: 48,
+          state: createMockState({ status }),
+        });
+      });
+      TestBed.flushEffects();
+
+      total.set(1200);
+      status.set('success');
+      TestBed.flushEffects();
+
+      expect(stripBidiIsolates(recycler.announcement())).toBe('1.200 results found.');
+    });
   });
 
   describe('language switch', () => {
@@ -246,7 +287,9 @@ describe('injectRecycler', () => {
     it('does not re-announce on a language flip', () => {
       const lang = signal<'en' | 'de'>('en');
       TestBed.configureTestingModule({
-        providers: [provideRecyclerI18n(computed(() => (lang() === 'de' ? DE : EN)))],
+        providers: [
+          provideRecyclerI18n(withRecyclerI18nLabels(computed(() => (lang() === 'de' ? DE : EN)))),
+        ],
       });
       const status = signal<AsyncStatus>('refreshing');
       const total = signal(7);
@@ -278,7 +321,9 @@ describe('injectRecycler', () => {
     it('keeps the stateless load-count phrase on a flip', () => {
       const lang = signal<'en' | 'de'>('en');
       TestBed.configureTestingModule({
-        providers: [provideRecyclerI18n(computed(() => (lang() === 'de' ? DE : EN)))],
+        providers: [
+          provideRecyclerI18n(withRecyclerI18nLabels(computed(() => (lang() === 'de' ? DE : EN)))),
+        ],
       });
       const total = signal(20);
       let recycler!: CngxRecycler;
@@ -305,7 +350,9 @@ describe('injectRecycler', () => {
     });
 
     it('replaces the whole bundle with a plain override, as before', () => {
-      TestBed.configureTestingModule({ providers: [provideRecyclerI18n(DE)] });
+      TestBed.configureTestingModule({
+        providers: [provideRecyclerI18n(withRecyclerI18nLabels(DE))],
+      });
       const status = signal<AsyncStatus>('loading');
       let recycler!: CngxRecycler;
       TestBed.runInInjectionContext(() => {

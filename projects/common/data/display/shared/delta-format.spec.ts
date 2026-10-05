@@ -76,3 +76,34 @@ describe('delta-format', () => {
     });
   });
 });
+
+describe('formatDelta sign', () => {
+  it('lets the locale draw the plus sign and prints a negative unsigned', () => {
+    expect(formatDelta(5.3, 'percent', 'en-US')).toBe('+5.3%');
+    expect(formatDelta(5.3, 'percent', 'de')).toBe('+5,3\u00a0%');
+    expect(formatDelta(-5.3, 'percent', 'de')).toBe('5,3\u00a0%');
+    expect(formatDelta(1200, 'absolute', 'de')).toBe('+1.200');
+    expect(formatDelta(0, 'absolute', 'en-US')).toBe('0');
+  });
+});
+
+describe('formatDelta formatter reuse', () => {
+  it('builds one Intl.NumberFormat per locale and options, not one per call', () => {
+    const Real = Intl.NumberFormat;
+    let constructed = 0;
+    Intl.NumberFormat = new Proxy(Real, {
+      construct(target, args: ConstructorParameters<typeof Intl.NumberFormat>) {
+        constructed++;
+        return Reflect.construct(target, args);
+      },
+    });
+    try {
+      for (let i = 0; i < 5; i++) {
+        formatDelta(12.5 + i, 'percent', 'fr-CA');
+      }
+      expect(constructed).toBeLessThanOrEqual(1);
+    } finally {
+      Intl.NumberFormat = Real;
+    }
+  });
+});

@@ -9,6 +9,11 @@ import {
   input,
   Renderer2,
 } from '@angular/core';
+import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
+
+import { injectDisplayI18n } from '../i18n/display-i18n';
+
+const NUMBER_FORMAT: Intl.NumberFormatOptions = {};
 
 /**
  * Color palette options for the badge.
@@ -70,8 +75,14 @@ export class CngxBadge {
   readonly position = input<CngxBadgePosition>('above-end');
   /** Whether the indicator is hidden regardless of value. */
   readonly hidden = input<boolean>(false);
-  /** Cap for numeric values - anything over renders as `"{max}+"`. */
+  /**
+   * Cap for numeric values - anything over renders through
+   * `CNGX_DISPLAY_I18N.badgeOverflow` (English `"99+"`).
+   */
   readonly max = input<number>(99);
+
+  private readonly i18n = injectDisplayI18n();
+  private readonly locale = injectLocale();
 
   private readonly hostEl = inject(ElementRef<HTMLElement>);
   private readonly renderer = inject(Renderer2);
@@ -100,7 +111,9 @@ export class CngxBadge {
     }
     if (typeof v === 'number') {
       const m = this.max();
-      return v > m ? `${m}+` : String(v);
+      return v > m
+        ? this.i18n().badgeOverflow(m)
+        : numberFormatterFor(this.locale(), NUMBER_FORMAT).format(v);
     }
     return v;
   });

@@ -6,6 +6,8 @@ import { describe, expect, test } from 'vitest';
 import { CNGX_STEPPER_I18N } from '@cngx/common/stepper';
 
 import { createMatStepHandle } from './handle';
+import { stripBidiIsolates } from '@cngx/testing';
+
 
 let idCounter = 0;
 function seedId(): string {
@@ -92,7 +94,7 @@ describe('createMatStepHandle - Phase 6.2 label fallback ladder', () => {
     });
     const matSteps = await renderLabels();
     const handle = createMatStepHandle(matSteps[3], seedId, TestBed.inject(CNGX_STEPPER_I18N)).handle;
-    expect(handle.label()).toBe(`Step ${handle.id}`);
+    expect(stripBidiIsolates(handle.label())).toBe(`Step ${handle.id}`);
     expect(handle.label().length).toBeGreaterThan('Step '.length);
   });
 
@@ -121,7 +123,7 @@ describe('createMatStepHandle - Phase 6.2 label fallback ladder', () => {
       lang() === 'de' ? { ...base(), stepFallbackLabel: (id: string) => `Schritt ${id}` } : base(),
     );
     const handle = createMatStepHandle(matSteps[3], seedId, i18n).handle;
-    expect(handle.label()).toBe(`Step ${handle.id}`);
+    expect(stripBidiIsolates(handle.label())).toBe(`Step ${handle.id}`);
 
     lang.set('de');
     expect(handle.label()).toBe(`Schritt ${handle.id}`);

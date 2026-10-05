@@ -15,6 +15,8 @@ import {
 } from '@cngx/common/stepper';
 
 import { CngxProgressBarStepper } from './progress-bar-stepper.component';
+import { stripBidiIsolates } from '@cngx/testing';
+
 
 @Component({
   standalone: true,
@@ -290,17 +292,17 @@ describe('CngxProgressBarStepper language switch', () => {
       '.cngx-progress-bar-stepper__error',
     ) as HTMLElement;
     expect(caption.textContent?.trim()).toBe('Step 1 of 2');
-    expect(error.textContent?.trim()).toContain('Two: Errored');
+    expect(stripBidiIsolates(error.textContent?.trim())).toContain('Two: Errored');
 
     lang.set('de');
     fixture.detectChanges();
     expect(caption.textContent?.trim()).toBe('Schritt 1 von 2');
-    expect(error.textContent?.trim()).toContain('Two: Errored');
+    expect(stripBidiIsolates(error.textContent?.trim())).toContain('Two: Errored');
 
     fixture.componentInstance.err.set(false);
     fixture.detectChanges();
     fixture.componentInstance.err.set(true);
     fixture.detectChanges();
-    expect(error.textContent?.trim()).toContain('Two: Fehler');
+    expect(stripBidiIsolates(error.textContent?.trim())).toContain('Two: Fehler');
   });
 });

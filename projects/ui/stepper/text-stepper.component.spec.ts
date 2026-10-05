@@ -12,6 +12,8 @@ import {
 } from '@cngx/common/stepper';
 
 import { CngxTextStepper } from './text-stepper.component';
+import { stripBidiIsolates } from '@cngx/testing';
+
 
 @Component({
   standalone: true,
@@ -250,12 +252,12 @@ describe('CngxTextStepper language switch', () => {
     const text = fixture.nativeElement.querySelector('.cngx-text-stepper__text') as HTMLElement;
     const error = fixture.nativeElement.querySelector('.cngx-text-stepper__error') as HTMLElement;
     expect(text.textContent?.trim()).toBe('Step 1 of 2');
-    expect(error.textContent?.trim()).toContain('Payment: Errored');
+    expect(stripBidiIsolates(error.textContent?.trim())).toContain('Payment: Errored');
 
     lang.set('de');
     fixture.detectChanges();
     expect(text.textContent?.trim()).toBe('Step 1 of 2');
-    expect(error.textContent?.trim()).toContain('Payment: Errored');
+    expect(stripBidiIsolates(error.textContent?.trim())).toContain('Payment: Errored');
 
     fixture.componentInstance.active.set(1);
     fixture.componentInstance.err.set(false);
@@ -263,7 +265,7 @@ describe('CngxTextStepper language switch', () => {
     fixture.componentInstance.err.set(true);
     fixture.detectChanges();
     expect(text.textContent?.trim()).toBe('Schritt 2 von 2');
-    expect(error.textContent?.trim()).toContain('Payment: Fehler');
+    expect(stripBidiIsolates(error.textContent?.trim())).toContain('Payment: Fehler');
   });
 });
 

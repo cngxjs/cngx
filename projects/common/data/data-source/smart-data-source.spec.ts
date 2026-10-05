@@ -2,10 +2,12 @@ import { Component, type Injector, runInInjectionContext, signal } from '@angula
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { provideLocale } from '@cngx/core/utils';
 import { createManualState } from '../async-state/create-manual-state';
 import { CngxFilter } from '../filter/filter.directive';
 import { CngxPaginate } from '../paginate/paginate.directive';
 import { CngxSort } from '../sort/sort.directive';
+import type { CngxSearch } from '@cngx/common/interactive';
 import { CngxSmartDataSource, injectSmartDataSource } from './smart-data-source';
 
 interface Item {
@@ -36,6 +38,67 @@ describe('CngxSmartDataSource - no directives', () => {
     TestBed.runInInjectionContext(() => {
       const ds = injectSmartDataSource(signal([]));
       expect(() => ds.disconnect()).not.toThrow();
+    });
+  });
+
+  it('searches ignoring case and accents in the app locale', () => {
+    TestBed.configureTestingModule({ providers: [provideLocale('tr')] });
+    TestBed.runInInjectionContext(() => {
+      const term = signal('uber');
+      const search = { term } as unknown as CngxSearch;
+      const people = signal([
+        { name: 'Über', age: 1 },
+        { name: 'Ida', age: 2 },
+        { name: 'İzmir', age: 3 },
+      ]);
+      const ds = injectSmartDataSource(people, { search: () => search });
+      expect(ds.filteredCount()).toBe(1);
+      term.set('\u2068i');
+      expect(ds.filteredCount()).toBe(1);
+    });
+  });
+
+  it('keeps the default search exact across terms and changed rows', () => {
+    TestBed.runInInjectionContext(() => {
+      const term = signal('ub');
+      const search = { term } as unknown as CngxSearch;
+      const rows = signal([{ name: 'Über' }, { name: 'Ida' }]);
+      const ds = injectSmartDataSource(rows, { search: () => search });
+      expect(ds.filteredCount()).toBe(1);
+      term.set('id');
+      expect(ds.filteredCount()).toBe(1);
+      rows.set([{ name: 'Idee' }, { name: 'Ida' }, { name: 'Uber' }]);
+      expect(ds.filteredCount()).toBe(2);
+      term.set('ub');
+      expect(ds.filteredCount()).toBe(1);
+    });
+  });
+
+  it('stays exact over more distinct values than any fold cache would hold', () => {
+    TestBed.runInInjectionContext(() => {
+      const term = signal('zurich 4999');
+      const search = { term } as unknown as CngxSearch;
+      const rows = signal(Array.from({ length: 5000 }, (_, i) => ({ name: `Zürich ${i}` })));
+      const ds = injectSmartDataSource(rows, { search: () => search });
+      expect(ds.filteredCount()).toBe(1);
+      term.set('zurich 1');
+      expect(ds.filteredCount()).toBe(1111);
+      term.set('zurich 4999');
+      expect(ds.filteredCount()).toBe(1);
+    });
+  });
+
+  it('folds a row again when a field changes in place', () => {
+    TestBed.runInInjectionContext(() => {
+      const term = signal('ida');
+      const search = { term } as unknown as CngxSearch;
+      const row = { name: 'Ida' };
+      const rows = signal([row]);
+      const ds = injectSmartDataSource(rows, { search: () => search });
+      expect(ds.filteredCount()).toBe(1);
+      row.name = 'Über';
+      term.set('uber');
+      expect(ds.filteredCount()).toBe(1);
     });
   });
 
@@ -411,5 +474,33 @@ describe('CngxSmartDataSource - reactivity equality', () => {
       expect(values.length).toBe(1);
       sub.unsubscribe();
     });
+  });
+});
+
+describe('CngxSmartDataSource - locale collation', () => {
+  const names = ['Zebra', 'Äpfel', 'apple'];
+
+  function sortedIn(locale: string): string[] {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [WithDirectivesHost],
+      providers: [provideLocale(locale)],
+    });
+    const fixture = TestBed.createComponent(WithDirectivesHost);
+    fixture.detectChanges();
+    const injector: Injector = fixture.debugElement.query(By.directive(CngxSort)).injector;
+    const data = signal(names.map((name, age) => ({ name, age })));
+    const ds = runInInjectionContext(injector, () => injectSmartDataSource(data));
+    injector.get(CngxSort).setSort('name');
+    const values: Item[][] = [];
+    const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+    TestBed.flushEffects();
+    sub.unsubscribe();
+    return values.at(-1)!.map((i) => i.name);
+  }
+
+  it('collates string keys in the app locale', () => {
+    expect(sortedIn('de')).toEqual(['Äpfel', 'apple', 'Zebra']);
+    expect(sortedIn('sv')).toEqual(['apple', 'Zebra', 'Äpfel']);
   });
 });

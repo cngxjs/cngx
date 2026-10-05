@@ -10,11 +10,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { CngxAvatar } from '../avatar/avatar.component';
-import {
-  composeAvatarGroupLabel,
-  DISPLAY_I18N_DEFAULTS,
-  injectDisplayI18n,
-} from '../i18n/display-i18n';
+import { injectDisplayI18n, isSectionAvatarGroupLabel } from '../i18n/display-i18n';
 
 /**
  * Stacked avatar group with an overflow pill. Project `<cngx-avatar>` children;
@@ -62,7 +58,7 @@ import {
   template: `
     <ng-content select="cngx-avatar" />
     @if (hiddenCount() > 0) {
-      <span class="cngx-avatar-group__overflow" aria-hidden="true">+{{ hiddenCount() }}</span>
+      <span class="cngx-avatar-group__overflow" aria-hidden="true">{{ overflowText() }}</span>
     }
   `,
 })
@@ -78,8 +74,7 @@ export class CngxAvatarGroup {
   /**
    * Entity noun used in the `aria-label` summary. Unbound, it follows
    * `CNGX_DISPLAY_I18N.avatarGroupNoun` (or its `avatarGroupLabel`
-   * formatter); a bound noun switches to the English `<total> <noun>`
-   * composition.
+   * formatter); a bound noun goes into the language's summary message.
    */
   readonly label = input<string | undefined>(undefined);
 
@@ -110,6 +105,11 @@ export class CngxAvatarGroup {
   /** How many avatars are collapsed into the `+N` pill. */
   protected readonly hiddenCount = computed(() => this.total() - this.visibleCount());
 
+  /** Visible `+N` pill text, with the count in the app locale. */
+  protected readonly overflowText = computed(() =>
+    this.i18n().avatarGroupOverflow(this.hiddenCount()),
+  );
+
   /** Accessible summary of total and hidden counts. */
   protected readonly ariaLabel = computed(() => {
     const total = this.total();
@@ -118,17 +118,17 @@ export class CngxAvatarGroup {
     if (format) {
       return format(total, hidden);
     }
+    const i18n = this.i18n();
     const noun = this.label();
     if (noun !== undefined) {
-      return composeAvatarGroupLabel(total, hidden, noun);
+      return i18n.avatarGroupLabelFor(total, hidden, noun);
     }
-    const i18n = this.i18n();
     // A consumer formatter owns word order and plurals; otherwise the resolved
     // noun composes, so a noun-only override still reaches AT.
-    if (i18n.avatarGroupLabel !== DISPLAY_I18N_DEFAULTS.avatarGroupLabel) {
+    if (!isSectionAvatarGroupLabel(i18n.avatarGroupLabel)) {
       return i18n.avatarGroupLabel(total, hidden);
     }
-    return composeAvatarGroupLabel(total, hidden, i18n.avatarGroupNoun);
+    return i18n.avatarGroupLabelFor(total, hidden, i18n.avatarGroupNoun);
   });
 
   constructor() {

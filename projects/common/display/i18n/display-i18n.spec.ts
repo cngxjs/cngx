@@ -13,6 +13,13 @@ import {
   withDisplayI18nLabels,
   type CngxDisplayI18n,
 } from './display-i18n';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
+import { stripBidiIsolates } from '@cngx/testing';
 
 @Component({
   template: `
@@ -63,16 +70,66 @@ describe('CNGX_DISPLAY_I18N', () => {
     const bundle = TestBed.inject(CNGX_DISPLAY_I18N)();
     expect(bundle.avatarStatus('busy')).toBe('busy');
     expect(bundle.avatarGroupNoun).toBe('avatars');
-    expect(bundle.avatarGroupLabel(5, 2)).toBe('5 avatars, 2 not shown');
-    expect(bundle.avatarGroupLabel(5, 0)).toBe('5 avatars');
+    expect(stripBidiIsolates(bundle.avatarGroupLabel(5, 2))).toBe('5 avatars, 2 not shown');
+    expect(stripBidiIsolates(bundle.avatarGroupLabel(5, 0))).toBe('5 avatars');
     expect(bundle.segmentedProgressValueText(2, 5)).toBe('2 of 5');
     expect(bundle.chipRemove).toBe('Remove');
+    expect(bundle.avatarGroupOverflow(3)).toBe('+3');
+    expect(bundle.badgeOverflow(99)).toBe('99+');
+    expect(stripBidiIsolates(bundle.avatarGroupLabelFor(3, 0, 'people'))).toBe('3 people');
+  });
+
+  it('reads the display section of the active pack, with English for what it leaves out', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+    });
+    const bundle = TestBed.inject(CNGX_DISPLAY_I18N);
+    pack.set({
+      locale: 'de',
+      display: {
+        avatarStatus: {
+          online: 'online',
+          offline: 'offline',
+          busy: 'beschäftigt',
+          away: 'abwesend',
+        },
+        avatarGroupLabel: { one: '{count} Person', other: '{count} Personen' },
+        avatarGroupOverflow: '+{count}',
+      },
+    });
+    expect(bundle().avatarStatus('busy')).toBe('beschäftigt');
+    expect(bundle().avatarGroupLabel(1, 0)).toBe('1 Person');
+    expect(bundle().avatarGroupLabel(1200, 0)).toBe('1.200 Personen');
+    expect(bundle().avatarGroupOverflow(1200)).toBe('+1.200');
+    expect(bundle().chipRemove).toBe('Remove');
+  });
+
+  it('lets provideDisplayI18n override single keys on top of the active pack', () => {
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [
+        provideCngxI18n(
+          withPartialPack({
+            locale: 'de',
+            display: { chipRemove: 'Entfernen', avatarGroupOverflow: '{count} weitere' },
+          }),
+          withDocumentLanguage('off'),
+        ),
+        provideDisplayI18n(withDisplayI18nLabels({ chipRemove: 'Löschen' })),
+      ],
+    });
+    const { group, chipRemove } = render(Host);
+    expect(chipRemove?.getAttribute('aria-label')).toBe('Löschen');
+    expect(group?.querySelector('.cngx-avatar-group__overflow')?.textContent?.trim()).toBe(
+      '1 weitere',
+    );
   });
 
   it('renders the English defaults on the display atoms', () => {
     TestBed.configureTestingModule({ imports: [Host] });
     const { group, progress, chipRemove } = render(Host);
-    expect(group?.getAttribute('aria-label')).toBe('3 avatars, 1 not shown');
+    expect(stripBidiIsolates(group?.getAttribute('aria-label'))).toBe('3 avatars, 1 not shown');
     expect(progress?.getAttribute('aria-valuetext')).toBe('2 of 5');
     expect(chipRemove?.getAttribute('aria-label')).toBe('Remove');
   });
@@ -87,7 +144,7 @@ describe('CNGX_DISPLAY_I18N', () => {
       ],
     });
     const { group, chipRemove } = render(Host);
-    expect(group?.getAttribute('aria-label')).toBe('3 Profile, 1 not shown');
+    expect(stripBidiIsolates(group?.getAttribute('aria-label'))).toBe('3 Profile, 1 not shown');
     expect(chipRemove?.getAttribute('aria-label')).toBe('Entfernen');
   });
 
@@ -117,7 +174,7 @@ describe('CNGX_DISPLAY_I18N', () => {
       ],
     });
     const { group } = render(BoundNounHost);
-    expect(group?.getAttribute('aria-label')).toBe('3 people, 1 not shown');
+    expect(stripBidiIsolates(group?.getAttribute('aria-label'))).toBe('3 people, 1 not shown');
   });
 
   it('shares one Signal across readers under one injector', () => {

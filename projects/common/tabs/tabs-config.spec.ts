@@ -11,6 +11,12 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
 import { coerceSignal } from '@cngx/core/utils';
 
 import {
@@ -493,3 +499,51 @@ describe('CngxTabsConfig copy keys', () => {
   });
 });
 
+describe('CNGX_TABS_CONFIG language pack', () => {
+  beforeEach(() => TestBed.resetTestingModule());
+
+  it('reads the landmark and role-description labels from the tabs section', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+      ],
+    });
+    const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+    const aria = coerceSignal(cfg.ariaLabels);
+    const fallback = coerceSignal(cfg.fallbackLabels);
+    expect(aria()).toEqual({ tabsRegion: 'Tabs' });
+    expect(fallback()).toEqual({
+      tabRoleDescription: 'tab list',
+      tabPanelRoleDescription: 'tab panel',
+    });
+
+    pack.set({ locale: 'de', tabs: { tabsRegion: 'Reiter', tabRoleDescription: 'Reiterliste' } });
+    expect(aria()?.tabsRegion).toBe('Reiter');
+    expect(fallback()?.tabRoleDescription).toBe('Reiterliste');
+    expect(fallback()?.tabPanelRoleDescription).toBe('tab panel');
+  });
+
+  it('applies withTabsAriaLabels on top of the active pack, also in provideTabsConfigAt', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(
+          withPartialPack({
+            locale: 'de',
+            tabs: { tabsRegion: 'Reiter', tabPanelRoleDescription: 'Reiterinhalt' },
+          }),
+          withDocumentLanguage('off'),
+        ),
+        ...provideTabsConfigAt(withTabsFallbackLabels({ tabRoleDescription: 'Leiste' })),
+      ],
+    });
+    const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+    expect(coerceSignal(cfg.ariaLabels)()?.tabsRegion).toBe('Reiter');
+    expect(coerceSignal(cfg.fallbackLabels)()).toEqual({
+      tabRoleDescription: 'Leiste',
+      tabPanelRoleDescription: 'Reiterinhalt',
+    });
+  });
+});

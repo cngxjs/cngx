@@ -81,3 +81,7 @@ export {
   type CngxDisplayI18n,
   type CngxDisplayI18nFeature,
 } from './i18n/display-i18n';
+export {
+  CNGX_DISPLAY_LANGUAGE_EN,
+  type CngxDisplayLanguageSection,
+} from './i18n/display-language-section';

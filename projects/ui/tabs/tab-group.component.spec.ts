@@ -40,6 +40,7 @@ import {
 } from '@cngx/common/tabs';
 
 import { CngxTabGroup } from './tab-group.component';
+import { stripBidiIsolates } from '@cngx/testing';
 
 @Component({
   standalone: true,
@@ -135,9 +136,9 @@ describe('CngxTabGroup organism', () => {
         'button[role="tab"]',
       ) as NodeListOf<HTMLButtonElement>,
     );
-    expect(tabs[0].getAttribute('aria-label')).toBe('Tab 1 of 3: A');
-    expect(tabs[1].getAttribute('aria-label')).toBe('Tab 2 of 3: B');
-    expect(tabs[2].getAttribute('aria-label')).toBe('Tab 3 of 3: C');
+    expect(stripBidiIsolates(tabs[0].getAttribute('aria-label'))).toBe('Tab 1 of 3: A');
+    expect(stripBidiIsolates(tabs[1].getAttribute('aria-label'))).toBe('Tab 2 of 3: B');
+    expect(stripBidiIsolates(tabs[2].getAttribute('aria-label'))).toBe('Tab 3 of 3: C');
   });
 
   it('first tab is aria-selected="true", others "false"', () => {
@@ -725,7 +726,7 @@ describe('CngxTabGroup organism', () => {
       // fallback whenever both gate signals are set).
       tabs[1].click();
       fixture.detectChanges();
-      expect(region.textContent?.trim()).toBe(
+      expect(stripBidiIsolates(region.textContent?.trim())).toBe(
         'Could not save changes - reverted to "A".',
       );
     });
@@ -780,7 +781,7 @@ describe('CngxTabGroup organism', () => {
       tabs[1].click();
       fixture.detectChanges();
       // First reject - rich phrase fires.
-      expect(region.textContent?.trim()).toBe(
+      expect(stripBidiIsolates(region.textContent?.trim())).toBe(
         'Could not save changes - reverted to "A".',
       );
       // Sanity: clearing lastFailedIndex while still in the error
@@ -845,7 +846,7 @@ describe('CngxTabGroup organism', () => {
       // Forward nav - 0 → 2. Direction prefix uses i18n.nextTab.
       tabs[2].click();
       fixture.detectChanges();
-      expect(region.textContent?.trim()).toBe('Next tab: Tab 3 of 3: C');
+      expect(stripBidiIsolates(region.textContent?.trim())).toBe('Next tab: Tab 3 of 3: C');
     });
 
     it('liveAnnouncement success arm prepends previousTab on backward nav', () => {
@@ -868,11 +869,11 @@ describe('CngxTabGroup organism', () => {
       // Move forward first so the next backward step has a prior > new.
       tabs[2].click();
       fixture.detectChanges();
-      expect(region.textContent?.trim()).toBe('Next tab: Tab 3 of 3: C');
+      expect(stripBidiIsolates(region.textContent?.trim())).toBe('Next tab: Tab 3 of 3: C');
       // Backward nav - 2 → 0. Direction prefix uses i18n.previousTab.
       tabs[0].click();
       fixture.detectChanges();
-      expect(region.textContent?.trim()).toBe('Previous tab: Tab 1 of 3: A');
+      expect(stripBidiIsolates(region.textContent?.trim())).toBe('Previous tab: Tab 1 of 3: A');
     });
   });
 
@@ -1899,6 +1900,33 @@ class DismissableHost {
   added = 0;
 }
 
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group [closable]="true" aria-label="Unlabelled">
+      <div cngxTab [label]="'Home'"></div>
+      <div cngxTab></div>
+    </cngx-tab-group>
+  `,
+})
+class UnlabelledDismissableHost {}
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group [closable]="true" aria-label="Unlabelled">
+      @for (label of labels(); track $index) {
+        <div cngxTab [label]="label === '' ? undefined : label"></div>
+      }
+    </cngx-tab-group>
+  `,
+})
+class GrowingUnlabelledHost {
+  readonly labels = signal(['Lead', 'Home', '']);
+}
+
 describe('CngxTabGroup dismissable + addable', () => {
   function closeButtons(fixture: {
     nativeElement: HTMLElement;
@@ -1935,8 +1963,31 @@ describe('CngxTabGroup dismissable + addable', () => {
     const fixture = TestBed.createComponent(DismissableHost);
     fixture.detectChanges();
     const btn = closeButtons(fixture)[0];
-    expect(btn.getAttribute('aria-label')).toBe('Close "Profile"');
+    expect(stripBidiIsolates(btn.getAttribute('aria-label'))).toBe('Close "Profile"');
     expect(btn.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('names the close button of an unlabelled tab by its position', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(UnlabelledDismissableHost);
+    fixture.detectChanges();
+    const buttons = closeButtons(fixture);
+    expect(stripBidiIsolates(buttons[1].getAttribute('aria-label'))).toBe('Close "Tab 2"');
+  });
+
+  it('renames the unlabelled close button when a tab before it goes away', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(GrowingUnlabelledHost);
+    fixture.detectChanges();
+    const last = (): string | null => closeButtons(fixture).at(-1)!.getAttribute('aria-label');
+    expect(stripBidiIsolates(last())).toBe('Close "Tab 3"');
+    fixture.componentInstance.labels.set(['Home', '']);
+    fixture.detectChanges();
+    expect(stripBidiIsolates(last())).toBe('Close "Tab 2"');
   });
 
   it('clicking a close button emits tabClose with id + index', () => {
@@ -2076,7 +2127,7 @@ describe('CngxTabGroup dismissable focus restoration', () => {
     TestBed.tick();
     TestBed.tick();
 
-    expect(live.textContent).toBe('Closed "b"');
+    expect(stripBidiIsolates(live.textContent)).toBe('Closed "b"');
     const active = fixture.nativeElement.querySelector(
       'button[role="tab"][aria-selected="true"]',
     ) as HTMLButtonElement;
@@ -2106,12 +2157,12 @@ describe('CngxTabGroup dismissable focus restoration', () => {
     fixture.componentInstance.flushRemoval(); // b lands
     fixture.detectChanges();
     TestBed.tick();
-    expect(live.textContent).toBe('Closed "b"');
+    expect(stripBidiIsolates(live.textContent)).toBe('Closed "b"');
 
     fixture.componentInstance.flushRemoval(); // c lands later
     fixture.detectChanges();
     TestBed.tick();
-    expect(live.textContent).toBe('Closed "c"');
+    expect(stripBidiIsolates(live.textContent)).toBe('Closed "c"');
     const active = fixture.nativeElement.querySelector(
       'button[role="tab"][aria-selected="true"]',
     ) as HTMLButtonElement;
@@ -2315,9 +2366,9 @@ describe('CngxTabGroup sub-label', () => {
     const tabs = Array.from(
       fixture.nativeElement.querySelectorAll('button[role="tab"]'),
     ) as HTMLButtonElement[];
-    expect(tabs[0].getAttribute('aria-label')).toBe('Tab 1 of 3: Bookmarks, 45');
-    expect(tabs[1].getAttribute('aria-label')).toBe('Tab 2 of 3: Home');
-    expect(tabs[2].getAttribute('aria-label')).toBe('Tab 3 of 3: Plain');
+    expect(stripBidiIsolates(tabs[0].getAttribute('aria-label'))).toBe('Tab 1 of 3: Bookmarks, 45');
+    expect(stripBidiIsolates(tabs[1].getAttribute('aria-label'))).toBe('Tab 2 of 3: Home');
+    expect(stripBidiIsolates(tabs[2].getAttribute('aria-label'))).toBe('Tab 3 of 3: Plain');
   });
 
   it('iconLayout="only" keeps the sub-label in the DOM (clip, not removal) and the source CSS clips it', () => {
@@ -2468,7 +2519,7 @@ describe('CngxTabGroup language switch', () => {
     const add = fixture.nativeElement.querySelector('.cngx-tabs__add') as HTMLButtonElement;
     const close = fixture.nativeElement.querySelector('.cngx-tabs__close') as HTMLButtonElement;
     expect(add.getAttribute('aria-label')).toBe('Add tab');
-    expect(close.getAttribute('aria-label')).toBe('Close "Profile"');
+    expect(stripBidiIsolates(close.getAttribute('aria-label'))).toBe('Close "Profile"');
 
     lang.set('de');
     fixture.detectChanges();

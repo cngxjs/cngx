@@ -123,6 +123,7 @@ describe('createStepperStateView', () => {
 describe('resolveStepperErrorSummary', () => {
   const i18n = {
     statusLabels: { errored: 'Errored' },
+    stepWithDetail: (step: string, detail: string) => `${step}: ${detail}`,
     stepHasErrors: (count: number) => `${count} error${count === 1 ? '' : 's'}`,
   } as unknown as CngxStepperI18n;
 
@@ -139,6 +140,18 @@ describe('resolveStepperErrorSummary', () => {
     ]);
     const view = { errorCount: signal(1), firstErrorIndex: signal(1) };
     expect(resolveStepperErrorSummary(view, stepsOnly, i18n)).toBe('Payment: Errored');
+  });
+
+  it('joins the step label and the errored status through stepWithDetail', () => {
+    const stepsOnly = signal<readonly CngxStepNode[]>([
+      stubNode({ id: 'Payment', flatIndex: 0, label: () => 'Payment' }),
+    ]);
+    const view = { errorCount: signal(1), firstErrorIndex: signal(0) };
+    const reordered = {
+      ...i18n,
+      stepWithDetail: (step: string, detail: string) => `${detail} - ${step}`,
+    } as CngxStepperI18n;
+    expect(resolveStepperErrorSummary(view, stepsOnly, reordered)).toBe('Errored - Payment');
   });
 
   it('collapses multiple errors to the count phrase', () => {
@@ -188,6 +201,7 @@ describe('resolveStepperErrorSummary language switch', () => {
     const lang = signal<'en' | 'de'>('en');
     const i18n = {
       statusLabels: { errored: 'Errored' },
+      stepWithDetail: (step: string, detail: string) => `${step}: ${detail}`,
       stepHasErrors: (count: number) => `${count} errors`,
     } as unknown as CngxStepperI18n;
     const stepsOnly = signal<readonly CngxStepNode[]>([

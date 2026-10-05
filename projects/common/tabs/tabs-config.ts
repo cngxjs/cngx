@@ -1,4 +1,5 @@
 import {
+  computed,
   type EnvironmentProviders,
   inject,
   InjectionToken,
@@ -8,6 +9,10 @@ import {
   type TemplateRef,
 } from '@angular/core';
 import { createOverrideMerge } from '@cngx/core/utils';
+import { recordEqual } from '@cngx/utils';
+
+import { injectTabsLanguage } from './i18n/tabs-i18n';
+import { CNGX_TABS_LANGUAGE_EN } from './i18n/tabs-language-section';
 
 import type { CngxTabOverflowItemContext } from './overflow/tab-overflow-item.directive';
 import type { CngxTabOverflowTriggerContext } from './overflow/tab-overflow-trigger.directive';
@@ -328,14 +333,14 @@ export const TABS_CONFIG_DEFAULTS: Required<
   // other. linkAriaCurrent defaults at the link, not here.
   linkAriaCurrent: 'page',
   ariaLabels: {
-    tabsRegion: 'Tabs',
+    tabsRegion: CNGX_TABS_LANGUAGE_EN.tabsRegion,
   },
   fallbackLabels: {
     // W3C ARIA tablist convention - kept distinct from
     // `i18n.tabsLabel` so AT doesn't read the same string twice
     // back-to-back across `aria-roledescription` and `aria-label`.
-    tabRoleDescription: 'tab list',
-    tabPanelRoleDescription: 'tab panel',
+    tabRoleDescription: CNGX_TABS_LANGUAGE_EN.tabRoleDescription,
+    tabPanelRoleDescription: CNGX_TABS_LANGUAGE_EN.tabPanelRoleDescription,
   },
   overflowStabilizeMs: 100,
   overflowMaxDeferMs: 250,
@@ -354,7 +359,7 @@ export const TABS_CONFIG_DEFAULTS: Required<
  */
 export const CNGX_TABS_CONFIG = new InjectionToken<CngxTabsConfig>('CngxTabsConfig', {
   providedIn: 'root',
-  factory: () => TABS_CONFIG_DEFAULTS,
+  factory: () => resolveFeatures([]),
 });
 
 /**
@@ -786,8 +791,28 @@ export function withTabAddIconTemplate(template: TemplateRef<void>): CngxTabsCon
   }));
 }
 
+/**
+ * @internal The defaults with the copy keys read from the tabs section of
+ * the active language pack. Runs in an injection context.
+ */
+function tabsConfigDefaultsFromPack(): CngxTabsConfig {
+  const language = injectTabsLanguage();
+  return {
+    ...TABS_CONFIG_DEFAULTS,
+    ariaLabels: computed(() => ({ tabsRegion: language().tabsRegion }), { equal: recordEqual }),
+    fallbackLabels: computed(
+      () => ({
+        tabRoleDescription: language().tabRoleDescription,
+        tabPanelRoleDescription: language().tabPanelRoleDescription,
+      }),
+      { equal: recordEqual },
+    ),
+  };
+}
+
+/** @internal Runs in an injection context; features apply on top of the pack. */
 function resolveFeatures(features: readonly CngxTabsConfigFeature[]): CngxTabsConfig {
-  return features.reduce<CngxTabsConfig>((cfg, feat) => feat(cfg), TABS_CONFIG_DEFAULTS);
+  return features.reduce<CngxTabsConfig>((cfg, feat) => feat(cfg), tabsConfigDefaultsFromPack());
 }
 
 /**
@@ -801,7 +826,7 @@ export function provideTabsConfig(
   ...features: readonly CngxTabsConfigFeature[]
 ): EnvironmentProviders {
   return makeEnvironmentProviders([
-    { provide: CNGX_TABS_CONFIG, useValue: resolveFeatures(features) },
+    { provide: CNGX_TABS_CONFIG, useFactory: () => resolveFeatures(features) },
   ]);
 }
 
@@ -820,7 +845,7 @@ export function provideTabsConfig(
  * @category common/tabs
  */
 export function provideTabsConfigAt(...features: readonly CngxTabsConfigFeature[]): Provider[] {
-  return [{ provide: CNGX_TABS_CONFIG, useValue: resolveFeatures(features) }];
+  return [{ provide: CNGX_TABS_CONFIG, useFactory: () => resolveFeatures(features) }];
 }
 
 /**

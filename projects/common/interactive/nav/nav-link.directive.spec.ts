@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
+import { provideLocale } from '@cngx/core/utils';
 import { CngxNavLink } from './nav-link.directive';
 import { provideNavConfig, withNavAnimation, withNavIndent } from './nav-config';
 
@@ -127,5 +128,37 @@ describe('CngxNavLink', () => {
     fixture.detectChanges();
     const el = fixture.debugElement.query(By.directive(CngxNavLink)).nativeElement as HTMLElement;
     expect(el.getAttribute('tabindex')).toBeNull();
+  });
+});
+
+@Component({
+  template: `<a cngxNavLink href="/a">{{ text() }}</a>`,
+  imports: [CngxNavLink],
+})
+class InitialHost {
+  readonly text = signal('istanbul');
+}
+
+describe('CngxNavLink initial', () => {
+  function initialOf(text: string, locale?: string): string | undefined {
+    TestBed.configureTestingModule({ providers: locale ? [provideLocale(locale)] : [] });
+    const fixture = TestBed.createComponent(InitialHost);
+    fixture.componentInstance.text.set(text);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const el = fixture.debugElement.query(By.directive(CngxNavLink)).nativeElement as HTMLElement;
+    return el.dataset['initial'];
+  }
+
+  it('uppercases the first letter with the app locale', () => {
+    expect(initialOf('istanbul', 'tr')).toBe('İ');
+  });
+
+  it('keeps a letter built from a base and a combining accent whole', () => {
+    expect(initialOf('e\u0301cole')).toBe('E\u0301');
+  });
+
+  it('keeps an emoji whole', () => {
+    expect(initialOf('\u{1F680} Launch')).toBe('\u{1F680}');
   });
 });

@@ -1,6 +1,7 @@
-import { Directive, inject, input } from '@angular/core';
+import { Directive, inject, input, type Signal } from '@angular/core';
 
 import { type ActiveDescendantItem } from '@cngx/common/a11y';
+import { foldForMatching, injectLocale } from '@cngx/core/utils';
 
 import { CngxSearch } from '../keyboard/search.directive';
 
@@ -11,13 +12,47 @@ import { CngxSearch } from '../keyboard/search.directive';
  */
 export type ListboxMatchFn = (option: ActiveDescendantItem, term: string) => boolean;
 
-/** @internal */
-const defaultLabelMatch: ListboxMatchFn = (option, term) => {
-  if (term === '') {
-    return true;
-  }
-  return option.label.toLowerCase().includes(term.toLowerCase());
-};
+interface FoldedLabel {
+  readonly locale: string;
+  readonly source: string;
+  readonly folded: string;
+}
+
+/**
+ * @internal Accent- and case-tolerant substring match in the app locale. The
+ * term is folded once per term and locale, each option label once per label
+ * and locale - not on every keystroke for every option.
+ */
+function labelMatchFor(locale: Signal<string>): ListboxMatchFn {
+  const labels = new WeakMap<ActiveDescendantItem, FoldedLabel>();
+  let lastTerm: FoldedLabel | undefined;
+  const foldedLabel = (option: ActiveDescendantItem, current: string): string => {
+    const hit = labels.get(option);
+    if (hit?.locale === current && hit.source === option.label) {
+      return hit.folded;
+    }
+    const entry = {
+      locale: current,
+      source: option.label,
+      folded: foldForMatching(option.label, current),
+    };
+    labels.set(option, entry);
+    return entry.folded;
+  };
+  const foldedTerm = (term: string, current: string): string => {
+    if (lastTerm?.locale !== current || lastTerm.source !== term) {
+      lastTerm = { locale: current, source: term, folded: foldForMatching(term, current) };
+    }
+    return lastTerm.folded;
+  };
+  return (option, term) => {
+    if (term === '') {
+      return true;
+    }
+    const current = locale();
+    return foldedLabel(option, current).includes(foldedTerm(term, current));
+  };
+}
 
 /**
  * Search input for a `CngxListbox`.
@@ -47,8 +82,11 @@ const defaultLabelMatch: ListboxMatchFn = (option, term) => {
   ],
 })
 export class CngxListboxSearch {
-  /** Custom matcher. Defaults to case-insensitive substring match on `label`. */
-  readonly matchFn = input<ListboxMatchFn>(defaultLabelMatch);
+  /**
+   * Custom matcher. Defaults to a substring match on `label` that ignores
+   * case and accents in the app locale.
+   */
+  readonly matchFn = input<ListboxMatchFn>(labelMatchFor(injectLocale()));
 
   private readonly search = inject(CngxSearch, { self: true, host: true });
 

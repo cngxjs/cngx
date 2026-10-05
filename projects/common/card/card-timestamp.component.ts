@@ -9,11 +9,54 @@ import {
 } from '@angular/core';
 import { dateTimeFormatterFor, injectLocale } from '@cngx/core/utils';
 
+import { injectCardI18n } from './i18n/card-i18n';
+
+/** @internal One piece of the timestamp message, in reading order. */
+interface TimestampSegment {
+  readonly kind: 'text' | 'prefix' | 'date';
+  readonly text: string;
+}
+
+function segmentsEqual(a: readonly TimestampSegment[], b: readonly TimestampSegment[]): boolean {
+  return (
+    a.length === b.length &&
+    a.every((segment, i) => segment.kind === b[i].kind && segment.text === b[i].text)
+  );
+}
+
+const TIMESTAMP_PLACEHOLDER = /\{(prefix|date)\}/;
+const DATE_ONLY: readonly TimestampSegment[] = [{ kind: 'date', text: '' }];
+
+/**
+ * @internal Splits the `timestamp` message into its prefix, date and text
+ * pieces. Whitespace between them is the host's gap; a message without
+ * `{date}` still shows the date last.
+ */
+function timestampSegments(message: string): readonly TimestampSegment[] {
+  const segments: TimestampSegment[] = [];
+  message.split(TIMESTAMP_PLACEHOLDER).forEach((part, index) => {
+    if (index % 2 === 1) {
+      segments.push({ kind: part as 'prefix' | 'date', text: '' });
+      return;
+    }
+    const text = part.trim();
+    if (text) {
+      segments.push({ kind: 'text', text });
+    }
+  });
+  if (!segments.some((segment) => segment.kind === 'date')) {
+    segments.push(DATE_ONLY[0]);
+  }
+  return segments;
+}
+
 /**
  * Displays a formatted date/timestamp, typically in a card footer.
  *
  * Uses `Intl.DateTimeFormat` with the app locale (`CNGX_LOCALE`, falling back
- * to the nearest `LOCALE_ID`); a locale flip re-formats.
+ * to the nearest `LOCALE_ID`); a locale flip re-formats. The order of the
+ * prefix and the date comes from the `timestamp` message of the card
+ * language section (English `'{prefix} {date}'`).
  *
  * ```html
  * <cngx-card>
@@ -37,26 +80,45 @@ import { dateTimeFormatterFor, injectLocale } from '@cngx/core/utils';
     class: 'cngx-card-timestamp',
   },
   template: `
-    @if (prefix()) {
-      <span class="cngx-card-timestamp__prefix">{{ prefix() }}</span>
+    @for (segment of segments(); track $index) {
+      @switch (segment.kind) {
+        @case ('prefix') {
+          <span class="cngx-card-timestamp__prefix">{{ prefix() }}</span>
+        }
+        @case ('date') {
+          <time [attr.datetime]="isoDate()" class="cngx-card-timestamp__date">
+            {{ formattedDate() }}
+          </time>
+        }
+        @default {
+          {{ segment.text }}
+        }
+      }
     }
-    <time [attr.datetime]="isoDate()" class="cngx-card-timestamp__date">
-      {{ formattedDate() }}
-    </time>
   `,
   styleUrls: ['./card-timestamp.component.css'],
 })
 export class CngxCardTimestamp {
   private readonly locale = injectLocale();
+  private readonly i18n = injectCardI18n();
 
   /** Date to display. Accepts Date objects or ISO strings. */
   readonly date = input.required<Date | string>();
 
-  /** Optional prefix text before the date (e.g. "Evaluierung am:"). */
+  /**
+   * Optional prefix text (e.g. "Evaluierung am:"). Placed before or after the
+   * date by the `timestamp` message of the card language section.
+   */
   readonly prefix = input<string | undefined>(undefined);
 
   /** `Intl.DateTimeFormatOptions` for the date. */
   readonly format = input<Intl.DateTimeFormatOptions | undefined>(undefined);
+
+  /** @internal Prefix, date and message text in the language's reading order. */
+  protected readonly segments = computed(
+    () => (this.prefix() ? timestampSegments(this.i18n().timestamp) : DATE_ONLY),
+    { equal: segmentsEqual },
+  );
 
   /**
    * @internal Coerced instant, deduped by time value so a fresh-ref

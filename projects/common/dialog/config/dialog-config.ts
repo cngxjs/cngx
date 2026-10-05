@@ -1,5 +1,11 @@
-import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { injectLanguageSection } from '@cngx/core/i18n';
 import { createOverrideMerge } from '@cngx/core/utils';
+
+import {
+  CNGX_DIALOG_LANGUAGE_EN,
+  type CngxDialogLanguageSection,
+} from '../i18n/dialog-language-section';
 
 /**
  * The five interaction strings the dialog family renders on its own behalf.
@@ -7,22 +13,12 @@ import { createOverrideMerge } from '@cngx/core/utils';
  * affordance only names itself when the trigger has no text of its own, the
  * error fallback only fires when the thrown value is not a string, and the
  * drag handle is labelled imperatively because the directive may promote any
- * element to a handle.
+ * element to a handle. The same shape as the dialog section of a language
+ * pack, declared once as {@link CngxDialogLanguageSection}.
  *
  * @category common/dialog/config
  */
-export interface CngxDialogLabels {
-  /** Implicit accessible name of `CngxDialogClose` when the trigger carries no text. */
-  readonly close: string;
-  /** Live-region text when a dialog error carries no message of its own. */
-  readonly errorFallback: string;
-  /** `aria-label` set on a promoted drag handle. */
-  readonly dragHandle: string;
-  /** `aria-roledescription` set on a promoted drag handle. */
-  readonly dragHandleRoleDescription: string;
-  /** Visually hidden keyboard-drag instruction the handle is described by. */
-  readonly dragInstructions: string;
-}
+export type CngxDialogLabels = CngxDialogLanguageSection;
 
 /**
  * App-wide dialog defaults, populated via {@link provideDialogConfig} in the
@@ -50,18 +46,22 @@ export interface CngxDialogDefaults {
   readonly labels: CngxDialogLabels | Signal<CngxDialogLabels>;
 }
 
-const DIALOG_LABEL_DEFAULTS: CngxDialogLabels = {
-  close: 'Close dialog',
-  errorFallback: 'An error occurred',
-  dragHandle: 'Move dialog',
-  dragHandleRoleDescription: 'draggable',
-  dragInstructions: 'Use arrow keys to move the dialog; Shift for larger steps',
-};
+const NO_SECTION: Partial<CngxDialogLabels> = {};
+
+/** @internal The dialog section of the active pack over the English labels. */
+function dialogLabelsFromPack(): Signal<CngxDialogLabels> {
+  const pack = injectLanguageSection('dialog');
+  return createOverrideMerge<CngxDialogLabels>(
+    CNGX_DIALOG_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+  );
+}
 
 /**
- * DI token carrying the merged {@link CngxDialogDefaults}. `providedIn: 'root'`
- * with the English defaults, so a consumer who provides nothing keeps today's
- * behaviour exactly.
+ * DI token carrying the merged {@link CngxDialogDefaults}. `providedIn: 'root'`:
+ * `labels` is the dialog section of the active language pack over the English
+ * defaults, so a consumer who provides nothing keeps today's behaviour
+ * exactly.
  *
  * @category common/dialog/config
  * @wcag AA
@@ -71,7 +71,7 @@ const DIALOG_LABEL_DEFAULTS: CngxDialogLabels = {
  */
 export const CNGX_DIALOG_DEFAULTS = new InjectionToken<CngxDialogDefaults>('CngxDialogDefaults', {
   providedIn: 'root',
-  factory: (): CngxDialogDefaults => ({ labels: DIALOG_LABEL_DEFAULTS }),
+  factory: (): CngxDialogDefaults => ({ labels: dialogLabelsFromPack() }),
 });
 
 /**
@@ -86,9 +86,9 @@ export interface CngxDialogConfigFeature {
 }
 
 /**
- * Override dialog interaction strings. Unset keys keep the English default,
- * and two calls merge rather than replace. Pass a `Signal` to switch the
- * language at runtime.
+ * Override dialog interaction strings. Unset keys keep the language pack's
+ * text, or the English default, and two calls merge rather than replace.
+ * Pass a `Signal` to switch the language at runtime.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -111,7 +111,8 @@ export function withDialogLabels(
 }
 
 /**
- * Register app-wide dialog defaults composed from `with*` features.
+ * Register app-wide dialog defaults composed from `with*` features, applied
+ * on top of the active language pack.
  *
  * @category common/dialog/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/config/dialog-config.ts
@@ -124,7 +125,7 @@ export function provideDialogConfig(...features: CngxDialogConfigFeature[]): Pro
       useFactory: (): CngxDialogDefaults => ({
         labels: features.reduce<Signal<CngxDialogLabels>>(
           (acc, feature) => createOverrideMerge(acc, feature.labels),
-          createOverrideMerge(DIALOG_LABEL_DEFAULTS, undefined),
+          dialogLabelsFromPack(),
         ),
       }),
     },

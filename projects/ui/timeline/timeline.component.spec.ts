@@ -22,6 +22,7 @@ import {
   createTimelineView,
   type CngxTimelineViewFactory,
 } from './timeline-view';
+import { stripBidiIsolates } from '@cngx/testing';
 
 interface Event {
   readonly id: number;
@@ -100,7 +101,8 @@ function mount(): { host: Host; el: HTMLElement; detect: () => void } {
   };
 }
 
-const text = (el: Element | null): string => (el?.textContent ?? '').trim();
+// Header dates are message arguments, wrapped in U+2068 / U+2069; compare without them.
+const text = (el: Element | null): string => stripBidiIsolates(el?.textContent).trim();
 
 /**
  * The default `groupLabel` formats the band's start date in the app locale

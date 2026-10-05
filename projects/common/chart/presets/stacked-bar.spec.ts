@@ -1,8 +1,9 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
-import { provideChartI18n, type CngxChartI18n } from '../i18n/chart-i18n';
+import { provideChartI18n, withChartI18nLabels, type CngxChartI18n } from '../i18n/chart-i18n';
 import { CngxStackedBar, type CngxStackedSegment } from './stacked-bar.component';
+import { stripBidiIsolates } from '@cngx/testing';
 
 @Component({
   standalone: true,
@@ -55,10 +56,10 @@ describe('CngxStackedBar', () => {
   it('builds an aria-label that enumerates segments and total', () => {
     const { host } = setup();
     const label = host.getAttribute('aria-label') ?? '';
-    expect(label).toContain('Total 100');
-    expect(label).toContain('A: 25');
-    expect(label).toContain('B: 50');
-    expect(label).toContain('C: 25');
+    expect(stripBidiIsolates(label)).toContain('Total 100');
+    expect(stripBidiIsolates(label)).toContain('A: 25');
+    expect(stripBidiIsolates(label)).toContain('B: 50');
+    expect(stripBidiIsolates(label)).toContain('C: 25');
   });
 
   const OVERRIDE_BASE: CngxChartI18n = {
@@ -79,11 +80,13 @@ describe('CngxStackedBar', () => {
     TestBed.configureTestingModule({
       imports: [TestHost],
       providers: [
-        provideChartI18n({
-          ...OVERRIDE_BASE,
-          stackedBarEmpty: () => 'Leer',
-          stackedBarSummary: (total, segments) => `Gesamt ${total} (${segments.length} Segmente)`,
-        }),
+        provideChartI18n(
+          withChartI18nLabels({
+            ...OVERRIDE_BASE,
+            stackedBarEmpty: () => 'Leer',
+            stackedBarSummary: (total, segments) => `Gesamt ${total} (${segments.length} Segmente)`,
+          }),
+        ),
       ],
     });
     const fixture = TestBed.createComponent(TestHost);
@@ -98,12 +101,14 @@ describe('CngxStackedBar', () => {
   it('falls back to the built-in phrasing when an override omits the optional stacked-bar keys', () => {
     TestBed.configureTestingModule({
       imports: [TestHost],
-      providers: [provideChartI18n(OVERRIDE_BASE)],
+      providers: [provideChartI18n(withChartI18nLabels(OVERRIDE_BASE))],
     });
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
     const host = fixture.nativeElement.querySelector('[data-testid="bar"]') as HTMLElement;
-    expect(host.getAttribute('aria-label')).toBe('Total 100. A: 25, B: 50, C: 25.');
+    expect(stripBidiIsolates(host.getAttribute('aria-label'))).toBe(
+      'Total 100. A: 25, B: 50, C: 25.',
+    );
     fixture.componentInstance.segments.set([]);
     fixture.detectChanges();
     expect(host.getAttribute('aria-label')).toBe('Empty stacked bar');
@@ -131,5 +136,35 @@ describe('CngxStackedBar', () => {
     fixture.componentInstance.state.setError(new Error('feed down'));
     fixture.detectChanges();
     expect(host.getAttribute('aria-label')).toBe('Error loading chart');
+  });
+});
+
+describe('CngxStackedBar segment title', () => {
+  it('builds each segment tooltip through stackedBarSegmentTitle', () => {
+    TestBed.configureTestingModule({
+      imports: [TestHost],
+      providers: [
+        provideChartI18n(
+          withChartI18nLabels({ stackedBarSegmentTitle: (label, value) => `${value} (${label})` }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    const titles = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('.cngx-stacked-bar__segment'),
+      (el) => el.getAttribute('title'),
+    );
+    expect(titles).toEqual(['25 (A)', '50 (B)', '25 (C)']);
+  });
+
+  it('keeps the English label: value tooltip', () => {
+    TestBed.configureTestingModule({ imports: [TestHost] });
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    const first = (fixture.nativeElement as HTMLElement).querySelector(
+      '.cngx-stacked-bar__segment',
+    );
+    expect(stripBidiIsolates(first?.getAttribute('title'))).toBe('A: 25');
   });
 });

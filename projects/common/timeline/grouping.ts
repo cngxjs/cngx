@@ -1,4 +1,5 @@
 import { InjectionToken, linkedSignal, type Signal } from '@angular/core';
+import { memoize } from '@cngx/core/utils';
 
 /**
  * One rendered band of a timeline - a calendar bucket plus the items that
@@ -100,6 +101,12 @@ export interface TimelineGroupingOptions<T> {
   readonly groupBy?: () => TimelineGroupBy<T>;
   /** Sort direction. Defaults to `'desc'`. */
   readonly direction?: () => TimelineDirection;
+  /**
+   * BCP 47 locale whose first day of the week starts a `'week'` bucket
+   * (`Intl.Locale` week info: Sunday in `en-US`, Monday in `de`). Unset, or
+   * where the runtime has no week info, weeks start on Monday (ISO 8601).
+   */
+  readonly locale?: () => string;
 }
 
 /**
@@ -132,9 +139,33 @@ function groupByDay(date: Date): TimelineGroupKey {
   };
 }
 
-function groupByWeek(date: Date): TimelineGroupKey {
-  // ISO weeks start on Monday; `getDay()` starts on Sunday.
-  const offset = (date.getDay() + 6) % 7;
+interface WeekInfoLocale {
+  readonly getWeekInfo?: () => { readonly firstDay?: number };
+  readonly weekInfo?: { readonly firstDay?: number };
+}
+
+const ISO_FIRST_DAY = 1;
+
+/**
+ * First day of the week for a locale, `1` (Monday) to `7` (Sunday); ISO
+ * Monday without week info.
+ */
+const firstDayOfWeek = memoize(
+  (locale: string): number => {
+    let intlLocale: WeekInfoLocale;
+    try {
+      intlLocale = new Intl.Locale(locale) as unknown as WeekInfoLocale;
+    } catch {
+      return ISO_FIRST_DAY;
+    }
+    return (intlLocale.getWeekInfo?.() ?? intlLocale.weekInfo)?.firstDay ?? ISO_FIRST_DAY;
+  },
+  { cacheLimit: 32 },
+);
+
+function groupByWeek(date: Date, firstDay: number): TimelineGroupKey {
+  // `firstDay` counts Monday as 1 and Sunday as 7; `getDay()` counts Sunday as 0.
+  const offset = (date.getDay() - (firstDay % 7) + 7) % 7;
   const start = new Date(date.getFullYear(), date.getMonth(), date.getDate() - offset);
   return {
     key: `W${start.getFullYear()}-${pad2(start.getMonth() + 1)}-${pad2(start.getDate())}`,
@@ -152,13 +183,13 @@ function groupByNone(date: Date): TimelineGroupKey {
   return { key: 'all', start: date };
 }
 
-function resolveGrouper<T>(mode: TimelineGroupBy<T>): TimelineGroupingFn<T> {
+function resolveGrouper<T>(mode: TimelineGroupBy<T>, firstDay: number): TimelineGroupingFn<T> {
   if (typeof mode === 'function') {
     return mode;
   }
   switch (mode) {
     case 'week':
-      return groupByWeek;
+      return (date) => groupByWeek(date, firstDay);
     case 'month':
       return groupByMonth;
     case 'none':
@@ -226,7 +257,7 @@ function groupsEqual<T>(a: readonly TimelineGroup<T>[], b: readonly TimelineGrou
 export function createTimelineGrouping<T>(
   options: TimelineGroupingOptions<T>,
 ): TimelineGrouping<T> {
-  const { items, dateAccessor, groupBy, direction } = options;
+  const { items, dateAccessor, groupBy, direction, locale } = options;
 
   // Dev-only diagnostic; once per grouping instance so a recompute over the
   // same bad data does not spam the console.
@@ -240,7 +271,8 @@ export function createTimelineGrouping<T>(
   const groups = linkedSignal<readonly TimelineGroup<T>[], readonly TimelineGroup<T>[]>({
     source: () => {
       const source = items();
-      const grouper = resolveGrouper(groupBy?.() ?? 'day');
+      const firstDay = locale ? firstDayOfWeek(locale()) : ISO_FIRST_DAY;
+      const grouper = resolveGrouper(groupBy?.() ?? 'day', firstDay);
       const sign = (direction?.() ?? 'desc') === 'asc' ? 1 : -1;
 
       const dated = source.map((item) => ({ item, date: toDate(dateAccessor(item)) }));

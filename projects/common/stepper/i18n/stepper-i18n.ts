@@ -1,21 +1,24 @@
-import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { coerceSignal, createNestedOverrideMerge } from '@cngx/core/utils';
+import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createNestedOverrideMerge, type CngxNestedOverrides } from '@cngx/core/utils';
+
+import {
+  CNGX_STEPPER_LANGUAGE_EN,
+  type CngxStepperLanguageSection,
+  type CngxStepperStatusLanguage,
+} from './stepper-language-section';
 
 /**
  * Status-pill labels used by the `stripe-status-rich` skin (and any
  * future skin / variant that surfaces a per-step status pill). Sub-
  * bundle of {@link CngxStepperI18n}; consumers override partial keys
  * via {@link withStepperI18nLabels} - un-overridden keys keep their
- * English defaults.
+ * English defaults. The same shape as the section's status words, declared
+ * once as {@link CngxStepperStatusLanguage}.
  *
  * @category common/stepper/i18n
  */
-export interface CngxStepperStatusLabels {
-  readonly done: string;
-  readonly inProgress: string;
-  readonly upNext: string;
-  readonly errored: string;
-}
+export type CngxStepperStatusLabels = CngxStepperStatusLanguage;
 
 /**
  * Stepper i18n surface. Library defaults are English; locales come from
@@ -42,7 +45,15 @@ export interface CngxStepperI18n {
    * @category common/stepper/i18n
    */
   readonly stepIndicatorRoleDescription: string;
+  /** `aria-roledescription` of a step group header. English `step group`. */
+  readonly groupRoleDescription: string;
   readonly selectedStep: (label: string, position: number, count: number) => string;
+  /**
+   * A step name followed by a detail - its status (`Step 2 of 3: Shipping:
+   * Errored`) or its label (`Step 2 of 3: Shipping`). One message, so a
+   * locale owns the joiner and the order.
+   */
+  readonly stepWithDetail: (step: string, detail: string) => string;
   readonly stepHasErrors: (count: number) => string;
   readonly previousStep: string;
   readonly nextStep: string;
@@ -92,6 +103,10 @@ export interface CngxStepperI18n {
   readonly groupSummaryCount: (total: number) => string;
   /** Collapsed-group SR phrase for `groupCollapseSummary: 'progress'`. */
   readonly groupSummaryProgress: (completed: number, total: number) => string;
+  /** Visible collapsed-group badge for `groupCollapseSummary: 'count'`. */
+  readonly groupSummaryCountShort: (total: number) => string;
+  /** Visible collapsed-group badge for `groupCollapseSummary: 'progress'`. */
+  readonly groupSummaryProgressShort: (completed: number, total: number) => string;
   /**
    * Last-resort label of a Material `<mat-step>` instrumented by
    * `[cngxMatStepper]` when it has no `label`, `ariaLabel` or static
@@ -113,34 +128,64 @@ export type CngxStepperI18nOverrides = Omit<Partial<CngxStepperI18n>, 'statusLab
   readonly statusLabels?: Partial<CngxStepperStatusLabels>;
 };
 
-/** @internal */
-const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
-  stepperLabel: 'Stepper',
-  stepIndicatorRoleDescription: 'Step indicator',
-  selectedStep: (label, position, count) => `Step ${position} of ${count}: ${label}`,
-  stepHasErrors: (count) => `${count} error${count === 1 ? '' : 's'}`,
-  previousStep: 'Previous step',
-  nextStep: 'Next step',
-  commitFailedRetry: 'Commit failed - retry?',
-  commitInFlight: 'Committing step…',
-  commitRolledBackTo: (originLabel) => `Reverted to step "${originLabel}".`,
-  stepRolledBack: (base) => `${base} This step was rolled back.`,
-  statusLabels: {
-    done: 'Done',
-    inProgress: 'In progress',
-    upNext: 'Up next',
-    errored: 'Errored',
-  },
-  textStepperFormat: (current, total) => `Step ${current} of ${total}`,
-  groupSummaryCount: (total) => `${total} steps`,
-  groupSummaryProgress: (completed, total) => `${completed} of ${total} steps complete`,
-  stepFallbackLabel: (id) => `Step ${id}`,
-};
+const NO_SECTION: CngxNestedOverrides<CngxStepperLanguageSection, 'statusLabels'> = {};
+
+/** @internal Turns a stepper section into the token's keys for a locale. */
+function stepperBundleFrom(section: CngxStepperLanguageSection, locale: string): CngxStepperI18n {
+  return {
+    stepperLabel: section.stepperLabel,
+    stepIndicatorRoleDescription: section.stepIndicatorRoleDescription,
+    groupRoleDescription: section.groupRoleDescription,
+    selectedStep: (label, position, count) =>
+      formatMessage(section.selectedStep, { label, position, count }, locale),
+    stepWithDetail: (step, detail) =>
+      formatMessage(section.stepWithDetail, { step, detail }, locale),
+    stepHasErrors: (count) => formatMessage(section.stepHasErrors, { count }, locale),
+    previousStep: section.previousStep,
+    nextStep: section.nextStep,
+    commitFailedRetry: section.commitFailedRetry,
+    commitInFlight: section.commitInFlight,
+    commitRolledBackTo: (origin) => formatMessage(section.commitRolledBackTo, { origin }, locale),
+    stepRolledBack: (base) => formatMessage(section.stepRolledBack, { base }, locale),
+    statusLabels: section.statusLabels,
+    textStepperFormat: (current, count) =>
+      formatMessage(section.textStepperFormat, { current, count }, locale),
+    groupSummaryCount: (count) => formatMessage(section.groupSummaryCount, { count }, locale),
+    groupSummaryProgress: (completed, count) =>
+      formatMessage(section.groupSummaryProgress, { completed, count }, locale),
+    groupSummaryCountShort: (count) =>
+      formatMessage(section.groupSummaryCountShort, { count }, locale),
+    groupSummaryProgressShort: (completed, count) =>
+      formatMessage(section.groupSummaryProgressShort, { completed, count }, locale),
+    stepFallbackLabel: (id) => formatMessage(section.stepFallbackLabel, { id }, locale),
+  };
+}
+
+/**
+ * @internal The English stepper section with the active pack's stepper
+ * section on top. Feeds both `CNGX_STEPPER_I18N` and the
+ * `CNGX_STEPPER_CONFIG` labels.
+ */
+export function injectStepperLanguage(): Signal<CngxStepperLanguageSection> {
+  const pack = injectLanguageSection('stepper');
+  return createNestedOverrideMerge<CngxStepperLanguageSection, 'statusLabels'>(
+    CNGX_STEPPER_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+    'statusLabels',
+  );
+}
+
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const stepperBundle = createSectionBundle<CngxStepperLanguageSection, CngxStepperI18n>({
+  section: injectStepperLanguage,
+  toBundle: stepperBundleFrom,
+});
 
 /**
  * DI token for the resolved stepper i18n bundle, as a `Signal` so a
  * runtime language switch re-renders every label it feeds.
- * `providedIn: 'root'` with English defaults. Provide it through
+ * `providedIn: 'root'`: the stepper section of the active language pack over
+ * the English defaults, formatted for the app locale. Provide it through
  * {@link provideStepperI18n}; a `{ provide, useValue }` entry must supply a
  * `Signal<CngxStepperI18n>`.
  *
@@ -151,7 +196,7 @@ const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
  */
 export const CNGX_STEPPER_I18N = new InjectionToken<Signal<CngxStepperI18n>>('CngxStepperI18n', {
   providedIn: 'root',
-  factory: () => coerceSignal(STEPPER_I18N_DEFAULTS),
+  factory: () => stepperBundle.build(),
 });
 
 /**
@@ -181,7 +226,7 @@ function defineStepperI18nFeature(
 
 /**
  * Override stepper i18n labels. Partial override - unset keys keep
- * the English default. {@link CngxStepperStatusLabels} is merged
+ * the language pack's copy, or the English default. {@link CngxStepperStatusLabels} is merged
  * key-by-key so consumers can override one pill label without
  * restating the rest. Pass a `Signal` to switch the language at runtime.
  * Sibling of `withStepperAriaLabels` / `withStepperFallbackLabels`.
@@ -198,7 +243,8 @@ export function withStepperI18nLabels(
 
 /**
  * Provider for the stepper i18n bundle. Compose `withStepperI18nLabels(...)`
- * (plus any future i18n `with*`) - unset keys fall back to English.
+ * (plus any future i18n `with*`) - unset keys fall back to the language
+ * pack, then English. The features apply on top of the active pack.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -215,11 +261,7 @@ export function withStepperI18nLabels(
 export function provideStepperI18n(...features: readonly CngxStepperI18nFeature[]): Provider {
   return {
     provide: CNGX_STEPPER_I18N,
-    useFactory: () =>
-      features.reduce<Signal<CngxStepperI18n>>(
-        (bundle, feat) => feat(bundle),
-        coerceSignal(STEPPER_I18N_DEFAULTS),
-      ),
+    useFactory: () => stepperBundle.build(features),
   };
 }
 
@@ -231,5 +273,5 @@ export function provideStepperI18n(...features: readonly CngxStepperI18nFeature[
  * @category common/stepper/i18n
  */
 export function injectStepperI18n(): Signal<CngxStepperI18n> {
-  return inject(CNGX_STEPPER_I18N);
+  return stepperBundle.resolve(inject(CNGX_STEPPER_I18N));
 }

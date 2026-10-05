@@ -12,11 +12,6 @@ const DEFAULT_CONFIG: CngxPopoverPanelConfig = {
   defaultVariant: 'default',
 };
 
-/** @internal English panel copy; `CngxPopoverPanel` merges `config.labels` over it. */
-export const POPOVER_PANEL_LABELS_DEFAULTS: CngxPopoverPanelLabels = {
-  close: 'Close',
-};
-
 /**
  * Injection token for popover panel configuration.
  *
@@ -122,7 +117,8 @@ export function withArrowTemplate(tpl: TemplateRef<CngxPopoverArrowContext>): Po
 }
 
 /**
- * Set the app-wide panel copy. Unset keys keep the English default; pass a
+ * Set the app-wide panel copy. Unset keys keep the language pack's copy, or
+ * the English default; pass a
  * `Signal` of a partial bundle to switch languages at runtime. A later call
  * replaces the whole bundle. Mirrors `withDialogLabels`.
  *

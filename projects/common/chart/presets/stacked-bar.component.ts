@@ -157,6 +157,7 @@ export class CngxStackedBar {
     () => {
       const total = this.resolvedTotal();
       const locale = this.locale();
+      const segmentTitle = this.i18n().stackedBarSegmentTitle;
       let runningLeft = 0;
       return this.segments().map((s, i) => {
         const width = (s.value / total) * 100;
@@ -167,7 +168,7 @@ export class CngxStackedBar {
           left,
           width,
           color: s.color ?? null,
-          title: `${s.label}: ${formatChartNumber(s.value, locale)}`,
+          title: segmentTitle(s.label, formatChartNumber(s.value, locale)),
         };
       });
     },

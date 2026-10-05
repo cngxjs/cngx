@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { LOCALE_ID } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CNGX_LOCALE } from '@cngx/core/utils';
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
+import { stripBidiIsolates } from '@cngx/testing';
 import { CngxMetric } from './metric.component';
 
 @Component({
@@ -101,5 +103,41 @@ describe('CngxMetric - CNGX_LOCALE', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('cngx-metric')).toBe(el);
     expect(valueEl.textContent!.trim()).toBe('1.234,5');
+  });
+});
+
+describe('CngxMetric language pack', () => {
+  function mount(value: number | null, unit?: string) {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.value.set(value);
+    fixture.componentInstance.unit.set(unit);
+    fixture.detectChanges();
+    return fixture.nativeElement.querySelector('cngx-metric') as HTMLElement;
+  }
+
+  it('shows the placeholder glyph and announces only the no-value text for null', () => {
+    TestBed.configureTestingModule({ imports: [TestHost] });
+    const el = mount(null, 'kg');
+    expect(el.querySelector('.cngx-metric__value')?.textContent?.trim()).toBe('\u2014');
+    expect(el.querySelector('.cngx-metric__unit')).toBeNull();
+    expect(el.getAttribute('aria-label')).toBe('No value');
+  });
+
+  it('orders value and unit by the metricValueWithUnit message, visibly and in the name', () => {
+    TestBed.configureTestingModule({
+      imports: [TestHost],
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'en-US', kpi: { metricValueWithUnit: '{unit} {value}' } }),
+          withDocumentLanguage('off'),
+        ),
+      ],
+    });
+    const el = mount(42, '$');
+    expect(Array.from(el.children, (c) => c.className)).toEqual([
+      'cngx-metric__unit',
+      'cngx-metric__value',
+    ]);
+    expect(stripBidiIsolates(el.getAttribute('aria-label'))).toBe('$ 42');
   });
 });

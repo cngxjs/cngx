@@ -1,4 +1,5 @@
 import {
+  computed,
   inject,
   InjectionToken,
   makeEnvironmentProviders,
@@ -8,20 +9,20 @@ import {
   type Signal,
   SkipSelf,
 } from '@angular/core';
+import { injectLanguageSection } from '@cngx/core/i18n';
+import { createOverrideMerge } from '@cngx/core/utils';
+
+import { CNGX_MENU_LANGUAGE_EN, type CngxMenuLanguageSection } from '../i18n/menu-language-section';
 
 /**
  * Localised UI strings the menu announces or otherwise renders. English by
- * default; consumers override via {@link withAriaLabels}.
+ * default; consumers override via {@link withAriaLabels}. The same shape as
+ * the menu section of a language pack, declared once as
+ * {@link CngxMenuLanguageSection}.
  *
  * @category common/interactive/menu
  */
-export interface CngxMenuAriaLabels {
-  readonly submenuOpened: string;
-  readonly submenuClosed: string;
-  readonly itemActivated: string;
-  readonly itemDisabled: string;
-  readonly menuDismissed: string;
-}
+export type CngxMenuAriaLabels = CngxMenuLanguageSection;
 
 /**
  * Resolved configuration consumed by every menu directive in the family.
@@ -95,20 +96,14 @@ export function defineMenuConfigFeature(
 }
 
 /**
- * Library-default menu configuration. **English-only** - German (or any
- * other locale) is consumer-supplied via `withAriaLabels` per the
- * `feedback_en_default_locale` rule.
+ * Library-default menu configuration with the English labels. The token's
+ * default reads `ariaLabels` from the menu section of the active language
+ * pack instead; `withAriaLabels` overrides single labels on top.
  *
  * @category common/interactive/menu
  */
 export const DEFAULT_MENU_CONFIG: CngxMenuConfig = {
-  ariaLabels: {
-    submenuOpened: 'Submenu opened',
-    submenuClosed: 'Submenu closed',
-    itemActivated: 'Item activated',
-    itemDisabled: 'Item disabled',
-    menuDismissed: 'Menu dismissed',
-  },
+  ariaLabels: CNGX_MENU_LANGUAGE_EN,
   typeaheadDebounce: 300,
   submenuOpenDelay: 0,
   submenuCloseDelay: 150,
@@ -118,11 +113,28 @@ export const DEFAULT_MENU_CONFIG: CngxMenuConfig = {
   dismissOnBlur: true,
 };
 
+const NO_SECTION: Partial<CngxMenuLanguageSection> = {};
+
+/**
+ * @internal {@link DEFAULT_MENU_CONFIG} with `ariaLabels` read from the menu
+ * section of the active language pack. Runs in an injection context.
+ */
+function menuConfigDefaultsFromPack(): CngxMenuConfig {
+  const pack = injectLanguageSection('menu');
+  return {
+    ...DEFAULT_MENU_CONFIG,
+    ariaLabels: createOverrideMerge(
+      CNGX_MENU_LANGUAGE_EN,
+      computed(() => pack() ?? NO_SECTION),
+    ),
+  };
+}
+
 /**
  * DI token carrying the resolved {@link CngxMenuConfig}. Defaults to
- * {@link DEFAULT_MENU_CONFIG} at root; override via {@link provideMenuConfig}
- * (app-wide) or {@link provideMenuConfigAt} (component scope via
- * `viewProviders`).
+ * {@link DEFAULT_MENU_CONFIG} with the language pack's labels at root;
+ * override via {@link provideMenuConfig} (app-wide) or
+ * {@link provideMenuConfigAt} (component scope via `viewProviders`).
  *
  * @category common/interactive/menu
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-config.ts
@@ -130,7 +142,7 @@ export const DEFAULT_MENU_CONFIG: CngxMenuConfig = {
  */
 export const CNGX_MENU_CONFIG = new InjectionToken<CngxMenuConfig>('CngxMenuConfig', {
   providedIn: 'root',
-  factory: () => DEFAULT_MENU_CONFIG,
+  factory: menuConfigDefaultsFromPack,
 });
 
 /** @internal */
@@ -162,7 +174,7 @@ export function provideMenuConfig(...features: CngxMenuConfigFeature[]): Environ
   return makeEnvironmentProviders([
     {
       provide: CNGX_MENU_CONFIG,
-      useFactory: () => applyFeatures(DEFAULT_MENU_CONFIG, features),
+      useFactory: () => applyFeatures(menuConfigDefaultsFromPack(), features),
     },
   ]);
 }
@@ -179,7 +191,7 @@ export function provideMenuConfigAt(...features: CngxMenuConfigFeature[]): Provi
     {
       provide: CNGX_MENU_CONFIG,
       useFactory: (parent: CngxMenuConfig | null) =>
-        applyFeatures(parent ?? DEFAULT_MENU_CONFIG, features),
+        applyFeatures(parent ?? menuConfigDefaultsFromPack(), features),
       deps: [[new SkipSelf(), new Optional(), CNGX_MENU_CONFIG]],
     },
   ];

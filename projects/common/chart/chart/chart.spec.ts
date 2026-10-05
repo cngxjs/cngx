@@ -12,7 +12,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createResizeObserverMock } from '@cngx/testing';
+import { createResizeObserverMock, stripBidiIsolates } from '@cngx/testing';
 import { CngxChart } from './chart.component';
 import { CNGX_CHART_CONTEXT, type CngxChartContext } from './chart-context';
 import {
@@ -165,8 +165,8 @@ describe('CngxChart', () => {
     const label = chart.getAttribute('aria-label') ?? '';
     // English defaults: "Trending up. Min 5, max 38, current 38. No thresholds."
     expect(label).toContain('Trending up');
-    expect(label).toContain('Min 5');
-    expect(label).toContain('current 38');
+    expect(stripBidiIsolates(label)).toContain('Min 5');
+    expect(stripBidiIsolates(label)).toContain('current 38');
     expect(label).toContain('No thresholds');
   });
 
@@ -1747,7 +1747,7 @@ describe('CngxChart - connection copy flip', () => {
 
   it('does not re-announce on a language flip', async () => {
     const { createManualState } = await import('@cngx/common/data');
-    const { provideChartI18n } = await import('../i18n/chart-i18n');
+    const { provideChartI18n, withChartI18nLabels } = await import('../i18n/chart-i18n');
     const lang = signal<'en' | 'de'>('en');
     @Component({
       standalone: true,
@@ -1767,14 +1767,16 @@ describe('CngxChart - connection copy flip', () => {
       imports: [Host],
       providers: [
         provideChartI18n(
-          computed(() =>
-            lang() === 'de'
-              ? {
-                  connectionLost: () => 'Verbindung verloren',
-                  connectionReconnecting: () => 'Verbinde neu',
-                  connectionRestored: () => 'Verbindung wiederhergestellt',
-                }
-              : {},
+          withChartI18nLabels(
+            computed(() =>
+              lang() === 'de'
+                ? {
+                    connectionLost: () => 'Verbindung verloren',
+                    connectionReconnecting: () => 'Verbinde neu',
+                    connectionRestored: () => 'Verbindung wiederhergestellt',
+                  }
+                : {},
+            ),
           ),
         ),
       ],

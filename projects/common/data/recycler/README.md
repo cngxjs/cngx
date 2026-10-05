@@ -10,6 +10,7 @@ import {
   CngxRecyclerAnnouncer,
   connectRecyclerToRoving,
   provideRecyclerI18n,
+  withRecyclerI18nLabels,
   type CngxRecycler,
 } from '@cngx/common/data';
 ```
@@ -474,16 +475,16 @@ Items outside the rendered range are scrolled into view and focused automaticall
 
 ## I18n
 
-SR announcement texts are configurable via `CNGX_RECYCLER_I18N`:
+SR announcement texts come from the recycler section of the language pack (see the localisation guide). Override single keys on top of it via `CNGX_RECYCLER_I18N`:
 
 ```typescript
 providers: [
-  provideRecyclerI18n({
-    loaded: (n, t) => `${n} weitere Eintraege. ${t} gesamt.`,
-    filtered: (c) => `${c} Ergebnisse.`,
-    empty: () => 'Keine Ergebnisse.',
-    error: () => 'Fehler beim Laden.',
-  }),
+  provideRecyclerI18n(
+    withRecyclerI18nLabels({
+      empty: () => 'Keine Ergebnisse.',
+      error: () => 'Fehler beim Laden.',
+    }),
+  ),
 ]
 ```
 

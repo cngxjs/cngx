@@ -47,14 +47,14 @@ import { formatChartNumber } from './format-number';
       </caption>
       <thead>
         <tr>
-          <th scope="col">#</th>
+          <th scope="col">{{ indexColumnLabel() }}</th>
           <th scope="col">{{ valueColumnLabel() }}</th>
         </tr>
       </thead>
       <tbody>
         @for (row of rows(); track row.index) {
           <tr>
-            <th scope="row">{{ row.index + 1 }}</th>
+            <th scope="row">{{ fmt()(row.index + 1) }}</th>
             <td>{{ fmt()(row.value) }}</td>
           </tr>
         }
@@ -102,6 +102,7 @@ export class CngxChartDataTable {
   protected readonly resolvedId = computed(() => this.id() ?? this.defaultId);
 
   protected readonly caption = computed(() => this.i18n().dataTable());
+  protected readonly indexColumnLabel = computed(() => this.i18n().indexColumnLabel());
   protected readonly valueColumnLabel = computed(() => this.i18n().valueColumnLabel());
 
   /** Noise-stripped display text in the app locale - see {@link formatChartNumber}. */

@@ -1,6 +1,8 @@
 import { inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 
+import { injectResolvedInteractiveI18n } from '../i18n/interactive-i18n';
+
 /**
  * Creates a functional route guard that blocks navigation when the form is dirty.
  *
@@ -22,15 +24,14 @@ import { DOCUMENT } from '@angular/common';
  * ```
  *
  * @param isDirty - Callback that returns `true` when there are unsaved changes.
- * @param message - Confirmation message. Default: `'You have unsaved changes. Leave anyway?'`
+ * @param message - Confirmation message. Unset, it reads `unsavedChanges` of
+ *   `CNGX_INTERACTIVE_I18N` (English `'You have unsaved changes. Leave anyway?'`)
+ *   when the guard runs, so it follows the active language.
  * @returns A functional guard compatible with Angular's `canDeactivate`.
  *
  * @category common/interactive/guard
  */
-export function canDeactivateWhenClean(
-  isDirty: () => boolean,
-  message = 'You have unsaved changes. Leave anyway?',
-): () => boolean {
+export function canDeactivateWhenClean(isDirty: () => boolean, message?: string): () => boolean {
   return () => {
     if (!isDirty()) {
       return true;
@@ -40,6 +41,6 @@ export function canDeactivateWhenClean(
     if (!win) {
       return true;
     }
-    return win.confirm(message);
+    return win.confirm(message ?? injectResolvedInteractiveI18n()().unsavedChanges);
   };
 }

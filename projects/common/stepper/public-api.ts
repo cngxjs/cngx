@@ -123,6 +123,11 @@ export {
   provideStepperI18n,
   withStepperI18nLabels,
 } from './i18n/stepper-i18n';
+export {
+  CNGX_STEPPER_LANGUAGE_EN,
+  type CngxStepperLanguageSection,
+  type CngxStepperStatusLanguage,
+} from './i18n/stepper-language-section';
 export { resolveStepperStatusLabel } from './status-label';
 
 export { createStepperDisplayMode, injectStepperCollapse } from './display-mode';

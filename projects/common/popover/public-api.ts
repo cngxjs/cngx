@@ -42,6 +42,10 @@ export {
   withArrowTemplate,
   withPopoverPanelLabels,
 } from './popover-panel.config';
+export {
+  CNGX_POPOVER_LANGUAGE_EN,
+  type CngxPopoverLanguageSection,
+} from './i18n/popover-language-section';
 export { CngxPopoverPanel } from './popover-panel.component';
 export { CngxPopoverAction, type PopoverActionVariant } from './popover-action.component';
 export {

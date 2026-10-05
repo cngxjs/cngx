@@ -20,7 +20,8 @@ const INTEGER_OPTIONS: Intl.NumberFormatOptions = {
  * matches the plain `String(v)` it replaced for every value `String`
  * prints without an exponent; exponential magnitudes print positionally
  * instead (`1e-7` -> `0.0000001`, `1e21` -> 22 digits). Non-finite values
- * pass through `String(v)` untouched.
+ * format in `locale` too (`∞`, `-∞`, `NaN`), never as the English
+ * `Infinity`.
  *
  * Shared by the default axis tick formatter, the default i18n summary
  * and the SR data table, so all three read the same value the same way.
@@ -28,9 +29,6 @@ const INTEGER_OPTIONS: Intl.NumberFormatOptions = {
  * @internal
  */
 export function formatChartNumber(v: number, locale: string): string {
-  if (!Number.isFinite(v)) {
-    return String(v);
-  }
   const options = Number.isInteger(v) ? INTEGER_OPTIONS : FRACTION_OPTIONS;
   // Intl prints -0 as "-0"; String(-0) is "0".
   return numberFormatterFor(locale, options).format(v === 0 ? 0 : v);

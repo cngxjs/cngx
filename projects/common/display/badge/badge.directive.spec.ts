@@ -3,6 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
+import { provideLocale, provideLocaleAt } from '@cngx/core/utils';
+
 import { CngxBadge } from './badge.directive';
 
 @Component({
@@ -28,6 +31,16 @@ class BadgeHost {
   >('above-end');
   readonly hidden = signal(false);
   readonly max = signal(99);
+}
+
+@Component({
+  template: `<span [cngxBadge]="value()" [max]="max()" position="inline">Inbox</span>`,
+  imports: [CngxBadge],
+  providers: [provideLocaleAt('de')],
+})
+class GermanBadgeHost {
+  readonly value = signal(1200);
+  readonly max = signal(1000);
 }
 
 describe('CngxBadge', () => {
@@ -62,6 +75,31 @@ describe('CngxBadge', () => {
     fixture.componentInstance.max.set(99);
     fixture.detectChanges();
     expect(dir.displayValue()).toBe('99+');
+  });
+
+  it('formats the count with the app locale', () => {
+    TestBed.configureTestingModule({ providers: [provideLocale('de')] });
+    const { fixture, dir } = setup();
+    fixture.componentInstance.max.set(10000);
+    fixture.componentInstance.value.set(1200);
+    fixture.detectChanges();
+    expect(dir.displayValue()).toBe('1.200');
+  });
+
+  it('renders the overflow through the display section', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', display: { badgeOverflow: 'über {max}' } }),
+          withDocumentLanguage('off'),
+        ),
+      ],
+    });
+    const { fixture, dir } = setup();
+    fixture.componentInstance.value.set(1500);
+    fixture.componentInstance.max.set(999);
+    fixture.detectChanges();
+    expect(dir.displayValue()).toBe('über 999');
   });
 
   it('renders string value verbatim', () => {
@@ -128,5 +166,19 @@ describe('CngxBadge', () => {
     TestBed.flushEffects();
     const badgeEl = hostEl.querySelector('.cngx-badge-indicator');
     expect(badgeEl?.classList.contains('cngx-badge-indicator--below-start')).toBe(true);
+  });
+
+  it('formats the count and the overflow in the locale of a provideLocaleAt subtree', () => {
+    TestBed.configureTestingModule({
+      imports: [GermanBadgeHost],
+      providers: [provideLocale('en')],
+    });
+    const fixture = TestBed.createComponent(GermanBadgeHost);
+    fixture.detectChanges();
+    const dir = fixture.debugElement.query(By.directive(CngxBadge)).injector.get(CngxBadge);
+    expect(dir.displayValue()).toBe('1.000+');
+    fixture.componentInstance.max.set(9999);
+    fixture.detectChanges();
+    expect(dir.displayValue()).toBe('1.200');
   });
 });

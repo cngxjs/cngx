@@ -3,6 +3,12 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
 import { coerceSignal } from '@cngx/core/utils';
 
 import {
@@ -458,5 +464,63 @@ describe('CngxStepperConfig copy keys', () => {
     const before = aria();
     labels.set({ stepperRegion: 'Schrittfolge' });
     expect(aria()).toBe(before);
+  });
+});
+
+describe('CNGX_STEPPER_CONFIG language pack', () => {
+  it('keeps the pre-section English labels', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+    expect(coerceSignal(cfg.ariaLabels)()).toEqual({ stepperRegion: 'Stepper' });
+    expect(coerceSignal(cfg.fallbackLabels)()).toEqual({
+      groupRoleDescription: 'step group',
+      stepRoleDescription: 'stepper',
+    });
+  });
+
+  it('reads the landmark and role-description labels from the stepper section', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+      ],
+    });
+    const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+    const aria = coerceSignal(cfg.ariaLabels);
+    const fallback = coerceSignal(cfg.fallbackLabels);
+    expect(aria()?.stepperRegion).toBe('Stepper');
+
+    pack.set({
+      locale: 'de',
+      stepper: { stepperRegion: 'Schrittfolge', groupRoleDescription: 'Schrittgruppe' },
+    });
+    expect(aria()?.stepperRegion).toBe('Schrittfolge');
+    expect(fallback()).toEqual({
+      groupRoleDescription: 'Schrittgruppe',
+      stepRoleDescription: 'stepper',
+    });
+  });
+
+  it('applies withStepperFallbackLabels on top of the pack, also in provideStepperConfigAt', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(
+          withPartialPack({
+            locale: 'de',
+            stepper: { stepperRegion: 'Schrittfolge', stepRoleDescription: 'Schritte' },
+          }),
+          withDocumentLanguage('off'),
+        ),
+        ...provideStepperConfigAt(withStepperFallbackLabels({ groupRoleDescription: 'Gruppe' })),
+      ],
+    });
+    const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+    expect(coerceSignal(cfg.ariaLabels)()?.stepperRegion).toBe('Schrittfolge');
+    expect(coerceSignal(cfg.fallbackLabels)()).toEqual({
+      groupRoleDescription: 'Gruppe',
+      stepRoleDescription: 'Schritte',
+    });
   });
 });

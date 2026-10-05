@@ -1,5 +1,11 @@
-import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
+import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createOverrideMerge } from '@cngx/core/utils';
+
+import {
+  CNGX_INTERACTIVE_LANGUAGE_EN,
+  type CngxInteractiveLanguageSection,
+} from './interactive-language-section';
 
 /**
  * Interactive i18n surface. Library defaults are English; consumers override
@@ -9,11 +15,12 @@ import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
  *
  * `asyncClickSucceeded` / `asyncClickFailed` are live-region copy:
  * `CngxAsyncClick` (and `CngxActionButton`, which wraps it) announces the
- * settle it just made, spent once per transition. The other keys seed
- * string inputs at construction (`CngxCopyBlock`, `CngxRangeSlider`,
- * `CngxBreadcrumb`), so a bound input still wins and an unbound one is
- * static per instance. They are optional so a bundle built before they
- * existed keeps compiling; the English defaults fill them.
+ * settle it just made, spent once per transition. The other keys are the
+ * fallback of string inputs (`CngxCopyBlock`, `CngxRangeSlider`,
+ * `CngxBreadcrumb`), resolved in a `computed()`: a bound input wins, and an
+ * unbound one follows a language switch. They are optional so a bundle
+ * built before they existed keeps compiling; the active language pack (or
+ * its English section) fills them at the reading site.
  *
  * @category common/interactive/i18n
  */
@@ -34,23 +41,55 @@ export interface CngxInteractiveI18n {
   readonly rangeMaximum?: string;
   /** Default of the `CngxBreadcrumb` `label` input (landmark name). */
   readonly breadcrumb?: string;
+  /** Default confirmation of `canDeactivateWhenClean`. */
+  readonly unsavedChanges?: string;
+  /**
+   * Visible `start - end` value of `CngxRangeSlider`. Receives both values
+   * already formatted; one message, so a locale owns the order and the joiner.
+   */
+  readonly rangeValue?: (start: string, end: string) => string;
 }
 
-const INTERACTIVE_I18N_DEFAULTS: Required<CngxInteractiveI18n> = {
-  asyncClickSucceeded: 'Action succeeded',
-  asyncClickFailed: 'Action failed',
-  copy: 'Copy',
-  copied: 'Copied!',
-  copiedAnnouncement: 'Copied to clipboard',
-  rangeMinimum: 'Minimum',
-  rangeMaximum: 'Maximum',
-  breadcrumb: 'Breadcrumb',
-};
+/** @internal Turns an interactive section into the token's keys for a locale. */
+function interactiveBundleFrom(
+  section: CngxInteractiveLanguageSection,
+  locale: string,
+): Required<CngxInteractiveI18n> {
+  return {
+    asyncClickSucceeded: section.asyncClickSucceeded,
+    asyncClickFailed: section.asyncClickFailed,
+    copy: section.copy,
+    copied: section.copied,
+    copiedAnnouncement: section.copiedAnnouncement,
+    rangeMinimum: section.rangeMinimum,
+    rangeMaximum: section.rangeMaximum,
+    breadcrumb: section.breadcrumb,
+    unsavedChanges: section.unsavedChanges,
+    rangeValue: (start, end) => formatMessage(section.rangeValue, { start, end }, locale),
+  };
+}
+
+const NO_SECTION: Partial<CngxInteractiveLanguageSection> = {};
+
+/** @internal The interactive section of the active pack over English. */
+function injectInteractiveSection(): Signal<CngxInteractiveLanguageSection> {
+  const pack = injectLanguageSection('interactive');
+  return createOverrideMerge(
+    CNGX_INTERACTIVE_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+  );
+}
+
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const interactiveBundle = createSectionBundle<CngxInteractiveLanguageSection, CngxInteractiveI18n>({
+  section: injectInteractiveSection,
+  toBundle: interactiveBundleFrom,
+});
 
 /**
- * DI token for the interactive i18n bundle. `providedIn: 'root'` with English
- * defaults; the value is a `Signal`, shared by every reader under one
- * injector.
+ * DI token for the interactive i18n bundle. `providedIn: 'root'`: the
+ * interactive section of the active language pack over the English defaults;
+ * the value is a `Signal`, shared by every reader under one injector.
  *
  * @category common/interactive/i18n
  * @wcag AA
@@ -62,7 +101,7 @@ export const CNGX_INTERACTIVE_I18N = new InjectionToken<Signal<CngxInteractiveI1
   'CngxInteractiveI18n',
   {
     providedIn: 'root',
-    factory: () => coerceSignal(INTERACTIVE_I18N_DEFAULTS),
+    factory: () => interactiveBundle.build(),
   },
 );
 
@@ -86,8 +125,8 @@ function defineInteractiveI18nFeature(
 }
 
 /**
- * Override i18n labels via a partial bundle - unset keys keep the English
- * default. Pass a `Signal` of a partial bundle to switch languages at
+ * Override i18n labels via a partial bundle - unset keys keep the language
+ * pack's copy, or the English default. Pass a `Signal` of a partial bundle to switch languages at
  * runtime.
  *
  * @category common/interactive/i18n
@@ -101,7 +140,8 @@ export function withInteractiveI18nLabels(
 
 /**
  * Provider for the interactive i18n bundle. Returns a plain `Provider`, so it
- * also scopes a subtree through `viewProviders`.
+ * also scopes a subtree through `viewProviders`. The features apply on top of
+ * the active language pack.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -121,11 +161,7 @@ export function provideInteractiveI18n(
 ): Provider {
   return {
     provide: CNGX_INTERACTIVE_I18N,
-    useFactory: () =>
-      features.reduce<Signal<CngxInteractiveI18n>>(
-        (bundle, feat) => feat(bundle),
-        coerceSignal(INTERACTIVE_I18N_DEFAULTS),
-      ),
+    useFactory: () => interactiveBundle.build(features),
   };
 }
 
@@ -137,18 +173,14 @@ export function provideInteractiveI18n(
  * @since 0.1.0
  */
 export function injectInteractiveI18n(): Signal<CngxInteractiveI18n> {
-  return inject(CNGX_INTERACTIVE_I18N);
+  return interactiveBundle.resolve(inject(CNGX_INTERACTIVE_I18N));
 }
 
 /**
- * @internal - the interactive bundle as a shared signal with every optional
- * key filled from the English defaults, so a directly provided token value
- * that predates a key still resolves it. One `computed()` per injected
- * bundle.
+ * @internal - {@link injectInteractiveI18n} typed with every key present.
+ * The reading-site resolve already fills each key a directly provided token
+ * value leaves out from the active pack's section, so no key is ever unset.
  */
 export function injectResolvedInteractiveI18n(): Signal<Required<CngxInteractiveI18n>> {
-  return createOverrideMerge<Required<CngxInteractiveI18n>>(
-    INTERACTIVE_I18N_DEFAULTS,
-    injectInteractiveI18n(),
-  );
+  return injectInteractiveI18n() as Signal<Required<CngxInteractiveI18n>>;
 }

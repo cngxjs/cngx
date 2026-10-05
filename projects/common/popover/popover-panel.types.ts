@@ -1,5 +1,6 @@
 import type { Signal, TemplateRef } from '@angular/core';
 
+import type { CngxPopoverLanguageSection } from './i18n/popover-language-section';
 import type { CngxPopoverArrowContext } from './popover-panel-slots';
 
 /**
@@ -54,15 +55,14 @@ export interface CngxPopoverPanelConfig {
 }
 
 /**
- * User-facing copy of `CngxPopoverPanel`. Library defaults are English.
+ * User-facing copy of `CngxPopoverPanel`. Library defaults are English. The
+ * same shape as the popover section of a language pack, declared once as
+ * {@link CngxPopoverLanguageSection}.
  *
  * @category common/popover
  * @since 0.1.0
  */
-export interface CngxPopoverPanelLabels {
-  /** Accessible name of the built-in close button (`[showClose]`). */
-  readonly close: string;
-}
+export type CngxPopoverPanelLabels = CngxPopoverLanguageSection;
 
 /**
  * Feature function signature for `providePopoverPanel()`.
