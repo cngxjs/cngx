@@ -21,7 +21,6 @@ import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectAriaLabels,
 } from '../shared/config';
-import { createLabelMatch } from '../shared/internal/label-match';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import type { CngxSelectOptionDef } from '../shared/option.model';
 import { resolveReorderableSelectConfig } from '../shared/reorderable-select-config';
@@ -317,17 +316,6 @@ describe('select chip copy in the DOM', () => {
 });
 
 describe('select label matching', () => {
-  it('matches a substring ignoring case and accents in the locale', () => {
-    const match = createLabelMatch(signal('en'));
-    expect(match('Crème brûlée', 'BRULE')).toBe(true);
-    expect(match('Über', 'ub')).toBe(true);
-    expect(match('Postgres', 'gres')).toBe(true);
-    expect(match('Postgres', 'mysql')).toBe(false);
-    expect(match('anything', '')).toBe(true);
-    const turkish = createLabelMatch(signal('tr'));
-    expect(turkish('İzmir', 'iz')).toBe(true);
-  });
-
   it('finds a closed-trigger typeahead match ignoring accents', () => {
     const controller = createTypeaheadController<string>({
       options: signal([

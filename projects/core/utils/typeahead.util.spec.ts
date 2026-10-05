@@ -1,5 +1,11 @@
+import { signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
-import { createTypeaheadMatcher, foldForMatching, matchesTypeahead } from './typeahead.util';
+import {
+  createLabelMatcher,
+  createTypeaheadMatcher,
+  foldForMatching,
+  matchesTypeahead,
+} from './typeahead.util';
 
 describe('matchesTypeahead', () => {
   it('matches case-insensitively in both directions', () => {
@@ -75,5 +81,38 @@ describe('createTypeaheadMatcher', () => {
     const city = { label: 'Istanbul' };
     expect(createTypeaheadMatcher('i')(city.label, city)).toBe(true);
     expect(createTypeaheadMatcher('i', 'tr')(city.label, city)).toBe(false);
+  });
+});
+
+describe('createLabelMatcher', () => {
+  it('matches a substring ignoring case and accents in the locale', () => {
+    const match = createLabelMatcher(signal('en'));
+    expect(match('Crème brûlée', 'BRULE')).toBe(true);
+    expect(match('Über', 'ub')).toBe(true);
+    expect(match('Postgres', 'gres')).toBe(true);
+    expect(match('Postgres', 'mysql')).toBe(false);
+    expect(match('anything', '')).toBe(true);
+    const turkish = createLabelMatcher(signal('tr'));
+    expect(turkish('İzmir', 'iz')).toBe(true);
+  });
+
+  it('matches through invisible format characters', () => {
+    const match = createLabelMatcher(signal('en'));
+    expect(match('\u2068Über\u2069', 'uber')).toBe(true);
+  });
+
+  it('re-folds a keyed label when its text or the locale changes', () => {
+    const locale = signal('en');
+    const match = createLabelMatcher(locale);
+    const option = { label: 'Apple' };
+    expect(match(option.label, 'app', option)).toBe(true);
+    option.label = 'Banana';
+    expect(match(option.label, 'app', option)).toBe(false);
+    expect(match(option.label, 'nan', option)).toBe(true);
+    // Turkish lowercases a plain capital I to dotless ı, English to i.
+    const city = { label: 'IZMIR' };
+    expect(match(city.label, 'izmir', city)).toBe(true);
+    locale.set('tr');
+    expect(match(city.label, 'izmir', city)).toBe(false);
   });
 });

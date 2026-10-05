@@ -19,6 +19,7 @@ import {
 
 import {
   CNGX_STATEFUL,
+  createLabelMatcher,
   injectLocale,
   type AsyncStatus,
   type CngxAsyncState,
@@ -39,7 +40,6 @@ import {
 } from '@cngx/common/popover';
 
 import { injectSelectCopy } from '../i18n/select-i18n';
-import { createLabelMatch } from '../shared/internal/label-match';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
 import {
@@ -426,7 +426,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly empty = computed<boolean>(() => this.value() === undefined);
 
   /** @internal Folded substring match of the option label in the reading locale. */
-  private readonly labelMatch = createLabelMatch(injectLocale());
+  private readonly labelMatch = createLabelMatcher(injectLocale());
 
   /** @internal */
   protected readonly effectiveMatchFn = computed<ListboxMatchFn>(

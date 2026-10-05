@@ -20,7 +20,13 @@ import {
   viewChild,
 } from '@angular/core';
 
-import { CNGX_STATEFUL, injectLocale, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
+import {
+  CNGX_STATEFUL,
+  createLabelMatcher,
+  injectLocale,
+  type AsyncStatus,
+  type CngxAsyncState,
+} from '@cngx/core/utils';
 import {
   CngxClickOutside,
   CngxListbox,
@@ -44,7 +50,6 @@ import {
 } from '@cngx/forms/field';
 
 import { injectSelectCopy } from '../i18n/select-i18n';
-import { createLabelMatch } from '../shared/internal/label-match';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
@@ -757,7 +762,7 @@ export class CngxSelectShell<T = unknown>
   }
 
   /** @internal Folded substring match of an option label in the reading locale. */
-  private readonly labelMatch = createLabelMatch(injectLocale());
+  private readonly labelMatch = createLabelMatcher(injectLocale());
 
   /** @internal */
   matches<TVal>(value: TVal, label: string, term: string): boolean {
