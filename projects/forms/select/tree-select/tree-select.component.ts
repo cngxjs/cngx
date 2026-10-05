@@ -616,10 +616,10 @@ export class CngxTreeSelect<T = unknown>
   protected readonly panelWidthCss = computed<string | null>(() => {
     const w = this.panelWidth();
     if (w === null || w === undefined) {
-      return null;
+      return 'auto';
     }
     if (w === 'trigger') {
-      return 'var(--cngx-popover-trigger-width, auto)';
+      return 'anchor-size(width)';
     }
     return `${w}px`;
   });
