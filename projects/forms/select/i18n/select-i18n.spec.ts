@@ -22,7 +22,7 @@ import {
   type CngxSelectAriaLabels,
 } from '../shared/config';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
-import { injectSelectLabels, provideSelectConfigAt } from '../public-api';
+import { injectSelectConfig, provideSelectConfigAt } from '../public-api';
 import type { CngxSelectOptionDef } from '../shared/option.model';
 import { resolveReorderableSelectConfig } from '../shared/reorderable-select-config';
 import { createTypeaheadController } from '../shared/typeahead-controller';
@@ -316,7 +316,7 @@ describe('select chip copy in the DOM', () => {
   });
 });
 
-describe('injectSelectLabels', () => {
+describe('injectSelectConfig copy', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
   });
@@ -329,7 +329,7 @@ describe('injectSelectLabels', () => {
         provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
       ],
     });
-    const labels = TestBed.runInInjectionContext(() => injectSelectLabels());
+    const labels = TestBed.runInInjectionContext(() => injectSelectConfig());
     expect(labels.fallbackLabels().empty).toBe('No Options');
     expect(labels.ariaLabels().chipRemove).toBe('Remove');
 
@@ -346,21 +346,20 @@ describe('injectSelectLabels', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), provideLocale('en')],
     });
-    const root = TestBed.runInInjectionContext(() => injectSelectLabels());
-    const german = runInSubtree([provideLocaleAt('de')], () => injectSelectLabels());
+    const root = TestBed.runInInjectionContext(() => injectSelectConfig());
+    const german = runInSubtree([provideLocaleAt('de')], () => injectSelectConfig());
     expect(root.fallbackLabels().chipOverflowBadge(1200)).toBe('+1,200');
     expect(german.fallbackLabels().chipOverflowBadge(1200)).toBe('+1.200');
   });
 
-  it('reads a provideSelectConfigAt subtree and shares the component signals', () => {
+  it('reads a provideSelectConfigAt subtree', () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const scoped = runInSubtree(
       [provideSelectConfigAt(withFallbackLabels({ empty: 'Nichts gefunden' }))],
-      () => ({ labels: injectSelectLabels(), config: resolveSelectConfig() }),
+      () => injectSelectConfig(),
     );
-    expect(scoped.labels.fallbackLabels().empty).toBe('Nichts gefunden');
-    expect(Object.is(scoped.labels.fallbackLabels, scoped.config.fallbackLabels)).toBe(true);
-    expect(Object.is(scoped.labels.ariaLabels, scoped.config.ariaLabels)).toBe(true);
+    expect(scoped.fallbackLabels().empty).toBe('Nichts gefunden');
+    expect(scoped.fallbackLabels().loading).toBe(CNGX_SELECT_LANGUAGE_EN.loading);
   });
 });
 
