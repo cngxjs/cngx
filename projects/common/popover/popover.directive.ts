@@ -170,9 +170,9 @@ function warnMissingFloatingMiddleware(doc: Document): void {
     'CngxPopover: provideFloatingFallback(computePosition) was registered without middleware. ' +
       'Popovers in browsers without CSS Anchor Positioning will clip against the viewport edge ' +
       'because no flip/shift recovery is configured. Pass middleware on registration:\n\n' +
-      "  import { computePosition, flip, offset, shift } from '@floating-ui/dom';\n\n" +
+      "  import { computePosition, flip, shift } from '@floating-ui/dom';\n\n" +
       '  providers: [\n' +
-      '    provideFloatingFallback(computePosition, [offset(8), flip(), shift()]),\n' +
+      '    provideFloatingFallback(computePosition, [flip(), shift()]),\n' +
       '  ],\n',
   );
 }

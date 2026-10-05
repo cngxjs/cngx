@@ -194,13 +194,15 @@ npm install @floating-ui/dom
 ```
 
 ```typescript
-import { computePosition, flip, offset, shift } from '@floating-ui/dom';
+import { computePosition, flip, shift } from '@floating-ui/dom';
 import { provideFloatingFallback } from '@cngx/common/popover';
 
 providers: [
-  provideFloatingFallback(computePosition, [offset(8), flip(), shift()]),
+  provideFloatingFallback(computePosition, [flip(), shift()]),
 ]
 ```
+
+Leave `offset()` out: the popover prepends its own offset middleware from its `offset` input, so a second one doubles the gap.
 
 The library never imports `@floating-ui/dom` directly. When not provided, positioning falls back to browser defaults. Zero bundle impact for modern browsers.
 
