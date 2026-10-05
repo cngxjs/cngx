@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import { CNGX_DIRECTION, type CngxDirection } from '@cngx/core';
 import { CNGX_LOCALE, coerceSignal, memoize } from '@cngx/core/utils';
+import { recordEqual } from '@cngx/utils';
 
 import { canonicalLocale } from './format-message';
 import type {
@@ -260,5 +261,13 @@ export function injectLanguageSection<K extends keyof CngxLanguagePack>(
 ): Signal<CngxPartialLanguagePack[K] | undefined> {
   const pack = inject(CNGX_LANGUAGE_PACK);
   const section = computed(() => pack()[key]);
-  return computed(() => withoutUndefinedKeys(section()));
+  return computed(() => withoutUndefinedKeys(section()), { equal: sectionEqual });
+}
+
+/** A new pack whose section reads key by key the same keeps the section reference. */
+function sectionEqual<T extends object>(a: T | undefined, b: T | undefined): boolean {
+  if (a === undefined || b === undefined) {
+    return a === b;
+  }
+  return recordEqual(a, b);
 }

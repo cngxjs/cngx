@@ -109,6 +109,18 @@ describe('provideCngxI18n', () => {
     expect(Object.is(section(), filtered)).toBe(true);
   });
 
+  it('keeps the section reference when a new pack carries a key-by-key equal section', () => {
+    const active = signal<CngxCompleteLanguagePack | undefined>(DE);
+    const { section } = setup([provideCngxI18n(withPack(active))]);
+    const first = section();
+
+    active.set({ locale: 'de', __spec: { title: 'Titel', close: 'Schließen' } });
+    expect(Object.is(section(), first)).toBe(true);
+
+    active.set({ locale: 'de', __spec: { title: 'Überschrift', close: 'Schließen' } });
+    expect(section()?.title).toBe('Überschrift');
+  });
+
   it('lets the last pack feature win', () => {
     const { section } = setup([provideCngxI18n(withPack(DE), withPack(FR))]);
     expect(section()?.title).toBe('Titre');
