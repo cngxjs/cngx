@@ -77,7 +77,7 @@ Enter animations honour `prefers-reduced-motion: reduce`.
 
 ## Forced colors
 
-Chromium keeps author colours inside SVG under forced colors, so every layer opts back into the user palette: marks, labels and axes paint CanvasText. Line, bar and scatter layers count as series, in source order, and take a four-step pattern by index - lines solid, dashed, dotted, dash-dot; bars and points solid, 45deg hatch, hollow, 0deg hatch. It is the cycle `cngx-chart-legend` gives its swatches, so legend entry N matches series N. Areas wash under the line they pair with, thresholds and bands are named by their labels; none of them count. Layers wrapped in an extra `<svg:g>` drop out of the count. The canvas backend (large series) is not forced.
+Chromium keeps author colours inside SVG under forced colors, so every layer opts back into the user palette: marks, labels and axes paint CanvasText. Line, bar and scatter layers count as series, in source order, and take a four-step pattern by index - lines solid, dashed, dotted, dash-dot; bars and points solid, 45deg hatch, hollow, 0deg hatch. It is the cycle `cngx-chart-legend` gives its swatches, so legend entry N matches series N. Areas wash under the line they pair with, thresholds and bands are named by their labels; none of them count. Layers wrapped in an extra `<svg:g>` drop out of the count. The canvas backend (large series) paints the same palette and cycle, so a chart that crosses the canvas threshold keeps its patterns; the one difference is that it counts a wrapped layer as a series.
 
 ## See also
 

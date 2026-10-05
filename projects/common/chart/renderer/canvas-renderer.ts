@@ -67,6 +67,22 @@ const SOLID_DASH: number[] = [];
  * `overflow: visible` it now clips there too. Out-of-domain data is cut
  * off on both paths.
  *
+ * Under forced colors the canvas follows the same contract as the SVG
+ * layers, since the browser never forces canvas pixels: every mark paints
+ * CanvasText, ignoring `[color]` and the colour tokens; areas and bands keep
+ * their opacity; line, bar and scatter take the legend's four-step cycle by
+ * series index (lines solid / dashed / dotted / dash-dot, bars and points
+ * solid / 45deg hatch / hollow / 0deg hatch), with area, threshold and band
+ * not counting. CanvasText and Canvas are resolved through a probe element
+ * opted out of forcing and cached like the author colours. Chromium also
+ * resolves the system keywords on a 2D context to the forced palette, but
+ * other engines are unverified, so the backend paints the probed values.
+ * The renderer controller watches `(forced-colors: active)` and
+ * `(prefers-color-scheme: dark)` and invalidates the colour cache before
+ * repainting on a flip, so a contrast-theme switch repaints at once. One
+ * difference from SVG: a layer wrapped in an extra `<svg:g>` still counts
+ * here, since the backend only sees the layer order.
+ *
  * @category common/chart/renderer
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/canvas-renderer.ts
  * @since 0.1.0
