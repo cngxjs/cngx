@@ -51,8 +51,10 @@ const stepMemo = new WeakMap<readonly LayerGeometry[], readonly (ForcedSeriesSte
  * outside the cycle. Line, bar and scatter count, area, threshold and band
  * do not - the same rule as the SVG
  * `:nth-child(4n + k of .cngx-chart-series)` selectors. Memoised by the
- * array reference: the chart's geometries array is reference-stable while
- * no layer changes, so a realtime frame allocates nothing here.
+ * array reference: the chart keeps the same geometries array while no
+ * layer emits a new geometry, so repaints without data (resize, DPR or
+ * palette flip) reuse the steps. A streaming chart gets a new array on
+ * every data tick and recomputes one small array per frame.
  */
 export function forcedSeriesSteps(
   geometries: readonly LayerGeometry[],
@@ -90,9 +92,11 @@ const NO_HATCHES: ForcedHatches = { diagonal: null, horizontal: null };
  * defs: a 4px tile with a 2px ink stripe on a Canvas gap (the gap keeps a
  * hatched mark readable where it overlaps another). The tile is drawn at
  * device-pixel size and scaled back through the pattern transform, so the
- * stripes stay crisp on a high-DPR screen instead of being resampled into
- * off-palette greys. Returns nulls when the host lacks `createPattern` or
- * `DOMMatrix`; the caller then fills with ink.
+ * 0deg hatch maps one tile pixel to one device pixel and stays pure ink
+ * and canvas on a high-DPR screen. The 45deg hatch is rotated and therefore
+ * resampled; its stripe edges blend ink into canvas, as the SVG pattern's
+ * do. Returns nulls when the host lacks `createPattern` or `DOMMatrix`; the
+ * caller then fills with ink.
  */
 export function createForcedHatches(
   doc: Document,
