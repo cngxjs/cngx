@@ -1,13 +1,12 @@
 import { computed, inject, InjectionToken, type Signal } from '@angular/core';
 
-import { formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
 import {
   coerceSignal,
   createNestedOverrideMerge,
-  injectLocale,
+  createOverrideMerge,
   type CngxNestedOverrides,
 } from '@cngx/core/utils';
-import { recordEqual } from '@cngx/utils';
 
 import type { InputAriaLabels } from '../input-config';
 import { CNGX_INPUT_LANGUAGE_EN, type CngxInputLanguageSection } from './input-language-section';
@@ -49,123 +48,76 @@ export function inputLabelsFrom(
   };
 }
 
-const LABELS = new WeakMap<CngxInputLanguageSection, Map<string, CngxResolvedInputAriaLabels>>();
-
-/**
- * @internal The labels of one section object and locale, built once: equal
- * inputs give the identical object, so readers compare by reference.
- */
-function labelsOf(section: CngxInputLanguageSection, locale: string): CngxResolvedInputAriaLabels {
-  let byLocale = LABELS.get(section);
-  if (!byLocale) {
-    byLocale = new Map();
-    LABELS.set(section, byLocale);
-  }
-  let labels = byLocale.get(locale);
-  if (!labels) {
-    labels = inputLabelsFrom(section, locale);
-    byLocale.set(locale, labels);
-  }
-  return labels;
-}
-
 const NO_SECTION: CngxNestedOverrides<CngxInputLanguageSection, 'passwordStrengthLevel'> = {};
 
 /**
- * @internal The input section of the active language pack over the English
- * section, resolved once per injector so every input reads the same signal.
+ * @internal The input section of the active pack over the English section;
+ * `passwordStrengthLevel` merges key by key.
  */
-const INPUT_LANGUAGE = new InjectionToken<Signal<CngxInputLanguageSection>>('CngxInputLanguage', {
-  providedIn: 'root',
-  factory: () => {
-    const pack = injectLanguageSection('input');
-    return createNestedOverrideMerge<CngxInputLanguageSection, 'passwordStrengthLevel'>(
-      CNGX_INPUT_LANGUAGE_EN,
-      computed(() => pack() ?? NO_SECTION),
-      'passwordStrengthLevel',
-    );
-  },
+function injectInputLanguage(): Signal<CngxInputLanguageSection> {
+  const pack = injectLanguageSection('input');
+  return createNestedOverrideMerge<CngxInputLanguageSection, 'passwordStrengthLevel'>(
+    CNGX_INPUT_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+    'passwordStrengthLevel',
+  );
+}
+
+/** @internal Builds and reads the section labels, formatted for the reading locale. */
+const inputBundle = createSectionBundle<CngxInputLanguageSection, CngxResolvedInputAriaLabels>({
+  section: injectInputLanguage,
+  toBundle: inputLabelsFrom,
 });
 
 /**
- * @internal The input section of the active language pack over English.
- * Injection context required.
+ * @internal The input section labels of the active pack, formatted for the app
+ * locale. Private: consumers override copy through `withInputAriaLabels`.
  */
-export function injectInputLanguage(): Signal<CngxInputLanguageSection> {
-  return inject(INPUT_LANGUAGE);
-}
-
-const SITE_LABELS = new WeakMap<
-  Signal<CngxInputLanguageSection>,
-  WeakMap<Signal<string>, Signal<CngxResolvedInputAriaLabels>>
->();
+const INPUT_SECTION_LABELS = new InjectionToken<Signal<CngxResolvedInputAriaLabels>>(
+  'CngxInputSectionLabels',
+  { providedIn: 'root', factory: () => inputBundle.build() },
+);
 
 /**
  * @internal The section labels at the reading site: the active pack's input
  * section formatted for the locale of the injector that reads it, so a
- * `provideLocaleAt` subtree formats its own numbers. Memoized per section and
- * locale signal. Injection context required.
+ * `provideLocaleAt` subtree formats its own numbers. Injection context
+ * required.
  */
 export function injectInputSectionLabels(): Signal<CngxResolvedInputAriaLabels> {
-  const language = injectInputLanguage();
-  const locale = injectLocale();
-  let byLocale = SITE_LABELS.get(language);
-  if (!byLocale) {
-    byLocale = new WeakMap();
-    SITE_LABELS.set(language, byLocale);
-  }
-  let labels = byLocale.get(locale);
-  if (!labels) {
-    labels = computed(() => labelsOf(language(), locale()));
-    byLocale.set(locale, labels);
-  }
-  return labels;
+  return inputBundle.resolve(inject(INPUT_SECTION_LABELS));
 }
 
-const NO_OVERRIDES: object = {};
-
-const FILLS = new WeakMap<
-  Signal<CngxResolvedInputAriaLabels>,
-  WeakMap<object, Signal<CngxResolvedInputAriaLabels>>
->();
+const DEFINED = new WeakMap<object, Signal<Partial<InputAriaLabels>>>();
 
 /**
- * @internal The config overrides spread over the section labels; a key an
- * override leaves `undefined` reads the section. Memoized per (section labels,
- * override source); keeps its reference while the result is key-wise equal.
+ * @internal The override source without the keys it sets to `undefined`, so
+ * the merge reads the section for them. Memoized per source.
  */
-export function fillInputLabels(
-  defaults: Signal<CngxResolvedInputAriaLabels>,
+function definedOverrides(
+  source: Partial<InputAriaLabels> | Signal<Partial<InputAriaLabels>>,
+): Signal<Partial<InputAriaLabels>> {
+  let defined = DEFINED.get(source);
+  if (!defined) {
+    const overrides = coerceSignal(source);
+    defined = computed(() =>
+      Object.fromEntries(Object.entries(overrides()).filter(([, value]) => value !== undefined)),
+    );
+    DEFINED.set(source, defined);
+  }
+  return defined;
+}
+
+/**
+ * @internal The input labels at the reading site with the `CNGX_INPUT_CONFIG`
+ * labels on top. A key the config sets wins; a key it leaves unset or
+ * `undefined` reads the section. Injection context required.
+ */
+export function injectInputLabels(
   overrides: Partial<InputAriaLabels> | Signal<Partial<InputAriaLabels>> | undefined,
 ): Signal<CngxResolvedInputAriaLabels> {
-  let byOverrides = FILLS.get(defaults);
-  if (!byOverrides) {
-    byOverrides = new WeakMap();
-    FILLS.set(defaults, byOverrides);
-  }
-  const key: object = overrides ?? NO_OVERRIDES;
-  const cached = byOverrides.get(key);
-  if (cached) {
-    return cached;
-  }
-  if (!overrides) {
-    byOverrides.set(key, defaults);
-    return defaults;
-  }
-  const user = coerceSignal<Partial<InputAriaLabels>>(overrides);
-  const filled = computed<CngxResolvedInputAriaLabels>(
-    () => {
-      const base = defaults();
-      const value: Record<string, unknown> = { ...base };
-      for (const [name, override] of Object.entries(user())) {
-        if (override !== undefined) {
-          value[name] = override;
-        }
-      }
-      return value as unknown as CngxResolvedInputAriaLabels;
-    },
-    { equal: recordEqual },
+  return createOverrideMerge<CngxResolvedInputAriaLabels>(
+    injectInputSectionLabels(),
+    overrides && definedOverrides(overrides),
   );
-  byOverrides.set(key, filled);
-  return filled;
 }

@@ -1,6 +1,6 @@
 import { computed, type Signal } from '@angular/core';
 
-import { coerceSignal } from '@cngx/core/utils';
+import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
 import { recordEqual } from '@cngx/utils';
 
 import {
@@ -37,44 +37,50 @@ export interface CngxResolvedSelectLabels {
   readonly announcer: Signal<CngxResolvedSelectAnnouncer>;
 }
 
-const NO_OVERRIDES: object = {};
-
-const FILLS = new WeakMap<Signal<object>, WeakMap<object, Signal<object>>>();
+const MAPPED = new WeakMap<object, WeakMap<object, Signal<object>>>();
 
 /**
- * The override spread over the defaults; a defaulted key the override sets to
- * `undefined` falls back to its default, so readers need no literal of their
- * own. Memoized per (defaults signal, override source); keeps its reference
- * while the result is key-wise equal.
+ * The override source passed through `map`, memoized per (map, source) so the
+ * merge below sees one stable override signal per config object.
  */
-function fillOver<T extends object>(
+function mappedOverrides<T extends object>(source: T | Signal<T>, map: (value: T) => T): Signal<T> {
+  const key: object = map;
+  let byMap = MAPPED.get(key);
+  if (!byMap) {
+    byMap = new WeakMap();
+    MAPPED.set(key, byMap);
+  }
+  let mapped = byMap.get(source) as Signal<T> | undefined;
+  if (!mapped) {
+    const overrides = coerceSignal(source);
+    mapped = computed(() => map(overrides()));
+    byMap.set(source, mapped);
+  }
+  return mapped;
+}
+
+/**
+ * Drops every key the override sets to `null` or `undefined`, so a defaulted
+ * key falls back to its default and readers need no literal of their own.
+ */
+function withoutNullish<T extends object>(record: T): T {
+  return Object.fromEntries(Object.entries(record).filter(([, value]) => value != null)) as T;
+}
+
+/** Drops a nullish `format`, so the announcer keeps the section formatter. */
+function withoutNullishFormat<T extends object>(config: T): T {
+  return Object.fromEntries(
+    Object.entries(config).filter(([name, value]) => name !== 'format' || value != null),
+  ) as T;
+}
+
+/** The config copy merged over the site defaults, after `map`. */
+function mergeOver<T extends object>(
   defaults: Signal<T>,
-  overrides: Partial<T> | Signal<Partial<T>> | undefined,
+  source: Partial<T> | Signal<Partial<T>> | undefined,
+  map: (value: Partial<T>) => Partial<T>,
 ): Signal<T> {
-  let byOverrides = FILLS.get(defaults);
-  if (!byOverrides) {
-    byOverrides = new WeakMap();
-    FILLS.set(defaults, byOverrides);
-  }
-  const key: object = overrides ?? NO_OVERRIDES;
-  const cached = byOverrides.get(key) as Signal<T> | undefined;
-  if (cached) {
-    return cached;
-  }
-  const user = coerceSignal<Partial<T>>(overrides ?? {});
-  const filled = computed<T>(
-    () => {
-      const base = defaults();
-      const value = { ...base, ...user() } as T;
-      for (const name of Object.keys(base) as (keyof T)[]) {
-        value[name] ??= base[name];
-      }
-      return value;
-    },
-    { equal: recordEqual },
-  );
-  byOverrides.set(key, filled);
-  return filled;
+  return createOverrideMerge<T>(defaults, source && mappedOverrides(source, map));
 }
 
 interface SiteDefaults {
@@ -85,6 +91,7 @@ interface SiteDefaults {
 
 const SITES = new WeakMap<Signal<CngxSelectCopy>, SiteDefaults>();
 
+/** The copy keys of one site copy signal, each its own signal. Memoized per copy signal. */
 function siteDefaults(copy: Signal<CngxSelectCopy>): SiteDefaults {
   let site = SITES.get(copy);
   if (!site) {
@@ -93,9 +100,7 @@ function siteDefaults(copy: Signal<CngxSelectCopy>): SiteDefaults {
       fallbackLabels: computed(() => copy().fallbackLabels),
       announcer: computed(
         () => ({ ...CNGX_SELECT_DEFAULTS.announcer, format: copy().announceFormat }),
-        {
-          equal: recordEqual,
-        },
+        { equal: recordEqual },
       ),
     };
     SITES.set(copy, site);
@@ -103,16 +108,12 @@ function siteDefaults(copy: Signal<CngxSelectCopy>): SiteDefaults {
   return site;
 }
 
-const ANNOUNCERS = new WeakMap<
-  Signal<CngxResolvedSelectAnnouncer>,
-  WeakMap<object, Signal<CngxResolvedSelectAnnouncer>>
->();
-
 /**
  * Resolves the copy keys of a select config lazily, at the reading site. The
  * defaults are the active pack's select section (English by default) formatted
  * for the reader's locale; `ariaLabels` and `fallbackLabels` spread the config
- * over them, and the announcer spreads too, a missing `format` keeping the
+ * over them, a defaulted key the config sets to `undefined` keeping its
+ * default, and the announcer spreads too, a missing `format` keeping the
  * section formatter. Every result is memoized per config source and site, so
  * every select under one injector shares the same signals. Injection context
  * required.
@@ -122,40 +123,8 @@ const ANNOUNCERS = new WeakMap<
 export function resolveSelectLabels(user: CngxSelectConfig): CngxResolvedSelectLabels {
   const site = siteDefaults(injectSelectCopy());
   return {
-    ariaLabels: fillOver<CngxResolvedSelectAriaLabels>(site.ariaLabels, user.ariaLabels),
-    fallbackLabels: fillOver<Required<CngxSelectFallbackLabels>>(
-      site.fallbackLabels,
-      user.fallbackLabels,
-    ),
-    announcer: resolveAnnouncer(site.announcer, user.announcer),
+    ariaLabels: mergeOver(site.ariaLabels, user.ariaLabels, withoutNullish),
+    fallbackLabels: mergeOver(site.fallbackLabels, user.fallbackLabels, withoutNullish),
+    announcer: mergeOver(site.announcer, user.announcer, withoutNullishFormat),
   };
-}
-
-function resolveAnnouncer(
-  defaults: Signal<CngxResolvedSelectAnnouncer>,
-  source: CngxSelectConfig['announcer'],
-): Signal<CngxResolvedSelectAnnouncer> {
-  if (!source) {
-    return defaults;
-  }
-  let bySource = ANNOUNCERS.get(defaults);
-  if (!bySource) {
-    bySource = new WeakMap();
-    ANNOUNCERS.set(defaults, bySource);
-  }
-  const cached = bySource.get(source);
-  if (cached) {
-    return cached;
-  }
-  const user = coerceSignal(source);
-  const resolved = computed<CngxResolvedSelectAnnouncer>(
-    () => {
-      const base = defaults();
-      const config = user();
-      return { ...base, ...config, format: config.format ?? base.format };
-    },
-    { equal: recordEqual },
-  );
-  bySource.set(source, resolved);
-  return resolved;
 }

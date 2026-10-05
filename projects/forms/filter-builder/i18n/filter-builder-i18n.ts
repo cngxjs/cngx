@@ -1,13 +1,11 @@
 import { computed, inject, InjectionToken, type Signal } from '@angular/core';
 
-import { formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
 import {
   coerceSignal,
   createNestedOverrideMerge,
-  injectLocale,
   type CngxNestedOverrides,
 } from '@cngx/core/utils';
-import { recordEqual } from '@cngx/utils';
 
 import type {
   CngxFilterBuilderAnnouncementFormatters,
@@ -148,150 +146,92 @@ export function filterBuilderI18nFrom(
   };
 }
 
-const BUNDLES = new WeakMap<
-  CngxFilterBuilderLanguageSection,
-  Map<string, CngxResolvedFilterBuilderI18n>
->();
-
-/**
- * @internal The bundle of one section object and locale, built once: equal
- * inputs give the identical object, so readers compare by reference.
- */
-function bundleOf(
-  section: CngxFilterBuilderLanguageSection,
-  locale: string,
-): CngxResolvedFilterBuilderI18n {
-  let byLocale = BUNDLES.get(section);
-  if (!byLocale) {
-    byLocale = new Map();
-    BUNDLES.set(section, byLocale);
-  }
-  let bundle = byLocale.get(locale);
-  if (!bundle) {
-    bundle = filterBuilderI18nFrom(section, locale);
-    byLocale.set(locale, bundle);
-  }
-  return bundle;
-}
-
 const NO_SECTION: CngxNestedOverrides<CngxFilterBuilderLanguageSection, 'operators'> = {};
 
 /**
- * @internal The filter-builder section of the active language pack over the
- * English section, resolved once per injector so every builder reads the same
- * signal.
+ * @internal The filter-builder section of the active pack over the English
+ * section; `operators` merges key by key.
  */
-const FILTER_BUILDER_LANGUAGE = new InjectionToken<Signal<CngxFilterBuilderLanguageSection>>(
-  'CngxFilterBuilderLanguage',
-  {
-    providedIn: 'root',
-    factory: () => {
-      const pack = injectLanguageSection('filterBuilder');
-      return createNestedOverrideMerge<CngxFilterBuilderLanguageSection, 'operators'>(
-        CNGX_FILTER_BUILDER_LANGUAGE_EN,
-        computed(() => pack() ?? NO_SECTION),
-        'operators',
-      );
-    },
-  },
-);
-
-/**
- * @internal The filter-builder section of the active language pack over
- * English. Injection context required.
- */
-export function injectFilterBuilderLanguage(): Signal<CngxFilterBuilderLanguageSection> {
-  return inject(FILTER_BUILDER_LANGUAGE);
+function injectFilterBuilderLanguage(): Signal<CngxFilterBuilderLanguageSection> {
+  const pack = injectLanguageSection('filterBuilder');
+  return createNestedOverrideMerge<CngxFilterBuilderLanguageSection, 'operators'>(
+    CNGX_FILTER_BUILDER_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+    'operators',
+  );
 }
 
-const SITE_BUNDLES = new WeakMap<
-  Signal<CngxFilterBuilderLanguageSection>,
-  WeakMap<Signal<string>, Signal<CngxResolvedFilterBuilderI18n>>
->();
+/** @internal Builds and reads the section bundle, formatted for the reading locale. */
+const filterBuilderBundle = createSectionBundle<
+  CngxFilterBuilderLanguageSection,
+  CngxResolvedFilterBuilderI18n
+>({
+  section: injectFilterBuilderLanguage,
+  toBundle: filterBuilderI18nFrom,
+});
+
+/**
+ * @internal The filter-builder section bundle of the active pack, formatted
+ * for the app locale. Private: consumers override copy through
+ * `withFilterBuilderI18n`.
+ */
+const FILTER_BUILDER_SECTION_I18N = new InjectionToken<Signal<CngxResolvedFilterBuilderI18n>>(
+  'CngxFilterBuilderSectionI18n',
+  { providedIn: 'root', factory: () => filterBuilderBundle.build() },
+);
 
 /**
  * @internal The section bundle at the reading site: the active pack's
  * filter-builder section formatted for the locale of the injector that reads
- * it, so a `provideLocaleAt` subtree formats with its own locale. Memoized per
- * section and locale signal. Injection context required.
+ * it, so a `provideLocaleAt` subtree formats with its own locale. Injection
+ * context required.
  */
 export function injectFilterBuilderSectionI18n(): Signal<CngxResolvedFilterBuilderI18n> {
-  const language = injectFilterBuilderLanguage();
-  const locale = injectLocale();
-  let byLocale = SITE_BUNDLES.get(language);
-  if (!byLocale) {
-    byLocale = new WeakMap();
-    SITE_BUNDLES.set(language, byLocale);
-  }
-  let bundle = byLocale.get(locale);
-  if (!bundle) {
-    bundle = computed(() => bundleOf(language(), locale()));
-    byLocale.set(locale, bundle);
-  }
-  return bundle;
+  return filterBuilderBundle.resolve(inject(FILTER_BUILDER_SECTION_I18N));
 }
 
-const NO_OVERRIDES: object = {};
+type CngxFilterBuilderOverrides = CngxNestedOverrides<CngxResolvedFilterBuilderI18n, 'operators'>;
 
-const FILLS = new WeakMap<
-  Signal<CngxResolvedFilterBuilderI18n>,
-  WeakMap<object, Signal<CngxResolvedFilterBuilderI18n>>
->();
-
-/** @internal Key-wise equality with the record under `key` compared key by key. */
-function nestedRecordEqual<T extends object>(key: keyof T): (a: T, b: T) => boolean {
-  return (a, b) =>
-    recordEqual({ ...a, [key]: undefined }, { ...b, [key]: undefined }) &&
-    recordEqual(a[key] as object, b[key] as object);
+/** @internal `record` without the keys it sets to `undefined`. */
+function withoutUndefined<T extends object>(record: T): T {
+  return Object.fromEntries(Object.entries(record).filter(([, value]) => value !== undefined)) as T;
 }
 
-const bundleEqual = nestedRecordEqual<CngxResolvedFilterBuilderI18n>('operators');
+const DEFINED = new WeakMap<object, Signal<CngxFilterBuilderOverrides>>();
 
 /**
- * @internal The config overrides spread over the section bundle; a key an
- * override leaves `undefined` reads the section, and `operators` merges key by
- * key. `announcement` is replaced as a whole. Memoized per (section bundle,
- * override source); keeps its reference while the result is equal.
+ * @internal The override source without the keys it sets to `undefined`, at
+ * the top level and inside `operators`, so the merge reads the section for
+ * them. Memoized per source.
  */
-export function fillFilterBuilderI18n(
-  defaults: Signal<CngxResolvedFilterBuilderI18n>,
+function definedOverrides(
+  source: Partial<CngxFilterBuilderI18n> | Signal<Partial<CngxFilterBuilderI18n>>,
+): Signal<CngxFilterBuilderOverrides> {
+  let defined = DEFINED.get(source);
+  if (!defined) {
+    const overrides = coerceSignal(source);
+    defined = computed(() => {
+      const { operators, ...rest } = overrides();
+      const top: CngxFilterBuilderOverrides = withoutUndefined(rest);
+      return operators ? { ...top, operators: withoutUndefined(operators) } : top;
+    });
+    DEFINED.set(source, defined);
+  }
+  return defined;
+}
+
+/**
+ * @internal The filter-builder bundle at the reading site with the config
+ * overrides on top. A key an override sets wins; a key it leaves unset or
+ * `undefined` reads the section; `operators` merges key by key and
+ * `announcement` is replaced as a whole. Injection context required.
+ */
+export function injectFilterBuilderSiteI18n(
   overrides: Partial<CngxFilterBuilderI18n> | Signal<Partial<CngxFilterBuilderI18n>> | undefined,
 ): Signal<CngxResolvedFilterBuilderI18n> {
-  let byOverrides = FILLS.get(defaults);
-  if (!byOverrides) {
-    byOverrides = new WeakMap();
-    FILLS.set(defaults, byOverrides);
-  }
-  const key: object = overrides ?? NO_OVERRIDES;
-  const cached = byOverrides.get(key);
-  if (cached) {
-    return cached;
-  }
-  if (!overrides) {
-    byOverrides.set(key, defaults);
-    return defaults;
-  }
-  const user = coerceSignal<Partial<CngxFilterBuilderI18n>>(overrides);
-  const filled = computed<CngxResolvedFilterBuilderI18n>(
-    () => {
-      const base = defaults();
-      const value: Record<string, unknown> = { ...base };
-      for (const [name, override] of Object.entries(user())) {
-        if (override !== undefined && name !== 'operators') {
-          value[name] = override;
-        }
-      }
-      const operators: Record<string, string> = { ...base.operators };
-      for (const [name, label] of Object.entries(user().operators ?? {})) {
-        if (label !== undefined) {
-          operators[name] = label;
-        }
-      }
-      value['operators'] = operators;
-      return value as unknown as CngxResolvedFilterBuilderI18n;
-    },
-    { equal: bundleEqual },
+  return createNestedOverrideMerge<CngxResolvedFilterBuilderI18n, 'operators'>(
+    injectFilterBuilderSectionI18n(),
+    overrides && definedOverrides(overrides),
+    'operators',
   );
-  byOverrides.set(key, filled);
-  return filled;
 }

@@ -12,7 +12,12 @@ import { provideLocale, provideLocaleAt } from '@cngx/core/utils';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 
-import { injectInputAriaLabels, provideInputConfig, withInputAriaLabels } from '../input-config';
+import {
+  injectInputAriaLabels,
+  provideInputConfig,
+  withInputAriaLabels,
+  type InputAriaLabels,
+} from '../input-config';
 import { CngxPasswordStrength } from '../password-strength.directive';
 import { injectInputSectionLabels } from './input-i18n';
 import { CNGX_INPUT_LANGUAGE_EN } from './input-language-section';
@@ -132,6 +137,24 @@ describe('input language section', () => {
     const again = TestBed.runInInjectionContext(() => injectInputSectionLabels());
     expect(Object.is(site, again)).toBe(true);
     expect(Object.is(site(), again())).toBe(true);
+  });
+
+  it('keeps the label reference when an equal config override recomputes', () => {
+    const overrides = signal<Partial<InputAriaLabels>>({ clear: 'Leeren' });
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideInputConfig(withInputAriaLabels(overrides)),
+      ],
+    });
+    const resolved = labels();
+    const before = resolved();
+    expect(before.clear).toBe('Leeren');
+    overrides.set({ clear: 'Leeren', copyError: undefined });
+    expect(Object.is(resolved(), before)).toBe(true);
+    overrides.set({ clear: 'Weg' });
+    expect(resolved().clear).toBe('Weg');
+    expect(resolved().copyError).toBe('Copy failed');
   });
 });
 

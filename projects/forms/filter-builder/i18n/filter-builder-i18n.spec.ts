@@ -15,6 +15,7 @@ import {
   injectFilterBuilderI18n,
   provideFilterBuilderConfig,
   withFilterBuilderI18n,
+  type CngxFilterBuilderI18n,
 } from '../filter-builder.config';
 import { injectFilterBuilderSectionI18n } from './filter-builder-i18n';
 import { CNGX_FILTER_BUILDER_LANGUAGE_EN } from './filter-builder-language-section';
@@ -264,5 +265,31 @@ describe('filter-builder language section', () => {
     const again = TestBed.runInInjectionContext(() => injectFilterBuilderSectionI18n());
     expect(Object.is(site, again)).toBe(true);
     expect(Object.is(site(), again())).toBe(true);
+  });
+
+  it('keeps the bundle reference when an equal config override recomputes', () => {
+    const overrides = signal<Partial<CngxFilterBuilderI18n>>({
+      addFilter: 'Add rule',
+      operators: { eq: 'Is' },
+    });
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideFilterBuilderConfig(withFilterBuilderI18n(overrides)),
+      ],
+    });
+    const resolved = i18n();
+    const before = resolved();
+    expect(before.operators['eq']).toBe('Is');
+    overrides.set({
+      addFilter: 'Add rule',
+      emptyState: undefined,
+      operators: { eq: 'Is' },
+    });
+    expect(Object.is(resolved(), before)).toBe(true);
+    expect(resolved().emptyState).toBe('No filters defined');
+    expect(resolved().operators['contains']).toBe('Contains');
+    overrides.set({ addFilter: 'Add condition', operators: { eq: 'Is' } });
+    expect(resolved().addFilter).toBe('Add condition');
   });
 });

@@ -1,7 +1,7 @@
 import { computed, inject, InjectionToken, type Signal } from '@angular/core';
 
-import { formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createOverrideMerge, injectLocale } from '@cngx/core/utils';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createOverrideMerge } from '@cngx/core/utils';
 
 import type {
   CngxSelectAnnouncerConfig,
@@ -36,6 +36,10 @@ export interface CngxSelectCopy {
   readonly clearSelection: string;
   /** Clear-button default of the multi-value and input selects. */
   readonly resetSelection: string;
+  /** Default accessible name of the action-select action group. */
+  readonly actionGroup: string;
+  /** Default accessible name of the reorderable-select reorder hint. */
+  readonly reorderHint: string;
 }
 
 /** @internal Builds the default announcer formatter from the section's messages. */
@@ -118,109 +122,67 @@ export function selectCopyFrom(section: CngxSelectLanguageSection, locale: strin
     announceFormat: announceFormatFrom(section, locale),
     clearSelection: section.clearSelection,
     resetSelection: section.resetSelection,
+    actionGroup: section.actionGroup,
+    reorderHint: section.reorderHint,
   };
-}
-
-const COPIES = new WeakMap<CngxSelectLanguageSection, Map<string, CngxSelectCopy>>();
-
-/**
- * @internal The copy of one section object and locale, built once: equal
- * inputs give the identical object, so readers compare by reference.
- */
-function copyOf(section: CngxSelectLanguageSection, locale: string): CngxSelectCopy {
-  let byLocale = COPIES.get(section);
-  if (!byLocale) {
-    byLocale = new Map();
-    COPIES.set(section, byLocale);
-  }
-  let copy = byLocale.get(locale);
-  if (!copy) {
-    copy = selectCopyFrom(section, locale);
-    byLocale.set(locale, copy);
-  }
-  return copy;
 }
 
 const NO_SECTION: Partial<CngxSelectLanguageSection> = {};
 
-/**
- * @internal The select section of the active language pack over the English
- * section, resolved once per injector so every select reads the same signal.
- */
-const SELECT_LANGUAGE = new InjectionToken<Signal<CngxSelectLanguageSection>>(
-  'CngxSelectLanguage',
-  {
-    providedIn: 'root',
-    factory: () => {
-      const pack = injectLanguageSection('select');
-      return createOverrideMerge<CngxSelectLanguageSection>(
-        CNGX_SELECT_LANGUAGE_EN,
-        computed(() => pack() ?? NO_SECTION),
-      );
-    },
-  },
-);
-
-/**
- * @internal The select section of the active language pack over English.
- * Injection context required.
- */
-export function injectSelectLanguage(): Signal<CngxSelectLanguageSection> {
-  return inject(SELECT_LANGUAGE);
+/** @internal The select section of the active pack over the English section. */
+function injectSelectLanguage(): Signal<CngxSelectLanguageSection> {
+  const pack = injectLanguageSection('select');
+  return createOverrideMerge<CngxSelectLanguageSection>(
+    CNGX_SELECT_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+  );
 }
 
-const COPY_SIGNALS = new WeakMap<
-  Signal<CngxSelectLanguageSection>,
-  WeakMap<Signal<string>, Signal<CngxSelectCopy>>
->();
+/** @internal Builds and reads the select copy, formatted for the reading locale. */
+const selectBundle = createSectionBundle<CngxSelectLanguageSection, CngxSelectCopy>({
+  section: injectSelectLanguage,
+  toBundle: selectCopyFrom,
+});
+
+/**
+ * @internal The select copy of the active pack, formatted for the app locale.
+ * Private: consumers override copy through `provideSelectConfig`.
+ */
+const SELECT_SECTION_COPY = new InjectionToken<Signal<CngxSelectCopy>>('CngxSelectSectionCopy', {
+  providedIn: 'root',
+  factory: () => selectBundle.build(),
+});
 
 /**
  * @internal The select copy at the reading site: the active pack's select
  * section formatted for the locale of the injector that reads it, so a
- * `provideLocaleAt` subtree formats its own numbers. Memoized per section and
- * locale signal: every select under one injector shares one signal.
- * Injection context required.
+ * `provideLocaleAt` subtree formats its own numbers. Every select under one
+ * injector shares one signal. Injection context required.
  */
 export function injectSelectCopy(): Signal<CngxSelectCopy> {
-  const language = injectSelectLanguage();
-  const locale = injectLocale();
-  let byLocale = COPY_SIGNALS.get(language);
-  if (!byLocale) {
-    byLocale = new WeakMap();
-    COPY_SIGNALS.set(language, byLocale);
-  }
-  let copy = byLocale.get(locale);
-  if (!copy) {
-    copy = computed(() => copyOf(language(), locale()));
-    byLocale.set(locale, copy);
-  }
-  return copy;
+  return selectBundle.resolve(inject(SELECT_SECTION_COPY));
 }
 
-/** Keys of the select section that hold a plain word. */
-type CngxSelectWordKey = {
-  [K in keyof CngxSelectLanguageSection]: CngxSelectLanguageSection[K] extends string ? K : never;
-}[keyof CngxSelectLanguageSection];
+/** Keys of the select copy that hold a plain word read on its own. */
+type CngxSelectWordKey = 'actionGroup' | 'reorderHint';
 
-const WORDS = new WeakMap<
-  Signal<CngxSelectLanguageSection>,
-  Map<CngxSelectWordKey, Signal<string>>
->();
+const WORDS = new WeakMap<Signal<CngxSelectCopy>, Map<CngxSelectWordKey, Signal<string>>>();
 
 /**
- * @internal One plain word of the active pack's select section, as a signal
- * shared by every reader under the injector. Injection context required.
+ * @internal One plain word of the select copy at the reading site, as a
+ * signal shared by every reader under the injector. Injection context
+ * required.
  */
 export function injectSelectWord(key: CngxSelectWordKey): Signal<string> {
-  const language = injectSelectLanguage();
-  let byKey = WORDS.get(language);
+  const copy = injectSelectCopy();
+  let byKey = WORDS.get(copy);
   if (!byKey) {
     byKey = new Map();
-    WORDS.set(language, byKey);
+    WORDS.set(copy, byKey);
   }
   let word = byKey.get(key);
   if (!word) {
-    word = computed(() => language()[key]);
+    word = computed(() => copy()[key]);
     byKey.set(key, word);
   }
   return word;

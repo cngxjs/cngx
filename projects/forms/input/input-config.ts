@@ -1,10 +1,6 @@
 import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
 import { createOverrideMerge } from '@cngx/core/utils';
-import {
-  fillInputLabels,
-  injectInputSectionLabels,
-  type CngxResolvedInputAriaLabels,
-} from './i18n/input-i18n';
+import { injectInputLabels, type CngxResolvedInputAriaLabels } from './i18n/input-i18n';
 import type { MaskTokenMap } from './input-mask.directive';
 import type { PasswordStrengthLabel } from './password-strength.factory';
 
@@ -573,5 +569,5 @@ export function withInputAriaLabels(
  * @internal
  */
 export function injectInputAriaLabels(): Signal<CngxResolvedInputAriaLabels> {
-  return fillInputLabels(injectInputSectionLabels(), inject(CNGX_INPUT_CONFIG).ariaLabels);
+  return injectInputLabels(inject(CNGX_INPUT_CONFIG).ariaLabels);
 }

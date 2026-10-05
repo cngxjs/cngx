@@ -10,7 +10,7 @@ import {
 import { createNestedOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxFilterEditorComponent } from './filter-builder-editor.contract';
-import { fillFilterBuilderI18n, injectFilterBuilderSectionI18n } from './i18n/filter-builder-i18n';
+import { injectFilterBuilderSiteI18n } from './i18n/filter-builder-i18n';
 import {
   CNGX_FILTER_BUILTIN_OPERATOR_DEFS,
   type CngxFilterOperatorDef,
@@ -411,8 +411,5 @@ export function injectFilterBuilderConfig(): CngxFilterBuilderConfig {
  * @relatedTo withFilterBuilderI18n, CNGX_FILTER_BUILDER_LANGUAGE_EN
  */
 export function injectFilterBuilderI18n(): Signal<Required<CngxFilterBuilderI18n>> {
-  return fillFilterBuilderI18n(
-    injectFilterBuilderSectionI18n(),
-    inject(CNGX_FILTER_BUILDER_CONFIG).i18n,
-  );
+  return injectFilterBuilderSiteI18n(inject(CNGX_FILTER_BUILDER_CONFIG).i18n);
 }

@@ -13,7 +13,14 @@ import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 
 import { CngxMultiSelect } from '../multi-select/multi-select.component';
 import { resolveActionSelectConfig } from '../shared/action-select-config';
-import { provideSelectConfig, withAriaLabels, withFallbackLabels } from '../shared/config';
+import {
+  provideSelectConfig,
+  withAnnouncer,
+  withAriaLabels,
+  withFallbackLabels,
+  type CngxSelectAnnouncerConfig,
+  type CngxSelectAriaLabels,
+} from '../shared/config';
 import { createLabelMatch } from '../shared/internal/label-match';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import type { CngxSelectOptionDef } from '../shared/option.model';
@@ -214,6 +221,28 @@ describe('select language section', () => {
     const again = TestBed.runInInjectionContext(() => injectSelectCopy());
     expect(Object.is(copy, again)).toBe(true);
     expect(Object.is(copy(), again())).toBe(true);
+  });
+
+  it('keeps the copy reference when an equal config override recomputes', () => {
+    const aria = signal<CngxSelectAriaLabels>({ chipRemove: 'Drop' });
+    const announcer = signal<CngxSelectAnnouncerConfig>({ politeness: 'assertive' });
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideSelectConfig(withAriaLabels(aria), withAnnouncer(announcer)),
+      ],
+    });
+    const config = resolve();
+    const labels = config.ariaLabels();
+    const announce = config.announcer();
+    expect(labels.chipRemove).toBe('Drop');
+    aria.set({ chipRemove: 'Drop', treeExpand: undefined });
+    announcer.set({ politeness: 'assertive', format: undefined });
+    expect(Object.is(config.ariaLabels(), labels)).toBe(true);
+    expect(Object.is(config.announcer(), announce)).toBe(true);
+    expect(config.ariaLabels().treeExpand).toBe('Expand node');
+    aria.set({ chipRemove: 'Remove chip' });
+    expect(config.ariaLabels().chipRemove).toBe('Remove chip');
   });
 });
 
