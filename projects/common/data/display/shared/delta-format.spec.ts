@@ -86,3 +86,24 @@ describe('formatDelta sign', () => {
     expect(formatDelta(0, 'absolute', 'en-US')).toBe('0');
   });
 });
+
+describe('formatDelta formatter reuse', () => {
+  it('builds one Intl.NumberFormat per locale and options, not one per call', () => {
+    const Real = Intl.NumberFormat;
+    let constructed = 0;
+    Intl.NumberFormat = new Proxy(Real, {
+      construct(target, args: ConstructorParameters<typeof Intl.NumberFormat>) {
+        constructed++;
+        return Reflect.construct(target, args);
+      },
+    });
+    try {
+      for (let i = 0; i < 5; i++) {
+        formatDelta(12.5 + i, 'percent', 'fr-CA');
+      }
+      expect(constructed).toBeLessThanOrEqual(1);
+    } finally {
+      Intl.NumberFormat = Real;
+    }
+  });
+});

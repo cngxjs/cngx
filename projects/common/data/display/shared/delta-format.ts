@@ -10,6 +10,7 @@
  * consume these helpers so the direction / glyph / format logic has a single
  * source of truth (Pillar 1) with no Angular dependency.
  */
+import { numberFormatterFor } from '@cngx/core/utils';
 
 /** Which way the delta moved. `flat` is exactly zero. */
 export type DeltaDirection = 'up' | 'down' | 'flat';
@@ -74,11 +75,11 @@ export function formatDelta(
   if (mode === 'percent') {
     // The input is already in percent units; Intl's percent style multiplies
     // by 100, so scale down first.
-    return new Intl.NumberFormat(locale, {
+    return numberFormatterFor(locale, {
       ...(format ?? { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
       style: 'percent',
       signDisplay,
     }).format(abs / 100);
   }
-  return new Intl.NumberFormat(locale, { ...format, signDisplay }).format(abs);
+  return numberFormatterFor(locale, { ...format, signDisplay }).format(abs);
 }
