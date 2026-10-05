@@ -19,7 +19,8 @@ import {
  * fallback of string inputs (`CngxCopyBlock`, `CngxRangeSlider`,
  * `CngxBreadcrumb`), resolved in a `computed()`: a bound input wins, and an
  * unbound one follows a language switch. They are optional so a bundle
- * built before they existed keeps compiling; the English defaults fill them.
+ * built before they existed keeps compiling; the active language pack (or
+ * its English section) fills them at the reading site.
  *
  * @category common/interactive/i18n
  */
@@ -67,9 +68,6 @@ function interactiveBundleFrom(
     rangeValue: (start, end) => formatMessage(section.rangeValue, { start, end }, locale),
   };
 }
-
-/** @internal English for every key, filling keys a directly provided bundle predates. */
-const INTERACTIVE_I18N_DEFAULTS = interactiveBundleFrom(CNGX_INTERACTIVE_LANGUAGE_EN, 'en');
 
 const NO_SECTION: Partial<CngxInteractiveLanguageSection> = {};
 
@@ -179,14 +177,10 @@ export function injectInteractiveI18n(): Signal<CngxInteractiveI18n> {
 }
 
 /**
- * @internal - the interactive bundle as a shared signal with every optional
- * key filled from the English defaults, so a directly provided token value
- * that predates a key still resolves it. One `computed()` per injected
- * bundle.
+ * @internal - {@link injectInteractiveI18n} typed with every key present.
+ * The reading-site resolve already fills each key a directly provided token
+ * value leaves out from the active pack's section, so no key is ever unset.
  */
 export function injectResolvedInteractiveI18n(): Signal<Required<CngxInteractiveI18n>> {
-  return createOverrideMerge<Required<CngxInteractiveI18n>>(
-    INTERACTIVE_I18N_DEFAULTS,
-    injectInteractiveI18n(),
-  );
+  return injectInteractiveI18n() as Signal<Required<CngxInteractiveI18n>>;
 }

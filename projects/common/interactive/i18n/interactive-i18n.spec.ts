@@ -157,6 +157,25 @@ describe('CNGX_INTERACTIVE_I18N', () => {
     expect(bundle().breadcrumb).toBe('Breadcrumb');
   });
 
+  it('fills the keys a directly provided bundle leaves out from the active pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', interactive: { copy: 'Kopieren' } }),
+          withDocumentLanguage('off'),
+        ),
+        {
+          provide: CNGX_INTERACTIVE_I18N,
+          useValue: signal({ asyncClickSucceeded: 'Ok', asyncClickFailed: 'Nope' }).asReadonly(),
+        },
+      ],
+    });
+    const bundle = TestBed.runInInjectionContext(() => injectResolvedInteractiveI18n());
+    expect(bundle().asyncClickSucceeded).toBe('Ok');
+    expect(bundle().copy).toBe('Kopieren');
+    expect(bundle().breadcrumb).toBe('Breadcrumb');
+  });
+
   it('defaults the copy-block, range-slider and breadcrumb inputs from the bundle', () => {
     TestBed.configureTestingModule({
       imports: [StringInputsHost],
