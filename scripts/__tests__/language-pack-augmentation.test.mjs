@@ -156,17 +156,16 @@ describe('language-pack augmentation against dist/', () => {
   it('requires card transitively once an imported entry loads @cngx/common/card types', () => {
     // @cngx/ui/timeline -> @cngx/common/timeline -> @cngx/common/card: a pack
     // needs the sections of every cngx entry in the consumer's type graph.
-    // The graph also reaches other sections (TS2739 lists several missing
-    // properties, TS2741 one); the proof is that card is among them.
+    // Asserted on the pack type itself: the missing-property diagnostic for
+    // an empty pack changes code and truncates its list as sections grow.
     const diagnostics = compile(`
       import type { CngxLanguagePack } from '@cngx/core/i18n';
       import { CngxTimeline } from '@cngx/ui/timeline';
       export const timeline = CngxTimeline;
-      export const pack: CngxLanguagePack = {};
+      type CardRequired = {} extends Pick<CngxLanguagePack, 'card'> ? false : true;
+      export const cardRequired: CardRequired = true;
     `);
-    expect(diagnostics).toHaveLength(1);
-    expect([2739, 2741]).toContain(diagnostics[0].code);
-    expect(diagnostics[0].message).toMatch(/\bcard\b/);
+    expect(diagnostics).toEqual([]);
   });
 
   it('loads the shipped d.ts files without a resolution error', () => {
