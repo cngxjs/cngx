@@ -71,13 +71,25 @@ export interface CngxChartI18n {
 }
 
 /**
- * Every formatter a {@link createChartI18nDefaults} call produced. A token
- * key holding one of these is still a library default, so the use-site
- * resolver swaps it for the current locale's default.
+ * Marks a formatter that {@link createChartI18nDefaults} produced. A token
+ * key holding one is still a library default, so the use-site resolver swaps
+ * it for the current locale's default. The mark travels on the function
+ * itself, non-enumerable, so no global registry is written.
  *
  * @internal
  */
-const DEFAULT_FORMATTERS = new WeakSet<object>();
+const DEFAULT_FORMATTER = Symbol('cngxChartDefaultFormatter');
+
+function markDefaultFormatters<T extends object>(bundle: T): T {
+  for (const fn of Object.values(bundle)) {
+    Object.defineProperty(fn, DEFAULT_FORMATTER, { value: true });
+  }
+  return bundle;
+}
+
+function isDefaultFormatter(value: unknown): boolean {
+  return typeof value === 'function' && DEFAULT_FORMATTER in value;
+}
 
 const CHART_I18N_DEFAULTS_CACHE_LIMIT = 32;
 
@@ -103,13 +115,7 @@ export function createChartI18nDefaults(
   let byLocale = DEFAULTS_BY_SECTION.get(section);
   if (!byLocale) {
     byLocale = memoize(
-      (forLocale: string) => {
-        const defaults = chartBundleFrom(section, forLocale);
-        for (const fn of Object.values(defaults)) {
-          DEFAULT_FORMATTERS.add(fn);
-        }
-        return defaults;
-      },
+      (forLocale: string) => markDefaultFormatters(chartBundleFrom(section, forLocale)),
       { cacheLimit: CHART_I18N_DEFAULTS_CACHE_LIMIT },
     );
     DEFAULTS_BY_SECTION.set(section, byLocale);
@@ -308,7 +314,7 @@ export function injectChartI18n(): Signal<Required<CngxChartI18n>> {
         const out: Record<string, unknown> = { ...localized };
         for (const key of Object.keys(localized) as ChartI18nKey[]) {
           const value = own[key];
-          if (value !== undefined && !DEFAULT_FORMATTERS.has(value)) {
+          if (value !== undefined && !isDefaultFormatter(value)) {
             out[key] = value;
           }
         }

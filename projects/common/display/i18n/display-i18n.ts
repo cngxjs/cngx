@@ -56,8 +56,12 @@ export interface CngxDisplayI18n {
   readonly badgeOverflow: (max: number) => string;
 }
 
-/** @internal `avatarGroupLabel` functions built from a language section, not by a consumer. */
-const SECTION_AVATAR_GROUP_LABELS = new WeakSet<object>();
+/**
+ * @internal Marks an `avatarGroupLabel` built from a language section, not by
+ * a consumer. The mark travels on the function itself, non-enumerable, so no
+ * global registry is written.
+ */
+const SECTION_AVATAR_GROUP_LABEL = Symbol('cngxSectionAvatarGroupLabel');
 
 /**
  * @internal Whether an `avatarGroupLabel` came from a language section. Such a
@@ -65,7 +69,7 @@ const SECTION_AVATAR_GROUP_LABELS = new WeakSet<object>();
  * noun-only override still reaches AT; a consumer formatter owns the phrase.
  */
 export function isSectionAvatarGroupLabel(format: CngxDisplayI18n['avatarGroupLabel']): boolean {
-  return SECTION_AVATAR_GROUP_LABELS.has(format);
+  return SECTION_AVATAR_GROUP_LABEL in format;
 }
 
 /** @internal Turns a display section into the token's keys for a locale. */
@@ -78,7 +82,7 @@ function displayBundleFrom(section: CngxDisplayLanguageSection, locale: string):
     );
   const avatarGroupLabel = (total: number, hidden: number): string =>
     avatarGroupLabelFor(total, hidden, section.avatarGroupNoun);
-  SECTION_AVATAR_GROUP_LABELS.add(avatarGroupLabel);
+  Object.defineProperty(avatarGroupLabel, SECTION_AVATAR_GROUP_LABEL, { value: true });
   return {
     avatarStatus: (status) => section.avatarStatus[status],
     avatarGroupNoun: section.avatarGroupNoun,
