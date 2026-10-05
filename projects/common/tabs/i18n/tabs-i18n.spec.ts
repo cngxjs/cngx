@@ -8,7 +8,8 @@ import {
   withPartialPack,
   type CngxActiveLanguagePack,
 } from '@cngx/core/i18n';
-import { stripBidiIsolates } from '@cngx/testing';
+import { provideLocale, provideLocaleAt } from '@cngx/core/utils';
+import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 
 import {
   CNGX_TABS_I18N,
@@ -235,5 +236,18 @@ describe('CngxTabsI18n', () => {
       expect(merged.addTab).toBe('Weiter');
       expect(merged.commitInFlight).toBe(defaults.commitInFlight);
     });
+  });
+});
+
+describe('CngxTabsI18n in a provideLocaleAt subtree', () => {
+  it('formats numbers in the subtree locale while the root stays English', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideLocale('en')],
+    });
+    const root = TestBed.runInInjectionContext(() => injectTabsI18n());
+    const german = runInSubtree([provideLocaleAt('de')], () => injectTabsI18n());
+    expect(root().unlabeledTab(1200)).toBe('Tab 1,200');
+    expect(german().unlabeledTab(1200)).toBe('Tab 1.200');
   });
 });

@@ -1,6 +1,6 @@
 import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createOverrideMerge, injectLocale } from '@cngx/core/utils';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createOverrideMerge } from '@cngx/core/utils';
 
 import { CNGX_TABS_LANGUAGE_EN, type CngxTabsLanguageSection } from './tabs-language-section';
 
@@ -114,12 +114,16 @@ function tabsBundleFrom(section: CngxTabsLanguageSection, locale: string): CngxT
   };
 }
 
-/** @internal The tabs section of the active pack, mapped for the app locale. */
-function tabsBundleFromPack(): Signal<CngxTabsI18n> {
-  const section = injectTabsLanguage();
-  const locale = injectLocale();
-  return computed(() => tabsBundleFrom(section(), locale()));
+/** @internal The tabs section of the active pack over English. */
+function injectTabsSection(): Signal<CngxTabsLanguageSection> {
+  return injectTabsLanguage();
 }
+
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const tabsBundle = createSectionBundle<CngxTabsLanguageSection, CngxTabsI18n>({
+  section: injectTabsSection,
+  toBundle: tabsBundleFrom,
+});
 
 /**
  * DI token for the tabs i18n bundle, as a `Signal` so a runtime language
@@ -135,7 +139,7 @@ function tabsBundleFromPack(): Signal<CngxTabsI18n> {
  */
 export const CNGX_TABS_I18N = new InjectionToken<Signal<CngxTabsI18n>>('CngxTabsI18n', {
   providedIn: 'root',
-  factory: tabsBundleFromPack,
+  factory: () => tabsBundle.build(),
 });
 
 /**
@@ -195,8 +199,7 @@ export function withTabsI18nLabels(
 export function provideTabsI18n(...features: readonly CngxTabsI18nFeature[]): Provider {
   return {
     provide: CNGX_TABS_I18N,
-    useFactory: () =>
-      features.reduce<Signal<CngxTabsI18n>>((bundle, feat) => feat(bundle), tabsBundleFromPack()),
+    useFactory: () => tabsBundle.build(features),
   };
 }
 
@@ -207,5 +210,5 @@ export function provideTabsI18n(...features: readonly CngxTabsI18nFeature[]): Pr
  * @category common/tabs/i18n
  */
 export function injectTabsI18n(): Signal<CngxTabsI18n> {
-  return inject(CNGX_TABS_I18N);
+  return tabsBundle.resolve(inject(CNGX_TABS_I18N));
 }

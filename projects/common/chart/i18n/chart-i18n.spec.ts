@@ -8,7 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideLocale } from '@cngx/core/utils';
+import { provideLocale, provideLocaleAt } from '@cngx/core/utils';
 import {
   provideCngxI18n,
   withDocumentLanguage,
@@ -25,7 +25,7 @@ import {
   withChartI18nLabels,
   type CngxChartI18n,
 } from './chart-i18n';
-import { stripBidiIsolates } from '@cngx/testing';
+import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 import { CNGX_CHART_LANGUAGE_EN } from './chart-language-section';
 
 describe('CNGX_CHART_I18N', () => {
@@ -388,5 +388,16 @@ describe('CNGX_CHART_I18N language pack', () => {
     const i18n = TestBed.runInInjectionContext(() => injectChartI18n())();
     expect(i18n.dataTable()).toBe('Datentabelle');
     expect(i18n.empty()).toBe('Keine Daten');
+  });
+});
+
+describe('injectChartI18n in a provideLocaleAt subtree', () => {
+  it('formats numbers in the subtree locale while the root stays English', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideLocale('en')] });
+    const root = TestBed.runInInjectionContext(() => injectChartI18n());
+    const german = runInSubtree([provideLocaleAt('de')], () => injectChartI18n());
+    expect(stripBidiIsolates(root().thresholdAlert(12.5))).toBe('Threshold 12.5 crossed');
+    expect(stripBidiIsolates(german().thresholdAlert(12.5))).toBe('Threshold 12,5 crossed');
   });
 });

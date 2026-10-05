@@ -281,3 +281,20 @@ describe('timeline config language pack', () => {
     expect(labels.loading).toBe('Wird geladen');
   });
 });
+
+describe('timeline labels from the language pack', () => {
+  it('keep their reference while the timeline section stays equal', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+    });
+    const labels = coerceSignal(TestBed.inject(CNGX_TIMELINE_CONFIG).labels!);
+    const english = labels();
+    pack.set({ locale: 'de' });
+    expect(labels()).toBe(english);
+    pack.set({ locale: 'de', timeline: { retry: 'Erneut versuchen' } });
+    expect(labels()).not.toBe(english);
+    expect(labels().retry).toBe('Erneut versuchen');
+  });
+});

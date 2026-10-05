@@ -1,10 +1,6 @@
 import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import {
-  createNestedOverrideMerge,
-  injectLocale,
-  type CngxNestedOverrides,
-} from '@cngx/core/utils';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createNestedOverrideMerge, type CngxNestedOverrides } from '@cngx/core/utils';
 
 import {
   CNGX_STEPPER_LANGUAGE_EN,
@@ -179,12 +175,11 @@ export function injectStepperLanguage(): Signal<CngxStepperLanguageSection> {
   );
 }
 
-/** @internal The stepper section of the active pack, mapped for the app locale. */
-function stepperBundleFromPack(): Signal<CngxStepperI18n> {
-  const section = injectStepperLanguage();
-  const locale = injectLocale();
-  return computed(() => stepperBundleFrom(section(), locale()));
-}
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const stepperBundle = createSectionBundle<CngxStepperLanguageSection, CngxStepperI18n>({
+  section: injectStepperLanguage,
+  toBundle: stepperBundleFrom,
+});
 
 /**
  * DI token for the resolved stepper i18n bundle, as a `Signal` so a
@@ -201,7 +196,7 @@ function stepperBundleFromPack(): Signal<CngxStepperI18n> {
  */
 export const CNGX_STEPPER_I18N = new InjectionToken<Signal<CngxStepperI18n>>('CngxStepperI18n', {
   providedIn: 'root',
-  factory: stepperBundleFromPack,
+  factory: () => stepperBundle.build(),
 });
 
 /**
@@ -266,11 +261,7 @@ export function withStepperI18nLabels(
 export function provideStepperI18n(...features: readonly CngxStepperI18nFeature[]): Provider {
   return {
     provide: CNGX_STEPPER_I18N,
-    useFactory: () =>
-      features.reduce<Signal<CngxStepperI18n>>(
-        (bundle, feat) => feat(bundle),
-        stepperBundleFromPack(),
-      ),
+    useFactory: () => stepperBundle.build(features),
   };
 }
 
@@ -282,5 +273,5 @@ export function provideStepperI18n(...features: readonly CngxStepperI18nFeature[
  * @category common/stepper/i18n
  */
 export function injectStepperI18n(): Signal<CngxStepperI18n> {
-  return inject(CNGX_STEPPER_I18N);
+  return stepperBundle.resolve(inject(CNGX_STEPPER_I18N));
 }

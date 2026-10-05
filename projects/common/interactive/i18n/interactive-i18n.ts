@@ -1,6 +1,6 @@
 import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createOverrideMerge, injectLocale } from '@cngx/core/utils';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createOverrideMerge } from '@cngx/core/utils';
 
 import {
   CNGX_INTERACTIVE_LANGUAGE_EN,
@@ -73,16 +73,20 @@ const INTERACTIVE_I18N_DEFAULTS = interactiveBundleFrom(CNGX_INTERACTIVE_LANGUAG
 
 const NO_SECTION: Partial<CngxInteractiveLanguageSection> = {};
 
-/** @internal The interactive section of the active pack over English, mapped for the locale. */
-function interactiveBundleFromPack(): Signal<CngxInteractiveI18n> {
+/** @internal The interactive section of the active pack over English. */
+function injectInteractiveSection(): Signal<CngxInteractiveLanguageSection> {
   const pack = injectLanguageSection('interactive');
-  const locale = injectLocale();
-  const section = createOverrideMerge(
+  return createOverrideMerge(
     CNGX_INTERACTIVE_LANGUAGE_EN,
     computed(() => pack() ?? NO_SECTION),
   );
-  return computed(() => interactiveBundleFrom(section(), locale()));
 }
+
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const interactiveBundle = createSectionBundle<CngxInteractiveLanguageSection, CngxInteractiveI18n>({
+  section: injectInteractiveSection,
+  toBundle: interactiveBundleFrom,
+});
 
 /**
  * DI token for the interactive i18n bundle. `providedIn: 'root'`: the
@@ -99,7 +103,7 @@ export const CNGX_INTERACTIVE_I18N = new InjectionToken<Signal<CngxInteractiveI1
   'CngxInteractiveI18n',
   {
     providedIn: 'root',
-    factory: interactiveBundleFromPack,
+    factory: () => interactiveBundle.build(),
   },
 );
 
@@ -159,11 +163,7 @@ export function provideInteractiveI18n(
 ): Provider {
   return {
     provide: CNGX_INTERACTIVE_I18N,
-    useFactory: () =>
-      features.reduce<Signal<CngxInteractiveI18n>>(
-        (bundle, feat) => feat(bundle),
-        interactiveBundleFromPack(),
-      ),
+    useFactory: () => interactiveBundle.build(features),
   };
 }
 
@@ -175,7 +175,7 @@ export function provideInteractiveI18n(
  * @since 0.1.0
  */
 export function injectInteractiveI18n(): Signal<CngxInteractiveI18n> {
-  return inject(CNGX_INTERACTIVE_I18N);
+  return interactiveBundle.resolve(inject(CNGX_INTERACTIVE_I18N));
 }
 
 /**

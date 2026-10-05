@@ -190,6 +190,22 @@ function timelineLabelsFrom(section: CngxTimelineLanguageSection): CngxTimelineL
   };
 }
 
+const LABELS_BY_SECTION = new WeakMap<CngxTimelineLanguageSection, CngxTimelineLabels>();
+
+/**
+ * @internal The labels of one section object, built once: an equal section
+ * yields the identical labels, so readers compare by reference. The locale
+ * reaches `groupLabel` as its argument, so the labels do not depend on it.
+ */
+function labelsOf(section: CngxTimelineLanguageSection): CngxTimelineLabels {
+  let labels = LABELS_BY_SECTION.get(section);
+  if (!labels) {
+    labels = timelineLabelsFrom(section);
+    LABELS_BY_SECTION.set(section, labels);
+  }
+  return labels;
+}
+
 const TIMELINE_CONFIG_DEFAULTS: Required<CngxTimelineConfig> = {
   labels: timelineLabelsFrom(CNGX_TIMELINE_LANGUAGE_EN),
   templates: {},
@@ -208,7 +224,7 @@ function timelineConfigDefaultsFromPack(): CngxTimelineConfig {
     computed(() => pack() ?? NO_SECTION),
     'status',
   );
-  return { ...TIMELINE_CONFIG_DEFAULTS, labels: computed(() => timelineLabelsFrom(section())) };
+  return { ...TIMELINE_CONFIG_DEFAULTS, labels: computed(() => labelsOf(section())) };
 }
 
 /**

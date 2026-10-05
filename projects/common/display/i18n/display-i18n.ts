@@ -1,9 +1,8 @@
 import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
 import {
   createNestedOverrideMerge,
   createOverrideMerge,
-  injectLocale,
   type CngxNestedOverrides,
 } from '@cngx/core/utils';
 
@@ -98,17 +97,21 @@ function displayBundleFrom(section: CngxDisplayLanguageSection, locale: string):
 
 const NO_SECTION: CngxNestedOverrides<CngxDisplayLanguageSection, 'avatarStatus'> = {};
 
-/** @internal The display section of the active pack over English, mapped for the locale. */
-function displayBundleFromPack(): Signal<CngxDisplayI18n> {
+/** @internal The display section of the active pack over English. */
+function injectDisplaySection(): Signal<CngxDisplayLanguageSection> {
   const pack = injectLanguageSection('display');
-  const locale = injectLocale();
-  const section = createNestedOverrideMerge<CngxDisplayLanguageSection, 'avatarStatus'>(
+  return createNestedOverrideMerge<CngxDisplayLanguageSection, 'avatarStatus'>(
     CNGX_DISPLAY_LANGUAGE_EN,
     computed(() => pack() ?? NO_SECTION),
     'avatarStatus',
   );
-  return computed(() => displayBundleFrom(section(), locale()));
 }
+
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const displayBundle = createSectionBundle<CngxDisplayLanguageSection, CngxDisplayI18n>({
+  section: injectDisplaySection,
+  toBundle: displayBundleFrom,
+});
 
 /**
  * DI token for the display i18n bundle. `providedIn: 'root'`: the display
@@ -124,7 +127,7 @@ function displayBundleFromPack(): Signal<CngxDisplayI18n> {
  */
 export const CNGX_DISPLAY_I18N = new InjectionToken<Signal<CngxDisplayI18n>>('CngxDisplayI18n', {
   providedIn: 'root',
-  factory: displayBundleFromPack,
+  factory: () => displayBundle.build(),
 });
 
 /**
@@ -184,11 +187,7 @@ export function withDisplayI18nLabels(
 export function provideDisplayI18n(...features: readonly CngxDisplayI18nFeature[]): Provider {
   return {
     provide: CNGX_DISPLAY_I18N,
-    useFactory: () =>
-      features.reduce<Signal<CngxDisplayI18n>>(
-        (bundle, feat) => feat(bundle),
-        displayBundleFromPack(),
-      ),
+    useFactory: () => displayBundle.build(features),
   };
 }
 
@@ -200,5 +199,5 @@ export function provideDisplayI18n(...features: readonly CngxDisplayI18nFeature[
  * @since 0.1.0
  */
 export function injectDisplayI18n(): Signal<CngxDisplayI18n> {
-  return inject(CNGX_DISPLAY_I18N);
+  return displayBundle.resolve(inject(CNGX_DISPLAY_I18N));
 }

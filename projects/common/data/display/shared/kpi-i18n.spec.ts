@@ -12,7 +12,8 @@ import {
   withKpiI18nLabels,
   type CngxKpiI18n,
 } from './kpi-i18n';
-import { stripBidiIsolates } from '@cngx/testing';
+import { provideLocale, provideLocaleAt } from '@cngx/core/utils';
+import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 
 @Component({
   template: `
@@ -123,5 +124,16 @@ describe('CNGX_KPI_I18N', () => {
     const first = TestBed.runInInjectionContext(() => injectKpiI18n());
     const second = TestBed.runInInjectionContext(() => injectKpiI18n());
     expect(first).toBe(second);
+  });
+});
+
+describe('CngxKpiI18n in a provideLocaleAt subtree', () => {
+  it('formats numbers in the subtree locale while the root stays English', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideLocale('en')] });
+    const root = TestBed.runInInjectionContext(() => injectKpiI18n());
+    const german = runInSubtree([provideLocaleAt('de')], () => injectKpiI18n());
+    expect(stripBidiIsolates(root().goalValueText(1200, 5000))).toBe('1,200 of 5,000');
+    expect(stripBidiIsolates(german().goalValueText(1200, 5000))).toBe('1.200 of 5.000');
   });
 });

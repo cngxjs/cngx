@@ -7,8 +7,8 @@ import {
   withPartialPack,
   type CngxActiveLanguagePack,
 } from '@cngx/core/i18n';
-import { provideLocale } from '@cngx/core/utils';
-import { stripBidiIsolates } from '@cngx/testing';
+import { provideLocale, provideLocaleAt } from '@cngx/core/utils';
+import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 
 import {
   CNGX_STEPPER_I18N,
@@ -308,9 +308,11 @@ describe('CngxStepperI18n', () => {
           provideStepperI18n(withStepperI18nLabels({ stepperLabel: 'A' })),
         ],
       });
-      const first = TestBed.inject(CNGX_STEPPER_I18N);
+      const first = TestBed.runInInjectionContext(() => injectStepperI18n());
       const second = TestBed.runInInjectionContext(() => injectStepperI18n());
       expect(second).toBe(first);
+      // Same reading locale as the provider: the token's own bundle, no copy.
+      expect(first()).toBe(TestBed.inject(CNGX_STEPPER_I18N)());
     });
 
     it('keeps the bundle reference when an override is re-set to an equal object', () => {
@@ -368,5 +370,18 @@ describe('CngxStepperI18n', () => {
         errored: 'Errored',
       });
     });
+  });
+});
+
+describe('CngxStepperI18n in a provideLocaleAt subtree', () => {
+  it('formats numbers and plurals in the subtree locale while the root stays English', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideLocale('en')],
+    });
+    const root = TestBed.runInInjectionContext(() => injectStepperI18n());
+    const german = runInSubtree([provideLocaleAt('de')], () => injectStepperI18n());
+    expect(root().textStepperFormat(1, 1200)).toBe('Step 1 of 1,200');
+    expect(german().textStepperFormat(1, 1200)).toBe('Step 1 of 1.200');
+    expect(german().groupSummaryCount(1)).toBe('1 step');
   });
 });

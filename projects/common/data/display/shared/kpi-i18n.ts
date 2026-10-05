@@ -1,6 +1,6 @@
 import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createOverrideMerge, injectLocale, numberFormatterFor } from '@cngx/core/utils';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createOverrideMerge, numberFormatterFor } from '@cngx/core/utils';
 
 import { CNGX_KPI_LANGUAGE_EN, type CngxKpiLanguageSection } from '../../i18n/kpi-language-section';
 import type { DeltaDirection, DeltaSentiment } from './delta-format';
@@ -72,16 +72,20 @@ function kpiBundleFrom(section: CngxKpiLanguageSection, locale: string): CngxKpi
 
 const NO_SECTION: Partial<CngxKpiLanguageSection> = {};
 
-/** @internal The kpi section of the active pack over English, mapped for the app locale. */
-function kpiBundleFromPack(): Signal<CngxKpiI18n> {
+/** @internal The kpi section of the active pack over English. */
+function injectKpiSection(): Signal<CngxKpiLanguageSection> {
   const pack = injectLanguageSection('kpi');
-  const locale = injectLocale();
-  const section = createOverrideMerge(
+  return createOverrideMerge(
     CNGX_KPI_LANGUAGE_EN,
     computed(() => pack() ?? NO_SECTION),
   );
-  return computed(() => kpiBundleFrom(section(), locale()));
 }
+
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const kpiBundle = createSectionBundle<CngxKpiLanguageSection, CngxKpiI18n>({
+  section: injectKpiSection,
+  toBundle: kpiBundleFrom,
+});
 
 /**
  * DI token for the KPI i18n bundle. `providedIn: 'root'`: the kpi section
@@ -97,7 +101,7 @@ function kpiBundleFromPack(): Signal<CngxKpiI18n> {
  */
 export const CNGX_KPI_I18N = new InjectionToken<Signal<CngxKpiI18n>>('CngxKpiI18n', {
   providedIn: 'root',
-  factory: kpiBundleFromPack,
+  factory: () => kpiBundle.build(),
 });
 
 /**
@@ -154,8 +158,7 @@ export function withKpiI18nLabels(
 export function provideKpiI18n(...features: readonly CngxKpiI18nFeature[]): Provider {
   return {
     provide: CNGX_KPI_I18N,
-    useFactory: () =>
-      features.reduce<Signal<CngxKpiI18n>>((bundle, feat) => feat(bundle), kpiBundleFromPack()),
+    useFactory: () => kpiBundle.build(features),
   };
 }
 
@@ -167,5 +170,5 @@ export function provideKpiI18n(...features: readonly CngxKpiI18nFeature[]): Prov
  * @since 0.1.0
  */
 export function injectKpiI18n(): Signal<CngxKpiI18n> {
-  return inject(CNGX_KPI_I18N);
+  return kpiBundle.resolve(inject(CNGX_KPI_I18N));
 }

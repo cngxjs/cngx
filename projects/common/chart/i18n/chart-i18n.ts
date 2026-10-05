@@ -1,7 +1,6 @@
 import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { CNGX_LANGUAGE_PACK, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createOverrideMerge, injectLocale, memoize } from '@cngx/core/utils';
-import { recordEqual } from '@cngx/utils';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createOverrideMerge } from '@cngx/core/utils';
 
 import { formatChartNumber } from '../chart/format-number';
 import { CNGX_CHART_LANGUAGE_EN, type CngxChartLanguageSection } from './chart-language-section';
@@ -68,59 +67,6 @@ export interface CngxChartI18n {
    * `label: value`.
    */
   readonly stackedBarSegmentTitle?: (label: string, value: string) => string;
-}
-
-/**
- * Marks a formatter that {@link createChartI18nDefaults} produced. A token
- * key holding one is still a library default, so the use-site resolver swaps
- * it for the current locale's default. The mark travels on the function
- * itself, non-enumerable, so no global registry is written.
- *
- * @internal
- */
-const DEFAULT_FORMATTER = Symbol('cngxChartDefaultFormatter');
-
-function markDefaultFormatters<T extends object>(bundle: T): T {
-  for (const fn of Object.values(bundle)) {
-    Object.defineProperty(fn, DEFAULT_FORMATTER, { value: true });
-  }
-  return bundle;
-}
-
-function isDefaultFormatter(value: unknown): boolean {
-  return typeof value === 'function' && DEFAULT_FORMATTER in value;
-}
-
-const CHART_I18N_DEFAULTS_CACHE_LIMIT = 32;
-
-const DEFAULTS_BY_SECTION = new WeakMap<
-  CngxChartLanguageSection,
-  (locale: string) => Required<CngxChartI18n>
->();
-
-/**
- * The default formatters for one chart section and one number locale - the
- * single source every fallback path resolves against. Numbers inside the
- * copy (summary min / max / current, threshold, stacked-bar values) format
- * in `locale`; the words come from `section`. Memoized per section object
- * and locale, so every reader of one pair shares the same function
- * references.
- *
- * @internal
- */
-export function createChartI18nDefaults(
-  section: CngxChartLanguageSection,
-  locale: string,
-): Required<CngxChartI18n> {
-  let byLocale = DEFAULTS_BY_SECTION.get(section);
-  if (!byLocale) {
-    byLocale = memoize(
-      (forLocale: string) => markDefaultFormatters(chartBundleFrom(section, forLocale)),
-      { cacheLimit: CHART_I18N_DEFAULTS_CACHE_LIMIT },
-    );
-    DEFAULTS_BY_SECTION.set(section, byLocale);
-  }
-  return byLocale(locale);
 }
 
 type ChartTrend = CngxChartSummary['trend'];
@@ -194,28 +140,32 @@ function chartBundleFrom(
   };
 }
 
+/**
+ * The default chart copy for one section and one number locale - the single
+ * source every fallback path resolves against. Numbers inside the copy
+ * (summary min / max / current, threshold, stacked-bar values) format in
+ * `locale`; the words come from `section`.
+ *
+ * @internal
+ */
+export const createChartI18nDefaults = chartBundleFrom;
+
 const NO_SECTION: Partial<CngxChartLanguageSection> = {};
 
-const SECTION_BY_PACK = new WeakMap<object, Signal<CngxChartLanguageSection>>();
-
-/**
- * @internal The English chart section with the active pack's chart section
- * on top. One signal per active pack, so every chart part reading the same
- * pack shares it and a reader that hits the cache allocates nothing.
- */
-function injectChartLanguage(): Signal<CngxChartLanguageSection> {
-  const packKey = inject(CNGX_LANGUAGE_PACK);
-  let section = SECTION_BY_PACK.get(packKey);
-  if (!section) {
-    const pack = injectLanguageSection('chart');
-    section = createOverrideMerge(
-      CNGX_CHART_LANGUAGE_EN,
-      computed(() => pack() ?? NO_SECTION),
-    );
-    SECTION_BY_PACK.set(packKey, section);
-  }
-  return section;
+/** @internal The English chart section with the active pack's chart section on top. */
+function injectChartSection(): Signal<CngxChartLanguageSection> {
+  const pack = injectLanguageSection('chart');
+  return createOverrideMerge(
+    CNGX_CHART_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+  );
 }
+
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const chartBundle = createSectionBundle<CngxChartLanguageSection, CngxChartI18n>({
+  section: injectChartSection,
+  toBundle: chartBundleFrom,
+});
 
 /**
  * Injection token for chart i18n strings, a `Signal` so the copy follows a
@@ -232,15 +182,8 @@ function injectChartLanguage(): Signal<CngxChartLanguageSection> {
  */
 export const CNGX_CHART_I18N = new InjectionToken<Signal<CngxChartI18n>>('CngxChartI18n', {
   providedIn: 'root',
-  factory: chartBundleFromPack,
+  factory: () => chartBundle.build(),
 });
-
-/** @internal The chart section of the active pack, formatted for the root app locale. */
-function chartBundleFromPack(): Signal<CngxChartI18n> {
-  const section = injectChartLanguage();
-  const locale = injectLocale();
-  return computed(() => createChartI18nDefaults(section(), locale()), { equal: recordEqual });
-}
 
 /**
  * Branded feature-fn for {@link provideChartI18n}.
@@ -291,65 +234,18 @@ export function withChartI18nLabels(
 export function provideChartI18n(...features: readonly CngxChartI18nFeature[]): Provider {
   return {
     provide: CNGX_CHART_I18N,
-    useFactory: (): Signal<CngxChartI18n> =>
-      features.reduce<Signal<CngxChartI18n>>((bundle, feat) => feat(bundle), chartBundleFromPack()),
+    useFactory: (): Signal<CngxChartI18n> => chartBundle.build(features),
   };
 }
 
-/** @internal */
-type ChartI18nKey = keyof CngxChartI18n;
-
-/** @internal Resolved bundles keyed by token value, then section signal, then locale signal. */
-const resolvedByToken = new WeakMap<
-  Signal<CngxChartI18n>,
-  WeakMap<
-    Signal<CngxChartLanguageSection>,
-    WeakMap<Signal<string>, Signal<Required<CngxChartI18n>>>
-  >
->();
-
 /**
- * @internal - the chart i18n bundle as a locale-aware signal. Every key
- * that is absent from the token value, or still a library default (the
- * en-US bundle, the token factory's root-locale snapshot, or a
- * {@link provideChartI18n} merge that kept it), resolves to the current
- * `CNGX_LOCALE` default; a key the consumer passed stays theirs verbatim.
- * One `computed()` per (token value, pack section, locale signal), so every
- * chart part under one injector shares it, and a route that provides its
- * own language pack gets its own words even when it shares the token value.
+ * @internal - the chart i18n bundle for the reading site. Every key the
+ * token value leaves out, or leaves at its default, follows the use site's
+ * pack section and locale; a key the consumer set stays theirs verbatim.
+ * One signal per (token value, pack section, locale), shared by every chart
+ * part under one injector.
  */
 export function injectChartI18n(): Signal<Required<CngxChartI18n>> {
-  const bundle = inject(CNGX_CHART_I18N);
-  const section = injectChartLanguage();
-  const locale = injectLocale();
-  let bySection = resolvedByToken.get(bundle);
-  if (!bySection) {
-    bySection = new WeakMap();
-    resolvedByToken.set(bundle, bySection);
-  }
-  let byLocale = bySection.get(section);
-  if (!byLocale) {
-    byLocale = new WeakMap();
-    bySection.set(section, byLocale);
-  }
-  let resolved = byLocale.get(locale);
-  if (!resolved) {
-    resolved = computed(
-      () => {
-        const own = bundle();
-        const localized = createChartI18nDefaults(section(), locale());
-        const out: Record<string, unknown> = { ...localized };
-        for (const key of Object.keys(localized) as ChartI18nKey[]) {
-          const value = own[key];
-          if (value !== undefined && !isDefaultFormatter(value)) {
-            out[key] = value;
-          }
-        }
-        return out as Required<CngxChartI18n>;
-      },
-      { equal: recordEqual },
-    );
-    byLocale.set(locale, resolved);
-  }
-  return resolved;
+  // resolve() fills every key the value leaves out from the complete section bundle.
+  return chartBundle.resolve(inject(CNGX_CHART_I18N)) as Signal<Required<CngxChartI18n>>;
 }

@@ -1,8 +1,17 @@
-import { computed, provideZonelessChangeDetection, signal, type WritableSignal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  Injector,
+  provideZonelessChangeDetection,
+  runInInjectionContext,
+  signal,
+  type WritableSignal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { createResizeObserverMock } from '@cngx/testing';
-import type { CngxAsyncState, AsyncStatus } from '@cngx/core/utils';
+import { createResizeObserverMock, stripBidiIsolates } from '@cngx/testing';
+import { provideLocaleAt, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
 
 import {
   injectRecycler,
@@ -232,6 +241,32 @@ describe('injectRecycler', () => {
       TestBed.flushEffects();
 
       expect(recycler.announcement()).toBe('3 results found.');
+    });
+
+    it('formats the announced count in the locale of a provideLocaleAt subtree', () => {
+      @Component({ template: '', providers: [provideLocaleAt('de')] })
+      class GermanSubtree {
+        readonly injector = inject(Injector);
+      }
+      const status = signal<AsyncStatus>('refreshing');
+      const total = signal(1300);
+      const { injector } = TestBed.createComponent(GermanSubtree).componentInstance;
+      let recycler!: CngxRecycler;
+      runInInjectionContext(injector, () => {
+        recycler = injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => total(),
+          estimateSize: 48,
+          state: createMockState({ status }),
+        });
+      });
+      TestBed.flushEffects();
+
+      total.set(1200);
+      status.set('success');
+      TestBed.flushEffects();
+
+      expect(stripBidiIsolates(recycler.announcement())).toBe('1.200 results found.');
     });
   });
 

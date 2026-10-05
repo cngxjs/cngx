@@ -14,12 +14,11 @@ import {
 } from '@angular/core';
 import { clamp } from '@cngx/utils';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
 import {
   createOverrideMerge,
   createTransitionTracker,
   createVisibilityGate,
-  injectLocale,
 } from '@cngx/core/utils';
 
 import {
@@ -59,16 +58,20 @@ function recyclerBundleFrom(section: CngxRecyclerLanguageSection, locale: string
   };
 }
 
-/** @internal The recycler section of the active pack over English, mapped for the app locale. */
-function recyclerBundleFromPack(): Signal<RecyclerI18n> {
+/** @internal The recycler section of the active pack over English. */
+function injectRecyclerSection(): Signal<CngxRecyclerLanguageSection> {
   const pack = injectLanguageSection('recycler');
-  const locale = injectLocale();
-  const section = createOverrideMerge(
+  return createOverrideMerge(
     CNGX_RECYCLER_LANGUAGE_EN,
     computed(() => pack() ?? NO_SECTION),
   );
-  return computed(() => recyclerBundleFrom(section(), locale()));
 }
+
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const recyclerBundle = createSectionBundle<CngxRecyclerLanguageSection, RecyclerI18n>({
+  section: injectRecyclerSection,
+  toBundle: recyclerBundleFrom,
+});
 
 /**
  * Injection token for recycler SR announcement texts, a `Signal` so the
@@ -82,7 +85,7 @@ function recyclerBundleFromPack(): Signal<RecyclerI18n> {
  * @since 0.1.0
  */
 export const CNGX_RECYCLER_I18N = new InjectionToken<Signal<RecyclerI18n>>('CngxRecyclerI18n', {
-  factory: recyclerBundleFromPack,
+  factory: () => recyclerBundle.build(),
 });
 
 /**
@@ -134,11 +137,7 @@ export function withRecyclerI18nLabels(
 export function provideRecyclerI18n(...features: readonly CngxRecyclerI18nFeature[]): Provider {
   return {
     provide: CNGX_RECYCLER_I18N,
-    useFactory: () =>
-      features.reduce<Signal<RecyclerI18n>>(
-        (bundle, feat) => feat(bundle),
-        recyclerBundleFromPack(),
-      ),
+    useFactory: () => recyclerBundle.build(features),
   };
 }
 
@@ -358,7 +357,7 @@ export interface CngxRecycler {
  */
 export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   const destroyRef = inject(DestroyRef);
-  const i18n = inject(CNGX_RECYCLER_I18N);
+  const i18n = recyclerBundle.resolve(inject(CNGX_RECYCLER_I18N));
   const overscan = config.overscan ?? 5;
   const isGrid = (config.layout ?? 'list') === 'grid';
 
