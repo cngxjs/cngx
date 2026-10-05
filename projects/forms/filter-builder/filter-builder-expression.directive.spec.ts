@@ -1,6 +1,7 @@
 import { Component, computed, signal, viewChild, type EnvironmentProviders } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
+import { stripBidiIsolates } from '@cngx/testing';
 
 import type { FilterFieldDef, FilterGroup, FilterNode } from './filter-builder.types';
 import { CNGX_FILTER_BUILDER_HOST, type CngxFilterBuilderHost } from './filter-builder-host.token';
@@ -16,7 +17,10 @@ const FIELD_CUSTOM: FilterFieldDef = {
   operators: ['hasAny', 'hasAll'],
 };
 
-function buildMockHost(initial: FilterGroup, fieldList: readonly FilterFieldDef[]): CngxFilterBuilderHost {
+function buildMockHost(
+  initial: FilterGroup,
+  fieldList: readonly FilterFieldDef[],
+): CngxFilterBuilderHost {
   const tree = signal<FilterGroup>(initial);
   const fields = signal<readonly FilterFieldDef[]>(fieldList);
   const fieldMap = signal<ReadonlyMap<string, FilterFieldDef>>(
@@ -95,7 +99,9 @@ describe('CngxFilterExpression', () => {
       id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'contains', value: 'foo' }],
+      filters: [
+        { type: 'expression', id: 'e1', field: 'name', operator: 'contains', value: 'foo' },
+      ],
     };
     const { directive } = setup(tree, [FIELD_NAME]);
     expect(directive.node()?.field).toBe('name');
@@ -145,10 +151,12 @@ describe('CngxFilterExpression', () => {
       id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'contains', value: 'foo' }],
+      filters: [
+        { type: 'expression', id: 'e1', field: 'name', operator: 'contains', value: 'foo' },
+      ],
     };
     const { directive } = setup(tree, [FIELD_NAME]);
-    expect(directive.expressionLabel()).toBe('Filter: Name Contains');
+    expect(stripBidiIsolates(directive.expressionLabel())).toBe('Filter: Name Contains');
   });
 
   it('follows a language flip of the operator label in expressionLabel', () => {
@@ -158,18 +166,25 @@ describe('CngxFilterExpression', () => {
       id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'contains', value: 'foo' }],
+      filters: [
+        { type: 'expression', id: 'e1', field: 'name', operator: 'contains', value: 'foo' },
+      ],
     };
-    const { directive } = setup(tree, [FIELD_NAME], [0], [
-      provideFilterBuilderConfig(
-        withFilterBuilderI18n(
-          computed(() => (lang() === 'de' ? { operators: { contains: 'Enthält' } } : {})),
+    const { directive } = setup(
+      tree,
+      [FIELD_NAME],
+      [0],
+      [
+        provideFilterBuilderConfig(
+          withFilterBuilderI18n(
+            computed(() => (lang() === 'de' ? { operators: { contains: 'Enthält' } } : {})),
+          ),
         ),
-      ),
-    ]);
-    expect(directive.expressionLabel()).toBe('Filter: Name Contains');
+      ],
+    );
+    expect(stripBidiIsolates(directive.expressionLabel())).toBe('Filter: Name Contains');
     lang.set('de');
-    expect(directive.expressionLabel()).toBe('Filter: Name Enthält');
+    expect(stripBidiIsolates(directive.expressionLabel())).toBe('Filter: Name Enthält');
   });
 
   it('returns null node when path addresses a group instead of an expression', () => {
@@ -192,7 +207,9 @@ describe('CngxFilterExpression', () => {
       id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', id: 'e1', field: 'missing-key', operator: 'eq', value: null }],
+      filters: [
+        { type: 'expression', id: 'e1', field: 'missing-key', operator: 'eq', value: null },
+      ],
     };
     const { directive } = setup(tree, []);
     const a = directive.availableOperators();
@@ -233,7 +250,9 @@ describe('CngxFilterExpression - shared incomplete definition', () => {
       id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'isEmpty', value: undefined }],
+      filters: [
+        { type: 'expression', id: 'e1', field: 'name', operator: 'isEmpty', value: undefined },
+      ],
     };
     const { directive } = setup(tree, [FIELD_NAME]);
     expect(directive.isIncomplete()).toBe(false);

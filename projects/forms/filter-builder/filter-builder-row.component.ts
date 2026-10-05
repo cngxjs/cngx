@@ -10,7 +10,6 @@ import {
   untracked,
   ViewEncapsulation,
 } from '@angular/core';
-import { coerceSignal } from '@cngx/core/utils';
 import { CngxToggle } from '@cngx/common/interactive';
 import { CngxInput } from '@cngx/forms/input';
 import { CngxSelect } from '@cngx/forms/select';
@@ -18,7 +17,11 @@ import { CngxSelect } from '@cngx/forms/select';
 import { CNGX_FILTER_BUILDER_GLYPHS } from './filter-builder.glyphs';
 import { referenceEqual } from './filter-builder-internal';
 import { CngxFilterValueEditorHost } from './filter-builder-value-editor-host.directive';
-import { injectFilterBuilderConfig, isNativeEditor } from './filter-builder.config';
+import {
+  injectFilterBuilderConfig,
+  injectFilterBuilderI18n,
+  isNativeEditor,
+} from './filter-builder.config';
 import {
   CNGX_FILTER_ROW_CONTROLLER_FACTORY,
   type CngxFilterRowWriteSink,
@@ -70,7 +73,7 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
 })
 export class CngxFilterRow {
   private readonly config = injectFilterBuilderConfig();
-  protected readonly i18n = coerceSignal(this.config.i18n);
+  protected readonly i18n = injectFilterBuilderI18n();
   protected readonly editors = injectFilterEditors();
   protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
   protected readonly isNativeEditor = isNativeEditor;
@@ -132,6 +135,7 @@ export class CngxFilterRow {
     fields: this.fields,
     templates: this.templates,
     config: this.config,
+    i18n: this.i18n,
     editors: this.editors,
     sink: this.sink,
   });

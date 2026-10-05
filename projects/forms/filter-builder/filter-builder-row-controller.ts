@@ -1,5 +1,4 @@
 import { computed, InjectionToken, type Signal, type TemplateRef } from '@angular/core';
-import { coerceSignal } from '@cngx/core/utils';
 import { arrayEqual } from '@cngx/utils';
 
 import { isExpressionValueEmpty } from './filter-builder-internal';
@@ -7,7 +6,11 @@ import { resolveOperatorLabel } from './filter-builder-operators';
 import type { CngxFilterBuilderRemoveButtonContext } from './filter-builder-slots';
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import type { CngxFilterBuilderValueEditorContext } from './filter-builder-value-editor.slot';
-import type { CngxFilterBuilderConfig, CngxFilterEditor } from './filter-builder.config';
+import type {
+  CngxFilterBuilderConfig,
+  CngxFilterBuilderI18n,
+  CngxFilterEditor,
+} from './filter-builder.config';
 import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
 
 /** @internal */
@@ -109,9 +112,9 @@ export interface CngxFilterRowWriteSink {
  * Dependencies `createFilterRowController` composes over. `node`, `fields`
  * and `templates` are signals owned by the host component; `fieldMap` is
  * optional - when omitted the controller derives it from `fields`.
- * `config` and `editors` are injection-time objects; the copy under
- * `config.i18n` may be a `Signal` and is read live. `sink` is the
- * component's write seam.
+ * `config` and `editors` are injection-time objects. `i18n` is the resolved
+ * copy (`injectFilterBuilderI18n()`), read live. `sink` is the component's
+ * write seam.
  *
  * @category forms/filter-builder/config
  */
@@ -123,6 +126,8 @@ export interface CngxFilterRowControllerDeps {
   readonly path?: Signal<readonly number[]>;
   readonly templates: Signal<CngxFilterBuilderTemplateRegistry | null>;
   readonly config: CngxFilterBuilderConfig;
+  /** The resolved copy, read live: `injectFilterBuilderI18n()` at the host. */
+  readonly i18n: Signal<CngxFilterBuilderI18n>;
   readonly editors: ReadonlyMap<string, CngxFilterEditor>;
   readonly sink: CngxFilterRowWriteSink;
 }
@@ -204,7 +209,7 @@ export type CngxFilterRowControllerFactory = (
 export function createFilterRowController(
   deps: CngxFilterRowControllerDeps,
 ): CngxFilterRowController {
-  const i18n = coerceSignal(deps.config.i18n);
+  const i18n = deps.i18n;
   const fieldMap: Signal<ReadonlyMap<string, FilterFieldDef>> =
     deps.fieldMap ??
     computed<ReadonlyMap<string, FilterFieldDef>>(
@@ -233,7 +238,7 @@ export function createFilterRowController(
   }
 
   function operatorLabel(operator: string): string {
-    return resolveOperatorLabel(operator, i18n().operators, deps.config.operators);
+    return resolveOperatorLabel(operator, i18n(), deps.config.operators);
   }
 
   function writeValue(next: unknown): void {

@@ -1,6 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
+import { stripBidiIsolates } from '@cngx/testing';
 
 import { By } from '@angular/platform-browser';
 
@@ -19,7 +27,11 @@ import {
 } from './filter-builder-slots';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
-import { createEmptyFilterRoot, createFilterExpression, createFilterGroup } from './filter-builder.helpers';
+import {
+  createEmptyFilterRoot,
+  createFilterExpression,
+  createFilterGroup,
+} from './filter-builder.helpers';
 import type { FilterFieldDef, FilterGroup } from './filter-builder.types';
 import {
   provideFilterBuilderConfig,
@@ -33,9 +45,7 @@ const FIELD_AGE: FilterFieldDef = { key: 'age', label: 'Age', editorType: 'numbe
 const FIELDS: readonly FilterFieldDef[] = [FIELD_NAME, FIELD_AGE];
 
 @Component({
-  template: `
-    <cngx-filter-builder [fields]="fields()" [(value)]="value"></cngx-filter-builder>
-  `,
+  template: ` <cngx-filter-builder [fields]="fields()" [(value)]="value"></cngx-filter-builder> `,
   imports: [CngxFilterBuilder],
 })
 class BasicHost {
@@ -54,7 +64,9 @@ function basicSetup(initial: FilterGroup = createEmptyFilterRoot()): {
   fixture.componentInstance.value = initial;
   fixture.detectChanges();
   TestBed.flushEffects();
-  const presenter = (fixture.componentInstance.builder() as unknown as { presenter: CngxFilterBuilderPresenter }).presenter;
+  const presenter = (
+    fixture.componentInstance.builder() as unknown as { presenter: CngxFilterBuilderPresenter }
+  ).presenter;
   return {
     fixture,
     host: fixture.componentInstance,
@@ -151,13 +163,13 @@ describe('CngxFilterBuilder - body mount', () => {
 describe('CngxFilterBuilder - announcer text', () => {
   it('announces "Filter added: Name" when add filter button is clicked', () => {
     const { fixture, hostEl, presenter } = basicSetup();
-    const addButton = Array.from(hostEl.querySelectorAll('button')).find(
-      (b) => b.textContent?.includes('Add filter'),
+    const addButton = Array.from(hostEl.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Add filter'),
     ) as HTMLButtonElement;
     addButton.click();
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(presenter.announcement()).toBe('Filter added: Name');
+    expect(stripBidiIsolates(presenter.announcement())).toBe('Filter added: Name');
   });
 
   it('announces "Logic changed to OR" when the logic select changes', () => {
@@ -166,7 +178,7 @@ describe('CngxFilterBuilder - announcer text', () => {
     presenter.setLogic([], 'or');
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(presenter.announcement()).toBe('Logic changed to OR');
+    expect(stripBidiIsolates(presenter.announcement())).toBe('Logic changed to OR');
   });
 
   it('announces "Filter removed: Name Equals \\"foo\\"" on remove', () => {
@@ -175,7 +187,7 @@ describe('CngxFilterBuilder - announcer text', () => {
     presenter.removeNode([0]);
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(presenter.announcement()).toBe('Filter removed: Name Equals "foo"');
+    expect(stripBidiIsolates(presenter.announcement())).toBe('Filter removed: Name Equals "foo"');
   });
 
   it('announces "Group negated" on toggleNegated', () => {
@@ -201,12 +213,12 @@ describe('CngxFilterBuilder - ARIA labels reactive', () => {
     const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
     const { fixture, hostEl, presenter } = basicSetup(initial);
     const rootGroup = hostEl.querySelector('.cngx-filter-builder__group') as HTMLElement;
-    expect(rootGroup.getAttribute('aria-label')).toBe('Root filter group (AND)');
+    expect(stripBidiIsolates(rootGroup.getAttribute('aria-label'))).toBe('Root filter group (AND)');
 
     presenter.setLogic([], 'or');
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(rootGroup.getAttribute('aria-label')).toBe('Root filter group (OR)');
+    expect(stripBidiIsolates(rootGroup.getAttribute('aria-label'))).toBe('Root filter group (OR)');
   });
 
   it('renders aria-label="role=group" on expression containers', () => {
@@ -214,7 +226,7 @@ describe('CngxFilterBuilder - ARIA labels reactive', () => {
     const { hostEl } = basicSetup(initial);
     const expr = hostEl.querySelector('.cngx-filter-builder__expression') as HTMLElement;
     expect(expr.getAttribute('role')).toBe('group');
-    expect(expr.getAttribute('aria-label')).toBe('Filter: Name Contains');
+    expect(stripBidiIsolates(expr.getAttribute('aria-label'))).toBe('Filter: Name Contains');
   });
 });
 
@@ -248,16 +260,18 @@ describe('CngxFilterBuilder - language switch', () => {
         (b.textContent ?? '').replace(/^\+\s*/, '').trim(),
       );
     const ariaLabels = () =>
-      Array.from(hostEl.querySelectorAll('[aria-label]')).map((el) => el.getAttribute('aria-label'));
-    expect(rootGroup.getAttribute('aria-label')).toBe('Root filter group (AND)');
-    expect(expr.getAttribute('aria-label')).toBe('Filter: Name Contains');
+      Array.from(hostEl.querySelectorAll('[aria-label]')).map((el) =>
+        el.getAttribute('aria-label'),
+      );
+    expect(stripBidiIsolates(rootGroup.getAttribute('aria-label'))).toBe('Root filter group (AND)');
+    expect(stripBidiIsolates(expr.getAttribute('aria-label'))).toBe('Filter: Name Contains');
     expect(buttonTexts()).toContain('Add filter');
     expect(ariaLabels()).toContain('Remove filter');
 
     lang.set('de');
     fixture.detectChanges();
-    expect(rootGroup.getAttribute('aria-label')).toBe('Root filter group (UND)');
-    expect(expr.getAttribute('aria-label')).toBe('Filter: Name Enthält');
+    expect(stripBidiIsolates(rootGroup.getAttribute('aria-label'))).toBe('Root filter group (UND)');
+    expect(stripBidiIsolates(expr.getAttribute('aria-label'))).toBe('Filter: Name Enthält');
     expect(buttonTexts()).toContain('Filter hinzufügen');
     expect(ariaLabels()).toContain('Filter entfernen');
     expect(ariaLabels()).not.toContain('Remove filter');
@@ -285,7 +299,9 @@ describe('CngxFilterBuilderBody - identity-keyed template caches evict on remove
     const body = bodyOf(fixture);
     body.groupTemplateContext(createFilterGroup('and'), []);
     body.expressionTemplateContext(createFilterExpression('name', 'eq', 'x'), [0]);
-    expect(body.groupTemplateContextCache.size + body.expressionTemplateContextCache.size).toBeGreaterThan(0);
+    expect(
+      body.groupTemplateContextCache.size + body.expressionTemplateContextCache.size,
+    ).toBeGreaterThan(0);
 
     presenter.removeNode([0]);
     fixture.detectChanges();
@@ -303,7 +319,9 @@ describe('CngxFilterBuilderBody - cache teardown on destroy', () => {
     const body = bodyOf(fixture);
     body.groupTemplateContext(createFilterGroup('and'), []);
     body.expressionTemplateContext(createFilterExpression('name', 'eq', 'x'), [0]);
-    expect(body.groupTemplateContextCache.size + body.expressionTemplateContextCache.size).toBeGreaterThan(0);
+    expect(
+      body.groupTemplateContextCache.size + body.expressionTemplateContextCache.size,
+    ).toBeGreaterThan(0);
 
     fixture.destroy();
 
@@ -375,7 +393,11 @@ describe('CngxFilterBuilder - group template slot', () => {
 @Component({
   template: `
     <cngx-filter-builder [fields]="fields()" [(value)]="value">
-      <ng-template cngxFilterBuilderExpressionTemplate let-expression="expression" let-fieldDef="fieldDef">
+      <ng-template
+        cngxFilterBuilderExpressionTemplate
+        let-expression="expression"
+        let-fieldDef="fieldDef"
+      >
         <span data-custom-expr>{{ fieldDef?.label }}: {{ expression.value }}</span>
       </ng-template>
     </cngx-filter-builder>
@@ -497,8 +519,15 @@ class LogicToggleSlotHost {
 @Component({
   template: `
     <cngx-filter-builder [fields]="fields()" [(value)]="value">
-      <ng-template cngxFilterBuilderNegationToggle let-negated="negated" let-label="label" let-toggle="toggle">
-        <button type="button" data-custom-neg [attr.data-negated]="negated" (click)="toggle()">{{ label }} (custom)</button>
+      <ng-template
+        cngxFilterBuilderNegationToggle
+        let-negated="negated"
+        let-label="label"
+        let-toggle="toggle"
+      >
+        <button type="button" data-custom-neg [attr.data-negated]="negated" (click)="toggle()">
+          {{ label }} (custom)
+        </button>
       </ng-template>
     </cngx-filter-builder>
   `,
@@ -506,7 +535,10 @@ class LogicToggleSlotHost {
 })
 class NegationToggleSlotHost {
   readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
-  value: FilterGroup = { ...createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]), negated: true };
+  value: FilterGroup = {
+    ...createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]),
+    negated: true,
+  };
 }
 
 describe('CngxFilterBuilder - negation toggle slot', () => {
@@ -545,7 +577,7 @@ describe('CngxFilterBuilder - default logic joiner chips', () => {
     TestBed.flushEffects();
 
     expect(presenter.tree().logic).toBe('or');
-    expect(presenter.announcement()).toBe('Logic changed to OR');
+    expect(stripBidiIsolates(presenter.announcement())).toBe('Logic changed to OR');
     expect(joiners[0].textContent?.trim()).toBe('OR');
 
     // Cycle wraps back to the first configured option.
@@ -584,7 +616,9 @@ describe('CngxFilterBuilder - maxNestingDepth', () => {
 
   it('disables the nested add-group button at the depth cap', () => {
     const { hostEl } = depthOneSetup(
-      createFilterGroup('and', [createFilterGroup('or', [createFilterExpression('name', 'eq', 'x')])]),
+      createFilterGroup('and', [
+        createFilterGroup('or', [createFilterExpression('name', 'eq', 'x')]),
+      ]),
     );
     const groups = hostEl.querySelectorAll('.cngx-filter-builder__group');
     expect(groups.length).toBe(2);

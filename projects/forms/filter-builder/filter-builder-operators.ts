@@ -27,7 +27,7 @@ export interface CngxFilterOperatorContext {
  * One operator definition: how the operator evaluates an item value
  * against the expression value, an optional default `label` for the
  * operator picker (resolution order: `i18n.operators[key]` ?? `def.label`
- * ?? raw key), and `valueless` for operators that are complete without an
+ * ?? `i18n.unnamedOperator`, never the raw key), and `valueless` for operators that are complete without an
  * expression value (`isEmpty` / `isNotEmpty` family) - a valueless
  * operator is exempt from the empty-value no-op short-circuit.
  *
@@ -107,12 +107,15 @@ function substringDef(
  */
 export const CNGX_FILTER_BUILTIN_OPERATOR_DEFS: ReadonlyMap<string, CngxFilterOperatorDef> =
   new Map<string, CngxFilterOperatorDef>([
-    // Labels for the builtins live in the default i18n bundle
-    // (DEFAULT_I18N.operators) - def.label is the tier for
+    // Labels for the builtins live in the filter-builder language section
+    // (CNGX_FILTER_BUILDER_LANGUAGE_EN.operators) - def.label is the tier for
     // consumer-registered keys only, so the string exists once.
     ['eq', { evaluate: (itemValue, exprValue) => Object.is(itemValue, exprValue) }],
     ['neq', { evaluate: (itemValue, exprValue) => !Object.is(itemValue, exprValue) }],
-    ['isEmpty', { valueless: true, evaluate: (itemValue) => itemValue == null || itemValue === '' }],
+    [
+      'isEmpty',
+      { valueless: true, evaluate: (itemValue) => itemValue == null || itemValue === '' },
+    ],
     [
       'isNotEmpty',
       { valueless: true, evaluate: (itemValue) => itemValue != null && itemValue !== '' },
@@ -193,17 +196,28 @@ export function resolveOperatorDef(
 
 /**
  * Label for an operator key: the i18n entry, else the operator definition's
- * `label`, else the raw key. The one resolution path the picker, the row
- * `aria-label` and the live-region announcements share.
+ * `label`, else the bundle's `unnamedOperator` word; never the raw key. An
+ * empty key (a row without an operator) reads `''`. The one resolution path
+ * the picker, the row `aria-label` and the live-region announcements share.
  *
  * @internal
  */
 export function resolveOperatorLabel(
   operator: string,
-  i18nOperators: Readonly<Record<string, string>>,
+  i18n: {
+    readonly operators: Readonly<Record<string, string>>;
+    readonly unnamedOperator: string;
+  },
   operators?: ReadonlyMap<string, CngxFilterOperatorDef>,
 ): string {
-  return i18nOperators[operator] ?? resolveOperatorDef(operator, operators)?.label ?? operator;
+  if (!operator) {
+    return '';
+  }
+  return (
+    i18n.operators[operator] ??
+    resolveOperatorDef(operator, operators)?.label ??
+    i18n.unnamedOperator
+  );
 }
 
 /** @internal One warning per unknown operator key per application lifetime. */

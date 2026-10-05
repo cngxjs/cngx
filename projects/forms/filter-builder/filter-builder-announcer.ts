@@ -65,7 +65,7 @@ function renderValueForAnnouncement(
     return '';
   }
   if (typeof value === 'string') {
-    return `"${value}"`;
+    return i18n.quotedValue(value);
   }
   if (typeof value === 'boolean') {
     return (value ? i18n.booleanTrue : i18n.booleanFalse) ?? String(value);
@@ -109,11 +109,11 @@ function formatMutation<TValue>(
   const announce = i18n.announcement;
   const locale = sources.locale?.();
   const operator = ctx?.operator ?? '';
-  const operatorLabel = resolveOperatorLabel(operator, i18n.operators, sources.operators);
+  const operatorLabel = resolveOperatorLabel(operator, i18n, sources.operators);
 
   const fieldLabel = ctx?.fieldKey
     ? (sources.fieldMap().get(ctx.fieldKey)?.label ?? ctx.fieldKey)
-    : '';
+    : i18n.unboundFilterLabel;
 
   switch (event.kind) {
     case 'add-filter':

@@ -245,7 +245,7 @@ For Reactive Forms, wrap the `FormControl` with `adaptFormControl()` from `@cngx
 | `withLogicOptions(readonly[])` | Constrain logic toggle options (default: `['and', 'or']`). |
 | `withMaxNestingDepth(number)` | Cap nested-group depth (`Infinity` by default). |
 | `withDefaultOperators(...)` | Override per-`editorType` default operator list. |
-| `withFilterBuilderI18n(partial)` | Override labels, operator names, announcement formatters. |
+| `withFilterBuilderI18n(partial)` | Override labels, operator names, announcement formatters on top of the `filterBuilder` language section (`CNGX_FILTER_BUILDER_LANGUAGE_EN`). |
 | `withTemplates(partial)` | Provide default slot templates as a fallback below `contentChild`. |
 
 Resolution priority: per-instance input → `provideFilterBuilderConfigAt` → `provideFilterBuilderConfig` → library defaults (English).
