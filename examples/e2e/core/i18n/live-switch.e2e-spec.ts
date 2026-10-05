@@ -29,7 +29,7 @@ test.describe('live language switch', () => {
 
     // (1) EN baseline.
     await expect(delta).toHaveAttribute('aria-label', /declined|improved/);
-    await expect(trend).toHaveAttribute('aria-label', '+5.3% up');
+    await expect(trend).toHaveAttribute('aria-label', '\u2068+5.3%\u2069 \u2068up\u2069');
     await expect(progress).toHaveAttribute('aria-valuetext', '42%');
 
     // (2) An announcement in English.
@@ -302,7 +302,7 @@ test.describe('live language switch', () => {
 
     // (2) Back to English, no reload.
     await page.getByRole('button', { name: 'EN', exact: true }).click();
-    await expect(trend).toHaveAttribute('aria-label', '+5.3% up');
+    await expect(trend).toHaveAttribute('aria-label', '\u2068+5.3%\u2069 \u2068up\u2069');
     await expect(progress).toHaveAttribute('aria-valuetext', '42%');
   });
 

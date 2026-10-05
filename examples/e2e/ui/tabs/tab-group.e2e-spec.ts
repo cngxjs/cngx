@@ -11,10 +11,11 @@ test.describe('ui/tabs/tab-group', () => {
     const tablist = page.getByRole('tablist');
     await expect(tablist).toBeVisible();
 
-    // Tab aria-labels are formatted "Tab N of M: <Label>" — match by suffix.
-    const profile = page.getByRole('tab', { name: /Profile$/ });
-    const account = page.getByRole('tab', { name: /Account$/ });
-    const notif = page.getByRole('tab', { name: /Notifications$/ });
+    // Tab aria-labels are formatted "Tab N of M: <Label>" with the label
+    // bidi-isolated (U+2068 ... U+2069) - match by suffix.
+    const profile = page.getByRole('tab', { name: /Profile\u2069$/ });
+    const account = page.getByRole('tab', { name: /Account\u2069$/ });
+    const notif = page.getByRole('tab', { name: /Notifications\u2069$/ });
 
     await expect(profile).toHaveAttribute('aria-selected', 'true');
     await account.click();
