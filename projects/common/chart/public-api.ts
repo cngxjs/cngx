@@ -94,7 +94,9 @@ export {
 export {
   CNGX_CHART_I18N,
   provideChartI18n,
+  withChartI18nLabels,
   type CngxChartI18n,
+  type CngxChartI18nFeature,
   type CngxChartSummary,
 } from './i18n/chart-i18n';
 export {

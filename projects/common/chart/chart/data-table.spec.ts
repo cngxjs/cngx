@@ -10,7 +10,7 @@ import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
 import { CngxChartDataTable } from './data-table.component';
-import { provideChartI18n, type CngxChartI18n } from '../i18n/chart-i18n';
+import { provideChartI18n, withChartI18nLabels, type CngxChartI18n } from '../i18n/chart-i18n';
 
 @Component({
   standalone: true,
@@ -95,7 +95,7 @@ describe('CngxChartDataTable', () => {
     };
     TestBed.configureTestingModule({
       imports: [TestHost],
-      providers: [provideChartI18n(override)],
+      providers: [provideChartI18n(withChartI18nLabels(override))],
     });
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();

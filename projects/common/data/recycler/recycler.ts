@@ -86,26 +86,59 @@ export const CNGX_RECYCLER_I18N = new InjectionToken<Signal<RecyclerI18n>>('Cngx
 });
 
 /**
- * Provider function for custom recycler i18n texts. Keys you leave out keep
- * the language pack's text, or the English default.
+ * Branded feature-fn for {@link provideRecyclerI18n}.
+ *
+ * @category common/data/recycler
+ */
+export type CngxRecyclerI18nFeature = ((bundle: Signal<RecyclerI18n>) => Signal<RecyclerI18n>) & {
+  readonly _target: 'i18n';
+};
+
+/** @internal */
+function defineRecyclerI18nFeature(
+  fn: (bundle: Signal<RecyclerI18n>) => Signal<RecyclerI18n>,
+): CngxRecyclerI18nFeature {
+  return Object.assign(fn, { _target: 'i18n' as const });
+}
+
+/**
+ * Override recycler announcements via a partial bundle - keys you leave out
+ * keep the language pack's text, or the English default. Pass a `Signal` to
+ * switch the language at runtime.
+ *
+ * @category common/data/recycler
+ */
+export function withRecyclerI18nLabels(
+  overrides: Partial<RecyclerI18n> | Signal<Partial<RecyclerI18n>>,
+): CngxRecyclerI18nFeature {
+  return defineRecyclerI18nFeature((bundle) => createOverrideMerge(bundle, overrides));
+}
+
+/**
+ * Provider for the recycler announcement texts. The features apply on top of
+ * the active language pack.
  *
  * ```typescript
- * providers: [provideRecyclerI18n({
- *   loaded: (n, t) => `${n} weitere Einträge. ${t} gesamt.`,
- *   filtered: (c) => `${c} Ergebnisse.`,
- *   empty: () => 'Keine Ergebnisse.',
- *   error: () => 'Fehler beim Laden.',
- * })]
+ * providers: [
+ *   provideRecyclerI18n(
+ *     withRecyclerI18nLabels({
+ *       empty: () => 'Keine Ergebnisse.',
+ *       error: () => 'Fehler beim Laden.',
+ *     }),
+ *   ),
+ * ]
  * ```
  *
  * @category common/data/recycler
  */
-export function provideRecyclerI18n(
-  i18n: Partial<RecyclerI18n> | Signal<Partial<RecyclerI18n>>,
-): Provider {
+export function provideRecyclerI18n(...features: readonly CngxRecyclerI18nFeature[]): Provider {
   return {
     provide: CNGX_RECYCLER_I18N,
-    useFactory: () => createOverrideMerge(recyclerBundleFromPack(), i18n),
+    useFactory: () =>
+      features.reduce<Signal<RecyclerI18n>>(
+        (bundle, feat) => feat(bundle),
+        recyclerBundleFromPack(),
+      ),
   };
 }
 

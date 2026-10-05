@@ -58,13 +58,14 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/common/chart
 
 - `CNGX_CHART_I18N` is now `InjectionToken<Signal<CngxChartI18n>>`. Call the Signal where you read a formatter, inside a `computed()`, a template or a handler: `inject(CNGX_CHART_I18N).summary(input)` becomes `inject(CNGX_CHART_I18N)().summary(input)`. The default factory reads the app locale live, so the default number formatting follows a `CNGX_LOCALE` switch.
-- A direct `{ provide: CNGX_CHART_I18N, useValue: bundle }` must supply a Signal. Prefer `provideChartI18n(overrides)`, which merges over the English defaults. `provideChartI18n` now also accepts a `Signal<Partial<CngxChartI18n>>` for runtime switching, and returns a plain `Provider` (it used to return `{ provide, useValue }`).
+- A direct `{ provide: CNGX_CHART_I18N, useValue: bundle }` must supply a Signal. Prefer `provideChartI18n(withChartI18nLabels(overrides))`, which merges over the language pack and the English defaults; `withChartI18nLabels` also accepts a `Signal<Partial<CngxChartI18n>>` for runtime switching. `provideChartI18n` returns a plain `Provider` (it used to return `{ provide, useValue }`).
+- `provideChartI18n` takes features like its siblings: `provideChartI18n(overrides)` becomes `provideChartI18n(withChartI18nLabels(overrides))`.
 
 ### @cngx/common/data
 
 - `CNGX_RECYCLER_I18N` is now `InjectionToken<Signal<RecyclerI18n>>`. Call the Signal where you read a phrase, inside a `computed()`, an effect or a handler: `inject(CNGX_RECYCLER_I18N).empty()` becomes `inject(CNGX_RECYCLER_I18N)().empty()`.
-- A direct `{ provide: CNGX_RECYCLER_I18N, useValue: bundle }` must supply a Signal. Prefer `provideRecyclerI18n(bundle)`; it accepts a `Signal` for runtime switching and returns a plain `Provider`.
-- `provideRecyclerI18n` takes a partial bundle and merges it over the language pack's recycler section: keys you leave out keep their translated or English text instead of being required.
+- A direct `{ provide: CNGX_RECYCLER_I18N, useValue: bundle }` must supply a Signal. Prefer `provideRecyclerI18n(withRecyclerI18nLabels(overrides))`; the feature accepts a `Signal` for runtime switching, and the provider returns a plain `Provider`.
+- `provideRecyclerI18n` takes features like its siblings: `provideRecyclerI18n(bundle)` becomes `provideRecyclerI18n(withRecyclerI18nLabels(bundle))`. The overrides are partial and merge over the language pack's recycler section: keys you leave out keep their translated or English text.
 - `CngxKpiI18n` has three new required keys: `metricValueWithUnit` (English `'{value} {unit}'`, the order of a metric's value and unit), `metricPlaceholder` (the glyph a metric without a value shows) and `metricNoValue` (English `'No value'`, its accessible name). A hand-built `Signal<CngxKpiI18n>` supplies them; `withKpiI18nLabels` overrides are unaffected.
 
 ### @cngx/common/dialog

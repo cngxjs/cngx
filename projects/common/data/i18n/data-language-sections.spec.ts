@@ -11,7 +11,11 @@ import { stripBidiIsolates } from '@cngx/testing';
 import { describe, expect, it } from 'vitest';
 
 import { CNGX_KPI_I18N, provideKpiI18n, withKpiI18nLabels } from '../display/shared/kpi-i18n';
-import { CNGX_RECYCLER_I18N, provideRecyclerI18n } from '../recycler/recycler';
+import {
+  CNGX_RECYCLER_I18N,
+  provideRecyclerI18n,
+  withRecyclerI18nLabels,
+} from '../recycler/recycler';
 
 describe('kpi language section', () => {
   it('derives the pre-section English copy from the English section', () => {
@@ -92,7 +96,7 @@ describe('recycler language section', () => {
           withPartialPack({ locale: 'de', recycler: { empty: 'Keine Ergebnisse.' } }),
           withDocumentLanguage('off'),
         ),
-        provideRecyclerI18n({ error: () => 'Fehler.' }),
+        provideRecyclerI18n(withRecyclerI18nLabels({ error: () => 'Fehler.' })),
       ],
     });
     const i18n = TestBed.inject(CNGX_RECYCLER_I18N)();

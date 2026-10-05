@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
-import { provideChartI18n, type CngxChartI18n } from '../i18n/chart-i18n';
+import { provideChartI18n, withChartI18nLabels, type CngxChartI18n } from '../i18n/chart-i18n';
 import { CngxStackedBar, type CngxStackedSegment } from './stacked-bar.component';
 import { stripBidiIsolates } from '@cngx/testing';
 
@@ -80,11 +80,13 @@ describe('CngxStackedBar', () => {
     TestBed.configureTestingModule({
       imports: [TestHost],
       providers: [
-        provideChartI18n({
-          ...OVERRIDE_BASE,
-          stackedBarEmpty: () => 'Leer',
-          stackedBarSummary: (total, segments) => `Gesamt ${total} (${segments.length} Segmente)`,
-        }),
+        provideChartI18n(
+          withChartI18nLabels({
+            ...OVERRIDE_BASE,
+            stackedBarEmpty: () => 'Leer',
+            stackedBarSummary: (total, segments) => `Gesamt ${total} (${segments.length} Segmente)`,
+          }),
+        ),
       ],
     });
     const fixture = TestBed.createComponent(TestHost);
@@ -99,7 +101,7 @@ describe('CngxStackedBar', () => {
   it('falls back to the built-in phrasing when an override omits the optional stacked-bar keys', () => {
     TestBed.configureTestingModule({
       imports: [TestHost],
-      providers: [provideChartI18n(OVERRIDE_BASE)],
+      providers: [provideChartI18n(withChartI18nLabels(OVERRIDE_BASE))],
     });
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
@@ -142,7 +144,9 @@ describe('CngxStackedBar segment title', () => {
     TestBed.configureTestingModule({
       imports: [TestHost],
       providers: [
-        provideChartI18n({ stackedBarSegmentTitle: (label, value) => `${value} (${label})` }),
+        provideChartI18n(
+          withChartI18nLabels({ stackedBarSegmentTitle: (label, value) => `${value} (${label})` }),
+        ),
       ],
     });
     const fixture = TestBed.createComponent(TestHost);

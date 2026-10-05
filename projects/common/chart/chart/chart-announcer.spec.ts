@@ -11,7 +11,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { provideLocale } from '@cngx/core/utils';
 
-import { provideChartI18n } from '../i18n/chart-i18n';
+import { provideChartI18n, withChartI18nLabels } from '../i18n/chart-i18n';
 import { CngxChartAnnouncer } from './chart-announcer.component';
 import { type CngxChart } from './chart.component';
 import { type CngxSignificantChange } from './significant-change';
@@ -140,13 +140,15 @@ describe('CngxChartAnnouncer - copy flip', () => {
       imports: [Host],
       providers: [
         provideChartI18n(
-          computed(() =>
-            lang() === 'de'
-              ? {
-                  trendChanged: (t: 'up' | 'down' | 'flat') => `Trend jetzt ${t}`,
-                  thresholdAlert: (v: number) => `Schwelle ${v} überschritten`,
-                }
-              : {},
+          withChartI18nLabels(
+            computed(() =>
+              lang() === 'de'
+                ? {
+                    trendChanged: (t: 'up' | 'down' | 'flat') => `Trend jetzt ${t}`,
+                    thresholdAlert: (v: number) => `Schwelle ${v} überschritten`,
+                  }
+                : {},
+            ),
           ),
         ),
       ],

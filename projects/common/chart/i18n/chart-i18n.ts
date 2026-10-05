@@ -194,18 +194,6 @@ function injectChartLanguage(): Signal<CngxChartLanguageSection> {
 }
 
 /**
- * The en-US defaults. Module-internal (not on `public-api.ts`):
- * {@link provideChartI18n} merges over it, and {@link injectChartI18n}
- * recognises its keys as defaults, so the English never exists twice.
- *
- * @internal
- */
-export const CHART_I18N_EN: Required<CngxChartI18n> = createChartI18nDefaults(
-  CNGX_CHART_LANGUAGE_EN,
-  'en-US',
-);
-
-/**
  * Injection token for chart i18n strings, a `Signal` so the copy follows a
  * runtime language switch. Defaults to English via `factory:`, with numbers
  * in the root app locale (`CNGX_LOCALE`, falling back to `LOCALE_ID`), read
@@ -220,37 +208,67 @@ export const CHART_I18N_EN: Required<CngxChartI18n> = createChartI18nDefaults(
  */
 export const CNGX_CHART_I18N = new InjectionToken<Signal<CngxChartI18n>>('CngxChartI18n', {
   providedIn: 'root',
-  factory: (): Signal<CngxChartI18n> => {
-    const section = injectChartLanguage();
-    const locale = injectLocale();
-    return computed(() => createChartI18nDefaults(section(), locale()), { equal: recordEqual });
-  },
+  factory: chartBundleFromPack,
 });
 
+/** @internal The chart section of the active pack, formatted for the root app locale. */
+function chartBundleFromPack(): Signal<CngxChartI18n> {
+  const section = injectChartLanguage();
+  const locale = injectLocale();
+  return computed(() => createChartI18nDefaults(section(), locale()), { equal: recordEqual });
+}
+
 /**
- * Provider helper for custom chart i18n strings. Overrides merge over
- * the English defaults, so a consumer localises only the keys they
- * care about and every key added to {@link CngxChartI18n} later keeps
- * its default instead of forcing an update. Passing a full object
- * still works - it simply overrides every key. Pass a `Signal` to switch
- * the language at runtime.
+ * Branded feature-fn for {@link provideChartI18n}.
+ *
+ * @category common/chart/i18n
+ */
+export type CngxChartI18nFeature = ((bundle: Signal<CngxChartI18n>) => Signal<CngxChartI18n>) & {
+  readonly _target: 'i18n';
+};
+
+/** @internal */
+function defineChartI18nFeature(
+  fn: (bundle: Signal<CngxChartI18n>) => Signal<CngxChartI18n>,
+): CngxChartI18nFeature {
+  return Object.assign(fn, { _target: 'i18n' as const });
+}
+
+/**
+ * Override chart copy via a partial bundle - unset keys keep the language
+ * pack's copy, or the English default, and keep following the app locale.
+ * Pass a `Signal` to switch the language at runtime.
+ *
+ * @category common/chart/i18n
+ */
+export function withChartI18nLabels(
+  overrides: Partial<CngxChartI18n> | Signal<Partial<CngxChartI18n>>,
+): CngxChartI18nFeature {
+  return defineChartI18nFeature((bundle) => createOverrideMerge(bundle, overrides));
+}
+
+/**
+ * Provider for the chart i18n bundle. The features apply on top of the
+ * active language pack, so a consumer localises only the keys they care
+ * about; every key left out keeps the pack's copy and follows the app locale.
  *
  * ```typescript
- * providers: [provideChartI18n({
- *   summary: ({ trend, min, max, current }) =>
- *     `${trend === 'up' ? 'Aufwärtstrend' : 'Abwärtstrend'}. Min ${min}, Max ${max}, aktuell ${current}.`,
- *   dataTable: () => 'Datentabelle',
- * })]
+ * providers: [
+ *   provideChartI18n(
+ *     withChartI18nLabels({
+ *       dataTable: () => 'Datentabelle',
+ *     }),
+ *   ),
+ * ]
  * ```
  *
  * @category common/chart/i18n
  */
-export function provideChartI18n(
-  i18n: Partial<CngxChartI18n> | Signal<Partial<CngxChartI18n>>,
-): Provider {
+export function provideChartI18n(...features: readonly CngxChartI18nFeature[]): Provider {
   return {
     provide: CNGX_CHART_I18N,
-    useFactory: (): Signal<CngxChartI18n> => createOverrideMerge<CngxChartI18n>(CHART_I18N_EN, i18n),
+    useFactory: (): Signal<CngxChartI18n> =>
+      features.reduce<Signal<CngxChartI18n>>((bundle, feat) => feat(bundle), chartBundleFromPack()),
   };
 }
 

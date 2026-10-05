@@ -10,13 +10,15 @@ import {
 import { describe, expect, it } from 'vitest';
 import { CngxChartDataTable } from '../chart/data-table.component';
 import {
-  CHART_I18N_EN,
   CNGX_CHART_I18N,
+  createChartI18nDefaults,
   injectChartI18n,
   provideChartI18n,
+  withChartI18nLabels,
   type CngxChartI18n,
 } from './chart-i18n';
 import { stripBidiIsolates } from '@cngx/testing';
+import { CNGX_CHART_LANGUAGE_EN } from './chart-language-section';
 
 describe('CNGX_CHART_I18N', () => {
   it('resolves to English defaults when no override is provided', () => {
@@ -87,7 +89,7 @@ describe('CNGX_CHART_I18N', () => {
       error: () => 'ERROR_OVR',
     };
     TestBed.configureTestingModule({
-      providers: [provideChartI18n(override)],
+      providers: [provideChartI18n(withChartI18nLabels(override))],
     });
     const i18n = TestBed.inject(CNGX_CHART_I18N)();
     expect(i18n.empty()).toBe('EMPTY_OVR');
@@ -101,7 +103,7 @@ describe('CNGX_CHART_I18N', () => {
 
   it('merges a partial override over the English defaults', () => {
     TestBed.configureTestingModule({
-      providers: [provideChartI18n({ empty: () => 'Nix da' })],
+      providers: [provideChartI18n(withChartI18nLabels({ empty: () => 'Nix da' }))],
     });
     const i18n = TestBed.inject(CNGX_CHART_I18N)();
     expect(i18n.empty()).toBe('Nix da');
@@ -148,7 +150,7 @@ describe('injectChartI18n', () => {
   it('keeps a passed key verbatim and formats an omitted summary with LOCALE_ID', () => {
     TestBed.configureTestingModule({
       providers: [
-        provideChartI18n({ dataTable: () => 'Datentabelle' }),
+        provideChartI18n(withChartI18nLabels({ dataTable: () => 'Datentabelle' })),
         { provide: LOCALE_ID, useValue: 'de' },
       ],
     });
@@ -191,7 +193,11 @@ describe('injectChartI18n', () => {
     const lang = signal<'en' | 'de'>('en');
     TestBed.configureTestingModule({
       providers: [
-        provideChartI18n(computed(() => (lang() === 'de' ? { empty: () => 'Keine Daten' } : {}))),
+        provideChartI18n(
+          withChartI18nLabels(
+            computed(() => (lang() === 'de' ? { empty: () => 'Keine Daten' } : {})),
+          ),
+        ),
       ],
     });
     const i18n = TestBed.runInInjectionContext(() => injectChartI18n());
@@ -202,13 +208,30 @@ describe('injectChartI18n', () => {
     expect(i18n().loading()).toBe('Loading');
   });
 
+  it('applies withChartI18nLabels on top of the active language pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', chart: { empty: 'Keine Daten', loading: 'Lädt' } }),
+          withDocumentLanguage('off'),
+        ),
+        provideChartI18n(withChartI18nLabels({ empty: () => 'Nichts da' })),
+      ],
+    });
+    const i18n = TestBed.runInInjectionContext(() => injectChartI18n())();
+    expect(i18n.empty()).toBe('Nichts da');
+    expect(i18n.loading()).toBe('Lädt');
+  });
+
   it('resolves a plain override to the same strings as the eager merge did', () => {
     TestBed.configureTestingModule({
-      providers: [provideChartI18n({ dataTable: () => 'Datentabelle' })],
+      providers: [provideChartI18n(withChartI18nLabels({ dataTable: () => 'Datentabelle' }))],
     });
     const raw = TestBed.inject(CNGX_CHART_I18N)();
     expect(raw.dataTable()).toBe('Datentabelle');
-    expect(raw.valueColumnLabel).toBe(CHART_I18N_EN.valueColumnLabel);
+    expect(raw.valueColumnLabel()).toBe(
+      createChartI18nDefaults(CNGX_CHART_LANGUAGE_EN, 'en-US').valueColumnLabel(),
+    );
   });
 
   it('keeps the default bundle reference when a locale flip lands on a cached locale', () => {
@@ -251,7 +274,7 @@ describe('injectChartI18n', () => {
       stackedBarSegmentTitle: () => 'W',
     };
     TestBed.configureTestingModule({
-      providers: [provideChartI18n(full), provideLocale(locale)],
+      providers: [provideChartI18n(withChartI18nLabels(full)), provideLocale(locale)],
     });
     const i18n = TestBed.runInInjectionContext(() => injectChartI18n());
     const before = i18n();
@@ -327,7 +350,7 @@ describe('CNGX_CHART_I18N language pack', () => {
           withPartialPack({ locale: 'de', chart: { empty: 'Keine Daten', dataTable: 'Tabelle' } }),
           withDocumentLanguage('off'),
         ),
-        provideChartI18n({ dataTable: () => 'Datentabelle' }),
+        provideChartI18n(withChartI18nLabels({ dataTable: () => 'Datentabelle' })),
       ],
     });
     const i18n = TestBed.runInInjectionContext(() => injectChartI18n())();

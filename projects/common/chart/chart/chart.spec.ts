@@ -1747,7 +1747,7 @@ describe('CngxChart - connection copy flip', () => {
 
   it('does not re-announce on a language flip', async () => {
     const { createManualState } = await import('@cngx/common/data');
-    const { provideChartI18n } = await import('../i18n/chart-i18n');
+    const { provideChartI18n, withChartI18nLabels } = await import('../i18n/chart-i18n');
     const lang = signal<'en' | 'de'>('en');
     @Component({
       standalone: true,
@@ -1767,14 +1767,16 @@ describe('CngxChart - connection copy flip', () => {
       imports: [Host],
       providers: [
         provideChartI18n(
-          computed(() =>
-            lang() === 'de'
-              ? {
-                  connectionLost: () => 'Verbindung verloren',
-                  connectionReconnecting: () => 'Verbinde neu',
-                  connectionRestored: () => 'Verbindung wiederhergestellt',
-                }
-              : {},
+          withChartI18nLabels(
+            computed(() =>
+              lang() === 'de'
+                ? {
+                    connectionLost: () => 'Verbindung verloren',
+                    connectionReconnecting: () => 'Verbinde neu',
+                    connectionRestored: () => 'Verbindung wiederhergestellt',
+                  }
+                : {},
+            ),
           ),
         ),
       ],

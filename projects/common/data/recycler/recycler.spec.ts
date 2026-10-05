@@ -4,7 +4,13 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { createResizeObserverMock } from '@cngx/testing';
 import type { CngxAsyncState, AsyncStatus } from '@cngx/core/utils';
 
-import { injectRecycler, provideRecyclerI18n, type CngxRecycler, type RecyclerI18n } from './recycler';
+import {
+  injectRecycler,
+  provideRecyclerI18n,
+  withRecyclerI18nLabels,
+  type CngxRecycler,
+  type RecyclerI18n,
+} from './recycler';
 
 function createMockState(
   overrides?: Partial<{
@@ -246,7 +252,9 @@ describe('injectRecycler', () => {
     it('does not re-announce on a language flip', () => {
       const lang = signal<'en' | 'de'>('en');
       TestBed.configureTestingModule({
-        providers: [provideRecyclerI18n(computed(() => (lang() === 'de' ? DE : EN)))],
+        providers: [
+          provideRecyclerI18n(withRecyclerI18nLabels(computed(() => (lang() === 'de' ? DE : EN)))),
+        ],
       });
       const status = signal<AsyncStatus>('refreshing');
       const total = signal(7);
@@ -278,7 +286,9 @@ describe('injectRecycler', () => {
     it('keeps the stateless load-count phrase on a flip', () => {
       const lang = signal<'en' | 'de'>('en');
       TestBed.configureTestingModule({
-        providers: [provideRecyclerI18n(computed(() => (lang() === 'de' ? DE : EN)))],
+        providers: [
+          provideRecyclerI18n(withRecyclerI18nLabels(computed(() => (lang() === 'de' ? DE : EN)))),
+        ],
       });
       const total = signal(20);
       let recycler!: CngxRecycler;
@@ -305,7 +315,9 @@ describe('injectRecycler', () => {
     });
 
     it('replaces the whole bundle with a plain override, as before', () => {
-      TestBed.configureTestingModule({ providers: [provideRecyclerI18n(DE)] });
+      TestBed.configureTestingModule({
+        providers: [provideRecyclerI18n(withRecyclerI18nLabels(DE))],
+      });
       const status = signal<AsyncStatus>('loading');
       let recycler!: CngxRecycler;
       TestBed.runInInjectionContext(() => {

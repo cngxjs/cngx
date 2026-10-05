@@ -80,7 +80,9 @@ export { CngxGoal } from './display/goal/goal.component';
 export {
   injectRecycler,
   provideRecyclerI18n,
+  withRecyclerI18nLabels,
   CNGX_RECYCLER_I18N,
+  type CngxRecyclerI18nFeature,
   type RecyclerConfig,
   type CngxRecycler,
   type RecyclerI18n,

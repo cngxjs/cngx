@@ -22,7 +22,7 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     "import { CngxCard, provideCardI18n, withCardI18nLabels } from '@cngx/common/card';",
-    "import { CngxChart, provideChartI18n } from '@cngx/common/chart';",
+    "import { CngxChart, provideChartI18n, withChartI18nLabels } from '@cngx/common/chart';",
     "import { CngxChip, provideDisplayI18n, withDisplayI18nLabels } from '@cngx/common/display';",
     "import { CngxBreadcrumb, CngxCopyBlock, CngxRangeSlider, provideInteractiveI18n, withInteractiveI18nLabels } from '@cngx/common/interactive';",
     "import { CngxExpandableText, provideLayoutI18n, withLayoutI18nLabels } from '@cngx/common/layout';",
@@ -44,7 +44,7 @@ export const STORY: DemoSpec = {
   ],
   viewProviders: [
     'provideCardI18n(withCardI18nLabels(DEMO_CARD_LABELS))',
-    'provideChartI18n(DEMO_CHART_LABELS)',
+    'provideChartI18n(withChartI18nLabels(DEMO_CHART_LABELS))',
     'provideDisplayI18n(withDisplayI18nLabels(DEMO_DISPLAY_LABELS))',
     'provideInteractiveI18n(withInteractiveI18nLabels(DEMO_INTERACTIVE_LABELS))',
     'provideLayoutI18n(withLayoutI18nLabels(DEMO_LAYOUT_LABELS))',
