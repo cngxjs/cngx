@@ -1,4 +1,12 @@
-import { Component, computed, LOCALE_ID, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  createEnvironmentInjector,
+  EnvironmentInjector,
+  LOCALE_ID,
+  runInInjectionContext,
+  signal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideLocale } from '@cngx/core/utils';
 import {
@@ -308,6 +316,30 @@ describe('CNGX_CHART_I18N language pack', () => {
     expect(i18n.error()).toBe('Error loading chart');
     expect(i18n.stackedBarEmpty()).toBe('Empty stacked bar');
     expect(stripBidiIsolates(i18n.stackedBarSegmentTitle('A', '2.2'))).toBe('A: 2.2');
+  });
+
+  it('gives a route with its own language pack its own words over a shared token value', () => {
+    // The same locale signal at root and in the route: only the pack differs.
+    const shared = signal('de');
+    TestBed.configureTestingModule({ providers: [provideLocale(shared)] });
+    const root = TestBed.inject(EnvironmentInjector);
+    const route = createEnvironmentInjector(
+      [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', chart: { dataTable: 'Datentabelle' } }),
+          withDocumentLanguage('off'),
+        ),
+        provideLocale(shared),
+      ],
+      root,
+    );
+    const atRoot = TestBed.runInInjectionContext(() => injectChartI18n());
+    const inRoute = runInInjectionContext(route, () => injectChartI18n());
+    expect(route.get(CNGX_CHART_I18N)).toBe(TestBed.inject(CNGX_CHART_I18N));
+    expect(atRoot().dataTable()).toBe('Data table');
+    expect(inRoute().dataTable()).toBe('Datentabelle');
+    expect(runInInjectionContext(route, () => injectChartI18n())).toBe(inRoute);
+    route.destroy();
   });
 
   it('takes the summary words, order and list separator from the pack', () => {

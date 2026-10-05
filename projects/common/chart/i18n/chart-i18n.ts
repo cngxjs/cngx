@@ -1,5 +1,5 @@
 import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { CNGX_LANGUAGE_PACK, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
 import { createOverrideMerge, injectLocale, memoize } from '@cngx/core/utils';
 import { recordEqual } from '@cngx/utils';
 
@@ -196,13 +196,25 @@ function chartBundleFrom(
 
 const NO_SECTION: Partial<CngxChartLanguageSection> = {};
 
-/** @internal The English chart section with the active pack's chart section on top. */
+const SECTION_BY_PACK = new WeakMap<object, Signal<CngxChartLanguageSection>>();
+
+/**
+ * @internal The English chart section with the active pack's chart section
+ * on top. One signal per active pack, so every chart part reading the same
+ * pack shares it and a reader that hits the cache allocates nothing.
+ */
 function injectChartLanguage(): Signal<CngxChartLanguageSection> {
-  const pack = injectLanguageSection('chart');
-  return createOverrideMerge(
-    CNGX_CHART_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
+  const packKey = inject(CNGX_LANGUAGE_PACK);
+  let section = SECTION_BY_PACK.get(packKey);
+  if (!section) {
+    const pack = injectLanguageSection('chart');
+    section = createOverrideMerge(
+      CNGX_CHART_LANGUAGE_EN,
+      computed(() => pack() ?? NO_SECTION),
+    );
+    SECTION_BY_PACK.set(packKey, section);
+  }
+  return section;
 }
 
 /**
@@ -287,10 +299,13 @@ export function provideChartI18n(...features: readonly CngxChartI18nFeature[]): 
 /** @internal */
 type ChartI18nKey = keyof CngxChartI18n;
 
-/** @internal */
+/** @internal Resolved bundles keyed by token value, then section signal, then locale signal. */
 const resolvedByToken = new WeakMap<
   Signal<CngxChartI18n>,
-  WeakMap<Signal<string>, Signal<Required<CngxChartI18n>>>
+  WeakMap<
+    Signal<CngxChartLanguageSection>,
+    WeakMap<Signal<string>, Signal<Required<CngxChartI18n>>>
+  >
 >();
 
 /**
@@ -299,17 +314,23 @@ const resolvedByToken = new WeakMap<
  * en-US bundle, the token factory's root-locale snapshot, or a
  * {@link provideChartI18n} merge that kept it), resolves to the current
  * `CNGX_LOCALE` default; a key the consumer passed stays theirs verbatim.
- * One `computed()` per (token value, locale signal) pair, so every chart
- * part under one injector shares it.
+ * One `computed()` per (token value, pack section, locale signal), so every
+ * chart part under one injector shares it, and a route that provides its
+ * own language pack gets its own words even when it shares the token value.
  */
 export function injectChartI18n(): Signal<Required<CngxChartI18n>> {
   const bundle = inject(CNGX_CHART_I18N);
   const section = injectChartLanguage();
   const locale = injectLocale();
-  let byLocale = resolvedByToken.get(bundle);
+  let bySection = resolvedByToken.get(bundle);
+  if (!bySection) {
+    bySection = new WeakMap();
+    resolvedByToken.set(bundle, bySection);
+  }
+  let byLocale = bySection.get(section);
   if (!byLocale) {
     byLocale = new WeakMap();
-    resolvedByToken.set(bundle, byLocale);
+    bySection.set(section, byLocale);
   }
   let resolved = byLocale.get(locale);
   if (!resolved) {
