@@ -27,6 +27,7 @@ import {
 import {
   ANCHOR_AREA_PROPERTY,
   POSITION_AREA,
+  resolveAnchorMargin,
   resolveDirectionalPlacement,
   resolveFloatingPlacement,
   SUPPORTS_ANCHOR,
@@ -298,7 +299,11 @@ export class CngxPopover {
    */
   readonly positionTryFallbacks = input<readonly PopoverPositionTryFallback[]>([]);
 
-  /** Gap between anchor and popover in px. */
+  /**
+   * Gap between anchor and popover in px, on the placement's main axis
+   * (block axis for `top` / `bottom`, inline axis for `left` / `right`);
+   * the cross axis stays flush. Same on both positioning engines.
+   */
   readonly offset = input(8);
 
   /** Whether Escape key dismisses the popover. */
@@ -533,7 +538,9 @@ export class CngxPopover {
     () => this.resolvedEdgeSignal() ?? (this.effectivePlacement().split('-')[0] as ArrowEdge),
   );
 
-  protected readonly cssMargin = computed(() => (SUPPORTS_ANCHOR ? `${this.offset()}px` : null));
+  protected readonly cssMargin = computed(() =>
+    SUPPORTS_ANCHOR ? resolveAnchorMargin(this.effectivePlacement(), this.offset()) : null,
+  );
 
   /**
    * Comma-joined `position-try-fallbacks` value, or `null` to skip the

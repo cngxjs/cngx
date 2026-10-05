@@ -67,6 +67,31 @@ export const POSITION_AREA: Record<PopoverPlacement, string> = {
 
 /**
  * @internal
+ * CSS `margin` shorthand that puts `offsetPx` between the popover and its
+ * anchor on the placement's main axis only: the block axis for `top` /
+ * `bottom`, the inline axis for `left` / `right`. The cross axis stays at
+ * `0`, so `-start` / `-end` placements sit flush with the anchor edge -
+ * the same geometry `makeOffsetMiddleware` produces on the floating-ui
+ * path.
+ *
+ * Both sides of the main axis carry the offset so the gap survives every
+ * `position-try-fallbacks` tactic: `flip-block` / `flip-inline` mirror
+ * within the axis, `flip-start` transposes the margin together with the
+ * `position-area`. There is deliberately no cross-axis margin, so a
+ * cross-aligned popover may touch the viewport edge; overflow recovery
+ * belongs to `position-try-fallbacks`.
+ *
+ * Takes the requested, direction-resolved placement, never the measured
+ * edge, so the margin never feeds geometry back into geometry.
+ */
+export function resolveAnchorMargin(placement: PopoverPlacement, offsetPx: number): string {
+  const side = placement.split('-')[0];
+  const isBlockSide = side === 'top' || side === 'bottom';
+  return isBlockSide ? `${offsetPx}px 0` : `0 ${offsetPx}px`;
+}
+
+/**
+ * @internal
  * Full physical mirror of every placement token under `rtl`: the left/right
  * side swaps, and a block-placement's inline *alignment* (`-start <-> -end`)
  * swaps too. Feeds the CSS-anchor path only - {@link POSITION_AREA} uses
