@@ -1,4 +1,4 @@
-import { Component, TemplateRef, contentChild, inject, viewChild } from '@angular/core';
+import { Component, TemplateRef, contentChild, inject, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -16,6 +16,7 @@ import {
   CngxSelectOptionPending,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
+  CngxSelectAction,
   CngxSelectRetryButton,
 } from './template-slots';
 import {
@@ -135,6 +136,41 @@ class AllSlotsHost {
 })
 class NoSlotsHost {
   readonly probe = viewChild.required<RegistryProbe<string>>(RegistryProbe);
+}
+
+@Component({
+  selector: 'action-registry-probe',
+  standalone: true,
+  template: `<ng-content />`,
+})
+class ActionRegistryProbe<T> {
+  private readonly actionDirective = contentChild<CngxSelectAction>(CngxSelectAction);
+  readonly registry: CngxSelectTemplateRegistry<T> = createTemplateRegistry<T>({
+    check: signal(undefined),
+    caret: signal(undefined),
+    optgroup: signal(undefined),
+    placeholder: signal(undefined),
+    empty: signal(undefined),
+    loading: signal(undefined),
+    optionLabel: signal(undefined),
+    error: signal(undefined),
+    retryButton: signal(undefined),
+    refreshing: signal(undefined),
+    commitError: signal(undefined),
+    clearButton: signal(undefined),
+    optionPending: signal(undefined),
+    optionError: signal(undefined),
+    action: this.actionDirective,
+  });
+}
+
+@Component({
+  standalone: true,
+  imports: [ActionRegistryProbe],
+  template: `<action-registry-probe />`,
+})
+class ActionNoSlotsHost {
+  readonly probe = viewChild.required<ActionRegistryProbe<string>>(ActionRegistryProbe);
 }
 
 function flush(fixture: { detectChanges: () => void }): void {
@@ -276,5 +312,30 @@ describe('createTemplateRegistry', () => {
     expect(registry.check()).not.toBeNull();
     expect(registry.empty()).not.toBe(emptyTpl);
     expect(registry.empty()).not.toBeNull();
+  });
+
+  it('does not resolve a templates.action default on a host that wires no action query', () => {
+    @Component({
+      standalone: true,
+      template: `<ng-template #action>config-action</ng-template>`,
+    })
+    class Factory {
+      readonly action = viewChild.required<TemplateRef<unknown>>('action');
+    }
+    const factory = TestBed.createComponent(Factory);
+    factory.detectChanges();
+    const actionTpl = factory.componentInstance.action() as unknown as TemplateRef<never>;
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withTemplates({ action: actionTpl }))],
+    });
+    const flat = TestBed.createComponent(NoSlotsHost);
+    flush(flat);
+    expect(flat.componentInstance.probe().registry.action()).toBeNull();
+
+    const actionHost = TestBed.createComponent(ActionNoSlotsHost);
+    flush(actionHost);
+    expect(actionHost.componentInstance.probe().registry.action()).toBe(actionTpl);
   });
 });

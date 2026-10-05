@@ -2805,6 +2805,23 @@ pre.code-block code {
   color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
 }
 
+// Demo-only bordered field row for the popover-anchor story: the row is the
+// popover anchor, the inset input inside it is the trigger. Structural only;
+// colours come from the theme tokens.
+.demo-popover-field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-space-sm, 8px);
+  inline-size: 20rem;
+  padding-inline: var(--cngx-space-md, 16px);
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: 6px;
+}
+.demo-popover-field input {
+  flex: 1;
+  min-inline-size: 0;
+}
+
 // Menu list inside a bare `[cngxPopover]` - resets the UA list defaults
 // and sets a minimum width so the menu does not collapse to its widest
 // item only when the popover surrounds short labels.

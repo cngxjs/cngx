@@ -15,6 +15,7 @@ export type {
 } from './popover.types';
 export { CngxPopover } from './popover.directive';
 export { CngxPopoverTrigger } from './popover-trigger.directive';
+export { CngxPopoverAnchor } from './popover-anchor.directive';
 export { CngxTooltip } from './tooltip.directive';
 
 // Floating UI fallback (opt-in)

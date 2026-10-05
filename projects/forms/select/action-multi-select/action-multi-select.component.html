@@ -12,6 +12,7 @@
   @let aria = triggerAria();
   <div
     class="cngx-action-multi-select__trigger cngx-field-trigger"
+    [cngxPopoverAnchor]="pop"
     role="group"
     [attr.aria-label]="aria.label"
     [attr.aria-labelledby]="aria.labelledBy"

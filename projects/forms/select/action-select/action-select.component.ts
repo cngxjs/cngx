@@ -31,7 +31,12 @@ import {
   CngxListboxTrigger,
   type ListboxMatchFn,
 } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
+import {
+  CngxPopover,
+  CngxPopoverAnchor,
+  CngxPopoverTrigger,
+  type PopoverPlacement,
+} from '@cngx/common/popover';
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { createLabelMatch } from '../shared/internal/label-match';
@@ -196,6 +201,7 @@ export interface CngxActionSelectChange<T = unknown> {
     CngxListboxSearch,
     CngxListboxTrigger,
     CngxPopover,
+    CngxPopoverAnchor,
     CngxPopoverTrigger,
     CngxSelectPanel,
     NgTemplateOutlet,

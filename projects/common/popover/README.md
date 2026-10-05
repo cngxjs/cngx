@@ -46,6 +46,19 @@ import {
 </div>
 ```
 
+### Anchoring to another element
+
+When the focusable trigger is not the visible box the panel should hang under (an input inside a bordered field row), put `[cngxPopoverAnchor]` on the box. The trigger keeps `aria-expanded`, `aria-controls` and `aria-haspopup` but yields its `anchor-name`; CSS Anchor Positioning and the Floating UI fallback both measure the anchor.
+
+```html
+<div class="field" [cngxPopoverAnchor]="pop">
+  <input [cngxPopoverTrigger]="pop" (focus)="pop.show()" aria-label="City" />
+</div>
+<div cngxPopover #pop="cngxPopover" placement="bottom-start">...</div>
+```
+
+The explicit anchor wins over the trigger. When the anchor unmounts, the trigger becomes the anchor again. Pointerdowns on the trigger still count as inside for `[closeOnOutsideClick]`.
+
 ### Controlled Popover
 
 ```html

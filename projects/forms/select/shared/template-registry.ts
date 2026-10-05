@@ -106,7 +106,12 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
  * }
  * ```
  */
-const NO_ACTION_DIRECTIVE: Signal<CngxSelectAction | undefined> = signal(undefined);
+/**
+ * Flat variants wire no action query, so `templates.action` must not reach
+ * them: resolving it through the cascade would render an app-wide action
+ * default at the bottom of every flat panel.
+ */
+const NO_ACTION_TEMPLATE: Signal<TemplateRef<CngxSelectActionContext> | null> = signal(null);
 
 const NO_LOADING_GLYPH_DIRECTIVE: Signal<CngxSelectLoadingGlyph | undefined> = signal(undefined);
 
@@ -144,7 +149,7 @@ export function createTemplateRegistry<T = unknown>(
     clearButton: injectResolvedTemplate(queries.clearButton, 'clearButton'),
     optionPending: injectResolvedTemplate(queries.optionPending, 'optionPending'),
     optionError: injectResolvedTemplate(queries.optionError, 'optionError'),
-    action: injectResolvedTemplate(queries.action ?? NO_ACTION_DIRECTIVE, 'action'),
+    action: queries.action ? injectResolvedTemplate(queries.action, 'action') : NO_ACTION_TEMPLATE,
   };
 }
 
