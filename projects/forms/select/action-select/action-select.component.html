@@ -5,7 +5,11 @@
   [enabled]="panelOpen()"
   (clickOutside)="handleClickOutside()"
 >
-  <div class="cngx-action-select__trigger cngx-field-trigger" (click)="handleWrapperClick()">
+  <div
+    class="cngx-action-select__trigger cngx-field-trigger"
+    [cngxPopoverAnchor]="pop"
+    (click)="handleWrapperClick()"
+  >
     @if (inputPrefixTpl(); as prefixTpl) {
       <span class="cngx-action-select__prefix" (click)="$event.stopPropagation()">
         <ng-container *ngTemplateOutlet="prefixTpl; context: inputSlotContext()" />

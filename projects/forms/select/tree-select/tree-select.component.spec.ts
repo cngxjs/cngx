@@ -115,6 +115,13 @@ describe('CngxTreeSelect', () => {
     expect(f.root.querySelector('.cngx-tree-select__placeholder')).toBeTruthy();
   });
 
+  it('sizes the panel to the anchor width by default, like the rest of the family', () => {
+    const panel = f.root.querySelector<HTMLElement>('.cngx-select__panel');
+    expect(panel?.style.getPropertyValue('--cngx-select-panel-min-width')).toBe(
+      'anchor-size(width)',
+    );
+  });
+
   it('implements CngxFormFieldControl (empty, disabled, id + focus wiring)', () => {
     expect(f.tree.empty()).toBe(true);
     expect(f.tree.disabled()).toBe(false);

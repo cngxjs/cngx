@@ -28,7 +28,12 @@ import {
   CngxListboxTrigger,
   type ListboxMatchFn,
 } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
+import {
+  CngxPopover,
+  CngxPopoverAnchor,
+  CngxPopoverTrigger,
+  type PopoverPlacement,
+} from '@cngx/common/popover';
 
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
@@ -202,6 +207,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
     CngxListboxSearch,
     CngxListboxTrigger,
     CngxPopover,
+    CngxPopoverAnchor,
     CngxPopoverTrigger,
     CngxSelectPanel,
     NgTemplateOutlet,
