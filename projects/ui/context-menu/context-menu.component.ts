@@ -61,6 +61,7 @@ import { CNGX_CONTEXT_MENU_PANEL, type CngxContextMenuPanel } from './context-me
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/context-menu/context-menu.component.ts
  * @since 0.1.0
  * @relatedTo CngxContextMenuFor, CngxContextMenuItem, CngxContextMenuContent, CngxMenu, CngxPopover
+ * @slot cngxContextMenuContent Replaces the projected items with lazy content rendered only while the menu is open; gets the trigger's per-open datum as $implicit (let-row).
  */
 @Component({
   selector: 'cngx-context-menu',
