@@ -318,25 +318,22 @@ describe('CNGX_CHART_I18N language pack', () => {
     expect(stripBidiIsolates(i18n.stackedBarSegmentTitle('A', '2.2'))).toBe('A: 2.2');
   });
 
-  it('gives a route with its own language pack its own words over a shared token value', () => {
-    // The same locale signal at root and in the route: only the pack differs.
-    const shared = signal('de');
-    TestBed.configureTestingModule({ providers: [provideLocale(shared)] });
-    const root = TestBed.inject(EnvironmentInjector);
-    const route = createEnvironmentInjector(
-      [
+  it('gives a route with its own locale its own number format over a shared token value', () => {
+    TestBed.configureTestingModule({
+      providers: [
         provideCngxI18n(
-          withPartialPack({ locale: 'de', chart: { dataTable: 'Datentabelle' } }),
+          withPartialPack({ locale: 'en', chart: { dataTable: 'Datentabelle' } }),
           withDocumentLanguage('off'),
         ),
-        provideLocale(shared),
       ],
-      root,
-    );
+    });
+    const root = TestBed.inject(EnvironmentInjector);
+    const route = createEnvironmentInjector([provideLocale('de')], root);
     const atRoot = TestBed.runInInjectionContext(() => injectChartI18n());
     const inRoute = runInInjectionContext(route, () => injectChartI18n());
     expect(route.get(CNGX_CHART_I18N)).toBe(TestBed.inject(CNGX_CHART_I18N));
-    expect(atRoot().dataTable()).toBe('Data table');
+    expect(stripBidiIsolates(atRoot().thresholdAlert(1.5))).toBe('Threshold 1.5 crossed');
+    expect(stripBidiIsolates(inRoute().thresholdAlert(1.5))).toBe('Threshold 1,5 crossed');
     expect(inRoute().dataTable()).toBe('Datentabelle');
     expect(runInInjectionContext(route, () => injectChartI18n())).toBe(inRoute);
     route.destroy();

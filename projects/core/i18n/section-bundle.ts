@@ -35,8 +35,10 @@ export interface CngxSectionBundle<B extends object> {
   readonly build: (features?: readonly ((bundle: Signal<B>) => Signal<B>)[]) => Signal<B>;
   /**
    * Reads the token for the use site: every key the features left at its
-   * default follows the use site's section and locale (a `provideLocaleAt`
-   * subtree, a route-level pack); every key a feature set stays as set. A
+   * default follows the use site's locale (a `provideLocaleAt` subtree);
+   * every key a feature set stays as set. The language pack itself is
+   * app-wide - a subtree overrides copy through the area's `provide*I18n` /
+   * `provide*At`, not through a second pack. A
    * token value supplied without {@link CngxSectionBundle.build} keeps every
    * key it sets, and a key it leaves out follows the use site.
    */
