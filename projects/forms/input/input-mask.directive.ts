@@ -264,11 +264,15 @@ function resolvePreset(
 
   switch (name) {
     case 'date':
+      // `name` is the segment before the first `:`, so `date:short` lands here.
+      if (parts[1]?.toLowerCase() === 'short') {
+        return {
+          patterns: [
+            resolveDateFormat(locale, tables.dateShort ?? {}, PRESET_FALLBACKS.dateShort),
+          ],
+        };
+      }
       return { patterns: [resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)] };
-    case 'date:short':
-      return {
-        patterns: [resolveDateFormat(locale, tables.dateShort ?? {}, PRESET_FALLBACKS.dateShort)],
-      };
     case 'time':
       // `time:24` / `time:12` pin the cycle; bare `time` follows the locale.
       return { patterns: [timePattern(parts[1], locale)] };

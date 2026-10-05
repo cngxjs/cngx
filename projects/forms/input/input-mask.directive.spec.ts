@@ -592,6 +592,14 @@ describe('CngxInputMask', () => {
       expect(setup({ mask: 'date', locale: 'de-LI' }).input.value).toBe('__.__.____');
     });
 
+    it('resolves "date:short" to the 2-digit-year pattern', () => {
+      expect(setup({ mask: 'date:short', locale: 'en-US' }).input.value).toBe('__/__/__');
+      TestBed.resetTestingModule();
+      expect(setup({ mask: 'date:short', locale: 'de-DE' }).input.value).toBe('__.__.__');
+      TestBed.resetTestingModule();
+      expect(setup({ mask: 'date', locale: 'en-US' }).input.value).toBe('__/__/____');
+    });
+
     it('should resolve "date" preset for ja locale (YYYY/MM/DD)', () => {
       const { input } = setup({ mask: 'date', locale: 'ja-JP' });
       expect(input.value).toBe('____/__/__');
