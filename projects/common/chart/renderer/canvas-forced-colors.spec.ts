@@ -5,6 +5,7 @@ import { type CngxChartContext } from '../chart/chart-context';
 import { type LayerGeometry } from '../layers/chart-layer';
 import { createCanvasRenderer } from './canvas-renderer';
 import { type ChartRendererDeps, type CngxChartRenderer } from './chart-renderer';
+import { forcedSeriesSteps } from './forced-series';
 
 const INK = 'rgb(1, 2, 3)';
 const PAPER = 'rgb(250, 251, 252)';
@@ -247,5 +248,58 @@ describe('createCanvasRenderer under forced colors', () => {
     renderer.mount(host, d.ctx);
     renderer.paint([LINE]);
     expect(host.querySelector('span')).toBeNull();
+  });
+});
+
+describe('createCanvasRenderer forced-colors line dashes', () => {
+  const PLAIN_LINE: LayerGeometry = { ...LINE, points: undefined } as LayerGeometry;
+
+  /** The dash set right before each line stroke (a stroke with a Path2D argument). */
+  function lineDashes(): unknown[] {
+    const out: unknown[] = [];
+    rec.calls.forEach((c, i) => {
+      const next = rec.calls[i + 1];
+      if (c.op === 'setLineDash' && next?.op === 'stroke' && next.args?.length) {
+        out.push(c.args?.[0]);
+      }
+    });
+    return out;
+  }
+
+  it('walks the legend cycle per line, skipping area and threshold', () => {
+    const renderer = mounted();
+    renderer.paint([PLAIN_LINE, PLAIN_LINE, AREA, PLAIN_LINE, THRESHOLD, PLAIN_LINE, PLAIN_LINE]);
+    expect(lineDashes()).toEqual([[], [6, 3], [0.1, 4], [8, 3, 0.1, 3], []]);
+  });
+
+  it('counts bars and scatter in the line step', () => {
+    const renderer = mounted();
+    renderer.paint([BAR, SCATTER, PLAIN_LINE]);
+    expect(lineDashes()).toEqual([[0.1, 4]]);
+  });
+
+  it('resets the dash right after each line stroke', () => {
+    const renderer = mounted();
+    renderer.paint([PLAIN_LINE, PLAIN_LINE]);
+    rec.calls.forEach((c, i) => {
+      if (c.op === 'stroke' && c.args?.length) {
+        expect(rec.calls[i + 1]).toEqual({ op: 'setLineDash', args: [[]] });
+      }
+    });
+  });
+
+  it('sets no line dash in normal mode', () => {
+    forced.set(false);
+    const renderer = mounted();
+    renderer.paint([PLAIN_LINE, PLAIN_LINE]);
+    expect(rec.calls.some((c) => c.op === 'setLineDash')).toBe(false);
+  });
+
+  it('returns the identical steps array for the same geometries array', () => {
+    const geometries = [PLAIN_LINE, AREA, BAR];
+    const first = forcedSeriesSteps(geometries);
+    expect(forcedSeriesSteps(geometries)).toBe(first);
+    expect(first).toEqual([0, null, 1]);
+    expect(forcedSeriesSteps([...geometries])).not.toBe(first);
   });
 });

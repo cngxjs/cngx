@@ -1,7 +1,13 @@
 import { type CngxChartContext } from '../chart/chart-context';
 import { type LayerGeometry } from '../layers/chart-layer';
 import { type ChartRendererDeps, type CngxChartRenderer } from './chart-renderer';
-import { type ForcedSystemColors, resolveSystemColors } from './forced-series';
+import {
+  FORCED_LINE_DASHES,
+  type ForcedSeriesStep,
+  forcedSeriesSteps,
+  type ForcedSystemColors,
+  resolveSystemColors,
+} from './forced-series';
 
 /**
  * @internal Per-kind CSS custom-property fallback chain, resolved when a
@@ -27,6 +33,8 @@ const DEFAULT_AREA_OPACITY = 0.18;
 const DEFAULT_BAND_OPACITY = 0.12;
 /** @internal Fallback point-marker radius, matching the layers' CSS token defaults. */
 const DEFAULT_POINT_RADIUS = 3;
+/** @internal Shared solid dash, so resetting after a dashed stroke allocates nothing. */
+const SOLID_DASH: number[] = [];
 
 /**
  * Canvas rendering backend. Mounts a `<canvas>` absolutely positioned
@@ -248,19 +256,32 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     forcedNow = deps.forcedColors?.() ?? false;
     const { width, height } = deps.ctx.dimensions();
     c.clearRect(0, 0, width, height);
-    for (const g of geometries) {
-      paintOne(c, g);
+    const steps = forcedNow ? forcedSeriesSteps(geometries) : null;
+    for (let i = 0; i < geometries.length; i++) {
+      paintOne(c, geometries[i], steps?.[i] ?? null);
     }
   }
 
-  function paintOne(c: CanvasRenderingContext2D, g: LayerGeometry): void {
+  function paintOne(
+    c: CanvasRenderingContext2D,
+    g: LayerGeometry,
+    step: ForcedSeriesStep | null,
+  ): void {
     switch (g.kind) {
       case 'line': {
         c.strokeStyle = colorOf(g.color, 'line');
         c.lineWidth = strokeWidthOf(g.strokeWidth);
         c.lineJoin = 'round';
         c.lineCap = 'round';
+        // Forced colors: the legend's dash for this series step (round caps
+        // turn the 0.1 dash into a dot, as in SVG).
+        if (step !== null) {
+          c.setLineDash(FORCED_LINE_DASHES[step]);
+        }
         c.stroke(new Path2D(g.d));
+        if (step !== null) {
+          c.setLineDash(SOLID_DASH);
+        }
         drawPointMarks(c, g.points, g.color, 'line', '--cngx-line-point-radius');
         break;
       }
