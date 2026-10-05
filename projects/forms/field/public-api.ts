@@ -56,6 +56,7 @@ export {
   injectFormFieldI18n,
   type CngxFormFieldI18n,
   type CngxFormFieldI18nFeature,
+  type CngxFormFieldI18nOverrides,
 } from './i18n/form-field-i18n';
 export {
   CNGX_FORM_FIELD_LANGUAGE_EN,

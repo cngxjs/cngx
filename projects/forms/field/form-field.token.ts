@@ -424,7 +424,9 @@ const NO_HINT_FORMATTERS: Partial<ConstraintHintFormatters> = {};
  * Enable auto-generated constraint hints for all form fields. The hint copy
  * comes from the form-field section of the active language pack (English
  * without one), with numbers formatted for the field's locale. Formatters
- * passed here replace single hints and stay as set.
+ * passed here replace single hints and stay as set. This is the one override
+ * for hints: `withFormFieldI18nLabels` does not take the `hint*` keys, and a
+ * language pack changes the copy of every hint left out here.
  *
  * Language-pack copy
  * ```ts

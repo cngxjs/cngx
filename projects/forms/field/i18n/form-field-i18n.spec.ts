@@ -18,6 +18,7 @@ import {
   resolveErrorMessage,
   withFormFieldI18nLabels,
   type CngxFormFieldI18n,
+  type CngxFormFieldI18nOverrides,
 } from './form-field-i18n';
 
 function message(i18n: CngxFormFieldI18n, kind: string, extra?: Record<string, unknown>): string {
@@ -183,7 +184,11 @@ describe('CngxFormFieldI18n', () => {
     expect(bundle().hintMaxValue(1000)).toBe('Max. 1.000');
   });
 
-  it('lets withFormFieldI18nLabels replace a hint on top of the active pack', () => {
+  it('leaves the constraint hints to withConstraintHints', () => {
+    // @ts-expect-error hints are overridden only through withConstraintHints
+    const hint: CngxFormFieldI18nOverrides = { hintMaxValue: (max: number) => `bis ${max}` };
+    const invalid: CngxFormFieldI18nOverrides = { invalid: 'Ungueltig.' };
+    expect(hint).toBeDefined();
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
@@ -191,12 +196,13 @@ describe('CngxFormFieldI18n', () => {
           withPartialPack({ locale: 'de', formField: { hintMinValue: 'Mind. {min}' } }),
           withDocumentLanguage('off'),
         ),
-        provideFormFieldI18n(withFormFieldI18nLabels({ hintMaxValue: (max) => `bis ${max}` })),
+        provideFormFieldI18n(withFormFieldI18nLabels(invalid)),
       ],
     });
     const i18n = TestBed.inject(CNGX_FORM_FIELD_I18N)();
-    expect(i18n.hintMaxValue(5)).toBe('bis 5');
+    expect(i18n.invalid).toBe('Ungueltig.');
     expect(i18n.hintMinValue(1000)).toBe('Mind. 1.000');
+    expect(i18n.hintMaxValue(5)).toBe('Max. 5');
   });
 
   it('formats constraint hints in the locale of a provideLocaleAt subtree', () => {

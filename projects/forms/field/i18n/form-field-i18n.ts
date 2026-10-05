@@ -17,7 +17,9 @@ import {
  * Form-field i18n surface: the library's own error copy and constraint hints.
  * The error copy sits below the consumer's `CNGX_ERROR_MESSAGES` registry and
  * below an error's own `message`, so it only speaks where neither says
- * anything. The hints sit below the formatters passed to `withConstraintHints`.
+ * anything. The `hint*` keys are the language-pack copy of the constraint
+ * hints; replace a hint through `withConstraintHints`, the one override for
+ * hints (`withFormFieldI18nLabels` does not take them).
  *
  * @category forms/field/i18n
  * @since 0.1.0
@@ -48,6 +50,29 @@ export interface CngxFormFieldI18n {
   /** Constraint hint for a highest value, e.g. "Max. 100". */
   readonly hintMaxValue: (max: number) => string;
 }
+
+/** @internal The constraint-hint keys, overridden only through `withConstraintHints`. */
+type HintKey =
+  | 'hintLengthRange'
+  | 'hintMinLength'
+  | 'hintMaxLength'
+  | 'hintValueRange'
+  | 'hintMinValue'
+  | 'hintMaxValue';
+
+/**
+ * The keys {@link withFormFieldI18nLabels} accepts: every
+ * {@link CngxFormFieldI18n} key except the constraint hints, with
+ * `errorMessages` merged kind by kind. Hints are replaced through
+ * `withConstraintHints` on `provideFormField` / `provideFormFieldAt`.
+ *
+ * @category forms/field/i18n
+ * @since 0.1.0
+ */
+export type CngxFormFieldI18nOverrides = CngxNestedOverrides<
+  Omit<CngxFormFieldI18n, HintKey>,
+  'errorMessages'
+>;
 
 type NumberKey = 'min' | 'max' | 'minLength' | 'maxLength';
 
@@ -158,13 +183,16 @@ export type CngxFormFieldI18nFeature = ((
  * by kind, so overriding `required` keeps the other built-in messages. Pass a
  * `Signal` to switch the language at runtime.
  *
+ * The constraint hints are not taken here: `withConstraintHints(formatters)`
+ * on `provideFormField` / `provideFormFieldAt` is the one override for them,
+ * and the language pack's `formField.hint*` keys stay their copy source.
+ *
  * @category forms/field/i18n
  * @since 0.1.0
+ * @relatedTo provideFormFieldI18n, withConstraintHints
  */
 export function withFormFieldI18nLabels(
-  overrides:
-    | CngxNestedOverrides<CngxFormFieldI18n, 'errorMessages'>
-    | Signal<CngxNestedOverrides<CngxFormFieldI18n, 'errorMessages'>>,
+  overrides: CngxFormFieldI18nOverrides | Signal<CngxFormFieldI18nOverrides>,
 ): CngxFormFieldI18nFeature {
   return Object.assign(
     (bundle: Signal<CngxFormFieldI18n>) =>
