@@ -14,9 +14,10 @@ import {
 } from './form-field-language-section';
 
 /**
- * Form-field i18n surface: the library's own error copy. It sits below the
- * consumer's `CNGX_ERROR_MESSAGES` registry and below an error's own
- * `message`, so it only speaks where neither says anything.
+ * Form-field i18n surface: the library's own error copy and constraint hints.
+ * The error copy sits below the consumer's `CNGX_ERROR_MESSAGES` registry and
+ * below an error's own `message`, so it only speaks where neither says
+ * anything. The hints sit below the formatters passed to `withConstraintHints`.
  *
  * @category forms/field/i18n
  * @since 0.1.0
@@ -34,6 +35,18 @@ export interface CngxFormFieldI18n {
    * `{label}` and `{message}` rendered as elements. English `'{label}: {message}'`.
    */
   readonly errorSummaryItem: string;
+  /** Constraint hint for a length range, e.g. "8–64 characters". */
+  readonly hintLengthRange: (min: number, max: number) => string;
+  /** Constraint hint for a lowest length, e.g. "Min. 8 characters". */
+  readonly hintMinLength: (min: number) => string;
+  /** Constraint hint for a highest length, e.g. "Max. 64 characters". */
+  readonly hintMaxLength: (max: number) => string;
+  /** Constraint hint for a value range, e.g. "0–100". */
+  readonly hintValueRange: (min: number, max: number) => string;
+  /** Constraint hint for a lowest value, e.g. "Min. 0". */
+  readonly hintMinValue: (min: number) => string;
+  /** Constraint hint for a highest value, e.g. "Max. 100". */
+  readonly hintMaxValue: (max: number) => string;
 }
 
 type NumberKey = 'min' | 'max' | 'minLength' | 'maxLength';
@@ -75,6 +88,13 @@ function formFieldBundleFrom(
     },
     invalid: section.invalid,
     errorSummaryItem: section.errorSummaryItem,
+    hintLengthRange: (min, max) =>
+      formatMessage(section.hintLengthRange, { min, max, count: max }, locale),
+    hintMinLength: (min) => formatMessage(section.hintMinLength, { count: min }, locale),
+    hintMaxLength: (max) => formatMessage(section.hintMaxLength, { count: max }, locale),
+    hintValueRange: (min, max) => formatMessage(section.hintValueRange, { min, max }, locale),
+    hintMinValue: (min) => formatMessage(section.hintMinValue, { min }, locale),
+    hintMaxValue: (max) => formatMessage(section.hintMaxValue, { max }, locale),
   };
 }
 

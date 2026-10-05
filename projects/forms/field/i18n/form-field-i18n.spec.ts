@@ -142,4 +142,70 @@ describe('CngxFormFieldI18n', () => {
     expect(message(root(), 'max', { max: 2500 })).toBe('Enter a value of 2,500 or less.');
     expect(message(german(), 'max', { max: 2500 })).toBe('Enter a value of 2.500 or less.');
   });
+
+  it('derives the English constraint hints from the English section', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const i18n = TestBed.inject(CNGX_FORM_FIELD_I18N)();
+    expect(i18n.hintLengthRange(8, 64)).toBe('8–64 characters');
+    expect(i18n.hintMinLength(8)).toBe('Min. 8 characters');
+    expect(i18n.hintMaxLength(64)).toBe('Max. 64 characters');
+    expect(i18n.hintValueRange(18, 99)).toBe('18–99');
+    expect(i18n.hintMinValue(0)).toBe('Min. 0');
+    expect(i18n.hintMaxValue(100)).toBe('Max. 100');
+  });
+
+  it('picks the singular hint form and formats hint numbers for the locale', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const i18n = TestBed.inject(CNGX_FORM_FIELD_I18N)();
+    expect(i18n.hintMinLength(1)).toBe('Min. 1 character');
+    expect(i18n.hintMaxLength(1)).toBe('Max. 1 character');
+    expect(i18n.hintLengthRange(0, 1)).toBe('0–1 character');
+    expect(i18n.hintValueRange(1000, 5000)).toBe('1,000–5,000');
+  });
+
+  it('switches the constraint hints with the active pack', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+      ],
+    });
+    const bundle = TestBed.inject(CNGX_FORM_FIELD_I18N);
+    expect(bundle().hintMinValue(1000)).toBe('Min. 1,000');
+
+    pack.set({
+      locale: 'de',
+      formField: { hintMinValue: 'Mind. {min}', hintLengthRange: '{min} bis {max} Zeichen' },
+    });
+    expect(bundle().hintMinValue(1000)).toBe('Mind. 1.000');
+    expect(bundle().hintLengthRange(8, 64)).toBe('8 bis 64 Zeichen');
+    expect(bundle().hintMaxValue(1000)).toBe('Max. 1.000');
+  });
+
+  it('lets withFormFieldI18nLabels replace a hint on top of the active pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', formField: { hintMinValue: 'Mind. {min}' } }),
+          withDocumentLanguage('off'),
+        ),
+        provideFormFieldI18n(withFormFieldI18nLabels({ hintMaxValue: (max) => `bis ${max}` })),
+      ],
+    });
+    const i18n = TestBed.inject(CNGX_FORM_FIELD_I18N)();
+    expect(i18n.hintMaxValue(5)).toBe('bis 5');
+    expect(i18n.hintMinValue(1000)).toBe('Mind. 1.000');
+  });
+
+  it('formats constraint hints in the locale of a provideLocaleAt subtree', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideLocale('en')],
+    });
+    const root = TestBed.runInInjectionContext(() => injectFormFieldI18n());
+    const german = runInSubtree([provideLocaleAt('de')], () => injectFormFieldI18n());
+    expect(root().hintValueRange(1000, 5000)).toBe('1,000–5,000');
+    expect(german().hintValueRange(1000, 5000)).toBe('1.000–5.000');
+  });
 });

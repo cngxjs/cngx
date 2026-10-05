@@ -2,8 +2,9 @@ import type { CngxMessage } from '@cngx/core/i18n';
 
 /**
  * The form-field section of a {@link CngxLanguagePack}: the message of every
- * built-in validator kind, the generic fallback for any other kind, and the
- * order of a field label and its message in the form-level error summary. It
+ * built-in validator kind, the generic fallback for any other kind, the
+ * order of a field label and its message in the form-level error summary, and
+ * the constraint hints a field derives from its validators. It
  * feeds `CNGX_FORM_FIELD_I18N`. Messages use `{name}` placeholders; a plural
  * message picks its form from `{count}`.
  *
@@ -42,6 +43,21 @@ export interface CngxFormFieldLanguageSection {
    * a function has nothing to fill in.
    */
   readonly errorSummaryItem: string;
+  /**
+   * Constraint hint for a length range: `{min}` and `{max}`, plural on
+   * `{count}` (the highest allowed length).
+   */
+  readonly hintLengthRange: CngxMessage;
+  /** Constraint hint for a lowest length; plural on `{count}`. */
+  readonly hintMinLength: CngxMessage;
+  /** Constraint hint for a highest length; plural on `{count}`. */
+  readonly hintMaxLength: CngxMessage;
+  /** Constraint hint for a value range: `{min}` and `{max}`. */
+  readonly hintValueRange: CngxMessage;
+  /** Constraint hint for a lowest value: `{min}`. */
+  readonly hintMinValue: CngxMessage;
+  /** Constraint hint for a highest value: `{max}`. */
+  readonly hintMaxValue: CngxMessage;
 }
 
 /**
@@ -70,6 +86,21 @@ export const CNGX_FORM_FIELD_LANGUAGE_EN: CngxFormFieldLanguageSection = {
   parse: 'Enter a valid value.',
   invalid: 'This value is invalid.',
   errorSummaryItem: '{label}: {message}',
+  hintLengthRange: {
+    one: '{min}–{max} character',
+    other: '{min}–{max} characters',
+  },
+  hintMinLength: {
+    one: 'Min. {count} character',
+    other: 'Min. {count} characters',
+  },
+  hintMaxLength: {
+    one: 'Max. {count} character',
+    other: 'Max. {count} characters',
+  },
+  hintValueRange: '{min}–{max}',
+  hintMinValue: 'Min. {min}',
+  hintMaxValue: 'Max. {max}',
 };
 
 declare module '@cngx/core/i18n' {

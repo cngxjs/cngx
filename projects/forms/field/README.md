@@ -57,7 +57,7 @@ field from the next.
 | `provideFormFieldAt(...features)` | Same config, scoped to a component subtree (`providers` / `viewProviders`) |
 | `provideErrorMessages(map)` | Shorthand for error messages only |
 | `withErrorMessages(map)` | Error-kind-to-message formatters |
-| `withConstraintHints(formatters?)` | Auto-generate hints from validators (i18n via `ConstraintHintFormatters`) |
+| `withConstraintHints(formatters?)` | Auto-generate hints from validators; copy from the `formField` language section, single `ConstraintHintFormatters` replaceable |
 | `withRequiredMarker(text?)` | Auto-show required marker on labels |
 | `withAutocompleteMappings(map)` | Extend/override autocomplete inference |
 | `withNoSpellcheck(fields)` | Extend spellcheck-disabled field list |

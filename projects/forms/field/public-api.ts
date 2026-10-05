@@ -46,7 +46,6 @@ export {
   withErrorStrategy,
   DEFAULT_AUTOCOMPLETE_MAPPINGS,
   DEFAULT_NO_SPELLCHECK_FIELDS,
-  DEFAULT_HINT_FORMATTERS,
   type CngxFieldSkin,
   type CngxFormFieldHostContract,
 } from './form-field.token';
