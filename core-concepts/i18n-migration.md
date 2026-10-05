@@ -193,6 +193,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CNGX_ERROR_MESSAGES` is now `InjectionToken<Signal<ErrorMessageMap>>`. Call the Signal where you read a message, inside a `computed()`, a template or a handler: `inject(CNGX_ERROR_MESSAGES)[kind]` becomes `inject(CNGX_ERROR_MESSAGES)()[kind]`.
 - A direct `{ provide: CNGX_ERROR_MESSAGES, useValue: map }` must supply a Signal. Prefer `provideErrorMessages(map)` at an environment injector, or `provideFormFieldAt(withErrorMessages(map))` on a component. `provideErrorMessages` and `withErrorMessages` now also accept a `Signal<ErrorMessageMap>` for runtime switching; `withErrorMessages` still merges key by key across features.
 - `FormFieldConfig.errorMessages` and `.constraintHints` are typed `T | Signal<T>`, and once `withErrorMessages` / `withConstraintHints` ran they hold a `Signal`. Code that reads them off `injectFormFieldConfig()` or `CNGX_FORM_FIELD_CONFIG` wraps the key once, in a field: `private readonly hints = coerceSignal(injectFormFieldConfig().constraintHints);` (`coerceSignal` from `@cngx/core/utils`), then `this.hints()?.lengthRange(8, 64)` inside a `computed()`, a template or a handler. `withConstraintHints` now also accepts a `Signal<Partial<ConstraintHintFormatters>>`; unset formatters keep the English defaults.
+- `FormErrorItem` gains a `label` member (the visible `CngxLabel` text, `undefined` without a label). A custom `<cngx-form-errors>` template that renders `err.fieldName` shows the model key; render `err.label` instead.
 
 ### @cngx/forms/input
 
@@ -263,6 +264,11 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The collapsed-group screen-reader phrases use the singular for one step: `1 step`, `0 of 1 step complete` (before: `1 steps`).
 - The visible collapsed-group badge formats its numbers with the app locale (`1.200` in German) and its order comes from `groupSummaryProgressShort`.
 - `cngx-stepper-count` no longer forces `direction: ltr`; the caption reads in the page direction. A `format` that renders a bare ratio such as `2/9` keeps its order under RTL with `--cngx-stepper-count-direction: ltr`.
+
+### @cngx/forms/field
+
+- `CngxFieldErrors` and `CngxFormErrors` no longer show the raw error `kind` (`minLength`). An error resolves to the `CNGX_ERROR_MESSAGES` entry for its kind, then its own `message`, then the English message of a built-in kind (`required`, `requiredTrue`, `email`, `min`, `max`, `minLength`, `maxLength`, `pattern`, `parse`), then `'This value is invalid.'`. A registry entry and a validator `message` still win, so an app that maps every kind sees no change. Translate the library messages through the `formField` section of a language pack or `provideFormFieldI18n(withFormFieldI18nLabels(...))`.
+- The default `CngxFormErrors` summary names each field by the visible text of its `CngxLabel` instead of its model key (`E-mail address: ...` where it showed `email: ...`), and places label and message through the `errorSummaryItem` message (English `'{label}: {message}'`). A field without a `CngxLabel` shows its message alone.
 
 ### @cngx/forms/select
 

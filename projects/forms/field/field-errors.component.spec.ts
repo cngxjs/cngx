@@ -157,13 +157,13 @@ describe('CngxFieldErrors', () => {
       expect(errorsEl.textContent?.trim()).toBe('Custom error message');
     });
 
-    it('falls back to error.kind when no message and no registry entry', () => {
+    it('never shows the raw kind: an unknown kind without a message reads the generic message', () => {
       ref.touched.set(true);
       ref.invalid.set(true);
       ref.errors.set([mockValidationError('unknownError')]);
       fixture.detectChanges();
       TestBed.flushEffects();
-      expect(errorsEl.textContent?.trim()).toBe('unknownError');
+      expect(errorsEl.textContent?.trim()).toBe('This value is invalid.');
     });
 
     it('clears messages when errors resolve', () => {
@@ -194,6 +194,42 @@ describe('CngxFieldErrors', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
       expect(errorsEl.textContent?.trim()).toBe('Field required');
+    });
+
+    it('lets the error own message win over the built-in kind message', () => {
+      ref.touched.set(true);
+      ref.invalid.set(true);
+      ref.errors.set([mockValidationError('pattern', 'Use the format AB-123.')]);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(errorsEl.textContent?.trim()).toBe('Use the format AB-123.');
+    });
+
+    it('renders the English message of a built-in kind that carries no message', () => {
+      ref.touched.set(true);
+      ref.invalid.set(true);
+      ref.errors.set([
+        mockValidationError('required'),
+        mockValidationError('minLength', undefined, { minLength: 1 }),
+        mockValidationError('maxLength', undefined, { maxLength: 1200 }),
+      ]);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const texts = Array.from(errorsEl.querySelectorAll('p')).map((p) => p.textContent?.trim());
+      expect(texts).toEqual([
+        'This field is required.',
+        'Enter at least 1 character.',
+        'Enter at most 1,200 characters.',
+      ]);
+    });
+
+    it('never shows the raw kind of an unknown error', () => {
+      ref.touched.set(true);
+      ref.invalid.set(true);
+      ref.errors.set([mockValidationError('serverRejected')]);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(errorsEl.textContent?.trim()).toBe('This value is invalid.');
     });
   });
 

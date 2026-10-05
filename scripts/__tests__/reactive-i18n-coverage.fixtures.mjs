@@ -260,6 +260,12 @@ export const COPY_TOKENS = [
     settingsKeys: [],
   },
   {
+    token: 'CNGX_FORM_FIELD_I18N',
+    kind: 'dedicated',
+    copyKeys: '*',
+    settingsKeys: [],
+  },
+  {
     token: 'CNGX_FORM_FIELD_CONFIG',
     kind: 'config',
     copyKeys: ['errorMessages', 'constraintHints'],
