@@ -319,6 +319,7 @@ export interface CngxSelectConfig {
     readonly clearButton?: TemplateRef<CngxSelectClearButtonContext> | null;
     readonly optionPending?: TemplateRef<CngxSelectOptionPendingContext> | null;
     readonly optionError?: TemplateRef<CngxSelectOptionErrorContext> | null;
+    /** Honoured only by `CngxActionSelect` and `CngxActionMultiSelect`; the flat variants have no action area. */
     readonly action?: TemplateRef<CngxSelectActionContext> | null;
   };
 }
