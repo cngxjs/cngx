@@ -13,7 +13,7 @@ import { injectKpiI18n } from '../shared/kpi-i18n';
 const UNIT_PLACEHOLDER = /\{(value|unit)\}/;
 
 /** @internal `true` when the language reads the unit before the value. */
-function unitFirst(message: string): boolean {
+function readsUnitFirst(message: string): boolean {
   const [, first] = UNIT_PLACEHOLDER.exec(message) ?? [];
   return first === 'unit';
 }
@@ -118,7 +118,7 @@ export class CngxMetric {
   });
 
   /** @internal Unit before value, per the `metricValueWithUnit` message. */
-  protected readonly unitFirst = computed(() => unitFirst(this.i18n().metricValueWithUnit));
+  protected readonly unitFirst = computed(() => readsUnitFirst(this.i18n().metricValueWithUnit));
 
   /** @internal Full accessible description including unit. */
   readonly accessibleValue = computed(() => {
