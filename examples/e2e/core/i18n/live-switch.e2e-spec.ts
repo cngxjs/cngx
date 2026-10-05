@@ -170,7 +170,10 @@ test.describe('live language switch', () => {
 
     // (1) EN baseline.
     await expect(clearAll).toHaveAttribute('aria-label', 'Reset selection');
-    await expect(chipRemove('Red')).toHaveAttribute('aria-label', '\u2068Remove\u2069: \u2068Red\u2069');
+    await expect(chipRemove('Red')).toHaveAttribute(
+      'aria-label',
+      '\u2068Remove\u2069: \u2068Red\u2069',
+    );
 
     // (2) An announcement in English.
     await chipRemove('Blue').click();
@@ -179,7 +182,10 @@ test.describe('live language switch', () => {
     // (3) Flip to German, no reload: labels switch, the announcement stays.
     await page.getByRole('button', { name: 'DE', exact: true }).click();
     await expect(clearAll).toHaveAttribute('aria-label', 'Auswahl zurücksetzen');
-    await expect(chipRemove('Red')).toHaveAttribute('aria-label', '\u2068Entfernen\u2069: \u2068Red\u2069');
+    await expect(chipRemove('Red')).toHaveAttribute(
+      'aria-label',
+      '\u2068Entfernen\u2069: \u2068Red\u2069',
+    );
     await expect(liveRegion).toHaveText('\u2068Colors\u2069: \u2068Blue\u2069 removed, 2 selected');
 
     // (4) The next change speaks German.
@@ -270,7 +276,9 @@ test.describe('live language switch', () => {
     // (1) EN baseline: the failed section speaks its error.
     await expect(trail).toHaveAttribute('aria-label', 'Breadcrumb');
     await expect(alert).toHaveText('This section could not be loaded.');
-    await expect(lockedHeader).toHaveAccessibleDescription('This section is currently unavailable.');
+    await expect(lockedHeader).toHaveAccessibleDescription(
+      'This section is currently unavailable.',
+    );
 
     // (2) Flip to German, no reload: labels switch, the shown error stays.
     await page.getByRole('button', { name: 'DE', exact: true }).click();
