@@ -63,6 +63,7 @@ import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
 } from '../shared/chip-removal-handler';
+import { createChipOverflow } from '../shared/internal/chip-overflow';
 import { sameArrayContents } from '../shared/internal/compare';
 import type {
   CngxSelectCommitAction,
@@ -712,29 +713,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  /** @internal - chip subset + overflow badge count (see CngxMultiSelect). */
-  protected readonly visibleSelected = computed<CngxSelectOptionDef<T>[]>(() => {
-    const all = this.selectedOptions();
-    if (this.chipOverflow() !== 'truncate') {
-      return all;
-    }
-    const cap = Math.max(1, this.maxVisibleChips());
-    return all.length <= cap ? all : all.slice(0, cap);
-  });
-  /** @internal */
-  protected readonly overflowBadgeCount = computed<number>(() => {
-    if (this.chipOverflow() !== 'truncate') {
-      return 0;
-    }
-    const total = this.selectedOptions().length;
-    const cap = Math.max(1, this.maxVisibleChips());
-    return total > cap ? total - cap : 0;
-  });
-  /** @internal Visible `+N` badge text, the count in the reading locale's digits. */
-  protected readonly overflowBadgeText = computed<string>(() =>
-    this.config.fallbackLabels().chipOverflowBadge(this.overflowBadgeCount()),
-  );
-
   protected readonly selectedOptions = computed<CngxSelectOptionDef<T>[]>(
     () => {
       const vals = this.values();
@@ -758,6 +736,20 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     {
       equal: (a, b) => sameArrayContents(a, b, Object.is),
     },
+  );
+
+  private readonly chipStrip = createChipOverflow<T>({
+    selectedOptions: this.selectedOptions,
+    chipOverflow: this.chipOverflow,
+    maxVisibleChips: this.maxVisibleChips,
+  });
+  /** @internal - chip subset + overflow badge count (see createChipOverflow). */
+  protected readonly visibleSelected = this.chipStrip.visibleSelected;
+  /** @internal */
+  protected readonly overflowBadgeCount = this.chipStrip.overflowBadgeCount;
+  /** @internal Visible `+N` badge text, the count in the reading locale's digits. */
+  protected readonly overflowBadgeText = computed<string>(() =>
+    this.config.fallbackLabels().chipOverflowBadge(this.overflowBadgeCount()),
   );
 
   private readonly togglingOption = this.core.togglingOption;

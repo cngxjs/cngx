@@ -41,7 +41,7 @@ export interface ChipOverflow<T> {
 
 /**
  * Chip-strip overflow derivation shared by the chip-rendering array
- * variants (`CngxMultiSelect`, `CngxCombobox`).
+ * variants (`CngxMultiSelect`, `CngxCombobox`, `CngxActionMultiSelect`).
  *
  * @internal
  */

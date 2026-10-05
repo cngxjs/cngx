@@ -196,6 +196,14 @@ describe('cngxSelectChipOverflow slot', () => {
         expect(root.querySelector(PROJECTED)).toBeNull();
       });
 
+      it('renders only the first maxVisibleChips chips in truncate mode', () => {
+        const root = render(plain);
+        const chips = Array.from(root.querySelectorAll('cngx-chip'));
+        expect(chips).toHaveLength(1);
+        expect(chips[0].textContent).toContain('Red');
+        expect(root.querySelector(BADGE)?.textContent?.trim()).toBe('+3');
+      });
+
       it('replaces the badge with the projected template and passes count and label', () => {
         const root = render(projectedHost);
         expect(root.querySelector(BADGE)).toBeNull();
