@@ -16,17 +16,13 @@ import { CNGX_MENU_LANGUAGE_EN, type CngxMenuLanguageSection } from '../i18n/men
 
 /**
  * Localised UI strings the menu announces or otherwise renders. English by
- * default; consumers override via {@link withAriaLabels}.
+ * default; consumers override via {@link withAriaLabels}. The same shape as
+ * the menu section of a language pack, declared once as
+ * {@link CngxMenuLanguageSection}.
  *
  * @category common/interactive/menu
  */
-export interface CngxMenuAriaLabels {
-  readonly submenuOpened: string;
-  readonly submenuClosed: string;
-  readonly itemActivated: string;
-  readonly itemDisabled: string;
-  readonly menuDismissed: string;
-}
+export type CngxMenuAriaLabels = CngxMenuLanguageSection;
 
 /**
  * Resolved configuration consumed by every menu directive in the family.

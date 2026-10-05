@@ -2,7 +2,7 @@ import { computed, inject, InjectionToken, type Provider, type Signal } from '@a
 import { injectLanguageSection } from '@cngx/core/i18n';
 import { createOverrideMerge } from '@cngx/core/utils';
 
-import { CNGX_LAYOUT_LANGUAGE_EN } from './layout-language-section';
+import { CNGX_LAYOUT_LANGUAGE_EN, type CngxLayoutLanguageSection } from './layout-language-section';
 
 /**
  * Layout i18n surface. Library defaults are English; consumers override via
@@ -12,17 +12,13 @@ import { CNGX_LAYOUT_LANGUAGE_EN } from './layout-language-section';
  *
  * Both keys seed the `CngxExpandableText` `moreLabel` / `lessLabel` inputs
  * at construction, so a bound input still wins and an unbound one is static
- * per instance.
+ * per instance. The same shape as the layout section of a language pack,
+ * declared once as {@link CngxLayoutLanguageSection}.
  *
  * @category common/layout/i18n
  * @since 0.1.0
  */
-export interface CngxLayoutI18n {
-  /** Default of the `CngxExpandableText` `moreLabel` input. */
-  readonly expandableTextMore: string;
-  /** Default of the `CngxExpandableText` `lessLabel` input. */
-  readonly expandableTextLess: string;
-}
+export type CngxLayoutI18n = CngxLayoutLanguageSection;
 
 const NO_SECTION: Partial<CngxLayoutI18n> = {};
 

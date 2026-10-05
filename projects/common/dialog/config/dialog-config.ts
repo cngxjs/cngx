@@ -2,7 +2,10 @@ import { computed, inject, InjectionToken, type Provider, type Signal } from '@a
 import { injectLanguageSection } from '@cngx/core/i18n';
 import { createOverrideMerge } from '@cngx/core/utils';
 
-import { CNGX_DIALOG_LANGUAGE_EN } from '../i18n/dialog-language-section';
+import {
+  CNGX_DIALOG_LANGUAGE_EN,
+  type CngxDialogLanguageSection,
+} from '../i18n/dialog-language-section';
 
 /**
  * The five interaction strings the dialog family renders on its own behalf.
@@ -10,22 +13,12 @@ import { CNGX_DIALOG_LANGUAGE_EN } from '../i18n/dialog-language-section';
  * affordance only names itself when the trigger has no text of its own, the
  * error fallback only fires when the thrown value is not a string, and the
  * drag handle is labelled imperatively because the directive may promote any
- * element to a handle.
+ * element to a handle. The same shape as the dialog section of a language
+ * pack, declared once as {@link CngxDialogLanguageSection}.
  *
  * @category common/dialog/config
  */
-export interface CngxDialogLabels {
-  /** Implicit accessible name of `CngxDialogClose` when the trigger carries no text. */
-  readonly close: string;
-  /** Live-region text when a dialog error carries no message of its own. */
-  readonly errorFallback: string;
-  /** `aria-label` set on a promoted drag handle. */
-  readonly dragHandle: string;
-  /** `aria-roledescription` set on a promoted drag handle. */
-  readonly dragHandleRoleDescription: string;
-  /** Visually hidden keyboard-drag instruction the handle is described by. */
-  readonly dragInstructions: string;
-}
+export type CngxDialogLabels = CngxDialogLanguageSection;
 
 /**
  * App-wide dialog defaults, populated via {@link provideDialogConfig} in the

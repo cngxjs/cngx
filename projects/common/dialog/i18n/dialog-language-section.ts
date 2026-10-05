@@ -3,8 +3,8 @@ import type {} from '@cngx/core/i18n';
 
 /**
  * The dialog section of a {@link CngxLanguagePack}: the interaction strings
- * the dialog family renders on its own behalf. Same keys as
- * {@link CngxDialogLabels}; it feeds the `labels` of `CNGX_DIALOG_DEFAULTS`.
+ * the dialog family renders on its own behalf. {@link CngxDialogLabels} is
+ * this shape; it feeds the `labels` of `CNGX_DIALOG_DEFAULTS`.
  *
  * @category common/dialog/i18n
  * @since 0.1.0
