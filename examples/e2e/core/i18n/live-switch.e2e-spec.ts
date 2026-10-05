@@ -163,23 +163,24 @@ test.describe('live language switch', () => {
 
     const select = page.locator('cngx-multi-select');
     const clearAll = select.locator('.cngx-multi-select__clear-all');
+    // `chipRemoveFor` isolates both arguments (U+2068 ... U+2069).
     const chipRemove = (label: string) =>
-      select.locator(`cngx-chip button[aria-label$=": ${label}"]`);
+      select.locator(`cngx-chip button[aria-label$=": \u2068${label}\u2069"]`);
     const liveRegion = page.locator('body > span.cngx-sr-only[aria-live="polite"]');
 
     // (1) EN baseline.
     await expect(clearAll).toHaveAttribute('aria-label', 'Reset selection');
-    await expect(chipRemove('Red')).toHaveAttribute('aria-label', 'Remove: Red');
+    await expect(chipRemove('Red')).toHaveAttribute('aria-label', '\u2068Remove\u2069: \u2068Red\u2069');
 
     // (2) An announcement in English.
     await chipRemove('Blue').click();
-    await expect(liveRegion).toHaveText('Colors: Blue removed, 2 selected');
+    await expect(liveRegion).toHaveText('\u2068Colors\u2069: \u2068Blue\u2069 removed, 2 selected');
 
     // (3) Flip to German, no reload: labels switch, the announcement stays.
     await page.getByRole('button', { name: 'DE', exact: true }).click();
     await expect(clearAll).toHaveAttribute('aria-label', 'Auswahl zurücksetzen');
-    await expect(chipRemove('Red')).toHaveAttribute('aria-label', 'Entfernen: Red');
-    await expect(liveRegion).toHaveText('Colors: Blue removed, 2 selected');
+    await expect(chipRemove('Red')).toHaveAttribute('aria-label', '\u2068Entfernen\u2069: \u2068Red\u2069');
+    await expect(liveRegion).toHaveText('\u2068Colors\u2069: \u2068Blue\u2069 removed, 2 selected');
 
     // (4) The next change speaks German.
     await chipRemove('Green').click();

@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'withConstraintHints: Auto-generated hints from validators',
   subtitle: 'In an app you wire <code>provideFormField(withConstraintHints())</code> once in <code>bootstrapApplication</code>; the presenter then derives hint strings like <code>3&ndash;12 characters</code> from the field\'s <code>minLength</code> / <code>maxLength</code> / <code>min</code> / <code>max</code> validators. This demo scopes the identical config to the example via <code>CNGX_FORM_FIELD_CONFIG</code> so the rest of the catalogue stays hint-free.',
-  description: 'The hints live on <code>CngxFormFieldPresenter.constraintHints()</code> as a plain <code>string[]</code> - nothing renders until a consumer interpolates it, so the skin stays yours. Here a <code>viewChild(CngxFormFieldPresenter)</code> reads the array; in an app a tiny child component that injects <code>CngxFormFieldPresenter</code> does the same without a query (see the <code>withConstraintHints</code> API docs for that pattern). Rendering the joined string inside <code>[cngxHint]</code> wires it into <code>aria-describedby</code>, so a screen reader announces the constraints with the field. Pass custom formatters to <code>withConstraintHints({ ... })</code> for i18n.',
+  description: 'The hints live on <code>CngxFormFieldPresenter.constraintHints()</code> as a plain <code>string[]</code> - nothing renders until a consumer interpolates it, so the skin stays yours. Here a <code>viewChild(CngxFormFieldPresenter)</code> reads the array; in an app a tiny child component that injects <code>CngxFormFieldPresenter</code> does the same without a query (see the <code>withConstraintHints</code> API docs for that pattern). Rendering the joined string inside <code>[cngxHint]</code> wires it into <code>aria-describedby</code>, so a screen reader announces the constraints with the field. An empty <code>constraintHints: {}</code> enables the hints; their copy comes from the form-field language section, so a language pack translates them and the numbers follow the locale. A formatter passed to <code>withConstraintHints({ ... })</code> replaces that single hint.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -17,12 +17,12 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { form, schema, required, minLength, maxLength } from \'@angular/forms/signals\';',
-    'import { CngxFormField, CngxFormFieldPresenter, CngxLabel, CngxHint, CngxFieldErrors, CNGX_FORM_FIELD_CONFIG, DEFAULT_HINT_FORMATTERS } from \'@cngx/forms/field\';',
+    'import { CngxFormField, CngxFormFieldPresenter, CngxLabel, CngxHint, CngxFieldErrors, CNGX_FORM_FIELD_CONFIG } from \'@cngx/forms/field\';',
     'import { CngxInput } from \'@cngx/forms/input\';',
   ],
   imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxHint', 'CngxFieldErrors'],
   viewProviders: [
-    '{ provide: CNGX_FORM_FIELD_CONFIG, useValue: { constraintHints: DEFAULT_HINT_FORMATTERS } }',
+    '{ provide: CNGX_FORM_FIELD_CONFIG, useValue: { constraintHints: {} } }',
   ],
   setup: `protected readonly hintModel = signal({ username: '' });
   protected readonly hintForm = form(this.hintModel, schema<{ username: string }>((root) => {

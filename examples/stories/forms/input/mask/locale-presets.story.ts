@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxInputMask: locale presets',
-  subtitle: 'Pass a preset name like <code>phone</code>, <code>date</code>, or <code>creditcard</code>. Region suffix optional: <code>phone:CH</code>, <code>iban:DE</code>.',
+  subtitle: 'Pass a preset name like <code>phone</code>, <code>date</code>, or <code>creditcard</code>. Region suffix optional: <code>phone:CH</code>, <code>iban:DE</code>. Bare <code>time</code> follows the locale hour cycle; <code>time:24</code> / <code>time:12</code> pin it.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
@@ -33,7 +33,7 @@ export const STORY: DemoSpec = {
       
     </div>
     <div class="demo-field">
-      <label class="demo-label">Time (24h)</label>
+      <label class="demo-label">Time (locale hour cycle)</label>
       <input cngxInputMask="time" #timeMask="cngxInputMask" class="demo-input" />
       
     </div>
