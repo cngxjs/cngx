@@ -4,17 +4,15 @@ import { By } from '@angular/platform-browser';
 import { CngxFormField } from '@cngx/forms/field';
 import { createMockField } from '@cngx/forms/field/testing';
 import { CngxInputMask } from '../input-mask.directive';
-import {
-  provideInputConfig,
-  withInputAriaLabels,
-  withPhoneDefaultRegion,
-} from '../input-config';
+import { provideInputConfig, withInputAriaLabels, withPhoneDefaultRegion } from '../input-config';
 import { providePhoneMetadata, type CngxPhoneMetadata } from '../phone-metadata';
 import { loadAllMaskPresets } from '../mask-presets/registry';
 import { CngxPhoneInput } from './phone-input.component';
 import { CngxSelect } from '@cngx/forms/select';
 import { provideLocale } from '@cngx/core/utils';
 import { createPhoneCountries, type Country } from './countries';
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
+import { stripBidiIsolates } from '@cngx/testing';
 
 const CNGX_PHONE_COUNTRIES = createPhoneCountries('en-US');
 const FULL_ICU = new Intl.DisplayNames('de', { type: 'region' }).of('AT') === 'Österreich';
@@ -40,9 +38,7 @@ function setup() {
   fixture.detectChanges();
   TestBed.flushEffects();
   const phone = fixture.componentInstance.phone();
-  const mask = fixture.debugElement
-    .query(By.directive(CngxInputMask))
-    .injector.get(CngxInputMask);
+  const mask = fixture.debugElement.query(By.directive(CngxInputMask)).injector.get(CngxInputMask);
   return { fixture, phone, mask };
 }
 
@@ -271,9 +267,7 @@ describe('CngxPhoneInput', () => {
     const reason = fixture.nativeElement.querySelector(
       '.cngx-phone-input__disabled-reason',
     ) as HTMLElement;
-    const input = fixture.nativeElement.querySelector(
-      '.cngx-phone-input__number',
-    ) as HTMLElement;
+    const input = fixture.nativeElement.querySelector('.cngx-phone-input__number') as HTMLElement;
     expect(input.getAttribute('aria-describedby')).toContain(reason.id);
     expect(reason.textContent).toContain('Locked until sign-in');
     expect(reason.getAttribute('aria-hidden')).toBeNull();
@@ -366,7 +360,9 @@ describe('CngxPhoneInput', () => {
 
     const fixture = TestBed.createComponent(BareHost);
     fixture.detectChanges();
-    const mask = fixture.debugElement.query(By.directive(CngxInputMask)).injector.get(CngxInputMask);
+    const mask = fixture.debugElement
+      .query(By.directive(CngxInputMask))
+      .injector.get(CngxInputMask);
     expect(mask.mask()).toBe('phone:DE');
     expect(fixture.componentInstance.phone().country().region).toBe('DE');
   });
@@ -392,7 +388,9 @@ describe('CngxPhoneInput', () => {
     fixture.detectChanges();
     expect(phone.country()).toBe(CNGX_PHONE_COUNTRIES[0]);
     expect(select.value()).toBe(CNGX_PHONE_COUNTRIES[0]);
-    const mask = fixture.debugElement.query(By.directive(CngxInputMask)).injector.get(CngxInputMask);
+    const mask = fixture.debugElement
+      .query(By.directive(CngxInputMask))
+      .injector.get(CngxInputMask);
     expect(mask.mask()).toBe('phone:US');
   });
 
@@ -463,9 +461,12 @@ describe('CngxPhoneInput', () => {
     TestBed.flushEffects();
     fixture.detectChanges();
 
-    const select = fixture.debugElement.query(By.directive(CngxSelect)).componentInstance as CngxSelect<Country>;
+    const select = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<Country>;
     expect(select.value()).toBe(localized[1]);
-    const mask = fixture.debugElement.query(By.directive(CngxInputMask)).injector.get(CngxInputMask);
+    const mask = fixture.debugElement
+      .query(By.directive(CngxInputMask))
+      .injector.get(CngxInputMask);
     expect(mask.mask()).toBe('phone:AT');
   });
 
@@ -486,7 +487,8 @@ describe('CngxPhoneInput', () => {
 
     const fixture = TestBed.createComponent(BoundHost);
     fixture.detectChanges();
-    const select = fixture.debugElement.query(By.directive(CngxSelect)).componentInstance as CngxSelect<Country>;
+    const select = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<Country>;
     expect(select.value()).toBe(localized[1]);
   });
 
@@ -504,7 +506,7 @@ describe('CngxPhoneInput', () => {
       const option = (select.options() ?? []).find(
         (o) => 'value' in o && (o.value as Country).region === region,
       );
-      return option && 'label' in option ? option.label : undefined;
+      return option && 'label' in option ? stripBidiIsolates(option.label) : undefined;
     }
 
     it('keeps the EN labels byte-identical', () => {
@@ -527,6 +529,32 @@ describe('CngxPhoneInput', () => {
       expect(labelFor('AT')).toBe('+43 Austria');
     });
 
+    it('orders the dial code and the country name by the input section', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideCngxI18n(
+            withPartialPack({
+              locale: 'en-US',
+              input: { phoneCountryOption: '{country} ({dialCode})' },
+            }),
+            withDocumentLanguage('off'),
+          ),
+        ],
+      });
+      expect(labelFor('AT')).toBe('Austria (+43)');
+    });
+
+    it('lets withInputAriaLabels place the dial code', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideInputConfig(
+            withInputAriaLabels({ phoneCountryOption: (dial, country) => `${country} ${dial}` }),
+          ),
+        ],
+      });
+      expect(labelFor('AT')).toBe('Austria +43');
+    });
+
     it('shares one list per locale', () => {
       expect(createPhoneCountries('en-US')).toBe(CNGX_PHONE_COUNTRIES);
     });
@@ -541,35 +569,42 @@ describe('CngxPhoneInput', () => {
       expect(labelFor('AT')).toBe('+43 Österreich');
     });
 
-    it.runIf(FULL_ICU)('relabels the unbound list on a locale flip and keeps the country region', () => {
-      const locale = signal('en-US');
-      TestBed.configureTestingModule({ providers: [provideLocale(locale)] });
-      const fixture = TestBed.createComponent(BareHost);
-      fixture.detectChanges();
-      const select = fixture.debugElement.query(By.directive(CngxSelect))
-        .componentInstance as CngxSelect<Country>;
-      const phone = fixture.componentInstance.phone();
-      const before = phone.country();
-      const labelOf = (region: string) => {
-        const option = (select.options() ?? []).find(
-          (o) => 'value' in o && (o.value as Country).region === region,
-        );
-        return option && 'label' in option ? option.label : undefined;
-      };
-      expect(labelOf('AT')).toBe('+43 Austria');
+    it.runIf(FULL_ICU)(
+      'relabels the unbound list on a locale flip and keeps the country region',
+      () => {
+        const locale = signal('en-US');
+        TestBed.configureTestingModule({ providers: [provideLocale(locale)] });
+        const fixture = TestBed.createComponent(BareHost);
+        fixture.detectChanges();
+        const select = fixture.debugElement.query(By.directive(CngxSelect))
+          .componentInstance as CngxSelect<Country>;
+        const phone = fixture.componentInstance.phone();
+        const before = phone.country();
+        const labelOf = (region: string) => {
+          const option = (select.options() ?? []).find(
+            (o) => 'value' in o && (o.value as Country).region === region,
+          );
+          return option && 'label' in option ? stripBidiIsolates(option.label) : undefined;
+        };
+        expect(labelOf('AT')).toBe('+43 Austria');
 
-      locale.set('de');
-      fixture.detectChanges();
-      expect(labelOf('AT')).toBe('+43 Österreich');
-      expect(phone.country()).toBe(before);
-      expect(select.value()?.region).toBe(before.region);
-      expect(select.value()).toBe(createPhoneCountries('de').find((c) => c.region === before.region));
-    });
+        locale.set('de');
+        fixture.detectChanges();
+        expect(labelOf('AT')).toBe('+43 Österreich');
+        expect(phone.country()).toBe(before);
+        expect(select.value()?.region).toBe(before.region);
+        expect(select.value()).toBe(
+          createPhoneCountries('de').find((c) => c.region === before.region),
+        );
+      },
+    );
 
     it('keeps a bound [countries] list on a locale flip', () => {
       const locale = signal('en-US');
       TestBed.configureTestingModule({ providers: [provideLocale(locale)] });
-      const localized: readonly Country[] = [{ region: 'AT', dialCode: '+43', label: 'Österreich' }];
+      const localized: readonly Country[] = [
+        { region: 'AT', dialCode: '+43', label: 'Österreich' },
+      ];
 
       @Component({
         template: `<cngx-phone-input [countries]="countries" />`,

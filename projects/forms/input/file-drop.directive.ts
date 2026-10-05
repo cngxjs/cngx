@@ -10,11 +10,7 @@ import {
   type Signal,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import {
-  CNGX_INPUT_CONFIG,
-  DEFAULT_INPUT_ARIA_LABELS,
-  injectInputAriaLabels,
-} from './input-config';
+import { CNGX_INPUT_CONFIG, injectInputAriaLabels } from './input-config';
 
 /**
  * Describes a file that was rejected during drop/browse validation.
@@ -119,8 +115,7 @@ export class CngxFileDrop {
   readonly ariaLabel = input<string | undefined>(undefined);
 
   protected readonly resolvedAriaLabel = computed(
-    () =>
-      this.ariaLabel() ?? this.ariaLabels().fileDropZone ?? DEFAULT_INPUT_ARIA_LABELS.fileDropZone,
+    () => this.ariaLabel() ?? this.ariaLabels().fileDropZone,
   );
 
   /**

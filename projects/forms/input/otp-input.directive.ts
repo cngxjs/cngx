@@ -10,7 +10,7 @@ import {
   type Signal,
 } from '@angular/core';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
-import { DEFAULT_INPUT_ARIA_LABELS, injectInputAriaLabels } from './input-config';
+import { injectInputAriaLabels } from './input-config';
 
 /**
  * Marks a single input slot within a `[cngxOtpInput]` container.
@@ -58,7 +58,7 @@ export class CngxOtpSlot {
 
   /** Per-slot accessible label, e.g. `'Digit 1 of 6'`. Config-driven, EN default. */
   protected readonly slotLabel = computed(() => {
-    const factory = this.ariaLabels().otpSlot ?? DEFAULT_INPUT_ARIA_LABELS.otpSlot;
+    const factory = this.ariaLabels().otpSlot;
     return factory(this.index(), this.parent.length());
   });
 
@@ -185,9 +185,7 @@ export class CngxOtpInput {
   private readonly valuesState = signal<string[]>([]);
 
   /** Group label announcing the boxes as one control. Config-driven, EN default. */
-  protected readonly groupLabel = computed(
-    () => this.ariaLabels().otpGroup ?? DEFAULT_INPUT_ARIA_LABELS.otpGroup,
-  );
+  protected readonly groupLabel = computed(() => this.ariaLabels().otpGroup);
 
   /** Array of indices for `@for` rendering. */
   readonly indices = computed(() => Array.from({ length: this.length() }, (_, i) => i));
@@ -271,7 +269,7 @@ export class CngxOtpInput {
 
   /** Announces OTP completion to assistive tech. Config-driven, EN default. */
   private announceComplete(): void {
-    this.announcer.announce(this.ariaLabels().otpComplete ?? DEFAULT_INPUT_ARIA_LABELS.otpComplete);
+    this.announcer.announce(this.ariaLabels().otpComplete);
   }
 
   /** Focuses the input at the given index. */

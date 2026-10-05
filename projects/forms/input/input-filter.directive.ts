@@ -1,6 +1,6 @@
 import { Directive, inject, input } from '@angular/core';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
-import { DEFAULT_INPUT_ARIA_LABELS, injectInputAriaLabels } from './input-config';
+import { injectInputAriaLabels } from './input-config';
 
 /**
  * Allowed-character pattern for {@link CngxInputFilter}. The three string
@@ -101,10 +101,7 @@ export class CngxInputFilter {
         if (!this.lastWasRejection) {
           // Announce once per run of rejections; a held disallowed key must not
           // spam the assertive live region. An accepted insertion resets it.
-          this.announcer.announce(
-            this.ariaLabels().inputRejected ?? DEFAULT_INPUT_ARIA_LABELS.inputRejected,
-            'assertive',
-          );
+          this.announcer.announce(this.ariaLabels().inputRejected, 'assertive');
           this.lastWasRejection = true;
         }
         return;

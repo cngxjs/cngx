@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { clamp } from '@cngx/utils';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
-import { injectLocale } from '@cngx/core/utils';
+import { dateTimeFormatterFor, injectLocale } from '@cngx/core/utils';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 import { CNGX_INPUT_CONFIG, type InputConfig } from './input-config';
 import {
@@ -170,7 +170,6 @@ function firstEmptySlot(tokens: MaskToken[], masked: string, placeholder: string
   return tokens.length;
 }
 
-
 /**
  * Inline fallback masks used while a lazily-loaded preset table is still in
  * flight (and as the final default when no region matches).
@@ -213,6 +212,31 @@ function resolveDateFormat(
   return fallback;
 }
 
+const TIME_24 = '00:00';
+const TIME_12 = '00:00 AA';
+
+/**
+ * The time mask of a locale's hour cycle: `h11` / `h12` locales (`en-US`) get
+ * the 12-hour mask with its AM/PM slots, `h23` / `h24` locales (`de`) the
+ * 24-hour mask.
+ * @internal
+ */
+function localeTimePattern(locale: string): string {
+  const { hourCycle } = dateTimeFormatterFor(locale, { hour: 'numeric' }).resolvedOptions();
+  return hourCycle === 'h11' || hourCycle === 'h12' ? TIME_12 : TIME_24;
+}
+
+/** @internal The `time` mask: a pinned `24` / `12` cycle, else the locale's. */
+function timePattern(cycle: string | undefined, locale: string): string {
+  if (cycle === '24') {
+    return TIME_24;
+  }
+  if (cycle === '12') {
+    return TIME_12;
+  }
+  return localeTimePattern(locale);
+}
+
 /**
  * Resolves a preset name to its mask patterns. Built-in region tables arrive
  * lazily via {@link maskPresetTables}; until a table loads, the inline
@@ -243,18 +267,16 @@ function resolvePreset(
       return { patterns: [resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)] };
     case 'date:short':
       return {
-        patterns: [
-          resolveDateFormat(locale, tables.dateShort ?? {}, PRESET_FALLBACKS.dateShort),
-        ],
+        patterns: [resolveDateFormat(locale, tables.dateShort ?? {}, PRESET_FALLBACKS.dateShort)],
       };
     case 'time':
-    case 'time:24':
-      return { patterns: ['00:00'] };
-    case 'time:12':
-      return { patterns: ['00:00 AA'] };
+      // `time:24` / `time:12` pin the cycle; bare `time` follows the locale.
+      return { patterns: [timePattern(parts[1], locale)] };
     case 'datetime':
       return {
-        patterns: [`${resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)} 00:00`],
+        patterns: [
+          `${resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)} ${localeTimePattern(locale)}`,
+        ],
       };
     case 'phone': {
       const raw = phones[region] ?? PRESET_FALLBACKS.phone;
@@ -369,9 +391,10 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * |-|-|-|
  * | `date` | `cngxInputMask="date"` | Locale-aware DD/MM/YYYY or MM/DD/YYYY |
  * | `date:short` | `cngxInputMask="date:short"` | 2-digit year |
- * | `time` / `time:24` | `cngxInputMask="time"` | HH:MM (24h) |
+ * | `time` | `cngxInputMask="time"` | Locale hour cycle: HH:MM AM/PM (`en-US`) or HH:MM (`de`) |
+ * | `time:24` | `cngxInputMask="time:24"` | HH:MM (24h) |
  * | `time:12` | `cngxInputMask="time:12"` | HH:MM AM/PM |
- * | `datetime` | `cngxInputMask="datetime"` | Date + time |
+ * | `datetime` | `cngxInputMask="datetime"` | Locale date + locale-hour-cycle time |
  * | `phone` | `cngxInputMask="phone:CH"` | Country-specific |
  * | `creditcard` | `cngxInputMask="creditcard"` | Amex/Visa/MC auto-switch |
  * | `iban` | `cngxInputMask="iban:CH"` | Country-specific grouping |
@@ -679,7 +702,8 @@ export class CngxInputMask {
       const restoreCaret = el.ownerDocument.activeElement === el;
       el.value = masked;
       if (restoreCaret) {
-        const pos = this.cursorFromRawIndex(this.caretRawIndex, this.tokens()) + this.prefix().length;
+        const pos =
+          this.cursorFromRawIndex(this.caretRawIndex, this.tokens()) + this.prefix().length;
         el.setSelectionRange(pos, pos);
       }
       el.dispatchEvent(new Event('input', { bubbles: true }));

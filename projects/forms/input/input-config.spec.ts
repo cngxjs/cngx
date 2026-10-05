@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CNGX_INPUT_CONFIG,
-  DEFAULT_INPUT_ARIA_LABELS,
   injectInputAriaLabels,
   injectInputConfig,
   type InputConfig,
@@ -31,12 +30,11 @@ describe('withInputAriaLabels', () => {
     expect(coerceSignal(config.ariaLabels)()?.clear).toBe('Leeren');
   });
 
-  it('leaves unset keys undefined so directives fall back to DEFAULT_INPUT_ARIA_LABELS', () => {
+  it('leaves unset keys undefined so readers fall back to the input section', () => {
     const config = resolveIn([provideInputConfig(withInputAriaLabels({ clear: 'Leeren' }))]);
     expect(coerceSignal(config.ariaLabels)()?.copySuccess).toBeUndefined();
-    expect(
-      coerceSignal(config.ariaLabels)()?.copySuccess ?? DEFAULT_INPUT_ARIA_LABELS.copySuccess,
-    ).toBe('Copied');
+    const labels = TestBed.runInInjectionContext(() => injectInputAriaLabels());
+    expect(labels().copySuccess).toBe('Copied');
   });
 
   it('merges successive overrides without dropping prior keys', () => {
@@ -78,13 +76,15 @@ describe('withInputAriaLabels', () => {
   });
 
   it('ships English defaults with an otpSlot factory', () => {
-    expect(DEFAULT_INPUT_ARIA_LABELS.clear).toBe('Clear');
-    expect(DEFAULT_INPUT_ARIA_LABELS.otpGroup).toBe('One-time code');
-    expect(DEFAULT_INPUT_ARIA_LABELS.otpComplete).toBe('Code complete');
-    expect(DEFAULT_INPUT_ARIA_LABELS.copySuccess).toBe('Copied');
-    expect(DEFAULT_INPUT_ARIA_LABELS.copyError).toBe('Copy failed');
-    expect(DEFAULT_INPUT_ARIA_LABELS.otpSlot(0, 6)).toBe('Digit 1 of 6');
-    expect(DEFAULT_INPUT_ARIA_LABELS.otpSlot(5, 6)).toBe('Digit 6 of 6');
+    TestBed.configureTestingModule({ providers: [] });
+    const labels = TestBed.runInInjectionContext(() => injectInputAriaLabels())();
+    expect(labels.clear).toBe('Clear');
+    expect(labels.otpGroup).toBe('One-time code');
+    expect(labels.otpComplete).toBe('Code complete');
+    expect(labels.copySuccess).toBe('Copied');
+    expect(labels.copyError).toBe('Copy failed');
+    expect(labels.otpSlot(0, 6)).toBe('Digit 1 of 6');
+    expect(labels.otpSlot(5, 6)).toBe('Digit 6 of 6');
   });
 });
 

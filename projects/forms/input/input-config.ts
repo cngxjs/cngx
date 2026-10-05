@@ -1,6 +1,12 @@
 import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
+import { createOverrideMerge } from '@cngx/core/utils';
+import {
+  fillInputLabels,
+  injectInputSectionLabels,
+  type CngxResolvedInputAriaLabels,
+} from './i18n/input-i18n';
 import type { MaskTokenMap } from './input-mask.directive';
+import type { PasswordStrengthLabel } from './password-strength.factory';
 
 /**
  * Global configuration for `@cngx/forms/input` directives.
@@ -48,8 +54,8 @@ export interface InputConfig {
   /** Default selected region (ISO key) for `CngxPhoneInput`. Set via `withPhoneDefaultRegion`. */
   readonly phoneDefaultRegion?: string;
   /**
-   * Consumer overrides for the built-in ARIA label strings. Unset keys fall
-   * back to {@link DEFAULT_INPUT_ARIA_LABELS}. Holds a `Signal` once
+   * Consumer overrides for the built-in ARIA label strings. Unset keys read
+   * the `input` section of the active language pack. Holds a `Signal` once
    * `withInputAriaLabels` ran, so the labels follow a runtime language switch.
    */
   readonly ariaLabels?: Partial<InputAriaLabels> | Signal<Partial<InputAriaLabels>>;
@@ -58,9 +64,10 @@ export interface InputConfig {
 /**
  * Consumer-overridable ARIA label strings for `@cngx/forms/input` directives.
  *
- * Library defaults are English ({@link DEFAULT_INPUT_ARIA_LABELS}); supply a
- * partial override via {@link withInputAriaLabels} at the application or
- * component level. Mirrors the select family's `withAriaLabels` idiom.
+ * Unset keys read the `input` section of the active language pack
+ * (`CNGX_INPUT_LANGUAGE_EN` by default); supply a partial override via
+ * {@link withInputAriaLabels} at the application or component level. Mirrors
+ * the select family's `withAriaLabels` idiom.
  *
  * @category forms/input
  */
@@ -69,7 +76,7 @@ export interface InputAriaLabels {
   readonly clear: string;
   /** Group name for the `CngxOtpInput` host (`role="group"`). Default: `'One-time code'` */
   readonly otpGroup: string;
-  /** Per-slot `aria-label` factory for `CngxOtpSlot`. Default: `` `Digit ${index + 1} of ${length}` `` */
+  /** Per-slot `aria-label` factory for `CngxOtpSlot`, `index` 0-based. Default: `'Digit {position} of {count}'` */
   readonly otpSlot: (index: number, length: number) => string;
   /** Live-region announcement when the OTP is fully entered. Default: `'Code complete'` */
   readonly otpComplete: string;
@@ -81,51 +88,41 @@ export interface InputAriaLabels {
   readonly fileDropZone: string;
   /** Assertive live-region warning announced when `CngxCapsLock` detects Caps Lock active. Default: `'Caps Lock is on'` */
   readonly capsLockOn: string;
-  /** Polite live-region template announced by `CngxPasswordStrength` when the strength label changes. Default: `` `Password strength: ${label}` `` */
+  /**
+   * Polite live-region sentence announced by `CngxPasswordStrength` when the
+   * strength level changes. Receives the level word from
+   * {@link passwordStrengthLevel}, not the level key. Default:
+   * `'Password strength: {level}'`
+   */
   readonly passwordStrength: (label: string) => string;
+  /**
+   * The word of a password-strength level key (`weak`, `fair`, `good`,
+   * `strong`), passed on to {@link passwordStrength}. Default: the section's
+   * `passwordStrengthLevel` word (English: the key).
+   */
+  readonly passwordStrengthLevel?: (level: PasswordStrengthLabel) => string;
   /** Assertive live-region announcement when `CngxInputFilter` rejects a disallowed character. Default: `'Character not allowed'` */
   readonly inputRejected: string;
   /** Polite live-region announcement when `CngxSensitiveValue` reveals the value. Default: `'Value revealed'` */
   readonly sensitiveReveal: string;
   /** Polite live-region announcement when `CngxSensitiveValue` hides the value. Default: `'Value hidden'` */
   readonly sensitiveHide: string;
-  /** Live-region announcement factory for `CngxRating` on a committed value. Default: `` (value, max) => `${value} of ${max}` `` */
+  /** Live-region announcement factory for `CngxRating` on a committed value. Default: `'{value} of {max}'` */
   readonly ratingValue: (value: number, max: number) => string;
-  /** Per-star `aria-label` factory for each `CngxRating` radio. Default: `` (step, max) => `${step} of ${max}` `` */
+  /** Per-star `aria-label` factory for each `CngxRating` radio. Default: `'{step} of {max}'` */
   readonly ratingItem: (step: number, max: number) => string;
   /** `aria-label` for the `CngxPhoneInput` country picker. Default: `'Country'` */
   readonly phoneCountry: string;
-  /** Visible `CngxCharCount` readout when a maximum applies. Default: `` (current, max) => `${current}/${max}` `` */
+  /**
+   * One row of the `CngxPhoneInput` country picker: the dial code and the
+   * country name in the order of the language. Default: `'{dialCode} {country}'`
+   */
+  readonly phoneCountryOption?: (dialCode: string, country: string) => string;
+  /** Visible `CngxCharCount` readout when a maximum applies. Default: `'{current}/{max}'` */
   readonly charCountMax?: (current: number, max: number) => string;
-  /** Visible `CngxCharCount` readout when only a minimum applies. Default: `` (current, min) => `${current} (min ${min})` `` */
+  /** Visible `CngxCharCount` readout when only a minimum applies. Default: `'{current} (min {min})'` */
   readonly charCountMin?: (current: number, min: number) => string;
 }
-
-/**
- * English default ARIA labels for `@cngx/forms/input`. Directives read a key
- * as `config.ariaLabels?.<key> ?? DEFAULT_INPUT_ARIA_LABELS.<key>`.
- *
- * @category forms/input
- */
-export const DEFAULT_INPUT_ARIA_LABELS: Required<InputAriaLabels> = {
-  clear: 'Clear',
-  otpGroup: 'One-time code',
-  otpSlot: (index, length) => `Digit ${index + 1} of ${length}`,
-  otpComplete: 'Code complete',
-  copySuccess: 'Copied',
-  copyError: 'Copy failed',
-  fileDropZone: 'File drop zone',
-  capsLockOn: 'Caps Lock is on',
-  passwordStrength: (label) => `Password strength: ${label}`,
-  inputRejected: 'Character not allowed',
-  sensitiveReveal: 'Value revealed',
-  sensitiveHide: 'Value hidden',
-  ratingValue: (value, max) => `${value} of ${max}`,
-  ratingItem: (step, max) => `${step} of ${max}`,
-  phoneCountry: 'Country',
-  charCountMax: (current, max) => `${current}/${max}`,
-  charCountMin: (current, min) => `${current} (min ${min})`,
-};
 
 /**
  * Empty default - every directive falls back to its own default.
@@ -133,7 +130,7 @@ export const DEFAULT_INPUT_ARIA_LABELS: Required<InputAriaLabels> = {
  */
 const DEFAULT_INPUT_CONFIG: InputConfig = {};
 
-/** @internal - shared empty bundle, so every unconfigured reader shares one Signal. */
+/** @internal - shared empty bundle for the first `withInputAriaLabels` merge. */
 const NO_INPUT_ARIA_LABELS: Partial<InputAriaLabels> = {};
 
 /**
@@ -526,10 +523,10 @@ export function withPhoneDefaultRegion(region: string): InputConfigFeature {
 /**
  * Overrides the built-in ARIA label strings the input directives announce.
  *
- * - Unset keys fall back to `DEFAULT_INPUT_ARIA_LABELS` per key, so a partial
- *   override is safe.
- * - Library defaults are English; German (or any locale) is consumer-supplied
- *   here. Mirrors the select family's `withAriaLabels`.
+ * - Unset keys read the `input` section of the active language pack
+ *   (English by default) per key, so a partial override is safe. The
+ *   overrides apply on top of the pack. Mirrors the select family's
+ *   `withAriaLabels`.
  * - Pass a `Signal` to switch the labels at runtime; later features still
  *   merge over earlier ones key by key.
  * - `clear` -> `CngxInputClear` button label.
@@ -537,12 +534,16 @@ export function withPhoneDefaultRegion(region: string): InputConfigFeature {
  * - `otpGroup` / `otpSlot(index, length)` / `otpComplete` -> `CngxOtpInput`
  *   group, per-slot labels, and completion announcement.
  * - `capsLockOn` -> `CngxCapsLock` assertive warning.
- * - `passwordStrength(label)` -> `CngxPasswordStrength` polite announcement.
+ * - `passwordStrength(label)` / `passwordStrengthLevel(level)` ->
+ *   `CngxPasswordStrength` polite announcement and its level word.
  * - `inputRejected` -> `CngxInputFilter` assertive rejection.
  * - `sensitiveReveal` / `sensitiveHide` -> `CngxSensitiveValue` reveal/hide announcements.
  * - `ratingValue(value, max)` -> `CngxRating` polite committed-value announcement.
  * - `ratingItem(step, max)` -> `CngxRating` per-star radio `aria-label`.
- * - `phoneCountry` -> `CngxPhoneInput` country-picker `aria-label`.
+ * - `phoneCountry` / `phoneCountryOption(dialCode, country)` ->
+ *   `CngxPhoneInput` country-picker `aria-label` and its rows.
+ * - `charCountMax(current, max)` / `charCountMin(current, min)` ->
+ *   `CngxCharCount` visible readout.
  *
  * ```typescript
  * provideInputConfig(
@@ -563,12 +564,14 @@ export function withInputAriaLabels(
 }
 
 /**
- * Reads the configured aria labels as a `Signal`, so a reader follows a
- * runtime language switch. Unset keys stay `undefined`; the reader falls back
- * to `DEFAULT_INPUT_ARIA_LABELS` per key.
+ * Reads the resolved aria labels as a `Signal`: the configured overrides over
+ * the `input` section of the active language pack, formatted for the locale of
+ * the reading injector. A key an override leaves unset or `undefined` reads the
+ * section. Read it inside a `computed()`, a template or a handler so a runtime
+ * language switch reaches the label.
  *
  * @internal
  */
-export function injectInputAriaLabels(): Signal<Partial<InputAriaLabels>> {
-  return coerceSignal(inject(CNGX_INPUT_CONFIG).ariaLabels ?? NO_INPUT_ARIA_LABELS);
+export function injectInputAriaLabels(): Signal<CngxResolvedInputAriaLabels> {
+  return fillInputLabels(injectInputSectionLabels(), inject(CNGX_INPUT_CONFIG).ariaLabels);
 }

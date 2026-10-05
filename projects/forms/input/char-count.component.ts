@@ -14,7 +14,7 @@ import {
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { CngxFormFieldPresenter } from '@cngx/forms/field';
-import { DEFAULT_INPUT_ARIA_LABELS, injectInputAriaLabels } from './input-config';
+import { injectInputAriaLabels } from './input-config';
 
 /**
  * Live character counter for text inputs inside a `cngx-form-field`.
@@ -137,11 +137,11 @@ export class CngxCharCount {
     const current = this.currentLength();
     const max = this.resolvedMax();
     if (max != null) {
-      return (labels.charCountMax ?? DEFAULT_INPUT_ARIA_LABELS.charCountMax)(current, max);
+      return labels.charCountMax(current, max);
     }
     const min = this.resolvedMin();
     if (min != null) {
-      return (labels.charCountMin ?? DEFAULT_INPUT_ARIA_LABELS.charCountMin)(current, min);
+      return labels.charCountMin(current, min);
     }
     return null;
   });

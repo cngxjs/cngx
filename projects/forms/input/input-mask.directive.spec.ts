@@ -667,11 +667,40 @@ describe('CngxInputMask', () => {
       expect(input.value).toContain('.');
     });
 
-    it('should resolve "time" preset', () => {
-      const { input, directive, fixture } = setup({ mask: 'time' });
+    it('should resolve "time:24" preset', () => {
+      const { input, directive, fixture } = setup({ mask: 'time:24' });
       typeSequence(input, '1430', directive, fixture);
       expect(input.value).toBe('14:30');
       expect(directive.isComplete()).toBe(true);
+    });
+
+    it('resolves "time" to the 24-hour mask for an h23 locale (de)', () => {
+      const { input, directive, fixture } = setup({ mask: 'time', locale: 'de' });
+      expect(directive.currentPattern()).toBe('00:00');
+      typeSequence(input, '1430', directive, fixture);
+      expect(input.value).toBe('14:30');
+      expect(directive.isComplete()).toBe(true);
+    });
+
+    it('resolves "time" to the 12-hour mask for an h12 locale (en-US)', () => {
+      const { directive } = setup({ mask: 'time', locale: 'en-US' });
+      expect(directive.currentPattern()).toBe('00:00 AA');
+    });
+
+    it('resolves the time part of "datetime" by the locale hour cycle', () => {
+      expect(setup({ mask: 'datetime', locale: 'en-US' }).directive.currentPattern()).toBe(
+        '00/00/0000 00:00 AA',
+      );
+      TestBed.resetTestingModule();
+      expect(setup({ mask: 'datetime', locale: 'de' }).directive.currentPattern()).toBe(
+        '00.00.0000 00:00',
+      );
+    });
+
+    it('keeps "time:12" and "time:24" fixed whatever the locale', () => {
+      expect(setup({ mask: 'time:12', locale: 'de' }).directive.currentPattern()).toBe('00:00 AA');
+      TestBed.resetTestingModule();
+      expect(setup({ mask: 'time:24', locale: 'en-US' }).directive.currentPattern()).toBe('00:00');
     });
 
     it('should resolve "iban:CH" preset and accept letters + digits', () => {
