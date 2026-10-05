@@ -58,6 +58,30 @@ export type CngxCommandMatcher = (
  * @since 0.1.0
  */
 export function createDefaultCommandMatcher(locale?: Signal<string>): CngxCommandMatcher {
+  // Folded label and keywords per command, re-folded only when the label, the
+  // keywords array or the locale changes - not on every keystroke.
+  const folded = new WeakMap<CngxCommand, FoldedCommand>();
+  const foldedFor = (command: CngxCommand, activeLocale: string | undefined): FoldedCommand => {
+    const hit = folded.get(command);
+    if (
+      hit !== undefined &&
+      hit.locale === activeLocale &&
+      hit.sourceLabel === command.label &&
+      hit.sourceKeywords === command.keywords
+    ) {
+      return hit;
+    }
+    const entry: FoldedCommand = {
+      locale: activeLocale,
+      sourceLabel: command.label,
+      sourceKeywords: command.keywords,
+      label: foldForMatching(command.label, activeLocale),
+      keywords: (command.keywords ?? []).map((keyword) => foldForMatching(keyword, activeLocale)),
+    };
+    folded.set(command, entry);
+    return entry;
+  };
+
   return (commands, term, scope) => {
     const scoped = scope ? commands.filter((command) => command.group === scope) : commands;
     const activeLocale = locale?.();
@@ -68,7 +92,7 @@ export function createDefaultCommandMatcher(locale?: Signal<string>): CngxComman
 
     const ranked: CngxRankedCommand[] = [];
     for (const command of scoped) {
-      const score = scoreCommand(command, query, activeLocale);
+      const score = scoreCommand(foldedFor(command, activeLocale), query);
       if (score > 0) {
         ranked.push({ command, score });
       }
@@ -80,9 +104,17 @@ export function createDefaultCommandMatcher(locale?: Signal<string>): CngxComman
   };
 }
 
-/** @internal Scores one command against a folded query; `0` means no match. */
-function scoreCommand(command: CngxCommand, query: string, locale: string | undefined): number {
-  const label = foldForMatching(command.label, locale);
+/** @internal A command's label and keywords, folded for one locale. */
+interface FoldedCommand {
+  readonly locale: string | undefined;
+  readonly sourceLabel: string;
+  readonly sourceKeywords: CngxCommand['keywords'];
+  readonly label: string;
+  readonly keywords: readonly string[];
+}
+
+/** @internal Scores one folded command against a folded query; `0` means no match. */
+function scoreCommand({ label, keywords }: FoldedCommand, query: string): number {
   if (label === query) {
     return 100;
   }
@@ -92,8 +124,7 @@ function scoreCommand(command: CngxCommand, query: string, locale: string | unde
   if (label.includes(query)) {
     return 60;
   }
-  for (const keyword of command.keywords ?? []) {
-    const value = foldForMatching(keyword, locale);
+  for (const value of keywords) {
     if (value === query) {
       return 50;
     }

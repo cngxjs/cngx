@@ -57,6 +57,18 @@ describe('createDefaultCommandMatcher', () => {
     expect(match(commands, 'CAFE').map((r) => r.command.id)).toEqual(['c']);
     expect(match(commands, 'ÜBER UNS')[0].score).toBe(100);
   });
+
+  it('ranks the same across keystrokes and follows a relabelled command object', () => {
+    const save = cmd('save', { label: 'Save', keywords: ['store'] });
+    const open = cmd('open', { label: 'Open' });
+    const commands = [save, open];
+    expect(match(commands, 'sa').map((r) => r.command.id)).toEqual(['save']);
+    expect(match(commands, 'sav').map((r) => r.command.id)).toEqual(['save']);
+    expect(match(commands, 'sto').map((r) => r.command.id)).toEqual(['save']);
+    (save as { label: string }).label = 'Speichern';
+    expect(match(commands, 'sp').map((r) => r.command.id)).toEqual(['save']);
+    expect(match(commands, 'sa')).toEqual([]);
+  });
 });
 
 describe('CNGX_COMMAND_MATCH_FACTORY', () => {
