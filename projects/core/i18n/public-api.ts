@@ -25,3 +25,8 @@ export {
   type CngxCompleteLanguagePack,
   type CngxI18nFeature,
 } from './provide-i18n';
+export {
+  createSectionBundle,
+  type CngxSectionBundle,
+  type CngxSectionBundleOptions,
+} from './section-bundle';
