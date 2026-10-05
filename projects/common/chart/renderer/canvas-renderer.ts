@@ -1,6 +1,7 @@
 import { type CngxChartContext } from '../chart/chart-context';
 import { type LayerGeometry } from '../layers/chart-layer';
 import { type ChartRendererDeps, type CngxChartRenderer } from './chart-renderer';
+import { type ForcedSystemColors, resolveSystemColors } from './forced-series';
 
 /**
  * @internal Per-kind CSS custom-property fallback chain, resolved when a
@@ -70,6 +71,11 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   let dprCleanup: (() => void) | null = null;
   const colorCache = new Map<string, string>();
   const numberCache = new Map<string, number>();
+  // Snapshot of deps.forcedColors, taken once per paint() so the per-mark
+  // colour lookups do not re-read the signal.
+  let forcedNow = false;
+  // Forced system palette; cleared with colorCache so a flip re-probes it.
+  let sysColors: ForcedSystemColors | null = null;
 
   function readVar(name: string): string {
     return hostEl ? getComputedStyle(hostEl).getPropertyValue(name).trim() : '';
@@ -92,7 +98,21 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     return value;
   }
 
+  /**
+   * The forced system palette, probed once per palette and dropped by
+   * `invalidateColorCache()`, so a forced-colors flip re-probes it.
+   */
+  function systemColors(): ForcedSystemColors {
+    sysColors ??= hostEl ? resolveSystemColors(hostEl) : { ink: 'CanvasText', canvas: 'Canvas' };
+    return sysColors;
+  }
+
   function colorOf(color: string | null, kind: LayerGeometry['kind']): string {
+    // Forced colors: every mark paints CanvasText, ignoring the [color]
+    // literal and the var chain (parity with the layers' !important rules).
+    if (forcedNow) {
+      return systemColors().ink;
+    }
     // An explicit literal color (e.g. [cngxLine] [color]="'#f00'") passes
     // through untouched - no var resolution, no cache.
     if (color !== null && !color.startsWith('--')) {
@@ -225,6 +245,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
       return;
     }
     sizeCanvas();
+    forcedNow = deps.forcedColors?.() ?? false;
     const { width, height } = deps.ctx.dimensions();
     c.clearRect(0, 0, width, height);
     for (const g of geometries) {
@@ -291,6 +312,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   function invalidateColorCache(): void {
     colorCache.clear();
     numberCache.clear();
+    sysColors = null;
   }
 
   function destroy(): void {
@@ -305,6 +327,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     lastH = -1;
     colorCache.clear();
     numberCache.clear();
+    sysColors = null;
   }
 
   return {

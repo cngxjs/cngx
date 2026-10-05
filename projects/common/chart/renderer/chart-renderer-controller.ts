@@ -1,5 +1,7 @@
 import { type DestroyRef, effect, linkedSignal, type Signal, untracked } from '@angular/core';
 
+import { createMediaQuerySignal } from '@cngx/core/utils';
+
 import { type CngxChartContext } from '../chart/chart-context';
 import { dimensionsEqual } from '../chart/equal-helpers';
 import { type LayerGeometry } from '../layers/chart-layer';
@@ -35,9 +37,13 @@ export interface CngxChartRendererController {
  *
  * - **mount** - tracks `mode()`; on change, destroys the previous backend,
  *   builds the new one via `factory`, mounts it, and seeds the first paint.
- * - **paint** - tracks `geometries()` and the (structurally-deduped)
- *   dimensions; repaints on every geometry emission and invalidates the
- *   backend's color cache when the dimensions actually change.
+ * - **paint** - tracks `geometries()`, the (structurally-deduped)
+ *   dimensions and the `(forced-colors: active)` /
+ *   `(prefers-color-scheme: dark)` media queries; repaints on every
+ *   geometry emission and invalidates the backend's color cache when the
+ *   dimensions or either media query actually change, so a contrast-theme
+ *   or OS colour-scheme switch repaints at once instead of after the next
+ *   resize.
  *
  * Both effects wrap their imperative renderer calls in `untracked()` so
  * the renderer's own signal reads never feed back into the effect graph.
@@ -65,6 +71,12 @@ export function createChartRendererController(
   const dims = linkedSignal(() => deps.ctx.dimensions(), { equal: dimensionsEqual });
   let lastDims = untracked(dims);
 
+  const view = deps.host.ownerDocument.defaultView;
+  const forced = createMediaQuerySignal('(forced-colors: active)', deps.destroyRef, view);
+  const darkScheme = createMediaQuerySignal('(prefers-color-scheme: dark)', deps.destroyRef, view);
+  let lastForced = untracked(forced);
+  let lastDark = untracked(darkScheme);
+
   // Mount effect: rebuild the backend whenever the mode flips, then seed
   // the first paint (the paint effect does not track `mode`, so the fresh
   // backend would otherwise stay blank until the next geometry change).
@@ -72,20 +84,30 @@ export function createChartRendererController(
     const mode = deps.mode();
     untracked(() => {
       current?.destroy();
-      current = deps.factory(mode, { ctx: deps.ctx, destroyRef: deps.destroyRef });
+      current = deps.factory(mode, {
+        ctx: deps.ctx,
+        destroyRef: deps.destroyRef,
+        forcedColors: forced,
+      });
       current.mount(deps.host, deps.ctx);
       current.paint(deps.geometries());
     });
   });
 
   // Paint effect: repaint on geometry change; invalidate the color cache
-  // only when the deduped dimensions actually changed.
+  // only when the deduped dimensions or a palette media query actually
+  // changed (a palette flip re-resolves colors like a theming reflow).
   effect(() => {
     const geometries = deps.geometries();
     const nextDims = dims();
+    const nextForced = forced();
+    const nextDark = darkScheme();
     untracked(() => {
-      if (nextDims !== lastDims) {
+      const paletteChanged = nextForced !== lastForced || nextDark !== lastDark;
+      if (nextDims !== lastDims || paletteChanged) {
         lastDims = nextDims;
+        lastForced = nextForced;
+        lastDark = nextDark;
         current?.invalidateColorCache?.();
       }
       current?.paint(geometries);

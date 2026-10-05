@@ -1,0 +1,251 @@
+import { signal, type DestroyRef, type WritableSignal } from '@angular/core';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { type CngxChartContext } from '../chart/chart-context';
+import { type LayerGeometry } from '../layers/chart-layer';
+import { createCanvasRenderer } from './canvas-renderer';
+import { type ChartRendererDeps, type CngxChartRenderer } from './chart-renderer';
+
+const INK = 'rgb(1, 2, 3)';
+const PAPER = 'rgb(250, 251, 252)';
+const AUTHOR = 'rgb(200, 0, 0)';
+
+interface Recorded {
+  readonly op: string;
+  readonly args?: readonly unknown[];
+  readonly value?: unknown;
+}
+
+const METHODS = [
+  'clearRect',
+  'stroke',
+  'strokeRect',
+  'fill',
+  'fillRect',
+  'beginPath',
+  'moveTo',
+  'lineTo',
+  'arc',
+  'setLineDash',
+  'setTransform',
+] as const;
+
+const PROPS = ['strokeStyle', 'fillStyle', 'lineWidth', 'globalAlpha', 'lineJoin', 'lineCap'];
+
+/** Fake 2D context that records every method call and style assignment in order. */
+function makeRecorder(): { ctx: CanvasRenderingContext2D; calls: Recorded[] } {
+  const calls: Recorded[] = [];
+  const state: Record<string, unknown> = {
+    strokeStyle: '',
+    fillStyle: '',
+    lineWidth: 0,
+    globalAlpha: 1,
+    lineJoin: '',
+    lineCap: '',
+  };
+  const ctx: Record<string, unknown> = {};
+  for (const m of METHODS) {
+    ctx[m] = vi.fn((...args: unknown[]) => {
+      calls.push({ op: m, args });
+    });
+  }
+  for (const p of PROPS) {
+    Object.defineProperty(ctx, p, {
+      get: () => state[p],
+      set: (value: unknown) => {
+        state[p] = value;
+        calls.push({ op: `set:${p}`, value });
+      },
+    });
+  }
+  return { ctx: ctx as unknown as CanvasRenderingContext2D, calls };
+}
+
+const LINE: LayerGeometry = {
+  kind: 'line',
+  d: 'M 0 0 L 10 10',
+  color: '#00ff00',
+  strokeWidth: null,
+  fill: 'none',
+  points: [{ cx: 5, cy: 5 }],
+};
+const AREA: LayerGeometry = {
+  kind: 'area',
+  d: 'M 0 0 L 10 10 Z',
+  color: null,
+  strokeWidth: null,
+  fill: null,
+  opacity: 0.4,
+};
+const AREA_VAR_OPACITY: LayerGeometry = { ...AREA, opacity: null };
+const BAR: LayerGeometry = {
+  kind: 'bar',
+  rects: [{ x: 0, y: 0, w: 5, h: 10, color: '#0000ff' }],
+};
+const SCATTER: LayerGeometry = {
+  kind: 'scatter',
+  marks: [{ cx: 3, cy: 3, r: 2, color: null }],
+};
+const THRESHOLD: LayerGeometry = {
+  kind: 'threshold',
+  x1: 0,
+  y1: 5,
+  x2: 100,
+  y2: 5,
+  color: null,
+  dashed: true,
+} as LayerGeometry;
+const BAND: LayerGeometry = {
+  kind: 'band',
+  x: 0,
+  y: 0,
+  w: 100,
+  h: 10,
+  color: null,
+  opacity: null,
+} as LayerGeometry;
+
+let rec: ReturnType<typeof makeRecorder>;
+let forced: WritableSignal<boolean>;
+let gcs: ReturnType<typeof vi.spyOn>;
+
+function deps(): ChartRendererDeps {
+  const ctx = {
+    dimensions: signal({ width: 100, height: 50 }),
+    renderSvg: signal(true),
+  } as unknown as CngxChartContext;
+  const destroyRef = { onDestroy: vi.fn() } as unknown as DestroyRef;
+  return { ctx, destroyRef, forcedColors: forced };
+}
+
+function mounted(): CngxChartRenderer {
+  const d = deps();
+  const renderer = createCanvasRenderer(d);
+  renderer.mount(document.createElement('div'), d.ctx);
+  rec.calls.length = 0;
+  return renderer;
+}
+
+function styles(op: 'set:strokeStyle' | 'set:fillStyle'): unknown[] {
+  return rec.calls.filter((c) => c.op === op).map((c) => c.value);
+}
+
+/** Mount, paint once, return the recorded calls of that paint. */
+function paintTrace(geometries: readonly LayerGeometry[]): Recorded[] {
+  const renderer = mounted();
+  renderer.paint(geometries);
+  return rec.calls.map((c) => ({ ...c }));
+}
+
+beforeEach(() => {
+  rec = makeRecorder();
+  forced = signal(true);
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(rec.ctx);
+  class FakePath2D {
+    constructor(readonly d?: string) {}
+  }
+  vi.stubGlobal('Path2D', FakePath2D);
+  // Probe span: CanvasText / Canvas resolve to the fixture palette; host
+  // custom properties resolve to an author colour and an opacity token.
+  gcs = vi.spyOn(window, 'getComputedStyle').mockImplementation(
+    (el: Element) =>
+      ({
+        color: (el as HTMLElement).style.color === 'canvas' ? PAPER : INK,
+        getPropertyValue: (name: string) => {
+          if (name === '--cngx-area-opacity') {
+            return '0.25';
+          }
+          return name.startsWith('--cngx-') && name.endsWith('-opacity') ? '' : AUTHOR;
+        },
+      }) as unknown as CSSStyleDeclaration,
+  );
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
+
+describe('createCanvasRenderer under forced colors', () => {
+  it('paints every stroke and fill in the probed ink', () => {
+    const renderer = mounted();
+    renderer.paint([LINE, AREA, BAR, SCATTER, THRESHOLD, BAND]);
+
+    const all = [...styles('set:strokeStyle'), ...styles('set:fillStyle')];
+    expect(all.length).toBeGreaterThan(0);
+    for (const value of all) {
+      expect(value).toBe(INK);
+    }
+  });
+
+  it('ignores a literal [color] on line and bar', () => {
+    const renderer = mounted();
+    renderer.paint([LINE, BAR]);
+    expect(styles('set:strokeStyle')).not.toContain('#00ff00');
+    expect(styles('set:fillStyle')).not.toContain('#0000ff');
+  });
+
+  it('keeps the area opacity from the input, then from the token', () => {
+    const renderer = mounted();
+    renderer.paint([AREA]);
+    expect(rec.calls.find((c) => c.op === 'set:globalAlpha')?.value).toBe(0.4);
+
+    rec.calls.length = 0;
+    renderer.paint([AREA_VAR_OPACITY]);
+    expect(rec.calls.find((c) => c.op === 'set:globalAlpha')?.value).toBe(0.25);
+  });
+
+  it('keeps the threshold dash', () => {
+    const renderer = mounted();
+    renderer.paint([THRESHOLD]);
+    const dashes = rec.calls.filter((c) => c.op === 'setLineDash').map((c) => c.args?.[0]);
+    expect(dashes[0]).toEqual([4, 3]);
+  });
+
+  it('paints exactly as before when the signal reads false', () => {
+    const fixture = [LINE, AREA, BAR, SCATTER, THRESHOLD, BAND];
+    forced.set(false);
+    const normal = paintTrace(fixture);
+
+    // The same paint with no forcedColors in the deps at all: the pre-forced baseline.
+    rec = makeRecorder();
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(rec.ctx);
+    const d = deps();
+    const baseline = createCanvasRenderer({ ctx: d.ctx, destroyRef: d.destroyRef });
+    baseline.mount(document.createElement('div'), d.ctx);
+    rec.calls.length = 0;
+    baseline.paint(fixture);
+
+    expect(normal).toEqual(rec.calls);
+    expect(styles('set:fillStyle')).toContain('#0000ff');
+  });
+
+  it('probes the palette once and reads no style between paint 2 and paint 10', () => {
+    const renderer = mounted();
+    renderer.paint([LINE, BAR]);
+    renderer.paint([LINE, BAR]);
+    const afterSecond = gcs.mock.calls.length;
+    for (let i = 3; i <= 10; i++) {
+      renderer.paint([LINE, BAR]);
+    }
+    expect(gcs.mock.calls.length).toBe(afterSecond);
+  });
+
+  it('re-probes the palette after invalidateColorCache', () => {
+    const renderer = mounted();
+    renderer.paint([LINE]);
+    const afterFirst = gcs.mock.calls.length;
+    renderer.invalidateColorCache?.();
+    renderer.paint([LINE]);
+    expect(gcs.mock.calls.length).toBeGreaterThan(afterFirst);
+  });
+
+  it('leaves no probe element in the host', () => {
+    const d = deps();
+    const renderer = createCanvasRenderer(d);
+    const host = document.createElement('div');
+    renderer.mount(host, d.ctx);
+    renderer.paint([LINE]);
+    expect(host.querySelector('span')).toBeNull();
+  });
+});
