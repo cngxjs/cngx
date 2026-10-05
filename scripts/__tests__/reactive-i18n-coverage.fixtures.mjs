@@ -318,7 +318,7 @@ export const COPY_TOKENS = [
     token: 'CNGX_TREETABLE_CONFIG',
     kind: 'config',
     copyKeys: ['labels'],
-    settingsKeys: ['highlightRowOnHover', 'capitaliseHeader', 'templates'],
+    settingsKeys: ['highlightRowOnHover', 'templates'],
   },
   {
     token: 'CNGX_FEEDBACK_I18N',

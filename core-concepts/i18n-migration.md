@@ -220,6 +220,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `TreetableLabels` gains two optional keys: `columnLabels`, the column header labels by column key, and `unlabeledColumn: (position) => string`, the header of a column without a label (English `'Column {position}'`). Both default to the `treetable` section of the language pack; `columnLabels` from `withTreetableLabels` merges key by key over the pack's.
 - The internal English label bundle is gone; every English treetable string comes from the new `CNGX_TREETABLE_LANGUAGE_EN` export, the `treetable` section of the language pack.
 - `sortTree(nodes, field, direction, locale?)` takes the collation locale as an optional fourth argument. Pass the use-site locale, `sortTree(nodes, 'name', 'asc', injectLocale()())`; without it the runtime default collation applies as before.
+- `withCapitaliseHeaders` is removed, and so is the `capitaliseHeader` key of `TreetableConfig` and `CngxTreetableOptions`. It only switched the case of the column key a development build shows for a column without a label; production builds never show that key. Delete the call and the option; development builds now always capitalise the key.
 
 ---
 
@@ -307,7 +308,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/data-display/treetable
 
 - The treetable copy comes from the `treetable` section of the language pack; `withTreetableLabels` still wins key by key, also on top of a pack. English output is unchanged apart from the points below.
-- A column without a `columnLabels` entry and without a `*cngxHeader` template no longer shows its data key in production builds: the header reads `unlabeledColumn` (`Column 2`). Development builds still show the key (capitalised unless `capitaliseHeader` is `false`) and warn once per key. Give every column a label through `withTreetableLabels({ columnLabels: { name: 'Name' } })`, the `treetable.columnLabels` of your language pack, or a `*cngxHeader` template. `capitaliseHeader` now only affects that development fallback.
+- A column without a `columnLabels` entry and without a `*cngxHeader` template no longer shows its data key in production builds: the header reads `unlabeledColumn` (`Column 2`). Development builds still show the key, capitalised, and warn once per key. Give every column a label through `withTreetableLabels({ columnLabels: { name: 'Name' } })`, the `treetable.columnLabels` of your language pack, or a `*cngxHeader` template.
 - The default cell formats numbers and dates with the treetable's locale: `1234.5` renders `1,234.5` in English and `1.234,5` in German (at most three fraction digits), and a `Date` renders as `Oct 5, 2026` instead of `Date.toString()`; an invalid date renders empty. A `*cngxCell` template still receives the raw value.
 - The select-all announcements format the count with the locale: `1,200 rows selected` where English said `1200 rows selected`.
 

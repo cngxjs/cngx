@@ -35,14 +35,6 @@ export interface TreetableConfig {
    */
   highlightRowOnHover?: boolean;
   /**
-   * When `true`, the column key a dev build shows for a column without a
-   * label has its first letter uppercased. Labels from `columnLabels` are
-   * shown as written. Set per-instance via `options.capitaliseHeader` to
-   * override.
-   * @defaultValue `true`
-   */
-  capitaliseHeader?: boolean;
-  /**
    * App-wide copy overrides for every built-in string the treetable
    * renders or announces. Unset keys fall back to the English library
    * defaults. Register via {@link withTreetableLabels}; holds a `Signal`
@@ -179,8 +171,7 @@ export const CNGX_TREETABLE_CONFIG = new InjectionToken<TreetableConfig>('CNGX_T
  * bootstrapApplication(AppComponent, {
  *   providers: [
  *     provideTreetable(
- *       withHighlightOnHover(),       // turn hover-highlight on app-wide
- *       withCapitaliseHeaders(false), // keep raw dev header keys app-wide
+ *       withHighlightOnHover(), // turn hover-highlight on app-wide
  *     ),
  *   ],
  * });
@@ -292,21 +283,4 @@ export function withTreetableLabels(
  */
 export function withTreetableTemplates(templates: TreetableTemplates): TreetableFeature {
   return { _apply: (c) => ({ ...c, templates: { ...c.templates, ...templates } }) };
-}
-
-/**
- * Feature: auto-capitalisation of the column key a dev build shows as the
- * header of a column without a label.
- *
- * The library default for `capitaliseHeader` is `true`. Use
- * `withCapitaliseHeaders(false)` to *opt out* and show the raw column key
- * in dev. Production builds never show the key: a column without a
- * `columnLabels` entry or `*cngxHeader` template reads `unlabeledColumn`.
- *
- * @param enabled - Capitalise on/off. Default `true`.
- *
- * @category data-display/treetable
- */
-export function withCapitaliseHeaders(enabled = true): TreetableFeature {
-  return { _apply: (c) => ({ ...c, capitaliseHeader: enabled }) };
 }

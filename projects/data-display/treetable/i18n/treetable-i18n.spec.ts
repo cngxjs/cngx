@@ -143,14 +143,14 @@ describe('treetable default header', () => {
   };
 
   it('reads the column label in every build', () => {
-    expect(columnHeaderFor('name', 1, en, true, true)).toBe('Full name');
-    expect(columnHeaderFor('name', 1, en, true, false)).toBe('Full name');
+    expect(columnHeaderFor('name', 1, en, true)).toBe('Full name');
+    expect(columnHeaderFor('name', 1, en, false)).toBe('Full name');
   });
 
-  it('shows the key only in a dev build, never in production', () => {
-    expect(columnHeaderFor('fileSize', 2, en, true, true)).toBe('FileSize');
-    expect(columnHeaderFor('fileSize', 2, en, false, true)).toBe('fileSize');
-    const production = columnHeaderFor('fileSize', 2, en, true, false);
+  it('shows the capitalised key only in a dev build, never in production', () => {
+    expect(columnHeaderFor('fileSize', 2, en, true)).toBe('FileSize');
+    expect(columnHeaderFor('Size', 2, en, true)).toBe('Size');
+    const production = columnHeaderFor('fileSize', 2, en, false);
     expect(production).toBe('Column 2');
     expect(production.toLowerCase()).not.toContain('filesize');
   });

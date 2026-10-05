@@ -5,7 +5,6 @@ export {
   provideTreetableAt,
   CNGX_TREETABLE_CONFIG,
   withHighlightOnHover,
-  withCapitaliseHeaders,
   withTreetableLabels,
   withTreetableTemplates,
 } from './treetable.token';

@@ -180,7 +180,7 @@ export function formatCellValue(value: unknown, locale: string): unknown {
 
 /**
  * The default header of a data column: its `columnLabels` entry, else in a
- * dev build the column key (capitalised when `capitaliseKey`), else the
+ * dev build the capitalised column key, else the
  * `unlabeledColumn` text for its 1-based `position`. Never the key in
  * production.
  *
@@ -193,7 +193,6 @@ export function columnHeaderFor(
     readonly columnLabels: Readonly<Record<string, string>>;
     readonly unlabeledColumn: (position: number) => string;
   },
-  capitaliseKey: boolean,
   devMode: boolean,
 ): string {
   const label = labels.columnLabels[key];
@@ -201,7 +200,7 @@ export function columnHeaderFor(
     return label;
   }
   if (devMode) {
-    return capitaliseKey ? capitalise(key) : key;
+    return capitalise(key);
   }
   return labels.unlabeledColumn(position);
 }

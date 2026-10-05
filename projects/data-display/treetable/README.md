@@ -105,7 +105,6 @@ Per-instance display options:
 interface TreetableOptions<T> {
   highlightRowOnHover?: boolean;              // Visual hover effect
   customColumnOrder?: readonly (keyof T & string)[]; // Column ordering
-  capitaliseHeader?: boolean;                 // Uppercase the dev-only key header
 }
 ```
 
@@ -213,20 +212,19 @@ Configure application-wide defaults:
 ```typescript
 bootstrapApplication(AppComponent, {
   providers: [
-    provideTreetable(withHighlightOnHover(), withCapitaliseHeaders()),
+    provideTreetable(withHighlightOnHover()),
   ],
 });
 ```
 
 `provideTreetable(...features)` takes composable features, not an options
-object: `withHighlightOnHover()`, `withCapitaliseHeaders()`,
-`withTreetableLabels({ ... })` and `withTreetableTemplates({ ... })`.
+object: `withHighlightOnHover()`, `withTreetableLabels({ ... })` and `withTreetableTemplates({ ... })`.
 Per-instance `options` input overrides these defaults.
 
 Column headers come from `columnLabels` (`withTreetableLabels({ columnLabels: { name: 'Name' } })`
 or the `treetable` section of the language pack) or a `*cngxHeader` template.
 A column without either shows `Column 2` in production; dev builds show the
-data key and warn once per key. Default cells format numbers and dates with
+capitalised data key and warn once per key. Default cells format numbers and dates with
 the treetable's locale. `sortTree(nodes, field, direction, locale)` collates
 with the locale you pass.
 

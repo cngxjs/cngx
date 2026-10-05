@@ -554,9 +554,6 @@ export class CngxTreetable<T = unknown> {
         if (a.highlightRowOnHover !== b.highlightRowOnHover) {
           return false;
         }
-        if (a.capitaliseHeader !== b.capitaliseHeader) {
-          return false;
-        }
         const ac = a.customColumnOrder;
         const bc = b.customColumnOrder;
         if (ac === bc) {
@@ -577,13 +574,9 @@ export class CngxTreetable<T = unknown> {
    */
   protected readonly headerLabels = computed(() => {
     const labels = this.labels();
-    const capitaliseKey = this.resolvedOptions().capitaliseHeader !== false;
     const dev = isDevBuild();
     return new Map(
-      this.columns().map((col, index) => [
-        col,
-        columnHeaderFor(col, index + 1, labels, capitaliseKey, dev),
-      ]),
+      this.columns().map((col, index) => [col, columnHeaderFor(col, index + 1, labels, dev)]),
     );
   });
 
