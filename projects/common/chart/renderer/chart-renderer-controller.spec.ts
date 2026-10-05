@@ -1,10 +1,16 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
+import { createMatchMediaMock, type MatchMediaMock } from '@cngx/testing';
 
 import { type CngxChartContext } from '../chart/chart-context';
 import { type LayerGeometry } from '../layers/chart-layer';
-import { type CngxChartRenderer, type CngxChartRendererFactory } from './chart-renderer';
+import {
+  type ChartRendererDeps,
+  type CngxChartRenderer,
+  type CngxChartRendererFactory,
+} from './chart-renderer';
 import {
   createChartRendererController,
   type CngxChartRendererController,
@@ -27,9 +33,11 @@ class ControllerHost {
   readonly dims = signal({ width: 100, height: 50 });
   readonly factoryCalls: Array<'svg' | 'canvas'> = [];
   readonly renderers: RendererSpy[] = [];
+  readonly depsSeen: ChartRendererDeps[] = [];
 
-  readonly factory: CngxChartRendererFactory = (mode) => {
+  readonly factory: CngxChartRendererFactory = (mode, deps) => {
     this.factoryCalls.push(mode);
+    this.depsSeen.push(deps);
     const spy: RendererSpy = {
       mode,
       mount: vi.fn(),
@@ -115,5 +123,65 @@ describe('createChartRendererController', () => {
     const r = host.last;
     fixture.destroy();
     expect(r.destroy).toHaveBeenCalled();
+  });
+});
+
+describe('createChartRendererController palette media queries', () => {
+  const FORCED = '(forced-colors: active)';
+  const DARK = '(prefers-color-scheme: dark)';
+  let mm: MatchMediaMock;
+  let fixture: ReturnType<typeof TestBed.createComponent<ControllerHost>>;
+  let host: ControllerHost;
+
+  beforeEach(() => {
+    mm = createMatchMediaMock(false);
+    mm.install(window);
+    mm.trigger(true, FORCED);
+    TestBed.configureTestingModule({ imports: [ControllerHost] });
+    fixture = TestBed.createComponent(ControllerHost);
+    TestBed.tick();
+    host = fixture.componentInstance;
+  });
+
+  it('hands the backend a forcedColors signal seeded from the media query', () => {
+    expect(host.depsSeen[0].forcedColors?.()).toBe(true);
+  });
+
+  it.each([
+    ['forced-colors', FORCED, false],
+    ['colour-scheme', DARK, true],
+  ])('invalidates once and paints once on a %s flip', (_label, query, matches) => {
+    const r = host.last;
+    const invBefore = r.invalidateColorCache.mock.calls.length;
+    const paintBefore = r.paint.mock.calls.length;
+
+    mm.trigger(matches, query);
+    TestBed.tick();
+
+    expect(r.invalidateColorCache.mock.calls.length).toBe(invBefore + 1);
+    expect(r.paint.mock.calls.length).toBe(paintBefore + 1);
+    const invOrder = r.invalidateColorCache.mock.invocationCallOrder.at(-1) ?? 0;
+    const paintOrder = r.paint.mock.invocationCallOrder.at(-1) ?? 0;
+    expect(invOrder).toBeLessThan(paintOrder);
+  });
+
+  it('reflects a forced-colors flip in the signal the backend holds', () => {
+    mm.trigger(false, FORCED);
+    TestBed.tick();
+    expect(host.depsSeen[0].forcedColors?.()).toBe(false);
+  });
+
+  it('removes both media-query listeners on destroy', () => {
+    const lists = (window.matchMedia as unknown as Mock).mock.results.map(
+      (res) => res.value as MediaQueryList,
+    );
+    const palette = lists.filter((l) => l.media === FORCED || l.media === DARK);
+    expect(palette).toHaveLength(2);
+
+    fixture.destroy();
+
+    for (const l of palette) {
+      expect(l.removeEventListener).toHaveBeenCalledOnce();
+    }
   });
 });

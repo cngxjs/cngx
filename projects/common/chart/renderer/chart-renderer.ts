@@ -1,4 +1,4 @@
-import { type DestroyRef } from '@angular/core';
+import { type DestroyRef, type Signal } from '@angular/core';
 
 import { type CngxChartContext } from '../chart/chart-context';
 import { type LayerGeometry } from '../layers/chart-layer';
@@ -14,6 +14,15 @@ import { type LayerGeometry } from '../layers/chart-layer';
 export interface ChartRendererDeps {
   readonly ctx: CngxChartContext;
   readonly destroyRef: DestroyRef;
+  /**
+   * Whether the host currently matches `(forced-colors: active)`. The
+   * renderer controller fills it from one media-query signal and repaints
+   * on every flip; the Canvas backend reads it to paint in the system
+   * palette. The SVG backend ignores it (its layers carry their own
+   * forced-colors CSS), and a custom backend registered through
+   * {@link CNGX_CHART_RENDERER_FACTORY} may ignore it too.
+   */
+  readonly forcedColors?: Signal<boolean>;
 }
 
 /**

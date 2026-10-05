@@ -1,6 +1,16 @@
 import { type CngxChartContext } from '../chart/chart-context';
 import { type LayerGeometry } from '../layers/chart-layer';
 import { type ChartRendererDeps, type CngxChartRenderer } from './chart-renderer';
+import {
+  createForcedHatches,
+  FORCED_LINE_DASHES,
+  type ForcedHatches,
+  type ForcedSeriesStep,
+  forcedSeriesSteps,
+  type ForcedSystemColors,
+  type SystemColorProbe,
+  createSystemColorProbe,
+} from './forced-series';
 
 /**
  * @internal Per-kind CSS custom-property fallback chain, resolved when a
@@ -26,6 +36,8 @@ const DEFAULT_AREA_OPACITY = 0.18;
 const DEFAULT_BAND_OPACITY = 0.12;
 /** @internal Fallback point-marker radius, matching the layers' CSS token defaults. */
 const DEFAULT_POINT_RADIUS = 3;
+/** @internal Shared solid dash, so resetting after a dashed stroke allocates nothing. */
+const SOLID_DASH: number[] = [];
 
 /**
  * Canvas rendering backend. Mounts a `<canvas>` absolutely positioned
@@ -56,6 +68,22 @@ const DEFAULT_POINT_RADIUS = 3;
  * `overflow: visible` it now clips there too. Out-of-domain data is cut
  * off on both paths.
  *
+ * Under forced colors the canvas follows the same contract as the SVG
+ * layers, since the browser never forces canvas pixels: every mark paints
+ * CanvasText, ignoring `[color]` and the colour tokens; areas and bands keep
+ * their opacity; line, bar and scatter take the legend's four-step cycle by
+ * series index (lines solid / dashed / dotted / dash-dot, bars and points
+ * solid / 45deg hatch / hollow / 0deg hatch), with area, threshold and band
+ * not counting. CanvasText and Canvas are resolved through a probe element
+ * opted out of forcing and cached like the author colours. Chromium also
+ * resolves the system keywords on a 2D context to the forced palette, but
+ * other engines are unverified, so the backend paints the probed values.
+ * The renderer controller watches `(forced-colors: active)` and
+ * `(prefers-color-scheme: dark)` and invalidates the colour cache before
+ * repainting on a flip, so a contrast-theme switch repaints at once. One
+ * difference from SVG: a layer wrapped in an extra `<svg:g>` still counts
+ * here, since the backend only sees the layer order.
+ *
  * @category common/chart/renderer
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/canvas-renderer.ts
  * @since 0.1.0
@@ -70,6 +98,15 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   let dprCleanup: (() => void) | null = null;
   const colorCache = new Map<string, string>();
   const numberCache = new Map<string, number>();
+  // Snapshot of deps.forcedColors, taken once per paint() so the per-mark
+  // colour lookups do not re-read the signal.
+  let forcedNow = false;
+  // Forced system palette; cleared with colorCache so a flip re-probes it.
+  let sysColors: ForcedSystemColors | null = null;
+  let probe: SystemColorProbe | null = null;
+  // Hatch patterns for the forced cycle, per palette and DPR.
+  let hatches: ForcedHatches | null = null;
+  let hatchDpr = -1;
 
   function readVar(name: string): string {
     return hostEl ? getComputedStyle(hostEl).getPropertyValue(name).trim() : '';
@@ -92,7 +129,56 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     return value;
   }
 
+  /**
+   * The forced system palette, probed once per palette and dropped by
+   * `invalidateColorCache()`, so a forced-colors flip re-probes it.
+   */
+  function systemColors(): ForcedSystemColors {
+    sysColors ??= probe?.read() ?? { ink: 'CanvasText', canvas: 'canvas' };
+    return sysColors;
+  }
+
+  function forcedHatches(c: CanvasRenderingContext2D): ForcedHatches {
+    const dpr = globalThis.devicePixelRatio ?? 1;
+    if (!hatches || hatchDpr !== dpr) {
+      const doc = hostEl?.ownerDocument ?? document;
+      hatches = createForcedHatches(doc, c, systemColors(), dpr);
+      hatchDpr = dpr;
+    }
+    return hatches;
+  }
+
+  /**
+   * Set the fill of a bar / scatter mark at its forced step and return the
+   * ink ring width (0 = no ring): solid ink; diagonal hatch with a 1px ring;
+   * hollow Canvas with a 1.5px ring; horizontal hatch with a 1px ring. A
+   * missing pattern falls back to an ink fill. Mirrors the bar / scatter
+   * layers' forced-colors CSS.
+   */
+  function applyForcedMark(c: CanvasRenderingContext2D, step: ForcedSeriesStep): number {
+    const sys = systemColors();
+    switch (step) {
+      case 1:
+        c.fillStyle = forcedHatches(c).diagonal ?? sys.ink;
+        return 1;
+      case 2:
+        c.fillStyle = sys.canvas;
+        return 1.5;
+      case 3:
+        c.fillStyle = forcedHatches(c).horizontal ?? sys.ink;
+        return 1;
+      default:
+        c.fillStyle = sys.ink;
+        return 0;
+    }
+  }
+
   function colorOf(color: string | null, kind: LayerGeometry['kind']): string {
+    // Forced colors: every mark paints CanvasText, ignoring the [color]
+    // literal and the var chain (parity with the layers' !important rules).
+    if (forcedNow) {
+      return systemColors().ink;
+    }
     // An explicit literal color (e.g. [cngxLine] [color]="'#f00'") passes
     // through untouched - no var resolution, no cache.
     if (color !== null && !color.startsWith('--')) {
@@ -211,6 +297,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     host.appendChild(el);
     canvas = el;
     ctx2d = el.getContext('2d');
+    probe = createSystemColorProbe(host);
     sizeCanvas();
     watchDpr();
     // Teardown is owned by the renderer controller (it destroys on mode
@@ -225,21 +312,35 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
       return;
     }
     sizeCanvas();
+    forcedNow = deps.forcedColors?.() ?? false;
     const { width, height } = deps.ctx.dimensions();
     c.clearRect(0, 0, width, height);
-    for (const g of geometries) {
-      paintOne(c, g);
+    const steps = forcedNow ? forcedSeriesSteps(geometries) : null;
+    for (let i = 0; i < geometries.length; i++) {
+      paintOne(c, geometries[i], steps?.[i] ?? null);
     }
   }
 
-  function paintOne(c: CanvasRenderingContext2D, g: LayerGeometry): void {
+  function paintOne(
+    c: CanvasRenderingContext2D,
+    g: LayerGeometry,
+    step: ForcedSeriesStep | null,
+  ): void {
     switch (g.kind) {
       case 'line': {
         c.strokeStyle = colorOf(g.color, 'line');
         c.lineWidth = strokeWidthOf(g.strokeWidth);
         c.lineJoin = 'round';
         c.lineCap = 'round';
+        // Forced colors: the legend's dash for this series step (round caps
+        // turn the 0.1 dash into a dot, as in SVG).
+        if (step !== null) {
+          c.setLineDash(FORCED_LINE_DASHES[step]);
+        }
         c.stroke(new Path2D(g.d));
+        if (step !== null) {
+          c.setLineDash(SOLID_DASH);
+        }
         drawPointMarks(c, g.points, g.color, 'line', '--cngx-line-point-radius');
         break;
       }
@@ -252,18 +353,38 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
         break;
       }
       case 'bar': {
+        const ring = step === null ? 0 : applyForcedMark(c, step);
+        if (ring > 0) {
+          c.strokeStyle = systemColors().ink;
+          c.lineWidth = ring;
+        }
         for (const r of g.rects) {
-          c.fillStyle = colorOf(r.color, 'bar');
+          if (step === null) {
+            c.fillStyle = colorOf(r.color, 'bar');
+          }
           c.fillRect(r.x, r.y, r.w, r.h);
+          if (ring > 0) {
+            c.strokeRect(r.x, r.y, r.w, r.h);
+          }
         }
         break;
       }
       case 'scatter': {
+        const ring = step === null ? 0 : applyForcedMark(c, step);
+        if (ring > 0) {
+          c.strokeStyle = systemColors().ink;
+          c.lineWidth = ring;
+        }
         for (const m of g.marks) {
-          c.fillStyle = colorOf(m.color, 'scatter');
+          if (step === null) {
+            c.fillStyle = colorOf(m.color, 'scatter');
+          }
           c.beginPath();
           c.arc(m.cx, m.cy, m.r, 0, Math.PI * 2);
           c.fill();
+          if (ring > 0) {
+            c.stroke();
+          }
         }
         break;
       }
@@ -291,6 +412,8 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   function invalidateColorCache(): void {
     colorCache.clear();
     numberCache.clear();
+    sysColors = null;
+    hatches = null;
   }
 
   function destroy(): void {
@@ -299,12 +422,16 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     lastGeometries = [];
     canvas?.remove();
     canvas = null;
+    probe?.remove();
+    probe = null;
     ctx2d = null;
     hostEl = null;
     lastW = -1;
     lastH = -1;
     colorCache.clear();
     numberCache.clear();
+    sysColors = null;
+    hatches = null;
   }
 
   return {
