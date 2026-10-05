@@ -18,7 +18,7 @@ import {
   resolveInlineStep,
   resolveStepFrom,
 } from '@cngx/core';
-import { injectLocale, matchesTypeahead } from '@cngx/core/utils';
+import { createTypeaheadMatcher, injectLocale } from '@cngx/core/utils';
 
 import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from './ad-item.token';
 
@@ -467,13 +467,14 @@ export class CngxActiveDescendant {
     const activeRel = this.activeIndexState() < 0 ? -1 : this.activeIndexState() - windowOffset;
     const cycles = term.length === 1;
     const startRel = cycles ? activeRel + 1 : Math.max(0, activeRel);
+    const matches = createTypeaheadMatcher(term, locale);
     for (let step = 0; step < count; step++) {
       const rel = (((startRel + step) % count) + count) % count;
       const candidate = items[rel];
       if (skip && candidate.disabled) {
         continue;
       }
-      if (matchesTypeahead(candidate.label, term, locale)) {
+      if (matches(candidate.label, candidate)) {
         this.activeIndexState.set(rel + windowOffset);
         return;
       }

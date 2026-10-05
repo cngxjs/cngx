@@ -56,5 +56,51 @@ export function foldForMatching(value: string, locale?: string): string {
  * @relatedTo CngxActiveDescendant, CngxTreeSelect
  */
 export function matchesTypeahead(label: string, term: string, locale?: string): boolean {
-  return foldForMatching(label, locale).startsWith(foldForMatching(term, locale));
+  return createTypeaheadMatcher(term, locale)(label);
+}
+
+interface FoldedLabel {
+  readonly label: string;
+  readonly locale: string | undefined;
+  readonly folded: string;
+}
+
+/** Folded labels per option object; the label and locale are compared on every read. */
+const FOLDED_LABELS = new WeakMap<object, FoldedLabel>();
+
+function foldedLabelOf(label: string, locale: string | undefined, key: object | undefined): string {
+  if (!key) {
+    return foldForMatching(label, locale);
+  }
+  const cached = FOLDED_LABELS.get(key);
+  if (cached?.label === label && cached.locale === locale) {
+    return cached.folded;
+  }
+  const folded = foldForMatching(label, locale);
+  FOLDED_LABELS.set(key, { label, locale, folded });
+  return folded;
+}
+
+/**
+ * {@link matchesTypeahead} for a walk over many labels: the term is folded
+ * once, and a label passed with its option object as `key` is folded once per
+ * label text and locale, so a keystroke over a long list folds only what
+ * changed. Same semantic as {@link matchesTypeahead}.
+ *
+ * ```typescript
+ * const matches = createTypeaheadMatcher(term, locale);
+ * const hit = options.find((option) => matches(option.label, option));
+ * ```
+ *
+ * @category core/utils/typeahead
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/typeahead.util.ts
+ * @since 0.1.0
+ * @relatedTo matchesTypeahead, foldForMatching
+ */
+export function createTypeaheadMatcher(
+  term: string,
+  locale?: string,
+): (label: string, key?: object) => boolean {
+  const folded = foldForMatching(term, locale);
+  return (label, key) => foldedLabelOf(label, locale, key).startsWith(folded);
 }
