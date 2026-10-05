@@ -9,19 +9,47 @@ import { CngxFilter } from '../filter/filter.directive';
 import { CngxSort } from '../sort/sort.directive';
 import { CngxSearch } from '@cngx/common/interactive';
 
-const FOLDED_VALUE_CACHE_LIMIT = 4096;
+interface FoldedFields {
+  readonly locale: string;
+  readonly raw: readonly string[];
+  readonly folded: readonly string[];
+}
+
+/**
+ * @internal Folded field values per row object. Keyed by the row, so it
+ * cannot thrash and is collected with the rows; the raw strings are compared
+ * on every read, so a row mutated in place is folded again.
+ */
+const FOLDED_FIELDS = new WeakMap<object, FoldedFields>();
+
+function rawFieldsOf(item: object): string[] {
+  const raw: string[] = [];
+  for (const v of Object.values(item)) {
+    if (v !== null && v !== undefined && typeof v !== 'object') {
+      raw.push(String(v as string | number | boolean | bigint));
+    }
+  }
+  return raw;
+}
+
+function foldedFieldsOf(item: object, locale: string): readonly string[] {
+  const raw = rawFieldsOf(item);
+  const cached = FOLDED_FIELDS.get(item);
+  if (cached?.locale === locale && arrayEqual(cached.raw, raw)) {
+    return cached.folded;
+  }
+  const folded = raw.map((value) => foldForMatching(value, locale));
+  FOLDED_FIELDS.set(item, { locale, raw, folded });
+  return folded;
+}
 
 /**
  * @internal The default search: primitive field values, case and accents
- * ignored in `locale`. One instance per locale, so its caches outlive a
- * keystroke: the term is folded once per term, each field value once per
- * value, not once per item on every run.
+ * ignored in `locale`. The term is folded once per term, each row's field
+ * values once per row and locale, not on every keystroke.
  */
 const defaultSearchFnFor = memoize(
   (locale: string): ((item: unknown, term: string) => boolean) => {
-    const foldValue = memoize((value: string) => foldForMatching(value, locale), {
-      cacheLimit: FOLDED_VALUE_CACHE_LIMIT,
-    });
     let lastTerm = '';
     let lastFolded = '';
     return (item, term) => {
@@ -29,11 +57,10 @@ const defaultSearchFnFor = memoize(
         lastTerm = term;
         lastFolded = foldForMatching(term, locale);
       }
-      return Object.values(item as Record<string, unknown>).some((v) =>
-        v === null || v === undefined || typeof v === 'object'
-          ? false
-          : foldValue(String(v as string | number | boolean | bigint)).includes(lastFolded),
-      );
+      if (typeof item !== 'object' || item === null) {
+        return foldForMatching(String(item), locale).includes(lastFolded);
+      }
+      return foldedFieldsOf(item, locale).some((value) => value.includes(lastFolded));
     };
   },
   { cacheLimit: 8 },

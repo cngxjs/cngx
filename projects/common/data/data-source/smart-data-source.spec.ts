@@ -74,6 +74,34 @@ describe('CngxSmartDataSource - no directives', () => {
     });
   });
 
+  it('stays exact over more distinct values than any fold cache would hold', () => {
+    TestBed.runInInjectionContext(() => {
+      const term = signal('zurich 4999');
+      const search = { term } as unknown as CngxSearch;
+      const rows = signal(Array.from({ length: 5000 }, (_, i) => ({ name: `Zürich ${i}` })));
+      const ds = injectSmartDataSource(rows, { search: () => search });
+      expect(ds.filteredCount()).toBe(1);
+      term.set('zurich 1');
+      expect(ds.filteredCount()).toBe(1111);
+      term.set('zurich 4999');
+      expect(ds.filteredCount()).toBe(1);
+    });
+  });
+
+  it('folds a row again when a field changes in place', () => {
+    TestBed.runInInjectionContext(() => {
+      const term = signal('ida');
+      const search = { term } as unknown as CngxSearch;
+      const row = { name: 'Ida' };
+      const rows = signal([row]);
+      const ds = injectSmartDataSource(rows, { search: () => search });
+      expect(ds.filteredCount()).toBe(1);
+      row.name = 'Über';
+      term.set('uber');
+      expect(ds.filteredCount()).toBe(1);
+    });
+  });
+
   it('returns CngxSmartDataSource instance', () => {
     TestBed.runInInjectionContext(() => {
       expect(injectSmartDataSource(signal([]))).toBeInstanceOf(CngxSmartDataSource);
