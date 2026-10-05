@@ -248,6 +248,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly displayWith = input<(value: T) => string>((v) => String(v));
   /** When `true` (default), blur without a pick resets to `displayWith(value())`. */
   readonly clearOnBlur = input<boolean>(true);
+  /** Custom matcher for the inline search. Wins over `CngxSelectConfig.searchMatchFn`. */
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
   readonly skipInitial = input<boolean>(false);
@@ -383,7 +384,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected readonly effectiveMatchFn = computed<ListboxMatchFn>(
-    () => this.searchMatchFn() ?? ((option, term) => this.labelMatch(option.label, term, option)),
+    () =>
+      this.searchMatchFn() ??
+      this.config.searchMatchFn ??
+      ((option, term) => this.labelMatch(option.label, term, option)),
   );
 
   /** Filter overlay applied by `createSelectCore` on non-empty search term. */

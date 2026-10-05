@@ -261,6 +261,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly autofocus = input<boolean>(false);
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
+  /** Custom matcher for the inline search. Wins over `CngxSelectConfig.searchMatchFn`. */
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
   /** Debounce for the inline search (ms). Default `0` for action-slot feedback. */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
@@ -464,7 +465,10 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   /** @internal */
   protected readonly effectiveMatchFn = computed<ListboxMatchFn>(
-    () => this.searchMatchFn() ?? ((option, term) => this.labelMatch(option.label, term, option)),
+    () =>
+      this.searchMatchFn() ??
+      this.config.searchMatchFn ??
+      ((option, term) => this.labelMatch(option.label, term, option)),
   );
 
   private readonly filter = computed<

@@ -7,6 +7,7 @@ import {
   makeEnvironmentProviders,
 } from '@angular/core';
 
+import type { ListboxMatchFn } from '@cngx/common/interactive';
 import type { PopoverPlacement } from '@cngx/common/popover';
 import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
 
@@ -280,6 +281,16 @@ export interface CngxSelectConfig {
   readonly typeaheadDebounceInterval?: number;
   /** Whether typeahead commits value while panel is closed (native `<select>` parity). */
   readonly typeaheadWhileClosed?: boolean;
+  /**
+   * App-wide matcher for the inline search of the searchable variants
+   * (`CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`,
+   * `CngxActionMultiSelect`, `CngxSelectShell`). A per-instance
+   * `[searchMatchFn]` wins. `null` (default) keeps the folded label match
+   * in the reading locale (case-, accent- and format-character-tolerant
+   * substring). `CngxSelectShell` filters before its options register, so
+   * the item it passes carries `value` and `label` with an empty `id`.
+   */
+  readonly searchMatchFn?: ListboxMatchFn | null;
   /** Whether the default selected-indicator (checkmark) is shown at all. */
   readonly showSelectionIndicator?: boolean;
   /**
@@ -365,6 +376,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   panelClass: '',
   typeaheadDebounceInterval: 300,
   typeaheadWhileClosed: true,
+  searchMatchFn: null as ListboxMatchFn | null,
   showSelectionIndicator: true,
   selectionIndicatorPosition: 'after',
   selectionIndicatorVariant: 'auto',
@@ -592,6 +604,22 @@ export function withTypeaheadDebounce(ms: number): CngxSelectConfigFeature {
  */
 export function withTypeaheadWhileClosed(enabled: boolean): CngxSelectConfigFeature {
   return feature({ typeaheadWhileClosed: enabled });
+}
+
+/**
+ * App-wide matcher for the inline search of the searchable variants. A
+ * per-instance `[searchMatchFn]` wins; without either, the variants keep the
+ * folded label match in the reading locale. Under `provideSelectConfigAt` it
+ * applies to that subtree only.
+ *
+ * ```ts
+ * provideSelectConfig(
+ *   withSearchMatchFn((option, term) => option.label.startsWith(term)),
+ * );
+ * ```
+ */
+export function withSearchMatchFn(fn: ListboxMatchFn | null): CngxSelectConfigFeature {
+  return feature({ searchMatchFn: fn });
 }
 
 /**

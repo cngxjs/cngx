@@ -140,6 +140,7 @@ export {
   withPanelClass,
   withTypeaheadDebounce,
   withTypeaheadWhileClosed,
+  withSearchMatchFn,
   withSelectionIndicator,
   withSelectionIndicatorPosition,
   withSelectionIndicatorVariant,

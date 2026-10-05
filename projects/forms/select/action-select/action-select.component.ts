@@ -251,6 +251,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   readonly displayWith = input<(value: T) => string>(String);
   readonly clearOnBlur = input<boolean>(true);
+  /** Custom matcher for the inline search. Wins over `CngxSelectConfig.searchMatchFn`. */
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
   /**
    * Debounce for the inline search (ms). Default `0` so the slot's
@@ -430,7 +431,10 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected readonly effectiveMatchFn = computed<ListboxMatchFn>(
-    () => this.searchMatchFn() ?? ((option, term) => this.labelMatch(option.label, term, option)),
+    () =>
+      this.searchMatchFn() ??
+      this.config.searchMatchFn ??
+      ((option, term) => this.labelMatch(option.label, term, option)),
   );
 
   /** Filter overlay applied by `createSelectCore` on non-empty search term. */

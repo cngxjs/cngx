@@ -224,6 +224,7 @@ export const COPY_TOKENS = [
       'panelClass',
       'typeaheadDebounceInterval',
       'typeaheadWhileClosed',
+      'searchMatchFn',
       'showSelectionIndicator',
       'selectionIndicatorPosition',
       'selectionIndicatorVariant',

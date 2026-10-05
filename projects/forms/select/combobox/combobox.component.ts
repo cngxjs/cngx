@@ -313,7 +313,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
    */
   readonly closeOnSelect = input<boolean>(false);
 
-  /** Custom matcher for the inline `CngxListboxSearch`. */
+  /**
+   * Custom matcher for the inline `CngxListboxSearch`. Wins over
+   * `CngxSelectConfig.searchMatchFn`.
+   */
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
 
   /** Debounce for search term updates (ms). */
@@ -527,7 +530,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected readonly effectiveMatchFn = computed<ListboxMatchFn>(
-    () => this.searchMatchFn() ?? ((option, term) => this.labelMatch(option.label, term, option)),
+    () =>
+      this.searchMatchFn() ??
+      this.config.searchMatchFn ??
+      ((option, term) => this.labelMatch(option.label, term, option)),
   );
 
   /**

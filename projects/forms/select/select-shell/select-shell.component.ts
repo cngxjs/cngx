@@ -299,8 +299,9 @@ export class CngxSelectShell<T = unknown>
 
   /**
    * Per-instance match policy. Receives `(value, label, term)` and
-   * returns `true` when the option should stay visible. Default:
-   * case-insensitive substring on the label.
+   * returns `true` when the option should stay visible. Wins over
+   * `CngxSelectConfig.searchMatchFn`. Default: the folded label match in
+   * the reading locale.
    */
   readonly searchMatchFn = input<((value: T, label: string, term: string) => boolean) | null>(null);
 
@@ -770,6 +771,10 @@ export class CngxSelectShell<T = unknown>
     const fn = this.searchMatchFn();
     if (fn) {
       return fn(value as unknown as T, label, term);
+    }
+    const shared = this.config.searchMatchFn;
+    if (shared) {
+      return shared({ id: '', value, label }, term);
     }
     return this.labelMatch(label, term);
   }
