@@ -1900,6 +1900,18 @@ class DismissableHost {
   added = 0;
 }
 
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group [closable]="true" aria-label="Unlabelled">
+      <div cngxTab [label]="'Home'"></div>
+      <div cngxTab></div>
+    </cngx-tab-group>
+  `,
+})
+class UnlabelledDismissableHost {}
+
 describe('CngxTabGroup dismissable + addable', () => {
   function closeButtons(fixture: {
     nativeElement: HTMLElement;
@@ -1938,6 +1950,16 @@ describe('CngxTabGroup dismissable + addable', () => {
     const btn = closeButtons(fixture)[0];
     expect(stripBidiIsolates(btn.getAttribute('aria-label'))).toBe('Close "Profile"');
     expect(btn.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('names the close button of an unlabelled tab by its position', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(UnlabelledDismissableHost);
+    fixture.detectChanges();
+    const buttons = closeButtons(fixture);
+    expect(stripBidiIsolates(buttons[1].getAttribute('aria-label'))).toBe('Close "Tab 2"');
   });
 
   it('clicking a close button emits tabClose with id + index', () => {

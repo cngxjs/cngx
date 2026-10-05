@@ -223,7 +223,13 @@ export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDism
     resolvedClosable,
     resolvedAddable,
     isTabClosable,
-    closeButtonLabel: (tab) => opts.i18n().closeTab(tab.label() ?? ''),
+    // An unlabelled tab is named by position, never as `Close ""`.
+    closeButtonLabel: (tab) => {
+      const i18n = opts.i18n();
+      const position = opts.host.tabs().findIndex((candidate) => candidate.id === tab.id) + 1;
+      const label = tab.label() ?? '';
+      return i18n.closeTab(label === '' ? i18n.unlabeledTab(position) : label);
+    },
     closeIconContextFor: (tab) => {
       let ctx = closeIconContextCache.get(tab);
       if (!ctx) {

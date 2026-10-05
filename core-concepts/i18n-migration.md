@@ -246,6 +246,10 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxNavLink` derives `data-initial` from the first full character of the link text, uppercased with the app locale (`İ` for Turkish `istanbul`, a whole emoji or accented letter).
 - `CngxSpeak` speaks in the app locale while `lang` is unbound, instead of the browser default voice language.
 
+### @cngx/common/tabs
+
+- The close button of a tab without a label is named by its position through `unlabeledTab` (`Close "Tab 2"`), instead of `Close ""`.
+
 ### @cngx/common/timeline
 
 - `CngxTimeline` with `groupBy="week"` starts a week on the first day of the app locale (`Intl.Locale` week info): Sunday under `en-US`, Monday under `de` or `en-GB`. Before, weeks always started on Monday. Where the runtime has no week info, and for `createTimelineGrouping` without a `locale` option, weeks still start on Monday.
