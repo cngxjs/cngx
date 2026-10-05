@@ -8,6 +8,7 @@ import { Subject, type Observable } from 'rxjs';
 import { CngxListbox } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
+import { stripBidiIsolates } from '@cngx/testing';
 
 import { CngxFormField } from '@cngx/forms/field';
 
@@ -485,7 +486,7 @@ describe('CngxMultiSelect - commit action producer', () => {
     flush(fixture);
 
     const errorCall = announceSpy.mock.calls.at(-1)!;
-    expect(errorCall[0]).toBe('Farben: Save failed - server down');
+    expect(stripBidiIsolates(errorCall[0])).toBe('Farben: Save failed - server down');
     expect(errorCall[1]).toBe('assertive');
     announceSpy.mockRestore();
   });
@@ -1028,8 +1029,8 @@ describe('CngxMultiSelect - withAriaLabels config override', () => {
     const chipRemove = fixture.nativeElement.querySelector(
       '.cngx-chip__remove',
     ) as HTMLElement;
-    // `removeAriaLabel + ': ' + opt.label` composition - prefix comes from config.
-    expect(chipRemove.getAttribute('aria-label')).toMatch(/^Remove:/);
+    // The `chipRemoveFor` message places the config action and the label.
+    expect(stripBidiIsolates(chipRemove.getAttribute('aria-label'))).toMatch(/^Remove:/);
   });
 
   it('withAriaLabels({ clearButton, chipRemove }) overrides both labels app-wide', () => {
@@ -1053,7 +1054,7 @@ describe('CngxMultiSelect - withAriaLabels config override', () => {
     const chipRemove = fixture.nativeElement.querySelector(
       '.cngx-chip__remove',
     ) as HTMLElement;
-    expect(chipRemove.getAttribute('aria-label')).toMatch(/^Remove:/);
+    expect(stripBidiIsolates(chipRemove.getAttribute('aria-label'))).toMatch(/^Remove:/);
   });
 
   it('partial override preserves the non-overridden English default', () => {
@@ -1073,7 +1074,7 @@ describe('CngxMultiSelect - withAriaLabels config override', () => {
     const chipRemove = fixture.nativeElement.querySelector(
       '.cngx-chip__remove',
     ) as HTMLElement;
-    expect(chipRemove.getAttribute('aria-label')).toMatch(/^Delete:/);
+    expect(stripBidiIsolates(chipRemove.getAttribute('aria-label'))).toMatch(/^Delete:/);
   });
 
   it('per-instance [clearButtonAriaLabel] still wins over withAriaLabels', () => {

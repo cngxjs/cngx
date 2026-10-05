@@ -589,9 +589,8 @@ A few representative extension paths.
 **Add a new ariaLabels key.**
 
 1. Add the optional field on `CngxSelectAriaLabels` in `shared/config.ts`.
-2. Add the English default to `CNGX_SELECT_DEFAULTS.ariaLabels`.
-3. Read it through `config.ariaLabels.<key> ?? '<English fallback>'` at the consumption site (variant or panel-shell).
-4. Update `feedback_en_default_locale.md` is not needed - the EN convention is universal.
+2. Add the key to `CngxSelectLanguageSection` and its English text to `CNGX_SELECT_LANGUAGE_EN` (`i18n/select-language-section.ts`), then map it in `selectCopyFrom` (`i18n/select-i18n.ts`).
+3. Read it through `config.ariaLabels().<key>` inside a `computed()` or template at the consumption site (variant or panel-shell); no literal fallback.
 
 **Override an internal logic block enterprise-wide.**
 

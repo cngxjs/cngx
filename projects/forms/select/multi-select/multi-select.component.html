@@ -76,7 +76,7 @@
           } @else {
             <cngx-chip
               [removable]="!disabled()"
-              [removeAriaLabel]="resolvedChipRemoveAriaLabel() + ': ' + opt.label"
+              [removeAriaLabel]="chipRemoveLabelFor()(opt.label)"
               (remove)="handleChipRemoveClick($event, opt)"
             >
               {{ opt.label }}
@@ -85,7 +85,7 @@
         }
         @if (overflowBadgeCount() > 0) {
           <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
-            +{{ overflowBadgeCount() }}
+            {{ overflowBadgeText() }}
           </span>
         }
       }

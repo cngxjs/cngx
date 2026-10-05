@@ -17,7 +17,7 @@ import {
   type TemplateRef,
 } from '@angular/core';
 
-import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
+import { CNGX_STATEFUL, injectLocale, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
 
 import {
   CngxClickOutside,
@@ -28,6 +28,8 @@ import {
 } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
+import { injectSelectCopy } from '../i18n/select-i18n';
+import { createLabelMatch } from '../shared/internal/label-match';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
 import {
@@ -243,10 +245,15 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearable = input<boolean>(false);
+  /** @internal The select section at this reading site; per-variant defaults. */
+  private readonly selectCopy = injectSelectCopy();
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
-    () => this.clearButtonAriaLabel() ?? this.config.ariaLabels().clearButton ?? 'Reset selection',
+    () =>
+      this.clearButtonAriaLabel() ??
+      this.config.ariaLabels().clearButton ??
+      this.selectCopy().resetSelection,
   );
   /**
    * Replaces the built-in `✕` glyph inside the default clear button.
@@ -360,16 +367,12 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */ readonly focused = this.focusState.focused;
   readonly empty = computed<boolean>(() => this.value() === undefined);
 
+  /** @internal Folded substring match of the option label in the reading locale. */
+  private readonly labelMatch = createLabelMatch(injectLocale());
+
   /** @internal */
   protected readonly effectiveMatchFn = computed<ListboxMatchFn>(
-    () =>
-      this.searchMatchFn() ??
-      ((option, term) => {
-        if (term === '') {
-          return true;
-        }
-        return option.label.toLowerCase().includes(term.toLowerCase());
-      }),
+    () => this.searchMatchFn() ?? ((option, term) => this.labelMatch(option.label, term, option)),
   );
 
   /** Filter overlay applied by `createSelectCore` on non-empty search term. */

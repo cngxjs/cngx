@@ -20,7 +20,7 @@ import {
   viewChild,
 } from '@angular/core';
 
-import { CNGX_STATEFUL, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
+import { CNGX_STATEFUL, injectLocale, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import {
   CngxClickOutside,
   CngxListbox,
@@ -43,6 +43,8 @@ import {
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
+import { injectSelectCopy } from '../i18n/select-i18n';
+import { createLabelMatch } from '../shared/internal/label-match';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
@@ -248,10 +250,15 @@ export class CngxSelectShell<T = unknown>
   readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearable = input<boolean>(false);
+  /** @internal The select section at this reading site; per-variant defaults. */
+  private readonly selectCopy = injectSelectCopy();
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
-    () => this.clearButtonAriaLabel() ?? this.config.ariaLabels().clearButton ?? 'Clear selection',
+    () =>
+      this.clearButtonAriaLabel() ??
+      this.config.ariaLabels().clearButton ??
+      this.selectCopy().clearSelection,
   );
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
@@ -749,13 +756,16 @@ export class CngxSelectShell<T = unknown>
     this.localItemsBuffer.clear();
   }
 
+  /** @internal Folded substring match of an option label in the reading locale. */
+  private readonly labelMatch = createLabelMatch(injectLocale());
+
   /** @internal */
   matches<TVal>(value: TVal, label: string, term: string): boolean {
     const fn = this.searchMatchFn();
     if (fn) {
       return fn(value as unknown as T, label, term);
     }
-    return label.toLowerCase().includes(term.toLowerCase());
+    return this.labelMatch(label, term);
   }
 
   /**

@@ -174,6 +174,11 @@ export {
 export { CngxSelectAnnouncer } from './shared/announcer';
 
 export {
+  CNGX_SELECT_LANGUAGE_EN,
+  type CngxSelectLanguageSection,
+} from './i18n/select-language-section';
+
+export {
   injectSelectConfig,
   injectSelectAnnouncer,
   injectActionSelectConfig,

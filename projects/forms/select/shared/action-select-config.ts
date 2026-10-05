@@ -10,6 +10,9 @@ import {
 import type { PopoverPlacement } from '@cngx/common/popover';
 import { coerceSignal } from '@cngx/core/utils';
 
+import { injectSelectWord } from '../i18n/select-i18n';
+import { CNGX_SELECT_LANGUAGE_EN } from '../i18n/select-language-section';
+
 /**
  * Focus-trap policy for the action-slot workflow:
  * - `'dirty'` (default) - trap on while `actionDirty()` is `true`.
@@ -39,7 +42,8 @@ export interface CngxActionSelectConfig {
   readonly focusTrapBehavior?: CngxActionFocusTrapBehavior;
   /**
    * Accessible name of the action-slot group (`role="group"`) in every select
-   * panel, value or `Signal`. Default `'Inline action'`. Localisation hook.
+   * panel, value or `Signal`. Unset, it reads `actionGroup` of the `select`
+   * language section (English `'Inline action'`).
    */
   readonly ariaLabel?: string | Signal<string>;
   /**
@@ -68,7 +72,7 @@ export const CNGX_ACTION_SELECT_DEFAULTS: Required<Omit<CngxActionSelectConfig, 
   readonly ariaLabel: string;
 } = {
   focusTrapBehavior: 'dirty',
-  ariaLabel: 'Inline action',
+  ariaLabel: CNGX_SELECT_LANGUAGE_EN.actionGroup,
   closeOnCreate: null,
   actionPosition: 'bottom',
   liveInputFallback: true,
@@ -239,7 +243,7 @@ export function resolveActionSelectConfig(): Required<Omit<CngxActionSelectConfi
   const user = inject(CNGX_ACTION_SELECT_CONFIG, { optional: true }) ?? {};
   return {
     focusTrapBehavior: user.focusTrapBehavior ?? CNGX_ACTION_SELECT_DEFAULTS.focusTrapBehavior,
-    ariaLabel: coerceSignal(user.ariaLabel ?? CNGX_ACTION_SELECT_DEFAULTS.ariaLabel),
+    ariaLabel: coerceSignal(user.ariaLabel ?? injectSelectWord('actionGroup')),
     closeOnCreate:
       user.closeOnCreate === undefined
         ? CNGX_ACTION_SELECT_DEFAULTS.closeOnCreate

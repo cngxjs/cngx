@@ -18,7 +18,12 @@ import {
   type TemplateRef,
 } from '@angular/core';
 
-import { CNGX_STATEFUL, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
+import {
+  CNGX_STATEFUL,
+  injectLocale,
+  type AsyncStatus,
+  type CngxAsyncState,
+} from '@cngx/core/utils';
 
 import { CngxChip } from '@cngx/common/display';
 import {
@@ -32,6 +37,7 @@ import {
 } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
+import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
 import {
@@ -259,16 +265,30 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly clearable = input<boolean>(false);
+  /** @internal The select section at this reading site; per-variant defaults. */
+  private readonly selectCopy = injectSelectCopy();
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
-    () => this.clearButtonAriaLabel() ?? this.config.ariaLabels().clearButton ?? 'Reset selection',
+    () =>
+      this.clearButtonAriaLabel() ??
+      this.config.ariaLabels().clearButton ??
+      this.selectCopy().resetSelection,
   );
   readonly chipRemoveAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedChipRemoveAriaLabel = computed<string>(
-    () => this.chipRemoveAriaLabel() ?? this.config.ariaLabels().chipRemove ?? 'Remove',
+    () => this.chipRemoveAriaLabel() ?? this.config.ariaLabels().chipRemove,
   );
+  /**
+   * @internal Accessible name of a chip's remove button: the remove action and
+   * the chip label placed by the `chipRemoveFor` message.
+   */
+  protected readonly chipRemoveLabelFor = computed<(label: string) => string>(() => {
+    const action = this.resolvedChipRemoveAriaLabel();
+    const format = this.config.ariaLabels().chipRemoveFor;
+    return (label) => format(action, label);
+  });
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
@@ -555,6 +575,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     compareWith: this.compareWith,
     debounceMs: this.typeaheadDebounceInterval,
     disabled: this.disabled,
+    locale: injectLocale(),
   });
 
   /**

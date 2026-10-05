@@ -110,7 +110,7 @@
             } @else {
               <cngx-chip
                 [removable]="!disabled()"
-                [removeAriaLabel]="resolvedChipRemoveAriaLabel() + ': ' + opt.label"
+                [removeAriaLabel]="chipRemoveLabelFor()(opt.label)"
                 (remove)="handleChipRemoveClick($event, opt)"
               >
                 {{ opt.label }}

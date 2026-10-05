@@ -18,7 +18,12 @@ import {
   type TemplateRef,
 } from '@angular/core';
 
-import { CNGX_STATEFUL, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
+import {
+  CNGX_STATEFUL,
+  injectLocale,
+  type AsyncStatus,
+  type CngxAsyncState,
+} from '@cngx/core/utils';
 
 import { CngxChip } from '@cngx/common/display';
 import {
@@ -30,6 +35,8 @@ import {
 } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
+import { injectSelectCopy } from '../i18n/select-i18n';
+import { createLabelMatch } from '../shared/internal/label-match';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
 import {
@@ -259,16 +266,30 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly clearable = input<boolean>(false);
+  /** @internal The select section at this reading site; per-variant defaults. */
+  private readonly selectCopy = injectSelectCopy();
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
-    () => this.clearButtonAriaLabel() ?? this.config.ariaLabels().clearButton ?? 'Reset selection',
+    () =>
+      this.clearButtonAriaLabel() ??
+      this.config.ariaLabels().clearButton ??
+      this.selectCopy().resetSelection,
   );
   readonly chipRemoveAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedChipRemoveAriaLabel = computed<string>(
-    () => this.chipRemoveAriaLabel() ?? this.config.ariaLabels().chipRemove ?? 'Remove',
+    () => this.chipRemoveAriaLabel() ?? this.config.ariaLabels().chipRemove,
   );
+  /**
+   * @internal Accessible name of a chip's remove button: the remove action and
+   * the chip label placed by the `chipRemoveFor` message.
+   */
+  protected readonly chipRemoveLabelFor = computed<(label: string) => string>(() => {
+    const action = this.resolvedChipRemoveAriaLabel();
+    const format = this.config.ariaLabels().chipRemoveFor;
+    return (label) => format(action, label);
+  });
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
@@ -432,16 +453,12 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** @internal */ readonly focused = this.focusState.focused;
   readonly empty = computed<boolean>(() => this.isEmpty());
 
+  /** @internal Folded substring match of the option label in the reading locale. */
+  private readonly labelMatch = createLabelMatch(injectLocale());
+
   /** @internal */
   protected readonly effectiveMatchFn = computed<ListboxMatchFn>(
-    () =>
-      this.searchMatchFn() ??
-      ((option, term) => {
-        if (term === '') {
-          return true;
-        }
-        return option.label.toLowerCase().includes(term.toLowerCase());
-      }),
+    () => this.searchMatchFn() ?? ((option, term) => this.labelMatch(option.label, term, option)),
   );
 
   private readonly filter = computed<
@@ -693,6 +710,10 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     const cap = Math.max(1, this.maxVisibleChips());
     return total > cap ? total - cap : 0;
   });
+  /** @internal Visible `+N` badge text, the count in the reading locale's digits. */
+  protected readonly overflowBadgeText = computed<string>(() =>
+    this.config.fallbackLabels().chipOverflowBadge(this.overflowBadgeCount()),
+  );
 
   protected readonly selectedOptions = computed<CngxSelectOptionDef<T>[]>(
     () => {

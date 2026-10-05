@@ -54,9 +54,12 @@ const EN_FALLBACK: Required<CngxSelectFallbackLabels> = {
   searchPlaceholder: 'Search…',
   commitFailed: 'Save failed',
   commitFailedRetry: 'Try again',
+  chipOverflowBadge: (count: number) => `+${count}`,
 };
 
 const EN_ARIA: CngxResolvedSelectAriaLabels = {
+  chipRemove: 'Remove',
+  chipRemoveFor: (action: string, label: string) => `${action}: ${label}`,
   treeExpand: 'Expand node',
   treeCollapse: 'Collapse node',
   statusLoading: 'Loading options',

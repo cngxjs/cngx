@@ -1,6 +1,7 @@
 import { Injector, isSignal, runInInjectionContext, signal, type TemplateRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { coerceSignal } from '@cngx/core/utils';
+import { stripBidiIsolates } from '@cngx/testing';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -29,10 +30,13 @@ function resolveIn(providers: unknown[]): ReturnType<typeof resolveSelectConfig>
 describe('withAriaLabels', () => {
   it('resolves to library EN defaults for status/tree/fallback keys when no override is supplied', () => {
     const config = resolveIn([]);
-    // Variant-defaulted keys (clearButton, chipRemove) intentionally
-    // stay undefined so per-variant input fallbacks remain authoritative.
+    // clearButton intentionally stays undefined: its default differs per
+    // variant (single 'Clear selection', multi 'Reset selection').
     expect(config.ariaLabels().clearButton).toBeUndefined();
-    expect(config.ariaLabels().chipRemove).toBeUndefined();
+    expect(config.ariaLabels().chipRemove).toBe('Remove');
+    expect(stripBidiIsolates(config.ariaLabels().chipRemoveFor('Remove', 'Red'))).toBe(
+      'Remove: Red',
+    );
     // Library-defaulted keys are populated up-front so panel-shell,
     // select-core, and tree-select can read them directly.
     expect(config.ariaLabels().treeExpand).toBe('Expand node');
@@ -40,10 +44,12 @@ describe('withAriaLabels', () => {
     expect(config.ariaLabels().statusLoading).toBe('Loading options');
     expect(config.ariaLabels().statusRefreshing).toBe('Refreshing options');
     expect(config.ariaLabels().fieldLabelFallback).toBe('Selection');
-    expect(config.ariaLabels().commitFailedMessage('Colours', 'server down')).toBe(
-      'Colours: Save failed - server down',
+    expect(
+      stripBidiIsolates(config.ariaLabels().commitFailedMessage('Colours', 'server down')),
+    ).toBe('Colours: Save failed - server down');
+    expect(stripBidiIsolates(config.ariaLabels().commitFailedMessage('Colours', undefined))).toBe(
+      'Colours: Save failed',
     );
-    expect(config.ariaLabels().commitFailedMessage('Colours', undefined)).toBe('Colours: Save failed');
     expect(config.ariaLabels().listboxFallback).toBe('Options');
   });
 
@@ -181,7 +187,7 @@ describe('runtime language switch', () => {
     const config = resolveIn([provideSelectConfig(withAnnouncer(announcer))]);
     const input = { selectedLabel: 'Red', fieldLabel: 'Color', multi: false };
     expect(config.announcer().politeness).toBe('assertive');
-    expect(config.announcer().format(input)).toBe('Color: Red selected');
+    expect(stripBidiIsolates(config.announcer().format(input))).toBe('Color: Red selected');
 
     announcer.set({
       politeness: 'assertive',
@@ -330,7 +336,7 @@ describe('default announcer format - reordered action', () => {
       fromIndex: 0,
       toIndex: 2,
     });
-    expect(message).toBe('Recipients: Admins moved to position 3');
+    expect(stripBidiIsolates(message)).toBe('Recipients: Admins moved to position 3');
   });
 
   it('falls back to a positionless message when toIndex is omitted', () => {
@@ -342,27 +348,31 @@ describe('default announcer format - reordered action', () => {
       action: 'reordered',
       count: 3,
     });
-    expect(message).toBe('Recipients: Admins moved');
+    expect(stripBidiIsolates(message)).toBe('Recipients: Admins moved');
   });
 
   it('leaves existing added/removed messages unchanged (backward compat)', () => {
     const config = resolveIn([]);
     expect(
-      config.announcer().format({
-        selectedLabel: 'Red',
-        fieldLabel: 'Color',
-        multi: true,
-        action: 'added',
-        count: 1,
-      }),
+      stripBidiIsolates(
+        config.announcer().format({
+          selectedLabel: 'Red',
+          fieldLabel: 'Color',
+          multi: true,
+          action: 'added',
+          count: 1,
+        }),
+      ),
     ).toBe('Color: Red added, 1 selected');
     expect(
-      config.announcer().format({
-        selectedLabel: null,
-        fieldLabel: 'Color',
-        multi: true,
-        action: 'removed',
-      }),
+      stripBidiIsolates(
+        config.announcer().format({
+          selectedLabel: null,
+          fieldLabel: 'Color',
+          multi: true,
+          action: 'removed',
+        }),
+      ),
     ).toBe('Color: selection cleared');
   });
 });
@@ -376,7 +386,7 @@ describe('default announcer format - created action', () => {
       multi: false,
       action: 'created',
     });
-    expect(message).toBe('Color: Violet created and selected');
+    expect(stripBidiIsolates(message)).toBe('Color: Violet created and selected');
   });
 
   it("speaks the same sentence for multi-select ('created' short-circuits the multi branch)", () => {
@@ -388,7 +398,7 @@ describe('default announcer format - created action', () => {
       action: 'created',
       count: 5,
     });
-    expect(message).toBe('Topics: Design created and selected');
+    expect(stripBidiIsolates(message)).toBe('Topics: Design created and selected');
   });
 
   it("falls back to a labelless 'created' sentence when no label is available", () => {
@@ -399,7 +409,7 @@ describe('default announcer format - created action', () => {
       multi: false,
       action: 'created',
     });
-    expect(message).toBe('Color: created');
+    expect(stripBidiIsolates(message)).toBe('Color: created');
   });
 });
 

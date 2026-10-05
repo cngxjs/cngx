@@ -119,7 +119,8 @@ export type CngxSelectSelectionIndicatorVariant = 'auto' | 'checkbox' | 'checkma
 
 /**
  * ARIA-label overrides. Per-instance
- * `[clearButtonAriaLabel]`/`[chipRemoveAriaLabel]` wins.
+ * `[clearButtonAriaLabel]`/`[chipRemoveAriaLabel]` wins. Unset keys read the
+ * `select` section of the active language pack, English by default.
  *
  * @category forms/select/config
  */
@@ -128,6 +129,12 @@ export interface CngxSelectAriaLabels {
   readonly clearButton?: string;
   /** Per-chip remove. Default `'Remove'`. */
   readonly chipRemove?: string;
+  /**
+   * Accessible name of a chip's remove button. Receives the remove action
+   * (`chipRemove`, or the `[chipRemoveAriaLabel]` input) and the chip label,
+   * and returns the whole name. Default `'{action}: {label}'` (`Remove: Red`).
+   */
+  readonly chipRemoveFor?: (action: string, label: string) => string;
   /** Tree-select twisty (collapsed). Default `'Expand node'`. */
   readonly treeExpand?: string;
   /** Tree-select twisty (expanded). Default `'Collapse node'`. */
@@ -142,9 +149,8 @@ export interface CngxSelectAriaLabels {
    * Assertive announcement when a `[commitAction]` rejects. Receives the
    * field label (or `fieldLabelFallback`) and the rejection's
    * `Error.message`, `undefined` when the rejection is not an `Error`, and
-   * returns the whole sentence. Default
-   * `` (label, detail) => `${label}: Save failed - ${detail}` ``, without
-   * the ` - ${detail}` part when there is no detail.
+   * returns the whole sentence. Default `'{label}: Save failed - {detail}'`,
+   * `'{label}: Save failed'` when there is no detail.
    */
   readonly commitFailedMessage?: (label: string, detail: string | undefined) => string;
   /** `<cngx-select-search>` input. Default `'Search options'`. */
@@ -178,8 +184,9 @@ export interface CngxSelectVirtualizationConfig {
 }
 
 /**
- * Fallback labels for `CngxSelectPanelShell`'s built-in views.
- * Per-instance template projection wins.
+ * Fallback labels for `CngxSelectPanelShell`'s built-in views and the visible
+ * chip-strip copy. Per-instance template projection wins. Unset keys read the
+ * `select` section of the active language pack, English by default.
  */
 export interface CngxSelectFallbackLabels {
   /** `loadingVariant === 'text'` body. Default `'Loading…'`. */
@@ -200,6 +207,11 @@ export interface CngxSelectFallbackLabels {
   readonly commitFailed?: string;
   /** Commit-error retry button. Default `'Try again'`. */
   readonly commitFailedRetry?: string;
+  /**
+   * Visible badge for the chips `chipOverflow: 'truncate'` hides. Receives
+   * the hidden count. Default `'+{count}'`, the count in the locale's digits.
+   */
+  readonly chipOverflowBadge?: (count: number) => string;
 }
 
 /**
@@ -323,17 +335,17 @@ export interface CngxSelectConfig {
   };
 }
 
-/** Library defaults merged with `provideSelectConfig` user values. @internal */
+/**
+ * Library defaults merged with `provideSelectConfig` user values. The copy
+ * keys are not here: they read the `select` language section at the reading
+ * site. @internal
+ */
 export const CNGX_SELECT_DEFAULTS: Required<
   Omit<CngxSelectConfig, 'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'>
 > & {
   readonly panelClass: string | readonly string[];
   readonly templates: Required<NonNullable<CngxSelectConfig['templates']>>;
-  readonly announcer: Required<Omit<CngxSelectAnnouncerConfig, 'format'>> & {
-    readonly format: NonNullable<CngxSelectAnnouncerConfig['format']>;
-  };
-  readonly ariaLabels: Required<Omit<CngxSelectAriaLabels, 'clearButton' | 'chipRemove'>>;
-  readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
+  readonly announcer: Required<Omit<CngxSelectAnnouncerConfig, 'format'>>;
 } = {
   panelWidth: 'trigger',
   loadingVariant: 'spinner',
@@ -361,39 +373,6 @@ export const CNGX_SELECT_DEFAULTS: Required<
   announcer: {
     enabled: true,
     politeness: 'polite',
-    format: ({ selectedLabel, fieldLabel, multi, action, count, toIndex }): string => {
-      // `'created'` reads identically in single + multi - both
-      // cardinalities share the sentence shape.
-      if (action === 'created') {
-        if (selectedLabel == null) {
-          return `${fieldLabel}: created`;
-        }
-        return `${fieldLabel}: ${selectedLabel} created and selected`;
-      }
-      if (!multi) {
-        if (selectedLabel == null) {
-          return `${fieldLabel}: selection cleared`;
-        }
-        return `${fieldLabel}: ${selectedLabel} selected`;
-      }
-      if (action === 'reordered') {
-        if (selectedLabel == null) {
-          return `${fieldLabel}: moved`;
-        }
-        if (typeof toIndex === 'number') {
-          return `${fieldLabel}: ${selectedLabel} moved to position ${toIndex + 1}`;
-        }
-        return `${fieldLabel}: ${selectedLabel} moved`;
-      }
-      if (selectedLabel == null) {
-        return `${fieldLabel}: selection cleared`;
-      }
-      const verb = action === 'removed' ? 'removed' : 'added';
-      if (typeof count === 'number') {
-        return `${fieldLabel}: ${selectedLabel} ${verb}, ${count} selected`;
-      }
-      return `${fieldLabel}: ${selectedLabel} ${verb}`;
-    },
   },
   templates: {
     check: null,
@@ -413,28 +392,6 @@ export const CNGX_SELECT_DEFAULTS: Required<
     optionPending: null,
     optionError: null,
     action: null,
-  },
-  ariaLabels: {
-    treeExpand: 'Expand node',
-    treeCollapse: 'Collapse node',
-    statusLoading: 'Loading options',
-    statusRefreshing: 'Refreshing options',
-    fieldLabelFallback: 'Selection',
-    commitFailedMessage: (label, detail) =>
-      detail ? `${label}: Save failed - ${detail}` : `${label}: Save failed`,
-    searchInput: 'Search options',
-    listboxFallback: 'Options',
-  },
-  fallbackLabels: {
-    loading: 'Loading…',
-    empty: 'No Options',
-    loadFailed: 'Loading failed',
-    loadFailedRetry: 'Retry',
-    refreshFailed: 'Refresh failed',
-    refreshFailedRetry: 'Try again',
-    searchPlaceholder: 'Search…',
-    commitFailed: 'Save failed',
-    commitFailedRetry: 'Try again',
   },
 };
 
