@@ -123,6 +123,22 @@ export function createChartI18nDefaults(
   return byLocale(locale);
 }
 
+type ChartTrend = CngxChartSummary['trend'];
+
+/** @internal The section word for each trend in the summary sentence. */
+const SUMMARY_TREND_KEY = {
+  up: 'summaryTrendUp',
+  down: 'summaryTrendDown',
+  flat: 'summaryTrendFlat',
+} as const satisfies Record<ChartTrend, keyof CngxChartLanguageSection>;
+
+/** @internal The section phrase announced when the trend changes. */
+const TREND_CHANGED_KEY = {
+  up: 'trendChangedUp',
+  down: 'trendChangedDown',
+  flat: 'trendFlattened',
+} as const satisfies Record<ChartTrend, keyof CngxChartLanguageSection>;
+
 /** @internal Turns a chart section into the token's keys for a locale. */
 function chartBundleFrom(
   section: CngxChartLanguageSection,
@@ -133,12 +149,7 @@ function chartBundleFrom(
     formatMessage(section.stackedBarSegmentTitle, { label, value }, locale);
   return {
     summary: ({ trend, min, max, current, thresholds }) => {
-      const trendText =
-        trend === 'up'
-          ? section.summaryTrendUp
-          : trend === 'down'
-            ? section.summaryTrendDown
-            : section.summaryTrendFlat;
+      const trendText = section[SUMMARY_TREND_KEY[trend]];
       const thresholdText =
         thresholds.length === 0
           ? section.summaryNoThresholds
@@ -158,12 +169,7 @@ function chartBundleFrom(
     dataTable: () => section.dataTable,
     indexColumnLabel: () => section.indexColumnLabel,
     valueColumnLabel: () => section.valueColumnLabel,
-    trendChanged: (trend) =>
-      trend === 'up'
-        ? section.trendChangedUp
-        : trend === 'down'
-          ? section.trendChangedDown
-          : section.trendFlattened,
+    trendChanged: (trend) => section[TREND_CHANGED_KEY[trend]],
     thresholdAlert: (threshold) =>
       formatMessage(section.thresholdAlert, { threshold: num(threshold) }, locale),
     connectionLost: () => section.connectionLost,
