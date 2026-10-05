@@ -321,6 +321,28 @@ describe('sortTree', () => {
     sortTree(tree, 'name', 'asc');
     expect(tree.map((n) => n.value.name)).toEqual(original);
   });
+
+  it('collates with the given locale', () => {
+    const words: Node<{ name: string }>[] = ['zebra', 'äpple', 'apa'].map((name) => ({
+      value: { name },
+    }));
+    const names = (locale: string) =>
+      sortTree(words, 'name', 'asc', locale).map((n) => n.value.name);
+    // German sorts ä beside a; Swedish sorts it after z.
+    expect(names('de')).toEqual(['apa', 'äpple', 'zebra']);
+    expect(names('sv')).toEqual(['apa', 'zebra', 'äpple']);
+  });
+
+  it('passes the locale down to every level and keeps numeric order', () => {
+    const nested: Node<{ name: string }>[] = [
+      {
+        value: { name: 'root' },
+        children: ['äpple', 'zebra', 'item10', 'item2'].map((name) => ({ value: { name } })),
+      },
+    ];
+    const children = sortTree(nested, 'name', 'asc', 'sv')[0].children ?? [];
+    expect(children.map((n) => n.value.name)).toEqual(['item2', 'item10', 'zebra', 'äpple']);
+  });
 });
 
 describe('nodeMatchesSearch', () => {

@@ -92,7 +92,7 @@
           @if (headerTplFor(col); as tpl) {
             <ng-container *ngTemplateOutlet="tpl"></ng-container>
           } @else {
-            {{ resolvedOptions().capitaliseHeader !== false ? capitalise(col) : col }}
+            {{ headerLabels().get(col) }}
           }
         </cdk-header-cell>
         <cdk-cell
@@ -107,7 +107,7 @@
               "
             ></ng-container>
           } @else {
-            {{ asRecord(node.value)[col] }}
+            {{ cellText(asRecord(node.value)[col]) }}
           }
         </cdk-cell>
       </ng-container>

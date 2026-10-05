@@ -105,7 +105,7 @@ Per-instance display options:
 interface TreetableOptions<T> {
   highlightRowOnHover?: boolean;              // Visual hover effect
   customColumnOrder?: readonly (keyof T & string)[]; // Column ordering
-  capitaliseHeader?: boolean;                 // Uppercase first letter of headers
+  capitaliseHeader?: boolean;                 // Uppercase the dev-only key header
 }
 ```
 
@@ -222,6 +222,13 @@ bootstrapApplication(AppComponent, {
 object: `withHighlightOnHover()`, `withCapitaliseHeaders()`,
 `withTreetableLabels({ ... })` and `withTreetableTemplates({ ... })`.
 Per-instance `options` input overrides these defaults.
+
+Column headers come from `columnLabels` (`withTreetableLabels({ columnLabels: { name: 'Name' } })`
+or the `treetable` section of the language pack) or a `*cngxHeader` template.
+A column without either shows `Column 2` in production; dev builds show the
+data key and warn once per key. Default cells format numbers and dates with
+the treetable's locale. `sortTree(nodes, field, direction, locale)` collates
+with the locale you pass.
 
 ## Controlled vs. Uncontrolled
 

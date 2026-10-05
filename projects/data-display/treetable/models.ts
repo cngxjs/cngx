@@ -73,8 +73,9 @@ export interface CngxTreetableOptions<T> {
    */
   customColumnOrder?: readonly (keyof T & string)[];
   /**
-   * When `true` (the default), column header labels have their first letter
-   * uppercased. Set to `false` to display raw key names.
+   * When `true` (the default), the column key a dev build shows for a column
+   * without a label has its first letter uppercased. Set to `false` to show
+   * the raw key. Production builds never show the key.
    * @defaultValue `true`
    */
   capitaliseHeader?: boolean;

@@ -217,6 +217,9 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/data-display/treetable
 
 - `TreetableConfig.labels` is typed `Partial<TreetableLabels> | Signal<Partial<TreetableLabels>>`, and once `withTreetableLabels` ran it holds a `Signal`. Code that reads it off `CNGX_TREETABLE_CONFIG` wraps the key once, in a field: with a module-level `const NO_LABELS: Partial<TreetableLabels> = {};`, write `private readonly labels = coerceSignal(inject(CNGX_TREETABLE_CONFIG).labels ?? NO_LABELS);` (`coerceSignal` from `@cngx/core/utils`) and read `this.labels().loading` inside a `computed()`, a template or a handler. `withTreetableLabels` now also accepts a `Signal<Partial<TreetableLabels>>`; plain partials still merge key by key across features.
+- `TreetableLabels` gains two optional keys: `columnLabels`, the column header labels by column key, and `unlabeledColumn: (position) => string`, the header of a column without a label (English `'Column {position}'`). Both default to the `treetable` section of the language pack; `columnLabels` from `withTreetableLabels` merges key by key over the pack's.
+- The internal English label bundle is gone; every English treetable string comes from the new `CNGX_TREETABLE_LANGUAGE_EN` export, the `treetable` section of the language pack.
+- `sortTree(nodes, field, direction, locale?)` takes the collation locale as an optional fourth argument. Pass the use-site locale, `sortTree(nodes, 'name', 'asc', injectLocale()())`; without it the runtime default collation applies as before.
 
 ---
 
@@ -300,6 +303,13 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - An operator key without an `operators` entry and without a definition `label` is shown and announced as `unnamedOperator` (English `'Unnamed operator'`) in the picker, the row's accessible name and the live region. Before, the raw key (`lengthGt`) was shown and spoken. Give such operators a `label` through `withOperators` or an entry through `withFilterBuilderI18n({ operators })`.
 - Announcements about a filter without a field name it with `unboundFilterLabel`: `Filter removed: Unbound filter Equals "x"` where English said `Filter removed: Equals "x"`, and `Filter added: Unbound filter` where it said `Filter added: `. A custom `filterAdded` / `filterRemoved` / `fieldChanged` formatter receives the word as `fieldLabel` instead of an empty string.
 - The removal announcement is one message per shape (with or without operator and value) instead of a joined and whitespace-collapsed string, so runs of spaces inside a field label or value are spoken as written. Text values are quoted by the `quotedValue` message (English `'"{value}"'`), so a language can use its own quotation marks.
+
+### @cngx/data-display/treetable
+
+- The treetable copy comes from the `treetable` section of the language pack; `withTreetableLabels` still wins key by key, also on top of a pack. English output is unchanged apart from the points below.
+- A column without a `columnLabels` entry and without a `*cngxHeader` template no longer shows its data key in production builds: the header reads `unlabeledColumn` (`Column 2`). Development builds still show the key (capitalised unless `capitaliseHeader` is `false`) and warn once per key. Give every column a label through `withTreetableLabels({ columnLabels: { name: 'Name' } })`, the `treetable.columnLabels` of your language pack, or a `*cngxHeader` template. `capitaliseHeader` now only affects that development fallback.
+- The default cell formats numbers and dates with the treetable's locale: `1234.5` renders `1,234.5` in English and `1.234,5` in German (at most three fraction digits), and a `Date` renders as `Oct 5, 2026` instead of `Date.toString()`; an invalid date renders empty. A `*cngxCell` template still receives the raw value.
+- The select-all announcements format the count with the locale: `1,200 rows selected` where English said `1200 rows selected`.
 
 
 ---

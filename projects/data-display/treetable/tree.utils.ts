@@ -1,3 +1,4 @@
+import { dateTimeFormatterFor, numberFormatterFor } from '@cngx/core/utils';
 import {
   filterTree as filterTreeKernel,
   flattenTree as flattenTreeKernel,
@@ -100,13 +101,40 @@ export function filterTree<T>(nodes: CngxTreetableNode<T>[], predicate: (value: 
   return filterTreeKernel(nodes, predicate) as CngxTreetableNode<T>[];
 }
 
+const collators = new Map<string, Intl.Collator>();
+
+/** @internal One numeric, base-sensitivity collator per locale (`''` = runtime default). */
+function collatorFor(locale: string | undefined): Intl.Collator {
+  const key = locale ?? '';
+  let collator = collators.get(key);
+  if (!collator) {
+    collator = new Intl.Collator(locale, { numeric: true, sensitivity: 'base' });
+    collators.set(key, collator);
+  }
+  return collator;
+}
+
 /**
  * Sorts each level of the tree independently by a field key.
  * Children remain grouped under their parent; only sibling order changes.
  *
+ * Values compare as text with an `Intl.Collator` of `locale` (numeric,
+ * base sensitivity), so `"item2"` sorts before `"item10"` and letters follow
+ * the locale's alphabet (Swedish `ä` after `z`, German `ä` beside `a`). Pass
+ * the use-site locale: `sortTree(nodes, 'name', 'asc', injectLocale()())`.
+ * Without it the runtime default locale applies.
+ *
+ * @param locale - BCP 47 tag of the collation; the runtime default when omitted.
+ *
  * @category data-display/treetable
  */
-export function sortTree<T>(nodes: CngxTreetableNode<T>[], field: string, direction: 'asc' | 'desc'): CngxTreetableNode<T>[] {
+export function sortTree<T>(
+  nodes: CngxTreetableNode<T>[],
+  field: string,
+  direction: 'asc' | 'desc',
+  locale?: string,
+): CngxTreetableNode<T>[] {
+  const collator = collatorFor(locale);
   const toPrimitive = (v: unknown): string => {
     if (v === null || v === undefined || typeof v === 'object') {
       return '';
@@ -116,13 +144,66 @@ export function sortTree<T>(nodes: CngxTreetableNode<T>[], field: string, direct
   const sorted = [...nodes].sort((a, b) => {
     const av = toPrimitive((a.value as Record<string, unknown>)[field]);
     const bv = toPrimitive((b.value as Record<string, unknown>)[field]);
-    const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+    const cmp = collator.compare(av, bv);
     return direction === 'asc' ? cmp : -cmp;
   });
   return sorted.map((node) => ({
     ...node,
-    children: node.children ? sortTree(node.children, field, direction) : undefined,
+    children: node.children ? sortTree(node.children, field, direction, locale) : undefined,
   }));
+}
+
+const CELL_NUMBER_FORMAT: Intl.NumberFormatOptions = {};
+const CELL_DATE_FORMAT: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+};
+
+/**
+ * The default cell text of a value: numbers and dates formatted for `locale`,
+ * an invalid date empty, everything else unchanged.
+ *
+ * @internal
+ */
+export function formatCellValue(value: unknown, locale: string): unknown {
+  if (typeof value === 'number') {
+    return numberFormatterFor(locale, CELL_NUMBER_FORMAT).format(value);
+  }
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime())
+      ? ''
+      : dateTimeFormatterFor(locale, CELL_DATE_FORMAT).format(value);
+  }
+  return value;
+}
+
+/**
+ * The default header of a data column: its `columnLabels` entry, else in a
+ * dev build the column key (capitalised when `capitaliseKey`), else the
+ * `unlabeledColumn` text for its 1-based `position`. Never the key in
+ * production.
+ *
+ * @internal
+ */
+export function columnHeaderFor(
+  key: string,
+  position: number,
+  labels: {
+    readonly columnLabels: Readonly<Record<string, string>>;
+    readonly unlabeledColumn: (position: number) => string;
+  },
+  capitaliseKey: boolean,
+  devMode: boolean,
+): string {
+  const label = labels.columnLabels[key];
+  if (label !== undefined) {
+    return label;
+  }
+  if (devMode) {
+    return capitaliseKey ? capitalise(key) : key;
+  }
+  return labels.unlabeledColumn(position);
 }
 
 /**

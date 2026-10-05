@@ -35,9 +35,10 @@ export interface TreetableConfig {
    */
   highlightRowOnHover?: boolean;
   /**
-   * When `true`, column header labels have their first letter
-   * uppercased before display. Set per-instance via
-   * `options.capitaliseHeader` to override.
+   * When `true`, the column key a dev build shows for a column without a
+   * label has its first letter uppercased. Labels from `columnLabels` are
+   * shown as written. Set per-instance via `options.capitaliseHeader` to
+   * override.
    * @defaultValue `true`
    */
   capitaliseHeader?: boolean;
@@ -76,8 +77,9 @@ export interface TreetableTemplates {
 }
 
 /**
- * Every built-in string `CngxTreetable` renders or announces. English
- * by default; localise app-wide via {@link withTreetableLabels}.
+ * Every built-in string `CngxTreetable` renders or announces. Unset keys read
+ * the `treetable` section of the active language pack, English by default;
+ * override app-wide via {@link withTreetableLabels}.
  *
  * @category data-display/treetable
  */
@@ -102,6 +104,18 @@ export interface TreetableLabels {
   rowsSelected?: (count: number) => string;
   /** Live-region announcement after select-all deselects `count` visible rows. */
   rowsDeselected?: (count: number) => string;
+  /**
+   * Column header labels by column key, merged key by key over the language
+   * pack's `columnLabels`. A `*cngxHeader` template still wins. A column
+   * without a label reads {@link TreetableLabels.unlabeledColumn}; dev builds
+   * show the key instead and warn once per key.
+   */
+  columnLabels?: Readonly<Record<string, string>>;
+  /**
+   * Header of a column without a label. Receives the column's 1-based
+   * position among the data columns. Default `'Column {position}'`.
+   */
+  unlabeledColumn?: (position: number) => string;
 }
 
 /**
@@ -109,24 +123,6 @@ export interface TreetableLabels {
  * @internal
  */
 export const NO_TREETABLE_LABELS: Partial<TreetableLabels> = {};
-
-/**
- * English library defaults for {@link TreetableLabels}. Internal - the
- * component overlays `CNGX_TREETABLE_CONFIG.labels` on top of this.
- * @internal
- */
-export const TREETABLE_DEFAULT_LABELS: Required<TreetableLabels> = {
-  loading: 'Loading',
-  refreshing: 'Refreshing',
-  errorFallback: 'Data failed to load',
-  emptyFallback: 'No data',
-  expand: 'Expand',
-  collapse: 'Collapse',
-  selectAll: 'Select all rows',
-  selectRow: 'Select row',
-  rowsSelected: (count) => (count === 1 ? '1 row selected' : `${count} rows selected`),
-  rowsDeselected: (count) => (count === 1 ? '1 row deselected' : `${count} rows deselected`),
-};
 
 /**
  * Marker shape returned by every `withXxx()` helper. Each feature is a
@@ -184,7 +180,7 @@ export const CNGX_TREETABLE_CONFIG = new InjectionToken<TreetableConfig>('CNGX_T
  *   providers: [
  *     provideTreetable(
  *       withHighlightOnHover(),       // turn hover-highlight on app-wide
- *       withCapitaliseHeaders(false), // keep raw header keys app-wide
+ *       withCapitaliseHeaders(false), // keep raw dev header keys app-wide
  *     ),
  *   ],
  * });
@@ -254,15 +250,17 @@ export function withHighlightOnHover(enabled = true): TreetableFeature {
 
 /**
  * Feature: app-wide copy overrides for the treetable's built-in
- * strings ({@link TreetableLabels}). Partial - unset keys keep the
- * English library defaults. Later calls merge over earlier ones
- * key-by-key. Pass a `Signal` to switch the copy at runtime.
+ * strings ({@link TreetableLabels}). Partial - unset keys read the
+ * `treetable` section of the active language pack, English by default.
+ * Later calls merge over earlier ones key-by-key (`columnLabels` is
+ * replaced as a whole between two calls). Pass a `Signal` to switch the
+ * copy at runtime.
  *
  * ```ts
  * provideTreetable(
  *   withTreetableLabels({
  *     loading: 'Wird geladen',
- *     errorFallback: 'Daten konnten nicht geladen werden',
+ *     columnLabels: { name: 'Name', size: 'Größe' },
  *   }),
  * );
  * ```
@@ -297,13 +295,13 @@ export function withTreetableTemplates(templates: TreetableTemplates): Treetable
 }
 
 /**
- * Feature: auto-capitalisation of column header labels.
+ * Feature: auto-capitalisation of the column key a dev build shows as the
+ * header of a column without a label.
  *
- * The library default for `capitaliseHeader` is `true`, so headers
- * already capitalise without this helper. Use
- * `withCapitaliseHeaders(false)` to *opt out* and render the raw
- * column-key strings (useful for snake_case domain keys you want to
- * keep verbatim, or for fully custom `*cngxHeader` slot rendering).
+ * The library default for `capitaliseHeader` is `true`. Use
+ * `withCapitaliseHeaders(false)` to *opt out* and show the raw column key
+ * in dev. Production builds never show the key: a column without a
+ * `columnLabels` entry or `*cngxHeader` template reads `unlabeledColumn`.
  *
  * @param enabled - Capitalise on/off. Default `true`.
  *
