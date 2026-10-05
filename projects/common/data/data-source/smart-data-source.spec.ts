@@ -58,6 +58,22 @@ describe('CngxSmartDataSource - no directives', () => {
     });
   });
 
+  it('keeps the default search exact across terms and changed rows', () => {
+    TestBed.runInInjectionContext(() => {
+      const term = signal('ub');
+      const search = { term } as unknown as CngxSearch;
+      const rows = signal([{ name: 'Über' }, { name: 'Ida' }]);
+      const ds = injectSmartDataSource(rows, { search: () => search });
+      expect(ds.filteredCount()).toBe(1);
+      term.set('id');
+      expect(ds.filteredCount()).toBe(1);
+      rows.set([{ name: 'Idee' }, { name: 'Ida' }, { name: 'Uber' }]);
+      expect(ds.filteredCount()).toBe(2);
+      term.set('ub');
+      expect(ds.filteredCount()).toBe(1);
+    });
+  });
+
   it('returns CngxSmartDataSource instance', () => {
     TestBed.runInInjectionContext(() => {
       expect(injectSmartDataSource(signal([]))).toBeInstanceOf(CngxSmartDataSource);

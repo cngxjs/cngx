@@ -12,14 +12,45 @@ import { CngxSearch } from '../keyboard/search.directive';
  */
 export type ListboxMatchFn = (option: ActiveDescendantItem, term: string) => boolean;
 
-/** @internal Accent- and case-tolerant substring match in the app locale. */
+interface FoldedLabel {
+  readonly locale: string;
+  readonly source: string;
+  readonly folded: string;
+}
+
+/**
+ * @internal Accent- and case-tolerant substring match in the app locale. The
+ * term is folded once per term and locale, each option label once per label
+ * and locale - not on every keystroke for every option.
+ */
 function labelMatchFor(locale: Signal<string>): ListboxMatchFn {
+  const labels = new WeakMap<ActiveDescendantItem, FoldedLabel>();
+  let lastTerm: FoldedLabel | undefined;
+  const foldedLabel = (option: ActiveDescendantItem, current: string): string => {
+    const hit = labels.get(option);
+    if (hit?.locale === current && hit.source === option.label) {
+      return hit.folded;
+    }
+    const entry = {
+      locale: current,
+      source: option.label,
+      folded: foldForMatching(option.label, current),
+    };
+    labels.set(option, entry);
+    return entry.folded;
+  };
+  const foldedTerm = (term: string, current: string): string => {
+    if (lastTerm?.locale !== current || lastTerm.source !== term) {
+      lastTerm = { locale: current, source: term, folded: foldForMatching(term, current) };
+    }
+    return lastTerm.folded;
+  };
   return (option, term) => {
     if (term === '') {
       return true;
     }
     const current = locale();
-    return foldForMatching(option.label, current).includes(foldForMatching(term, current));
+    return foldedLabel(option, current).includes(foldedTerm(term, current));
   };
 }
 
