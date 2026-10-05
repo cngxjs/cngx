@@ -162,24 +162,43 @@ export const CELL_DATE_FORMAT: Intl.DateTimeFormatOptions = {
 };
 
 /**
- * The default cell text of a value: numbers and dates formatted for `locale`
- * (dates with `dateFormat`, date-only by default), an invalid date empty,
- * everything else unchanged.
+ * The formatters a default cell uses for one locale and date format.
  *
  * @internal
  */
-export function formatCellValue(
-  value: unknown,
+export interface CellFormatters {
+  readonly number: Intl.NumberFormat;
+  readonly date: Intl.DateTimeFormat;
+}
+
+/**
+ * Resolves the default-cell formatters for `locale` (dates with `dateFormat`,
+ * date-only by default). Resolve once per locale and format, not per cell.
+ *
+ * @internal
+ */
+export function cellFormattersFor(
   locale: string,
   dateFormat: Intl.DateTimeFormatOptions = CELL_DATE_FORMAT,
-): unknown {
+): CellFormatters {
+  return {
+    number: numberFormatterFor(locale, CELL_NUMBER_FORMAT),
+    date: dateTimeFormatterFor(locale, dateFormat),
+  };
+}
+
+/**
+ * The default cell text of a value: numbers and dates formatted with
+ * `formatters`, an invalid date empty, everything else unchanged.
+ *
+ * @internal
+ */
+export function formatCellValue(value: unknown, formatters: CellFormatters): unknown {
   if (typeof value === 'number') {
-    return numberFormatterFor(locale, CELL_NUMBER_FORMAT).format(value);
+    return formatters.number.format(value);
   }
   if (value instanceof Date) {
-    return Number.isNaN(value.getTime())
-      ? ''
-      : dateTimeFormatterFor(locale, dateFormat).format(value);
+    return Number.isNaN(value.getTime()) ? '' : formatters.date.format(value);
   }
   return value;
 }

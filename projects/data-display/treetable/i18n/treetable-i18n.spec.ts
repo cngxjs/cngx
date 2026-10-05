@@ -13,7 +13,7 @@ import { provideLocale, provideLocaleAt } from '@cngx/core/utils';
 import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 
 import type { Node } from '../models';
-import { columnHeaderFor, formatCellValue } from '../tree.utils';
+import { cellFormattersFor, columnHeaderFor, formatCellValue } from '../tree.utils';
 import { CngxTreetable } from '../treetable.component';
 import {
   CNGX_TREETABLE_CONFIG,
@@ -367,9 +367,18 @@ describe('CngxTreetable header and cell copy', () => {
   });
 
   it('renders an invalid date cell empty and leaves other values unchanged', () => {
-    expect(formatCellValue(new Date(Number.NaN), 'en')).toBe('');
-    expect(formatCellValue('text', 'en')).toBe('text');
-    expect(formatCellValue(true, 'en')).toBe(true);
-    expect(formatCellValue(null, 'en')).toBeNull();
+    const en = cellFormattersFor('en');
+    expect(formatCellValue(new Date(Number.NaN), en)).toBe('');
+    expect(formatCellValue('text', en)).toBe('text');
+    expect(formatCellValue(true, en)).toBe(true);
+    expect(formatCellValue(null, en)).toBeNull();
+  });
+
+  it('reuses the cached formatters for the same locale and date format', () => {
+    const first = cellFormattersFor('de', { dateStyle: 'medium' });
+    const second = cellFormattersFor('de', { dateStyle: 'medium' });
+    expect(second.number).toBe(first.number);
+    expect(second.date).toBe(first.date);
+    expect(cellFormattersFor('en').date).not.toBe(cellFormattersFor('de').date);
   });
 });

@@ -50,6 +50,7 @@ import {
   extractColumns,
   flattenTree,
   CELL_DATE_FORMAT,
+  cellFormattersFor,
   formatCellValue,
   getInitialExpandedIds,
   isNodeVisible,
@@ -791,13 +792,18 @@ export class CngxTreetable<T = unknown> {
     () => this.resolvedOptions().dateFormat ?? CELL_DATE_FORMAT,
   );
 
+  /** Default-cell formatters, resolved once per locale and date format. */
+  private readonly cellFormatters = computed(() =>
+    cellFormattersFor(this.locale(), this.dateFormat()),
+  );
+
   /**
    * Default cell text: numbers and dates formatted for the treetable's
    * locale (dates with the resolved `dateFormat`), other values unchanged.
    * @internal
    */
   protected cellText(value: unknown): unknown {
-    return formatCellValue(value, this.locale(), this.dateFormat());
+    return formatCellValue(value, this.cellFormatters());
   }
 
   /**
