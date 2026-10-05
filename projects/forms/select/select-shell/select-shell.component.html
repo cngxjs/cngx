@@ -29,7 +29,16 @@
     (blur)="handleBlur()"
     (keydown)="handleTriggerKeydown($event)"
   >
-    @if (triggerLabelTpl(); as labelTpl) {
+    @if (isEmpty() && tpl.placeholder(); as phTpl) {
+      <span class="cngx-select-shell__label cngx-select-shell__label--placeholder">
+        <ng-container
+          *ngTemplateOutlet="
+            phTpl;
+            context: { $implicit: placeholder(), placeholder: placeholder() }
+          "
+        />
+      </span>
+    } @else if (triggerLabelTpl(); as labelTpl) {
       <ng-container *ngTemplateOutlet="labelTpl; context: triggerLabelContext()" />
     } @else {
       <span
