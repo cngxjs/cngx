@@ -246,13 +246,35 @@ describe('createCanvasRenderer under forced colors', () => {
     expect(gcs.mock.calls.length).toBeGreaterThan(afterFirst);
   });
 
-  it('leaves no probe element in the host', () => {
+  it('mounts one hidden palette probe and removes it on destroy', () => {
     const d = deps();
     const renderer = createCanvasRenderer(d);
     const host = document.createElement('div');
     renderer.mount(host, d.ctx);
-    renderer.paint([LINE]);
-    expect(host.querySelector('span')).toBeNull();
+    const probes = host.querySelectorAll('.cngx-chart__palette-probe');
+    expect(probes).toHaveLength(1);
+    expect(probes[0].getAttribute('aria-hidden')).toBe('true');
+
+    renderer.destroy();
+    expect(host.querySelector('.cngx-chart__palette-probe')).toBeNull();
+  });
+
+  it('mutates no host DOM while painting, re-probes included', () => {
+    const d = deps();
+    const renderer = createCanvasRenderer(d);
+    const host = document.createElement('div');
+    renderer.mount(host, d.ctx);
+    renderer.paint([LINE, BAR]);
+    const observer = new MutationObserver(() => undefined);
+    observer.observe(host, { childList: true, attributes: true, subtree: true });
+
+    for (let i = 2; i <= 10; i++) {
+      renderer.invalidateColorCache?.();
+      renderer.paint([LINE, BAR]);
+    }
+
+    expect(observer.takeRecords()).toEqual([]);
+    observer.disconnect();
   });
 });
 

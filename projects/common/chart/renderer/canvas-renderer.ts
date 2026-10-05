@@ -8,7 +8,8 @@ import {
   type ForcedSeriesStep,
   forcedSeriesSteps,
   type ForcedSystemColors,
-  resolveSystemColors,
+  type SystemColorProbe,
+  createSystemColorProbe,
 } from './forced-series';
 
 /**
@@ -102,6 +103,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   let forcedNow = false;
   // Forced system palette; cleared with colorCache so a flip re-probes it.
   let sysColors: ForcedSystemColors | null = null;
+  let probe: SystemColorProbe | null = null;
   // Hatch patterns for the forced cycle, per palette and DPR.
   let hatches: ForcedHatches | null = null;
   let hatchDpr = -1;
@@ -132,7 +134,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
    * `invalidateColorCache()`, so a forced-colors flip re-probes it.
    */
   function systemColors(): ForcedSystemColors {
-    sysColors ??= hostEl ? resolveSystemColors(hostEl) : { ink: 'CanvasText', canvas: 'canvas' };
+    sysColors ??= probe?.read() ?? { ink: 'CanvasText', canvas: 'canvas' };
     return sysColors;
   }
 
@@ -295,6 +297,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     host.appendChild(el);
     canvas = el;
     ctx2d = el.getContext('2d');
+    probe = createSystemColorProbe(host);
     sizeCanvas();
     watchDpr();
     // Teardown is owned by the renderer controller (it destroys on mode
@@ -419,6 +422,8 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     lastGeometries = [];
     canvas?.remove();
     canvas = null;
+    probe?.remove();
+    probe = null;
     ctx2d = null;
     hostEl = null;
     lastW = -1;

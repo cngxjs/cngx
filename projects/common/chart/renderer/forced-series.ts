@@ -12,27 +12,48 @@ export interface ForcedSystemColors {
   readonly canvas: string;
 }
 
+/** @internal Reads the forced system palette without touching the DOM. */
+export interface SystemColorProbe {
+  /** Resolve CanvasText / Canvas from the probe's current computed style. */
+  read(): ForcedSystemColors;
+  /** Detach the probe from its host. */
+  remove(): void;
+}
+
 /**
- * @internal Resolve `CanvasText` / `Canvas` to concrete colours through a
- * probe span under `host`. The probe opts out with
- * `forced-color-adjust: none`; without it a forced `color: Canvas` would
- * compute to the forced text colour. Removed right after the read, so the
- * host's DOM is left as it was. Falls back to the keywords when the host
+ * @internal Mount a hidden probe under `host` that resolves `CanvasText` /
+ * `Canvas` to concrete colours. Two child spans carry the keywords and opt
+ * out with `forced-color-adjust: none`; without it a forced `color: Canvas`
+ * would compute to the forced text colour. The probe lives as long as the
+ * renderer, so a re-read on a palette flip is two style reads and never a
+ * host mutation inside `paint()`. Falls back to the keywords when the host
  * resolves nothing (jsdom).
  */
-export function resolveSystemColors(host: HTMLElement): ForcedSystemColors {
-  const probe = host.ownerDocument.createElement('span');
-  probe.style.setProperty('forced-color-adjust', 'none');
-  probe.style.display = 'none';
-  host.appendChild(probe);
-  probe.style.color = 'CanvasText';
-  const ink = getComputedStyle(probe).color;
+export function createSystemColorProbe(host: HTMLElement): SystemColorProbe {
+  const doc = host.ownerDocument;
+  const root = doc.createElement('span');
+  root.className = 'cngx-chart__palette-probe';
+  root.setAttribute('aria-hidden', 'true');
+  root.style.display = 'none';
+  const swatch = (keyword: string): HTMLElement => {
+    const el = doc.createElement('span');
+    el.style.setProperty('forced-color-adjust', 'none');
+    el.style.color = keyword;
+    root.appendChild(el);
+    return el;
+  };
+  const ink = swatch('CanvasText');
   // Lowercase on purpose: CSS keywords are case-insensitive, and the
   // capitalised form reads as copy to the user-facing string guard.
-  probe.style.color = 'canvas';
-  const canvas = getComputedStyle(probe).color;
-  probe.remove();
-  return { ink: ink || 'CanvasText', canvas: canvas || 'canvas' };
+  const canvas = swatch('canvas');
+  host.appendChild(root);
+  return {
+    read: () => ({
+      ink: getComputedStyle(ink).color || 'CanvasText',
+      canvas: getComputedStyle(canvas).color || 'canvas',
+    }),
+    remove: () => root.remove(),
+  };
 }
 
 /** @internal Position of a series in the legend's four-step forced-colors cycle. */
