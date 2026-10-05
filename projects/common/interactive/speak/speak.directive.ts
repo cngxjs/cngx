@@ -9,7 +9,10 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { CNGX_LOCALE } from '@cngx/core/utils';
+import { CNGX_LOCALE, injectLocale } from '@cngx/core/utils';
+
+/** Angular's `LOCALE_ID` when the app provides none. */
+const IMPLICIT_LOCALE_ID = 'en-US';
 
 /**
  * Headless text-to-speech directive using the browser's SpeechSynthesis API.
@@ -79,14 +82,22 @@ export class CngxSpeak {
   /** Speech volume (0–1, default 1). */
   readonly volume = input(1);
   /**
-   * BCP 47 language tag (e.g. `'de-DE'`). Empty string uses the app locale:
-   * a provided `CNGX_LOCALE` (`provideLocale`, `provideCngxI18n`), else
-   * `<html lang>`, else the browser's default voice language.
+   * BCP 47 language tag (e.g. `'de-DE'`). Empty string uses the app locale,
+   * in the order cngx formatters read it: a provided `CNGX_LOCALE`
+   * (`provideLocale`, `provideCngxI18n`), else a `LOCALE_ID` other than
+   * `'en-US'`, else `<html lang>`, else the browser's default voice language.
+   *
+   * `'en-US'` is Angular's implicit `LOCALE_ID` when an app sets none, and an
+   * explicit `'en-US'` cannot be told apart from it. A voice is chosen by its
+   * language, so treating that default as a choice would read German page
+   * text with an English voice; it falls through to `<html lang>` instead.
+   * An app that wants American English speech says so with `provideLocale`,
+   * `<html lang>` or this input.
    */
   readonly lang = input('');
-  // Optional on purpose: injectLocale() would fall back to Angular's implicit
-  // LOCALE_ID 'en-US' and read German text with an English voice.
   private readonly appLocale = inject(CNGX_LOCALE, { optional: true });
+  // Without a provided CNGX_LOCALE this reads the nearest LOCALE_ID.
+  private readonly locale = injectLocale();
   private readonly documentElement = inject(DOCUMENT).documentElement;
   /** Controls auto-speak on text changes. Does NOT affect `speak()` or `cancel()`. */
   readonly enabled = input(true);
@@ -159,6 +170,18 @@ export class CngxSpeak {
     }
   }
 
+  private resolveAppLanguage(): string {
+    const provided = this.appLocale?.();
+    if (provided) {
+      return provided;
+    }
+    const localeId = this.locale();
+    if (localeId !== IMPLICIT_LOCALE_ID) {
+      return localeId;
+    }
+    return this.documentElement.lang;
+  }
+
   private performSpeak(text: string): void {
     const synth = this.synth!;
     // Chrome silently drops the next speak() when cancel() runs on an
@@ -172,8 +195,7 @@ export class CngxSpeak {
     utterance.rate = this.rate();
     utterance.pitch = this.pitch();
     utterance.volume = this.volume();
-    const appLocale = this.appLocale?.() ?? '';
-    const lang = this.lang() || (appLocale === '' ? this.documentElement.lang : appLocale);
+    const lang = this.lang() || this.resolveAppLanguage();
     if (lang) {
       utterance.lang = lang;
     }

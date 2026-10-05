@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, LOCALE_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -110,6 +110,26 @@ describe('CngxSpeak', () => {
 
   it('speaks in <html lang> while no locale is provided', () => {
     document.documentElement.lang = 'de';
+    const { fixture } = setup();
+    fixture.componentInstance.message.set('Hallo');
+    TestBed.flushEffects();
+    const utterance = vi.mocked(speechSynthesis.speak).mock.calls[0][0] as unknown as MockUtterance;
+    expect(utterance.lang).toBe('de');
+  });
+
+  it('speaks in an explicit LOCALE_ID other than en-US', () => {
+    document.documentElement.lang = 'fr';
+    TestBed.configureTestingModule({ providers: [{ provide: LOCALE_ID, useValue: 'de-CH' }] });
+    const { fixture } = setup();
+    fixture.componentInstance.message.set('Grüezi');
+    TestBed.flushEffects();
+    const utterance = vi.mocked(speechSynthesis.speak).mock.calls[0][0] as unknown as MockUtterance;
+    expect(utterance.lang).toBe('de-CH');
+  });
+
+  it('reads an en-US LOCALE_ID as unset and speaks in <html lang>', () => {
+    document.documentElement.lang = 'de';
+    TestBed.configureTestingModule({ providers: [{ provide: LOCALE_ID, useValue: 'en-US' }] });
     const { fixture } = setup();
     fixture.componentInstance.message.set('Hallo');
     TestBed.flushEffects();
