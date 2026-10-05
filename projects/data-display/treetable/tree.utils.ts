@@ -206,8 +206,8 @@ export function formatCellValue(value: unknown, formatters: CellFormatters): unk
 /**
  * The default header of a data column: its `columnLabels` entry, else in a
  * dev build the capitalised column key, else the
- * `unlabeledColumn` text for its 1-based `position`. Never the key in
- * production.
+ * `unlabeledColumn` text for its 1-based `position` and its key. Never the key
+ * in production unless a consumer `unlabeledColumn` renders it.
  *
  * @internal
  */
@@ -216,7 +216,7 @@ export function columnHeaderFor(
   position: number,
   labels: {
     readonly columnLabels: Readonly<Record<string, string>>;
-    readonly unlabeledColumn: (position: number) => string;
+    readonly unlabeledColumn: (position: number, column: string) => string;
   },
   devMode: boolean,
 ): string {
@@ -227,7 +227,7 @@ export function columnHeaderFor(
   if (devMode) {
     return capitalise(key);
   }
-  return labels.unlabeledColumn(position);
+  return labels.unlabeledColumn(position, key);
 }
 
 /**

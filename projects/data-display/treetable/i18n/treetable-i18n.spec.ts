@@ -12,6 +12,7 @@ import {
 import { provideLocale, provideLocaleAt } from '@cngx/core/utils';
 import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 
+import { CngxHeaderTpl } from '../column-template.directive';
 import type { Node } from '../models';
 import { cellFormattersFor, columnHeaderFor, formatCellValue } from '../tree.utils';
 import { CngxTreetable } from '../treetable.component';
@@ -58,7 +59,7 @@ describe('treetable language section', () => {
     expect(strip(en.rowsDeselected(1))).toBe('1 row deselected');
     expect(strip(en.rowsDeselected(3))).toBe('3 rows deselected');
     expect(en.columnLabels).toEqual({});
-    expect(strip(en.unlabeledColumn(2))).toBe('Column 2');
+    expect(strip(en.unlabeledColumn(2, 'size'))).toBe('Column 2');
     expect(EN_SECTION.unlabeledColumn).toBe('Column {position}');
   });
 
@@ -88,7 +89,7 @@ describe('treetable language section', () => {
     expect(strip(de.rowsSelected(1))).toBe('1 Zeile ausgewählt');
     expect(strip(de.rowsSelected(1200))).toBe('1.200 Zeilen ausgewählt');
     expect(de.columnLabels).toEqual({ name: 'Name', size: 'Größe' });
-    expect(strip(de.unlabeledColumn(3))).toBe('Spalte 3');
+    expect(strip(de.unlabeledColumn(3, 'size'))).toBe('Spalte 3');
 
     pack.set(undefined);
     expect(resolved().expand).toBe('Expand');
@@ -159,6 +160,19 @@ describe('treetable default header', () => {
     const production = columnHeaderFor('fileSize', 2, en, false);
     expect(production).toBe('Column 2');
     expect(production.toLowerCase()).not.toContain('filesize');
+  });
+
+  it('passes the column key to unlabeledColumn', () => {
+    const seen: [number, string][] = [];
+    const custom = {
+      columnLabels: {},
+      unlabeledColumn: (position: number, column: string) => {
+        seen.push([position, column]);
+        return column.toUpperCase();
+      },
+    };
+    expect(columnHeaderFor('size', 2, custom, false)).toBe('SIZE');
+    expect(seen).toEqual([[2, 'size']]);
   });
 });
 
@@ -239,6 +253,59 @@ describe('CngxTreetable header and cell copy', () => {
     expect(
       warn.mock.calls.some((call: unknown[]) => String(call[0]).includes('CngxTreetable')),
     ).toBe(false);
+  });
+
+  it('passes the column key to a consumer unlabeledColumn in production', () => {
+    vi.stubGlobal('ngDevMode', false);
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [
+        provideTreetable(
+          withTreetableLabels({
+            columnLabels: { name: 'Title' },
+            unlabeledColumn: (position, key) => `${key[0].toUpperCase()}${key.slice(1)} (${position})`,
+          }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    expect(headerTexts(fixture)).toEqual(['Title', 'Size (2)', 'Modified (3)']);
+  });
+
+  it('gives a cngxHeader template the column key and the resolved default label', () => {
+    vi.stubGlobal('ngDevMode', false);
+    @Component({
+      selector: 'cngx-header-slot-host',
+      template: `
+        <cngx-treetable [tree]="tree" [options]="options">
+          <ng-template [cngxHeader]="'name'" let-key let-column="column" let-label="label">
+            <span class="slot" [attr.data-key]="key" [attr.data-column]="column">{{ label }}</span>
+          </ng-template>
+          <ng-template [cngxHeader]="'size'" let-key let-column="column" let-label="label">
+            <span class="slot" [attr.data-key]="key" [attr.data-column]="column">{{ label }}</span>
+          </ng-template>
+        </cngx-treetable>
+      `,
+      imports: [CngxTreetable, CngxHeaderTpl],
+    })
+    class SlotHost {
+      readonly tree = data;
+      readonly options = { customColumnOrder: ['name', 'size', 'modified'] as const };
+    }
+
+    TestBed.configureTestingModule({
+      imports: [SlotHost],
+      providers: [provideTreetable(withTreetableLabels({ columnLabels: { name: 'Title' } }))],
+    });
+    const fixture = TestBed.createComponent(SlotHost);
+    fixture.detectChanges();
+    const slots = fixture.debugElement
+      .queryAll(By.css('.slot'))
+      .map((el) => el.nativeElement as HTMLElement);
+    expect(slots.map((el) => el.getAttribute('data-key'))).toEqual(['name', 'size']);
+    expect(slots.map((el) => el.getAttribute('data-column'))).toEqual(['name', 'size']);
+    expect(slots.map((el) => strip(el.textContent).trim())).toEqual(['Title', 'Column 2']);
   });
 
   it('formats number and date cells with the locale', () => {

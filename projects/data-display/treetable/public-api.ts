@@ -34,6 +34,7 @@ export type {
   TreetableOptions,
   CngxCellTplContext,
   CngxErrorTplContext,
+  CngxHeaderTplContext,
   CngxSkeletonRowTplContext,
 } from './models';
 export { flattenTree, filterTree, sortTree, nodeMatchesSearch } from './tree.utils';

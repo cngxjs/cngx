@@ -1,5 +1,10 @@
 import { Directive, inject, input, TemplateRef } from '@angular/core';
-import type { CngxCellTplContext, CngxErrorTplContext, CngxSkeletonRowTplContext } from './models';
+import type {
+  CngxCellTplContext,
+  CngxErrorTplContext,
+  CngxHeaderTplContext,
+  CngxSkeletonRowTplContext,
+} from './models';
 
 /**
  * Marks an `<ng-template>` as a custom cell template for a named column.
@@ -38,11 +43,14 @@ export class CngxCellTpl<T = unknown> {
 
 /**
  * Marks an `<ng-template>` as a custom header template for a named column.
+ * The template context is typed as {@link CngxHeaderTplContext}: the column
+ * key as `$implicit` / `column` and the resolved default header text as
+ * `label`.
  *
  * ```html
  * <cngx-treetable [tree]="tree">
- *   <ng-template [cngxHeader]="'name'">
- *     Full Name <mat-icon>sort</mat-icon>
+ *   <ng-template [cngxHeader]="'name'" let-column let-label="label">
+ *     {{ label }} <mat-icon>sort</mat-icon>
  *   </ng-template>
  * </cngx-treetable>
  * ```
@@ -57,12 +65,13 @@ export class CngxHeaderTpl {
   /** The column key whose header this template replaces. */
   readonly column = input.required<string>({ alias: 'cngxHeader' });
   /**
-   * The projected `<ng-template>` reference. Read by `CngxTreetable`
-   * via `contentChildren(CngxHeaderTpl)` and rendered into the matching
+   * The projected `<ng-template>` reference, typed against
+   * {@link CngxHeaderTplContext}. Read by `CngxTreetable` via
+   * `contentChildren(CngxHeaderTpl)` and rendered into the matching
    * column's header cell.
    * @internal
    */
-  readonly template = inject(TemplateRef<void>);
+  readonly template = inject(TemplateRef<CngxHeaderTplContext>);
 }
 
 /**

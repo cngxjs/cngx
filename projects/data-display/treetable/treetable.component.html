@@ -90,7 +90,12 @@
       <ng-container [cdkColumnDef]="col">
         <cdk-header-cell *cdkHeaderCellDef>
           @if (headerTplFor(col); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl"></ng-container>
+            <ng-container
+              *ngTemplateOutlet="
+                tpl;
+                context: { $implicit: col, column: col, label: headerLabels().get(col) ?? '' }
+              "
+            ></ng-container>
           } @else {
             {{ headerLabels().get(col) }}
           }

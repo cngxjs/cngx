@@ -137,7 +137,7 @@ function isDevBuild(): boolean {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/treetable.component.ts
  * @since 0.1.0
  * @relatedTo CngxTreetableRow, CngxCellTpl, CngxHeaderTpl, CngxEmptyTpl
- * @slot cngxHeader Replaces a column's header cell; no template context (read the column off your own definition).
+ * @slot cngxHeader Replaces a column's header cell; gets the column key as `$implicit` / `column` plus the resolved default header `label`.
  * @slot cngxCell Replaces a body cell; gets the flat node as `$implicit` plus the resolved `value`.
  * @slot cngxEmpty Rendered when the tree resolves to no rows.
  * @slot cngxError Rendered when a bound async state fails; gets the error as `$implicit` plus a `retry` callback.

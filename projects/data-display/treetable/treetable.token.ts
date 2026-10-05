@@ -113,9 +113,11 @@ export interface TreetableLabels {
   columnLabels?: Readonly<Record<string, string>>;
   /**
    * Header of a column without a label. Receives the column's 1-based
-   * position among the data columns. Default `'Column {position}'`.
+   * position among the data columns and the column key. Default
+   * `'Column {position}'`; the default never renders the key, a consumer
+   * function may derive a header from it.
    */
-  unlabeledColumn?: (position: number) => string;
+  unlabeledColumn?: (position: number, column: string) => string;
 }
 
 /**

@@ -1,6 +1,6 @@
 import type { Signal, TemplateRef } from '@angular/core';
 import type { CngxCellTpl, CngxHeaderTpl } from './column-template.directive';
-import type { CngxCellTplContext } from './models';
+import type { CngxCellTplContext, CngxHeaderTplContext } from './models';
 
 /**
  * Resolves a custom cell template for the given column key, or returns `null`
@@ -26,6 +26,6 @@ export function resolveCellTpl<T>(
 export function resolveHeaderTpl(
   col: string,
   tpls: Signal<readonly CngxHeaderTpl[]>,
-): TemplateRef<void> | null {
+): TemplateRef<CngxHeaderTplContext> | null {
   return tpls().find((t) => t.column() === col)?.template ?? null;
 }
