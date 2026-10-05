@@ -19,7 +19,10 @@ import type { PopoverHaspopup } from './popover.types';
  * Sets `aria-expanded`, `aria-controls`, and `aria-haspopup` based on the
  * referenced popover's state. Also sets `anchor-name` for CSS Anchor
  * Positioning and registers the anchor element on the popover for fallback
- * positioning.
+ * positioning. Both geometry jobs take effect only while no `CngxPopoverAnchor`
+ * holds the popover: when the focusable trigger is not the visible box the
+ * panel should hang under, put `[cngxPopoverAnchor]` on that box and the
+ * trigger yields its `anchor-name` while keeping every ARIA attribute.
  *
  * Contains **no event handlers** - the consumer binds interactions directly:
  *
@@ -40,11 +43,12 @@ import type { PopoverHaspopup } from './popover.types';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-trigger.directive.ts
  * @since 0.1.0
- * @relatedTo CngxPopover, CngxPopoverPanel, CngxTooltip
+ * @relatedTo CngxPopover, CngxPopoverAnchor, CngxPopoverPanel, CngxTooltip
  * <example-url>http://localhost:4200/#/common/popover/click-popover</example-url>
  * <example-url>http://localhost:4200/#/common/popover/controlled-open</example-url>
  * <example-url>http://localhost:4200/#/common/popover/escape-mode</example-url>
  * <example-url>http://localhost:4200/#/common/popover/placement-variants</example-url>
+ * <example-url>http://localhost:4200/#/common/popover/anchor/field-box-anchor</example-url>
  */
 @Directive({
   selector: '[cngxPopoverTrigger]',
@@ -105,8 +109,14 @@ export class CngxPopoverTrigger {
     return resolved === 'none' ? null : resolved;
   });
 
+  /**
+   * CSS anchor name, yielded (`null`) while a `CngxPopoverAnchor` holds
+   * the popover's explicit anchor slot.
+   */
   protected readonly cssAnchorName = computed(() =>
-    SUPPORTS_ANCHOR ? `--cngx-pop-${this.popoverRef().id()}` : null,
+    SUPPORTS_ANCHOR && this.popoverRef().explicitAnchorElement() === null
+      ? `--cngx-pop-${this.popoverRef().id()}`
+      : null,
   );
 
   private savedFocus: HTMLElement | null = null;
@@ -118,13 +128,10 @@ export class CngxPopoverTrigger {
       untracked(() => pop.setAnchorElement(this.elRef.nativeElement));
     });
 
-    // Clear the anchor registration on destroy - identity-guarded so a
-    // trigger that registered later on the same popover is not clobbered.
+    // Release the implicit anchor slot on destroy. The popover guards on
+    // identity, so a trigger that registered later is not clobbered.
     this.destroyRef.onDestroy(() => {
-      const pop = this.popoverRef();
-      if (pop.anchorElement() === this.elRef.nativeElement) {
-        pop.setAnchorElement(null);
-      }
+      this.popoverRef().releaseAnchorElement(this.elRef.nativeElement);
     });
 
     // Focus restoration: adopt the popover's pre-show focus snapshot on

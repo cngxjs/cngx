@@ -17,6 +17,7 @@ import { fromEvent } from 'rxjs';
 
 import { injectDirection } from '@cngx/core';
 import {
+  createSlotRegistry,
   hasTransition,
   nextUid,
   onTransitionDone,
@@ -438,19 +439,37 @@ export class CngxPopover {
    */
   readonly focusOrigin = this.focusOriginState.asReadonly();
 
-  /** Backing state for {@link anchorElement}. */
+  /**
+   * Implicit anchor slot, written by `CngxPopoverTrigger` and composing
+   * organisms via {@link setAnchorElement}.
+   */
   private readonly anchorElementState = signal<HTMLElement | null>(null);
 
+  /** Explicit anchor slot, claimed by `CngxPopoverAnchor`. */
+  private readonly explicitAnchorElementSlot = createSlotRegistry<HTMLElement>();
+
   /**
-   * The anchor element for Floating UI fallback positioning and the
-   * arrow-offset geometry. Registered by `CngxPopoverTrigger` (or a
-   * composing organism) via {@link setAnchorElement}.
+   * The element a `CngxPopoverAnchor` registered via
+   * {@link registerAnchorElement}, or `null`. While non-null it shadows
+   * the implicit anchor and `CngxPopoverTrigger` yields its
+   * `anchor-name`.
    */
-  readonly anchorElement = this.anchorElementState.asReadonly();
+  readonly explicitAnchorElement = this.explicitAnchorElementSlot.current;
+
+  /**
+   * The anchor element for Floating UI fallback positioning, the
+   * arrow-offset geometry and the outside-click guard. Precedence: the
+   * explicit anchor ({@link registerAnchorElement}, `CngxPopoverAnchor`)
+   * wins over the implicit one ({@link setAnchorElement},
+   * `CngxPopoverTrigger` or a composing organism).
+   */
+  readonly anchorElement = computed<HTMLElement | null>(
+    () => this.explicitAnchorElement() ?? this.anchorElementState(),
+  );
 
   /**
    * Inline-axis position the arrow ornament should sit at, expressed as
-   * a CSS length pinned to the trigger's centre. Computed from
+   * a CSS length pinned to the anchor's centre. Computed from
    * `anchorElement()` + the panel's own bounding box on every show /
    * reposition / window resize.
    *
@@ -642,6 +661,35 @@ export class CngxPopover {
   }
 
   /**
+   * Release the implicit anchor slot - but only while `element` still
+   * holds it. A trigger destroyed after another writer claimed the slot
+   * leaves that writer untouched.
+   */
+  releaseAnchorElement(element: HTMLElement): void {
+    this.anchorElementState.update((held) => (held === element ? null : held));
+  }
+
+  /**
+   * Claim the explicit anchor slot. Called by `CngxPopoverAnchor`; last
+   * registration wins. The explicit anchor shadows every
+   * {@link setAnchorElement} writer (trigger, submenu, context-menu
+   * virtual anchor) for positioning, arrow geometry and outside-click
+   * handling until it is unregistered.
+   */
+  registerAnchorElement(element: HTMLElement): void {
+    this.explicitAnchorElementSlot.register(element);
+  }
+
+  /**
+   * Release the explicit anchor slot - but only while `element` still
+   * holds it. A stale anchor releasing after a successor registered is
+   * a no-op.
+   */
+  unregisterAnchorElement(element: HTMLElement): void {
+    this.explicitAnchorElementSlot.unregister(element);
+  }
+
+  /**
    * Install the `aria-haspopup` hint triggers fall back to when the
    * consumer sets none. Composers (`CngxPopoverPanel`, menu wirings)
    * call this once at construction; `undefined` clears the hint.
@@ -687,7 +735,9 @@ export class CngxPopover {
   /**
    * @internal Called by the global outside-click listener for every open
    * popover. Hides this one when it opted into `closeOnOutsideClick` and the
-   * pointerdown landed outside both its panel and its anchor (trigger).
+   * pointerdown landed outside its panel, its anchor and its trigger (the
+   * implicit anchor holder, which differs from the anchor while a
+   * `CngxPopoverAnchor` holds the popover).
    */
   closeIfOutsidePointerDown(target: EventTarget | null): void {
     if (!this.closeOnOutsideClick()) {
@@ -696,7 +746,8 @@ export class CngxPopover {
     const node = target as Node | null;
     const panel = this.popoverElement;
     const anchor = this.anchorElement();
-    if (panel.contains(node) || anchor?.contains(node)) {
+    const trigger = this.anchorElementState();
+    if (panel.contains(node) || anchor?.contains(node) || trigger?.contains(node)) {
       return;
     }
     this.hide();
@@ -736,11 +787,11 @@ export class CngxPopover {
   }
 
   /**
-   * Recompute the arrow's edge and inline offset from the live trigger and
+   * Recompute the arrow's edge and inline offset from the live anchor and
    * panel rects. The resolved edge captures any browser-driven flip; the
    * offset is clamped inside the panel's rounded-corner bounds so the
    * arrow's base stays flush with the panel's straight edge even when the
-   * trigger sits outside the panel's inline extent.
+   * anchor sits outside the panel's inline extent.
    */
   private updateArrowOffset(): void {
     const anchor = this.anchorElement();
