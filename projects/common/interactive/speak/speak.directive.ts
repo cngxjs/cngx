@@ -9,7 +9,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { injectLocale } from '@cngx/core/utils';
+import { CNGX_LOCALE } from '@cngx/core/utils';
 
 /**
  * Headless text-to-speech directive using the browser's SpeechSynthesis API.
@@ -78,9 +78,16 @@ export class CngxSpeak {
   readonly pitch = input(1);
   /** Speech volume (0–1, default 1). */
   readonly volume = input(1);
-  /** BCP 47 language tag (e.g. `'de-DE'`). Empty string uses the app locale. */
+  /**
+   * BCP 47 language tag (e.g. `'de-DE'`). Empty string uses the app locale:
+   * a provided `CNGX_LOCALE` (`provideLocale`, `provideCngxI18n`), else
+   * `<html lang>`, else the browser's default voice language.
+   */
   readonly lang = input('');
-  private readonly locale = injectLocale();
+  // Optional on purpose: injectLocale() would fall back to Angular's implicit
+  // LOCALE_ID 'en-US' and read German text with an English voice.
+  private readonly appLocale = inject(CNGX_LOCALE, { optional: true });
+  private readonly documentElement = inject(DOCUMENT).documentElement;
   /** Controls auto-speak on text changes. Does NOT affect `speak()` or `cancel()`. */
   readonly enabled = input(true);
 
@@ -165,7 +172,8 @@ export class CngxSpeak {
     utterance.rate = this.rate();
     utterance.pitch = this.pitch();
     utterance.volume = this.volume();
-    const lang = this.lang() || this.locale();
+    const appLocale = this.appLocale?.() ?? '';
+    const lang = this.lang() || (appLocale === '' ? this.documentElement.lang : appLocale);
     if (lang) {
       utterance.lang = lang;
     }

@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { provideLocale } from '@cngx/core/utils';
 import { CngxSpeak } from './speak.directive';
 
@@ -41,8 +41,18 @@ class RateHost {
   rate = signal(1);
 }
 
+@Component({
+  template: '<div [cngxSpeak]="message()" lang="fr-FR"></div>',
+  imports: [CngxSpeak],
+})
+class LangHost {
+  message = signal('');
+}
+
 describe('CngxSpeak', () => {
+  let initialLang: string | null;
   beforeEach(() => {
+    initialLang = document.documentElement.getAttribute('lang');
     // performSpeak gates cancel() on `synth.speaking || synth.pending` to
     // dodge Chrome's idle-cancel utterance-drop bug. The mock therefore
     // has to track those flags so the "cancels previous speech" contract
@@ -64,6 +74,14 @@ describe('CngxSpeak', () => {
     TestBed.configureTestingModule({ imports: [TestHost] });
   });
 
+  afterEach(() => {
+    if (initialLang === null) {
+      document.documentElement.removeAttribute('lang');
+    } else {
+      document.documentElement.setAttribute('lang', initialLang);
+    }
+  });
+
   function setup() {
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
@@ -79,6 +97,35 @@ describe('CngxSpeak', () => {
     TestBed.flushEffects();
     const utterance = vi.mocked(speechSynthesis.speak).mock.calls[0][0] as unknown as MockUtterance;
     expect(utterance.lang).toBe('de-AT');
+  });
+
+  it('leaves the utterance language to the browser without a locale or <html lang>', () => {
+    document.documentElement.removeAttribute('lang');
+    const { fixture } = setup();
+    fixture.componentInstance.message.set('Hallo');
+    TestBed.flushEffects();
+    const utterance = vi.mocked(speechSynthesis.speak).mock.calls[0][0] as unknown as MockUtterance;
+    expect(utterance.lang).toBe('');
+  });
+
+  it('speaks in <html lang> while no locale is provided', () => {
+    document.documentElement.lang = 'de';
+    const { fixture } = setup();
+    fixture.componentInstance.message.set('Hallo');
+    TestBed.flushEffects();
+    const utterance = vi.mocked(speechSynthesis.speak).mock.calls[0][0] as unknown as MockUtterance;
+    expect(utterance.lang).toBe('de');
+  });
+
+  it('lets a bound lang win over the app locale', () => {
+    document.documentElement.lang = 'de';
+    TestBed.configureTestingModule({ providers: [provideLocale('de-AT')] });
+    const fixture = TestBed.createComponent(LangHost);
+    fixture.detectChanges();
+    fixture.componentInstance.message.set('Bonjour');
+    TestBed.flushEffects();
+    const utterance = vi.mocked(speechSynthesis.speak).mock.calls[0][0] as unknown as MockUtterance;
+    expect(utterance.lang).toBe('fr-FR');
   });
 
   it('does not speak on initial render', () => {

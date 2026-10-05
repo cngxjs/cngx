@@ -244,7 +244,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxSlider` and `CngxRangeSlider` format tick labels and the visible value with the app locale when no `valueText` is bound (`1,000`, `1.000` in German; before `1000`).
 - The visible `CngxRangeSlider` value is one message (`rangeValue`, English `'{start} - {end}'`) and reads in the page direction; it is no longer forced `ltr`. Pin a left-to-right readout with `--cngx-slider-range-direction: ltr`.
 - `CngxNavLink` derives `data-initial` from the first full character of the link text, uppercased with the app locale (`İ` for Turkish `istanbul`, a whole emoji or accented letter).
-- `CngxSpeak` speaks in the app locale while `lang` is unbound, instead of the browser default voice language.
+- `CngxSpeak` speaks in the app locale while `lang` is unbound: a provided `CNGX_LOCALE` (`provideLocale`, `provideCngxI18n`), else `<html lang>`. With neither, the browser's default voice language applies as before; Angular's implicit `LOCALE_ID` (`en-US`) is never used.
 
 ### @cngx/common/tabs
 
