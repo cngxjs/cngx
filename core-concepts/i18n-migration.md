@@ -274,6 +274,7 @@ These apply once your app config calls `provideCngxI18n(...)` from `@cngx/core/i
 
 - `provideCngxI18n` provides `CNGX_LOCALE` from the active pack's `locale`. A component-level `{ provide: LOCALE_ID, useValue: 'de-CH' }` no longer reaches CNGX formatters, because a provided `CNGX_LOCALE` outranks every `LOCALE_ID`. Use `provideLocaleAt('de-CH')` in that component's `viewProviders` instead.
 - `provideCngxI18n` writes `<html lang>` and `<html dir>` from the active pack, and `CNGX_DIRECTION` reports the pack's direction instead of reading `dir` from the DOM. An app that sets these attributes itself passes `withDocumentLanguage('off')`.
+- A pack `locale` that is not a BCP 47 tag (`'de_DE'`) reads as English for numbers, plurals, `CNGX_LOCALE` and `<html lang>`, with a warning in development. Write region tags with a hyphen: `'de-DE'`.
 
 ---
 

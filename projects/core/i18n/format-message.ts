@@ -33,6 +33,27 @@ const FIRST_STRONG_ISOLATE = '⁨';
 const POP_DIRECTIONAL_ISOLATE = '⁩';
 const NUMBER_FORMAT: Intl.NumberFormatOptions = {};
 
+const FALLBACK_LOCALE = 'en';
+
+/**
+ * @internal The canonical BCP 47 form of `locale`. A tag `Intl` rejects
+ * (`'de_DE'`, `''`) reads as English with one dev warning, so a bad pack
+ * `locale` can never make every message throw.
+ */
+export const canonicalLocale = memoize(
+  (locale: string): string => {
+    try {
+      return Intl.getCanonicalLocales(locale)[0] ?? FALLBACK_LOCALE;
+    } catch {
+      if (isDevMode()) {
+        console.warn(`[cngx/i18n] "${locale}" is not a BCP 47 locale; reading it as English.`);
+      }
+      return FALLBACK_LOCALE;
+    }
+  },
+  { cacheLimit: 32 },
+);
+
 const pluralRulesFor = memoize((locale: string) => new Intl.PluralRules(locale), {
   cacheLimit: 32,
 });
@@ -70,12 +91,18 @@ function selectPluralForm(
  * ```
  *
  * In dev mode a placeholder without an argument logs a warning and stays
- * visible in the output.
+ * visible in the output. A `locale` that is not a BCP 47 tag formats as
+ * English, with one dev warning per tag.
  *
  * @category core/i18n
  * @since 0.1.0
  */
-export function formatMessage(message: CngxMessage, args: CngxMessageArgs, locale: string): string {
+export function formatMessage(
+  message: CngxMessage,
+  args: CngxMessageArgs,
+  requestedLocale: string,
+): string {
+  const locale = canonicalLocale(requestedLocale);
   if (typeof message === 'function') {
     return message(args, locale);
   }

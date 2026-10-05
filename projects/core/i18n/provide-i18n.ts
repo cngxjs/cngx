@@ -15,6 +15,7 @@ import {
 import { CNGX_DIRECTION, type CngxDirection } from '@cngx/core';
 import { CNGX_LOCALE, coerceSignal, memoize } from '@cngx/core/utils';
 
+import { canonicalLocale } from './format-message';
 import type {
   CngxLanguagePack,
   CngxLanguagePackMeta,
@@ -162,7 +163,7 @@ function reflectDocumentLanguage(): void {
   const direction = inject(PACK_DIRECTION);
   const pack = inject(CNGX_LANGUAGE_PACK);
   effect(() => {
-    const lang = pack().locale;
+    const lang = canonicalLocale(pack().locale);
     const dir = direction();
     untracked(() => {
       root.lang = lang;
@@ -210,7 +211,7 @@ export function provideCngxI18n(...features: readonly CngxI18nFeature[]): Enviro
       provide: CNGX_LOCALE,
       useFactory: () => {
         const pack = inject(CNGX_LANGUAGE_PACK);
-        return computed(() => pack().locale);
+        return computed(() => canonicalLocale(pack().locale));
       },
     },
   ];
@@ -220,7 +221,7 @@ export function provideCngxI18n(...features: readonly CngxI18nFeature[]): Enviro
         provide: PACK_DIRECTION,
         useFactory: () => {
           const pack = inject(CNGX_LANGUAGE_PACK);
-          return computed(() => pack().dir ?? directionOf(pack().locale));
+          return computed(() => pack().dir ?? directionOf(canonicalLocale(pack().locale)));
         },
       },
       { provide: CNGX_DIRECTION, useExisting: PACK_DIRECTION },

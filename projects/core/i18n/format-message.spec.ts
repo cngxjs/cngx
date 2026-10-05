@@ -69,6 +69,14 @@ describe('formatMessage', () => {
     expect(out).toBe(`تم حذف ${FSI}Report.pdf${PDI}`);
   });
 
+  it('formats a message with a malformed locale as English and warns once', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const errors = { one: '{count} error', other: '{count} errors' };
+    expect(formatMessage(errors, { count: 1200 }, 'xx_YY_bad')).toBe('1,200 errors');
+    expect(formatMessage(errors, { count: 1 }, 'xx_YY_bad')).toBe('1 error');
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+
   it('calls a function message with the arguments and the locale', () => {
     const fn = vi.fn(
       (args: Readonly<Record<string, string | number>>, locale: string) =>

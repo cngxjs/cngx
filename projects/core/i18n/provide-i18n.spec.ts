@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PLATFORM_ID, signal, type EnvironmentProviders, type Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { injectDirection, provideDirection } from '@cngx/core';
@@ -153,6 +153,16 @@ describe('provideCngxI18n locale and direction', () => {
   it('lets an explicit pack dir win over the derived one', () => {
     const { direction } = setup([provideCngxI18n(withPack({ ...DE, dir: 'rtl' }))]);
     expect(direction()).toBe('rtl');
+  });
+
+  it('reads a malformed pack locale as English for locale, direction and <html lang>', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { locale, direction } = setup([provideCngxI18n(withPack({ ...DE, locale: 'de_DE' }))]);
+    TestBed.flushEffects();
+    expect([locale(), direction()]).toEqual(['en', 'ltr']);
+    expect(document.documentElement.lang).toBe('en');
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it('drives the locale from a regional spread', () => {
