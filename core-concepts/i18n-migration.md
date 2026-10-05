@@ -309,7 +309,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - The treetable copy comes from the `treetable` section of the language pack; `withTreetableLabels` still wins key by key, also on top of a pack. English output is unchanged apart from the points below.
 - A column without a `columnLabels` entry and without a `*cngxHeader` template no longer shows its data key in production builds: the header reads `unlabeledColumn` (`Column 2`). Development builds still show the key, capitalised, and warn once per key. Give every column a label through `withTreetableLabels({ columnLabels: { name: 'Name' } })`, the `treetable.columnLabels` of your language pack, or a `*cngxHeader` template.
-- The default cell formats numbers and dates with the treetable's locale: `1234.5` renders `1,234.5` in English and `1.234,5` in German (at most three fraction digits), and a `Date` renders as `Oct 5, 2026` instead of `Date.toString()`; an invalid date renders empty. A `*cngxCell` template still receives the raw value.
+- The default cell formats numbers and dates with the treetable's locale: `1234.5` renders `1,234.5` in English and `1.234,5` in German (at most three fraction digits), and a `Date` renders as `Oct 5, 2026` instead of `Date.toString()`; an invalid date renders empty. To show the time of day, set `provideTreetable(withTreetableDateFormat({ dateStyle: 'medium', timeStyle: 'short' }))` or the per-instance `dateFormat` option. A `*cngxCell` template still receives the raw value.
 - The select-all announcements format the count with the locale: `1,200 rows selected` where English said `1200 rows selected`.
 
 
