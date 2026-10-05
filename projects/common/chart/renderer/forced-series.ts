@@ -27,10 +27,12 @@ export function resolveSystemColors(host: HTMLElement): ForcedSystemColors {
   host.appendChild(probe);
   probe.style.color = 'CanvasText';
   const ink = getComputedStyle(probe).color;
-  probe.style.color = 'Canvas';
+  // Lowercase on purpose: CSS keywords are case-insensitive, and the
+  // capitalised form reads as copy to the user-facing string guard.
+  probe.style.color = 'canvas';
   const canvas = getComputedStyle(probe).color;
   probe.remove();
-  return { ink: ink || 'CanvasText', canvas: canvas || 'Canvas' };
+  return { ink: ink || 'CanvasText', canvas: canvas || 'canvas' };
 }
 
 /** @internal Position of a series in the legend's four-step forced-colors cycle. */

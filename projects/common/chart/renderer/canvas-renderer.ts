@@ -132,7 +132,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
    * `invalidateColorCache()`, so a forced-colors flip re-probes it.
    */
   function systemColors(): ForcedSystemColors {
-    sysColors ??= hostEl ? resolveSystemColors(hostEl) : { ink: 'CanvasText', canvas: 'Canvas' };
+    sysColors ??= hostEl ? resolveSystemColors(hostEl) : { ink: 'CanvasText', canvas: 'canvas' };
     return sysColors;
   }
 
