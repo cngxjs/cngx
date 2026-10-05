@@ -37,8 +37,8 @@ export interface CngxSectionBundle<B extends object> {
    * Reads the token for the use site: every key the features left at its
    * default follows the use site's section and locale (a `provideLocaleAt`
    * subtree, a route-level pack); every key a feature set stays as set. A
-   * token value supplied without {@link CngxSectionBundle.build} is returned
-   * as is.
+   * token value supplied without {@link CngxSectionBundle.build} keeps every
+   * key it sets, and a key it leaves out follows the use site.
    */
   readonly resolve: (bundle: Signal<B>) => Signal<B>;
 }
@@ -52,29 +52,37 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   );
 }
 
+/** The defaults of a token value not built by `build`: it set every key it has. */
+const NO_DEFAULTS: Readonly<Record<string, unknown>> = {};
+
 /**
- * Keys of `own` that still hold the default from `root` take the use-site
- * default from `site`; a key a feature replaced stays. One level into plain
- * records, so a nested label the consumer did not set follows too.
+ * Keys of `own` that are missing or still hold the default from `root` take
+ * the use-site default from `site`; a key a feature replaced stays. One level
+ * into plain records, so a nested label the consumer did not set follows too.
+ * Returns `own` itself when no key changes.
  */
-function overlay<B extends object>(own: B, root: B, site: B): B {
+function overlay<B extends object>(own: B, root: object, site: B): B {
   const ownRecord = own as Record<string, unknown>;
   const rootRecord = root as Record<string, unknown>;
   const siteRecord = site as Record<string, unknown>;
   const out: Record<string, unknown> = { ...ownRecord };
+  let changed = false;
   for (const key of Object.keys(siteRecord)) {
     const value = ownRecord[key];
     const rootValue = rootRecord[key];
-    if (value === undefined || Object.is(value, rootValue)) {
-      out[key] = siteRecord[key];
-      continue;
-    }
     const siteValue = siteRecord[key];
-    if (isRecord(value) && isRecord(rootValue) && isRecord(siteValue)) {
-      out[key] = overlay(value, rootValue, siteValue);
+    let next = value;
+    if (value === undefined || Object.is(value, rootValue)) {
+      next = siteValue;
+    } else if (isRecord(value) && isRecord(rootValue) && isRecord(siteValue)) {
+      next = overlay(value, rootValue, siteValue);
+    }
+    if (!Object.is(next, value)) {
+      out[key] = next;
+      changed = true;
     }
   }
-  return out as B;
+  return changed ? (out as B) : own;
 }
 
 /**
@@ -105,7 +113,7 @@ export function createSectionBundle<S extends object, B extends object>(
   const bundles = new WeakMap<S, Map<string, B>>();
   const sections = new WeakMap<Signal<unknown>, Signal<S>>();
   const resolved = new WeakMap<Signal<B>, WeakMap<Signal<S>, WeakMap<Signal<string>, Signal<B>>>>();
-  const overlays = new WeakMap<B, WeakMap<B, WeakMap<B, B>>>();
+  const overlays = new WeakMap<B, WeakMap<object, WeakMap<B, B>>>();
 
   const bundleFor = (section: S, locale: string): B => {
     let byLocale = bundles.get(section);
@@ -131,7 +139,7 @@ export function createSectionBundle<S extends object, B extends object>(
     return section;
   };
 
-  const overlayFor = (own: B, root: B, site: B): B => {
+  const overlayFor = (own: B, root: object, site: B): B => {
     let byRoot = overlays.get(own);
     if (!byRoot) {
       byRoot = new WeakMap();
@@ -161,9 +169,6 @@ export function createSectionBundle<S extends object, B extends object>(
 
   const resolve: CngxSectionBundle<B>['resolve'] = (bundle) => {
     const defaults = DEFAULTS_OF.get(bundle) as Signal<B> | undefined;
-    if (!defaults) {
-      return bundle;
-    }
     const section = sectionHere();
     const locale = injectLocale();
     let bySection = resolved.get(bundle);
@@ -180,7 +185,7 @@ export function createSectionBundle<S extends object, B extends object>(
     if (!result) {
       result = computed(() => {
         const own = bundle();
-        const root = defaults();
+        const root = defaults ? defaults() : NO_DEFAULTS;
         const site = bundleFor(section(), locale());
         return site === root ? own : overlayFor(own, root, site);
       });

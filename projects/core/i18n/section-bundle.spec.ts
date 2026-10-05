@@ -130,9 +130,17 @@ describe('createSectionBundle', () => {
     expect(i18n().items(1200)).toBe('1.200 items');
   });
 
-  it('returns a token value built elsewhere as it is', () => {
-    const foreign = signal<SpecBundle>({ title: 'Own', items: () => 'own' });
-    TestBed.configureTestingModule({ providers: [{ provide: SPEC_I18N, useValue: foreign }] });
-    expect(TestBed.runInInjectionContext(injectSpecI18n)).toBe(foreign);
+  it('keeps a token value built elsewhere and fills only the keys it leaves out', () => {
+    const complete: SpecBundle = { title: 'Own', items: () => 'own' };
+    const partial = { title: 'Own' } as SpecBundle;
+    const value = signal<SpecBundle>(complete);
+    TestBed.configureTestingModule({
+      providers: [provideLocale('en'), { provide: SPEC_I18N, useValue: value }],
+    });
+    const i18n = TestBed.runInInjectionContext(injectSpecI18n);
+    expect(i18n()).toBe(complete);
+    value.set(partial);
+    expect(i18n().title).toBe('Own');
+    expect(i18n().items(2)).toBe('2 items');
   });
 });
