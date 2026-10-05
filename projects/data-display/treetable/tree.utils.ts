@@ -154,26 +154,32 @@ export function sortTree<T>(
 }
 
 const CELL_NUMBER_FORMAT: Intl.NumberFormatOptions = {};
-const CELL_DATE_FORMAT: Intl.DateTimeFormatOptions = {
+/** @internal Date-only default for a `Date` in a default cell. */
+export const CELL_DATE_FORMAT: Intl.DateTimeFormatOptions = {
   year: 'numeric',
   month: 'short',
   day: 'numeric',
 };
 
 /**
- * The default cell text of a value: numbers and dates formatted for `locale`,
- * an invalid date empty, everything else unchanged.
+ * The default cell text of a value: numbers and dates formatted for `locale`
+ * (dates with `dateFormat`, date-only by default), an invalid date empty,
+ * everything else unchanged.
  *
  * @internal
  */
-export function formatCellValue(value: unknown, locale: string): unknown {
+export function formatCellValue(
+  value: unknown,
+  locale: string,
+  dateFormat: Intl.DateTimeFormatOptions = CELL_DATE_FORMAT,
+): unknown {
   if (typeof value === 'number') {
     return numberFormatterFor(locale, CELL_NUMBER_FORMAT).format(value);
   }
   if (value instanceof Date) {
     return Number.isNaN(value.getTime())
       ? ''
-      : dateTimeFormatterFor(locale, CELL_DATE_FORMAT).format(value);
+      : dateTimeFormatterFor(locale, dateFormat).format(value);
   }
   return value;
 }

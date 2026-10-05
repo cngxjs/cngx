@@ -35,6 +35,14 @@ export interface TreetableConfig {
    */
   highlightRowOnHover?: boolean;
   /**
+   * `Intl.DateTimeFormat` options for a `Date` in a default cell, formatted
+   * for the treetable's locale. Register via {@link withTreetableDateFormat};
+   * set per-instance via `options.dateFormat` to override.
+   * @defaultValue `{ year: 'numeric', month: 'short', day: 'numeric' }`
+   * @since 0.1.0
+   */
+  dateFormat?: Intl.DateTimeFormatOptions;
+  /**
    * App-wide copy overrides for every built-in string the treetable
    * renders or announces. Unset keys fall back to the English library
    * defaults. Register via {@link withTreetableLabels}; holds a `Signal`
@@ -283,4 +291,29 @@ export function withTreetableLabels(
  */
 export function withTreetableTemplates(templates: TreetableTemplates): TreetableFeature {
   return { _apply: (c) => ({ ...c, templates: { ...c.templates, ...templates } }) };
+}
+
+/**
+ * Feature: how a default cell formats a `Date` value. The options go to
+ * `Intl.DateTimeFormat` with the treetable's locale, so the output follows
+ * a locale switch; the formatter is cached per locale and options, not
+ * created per cell. The default is date-only
+ * (`{ year: 'numeric', month: 'short', day: 'numeric' }`, `Oct 5, 2026`).
+ * Pass `timeStyle` or `hour`/`minute` to show the time of day. A
+ * `*cngxCell` template still receives the raw value.
+ *
+ * ```ts
+ * provideTreetable(withTreetableDateFormat({ dateStyle: 'medium', timeStyle: 'short' }));
+ * ```
+ *
+ * Per-instance `options.dateFormat` wins over this feature.
+ *
+ * @param options - The `Intl.DateTimeFormat` options for date cells.
+ *
+ * @category data-display/treetable
+ * @since 0.1.0
+ * @relatedTo CngxTreetable, provideTreetable, provideTreetableAt
+ */
+export function withTreetableDateFormat(options: Intl.DateTimeFormatOptions): TreetableFeature {
+  return { _apply: (c) => ({ ...c, dateFormat: options }) };
 }

@@ -72,6 +72,14 @@ export interface CngxTreetableOptions<T> {
    * rendered by default; use this to override that set or reorder columns.
    */
   customColumnOrder?: readonly (keyof T & string)[];
+  /**
+   * `Intl.DateTimeFormat` options for a `Date` in a default cell, formatted
+   * for the treetable's locale. A `*cngxCell` template still gets the raw
+   * value.
+   * @defaultValue `{ year: 'numeric', month: 'short', day: 'numeric' }`
+   * @since 0.1.0
+   */
+  dateFormat?: Intl.DateTimeFormatOptions;
 }
 
 /**

@@ -15,7 +15,13 @@ import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 import type { Node } from '../models';
 import { columnHeaderFor, formatCellValue } from '../tree.utils';
 import { CngxTreetable } from '../treetable.component';
-import { CNGX_TREETABLE_CONFIG, provideTreetable, withTreetableLabels } from '../treetable.token';
+import {
+  CNGX_TREETABLE_CONFIG,
+  provideTreetable,
+  provideTreetableAt,
+  withTreetableDateFormat,
+  withTreetableLabels,
+} from '../treetable.token';
 import { injectTreetableLabels } from './treetable-i18n';
 import { CNGX_TREETABLE_LANGUAGE_EN } from './treetable-language-section';
 
@@ -247,6 +253,117 @@ describe('CngxTreetable header and cell copy', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
     expect(cellTexts(fixture)).toEqual(['Report', '1,234.5', 'Oct 5, 2026']);
+  });
+
+  it('renders a date cell date-only by default', () => {
+    TestBed.configureTestingModule({ imports: [Host], providers: [provideLocale('en-US')] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const date = cellTexts(fixture)[2];
+    expect(date).toBe('Oct 5, 2026');
+    expect(date).not.toMatch(/\d{1,2}:\d{2}/);
+  });
+
+  it('withTreetableDateFormat shows the time of day', () => {
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [
+        provideLocale('en-US'),
+        provideTreetable(withTreetableDateFormat({ dateStyle: 'medium', timeStyle: 'short' })),
+      ],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const date = cellTexts(fixture)[2];
+    expect(date).toMatch(/^Oct 5, 2026/);
+    expect(date).toMatch(/12:00\sPM$/);
+  });
+
+  it('formats the configured date format per locale', () => {
+    const format = withTreetableDateFormat({ dateStyle: 'medium', timeStyle: 'short' });
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [provideLocale('de'), provideTreetable(format)],
+    });
+    const german = TestBed.createComponent(Host);
+    german.detectChanges();
+    const de = cellTexts(german)[2];
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [provideLocale('en'), provideTreetable(format)],
+    });
+    const english = TestBed.createComponent(Host);
+    english.detectChanges();
+    const en = cellTexts(english)[2];
+
+    expect(de).toBe('05.10.2026, 12:00');
+    expect(en).toMatch(/^Oct 5, 2026, 12:00\sPM$/);
+  });
+
+  it('a provideTreetableAt subtree overrides the app-wide date format', () => {
+    @Component({
+      selector: 'cngx-scoped-date-host',
+      template: `<cngx-treetable [tree]="tree" [options]="options" />`,
+      imports: [CngxTreetable],
+      viewProviders: [
+        ...provideTreetableAt(withTreetableDateFormat({ year: 'numeric', month: '2-digit' })),
+      ],
+    })
+    class ScopedHost {
+      readonly tree = data;
+      readonly options = { customColumnOrder: ['name', 'size', 'modified'] as const };
+    }
+
+    TestBed.configureTestingModule({
+      imports: [Host, ScopedHost],
+      providers: [
+        provideLocale('en-US'),
+        provideTreetable(withTreetableDateFormat({ dateStyle: 'full' })),
+      ],
+    });
+    const app = TestBed.createComponent(Host);
+    app.detectChanges();
+    const scoped = TestBed.createComponent(ScopedHost);
+    scoped.detectChanges();
+
+    expect(cellTexts(app)[2]).toBe('Monday, October 5, 2026');
+    const scopedDate = scoped.debugElement
+      .queryAll(By.css('cdk-row cdk-cell'))
+      .map((cell) => (cell.nativeElement as HTMLElement).textContent?.trim() ?? '')
+      .at(-1);
+    expect(scopedDate).toBe('10/2026');
+  });
+
+  it('per-instance options.dateFormat wins over the app-wide feature', () => {
+    @Component({
+      selector: 'cngx-instance-date-host',
+      template: `<cngx-treetable [tree]="tree" [options]="options" />`,
+      imports: [CngxTreetable],
+    })
+    class InstanceHost {
+      readonly tree = data;
+      readonly options = {
+        customColumnOrder: ['name', 'size', 'modified'] as const,
+        dateFormat: { month: 'long' } as Intl.DateTimeFormatOptions,
+      };
+    }
+
+    TestBed.configureTestingModule({
+      imports: [InstanceHost],
+      providers: [
+        provideLocale('en-US'),
+        provideTreetable(withTreetableDateFormat({ dateStyle: 'full' })),
+      ],
+    });
+    const fixture = TestBed.createComponent(InstanceHost);
+    fixture.detectChanges();
+    const date = fixture.debugElement
+      .queryAll(By.css('cdk-row cdk-cell'))
+      .map((cell) => (cell.nativeElement as HTMLElement).textContent?.trim() ?? '')
+      .at(-1);
+    expect(date).toBe('October');
   });
 
   it('renders an invalid date cell empty and leaves other values unchanged', () => {

@@ -105,6 +105,7 @@ Per-instance display options:
 interface TreetableOptions<T> {
   highlightRowOnHover?: boolean;              // Visual hover effect
   customColumnOrder?: readonly (keyof T & string)[]; // Column ordering
+  dateFormat?: Intl.DateTimeFormatOptions;    // Date cell format (date-only default)
 }
 ```
 
@@ -218,14 +219,17 @@ bootstrapApplication(AppComponent, {
 ```
 
 `provideTreetable(...features)` takes composable features, not an options
-object: `withHighlightOnHover()`, `withTreetableLabels({ ... })` and `withTreetableTemplates({ ... })`.
+object: `withHighlightOnHover()`, `withTreetableDateFormat({ ... })`,
+`withTreetableLabels({ ... })` and `withTreetableTemplates({ ... })`.
 Per-instance `options` input overrides these defaults.
 
 Column headers come from `columnLabels` (`withTreetableLabels({ columnLabels: { name: 'Name' } })`
 or the `treetable` section of the language pack) or a `*cngxHeader` template.
 A column without either shows `Column 2` in production; dev builds show the
 capitalised data key and warn once per key. Default cells format numbers and dates with
-the treetable's locale. `sortTree(nodes, field, direction, locale)` collates
+the treetable's locale. Dates are date-only (`Oct 5, 2026`) unless
+`withTreetableDateFormat({ dateStyle: 'medium', timeStyle: 'short' })` or
+`options.dateFormat` passes other `Intl.DateTimeFormat` options. `sortTree(nodes, field, direction, locale)` collates
 with the locale you pass.
 
 ## Controlled vs. Uncontrolled

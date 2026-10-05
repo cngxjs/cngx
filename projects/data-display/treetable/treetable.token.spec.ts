@@ -8,6 +8,7 @@ import {
   provideTreetable,
   provideTreetableAt,
   withHighlightOnHover,
+  withTreetableDateFormat,
   withTreetableLabels,
 } from './treetable.token';
 
@@ -28,6 +29,12 @@ describe('CNGX_TREETABLE_CONFIG cascade', () => {
   it('withHighlightOnHover sets only the hover flag', () => {
     TestBed.configureTestingModule({ providers: [provideTreetable(withHighlightOnHover())] });
     expect(injectConfig()).toEqual({ highlightRowOnHover: true });
+  });
+
+  it('withTreetableDateFormat sets only the date format', () => {
+    const format: Intl.DateTimeFormatOptions = { dateStyle: 'medium', timeStyle: 'short' };
+    TestBed.configureTestingModule({ providers: [provideTreetable(withTreetableDateFormat(format))] });
+    expect(injectConfig()).toEqual({ dateFormat: format });
   });
 
   it('withTreetableLabels merges partial label bags across features', () => {

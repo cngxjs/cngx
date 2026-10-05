@@ -7,6 +7,7 @@ export {
   withHighlightOnHover,
   withTreetableLabels,
   withTreetableTemplates,
+  withTreetableDateFormat,
 } from './treetable.token';
 export {
   CngxCellTpl,
