@@ -8,6 +8,7 @@ import {
   type Injector,
   type Signal,
 } from '@angular/core';
+import { arrayEqual } from '@cngx/utils';
 
 import type { CngxTabsI18n } from '../i18n/tabs-i18n';
 import type { CngxTabCloseIconContext } from '../slots/tab-close-icon.directive';
@@ -119,6 +120,11 @@ export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDism
 
   const isTabClosable = (tab: CngxTabHandle): boolean => tab.closable() ?? resolvedClosable();
 
+  // 1-based position per tab id, derived once per tab list, so a close-button
+  // label never scans the strip.
+  const tabIds = computed(() => opts.host.tabs().map((tab) => tab.id), { equal: arrayEqual });
+  const positionById = computed(() => new Map(tabIds().map((id, index) => [id, index + 1])));
+
   // The close request only ASKS the consumer to remove the tab - the
   // removal may land asynchronously (or never). Focus restore and the
   // closed announcement key on a requested id actually leaving the
@@ -226,9 +232,11 @@ export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDism
     // An unlabelled tab is named by position, never as `Close ""`.
     closeButtonLabel: (tab) => {
       const i18n = opts.i18n();
-      const position = opts.host.tabs().findIndex((candidate) => candidate.id === tab.id) + 1;
       const label = tab.label() ?? '';
-      return i18n.closeTab(label === '' ? i18n.unlabeledTab(position) : label);
+      if (label !== '') {
+        return i18n.closeTab(label);
+      }
+      return i18n.closeTab(i18n.unlabeledTab(positionById().get(tab.id) ?? 0));
     },
     closeIconContextFor: (tab) => {
       let ctx = closeIconContextCache.get(tab);
