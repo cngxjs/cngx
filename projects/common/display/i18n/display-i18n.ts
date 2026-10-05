@@ -27,9 +27,9 @@ export type CngxAvatarStatus = 'online' | 'offline' | 'busy' | 'away';
  * bundle, so a runtime language switch re-derives every read.
  *
  * Per-instance inputs (`statusLabel`, `labelFormat`, `valueTextFormat`, a bound
- * `label` / `removeAriaLabel`) still win over the bundle. `avatarGroupNoun`
- * and `chipRemove` seed string inputs at construction, so they are static per
- * instance; the formatter keys are read reactively.
+ * `label` / `removeAriaLabel`) still win over the bundle. Every key is read
+ * reactively while its input is unbound, `avatarGroupNoun` and `chipRemove`
+ * included, so a language switch reaches each atom without re-creating it.
  *
  * @category common/display/i18n
  * @since 0.1.0
