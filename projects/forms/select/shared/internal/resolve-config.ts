@@ -10,6 +10,16 @@ import { type CngxResolvedSelectLabels, resolveSelectLabels } from './resolve-la
 const NO_CONFIG: CngxSelectConfig = {};
 
 /**
+ * The nearest `CNGX_SELECT_CONFIG` as provided, or an empty config. The one
+ * lookup every select-config reader starts from. Injection context required.
+ *
+ * @internal
+ */
+export function injectSelectConfigSource(): CngxSelectConfig {
+  return inject(CNGX_SELECT_CONFIG, { optional: true }) ?? NO_CONFIG;
+}
+
+/**
  * Effective {@link CngxSelectConfig} for the current injector, merged
  * with library defaults. Always fully populated. The copy keys
  * (`ariaLabels`, `fallbackLabels`, `announcer`) are `Signal`s, read lazily
@@ -25,7 +35,7 @@ export function resolveSelectConfig(): Required<
 > &
   Pick<typeof CNGX_SELECT_DEFAULTS, 'panelClass' | 'templates'> &
   CngxResolvedSelectLabels {
-  const user = inject(CNGX_SELECT_CONFIG, { optional: true }) ?? NO_CONFIG;
+  const user = injectSelectConfigSource();
   return {
     ...resolveSelectLabels(user),
     panelWidth: user.panelWidth ?? CNGX_SELECT_DEFAULTS.panelWidth,

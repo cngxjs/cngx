@@ -17,7 +17,7 @@ import {
   provideInputConfig,
   withInputAriaLabels,
   type InputAriaLabels,
-} from '../input-config';
+} from '../public-api';
 import { CngxPasswordStrength } from '../password-strength.directive';
 import { injectInputSectionLabels } from './input-i18n';
 import { CNGX_INPUT_LANGUAGE_EN } from './input-language-section';

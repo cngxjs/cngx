@@ -44,6 +44,7 @@ export {
   provideInputConfig,
   provideInputConfigAt,
   injectInputConfig,
+  injectInputAriaLabels,
   withInputAriaLabels,
   withPhonePatterns,
   withPhoneDefaultRegion,

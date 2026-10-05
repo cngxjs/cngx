@@ -1,6 +1,6 @@
 import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
 import { createOverrideMerge } from '@cngx/core/utils';
-import { injectInputLabels, type CngxResolvedInputAriaLabels } from './i18n/input-i18n';
+import { injectInputLabels } from './i18n/input-i18n';
 import type { MaskTokenMap } from './input-mask.directive';
 import type { PasswordStrengthLabel } from './password-strength.factory';
 
@@ -560,14 +560,29 @@ export function withInputAriaLabels(
 }
 
 /**
- * Reads the resolved aria labels as a `Signal`: the configured overrides over
- * the `input` section of the active language pack, formatted for the locale of
- * the reading injector. A key an override leaves unset or `undefined` reads the
- * section. Read it inside a `computed()`, a template or a handler so a runtime
- * language switch reaches the label.
+ * Reads the resolved input labels as a `Signal`: the `withInputAriaLabels`
+ * overrides of the nearest `CNGX_INPUT_CONFIG` over the `input` section of the
+ * active language pack (English without one), formatted for the locale of the
+ * reading injector. Every key is filled; a key an override leaves unset or
+ * `undefined` reads the section. A `provideLocaleAt` subtree formats its
+ * numbers in that locale.
  *
- * @internal
+ * This is the same copy the input directives announce, so a custom input
+ * built next to them reads labels that follow a language switch. Read it
+ * inside a `computed()`, a template or a handler, never at construction, so a
+ * runtime language switch reaches the label. Injection context required.
+ *
+ * ```typescript
+ * export class AppClearButton {
+ *   private readonly labels = injectInputAriaLabels();
+ *   protected readonly ariaLabel = computed(() => this.labels().clear);
+ * }
+ * ```
+ *
+ * @category forms/input
+ * @since 0.1.0
+ * @relatedTo withInputAriaLabels, provideInputConfig, provideInputConfigAt, InputAriaLabels
  */
-export function injectInputAriaLabels(): Signal<CngxResolvedInputAriaLabels> {
+export function injectInputAriaLabels(): Signal<Required<InputAriaLabels>> {
   return injectInputLabels(inject(CNGX_INPUT_CONFIG).ariaLabels);
 }

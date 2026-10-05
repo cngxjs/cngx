@@ -22,6 +22,7 @@ import {
   type CngxSelectAriaLabels,
 } from '../shared/config';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { injectSelectLabels, provideSelectConfigAt } from '../public-api';
 import type { CngxSelectOptionDef } from '../shared/option.model';
 import { resolveReorderableSelectConfig } from '../shared/reorderable-select-config';
 import { createTypeaheadController } from '../shared/typeahead-controller';
@@ -312,6 +313,54 @@ describe('select chip copy in the DOM', () => {
     expect(stripBidiIsolates(remove?.getAttribute('aria-label'))).toBe('Red entfernen');
     const badge = root.querySelector('.cngx-select__chip-overflow-badge');
     expect(badge?.textContent?.trim()).toBe('2 weitere');
+  });
+});
+
+describe('injectSelectLabels', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  it('follows a pack switch', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+      ],
+    });
+    const labels = TestBed.runInInjectionContext(() => injectSelectLabels());
+    expect(labels.fallbackLabels().empty).toBe('No Options');
+    expect(labels.ariaLabels().chipRemove).toBe('Remove');
+
+    pack.set({
+      locale: 'de',
+      select: { empty: 'Keine Optionen', chipRemove: 'Entfernen', chipOverflowBadge: '+{count}' },
+    });
+    expect(labels.fallbackLabels().empty).toBe('Keine Optionen');
+    expect(labels.ariaLabels().chipRemove).toBe('Entfernen');
+    expect(labels.fallbackLabels().chipOverflowBadge(1200)).toBe('+1.200');
+  });
+
+  it('formats numbers in the locale of a provideLocaleAt subtree', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideLocale('en')],
+    });
+    const root = TestBed.runInInjectionContext(() => injectSelectLabels());
+    const german = runInSubtree([provideLocaleAt('de')], () => injectSelectLabels());
+    expect(root.fallbackLabels().chipOverflowBadge(1200)).toBe('+1,200');
+    expect(german.fallbackLabels().chipOverflowBadge(1200)).toBe('+1.200');
+  });
+
+  it('reads a provideSelectConfigAt subtree and shares the component signals', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const scoped = runInSubtree(
+      [provideSelectConfigAt(withFallbackLabels({ empty: 'Nichts gefunden' }))],
+      () => ({ labels: injectSelectLabels(), config: resolveSelectConfig() }),
+    );
+    expect(scoped.labels.fallbackLabels().empty).toBe('Nichts gefunden');
+    expect(Object.is(scoped.labels.fallbackLabels, scoped.config.fallbackLabels)).toBe(true);
+    expect(Object.is(scoped.labels.ariaLabels, scoped.config.ariaLabels)).toBe(true);
   });
 });
 

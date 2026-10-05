@@ -180,9 +180,11 @@ export {
 
 export {
   injectSelectConfig,
+  injectSelectLabels,
   injectSelectAnnouncer,
   injectActionSelectConfig,
   injectReorderableSelectConfig,
+  type CngxSelectLabels,
 } from './shared/inject-helpers';
 
 export {
