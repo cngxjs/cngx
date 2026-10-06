@@ -3,7 +3,7 @@ import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ListboxMatchFn } from '@cngx/common/interactive';
+import { CngxListboxSearch, type ListboxMatchFn } from '@cngx/common/interactive';
 
 import { CngxActionMultiSelect } from '../action-multi-select/action-multi-select.component';
 import { CngxActionSelect } from '../action-select/action-select.component';
@@ -40,6 +40,35 @@ const shellStartsWith: ShellMatchFn = (option, term) => option.value.startsWith(
 // @ts-expect-error the pre-0.1 `(value, label, term)` shell matcher shape is gone
 const legacyShellMatch: ShellMatchFn = (value: string, label: string, term: string) =>
   label.includes(term) || value === term;
+
+// Every searchable variant types its matcher with the host's T, so a
+// value-aware matcher compiles without a cast and a wrongly typed one fails.
+type MatchFnOf<C extends { searchMatchFn: () => unknown }> = NonNullable<
+  ReturnType<C['searchMatchFn']>
+>;
+const comboboxByValue: MatchFnOf<CngxCombobox<string>> = (o, t) => o.value.startsWith(t);
+const typeaheadByValue: MatchFnOf<CngxTypeahead<string>> = (o, t) => o.value.startsWith(t);
+const actionSelectByValue: MatchFnOf<CngxActionSelect<string>> = (o, t) => o.value.startsWith(t);
+const actionMultiByValue: MatchFnOf<CngxActionMultiSelect<string>> = (o, t) =>
+  o.value.startsWith(t);
+// @ts-expect-error a CngxCombobox<string> matcher receives a string value, not a number
+const comboboxWrongValue: MatchFnOf<CngxCombobox<string>> = (o: {
+  readonly value: number;
+  readonly label: string;
+}) => o.value > 0;
+// @ts-expect-error a CngxActionMultiSelect<string> matcher receives a string value
+const actionMultiWrongValue: MatchFnOf<CngxActionMultiSelect<string>> = (o: {
+  readonly value: number;
+  readonly label: string;
+}) => o.value > 0;
+const TYPED_MATCHERS = [
+  comboboxByValue,
+  typeaheadByValue,
+  actionSelectByValue,
+  actionMultiByValue,
+  comboboxWrongValue,
+  actionMultiWrongValue,
+];
 
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
@@ -83,7 +112,7 @@ type Searchable = { readonly effectiveMatchFn: Signal<ListboxMatchFn> };
 })
 class RootHost {
   readonly options = OPTIONS;
-  readonly matcher = signal<CngxSelectMatchFn | null>(null);
+  readonly matcher = signal<CngxSelectMatchFn<string> | null>(null);
   readonly shellMatcher = signal<CngxSelectMatchFn<string> | null>(null);
 }
 
@@ -178,6 +207,20 @@ describe('CngxSelectConfig.searchMatchFn', () => {
     }
     expect(asListboxMatch).toBe(configMatch);
     expect(legacyShellMatch).toBeTypeOf('function');
+  });
+
+  it('binds the typed matcher to the listbox search input unchanged', () => {
+    const fixture = TestBed.createComponent(RootHost);
+    fixture.componentInstance.matcher.set(comboboxByValue);
+    fixture.detectChanges();
+    for (const type of VARIANTS) {
+      const host = fixture.debugElement.query(By.directive(type));
+      const search = host.query(By.directive(CngxListboxSearch)).injector.get(CngxListboxSearch);
+      expect(search.matchFn()).toBe(comboboxByValue);
+      expect(search.matchFn()(ITEM, 'gre')).toBe(true);
+      expect(search.matchFn()(ITEM, 'Gr')).toBe(false);
+    }
+    expect(TYPED_MATCHERS).toHaveLength(6);
   });
 
   it('reads the matcher of a provideSelectConfigAt subtree', () => {

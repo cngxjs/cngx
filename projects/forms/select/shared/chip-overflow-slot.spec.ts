@@ -1,4 +1,4 @@
-import { Component, signal, type Type } from '@angular/core';
+import { Component, signal, type TemplateRef, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -6,7 +6,7 @@ import { CngxActionMultiSelect } from '../action-multi-select/action-multi-selec
 import { CngxCombobox } from '../combobox/combobox.component';
 import { CngxMultiSelect } from '../multi-select/multi-select.component';
 import type { CngxSelectOptionDef } from './option.model';
-import { CngxSelectChipOverflow } from './template-slots';
+import { CngxSelectChipOverflow, type CngxSelectChipOverflowContext } from './template-slots';
 
 const OPTIONS: CngxSelectOptionDef<string>[] = [
   { value: 'red', label: 'Red' },
@@ -14,6 +14,19 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
   { value: 'blue', label: 'Blue' },
   { value: 'black', label: 'Black' },
 ];
+
+type Equal<A, B> =
+  (<X>() => X extends A ? 1 : 2) extends <X>() => X extends B ? 1 : 2 ? true : false;
+
+// The slot carries the option type like its CngxMultiSelectChip / CngxComboboxChip siblings.
+const overflowRefTyped: Equal<
+  CngxSelectChipOverflow<string>['templateRef'],
+  TemplateRef<CngxSelectChipOverflowContext<string>>
+> = true;
+const overflowHiddenTyped: Equal<
+  CngxSelectChipOverflowContext<string>['hidden'],
+  readonly CngxSelectOptionDef<string>[]
+> = true;
 
 const BADGE = '.cngx-select__chip-overflow-badge';
 const PROJECTED = '.projected-overflow';
@@ -255,6 +268,7 @@ describe('cngxSelectChipOverflow slot', () => {
         expect(root.querySelector(PROJECTED)?.getAttribute('data-hidden')).toBe(
           'green,blue,black',
         );
+        expect(overflowRefTyped && overflowHiddenTyped).toBe(true);
       });
     });
   }

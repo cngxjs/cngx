@@ -40,6 +40,7 @@ import {
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { toListboxMatchFn } from '../shared/internal/listbox-match';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -252,7 +253,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly displayWith = input<(value: T) => string>(String);
   readonly clearOnBlur = input<boolean>(true);
   /** Custom matcher for the inline search. Wins over `CngxSelectConfig.searchMatchFn`. */
-  readonly searchMatchFn = input<CngxSelectMatchFn | null>(null);
+  readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
   /**
    * Debounce for the inline search (ms). Default `0` so the slot's
    * `let-term` reflects every keystroke; raise for large option lists.
@@ -430,9 +431,12 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   private readonly labelMatch = createListboxLabelMatch(injectLocale());
 
   /** @internal */
-  protected readonly effectiveMatchFn = computed<CngxSelectMatchFn>(
+  protected readonly effectiveMatchFn = computed<CngxSelectMatchFn<T>>(
     () => this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch,
   );
+
+  /** @internal - `effectiveMatchFn` as the listbox search input takes it. */
+  protected readonly listboxMatchFn = computed(() => toListboxMatchFn(this.effectiveMatchFn()));
 
   /** Filter overlay applied by `createSelectCore` on non-empty search term. */
   private readonly filter = computed<

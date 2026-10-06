@@ -447,6 +447,35 @@ describe('CngxCombobox - search + filter', () => {
     expect((rows2[0] as HTMLElement).textContent).toContain('Grün');
   });
 
+  it('filters the listbox through a value-typed [searchMatchFn]', () => {
+    // `option.value` is a string here: the matcher is typed with the host's T.
+    const byValuePrefix: CngxSelectMatchFn<string> = (o, t) => o.value.startsWith(t);
+    @Component({
+      template: `
+        <cngx-combobox [label]="'Farbe'" [options]="options" [searchMatchFn]="matcher" />
+      `,
+      imports: [CngxCombobox],
+    })
+    class ValueMatchHost {
+      readonly options = OPTIONS;
+      readonly matcher = byValuePrefix;
+    }
+    const fixture = TestBed.createComponent(ValueMatchHost);
+    flush(fixture);
+    const input: HTMLInputElement = fixture.nativeElement.querySelector(
+      '.cngx-combobox__input',
+    );
+    input.focus();
+    flush(fixture);
+    // No label contains "re"; only the value "red" starts with it.
+    setInputValue(input, 're');
+    vi.advanceTimersByTime(350);
+    flush(fixture);
+    const rows = fixture.nativeElement.querySelectorAll('[cngxOption]');
+    expect(rows.length).toBe(1);
+    expect((rows[0] as HTMLElement).textContent).toContain('Rot');
+  });
+
   it('debounce interval honored via [searchDebounceMs]', () => {
     @Component({
       template: `

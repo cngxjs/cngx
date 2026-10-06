@@ -665,8 +665,8 @@ export class CngxMultiSelectChipHandle {
   standalone: true,
   exportAs: 'cngxSelectChipOverflow',
 })
-export class CngxSelectChipOverflow {
-  readonly templateRef = inject<TemplateRef<CngxSelectChipOverflowContext>>(TemplateRef);
+export class CngxSelectChipOverflow<T = unknown> {
+  readonly templateRef = inject<TemplateRef<CngxSelectChipOverflowContext<T>>>(TemplateRef);
 }
 
 /**

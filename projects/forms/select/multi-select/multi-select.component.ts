@@ -337,7 +337,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
   private readonly chipDirective = contentChild<CngxMultiSelectChip<T>>(CngxMultiSelectChip);
   private readonly chipOverflowDirective =
-    contentChild<CngxSelectChipOverflow>(CngxSelectChipOverflow);
+    contentChild<CngxSelectChipOverflow<T>>(CngxSelectChipOverflow);
   private readonly clearButtonDirective =
     contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly optionPendingDirective =
@@ -371,9 +371,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     () => this.chipDirective()?.templateRef ?? null,
   );
   /** @internal */
-  protected readonly chipOverflowTpl = computed<TemplateRef<CngxSelectChipOverflowContext> | null>(
-    () => this.chipOverflowDirective()?.templateRef ?? null,
-  );
+  protected readonly chipOverflowTpl = computed<TemplateRef<
+    CngxSelectChipOverflowContext<T>
+  > | null>(() => this.chipOverflowDirective()?.templateRef ?? null);
 
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);

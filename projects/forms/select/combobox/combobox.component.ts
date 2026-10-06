@@ -42,6 +42,7 @@ import {
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { toListboxMatchFn } from '../shared/internal/listbox-match';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -320,7 +321,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
    * Custom matcher for the inline `CngxListboxSearch`. Wins over
    * `CngxSelectConfig.searchMatchFn`.
    */
-  readonly searchMatchFn = input<CngxSelectMatchFn | null>(null);
+  readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
 
   /** Debounce for search term updates (ms). */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
@@ -455,7 +456,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     contentChild<CngxComboboxTriggerLabel<T>>(CngxComboboxTriggerLabel);
   private readonly chipDirective = contentChild<CngxComboboxChip<T>>(CngxComboboxChip);
   private readonly chipOverflowDirective =
-    contentChild<CngxSelectChipOverflow>(CngxSelectChipOverflow);
+    contentChild<CngxSelectChipOverflow<T>>(CngxSelectChipOverflow);
   private readonly optionLabelDirective =
     contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
@@ -501,9 +502,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     () => this.chipDirective()?.templateRef ?? null,
   );
   /** @internal */
-  protected readonly chipOverflowTpl = computed<TemplateRef<CngxSelectChipOverflowContext> | null>(
-    () => this.chipOverflowDirective()?.templateRef ?? null,
-  );
+  protected readonly chipOverflowTpl = computed<TemplateRef<
+    CngxSelectChipOverflowContext<T>
+  > | null>(() => this.chipOverflowDirective()?.templateRef ?? null);
   /** @internal */
   protected readonly inputPrefixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
     () => this.inputPrefixDirective()?.templateRef ?? null,
@@ -538,9 +539,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   private readonly labelMatch = createListboxLabelMatch(injectLocale());
 
   /** @internal */
-  protected readonly effectiveMatchFn = computed<CngxSelectMatchFn>(
+  protected readonly effectiveMatchFn = computed<CngxSelectMatchFn<T>>(
     () => this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch,
   );
+
+  /** @internal - `effectiveMatchFn` as the listbox search input takes it. */
+  protected readonly listboxMatchFn = computed(() => toListboxMatchFn(this.effectiveMatchFn()));
 
   /**
    * Filter overlay bound to the inline search term. `null` on empty

@@ -42,6 +42,7 @@ import {
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { toListboxMatchFn } from '../shared/internal/listbox-match';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -267,7 +268,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /** Custom matcher for the inline search. Wins over `CngxSelectConfig.searchMatchFn`. */
-  readonly searchMatchFn = input<CngxSelectMatchFn | null>(null);
+  readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
   /** Debounce for the inline search (ms). Default `0` for action-slot feedback. */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
   readonly skipInitial = input<boolean>(false);
@@ -405,7 +406,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
   private readonly chipDirective = contentChild<CngxMultiSelectChip<T>>(CngxMultiSelectChip);
   private readonly chipOverflowDirective =
-    contentChild<CngxSelectChipOverflow>(CngxSelectChipOverflow);
+    contentChild<CngxSelectChipOverflow<T>>(CngxSelectChipOverflow);
   private readonly clearButtonDirective =
     contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly optionPendingDirective =
@@ -445,9 +446,9 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     () => this.chipDirective()?.templateRef ?? null,
   );
   /** @internal */
-  protected readonly chipOverflowTpl = computed<TemplateRef<CngxSelectChipOverflowContext> | null>(
-    () => this.chipOverflowDirective()?.templateRef ?? null,
-  );
+  protected readonly chipOverflowTpl = computed<TemplateRef<
+    CngxSelectChipOverflowContext<T>
+  > | null>(() => this.chipOverflowDirective()?.templateRef ?? null);
   /** @internal */
   protected readonly inputPrefixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
     () => this.inputPrefixDirective()?.templateRef ?? null,
@@ -475,9 +476,12 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   private readonly labelMatch = createListboxLabelMatch(injectLocale());
 
   /** @internal */
-  protected readonly effectiveMatchFn = computed<CngxSelectMatchFn>(
+  protected readonly effectiveMatchFn = computed<CngxSelectMatchFn<T>>(
     () => this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch,
   );
+
+  /** @internal - `effectiveMatchFn` as the listbox search input takes it. */
+  protected readonly listboxMatchFn = computed(() => toListboxMatchFn(this.effectiveMatchFn()));
 
   private readonly filter = computed<
     ((input: CngxSelectOptionsInput<T>) => CngxSelectOptionsInput<T>) | null
