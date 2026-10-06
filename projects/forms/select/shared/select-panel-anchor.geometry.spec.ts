@@ -266,19 +266,17 @@ describe('select panel anchor geometry', () => {
     });
   }
 
-  // `bottom-start` keeps the popover's all-sides offset margin, so the panel's
-  // aligned edge sits that margin inside the row's edge on both engines'
-  // CSS-anchor path. The assertions subtract it instead of pinning 8px.
+  // The popover offset sits on the main axis only, so a `bottom-start`
+  // panel's aligned edge meets the row's edge exactly.
   it('bottom-start aligns the wider panel to the row start in LTR', async () => {
     const fixture = mount(PlacementHost);
     fixture.detectChanges();
     TestBed.flushEffects();
     fixture.detectChanges();
 
-    const { panel, rowRect, panelRect } = await openAndMeasure(fixture);
-    const margin = parseFloat(getComputedStyle(panel).marginLeft);
+    const { rowRect, panelRect } = await openAndMeasure(fixture);
     expect(panelRect.width).toBeGreaterThan(rowRect.width + 2);
-    expect(Math.abs(panelRect.left - margin - rowRect.left)).toBeLessThanOrEqual(1);
+    expect(Math.abs(panelRect.left - rowRect.left)).toBeLessThanOrEqual(1);
   });
 
   it('bottom-start aligns the wider panel to the row end in RTL', async () => {
@@ -289,9 +287,8 @@ describe('select panel anchor geometry', () => {
     TestBed.flushEffects();
     fixture.detectChanges();
 
-    const { panel, rowRect, panelRect } = await openAndMeasure(fixture);
-    const margin = parseFloat(getComputedStyle(panel).marginRight);
+    const { rowRect, panelRect } = await openAndMeasure(fixture);
     expect(panelRect.width).toBeGreaterThan(rowRect.width + 2);
-    expect(Math.abs(rowRect.right - margin - panelRect.right)).toBeLessThanOrEqual(1);
+    expect(Math.abs(rowRect.right - panelRect.right)).toBeLessThanOrEqual(1);
   });
 });

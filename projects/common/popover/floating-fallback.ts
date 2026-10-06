@@ -25,7 +25,10 @@ export type ComputePositionFn = (
 export interface FloatingFallbackConfig {
   /** The `computePosition` function from `@floating-ui/dom`. */
   computePosition: ComputePositionFn;
-  /** Middleware array (e.g. `[offset(8), flip(), shift()]`). */
+  /**
+   * Middleware array (e.g. `[flip(), shift()]`). The popover prepends its own
+   * offset middleware, so do not pass `offset()` here.
+   */
   middleware?: unknown[];
 }
 
@@ -50,11 +53,11 @@ export const CNGX_FLOATING_FALLBACK = new InjectionToken<FloatingFallbackConfig 
  * never imports it directly, keeping the bundle at zero cost for modern browsers.
  *
  * ```typescript
- * import { computePosition, flip, offset, shift } from '@floating-ui/dom';
+ * import { computePosition, flip, shift } from '@floating-ui/dom';
  *
  * // In app.config.ts or component providers:
  * providers: [
- *   provideFloatingFallback(computePosition, [offset(8), flip(), shift()]),
+ *   provideFloatingFallback(computePosition, [flip(), shift()]),
  * ]
  * ```
  *

@@ -12,8 +12,6 @@ import { CngxPopoverTrigger } from './popover-trigger.directive';
 // (jsdom owns the floating-ui path in popover-anchor.directive.spec.ts).
 // The reset ships in `cngx.css`; under ViewEncapsulation.None it reaches the
 // top-layer panel, so the panel's border box is what the anchor aligns.
-// `[offset]="0"` drops the popover's all-sides margin so the start edges meet
-// exactly.
 
 const HARNESS_STYLES = ['../../core/theming/reset.css', '../theming/components/cngx-popover.css'];
 
@@ -41,7 +39,6 @@ const HARNESS_STYLES = ['../../core/theming/reset.css', '../theming/components/c
       #pop="cngxPopover"
       class="panel"
       placement="bottom-start"
-      [offset]="0"
       style="width: 200px; height: 40px"
     >
       Content

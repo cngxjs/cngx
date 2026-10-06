@@ -18,6 +18,7 @@ import { nextUid } from '@cngx/core/utils';
 import {
   ANCHOR_AREA_PROPERTY,
   POSITION_AREA,
+  resolveAnchorMargin,
   resolveDirectionalPlacement,
   resolveFloatingPlacement,
   SUPPORTS_ANCHOR,
@@ -187,7 +188,7 @@ export class CngxTooltip {
       if (SUPPORTS_ANCHOR) {
         el.style.setProperty('position-anchor', `--cngx-tip-${this.idSignal()}`);
         el.style.setProperty(ANCHOR_AREA_PROPERTY, POSITION_AREA[placement]);
-        el.style.setProperty('margin', `${offset}px`);
+        el.style.setProperty('margin', resolveAnchorMargin(placement, offset));
       }
     });
 

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ANCHOR_AREA_PROPERTY,
   POSITION_AREA,
+  resolveAnchorMargin,
   resolveDirectionalPlacement,
   resolveFloatingPlacement,
   SUPPORTS_ANCHOR,
@@ -42,6 +43,34 @@ describe('POSITION_AREA mapping', () => {
     for (const value of Object.values(POSITION_AREA)) {
       expect(cornerCells).not.toContain(value);
     }
+  });
+});
+
+describe('resolveAnchorMargin (main-axis offset under CSS anchor)', () => {
+  const expected: Record<PopoverPlacement, string> = {
+    top: '8px 0',
+    'top-start': '8px 0',
+    'top-end': '8px 0',
+    bottom: '8px 0',
+    'bottom-start': '8px 0',
+    'bottom-end': '8px 0',
+    left: '0 8px',
+    'left-start': '0 8px',
+    'left-end': '0 8px',
+    right: '0 8px',
+    'right-start': '0 8px',
+    'right-end': '0 8px',
+  };
+
+  for (const placement of Object.keys(expected) as PopoverPlacement[]) {
+    it(`puts the offset on the main axis for "${placement}"`, () => {
+      expect(resolveAnchorMargin(placement, 8)).toBe(expected[placement]);
+    });
+  }
+
+  it('keeps the axis shape for a zero offset', () => {
+    expect(resolveAnchorMargin('bottom-start', 0)).toBe('0px 0');
+    expect(resolveAnchorMargin('right-end', 0)).toBe('0 0px');
   });
 });
 
