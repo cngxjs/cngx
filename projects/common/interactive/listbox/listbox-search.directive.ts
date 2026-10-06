@@ -15,7 +15,9 @@ export type ListboxMatchFn = (option: ActiveDescendantItem, term: string) => boo
 /**
  * The default listbox matcher: an accent- and case-tolerant substring match
  * of `option.label` against the term in the locale `locale` holds, built on
- * {@link createLabelMatcher}. The option object is the cache key, so each
+ * {@link createLabelMatcher}. It accepts any object with a `label`, so the
+ * same function serves as a `ListboxMatchFn` and as a select-family matcher
+ * over stable option definitions. The option object is the cache key, so each
  * label is folded once per label text and locale; the cache is a `WeakMap`
  * owned by the returned function and never outlives the options. An empty
  * term matches every option.
@@ -35,7 +37,9 @@ export type ListboxMatchFn = (option: ActiveDescendantItem, term: string) => boo
  * @since 0.1.0
  * @relatedTo createLabelMatcher, CngxListboxSearch
  */
-export function createListboxLabelMatch(locale: Signal<string>): ListboxMatchFn {
+export function createListboxLabelMatch(
+  locale: Signal<string>,
+): (option: { readonly label: string }, term: string) => boolean {
   const matches = createLabelMatcher(locale);
   return (option, term) => matches(option.label, term, option);
 }

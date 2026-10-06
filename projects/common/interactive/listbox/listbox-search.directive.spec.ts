@@ -3,7 +3,11 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CngxListboxSearch, createListboxLabelMatch } from './listbox-search.directive';
+import {
+  CngxListboxSearch,
+  createListboxLabelMatch,
+  type ListboxMatchFn,
+} from './listbox-search.directive';
 import { CngxListbox } from './listbox.directive';
 import { CngxOption } from './option.directive';
 
@@ -99,7 +103,7 @@ describe('CngxListboxSearch', () => {
 
 describe('createListboxLabelMatch', () => {
   it('matches option labels ignoring case and accents in the locale', () => {
-    const match = createListboxLabelMatch(signal('en'));
+    const match: ListboxMatchFn = createListboxLabelMatch(signal('en'));
     expect(match({ id: 'u', value: 'u', label: 'Über' }, 'UBER')).toBe(true);
     expect(match({ id: 'c', value: 'c', label: 'Crème brûlée' }, 'brule')).toBe(true);
     expect(match({ id: 'p', value: 'p', label: 'Postgres' }, 'mysql')).toBe(false);
@@ -121,6 +125,16 @@ describe('createListboxLabelMatch', () => {
     } finally {
       normalize.mockRestore();
     }
+  });
+
+  it('accepts any object with a label and stays a ListboxMatchFn', () => {
+    const match = createListboxLabelMatch(signal('en'));
+    const asListbox: ListboxMatchFn = match;
+    const asSelect: (option: { readonly value: unknown; readonly label: string }, term: string) => boolean =
+      match;
+    expect(match({ label: 'Über' }, 'uber')).toBe(true);
+    expect(asListbox({ id: 'a', value: 'a', label: 'Apple' }, 'app')).toBe(true);
+    expect(asSelect({ value: 'b', label: 'Banana' }, 'app')).toBe(false);
   });
 
   it('re-folds a cached option when the locale changes', () => {

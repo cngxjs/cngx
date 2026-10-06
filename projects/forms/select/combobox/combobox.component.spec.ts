@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Subject, type Observable } from 'rxjs';
 
-import { CngxListbox, type ListboxMatchFn } from '@cngx/common/interactive';
+import { CngxListbox, createListboxLabelMatch } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
@@ -257,13 +257,13 @@ function setInputValue(el: HTMLInputElement, value: string): void {
 describe('filterSelectOptions (helper)', () => {
   it('returns the input unchanged for an empty term', () => {
     const all: CngxSelectOptionsInput<string> = OPTIONS;
-    const match: ListboxMatchFn = (o, t) =>
+    const match: CngxSelectMatchFn<string> = (o, t) =>
       o.label.toLowerCase().includes(t.toLowerCase());
     expect(filterSelectOptions(all, '', match)).toBe(all);
   });
 
   it('filters flat options with the match fn', () => {
-    const match: ListboxMatchFn = (o, t) =>
+    const match: CngxSelectMatchFn<string> = (o, t) =>
       o.label.toLowerCase().includes(t.toLowerCase());
     const out = filterSelectOptions(OPTIONS, 'ro', match);
     expect(out.map((o) => (o as CngxSelectOptionDef<string>).value)).toEqual(['red']);
@@ -283,13 +283,47 @@ describe('filterSelectOptions (helper)', () => {
         children: [{ value: 'blue', label: 'Blau' }],
       },
     ];
-    const match: ListboxMatchFn = (o, t) =>
+    const match: CngxSelectMatchFn<string> = (o, t) =>
       o.label.toLowerCase().includes(t.toLowerCase());
     const out = filterSelectOptions(grouped, 'rot', match);
     expect(out.length).toBe(1);
     const survivingGroup = out[0] as { label: string; children: CngxSelectOptionDef<string>[] };
     expect(survivingGroup.label).toBe('Warm');
     expect(survivingGroup.children.map((c) => c.value)).toEqual(['red']);
+  });
+
+  it('hands the matcher the option definition object itself, with no id', () => {
+    const grouped: CngxSelectOptionsInput<string> = [
+      { label: 'Warm', children: [{ value: 'red', label: 'Rot' }] },
+      { value: 'blue', label: 'Blau' },
+    ];
+    const seen: object[] = [];
+    const match: CngxSelectMatchFn<string> = (o, t) => {
+      seen.push(o);
+      return o.label.toLowerCase().includes(t);
+    };
+    filterSelectOptions(grouped, 'r', match);
+    const flat = [
+      (grouped[0] as { children: readonly CngxSelectOptionDef<string>[] }).children[0],
+      grouped[1],
+    ];
+    expect(seen).toHaveLength(2);
+    expect(seen[0]).toBe(flat[0]);
+    expect(seen[1]).toBe(flat[1]);
+    expect(seen.some((o) => 'id' in o)).toBe(false);
+  });
+
+  it('lets the default label match reuse its fold cache across filter runs', () => {
+    const match = createListboxLabelMatch(signal('en'));
+    const normalize = vi.spyOn(String.prototype, 'normalize');
+    try {
+      filterSelectOptions(OPTIONS, 'ro', match);
+      const afterFirst = normalize.mock.calls.length;
+      filterSelectOptions(OPTIONS, 'ro', match);
+      expect(normalize.mock.calls.length).toBe(afterFirst);
+    } finally {
+      normalize.mockRestore();
+    }
   });
 });
 

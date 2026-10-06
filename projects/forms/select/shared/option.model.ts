@@ -1,3 +1,5 @@
+import type { CngxSelectMatchFn } from './config';
+
 /**
  * Data-driven option for the Select family. Pass an array to `[options]`.
  * Element-driven composition uses `<cngx-option>` (`CngxSelectOption`) -
@@ -71,19 +73,17 @@ export function flattenSelectOptions<T>(
 }
 
 /**
- * Filters by `term` using a listbox `match` fn. Preserves group shape;
- * empty groups dropped. The matcher payload's `id: ''` is synthetic; real
- * DOM ids come from `CngxOption`, and in-tree matchers ignore the field.
+ * Filters by `term` using a select-family matcher. Preserves group shape;
+ * empty groups dropped. The matcher receives the option definition object
+ * itself, so a matcher that caches per option (the default label fold) hits
+ * its cache across filter runs over the same options.
  *
  * @category forms/select/state
  */
 export function filterSelectOptions<T>(
   input: CngxSelectOptionsInput<T>,
   term: string,
-  match: (
-    option: { readonly id: string; readonly value: T; readonly label: string; readonly disabled: boolean },
-    term: string,
-  ) => boolean,
+  match: CngxSelectMatchFn<T>,
 ): CngxSelectOptionsInput<T> {
   if (term === '') {
     return input;
@@ -91,24 +91,12 @@ export function filterSelectOptions<T>(
   const out: (CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>)[] = [];
   for (const item of input) {
     if (isCngxSelectOptionGroupDef(item)) {
-      const kept = item.children.filter((opt) =>
-        match(
-          { id: '', value: opt.value, label: opt.label, disabled: !!opt.disabled },
-          term,
-        ),
-      );
+      const kept = item.children.filter((opt) => match(opt, term));
       if (kept.length > 0) {
         out.push({ ...item, children: kept });
       }
-    } else {
-      if (
-        match(
-          { id: '', value: item.value, label: item.label, disabled: !!item.disabled },
-          term,
-        )
-      ) {
-        out.push(item);
-      }
+    } else if (match(item, term)) {
+      out.push(item);
     }
   }
   return out;

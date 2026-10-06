@@ -30,7 +30,6 @@ import {
   CngxListboxSearch,
   CngxListboxTrigger,
   createListboxLabelMatch,
-  type ListboxMatchFn,
 } from '@cngx/common/interactive';
 import {
   CngxPopover,
@@ -384,7 +383,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly labelMatch = createListboxLabelMatch(injectLocale());
 
   /** @internal */
-  protected readonly effectiveMatchFn = computed<ListboxMatchFn>(
+  protected readonly effectiveMatchFn = computed<CngxSelectMatchFn>(
     () => this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch,
   );
 
