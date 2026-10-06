@@ -78,6 +78,7 @@ import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectConfig,
   type CngxSelectLoadingVariant,
+  type CngxSelectMatchFn,
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
@@ -320,7 +321,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
    * Custom matcher for the inline `CngxListboxSearch`. Wins over
    * `CngxSelectConfig.searchMatchFn`.
    */
-  readonly searchMatchFn = input<ListboxMatchFn | null>(null);
+  readonly searchMatchFn = input<CngxSelectMatchFn | null>(null);
 
   /** Debounce for search term updates (ms). */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);

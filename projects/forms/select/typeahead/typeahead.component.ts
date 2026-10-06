@@ -64,6 +64,7 @@ import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectConfig,
   type CngxSelectLoadingVariant,
+  type CngxSelectMatchFn,
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
@@ -249,7 +250,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** When `true` (default), blur without a pick resets to `displayWith(value())`. */
   readonly clearOnBlur = input<boolean>(true);
   /** Custom matcher for the inline search. Wins over `CngxSelectConfig.searchMatchFn`. */
-  readonly searchMatchFn = input<ListboxMatchFn | null>(null);
+  readonly searchMatchFn = input<CngxSelectMatchFn | null>(null);
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
   readonly skipInitial = input<boolean>(false);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);

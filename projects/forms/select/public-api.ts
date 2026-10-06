@@ -128,6 +128,7 @@ export {
   type CngxSelectAriaLabels,
   type CngxSelectConfigFeature,
   type CngxSelectFallbackLabels,
+  type CngxSelectMatchFn,
   type CngxSelectTemplateContexts,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,

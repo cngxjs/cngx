@@ -65,6 +65,7 @@ import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectConfig,
   type CngxSelectLoadingVariant,
+  type CngxSelectMatchFn,
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
@@ -252,7 +253,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly displayWith = input<(value: T) => string>(String);
   readonly clearOnBlur = input<boolean>(true);
   /** Custom matcher for the inline search. Wins over `CngxSelectConfig.searchMatchFn`. */
-  readonly searchMatchFn = input<ListboxMatchFn | null>(null);
+  readonly searchMatchFn = input<CngxSelectMatchFn | null>(null);
   /**
    * Debounce for the inline search (ms). Default `0` so the slot's
    * `let-term` reflects every keystroke; raise for large option lists.

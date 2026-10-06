@@ -60,6 +60,7 @@ import {
 import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectLoadingVariant,
+  type CngxSelectMatchFn,
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
@@ -298,12 +299,12 @@ export class CngxSelectShell<T = unknown>
   readonly searchTerm = model<string>('');
 
   /**
-   * Per-instance match policy. Receives `(value, label, term)` and
-   * returns `true` when the option should stay visible. Wins over
-   * `CngxSelectConfig.searchMatchFn`. Default: the folded label match in
-   * the reading locale.
+   * Per-instance match policy. Receives the option's `{ value, label }` and
+   * the term and returns `true` when the option should stay visible. Wins
+   * over `CngxSelectConfig.searchMatchFn`. Default: the folded label match
+   * in the reading locale.
    */
-  readonly searchMatchFn = input<((value: T, label: string, term: string) => boolean) | null>(null);
+  readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
 
   /**
    * Debounce for `searchTermChange` (ms). Forward-compatible input -
@@ -770,11 +771,11 @@ export class CngxSelectShell<T = unknown>
   matches<TVal>(value: TVal, label: string, term: string): boolean {
     const fn = this.searchMatchFn();
     if (fn) {
-      return fn(value as unknown as T, label, term);
+      return fn({ value: value as unknown as T, label }, term);
     }
     const shared = this.config.searchMatchFn;
     if (shared) {
-      return shared({ id: '', value, label }, term);
+      return shared({ value, label }, term);
     }
     return this.labelMatch(label, term);
   }

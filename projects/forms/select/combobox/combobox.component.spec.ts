@@ -15,7 +15,7 @@ import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { CngxCombobox, type CngxComboboxChange } from './combobox.component';
 import { CngxComboboxChip } from '../shared/template-slots';
-import { provideSelectConfig, withOpenOn } from '../shared/config';
+import { provideSelectConfig, withOpenOn, type CngxSelectMatchFn } from '../shared/config';
 import {
   filterSelectOptions,
   type CngxSelectOptionDef,
@@ -375,7 +375,7 @@ describe('CngxCombobox - search + filter', () => {
   });
 
   it('custom [searchMatchFn] wins over the default substring match', () => {
-    const startsWithG: ListboxMatchFn = (o, t) =>
+    const startsWithG: CngxSelectMatchFn = (o, t) =>
       o.label.toLowerCase().startsWith(t.toLowerCase());
     @Component({
       template: `

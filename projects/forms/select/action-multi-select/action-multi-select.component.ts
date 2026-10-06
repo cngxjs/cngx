@@ -74,6 +74,7 @@ import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectConfig,
   type CngxSelectLoadingVariant,
+  type CngxSelectMatchFn,
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
@@ -267,7 +268,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /** Custom matcher for the inline search. Wins over `CngxSelectConfig.searchMatchFn`. */
-  readonly searchMatchFn = input<ListboxMatchFn | null>(null);
+  readonly searchMatchFn = input<CngxSelectMatchFn | null>(null);
   /** Debounce for the inline search (ms). Default `0` for action-slot feedback. */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
   readonly skipInitial = input<boolean>(false);

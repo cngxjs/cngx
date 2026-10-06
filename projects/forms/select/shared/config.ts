@@ -7,7 +7,6 @@ import {
   makeEnvironmentProviders,
 } from '@angular/core';
 
-import type { ListboxMatchFn } from '@cngx/common/interactive';
 import type { PopoverPlacement } from '@cngx/common/popover';
 import { coerceSignal, createOverrideMerge } from '@cngx/core/utils';
 
@@ -216,6 +215,28 @@ export interface CngxSelectFallbackLabels {
 }
 
 /**
+ * Search matcher of the select family: returns `true` when the option stays
+ * visible for `term`. It receives the option's `value` and `label` and
+ * nothing else, so it can be written once and reused across every searchable
+ * variant, `CngxSelectShell` and `withSearchMatchFn`. A listbox item
+ * (`ActiveDescendantItem`) satisfies the option shape, so the same function
+ * also works as a `ListboxMatchFn`.
+ *
+ * ```ts
+ * const startsWith: CngxSelectMatchFn = (option, term) =>
+ *   option.label.toLowerCase().startsWith(term.toLowerCase());
+ * ```
+ *
+ * @category forms/select/config
+ * @since 0.1.0
+ * @relatedTo withSearchMatchFn, CngxSelectShell, ListboxMatchFn
+ */
+export type CngxSelectMatchFn<T = unknown> = (
+  option: { readonly value: T; readonly label: string },
+  term: string,
+) => boolean;
+
+/**
  * Resolved select-family configuration cascade. Built by composing
  * `with*` features through `provideSelectConfig` /
  * `provideSelectConfigAt`; consumed via the `CNGX_SELECT_CONFIG`
@@ -287,10 +308,9 @@ export interface CngxSelectConfig {
    * `CngxActionMultiSelect`, `CngxSelectShell`). A per-instance
    * `[searchMatchFn]` wins. `null` (default) keeps the folded label match
    * in the reading locale (case-, accent- and format-character-tolerant
-   * substring). `CngxSelectShell` filters before its options register, so
-   * the item it passes carries `value` and `label` with an empty `id`.
+   * substring). The matcher receives the option's `value` and `label`.
    */
-  readonly searchMatchFn?: ListboxMatchFn | null;
+  readonly searchMatchFn?: CngxSelectMatchFn | null;
   /** Whether the default selected-indicator (checkmark) is shown at all. */
   readonly showSelectionIndicator?: boolean;
   /**
@@ -376,7 +396,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   panelClass: '',
   typeaheadDebounceInterval: 300,
   typeaheadWhileClosed: true,
-  searchMatchFn: null as ListboxMatchFn | null,
+  searchMatchFn: null as CngxSelectMatchFn | null,
   showSelectionIndicator: true,
   selectionIndicatorPosition: 'after',
   selectionIndicatorVariant: 'auto',
@@ -618,7 +638,7 @@ export function withTypeaheadWhileClosed(enabled: boolean): CngxSelectConfigFeat
  * );
  * ```
  */
-export function withSearchMatchFn(fn: ListboxMatchFn | null): CngxSelectConfigFeature {
+export function withSearchMatchFn(fn: CngxSelectMatchFn | null): CngxSelectConfigFeature {
   return feature({ searchMatchFn: fn });
 }
 

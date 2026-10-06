@@ -10,7 +10,12 @@ import { CngxActionSelect } from '../action-select/action-select.component';
 import { CngxCombobox } from '../combobox/combobox.component';
 import { CngxSelectShell } from '../select-shell/select-shell.component';
 import { CngxTypeahead } from '../typeahead/typeahead.component';
-import { provideSelectConfig, provideSelectConfigAt, withSearchMatchFn } from './config';
+import {
+  provideSelectConfig,
+  provideSelectConfigAt,
+  withSearchMatchFn,
+  type CngxSelectMatchFn,
+} from './config';
 import type { CngxSelectOptionDef } from './option.model';
 
 const OPTIONS: CngxSelectOptionDef<string>[] = [
@@ -21,9 +26,20 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
 
 const ITEM = { id: 'x', value: 'green', label: 'Grün' };
 
-const configMatch = vi.fn<ListboxMatchFn>(() => true);
-const subtreeMatch = vi.fn<ListboxMatchFn>(() => false);
-const inputMatch = vi.fn<ListboxMatchFn>(() => false);
+const configMatch = vi.fn<CngxSelectMatchFn>(() => true);
+const subtreeMatch = vi.fn<CngxSelectMatchFn>(() => false);
+const inputMatch = vi.fn<CngxSelectMatchFn>(() => false);
+
+// A select matcher works where a listbox matcher is expected: a listbox item
+// satisfies the `{ value, label }` option shape, so the variants pass their
+// items straight through.
+const asListboxMatch: ListboxMatchFn = configMatch;
+
+type ShellMatchFn = NonNullable<ReturnType<CngxSelectShell<string>['searchMatchFn']>>;
+const shellStartsWith: ShellMatchFn = (option, term) => option.value.startsWith(term);
+// @ts-expect-error the pre-0.1 `(value, label, term)` shell matcher shape is gone
+const legacyShellMatch: ShellMatchFn = (value: string, label: string, term: string) =>
+  label.includes(term) || value === term;
 
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
@@ -67,10 +83,8 @@ type Searchable = { readonly effectiveMatchFn: Signal<ListboxMatchFn> };
 })
 class RootHost {
   readonly options = OPTIONS;
-  readonly matcher = signal<ListboxMatchFn | null>(null);
-  readonly shellMatcher = signal<((value: string, label: string, term: string) => boolean) | null>(
-    null,
-  );
+  readonly matcher = signal<CngxSelectMatchFn | null>(null);
+  readonly shellMatcher = signal<CngxSelectMatchFn<string> | null>(null);
 }
 
 @Component({
@@ -123,7 +137,8 @@ describe('CngxSelectConfig.searchMatchFn', () => {
       expect(matcherOf(fixture, type)).toBe(configMatch);
     }
     expect(shellOf(fixture).matches('green', 'Grün', 'gr')).toBe(true);
-    expect(configMatch).toHaveBeenCalledWith({ id: '', value: 'green', label: 'Grün' }, 'gr');
+    expect(configMatch).toHaveBeenCalledWith({ value: 'green', label: 'Grün' }, 'gr');
+    expect(configMatch.mock.calls[0][0]).not.toHaveProperty('id');
   });
 
   it('lets a per-instance [searchMatchFn] win over the config matcher', () => {
@@ -136,6 +151,33 @@ describe('CngxSelectConfig.searchMatchFn', () => {
     }
     expect(shellOf(fixture).matches('green', 'Grün', 'gr')).toBe(false);
     expect(configMatch).not.toHaveBeenCalled();
+  });
+
+  it('passes the shell option as { value, label } to a [searchMatchFn]', () => {
+    const fixture = TestBed.createComponent(RootHost);
+    const shellMatch = vi.fn<CngxSelectMatchFn<string>>(shellStartsWith);
+    fixture.componentInstance.shellMatcher.set(shellMatch);
+    fixture.detectChanges();
+    expect(shellOf(fixture).matches('green', 'Grün', 'gr')).toBe(true);
+    expect(shellOf(fixture).matches('green', 'Grün', 'bl')).toBe(false);
+    expect(shellMatch).toHaveBeenCalledWith({ value: 'green', label: 'Grün' }, 'gr');
+    expect(shellMatch.mock.calls[0][0]).not.toHaveProperty('id');
+    expect(configMatch).not.toHaveBeenCalled();
+  });
+
+  it('accepts a CngxSelectMatchFn on every searchable variant and filters through it', () => {
+    const fixture = TestBed.createComponent(RootHost);
+    const byValue: CngxSelectMatchFn = (option, term) => option.value === term;
+    fixture.componentInstance.matcher.set(byValue);
+    fixture.detectChanges();
+    for (const type of VARIANTS) {
+      const match = matcherOf(fixture, type);
+      expect(match).toBe(byValue);
+      expect(match(ITEM, 'green')).toBe(true);
+      expect(match(ITEM, 'red')).toBe(false);
+    }
+    expect(asListboxMatch).toBe(configMatch);
+    expect(legacyShellMatch).toBeTypeOf('function');
   });
 
   it('reads the matcher of a provideSelectConfigAt subtree', () => {
