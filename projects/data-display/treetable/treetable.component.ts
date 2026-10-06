@@ -742,7 +742,11 @@ export class CngxTreetable<T = unknown> {
       this.headerTpls();
       untracked(() => {
         for (const col of columns) {
-          if (warned.has(col) || columnLabels[col] !== undefined || this.headerTplFor(col)) {
+          if (
+            warned.has(col) ||
+            columnLabels[col] !== undefined ||
+            resolveHeaderTpl(col, this.headerTpls)
+          ) {
             continue;
           }
           warned.add(col);
@@ -1056,8 +1060,11 @@ export class CngxTreetable<T = unknown> {
     return resolveCellTpl<T>(col, this.cellTpls);
   }
 
-  /** @internal */
+  /**
+   * @internal Header slot cascade per column: a `*cngxHeader` projected for
+   * the column -> `CNGX_TREETABLE_CONFIG.templates.header` -> the label text.
+   */
   protected headerTplFor(col: string) {
-    return resolveHeaderTpl(col, this.headerTpls);
+    return resolveHeaderTpl(col, this.headerTpls) ?? this.config().templates?.header ?? null;
   }
 }

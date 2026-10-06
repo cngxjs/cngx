@@ -7,7 +7,11 @@ import {
   type TemplateRef,
 } from '@angular/core';
 import { createOverrideMerge } from '@cngx/core/utils';
-import type { CngxErrorTplContext, CngxSkeletonRowTplContext } from './models';
+import type {
+  CngxErrorTplContext,
+  CngxHeaderTplContext,
+  CngxSkeletonRowTplContext,
+} from './models';
 
 /**
  * Application-wide default configuration for every `CngxTreetable`
@@ -67,8 +71,8 @@ export interface TreetableConfig {
 }
 
 /**
- * App-wide default templates for the treetable's async-state surfaces
- * ({@link withTreetableTemplates}). Each key mirrors the projected
+ * App-wide default templates for the treetable's async-state surfaces and
+ * column headers ({@link withTreetableTemplates}). Each key mirrors the projected
  * slot of the same region and receives the same template context.
  *
  * @category data-display/treetable
@@ -82,6 +86,13 @@ export interface TreetableTemplates {
   skeletonRow?: TemplateRef<CngxSkeletonRowTplContext>;
   /** Default for the refresh-indicator content (`*cngxRefresh`). */
   refresh?: TemplateRef<void>;
+  /**
+   * Default for every column header (`*cngxHeader`); gets
+   * {@link CngxHeaderTplContext}, so one template serves every column by its
+   * key. A `*cngxHeader` projected for a column wins for that column.
+   * @since 0.1.0
+   */
+  header?: TemplateRef<CngxHeaderTplContext>;
 }
 
 /**
@@ -287,8 +298,8 @@ export function withTreetableLabels(
 }
 
 /**
- * Feature: app-wide default templates for the async-state surfaces
- * ({@link TreetableTemplates}). Partial - unset keys keep the built-in
+ * Feature: app-wide default templates for the async-state surfaces and
+ * the column headers ({@link TreetableTemplates}). Partial - unset keys keep the built-in
  * markup. A projected slot on the instance always wins over this tier.
  *
  * Because the values are `TemplateRef`s, this feature is typically

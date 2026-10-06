@@ -1,4 +1,10 @@
-import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
+import {
+  Component,
+  provideZonelessChangeDetection,
+  signal,
+  viewChild,
+  type TemplateRef,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -13,13 +19,16 @@ import { provideLocale, provideLocaleAt } from '@cngx/core/utils';
 import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 
 import { CngxHeaderTpl } from '../column-template.directive';
-import type { Node } from '../models';
+import type { CngxHeaderTplContext, Node } from '../models';
 import { cellFormattersFor, columnHeaderFor, formatCellValue } from '../tree.utils';
 import { CngxTreetable } from '../treetable.component';
 import {
+  CNGX_TREETABLE_CONFIG,
   provideTreetable,
   provideTreetableAt,
   withTreetableDateFormat,
+  withTreetableTemplates,
+  type TreetableTemplates,
   withTreetableLabels,
   withTreetableNumberFormat,
 } from '../treetable.token';
@@ -323,6 +332,123 @@ describe('CngxTreetable header and cell copy', () => {
     expect(slots.map((el) => el.getAttribute('data-key'))).toEqual(['name', 'size']);
     expect(slots.map((el) => el.getAttribute('data-column'))).toEqual(['name', 'size']);
     expect(slots.map((el) => strip(el.textContent).trim())).toEqual(['Title', 'Column 2']);
+  });
+
+  @Component({
+    selector: 'cngx-header-template-holder',
+    template: `
+      <ng-template #app let-key let-column="column" let-label="label">
+        <span class="app-header" [attr.data-key]="key" [attr.data-column]="column">{{ label }}</span>
+      </ng-template>
+      <ng-template #scoped let-key let-label="label">
+        <span class="scoped-header" [attr.data-key]="key">{{ label }}</span>
+      </ng-template>
+    `,
+  })
+  class HeaderTemplates {
+    readonly app = viewChild.required<TemplateRef<CngxHeaderTplContext>>('app');
+    readonly scoped = viewChild.required<TemplateRef<CngxHeaderTplContext>>('scoped');
+  }
+
+  function headerTemplates(): HeaderTemplates {
+    const holder = TestBed.createComponent(HeaderTemplates);
+    holder.detectChanges();
+    return holder.componentInstance;
+  }
+
+  it('renders the config header template with the column context when no cngxHeader is projected', () => {
+    vi.stubGlobal('ngDevMode', false);
+    const cfg: { templates?: TreetableTemplates } = {};
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [{ provide: CNGX_TREETABLE_CONFIG, useValue: cfg }],
+    });
+    cfg.templates = { header: headerTemplates().app() };
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const headers = fixture.debugElement
+      .queryAll(By.css('.app-header'))
+      .map((el) => el.nativeElement as HTMLElement);
+    expect(headers.map((el) => el.getAttribute('data-key'))).toEqual(['name', 'size', 'modified']);
+    expect(headers.map((el) => el.getAttribute('data-column'))).toEqual([
+      'name',
+      'size',
+      'modified',
+    ]);
+    expect(headers.map((el) => strip(el.textContent).trim())).toEqual([
+      'Column 1',
+      'Column 2',
+      'Column 3',
+    ]);
+  });
+
+  it('lets a projected cngxHeader win over the config header template for its column', () => {
+    vi.stubGlobal('ngDevMode', false);
+    @Component({
+      selector: 'cngx-header-mixed-host',
+      template: `
+        <cngx-treetable [tree]="tree" [options]="options">
+          <ng-template [cngxHeader]="'name'" let-label="label">
+            <span class="slot">{{ label }}</span>
+          </ng-template>
+        </cngx-treetable>
+      `,
+      imports: [CngxTreetable, CngxHeaderTpl],
+    })
+    class MixedHost {
+      readonly tree = data;
+      readonly options = { customColumnOrder: ['name', 'size', 'modified'] as const };
+    }
+    const cfg: { templates?: TreetableTemplates } = {};
+    TestBed.configureTestingModule({
+      imports: [MixedHost],
+      providers: [{ provide: CNGX_TREETABLE_CONFIG, useValue: cfg }],
+    });
+    cfg.templates = { header: headerTemplates().app() };
+    const fixture = TestBed.createComponent(MixedHost);
+    fixture.detectChanges();
+    const slots = fixture.debugElement.queryAll(By.css('.slot'));
+    expect(slots.length).toBe(1);
+    expect(
+      fixture.debugElement
+        .queryAll(By.css('.app-header'))
+        .map((el) => (el.nativeElement as HTMLElement).getAttribute('data-key')),
+    ).toEqual(['size', 'modified']);
+  });
+
+  it('a provideTreetableAt subtree overrides the app-wide header template', () => {
+    vi.stubGlobal('ngDevMode', false);
+    const cfg: { templates?: TreetableTemplates } = {};
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [{ provide: CNGX_TREETABLE_CONFIG, useValue: cfg }],
+    });
+    const tpls = headerTemplates();
+    cfg.templates = { header: tpls.app() };
+
+    @Component({
+      selector: 'cngx-header-scoped-host',
+      template: `<cngx-treetable [tree]="tree" [options]="options" />`,
+      imports: [CngxTreetable],
+      providers: [provideTreetableAt(withTreetableTemplates({ header: tpls.scoped() }))],
+    })
+    class ScopedHost {
+      readonly tree = data;
+      readonly options = { customColumnOrder: ['name', 'size'] as const };
+    }
+
+    const root = TestBed.createComponent(Host);
+    root.detectChanges();
+    const scoped = TestBed.createComponent(ScopedHost);
+    scoped.detectChanges();
+    expect(root.debugElement.queryAll(By.css('.app-header')).length).toBe(3);
+    expect(root.debugElement.queryAll(By.css('.scoped-header')).length).toBe(0);
+    expect(
+      scoped.debugElement
+        .queryAll(By.css('.scoped-header'))
+        .map((el) => (el.nativeElement as HTMLElement).getAttribute('data-key')),
+    ).toEqual(['name', 'size']);
+    expect(scoped.debugElement.queryAll(By.css('.app-header')).length).toBe(0);
   });
 
   it('formats number and date cells with the locale', () => {
