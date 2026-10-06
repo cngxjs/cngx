@@ -19,7 +19,6 @@ import {
 
 import {
   CNGX_STATEFUL,
-  createLabelMatcher,
   injectLocale,
   type AsyncStatus,
   type CngxAsyncState,
@@ -30,6 +29,7 @@ import {
   CngxListbox,
   CngxListboxSearch,
   CngxListboxTrigger,
+  createListboxLabelMatch,
   type ListboxMatchFn,
 } from '@cngx/common/interactive';
 import {
@@ -427,14 +427,11 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly empty = computed<boolean>(() => this.value() === undefined);
 
   /** @internal Folded substring match of the option label in the reading locale. */
-  private readonly labelMatch = createLabelMatcher(injectLocale());
+  private readonly labelMatch = createListboxLabelMatch(injectLocale());
 
   /** @internal */
   protected readonly effectiveMatchFn = computed<ListboxMatchFn>(
-    () =>
-      this.searchMatchFn() ??
-      this.config.searchMatchFn ??
-      ((option, term) => this.labelMatch(option.label, term, option)),
+    () => this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch,
   );
 
   /** Filter overlay applied by `createSelectCore` on non-empty search term. */

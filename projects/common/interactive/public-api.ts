@@ -208,6 +208,7 @@ export {
 export { CngxListbox } from './listbox/listbox.directive';
 export {
   CngxListboxSearch,
+  createListboxLabelMatch,
   type ListboxMatchFn,
 } from './listbox/listbox-search.directive';
 export { CngxListboxTrigger } from './listbox/listbox-trigger.directive';

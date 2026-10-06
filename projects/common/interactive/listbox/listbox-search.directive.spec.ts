@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CngxListboxSearch } from './listbox-search.directive';
+import { CngxListboxSearch, createListboxLabelMatch } from './listbox-search.directive';
 import { CngxListbox } from './listbox.directive';
 import { CngxOption } from './option.directive';
 
@@ -94,5 +94,41 @@ describe('CngxListboxSearch', () => {
     option.label = 'Birnen';
     expect(match(option, 'bir')).toBe(true);
     expect(match(option, 'apf')).toBe(false);
+  });
+});
+
+describe('createListboxLabelMatch', () => {
+  it('matches option labels ignoring case and accents in the locale', () => {
+    const match = createListboxLabelMatch(signal('en'));
+    expect(match({ id: 'u', value: 'u', label: 'Über' }, 'UBER')).toBe(true);
+    expect(match({ id: 'c', value: 'c', label: 'Crème brûlée' }, 'brule')).toBe(true);
+    expect(match({ id: 'p', value: 'p', label: 'Postgres' }, 'mysql')).toBe(false);
+    expect(match({ id: 'e', value: 'e', label: 'anything' }, '')).toBe(true);
+  });
+
+  it('folds a label once per option object and re-folds a new option', () => {
+    const match = createListboxLabelMatch(signal('en'));
+    const option = { id: 'a', value: 'a', label: 'Apple' };
+    const normalize = vi.spyOn(String.prototype, 'normalize');
+    try {
+      match(option, 'app');
+      const afterFirst = normalize.mock.calls.length;
+      match(option, 'app');
+      match(option, 'app');
+      expect(normalize.mock.calls.length).toBe(afterFirst);
+      match({ ...option }, 'app');
+      expect(normalize.mock.calls.length).toBe(afterFirst + 1);
+    } finally {
+      normalize.mockRestore();
+    }
+  });
+
+  it('re-folds a cached option when the locale changes', () => {
+    const locale = signal('en');
+    const match = createListboxLabelMatch(locale);
+    const city = { id: 'i', value: 'i', label: 'IZMIR' };
+    expect(match(city, 'izmir')).toBe(true);
+    locale.set('tr');
+    expect(match(city, 'izmir')).toBe(false);
   });
 });

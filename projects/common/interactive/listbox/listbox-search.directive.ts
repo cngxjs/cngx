@@ -13,10 +13,29 @@ import { CngxSearch } from '../keyboard/search.directive';
 export type ListboxMatchFn = (option: ActiveDescendantItem, term: string) => boolean;
 
 /**
- * @internal Accent- and case-tolerant substring match in the reading locale,
- * keyed per option so each label is folded once per label text and locale.
+ * The default listbox matcher: an accent- and case-tolerant substring match
+ * of `option.label` against the term in the locale `locale` holds, built on
+ * {@link createLabelMatcher}. The option object is the cache key, so each
+ * label is folded once per label text and locale; the cache is a `WeakMap`
+ * owned by the returned function and never outlives the options. An empty
+ * term matches every option.
+ *
+ * Reach for it when a component filters `ActiveDescendantItem`s and wants the
+ * same match a `CngxListboxSearch` applies by default, e.g. as the last arm
+ * of an `input() ?? config ?? default` cascade. Create it once per host in an
+ * injection context (field initializer) so the cache lives as long as the host.
+ *
+ * ```typescript
+ * private readonly labelMatch = createListboxLabelMatch(injectLocale());
+ * protected readonly matchFn = computed(() => this.matchFnInput() ?? this.labelMatch);
+ * ```
+ *
+ * @category common/interactive
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox-search.directive.ts
+ * @since 0.1.0
+ * @relatedTo createLabelMatcher, CngxListboxSearch
  */
-function labelMatchFor(locale: Signal<string>): ListboxMatchFn {
+export function createListboxLabelMatch(locale: Signal<string>): ListboxMatchFn {
   const matches = createLabelMatcher(locale);
   return (option, term) => matches(option.label, term, option);
 }
@@ -53,7 +72,7 @@ export class CngxListboxSearch {
    * Custom matcher. Defaults to a substring match on `label` that ignores
    * case and accents in the app locale.
    */
-  readonly matchFn = input<ListboxMatchFn>(labelMatchFor(injectLocale()));
+  readonly matchFn = input<ListboxMatchFn>(createListboxLabelMatch(injectLocale()));
 
   private readonly search = inject(CngxSearch, { self: true, host: true });
 
