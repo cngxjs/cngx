@@ -17,6 +17,34 @@ describe('resolvePreset', () => {
     it('falls back to the inline short mask while the table is not loaded', () => {
       expect(resolvePreset('date:short', 'de-DE', {})?.patterns).toEqual(['00/00/00']);
     });
+
+    it('applies config dateFormats with a two-digit year', () => {
+      const config = { dateFormats: { 'de-DE': '0000-00-00', 'en-NZ': '00.00.0000' } };
+      expect(resolvePreset('date:short', 'de-DE', DATE_TABLES, config)?.patterns).toEqual([
+        '00-00-00',
+      ]);
+      expect(resolvePreset('date:short', 'en-NZ', DATE_TABLES, config)?.patterns).toEqual([
+        '00.00.00',
+      ]);
+      expect(resolvePreset('date:short', 'en-NZ', {}, config)?.patterns).toEqual(['00.00.00']);
+    });
+
+    it('keeps the built-in short mask for a locale the config does not set', () => {
+      const config = { dateFormats: { 'de-DE': '0000-00-00' } };
+      expect(resolvePreset('date:short', 'en-US', DATE_TABLES, config)?.patterns).toEqual([
+        '00/00/00',
+      ]);
+    });
+
+    it('matches every built-in short mask to its long mask', () => {
+      for (const [locale, long] of Object.entries(DATE_FORMATS)) {
+        expect(
+          resolvePreset('date:short', locale, { dateShort: DATE_SHORT_FORMATS }, {
+            dateFormats: { [locale]: long },
+          })?.patterns,
+        ).toEqual([DATE_SHORT_FORMATS[locale]]);
+      }
+    });
   });
 
   describe('date', () => {

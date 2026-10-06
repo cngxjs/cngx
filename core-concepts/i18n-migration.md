@@ -300,6 +300,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The input copy comes from the `input` section of the language pack: every `CNGX_INPUT_CONFIG` `ariaLabels` key the config leaves unset, or sets to `undefined`, reads it. `withInputAriaLabels` still wins key by key, also on top of a pack. English output is unchanged apart from the number formatting below.
 - `CngxCharCount` readouts, `CngxRating` announcements and star labels, and `CngxOtpSlot` labels format their numbers with the locale: `1,200/5,000` where English showed `1200/5000`, `1.200/5.000` and `2,5 of 5` in German.
 - The `cngxInputMask="time"` preset follows the hour cycle of the locale (`Intl.DateTimeFormat(locale, { hour: 'numeric' }).resolvedOptions().hourCycle`): `en-US` gets the 12-hour mask `00:00 AA`, `de` the 24-hour `00:00`. The time part of `datetime` follows the same rule (`00/00/0000 00:00 AA` in `en-US`). Before, both were always 24-hour. `time:24` pins the 24-hour mask; `time:12` now renders the 12-hour mask, where before its suffix was ignored and it rendered 24-hour.
+- `withDateFormats` entries also reach the `cngxInputMask="date:short"` preset, with the four-digit year group shortened to two digits (`'0000-00-00'` gives `00-00-00`). Before, `date:short` read only the built-in short table and ignored the config.
 
 ### @cngx/forms/filter-builder
 

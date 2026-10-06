@@ -57,6 +57,26 @@ function resolveDateFormat(
   return fallback;
 }
 
+/**
+ * The consumer `dateFormats` as short-date masks: each four-digit year group
+ * becomes two digits, separators and group order stay (`00.00.0000` ->
+ * `00.00.00`, `0000-00-00` -> `00-00-00`), the same relation the built-in
+ * long and short tables have.
+ * @internal
+ */
+function shortDateFormats(
+  formats: Readonly<Record<string, string>> | undefined,
+): Record<string, string> | undefined {
+  if (!formats) {
+    return undefined;
+  }
+  const short: Record<string, string> = {};
+  for (const [key, pattern] of Object.entries(formats)) {
+    short[key] = pattern.replace(/(?<!0)0000(?!0)/g, '00');
+  }
+  return short;
+}
+
 const TIME_24 = '00:00';
 const TIME_12 = '00:00 PM';
 
@@ -128,8 +148,9 @@ export function resolvePreset(
     case 'date':
       // `name` is the segment before the first `:`, so `date:short` lands here.
       if (parts[1]?.toLowerCase() === 'short') {
+        const shortDates = { ...tables.dateShort, ...shortDateFormats(config?.dateFormats) };
         return {
-          patterns: [resolveDateFormat(locale, tables.dateShort ?? {}, PRESET_FALLBACKS.dateShort)],
+          patterns: [resolveDateFormat(locale, shortDates, PRESET_FALLBACKS.dateShort)],
         };
       }
       return { patterns: [resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)] };

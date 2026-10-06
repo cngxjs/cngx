@@ -334,7 +334,9 @@ export function withZipPatterns(patterns: Record<string, string>): InputConfigFe
  * - Masks capture separators and group count only, NOT field order: `en-US`
  *   (MM/DD) and `en-GB` (DD/MM) share `00/00/0000`.
  * - Tokens: `0` = required digit, separators are literals.
- * - Does not feed `date:short` - that uses a separate built-in table.
+ * - Also feeds `date:short`: each entry's four-digit year group becomes two
+ *   digits (`00.00.0000` -> `00.00.00`) and wins over the built-in short table
+ *   with the same resolution order.
  * - Consumer entries merge per key and win on collision.
  *
  * ```typescript
