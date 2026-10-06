@@ -17,14 +17,13 @@ import type { Node } from '../models';
 import { cellFormattersFor, columnHeaderFor, formatCellValue } from '../tree.utils';
 import { CngxTreetable } from '../treetable.component';
 import {
-  CNGX_TREETABLE_CONFIG,
   provideTreetable,
   provideTreetableAt,
   withTreetableDateFormat,
   withTreetableLabels,
   withTreetableNumberFormat,
 } from '../treetable.token';
-import { injectTreetableLabels } from './treetable-i18n';
+import { injectTreetableLabels } from '../public-api';
 import { CNGX_TREETABLE_LANGUAGE_EN } from './treetable-language-section';
 
 // Compile-checked: the English section is a complete treetable section of a pack.
@@ -34,7 +33,7 @@ const strip = stripBidiIsolates;
 
 function labels() {
   return TestBed.runInInjectionContext(() =>
-    injectTreetableLabels(TestBed.inject(CNGX_TREETABLE_CONFIG).labels),
+    injectTreetableLabels(),
   );
 }
 
@@ -129,10 +128,27 @@ describe('treetable language section', () => {
     });
     const root = labels();
     const german = runInSubtree([provideLocaleAt('de')], () =>
-      injectTreetableLabels(TestBed.inject(CNGX_TREETABLE_CONFIG).labels),
+      injectTreetableLabels(),
     );
     expect(strip(root().rowsSelected(1200))).toBe('1,200 rows selected');
     expect(strip(german().rowsSelected(1200))).toBe('1.200 rows selected');
+  });
+
+  it('reads the label overrides of a provideTreetableAt subtree', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTreetable(withTreetableLabels({ expand: 'Open' })),
+      ],
+    });
+    const root = labels();
+    const scoped = runInSubtree(
+      [provideTreetableAt(withTreetableLabels({ expand: 'Show children' }))],
+      () => injectTreetableLabels(),
+    );
+    expect(root().expand).toBe('Open');
+    expect(scoped().expand).toBe('Show children');
+    expect(scoped().collapse).toBe('Collapse');
   });
 
   it('keeps the labels reference for the same section and locale', () => {

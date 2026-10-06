@@ -39,6 +39,7 @@ export type {
   CngxSkeletonRowTplContext,
 } from './models';
 export { flattenTree, filterTree, sortTree, nodeMatchesSearch } from './tree.utils';
+export { injectTreetableLabels } from './i18n/treetable-i18n';
 export {
   CNGX_TREETABLE_LANGUAGE_EN,
   type CngxTreetableLanguageSection,

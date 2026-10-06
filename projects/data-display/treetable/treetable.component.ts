@@ -56,7 +56,7 @@ import {
   getInitialExpandedIds,
   isNodeVisible,
 } from './tree.utils';
-import { CNGX_TREETABLE_CONFIG, NO_TREETABLE_LABELS } from './treetable.token';
+import { CNGX_TREETABLE_CONFIG } from './treetable.token';
 import { injectTreetableLabels } from './i18n/treetable-i18n';
 
 declare const ngDevMode: boolean | undefined;
@@ -331,9 +331,7 @@ export class CngxTreetable<T = unknown> {
    * `CNGX_TREETABLE_CONFIG.labels` over the `treetable` section of the
    * active language pack, formatted for this treetable's locale.
    */
-  protected readonly labels = injectTreetableLabels(
-    coerceSignal(this.configValue.labels ?? NO_TREETABLE_LABELS),
-  );
+  protected readonly labels = injectTreetableLabels();
 
   /** Locale of this treetable's injector - formats the default cell numbers and dates. */
   private readonly locale = injectLocale();

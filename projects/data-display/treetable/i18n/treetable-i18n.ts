@@ -2,7 +2,7 @@ import { computed, inject, InjectionToken, type Signal } from '@angular/core';
 import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
 import { createNestedOverrideMerge, type CngxNestedOverrides } from '@cngx/core/utils';
 
-import type { TreetableLabels } from '../treetable.token';
+import { CNGX_TREETABLE_CONFIG, type TreetableLabels } from '../treetable.token';
 import {
   CNGX_TREETABLE_LANGUAGE_EN,
   type CngxTreetableLanguageSection,
@@ -70,19 +70,37 @@ const TREETABLE_SECTION_LABELS = new InjectionToken<Signal<CngxResolvedTreetable
 );
 
 /**
- * @internal The treetable labels at the reading site: the active pack's
- * treetable section formatted for the locale of the injector that reads it
- * (a `provideLocaleAt` subtree formats with its own locale), with the
- * `CNGX_TREETABLE_CONFIG` labels on top. A key the config sets wins;
- * `columnLabels` merges key by key. Injection context required.
+ * Reads the resolved treetable copy as a `Signal`: the `withTreetableLabels`
+ * overrides of the nearest `CNGX_TREETABLE_CONFIG` over the `treetable`
+ * section of the active language pack (English without one), formatted for
+ * the locale of the reading injector. Every key is filled; a key the config
+ * leaves unset reads the section, and `columnLabels` merges key by key. A
+ * `provideLocaleAt` subtree formats its counts in that locale, and a
+ * `provideTreetableAt` subtree reads its own label overrides.
+ *
+ * This is the same copy `CngxTreetable` renders and announces, so a custom
+ * toolbar, header or selection summary built next to a treetable follows a
+ * language switch. Read it inside a `computed()`, a template or a handler,
+ * never at construction. Injection context required.
+ *
+ * ```typescript
+ * export class AppSelectionSummary {
+ *   private readonly labels = injectTreetableLabels();
+ *   readonly count = input.required<number>();
+ *   protected readonly text = computed(() => this.labels().rowsSelected(this.count()));
+ * }
+ * ```
+ *
+ * @category data-display/treetable
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/i18n/treetable-i18n.ts
+ * @since 0.1.0
+ * @relatedTo withTreetableLabels, provideTreetable, provideTreetableAt, TreetableLabels, CNGX_TREETABLE_LANGUAGE_EN
  */
-export function injectTreetableLabels(
-  overrides: Partial<TreetableLabels> | Signal<Partial<TreetableLabels>> | undefined,
-): Signal<CngxResolvedTreetableLabels> {
+export function injectTreetableLabels(): Signal<Required<TreetableLabels>> {
   const site = treetableBundle.resolve(inject(TREETABLE_SECTION_LABELS));
   return createNestedOverrideMerge<CngxResolvedTreetableLabels, 'columnLabels'>(
     site,
-    overrides,
+    inject(CNGX_TREETABLE_CONFIG).labels,
     'columnLabels',
   );
 }
