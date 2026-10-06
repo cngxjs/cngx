@@ -55,7 +55,6 @@ export const STORY: DemoSpec = {
         align-items: center;
         gap: .5rem;
         padding: .5rem .75rem;
-        background: var(--cngx-surface-variant, rgba(0,0,0,.02));
       ">
         <span class="demo-split-action-glyph" aria-hidden="true">✨</span>
         <span class="demo-split-action-heading">
