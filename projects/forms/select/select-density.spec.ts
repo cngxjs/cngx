@@ -57,3 +57,10 @@ describe('panel loading + empty-state density derivation', () => {
     assertScaleSet(css('shared/select-base.css'), '--cngx-select-message-padding');
   });
 });
+
+describe('action-region frame density derivation', () => {
+  it('derives the action separator padding and margin from the scale', () => {
+    assertScaleSet(css('shared/select-base.css'), '--cngx-select-action-padding');
+    assertScaleSet(css('shared/select-base.css'), '--cngx-select-action-margin');
+  });
+});

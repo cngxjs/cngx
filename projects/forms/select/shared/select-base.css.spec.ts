@@ -295,3 +295,37 @@ describe('select-family opacity tokens', () => {
     expect(code).not.toMatch(/var\(\s*--cngx-[a-z-]*opacity\b/);
   });
 });
+
+// The action region owns its separator, so consumer *cngxSelectAction
+// templates need no hand-rolled border. The Material bridge drops the panel
+// border, so the separator must stay explicitly set there; the bridge needs
+// mat.theme and cannot load into the geometry harness, hence a source guard.
+describe('select-family action-region frame', () => {
+  it('borders the bottom action on its options-facing block-start side', () => {
+    const rule = scopeBlock('.cngx-select__action--bottom {');
+    expect(rule).toMatch(/border-block-start:\s*var\(\s*--cngx-select-action-border/);
+    expect(rule).toContain('margin-block-start: var(--cngx-select-action-margin');
+    expect(rule).toContain('padding-block-start: var(--cngx-select-action-padding');
+  });
+
+  it('borders the top action on its options-facing block-end side', () => {
+    const rule = scopeBlock('.cngx-select__action--top {');
+    expect(rule).toMatch(/border-block-end:\s*var\(\s*--cngx-select-action-border/);
+    expect(rule).toContain('margin-block-end: var(--cngx-select-action-margin');
+    expect(rule).toContain('padding-block-end: var(--cngx-select-action-padding');
+  });
+
+  it('delegates the separator colour to the foundation border at :root', () => {
+    expect(SHARED).toContain('--cngx-select-action-border: 1px solid var(--cngx-color-border);');
+  });
+
+  it('keeps the separator on under the Material bridge', () => {
+    const bridge = readFileSync(
+      resolve(process.cwd(), 'projects/themes/material/select-theme.scss'),
+      'utf8',
+    );
+    const value = /--cngx-select-action-border:\s*([^;]+);/.exec(bridge)?.[1].trim();
+    expect(value).toBeDefined();
+    expect(value).not.toBe('none');
+  });
+});

@@ -14,7 +14,7 @@ import { CngxSelectShell } from '../select-shell/select-shell.component';
 import { CngxSelect } from '../single-select/select.component';
 import { CngxTreeSelect } from '../tree-select/tree-select.component';
 import { CngxTypeahead } from '../typeahead/typeahead.component';
-import { CngxSelectInputPrefix } from './template-slots';
+import { CngxSelectAction, CngxSelectInputPrefix } from './template-slots';
 
 // Runs in a real Chromium (the `test-geometry` target). Every select variant
 // opens its panel flush with its bordered `.cngx-field-trigger` row. The four
@@ -86,11 +86,16 @@ interface Openable {
     CngxSelectShell,
     CngxSelectOption,
     CngxSelectInputPrefix,
+    CngxSelectAction,
   ],
   styleUrls: HARNESS_STYLES,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div class="slot" style="display: block; width: 20rem; margin: 1rem">
+    <div
+      class="slot"
+      style="display: block; width: 20rem; margin: 1rem"
+      [style.--cngx-select-action-border]="actionBorder()"
+    >
       @switch (variant()) {
         @case ('select') {
           <cngx-select #v [skin]="skin()" [label]="'C'" [options]="options" />
@@ -119,17 +124,35 @@ interface Openable {
           <cngx-reorderable-multi-select #v [skin]="skin()" [label]="'C'" [options]="options" />
         }
         @case ('action') {
-          <cngx-action-select #v [skin]="skin()" [label]="'C'" [options]="options">
+          <cngx-action-select
+            #v
+            [skin]="skin()"
+            [label]="'C'"
+            [options]="options"
+            [actionPosition]="actionPosition()"
+          >
             <ng-template cngxSelectInputPrefix
               ><span class="pfx" style="display: inline-block; width: 2rem">@</span></ng-template
             >
+            @if (withAction()) {
+              <ng-template cngxSelectAction><button type="button">Add</button></ng-template>
+            }
           </cngx-action-select>
         }
         @case ('action-multi') {
-          <cngx-action-multi-select #v [skin]="skin()" [label]="'C'" [options]="options">
+          <cngx-action-multi-select
+            #v
+            [skin]="skin()"
+            [label]="'C'"
+            [options]="options"
+            [actionPosition]="actionPosition()"
+          >
             <ng-template cngxSelectInputPrefix
               ><span class="pfx" style="display: inline-block; width: 2rem">@</span></ng-template
             >
+            @if (withAction()) {
+              <ng-template cngxSelectAction><button type="button">Add</button></ng-template>
+            }
           </cngx-action-multi-select>
         }
         @case ('shell') {
@@ -145,6 +168,9 @@ interface Openable {
 class VariantHost {
   readonly variant = signal<Variant>('select');
   readonly skin = signal<'outline' | 'fill' | undefined>(undefined);
+  readonly withAction = signal(false);
+  readonly actionPosition = signal<'top' | 'bottom'>('bottom');
+  readonly actionBorder = signal<string | null>(null);
   readonly options = [
     { value: 'red', label: 'Red' },
     { value: 'green', label: 'Green' },
@@ -290,5 +316,130 @@ describe('select panel anchor geometry', () => {
     const { rowRect, panelRect } = await openAndMeasure(fixture);
     expect(panelRect.width).toBeGreaterThan(rowRect.width + 2);
     expect(Math.abs(rowRect.right - panelRect.right)).toBeLessThanOrEqual(1);
+  });
+});
+
+// The panel frame (surface, edges, gap, action-region separator) is one
+// source of truth across the family; option and tree-row content is not
+// locked. Every variant is compared against CngxSelect read in the same run,
+// so value tuning stays free, and absolute floors catch a family-wide loss.
+const FRAME_PROPS = [
+  'box-shadow',
+  'border-top-width',
+  'border-top-style',
+  'border-top-color',
+  'border-right-width',
+  'border-right-style',
+  'border-right-color',
+  'border-bottom-width',
+  'border-bottom-style',
+  'border-bottom-color',
+  'border-left-width',
+  'border-left-style',
+  'border-left-color',
+  'border-top-left-radius',
+  'border-top-right-radius',
+  'border-bottom-right-radius',
+  'border-bottom-left-radius',
+  'padding-top',
+  'padding-right',
+  'padding-bottom',
+  'padding-left',
+  'background-color',
+] as const;
+
+const ACTION_FRAME_PROPS = [
+  'border-block-start-width',
+  'border-block-start-style',
+  'border-block-start-color',
+  'margin-block-start',
+  'padding-block-start',
+] as const;
+
+interface HostSetup {
+  readonly variant: Variant;
+  readonly withAction?: boolean;
+  readonly actionPosition?: 'top' | 'bottom';
+  readonly actionBorder?: string | null;
+}
+
+async function openVariant(setup: HostSetup) {
+  const fixture = mount(VariantHost);
+  const host = fixture.componentInstance;
+  host.variant.set(setup.variant);
+  host.withAction.set(setup.withAction ?? false);
+  host.actionPosition.set(setup.actionPosition ?? 'bottom');
+  host.actionBorder.set(setup.actionBorder ?? null);
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  fixture.detectChanges();
+  const measured = await openAndMeasure(fixture);
+  return { ...measured, root: fixture.nativeElement as HTMLElement };
+}
+
+function readFrame(el: HTMLElement, props: readonly string[]): Record<string, string> {
+  return Object.fromEntries(props.map((prop) => [prop, computedValue(el, prop)]));
+}
+
+function actionRegion(root: HTMLElement, side: 'top' | 'bottom'): HTMLElement {
+  const el = root.querySelector<HTMLElement>(`.cngx-select__action--${side}`);
+  if (!el) {
+    throw new Error(`.cngx-select__action--${side} did not render`);
+  }
+  return el;
+}
+
+describe('select panel frame', () => {
+  it('select reference clears the absolute floors', async () => {
+    const { panel } = await openVariant({ variant: 'select' });
+    expect(computedValue(panel, 'box-shadow')).not.toBe('none');
+    expect(computedValue(panel, 'background-color')).not.toBe('rgba(0, 0, 0, 0)');
+    expect(parseFloat(computedValue(panel, 'border-top-left-radius'))).toBeGreaterThan(0);
+  });
+
+  for (const variant of VARIANTS) {
+    it(`${variant}: panel frame equals the CngxSelect reference`, async () => {
+      const reference = readFrame((await openVariant({ variant: 'select' })).panel, FRAME_PROPS);
+      mountedRoot?.remove();
+      const { panel, rowRect, panelRect } = await openVariant({ variant });
+      expect(readFrame(panel, FRAME_PROPS)).toEqual(reference);
+      expect(Math.abs(panelRect.top - rowRect.bottom - 8)).toBeLessThanOrEqual(1);
+    });
+  }
+
+  it('action-select and action-multi-select share one action-region frame', async () => {
+    const single = actionRegion(
+      (await openVariant({ variant: 'action', withAction: true })).root,
+      'bottom',
+    );
+    const singleFrame = readFrame(single, ACTION_FRAME_PROPS);
+    mountedRoot?.remove();
+    const multi = actionRegion(
+      (await openVariant({ variant: 'action-multi', withAction: true })).root,
+      'bottom',
+    );
+    expect(parseFloat(singleFrame['border-block-start-width'])).toBeGreaterThan(0);
+    expect(singleFrame['border-block-start-style']).toBe('solid');
+    expect(readFrame(multi, ACTION_FRAME_PROPS)).toEqual(singleFrame);
+  });
+
+  it('a top action carries the separator on its block-end side', async () => {
+    const { root } = await openVariant({
+      variant: 'action',
+      withAction: true,
+      actionPosition: 'top',
+    });
+    const top = actionRegion(root, 'top');
+    expect(parseFloat(computedValue(top, 'border-block-end-width'))).toBeGreaterThan(0);
+    expect(computedValue(top, 'border-block-start-style')).toBe('none');
+  });
+
+  it('drops the separator when the border token is none', async () => {
+    const { root } = await openVariant({
+      variant: 'action-multi',
+      withAction: true,
+      actionBorder: 'none',
+    });
+    expect(computedValue(actionRegion(root, 'bottom'), 'border-block-start-style')).toBe('none');
   });
 });

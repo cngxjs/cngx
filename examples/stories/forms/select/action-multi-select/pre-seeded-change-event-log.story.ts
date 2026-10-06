@@ -60,7 +60,6 @@ export const STORY: DemoSpec = {
           width: 100%;
           padding: 0.5rem 0.75rem;
           border: 0;
-          border-top: 1px solid var(--cngx-color-border, #e5e7eb);
           background: transparent;
           text-align: left;
           cursor: pointer;

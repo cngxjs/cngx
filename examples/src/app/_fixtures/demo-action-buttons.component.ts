@@ -47,7 +47,6 @@ export interface DemoActionContext {
         display: flex;
         gap: 0.5rem;
         padding: 0.5rem 0.75rem;
-        border-top: 1px solid var(--cngx-color-border);
         justify-content: flex-end;
       "
     >

@@ -74,7 +74,6 @@ export const STORY: DemoSpec = {
         flex-direction: column;
         gap: 0.5rem;
         padding: 0.75rem;
-        border-top: 1px solid var(--cngx-color-border, #e5e7eb);
         background: var(--cngx-surface-variant, rgba(0,0,0,.02));
       ">
         <div class="demo-mini-form-heading">

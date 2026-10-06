@@ -26,6 +26,8 @@ import {
   CngxActionMultiSelect,
   CngxSelectShell,
   CngxSelectOption,
+  CngxSelectAction,
+  type CngxSelectCreateAction,
   type CngxSelectOptionDef,
 } from '@cngx/forms/select';
 import {
@@ -103,6 +105,7 @@ interface FieldModel {
     CngxActionMultiSelect,
     CngxSelectShell,
     CngxSelectOption,
+    CngxSelectAction,
     CngxFormField,
     CngxLabel,
     CngxHint,
@@ -347,9 +350,16 @@ interface FieldModel {
           [label]="'Favorite color'"
           [options]="colors"
           [(value)]="actionValue"
+          [quickCreateAction]="createColor"
           [clearable]="true"
           placeholder="Pick a color..."
-        />
+        >
+          <ng-template cngxSelectAction let-term let-commit="commit" let-pending="isPending">
+            <button type="button" [disabled]="!term || pending" (click)="commit()">
+              Create "{{ term }}"
+            </button>
+          </ng-template>
+        </cngx-action-select>
       </section>
 
       <section>
@@ -359,10 +369,17 @@ interface FieldModel {
           [label]="'Favorite colors'"
           [options]="colors"
           [(values)]="actionMultiValues"
+          [quickCreateAction]="createColor"
           [clearable]="true"
           [chipOverflow]="'truncate'"
           placeholder="Pick colors..."
-        />
+        >
+          <ng-template cngxSelectAction let-term let-commit="commit" let-pending="isPending">
+            <button type="button" [disabled]="!term || pending" (click)="commit()">
+              Create "{{ term }}"
+            </button>
+          </ng-template>
+        </cngx-action-multi-select>
       </section>
 
       <section>
@@ -629,6 +646,7 @@ export class MaterialLab {
   protected readonly reorderableValues = signal<string[]>(['build', 'test', 'deploy']);
   protected readonly actionValue = signal<string | undefined>(undefined);
   protected readonly actionMultiValues = signal<string[]>([]);
+  protected readonly createColor: CngxSelectCreateAction<string> = (term) => term;
   protected readonly shellValue = signal<string | undefined>(undefined);
 
   // Signal Forms model backing the cngx-form-field probes. `errEmail` carries an
