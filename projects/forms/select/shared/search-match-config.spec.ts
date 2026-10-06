@@ -3,8 +3,9 @@ import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CngxListboxSearch, type ListboxMatchFn } from '@cngx/common/interactive';
+import { CngxListboxSearch, CngxOption, type ListboxMatchFn } from '@cngx/common/interactive';
 
+import { CngxSelectOption } from '../declarative/option.component';
 import { CngxActionMultiSelect } from '../action-multi-select/action-multi-select.component';
 import { CngxActionSelect } from '../action-select/action-select.component';
 import { CngxCombobox } from '../combobox/combobox.component';
@@ -15,6 +16,7 @@ import {
   provideSelectConfigAt,
   withSearchMatchFn,
   type CngxSelectMatchFn,
+  type CngxSelectMatchOption,
 } from './config';
 import type { CngxSelectOptionDef } from './option.model';
 
@@ -128,6 +130,21 @@ class SubtreeHost {
   readonly options = OPTIONS;
 }
 
+@Component({
+  template: `
+    <cngx-select-shell [label]="'L'" [searchMatchFn]="matcher()" [(searchTerm)]="term">
+      <cngx-option [value]="'red'" [label]="'Rot'">Rot</cngx-option>
+      <cngx-option [value]="'green'" [label]="label()">{{ label() }}</cngx-option>
+    </cngx-select-shell>
+  `,
+  imports: [CngxSelectShell, CngxSelectOption],
+})
+class ProjectedShellHost {
+  readonly matcher = signal<CngxSelectMatchFn<string> | null>(null);
+  readonly term = signal('');
+  readonly label = signal('Grün');
+}
+
 const VARIANTS: readonly Type<unknown>[] = [
   CngxCombobox,
   CngxTypeahead,
@@ -221,6 +238,61 @@ describe('CngxSelectConfig.searchMatchFn', () => {
       expect(search.matchFn()(ITEM, 'Gr')).toBe(false);
     }
     expect(TYPED_MATCHERS).toHaveLength(6);
+  });
+
+  it('hands a shell matcher one stable record per projected option on both paths', () => {
+    const fixture = TestBed.createComponent(ProjectedShellHost);
+    const seen: CngxSelectMatchOption<string>[] = [];
+    fixture.componentInstance.matcher.set((option, term) => {
+      seen.push(option);
+      return option.label.toLowerCase().includes(term);
+    });
+    fixture.detectChanges();
+    const shell = shellOf(fixture);
+    const options = fixture.debugElement
+      .queryAll(By.directive(CngxOption))
+      .map((d) => d.injector.get(CngxOption));
+
+    fixture.componentInstance.term.set('r');
+    fixture.detectChanges();
+    expect(options.map((o) => o.hidden())).toEqual([false, false]);
+    fixture.componentInstance.term.set('ro');
+    fixture.detectChanges();
+    expect(options.map((o) => o.hidden())).toEqual([false, true]);
+
+    const red = seen.filter((o) => o.value === 'red');
+    const green = seen.filter((o) => o.value === 'green');
+    // Model filter run + per-option `hidden`, for two terms.
+    expect(red.length).toBeGreaterThanOrEqual(4);
+    expect(red.every((o) => o === red[0])).toBe(true);
+    expect(green.every((o) => o === green[0])).toBe(true);
+    expect(red[0]).toEqual({ value: 'red', label: 'Rot' });
+    expect(seen.some((o) => 'id' in o)).toBe(false);
+    expect(shell.matches('red', 'Rot', 'ro', options[0])).toBe(true);
+    expect(seen.at(-1)).toBe(red[0]);
+
+    fixture.componentInstance.label.set('Grau');
+    fixture.detectChanges();
+    const renamed = seen.filter((o) => o.value === 'green').at(-1);
+    expect(renamed).not.toBe(green[0]);
+    expect(renamed).toEqual({ value: 'green', label: 'Grau' });
+  });
+
+  it('lets the default shell match reuse its fold cache across filter runs', () => {
+    TestBed.resetTestingModule();
+    const fixture = TestBed.createComponent(ProjectedShellHost);
+    fixture.detectChanges();
+    fixture.componentInstance.term.set('r');
+    fixture.detectChanges();
+    const normalize = vi.spyOn(String.prototype, 'normalize');
+    try {
+      fixture.componentInstance.term.set('ro');
+      fixture.detectChanges();
+      // Only the new term is folded; both labels come from the per-record cache.
+      expect(normalize).toHaveBeenCalledTimes(1);
+    } finally {
+      normalize.mockRestore();
+    }
   });
 
   it('reads the matcher of a provideSelectConfigAt subtree', () => {

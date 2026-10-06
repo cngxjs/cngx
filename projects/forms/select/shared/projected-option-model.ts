@@ -3,6 +3,7 @@ import { computed, InjectionToken, type Signal } from '@angular/core';
 import type { ActiveDescendantItem } from '@cngx/common/a11y';
 import type { CngxOption, CngxOptionContainer, CngxOptionGroup } from '@cngx/common/interactive';
 
+import type { CngxSelectMatchOption } from './config';
 import {
   isCngxSelectOptionGroupDef,
   type CngxSelectOptionDef,
@@ -19,8 +20,14 @@ export interface ProjectedOptionModelInput<T> {
   readonly containers: Signal<readonly CngxOptionContainer[]>;
   /** Empty string short-circuits to the unfiltered reference. */
   readonly searchTerm: Signal<string>;
-  /** Per-option match policy when `searchTerm` is non-empty. */
-  readonly matches: (value: T, label: string, term: string) => boolean;
+  /**
+   * Per-option match policy when `searchTerm` is non-empty. Receives the
+   * option's stable `{ value, label }` record (see
+   * {@link ProjectedOptionModel.recordFor}): the same object across filter
+   * runs until the option's value or label changes, so a matcher can key a
+   * per-option cache on it.
+   */
+  readonly matches: (option: CngxSelectMatchOption<T>, term: string) => boolean;
 }
 
 /**
@@ -34,6 +41,13 @@ export interface ProjectedOptionModel<T> {
   readonly projectedOptions: Signal<readonly CngxOption[]>;
   readonly visibleProjectedOptions: Signal<readonly CngxOption[]>;
   readonly adItems: Signal<ActiveDescendantItem[]>;
+  /**
+   * The stable `{ value, label }` record of a projected option, the object
+   * `matches` receives. Returns the same reference while the option's value
+   * and label stay the same and a fresh one once either changes. Cached per
+   * option instance, so it never outlives the option.
+   */
+  readonly recordFor: (option: CngxOption) => CngxSelectMatchOption<T>;
 }
 
 /**
@@ -146,6 +160,19 @@ export function createProjectedOptionModel<T>(
     },
   );
 
+  const records = new WeakMap<CngxOption, CngxSelectMatchOption<T>>();
+  const recordFor = (option: CngxOption): CngxSelectMatchOption<T> => {
+    const value = option.value() as T;
+    const label = option.label();
+    const hit = records.get(option);
+    if (hit && Object.is(hit.value, value) && hit.label === label) {
+      return hit;
+    }
+    const record: CngxSelectMatchOption<T> = { value, label };
+    records.set(option, record);
+    return record;
+  };
+
   const visibleProjectedOptions = computed<readonly CngxOption[]>(
     () => {
       const all = projectedOptions();
@@ -153,7 +180,7 @@ export function createProjectedOptionModel<T>(
       if (!term) {
         return all;
       }
-      return all.filter((opt) => input.matches(opt.value() as T, opt.label(), term));
+      return all.filter((opt) => input.matches(recordFor(opt), term));
     },
     {
       equal: (a, b) => a.length === b.length && a.every((v, i) => v === b[i]),
@@ -199,7 +226,7 @@ export function createProjectedOptionModel<T>(
     },
   );
 
-  return { derivedOptions, projectedOptions, visibleProjectedOptions, adItems };
+  return { derivedOptions, projectedOptions, visibleProjectedOptions, adItems, recordFor };
 }
 
 /**

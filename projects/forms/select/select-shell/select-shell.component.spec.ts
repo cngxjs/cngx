@@ -5,7 +5,7 @@ import { By } from '@angular/platform-browser';
 import { Subject, type Observable } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { CngxListbox } from '@cngx/common/interactive';
+import { CngxListbox, type CngxOption } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { createManualState } from '@cngx/common/data';
 import {
@@ -952,6 +952,10 @@ describe('CngxSelectShell - factory token wiring', () => {
               projectedOptions: signal([]).asReadonly(),
               visibleProjectedOptions: signal([]).asReadonly(),
               adItems: signal([]).asReadonly(),
+              recordFor: (option: CngxOption) => ({
+                value: option.value() as T,
+                label: option.label(),
+              }),
             } as unknown as ProjectedOptionModel<T>;
           },
         },

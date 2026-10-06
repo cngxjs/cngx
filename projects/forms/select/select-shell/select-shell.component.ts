@@ -22,7 +22,6 @@ import {
 
 import {
   CNGX_STATEFUL,
-  createLabelMatcher,
   injectLocale,
   type AsyncStatus,
   type CngxAsyncState,
@@ -31,10 +30,12 @@ import {
   CngxClickOutside,
   CngxListbox,
   CngxListboxTrigger,
+  createListboxLabelMatch,
   CNGX_OPTION_CONTAINER,
   CNGX_OPTION_FILTER_HOST,
   CNGX_OPTION_INTERACTION_HOST,
   CNGX_OPTION_STATUS_HOST,
+  type CngxOption,
   type CngxOptionFilterHost,
   type CngxOptionInteractionHost,
   type CngxOptionStatus,
@@ -61,6 +62,7 @@ import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectMatchFn,
+  type CngxSelectMatchOption,
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
@@ -353,7 +355,7 @@ export class CngxSelectShell<T = unknown>
   private readonly projectedOptionModel = inject(CNGX_PROJECTED_OPTION_MODEL_FACTORY)<T>({
     containers: this.containers,
     searchTerm: this.searchTerm,
-    matches: (value, label, term) => this.matches(value, label, term),
+    matches: (option, term) => this.matchOption(option, term),
   });
 
   protected readonly derivedOptions = this.projectedOptionModel.derivedOptions;
@@ -764,20 +766,30 @@ export class CngxSelectShell<T = unknown>
     this.localItemsBuffer.clear();
   }
 
-  /** @internal Folded substring match of an option label in the reading locale. */
-  private readonly labelMatch = createLabelMatcher(injectLocale());
+  /**
+   * @internal Folded substring match of an option label in the reading
+   * locale, cached per stable option record.
+   */
+  private readonly labelMatch = createListboxLabelMatch(injectLocale());
 
-  /** @internal */
-  matches<TVal>(value: TVal, label: string, term: string): boolean {
-    const fn = this.searchMatchFn();
-    if (fn) {
-      return fn({ value: value as unknown as T, label }, term);
-    }
-    const shared = this.config.searchMatchFn;
-    if (shared) {
-      return shared({ value, label }, term);
-    }
-    return this.labelMatch(label, term);
+  /**
+   * @internal `CngxOptionFilterHost` policy. Resolves the projected option's
+   * stable record so the per-option `hidden` path and the model's filter run
+   * hand a matcher the same object. A caller that does not pass the option
+   * (a third-party filter host) gets a one-off `{ value, label }` and only
+   * loses the per-option cache.
+   */
+  matches<TVal>(value: TVal, label: string, term: string, option?: CngxOption): boolean {
+    const record = option
+      ? this.projectedOptionModel.recordFor(option)
+      : { value: value as unknown as T, label };
+    return this.matchOption(record, term);
+  }
+
+  /** @internal `[searchMatchFn]` > `CngxSelectConfig.searchMatchFn` > folded label match. */
+  private matchOption(option: CngxSelectMatchOption<T>, term: string): boolean {
+    const fn = this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch;
+    return fn(option, term);
   }
 
   /**

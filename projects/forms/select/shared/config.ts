@@ -232,9 +232,24 @@ export interface CngxSelectFallbackLabels {
  * @relatedTo withSearchMatchFn, CngxSelectShell, ListboxMatchFn
  */
 export type CngxSelectMatchFn<T = unknown> = (
-  option: { readonly value: T; readonly label: string },
+  option: CngxSelectMatchOption<T>,
   term: string,
 ) => boolean;
+
+/**
+ * The option shape a {@link CngxSelectMatchFn} receives: the option's `value`
+ * and plain-text `label`, nothing else. The select family passes a stable
+ * object per option (the option definition, or the projected option's record
+ * in `CngxSelectShell`), so a matcher can key a per-option cache on it.
+ *
+ * @category forms/select/config
+ * @since 0.1.0
+ * @relatedTo CngxSelectMatchFn
+ */
+export interface CngxSelectMatchOption<T = unknown> {
+  readonly value: T;
+  readonly label: string;
+}
 
 /**
  * Resolved select-family configuration cascade. Built by composing

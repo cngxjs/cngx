@@ -2,7 +2,9 @@ import { signal, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
-import type { CngxOptionContainer } from '@cngx/common/interactive';
+import type { CngxOption, CngxOptionContainer } from '@cngx/common/interactive';
+
+import type { CngxSelectMatchOption } from './config';
 
 import {
   CNGX_PROJECTED_OPTION_MODEL_FACTORY,
@@ -29,8 +31,8 @@ function fakeGroup(label: string, children: CngxOptionContainer[]): CngxOptionCo
   } as unknown as CngxOptionContainer;
 }
 
-function labelMatches(_value: T, label: string, term: string): boolean {
-  return label.toLowerCase().includes(term.toLowerCase());
+function labelMatches(option: CngxSelectMatchOption<T>, term: string): boolean {
+  return option.label.toLowerCase().includes(term.toLowerCase());
 }
 
 function make(
@@ -126,6 +128,70 @@ describe('createProjectedOptionModel', () => {
       containers.set([fakeOption('o1', 'a', 'Alpha renamed')]);
       expect(model.derivedOptions()).not.toBe(first);
     });
+  });
+});
+
+describe('createProjectedOptionModel - stable match records', () => {
+  function liveOption(id: string, value: T, label: WritableSignal<string>): CngxOptionContainer {
+    return {
+      kind: 'option',
+      id,
+      value: () => value,
+      label: () => label(),
+      disabled: () => false,
+    } as unknown as CngxOptionContainer;
+  }
+
+  function recording(initial: CngxOptionContainer[]) {
+    const seen: CngxSelectMatchOption<T>[] = [];
+    const searchTerm = signal('');
+    const model = createProjectedOptionModel<T>({
+      containers: signal<readonly CngxOptionContainer[]>(initial),
+      searchTerm,
+      matches: (option, term) => {
+        seen.push(option);
+        return labelMatches(option, term);
+      },
+    });
+    return { model, searchTerm, seen };
+  }
+
+  it('hands the matcher the same record per option across filter runs', () => {
+    const { model, searchTerm, seen } = recording([
+      fakeOption('o1', 'a', 'Alpha'),
+      fakeOption('o2', 'b', 'Beta'),
+    ]);
+    searchTerm.set('al');
+    model.visibleProjectedOptions();
+    searchTerm.set('be');
+    model.visibleProjectedOptions();
+    expect(seen).toHaveLength(4);
+    expect(seen[2]).toBe(seen[0]);
+    expect(seen[3]).toBe(seen[1]);
+    expect(seen[0]).toEqual({ value: 'a', label: 'Alpha' });
+    expect(seen[0]).not.toHaveProperty('id');
+  });
+
+  it('returns the record the matcher saw from recordFor', () => {
+    const { model, searchTerm, seen } = recording([fakeOption('o1', 'a', 'Alpha')]);
+    searchTerm.set('al');
+    model.visibleProjectedOptions();
+    const option = model.projectedOptions()[0] as CngxOption;
+    expect(model.recordFor(option)).toBe(seen[0]);
+  });
+
+  it('refreshes the record once the label changes', () => {
+    const label = signal('Alpha');
+    const { model, searchTerm, seen } = recording([liveOption('o1', 'a', label)]);
+    searchTerm.set('a');
+    model.visibleProjectedOptions();
+    label.set('Aleph');
+    model.visibleProjectedOptions();
+    expect(seen).toHaveLength(2);
+    expect(seen[1]).not.toBe(seen[0]);
+    expect(seen[1]).toEqual({ value: 'a', label: 'Aleph' });
+    const option = model.projectedOptions()[0] as CngxOption;
+    expect(model.recordFor(option)).toBe(seen[1]);
   });
 });
 

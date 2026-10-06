@@ -1,5 +1,7 @@
 import { InjectionToken, type Signal } from '@angular/core';
 
+import type { CngxOption } from './option.directive';
+
 /**
  * Pull-based contract a parent host (e.g. `CngxSelectShell` with a search
  * input, future filter-driven hosts) implements so individual `CngxOption`
@@ -18,9 +20,13 @@ export interface CngxOptionFilterHost {
   readonly searchTerm: Signal<string>;
   /**
    * Decides whether the option is a match for the active term. Receives the
-   * option's value, its resolved plain-text label, and the current term.
+   * option's value, its resolved plain-text label, the current term, and the
+   * calling `CngxOption` instance. The option is a stable identity across
+   * filter runs, so a host can key per-option caches (a folded label, a
+   * stable `{ value, label }` record) on it; a host that only needs value and
+   * label leaves the parameter out.
    */
-  matches<T>(value: T, label: string, term: string): boolean;
+  matches<T>(value: T, label: string, term: string, option?: CngxOption): boolean;
 }
 
 /**
