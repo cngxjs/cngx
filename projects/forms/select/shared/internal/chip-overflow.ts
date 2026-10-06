@@ -3,7 +3,7 @@ import { computed, type Signal } from '@angular/core';
 import type { CngxSelectOptionDef } from '../option.model';
 import { sameArrayContents } from './compare';
 
-const NO_HIDDEN: readonly never[] = [];
+const NO_HIDDEN: readonly never[] = Object.freeze([]) as readonly never[];
 
 /**
  * Inputs for {@link createChipOverflow}.
