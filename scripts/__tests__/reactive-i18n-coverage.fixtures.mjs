@@ -302,6 +302,7 @@ export const COPY_TOKENS = [
       'ibanPatterns',
       'zipPatterns',
       'dateFormats',
+      'dateShortFormats',
       'maskPlaceholder',
       'maskGuide',
       'customTokens',

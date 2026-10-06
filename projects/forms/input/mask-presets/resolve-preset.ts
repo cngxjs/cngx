@@ -148,7 +148,12 @@ export function resolvePreset(
     case 'date':
       // `name` is the segment before the first `:`, so `date:short` lands here.
       if (parts[1]?.toLowerCase() === 'short') {
-        const shortDates = { ...tables.dateShort, ...shortDateFormats(config?.dateFormats) };
+        // Per key: config `dateShortFormats`, then derived `dateFormats`, then the table.
+        const shortDates = {
+          ...tables.dateShort,
+          ...shortDateFormats(config?.dateFormats),
+          ...config?.dateShortFormats,
+        };
         return {
           patterns: [resolveDateFormat(locale, shortDates, PRESET_FALLBACKS.dateShort)],
         };

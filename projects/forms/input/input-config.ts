@@ -20,6 +20,11 @@ export interface InputConfig {
   readonly zipPatterns?: Readonly<Record<string, string>>;
   /** Extra date format patterns by language code (merged with built-in). */
   readonly dateFormats?: Readonly<Record<string, string>>;
+  /**
+   * Extra short-date patterns for `date:short` by locale (merged with built-in).
+   * An entry wins over the one derived from `dateFormats`.
+   */
+  readonly dateShortFormats?: Readonly<Record<string, string>>;
   /** Default mask placeholder character. Default: `'_'` */
   readonly maskPlaceholder?: string;
   /** Default guide mode for masks. Default: `true` */
@@ -152,7 +157,7 @@ const NO_INPUT_ARIA_LABELS: Partial<InputAriaLabels> = {};
  * @category forms/input
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-config.ts
  * @since 0.1.0
- * @relatedTo provideInputConfig, provideInputConfigAt, injectInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withCopyResetDelay, withFileMaxSize, withFileMaxFiles, withCurrency, withPhoneDefaultRegion
+ * @relatedTo provideInputConfig, provideInputConfigAt, injectInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withDateShortFormats, withCopyResetDelay, withFileMaxSize, withFileMaxFiles, withCurrency, withPhoneDefaultRegion
  */
 export const CNGX_INPUT_CONFIG = new InjectionToken<InputConfig>('CNGX_INPUT_CONFIG', {
   providedIn: 'root',
@@ -193,6 +198,7 @@ export type InputConfigFeature = (config: InputConfig) => InputConfig;
  * @see {@link withIbanPatterns}
  * @see {@link withZipPatterns}
  * @see {@link withDateFormats}
+ * @see {@link withDateShortFormats}
  * @see {@link withMaskPlaceholder}
  * @see {@link withMaskGuide}
  * @see {@link withCustomTokens}
@@ -336,7 +342,8 @@ export function withZipPatterns(patterns: Record<string, string>): InputConfigFe
  * - Tokens: `0` = required digit, separators are literals.
  * - Also feeds `date:short`: each entry's four-digit year group becomes two
  *   digits (`00.00.0000` -> `00.00.00`) and wins over the built-in short table
- *   with the same resolution order.
+ *   with the same resolution order. A {@link withDateShortFormats} entry for
+ *   the same key wins over the derived one.
  * - Consumer entries merge per key and win on collision.
  *
  * ```typescript
@@ -351,6 +358,37 @@ export function withDateFormats(formats: Record<string, string>): InputConfigFea
   return (config) => ({
     ...config,
     dateFormats: { ...config.dateFormats, ...formats },
+  });
+}
+
+/**
+ * Adds or overrides `date:short` mask patterns keyed by BCP-47 locale (e.g.
+ * `de-CH`), for a short mask that is not the long mask with a two-digit year.
+ *
+ * - Resolution for `date:short`, per key: this entry, then the entry derived
+ *   from {@link withDateFormats} (four-digit year group shortened to two
+ *   digits), then the built-in short table. Locale matching follows
+ *   `withDateFormats`: exact locale, bare language key, any same-language
+ *   locale, then `en-US`.
+ * - Leaves `date` and `datetime` untouched.
+ * - Tokens: `0` = required digit, separators are literals.
+ * - Consumer entries merge per key and win on collision.
+ *
+ * ```typescript
+ * provideInputConfig(
+ *   withDateFormats({ 'de-CH': '00.00.0000' }),
+ *   withDateShortFormats({ 'de-CH': '00.00' }),
+ * );
+ * // app locale 'de-CH' + <input cngxInputMask="date:short" /> -> 00.00
+ * ```
+ *
+ * @see {@link provideInputConfig}
+ * @category forms/input
+ */
+export function withDateShortFormats(formats: Record<string, string>): InputConfigFeature {
+  return (config) => ({
+    ...config,
+    dateShortFormats: { ...config.dateShortFormats, ...formats },
   });
 }
 

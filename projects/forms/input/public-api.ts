@@ -51,6 +51,7 @@ export {
   withIbanPatterns,
   withZipPatterns,
   withDateFormats,
+  withDateShortFormats,
   withMaskPlaceholder,
   withMaskGuide,
   withCustomTokens,

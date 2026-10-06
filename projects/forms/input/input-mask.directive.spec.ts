@@ -8,7 +8,12 @@ import { CngxFieldSkinHost, provideFormField, withFieldSkin } from '@cngx/forms/
 import { CNGX_LOCALE } from '@cngx/core/utils';
 import { CngxInput } from './input.directive';
 import { CngxInputMask, type MaskTokenMap } from './input-mask.directive';
-import { provideInputConfig, withPhonePatterns } from './input-config';
+import {
+  provideInputConfig,
+  withDateFormats,
+  withDateShortFormats,
+  withPhonePatterns,
+} from './input-config';
 import { loadAllMaskPresets } from './mask-presets/registry';
 
 // ── Test host ───────────────────────────────────────────────────────
@@ -598,6 +603,23 @@ describe('CngxInputMask', () => {
       expect(setup({ mask: 'date:short', locale: 'de-DE' }).input.value).toBe('__.__.__');
       TestBed.resetTestingModule();
       expect(setup({ mask: 'date', locale: 'en-US' }).input.value).toBe('__/__/____');
+    });
+
+    it('lets withDateShortFormats set "date:short" over the withDateFormats derivation', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideInputConfig(
+            withDateFormats({ 'de-DE': '0000-00-00' }),
+            withDateShortFormats({ 'de-DE': '00.00' }),
+          ),
+        ],
+      });
+      expect(setup({ mask: 'date:short', locale: 'de-DE' }).input.value).toBe('__.__');
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideInputConfig(withDateFormats({ 'de-DE': '0000-00-00' }))],
+      });
+      expect(setup({ mask: 'date:short', locale: 'de-DE' }).input.value).toBe('__-__-__');
     });
 
     it('should resolve "date" preset for ja locale (YYYY/MM/DD)', () => {

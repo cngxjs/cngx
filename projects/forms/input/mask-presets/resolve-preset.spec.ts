@@ -36,6 +36,39 @@ describe('resolvePreset', () => {
       ]);
     });
 
+    it('lets config dateShortFormats win over the mask derived from dateFormats', () => {
+      const config = {
+        dateFormats: { 'de-DE': '0000-00-00' },
+        dateShortFormats: { 'de-DE': '00.00' },
+      };
+      expect(resolvePreset('date:short', 'de-DE', DATE_TABLES, config)?.patterns).toEqual([
+        '00.00',
+      ]);
+      expect(resolvePreset('date:short', 'de-DE', {}, config)?.patterns).toEqual(['00.00']);
+      expect(resolvePreset('date', 'de-DE', DATE_TABLES, config)?.patterns).toEqual(['0000-00-00']);
+    });
+
+    it('applies dateShortFormats without dateFormats over the built-in short table', () => {
+      const config = { dateShortFormats: { 'en-US': '00-00' } };
+      expect(resolvePreset('date:short', 'en-US', DATE_TABLES, config)?.patterns).toEqual([
+        '00-00',
+      ]);
+      expect(resolvePreset('date', 'en-US', DATE_TABLES, config)?.patterns).toEqual(['00/00/0000']);
+    });
+
+    it('keeps the derived short mask for a locale dateShortFormats does not set', () => {
+      const config = {
+        dateFormats: { 'de-DE': '0000-00-00' },
+        dateShortFormats: { 'en-NZ': '00.00' },
+      };
+      expect(resolvePreset('date:short', 'de-DE', DATE_TABLES, config)?.patterns).toEqual([
+        '00-00-00',
+      ]);
+      expect(resolvePreset('date:short', 'en-US', DATE_TABLES, config)?.patterns).toEqual([
+        '00/00/00',
+      ]);
+    });
+
     it('matches every built-in short mask to its long mask', () => {
       for (const [locale, long] of Object.entries(DATE_FORMATS)) {
         expect(

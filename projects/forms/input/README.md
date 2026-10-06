@@ -324,6 +324,7 @@ export const appConfig: ApplicationConfig = {
 | `withIbanPatterns(map)` | `CngxInputMask` | Add/override IBAN patterns by country |
 | `withZipPatterns(map)` | `CngxInputMask` | Add/override ZIP patterns by country |
 | `withDateFormats(map)` | `CngxInputMask` | Add/override date patterns by language |
+| `withDateShortFormats(map)` | `CngxInputMask` | Add/override `date:short` patterns by locale; wins over the short mask derived from `withDateFormats` |
 | `withNumericDefaults(opts)` | `CngxNumericInput` | Default locale, decimals, step |
 | `withCopyResetDelay(ms)` | `CngxCopyValue` | Default reset delay |
 | `withFileMaxSize(bytes)` | `CngxFileDrop` | Default max file size |
