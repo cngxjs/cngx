@@ -226,12 +226,15 @@ export interface CngxComboboxChipContext<T = unknown> {
  * `chipOverflow: 'truncate'`. `count` is the number of selected options the
  * strip hides, `label` the badge text the host would render (the
  * `chipOverflowBadge` copy of the active language pack, `+N` in English,
- * the number in the reading locale's digits).
+ * the number in the reading locale's digits), `hidden` the hidden selected
+ * options themselves in selection order, e.g. for a tooltip listing them.
+ * `hidden` keeps its identity while the hidden set is unchanged.
  */
-export interface CngxSelectChipOverflowContext {
+export interface CngxSelectChipOverflowContext<T = unknown> {
   readonly $implicit: number;
   readonly count: number;
   readonly label: string;
+  readonly hidden: readonly CngxSelectOptionDef<T>[];
 }
 
 /**

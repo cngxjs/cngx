@@ -787,6 +787,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   protected readonly visibleSelected = this.chipStrip.visibleSelected;
   /** @internal */
   protected readonly overflowBadgeCount = this.chipStrip.overflowBadgeCount;
+  /** @internal Selected options the truncated strip hides, for the overflow slot. */
+  protected readonly hiddenSelected = this.chipStrip.hiddenSelected;
   /** @internal Visible `+N` badge text, the count in the reading locale's digits. */
   protected readonly overflowBadgeText = computed<string>(() =>
     this.config.fallbackLabels().chipOverflowBadge(this.overflowBadgeCount()),

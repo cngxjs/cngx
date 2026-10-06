@@ -18,6 +18,10 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
 const BADGE = '.cngx-select__chip-overflow-badge';
 const PROJECTED = '.projected-overflow';
 
+function hiddenValues(hidden: readonly CngxSelectOptionDef<string>[]): string {
+  return hidden.map((o) => o.value).join(',');
+}
+
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
     showPopover?: () => void;
@@ -70,10 +74,20 @@ class MultiDefaultHost {
       [maxVisibleChips]="1"
       [(values)]="values"
     >
-      <ng-template cngxSelectChipOverflow let-n let-count="count" let-label="label">
-        <span class="projected-overflow" [attr.data-implicit]="n" [attr.data-count]="count">{{
-          label
-        }}</span>
+      <ng-template
+        cngxSelectChipOverflow
+        let-n
+        let-count="count"
+        let-label="label"
+        let-hidden="hidden"
+      >
+        <span
+          class="projected-overflow"
+          [attr.data-implicit]="n"
+          [attr.data-count]="count"
+          [attr.data-hidden]="hiddenValues(hidden)"
+          >{{ label }}</span
+        >
       </ng-template>
     </cngx-multi-select>
   `,
@@ -82,6 +96,7 @@ class MultiDefaultHost {
 class MultiProjectedHost {
   readonly options = OPTIONS;
   readonly values = signal<string[]>(['red', 'green', 'blue', 'black']);
+  readonly hiddenValues = hiddenValues;
 }
 
 @Component({
@@ -110,10 +125,20 @@ class ComboboxDefaultHost {
       [maxVisibleChips]="1"
       [(values)]="values"
     >
-      <ng-template cngxSelectChipOverflow let-n let-count="count" let-label="label">
-        <span class="projected-overflow" [attr.data-implicit]="n" [attr.data-count]="count">{{
-          label
-        }}</span>
+      <ng-template
+        cngxSelectChipOverflow
+        let-n
+        let-count="count"
+        let-label="label"
+        let-hidden="hidden"
+      >
+        <span
+          class="projected-overflow"
+          [attr.data-implicit]="n"
+          [attr.data-count]="count"
+          [attr.data-hidden]="hiddenValues(hidden)"
+          >{{ label }}</span
+        >
       </ng-template>
     </cngx-combobox>
   `,
@@ -122,6 +147,7 @@ class ComboboxDefaultHost {
 class ComboboxProjectedHost {
   readonly options = OPTIONS;
   readonly values = signal<string[]>(['red', 'green', 'blue', 'black']);
+  readonly hiddenValues = hiddenValues;
 }
 
 @Component({
@@ -150,10 +176,20 @@ class ActionMultiDefaultHost {
       [maxVisibleChips]="1"
       [(values)]="values"
     >
-      <ng-template cngxSelectChipOverflow let-n let-count="count" let-label="label">
-        <span class="projected-overflow" [attr.data-implicit]="n" [attr.data-count]="count">{{
-          label
-        }}</span>
+      <ng-template
+        cngxSelectChipOverflow
+        let-n
+        let-count="count"
+        let-label="label"
+        let-hidden="hidden"
+      >
+        <span
+          class="projected-overflow"
+          [attr.data-implicit]="n"
+          [attr.data-count]="count"
+          [attr.data-hidden]="hiddenValues(hidden)"
+          >{{ label }}</span
+        >
       </ng-template>
     </cngx-action-multi-select>
   `,
@@ -162,6 +198,7 @@ class ActionMultiDefaultHost {
 class ActionMultiProjectedHost {
   readonly options = OPTIONS;
   readonly values = signal<string[]>(['red', 'green', 'blue', 'black']);
+  readonly hiddenValues = hiddenValues;
 }
 
 const HOSTS: readonly { name: string; plain: Type<unknown>; projected: Type<unknown> }[] = [
@@ -211,6 +248,13 @@ describe('cngxSelectChipOverflow slot', () => {
         expect(projected?.getAttribute('data-implicit')).toBe('3');
         expect(projected?.getAttribute('data-count')).toBe('3');
         expect(projected?.textContent?.trim()).toBe('+3');
+      });
+
+      it('passes the hidden selected options to the projected template', () => {
+        const root = render(projectedHost);
+        expect(root.querySelector(PROJECTED)?.getAttribute('data-hidden')).toBe(
+          'green,blue,black',
+        );
       });
     });
   }
