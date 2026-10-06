@@ -90,6 +90,7 @@
  * positioning detaches it from the trigger's DOM context:
  *
  * - `--cngx-select-panel-border` -> `--cngx-color-border`
+ * - `--cngx-select-action-border` -> `--cngx-color-border`
  * - `--cngx-select-panel-bg` -> `--cngx-color-surface`
  * - `--cngx-select-panel-color` -> `--cngx-color-text`
  * - `--cngx-select-panel-shadow` -> `--cngx-shadow-md`
@@ -200,6 +201,41 @@
    * @group Layout
    */
   @property --cngx-select-panel-padding {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.25rem;
+  }
+
+  /**
+   * Border shorthand of the separator between the action region and the
+   * options: on the block-start side of a bottom action, the block-end
+   * side of a top action. Falls back through `--cngx-color-border`.
+   * `inherits: true` so the :root delegating value reaches the floating
+   * panel. Set it to `none` to drop the separator.
+   * @group Surface
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-select-action-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px solid oklch(0.85 0.01 250);
+  }
+
+  /**
+   * Space between the action separator and the action content.
+   * @group Layout
+   */
+  @property --cngx-select-action-padding {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.25rem;
+  }
+
+  /**
+   * Space between the options and the action separator.
+   * @group Layout
+   */
+  @property --cngx-select-action-margin {
     syntax: '*';
     inherits: true;
     initial-value: 0.25rem;
@@ -847,6 +883,7 @@
    * color via the delegating border-color chain. */
   :root {
     --cngx-select-panel-border: 1px solid var(--cngx-color-border);
+    --cngx-select-action-border: 1px solid var(--cngx-color-border);
     --cngx-select-panel-bg: var(--cngx-color-surface);
     --cngx-select-panel-color: var(--cngx-color-text);
     --cngx-select-check-color: var(--cngx-color-primary);
@@ -917,6 +954,8 @@
        so the negative-margin loading/refreshing bars below, which bleed to the
        panel edge, track the same value. 0.25rem -> xs. */
     --cngx-select-panel-padding: var(--cngx-space-xs);
+    --cngx-select-action-padding: var(--cngx-space-xs);
+    --cngx-select-action-margin: var(--cngx-space-xs);
     border: var(
       --cngx-select-panel-border,
       1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
@@ -956,6 +995,27 @@
      non-virtualized panels keep shrink-to-fit. */
   .cngx-select__panel:has(.cngx-select__virtual-spacer) {
     width: var(--cngx-select-panel-min-width, anchor-size(width));
+  }
+
+  /* The action region carries its own separator on the side facing the
+     options, so every select with a *cngxSelectAction template shows the
+     same frame and consumer templates need no hand-rolled border. */
+  .cngx-select__action--bottom {
+    border-block-start: var(
+      --cngx-select-action-border,
+      1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
+    );
+    margin-block-start: var(--cngx-select-action-margin, 0.25rem);
+    padding-block-start: var(--cngx-select-action-padding, 0.25rem);
+  }
+
+  .cngx-select__action--top {
+    border-block-end: var(
+      --cngx-select-action-border,
+      1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
+    );
+    margin-block-end: var(--cngx-select-action-margin, 0.25rem);
+    padding-block-end: var(--cngx-select-action-padding, 0.25rem);
   }
 
   /* With the width locked, an option that would exceed it must stay on one line
