@@ -102,7 +102,7 @@ test.describe('CngxIncrementalList virtualized viewport', () => {
     for (let i = 0; i < 3; i++) {
       await trigger.click();
     }
-    await expect(page.locator('.cngx-incremental-list__end')).toHaveText(/all 10000 loaded/i);
+    await expect(page.locator('.cngx-incremental-list__end')).toHaveText(/all 10,000 loaded/i);
     await expect(trigger).toBeHidden();
   });
 });
