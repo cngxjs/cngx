@@ -9,7 +9,7 @@ import {
   type CngxLanguagePack,
 } from '@cngx/core/i18n';
 import { provideLocale, provideLocaleAt } from '@cngx/core/utils';
-import { runInSubtree } from '@cngx/testing';
+import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 
 import { withSidenavLabels } from '../config/features';
 import { provideSidenavConfig } from '../config/provide-sidenav-config';
@@ -30,8 +30,8 @@ describe('sidenav language section', () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const en = labels()();
     expect(en.resizeHandle).toBe('Resize navigation');
-    expect(en.resizeValueText(280)).toBe('280 pixels');
-    expect(EN_SECTION.resizeValueText).toBe('{width} pixels');
+    expect(stripBidiIsolates(en.resizeValueText(40, '40%'))).toBe('40%');
+    expect(EN_SECTION.resizeValueText).toBe('{value}');
   });
 
   it('reads the section of the active pack, with English for what it leaves out', () => {
@@ -47,7 +47,7 @@ describe('sidenav language section', () => {
 
     pack.set({ locale: 'de', sidenav: { resizeHandle: 'Navigation anpassen' } });
     expect(resolved().resizeHandle).toBe('Navigation anpassen');
-    expect(resolved().resizeValueText(1200)).toBe('1.200 pixels');
+    expect(stripBidiIsolates(resolved().resizeValueText(40, '40\u00a0%'))).toBe('40\u00a0%');
   });
 
   it('lets withSidenavLabels override single keys on top of the active pack', () => {
@@ -57,7 +57,7 @@ describe('sidenav language section', () => {
         provideCngxI18n(
           withPartialPack({
             locale: 'de',
-            sidenav: { resizeHandle: 'Breite', resizeValueText: '{width} Pixel' },
+            sidenav: { resizeHandle: 'Breite', resizeValueText: '{percent} Prozent' },
           }),
           withDocumentLanguage('off'),
         ),
@@ -66,17 +66,24 @@ describe('sidenav language section', () => {
     });
     const resolved = labels()();
     expect(resolved.resizeHandle).toBe('Navigation anpassen');
-    expect(resolved.resizeValueText(300)).toBe('300 Pixel');
+    expect(resolved.resizeValueText(1200, '1.200\u00a0%')).toBe('1.200 Prozent');
   });
 
-  it('formats numbers in the locale of a provideLocaleAt subtree', () => {
+  it('formats the {percent} number in the locale of a provideLocaleAt subtree', () => {
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideLocale('en')],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(
+          withPartialPack({ locale: 'en', sidenav: { resizeValueText: '{percent} of 1000' } }),
+          withDocumentLanguage('off'),
+        ),
+        provideLocale('en'),
+      ],
     });
     const root = labels();
     const german = runInSubtree([provideLocaleAt('de')], () => injectSidenavLabels());
-    expect(root().resizeValueText(1200)).toBe('1,200 pixels');
-    expect(german().resizeValueText(1200)).toBe('1.200 pixels');
+    expect(root().resizeValueText(1000, '')).toBe('1,000 of 1000');
+    expect(german().resizeValueText(1000, '')).toBe('1.000 of 1000');
   });
 
   it('keeps the labels reference for the same section and locale', () => {

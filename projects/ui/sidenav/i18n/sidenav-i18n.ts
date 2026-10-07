@@ -17,7 +17,8 @@ export function sidenavLabelsFrom(
 ): CngxSidenavLabels {
   return {
     resizeHandle: section.resizeHandle,
-    resizeValueText: (width) => formatMessage(section.resizeValueText, { width }, locale),
+    resizeValueText: (percent, value) =>
+      formatMessage(section.resizeValueText, { percent, value }, locale),
   };
 }
 

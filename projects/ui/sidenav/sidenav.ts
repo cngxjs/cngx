@@ -15,13 +15,21 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
-import { createTransitionTracker, matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
+import {
+  createTransitionTracker,
+  injectLocale,
+  matchesKeyCombo,
+  numberFormatterFor,
+  parseKeyCombo,
+} from '@cngx/core/utils';
 import { CNGX_HOVER_INTENT_DEFAULTS, CngxHoverIntent } from '@cngx/common/interactive';
 import { CNGX_CONTAINER_SIZE } from '@cngx/common/layout';
 
 import { injectSidenavConfig } from './config/inject-sidenav-config';
 import { injectSidenavLabels } from './i18n/sidenav-i18n';
 import { CNGX_SIDENAV } from './sidenav-token';
+
+const PERCENT_FORMAT: Intl.NumberFormatOptions = { style: 'percent' };
 
 /**
  * Logical position - flips in RTL.
@@ -217,6 +225,7 @@ export class CngxSidenav {
   readonly resizeLabel = input<string | undefined>(undefined);
 
   private readonly labels = injectSidenavLabels();
+  private readonly locale = injectLocale();
 
   /** @internal */
   protected readonly resolvedResizeLabel = computed(
@@ -561,13 +570,21 @@ export class CngxSidenav {
   protected readonly widthValueNow = computed(() => this.widthPx() ?? this.measuredWidthPx());
 
   /**
-   * @internal `aria-valuetext` of the separator: the width spoken through the
-   * `resizeValueText` label, the number formatted for the locale, so AT does
-   * not read a bare unitless number.
+   * @internal `aria-valuetext` of the separator: its position as a percent of
+   * the min-max range, formatted in the locale, so AT speaks where the handle
+   * sits instead of a bare pixel count. `null` (AT reads `aria-valuenow`) while
+   * the width or a bound is not in px.
    */
   protected readonly widthValueText = computed(() => {
     const width = this.widthValueNow();
-    return width === null ? null : this.labels().resizeValueText(width);
+    const min = this.minWidthPx();
+    const max = this.maxWidthPx();
+    if (width === null || min === null || max === null || max <= min) {
+      return null;
+    }
+    const percent = Math.round(Math.min(1, Math.max(0, (width - min) / (max - min))) * 100);
+    const formatted = numberFormatterFor(this.locale(), PERCENT_FORMAT).format(percent / 100);
+    return this.labels().resizeValueText(percent, formatted);
   });
 
   private measureWidth(): void {

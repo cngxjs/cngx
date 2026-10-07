@@ -95,8 +95,10 @@ export interface CngxSidenavLabels {
    */
   readonly resizeHandle: string;
   /**
-   * `aria-valuetext` of the resize separator, given the rail width in CSS
-   * pixels (English `'280 pixels'`).
+   * `aria-valuetext` of the resize separator. Receives the separator position
+   * as a rounded percent (0-100) of its min-max range and that value already
+   * formatted as a percent in the app locale; the default returns the
+   * formatted string. Same shape as the feedback `progressValueText`.
    */
-  readonly resizeValueText: (width: number) => string;
+  readonly resizeValueText: (percent: number, formatted: string) => string;
 }

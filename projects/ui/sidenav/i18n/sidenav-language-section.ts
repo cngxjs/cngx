@@ -13,7 +13,11 @@ import type { CngxMessage } from '@cngx/core/i18n';
 export interface CngxSidenavLanguageSection {
   /** Accessible name of the resize separator while `[resizeLabel]` is unbound. */
   readonly resizeHandle: string;
-  /** `{width}`: the rail width in CSS pixels, spoken as the separator's value. */
+  /**
+   * `{value}` (the separator position as a percent of its min-max range,
+   * formatted in the locale, `40%`), `{percent}` (the rounded number): the
+   * separator's `aria-valuetext`.
+   */
   readonly resizeValueText: CngxMessage;
 }
 
@@ -27,7 +31,7 @@ export interface CngxSidenavLanguageSection {
  */
 export const CNGX_SIDENAV_LANGUAGE_EN: CngxSidenavLanguageSection = {
   resizeHandle: 'Resize navigation',
-  resizeValueText: '{width} pixels',
+  resizeValueText: '{value}',
 };
 
 declare module '@cngx/core/i18n' {

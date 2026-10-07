@@ -64,7 +64,7 @@ Key features:
 - **Responsive by default:** `mode` is `auto` unless you say otherwise - `side` once the surrounding layout is `64rem` or wider, `over` below that
 - **Mode switching:** bind `mode` to pin one of `over` (overlay), `push` (nudges content), `side` (permanent), `mini` (collapsed icon rail; hover expands after a tunable dwell via `[expandDelay]` / `[collapseDelay]`)
 - **Two-way binding:** `[(opened)]` synchronizes with external state
-- **Resize:** Optional drag handle with min/max constraints; the separator speaks its width through the `sidenav` language section (`aria-valuetext`)
+- **Resize:** Optional drag handle with min/max constraints; the separator speaks its position as a percent of the min-max range (`aria-valuetext`, `sidenav` language section)
 - **Keyboard:** Escape closes overlay, configurable global shortcut via `[shortcut]`
 - **RTL-aware:** `position="start"` / `"end"` flip logically in RTL
 - **Deep-linking:** persist open state to a URL query param via `[cngxSidenavRouterSync]` (see [Deep-linking](#deep-linking-router-sync))
