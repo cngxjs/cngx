@@ -24,6 +24,12 @@ export {
 } from './observers/container-size';
 export { CngxScrollLock } from './scroll/scroll-lock.directive';
 export { createScrollLock } from './scroll/scroll-lock-core';
+export { CngxScrollEdges } from './scroll/scroll-edges.directive';
+export {
+  createScrollEdges,
+  type CngxScrollEdgesState,
+  type ScrollEdgesHost,
+} from './scroll/scroll-edges-core';
 export { CngxSkeleton } from './text/skeleton.directive';
 export { CngxInfiniteScroll } from './scroll/infinite-scroll.directive';
 export { CngxStickyHeader } from './scroll/sticky-header.directive';

@@ -1,6 +1,6 @@
 # Scroll System
 
-Scroll-aware directives for sticky headers, infinite scroll, scroll locking, and active section tracking. All utilities use native browser APIs (`IntersectionObserver`, `ResizeObserver`, media queries) with Signal-based reactivity.
+Scroll-aware directives for sticky headers, infinite scroll, scroll locking, scroll-edge state, and active section tracking. All utilities use native browser APIs (`IntersectionObserver`, `ResizeObserver`, media queries) with Signal-based reactivity.
 
 ## Import
 
@@ -10,6 +10,8 @@ import {
   CngxScrollLock,
   CngxStickyHeader,
   CngxInfiniteScroll,
+  CngxScrollEdges,
+  createScrollEdges,
 } from '@cngx/common/layout';
 ```
 
@@ -183,13 +185,46 @@ fetchNextPage() {
 </div>
 ```
 
+## CngxScrollEdges
+
+Reports which edges of a scrollport still hide content. Place it on the element that scrolls; it exposes four boolean signals and reflects each as a logical host attribute that is present only while content is hidden toward that edge. The directive paints nothing - edge shadows or fades live in your CSS, keyed on the attributes.
+
+| Signal | Host attribute | True while content is hidden |
+|-|-|-|
+| `canScrollBlockStart()` | `data-scroll-block-start` | above |
+| `canScrollBlockEnd()` | `data-scroll-block-end` | below |
+| `canScrollInlineStart()` | `data-scroll-inline-start` | toward inline start (left in LTR, right in RTL) |
+| `canScrollInlineEnd()` | `data-scroll-inline-end` | toward inline end (right in LTR, left in RTL) |
+
+### Usage Example
+
+```html
+<div class="sheet" cngxScrollEdges #edges="cngxScrollEdges" tabindex="0" role="region" aria-label="Report">
+  <table>...</table>
+</div>
+```
+
+```css
+.sheet { overflow: auto; transition: box-shadow 150ms; }
+.sheet[data-scroll-block-start] { box-shadow: inset 0 8px 8px -8px rgb(0 0 0 / 0.3); }
+```
+
+### How It Works
+
+- A passive `scroll` listener, one `observeResize` on the scrollport and on each direct element child, and a `childList` `MutationObserver` that keeps the child set current all schedule one read per animation frame.
+- The read lands in one snapshot signal with a structural `equal`; the four signals only notify when an edge flips. A distance of 1px or less counts as the edge.
+- RTL needs no direction lookup: `Math.abs(scrollLeft)` is the distance from the inline-start edge in both directions, so a `dir="rtl"` subtree inside an LTR page reports correctly.
+- Only direct children are resize-observed. Wrap a long item list in one content element; growth deep inside a fixed-size child is picked up on the next scroll.
+- `createScrollEdges(element, destroyRef, host)` is the pure factory behind the directive for code that owns its own scrollport. A `null` host (SSR) wires nothing and keeps every edge `false`.
+- The attributes map 1:1 onto CSS `scroll-state(scrollable: ...)` container queries, so the CSS can swap once those are Baseline.
+
 ## Accessibility
 
 - **ARIA roles:** Scroll utilities do not add roles (no semantic DOM changes). Content structure remains natural.
 - **Keyboard interaction:**
   - `Escape` - Closes any modals with `CngxScrollLock` active
   - Scroll wheel / arrow keys - Native scroll behavior preserved (only `overflow` is hidden, not prevented)
-- **Screen reader:** `aria-busy="true"` on infinite scroll sentinel when loading. Sticky header state available via `isSticky()` signal for dynamic aria-labels.
+- **Screen reader:** `aria-busy="true"` on infinite scroll sentinel when loading. Sticky header state available via `isSticky()` signal for dynamic aria-labels. `CngxScrollEdges` is purely visual: the hidden content stays in the DOM and in the reading order, and the edge state is not announced.
 - **Focus management:** Scroll lock does not trap focus; it only prevents viewport scrolling. Use with focus-trapping directives (`CngxFocusTrap`) for modal behavior.
 
 ## Composition
