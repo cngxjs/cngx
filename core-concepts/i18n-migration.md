@@ -160,6 +160,8 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxBreadcrumbConfig.ariaLabels` is typed `CngxBreadcrumbAriaLabels | Signal<CngxBreadcrumbAriaLabels>`, and once `withBreadcrumbAriaLabels` ran it holds a `Signal`. Code that reads it off `injectBreadcrumbConfig()` or `CNGX_BREADCRUMB_CONFIG` reads the resolved bundle through the new accessor instead: `injectBreadcrumbConfig().ariaLabels?.bar` becomes `injectBreadcrumbAriaLabels()().bar`, called inside a `computed()`, a template or a handler; every key is filled from the English defaults. `withBreadcrumbAriaLabels` now also accepts a `Signal<CngxBreadcrumbAriaLabels>`; plain objects still merge key by key, and `provideBreadcrumbConfigAt` still merges over the parent scope.
 - The copy inputs `CngxBreadcrumbBar.label`, `CngxBreadcrumbOverflow.triggerLabel` / `.menuLabel` and `CngxBreadcrumbSiblings.triggerLabel` / `.menuLabel` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time config default. Template bindings are unchanged; the rendered name follows a language switch while the input is unbound. Code that reads the input programmatically gets `undefined` when nothing is bound.
 
+- `CNGX_BREADCRUMB_CONFIG`'s default carries no copy any more: `ariaLabels` is unset by default and holds only the overrides `withBreadcrumbAriaLabels` set. The name defaults are the `breadcrumb` section of the language pack, exported in English as `CNGX_BREADCRUMB_LANGUAGE_EN`. Code that read `injectBreadcrumbConfig().ariaLabels` for a default reads `injectBreadcrumbAriaLabels()()`.
+
 ### @cngx/ui/chart-panel
 
 - `CngxChartPanelConfig.ariaLabels` is typed `CngxChartPanelAriaLabels | Signal<CngxChartPanelAriaLabels>`, and once `withChartPanelAriaLabels` ran it holds a `Signal`. Code that reads it off `injectChartPanelConfig()` or `CNGX_CHART_PANEL_CONFIG` reads the resolved bundle through the new accessor instead: `injectChartPanelConfig().ariaLabels?.busy` becomes `injectChartPanelAriaLabels()().busy`, called inside a `computed()`, a template or a handler. `withChartPanelAriaLabels` now also accepts a `Signal<CngxChartPanelAriaLabels>`; plain objects still merge key by key, and `provideChartPanelConfigAt` still merges over the parent scope.
@@ -311,6 +313,12 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - The sidenav copy comes from the `sidenav` section of the language pack; `withSidenavLabels` still wins key by key, also on top of a pack.
 - The resize separator carries `aria-valuetext` from the `resizeValueText` message (English `'280 pixels'`, the number formatted for the locale), so assistive tech no longer reads a bare unitless number.
+
+### @cngx/ui/breadcrumb
+
+- The breadcrumb names come from the `breadcrumb` section of the language pack; `withBreadcrumbAriaLabels` still wins key by key, also on top of a pack.
+- Route data for `cngxRouterSync` and `cngxSiblingsRouterSync` may be a keyed label, `{ key: 'orders', label: 'Orders' }`: the crumb shows `breadcrumb.routes[key]` of the active pack, else `label`, never the key, and follows a language switch. Plain string labels are unchanged.
+- The separator glyphs drawn in CSS (`›`, `‹`, `·`) carry empty alt text; the separator elements stay `aria-hidden`.
 
 ### @cngx/ui/paginator
 

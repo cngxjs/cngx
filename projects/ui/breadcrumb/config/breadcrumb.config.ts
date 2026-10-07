@@ -64,7 +64,8 @@ export interface CngxBreadcrumbAriaLabels {
  *   2. `provideBreadcrumbConfigAt(...)` in a parent component's
  *      `viewProviders` (component-scoped override).
  *   3. `provideBreadcrumbConfig(...)` at the application root.
- *   4. Library defaults (English; merged in via `CNGX_BREADCRUMB_DEFAULTS`).
+ *   4. Library defaults (`CNGX_BREADCRUMB_DEFAULTS`; the accessible names come
+ *      from the `breadcrumb` section of the language pack).
  *
  * Every key is optional - partial overrides deep-merge with the library
  * defaults, so consumers declare only the keys they want to override.

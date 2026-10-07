@@ -15,6 +15,7 @@ import { filter } from 'rxjs/operators';
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
 import type { CngxBreadcrumbItemsSource } from './breadcrumb-items-source.token';
 import { injectBreadcrumbConfig } from './config/inject-breadcrumb-config';
+import { injectBreadcrumbSiteCopy, routeLabelText } from './i18n/breadcrumb-i18n';
 import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
 
 /**
@@ -51,8 +52,9 @@ function crumbsEqual(
  * Opt-in router mode for {@link CngxBreadcrumbBar}. Add `routerSync` to a
  * `<cngx-breadcrumb>` and the trail is derived from the activated route tree -
  * every route whose `data[dataKey]` (default `data.breadcrumb`) is a non-empty
- * string contributes a crumb, terminal marking follows from position. The bar
- * reads the trail through the {@link CNGX_BREADCRUMB_ITEMS_SOURCE} seam
+ * string or a keyed label ({@link CngxBreadcrumbRouteLabel}, translated through
+ * the language pack) contributes a crumb, terminal marking follows from
+ * position. The bar reads the trail through the {@link CNGX_BREADCRUMB_ITEMS_SOURCE} seam
  * (provided here via `useExisting`), so the directive never writes the bar's
  * `[items]` input and never injects the concrete bar class - decompose-clean
  * (Pillar 1; reference_atomic_decompose rule 4).
@@ -86,13 +88,12 @@ function crumbsEqual(
   selector: 'cngx-breadcrumb[cngxRouterSync]',
   exportAs: 'cngxBreadcrumbRouterSync',
   standalone: true,
-  providers: [
-    { provide: CNGX_BREADCRUMB_ITEMS_SOURCE, useExisting: CngxBreadcrumbRouterSync },
-  ],
+  providers: [{ provide: CNGX_BREADCRUMB_ITEMS_SOURCE, useExisting: CngxBreadcrumbRouterSync }],
 })
 export class CngxBreadcrumbRouterSync implements CngxBreadcrumbItemsSource {
   private readonly router = inject(Router, { optional: true });
   private readonly cfg = injectBreadcrumbConfig();
+  private readonly routes = injectBreadcrumbSiteCopy().routes;
 
   /**
    * Route `data` key the trail is read from. Falls back through the config
@@ -132,27 +133,33 @@ export class CngxBreadcrumbRouterSync implements CngxBreadcrumbItemsSource {
       ),
       { initialValue: null },
     );
-    // Derive the trail from the navigation trigger and dataKey - both reactive,
-    // so a runtime dataKey change re-reads the tree too. The route snapshot is
+    // Derive the trail from the navigation trigger, dataKey and the route
+    // labels of the active pack - all reactive, so a runtime dataKey change or
+    // a language switch re-reads the tree too. The route snapshot is
     // read imperatively per recompute; navEnd is the tracked trigger (Pillar 1).
-    this.crumbs = computed(() => {
-      navEnd();
-      return buildCrumbs(router, this.dataKey(), this.iconKey());
-    }, { equal: crumbsEqual });
+    this.crumbs = computed(
+      () => {
+        navEnd();
+        return buildCrumbs(router, this.dataKey(), this.iconKey(), this.routes());
+      },
+      { equal: crumbsEqual },
+    );
   }
 }
 
 /**
  * Walks the activated route tree from the root down the firstChild chain,
  * accumulating the URL and emitting one crumb per route whose `data[dataKey]`
- * is a non-empty string. A non-empty `data[iconKey]` string rides onto the
- * crumb's opaque `icon` (the leading icon slot renders it; deepest wins on the
+ * is a non-empty string or a keyed label (`{ key, label }`, translated through
+ * the `routes` of the breadcrumb section). A non-empty `data[iconKey]` string
+ * rides onto the crumb's opaque `icon` (the leading icon slot renders it; deepest wins on the
  * componentless-collapse branch, like the label).
  */
 function buildCrumbs(
   router: Router,
   dataKey: string,
   iconKey: string,
+  routes: Readonly<Record<string, string>>,
 ): readonly CngxBreadcrumbCrumb[] {
   const crumbs: CngxBreadcrumbCrumb[] = [];
   let route: ActivatedRouteSnapshot | null = router.routerState.snapshot.root;
@@ -165,12 +172,13 @@ function buildCrumbs(
     if (segment) {
       url += `/${segment}`;
     }
-    const raw: unknown = route.data[dataKey];
-    if (typeof raw === 'string' && raw.length > 0) {
+    const label = routeLabelText(route.data[dataKey], routes);
+    if (label !== undefined) {
       const href = url || '/';
       const rawIcon: unknown = route.data[iconKey];
       const icon = typeof rawIcon === 'string' && rawIcon.length > 0 ? rawIcon : undefined;
-      const next: CngxBreadcrumbCrumb = icon !== undefined ? { label: raw, href, icon } : { label: raw, href };
+      const next: CngxBreadcrumbCrumb =
+        icon !== undefined ? { label, href, icon } : { label, href };
       const prev = crumbs[crumbs.length - 1];
       if (prev?.href === href) {
         // A segment-less (componentless) route carrying a breadcrumb reuses the

@@ -15,6 +15,7 @@ import { filter } from 'rxjs/operators';
 import { CNGX_BREADCRUMB_SIBLINGS_SOURCE } from './breadcrumb-siblings-source.token';
 import type { CngxBreadcrumbSiblingsSource } from './breadcrumb-siblings-source.token';
 import { injectBreadcrumbConfig } from './config/inject-breadcrumb-config';
+import { injectBreadcrumbSiteCopy, routeLabelText } from './i18n/breadcrumb-i18n';
 import type { CngxBreadcrumbSibling } from './breadcrumb.types';
 
 /**
@@ -100,6 +101,7 @@ function siblingsEqual(
 export class CngxBreadcrumbSiblingsRouterSync implements CngxBreadcrumbSiblingsSource {
   private readonly router = inject(Router, { optional: true });
   private readonly cfg = injectBreadcrumbConfig();
+  private readonly routes = injectBreadcrumbSiteCopy().routes;
 
   /**
    * Index into the activated route chain (root's first real child is `0`)
@@ -140,14 +142,15 @@ export class CngxBreadcrumbSiblingsRouterSync implements CngxBreadcrumbSiblingsS
       ),
       { initialValue: null },
     );
-    // Derive the set from the navigation trigger, depth, and dataKey - all
-    // reactive, so a runtime depth/dataKey change re-reads the tree too. The
+    // Derive the set from the navigation trigger, depth, dataKey and the route
+    // labels of the active pack - all reactive, so a runtime depth/dataKey
+    // change or a language switch re-reads the tree too. The
     // route snapshot is read imperatively per recompute; navEnd is the tracked
     // trigger (Pillar 1).
     this.siblings = computed(
       () => {
         navEnd();
-        return buildSiblings(router, this.depth(), this.dataKey());
+        return buildSiblings(router, this.depth(), this.dataKey(), this.routes());
       },
       { equal: siblingsEqual },
     );
@@ -157,7 +160,8 @@ export class CngxBreadcrumbSiblingsRouterSync implements CngxBreadcrumbSiblingsS
 /**
  * Enumerates the sibling routes at `depth` in the activated route chain: the
  * children of that level's parent (or the root config at depth 0) whose
- * `data[dataKey]` is a non-empty string, marking the active child `current`.
+ * `data[dataKey]` is a non-empty string or a keyed label, marking the active
+ * child `current`.
  * Sibling configs come from the static route configuration, not the activated
  * snapshot (which only holds the one active child), so the whole set of
  * alternatives is visible. Duplicate hrefs are collapsed like `buildCrumbs`.
@@ -166,6 +170,7 @@ function buildSiblings(
   router: Router,
   depth: number,
   dataKey: string,
+  routes: Readonly<Record<string, string>>,
 ): readonly CngxBreadcrumbSibling[] {
   // Active chain of real routes, skipping the componentless root.
   const chain: ActivatedRouteSnapshot[] = [];
@@ -197,8 +202,8 @@ function buildSiblings(
 
   const out: CngxBreadcrumbSibling[] = [];
   for (const cfg of siblingConfigs) {
-    const raw: unknown = cfg.data?.[dataKey];
-    if (typeof raw !== 'string' || raw.length === 0) {
+    const label = routeLabelText(cfg.data?.[dataKey], routes);
+    if (label === undefined) {
       continue;
     }
     const seg = cfg.path ?? '';
@@ -211,9 +216,9 @@ function buildSiblings(
       // duplicate href (the dropdown's @for track would otherwise collide).
       // Boolean either-matched, deliberately not ?? - a false on the earlier
       // row must not eat the active config's match.
-      out[out.length - 1] = { label: raw, href, current: !!prev.current || current };
+      out[out.length - 1] = { label, href, current: !!prev.current || current };
     } else {
-      out.push({ label: raw, href, current });
+      out.push({ label, href, current });
     }
   }
   return out;

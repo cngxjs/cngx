@@ -132,6 +132,11 @@ instance (`data[iconKey]` rides onto `crumb.icon`). A componentless route
 reusing the parent URL collapses into one crumb, deepest label wins. Without
 `@angular/router` the directive dev-warns once and stays an empty source.
 
+To translate a crumb, key its label: `data: { breadcrumb: { key: 'orders',
+label: 'Orders' } }`. The crumb reads `breadcrumb.routes.orders` from the
+active language pack and falls back to `label`; the key is never shown. The
+sibling sync reads route data the same way.
+
 ## Sibling dropdowns
 
 `CngxBreadcrumbSiblings` lists the alternatives at one trail level - a chevron

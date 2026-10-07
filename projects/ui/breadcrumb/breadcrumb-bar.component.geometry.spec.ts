@@ -49,6 +49,16 @@ class HeaderBreadcrumbHost {
   readonly items = TRAIL;
 }
 
+@Component({
+  selector: 'cngx-breadcrumb-editorial-geometry-host',
+  standalone: true,
+  imports: [CngxBreadcrumbBar],
+  template: `<cngx-breadcrumb [items]="items" [label]="'Breadcrumb'" skin="editorial" />`,
+})
+class EditorialBreadcrumbHost {
+  readonly items = TRAIL;
+}
+
 const LONG_TRAIL: readonly CngxBreadcrumbCrumb[] = [
   { label: 'Home', href: '/' },
   { label: 'Catalog', href: '/catalog' },
@@ -95,6 +105,18 @@ function mountRibbon(): HTMLElement {
 
 function mountHeader(): HTMLElement {
   const fixture = TestBed.createComponent(HeaderBreadcrumbHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const host = mountedRoot.querySelector('.cngx-breadcrumb');
+  if (!host) {
+    throw new Error('cngx-breadcrumb did not render');
+  }
+  return host as HTMLElement;
+}
+
+function mountEditorial(): HTMLElement {
+  const fixture = TestBed.createComponent(EditorialBreadcrumbHost);
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
@@ -271,6 +293,19 @@ describe('CngxBreadcrumbBar separator glyph direction', () => {
     expect(rtl).not.toBe(ltr);
 
     document.documentElement.dir = 'ltr';
+    expect(separatorContent(host)).toBe(ltr);
+  });
+
+  it('gives the separator glyphs empty alt text', () => {
+    expect(separatorContent(mountHeader())).toBe('"›" / ""');
+    mountedRoot?.remove();
+    expect(separatorContent(mountEditorial())).toBe('"·" / ""');
+  });
+
+  it('keeps the symmetric editorial dot under dir=rtl', () => {
+    const host = mountEditorial();
+    const ltr = separatorContent(host);
+    document.documentElement.dir = 'rtl';
     expect(separatorContent(host)).toBe(ltr);
   });
 });
