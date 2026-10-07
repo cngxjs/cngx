@@ -1,10 +1,21 @@
 import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+  type CngxLanguagePack,
+} from '@cngx/core/i18n';
 
 import { CngxChartPanel } from '../chart-panel.component';
 import type { CngxChartPanelAriaLabels } from './chart-panel.config';
+import { CNGX_CHART_PANEL_LANGUAGE_EN } from '../i18n/chart-panel-language-section';
 import { CNGX_CHART_PANEL_DEFAULTS } from './chart-panel.config.defaults';
+
+// Compile-checked: the English section is a complete section of a pack.
+const EN_SECTION: CngxLanguagePack['chartPanel'] = CNGX_CHART_PANEL_LANGUAGE_EN;
 import { withChartPanelAriaLabels, withChartPanelLegendPosition } from './features';
 import { injectChartPanelAriaLabels, injectChartPanelConfig } from './inject-chart-panel-config';
 import { provideChartPanelConfig, provideChartPanelConfigAt } from './provide-chart-panel-config';
@@ -17,11 +28,40 @@ describe('CNGX_CHART_PANEL_CONFIG cascade', () => {
     return TestBed.runInInjectionContext(() => injectChartPanelAriaLabels());
   }
 
-  it('exposes the English library defaults without any provider', () => {
-    expect(read()).toEqual({
-      ariaLabels: { busy: 'Updating' },
-      legendPosition: 'bottom',
+  it('carries no copy in the defaults and resolves the English section without any provider', () => {
+    expect(read()).toEqual({ legendPosition: 'bottom' });
+    expect(labels()()).toEqual({ busy: 'Updating' });
+    expect(EN_SECTION.busy).toBe('Updating');
+  });
+
+  it('reads the chartPanel section of the active pack', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
     });
+    const resolved = labels();
+    expect(resolved().busy).toBe('Updating');
+    pack.set({ locale: 'de', chartPanel: { busy: 'Wird aktualisiert' } });
+    expect(resolved().busy).toBe('Wird aktualisiert');
+  });
+
+  it('lets withChartPanelAriaLabels win on top of the active pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', chartPanel: { busy: 'Wird aktualisiert' } }),
+          withDocumentLanguage('off'),
+        ),
+        provideChartPanelConfig(withChartPanelAriaLabels({ busy: 'Laedt' })),
+      ],
+    });
+    expect(labels()().busy).toBe('Laedt');
+  });
+
+  it('keeps the labels reference for the same section', () => {
+    const first = labels();
+    expect(Object.is(first, labels())).toBe(true);
+    expect(Object.is(first(), labels()())).toBe(true);
   });
 
   it('keeps the defaults reference intact for an empty provider call', () => {

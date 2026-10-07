@@ -169,6 +169,8 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxChartPanelConfig.ariaLabels` is typed `CngxChartPanelAriaLabels | Signal<CngxChartPanelAriaLabels>`, and once `withChartPanelAriaLabels` ran it holds a `Signal`. Code that reads it off `injectChartPanelConfig()` or `CNGX_CHART_PANEL_CONFIG` reads the resolved bundle through the new accessor instead: `injectChartPanelConfig().ariaLabels?.busy` becomes `injectChartPanelAriaLabels()().busy`, called inside a `computed()`, a template or a handler. `withChartPanelAriaLabels` now also accepts a `Signal<CngxChartPanelAriaLabels>`; plain objects still merge key by key, and `provideChartPanelConfigAt` still merges over the parent scope.
 - The hidden busy status reads its label untracked: a language switch during a running busy phase does not re-announce it, and the next busy phase speaks the new language. The busy description of the action cluster follows the switch at once.
 
+- `CNGX_CHART_PANEL_CONFIG`'s default carries no copy any more: `ariaLabels` is unset by default and holds only the overrides `withChartPanelAriaLabels` set. The default is the `chartPanel` section of the language pack, exported in English as `CNGX_CHART_PANEL_LANGUAGE_EN`. Code that read `injectChartPanelConfig().ariaLabels` for a default reads `injectChartPanelAriaLabels()()`.
+
 ### @cngx/ui/collection
 
 - `CngxIncrementalListConfig.ariaLabels` is typed `CngxIncrementalListAriaLabels | Signal<CngxIncrementalListAriaLabels>`, and once `withIncrementalListAriaLabels` ran it holds a `Signal`. Code that reads it off `injectIncrementalListConfig()` or `CNGX_INCREMENTAL_LIST_CONFIG` reads the resolved bundle through the new accessor instead: `injectIncrementalListConfig().ariaLabels.empty` becomes `injectIncrementalListAriaLabels()().empty`, called inside a `computed()`, a template or a handler.
@@ -336,6 +338,10 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/ui/accordion
 
 - The disabled reason and the error message come from the `accordion` section of the language pack; `withAccordionLabels` and the `[disabledReason]` / `[errorMessage]` inputs still win, also on top of a pack.
+
+### @cngx/ui/chart-panel
+
+- The busy label comes from the `chartPanel` section of the language pack; `withChartPanelAriaLabels` still wins, also on top of a pack.
 
 ### @cngx/ui/paginator
 

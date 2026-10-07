@@ -22,7 +22,8 @@ export interface CngxChartPanelAriaLabels {
  *   1. Per-instance Input binding (e.g. `[legendPosition]`).
  *   2. `provideChartPanelConfigAt(...)` in a parent component's `viewProviders`.
  *   3. `provideChartPanelConfig(...)` at the application root.
- *   4. Library defaults (English; merged in via `CNGX_CHART_PANEL_DEFAULTS`).
+ *   4. Library defaults (`CNGX_CHART_PANEL_DEFAULTS`; the strings come from
+ *      the `chartPanel` section of the language pack).
  *
  * @category ui/chart-panel
  * @since 0.1.0
