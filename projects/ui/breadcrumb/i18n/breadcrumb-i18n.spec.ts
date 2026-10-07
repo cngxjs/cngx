@@ -12,7 +12,7 @@ import {
 import { withBreadcrumbAriaLabels } from '../config/features';
 import { injectBreadcrumbAriaLabels } from '../config/inject-breadcrumb-config';
 import { provideBreadcrumbConfig } from '../config/provide-breadcrumb-config';
-import { injectBreadcrumbSiteCopy, routeLabelText } from './breadcrumb-i18n';
+import { routeLabelText } from './breadcrumb-i18n';
 import { CNGX_BREADCRUMB_LANGUAGE_EN } from './breadcrumb-language-section';
 
 // Compile-checked: the English section is a complete section of a pack.
@@ -34,7 +34,7 @@ describe('breadcrumb language section', () => {
       siblingsTrigger: 'Show sibling pages',
       siblingsMenu: 'Sibling pages',
     });
-    expect(EN_SECTION.routes).toEqual({});
+    expect(EN_SECTION.bar).toBe('Breadcrumb');
   });
 
   it('reads the section of the active pack, with English for what it leaves out', () => {
@@ -46,16 +46,14 @@ describe('breadcrumb language section', () => {
       ],
     });
     const resolved = labels();
-    const routes = TestBed.runInInjectionContext(() => injectBreadcrumbSiteCopy().routes);
     expect(resolved().bar).toBe('Breadcrumb');
 
     pack.set({
       locale: 'de',
-      breadcrumb: { bar: 'Brotkrumen', routes: { orders: 'Bestellungen' } },
+      breadcrumb: { bar: 'Brotkrumen' },
     });
     expect(resolved().bar).toBe('Brotkrumen');
     expect(resolved().siblingsMenu).toBe('Sibling pages');
-    expect(routes()).toEqual({ orders: 'Bestellungen' });
   });
 
   it('lets withBreadcrumbAriaLabels override single keys on top of the active pack', () => {
@@ -87,22 +85,23 @@ describe('breadcrumb language section', () => {
 });
 
 describe('routeLabelText', () => {
-  const routes = { orders: 'Bestellungen' };
-
   it('passes a plain label through and drops an empty one', () => {
-    expect(routeLabelText('Orders', routes)).toBe('Orders');
-    expect(routeLabelText('', routes)).toBeUndefined();
+    expect(routeLabelText('Orders')).toBe('Orders');
+    expect(routeLabelText('')).toBeUndefined();
   });
 
-  it('translates a keyed label, else shows its label, never the key', () => {
-    expect(routeLabelText({ key: 'orders', label: 'Orders' }, routes)).toBe('Bestellungen');
-    expect(routeLabelText({ key: 'invoices', label: 'Invoices' }, routes)).toBe('Invoices');
-    expect(routeLabelText({ key: 'invoices' }, routes)).toBeUndefined();
+  it('reads a Signal label', () => {
+    const label = signal('Orders');
+    expect(routeLabelText(label)).toBe('Orders');
+    label.set('Bestellungen');
+    expect(routeLabelText(label)).toBe('Bestellungen');
   });
 
   it('ignores data that is no label', () => {
-    expect(routeLabelText(undefined, routes)).toBeUndefined();
-    expect(routeLabelText(42, routes)).toBeUndefined();
-    expect(routeLabelText(null, routes)).toBeUndefined();
+    expect(routeLabelText(undefined)).toBeUndefined();
+    expect(routeLabelText(42)).toBeUndefined();
+    expect(routeLabelText(null)).toBeUndefined();
+    expect(routeLabelText({ key: 'orders', label: 'Orders' })).toBeUndefined();
+    expect(routeLabelText(signal(42))).toBeUndefined();
   });
 });

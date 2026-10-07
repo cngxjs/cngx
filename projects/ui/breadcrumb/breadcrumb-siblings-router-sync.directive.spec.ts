@@ -1,4 +1,4 @@
-import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
+import { Component, computed, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NavigationEnd, provideRouter, Router, RouterOutlet } from '@angular/router';
@@ -129,6 +129,44 @@ describe('CngxBreadcrumbSiblingsRouterSync', () => {
       .injector.get(CngxBreadcrumbSiblingsRouterSync);
     return { fixture, router, directive, root };
   }
+
+  it('follows a Signal sibling label on the app language switch', async () => {
+    const lang = signal<'en' | 'de'>('en');
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([
+          {
+            path: 'eu',
+            component: Shell,
+            data: { breadcrumb: 'Region EU' },
+            children: [
+              {
+                path: 'munich',
+                component: Blank,
+                data: { breadcrumb: computed(() => (lang() === 'en' ? 'Munich' : 'München')) },
+              },
+              { path: 'berlin', component: Blank, data: { breadcrumb: 'Berlin' } },
+            ],
+          },
+        ]),
+      ],
+    });
+    const router = TestBed.inject(Router);
+    const fixture = TestBed.createComponent(SibRouterHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    await router.navigateByUrl('/eu/berlin');
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const directive = fixture.debugElement
+      .query(By.directive(CngxBreadcrumbSiblingsRouterSync))
+      .injector.get(CngxBreadcrumbSiblingsRouterSync);
+    expect(directive.siblings().map((s) => s.label)).toEqual(['Munich', 'Berlin']);
+
+    lang.set('de');
+    expect(directive.siblings().map((s) => s.label)).toEqual(['München', 'Berlin']);
+  });
 
   it('derives the level siblings from the route tree, winning over [siblings]', async () => {
     const { fixture, router, root } = await mountRouted();

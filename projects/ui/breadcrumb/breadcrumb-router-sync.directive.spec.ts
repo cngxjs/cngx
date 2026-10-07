@@ -1,15 +1,9 @@
-import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
+import { Component, computed, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NavigationEnd, provideRouter, Router, RouterOutlet } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  provideCngxI18n,
-  withDocumentLanguage,
-  withPartialPack,
-  type CngxActiveLanguagePack,
-} from '@cngx/core/i18n';
 import { createResizeObserverMock } from '@cngx/testing';
 
 import { CngxBreadcrumbBar } from './breadcrumb-bar.component';
@@ -283,19 +277,13 @@ describe('CngxBreadcrumbRouterSync', () => {
     expect(labels(barEl)).toEqual(['Default']);
   });
 
-  it('translates a keyed route label through the breadcrumb section and never shows the key', async () => {
-    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+  it('follows a Signal route label on the app language switch', async () => {
+    const lang = signal<'en' | 'de'>('en');
+    const orders = computed(() => (lang() === 'en' ? 'Orders' : 'Bestellungen'));
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
-        provideRouter([
-          {
-            path: 'orders',
-            component: Blank,
-            data: { breadcrumb: { key: 'orders', label: 'Orders' } },
-          },
-        ]),
+        provideRouter([{ path: 'orders', component: Blank, data: { breadcrumb: orders } }]),
       ],
     });
     const router = TestBed.inject(Router);
@@ -311,7 +299,7 @@ describe('CngxBreadcrumbRouterSync', () => {
       .injector.get(CngxBreadcrumbRouterSync);
     expect(directive.crumbs().map((c) => c.label)).toEqual(['Orders']);
 
-    pack.set({ locale: 'de', breadcrumb: { routes: { orders: 'Bestellungen' } } });
+    lang.set('de');
     expect(directive.crumbs().map((c) => c.label)).toEqual(['Bestellungen']);
   });
 

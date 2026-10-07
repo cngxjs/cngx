@@ -328,7 +328,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/ui/breadcrumb
 
 - The breadcrumb names come from the `breadcrumb` section of the language pack; `withBreadcrumbAriaLabels` still wins key by key, also on top of a pack.
-- Route data for `cngxRouterSync` and `cngxSiblingsRouterSync` may be a keyed label, `{ key: 'orders', label: 'Orders' }`: the crumb shows `breadcrumb.routes[key]` of the active pack, else `label`, never the key, and follows a language switch. Plain string labels are unchanged.
+- Route data for `cngxRouterSync` and `cngxSiblingsRouterSync` may be a `Signal<string>` as well as a string: `data: { breadcrumb: computed(() => t('nav.orders')) }`. The crumb follows the app's own translation on a language switch. Route labels are app copy, so the `breadcrumb` section of the language pack does not carry them. Plain string labels are unchanged.
 - The separator glyphs drawn in CSS (`›`, `‹`, `·`) carry empty alt text; the separator elements stay `aria-hidden`.
 
 ### @cngx/ui/a11y

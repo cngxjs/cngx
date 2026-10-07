@@ -48,8 +48,5 @@ export function injectBreadcrumbConfig(): CngxBreadcrumbConfig {
  * @since 0.1.0
  */
 export function injectBreadcrumbAriaLabels(): Signal<Required<CngxBreadcrumbAriaLabels>> {
-  return createFilledOverrideMerge(
-    injectBreadcrumbSiteCopy().ariaLabels,
-    injectBreadcrumbConfig().ariaLabels,
-  );
+  return createFilledOverrideMerge(injectBreadcrumbSiteCopy(), injectBreadcrumbConfig().ariaLabels);
 }
