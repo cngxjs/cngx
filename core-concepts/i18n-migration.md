@@ -191,6 +191,8 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - `CngxTocConfig.ariaLabels` is typed `CngxTocAriaLabels | Signal<CngxTocAriaLabels>`, and once `withTocAriaLabels` ran it holds a `Signal`. Code that reads it off `injectTocConfig()` or `CNGX_TOC_CONFIG` reads the resolved bundle through the new accessor instead: `injectTocConfig().ariaLabels?.nav` becomes `injectTocAriaLabels()().nav`, called inside a `computed()`, a template or a handler. `withTocAriaLabels` now also accepts a `Signal<CngxTocAriaLabels>`; plain objects still merge key by key, and `provideTocConfigAt` still merges over the parent scope.
 
+- `CNGX_TOC_DEFAULTS` and the default `CNGX_TOC_CONFIG` carry no copy any more: `ariaLabels` is unset by default and holds only the overrides `withTocAriaLabels` set. The default is the `toc` section of the language pack, exported in English as `CNGX_TOC_LANGUAGE_EN`. Code that read `CNGX_TOC_DEFAULTS.ariaLabels.nav` reads `injectTocAriaLabels()().nav`.
+
 ### @cngx/ui/a11y
 
 - `CngxA11yPanelConfig.labels` is typed `CngxA11yPanelLabels | Signal<CngxA11yPanelLabels>` and `.axes` is typed `readonly CngxA11yPanelAxisSpec[] | Signal<readonly CngxA11yPanelAxisSpec[]>`; once a feature ran, `labels` holds a `Signal`. Code that reads them off `injectA11yPanelConfig()` or `CNGX_A11Y_PANEL_CONFIG` reads them through the new accessors instead: `injectA11yPanelConfig().labels.heading` becomes `injectA11yPanelLabels()().heading`, and `injectA11yPanelConfig().axes` becomes `injectA11yPanelAxes()()`, each called inside a `computed()`, a template or a handler.
@@ -348,6 +350,10 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/ui/stat-card
 
 - The state copy comes from the `statCard` section of the language pack; `withStatCardAriaLabels` and the copy inputs still win, also on top of a pack.
+
+### @cngx/ui/toc
+
+- The landmark name comes from the `toc` section of the language pack; `withTocAriaLabels` still wins, also on top of a pack.
 
 ### @cngx/ui/paginator
 

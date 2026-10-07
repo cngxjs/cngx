@@ -1,16 +1,22 @@
 import { Component, computed, Directive, signal, type TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+  type CngxLanguagePack,
+} from '@cngx/core/i18n';
 
 import type { CngxTocItemContext } from '../toc.types';
 import type { CngxTocAriaLabels } from './toc.config';
+import { CNGX_TOC_LANGUAGE_EN } from '../i18n/toc-language-section';
 import { CNGX_TOC_CONFIG, CNGX_TOC_DEFAULTS } from './toc.config.defaults';
-import {
-  withTocAriaLabels,
-  withTocScrollBehavior,
-  withTocSpy,
-  withTocTemplates,
-} from './features';
+
+// Compile-checked: the English section is a complete section of a pack.
+const EN_SECTION: CngxLanguagePack['toc'] = CNGX_TOC_LANGUAGE_EN;
+import { withTocAriaLabels, withTocScrollBehavior, withTocSpy, withTocTemplates } from './features';
 import { injectTocAriaLabels, injectTocConfig } from './inject-toc-config';
 import { provideTocConfig, provideTocConfigAt } from './provide-toc-config';
 
@@ -145,7 +151,32 @@ describe('CNGX_TOC_CONFIG', () => {
     expect(navLabel()).toBe('On this page');
   });
 
-  it('keeps the plain labels bundle on the exported defaults', () => {
-    expect(CNGX_TOC_DEFAULTS.ariaLabels.nav).toBe('On this page');
+  it('carries no copy in the exported defaults; the English section names the landmark', () => {
+    expect(CNGX_TOC_DEFAULTS.ariaLabels).toBeUndefined();
+    expect(EN_SECTION.nav).toBe('On this page');
+  });
+
+  it('reads the toc section of the active pack', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+    });
+    const labels = TestBed.runInInjectionContext(() => injectTocAriaLabels());
+    expect(labels().nav).toBe('On this page');
+    pack.set({ locale: 'de', toc: { nav: 'Auf dieser Seite' } });
+    expect(labels().nav).toBe('Auf dieser Seite');
+  });
+
+  it('lets withTocAriaLabels win on top of the active pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', toc: { nav: 'Auf dieser Seite' } }),
+          withDocumentLanguage('off'),
+        ),
+        provideTocConfig(withTocAriaLabels({ nav: 'Inhalt' })),
+      ],
+    });
+    expect(TestBed.runInInjectionContext(() => injectTocAriaLabels())().nav).toBe('Inhalt');
   });
 });
