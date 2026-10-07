@@ -92,7 +92,7 @@ describe('createStepperAnnouncementBuilders language switch', () => {
 });
 
 describe('createStepperAnnouncementBuilders headerStatusPhrase', () => {
-  function builderFor(state: string) {
+  function buildersFor(state: string, flatIndex = 0) {
     const i18n = signal({
       selectedStep: (label: string, position: number, count: number) =>
         `Step ${position} of ${count}: ${label}`,
@@ -108,7 +108,7 @@ describe('createStepperAnnouncementBuilders headerStatusPhrase', () => {
     const node = {
       id: 'a',
       kind: 'step',
-      flatIndex: 0,
+      flatIndex,
       label: signal('Account'),
       state: signal(state),
     } as unknown as CngxStepNode;
@@ -120,6 +120,11 @@ describe('createStepperAnnouncementBuilders headerStatusPhrase', () => {
       commitTransition: { current: signal('idle'), previous: signal('idle') },
     } as unknown as CngxStepperHost;
     const builders = createStepperAnnouncementBuilders({ presenter, stepsOnly, i18n });
+    return { builders, node };
+  }
+
+  function builderFor(state: string): string {
+    const { builders, node } = buildersFor(state);
     return builders.headerStatusPhrase(node);
   }
 
@@ -130,5 +135,12 @@ describe('createStepperAnnouncementBuilders headerStatusPhrase', () => {
 
   it('keeps the plain status phrase for a step without a glyph status', () => {
     expect(builderFor('idle')).toBe('Step 1 of 1: Account');
+  });
+
+  it('references the descriptor while only the glyph status is non-empty', () => {
+    const { builders, node } = buildersFor('success', -1);
+    expect(builders.statusPhrase(node)).toBe('');
+    expect(builders.headerStatusPhrase(node)).toBe('Done');
+    expect(builders.describedBy(node)).toBe('a-desc');
   });
 });

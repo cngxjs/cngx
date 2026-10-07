@@ -52,7 +52,7 @@ export interface CngxStepperAnnouncementBuilders {
   readonly descriptorId: (node: CngxStepNode) => string;
   /**
    * `aria-describedby` value for a node: `descriptorId(node)` while the
-   * node's phrase (`statusPhrase` for steps, `groupStatusPhrase` for
+   * node's phrase (`headerStatusPhrase` for steps, `groupStatusPhrase` for
    * groups) is non-empty, else `null`. The descriptor span stays in the
    * DOM; only the reference is gated - accname 1.2 §2A traverses a
    * directly-referenced node even when it is empty or hidden.
@@ -163,7 +163,7 @@ export function createStepperAnnouncementBuilders(
   const descriptorId = (node: CngxStepNode): string => `${node.id}-desc`;
 
   const describedBy = (node: CngxStepNode): string | null => {
-    const phrase = node.kind === 'step' ? statusPhrase(node) : groupStatusPhrase(node);
+    const phrase = node.kind === 'step' ? headerStatusPhrase(node) : groupStatusPhrase(node);
     return phrase ? descriptorId(node) : null;
   };
 
