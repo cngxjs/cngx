@@ -24,7 +24,7 @@ import {
   type RecyclerI18n,
   resolveAsyncView,
 } from '@cngx/common/data';
-import { injectLocale } from '@cngx/core/utils';
+import { displayFormattersFor, formatDisplayValue, injectLocale } from '@cngx/core/utils';
 import { recordEqual } from '@cngx/utils';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 import { CngxProgress } from '@cngx/ui/feedback';
@@ -35,7 +35,6 @@ import {
   type CngxIncrementalListAriaLabels,
 } from './incremental-list-config';
 import { CNGX_PAGINATOR_HOST } from './incremental-list-host.token';
-import { itemTextFor } from './incremental-list-item-text';
 import { CngxIncrementalVirtualizedBody } from './incremental-list-virtualized-body.component';
 import {
   CngxIncrementalEmpty,
@@ -213,6 +212,7 @@ export class CngxIncrementalList<T = unknown> {
   private readonly config = injectIncrementalListConfig();
   private readonly ariaLabels = injectIncrementalListAriaLabels();
   private readonly locale = injectLocale();
+  private readonly formatters = computed(() => displayFormattersFor(this.locale()));
 
   // View slot resolvers. Direct contentChild field initialisers (AOT NG8110
   // rejects them from a helper); read as TemplateRef so the cascade computeds
@@ -381,7 +381,7 @@ export class CngxIncrementalList<T = unknown> {
 
   /** Built-in row text without an item slot: numbers and dates in the locale. */
   protected itemText(item: T): unknown {
-    return itemTextFor(item, this.locale());
+    return formatDisplayValue(item, this.formatters());
   }
 
   constructor() {

@@ -66,3 +66,70 @@ export function numberFormatterFor(
 ): Intl.NumberFormat {
   return numberFormatterForKey(`${locale}|${JSON.stringify(options)}`);
 }
+
+const DISPLAY_NUMBER_FORMAT: Intl.NumberFormatOptions = {};
+const DISPLAY_DATE_FORMAT: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+};
+
+/**
+ * The number and date formatters a default value display uses for one
+ * locale. Resolve with {@link displayFormattersFor}, apply with
+ * {@link formatDisplayValue}.
+ *
+ * @category core/utils
+ * @since 0.1.0
+ * @relatedTo displayFormattersFor, formatDisplayValue
+ */
+export interface CngxDisplayFormatters {
+  readonly number: Intl.NumberFormat;
+  readonly date: Intl.DateTimeFormat;
+}
+
+/**
+ * Resolves the formatters for showing a raw value as text in `locale`: dates
+ * with `dateFormat` (date-only by default), numbers with `numberFormat` (the
+ * `Intl.NumberFormat` defaults by default). Both come from the bounded
+ * formatter caches; resolve once per locale and format inside a `computed()`,
+ * not per value.
+ *
+ * ```ts
+ * private readonly formatters = computed(() => displayFormattersFor(this.locale()));
+ * protected text(value: unknown) { return formatDisplayValue(value, this.formatters()); }
+ * ```
+ *
+ * @category core/utils
+ * @since 0.1.0
+ * @relatedTo formatDisplayValue, numberFormatterFor, dateTimeFormatterFor
+ */
+export function displayFormattersFor(
+  locale: string,
+  dateFormat: Intl.DateTimeFormatOptions = DISPLAY_DATE_FORMAT,
+  numberFormat: Intl.NumberFormatOptions = DISPLAY_NUMBER_FORMAT,
+): CngxDisplayFormatters {
+  return {
+    number: numberFormatterFor(locale, numberFormat),
+    date: dateTimeFormatterFor(locale, dateFormat),
+  };
+}
+
+/**
+ * The display text of a raw value: a number or a `Date` formatted with
+ * `formatters`, an invalid date empty, every other value unchanged. The
+ * fallback a component renders when the consumer supplied no template.
+ *
+ * @category core/utils
+ * @since 0.1.0
+ * @relatedTo displayFormattersFor
+ */
+export function formatDisplayValue(value: unknown, formatters: CngxDisplayFormatters): unknown {
+  if (typeof value === 'number') {
+    return formatters.number.format(value);
+  }
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? '' : formatters.date.format(value);
+  }
+  return value;
+}

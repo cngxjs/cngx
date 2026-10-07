@@ -1,8 +1,4 @@
-import { dateTimeFormatterFor, numberFormatterFor } from '@cngx/core/utils';
-import {
-  filterTree as filterTreeKernel,
-  flattenTree as flattenTreeKernel,
-} from '@cngx/utils';
+import { filterTree as filterTreeKernel, flattenTree as flattenTreeKernel } from '@cngx/utils';
 import type { CngxTreetableFlatNode, CngxTreetableNode, CngxTreetableOptions } from './models';
 
 export { isNodeVisible } from '@cngx/utils';
@@ -97,7 +93,10 @@ export function capitalise(str: string): string {
  *
  * @category data-display/treetable
  */
-export function filterTree<T>(nodes: CngxTreetableNode<T>[], predicate: (value: T) => boolean): CngxTreetableNode<T>[] {
+export function filterTree<T>(
+  nodes: CngxTreetableNode<T>[],
+  predicate: (value: T) => boolean,
+): CngxTreetableNode<T>[] {
   return filterTreeKernel(nodes, predicate) as CngxTreetableNode<T>[];
 }
 
@@ -151,60 +150,6 @@ export function sortTree<T>(
     ...node,
     children: node.children ? sortTree(node.children, field, direction, locale) : undefined,
   }));
-}
-
-/** @internal `Intl.NumberFormat` defaults for a number in a default cell. */
-export const CELL_NUMBER_FORMAT: Intl.NumberFormatOptions = {};
-/** @internal Date-only default for a `Date` in a default cell. */
-export const CELL_DATE_FORMAT: Intl.DateTimeFormatOptions = {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-};
-
-/**
- * The formatters a default cell uses for one locale, date format and number
- * format.
- *
- * @internal
- */
-export interface CellFormatters {
-  readonly number: Intl.NumberFormat;
-  readonly date: Intl.DateTimeFormat;
-}
-
-/**
- * Resolves the default-cell formatters for `locale` (dates with `dateFormat`,
- * date-only by default; numbers with `numberFormat`, the `Intl.NumberFormat`
- * defaults by default). Resolve once per locale and format, not per cell.
- *
- * @internal
- */
-export function cellFormattersFor(
-  locale: string,
-  dateFormat: Intl.DateTimeFormatOptions = CELL_DATE_FORMAT,
-  numberFormat: Intl.NumberFormatOptions = CELL_NUMBER_FORMAT,
-): CellFormatters {
-  return {
-    number: numberFormatterFor(locale, numberFormat),
-    date: dateTimeFormatterFor(locale, dateFormat),
-  };
-}
-
-/**
- * The default cell text of a value: numbers and dates formatted with
- * `formatters`, an invalid date empty, everything else unchanged.
- *
- * @internal
- */
-export function formatCellValue(value: unknown, formatters: CellFormatters): unknown {
-  if (typeof value === 'number') {
-    return formatters.number.format(value);
-  }
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? '' : formatters.date.format(value);
-  }
-  return value;
 }
 
 /**

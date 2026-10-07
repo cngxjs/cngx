@@ -20,7 +20,7 @@ import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 
 import { CngxHeaderTpl } from '../column-template.directive';
 import type { CngxHeaderTplContext, Node } from '../models';
-import { cellFormattersFor, columnHeaderFor, formatCellValue } from '../tree.utils';
+import { columnHeaderFor } from '../tree.utils';
 import { CngxTreetable } from '../treetable.component';
 import {
   CNGX_TREETABLE_CONFIG,
@@ -41,9 +41,7 @@ const EN_SECTION: CngxLanguagePack['treetable'] = CNGX_TREETABLE_LANGUAGE_EN;
 const strip = stripBidiIsolates;
 
 function labels() {
-  return TestBed.runInInjectionContext(() =>
-    injectTreetableLabels(),
-  );
+  return TestBed.runInInjectionContext(() => injectTreetableLabels());
 }
 
 describe('treetable language section', () => {
@@ -136,9 +134,7 @@ describe('treetable language section', () => {
       providers: [provideZonelessChangeDetection(), provideLocale('en')],
     });
     const root = labels();
-    const german = runInSubtree([provideLocaleAt('de')], () =>
-      injectTreetableLabels(),
-    );
+    const german = runInSubtree([provideLocaleAt('de')], () => injectTreetableLabels());
     expect(strip(root().rowsSelected(1200))).toBe('1,200 rows selected');
     expect(strip(german().rowsSelected(1200))).toBe('1.200 rows selected');
   });
@@ -289,7 +285,8 @@ describe('CngxTreetable header and cell copy', () => {
         provideTreetable(
           withTreetableLabels({
             columnLabels: { name: 'Title' },
-            unlabeledColumn: (position, key) => `${key[0].toUpperCase()}${key.slice(1)} (${position})`,
+            unlabeledColumn: (position, key) =>
+              `${key[0].toUpperCase()}${key.slice(1)} (${position})`,
           }),
         ),
       ],
@@ -338,7 +335,9 @@ describe('CngxTreetable header and cell copy', () => {
     selector: 'cngx-header-template-holder',
     template: `
       <ng-template #app let-key let-column="column" let-label="label">
-        <span class="app-header" [attr.data-key]="key" [attr.data-column]="column">{{ label }}</span>
+        <span class="app-header" [attr.data-key]="key" [attr.data-column]="column">{{
+          label
+        }}</span>
       </ng-template>
       <ng-template #scoped let-key let-label="label">
         <span class="scoped-header" [attr.data-key]="key">{{ label }}</span>
@@ -668,30 +667,5 @@ describe('CngxTreetable header and cell copy', () => {
       .map((cell) => (cell.nativeElement as HTMLElement).textContent?.trim() ?? '')
       .at(-2);
     expect(number).toBe('1,235');
-  });
-
-  it('renders an invalid date cell empty and leaves other values unchanged', () => {
-    const en = cellFormattersFor('en');
-    expect(formatCellValue(new Date(Number.NaN), en)).toBe('');
-    expect(formatCellValue('text', en)).toBe('text');
-    expect(formatCellValue(true, en)).toBe(true);
-    expect(formatCellValue(null, en)).toBeNull();
-  });
-
-  it('reuses the cached formatters for the same locale and date format', () => {
-    const first = cellFormattersFor('de', { dateStyle: 'medium' });
-    const second = cellFormattersFor('de', { dateStyle: 'medium' });
-    expect(second.number).toBe(first.number);
-    expect(second.date).toBe(first.date);
-    expect(cellFormattersFor('en').date).not.toBe(cellFormattersFor('de').date);
-  });
-
-  it('reuses the cached number formatter for the same locale and number format', () => {
-    const first = cellFormattersFor('de', undefined, { minimumFractionDigits: 2 });
-    const second = cellFormattersFor('de', undefined, { minimumFractionDigits: 2 });
-    expect(second.number).toBe(first.number);
-    expect(second.number.format(1.5)).toBe('1,50');
-    expect(cellFormattersFor('de').number).not.toBe(first.number);
-    expect(cellFormattersFor('de').number).toBe(cellFormattersFor('de').number);
   });
 });
