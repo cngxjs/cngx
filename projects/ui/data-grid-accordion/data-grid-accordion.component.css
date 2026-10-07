@@ -37,6 +37,27 @@
      byte-identical to before. */
   max-block-size: var(--cngx-dga-max-block-size, none);
 
+  /* Keep keyboard focus clear of the pinned head and foot bands (WCAG 2.4.11 Focus Not
+     Obscured). Native focus scroll-into-view honours `scroll-padding`, so a focused row
+     or sort header lands below the head band and above the foot band instead of under
+     them. The band sizes are MEASURED by the host (`--cngx-dga-head-block-size` /
+     `--cngx-dga-foot-block-size`, bound from a resize observer on the projected head /
+     foot), so every skin, density, text scale and multi-line head is covered; the
+     `-scroll-pad` tokens are optional overrides. The clearance adds the focus ring's
+     width + outward offset, which paints outside the element rect. Unconditional on
+     purpose: a style query resolves against an ancestor container, and the max-block-size
+     token is this host's own inline style, so a rule inside the bounded `@container`
+     block below would never reach the host. `scroll-padding` only affects scrolling of
+     this scrollport, so it is inert on an unbounded host with no block overflow. */
+  scroll-padding-block: calc(
+      var(--cngx-dga-head-scroll-pad, var(--cngx-dga-head-block-size, 0px)) +
+        var(--cngx-dga-focus-clearance, 4px)
+    )
+    calc(
+      var(--cngx-dga-foot-scroll-pad, var(--cngx-dga-foot-block-size, 0px)) +
+        var(--cngx-dga-focus-clearance, 4px)
+    );
+
   /* A thin, neutral scrollbar by default. The rail spans the scrollport (beside the
      pinned head / foot in bounded mode, and along the base horizontal scroll), so keep
      it fine and quiet instead of the heavy platform default. Standard properties, so

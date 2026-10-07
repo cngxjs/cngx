@@ -9,7 +9,9 @@
  * Registration matters because the column template, gaps, and paddings are set
  * on the group host and read by descendant summaries. `@property` with
  * `inherits: true` keeps that host -> descendant cascade alive; `inherits: false`
- * would silently pin descendants to the initial value. Every token here inherits.
+ * would silently pin descendants to the initial value. Every token here inherits,
+ * except the two measured band sizes (`--cngx-dga-head-block-size` /
+ * `--cngx-dga-foot-block-size`), which only the host itself reads.
  *
  * Density: the pixel `initial-value` of each spacing token is only the un-set
  * fallback. The organism's default rule and each skin SET `--cngx-dga-row-py` /
@@ -213,6 +215,65 @@
    * @group Surface
    */
   @property --cngx-dga-foot-bg {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Optional override for the block-start scroll padding that keeps keyboard focus
+   * below the pinned column head (WCAG 2.4.11). Unset, the host uses the measured
+   * `--cngx-dga-head-block-size`. Universal syntax with NO initial-value, so an unset
+   * override falls through to the measured value; a registered initial would never be
+   * "unset", so the use-site fallback would never fire.
+   * @group Grid
+   */
+  @property --cngx-dga-head-scroll-pad {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Optional override for the block-end scroll padding that keeps keyboard focus above
+   * the pinned footer (WCAG 2.4.11). Unset, the host uses the measured
+   * `--cngx-dga-foot-block-size`. No initial-value, for the same reason as the head pad.
+   * @group Grid
+   */
+  @property --cngx-dga-foot-scroll-pad {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Measured border-box block size of the projected column head, bound by the host from
+   * a resize observer. Host-only: `inherits: false`, so a nested headerless grid never
+   * picks up an outer grid's band and a head resize never restyles the subtree. Only the
+   * host's own `scroll-padding-block` reads it, never a descendant. No initial-value, so
+   * an unmeasured head falls back to `0px` at the use site.
+   * @group Grid
+   */
+  @property --cngx-dga-head-block-size {
+    syntax: '*';
+    inherits: false;
+  }
+
+  /**
+   * Measured border-box block size of the projected footer, the foot counterpart of
+   * `--cngx-dga-head-block-size` (host-only, no initial-value).
+   * @group Grid
+   */
+  @property --cngx-dga-foot-block-size {
+    syntax: '*';
+    inherits: false;
+  }
+
+  /**
+   * Extra room the scroll padding adds beyond the pinned bands so the focus ring, which
+   * paints outside the focused element, is never clipped by a band. The use-site default
+   * `4px` is the worst case: the 2px ring of `--cngx-dga-focus-ring` plus the 2px outward
+   * offset of the sort header. A consumer widening the ring raises this too.
+   * @group Grid
+   */
+  @property --cngx-dga-focus-clearance {
     syntax: '*';
     inherits: true;
   }

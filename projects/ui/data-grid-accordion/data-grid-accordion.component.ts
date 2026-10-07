@@ -1,3 +1,4 @@
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,13 +6,19 @@ import {
   contentChild,
   contentChildren,
   effect,
+  ElementRef,
   inject,
   input,
   model,
+  PLATFORM_ID,
+  type Signal,
+  signal,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 
 import { coerceNumberProperty } from '@cngx/core/utils';
+import { observeResize, type ResizeObserverHost } from '@cngx/common/layout';
 import { CngxAccordion } from '@cngx/common/interactive';
 import { CngxFilter, CngxSort } from '@cngx/common/data';
 
@@ -21,6 +28,7 @@ import {
 } from './data-grid-accordion.token';
 import type { CngxDataGridSkin } from './config/data-grid-accordion.config';
 import { injectDataGridAccordionConfig } from './config/inject-data-grid-accordion-config';
+import { CngxDataGridFooter } from './data-grid-footer.component';
 import { CngxDataGridHeader } from './data-grid-header.component';
 import { CngxDataGridRow } from './data-grid-row.component';
 import type { CngxDgCellTrack } from './data-grid-cell.directive';
@@ -154,6 +162,8 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
     '[attr.data-skin]': 'resolvedSkin() ?? null',
     '[style.--cngx-dga-columns]': 'resolvedColumns()',
     '[style.--cngx-dga-max-block-size]': 'maxBlockSizeVar()',
+    '[style.--cngx-dga-head-block-size]': 'headBlockSizeVar()',
+    '[style.--cngx-dga-foot-block-size]': 'footBlockSizeVar()',
   },
 })
 export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
@@ -257,6 +267,10 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
   // The header is the single column source; the first row provides the primary
   // index (for the grow default) and doubles as the source when no header exists.
   private readonly header = contentChild(CngxDataGridHeader);
+  // Element reads of the projected head / foot, measured so the host's
+  // `scroll-padding-block` keeps focus clear of the pinned bands (WCAG 2.4.11).
+  private readonly headerEl = contentChild(CngxDataGridHeader, { read: ElementRef });
+  private readonly footerEl = contentChild(CngxDataGridFooter, { read: ElementRef });
   private readonly rows = contentChildren(CngxDataGridRow);
   private readonly firstRow = computed(() => this.rows().at(0));
 
@@ -295,6 +309,26 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
     () => this.columns() ?? this.derivedColumns() ?? '1fr',
   );
 
+  /** Window surface for the band observers; `null` off the browser (SSR). */
+  private readonly resizeHost: ResizeObserverHost | null = isPlatformBrowser(inject(PLATFORM_ID))
+    ? inject(DOCUMENT).defaultView
+    : null;
+
+  /**
+   * Measured border-box block size of the projected head / foot band in px, `null`
+   * when the band is absent or not observed yet. Written only by the observer callback.
+   */
+  private readonly headBlockSize = this.measureBlockSize(this.headerEl);
+  private readonly footBlockSize = this.measureBlockSize(this.footerEl);
+
+  /**
+   * The measured head / foot sizes as CSS lengths for `--cngx-dga-head-block-size` /
+   * `--cngx-dga-foot-block-size`. `null` removes the inline property, so the CSS falls
+   * back to `0px` plus the focus clearance. Primitive, so `Object.is` dedupes.
+   */
+  protected readonly headBlockSizeVar = computed(() => toPx(this.headBlockSize()));
+  protected readonly footBlockSizeVar = computed(() => toPx(this.footBlockSize()));
+
   constructor() {
     // A row projecting more cells than the shared template has tracks pushes
     // the extras into implicit grid tracks - the subgrid misaligns silently.
@@ -318,6 +352,42 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
       });
     }
   }
+
+  /**
+   * Observe the block size of a late-resolving content child. The effect only
+   * subscribes: it tracks the `contentChild` read, wires `observeResize` inside
+   * `untracked`, and tears it down via `onCleanup` when the child changes (an `@if`
+   * toggling the head). The size write happens in the observer callback, never in
+   * the effect body. `createResizeSignal` needs a static element, so the low-level
+   * `observeResize` is the documented route for a reactive target.
+   */
+  private measureBlockSize(
+    target: Signal<ElementRef<HTMLElement> | undefined>,
+  ): Signal<number | null> {
+    const size = signal<number | null>(null);
+    effect((onCleanup) => {
+      const element = target()?.nativeElement;
+      if (!element) {
+        return;
+      }
+      const teardown = untracked(() =>
+        observeResize(this.resizeHost, element, 'border-box', (entry) => {
+          size.set(entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height);
+        }),
+      );
+      // A removed band reports no size, so the padding falls back to the clearance.
+      onCleanup(() => {
+        teardown();
+        size.set(null);
+      });
+    });
+    return size.asReadonly();
+  }
+}
+
+/** A measured px size as a CSS length, `null` when unmeasured. */
+function toPx(size: number | null): string | null {
+  return size == null ? null : `${size}px`;
 }
 
 /**
