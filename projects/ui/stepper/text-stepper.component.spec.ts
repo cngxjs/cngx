@@ -14,7 +14,6 @@ import {
 import { CngxTextStepper } from './text-stepper.component';
 import { stripBidiIsolates } from '@cngx/testing';
 
-
 @Component({
   standalone: true,
   imports: [CngxTextStepper, CngxStep],
@@ -77,7 +76,22 @@ describe('CngxTextStepper', () => {
     const fixture = TestBed.createComponent(HostWithLabel);
     fixture.detectChanges();
     const text = fixture.nativeElement.querySelector('.cngx-text-stepper__text') as HTMLElement;
-    expect(text.textContent?.trim()).toBe('Step 2 of 3: Payment');
+    expect(stripBidiIsolates(text.textContent?.trim())).toBe('Step 2 of 3: Payment');
+  });
+
+  it('[showCurrentLabel] joins count and label through stepWithDetail', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperI18n(
+          withStepperI18nLabels({ stepWithDetail: (step, detail) => `${step} - ${detail}` }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(HostWithLabel);
+    fixture.detectChanges();
+    const text = fixture.nativeElement.querySelector('.cngx-text-stepper__text') as HTMLElement;
+    expect(stripBidiIsolates(text.textContent?.trim())).toBe('Step 2 of 3 - Payment');
   });
 
   it('respects withStepperI18nLabels({ textStepperFormat })', () => {
@@ -290,15 +304,14 @@ describe('CngxTextStepper consumer-translated step label', () => {
     const fixture = TestBed.createComponent(LabelSwitchHost);
     fixture.detectChanges();
     const text = fixture.nativeElement.querySelector('.cngx-text-stepper__text') as HTMLElement;
-    expect(text.textContent?.trim()).toBe('Step 1 of 2: Customer');
+    expect(stripBidiIsolates(text.textContent?.trim())).toBe('Step 1 of 2: Customer');
 
     fixture.componentInstance.lang.set('de');
     fixture.detectChanges();
-    expect(text.textContent?.trim()).toBe('Step 1 of 2: Customer');
+    expect(stripBidiIsolates(text.textContent?.trim())).toBe('Step 1 of 2: Customer');
 
     fixture.componentInstance.active.set(1);
     fixture.detectChanges();
-    expect(text.textContent?.trim()).toBe('Step 2 of 2: Zahlung');
+    expect(stripBidiIsolates(text.textContent?.trim())).toBe('Step 2 of 2: Zahlung');
   });
 });
-

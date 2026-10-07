@@ -65,6 +65,7 @@ import {
   injectStepperI18n,
   type CngxStepNode,
   type CngxStepPanelHost,
+  type CngxStepperI18n,
 } from '@cngx/common/stepper';
 import {
   CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
@@ -347,9 +348,8 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /** Mobile-dot `aria-label`, appending the errored status when the dot has an error. */
   protected mobileDotAriaLabel(node: CngxStepNode, index: number): string {
-    const i18n = this.i18n();
-    const base = i18n.selectedStep(node.label(), index + 1, this.stepsOnly().length);
-    return this.stateView.hasError(node) ? `${base}: ${i18n.statusLabels.errored}` : base;
+    const base = this.i18n().selectedStep(node.label(), index + 1, this.stepsOnly().length);
+    return this.stateView.hasError(node) ? withErroredStatus(base, this.i18n()) : base;
   }
   protected readonly groupRoleDescription = computed<string>(
     () => this.fallbackLabels()?.groupRoleDescription ?? this.i18n().groupRoleDescription,
@@ -585,4 +585,9 @@ export class CngxStepper implements CngxStepPanelHost {
   contentTemplateFor(id: string): TemplateRef<CngxStepContentContext> | null {
     return this.stepDirectiveById().get(id)?.contentTemplate()?.templateRef ?? null;
   }
+}
+
+/** @internal `"<base>: Errored"`, joined through the `stepWithDetail` message. */
+function withErroredStatus(base: string, i18n: CngxStepperI18n): string {
+  return i18n.stepWithDetail(base, i18n.statusLabels.errored);
 }

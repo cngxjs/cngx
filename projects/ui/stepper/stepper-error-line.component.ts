@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, input } from '@angular/core';
 
 import { CNGX_STEPPER_GLYPHS } from '@cngx/common/stepper';
 

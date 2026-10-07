@@ -20,7 +20,6 @@ import {
 import { CngxDotStepper } from './dot-stepper.component';
 import { stripBidiIsolates } from '@cngx/testing';
 
-
 @Component({
   standalone: true,
   imports: [CngxDotStepper, CngxStep],
@@ -169,6 +168,36 @@ describe('CngxDotStepper', () => {
     expect(stripBidiIsolates(dots[3].getAttribute('aria-label'))).toBe('Step 4 of 4: Four');
   });
 
+  it('joins an errored dot label through stepWithDetail', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxDotStepper, CngxStep],
+      template: `
+        <cngx-dot-stepper aria-label="Errored">
+          <div cngxStep label="One"></div>
+          <div cngxStep label="Two" [error]="true"></div>
+        </cngx-dot-stepper>
+      `,
+    })
+    class ErroredHost {}
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperI18n(
+          withStepperI18nLabels({ stepWithDetail: (step, detail) => `${step} - ${detail}` }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(ErroredHost);
+    fixture.detectChanges();
+    const dots = Array.from(
+      fixture.nativeElement.querySelectorAll('.cngx-dot-stepper__dot'),
+    ) as HTMLElement[];
+    expect(stripBidiIsolates(dots[1].getAttribute('aria-label'))).toBe(
+      'Step 2 of 2: Two - Errored',
+    );
+  });
+
   it('renders the per-instance *cngxDotStepperDot slot inside every dot when provided', () => {
     @Component({
       standalone: true,
@@ -216,7 +245,8 @@ describe('CngxDotStepper', () => {
     })
     class ConfigHost {
       active = signal(0);
-      readonly fallbackTpl = viewChild.required<TemplateRef<CngxDotStepperDotContext>>('fallbackTpl');
+      readonly fallbackTpl =
+        viewChild.required<TemplateRef<CngxDotStepperDotContext>>('fallbackTpl');
     }
 
     TestBed.configureTestingModule({

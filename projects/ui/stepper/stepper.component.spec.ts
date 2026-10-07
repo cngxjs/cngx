@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
 import { createResizeObserverMock, stripBidiIsolates } from '@cngx/testing';
 
 import {
@@ -27,7 +28,6 @@ import {
 } from '@cngx/common/stepper';
 
 import { CngxStepper } from './stepper.component';
-
 
 @Component({
   standalone: true,
@@ -1927,6 +1927,77 @@ describe('CngxStepper language switch', () => {
   });
 });
 
+describe('CngxStepper glyph status text', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxStepper, CngxStep],
+    template: `
+      <cngx-stepper aria-label="Wizard">
+        <div cngxStep label="Account" [completed]="true"></div>
+        <div cngxStep label="Payment" [error]="true"></div>
+        <div cngxStep label="Review"></div>
+      </cngx-stepper>
+    `,
+  })
+  class StatusHost {}
+
+  const headerTexts = (providers: unknown[] = []): string[] => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), ...(providers as never[])],
+    });
+    const fixture = TestBed.createComponent(StatusHost);
+    fixture.detectChanges();
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll('button.cngx-stepper__step'),
+    ) as HTMLButtonElement[];
+    return buttons.map((button) =>
+      stripBidiIsolates(
+        button.querySelector(':scope > .cngx-sr-only[id$="-desc"]')?.textContent?.trim() ?? '',
+      ),
+    );
+  };
+
+  it('speaks the done and errored status the skins draw as a glyph', () => {
+    expect(headerTexts()).toEqual([
+      'Step 1 of 3: Account: Done',
+      'Step 2 of 3: Payment: Errored',
+      'Step 3 of 3: Review',
+    ]);
+  });
+
+  it('joins the status through the stepWithDetail message of the language pack', () => {
+    const texts = headerTexts([
+      provideCngxI18n(
+        withPartialPack({
+          locale: 'de',
+          stepper: { stepWithDetail: '{step} ({detail})' },
+        }),
+        withDocumentLanguage('off'),
+      ),
+    ]);
+    expect(texts[1]).toBe('Step 2 of 3: Payment (Errored)');
+  });
+
+  it('joins the errored mobile-dot label through stepWithDetail', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperI18n(
+          withStepperI18nLabels({ stepWithDetail: (step, detail) => `${step} - ${detail}` }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(StatusHost);
+    fixture.detectChanges();
+    const stepper = fixture.debugElement.query(By.directive(CngxStepper))
+      .componentInstance as CngxStepper;
+    const steps = stepper['stepsOnly']();
+    expect(stripBidiIsolates(stepper['mobileDotAriaLabel'](steps[1], 1))).toBe(
+      'Step 2 of 3: Payment - Errored',
+    );
+  });
+});
+
 describe('CngxStepper config copy switch', () => {
   @Component({
     standalone: true,
@@ -1947,7 +2018,9 @@ describe('CngxStepper config copy switch', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideStepperConfig(
-          withStepperAriaLabels(computed(() => (lang() === 'de' ? { stepperRegion: 'Schrittfolge' } : {}))),
+          withStepperAriaLabels(
+            computed(() => (lang() === 'de' ? { stepperRegion: 'Schrittfolge' } : {})),
+          ),
           withStepperFallbackLabels(
             computed(() =>
               lang() === 'de'
@@ -1973,4 +2046,3 @@ describe('CngxStepper config copy switch', () => {
     expect(group.getAttribute('aria-roledescription')).toBe('Schrittgruppe');
   });
 });
-

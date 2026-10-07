@@ -1357,7 +1357,7 @@
        1.4.1). Inherits the white tile text colour. */
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error'])
       .cngx-stepper__label::before {
-      content: var(--cngx-step-chevron-error-glyph, '!');
+      content: var(--cngx-step-chevron-error-glyph, '!') / '';
       margin-inline-end: 0.4rem;
       font-weight: 700;
     }
@@ -1646,7 +1646,7 @@
         .cngx-stepper__indicator[data-state='success']
       )
       .cngx-stepper__label::before {
-      content: '\2713';
+      content: '\2713' / '';
       margin-inline-end: 0.3rem;
       font-weight: 600;
     }
@@ -1668,7 +1668,7 @@
 
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error'])
       .cngx-stepper__label::before {
-      content: var(--cngx-step-chips-error-glyph, '!');
+      content: var(--cngx-step-chips-error-glyph, '!') / '';
       margin-inline-end: 0.3rem;
       font-weight: 700;
     }
@@ -1734,12 +1734,20 @@
     }
 
     /* Chevron separator after every item except the last. Sits in the
-       inter-item gap, decorative and muted. */
+       inter-item gap, decorative and muted, and out of the step's
+       accessible name. */
     .cngx-stepper__step:not(:last-child)::after {
-      content: var(--cngx-step-breadcrumb-separator, '\203A');
+      content: var(--cngx-step-breadcrumb-separator, '\203A') / '';
       margin-inline-start: var(--cngx-step-breadcrumb-gap, 0.5rem);
       color: color-mix(in srgb, currentColor 30%, transparent);
       font-weight: 400;
+    }
+
+    /* The chevron points in reading direction, so RTL swaps it for its
+       mirror. A custom separator sets its RTL form through
+       --cngx-step-breadcrumb-separator-rtl. */
+    .cngx-stepper__step:not(:last-child):where(:dir(rtl))::after {
+      content: var(--cngx-step-breadcrumb-separator-rtl, '\2039') / '';
     }
 
     /* Completed items: full-strength label + a green check suffix, and
@@ -1759,7 +1767,7 @@
         .cngx-stepper__indicator[data-state='success']
       )
       .cngx-stepper__label::after {
-      content: '\2713';
+      content: '\2713' / '';
       margin-inline-start: 0.3rem;
       color: var(
         --cngx-step-breadcrumb-check-color,
@@ -1803,7 +1811,7 @@
 
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error'])
       .cngx-stepper__label::after {
-      content: var(--cngx-step-breadcrumb-error-glyph, '!');
+      content: var(--cngx-step-breadcrumb-error-glyph, '!') / '';
       margin-inline-start: 0.3rem;
       font-weight: 700;
       color: var(
@@ -1993,7 +2001,7 @@
    over the red fill so error never relies on colour alone. Mirrors the
    standalone `<cngx-dot-stepper>` treatment. */
 .cngx-stepper__mobile-dot--error::after {
-  content: var(--cngx-dot-step-error-glyph, '!');
+  content: var(--cngx-dot-step-error-glyph, '!') / '';
   position: absolute;
   inset: 0;
   display: grid;
@@ -2298,7 +2306,8 @@
      its own author colours through. path-chevron and stripe-status-rich draw
      their own segments and stay untouched. :where() keeps the guards at zero
      specificity, so the current-step Highlight and the error ring below win. */
-  :where(.cngx-stepper:not([data-skin='path-chevron'], [data-skin='stripe-status-rich'])) .cngx-stepper__indicator {
+  :where(.cngx-stepper:not([data-skin='path-chevron'], [data-skin='stripe-status-rich']))
+    .cngx-stepper__indicator {
     outline: 1px solid CanvasText;
     outline-offset: -1px;
   }

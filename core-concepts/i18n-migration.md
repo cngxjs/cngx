@@ -282,6 +282,12 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The visible collapsed-group badge formats its numbers with the app locale (`1.200` in German) and its order comes from `groupSummaryProgressShort`.
 - `cngx-stepper-count` no longer forces `direction: ltr`; the caption reads in the page direction. A `format` that renders a bare ratio such as `2/9` keeps its order under RTL with `--cngx-stepper-count-direction: ltr`.
 
+### @cngx/ui/stepper
+
+- The errored mobile-dot and `cngx-dot-stepper` labels and the `[showCurrentLabel]` caption of `cngx-text-stepper` join their parts through the `stepWithDetail` message (English `'{step}: {detail}'`) instead of a hardcoded `': '`; the parts are bidi-isolated, so an exact comparison strips U+2068 / U+2069 first.
+- The status glyphs of the `path-chevron`, `chips` and `breadcrumb` skins (`✓`, `!`), the breadcrumb separator and the mobile and dot error glyphs carry CSS alt text (`/ ''`) and no longer reach the step's accessible name. The step header's screen-reader status text names the status instead: `Step 1 of 3: Account: Done`, `Step 2 of 3: Payment: Errored`, joined through `stepWithDetail` with the `statusLabels` words.
+- The `breadcrumb` separator mirrors under RTL: `‹` by default, or `--cngx-step-breadcrumb-separator-rtl` next to a custom `--cngx-step-breadcrumb-separator`.
+
 ### @cngx/ui/feedback
 
 - The feedback copy comes from the `feedback` section of the language pack; `provideFeedbackI18n` and `withFeedbackI18nLabels` still win key by key, also on top of a pack. English output is unchanged apart from the points below.
