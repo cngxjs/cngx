@@ -63,9 +63,12 @@ describe('command palette config cascade', () => {
     expect(config.resultCount(3)).toBe('3 Treffer');
   });
 
-  it('is available on the token with the default factory', () => {
+  it('is available on the token with the default factory, carrying no copy', () => {
     TestBed.configureTestingModule({});
-    expect(TestBed.inject(CNGX_COMMAND_PALETTE_CONFIG).listboxLabel).toBe('Commands');
+    const config = TestBed.inject(CNGX_COMMAND_PALETTE_CONFIG);
+    expect(config.openShortcut).toBe('mod+k');
+    expect(config.listboxLabel).toBeUndefined();
+    expect(resolve().listboxLabel).toBe('Commands');
   });
 
   it('follows a Signal of label overrides and keeps unset labels inherited', () => {

@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
-import { injectResolvedFeedbackI18n } from '../config/feedback-i18n';
+import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { CngxSeverityIcon } from '../config/severity-icon';
 import { CngxToaster, type ToastState } from './toast.service';
 
@@ -141,7 +141,7 @@ export class CngxToastOutlet {
   protected readonly service = inject(CngxToaster);
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
 
-  private readonly i18n = injectResolvedFeedbackI18n();
+  private readonly i18n = injectFeedbackI18n();
 
   /**
    * @internal - repeat-marker formatter for toasts, which are live regions. The toast

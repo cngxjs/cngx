@@ -17,7 +17,6 @@ import {
 import { CngxProgressBarStepper } from './progress-bar-stepper.component';
 import { stripBidiIsolates } from '@cngx/testing';
 
-
 @Component({
   standalone: true,
   imports: [CngxProgressBarStepper, CngxStep],
@@ -131,9 +130,7 @@ describe('CngxProgressBarStepper', () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const fixture = TestBed.createComponent(NoCaptionHost);
     fixture.detectChanges();
-    expect(
-      fixture.nativeElement.querySelector('.cngx-progress-bar-stepper__caption'),
-    ).toBeNull();
+    expect(fixture.nativeElement.querySelector('.cngx-progress-bar-stepper__caption')).toBeNull();
   });
 
   describe('accname + roledescription cascade (parity with <cngx-stepper>)', () => {
@@ -217,9 +214,7 @@ describe('CngxProgressBarStepper', () => {
       const fixture = TestBed.createComponent(EmptyHost);
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('cngx-progress')).toBeNull();
-      expect(
-        fixture.nativeElement.querySelector('.cngx-progress-bar-stepper__caption'),
-      ).toBeNull();
+      expect(fixture.nativeElement.querySelector('.cngx-progress-bar-stepper__caption')).toBeNull();
     });
 
     it('renders the projected *cngxStepperEmpty template when there are no steps', () => {

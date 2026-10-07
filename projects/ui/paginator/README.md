@@ -99,9 +99,11 @@ gates navigation, renders an indeterminate `cngx-progress` bar, flips
 
 ## Configuration
 
-All accessible-name strings, announcement phrasing, the range format, and the
-default page-size choices cascade through `CNGX_PAGINATOR_CONFIG` (English
-defaults). Override at the app root with `provideCngxPaginatorConfig(...)`, or
+All accessible-name strings, announcement phrasing, the readout formats, and the
+default page-size choices cascade through `CNGX_PAGINATOR_CONFIG`. The copy
+defaults are the `paginator` section of the language pack (English without one),
+with numbers formatted for the locale; translate them with the language file.
+Override single keys at the app root with `provideCngxPaginatorConfig(...)`, or
 per region with `provideCngxPaginatorConfigAt(...)` in `viewProviders`.
 
 ```ts

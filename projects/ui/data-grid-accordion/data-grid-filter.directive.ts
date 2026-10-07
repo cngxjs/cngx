@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { computed, DestroyRef, Directive, effect, ElementRef, inject, input } from '@angular/core';
 
-import { injectDataGridAccordionLabels } from './config/data-grid-accordion.config.defaults';
+import { injectDataGridAccordionLabels } from './i18n/data-grid-accordion-i18n';
 import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
 
 /**
@@ -15,8 +15,8 @@ import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
  *
  * The debounce lives in this slot, not in the group, because it is an input-UX concern;
  * a consumer driving the term programmatically writes `grid.filterTerm` directly with no
- * debounce. The default `aria-label` is English (a consumer overrides via
- * `cngxDgaFilterLabel`).
+ * debounce. The default `aria-label` is the `filterRows` label of the language pack (a
+ * consumer overrides via `cngxDgaFilterLabel`).
  *
  * ```html
  * <cngx-data-grid-accordion>

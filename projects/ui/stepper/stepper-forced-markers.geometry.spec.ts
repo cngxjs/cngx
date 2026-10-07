@@ -42,7 +42,9 @@ const SCHEMES = ['light', 'dark'] as const;
       <div cngxStep label="Two"></div>
     </cngx-stepper>
     <cngx-stepper class="slot" [activeStepIndex]="1" aria-label="Slot">
-      <ng-template cngxStepIndicator let-position><span style="color: rgb(0, 160, 0)">{{ position }}</span></ng-template>
+      <ng-template cngxStepIndicator let-position
+        ><span style="color: rgb(0, 160, 0)">{{ position }}</span></ng-template
+      >
       <div cngxStep label="One" [completed]="true"></div>
       <div cngxStep label="Two"></div>
     </cngx-stepper>
@@ -63,7 +65,9 @@ async function mount(): Promise<HTMLElement> {
   fixture.detectChanges();
   await fixture.whenStable();
   fixture.detectChanges();
-  for (const indicator of Array.from(mountedRoot.querySelectorAll<HTMLElement>('.cngx-stepper__indicator'))) {
+  for (const indicator of Array.from(
+    mountedRoot.querySelectorAll<HTMLElement>('.cngx-stepper__indicator'),
+  )) {
     indicator.style.transition = 'none';
   }
   return mountedRoot;
@@ -92,7 +96,8 @@ afterEach(async () => {
 });
 
 describe.each(SCHEMES)('stepper markers under forced colors, %s', (scheme) => {
-  const probe = (root: HTMLElement, name: string): string => computedValue(one(root, `.probe-${name}`), 'color');
+  const probe = (root: HTMLElement, name: string): string =>
+    computedValue(one(root, `.probe-${name}`), 'color');
 
   async function mountForced(): Promise<HTMLElement> {
     await cdp().send('Emulation.setEmulatedMedia', {
@@ -111,7 +116,11 @@ describe.each(SCHEMES)('stepper markers under forced colors, %s', (scheme) => {
 
   it('renders the fixture states', async () => {
     const root = await mountForced();
-    expect(indicators(root, 'wiz').map((el) => el.dataset['state'])).toEqual(['success', expect.any(String), expect.any(String)]);
+    expect(indicators(root, 'wiz').map((el) => el.dataset['state'])).toEqual([
+      'success',
+      expect.any(String),
+      expect.any(String),
+    ]);
     expect(steps(root, 'wiz')[1].getAttribute('aria-current')).toBe('step');
     expect(steps(root, 'lin')[0].getAttribute('aria-current')).toBe('step');
     expect(indicators(root, 'lin')[0].dataset['state']).toBe('success');
@@ -155,7 +164,9 @@ describe.each(SCHEMES)('stepper markers under forced colors, %s', (scheme) => {
   it('draws the wizard rails in CanvasText', async () => {
     const root = await mountForced();
     for (const step of steps(root, 'wiz').slice(1)) {
-      expect(getComputedStyle(step, '::before').getPropertyValue('background-color')).toBe(probe(root, 'canvastext'));
+      expect(getComputedStyle(step, '::before').getPropertyValue('background-color')).toBe(
+        probe(root, 'canvastext'),
+      );
     }
   });
 
@@ -175,6 +186,8 @@ describe('stepper markers without forced colors', () => {
     const [done, , upcoming] = indicators(root, 'wiz');
     expect(computedValue(upcoming, 'outline-style')).toBe('none');
     expect(computedValue(done, 'forced-color-adjust')).toBe('auto');
-    expect(computedValue(done, 'background-color')).not.toBe(computedValue(one(root, '.probe-canvastext'), 'color'));
+    expect(computedValue(done, 'background-color')).not.toBe(
+      computedValue(one(root, '.probe-canvastext'), 'color'),
+    );
   });
 });

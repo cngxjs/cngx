@@ -1,8 +1,12 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { CNGX_STATEFUL, type CngxStateful } from '@cngx/core/utils';
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
+import { stripBidiIsolates } from '@cngx/testing';
+
+import { provideFeedback, withErrorDetail } from '../config/feedback-config';
 
 import { CngxAlerter } from './alerter.service';
 import { CngxAlertOn } from './alert-on.directive';
@@ -141,5 +145,99 @@ describe('CngxAlertOn', () => {
     TestBed.flushEffects();
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/No state source/));
     spy.mockRestore();
+  });
+
+  describe('error detail', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    @Component({
+      selector: 'test-alert-detail',
+      template: `<div [cngxAlertOn]="state" alertError="Save failed" [alertErrorDetail]="true"></div>`,
+      imports: [CngxAlertOn],
+    })
+    class DetailHost {
+      readonly state = createManualState<string>();
+    }
+
+    const failWith = (error: unknown): string => {
+      const alerter = TestBed.inject(CngxAlerter);
+      const fixture = TestBed.createComponent(DetailHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.componentInstance.state.setError(error);
+      TestBed.flushEffects();
+      return alerter.alerts()[0].config.message;
+    };
+
+    it('appends the raw error text through errorWithDetail in development builds', () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      TestBed.configureTestingModule({ providers: [CngxAlerter] });
+      const message = failWith(new Error('Timeout'));
+      expect(message).toBe('\u2068Save failed\u2069: \u2068Timeout\u2069');
+    });
+
+    it('warns once per app that production builds show no raw detail', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      TestBed.configureTestingModule({ providers: [CngxAlerter] });
+      failWith(new Error('Timeout'));
+      failWith(new Error('Timeout again'));
+      const warnings = warn.mock.calls.filter(([text]) =>
+        String(text).includes('withErrorDetail'),
+      );
+      expect(warnings).toHaveLength(1);
+      expect(String(warnings[0][0])).toContain('Production builds show no detail');
+    });
+
+    it('does not warn when withErrorDetail maps the error', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      TestBed.configureTestingModule({
+        providers: [CngxAlerter, provideFeedback(withErrorDetail(() => 'Busy'))],
+      });
+      failWith(new Error('Timeout'));
+      expect(warn.mock.calls.some(([text]) => String(text).includes('withErrorDetail'))).toBe(
+        false,
+      );
+    });
+
+    it('does not warn when the error carries no text', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      TestBed.configureTestingModule({ providers: [CngxAlerter] });
+      expect(failWith({ status: 500 })).toBe('Save failed');
+      expect(warn.mock.calls.some(([text]) => String(text).includes('withErrorDetail'))).toBe(
+        false,
+      );
+    });
+
+    it('routes the detail through withErrorDetail', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          CngxAlerter,
+          provideFeedback(withErrorDetail((error) => (error === 503 ? 'Server busy' : undefined))),
+        ],
+      });
+      expect(stripBidiIsolates(failWith(503))).toBe('Save failed: Server busy');
+    });
+
+    it('shows the message alone when the mapping returns no detail', () => {
+      TestBed.configureTestingModule({
+        providers: [CngxAlerter, provideFeedback(withErrorDetail(() => undefined))],
+      });
+      expect(failWith(new Error('HTTP 500 Internal Server Error'))).toBe('Save failed');
+    });
+
+    it('joins message and detail with the active language pack', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          CngxAlerter,
+          provideCngxI18n(
+            withPartialPack({ locale: 'de', feedback: { errorWithDetail: '{message} ({detail})' } }),
+            withDocumentLanguage('off'),
+          ),
+        ],
+      });
+      expect(stripBidiIsolates(failWith('Zeitlimit'))).toBe('Save failed (Zeitlimit)');
+    });
   });
 });

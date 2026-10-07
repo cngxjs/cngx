@@ -212,7 +212,9 @@ describe.each(SCHEMES)('disabled stepper, %s', (scheme) => {
     expect(computedValue(at(root, '.step-off .cngx-stepper__indicator'), 'outline-style')).toBe(
       'solid',
     );
-    expect(computedValue(at(root, '.step-off .cngx-stepper__indicator'), 'outline-color')).toBe(gray);
+    expect(computedValue(at(root, '.step-off .cngx-stepper__indicator'), 'outline-color')).toBe(
+      gray,
+    );
     expect(computedValue(at(root, '.step-idle'), 'color')).toBe(canvasText);
   });
 

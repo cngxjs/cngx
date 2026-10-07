@@ -1,6 +1,8 @@
 import { afterNextRender, Directive, computed, inject, input, isDevMode } from '@angular/core';
 import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
 
+import { injectErrorDetail } from '../config/feedback-config';
+import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { createStateBridge } from '../internal/state-bridge';
 import { CngxAlerter } from './alerter.service';
 
@@ -42,6 +44,8 @@ import { CngxAlerter } from './alerter.service';
 export class CngxAlertOn {
   private readonly alerter = inject(CngxAlerter, { optional: true });
   private readonly statefulFallback = inject(CNGX_STATEFUL, { optional: true });
+  private readonly errorDetail = injectErrorDetail();
+  private readonly i18n = injectFeedbackI18n();
 
   /**
    * The async state to watch. Optional - when omitted, falls back to
@@ -67,7 +71,11 @@ export class CngxAlertOn {
   /** Alert message on error. If not set, no error alert fires. */
   readonly alertError = input<string | undefined>(undefined);
 
-  /** Include the error detail message in the alert body. */
+  /**
+   * Append the error detail to the alert message, as mapped by
+   * `withErrorDetail` (default: the raw error text in development builds,
+   * nothing in production).
+   */
   readonly alertErrorDetail = input<boolean>(false);
 
   /** Scope for the alert - matches against `CngxAlertStack`'s `[scope]` input. */
@@ -119,15 +127,9 @@ export class CngxAlertOn {
           if (msg) {
             const err = s.error();
             const detail =
-              this.alertErrorDetail() && err != null
-                ? err instanceof Error
-                  ? err.message
-                  : typeof err === 'string'
-                    ? err
-                    : undefined
-                : undefined;
+              this.alertErrorDetail() && err != null ? this.errorDetail(err) : undefined;
             alerter.show({
-              message: detail ? `${msg}: ${detail}` : msg,
+              message: detail ? this.i18n().errorWithDetail(msg, detail) : msg,
               severity: 'error',
               scope: this.alertScope(),
             });

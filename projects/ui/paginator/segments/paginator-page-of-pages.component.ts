@@ -8,6 +8,7 @@ import {
 
 import { CngxListbox, CngxListboxTrigger, CngxOption } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
 
 import { injectPaginatorAriaLabels, injectPaginatorFormats } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
@@ -61,7 +62,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
         #lb="cngxListbox"
       >
         @for (page of pages(); track page) {
-          <li cngxOption class="cngx-paginator__option" [value]="page">{{ page }}</li>
+          <li cngxOption class="cngx-paginator__option" [value]="page">{{ numbers().format(page) }}</li>
         }
       </ul>
     </div>
@@ -71,6 +72,9 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 export class CngxPaginatorPageOfPages {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
   protected readonly ariaLabels = injectPaginatorAriaLabels();
+  private readonly locale = injectLocale();
+  /** Visible page numbers and sizes, formatted for the locale (`1.000` in German). */
+  protected readonly numbers = computed(() => numberFormatterFor(this.locale(), {}));
   private readonly formats = injectPaginatorFormats();
   protected readonly glyphs = CNGX_PAGINATOR_GLYPHS;
 

@@ -49,7 +49,24 @@ consumer-composed language file uses: `provideFeedback(...)` replaces the whole
 `CNGX_FEEDBACK_CONFIG` value, so routing a translation through it would reset
 unrelated feedback defaults. Both accept a `Signal` of the overrides to switch
 the language at runtime; `CNGX_FEEDBACK_I18N` itself is a `Signal` of the
-resolved bundle.
+resolved bundle. To translate the whole family, put a `feedback` section in
+your language pack (`provideCngxI18n` from `@cngx/core/i18n`); the English
+section is `CNGX_FEEDBACK_LANGUAGE_EN`, and the two providers above override
+single keys on top of it.
+
+The state bridges append an error detail only through a mapping you own. With
+`[toastErrorDetail]="true"` (and the alert and banner equivalents), development
+builds show the raw `Error.message` and warn once in the console; production
+builds show the message alone until you set `withErrorDetail`:
+
+```ts
+provideFeedback(
+  withToasts(),
+  withErrorDetail((error) =>
+    error instanceof HttpErrorResponse ? translate(`http.${error.status}`) : undefined,
+  ),
+)
+```
 
 ## See also
 

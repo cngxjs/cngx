@@ -3,10 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import type { CngxDataGridAccordionLabels } from './data-grid-accordion.config';
-import {
-  CNGX_DATA_GRID_ACCORDION_CONFIG,
-  injectDataGridAccordionLabels,
-} from './data-grid-accordion.config.defaults';
+import { injectDataGridAccordionLabels } from '../i18n/data-grid-accordion-i18n';
+import { CNGX_DATA_GRID_ACCORDION_CONFIG } from './data-grid-accordion.config.defaults';
 import { withDataGridAccordionLabels, withDataGridSkin } from './features';
 import {
   provideDataGridAccordionConfig,

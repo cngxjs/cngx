@@ -14,7 +14,8 @@ import {
   type CngxPaginatorAnnouncer,
 } from './paginator-announcer';
 import {
-  CNGX_PAGINATOR_DEFAULTS,
+  injectPaginatorAriaLabels,
+  injectPaginatorFormats,
   provideCngxPaginatorConfig,
   withPaginatorAnnouncements,
   withPaginatorAriaLabels,
@@ -107,12 +108,13 @@ describe('paginator config: range format + pageOfPages keys', () => {
   test('EN defaults carry the new keys', () => {
     // The default emphasises the current range with `<b>` (rendered as
     // sanitised HTML by cngx-pgn-range; its textContent stays "1-10 of 95").
-    expect(CNGX_PAGINATOR_DEFAULTS.formats.range(1, 10, 95)).toBe('<b>1-10</b> of 95');
-    expect(CNGX_PAGINATOR_DEFAULTS.ariaLabels.pageOfPages).toBe('Select page');
+    TestBed.configureTestingModule({});
+    const formats = TestBed.runInInjectionContext(() => injectPaginatorFormats());
+    const ariaLabels = TestBed.runInInjectionContext(() => injectPaginatorAriaLabels());
+    expect(formats().range(1, 10, 95)).toBe('<b>1-10</b> of 95');
+    expect(ariaLabels().pageOfPages).toBe('Select page');
     // Distinct from the go-to-page label it used to borrow.
-    expect(CNGX_PAGINATOR_DEFAULTS.ariaLabels.pageOfPages).not.toBe(
-      CNGX_PAGINATOR_DEFAULTS.ariaLabels.goToPage,
-    );
+    expect(ariaLabels().pageOfPages).not.toBe(ariaLabels().goToPage);
   });
 
   test('the default range format reaches cngx-pgn-range', async () => {

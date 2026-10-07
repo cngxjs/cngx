@@ -67,8 +67,9 @@ export interface CngxDataGridAccordionConfig {
   readonly skin?: CngxDataGridSkin;
   /**
    * App-wide copy for the grid's count, sort, filter and row surfaces. Reactive
-   * from birth: pass a partial bundle or a `Signal` of one; unset keys keep the
-   * English default. Override via {@link withDataGridAccordionLabels}.
+   * from birth: pass a partial bundle or a `Signal` of one; unset keys read the
+   * `dataGridAccordion` section of the language pack. Override via
+   * {@link withDataGridAccordionLabels}.
    */
   readonly labels?:
     | Partial<CngxDataGridAccordionLabels>
@@ -76,10 +77,11 @@ export interface CngxDataGridAccordionConfig {
 }
 
 /**
- * User-facing copy of the data-grid-accordion family. Library defaults are
- * English. Keys read as input defaults (`countSingular`, `sort*`, `filter*`,
- * `rowLoadFailed`) are read once when each part is created; `count` and `note`
- * follow a live bundle.
+ * User-facing copy of the data-grid-accordion family. The defaults come from
+ * the `dataGridAccordion` section of the language pack (English without one).
+ * Every key follows a live bundle and a language switch; live regions (the
+ * count, a row's load error) read it untracked and speak the new language with
+ * their next change.
  *
  * @category ui/data-grid-accordion
  * @since 0.1.0
@@ -91,6 +93,8 @@ export interface CngxDataGridAccordionLabels {
   readonly countSingular: string;
   /** Default of `[cngxDgaCountPlural]`. */
   readonly countPlural: string;
+  /** Text of the `CngxDgaCount` live region when a noun is bound: the count and the noun. */
+  readonly countWithNoun: (count: number, noun: string) => string;
   /** Default of `[cngxDgaSortStatusNotSorted]`, the described sort status while unsorted. */
   readonly sortNone: string;
   /** Default of `[cngxDgaSortStatusAscending]`. */
@@ -103,6 +107,8 @@ export interface CngxDataGridAccordionLabels {
   readonly sortAnnouncedDescending: string;
   /** Default of `[cngxDgaSortAnnounceCleared]`; `{label}` is replaced by the column name. */
   readonly sortAnnouncedCleared: string;
+  /** Column name of a sort announcement when the header has no `[cngxDgaSortLabel]` and no text. */
+  readonly unlabeledColumn: string;
   /** Default of the `CngxDgaFilterField` visible `[label]`. */
   readonly filter: string;
   /** Default of `[cngxDgaFilterLabel]`, the filter box accessible name. */

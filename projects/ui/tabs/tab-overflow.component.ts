@@ -211,6 +211,8 @@ export class CngxTabOverflow {
     hiddenCount: this.hiddenCount,
     hiddenTabs: this.hiddenTabs,
     pickTab: (tab) => this.pickTab(tab),
+    tabs: this.panelHost.tabs,
+    i18n: this.i18n,
   });
 
   private observer: IntersectionObserver | null = null;

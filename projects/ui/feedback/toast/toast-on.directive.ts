@@ -1,6 +1,8 @@
 import { afterNextRender, Directive, computed, inject, input, isDevMode } from '@angular/core';
 import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
 
+import { injectErrorDetail } from '../config/feedback-config';
+import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { createStateBridge } from '../internal/state-bridge';
 import { CngxToaster } from './toast.service';
 
@@ -52,6 +54,8 @@ import { CngxToaster } from './toast.service';
 export class CngxToastOn {
   private readonly toast = inject(CngxToaster, { optional: true });
   private readonly statefulFallback = inject(CNGX_STATEFUL, { optional: true });
+  private readonly errorDetail = injectErrorDetail();
+  private readonly i18n = injectFeedbackI18n();
 
   // Validated non-null ref - constructor throws if missing
   private readonly toastService: CngxToaster;
@@ -81,7 +85,11 @@ export class CngxToastOn {
   /** Toast message on error. If not set, no error toast fires. */
   readonly toastError = input<string | undefined>(undefined);
 
-  /** Include the error detail message in the toast body. */
+  /**
+   * Append the error detail to the toast message, as mapped by
+   * `withErrorDetail` (default: the raw error text in development builds,
+   * nothing in production).
+   */
   readonly toastErrorDetail = input<boolean>(false);
 
   /** Duration for success toasts in ms. */
@@ -136,15 +144,9 @@ export class CngxToastOn {
           if (msg) {
             const err = s.error();
             const detail =
-              this.toastErrorDetail() && err != null
-                ? err instanceof Error
-                  ? err.message
-                  : typeof err === 'string'
-                    ? err
-                    : undefined
-                : undefined;
+              this.toastErrorDetail() && err != null ? this.errorDetail(err) : undefined;
             this.toastService.show({
-              message: detail ? `${msg}: ${detail}` : msg,
+              message: detail ? this.i18n().errorWithDetail(msg, detail) : msg,
               severity: 'error',
               duration: this.toastErrorDuration(),
             });

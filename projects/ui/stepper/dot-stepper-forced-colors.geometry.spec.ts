@@ -66,7 +66,8 @@ function one(root: ParentNode, selector: string): HTMLElement {
   return el;
 }
 
-const glyph = (el: Element): string => getComputedStyle(el, '::after').getPropertyValue('color').trim();
+const glyph = (el: Element): string =>
+  getComputedStyle(el, '::after').getPropertyValue('color').trim();
 
 afterEach(async () => {
   mountedRoot?.remove();
@@ -75,7 +76,8 @@ afterEach(async () => {
 });
 
 describe.each(SCHEMES)('dot stepper under forced colors, %s', (scheme) => {
-  const probe = (root: HTMLElement, name: string): string => computedValue(one(root, `.probe-${name}`), 'color');
+  const probe = (root: HTMLElement, name: string): string =>
+    computedValue(one(root, `.probe-${name}`), 'color');
 
   async function mountForced(): Promise<HTMLElement> {
     await cdp().send('Emulation.setEmulatedMedia', {
@@ -108,7 +110,9 @@ describe.each(SCHEMES)('dot stepper under forced colors, %s', (scheme) => {
     for (const dot of [errored, upcoming]) {
       expect(computedValue(dot, 'forced-color-adjust')).toBe('none');
       expect(computedValue(dot, 'background-color')).toBe(probe(root, 'canvas'));
-      expect(computedValue(dot, 'box-shadow')).toBe(`${probe(root, 'canvastext')} 0px 0px 0px 1px inset`);
+      expect(computedValue(dot, 'box-shadow')).toBe(
+        `${probe(root, 'canvastext')} 0px 0px 0px 1px inset`,
+      );
     }
     expect(glyph(errored)).toBe(probe(root, 'canvastext'));
   });

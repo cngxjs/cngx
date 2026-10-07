@@ -39,13 +39,20 @@ export interface CngxStepperAnnouncementBuilders {
    * routes the rejected row through `stepRolledBack(base)`.
    */
   readonly statusPhrase: (node: CngxStepNode) => string;
+  /**
+   * Step-header descriptor: `statusPhrase` plus the done / errored status
+   * the stepper skins draw as a CSS glyph, joined through `stepWithDetail`.
+   * The glyphs carry `/ ''` alt text, so this text is where their meaning
+   * reaches a screen reader.
+   */
+  readonly headerStatusPhrase: (node: CngxStepNode) => string;
   /** Group descriptor - rolls up children's aggregated status. */
   readonly groupStatusPhrase: (node: CngxStepNode) => string;
   /** Stable descriptor-span id for a node (`<node-id>-desc`). */
   readonly descriptorId: (node: CngxStepNode) => string;
   /**
    * `aria-describedby` value for a node: `descriptorId(node)` while the
-   * node's phrase (`statusPhrase` for steps, `groupStatusPhrase` for
+   * node's phrase (`headerStatusPhrase` for steps, `groupStatusPhrase` for
    * groups) is non-empty, else `null`. The descriptor span stays in the
    * DOM; only the reference is gated - accname 1.2 §2A traverses a
    * directly-referenced node even when it is empty or hidden.
@@ -144,14 +151,39 @@ export function createStepperAnnouncementBuilders(
     return '';
   };
 
+  const headerStatusPhrase = (node: CngxStepNode): string => {
+    const phrase = statusPhrase(node);
+    const status = glyphStatus(node, inputs.i18n());
+    if (!status) {
+      return phrase;
+    }
+    return phrase ? inputs.i18n().stepWithDetail(phrase, status) : status;
+  };
+
   const descriptorId = (node: CngxStepNode): string => `${node.id}-desc`;
 
   const describedBy = (node: CngxStepNode): string | null => {
-    const phrase = node.kind === 'step' ? statusPhrase(node) : groupStatusPhrase(node);
+    const phrase = node.kind === 'step' ? headerStatusPhrase(node) : groupStatusPhrase(node);
     return phrase ? descriptorId(node) : null;
   };
 
-  return { liveAnnouncement, statusPhrase, groupStatusPhrase, descriptorId, describedBy };
+  return {
+    liveAnnouncement,
+    statusPhrase,
+    headerStatusPhrase,
+    groupStatusPhrase,
+    descriptorId,
+    describedBy,
+  };
+}
+
+/** The status word behind a skin's done / errored glyph, or `''`. */
+function glyphStatus(node: CngxStepNode, i18n: CngxStepperI18n): string {
+  const state = node.state();
+  if (state === 'error') {
+    return i18n.statusLabels.errored;
+  }
+  return state === 'success' ? i18n.statusLabels.done : '';
 }
 
 /**
@@ -213,8 +245,7 @@ export function createStepperPanelRefs(inputs: CngxStepperPanelRefsInputs): Cngx
     return renderedHeaderIds().has(node.id) ? headerIdFor(node) : null;
   };
 
-  const ariaLabel = (node: CngxStepNode): string | null =>
-    labelledBy(node) ? null : node.label();
+  const ariaLabel = (node: CngxStepNode): string | null => (labelledBy(node) ? null : node.label());
 
   const describedBy = (node: CngxStepNode): string | null => {
     if (displayMode() === 'classic' && !renderedHeaderIds().has(node.id)) {

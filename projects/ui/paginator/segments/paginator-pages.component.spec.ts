@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { describe, expect, test } from 'vitest';
 
 import { CngxPaginate } from '@cngx/common/data';
+import { provideLocale } from '@cngx/core/utils';
 
 import { CngxPaginator } from '../paginator.component';
 import { CngxPaginatorPages } from './paginator-pages.component';
@@ -232,5 +233,17 @@ describe('CngxPaginatorPages - configurable truncation', () => {
     // 10 real pages, but the override hard-codes a two-button window and no gap.
     expect(pages(fixture).map((b) => b.textContent?.trim())).toEqual(['1', '2']);
     expect(fixture.nativeElement.querySelectorAll('.cngx-paginator__more')).toHaveLength(0);
+  });
+
+  test('formats the visible page numbers in the locale', async () => {
+    TestBed.configureTestingModule({ providers: [...providers, provideLocale('de')] });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.componentInstance.total.set(20_000);
+    fixture.componentInstance.index.set(1_499);
+    await settle(fixture);
+    const current = fixture.nativeElement.querySelector(
+      '.cngx-paginator__page--current',
+    ) as HTMLElement;
+    expect(current.textContent?.trim()).toBe('1.500');
   });
 });

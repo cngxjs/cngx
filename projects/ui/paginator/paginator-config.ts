@@ -13,10 +13,12 @@ import {
 } from '@angular/core';
 import { createOverrideMerge } from '@cngx/core/utils';
 
+import { fillOver, injectPaginatorSiteCopy } from './i18n/paginator-i18n';
+
 /**
  * Accessible-name strings for the paginator landmark and its segment parts.
- * Library defaults are English; consumers localise via
- * {@link withPaginatorAriaLabels}.
+ * The defaults come from the `paginator` section of the language pack
+ * (English without one); {@link withPaginatorAriaLabels} overrides single keys.
  *
  * @category ui/paginator
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
@@ -70,8 +72,9 @@ export interface CngxPaginatorAriaLabels {
 }
 
 /**
- * Display-text formatters for the data-readout segments. Library defaults are
- * English; consumers localise via {@link withPaginatorRangeFormat}.
+ * Display-text formatters for the data-readout segments. The defaults come
+ * from the `paginator` section of the language pack, numbers formatted for the
+ * locale; the `withPaginator*Format` features override single keys.
  *
  * @category ui/paginator
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
@@ -96,7 +99,7 @@ export interface CngxPaginatorFormats {
    * Trigger readout of the `cngx-pgn-page-of-pages` dropdown, given the 1-based
    * current page and total page count. Rendered as sanitised HTML (the default
    * bolds the page). Optional for compatibility with full configs written before
-   * it existed; the English default applies when absent.
+   * it existed; the language-pack default applies when absent.
    */
   readonly pageOfPagesReadout?: (page: number, totalPages: number) => string;
   /**
@@ -109,21 +112,11 @@ export interface CngxPaginatorFormats {
 }
 
 /**
- * @internal - English readout formatters; the fallback for the optional
- * `formats` keys a full consumer config omits.
- */
-export const CNGX_PAGINATOR_READOUT_DEFAULTS: Required<
-  Pick<CngxPaginatorFormats, 'pageOfPagesReadout' | 'loadMoreReadout'>
-> = {
-  pageOfPagesReadout: (page, totalPages) => `<b>${page}</b> / ${totalPages}`,
-  loadMoreReadout: (shown, total) => `${shown} / ${total}`,
-};
-
-/**
  * Live-region announcement phrasing. The paginator announces the effective page
  * on every change (navigation or a `total`-shrink clamp, so the clamp is never
- * silent) and the async busy / settle transitions. Library defaults are
- * English; consumers localise via {@link withPaginatorAnnouncements}.
+ * silent) and the async busy / settle transitions. The defaults come from the
+ * `paginator` section of the language pack; {@link withPaginatorAnnouncements}
+ * overrides single keys.
  *
  * @category ui/paginator
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
@@ -154,14 +147,16 @@ export interface CngxPaginatorTemplates {
 }
 
 /**
- * Resolved paginator configuration. Three required sub-trees - accessible-name
+ * Resolved paginator configuration. Three copy sub-trees - accessible-name
  * strings, live-region announcement phrasing, and data-readout formatters -
  * plus a flat `pageSizeOptions` list and an optional `templates` slot tree,
  * each merged independently by the reducer in
  * {@link provideCngxPaginatorConfig}.
  *
- * The three copy sub-trees accept a value or a `Signal`, so the paginator
- * follows a runtime language switch. Read them through
+ * The copy sub-trees hold overrides only: unset by default, a partial value or
+ * a `Signal` of one once a feature ran. Every key they leave out reads the
+ * `paginator` section of the language pack, so the paginator follows a runtime
+ * language switch. Read the resolved copy through
  * {@link injectPaginatorAriaLabels}, {@link injectPaginatorAnnouncements} and
  * {@link injectPaginatorFormats}, inside a `computed()`, a template or a handler.
  *
@@ -170,9 +165,11 @@ export interface CngxPaginatorTemplates {
  * @since 0.1.0
  */
 export interface CngxPaginatorConfig {
-  readonly ariaLabels: CngxPaginatorAriaLabels | Signal<CngxPaginatorAriaLabels>;
-  readonly announcements: CngxPaginatorAnnouncements | Signal<CngxPaginatorAnnouncements>;
-  readonly formats: CngxPaginatorFormats | Signal<CngxPaginatorFormats>;
+  readonly ariaLabels?: Partial<CngxPaginatorAriaLabels> | Signal<Partial<CngxPaginatorAriaLabels>>;
+  readonly announcements?:
+    | Partial<CngxPaginatorAnnouncements>
+    | Signal<Partial<CngxPaginatorAnnouncements>>;
+  readonly formats?: Partial<CngxPaginatorFormats> | Signal<Partial<CngxPaginatorFormats>>;
   /**
    * Default items-per-page choices the `cngx-pgn-page-size` dropdown renders
    * when no per-instance `[options]` is bound. The instance input still wins
@@ -184,49 +181,11 @@ export interface CngxPaginatorConfig {
   readonly templates?: CngxPaginatorTemplates;
 }
 
-const ARIA_LABELS_DEFAULTS: CngxPaginatorAriaLabels = {
-  label: 'Pagination',
-  first: 'First page',
-  previous: 'Previous page',
-  next: 'Next page',
-  last: 'Last page',
-  page: (page) => `Page ${page}`,
-  morePages: 'More pages',
-  itemsPerPage: 'Items per page',
-  goToPage: 'Go to page',
-  pageOfPages: 'Select page',
-  loadMore: 'Load more',
-  allLoaded: (total) => `All ${total} loaded`,
-  bucket: (label) => label,
-  emptyBucket: (label) => `${label}, no items`,
-  bucketGroup: 'Categories',
-  railPosition: 'Page position',
-};
-
-const ANNOUNCEMENTS_DEFAULTS: CngxPaginatorAnnouncements = {
-  pageChange: (page, totalPages) => `Page ${page} of ${totalPages}`,
-  loading: 'Loading',
-  updated: 'Updated',
-};
-
-const FORMATS_DEFAULTS: CngxPaginatorFormats = {
-  // The readout segments render the formatter output as sanitised HTML, so the
-  // current value (the page, or the item range) is emphasised with `<b>`;
-  // Angular's sanitiser keeps `<b>` and strips anything dangerous.
-  range: (start, end, total) => `<b>${start}-${end}</b> of ${total}`,
-  pageStatus: (page, totalPages) => `Page <b>${page}</b> of ${totalPages}`,
-  ...CNGX_PAGINATOR_READOUT_DEFAULTS,
-};
-
-/** Library defaults - English. Override via {@link provideCngxPaginatorConfig}. */
-export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig & {
-  readonly ariaLabels: CngxPaginatorAriaLabels;
-  readonly announcements: CngxPaginatorAnnouncements;
-  readonly formats: CngxPaginatorFormats;
-} = {
-  ariaLabels: ARIA_LABELS_DEFAULTS,
-  announcements: ANNOUNCEMENTS_DEFAULTS,
-  formats: FORMATS_DEFAULTS,
+/**
+ * Library defaults. Carries no copy: the copy defaults are the `paginator`
+ * section of the language pack. Override via {@link provideCngxPaginatorConfig}.
+ */
+export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
   // Includes the brain's default pageSize (10) so the trigger value is always a
   // member of the panel; a common data-table ladder, locale-neutral.
   pageSizeOptions: [10, 25, 50, 100],
@@ -289,6 +248,10 @@ function formatPayload<K extends keyof CngxPaginatorFormats>(
 }
 
 /** Reduce a feature list onto a base config, merging each sub-tree in isolation. */
+const NO_ARIA_LABELS: Partial<CngxPaginatorAriaLabels> = {};
+const NO_ANNOUNCEMENTS: Partial<CngxPaginatorAnnouncements> = {};
+const NO_FORMATS: Partial<CngxPaginatorFormats> = {};
+
 function applyFeatures(
   base: CngxPaginatorConfig,
   features: readonly CngxPaginatorConfigFeature[],
@@ -300,11 +263,11 @@ function applyFeatures(
   let templates = base.templates;
   for (const feature of features) {
     if (feature.kind === 'ariaLabels') {
-      ariaLabels = createOverrideMerge(ariaLabels, feature.payload);
+      ariaLabels = createOverrideMerge(ariaLabels ?? NO_ARIA_LABELS, feature.payload);
     } else if (feature.kind === 'announcements') {
-      announcements = createOverrideMerge(announcements, feature.payload);
+      announcements = createOverrideMerge(announcements ?? NO_ANNOUNCEMENTS, feature.payload);
     } else if (feature.kind === 'formats') {
-      formats = createOverrideMerge(formats, feature.payload);
+      formats = createOverrideMerge(formats ?? NO_FORMATS, feature.payload);
     } else if (feature.kind === 'pageSizeOptions') {
       // A size list is one atomic value - replace, do not merge.
       pageSizeOptions = feature.payload;
@@ -558,7 +521,7 @@ export function injectPaginatorConfig(): CngxPaginatorConfig {
  * @since 0.1.0
  */
 export function injectPaginatorAriaLabels(): Signal<CngxPaginatorAriaLabels> {
-  return createOverrideMerge(ARIA_LABELS_DEFAULTS, injectPaginatorConfig().ariaLabels);
+  return fillOver(injectPaginatorSiteCopy().ariaLabels, injectPaginatorConfig().ariaLabels);
 }
 
 /**
@@ -571,21 +534,21 @@ export function injectPaginatorAriaLabels(): Signal<CngxPaginatorAriaLabels> {
  * @since 0.1.0
  */
 export function injectPaginatorAnnouncements(): Signal<CngxPaginatorAnnouncements> {
-  return createOverrideMerge(ANNOUNCEMENTS_DEFAULTS, injectPaginatorConfig().announcements);
+  return fillOver(injectPaginatorSiteCopy().announcements, injectPaginatorConfig().announcements);
 }
 
 /**
  * The resolved readout formatters of the paginator config in scope, as a
- * Signal with the optional keys filled from the English defaults. Runs in
- * injection context.
+ * Signal with every key filled from the `paginator` section of the language
+ * pack. Runs in injection context.
  *
  * @category ui/paginator
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
  * @since 0.1.0
  */
 export function injectPaginatorFormats(): Signal<Required<CngxPaginatorFormats>> {
-  return createOverrideMerge(
-    FORMATS_DEFAULTS as Required<CngxPaginatorFormats>,
+  return fillOver<Required<CngxPaginatorFormats>>(
+    injectPaginatorSiteCopy().formats,
     injectPaginatorConfig().formats,
   );
 }

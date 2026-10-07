@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { stripBidiIsolates } from '@cngx/testing';
 
 import { CngxDataGridAccordion } from './data-grid-accordion.component';
 import { CngxDataGridFooter } from './data-grid-footer.component';
@@ -96,7 +97,7 @@ describe('CngxDgaCount', () => {
       host.count.set(3);
       fixture.detectChanges();
       TestBed.flushEffects();
-      expect(el.textContent).toBe('3 Treffer');
+      expect(stripBidiIsolates(el.textContent)).toBe('3 Treffer');
     });
 
     it('lets a count formatter win over noun labels', () => {
@@ -111,7 +112,7 @@ describe('CngxDgaCount', () => {
       fixture.detectChanges();
       const el = fixture.debugElement.query(By.directive(CngxDgaCount))
         .nativeElement as HTMLElement;
-      expect(el.textContent).toBe('2 rows');
+      expect(stripBidiIsolates(el.textContent)).toBe('2 rows');
     });
 
     it('does not rewrite a shown count on a copy flip; the next count speaks the new copy', () => {

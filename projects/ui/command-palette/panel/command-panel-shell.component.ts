@@ -109,13 +109,13 @@ export class CngxCommandPanelShell {
    * untracked, so a language switch never re-speaks a shown error; the next error
    * speaks the new language.
    */
-  protected readonly errorText = computed(() => {
+  protected readonly errorText = computed<string>(() => {
     this.view();
     return untracked(() => this.copy().errorLabel);
   });
 
   /** @internal - retry-button copy inside the error region, keyed like {@link errorText}. */
-  protected readonly retryText = computed(() => {
+  protected readonly retryText = computed<string>(() => {
     this.view();
     return untracked(() => this.copy().retryLabel);
   });

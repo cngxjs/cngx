@@ -3,6 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { CNGX_STATEFUL, type CngxStateful } from '@cngx/core/utils';
+import { stripBidiIsolates } from '@cngx/testing';
+
+import { provideFeedback, withErrorDetail } from '../config/feedback-config';
 
 import { CngxBanner } from './banner.service';
 import { CngxBannerOn } from './banner-on.directive';
@@ -91,5 +94,29 @@ describe('CngxBannerOn', () => {
     TestBed.flushEffects();
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/No state source/));
     spy.mockRestore();
+  });
+
+  it('appends the detail mapped by withErrorDetail through errorWithDetail', () => {
+    @Component({
+      selector: 'test-banner-detail',
+      template: `<div [cngxBannerOn]="state" bannerId="sync" bannerError="Sync failed" [bannerErrorDetail]="true"></div>`,
+      imports: [CngxBannerOn],
+    })
+    class DetailHost {
+      readonly state = createManualState<string>();
+    }
+    TestBed.configureTestingModule({
+      providers: [
+        CngxBanner,
+        provideFeedback(withErrorDetail((error) => (typeof error === 'string' ? error : undefined))),
+      ],
+    });
+    const banner = TestBed.inject(CngxBanner);
+    const fixture = TestBed.createComponent(DetailHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.componentInstance.state.setError('Quota exceeded');
+    TestBed.flushEffects();
+    expect(stripBidiIsolates(banner.banners()[0].config.message)).toBe('Sync failed: Quota exceeded');
   });
 });

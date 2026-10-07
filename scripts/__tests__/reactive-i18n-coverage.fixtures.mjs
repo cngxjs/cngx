@@ -578,7 +578,6 @@ export const SETTINGS_TOKENS = [
  * @type {readonly string[]}
  */
 export const HELPERS = [
-  'injectResolvedFeedbackI18n',
   'injectChartI18n',
   'resolveSelectConfig',
   'resolveCommandPaletteCopy',

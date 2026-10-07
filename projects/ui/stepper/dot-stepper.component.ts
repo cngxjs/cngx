@@ -185,7 +185,9 @@ export class CngxDotStepper {
   protected ariaLabelFor(node: CngxStepNode, index: number): string {
     const i18n = this.i18n();
     const base = i18n.selectedStep(node.label(), index + 1, this.stepNodes().length);
-    return this.stateView.hasError(node) ? `${base}: ${i18n.statusLabels.errored}` : base;
+    return this.stateView.hasError(node)
+      ? i18n.stepWithDetail(base, i18n.statusLabels.errored)
+      : base;
   }
 
   /** Build the slot context for `*cngxDotStepperDot`. */

@@ -35,3 +35,7 @@ export {
 } from './config/provide-data-grid-accordion-config';
 export { withDataGridAccordionLabels, withDataGridSkin } from './config/features';
 export { injectDataGridAccordionConfig } from './config/inject-data-grid-accordion-config';
+export {
+  CNGX_DATA_GRID_ACCORDION_LANGUAGE_EN,
+  type CngxDataGridAccordionLanguageSection,
+} from './i18n/data-grid-accordion-language-section';

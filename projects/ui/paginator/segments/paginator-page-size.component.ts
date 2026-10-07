@@ -9,6 +9,7 @@ import {
 
 import { CngxListbox, CngxListboxTrigger, CngxOption } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
 
 import { injectPaginatorAriaLabels, injectPaginatorConfig } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
@@ -48,7 +49,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
       [disabled]="host.isBusy()"
       (click)="pop.toggle()"
     >
-      <span class="cngx-paginator__select-label">{{ host.pageSize() }}</span>
+      <span class="cngx-paginator__select-label">{{ numbers().format(host.pageSize()) }}</span>
       <span class="cngx-paginator__select-caret" aria-hidden="true">{{ glyphs.caret }}</span>
     </button>
     <div cngxPopover #pop="cngxPopover" [closeOnOutsideClick]="true">
@@ -62,7 +63,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
         #lb="cngxListbox"
       >
         @for (option of resolvedOptions(); track option) {
-          <li cngxOption class="cngx-paginator__option" [value]="option">{{ option }}</li>
+          <li cngxOption class="cngx-paginator__option" [value]="option">{{ numbers().format(option) }}</li>
         }
       </ul>
     </div>
@@ -73,6 +74,9 @@ export class CngxPaginatorPageSize {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
   private readonly config = injectPaginatorConfig();
   protected readonly ariaLabels = injectPaginatorAriaLabels();
+  private readonly locale = injectLocale();
+  /** Visible page numbers and sizes, formatted for the locale (`1.000` in German). */
+  protected readonly numbers = computed(() => numberFormatterFor(this.locale(), {}));
   protected readonly glyphs = CNGX_PAGINATOR_GLYPHS;
 
   /**

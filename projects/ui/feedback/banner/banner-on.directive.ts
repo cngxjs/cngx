@@ -1,6 +1,8 @@
 import { afterNextRender, Directive, computed, inject, input, isDevMode } from '@angular/core';
 import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
 
+import { injectErrorDetail } from '../config/feedback-config';
+import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { createStateBridge } from '../internal/state-bridge';
 import { CngxBanner } from './banner.service';
 
@@ -34,6 +36,8 @@ import { CngxBanner } from './banner.service';
 export class CngxBannerOn {
   private readonly bannerService = inject(CngxBanner, { optional: true });
   private readonly statefulFallback = inject(CNGX_STATEFUL, { optional: true });
+  private readonly errorDetail = injectErrorDetail();
+  private readonly i18n = injectFeedbackI18n();
 
   /**
    * The async state to watch. Optional - when omitted, falls back to
@@ -62,7 +66,11 @@ export class CngxBannerOn {
   /** Banner severity on error. Default `'error'`. */
   readonly bannerSeverity = input<'error' | 'warning'>('error');
 
-  /** Include error detail in the message. */
+  /**
+   * Append the error detail to the banner message, as mapped by
+   * `withErrorDetail` (default: the raw error text in development builds,
+   * nothing in production).
+   */
   readonly bannerErrorDetail = input<boolean>(false);
 
   constructor() {
@@ -98,15 +106,9 @@ export class CngxBannerOn {
           if (msg) {
             const err = s.error();
             const detail =
-              this.bannerErrorDetail() && err != null
-                ? err instanceof Error
-                  ? err.message
-                  : typeof err === 'string'
-                    ? err
-                    : undefined
-                : undefined;
+              this.bannerErrorDetail() && err != null ? this.errorDetail(err) : undefined;
             banner.show({
-              message: detail ? `${msg}: ${detail}` : msg,
+              message: detail ? this.i18n().errorWithDetail(msg, detail) : msg,
               id: this.bannerId(),
               severity: this.bannerSeverity(),
             });

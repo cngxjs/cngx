@@ -8,7 +8,7 @@ import {
 
 import { nextUid } from '@cngx/core/utils';
 
-import { injectDataGridAccordionLabels } from './config/data-grid-accordion.config.defaults';
+import { injectDataGridAccordionLabels } from './i18n/data-grid-accordion-i18n';
 import { CngxDgaFilter } from './data-grid-filter.directive';
 
 /**

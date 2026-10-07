@@ -158,8 +158,12 @@ export class CngxProgressBarStepper {
    * Read only when `stateView.hasAnyError()` gates the template.
    */
   protected readonly errorText = computed<string>(() =>
-    resolveStepperErrorSummary(this.stateView, this.presenter.stepsOnly, untracked(() => this.i18n()), (node: CngxStepNode) =>
-      node.errorMessage?.() ?? node.errorAggregator?.()?.errorLabels?.()?.[0],
+    resolveStepperErrorSummary(
+      this.stateView,
+      this.presenter.stepsOnly,
+      untracked(() => this.i18n()),
+      (node: CngxStepNode) =>
+        node.errorMessage?.() ?? node.errorAggregator?.()?.errorLabels?.()?.[0],
     ),
   );
 }

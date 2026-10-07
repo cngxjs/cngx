@@ -30,7 +30,7 @@ test.describe('live language switch', () => {
     // (1) EN baseline.
     await expect(delta).toHaveAttribute('aria-label', /declined|improved/);
     await expect(trend).toHaveAttribute('aria-label', '\u2068+5.3%\u2069 \u2068up\u2069');
-    await expect(progress).toHaveAttribute('aria-valuetext', '42%');
+    await expect(progress).toHaveAttribute('aria-valuetext', '\u206842%\u2069');
 
     // (2) An announcement in English.
     await actionButton.click();
@@ -44,7 +44,7 @@ test.describe('live language switch', () => {
     await expect(page.getByLabel('beschäftigt')).toHaveCount(1);
     await expect(avatarGroup).toHaveAttribute('aria-label', /Avatare/);
     await expect(segmented).toHaveAttribute('aria-valuetext', '2 von 4');
-    await expect(progress).toHaveAttribute('aria-valuetext', '42\u00a0%');
+    await expect(progress).toHaveAttribute('aria-valuetext', '\u206842\u00a0%\u2069');
 
     // (4) The live region did not re-speak in German.
     await expect(liveRegion).toHaveText('Action succeeded');
@@ -307,12 +307,12 @@ test.describe('live language switch', () => {
     // (1) Bootstrapped in German, and the story's toggle reads the same signal.
     await expect(de).toHaveAttribute('aria-pressed', 'true');
     await expect(trend).toHaveAttribute('aria-label', /^\+5,3 % aufwärts$/);
-    await expect(progress).toHaveAttribute('aria-valuetext', '42 %');
+    await expect(progress).toHaveAttribute('aria-valuetext', '\u206842\u00a0%\u2069');
 
     // (2) Back to English, no reload.
     await page.getByRole('button', { name: 'EN', exact: true }).click();
     await expect(trend).toHaveAttribute('aria-label', '\u2068+5.3%\u2069 \u2068up\u2069');
-    await expect(progress).toHaveAttribute('aria-valuetext', '42%');
+    await expect(progress).toHaveAttribute('aria-valuetext', '\u206842%\u2069');
   });
 
   // The unbound-defaults story provides nothing itself, so only the root

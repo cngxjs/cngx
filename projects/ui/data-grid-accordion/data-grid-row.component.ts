@@ -15,7 +15,7 @@ import { nextUid, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils
 import { CNGX_ACCORDION, CngxAccordionPanel } from '@cngx/common/interactive';
 
 import type { CngxDataGridSeverity } from './config/data-grid-accordion.config';
-import { injectDataGridAccordionLabels } from './config/data-grid-accordion.config.defaults';
+import { injectDataGridAccordionLabels } from './i18n/data-grid-accordion-i18n';
 import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
 import { CngxDgCell } from './data-grid-cell.directive';
 import { CngxDgaRowBusy } from './data-grid-row-busy.directive';

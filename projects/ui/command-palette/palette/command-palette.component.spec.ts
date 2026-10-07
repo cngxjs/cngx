@@ -9,7 +9,9 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideCommands, type CngxCommand } from '@cngx/common/command';
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
 import { parseKeyCombo } from '@cngx/core/utils';
+import { stripBidiIsolates } from '@cngx/testing';
 import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -109,6 +111,26 @@ describe('CngxCommandPalette', () => {
     openFully();
     expect(dialogEl.showModal).toHaveBeenCalled();
     expect(fixture.componentInstance.palette().isOpen()).toBe(true);
+  });
+
+  it('speaks each footer legend entry once, in the order of the legendEntry message', () => {
+    configure([], [
+      provideCngxI18n(
+        withPartialPack({ locale: 'de', commandPalette: { legendEntry: '{label}: {keys}' } }),
+        withDocumentLanguage('off'),
+      ),
+    ]);
+    openFully();
+    const entries = Array.from(
+      fixture.nativeElement.querySelectorAll('.cngx-command-legend'),
+    ) as HTMLElement[];
+    expect(entries).toHaveLength(3);
+    const run = entries[1];
+    expect(run.querySelector('kbd')?.getAttribute('aria-hidden')).toBe('true');
+    expect(run.querySelector('kbd + span')?.getAttribute('aria-hidden')).toBe('true');
+    expect(stripBidiIsolates(run.querySelector('.cngx-sr-only')?.textContent?.trim())).toBe(
+      'Run: enter',
+    );
   });
 
   it('opens when the trigger is clicked', () => {

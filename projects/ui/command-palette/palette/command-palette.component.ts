@@ -96,7 +96,11 @@ import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
           <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{}" />
         } @else {
           @for (entry of copy().footerLegend; track entry.label) {
-            <span class="cngx-command-legend"><kbd>{{ entry.keys }}</kbd> {{ entry.label }}</span>
+            <span class="cngx-command-legend">
+              <kbd aria-hidden="true">{{ entry.keys }}</kbd>
+              <span aria-hidden="true">{{ entry.label }}</span>
+              <span class="cngx-sr-only">{{ copy().legendEntry(entry.keys, entry.label) }}</span>
+            </span>
           }
         }
       </footer>

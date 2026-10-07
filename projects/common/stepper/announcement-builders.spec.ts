@@ -49,7 +49,15 @@ function setup() {
     commitTransition: { current: current.asReadonly(), previous: previous.asReadonly() },
   } as unknown as CngxStepperHost;
   const builders = createStepperAnnouncementBuilders({ presenter, stepsOnly, i18n });
-  return { lang, builders, current, previous, activeStepIndex, lastFailedIndex, originIndexDuringCommit };
+  return {
+    lang,
+    builders,
+    current,
+    previous,
+    activeStepIndex,
+    lastFailedIndex,
+    originIndexDuringCommit,
+  };
 }
 
 describe('createStepperAnnouncementBuilders language switch', () => {
@@ -80,5 +88,59 @@ describe('createStepperAnnouncementBuilders language switch', () => {
     expect(builders.liveAnnouncement()).toBe('Speichere');
     current.set('error');
     expect(builders.liveAnnouncement()).toBe('Zurueck zu "Schritt a".');
+  });
+});
+
+describe('createStepperAnnouncementBuilders headerStatusPhrase', () => {
+  function buildersFor(state: string, flatIndex = 0) {
+    const i18n = signal({
+      selectedStep: (label: string, position: number, count: number) =>
+        `Step ${position} of ${count}: ${label}`,
+      stepWithDetail: (step: string, detail: string) => `${step} (${detail})`,
+      stepRolledBack: (base: string) => base,
+      statusLabels: {
+        done: 'Done',
+        errored: 'Errored',
+        inProgress: 'In progress',
+        upNext: 'Up next',
+      },
+    } as unknown as CngxStepperI18n);
+    const node = {
+      id: 'a',
+      kind: 'step',
+      flatIndex,
+      label: signal('Account'),
+      state: signal(state),
+    } as unknown as CngxStepNode;
+    const stepsOnly = signal<readonly CngxStepNode[]>([node]);
+    const presenter = {
+      stepsOnly,
+      lastFailedIndex: signal(undefined),
+      originIndexDuringCommit: signal(undefined),
+      commitTransition: { current: signal('idle'), previous: signal('idle') },
+    } as unknown as CngxStepperHost;
+    const builders = createStepperAnnouncementBuilders({ presenter, stepsOnly, i18n });
+    return { builders, node };
+  }
+
+  function builderFor(state: string): string {
+    const { builders, node } = buildersFor(state);
+    return builders.headerStatusPhrase(node);
+  }
+
+  it('names the done and errored status through stepWithDetail', () => {
+    expect(builderFor('success')).toBe('Step 1 of 1: Account (Done)');
+    expect(builderFor('error')).toBe('Step 1 of 1: Account (Errored)');
+  });
+
+  it('keeps the plain status phrase for a step without a glyph status', () => {
+    expect(builderFor('idle')).toBe('Step 1 of 1: Account');
+  });
+
+  it('references the descriptor while only the glyph status is non-empty', () => {
+    const { builders, node } = buildersFor('success', -1);
+    expect(builders.statusPhrase(node)).toBe('');
+    expect(builders.headerStatusPhrase(node)).toBe('Done');
+    expect(builders.describedBy(node)).toBe('a-desc');
   });
 });

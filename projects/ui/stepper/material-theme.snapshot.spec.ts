@@ -29,10 +29,7 @@ import { describe, expect, it } from 'vitest';
  */
 
 const REPO_ROOT = resolve(__dirname, '../../..');
-const LOAD_PATHS = [
-  resolve(REPO_ROOT, 'node_modules'),
-  resolve(REPO_ROOT, 'projects/themes'),
-];
+const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'projects/themes')];
 
 interface CompileOptions {
   themeVersion: 'v1' | 'v0';

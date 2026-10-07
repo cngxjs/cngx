@@ -74,10 +74,13 @@ every change-detection pass and would reset on each.
 announce. With `[announce]` the bridge mounts a visually-hidden `aria-live`
 region and speaks the new page after every change. The default phrasing
 resolves from the shared `CNGX_PAGINATOR_CONFIG` cascade
-(`announcements.pageChange`, "Page N of M" in the EN defaults), so
-`provideCngxPaginatorConfig(withPaginatorAnnouncements(...))` localises the
-bridge together with the `CngxPaginator` organism. Bind `[announceLabel]` for a
-richer per-instance message - its context also carries the visible item range.
+(`announcements.pageChange`, "Page N of M" in English), whose defaults are the
+`paginator` section of the cngx language pack, so the announcement is translated
+with the rest of the pack and `provideCngxPaginatorConfig(withPaginatorAnnouncements(...))`
+overrides it together with the `CngxPaginator` organism. Material's own
+`MatPaginatorIntl` stays responsible for the visible Material labels and range;
+cngx never writes it. Bind `[announceLabel]` for a richer per-instance message -
+its context also carries the visible item range.
 
 ```html
 <mat-paginator cngxMatPaginator [total]="items().length" announce></mat-paginator>

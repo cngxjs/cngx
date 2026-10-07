@@ -13,6 +13,10 @@ import {
 import { coerceSignal } from '@cngx/core/utils';
 import { recordEqual } from '@cngx/utils';
 
+import {
+  injectCommandPaletteSiteCopy,
+  type CngxCommandPaletteSiteCopy,
+} from '../i18n/command-palette-i18n';
 import { CNGX_COMMAND_PALETTE_DEFAULTS } from '../panel/command-palette-defaults';
 import type {
   CngxCommandGroupHeaderContext,
@@ -53,14 +57,11 @@ export interface CngxCommandPaletteLegendEntry {
 }
 
 /**
- * Resolved, localisable configuration for the command palette. English by
- * default (sourced from the internal defaults); German or any other locale is
- * consumer-supplied through {@link provideCommandPaletteConfig} and the `with*`
- * features - never hard-coded (`feedback_en_default_locale`).
- *
- * Every copy key accepts a value or a `Signal`, so the palette follows a
- * runtime language switch. Read a key through `coerceSignal` from
- * `@cngx/core/utils`, inside a `computed()`, a template or a handler.
+ * Configuration for the command palette. The copy keys hold overrides only:
+ * unset by default, a value or a `Signal` once a `with*` feature ran. Every
+ * copy key they leave out reads the `commandPalette` section of the language
+ * pack (English without one), so the palette follows a runtime language
+ * switch.
  *
  * @category ui/command-palette
  * @since 0.1.0
@@ -72,27 +73,23 @@ export interface CngxCommandPaletteConfig {
    */
   readonly openShortcut: string;
   /** Placeholder + accessible name for the search input. */
-  readonly searchPlaceholder: string | Signal<string>;
+  readonly searchPlaceholder?: string | Signal<string>;
   /** Accessible label for the results listbox. */
-  readonly listboxLabel: string | Signal<string>;
+  readonly listboxLabel?: string | Signal<string>;
   /** Empty-state copy (async source returned no results). */
-  readonly emptyLabel: string | Signal<string>;
+  readonly emptyLabel?: string | Signal<string>;
   /** First-load skeleton copy. */
-  readonly loadingLabel: string | Signal<string>;
+  readonly loadingLabel?: string | Signal<string>;
   /** Error-state copy. */
-  readonly errorLabel: string | Signal<string>;
+  readonly errorLabel?: string | Signal<string>;
   /** Retry-button copy in the error state. */
-  readonly retryLabel: string | Signal<string>;
-  /**
-   * Accessible name of the palette dialog while its `[ariaLabel]` is unbound.
-   * Optional for compatibility with full configs written before it existed;
-   * the English default applies when absent.
-   */
+  readonly retryLabel?: string | Signal<string>;
+  /** Accessible name of the palette dialog while its `[ariaLabel]` is unbound. */
   readonly paletteLabel?: string | Signal<string>;
   /** Builds the polite `aria-live` result-count message. */
-  readonly resultCount: ((count: number) => string) | Signal<(count: number) => string>;
+  readonly resultCount?: ((count: number) => string) | Signal<(count: number) => string>;
   /** Keyboard-legend rows rendered in the footer. */
-  readonly footerLegend:
+  readonly footerLegend?:
     | readonly CngxCommandPaletteLegendEntry[]
     | Signal<readonly CngxCommandPaletteLegendEntry[]>;
   /** Global default slot templates (config = strings, slots = structure). */
@@ -115,23 +112,14 @@ export type CngxCommandPaletteConfigFeature = (
 ) => CngxCommandPaletteConfig;
 
 /**
- * Library-default palette configuration, built from the internal defaults
- * const. English-only.
+ * Library-default palette configuration. Carries no copy: the copy defaults
+ * are the `commandPalette` section of the language pack.
  *
  * @category ui/command-palette
  * @since 0.1.0
  */
 export const DEFAULT_COMMAND_PALETTE_CONFIG: CngxCommandPaletteConfig = {
   openShortcut: CNGX_COMMAND_PALETTE_DEFAULTS.openShortcut,
-  searchPlaceholder: CNGX_COMMAND_PALETTE_DEFAULTS.searchPlaceholder,
-  listboxLabel: CNGX_COMMAND_PALETTE_DEFAULTS.listboxLabel,
-  emptyLabel: CNGX_COMMAND_PALETTE_DEFAULTS.emptyLabel,
-  loadingLabel: CNGX_COMMAND_PALETTE_DEFAULTS.loadingLabel,
-  errorLabel: CNGX_COMMAND_PALETTE_DEFAULTS.errorLabel,
-  retryLabel: CNGX_COMMAND_PALETTE_DEFAULTS.retryLabel,
-  paletteLabel: CNGX_COMMAND_PALETTE_DEFAULTS.paletteLabel,
-  resultCount: CNGX_COMMAND_PALETTE_DEFAULTS.resultCount,
-  footerLegend: CNGX_COMMAND_PALETTE_DEFAULTS.footerLegend,
 };
 
 /**
@@ -211,64 +199,61 @@ export function injectCommandPaletteConfig(): CngxCommandPaletteConfig {
   return inject(CNGX_COMMAND_PALETTE_CONFIG);
 }
 
-/**
- * @internal - the palette's copy keys as plain values, as
- * {@link resolveCommandPaletteCopy} hands them to the components.
- */
-interface CngxCommandPaletteCopy {
-  readonly searchPlaceholder: string;
-  readonly listboxLabel: string;
-  readonly emptyLabel: string;
-  readonly loadingLabel: string;
-  readonly errorLabel: string;
-  readonly retryLabel: string;
-  readonly paletteLabel: string;
-  readonly resultCount: (count: number) => string;
-  readonly footerLegend: readonly CngxCommandPaletteLegendEntry[];
-}
-
 const valueOf = <T>(source: T | Signal<T>): T => (isSignal(source) ? source() : source);
 
 /**
  * @internal - the config with every copy key unwrapped to a plain value. Still
  * a {@link CngxCommandPaletteConfig}, so a reader keeps one config shape.
  */
-export type CngxCommandPaletteResolvedConfig = CngxCommandPaletteConfig & CngxCommandPaletteCopy;
+export type CngxCommandPaletteResolvedConfig = CngxCommandPaletteConfig &
+  CngxCommandPaletteSiteCopy;
 
 const RESOLVED_COPY = new WeakMap<
-  CngxCommandPaletteConfig,
-  Signal<CngxCommandPaletteResolvedConfig>
+  Signal<CngxCommandPaletteSiteCopy>,
+  WeakMap<CngxCommandPaletteConfig, Signal<CngxCommandPaletteResolvedConfig>>
 >();
 
 /**
- * @internal - one Signal of the config's copy keys, each unwrapped, so a
- * language switch reaches every reader. Memoized per config object: every
- * palette part under one injector reads the same `computed()`. Read it inside a
- * `computed()`, a template or a handler.
+ * @internal - one Signal of the config's copy keys, each unwrapped, over the
+ * `commandPalette` section of the active pack at the reading site's locale, so
+ * a language switch reaches every reader. A key the config leaves unset reads
+ * the section. Memoized per site copy and config object: every palette part
+ * under one injector reads the same `computed()`. Injection context required;
+ * read the result inside a `computed()`, a template or a handler.
  */
 export function resolveCommandPaletteCopy(
   config: CngxCommandPaletteConfig,
 ): Signal<CngxCommandPaletteResolvedConfig> {
-  const cached = RESOLVED_COPY.get(config);
+  const site = injectCommandPaletteSiteCopy();
+  let byConfig = RESOLVED_COPY.get(site);
+  if (!byConfig) {
+    byConfig = new WeakMap();
+    RESOLVED_COPY.set(site, byConfig);
+  }
+  const cached = byConfig.get(config);
   if (cached) {
     return cached;
   }
   const copy = computed<CngxCommandPaletteResolvedConfig>(
-    () => ({
-      ...config,
-      searchPlaceholder: valueOf(config.searchPlaceholder),
-      listboxLabel: valueOf(config.listboxLabel),
-      emptyLabel: valueOf(config.emptyLabel),
-      loadingLabel: valueOf(config.loadingLabel),
-      errorLabel: valueOf(config.errorLabel),
-      retryLabel: valueOf(config.retryLabel),
-      paletteLabel: valueOf(config.paletteLabel) ?? CNGX_COMMAND_PALETTE_DEFAULTS.paletteLabel,
-      resultCount: valueOf(config.resultCount),
-      footerLegend: valueOf(config.footerLegend),
-    }),
+    () => {
+      const defaults = site();
+      return {
+        ...config,
+        searchPlaceholder: valueOf(config.searchPlaceholder) ?? defaults.searchPlaceholder,
+        listboxLabel: valueOf(config.listboxLabel) ?? defaults.listboxLabel,
+        emptyLabel: valueOf(config.emptyLabel) ?? defaults.emptyLabel,
+        loadingLabel: valueOf(config.loadingLabel) ?? defaults.loadingLabel,
+        errorLabel: valueOf(config.errorLabel) ?? defaults.errorLabel,
+        retryLabel: valueOf(config.retryLabel) ?? defaults.retryLabel,
+        paletteLabel: valueOf(config.paletteLabel) ?? defaults.paletteLabel,
+        resultCount: valueOf(config.resultCount) ?? defaults.resultCount,
+        footerLegend: valueOf(config.footerLegend) ?? defaults.footerLegend,
+        legendEntry: defaults.legendEntry,
+      };
+    },
     { equal: recordEqual },
   );
-  RESOLVED_COPY.set(config, copy);
+  byConfig.set(config, copy);
   return copy;
 }
 

@@ -19,7 +19,7 @@ import {
   type CngxAsyncState,
 } from '@cngx/core/utils';
 
-import { injectResolvedFeedbackI18n } from '../config/feedback-i18n';
+import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { createStateBridge } from '../internal/state-bridge';
 import { CngxLoadingIndicator } from '../loading/loading-indicator';
 import { CngxToaster } from '../toast/toast.service';
@@ -191,7 +191,7 @@ export class CngxAsyncErrorTpl {
 })
 export class CngxAsyncContainer<T> {
   private readonly toaster = inject(CngxToaster, { optional: true });
-  protected readonly i18n = injectResolvedFeedbackI18n();
+  protected readonly i18n = injectFeedbackI18n();
   private readonly loadingConfig = injectLoadingConfig();
 
   /** The async state to render. */

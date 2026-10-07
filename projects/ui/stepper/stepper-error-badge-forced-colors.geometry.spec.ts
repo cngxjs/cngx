@@ -68,7 +68,8 @@ afterEach(async () => {
 });
 
 describe.each(SCHEMES)('stepper error badge under forced colors, %s', (scheme) => {
-  const probe = (root: HTMLElement, name: string): string => computedValue(one(root, `.probe-${name}`), 'color');
+  const probe = (root: HTMLElement, name: string): string =>
+    computedValue(one(root, `.probe-${name}`), 'color');
 
   async function mountForced(): Promise<HTMLElement> {
     await cdp().send('Emulation.setEmulatedMedia', {
@@ -102,6 +103,8 @@ describe('stepper error badge without forced colors', () => {
     const root = await mount();
     const [badge] = badges(root);
     expect(computedValue(badge, 'forced-color-adjust')).toBe('auto');
-    expect(computedValue(badge, 'background-color')).not.toBe(computedValue(one(root, '.probe-canvastext'), 'color'));
+    expect(computedValue(badge, 'background-color')).not.toBe(
+      computedValue(one(root, '.probe-canvastext'), 'color'),
+    );
   });
 });

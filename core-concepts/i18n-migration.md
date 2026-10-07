@@ -43,6 +43,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxTabsConfig.ariaLabels` and `.fallbackLabels` are typed `L | Signal<L>`, and once `withTabsAriaLabels` / `withTabsFallbackLabels` ran they hold a `Signal`. Code that reads them off `injectTabsConfig()` wraps the key: `config.ariaLabels?.tabsRegion` becomes `coerceSignal(config.ariaLabels)()?.tabsRegion` (`coerceSignal` from `@cngx/core/utils`), read inside a `computed()` or template. Both features now also accept a `Signal`.
 - `injectTabsConfig().ariaLabels` and `.fallbackLabels` now always hold a `Signal`, also without `withTabsAriaLabels` / `withTabsFallbackLabels`: their defaults come from the tabs section of the language pack. `provideTabsConfig` and `provideTabsConfigAt` resolve their features when the token is first injected, not when the provider is created.
 - `CngxTabsI18n` has a new required key `unlabeledTab(position)` (English `'Tab {position}'`), the name of a tab without a label. A hand-built `Signal<CngxTabsI18n>` supplies it; `withTabsI18nLabels` overrides are unaffected.
+- `CngxTabOverflowTemplateBindingsOptions` (the options of `createTabOverflowTemplateBindings`) has two new required fields: `tabs`, every tab of the strip, and `i18n`, the tabs copy Signal. Pass `panelHost.tabs` and `injectTabsI18n()`. The bindings gain `itemLabel(tab)`, the default overflow row text.
 
 ### @cngx/common/card
 
@@ -116,11 +117,15 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CNGX_FEEDBACK_I18N` is now `InjectionToken<Signal<CngxFeedbackI18n>>`, and `injectFeedbackI18n()` returns `Signal<CngxFeedbackI18n>`. Call the Signal where you read a label, inside a `computed()`, a template or a handler: `inject(CNGX_FEEDBACK_I18N).alertsRegionLabel` becomes `inject(CNGX_FEEDBACK_I18N)().alertsRegionLabel`.
 - A direct `{ provide: CNGX_FEEDBACK_I18N, useValue: bundle }` must supply a Signal. Prefer `provideFeedbackI18n(overrides)`, which merges over the English defaults, `announcements` key by key. `provideFeedbackI18n` and `withFeedbackI18nLabels` now also accept a `Signal<CngxFeedbackI18nOverrides>` for runtime switching, and `provideFeedbackI18n` returns a plain `Provider` (it used to return `{ provide, useValue }`).
 - The copy inputs `CngxLoadingIndicator.label`, `CngxLoadingOverlay.label` and `CngxProgress.label` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `loadingLabel` / `progressLabel` default. Template bindings are unchanged; the rendered `aria-label` follows a language switch while the input is unbound. Code that reads the input programmatically (`indicator.label()`) gets `undefined` when nothing is bound; read the rendered `aria-label` instead.
+- The keys `dismissLabel`, `bannerActionFailed`, `toastRepeatCount`, `loadingLabel`, `progressLabel`, `progressValueText` and `announcements.alertOverflowVisible` of `CngxFeedbackI18n` are no longer optional, and the interface gains `errorWithDetail: (message, detail) => string`. A full bundle typed as `CngxFeedbackI18n` adds them, or becomes a `CngxFeedbackI18nOverrides` passed to `provideFeedbackI18n`. A bundle provided directly with `{ provide: CNGX_FEEDBACK_I18N, useValue }` still reads every key it leaves out from the language pack, then English.
+- The English feedback copy comes from the new `CNGX_FEEDBACK_LANGUAGE_EN` export, the `feedback` section of the language pack. `provideFeedbackI18n` and `withFeedbackI18nLabels` override single keys on top of it.
 
 ### @cngx/ui/data-grid-accordion
 
 - The copy inputs `CngxDgaCount.singular` / `.plural`, `CngxDgaFilter.ariaLabel`, `CngxDgaFilterField.label`, `CngxDataGridRow.errorMessage` and `CngxDgaSortHeader.notSortedLabel` / `.ascendingLabel` / `.descendingLabel` / `.ascendingAnnouncement` / `.descendingAnnouncement` / `.clearedAnnouncement` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `withDataGridAccordionLabels` default. Template bindings and attribute values are unchanged; the rendered text follows a language switch while the input is unbound. Code that reads the input programmatically (`sortHeader.notSortedLabel()`) gets `undefined` when nothing is bound; read the rendered text instead.
 - `CngxDgaCount`: a bound `cngxDgaCountSingular` or `cngxDgaCountPlural` now always composes `<count> <noun>`, also when it happens to equal the `countSingular` / `countPlural` default, and an unbound noun falls back to its label. Leave both unbound to use a custom `count` formatter.
+- `CngxDataGridAccordionLabels` has two new keys: `countWithNoun(count, noun)`, the order of a count and a bound noun (English `'{count} {noun}'`), and `unlabeledColumn`, the column name of a sort announcement for a header without text (English `'this column'`). A full bundle typed as `CngxDataGridAccordionLabels` adds them; `withDataGridAccordionLabels` partials are unaffected.
+- The English data-grid-accordion copy comes from the new `CNGX_DATA_GRID_ACCORDION_LANGUAGE_EN` export, the `dataGridAccordion` section of the language pack. `withDataGridAccordionLabels` overrides single keys on top of it.
 
 ### @cngx/ui/sidenav
 
@@ -135,12 +140,14 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The copy keys of `CngxCommandPaletteConfig` (`searchPlaceholder`, `listboxLabel`, `emptyLabel`, `loadingLabel`, `errorLabel`, `retryLabel`, `paletteLabel`, `resultCount`, `footerLegend`) are typed `T | Signal<T>`, and once a `Signal` was passed to a feature they hold a `Signal`. Code that reads a key off `injectCommandPaletteConfig()` or `CNGX_COMMAND_PALETTE_CONFIG` wraps it once, in a field: `private readonly emptyLabel = coerceSignal(injectCommandPaletteConfig().emptyLabel);` (`coerceSignal` from `@cngx/core/utils`), then `this.emptyLabel()` inside a `computed()`, a template or a handler. A hand-written `CngxCommandPaletteConfigFeature` keeps working; one that reads a copy key wraps it the same way.
 - `withCommandPaletteLabels` now also accepts a `Signal` of the label overrides: a key the Signal sets wins, an unset key follows the inherited value. `withResultCountFormatter` and `withKeyboardLegend` accept a value or a `Signal`. Plain values keep their merge rules.
 - `CngxCommandPalette.ariaLabel` is now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `paletteLabel` default. Template bindings are unchanged; the rendered dialog name follows a language switch while the input is unbound.
+- The copy keys of `CngxCommandPaletteConfig` are optional and the default `CNGX_COMMAND_PALETTE_CONFIG` carries no copy: a key holds only the override a feature set. The copy defaults are the `commandPalette` section of the language pack, exported in English as `CNGX_COMMAND_PALETTE_LANGUAGE_EN`. Code that read a copy key off `injectCommandPaletteConfig()` gets `undefined` while no feature set it.
 
 ### @cngx/ui/paginator
 
 - `CngxPaginatorConfig.ariaLabels`, `.announcements` and `.formats` are typed `L | Signal<L>`, and once a `with*` feature ran they hold a `Signal`. Code that reads them off `injectPaginatorConfig()` or `CNGX_PAGINATOR_CONFIG` reads the resolved bundle through the new accessors instead: `injectPaginatorConfig().ariaLabels.next` becomes `injectPaginatorAriaLabels()().next`, likewise `injectPaginatorAnnouncements()` and `injectPaginatorFormats()` (the latter fills the optional readout formatters), each called inside a `computed()`, a template or a handler. `CNGX_PAGINATOR_DEFAULTS` keeps its plain bundles.
 - `withPaginatorAriaLabels` and `withPaginatorAnnouncements` now also accept a `Signal` of the partial bundle, and `withPaginatorRangeFormat`, `withPaginatorPageStatusFormat`, `withPaginatorPageOfPagesFormat` and `withPaginatorLoadMoreFormat` accept a formatter or a `Signal` of one. Plain values keep their merge rules; `provideCngxPaginatorConfigAt` still merges over the parent scope. A hand-built `CngxPaginatorConfigFeature` payload may be a `Signal` as well.
 - `@cngx/ui/mat-paginator`: the bridge reads `announcements.pageChange` and a bound `[announceLabel]` formatter untracked, so a language switch does not re-speak the current page; the next page change speaks the new language.
+- `CNGX_PAGINATOR_DEFAULTS` and the default `CNGX_PAGINATOR_CONFIG` carry no copy any more: `ariaLabels`, `announcements` and `formats` are optional, unset by default, and hold only the overrides the `withPaginator*` features set (`Partial<L> | Signal<Partial<L>>`). The copy defaults are the `paginator` section of the language pack, exported in English as `CNGX_PAGINATOR_LANGUAGE_EN`. Code that read `CNGX_PAGINATOR_DEFAULTS.ariaLabels.next` reads `injectPaginatorAriaLabels()().next`; a hand-built config that spread the full default bundles drops them.
 
 ### @cngx/ui/accordion
 
@@ -268,6 +275,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/common/tabs
 
 - The close button of a tab without a label is named by its position through `unlabeledTab` (`Close "Tab 2"`), instead of `Close ""`.
+- A hidden tab without a label is named by its strip position in the overflow menu and its typeahead (`Tab 3`), instead of its tab id.
 
 ### @cngx/common/timeline
 
@@ -279,6 +287,43 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The collapsed-group screen-reader phrases use the singular for one step: `1 step`, `0 of 1 step complete` (before: `1 steps`).
 - The visible collapsed-group badge formats its numbers with the app locale (`1.200` in German) and its order comes from `groupSummaryProgressShort`.
 - `cngx-stepper-count` no longer forces `direction: ltr`; the caption reads in the page direction. A `format` that renders a bare ratio such as `2/9` keeps its order under RTL with `--cngx-stepper-count-direction: ltr`.
+
+### @cngx/ui/stepper
+
+- The errored mobile-dot and `cngx-dot-stepper` labels and the `[showCurrentLabel]` caption of `cngx-text-stepper` join their parts through the `stepWithDetail` message (English `'{step}: {detail}'`) instead of a hardcoded `': '`; the parts are bidi-isolated, so an exact comparison strips U+2068 / U+2069 first.
+- The status glyphs of the `path-chevron`, `chips` and `breadcrumb` skins (`✓`, `!`), the breadcrumb separator and the mobile and dot error glyphs carry CSS alt text (`/ ''`) and no longer reach the step's accessible name. The step header's screen-reader status text names the status instead: `Step 1 of 3: Account: Done`, `Step 2 of 3: Payment: Errored`, joined through `stepWithDetail` with the `statusLabels` words.
+- The `breadcrumb` separator mirrors under RTL: `‹` by default, or `--cngx-step-breadcrumb-separator-rtl` next to a custom `--cngx-step-breadcrumb-separator`.
+
+### @cngx/ui/mat-tabs
+
+- The has-errors flag glyph (`!`) carries CSS alt text and no longer reaches the tab's accessible name; the decoration's screen-reader text names the error.
+
+### @cngx/ui/data-grid-accordion
+
+- `CngxDgaCount` speaks its count through the `count` plural message with the number formatted in the locale (`1,200 results`), and a bound noun through `countWithNoun`, the noun bidi-isolated.
+- A sort announcement names the column by `[cngxDgaSortLabel]`, else by the header's own text, else by `unlabeledColumn` - never by the field key (`Sorted by Name ascending`, before: `Sorted by name ascending`). The column name is bidi-isolated, so an exact comparison strips U+2068 / U+2069 first. Announcement strings bound per instance keep their `{label}` placeholder.
+- The sort arrows (`▲`, `▼`) and the `spreadsheet` skin's row numbers and column letters carry CSS alt text and no longer reach a header's accessible name.
+
+### @cngx/ui/paginator
+
+- The paginator copy comes from the `paginator` section of the language pack; the `withPaginator*` features still win key by key, also on top of a pack.
+- Numbers in the copy and the readouts are formatted for the locale: `<b>1,001-1,010</b> of 12,500`, `Page 2 of 1,250`; the page buttons, the page-of-pages options and the page-size select show `1.500` in German. The alphabet bucket names are bidi-isolated, so an exact comparison strips U+2068 / U+2069 first.
+
+### @cngx/ui/command-palette
+
+- The result count is a plural message with the number formatted for the locale (`1,200 results`).
+- A footer legend entry is spoken once, as one `legendEntry` phrase (English `'{keys} {label}'`, parts bidi-isolated); the visible `<kbd>` and label are hidden from assistive tech.
+
+### @cngx/ui/feedback
+
+- The feedback copy comes from the `feedback` section of the language pack; `provideFeedbackI18n` and `withFeedbackI18nLabels` still win key by key, also on top of a pack. English output is unchanged apart from the points below.
+- `CngxAlertOn`, `CngxToastOn` and `CngxBannerOn` with their `*ErrorDetail` input set no longer append the raw error text in production builds: the detail comes from the mapping set with `provideFeedback(withErrorDetail((error) => ...))`, and without one only development builds show `Error.message` (or a thrown string), with a one-time console warning that production builds show no detail. Message and detail are joined by the `errorWithDetail` message (English `'{message}: {detail}'`), both parts bidi-isolated. Map the errors your app expects to translated text: `withErrorDetail((error) => (error instanceof HttpErrorResponse ? translate(`http.${error.status}`) : undefined))`.
+- The accessible name of the alert-stack overflow trigger uses the singular for one hidden alert: `+ 1 more alert` (before: `+ 1 more alerts`). The overflow counts and the toast repeat marker format their numbers with the locale (`(x1.200)` in German).
+- The `aria-valuetext` of a determinate `CngxProgress` comes from the `progressValueText` message (English `'{value}'`, the percent formatted in the locale); the inserted percent is bidi-isolated, so an exact comparison strips U+2068 / U+2069 first.
+
+### @cngx/ui/action-button
+
+- `CngxActionButton` with `[toastErrorDetail]` set routes the failure toast detail through the feedback error mapping: the detail comes from `provideFeedback(withErrorDetail((error) => ...))`, and without one only development builds show `Error.message` (or a thrown string), with the same one-time warning as `CngxToastOn`. Message and detail are joined by the feedback `errorWithDetail` message (English `'{message}: {detail}'`), both parts bidi-isolated, so an exact comparison strips U+2068 / U+2069 first.
 
 ### @cngx/forms/field
 

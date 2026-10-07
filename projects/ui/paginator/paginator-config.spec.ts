@@ -70,8 +70,10 @@ describe('paginator page-size options cascade', () => {
     });
     const ariaLabels = TestBed.runInInjectionContext(() => injectPaginatorAriaLabels());
     const announcements = TestBed.runInInjectionContext(() => injectPaginatorAnnouncements());
-    expect(ariaLabels()).toEqual({ ...CNGX_PAGINATOR_DEFAULTS.ariaLabels, next: 'Nächste Seite' });
-    expect(announcements()).toEqual({ ...CNGX_PAGINATOR_DEFAULTS.announcements, loading: 'Lädt' });
+    expect(ariaLabels().next).toBe('Nächste Seite');
+    expect(ariaLabels().previous).toBe('Previous page');
+    expect(announcements().loading).toBe('Lädt');
+    expect(announcements().updated).toBe('Updated');
   });
 
   test('follows Signal overrides and keeps the bundle reference on an equal recompute', () => {

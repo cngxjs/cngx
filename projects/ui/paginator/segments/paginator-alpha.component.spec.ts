@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, test } from 'vitest';
 
+import { stripBidiIsolates } from '@cngx/testing';
 import { CngxBucketPaginate, type CngxBucket } from '@cngx/common/data';
 
 import { CngxPaginatorAlpha } from './paginator-alpha.component';
@@ -74,10 +75,10 @@ describe('CngxPaginatorAlpha', () => {
     const { fixture } = await setup();
     const [ac, df, gi] = chips(fixture);
     expect(df.disabled).toBe(true);
-    expect(df.getAttribute('aria-label')).toBe('D-F, no items');
+    expect(stripBidiIsolates(df.getAttribute('aria-label'))).toBe('D-F, no items');
     expect(ac.disabled).toBe(false);
     expect(gi.disabled).toBe(false);
-    expect(ac.getAttribute('aria-label')).toBe('A-C');
+    expect(stripBidiIsolates(ac.getAttribute('aria-label'))).toBe('A-C');
   });
 
   test('clicking a chip sets aria-pressed and selects the bucket', async () => {

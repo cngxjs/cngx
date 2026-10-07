@@ -124,7 +124,7 @@ export class CngxTextStepper {
     if (!node) {
       return base;
     }
-    return `${base}: ${untracked(node.label)}`;
+    return untracked(() => this.i18n().stepWithDetail(base, node.label()));
   });
 
   /**
@@ -134,8 +134,12 @@ export class CngxTextStepper {
    * `stateView.hasAnyError()`, so this is only read when non-empty.
    */
   protected readonly errorText = computed<string>(() =>
-    resolveStepperErrorSummary(this.stateView, this.stepNodes, untracked(() => this.i18n()), (node: CngxStepNode) =>
-      node.errorMessage?.() ?? node.errorAggregator?.()?.errorLabels?.()?.[0],
+    resolveStepperErrorSummary(
+      this.stateView,
+      this.stepNodes,
+      untracked(() => this.i18n()),
+      (node: CngxStepNode) =>
+        node.errorMessage?.() ?? node.errorAggregator?.()?.errorLabels?.()?.[0],
     ),
   );
 }

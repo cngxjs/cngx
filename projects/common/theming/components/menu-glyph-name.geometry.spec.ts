@@ -1,9 +1,7 @@
-/// <reference types="@vitest/browser-playwright" />
-
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cdp } from 'vitest/browser';
+import { accessibleName } from '@cngx/testing/geometry';
 
 // Runs in a real Chromium (the `test-geometry` target). The checked tick and
 // dot are `::before` content of the item, so without CSS alt text Chromium
@@ -28,16 +26,6 @@ import { cdp } from 'vitest/browser';
 })
 class MenuGlyphNameHost {}
 
-interface AxNode {
-  readonly name?: { readonly value?: string };
-}
-
-interface DomNode {
-  readonly nodeId: number;
-  readonly children?: readonly DomNode[];
-  readonly contentDocument?: DomNode;
-}
-
 let mountedRoot: HTMLElement | null = null;
 
 function mount(): void {
@@ -45,36 +33,6 @@ function mount(): void {
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
-}
-
-/** Every document in the tree; the spec runs inside the runner's iframe. */
-function documentsOf(node: DomNode): DomNode[] {
-  const nested = [
-    ...(node.children ?? []),
-    ...(node.contentDocument ? [node.contentDocument] : []),
-  ];
-  return [...(node.contentDocument ? [node.contentDocument] : []), ...nested.flatMap(documentsOf)];
-}
-
-async function accessibleName(selector: string): Promise<string | undefined> {
-  const session = cdp();
-  const { root } = (await session.send('DOM.getDocument', { depth: -1, pierce: true })) as {
-    root: DomNode;
-  };
-  for (const doc of [root, ...documentsOf(root)]) {
-    const { nodeId } = (await session.send('DOM.querySelector', {
-      nodeId: doc.nodeId,
-      selector,
-    })) as { nodeId: number };
-    if (nodeId) {
-      const { nodes } = (await session.send('Accessibility.getPartialAXTree', {
-        nodeId,
-        fetchRelatives: false,
-      })) as { nodes: readonly AxNode[] };
-      return nodes[0]?.name?.value;
-    }
-  }
-  throw new Error(`${selector} is in no document`);
 }
 
 afterEach(() => {

@@ -61,7 +61,7 @@ test.describe('German language pack', () => {
     await openDe(page, 'ui/feedback/progress/linear-determinate');
     await page.getByRole('button', { name: 'Start Upload' }).click();
     const progress = page.locator('cngx-progress');
-    await expect(progress).toHaveAttribute('aria-valuetext', /^\d+\u00a0%$/);
+    await expect(progress).toHaveAttribute('aria-valuetext', /^\u2068\d+\u00a0%\u2069$/);
     await expect(progress).not.toHaveAttribute('aria-valuetext', /percent/);
   });
 

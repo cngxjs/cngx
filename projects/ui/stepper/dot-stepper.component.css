@@ -129,7 +129,7 @@
    the dot `:empty`, so the consumer-slot chrome-strip rule below and the
    default circle are both untouched. Sits above consumer slot art too. */
 .cngx-dot-stepper__dot--error::after {
-  content: var(--cngx-dot-step-error-glyph, '!');
+  content: var(--cngx-dot-step-error-glyph, '!') / '';
   position: absolute;
   inset: 0;
   display: grid;
