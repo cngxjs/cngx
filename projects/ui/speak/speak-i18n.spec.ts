@@ -3,6 +3,15 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { type CngxSpeak } from '@cngx/common';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+  type CngxLanguagePack,
+} from '@cngx/core/i18n';
+
+import { CNGX_SPEAK_LANGUAGE_EN } from './i18n/speak-language-section';
 
 import { CngxSpeakButton } from './speak-button';
 import {
@@ -12,6 +21,11 @@ import {
   withSpeakI18nLabels,
   type CngxSpeakI18n,
 } from './speak-i18n';
+
+// Compile-checked: the English section is a complete section of a pack, and
+// the token keeps the section's keys.
+const EN_SECTION: CngxLanguagePack['speak'] = CNGX_SPEAK_LANGUAGE_EN;
+const SAME_SHAPE: CngxSpeakI18n = EN_SECTION;
 
 const idleSpeak = { speaking: () => false, supported: true, toggle: () => undefined };
 
@@ -75,5 +89,48 @@ describe('CNGX_SPEAK_I18N', () => {
     overrides.set({ readAloud: 'Vorlesen' });
     fixture.detectChanges();
     expect(button.getAttribute('aria-label')).toBe('Vorlesen');
+  });
+
+  it('reads the speak section of the active pack, with English for what it leaves out', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+    });
+    const bundle = TestBed.runInInjectionContext(() => injectSpeakI18n());
+    expect(bundle()).toEqual(SAME_SHAPE);
+
+    pack.set({ locale: 'de', speak: { readAloud: 'Vorlesen' } });
+    expect(bundle()).toEqual({ readAloud: 'Vorlesen', stopSpeaking: 'Stop speaking' });
+  });
+
+  it('lets withSpeakI18nLabels override single keys on top of the active pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({
+            locale: 'de',
+            speak: { readAloud: 'Vorlesen', stopSpeaking: 'Vorlesen beenden' },
+          }),
+          withDocumentLanguage('off'),
+        ),
+        provideSpeakI18n(withSpeakI18nLabels({ readAloud: 'Laut lesen' })),
+      ],
+    });
+    const bundle = TestBed.runInInjectionContext(() => injectSpeakI18n());
+    expect(bundle()).toEqual({ readAloud: 'Laut lesen', stopSpeaking: 'Vorlesen beenden' });
+  });
+
+  it('keeps the bundle reference on an equal pack recompute', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>({
+      locale: 'de',
+      speak: { readAloud: 'Vorlesen' },
+    });
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+    });
+    const bundle = TestBed.runInInjectionContext(() => injectSpeakI18n());
+    const first = bundle();
+    pack.set({ locale: 'de', speak: { readAloud: 'Vorlesen' } });
+    expect(bundle()).toBe(first);
   });
 });

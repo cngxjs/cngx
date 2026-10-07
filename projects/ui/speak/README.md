@@ -35,7 +35,7 @@ export class ExampleComponent {
 `CngxSpeakButton` is a ready-made speaker button that connects to a `CngxSpeak` directive via an explicit `[speakRef]` input. It provides:
 
 - **Speaker and stop icons** - Built-in SVGs that toggle based on speaking state
-- **Accessible labels** - ARIA labels that reflect the current state, English by default (`"Read aloud"` / `"Stop speaking"`) and overridable per locale via `[readAloudLabel]` / `[stopLabel]`
+- **Accessible labels** - ARIA labels that reflect the current state, English by default (`"Read aloud"` / `"Stop speaking"`), translated through the `speak` section of the language pack, and overridable per instance via `[readAloudLabel]` / `[stopLabel]`
 - **Cognitive accessibility** - Part of CngxSpeak, targeting dyslexia and reading ease
 - **Full theming control** - CSS custom properties for styling, Material theme SCSS integration
 - **No ancestor injection** - Explicit `[speakRef]` wiring prevents hidden dependencies
