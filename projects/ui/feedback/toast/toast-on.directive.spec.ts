@@ -2,6 +2,9 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { CNGX_STATEFUL, type CngxStateful } from '@cngx/core/utils';
+import { stripBidiIsolates } from '@cngx/testing';
+
+import { provideFeedback, withErrorDetail } from '../config/feedback-config';
 
 import { provideToasts, CngxToaster } from './toast.service';
 import { CngxToastOn } from './toast-on.directive';
@@ -124,5 +127,29 @@ describe('CngxToastOn', () => {
     TestBed.tick();
     expect(toaster.toasts().length).toBe(1);
     expect(toaster.toasts()[0].config.message).toBe('FromInput');
+  });
+
+  it('appends the detail mapped by withErrorDetail through errorWithDetail', () => {
+    @Component({
+      selector: 'test-toast-detail',
+      template: `<div [cngxToastOn]="state" toastError="Save failed" [toastErrorDetail]="true"></div>`,
+      imports: [CngxToastOn],
+    })
+    class DetailHost {
+      readonly state = createManualState<string>();
+    }
+    TestBed.configureTestingModule({
+      providers: [
+        provideToasts(),
+        provideFeedback(withErrorDetail((error) => (error instanceof Error ? 'Offline' : undefined))),
+      ],
+    });
+    const toaster = TestBed.inject(CngxToaster);
+    const fixture = TestBed.createComponent(DetailHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.componentInstance.state.setError(new Error('net::ERR_INTERNET_DISCONNECTED'));
+    TestBed.flushEffects();
+    expect(stripBidiIsolates(toaster.toasts()[0].config.message)).toBe('Save failed: Offline');
   });
 });

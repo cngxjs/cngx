@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { createVisibilityGate, injectLoadingConfig, type CngxAsyncState } from '@cngx/core/utils';
 
-import { injectResolvedFeedbackI18n } from '../config/feedback-i18n';
+import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { CngxLoadingIndicator } from './loading-indicator';
 
 /**
@@ -93,7 +93,7 @@ import { CngxLoadingIndicator } from './loading-indicator';
 export class CngxLoadingOverlay {
   private readonly doc = inject(DOCUMENT);
   private readonly loadingConfig = injectLoadingConfig();
-  private readonly i18n = injectResolvedFeedbackI18n();
+  private readonly i18n = injectFeedbackI18n();
 
   /** Bind an async state - shows overlay when `isBusy()`. */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);

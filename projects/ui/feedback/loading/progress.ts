@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { injectLocale, numberFormatterFor, type CngxAsyncState } from '@cngx/core/utils';
 
-import { injectResolvedFeedbackI18n } from '../config/feedback-i18n';
+import { injectFeedbackI18n } from '../config/feedback-i18n';
 
 /**
  * Visual variant for the progress indicator.
@@ -114,7 +114,7 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
   styleUrls: ['./progress.css'],
 })
 export class CngxProgress {
-  private readonly i18n = injectResolvedFeedbackI18n();
+  private readonly i18n = injectFeedbackI18n();
   private readonly locale = injectLocale();
 
   /** Bind an async state - reads `progress()` for determinate mode. */

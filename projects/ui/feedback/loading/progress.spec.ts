@@ -1,6 +1,7 @@
 import { Component, LOCALE_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideLocale } from '@cngx/core/utils';
+import { stripBidiIsolates } from '@cngx/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { provideFeedbackI18n } from '../config/feedback-i18n';
@@ -24,7 +25,10 @@ const render = () => {
   return {
     fixture,
     host,
-    valueText: () => host.getAttribute('aria-valuetext'),
+    valueText: () => {
+      const text = host.getAttribute('aria-valuetext');
+      return text === null ? null : stripBidiIsolates(text);
+    },
     visible: () => host.querySelector('.cngx-progress__label')?.textContent?.trim(),
   };
 };

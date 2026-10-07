@@ -1,6 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
+import { provideLocale, provideLocaleAt } from '@cngx/core/utils';
+import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 
 import { CngxAlert } from '../alert/alert';
 import { CngxAlertStack } from '../alert/alert-stack';
@@ -9,9 +17,7 @@ import { CngxToaster, provideToasts } from '../toast/toast.service';
 import { provideFeedback, withAlerts, withToasts } from './feedback-config';
 import {
   CNGX_FEEDBACK_I18N,
-  FEEDBACK_I18N_DEFAULTS,
   injectFeedbackI18n,
-  injectResolvedFeedbackI18n,
   provideFeedbackI18n,
   type CngxFeedbackI18nOverrides,
   withFeedbackI18nLabels,
@@ -122,18 +128,19 @@ describe('CNGX_FEEDBACK_I18N', () => {
     expect(announcements.alertOverflow(2)).toBe('2 weitere');
   });
 
-  it('resolves plain overrides to the same bundle as the eager merge did', () => {
+  it('applies plain overrides over the English section, announcements key by key', () => {
     const overrides: CngxFeedbackI18nOverrides = {
       alertsRegionLabel: 'Hinweise',
       dismissLabel: 'Schliessen',
       announcements: { asyncLoaded: 'Inhalt geladen' },
     };
     TestBed.configureTestingModule({ providers: [provideFeedbackI18n(overrides)] });
-    expect(TestBed.inject(CNGX_FEEDBACK_I18N)()).toEqual({
-      ...FEEDBACK_I18N_DEFAULTS,
-      ...overrides,
-      announcements: { ...FEEDBACK_I18N_DEFAULTS.announcements, ...overrides.announcements },
-    });
+    const bundle = TestBed.inject(CNGX_FEEDBACK_I18N)();
+    expect(bundle.alertsRegionLabel).toBe('Hinweise');
+    expect(bundle.dismissLabel).toBe('Schliessen');
+    expect(bundle.notificationsRegionLabel).toBe('Notifications');
+    expect(bundle.announcements.asyncLoaded).toBe('Inhalt geladen');
+    expect(bundle.announcements.asyncRefreshFailed).toBe('Refresh failed');
   });
 
   it('follows a Signal override and keeps its reference on an equal recompute', () => {
@@ -193,13 +200,13 @@ describe('CNGX_FEEDBACK_I18N', () => {
 
   describe('dismiss, banner and repeat copy', () => {
     it('fills the new keys with the English defaults without a provider', () => {
-      const bundle = TestBed.runInInjectionContext(() => injectResolvedFeedbackI18n());
+      const bundle = TestBed.runInInjectionContext(() => injectFeedbackI18n());
       expect(bundle().dismissLabel).toBe('Dismiss');
       expect(bundle().bannerActionFailed).toBe('Action failed');
       expect(bundle().toastRepeatCount(3)).toBe('(x3)');
     });
 
-    it('keeps the English defaults for a full bundle provided without the new keys', () => {
+    it('fills the keys a directly provided bundle leaves out from the English section', () => {
       TestBed.configureTestingModule({
         providers: [
           {
@@ -221,7 +228,7 @@ describe('CNGX_FEEDBACK_I18N', () => {
           },
         ],
       });
-      const bundle = TestBed.runInInjectionContext(() => injectResolvedFeedbackI18n());
+      const bundle = TestBed.runInInjectionContext(() => injectFeedbackI18n());
       expect(bundle().alertsRegionLabel).toBe('Hinweise');
       expect(bundle().dismissLabel).toBe('Dismiss');
       expect(bundle().bannerActionFailed).toBe('Action failed');
@@ -262,6 +269,133 @@ describe('CNGX_FEEDBACK_I18N', () => {
         .queryAll((el) => el.name === 'cngx-alert')
         .map((el) => (el.componentInstance as unknown as { i18n: unknown }).i18n);
       expect(first).toBe(second);
+    });
+  });
+
+  describe('feedback language section', () => {
+    const germanAnnouncements = {
+      alertDismissed: 'Hinweis verworfen',
+      alertOverflow: { one: '+ {count} weiterer Hinweis', other: '+ {count} weitere Hinweise' },
+      alertOverflowVisible: '+ {count} weitere',
+      asyncLoading: 'Inhalt wird geladen',
+      asyncLoaded: 'Geladen',
+      asyncError: 'Fehler beim Laden',
+      asyncRefreshing: 'Inhalt wird aktualisiert',
+      asyncRefreshed: 'Inhalt aktualisiert',
+      asyncRefreshFailed: 'Aktualisierung fehlgeschlagen',
+    };
+
+    it('derives the pre-section English copy from the English section', () => {
+      const i18n = TestBed.inject(CNGX_FEEDBACK_I18N)();
+      expect(i18n.alertsRegionLabel).toBe('Alerts');
+      expect(i18n.notificationsRegionLabel).toBe('Notifications');
+      expect(i18n.dismissLabel).toBe('Dismiss');
+      expect(i18n.bannerActionFailed).toBe('Action failed');
+      expect(i18n.toastRepeatCount(3)).toBe('(x3)');
+      expect(i18n.loadingLabel).toBe('Loading');
+      expect(i18n.progressLabel).toBe('Progress');
+      expect(stripBidiIsolates(i18n.progressValueText(42, '42%'))).toBe('42%');
+      expect(stripBidiIsolates(i18n.errorWithDetail('Save failed', 'Timeout'))).toBe(
+        'Save failed: Timeout',
+      );
+      const a = i18n.announcements;
+      expect(a.alertDismissed).toBe('Alert dismissed');
+      expect(a.alertOverflow(3)).toBe('+ 3 more alerts');
+      expect(a.alertOverflowVisible(3)).toBe('+ 3 more');
+      expect(a.asyncLoading).toBe('Loading content');
+      expect(a.asyncLoaded).toBe('Content loaded');
+      expect(a.asyncError).toBe('Error loading content');
+      expect(a.asyncRefreshing).toBe('Refreshing content');
+      expect(a.asyncRefreshed).toBe('Content refreshed');
+      expect(a.asyncRefreshFailed).toBe('Refresh failed');
+    });
+
+    it('fixes the singular overflow name and formats counts with the locale', () => {
+      TestBed.configureTestingModule({ providers: [provideLocale('de')] });
+      const i18n = TestBed.inject(CNGX_FEEDBACK_I18N)();
+      expect(i18n.announcements.alertOverflow(1)).toBe('+ 1 more alert');
+      expect(i18n.announcements.alertOverflowVisible(1200)).toBe('+ 1.200 more');
+      expect(i18n.toastRepeatCount(1200)).toBe('(x1.200)');
+    });
+
+    it('isolates both parts of an error with detail', () => {
+      const i18n = TestBed.inject(CNGX_FEEDBACK_I18N)();
+      expect(i18n.errorWithDetail('Save failed', 'Timeout')).toBe(
+        '\u2068Save failed\u2069: \u2068Timeout\u2069',
+      );
+    });
+
+    it('reads the feedback section of the active pack, with English for what it leaves out', () => {
+      const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+      TestBed.configureTestingModule({
+        providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+      });
+      const bundle = TestBed.inject(CNGX_FEEDBACK_I18N);
+      expect(bundle().alertsRegionLabel).toBe('Alerts');
+
+      pack.set({
+        locale: 'de',
+        feedback: {
+          alertsRegionLabel: 'Hinweise',
+          errorWithDetail: '{message} ({detail})',
+          announcements: germanAnnouncements,
+        },
+      });
+      const german = bundle();
+      expect(german.alertsRegionLabel).toBe('Hinweise');
+      expect(german.announcements.alertOverflow(1)).toBe('+ 1 weiterer Hinweis');
+      expect(german.announcements.alertOverflow(2)).toBe('+ 2 weitere Hinweise');
+      expect(stripBidiIsolates(german.errorWithDetail('Fehler', 'Zeit'))).toBe('Fehler (Zeit)');
+      expect(german.announcements.asyncLoaded).toBe('Geladen');
+      expect(german.dismissLabel).toBe('Dismiss');
+    });
+
+    it('keeps the bundle while the pack keeps its section and maps anew on a flip', () => {
+      const de = { locale: 'de', feedback: { dismissLabel: 'Schliessen' } };
+      const pack = signal<CngxActiveLanguagePack | undefined>(de);
+      TestBed.configureTestingModule({
+        providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+      });
+      const bundle = TestBed.inject(CNGX_FEEDBACK_I18N);
+      const first = bundle();
+      pack.set({ ...de });
+      expect(bundle()).toBe(first);
+      pack.set({ locale: 'de', feedback: { dismissLabel: 'Verwerfen' } });
+      expect(bundle()).not.toBe(first);
+      expect(bundle().dismissLabel).toBe('Verwerfen');
+    });
+
+    it('lets provideFeedbackI18n override single keys on top of the active pack', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideCngxI18n(
+            withPartialPack({
+              locale: 'de',
+              feedback: {
+                dismissLabel: 'Schliessen',
+                announcements: germanAnnouncements,
+              },
+            }),
+            withDocumentLanguage('off'),
+          ),
+          provideFeedbackI18n({ announcements: { asyncLoaded: 'Inhalt da' } }),
+        ],
+      });
+      const i18n = TestBed.inject(CNGX_FEEDBACK_I18N)();
+      expect(i18n.dismissLabel).toBe('Schliessen');
+      expect(i18n.announcements.asyncLoaded).toBe('Inhalt da');
+      expect(i18n.announcements.asyncError).toBe('Fehler beim Laden');
+    });
+
+    it('formats the default keys in the locale of a provideLocaleAt subtree', () => {
+      TestBed.configureTestingModule({
+        providers: [provideFeedbackI18n({ dismissLabel: 'Schliessen' })],
+      });
+      const root = TestBed.runInInjectionContext(() => injectFeedbackI18n());
+      const german = runInSubtree([provideLocaleAt('de')], () => injectFeedbackI18n());
+      expect(root().toastRepeatCount(1200)).toBe('(x1,200)');
+      expect(german().toastRepeatCount(1200)).toBe('(x1.200)');
+      expect(german().dismissLabel).toBe('Schliessen');
     });
   });
 });

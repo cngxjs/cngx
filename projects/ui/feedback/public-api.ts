@@ -16,6 +16,7 @@ export {
   CNGX_FEEDBACK_CONFIG,
   type FeedbackConfig,
   type FeedbackFeature,
+  type CngxErrorDetailFn,
   provideFeedback,
   withSpinnerTemplate,
   withAlertIcons,
@@ -24,6 +25,8 @@ export {
   withToasts,
   withAlerts,
   withBanners,
+  withErrorDetail,
+  injectErrorDetail,
 } from './config/feedback-config';
 export {
   CNGX_FEEDBACK_I18N,
@@ -34,6 +37,11 @@ export {
   provideFeedbackI18n,
   injectFeedbackI18n,
 } from './config/feedback-i18n';
+export {
+  CNGX_FEEDBACK_LANGUAGE_EN,
+  type CngxFeedbackLanguageSection,
+  type CngxFeedbackAnnouncementsLanguage,
+} from './i18n/feedback-language-section';
 export {
   CngxAlerter,
   type AlertConfig,

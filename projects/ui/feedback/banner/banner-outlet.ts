@@ -13,7 +13,7 @@ import {
 import { CngxCloseButton } from '@cngx/common/interactive';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
-import { injectResolvedFeedbackI18n } from '../config/feedback-i18n';
+import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { CngxSeverityIcon } from '../config/severity-icon';
 import { CngxBanner, type BannerState } from './banner.service';
 
@@ -115,7 +115,7 @@ import { CngxBanner, type BannerState } from './banner.service';
 export class CngxBannerOutlet {
   protected readonly service = inject(CngxBanner);
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
-  private readonly i18n = injectResolvedFeedbackI18n();
+  private readonly i18n = injectFeedbackI18n();
 
   /**
    * @internal - action-error copy for the `role="alert"` slot. The banner list is the

@@ -18,7 +18,7 @@ import {
 import { CngxCloseButton } from '@cngx/common/interactive';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
-import { FEEDBACK_I18N_DEFAULTS, injectResolvedFeedbackI18n } from '../config/feedback-i18n';
+import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { CngxSeverityIcon } from '../config/severity-icon';
 import { CngxAlerter, type AlertState } from './alerter.service';
 
@@ -171,7 +171,7 @@ export class CngxAlertStack {
 
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
 
-  private readonly i18n = injectResolvedFeedbackI18n();
+  private readonly i18n = injectFeedbackI18n();
 
   /** @internal - region name of the plain `role="region"` host; follows a switch at once. */
   protected readonly regionLabel = computed(() => this.i18n().alertsRegionLabel);
@@ -262,12 +262,9 @@ export class CngxAlertStack {
   );
 
   /** @internal - visible text of the overflow trigger, contained in its accessible name. */
-  protected readonly overflowVisibleLabel = computed(() => {
-    const visible =
-      this.i18n().announcements.alertOverflowVisible ??
-      FEEDBACK_I18N_DEFAULTS.announcements.alertOverflowVisible;
-    return visible(this.overflowCount());
-  });
+  protected readonly overflowVisibleLabel = computed(() =>
+    this.i18n().announcements.alertOverflowVisible(this.overflowCount()),
+  );
 
   /**
    * @internal - arrival detection derived via linkedSignal (not managed in

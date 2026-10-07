@@ -116,6 +116,8 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CNGX_FEEDBACK_I18N` is now `InjectionToken<Signal<CngxFeedbackI18n>>`, and `injectFeedbackI18n()` returns `Signal<CngxFeedbackI18n>`. Call the Signal where you read a label, inside a `computed()`, a template or a handler: `inject(CNGX_FEEDBACK_I18N).alertsRegionLabel` becomes `inject(CNGX_FEEDBACK_I18N)().alertsRegionLabel`.
 - A direct `{ provide: CNGX_FEEDBACK_I18N, useValue: bundle }` must supply a Signal. Prefer `provideFeedbackI18n(overrides)`, which merges over the English defaults, `announcements` key by key. `provideFeedbackI18n` and `withFeedbackI18nLabels` now also accept a `Signal<CngxFeedbackI18nOverrides>` for runtime switching, and `provideFeedbackI18n` returns a plain `Provider` (it used to return `{ provide, useValue }`).
 - The copy inputs `CngxLoadingIndicator.label`, `CngxLoadingOverlay.label` and `CngxProgress.label` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `loadingLabel` / `progressLabel` default. Template bindings are unchanged; the rendered `aria-label` follows a language switch while the input is unbound. Code that reads the input programmatically (`indicator.label()`) gets `undefined` when nothing is bound; read the rendered `aria-label` instead.
+- The keys `dismissLabel`, `bannerActionFailed`, `toastRepeatCount`, `loadingLabel`, `progressLabel`, `progressValueText` and `announcements.alertOverflowVisible` of `CngxFeedbackI18n` are no longer optional, and the interface gains `errorWithDetail: (message, detail) => string`. A full bundle typed as `CngxFeedbackI18n` adds them, or becomes a `CngxFeedbackI18nOverrides` passed to `provideFeedbackI18n`. A bundle provided directly with `{ provide: CNGX_FEEDBACK_I18N, useValue }` still reads every key it leaves out from the language pack, then English.
+- The English feedback copy comes from the new `CNGX_FEEDBACK_LANGUAGE_EN` export, the `feedback` section of the language pack. `provideFeedbackI18n` and `withFeedbackI18nLabels` override single keys on top of it.
 
 ### @cngx/ui/data-grid-accordion
 
@@ -279,6 +281,13 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The collapsed-group screen-reader phrases use the singular for one step: `1 step`, `0 of 1 step complete` (before: `1 steps`).
 - The visible collapsed-group badge formats its numbers with the app locale (`1.200` in German) and its order comes from `groupSummaryProgressShort`.
 - `cngx-stepper-count` no longer forces `direction: ltr`; the caption reads in the page direction. A `format` that renders a bare ratio such as `2/9` keeps its order under RTL with `--cngx-stepper-count-direction: ltr`.
+
+### @cngx/ui/feedback
+
+- The feedback copy comes from the `feedback` section of the language pack; `provideFeedbackI18n` and `withFeedbackI18nLabels` still win key by key, also on top of a pack. English output is unchanged apart from the points below.
+- `CngxAlertOn`, `CngxToastOn` and `CngxBannerOn` with their `*ErrorDetail` input set no longer append the raw error text in production builds: the detail comes from the mapping set with `provideFeedback(withErrorDetail((error) => ...))`, and without one only development builds show `Error.message` (or a thrown string). Message and detail are joined by the `errorWithDetail` message (English `'{message}: {detail}'`), both parts bidi-isolated. Map the errors your app expects to translated text: `withErrorDetail((error) => (error instanceof HttpErrorResponse ? translate(`http.${error.status}`) : undefined))`.
+- The accessible name of the alert-stack overflow trigger uses the singular for one hidden alert: `+ 1 more alert` (before: `+ 1 more alerts`). The overflow counts and the toast repeat marker format their numbers with the locale (`(x1.200)` in German).
+- The `aria-valuetext` of a determinate `CngxProgress` comes from the `progressValueText` message (English `'{value}'`, the percent formatted in the locale); the inserted percent is bidi-isolated, so an exact comparison strips U+2068 / U+2069 first.
 
 ### @cngx/forms/field
 

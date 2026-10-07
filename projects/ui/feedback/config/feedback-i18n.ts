@@ -1,6 +1,11 @@
-import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { coerceSignal, createNestedOverrideMerge, createOverrideMerge } from '@cngx/core/utils';
+import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createNestedOverrideMerge, type CngxNestedOverrides } from '@cngx/core/utils';
 
+import {
+  CNGX_FEEDBACK_LANGUAGE_EN,
+  type CngxFeedbackLanguageSection,
+} from '../i18n/feedback-language-section';
 import type { FeedbackFeature } from './feedback-config';
 
 /**
@@ -27,10 +32,8 @@ export interface CngxFeedbackAnnouncements {
    * Visible text of the alert-stack overflow trigger. Receives the hidden
    * count; its output must be contained in
    * {@link CngxFeedbackAnnouncements.alertOverflow} for the same count.
-   * Optional for compatibility with full bundles written before it existed;
-   * the English default applies when absent.
    */
-  readonly alertOverflowVisible?: (count: number) => string;
+  readonly alertOverflowVisible: (count: number) => string;
   /** `idle -> loading` on `CngxAsyncContainer`. */
   readonly asyncLoading: string;
   /** `loading -> success`. */
@@ -64,42 +67,32 @@ export interface CngxFeedbackI18n {
   readonly notificationsRegionLabel: string;
   /** Live-region copy - see {@link CngxFeedbackAnnouncements}. */
   readonly announcements: CngxFeedbackAnnouncements;
-  /**
-   * Accessible name of the dismiss button on alerts, stacked alerts, toasts and
-   * banners. Optional for compatibility with full bundles written before it
-   * existed; the English default applies when absent.
-   */
-  readonly dismissLabel?: string;
-  /**
-   * Shown in the banner's `role="alert"` slot when its action rejects. Optional
-   * for the same compatibility reason as {@link CngxFeedbackI18n.dismissLabel}.
-   */
-  readonly bannerActionFailed?: string;
-  /**
-   * Visible repeat marker on a toast raised more than once. Receives the repeat
-   * count. Optional for the same compatibility reason as
-   * {@link CngxFeedbackI18n.dismissLabel}.
-   */
-  readonly toastRepeatCount?: (count: number) => string;
+  /** Accessible name of the dismiss button on alerts, stacked alerts, toasts and banners. */
+  readonly dismissLabel: string;
+  /** Shown in the banner's `role="alert"` slot when its action rejects. */
+  readonly bannerActionFailed: string;
+  /** Visible repeat marker on a toast raised more than once. Receives the repeat count. */
+  readonly toastRepeatCount: (count: number) => string;
   /**
    * Default accessible name of `CngxLoadingIndicator` and `CngxLoadingOverlay`
-   * while their `label` input is unbound. Optional for the same compatibility
-   * reason as {@link CngxFeedbackI18n.dismissLabel}.
+   * while their `label` input is unbound.
    */
-  readonly loadingLabel?: string;
-  /**
-   * Default accessible name of `CngxProgress` while its `label` input is
-   * unbound. Optional for the same compatibility reason as
-   * {@link CngxFeedbackI18n.dismissLabel}.
-   */
-  readonly progressLabel?: string;
+  readonly loadingLabel: string;
+  /** Default accessible name of `CngxProgress` while its `label` input is unbound. */
+  readonly progressLabel: string;
   /**
    * `aria-valuetext` of a determinate `CngxProgress`. Receives the rounded
    * percent (0-100) and that value already formatted as a percent in the app
-   * locale; the default returns the formatted string. Optional for the same
-   * compatibility reason as {@link CngxFeedbackI18n.dismissLabel}.
+   * locale; the default returns the formatted string.
    */
-  readonly progressValueText?: (percent: number, formatted: string) => string;
+  readonly progressValueText: (percent: number, formatted: string) => string;
+  /**
+   * The message a state bridge (`CngxAlertOn`, `CngxToastOn`, `CngxBannerOn`)
+   * and `CngxActionButton` show for a failure with a detail: the bound error
+   * message followed by the detail `withErrorDetail` mapped from the error.
+   * One message, so a locale owns the joiner and the order.
+   */
+  readonly errorWithDetail: (message: string, detail: string) => string;
 }
 
 /**
@@ -112,36 +105,63 @@ export type CngxFeedbackI18nOverrides = Partial<Omit<CngxFeedbackI18n, 'announce
   readonly announcements?: Partial<CngxFeedbackAnnouncements>;
 };
 
-/** @internal - English defaults, also the fallback for optional keys a full bundle omits. */
-export const FEEDBACK_I18N_DEFAULTS: Required<CngxFeedbackI18n> & {
-  readonly announcements: Required<CngxFeedbackAnnouncements>;
-} = {
-  alertsRegionLabel: 'Alerts',
-  notificationsRegionLabel: 'Notifications',
-  dismissLabel: 'Dismiss',
-  bannerActionFailed: 'Action failed',
-  toastRepeatCount: (count) => `(x${count})`,
-  loadingLabel: 'Loading',
-  progressLabel: 'Progress',
-  progressValueText: (_percent, formatted) => formatted,
-  announcements: {
-    alertDismissed: 'Alert dismissed',
-    alertOverflow: (count) => `+ ${count} more alerts`,
-    alertOverflowVisible: (count) => `+ ${count} more`,
-    asyncLoading: 'Loading content',
-    asyncLoaded: 'Content loaded',
-    asyncError: 'Error loading content',
-    asyncRefreshing: 'Refreshing content',
-    asyncRefreshed: 'Content refreshed',
-    asyncRefreshFailed: 'Refresh failed',
-  },
-};
+const NO_SECTION: CngxNestedOverrides<CngxFeedbackLanguageSection, 'announcements'> = {};
+
+/** @internal Turns a feedback section into the token's keys for a locale. */
+function feedbackBundleFrom(
+  section: CngxFeedbackLanguageSection,
+  locale: string,
+): CngxFeedbackI18n {
+  const announcements = section.announcements;
+  return {
+    alertsRegionLabel: section.alertsRegionLabel,
+    notificationsRegionLabel: section.notificationsRegionLabel,
+    dismissLabel: section.dismissLabel,
+    bannerActionFailed: section.bannerActionFailed,
+    toastRepeatCount: (count) => formatMessage(section.toastRepeatCount, { count }, locale),
+    loadingLabel: section.loadingLabel,
+    progressLabel: section.progressLabel,
+    progressValueText: (percent, value) =>
+      formatMessage(section.progressValueText, { percent, value }, locale),
+    errorWithDetail: (message, detail) =>
+      formatMessage(section.errorWithDetail, { message, detail }, locale),
+    announcements: {
+      alertDismissed: announcements.alertDismissed,
+      alertOverflow: (count) => formatMessage(announcements.alertOverflow, { count }, locale),
+      alertOverflowVisible: (count) =>
+        formatMessage(announcements.alertOverflowVisible, { count }, locale),
+      asyncLoading: announcements.asyncLoading,
+      asyncLoaded: announcements.asyncLoaded,
+      asyncError: announcements.asyncError,
+      asyncRefreshing: announcements.asyncRefreshing,
+      asyncRefreshed: announcements.asyncRefreshed,
+      asyncRefreshFailed: announcements.asyncRefreshFailed,
+    },
+  };
+}
+
+/** @internal The English feedback section with the active pack's feedback section on top. */
+function injectFeedbackLanguage(): Signal<CngxFeedbackLanguageSection> {
+  const pack = injectLanguageSection('feedback');
+  return createNestedOverrideMerge<CngxFeedbackLanguageSection, 'announcements'>(
+    CNGX_FEEDBACK_LANGUAGE_EN,
+    computed(() => pack() ?? NO_SECTION),
+    'announcements',
+  );
+}
+
+/** @internal Builds and reads the token, formatted for the reading locale. */
+const feedbackBundle = createSectionBundle<CngxFeedbackLanguageSection, CngxFeedbackI18n>({
+  section: injectFeedbackLanguage,
+  toBundle: feedbackBundleFrom,
+});
 
 /**
  * DI token for the feedback i18n bundle, a `Signal` so region names, labels
- * and announcements follow a runtime language switch. `providedIn: 'root'`
- * with English defaults, so a consumer who provides nothing still gets named
- * regions.
+ * and announcements follow a runtime language switch. `providedIn: 'root'`:
+ * the feedback section of the active language pack over the English
+ * defaults, formatted for the app locale, so a consumer who provides nothing
+ * still gets named regions.
  *
  * @category ui/feedback/i18n
  * @wcag AA
@@ -153,13 +173,14 @@ export const CNGX_FEEDBACK_I18N = new InjectionToken<Signal<CngxFeedbackI18n>>(
   'CngxFeedbackI18n',
   {
     providedIn: 'root',
-    factory: () => coerceSignal<CngxFeedbackI18n>(FEEDBACK_I18N_DEFAULTS),
+    factory: () => feedbackBundle.build(),
   },
 );
 
 /**
  * Override the feedback region names from inside `provideFeedback()`. Unset
- * keys keep the English default, and `announcements` merges key by key. Pass
+ * keys keep the language pack's copy, or the English default, and
+ * `announcements` merges key by key. Pass
  * a `Signal` to switch the language at runtime.
  *
  * ```ts
@@ -190,9 +211,11 @@ export function withFeedbackI18nLabels(
  * `provideFeedback()`. This is the entry point a consumer-composed language
  * file uses - `provideFeedback()` replaces the whole `CNGX_FEEDBACK_CONFIG`
  * value, so routing a translation through it would reset unrelated feedback
- * defaults the app set elsewhere. Unset keys keep the English default,
- * `announcements` merges key by key, and a `Signal` switches the language at
- * runtime.
+ * defaults the app set elsewhere. Unset keys keep the language pack's copy,
+ * or the English default, `announcements` merges key by key, and a `Signal`
+ * switches the language at runtime. For a whole language prefer the
+ * `feedback` section of a language pack (`provideCngxI18n` from
+ * `@cngx/core/i18n`); this provider overrides single keys on top of it.
  *
  * @example
  * ```ts
@@ -221,31 +244,27 @@ export function provideFeedbackI18n(
   return {
     provide: CNGX_FEEDBACK_I18N,
     useFactory: () =>
-      createNestedOverrideMerge<CngxFeedbackI18n, 'announcements'>(
-        FEEDBACK_I18N_DEFAULTS,
-        overrides,
-        'announcements',
-      ),
+      feedbackBundle.build([
+        (bundle) =>
+          createNestedOverrideMerge<CngxFeedbackI18n, 'announcements'>(
+            bundle,
+            overrides,
+            'announcements',
+          ),
+      ]),
   };
 }
 
 /**
- * Inject the resolved feedback i18n bundle.
+ * Inject the resolved feedback i18n bundle in an injection context: every key
+ * left at its default follows the locale of the reading site (a
+ * `provideLocaleAt` subtree), every key an override set stays. Read it inside
+ * a `computed()`, template or handler so a language switch reaches the label.
+ * One Signal per injector, bundle and locale, so row-level readers (alerts,
+ * toasts, banners) share it.
  *
  * @category ui/feedback/i18n
  */
 export function injectFeedbackI18n(): Signal<CngxFeedbackI18n> {
-  return inject(CNGX_FEEDBACK_I18N);
-}
-
-/**
- * @internal - the feedback bundle as a shared signal with every optional key
- * filled from the English defaults. One `computed()` per injected bundle, so
- * row-level readers (alerts, toasts, banners) allocate nothing after the first.
- */
-export function injectResolvedFeedbackI18n(): Signal<Required<CngxFeedbackI18n>> {
-  return createOverrideMerge<Required<CngxFeedbackI18n>>(
-    FEEDBACK_I18N_DEFAULTS,
-    injectFeedbackI18n(),
-  );
+  return feedbackBundle.resolve(inject(CNGX_FEEDBACK_I18N));
 }
