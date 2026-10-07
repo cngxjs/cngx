@@ -22,7 +22,7 @@
           [ngTemplateOutletContext]="{ $implicit: item, index: recycler.start() + $index }"
         />
       } @else {
-        {{ item }}
+        {{ itemText(item) }}
       }
     </li>
   }

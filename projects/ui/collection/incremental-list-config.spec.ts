@@ -2,8 +2,8 @@ import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test } from 'vitest';
 
+import { CNGX_COLLECTION_LANGUAGE_EN } from './i18n/collection-language-section';
 import {
-  CNGX_INCREMENTAL_LIST_DEFAULTS,
   injectIncrementalListAriaLabels,
   provideIncrementalListConfig,
   withIncrementalListAriaLabels,
@@ -13,7 +13,7 @@ import {
 const resolve = () => TestBed.runInInjectionContext(() => injectIncrementalListAriaLabels());
 
 describe('incremental-list ariaLabels cascade', () => {
-  test('resolves plain overrides to the same bundle as the eager merge did', () => {
+  test('resolves plain overrides over the collection section', () => {
     TestBed.configureTestingModule({
       providers: [
         provideIncrementalListConfig(
@@ -22,11 +22,11 @@ describe('incremental-list ariaLabels cascade', () => {
         ),
       ],
     });
-    expect(resolve()()).toEqual({
-      ...CNGX_INCREMENTAL_LIST_DEFAULTS.ariaLabels,
-      empty: 'Noch nichts hier',
-      retry: 'Erneut versuchen',
-    });
+    const labels = resolve()();
+    expect(labels.empty).toBe('Noch nichts hier');
+    expect(labels.retry).toBe('Erneut versuchen');
+    expect(labels.loading).toBe(CNGX_COLLECTION_LANGUAGE_EN.loading);
+    expect(labels.pageError).toBe(CNGX_COLLECTION_LANGUAGE_EN.pageError);
   });
 
   test('follows Signal overrides and keeps the bundle reference on an equal recompute', () => {

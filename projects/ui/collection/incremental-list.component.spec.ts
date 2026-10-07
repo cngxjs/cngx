@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createResizeObserverMock } from '@cngx/testing';
 
 import { CNGX_RECYCLER_I18N, CngxPaginate, createManualState } from '@cngx/common/data';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { provideLocale, type CngxAsyncState } from '@cngx/core/utils';
 import { CngxPaginatorLoadMore } from '@cngx/ui/paginator';
 
 import {
@@ -151,7 +151,12 @@ class VirtualI18nHostCmp {
 @Component({
   standalone: true,
   imports: [CngxIncrementalList],
-  template: `<cngx-incremental-list [state]="state()" [total]="3" [pageSize]="10" [trackBy]="trackFn" />`,
+  template: `<cngx-incremental-list
+    [state]="state()"
+    [total]="3"
+    [pageSize]="10"
+    [trackBy]="trackFn"
+  />`,
 })
 class TrackHostCmp {
   readonly state = signal<CngxAsyncState<number[]> | undefined>(undefined);
@@ -238,9 +243,9 @@ describe('CngxIncrementalList', () => {
     await settle(fixture);
     expect(listEl.querySelector('cngx-progress')).toBeNull();
     expect(listEl.querySelectorAll('.cngx-incremental-list__item')).toHaveLength(3);
-    expect(
-      listEl.querySelector('.cngx-incremental-list__items')?.hasAttribute('aria-busy'),
-    ).toBe(false);
+    expect(listEl.querySelector('.cngx-incremental-list__items')?.hasAttribute('aria-busy')).toBe(
+      false,
+    );
 
     // success with an empty result -> empty branch.
     manual.setSuccess([]);
@@ -254,6 +259,22 @@ describe('CngxIncrementalList', () => {
     fresh.setError(new Error('boom'));
     await settle(fixture);
     expect(listEl.querySelector('.cngx-incremental-list__error')).not.toBeNull();
+  });
+
+  test('formats number items for the locale without an item slot', async () => {
+    TestBed.configureTestingModule({ providers: [...providers, provideLocale('de')] });
+    const fixture = TestBed.createComponent(HostCmp);
+    const host = fixture.componentInstance;
+    const manual = createManualState<number[]>();
+    manual.setSuccess([1200, 3400.5]);
+    host.state.set(manual);
+    host.total.set(2);
+    host.size.set(10);
+    await settle(fixture);
+    const rows = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('.cngx-incremental-list__item'),
+    ).map((row) => row.textContent?.trim());
+    expect(rows).toEqual(['1.200', '3.400,5']);
   });
 
   test('exhausted renders the end-reached label only on the last page', async () => {
@@ -331,9 +352,8 @@ describe('CngxIncrementalList', () => {
 
     const [start, end] = paginate.cumulativeRange();
     const expected = data.slice(start, end);
-    const rendered = Array.from(
-      listEl.querySelectorAll('.cngx-incremental-list__item'),
-      (li) => Number(li.textContent),
+    const rendered = Array.from(listEl.querySelectorAll('.cngx-incremental-list__item'), (li) =>
+      Number(li.textContent),
     );
     expect(rendered).toEqual(expected);
   });
@@ -376,7 +396,9 @@ describe('CngxIncrementalList', () => {
       providers: [provideIncrementalListConfig(withIncrementalListAriaLabels(labels))],
     });
     const recyclerI18n = (fixture: ComponentFixture<HostCmp>) =>
-      fixture.debugElement.query(By.directive(CngxIncrementalList)).injector.get(CNGX_RECYCLER_I18N);
+      fixture.debugElement
+        .query(By.directive(CngxIncrementalList))
+        .injector.get(CNGX_RECYCLER_I18N);
     const first = TestBed.createComponent(HostCmp);
     const second = TestBed.createComponent(HostCmp);
     await settle(first);
@@ -447,7 +469,9 @@ describe('CngxIncrementalList', () => {
     fixture.componentInstance.state.set(manual);
     await settle(fixture);
 
-    const retryBtn = fixture.nativeElement.querySelector('.custom-retry') as HTMLButtonElement | null;
+    const retryBtn = fixture.nativeElement.querySelector(
+      '.custom-retry',
+    ) as HTMLButtonElement | null;
     expect(retryBtn).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.cngx-incremental-list__error')).toBeNull();
     retryBtn?.click();
@@ -475,7 +499,9 @@ describe('CngxIncrementalList', () => {
 
     const sr = fixture.nativeElement.querySelector('.cngx-incremental-list__sr');
     expect(sr?.textContent?.trim()).toBe('Nothing to display');
-    const empty = fixture.nativeElement.querySelector('cngx-empty-state.cngx-incremental-list__empty');
+    const empty = fixture.nativeElement.querySelector(
+      'cngx-empty-state.cngx-incremental-list__empty',
+    );
     expect(empty?.textContent).toContain('Nothing to display');
   });
 
@@ -527,9 +553,9 @@ describe('CngxIncrementalList', () => {
       'Failed to load more',
     );
 
-    const retryBtn = inline?.querySelector('.cngx-incremental-list__retry') as
-      | HTMLButtonElement
-      | null;
+    const retryBtn = inline?.querySelector(
+      '.cngx-incremental-list__retry',
+    ) as HTMLButtonElement | null;
     expect(retryBtn).not.toBeNull();
     retryBtn?.click();
     await settle(fixture);

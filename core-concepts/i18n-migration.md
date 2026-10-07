@@ -166,9 +166,11 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 ### @cngx/ui/collection
 
-- `CngxIncrementalListConfig.ariaLabels` is typed `CngxIncrementalListAriaLabels | Signal<CngxIncrementalListAriaLabels>`, and once `withIncrementalListAriaLabels` ran it holds a `Signal`. Code that reads it off `injectIncrementalListConfig()` or `CNGX_INCREMENTAL_LIST_CONFIG` reads the resolved bundle through the new accessor instead: `injectIncrementalListConfig().ariaLabels.empty` becomes `injectIncrementalListAriaLabels()().empty`, called inside a `computed()`, a template or a handler. `CNGX_INCREMENTAL_LIST_DEFAULTS` keeps its plain bundle.
+- `CngxIncrementalListConfig.ariaLabels` is typed `CngxIncrementalListAriaLabels | Signal<CngxIncrementalListAriaLabels>`, and once `withIncrementalListAriaLabels` ran it holds a `Signal`. Code that reads it off `injectIncrementalListConfig()` or `CNGX_INCREMENTAL_LIST_CONFIG` reads the resolved bundle through the new accessor instead: `injectIncrementalListConfig().ariaLabels.empty` becomes `injectIncrementalListAriaLabels()().empty`, called inside a `computed()`, a template or a handler.
 - `withIncrementalListAriaLabels` now also accepts a `Signal` of the partial bundle. Plain partials keep their merge rules; `provideIncrementalListConfigAt` still merges over the parent scope. A hand-built `CngxIncrementalListConfigFeature` payload may be a `Signal` as well.
 - The settle live region and the recycler load-count announcement read their phrasing untracked: a language switch does not re-speak the current message, the next settle or load speaks the new language. The empty-state title (a status region of its own) keeps its text until the next settle too; the visible error, retry and end texts follow the switch at once.
+
+- `CNGX_INCREMENTAL_LIST_DEFAULTS` and the default `CNGX_INCREMENTAL_LIST_CONFIG` carry no copy any more: `ariaLabels` is optional, unset by default, and holds only the overrides `withIncrementalListAriaLabels` set (`Partial<L> | Signal<Partial<L>>`). The label defaults are the `collection` section of the language pack, exported in English as `CNGX_COLLECTION_LANGUAGE_EN`. Code that read `CNGX_INCREMENTAL_LIST_DEFAULTS.ariaLabels.empty` reads `injectIncrementalListAriaLabels()().empty`; a hand-built config that spread the full default bundle drops it.
 
 ### @cngx/ui/stat-card
 
@@ -308,6 +310,11 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - The paginator copy comes from the `paginator` section of the language pack; the `withPaginator*` features still win key by key, also on top of a pack.
 - Numbers in the copy and the readouts are formatted for the locale: `<b>1,001-1,010</b> of 12,500`, `Page 2 of 1,250`; the page buttons, the page-of-pages options and the page-size select show `1.500` in German. The alphabet bucket names are bidi-isolated, so an exact comparison strips U+2068 / U+2069 first.
+
+### @cngx/ui/collection
+
+- The incremental-list copy comes from the `collection` section of the language pack; `withIncrementalListAriaLabels` still wins key by key, also on top of a pack.
+- The end-reached and load-count texts format their numbers for the locale (`All 1,200 loaded`), and a row without an item slot shows a number or a `Date` formatted for the locale (`1.200`, `7. Okt. 2026` in German; dates date-only) instead of `String(item)`.
 
 ### @cngx/ui/command-palette
 
