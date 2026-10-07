@@ -87,6 +87,51 @@ foot size plus `--cngx-dga-focus-clearance` (4px, the widest ring plus its offse
 `--cngx-dga-head-scroll-pad` / `--cngx-dga-foot-scroll-pad` override the measured
 values.
 
+### Scroll-edge visuals are swappable defaults
+
+The shadows and the inline fade are only the default look. The host attributes
+`data-scroll-block-start`, `data-scroll-block-end`, `data-scroll-inline-start` and
+`data-scroll-inline-end` are public: each is present (empty value) only while content is
+hidden toward that edge, so you can key any visual on them.
+
+Turn the default shadows off:
+
+```css
+cngx-data-grid-accordion {
+  --cngx-dga-head-shadow: none;
+  --cngx-dga-foot-shadow: none;
+}
+```
+
+A line that appears under the pinned head instead. Use a background layer on the header
+rather than a pseudo-element: some skins already use the header's pseudo-elements, and
+a background layer stacks on top of the skin's own fill:
+
+```css
+cngx-data-grid-accordion {
+  --cngx-dga-head-shadow: none;
+}
+cngx-data-grid-accordion[data-scroll-block-start] .cngx-dga-header {
+  background-image: linear-gradient(to top, var(--cngx-color-border, #d1d5db) 2px, transparent 0);
+}
+```
+
+A tonal head instead (the Material 3 top app bar pattern). Set the header's background
+directly: the named skins paint the head fill themselves, so `--cngx-dga-head-bg` only
+reaches the unskinned grid:
+
+```css
+cngx-data-grid-accordion {
+  --cngx-dga-head-shadow: none;
+}
+cngx-data-grid-accordion[data-scroll-block-start] .cngx-dga-header {
+  background-color: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, var(--cngx-color-surface, #fff));
+}
+```
+
+Under forced colors the UA strips shadows, so a line or border is the cue that survives
+there.
+
 Motion and forced colors: the shadow and fade ease over `--cngx-dga-edge-duration`
 (default `--cngx-duration-fast`), which the global reduced-motion net collapses to an
 instant change. Under forced colors the UA drops the shadows and the fade is removed;

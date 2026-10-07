@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A bounded ledger whose pinned head casts a shadow only while rows are scrolled away above it, and whose footer casts one only while rows remain below. Scroll to either end and the matching shadow goes away.',
   description:
-    'The group composes <code>CngxScrollEdges</code> on its host, so the scrollport reflects <code>data-scroll-block-start</code> / <code>-block-end</code> only while rows are really hidden in that direction. The head / foot shadows are keyed on those attributes and tuned through <code>--cngx-dga-head-shadow</code> / <code>--cngx-dga-foot-shadow</code>. Keyboard focus lands clear of both bands: the host pads its scrollport by the measured head and foot size plus <code>--cngx-dga-focus-clearance</code>. Flip the direction to check the same behaviour under RTL.',
+    'The group composes <code>CngxScrollEdges</code> on its host, so the scrollport reflects <code>data-scroll-block-start</code> / <code>-block-end</code> only while rows are really hidden in that direction. The head / foot shadows are keyed on those attributes and tuned through <code>--cngx-dga-head-shadow</code> / <code>--cngx-dga-foot-shadow</code>. Keyboard focus lands clear of both bands: the host pads its scrollport by the measured head and foot size plus <code>--cngx-dga-focus-clearance</code>. The shadows are only the default look: set the two shadow tokens to <code>none</code> or key your own line or tonal head on the same attributes. Flip the direction to check the same behaviour under RTL.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'building-block',
@@ -18,8 +18,7 @@ export const STORY: DemoSpec = {
     'CngxDataGridFooter',
     'CngxDgCell',
   ],
-  setup: `protected readonly dir = signal<'ltr' | 'rtl'>('ltr');
-  private readonly names = [
+  setup: `private readonly names = [
     'Northwind Traders', 'Contoso Ltd', 'Fabrikam Inc', 'Adventure Works',
     'Wingtip Toys', 'Tailspin Toys', 'Proseware Inc', 'Fourth Coffee',
   ];
@@ -55,6 +54,7 @@ export const STORY: DemoSpec = {
       </cngx-dga-footer>
     </cngx-data-grid-accordion>
   </div>`,
+  setupChrome: `protected readonly dir = signal<'ltr' | 'rtl'>('ltr');`,
   templateChrome: `<div class="button-row" role="radiogroup" aria-label="Direction">
     <label>
       <input type="radio" name="dga-bounded-dir" value="ltr"

@@ -281,9 +281,11 @@
 
   /**
    * Shadow cast by the pinned column head while rows are scrolled away above it
-   * (bounded mode only). Universal syntax with NO initial-value, so the adaptive
-   * default at the use site (derived from `--cngx-color-text`) stays live; a fixed
-   * colour initial would defeat it.
+   * (bounded mode only). This is only the default look: set it to `none` to turn
+   * it off, or key your own visual (a line that appears, a tonal head) on the
+   * public `data-scroll-block-start` host attribute. Universal syntax with NO
+   * initial-value, so the adaptive default at the use site (derived from
+   * `--cngx-color-text`) stays live; a fixed colour initial would defeat it.
    * @group Surface
    */
   @property --cngx-dga-head-shadow {
@@ -293,7 +295,9 @@
 
   /**
    * Shadow cast by the pinned footer while rows remain below it (bounded mode only).
-   * No initial-value, for the same reason as the head shadow.
+   * A swappable default like the head shadow: `none` turns it off, and the public
+   * `data-scroll-block-end` host attribute keys any replacement. No initial-value,
+   * for the same reason as the head shadow.
    * @group Surface
    */
   @property --cngx-dga-foot-shadow {
@@ -303,7 +307,9 @@
 
   /**
    * Width of the inline edge fade shown while columns are hidden sideways. Also sets
-   * how far the inline scroll padding keeps a focused cell away from the edge.
+   * how far the inline scroll padding keeps a focused cell away from the edge. The
+   * fade is a default look keyed on the public `data-scroll-inline-start` /
+   * `data-scroll-inline-end` host attributes.
    * @group Grid
    */
   @property --cngx-dga-edge-fade-size {

@@ -18,8 +18,7 @@ export const STORY: DemoSpec = {
     'CngxDataGridFooter',
     'CngxDgCell',
   ],
-  setup: `protected readonly dir = signal<'ltr' | 'rtl'>('ltr');
-  protected readonly rows = [
+  setup: `protected readonly rows = [
     { id: 'INV-1001', customer: 'Northwind Traders', region: 'North', amount: '$1,240.00' },
     { id: 'INV-1002', customer: 'Contoso Ltd', region: 'West', amount: '$860.50' },
     { id: 'INV-1003', customer: 'Fabrikam Inc', region: 'South', amount: '$3,105.00' },
@@ -52,6 +51,7 @@ export const STORY: DemoSpec = {
       </cngx-dga-footer>
     </cngx-data-grid-accordion>
   </div>`,
+  setupChrome: `protected readonly dir = signal<'ltr' | 'rtl'>('ltr');`,
   templateChrome: `<div class="button-row" role="radiogroup" aria-label="Direction">
     <label>
       <input type="radio" name="dga-narrow-dir" value="ltr"
