@@ -13,8 +13,7 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxScrollEdges'],
   moduleImports: ["import { CngxScrollEdges } from '@cngx/common/layout';"],
   imports: ['CngxScrollEdges'],
-  setup: `protected readonly dir = signal<'ltr' | 'rtl'>('ltr');
-  protected readonly rows = Array.from({ length: 16 }, (_, i) => i + 1);
+  setup: `protected readonly rows = Array.from({ length: 16 }, (_, i) => i + 1);
   protected readonly columns = Array.from({ length: 10 }, (_, i) => i + 1);`,
   template: `<div class="demo-scroll-edges-frame" [attr.dir]="dir()">
     <div
@@ -34,6 +33,7 @@ export const STORY: DemoSpec = {
       </div>
     </div>
   </div>`,
+  setupChrome: `protected readonly dir = signal<'ltr' | 'rtl'>('ltr');`,
   templateChrome: `<div class="button-row" role="radiogroup" aria-label="Direction">
     <label>
       <input type="radio" name="scroll-edges-dir" value="ltr"

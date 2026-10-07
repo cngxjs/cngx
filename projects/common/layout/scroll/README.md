@@ -209,6 +209,34 @@ Reports which edges of a scrollport still hide content. Place it on the element 
 .sheet[data-scroll-block-start] { box-shadow: inset 0 8px 8px -8px rgb(0 0 0 / 0.3); }
 ```
 
+### Contract: attributes, not paint
+
+The atom paints nothing. Its public, stable contract is the four `data-scroll-*` host
+attributes (each present, with an empty value, only while true) plus the four signals
+behind them; every visual is yours. Give the bar a transparent border at rest (the
+hairline recipe below needs one), then pick the cue that fits your design language:
+
+```css
+/* 1. Shadow (Material 2 elevate-on-scroll): lift the bar while content sits under it. */
+.page[data-scroll-block-start] .app-bar {
+  box-shadow: 0 2px 4px -2px rgb(0 0 0 / 0.3);
+}
+
+/* 2. Hairline that appears (iOS scroll-edge appearance): no line at rest. */
+.page[data-scroll-block-start] .app-bar {
+  border-block-end-color: var(--cngx-color-border, #d1d5db);
+}
+
+/* 3. Tonal surface change (Material 3 top app bar): a tinted container on scroll. */
+.page[data-scroll-block-start] .app-bar {
+  background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, var(--cngx-color-surface, #fff));
+}
+```
+
+Forced colors (Windows High Contrast) strips `box-shadow`, so a shadow-only cue vanishes
+there. Prefer the hairline (a border survives in system colours), or pair the shadow with
+a border inside `@media (forced-colors: active)`.
+
 ### How It Works
 
 - A passive `scroll` listener, one `observeResize` on the scrollport and on each direct element child, and a `childList` `MutationObserver` that keeps the child set current all schedule one read per animation frame.

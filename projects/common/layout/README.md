@@ -82,6 +82,7 @@ Reports which edges of a scrollport still hide content as four signals (`canScro
 - One read per animation frame, triggered by scroll, resize of the scrollport or a direct child, and child-list mutations. 1px tolerance.
 - RTL-safe without a direction lookup; inline start is the right edge under `dir="rtl"`.
 - Purely visual: no announcement, the hidden content stays in the DOM.
+- The atom paints nothing: the `data-scroll-*` attributes (present only while true) are the public, stable contract. Common cues keyed on them: a shadow (elevate-on-scroll), a hairline that appears, or a tonal surface change. Forced colors strips `box-shadow`, so prefer a border there. Recipes in [scroll/README.md](scroll/README.md#cngxscrolledges).
 
 ## CngxScrollSpy
 

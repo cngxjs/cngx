@@ -22,13 +22,30 @@ import { createScrollEdges } from './scroll-edges-core';
  * edge is on the right. The direction is derived from the scroll offset
  * itself, so a `dir="rtl"` subtree inside an LTR page reports correctly.
  *
- * The directive paints nothing. All visuals belong to the consumer CSS, keyed
- * on the attributes:
+ * The directive paints nothing. The four attributes (present only while true)
+ * are its public, stable contract; every visual belongs to the consumer CSS,
+ * keyed on them. Three common cues:
+ *
+ * Shadow (Material 2 elevate-on-scroll):
  *
  * ```css
- * .sheet { overflow: auto; transition: box-shadow 150ms; }
- * .sheet[data-scroll-block-start] { box-shadow: inset 0 8px 8px -8px rgb(0 0 0 / 0.3); }
+ * .sheet[data-scroll-block-start] .bar { box-shadow: 0 2px 4px -2px rgb(0 0 0 / 0.3); }
  * ```
+ *
+ * Hairline that appears (iOS scroll-edge appearance; transparent border at rest):
+ *
+ * ```css
+ * .sheet[data-scroll-block-start] .bar { border-block-end-color: var(--cngx-color-border); }
+ * ```
+ *
+ * Tonal surface change (Material 3 top app bar):
+ *
+ * ```css
+ * .sheet[data-scroll-block-start] .bar { background: var(--app-bar-scrolled-surface); }
+ * ```
+ *
+ * Forced colors strips `box-shadow`, so a shadow-only cue disappears there;
+ * prefer a border or pair the shadow with one under `forced-colors: active`.
  *
  * ```html
  * <div class="sheet" cngxScrollEdges #edges="cngxScrollEdges">...</div>
