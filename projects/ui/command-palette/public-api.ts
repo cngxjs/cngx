@@ -43,3 +43,7 @@ export {
   type CngxCommandPaletteErrorContext,
   type CngxCommandPaletteFooterContext,
 } from './slots/command-slots';
+export {
+  CNGX_COMMAND_PALETTE_LANGUAGE_EN,
+  type CngxCommandPaletteLanguageSection,
+} from './i18n/command-palette-language-section';

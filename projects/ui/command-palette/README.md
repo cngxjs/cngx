@@ -145,8 +145,11 @@ provideCommandPaletteConfig(
 ```
 
 Root, or scoped to a subtree with `provideCommandPaletteConfigAt` in
-`viewProviders`, where features merge onto the enclosing scope. Defaults are
-English; supply your locale through the cascade.
+`viewProviders`, where features merge onto the enclosing scope. The copy
+defaults are the `commandPalette` section of the language pack (English
+without one), so the language file translates the palette; the features above
+override single keys on top of it. Each footer legend entry is spoken once,
+through the section's `legendEntry` message (`'{keys} {label}'`).
 
 ## Accessibility
 

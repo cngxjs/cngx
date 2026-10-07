@@ -140,6 +140,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The copy keys of `CngxCommandPaletteConfig` (`searchPlaceholder`, `listboxLabel`, `emptyLabel`, `loadingLabel`, `errorLabel`, `retryLabel`, `paletteLabel`, `resultCount`, `footerLegend`) are typed `T | Signal<T>`, and once a `Signal` was passed to a feature they hold a `Signal`. Code that reads a key off `injectCommandPaletteConfig()` or `CNGX_COMMAND_PALETTE_CONFIG` wraps it once, in a field: `private readonly emptyLabel = coerceSignal(injectCommandPaletteConfig().emptyLabel);` (`coerceSignal` from `@cngx/core/utils`), then `this.emptyLabel()` inside a `computed()`, a template or a handler. A hand-written `CngxCommandPaletteConfigFeature` keeps working; one that reads a copy key wraps it the same way.
 - `withCommandPaletteLabels` now also accepts a `Signal` of the label overrides: a key the Signal sets wins, an unset key follows the inherited value. `withResultCountFormatter` and `withKeyboardLegend` accept a value or a `Signal`. Plain values keep their merge rules.
 - `CngxCommandPalette.ariaLabel` is now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `paletteLabel` default. Template bindings are unchanged; the rendered dialog name follows a language switch while the input is unbound.
+- The copy keys of `CngxCommandPaletteConfig` are optional and the default `CNGX_COMMAND_PALETTE_CONFIG` carries no copy: a key holds only the override a feature set. The copy defaults are the `commandPalette` section of the language pack, exported in English as `CNGX_COMMAND_PALETTE_LANGUAGE_EN`. Code that read a copy key off `injectCommandPaletteConfig()` gets `undefined` while no feature set it.
 
 ### @cngx/ui/paginator
 
@@ -307,6 +308,11 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - The paginator copy comes from the `paginator` section of the language pack; the `withPaginator*` features still win key by key, also on top of a pack.
 - Numbers in the copy and the readouts are formatted for the locale: `<b>1,001-1,010</b> of 12,500`, `Page 2 of 1,250`; the page buttons, the page-of-pages options and the page-size select show `1.500` in German. The alphabet bucket names are bidi-isolated, so an exact comparison strips U+2068 / U+2069 first.
+
+### @cngx/ui/command-palette
+
+- The result count is a plural message with the number formatted for the locale (`1,200 results`).
+- A footer legend entry is spoken once, as one `legendEntry` phrase (English `'{keys} {label}'`, parts bidi-isolated); the visible `<kbd>` and label are hidden from assistive tech.
 
 ### @cngx/ui/feedback
 
