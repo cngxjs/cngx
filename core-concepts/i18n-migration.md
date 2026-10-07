@@ -289,6 +289,10 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The accessible name of the alert-stack overflow trigger uses the singular for one hidden alert: `+ 1 more alert` (before: `+ 1 more alerts`). The overflow counts and the toast repeat marker format their numbers with the locale (`(x1.200)` in German).
 - The `aria-valuetext` of a determinate `CngxProgress` comes from the `progressValueText` message (English `'{value}'`, the percent formatted in the locale); the inserted percent is bidi-isolated, so an exact comparison strips U+2068 / U+2069 first.
 
+### @cngx/ui/action-button
+
+- `CngxActionButton` with `[toastErrorDetail]` set routes the failure toast detail through the feedback error mapping: the detail comes from `provideFeedback(withErrorDetail((error) => ...))`, and without one only development builds show `Error.message` (or a thrown string), with the same one-time warning as `CngxToastOn`. Message and detail are joined by the feedback `errorWithDetail` message (English `'{message}: {detail}'`), both parts bidi-isolated, so an exact comparison strips U+2068 / U+2069 first.
+
 ### @cngx/forms/field
 
 - `CngxFieldErrors` and `CngxFormErrors` no longer show the raw error `kind` (`minLength`). An error resolves to the `CNGX_ERROR_MESSAGES` entry for its kind, then its own `message`, then the English message of a built-in kind (`required`, `requiredTrue`, `email`, `min`, `max`, `minLength`, `maxLength`, `pattern`, `parse`), then `'This value is invalid.'`. A registry entry and a validator `message` still win, so an app that maps every kind sees no change. Translate the library messages through the `formField` section of a language pack or `provideFormFieldI18n(withFormFieldI18nLabels(...))`.

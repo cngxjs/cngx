@@ -1,6 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { beforeEach, vi } from 'vitest';
+import { afterEach, beforeEach, vi } from 'vitest';
 import { CngxActionButton } from './action-button';
 import {
   CngxFailed,
@@ -11,7 +11,9 @@ import {
   type CngxInteractiveI18n,
 } from '@cngx/common/interactive';
 import { type CngxAsyncState, buildAsyncStateView, type AsyncStatus } from '@cngx/core/utils';
-import { CngxToaster } from '@cngx/ui/feedback';
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
+import { stripBidiIsolates } from '@cngx/testing';
+import { CngxToaster, provideFeedback, withErrorDetail } from '@cngx/ui/feedback';
 
 function deferred<T = void>() {
   let resolve!: (value: T) => void;
@@ -571,6 +573,10 @@ describe('CngxActionButton', () => {
   });
 
   describe('toast integration', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
     it('should call toaster.show on success', async () => {
       const showSpy = vi.fn();
       TestBed.overrideProvider(CngxToaster, { useValue: { show: showSpy } });
@@ -588,6 +594,7 @@ describe('CngxActionButton', () => {
     });
 
     it('should call toaster.show on error with detail', async () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       const showSpy = vi.fn();
       TestBed.overrideProvider(CngxToaster, { useValue: { show: showSpy } });
       const fixture = TestBed.createComponent(ToastHost);
@@ -600,7 +607,7 @@ describe('CngxActionButton', () => {
         flush(fixture);
         expect(showSpy).toHaveBeenCalledWith(
           expect.objectContaining({
-            message: 'Save failed: DB timeout',
+            message: '\u2068Save failed\u2069: \u2068DB timeout\u2069',
             severity: 'error',
           }),
         );
@@ -642,6 +649,65 @@ describe('CngxActionButton', () => {
         flush(fixture);
         expect(btn.textContent).toBeDefined();
       });
+    });
+  });
+
+  describe('toast error detail', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    const failWith = async (error: unknown): Promise<string> => {
+      const showSpy = vi.fn();
+      TestBed.overrideProvider(CngxToaster, { useValue: { show: showSpy } });
+      const fixture = TestBed.createComponent(ToastHost);
+      fixture.componentInstance.actionImpl = () => Promise.reject(error);
+      fixture.detectChanges();
+      (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
+      await vi.waitFor(() => {
+        flush(fixture);
+        expect(showSpy).toHaveBeenCalled();
+      });
+      return showSpy.mock.calls[0][0].message;
+    };
+
+    it('routes the detail through withErrorDetail', async () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideFeedback(withErrorDetail((error) => (error === 503 ? 'Server busy' : undefined))),
+        ],
+      });
+      expect(stripBidiIsolates(await failWith(503))).toBe('Save failed: Server busy');
+    });
+
+    it('shows the message alone when the mapping returns no detail', async () => {
+      TestBed.configureTestingModule({
+        providers: [provideFeedback(withErrorDetail(() => undefined))],
+      });
+      expect(await failWith(new Error('HTTP 500 Internal Server Error'))).toBe('Save failed');
+    });
+
+    it('warns once in development when the raw error text shows', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      await failWith(new Error('Timeout'));
+      const warnings = warn.mock.calls.filter(([text]) => String(text).includes('withErrorDetail'));
+      expect(warnings).toHaveLength(1);
+    });
+
+    it('joins message and detail with the active language pack', async () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideFeedback(withErrorDetail(() => 'Zeitlimit')),
+          provideCngxI18n(
+            withPartialPack({
+              locale: 'de',
+              feedback: { errorWithDetail: '{message} ({detail})' },
+            }),
+            withDocumentLanguage('off'),
+          ),
+        ],
+      });
+      expect(stripBidiIsolates(await failWith(new Error('x')))).toBe('Save failed (Zeitlimit)');
     });
   });
 

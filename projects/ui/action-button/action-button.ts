@@ -27,7 +27,7 @@ import {
   nextUid,
   type CngxAsyncState,
 } from '@cngx/core/utils';
-import { CngxToastOn, CngxToaster } from '@cngx/ui/feedback';
+import { CngxToastOn, CngxToaster, injectErrorDetail, injectFeedbackI18n } from '@cngx/ui/feedback';
 
 /**
  * Visual variant for the action button - maps to a CSS class.
@@ -163,6 +163,8 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
 })
 export class CngxActionButton {
   private readonly toaster = inject(CngxToaster, { optional: true });
+  private readonly errorDetail = injectErrorDetail();
+  private readonly feedbackI18n = injectFeedbackI18n();
   private readonly externalToastOn = inject(CngxToastOn, { self: true, optional: true });
   protected readonly i18n = injectInteractiveI18n();
 
@@ -389,15 +391,9 @@ export class CngxActionButton {
           if (msg && this.toaster) {
             const err = this.effectiveError();
             const detail =
-              this.toastErrorDetail() && err != null
-                ? err instanceof Error
-                  ? err.message
-                  : typeof err === 'string'
-                    ? err
-                    : undefined
-                : undefined;
+              this.toastErrorDetail() && err != null ? this.errorDetail(err) : undefined;
             this.toaster.show({
-              message: detail ? `${msg}: ${detail}` : msg,
+              message: detail ? this.feedbackI18n().errorWithDetail(msg, detail) : msg,
               severity: 'error',
               duration: this.toastErrorDuration(),
             });
