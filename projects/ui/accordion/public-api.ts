@@ -37,3 +37,7 @@ export {
   withAccordionTemplates,
 } from './config/features';
 export { injectAccordionConfig } from './config/inject-accordion-config';
+export {
+  CNGX_ACCORDION_LANGUAGE_EN,
+  type CngxAccordionLanguageSection,
+} from './i18n/accordion-language-section';

@@ -1,6 +1,8 @@
 import { computed, inject, isSignal, type Signal } from '@angular/core';
 import { recordEqual } from '@cngx/utils';
 
+import { injectAccordionSiteCopy } from '../i18n/accordion-i18n';
+import type { CngxAccordionLanguageSection } from '../i18n/accordion-language-section';
 import type { CngxAccordionConfig } from './accordion.config';
 import { CNGX_ACCORDION_CONFIG } from './accordion.config.defaults';
 
@@ -42,30 +44,44 @@ export type CngxAccordionResolvedConfig = CngxAccordionConfig & {
 
 const valueOf = <T>(source: T | Signal<T>): T => (isSignal(source) ? source() : source);
 
-const RESOLVED_COPY = new WeakMap<CngxAccordionConfig, Signal<CngxAccordionResolvedConfig>>();
+const RESOLVED_COPY = new WeakMap<
+  Signal<CngxAccordionLanguageSection>,
+  WeakMap<CngxAccordionConfig, Signal<CngxAccordionResolvedConfig>>
+>();
 
 /**
  * The config with `disabledReason` / `errorMessage` read through, as a Signal
- * that follows a runtime language switch. Memoized per config object, so every
- * item under one cascade shares one `computed()`.
+ * that follows a runtime language switch. A key the config leaves unset reads
+ * the `accordion` section of the active pack. Memoized per site section and
+ * config object, so every item under one cascade shares one `computed()`.
+ * Injection context required.
  *
  * @internal
  */
 export function resolveAccordionCopy(
   config: CngxAccordionConfig,
 ): Signal<CngxAccordionResolvedConfig> {
-  const cached = RESOLVED_COPY.get(config);
+  const site = injectAccordionSiteCopy();
+  let byConfig = RESOLVED_COPY.get(site);
+  if (!byConfig) {
+    byConfig = new WeakMap();
+    RESOLVED_COPY.set(site, byConfig);
+  }
+  const cached = byConfig.get(config);
   if (cached) {
     return cached;
   }
   const copy = computed<CngxAccordionResolvedConfig>(
-    () => ({
-      ...config,
-      disabledReason: valueOf(config.disabledReason),
-      errorMessage: valueOf(config.errorMessage),
-    }),
+    () => {
+      const section = site();
+      return {
+        ...config,
+        disabledReason: valueOf(config.disabledReason) ?? section.disabledReason,
+        errorMessage: valueOf(config.errorMessage) ?? section.errorMessage,
+      };
+    },
     { equal: recordEqual },
   );
-  RESOLVED_COPY.set(config, copy);
+  byConfig.set(config, copy);
   return copy;
 }

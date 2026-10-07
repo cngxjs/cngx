@@ -155,6 +155,8 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxAccordionConfig.disabledReason` and `.errorMessage` are typed `string | Signal<string>`, and hold a `Signal` once one was passed to `withAccordionLabels`. Code that reads them off `injectAccordionConfig()` or `CNGX_ACCORDION_CONFIG` wraps the key once, in a field: `private readonly reason = coerceSignal(injectAccordionConfig().disabledReason);` (`coerceSignal` from `@cngx/core/utils`), then `this.reason()` inside a `computed()`, a template or a handler. `withAccordionLabels` now also accepts a `Signal<string>` per key; plain strings keep their merge rules.
 - The copy inputs `CngxAccordionItem.disabledReason` / `.errorMessage` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time config default. Template bindings are unchanged; the rendered reason follows a language switch while the input is unbound, and the error alert speaks the new language with the next error. Code that reads the input programmatically gets `undefined` when nothing is bound.
 
+- `CngxAccordionConfig.disabledReason` and `.errorMessage` are optional, and `CNGX_ACCORDION_DEFAULTS` carries neither: they hold only the overrides `withAccordionLabels` set. The defaults are the `accordion` section of the language pack, exported in English as `CNGX_ACCORDION_LANGUAGE_EN`. A hand-built `CngxAccordionConfig` no longer has to list them.
+
 ### @cngx/ui/breadcrumb
 
 - `CngxBreadcrumbConfig.ariaLabels` is typed `CngxBreadcrumbAriaLabels | Signal<CngxBreadcrumbAriaLabels>`, and once `withBreadcrumbAriaLabels` ran it holds a `Signal`. Code that reads it off `injectBreadcrumbConfig()` or `CNGX_BREADCRUMB_CONFIG` reads the resolved bundle through the new accessor instead: `injectBreadcrumbConfig().ariaLabels?.bar` becomes `injectBreadcrumbAriaLabels()().bar`, called inside a `computed()`, a template or a handler; every key is filled from the English defaults. `withBreadcrumbAriaLabels` now also accepts a `Signal<CngxBreadcrumbAriaLabels>`; plain objects still merge key by key, and `provideBreadcrumbConfigAt` still merges over the parent scope.
@@ -330,6 +332,10 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/ui/speak
 
 - The speak button names come from the `speak` section of the language pack; `provideSpeakI18n` / `withSpeakI18nLabels` and the `[readAloudLabel]` / `[stopLabel]` inputs still win, also on top of a pack. `CngxSpeakI18n` is now an alias of the exported `CngxSpeakLanguageSection`.
+
+### @cngx/ui/accordion
+
+- The disabled reason and the error message come from the `accordion` section of the language pack; `withAccordionLabels` and the `[disabledReason]` / `[errorMessage]` inputs still win, also on top of a pack.
 
 ### @cngx/ui/paginator
 
