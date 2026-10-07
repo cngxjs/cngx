@@ -1,12 +1,15 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxAccordion } from '@cngx/common/interactive';
+import { CngxScrollEdges } from '@cngx/common/layout';
 import { CngxFilter, CngxSort, type SortEntry } from '@cngx/common/data';
+import { createResizeObserverMock, type ResizeObserverMock } from '@cngx/testing';
 
 import { CngxDataGridAccordion } from './data-grid-accordion.component';
+import { CngxDataGridFooter } from './data-grid-footer.component';
 import { CngxDataGridHeader } from './data-grid-header.component';
 import { CngxDataGridRow } from './data-grid-row.component';
 import { CngxDgCell, type CngxDgCellTrack } from './data-grid-cell.directive';
@@ -568,6 +571,74 @@ describe('CngxDataGridAccordion - layout containment', () => {
     );
     expect(css).toMatch(/\.cngx-data-grid-accordion\s*\{[^}]*scrollbar-color:/);
   });
+
+  it('pads the scrollport block axis by the measured bands plus the focus clearance', () => {
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const css = dgaCss();
+    // In the host BASE rule, never inside the bounded `@container` block: the
+    // max-block-size token is the host's own inline style, so a style query could
+    // never match the host itself.
+    const base = css.match(/\.cngx-data-grid-accordion\s*\{[^}]*\}/)?.[0] ?? '';
+    expect(base).toMatch(/scroll-padding-block:/);
+    expect(base).toMatch(/var\(--cngx-dga-head-scroll-pad,\s*var\(--cngx-dga-head-block-size,\s*0px\)\)/);
+    expect(base).toMatch(/var\(--cngx-dga-foot-scroll-pad,\s*var\(--cngx-dga-foot-block-size,\s*0px\)\)/);
+    expect(base).toMatch(/var\(--cngx-dga-focus-clearance,\s*4px\)/);
+    const bounded = css.match(/@container[^{]*\{([\s\S]*?)\n\}/)?.[1] ?? '';
+    expect(bounded).not.toMatch(/scroll-padding/);
+  });
+
+  it('keeps the inline scroll padding in the host base rule, sized by the fade', () => {
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const base = dgaCss().match(/\.cngx-data-grid-accordion\s*\{[^}]*\}/)?.[0] ?? '';
+    expect(base).toMatch(
+      /scroll-padding-inline:\s*calc\(\s*var\(--cngx-dga-edge-fade-size,\s*24px\)\s*\+\s*var\(--cngx-dga-focus-clearance,\s*4px\)\s*\)/,
+    );
+  });
+
+  it('gates the head / foot shadows on the block edge attributes inside the bounded block', () => {
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const bounded = dgaCss().match(/@container[^{]*\{([\s\S]*?)\n\}/)?.[1] ?? '';
+    expect(bounded).toMatch(
+      /\[data-scroll-block-start\][^{]*\.cngx-dga-header\s*\{[^}]*box-shadow:\s*var\(\s*--cngx-dga-head-shadow/,
+    );
+    expect(bounded).toMatch(
+      /\[data-scroll-block-end\][^{]*\.cngx-dga-footer\s*\{[^}]*box-shadow:\s*var\(\s*--cngx-dga-foot-shadow/,
+    );
+  });
+
+  it('gates the inline edge fade on the inline attributes, with an RTL twin and a forced-colors drop', () => {
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const css = dgaCss();
+    expect(css).toMatch(
+      /\.cngx-data-grid-accordion:is\(\[data-scroll-inline-start\],\s*\[data-scroll-inline-end\]\)\s*\{[^}]*mask-image:[^}]*var\(--_cngx-dga-fade-dir,\s*to right\)[^}]*mask-composite:\s*add,\s*exclude/,
+    );
+    // RTL flips only the direction carrier; the mask is declared once.
+    expect(css).toMatch(
+      /\.cngx-data-grid-accordion:dir\(rtl\)\s*\{\s*--_cngx-dga-fade-dir:\s*to left;?\s*\}/,
+    );
+    expect(css.match(/(?<!-webkit-)mask-image:\s*linear-gradient/g)).toHaveLength(1);
+    expect(css).toMatch(/mask-clip:\s*padding-box,\s*padding-box,\s*border-box/);
+    // The fade bottoms out at the fade-min opacity, never at full transparency.
+    expect(css).toMatch(/var\(--cngx-dga-edge-fade-min,\s*0\.35\)/);
+    // The build may prepend a `-webkit-` twin to each mask declaration.
+    expect(css).toMatch(
+      /@media\s*\(forced-colors:\s*active\)\s*\{[^{]*\{\s*(?:-webkit-mask-image:\s*none;\s*)?mask-image:\s*none/,
+    );
+    // The host's own focus ring paints outside the border box, where the mask is clear.
+    expect(css).toMatch(/:focus-visible\s*\{\s*(?:-webkit-mask-image:\s*none;\s*)?mask-image:\s*none/);
+  });
 });
 
 @Component({
@@ -613,5 +684,280 @@ describe('CngxDataGridAccordion - [maxBlockSize] input', () => {
   it('leaves the property unset when unbound, so the grid stays unbounded', () => {
     const { el } = setup();
     expect(el.style.getPropertyValue('--cngx-dga-max-block-size')).toBe('');
+  });
+});
+
+@Component({
+  template: `<cngx-data-grid-accordion [maxBlockSize]="320">
+    @if (withHeader()) {
+      <cngx-dga-header><span cngxDgaCell>Name</span></cngx-dga-header>
+    }
+  </cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion, CngxDataGridHeader, CngxDgCell],
+})
+class BandHost {
+  readonly withHeader = signal(true);
+}
+
+@Component({
+  template: `<cngx-data-grid-accordion class="outer" [maxBlockSize]="320">
+    <cngx-dga-header><span cngxDgaCell>Name</span></cngx-dga-header>
+    <cngx-data-grid-accordion class="inner">
+      <cngx-dga-footer><span cngxDgaCell>Total</span></cngx-dga-footer>
+    </cngx-data-grid-accordion>
+  </cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion, CngxDataGridHeader, CngxDataGridFooter, CngxDgCell],
+})
+class NestedBandHost {}
+
+describe('CngxDataGridAccordion - measured head / foot bands', () => {
+  let ro: ResizeObserverMock;
+
+  beforeEach(() => {
+    ro = createResizeObserverMock();
+    ro.install(window);
+    TestBed.configureTestingModule({ imports: [BandHost, NestedBandHost] });
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  function band(blockSize: number): Partial<ResizeObserverEntry> {
+    return {
+      borderBoxSize: [{ blockSize, inlineSize: 300 }],
+      contentRect: { height: blockSize } as DOMRectReadOnly,
+    };
+  }
+
+  function grid(fixture: { nativeElement: HTMLElement }, selector = 'cngx-data-grid-accordion') {
+    return fixture.nativeElement.querySelector(selector) as HTMLElement;
+  }
+
+  it('binds the measured header block size as a px length', () => {
+    const fixture = TestBed.createComponent(BandHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(ro.observe).toHaveBeenCalled();
+
+    ro.triggerResize(band(48));
+    fixture.detectChanges();
+
+    expect(grid(fixture).style.getPropertyValue('--cngx-dga-head-block-size')).toBe('48px');
+    expect(grid(fixture).style.getPropertyValue('--cngx-dga-foot-block-size')).toBe('');
+  });
+
+  it('drops the binding and disconnects when the header goes away', () => {
+    const fixture = TestBed.createComponent(BandHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    ro.triggerResize(band(48));
+    fixture.detectChanges();
+    const disconnects = ro.disconnect.mock.calls.length;
+
+    fixture.componentInstance.withHeader.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expect(ro.disconnect.mock.calls.length).toBeGreaterThan(disconnects);
+    expect(grid(fixture).style.getPropertyValue('--cngx-dga-head-block-size')).toBe('');
+  });
+
+  it('gives a nested headerless grid no head binding of its own', () => {
+    const fixture = TestBed.createComponent(NestedBandHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expect(grid(fixture, '.inner').style.getPropertyValue('--cngx-dga-head-block-size')).toBe('');
+  });
+});
+
+describe('CngxDataGridAccordion - scroll edges', () => {
+  const KEYS = ['scrollTop', 'scrollHeight', 'clientHeight', 'scrollLeft', 'scrollWidth', 'clientWidth'] as const;
+  const metrics: Record<(typeof KEYS)[number], number> = {
+    scrollTop: 0,
+    scrollHeight: 600,
+    clientHeight: 320,
+    scrollLeft: 0,
+    scrollWidth: 300,
+    clientWidth: 300,
+  };
+  const saved = new Map<string, PropertyDescriptor | undefined>();
+  let frames: FrameRequestCallback[] = [];
+
+  beforeEach(() => {
+    for (const key of KEYS) {
+      saved.set(key, Object.getOwnPropertyDescriptor(Element.prototype, key));
+      Object.defineProperty(Element.prototype, key, { get: () => metrics[key], configurable: true });
+    }
+    frames = [];
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    TestBed.configureTestingModule({ imports: [BandHost] });
+  });
+
+  afterEach(() => {
+    for (const key of KEYS) {
+      const descriptor = saved.get(key);
+      if (descriptor) {
+        Object.defineProperty(Element.prototype, key, descriptor);
+      } else {
+        delete (Element.prototype as unknown as Record<string, unknown>)[key];
+      }
+    }
+    saved.clear();
+    vi.unstubAllGlobals();
+  });
+
+  it('composes CngxScrollEdges on the host and reflects a hidden block end', () => {
+    const fixture = TestBed.createComponent(BandHost);
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxDataGridAccordion));
+    const edges = de.injector.get(CngxScrollEdges, null, { self: true });
+    expect(edges).toBeInstanceOf(CngxScrollEdges);
+
+    const pending = frames;
+    frames = [];
+    pending.forEach((callback) => callback(0));
+    fixture.detectChanges();
+
+    const el = de.nativeElement as HTMLElement;
+    expect(el.getAttribute('data-scroll-block-end')).toBe('');
+    expect(el.hasAttribute('data-scroll-block-start')).toBe(false);
+    expect(el.hasAttribute('data-scroll-inline-end')).toBe(false);
+  });
+});
+
+@Component({
+  template: `<cngx-data-grid-accordion class="outer" [maxBlockSize]="320" [(openIds)]="open">
+    @if (outerHeader()) {
+      <cngx-dga-header class="outer-head"><span cngxDgaCell>Outer</span></cngx-dga-header>
+    }
+    <cngx-dga-row panelId="a">
+      <span cngxDgaCell>Row</span>
+      <cngx-data-grid-accordion class="inner">
+        <cngx-dga-header class="inner-head">
+          <span cngxDgaCell col="sm">Inner</span>
+          <span cngxDgaCell col="lg">Inner 2</span>
+        </cngx-dga-header>
+        <cngx-dga-footer class="inner-foot"><span cngxDgaCell>Inner total</span></cngx-dga-footer>
+      </cngx-data-grid-accordion>
+    </cngx-dga-row>
+    @if (outerFooter()) {
+      <cngx-dga-footer class="outer-foot"><span cngxDgaCell>Outer total</span></cngx-dga-footer>
+    }
+  </cngx-data-grid-accordion>`,
+  imports: [
+    CngxDataGridAccordion,
+    CngxDataGridHeader,
+    CngxDataGridFooter,
+    CngxDataGridRow,
+    CngxDgCell,
+  ],
+})
+class NestedDetailHost {
+  readonly outerHeader = signal(true);
+  readonly outerFooter = signal(true);
+  readonly open = signal<ReadonlySet<string>>(new Set());
+}
+
+describe('CngxDataGridAccordion - band queries stay on the own grid', () => {
+  // One callback per observed element, so each band can report its own size.
+  const callbacks = new Map<Element, ResizeObserverCallback>();
+
+  beforeEach(() => {
+    callbacks.clear();
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(private readonly callback: ResizeObserverCallback) {}
+        observe(target: Element): void {
+          callbacks.set(target, this.callback);
+        }
+        unobserve(): void {
+          // unused
+        }
+        disconnect(): void {
+          // unused
+        }
+      },
+    );
+    TestBed.configureTestingModule({ imports: [NestedDetailHost] });
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  function resize(target: Element, blockSize: number): void {
+    callbacks.get(target)?.(
+      [
+        {
+          target,
+          borderBoxSize: [{ blockSize, inlineSize: 300 }],
+          contentRect: { height: blockSize } as DOMRectReadOnly,
+        } as unknown as ResizeObserverEntry,
+      ],
+      null as unknown as ResizeObserver,
+    );
+  }
+
+  function setup(open: boolean, outerHeader = true) {
+    const fixture = TestBed.createComponent(NestedDetailHost);
+    fixture.componentInstance.outerHeader.set(outerHeader);
+    fixture.componentInstance.open.set(new Set(open ? ['a'] : []));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const q = (selector: string) => root.querySelector(selector) as HTMLElement;
+    for (const [selector, size] of [
+      ['.outer-head', 30],
+      ['.outer-foot', 40],
+      ['.inner-head', 70],
+      ['.inner-foot', 90],
+    ] as const) {
+      const el = root.querySelector(selector);
+      if (el) {
+        resize(el, size);
+      }
+    }
+    fixture.detectChanges();
+    return { fixture, outer: q('.outer'), inner: q('.inner') };
+  }
+
+  const head = (el: HTMLElement) => el.style.getPropertyValue('--cngx-dga-head-block-size');
+  const foot = (el: HTMLElement) => el.style.getPropertyValue('--cngx-dga-foot-block-size');
+
+  for (const open of [false, true]) {
+    it(`measures the outer bands, not a nested grid's, with the row ${open ? 'expanded' : 'collapsed'}`, () => {
+      const { outer, inner } = setup(open);
+      expect(head(outer)).toBe('30px');
+      expect(foot(outer)).toBe('40px');
+      expect(head(inner)).toBe('70px');
+      expect(foot(inner)).toBe('90px');
+    });
+  }
+
+  it('leaves a headerless outer grid unmeasured even when a nested grid has a header', () => {
+    const { outer } = setup(true, false);
+    expect(head(outer)).toBe('');
+    expect(foot(outer)).toBe('40px');
+  });
+
+  it('derives the outer columns from its own header, not the nested one', () => {
+    const { fixture, outer } = setup(true, false);
+    // Headerless outer: its own first row is the column source (one plain cell ->
+    // `auto`), never the nested header's two sized tracks.
+    expect(outer.style.getPropertyValue('--cngx-dga-columns')).toBe('auto');
+    // The @if-wrapped outer header is still a direct child (control flow is transparent).
+    fixture.componentInstance.outerHeader.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    resize(fixture.nativeElement.querySelector('.outer-head'), 32);
+    fixture.detectChanges();
+    expect(head(outer)).toBe('32px');
   });
 });

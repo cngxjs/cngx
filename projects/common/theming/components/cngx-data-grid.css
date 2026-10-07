@@ -9,7 +9,10 @@
  * Registration matters because the column template, gaps, and paddings are set
  * on the group host and read by descendant summaries. `@property` with
  * `inherits: true` keeps that host -> descendant cascade alive; `inherits: false`
- * would silently pin descendants to the initial value. Every token here inherits.
+ * would silently pin descendants to the initial value. Every token here inherits,
+ * except the two measured band sizes (`--cngx-dga-head-block-size` /
+ * `--cngx-dga-foot-block-size`) and the private fade carriers, which only the host
+ * itself reads.
  *
  * Density: the pixel `initial-value` of each spacing token is only the un-set
  * fallback. The organism's default rule and each skin SET `--cngx-dga-row-py` /
@@ -215,5 +218,169 @@
   @property --cngx-dga-foot-bg {
     syntax: '*';
     inherits: true;
+  }
+
+  /**
+   * Optional override for the block-start scroll padding that keeps keyboard focus
+   * below the pinned column head (WCAG 2.4.11). Unset, the host uses the measured
+   * `--cngx-dga-head-block-size`. Universal syntax with NO initial-value, so an unset
+   * override falls through to the measured value; a registered initial would never be
+   * "unset", so the use-site fallback would never fire.
+   * @group Grid
+   */
+  @property --cngx-dga-head-scroll-pad {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Optional override for the block-end scroll padding that keeps keyboard focus above
+   * the pinned footer (WCAG 2.4.11). Unset, the host uses the measured
+   * `--cngx-dga-foot-block-size`. No initial-value, for the same reason as the head pad.
+   * @group Grid
+   */
+  @property --cngx-dga-foot-scroll-pad {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Measured border-box block size of the projected column head, bound by the host from
+   * a resize observer. Host-only: `inherits: false`, so a nested headerless grid never
+   * picks up an outer grid's band and a head resize never restyles the subtree. Only the
+   * host's own `scroll-padding-block` reads it, never a descendant. No initial-value, so
+   * an unmeasured head falls back to `0px` at the use site.
+   * @group Grid
+   */
+  @property --cngx-dga-head-block-size {
+    syntax: '*';
+    inherits: false;
+  }
+
+  /**
+   * Measured border-box block size of the projected footer, the foot counterpart of
+   * `--cngx-dga-head-block-size` (host-only, no initial-value).
+   * @group Grid
+   */
+  @property --cngx-dga-foot-block-size {
+    syntax: '*';
+    inherits: false;
+  }
+
+  /**
+   * Extra room the scroll padding adds beyond the pinned bands so the focus ring, which
+   * paints outside the focused element, is never clipped by a band. The use-site default
+   * `4px` is the worst case: the 2px ring of `--cngx-dga-focus-ring` plus the 2px outward
+   * offset of the sort header. A consumer widening the ring raises this too.
+   * @group Grid
+   */
+  @property --cngx-dga-focus-clearance {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Shadow cast by the pinned column head while rows are scrolled away above it
+   * (bounded mode only). This is only the default look: set it to `none` to turn
+   * it off, or key your own visual (a line that appears, a tonal head) on the
+   * public `data-scroll-block-start` host attribute. Universal syntax with NO
+   * initial-value, so the adaptive default at the use site (derived from
+   * `--cngx-color-text`) stays live; a fixed colour initial would defeat it.
+   * @group Surface
+   */
+  @property --cngx-dga-head-shadow {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Shadow cast by the pinned footer while rows remain below it (bounded mode only).
+   * A swappable default like the head shadow: `none` turns it off, and the public
+   * `data-scroll-block-end` host attribute keys any replacement. No initial-value,
+   * for the same reason as the head shadow.
+   * @group Surface
+   */
+  @property --cngx-dga-foot-shadow {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Width of the inline edge fade shown while columns are hidden sideways. Also sets
+   * how far the inline scroll padding keeps a focused cell away from the edge. The
+   * fade is a default look keyed on the public `data-scroll-inline-start` /
+   * `data-scroll-inline-end` host attributes.
+   * @group Grid
+   */
+  @property --cngx-dga-edge-fade-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 24px;
+  }
+
+  /**
+   * Mask opacity at the very edge of the inline fade. The fade never reaches full
+   * transparency, so overlay scrollbars and edge content stay visible.
+   * @group Grid
+   */
+  @property --cngx-dga-edge-fade-min {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 0.35;
+  }
+
+  /**
+   * Private transition carrier: the current inline-start fade width. Set and read on
+   * the host only; registered so the length eases instead of popping.
+   * @group Grid
+   */
+  @property --_cngx-dga-fade-inline-start {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+
+  /**
+   * Private transition carrier: the current inline-end fade width (host only).
+   * @group Grid
+   */
+  @property --_cngx-dga-fade-inline-end {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+
+  /**
+   * Private transition carrier: the mask opacity at the inline-start edge, `1` (no
+   * fade) until that side hides columns. Host only, so a nested grid never inherits
+   * an outer grid's fade state.
+   * @group Grid
+   */
+  @property --_cngx-dga-fade-alpha-start {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 1;
+  }
+
+  /**
+   * Private transition carrier: the mask opacity at the inline-end edge (host only).
+   * @group Grid
+   */
+  @property --_cngx-dga-fade-alpha-end {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 1;
+  }
+
+  /**
+   * Private carrier: the physical direction of the inline fade gradient, `to right`
+   * unless the host itself resolves to RTL. Host only, so an LTR grid nested in an
+   * RTL one keeps its own direction.
+   * @group Grid
+   */
+  @property --_cngx-dga-fade-dir {
+    syntax: '*';
+    inherits: false;
+    initial-value: to right;
   }
 }

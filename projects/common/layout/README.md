@@ -65,6 +65,25 @@ Communicates when a `position: sticky` element becomes stuck. Does NOT apply sti
 - Sentinel and observer are created in `afterNextRender`, cleaned up via `DestroyRef`.
 - Sticky header itself remains visible to screen readers (`aria-hidden` is not set on host).
 
+## CngxScrollEdges
+
+Reports which edges of a scrollport still hide content as four signals (`canScrollBlockStart` / `BlockEnd` / `InlineStart` / `InlineEnd`) and reflects them as logical host attributes (`data-scroll-block-start` and siblings), present only while true. Paints nothing; key edge shadows or fades on the attributes in your CSS.
+
+```html
+<div class="sheet" cngxScrollEdges>...</div>
+```
+
+```css
+.sheet[data-scroll-block-end] { box-shadow: inset 0 -8px 8px -8px rgb(0 0 0 / 0.3); }
+```
+
+### Notes
+
+- One read per animation frame, triggered by scroll, resize of the scrollport or a direct child, and child-list mutations. 1px tolerance.
+- RTL-safe without a direction lookup; inline start is the right edge under `dir="rtl"`.
+- Purely visual: no announcement, the hidden content stays in the DOM.
+- The atom paints nothing: the `data-scroll-*` attributes (present only while true) are the public, stable contract. Common cues keyed on them: a shadow (elevate-on-scroll), a hairline that appears, or a tonal surface change. Forced colors strips `box-shadow`, so prefer a border there. Recipes in [scroll/README.md](scroll/README.md#cngxscrolledges).
+
 ## CngxScrollSpy
 
 Tracks which section is currently most visible in the viewport. Observes a list of elements by their IDs using `IntersectionObserver` with fine-grained thresholds (10% steps). Reports the one with the highest ratio above the minimum threshold.

@@ -1,3 +1,4 @@
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,13 +6,19 @@ import {
   contentChild,
   contentChildren,
   effect,
+  ElementRef,
   inject,
   input,
   model,
+  PLATFORM_ID,
+  type Signal,
+  signal,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 
 import { coerceNumberProperty } from '@cngx/core/utils';
+import { CngxScrollEdges, observeResize, type ResizeObserverHost } from '@cngx/common/layout';
 import { CngxAccordion } from '@cngx/common/interactive';
 import { CngxFilter, CngxSort } from '@cngx/common/data';
 
@@ -21,6 +28,7 @@ import {
 } from './data-grid-accordion.token';
 import type { CngxDataGridSkin } from './config/data-grid-accordion.config';
 import { injectDataGridAccordionConfig } from './config/inject-data-grid-accordion-config';
+import { CngxDataGridFooter } from './data-grid-footer.component';
 import { CngxDataGridHeader } from './data-grid-header.component';
 import { CngxDataGridRow } from './data-grid-row.component';
 import type { CngxDgCellTrack } from './data-grid-cell.directive';
@@ -73,6 +81,18 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * tool here: the group is its own scrollport, so a header would resolve its sticky
  * against that scrollport, and an unbounded (content-height) grid has nothing to stick
  * to. Leave `[maxBlockSize]` unbound and the grid stays content-height, byte-identical.
+ * While rows are scrolled away above or remain below, the pinned head / foot cast a
+ * shadow (`--cngx-dga-head-shadow` / `--cngx-dga-foot-shadow`); with no hidden rows in
+ * that direction there is none. Keyboard focus lands clear of both bands: the host pads
+ * its scrollport by the measured head / foot size plus `--cngx-dga-focus-clearance`.
+ *
+ * A grid narrower than its columns (`--cngx-dga-min-width`) scrolls sideways; the host
+ * then fades the inline edge that still hides columns (`--cngx-dga-edge-fade-size`,
+ * never below `--cngx-dga-edge-fade-min` opacity), mirrored under `dir="rtl"`. Both
+ * affordances come from the composed {@link CngxScrollEdges} atom, whose
+ * `data-scroll-block-start` / `-block-end` / `-inline-start` / `-inline-end` host
+ * attributes are present only while content is hidden toward that edge; under forced
+ * colors the fade is dropped and the shadows are forced away.
  *
  * ```html
  * <cngx-data-grid-accordion [multi]="true">
@@ -98,10 +118,12 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-accordion.component.ts
  * @since 0.1.0
- * @relatedTo CngxDataGridRow, CngxDgCell, CngxDataGridHeader, CngxDataGridFooter, CngxAccordion, CngxSort, CngxFilter, CngxDgaSortHeader, CngxDgaFilter, CngxDgaCount
+ * @relatedTo CngxDataGridRow, CngxDgCell, CngxDataGridHeader, CngxDataGridFooter, CngxAccordion, CngxSort, CngxFilter, CngxDgaSortHeader, CngxDgaFilter, CngxDgaCount, CngxScrollEdges
  *
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sortable-ledger</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sticky-head</example-url>
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/scroll-edges-bounded</example-url>
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/scroll-edges-narrow</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/bound-sort-filter</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/master-detail</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/spreadsheet</example-url>
@@ -142,6 +164,8 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
       inputs: ['cngxFilter: filterPredicate'],
       outputs: ['filterChange'],
     },
+    // The host is the scrollport; the atom reflects `data-scroll-*` on it for the edge CSS.
+    { directive: CngxScrollEdges },
   ],
   providers: [{ provide: CNGX_DATA_GRID_ACCORDION, useExisting: CngxDataGridAccordion }],
   // The inner `__grid` is the single grid that owns the tracks; the host stays the
@@ -154,6 +178,8 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
     '[attr.data-skin]': 'resolvedSkin() ?? null',
     '[style.--cngx-dga-columns]': 'resolvedColumns()',
     '[style.--cngx-dga-max-block-size]': 'maxBlockSizeVar()',
+    '[style.--cngx-dga-head-block-size]': 'headBlockSizeVar()',
+    '[style.--cngx-dga-foot-block-size]': 'footBlockSizeVar()',
   },
 })
 export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
@@ -256,7 +282,22 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
 
   // The header is the single column source; the first row provides the primary
   // index (for the grow default) and doubles as the source when no header exists.
-  private readonly header = contentChild(CngxDataGridHeader);
+  // Every band query is `descendants: false`: a signal `contentChild` defaults to
+  // `descendants: true` and returns the first match in document order, so a grid
+  // nested in a row detail would hand its own header / footer to this grid. Direct
+  // children only (control-flow blocks stay transparent, as for `rows` below), which
+  // is also the only shape the subgrid layout supports.
+  private readonly header = contentChild(CngxDataGridHeader, { descendants: false });
+  // Element reads of the projected head / foot, measured so the host's
+  // `scroll-padding-block` keeps focus clear of the pinned bands (WCAG 2.4.11).
+  private readonly headerEl = contentChild(CngxDataGridHeader, {
+    read: ElementRef,
+    descendants: false,
+  });
+  private readonly footerEl = contentChild(CngxDataGridFooter, {
+    read: ElementRef,
+    descendants: false,
+  });
   private readonly rows = contentChildren(CngxDataGridRow);
   private readonly firstRow = computed(() => this.rows().at(0));
 
@@ -295,6 +336,26 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
     () => this.columns() ?? this.derivedColumns() ?? '1fr',
   );
 
+  /** Window surface for the band observers; `null` off the browser (SSR). */
+  private readonly resizeHost: ResizeObserverHost | null = isPlatformBrowser(inject(PLATFORM_ID))
+    ? inject(DOCUMENT).defaultView
+    : null;
+
+  /**
+   * Measured border-box block size of the projected head / foot band in px, `null`
+   * when the band is absent or not observed yet. Written only by the observer callback.
+   */
+  private readonly headBlockSize = this.measureBlockSize(this.headerEl);
+  private readonly footBlockSize = this.measureBlockSize(this.footerEl);
+
+  /**
+   * The measured head / foot sizes as CSS lengths for `--cngx-dga-head-block-size` /
+   * `--cngx-dga-foot-block-size`. `null` removes the inline property, so the CSS falls
+   * back to `0px` plus the focus clearance. Primitive, so `Object.is` dedupes.
+   */
+  protected readonly headBlockSizeVar = computed(() => toPx(this.headBlockSize()));
+  protected readonly footBlockSizeVar = computed(() => toPx(this.footBlockSize()));
+
   constructor() {
     // A row projecting more cells than the shared template has tracks pushes
     // the extras into implicit grid tracks - the subgrid misaligns silently.
@@ -318,6 +379,42 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
       });
     }
   }
+
+  /**
+   * Observe the block size of a late-resolving content child. The effect only
+   * subscribes: it tracks the `contentChild` read, wires `observeResize` inside
+   * `untracked`, and tears it down via `onCleanup` when the child changes (an `@if`
+   * toggling the head). The size write happens in the observer callback, never in
+   * the effect body. `createResizeSignal` needs a static element, so the low-level
+   * `observeResize` is the documented route for a reactive target.
+   */
+  private measureBlockSize(
+    target: Signal<ElementRef<HTMLElement> | undefined>,
+  ): Signal<number | null> {
+    const size = signal<number | null>(null);
+    effect((onCleanup) => {
+      const element = target()?.nativeElement;
+      if (!element) {
+        return;
+      }
+      const teardown = untracked(() =>
+        observeResize(this.resizeHost, element, 'border-box', (entry) => {
+          size.set(entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height);
+        }),
+      );
+      // A removed band reports no size, so the padding falls back to the clearance.
+      onCleanup(() => {
+        teardown();
+        size.set(null);
+      });
+    });
+    return size.asReadonly();
+  }
+}
+
+/** A measured px size as a CSS length, `null` when unmeasured. */
+function toPx(size: number | null): string | null {
+  return size == null ? null : `${size}px`;
 }
 
 /**
