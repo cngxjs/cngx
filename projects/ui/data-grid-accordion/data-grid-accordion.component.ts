@@ -282,11 +282,22 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
 
   // The header is the single column source; the first row provides the primary
   // index (for the grow default) and doubles as the source when no header exists.
-  private readonly header = contentChild(CngxDataGridHeader);
+  // Every band query is `descendants: false`: a signal `contentChild` defaults to
+  // `descendants: true` and returns the first match in document order, so a grid
+  // nested in a row detail would hand its own header / footer to this grid. Direct
+  // children only (control-flow blocks stay transparent, as for `rows` below), which
+  // is also the only shape the subgrid layout supports.
+  private readonly header = contentChild(CngxDataGridHeader, { descendants: false });
   // Element reads of the projected head / foot, measured so the host's
   // `scroll-padding-block` keeps focus clear of the pinned bands (WCAG 2.4.11).
-  private readonly headerEl = contentChild(CngxDataGridHeader, { read: ElementRef });
-  private readonly footerEl = contentChild(CngxDataGridFooter, { read: ElementRef });
+  private readonly headerEl = contentChild(CngxDataGridHeader, {
+    read: ElementRef,
+    descendants: false,
+  });
+  private readonly footerEl = contentChild(CngxDataGridFooter, {
+    read: ElementRef,
+    descendants: false,
+  });
   private readonly rows = contentChildren(CngxDataGridRow);
   private readonly firstRow = computed(() => this.rows().at(0));
 

@@ -828,3 +828,134 @@ describe('CngxDataGridAccordion - scroll edges', () => {
     expect(el.hasAttribute('data-scroll-inline-end')).toBe(false);
   });
 });
+
+@Component({
+  template: `<cngx-data-grid-accordion class="outer" [maxBlockSize]="320" [(openIds)]="open">
+    @if (outerHeader()) {
+      <cngx-dga-header class="outer-head"><span cngxDgaCell>Outer</span></cngx-dga-header>
+    }
+    <cngx-dga-row panelId="a">
+      <span cngxDgaCell>Row</span>
+      <cngx-data-grid-accordion class="inner">
+        <cngx-dga-header class="inner-head">
+          <span cngxDgaCell col="sm">Inner</span>
+          <span cngxDgaCell col="lg">Inner 2</span>
+        </cngx-dga-header>
+        <cngx-dga-footer class="inner-foot"><span cngxDgaCell>Inner total</span></cngx-dga-footer>
+      </cngx-data-grid-accordion>
+    </cngx-dga-row>
+    @if (outerFooter()) {
+      <cngx-dga-footer class="outer-foot"><span cngxDgaCell>Outer total</span></cngx-dga-footer>
+    }
+  </cngx-data-grid-accordion>`,
+  imports: [
+    CngxDataGridAccordion,
+    CngxDataGridHeader,
+    CngxDataGridFooter,
+    CngxDataGridRow,
+    CngxDgCell,
+  ],
+})
+class NestedDetailHost {
+  readonly outerHeader = signal(true);
+  readonly outerFooter = signal(true);
+  readonly open = signal<ReadonlySet<string>>(new Set());
+}
+
+describe('CngxDataGridAccordion - band queries stay on the own grid', () => {
+  // One callback per observed element, so each band can report its own size.
+  const callbacks = new Map<Element, ResizeObserverCallback>();
+
+  beforeEach(() => {
+    callbacks.clear();
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(private readonly callback: ResizeObserverCallback) {}
+        observe(target: Element): void {
+          callbacks.set(target, this.callback);
+        }
+        unobserve(): void {
+          // unused
+        }
+        disconnect(): void {
+          // unused
+        }
+      },
+    );
+    TestBed.configureTestingModule({ imports: [NestedDetailHost] });
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  function resize(target: Element, blockSize: number): void {
+    callbacks.get(target)?.(
+      [
+        {
+          target,
+          borderBoxSize: [{ blockSize, inlineSize: 300 }],
+          contentRect: { height: blockSize } as DOMRectReadOnly,
+        } as unknown as ResizeObserverEntry,
+      ],
+      null as unknown as ResizeObserver,
+    );
+  }
+
+  function setup(open: boolean, outerHeader = true) {
+    const fixture = TestBed.createComponent(NestedDetailHost);
+    fixture.componentInstance.outerHeader.set(outerHeader);
+    fixture.componentInstance.open.set(new Set(open ? ['a'] : []));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const q = (selector: string) => root.querySelector(selector) as HTMLElement;
+    for (const [selector, size] of [
+      ['.outer-head', 30],
+      ['.outer-foot', 40],
+      ['.inner-head', 70],
+      ['.inner-foot', 90],
+    ] as const) {
+      const el = root.querySelector(selector);
+      if (el) {
+        resize(el, size);
+      }
+    }
+    fixture.detectChanges();
+    return { fixture, outer: q('.outer'), inner: q('.inner') };
+  }
+
+  const head = (el: HTMLElement) => el.style.getPropertyValue('--cngx-dga-head-block-size');
+  const foot = (el: HTMLElement) => el.style.getPropertyValue('--cngx-dga-foot-block-size');
+
+  for (const open of [false, true]) {
+    it(`measures the outer bands, not a nested grid's, with the row ${open ? 'expanded' : 'collapsed'}`, () => {
+      const { outer, inner } = setup(open);
+      expect(head(outer)).toBe('30px');
+      expect(foot(outer)).toBe('40px');
+      expect(head(inner)).toBe('70px');
+      expect(foot(inner)).toBe('90px');
+    });
+  }
+
+  it('leaves a headerless outer grid unmeasured even when a nested grid has a header', () => {
+    const { outer } = setup(true, false);
+    expect(head(outer)).toBe('');
+    expect(foot(outer)).toBe('40px');
+  });
+
+  it('derives the outer columns from its own header, not the nested one', () => {
+    const { fixture, outer } = setup(true, false);
+    // Headerless outer: its own first row is the column source (one plain cell ->
+    // `auto`), never the nested header's two sized tracks.
+    expect(outer.style.getPropertyValue('--cngx-dga-columns')).toBe('auto');
+    // The @if-wrapped outer header is still a direct child (control flow is transparent).
+    fixture.componentInstance.outerHeader.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    resize(fixture.nativeElement.querySelector('.outer-head'), 32);
+    fixture.detectChanges();
+    expect(head(outer)).toBe('32px');
+  });
+});
