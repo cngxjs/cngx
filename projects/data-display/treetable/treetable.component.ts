@@ -32,8 +32,8 @@ import { NgTemplateOutlet } from '@angular/common';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
-import { coerceSignal } from '@cngx/core/utils';
-import { arrayEqual, recordEqual } from '@cngx/utils';
+import { coerceSignal, injectLocale } from '@cngx/core/utils';
+import { arrayEqual } from '@cngx/utils';
 import { CngxTreetableRow } from './treetable-row.directive';
 import {
   CngxCellTpl,
@@ -46,18 +46,25 @@ import {
 import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
 import type { CngxErrorTplContext, CngxTreetableFlatNode, CngxTreetableNode, CngxTreetableOptions } from './models';
 import {
-  capitalise,
+  columnHeaderFor,
   extractColumns,
   flattenTree,
+  CELL_DATE_FORMAT,
+  CELL_NUMBER_FORMAT,
+  cellFormattersFor,
+  formatCellValue,
   getInitialExpandedIds,
   isNodeVisible,
 } from './tree.utils';
-import {
-  CNGX_TREETABLE_CONFIG,
-  NO_TREETABLE_LABELS,
-  TREETABLE_DEFAULT_LABELS,
-  type TreetableLabels,
-} from './treetable.token';
+import { CNGX_TREETABLE_CONFIG } from './treetable.token';
+import { injectTreetableLabels } from './i18n/treetable-i18n';
+
+declare const ngDevMode: boolean | undefined;
+
+/** `false` only in a production build, where Angular defines `ngDevMode` as `false`. */
+function isDevBuild(): boolean {
+  return typeof ngDevMode === 'undefined' || !!ngDevMode;
+}
 
 /**
  * Headless tree table built on Angular CDK Table.
@@ -131,7 +138,7 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/treetable.component.ts
  * @since 0.1.0
  * @relatedTo CngxTreetableRow, CngxCellTpl, CngxHeaderTpl, CngxEmptyTpl
- * @slot cngxHeader Replaces a column's header cell; no template context (read the column off your own definition).
+ * @slot cngxHeader Replaces a column's header cell; gets the column key as `$implicit` / `column` plus the resolved default header `label`.
  * @slot cngxCell Replaces a body cell; gets the flat node as `$implicit` plus the resolved `value`.
  * @slot cngxEmpty Rendered when the tree resolves to no rows.
  * @slot cngxError Rendered when a bound async state fails; gets the error as `$implicit` plus a `retry` callback.
@@ -318,20 +325,16 @@ export class CngxTreetable<T = unknown> {
 
   private readonly configValue = inject(CNGX_TREETABLE_CONFIG);
   private readonly config = coerceSignal(this.configValue);
-  private readonly labelOverrides = coerceSignal(this.configValue.labels ?? NO_TREETABLE_LABELS);
 
   /**
    * @internal Resolved copy for every built-in string: app-wide
-   * `CNGX_TREETABLE_CONFIG.labels` overlaid on the English library
-   * defaults.
+   * `CNGX_TREETABLE_CONFIG.labels` over the `treetable` section of the
+   * active language pack, formatted for this treetable's locale.
    */
-  protected readonly labels = computed<Required<TreetableLabels>>(
-    () => ({
-      ...TREETABLE_DEFAULT_LABELS,
-      ...this.labelOverrides(),
-    }),
-    { equal: recordEqual },
-  );
+  protected readonly labels = injectTreetableLabels();
+
+  /** Locale of this treetable's injector - formats the default cell numbers and dates. */
+  private readonly locale = injectLocale();
 
   /** Document writing direction - swaps the physical expand/collapse arrows under `rtl` (APG treegrid). */
   private readonly direction = injectDirection();
@@ -552,7 +555,10 @@ export class CngxTreetable<T = unknown> {
         if (a.highlightRowOnHover !== b.highlightRowOnHover) {
           return false;
         }
-        if (a.capitaliseHeader !== b.capitaliseHeader) {
+        if (a.dateFormat !== b.dateFormat) {
+          return false;
+        }
+        if (a.numberFormat !== b.numberFormat) {
           return false;
         }
         const ac = a.customColumnOrder;
@@ -568,8 +574,18 @@ export class CngxTreetable<T = unknown> {
     },
   );
 
-  /** @internal Exposed so templates can call it without importing the utility. */
-  protected readonly capitalise = capitalise;
+  /**
+   * @internal Default header text per data column: its `columnLabels` entry,
+   * else the column key in a dev build, else `unlabeledColumn`. Never the
+   * raw key in production.
+   */
+  protected readonly headerLabels = computed(() => {
+    const labels = this.labels();
+    const dev = isDevBuild();
+    return new Map(
+      this.columns().map((col, index) => [col, columnHeaderFor(col, index + 1, labels, dev)]),
+    );
+  });
 
   /**
    * `true` when every visible node is selected.
@@ -707,6 +723,41 @@ export class CngxTreetable<T = unknown> {
         }
       });
     });
+
+    if (isDevBuild()) {
+      this.warnUnlabeledColumns();
+    }
+  }
+
+  /**
+   * Dev only: warns once per column key that renders its key as the header
+   * because it has neither a `columnLabels` entry nor a `*cngxHeader`
+   * template. Production shows `unlabeledColumn` there instead.
+   */
+  private warnUnlabeledColumns(): void {
+    const warned = new Set<string>();
+    effect(() => {
+      const { columnLabels } = this.labels();
+      const columns = this.columns();
+      this.headerTpls();
+      untracked(() => {
+        for (const col of columns) {
+          if (
+            warned.has(col) ||
+            columnLabels[col] !== undefined ||
+            resolveHeaderTpl(col, this.headerTpls)
+          ) {
+            continue;
+          }
+          warned.add(col);
+          console.warn(
+            `[CngxTreetable] column "${col}" has no header label - production shows ` +
+              `the unlabeledColumn text instead of the key. Add it to columnLabels ` +
+              `(withTreetableLabels or the language pack) or project a *cngxHeader template.`,
+          );
+        }
+      });
+    });
   }
 
   /**
@@ -740,6 +791,31 @@ export class CngxTreetable<T = unknown> {
    */
   protected asRecord(value: T): Record<string, unknown> {
     return value as Record<string, unknown>;
+  }
+
+  /** Resolved `Intl.DateTimeFormat` options for a `Date` in a default cell. */
+  private readonly dateFormat = computed(
+    () => this.resolvedOptions().dateFormat ?? CELL_DATE_FORMAT,
+  );
+
+  /** Resolved `Intl.NumberFormat` options for a number in a default cell. */
+  private readonly numberFormat = computed(
+    () => this.resolvedOptions().numberFormat ?? CELL_NUMBER_FORMAT,
+  );
+
+  /** Default-cell formatters, resolved once per locale, date and number format. */
+  private readonly cellFormatters = computed(() =>
+    cellFormattersFor(this.locale(), this.dateFormat(), this.numberFormat()),
+  );
+
+  /**
+   * Default cell text: numbers and dates formatted for the treetable's
+   * locale (dates with the resolved `dateFormat`, numbers with the resolved
+   * `numberFormat`), other values unchanged.
+   * @internal
+   */
+  protected cellText(value: unknown): unknown {
+    return formatCellValue(value, this.cellFormatters());
   }
 
   /**
@@ -984,8 +1060,11 @@ export class CngxTreetable<T = unknown> {
     return resolveCellTpl<T>(col, this.cellTpls);
   }
 
-  /** @internal */
+  /**
+   * @internal Header slot cascade per column: a `*cngxHeader` projected for
+   * the column -> `CNGX_TREETABLE_CONFIG.templates.header` -> the label text.
+   */
   protected headerTplFor(col: string) {
-    return resolveHeaderTpl(col, this.headerTpls);
+    return resolveHeaderTpl(col, this.headerTpls) ?? this.config().templates?.header ?? null;
   }
 }

@@ -2,6 +2,7 @@ import { Component, computed, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
+import { stripBidiIsolates } from '@cngx/testing';
 import { CngxPasswordStrength } from './password-strength.directive';
 import {
   CNGX_PASSWORD_STRENGTH_FACTORY,
@@ -76,7 +77,9 @@ describe('CngxPasswordStrength', () => {
       expect(announce).not.toHaveBeenCalled();
       vi.advanceTimersByTime(400);
       expect(announce).toHaveBeenCalledTimes(1);
-      expect(announce).toHaveBeenCalledWith('Password strength: strong');
+      expect(stripBidiIsolates(announce.mock.calls.at(-1)?.[0] as string)).toBe(
+        'Password strength: strong',
+      );
     });
 
     it('announces only on a label edge, not on every debounce-settle', () => {

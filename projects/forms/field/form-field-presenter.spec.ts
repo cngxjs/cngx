@@ -9,11 +9,16 @@ import {
   type CngxFieldSkin,
   type CngxFormFieldControl,
 } from '@cngx/core/tokens';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
 import { CngxFormField } from './form-field.component';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import {
   CNGX_FORM_FIELD_CONFIG,
-  DEFAULT_HINT_FORMATTERS,
   provideFormField,
   withConstraintHints,
   type ErrorStrategyContext,
@@ -574,7 +579,7 @@ describe('CngxFormFieldPresenter', () => {
         providers: [
           {
             provide: CNGX_FORM_FIELD_CONFIG,
-            useValue: { constraintHints: DEFAULT_HINT_FORMATTERS },
+            useValue: { constraintHints: {} },
           },
         ],
       });
@@ -597,7 +602,7 @@ describe('CngxFormFieldPresenter', () => {
         providers: [
           {
             provide: CNGX_FORM_FIELD_CONFIG,
-            useValue: { constraintHints: DEFAULT_HINT_FORMATTERS },
+            useValue: { constraintHints: {} },
           },
         ],
       });
@@ -620,7 +625,7 @@ describe('CngxFormFieldPresenter', () => {
         providers: [
           {
             provide: CNGX_FORM_FIELD_CONFIG,
-            useValue: { constraintHints: DEFAULT_HINT_FORMATTERS },
+            useValue: { constraintHints: {} },
           },
         ],
       });
@@ -643,7 +648,7 @@ describe('CngxFormFieldPresenter', () => {
         providers: [
           {
             provide: CNGX_FORM_FIELD_CONFIG,
-            useValue: { constraintHints: DEFAULT_HINT_FORMATTERS },
+            useValue: { constraintHints: {} },
           },
         ],
       });
@@ -688,6 +693,35 @@ describe('CngxFormFieldPresenter', () => {
 
       lang.set('de');
       expect(presenter.constraintHints()).toEqual(['8 bis 64 Zeichen']);
+    });
+
+    it('reads the hints from the active pack and keeps a withConstraintHints formatter', () => {
+      const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+      TestBed.configureTestingModule({
+        imports: [TestHost],
+        providers: [
+          provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+          provideFormField(withConstraintHints({ minValue: (min: number) => `from ${min}` })),
+        ],
+      });
+      const mock = createMockField({ name: 'size', minLength: 1, min: 1000, max: 5000 });
+      fixture = TestBed.createComponent(TestHost);
+      host = fixture.componentInstance;
+      host.field.set(mock.accessor);
+      fixture.detectChanges();
+      presenter = fixture.debugElement
+        .query(By.directive(CngxFormFieldPresenter))
+        .injector.get(CngxFormFieldPresenter);
+      expect(presenter.constraintHints()).toEqual(['Min. 1 character', '1,000–5,000']);
+
+      pack.set({
+        locale: 'de',
+        formField: { hintMinLength: 'Mind. {count} Zeichen', hintValueRange: '{min} bis {max}' },
+      });
+      expect(presenter.constraintHints()).toEqual(['Mind. 1 Zeichen', '1.000 bis 5.000']);
+
+      mock.ref.max.set(undefined);
+      expect(presenter.constraintHints()).toEqual(['Mind. 1 Zeichen', 'from 1000']);
     });
   });
 

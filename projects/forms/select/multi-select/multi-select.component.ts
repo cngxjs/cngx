@@ -17,12 +17,18 @@ import {
   type TemplateRef,
 } from '@angular/core';
 
-import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
+import {
+  CNGX_STATEFUL,
+  injectLocale,
+  type CngxAsyncState,
+  type AsyncStatus,
+} from '@cngx/core/utils';
 
 import { CngxChip } from '@cngx/common/display';
 import { CngxClickOutside, CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
+import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
 import {
@@ -80,6 +86,8 @@ import {
 import {
   CngxMultiSelectChip,
   type CngxMultiSelectChipContext,
+  CngxSelectChipOverflow,
+  type CngxSelectChipOverflowContext,
   CngxMultiSelectTriggerLabel,
   type CngxMultiSelectTriggerLabelContext,
   CngxSelectCaret,
@@ -129,7 +137,8 @@ export interface CngxMultiSelectChange<T = unknown> {
  * `cngxSelectRefreshing`, `cngxSelectCommitError`, `cngxSelectClearButton`,
  * `cngxSelectOptionPending` and `cngxSelectOptionError` also take an
  * app-wide default through `CNGX_SELECT_CONFIG.templates` (`withTemplates`);
- * `cngxMultiSelectTriggerLabel` and `cngxMultiSelectChip` are directive-only.
+ * `cngxMultiSelectTriggerLabel`, `cngxMultiSelectChip` and
+ * `cngxSelectChipOverflow` are directive-only.
  * `templates.loadingGlyph` replaces the loading and refresh glyph app-wide;
  * this host has no projected glyph slot.
  *
@@ -157,6 +166,7 @@ export interface CngxMultiSelectChange<T = unknown> {
  * @slot cngxSelectRefreshing Replaces the refresh indicator shown above the options while a reload runs; previousCount is always 0 on this host.
  * @slot cngxSelectCommitError Replaces the panel's commit-error banner when a commit fails and commitErrorDisplay is 'banner'; gets error, option, retry.
  * @slot cngxMultiSelectChip Replaces each chip in the trigger strip unless cngxMultiSelectTriggerLabel is projected; gets option, remove.
+ * @slot cngxSelectChipOverflow Replaces the +N badge after the visible chips when chipOverflow is 'truncate' and selected options are hidden; gets count, label.
  * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled; gets clear, disabled.
  * @slot cngxSelectOptionPending Replaces the spinner on an option row while its commit is in flight; gets option.
  * @slot cngxSelectOptionError Replaces the error mark on selected rows when a commit fails and commitErrorDisplay is 'inline'; gets option, error.
@@ -245,16 +255,30 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly clearable = input<boolean>(false);
+  /** @internal The select section at this reading site; per-variant defaults. */
+  private readonly selectCopy = injectSelectCopy();
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
-    () => this.clearButtonAriaLabel() ?? this.config.ariaLabels().clearButton ?? 'Reset selection',
+    () =>
+      this.clearButtonAriaLabel() ??
+      this.config.ariaLabels().clearButton ??
+      this.selectCopy().resetSelection,
   );
   readonly chipRemoveAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedChipRemoveAriaLabel = computed<string>(
-    () => this.chipRemoveAriaLabel() ?? this.config.ariaLabels().chipRemove ?? 'Remove',
+    () => this.chipRemoveAriaLabel() ?? this.config.ariaLabels().chipRemove,
   );
+  /**
+   * @internal Accessible name of a chip's remove button: the remove action and
+   * the chip label placed by the `chipRemoveFor` message.
+   */
+  protected readonly chipRemoveLabelFor = computed<(label: string) => string>(() => {
+    const action = this.resolvedChipRemoveAriaLabel();
+    const format = this.config.ariaLabels().chipRemoveFor;
+    return (label) => format(action, label);
+  });
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
@@ -312,6 +336,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   private readonly commitErrorDirective =
     contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
   private readonly chipDirective = contentChild<CngxMultiSelectChip<T>>(CngxMultiSelectChip);
+  private readonly chipOverflowDirective =
+    contentChild<CngxSelectChipOverflow<T>>(CngxSelectChipOverflow);
   private readonly clearButtonDirective =
     contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly optionPendingDirective =
@@ -344,6 +370,10 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly chipTpl = computed<TemplateRef<CngxMultiSelectChipContext<T>> | null>(
     () => this.chipDirective()?.templateRef ?? null,
   );
+  /** @internal */
+  protected readonly chipOverflowTpl = computed<TemplateRef<
+    CngxSelectChipOverflowContext<T>
+  > | null>(() => this.chipOverflowDirective()?.templateRef ?? null);
 
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
@@ -474,6 +504,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     compareWith: this.compareWith,
     debounceMs: this.typeaheadDebounceInterval,
     disabled: this.disabled,
+    locale: injectLocale(),
   });
 
   /**
@@ -577,6 +608,12 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly visibleSelected = this.chipStrip.visibleSelected;
   /** @internal */
   protected readonly overflowBadgeCount = this.chipStrip.overflowBadgeCount;
+  /** @internal Selected options the truncated strip hides, for the overflow slot. */
+  protected readonly hiddenSelected = this.chipStrip.hiddenSelected;
+  /** @internal Visible `+N` badge text, the count in the reading locale's digits. */
+  protected readonly overflowBadgeText = computed<string>(() =>
+    this.config.fallbackLabels().chipOverflowBadge(this.overflowBadgeCount()),
+  );
 
   private readonly togglingOption = this.core.togglingOption;
 

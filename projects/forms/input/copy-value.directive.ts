@@ -9,11 +9,7 @@ import {
   type Signal,
 } from '@angular/core';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
-import {
-  CNGX_INPUT_CONFIG,
-  DEFAULT_INPUT_ARIA_LABELS,
-  injectInputAriaLabels,
-} from './input-config';
+import { CNGX_INPUT_CONFIG, injectInputAriaLabels } from './input-config';
 
 /**
  * Clipboard copy behavior for input fields, tokens, API keys.
@@ -101,9 +97,7 @@ export class CngxCopyValue {
       }
 
       this.copiedState.set(true);
-      this.announcer.announce(
-        this.ariaLabels().copySuccess ?? DEFAULT_INPUT_ARIA_LABELS.copySuccess,
-      );
+      this.announcer.announce(this.ariaLabels().copySuccess);
       this.didCopy.emit(text);
 
       if (this.resetTimer != null) {
@@ -122,10 +116,7 @@ export class CngxCopyValue {
     } catch {
       // Clipboard write failed (permission denied, etc.). Announce assertively
       // so the failure is not a silent state change (Pillar 2).
-      this.announcer.announce(
-        this.ariaLabels().copyError ?? DEFAULT_INPUT_ARIA_LABELS.copyError,
-        'assertive',
-      );
+      this.announcer.announce(this.ariaLabels().copyError, 'assertive');
     }
   }
 

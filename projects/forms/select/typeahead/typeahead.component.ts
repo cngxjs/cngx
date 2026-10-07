@@ -17,14 +17,19 @@ import {
   type TemplateRef,
 } from '@angular/core';
 
-import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
+import {
+  CNGX_STATEFUL,
+  injectLocale,
+  type CngxAsyncState,
+  type AsyncStatus,
+} from '@cngx/core/utils';
 
 import {
   CngxClickOutside,
   CngxListbox,
   CngxListboxSearch,
   CngxListboxTrigger,
-  type ListboxMatchFn,
+  createListboxLabelMatch,
 } from '@cngx/common/interactive';
 import {
   CngxPopover,
@@ -33,7 +38,9 @@ import {
   type PopoverPlacement,
 } from '@cngx/common/popover';
 
+import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { toListboxMatchFn } from '../shared/internal/listbox-match';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -57,6 +64,7 @@ import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectConfig,
   type CngxSelectLoadingVariant,
+  type CngxSelectMatchFn,
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
@@ -241,7 +249,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly displayWith = input<(value: T) => string>((v) => String(v));
   /** When `true` (default), blur without a pick resets to `displayWith(value())`. */
   readonly clearOnBlur = input<boolean>(true);
-  readonly searchMatchFn = input<ListboxMatchFn | null>(null);
+  /** Custom matcher for the inline search. Wins over `CngxSelectConfig.searchMatchFn`. */
+  readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
   readonly skipInitial = input<boolean>(false);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
@@ -249,10 +258,15 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearable = input<boolean>(false);
+  /** @internal The select section at this reading site; per-variant defaults. */
+  private readonly selectCopy = injectSelectCopy();
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
-    () => this.clearButtonAriaLabel() ?? this.config.ariaLabels().clearButton ?? 'Reset selection',
+    () =>
+      this.clearButtonAriaLabel() ??
+      this.config.ariaLabels().clearButton ??
+      this.selectCopy().resetSelection,
   );
   /**
    * Replaces the built-in `✕` glyph inside the default clear button.
@@ -366,17 +380,16 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */ readonly focused = this.focusState.focused;
   readonly empty = computed<boolean>(() => this.value() === undefined);
 
+  /** @internal Folded substring match of the option label in the reading locale. */
+  private readonly labelMatch = createListboxLabelMatch(injectLocale());
+
   /** @internal */
-  protected readonly effectiveMatchFn = computed<ListboxMatchFn>(
-    () =>
-      this.searchMatchFn() ??
-      ((option, term) => {
-        if (term === '') {
-          return true;
-        }
-        return option.label.toLowerCase().includes(term.toLowerCase());
-      }),
+  protected readonly effectiveMatchFn = computed<CngxSelectMatchFn<T>>(
+    () => this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch,
   );
+
+  /** @internal - `effectiveMatchFn` as the listbox search input takes it. */
+  protected readonly listboxMatchFn = computed(() => toListboxMatchFn(this.effectiveMatchFn()));
 
   /** Filter overlay applied by `createSelectCore` on non-empty search term. */
   private readonly filter = computed<

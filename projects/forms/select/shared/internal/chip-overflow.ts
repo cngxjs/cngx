@@ -3,6 +3,8 @@ import { computed, type Signal } from '@angular/core';
 import type { CngxSelectOptionDef } from '../option.model';
 import { sameArrayContents } from './compare';
 
+const NO_HIDDEN: readonly never[] = Object.freeze([]) as readonly never[];
+
 /**
  * Inputs for {@link createChipOverflow}.
  *
@@ -37,11 +39,17 @@ export interface ChipOverflow<T> {
    * numeric expression.
    */
   readonly overflowBadgeCount: Signal<number>;
+  /**
+   * Selected options hidden by `'truncate'`, in selection order. Empty in
+   * `'wrap'` / `'scroll-x'`. Structurally equal across reads, so the array
+   * keeps its identity while the hidden set is unchanged.
+   */
+  readonly hiddenSelected: Signal<readonly CngxSelectOptionDef<T>[]>;
 }
 
 /**
  * Chip-strip overflow derivation shared by the chip-rendering array
- * variants (`CngxMultiSelect`, `CngxCombobox`).
+ * variants (`CngxMultiSelect`, `CngxCombobox`, `CngxActionMultiSelect`).
  *
  * @internal
  */
@@ -68,5 +76,17 @@ export function createChipOverflow<T>(opts: ChipOverflowOptions<T>): ChipOverflo
     return total > cap ? total - cap : 0;
   });
 
-  return { visibleSelected, overflowBadgeCount };
+  const hiddenSelected = computed<readonly CngxSelectOptionDef<T>[]>(
+    () => {
+      if (opts.chipOverflow() !== 'truncate') {
+        return NO_HIDDEN;
+      }
+      const all = opts.selectedOptions();
+      const cap = Math.max(1, opts.maxVisibleChips());
+      return all.length <= cap ? NO_HIDDEN : all.slice(cap);
+    },
+    { equal: (a, b) => sameArrayContents(a, b, Object.is) },
+  );
+
+  return { visibleSelected, overflowBadgeCount, hiddenSelected };
 }

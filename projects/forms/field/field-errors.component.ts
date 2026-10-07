@@ -10,13 +10,15 @@ import {
 import { NgTemplateOutlet } from '@angular/common';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CNGX_ERROR_MESSAGES } from './form-field.token';
+import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n';
 
 /**
  * Auto-renders validation errors from the {@link CNGX_ERROR_MESSAGES} registry.
  *
  * Place inside a `cngx-form-field`. Errors are only shown after the touched gate
  * (user has interacted with the field). Each error is matched by its `kind` against
- * the registered message functions.
+ * the registered message functions; an unregistered kind shows the error's own
+ * `message`, then the library message from `CNGX_FORM_FIELD_I18N`, never the raw kind.
  *
  * Supports an optional custom template for per-error rendering while keeping
  * auto-resolution from the registry.
@@ -79,6 +81,7 @@ export class CngxFieldErrors {
   /** @internal */
   protected readonly presenter = inject(CngxFormFieldPresenter);
   private readonly errorMap = inject(CNGX_ERROR_MESSAGES);
+  private readonly i18n = injectFormFieldI18n();
 
   /** Optional custom template for each error item. */
   protected readonly customTpl = contentChild<TemplateRef<CngxFieldErrorContext>>(TemplateRef);
@@ -104,9 +107,9 @@ export class CngxFieldErrors {
     // region; the next error change speaks the new language.
     return untracked(() => {
       const map = this.errorMap();
+      const i18n = this.i18n();
       return errors.map((err, i) => {
-        const fn = map[err.kind];
-        const message = fn ? fn(err) : (err.message ?? err.kind);
+        const message = resolveErrorMessage(err, map, i18n);
         return {
           $implicit: message,
           message,

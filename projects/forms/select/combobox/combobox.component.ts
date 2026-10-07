@@ -18,7 +18,12 @@ import {
   type TemplateRef,
 } from '@angular/core';
 
-import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
+import {
+  CNGX_STATEFUL,
+  injectLocale,
+  type CngxAsyncState,
+  type AsyncStatus,
+} from '@cngx/core/utils';
 
 import { CngxChip } from '@cngx/common/display';
 import {
@@ -26,7 +31,7 @@ import {
   CngxListbox,
   CngxListboxSearch,
   CngxListboxTrigger,
-  type ListboxMatchFn,
+  createListboxLabelMatch,
 } from '@cngx/common/interactive';
 import {
   CngxPopover,
@@ -35,7 +40,9 @@ import {
   type PopoverPlacement,
 } from '@cngx/common/popover';
 
+import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { toListboxMatchFn } from '../shared/internal/listbox-match';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -71,6 +78,7 @@ import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectConfig,
   type CngxSelectLoadingVariant,
+  type CngxSelectMatchFn,
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
@@ -95,6 +103,8 @@ import {
 import {
   CngxComboboxChip,
   type CngxComboboxChipContext,
+  CngxSelectChipOverflow,
+  type CngxSelectChipOverflowContext,
   CngxComboboxTriggerLabel,
   type CngxComboboxTriggerLabelContext,
   CngxSelectCaret,
@@ -151,8 +161,8 @@ export interface CngxComboboxChange<T = unknown> {
  * `cngxSelectCommitError`, `cngxSelectClearButton`,
  * `cngxSelectOptionPending` and `cngxSelectOptionError` also take an
  * app-wide default through `CNGX_SELECT_CONFIG.templates` (`withTemplates`);
- * `cngxComboboxTriggerLabel`, `cngxComboboxChip`, `cngxSelectInputPrefix`
- * and `cngxSelectInputSuffix` are directive-only. `templates.loadingGlyph`
+ * `cngxComboboxTriggerLabel`, `cngxComboboxChip`, `cngxSelectChipOverflow`,
+ * `cngxSelectInputPrefix` and `cngxSelectInputSuffix` are directive-only. `templates.loadingGlyph`
  * replaces the loading and refresh glyph app-wide; this host has no
  * projected glyph slot. The placeholder is the input's own `placeholder`
  * text, so `cngxSelectPlaceholder` does not apply here.
@@ -174,6 +184,7 @@ export interface CngxComboboxChange<T = unknown> {
  * @slot cngxSelectLoading Replaces the panel's loading indicator during the first load of [state], or while [loading] is true without [state]; gets retry.
  * @slot cngxComboboxTriggerLabel Replaces the chip strip whenever projected, including with no selection, while the search input stays; gets selected, values, count.
  * @slot cngxComboboxChip Replaces each chip in the trigger strip unless cngxComboboxTriggerLabel is projected; gets option, remove, index.
+ * @slot cngxSelectChipOverflow Replaces the +N badge after the visible chips when chipOverflow is 'truncate' and selected options are hidden; gets count, label.
  * @slot cngxSelectOptionLabel Replaces the label content of each option row; gets option, selected, highlighted.
  * @slot cngxSelectError Replaces the panel's error block on a failed load and the inline error above the options on a failed refresh; gets error, retry.
  * @slot cngxSelectRetryButton Replaces the retry button inside the built-in load-error, inline-error and commit-error blocks; gets retry, error, disabled, label.
@@ -306,8 +317,11 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
    */
   readonly closeOnSelect = input<boolean>(false);
 
-  /** Custom matcher for the inline `CngxListboxSearch`. */
-  readonly searchMatchFn = input<ListboxMatchFn | null>(null);
+  /**
+   * Custom matcher for the inline `CngxListboxSearch`. Wins over
+   * `CngxSelectConfig.searchMatchFn`.
+   */
+  readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
 
   /** Debounce for search term updates (ms). */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
@@ -342,18 +356,32 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly clearable = input<boolean>(false);
 
   /** A11y label for the clear-all button. */
+  /** @internal The select section at this reading site; per-variant defaults. */
+  private readonly selectCopy = injectSelectCopy();
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
-    () => this.clearButtonAriaLabel() ?? this.config.ariaLabels().clearButton ?? 'Reset selection',
+    () =>
+      this.clearButtonAriaLabel() ??
+      this.config.ariaLabels().clearButton ??
+      this.selectCopy().resetSelection,
   );
 
   /** A11y label prefix for the per-chip remove button. */
   readonly chipRemoveAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedChipRemoveAriaLabel = computed<string>(
-    () => this.chipRemoveAriaLabel() ?? this.config.ariaLabels().chipRemove ?? 'Remove',
+    () => this.chipRemoveAriaLabel() ?? this.config.ariaLabels().chipRemove,
   );
+  /**
+   * @internal Accessible name of a chip's remove button: the remove action and
+   * the chip label placed by the `chipRemoveFor` message.
+   */
+  protected readonly chipRemoveLabelFor = computed<(label: string) => string>(() => {
+    const action = this.resolvedChipRemoveAriaLabel();
+    const format = this.config.ariaLabels().chipRemoveFor;
+    return (label) => format(action, label);
+  });
 
   /** Loading state inside the panel. */
   readonly loading = input<boolean>(false);
@@ -427,6 +455,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   private readonly triggerLabelDirective =
     contentChild<CngxComboboxTriggerLabel<T>>(CngxComboboxTriggerLabel);
   private readonly chipDirective = contentChild<CngxComboboxChip<T>>(CngxComboboxChip);
+  private readonly chipOverflowDirective =
+    contentChild<CngxSelectChipOverflow<T>>(CngxSelectChipOverflow);
   private readonly optionLabelDirective =
     contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
@@ -472,6 +502,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     () => this.chipDirective()?.templateRef ?? null,
   );
   /** @internal */
+  protected readonly chipOverflowTpl = computed<TemplateRef<
+    CngxSelectChipOverflowContext<T>
+  > | null>(() => this.chipOverflowDirective()?.templateRef ?? null);
+  /** @internal */
   protected readonly inputPrefixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
     () => this.inputPrefixDirective()?.templateRef ?? null,
   );
@@ -501,17 +535,16 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   readonly empty = computed<boolean>(() => this.isEmpty());
 
+  /** @internal Folded substring match of the option label in the reading locale. */
+  private readonly labelMatch = createListboxLabelMatch(injectLocale());
+
   /** @internal */
-  protected readonly effectiveMatchFn = computed<ListboxMatchFn>(
-    () =>
-      this.searchMatchFn() ??
-      ((option, term) => {
-        if (term === '') {
-          return true;
-        }
-        return option.label.toLowerCase().includes(term.toLowerCase());
-      }),
+  protected readonly effectiveMatchFn = computed<CngxSelectMatchFn<T>>(
+    () => this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch,
   );
+
+  /** @internal - `effectiveMatchFn` as the listbox search input takes it. */
+  protected readonly listboxMatchFn = computed(() => toListboxMatchFn(this.effectiveMatchFn()));
 
   /**
    * Filter overlay bound to the inline search term. `null` on empty
@@ -758,6 +791,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   protected readonly visibleSelected = this.chipStrip.visibleSelected;
   /** @internal */
   protected readonly overflowBadgeCount = this.chipStrip.overflowBadgeCount;
+  /** @internal Selected options the truncated strip hides, for the overflow slot. */
+  protected readonly hiddenSelected = this.chipStrip.hiddenSelected;
+  /** @internal Visible `+N` badge text, the count in the reading locale's digits. */
+  protected readonly overflowBadgeText = computed<string>(() =>
+    this.config.fallbackLabels().chipOverflowBadge(this.overflowBadgeCount()),
+  );
 
   private readonly togglingOption = this.core.togglingOption;
 

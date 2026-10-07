@@ -30,6 +30,27 @@ class FilterHostHarness implements CngxOptionFilterHost {
   }
 }
 
+// A host that keys on the calling option through the optional fourth argument.
+@Component({
+  template: `
+    <div cngxActiveDescendant tabindex="0">
+      <div cngxOption value="a" label="Apple">Apple</div>
+      <div cngxOption value="b" label="Banana">Banana</div>
+    </div>
+  `,
+  imports: [CngxActiveDescendant, CngxOption],
+  providers: [{ provide: CNGX_OPTION_FILTER_HOST, useExisting: OptionAwareHost }],
+})
+class OptionAwareHost implements CngxOptionFilterHost {
+  readonly searchTerm = signal<string>('');
+  readonly seen: (CngxOption | undefined)[] = [];
+
+  matches<T>(_value: T, label: string, term: string, option?: CngxOption): boolean {
+    this.seen.push(option);
+    return label.toLowerCase().includes(term.toLowerCase());
+  }
+}
+
 function setup(): {
   fixture: ComponentFixture<FilterHostHarness>;
   host: FilterHostHarness;
@@ -94,6 +115,25 @@ describe('CNGX_OPTION_FILTER_HOST', () => {
     expect(optionEls[0].el.classList.contains('cngx-option--hidden')).toBe(true);
     expect(optionEls[1].el.hasAttribute('hidden')).toBe(false);
     expect(optionEls[1].el.classList.contains('cngx-option--hidden')).toBe(false);
+  });
+
+  it('passes the calling option instance as the fourth argument', () => {
+    TestBed.configureTestingModule({});
+    const fixture = TestBed.createComponent(OptionAwareHost);
+    fixture.detectChanges();
+    const options = fixture.debugElement
+      .queryAll(By.directive(CngxOption))
+      .map((d) => d.injector.get(CngxOption));
+    const host = fixture.componentInstance;
+
+    host.searchTerm.set('an');
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expect(options[0].hidden()).toBe(true);
+    expect(options[1].hidden()).toBe(false);
+    expect(host.seen).toEqual(expect.arrayContaining(options));
+    expect(host.seen.every((o) => o === options[0] || o === options[1])).toBe(true);
   });
 
   it('clearing the term restores visibility for previously hidden options', () => {

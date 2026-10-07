@@ -100,15 +100,32 @@ class OverflowHost {
 }
 
 describe('CngxMultiSelect chip-overflow badge isolates under dir=rtl', () => {
-  it('pins the +N badge to isolate + direction:ltr', () => {
-    document.documentElement.dir = 'rtl';
+  afterEach(() => {
+    document.documentElement.style.removeProperty('--cngx-select-chip-overflow-badge-direction');
+  });
+
+  function mountOverflow(): HTMLElement {
     const fixture = TestBed.createComponent(OverflowHost);
     mountedRoot = fixture.nativeElement as HTMLElement;
     document.body.appendChild(mountedRoot);
     fixture.detectChanges();
-    const badge = query(mountedRoot, '.cngx-select__chip-overflow-badge');
-    // `+N` detaches its `+` under RTL; direction:ltr keeps sign left of digits.
+    return query(mountedRoot, '.cngx-select__chip-overflow-badge');
+  }
+
+  it('isolates the +N badge and lets it follow dir=rtl', () => {
+    document.documentElement.dir = 'rtl';
+    const badge = mountOverflow();
+    // The badge text comes from a message, so it reads in the page direction.
     expect(computedValue(badge, 'unicode-bidi')).toBe('isolate');
-    expect(computedValue(badge, 'direction')).toBe('ltr');
+    expect(computedValue(badge, 'direction')).toBe('rtl');
+  });
+
+  it('pins a bare sign-fixed badge to ltr through the direction token', () => {
+    document.documentElement.dir = 'rtl';
+    document.documentElement.style.setProperty(
+      '--cngx-select-chip-overflow-badge-direction',
+      'ltr',
+    );
+    expect(computedValue(mountOverflow(), 'direction')).toBe('ltr');
   });
 });

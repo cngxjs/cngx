@@ -131,7 +131,8 @@ export class CngxOption implements CngxAdItemHandle {
 
   /**
    * Reactive visibility derived from the optional `CNGX_OPTION_FILTER_HOST`
-   * host's `searchTerm` and `matches` policy. `false` when no host is
+   * host's `searchTerm` and `matches` policy (called with this option as the
+   * fourth argument). `false` when no host is
    * provided or the term is empty; `true` only when the host's policy
    * explicitly rejects the option for the current term.
    *
@@ -146,7 +147,7 @@ export class CngxOption implements CngxAdItemHandle {
     if (!term) {
       return false;
     }
-    return !host.matches(this.value(), this.label(), term);
+    return !host.matches(this.value(), this.label(), term, this);
   });
 
   /**

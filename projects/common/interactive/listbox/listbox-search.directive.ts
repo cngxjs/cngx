@@ -1,7 +1,7 @@
 import { Directive, inject, input, type Signal } from '@angular/core';
 
 import { type ActiveDescendantItem } from '@cngx/common/a11y';
-import { foldForMatching, injectLocale } from '@cngx/core/utils';
+import { createLabelMatcher, injectLocale } from '@cngx/core/utils';
 
 import { CngxSearch } from '../keyboard/search.directive';
 
@@ -12,46 +12,36 @@ import { CngxSearch } from '../keyboard/search.directive';
  */
 export type ListboxMatchFn = (option: ActiveDescendantItem, term: string) => boolean;
 
-interface FoldedLabel {
-  readonly locale: string;
-  readonly source: string;
-  readonly folded: string;
-}
-
 /**
- * @internal Accent- and case-tolerant substring match in the app locale. The
- * term is folded once per term and locale, each option label once per label
- * and locale - not on every keystroke for every option.
+ * The default listbox matcher: an accent- and case-tolerant substring match
+ * of `option.label` against the term in the locale `locale` holds, built on
+ * {@link createLabelMatcher}. It accepts any object with a `label`, so the
+ * same function serves as a `ListboxMatchFn` and as a select-family matcher
+ * over stable option definitions. The option object is the cache key, so each
+ * label is folded once per label text and locale; the cache is a `WeakMap`
+ * owned by the returned function and never outlives the options. An empty
+ * term matches every option.
+ *
+ * Reach for it when a component filters `ActiveDescendantItem`s and wants the
+ * same match a `CngxListboxSearch` applies by default, e.g. as the last arm
+ * of an `input() ?? config ?? default` cascade. Create it once per host in an
+ * injection context (field initializer) so the cache lives as long as the host.
+ *
+ * ```typescript
+ * private readonly labelMatch = createListboxLabelMatch(injectLocale());
+ * protected readonly matchFn = computed(() => this.matchFnInput() ?? this.labelMatch);
+ * ```
+ *
+ * @category common/interactive
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox-search.directive.ts
+ * @since 0.1.0
+ * @relatedTo createLabelMatcher, CngxListboxSearch
  */
-function labelMatchFor(locale: Signal<string>): ListboxMatchFn {
-  const labels = new WeakMap<ActiveDescendantItem, FoldedLabel>();
-  let lastTerm: FoldedLabel | undefined;
-  const foldedLabel = (option: ActiveDescendantItem, current: string): string => {
-    const hit = labels.get(option);
-    if (hit?.locale === current && hit.source === option.label) {
-      return hit.folded;
-    }
-    const entry = {
-      locale: current,
-      source: option.label,
-      folded: foldForMatching(option.label, current),
-    };
-    labels.set(option, entry);
-    return entry.folded;
-  };
-  const foldedTerm = (term: string, current: string): string => {
-    if (lastTerm?.locale !== current || lastTerm.source !== term) {
-      lastTerm = { locale: current, source: term, folded: foldForMatching(term, current) };
-    }
-    return lastTerm.folded;
-  };
-  return (option, term) => {
-    if (term === '') {
-      return true;
-    }
-    const current = locale();
-    return foldedLabel(option, current).includes(foldedTerm(term, current));
-  };
+export function createListboxLabelMatch(
+  locale: Signal<string>,
+): (option: { readonly label: string }, term: string) => boolean {
+  const matches = createLabelMatcher(locale);
+  return (option, term) => matches(option.label, term, option);
 }
 
 /**
@@ -86,7 +76,7 @@ export class CngxListboxSearch {
    * Custom matcher. Defaults to a substring match on `label` that ignores
    * case and accents in the app locale.
    */
-  readonly matchFn = input<ListboxMatchFn>(labelMatchFor(injectLocale()));
+  readonly matchFn = input<ListboxMatchFn>(createListboxLabelMatch(injectLocale()));
 
   private readonly search = inject(CngxSearch, { self: true, host: true });
 

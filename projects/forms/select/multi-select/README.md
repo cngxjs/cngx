@@ -107,6 +107,7 @@ All [`CngxSelect` slots](../single-select/README.md#template-slots) plus:
 |-|-|
 | `*cngxMultiSelectChip`         | Per-chip rendering                       |
 | `*cngxMultiSelectTriggerLabel` | Whole chip strip with text/badge summary |
+| `*cngxSelectChipOverflow` | `+N` badge after the visible chips under `chipOverflow: 'truncate'`; gets `count`, `label`, `hidden` (the hidden selected options) |
 
 The selected-option label inside the default `<cngx-chip>` is also overridable via `*cngxSelectOptionLabel` - that template renders both in the panel rows AND in the default chip body.
 

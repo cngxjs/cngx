@@ -1,13 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  model,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, model, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { coerceSignal } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
 
 import type { CngxFilterEditorComponent } from './filter-builder-editor.contract';
@@ -17,6 +9,7 @@ import {
   CNGX_FILTER_BUILDER_CONFIG,
   CNGX_FILTER_BUILDER_DEFAULTS,
   injectFilterBuilderConfig,
+  injectFilterBuilderI18n,
   isNativeEditor,
   provideFilterBuilderConfig,
   provideFilterBuilderConfigAt,
@@ -35,6 +28,7 @@ import {
 class TokenProbe {
   readonly config: CngxFilterBuilderConfig = injectFilterBuilderConfig();
   readonly resolvedConfig = inject(CNGX_FILTER_BUILDER_CONFIG);
+  readonly i18n = injectFilterBuilderI18n();
 }
 
 function setupRoot(...providers: ReturnType<typeof provideFilterBuilderConfig>[]): TokenProbe {
@@ -50,7 +44,7 @@ describe('filter-builder.config', () => {
     });
 
     it('ships English defaults for the i18n surface', () => {
-      const i18n = coerceSignal(CNGX_FILTER_BUILDER_DEFAULTS.i18n)();
+      const i18n = setupRoot().i18n();
       expect(i18n.addFilter).toBe('Add filter');
       expect(i18n.removeGroup).toBe('Remove filter group');
       expect(i18n.xor).toBe('XOR');
@@ -59,7 +53,7 @@ describe('filter-builder.config', () => {
     });
 
     it('does not expose nand / nor labels', () => {
-      const operators = coerceSignal(CNGX_FILTER_BUILDER_DEFAULTS.i18n)().operators;
+      const operators = setupRoot().i18n().operators;
       expect(operators).not.toHaveProperty('nand');
       expect(operators).not.toHaveProperty('nor');
     });
@@ -102,9 +96,9 @@ describe('filter-builder.config', () => {
           withFilterBuilderI18n({ operators: { contains: 'Enthält' } }),
         ),
       );
-      expect(coerceSignal(probe.config.i18n)().addFilter).toBe('Filter hinzufügen');
-      expect(coerceSignal(probe.config.i18n)().operators['contains']).toBe('Enthält');
-      expect(coerceSignal(probe.config.i18n)().operators['eq']).toBe('Equals');
+      expect(probe.i18n().addFilter).toBe('Filter hinzufügen');
+      expect(probe.i18n().operators['contains']).toBe('Enthält');
+      expect(probe.i18n().operators['eq']).toBe('Equals');
     });
 
     it('withFilterBuilderI18n follows a Signal and keeps the other operator labels', () => {
@@ -121,7 +115,7 @@ describe('filter-builder.config', () => {
           ),
         ),
       );
-      const i18n = coerceSignal(probe.config.i18n);
+      const i18n = probe.i18n;
       expect(i18n().addFilter).toBe('Add filter');
       expect(i18n().operators['contains']).toBe('Contains');
       lang.set('de');
@@ -155,9 +149,7 @@ describe('filter-builder.config', () => {
     });
 
     it('withTemplates merges template refs into the slot map', () => {
-      const probe = setupRoot(
-        provideFilterBuilderConfig(withTemplates({ removeButton: null })),
-      );
+      const probe = setupRoot(provideFilterBuilderConfig(withTemplates({ removeButton: null })));
       expect(probe.config.templates).toHaveProperty('removeButton', null);
     });
   });

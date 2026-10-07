@@ -7,6 +7,7 @@ import {
   createDefaultsFill,
   createNestedOverrideMerge,
   createOverrideMerge,
+  type CngxNestedOverrides,
 } from './override-merge';
 
 interface Labels {
@@ -201,7 +202,10 @@ describe('createDefaultsFill', () => {
 
   it('follows a live flip and keeps the reference on an equal recompute', () => {
     const source = signal<Partial<Labels>>({});
-    const filled = createDefaultsFill<Labels>(createOverrideMerge<Labels>(DEFAULTS, source), DEFAULTS);
+    const filled = createDefaultsFill<Labels>(
+      createOverrideMerge<Labels>(DEFAULTS, source),
+      DEFAULTS,
+    );
     source.set({ bar: 'Brotkrumen' });
     const german = filled();
     expect(german.bar).toBe('Brotkrumen');
@@ -212,5 +216,93 @@ describe('createDefaultsFill', () => {
     expect(fallback.bar).toBe('Breadcrumb');
     source.set({});
     expect(filled()).toBe(fallback);
+  });
+
+  it('treats null like undefined and keeps every other falsy value', () => {
+    interface Flags {
+      readonly label?: string | null;
+      readonly count?: number;
+      readonly on?: boolean;
+    }
+    const base: Flags = { label: 'Label', count: 3, on: true };
+    const merged = createOverrideMerge<Flags>(base, { label: null, count: 0, on: false });
+    expect(createDefaultsFill<Flags>(merged, base)()).toEqual({
+      label: 'Label',
+      count: 0,
+      on: false,
+    });
+    const empty = createOverrideMerge<Flags>(base, { label: '' });
+    expect(createDefaultsFill<Flags>(empty, base)().label).toBe('');
+  });
+
+  it('fills from Signal defaults and follows a defaults switch', () => {
+    const defaults = signal<Labels>(DEFAULTS);
+    const merged = createOverrideMerge<Labels>(defaults, { bar: undefined });
+    const filled = createDefaultsFill<Labels>(merged, defaults);
+    expect(filled().bar).toBe('Breadcrumb');
+    defaults.set({ bar: 'Brotkrumen', menu: 'Menue' });
+    expect(filled()).toEqual({ bar: 'Brotkrumen', menu: 'Menue' });
+  });
+
+  it('keeps the reference on an equal recompute with Signal defaults', () => {
+    const defaults = signal<Labels>(DEFAULTS);
+    const filled = createDefaultsFill<Labels>(
+      createOverrideMerge<Labels>(defaults, { menu: 'Liste' }),
+      defaults,
+    );
+    const first = filled();
+    defaults.set({ ...DEFAULTS });
+    expect(filled()).toBe(first);
+  });
+
+  it('memoizes per defaults as well as per merged signal', () => {
+    const merged = createOverrideMerge<Labels>(DEFAULTS, { bar: undefined });
+    const other = { bar: 'Pfad', menu: 'Menue' };
+    expect(createDefaultsFill<Labels>(merged, other)().bar).toBe('Pfad');
+    expect(createDefaultsFill<Labels>(merged, DEFAULTS)().bar).toBe('Breadcrumb');
+  });
+
+  describe('with a nested record key', () => {
+    interface Bundle {
+      readonly title: string;
+      readonly status: { readonly ok: string; readonly failed: string };
+    }
+    const BUNDLE: Bundle = { title: 'Status', status: { ok: 'OK', failed: 'Failed' } };
+
+    it('fills unset keys at the top level and inside the nested record', () => {
+      const merged = createNestedOverrideMerge<Bundle, 'status'>(
+        BUNDLE,
+        { title: undefined, status: { ok: undefined, failed: 'Fehler' } },
+        'status',
+      );
+      const filled = createDefaultsFill<Bundle, 'status'>(merged, BUNDLE, 'status');
+      expect(filled()).toEqual({ title: 'Status', status: { ok: 'OK', failed: 'Fehler' } });
+    });
+
+    it('fills from Signal defaults and keeps the reference on an equal recompute', () => {
+      const defaults = signal<Bundle>(BUNDLE);
+      const source = signal<CngxNestedOverrides<Bundle, 'status'>>({ status: { ok: undefined } });
+      const filled = createDefaultsFill<Bundle, 'status'>(
+        createNestedOverrideMerge<Bundle, 'status'>(defaults, source, 'status'),
+        defaults,
+        'status',
+      );
+      const first = filled();
+      expect(first.status.ok).toBe('OK');
+      source.set({ status: { ok: undefined } });
+      expect(filled()).toBe(first);
+      defaults.set({ title: 'Zustand', status: { ok: 'Gut', failed: 'Fehler' } });
+      expect(filled()).toEqual({ title: 'Zustand', status: { ok: 'Gut', failed: 'Fehler' } });
+    });
+
+    it('returns a separate signal from the flat fill of the same merge', () => {
+      const merged = createNestedOverrideMerge<Bundle, 'status'>(BUNDLE, {}, 'status');
+      expect(createDefaultsFill<Bundle, 'status'>(merged, BUNDLE, 'status')).toBe(
+        createDefaultsFill<Bundle, 'status'>(merged, BUNDLE, 'status'),
+      );
+      expect(createDefaultsFill<Bundle>(merged, BUNDLE)).not.toBe(
+        createDefaultsFill<Bundle, 'status'>(merged, BUNDLE, 'status'),
+      );
+    });
   });
 });

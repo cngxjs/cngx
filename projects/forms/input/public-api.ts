@@ -35,10 +35,7 @@ export { CngxInputFilter, type InputFilterPattern } from './input-filter.directi
 export { CngxTrim } from './trim.directive';
 export { withCurrency, type CurrencyOptions } from './currency.feature';
 export { CngxPasteTransform } from './paste-transform.directive';
-export {
-  CngxSensitiveValue,
-  type SensitiveRevealAudit,
-} from './sensitive-value.directive';
+export { CngxSensitiveValue, type SensitiveRevealAudit } from './sensitive-value.directive';
 export {
   CNGX_INPUT_CONFIG,
   type InputConfig,
@@ -47,12 +44,14 @@ export {
   provideInputConfig,
   provideInputConfigAt,
   injectInputConfig,
+  injectInputAriaLabels,
   withInputAriaLabels,
   withPhonePatterns,
   withPhoneDefaultRegion,
   withIbanPatterns,
   withZipPatterns,
   withDateFormats,
+  withDateShortFormats,
   withMaskPlaceholder,
   withMaskGuide,
   withCustomTokens,
@@ -61,3 +60,7 @@ export {
   withFileMaxSize,
   withFileMaxFiles,
 } from './input-config';
+export {
+  CNGX_INPUT_LANGUAGE_EN,
+  type CngxInputLanguageSection,
+} from './i18n/input-language-section';

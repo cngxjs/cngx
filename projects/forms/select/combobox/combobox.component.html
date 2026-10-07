@@ -52,7 +52,7 @@
           } @else {
             <cngx-chip
               [removable]="!disabled()"
-              [removeAriaLabel]="resolvedChipRemoveAriaLabel() + ': ' + opt.label"
+              [removeAriaLabel]="chipRemoveLabelFor()(opt.label)"
               (remove)="handleChipRemoveClick($event, opt)"
             >
               {{ opt.label }}
@@ -60,9 +60,23 @@
           }
         }
         @if (overflowBadgeCount() > 0) {
-          <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
-            +{{ overflowBadgeCount() }}
-          </span>
+          @if (chipOverflowTpl(); as overflowT) {
+            <ng-container
+              *ngTemplateOutlet="
+                overflowT;
+                context: {
+                  $implicit: overflowBadgeCount(),
+                  count: overflowBadgeCount(),
+                  label: overflowBadgeText(),
+                  hidden: hiddenSelected(),
+                }
+              "
+            />
+          } @else {
+            <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
+              {{ overflowBadgeText() }}
+            </span>
+          }
         }
       </span>
     }
@@ -84,7 +98,7 @@
       spellcheck="false"
       [attr.inputmode]="inputMode()"
       [attr.enterkeyhint]="enterKeyHint()"
-      [matchFn]="effectiveMatchFn()"
+      [matchFn]="listboxMatchFn()"
       [debounceMs]="searchDebounceMs()"
       [cngxPopoverTrigger]="pop"
       [haspopup]="'listbox'"

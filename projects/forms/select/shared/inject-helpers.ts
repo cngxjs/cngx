@@ -9,12 +9,24 @@ import { resolveReorderableSelectConfig } from './reorderable-select-config';
  * Effective select config for the current injector, merged with library
  * defaults. Always fully populated - never `null`. Injection context required.
  *
+ * The copy keys `ariaLabels` and `fallbackLabels` are signals carrying the
+ * same words the select components render and announce: the
+ * `withAriaLabels` / `withFallbackLabels` overrides of the nearest
+ * `CNGX_SELECT_CONFIG` over the `select` section of the active language pack
+ * (English without one), formatted for the locale of the reading injector. A
+ * runtime language switch and a `provideLocaleAt` subtree both reach them, so
+ * a custom composite next to the selects shows the same copy. Read them
+ * inside a `computed()`, a template or a handler, never at construction.
+ *
  * ```ts
  * import { injectSelectConfig } from '@cngx/forms/select';
  *
  * export class MyComposite {
  *   private readonly config = injectSelectConfig();
  *   protected readonly panelWidth = this.config.panelWidth;
+ *   protected readonly badge = computed(() =>
+ *     this.config.fallbackLabels().chipOverflowBadge(this.hidden()),
+ *   );
  * }
  * ```
  *

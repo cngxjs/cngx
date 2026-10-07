@@ -113,10 +113,11 @@ export interface FormFieldConfig {
   errorMessages?: ErrorMessageMap | Signal<ErrorMessageMap>;
   /**
    * When set, auto-generated constraint hints are shown (e.g. "8–64 characters").
-   * Contains the resolved formatters (merged with English defaults by `withConstraintHints()`),
-   * as a `Signal` once that feature ran. `undefined` means disabled.
+   * Holds the consumer's formatters from `withConstraintHints()` (possibly
+   * none); every formatter left out reads the form-field language section at
+   * the field. `undefined` means disabled.
    */
-  constraintHints?: ConstraintHintFormatters | Signal<ConstraintHintFormatters>;
+  constraintHints?: Partial<ConstraintHintFormatters> | Signal<Partial<ConstraintHintFormatters>>;
   /**
    * Maps field names to `autocomplete` attribute values.
    * Merged with built-in defaults by `withAutocompleteMappings()`.
@@ -417,24 +418,25 @@ export function withErrorStrategy(strategy: ErrorStrategyName | ErrorStrategyFn)
   return { _apply: (c) => ({ ...c, errorStrategy: fn }) };
 }
 
+const NO_HINT_FORMATTERS: Partial<ConstraintHintFormatters> = {};
+
 /**
- * Enable auto-generated constraint hints for all form fields.
- * Pass `true` for English defaults, or a `ConstraintHintFormatters` object for i18n.
+ * Enable auto-generated constraint hints for all form fields. The hint copy
+ * comes from the form-field section of the active language pack (English
+ * without one), with numbers formatted for the field's locale. Formatters
+ * passed here replace single hints and stay as set. This is the one override
+ * for hints: `withFormFieldI18nLabels` does not take the `hint*` keys, and a
+ * language pack changes the copy of every hint left out here.
  *
- * English defaults
+ * Language-pack copy
  * ```ts
  * provideFormField(withConstraintHints())
  * ```
  *
- * German
+ * One hint replaced, the others from the language pack
  * ```ts
  * provideFormField(withConstraintHints({
- *   lengthRange: (min, max) => `${min}–${max} Zeichen`,
- *   minLength: (min) => `Mind. ${min} Zeichen`,
- *   maxLength: (max) => `Max. ${max} Zeichen`,
- *   valueRange: (min, max) => `${min}–${max}`,
- *   minValue: (min) => `Mind. ${min}`,
- *   maxValue: (max) => `Max. ${max}`,
+ *   lengthRange: (min, max) => `${min} to ${max} characters`,
  * }))
  * ```
  *
@@ -463,13 +465,14 @@ export function withErrorStrategy(strategy: ErrorStrategyName | ErrorStrategyFn)
 export function withConstraintHints(
   formatters?: Partial<ConstraintHintFormatters> | Signal<Partial<ConstraintHintFormatters>>,
 ): FormFieldFeature {
-  const resolved = createOverrideMerge(DEFAULT_HINT_FORMATTERS, formatters);
-  return { _apply: (c) => ({ ...c, constraintHints: resolved }) };
+  const own = formatters ?? NO_HINT_FORMATTERS;
+  return { _apply: (c) => ({ ...c, constraintHints: own }) };
 }
 
 /**
- * Complete set of formatter functions for constraint hint text.
- * Stored in config after `withConstraintHints()` merges user overrides with defaults.
+ * Formatter functions for constraint hint text. `withConstraintHints()` takes
+ * any subset; the field reads every formatter left out from the form-field
+ * language section.
  *
  * @category forms/field
  */
@@ -517,20 +520,6 @@ export interface ConstraintMetadata {
   readonly required: boolean;
 }
 
-/**
- * English default formatters for constraint hints.
- *
- * @category forms/field
- */
-export const DEFAULT_HINT_FORMATTERS: ConstraintHintFormatters = {
-  lengthRange: (min, max) => `${min}–${max} characters`,
-  minLength: (min) => `Min. ${min} characters`,
-  maxLength: (max) => `Max. ${max} characters`,
-  valueRange: (min, max) => `${min}–${max}`,
-  minValue: (min) => `Min. ${min}`,
-  maxValue: (max) => `Max. ${max}`,
-  extra: () => [],
-};
 
 /**
  * Auto-render a required marker (e.g. `*`) inside every `CngxLabel` for required fields.

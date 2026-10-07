@@ -57,4 +57,26 @@ describe('createChipOverflow', () => {
     expect(h.strip.visibleSelected().length).toBe(4);
     expect(h.strip.overflowBadgeCount()).toBe(0);
   });
+  it('lists the hidden selections in truncate mode and none otherwise', () => {
+    const h = makeHarness(['a', 'b', 'c', 'd'], 'truncate', 2);
+    expect(h.strip.hiddenSelected().map((o) => o.value)).toEqual(['c', 'd']);
+    h.maxVisibleChips.set(4);
+    expect(h.strip.hiddenSelected()).toEqual([]);
+    h.maxVisibleChips.set(1);
+    h.chipOverflow.set('wrap');
+    expect(h.strip.hiddenSelected()).toEqual([]);
+  });
+
+  it('keeps the hidden array identity while the hidden set is unchanged', () => {
+    const h = makeHarness(['a', 'b', 'c', 'd'], 'truncate', 2);
+    const first = h.strip.hiddenSelected();
+    h.selectedOptions.set([...h.selectedOptions()]);
+    expect(h.strip.hiddenSelected()).toBe(first);
+    const [a, b, c, d] = h.selectedOptions();
+    h.selectedOptions.set([b, a, c, d]);
+    expect(h.strip.hiddenSelected()).toBe(first);
+    h.selectedOptions.set([a, b, c]);
+    expect(h.strip.hiddenSelected()).not.toBe(first);
+    expect(h.strip.hiddenSelected().map((o) => o.value)).toEqual(['c']);
+  });
 });

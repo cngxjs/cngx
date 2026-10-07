@@ -8,9 +8,8 @@ import {
   input,
   untracked,
 } from '@angular/core';
-import { coerceSignal } from '@cngx/core/utils';
 
-import { injectFilterBuilderConfig } from './filter-builder.config';
+import { injectFilterBuilderConfig, injectFilterBuilderI18n } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import type {
   CngxFilterBuilderAddFilterButtonContext as AddFilterButtonCtx,
@@ -66,7 +65,7 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
 export class CngxFilterBuilderBody {
   protected readonly host = inject(CNGX_FILTER_BUILDER_HOST);
   private readonly config = injectFilterBuilderConfig();
-  protected readonly i18n = coerceSignal(this.config.i18n);
+  protected readonly i18n = injectFilterBuilderI18n();
 
   readonly templates = input.required<CngxFilterBuilderTemplateRegistry>();
 

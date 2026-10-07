@@ -20,7 +20,7 @@ import {
   createFieldSync,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
-import { DEFAULT_INPUT_ARIA_LABELS, injectInputAriaLabels } from '../input-config';
+import { injectInputAriaLabels } from '../input-config';
 import { CngxRatingItem, type CngxRatingItemContext } from './rating-item.directive';
 
 /**
@@ -102,10 +102,7 @@ const CNGX_RATING_GLYPHS = {
           (focus)="onItemFocus(step)"
         >
           @if (itemTemplate(); as tpl) {
-            <ng-container
-              [ngTemplateOutlet]="tpl"
-              [ngTemplateOutletContext]="itemContexts()[i]"
-            />
+            <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="itemContexts()[i]" />
           } @else {
             <span aria-hidden="true">{{ value() >= step ? glyphs.full : glyphs.empty }}</span>
           }
@@ -251,7 +248,7 @@ export class CngxRating implements CngxFormFieldControl {
    */
   protected readonly itemLabels = computed<string[]>(
     () => {
-      const factory = this.ariaLabels().ratingItem ?? DEFAULT_INPUT_ARIA_LABELS.ratingItem;
+      const factory = this.ariaLabels().ratingItem;
       const max = this.max();
       return this.steps().map((step) => factory(step, max));
     },
@@ -313,7 +310,7 @@ export class CngxRating implements CngxFormFieldControl {
       return;
     }
     this.value.set(step);
-    const factory = this.ariaLabels().ratingValue ?? DEFAULT_INPUT_ARIA_LABELS.ratingValue;
+    const factory = this.ariaLabels().ratingValue;
     this.announcer.announce(factory(step, this.max()));
   }
 }

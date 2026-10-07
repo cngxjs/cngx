@@ -1,5 +1,5 @@
 import { signal } from '@angular/core';
-import { coerceSignal } from '@cngx/core/utils';
+import { stripBidiIsolates } from '@cngx/testing';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -9,6 +9,8 @@ import {
 } from './filter-builder-row-controller';
 import type { CngxFilterEditor } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_DEFAULTS } from './filter-builder.config';
+import { filterBuilderI18nFrom } from './i18n/filter-builder-i18n';
+import { CNGX_FILTER_BUILDER_LANGUAGE_EN } from './i18n/filter-builder-language-section';
 import { createFilterExpression } from './filter-builder.helpers';
 import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
 
@@ -28,6 +30,8 @@ const EDITORS: ReadonlyMap<string, CngxFilterEditor> = new Map<string, CngxFilte
   ['string', 'native:string'],
   ['number', 'native:number'],
 ]);
+
+const EN_I18N = signal(filterBuilderI18nFrom(CNGX_FILTER_BUILDER_LANGUAGE_EN, 'en'));
 
 function createSink() {
   return {
@@ -49,6 +53,7 @@ function createHarness(initialNode: FilterExpression | null = null) {
     path,
     templates: signal(null),
     config: CNGX_FILTER_BUILDER_DEFAULTS,
+    i18n: EN_I18N,
     editors: EDITORS,
     sink,
   };
@@ -277,11 +282,11 @@ describe('createFilterRowController - derivations', () => {
     expect(unknownField.controller.valueEditorContext()).toBeNull();
   });
 
-  it('labels operators from i18n with a raw-key fallback and defaults unknown fields to eq', () => {
+  it('labels operators from i18n, never with the raw key, and defaults unknown fields to eq', () => {
     const { controller } = createHarness(null);
 
     expect(controller.operatorLabel('eq')).toBe('Equals');
-    expect(controller.operatorLabel('customOp')).toBe('customOp');
+    expect(controller.operatorLabel('customOp')).toBe('Unnamed operator');
     expect(controller.defaultOperatorFor('ghost')).toBe('eq');
     expect(controller.defaultOperatorFor('rating')).toBe('gte');
   });
@@ -290,18 +295,16 @@ describe('createFilterRowController - derivations', () => {
     const { controller, node } = createHarness(null);
 
     expect(controller.isIncomplete()).toBe(true);
-    expect(controller.ariaLabel()).toBe(
-      coerceSignal(CNGX_FILTER_BUILDER_DEFAULTS.i18n)().unboundFilterLabel,
-    );
+    expect(controller.ariaLabel()).toBe(EN_I18N().unboundFilterLabel);
 
     node.set(createFilterExpression('name', 'eq', 'foo'));
     expect(controller.isIncomplete()).toBe(false);
-    expect(controller.ariaLabel()).toBe('Filter: Name Equals');
+    expect(stripBidiIsolates(controller.ariaLabel())).toBe('Filter: Name Equals');
   });
 });
 
 describe('createFilterRowController - operator registry integration', () => {
-  it('resolves labels through the def tier between i18n and the raw key', () => {
+  it('resolves labels through the def tier between i18n and the unnamed-operator word', () => {
     const node = signal<FilterExpression | null>(null);
     const sink = createSink();
     const controller = createFilterRowController({
@@ -315,13 +318,14 @@ describe('createFilterRowController - operator registry integration', () => {
           ['lengthGt', { label: 'Longer than', evaluate: () => false }],
         ]),
       },
+      i18n: EN_I18N,
       editors: EDITORS,
       sink,
     });
 
     expect(controller.operatorLabel('eq')).toBe('Equals');
     expect(controller.operatorLabel('lengthGt')).toBe('Longer than');
-    expect(controller.operatorLabel('ghostOp')).toBe('ghostOp');
+    expect(controller.operatorLabel('ghostOp')).toBe('Unnamed operator');
   });
 
   it('marks an empty-value expression incomplete unless its operator is valueless', () => {
@@ -347,6 +351,7 @@ describe('createFilterRowController - operator registry integration', () => {
           ['isBlankish', { valueless: true, evaluate: () => false }],
         ]),
       },
+      i18n: EN_I18N,
       editors: EDITORS,
       sink,
     });

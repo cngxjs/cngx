@@ -21,11 +21,7 @@ import {
 } from '@cngx/forms/field';
 import { CngxSelect, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxInputMask } from '../input-mask.directive';
-import {
-  CNGX_INPUT_CONFIG,
-  DEFAULT_INPUT_ARIA_LABELS,
-  injectInputAriaLabels,
-} from '../input-config';
+import { CNGX_INPUT_CONFIG, injectInputAriaLabels } from '../input-config';
 import { CNGX_PHONE_METADATA } from '../phone-metadata';
 import { createPhoneCountries, type Country } from './countries';
 
@@ -259,7 +255,13 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
 
   /** @internal Country options for the inner select, keyed by the country ref. */
   protected readonly selectOptions = computed<CngxSelectOptionDef<Country>[]>(
-    () => this.resolvedCountries().map((c) => ({ value: c, label: `${c.dialCode} ${c.label}` })),
+    () => {
+      const option = this.ariaLabels().phoneCountryOption;
+      return this.resolvedCountries().map((c) => ({
+        value: c,
+        label: option(c.dialCode, c.label),
+      }));
+    },
     {
       equal: (a, b) =>
         a.length === b.length &&
@@ -292,7 +294,7 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
     if (explicit !== '') {
       return explicit;
     }
-    return this.ariaLabels().phoneCountry ?? DEFAULT_INPUT_ARIA_LABELS.phoneCountry;
+    return this.ariaLabels().phoneCountry;
   });
 
   constructor() {

@@ -10,7 +10,7 @@ import {
   type Signal,
 } from '@angular/core';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
-import { DEFAULT_INPUT_ARIA_LABELS, injectInputAriaLabels } from './input-config';
+import { injectInputAriaLabels } from './input-config';
 import {
   CNGX_PASSWORD_STRENGTH_FACTORY,
   type PasswordStrengthLabel,
@@ -106,10 +106,8 @@ export class CngxPasswordStrength {
             return;
           }
           lastAnnounced = label;
-          const template =
-            this.ariaLabels().passwordStrength ??
-            DEFAULT_INPUT_ARIA_LABELS.passwordStrength;
-          this.announcer.announce(template(label));
+          const labels = this.ariaLabels();
+          this.announcer.announce(labels.passwordStrength(labels.passwordStrengthLevel(label)));
         }, ANNOUNCE_DEBOUNCE_MS);
       });
     });

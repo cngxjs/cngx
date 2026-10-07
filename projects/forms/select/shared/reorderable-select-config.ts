@@ -11,6 +11,9 @@ import {
 import type { CngxReorderModifier } from '@cngx/common/interactive';
 import { coerceSignal } from '@cngx/core/utils';
 
+import { injectSelectWord } from '../i18n/select-i18n';
+import { CNGX_SELECT_LANGUAGE_EN } from '../i18n/select-language-section';
+
 /**
  * App-wide config for reorder-aware select variants. Cascade:
  * per-instance input > `provideReorderableSelectConfigAt` >
@@ -21,7 +24,11 @@ import { coerceSignal } from '@cngx/core/utils';
 export interface CngxReorderableSelectConfig {
   /** Forwarded to inner `CngxReorder`. Default `'alt'`. */
   readonly keyboardModifier?: CngxReorderModifier;
-  /** ARIA label on the chip-strip `role="group"`, value or `Signal`. Localisation hook. */
+  /**
+   * ARIA label on the chip-strip `role="group"`, value or `Signal`. Unset, it
+   * reads `reorderHint` of the `select` language section (English
+   * `'Reorder with Alt + arrow keys'`).
+   */
   readonly ariaLabel?: string | Signal<string>;
   /**
    * Drag-handle glyph. `null` keeps the six-dot grip. Per-instance
@@ -40,7 +47,7 @@ export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
   Omit<CngxReorderableSelectConfig, 'dragHandle' | 'ariaLabel'>
 > & { readonly dragHandle: TemplateRef<void> | null; readonly ariaLabel: string } = {
   keyboardModifier: 'alt',
-  ariaLabel: 'Reorder with Alt + arrow keys',
+  ariaLabel: CNGX_SELECT_LANGUAGE_EN.reorderHint,
   dragHandle: null,
   freezeStripOnCommit: true,
 };
@@ -191,7 +198,7 @@ export function resolveReorderableSelectConfig(): Required<
   const user = inject(CNGX_REORDERABLE_SELECT_CONFIG, { optional: true }) ?? {};
   return {
     keyboardModifier: user.keyboardModifier ?? CNGX_REORDERABLE_SELECT_DEFAULTS.keyboardModifier,
-    ariaLabel: coerceSignal(user.ariaLabel ?? CNGX_REORDERABLE_SELECT_DEFAULTS.ariaLabel),
+    ariaLabel: coerceSignal(user.ariaLabel ?? injectSelectWord('reorderHint')),
     dragHandle:
       user.dragHandle === undefined ? CNGX_REORDERABLE_SELECT_DEFAULTS.dragHandle : user.dragHandle,
     freezeStripOnCommit:

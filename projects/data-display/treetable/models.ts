@@ -73,11 +73,21 @@ export interface CngxTreetableOptions<T> {
    */
   customColumnOrder?: readonly (keyof T & string)[];
   /**
-   * When `true` (the default), column header labels have their first letter
-   * uppercased. Set to `false` to display raw key names.
-   * @defaultValue `true`
+   * `Intl.DateTimeFormat` options for a `Date` in a default cell, formatted
+   * for the treetable's locale. A `*cngxCell` template still gets the raw
+   * value.
+   * @defaultValue `{ year: 'numeric', month: 'short', day: 'numeric' }`
+   * @since 0.1.0
    */
-  capitaliseHeader?: boolean;
+  dateFormat?: Intl.DateTimeFormatOptions;
+  /**
+   * `Intl.NumberFormat` options for a number in a default cell, formatted
+   * for the treetable's locale. A `*cngxCell` template still gets the raw
+   * value.
+   * @defaultValue `{}` (the `Intl.NumberFormat` defaults)
+   * @since 0.1.0
+   */
+  numberFormat?: Intl.NumberFormatOptions;
 }
 
 /**
@@ -106,6 +116,32 @@ export interface CngxCellTplContext<T> {
   $implicit: CngxTreetableFlatNode<T>;
   /** The raw cell value for the column (`node.value[column]`) - available as `let-value="value"`. */
   value: unknown;
+}
+
+/**
+ * Template context type for {@link CngxHeaderTpl}.
+ *
+ * ```html
+ * <ng-template [cngxHeader]="'size'" let-column let-label="label">
+ *   {{ label }} <my-sort-icon [column]="column" />
+ * </ng-template>
+ * ```
+ *
+ * `label` is the text the default header would render: the column's
+ * `columnLabels` entry, else the `unlabeledColumn` text (the key itself only in
+ * a dev build). Derive a header from `column` when neither fits; the key is
+ * never rendered unless the template renders it.
+ *
+ * @category data-display/treetable
+ * @since 0.1.0
+ */
+export interface CngxHeaderTplContext {
+  /** The column key - available as `let-column`. */
+  $implicit: string;
+  /** The column key - available as `let-column="column"`. */
+  column: string;
+  /** The resolved default header text - available as `let-label="label"`. */
+  label: string;
 }
 
 /**

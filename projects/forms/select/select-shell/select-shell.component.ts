@@ -20,15 +20,22 @@ import {
   viewChild,
 } from '@angular/core';
 
-import { CNGX_STATEFUL, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
+import {
+  CNGX_STATEFUL,
+  injectLocale,
+  type AsyncStatus,
+  type CngxAsyncState,
+} from '@cngx/core/utils';
 import {
   CngxClickOutside,
   CngxListbox,
   CngxListboxTrigger,
+  createListboxLabelMatch,
   CNGX_OPTION_CONTAINER,
   CNGX_OPTION_FILTER_HOST,
   CNGX_OPTION_INTERACTION_HOST,
   CNGX_OPTION_STATUS_HOST,
+  type CngxOption,
   type CngxOptionFilterHost,
   type CngxOptionInteractionHost,
   type CngxOptionStatus,
@@ -43,6 +50,7 @@ import {
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
+import { injectSelectCopy } from '../i18n/select-i18n';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
@@ -53,6 +61,8 @@ import {
 import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectLoadingVariant,
+  type CngxSelectMatchFn,
+  type CngxSelectMatchOption,
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
@@ -248,10 +258,15 @@ export class CngxSelectShell<T = unknown>
   readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearable = input<boolean>(false);
+  /** @internal The select section at this reading site; per-variant defaults. */
+  private readonly selectCopy = injectSelectCopy();
   readonly clearButtonAriaLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; follows a language switch. */
   protected readonly resolvedClearButtonAriaLabel = computed<string>(
-    () => this.clearButtonAriaLabel() ?? this.config.ariaLabels().clearButton ?? 'Clear selection',
+    () =>
+      this.clearButtonAriaLabel() ??
+      this.config.ariaLabels().clearButton ??
+      this.selectCopy().clearSelection,
   );
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
@@ -286,11 +301,12 @@ export class CngxSelectShell<T = unknown>
   readonly searchTerm = model<string>('');
 
   /**
-   * Per-instance match policy. Receives `(value, label, term)` and
-   * returns `true` when the option should stay visible. Default:
-   * case-insensitive substring on the label.
+   * Per-instance match policy. Receives the option's `{ value, label }` and
+   * the term and returns `true` when the option should stay visible. Wins
+   * over `CngxSelectConfig.searchMatchFn`. Default: the folded label match
+   * in the reading locale.
    */
-  readonly searchMatchFn = input<((value: T, label: string, term: string) => boolean) | null>(null);
+  readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
 
   /**
    * Debounce for `searchTermChange` (ms). Forward-compatible input -
@@ -339,7 +355,7 @@ export class CngxSelectShell<T = unknown>
   private readonly projectedOptionModel = inject(CNGX_PROJECTED_OPTION_MODEL_FACTORY)<T>({
     containers: this.containers,
     searchTerm: this.searchTerm,
-    matches: (value, label, term) => this.matches(value, label, term),
+    matches: (option, term) => this.matchOption(option, term),
   });
 
   protected readonly derivedOptions = this.projectedOptionModel.derivedOptions;
@@ -671,6 +687,7 @@ export class CngxSelectShell<T = unknown>
     compareWith: this.compareWith,
     debounceMs: computed(() => this.config.typeaheadDebounceInterval),
     disabled: this.disabled,
+    locale: injectLocale(),
   });
 
   /**
@@ -749,13 +766,30 @@ export class CngxSelectShell<T = unknown>
     this.localItemsBuffer.clear();
   }
 
-  /** @internal */
-  matches<TVal>(value: TVal, label: string, term: string): boolean {
-    const fn = this.searchMatchFn();
-    if (fn) {
-      return fn(value as unknown as T, label, term);
-    }
-    return label.toLowerCase().includes(term.toLowerCase());
+  /**
+   * @internal Folded substring match of an option label in the reading
+   * locale, cached per stable option record.
+   */
+  private readonly labelMatch = createListboxLabelMatch(injectLocale());
+
+  /**
+   * @internal `CngxOptionFilterHost` policy. Resolves the projected option's
+   * stable record so the per-option `hidden` path and the model's filter run
+   * hand a matcher the same object. A caller that does not pass the option
+   * (a third-party filter host) gets a one-off `{ value, label }` and only
+   * loses the per-option cache.
+   */
+  matches<TVal>(value: TVal, label: string, term: string, option?: CngxOption): boolean {
+    const record = option
+      ? this.projectedOptionModel.recordFor(option)
+      : { value: value as unknown as T, label };
+    return this.matchOption(record, term);
+  }
+
+  /** @internal `[searchMatchFn]` > `CngxSelectConfig.searchMatchFn` > folded label match. */
+  private matchOption(option: CngxSelectMatchOption<T>, term: string): boolean {
+    const fn = this.searchMatchFn() ?? this.config.searchMatchFn ?? this.labelMatch;
+    return fn(option, term);
   }
 
   /**

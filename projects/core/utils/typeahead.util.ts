@@ -1,3 +1,5 @@
+import type { Signal } from '@angular/core';
+
 // Combining marks, plus format characters such as the U+2068 / U+2069 isolates
 // formatMessage wraps around inserted text.
 const FOLDED_AWAY = /[\p{M}\p{Cf}]/gu;
@@ -103,4 +105,69 @@ export function createTypeaheadMatcher(
 ): (label: string, key?: object) => boolean {
   const folded = foldForMatching(term, locale);
   return (label, key) => foldedLabelOf(label, locale, key).startsWith(folded);
+}
+
+interface FoldedText {
+  readonly locale: string;
+  readonly source: string;
+  readonly folded: string;
+}
+
+/**
+ * Accent- and case-tolerant SUBSTRING match of a label against a search term
+ * in the locale `locale` holds - the filter semantic of every cngx search box
+ * (listbox search, select-family search inputs). Both sides go through
+ * {@link foldForMatching}. Prefix matching for type-to-find stays with
+ * {@link createTypeaheadMatcher}.
+ *
+ * The returned function folds the term once per term and locale (it keeps
+ * the last one) and a label passed with its item object as `key` once per
+ * label text and locale; the label cache is a `WeakMap` owned by this matcher
+ * instance, so it never outlives the items. A label without `key` is folded on
+ * every call. An empty term matches every label. `locale` is read on every
+ * call, so a filter `computed()` that calls the matcher re-runs on a locale
+ * switch.
+ *
+ * ```typescript
+ * const matches = createLabelMatcher(injectLocale());
+ * const visible = computed(() =>
+ *   options().filter((option) => matches(option.label, term(), option)),
+ * );
+ * ```
+ *
+ * @category core/utils
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/typeahead.util.ts
+ * @since 0.1.0
+ * @relatedTo createTypeaheadMatcher, foldForMatching
+ */
+export function createLabelMatcher(
+  locale: Signal<string>,
+): (label: string, term: string, key?: object) => boolean {
+  const labels = new WeakMap<object, FoldedText>();
+  let lastTerm: FoldedText | undefined;
+  const foldedLabel = (label: string, current: string, key: object | undefined): string => {
+    if (!key) {
+      return foldForMatching(label, current);
+    }
+    const hit = labels.get(key);
+    if (hit?.locale === current && hit.source === label) {
+      return hit.folded;
+    }
+    const entry = { locale: current, source: label, folded: foldForMatching(label, current) };
+    labels.set(key, entry);
+    return entry.folded;
+  };
+  const foldedTerm = (term: string, current: string): string => {
+    if (lastTerm?.locale !== current || lastTerm.source !== term) {
+      lastTerm = { locale: current, source: term, folded: foldForMatching(term, current) };
+    }
+    return lastTerm.folded;
+  };
+  return (label, term, key) => {
+    if (term === '') {
+      return true;
+    }
+    const current = locale();
+    return foldedLabel(label, current, key).includes(foldedTerm(term, current));
+  };
 }

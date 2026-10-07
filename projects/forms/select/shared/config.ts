@@ -119,7 +119,8 @@ export type CngxSelectSelectionIndicatorVariant = 'auto' | 'checkbox' | 'checkma
 
 /**
  * ARIA-label overrides. Per-instance
- * `[clearButtonAriaLabel]`/`[chipRemoveAriaLabel]` wins.
+ * `[clearButtonAriaLabel]`/`[chipRemoveAriaLabel]` wins. Unset keys read the
+ * `select` section of the active language pack, English by default.
  *
  * @category forms/select/config
  */
@@ -128,6 +129,12 @@ export interface CngxSelectAriaLabels {
   readonly clearButton?: string;
   /** Per-chip remove. Default `'Remove'`. */
   readonly chipRemove?: string;
+  /**
+   * Accessible name of a chip's remove button. Receives the remove action
+   * (`chipRemove`, or the `[chipRemoveAriaLabel]` input) and the chip label,
+   * and returns the whole name. Default `'{action}: {label}'` (`Remove: Red`).
+   */
+  readonly chipRemoveFor?: (action: string, label: string) => string;
   /** Tree-select twisty (collapsed). Default `'Expand node'`. */
   readonly treeExpand?: string;
   /** Tree-select twisty (expanded). Default `'Collapse node'`. */
@@ -142,9 +149,8 @@ export interface CngxSelectAriaLabels {
    * Assertive announcement when a `[commitAction]` rejects. Receives the
    * field label (or `fieldLabelFallback`) and the rejection's
    * `Error.message`, `undefined` when the rejection is not an `Error`, and
-   * returns the whole sentence. Default
-   * `` (label, detail) => `${label}: Save failed - ${detail}` ``, without
-   * the ` - ${detail}` part when there is no detail.
+   * returns the whole sentence. Default `'{label}: Save failed - {detail}'`,
+   * `'{label}: Save failed'` when there is no detail.
    */
   readonly commitFailedMessage?: (label: string, detail: string | undefined) => string;
   /** `<cngx-select-search>` input. Default `'Search options'`. */
@@ -178,8 +184,9 @@ export interface CngxSelectVirtualizationConfig {
 }
 
 /**
- * Fallback labels for `CngxSelectPanelShell`'s built-in views.
- * Per-instance template projection wins.
+ * Fallback labels for `CngxSelectPanelShell`'s built-in views and the visible
+ * chip-strip copy. Per-instance template projection wins. Unset keys read the
+ * `select` section of the active language pack, English by default.
  */
 export interface CngxSelectFallbackLabels {
   /** `loadingVariant === 'text'` body. Default `'Loading…'`. */
@@ -200,6 +207,48 @@ export interface CngxSelectFallbackLabels {
   readonly commitFailed?: string;
   /** Commit-error retry button. Default `'Try again'`. */
   readonly commitFailedRetry?: string;
+  /**
+   * Visible badge for the chips `chipOverflow: 'truncate'` hides. Receives
+   * the hidden count. Default `'+{count}'`, the count in the locale's digits.
+   */
+  readonly chipOverflowBadge?: (count: number) => string;
+}
+
+/**
+ * Search matcher of the select family: returns `true` when the option stays
+ * visible for `term`. It receives the option's `value` and `label` and
+ * nothing else, so it can be written once and reused across every searchable
+ * variant, `CngxSelectShell` and `withSearchMatchFn`. A listbox item
+ * (`ActiveDescendantItem`) satisfies the option shape, so the same function
+ * also works as a `ListboxMatchFn`.
+ *
+ * ```ts
+ * const startsWith: CngxSelectMatchFn = (option, term) =>
+ *   option.label.toLowerCase().startsWith(term.toLowerCase());
+ * ```
+ *
+ * @category forms/select/config
+ * @since 0.1.0
+ * @relatedTo withSearchMatchFn, CngxSelectShell, ListboxMatchFn
+ */
+export type CngxSelectMatchFn<T = unknown> = (
+  option: CngxSelectMatchOption<T>,
+  term: string,
+) => boolean;
+
+/**
+ * The option shape a {@link CngxSelectMatchFn} receives: the option's `value`
+ * and plain-text `label`, nothing else. The select family passes a stable
+ * object per option (the option definition, or the projected option's record
+ * in `CngxSelectShell`), so a matcher can key a per-option cache on it.
+ *
+ * @category forms/select/config
+ * @since 0.1.0
+ * @relatedTo CngxSelectMatchFn
+ */
+export interface CngxSelectMatchOption<T = unknown> {
+  readonly value: T;
+  readonly label: string;
 }
 
 /**
@@ -268,6 +317,15 @@ export interface CngxSelectConfig {
   readonly typeaheadDebounceInterval?: number;
   /** Whether typeahead commits value while panel is closed (native `<select>` parity). */
   readonly typeaheadWhileClosed?: boolean;
+  /**
+   * App-wide matcher for the inline search of the searchable variants
+   * (`CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`,
+   * `CngxActionMultiSelect`, `CngxSelectShell`). A per-instance
+   * `[searchMatchFn]` wins. `null` (default) keeps the folded label match
+   * in the reading locale (case-, accent- and format-character-tolerant
+   * substring). The matcher receives the option's `value` and `label`.
+   */
+  readonly searchMatchFn?: CngxSelectMatchFn | null;
   /** Whether the default selected-indicator (checkmark) is shown at all. */
   readonly showSelectionIndicator?: boolean;
   /**
@@ -325,17 +383,17 @@ export interface CngxSelectConfig {
   };
 }
 
-/** Library defaults merged with `provideSelectConfig` user values. @internal */
+/**
+ * Library defaults merged with `provideSelectConfig` user values. The copy
+ * keys are not here: they read the `select` language section at the reading
+ * site. @internal
+ */
 export const CNGX_SELECT_DEFAULTS: Required<
   Omit<CngxSelectConfig, 'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'>
 > & {
   readonly panelClass: string | readonly string[];
   readonly templates: Required<NonNullable<CngxSelectConfig['templates']>>;
-  readonly announcer: Required<Omit<CngxSelectAnnouncerConfig, 'format'>> & {
-    readonly format: NonNullable<CngxSelectAnnouncerConfig['format']>;
-  };
-  readonly ariaLabels: Required<Omit<CngxSelectAriaLabels, 'clearButton' | 'chipRemove'>>;
-  readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
+  readonly announcer: Required<Omit<CngxSelectAnnouncerConfig, 'format'>>;
 } = {
   panelWidth: 'trigger',
   loadingVariant: 'spinner',
@@ -353,6 +411,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   panelClass: '',
   typeaheadDebounceInterval: 300,
   typeaheadWhileClosed: true,
+  searchMatchFn: null as CngxSelectMatchFn | null,
   showSelectionIndicator: true,
   selectionIndicatorPosition: 'after',
   selectionIndicatorVariant: 'auto',
@@ -363,39 +422,6 @@ export const CNGX_SELECT_DEFAULTS: Required<
   announcer: {
     enabled: true,
     politeness: 'polite',
-    format: ({ selectedLabel, fieldLabel, multi, action, count, toIndex }): string => {
-      // `'created'` reads identically in single + multi - both
-      // cardinalities share the sentence shape.
-      if (action === 'created') {
-        if (selectedLabel == null) {
-          return `${fieldLabel}: created`;
-        }
-        return `${fieldLabel}: ${selectedLabel} created and selected`;
-      }
-      if (!multi) {
-        if (selectedLabel == null) {
-          return `${fieldLabel}: selection cleared`;
-        }
-        return `${fieldLabel}: ${selectedLabel} selected`;
-      }
-      if (action === 'reordered') {
-        if (selectedLabel == null) {
-          return `${fieldLabel}: moved`;
-        }
-        if (typeof toIndex === 'number') {
-          return `${fieldLabel}: ${selectedLabel} moved to position ${toIndex + 1}`;
-        }
-        return `${fieldLabel}: ${selectedLabel} moved`;
-      }
-      if (selectedLabel == null) {
-        return `${fieldLabel}: selection cleared`;
-      }
-      const verb = action === 'removed' ? 'removed' : 'added';
-      if (typeof count === 'number') {
-        return `${fieldLabel}: ${selectedLabel} ${verb}, ${count} selected`;
-      }
-      return `${fieldLabel}: ${selectedLabel} ${verb}`;
-    },
   },
   templates: {
     check: null,
@@ -415,28 +441,6 @@ export const CNGX_SELECT_DEFAULTS: Required<
     optionPending: null,
     optionError: null,
     action: null,
-  },
-  ariaLabels: {
-    treeExpand: 'Expand node',
-    treeCollapse: 'Collapse node',
-    statusLoading: 'Loading options',
-    statusRefreshing: 'Refreshing options',
-    fieldLabelFallback: 'Selection',
-    commitFailedMessage: (label, detail) =>
-      detail ? `${label}: Save failed - ${detail}` : `${label}: Save failed`,
-    searchInput: 'Search options',
-    listboxFallback: 'Options',
-  },
-  fallbackLabels: {
-    loading: 'Loading…',
-    empty: 'No Options',
-    loadFailed: 'Loading failed',
-    loadFailedRetry: 'Retry',
-    refreshFailed: 'Refresh failed',
-    refreshFailedRetry: 'Try again',
-    searchPlaceholder: 'Search…',
-    commitFailed: 'Save failed',
-    commitFailedRetry: 'Try again',
   },
 };
 
@@ -635,6 +639,22 @@ export function withTypeaheadDebounce(ms: number): CngxSelectConfigFeature {
  */
 export function withTypeaheadWhileClosed(enabled: boolean): CngxSelectConfigFeature {
   return feature({ typeaheadWhileClosed: enabled });
+}
+
+/**
+ * App-wide matcher for the inline search of the searchable variants. A
+ * per-instance `[searchMatchFn]` wins; without either, the variants keep the
+ * folded label match in the reading locale. Under `provideSelectConfigAt` it
+ * applies to that subtree only.
+ *
+ * ```ts
+ * provideSelectConfig(
+ *   withSearchMatchFn((option, term) => option.label.startsWith(term)),
+ * );
+ * ```
+ */
+export function withSearchMatchFn(fn: CngxSelectMatchFn | null): CngxSelectConfigFeature {
+  return feature({ searchMatchFn: fn });
 }
 
 /**

@@ -224,6 +224,7 @@ export const COPY_TOKENS = [
       'panelClass',
       'typeaheadDebounceInterval',
       'typeaheadWhileClosed',
+      'searchMatchFn',
       'showSelectionIndicator',
       'selectionIndicatorPosition',
       'selectionIndicatorVariant',
@@ -255,6 +256,12 @@ export const COPY_TOKENS = [
   },
   {
     token: 'CNGX_ERROR_MESSAGES',
+    kind: 'dedicated',
+    copyKeys: '*',
+    settingsKeys: [],
+  },
+  {
+    token: 'CNGX_FORM_FIELD_I18N',
     kind: 'dedicated',
     copyKeys: '*',
     settingsKeys: [],
@@ -295,6 +302,7 @@ export const COPY_TOKENS = [
       'ibanPatterns',
       'zipPatterns',
       'dateFormats',
+      'dateShortFormats',
       'maskPlaceholder',
       'maskGuide',
       'customTokens',
@@ -312,7 +320,7 @@ export const COPY_TOKENS = [
     token: 'CNGX_TREETABLE_CONFIG',
     kind: 'config',
     copyKeys: ['labels'],
-    settingsKeys: ['highlightRowOnHover', 'capitaliseHeader', 'templates'],
+    settingsKeys: ['highlightRowOnHover', 'dateFormat', 'numberFormat', 'templates'],
   },
   {
     token: 'CNGX_FEEDBACK_I18N',

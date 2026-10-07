@@ -7,8 +7,8 @@ import {
   CNGX_TREETABLE_CONFIG,
   provideTreetable,
   provideTreetableAt,
-  withCapitaliseHeaders,
   withHighlightOnHover,
+  withTreetableDateFormat,
   withTreetableLabels,
 } from './treetable.token';
 
@@ -31,11 +31,10 @@ describe('CNGX_TREETABLE_CONFIG cascade', () => {
     expect(injectConfig()).toEqual({ highlightRowOnHover: true });
   });
 
-  it('withCapitaliseHeaders(false) sets only the header flag', () => {
-    TestBed.configureTestingModule({
-      providers: [provideTreetable(withCapitaliseHeaders(false))],
-    });
-    expect(injectConfig()).toEqual({ capitaliseHeader: false });
+  it('withTreetableDateFormat sets only the date format', () => {
+    const format: Intl.DateTimeFormatOptions = { dateStyle: 'medium', timeStyle: 'short' };
+    TestBed.configureTestingModule({ providers: [provideTreetable(withTreetableDateFormat(format))] });
+    expect(injectConfig()).toEqual({ dateFormat: format });
   });
 
   it('withTreetableLabels merges partial label bags across features', () => {
@@ -71,9 +70,9 @@ describe('CNGX_TREETABLE_CONFIG cascade', () => {
 
   it('folds features left to right - the later feature wins on the same key', () => {
     TestBed.configureTestingModule({
-      providers: [provideTreetable(withCapitaliseHeaders(true), withCapitaliseHeaders(false))],
+      providers: [provideTreetable(withHighlightOnHover(true), withHighlightOnHover(false))],
     });
-    expect(injectConfig()).toEqual({ capitaliseHeader: false });
+    expect(injectConfig()).toEqual({ highlightRowOnHover: false });
   });
 
   it('provideTreetableAt yields the same resolution as a Provider[] scope', () => {
@@ -87,13 +86,15 @@ describe('CNGX_TREETABLE_CONFIG cascade', () => {
     TestBed.configureTestingModule({ providers: [provideTreetable(withHighlightOnHover())] });
     const parent = TestBed.inject(Injector);
     const child = Injector.create({
-      providers: provideTreetableAt(withCapitaliseHeaders(false)),
+      providers: provideTreetableAt(withTreetableLabels({ loading: 'Loading rows' })),
       parent,
     });
 
     // The scope override is a full restatement - the ancestor's hover flag
     // does not leak into the child config.
-    expect(child.get(CNGX_TREETABLE_CONFIG)).toEqual({ capitaliseHeader: false });
+    const scoped = child.get(CNGX_TREETABLE_CONFIG);
+    expect(scoped.highlightRowOnHover).toBeUndefined();
+    expect(coerceSignal(scoped.labels)()).toEqual({ loading: 'Loading rows' });
     expect(injectConfig()).toEqual({ highlightRowOnHover: true });
   });
 });

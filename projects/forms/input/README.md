@@ -158,7 +158,8 @@ Pass a preset name instead of a pattern. Region suffix optional -- defaults to t
 |-|-|-|
 | `date` | `cngxInputMask="date"` | DD/MM/YYYY or MM/DD/YYYY per locale |
 | `date:short` | `cngxInputMask="date:short"` | 2-digit year |
-| `time` / `time:24` | `cngxInputMask="time"` | HH:MM (24h) |
+| `time` | `cngxInputMask="time"` | Locale hour cycle: HH:MM AM/PM (`en-US`) or HH:MM (`de`) |
+| `time:24` | `cngxInputMask="time:24"` | HH:MM (24h) |
 | `time:12` | `cngxInputMask="time:12"` | HH:MM AM/PM |
 | `datetime` | `cngxInputMask="datetime"` | Date + time |
 | `phone` | `cngxInputMask="phone:CH"` | Country-specific (US, DE, CH, AT, FR, UK, IT, ES, JP, BR) |
@@ -323,6 +324,7 @@ export const appConfig: ApplicationConfig = {
 | `withIbanPatterns(map)` | `CngxInputMask` | Add/override IBAN patterns by country |
 | `withZipPatterns(map)` | `CngxInputMask` | Add/override ZIP patterns by country |
 | `withDateFormats(map)` | `CngxInputMask` | Add/override date patterns by language |
+| `withDateShortFormats(map)` | `CngxInputMask` | Add/override `date:short` patterns by locale; wins over the short mask derived from `withDateFormats` |
 | `withNumericDefaults(opts)` | `CngxNumericInput` | Default locale, decimals, step |
 | `withCopyResetDelay(ms)` | `CngxCopyValue` | Default reset delay |
 | `withFileMaxSize(bytes)` | `CngxFileDrop` | Default max file size |

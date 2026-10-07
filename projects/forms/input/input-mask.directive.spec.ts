@@ -8,7 +8,12 @@ import { CngxFieldSkinHost, provideFormField, withFieldSkin } from '@cngx/forms/
 import { CNGX_LOCALE } from '@cngx/core/utils';
 import { CngxInput } from './input.directive';
 import { CngxInputMask, type MaskTokenMap } from './input-mask.directive';
-import { provideInputConfig, withPhonePatterns } from './input-config';
+import {
+  provideInputConfig,
+  withDateFormats,
+  withDateShortFormats,
+  withPhonePatterns,
+} from './input-config';
 import { loadAllMaskPresets } from './mask-presets/registry';
 
 // ── Test host ───────────────────────────────────────────────────────
@@ -592,6 +597,31 @@ describe('CngxInputMask', () => {
       expect(setup({ mask: 'date', locale: 'de-LI' }).input.value).toBe('__.__.____');
     });
 
+    it('resolves "date:short" to the 2-digit-year pattern', () => {
+      expect(setup({ mask: 'date:short', locale: 'en-US' }).input.value).toBe('__/__/__');
+      TestBed.resetTestingModule();
+      expect(setup({ mask: 'date:short', locale: 'de-DE' }).input.value).toBe('__.__.__');
+      TestBed.resetTestingModule();
+      expect(setup({ mask: 'date', locale: 'en-US' }).input.value).toBe('__/__/____');
+    });
+
+    it('lets withDateShortFormats set "date:short" over the withDateFormats derivation', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideInputConfig(
+            withDateFormats({ 'de-DE': '0000-00-00' }),
+            withDateShortFormats({ 'de-DE': '00.00' }),
+          ),
+        ],
+      });
+      expect(setup({ mask: 'date:short', locale: 'de-DE' }).input.value).toBe('__.__');
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideInputConfig(withDateFormats({ 'de-DE': '0000-00-00' }))],
+      });
+      expect(setup({ mask: 'date:short', locale: 'de-DE' }).input.value).toBe('__-__-__');
+    });
+
     it('should resolve "date" preset for ja locale (YYYY/MM/DD)', () => {
       const { input } = setup({ mask: 'date', locale: 'ja-JP' });
       expect(input.value).toBe('____/__/__');
@@ -667,11 +697,93 @@ describe('CngxInputMask', () => {
       expect(input.value).toContain('.');
     });
 
-    it('should resolve "time" preset', () => {
-      const { input, directive, fixture } = setup({ mask: 'time' });
+    it('should resolve "time:24" preset', () => {
+      const { input, directive, fixture } = setup({ mask: 'time:24' });
       typeSequence(input, '1430', directive, fixture);
       expect(input.value).toBe('14:30');
       expect(directive.isComplete()).toBe(true);
+    });
+
+    it('resolves "time" to the 24-hour mask for an h23 locale (de)', () => {
+      const { input, directive, fixture } = setup({ mask: 'time', locale: 'de' });
+      expect(directive.currentPattern()).toBe('00:00');
+      typeSequence(input, '1430', directive, fixture);
+      expect(input.value).toBe('14:30');
+      expect(directive.isComplete()).toBe(true);
+    });
+
+    it('resolves "time" to the 12-hour mask for an h12 locale (en-US)', () => {
+      const { directive } = setup({ mask: 'time', locale: 'en-US' });
+      expect(directive.currentPattern()).toBe('00:00 PM');
+    });
+
+    it('resolves the time part of "datetime" by the locale hour cycle', () => {
+      expect(setup({ mask: 'datetime', locale: 'en-US' }).directive.currentPattern()).toBe(
+        '00/00/0000 00:00 PM',
+      );
+      TestBed.resetTestingModule();
+      expect(setup({ mask: 'datetime', locale: 'de' }).directive.currentPattern()).toBe(
+        '00.00.0000 00:00',
+      );
+    });
+
+    it('keeps "time:12" and "time:24" fixed whatever the locale', () => {
+      expect(setup({ mask: 'time:12', locale: 'de' }).directive.currentPattern()).toBe('00:00 PM');
+      TestBed.resetTestingModule();
+      expect(setup({ mask: 'time:24', locale: 'en-US' }).directive.currentPattern()).toBe('00:00');
+    });
+
+    describe('12-hour meridiem slots', () => {
+      it('accepts "10:30 PM"', () => {
+        const { input, directive, fixture } = setup({ mask: 'time:12' });
+        typeSequence(input, '1030PM', directive, fixture);
+        expect(directive.value()).toBe('1030PM');
+        expect(input.value).toBe('10:30 PM');
+        expect(directive.isComplete()).toBe(true);
+      });
+
+      it('rejects letters other than A/P then M', () => {
+        const { input, directive, fixture } = setup({ mask: 'time:12' });
+        typeSequence(input, '1030XY', directive, fixture);
+        expect(directive.value()).toBe('1030');
+        expect(input.value).toBe('10:30 __');
+        expect(directive.isComplete()).toBe(false);
+
+        typeSequence(input, 'AX', directive, fixture);
+        expect(directive.value()).toBe('1030A');
+        expect(input.value).toBe('10:30 A_');
+      });
+
+      it('normalises a lowercase "pm" to "PM"', () => {
+        const { input, directive, fixture } = setup({ mask: 'time:12' });
+        typeSequence(input, '0915pm', directive, fixture);
+        expect(directive.value()).toBe('0915PM');
+        expect(input.value).toBe('09:15 PM');
+      });
+
+      it('applies to bare "time" and "datetime" under an h12 locale', () => {
+        const time = setup({ mask: 'time', locale: 'en-US' });
+        typeSequence(time.input, '1030xa', time.directive, time.fixture);
+        expect(time.directive.value()).toBe('1030A');
+        TestBed.resetTestingModule();
+
+        const dt = setup({ mask: 'datetime', locale: 'en-US' });
+        typeSequence(dt.input, '123120241030pm', dt.directive, dt.fixture);
+        expect(dt.input.value).toBe('12/31/2024 10:30 PM');
+      });
+
+      it('leaves "time:24" and "mac" unaffected', () => {
+        const time24 = setup({ mask: 'time:24' });
+        typeSequence(time24.input, '2359', time24.directive, time24.fixture);
+        expect(time24.input.value).toBe('23:59');
+        expect(time24.directive.isComplete()).toBe(true);
+        TestBed.resetTestingModule();
+
+        const mac = setup({ mask: 'mac' });
+        typeSequence(mac.input, 'XYzzQQ', mac.directive, mac.fixture);
+        expect(mac.directive.value()).toBe('XYzzQQ');
+        expect(mac.directive.currentPattern()).toBe('AA:AA:AA:AA:AA:AA');
+      });
     });
 
     it('should resolve "iban:CH" preset and accept letters + digits', () => {

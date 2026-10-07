@@ -15,6 +15,7 @@ import {
 } from '@cngx/core/tokens';
 import { coerceSignal } from '@cngx/core/utils';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
+import { injectFormFieldI18n } from './i18n/form-field-i18n';
 import {
   CNGX_FORM_FIELD_CONFIG,
   CNGX_FORM_FIELD_REVEAL,
@@ -79,6 +80,7 @@ function buildHint(
 export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
   private readonly config = inject(CNGX_FORM_FIELD_CONFIG);
   private readonly hintFormatters = coerceSignal(this.config.constraintHints);
+  private readonly i18n = injectFormFieldI18n();
   private readonly fieldReveal = inject(CNGX_FORM_FIELD_REVEAL, { optional: true });
 
   /**
@@ -255,15 +257,17 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
    * Auto-generated human-readable constraint hints (e.g. "8–64 characters").
    *
    * Only populated when `withConstraintHints()` is active in `provideFormField()`.
-   * Custom i18n formatters override the English defaults via `withConstraintHints({ ... })`.
+   * The copy comes from the form-field language section, formatted for this
+   * field's locale; formatters passed to `withConstraintHints({ ... })` win.
    *
    * Returns an array of hint strings derived from `minLength`/`maxLength` and `min`/`max`.
    */
   readonly constraintHints = computed<string[]>(() => {
-    const fmt = this.hintFormatters();
-    if (!fmt) {
+    const own = this.hintFormatters();
+    if (!own) {
       return [];
     }
+    const i18n = this.i18n();
 
     const meta: ConstraintMetadata = {
       minLength: this.minLength(),
@@ -275,9 +279,21 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
     };
 
     return [
-      buildHint(meta.minLength, meta.maxLength, fmt.lengthRange, fmt.minLength, fmt.maxLength),
-      buildHint(meta.min, meta.max, fmt.valueRange, fmt.minValue, fmt.maxValue),
-      ...fmt.extra(meta),
+      buildHint(
+        meta.minLength,
+        meta.maxLength,
+        own.lengthRange ?? i18n.hintLengthRange,
+        own.minLength ?? i18n.hintMinLength,
+        own.maxLength ?? i18n.hintMaxLength,
+      ),
+      buildHint(
+        meta.min,
+        meta.max,
+        own.valueRange ?? i18n.hintValueRange,
+        own.minValue ?? i18n.hintMinValue,
+        own.maxValue ?? i18n.hintMaxValue,
+      ),
+      ...(own.extra?.(meta) ?? []),
     ].filter((h): h is string => h !== undefined && h !== '');
   });
 

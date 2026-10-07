@@ -7,7 +7,11 @@ import {
   type TemplateRef,
 } from '@angular/core';
 import { createOverrideMerge } from '@cngx/core/utils';
-import type { CngxErrorTplContext, CngxSkeletonRowTplContext } from './models';
+import type {
+  CngxErrorTplContext,
+  CngxHeaderTplContext,
+  CngxSkeletonRowTplContext,
+} from './models';
 
 /**
  * Application-wide default configuration for every `CngxTreetable`
@@ -35,12 +39,21 @@ export interface TreetableConfig {
    */
   highlightRowOnHover?: boolean;
   /**
-   * When `true`, column header labels have their first letter
-   * uppercased before display. Set per-instance via
-   * `options.capitaliseHeader` to override.
-   * @defaultValue `true`
+   * `Intl.DateTimeFormat` options for a `Date` in a default cell, formatted
+   * for the treetable's locale. Register via {@link withTreetableDateFormat};
+   * set per-instance via `options.dateFormat` to override.
+   * @defaultValue `{ year: 'numeric', month: 'short', day: 'numeric' }`
+   * @since 0.1.0
    */
-  capitaliseHeader?: boolean;
+  dateFormat?: Intl.DateTimeFormatOptions;
+  /**
+   * `Intl.NumberFormat` options for a number in a default cell, formatted
+   * for the treetable's locale. Register via {@link withTreetableNumberFormat};
+   * set per-instance via `options.numberFormat` to override.
+   * @defaultValue `{}` (the `Intl.NumberFormat` defaults, at most three fraction digits)
+   * @since 0.1.0
+   */
+  numberFormat?: Intl.NumberFormatOptions;
   /**
    * App-wide copy overrides for every built-in string the treetable
    * renders or announces. Unset keys fall back to the English library
@@ -58,8 +71,8 @@ export interface TreetableConfig {
 }
 
 /**
- * App-wide default templates for the treetable's async-state surfaces
- * ({@link withTreetableTemplates}). Each key mirrors the projected
+ * App-wide default templates for the treetable's async-state surfaces and
+ * column headers ({@link withTreetableTemplates}). Each key mirrors the projected
  * slot of the same region and receives the same template context.
  *
  * @category data-display/treetable
@@ -73,11 +86,19 @@ export interface TreetableTemplates {
   skeletonRow?: TemplateRef<CngxSkeletonRowTplContext>;
   /** Default for the refresh-indicator content (`*cngxRefresh`). */
   refresh?: TemplateRef<void>;
+  /**
+   * Default for every column header (`*cngxHeader`); gets
+   * {@link CngxHeaderTplContext}, so one template serves every column by its
+   * key. A `*cngxHeader` projected for a column wins for that column.
+   * @since 0.1.0
+   */
+  header?: TemplateRef<CngxHeaderTplContext>;
 }
 
 /**
- * Every built-in string `CngxTreetable` renders or announces. English
- * by default; localise app-wide via {@link withTreetableLabels}.
+ * Every built-in string `CngxTreetable` renders or announces. Unset keys read
+ * the `treetable` section of the active language pack, English by default;
+ * override app-wide via {@link withTreetableLabels}.
  *
  * @category data-display/treetable
  */
@@ -102,6 +123,20 @@ export interface TreetableLabels {
   rowsSelected?: (count: number) => string;
   /** Live-region announcement after select-all deselects `count` visible rows. */
   rowsDeselected?: (count: number) => string;
+  /**
+   * Column header labels by column key, merged key by key over the language
+   * pack's `columnLabels`. A `*cngxHeader` template still wins. A column
+   * without a label reads {@link TreetableLabels.unlabeledColumn}; dev builds
+   * show the key instead and warn once per key.
+   */
+  columnLabels?: Readonly<Record<string, string>>;
+  /**
+   * Header of a column without a label. Receives the column's 1-based
+   * position among the data columns and the column key. Default
+   * `'Column {position}'`; the default never renders the key, a consumer
+   * function may derive a header from it.
+   */
+  unlabeledColumn?: (position: number, column: string) => string;
 }
 
 /**
@@ -109,24 +144,6 @@ export interface TreetableLabels {
  * @internal
  */
 export const NO_TREETABLE_LABELS: Partial<TreetableLabels> = {};
-
-/**
- * English library defaults for {@link TreetableLabels}. Internal - the
- * component overlays `CNGX_TREETABLE_CONFIG.labels` on top of this.
- * @internal
- */
-export const TREETABLE_DEFAULT_LABELS: Required<TreetableLabels> = {
-  loading: 'Loading',
-  refreshing: 'Refreshing',
-  errorFallback: 'Data failed to load',
-  emptyFallback: 'No data',
-  expand: 'Expand',
-  collapse: 'Collapse',
-  selectAll: 'Select all rows',
-  selectRow: 'Select row',
-  rowsSelected: (count) => (count === 1 ? '1 row selected' : `${count} rows selected`),
-  rowsDeselected: (count) => (count === 1 ? '1 row deselected' : `${count} rows deselected`),
-};
 
 /**
  * Marker shape returned by every `withXxx()` helper. Each feature is a
@@ -183,8 +200,7 @@ export const CNGX_TREETABLE_CONFIG = new InjectionToken<TreetableConfig>('CNGX_T
  * bootstrapApplication(AppComponent, {
  *   providers: [
  *     provideTreetable(
- *       withHighlightOnHover(),       // turn hover-highlight on app-wide
- *       withCapitaliseHeaders(false), // keep raw header keys app-wide
+ *       withHighlightOnHover(), // turn hover-highlight on app-wide
  *     ),
  *   ],
  * });
@@ -254,15 +270,17 @@ export function withHighlightOnHover(enabled = true): TreetableFeature {
 
 /**
  * Feature: app-wide copy overrides for the treetable's built-in
- * strings ({@link TreetableLabels}). Partial - unset keys keep the
- * English library defaults. Later calls merge over earlier ones
- * key-by-key. Pass a `Signal` to switch the copy at runtime.
+ * strings ({@link TreetableLabels}). Partial - unset keys read the
+ * `treetable` section of the active language pack, English by default.
+ * Later calls merge over earlier ones key-by-key (`columnLabels` is
+ * replaced as a whole between two calls). Pass a `Signal` to switch the
+ * copy at runtime.
  *
  * ```ts
  * provideTreetable(
  *   withTreetableLabels({
  *     loading: 'Wird geladen',
- *     errorFallback: 'Daten konnten nicht geladen werden',
+ *     columnLabels: { name: 'Name', size: 'Größe' },
  *   }),
  * );
  * ```
@@ -280,8 +298,8 @@ export function withTreetableLabels(
 }
 
 /**
- * Feature: app-wide default templates for the async-state surfaces
- * ({@link TreetableTemplates}). Partial - unset keys keep the built-in
+ * Feature: app-wide default templates for the async-state surfaces and
+ * the column headers ({@link TreetableTemplates}). Partial - unset keys keep the built-in
  * markup. A projected slot on the instance always wins over this tier.
  *
  * Because the values are `TemplateRef`s, this feature is typically
@@ -297,18 +315,51 @@ export function withTreetableTemplates(templates: TreetableTemplates): Treetable
 }
 
 /**
- * Feature: auto-capitalisation of column header labels.
+ * Feature: how a default cell formats a `Date` value. The options go to
+ * `Intl.DateTimeFormat` with the treetable's locale, so the output follows
+ * a locale switch; the formatter is cached per locale and options, not
+ * created per cell. The default is date-only
+ * (`{ year: 'numeric', month: 'short', day: 'numeric' }`, `Oct 5, 2026`).
+ * Pass `timeStyle` or `hour`/`minute` to show the time of day. A
+ * `*cngxCell` template still receives the raw value.
  *
- * The library default for `capitaliseHeader` is `true`, so headers
- * already capitalise without this helper. Use
- * `withCapitaliseHeaders(false)` to *opt out* and render the raw
- * column-key strings (useful for snake_case domain keys you want to
- * keep verbatim, or for fully custom `*cngxHeader` slot rendering).
+ * ```ts
+ * provideTreetable(withTreetableDateFormat({ dateStyle: 'medium', timeStyle: 'short' }));
+ * ```
  *
- * @param enabled - Capitalise on/off. Default `true`.
+ * Per-instance `options.dateFormat` wins over this feature.
+ *
+ * @param options - The `Intl.DateTimeFormat` options for date cells.
  *
  * @category data-display/treetable
+ * @since 0.1.0
+ * @relatedTo CngxTreetable, provideTreetable, provideTreetableAt, withTreetableNumberFormat
  */
-export function withCapitaliseHeaders(enabled = true): TreetableFeature {
-  return { _apply: (c) => ({ ...c, capitaliseHeader: enabled }) };
+export function withTreetableDateFormat(options: Intl.DateTimeFormatOptions): TreetableFeature {
+  return { _apply: (c) => ({ ...c, dateFormat: options }) };
+}
+
+/**
+ * Feature: how a default cell formats a number value. The options go to
+ * `Intl.NumberFormat` with the treetable's locale, so the output follows a
+ * locale switch; the formatter is cached per locale and options, not created
+ * per cell. The default is the `Intl.NumberFormat` defaults (`1,234.5` in
+ * English, at most three fraction digits). Pass `minimumFractionDigits`,
+ * `style: 'percent'`, `notation: 'compact'` or a unit to change it. A
+ * `*cngxCell` template still receives the raw value.
+ *
+ * ```ts
+ * provideTreetable(withTreetableNumberFormat({ minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+ * ```
+ *
+ * Per-instance `options.numberFormat` wins over this feature.
+ *
+ * @param options - The `Intl.NumberFormat` options for number cells.
+ *
+ * @category data-display/treetable
+ * @since 0.1.0
+ * @relatedTo CngxTreetable, provideTreetable, provideTreetableAt, withTreetableDateFormat
+ */
+export function withTreetableNumberFormat(options: Intl.NumberFormatOptions): TreetableFeature {
+  return { _apply: (c) => ({ ...c, numberFormat: options }) };
 }

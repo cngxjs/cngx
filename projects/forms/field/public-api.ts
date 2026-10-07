@@ -46,10 +46,22 @@ export {
   withErrorStrategy,
   DEFAULT_AUTOCOMPLETE_MAPPINGS,
   DEFAULT_NO_SPELLCHECK_FIELDS,
-  DEFAULT_HINT_FORMATTERS,
   type CngxFieldSkin,
   type CngxFormFieldHostContract,
 } from './form-field.token';
+export {
+  CNGX_FORM_FIELD_I18N,
+  provideFormFieldI18n,
+  withFormFieldI18nLabels,
+  injectFormFieldI18n,
+  type CngxFormFieldI18n,
+  type CngxFormFieldI18nFeature,
+  type CngxFormFieldI18nOverrides,
+} from './i18n/form-field-i18n';
+export {
+  CNGX_FORM_FIELD_LANGUAGE_EN,
+  type CngxFormFieldLanguageSection,
+} from './i18n/form-field-language-section';
 export { CngxErrorScopeFieldBridge } from './error-scope-field-bridge.directive';
 export { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from './value-transformer.token';
 export type {

@@ -1,8 +1,7 @@
 import { computed, Directive, inject, input } from '@angular/core';
-import { coerceSignal } from '@cngx/core/utils';
 
 import type { FilterGroup, FilterNode } from './filter-builder.types';
-import { injectFilterBuilderConfig } from './filter-builder.config';
+import { injectFilterBuilderI18n } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import { referenceEqual } from './filter-builder-internal';
 
@@ -53,8 +52,7 @@ export class CngxFilterGroup {
   protected readonly pathAttr = computed(() => this.path().join('.'));
 
   private readonly host = inject(CNGX_FILTER_BUILDER_HOST);
-  private readonly config = injectFilterBuilderConfig();
-  private readonly i18n = coerceSignal(this.config.i18n);
+  private readonly i18n = injectFilterBuilderI18n();
 
   readonly node = computed<FilterGroup | null>(
     () => {
@@ -69,10 +67,9 @@ export class CngxFilterGroup {
 
   readonly logic = computed(() => this.node()?.logic ?? 'and');
   readonly negated = computed(() => this.node()?.negated ?? false);
-  readonly children = computed<readonly FilterNode[]>(
-    () => this.node()?.filters ?? EMPTY_FILTERS,
-    { equal: referenceEqual },
-  );
+  readonly children = computed<readonly FilterNode[]>(() => this.node()?.filters ?? EMPTY_FILTERS, {
+    equal: referenceEqual,
+  });
   readonly childCount = computed(() => this.children().length);
   readonly isRoot = computed(() => this.path().length === 0);
   readonly depth = computed(() => this.path().length);

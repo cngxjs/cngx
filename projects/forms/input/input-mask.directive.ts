@@ -15,13 +15,9 @@ import { clamp } from '@cngx/utils';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { injectLocale } from '@cngx/core/utils';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
-import { CNGX_INPUT_CONFIG, type InputConfig } from './input-config';
-import {
-  ensureMaskPreset,
-  maskPresetKey,
-  maskPresetTables,
-  type MaskPresetTables,
-} from './mask-presets/registry';
+import { CNGX_INPUT_CONFIG } from './input-config';
+import { ensureMaskPreset, maskPresetKey, maskPresetTables } from './mask-presets/registry';
+import { resolvePreset } from './mask-presets/resolve-preset';
 
 /** @internal */
 interface MaskToken {
@@ -170,151 +166,6 @@ function firstEmptySlot(tokens: MaskToken[], masked: string, placeholder: string
   return tokens.length;
 }
 
-
-/**
- * Inline fallback masks used while a lazily-loaded preset table is still in
- * flight (and as the final default when no region matches).
- * @internal
- */
-const PRESET_FALLBACKS = {
-  phone: '+000000000000',
-  date: '00/00/0000',
-  dateShort: '00/00/00',
-  iban: 'AA00 0000 0000 0000 0000 00',
-  zip: '00000',
-} as const;
-
-/**
- * Resolves a date mask for a locale: exact BCP-47 key first (case-insensitive),
- * then a bare language key (back-compat with language-keyed `withDateFormats`
- * config), then any same-language locale, then the provided fallback pattern.
- * @internal
- */
-function resolveDateFormat(
-  locale: string,
-  table: Record<string, string>,
-  fallback: string,
-): string {
-  const lc = locale.toLowerCase();
-  const lang = lc.split('-')[0];
-  for (const key of Object.keys(table)) {
-    if (key.toLowerCase() === lc) {
-      return table[key];
-    }
-  }
-  if (table[lang]) {
-    return table[lang];
-  }
-  for (const key of Object.keys(table)) {
-    if (key.toLowerCase().startsWith(`${lang}-`)) {
-      return table[key];
-    }
-  }
-  return fallback;
-}
-
-/**
- * Resolves a preset name to its mask patterns. Built-in region tables arrive
- * lazily via {@link maskPresetTables}; until a table loads, the inline
- * {@link PRESET_FALLBACKS} stand in. Consumer overrides (`config.*Patterns`)
- * are synchronous and always merged on top.
- * @internal
- */
-function resolvePreset(
-  maskInput: string,
-  locale: string,
-  tables: MaskPresetTables,
-  config?: InputConfig,
-): { patterns: string[]; prefix?: string; suffix?: string } | null {
-  const parts = maskInput.split(':');
-  const name = parts[0].toLowerCase();
-  const regionHint = parts[1]?.toUpperCase();
-  const region = regionHint ?? localeToRegion(locale);
-  // Optional `phone:<region>:<mobile|landline>` segment forces one alternate.
-  const lineType = parts[2]?.toLowerCase();
-
-  const phones = { ...tables.phone, ...config?.phonePatterns };
-  const ibans = { ...tables.iban, ...config?.ibanPatterns };
-  const zips = { ...tables.zip, ...config?.zipPatterns };
-  const dates = { ...tables.date, ...config?.dateFormats };
-
-  switch (name) {
-    case 'date':
-      return { patterns: [resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)] };
-    case 'date:short':
-      return {
-        patterns: [
-          resolveDateFormat(locale, tables.dateShort ?? {}, PRESET_FALLBACKS.dateShort),
-        ],
-      };
-    case 'time':
-    case 'time:24':
-      return { patterns: ['00:00'] };
-    case 'time:12':
-      return { patterns: ['00:00 AA'] };
-    case 'datetime':
-      return {
-        patterns: [`${resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)} 00:00`],
-      };
-    case 'phone': {
-      const raw = phones[region] ?? PRESET_FALLBACKS.phone;
-      const alts = raw.split('|');
-      if (lineType === 'mobile' && alts.length > 1) {
-        return { patterns: [alts[alts.length - 1]] };
-      }
-      if (lineType === 'landline') {
-        return { patterns: [alts[0]] };
-      }
-      return { patterns: [raw] };
-    }
-    case 'creditcard':
-      return { patterns: ['0000 000000 00000|0000 0000 0000 0000'] };
-    case 'iban':
-      return { patterns: [ibans[region] ?? PRESET_FALLBACKS.iban] };
-    case 'zip':
-      return resolveZip(region, zips);
-    case 'ip':
-    case 'ipv4':
-      return { patterns: ['099.099.099.099'] };
-    case 'mac':
-      return { patterns: ['AA:AA:AA:AA:AA:AA'] };
-    default:
-      return null;
-  }
-}
-
-function resolveZip(region: string, zips: Record<string, string>): { patterns: string[] } {
-  const pattern = zips[region];
-  if (!pattern) {
-    return { patterns: ['00000'] };
-  }
-  if (pattern.includes('|')) {
-    return { patterns: pattern.split('|') };
-  }
-  return { patterns: [pattern] };
-}
-
-function localeToRegion(locale: string): string {
-  const parts = locale.split('-');
-  if (parts.length >= 2) {
-    return parts[1].toUpperCase();
-  }
-  const fallback: Record<string, string> = {
-    en: 'US',
-    de: 'DE',
-    fr: 'FR',
-    it: 'IT',
-    es: 'ES',
-    pt: 'BR',
-    nl: 'NL',
-    ru: 'RU',
-    ja: 'JP',
-    zh: 'CN',
-    ko: 'KR',
-  };
-  return fallback[parts[0].toLowerCase()] ?? 'US';
-}
-
 /**
  * Custom mask token definition. Use with the `customTokens` input to
  * define characters beyond the built-in `0`, `9`, `A`, `a`, `*`.
@@ -369,9 +220,10 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * |-|-|-|
  * | `date` | `cngxInputMask="date"` | Locale-aware DD/MM/YYYY or MM/DD/YYYY |
  * | `date:short` | `cngxInputMask="date:short"` | 2-digit year |
- * | `time` / `time:24` | `cngxInputMask="time"` | HH:MM (24h) |
+ * | `time` | `cngxInputMask="time"` | Locale hour cycle: HH:MM AM/PM (`en-US`) or HH:MM (`de`) |
+ * | `time:24` | `cngxInputMask="time:24"` | HH:MM (24h) |
  * | `time:12` | `cngxInputMask="time:12"` | HH:MM AM/PM |
- * | `datetime` | `cngxInputMask="datetime"` | Date + time |
+ * | `datetime` | `cngxInputMask="datetime"` | Locale date + locale-hour-cycle time |
  * | `phone` | `cngxInputMask="phone:CH"` | Country-specific |
  * | `creditcard` | `cngxInputMask="creditcard"` | Amex/Visa/MC auto-switch |
  * | `iban` | `cngxInputMask="iban:CH"` | Country-specific grouping |
@@ -511,14 +363,25 @@ export class CngxInputMask {
 
   private readonly resolvedGuide = computed(() => this.guide() ?? this.config.maskGuide ?? true);
 
+  /** Resolved preset, or `null` for a custom pattern. */
+  private readonly preset = computed(() =>
+    // Reading the signal makes this recompute when a lazily-imported table lands.
+    resolvePreset(this.mask(), this.locale(), maskPresetTables(), this.config),
+  );
+
   private readonly resolvedCustomTokens = computed(
     () => {
       const fromInput = this.customTokens();
       const fromConfig = this.config.customTokens;
-      if (fromInput && fromConfig) {
+      // Preset-scoped tokens win: the preset's pattern is written against them.
+      const fromPreset = this.preset()?.tokens;
+      if (!fromPreset && fromInput && fromConfig) {
         return { ...fromConfig, ...fromInput };
       }
-      return fromInput ?? fromConfig;
+      if (!fromPreset) {
+        return fromInput ?? fromConfig;
+      }
+      return { ...fromConfig, ...fromInput, ...fromPreset };
     },
     {
       equal: (a, b) => {
@@ -544,13 +407,11 @@ export class CngxInputMask {
   /** Resolved patterns (handles presets, config overrides, and `|` splitting). */
   private readonly resolvedPatterns = computed(
     () => {
-      const maskVal = this.mask();
-      // Reading the signal makes this recompute when a lazily-imported table lands.
-      const preset = resolvePreset(maskVal, this.locale(), maskPresetTables(), this.config);
+      const preset = this.preset();
       if (preset) {
         return preset.patterns.flatMap((p) => p.split('|'));
       }
-      return maskVal.split('|');
+      return this.mask().split('|');
     },
     { equal: (a, b) => a.length === b.length && a.every((p, i) => p === b[i]) },
   );
@@ -679,7 +540,8 @@ export class CngxInputMask {
       const restoreCaret = el.ownerDocument.activeElement === el;
       el.value = masked;
       if (restoreCaret) {
-        const pos = this.cursorFromRawIndex(this.caretRawIndex, this.tokens()) + this.prefix().length;
+        const pos =
+          this.cursorFromRawIndex(this.caretRawIndex, this.tokens()) + this.prefix().length;
         el.setSelectionRange(pos, pos);
       }
       el.dispatchEvent(new Event('input', { bubbles: true }));

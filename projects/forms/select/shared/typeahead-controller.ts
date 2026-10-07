@@ -1,5 +1,7 @@
 import { signal, type Signal } from '@angular/core';
 
+import { createTypeaheadMatcher } from '@cngx/core/utils';
+
 import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn } from './internal/select-core';
 
@@ -11,12 +13,18 @@ import type { CngxSelectCompareFn } from './internal/select-core';
 export interface TypeaheadControllerOptions<T> {
   /** Flat candidate list in listbox order. */
   readonly options: Signal<readonly CngxSelectOptionDef<T>[]>;
-  /** Reserved - current matcher uses `label.startsWith` only. */
+  /** Reserved - the matcher compares labels only. */
   readonly compareWith: Signal<CngxSelectCompareFn<T>>;
   /** Buffer-reset window. Maps to `typeaheadDebounceInterval`. */
   readonly debounceMs: Signal<number>;
   /** `true` short-circuits `matchFromIndex` to `null`. */
   readonly disabled: Signal<boolean>;
+  /**
+   * Locale the buffer and the labels are folded with (`injectLocale()`).
+   * Without it, both lowercase with `toLowerCase()`; accents are ignored
+   * either way.
+   */
+  readonly locale?: Signal<string>;
 }
 
 /**
@@ -27,7 +35,8 @@ export interface TypeaheadControllerOptions<T> {
 export interface TypeaheadController<T> {
   /**
    * Appends `char` to the buffer and returns the first non-disabled
-   * option whose lowercased label starts with it. `currentIndex < 0`
+   * option whose label starts with it, case- and accent-tolerant in
+   * `locale` (`createTypeaheadMatcher`). `currentIndex < 0`
    * walks inclusively from 0; `currentIndex >= 0` walks exclusively
    * with round-robin (native `<select>` parity). Returns `null` for
    * non-printable input, disabled state, empty options, or no match.
@@ -40,7 +49,7 @@ export interface TypeaheadController<T> {
 }
 
 /**
- * `<select>` keyboard-typeahead: printable-key guard, lower-case match,
+ * `<select>` keyboard-typeahead: printable-key guard, folded prefix match,
  * disabled skip, round-robin walk, debounced buffer reset. State-holding
  * (buffer + timer) but no DI refs; caller owns the lifetime.
  *
@@ -77,7 +86,8 @@ export function createTypeaheadController<T>(
     if (char.length !== 1 || !/\S/.test(char)) {
       return null;
     }
-    const next = buffer() + char.toLowerCase();
+    const locale = options.locale?.();
+    const next = buffer() + (locale ? char.toLocaleLowerCase(locale) : char.toLowerCase());
     buffer.set(next);
     scheduleReset();
 
@@ -89,13 +99,14 @@ export function createTypeaheadController<T>(
     // currentIndex < 0: no highlight, walk inclusively from 0.
     // Otherwise: start after current for native `<select>` parity.
     const effectiveStart = currentIndex < 0 ? 0 : (currentIndex + 1) % count;
+    const matches = createTypeaheadMatcher(next, locale);
     for (let i = 0; i < count; i++) {
       const idx = (effectiveStart + i) % count;
       const candidate = opts[idx];
       if (candidate.disabled) {
         continue;
       }
-      if (candidate.label.toLowerCase().startsWith(next)) {
+      if (matches(candidate.label, candidate)) {
         return candidate;
       }
     }

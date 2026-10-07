@@ -50,25 +50,21 @@ describe('form-field tokens', () => {
       expect(config).toEqual({});
     });
 
-    it('applies withConstraintHints with English defaults', () => {
+    it('enables constraint hints without own formatters', () => {
       TestBed.configureTestingModule({
         providers: [provideFormField(withConstraintHints())],
       });
       const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
-      expect(config.constraintHints).toBeTruthy();
-      expect(coerceSignal(config.constraintHints)()?.lengthRange(8, 64)).toBe('8–64 characters');
+      expect(coerceSignal(config.constraintHints)()).toEqual({});
     });
 
-    it('applies withConstraintHints with custom formatters', () => {
+    it('keeps the formatters passed to withConstraintHints as set', () => {
       const custom = { lengthRange: (min: number, max: number) => `${min} to ${max}` };
       TestBed.configureTestingModule({
         providers: [provideFormField(withConstraintHints(custom))],
       });
       const config = TestBed.inject(CNGX_FORM_FIELD_CONFIG);
-      const hints = coerceSignal(config.constraintHints)();
-      expect(hints?.lengthRange(8, 64)).toBe('8 to 64');
-      // Non-overridden formatters fall back to English defaults
-      expect(hints?.minLength(8)).toBe('Min. 8 characters');
+      expect(coerceSignal(config.constraintHints)()).toBe(custom);
     });
 
     it('applies withErrorMessages and provides CNGX_ERROR_MESSAGES', () => {
@@ -140,7 +136,7 @@ describe('form-field tokens', () => {
       expect(map()['email']?.(mockValidationError('email'))).toBe('Invalid');
     });
 
-    it('follows a Signal passed to withConstraintHints and keeps the other defaults', () => {
+    it('passes a Signal given to withConstraintHints through', () => {
       const lang = signal<'en' | 'de'>('en');
       const formatters = computed(() =>
         lang() === 'de' ? { lengthRange: (min: number, max: number) => `${min} bis ${max}` } : {},
@@ -149,10 +145,9 @@ describe('form-field tokens', () => {
         providers: [provideFormField(withConstraintHints(formatters))],
       });
       const hints = coerceSignal(TestBed.inject(CNGX_FORM_FIELD_CONFIG).constraintHints);
-      expect(hints()?.lengthRange(8, 64)).toBe('8–64 characters');
+      expect(hints()?.lengthRange).toBeUndefined();
       lang.set('de');
-      expect(hints()?.lengthRange(8, 64)).toBe('8 bis 64');
-      expect(hints()?.minLength(8)).toBe('Min. 8 characters');
+      expect(hints()?.lengthRange?.(8, 64)).toBe('8 bis 64');
     });
 
     it('keeps the merged messages reference on an equal recompute', () => {

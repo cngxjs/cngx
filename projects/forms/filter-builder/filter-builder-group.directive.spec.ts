@@ -1,6 +1,7 @@
 import { Component, computed, signal, viewChild, type Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
+import { stripBidiIsolates } from '@cngx/testing';
 
 import type { FilterFieldDef, FilterGroup, FilterNode } from './filter-builder.types';
 import { CNGX_FILTER_BUILDER_HOST, type CngxFilterBuilderHost } from './filter-builder-host.token';
@@ -87,7 +88,13 @@ function setup(
 
 describe('CngxFilterGroup', () => {
   it('resolves the host via the DI token', () => {
-    const { directive } = setup({ type: 'group', id: 'root', logic: 'and', negated: false, filters: [] });
+    const { directive } = setup({
+      type: 'group',
+      id: 'root',
+      logic: 'and',
+      negated: false,
+      filters: [],
+    });
     expect(directive).toBeTruthy();
     expect(directive.isRoot()).toBe(true);
   });
@@ -116,21 +123,23 @@ describe('CngxFilterGroup', () => {
       filters: [{ type: 'group', id: 'g1', logic: 'or', negated: true, filters: [] }],
     };
     const { fixture, host, directive } = setup(tree, []);
-    expect(directive.groupLabel()).toBe('Root filter group (AND)');
+    expect(stripBidiIsolates(directive.groupLabel())).toBe('Root filter group (AND)');
 
     host.path.set([0]);
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    expect(directive.groupLabel()).toBe('Filter group (OR, negated)');
+    expect(stripBidiIsolates(directive.groupLabel())).toBe('Filter group (OR, negated)');
   });
 
   it('names the group with the translated logic word and negation tag', () => {
     const tree: FilterGroup = { type: 'group', id: 'g1', logic: 'or', negated: true, filters: [] };
-    const { directive } = setup(tree, [], [
-      provideFilterBuilderConfigAt(withFilterBuilderI18n({ or: 'ODER', negatedTag: 'negiert' })),
-    ]);
-    expect(directive.groupLabel()).toBe('Root filter group (ODER, negiert)');
+    const { directive } = setup(
+      tree,
+      [],
+      [provideFilterBuilderConfigAt(withFilterBuilderI18n({ or: 'ODER', negatedTag: 'negiert' }))],
+    );
+    expect(stripBidiIsolates(directive.groupLabel())).toBe('Root filter group (ODER, negiert)');
   });
 
   it('reflects null safely when the path addresses an expression', () => {

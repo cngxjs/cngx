@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 import { CngxFormErrors } from './form-errors.component';
 import { provideErrorMessages } from './form-field.token';
+import { provideFormFieldI18n, withFormFieldI18nLabels } from './i18n/form-field-i18n';
 import { createMockField, mockValidationError } from './testing/mock-field';
 import type { CngxFieldAccessor, ErrorMessageMap } from './models';
 
@@ -13,7 +14,11 @@ const MESSAGES: ErrorMessageMap = {
 };
 
 @Component({
-  template: `<cngx-form-errors [fields]="fields()" [show]="show()" />`,
+  template: `
+    <label id="cngx-email-label">E-mail address <span aria-hidden="true">*</span></label>
+    <label id="cngx-password-label">Password</label>
+    <cngx-form-errors [fields]="fields()" [show]="show()" />
+  `,
   imports: [CngxFormErrors],
 })
 class TestHost {
@@ -39,17 +44,27 @@ class CustomTplHost {
   show = signal(false);
 }
 
+@Component({
+  template: `<cngx-form-errors [fields]="fields()" [show]="show()" />`,
+  imports: [CngxFormErrors],
+})
+class UnlabelledHost {
+  fields = signal<CngxFieldAccessor[]>([]);
+  show = signal(false);
+}
+
 describe('CngxFormErrors', () => {
   function setup(
-    HostClass: typeof TestHost | typeof CustomTplHost = TestHost,
+    HostClass: typeof TestHost | typeof CustomTplHost | typeof UnlabelledHost = TestHost,
     messages: ErrorMessageMap | Signal<ErrorMessageMap> = MESSAGES,
+    providers: unknown[] = [],
   ) {
     const emailMock = createMockField({ name: 'email' });
     const pwMock = createMockField({ name: 'password' });
 
     TestBed.configureTestingModule({
       imports: [HostClass],
-      providers: [provideErrorMessages(messages)],
+      providers: [provideErrorMessages(messages), ...(providers as never[])],
     });
     const fixture = TestBed.createComponent(HostClass);
     fixture.componentInstance.fields.set([emailMock.accessor, pwMock.accessor]);
@@ -95,13 +110,77 @@ describe('CngxFormErrors', () => {
 
     const el = fixture.debugElement.query(By.directive(CngxFormErrors))
       .nativeElement as HTMLElement;
-    const items = el.querySelectorAll('li');
-    expect(items.length).toBe(3);
-    expect(items[0].textContent).toContain('email');
-    expect(items[0].textContent).toContain('This field is required.');
-    expect(items[1].textContent).toContain('email');
-    expect(items[1].textContent).toContain('Invalid email.');
-    expect(items[2].textContent).toContain('password');
+    const items = Array.from(el.querySelectorAll('li')).map((li) =>
+      li.textContent?.replace(/\s+/g, ' ').trim(),
+    );
+    expect(items).toEqual([
+      'E-mail address: This field is required.',
+      'E-mail address: Invalid email.',
+      'Password: This field is required.',
+    ]);
+    expect(el.querySelector('li strong')?.textContent).toBe('E-mail address');
+  });
+
+  it('names a field by its visible label, never by its model key', () => {
+    const { fixture, emailMock } = setup();
+    emailMock.ref.invalid.set(true);
+    emailMock.ref.errors.set([mockValidationError('required')]);
+    fixture.componentInstance.show.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const el = fixture.debugElement.query(By.directive(CngxFormErrors))
+      .nativeElement as HTMLElement;
+    expect(el.querySelector('li')?.textContent).not.toContain('email');
+  });
+
+  it('shows the message alone for a field without a label', () => {
+    TestBed.resetTestingModule();
+    const { fixture, emailMock } = setup(UnlabelledHost);
+    emailMock.ref.invalid.set(true);
+    emailMock.ref.errors.set([mockValidationError('required')]);
+    fixture.componentInstance.show.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const el = fixture.debugElement.query(By.directive(CngxFormErrors))
+      .nativeElement as HTMLElement;
+    expect(el.querySelector('li')?.textContent?.trim()).toBe('This field is required.');
+    expect(el.querySelector('li strong')).toBeNull();
+  });
+
+  it('places label and message in the order of the errorSummaryItem message', () => {
+    TestBed.resetTestingModule();
+    const { fixture, emailMock } = setup(TestHost, MESSAGES, [
+      provideFormFieldI18n(withFormFieldI18nLabels({ errorSummaryItem: '{message} ({label})' })),
+    ]);
+    emailMock.ref.invalid.set(true);
+    emailMock.ref.errors.set([mockValidationError('required')]);
+    fixture.componentInstance.show.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const el = fixture.debugElement.query(By.directive(CngxFormErrors))
+      .nativeElement as HTMLElement;
+    expect(el.querySelector('li')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'This field is required. (E-mail address)',
+    );
+  });
+
+  it('never shows the raw kind of an unmapped error without a message', () => {
+    TestBed.resetTestingModule();
+    const { fixture, emailMock } = setup(TestHost, {});
+    emailMock.ref.invalid.set(true);
+    emailMock.ref.errors.set([mockValidationError('serverRejected')]);
+    fixture.componentInstance.show.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const el = fixture.debugElement.query(By.directive(CngxFormErrors))
+      .nativeElement as HTMLElement;
+    const text = el.querySelector('li')?.textContent ?? '';
+    expect(text).toContain('This value is invalid.');
+    expect(text).not.toContain('serverRejected');
   });
 
   it('sets role=alert when visible', () => {
@@ -164,6 +243,32 @@ describe('CngxFormErrors', () => {
   });
 
   describe('language switch', () => {
+    it('keeps the label / message order until the errors change', () => {
+      TestBed.resetTestingModule();
+      const order = signal('{label}: {message}');
+      const { fixture, emailMock } = setup(TestHost, MESSAGES, [
+        provideFormFieldI18n(
+          withFormFieldI18nLabels(computed(() => ({ errorSummaryItem: order() }))),
+        ),
+      ]);
+      fixture.componentInstance.show.set(true);
+      emailMock.ref.invalid.set(true);
+      emailMock.ref.errors.set([mockValidationError('required')]);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.directive(CngxFormErrors))
+        .nativeElement as HTMLElement;
+      const text = () => el.querySelector('li')?.textContent?.replace(/\s+/g, ' ').trim();
+      expect(text()).toBe('E-mail address: This field is required.');
+
+      order.set('{message} ({label})');
+      fixture.detectChanges();
+      expect(text()).toBe('E-mail address: This field is required.');
+
+      emailMock.ref.errors.set([mockValidationError('required')]);
+      fixture.detectChanges();
+      expect(text()).toBe('This field is required. (E-mail address)');
+    });
+
     it('does not re-announce on a language flip', () => {
       const lang = signal<'en' | 'de'>('en');
       const { fixture, emailMock } = setup(

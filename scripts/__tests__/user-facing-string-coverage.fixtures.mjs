@@ -49,17 +49,10 @@ export const ALREADY_COVERED = [];
 export const EXCLUDED = [];
 
 /**
- * The only `localeCompare` call sites the locale-source guard accepts. Sort
- * collation, not displayed text: the comparator is a pure function without
- * an injection context and uses the runtime default collation. It stays out
- * of the single-locale-source rule until the treetable section threads the
- * app locale into it.
+ * The only `localeCompare` call sites the locale-source guard accepts. Empty:
+ * the treetable sort, the last one, collates with an `Intl.Collator` of the
+ * caller's locale.
  *
  * @type {readonly { file: string; note: string }[]}
  */
-export const LOCALE_COMPARE_ALLOWED = [
-  {
-    file: 'projects/data-display/treetable/tree.utils.ts',
-    note: 'treetable sort comparator, runtime default collation',
-  },
-];
+export const LOCALE_COMPARE_ALLOWED = [];

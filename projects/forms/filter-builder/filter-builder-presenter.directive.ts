@@ -13,7 +13,7 @@ import {
   untracked,
   type Signal,
 } from '@angular/core';
-import { coerceSignal, injectLocale, nextUid } from '@cngx/core/utils';
+import { injectLocale, nextUid } from '@cngx/core/utils';
 import { CngxFormFieldPresenter, type CngxFormFieldControl } from '@cngx/forms/field';
 
 import type {
@@ -23,7 +23,7 @@ import type {
   FilterLogic,
   FilterNode,
 } from './filter-builder.types';
-import { injectFilterBuilderConfig } from './filter-builder.config';
+import { injectFilterBuilderConfig, injectFilterBuilderI18n } from './filter-builder.config';
 import { isExpressionIncomplete } from './filter-builder-internal';
 import type { CngxFilterRowFieldChangePlan } from './filter-builder-row-controller';
 import { CNGX_FILTER_BUILDER_HOST, type CngxFilterBuilderHost } from './filter-builder-host.token';
@@ -90,7 +90,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   private readonly announcer = this.announcerFactory<TValue>({
     lastMutation: this.lastMutation,
     fieldMap: this.fieldMap,
-    i18n: coerceSignal(this.config.i18n),
+    i18n: injectFilterBuilderI18n(),
     locale: injectLocale(),
     operators: this.config.operators,
   });
@@ -312,9 +312,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
         const parent = this.core.getNodeAtPath(parentPath);
         const siblingCount = parent?.type === 'group' ? parent.filters.length : 0;
         const containerPath =
-          siblingCount > 0
-            ? [...parentPath, Math.min(removedIndex, siblingCount - 1)]
-            : parentPath;
+          siblingCount > 0 ? [...parentPath, Math.min(removedIndex, siblingCount - 1)] : parentPath;
         const container = host.querySelector<HTMLElement>(
           `[data-cngx-filter-path="${containerPath.join('.')}"]`,
         );

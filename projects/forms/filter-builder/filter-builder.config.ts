@@ -10,6 +10,7 @@ import {
 import { createNestedOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxFilterEditorComponent } from './filter-builder-editor.contract';
+import { injectFilterBuilderSiteI18n } from './i18n/filter-builder-i18n';
 import {
   CNGX_FILTER_BUILTIN_OPERATOR_DEFS,
   type CngxFilterOperatorDef,
@@ -98,7 +99,10 @@ export interface CngxFilterBuilderAnnouncementFormatters {
 }
 
 /**
- * Locale bundle - button copy, operator labels, group/expression label factories, announcer formatters. Defaults are English.
+ * Locale bundle - button copy, operator labels, group/expression label
+ * factories, announcer formatters. Unset keys read the `filterBuilder`
+ * section of the active language pack (`CNGX_FILTER_BUILDER_LANGUAGE_EN` by
+ * default); set keys through {@link withFilterBuilderI18n}.
  *
  * @category forms/filter-builder/config
  */
@@ -115,6 +119,12 @@ export interface CngxFilterBuilderI18n {
   readonly negate: string;
   readonly emptyState: string;
   readonly operators: Readonly<Record<string, string>>;
+  /**
+   * Label of an operator key that has neither an `operators` entry nor a
+   * definition `label`. The raw key is never shown or announced. Default:
+   * `'Unnamed operator'`.
+   */
+  readonly unnamedOperator: string;
   readonly groupLabel: (ctx: CngxFilterBuilderGroupLabelContext) => string;
   readonly expressionLabel: (ctx: CngxFilterBuilderExpressionLabelContext) => string;
   readonly unboundFilterLabel: string;
@@ -125,6 +135,11 @@ export interface CngxFilterBuilderI18n {
   readonly booleanTrue?: string;
   /** Spoken form of a `false` filter value in announcements. Default: `'false'`. */
   readonly booleanFalse?: string;
+  /**
+   * A text filter value in announcements, quoted in the language's quotation
+   * marks. Default: `'"{value}"'`.
+   */
+  readonly quotedValue: (value: string) => string;
 }
 
 /**
@@ -134,7 +149,12 @@ export interface CngxFilterBuilderI18n {
  */
 export interface CngxFilterBuilderConfig {
   readonly templates: CngxFilterBuilderTemplates;
-  readonly i18n: CngxFilterBuilderI18n | Signal<CngxFilterBuilderI18n>;
+  /**
+   * Copy overrides. Unset keys read the `filterBuilder` section of the active
+   * language pack; read the resolved bundle with `injectFilterBuilderI18n()`.
+   * Holds a `Signal` once `withFilterBuilderI18n` ran.
+   */
+  readonly i18n?: Partial<CngxFilterBuilderI18n> | Signal<Partial<CngxFilterBuilderI18n>>;
   readonly maxNestingDepth: number;
   readonly defaultOperators: Readonly<Record<FilterEditorType, readonly string[]>>;
   readonly operators: ReadonlyMap<string, CngxFilterOperatorDef>;
@@ -143,93 +163,12 @@ export interface CngxFilterBuilderConfig {
   readonly negationEnabled: boolean;
 }
 
-/** @internal */
-const DEFAULT_I18N: CngxFilterBuilderI18n = Object.freeze({
-  addFilter: 'Add filter',
-  addGroup: 'Add group',
-  removeFilter: 'Remove filter',
-  removeGroup: 'Remove filter group',
-  and: 'AND',
-  or: 'OR',
-  xor: 'XOR',
-  logicLabel: 'Combine filters with',
-  negate: 'Negate',
-  emptyState: 'No filters defined',
-  operators: Object.freeze({
-    contains: 'Contains',
-    eq: 'Equals',
-    neq: 'Not equals',
-    startsWith: 'Starts with',
-    endsWith: 'Ends with',
-    isEmpty: 'Is empty',
-    isNotEmpty: 'Is not empty',
-    gt: 'Greater than',
-    gte: 'Greater than or equal',
-    lt: 'Less than',
-    lte: 'Less than or equal',
-    between: 'Between',
-    in: 'In',
-    notIn: 'Not in',
-  }),
-  groupLabel: ({
-    logic,
-    negated,
-    isRoot,
-    logicLabel,
-    negatedTag,
-  }: CngxFilterBuilderGroupLabelContext): string => {
-    const upper = logicLabel ?? logic.toUpperCase();
-    const negTag = negated ? `, ${negatedTag ?? 'negated'}` : '';
-    const heading = isRoot ? 'Root filter group' : 'Filter group';
-    return `${heading} (${upper}${negTag})`;
-  },
-  expressionLabel: ({
-    fieldLabel,
-    operator,
-    operatorLabel,
-  }: CngxFilterBuilderExpressionLabelContext): string => {
-    const op = (operatorLabel ?? operator) || '(no operator)';
-    return `Filter: ${fieldLabel} ${op}`;
-  },
-  unboundFilterLabel: 'Unbound filter',
-  announcement: Object.freeze({
-    filterAdded: ({ fieldLabel }: { fieldLabel: string }) => `Filter added: ${fieldLabel}`,
-    filterRemoved: ({
-      fieldLabel,
-      operator,
-      value,
-      operatorLabel,
-    }: {
-      fieldLabel: string;
-      operator: string;
-      value: string;
-      operatorLabel?: string;
-    }) =>
-      `Filter removed: ${fieldLabel} ${operatorLabel ?? operator} ${value}`
-        .trim()
-        .replace(/\s+/g, ' '),
-    groupAdded: () => 'Filter group added',
-    groupRemoved: () => 'Filter group removed',
-    logicChanged: ({ logic, logicLabel }: { logic: FilterLogic; logicLabel?: string }) =>
-      `Logic changed to ${logicLabel ?? logic.toUpperCase()}`,
-    groupNegated: () => 'Group negated',
-    groupUnnegated: () => 'Group un-negated',
-    fieldChanged: ({ fieldLabel }: { fieldLabel: string }) => `Field changed to ${fieldLabel}`,
-    operatorChanged: ({ operator, operatorLabel }: { operator: string; operatorLabel?: string }) =>
-      `Operator changed to ${operatorLabel ?? operator}`,
-    valueChanged: ({ value }: { value: string }) =>
-      value ? `Value changed to ${value}` : 'Value changed',
-    filtersCleared: () => 'Filters cleared',
-  }) as CngxFilterBuilderAnnouncementFormatters,
-  negatedTag: 'negated',
-  booleanTrue: 'true',
-  booleanFalse: 'false',
-}) as CngxFilterBuilderI18n;
-
-/** @internal Library defaults; English. */
+/**
+ * @internal Library defaults. The copy is not here: it reads the
+ * `filterBuilder` language section at the reading site.
+ */
 export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.freeze({
   templates: Object.freeze({}),
-  i18n: DEFAULT_I18N,
   maxNestingDepth: 8,
   defaultOperators: DEFAULT_OPERATORS,
   operators: CNGX_FILTER_BUILTIN_OPERATOR_DEFS,
@@ -273,6 +212,9 @@ export const CNGX_FILTER_BUILDER_CONFIG = new InjectionToken<CngxFilterBuilderCo
   { factory: () => CNGX_FILTER_BUILDER_DEFAULTS },
 );
 
+/** @internal - shared empty bundle for the first `withFilterBuilderI18n` merge. */
+const NO_I18N: Partial<CngxFilterBuilderI18n> = {};
+
 /** @internal */
 const FILTER_BUILDER_FEATURE_BRAND: unique symbol = Symbol('CngxFilterBuilderConfigFeature');
 
@@ -294,8 +236,10 @@ function feature(
 }
 
 /**
- * Override any subset of the i18n bundle. `operators` is shallow-merged.
- * Pass a `Signal` to switch the copy at runtime; the merge then follows it.
+ * Override any subset of the i18n bundle. Unset keys read the `filterBuilder`
+ * section of the active language pack, and the overrides apply on top of it.
+ * `operators` merges key by key; `announcement` is replaced as a whole. Pass a
+ * `Signal` to switch the copy at runtime; the merge then follows it.
  *
  * @category forms/filter-builder/config
  */
@@ -304,7 +248,11 @@ export function withFilterBuilderI18n(
 ): CngxFilterBuilderConfigFeature {
   return feature((config) => ({
     ...config,
-    i18n: createNestedOverrideMerge(config.i18n, partial, 'operators'),
+    i18n: createNestedOverrideMerge<Partial<CngxFilterBuilderI18n>, 'operators'>(
+      config.i18n ?? NO_I18N,
+      partial,
+      'operators',
+    ),
   }));
 }
 
@@ -337,7 +285,7 @@ export function withDefaultOperators(
  * together. Merges over the builtin map (and over earlier `withOperators`
  * calls), so builtins stay evaluable and individual keys can be
  * overridden. Label resolution per row is
- * `i18n.operators[key] ?? def.label ?? key`.
+ * `i18n.operators[key] ?? def.label ?? i18n.unnamedOperator`.
  *
  * Registration alone adds no picker entry: expose the key per field via
  * `FilterFieldDef.operators` or per editor type via
@@ -385,7 +333,6 @@ export function withLogicOptions(logics: readonly FilterLogic[]): CngxFilterBuil
 export function withNegation(enabled: boolean): CngxFilterBuilderConfigFeature {
   return feature((config) => ({ ...config, negationEnabled: enabled }));
 }
-
 
 /**
  * Register global template overrides - keyed fallback below per-instance content-child slots.
@@ -449,4 +396,20 @@ export function provideFilterBuilderConfigAt(
  */
 export function injectFilterBuilderConfig(): CngxFilterBuilderConfig {
   return inject(CNGX_FILTER_BUILDER_CONFIG);
+}
+
+/**
+ * Reads the resolved i18n bundle as a `Signal`: the `withFilterBuilderI18n`
+ * overrides over the `filterBuilder` section of the active language pack,
+ * formatted for the locale of the reading injector. A key an override leaves
+ * unset or `undefined` reads the section. Read it inside a `computed()`, a
+ * template or a handler so a runtime language switch reaches the copy.
+ * Injection context required.
+ *
+ * @category forms/filter-builder/config
+ * @since 0.1.0
+ * @relatedTo withFilterBuilderI18n, CNGX_FILTER_BUILDER_LANGUAGE_EN
+ */
+export function injectFilterBuilderI18n(): Signal<Required<CngxFilterBuilderI18n>> {
+  return injectFilterBuilderSiteI18n(inject(CNGX_FILTER_BUILDER_CONFIG).i18n);
 }

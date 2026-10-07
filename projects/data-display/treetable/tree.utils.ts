@@ -1,3 +1,4 @@
+import { dateTimeFormatterFor, numberFormatterFor } from '@cngx/core/utils';
 import {
   filterTree as filterTreeKernel,
   flattenTree as flattenTreeKernel,
@@ -100,13 +101,40 @@ export function filterTree<T>(nodes: CngxTreetableNode<T>[], predicate: (value: 
   return filterTreeKernel(nodes, predicate) as CngxTreetableNode<T>[];
 }
 
+const collators = new Map<string, Intl.Collator>();
+
+/** @internal One numeric, base-sensitivity collator per locale (`''` = runtime default). */
+function collatorFor(locale: string | undefined): Intl.Collator {
+  const key = locale ?? '';
+  let collator = collators.get(key);
+  if (!collator) {
+    collator = new Intl.Collator(locale, { numeric: true, sensitivity: 'base' });
+    collators.set(key, collator);
+  }
+  return collator;
+}
+
 /**
  * Sorts each level of the tree independently by a field key.
  * Children remain grouped under their parent; only sibling order changes.
  *
+ * Values compare as text with an `Intl.Collator` of `locale` (numeric,
+ * base sensitivity), so `"item2"` sorts before `"item10"` and letters follow
+ * the locale's alphabet (Swedish `ä` after `z`, German `ä` beside `a`). Pass
+ * the use-site locale: `sortTree(nodes, 'name', 'asc', injectLocale()())`.
+ * Without it the runtime default locale applies.
+ *
+ * @param locale - BCP 47 tag of the collation; the runtime default when omitted.
+ *
  * @category data-display/treetable
  */
-export function sortTree<T>(nodes: CngxTreetableNode<T>[], field: string, direction: 'asc' | 'desc'): CngxTreetableNode<T>[] {
+export function sortTree<T>(
+  nodes: CngxTreetableNode<T>[],
+  field: string,
+  direction: 'asc' | 'desc',
+  locale?: string,
+): CngxTreetableNode<T>[] {
+  const collator = collatorFor(locale);
   const toPrimitive = (v: unknown): string => {
     if (v === null || v === undefined || typeof v === 'object') {
       return '';
@@ -116,13 +144,94 @@ export function sortTree<T>(nodes: CngxTreetableNode<T>[], field: string, direct
   const sorted = [...nodes].sort((a, b) => {
     const av = toPrimitive((a.value as Record<string, unknown>)[field]);
     const bv = toPrimitive((b.value as Record<string, unknown>)[field]);
-    const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+    const cmp = collator.compare(av, bv);
     return direction === 'asc' ? cmp : -cmp;
   });
   return sorted.map((node) => ({
     ...node,
-    children: node.children ? sortTree(node.children, field, direction) : undefined,
+    children: node.children ? sortTree(node.children, field, direction, locale) : undefined,
   }));
+}
+
+/** @internal `Intl.NumberFormat` defaults for a number in a default cell. */
+export const CELL_NUMBER_FORMAT: Intl.NumberFormatOptions = {};
+/** @internal Date-only default for a `Date` in a default cell. */
+export const CELL_DATE_FORMAT: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+};
+
+/**
+ * The formatters a default cell uses for one locale, date format and number
+ * format.
+ *
+ * @internal
+ */
+export interface CellFormatters {
+  readonly number: Intl.NumberFormat;
+  readonly date: Intl.DateTimeFormat;
+}
+
+/**
+ * Resolves the default-cell formatters for `locale` (dates with `dateFormat`,
+ * date-only by default; numbers with `numberFormat`, the `Intl.NumberFormat`
+ * defaults by default). Resolve once per locale and format, not per cell.
+ *
+ * @internal
+ */
+export function cellFormattersFor(
+  locale: string,
+  dateFormat: Intl.DateTimeFormatOptions = CELL_DATE_FORMAT,
+  numberFormat: Intl.NumberFormatOptions = CELL_NUMBER_FORMAT,
+): CellFormatters {
+  return {
+    number: numberFormatterFor(locale, numberFormat),
+    date: dateTimeFormatterFor(locale, dateFormat),
+  };
+}
+
+/**
+ * The default cell text of a value: numbers and dates formatted with
+ * `formatters`, an invalid date empty, everything else unchanged.
+ *
+ * @internal
+ */
+export function formatCellValue(value: unknown, formatters: CellFormatters): unknown {
+  if (typeof value === 'number') {
+    return formatters.number.format(value);
+  }
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? '' : formatters.date.format(value);
+  }
+  return value;
+}
+
+/**
+ * The default header of a data column: its `columnLabels` entry, else in a
+ * dev build the capitalised column key, else the
+ * `unlabeledColumn` text for its 1-based `position` and its key. Never the key
+ * in production unless a consumer `unlabeledColumn` renders it.
+ *
+ * @internal
+ */
+export function columnHeaderFor(
+  key: string,
+  position: number,
+  labels: {
+    readonly columnLabels: Readonly<Record<string, string>>;
+    readonly unlabeledColumn: (position: number, column: string) => string;
+  },
+  devMode: boolean,
+): string {
+  const label = labels.columnLabels[key];
+  if (label !== undefined) {
+    return label;
+  }
+  if (devMode) {
+    return capitalise(key);
+  }
+  return labels.unlabeledColumn(position, key);
 }
 
 /**

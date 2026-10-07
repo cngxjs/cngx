@@ -184,7 +184,7 @@ readonly field = adaptFormControl(this.control, 'email', inject(DestroyRef));
 | Function | Description |
 |-|-|
 | `withErrorMessages(map)` | Register error-kind-to-message formatters |
-| `withConstraintHints(formatters?)` | Auto-generate hints from validators (i18n via formatters) |
+| `withConstraintHints(formatters?)` | Auto-generate hints from validators; copy from the `formField` language section, single formatters replaceable |
 | `withRequiredMarker(text?)` | Auto-show required marker on labels |
 | `withAutocompleteMappings(map)` | Extend/override autocomplete inference |
 | `withNoSpellcheck(fields)` | Extend spellcheck-disabled field list |

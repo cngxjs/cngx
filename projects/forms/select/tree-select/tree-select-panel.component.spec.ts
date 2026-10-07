@@ -80,8 +80,11 @@ function makeShellHost(): CngxSelectPanelHost {
       searchPlaceholder: 'Search…',
       commitFailed: 'Save failed',
       commitFailedRetry: 'Try again',
+      chipOverflowBadge: (count: number) => `+${count}`,
     }),
     ariaLabels: signal({
+      chipRemove: 'Remove',
+      chipRemoveFor: (action: string, label: string) => `${action}: ${label}`,
       treeExpand: 'Expand node',
       treeCollapse: 'Collapse node',
       statusLoading: 'Loading options',

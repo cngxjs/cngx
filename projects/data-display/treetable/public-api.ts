@@ -5,9 +5,10 @@ export {
   provideTreetableAt,
   CNGX_TREETABLE_CONFIG,
   withHighlightOnHover,
-  withCapitaliseHeaders,
   withTreetableLabels,
   withTreetableTemplates,
+  withTreetableDateFormat,
+  withTreetableNumberFormat,
 } from './treetable.token';
 export {
   CngxCellTpl,
@@ -34,6 +35,12 @@ export type {
   TreetableOptions,
   CngxCellTplContext,
   CngxErrorTplContext,
+  CngxHeaderTplContext,
   CngxSkeletonRowTplContext,
 } from './models';
 export { flattenTree, filterTree, sortTree, nodeMatchesSearch } from './tree.utils';
+export { injectTreetableLabels } from './i18n/treetable-i18n';
+export {
+  CNGX_TREETABLE_LANGUAGE_EN,
+  type CngxTreetableLanguageSection,
+} from './i18n/treetable-language-section';
