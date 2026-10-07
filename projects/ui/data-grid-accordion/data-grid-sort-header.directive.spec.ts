@@ -158,6 +158,17 @@ describe('CngxDgaSortHeader', () => {
     expect(stripBidiIsolates(spy.mock.lastCall?.[0])).toBe('Sorted by Name ascending');
   });
 
+  it('leaves aria-hidden icons out of the announced column name', () => {
+    const spy = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce').mockImplementation(() => {});
+    const fixture = TestBed.createComponent(IconHeaderHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxDgaSortHeader))
+      .nativeElement as HTMLElement;
+    el.click();
+    fixture.detectChanges();
+    expect(stripBidiIsolates(spy.mock.lastCall?.[0])).toBe('Sorted by Amount ascending');
+  });
+
   it('falls back to the unlabeledColumn label for a header without text', () => {
     const spy = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce').mockImplementation(() => {});
     const fixture = TestBed.createComponent(EmptyHeaderHost);
@@ -270,3 +281,15 @@ class LabelHost {}
   imports: [CngxDataGridAccordion, CngxDataGridHeader, CngxDgCell, CngxDgaSortHeader],
 })
 class EmptyHeaderHost {}
+
+@Component({
+  template: `<cngx-data-grid-accordion>
+    <cngx-dga-header>
+      <span cngxDgaCell cngxDgaSortHeader="amount"
+        ><span aria-hidden="true">$</span> Amount <span aria-hidden="true">NEW</span></span
+      >
+    </cngx-dga-header>
+  </cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion, CngxDataGridHeader, CngxDgCell, CngxDgaSortHeader],
+})
+class IconHeaderHost {}

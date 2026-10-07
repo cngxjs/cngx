@@ -205,15 +205,12 @@ export class CngxDgaSortHeader {
     return this.clearedAnnouncement() ?? labels.sortAnnouncedCleared;
   }
 
-  /** The header's visible text, without the hidden sort status it carries. */
+  /**
+   * The header's text as assistive tech reads it: `aria-hidden` subtrees (the sort
+   * status node, decorative icons and badges) are left out.
+   */
   private headerText(): string {
-    let text = '';
-    this.host.childNodes.forEach((node) => {
-      if (node !== this.statusElement) {
-        text += node.textContent ?? '';
-      }
-    });
-    return text.replace(/\s+/g, ' ').trim();
+    return readableText(this.host).replace(/\s+/g, ' ').trim();
   }
 
   protected handleActivateKey(event: Event): void {
@@ -221,4 +218,19 @@ export class CngxDgaSortHeader {
     event.preventDefault();
     this.handleSort(event);
   }
+}
+
+/** @internal Text content of `node`, skipping every `aria-hidden="true"` subtree. */
+function readableText(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent ?? '';
+  }
+  if (node instanceof Element && node.getAttribute('aria-hidden') === 'true') {
+    return '';
+  }
+  let text = '';
+  node.childNodes.forEach((child) => {
+    text += readableText(child);
+  });
+  return text;
 }
