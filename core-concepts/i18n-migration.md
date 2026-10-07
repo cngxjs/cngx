@@ -130,6 +130,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/ui/sidenav
 
 - The copy input `CngxSidenav.resizeLabel` is now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `withSidenavLabels` `resizeHandle` default. Template bindings are unchanged; the rendered resize-handle `aria-label` follows a language switch while the input is unbound. Code that reads `sidenav.resizeLabel()` programmatically gets `undefined` when nothing is bound.
+- `CngxSidenavLabels` gains the required key `resizeValueText: (width: number) => string`. A full `CngxSidenavLabels` object built by hand adds it; `withSidenavLabels` takes a partial and is unaffected. The label defaults are the `sidenav` section of the language pack, exported in English as `CNGX_SIDENAV_LANGUAGE_EN`.
 
 ### @cngx/ui/speak
 
@@ -305,6 +306,11 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxDgaCount` speaks its count through the `count` plural message with the number formatted in the locale (`1,200 results`), and a bound noun through `countWithNoun`, the noun bidi-isolated.
 - A sort announcement names the column by `[cngxDgaSortLabel]`, else by the header's own text, else by `unlabeledColumn` - never by the field key (`Sorted by Name ascending`, before: `Sorted by name ascending`). The column name is bidi-isolated, so an exact comparison strips U+2068 / U+2069 first. Announcement strings bound per instance keep their `{label}` placeholder.
 - The sort arrows (`▲`, `▼`) and the `spreadsheet` skin's row numbers and column letters carry CSS alt text and no longer reach a header's accessible name.
+
+### @cngx/ui/sidenav
+
+- The sidenav copy comes from the `sidenav` section of the language pack; `withSidenavLabels` still wins key by key, also on top of a pack.
+- The resize separator carries `aria-valuetext` from the `resizeValueText` message (English `'280 pixels'`, the number formatted for the locale), so assistive tech no longer reads a bare unitless number.
 
 ### @cngx/ui/paginator
 

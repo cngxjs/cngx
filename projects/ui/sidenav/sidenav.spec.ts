@@ -15,6 +15,7 @@ import { CngxSidenavContent } from './sidenav-content';
 import { provideSidenavConfig } from './config/provide-sidenav-config';
 import { withSidenavDimensions, withSidenavHoverDwell, withSidenavLabels } from './config/features';
 import type { CngxSidenavLabels } from './config/sidenav.config';
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
 
 @Component({
   template: `
@@ -621,6 +622,27 @@ describe('CngxSidenav resizable', () => {
     expect(before).not.toBe('Navigation anpassen');
   });
 
+  it('speaks the separator value as a width through the sidenav section', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', sidenav: { resizeValueText: '{width} Pixel breit' } }),
+          withDocumentLanguage('off'),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.componentInstance.resizable.set(true);
+    fixture.componentInstance.width.set('1200px');
+    fixture.detectChanges();
+    const handle = (
+      fixture.debugElement.queryAll(By.directive(CngxSidenav))[0].nativeElement as HTMLElement
+    ).querySelector<HTMLElement>('.cngx-sidenav__resize-handle')!;
+    expect(handle.getAttribute('aria-valuenow')).toBe('1200');
+    expect(handle.getAttribute('aria-valuetext')).toBe('1.200 Pixel breit');
+    expect(handle.getAttribute('aria-label')).toBe('Resize navigation');
+  });
+
   it('names the resize handle from the sidenav labels bundle', () => {
     TestBed.configureTestingModule({
       providers: [provideSidenavConfig(withSidenavLabels({ resizeHandle: 'Navigation anpassen' }))],
@@ -905,6 +927,7 @@ describe('CngxSidenav resize math and shortcut', () => {
     )!;
     expect(handle.getAttribute('tabindex')).toBe('0');
     expect(handle.getAttribute('aria-label')).toBe('Resize navigation');
+    expect(handle.getAttribute('aria-valuetext')).toBe('240 pixels');
 
     // jsdom has no layout; the handler reads the rendered width via rect.
     const el = leftDe.nativeElement as HTMLElement;

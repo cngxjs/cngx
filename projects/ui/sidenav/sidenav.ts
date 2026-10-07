@@ -15,17 +15,12 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
-import {
-  createOverrideMerge,
-  createTransitionTracker,
-  matchesKeyCombo,
-  parseKeyCombo,
-} from '@cngx/core/utils';
+import { createTransitionTracker, matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
 import { CNGX_HOVER_INTENT_DEFAULTS, CngxHoverIntent } from '@cngx/common/interactive';
 import { CNGX_CONTAINER_SIZE } from '@cngx/common/layout';
 
 import { injectSidenavConfig } from './config/inject-sidenav-config';
-import { CNGX_SIDENAV_LABELS_DEFAULTS } from './config/sidenav.config.defaults';
+import { injectSidenavLabels } from './i18n/sidenav-i18n';
 import { CNGX_SIDENAV } from './sidenav-token';
 
 /**
@@ -172,6 +167,7 @@ export type ResolvedSidenavMode = Exclude<SidenavMode, 'auto'>;
         [attr.aria-label]="resolvedResizeLabel()"
         [attr.aria-orientation]="'vertical'"
         [attr.aria-valuenow]="widthValueNow()"
+        [attr.aria-valuetext]="widthValueText()"
         [attr.aria-valuemin]="minWidthPx()"
         [attr.aria-valuemax]="maxWidthPx()"
       ></div>
@@ -220,7 +216,7 @@ export class CngxSidenav {
    */
   readonly resizeLabel = input<string | undefined>(undefined);
 
-  private readonly labels = createOverrideMerge(CNGX_SIDENAV_LABELS_DEFAULTS, this.cfg.labels);
+  private readonly labels = injectSidenavLabels();
 
   /** @internal */
   protected readonly resolvedResizeLabel = computed(
@@ -563,6 +559,16 @@ export class CngxSidenav {
    * on a focusable separator even for rem-sized rails.
    */
   protected readonly widthValueNow = computed(() => this.widthPx() ?? this.measuredWidthPx());
+
+  /**
+   * @internal `aria-valuetext` of the separator: the width spoken through the
+   * `resizeValueText` label, the number formatted for the locale, so AT does
+   * not read a bare unitless number.
+   */
+  protected readonly widthValueText = computed(() => {
+    const width = this.widthValueNow();
+    return width === null ? null : this.labels().resizeValueText(width);
+  });
 
   private measureWidth(): void {
     const el = this.elementRef.nativeElement as HTMLElement;
