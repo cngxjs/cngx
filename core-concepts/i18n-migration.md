@@ -146,6 +146,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxPaginatorConfig.ariaLabels`, `.announcements` and `.formats` are typed `L | Signal<L>`, and once a `with*` feature ran they hold a `Signal`. Code that reads them off `injectPaginatorConfig()` or `CNGX_PAGINATOR_CONFIG` reads the resolved bundle through the new accessors instead: `injectPaginatorConfig().ariaLabels.next` becomes `injectPaginatorAriaLabels()().next`, likewise `injectPaginatorAnnouncements()` and `injectPaginatorFormats()` (the latter fills the optional readout formatters), each called inside a `computed()`, a template or a handler. `CNGX_PAGINATOR_DEFAULTS` keeps its plain bundles.
 - `withPaginatorAriaLabels` and `withPaginatorAnnouncements` now also accept a `Signal` of the partial bundle, and `withPaginatorRangeFormat`, `withPaginatorPageStatusFormat`, `withPaginatorPageOfPagesFormat` and `withPaginatorLoadMoreFormat` accept a formatter or a `Signal` of one. Plain values keep their merge rules; `provideCngxPaginatorConfigAt` still merges over the parent scope. A hand-built `CngxPaginatorConfigFeature` payload may be a `Signal` as well.
 - `@cngx/ui/mat-paginator`: the bridge reads `announcements.pageChange` and a bound `[announceLabel]` formatter untracked, so a language switch does not re-speak the current page; the next page change speaks the new language.
+- `CNGX_PAGINATOR_DEFAULTS` and the default `CNGX_PAGINATOR_CONFIG` carry no copy any more: `ariaLabels`, `announcements` and `formats` are optional, unset by default, and hold only the overrides the `withPaginator*` features set (`Partial<L> | Signal<Partial<L>>`). The copy defaults are the `paginator` section of the language pack, exported in English as `CNGX_PAGINATOR_LANGUAGE_EN`. Code that read `CNGX_PAGINATOR_DEFAULTS.ariaLabels.next` reads `injectPaginatorAriaLabels()().next`; a hand-built config that spread the full default bundles drops them.
 
 ### @cngx/ui/accordion
 
@@ -301,6 +302,11 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxDgaCount` speaks its count through the `count` plural message with the number formatted in the locale (`1,200 results`), and a bound noun through `countWithNoun`, the noun bidi-isolated.
 - A sort announcement names the column by `[cngxDgaSortLabel]`, else by the header's own text, else by `unlabeledColumn` - never by the field key (`Sorted by Name ascending`, before: `Sorted by name ascending`). The column name is bidi-isolated, so an exact comparison strips U+2068 / U+2069 first. Announcement strings bound per instance keep their `{label}` placeholder.
 - The sort arrows (`▲`, `▼`) and the `spreadsheet` skin's row numbers and column letters carry CSS alt text and no longer reach a header's accessible name.
+
+### @cngx/ui/paginator
+
+- The paginator copy comes from the `paginator` section of the language pack; the `withPaginator*` features still win key by key, also on top of a pack.
+- Numbers in the copy and the readouts are formatted for the locale: `<b>1,001-1,010</b> of 12,500`, `Page 2 of 1,250`; the page buttons, the page-of-pages options and the page-size select show `1.500` in German. The alphabet bucket names are bidi-isolated, so an exact comparison strips U+2068 / U+2069 first.
 
 ### @cngx/ui/feedback
 

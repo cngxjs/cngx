@@ -69,3 +69,7 @@ export {
   type CngxPaginatorAnnouncer,
   type CngxPaginatorAnnouncerFactory,
 } from './paginator-announcer';
+export {
+  CNGX_PAGINATOR_LANGUAGE_EN,
+  type CngxPaginatorLanguageSection,
+} from './i18n/paginator-language-section';

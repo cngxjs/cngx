@@ -14,6 +14,7 @@ import {
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 import { CngxListbox, CngxListboxTrigger, CngxOption } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
 
 import { injectPaginatorAriaLabels } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
@@ -63,7 +64,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
             [attr.aria-disabled]="host.isBusy() ? 'true' : null"
             (click)="goto(item.index)"
           >
-            {{ item.index + 1 }}
+            {{ numbers().format(item.index + 1) }}
           </button>
         } @else {
           <button
@@ -97,7 +98,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
               (valueChange)="onSelectOverflow($event, morePopover)"
             >
               @for (hidden of item.hidden; track hidden) {
-                <li cngxOption class="cngx-paginator__option" [value]="hidden">{{ hidden + 1 }}</li>
+                <li cngxOption class="cngx-paginator__option" [value]="hidden">{{ numbers().format(hidden + 1) }}</li>
               }
             </ul>
           </div>
@@ -110,6 +111,9 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
 export class CngxPaginatorPages {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
   protected readonly ariaLabels = injectPaginatorAriaLabels();
+  private readonly locale = injectLocale();
+  /** Visible page numbers and sizes, formatted for the locale (`1.000` in German). */
+  protected readonly numbers = computed(() => numberFormatterFor(this.locale(), {}));
   protected readonly glyphs = CNGX_PAGINATOR_GLYPHS;
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
