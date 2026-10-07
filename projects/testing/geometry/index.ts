@@ -4,6 +4,7 @@
  *
  * @module @cngx/testing/geometry
  */
+export { accessibleName } from './accessible-name';
 export {
   computedValue,
   containerState,
