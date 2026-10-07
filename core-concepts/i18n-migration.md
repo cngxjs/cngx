@@ -187,8 +187,11 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 ### @cngx/ui/a11y
 
-- `CngxA11yPanelConfig.labels` is typed `CngxA11yPanelLabels | Signal<CngxA11yPanelLabels>` and `.axes` is typed `readonly CngxA11yPanelAxisSpec[] | Signal<readonly CngxA11yPanelAxisSpec[]>`; once a feature ran, `labels` holds a `Signal`. Code that reads them off `injectA11yPanelConfig()` or `CNGX_A11Y_PANEL_CONFIG` reads them through the new accessors instead: `injectA11yPanelConfig().labels.heading` becomes `injectA11yPanelLabels()().heading`, and `injectA11yPanelConfig().axes` becomes `injectA11yPanelAxes()()`, each called inside a `computed()`, a template or a handler. `CNGX_A11Y_PANEL_DEFAULTS` keeps its plain values.
+- `CngxA11yPanelConfig.labels` is typed `CngxA11yPanelLabels | Signal<CngxA11yPanelLabels>` and `.axes` is typed `readonly CngxA11yPanelAxisSpec[] | Signal<readonly CngxA11yPanelAxisSpec[]>`; once a feature ran, `labels` holds a `Signal`. Code that reads them off `injectA11yPanelConfig()` or `CNGX_A11Y_PANEL_CONFIG` reads them through the new accessors instead: `injectA11yPanelConfig().labels.heading` becomes `injectA11yPanelLabels()().heading`, and `injectA11yPanelConfig().axes` becomes `injectA11yPanelAxes()()`, each called inside a `computed()`, a template or a handler.
 - `withA11yPanelLabels` now also accepts a `Signal<CngxA11yPanelLabelsOverride>` (the `axes` record still merges key by key), and `withA11yPanelAxes` accepts a `Signal` of the axis list, so translated option labels follow a switch. Plain values keep their merge rules; `provideA11yPanelConfigAt` still merges over the parent scope.
+
+- `CNGX_A11Y_PANEL_DEFAULTS` and the default `CNGX_A11Y_PANEL_CONFIG` carry no copy any more: `labels` is optional, unset by default, and holds only the overrides `withA11yPanelLabels` set (`CngxA11yPanelLabelsOverride | Signal<CngxA11yPanelLabelsOverride>`); the default axis list carries values and reset targets but no option labels. The text and the option labels are the `a11yPanel` section of the language pack, exported in English as `CNGX_A11Y_PANEL_LANGUAGE_EN`. Code that read `CNGX_A11Y_PANEL_DEFAULTS.labels.heading` or an option label off `CNGX_A11Y_PANEL_DEFAULTS.axes` reads `injectA11yPanelLabels()().heading` / `injectA11yPanelAxes()()`, where every option label is filled.
+- `CngxA11yPanelAxisOption.label` is optional. An option without it reads the label for its value from the `a11yPanel` section, so `withA11yPanelAxes` no longer needs to restate the labels to translate them; a label set there still wins.
 
 ### @cngx/forms/select
 
@@ -319,6 +322,10 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The breadcrumb names come from the `breadcrumb` section of the language pack; `withBreadcrumbAriaLabels` still wins key by key, also on top of a pack.
 - Route data for `cngxRouterSync` and `cngxSiblingsRouterSync` may be a keyed label, `{ key: 'orders', label: 'Orders' }`: the crumb shows `breadcrumb.routes[key]` of the active pack, else `label`, never the key, and follows a language switch. Plain string labels are unchanged.
 - The separator glyphs drawn in CSS (`›`, `‹`, `·`) carry empty alt text; the separator elements stay `aria-hidden`.
+
+### @cngx/ui/a11y
+
+- The panel text and the option labels come from the `a11yPanel` section of the language pack (option labels as one record per axis, keyed by value); `withA11yPanelLabels` and labels set in `withA11yPanelAxes` still win, also on top of a pack.
 
 ### @cngx/ui/paginator
 

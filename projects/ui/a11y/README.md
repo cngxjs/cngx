@@ -43,8 +43,11 @@ default and announces the change through the shared live region.
 
 ## Configuration
 
-Labels and the rendered axis list come from `CNGX_A11Y_PANEL_CONFIG`. Defaults
-are English; override via the cascade.
+The rendered axis list comes from `CNGX_A11Y_PANEL_CONFIG`; the text and the
+option labels come from the `a11yPanel` section of the language pack (English
+without one, `CNGX_A11Y_PANEL_LANGUAGE_EN`). An option without a `label` reads
+it from the section by value, so a custom axis list translates with the pack.
+The `with*` features override single keys.
 
 ```ts
 import {
@@ -57,8 +60,8 @@ provideA11yPanelConfig(
   withA11yPanelLabels({ heading: 'Barrierefreiheit', axes: { motion: 'Bewegung' } }),
   withA11yPanelAxes([
     { axis: 'textScale', reset: 'md', options: [
-      { value: 'md', label: 'Default' },
-      { value: 'lg', label: 'Large' },
+      { value: 'md' },
+      { value: 'lg', label: 'Bigger' },
     ] },
   ]),
 );

@@ -24,3 +24,7 @@ export type {
   CngxA11yPanelLabelsOverride,
   CngxA11yPanelConfigFeature,
 } from './a11y-panel.config';
+export {
+  CNGX_A11Y_PANEL_LANGUAGE_EN,
+  type CngxA11yPanelLanguageSection,
+} from './i18n/a11y-panel-language-section';
