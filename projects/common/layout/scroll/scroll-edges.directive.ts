@@ -49,6 +49,7 @@ import { createScrollEdges } from './scroll-edges-core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/scroll-edges.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStickyHeader, CngxScrollSpy, createScrollEdges
+ * <example-url>http://localhost:4200/#/common/layout/scroll-edges/edge-shadows</example-url>
  */
 @Directive({
   selector: '[cngxScrollEdges]',
