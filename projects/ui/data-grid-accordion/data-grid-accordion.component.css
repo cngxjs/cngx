@@ -57,6 +57,12 @@
       var(--cngx-dga-foot-scroll-pad, var(--cngx-dga-foot-block-size, 0px)) +
         var(--cngx-dga-focus-clearance, 4px)
     );
+  /* The inline twin keeps focus clear of the inline edge fade below: a focused cell
+     scrolled in sideways lands past the fade width plus the ring clearance. Inert on a
+     host without inline overflow. */
+  scroll-padding-inline: calc(
+    var(--cngx-dga-edge-fade-size, 24px) + var(--cngx-dga-focus-clearance, 4px)
+  );
 
   /* A thin, neutral scrollbar by default. The rail spans the scrollport (beside the
      pinned head / foot in bounded mode, and along the base horizontal scroll), so keep
@@ -70,6 +76,75 @@
       color-mix(in oklab, var(--cngx-color-text, #0f1320) 22%, transparent)
     )
     var(--cngx-dga-scrollbar-track, transparent);
+
+  /* Inline edge fade carriers (registered `<length>`, host-only), eased so the fade
+     grows in instead of popping. The duration token is deliberately unregistered so its
+     `--cngx-duration-fast` fallback stays live; the global reduced-motion net collapses
+     it (motion-tokens.css), so no own `prefers-reduced-motion` block. */
+  transition:
+    --_cngx-dga-fade-inline-start var(--cngx-dga-edge-duration, var(--cngx-duration-fast, 150ms)),
+    --_cngx-dga-fade-inline-end var(--cngx-dga-edge-duration, var(--cngx-duration-fast, 150ms));
+}
+
+/* Inline scroll-edge affordance. The host composes `CngxScrollEdges`, which reflects
+   `data-scroll-inline-start` / `-end` only while columns are really hidden toward that
+   side (Pillar 2: the fade is the real scroll state, never an always-on decoration).
+   The fade is a `mask-image` on the host: the mask belongs to the scrollport box, so it
+   does not scroll with the content and needs no pseudo-element or sentinel inside the
+   subgrid chain. Three layers - the fade over the padding box, a solid padding box and a
+   solid border box, composited `add, exclude` - leave the border ring unmasked, so the
+   skin frame and classic scrollbars (between border and padding edge) stay crisp.
+   Overlay scrollbars sit inside the padding box and fall under the fade, so the fade
+   never reaches full transparency: it bottoms out at `--cngx-dga-edge-fade-min`. A side
+   that hides nothing stays fully opaque to its edge. Present only while an inline
+   attribute is set, so a fitting grid carries no mask and no extra stacking context. */
+.cngx-data-grid-accordion[data-scroll-inline-start] {
+  --_cngx-dga-fade-inline-start: var(--cngx-dga-edge-fade-size, 24px);
+  --_cngx-dga-fade-alpha-start: var(--cngx-dga-edge-fade-min, 0.35);
+}
+
+.cngx-data-grid-accordion[data-scroll-inline-end] {
+  --_cngx-dga-fade-inline-end: var(--cngx-dga-edge-fade-size, 24px);
+  --_cngx-dga-fade-alpha-end: var(--cngx-dga-edge-fade-min, 0.35);
+}
+
+.cngx-data-grid-accordion:is([data-scroll-inline-start], [data-scroll-inline-end]) {
+  mask-image:
+    linear-gradient(
+      to right,
+      rgb(0 0 0 / var(--_cngx-dga-fade-alpha-start, 1)),
+      rgb(0 0 0) var(--_cngx-dga-fade-inline-start, 0px),
+      rgb(0 0 0) calc(100% - var(--_cngx-dga-fade-inline-end, 0px)),
+      rgb(0 0 0 / var(--_cngx-dga-fade-alpha-end, 1))
+    ),
+    linear-gradient(rgb(0 0 0), rgb(0 0 0)),
+    linear-gradient(rgb(0 0 0), rgb(0 0 0));
+  mask-clip: padding-box, padding-box, border-box;
+  mask-origin: padding-box, padding-box, border-box;
+  mask-composite: add, exclude;
+}
+
+/* Physical gradient, so RTL flips it: inline start is the right edge. */
+.cngx-data-grid-accordion:dir(rtl):is([data-scroll-inline-start], [data-scroll-inline-end]) {
+  mask-image:
+    linear-gradient(
+      to left,
+      rgb(0 0 0 / var(--_cngx-dga-fade-alpha-start, 1)),
+      rgb(0 0 0) var(--_cngx-dga-fade-inline-start, 0px),
+      rgb(0 0 0) calc(100% - var(--_cngx-dga-fade-inline-end, 0px)),
+      rgb(0 0 0 / var(--_cngx-dga-fade-alpha-end, 1))
+    ),
+    linear-gradient(rgb(0 0 0), rgb(0 0 0)),
+    linear-gradient(rgb(0 0 0), rgb(0 0 0));
+}
+
+/* The host is itself a scroll container, keyboard-focusable in current engines. Its own
+   focus ring paints outside the border box, where the mask is fully transparent, so the
+   mask yields while the host itself holds keyboard focus (WCAG 2.4.7). Descendant focus
+   keeps the mask: the inline `scroll-padding` above already lands focused cells clear of
+   the fade, so the fade never flashes as focus moves through the rows. */
+.cngx-data-grid-accordion:is([data-scroll-inline-start], [data-scroll-inline-end]):focus-visible {
+  mask-image: none;
 }
 
 /* The single grid that owns the column tracks. Header, every row, and the footer are
@@ -144,6 +219,7 @@
     inset-block-start: 0;
     z-index: var(--cngx-dga-head-z, 2);
     background: var(--cngx-dga-head-bg, var(--cngx-color-surface, #fff));
+    transition: box-shadow var(--cngx-dga-edge-duration, var(--cngx-duration-fast, 150ms));
   }
 
   .cngx-dga-footer {
@@ -151,6 +227,29 @@
     inset-block-end: 0;
     z-index: var(--cngx-dga-foot-z, 2);
     background: var(--cngx-dga-foot-bg, var(--cngx-color-surface, #fff));
+    transition: box-shadow var(--cngx-dga-edge-duration, var(--cngx-duration-fast, 150ms));
+  }
+
+  /* The pinned bands communicate hidden rows (Pillar 2): the head casts a shadow only
+     while rows are scrolled away above it, the footer only while rows remain below it.
+     Keyed on the `CngxScrollEdges` host attributes, child combinators so an outer grid's
+     state never reaches a nested grid's bands. */
+  .cngx-data-grid-accordion[data-scroll-block-start]
+    > .cngx-data-grid-accordion__grid
+    > .cngx-dga-header {
+    box-shadow: var(
+      --cngx-dga-head-shadow,
+      0 2px 4px -2px color-mix(in oklab, var(--cngx-color-text, #0f1320) 30%, transparent)
+    );
+  }
+
+  .cngx-data-grid-accordion[data-scroll-block-end]
+    > .cngx-data-grid-accordion__grid
+    > .cngx-dga-footer {
+    box-shadow: var(
+      --cngx-dga-foot-shadow,
+      0 -2px 4px -2px color-mix(in oklab, var(--cngx-color-text, #0f1320) 30%, transparent)
+    );
   }
 }
 
@@ -260,4 +359,18 @@
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+/* Forced colors (WHCM): the UA forces the head / foot shadows to `none`, and the edge
+   fade is dropped here because a mask lowers text contrast below the forced-colors
+   guarantee. The affordance re-signals through the system-coloured scrollbar and the
+   1px head / foot rules, so nothing is re-drawn. The selector matches the specificity of
+   the RTL mask rule and comes later, so it wins in both directions. */
+@media (forced-colors: active) {
+  .cngx-data-grid-accordion:is([data-scroll-inline-start], [data-scroll-inline-end]):is(
+      :dir(ltr),
+      :dir(rtl)
+    ) {
+    mask-image: none;
+  }
 }

@@ -18,7 +18,7 @@ import {
 } from '@angular/core';
 
 import { coerceNumberProperty } from '@cngx/core/utils';
-import { observeResize, type ResizeObserverHost } from '@cngx/common/layout';
+import { CngxScrollEdges, observeResize, type ResizeObserverHost } from '@cngx/common/layout';
 import { CngxAccordion } from '@cngx/common/interactive';
 import { CngxFilter, CngxSort } from '@cngx/common/data';
 
@@ -81,6 +81,18 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * tool here: the group is its own scrollport, so a header would resolve its sticky
  * against that scrollport, and an unbounded (content-height) grid has nothing to stick
  * to. Leave `[maxBlockSize]` unbound and the grid stays content-height, byte-identical.
+ * While rows are scrolled away above or remain below, the pinned head / foot cast a
+ * shadow (`--cngx-dga-head-shadow` / `--cngx-dga-foot-shadow`); with no hidden rows in
+ * that direction there is none. Keyboard focus lands clear of both bands: the host pads
+ * its scrollport by the measured head / foot size plus `--cngx-dga-focus-clearance`.
+ *
+ * A grid narrower than its columns (`--cngx-dga-min-width`) scrolls sideways; the host
+ * then fades the inline edge that still hides columns (`--cngx-dga-edge-fade-size`,
+ * never below `--cngx-dga-edge-fade-min` opacity), mirrored under `dir="rtl"`. Both
+ * affordances come from the composed {@link CngxScrollEdges} atom, whose
+ * `data-scroll-block-start` / `-block-end` / `-inline-start` / `-inline-end` host
+ * attributes are present only while content is hidden toward that edge; under forced
+ * colors the fade is dropped and the shadows are forced away.
  *
  * ```html
  * <cngx-data-grid-accordion [multi]="true">
@@ -106,7 +118,7 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-accordion.component.ts
  * @since 0.1.0
- * @relatedTo CngxDataGridRow, CngxDgCell, CngxDataGridHeader, CngxDataGridFooter, CngxAccordion, CngxSort, CngxFilter, CngxDgaSortHeader, CngxDgaFilter, CngxDgaCount
+ * @relatedTo CngxDataGridRow, CngxDgCell, CngxDataGridHeader, CngxDataGridFooter, CngxAccordion, CngxSort, CngxFilter, CngxDgaSortHeader, CngxDgaFilter, CngxDgaCount, CngxScrollEdges
  *
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sortable-ledger</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sticky-head</example-url>
@@ -150,6 +162,8 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
       inputs: ['cngxFilter: filterPredicate'],
       outputs: ['filterChange'],
     },
+    // The host is the scrollport; the atom reflects `data-scroll-*` on it for the edge CSS.
+    { directive: CngxScrollEdges },
   ],
   providers: [{ provide: CNGX_DATA_GRID_ACCORDION, useExisting: CngxDataGridAccordion }],
   // The inner `__grid` is the single grid that owns the tracks; the host stays the

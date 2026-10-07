@@ -11,7 +11,8 @@
  * `inherits: true` keeps that host -> descendant cascade alive; `inherits: false`
  * would silently pin descendants to the initial value. Every token here inherits,
  * except the two measured band sizes (`--cngx-dga-head-block-size` /
- * `--cngx-dga-foot-block-size`), which only the host itself reads.
+ * `--cngx-dga-foot-block-size`) and the two private fade carriers, which only the
+ * host itself reads.
  *
  * Density: the pixel `initial-value` of each spacing token is only the un-set
  * fallback. The organism's default rule and each skin SET `--cngx-dga-row-py` /
@@ -276,5 +277,70 @@
   @property --cngx-dga-focus-clearance {
     syntax: '*';
     inherits: true;
+  }
+
+  /**
+   * Shadow cast by the pinned column head while rows are scrolled away above it
+   * (bounded mode only). Universal syntax with NO initial-value, so the adaptive
+   * default at the use site (derived from `--cngx-color-text`) stays live; a fixed
+   * colour initial would defeat it.
+   * @group Surface
+   */
+  @property --cngx-dga-head-shadow {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Shadow cast by the pinned footer while rows remain below it (bounded mode only).
+   * No initial-value, for the same reason as the head shadow.
+   * @group Surface
+   */
+  @property --cngx-dga-foot-shadow {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Width of the inline edge fade shown while columns are hidden sideways. Also sets
+   * how far the inline scroll padding keeps a focused cell away from the edge.
+   * @group Grid
+   */
+  @property --cngx-dga-edge-fade-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 24px;
+  }
+
+  /**
+   * Mask opacity at the very edge of the inline fade. The fade never reaches full
+   * transparency, so overlay scrollbars and edge content stay visible.
+   * @group Grid
+   */
+  @property --cngx-dga-edge-fade-min {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 0.35;
+  }
+
+  /**
+   * Private transition carrier: the current inline-start fade width. Set and read on
+   * the host only; registered so the length eases instead of popping.
+   * @group Grid
+   */
+  @property --_cngx-dga-fade-inline-start {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+
+  /**
+   * Private transition carrier: the current inline-end fade width (host only).
+   * @group Grid
+   */
+  @property --_cngx-dga-fade-inline-end {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
   }
 }

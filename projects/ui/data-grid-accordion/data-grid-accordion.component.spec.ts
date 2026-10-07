@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxAccordion } from '@cngx/common/interactive';
+import { CngxScrollEdges } from '@cngx/common/layout';
 import { CngxFilter, CngxSort, type SortEntry } from '@cngx/common/data';
 import { createResizeObserverMock, type ResizeObserverMock } from '@cngx/testing';
 
@@ -588,6 +589,54 @@ describe('CngxDataGridAccordion - layout containment', () => {
     const bounded = css.match(/@container[^{]*\{([\s\S]*?)\n\}/)?.[1] ?? '';
     expect(bounded).not.toMatch(/scroll-padding/);
   });
+
+  it('keeps the inline scroll padding in the host base rule, sized by the fade', () => {
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const base = dgaCss().match(/\.cngx-data-grid-accordion\s*\{[^}]*\}/)?.[0] ?? '';
+    expect(base).toMatch(
+      /scroll-padding-inline:\s*calc\(\s*var\(--cngx-dga-edge-fade-size,\s*24px\)\s*\+\s*var\(--cngx-dga-focus-clearance,\s*4px\)\s*\)/,
+    );
+  });
+
+  it('gates the head / foot shadows on the block edge attributes inside the bounded block', () => {
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const bounded = dgaCss().match(/@container[^{]*\{([\s\S]*?)\n\}/)?.[1] ?? '';
+    expect(bounded).toMatch(
+      /\[data-scroll-block-start\][^{]*\.cngx-dga-header\s*\{[^}]*box-shadow:\s*var\(\s*--cngx-dga-head-shadow/,
+    );
+    expect(bounded).toMatch(
+      /\[data-scroll-block-end\][^{]*\.cngx-dga-footer\s*\{[^}]*box-shadow:\s*var\(\s*--cngx-dga-foot-shadow/,
+    );
+  });
+
+  it('gates the inline edge fade on the inline attributes, with an RTL twin and a forced-colors drop', () => {
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const css = dgaCss();
+    expect(css).toMatch(
+      /\.cngx-data-grid-accordion:is\(\[data-scroll-inline-start\],\s*\[data-scroll-inline-end\]\)\s*\{[^}]*mask-image:[^}]*to right[^}]*mask-composite:\s*add,\s*exclude/,
+    );
+    expect(css).toMatch(
+      /\.cngx-data-grid-accordion:dir\(rtl\):is\(\[data-scroll-inline-start\],\s*\[data-scroll-inline-end\]\)\s*\{[^}]*to left/,
+    );
+    expect(css).toMatch(/mask-clip:\s*padding-box,\s*padding-box,\s*border-box/);
+    // The fade bottoms out at the fade-min opacity, never at full transparency.
+    expect(css).toMatch(/var\(--cngx-dga-edge-fade-min,\s*0\.35\)/);
+    // The build may prepend a `-webkit-` twin to each mask declaration.
+    expect(css).toMatch(
+      /@media\s*\(forced-colors:\s*active\)\s*\{[^{]*\{\s*(?:-webkit-mask-image:\s*none;\s*)?mask-image:\s*none/,
+    );
+    // The host's own focus ring paints outside the border box, where the mask is clear.
+    expect(css).toMatch(/:focus-visible\s*\{\s*(?:-webkit-mask-image:\s*none;\s*)?mask-image:\s*none/);
+  });
 });
 
 @Component({
@@ -718,5 +767,64 @@ describe('CngxDataGridAccordion - measured head / foot bands', () => {
     fixture.detectChanges();
 
     expect(grid(fixture, '.inner').style.getPropertyValue('--cngx-dga-head-block-size')).toBe('');
+  });
+});
+
+describe('CngxDataGridAccordion - scroll edges', () => {
+  const KEYS = ['scrollTop', 'scrollHeight', 'clientHeight', 'scrollLeft', 'scrollWidth', 'clientWidth'] as const;
+  const metrics: Record<(typeof KEYS)[number], number> = {
+    scrollTop: 0,
+    scrollHeight: 600,
+    clientHeight: 320,
+    scrollLeft: 0,
+    scrollWidth: 300,
+    clientWidth: 300,
+  };
+  const saved = new Map<string, PropertyDescriptor | undefined>();
+  let frames: FrameRequestCallback[] = [];
+
+  beforeEach(() => {
+    for (const key of KEYS) {
+      saved.set(key, Object.getOwnPropertyDescriptor(Element.prototype, key));
+      Object.defineProperty(Element.prototype, key, { get: () => metrics[key], configurable: true });
+    }
+    frames = [];
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    TestBed.configureTestingModule({ imports: [BandHost] });
+  });
+
+  afterEach(() => {
+    for (const key of KEYS) {
+      const descriptor = saved.get(key);
+      if (descriptor) {
+        Object.defineProperty(Element.prototype, key, descriptor);
+      } else {
+        delete (Element.prototype as unknown as Record<string, unknown>)[key];
+      }
+    }
+    saved.clear();
+    vi.unstubAllGlobals();
+  });
+
+  it('composes CngxScrollEdges on the host and reflects a hidden block end', () => {
+    const fixture = TestBed.createComponent(BandHost);
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxDataGridAccordion));
+    const edges = de.injector.get(CngxScrollEdges, null, { self: true });
+    expect(edges).toBeInstanceOf(CngxScrollEdges);
+
+    const pending = frames;
+    frames = [];
+    pending.forEach((callback) => callback(0));
+    fixture.detectChanges();
+
+    const el = de.nativeElement as HTMLElement;
+    expect(el.getAttribute('data-scroll-block-end')).toBe('');
+    expect(el.hasAttribute('data-scroll-block-start')).toBe(false);
+    expect(el.hasAttribute('data-scroll-inline-end')).toBe(false);
   });
 });
