@@ -70,7 +70,6 @@ export const STORY: DemoSpec = {
         flex-direction: column;
         gap: 0.5rem;
         padding: 0.75rem;
-        background: var(--cngx-surface-variant, rgba(0,0,0,.02));
       ">
         <div class="demo-mini-form-heading">
           + Create new tag "{{ term || '…' }}"
