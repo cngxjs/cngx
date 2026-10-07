@@ -49,9 +49,9 @@ export interface CngxFeedbackAnnouncements {
 }
 
 /**
- * Feedback i18n surface. Library defaults are English; consumers override via
- * {@link withFeedbackI18nLabels} inside `provideFeedback()`, or with
- * {@link provideFeedbackI18n} when they compose their own language file.
+ * Feedback i18n surface. The defaults come from the `feedback` section of the
+ * language pack (English without one); {@link withFeedbackI18nLabels} inside
+ * `provideFeedback()` or {@link provideFeedbackI18n} override single keys on top.
  * Sibling to `CNGX_STEPPER_I18N`, `CNGX_TABS_I18N` and `CNGX_CHART_I18N`.
  *
  * Two region names and one announcement sub-bundle. The banner outlet carries

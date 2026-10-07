@@ -131,8 +131,9 @@ Notes that matter in practice:
   relying on a visual change a screen-reader user cannot see.
 - Keep the live region present in the DOM and toggle its content, rather than adding and
   removing it, so assistive tech has something stable to observe.
-- All accessible-name and announcement strings are English by default and fully overridable,
-  so the control localises with the rest of the app.
+- All accessible-name and announcement strings come from the `paginator` section of the
+  language pack and stay overridable key by key, so the control localises with the rest of
+  the app.
 
 ### Visual
 
