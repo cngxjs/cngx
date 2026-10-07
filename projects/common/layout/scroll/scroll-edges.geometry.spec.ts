@@ -128,6 +128,34 @@ describe('CngxScrollEdges geometry', () => {
     expect(await scrollTo(0, 0)).toEqual(['data-scroll-block-end', 'data-scroll-inline-end']);
   });
 
+  it('clears every edge when the content shrinks to fit', async () => {
+    const { box, edges, scrollTo } = await mount('ltr');
+    expect(await scrollTo(200, 150)).toEqual([...EDGE_ATTRIBUTES]);
+
+    const content = box.querySelector('.edges-content') as HTMLElement;
+    content.style.inlineSize = '200px';
+    content.style.blockSize = '100px';
+
+    expect(await edges()).toEqual([]);
+  });
+
+  it('observes a child appended after mount and reacts to its growth', async () => {
+    const { box, edges } = await mount('ltr');
+    const content = box.querySelector('.edges-content') as HTMLElement;
+    content.style.inlineSize = '200px';
+    content.style.blockSize = '100px';
+    expect(await edges()).toEqual([]);
+
+    const late = document.createElement('div');
+    late.style.blockSize = '0px';
+    box.appendChild(late);
+    expect(await edges()).toEqual([]);
+
+    // Only the late child resizes: the box and the first child keep their size.
+    late.style.blockSize = '300px';
+    expect(await edges()).toEqual(['data-scroll-block-end']);
+  });
+
   it('reports no edge for a 1px overflow', async () => {
     const { box, edges } = await mount('ltr', true);
     expect(box.scrollHeight - box.clientHeight).toBe(1);

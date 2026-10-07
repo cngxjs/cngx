@@ -190,6 +190,32 @@ describe('createScrollEdges', () => {
     expect(state.canScrollBlockStart()).toBe(true);
   });
 
+  it('applies the 1px tolerance on the inline axis', () => {
+    const fake = makeHost();
+    const element = makeScrollport({ scrollWidth: 101, clientWidth: 100 });
+    const state = createScrollEdges(element, makeDestroyRef().destroyRef, fake.host);
+    fake.flushFrames();
+    expect(state.canScrollInlineEnd()).toBe(false);
+
+    element.scrollWidth = 102;
+    element.dispatchEvent(new Event('scroll'));
+    fake.flushFrames();
+    expect(state.canScrollInlineEnd()).toBe(true);
+  });
+
+  it('applies the 1px tolerance to a negative RTL scrollLeft', () => {
+    const fake = makeHost();
+    const element = makeScrollport({ scrollWidth: 400, clientWidth: 100, scrollLeft: -1 });
+    const state = createScrollEdges(element, makeDestroyRef().destroyRef, fake.host);
+    fake.flushFrames();
+    expect(state.canScrollInlineStart()).toBe(false);
+
+    element.scrollLeft = -2;
+    element.dispatchEvent(new Event('scroll'));
+    fake.flushFrames();
+    expect(state.canScrollInlineStart()).toBe(true);
+  });
+
   it('maps a negative RTL scrollLeft onto the same start / end as LTR', () => {
     const positions = [
       { ltr: 0, rtl: 0, inlineStart: false, inlineEnd: true },
