@@ -1,6 +1,6 @@
 import { computed, type Signal } from '@angular/core';
 
-import { createDefaultsFill, createOverrideMerge } from '@cngx/core/utils';
+import { createFilledOverrideMerge } from '@cngx/core/utils';
 import { recordEqual } from '@cngx/utils';
 
 import {
@@ -35,17 +35,6 @@ export interface CngxResolvedSelectLabels {
   readonly ariaLabels: Signal<CngxResolvedSelectAriaLabels>;
   readonly fallbackLabels: Signal<Required<CngxSelectFallbackLabels>>;
   readonly announcer: Signal<CngxResolvedSelectAnnouncer>;
-}
-
-/**
- * The config copy merged over the site defaults; a key the config leaves
- * `null` or `undefined` reads the default (`createDefaultsFill`).
- */
-function fillOver<T extends object>(
-  defaults: Signal<T>,
-  source: Partial<T> | Signal<Partial<T>> | undefined,
-): Signal<T> {
-  return createDefaultsFill(createOverrideMerge<T>(defaults, source), defaults);
 }
 
 interface SiteDefaults {
@@ -88,8 +77,8 @@ function siteDefaults(copy: Signal<CngxSelectCopy>): SiteDefaults {
 export function resolveSelectLabels(user: CngxSelectConfig): CngxResolvedSelectLabels {
   const site = siteDefaults(injectSelectCopy());
   return {
-    ariaLabels: fillOver(site.ariaLabels, user.ariaLabels),
-    fallbackLabels: fillOver(site.fallbackLabels, user.fallbackLabels),
-    announcer: fillOver(site.announcer, user.announcer),
+    ariaLabels: createFilledOverrideMerge(site.ariaLabels, user.ariaLabels),
+    fallbackLabels: createFilledOverrideMerge(site.fallbackLabels, user.fallbackLabels),
+    announcer: createFilledOverrideMerge(site.announcer, user.announcer),
   };
 }

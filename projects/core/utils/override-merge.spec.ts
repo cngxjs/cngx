@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { coerceSignal } from './coerce.util';
 import {
   createDefaultsFill,
+  createFilledOverrideMerge,
   createNestedOverrideMerge,
   createOverrideMerge,
   type CngxNestedOverrides,
@@ -304,5 +305,35 @@ describe('createDefaultsFill', () => {
         createDefaultsFill<Bundle, 'status'>(merged, BUNDLE, 'status'),
       );
     });
+  });
+});
+
+describe('createFilledOverrideMerge', () => {
+  interface Copy {
+    readonly bar: string;
+    readonly menu: string;
+  }
+  const COPY: Copy = { bar: 'Breadcrumb', menu: 'Menu' };
+
+  it('merges the override and fills an unset key from the defaults', () => {
+    const filled = createFilledOverrideMerge<Copy>(COPY, { bar: undefined, menu: 'Liste' });
+    expect(filled()).toEqual({ bar: 'Breadcrumb', menu: 'Liste' });
+  });
+
+  it('follows Signal defaults and keeps the reference on an equal recompute', () => {
+    const defaults = signal<Copy>(COPY);
+    const filled = createFilledOverrideMerge<Copy>(defaults, { menu: 'Liste' });
+    const first = filled();
+    defaults.set({ ...COPY });
+    expect(filled()).toBe(first);
+    defaults.set({ bar: 'Pfad', menu: 'Menue' });
+    expect(filled()).toEqual({ bar: 'Pfad', menu: 'Liste' });
+  });
+
+  it('returns the same signal for the same defaults and overrides', () => {
+    const overrides = { menu: 'Liste' };
+    expect(createFilledOverrideMerge<Copy>(COPY, overrides)).toBe(
+      createFilledOverrideMerge<Copy>(COPY, overrides),
+    );
   });
 });

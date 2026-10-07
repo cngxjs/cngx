@@ -55,7 +55,8 @@ import {
 //   R3         a raw dereference below a copy key or of a dedicated bundle
 //              (`cfg.ariaLabels.x`, `{ ...base.labels }`, `inject(I18N).x`),
 //              outside the argument of `coerceSignal` / `createOverrideMerge`
-//              / `createNestedOverrideMerge` and outside a registered helper.
+//              / `createNestedOverrideMerge` / `createFilledOverrideMerge` and
+//              outside a registered helper.
 //   R4         a live region reads copy tracked - a copy flip would re-speak it.
 //
 // Copy reads are found through the type checker, not through names: a value
@@ -69,7 +70,12 @@ import {
 const TRANSPARENT_ALIASES = new Set(['Partial', 'Readonly', 'Required']);
 
 /** Calls whose argument position may carry a copy key as a value. */
-const MERGE_HELPERS = new Set(['coerceSignal', 'createOverrideMerge', 'createNestedOverrideMerge']);
+const MERGE_HELPERS = new Set([
+  'coerceSignal',
+  'createOverrideMerge',
+  'createNestedOverrideMerge',
+  'createFilledOverrideMerge',
+]);
 
 /** `role` values that make an element a live region. */
 const LIVE_ROLES = new Set(['status', 'alert', 'log']);

@@ -1,7 +1,7 @@
 import { computed, inject, InjectionToken, type Signal } from '@angular/core';
 
 import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createDefaultsFill, createOverrideMerge } from '@cngx/core/utils';
+import { createOverrideMerge } from '@cngx/core/utils';
 
 import type {
   CngxPaginatorAnnouncements,
@@ -123,15 +123,4 @@ function siteDefaults(copy: Signal<CngxPaginatorCopy>): SiteDefaults {
  */
 export function injectPaginatorSiteCopy(): SiteDefaults {
   return siteDefaults(paginatorBundle.resolve(inject(PAGINATOR_SECTION_COPY)));
-}
-
-/**
- * @internal A config sub-tree over its site default; a key the config leaves
- * unset, `null` or `undefined` reads the default.
- */
-export function fillOver<T extends object>(
-  defaults: Signal<T>,
-  source: Partial<T> | Signal<Partial<T>> | undefined,
-): Signal<T> {
-  return createDefaultsFill(createOverrideMerge<T>(defaults, source), defaults);
 }
