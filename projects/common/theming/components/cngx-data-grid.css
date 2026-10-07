@@ -11,8 +11,8 @@
  * `inherits: true` keeps that host -> descendant cascade alive; `inherits: false`
  * would silently pin descendants to the initial value. Every token here inherits,
  * except the two measured band sizes (`--cngx-dga-head-block-size` /
- * `--cngx-dga-foot-block-size`) and the two private fade carriers, which only the
- * host itself reads.
+ * `--cngx-dga-foot-block-size`) and the private fade carriers, which only the host
+ * itself reads.
  *
  * Density: the pixel `initial-value` of each spacing token is only the un-set
  * fallback. The organism's default rule and each skin SET `--cngx-dga-row-py` /
@@ -342,5 +342,39 @@
     syntax: '<length>';
     inherits: false;
     initial-value: 0px;
+  }
+
+  /**
+   * Private transition carrier: the mask opacity at the inline-start edge, `1` (no
+   * fade) until that side hides columns. Host only, so a nested grid never inherits
+   * an outer grid's fade state.
+   * @group Grid
+   */
+  @property --_cngx-dga-fade-alpha-start {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 1;
+  }
+
+  /**
+   * Private transition carrier: the mask opacity at the inline-end edge (host only).
+   * @group Grid
+   */
+  @property --_cngx-dga-fade-alpha-end {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 1;
+  }
+
+  /**
+   * Private carrier: the physical direction of the inline fade gradient, `to right`
+   * unless the host itself resolves to RTL. Host only, so an LTR grid nested in an
+   * RTL one keeps its own direction.
+   * @group Grid
+   */
+  @property --_cngx-dga-fade-dir {
+    syntax: '*';
+    inherits: false;
+    initial-value: to right;
   }
 }

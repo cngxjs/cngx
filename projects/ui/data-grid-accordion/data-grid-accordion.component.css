@@ -77,13 +77,15 @@
     )
     var(--cngx-dga-scrollbar-track, transparent);
 
-  /* Inline edge fade carriers (registered `<length>`, host-only), eased so the fade
-     grows in instead of popping. The duration token is deliberately unregistered so its
-     `--cngx-duration-fast` fallback stays live; the global reduced-motion net collapses
-     it (motion-tokens.css), so no own `prefers-reduced-motion` block. */
+  /* Inline edge fade carriers (registered `<length>` / `<number>`, host-only), eased so
+     the fade grows in instead of popping. The duration token is deliberately unregistered
+     so its `--cngx-duration-fast` fallback stays live; the global reduced-motion net
+     collapses it (motion-tokens.css), so no own `prefers-reduced-motion` block. */
   transition:
     --_cngx-dga-fade-inline-start var(--cngx-dga-edge-duration, var(--cngx-duration-fast, 150ms)),
-    --_cngx-dga-fade-inline-end var(--cngx-dga-edge-duration, var(--cngx-duration-fast, 150ms));
+    --_cngx-dga-fade-inline-end var(--cngx-dga-edge-duration, var(--cngx-duration-fast, 150ms)),
+    --_cngx-dga-fade-alpha-start var(--cngx-dga-edge-duration, var(--cngx-duration-fast, 150ms)),
+    --_cngx-dga-fade-alpha-end var(--cngx-dga-edge-duration, var(--cngx-duration-fast, 150ms));
 }
 
 /* Inline scroll-edge affordance. The host composes `CngxScrollEdges`, which reflects
@@ -97,7 +99,10 @@
    Overlay scrollbars sit inside the padding box and fall under the fade, so the fade
    never reaches full transparency: it bottoms out at `--cngx-dga-edge-fade-min`. A side
    that hides nothing stays fully opaque to its edge. Present only while an inline
-   attribute is set, so a fitting grid carries no mask and no extra stacking context. */
+   attribute is set, so a fitting grid carries no mask and no extra stacking context.
+   The gradient is physical, so its direction rides one private carrier
+   (`--_cngx-dga-fade-dir`, registered host-only with `to right`) that the RTL rule flips;
+   the mask itself is declared once. */
 .cngx-data-grid-accordion[data-scroll-inline-start] {
   --_cngx-dga-fade-inline-start: var(--cngx-dga-edge-fade-size, 24px);
   --_cngx-dga-fade-alpha-start: var(--cngx-dga-edge-fade-min, 0.35);
@@ -111,7 +116,7 @@
 .cngx-data-grid-accordion:is([data-scroll-inline-start], [data-scroll-inline-end]) {
   mask-image:
     linear-gradient(
-      to right,
+      var(--_cngx-dga-fade-dir, to right),
       rgb(0 0 0 / var(--_cngx-dga-fade-alpha-start, 1)),
       rgb(0 0 0) var(--_cngx-dga-fade-inline-start, 0px),
       rgb(0 0 0) calc(100% - var(--_cngx-dga-fade-inline-end, 0px)),
@@ -124,18 +129,9 @@
   mask-composite: add, exclude;
 }
 
-/* Physical gradient, so RTL flips it: inline start is the right edge. */
-.cngx-data-grid-accordion:dir(rtl):is([data-scroll-inline-start], [data-scroll-inline-end]) {
-  mask-image:
-    linear-gradient(
-      to left,
-      rgb(0 0 0 / var(--_cngx-dga-fade-alpha-start, 1)),
-      rgb(0 0 0) var(--_cngx-dga-fade-inline-start, 0px),
-      rgb(0 0 0) calc(100% - var(--_cngx-dga-fade-inline-end, 0px)),
-      rgb(0 0 0 / var(--_cngx-dga-fade-alpha-end, 1))
-    ),
-    linear-gradient(rgb(0 0 0), rgb(0 0 0)),
-    linear-gradient(rgb(0 0 0), rgb(0 0 0));
+/* RTL: inline start is the right edge, so the fade runs right to left. */
+.cngx-data-grid-accordion:dir(rtl) {
+  --_cngx-dga-fade-dir: to left;
 }
 
 /* The host is itself a scroll container, keyboard-focusable in current engines. Its own
@@ -364,13 +360,10 @@
 /* Forced colors (WHCM): the UA forces the head / foot shadows to `none`, and the edge
    fade is dropped here because a mask lowers text contrast below the forced-colors
    guarantee. The affordance re-signals through the system-coloured scrollbar and the
-   1px head / foot rules, so nothing is re-drawn. The selector matches the specificity of
-   the RTL mask rule and comes later, so it wins in both directions. */
+   1px head / foot rules, so nothing is re-drawn. Same selector as the one mask rule, and
+   later in the file, so it wins in both directions. */
 @media (forced-colors: active) {
-  .cngx-data-grid-accordion:is([data-scroll-inline-start], [data-scroll-inline-end]):is(
-      :dir(ltr),
-      :dir(rtl)
-    ) {
+  .cngx-data-grid-accordion:is([data-scroll-inline-start], [data-scroll-inline-end]) {
     mask-image: none;
   }
 }

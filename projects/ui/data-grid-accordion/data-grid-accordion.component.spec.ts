@@ -622,11 +622,13 @@ describe('CngxDataGridAccordion - layout containment', () => {
 
     const css = dgaCss();
     expect(css).toMatch(
-      /\.cngx-data-grid-accordion:is\(\[data-scroll-inline-start\],\s*\[data-scroll-inline-end\]\)\s*\{[^}]*mask-image:[^}]*to right[^}]*mask-composite:\s*add,\s*exclude/,
+      /\.cngx-data-grid-accordion:is\(\[data-scroll-inline-start\],\s*\[data-scroll-inline-end\]\)\s*\{[^}]*mask-image:[^}]*var\(--_cngx-dga-fade-dir,\s*to right\)[^}]*mask-composite:\s*add,\s*exclude/,
     );
+    // RTL flips only the direction carrier; the mask is declared once.
     expect(css).toMatch(
-      /\.cngx-data-grid-accordion:dir\(rtl\):is\(\[data-scroll-inline-start\],\s*\[data-scroll-inline-end\]\)\s*\{[^}]*to left/,
+      /\.cngx-data-grid-accordion:dir\(rtl\)\s*\{\s*--_cngx-dga-fade-dir:\s*to left;?\s*\}/,
     );
+    expect(css.match(/(?<!-webkit-)mask-image:\s*linear-gradient/g)).toHaveLength(1);
     expect(css).toMatch(/mask-clip:\s*padding-box,\s*padding-box,\s*border-box/);
     // The fade bottoms out at the fade-min opacity, never at full transparency.
     expect(css).toMatch(/var\(--cngx-dga-edge-fade-min,\s*0\.35\)/);
