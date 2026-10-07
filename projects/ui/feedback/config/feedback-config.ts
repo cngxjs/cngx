@@ -1,4 +1,5 @@
 import {
+  EnvironmentInjector,
   type EnvironmentProviders,
   inject,
   InjectionToken,
@@ -359,16 +360,35 @@ function rawErrorText(error: unknown): string | undefined {
   return typeof error === 'string' ? error : undefined;
 }
 
+/** @internal Production default: no detail. */
+const noErrorDetail: CngxErrorDetailFn = () => undefined;
+
+/** @internal Environment injectors that already warned about the raw-text default. */
+const WARNED = new WeakSet<EnvironmentInjector>();
+
 /**
- * Default detail mapping: the raw error text in development builds, nothing
- * in production. A raw `err.message` is written for developers - an HTTP
- * status line, a stack frame, an English server string - and is neither
- * translated nor safe to show.
+ * Development default: the raw error text, with one warning per environment
+ * injector the first time it shows, because production builds show nothing
+ * there. A raw `err.message` is written for developers - an HTTP status line,
+ * a stack frame, an English server string - and is neither translated nor
+ * safe to show.
  *
  * @internal
  */
-const devOnlyErrorDetail: CngxErrorDetailFn = (error) =>
-  isDevMode() ? rawErrorText(error) : undefined;
+function rawErrorDetailWithWarning(injector: EnvironmentInjector): CngxErrorDetailFn {
+  return (error) => {
+    const detail = rawErrorText(error);
+    if (detail !== undefined && !WARNED.has(injector)) {
+      WARNED.add(injector);
+      console.warn(
+        '[cngx/feedback] Showing the raw error text as the error detail. Production builds ' +
+          'show no detail here: map errors to user-facing text with ' +
+          'provideFeedback(withErrorDetail(...)).',
+      );
+    }
+    return detail;
+  };
+}
 
 /**
  * Map a failure to the detail text `CngxAlertOn`, `CngxToastOn`,
@@ -378,8 +398,8 @@ const devOnlyErrorDetail: CngxErrorDetailFn = (error) =>
  * show the message alone.
  *
  * Without this feature, development builds show the raw `Error.message` (or
- * a thrown string) and production builds show no detail, so no untranslated
- * server text reaches a user.
+ * a thrown string) and warn once that production builds show no detail, so
+ * no untranslated server text reaches a user.
  *
  * ```ts
  * provideFeedback(
@@ -399,12 +419,20 @@ export function withErrorDetail(map: CngxErrorDetailFn): FeedbackFeature {
 
 /**
  * Inject the error-detail mapping set by {@link withErrorDetail}, or the
- * default (raw text in development, nothing in production). Call it in an
- * injection context, then call the returned function with the error.
+ * default: the raw text in development, with one warning per app the first
+ * time it shows, and nothing in production. Call it in an injection context,
+ * then call the returned function with the error.
  *
  * @category ui/feedback
  * @since 0.1.0
  */
 export function injectErrorDetail(): CngxErrorDetailFn {
-  return inject(CNGX_FEEDBACK_CONFIG, { optional: true })?.errorDetail ?? devOnlyErrorDetail;
+  const mapped = inject(CNGX_FEEDBACK_CONFIG, { optional: true })?.errorDetail;
+  if (mapped) {
+    return mapped;
+  }
+  if (!isDevMode()) {
+    return noErrorDetail;
+  }
+  return rawErrorDetailWithWarning(inject(EnvironmentInjector));
 }

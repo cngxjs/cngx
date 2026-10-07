@@ -56,8 +56,8 @@ single keys on top of it.
 
 The state bridges append an error detail only through a mapping you own. With
 `[toastErrorDetail]="true"` (and the alert and banner equivalents), development
-builds show the raw `Error.message`; production builds show the message alone
-until you set `withErrorDetail`:
+builds show the raw `Error.message` and warn once in the console; production
+builds show the message alone until you set `withErrorDetail`:
 
 ```ts
 provideFeedback(
