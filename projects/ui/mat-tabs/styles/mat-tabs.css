@@ -297,7 +297,7 @@
    */
   .mat-mdc-tab.cngx-mat-tab--has-errors::before,
   .mat-mdc-tab-link.cngx-mat-tab--has-errors::before {
-    content: '!';
+    content: '!' / '';
     position: absolute;
     top: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
     inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);

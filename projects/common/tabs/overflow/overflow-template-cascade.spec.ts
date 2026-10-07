@@ -8,6 +8,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import type { CngxTabsI18n } from '../i18n/tabs-i18n';
 import type { CngxTabHandle } from '../tab-group-host.token';
 import type { CngxTabsConfig } from '../tabs-config';
 import {
@@ -42,6 +43,10 @@ interface FakeHandle {
   readonly id: string;
   readonly disabled: () => boolean;
 }
+
+const TABS_I18N = signal({
+  unlabeledTab: (position: number) => `Tab ${position}`,
+} as unknown as CngxTabsI18n).asReadonly();
 
 function makeHandle(id: string, disabled = false): CngxTabHandle {
   return {
@@ -83,6 +88,8 @@ describe('createTabOverflowTemplateBindings', () => {
       hiddenCount: signal(tabs.length).asReadonly(),
       hiddenTabs: signal(tabs).asReadonly(),
       pickTab: overrides.pickTab ?? (() => {}),
+      tabs: signal<readonly CngxTabHandle[]>([]).asReadonly(),
+      i18n: TABS_I18N,
     });
   }
 
@@ -120,14 +127,14 @@ describe('createTabOverflowTemplateBindings', () => {
     const hiddenCount = signal(1);
     const hiddenTabs = signal<readonly CngxTabHandle[]>(tabs);
     const bindings = createTabOverflowTemplateBindings({
-      triggerSlot: signal<CngxTabOverflowTrigger | undefined>(
-        undefined,
-      ).asReadonly(),
+      triggerSlot: signal<CngxTabOverflowTrigger | undefined>(undefined).asReadonly(),
       itemSlot: signal<CngxTabOverflowItem | undefined>(undefined).asReadonly(),
       config: {},
       hiddenCount: hiddenCount.asReadonly(),
       hiddenTabs: hiddenTabs.asReadonly(),
       pickTab: () => {},
+      tabs: signal<readonly CngxTabHandle[]>([]).asReadonly(),
+      i18n: TABS_I18N,
     });
     const ctx1 = bindings.triggerContext();
     // Re-emit `hiddenTabs` with the same reference and re-read count.
@@ -226,14 +233,14 @@ describe('createTabOverflowTemplateBindings', () => {
     const hiddenCount = signal(2);
     const hiddenTabs = signal<readonly CngxTabHandle[]>(tabs);
     const bindings = createTabOverflowTemplateBindings({
-      triggerSlot: signal<CngxTabOverflowTrigger | undefined>(
-        undefined,
-      ).asReadonly(),
+      triggerSlot: signal<CngxTabOverflowTrigger | undefined>(undefined).asReadonly(),
       itemSlot: signal<CngxTabOverflowItem | undefined>(undefined).asReadonly(),
       config: {},
       hiddenCount: hiddenCount.asReadonly(),
       hiddenTabs: hiddenTabs.asReadonly(),
       pickTab: () => {},
+      tabs: signal<readonly CngxTabHandle[]>([]).asReadonly(),
+      i18n: TABS_I18N,
     });
     const items1 = bindings.adItems();
     // Re-emit hiddenTabs with a fresh array carrying the same handle
@@ -253,14 +260,14 @@ describe('createTabOverflowTemplateBindings', () => {
     } as unknown as CngxTabHandle;
     const hiddenTabs = signal<readonly CngxTabHandle[]>([labelled]);
     const bindings = createTabOverflowTemplateBindings({
-      triggerSlot: signal<CngxTabOverflowTrigger | undefined>(
-        undefined,
-      ).asReadonly(),
+      triggerSlot: signal<CngxTabOverflowTrigger | undefined>(undefined).asReadonly(),
       itemSlot: signal<CngxTabOverflowItem | undefined>(undefined).asReadonly(),
       config: {},
       hiddenCount: signal(1).asReadonly(),
       hiddenTabs: hiddenTabs.asReadonly(),
       pickTab: () => {},
+      tabs: signal<readonly CngxTabHandle[]>([]).asReadonly(),
+      i18n: TABS_I18N,
     });
     const items1 = bindings.adItems();
     expect(items1[0].label).toBe('A');
@@ -270,5 +277,27 @@ describe('createTabOverflowTemplateBindings', () => {
     expect(items2).not.toBe(items1);
     expect(items2[0].label).toBe('Renamed');
   });
-});
 
+  it('names an unlabelled hidden tab by its strip position, never by its id', () => {
+    const unlabelled = {
+      id: 'cngx-tab-7',
+      label: () => undefined,
+      disabled: () => false,
+      errorAggregator: () => null,
+    } as unknown as CngxTabHandle;
+    const strip = [makeHandle('A'), makeHandle('B'), unlabelled];
+    const bindings = createTabOverflowTemplateBindings({
+      triggerSlot: signal<CngxTabOverflowTrigger | undefined>(undefined).asReadonly(),
+      itemSlot: signal<CngxTabOverflowItem | undefined>(undefined).asReadonly(),
+      config: {},
+      hiddenCount: signal(1).asReadonly(),
+      hiddenTabs: signal<readonly CngxTabHandle[]>([unlabelled]).asReadonly(),
+      pickTab: () => {},
+      tabs: signal<readonly CngxTabHandle[]>(strip).asReadonly(),
+      i18n: TABS_I18N,
+    });
+    expect(bindings.itemLabel(unlabelled)).toBe('Tab 3');
+    expect(bindings.itemLabel(strip[0])).toBe('A');
+    expect(bindings.adItems()[0].label).toBe('Tab 3');
+  });
+});

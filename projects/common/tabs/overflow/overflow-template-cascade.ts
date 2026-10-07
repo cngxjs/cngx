@@ -10,6 +10,9 @@ import {
 import type { ActiveDescendantItem, CngxActiveDescendant } from '@cngx/common/a11y';
 import type { CngxPopover } from '@cngx/common/popover';
 
+import { arrayEqual } from '@cngx/utils';
+
+import type { CngxTabsI18n } from '../i18n/tabs-i18n';
 import type { CngxTabHandle } from '../tab-group-host.token';
 import type { CngxTabsConfig } from '../tabs-config';
 import type {
@@ -54,6 +57,10 @@ export interface CngxTabOverflowTemplateBindingsOptions {
   readonly hiddenTabs: Signal<readonly CngxTabHandle[]>;
   /** Commit-aware select callback - invoked from `itemContext.pick`. */
   readonly pickTab: (tab: CngxTabHandle) => void;
+  /** Every tab of the strip; an unlabelled tab is named by its position in it. */
+  readonly tabs: Signal<readonly CngxTabHandle[]>;
+  /** Resolved tabs copy (`unlabeledTab`). */
+  readonly i18n: Signal<CngxTabsI18n>;
 }
 
 /**
@@ -68,6 +75,11 @@ export interface CngxTabOverflowTemplateBindings {
   readonly itemTemplate: Signal<TemplateRef<CngxTabOverflowItemContext> | null>;
   readonly triggerContext: Signal<CngxTabOverflowTriggerContext>;
   readonly buildItemContext: (tab: CngxTabHandle, index: number) => CngxTabOverflowItemContext;
+  /**
+   * Default text of an overflow row and its typeahead label: the tab label,
+   * or `unlabeledTab(position)` for an unlabelled tab - never the tab id.
+   */
+  readonly itemLabel: (tab: CngxTabHandle) => string;
   /**
    * `ActiveDescendantItem[]` projection of `hiddenTabs()` for
    * `CngxActiveDescendant.items`. \
@@ -178,12 +190,22 @@ export function createTabOverflowTemplateBindings(
     itemContextCache.set(tab, { context, disabled, index });
     return context;
   };
+  // 1-based strip position per tab id, derived once per tab list.
+  const tabIds = computed(() => opts.tabs().map((tab) => tab.id), { equal: arrayEqual });
+  const positionById = computed(() => new Map(tabIds().map((id, index) => [id, index + 1])));
+  const itemLabel = (tab: CngxTabHandle): string => {
+    const label = tab.label() ?? '';
+    if (label !== '') {
+      return label;
+    }
+    return opts.i18n().unlabeledTab(positionById().get(tab.id) ?? 0);
+  };
   const adItems = computed<ActiveDescendantItem[]>(
     () =>
       opts.hiddenTabs().map((tab) => ({
         id: tabOverflowOptionId(tab),
         value: tab,
-        label: tab.label() ?? tab.id,
+        label: itemLabel(tab),
         disabled: tab.disabled(),
       })),
     { equal: adItemsEqual },
@@ -193,6 +215,7 @@ export function createTabOverflowTemplateBindings(
     itemTemplate,
     triggerContext,
     buildItemContext,
+    itemLabel,
     adItems,
   };
 }

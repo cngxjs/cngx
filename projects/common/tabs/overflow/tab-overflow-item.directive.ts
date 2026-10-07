@@ -4,7 +4,7 @@ import type { CngxTabHandle } from '../tab-group-host.token';
 
 /**
  * Context for the `*cngxTabOverflowItem` template. Replaces the
- * default `tab.label() ?? tab.id` text inside the More popover; the
+ * default text (the tab label, or `unlabeledTab(position)`) inside the More popover; the
  * surrounding `<li role="menuitem">` shell (`aria-disabled`, click
  * handler, `data-tab-id`) stays library-owned.
  *

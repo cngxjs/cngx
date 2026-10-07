@@ -43,6 +43,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CngxTabsConfig.ariaLabels` and `.fallbackLabels` are typed `L | Signal<L>`, and once `withTabsAriaLabels` / `withTabsFallbackLabels` ran they hold a `Signal`. Code that reads them off `injectTabsConfig()` wraps the key: `config.ariaLabels?.tabsRegion` becomes `coerceSignal(config.ariaLabels)()?.tabsRegion` (`coerceSignal` from `@cngx/core/utils`), read inside a `computed()` or template. Both features now also accept a `Signal`.
 - `injectTabsConfig().ariaLabels` and `.fallbackLabels` now always hold a `Signal`, also without `withTabsAriaLabels` / `withTabsFallbackLabels`: their defaults come from the tabs section of the language pack. `provideTabsConfig` and `provideTabsConfigAt` resolve their features when the token is first injected, not when the provider is created.
 - `CngxTabsI18n` has a new required key `unlabeledTab(position)` (English `'Tab {position}'`), the name of a tab without a label. A hand-built `Signal<CngxTabsI18n>` supplies it; `withTabsI18nLabels` overrides are unaffected.
+- `CngxTabOverflowTemplateBindingsOptions` (the options of `createTabOverflowTemplateBindings`) has two new required fields: `tabs`, every tab of the strip, and `i18n`, the tabs copy Signal. Pass `panelHost.tabs` and `injectTabsI18n()`. The bindings gain `itemLabel(tab)`, the default overflow row text.
 
 ### @cngx/common/card
 
@@ -270,6 +271,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/common/tabs
 
 - The close button of a tab without a label is named by its position through `unlabeledTab` (`Close "Tab 2"`), instead of `Close ""`.
+- A hidden tab without a label is named by its strip position in the overflow menu and its typeahead (`Tab 3`), instead of its tab id.
 
 ### @cngx/common/timeline
 
@@ -287,6 +289,10 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The errored mobile-dot and `cngx-dot-stepper` labels and the `[showCurrentLabel]` caption of `cngx-text-stepper` join their parts through the `stepWithDetail` message (English `'{step}: {detail}'`) instead of a hardcoded `': '`; the parts are bidi-isolated, so an exact comparison strips U+2068 / U+2069 first.
 - The status glyphs of the `path-chevron`, `chips` and `breadcrumb` skins (`✓`, `!`), the breadcrumb separator and the mobile and dot error glyphs carry CSS alt text (`/ ''`) and no longer reach the step's accessible name. The step header's screen-reader status text names the status instead: `Step 1 of 3: Account: Done`, `Step 2 of 3: Payment: Errored`, joined through `stepWithDetail` with the `statusLabels` words.
 - The `breadcrumb` separator mirrors under RTL: `‹` by default, or `--cngx-step-breadcrumb-separator-rtl` next to a custom `--cngx-step-breadcrumb-separator`.
+
+### @cngx/ui/mat-tabs
+
+- The has-errors flag glyph (`!`) carries CSS alt text and no longer reaches the tab's accessible name; the decoration's screen-reader text names the error.
 
 ### @cngx/ui/feedback
 

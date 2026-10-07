@@ -65,7 +65,7 @@
             *ngTemplateOutlet="itemTpl; context: templates.buildItemContext(tab, i)"
           />
         } @else {
-          {{ tab.label() ?? tab.id }}
+          {{ templates.itemLabel(tab) }}
         }
       </li>
     }

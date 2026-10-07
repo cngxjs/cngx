@@ -185,6 +185,42 @@ describe('CngxTabOverflow', () => {
     );
   });
 
+  it('names an unlabelled hidden tab by its strip position, never by its id', async () => {
+    @Component({
+      standalone: true,
+      imports: [CngxTabGroup, CngxTab, CngxTabOverflow],
+      template: `
+        <cngx-tab-group aria-label="Unlabelled host">
+          <div cngxTab label="A"></div>
+          <div cngxTab label="B"></div>
+          <div cngxTab></div>
+          <cngx-tab-overflow></cngx-tab-overflow>
+        </cngx-tab-group>
+      `,
+    })
+    class UnlabelledHost {}
+    const { instances } = installMockIntersectionObserver();
+    const fixture = TestBed.createComponent(UnlabelledHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'cngx-tab-group button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    instances[0].fire([
+      { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
+    ]);
+    await flushStabilize();
+    fixture.detectChanges();
+
+    const item = fixture.nativeElement.querySelector('.cngx-tab-overflow__item') as HTMLElement;
+    expect(item.textContent?.trim()).toBe('Tab 3');
+    expect(item.textContent).not.toContain(item.getAttribute('data-tab-id') ?? '');
+  });
+
   it('opens the popover via mouse click with no pre-selected highlight (mouse-only users see a clean list)', async () => {
     const { instances } = installMockIntersectionObserver();
     stubPopoverApi();
