@@ -185,6 +185,8 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The copy inputs `CngxStatCard.busyLabel`, `.errorText`, `.errorDescription`, `.staleText` and `.emptyText` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time config default. Template bindings are unchanged. Code that reads the input programmatically gets `undefined` when nothing is bound.
 - Because the whole tile can be a live region (`[live]`), an unbound copy input reads its cascade string untracked: the tile keeps its text on a language switch and shows the new language with its next view or busy change, also while `[live]` is `'off'`.
 
+- `CNGX_STAT_CARD_CONFIG`'s default carries no copy any more: `ariaLabels` is unset by default and holds only the overrides `withStatCardAriaLabels` set. The defaults are the `statCard` section of the language pack, exported in English as `CNGX_STAT_CARD_LANGUAGE_EN`. Code that read `injectStatCardConfig().ariaLabels` for a default reads `injectStatCardAriaLabels()()`.
+
 ### @cngx/ui/toc
 
 - `CngxTocConfig.ariaLabels` is typed `CngxTocAriaLabels | Signal<CngxTocAriaLabels>`, and once `withTocAriaLabels` ran it holds a `Signal`. Code that reads it off `injectTocConfig()` or `CNGX_TOC_CONFIG` reads the resolved bundle through the new accessor instead: `injectTocConfig().ariaLabels?.nav` becomes `injectTocAriaLabels()().nav`, called inside a `computed()`, a template or a handler. `withTocAriaLabels` now also accepts a `Signal<CngxTocAriaLabels>`; plain objects still merge key by key, and `provideTocConfigAt` still merges over the parent scope.
@@ -342,6 +344,10 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/ui/chart-panel
 
 - The busy label comes from the `chartPanel` section of the language pack; `withChartPanelAriaLabels` still wins, also on top of a pack.
+
+### @cngx/ui/stat-card
+
+- The state copy comes from the `statCard` section of the language pack; `withStatCardAriaLabels` and the copy inputs still win, also on top of a pack.
 
 ### @cngx/ui/paginator
 

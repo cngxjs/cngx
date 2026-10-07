@@ -17,6 +17,10 @@ export {
 } from './config/provide-stat-card-config';
 export { withStatCardAriaLabels, withStatCardLoadingTreatment } from './config/features';
 export { injectStatCardAriaLabels, injectStatCardConfig } from './config/inject-stat-card-config';
+export {
+  CNGX_STAT_CARD_LANGUAGE_EN,
+  type CngxStatCardLanguageSection,
+} from './i18n/stat-card-language-section';
 
 // The four coordinated stat slots are the existing atoms from @cngx/common/data,
 // re-exported for a local import surface. A slot projected into the card injects

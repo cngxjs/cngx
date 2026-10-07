@@ -3,8 +3,9 @@ import type { CngxLoadingTreatment } from '@cngx/core/utils';
 
 /**
  * String fallbacks for the stat-card's non-content states. Every key is
- * optional; an unset key keeps the English default (`errorDescription` has
- * none and is omitted when unset).
+ * optional; an unset key reads the `statCard` section of the language pack
+ * (English without one; `errorDescription` has no default and is omitted when
+ * unset).
  *
  * @category ui/stat-card
  * @since 0.1.0
@@ -29,7 +30,9 @@ export interface CngxStatCardAriaLabels {
  * @since 0.1.0
  */
 export type CngxStatCardResolvedAriaLabels = CngxStatCardAriaLabels &
-  Required<Pick<CngxStatCardAriaLabels, 'busy' | 'errorFallback' | 'staleFallback' | 'emptyFallback'>>;
+  Required<
+    Pick<CngxStatCardAriaLabels, 'busy' | 'errorFallback' | 'staleFallback' | 'emptyFallback'>
+  >;
 
 /**
  * App-wide cascade for the stat-card's ARIA/message strings and its default
@@ -39,7 +42,8 @@ export type CngxStatCardResolvedAriaLabels = CngxStatCardAriaLabels &
  *   1. Per-instance Input binding (e.g. `[errorText]`, `[loadingTreatment]`).
  *   2. `provideStatCardConfigAt(...)` in a parent component's `viewProviders`.
  *   3. `provideStatCardConfig(...)` at the application root.
- *   4. Library defaults (English; merged in via `CNGX_STAT_CARD_DEFAULTS`).
+ *   4. Library defaults (`CNGX_STAT_CARD_DEFAULTS`; the strings come from the
+ *      `statCard` section of the language pack).
  *
  * Every key is optional - partial overrides deep-merge with the library
  * defaults, so consumers declare only the keys they want to override.

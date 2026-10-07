@@ -1,25 +1,11 @@
 import { InjectionToken } from '@angular/core';
 
-import type { CngxStatCardConfig, CngxStatCardResolvedAriaLabels } from './stat-card.config';
+import type { CngxStatCardConfig } from './stat-card.config';
 
 /**
- * English strings of the stat-card, the base every `ariaLabels` override
- * merges onto.
- *
- * @internal
- */
-export const CNGX_STAT_CARD_ARIA_LABELS_DEFAULTS: CngxStatCardResolvedAriaLabels = {
-  busy: 'Loading',
-  errorFallback: 'Could not load',
-  staleFallback: 'Showing last known value',
-  emptyFallback: 'No data',
-};
-
-/**
- * Library defaults for the stat-card configuration cascade. English by
- * default; locale overrides ride the `withStatCardAriaLabels` feature. The
- * values are byte-identical to the per-instance input defaults the component
- * shipped before the cascade, so an un-configured consumer sees no change.
+ * Library defaults for the stat-card configuration cascade. Carries no copy:
+ * the `ariaLabels` defaults are the `statCard` section of the language pack;
+ * single keys ride the `withStatCardAriaLabels` feature.
  *
  * Exported for intra-lib consumers (`provideStatCardConfig` deep-merges with
  * this base) but **NOT** re-exported from `public-api.ts` - downstream
@@ -30,7 +16,6 @@ export const CNGX_STAT_CARD_ARIA_LABELS_DEFAULTS: CngxStatCardResolvedAriaLabels
  * @internal
  */
 export const CNGX_STAT_CARD_DEFAULTS: CngxStatCardConfig = {
-  ariaLabels: CNGX_STAT_CARD_ARIA_LABELS_DEFAULTS,
   loadingTreatment: 'auto',
 };
 
