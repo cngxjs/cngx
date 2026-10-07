@@ -91,6 +91,8 @@ export interface CngxDataGridAccordionLabels {
   readonly countSingular: string;
   /** Default of `[cngxDgaCountPlural]`. */
   readonly countPlural: string;
+  /** Text of the `CngxDgaCount` live region when a noun is bound: the count and the noun. */
+  readonly countWithNoun: (count: number, noun: string) => string;
   /** Default of `[cngxDgaSortStatusNotSorted]`, the described sort status while unsorted. */
   readonly sortNone: string;
   /** Default of `[cngxDgaSortStatusAscending]`. */
@@ -103,6 +105,8 @@ export interface CngxDataGridAccordionLabels {
   readonly sortAnnouncedDescending: string;
   /** Default of `[cngxDgaSortAnnounceCleared]`; `{label}` is replaced by the column name. */
   readonly sortAnnouncedCleared: string;
+  /** Column name of a sort announcement when the header has no `[cngxDgaSortLabel]` and no text. */
+  readonly unlabeledColumn: string;
   /** Default of the `CngxDgaFilterField` visible `[label]`. */
   readonly filter: string;
   /** Default of `[cngxDgaFilterLabel]`, the filter box accessible name. */

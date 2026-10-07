@@ -124,6 +124,8 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 - The copy inputs `CngxDgaCount.singular` / `.plural`, `CngxDgaFilter.ariaLabel`, `CngxDgaFilterField.label`, `CngxDataGridRow.errorMessage` and `CngxDgaSortHeader.notSortedLabel` / `.ascendingLabel` / `.descendingLabel` / `.ascendingAnnouncement` / `.descendingAnnouncement` / `.clearedAnnouncement` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `withDataGridAccordionLabels` default. Template bindings and attribute values are unchanged; the rendered text follows a language switch while the input is unbound. Code that reads the input programmatically (`sortHeader.notSortedLabel()`) gets `undefined` when nothing is bound; read the rendered text instead.
 - `CngxDgaCount`: a bound `cngxDgaCountSingular` or `cngxDgaCountPlural` now always composes `<count> <noun>`, also when it happens to equal the `countSingular` / `countPlural` default, and an unbound noun falls back to its label. Leave both unbound to use a custom `count` formatter.
+- `CngxDataGridAccordionLabels` has two new keys: `countWithNoun(count, noun)`, the order of a count and a bound noun (English `'{count} {noun}'`), and `unlabeledColumn`, the column name of a sort announcement for a header without text (English `'this column'`). A full bundle typed as `CngxDataGridAccordionLabels` adds them; `withDataGridAccordionLabels` partials are unaffected.
+- The English data-grid-accordion copy comes from the new `CNGX_DATA_GRID_ACCORDION_LANGUAGE_EN` export, the `dataGridAccordion` section of the language pack. `withDataGridAccordionLabels` overrides single keys on top of it.
 
 ### @cngx/ui/sidenav
 
@@ -293,6 +295,12 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/ui/mat-tabs
 
 - The has-errors flag glyph (`!`) carries CSS alt text and no longer reaches the tab's accessible name; the decoration's screen-reader text names the error.
+
+### @cngx/ui/data-grid-accordion
+
+- `CngxDgaCount` speaks its count through the `count` plural message with the number formatted in the locale (`1,200 results`), and a bound noun through `countWithNoun`, the noun bidi-isolated.
+- A sort announcement names the column by `[cngxDgaSortLabel]`, else by the header's own text, else by `unlabeledColumn` - never by the field key (`Sorted by Name ascending`, before: `Sorted by name ascending`). The column name is bidi-isolated, so an exact comparison strips U+2068 / U+2069 first. Announcement strings bound per instance keep their `{label}` placeholder.
+- The sort arrows (`▲`, `▼`) and the `spreadsheet` skin's row numbers and column letters carry CSS alt text and no longer reach a header's accessible name.
 
 ### @cngx/ui/feedback
 

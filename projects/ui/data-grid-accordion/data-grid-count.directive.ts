@@ -1,9 +1,9 @@
 import { Directive, effect, ElementRef, inject, input, Renderer2, untracked } from '@angular/core';
 
-import {
-  CNGX_DATA_GRID_ACCORDION_LABELS_DEFAULTS,
-  injectDataGridAccordionLabels,
-} from './config/data-grid-accordion.config.defaults';
+import { coerceSignal } from '@cngx/core/utils';
+
+import { CNGX_DATA_GRID_ACCORDION_CONFIG } from './config/data-grid-accordion.config.defaults';
+import { injectDataGridAccordionLabels } from './i18n/data-grid-accordion-i18n';
 
 /**
  * A polite `aria-live` region for the visible-row count of a
@@ -26,11 +26,12 @@ import {
  * grid cell. It is not required - the footer already places a bare first child in
  * that column - but it is the consistent form the rest of the grid's cells use.
  *
- * The text is English by default (`3 results`). Localise it app-wide through
- * `withDataGridAccordionLabels`: a `count` formatter owns word order and plural rules,
- * the `countSingular` / `countPlural` nouns alone keep the `<count> <noun>` shape.
+ * The text comes from the `dataGridAccordion` section of the language pack
+ * (`3 results`, a plural message with a locale-formatted count). Override it app-wide
+ * through `withDataGridAccordionLabels`: a `count` formatter owns word order and plural
+ * rules, the `countSingular` / `countPlural` nouns alone compose through `countWithNoun`.
  * Binding `cngxDgaCountSingular` / `cngxDgaCountPlural` per instance always composes
- * `<count> <noun>`.
+ * through `countWithNoun`.
  *
  * @category ui/data-grid-accordion
  * @wcag AA
@@ -55,6 +56,7 @@ export class CngxDgaCount {
   /** The visible-row count the consumer derived. */
   readonly count = input.required<number>({ alias: 'cngxDgaCount' });
   private readonly labels = injectDataGridAccordionLabels();
+  private readonly overrides = coerceSignal(inject(CNGX_DATA_GRID_ACCORDION_CONFIG).labels);
 
   /**
    * Singular noun for a count of 1. Unbound, the `countSingular` label applies;
@@ -80,17 +82,24 @@ export class CngxDgaCount {
       const plural = this.plural();
       const text = untracked(() => {
         const labels = this.labels();
-        const unbound = singular === undefined && plural === undefined;
-        // A consumer `count` formatter owns word order and plurals; otherwise the
-        // resolved noun labels compose, so a nouns-only override still reaches AT.
-        if (unbound && labels.count !== CNGX_DATA_GRID_ACCORDION_LABELS_DEFAULTS.count) {
+        if (singular === undefined && plural === undefined && !this.nounsOnlyOverride()) {
           return labels.count(count);
         }
         const noun =
           count === 1 ? (singular ?? labels.countSingular) : (plural ?? labels.countPlural);
-        return `${count} ${noun}`;
+        return labels.countWithNoun(count, noun);
       });
       this.renderer.setProperty(this.element, 'textContent', text);
     });
+  }
+
+  /**
+   * `true` when the config overrides a noun but not the `count` formatter: the
+   * nouns then compose, so a nouns-only override still reaches assistive tech.
+   */
+  private nounsOnlyOverride(): boolean {
+    const overrides = this.overrides() ?? {};
+    const nouns = overrides.countSingular !== undefined || overrides.countPlural !== undefined;
+    return nouns && overrides.count === undefined;
   }
 }

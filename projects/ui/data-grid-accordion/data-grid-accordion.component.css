@@ -207,7 +207,8 @@
 }
 
 /* Direction arrow: only on the active column, tinted with the theme primary. A `::after`
-   glyph (pseudo content, so it is never announced and never widens a `ch`-based track).
+   glyph with empty alt text, so it never enters the column's accessible name (the sort
+   status is its description), and pseudo content never widens a `ch`-based track.
    The colour chains through `--cngx-dga-sort-indicator-color` so the Material bridge can
    map it to `--mat-sys-primary`. */
 .cngx-dga-sort-header--active::after {
@@ -217,11 +218,11 @@
 }
 
 .cngx-dga-sort-header--asc::after {
-  content: '\25B2'; /* ▲ */
+  content: '\25B2' / ''; /* ▲ */
 }
 
 .cngx-dga-sort-header--desc::after {
-  content: '\25BC'; /* ▼ */
+  content: '\25BC' / ''; /* ▼ */
 }
 
 /* Visually-hidden description node the sortable header's `aria-describedby` names.

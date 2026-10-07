@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CngxSort } from '@cngx/common/data';
+import { stripBidiIsolates } from '@cngx/testing';
 
 import type { CngxDataGridAccordionLabels } from './config/data-grid-accordion.config';
 import { withDataGridAccordionLabels } from './config/features';
@@ -149,6 +150,27 @@ describe('CngxDgaSortHeader', () => {
     expect(spy.mock.calls[1][0]).toContain('descending');
   });
 
+  it('names the column by its header text, never by its field key', () => {
+    const spy = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce').mockImplementation(() => {});
+    const { fixture, nameEl } = setup();
+    nameEl.click();
+    fixture.detectChanges();
+    expect(stripBidiIsolates(spy.mock.lastCall?.[0])).toBe('Sorted by Name ascending');
+  });
+
+  it('falls back to the unlabeledColumn label for a header without text', () => {
+    const spy = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce').mockImplementation(() => {});
+    const fixture = TestBed.createComponent(EmptyHeaderHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxDgaSortHeader))
+      .nativeElement as HTMLElement;
+    el.click();
+    fixture.detectChanges();
+    const spoken = stripBidiIsolates(spy.mock.lastCall?.[0]);
+    expect(spoken).toBe('Sorted by this column ascending');
+    expect(spoken).not.toContain('amount');
+  });
+
   it('does not announce on an external sort change', () => {
     const spy = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce').mockImplementation(() => {});
     const { fixture, sort } = setup();
@@ -166,7 +188,7 @@ describe('CngxDgaSortHeader', () => {
 
     nameEl.click();
     fixture.detectChanges();
-    expect(spy).toHaveBeenCalledWith('Betrag aufsteigend sortiert');
+    expect(stripBidiIsolates(spy.mock.lastCall?.[0])).toBe('Betrag aufsteigend sortiert');
   });
 
   it('defaults the status and announcement strings from the labels bundle', () => {
@@ -190,7 +212,7 @@ describe('CngxDgaSortHeader', () => {
 
     nameEl.click();
     fixture.detectChanges();
-    expect(spy).toHaveBeenLastCalledWith('name aufsteigend sortiert');
+    expect(stripBidiIsolates(spy.mock.lastCall?.[0])).toBe('Name aufsteigend sortiert');
 
     nameEl.click();
     fixture.detectChanges();
@@ -216,7 +238,7 @@ describe('CngxDgaSortHeader', () => {
 
     nameEl.click();
     fixture.detectChanges();
-    expect(spy).toHaveBeenLastCalledWith('name aufsteigend');
+    expect(stripBidiIsolates(spy.mock.lastCall?.[0])).toBe('Name aufsteigend');
   });
 });
 
@@ -238,3 +260,13 @@ describe('CngxDgaSortHeader', () => {
   imports: [CngxDataGridAccordion, CngxDataGridHeader, CngxDgCell, CngxDgaSortHeader],
 })
 class LabelHost {}
+
+@Component({
+  template: `<cngx-data-grid-accordion>
+    <cngx-dga-header>
+      <span cngxDgaCell cngxDgaSortHeader="amount"></span>
+    </cngx-dga-header>
+  </cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion, CngxDataGridHeader, CngxDgCell, CngxDgaSortHeader],
+})
+class EmptyHeaderHost {}

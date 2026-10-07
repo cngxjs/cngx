@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { computed, DestroyRef, Directive, effect, ElementRef, inject, input } from '@angular/core';
 
-import { injectDataGridAccordionLabels } from './config/data-grid-accordion.config.defaults';
+import { injectDataGridAccordionLabels } from './i18n/data-grid-accordion-i18n';
 import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
 
 /**

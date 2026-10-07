@@ -270,7 +270,7 @@
   .cngx-dga-header::before,
   .cngx-dga-row__cells::before,
   .cngx-dga-footer::before {
-    content: counter(cngx-dga-row);
+    content: counter(cngx-dga-row) / '';
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -388,7 +388,7 @@
   }
 
   .cngx-dga-header .cngx-dga-cell::before {
-    content: counter(cngx-dga-col, upper-alpha);
+    content: counter(cngx-dga-col, upper-alpha) / '';
   }
 
 

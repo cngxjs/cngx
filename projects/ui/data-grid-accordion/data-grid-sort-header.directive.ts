@@ -1,18 +1,11 @@
-import {
-  computed,
-  Directive,
-  effect,
-  ElementRef,
-  inject,
-  input,
-  Renderer2,
-} from '@angular/core';
+import { computed, Directive, effect, ElementRef, inject, input, Renderer2 } from '@angular/core';
 
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { createSortHeaderState } from '@cngx/common/data';
-import { nextUid } from '@cngx/core/utils';
+import { formatMessage } from '@cngx/core/i18n';
+import { injectLocale, nextUid } from '@cngx/core/utils';
 
-import { injectDataGridAccordionLabels } from './config/data-grid-accordion.config.defaults';
+import { injectDataGridAccordionLabels } from './i18n/data-grid-accordion-i18n';
 import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
 
 /**
@@ -85,6 +78,7 @@ export class CngxDgaSortHeader {
   readonly field = input.required<string>({ alias: 'cngxDgaSortHeader' });
 
   private readonly labels = injectDataGridAccordionLabels();
+  private readonly locale = injectLocale();
 
   /** SR status while unsorted. Unbound, the `sortNone` label applies. */
   readonly notSortedLabel = input<string | undefined>(undefined, {
@@ -101,7 +95,8 @@ export class CngxDgaSortHeader {
 
   /**
    * Human column name spoken in the live sort announcement (`{label}` placeholder
-   * of the announcement templates). Defaults to the field key.
+   * of the announcement templates). Defaults to the header's own text, then to the
+   * `unlabeledColumn` label - never to the field key.
    */
   readonly label = input<string | undefined>(undefined, { alias: 'cngxDgaSortLabel' });
   /**
@@ -194,14 +189,31 @@ export class CngxDgaSortHeader {
   }
 
   private announcementText(): string {
-    const label = this.label() ?? this.field();
     const labels = this.labels();
-    const template = this.isAsc()
-      ? (this.ascendingAnnouncement() ?? labels.sortAnnouncedAscending)
-      : this.isDesc()
-        ? (this.descendingAnnouncement() ?? labels.sortAnnouncedDescending)
-        : (this.clearedAnnouncement() ?? labels.sortAnnouncedCleared);
-    return template.replace('{label}', label);
+    const label = this.label() ?? (this.headerText() || labels.unlabeledColumn);
+    return formatMessage(this.announcementTemplate(), { label }, this.locale());
+  }
+
+  private announcementTemplate(): string {
+    const labels = this.labels();
+    if (this.isAsc()) {
+      return this.ascendingAnnouncement() ?? labels.sortAnnouncedAscending;
+    }
+    if (this.isDesc()) {
+      return this.descendingAnnouncement() ?? labels.sortAnnouncedDescending;
+    }
+    return this.clearedAnnouncement() ?? labels.sortAnnouncedCleared;
+  }
+
+  /** The header's visible text, without the hidden sort status it carries. */
+  private headerText(): string {
+    let text = '';
+    this.host.childNodes.forEach((node) => {
+      if (node !== this.statusElement) {
+        text += node.textContent ?? '';
+      }
+    });
+    return text.replace(/\s+/g, ' ').trim();
   }
 
   protected handleActivateKey(event: Event): void {
