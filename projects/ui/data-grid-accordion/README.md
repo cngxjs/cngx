@@ -57,6 +57,16 @@ Above `--cngx-dga-min-width` the grid fills 100%; below it the host scrolls side
 (`overflow-x: auto`) with every column intact. No column is ever dropped - horizontal
 scroll over silent information loss.
 
+The host composes `CngxScrollEdges`, so it carries `data-scroll-inline-start` /
+`data-scroll-inline-end` only while columns are really hidden toward that side, and
+fades that edge with a mask. The fade width is `--cngx-dga-edge-fade-size` (24px) and it
+never drops below `--cngx-dga-edge-fade-min` opacity (0.35), so edge content and overlay
+scrollbars stay visible; the border ring (skin frame, classic scrollbars) is left
+unmasked. The gradient flips under `dir="rtl"`. A focused cell scrolled in sideways
+lands clear of the fade (`scroll-padding-inline` = fade width plus
+`--cngx-dga-focus-clearance`), and while the grid host itself holds keyboard focus the
+mask yields so its focus ring stays visible.
+
 ## Bounded height
 
 Bind `[maxBlockSize]` to cap the grid (a number is `px`, a string is any CSS length):
@@ -67,6 +77,20 @@ set directly. This is the only way to pin the head - `[cngxStickyHeader]` from
 `@cngx/common/layout` is the wrong tool here, because the group is its own scrollport
 and a content-height grid has nothing to stick to. Leave `[maxBlockSize]` unbound and
 the grid stays content-height and unchanged.
+
+In bounded mode the pinned bands communicate hidden rows: the head casts a shadow only
+while `data-scroll-block-start` is set (rows scrolled away above), the footer only while
+`data-scroll-block-end` is set (rows remaining below). Tune them with
+`--cngx-dga-head-shadow` / `--cngx-dga-foot-shadow`. Keyboard focus never lands under a
+band: the host pads its scrollport (`scroll-padding-block`) by the measured head and
+foot size plus `--cngx-dga-focus-clearance` (4px, the widest ring plus its offset);
+`--cngx-dga-head-scroll-pad` / `--cngx-dga-foot-scroll-pad` override the measured
+values.
+
+Motion and forced colors: the shadow and fade ease over `--cngx-dga-edge-duration`
+(default `--cngx-duration-fast`), which the global reduced-motion net collapses to an
+instant change. Under forced colors the UA drops the shadows and the fade is removed;
+the system-coloured scrollbar and the 1px head / foot rules carry the cue.
 
 ## Skins
 

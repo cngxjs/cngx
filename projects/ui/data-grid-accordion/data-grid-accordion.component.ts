@@ -122,6 +122,8 @@ import type { CngxDgCellTrack } from './data-grid-cell.directive';
  *
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sortable-ledger</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/sticky-head</example-url>
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/scroll-edges-bounded</example-url>
+ * <example-url>http://localhost:4200/#/ui/data-grid-accordion/scroll-edges-narrow</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/bound-sort-filter</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/master-detail</example-url>
  * <example-url>http://localhost:4200/#/ui/data-grid-accordion/spreadsheet</example-url>
