@@ -1,5 +1,5 @@
 import { Component, LOCALE_ID, signal, viewChild } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CngxFormField } from '@cngx/forms/field';
 import { createMockField } from '@cngx/forms/field/testing';
@@ -56,18 +56,99 @@ describe('CngxPhoneInput', () => {
     await loadAllMaskPresets();
   });
 
-  it('pre-fills the dial code on select and re-seeds it on country change', async () => {
-    const { fixture, phone } = setup(); // initial country US (+1)
-    await Promise.resolve();
-    fixture.detectChanges();
-    expect(phone.value()).toBe('1');
+  describe('dial code', () => {
+    async function settle(fixture: ComponentFixture<Host>): Promise<void> {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      await Promise.resolve();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    }
 
-    phone.country.set(germany); // +49
-    fixture.detectChanges();
-    TestBed.flushEffects();
-    await Promise.resolve();
-    fixture.detectChanges();
-    expect(phone.value()).toBe('49');
+    function numberInput(fixture: ComponentFixture<Host>): HTMLInputElement {
+      return fixture.debugElement.query(By.directive(CngxInputMask)).nativeElement;
+    }
+
+    function typeDigits(fixture: ComponentFixture<Host>, chars: string): void {
+      const input = numberInput(fixture);
+      for (const ch of chars) {
+        const pos = input.value.indexOf('_');
+        const at = pos === -1 ? input.value.length : pos;
+        input.setSelectionRange(at, at);
+        input.dispatchEvent(
+          new InputEvent('beforeinput', { inputType: 'insertText', data: ch, cancelable: true }),
+        );
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      }
+    }
+
+    it('shows the dial code while the value stays empty', async () => {
+      const { fixture, phone, mask } = setup(); // initial country US (+1)
+      await settle(fixture);
+
+      expect(mask.value()).toBe('1');
+      expect(phone.value()).toBe('');
+      expect(phone.empty()).toBe(true);
+    });
+
+    it('shows the new dial code after a country switch from an untouched field', async () => {
+      const { fixture, phone, mask } = setup();
+      await settle(fixture);
+
+      phone.country.set(germany); // +49
+      await settle(fixture);
+
+      expect(mask.value()).toBe('49');
+      expect(phone.value()).toBe('');
+    });
+
+    it('clears typed digits on a country switch and shows the new dial code', async () => {
+      const { fixture, phone, mask } = setup();
+      await settle(fixture);
+      typeDigits(fixture, '2025550123');
+      expect(phone.value()).toBe('12025550123');
+
+      phone.country.set(germany);
+      await settle(fixture);
+
+      expect(mask.value()).toBe('49');
+      expect(phone.value()).toBe('');
+    });
+
+    it('keeps a deleted dial code deleted, and a later digit lands in the country-code slot', async () => {
+      const { fixture, phone, mask } = setup();
+      await settle(fixture);
+      const input = numberInput(fixture);
+
+      const caret = input.value.indexOf('1') + 1;
+      input.setSelectionRange(caret, caret);
+      input.dispatchEvent(
+        new InputEvent('beforeinput', { inputType: 'deleteContentBackward', cancelable: true }),
+      );
+      await settle(fixture);
+
+      expect(mask.value()).toBe('');
+      expect(phone.value()).toBe('');
+      expect(input.value.replace(/\D/g, '')).toBe('');
+
+      typeDigits(fixture, '7');
+
+      expect(mask.value()).toBe('7');
+      expect(phone.value()).toBe('7');
+    });
+
+    it('shows the dial code again when the value is cleared after typing', async () => {
+      const { fixture, phone, mask } = setup();
+      await settle(fixture);
+      typeDigits(fixture, '2025550123');
+
+      phone.value.set('');
+      await settle(fixture);
+
+      expect(mask.value()).toBe('1');
+      expect(phone.value()).toBe('');
+    });
   });
 
   it('forces the mask alternate via lineType without clearing the number', () => {

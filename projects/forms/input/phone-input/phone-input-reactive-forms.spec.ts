@@ -80,7 +80,11 @@ function digits(input: HTMLInputElement): string {
   return input.value.replace(/\D/g, '');
 }
 
-function leave(from: HTMLElement, to: HTMLElement | null, fixture: ComponentFixture<unknown>): void {
+function leave(
+  from: HTMLElement,
+  to: HTMLElement | null,
+  fixture: ComponentFixture<unknown>,
+): void {
   from.dispatchEvent(new FocusEvent('blur', { relatedTarget: to }));
   from.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: to }));
   flush(fixture);
@@ -103,7 +107,7 @@ describe('CngxPhoneInput under Reactive Forms', () => {
     expect(host.model().phone).toBe('12025550123');
   });
 
-  it.fails('P0: a Signal Forms field stays empty after load while the dial code shows', async () => {
+  it('P0: a Signal Forms field stays empty after load while the dial code shows', async () => {
     const { input, host } = await mount(SignalFormsHost);
 
     expect(host.model().phone).toBe('');
@@ -184,19 +188,25 @@ describe('CngxPhoneInput touched inside cngx-form-field', () => {
     await loadAllMaskPresets();
   });
 
-  it.fails('T1: moving from the number field to the country picker leaves the field untouched', async () => {
-    const { fixture, input, trigger, host } = await mount(SignalFormsHost);
+  it.fails(
+    'T1: moving from the number field to the country picker leaves the field untouched',
+    async () => {
+      const { fixture, input, trigger, host } = await mount(SignalFormsHost);
 
-    leave(input, trigger, fixture);
+      leave(input, trigger, fixture);
 
-    expect(host.f.phone().touched()).toBe(false);
-  });
+      expect(host.f.phone().touched()).toBe(false);
+    },
+  );
 
-  it.fails('T2: leaving after only the country picker was used marks the field touched', async () => {
-    const { fixture, trigger, host } = await mount(SignalFormsHost);
+  it.fails(
+    'T2: leaving after only the country picker was used marks the field touched',
+    async () => {
+      const { fixture, trigger, host } = await mount(SignalFormsHost);
 
-    leave(trigger, null, fixture);
+      leave(trigger, null, fixture);
 
-    expect(host.f.phone().touched()).toBe(true);
-  });
+      expect(host.f.phone().touched()).toBe(true);
+    },
+  );
 });

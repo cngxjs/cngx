@@ -7,9 +7,11 @@ import {
   ElementRef,
   inject,
   input,
+  linkedSignal,
   model,
   type OnInit,
   untracked,
+  viewChild,
 } from '@angular/core';
 import { injectLocale, nextUid } from '@cngx/core/utils';
 import {
@@ -53,10 +55,11 @@ class CngxPhoneInputDetach {}
  *
  * The country list is consumer-overridable through `[countries]`; the picked
  * row is matched by region, so a localized list (and `withPhoneDefaultRegion`)
- * preselects its own row. Selecting a
- * country pre-fills its dial code (e.g. `+49`); switching country clears the
- * entered national number (the mask's documented auto-clear on pattern change)
- * and re-seeds the new dial code.
+ * preselects its own row. The field shows the selected country's dial code
+ * (e.g. `+49`), but `value` stays `''` until national digits are typed, so an
+ * untouched field is empty and pristine for the form. Switching country clears
+ * the entered national number (the mask's documented auto-clear on pattern
+ * change) and shows the new dial code.
  *
  * ```html
  * <cngx-form-field [field]="f.phone">
@@ -106,7 +109,8 @@ class CngxPhoneInputDetach {}
       type="tel"
       [cngxInputMask]="maskExpr()"
       [forceAlternate]="forcedAlternate()"
-      [(value)]="value"
+      [value]="maskValue()"
+      (valueChange)="handleMaskValue($event)"
       [id]="id()"
       [disabled]="disabled()"
       [attr.aria-labelledby]="labelledBy()"
@@ -209,12 +213,33 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
   /** The mask region from the selected country, fed to `phone:<region>`. */
   protected readonly region = computed(() => this.resolvedCountry().region);
 
-  // value() is dial-code-prefixed (the prefill seeds the country code digits),
-  // so it is not the national subscriber number. Strip the dial code before
-  // handing it to the metadata strategy, which contracts on national digits.
+  // A form writes whatever it holds (`null` after reset(), a foreign type from an
+  // untyped control); every internal read goes through this.
+  private readonly normalizedValue = computed(() => {
+    const v: unknown = this.value();
+    return typeof v === 'string' ? v : '';
+  });
+
+  private readonly dialDigits = computed(() => this.resolvedCountry().dialCode.replace(/\D/g, ''));
+
+  /**
+   * @internal What the inner mask shows: the value, or the dial code while the
+   * value is empty. Writable so `handleMaskValue` keeps it equal to what the mask
+   * holds after an edit the value does not reflect (a deleted dial code).
+   */
+  protected readonly maskValue = linkedSignal(() => {
+    const v = this.normalizedValue();
+    return v === '' ? this.dialDigits() : v;
+  });
+
+  private readonly maskRef = viewChild(CngxInputMask);
+
+  // value() is dial-code-prefixed once digits are typed, so it is not the national
+  // subscriber number. Strip the dial code before handing it to the metadata
+  // strategy, which contracts on national digits.
   private readonly nationalDigits = computed(() => {
-    const cc = this.resolvedCountry().dialCode.replace(/\D/g, '');
-    const v = this.value();
+    const cc = this.dialDigits();
+    const v = this.normalizedValue();
     return v.startsWith(cc) ? v.slice(cc.length) : v;
   });
 
@@ -270,7 +295,7 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
   );
 
   readonly id = this.aria.id;
-  readonly empty = computed(() => this.value() === '');
+  readonly empty = computed(() => this.normalizedValue() === '');
   readonly disabled = this.aria.disabled;
   readonly errorState = this.aria.errorState;
 
@@ -304,17 +329,19 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
       coerceFromField: (v) => (typeof v === 'string' ? v : ''),
     });
 
-    // Pre-fill the dial code when a country is selected. CngxInputMask clears
-    // its value on region change, so the seed is deferred past that clear with
-    // queueMicrotask; it only seeds an empty field, never clobbering a typed or
-    // field-restored number. The dial-code digits land in the mask's `+NN`
-    // country-code slots (slot count matches the dial-code length per region).
+    // Re-shows the dial code after a country switch on an empty field. The new dial
+    // code reaches the mask through `maskValue`, but CngxInputMask clears its value
+    // on region change right after that push, and a binding cannot push the same
+    // value twice. The seed is deferred past that clear and written into the mask
+    // only, never into `value`: the field stays empty for the form. The dial-code
+    // digits land in the mask's `+NN` country-code slots.
     effect(() => {
-      const dialDigits = this.resolvedCountry().dialCode.replace(/\D/g, '');
+      this.dialDigits();
       untracked(() => {
         queueMicrotask(() => {
-          if (this.value() === '') {
-            this.value.set(dialDigits);
+          const mask = this.maskRef();
+          if (mask && mask.value() === '' && this.normalizedValue() === '') {
+            mask.value.set(this.dialDigits());
           }
         });
       });
@@ -335,6 +362,19 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
     const match = this.resolvedCountries().find((c) => c.region === region);
     if (match) {
       this.country.set(match);
+    }
+  }
+
+  /**
+   * @internal Mirrors a mask edit. A dial-code-only mask value is an empty field;
+   * `maskValue` takes the mask value as is, so deleting the dial code stays
+   * deleted until the next country switch.
+   */
+  protected handleMaskValue(next: string): void {
+    this.maskValue.set(next);
+    const value = next === this.dialDigits() ? '' : next;
+    if (value !== this.normalizedValue()) {
+      this.value.set(value);
     }
   }
 
