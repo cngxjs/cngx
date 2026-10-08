@@ -15,7 +15,6 @@ export {
 } from './incremental-list-slots';
 export {
   CNGX_INCREMENTAL_LIST_CONFIG,
-  CNGX_INCREMENTAL_LIST_DEFAULTS,
   provideIncrementalListConfig,
   provideIncrementalListConfigAt,
   injectIncrementalListAriaLabels,

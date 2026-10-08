@@ -4,6 +4,7 @@ import { describe, expect, test } from 'vitest';
 
 import { CNGX_COLLECTION_LANGUAGE_EN } from './i18n/collection-language-section';
 import {
+  CNGX_INCREMENTAL_LIST_CONFIG,
   injectIncrementalListAriaLabels,
   provideIncrementalListConfig,
   withIncrementalListAriaLabels,
@@ -52,5 +53,13 @@ describe('incremental-list ariaLabels cascade', () => {
 
     lang.set('de-AT');
     expect(labels()).toBe(german);
+  });
+
+  test('ships a default config without copy and keeps it for an empty provider call', () => {
+    const root = TestBed.inject(CNGX_INCREMENTAL_LIST_CONFIG);
+    expect(root.ariaLabels).toBeUndefined();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideIncrementalListConfig()] });
+    expect(TestBed.inject(CNGX_INCREMENTAL_LIST_CONFIG)).toBe(root);
   });
 });

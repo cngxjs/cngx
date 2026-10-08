@@ -98,10 +98,11 @@ export interface CngxIncrementalListConfig {
 }
 
 /**
- * Library defaults. Carries no copy: the label defaults are the `collection`
- * section of the language pack. Override via {@link provideIncrementalListConfig}.
+ * Library defaults. Empty: the label defaults are the `collection` section of
+ * the language pack and the template slots are unset, so a config only ever
+ * holds overrides.
  */
-export const CNGX_INCREMENTAL_LIST_DEFAULTS: CngxIncrementalListConfig = {};
+const INCREMENTAL_LIST_DEFAULTS: CngxIncrementalListConfig = {};
 
 const NO_ARIA_LABELS: Partial<CngxIncrementalListAriaLabels> = {};
 
@@ -119,7 +120,7 @@ export const CNGX_INCREMENTAL_LIST_CONFIG = new InjectionToken<CngxIncrementalLi
   'CngxIncrementalListConfig',
   {
     providedIn: 'root',
-    factory: () => CNGX_INCREMENTAL_LIST_DEFAULTS,
+    factory: () => INCREMENTAL_LIST_DEFAULTS,
   },
 );
 
@@ -224,7 +225,7 @@ export function provideIncrementalListConfig(
   return makeEnvironmentProviders([
     {
       provide: CNGX_INCREMENTAL_LIST_CONFIG,
-      useValue: applyFeatures(CNGX_INCREMENTAL_LIST_DEFAULTS, features),
+      useValue: applyFeatures(INCREMENTAL_LIST_DEFAULTS, features),
     },
   ]);
 }
@@ -246,7 +247,7 @@ export function provideIncrementalListConfigAt(
     {
       provide: CNGX_INCREMENTAL_LIST_CONFIG,
       useFactory: (parent: CngxIncrementalListConfig | null) =>
-        applyFeatures(parent ?? CNGX_INCREMENTAL_LIST_DEFAULTS, features),
+        applyFeatures(parent ?? INCREMENTAL_LIST_DEFAULTS, features),
       deps: [[new SkipSelf(), new Optional(), CNGX_INCREMENTAL_LIST_CONFIG]],
     },
   ];
