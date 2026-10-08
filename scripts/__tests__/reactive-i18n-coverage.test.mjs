@@ -260,6 +260,35 @@ const isOwnSymbol = (symbol) =>
   !!symbol?.declarations?.length &&
   symbol.declarations.every((d) => !d.getSourceFile().fileName.includes('node_modules'));
 
+/** A language-pack section interface: every value of it is copy by definition. */
+const LANGUAGE_SECTION_NAME = /^Cngx\w+LanguageSection$/;
+
+/**
+ * Registers every `Cngx*LanguageSection` interface as a copy value type, so a
+ * reader that gets its copy straight from a section (a section accessor, not a
+ * copy token) is still seen as reading copy.
+ *
+ * @param {ts.TypeChecker} checker
+ * @param {readonly ts.SourceFile[]} files
+ * @param {CopyModel['types']} types
+ */
+function registerLanguageSections(checker, files, types) {
+  for (const file of files) {
+    for (const statement of file.statements) {
+      if (
+        !ts.isInterfaceDeclaration(statement) ||
+        !LANGUAGE_SECTION_NAME.test(statement.name.text)
+      ) {
+        continue;
+      }
+      const symbol = checker.getSymbolAtLocation(statement.name);
+      if (symbol && !types.has(symbol)) {
+        types.set(symbol, { kind: 'value', token: 'CNGX_LANGUAGE_PACK', copyKeys: null });
+      }
+    }
+  }
+}
+
 /**
  * @param {ts.Program} program
  * @param {ReturnType<typeof discoverTokens>} tokens
@@ -317,6 +346,7 @@ export function buildCopyModel(program, tokens, copyTokens, helpers, localeReade
     }
   }
   const ownFiles = program.getSourceFiles().filter((sf) => !sf.fileName.includes('node_modules'));
+  registerLanguageSections(checker, ownFiles, types);
   return {
     checker,
     types,
@@ -1683,6 +1713,21 @@ const fixtureRows = (name) =>
     .sort();
 
 describe('reactive i18n rules', () => {
+  it('registers every Cngx*LanguageSection interface as a copy type', () => {
+    const path = resolve(FIXTURE_ROOT, 'language-section.ts');
+    const virtual = {
+      [path]: [
+        'export interface CngxDemoLanguageSection { readonly title: string; }',
+        'export interface CngxDemoSettings { readonly size: number; }',
+      ].join('\n'),
+    };
+    const program = createProgram([path], virtual);
+    const model = buildCopyModel(program, [], [], []);
+    const names = [...model.types.keys()].map((symbol) => symbol.getName());
+    expect(names).toContain('CngxDemoLanguageSection');
+    expect(names).not.toContain('CngxDemoSettings');
+  });
+
   it('type-checks the rule fixtures', () => {
     const diagnostics = ts
       .getPreEmitDiagnostics(FIXTURE_PROGRAM)
