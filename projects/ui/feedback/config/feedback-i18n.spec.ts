@@ -119,7 +119,10 @@ describe('CNGX_FEEDBACK_I18N', () => {
     TestBed.configureTestingModule({
       providers: [
         provideFeedbackI18n({
-          announcements: { alertDismissed: 'Hinweis verworfen', alertOverflow: (n) => `${n} weitere` },
+          announcements: {
+            alertDismissed: 'Hinweis verworfen',
+            alertOverflow: (n) => `${n} weitere`,
+          },
         }),
       ],
     });
@@ -348,6 +351,25 @@ describe('CNGX_FEEDBACK_I18N', () => {
       expect(stripBidiIsolates(german.errorWithDetail('Fehler', 'Zeit'))).toBe('Fehler (Zeit)');
       expect(german.announcements.asyncLoaded).toBe('Geladen');
       expect(german.dismissLabel).toBe('Dismiss');
+    });
+
+    it('reads English for an announcement the pack leaves unset', () => {
+      const announcements = { asyncLoaded: 'Geladen', asyncError: undefined };
+      TestBed.configureTestingModule({
+        providers: [
+          provideCngxI18n(
+            withPartialPack({
+              locale: 'de',
+              feedback: { announcements } as unknown as CngxActiveLanguagePack['feedback'],
+            }),
+            withDocumentLanguage('off'),
+          ),
+        ],
+      });
+      const { announcements: resolved } = TestBed.inject(CNGX_FEEDBACK_I18N)();
+      expect(resolved.asyncLoaded).toBe('Geladen');
+      expect(resolved.asyncError).toBe('Error loading content');
+      expect(resolved.asyncLoading).toBe('Loading content');
     });
 
     it('keeps the bundle while the pack keeps its section and maps anew on a flip', () => {

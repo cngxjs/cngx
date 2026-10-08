@@ -1,7 +1,6 @@
-import { computed, inject, InjectionToken, type Signal } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
 
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createOverrideMerge } from '@cngx/core/utils';
+import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
 
 import type { CngxCommandPaletteLegendEntry } from '../config/command-palette-config';
 import {
@@ -51,16 +50,11 @@ export function commandPaletteCopyFrom(
   };
 }
 
-const NO_SECTION: Partial<CngxCommandPaletteLanguageSection> = {};
-
 /** @internal The command-palette section of the active pack over the English section. */
-function injectCommandPaletteLanguage(): Signal<CngxCommandPaletteLanguageSection> {
-  const pack = injectLanguageSection('commandPalette');
-  return createOverrideMerge(
-    CNGX_COMMAND_PALETTE_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
+const injectCommandPaletteLanguage = createLanguageSection(
+  'commandPalette',
+  CNGX_COMMAND_PALETTE_LANGUAGE_EN,
+);
 
 /** @internal Builds and reads the section copy, formatted for the reading locale. */
 const commandPaletteBundle = createSectionBundle<

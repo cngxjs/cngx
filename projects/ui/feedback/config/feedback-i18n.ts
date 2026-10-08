@@ -1,6 +1,6 @@
-import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createNestedOverrideMerge, type CngxNestedOverrides } from '@cngx/core/utils';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createNestedLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
+import { createNestedOverrideMerge } from '@cngx/core/utils';
 
 import {
   CNGX_FEEDBACK_LANGUAGE_EN,
@@ -105,8 +105,6 @@ export type CngxFeedbackI18nOverrides = Partial<Omit<CngxFeedbackI18n, 'announce
   readonly announcements?: Partial<CngxFeedbackAnnouncements>;
 };
 
-const NO_SECTION: CngxNestedOverrides<CngxFeedbackLanguageSection, 'announcements'> = {};
-
 /** @internal Turns a feedback section into the token's keys for a locale. */
 function feedbackBundleFrom(
   section: CngxFeedbackLanguageSection,
@@ -141,14 +139,11 @@ function feedbackBundleFrom(
 }
 
 /** @internal The English feedback section with the active pack's feedback section on top. */
-function injectFeedbackLanguage(): Signal<CngxFeedbackLanguageSection> {
-  const pack = injectLanguageSection('feedback');
-  return createNestedOverrideMerge<CngxFeedbackLanguageSection, 'announcements'>(
-    CNGX_FEEDBACK_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-    'announcements',
-  );
-}
+const injectFeedbackLanguage = createNestedLanguageSection(
+  'feedback',
+  CNGX_FEEDBACK_LANGUAGE_EN,
+  'announcements',
+);
 
 /** @internal Builds and reads the token, formatted for the reading locale. */
 const feedbackBundle = createSectionBundle<CngxFeedbackLanguageSection, CngxFeedbackI18n>({
@@ -169,13 +164,10 @@ const feedbackBundle = createSectionBundle<CngxFeedbackLanguageSection, CngxFeed
  * @since 0.1.0
  * @relatedTo CngxAlertStack, CngxToastOutlet
  */
-export const CNGX_FEEDBACK_I18N = new InjectionToken<Signal<CngxFeedbackI18n>>(
-  'CngxFeedbackI18n',
-  {
-    providedIn: 'root',
-    factory: () => feedbackBundle.build(),
-  },
-);
+export const CNGX_FEEDBACK_I18N = new InjectionToken<Signal<CngxFeedbackI18n>>('CngxFeedbackI18n', {
+  providedIn: 'root',
+  factory: () => feedbackBundle.build(),
+});
 
 /**
  * Override the feedback region names from inside `provideFeedback()`. Unset
