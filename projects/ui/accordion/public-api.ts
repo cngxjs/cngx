@@ -33,7 +33,7 @@ export {
   withAccordionSkin,
   withAccordionTemplates,
 } from './config/features';
-export { injectAccordionConfig, injectAccordionCopy } from './config/inject-accordion-config';
+export { injectAccordionConfig, injectAccordionLabels } from './config/inject-accordion-config';
 export {
   CNGX_ACCORDION_LANGUAGE_EN,
   type CngxAccordionLanguageSection,

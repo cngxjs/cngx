@@ -21,7 +21,7 @@ import { CngxAccordionItemContent } from './accordion-item-content.directive';
 import { CngxAccordionItemError } from './accordion-item-error.directive';
 import { CngxAccordionItemIcon } from './accordion-item-icon.directive';
 import { CngxAccordionItemSubtitle } from './accordion-item-subtitle.directive';
-import { injectAccordionConfig, injectAccordionCopy } from './config/inject-accordion-config';
+import { injectAccordionConfig, injectAccordionLabels } from './config/inject-accordion-config';
 
 /**
  * Accordion item organism. Renders the APG-correct trio a headless consumer
@@ -69,7 +69,7 @@ import { injectAccordionConfig, injectAccordionCopy } from './config/inject-acco
 })
 export class CngxAccordionItem {
   private readonly config = injectAccordionConfig();
-  private readonly copy = injectAccordionCopy();
+  private readonly copy = injectAccordionLabels();
 
   /**
    * Disabled item: the header reports `tabindex="-1"` + `aria-disabled="true"`,

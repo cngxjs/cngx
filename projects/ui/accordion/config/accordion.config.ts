@@ -56,7 +56,7 @@ export type CngxAccordionSeverity = 'error' | 'warning' | 'info';
  *      `accordion` section of the language pack).
  *
  * The copy keys are overrides only: the token's default leaves them unset, and
- * {@link injectAccordionCopy} fills every unset key from the `accordion`
+ * {@link injectAccordionLabels} fills every unset key from the `accordion`
  * section of the language pack, so a reader never observes a partial shape.
  *
  * @category ui/accordion

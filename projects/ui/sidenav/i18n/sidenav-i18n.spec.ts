@@ -13,7 +13,7 @@ import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 
 import { withSidenavLabels } from '../config/features';
 import { provideSidenavConfig } from '../config/provide-sidenav-config';
-import { injectSidenavLabels } from './sidenav-i18n';
+import { injectSidenavLabels } from '../config/inject-sidenav-config';
 import { CNGX_SIDENAV_LANGUAGE_EN } from './sidenav-language-section';
 
 // Compile-checked: the English section is a complete section of a pack.

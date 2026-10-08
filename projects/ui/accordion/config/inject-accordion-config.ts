@@ -17,7 +17,7 @@ import { CNGX_ACCORDION_CONFIG } from './accordion.config.defaults';
  *
  * The copy keys `disabledReason` and `errorMessage` hold overrides only; read
  * the resolved copy (overrides over the language pack) through
- * {@link injectAccordionCopy}.
+ * {@link injectAccordionLabels}.
  *
  * @category ui/accordion
  * @since 0.1.0
@@ -39,7 +39,7 @@ const CONFIG_COPY = new WeakMap<
  *
  * @internal
  */
-export function accordionConfigCopy(
+function accordionConfigCopy(
   config: CngxAccordionConfig,
 ): Signal<Partial<CngxAccordionLanguageSection>> {
   let copy = CONFIG_COPY.get(config);
@@ -66,7 +66,7 @@ export function accordionConfigCopy(
  *
  * ```ts
  * export class MyAccordionReason {
- *   private readonly copy = injectAccordionCopy();
+ *   private readonly copy = injectAccordionLabels();
  *   protected readonly reason = computed(() => this.copy().disabledReason);
  * }
  * ```
@@ -74,7 +74,7 @@ export function accordionConfigCopy(
  * @category ui/accordion
  * @since 0.1.0
  */
-export function injectAccordionCopy(): Signal<CngxAccordionLanguageSection> {
+export function injectAccordionLabels(): Signal<CngxAccordionLanguageSection> {
   return createFilledOverrideMerge(
     injectAccordionSiteCopy(),
     accordionConfigCopy(injectAccordionConfig()),

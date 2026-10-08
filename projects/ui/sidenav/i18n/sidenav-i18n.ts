@@ -1,9 +1,7 @@
 import { inject, InjectionToken, type Signal } from '@angular/core';
 
 import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
-import { createFilledOverrideMerge } from '@cngx/core/utils';
 
-import { injectSidenavConfig } from '../config/inject-sidenav-config';
 import type { CngxSidenavLabels } from '../config/sidenav.config';
 import {
   CNGX_SIDENAV_LANGUAGE_EN,
@@ -41,20 +39,10 @@ const SIDENAV_SECTION_LABELS = new InjectionToken<Signal<CngxSidenavLabels>>(
 );
 
 /**
- * The resolved sidenav labels in scope, as a Signal that follows a runtime
- * language switch: the `sidenav` section of the active pack formatted for the
- * locale of the reading injector, with the `CNGX_SIDENAV_CONFIG` labels on
- * top. A key the config sets wins; a key it leaves unset, `null` or
- * `undefined` reads the section. Runs in injection context; read it inside a
- * `computed()`, a template or a handler.
- *
- * @category ui/sidenav
- * @since 0.1.0
- * @relatedTo withSidenavLabels
+ * @internal The sidenav labels at the reading site: the active pack's section
+ * formatted for the locale of the reading injector. Injection context
+ * required.
  */
-export function injectSidenavLabels(): Signal<CngxSidenavLabels> {
-  return createFilledOverrideMerge(
-    sidenavBundle.resolve(inject(SIDENAV_SECTION_LABELS)),
-    injectSidenavConfig().labels,
-  );
+export function injectSidenavSiteLabels(): Signal<CngxSidenavLabels> {
+  return sidenavBundle.resolve(inject(SIDENAV_SECTION_LABELS));
 }

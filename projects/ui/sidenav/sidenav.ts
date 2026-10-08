@@ -24,9 +24,9 @@ import {
 } from '@cngx/core/utils';
 import { CNGX_HOVER_INTENT_DEFAULTS, CngxHoverIntent } from '@cngx/common/interactive';
 import { CNGX_CONTAINER_SIZE } from '@cngx/common/layout';
+import { clamp } from '@cngx/utils';
 
-import { injectSidenavConfig } from './config/inject-sidenav-config';
-import { injectSidenavLabels } from './i18n/sidenav-i18n';
+import { injectSidenavConfig, injectSidenavLabels } from './config/inject-sidenav-config';
 import { CNGX_SIDENAV } from './sidenav-token';
 
 const PERCENT_FORMAT: Intl.NumberFormatOptions = { style: 'percent' };
@@ -582,7 +582,7 @@ export class CngxSidenav {
     if (width === null || min === null || max === null || max <= min) {
       return null;
     }
-    const percent = Math.round(Math.min(1, Math.max(0, (width - min) / (max - min))) * 100);
+    const percent = Math.round(clamp((width - min) / (max - min), 0, 1) * 100);
     const formatted = numberFormatterFor(this.locale(), PERCENT_FORMAT).format(percent / 100);
     return this.labels().resizeValueText(percent, formatted);
   });
