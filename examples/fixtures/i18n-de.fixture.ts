@@ -10,7 +10,7 @@ import {
   withTreetableLabels,
   type TreetableLabels,
 } from '@cngx/data-display/treetable';
-import type { ErrorMessageMap } from '@cngx/forms/field';
+import type { CngxFormFieldI18nOverrides, ErrorMessageMap } from '@cngx/forms/field';
 import {
   provideFilterBuilderConfigAt,
   withFilterBuilderI18n,
@@ -198,6 +198,9 @@ export const ERROR_MESSAGES_DE: ErrorMessageMap = {
   required: () => 'Pflichtfeld.',
   minLength: (e) => `Mindestens ${minLengthOf(e)} Zeichen.`,
 };
+export const FORM_FIELD_DE: CngxFormFieldI18nOverrides = {
+  errorMessages: { timeRange: () => 'Ungültige Uhrzeit.' },
+};
 export const INPUT_ARIA_DE: Partial<InputAriaLabels> = {
   clear: 'Leeren',
   charCountMax: (current, max) => `${current} von ${max}`,
@@ -306,6 +309,8 @@ export const DEMO_DISPLAY_LABELS = computed(() => (isDe() ? DISPLAY_DE : {}));
 export const DEMO_INTERACTIVE_LABELS = computed(() => (isDe() ? INTERACTIVE_DE : {}));
 export const DEMO_POPOVER_PANEL_LABELS = computed(() => (isDe() ? POPOVER_PANEL_DE : {}));
 export const DEMO_LOCALE = computed(() => (isDe() ? 'de-DE' : 'en-US'));
+/** Library form-field copy below the error registry, so the section keys show through. */
+export const DEMO_FORM_FIELD_LABELS = computed(() => (isDe() ? FORM_FIELD_DE : {}));
 export const DEMO_CARD_LABELS = computed(() => (isDe() ? CARD_DE : {}));
 export const DEMO_CHART_LABELS = computed(() => (isDe() ? CHART_DE : {}));
 export const DEMO_LAYOUT_LABELS = computed(() => (isDe() ? LAYOUT_DE : {}));
