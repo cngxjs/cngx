@@ -1,6 +1,6 @@
 # CngxValidators - Custom Form Validators
 
-Specialized validators for pattern matching and checkbox agreement validation.
+Specialized validators for pattern matching, checkbox agreement and time-of-day range checks.
 
 ## Import
 
@@ -8,6 +8,8 @@ Specialized validators for pattern matching and checkbox agreement validation.
 import {
   patternMatch,
   requiredTrue,
+  time,
+  timeRange,
 } from '@cngx/forms/validators';
 ```
 
@@ -31,7 +33,50 @@ const schema = formGroup({
 });
 ```
 
+## Time range
 
+A time mask (`cngxInputMask="time"`, `time:12`, `time:24`, `datetime`) checks one character per slot, so it lets `25:00`, `10:75`, `14:30 PM` and `00:15 AM` through: the allowed second hour digit depends on the first. `time` (Signal Forms) and `timeRange` (Reactive Forms) report those values with the error kind `timeRange`.
+
+```typescript
+import { form, schema, required } from '@angular/forms/signals';
+import { time } from '@cngx/forms/validators';
+
+readonly model = signal({ start: '' });
+readonly f = form(this.model, schema((root) => {
+  required(root.start);
+  time(root.start, { cycle: 12 });
+}));
+```
+
+```html
+<cngx-form-field [field]="f.start">
+  <label cngxLabel>Start</label>
+  <input cngxInput cngxInputMask="time:12" [formField]="f.start" />
+  <cngx-field-errors />
+</cngx-form-field>
+```
+
+Reactive Forms:
+
+```typescript
+import { FormControl } from '@angular/forms';
+import { adaptFormControl } from '@cngx/forms/field';
+import { timeRange } from '@cngx/forms/validators';
+
+readonly start = new FormControl('', { nonNullable: true, validators: [timeRange()] });
+readonly startField = adaptFormControl(this.start, 'start', inject(DestroyRef));
+```
+
+How a value is read:
+
+- The hour cycle comes from the value. AM/PM present means 1-12, absent means 0-23.
+- Pass `cycle: 12` or `cycle: 24` only when the mask pins it (`time:12` / `time:24`). A bare `time` mask follows the locale, so leave `cycle` unset.
+- Both shapes work: the raw mask value Signal Forms holds (`1430PM`) and a display string (`02:30 PM`).
+- `datetime` values are checked on their time part only (the last `HH:MM`).
+- An empty or incomplete value passes. Pair with `required` when a time must be entered.
+- A 12-hour value whose AM/PM is still empty (`14:30 __`) reads as a 24-hour time unless `cycle: 12` is passed.
+
+The message is the `timeRange` key of the `formField` language section (English `'Enter a valid time.'`). Replace it per app with `provideFormField(withErrorMessages({ timeRange: () => '...' }))`, or translate it in a language pack.
 
 ## See Also
 
