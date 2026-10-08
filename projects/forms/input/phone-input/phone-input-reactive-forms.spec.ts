@@ -115,11 +115,11 @@ describe('CngxPhoneInput under Reactive Forms', () => {
     expect(digits(input)).toBe('1');
   });
 
-  it.fails('P1: a [formControl] host mounts', async () => {
+  it('P1: a [formControl] host mounts', async () => {
     await expect(mount(RfHost)).resolves.toBeDefined();
   });
 
-  it.fails('P2: the control stays empty and pristine after load', async () => {
+  it('P2: the control stays empty and pristine after load', async () => {
     const { input, host } = await mount(RfHost);
 
     expect(host.control.value).toBe('');
@@ -127,7 +127,7 @@ describe('CngxPhoneInput under Reactive Forms', () => {
     expect(digits(input)).toBe('1');
   });
 
-  it.fails('P3: typed digits reach the control', async () => {
+  it('P3: typed digits reach the control', async () => {
     const { fixture, input, host } = await mount(RfHost);
 
     type(input, '2025550123', fixture);
@@ -136,7 +136,7 @@ describe('CngxPhoneInput under Reactive Forms', () => {
     expect(host.control.dirty).toBe(true);
   });
 
-  it.fails('P4: setValue renders into the mask', async () => {
+  it('P4: setValue renders into the mask', async () => {
     const { fixture, input, phone, host } = await mount(RfHost);
 
     host.control.setValue('12025550123');
@@ -146,7 +146,7 @@ describe('CngxPhoneInput under Reactive Forms', () => {
     expect(digits(input)).toBe('12025550123');
   });
 
-  it.fails('P5: reset() on a nullable control renders the dial code without throwing', async () => {
+  it('P5: reset() on a nullable control renders the dial code without throwing', async () => {
     const { fixture, input, host } = await mount(NullableHost);
     expect(digits(input)).toBe('12025550123');
 
@@ -157,7 +157,7 @@ describe('CngxPhoneInput under Reactive Forms', () => {
     expect(digits(input)).toBe('1');
   });
 
-  it.fails('P6: disable() disables the inner input and the country picker', async () => {
+  it('P6: disable() disables the inner input and the country picker', async () => {
     const { fixture, input, phone, select, host } = await mount(RfHost);
 
     host.control.disable();
@@ -172,7 +172,7 @@ describe('CngxPhoneInput under Reactive Forms', () => {
     expect(input.disabled).toBe(false);
   });
 
-  it.fails('P7: touched only when focus leaves the host', async () => {
+  it('P7: touched only when focus leaves the host', async () => {
     const { fixture, input, trigger, host } = await mount(RfHost);
 
     leave(input, trigger, fixture);

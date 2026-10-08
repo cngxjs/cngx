@@ -5,14 +5,17 @@ import {
   Directive,
   effect,
   ElementRef,
+  forwardRef,
   inject,
   input,
   linkedSignal,
   model,
   type OnInit,
+  signal,
   untracked,
   viewChild,
 } from '@angular/core';
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interactive';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { injectLocale, nextUid } from '@cngx/core/utils';
 import {
@@ -79,7 +82,14 @@ class CngxPhoneInputHostDetach {}
  * <cngx-form-field [field]="f.phone">
  *   <cngx-phone-input [(value)]="phone" />
  * </cngx-form-field>
+ *
+ * <!-- Reactive Forms: import CngxFormBridge from @cngx/forms/controls -->
+ * <cngx-phone-input [formControl]="phone" />
  * ```
+ *
+ * Under Reactive Forms the control holds the same value as the model. Without
+ * `CngxFormBridge` in the component's `imports`, Angular finds no value accessor
+ * and throws NG01203.
  *
  * @category forms/input
  * @docsKind primary
@@ -96,7 +106,17 @@ class CngxPhoneInputHostDetach {}
   exportAs: 'cngxPhoneInput',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxSelect, CngxInputMask, CngxPhoneInputDetach, CngxPhoneInputHostDetach],
-  providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxPhoneInput }],
+  providers: [
+    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxPhoneInput },
+    {
+      provide: CNGX_CONTROL_VALUE,
+      useFactory: (dir: CngxPhoneInput): CngxControlValue<string> => ({
+        value: dir.value,
+        disabled: dir.formDisabled,
+      }),
+      deps: [forwardRef(() => CngxPhoneInput)],
+    },
+  ],
   host: {
     class: 'cngx-phone-input',
     role: 'group',
@@ -199,12 +219,18 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
   private readonly ariaLabels = injectInputAriaLabels();
   private readonly metadata = inject(CNGX_PHONE_METADATA);
 
+  /**
+   * @internal - written by CngxFormBridge.setDisabledState through CNGX_CONTROL_VALUE.
+   * Never rename to `disabled`: `[formField]` binds custom-control members by name.
+   */
+  readonly formDisabled = signal(false);
+
   private readonly fallbackId = nextUid('cngx-phone-input-');
   /** @internal Stable id for the always-present disabled-reason span. */
   protected readonly reasonId = nextUid('cngx-phone-input-reason-');
   private readonly aria = createFieldControlAria(this.presenter, {
     fallbackId: this.fallbackId,
-    localDisabled: () => this.disabledInput(),
+    localDisabled: () => this.disabledInput() || this.formDisabled(),
     disabledReason: { id: this.reasonId, reason: () => this.disabledReason() },
   });
 
