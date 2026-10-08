@@ -954,7 +954,7 @@ describe('CngxTreetable', () => {
       fixture.detectChanges();
       expect(errorSurface(fixture)).not.toBeNull();
       expect(table(fixture)).toBeNull();
-      expect(stateRegionText(fixture)).toBe('Data failed to load');
+      expect(stateRegionText(fixture)).toBe('Could not load data');
       expect(fixture.debugElement.query(By.css('[role="alert"]'))).toBeNull();
     });
 
@@ -1006,7 +1006,7 @@ describe('CngxTreetable', () => {
       fixture.detectChanges();
       expect(table(fixture)).not.toBeNull();
       expect(errorSurface(fixture)).not.toBeNull();
-      expect(stateRegionText(fixture)).toBe('Data failed to load');
+      expect(stateRegionText(fixture)).toBe('Could not load data');
     });
 
     it('treats a non-first-load load over an empty grid as a load, not a blank region', () => {

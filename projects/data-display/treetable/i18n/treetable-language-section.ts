@@ -53,7 +53,7 @@ export interface CngxTreetableLanguageSection {
 export const CNGX_TREETABLE_LANGUAGE_EN: CngxTreetableLanguageSection = {
   loading: 'Loading',
   refreshing: 'Refreshing',
-  errorFallback: 'Data failed to load',
+  errorFallback: 'Could not load data',
   emptyFallback: 'No data',
   expand: 'Expand',
   collapse: 'Collapse',

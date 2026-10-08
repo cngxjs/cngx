@@ -54,7 +54,7 @@ describe('treetable language section', () => {
     const en = labels()();
     expect(en.loading).toBe('Loading');
     expect(en.refreshing).toBe('Refreshing');
-    expect(en.errorFallback).toBe('Data failed to load');
+    expect(en.errorFallback).toBe('Could not load data');
     expect(en.emptyFallback).toBe('No data');
     expect(en.expand).toBe('Expand');
     expect(en.collapse).toBe('Collapse');
