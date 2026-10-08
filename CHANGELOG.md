@@ -5,6 +5,448 @@ squash-merged pull request. Non-library scopes (examples, examples-gen, docs,
 ci, build, chore) and non-consumer-facing types are omitted by design.
 See CONTRIBUTING.md for the workflow.
 
+## 0.1.0-rc.8 (2026-10-08)
+
+
+### Features
+
+- **common:** display+card completion pass + core announcement/formatter utils ([#375](https://github.com/cngxjs/cngx/issues/375)) ([a8f6baf](https://github.com/cngxjs/cngx/commit/a8f6bafc690c4fd6df29173f4c0eedad85e918a9))
+- **common:** make stepper and tabs copy follow a runtime language signal ([#492](https://github.com/cngxjs/cngx/issues/492)) ([da5a43a](https://github.com/cngxjs/cngx/commit/da5a43ad518ed7dd27387633f2e1a9b9ae14aec7))
+- **common:** make the remaining common copy follow a runtime language signal ([#498](https://github.com/cngxjs/cngx/issues/498)) ([8066632](https://github.com/cngxjs/cngx/commit/80666326189b570e1ac0881fb20775080c871282))
+- **common,forms:** complete the config-cascade triads and guard family parity ([#456](https://github.com/cngxjs/cngx/issues/456)) ([cdbe2ee](https://github.com/cngxjs/cngx/commit/cdbe2eed902614836c17f364ca53b98e9b22663a))
+- **common,ui,forms:** let translators own the sentence order of stepper, tabs, timeline and select copy ([#515](https://github.com/cngxjs/cngx/issues/515)) ([b2f0256](https://github.com/cngxjs/cngx/commit/b2f02561c59742089c4701ae11f6dfa9e815504c))
+- **common/a11y:** export AriaLivePoliteness and true up the a11y docs ([#406](https://github.com/cngxjs/cngx/issues/406)) ([e4805a6](https://github.com/cngxjs/cngx/commit/e4805a6d4cbb61b0753b82369cbe94f7ce1b05e9))
+- **common/data:** fast-fling placeholders for virtualized recyclers ([#450](https://github.com/cngxjs/cngx/issues/450)) ([e6f7d2a](https://github.com/cngxjs/cngx/commit/e6f7d2ae1ebe659e5cfa6a6b58588d6812739eee))
+- **common/data:** add the CngxRecyclerRow data-availability slot directive ([#451](https://github.com/cngxjs/cngx/issues/451)) ([c181055](https://github.com/cngxjs/cngx/commit/c181055c1c897d15b948a544791604b997085c81))
+- **common/interactive:** nav-config token bindings + error-registry de-stage ([#374](https://github.com/cngxjs/cngx/issues/374)) ([9f4a9dd](https://github.com/cngxjs/cngx/commit/9f4a9dd2c8b120a47f338f48fb1db1219b9d94fa))
+- **common/popover:** add the cngxPopoverAnchor atom to anchor a popover to an element other than its trigger ([#526](https://github.com/cngxjs/cngx/issues/526)) ([c29ddc9](https://github.com/cngxjs/cngx/commit/c29ddc968107d9f66f662f40aa9b1cb6d319a655))
+- **core:** add createKeyedRegistry and createSlotRegistry with destroy-safe unregister ([#455](https://github.com/cngxjs/cngx/issues/455)) ([c800ef9](https://github.com/cngxjs/cngx/commit/c800ef94826bdadcdfc062974e620bb51f46d682))
+- **core:** add createNestedOverrideMerge and a reactive-i18n coverage guard ([#485](https://github.com/cngxjs/cngx/issues/485)) ([1e290b1](https://github.com/cngxjs/cngx/commit/1e290b100dc83aeb60e62c4fbd27857fde9d1c32))
+- **core,common:** drive cngx copy from one language pack per language ([#523](https://github.com/cngxjs/cngx/issues/523)) ([7aba5a7](https://github.com/cngxjs/cngx/commit/7aba5a7d7335fefab7eb58696064e1949d4d4b2c))
+- **core,common,ui:** route common copy and number formatting through reactive-ready i18n surfaces ([#474](https://github.com/cngxjs/cngx/issues/474)) ([e4abe1e](https://github.com/cngxjs/cngx/commit/e4abe1ee3f28c64ed59bec6d177a515243a1f64c))
+- **core,common,ui,forms:** make every user-facing string overridable ([#462](https://github.com/cngxjs/cngx/issues/462)) ([e271c2b](https://github.com/cngxjs/cngx/commit/e271c2b9cc6627e21c3e39bed24dbfb0fb74a1e2))
+- **core,forms,data-display:** close the i18n residue and pin CNGX_LOCALE as the only locale source ([#476](https://github.com/cngxjs/cngx/issues/476)) ([395b3b5](https://github.com/cngxjs/cngx/commit/395b3b5e7536e04c78c4ac77f49d317f4ebaee09))
+- **core,forms,themes:** add outline, fill and bare form-field skins ([#464](https://github.com/cngxjs/cngx/issues/464)) ([ff040de](https://github.com/cngxjs/cngx/commit/ff040dea0bd4c9b00e1a72f060658f83eb2d6791))
+- **core,forms,themes:** give every field skin one box model ([#471](https://github.com/cngxjs/cngx/issues/471)) ([f923381](https://github.com/cngxjs/cngx/commit/f9233814f26e293e47fe537f0424724212559daa))
+- **core/i18n:** ship the English and German language packs ([#537](https://github.com/cngxjs/cngx/issues/537)) ([9a7f65d](https://github.com/cngxjs/cngx/commit/9a7f65d2884234d3892dcca2eaf98cc4f2a8308d))
+- **core/theming:** derive component @property duration tokens from the motion scale ([#396](https://github.com/cngxjs/cngx/issues/396)) ([5624907](https://github.com/cngxjs/cngx/commit/5624907bcb6c5323f66c0d7dcbd097469ed5f831))
+- **core/theming:** add a primary text colour rung and map it in the Material bridge ([#516](https://github.com/cngxjs/cngx/issues/516)) ([880a175](https://github.com/cngxjs/cngx/commit/880a1759d21e9ff51527510a0431322fb9dfa022))
+- **data-display:** add provideTreetableAt and the prefixed treetable type aliases ([#423](https://github.com/cngxjs/cngx/issues/423)) ([e0ac8df](https://github.com/cngxjs/cngx/commit/e0ac8df176c317cd59f32656ebdde18cca5537b6))
+- **forms:** filter-builder system upgrade - row controller, open operators, editor host, pill rows ([#389](https://github.com/cngxjs/cngx/issues/389)) ([94ba2b5](https://github.com/cngxjs/cngx/commit/94ba2b5d86b6c52b083f092d6d6cf23dc7d2efcc))
+- **forms:** discover the field control via CNGX_FORM_FIELD_CONTROL and wire field-label accnames ([#392](https://github.com/cngxjs/cngx/issues/392)) ([6120c2a](https://github.com/cngxjs/cngx/commit/6120c2aec5c228f17acf00047c175636a579d6f0))
+- **forms:** let the container set the width of a bare field ([#490](https://github.com/cngxjs/cngx/issues/490)) ([dbaa791](https://github.com/cngxjs/cngx/commit/dbaa791662856627429e2d56c22c3f49dfdbea0c))
+- **forms:** space a labelled field by its own label and hint gaps ([#491](https://github.com/cngxjs/cngx/issues/491)) ([81490ef](https://github.com/cngxjs/cngx/commit/81490efdbff30a3d415c592b4f64daf3100dcac5))
+- **forms:** check the time range of time masks ([#534](https://github.com/cngxjs/cngx/issues/534)) ([7b960f6](https://github.com/cngxjs/cngx/commit/7b960f68b1af84f435a922642205b501791fe1bd))
+- **forms,data-display:** make field, input, filter-builder and treetable copy follow a runtime language signal ([#504](https://github.com/cngxjs/cngx/issues/504)) ([389438a](https://github.com/cngxjs/cngx/commit/389438ae971f40b37442fa7fb92f3f37afa720e7))
+- **forms,data-display:** drive the forms and treetable copy from one language pack ([#531](https://github.com/cngxjs/cngx/issues/531)) ([2e349c5](https://github.com/cngxjs/cngx/commit/2e349c5406c4e833d6e2360d805196132bc47311))
+- **forms,themes:** add an inner static label and field text tokens ([#475](https://github.com/cngxjs/cngx/issues/475)) ([1aceedb](https://github.com/cngxjs/cngx/commit/1aceedb6daae98d9c0165b10413ed17a9323d45d))
+- **forms/select:** config templates surface + interaction hardening ([#372](https://github.com/cngxjs/cngx/issues/372)) ([33b8f3d](https://github.com/cngxjs/cngx/commit/33b8f3d6daaa576f03810b31c62921e05fc188e8))
+- **forms/select:** tree-select type-to-find, aria-checked cascade, cache hygiene ([#373](https://github.com/cngxjs/cngx/issues/373)) ([149802a](https://github.com/cngxjs/cngx/commit/149802a2d03c20d475d6b7f2366097f09caa8b3b))
+- **forms/select:** make the select family copy follow a runtime language signal ([#500](https://github.com/cngxjs/cngx/issues/500)) ([4d65d2a](https://github.com/cngxjs/cngx/commit/4d65d2a19b2f2ac8e7c1bb39f4ca20f3ef2ba7fe))
+- **forms/select:** place the selection indicator at the row end and keep cursor rows readable in forced colors ([#502](https://github.com/cngxjs/cngx/issues/502)) ([1910156](https://github.com/cngxjs/cngx/commit/1910156ebcdbf9fdbfce04875a9543452a254f56))
+- **forms/select:** frame the select action region with a token-driven separator ([#529](https://github.com/cngxjs/cngx/issues/529)) ([504684e](https://github.com/cngxjs/cngx/commit/504684e4649f6893499ab9b2a2dd4e50c58b61b1))
+- **themes:** four missing Material bridges + rendered-value assertion harness ([#388](https://github.com/cngxjs/cngx/issues/388)) ([855b81c](https://github.com/cngxjs/cngx/commit/855b81cf1d7faa7c10cac023e563cd580d1d497f))
+- **ui:** export the documented types and DEFAULTS consts, close the entry docs gaps ([#409](https://github.com/cngxjs/cngx/issues/409)) ([3668c0e](https://github.com/cngxjs/cngx/commit/3668c0e33f6847be34c1fa0bfe997df9f6758d75))
+- **ui:** make sidenav, paginator and breadcrumb responsive by default ([#460](https://github.com/cngxjs/cngx/issues/460)) ([785e425](https://github.com/cngxjs/cngx/commit/785e425b61db8c8669d3d68dbb6f1be1351a28d8))
+- **ui:** make feedback, paginator, command-palette, dga, sidenav and speak copy follow a runtime language signal ([#509](https://github.com/cngxjs/cngx/issues/509)) ([5bc6ad1](https://github.com/cngxjs/cngx/commit/5bc6ad1071f1e7ce8379c0e05638203a5c710821))
+- **ui:** make accordion, breadcrumb, chart-panel, collection, stat-card, toc and a11y-panel copy follow a runtime language signal ([#514](https://github.com/cngxjs/cngx/issues/514)) ([499266d](https://github.com/cngxjs/cngx/commit/499266df04e0b3e16dc97d2d3429a3906a0bab77))
+- **ui:** drive the remaining ui copy from the language pack ([#535](https://github.com/cngxjs/cngx/issues/535)) ([fa60518](https://github.com/cngxjs/cngx/commit/fa605187f6f84ce6085becd04e8b79fdd9022626))
+- **ui,common:** drive the ui feedback, stepper, tabs, grid, paginator and command-palette copy from the language pack ([#532](https://github.com/cngxjs/cngx/issues/532)) ([67d2855](https://github.com/cngxjs/cngx/commit/67d2855ebaab44f4ff49478e2f70ac6d7e9e2f37))
+- **ui,common:** signal real scroll edges in the data-grid-accordion with a reusable CngxScrollEdges atom ([#533](https://github.com/cngxjs/cngx/issues/533)) ([bbfa1e3](https://github.com/cngxjs/cngx/commit/bbfa1e35432de304496509082e1c63c4c113e743))
+- **ui,common,data-display:** move the legacy width detections onto the container contract ([#461](https://github.com/cngxjs/cngx/issues/461)) ([0ff150f](https://github.com/cngxjs/cngx/commit/0ff150f43843e5dc1f9feacbb1a15ea5ab3fdbef))
+- **ui/stepper:** variant parity, mobile-collapse ids and always-mounted status regions ([#379](https://github.com/cngxjs/cngx/issues/379)) ([2ea70ab](https://github.com/cngxjs/cngx/commit/2ea70ab796707040a8be144a8e7c38e37b01825d))
+- **utils:** add the walkTree early-exit channel and the flattenTree duplicate-id warning ([#420](https://github.com/cngxjs/cngx/issues/420)) ([51bb565](https://github.com/cngxjs/cngx/commit/51bb565b6a51279e483b93e79abbf78ede1cfcd0))
+- **utils,core,common,ui:** route ui copy through reactive-ready i18n surfaces ([#472](https://github.com/cngxjs/cngx/issues/472)) ([0fdf4ca](https://github.com/cngxjs/cngx/commit/0fdf4ca882de244dcd819a54247e7ce9f3fb7e55))
+
+### Bug Fixes
+
+- **common:** paint disabled states by colour and keep state visible in forced colors ([#501](https://github.com/cngxjs/cngx/issues/501)) ([36dd85e](https://github.com/cngxjs/cngx/commit/36dd85e044475de9e10a7909692fde3b745ddeac))
+- **common:** keep the menu cursor, segmented progress and tooltip indicator legible by colour and in forced colors ([#512](https://github.com/cngxjs/cngx/issues/512)) ([83867c4](https://github.com/cngxjs/cngx/commit/83867c426394780985e3faebe0a892f676c71648))
+- **common,ui,forms:** keep background-only markers visible in forced colors ([#518](https://github.com/cngxjs/cngx/issues/518)) ([bfb81e8](https://github.com/cngxjs/cngx/commit/bfb81e8f4dd5b68f75d390f9010d505ff9109309))
+- **common/audio:** track context state changes and warn once per unknown earcon ([#427](https://github.com/cngxjs/cngx/issues/427)) ([0eed040](https://github.com/cngxjs/cngx/commit/0eed0403d1e80ccddb9dca123ebf82c74018cbaf))
+- **common/chart:** context export, time axis, gap handling, preset parity ([#367](https://github.com/cngxjs/cngx/issues/367)) ([ff0f7ea](https://github.com/cngxjs/cngx/commit/ff0f7ead53f4944962bad7bf45aeda3a2b3e3cca))
+- **common/chart:** draw the SVG chart series in the user palette with the legend's pattern in forced colors ([#519](https://github.com/cngxjs/cngx/issues/519)) ([209b452](https://github.com/cngxjs/cngx/commit/209b452420d12b7f5b4a3d0a8dde7eea55c9e1c8))
+- **common/chart:** let the area and band [opacity] input win over the opacity token default ([#520](https://github.com/cngxjs/cngx/issues/520)) ([d1f1b51](https://github.com/cngxjs/cngx/commit/d1f1b513e361fd3dd923dac5c223af8951985197))
+- **common/chart:** paint the canvas backend in the forced-colors palette with the legend's per-series cycle ([#521](https://github.com/cngxjs/cngx/issues/521)) ([8d05fe5](https://github.com/cngxjs/cngx/commit/8d05fe5c79f42c0c1afd745ce5b10b9c27ca2f47))
+- **common/data:** controlled sort end-to-end, deep-link-safe paginate routing, commit supersede order ([#353](https://github.com/cngxjs/cngx/issues/353)) ([c76249b](https://github.com/cngxjs/cngx/commit/c76249b029549b0be96df0e008c89b1d232265b7))
+- **common/data:** async-state family convergence and identity-guarded registries ([#354](https://github.com/cngxjs/cngx/issues/354)) ([32dc884](https://github.com/cngxjs/cngx/commit/32dc8846ed618e5f8cc025d9a623f57cc4c0c8b0))
+- **common/data:** stop virtual scroll from flashing blank strips on fast scroll ([#448](https://github.com/cngxjs/cngx/issues/448)) ([e417eaf](https://github.com/cngxjs/cngx/commit/e417eaf808167087a9c0f45eabf5e50cf68b02b5))
+- **common/display:** give the chip remove button a 24px hit box on every pointer ([#477](https://github.com/cngxjs/cngx/issues/477)) ([a3b8752](https://github.com/cngxjs/cngx/commit/a3b8752c3dd48f2e04634ccf26c639e9ba7ae341))
+- **common/interactive:** lifecycle races and focus/announce polish across interactive and a11y atoms ([#369](https://github.com/cngxjs/cngx/issues/369)) ([6594f07](https://github.com/cngxjs/cngx/commit/6594f078ccf05f5cb936a24d3c995b77b362c7c8))
+- **common/layout:** drawer inert composition + focus restore, text and observer hardening ([#376](https://github.com/cngxjs/cngx/issues/376)) ([e42e1a8](https://github.com/cngxjs/cngx/commit/e42e1a8222f22e9a177c0c2b24093acc7092ca50))
+- **common/layout:** soften the sticky-header never-scrolls dev warning to a 1px tolerance ([#457](https://github.com/cngxjs/cngx/issues/457)) ([0980e4b](https://github.com/cngxjs/cngx/commit/0980e4b68e41c3300768f76fd258b64fd2fbc350))
+- **common/popover:** ship bare popover menus with a real surface ([#441](https://github.com/cngxjs/cngx/issues/441)) ([4e66ada](https://github.com/cngxjs/cngx/commit/4e66adabe6cce1dfdabde87254066086e19f1f88))
+- **common/popover:** pin the panel close button to the panel corner ([#445](https://github.com/cngxjs/cngx/issues/445)) ([c9669b2](https://github.com/cngxjs/cngx/commit/c9669b2889389f68aa6b9eb75db05b4077a5d0d1))
+- **common/popover:** release focus before the panel is hidden ([#446](https://github.com/cngxjs/cngx/issues/446)) ([b445067](https://github.com/cngxjs/cngx/commit/b445067945900ddc49bc92706c4552b293335490))
+- **common/popover:** apply the popover offset on the placement's main axis only ([#528](https://github.com/cngxjs/cngx/issues/528)) ([523a7b9](https://github.com/cngxjs/cngx/commit/523a7b97bd17a7a1d1f100fa1615cfe0f37f9030))
+- **common/stepper:** family pass - commit races, nav hygiene, registries, router-sync, i18n ([#358](https://github.com/cngxjs/cngx/issues/358)) ([c828cc6](https://github.com/cngxjs/cngx/commit/c828cc6588270e971cc2b450589aafdc08122f46))
+- **common/tabs:** family pass - registry hygiene, router-commit correlation, config wiring, dismissal focus ([#359](https://github.com/cngxjs/cngx/issues/359)) ([1358a68](https://github.com/cngxjs/cngx/commit/1358a682cb48089804fc9212c3fb0141d4825e01))
+- **common/tabs:** shift the rejection markers when a dismissed tab closes ([#425](https://github.com/cngxjs/cngx/issues/425)) ([b853d10](https://github.com/cngxjs/cngx/commit/b853d1099505489ddb2b02db477c4f611a43a3d8))
+- **core:** transition delay-aware close + cancel handle, tracker mount seed, IME shortcut guard ([#368](https://github.com/cngxjs/cngx/issues/368)) ([9fd71ed](https://github.com/cngxjs/cngx/commit/9fd71edca3c9f004b9c62068b13b7efaf035b92f))
+- **core:** evict an undefined key in the bounded memoize cache ([#484](https://github.com/cngxjs/cngx/issues/484)) ([b2a534b](https://github.com/cngxjs/cngx/commit/b2a534bf90bdafcbfda4657e9acf2f6217b11cae))
+- **core,forms:** paint the disabled state on an outline control and outline box ([#480](https://github.com/cngxjs/cngx/issues/480)) ([4a02a5d](https://github.com/cngxjs/cngx/commit/4a02a5d6caca684967cda8cafc2ba8e72f4a2944))
+- **core,forms,themes:** meet the field contrast recipes in both schemes ([#473](https://github.com/cngxjs/cngx/issues/473)) ([c1491fb](https://github.com/cngxjs/cngx/commit/c1491fb5e5c075c06873ba19ffec75d867a7a7cd))
+- **core/theming:** quiet the bare description term by colour and define the highlight colour for dark ([#510](https://github.com/cngxjs/cngx/issues/510)) ([af68295](https://github.com/cngxjs/cngx/commit/af68295c94b360d650a59ffaa35a9ca4f575a327))
+- **data-display:** treetable state surface + state hygiene ([#366](https://github.com/cngxjs/cngx/issues/366)) ([4a89d6a](https://github.com/cngxjs/cngx/commit/4a89d6a0acb5d0679dbba061575c55c7e0fd7914))
+- **data-display/treetable:** draw the expand toggle of a selected row in the row ink under forced colors ([#511](https://github.com/cngxjs/cngx/issues/511)) ([402bb1a](https://github.com/cngxjs/cngx/commit/402bb1a2c87e4bceb1068f0d328a30c504fb55b7))
+- **examples,forms/input,ui/tabs:** bind aria-label through the input alias on cngx hosts ([#466](https://github.com/cngxjs/cngx/issues/466)) ([ade62e4](https://github.com/cngxjs/cngx/commit/ade62e49d07e05bddbb91a6b79aeca5b9d5723da))
+- **forms:** enlarge the select caret and default numeric inputs to monospace ([#440](https://github.com/cngxjs/cngx/issues/440)) ([1061345](https://github.com/cngxjs/cngx/commit/1061345b97cb0124aebb013fc1b939a8cb71a9f3))
+- **forms:** align input and select control heights across density and touch ([#442](https://github.com/cngxjs/cngx/issues/442)) ([e6ccd72](https://github.com/cngxjs/cngx/commit/e6ccd7257fbcd5acbb64edd94d8cdbe0e5edd442))
+- **forms:** close the form-field skin gaps on ARIA, trigger states and the bare look ([#468](https://github.com/cngxjs/cngx/issues/468)) ([87365e5](https://github.com/cngxjs/cngx/commit/87365e5491cb3b13a74ed942891e8f2325705fef))
+- **forms:** keep an empty manual error container out of the field gap ([#495](https://github.com/cngxjs/cngx/issues/495)) ([bcf8c3a](https://github.com/cngxjs/cngx/commit/bcf8c3a9138364cbc21627323795d87a5bca21cf))
+- **forms:** paint disabled states by colour and size selects like inputs ([#499](https://github.com/cngxjs/cngx/issues/499)) ([8f1e3e2](https://github.com/cngxjs/cngx/commit/8f1e3e281a7e062c3e8cc65b7f1770115a1ed138))
+- **forms:** give masked inputs a reactive forms value channel ([#538](https://github.com/cngxjs/cngx/issues/538)) ([a420d3b](https://github.com/cngxjs/cngx/commit/a420d3be86842251e1817904189279c32c6f28b1))
+- **forms/filter-builder:** shared incomplete definition, maxNestingDepth enforcement, focus restoration on remove ([#357](https://github.com/cngxjs/cngx/issues/357)) ([d66f6ef](https://github.com/cngxjs/cngx/commit/d66f6efc1c525ddbc39fe3c04f9fd7b9ae81aaaf))
+- **forms/filter-builder:** drop the no-op skeletonCount knob, re-register pill width tokens ([#454](https://github.com/cngxjs/cngx/issues/454)) ([3a6c55d](https://github.com/cngxjs/cngx/commit/3a6c55d071e2f201b061ee4f460b45c56947c633))
+- **forms/filter-builder:** read the danger text rung for the remove glyph ([#487](https://github.com/cngxjs/cngx/issues/487)) ([06f47da](https://github.com/cngxjs/cngx/commit/06f47da62786d69996121b14acad1246042e0cab))
+- **forms/input:** input hardening - eager clear listener, IME composition reconcile, char-count fallback, dev guards ([#356](https://github.com/cngxjs/cngx/issues/356)) ([ada7672](https://github.com/cngxjs/cngx/commit/ada767264f90210b5ab1b29a2d4dbfec871afdbf))
+- **forms/input:** paint disabled rating and phone input by colour ([#506](https://github.com/cngxjs/cngx/issues/506)) ([4059921](https://github.com/cngxjs/cngx/commit/4059921e0c42631ebdf2903771ce5eaed1693e0c))
+- **forms/select:** commit-flow parity across the array and action composites ([#355](https://github.com/cngxjs/cngx/issues/355)) ([94087e1](https://github.com/cngxjs/cngx/commit/94087e1055917d7caaec51bcf1c92ce196f869b6))
+- **forms/select:** size every select trigger to the text-control baseline ([#443](https://github.com/cngxjs/cngx/issues/443)) ([f8fe983](https://github.com/cngxjs/cngx/commit/f8fe983b09bd68e42f680be7f2e6d39aaa7f3718))
+- **forms/select:** stabilize the virtualized select panel width ([#449](https://github.com/cngxjs/cngx/issues/449)) ([0c09e34](https://github.com/cngxjs/cngx/commit/0c09e348400cae3f2bd753d1fd4a906b182da8a7))
+- **forms/select:** emit panel lifecycle and restore focus only on real open flips ([#479](https://github.com/cngxjs/cngx/issues/479)) ([e11eed1](https://github.com/cngxjs/cngx/commit/e11eed1eb06a78db1c05a0afdeed6fac41989f8d))
+- **forms/select:** paint a disabled outline trigger by colour, not opacity ([#483](https://github.com/cngxjs/cngx/issues/483)) ([118213a](https://github.com/cngxjs/cngx/commit/118213a8697142cd991ba2db04a7e99aba1fcdf3))
+- **forms/select:** size every select trigger as a border box ([#488](https://github.com/cngxjs/cngx/issues/488)) ([b72f136](https://github.com/cngxjs/cngx/commit/b72f1361290dcf8ed37d89ac5351e1ec259ad742))
+- **forms/select:** centre the default caret on the trigger ([#489](https://github.com/cngxjs/cngx/issues/489)) ([fcefbec](https://github.com/cngxjs/cngx/commit/fcefbeccd6c62c03e6e274ad6c764cec3a49c216))
+- **forms/select:** render a projected placeholder template on the select shell ([#522](https://github.com/cngxjs/cngx/issues/522)) ([8003d00](https://github.com/cngxjs/cngx/commit/8003d001cf0b51044f87b54513b3542bb4cc5394))
+- **forms/select:** keep the templates.action default off the selects without an action area ([#525](https://github.com/cngxjs/cngx/issues/525)) ([3686810](https://github.com/cngxjs/cngx/commit/368681087b02a49b14c2d5fa73553e3d09a60f03))
+- **forms/select:** anchor the input variants' panels to the field box instead of the inner input ([#527](https://github.com/cngxjs/cngx/issues/527)) ([1c2f9c1](https://github.com/cngxjs/cngx/commit/1c2f9c12e8e7150f081645975c21264ca5c9bbab))
+- **interop:** fromQuery busy retries, success-latched first load, dataUpdatedAt to lastUpdated ([#370](https://github.com/cngxjs/cngx/issues/370)) ([288365b](https://github.com/cngxjs/cngx/commit/288365be3a0b893e5c9df3a16abb0d31a63e82b5))
+- **scripts:** publish prereleases to latest until a stable release exists ([#536](https://github.com/cngxjs/cngx/issues/536)) ([0f9f7ce](https://github.com/cngxjs/cngx/commit/0f9f7cef626823b6ab79c060ef5b4d8258dec759))
+- **testing:** kernel-derived async-state mock and live DOM matchers ([#380](https://github.com/cngxjs/cngx/issues/380)) ([8d617ea](https://github.com/cngxjs/cngx/commit/8d617eaa23220eb43a3af57db6392f9ae0b5ef09))
+- **themes:** bridge placement pass, layering, placeholder imports, specifier ([#378](https://github.com/cngxjs/cngx/issues/378)) ([e2f8563](https://github.com/cngxjs/cngx/commit/e2f8563ac6f7b7dc0a7b4f4d9a202c8e66bc713e))
+- **themes/material:** name-drift bridges rewritten against real token surfaces ([#377](https://github.com/cngxjs/cngx/issues/377)) ([a339cba](https://github.com/cngxjs/cngx/commit/a339cbaf836fe59e9a13f797b27b0ce2a5ff5212))
+- **themes/material:** derive the M2 field error colour for 4.5:1 text contrast ([#486](https://github.com/cngxjs/cngx/issues/486)) ([decd3ef](https://github.com/cngxjs/cngx/commit/decd3efa09dc50bb4d92f85e54f7a7ea0f77f975))
+- **themes/material:** derive every M2 warn text token for 4.5:1 contrast ([#493](https://github.com/cngxjs/cngx/issues/493)) ([3d0b135](https://github.com/cngxjs/cngx/commit/3d0b1359814b8b63f7308f3d663b34d44dbda5c3))
+- **ui:** mat-bridges family pass - order-aware registration, accordion seeding, announcements, ownership filters ([#361](https://github.com/cngxjs/cngx/issues/361)) ([731a52d](https://github.com/cngxjs/cngx/commit/731a52d389e1fa43840c76875e0c8c74d93b4dc4))
+- **ui:** paginator family pass - goto commit, emit dedup, dots a11y, focus restore, clamp echo ([#362](https://github.com/cngxjs/cngx/issues/362)) ([0207339](https://github.com/cngxjs/cngx/commit/02073398aebde3de4e1233d7b24056db0d850a7a))
+- **ui:** command-palette + context-menu pass - panel ownership, mounted empty state, minted ids ([#363](https://github.com/cngxjs/cngx/issues/363)) ([70ad1fd](https://github.com/cngxjs/cngx/commit/70ad1fda42ac3cfcd85e0b88ff75680df0e0a4b7))
+- **ui:** small-organisms pass - empty-state, collection, chart-panel, dga, stat-card, timeline ([#364](https://github.com/cngxjs/cngx/issues/364)) ([24e0191](https://github.com/cngxjs/cngx/commit/24e019121d00d3c6cdc334cfe0283d89013cd2ef))
+- **ui:** nav-shells pass - toc query params, breadcrumb current/encoding, sidenav keyboard resize ([#365](https://github.com/cngxjs/cngx/issues/365)) ([39d4fd2](https://github.com/cngxjs/cngx/commit/39d4fd2293a69a3addf3e35f762ff4548234ff96))
+- **ui:** re-register the dropped @property color tokens and restore their derivations ([#387](https://github.com/cngxjs/cngx/issues/387)) ([381b69d](https://github.com/cngxjs/cngx/commit/381b69db2dcd9b4a0ee3633c7e3bbc3551fec46e))
+- **ui:** keep current breadcrumb, command row and step labels readable in forced colors ([#503](https://github.com/cngxjs/cngx/issues/503)) ([e42d625](https://github.com/cngxjs/cngx/commit/e42d625c8948fe61b55d24c925f470bb2932c931))
+- **ui:** paint disabled and quiet states by colour, never opacity ([#507](https://github.com/cngxjs/cngx/issues/507)) ([53c041d](https://github.com/cngxjs/cngx/commit/53c041d1ae8373a18a82cc6f0c09a931e19cd674))
+- **ui:** lift the alert, banner and stepper group chip labels to 4.5:1 and give busy chart-panel actions their own disabled state ([#513](https://github.com/cngxjs/cngx/issues/513)) ([d1c896a](https://github.com/cngxjs/cngx/commit/d1c896a3375e2a7409abbd28b4a74c3de86905f3))
+- **ui:** derive the feedback severity colours from the core semantic colours and lift the toc and breadcrumb current markers to 4.5:1 ([#517](https://github.com/cngxjs/cngx/issues/517)) ([0198be4](https://github.com/cngxjs/cngx/commit/0198be45cc4ac8fe787f0b4c0bbcdde966c8a398))
+- **ui/action-button:** fire the toast effect on transition edges only ([#411](https://github.com/cngxjs/cngx/issues/411)) ([b57e09c](https://github.com/cngxjs/cngx/commit/b57e09c3a62eb9df7d86e746d50ac7a7af4d193d))
+- **ui/action-button:** derive status ARIA and announcement, add a disabled reason ([#428](https://github.com/cngxjs/cngx/issues/428)) ([d45e6f1](https://github.com/cngxjs/cngx/commit/d45e6f1d2cb7f0b48b5ba8e9a2de1068dd108e8a))
+- **ui/collection,common/data,forms/select:** virtualized scrollports render and scroll stably ([#459](https://github.com/cngxjs/cngx/issues/459)) ([34aaa28](https://github.com/cngxjs/cngx/commit/34aaa28ccce342a5ab1bfa5bd2cb01a69c67f29e))
+- **ui/feedback:** alert pipeline, toast contract, and pause math ([#360](https://github.com/cngxjs/cngx/issues/360)) ([4fdd0a7](https://github.com/cngxjs/cngx/commit/4fdd0a7634214838d50a970286289959f448526b))
+- **ui/overlay:** give the overlay a lifecycle-safety envelope ([#429](https://github.com/cngxjs/cngx/issues/429)) ([bb0fbfc](https://github.com/cngxjs/cngx/commit/bb0fbfc10a01a3743e3e7c26c0b160ed0deaf8b0))
+- **ui/paginator:** close the page dropdowns on select and restore focus to the trigger ([#444](https://github.com/cngxjs/cngx/issues/444)) ([4baf328](https://github.com/cngxjs/cngx/commit/4baf3280bae7e686552992c87687efa29a8bc035))
+- **ui/paginator:** close the dropdown segments on re-pick of the current value ([#458](https://github.com/cngxjs/cngx/issues/458)) ([985433a](https://github.com/cngxjs/cngx/commit/985433a78bad67cb8dc1e5aa9df31e38963c740b))
+- **ui/sidenav:** release focus before the overlay rail is hidden ([#447](https://github.com/cngxjs/cngx/issues/447)) ([39616eb](https://github.com/cngxjs/cngx/commit/39616ebf74c3fe4f312fc317dd77515ea30fa205))
+- **ui/speak:** make the button labels overridable and gate it on speech support ([#426](https://github.com/cngxjs/cngx/issues/426)) ([f7b3104](https://github.com/cngxjs/cngx/commit/f7b31044e249c3091247a9f2055cabd058cf2b95))
+- **utils:** version pre-release parsing, exponent-aware decimalPlaces, NaN-bound clamp contract ([#371](https://github.com/cngxjs/cngx/issues/371)) ([eeeebe7](https://github.com/cngxjs/cngx/commit/eeeebe7ee84f643c916c9a3b15f733f0e20b7f89))
+
+### BREAKING CHANGES
+
+- **core:** `onTransitionDone` now returns a `TransitionDoneHandle`
+(`{ flush(): void; cancel(): void }`) instead of a bare function.
+- **forms:** filter-builder system upgrade - row controller, open operators, editor host, pill rows ([#389](https://github.com/cngxjs/cngx/issues/389))
+- **core:** collapse the preference axes onto a shared factory and exclude 'auto' from subtree inputs ([#393](https://github.com/cngxjs/cngx/issues/393))
+- **common/popover:** convert the writable signal surface to setter methods ([#394](https://github.com/cngxjs/cngx/issues/394))
+- **common/interactive:** chore sweep - read-only hovered, lifecycle fixes, create* aliases ([#395](https://github.com/cngxjs/cngx/issues/395))
+- **forms/filter-builder:** drop the no-op skeletonCount knob, re-register pill width tokens ([#454](https://github.com/cngxjs/cngx/issues/454))
+- **ui:** make sidenav, paginator and breadcrumb responsive by default ([#460](https://github.com/cngxjs/cngx/issues/460))
+- **ui,common,data-display:** move the legacy width detections onto the container contract ([#461](https://github.com/cngxjs/cngx/issues/461))
+- **common:** `CNGX_STEPPER_I18N` and `CNGX_TABS_I18N` are now
+`InjectionToken<Signal<T>>`, and the `ariaLabels` / `fallbackLabels`
+keys of `CngxStepperConfig` and `CngxTabsConfig` are typed `L |
+Signal<L>`.
+
+Migration (full list in `core-concepts/i18n-migration.md`):
+
+|Before|After|
+|-|-|
+
+|`inject(CNGX_STEPPER_I18N).stepperLabel`|`inject(CNGX_STEPPER_I18N)().stepperLabel`,
+read in a `computed()` or template|
+|`injectTabsI18n().tabsLabel`|`injectTabsI18n()().tabsLabel`|
+|`{ provide: CNGX_STEPPER_I18N, useValue: bundle
+}`|`provideStepperI18n(withStepperI18nLabels(overrides))`, or `useValue`
+with a Signal|
+|Hand-written `CngxStepperI18nFeature` / `CngxTabsI18nFeature`:
+`(bundle) => ({ ...bundle, x })`|`(bundle) =>
+createOverrideMerge(bundle, { x })`|
+|`config.ariaLabels?.stepperRegion` off `injectStepperConfig()` /
+`injectTabsConfig()`|`coerceSignal(config.ariaLabels)()?.stepperRegion`|
+|`i18n` option of `createStepperAnnouncementBuilders`,
+`createStepperSlotContextBuilders`, `createStepperAccname`,
+`createStepperGroupSummary`, `createTabGroupAnnouncements`,
+`createTabDismissals` as a plain bundle|pass `inject*I18n()` (a Signal)|
+|`createMatStepHandle(step, idSeed, bundle)`|`createMatStepHandle(step,
+idSeed, injectStepperI18n())`|
+
+The landmark name keeps its precedence: `ariaLabels.stepperRegion` /
+`tabsRegion` (English defaults) win over the i18n `stepperLabel` /
+`tabsLabel`, so localise the landmark through `with*AriaLabels` as well.
+
+### Other information
+
+- Reactive-i18n guard: every ratchet row for the stepper and tabs tokens
+is closed (242 to 210 rows). The live-region manifest now enforces the
+no-respeak spec of every stepper and tabs region, including five
+error-line regions the guard found once the bundle became a Signal read.
+- Every changed or removed type line in the `.d.ts` of `common/stepper`,
+`common/tabs`, `ui/stepper`, `ui/tabs`, `ui/mat-stepper` and
+`ui/mat-tabs` has a bullet in `core-concepts/i18n-migration.md`.
+- Known limit: the guard follows copy within one class, so copy that
+reaches a live region through a derived Signal of another unit (the
+Material `Step <id>` label) is covered by specs only.
+- Validated locally: `npm run lint`, `npm test`, `npm run test:scripts`,
+`npm run build:libs`, `npm run build:examples`, `npm run docs:json`, and
+the `examples/e2e/core/i18n` Playwright suite.
+- **common:** `CNGX_CARD_I18N`, `CNGX_CHART_I18N` and
+`CNGX_RECYCLER_I18N` are now `InjectionToken<Signal<T>>`; the `labels` /
+`ariaLabels` keys of `CngxDialogDefaults`, `CngxMenuConfig` and
+`CngxTimelineConfig` are typed `L | Signal<L>`; the common copy inputs
+listed above read `undefined` when unbound; `createTimelineFallbackCopy`
+returns a `Signal`.
+
+Migration (full list in `core-concepts/i18n-migration.md`):
+
+|Before|After|
+|-|-|
+|`inject(CNGX_CARD_I18N).selected`|`inject(CNGX_CARD_I18N)().selected`,
+read in a `computed()` or template|
+
+|`inject(CNGX_CHART_I18N).summary(x)`|`inject(CNGX_CHART_I18N)().summary(x)`|
+
+|`inject(CNGX_RECYCLER_I18N).empty()`|`inject(CNGX_RECYCLER_I18N)().empty()`|
+|`{ provide: CNGX_CARD_I18N, useValue: bundle
+}`|`provideCardI18n(withCardI18nLabels(overrides))`, or `useValue` with
+a Signal|
+
+|`injectDialogConfig().labels.close`|`coerceSignal(injectDialogConfig().labels)().close`|
+
+|`injectMenuConfig().ariaLabels.itemActivated`|`coerceSignal(injectMenuConfig().ariaLabels)().itemActivated`|
+|`injectTimelineConfig().labels?.retry`|a field
+`coerceSignal(injectTimelineConfig().labels ?? NO_LABELS)`, then
+`labels().retry`|
+|Hand-written menu / timeline feature spreading `cfg.ariaLabels` /
+`config.labels`|`createOverrideMerge(...)` /
+`createNestedOverrideMerge(..., 'status')`|
+|`directive.succeededAnnouncement()` read programmatically|read
+`directive.announcement()`; the input is `undefined` when unbound|
+
+|`createTimelineFallbackCopy(config).retry`|`createTimelineFallbackCopy(config)().retry`|
+|`CngxTimelineViewFactory` with plain `labels`|`labels` is a `Signal`;
+read the announcement copy in `untracked(() => labels().loading)`|
+- **forms:** paint disabled states by colour and size selects like inputs ([#499](https://github.com/cngxjs/cngx/issues/499))
+- **forms/select:** the `ariaLabels`, `fallbackLabels` and `announcer` keys
+of `CngxSelectConfig` and the `ariaLabel` key of
+`CngxActionSelectConfig` / `CngxReorderableSelectConfig` are typed `L |
+Signal<L>`; `injectSelectConfig()`, `injectActionSelectConfig()` and
+`injectReorderableSelectConfig()` return those keys as Signals; the
+`fallbackLabels` / `ariaLabels` members of every select component are
+Signals; the select copy inputs listed above read `undefined` when
+unbound.
+
+Migration (full list in `core-concepts/i18n-migration.md`):
+
+|Before|After|
+|-|-|
+
+|`injectSelectConfig().fallbackLabels.empty`|`injectSelectConfig().fallbackLabels().empty`,
+read in a `computed()` or template|
+
+|`injectSelectConfig().announcer.format`|`injectSelectConfig().announcer().format`|
+|`inject(CNGX_SELECT_CONFIG).ariaLabels?.clearButton`|a field
+`coerceSignal(config.ariaLabels ?? NO_ARIA_LABELS)`, then
+`ariaLabels().clearButton`|
+
+|`injectActionSelectConfig().ariaLabel`|`injectActionSelectConfig().ariaLabel()`|
+
+|`injectReorderableSelectConfig().ariaLabel`|`injectReorderableSelectConfig().ariaLabel()`|
+|`select.fallbackLabels.empty` on a component
+instance|`select.fallbackLabels().empty`|
+|`select.clearButtonAriaLabel()` read programmatically|read the rendered
+`aria-label`; the input is `undefined` when unbound|
+
+Behaviour changes:
+
+- The `*cngxSelectAction` wrapper in every select panel is
+`role="group"` with `aria-label` from `CngxActionSelectConfig.ariaLabel`
+(default `'Inline action'`); screen readers announce the group name when
+focus enters the action slot.
+- A defaulted copy key that an override sets to `undefined` resolves to
+its English default instead of `undefined` (`withFallbackLabels({ empty:
+undefined })` renders `'No Options'`). Set `''` to clear a label.
+
+### Other information
+
+- Reactive-i18n guard: every ratchet row assigned to this step is closed
+(167 to 141 rows), and each of the ten panel-shell live regions has its
+own no-respeak test in the manifest.
+- The guard now sees a copy type through an intersection (`Labels &
+Required<...>`), so a stricter resolved type cannot hide a live region
+from discovery.
+- Every changed or removed type line in the `@cngx/forms/select` `.d.ts`
+has a bullet in `core-concepts/i18n-migration.md`.
+- Validated locally: `npm run lint`, `npm test`, `npm run test:scripts`,
+`npm run build:libs`, `npm run build:examples`, `npm run docs:json`, the
+`examples/e2e/core/i18n` Playwright suite, and `e2e/action-select` /
+`e2e/action-multi-select` on Chromium and WebKit. Firefox could not
+launch in the local sandbox; CI covers it.
+- **common:** paint disabled states by colour and keep state visible in forced colors ([#501](https://github.com/cngxjs/cngx/issues/501))
+- **forms/select:** place the selection indicator at the row end and keep cursor rows readable in forced colors ([#502](https://github.com/cngxjs/cngx/issues/502))
+- **forms,data-display:** `CNGX_ERROR_MESSAGES` is
+`InjectionToken<Signal<ErrorMessageMap>>`;
+`FormFieldConfig.errorMessages` / `.constraintHints`,
+`InputConfig.ariaLabels` / `.numericLocale`,
+`CngxFilterBuilderConfig.i18n` and `TreetableConfig.labels` are typed `T
+| Signal<T>` and hold a Signal once their `with*` feature ran;
+`CngxFilterBuilderAnnouncerSources.i18n` is a Signal;
+`CngxPhoneInput.countries` reads `undefined` when unbound.
+
+Migration (full list in `core-concepts/i18n-migration.md`):
+
+|Before|After|
+|-|-|
+
+|`inject(CNGX_ERROR_MESSAGES)[kind]`|`inject(CNGX_ERROR_MESSAGES)()[kind]`,
+read in a `computed()`, template or handler|
+|`{ provide: CNGX_ERROR_MESSAGES, useValue: map
+}`|`provideErrorMessages(map)`, or
+`provideFormFieldAt(withErrorMessages(map))` on a component|
+|`injectFormFieldConfig().constraintHints?.lengthRange(...)`|a field
+`coerceSignal(injectFormFieldConfig().constraintHints)`, then
+`hints()?.lengthRange(...)`|
+|`injectInputConfig().ariaLabels?.clear`|a field
+`coerceSignal(injectInputConfig().ariaLabels ?? NO_LABELS)`, then
+`labels().clear`|
+
+|`injectInputConfig().numericLocale`|`coerceSignal(injectInputConfig().numericLocale)()`|
+|`injectFilterBuilderConfig().i18n.addFilter`|a field
+`coerceSignal(injectFilterBuilderConfig().i18n)`, then
+`i18n().addFilter`|
+|custom announcer factory reading
+`sources.i18n.announcement`|`sources.i18n().announcement`, inside
+`untracked` where it builds the region text|
+|`inject(CNGX_TREETABLE_CONFIG).labels?.loading`|a field
+`coerceSignal(config.labels ?? NO_LABELS)`, then `labels().loading`|
+|`phone.countries()` read programmatically|read the picker's options;
+the input is `undefined` when unbound|
+
+Behaviour change (all libraries): a live region keeps its text on a
+language switch even when a consumer formatter reads a language Signal
+itself (for example `withErrorMessages({ required: () =>
+translate('required') })`). The formatter is called untracked; the next
+status change speaks the new language. Labels outside live regions
+switch immediately.
+
+### Other information
+
+- Reactive-i18n guard: every ratchet row assigned to this step is closed
+(141 to 99 rows), and the `cngx-field-errors`, `cngx-form-errors`,
+password-strength and treetable live regions have their no-respeak tests
+in the manifest. Each no-respeak test was checked to fail without
+`untracked`.
+- Every changed or removed type line in the `.d.ts` of the four touched
+entries has a bullet in `core-concepts/i18n-migration.md`.
+- Validated locally: `npm run lint`, `npm test`, `npm run test:scripts`,
+`npm run build:libs`, `npm run build:examples`, `npm run docs:json` and
+the `examples/e2e/core/i18n` Playwright suite (16/16, Chromium).
+- **forms/input:** paint disabled rating and phone input by colour ([#506](https://github.com/cngxjs/cngx/issues/506))
+- **ui:** paint disabled and quiet states by colour, never opacity ([#507](https://github.com/cngxjs/cngx/issues/507))
+- **ui:** `CNGX_FEEDBACK_I18N` is
+`InjectionToken<Signal<CngxFeedbackI18n>>` and `injectFeedbackI18n()`
+returns a Signal; `CngxPaginatorConfig.ariaLabels` / `.announcements` /
+`.formats` and the copy keys of `CngxCommandPaletteConfig` are typed `T
+| Signal<T>` and hold a Signal once a Signal was passed to their
+feature; the copy inputs listed above read `undefined` when unbound.
+
+Migration (full list in `core-concepts/i18n-migration.md`):
+
+|Before|After|
+|-|-|
+
+|`inject(CNGX_FEEDBACK_I18N).alertsRegionLabel`|`inject(CNGX_FEEDBACK_I18N)().alertsRegionLabel`,
+read in a `computed()`, template or handler|
+|`{ provide: CNGX_FEEDBACK_I18N, useValue: bundle
+}`|`provideFeedbackI18n(overrides)`|
+
+|`injectPaginatorConfig().ariaLabels.next`|`injectPaginatorAriaLabels()().next`
+(likewise `injectPaginatorAnnouncements()`, `injectPaginatorFormats()`)|
+|`injectCommandPaletteConfig().emptyLabel`|a field
+`coerceSignal(injectCommandPaletteConfig().emptyLabel)`, then
+`emptyLabel()`|
+|`indicator.label()`, `sortHeader.notSortedLabel()`, ... read
+programmatically|read the rendered text; the input is `undefined` when
+unbound|
+
+Behaviour change: a bound `cngxDgaCountSingular` / `cngxDgaCountPlural`
+now always composes `<count> <noun>`, also when it equals the label
+default; leave both unbound to use a custom `count` formatter.
+
+### Other information
+
+- Reactive-i18n guard: every ratchet row assigned to this step is closed
+(99 to 43 rows), and all 12 live regions of this step have their
+no-respeak tests in the manifest, now enforced.
+- Every changed or removed public type line in the `.d.ts` of the seven
+touched entries has a bullet in `core-concepts/i18n-migration.md`.
+- Validated locally: `npm run lint`, `npm test`, `npm run test:scripts`,
+`npm run build:libs`, `npm run build:examples`, `npm run docs:json` and
+the `examples/e2e/core/i18n` Playwright suite (17/17, Chromium).
+- **common:** keep the menu cursor, segmented progress and tooltip indicator legible by colour and in forced colors ([#512](https://github.com/cngxjs/cngx/issues/512))
+- **ui:** lift the alert, banner and stepper group chip labels to 4.5:1 and give busy chart-panel actions their own disabled state ([#513](https://github.com/cngxjs/cngx/issues/513))
+- **ui:** the copy keys of the seven configs above are typed `T |
+Signal<T>` and hold a Signal once a Signal was passed to their feature
+(`CngxAccordionConfig.disabledReason` / `.errorMessage`,
+`CngxBreadcrumbConfig.ariaLabels`, `CngxChartPanelConfig.ariaLabels`,
+`CngxIncrementalListConfig.ariaLabels`, `CngxStatCardConfig.ariaLabels`,
+`CngxTocConfig.ariaLabels`, `CngxA11yPanelConfig.labels` / `.axes`); the
+copy inputs listed above read `undefined` when unbound.
+
+Migration (full list in `core-concepts/i18n-migration.md`):
+
+|Before|After|
+|-|-|
+
+|`injectBreadcrumbConfig().ariaLabels?.bar`|`injectBreadcrumbAriaLabels()().bar`
+(likewise chart-panel, incremental-list, stat-card, toc), read in a
+`computed()`, template or handler|
+|`injectA11yPanelConfig().labels.heading` /
+`.axes`|`injectA11yPanelLabels()().heading` / `injectA11yPanelAxes()()`|
+|`injectAccordionConfig().disabledReason`|a field
+`coerceSignal(injectAccordionConfig().disabledReason)`, then `reason()`|
+|`item.disabledReason()`, `card.errorText()`, ... read
+programmatically|read the rendered text; the input is `undefined` when
+unbound|
+
+Behaviour change: the whole stat card can be a live region, so an
+unbound stat-card copy input shows a new language with the tile's next
+view or busy change, also while `[live]` is `'off'`.
+
+### Other information
+
+- Reactive-i18n guard: every remaining ratchet row is closed (43 to 0),
+and the 4 live regions of this step have their no-respeak tests in the
+manifest, now enforced.
+- Every changed or removed public type line in the `.d.ts` of the seven
+touched entries has a bullet in `core-concepts/i18n-migration.md`;
+`@cngx/core/utils` only gains `createDefaultsFill`.
+- Validated locally: `npm run lint`, `npm test`, `npm run test:scripts`,
+`npm run build:libs`, `npm run build:examples`, `npm run docs:json` and
+the `examples/e2e/core/i18n` Playwright suite (18/18, Chromium).
+- **common,ui,forms:** the shipped i18n keys above change type, the deprecated
+stepper keys and two internal exports are removed, and two optional
+surfaces become required.
+
+Migration (full list in `core-concepts/i18n-migration.md`):
+
+|Before|After|
+|-|-|
+- **core,common:** drive cngx copy from one language pack per language ([#523](https://github.com/cngxjs/cngx/issues/523))
+- **forms,data-display:** drive the forms and treetable copy from one language pack ([#531](https://github.com/cngxjs/cngx/issues/531))
+- **ui,common:** drive the ui feedback, stepper, tabs, grid, paginator and command-palette copy from the language pack ([#532](https://github.com/cngxjs/cngx/issues/532))
+- **ui:** drive the remaining ui copy from the language pack ([#535](https://github.com/cngxjs/cngx/issues/535))
+- **forms:** check the time range of time masks ([#534](https://github.com/cngxjs/cngx/issues/534))
+- **forms:** give masked inputs a reactive forms value channel ([#538](https://github.com/cngxjs/cngx/issues/538))
+- **core/i18n:** ship the English and German language packs ([#537](https://github.com/cngxjs/cngx/issues/537))
+
 ## 0.1.0-rc.7 (2026-08-31)
 
 
