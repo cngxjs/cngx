@@ -74,7 +74,7 @@ const DISPLAY_DATE_FORMAT: Intl.DateTimeFormatOptions = {
   day: 'numeric',
 };
 
-/** One pair object per cached formatter pair, so equal inputs return the identical object. */
+/** One pair object per cached formatter pair: equal inputs share it while both formatters stay cached. */
 const DISPLAY_FORMATTERS = new WeakMap<
   Intl.NumberFormat,
   WeakMap<Intl.DateTimeFormat, CngxDisplayFormatters>
@@ -98,8 +98,9 @@ export interface CngxDisplayFormatters {
  * Resolves the formatters for showing a raw value as text in `locale`: dates
  * with `dateFormat` (date-only by default), numbers with `numberFormat` (the
  * `Intl.NumberFormat` defaults by default). Both come from the bounded
- * formatter caches, and the same locale and formats return the identical
- * object, so a `computed()` over it keeps its reference without an `equal`.
+ * formatter caches, and while both formatters stay cached the same locale
+ * and formats return the identical object, so a `computed()` over it keeps
+ * its reference without an `equal`.
  * Resolve once per locale and format, not per value.
  *
  * ```ts
