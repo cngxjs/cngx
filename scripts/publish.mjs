@@ -5,14 +5,14 @@
 //   node scripts/publish.mjs --version 1.2.3           # all libs, explicit version
 //   node scripts/publish.mjs --lib core --bump patch   # single lib
 //   node scripts/publish.mjs --dry-run --bump patch    # preview without publishing
-//   node scripts/publish.mjs --tag next --bump major   # publish with dist-tag
+//   node scripts/publish.mjs --tag next --bump major   # force a dist-tag (default: derived, see resolveDistTag)
 //   node scripts/publish.mjs --skip-git-tag --bump patch  # do not tag/push git
 //   node scripts/publish.mjs --registry <url> ...      # override npm registry
 
 import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { resolve, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -44,7 +44,7 @@ function bumpVersion(version, type) {
         throw new Error(
           `Current version "${version}" has no prerelease suffix. ` +
           `Start a new prerelease line explicitly, e.g. ` +
-          `--version ${major}.${minor + 1}.0-rc.0 --tag next; ` +
+          `--version ${major}.${minor + 1}.0-rc.0; ` +
           `--bump prerelease then increments it.`,
         );
       }
@@ -55,6 +55,46 @@ function bumpVersion(version, type) {
       return `${base}-${match[1]}${Number(match[2]) + 1}`;
     }
     default: throw new Error(`Unknown bump type: ${type}. Use patch, minor, major, or prerelease.`);
+  }
+}
+
+/**
+ * Picks the npm dist-tag for a release when `--tag` is not given.
+ *
+ * - A stable version always goes to `latest`.
+ * - A prerelease goes to `latest` while the lib has no stable release on the
+ *   registry yet: before 1.0 the newest rc is the best version a plain
+ *   `npm i @cngx/<lib>` can get, and leaving `latest` on an old rc hands
+ *   every new consumer stale code.
+ * - Once a stable release exists, a prerelease goes to `next`, so an rc never
+ *   displaces the stable line.
+ *
+ * The rule is derived from the registry, so the switch at 1.0 needs no edit.
+ * An explicit `--tag` always wins.
+ */
+export function resolveDistTag({ nextVersion, explicitTag, hasStableRelease }) {
+  if (explicitTag) return explicitTag;
+  if (!nextVersion.includes('-')) return 'latest';
+  return hasStableRelease ? 'next' : 'latest';
+}
+
+/** Whether `versions` (as listed by `npm view <pkg> versions`) holds a stable release. */
+export function containsStableRelease(versions) {
+  return versions.some((v) => !v.includes('-'));
+}
+
+function publishedVersions(lib, registryFlag) {
+  try {
+    const raw = execSync(`npm view @cngx/${lib} versions --json${registryFlag}`, {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [parsed];
+  } catch {
+    // Not published yet (E404) or registry unreachable: treat as no stable release.
+    return [];
   }
 }
 
@@ -130,7 +170,7 @@ function parseArgs() {
     version: null,
     bump: null,
     dryRun: false,
-    tag: 'latest',
+    tag: null,
     registry: null,
     skipGitTag: false,
   };
@@ -184,7 +224,7 @@ function main() {
 
   console.log(`\nVersion:  ${currentVersion} -> ${nextVersion}${dryRun ? ' (dry run)' : ''}`);
   console.log(`Libs:     ${libs.join(', ')}`);
-  console.log(`Tag:      ${tag}`);
+  console.log(`Tag:      ${tag ?? 'derived per lib (see resolveDistTag)'}`);
   if (registry) console.log(`Registry: ${registry}`);
   console.log(`Git tag:  ${skipGitTag ? 'skipped' : gitTagName}\n`);
 
@@ -221,13 +261,19 @@ function main() {
       }
     }
 
+    const distTag = resolveDistTag({
+      nextVersion,
+      explicitTag: tag,
+      hasStableRelease: tag ? false : containsStableRelease(publishedVersions(lib, registryFlag)),
+    });
+
     if (!dryRun) {
       writeFileSync(distPkgPath, JSON.stringify(distPkg, null, 2) + '\n');
       replaceVersionInDist(join(ROOT, 'dist', lib), nextVersion);
-      run(`npm publish --access public --tag ${tag}${registryFlag}`, join(ROOT, 'dist', lib));
-      console.log(`  Published @cngx/${lib}@${nextVersion}`);
+      run(`npm publish --access public --tag ${distTag}${registryFlag}`, join(ROOT, 'dist', lib));
+      console.log(`  Published @cngx/${lib}@${nextVersion} (dist-tag ${distTag})`);
     } else {
-      console.log(`  Would publish @cngx/${lib}@${nextVersion} (dist/${lib})`);
+      console.log(`  Would publish @cngx/${lib}@${nextVersion} (dist/${lib}, dist-tag ${distTag})`);
     }
   }
 
@@ -256,4 +302,6 @@ function main() {
   console.log('\nDone.');
 }
 
-main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
+}
