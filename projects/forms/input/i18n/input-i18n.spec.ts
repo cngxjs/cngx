@@ -95,6 +95,26 @@ describe('input language section', () => {
     expect(de.copySuccess).toBe('Copied');
   });
 
+  it('reads English for a strength level the pack leaves unset', () => {
+    const passwordStrengthLevel = { weak: 'schwach', strong: undefined };
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(
+          withPartialPack({
+            locale: 'de',
+            input: { passwordStrengthLevel } as unknown as CngxLanguagePack['input'],
+          }),
+          withDocumentLanguage('off'),
+        ),
+      ],
+    });
+    const de = labels()();
+    expect(de.passwordStrengthLevel('weak')).toBe('schwach');
+    expect(de.passwordStrengthLevel('strong')).toBe('strong');
+    expect(de.passwordStrengthLevel('fair')).toBe('fair');
+  });
+
   it('lets withInputAriaLabels override single keys on top of the active pack', () => {
     TestBed.configureTestingModule({
       providers: [

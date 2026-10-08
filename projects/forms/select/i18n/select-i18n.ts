@@ -1,7 +1,6 @@
 import { computed, inject, InjectionToken, type Signal } from '@angular/core';
 
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createOverrideMerge } from '@cngx/core/utils';
+import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
 
 import type {
   CngxSelectAnnouncerConfig,
@@ -127,16 +126,8 @@ export function selectCopyFrom(section: CngxSelectLanguageSection, locale: strin
   };
 }
 
-const NO_SECTION: Partial<CngxSelectLanguageSection> = {};
-
 /** @internal The select section of the active pack over the English section. */
-function injectSelectLanguage(): Signal<CngxSelectLanguageSection> {
-  const pack = injectLanguageSection('select');
-  return createOverrideMerge<CngxSelectLanguageSection>(
-    CNGX_SELECT_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
+const injectSelectLanguage = createLanguageSection('select', CNGX_SELECT_LANGUAGE_EN);
 
 /** @internal Builds and reads the select copy, formatted for the reading locale. */
 const selectBundle = createSectionBundle<CngxSelectLanguageSection, CngxSelectCopy>({
