@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Usage:
-//   node scripts/build-schematics.mjs <lib>
+//   node scripts/build-schematics.mjs <lib>   # one lib
+//   node scripts/build-schematics.mjs         # every lib in LIBS with a schematics folder
 //
 // Bundles projects/<lib>/schematics into dist/<lib>/schematics after
 // `ng build <lib>`. ng-packagr secondary entries are browser builds, so the
@@ -8,6 +9,11 @@
 // The Angular devkit, @schematics/angular, typescript and @angular/compiler
 // come from the consumer's CLI install; everything else is bundled so the
 // package's runtime dependencies stay unchanged.
+//
+// Every lib other than core ships a thin ng-add shim that delegates to
+// @cngx/core. A shim without its own ng-add/schema.json gets core's copied
+// in, so `ng add @cngx/<lib> --preset=...` accepts and prompts for the same
+// options from one source.
 
 import { build } from 'esbuild';
 import { copyFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
@@ -15,6 +21,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
+const CORE_NG_ADD_SCHEMA = join(ROOT, 'projects', 'core', 'schematics', 'ng-add', 'schema.json');
 
 const EXTERNAL = [
   '@angular-devkit/*',
@@ -90,13 +98,22 @@ async function buildLib(lib) {
   for (const file of ['collection.json', join('migrations', 'migrations.json'), ...schemaFiles(srcRoot)]) {
     copyInto(srcRoot, outRoot, file);
   }
+  const shimSchema = join(outRoot, 'ng-add', 'schema.json');
+  if (lib !== 'core' && existsSync(join(outRoot, 'ng-add')) && !existsSync(shimSchema)) {
+    copyFileSync(CORE_NG_ADD_SCHEMA, shimSchema);
+  }
 
   console.log(`build-schematics: dist/${lib}/schematics (${entries.length} entr${entries.length === 1 ? 'y' : 'ies'})`);
 }
 
-const lib = process.argv[2];
-if (!lib) {
-  fail('usage: node scripts/build-schematics.mjs <lib>');
+const requested = process.argv[2];
+if (requested && !LIBS.includes(requested)) {
+  fail(`unknown lib "${requested}". Expected one of: ${LIBS.join(', ')}.`);
 }
 
-await buildLib(lib);
+const libs = requested
+  ? [requested]
+  : LIBS.filter((lib) => existsSync(join(ROOT, 'projects', lib, 'schematics')));
+for (const lib of libs) {
+  await buildLib(lib);
+}
