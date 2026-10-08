@@ -33,6 +33,7 @@ import {
 } from './_i18n-ast.mjs';
 import {
   ALREADY_COVERED,
+  ARIA_HIDDEN_GLYPHS,
   EXCLUDED,
   LOCALE_COMPARE_ALLOWED,
   RATCHET,
@@ -695,6 +696,57 @@ export function scanStylesheet(stylesheet) {
   return out;
 }
 
+/** `content:` values that render nothing, so they need no alternative. */
+const EMPTY_CONTENT = /^(?:''|""|none|normal)$/;
+
+/**
+ * Generated `content:` that AT reads but no alt text silences. A non-empty
+ * `content` (a glyph, a string, `attr()`, `counter()`) joins the accessible
+ * name of its element unless the declaration carries a CSS alternative after
+ * `/` (`content: '\25BC' / ''`). Each finding names the rule's selector so a
+ * manifest row can point at the `aria-hidden` element that owns it.
+ *
+ * @param {string} stylesheet
+ * @returns {readonly { line: number; selector: string; value: string }[]}
+ */
+export function scanGlyphAltText(stylesheet) {
+  const code = stylesheet.replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' '));
+  const out = [];
+  for (const declaration of code.matchAll(/(?<![-\w])content\s*:([^;}]*)/g)) {
+    const value = declaration[1].trim();
+    if (EMPTY_CONTENT.test(value) || value.includes('/')) {
+      continue;
+    }
+    const before = code.slice(0, declaration.index);
+    const open = before.lastIndexOf('{');
+    const start = Math.max(
+      before.lastIndexOf('}', open),
+      before.lastIndexOf(';', open),
+      before.lastIndexOf('{', open - 1),
+    );
+    out.push({
+      line: before.split('\n').length,
+      selector: before
+        .slice(start + 1, open)
+        .replace(/\s+/g, ' ')
+        .trim(),
+      value,
+    });
+  }
+  return out;
+}
+
+/**
+ * `EXCLUDED` rows that are not dev-only text. Production copy always has an
+ * override path; only a dev-mode message may be excluded, and the row says so.
+ *
+ * @param {readonly import('./user-facing-string-coverage.fixtures.mjs').StringManifestEntry[]} rows
+ * @returns {readonly string[]}
+ */
+export function excludedViolations(rows) {
+  return rows.filter((row) => row.devOnly !== true).map((row) => `${row.file}: ${row.value}`);
+}
+
 /**
  * @param {ts.Node} node the literal
  * @param {ts.SourceFile} sf
@@ -938,6 +990,78 @@ describe('user-facing string ratchet', () => {
       .filter((entry) => entry.note.trim().length < 10)
       .map((entry) => `${entry.file}: ${entry.value}`);
     expect(unreasoned).toEqual([]);
+  });
+});
+
+const GLYPHS = SOURCES.filter((file) => /\.s?css$/.test(file)).flatMap((file) =>
+  scanGlyphAltText(readFileSync(resolve(REPO_ROOT, file), 'utf-8')).map((finding) => ({
+    file,
+    ...finding,
+  })),
+);
+/** @param {{ file: string; selector: string }} entry */
+const glyphKey = (entry) => `${entry.file}\t${entry.selector}`;
+
+describe('CSS glyph alt text', () => {
+  it('gives every generated content an alternative or an aria-hidden owner', () => {
+    const hidden = new Set(ARIA_HIDDEN_GLYPHS.map(glyphKey));
+    const unsilenced = GLYPHS.filter((glyph) => !hidden.has(glyphKey(glyph))).map(
+      (glyph) => `${glyph.file}:${glyph.line}: ${glyph.selector} { content: ${glyph.value} }`,
+    );
+    expect(unsilenced).toEqual([]);
+  });
+
+  it('carries no aria-hidden row that no longer matches a declaration', () => {
+    const present = new Set(GLYPHS.map(glyphKey));
+    const staleRows = ARIA_HIDDEN_GLYPHS.filter((row) => !present.has(glyphKey(row))).map(
+      (row) => `${row.file}: ${row.selector}`,
+    );
+    expect(staleRows).toEqual([]);
+  });
+
+  it('names the owning aria-hidden element and a reason on every row', () => {
+    const incomplete = ARIA_HIDDEN_GLYPHS.filter(
+      (row) => !row.element.includes('aria-hidden') || row.note.trim().length < 10,
+    ).map((row) => `${row.file}: ${row.selector}`);
+    expect(incomplete).toEqual([]);
+  });
+
+  it('reports a glyph, a string and attr() without an alternative', () => {
+    const stylesheet = [
+      ".a::before { content: '\\2713'; }",
+      ".b::after { content: 'NEW'; }",
+      '.c::before { content: attr(data-initial); }',
+    ].join('\n');
+    expect(scanGlyphAltText(stylesheet)).toEqual([
+      { line: 1, selector: '.a::before', value: "'\\2713'" },
+      { line: 2, selector: '.b::after', value: "'NEW'" },
+      { line: 3, selector: '.c::before', value: 'attr(data-initial)' },
+    ]);
+  });
+
+  it('accepts an alternative, empty content and a property named like content', () => {
+    const stylesheet = [
+      ".a::before { content: '\\2713' / ''; }",
+      ".b::after { content: var(--glyph, '!') / ''; }",
+      ".c::before { content: ''; }",
+      '.d::before { content: none; }',
+      '.e { align-content: center; }',
+    ].join('\n');
+    expect(scanGlyphAltText(stylesheet)).toEqual([]);
+  });
+});
+
+describe('EXCLUDED', () => {
+  it('holds dev-only text only', () => {
+    expect(excludedViolations(EXCLUDED)).toEqual([]);
+  });
+
+  it('reports a production row and accepts a dev-only row', () => {
+    const rows = [
+      { file: 'a.ts', value: 'Shown to users', note: 'production copy, no hook' },
+      { file: 'b.ts', value: 'Missing provider', note: 'dev-mode console text', devOnly: true },
+    ];
+    expect(excludedViolations(rows)).toEqual(['a.ts: Shown to users']);
   });
 });
 

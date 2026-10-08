@@ -18,6 +18,7 @@
  * @property {string} file Repo-relative path, exactly as the scanner reports it.
  * @property {string} value The literal, verbatim.
  * @property {string} note Why this row exists. One clause, no prose.
+ * @property {boolean} [devOnly] `EXCLUDED` only: the text shows in dev mode only.
  */
 
 /**
@@ -40,13 +41,31 @@ export const RATCHET = [];
 export const ALREADY_COVERED = [];
 
 /**
- * Deliberate non-hooks. Each row cites the accepted-debt entry or the design
- * reason that settled it, so the guard does not re-raise a closed decision on
- * every run.
+ * Deliberate non-hooks: dev-only text the scanner cannot see is dev-only
+ * (`devOnly: true`, asserted). Production copy always has an override path.
+ * Each row cites the reason, so the guard does not re-raise a closed decision
+ * on every run.
  *
  * @type {readonly StringManifestEntry[]}
  */
 export const EXCLUDED = [];
+
+/**
+ * Generated CSS `content` with no `/ ''` alternative, accepted because the
+ * element that renders it is `aria-hidden`, so AT never reads it. Keyed by
+ * file + rule selector; `element` names the owning `aria-hidden` element.
+ *
+ * @type {readonly { file: string; selector: string; element: string; note: string }[]}
+ */
+export const ARIA_HIDDEN_GLYPHS = [
+  {
+    file: 'projects/ui/stepper/stepper.component.css',
+    selector:
+      ".cngx-stepper__indicator[data-state='success']:has(.cngx-stepper__indicator-glyph)::before",
+    element: 'span.cngx-stepper__indicator[aria-hidden="true"] (stepper.component.html)',
+    note: 'completed-step check mark; the step state is spoken by the step status text',
+  },
+];
 
 /**
  * The only `localeCompare` call sites the locale-source guard accepts. Empty:
