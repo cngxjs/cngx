@@ -63,7 +63,7 @@ export interface CngxTimelineLabels {
   readonly errorFallback?: string;
   /**
    * Body text for the empty surface when no `*cngxTimelineEmpty` slot is
-   * bound. Default `'No events yet.'`
+   * bound. Default `'No events yet'`
    */
   readonly emptyFallback?: string;
   /**

@@ -24,8 +24,8 @@ describe('CngxStepperI18n', () => {
       providers: [provideZonelessChangeDetection()],
     });
     const i18n = TestBed.inject(CNGX_STEPPER_I18N)();
-    expect(i18n.stepperLabel).toBe('Stepper');
-    expect(i18n.stepIndicatorRoleDescription).toBe('Step indicator');
+    expect(i18n.stepperLabel).toBe('Steps');
+    expect(i18n.stepIndicatorRoleDescription).toBe('step indicator');
     expect(i18n.groupRoleDescription).toBe('step group');
     expect(stripBidiIsolates(i18n.selectedStep('Customer', 1, 3))).toBe('Step 1 of 3: Customer');
     expect(stripBidiIsolates(i18n.stepWithDetail('Step 2 of 3: Shipping', 'Errored'))).toBe(
@@ -35,8 +35,8 @@ describe('CngxStepperI18n', () => {
     expect(i18n.stepHasErrors(2)).toBe('2 errors');
     expect(i18n.previousStep).toBe('Previous step');
     expect(i18n.nextStep).toBe('Next step');
-    expect(i18n.commitFailedRetry).toBe('Commit failed - retry?');
-    expect(i18n.commitInFlight).toBe('Committing step…');
+    expect(i18n.commitFailedRetry).toBe('Could not save step - retry?');
+    expect(i18n.commitInFlight).toBe('Saving step…');
     expect(stripBidiIsolates(i18n.commitRolledBackTo('Customer'))).toBe(
       'Reverted to step "Customer".',
     );
@@ -71,7 +71,7 @@ describe('CngxStepperI18n', () => {
       ],
     });
     const bundle = TestBed.inject(CNGX_STEPPER_I18N);
-    expect(bundle().stepperLabel).toBe('Stepper');
+    expect(bundle().stepperLabel).toBe('Steps');
 
     pack.set({
       locale: 'de',
@@ -188,7 +188,7 @@ describe('CngxStepperI18n', () => {
     expect(i18n.commitInFlight).toBe('Speichere Schritt…');
     expect(i18n.commitRolledBackTo('Kunde')).toBe('Konnte nicht speichern - zurück zu „Kunde".');
     // Defensive fallback unset - keeps its English default.
-    expect(i18n.commitFailedRetry).toBe('Commit failed - retry?');
+    expect(i18n.commitFailedRetry).toBe('Could not save step - retry?');
   });
 
   it('withStepperI18nLabels composes partial overrides on top of defaults', () => {
@@ -239,7 +239,7 @@ describe('CngxStepperI18n', () => {
     });
     TestBed.runInInjectionContext(() => {
       const i18n = injectStepperI18n()();
-      expect(i18n.stepperLabel).toBe('Stepper');
+      expect(i18n.stepperLabel).toBe('Steps');
     });
   });
 
@@ -308,7 +308,7 @@ describe('CngxStepperI18n', () => {
         ],
       });
       const i18n = TestBed.inject(CNGX_STEPPER_I18N);
-      expect(i18n().stepperLabel).toBe('Stepper');
+      expect(i18n().stepperLabel).toBe('Steps');
       expect(i18n().statusLabels.done).toBe('Done');
 
       lang.set('de');

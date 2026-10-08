@@ -50,7 +50,7 @@ export const CNGX_INTERACTIVE_LANGUAGE_EN: CngxInteractiveLanguageSection = {
   rangeMaximum: 'Maximum',
   breadcrumb: 'Breadcrumb',
   unsavedChanges: 'You have unsaved changes. Leave anyway?',
-  rangeValue: '{start} - {end}',
+  rangeValue: '{start}–{end}',
 };
 
 declare module '@cngx/core/i18n' {

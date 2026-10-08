@@ -464,7 +464,7 @@ describe('CngxTimeline async body', () => {
 
       host.state.setSuccess([]);
       settleGate(detect);
-      expect(el.querySelector('.cngx-timeline__empty')?.textContent?.trim()).toBe('No events yet.');
+      expect(el.querySelector('.cngx-timeline__empty')?.textContent?.trim()).toBe('No events yet');
 
       host.state.setError(new Error('boom'));
       settleGate(detect);

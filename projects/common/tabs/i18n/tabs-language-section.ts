@@ -72,7 +72,7 @@ export const CNGX_TABS_LANGUAGE_EN: CngxTabsLanguageSection = {
   addTab: 'Add tab',
   closedTab: 'Closed "{label}"',
   closedUnlabeledTab: 'Tab closed',
-  commitFailedRetry: 'Tab change refused - retry?',
+  commitFailedRetry: 'Could not switch tab - retry?',
   commitInFlight: 'Switching tab…',
   commitRolledBackTo: 'Could not save changes - reverted to "{origin}".',
 };

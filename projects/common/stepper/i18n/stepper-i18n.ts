@@ -31,7 +31,7 @@ export interface CngxStepperI18n {
   /**
    * Last tier of the landmark `aria-label` and of the organism's
    * `aria-roledescription`. The label applies only while
-   * `CNGX_STEPPER_CONFIG.ariaLabels.stepperRegion` (default `'Stepper'`) is
+   * `CNGX_STEPPER_CONFIG.ariaLabels.stepperRegion` (default `'Steps'`) is
    * unset, the role description only while `fallbackLabels.stepRoleDescription`
    * (default `'stepper'`) is unset. Localise both through
    * `withStepperAriaLabels(...)` and `withStepperFallbackLabels(...)`.

@@ -217,7 +217,7 @@ describe('injectRecycler', () => {
       TestBed.flushEffects();
 
       // Routed by result: zero items is the empty phrase, not "0 results found".
-      expect(recycler.announcement()).toBe('No results.');
+      expect(recycler.announcement()).toBe('No results');
     });
 
     it('announces the filtered phrase when a reload settles with fewer items', () => {
@@ -274,8 +274,8 @@ describe('injectRecycler', () => {
     const EN: RecyclerI18n = {
       loaded: (n, t) => `${n} more items loaded. ${t} total.`,
       filtered: (c) => `${c} results found.`,
-      empty: () => 'No results.',
-      error: () => 'Error loading data.',
+      empty: () => 'No results',
+      error: () => 'Error loading data',
     };
     const DE: RecyclerI18n = {
       loaded: (n, t) => `${n} weitere Einträge. ${t} gesamt.`,

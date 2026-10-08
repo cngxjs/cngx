@@ -248,7 +248,7 @@ describe('timeline template slots', () => {
       const config = TestBed.runInInjectionContext(() => injectTimelineConfig());
 
       expect(lbl(config).retry).toBe('Again');
-      expect(lbl(config).emptyFallback).toBe('No events yet.');
+      expect(lbl(config).emptyFallback).toBe('No events yet');
       expect(config.templates?.loadingTail).toBe(tailTpl);
     });
   });

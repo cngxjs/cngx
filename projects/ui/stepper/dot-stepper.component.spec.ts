@@ -53,13 +53,13 @@ class LinearHost {
 }
 
 describe('CngxDotStepper', () => {
-  it('host carries role="group" + aria-roledescription="Step indicator" (NOT tablist)', () => {
+  it('host carries role="group" + aria-roledescription="step indicator" (NOT tablist)', () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
     const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
     expect(host.getAttribute('role')).toBe('group');
-    expect(host.getAttribute('aria-roledescription')).toBe('Step indicator');
+    expect(host.getAttribute('aria-roledescription')).toBe('step indicator');
     expect(host.getAttribute('role')).not.toBe('tablist');
   });
 
@@ -442,7 +442,7 @@ describe('CngxDotStepper', () => {
       const fixture = TestBed.createComponent(UnlabelledHost);
       fixture.detectChanges();
       const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
-      expect(host.getAttribute('aria-label')).toBe('Stepper');
+      expect(host.getAttribute('aria-label')).toBe('Steps');
     });
 
     it('withStepperAriaLabels({ stepperRegion }) moves the accname fallback', () => {

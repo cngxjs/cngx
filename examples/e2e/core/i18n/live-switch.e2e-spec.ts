@@ -75,7 +75,7 @@ test.describe('live language switch', () => {
     const tabsRegion = page.locator('.cngx-tabs__live-region');
 
     // (1) EN baseline.
-    await expect(stepper).toHaveAttribute('aria-label', 'Stepper');
+    await expect(stepper).toHaveAttribute('aria-label', 'Steps');
     await expect(stepper).toHaveAttribute('aria-roledescription', 'stepper');
     await expect(tabGroup).toHaveAttribute('aria-label', 'Tabs');
     await expect(tabGroup).toHaveAttribute('aria-roledescription', 'tab list');
@@ -83,7 +83,7 @@ test.describe('live language switch', () => {
     // (2) Start both pessimistic commits in English.
     await page.locator('button.cngx-stepper__step').nth(1).click();
     await tabGroup.getByRole('tab', { name: /Account/ }).click();
-    await expect(stepperRegion).toHaveText('Committing step…');
+    await expect(stepperRegion).toHaveText('Saving step…');
     await expect(tabsRegion).toHaveText('Switching tab…');
 
     // (3) Flip to German mid-commit: labels switch, the pending phrases stay.
@@ -92,7 +92,7 @@ test.describe('live language switch', () => {
     await expect(stepper).toHaveAttribute('aria-roledescription', 'Schrittfolge');
     await expect(tabGroup).toHaveAttribute('aria-label', 'Reiter');
     await expect(tabGroup).toHaveAttribute('aria-roledescription', 'Reiterliste');
-    await expect(stepperRegion).toHaveText('Committing step…');
+    await expect(stepperRegion).toHaveText('Saving step…');
     await expect(tabsRegion).toHaveText('Switching tab…');
 
     // (4) The landing announcements speak German, consumer labels included.
@@ -101,7 +101,7 @@ test.describe('live language switch', () => {
 
     // (5) A flip after landing re-labels the landmarks, not the landed phrases.
     await page.getByRole('button', { name: 'EN', exact: true }).click();
-    await expect(stepper).toHaveAttribute('aria-label', 'Stepper');
+    await expect(stepper).toHaveAttribute('aria-label', 'Steps');
     await expect(tabGroup).toHaveAttribute('aria-label', 'Tabs');
     await expect(stepperRegion).toHaveText('Schritt 2 von 3: Zahlung');
     await expect(tabsRegion).toHaveText('Nächster Reiter: Reiter 2 von 3: Konto');
@@ -130,7 +130,7 @@ test.describe('live language switch', () => {
     await expect(thumbs.first()).toHaveAttribute('aria-label', 'Minimum');
     await expect(toggle).toHaveText('Show less');
     await expect(chartFallback).toHaveText('No data');
-    await expect(timelineEmpty).toHaveText('No events yet.');
+    await expect(timelineEmpty).toHaveText('No events yet');
     await expect(copyButton).toHaveText('Copy');
 
     // (2) Announcements in English.
