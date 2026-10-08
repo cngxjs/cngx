@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Bind <code>[formControl]</code> on a masked input and import <code>CngxFormBridge</code>: typed text reaches the control as the raw value, and <code>setValue</code> writes back into the mask.',
   description:
-    'The control holds the raw value (<code>1430</code>), the same value Signal Forms stores. An empty field holds an empty string, so <code>Validators.required</code> fires. <code>CngxFormBridge</code> attaches only to <code>[formControl]</code> / <code>[formControlName]</code>, so a <code>[formField]</code> binding on the same mask is unaffected.',
+    'Type <code>14:30</code> and the control holds <code>1430</code>: the raw value without separators, the same value Signal Forms stores. An empty field holds an empty string, so <code>Validators.required</code> fires. <code>CngxFormBridge</code> attaches only to <code>[formControl]</code> / <code>[formControlName]</code>, so a <code>[formField]</code> binding on the same mask is unaffected.',
   level: 'molecule',
   audience: ['dev'],
   artifact: 'building-block',
