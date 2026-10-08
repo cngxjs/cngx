@@ -149,7 +149,9 @@ Root, or scoped to a subtree with `provideCommandPaletteConfigAt` in
 defaults are the `commandPalette` section of the language pack (English
 without one), so the language file translates the palette; the features above
 override single keys on top of it. Each footer legend entry is spoken once,
-through the section's `legendEntry` message (`'{keys} {label}'`).
+through the section's `legendEntry` message (`'{keys} {label}'`). The `<kbd>`
+glyphs are hidden from screen readers; an entry's `spokenKeys` (the navigate
+entry's `navigateKeysSpoken`, English `'Up and Down arrows'`) is what they hear.
 
 ## Accessibility
 

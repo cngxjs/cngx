@@ -28,8 +28,10 @@ export interface CngxCommandPaletteLanguageSection {
   readonly paletteLabel: string;
   /** `{count}`: the announced number of matching commands. */
   readonly resultCount: CngxMessage;
-  /** Keys of the footer legend's navigate entry. */
+  /** Keys of the footer legend's navigate entry, as shown. Never spoken. */
   readonly navigateKeys: string;
+  /** The navigate entry's keys in words, as screen readers hear them. */
+  readonly navigateKeysSpoken: string;
   /** Label of the footer legend's navigate entry. */
   readonly navigateLabel: string;
   /** Keys of the footer legend's run entry. */
@@ -62,6 +64,7 @@ export const CNGX_COMMAND_PALETTE_LANGUAGE_EN: CngxCommandPaletteLanguageSection
   paletteLabel: 'Command palette',
   resultCount: { one: '{count} result', other: '{count} results' },
   navigateKeys: '↑ ↓',
+  navigateKeysSpoken: 'Up and Down arrows',
   navigateLabel: 'Navigate',
   runKeys: 'Enter',
   runLabel: 'Run',

@@ -109,6 +109,7 @@ export const CNGX_LANGUAGE_DE = {
       other: '{count} Ergebnisse',
     },
     navigateKeys: '↑ ↓',
+    navigateKeysSpoken: 'Pfeiltasten nach oben und unten',
     navigateLabel: 'Navigieren',
     runKeys: 'Enter',
     runLabel: 'Ausführen',

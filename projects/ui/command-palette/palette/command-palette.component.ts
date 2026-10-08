@@ -99,7 +99,9 @@ import { CNGX_PALETTE_KEYBINDING_FACTORY } from './palette-keybinding';
             <span class="cngx-command-legend">
               <kbd aria-hidden="true">{{ entry.keys }}</kbd>
               <span aria-hidden="true">{{ entry.label }}</span>
-              <span class="cngx-sr-only">{{ copy().legendEntry(entry.keys, entry.label) }}</span>
+              <span class="cngx-sr-only">{{
+                copy().legendEntry(entry.spokenKeys ?? entry.keys, entry.label)
+              }}</span>
             </span>
           }
         }
@@ -141,7 +143,6 @@ export class CngxCommandPalette implements CngxCommandPaletteHost {
 
   /** Fired when the user asks to retry a failed result load. */
   readonly retry = output<void>();
-
 
   // Instance slot directives (content-projected). contentChild must be a direct
   // field initializer (AOT NG8110). Each resolves instance > config > null.

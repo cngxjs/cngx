@@ -113,6 +113,7 @@ export const CNGX_LANGUAGE_EN = {
       other: '{count} results',
     },
     navigateKeys: '↑ ↓',
+    navigateKeysSpoken: 'Up and Down arrows',
     navigateLabel: 'Navigate',
     runKeys: 'Enter',
     runLabel: 'Run',

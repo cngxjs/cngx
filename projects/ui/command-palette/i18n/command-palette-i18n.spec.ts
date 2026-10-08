@@ -46,7 +46,7 @@ describe('command-palette language section', () => {
     expect(en.resultCount(1)).toBe('1 result');
     expect(en.resultCount(3)).toBe('3 results');
     expect(en.footerLegend).toEqual([
-      { keys: '↑ ↓', label: 'Navigate' },
+      { keys: '↑ ↓', spokenKeys: 'Up and Down arrows', label: 'Navigate' },
       { keys: 'Enter', label: 'Run' },
       { keys: 'Esc', label: 'Close' },
     ]);

@@ -42,7 +42,11 @@ export function commandPaletteCopyFrom(
     paletteLabel: section.paletteLabel,
     resultCount: (count) => formatMessage(section.resultCount, { count }, locale),
     footerLegend: [
-      { keys: section.navigateKeys, label: section.navigateLabel },
+      {
+        keys: section.navigateKeys,
+        spokenKeys: section.navigateKeysSpoken,
+        label: section.navigateLabel,
+      },
       { keys: section.runKeys, label: section.runLabel },
       { keys: section.closeKeys, label: section.closeLabel },
     ],
