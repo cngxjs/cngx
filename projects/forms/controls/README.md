@@ -50,6 +50,7 @@ only place in cngx that implements `ControlValueAccessor`.
 | `CngxMultiChipGroup` | `cngx-multi-chip-group`, `[cngxMultiChipGroup]` | `T[]` |
 | `CngxInputMask` | `input[cngxInputMask]` | `string` (raw, no literals) |
 | `CngxNumericInput` | `input[cngxNumericInput]` | `number \| null` |
+| `CngxInputFormat` | `input[cngxInputFormat]` | `string` (raw, never the formatted text) |
 
 `CngxChipInput` is intentionally **not** in this list. Its tokenizer
 shape (emits `tokenCreated` events, no `value` model) needs a separate

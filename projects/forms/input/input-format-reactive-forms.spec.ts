@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { FormField, form } from '@angular/forms/signals';
 import { CngxFormBridge } from '@cngx/forms/controls';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CngxInputFormat, type FormatFn, type ParseFn } from './input-format.directive';
 
 const formatDollar: FormatFn = (raw) => (raw ? `$${raw}` : '');
@@ -66,6 +66,25 @@ class SignalFormsHost {
   readonly f = form(this.model);
 }
 
+@Component({
+  selector: 'format-rf-host-6',
+  template: `<input [cngxInputFormat]="format" [formControl]="control" />`,
+  imports: [CngxInputFormat, ReactiveFormsModule],
+})
+class UnbridgedHost {
+  readonly format = formatDollar;
+  readonly control = new FormControl('', { nonNullable: true });
+}
+
+@Component({
+  selector: 'format-rf-host-7',
+  template: `<input [cngxInputFormat]="format" />`,
+  imports: [CngxInputFormat],
+})
+class StandaloneHost {
+  readonly format = formatDollar;
+}
+
 function flush(fixture: ComponentFixture<unknown>): void {
   fixture.detectChanges();
   TestBed.flushEffects();
@@ -108,7 +127,7 @@ describe('CngxInputFormat under Reactive Forms', () => {
     expect(input.value).toBe('$250');
   });
 
-  it.fails('A: the control holds the raw value after typing and blur', () => {
+  it('A: the control holds the raw value after typing and blur', () => {
     const { fixture, input, host } = mount(RfHost);
 
     focus(input, fixture);
@@ -119,7 +138,7 @@ describe('CngxInputFormat under Reactive Forms', () => {
     expect(host.control.dirty).toBe(true);
   });
 
-  it.fails('A2: blur and refocus neither change the control nor emit', () => {
+  it('A2: blur and refocus neither change the control nor emit', () => {
     const { fixture, input, host } = mount(RfHost);
     focus(input, fixture);
     typeText(input, '250', fixture);
@@ -134,7 +153,7 @@ describe('CngxInputFormat under Reactive Forms', () => {
     expect(host.control.value).toBe('250');
   });
 
-  it.fails('B2: renders an initial control value formatted and stays pristine', () => {
+  it('B2: renders an initial control value formatted and stays pristine', () => {
     const { input, formatDir, host } = mount(InitialValueHost);
 
     expect(input.value).toBe('$100');
@@ -143,7 +162,7 @@ describe('CngxInputFormat under Reactive Forms', () => {
     expect(host.control.pristine).toBe(true);
   });
 
-  it.fails('C: setValue renders the formatted value and sets the model', () => {
+  it('C: setValue renders the formatted value and sets the model', () => {
     const { fixture, input, formatDir, host } = mount(RfHost);
 
     host.control.setValue('77');
@@ -171,7 +190,7 @@ describe('CngxInputFormat under Reactive Forms', () => {
     expect(input.disabled).toBe(false);
   });
 
-  it.fails('E: marks the control touched on focusout', () => {
+  it('E: marks the control touched on focusout', () => {
     const { fixture, input, host } = mount(RfHost);
 
     input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
@@ -180,7 +199,7 @@ describe('CngxInputFormat under Reactive Forms', () => {
     expect(host.control.touched).toBe(true);
   });
 
-  it.fails('G: reset() after typing renders an empty field without throwing', () => {
+  it('G: reset() after typing renders an empty field without throwing', () => {
     const { fixture, input, formatDir, host } = mount(NullableHost);
     focus(input, fixture);
     typeText(input, '9', fixture);
@@ -192,6 +211,18 @@ describe('CngxInputFormat under Reactive Forms', () => {
     expect(host.control.value).toBeNull();
     expect(input.value).toBe('');
     expect(formatDir.displayValue()).toBe('');
+  });
+
+  it('G2: focus and blur on a reset control keep it null and pristine', () => {
+    const { fixture, input, host } = mount(NullableHost);
+    host.control.reset();
+    flush(fixture);
+
+    focus(input, fixture);
+    blur(input, fixture);
+
+    expect(host.control.value).toBeNull();
+    expect(host.control.pristine).toBe(true);
   });
 
   it('SF: a [formField] host gets no value accessor and keeps the model raw', () => {
@@ -208,5 +239,33 @@ describe('CngxInputFormat under Reactive Forms', () => {
 
     expect(host.model().amount).toBe('300');
     expect(input.value).toBe('$300');
+  });
+});
+
+describe('CngxInputFormat dev-mode accessor check', () => {
+  function warnings(host: Type<unknown>): number {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      mount(host);
+      return warn.mock.calls.filter(([msg]) => String(msg).startsWith('[cngxInputFormat]')).length;
+    } finally {
+      warn.mockRestore();
+    }
+  }
+
+  it('warns once for [formControl] without CngxFormBridge', () => {
+    expect(warnings(UnbridgedHost)).toBe(1);
+  });
+
+  it('stays silent with CngxFormBridge', () => {
+    expect(warnings(RfHost)).toBe(0);
+  });
+
+  it('stays silent under [formField]', () => {
+    expect(warnings(SignalFormsHost)).toBe(0);
+  });
+
+  it('stays silent on a standalone input', () => {
+    expect(warnings(StandaloneHost)).toBe(0);
   });
 });
