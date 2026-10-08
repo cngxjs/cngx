@@ -1,4 +1,5 @@
 import {
+  afterNextRender,
   computed,
   DestroyRef,
   Directive,
@@ -6,12 +7,14 @@ import {
   ElementRef,
   forwardRef,
   inject,
+  Injector,
   input,
   model,
   type Signal,
   signal,
   untracked,
 } from '@angular/core';
+import { DefaultValueAccessor, NgControl } from '@angular/forms';
 import { clamp } from '@cngx/utils';
 import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interactive';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
@@ -333,6 +336,7 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
 export class CngxInputMask {
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
   private readonly locale = injectLocale();
   private readonly config = inject(CNGX_INPUT_CONFIG);
   private readonly host = inject(CNGX_FORM_FIELD_HOST, { optional: true });
@@ -547,6 +551,21 @@ export class CngxInputMask {
         cancelAnimationFrame(this.focusRafHandle);
       }
     });
+
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      // Resolved lazily: injecting NgControl at construction cycles through
+      // NG_VALUE_ACCESSOR -> CngxFormBridge -> CNGX_CONTROL_VALUE -> this mask.
+      afterNextRender(() => {
+        const ngControl = this.injector.get(NgControl, null, { self: true });
+        if (ngControl?.valueAccessor instanceof DefaultValueAccessor) {
+          console.warn(
+            "[cngxInputMask] This masked input uses Angular's DefaultValueAccessor, so typed " +
+              'text never reaches the form control. For Reactive Forms, import CngxFormBridge ' +
+              'from @cngx/forms/controls; [ngModel] is not supported, use [(value)] or Signal Forms.',
+          );
+        }
+      });
+    }
 
     // Lazily import the preset table the current mask needs. Side effect, so it
     // lives in an effect (not the resolvedPatterns computed); the import's

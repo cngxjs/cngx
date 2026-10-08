@@ -10,7 +10,7 @@ import {
 } from '@angular/forms';
 import { FormField, form } from '@angular/forms/signals';
 import { CngxFormBridge } from '@cngx/forms/controls';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CngxInputMask } from './input-mask.directive';
 
 @Component({
@@ -81,6 +81,22 @@ class SignalFormsHost {
   readonly model = signal({ at: '' });
   readonly f = form(this.model);
 }
+
+@Component({
+  selector: 'mask-rf-host-8',
+  template: `<input cngxInputMask="00:00" [formControl]="control" />`,
+  imports: [CngxInputMask, ReactiveFormsModule],
+})
+class UnbridgedHost {
+  readonly control = new FormControl('', { nonNullable: true });
+}
+
+@Component({
+  selector: 'mask-rf-host-9',
+  template: `<input cngxInputMask="00:00" />`,
+  imports: [CngxInputMask],
+})
+class StandaloneHost {}
 
 function flush(fixture: ComponentFixture<unknown>): void {
   fixture.detectChanges();
@@ -232,5 +248,33 @@ describe('CngxInputMask under Reactive Forms', () => {
     type(input, '1430', fixture);
 
     expect(host.model().at).toBe('1430');
+  });
+});
+
+describe('CngxInputMask dev-mode accessor check', () => {
+  function warnings(host: Type<unknown>): number {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      mount(host);
+      return warn.mock.calls.filter(([msg]) => String(msg).startsWith('[cngxInputMask]')).length;
+    } finally {
+      warn.mockRestore();
+    }
+  }
+
+  it('warns once for [formControl] without CngxFormBridge', () => {
+    expect(warnings(UnbridgedHost)).toBe(1);
+  });
+
+  it('stays silent with CngxFormBridge', () => {
+    expect(warnings(RfHost)).toBe(0);
+  });
+
+  it('stays silent under [formField]', () => {
+    expect(warnings(SignalFormsHost)).toBe(0);
+  });
+
+  it('stays silent on a standalone mask', () => {
+    expect(warnings(StandaloneHost)).toBe(0);
   });
 });
