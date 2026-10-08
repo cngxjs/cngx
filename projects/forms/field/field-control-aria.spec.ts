@@ -155,7 +155,7 @@ describe('createFieldControlAria', () => {
       expect(h.state.touched).toBe(1);
     });
 
-    it('handleFocusOutWithin keeps focus for moves inside the host and never touches the field', () => {
+    it('handleFocusOutWithin keeps focus for moves inside the host and touches the field on leaving', () => {
       const h = makePresenter();
       const aria = createFieldControlAria(h.presenter);
       const host = document.createElement('div');
@@ -165,10 +165,11 @@ describe('createFieldControlAria', () => {
 
       aria.handleFocusOutWithin({ relatedTarget: inner } as unknown as FocusEvent, host);
       expect(aria.focused()).toBe(true);
+      expect(h.state.touched).toBe(0);
 
       aria.handleFocusOutWithin({ relatedTarget: null } as unknown as FocusEvent, host);
       expect(aria.focused()).toBe(false);
-      expect(h.state.touched).toBe(0);
+      expect(h.state.touched).toBe(1);
     });
   });
 });

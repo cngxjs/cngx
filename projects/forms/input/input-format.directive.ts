@@ -10,8 +10,10 @@ import {
   untracked,
   type Signal,
 } from '@angular/core';
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interactive';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
+import { injectDefaultAccessorWarning, injectFormDisabled } from './reactive-forms-channel';
 
 /**
  * Function that formats a raw value for display.
@@ -32,17 +34,19 @@ export type ParseFn = (display: string) => string;
  *
  * Applies a `format` function when the input loses focus and a `parse` function
  * when it gains focus. The directive's `value` model carries the raw
- * (unformatted) value; bind it via `[(value)]` or wrap the input in
- * `<cngx-form-field [field]="f.x">` for Signal Forms.
+ * (unformatted) value, and so does a bound form: bind it via `[(value)]`, via
+ * `[formField]` for Signal Forms, or via `[formControl]` / `formControlName` with
+ * `CngxFormBridge` imported for Reactive Forms. `parse` should invert `format`.
  *
  * ```html
  * <!-- Currency formatting -->
  * <input [cngxInputFormat]="formatCurrency" [parse]="parseCurrency" [(value)]="amount" />
  *
- * <!-- Phone formatting inside a Signal-Forms field -->
- * <cngx-form-field [field]="f.phone">
- *   <input cngxInputFormat="formatPhone" cngxBindField [control]="f.phone" />
- * </cngx-form-field>
+ * <!-- Signal Forms -->
+ * <input [cngxInputFormat]="formatCurrency" [parse]="parseCurrency" [formField]="f.amount" />
+ *
+ * <!-- Reactive Forms: import CngxFormBridge from @cngx/forms/controls -->
+ * <input [cngxInputFormat]="formatCurrency" [parse]="parseCurrency" [formControl]="amount" />
  * ```
  *
  * @category forms/input
@@ -66,6 +70,14 @@ export type ParseFn = (display: string) => string;
       }),
       deps: [forwardRef(() => CngxInputFormat)],
     },
+    {
+      provide: CNGX_CONTROL_VALUE,
+      useFactory: (dir: CngxInputFormat): CngxControlValue<string> => ({
+        value: dir.value,
+        disabled: dir.formDisabled,
+      }),
+      deps: [forwardRef(() => CngxInputFormat)],
+    },
   ],
   host: {
     '(focus)': 'handleFocus()',
@@ -86,13 +98,32 @@ export class CngxInputFormat {
   /** Primary value channel - raw (unformatted) string. */
   readonly value = model<string>('', { alias: 'value' });
 
+  // CngxFormBridge writes whatever the form holds (`null` after reset(), a number
+  // from an untyped control); every internal read goes through this.
+  private readonly normalizedValue = computed(() => {
+    const v: unknown = this.value();
+    if (typeof v === 'string') {
+      return v;
+    }
+    if (typeof v === 'number') {
+      return String(v);
+    }
+    return '';
+  });
+
+  /**
+   * @internal - written by CngxFormBridge.setDisabledState through CNGX_CONTROL_VALUE.
+   * Never rename to `disabled`: `[formField]` binds custom-control members by name.
+   */
+  readonly formDisabled = injectFormDisabled(this.el);
+
   /**
    * @deprecated Read `value` directly. Kept one release for migration.
    */
   readonly rawValue: Signal<string> = this.value;
 
   /** The display (formatted) value. */
-  readonly displayValue: Signal<string> = computed(() => this.format()(this.value()));
+  readonly displayValue: Signal<string> = computed(() => this.format()(this.normalizedValue()));
 
   // Records the formatted string this directive last wrote to el.value, so the
   // synthetic input event we dispatch after a DOM write never re-enters
@@ -100,8 +131,17 @@ export class CngxInputFormat {
   private lastEffectWrite = '';
 
   constructor() {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      injectDefaultAccessorWarning(
+        "[cngxInputFormat] This formatted input uses Angular's DefaultValueAccessor, so the " +
+          'form control switches between raw and formatted text. For Reactive Forms, import ' +
+          'CngxFormBridge from @cngx/forms/controls; [ngModel] is not supported, use [(value)] ' +
+          'or Signal Forms.',
+      );
+    }
+
     effect(() => {
-      const raw = this.value();
+      const raw = this.normalizedValue();
       const formatFn = this.format();
       untracked(() => {
         const el = this.el.nativeElement;
@@ -124,7 +164,7 @@ export class CngxInputFormat {
     const el = this.el.nativeElement;
     const parseFn = this.parse();
     const raw = parseFn(el.value);
-    this.value.set(raw);
+    this.writeRaw(raw);
     if (raw !== el.value) {
       el.value = raw;
       this.lastEffectWrite = raw;
@@ -141,7 +181,7 @@ export class CngxInputFormat {
     this.host?.markAsTouched();
     const el = this.el.nativeElement;
     const raw = el.value;
-    this.value.set(raw);
+    this.writeRaw(raw);
     const formatted = this.format()(raw);
     if (formatted !== el.value) {
       el.value = formatted;
@@ -156,6 +196,14 @@ export class CngxInputFormat {
     if (el.value === this.lastEffectWrite) {
       return;
     }
-    this.value.set(el.value);
+    this.writeRaw(el.value);
+  }
+
+  // Skips an unchanged raw value, so a focus or blur on a reset (`null`) control
+  // does not turn it into `''` and mark the form dirty.
+  private writeRaw(raw: string): void {
+    if (raw !== this.normalizedValue()) {
+      this.value.set(raw);
+    }
   }
 }

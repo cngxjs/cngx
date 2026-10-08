@@ -49,6 +49,9 @@ only place in cngx that implements `ControlValueAccessor`.
 | `CngxButtonMultiToggleGroup` | `cngx-button-multi-toggle-group`, `[cngxButtonMultiToggleGroup]` | `T[]` |
 | `CngxMultiChipGroup` | `cngx-multi-chip-group`, `[cngxMultiChipGroup]` | `T[]` |
 | `CngxInputMask` | `input[cngxInputMask]` | `string` (raw, no literals) |
+| `CngxNumericInput` | `input[cngxNumericInput]` | `number \| null` |
+| `CngxInputFormat` | `input[cngxInputFormat]` | `string` (raw, never the formatted text) |
+| `CngxPhoneInput` | `cngx-phone-input` | `string` (dial-code-prefixed digits, `''` while empty) |
 
 `CngxChipInput` is intentionally **not** in this list. Its tokenizer
 shape (emits `tokenCreated` events, no `value` model) needs a separate

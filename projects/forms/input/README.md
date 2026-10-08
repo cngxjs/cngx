@@ -20,14 +20,14 @@ These directives enhance native `<input>`, `<textarea>`, and `<select>` elements
 |-|-|-|
 | `CngxInput` | `input[cngxInput]`, `textarea[cngxInput]`, `select[cngxInput]` | ARIA projection, focus/empty tracking, smart attributes |
 | `CngxPasswordToggle` | `input[cngxPasswordToggle]` | Toggles `type="password"` / `type="text"` |
-| `CngxInputMask` | `input[cngxInputMask]` | Pattern-based input mask with presets (CVA) |
-| `CngxNumericInput` | `input[cngxNumericInput]` | Locale-aware numeric input (CVA) |
+| `CngxInputMask` | `input[cngxInputMask]` | Pattern-based input mask with presets |
+| `CngxNumericInput` | `input[cngxNumericInput]` | Locale-aware numeric input |
 | `CngxAutosize` | `textarea[cngxAutosize]` | Auto-resize textarea |
 | `CngxInputClear` | `[cngxInputClear]` | Headless input clear behavior |
 | `CngxCopyValue` | `[cngxCopyValue]` | Clipboard copy behavior |
 | `CngxOtpInput` | `[cngxOtpInput]` | OTP/PIN container with auto-advance |
 | `CngxOtpSlot` | `input[cngxOtpSlot]` | Single OTP slot input |
-| `CngxInputFormat` | `input[cngxInputFormat]` | Display format on blur, raw on focus (CVA) |
+| `CngxInputFormat` | `input[cngxInputFormat]` | Display format on blur, raw on focus |
 | `CngxFileDrop` | `[cngxFileDrop]` | Headless drag-and-drop file behavior |
 
 ### Components
@@ -35,6 +35,7 @@ These directives enhance native `<input>`, `<textarea>`, and `<select>` elements
 | Export | Selector | Description |
 |-|-|-|
 | `CngxCharCount` | `cngx-char-count` | Live character counter with custom template support |
+| `CngxPhoneInput` | `cngx-phone-input` | Country picker plus region-aware phone mask |
 
 ### Types
 
@@ -192,7 +193,25 @@ Pass a preset name instead of a pattern. Region suffix optional -- defaults to t
 Locale-aware numeric input. Uses `Intl.NumberFormat` for display formatting on blur,
 raw value on focus. Arrow Up/Down (+ Shift for 10x) for increment/decrement with min/max clamping.
 Sets `inputmode="decimal"` and `role="spinbutton"` with ARIA `aria-valuemin`/`aria-valuemax`/`aria-valuenow`.
-Implements `ControlValueAccessor` for Reactive Forms.
+
+Forms: Signal Forms binds `[formField]` to the `value` model. Reactive Forms binds
+`[formControl]` / `[formControlName]` and imports `CngxFormBridge` from `@cngx/forms/controls`.
+Either way the form holds `number | null`, never the display string. The model commits on
+blur, paste and arrow keys, not per keystroke.
+
+```ts
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { CngxFormBridge } from '@cngx/forms/controls';
+import { CngxNumericInput } from '@cngx/forms/input';
+
+@Component({
+  imports: [ReactiveFormsModule, CngxFormBridge, CngxNumericInput],
+  template: `<input cngxNumericInput [decimals]="2" [formControl]="amount" />`,
+})
+class Order {
+  readonly amount = new FormControl<number | null>(null);
+}
+```
 
 ```html
 <input cngxNumericInput #num="cngxNumericInput"
@@ -259,11 +278,40 @@ The consumer provides slot `<input>` elements inside the container.
 ## CngxInputFormat
 
 Display formatting on blur, raw value on focus. Applies a `format` function on blur
-and a `parse` function on focus. Implements `ControlValueAccessor` for Reactive Forms.
+and a `parse` function on focus; `parse` should invert `format`.
+
+Forms: Signal Forms binds `[formField]`, Reactive Forms binds `[formControl]` /
+`[formControlName]` with `CngxFormBridge` imported from `@cngx/forms/controls`. The form
+always holds the raw value, also while the field is focused, never the formatted text.
 
 ```html
 <!-- Currency formatting -->
 <input [cngxInputFormat]="formatCurrency" [parse]="parseCurrency" />
+
+<!-- Reactive Forms (CngxFormBridge in the component's imports) -->
+<input [cngxInputFormat]="formatCurrency" [parse]="parseCurrency" [formControl]="amount" />
+```
+
+## CngxPhoneInput
+
+International phone field: a country picker drives a `phone:<region>` mask. The field
+shows the selected country's dial code, but `value` stays `''` until national digits are
+typed, so an untouched field is empty and pristine. With digits, `value` holds the
+dial-code-prefixed digits (`12025550123`). The field becomes touched when focus leaves the
+whole component, not when it moves between the picker and the number.
+
+Forms: inside `<cngx-form-field [field]="f.phone">` for Signal Forms. Reactive Forms binds
+`[formControl]` / `[formControlName]` on the element and needs `CngxFormBridge` from
+`@cngx/forms/controls` in the component's `imports`; without it Angular throws NG01203.
+
+```html
+<cngx-form-field [field]="f.phone">
+  <label cngxLabel>Phone</label>
+  <cngx-phone-input />
+</cngx-form-field>
+
+<!-- Reactive Forms -->
+<cngx-phone-input [formControl]="phone" />
 ```
 
 ## CngxFileDrop

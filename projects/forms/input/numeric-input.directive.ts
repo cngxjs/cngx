@@ -11,10 +11,12 @@ import {
   type Signal,
   untracked,
 } from '@angular/core';
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interactive';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { coerceSignal, injectLocale } from '@cngx/core/utils';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 import { CNGX_INPUT_CONFIG } from './input-config';
+import { injectDefaultAccessorWarning, injectFormDisabled } from './reactive-forms-channel';
 
 /**
  * `Intl.NumberFormatPart` types that make up the number itself - everything
@@ -109,7 +111,16 @@ function isAllowedChar(
  *
  * <!-- Integer-only -->
  * <input cngxNumericInput [decimals]="0" [allowNegative]="false" />
+ *
+ * <!-- Signal Forms -->
+ * <input cngxNumericInput [formField]="f.amount" />
+ *
+ * <!-- Reactive Forms: import CngxFormBridge from @cngx/forms/controls -->
+ * <input cngxNumericInput [formControl]="amount" />
  * ```
+ *
+ * A bound form holds `number | null`, the same value as the model, never the
+ * display string.
  *
  * @category forms/input
  * @docsKind primary
@@ -134,13 +145,21 @@ function isAllowedChar(
       }),
       deps: [forwardRef(() => CngxNumericInput)],
     },
+    {
+      provide: CNGX_CONTROL_VALUE,
+      useFactory: (dir: CngxNumericInput): CngxControlValue<number | null> => ({
+        value: dir.value,
+        disabled: dir.formDisabled,
+      }),
+      deps: [forwardRef(() => CngxNumericInput)],
+    },
   ],
   host: {
     '[attr.inputmode]': '"decimal"',
     '[attr.role]': '"spinbutton"',
     '[attr.aria-valuemin]': 'min() ?? null',
     '[attr.aria-valuemax]': 'max() ?? null',
-    '[attr.aria-valuenow]': 'numericValue()',
+    '[attr.aria-valuenow]': 'normalizedValue()',
     // Tabular-nums by default so digits align column-wise on cngx-numeric-input
     // fields (forms, dashboards, summary rows). Override on a parent via
     // `--cngx-numeric-input-numeric-variant: normal` when the body font's
@@ -229,6 +248,20 @@ export class CngxNumericInput {
   /** Primary value channel. `null` when empty or invalid. */
   readonly value = model<number | null>(null, { alias: 'value' });
 
+  // CngxFormBridge writes whatever the form holds (`null` after reset(), a foreign
+  // type from an untyped control); every internal read goes through this.
+  /** @internal */
+  protected readonly normalizedValue = computed(() => {
+    const v: unknown = this.value();
+    return typeof v === 'number' && Number.isFinite(v) ? v : null;
+  });
+
+  /**
+   * @internal - written by CngxFormBridge.setDisabledState through CNGX_CONTROL_VALUE.
+   * Never rename to `disabled`: `[formField]` binds custom-control members by name.
+   */
+  readonly formDisabled = injectFormDisabled(this.el);
+
   private readonly focusedState = signal(false);
 
   private readonly separators = computed(() => detectSeparators(this.activeLocale()), {
@@ -242,7 +275,7 @@ export class CngxNumericInput {
 
   /** Whether the current value is a valid number within min/max bounds. */
   readonly isValid = computed(() => {
-    const v = this.value();
+    const v = this.normalizedValue();
     if (v == null) {
       return true; // empty is valid; required handled by validators
     }
@@ -258,10 +291,19 @@ export class CngxNumericInput {
   });
 
   constructor() {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      injectDefaultAccessorWarning(
+        "[cngxNumericInput] This numeric input uses Angular's DefaultValueAccessor, so the form " +
+          'control gets display strings instead of numbers. For Reactive Forms, import ' +
+          'CngxFormBridge from @cngx/forms/controls; [ngModel] is not supported, use [(value)] ' +
+          'or Signal Forms.',
+      );
+    }
+
     // Sync formatted value to DOM; the input event notifies co-located CngxInput / matInput.
     effect(() => {
       const focused = this.focusedState();
-      const value = this.value();
+      const value = this.normalizedValue();
       const { decimal } = this.separators();
       const formatOnBlur = this.formatOnBlur();
       // Tracked so a blurred flip between locales that share separators still re-formats.
@@ -431,21 +473,32 @@ export class CngxNumericInput {
       const rounded = this.roundToDecimals(parsed);
       const clamped = this.clamp(rounded);
       this.updateValue(clamped);
-      const { decimal } = this.separators();
-      const raw = decimal === '.' ? String(clamped) : String(clamped).replace('.', decimal);
-      this.el.nativeElement.value = raw;
+      this.writeDisplay(this.toEditText(clamped));
     }
   }
 
   private adjustValue(direction: 1 | -1, multiplier: number): void {
-    const current = this.value() ?? 0;
+    const current = this.normalizedValue() ?? 0;
     const stepped = current + direction * this.resolvedStep() * multiplier;
     const clamped = this.clamp(this.roundToDecimals(stepped));
     this.updateValue(clamped);
-    const { decimal } = this.separators();
-    this.el.nativeElement.value =
-      decimal === '.' ? String(clamped) : String(clamped).replace('.', decimal);
+    this.writeDisplay(this.toEditText(clamped));
     this.el.nativeElement.select();
+  }
+
+  private toEditText(value: number): string {
+    const { decimal } = this.separators();
+    return decimal === '.' ? String(value) : String(value).replace('.', decimal);
+  }
+
+  // The input event notifies a co-located CngxInput / matInput, as the format effect does.
+  private writeDisplay(text: string): void {
+    const el = this.el.nativeElement;
+    if (el.value === text) {
+      return;
+    }
+    el.value = text;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
   private increment(multiplier: number): void {
@@ -504,7 +557,7 @@ export class CngxNumericInput {
   }
 
   private updateValue(value: number | null): void {
-    const prev = this.value();
+    const prev = this.normalizedValue();
     if (value !== prev) {
       this.value.set(value);
     }
