@@ -30,8 +30,5 @@ export function injectChartPanelConfig(): CngxChartPanelConfig {
  * @since 0.1.0
  */
 export function injectChartPanelAriaLabels(): Signal<Required<CngxChartPanelAriaLabels>> {
-  return createFilledOverrideMerge<Required<CngxChartPanelAriaLabels>>(
-    injectChartPanelSiteCopy(),
-    injectChartPanelConfig().ariaLabels,
-  );
+  return createFilledOverrideMerge(injectChartPanelSiteCopy(), injectChartPanelConfig().ariaLabels);
 }

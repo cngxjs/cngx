@@ -8,6 +8,14 @@ import { CNGX_BREADCRUMB_CONFIG, CNGX_BREADCRUMB_DEFAULTS } from './breadcrumb.c
 import { withBreadcrumbAriaLabels, withBreadcrumbDataKey } from './features';
 import { injectBreadcrumbAriaLabels, injectBreadcrumbConfig } from './inject-breadcrumb-config';
 import { provideBreadcrumbConfig, provideBreadcrumbConfigAt } from './provide-breadcrumb-config';
+import type { CngxBreadcrumbLanguageSection } from '../i18n/breadcrumb-language-section';
+import type { CngxBreadcrumbAriaLabels as DeclaredOnce } from './breadcrumb.config';
+
+// Compile-checked: the config copy type is the section's partial, declared once.
+type Equal<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
+const DECLARED_ONCE: Equal<DeclaredOnce, Partial<CngxBreadcrumbLanguageSection>> = true;
+void DECLARED_ONCE;
 
 // A view-child probe: reads the resolved config from within the host's view,
 // where component `viewProviders` are visible (the host instance itself is

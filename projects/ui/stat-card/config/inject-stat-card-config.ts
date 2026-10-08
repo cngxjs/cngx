@@ -38,8 +38,5 @@ export function injectStatCardConfig(): CngxStatCardConfig {
  * @since 0.1.0
  */
 export function injectStatCardAriaLabels(): Signal<CngxStatCardResolvedAriaLabels> {
-  return createFilledOverrideMerge<CngxStatCardResolvedAriaLabels>(
-    injectStatCardSiteCopy(),
-    injectStatCardConfig().ariaLabels,
-  );
+  return createFilledOverrideMerge(injectStatCardSiteCopy(), injectStatCardConfig().ariaLabels);
 }

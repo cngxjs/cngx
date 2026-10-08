@@ -1,18 +1,17 @@
 import type { Signal } from '@angular/core';
 
 import type { CngxChartPanelLegendPosition } from '../chart-panel.component';
+import type { CngxChartPanelLanguageSection } from '../i18n/chart-panel-language-section';
 
 /**
- * String fallbacks for the chart-panel's non-content states. Every key is
- * optional; an unset key keeps the English default.
+ * String fallbacks for the chart-panel's non-content states. A partial of the
+ * `chartPanel` language section, declared once there; an unset key reads the
+ * section (English without a pack).
  *
  * @category ui/chart-panel
  * @since 0.1.0
  */
-export interface CngxChartPanelAriaLabels {
-  /** Accessible name announced while a panel-level operation runs. */
-  readonly busy?: string;
-}
+export type CngxChartPanelAriaLabels = Partial<CngxChartPanelLanguageSection>;
 
 /**
  * App-wide cascade for the chart-panel's ARIA strings and its default legend

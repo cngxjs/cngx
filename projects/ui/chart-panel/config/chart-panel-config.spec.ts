@@ -19,6 +19,14 @@ const EN_SECTION: CngxLanguagePack['chartPanel'] = CNGX_CHART_PANEL_LANGUAGE_EN;
 import { withChartPanelAriaLabels, withChartPanelLegendPosition } from './features';
 import { injectChartPanelAriaLabels, injectChartPanelConfig } from './inject-chart-panel-config';
 import { provideChartPanelConfig, provideChartPanelConfigAt } from './provide-chart-panel-config';
+import type { CngxChartPanelLanguageSection } from '../i18n/chart-panel-language-section';
+import type { CngxChartPanelAriaLabels as DeclaredOnce } from './chart-panel.config';
+
+// Compile-checked: the config copy type is the section's partial, declared once.
+type Equal<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
+const DECLARED_ONCE: Equal<DeclaredOnce, Partial<CngxChartPanelLanguageSection>> = true;
+void DECLARED_ONCE;
 
 describe('CNGX_CHART_PANEL_CONFIG cascade', () => {
   function read() {

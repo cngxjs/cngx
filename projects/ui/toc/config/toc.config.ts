@@ -1,18 +1,17 @@
 import type { Signal, TemplateRef } from '@angular/core';
 
 import type { CngxTocItemContext } from '../toc.types';
+import type { CngxTocLanguageSection } from '../i18n/toc-language-section';
 
 /**
- * Accessible names the toc renders. Every key is optional; an unset key reads
- * the `toc` section of the language pack (English without one).
+ * Accessible names the toc renders. A partial of the `toc` language section,
+ * declared once there; an unset key reads the section (English without a
+ * pack).
  *
  * @category ui/toc
  * @since 0.1.0
  */
-export interface CngxTocAriaLabels {
-  /** Accessible name of the `nav` landmark (default `'On this page'`). */
-  readonly nav?: string;
-}
+export type CngxTocAriaLabels = Partial<CngxTocLanguageSection>;
 
 /**
  * App-wide cascade for the table-of-contents organism's ARIA label, its

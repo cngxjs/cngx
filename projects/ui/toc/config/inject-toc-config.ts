@@ -37,8 +37,5 @@ export function injectTocConfig(): CngxTocConfig {
  * @since 0.1.0
  */
 export function injectTocAriaLabels(): Signal<Required<CngxTocAriaLabels>> {
-  return createFilledOverrideMerge<Required<CngxTocAriaLabels>>(
-    injectTocSiteCopy(),
-    injectTocConfig().ariaLabels,
-  );
+  return createFilledOverrideMerge(injectTocSiteCopy(), injectTocConfig().ariaLabels);
 }

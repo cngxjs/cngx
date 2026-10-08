@@ -16,6 +16,20 @@ import { provideStatCardConfig, provideStatCardConfigAt } from './provide-stat-c
 import type { CngxStatCardAriaLabels } from './stat-card.config';
 import { CNGX_STAT_CARD_LANGUAGE_EN } from '../i18n/stat-card-language-section';
 import { CNGX_STAT_CARD_DEFAULTS } from './stat-card.config.defaults';
+import type { CngxStatCardLanguageSection } from '../i18n/stat-card-language-section';
+import type { CngxStatCardAriaLabels as DeclaredOnce } from './stat-card.config';
+
+// Compile-checked: the config copy type carries exactly the section's keys
+// (all optional) plus `errorDescription`, so it is declared once in the section.
+type Equal<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
+const DECLARED_ONCE: Equal<
+  Exclude<keyof DeclaredOnce, 'errorDescription'>,
+  keyof CngxStatCardLanguageSection
+> = true;
+const OPTIONAL_KEYS: Partial<CngxStatCardLanguageSection> = {} as DeclaredOnce;
+void DECLARED_ONCE;
+void OPTIONAL_KEYS;
 
 // Compile-checked: the English section is a complete section of a pack.
 const EN_SECTION: CngxLanguagePack['statCard'] = CNGX_STAT_CARD_LANGUAGE_EN;

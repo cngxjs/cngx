@@ -19,6 +19,14 @@ const EN_SECTION: CngxLanguagePack['toc'] = CNGX_TOC_LANGUAGE_EN;
 import { withTocAriaLabels, withTocScrollBehavior, withTocSpy, withTocTemplates } from './features';
 import { injectTocAriaLabels, injectTocConfig } from './inject-toc-config';
 import { provideTocConfig, provideTocConfigAt } from './provide-toc-config';
+import type { CngxTocLanguageSection } from '../i18n/toc-language-section';
+import type { CngxTocAriaLabels as DeclaredOnce } from './toc.config';
+
+// Compile-checked: the config copy type is the section's partial, declared once.
+type Equal<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
+const DECLARED_ONCE: Equal<DeclaredOnce, Partial<CngxTocLanguageSection>> = true;
+void DECLARED_ONCE;
 
 // A sentinel standing in for a real TemplateRef - the config cascade only
 // forwards the reference, so identity is all that matters at this layer. The

@@ -201,6 +201,10 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - `CNGX_A11Y_PANEL_DEFAULTS` and the default `CNGX_A11Y_PANEL_CONFIG` carry no copy any more: `labels` is optional, unset by default, and holds only the overrides `withA11yPanelLabels` set (`CngxA11yPanelLabelsOverride | Signal<CngxA11yPanelLabelsOverride>`); the default axis list carries values and reset targets but no option labels. The text and the option labels are the `a11yPanel` section of the language pack, exported in English as `CNGX_A11Y_PANEL_LANGUAGE_EN`. Code that read `CNGX_A11Y_PANEL_DEFAULTS.labels.heading` or an option label off `CNGX_A11Y_PANEL_DEFAULTS.axes` reads `injectA11yPanelLabels()().heading` / `injectA11yPanelAxes()()`, where every option label is filled.
 - `CngxA11yPanelAxisOption.label` is optional. An option without it reads the label for its value from the `a11yPanel` section, so `withA11yPanelAxes` no longer needs to restate the labels to translate them; a label set there still wins.
 
+### @cngx/ui (config copy types)
+
+- `CngxBreadcrumbAriaLabels`, `CngxTocAriaLabels` and `CngxChartPanelAriaLabels` are type aliases now (`Partial<` the area's language section `>`), not interfaces; `CngxStatCardAriaLabels` extends `Partial<CngxStatCardLanguageSection>` and adds `errorDescription`. Code that `extends` one of the three aliases as an interface switches to an intersection type. The keys are unchanged.
+
 ### @cngx/forms/select
 
 - `CngxSelectAriaLabels.commitFailedMessage` changes from `string` to `(label: string, detail: string | undefined) => string`. It receives the field label and the rejection's `Error.message` (`undefined` for a non-`Error` rejection) and returns the whole commit-error announcement, so a locale can reorder it. `withAriaLabels({ commitFailedMessage: 'Speichern fehlgeschlagen' })` becomes ``withAriaLabels({ commitFailedMessage: (label, detail) => (detail ? `${label}: Speichern fehlgeschlagen - ${detail}` : `${label}: Speichern fehlgeschlagen`) })``. The English default renders the same text as before.
