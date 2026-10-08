@@ -23,7 +23,6 @@ import { loadAllMaskPresets } from './mask-presets/registry';
     [cngxInputMask]="mask()"
     [placeholder]="ph()"
     [guide]="guide()"
-    [includeLiterals]="includeLiterals()"
     [prefix]="prefix()"
     [suffix]="suffix()"
     [transform]="transform()"
@@ -36,7 +35,6 @@ class Host {
   readonly mask = signal('(000) 000-0000');
   readonly ph = signal('_');
   readonly guide = signal(true);
-  readonly includeLiterals = signal(false);
   readonly prefix = signal('');
   readonly suffix = signal('');
   readonly transform = signal<((ch: string) => string) | undefined>(undefined);
@@ -50,7 +48,6 @@ function setup(
     mask?: string;
     ph?: string;
     guide?: boolean;
-    includeLiterals?: boolean;
     prefix?: string;
     suffix?: string;
     transform?: (ch: string) => string;
@@ -74,7 +71,6 @@ function setup(
   if (overrides.mask != null) host.mask.set(overrides.mask);
   if (overrides.ph != null) host.ph.set(overrides.ph);
   if (overrides.guide != null) host.guide.set(overrides.guide);
-  if (overrides.includeLiterals != null) host.includeLiterals.set(overrides.includeLiterals);
   if (overrides.prefix != null) host.prefix.set(overrides.prefix);
   if (overrides.suffix != null) host.suffix.set(overrides.suffix);
   if (overrides.transform != null) host.transform.set(overrides.transform);

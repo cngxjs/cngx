@@ -101,12 +101,8 @@ Nothing to change. The template-variable accessor surface is intact:
 
 ## Behavioural notes
 
-- `CngxInputMask` with `includeLiterals=true`: the `valueChange`-equivalent
-  output (the model's emission) now emits the raw string in all cases. The
-  pre-migration code emitted the literals-included masked-core string when
-  `includeLiterals` was set; that branch was tied to the CVA write-back path.
-  Read `maskedValueCore()` if a consumer still needs the literals-included
-  view of the current value.
+- `includeLiterals` is removed. It had no effect since the CVA removal; read
+  `maskedValueCore()` for the literal-included value.
 - The `valueChange` *template binding* (`(valueChange)="onChange($event)"`)
   keeps working - Angular synthesises the output from `value = model<T>()`.
   Only the explicit `directive.valueChange.subscribe(...)` API surface is

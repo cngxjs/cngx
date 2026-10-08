@@ -347,9 +347,6 @@ export class CngxInputMask {
   /** Placeholder char shown for unfilled positions. Falls back to global config. */
   readonly placeholder = input<string | undefined>(undefined);
 
-  /** Whether to include literal chars in the raw value. */
-  readonly includeLiterals = input<boolean>(false);
-
   /** Whether to guide cursor to the next empty position. Falls back to global config. */
   readonly guide = input<boolean | undefined>(undefined);
 
@@ -464,9 +461,10 @@ export class CngxInputMask {
   );
 
   /**
-   * Primary value channel - raw unmasked value (digits/letters only, no literals unless
-   * `includeLiterals`). Reactive Forms writes through `CngxFormBridge` land in the model as
-   * given: write the raw value (`'1430'`), not the display string.
+   * Primary value channel - raw unmasked value (slot characters only, no literals); read
+   * `maskedValueCore()` for the literal-included form. Reactive Forms writes through
+   * `CngxFormBridge` land in the model as given: write the raw value (`'1430'`), not the
+   * display string.
    */
   readonly value = model<string>('', { alias: 'value' });
 
