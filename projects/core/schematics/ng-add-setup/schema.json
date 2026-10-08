@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "CngxNgAddSetup",
+  "title": "cngx ng-add setup stage",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "The project to add cngx to."
+    },
+    "preset": {
+      "type": "string",
+      "enum": ["minimal", "recommended", "full"],
+      "default": "recommended"
+    },
+    "interactive": {
+      "type": "boolean",
+      "default": true
+    },
+    "dryRun": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": []
+}
