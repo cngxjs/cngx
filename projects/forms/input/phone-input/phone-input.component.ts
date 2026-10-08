@@ -340,9 +340,10 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
       untracked(() => {
         queueMicrotask(() => {
           const mask = this.maskRef();
-          if (mask && mask.value() === '' && this.normalizedValue() === '') {
-            mask.value.set(this.dialDigits());
+          if (mask?.value() !== '' || this.normalizedValue() !== '') {
+            return;
           }
+          mask.value.set(this.dialDigits());
         });
       });
     });
