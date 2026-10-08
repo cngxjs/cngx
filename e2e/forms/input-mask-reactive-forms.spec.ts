@@ -21,6 +21,9 @@ test.describe('input mask reactive forms story', () => {
     await expect(input).toHaveValue('09:15');
     await expect(value).toHaveText('Start value: 0915');
 
+    // The mask places the caret in a frame after focus; let it land before editing.
+    await input.focus();
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)));
     await input.press('End');
     for (let i = 0; i < 4; i++) {
       await input.press('Backspace');
