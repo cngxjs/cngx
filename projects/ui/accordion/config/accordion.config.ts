@@ -55,9 +55,9 @@ export type CngxAccordionSeverity = 'error' | 'warning' | 'info';
  *   4. Library defaults (`CNGX_ACCORDION_DEFAULTS`; the copy comes from the
  *      `accordion` section of the language pack).
  *
- * Both keys are required on the resolved config - the token ships a complete
- * default, and every `with*` feature overrides a whole key, so no consumer ever
- * observes a partial shape.
+ * The copy keys are overrides only: the token's default leaves them unset, and
+ * {@link injectAccordionCopy} fills every unset key from the `accordion`
+ * section of the language pack, so a reader never observes a partial shape.
  *
  * @category ui/accordion
  * @since 0.1.0

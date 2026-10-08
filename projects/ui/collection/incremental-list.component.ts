@@ -283,8 +283,8 @@ export class CngxIncrementalList<T = unknown> {
     { equal: (a, b) => a.length === b.length && a.every((item, i) => Object.is(item, b[i])) },
   );
 
-  // Built-in view labels, resolved through the config cascade (EN library
-  // defaults). Consumers re-phrase or localise via provideIncrementalListConfig.
+  // Built-in view labels: config overrides over the `collection` language
+  // section. Consumers re-phrase single keys via provideIncrementalListConfig.
   // They follow a language switch at once; the live region below reads them
   // untracked.
   protected readonly loadingLabel = computed(() => this.ariaLabels().loading);

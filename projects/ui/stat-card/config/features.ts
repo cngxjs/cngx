@@ -9,7 +9,8 @@ import type { CngxStatCardConfigFeature } from './provide-stat-card-config';
  * first-load error message, and the stale-data note. Per-instance
  * `[busyLabel]` / `[errorText]` / `[staleText]` bindings still win.
  *
- * Library defaults are English; this is the hook a localised app uses. Pass a
+ * The defaults come from the `statCard` section of the language pack (English
+ * without one); this overrides single keys on top of it. Pass a
  * `Signal` to switch the language at runtime; a tile with a live region speaks
  * the new language with its next state change.
  *
