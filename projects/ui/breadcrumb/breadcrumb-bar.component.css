@@ -564,13 +564,14 @@
   }
 
   /* editorial delimits with a mid-dot, not the base slash: suppress the "/"
-     glyph and render "·" via ::after */
+     glyph and render "·" via ::after. The dot is symmetric, so it needs no
+     RTL swap; the empty alt keeps it out of any accessible name. */
   .cngx-breadcrumb__separator {
     font-size: 0;
   }
 
   .cngx-breadcrumb__separator::after {
-    content: '·';
+    content: '·' / '';
     font-size: var(--cngx-breadcrumb-editorial-font-size);
   }
 }
@@ -662,7 +663,7 @@
   }
 
   .cngx-breadcrumb__separator::after {
-    content: var(--cngx-breadcrumb-separator, '\203A');
+    content: var(--cngx-breadcrumb-separator, '\203A') / '';
     font-size: var(--cngx-breadcrumb-header-font-size);
   }
 
@@ -1034,7 +1035,7 @@
   }
 
   .cngx-breadcrumb__separator::after {
-    content: var(--cngx-breadcrumb-separator, '\203A');
+    content: var(--cngx-breadcrumb-separator, '\203A') / '';
     font-size: var(--cngx-breadcrumb-chips-font-size);
   }
 }
@@ -1241,7 +1242,7 @@
   }
 
   .cngx-breadcrumb__separator::after {
-    content: var(--cngx-breadcrumb-separator, '\203A');
+    content: var(--cngx-breadcrumb-separator, '\203A') / '';
     font-size: var(--cngx-breadcrumb-iconlabel-font-size);
   }
 }
@@ -1395,7 +1396,7 @@
   }
 
   .cngx-breadcrumb__separator::after {
-    content: var(--cngx-breadcrumb-separator, '\203A');
+    content: var(--cngx-breadcrumb-separator, '\203A') / '';
     font-size: var(--cngx-breadcrumb-icononly-font-size);
   }
 }
@@ -1504,7 +1505,7 @@
   }
 
   .cngx-breadcrumb__separator::after {
-    content: var(--cngx-breadcrumb-separator, '\203A');
+    content: var(--cngx-breadcrumb-separator, '\203A') / '';
     font-size: var(--cngx-breadcrumb-shell-font-size);
   }
 }
@@ -1643,7 +1644,7 @@
   }
 
   .cngx-breadcrumb__separator::after {
-    content: var(--cngx-breadcrumb-separator, '\203A');
+    content: var(--cngx-breadcrumb-separator, '\203A') / '';
     font-size: var(--cngx-breadcrumb-record-font-size);
   }
 }

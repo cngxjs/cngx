@@ -1,4 +1,5 @@
 import {
+  computed,
   inject,
   InjectionToken,
   makeEnvironmentProviders,
@@ -14,7 +15,9 @@ import type {
   CngxMotionPreference,
   CngxTextScaleValue,
 } from '@cngx/core';
-import { coerceSignal, createNestedOverrideMerge } from '@cngx/core/utils';
+import { coerceSignal, createDefaultsFill, createNestedOverrideMerge } from '@cngx/core/utils';
+
+import { injectA11yPanelSiteCopy, type CngxA11yPanelOptionLabels } from './i18n/a11y-panel-i18n';
 
 /**
  * The four accessibility axes the panel can render a control group for.
@@ -30,8 +33,8 @@ export type CngxA11yPanelAxis = 'density' | 'textScale' | 'motion' | 'contrast';
  * One selectable option in an axis control group: the value written to the
  * axis signal plus the visible/toggle label. `V` is the axis' own value union
  * (e.g. `CngxDensityValue`), so a misspelled value fails to compile rather
- * than reaching the global preference signal. Library defaults are English;
- * consumers relabel via `withA11yPanelAxes`.
+ * than reaching the global preference signal. An option without a `label`
+ * reads it from the `a11yPanel` section of the language pack, by value.
  *
  * @category ui/a11y
  * @relatedTo withA11yPanelAxes
@@ -41,8 +44,12 @@ export type CngxA11yPanelAxis = 'density' | 'textScale' | 'motion' | 'contrast';
 export interface CngxA11yPanelAxisOption<V extends string = string> {
   /** Value written to the axis signal - a valid member of that axis' union. */
   readonly value: V;
-  /** Toggle-button label. */
-  readonly label: string;
+  /**
+   * Toggle-button label. Leave it out to read the label for `value` from the
+   * `a11yPanel` section of the language pack (English without one), so the
+   * option follows a language switch. A label set here wins.
+   */
+  readonly label?: string;
 }
 
 /**
@@ -83,8 +90,9 @@ export type CngxA11yPanelAxisSpec =
 /**
  * Panel text: per-axis group labels, the Reset control label, the default
  * heading (shown when no `[cngxA11yPanelHeader]` is projected), and the
- * live-region message announced on Reset. Library defaults are English;
- * consumers localise via {@link withA11yPanelLabels}.
+ * live-region message announced on Reset. The defaults come from the
+ * `a11yPanel` section of the language pack (English without one); override
+ * single keys via {@link withA11yPanelLabels}.
  *
  * @category ui/a11y
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
@@ -102,20 +110,22 @@ export interface CngxA11yPanelLabels {
 }
 
 /**
- * Resolved panel configuration - the text bundle plus the ordered axis list.
- * Merged from the library defaults and any `with*` features by the reducer in
- * {@link provideA11yPanelConfig}.
+ * Resolved panel configuration - the text overrides plus the ordered axis
+ * list. Merged from the library defaults and any `with*` features by the
+ * reducer in {@link provideA11yPanelConfig}.
  *
- * Both keys accept a value or a `Signal`, so the panel follows a runtime
- * language switch (`axes` carries the option labels). Read them through
- * {@link injectA11yPanelLabels} and {@link injectA11yPanelAxes}.
+ * `labels` holds overrides only: unset by default, a value or a `Signal` once
+ * {@link withA11yPanelLabels} ran; every key it leaves out reads the
+ * `a11yPanel` section of the language pack. `axes` accepts a value or a
+ * `Signal`; its option labels are optional and default to the section. Read
+ * both through {@link injectA11yPanelLabels} and {@link injectA11yPanelAxes}.
  *
  * @category ui/a11y
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
  */
 export interface CngxA11yPanelConfig {
-  readonly labels: CngxA11yPanelLabels | Signal<CngxA11yPanelLabels>;
+  readonly labels?: CngxA11yPanelLabelsOverride | Signal<CngxA11yPanelLabelsOverride>;
   readonly axes: readonly CngxA11yPanelAxisSpec[] | Signal<readonly CngxA11yPanelAxisSpec[]>;
 }
 
@@ -136,61 +146,39 @@ export interface CngxA11yPanelLabelsOverride {
   readonly resetMessage?: string;
 }
 
-/** Library defaults - English. Override via {@link provideA11yPanelConfig}. */
+/**
+ * Library defaults: the four axes in their default order, each with its reset
+ * value. Carries no copy - the text and the option labels are the `a11yPanel`
+ * section of the language pack. Override via {@link provideA11yPanelConfig}.
+ */
 export const CNGX_A11Y_PANEL_DEFAULTS: CngxA11yPanelConfig & {
-  readonly labels: CngxA11yPanelLabels;
   readonly axes: readonly CngxA11yPanelAxisSpec[];
 } = {
-  labels: {
-    axes: {
-      density: 'Spacing',
-      textScale: 'Text size',
-      motion: 'Motion',
-      contrast: 'Contrast',
-    },
-    reset: 'Reset to defaults',
-    heading: 'Accessibility',
-    resetMessage: 'Preferences reset to defaults',
-  },
   axes: [
     {
       axis: 'density',
       reset: 'comfortable',
-      options: [
-        { value: 'compact', label: 'Compact' },
-        { value: 'comfortable', label: 'Comfortable' },
-        { value: 'spacious', label: 'Spacious' },
-      ],
+      options: [{ value: 'compact' }, { value: 'comfortable' }, { value: 'spacious' }],
     },
     {
       axis: 'textScale',
       reset: 'md',
-      options: [
-        { value: 'sm', label: 'Small' },
-        { value: 'md', label: 'Default' },
-        { value: 'lg', label: 'Large' },
-      ],
+      options: [{ value: 'sm' }, { value: 'md' }, { value: 'lg' }],
     },
     {
       axis: 'motion',
       reset: 'auto',
-      options: [
-        { value: 'full', label: 'Full' },
-        { value: 'reduced', label: 'Reduced' },
-        { value: 'auto', label: 'System' },
-      ],
+      options: [{ value: 'full' }, { value: 'reduced' }, { value: 'auto' }],
     },
     {
       axis: 'contrast',
       reset: 'auto',
-      options: [
-        { value: 'normal', label: 'Normal' },
-        { value: 'more', label: 'More' },
-        { value: 'auto', label: 'System' },
-      ],
+      options: [{ value: 'normal' }, { value: 'more' }, { value: 'auto' }],
     },
   ],
 };
+
+const NO_LABELS: CngxA11yPanelLabelsOverride = {};
 
 /**
  * Configuration cascade token. Resolution priority (high to low):
@@ -239,7 +227,7 @@ function applyFeatures(
   let axes = base.axes;
   for (const feature of features) {
     if (feature.kind === 'labels') {
-      labels = createNestedOverrideMerge(labels, feature.payload, 'axes');
+      labels = createNestedOverrideMerge(labels ?? NO_LABELS, feature.payload, 'axes');
     } else {
       axes = feature.payload;
     }
@@ -277,14 +265,16 @@ export function withA11yPanelLabels(
 /**
  * Replace the rendered axis list - reorder groups, drop an axis, or restrict
  * the options a group offers. Supplying a subset renders only those groups.
- * Pass a `Signal` to relabel the options on a runtime language switch.
+ * Leave an option's `label` out and it reads the `a11yPanel` section of the
+ * language pack, so the options translate without restating the list; pass a
+ * `Signal` to relabel options you set yourself on a runtime language switch.
  *
  * ```ts
  * provideA11yPanelConfig(
  *   withA11yPanelAxes([
  *     { axis: 'textScale', reset: 'md', options: [
- *       { value: 'md', label: 'Default' },
- *       { value: 'lg', label: 'Large' },
+ *       { value: 'md' },
+ *       { value: 'lg', label: 'Bigger' },
  *     ] },
  *   ]),
  * );
@@ -357,9 +347,7 @@ export function provideA11yPanelConfig(
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
  * @since 0.1.0
  */
-export function provideA11yPanelConfigAt(
-  ...features: CngxA11yPanelConfigFeature[]
-): Provider[] {
+export function provideA11yPanelConfigAt(...features: CngxA11yPanelConfigFeature[]): Provider[] {
   return [
     {
       provide: CNGX_A11Y_PANEL_CONFIG,
@@ -386,8 +374,10 @@ export function injectA11yPanelConfig(): CngxA11yPanelConfig {
 
 /**
  * The resolved text bundle of the panel config in scope, as a Signal that
- * follows a runtime language switch. Runs in an injection context; read it
- * inside a `computed()`, a template or a handler.
+ * follows a runtime language switch: the config overrides over the `a11yPanel`
+ * section of the active pack, the `axes` record merged key by key. A key the
+ * config leaves unset, `null` or `undefined` reads the section. Runs in an
+ * injection context; read it inside a `computed()`, a template or a handler.
  *
  * @category ui/a11y
  * @relatedTo withA11yPanelLabels
@@ -395,13 +385,83 @@ export function injectA11yPanelConfig(): CngxA11yPanelConfig {
  * @since 0.1.0
  */
 export function injectA11yPanelLabels(): Signal<CngxA11yPanelLabels> {
-  return coerceSignal(injectA11yPanelConfig().labels);
+  const section = injectA11yPanelSiteCopy().labels;
+  return createDefaultsFill<CngxA11yPanelLabels, 'axes'>(
+    createNestedOverrideMerge<CngxA11yPanelLabels, 'axes'>(
+      section,
+      injectA11yPanelConfig().labels,
+      'axes',
+    ),
+    section,
+    'axes',
+  );
+}
+
+/** Options keyed by their array, then by the option-label record they were resolved against. */
+const RESOLVED_OPTIONS = new WeakMap<
+  readonly CngxA11yPanelAxisOption[],
+  WeakMap<object, readonly CngxA11yPanelAxisOption[]>
+>();
+
+/** `options` with every missing label read from `labels`, by value. Memoized per input pair. */
+function resolveOptions(
+  options: readonly CngxA11yPanelAxisOption[],
+  labels: Readonly<Record<string, string>>,
+): readonly CngxA11yPanelAxisOption[] {
+  let byLabels = RESOLVED_OPTIONS.get(options);
+  if (!byLabels) {
+    byLabels = new WeakMap();
+    RESOLVED_OPTIONS.set(options, byLabels);
+  }
+  let resolved = byLabels.get(labels);
+  if (!resolved) {
+    resolved = options.map((option) =>
+      option.label === undefined ? { ...option, label: labels[option.value] } : option,
+    );
+    byLabels.set(labels, resolved);
+  }
+  return resolved;
+}
+
+/** Axis lists are equal when every spec keeps its axis, reset target and options array. */
+function sameAxes(
+  a: readonly CngxA11yPanelAxisSpec[],
+  b: readonly CngxA11yPanelAxisSpec[],
+): boolean {
+  return (
+    a.length === b.length &&
+    a.every(
+      (spec, i) =>
+        spec.axis === b[i].axis && spec.reset === b[i].reset && spec.options === b[i].options,
+    )
+  );
+}
+
+/** Resolved axis lists, memoized per config object and option-label signal. */
+const RESOLVED_AXES = new WeakMap<
+  CngxA11yPanelConfig,
+  WeakMap<Signal<CngxA11yPanelOptionLabels>, Signal<readonly CngxA11yPanelAxisSpec[]>>
+>();
+
+/** The axis list with every option label filled. Kept out of a field initializer for compodocx. */
+function resolveAxes(
+  axes: readonly CngxA11yPanelAxisSpec[],
+  optionLabels: CngxA11yPanelOptionLabels,
+): readonly CngxA11yPanelAxisSpec[] {
+  return axes.map(
+    (spec) =>
+      ({
+        ...spec,
+        options: resolveOptions(spec.options, optionLabels[spec.axis]),
+      }) as CngxA11yPanelAxisSpec,
+  );
 }
 
 /**
  * The resolved axis list of the panel config in scope (values, option labels
- * and reset targets), as a Signal that follows a runtime language switch. Runs
- * in an injection context.
+ * and reset targets), as a Signal that follows a runtime language switch.
+ * Every option without its own `label` carries the label for its value from
+ * the `a11yPanel` section of the active pack. Runs in an injection context.
  *
  * @category ui/a11y
  * @relatedTo withA11yPanelAxes
@@ -409,5 +469,19 @@ export function injectA11yPanelLabels(): Signal<CngxA11yPanelLabels> {
  * @since 0.1.0
  */
 export function injectA11yPanelAxes(): Signal<readonly CngxA11yPanelAxisSpec[]> {
-  return coerceSignal(injectA11yPanelConfig().axes);
+  const config = injectA11yPanelConfig();
+  const optionLabels = injectA11yPanelSiteCopy().options;
+  let byLabels = RESOLVED_AXES.get(config);
+  if (!byLabels) {
+    byLabels = new WeakMap();
+    RESOLVED_AXES.set(config, byLabels);
+  }
+  const cached = byLabels.get(optionLabels);
+  if (cached) {
+    return cached;
+  }
+  const axes = coerceSignal(config.axes);
+  const resolved = computed(() => resolveAxes(axes(), optionLabels()), { equal: sameAxes });
+  byLabels.set(optionLabels, resolved);
+  return resolved;
 }

@@ -125,9 +125,12 @@ focus is never silently dropped.
   `isBusy()` signal - never a one-time setting.
 - State changes (empty, end-reached, error) surface through a polite live region
   so assistive technology is told when the collection settles.
-- `withIncrementalListAriaLabels` also takes a `Signal`, so the labels follow a
-  runtime language switch. The live region keeps its current message on a
-  switch and speaks the new language with the next settle.
+- The labels come from the `collection` section of the language pack
+  (`CNGX_COLLECTION_LANGUAGE_EN` in English); `withIncrementalListAriaLabels`
+  overrides single keys and also takes a `Signal`. The live region keeps its
+  current message on a language switch and speaks the new language with the
+  next settle.
+- Without an item slot, a number or `Date` row is formatted for the locale.
 
 ## Composition
 

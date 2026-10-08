@@ -79,10 +79,10 @@ export function withSidenavRouterSync(
 }
 
 /**
- * Set the app-wide sidenav copy. Unset keys keep the English default; pass a
- * `Signal` of a partial bundle to switch languages at runtime. The resize
- * handle reads its key once when each sidenav is created, so a per-instance
- * `[resizeLabel]` still wins. A later call replaces the whole bundle.
+ * Override the app-wide sidenav copy. Unset keys read the `sidenav` section of
+ * the language pack (English without one); pass a `Signal` of a partial bundle
+ * to switch languages at runtime. A per-instance `[resizeLabel]` still wins
+ * over `resizeHandle`. A later call replaces the whole bundle.
  *
  * ```ts
  * provideSidenavConfig(withSidenavLabels({ resizeHandle: 'Navigation anpassen' }));

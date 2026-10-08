@@ -581,7 +581,7 @@ export const HELPERS = [
   'injectChartI18n',
   'resolveSelectConfig',
   'resolveCommandPaletteCopy',
-  'resolveAccordionCopy',
+  'accordionConfigCopy',
 ];
 
 /**

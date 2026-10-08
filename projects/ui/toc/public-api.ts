@@ -21,3 +21,4 @@ export {
   type CngxTocConfigFeature,
 } from './config/provide-toc-config';
 export { injectTocAriaLabels, injectTocConfig } from './config/inject-toc-config';
+export { CNGX_TOC_LANGUAGE_EN, type CngxTocLanguageSection } from './i18n/toc-language-section';

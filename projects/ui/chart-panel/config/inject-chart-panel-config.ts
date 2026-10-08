@@ -1,11 +1,9 @@
 import { inject, type Signal } from '@angular/core';
-import { createDefaultsFill, createOverrideMerge } from '@cngx/core/utils';
+import { createFilledOverrideMerge } from '@cngx/core/utils';
 
+import { injectChartPanelSiteCopy } from '../i18n/chart-panel-i18n';
 import type { CngxChartPanelAriaLabels, CngxChartPanelConfig } from './chart-panel.config';
-import {
-  CNGX_CHART_PANEL_ARIA_LABELS_DEFAULTS,
-  CNGX_CHART_PANEL_CONFIG,
-} from './chart-panel.config.defaults';
+import { CNGX_CHART_PANEL_CONFIG } from './chart-panel.config.defaults';
 
 /**
  * Convenience accessor for the chart-panel configuration cascade. Runs in
@@ -22,17 +20,15 @@ export function injectChartPanelConfig(): CngxChartPanelConfig {
 }
 
 /**
- * The resolved strings of the chart-panel config in scope, every key filled
- * from the English defaults (also a key an override sets to `undefined`), as a Signal that follows a runtime language
- * switch. Runs in injection context; read it inside a `computed()`, a
+ * The resolved strings of the chart-panel config in scope, every key the
+ * config leaves unset (also a key an override sets to `undefined`) filled from
+ * the `chartPanel` section of the active pack, as a Signal that follows a
+ * runtime language switch. Runs in injection context; read it inside a `computed()`, a
  * template or a handler, and untracked where it builds live-region text.
  *
  * @category ui/chart-panel
  * @since 0.1.0
  */
 export function injectChartPanelAriaLabels(): Signal<Required<CngxChartPanelAriaLabels>> {
-  return createDefaultsFill(
-    createOverrideMerge(CNGX_CHART_PANEL_ARIA_LABELS_DEFAULTS, injectChartPanelConfig().ariaLabels),
-    CNGX_CHART_PANEL_ARIA_LABELS_DEFAULTS,
-  );
+  return createFilledOverrideMerge(injectChartPanelSiteCopy(), injectChartPanelConfig().ariaLabels);
 }

@@ -74,15 +74,17 @@ export interface CngxSidenavConfig {
   readonly shortcut?: string;
 
   /**
-   * App-wide sidenav copy. Reactive from birth: pass a partial bundle or a
-   * `Signal` of one; unset keys keep the English default. Override via
-   * `withSidenavLabels(...)`. A later feature replaces the whole bundle.
+   * App-wide sidenav copy overrides. Reactive from birth: pass a partial
+   * bundle or a `Signal` of one; unset keys read the `sidenav` section of the
+   * language pack (English without one). Override via `withSidenavLabels(...)`.
+   * A later feature replaces the whole bundle.
    */
   readonly labels?: Partial<CngxSidenavLabels> | Signal<Partial<CngxSidenavLabels>>;
 }
 
 /**
- * User-facing copy of the sidenav. Library defaults are English.
+ * User-facing copy of the sidenav. The defaults come from the `sidenav` section
+ * of the language pack (English without one).
  *
  * @category ui/sidenav
  * @since 0.1.0
@@ -90,7 +92,13 @@ export interface CngxSidenavConfig {
 export interface CngxSidenavLabels {
   /**
    * Default of `[resizeLabel]`, the accessible name of the resize separator.
-   * Read once when each sidenav is created.
    */
   readonly resizeHandle: string;
+  /**
+   * `aria-valuetext` of the resize separator. Receives the separator position
+   * as a rounded percent (0-100) of its min-max range and that value already
+   * formatted as a percent in the app locale; the default returns the
+   * formatted string. Same shape as the feedback `progressValueText`.
+   */
+  readonly resizeValueText: (percent: number, formatted: string) => string;
 }

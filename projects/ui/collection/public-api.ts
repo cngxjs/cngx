@@ -15,7 +15,6 @@ export {
 } from './incremental-list-slots';
 export {
   CNGX_INCREMENTAL_LIST_CONFIG,
-  CNGX_INCREMENTAL_LIST_DEFAULTS,
   provideIncrementalListConfig,
   provideIncrementalListConfigAt,
   injectIncrementalListAriaLabels,
@@ -27,6 +26,10 @@ export {
   type CngxIncrementalListAriaLabels,
   type CngxIncrementalListTemplates,
 } from './incremental-list-config';
+export {
+  CNGX_COLLECTION_LANGUAGE_EN,
+  type CngxCollectionLanguageSection,
+} from './i18n/collection-language-section';
 
 // Trigger atoms re-exported for discoverability - a projected trigger injects
 // the shared CNGX_PAGINATOR_HOST the organism provides. No new component; these

@@ -1,11 +1,9 @@
 import { inject, type Signal } from '@angular/core';
-import { createDefaultsFill, createOverrideMerge } from '@cngx/core/utils';
+import { createFilledOverrideMerge } from '@cngx/core/utils';
 
+import { injectBreadcrumbSiteCopy } from '../i18n/breadcrumb-i18n';
 import type { CngxBreadcrumbAriaLabels, CngxBreadcrumbConfig } from './breadcrumb.config';
-import {
-  CNGX_BREADCRUMB_ARIA_LABELS_DEFAULTS,
-  CNGX_BREADCRUMB_CONFIG,
-} from './breadcrumb.config.defaults';
+import { CNGX_BREADCRUMB_CONFIG } from './breadcrumb.config.defaults';
 
 /**
  * Convenience accessor for the breadcrumb configuration cascade. Runs in
@@ -34,9 +32,9 @@ export function injectBreadcrumbConfig(): CngxBreadcrumbConfig {
 
 /**
  * The resolved accessible names of the breadcrumb config in scope, every key
- * filled from the English defaults (also a key an override sets to
- * `undefined`), as a Signal that follows a runtime
- * language switch. Runs in injection context; read it inside a `computed()`,
+ * the config leaves unset (also a key an override sets to `undefined`) filled
+ * from the `breadcrumb` section of the active pack, as a Signal that follows a
+ * runtime language switch. Runs in injection context; read it inside a `computed()`,
  * a template or a handler.
  *
  * ```ts
@@ -50,8 +48,5 @@ export function injectBreadcrumbConfig(): CngxBreadcrumbConfig {
  * @since 0.1.0
  */
 export function injectBreadcrumbAriaLabels(): Signal<Required<CngxBreadcrumbAriaLabels>> {
-  return createDefaultsFill(
-    createOverrideMerge(CNGX_BREADCRUMB_ARIA_LABELS_DEFAULTS, injectBreadcrumbConfig().ariaLabels),
-    CNGX_BREADCRUMB_ARIA_LABELS_DEFAULTS,
-  );
+  return createFilledOverrideMerge(injectBreadcrumbSiteCopy(), injectBreadcrumbConfig().ariaLabels);
 }

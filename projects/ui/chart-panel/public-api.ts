@@ -2,10 +2,7 @@
  * @module @cngx/ui/chart-panel
  */
 
-export {
-  CngxChartPanel,
-  type CngxChartPanelLegendPosition,
-} from './chart-panel.component';
+export { CngxChartPanel, type CngxChartPanelLegendPosition } from './chart-panel.component';
 export {
   type CngxChartPanelAriaLabels,
   type CngxChartPanelConfig,
@@ -28,3 +25,7 @@ export {
   CngxChartPanelFooter,
 } from './chart-panel-slots';
 export { CNGX_CHART_PANEL, type CngxChartPanelRegistry } from './chart-panel.token';
+export {
+  CNGX_CHART_PANEL_LANGUAGE_EN,
+  type CngxChartPanelLanguageSection,
+} from './i18n/chart-panel-language-section';

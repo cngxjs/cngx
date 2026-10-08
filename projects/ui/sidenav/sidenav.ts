@@ -16,17 +16,20 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {
-  createOverrideMerge,
   createTransitionTracker,
+  injectLocale,
   matchesKeyCombo,
+  numberFormatterFor,
   parseKeyCombo,
 } from '@cngx/core/utils';
 import { CNGX_HOVER_INTENT_DEFAULTS, CngxHoverIntent } from '@cngx/common/interactive';
 import { CNGX_CONTAINER_SIZE } from '@cngx/common/layout';
+import { clamp } from '@cngx/utils';
 
-import { injectSidenavConfig } from './config/inject-sidenav-config';
-import { CNGX_SIDENAV_LABELS_DEFAULTS } from './config/sidenav.config.defaults';
+import { injectSidenavConfig, injectSidenavLabels } from './config/inject-sidenav-config';
 import { CNGX_SIDENAV } from './sidenav-token';
+
+const PERCENT_FORMAT: Intl.NumberFormatOptions = { style: 'percent' };
 
 /**
  * Logical position - flips in RTL.
@@ -172,6 +175,7 @@ export type ResolvedSidenavMode = Exclude<SidenavMode, 'auto'>;
         [attr.aria-label]="resolvedResizeLabel()"
         [attr.aria-orientation]="'vertical'"
         [attr.aria-valuenow]="widthValueNow()"
+        [attr.aria-valuetext]="widthValueText()"
         [attr.aria-valuemin]="minWidthPx()"
         [attr.aria-valuemax]="maxWidthPx()"
       ></div>
@@ -220,7 +224,8 @@ export class CngxSidenav {
    */
   readonly resizeLabel = input<string | undefined>(undefined);
 
-  private readonly labels = createOverrideMerge(CNGX_SIDENAV_LABELS_DEFAULTS, this.cfg.labels);
+  private readonly labels = injectSidenavLabels();
+  private readonly locale = injectLocale();
 
   /** @internal */
   protected readonly resolvedResizeLabel = computed(
@@ -563,6 +568,24 @@ export class CngxSidenav {
    * on a focusable separator even for rem-sized rails.
    */
   protected readonly widthValueNow = computed(() => this.widthPx() ?? this.measuredWidthPx());
+
+  /**
+   * @internal `aria-valuetext` of the separator: its position as a percent of
+   * the min-max range, formatted in the locale, so AT speaks where the handle
+   * sits instead of a bare pixel count. `null` (AT reads `aria-valuenow`) while
+   * the width or a bound is not in px.
+   */
+  protected readonly widthValueText = computed(() => {
+    const width = this.widthValueNow();
+    const min = this.minWidthPx();
+    const max = this.maxWidthPx();
+    if (width === null || min === null || max === null || max <= min) {
+      return null;
+    }
+    const percent = Math.round(clamp((width - min) / (max - min), 0, 1) * 100);
+    const formatted = numberFormatterFor(this.locale(), PERCENT_FORMAT).format(percent / 100);
+    return this.labels().resizeValueText(percent, formatted);
+  });
 
   private measureWidth(): void {
     const el = this.elementRef.nativeElement as HTMLElement;

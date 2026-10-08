@@ -1,24 +1,11 @@
 import { InjectionToken } from '@angular/core';
 
-import type { CngxBreadcrumbAriaLabels, CngxBreadcrumbConfig } from './breadcrumb.config';
+import type { CngxBreadcrumbConfig } from './breadcrumb.config';
 
 /**
- * English accessible names of the breadcrumb family, the base every
- * `ariaLabels` override merges onto.
- *
- * @internal
- */
-export const CNGX_BREADCRUMB_ARIA_LABELS_DEFAULTS: Required<CngxBreadcrumbAriaLabels> = {
-  bar: 'Breadcrumb',
-  overflowTrigger: 'Show collapsed breadcrumbs',
-  overflowMenu: 'Collapsed breadcrumbs',
-  siblingsTrigger: 'Show sibling pages',
-  siblingsMenu: 'Sibling pages',
-};
-
-/**
- * Library defaults for the breadcrumb configuration cascade. English by
- * default; locale overrides ride the `withBreadcrumbAriaLabels` feature.
+ * Library defaults for the breadcrumb configuration cascade. Carries no copy:
+ * the accessible-name defaults are the `breadcrumb` section of the language
+ * pack; single keys ride the `withBreadcrumbAriaLabels` feature.
  *
  * Exported for intra-lib consumers (`provideBreadcrumbConfig` deep-merges with
  * this base) but **NOT** re-exported from `public-api.ts`.
@@ -26,7 +13,6 @@ export const CNGX_BREADCRUMB_ARIA_LABELS_DEFAULTS: Required<CngxBreadcrumbAriaLa
  * @internal
  */
 export const CNGX_BREADCRUMB_DEFAULTS: CngxBreadcrumbConfig = {
-  ariaLabels: CNGX_BREADCRUMB_ARIA_LABELS_DEFAULTS,
   router: {
     dataKey: 'breadcrumb',
     iconKey: 'icon',

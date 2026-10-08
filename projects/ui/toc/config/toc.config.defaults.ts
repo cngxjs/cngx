@@ -1,21 +1,11 @@
 import { InjectionToken } from '@angular/core';
 
-import type { CngxTocAriaLabels, CngxTocConfig } from './toc.config';
+import type { CngxTocConfig } from './toc.config';
 
 /**
- * English accessible names of the toc, the base every `ariaLabels` override
- * merges onto.
- *
- * @internal
- */
-export const CNGX_TOC_ARIA_LABELS_DEFAULTS: Required<CngxTocAriaLabels> = {
-  nav: 'On this page',
-};
-
-/**
- * Library defaults for the toc configuration cascade. English by default per
- * `feedback_en_default_locale`; locale overrides ride the `withTocAriaLabels`
- * feature. The spy defaults (`rootMargin` / `threshold`) mirror
+ * Library defaults for the toc configuration cascade. Carries no copy: the
+ * `ariaLabels` defaults are the `toc` section of the language pack; single
+ * keys ride the `withTocAriaLabels` feature. The spy defaults (`rootMargin` / `threshold`) mirror
  * `CngxScrollSpy`'s own input defaults so an un-configured toc tracks
  * scrolling identically to a hand-wired spy.
  *
@@ -26,10 +16,7 @@ export const CNGX_TOC_ARIA_LABELS_DEFAULTS: Required<CngxTocAriaLabels> = {
  *
  * @internal
  */
-export const CNGX_TOC_DEFAULTS: CngxTocConfig & {
-  readonly ariaLabels: Required<CngxTocAriaLabels>;
-} = {
-  ariaLabels: CNGX_TOC_ARIA_LABELS_DEFAULTS,
+export const CNGX_TOC_DEFAULTS: CngxTocConfig = {
   scrollBehavior: 'smooth',
   spy: {
     rootMargin: '0px',

@@ -11,9 +11,9 @@ import {
   type Signal,
   type TemplateRef,
 } from '@angular/core';
-import { createOverrideMerge } from '@cngx/core/utils';
+import { createFilledOverrideMerge, createOverrideMerge } from '@cngx/core/utils';
 
-import { fillOver, injectPaginatorSiteCopy } from './i18n/paginator-i18n';
+import { injectPaginatorSiteCopy } from './i18n/paginator-i18n';
 
 /**
  * Accessible-name strings for the paginator landmark and its segment parts.
@@ -521,7 +521,10 @@ export function injectPaginatorConfig(): CngxPaginatorConfig {
  * @since 0.1.0
  */
 export function injectPaginatorAriaLabels(): Signal<CngxPaginatorAriaLabels> {
-  return fillOver(injectPaginatorSiteCopy().ariaLabels, injectPaginatorConfig().ariaLabels);
+  return createFilledOverrideMerge(
+    injectPaginatorSiteCopy().ariaLabels,
+    injectPaginatorConfig().ariaLabels,
+  );
 }
 
 /**
@@ -534,7 +537,10 @@ export function injectPaginatorAriaLabels(): Signal<CngxPaginatorAriaLabels> {
  * @since 0.1.0
  */
 export function injectPaginatorAnnouncements(): Signal<CngxPaginatorAnnouncements> {
-  return fillOver(injectPaginatorSiteCopy().announcements, injectPaginatorConfig().announcements);
+  return createFilledOverrideMerge(
+    injectPaginatorSiteCopy().announcements,
+    injectPaginatorConfig().announcements,
+  );
 }
 
 /**
@@ -547,7 +553,7 @@ export function injectPaginatorAnnouncements(): Signal<CngxPaginatorAnnouncement
  * @since 0.1.0
  */
 export function injectPaginatorFormats(): Signal<Required<CngxPaginatorFormats>> {
-  return fillOver<Required<CngxPaginatorFormats>>(
+  return createFilledOverrideMerge<Required<CngxPaginatorFormats>>(
     injectPaginatorSiteCopy().formats,
     injectPaginatorConfig().formats,
   );

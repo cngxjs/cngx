@@ -249,3 +249,30 @@ export function createDefaultsFill<T extends object>(
   byKey.set(key ?? FLAT, filled);
   return filled;
 }
+
+/**
+ * A partial override bundle over a defaults bundle, every key the override
+ * leaves unset, `null` or `undefined` reading the default: the
+ * {@link createOverrideMerge} + {@link createDefaultsFill} pair in one call.
+ * This is how a config copy sub-tree (override partials only) sits over the
+ * language-pack section of the reading site.
+ *
+ * Memoized and reference-stable like the two calls it composes: the same
+ * (defaults, overrides) pair returns the same signal.
+ *
+ * ```ts
+ * export function injectTrailLabels(): Signal<TrailLabels> {
+ *   return createFilledOverrideMerge(injectTrailSiteCopy(), injectTrailConfig().labels);
+ * }
+ * ```
+ *
+ * @category core/utils
+ * @since 0.1.0
+ * @relatedTo createOverrideMerge, createDefaultsFill
+ */
+export function createFilledOverrideMerge<T extends object>(
+  defaults: T | Signal<T>,
+  overrides: Partial<T> | Signal<Partial<T>> | undefined,
+): Signal<T> {
+  return createDefaultsFill(createOverrideMerge<T>(defaults, overrides), defaults);
+}

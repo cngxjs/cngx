@@ -11,3 +11,7 @@ export {
   type CngxSpeakI18n,
   type CngxSpeakI18nFeature,
 } from './speak-i18n';
+export {
+  CNGX_SPEAK_LANGUAGE_EN,
+  type CngxSpeakLanguageSection,
+} from './i18n/speak-language-section';

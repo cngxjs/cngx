@@ -1,18 +1,17 @@
 import type { Signal, TemplateRef } from '@angular/core';
 
 import type { CngxTocItemContext } from '../toc.types';
+import type { CngxTocLanguageSection } from '../i18n/toc-language-section';
 
 /**
- * Accessible names the toc renders. Every key is optional; an unset key keeps
- * the English default.
+ * Accessible names the toc renders. A partial of the `toc` language section,
+ * declared once there; an unset key reads the section (English without a
+ * pack).
  *
  * @category ui/toc
  * @since 0.1.0
  */
-export interface CngxTocAriaLabels {
-  /** Accessible name of the `nav` landmark (default `'On this page'`). */
-  readonly nav?: string;
-}
+export type CngxTocAriaLabels = Partial<CngxTocLanguageSection>;
 
 /**
  * App-wide cascade for the table-of-contents organism's ARIA label, its
@@ -24,7 +23,8 @@ export interface CngxTocAriaLabels {
  *   2. `provideTocConfigAt(...)` in a parent component's `viewProviders`
  *      (component-scoped override).
  *   3. `provideTocConfig(...)` at the application root.
- *   4. Library defaults (English; merged in via `CNGX_TOC_DEFAULTS`).
+ *   4. Library defaults (`CNGX_TOC_DEFAULTS`; the names come from the `toc`
+ *      section of the language pack).
  *
  * Every key is optional - partial overrides deep-merge with the library
  * defaults, so consumers declare only the keys they want to override.
@@ -36,7 +36,8 @@ export interface CngxTocConfig {
   /**
    * ARIA-string fallback for the `nav` landmark. A per-instance
    * `[navLabel]`-equivalent binding is not exposed; the landmark name always
-   * comes from this cascade, English by default. Accepts a `Signal` so the
+   * comes from this cascade, the `toc` section of the language pack by
+   * default. Accepts a `Signal` so the
    * name follows a runtime language switch; read the resolved bundle through
    * {@link injectTocAriaLabels}.
    */

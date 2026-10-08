@@ -1,4 +1,4 @@
-import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
+import { Component, computed, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NavigationEnd, provideRouter, Router, RouterOutlet } from '@angular/router';
@@ -118,7 +118,8 @@ describe('CngxBreadcrumbRouterSync', () => {
     const fixture = TestBed.createComponent(RouterHost);
     fixture.detectChanges();
     await flushMicrotasks();
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
+      .nativeElement as HTMLElement;
     const directive = fixture.debugElement
       .query(By.directive(CngxBreadcrumbRouterSync))
       .injector.get(CngxBreadcrumbRouterSync);
@@ -276,6 +277,32 @@ describe('CngxBreadcrumbRouterSync', () => {
     expect(labels(barEl)).toEqual(['Default']);
   });
 
+  it('follows a Signal route label on the app language switch', async () => {
+    const lang = signal<'en' | 'de'>('en');
+    const orders = computed(() => (lang() === 'en' ? 'Orders' : 'Bestellungen'));
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([{ path: 'orders', component: Blank, data: { breadcrumb: orders } }]),
+      ],
+    });
+    const router = TestBed.inject(Router);
+    const fixture = TestBed.createComponent(RouterHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    await router.navigateByUrl('/orders');
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.detectChanges();
+    const directive = fixture.debugElement
+      .query(By.directive(CngxBreadcrumbRouterSync))
+      .injector.get(CngxBreadcrumbRouterSync);
+    expect(directive.crumbs().map((c) => c.label)).toEqual(['Orders']);
+
+    lang.set('de');
+    expect(directive.crumbs().map((c) => c.label)).toEqual(['Bestellungen']);
+  });
+
   it('reads the trail from the dataKey set by the config cascade', async () => {
     TestBed.configureTestingModule({
       providers: [
@@ -298,7 +325,8 @@ describe('CngxBreadcrumbRouterSync', () => {
     await flushMicrotasks();
     fixture.detectChanges();
 
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
+      .nativeElement as HTMLElement;
     expect(labels(barEl)).toEqual(['Custom']);
   });
 
@@ -324,7 +352,8 @@ describe('CngxBreadcrumbRouterSync', () => {
     await flushMicrotasks();
     fixture.detectChanges();
 
-    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
+      .nativeElement as HTMLElement;
     expect(labels(barEl)).toEqual(['Default']);
   });
 

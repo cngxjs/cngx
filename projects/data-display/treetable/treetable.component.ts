@@ -32,7 +32,12 @@ import { NgTemplateOutlet } from '@angular/common';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import { injectDirection, resolveInlineArrowKey } from '@cngx/core';
-import { coerceSignal, injectLocale } from '@cngx/core/utils';
+import {
+  coerceSignal,
+  displayFormattersFor,
+  formatDisplayValue,
+  injectLocale,
+} from '@cngx/core/utils';
 import { arrayEqual } from '@cngx/utils';
 import { CngxTreetableRow } from './treetable-row.directive';
 import {
@@ -44,15 +49,16 @@ import {
   CngxSkeletonRowTpl,
 } from './column-template.directive';
 import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
-import type { CngxErrorTplContext, CngxTreetableFlatNode, CngxTreetableNode, CngxTreetableOptions } from './models';
+import type {
+  CngxErrorTplContext,
+  CngxTreetableFlatNode,
+  CngxTreetableNode,
+  CngxTreetableOptions,
+} from './models';
 import {
   columnHeaderFor,
   extractColumns,
   flattenTree,
-  CELL_DATE_FORMAT,
-  CELL_NUMBER_FORMAT,
-  cellFormattersFor,
-  formatCellValue,
   getInitialExpandedIds,
   isNodeVisible,
 } from './tree.utils';
@@ -793,20 +799,14 @@ export class CngxTreetable<T = unknown> {
     return value as Record<string, unknown>;
   }
 
-  /** Resolved `Intl.DateTimeFormat` options for a `Date` in a default cell. */
-  private readonly dateFormat = computed(
-    () => this.resolvedOptions().dateFormat ?? CELL_DATE_FORMAT,
-  );
-
-  /** Resolved `Intl.NumberFormat` options for a number in a default cell. */
-  private readonly numberFormat = computed(
-    () => this.resolvedOptions().numberFormat ?? CELL_NUMBER_FORMAT,
-  );
-
-  /** Default-cell formatters, resolved once per locale, date and number format. */
-  private readonly cellFormatters = computed(() =>
-    cellFormattersFor(this.locale(), this.dateFormat(), this.numberFormat()),
-  );
+  /**
+   * Default-cell formatters, resolved once per locale, date and number format
+   * (date-only and `Intl.NumberFormat` defaults when the options leave them unset).
+   */
+  private readonly cellFormatters = computed(() => {
+    const options = this.resolvedOptions();
+    return displayFormattersFor(this.locale(), options.dateFormat, options.numberFormat);
+  });
 
   /**
    * Default cell text: numbers and dates formatted for the treetable's
@@ -815,7 +815,7 @@ export class CngxTreetable<T = unknown> {
    * @internal
    */
   protected cellText(value: unknown): unknown {
-    return formatCellValue(value, this.cellFormatters());
+    return formatDisplayValue(value, this.cellFormatters());
   }
 
   /**

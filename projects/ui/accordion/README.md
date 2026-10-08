@@ -40,9 +40,10 @@ collapsed item un-hides its region so the alert is announced.
 `provideAccordionConfig(...)` / `provideAccordionConfigAt(...)` with
 `withAccordionLabels({ disabledReason, errorMessage })`,
 `withDefaultHeadingLevel(n)`, `withAccordionSkin(name)`, and
-`withAccordionTemplates({ icon, busySpinner, error })`. Library defaults are
-English. Both label keys accept a `Signal<string>`, so the accordion follows a
-runtime language switch.
+`withAccordionTemplates({ icon, busySpinner, error })`. The label defaults
+come from the `accordion` section of the language pack (English without one,
+`CNGX_ACCORDION_LANGUAGE_EN`). Both label keys accept a `Signal<string>`, so
+the accordion follows a runtime language switch.
 
 ## Skins
 

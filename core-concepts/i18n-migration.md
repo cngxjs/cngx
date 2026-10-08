@@ -130,6 +130,8 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 ### @cngx/ui/sidenav
 
 - The copy input `CngxSidenav.resizeLabel` is now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time `withSidenavLabels` `resizeHandle` default. Template bindings are unchanged; the rendered resize-handle `aria-label` follows a language switch while the input is unbound. Code that reads `sidenav.resizeLabel()` programmatically gets `undefined` when nothing is bound.
+- The resolved sidenav labels are public through `injectSidenavLabels()` (the config `labels` hold overrides only).
+- `CngxSidenavLabels` gains the required key `resizeValueText: (percent: number, formatted: string) => string`, the same shape as the feedback `progressValueText`. A full `CngxSidenavLabels` object built by hand adds it; `withSidenavLabels` takes a partial and is unaffected. The label defaults are the `sidenav` section of the language pack, exported in English as `CNGX_SIDENAV_LANGUAGE_EN`.
 
 ### @cngx/ui/speak
 
@@ -151,24 +153,32 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 ### @cngx/ui/accordion
 
-- `CngxAccordionConfig.disabledReason` and `.errorMessage` are typed `string | Signal<string>`, and hold a `Signal` once one was passed to `withAccordionLabels`. Code that reads them off `injectAccordionConfig()` or `CNGX_ACCORDION_CONFIG` wraps the key once, in a field: `private readonly reason = coerceSignal(injectAccordionConfig().disabledReason);` (`coerceSignal` from `@cngx/core/utils`), then `this.reason()` inside a `computed()`, a template or a handler. `withAccordionLabels` now also accepts a `Signal<string>` per key; plain strings keep their merge rules.
+- `CngxAccordionConfig.disabledReason` and `.errorMessage` are typed `string | Signal<string>`, and hold a `Signal` once one was passed to `withAccordionLabels`. Code that read them off `injectAccordionConfig()` or `CNGX_ACCORDION_CONFIG` reads the resolved copy through the new accessor instead: `injectAccordionLabels()().disabledReason`, inside a `computed()`, a template or a handler (the config keys hold overrides only). `withAccordionLabels` now also accepts a `Signal<string>` per key; plain strings keep their merge rules.
 - The copy inputs `CngxAccordionItem.disabledReason` / `.errorMessage` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time config default. Template bindings are unchanged; the rendered reason follows a language switch while the input is unbound, and the error alert speaks the new language with the next error. Code that reads the input programmatically gets `undefined` when nothing is bound.
+
+- `CngxAccordionConfig.disabledReason` and `.errorMessage` are optional, and `CNGX_ACCORDION_DEFAULTS` carries neither: they hold only the overrides `withAccordionLabels` set. The defaults are the `accordion` section of the language pack, exported in English as `CNGX_ACCORDION_LANGUAGE_EN`. A hand-built `CngxAccordionConfig` no longer has to list them.
 
 ### @cngx/ui/breadcrumb
 
-- `CngxBreadcrumbConfig.ariaLabels` is typed `CngxBreadcrumbAriaLabels | Signal<CngxBreadcrumbAriaLabels>`, and once `withBreadcrumbAriaLabels` ran it holds a `Signal`. Code that reads it off `injectBreadcrumbConfig()` or `CNGX_BREADCRUMB_CONFIG` reads the resolved bundle through the new accessor instead: `injectBreadcrumbConfig().ariaLabels?.bar` becomes `injectBreadcrumbAriaLabels()().bar`, called inside a `computed()`, a template or a handler; every key is filled from the English defaults. `withBreadcrumbAriaLabels` now also accepts a `Signal<CngxBreadcrumbAriaLabels>`; plain objects still merge key by key, and `provideBreadcrumbConfigAt` still merges over the parent scope.
+- `CngxBreadcrumbConfig.ariaLabels` is typed `CngxBreadcrumbAriaLabels | Signal<CngxBreadcrumbAriaLabels>`, and once `withBreadcrumbAriaLabels` ran it holds a `Signal`. Code that reads it off `injectBreadcrumbConfig()` or `CNGX_BREADCRUMB_CONFIG` reads the resolved bundle through the new accessor instead: `injectBreadcrumbConfig().ariaLabels?.bar` becomes `injectBreadcrumbAriaLabels()().bar`, called inside a `computed()`, a template or a handler; every key is filled from the `breadcrumb` language section. `withBreadcrumbAriaLabels` now also accepts a `Signal<CngxBreadcrumbAriaLabels>`; plain objects still merge key by key, and `provideBreadcrumbConfigAt` still merges over the parent scope.
 - The copy inputs `CngxBreadcrumbBar.label`, `CngxBreadcrumbOverflow.triggerLabel` / `.menuLabel` and `CngxBreadcrumbSiblings.triggerLabel` / `.menuLabel` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time config default. Template bindings are unchanged; the rendered name follows a language switch while the input is unbound. Code that reads the input programmatically gets `undefined` when nothing is bound.
+
+- `CNGX_BREADCRUMB_CONFIG`'s default carries no copy any more: `ariaLabels` is unset by default and holds only the overrides `withBreadcrumbAriaLabels` set. The name defaults are the `breadcrumb` section of the language pack, exported in English as `CNGX_BREADCRUMB_LANGUAGE_EN`. Code that read `injectBreadcrumbConfig().ariaLabels` for a default reads `injectBreadcrumbAriaLabels()()`.
 
 ### @cngx/ui/chart-panel
 
 - `CngxChartPanelConfig.ariaLabels` is typed `CngxChartPanelAriaLabels | Signal<CngxChartPanelAriaLabels>`, and once `withChartPanelAriaLabels` ran it holds a `Signal`. Code that reads it off `injectChartPanelConfig()` or `CNGX_CHART_PANEL_CONFIG` reads the resolved bundle through the new accessor instead: `injectChartPanelConfig().ariaLabels?.busy` becomes `injectChartPanelAriaLabels()().busy`, called inside a `computed()`, a template or a handler. `withChartPanelAriaLabels` now also accepts a `Signal<CngxChartPanelAriaLabels>`; plain objects still merge key by key, and `provideChartPanelConfigAt` still merges over the parent scope.
 - The hidden busy status reads its label untracked: a language switch during a running busy phase does not re-announce it, and the next busy phase speaks the new language. The busy description of the action cluster follows the switch at once.
 
+- `CNGX_CHART_PANEL_CONFIG`'s default carries no copy any more: `ariaLabels` is unset by default and holds only the overrides `withChartPanelAriaLabels` set. The default is the `chartPanel` section of the language pack, exported in English as `CNGX_CHART_PANEL_LANGUAGE_EN`. Code that read `injectChartPanelConfig().ariaLabels` for a default reads `injectChartPanelAriaLabels()()`.
+
 ### @cngx/ui/collection
 
-- `CngxIncrementalListConfig.ariaLabels` is typed `CngxIncrementalListAriaLabels | Signal<CngxIncrementalListAriaLabels>`, and once `withIncrementalListAriaLabels` ran it holds a `Signal`. Code that reads it off `injectIncrementalListConfig()` or `CNGX_INCREMENTAL_LIST_CONFIG` reads the resolved bundle through the new accessor instead: `injectIncrementalListConfig().ariaLabels.empty` becomes `injectIncrementalListAriaLabels()().empty`, called inside a `computed()`, a template or a handler. `CNGX_INCREMENTAL_LIST_DEFAULTS` keeps its plain bundle.
+- `CngxIncrementalListConfig.ariaLabels` is optional and typed `Partial<CngxIncrementalListAriaLabels> | Signal<Partial<CngxIncrementalListAriaLabels>>`; once `withIncrementalListAriaLabels` ran it holds a `Signal`. Code that reads it off `injectIncrementalListConfig()` or `CNGX_INCREMENTAL_LIST_CONFIG` reads the resolved bundle through the new accessor instead: `injectIncrementalListConfig().ariaLabels.empty` becomes `injectIncrementalListAriaLabels()().empty`, called inside a `computed()`, a template or a handler.
 - `withIncrementalListAriaLabels` now also accepts a `Signal` of the partial bundle. Plain partials keep their merge rules; `provideIncrementalListConfigAt` still merges over the parent scope. A hand-built `CngxIncrementalListConfigFeature` payload may be a `Signal` as well.
 - The settle live region and the recycler load-count announcement read their phrasing untracked: a language switch does not re-speak the current message, the next settle or load speaks the new language. The empty-state title (a status region of its own) keeps its text until the next settle too; the visible error, retry and end texts follow the switch at once.
+
+- `CNGX_INCREMENTAL_LIST_DEFAULTS` is removed, and the default `CNGX_INCREMENTAL_LIST_CONFIG` carries no copy any more: `ariaLabels` is optional, unset by default, and holds only the overrides `withIncrementalListAriaLabels` set (`Partial<L> | Signal<Partial<L>>`). The label defaults are the `collection` section of the language pack, exported in English as `CNGX_COLLECTION_LANGUAGE_EN`. Code that read `CNGX_INCREMENTAL_LIST_DEFAULTS.ariaLabels.empty` reads `injectIncrementalListAriaLabels()().empty`; a hand-built config that spread the defaults drops the spread.
 
 ### @cngx/ui/stat-card
 
@@ -176,14 +186,25 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - The copy inputs `CngxStatCard.busyLabel`, `.errorText`, `.errorDescription`, `.staleText` and `.emptyText` are now `input<string | undefined>`, and an unbound input reads `undefined` instead of the construction-time config default. Template bindings are unchanged. Code that reads the input programmatically gets `undefined` when nothing is bound.
 - Because the whole tile can be a live region (`[live]`), an unbound copy input reads its cascade string untracked: the tile keeps its text on a language switch and shows the new language with its next view or busy change, also while `[live]` is `'off'`.
 
+- `CNGX_STAT_CARD_CONFIG`'s default carries no copy any more: `ariaLabels` is unset by default and holds only the overrides `withStatCardAriaLabels` set. The defaults are the `statCard` section of the language pack, exported in English as `CNGX_STAT_CARD_LANGUAGE_EN`. Code that read `injectStatCardConfig().ariaLabels` for a default reads `injectStatCardAriaLabels()()`.
+
 ### @cngx/ui/toc
 
 - `CngxTocConfig.ariaLabels` is typed `CngxTocAriaLabels | Signal<CngxTocAriaLabels>`, and once `withTocAriaLabels` ran it holds a `Signal`. Code that reads it off `injectTocConfig()` or `CNGX_TOC_CONFIG` reads the resolved bundle through the new accessor instead: `injectTocConfig().ariaLabels?.nav` becomes `injectTocAriaLabels()().nav`, called inside a `computed()`, a template or a handler. `withTocAriaLabels` now also accepts a `Signal<CngxTocAriaLabels>`; plain objects still merge key by key, and `provideTocConfigAt` still merges over the parent scope.
 
+- `CNGX_TOC_DEFAULTS` and the default `CNGX_TOC_CONFIG` carry no copy any more: `ariaLabels` is unset by default and holds only the overrides `withTocAriaLabels` set. The default is the `toc` section of the language pack, exported in English as `CNGX_TOC_LANGUAGE_EN`. Code that read `CNGX_TOC_DEFAULTS.ariaLabels.nav` reads `injectTocAriaLabels()().nav`.
+
 ### @cngx/ui/a11y
 
-- `CngxA11yPanelConfig.labels` is typed `CngxA11yPanelLabels | Signal<CngxA11yPanelLabels>` and `.axes` is typed `readonly CngxA11yPanelAxisSpec[] | Signal<readonly CngxA11yPanelAxisSpec[]>`; once a feature ran, `labels` holds a `Signal`. Code that reads them off `injectA11yPanelConfig()` or `CNGX_A11Y_PANEL_CONFIG` reads them through the new accessors instead: `injectA11yPanelConfig().labels.heading` becomes `injectA11yPanelLabels()().heading`, and `injectA11yPanelConfig().axes` becomes `injectA11yPanelAxes()()`, each called inside a `computed()`, a template or a handler. `CNGX_A11Y_PANEL_DEFAULTS` keeps its plain values.
+- `CngxA11yPanelConfig.labels` is optional and typed `CngxA11yPanelLabelsOverride | Signal<CngxA11yPanelLabelsOverride>` (overrides only) and `.axes` is typed `readonly CngxA11yPanelAxisSpec[] | Signal<readonly CngxA11yPanelAxisSpec[]>`; once a feature ran, `labels` holds a `Signal`. Code that reads them off `injectA11yPanelConfig()` or `CNGX_A11Y_PANEL_CONFIG` reads them through the new accessors instead: `injectA11yPanelConfig().labels.heading` becomes `injectA11yPanelLabels()().heading`, and `injectA11yPanelConfig().axes` becomes `injectA11yPanelAxes()()`, each called inside a `computed()`, a template or a handler.
 - `withA11yPanelLabels` now also accepts a `Signal<CngxA11yPanelLabelsOverride>` (the `axes` record still merges key by key), and `withA11yPanelAxes` accepts a `Signal` of the axis list, so translated option labels follow a switch. Plain values keep their merge rules; `provideA11yPanelConfigAt` still merges over the parent scope.
+
+- `CNGX_A11Y_PANEL_DEFAULTS` and the default `CNGX_A11Y_PANEL_CONFIG` carry no copy any more: `labels` is optional, unset by default, and holds only the overrides `withA11yPanelLabels` set (`CngxA11yPanelLabelsOverride | Signal<CngxA11yPanelLabelsOverride>`); the default axis list carries values and reset targets but no option labels. The text and the option labels are the `a11yPanel` section of the language pack, exported in English as `CNGX_A11Y_PANEL_LANGUAGE_EN`. Code that read `CNGX_A11Y_PANEL_DEFAULTS.labels.heading` or an option label off `CNGX_A11Y_PANEL_DEFAULTS.axes` reads `injectA11yPanelLabels()().heading` / `injectA11yPanelAxes()()`, where every option label is filled.
+- `CngxA11yPanelAxisOption.label` is optional. An option without it reads the label for its value from the `a11yPanel` section, so `withA11yPanelAxes` no longer needs to restate the labels to translate them; a label set there still wins.
+
+### @cngx/ui (config copy types)
+
+- `CngxBreadcrumbAriaLabels`, `CngxTocAriaLabels` and `CngxChartPanelAriaLabels` are type aliases now (`Partial<` the area's language section `>`), not interfaces; `CngxStatCardAriaLabels` extends `Partial<CngxStatCardLanguageSection>` and adds `errorDescription`. Code that `extends` one of the three aliases as an interface switches to an intersection type. The keys are unchanged.
 
 ### @cngx/forms/select
 
@@ -304,10 +325,50 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 - A sort announcement names the column by `[cngxDgaSortLabel]`, else by the header's own text, else by `unlabeledColumn` - never by the field key (`Sorted by Name ascending`, before: `Sorted by name ascending`). The column name is bidi-isolated, so an exact comparison strips U+2068 / U+2069 first. Announcement strings bound per instance keep their `{label}` placeholder.
 - The sort arrows (`▲`, `▼`) and the `spreadsheet` skin's row numbers and column letters carry CSS alt text and no longer reach a header's accessible name.
 
+### @cngx/ui/sidenav
+
+- The sidenav copy comes from the `sidenav` section of the language pack; `withSidenavLabels` still wins key by key, also on top of a pack.
+- The resize separator carries `aria-valuetext`: its position as a percent of the `minWidth`-`maxWidth` range, from the `resizeValueText` message (English `'{value}'`, the percent formatted in the locale, `40%`; `{percent}` holds the rounded number). The inserted percent is bidi-isolated, so an exact comparison strips U+2068 / U+2069 first. While the width or a bound is not in px the attribute is omitted and assistive tech reads `aria-valuenow`.
+
+### @cngx/ui/breadcrumb
+
+- The breadcrumb names come from the `breadcrumb` section of the language pack; `withBreadcrumbAriaLabels` still wins key by key, also on top of a pack.
+- Route data for `cngxRouterSync` and `cngxSiblingsRouterSync` may be a `Signal<string>` as well as a string: `data: { breadcrumb: computed(() => t('nav.orders')) }`. The crumb follows the app's own translation on a language switch. Route labels are app copy, so the `breadcrumb` section of the language pack does not carry them. Plain string labels are unchanged.
+- The separator glyphs drawn in CSS (`›`, `‹`, `·`) carry empty alt text; the separator elements stay `aria-hidden`.
+
+### @cngx/ui/a11y
+
+- The panel text and the option labels come from the `a11yPanel` section of the language pack (option labels as one record per axis, keyed by value); `withA11yPanelLabels` and labels set in `withA11yPanelAxes` still win, also on top of a pack.
+
+### @cngx/ui/speak
+
+- The speak button names come from the `speak` section of the language pack; `provideSpeakI18n` / `withSpeakI18nLabels` and the `[readAloudLabel]` / `[stopLabel]` inputs still win, also on top of a pack. `CngxSpeakI18n` is now an alias of the exported `CngxSpeakLanguageSection`. A key `withSpeakI18nLabels` sets to `null` or `undefined` keeps the section label instead of leaving the button without a name.
+
+### @cngx/ui/accordion
+
+- The disabled reason and the error message come from the `accordion` section of the language pack; `withAccordionLabels` and the `[disabledReason]` / `[errorMessage]` inputs still win, also on top of a pack.
+
+### @cngx/ui/chart-panel
+
+- The busy label comes from the `chartPanel` section of the language pack; `withChartPanelAriaLabels` still wins, also on top of a pack.
+
+### @cngx/ui/stat-card
+
+- The state copy comes from the `statCard` section of the language pack; `withStatCardAriaLabels` and the copy inputs still win, also on top of a pack.
+
+### @cngx/ui/toc
+
+- The landmark name comes from the `toc` section of the language pack; `withTocAriaLabels` still wins, also on top of a pack.
+
 ### @cngx/ui/paginator
 
 - The paginator copy comes from the `paginator` section of the language pack; the `withPaginator*` features still win key by key, also on top of a pack.
 - Numbers in the copy and the readouts are formatted for the locale: `<b>1,001-1,010</b> of 12,500`, `Page 2 of 1,250`; the page buttons, the page-of-pages options and the page-size select show `1.500` in German. The alphabet bucket names are bidi-isolated, so an exact comparison strips U+2068 / U+2069 first.
+
+### @cngx/ui/collection
+
+- The incremental-list copy comes from the `collection` section of the language pack; `withIncrementalListAriaLabels` still wins key by key, also on top of a pack.
+- The end-reached and load-count texts format their numbers for the locale (`All 1,200 loaded`), and a row without an item slot shows a number or a `Date` formatted for the locale (`1.200`, `7. Okt. 2026` in German; dates date-only) instead of `String(item)`.
 
 ### @cngx/ui/command-palette
 

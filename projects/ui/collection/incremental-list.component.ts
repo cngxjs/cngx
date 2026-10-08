@@ -24,6 +24,7 @@ import {
   type RecyclerI18n,
   resolveAsyncView,
 } from '@cngx/common/data';
+import { displayFormattersFor, formatDisplayValue, injectLocale } from '@cngx/core/utils';
 import { recordEqual } from '@cngx/utils';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 import { CngxProgress } from '@cngx/ui/feedback';
@@ -210,6 +211,8 @@ export class CngxIncrementalList<T = unknown> {
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly config = injectIncrementalListConfig();
   private readonly ariaLabels = injectIncrementalListAriaLabels();
+  private readonly locale = injectLocale();
+  private readonly formatters = computed(() => displayFormattersFor(this.locale()));
 
   // View slot resolvers. Direct contentChild field initialisers (AOT NG8110
   // rejects them from a helper); read as TemplateRef so the cascade computeds
@@ -258,7 +261,9 @@ export class CngxIncrementalList<T = unknown> {
    * renders ("All 0 loaded" would be a lie); the load-more trigger stays until
    * the consumer supplies the count.
    */
-  protected readonly exhausted = computed(() => this.paginate.total() > 0 && this.paginate.isLast());
+  protected readonly exhausted = computed(
+    () => this.paginate.total() > 0 && this.paginate.isLast(),
+  );
 
   /**
    * The accumulated slice: every page revealed so far, sliced from the top of
@@ -278,8 +283,8 @@ export class CngxIncrementalList<T = unknown> {
     { equal: (a, b) => a.length === b.length && a.every((item, i) => Object.is(item, b[i])) },
   );
 
-  // Built-in view labels, resolved through the config cascade (EN library
-  // defaults). Consumers re-phrase or localise via provideIncrementalListConfig.
+  // Built-in view labels: config overrides over the `collection` language
+  // section. Consumers re-phrase single keys via provideIncrementalListConfig.
   // They follow a language switch at once; the live region below reads them
   // untracked.
   protected readonly loadingLabel = computed(() => this.ariaLabels().loading);
@@ -327,24 +332,24 @@ export class CngxIncrementalList<T = unknown> {
   });
 
   /** Which message the live region speaks for the current view, if any. */
-  private readonly statusKey = computed<
-    'loading' | 'empty' | 'error' | 'pageError' | 'end' | null
-  >(() => {
-    if (this.paginate.isBusy()) {
-      return 'loading';
-    }
-    const view = this.view();
-    if (view === 'empty') {
-      return 'empty';
-    }
-    if (view === 'error') {
-      return 'error';
-    }
-    if (view === 'content+error') {
-      return 'pageError';
-    }
-    return this.exhausted() ? 'end' : null;
-  });
+  private readonly statusKey = computed<'loading' | 'empty' | 'error' | 'pageError' | 'end' | null>(
+    () => {
+      if (this.paginate.isBusy()) {
+        return 'loading';
+      }
+      const view = this.view();
+      if (view === 'empty') {
+        return 'empty';
+      }
+      if (view === 'error') {
+        return 'error';
+      }
+      if (view === 'content+error') {
+        return 'pageError';
+      }
+      return this.exhausted() ? 'end' : null;
+    },
+  );
 
   /** Stable retry callback - emits the `retry` output; shared by the built-in button and the error slot context. */
   protected readonly retryFn = (): void => this.retry.emit();
@@ -373,6 +378,11 @@ export class CngxIncrementalList<T = unknown> {
 
   /** `@for` track expression - delegates to the `trackBy` input (index by default). */
   protected readonly trackItem = (index: number, item: T): unknown => this.trackBy()(index, item);
+
+  /** Built-in row text without an item slot: numbers and dates in the locale. */
+  protected itemText(item: T): unknown {
+    return formatDisplayValue(item, this.formatters());
+  }
 
   constructor() {
     // pageIndexChange / pageSizeChange emit, shared verbatim with

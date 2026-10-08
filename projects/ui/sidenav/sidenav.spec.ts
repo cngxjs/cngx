@@ -1,9 +1,10 @@
-import { Component, signal, type Type } from '@angular/core';
+import { Component, signal, type DebugElement, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createMatchMediaMock,
+  stripBidiIsolates,
   createResizeObserverMock,
   type MatchMediaMock,
   type ResizeObserverMock,
@@ -15,6 +16,7 @@ import { CngxSidenavContent } from './sidenav-content';
 import { provideSidenavConfig } from './config/provide-sidenav-config';
 import { withSidenavDimensions, withSidenavHoverDwell, withSidenavLabels } from './config/features';
 import type { CngxSidenavLabels } from './config/sidenav.config';
+import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
 
 @Component({
   template: `
@@ -621,6 +623,52 @@ describe('CngxSidenav resizable', () => {
     expect(before).not.toBe('Navigation anpassen');
   });
 
+  function resizeHandle(fixture: { debugElement: DebugElement }): HTMLElement {
+    return (
+      fixture.debugElement.queryAll(By.directive(CngxSidenav))[0].nativeElement as HTMLElement
+    ).querySelector<HTMLElement>('.cngx-sidenav__resize-handle')!;
+  }
+
+  it('speaks the separator position as a percent of its range through the sidenav section', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', sidenav: { resizeValueText: '{value} der Breite' } }),
+          withDocumentLanguage('off'),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.componentInstance.resizable.set(true);
+    fixture.componentInstance.width.set('360px');
+    fixture.detectChanges();
+    const handle = resizeHandle(fixture);
+    expect(handle.getAttribute('aria-valuenow')).toBe('360');
+    expect(stripBidiIsolates(handle.getAttribute('aria-valuetext'))).toBe('50\u00a0% der Breite');
+    expect(handle.getAttribute('aria-label')).toBe('Resize navigation');
+  });
+
+  it('clamps the spoken percent to the range', () => {
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.componentInstance.resizable.set(true);
+    fixture.componentInstance.width.set('1200px');
+    fixture.detectChanges();
+    expect(stripBidiIsolates(resizeHandle(fixture).getAttribute('aria-valuetext'))).toBe('100%');
+  });
+
+  it('drops aria-valuetext while a bound is not in px', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSidenavConfig(withSidenavDimensions({ maxWidth: '40rem' }))],
+    });
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.componentInstance.resizable.set(true);
+    fixture.componentInstance.width.set('300px');
+    fixture.detectChanges();
+    const handle = resizeHandle(fixture);
+    expect(handle.getAttribute('aria-valuenow')).toBe('300');
+    expect(handle.hasAttribute('aria-valuetext')).toBe(false);
+  });
+
   it('names the resize handle from the sidenav labels bundle', () => {
     TestBed.configureTestingModule({
       providers: [provideSidenavConfig(withSidenavLabels({ resizeHandle: 'Navigation anpassen' }))],
@@ -905,6 +953,7 @@ describe('CngxSidenav resize math and shortcut', () => {
     )!;
     expect(handle.getAttribute('tabindex')).toBe('0');
     expect(handle.getAttribute('aria-label')).toBe('Resize navigation');
+    expect(stripBidiIsolates(handle.getAttribute('aria-valuetext'))).toBe('25%');
 
     // jsdom has no layout; the handler reads the rendered width via rect.
     const el = leftDe.nativeElement as HTMLElement;

@@ -19,6 +19,7 @@ import {
   CngxVirtualItem,
   injectRecycler,
 } from '@cngx/common/data';
+import { displayFormattersFor, formatDisplayValue, injectLocale } from '@cngx/core/utils';
 
 import type { CngxIncrementalItemContext } from './incremental-list-slots';
 
@@ -83,6 +84,8 @@ export class CngxIncrementalVirtualizedBody<T = unknown> {
   readonly focusEscaped = output<void>();
 
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly locale = injectLocale();
+  private readonly formatters = computed(() => displayFormattersFor(this.locale()));
 
   /**
    * The recycler. Constructed here, never in the organism, so its scroll
@@ -134,6 +137,11 @@ export class CngxIncrementalVirtualizedBody<T = unknown> {
       },
     },
   );
+
+  /** Built-in row text without an item slot: numbers and dates in the locale. */
+  protected itemText(item: T): unknown {
+    return formatDisplayValue(item, this.formatters());
+  }
 
   constructor() {
     // Focus continuity under recycling: when the row that held focus scrolls out

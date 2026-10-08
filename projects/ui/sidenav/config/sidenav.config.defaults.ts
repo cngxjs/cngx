@@ -1,6 +1,6 @@
 import { InjectionToken } from '@angular/core';
 
-import type { CngxSidenavConfig, CngxSidenavLabels } from './sidenav.config';
+import type { CngxSidenavConfig } from './sidenav.config';
 
 /**
  * Library defaults for the sidenav configuration cascade. The values are
@@ -60,8 +60,3 @@ export const CNGX_SIDENAV_CONFIG = new InjectionToken<CngxSidenavConfig>('CNGX_S
   providedIn: 'root',
   factory: () => CNGX_SIDENAV_DEFAULTS,
 });
-
-/** @internal - English sidenav copy; the base of every `labels` merge. */
-export const CNGX_SIDENAV_LABELS_DEFAULTS: CngxSidenavLabels = {
-  resizeHandle: 'Resize navigation',
-};

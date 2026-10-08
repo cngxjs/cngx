@@ -11,20 +11,27 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+  type CngxLanguagePack,
+} from '@cngx/core/i18n';
 
 import { CngxAccordionGroup } from '../accordion-group.component';
 import { CngxAccordionItem } from '../accordion-item.component';
 import type { CngxAccordionItemIconContext } from '../accordion-item-icon.directive';
 import type { CngxAccordionItemStateContext } from '../accordion-item-state-context';
 import { CngxAccordionItemTitle } from '../accordion-item-title.directive';
-import { CNGX_ACCORDION_CONFIG, CNGX_ACCORDION_DEFAULTS } from './accordion.config.defaults';
-import {
-  withAccordionLabels,
-  withAccordionTemplates,
-  withDefaultHeadingLevel,
-} from './features';
-import { resolveAccordionCopy } from './inject-accordion-config';
+import { CNGX_ACCORDION_LANGUAGE_EN } from '../i18n/accordion-language-section';
+import { CNGX_ACCORDION_CONFIG } from './accordion.config.defaults';
+import { withAccordionLabels, withAccordionTemplates, withDefaultHeadingLevel } from './features';
+import { injectAccordionLabels } from './inject-accordion-config';
 import { provideAccordionConfig, provideAccordionConfigAt } from './provide-accordion-config';
+
+// Compile-checked: the English section is a complete section of a pack.
+const EN_SECTION: CngxLanguagePack['accordion'] = CNGX_ACCORDION_LANGUAGE_EN;
 
 const fakeIconTemplate = () => ({}) as unknown as TemplateRef<CngxAccordionItemIconContext>;
 const fakeTemplate = () => ({}) as unknown as TemplateRef<CngxAccordionItemStateContext>;
@@ -74,7 +81,9 @@ function render(host: Type<unknown>, providers: (Provider | EnvironmentProviders
   TestBed.configureTestingModule({ imports: [host], providers });
   const fixture = TestBed.createComponent(host);
   fixture.detectChanges();
-  const group = fixture.debugElement.query(By.directive(CngxAccordionGroup)).injector.get(CngxAccordionGroup);
+  const group = fixture.debugElement
+    .query(By.directive(CngxAccordionGroup))
+    .injector.get(CngxAccordionGroup);
   const root = fixture.nativeElement as HTMLElement;
   const item = {
     disabledReason: () => root.querySelector('.cngx-visually-hidden')?.textContent?.trim(),
@@ -133,7 +142,7 @@ describe('accordion config cascade', () => {
     expect(group.headingLevel()).toBe(5);
   });
 
-  it('resolves plain labels to the same config as the eager merge did', () => {
+  it('resolves plain labels over a config without copy defaults', () => {
     TestBed.configureTestingModule({
       providers: [
         provideAccordionConfig(
@@ -143,7 +152,6 @@ describe('accordion config cascade', () => {
       ],
     });
     expect(TestBed.inject(CNGX_ACCORDION_CONFIG)).toEqual({
-      disabledReason: CNGX_ACCORDION_DEFAULTS.disabledReason,
       errorMessage: 'Load failed.',
       headingLevel: 2,
       skin: undefined,
@@ -159,25 +167,53 @@ describe('accordion config cascade', () => {
     const { item } = render(UnboundHost, [
       provideAccordionConfig(withAccordionLabels({ disabledReason })),
     ]);
-    const copy = TestBed.runInInjectionContext(() =>
-      resolveAccordionCopy(inject(CNGX_ACCORDION_CONFIG)),
-    );
+    const copy = TestBed.runInInjectionContext(() => injectAccordionLabels());
     expect(item.disabledReason()).toBe('This section is locked.');
 
     lang.set('de');
     TestBed.tick();
     expect(item.disabledReason()).toBe('Dieser Abschnitt ist gesperrt.');
     const german = copy();
-    expect(german.errorMessage).toBe(CNGX_ACCORDION_DEFAULTS.errorMessage);
+    expect(german.errorMessage).toBe(EN_SECTION.errorMessage);
 
     lang.set('de-AT');
     expect(copy()).toBe(german);
   });
 
-  it('clamps a config heading level into the ARIA 2-6 range at the group', () => {
-    const { group } = render(UnboundHost, [
-      provideAccordionConfig(withDefaultHeadingLevel(9)),
+  it('reads the accordion section of the active pack, with English for what it leaves out', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    const { item } = render(UnboundHost, [
+      provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
     ]);
+    const copy = TestBed.runInInjectionContext(() => injectAccordionLabels());
+    expect(item.disabledReason()).toBe('This section is currently unavailable.');
+
+    pack.set({ locale: 'de', accordion: { disabledReason: 'Dieser Abschnitt ist gesperrt.' } });
+    TestBed.tick();
+    expect(item.disabledReason()).toBe('Dieser Abschnitt ist gesperrt.');
+    expect(copy().errorMessage).toBe('This section could not be loaded.');
+  });
+
+  it('lets withAccordionLabels override a key on top of the active pack', () => {
+    const { item } = render(UnboundHost, [
+      provideCngxI18n(
+        withPartialPack({
+          locale: 'de',
+          accordion: {
+            disabledReason: 'Dieser Abschnitt ist gesperrt.',
+            errorMessage: 'Laden fehlgeschlagen.',
+          },
+        }),
+        withDocumentLanguage('off'),
+      ),
+      provideAccordionConfig(withAccordionLabels({ disabledReason: 'Gesperrt.' })),
+    ]);
+    expect(item.disabledReason()).toBe('Gesperrt.');
+    expect(item.errorMessage()).toBe('Laden fehlgeschlagen.');
+  });
+
+  it('clamps a config heading level into the ARIA 2-6 range at the group', () => {
+    const { group } = render(UnboundHost, [provideAccordionConfig(withDefaultHeadingLevel(9))]);
     expect(group.headingLevel()).toBe(6);
   });
 

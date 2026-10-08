@@ -5,8 +5,9 @@ import type { CngxChartPanelAriaLabels } from './chart-panel.config';
 import type { CngxChartPanelConfigFeature } from './provide-chart-panel-config';
 
 /**
- * Override the chart-panel's string fallbacks. Library defaults are English;
- * this is the hook a localised app uses. Pass a `Signal` to switch the
+ * Override the chart-panel's string fallbacks. The defaults come from the
+ * `chartPanel` section of the language pack (English without one); this
+ * overrides single keys on top of it. Pass a `Signal` to switch the
  * language at runtime; the busy status speaks the new language with the next
  * busy phase.
  *

@@ -4,12 +4,19 @@
 export { coerceBooleanProperty, coerceNumberProperty, coerceSignal } from './coerce.util';
 export {
   createDefaultsFill,
+  createFilledOverrideMerge,
   createNestedOverrideMerge,
   createOverrideMerge,
   type CngxNestedOverrides,
 } from './override-merge';
 export { memoize, type MemoizeOptions } from './memo.util';
-export { dateTimeFormatterFor, numberFormatterFor } from './intl-format.util';
+export {
+  dateTimeFormatterFor,
+  displayFormattersFor,
+  formatDisplayValue,
+  numberFormatterFor,
+  type CngxDisplayFormatters,
+} from './intl-format.util';
 export { CNGX_LOCALE, injectLocale, provideLocale, provideLocaleAt } from './locale';
 export { parseKeyCombo, matchesKeyCombo, type KeyCombo } from './keyboard.util';
 export {

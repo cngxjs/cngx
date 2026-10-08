@@ -1,4 +1,5 @@
 import type { Signal } from '@angular/core';
+import type { CngxBreadcrumbLanguageSection } from '../i18n/breadcrumb-language-section';
 
 /**
  * Selectable visual skin for `CngxBreadcrumbBar`. Every skin keeps the same
@@ -36,24 +37,14 @@ export type CngxBreadcrumbSkin =
 
 /**
  * Accessible names the breadcrumb family renders: the bar landmark and the
- * overflow / siblings triggers and lists. Every key is optional; an unset key
- * keeps the English default.
+ * overflow / siblings triggers and lists. A partial of the `breadcrumb`
+ * language section, declared once there; an unset key reads the section
+ * (English without a pack).
  *
  * @category ui/breadcrumb
  * @since 0.1.0
  */
-export interface CngxBreadcrumbAriaLabels {
-  /** Accessible name of the `nav` landmark on `CngxBreadcrumbBar`. */
-  readonly bar?: string;
-  /** Accessible name of the overflow ellipsis trigger. */
-  readonly overflowTrigger?: string;
-  /** Accessible name of the collapsed-crumb menu. */
-  readonly overflowMenu?: string;
-  /** Accessible name of the siblings chevron trigger. */
-  readonly siblingsTrigger?: string;
-  /** Accessible name of the sibling list. */
-  readonly siblingsMenu?: string;
-}
+export type CngxBreadcrumbAriaLabels = Partial<CngxBreadcrumbLanguageSection>;
 
 /**
  * App-wide cascade for the breadcrumb family's ARIA labels, the router
@@ -64,7 +55,8 @@ export interface CngxBreadcrumbAriaLabels {
  *   2. `provideBreadcrumbConfigAt(...)` in a parent component's
  *      `viewProviders` (component-scoped override).
  *   3. `provideBreadcrumbConfig(...)` at the application root.
- *   4. Library defaults (English; merged in via `CNGX_BREADCRUMB_DEFAULTS`).
+ *   4. Library defaults (`CNGX_BREADCRUMB_DEFAULTS`; the accessible names come
+ *      from the `breadcrumb` section of the language pack).
  *
  * Every key is optional - partial overrides deep-merge with the library
  * defaults, so consumers declare only the keys they want to override.

@@ -15,6 +15,7 @@ import { filter } from 'rxjs/operators';
 import { CNGX_BREADCRUMB_SIBLINGS_SOURCE } from './breadcrumb-siblings-source.token';
 import type { CngxBreadcrumbSiblingsSource } from './breadcrumb-siblings-source.token';
 import { injectBreadcrumbConfig } from './config/inject-breadcrumb-config';
+import { routeLabelText } from './i18n/breadcrumb-i18n';
 import type { CngxBreadcrumbSibling } from './breadcrumb.types';
 
 /**
@@ -140,10 +141,10 @@ export class CngxBreadcrumbSiblingsRouterSync implements CngxBreadcrumbSiblingsS
       ),
       { initialValue: null },
     );
-    // Derive the set from the navigation trigger, depth, and dataKey - all
-    // reactive, so a runtime depth/dataKey change re-reads the tree too. The
-    // route snapshot is read imperatively per recompute; navEnd is the tracked
-    // trigger (Pillar 1).
+    // Derive the set from the navigation trigger, depth, dataKey and any Signal
+    // route label - all tracked, so a runtime depth/dataKey change or the app's
+    // language switch re-reads the tree too. The route snapshot is read
+    // imperatively per recompute; navEnd is the tracked trigger (Pillar 1).
     this.siblings = computed(
       () => {
         navEnd();
@@ -157,7 +158,8 @@ export class CngxBreadcrumbSiblingsRouterSync implements CngxBreadcrumbSiblingsS
 /**
  * Enumerates the sibling routes at `depth` in the activated route chain: the
  * children of that level's parent (or the root config at depth 0) whose
- * `data[dataKey]` is a non-empty string, marking the active child `current`.
+ * `data[dataKey]` is a non-empty string or a `Signal` of one, marking the active
+ * child `current`.
  * Sibling configs come from the static route configuration, not the activated
  * snapshot (which only holds the one active child), so the whole set of
  * alternatives is visible. Duplicate hrefs are collapsed like `buildCrumbs`.
@@ -197,8 +199,8 @@ function buildSiblings(
 
   const out: CngxBreadcrumbSibling[] = [];
   for (const cfg of siblingConfigs) {
-    const raw: unknown = cfg.data?.[dataKey];
-    if (typeof raw !== 'string' || raw.length === 0) {
+    const label = routeLabelText(cfg.data?.[dataKey]);
+    if (label === undefined) {
       continue;
     }
     const seg = cfg.path ?? '';
@@ -211,9 +213,9 @@ function buildSiblings(
       // duplicate href (the dropdown's @for track would otherwise collide).
       // Boolean either-matched, deliberately not ?? - a false on the earlier
       // row must not eat the active config's match.
-      out[out.length - 1] = { label: raw, href, current: !!prev.current || current };
+      out[out.length - 1] = { label, href, current: !!prev.current || current };
     } else {
-      out.push({ label: raw, href, current });
+      out.push({ label, href, current });
     }
   }
   return out;

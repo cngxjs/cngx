@@ -21,7 +21,7 @@ import { CngxAccordionItemContent } from './accordion-item-content.directive';
 import { CngxAccordionItemError } from './accordion-item-error.directive';
 import { CngxAccordionItemIcon } from './accordion-item-icon.directive';
 import { CngxAccordionItemSubtitle } from './accordion-item-subtitle.directive';
-import { injectAccordionConfig, resolveAccordionCopy } from './config/inject-accordion-config';
+import { injectAccordionConfig, injectAccordionLabels } from './config/inject-accordion-config';
 
 /**
  * Accordion item organism. Renders the APG-correct trio a headless consumer
@@ -69,7 +69,7 @@ import { injectAccordionConfig, resolveAccordionCopy } from './config/inject-acc
 })
 export class CngxAccordionItem {
   private readonly config = injectAccordionConfig();
-  private readonly copy = resolveAccordionCopy(this.config);
+  private readonly copy = injectAccordionLabels();
 
   /**
    * Disabled item: the header reports `tabindex="-1"` + `aria-disabled="true"`,
@@ -228,9 +228,7 @@ export class CngxAccordionItem {
    * a11y tree and is announced even when the item was never opened (Pillar 2 -
    * an error is never silenced by a collapsed panel).
    */
-  protected readonly regionHidden = computed(
-    () => !this.expanded() && this.status() !== 'error',
-  );
+  protected readonly regionHidden = computed(() => !this.expanded() && this.status() !== 'error');
 
   /**
    * Keep-alive latch for lazy content: `false` until the region first opens,

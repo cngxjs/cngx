@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { dateTimeFormatterFor, numberFormatterFor } from './intl-format.util';
+import {
+  dateTimeFormatterFor,
+  displayFormattersFor,
+  formatDisplayValue,
+  numberFormatterFor,
+} from './intl-format.util';
 
 describe('dateTimeFormatterFor', () => {
   it('returns the same formatter instance for equal locale + options', () => {
@@ -51,5 +56,50 @@ describe('numberFormatterFor', () => {
     const de = numberFormatterFor('de-DE', { style: 'percent' });
     expect(de).not.toBe(en);
     expect(de.format(0.42)).toBe(new Intl.NumberFormat('de-DE', { style: 'percent' }).format(0.42));
+  });
+});
+
+describe('formatDisplayValue', () => {
+  it('formats a number and a date for the locale, dates date-only', () => {
+    const date = new Date(2026, 9, 7, 13, 30);
+    expect(formatDisplayValue(1234.5, displayFormattersFor('en'))).toBe('1,234.5');
+    expect(formatDisplayValue(1234.5, displayFormattersFor('de'))).toBe('1.234,5');
+    expect(formatDisplayValue(date, displayFormattersFor('en'))).toBe('Oct 7, 2026');
+    expect(formatDisplayValue(date, displayFormattersFor('de'))).toBe('7. Okt. 2026');
+  });
+
+  it('renders an invalid date empty and passes every other value through', () => {
+    const en = displayFormattersFor('en');
+    const item = { id: 1 };
+    expect(formatDisplayValue(new Date(Number.NaN), en)).toBe('');
+    expect(formatDisplayValue('text', en)).toBe('text');
+    expect(formatDisplayValue(true, en)).toBe(true);
+    expect(formatDisplayValue(null, en)).toBeNull();
+    expect(formatDisplayValue(item, en)).toBe(item);
+  });
+
+  it('applies custom date and number formats', () => {
+    const custom = displayFormattersFor(
+      'de',
+      { dateStyle: 'medium' },
+      { minimumFractionDigits: 2 },
+    );
+    expect(formatDisplayValue(1.5, custom)).toBe('1,50');
+  });
+
+  it('reuses the cached formatters for the same locale and formats', () => {
+    const first = displayFormattersFor('de', { dateStyle: 'medium' });
+    const second = displayFormattersFor('de', { dateStyle: 'medium' });
+    expect(second.number).toBe(first.number);
+    expect(second.date).toBe(first.date);
+    expect(displayFormattersFor('en').date).not.toBe(displayFormattersFor('de').date);
+  });
+
+  it('returns the identical formatters object for equal locale and formats', () => {
+    expect(displayFormattersFor('de')).toBe(displayFormattersFor('de'));
+    expect(displayFormattersFor('de', { dateStyle: 'medium' })).toBe(
+      displayFormattersFor('de', { dateStyle: 'medium' }),
+    );
+    expect(displayFormattersFor('de')).not.toBe(displayFormattersFor('en'));
   });
 });

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createResizeObserverMock } from '@cngx/testing';
 
 import type { CngxRecycler } from '@cngx/common/data';
+import { provideLocale } from '@cngx/core/utils';
 
 import { CngxIncrementalVirtualizedBody } from './incremental-list-virtualized-body.component';
 
@@ -49,7 +50,10 @@ describe('CngxIncrementalVirtualizedBody', () => {
     // reads them on its first effect run.
     Object.defineProperty(el, 'clientHeight', { value: 500, writable: true, configurable: true });
     Object.defineProperty(el, 'scrollTop', { value: 0, writable: true, configurable: true });
-    fixture.componentRef.setInput('items', Array.from({ length: count }, (_, i) => i));
+    fixture.componentRef.setInput(
+      'items',
+      Array.from({ length: count }, (_, i) => i),
+    );
     fixture.componentRef.setInput('estimateSize', estimate);
     fixture.componentRef.setInput('trackItem', (_index: number, item: number) => item);
     fixture.detectChanges();
@@ -57,6 +61,21 @@ describe('CngxIncrementalVirtualizedBody', () => {
     const internals = fixture.componentInstance as unknown as BodyInternals;
     return { fixture, el, internals };
   }
+
+  it('formats number rows for the locale without an item template', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideLocale('de')],
+    });
+    const { fixture, el } = setup(3);
+    fixture.componentRef.setInput('items', [1200, 3400.5, 7]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const rows = Array.from(el.querySelectorAll('.cngx-incremental-list__item')).map((row) =>
+      row.textContent?.trim(),
+    );
+    expect(rows).toEqual(['1.200', '3.400,5', '7']);
+  });
 
   it('renders a bounded window, not the full slice', () => {
     const { internals } = setup(1000, 48);

@@ -9,13 +9,16 @@ import {
   type Signal,
   type TemplateRef,
 } from '@angular/core';
-import { createOverrideMerge } from '@cngx/core/utils';
+import { createFilledOverrideMerge, createOverrideMerge } from '@cngx/core/utils';
+
+import { injectCollectionSiteLabels } from './i18n/collection-i18n';
 
 /**
  * Accessible-name / visible-label strings for the incremental-list view states.
  * Each doubles as the live-region announcement and the built-in view text, so
- * an override stays in sync across both surfaces. Library defaults are English;
- * consumers localise via {@link withIncrementalListAriaLabels}.
+ * an override stays in sync across both surfaces. The defaults come from the
+ * `collection` section of the language pack (English without one); override
+ * single keys via {@link withIncrementalListAriaLabels}.
  *
  * @category ui/collection
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
@@ -72,39 +75,36 @@ export interface CngxIncrementalListTemplates {
 }
 
 /**
- * Resolved incremental-list configuration - the accessible-name strings plus an
- * optional `templates` slot tree, each merged independently by the reducer in
- * {@link provideIncrementalListConfig}.
+ * Resolved incremental-list configuration - the accessible-name overrides plus
+ * an optional `templates` slot tree, each merged independently by the reducer
+ * in {@link provideIncrementalListConfig}.
  *
- * `ariaLabels` accepts a value or a `Signal`, so the list follows a runtime
- * language switch. Read it through {@link injectIncrementalListAriaLabels},
- * inside a `computed()`, a template or a handler.
+ * `ariaLabels` holds overrides only: unset by default, a value or a `Signal`
+ * once {@link withIncrementalListAriaLabels} ran. Every key it leaves out reads
+ * the `collection` section of the language pack, so the list follows a
+ * runtime language switch. Read the labels through
+ * {@link injectIncrementalListAriaLabels}, inside a `computed()`, a template or
+ * a handler.
  *
  * @category ui/collection
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
  * @since 0.1.0
  */
 export interface CngxIncrementalListConfig {
-  readonly ariaLabels: CngxIncrementalListAriaLabels | Signal<CngxIncrementalListAriaLabels>;
+  readonly ariaLabels?:
+    | Partial<CngxIncrementalListAriaLabels>
+    | Signal<Partial<CngxIncrementalListAriaLabels>>;
   readonly templates?: CngxIncrementalListTemplates;
 }
 
-const ARIA_LABELS_DEFAULTS: CngxIncrementalListAriaLabels = {
-  loading: 'Loading',
-  empty: 'Nothing here yet',
-  error: 'Failed to load',
-  pageError: 'Failed to load more',
-  retry: 'Retry',
-  endReached: (total) => `All ${total} loaded`,
-  loadedMore: (count, total) => `${count} more loaded. ${total} total.`,
-};
+/**
+ * Library defaults. Empty: the label defaults are the `collection` section of
+ * the language pack and the template slots are unset, so a config only ever
+ * holds overrides.
+ */
+const INCREMENTAL_LIST_DEFAULTS: CngxIncrementalListConfig = {};
 
-/** Library defaults - English. Override via {@link provideIncrementalListConfig}. */
-export const CNGX_INCREMENTAL_LIST_DEFAULTS: CngxIncrementalListConfig & {
-  readonly ariaLabels: CngxIncrementalListAriaLabels;
-} = {
-  ariaLabels: ARIA_LABELS_DEFAULTS,
-};
+const NO_ARIA_LABELS: Partial<CngxIncrementalListAriaLabels> = {};
 
 /**
  * Configuration cascade token. Resolution priority (high to low):
@@ -120,7 +120,7 @@ export const CNGX_INCREMENTAL_LIST_CONFIG = new InjectionToken<CngxIncrementalLi
   'CngxIncrementalListConfig',
   {
     providedIn: 'root',
-    factory: () => CNGX_INCREMENTAL_LIST_DEFAULTS,
+    factory: () => INCREMENTAL_LIST_DEFAULTS,
   },
 );
 
@@ -151,7 +151,7 @@ function applyFeatures(
   let templates = base.templates;
   for (const feature of features) {
     if (feature.kind === 'ariaLabels') {
-      ariaLabels = createOverrideMerge(ariaLabels, feature.payload);
+      ariaLabels = createOverrideMerge(ariaLabels ?? NO_ARIA_LABELS, feature.payload);
     } else {
       templates = { ...templates, ...feature.payload };
     }
@@ -225,7 +225,7 @@ export function provideIncrementalListConfig(
   return makeEnvironmentProviders([
     {
       provide: CNGX_INCREMENTAL_LIST_CONFIG,
-      useValue: applyFeatures(CNGX_INCREMENTAL_LIST_DEFAULTS, features),
+      useValue: applyFeatures(INCREMENTAL_LIST_DEFAULTS, features),
     },
   ]);
 }
@@ -247,7 +247,7 @@ export function provideIncrementalListConfigAt(
     {
       provide: CNGX_INCREMENTAL_LIST_CONFIG,
       useFactory: (parent: CngxIncrementalListConfig | null) =>
-        applyFeatures(parent ?? CNGX_INCREMENTAL_LIST_DEFAULTS, features),
+        applyFeatures(parent ?? INCREMENTAL_LIST_DEFAULTS, features),
       deps: [[new SkipSelf(), new Optional(), CNGX_INCREMENTAL_LIST_CONFIG]],
     },
   ];
@@ -268,7 +268,10 @@ export function injectIncrementalListConfig(): CngxIncrementalListConfig {
 
 /**
  * The resolved labels of the incremental-list config in scope, as a Signal that
- * follows a runtime language switch. Read it untracked where it builds
+ * follows a runtime language switch: the config overrides over the
+ * `collection` section of the active pack, formatted for the reading site's
+ * locale. A key the config leaves unset, `null` or `undefined` reads the
+ * section. Read it untracked where it builds
  * live-region text, so a language switch does not re-speak the current
  * message. Runs in injection context.
  *
@@ -277,5 +280,8 @@ export function injectIncrementalListConfig(): CngxIncrementalListConfig {
  * @since 0.1.0
  */
 export function injectIncrementalListAriaLabels(): Signal<CngxIncrementalListAriaLabels> {
-  return createOverrideMerge(ARIA_LABELS_DEFAULTS, injectIncrementalListConfig().ariaLabels);
+  return createFilledOverrideMerge(
+    injectCollectionSiteLabels(),
+    injectIncrementalListConfig().ariaLabels,
+  );
 }

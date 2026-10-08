@@ -1,6 +1,9 @@
 import { computed, inject, isSignal, type Signal } from '@angular/core';
+import { createFilledOverrideMerge } from '@cngx/core/utils';
 import { recordEqual } from '@cngx/utils';
 
+import { injectAccordionSiteCopy } from '../i18n/accordion-i18n';
+import type { CngxAccordionLanguageSection } from '../i18n/accordion-language-section';
 import type { CngxAccordionConfig } from './accordion.config';
 import { CNGX_ACCORDION_CONFIG } from './accordion.config.defaults';
 
@@ -12,16 +15,9 @@ import { CNGX_ACCORDION_CONFIG } from './accordion.config.defaults';
  * so consumers don't import the token directly. Mirrors `injectBreadcrumbConfig`
  * in `@cngx/ui/breadcrumb`.
  *
- * The copy keys `disabledReason` and `errorMessage` may hold a `Signal`; wrap
- * one with `coerceSignal` from `@cngx/core/utils` and read it inside a
- * `computed()`, a template or a handler.
- *
- * ```ts
- * export class MyAccordionReason {
- *   private readonly reason = coerceSignal(injectAccordionConfig().disabledReason);
- *   protected readonly text = computed(() => this.reason());
- * }
- * ```
+ * The copy keys `disabledReason` and `errorMessage` hold overrides only; read
+ * the resolved copy (overrides over the language pack) through
+ * {@link injectAccordionLabels}.
  *
  * @category ui/accordion
  * @since 0.1.0
@@ -30,42 +26,57 @@ export function injectAccordionConfig(): CngxAccordionConfig {
   return inject(CNGX_ACCORDION_CONFIG);
 }
 
-/**
- * The accordion config with its copy keys resolved to plain strings.
- *
- * @internal
- */
-export type CngxAccordionResolvedConfig = CngxAccordionConfig & {
-  readonly disabledReason: string;
-  readonly errorMessage: string;
-};
-
 const valueOf = <T>(source: T | Signal<T>): T => (isSignal(source) ? source() : source);
 
-const RESOLVED_COPY = new WeakMap<CngxAccordionConfig, Signal<CngxAccordionResolvedConfig>>();
+const CONFIG_COPY = new WeakMap<
+  CngxAccordionConfig,
+  Signal<Partial<CngxAccordionLanguageSection>>
+>();
 
 /**
- * The config with `disabledReason` / `errorMessage` read through, as a Signal
- * that follows a runtime language switch. Memoized per config object, so every
- * item under one cascade shares one `computed()`.
+ * The copy keys a config sets, each unwrapped, as one Signal. Memoized per
+ * config object so every item under one cascade shares it.
  *
  * @internal
  */
-export function resolveAccordionCopy(
+function accordionConfigCopy(
   config: CngxAccordionConfig,
-): Signal<CngxAccordionResolvedConfig> {
-  const cached = RESOLVED_COPY.get(config);
-  if (cached) {
-    return cached;
+): Signal<Partial<CngxAccordionLanguageSection>> {
+  let copy = CONFIG_COPY.get(config);
+  if (!copy) {
+    copy = computed(
+      () => ({
+        disabledReason: valueOf(config.disabledReason),
+        errorMessage: valueOf(config.errorMessage),
+      }),
+      { equal: recordEqual },
+    );
+    CONFIG_COPY.set(config, copy);
   }
-  const copy = computed<CngxAccordionResolvedConfig>(
-    () => ({
-      ...config,
-      disabledReason: valueOf(config.disabledReason),
-      errorMessage: valueOf(config.errorMessage),
-    }),
-    { equal: recordEqual },
-  );
-  RESOLVED_COPY.set(config, copy);
   return copy;
+}
+
+/**
+ * The accordion copy in scope - `disabledReason` and `errorMessage` - as a
+ * Signal that follows a runtime language switch. A key the config sets wins;
+ * a key it leaves unset, `null` or `undefined` reads the `accordion` section
+ * of the active pack (English without one). Runs in injection context; read it
+ * inside a `computed()`, a template or a handler, and untracked where it
+ * builds live-region text.
+ *
+ * ```ts
+ * export class MyAccordionReason {
+ *   private readonly copy = injectAccordionLabels();
+ *   protected readonly reason = computed(() => this.copy().disabledReason);
+ * }
+ * ```
+ *
+ * @category ui/accordion
+ * @since 0.1.0
+ */
+export function injectAccordionLabels(): Signal<CngxAccordionLanguageSection> {
+  return createFilledOverrideMerge(
+    injectAccordionSiteCopy(),
+    accordionConfigCopy(injectAccordionConfig()),
+  );
 }

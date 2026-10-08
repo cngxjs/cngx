@@ -226,8 +226,8 @@ export class CngxStatCard {
 
   /**
    * Accessible label announced while the card is loading. Unbound
-   * (`undefined`), each copy input falls back to the config cascade and its
-   * English default.
+   * (`undefined`), each copy input falls back to the config cascade and the
+   * `statCard` section of the language pack.
    */
   readonly busyLabel = input<string | undefined>(undefined);
 

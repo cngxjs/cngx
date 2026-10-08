@@ -24,4 +24,8 @@ export {
   withSidenavRouterSync,
   withSidenavLabels,
 } from './config/features';
-export { injectSidenavConfig } from './config/inject-sidenav-config';
+export { injectSidenavConfig, injectSidenavLabels } from './config/inject-sidenav-config';
+export {
+  CNGX_SIDENAV_LANGUAGE_EN,
+  type CngxSidenavLanguageSection,
+} from './i18n/sidenav-language-section';

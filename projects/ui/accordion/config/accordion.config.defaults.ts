@@ -3,11 +3,9 @@ import { InjectionToken } from '@angular/core';
 import type { CngxAccordionConfig } from './accordion.config';
 
 /**
- * Library defaults for the accordion configuration cascade. English by default
- * per `feedback_en_default_locale`; locale overrides ride the
- * `withAccordionLabels` feature. The `disabledReason` string is byte-identical
- * to the per-instance input default the item shipped before the cascade, so an
- * un-configured consumer sees no change.
+ * Library defaults for the accordion configuration cascade. Carries no copy:
+ * the `disabledReason` / `errorMessage` defaults are the `accordion` section of
+ * the language pack; single keys ride the `withAccordionLabels` feature.
  *
  * Exported for intra-lib consumers (`provideAccordionConfig` merges with this
  * base) but **NOT** re-exported from `public-api.ts` - downstream consumers
@@ -18,8 +16,6 @@ import type { CngxAccordionConfig } from './accordion.config';
  * @internal
  */
 export const CNGX_ACCORDION_DEFAULTS: CngxAccordionConfig = {
-  disabledReason: 'This section is currently unavailable.',
-  errorMessage: 'This section could not be loaded.',
   headingLevel: 3,
 };
 
@@ -43,7 +39,10 @@ export const CNGX_ACCORDION_DEFAULTS: CngxAccordionConfig = {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/config/accordion.config.defaults.ts
  * @since 0.1.0
  */
-export const CNGX_ACCORDION_CONFIG = new InjectionToken<CngxAccordionConfig>('CNGX_ACCORDION_CONFIG', {
-  providedIn: 'root',
-  factory: () => CNGX_ACCORDION_DEFAULTS,
-});
+export const CNGX_ACCORDION_CONFIG = new InjectionToken<CngxAccordionConfig>(
+  'CNGX_ACCORDION_CONFIG',
+  {
+    providedIn: 'root',
+    factory: () => CNGX_ACCORDION_DEFAULTS,
+  },
+);

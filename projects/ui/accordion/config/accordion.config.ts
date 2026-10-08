@@ -52,11 +52,12 @@ export type CngxAccordionSeverity = 'error' | 'warning' | 'info';
  *   2. `provideAccordionConfigAt(...)` in a parent component's `viewProviders`
  *      (component-scoped override).
  *   3. `provideAccordionConfig(...)` at the application root.
- *   4. Library defaults (English; `CNGX_ACCORDION_DEFAULTS`).
+ *   4. Library defaults (`CNGX_ACCORDION_DEFAULTS`; the copy comes from the
+ *      `accordion` section of the language pack).
  *
- * Both keys are required on the resolved config - the token ships a complete
- * default, and every `with*` feature overrides a whole key, so no consumer ever
- * observes a partial shape.
+ * The copy keys are overrides only: the token's default leaves them unset, and
+ * {@link injectAccordionLabels} fills every unset key from the `accordion`
+ * section of the language pack, so a reader never observes a partial shape.
  *
  * @category ui/accordion
  * @since 0.1.0
@@ -64,20 +65,22 @@ export type CngxAccordionSeverity = 'error' | 'warning' | 'info';
 export interface CngxAccordionConfig {
   /**
    * Reason announced to assistive tech when an item is disabled, bound through
-   * the item's always-present `aria-describedby` reason element. English
-   * default; a per-instance `[disabledReason]` still wins over the cascade.
+   * the item's always-present `aria-describedby` reason element. An override
+   * only: unset, the reason comes from the `accordion` section of the language
+   * pack. A per-instance `[disabledReason]` still wins over the cascade.
    * Accepts a `Signal` so the reason follows a runtime language switch.
    */
-  readonly disabledReason: string | Signal<string>;
+  readonly disabledReason?: string | Signal<string>;
   /**
    * Message announced (via a `role="alert"`) when an item's `[state]` is error
-   * and no `*cngxAccordionItemError` slot is provided. English default; a
-   * per-instance `[errorMessage]` or the error slot still wins. Ships a spoken
+   * and no `*cngxAccordionItemError` slot is provided. An override only:
+   * unset, the message comes from the `accordion` section of the language
+   * pack. A per-instance `[errorMessage]` or the error slot still wins. Ships a spoken
    * default so the error state is never silent to assistive tech (Pillar 2).
    * Accepts a `Signal`; a shown message keeps its text on a language switch and
    * speaks the new language with the next error.
    */
-  readonly errorMessage: string | Signal<string>;
+  readonly errorMessage?: string | Signal<string>;
   /**
    * Default `aria-level` (2-6) every `CngxAccordionGroup` heading wrapper
    * reflects when `[headingLevel]` is not bound. Clamped into the ARIA range by

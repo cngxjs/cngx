@@ -1,7 +1,7 @@
 import { computed, inject, InjectionToken, type Signal } from '@angular/core';
 
 import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createDefaultsFill, createOverrideMerge } from '@cngx/core/utils';
+import { createFilledOverrideMerge, createOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxDataGridAccordionLabels } from '../config/data-grid-accordion.config';
 import { CNGX_DATA_GRID_ACCORDION_CONFIG } from '../config/data-grid-accordion.config.defaults';
@@ -75,11 +75,8 @@ const DATA_GRID_ACCORDION_SECTION_LABELS = new InjectionToken<Signal<CngxDataGri
  */
 export function injectDataGridAccordionLabels(): Signal<CngxDataGridAccordionLabels> {
   const section = dataGridAccordionBundle.resolve(inject(DATA_GRID_ACCORDION_SECTION_LABELS));
-  return createDefaultsFill(
-    createOverrideMerge<CngxDataGridAccordionLabels>(
-      section,
-      inject(CNGX_DATA_GRID_ACCORDION_CONFIG).labels,
-    ),
+  return createFilledOverrideMerge<CngxDataGridAccordionLabels>(
     section,
+    inject(CNGX_DATA_GRID_ACCORDION_CONFIG).labels,
   );
 }

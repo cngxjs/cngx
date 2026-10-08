@@ -50,7 +50,7 @@
                 [ngTemplateOutletContext]="{ $implicit: item, index: $index }"
               />
             } @else {
-              {{ item }}
+              {{ itemText(item) }}
             }
           </li>
         }
