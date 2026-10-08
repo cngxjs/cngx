@@ -1,5 +1,4 @@
 import {
-  computed,
   inject,
   InjectionToken,
   makeEnvironmentProviders,
@@ -9,8 +8,7 @@ import {
   type Signal,
   SkipSelf,
 } from '@angular/core';
-import { injectLanguageSection } from '@cngx/core/i18n';
-import { createOverrideMerge } from '@cngx/core/utils';
+import { createLanguageSection } from '@cngx/core/i18n';
 
 import { CNGX_MENU_LANGUAGE_EN, type CngxMenuLanguageSection } from '../i18n/menu-language-section';
 
@@ -113,21 +111,15 @@ export const DEFAULT_MENU_CONFIG: CngxMenuConfig = {
   dismissOnBlur: true,
 };
 
-const NO_SECTION: Partial<CngxMenuLanguageSection> = {};
+/** @internal The menu section of the active pack over the English section. */
+const injectMenuSection = createLanguageSection('menu', CNGX_MENU_LANGUAGE_EN);
 
 /**
  * @internal {@link DEFAULT_MENU_CONFIG} with `ariaLabels` read from the menu
  * section of the active language pack. Runs in an injection context.
  */
 function menuConfigDefaultsFromPack(): CngxMenuConfig {
-  const pack = injectLanguageSection('menu');
-  return {
-    ...DEFAULT_MENU_CONFIG,
-    ariaLabels: createOverrideMerge(
-      CNGX_MENU_LANGUAGE_EN,
-      computed(() => pack() ?? NO_SECTION),
-    ),
-  };
+  return { ...DEFAULT_MENU_CONFIG, ariaLabels: injectMenuSection() };
 }
 
 /**

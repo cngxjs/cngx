@@ -793,7 +793,7 @@
 
   cngx-sidenav.cngx-sidenav--mini:not(.cngx-sidenav--expanded)
     .cngx-nav-link[data-initial]::before {
-    content: attr(data-initial);
+    content: attr(data-initial) / '';
     font-size: var(--cngx-nav-link-initial-size, 0.875rem);
     font-weight: 600;
     display: inline-block;

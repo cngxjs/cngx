@@ -45,7 +45,7 @@ describe('data-grid-accordion language section', () => {
     expect(en.unlabeledColumn).toBe('this column');
     expect(en.filter).toBe('Filter');
     expect(en.filterRows).toBe('Filter rows');
-    expect(en.rowLoadFailed).toBe('Failed to load');
+    expect(en.rowLoadFailed).toBe('Could not load');
     expect(en.note).toBe('NOTE');
     expect(EN_SECTION.countWithNoun).toBe('{count} {noun}');
   });

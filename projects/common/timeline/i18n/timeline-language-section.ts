@@ -49,7 +49,7 @@ export const CNGX_TIMELINE_LANGUAGE_EN: CngxTimelineLanguageSection = {
   timelineRegion: 'Timeline',
   retry: 'Retry',
   errorFallback: 'Could not load the timeline.',
-  emptyFallback: 'No events yet.',
+  emptyFallback: 'No events yet',
   loading: 'Loading timeline',
   refreshing: 'Updating…',
   itemBusy: 'Updating',

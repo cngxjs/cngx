@@ -1,5 +1,5 @@
-import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
 import { createOverrideMerge } from '@cngx/core/utils';
 
 import { CNGX_TABS_LANGUAGE_EN, type CngxTabsLanguageSection } from './tabs-language-section';
@@ -77,19 +77,11 @@ export interface CngxTabsI18n {
   readonly commitRolledBackTo: (originLabel: string) => string;
 }
 
-const NO_SECTION: Partial<CngxTabsLanguageSection> = {};
-
 /**
  * @internal The English tabs section with the active pack's tabs section on
  * top. Feeds both `CNGX_TABS_I18N` and the `CNGX_TABS_CONFIG` labels.
  */
-export function injectTabsLanguage(): Signal<CngxTabsLanguageSection> {
-  const pack = injectLanguageSection('tabs');
-  return createOverrideMerge(
-    CNGX_TABS_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
+export const injectTabsLanguage = createLanguageSection('tabs', CNGX_TABS_LANGUAGE_EN);
 
 /** @internal Turns a tabs section into the token's keys for a locale. */
 function tabsBundleFrom(section: CngxTabsLanguageSection, locale: string): CngxTabsI18n {

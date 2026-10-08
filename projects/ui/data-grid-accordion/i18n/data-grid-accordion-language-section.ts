@@ -66,7 +66,7 @@ export const CNGX_DATA_GRID_ACCORDION_LANGUAGE_EN: CngxDataGridAccordionLanguage
   unlabeledColumn: 'this column',
   filter: 'Filter',
   filterRows: 'Filter rows',
-  rowLoadFailed: 'Failed to load',
+  rowLoadFailed: 'Could not load',
   note: 'NOTE',
 };
 

@@ -570,7 +570,7 @@ describe('CngxTimeline', () => {
       const { el } = mount();
 
       expect(el.querySelector('.cngx-timeline__list')).toBeNull();
-      expect(text(el.querySelector('.cngx-timeline__empty'))).toBe('No events yet.');
+      expect(text(el.querySelector('.cngx-timeline__empty'))).toBe('No events yet');
     });
   });
 });

@@ -1,10 +1,6 @@
-import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import {
-  createNestedOverrideMerge,
-  createOverrideMerge,
-  type CngxNestedOverrides,
-} from '@cngx/core/utils';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
+import { createNestedOverrideMerge, type CngxNestedOverrides } from '@cngx/core/utils';
 import type { ValidationError } from '@angular/forms/signals';
 
 import type { ErrorMessageFn, ErrorMessageMap } from '../models';
@@ -124,16 +120,8 @@ function formFieldBundleFrom(
   };
 }
 
-const NO_SECTION: Partial<CngxFormFieldLanguageSection> = {};
-
 /** @internal The form-field section of the active pack over English. */
-function injectFormFieldSection(): Signal<CngxFormFieldLanguageSection> {
-  const pack = injectLanguageSection('formField');
-  return createOverrideMerge(
-    CNGX_FORM_FIELD_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
+const injectFormFieldSection = createLanguageSection('formField', CNGX_FORM_FIELD_LANGUAGE_EN);
 
 /** @internal Builds and reads the token, formatted for the reading locale. */
 const formFieldBundle = createSectionBundle<CngxFormFieldLanguageSection, CngxFormFieldI18n>({

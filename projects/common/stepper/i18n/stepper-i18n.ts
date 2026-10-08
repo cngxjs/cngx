@@ -1,6 +1,6 @@
-import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createNestedOverrideMerge, type CngxNestedOverrides } from '@cngx/core/utils';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createNestedLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
+import { createNestedOverrideMerge } from '@cngx/core/utils';
 
 import {
   CNGX_STEPPER_LANGUAGE_EN,
@@ -31,7 +31,7 @@ export interface CngxStepperI18n {
   /**
    * Last tier of the landmark `aria-label` and of the organism's
    * `aria-roledescription`. The label applies only while
-   * `CNGX_STEPPER_CONFIG.ariaLabels.stepperRegion` (default `'Stepper'`) is
+   * `CNGX_STEPPER_CONFIG.ariaLabels.stepperRegion` (default `'Steps'`) is
    * unset, the role description only while `fallbackLabels.stepRoleDescription`
    * (default `'stepper'`) is unset. Localise both through
    * `withStepperAriaLabels(...)` and `withStepperFallbackLabels(...)`.
@@ -128,8 +128,6 @@ export type CngxStepperI18nOverrides = Omit<Partial<CngxStepperI18n>, 'statusLab
   readonly statusLabels?: Partial<CngxStepperStatusLabels>;
 };
 
-const NO_SECTION: CngxNestedOverrides<CngxStepperLanguageSection, 'statusLabels'> = {};
-
 /** @internal Turns a stepper section into the token's keys for a locale. */
 function stepperBundleFrom(section: CngxStepperLanguageSection, locale: string): CngxStepperI18n {
   return {
@@ -166,14 +164,11 @@ function stepperBundleFrom(section: CngxStepperLanguageSection, locale: string):
  * section on top. Feeds both `CNGX_STEPPER_I18N` and the
  * `CNGX_STEPPER_CONFIG` labels.
  */
-export function injectStepperLanguage(): Signal<CngxStepperLanguageSection> {
-  const pack = injectLanguageSection('stepper');
-  return createNestedOverrideMerge<CngxStepperLanguageSection, 'statusLabels'>(
-    CNGX_STEPPER_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-    'statusLabels',
-  );
-}
+export const injectStepperLanguage = createNestedLanguageSection(
+  'stepper',
+  CNGX_STEPPER_LANGUAGE_EN,
+  'statusLabels',
+);
 
 /** @internal Builds and reads the token, formatted for the reading locale. */
 const stepperBundle = createSectionBundle<CngxStepperLanguageSection, CngxStepperI18n>({

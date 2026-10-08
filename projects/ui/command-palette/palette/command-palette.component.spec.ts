@@ -114,12 +114,15 @@ describe('CngxCommandPalette', () => {
   });
 
   it('speaks each footer legend entry once, in the order of the legendEntry message', () => {
-    configure([], [
-      provideCngxI18n(
-        withPartialPack({ locale: 'de', commandPalette: { legendEntry: '{label}: {keys}' } }),
-        withDocumentLanguage('off'),
-      ),
-    ]);
+    configure(
+      [],
+      [
+        provideCngxI18n(
+          withPartialPack({ locale: 'de', commandPalette: { legendEntry: '{label}: {keys}' } }),
+          withDocumentLanguage('off'),
+        ),
+      ],
+    );
     openFully();
     const entries = Array.from(
       fixture.nativeElement.querySelectorAll('.cngx-command-legend'),
@@ -129,7 +132,17 @@ describe('CngxCommandPalette', () => {
     expect(run.querySelector('kbd')?.getAttribute('aria-hidden')).toBe('true');
     expect(run.querySelector('kbd + span')?.getAttribute('aria-hidden')).toBe('true');
     expect(stripBidiIsolates(run.querySelector('.cngx-sr-only')?.textContent?.trim())).toBe(
-      'Run: enter',
+      'Run: Enter',
+    );
+  });
+
+  it('shows the navigate glyphs but speaks the key names', () => {
+    configure();
+    openFully();
+    const navigate = fixture.nativeElement.querySelector('.cngx-command-legend') as HTMLElement;
+    expect(navigate.querySelector('kbd')?.textContent?.trim()).toBe('↑ ↓');
+    expect(stripBidiIsolates(navigate.querySelector('.cngx-sr-only')?.textContent?.trim())).toBe(
+      'Up and Down arrows Navigate',
     );
   });
 
@@ -193,7 +206,9 @@ describe('CngxCommandPalette', () => {
 
   it('opens on a per-instance [openShortcut] combo', () => {
     configure([], [], 'mod+p');
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', ctrlKey: true, metaKey: true }));
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'p', ctrlKey: true, metaKey: true }),
+    );
     vi.advanceTimersByTime(16);
     fixture.detectChanges();
     expect(fixture.componentInstance.palette().isOpen()).toBe(true);
@@ -201,7 +216,9 @@ describe('CngxCommandPalette', () => {
 
   it('opens on the combo set globally by withPaletteShortcut', () => {
     configure([], [provideCommandPaletteConfig(withPaletteShortcut('mod+j'))]);
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'j', ctrlKey: true, metaKey: true }));
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'j', ctrlKey: true, metaKey: true }),
+    );
     vi.advanceTimersByTime(16);
     fixture.detectChanges();
     expect(fixture.componentInstance.palette().isOpen()).toBe(true);
@@ -210,12 +227,16 @@ describe('CngxCommandPalette', () => {
   it('per-instance [openShortcut] wins over the config combo', () => {
     configure([], [provideCommandPaletteConfig(withPaletteShortcut('mod+j'))], 'mod+p');
     // The config combo must NOT open it...
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'j', ctrlKey: true, metaKey: true }));
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'j', ctrlKey: true, metaKey: true }),
+    );
     vi.advanceTimersByTime(16);
     fixture.detectChanges();
     expect(fixture.componentInstance.palette().isOpen()).toBe(false);
     // ...the instance combo does.
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', ctrlKey: true, metaKey: true }));
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'p', ctrlKey: true, metaKey: true }),
+    );
     vi.advanceTimersByTime(16);
     fixture.detectChanges();
     expect(fixture.componentInstance.palette().isOpen()).toBe(true);

@@ -21,8 +21,8 @@ describe('command palette config cascade', () => {
   it('defaults to the English internal labels and the mod+k open combo', () => {
     TestBed.configureTestingModule({});
     const config = resolve();
-    expect(config.searchPlaceholder).toBe('Type a command or search...');
-    expect(config.emptyLabel).toBe('No matching commands.');
+    expect(config.searchPlaceholder).toBe('Type a command or search…');
+    expect(config.emptyLabel).toBe('No matching commands');
     expect(config.footerLegend.length).toBeGreaterThan(0);
     expect(config.openShortcut).toBe('mod+k');
   });
@@ -46,7 +46,7 @@ describe('command palette config cascade', () => {
     expect(config.emptyLabel).toBe('Keine Treffer.');
     expect(config.retryLabel).toBe('Erneut');
     // Untouched labels keep the default.
-    expect(config.loadingLabel).toBe('Loading commands...');
+    expect(config.loadingLabel).toBe('Loading commands…');
   });
 
   it('replaces the keyboard legend and count formatter', () => {
@@ -86,7 +86,7 @@ describe('command palette config cascade', () => {
     const copy = TestBed.runInInjectionContext(() =>
       resolveCommandPaletteCopy(injectCommandPaletteConfig()),
     );
-    expect(copy().emptyLabel).toBe('No matching commands.');
+    expect(copy().emptyLabel).toBe('No matching commands');
     expect(copy().retryLabel).toBe('Try again');
 
     lang.set('de');

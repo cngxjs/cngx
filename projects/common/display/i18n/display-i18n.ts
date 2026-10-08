@@ -1,10 +1,6 @@
-import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import {
-  createNestedOverrideMerge,
-  createOverrideMerge,
-  type CngxNestedOverrides,
-} from '@cngx/core/utils';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createNestedLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
+import { createOverrideMerge } from '@cngx/core/utils';
 
 import {
   CNGX_DISPLAY_LANGUAGE_EN,
@@ -95,17 +91,12 @@ function displayBundleFrom(section: CngxDisplayLanguageSection, locale: string):
   };
 }
 
-const NO_SECTION: CngxNestedOverrides<CngxDisplayLanguageSection, 'avatarStatus'> = {};
-
 /** @internal The display section of the active pack over English. */
-function injectDisplaySection(): Signal<CngxDisplayLanguageSection> {
-  const pack = injectLanguageSection('display');
-  return createNestedOverrideMerge<CngxDisplayLanguageSection, 'avatarStatus'>(
-    CNGX_DISPLAY_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-    'avatarStatus',
-  );
-}
+const injectDisplaySection = createNestedLanguageSection(
+  'display',
+  CNGX_DISPLAY_LANGUAGE_EN,
+  'avatarStatus',
+);
 
 /** @internal Builds and reads the token, formatted for the reading locale. */
 const displayBundle = createSectionBundle<CngxDisplayLanguageSection, CngxDisplayI18n>({

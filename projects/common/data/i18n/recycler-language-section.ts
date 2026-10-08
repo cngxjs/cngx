@@ -33,8 +33,8 @@ export const CNGX_RECYCLER_LANGUAGE_EN: CngxRecyclerLanguageSection = {
     other: '{count} more items loaded. {total} total.',
   },
   filtered: { one: '{count} result found.', other: '{count} results found.' },
-  empty: 'No results.',
-  error: 'Error loading data.',
+  empty: 'No results',
+  error: 'Error loading data',
 };
 
 declare module '@cngx/core/i18n' {

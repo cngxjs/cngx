@@ -68,8 +68,8 @@ describe('recycler language section', () => {
     expect(i18n.loaded(1, 1200)).toBe('1 more item loaded. 1,200 total.');
     expect(i18n.filtered(3)).toBe('3 results found.');
     expect(i18n.filtered(1)).toBe('1 result found.');
-    expect(i18n.empty()).toBe('No results.');
-    expect(i18n.error()).toBe('Error loading data.');
+    expect(i18n.empty()).toBe('No results');
+    expect(i18n.error()).toBe('Error loading data');
   });
 
   it('reads the recycler section of the active pack', () => {
@@ -86,7 +86,7 @@ describe('recycler language section', () => {
     });
     const i18n = TestBed.inject(CNGX_RECYCLER_I18N)();
     expect(i18n.filtered(1200)).toBe('1.200 Treffer.');
-    expect(i18n.empty()).toBe('No results.');
+    expect(i18n.empty()).toBe('No results');
   });
 
   it('lets provideRecyclerI18n override single keys on top of the active pack', () => {

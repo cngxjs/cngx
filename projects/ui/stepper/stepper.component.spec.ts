@@ -808,7 +808,7 @@ describe('CngxStepper organism', () => {
         provideZonelessChangeDetection(),
         // Override clears stepperRegion so the cascade falls through
         // to the i18n bundle. Without this override the library
-        // default 'Stepper' for ariaLabels.stepperRegion wins.
+        // default 'Steps' for ariaLabels.stepperRegion wins.
         provideStepperConfig(withStepperAriaLabels({ stepperRegion: undefined })),
         provideStepperI18n(withStepperI18nLabels({ stepperLabel: 'Schrittfolge' })),
       ],
@@ -985,7 +985,7 @@ describe('CngxStepper organism', () => {
       const region = fixture.nativeElement.querySelector(
         '.cngx-stepper__live-region',
       ) as HTMLElement;
-      expect(region.textContent?.trim()).toBe('Committing step…');
+      expect(region.textContent?.trim()).toBe('Saving step…');
     });
 
     it('pessimistic async accept announces the landed step (pending → success)', async () => {
@@ -1096,7 +1096,7 @@ describe('CngxStepper organism', () => {
       fixture.detectChanges();
       // After clearLastFailed the priority chain falls through to the
       // generic message - origin slot still set but failedIdx undefined.
-      expect(region.textContent?.trim()).toBe('Commit failed - retry?');
+      expect(region.textContent?.trim()).toBe('Could not save step - retry?');
     });
 
     it('host carries aria-busy="true" while a commit is pending and clears on resolve', () => {
@@ -1884,11 +1884,11 @@ describe('CngxStepper language switch', () => {
     buttons[1].click();
     fixture.detectChanges();
     const region = fixture.nativeElement.querySelector('.cngx-stepper__live-region') as HTMLElement;
-    expect(region.textContent?.trim()).toBe('Committing step…');
+    expect(region.textContent?.trim()).toBe('Saving step…');
 
     lang.set('de');
     fixture.detectChanges();
-    expect(region.textContent?.trim()).toBe('Committing step…');
+    expect(region.textContent?.trim()).toBe('Saving step…');
 
     fixture.componentInstance.resolveCommit(false);
     await fixture.whenStable();
@@ -2035,7 +2035,7 @@ describe('CngxStepper config copy switch', () => {
     fixture.detectChanges();
     const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
     const group = fixture.nativeElement.querySelector('.cngx-stepper__group-header') as HTMLElement;
-    expect(host.getAttribute('aria-label')).toBe('Stepper');
+    expect(host.getAttribute('aria-label')).toBe('Steps');
     expect(host.getAttribute('aria-roledescription')).toBe('stepper');
     expect(group.getAttribute('aria-roledescription')).toBe('step group');
 

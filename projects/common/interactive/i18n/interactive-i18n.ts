@@ -1,5 +1,5 @@
-import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
 import { createOverrideMerge } from '@cngx/core/utils';
 
 import {
@@ -69,16 +69,8 @@ function interactiveBundleFrom(
   };
 }
 
-const NO_SECTION: Partial<CngxInteractiveLanguageSection> = {};
-
 /** @internal The interactive section of the active pack over English. */
-function injectInteractiveSection(): Signal<CngxInteractiveLanguageSection> {
-  const pack = injectLanguageSection('interactive');
-  return createOverrideMerge(
-    CNGX_INTERACTIVE_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
+const injectInteractiveSection = createLanguageSection('interactive', CNGX_INTERACTIVE_LANGUAGE_EN);
 
 /** @internal Builds and reads the token, formatted for the reading locale. */
 const interactiveBundle = createSectionBundle<CngxInteractiveLanguageSection, CngxInteractiveI18n>({

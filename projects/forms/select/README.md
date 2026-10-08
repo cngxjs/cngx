@@ -43,6 +43,8 @@ Every variant ships full WAI-ARIA 1.2:
 
 ## Localisation
 
+To translate the whole app, set a language pack with `provideCngxI18n(withPack(...))` from `@cngx/core/i18n` (see the localisation guide); the `select` section covers every string below.
+
 Library defaults are English. Override on the per-instance level through ARIA-label inputs, or globally via `withAriaLabels` and `withFallbackLabels` features in the `provideCngxSelect(...)` aggregator.
 
 ## See also

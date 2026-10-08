@@ -46,7 +46,8 @@ export interface CngxCommandPaletteTemplates {
 
 /**
  * One keyboard-legend row in the palette footer: the key glyphs and what they
- * do.
+ * do. `keys` is shown, never spoken; screen readers hear `spokenKeys` (the key
+ * names in words, e.g. `'Up and Down arrows'` for `'↑ ↓'`), else `keys`.
  *
  * @category ui/command-palette
  * @since 0.1.0
@@ -54,6 +55,7 @@ export interface CngxCommandPaletteTemplates {
 export interface CngxCommandPaletteLegendEntry {
   readonly keys: string;
   readonly label: string;
+  readonly spokenKeys?: string;
 }
 
 /**

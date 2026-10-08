@@ -1,5 +1,5 @@
-import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { injectLanguageSection } from '@cngx/core/i18n';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createLanguageSection } from '@cngx/core/i18n';
 import { createOverrideMerge } from '@cngx/core/utils';
 
 import { CNGX_CARD_LANGUAGE_EN, type CngxCardLanguageSection } from './card-language-section';
@@ -20,16 +20,8 @@ import { CNGX_CARD_LANGUAGE_EN, type CngxCardLanguageSection } from './card-lang
  */
 export type CngxCardI18n = CngxCardLanguageSection;
 
-const NO_SECTION: Partial<CngxCardI18n> = {};
-
 /** @internal The English section with the active pack's card section on top. */
-function cardBundleFromPack(): Signal<CngxCardI18n> {
-  const section = injectLanguageSection('card');
-  return createOverrideMerge(
-    CNGX_CARD_LANGUAGE_EN,
-    computed(() => section() ?? NO_SECTION),
-  );
-}
+const cardBundleFromPack = createLanguageSection('card', CNGX_CARD_LANGUAGE_EN);
 
 /**
  * DI token for the card i18n bundle, a `Signal` so the phrases follow a

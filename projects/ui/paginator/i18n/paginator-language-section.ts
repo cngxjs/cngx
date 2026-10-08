@@ -92,7 +92,7 @@ export const CNGX_PAGINATOR_LANGUAGE_EN: CngxPaginatorLanguageSection = {
   pageChange: 'Page {page} of {totalPages}',
   loading: 'Loading',
   updated: 'Updated',
-  range: '<b>{start}-{end}</b> of {total}',
+  range: '<b>{start}–{end}</b> of {total}',
   pageStatus: 'Page <b>{page}</b> of {totalPages}',
   pageOfPagesReadout: '<b>{page}</b> / {totalPages}',
   loadMoreReadout: '{shown} / {total}',

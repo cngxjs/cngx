@@ -154,7 +154,7 @@ describe('CngxProgressBarStepper', () => {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(UnlabelledHost);
       fixture.detectChanges();
-      expect(hostEl(fixture).getAttribute('aria-label')).toBe('Stepper');
+      expect(hostEl(fixture).getAttribute('aria-label')).toBe('Steps');
     });
 
     it('withStepperAriaLabels({ stepperRegion }) moves the accname fallback', () => {

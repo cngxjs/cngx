@@ -14,7 +14,7 @@ import {
 } from '@angular/core';
 import { clamp } from '@cngx/utils';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
 import {
   createOverrideMerge,
   createTransitionTracker,
@@ -46,8 +46,6 @@ export interface RecyclerI18n {
   error(): string;
 }
 
-const NO_SECTION: Partial<CngxRecyclerLanguageSection> = {};
-
 /** @internal Turns a recycler section into the token's keys for a locale. */
 function recyclerBundleFrom(section: CngxRecyclerLanguageSection, locale: string): RecyclerI18n {
   return {
@@ -59,13 +57,7 @@ function recyclerBundleFrom(section: CngxRecyclerLanguageSection, locale: string
 }
 
 /** @internal The recycler section of the active pack over English. */
-function injectRecyclerSection(): Signal<CngxRecyclerLanguageSection> {
-  const pack = injectLanguageSection('recycler');
-  return createOverrideMerge(
-    CNGX_RECYCLER_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
+const injectRecyclerSection = createLanguageSection('recycler', CNGX_RECYCLER_LANGUAGE_EN);
 
 /** @internal Builds and reads the token, formatted for the reading locale. */
 const recyclerBundle = createSectionBundle<CngxRecyclerLanguageSection, RecyclerI18n>({
@@ -379,11 +371,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   // per-index measurement - it carries no O(n) per-frame cost, so exclude it
   // from the variable-height warning (a reactive scalar estimate is a
   // sanctioned pattern; see the resolveSize note below).
-  if (
-    typeof config.estimateSize === 'function' &&
-    !isSignal(config.estimateSize) &&
-    isDevMode()
-  ) {
+  if (typeof config.estimateSize === 'function' && !isSignal(config.estimateSize) && isDevMode()) {
     const count = config.totalCount();
     if (count > 10_000) {
       console.warn(
@@ -433,7 +421,8 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     // lead with velocity, capped at one viewport of items so a teleport jump
     // never expands the window unbounded. Trailing edge keeps the base overscan.
     const estimate = config.estimateSize;
-    const refPx = typeof estimate === 'number' && estimate > 0 ? estimate : Math.max(1, clientHeight / 8);
+    const refPx =
+      typeof estimate === 'number' && estimate > 0 ? estimate : Math.max(1, clientHeight / 8);
     const itemsPerViewport = Math.max(1, Math.ceil(clientHeight / refPx));
     const velocity = scrollVelocity();
     const leadItems = Math.min(Math.ceil(Math.abs(velocity) / refPx), itemsPerViewport);

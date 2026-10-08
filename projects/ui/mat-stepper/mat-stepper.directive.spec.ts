@@ -504,7 +504,7 @@ describe('CngxMatStepper instrumentation directive', () => {
       'span[aria-live="polite"].cngx-sr-only',
     );
     try {
-      expect(politeRegions[politeRegions.length - 1]?.textContent).toBe('Committing step\u2026');
+      expect(politeRegions[politeRegions.length - 1]?.textContent).toBe('Saving step\u2026');
     } finally {
       TestBed.inject(CngxLiveAnnouncer).ngOnDestroy();
     }
@@ -537,7 +537,7 @@ describe('CngxMatStepper instrumentation directive', () => {
       presenter.select(1);
       fixture.detectChanges();
       await fixture.whenStable();
-      expect(announce.mock.calls.at(-1)?.[0]).toBe('Committing step\u2026');
+      expect(announce.mock.calls.at(-1)?.[0]).toBe('Saving step\u2026');
 
       fixture.componentInstance.resolveCommit(true);
       await fixture.whenStable();

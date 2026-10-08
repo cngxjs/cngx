@@ -164,7 +164,7 @@ describe('runtime language switch', () => {
   });
 
   it('follows a Signal of fallbackLabels over the defaults', () => {
-    const labels = signal<CngxSelectFallbackLabels>({ empty: 'No Options' });
+    const labels = signal<CngxSelectFallbackLabels>({ empty: 'No options' });
     const config = resolveIn([provideSelectConfig(withFallbackLabels(labels))]);
     labels.set({ empty: 'Keine Optionen' });
     expect(config.fallbackLabels().empty).toBe('Keine Optionen');
@@ -205,7 +205,7 @@ describe('runtime language switch', () => {
       ),
     ]);
     expect(config.ariaLabels().statusLoading).toBe('Loading options');
-    expect(config.fallbackLabels().empty).toBe('No Options');
+    expect(config.fallbackLabels().empty).toBe('No options');
     expect(config.ariaLabels().clearButton).toBeUndefined();
   });
 

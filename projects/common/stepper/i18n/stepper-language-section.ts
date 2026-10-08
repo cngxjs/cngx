@@ -74,18 +74,18 @@ export interface CngxStepperLanguageSection {
  * @relatedTo CNGX_STEPPER_I18N
  */
 export const CNGX_STEPPER_LANGUAGE_EN: CngxStepperLanguageSection = {
-  stepperRegion: 'Stepper',
-  stepperLabel: 'Stepper',
+  stepperRegion: 'Steps',
+  stepperLabel: 'Steps',
   stepRoleDescription: 'stepper',
-  stepIndicatorRoleDescription: 'Step indicator',
+  stepIndicatorRoleDescription: 'step indicator',
   groupRoleDescription: 'step group',
   selectedStep: 'Step {position} of {count}: {label}',
   stepWithDetail: '{step}: {detail}',
   stepHasErrors: { one: '{count} error', other: '{count} errors' },
   previousStep: 'Previous step',
   nextStep: 'Next step',
-  commitFailedRetry: 'Commit failed - retry?',
-  commitInFlight: 'Committing step…',
+  commitFailedRetry: 'Could not save step - retry?',
+  commitInFlight: 'Saving step…',
   commitRolledBackTo: 'Reverted to step "{origin}".',
   stepRolledBack: '{base} This step was rolled back.',
   statusLabels: {

@@ -54,7 +54,7 @@ describe('treetable language section', () => {
     const en = labels()();
     expect(en.loading).toBe('Loading');
     expect(en.refreshing).toBe('Refreshing');
-    expect(en.errorFallback).toBe('Data failed to load');
+    expect(en.errorFallback).toBe('Could not load data');
     expect(en.emptyFallback).toBe('No data');
     expect(en.expand).toBe('Expand');
     expect(en.collapse).toBe('Collapse');
@@ -100,6 +100,21 @@ describe('treetable language section', () => {
 
     pack.set(undefined);
     expect(resolved().expand).toBe('Expand');
+  });
+
+  it('keeps the labels reference when the pack is re-set to an equal section', () => {
+    const section = { expand: 'Aufklappen', columnLabels: { size: 'Größe' } };
+    const pack = signal<CngxActiveLanguagePack | undefined>({ locale: 'de', treetable: section });
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+      ],
+    });
+    const resolved = labels();
+    const first = resolved();
+    pack.set({ locale: 'de', treetable: { ...section, columnLabels: { size: 'Größe' } } });
+    expect(resolved()).toBe(first);
   });
 
   it('lets withTreetableLabels override single keys on top of the active pack', () => {

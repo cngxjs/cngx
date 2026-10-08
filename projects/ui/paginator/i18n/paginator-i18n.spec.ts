@@ -62,11 +62,11 @@ describe('paginator language section', () => {
     expect(announcements().pageChange(2, 9)).toBe('Page 2 of 9');
     expect(announcements().loading).toBe('Loading');
     expect(announcements().updated).toBe('Updated');
-    expect(formats().range(1, 10, 95)).toBe('<b>1-10</b> of 95');
+    expect(formats().range(1, 10, 95)).toBe('<b>1–10</b> of 95');
     expect(formats().pageStatus(2, 9)).toBe('Page <b>2</b> of 9');
     expect(formats().pageOfPagesReadout(2, 9)).toBe('<b>2</b> / 9');
     expect(formats().loadMoreReadout(20, 95)).toBe('20 / 95');
-    expect(EN_SECTION.range).toBe('<b>{start}-{end}</b> of {total}');
+    expect(EN_SECTION.range).toBe('<b>{start}–{end}</b> of {total}');
   });
 
   it('carries no copy on the default config, so the section is the default', () => {
@@ -83,7 +83,7 @@ describe('paginator language section', () => {
       providers: [provideZonelessChangeDetection(), provideLocale('en')],
     });
     const { announcements, formats } = read();
-    expect(formats().range(1001, 1010, 12500)).toBe('<b>1,001-1,010</b> of 12,500');
+    expect(formats().range(1001, 1010, 12500)).toBe('<b>1,001–1,010</b> of 12,500');
     expect(announcements().pageChange(2, 1250)).toBe('Page 2 of 1,250');
   });
 

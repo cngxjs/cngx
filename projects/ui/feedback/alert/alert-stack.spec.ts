@@ -82,7 +82,7 @@ describe('CngxAlertStack', () => {
     const overflow = stackEl.querySelector('.cngx-alert-stack__overflow');
     expect(overflow).toBeTruthy();
     expect(overflow?.textContent).toContain('2 more');
-    expect(overflow?.getAttribute('aria-label')).toBe('+ 2 more alerts');
+    expect(overflow?.getAttribute('aria-label')).toBe('+2 more alerts');
   });
 
   it('expands all alerts when overflow button is clicked', () => {
@@ -314,7 +314,7 @@ describe('CngxAlertStack', () => {
     const overflow = stackEl.querySelector('.cngx-alert-stack__overflow');
     expect(overflow?.hasAttribute('aria-controls')).toBe(false);
     expect(overflow?.hasAttribute('aria-expanded')).toBe(false);
-    expect(overflow?.getAttribute('aria-label')).toBe('+ 2 more alerts');
+    expect(overflow?.getAttribute('aria-label')).toBe('+2 more alerts');
   });
 
   // ── Timer pause on hover/focus (WCAG 2.2.1) ──────────────
@@ -360,7 +360,7 @@ describe('CngxAlertStack', () => {
       fixture.detectChanges();
       const overflow = stackEl.querySelector('.cngx-alert-stack__overflow')!;
       const visible = overflow.textContent!.trim();
-      expect(visible).toBe('+ 2 more');
+      expect(visible).toBe('+2 more');
       expect(overflow.getAttribute('aria-label')!.toLowerCase()).toContain(visible.toLowerCase());
     });
 

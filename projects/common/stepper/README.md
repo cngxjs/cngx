@@ -50,6 +50,8 @@ Resolution priority: per-instance Input → `viewProviders` → root provider �
 
 ### I18n
 
+To translate the whole app, set a language pack with `provideCngxI18n(withPack(...))` from `@cngx/core/i18n` (see the localisation guide); the exports below override single keys on top of the `stepper` section.
+
 | Export | Description |
 |-|-|
 | `provideStepperI18n(bundle)` | Provide a localised i18n bundle (defaults are English). |

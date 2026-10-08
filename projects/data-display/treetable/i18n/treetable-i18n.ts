@@ -1,6 +1,6 @@
-import { computed, inject, InjectionToken, type Signal } from '@angular/core';
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createNestedOverrideMerge, type CngxNestedOverrides } from '@cngx/core/utils';
+import { inject, InjectionToken, type Signal } from '@angular/core';
+import { createNestedLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
+import { createNestedOverrideMerge } from '@cngx/core/utils';
 
 import { CNGX_TREETABLE_CONFIG, type TreetableLabels } from '../treetable.token';
 import {
@@ -15,20 +15,15 @@ import {
  */
 export type CngxResolvedTreetableLabels = Required<TreetableLabels>;
 
-const NO_SECTION: CngxNestedOverrides<CngxTreetableLanguageSection, 'columnLabels'> = {};
-
 /**
  * @internal The treetable section of the active pack over the English section;
  * `columnLabels` merges key by key.
  */
-function injectTreetableLanguage(): Signal<CngxTreetableLanguageSection> {
-  const pack = injectLanguageSection('treetable');
-  return createNestedOverrideMerge<CngxTreetableLanguageSection, 'columnLabels'>(
-    CNGX_TREETABLE_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-    'columnLabels',
-  );
-}
+const injectTreetableLanguage = createNestedLanguageSection(
+  'treetable',
+  CNGX_TREETABLE_LANGUAGE_EN,
+  'columnLabels',
+);
 
 /** @internal Turns a treetable section into the labels for a locale. Pure. */
 export function treetableLabelsFrom(

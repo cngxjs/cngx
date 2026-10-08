@@ -9,13 +9,11 @@ import {
   ElementRef,
   effect,
   inject,
-  InjectionToken,
   input,
-  type Signal,
   untracked,
   ViewEncapsulation,
 } from '@angular/core';
-import { injectLanguageSection } from '@cngx/core/i18n';
+import { createLanguageSection } from '@cngx/core/i18n';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { createOverrideMerge, nextUid } from '@cngx/core/utils';
 
@@ -34,29 +32,13 @@ import {
 } from './popover-panel-slots';
 import { CngxPopover } from './popover.directive';
 import type { PopoverPanelRole } from './popover.types';
-import type { CngxPopoverPanelLabels } from './popover-panel.types';
-
-const NO_SECTION: Partial<CngxPopoverPanelLabels> = {};
 
 /**
  * @internal The popover section of the active language pack over the English
- * copy, resolved once per injector so every panel merges `config.labels` over
- * the same signal - and `createOverrideMerge` then shares one merge per
- * config object.
+ * copy, shared app-wide so every panel merges `config.labels` over the same
+ * signal - and `createOverrideMerge` then shares one merge per config object.
  */
-const POPOVER_PANEL_LANGUAGE = new InjectionToken<Signal<CngxPopoverPanelLabels>>(
-  'CngxPopoverPanelLanguage',
-  {
-    providedIn: 'root',
-    factory: () => {
-      const pack = injectLanguageSection('popover');
-      return createOverrideMerge<CngxPopoverPanelLabels>(
-        CNGX_POPOVER_LANGUAGE_EN,
-        computed(() => pack() ?? NO_SECTION),
-      );
-    },
-  },
-);
+const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER_LANGUAGE_EN);
 
 /**
  * Rich popover panel molecule with header/body/footer slots, variant
@@ -257,7 +239,7 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
    * Panel copy: `config.labels` over the popover section of the active
    * language pack, one shared merge per config object.
    */
-  private readonly labels = createOverrideMerge(inject(POPOVER_PANEL_LANGUAGE), this.config.labels);
+  private readonly labels = createOverrideMerge(injectPopoverPanelLanguage(), this.config.labels);
 
   /** Accessible name of the built-in close button. */
   protected readonly closeLabel = computed(() => this.labels().close);

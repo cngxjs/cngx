@@ -46,7 +46,7 @@ describe('CngxMetric', () => {
     const { fixture, el, host } = setup();
     host.value.set(null);
     fixture.detectChanges();
-    expect(el.querySelector('.cngx-metric__value')!.textContent!.trim()).toBe('\u2014');
+    expect(el.querySelector('.cngx-metric__value')!.textContent!.trim()).toBe('\u2013');
   });
 
   it('displays string value as-is', () => {
@@ -118,7 +118,7 @@ describe('CngxMetric language pack', () => {
   it('shows the placeholder glyph and announces only the no-value text for null', () => {
     TestBed.configureTestingModule({ imports: [TestHost] });
     const el = mount(null, 'kg');
-    expect(el.querySelector('.cngx-metric__value')?.textContent?.trim()).toBe('\u2014');
+    expect(el.querySelector('.cngx-metric__value')?.textContent?.trim()).toBe('\u2013');
     expect(el.querySelector('.cngx-metric__unit')).toBeNull();
     expect(el.getAttribute('aria-label')).toBe('No value');
   });

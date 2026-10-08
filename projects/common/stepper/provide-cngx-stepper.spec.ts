@@ -66,7 +66,7 @@ describe('provideCngxStepper', () => {
     const i18n = TestBed.inject(CNGX_STEPPER_I18N);
     expect(cfg.defaultOrientation).toBe('horizontal');
     expect(cfg.defaultLinear).toBe(false);
-    expect(i18n().stepperLabel).toBe('Stepper');
+    expect(i18n().stepperLabel).toBe('Steps');
   });
 
   it('only-config features leave i18n at library defaults (no spurious i18n provider)', () => {
@@ -77,7 +77,7 @@ describe('provideCngxStepper', () => {
       ],
     });
     const i18n = TestBed.inject(CNGX_STEPPER_I18N);
-    expect(i18n().stepperLabel).toBe('Stepper');
+    expect(i18n().stepperLabel).toBe('Steps');
     expect(i18n().previousStep).toBe('Previous step');
   });
 

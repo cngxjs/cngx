@@ -49,7 +49,7 @@ export const CNGX_KPI_LANGUAGE_EN: CngxKpiLanguageSection = {
   trendFlat: 'unchanged',
   goalValueText: '{now} of {max}',
   metricValueWithUnit: '{value} {unit}',
-  metricPlaceholder: '\u2014',
+  metricPlaceholder: '\u2013',
   metricNoValue: 'No value',
 };
 

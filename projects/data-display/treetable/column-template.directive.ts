@@ -175,7 +175,7 @@ export class CngxRefreshTpl {
  * state fails - both on a first-load failure (grid gone) and on a
  * failed refresh over loaded rows (`content+error`). Gets the raw
  * error as `$implicit`, so the consumer can render the actual failure
- * instead of the default "Data failed to load" message.
+ * instead of the default "Could not load data" message.
  *
  * Do not add `role="alert"` inside the template: the treetable's
  * state live region already announces the failure, and an alert would

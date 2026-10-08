@@ -25,7 +25,7 @@ export {
   type CngxCompleteLanguagePack,
   type CngxI18nFeature,
 } from './provide-i18n';
-export { createLanguageSection } from './language-section';
+export { createLanguageSection, createNestedLanguageSection } from './language-section';
 export {
   createSectionBundle,
   type CngxSectionBundle,

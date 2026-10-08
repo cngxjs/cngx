@@ -793,7 +793,7 @@ describe('CngxTabGroup organism', () => {
       );
       host.clearLastFailed();
       fixture.detectChanges();
-      expect(region.textContent?.trim()).toBe('Tab change refused - retry?');
+      expect(region.textContent?.trim()).toBe('Could not switch tab - retry?');
     });
 
     it('successful re-pick of the failed tab clears cngx-tab--rejected + rejection-icon span', () => {

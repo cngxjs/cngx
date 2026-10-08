@@ -47,6 +47,14 @@ export const config: SheriffConfig = {
       `entry:${entry}`,
       'scope:lib',
     ],
+    // Specific-before-generic so each shipped language pack under i18n/ is
+    // its own module, not part of the i18n entry.
+    'projects/core/i18n/<pack>': ({ pack }) => [
+      'lib:core',
+      'level:1',
+      `entry:i18n-${pack}`,
+      'scope:lib',
+    ],
     'projects/core': ['lib:core', 'level:1', 'entry:primary', 'scope:lib'],
     'projects/core/<entry>': ({ entry }) => [
       'lib:core',

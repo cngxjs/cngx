@@ -1,7 +1,7 @@
-import { computed, inject, InjectionToken, type Signal } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
 
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createFilledOverrideMerge, createOverrideMerge } from '@cngx/core/utils';
+import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
+import { createFilledOverrideMerge } from '@cngx/core/utils';
 
 import type { CngxDataGridAccordionLabels } from '../config/data-grid-accordion.config';
 import { CNGX_DATA_GRID_ACCORDION_CONFIG } from '../config/data-grid-accordion.config.defaults';
@@ -34,16 +34,11 @@ export function dataGridAccordionLabelsFrom(
   };
 }
 
-const NO_SECTION: Partial<CngxDataGridAccordionLanguageSection> = {};
-
 /** @internal The data-grid-accordion section of the active pack over the English section. */
-function injectDataGridAccordionLanguage(): Signal<CngxDataGridAccordionLanguageSection> {
-  const pack = injectLanguageSection('dataGridAccordion');
-  return createOverrideMerge(
-    CNGX_DATA_GRID_ACCORDION_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
+const injectDataGridAccordionLanguage = createLanguageSection(
+  'dataGridAccordion',
+  CNGX_DATA_GRID_ACCORDION_LANGUAGE_EN,
+);
 
 /** @internal Builds and reads the section labels, formatted for the reading locale. */
 const dataGridAccordionBundle = createSectionBundle<

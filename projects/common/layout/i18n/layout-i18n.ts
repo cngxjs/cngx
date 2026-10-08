@@ -1,5 +1,5 @@
-import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { injectLanguageSection } from '@cngx/core/i18n';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createLanguageSection } from '@cngx/core/i18n';
 import { createOverrideMerge } from '@cngx/core/utils';
 
 import { CNGX_LAYOUT_LANGUAGE_EN, type CngxLayoutLanguageSection } from './layout-language-section';
@@ -21,16 +21,8 @@ import { CNGX_LAYOUT_LANGUAGE_EN, type CngxLayoutLanguageSection } from './layou
  */
 export type CngxLayoutI18n = CngxLayoutLanguageSection;
 
-const NO_SECTION: Partial<CngxLayoutI18n> = {};
-
 /** @internal The English section with the active pack's layout section on top. */
-function layoutBundleFromPack(): Signal<CngxLayoutI18n> {
-  const section = injectLanguageSection('layout');
-  return createOverrideMerge(
-    CNGX_LAYOUT_LANGUAGE_EN,
-    computed(() => section() ?? NO_SECTION),
-  );
-}
+const layoutBundleFromPack = createLanguageSection('layout', CNGX_LAYOUT_LANGUAGE_EN);
 
 /**
  * DI token for the layout i18n bundle. `providedIn: 'root'`: the layout

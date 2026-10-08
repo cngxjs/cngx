@@ -48,7 +48,7 @@ describe('timeline config cascade', () => {
         timelineRegion: 'Timeline',
         retry: 'Retry',
         errorFallback: 'Could not load the timeline.',
-        emptyFallback: 'No events yet.',
+        emptyFallback: 'No events yet',
         loading: 'Loading timeline',
         refreshing: 'Updating…',
         itemBusy: 'Updating',
@@ -80,7 +80,7 @@ describe('timeline config cascade', () => {
       const labels = lbl(readConfig());
 
       expect(labels?.retry).toBe('Erneut versuchen');
-      expect(labels?.emptyFallback).toBe('No events yet.');
+      expect(labels?.emptyFallback).toBe('No events yet');
     });
 
     it('composes across several features, last write wins per key', () => {
@@ -179,7 +179,7 @@ describe('timeline config cascade', () => {
       const fixture = TestBed.createComponent(ScopeHost);
 
       expect(lbl(fixture.componentInstance.config).retry).toBe('Scoped');
-      expect(lbl(fixture.componentInstance.config).emptyFallback).toBe('No events yet.');
+      expect(lbl(fixture.componentInstance.config).emptyFallback).toBe('No events yet');
     });
   });
 
@@ -257,7 +257,7 @@ describe('timeline config language pack', () => {
     });
     expect(labels().retry).toBe('Erneut versuchen');
     expect(labels().status?.done).toBe('Erledigt');
-    expect(labels().emptyFallback).toBe('No events yet.');
+    expect(labels().emptyFallback).toBe('No events yet');
     expect(stripBidiIsolates(labels().groupLabel?.(group(new Date(2026, 6, 20)), 'de'))).toBe(
       'Woche ab 20.7.2026',
     );

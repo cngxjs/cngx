@@ -546,11 +546,11 @@ describe('CngxIncrementalList', () => {
     expect(listEl.querySelectorAll('.cngx-incremental-list__item')).toHaveLength(3);
     const inline = listEl.querySelector('.cngx-incremental-list__inline-error');
     expect(inline).not.toBeNull();
-    // Distinct page-error phrasing (not the first-load 'Failed to load'), visible
+    // Distinct page-error phrasing (not the first-load 'Could not load'), visible
     // and announced, so AT can tell the accumulated list survived.
-    expect(inline?.textContent).toContain('Failed to load more');
+    expect(inline?.textContent).toContain('Could not load more');
     expect(listEl.querySelector('.cngx-incremental-list__sr')?.textContent?.trim()).toBe(
-      'Failed to load more',
+      'Could not load more',
     );
 
     const retryBtn = inline?.querySelector(

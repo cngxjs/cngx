@@ -112,14 +112,17 @@ describe('CNGX_FEEDBACK_I18N', () => {
     const { announcements } = TestBed.inject(CNGX_FEEDBACK_I18N)();
     expect(announcements.asyncLoaded).toBe('Inhalt geladen');
     expect(announcements.asyncLoading).toBe('Loading content');
-    expect(announcements.alertOverflow(3)).toBe('+ 3 more alerts');
+    expect(announcements.alertOverflow(3)).toBe('+3 more alerts');
   });
 
   it('announces the overridden async phrases and alert dismissal', () => {
     TestBed.configureTestingModule({
       providers: [
         provideFeedbackI18n({
-          announcements: { alertDismissed: 'Hinweis verworfen', alertOverflow: (n) => `${n} weitere` },
+          announcements: {
+            alertDismissed: 'Hinweis verworfen',
+            alertOverflow: (n) => `${n} weitere`,
+          },
         }),
       ],
     });
@@ -178,7 +181,7 @@ describe('CNGX_FEEDBACK_I18N', () => {
     copy.set({ announcements: { alertDismissed: 'Verworfen' } });
     expect(bundle().announcements.alertDismissed).toBe('Verworfen');
     expect(bundle().announcements.asyncRefreshed).toBe('Content refreshed');
-    expect(bundle().announcements.alertOverflow(2)).toBe('+ 2 more alerts');
+    expect(bundle().announcements.alertOverflow(2)).toBe('+2 more alerts');
   });
 
   it('renames both regions on a language switch', () => {
@@ -300,8 +303,8 @@ describe('CNGX_FEEDBACK_I18N', () => {
       );
       const a = i18n.announcements;
       expect(a.alertDismissed).toBe('Alert dismissed');
-      expect(a.alertOverflow(3)).toBe('+ 3 more alerts');
-      expect(a.alertOverflowVisible(3)).toBe('+ 3 more');
+      expect(a.alertOverflow(3)).toBe('+3 more alerts');
+      expect(a.alertOverflowVisible(3)).toBe('+3 more');
       expect(a.asyncLoading).toBe('Loading content');
       expect(a.asyncLoaded).toBe('Content loaded');
       expect(a.asyncError).toBe('Error loading content');
@@ -313,8 +316,8 @@ describe('CNGX_FEEDBACK_I18N', () => {
     it('fixes the singular overflow name and formats counts with the locale', () => {
       TestBed.configureTestingModule({ providers: [provideLocale('de')] });
       const i18n = TestBed.inject(CNGX_FEEDBACK_I18N)();
-      expect(i18n.announcements.alertOverflow(1)).toBe('+ 1 more alert');
-      expect(i18n.announcements.alertOverflowVisible(1200)).toBe('+ 1.200 more');
+      expect(i18n.announcements.alertOverflow(1)).toBe('+1 more alert');
+      expect(i18n.announcements.alertOverflowVisible(1200)).toBe('+1.200 more');
       expect(i18n.toastRepeatCount(1200)).toBe('(x1.200)');
     });
 
@@ -348,6 +351,25 @@ describe('CNGX_FEEDBACK_I18N', () => {
       expect(stripBidiIsolates(german.errorWithDetail('Fehler', 'Zeit'))).toBe('Fehler (Zeit)');
       expect(german.announcements.asyncLoaded).toBe('Geladen');
       expect(german.dismissLabel).toBe('Dismiss');
+    });
+
+    it('reads English for an announcement the pack leaves unset', () => {
+      const announcements = { asyncLoaded: 'Geladen', asyncError: undefined };
+      TestBed.configureTestingModule({
+        providers: [
+          provideCngxI18n(
+            withPartialPack({
+              locale: 'de',
+              feedback: { announcements } as unknown as CngxActiveLanguagePack['feedback'],
+            }),
+            withDocumentLanguage('off'),
+          ),
+        ],
+      });
+      const { announcements: resolved } = TestBed.inject(CNGX_FEEDBACK_I18N)();
+      expect(resolved.asyncLoaded).toBe('Geladen');
+      expect(resolved.asyncError).toBe('Error loading content');
+      expect(resolved.asyncLoading).toBe('Loading content');
     });
 
     it('keeps the bundle while the pack keeps its section and maps anew on a flip', () => {

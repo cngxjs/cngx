@@ -33,8 +33,8 @@ describe('collection language section', () => {
     const en = labels()();
     expect(en.loading).toBe('Loading');
     expect(en.empty).toBe('Nothing here yet');
-    expect(en.error).toBe('Failed to load');
-    expect(en.pageError).toBe('Failed to load more');
+    expect(en.error).toBe('Could not load');
+    expect(en.pageError).toBe('Could not load more');
     expect(en.retry).toBe('Retry');
     expect(en.endReached(4)).toBe('All 4 loaded');
     expect(en.loadedMore(2, 4)).toBe('2 more loaded. 4 total.');

@@ -1,7 +1,6 @@
 import { computed, inject, InjectionToken, type Signal } from '@angular/core';
 
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createOverrideMerge } from '@cngx/core/utils';
+import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
 
 import type {
   CngxPaginatorAnnouncements,
@@ -67,16 +66,8 @@ export function paginatorCopyFrom(
   };
 }
 
-const NO_SECTION: Partial<CngxPaginatorLanguageSection> = {};
-
 /** @internal The paginator section of the active pack over the English section. */
-function injectPaginatorLanguage(): Signal<CngxPaginatorLanguageSection> {
-  const pack = injectLanguageSection('paginator');
-  return createOverrideMerge(
-    CNGX_PAGINATOR_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
+const injectPaginatorLanguage = createLanguageSection('paginator', CNGX_PAGINATOR_LANGUAGE_EN);
 
 /** @internal Builds and reads the section copy, formatted for the reading locale. */
 const paginatorBundle = createSectionBundle<CngxPaginatorLanguageSection, CngxPaginatorCopy>({

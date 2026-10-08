@@ -75,6 +75,8 @@ The dialog system is built around the native `<dialog>` element, which is the on
 
 ### Localising the built-in strings
 
+To translate the whole app, set a language pack with `provideCngxI18n(withPack(...))` from `@cngx/core/i18n` (see the localisation guide); `provideDialogConfig` overrides single keys on top of the `dialog` section.
+
 Five strings the dialog family renders on its own behalf are English by
 default and overridable as one bundle:
 

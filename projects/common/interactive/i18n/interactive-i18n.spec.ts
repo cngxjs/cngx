@@ -52,7 +52,7 @@ describe('CNGX_INTERACTIVE_I18N', () => {
       unsavedChanges: 'You have unsaved changes. Leave anyway?',
       rangeValue: expect.any(Function),
     });
-    expect(stripBidiIsolates(bundle.rangeValue?.('20', '80'))).toBe('20 - 80');
+    expect(stripBidiIsolates(bundle.rangeValue?.('20', '80'))).toBe('20–80');
   });
 
   it('reads the interactive section of the pack, with English for what it leaves out', () => {

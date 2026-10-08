@@ -191,21 +191,21 @@ export interface CngxSelectVirtualizationConfig {
 export interface CngxSelectFallbackLabels {
   /** `loadingVariant === 'text'` body. Default `'Loading…'`. */
   readonly loading?: string;
-  /** `empty`/`none` views. Default `'No Options'`. */
+  /** `empty`/`none` views. Default `'No options'`. */
   readonly empty?: string;
-  /** First-load error. Default `'Loading failed'`. */
+  /** First-load error. Default `'Could not load'`. */
   readonly loadFailed?: string;
   /** First-load error retry button. Default `'Retry'`. */
   readonly loadFailedRetry?: string;
   /** Inline refresh error. Default `'Refresh failed'`. */
   readonly refreshFailed?: string;
-  /** Inline refresh error retry button. Default `'Try again'`. */
+  /** Inline refresh error retry button. Default `'Retry'`. */
   readonly refreshFailedRetry?: string;
   /** `<cngx-select-search>` visible placeholder. Default `'Search…'`. */
   readonly searchPlaceholder?: string;
   /** Commit-error banner. Default `'Save failed'`. */
   readonly commitFailed?: string;
-  /** Commit-error retry button. Default `'Try again'`. */
+  /** Commit-error retry button. Default `'Retry'`. */
   readonly commitFailedRetry?: string;
   /**
    * Visible badge for the chips `chipOverflow: 'truncate'` hides. Receives

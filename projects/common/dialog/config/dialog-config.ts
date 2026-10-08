@@ -1,5 +1,5 @@
-import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { injectLanguageSection } from '@cngx/core/i18n';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createLanguageSection } from '@cngx/core/i18n';
 import { createOverrideMerge } from '@cngx/core/utils';
 
 import {
@@ -46,16 +46,8 @@ export interface CngxDialogDefaults {
   readonly labels: CngxDialogLabels | Signal<CngxDialogLabels>;
 }
 
-const NO_SECTION: Partial<CngxDialogLabels> = {};
-
 /** @internal The dialog section of the active pack over the English labels. */
-function dialogLabelsFromPack(): Signal<CngxDialogLabels> {
-  const pack = injectLanguageSection('dialog');
-  return createOverrideMerge<CngxDialogLabels>(
-    CNGX_DIALOG_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
+const dialogLabelsFromPack = createLanguageSection('dialog', CNGX_DIALOG_LANGUAGE_EN);
 
 /**
  * DI token carrying the merged {@link CngxDialogDefaults}. `providedIn: 'root'`:

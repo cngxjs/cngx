@@ -1,12 +1,7 @@
-import { computed, inject, InjectionToken, type Signal } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
 
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import {
-  createDefaultsFill,
-  createNestedOverrideMerge,
-  createOverrideMerge,
-  type CngxNestedOverrides,
-} from '@cngx/core/utils';
+import { createNestedLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
+import { createDefaultsFill, createOverrideMerge } from '@cngx/core/utils';
 
 import type { InputAriaLabels } from '../input-config';
 import { CNGX_INPUT_LANGUAGE_EN, type CngxInputLanguageSection } from './input-language-section';
@@ -48,20 +43,15 @@ export function inputLabelsFrom(
   };
 }
 
-const NO_SECTION: CngxNestedOverrides<CngxInputLanguageSection, 'passwordStrengthLevel'> = {};
-
 /**
  * @internal The input section of the active pack over the English section;
  * `passwordStrengthLevel` merges key by key.
  */
-function injectInputLanguage(): Signal<CngxInputLanguageSection> {
-  const pack = injectLanguageSection('input');
-  return createNestedOverrideMerge<CngxInputLanguageSection, 'passwordStrengthLevel'>(
-    CNGX_INPUT_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-    'passwordStrengthLevel',
-  );
-}
+const injectInputLanguage = createNestedLanguageSection(
+  'input',
+  CNGX_INPUT_LANGUAGE_EN,
+  'passwordStrengthLevel',
+);
 
 /** @internal Builds and reads the section labels, formatted for the reading locale. */
 const inputBundle = createSectionBundle<CngxInputLanguageSection, CngxResolvedInputAriaLabels>({

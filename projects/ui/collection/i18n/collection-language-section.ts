@@ -39,8 +39,8 @@ export interface CngxCollectionLanguageSection {
 export const CNGX_COLLECTION_LANGUAGE_EN: CngxCollectionLanguageSection = {
   loading: 'Loading',
   empty: 'Nothing here yet',
-  error: 'Failed to load',
-  pageError: 'Failed to load more',
+  error: 'Could not load',
+  pageError: 'Could not load more',
   retry: 'Retry',
   endReached: 'All {count} loaded',
   loadedMore: '{count} more loaded. {total} total.',

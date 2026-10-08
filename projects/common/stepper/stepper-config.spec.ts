@@ -46,7 +46,7 @@ describe('CngxStepperConfig', () => {
     expect(cfg.defaultOrientation).toBe('horizontal');
     expect(cfg.defaultLinear).toBe(false);
     expect(cfg.defaultCommitMode).toBe('pessimistic');
-    expect(coerceSignal(cfg.ariaLabels)()?.stepperRegion).toBe('Stepper');
+    expect(coerceSignal(cfg.ariaLabels)()?.stepperRegion).toBe('Steps');
   });
 
   it('provideStepperConfig merges with* features in order', () => {
@@ -446,7 +446,7 @@ describe('CngxStepperConfig copy keys', () => {
     const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
     const aria = coerceSignal(cfg.ariaLabels);
     const fallback = coerceSignal(cfg.fallbackLabels);
-    expect(aria()?.stepperRegion).toBe('Stepper');
+    expect(aria()?.stepperRegion).toBe('Steps');
     expect(fallback()?.groupRoleDescription).toBe('step group');
 
     lang.set('de');
@@ -471,7 +471,7 @@ describe('CNGX_STEPPER_CONFIG language pack', () => {
   it('keeps the pre-section English labels', () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
-    expect(coerceSignal(cfg.ariaLabels)()).toEqual({ stepperRegion: 'Stepper' });
+    expect(coerceSignal(cfg.ariaLabels)()).toEqual({ stepperRegion: 'Steps' });
     expect(coerceSignal(cfg.fallbackLabels)()).toEqual({
       groupRoleDescription: 'step group',
       stepRoleDescription: 'stepper',
@@ -489,7 +489,7 @@ describe('CNGX_STEPPER_CONFIG language pack', () => {
     const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
     const aria = coerceSignal(cfg.ariaLabels);
     const fallback = coerceSignal(cfg.fallbackLabels);
-    expect(aria()?.stepperRegion).toBe('Stepper');
+    expect(aria()?.stepperRegion).toBe('Steps');
 
     pack.set({
       locale: 'de',

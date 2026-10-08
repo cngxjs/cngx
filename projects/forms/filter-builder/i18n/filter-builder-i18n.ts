@@ -1,11 +1,7 @@
-import { computed, inject, InjectionToken, type Signal } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
 
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import {
-  createDefaultsFill,
-  createNestedOverrideMerge,
-  type CngxNestedOverrides,
-} from '@cngx/core/utils';
+import { createNestedLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
+import { createDefaultsFill, createNestedOverrideMerge } from '@cngx/core/utils';
 
 import type {
   CngxFilterBuilderAnnouncementFormatters,
@@ -146,20 +142,15 @@ export function filterBuilderI18nFrom(
   };
 }
 
-const NO_SECTION: CngxNestedOverrides<CngxFilterBuilderLanguageSection, 'operators'> = {};
-
 /**
  * @internal The filter-builder section of the active pack over the English
  * section; `operators` merges key by key.
  */
-function injectFilterBuilderLanguage(): Signal<CngxFilterBuilderLanguageSection> {
-  const pack = injectLanguageSection('filterBuilder');
-  return createNestedOverrideMerge<CngxFilterBuilderLanguageSection, 'operators'>(
-    CNGX_FILTER_BUILDER_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-    'operators',
-  );
-}
+const injectFilterBuilderLanguage = createNestedLanguageSection(
+  'filterBuilder',
+  CNGX_FILTER_BUILDER_LANGUAGE_EN,
+  'operators',
+);
 
 /** @internal Builds and reads the section bundle, formatted for the reading locale. */
 const filterBuilderBundle = createSectionBundle<
