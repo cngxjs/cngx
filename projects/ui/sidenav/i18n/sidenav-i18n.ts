@@ -41,11 +41,16 @@ const SIDENAV_SECTION_LABELS = new InjectionToken<Signal<CngxSidenavLabels>>(
 );
 
 /**
- * @internal The sidenav labels at the reading site: the active pack's section
- * formatted for the locale of the injector that reads it, with the
- * `CNGX_SIDENAV_CONFIG` labels on top. A key the config sets wins; a key it
- * leaves unset, `null` or `undefined` reads the section. Injection context
- * required.
+ * The resolved sidenav labels in scope, as a Signal that follows a runtime
+ * language switch: the `sidenav` section of the active pack formatted for the
+ * locale of the reading injector, with the `CNGX_SIDENAV_CONFIG` labels on
+ * top. A key the config sets wins; a key it leaves unset, `null` or
+ * `undefined` reads the section. Runs in injection context; read it inside a
+ * `computed()`, a template or a handler.
+ *
+ * @category ui/sidenav
+ * @since 0.1.0
+ * @relatedTo withSidenavLabels
  */
 export function injectSidenavLabels(): Signal<CngxSidenavLabels> {
   return createFilledOverrideMerge(

@@ -27,7 +27,7 @@ import { CngxAccordionItemTitle } from '../accordion-item-title.directive';
 import { CNGX_ACCORDION_LANGUAGE_EN } from '../i18n/accordion-language-section';
 import { CNGX_ACCORDION_CONFIG } from './accordion.config.defaults';
 import { withAccordionLabels, withAccordionTemplates, withDefaultHeadingLevel } from './features';
-import { resolveAccordionCopy } from './inject-accordion-config';
+import { injectAccordionCopy } from './inject-accordion-config';
 import { provideAccordionConfig, provideAccordionConfigAt } from './provide-accordion-config';
 
 // Compile-checked: the English section is a complete section of a pack.
@@ -167,9 +167,7 @@ describe('accordion config cascade', () => {
     const { item } = render(UnboundHost, [
       provideAccordionConfig(withAccordionLabels({ disabledReason })),
     ]);
-    const copy = TestBed.runInInjectionContext(() =>
-      resolveAccordionCopy(inject(CNGX_ACCORDION_CONFIG)),
-    );
+    const copy = TestBed.runInInjectionContext(() => injectAccordionCopy());
     expect(item.disabledReason()).toBe('This section is locked.');
 
     lang.set('de');
@@ -187,9 +185,7 @@ describe('accordion config cascade', () => {
     const { item } = render(UnboundHost, [
       provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
     ]);
-    const copy = TestBed.runInInjectionContext(() =>
-      resolveAccordionCopy(inject(CNGX_ACCORDION_CONFIG)),
-    );
+    const copy = TestBed.runInInjectionContext(() => injectAccordionCopy());
     expect(item.disabledReason()).toBe('This section is currently unavailable.');
 
     pack.set({ locale: 'de', accordion: { disabledReason: 'Dieser Abschnitt ist gesperrt.' } });

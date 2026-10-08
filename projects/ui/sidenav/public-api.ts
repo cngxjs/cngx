@@ -25,6 +25,7 @@ export {
   withSidenavLabels,
 } from './config/features';
 export { injectSidenavConfig } from './config/inject-sidenav-config';
+export { injectSidenavLabels } from './i18n/sidenav-i18n';
 export {
   CNGX_SIDENAV_LANGUAGE_EN,
   type CngxSidenavLanguageSection,
