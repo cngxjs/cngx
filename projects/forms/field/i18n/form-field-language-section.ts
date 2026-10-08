@@ -31,6 +31,8 @@ export interface CngxFormFieldLanguageSection {
   readonly pattern: string;
   /** Error kind `parse` (the control could not read the typed text). */
   readonly parse: string;
+  /** Error kind `timeRange` (a time outside 00:00-23:59, or outside 1-12 with AM/PM). */
+  readonly timeRange: string;
   /**
    * Any other error kind that has neither a registry entry nor its own
    * `message`. Never the raw kind.
@@ -84,6 +86,7 @@ export const CNGX_FORM_FIELD_LANGUAGE_EN: CngxFormFieldLanguageSection = {
   },
   pattern: 'Enter a value in the expected format.',
   parse: 'Enter a valid value.',
+  timeRange: 'Enter a valid time.',
   invalid: 'This value is invalid.',
   errorSummaryItem: '{label}: {message}',
   hintLengthRange: {

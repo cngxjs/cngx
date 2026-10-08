@@ -327,9 +327,10 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 ### @cngx/forms/field
 
-- `CngxFieldErrors` and `CngxFormErrors` no longer show the raw error `kind` (`minLength`). An error resolves to the `CNGX_ERROR_MESSAGES` entry for its kind, then its own `message`, then the English message of a built-in kind (`required`, `requiredTrue`, `email`, `min`, `max`, `minLength`, `maxLength`, `pattern`, `parse`), then `'This value is invalid.'`. A registry entry and a validator `message` still win, so an app that maps every kind sees no change. Translate the library messages through the `formField` section of a language pack or `provideFormFieldI18n(withFormFieldI18nLabels(...))`.
+- `CngxFieldErrors` and `CngxFormErrors` no longer show the raw error `kind` (`minLength`). An error resolves to the `CNGX_ERROR_MESSAGES` entry for its kind, then its own `message`, then the English message of a built-in kind (`required`, `requiredTrue`, `email`, `min`, `max`, `minLength`, `maxLength`, `pattern`, `parse`, `timeRange`), then `'This value is invalid.'`. A registry entry and a validator `message` still win, so an app that maps every kind sees no change. Translate the library messages through the `formField` section of a language pack or `provideFormFieldI18n(withFormFieldI18nLabels(...))`.
 - The default `CngxFormErrors` summary names each field by the visible text of its `CngxLabel` instead of its model key (`E-mail address: ...` where it showed `email: ...`), and places label and message through the `errorSummaryItem` message (English `'{label}: {message}'`). A field without a `CngxLabel` shows its message alone.
 - Constraint hints come from the `formField` language section and format their numbers with the field's locale: `1,000–5,000` where English showed `1000–5000`, `1.000–5.000` in German. The length hints pick the singular for one (`Min. 1 character` where it showed `Min. 1 characters`).
+- The `formField` section has a new key `timeRange`, the message of the `time` / `timeRange` validators from `@cngx/forms/validators` (English `'Enter a valid time.'`). An object typed as the complete `CngxFormFieldLanguageSection` needs the key; a partial pack falls back to English.
 
 ### @cngx/forms/select
 
