@@ -122,7 +122,25 @@ Listens to DOM `input` events on the sibling input for reliable value tracking.
 ## CngxInputMask
 
 Pattern-based input mask with locale-aware presets, multi-pattern support, and custom tokens.
-Implements `ControlValueAccessor` for Reactive Forms.
+
+Forms: Signal Forms binds `[formField]` to the mask's `value` model. Reactive Forms binds
+`[formControl]` / `[formControlName]` and imports `CngxFormBridge` from `@cngx/forms/controls`,
+which attaches by selector. Either way the form holds the raw value (`1430`, not `14:30`), and
+`setValue` expects the raw value: a display string is not normalized.
+
+```ts
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CngxFormBridge } from '@cngx/forms/controls';
+import { CngxInputMask } from '@cngx/forms/input';
+
+@Component({
+  imports: [ReactiveFormsModule, CngxFormBridge, CngxInputMask],
+  template: `<input cngxInputMask="time:24" [formControl]="start" />`,
+})
+class Shift {
+  readonly start = new FormControl('', { nonNullable: true, validators: [Validators.required] });
+}
+```
 
 ```html
 <!-- Locale-aware phone -->

@@ -26,7 +26,7 @@ the directive anymore. Pick one of the two paths below.
 
 ## Path 1 - Signal Forms (recommended)
 
-The model signal is what Signal Forms' `[control]` directive expects. Wrap
+The model signal is what Signal Forms' `[formField]` directive expects. Wrap
 the input in `<cngx-form-field>` for label and error chrome:
 
 ```ts
@@ -42,13 +42,13 @@ protected readonly amountForm = form(this.model, schema(root => {
 ```html
 <cngx-form-field [field]="amountForm.amount">
   <label cngxLabel>Amount</label>
-  <input cngxNumericInput cngxBindField [control]="amountForm.amount" />
+  <input cngxInput cngxNumericInput [formField]="amountForm.amount" />
   <cngx-field-errors />
 </cngx-form-field>
 ```
 
-`cngxBindField` carries the ARIA/state surface from the form-field down to the
-input element. `[control]` carries the value channel - it binds two-way to the
+`cngxInput` carries the ARIA/state surface from the form-field down to the
+input element. `[formField]` carries the value channel - it binds two-way to the
 directive's `value` model, no `ControlValueAccessor` involved.
 
 For a quick standalone two-way binding without Signal Forms involved, the bare
@@ -67,28 +67,40 @@ unchanged:
 
 ```ts
 import { adaptFormControl, type CngxFieldAccessor } from '@cngx/forms/field';
-import { FormControl } from '@angular/forms';
+import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef, inject, signal } from '@angular/core';
 
 private readonly destroyRef = inject(DestroyRef);
-readonly amountControl = new FormControl<number | null>(null);
-readonly amountField = signal<CngxFieldAccessor>(
-  adaptFormControl(this.amountControl, 'amount', this.destroyRef),
+readonly startControl = new FormControl('', {
+  nonNullable: true,
+  validators: [Validators.required],
+});
+readonly startField = signal<CngxFieldAccessor>(
+  adaptFormControl(this.startControl, 'start', this.destroyRef),
 );
 ```
 
+The value channel is `[formControl]` on the input itself; the adapter only
+feeds the `cngx-form-field` chrome (validity, touched, dirty, disabled):
+
 ```html
-<cngx-form-field [field]="amountField()">
-  <label cngxLabel>Amount</label>
-  <input cngxNumericInput cngxBindField [control]="amountField()" />
+<cngx-form-field [field]="startField()">
+  <label cngxLabel>Start</label>
+  <input cngxInput cngxInputMask="time:24" [formControl]="startControl" />
   <cngx-field-errors />
 </cngx-form-field>
 ```
 
-The RF `FormControl` stays the source of truth for value and validation; the
-adapter forwards reads, validity, touched, dirty, and disabled state into the
-form-field; the model on the directive handles the value channel via
-`[control]`.
+`CngxInputMask` needs `CngxFormBridge` from `@cngx/forms/controls` in the
+component's `imports`. The bridge attaches by selector and keeps the raw value
+(`1430`) in the control, the same value Signal Forms stores; `setValue` expects
+the raw value. Without the bridge Angular falls back to its
+`DefaultValueAccessor`, typed text never reaches the control, and the mask warns
+in dev mode.
+
+`CngxNumericInput` and `CngxInputFormat` still run on Angular's
+`DefaultValueAccessor` under `[formControl]`, so the control receives the
+display string the field shows, not the directive's `value` model.
 
 ## Path 3 - Standalone usage (no form, no field)
 
