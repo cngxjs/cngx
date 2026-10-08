@@ -1,6 +1,6 @@
 import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
 import { createLanguageSection } from '@cngx/core/i18n';
-import { createOverrideMerge } from '@cngx/core/utils';
+import { createFilledOverrideMerge } from '@cngx/core/utils';
 
 import {
   CNGX_SPEAK_LANGUAGE_EN,
@@ -58,8 +58,10 @@ function defineSpeakI18nFeature(
 }
 
 /**
- * Override i18n labels via a partial bundle - unset keys keep the language
- * pack's copy, or the English default. Pass a `Signal` of a partial bundle to switch languages at runtime.
+ * Override i18n labels via a partial bundle - unset keys, and keys set to
+ * `null` or `undefined`, keep the language pack's copy, or the English
+ * default, so the button never loses its accessible name. Pass a `Signal` of a
+ * partial bundle to switch languages at runtime.
  *
  * @category ui/speak/i18n
  * @since 0.1.0
@@ -67,7 +69,7 @@ function defineSpeakI18nFeature(
 export function withSpeakI18nLabels(
   overrides: Partial<CngxSpeakI18n> | Signal<Partial<CngxSpeakI18n>>,
 ): CngxSpeakI18nFeature {
-  return defineSpeakI18nFeature((bundle) => createOverrideMerge(bundle, overrides));
+  return defineSpeakI18nFeature((bundle) => createFilledOverrideMerge(bundle, overrides));
 }
 
 /**

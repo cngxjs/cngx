@@ -337,7 +337,7 @@ Each bullet names the symbol that changed, what it looked like before, and what 
 
 ### @cngx/ui/speak
 
-- The speak button names come from the `speak` section of the language pack; `provideSpeakI18n` / `withSpeakI18nLabels` and the `[readAloudLabel]` / `[stopLabel]` inputs still win, also on top of a pack. `CngxSpeakI18n` is now an alias of the exported `CngxSpeakLanguageSection`.
+- The speak button names come from the `speak` section of the language pack; `provideSpeakI18n` / `withSpeakI18nLabels` and the `[readAloudLabel]` / `[stopLabel]` inputs still win, also on top of a pack. `CngxSpeakI18n` is now an alias of the exported `CngxSpeakLanguageSection`. A key `withSpeakI18nLabels` sets to `null` or `undefined` keeps the section label instead of leaving the button without a name.
 
 ### @cngx/ui/accordion
 

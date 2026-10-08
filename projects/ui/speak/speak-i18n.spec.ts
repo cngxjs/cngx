@@ -133,4 +133,21 @@ describe('CNGX_SPEAK_I18N', () => {
     pack.set({ locale: 'de', speak: { readAloud: 'Vorlesen' } });
     expect(bundle()).toBe(first);
   });
+
+  it('keeps the section label for a key an override sets to undefined', () => {
+    const overrides = signal<Partial<CngxSpeakI18n>>({ readAloud: 'Vorlesen' });
+    TestBed.configureTestingModule({
+      imports: [CngxSpeakButton],
+      providers: [provideSpeakI18n(withSpeakI18nLabels(overrides))],
+    });
+    const fixture = TestBed.createComponent(CngxSpeakButton);
+    fixture.componentRef.setInput('speakRef', idleSpeak as unknown as CngxSpeak);
+    fixture.detectChanges();
+    const button = (fixture.nativeElement as HTMLElement).querySelector('button')!;
+    expect(button.getAttribute('aria-label')).toBe('Vorlesen');
+
+    overrides.set({ readAloud: undefined });
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-label')).toBe('Read aloud');
+  });
 });
