@@ -36,19 +36,19 @@ describe('command-palette language section', () => {
   it('derives the English copy from the English section, as before the section', () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const en = copy()();
-    expect(en.searchPlaceholder).toBe('Type a command or search...');
+    expect(en.searchPlaceholder).toBe('Type a command or search…');
     expect(en.listboxLabel).toBe('Commands');
-    expect(en.emptyLabel).toBe('No matching commands.');
-    expect(en.loadingLabel).toBe('Loading commands...');
-    expect(en.errorLabel).toBe('Could not load commands.');
+    expect(en.emptyLabel).toBe('No matching commands');
+    expect(en.loadingLabel).toBe('Loading commands…');
+    expect(en.errorLabel).toBe('Could not load commands');
     expect(en.retryLabel).toBe('Retry');
     expect(en.paletteLabel).toBe('Command palette');
     expect(en.resultCount(1)).toBe('1 result');
     expect(en.resultCount(3)).toBe('3 results');
     expect(en.footerLegend).toEqual([
-      { keys: 'up down', label: 'Navigate' },
-      { keys: 'enter', label: 'Run' },
-      { keys: 'esc', label: 'Close' },
+      { keys: '↑ ↓', label: 'Navigate' },
+      { keys: 'Enter', label: 'Run' },
+      { keys: 'Esc', label: 'Close' },
     ]);
     expect(stripBidiIsolates(en.legendEntry('enter', 'Run'))).toBe('enter Run');
     expect(EN_SECTION.legendEntry).toBe('{keys} {label}');
@@ -77,9 +77,9 @@ describe('command-palette language section', () => {
     const de = resolved();
     expect(de.listboxLabel).toBe('Befehle');
     expect(de.resultCount(1200)).toBe('1.200 Treffer');
-    expect(de.footerLegend[1]).toEqual({ keys: 'enter', label: 'Ausführen' });
+    expect(de.footerLegend[1]).toEqual({ keys: 'Enter', label: 'Ausführen' });
     expect(stripBidiIsolates(de.legendEntry('enter', 'Ausführen'))).toBe('Ausführen: enter');
-    expect(de.emptyLabel).toBe('No matching commands.');
+    expect(de.emptyLabel).toBe('No matching commands');
   });
 
   it('lets withCommandPaletteLabels override single keys on top of the active pack', () => {

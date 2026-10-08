@@ -129,7 +129,7 @@ describe('CngxCommandPalette', () => {
     expect(run.querySelector('kbd')?.getAttribute('aria-hidden')).toBe('true');
     expect(run.querySelector('kbd + span')?.getAttribute('aria-hidden')).toBe('true');
     expect(stripBidiIsolates(run.querySelector('.cngx-sr-only')?.textContent?.trim())).toBe(
-      'Run: enter',
+      'Run: Enter',
     );
   });
 

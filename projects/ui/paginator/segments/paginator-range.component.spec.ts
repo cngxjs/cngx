@@ -62,14 +62,14 @@ function rangeText(fixture: Plumbing['fixture']): string {
 describe('CngxPaginatorRange', () => {
   test('renders 1-based start-end of total for the first page', async () => {
     const { fixture } = await setup();
-    expect(rangeText(fixture)).toBe('1-10 of 100');
+    expect(rangeText(fixture)).toBe('1–10 of 100');
   });
 
   test('tracks the active page', async () => {
     const { fixture, paginate } = await setup();
     paginate.setPage(3);
     await settle(fixture);
-    expect(rangeText(fixture)).toBe('31-40 of 100');
+    expect(rangeText(fixture)).toBe('31–40 of 100');
   });
 
   test('clamps the last partial page to total', async () => {
@@ -78,13 +78,13 @@ describe('CngxPaginatorRange', () => {
     await settle(fixture);
     paginate.last();
     await settle(fixture);
-    expect(rangeText(fixture)).toBe('91-95 of 95');
+    expect(rangeText(fixture)).toBe('91–95 of 95');
   });
 
   test('shows a zero start when there are no items', async () => {
     const { fixture, host } = await setup();
     host.total.set(0);
     await settle(fixture);
-    expect(rangeText(fixture)).toBe('0-0 of 0');
+    expect(rangeText(fixture)).toBe('0–0 of 0');
   });
 });

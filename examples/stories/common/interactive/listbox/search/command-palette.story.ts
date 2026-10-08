@@ -66,7 +66,7 @@ export const STORY: DemoSpec = {
     }
   </div>
   @if (!palette.hasSearchResults()) {
-    <p class="demo-listbox-empty">No matching commands.</p>
+    <p class="demo-listbox-empty">No matching commands</p>
   }`,
   templateChrome: `<div class="event-grid">
     <div class="event-row">

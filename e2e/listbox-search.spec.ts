@@ -23,7 +23,7 @@ test.describe('CngxListboxSearch demo', () => {
     const search = page.locator('input[cngxListboxSearch]');
     await search.fill('zzz');
     const empty = page.locator('.demo-listbox-empty');
-    await expect(empty).toHaveText('No matching commands.');
+    await expect(empty).toHaveText('No matching commands');
   });
 
   test('keyboard selection works after filtering', async ({ page }) => {

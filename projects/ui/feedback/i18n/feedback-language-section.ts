@@ -90,8 +90,8 @@ export const CNGX_FEEDBACK_LANGUAGE_EN: CngxFeedbackLanguageSection = {
   errorWithDetail: '{message}: {detail}',
   announcements: {
     alertDismissed: 'Alert dismissed',
-    alertOverflow: { one: '+ {count} more alert', other: '+ {count} more alerts' },
-    alertOverflowVisible: '+ {count} more',
+    alertOverflow: { one: '+{count} more alert', other: '+{count} more alerts' },
+    alertOverflowVisible: '+{count} more',
     asyncLoading: 'Loading content',
     asyncLoaded: 'Content loaded',
     asyncError: 'Error loading content',

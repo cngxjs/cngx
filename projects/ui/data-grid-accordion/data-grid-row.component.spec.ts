@@ -249,7 +249,7 @@ describe('CngxDataGridRow async state', () => {
     expect(r.getAttribute('aria-busy')).toBeNull();
     const alert = r.querySelector('[role="alert"]') as HTMLElement;
     expect(alert).toBeTruthy();
-    expect(alert.textContent).toContain('Failed to load');
+    expect(alert.textContent).toContain('Could not load');
   });
 
   it('renders the projected body on success/undefined with no aria-busy', () => {
@@ -278,7 +278,7 @@ describe('CngxDataGridRow async state', () => {
     const fixture = TestBed.createComponent(SlotStateHost);
     fixture.detectChanges();
     const alert = region(fixture).querySelector('[role="alert"]') as HTMLElement;
-    expect(alert.textContent).toContain('custom: Failed to load');
+    expect(alert.textContent).toContain('custom: Could not load');
   });
 
   it('does not re-announce on a language flip', () => {
@@ -292,11 +292,11 @@ describe('CngxDataGridRow async state', () => {
     fixture.detectChanges();
     const alertText = (): string | undefined =>
       region(fixture).querySelector('[role="alert"]')?.textContent?.trim();
-    expect(alertText()).toBe('Failed to load');
+    expect(alertText()).toBe('Could not load');
 
     labels.set({ rowLoadFailed: 'Laden fehlgeschlagen' });
     fixture.detectChanges();
-    expect(alertText()).toBe('Failed to load');
+    expect(alertText()).toBe('Could not load');
 
     fixture.componentInstance.state.set('success');
     fixture.detectChanges();
@@ -318,7 +318,7 @@ describe('CngxDataGridRow async state', () => {
     expect(r.getAttribute('aria-labelledby')).toBe(cells.id);
     const alert = r.querySelector('[role="alert"]') as HTMLElement;
     expect(alert).toBeTruthy();
-    expect(alert.textContent).toContain('Failed to load');
+    expect(alert.textContent).toContain('Could not load');
   });
 });
 

@@ -103,11 +103,11 @@ describe('CngxCommandPanelShell', () => {
     fixture.detectChanges();
     const alertText = (): string =>
       (fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement).textContent!.trim();
-    expect(alertText()).toContain('Could not load commands.');
+    expect(alertText()).toContain('Could not load commands');
 
     labels.set({ errorLabel: 'Laden fehlgeschlagen.', retryLabel: 'Erneut' });
     fixture.detectChanges();
-    expect(alertText()).toContain('Could not load commands.');
+    expect(alertText()).toContain('Could not load commands');
 
     host.state.set(makeState('success', false, NON_EMPTY));
     fixture.detectChanges();

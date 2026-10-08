@@ -53,19 +53,19 @@ export interface CngxCommandPaletteLanguageSection {
  * @relatedTo CNGX_COMMAND_PALETTE_CONFIG
  */
 export const CNGX_COMMAND_PALETTE_LANGUAGE_EN: CngxCommandPaletteLanguageSection = {
-  searchPlaceholder: 'Type a command or search...',
+  searchPlaceholder: 'Type a command or search…',
   listboxLabel: 'Commands',
-  emptyLabel: 'No matching commands.',
-  loadingLabel: 'Loading commands...',
-  errorLabel: 'Could not load commands.',
+  emptyLabel: 'No matching commands',
+  loadingLabel: 'Loading commands…',
+  errorLabel: 'Could not load commands',
   retryLabel: 'Retry',
   paletteLabel: 'Command palette',
   resultCount: { one: '{count} result', other: '{count} results' },
-  navigateKeys: 'up down',
+  navigateKeys: '↑ ↓',
   navigateLabel: 'Navigate',
-  runKeys: 'enter',
+  runKeys: 'Enter',
   runLabel: 'Run',
-  closeKeys: 'esc',
+  closeKeys: 'Esc',
   closeLabel: 'Close',
   legendEntry: '{keys} {label}',
 };
