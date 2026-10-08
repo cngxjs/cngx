@@ -72,14 +72,14 @@ function makeShellHost(): CngxSelectPanelHost {
     panelWidthCss: signal(null),
     fallbackLabels: signal({
       loading: 'Loading…',
-      empty: 'No Options',
-      loadFailed: 'Loading failed',
+      empty: 'No options',
+      loadFailed: 'Could not load',
       loadFailedRetry: 'Retry',
       refreshFailed: 'Refresh failed',
-      refreshFailedRetry: 'Try again',
+      refreshFailedRetry: 'Retry',
       searchPlaceholder: 'Search…',
       commitFailed: 'Save failed',
-      commitFailedRetry: 'Try again',
+      commitFailedRetry: 'Retry',
       chipOverflowBadge: (count: number) => `+${count}`,
     }),
     ariaLabels: signal({

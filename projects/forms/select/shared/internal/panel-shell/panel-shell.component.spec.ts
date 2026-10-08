@@ -46,14 +46,14 @@ interface MockHostControls {
 
 const EN_FALLBACK: Required<CngxSelectFallbackLabels> = {
   loading: 'Loading…',
-  empty: 'No Options',
-  loadFailed: 'Loading failed',
+  empty: 'No options',
+  loadFailed: 'Could not load',
   loadFailedRetry: 'Retry',
   refreshFailed: 'Refresh failed',
-  refreshFailedRetry: 'Try again',
+  refreshFailedRetry: 'Retry',
   searchPlaceholder: 'Search…',
   commitFailed: 'Save failed',
-  commitFailedRetry: 'Try again',
+  commitFailedRetry: 'Retry',
   chipOverflowBadge: (count: number) => `+${count}`,
 };
 
@@ -209,13 +209,13 @@ describe('CngxSelectPanelShell', () => {
     controls.activeView.set('empty');
     fixture.detectChanges();
     let root = fixture.nativeElement as HTMLElement;
-    expect(root.querySelector('.cngx-select__empty')?.textContent).toBe('No Options');
+    expect(root.querySelector('.cngx-select__empty')?.textContent).toBe('No options');
     expect(root.querySelector('.projected-body')).toBeNull();
 
     controls.activeView.set('none');
     fixture.detectChanges();
     root = fixture.nativeElement as HTMLElement;
-    expect(root.querySelector('.cngx-select__empty')?.textContent).toBe('No Options');
+    expect(root.querySelector('.cngx-select__empty')?.textContent).toBe('No options');
   });
 
   it('renders a retry-capable error banner in "error" view (first-load)', () => {
@@ -365,7 +365,7 @@ describe('CngxSelectPanelShell - language flip', () => {
       show: (c) => c.activeView.set('error'),
       hide: (c) => c.activeView.set('content'),
       read: messageAndRetry('.cngx-select__error'),
-      en: 'Loading failed | Retry',
+      en: 'Could not load | Retry',
       de: 'Laden fehlgeschlagen | Erneut versuchen',
     });
   });
@@ -375,7 +375,7 @@ describe('CngxSelectPanelShell - language flip', () => {
       show: (c) => c.showInlineError.set(true),
       hide: (c) => c.showInlineError.set(false),
       read: messageAndRetry('.cngx-select__error--inline'),
-      en: 'Refresh failed | Try again',
+      en: 'Refresh failed | Retry',
       de: 'Aktualisieren fehlgeschlagen | Nochmal versuchen',
     });
   });
@@ -385,7 +385,7 @@ describe('CngxSelectPanelShell - language flip', () => {
       show: (c) => c.showCommitError.set(true),
       hide: (c) => c.showCommitError.set(false),
       read: messageAndRetry('.cngx-select__commit-error'),
-      en: 'Save failed | Try again',
+      en: 'Save failed | Retry',
       de: 'Speichern fehlgeschlagen | Nochmal speichern',
     });
   });

@@ -70,14 +70,14 @@ describe('select language section', () => {
 
     const fallback = config.fallbackLabels();
     expect(fallback.loading).toBe('Loading…');
-    expect(fallback.empty).toBe('No Options');
-    expect(fallback.loadFailed).toBe('Loading failed');
+    expect(fallback.empty).toBe('No options');
+    expect(fallback.loadFailed).toBe('Could not load');
     expect(fallback.loadFailedRetry).toBe('Retry');
     expect(fallback.refreshFailed).toBe('Refresh failed');
-    expect(fallback.refreshFailedRetry).toBe('Try again');
+    expect(fallback.refreshFailedRetry).toBe('Retry');
     expect(fallback.searchPlaceholder).toBe('Search…');
     expect(fallback.commitFailed).toBe('Save failed');
-    expect(fallback.commitFailedRetry).toBe('Try again');
+    expect(fallback.commitFailedRetry).toBe('Retry');
     expect(fallback.chipOverflowBadge(2)).toBe('+2');
 
     const field = 'Color';
@@ -135,7 +135,7 @@ describe('select language section', () => {
     });
     const config = resolve();
     const action = TestBed.runInInjectionContext(() => resolveActionSelectConfig());
-    expect(config.fallbackLabels().empty).toBe('No Options');
+    expect(config.fallbackLabels().empty).toBe('No options');
 
     pack.set({
       locale: 'de',
@@ -163,7 +163,7 @@ describe('select language section', () => {
       }),
     ).toBe('Farben: Rot hinzugefügt, 1.200 ausgewählt');
     expect(action.ariaLabel()).toBe('Schnellaktion');
-    expect(config.fallbackLabels().loadFailed).toBe('Loading failed');
+    expect(config.fallbackLabels().loadFailed).toBe('Could not load');
   });
 
   it('lets provideSelectConfig override single keys on top of the active pack', () => {
@@ -330,7 +330,7 @@ describe('injectSelectConfig copy', () => {
       ],
     });
     const labels = TestBed.runInInjectionContext(() => injectSelectConfig());
-    expect(labels.fallbackLabels().empty).toBe('No Options');
+    expect(labels.fallbackLabels().empty).toBe('No options');
     expect(labels.ariaLabels().chipRemove).toBe('Remove');
 
     pack.set({

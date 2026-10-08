@@ -122,7 +122,7 @@ describe('filter-builder language section', () => {
       'Logic changed to ODER',
     );
     expect(a.groupNegated()).toBe('Group negated');
-    expect(a.groupUnnegated()).toBe('Group un-negated');
+    expect(a.groupUnnegated()).toBe('Group negation removed');
     expect(strip(a.fieldChanged({ fieldLabel: 'Age' }))).toBe('Field changed to Age');
     expect(strip(a.operatorChanged({ operator: 'gte' }))).toBe(
       'Operator changed to Greater than or equal',

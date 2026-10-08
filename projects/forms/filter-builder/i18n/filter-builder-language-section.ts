@@ -147,7 +147,7 @@ export const CNGX_FILTER_BUILDER_LANGUAGE_EN: CngxFilterBuilderLanguageSection =
   announceGroupRemoved: 'Filter group removed',
   announceLogicChanged: 'Logic changed to {logic}',
   announceGroupNegated: 'Group negated',
-  announceGroupUnnegated: 'Group un-negated',
+  announceGroupUnnegated: 'Group negation removed',
   announceFieldChanged: 'Field changed to {field}',
   announceOperatorChanged: 'Operator changed to {operator}',
   announceValueChanged: 'Value changed to {value}',

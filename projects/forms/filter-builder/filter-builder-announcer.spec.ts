@@ -211,7 +211,7 @@ describe('createFilterBuilderAnnouncer', () => {
       buildSources({ kind: 'toggle-negated', path: [], context: { negated: false } }),
     );
     expect(stripBidiIsolates(negated.announcement())).toBe('Group negated');
-    expect(stripBidiIsolates(unnegated.announcement())).toBe('Group un-negated');
+    expect(stripBidiIsolates(unnegated.announcement())).toBe('Group negation removed');
   });
 
   it('does NOT re-run when only fieldMap mutates (untracked)', () => {
