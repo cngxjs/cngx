@@ -13,6 +13,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { injectLocale, nextUid } from '@cngx/core/utils';
 import {
   CngxFormFieldPresenter,
@@ -41,6 +42,19 @@ import { createPhoneCountries, type Country } from './countries';
   providers: [{ provide: CngxFormFieldPresenter, useValue: null }],
 })
 class CngxPhoneInputDetach {}
+
+/**
+ * Nulls `CNGX_FORM_FIELD_HOST` for the inner number input, so the mask's own blur
+ * never marks the field touched: `CngxPhoneInput` marks it when focus leaves the
+ * whole composite, not when focus moves from the number to the country picker.
+ * @internal
+ */
+@Directive({
+  selector: '[cngxPhoneInputHostDetach]',
+  standalone: true,
+  providers: [{ provide: CNGX_FORM_FIELD_HOST, useValue: null }],
+})
+class CngxPhoneInputHostDetach {}
 
 /**
  * International phone field composing a country picker with a region-aware mask.
@@ -81,7 +95,7 @@ class CngxPhoneInputDetach {}
   standalone: true,
   exportAs: 'cngxPhoneInput',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxSelect, CngxInputMask, CngxPhoneInputDetach],
+  imports: [CngxSelect, CngxInputMask, CngxPhoneInputDetach, CngxPhoneInputHostDetach],
   providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxPhoneInput }],
   host: {
     class: 'cngx-phone-input',
@@ -105,6 +119,7 @@ class CngxPhoneInputDetach {}
       [aria-label]="resolvedCountryLabel()"
     />
     <input
+      cngxPhoneInputHostDetach
       class="cngx-phone-input__number"
       type="tel"
       [cngxInputMask]="maskExpr()"

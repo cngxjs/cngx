@@ -59,9 +59,9 @@ export interface FieldControlAria {
    */
   readonly handleFocusOut: () => void;
   /**
-   * Composite-host blur: unfocus only when focus leaves the host subtree
-   * (internal focus moves between parts keep the focused state). Does not
-   * touch the field - composite hosts own their touched semantics.
+   * Composite-host blur: when focus leaves the host subtree, unfocus and mark
+   * the field as touched. Moves between the host's own parts keep the focused
+   * state and leave the field untouched - a composite is one control.
    */
   readonly handleFocusOutWithin: (event: FocusEvent, host: Node) => void;
 }
@@ -127,6 +127,7 @@ export function createFieldControlAria(
       const next = event.relatedTarget as Node | null;
       if (!host.contains(next)) {
         focusedState.set(false);
+        presenter?.fieldState().markAsTouched();
       }
     },
   };

@@ -188,25 +188,19 @@ describe('CngxPhoneInput touched inside cngx-form-field', () => {
     await loadAllMaskPresets();
   });
 
-  it.fails(
-    'T1: moving from the number field to the country picker leaves the field untouched',
-    async () => {
-      const { fixture, input, trigger, host } = await mount(SignalFormsHost);
+  it('T1: moving from the number field to the country picker leaves the field untouched', async () => {
+    const { fixture, input, trigger, host } = await mount(SignalFormsHost);
 
-      leave(input, trigger, fixture);
+    leave(input, trigger, fixture);
 
-      expect(host.f.phone().touched()).toBe(false);
-    },
-  );
+    expect(host.f.phone().touched()).toBe(false);
+  });
 
-  it.fails(
-    'T2: leaving after only the country picker was used marks the field touched',
-    async () => {
-      const { fixture, trigger, host } = await mount(SignalFormsHost);
+  it('T2: leaving after only the country picker was used marks the field touched', async () => {
+    const { fixture, trigger, host } = await mount(SignalFormsHost);
 
-      leave(trigger, null, fixture);
+    leave(trigger, null, fixture);
 
-      expect(host.f.phone().touched()).toBe(true);
-    },
-  );
+    expect(host.f.phone().touched()).toBe(true);
+  });
 });

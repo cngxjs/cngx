@@ -30,7 +30,11 @@ function mount() {
   return { fixture, buttons, host: fixture.componentInstance };
 }
 
-function leave(from: HTMLElement, to: HTMLElement | null, fixture: ComponentFixture<unknown>): void {
+function leave(
+  from: HTMLElement,
+  to: HTMLElement | null,
+  fixture: ComponentFixture<unknown>,
+): void {
   from.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: to }));
   flush(fixture);
 }
@@ -57,7 +61,7 @@ describe('CngxRating touched inside cngx-form-field', () => {
     expect(host.f.score().touched()).toBe(false);
   });
 
-  it.fails('R2: focus leaving the rating marks the field touched', () => {
+  it('R2: focus leaving the rating marks the field touched', () => {
     const { fixture, buttons, host } = mount();
 
     leave(buttons[0], null, fixture);
