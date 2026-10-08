@@ -120,7 +120,7 @@ describe('CngxInputMask under Reactive Forms', () => {
     expect(() => mount(DisabledHost)).not.toThrow();
   });
 
-  it.fails('A: typed text reaches the control as the raw value', () => {
+  it('A: typed text reaches the control as the raw value', () => {
     const { fixture, input, host } = mount(RfHost);
 
     type(input, '1430', fixture);
@@ -129,7 +129,7 @@ describe('CngxInputMask under Reactive Forms', () => {
     expect(host.control.dirty).toBe(true);
   });
 
-  it.fails('B1: keeps an empty control empty and pristine after the first render', () => {
+  it('B1: keeps an empty control empty and pristine after the first render', () => {
     const { host } = mount(RfHost);
 
     expect(host.control.value).toBe('');
@@ -137,7 +137,7 @@ describe('CngxInputMask under Reactive Forms', () => {
     expect(host.control.hasError('required')).toBe(true);
   });
 
-  it.fails('B2: renders an initial control value into the mask', () => {
+  it('B2: renders an initial control value into the mask', () => {
     const { input, mask, host } = mount(InitialValueHost);
 
     expect(input.value).toBe('09:15');
@@ -145,7 +145,7 @@ describe('CngxInputMask under Reactive Forms', () => {
     expect(host.control.value).toBe('0915');
   });
 
-  it.fails('C1: setValue writes through the mask and emits once', () => {
+  it('C1: setValue writes through the mask and emits once', () => {
     const { fixture, input, mask, host } = mount(RfHost);
     let emissions = 0;
     host.control.valueChanges.subscribe(() => emissions++);
@@ -176,7 +176,7 @@ describe('CngxInputMask under Reactive Forms', () => {
     expect(input.disabled).toBe(false);
   });
 
-  it.fails('E: marks the control touched on focusout', () => {
+  it('E: marks the control touched on focusout', () => {
     const { fixture, input, host } = mount(RfHost);
 
     input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
@@ -185,7 +185,7 @@ describe('CngxInputMask under Reactive Forms', () => {
     expect(host.control.touched).toBe(true);
   });
 
-  it.fails('F: typed text reaches a formControlName inside a formGroup', () => {
+  it('F: typed text reaches a formControlName inside a formGroup', () => {
     const { fixture, input, host } = mount(GroupHost);
 
     type(input, '1430', fixture);
@@ -193,7 +193,7 @@ describe('CngxInputMask under Reactive Forms', () => {
     expect(host.group.value.at).toBe('1430');
   });
 
-  it.fails('G1: survives reset() on a nullable control', () => {
+  it('G1: survives reset() on a nullable control', () => {
     const empty = mount(RfHost).input.value;
     const { fixture, input, host } = mount(NullableHost);
     expect(input.value).toBe('14:30');
@@ -205,7 +205,7 @@ describe('CngxInputMask under Reactive Forms', () => {
     expect(host.control.value).toBeNull();
   });
 
-  it.fails('G2: renders a numeric setValue without throwing', () => {
+  it('G2: renders a numeric setValue without throwing', () => {
     const { fixture, input, host } = mount(RfHost);
 
     host.control.setValue(1430 as unknown as string);
@@ -214,7 +214,7 @@ describe('CngxInputMask under Reactive Forms', () => {
     expect(input.value).toBe('14:30');
   });
 
-  it.fails('H: the mask-change auto-clear reaches the control', () => {
+  it('H: the mask-change auto-clear reaches the control', () => {
     const { fixture, input, host } = mount(PatternSwitchHost);
     type(input, '1430', fixture);
 

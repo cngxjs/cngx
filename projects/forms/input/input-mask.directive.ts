@@ -9,9 +9,11 @@ import {
   input,
   model,
   type Signal,
+  signal,
   untracked,
 } from '@angular/core';
 import { clamp } from '@cngx/utils';
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interactive';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { injectLocale } from '@cngx/core/utils';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
@@ -267,12 +269,19 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * uncoordinated paths). The mask's own paste handling filters clipboard text
  * per slot; per-character cleanup belongs in `[transform]` / `customTokens`.
  *
+ * ### Reactive Forms
+ *
+ * Bind `[formControl]` / `[formControlName]` and import `CngxFormBridge` from
+ * `@cngx/forms/controls`; the bridge attaches by selector and talks to the mask through
+ * `CNGX_CONTROL_VALUE`. The control holds the raw value (`'1430'`), the same value Signal
+ * Forms stores in the model, and `setValue` expects the raw value too.
+ *
  * @category forms/input
  * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-mask.directive.ts
  * @since 0.1.0
- * @relatedTo CngxInput, CngxInputFormat, CngxNumericInput, withMaskPlaceholder, withMaskGuide, withCustomTokens
+ * @relatedTo CngxInput, CngxInputFormat, CngxNumericInput, CngxFormBridge, withMaskPlaceholder, withMaskGuide, withCustomTokens
  * @playground All presets ./examples/all-presets/all-presets-example.component.ts
  * @playground Build your own pattern ./examples/pattern-builder/pattern-builder-example.component.ts
  * <example-url>http://localhost:4200/#/forms/input/mask/custom-pattern</example-url>
@@ -289,6 +298,14 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
       useFactory: (dir: CngxInputMask): CngxValueTransformer<string> => ({
         format: (raw: string) => dir.toMaskedDisplay(raw),
         parse: (display: string) => dir.fromMaskedDisplay(display),
+      }),
+      deps: [forwardRef(() => CngxInputMask)],
+    },
+    {
+      provide: CNGX_CONTROL_VALUE,
+      useFactory: (dir: CngxInputMask): CngxControlValue<string> => ({
+        value: dir.value,
+        disabled: dir.formDisabled,
       }),
       deps: [forwardRef(() => CngxInputMask)],
     },
@@ -424,7 +441,7 @@ export class CngxInputMask {
       const index = clamp(forced, 0, patterns.length - 1);
       return patterns[index];
     }
-    return selectPattern(patterns, this.value().length, this.resolvedCustomTokens());
+    return selectPattern(patterns, this.normalizedValue().length, this.resolvedCustomTokens());
   });
 
   private readonly tokens = computed(
@@ -442,8 +459,32 @@ export class CngxInputMask {
     },
   );
 
-  /** Primary value channel - raw unmasked value (digits/letters only, no literals unless `includeLiterals`). */
+  /**
+   * Primary value channel - raw unmasked value (digits/letters only, no literals unless
+   * `includeLiterals`). Reactive Forms writes through `CngxFormBridge` land in the model as
+   * given: write the raw value (`'1430'`), not the display string.
+   */
   readonly value = model<string>('', { alias: 'value' });
+
+  // RF writes reach the model unchanged through the bridge (`null` on reset, numbers).
+  private readonly normalizedValue = computed(() => {
+    const v: unknown = this.value();
+    if (typeof v === 'string') {
+      return v;
+    }
+    if (typeof v === 'number') {
+      return String(v);
+    }
+    return '';
+  });
+
+  /**
+   * @internal - written by CngxFormBridge.setDisabledState through CNGX_CONTROL_VALUE.
+   * Never rename to `disabled`: `[formField]` binds custom-control members by name.
+   */
+  readonly formDisabled = signal(false);
+
+  private appliedDisabled = false;
 
   /**
    * @deprecated Read `value` directly. Kept one release for migration.
@@ -453,7 +494,7 @@ export class CngxInputMask {
   /** Formatted value with mask applied (including prefix/suffix). */
   readonly maskedValue = computed(() => {
     const { masked } = applyMask(
-      this.value(),
+      this.normalizedValue(),
       this.tokens(),
       this.resolvedPlaceholder(),
       this.resolvedGuide(),
@@ -464,7 +505,7 @@ export class CngxInputMask {
   /** Formatted value without prefix/suffix (mask portion only). */
   readonly maskedValueCore = computed(() => {
     const { masked } = applyMask(
-      this.value(),
+      this.normalizedValue(),
       this.tokens(),
       this.resolvedPlaceholder(),
       this.resolvedGuide(),
@@ -475,7 +516,7 @@ export class CngxInputMask {
   /** `true` when all required mask positions are filled. */
   readonly isComplete = computed(() => {
     const { complete } = applyMask(
-      this.value(),
+      this.normalizedValue(),
       this.tokens(),
       this.resolvedPlaceholder(),
       this.resolvedGuide(),
@@ -517,7 +558,22 @@ export class CngxInputMask {
       }
     });
 
+    // Applies the bridged disabled flag. Writes only on a change: an initially disabled
+    // control lands here as `true` before the first run, while a static `disabled`
+    // attribute on an unbridged mask is never touched (`false === false`).
+    effect(() => {
+      const disabled = this.formDisabled();
+      if (disabled === this.appliedDisabled) {
+        return;
+      }
+      this.appliedDisabled = disabled;
+      this.el.nativeElement.disabled = disabled;
+    });
+
     // Sync masked value to DOM; the input event notifies co-located CngxInput / matInput.
+    // It also reaches Angular's DefaultValueAccessor when one is selected; with
+    // CngxFormBridge selected that accessor has no onChange, which keeps the load-time
+    // placeholder out of the control.
     //
     // No re-entry guard here (unlike CngxInputFormat's lastEffectWrite): the
     // host bindings of this directive (beforeinput / keydown / mousedown /
@@ -837,7 +893,7 @@ export class CngxInputMask {
   private insertChars(chars: string, selStart: number, selEnd: number, tokens: MaskToken[]): void {
     const el = this.el.nativeElement;
     const prefixLen = this.prefix().length;
-    const currentRaw = this.value();
+    const currentRaw = this.normalizedValue();
     const rawBefore = this.rawIndexFromCursor(selStart, tokens);
     const transformFn = this.transform();
     const customDefs = this.resolvedCustomTokens();
@@ -939,7 +995,7 @@ export class CngxInputMask {
     }
 
     const rawIdx = this.rawIndexFromCursor(target, tokens);
-    const raw = this.value();
+    const raw = this.normalizedValue();
     this.updateRaw(raw.slice(0, rawIdx) + raw.slice(rawIdx + 1));
     this.syncDom(el);
 
@@ -970,7 +1026,7 @@ export class CngxInputMask {
     }
 
     const rawIdx = this.rawIndexFromCursor(target, tokens);
-    const raw = this.value();
+    const raw = this.normalizedValue();
     this.updateRaw(raw.slice(0, rawIdx) + raw.slice(rawIdx + 1));
     this.syncDom(el);
 
@@ -981,7 +1037,7 @@ export class CngxInputMask {
   private deleteRange(start: number, end: number, tokens: MaskToken[]): void {
     const rawStart = this.rawIndexFromCursor(start, tokens);
     const rawEnd = this.rawIndexFromCursor(end, tokens);
-    const raw = this.value();
+    const raw = this.normalizedValue();
     this.updateRaw(raw.slice(0, rawStart) + raw.slice(rawEnd));
   }
 
