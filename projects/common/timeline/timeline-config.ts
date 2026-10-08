@@ -10,12 +10,8 @@ import {
   SkipSelf,
   type TemplateRef,
 } from '@angular/core';
-import { formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import {
-  createNestedOverrideMerge,
-  dateTimeFormatterFor,
-  type CngxNestedOverrides,
-} from '@cngx/core/utils';
+import { createNestedLanguageSection, formatMessage } from '@cngx/core/i18n';
+import { createNestedOverrideMerge, dateTimeFormatterFor } from '@cngx/core/utils';
 
 import {
   CNGX_TIMELINE_LANGUAGE_EN,
@@ -211,19 +207,19 @@ const TIMELINE_CONFIG_DEFAULTS: Required<CngxTimelineConfig> = {
   templates: {},
 };
 
-const NO_SECTION: CngxNestedOverrides<CngxTimelineLanguageSection, 'status'> = {};
+/** @internal The timeline section of the active pack over the English section. */
+const injectTimelineSection = createNestedLanguageSection(
+  'timeline',
+  CNGX_TIMELINE_LANGUAGE_EN,
+  'status',
+);
 
 /**
  * @internal The defaults with `labels` read from the timeline section of the
  * active language pack. Runs in an injection context.
  */
 function timelineConfigDefaultsFromPack(): CngxTimelineConfig {
-  const pack = injectLanguageSection('timeline');
-  const section = createNestedOverrideMerge<CngxTimelineLanguageSection, 'status'>(
-    CNGX_TIMELINE_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-    'status',
-  );
+  const section = injectTimelineSection();
   return { ...TIMELINE_CONFIG_DEFAULTS, labels: computed(() => labelsOf(section())) };
 }
 
@@ -312,9 +308,7 @@ export function withTimelineLabels(
  *
  * @category common/timeline
  */
-export function withTimelineTemplates(
-  templates: CngxTimelineTemplates,
-): CngxTimelineConfigFeature {
+export function withTimelineTemplates(templates: CngxTimelineTemplates): CngxTimelineConfigFeature {
   return (config) => ({ ...config, templates: { ...config.templates, ...templates } });
 }
 

@@ -1,5 +1,5 @@
-import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
 import { createOverrideMerge } from '@cngx/core/utils';
 
 import { formatChartNumber } from '../chart/format-number';
@@ -150,16 +150,8 @@ function chartBundleFrom(
  */
 export const createChartI18nDefaults = chartBundleFrom;
 
-const NO_SECTION: Partial<CngxChartLanguageSection> = {};
-
 /** @internal The English chart section with the active pack's chart section on top. */
-function injectChartSection(): Signal<CngxChartLanguageSection> {
-  const pack = injectLanguageSection('chart');
-  return createOverrideMerge(
-    CNGX_CHART_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
+const injectChartSection = createLanguageSection('chart', CNGX_CHART_LANGUAGE_EN);
 
 /** @internal Builds and reads the token, formatted for the reading locale. */
 const chartBundle = createSectionBundle<CngxChartLanguageSection, CngxChartI18n>({

@@ -1,5 +1,5 @@
-import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
 import { createOverrideMerge, numberFormatterFor } from '@cngx/core/utils';
 
 import { CNGX_KPI_LANGUAGE_EN, type CngxKpiLanguageSection } from '../../i18n/kpi-language-section';
@@ -70,16 +70,8 @@ function kpiBundleFrom(section: CngxKpiLanguageSection, locale: string): CngxKpi
   };
 }
 
-const NO_SECTION: Partial<CngxKpiLanguageSection> = {};
-
 /** @internal The kpi section of the active pack over English. */
-function injectKpiSection(): Signal<CngxKpiLanguageSection> {
-  const pack = injectLanguageSection('kpi');
-  return createOverrideMerge(
-    CNGX_KPI_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
+const injectKpiSection = createLanguageSection('kpi', CNGX_KPI_LANGUAGE_EN);
 
 /** @internal Builds and reads the token, formatted for the reading locale. */
 const kpiBundle = createSectionBundle<CngxKpiLanguageSection, CngxKpiI18n>({

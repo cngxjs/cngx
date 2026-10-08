@@ -95,6 +95,26 @@ describe('CngxStepperI18n', () => {
     expect(german.previousStep).toBe('Previous step');
   });
 
+  it('reads English for a status label the pack leaves unset', () => {
+    const statusLabels = { done: 'Erledigt', errored: undefined };
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(
+          withPartialPack({
+            locale: 'de',
+            stepper: { statusLabels } as unknown as CngxActiveLanguagePack['stepper'],
+          }),
+          withDocumentLanguage('off'),
+        ),
+      ],
+    });
+    const { statusLabels: labels } = TestBed.inject(CNGX_STEPPER_I18N)();
+    expect(labels.done).toBe('Erledigt');
+    expect(labels.errored).toBe('Errored');
+    expect(labels.upNext).toBe('Up next');
+  });
+
   it('keeps the bundle while the pack keeps its sections and maps anew on a flip', () => {
     const de = { locale: 'de', stepper: { stepperLabel: 'Schrittfolge' } };
     const pack = signal<CngxActiveLanguagePack | undefined>(de);
@@ -123,11 +143,11 @@ describe('CngxStepperI18n', () => {
             stepper: {
               previousStep: 'Zurück',
               statusLabels: {
-          done: 'Erledigt',
-          inProgress: 'Läuft',
-          upNext: 'Als Nächstes',
-          errored: 'Fehler',
-        },
+                done: 'Erledigt',
+                inProgress: 'Läuft',
+                upNext: 'Als Nächstes',
+                errored: 'Fehler',
+              },
             },
           }),
           withDocumentLanguage('off'),
@@ -159,17 +179,14 @@ describe('CngxStepperI18n', () => {
         provideStepperI18n(
           withStepperI18nLabels({
             commitInFlight: 'Speichere Schritt…',
-            commitRolledBackTo: (label) =>
-              `Konnte nicht speichern - zurück zu „${label}".`,
+            commitRolledBackTo: (label) => `Konnte nicht speichern - zurück zu „${label}".`,
           }),
         ),
       ],
     });
     const i18n = TestBed.inject(CNGX_STEPPER_I18N)();
     expect(i18n.commitInFlight).toBe('Speichere Schritt…');
-    expect(i18n.commitRolledBackTo('Kunde')).toBe(
-      'Konnte nicht speichern - zurück zu „Kunde".',
-    );
+    expect(i18n.commitRolledBackTo('Kunde')).toBe('Konnte nicht speichern - zurück zu „Kunde".');
     // Defensive fallback unset - keeps its English default.
     expect(i18n.commitFailedRetry).toBe('Commit failed - retry?');
   });
@@ -181,8 +198,7 @@ describe('CngxStepperI18n', () => {
         provideStepperI18n(
           withStepperI18nLabels({
             stepperLabel: 'Schrittfolge',
-            selectedStep: (label, position, count) =>
-              `Schritt ${position} von ${count}: ${label}`,
+            selectedStep: (label, position, count) => `Schritt ${position} von ${count}: ${label}`,
           }),
         ),
       ],
@@ -338,7 +354,10 @@ describe('CngxStepperI18n', () => {
         stepperLabel: 'Schrittfolge',
         statusLabels: { done: 'Erledigt', errored: 'Fehler' },
       };
-      const second: CngxStepperI18nOverrides = { previousStep: 'Vor', statusLabels: { done: 'Fertig' } };
+      const second: CngxStepperI18nOverrides = {
+        previousStep: 'Vor',
+        statusLabels: { done: 'Fertig' },
+      };
       TestBed.configureTestingModule({
         providers: [
           provideZonelessChangeDetection(),
