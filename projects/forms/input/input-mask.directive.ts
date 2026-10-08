@@ -544,11 +544,13 @@ export class CngxInputMask {
       }
     });
 
-    injectDefaultAccessorWarning(
-      "[cngxInputMask] This masked input uses Angular's DefaultValueAccessor, so typed " +
-        'text never reaches the form control. For Reactive Forms, import CngxFormBridge ' +
-        'from @cngx/forms/controls; [ngModel] is not supported, use [(value)] or Signal Forms.',
-    );
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      injectDefaultAccessorWarning(
+        "[cngxInputMask] This masked input uses Angular's DefaultValueAccessor, so typed " +
+          'text never reaches the form control. For Reactive Forms, import CngxFormBridge ' +
+          'from @cngx/forms/controls; [ngModel] is not supported, use [(value)] or Signal Forms.',
+      );
+    }
 
     // Lazily import the preset table the current mask needs. Side effect, so it
     // lives in an effect (not the resolvedPatterns computed); the import's

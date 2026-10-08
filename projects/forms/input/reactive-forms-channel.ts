@@ -33,14 +33,12 @@ export function injectFormDisabled(el: ElementRef<HTMLInputElement>): WritableSi
 }
 
 /**
- * Dev-mode warning when the host input landed on Angular's
- * `DefaultValueAccessor` instead of `CngxFormBridge`.
+ * Warns when the host input landed on Angular's `DefaultValueAccessor` instead of
+ * `CngxFormBridge`. Call it inside an `ngDevMode` guard, so production builds drop
+ * the message text along with the check.
  * @internal
  */
 export function injectDefaultAccessorWarning(message: string): void {
-  if (typeof ngDevMode === 'undefined' || !ngDevMode) {
-    return;
-  }
   const injector = inject(Injector);
   // Resolved lazily: injecting NgControl at construction cycles through
   // NG_VALUE_ACCESSOR -> CngxFormBridge -> CNGX_CONTROL_VALUE -> the host directive.

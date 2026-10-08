@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { FormControl, FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { FormField, form } from '@angular/forms/signals';
 import { CngxFormBridge } from '@cngx/forms/controls';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CngxNumericInput } from './numeric-input.directive';
 
 @Component({
@@ -57,6 +57,22 @@ class SignalFormsHost {
   readonly f = form(this.model);
 }
 
+@Component({
+  selector: 'numeric-rf-host-6',
+  template: `<input cngxNumericInput [formControl]="control" />`,
+  imports: [CngxNumericInput, ReactiveFormsModule],
+})
+class UnbridgedHost {
+  readonly control = new FormControl<number | null>(null);
+}
+
+@Component({
+  selector: 'numeric-rf-host-7',
+  template: `<input cngxNumericInput />`,
+  imports: [CngxNumericInput],
+})
+class StandaloneHost {}
+
 function flush(fixture: ComponentFixture<unknown>): void {
   fixture.detectChanges();
   TestBed.flushEffects();
@@ -81,7 +97,11 @@ function blur(input: HTMLInputElement, fixture: ComponentFixture<unknown>): void
   flush(fixture);
 }
 
-function typeAndBlur(input: HTMLInputElement, text: string, fixture: ComponentFixture<unknown>): void {
+function typeAndBlur(
+  input: HTMLInputElement,
+  text: string,
+  fixture: ComponentFixture<unknown>,
+): void {
   focus(input, fixture);
   input.value = text;
   input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -105,7 +125,7 @@ describe('CngxNumericInput under Reactive Forms', () => {
     expect(input.value).toBe('1.234,5');
   });
 
-  it.fails('A: typed text reaches the control as a number', () => {
+  it('A: typed text reaches the control as a number', () => {
     const { fixture, input, host } = mount(RfHost);
 
     typeAndBlur(input, '1234,5', fixture);
@@ -114,7 +134,7 @@ describe('CngxNumericInput under Reactive Forms', () => {
     expect(host.control.dirty).toBe(true);
   });
 
-  it.fails('A3: an in-range value survives focus plus blur without an emission', () => {
+  it('A3: an in-range value survives focus plus blur without an emission', () => {
     const { fixture, input, host } = mount(InitialValueHost);
     let emissions = 0;
     host.control.valueChanges.subscribe(() => emissions++);
@@ -127,7 +147,7 @@ describe('CngxNumericInput under Reactive Forms', () => {
     expect(host.control.pristine).toBe(true);
   });
 
-  it.fails('B2: renders an initial control value and stays pristine', () => {
+  it('B2: renders an initial control value and stays pristine', () => {
     const { input, numeric, host } = mount(InitialValueHost);
 
     expect(input.value).toBe('1.234,5');
@@ -136,7 +156,7 @@ describe('CngxNumericInput under Reactive Forms', () => {
     expect(host.control.pristine).toBe(true);
   });
 
-  it.fails('C: paste and arrow keys reach the control', () => {
+  it('C: paste and arrow keys reach the control', () => {
     const { fixture, input, host } = mount(RfHost);
     focus(input, fixture);
 
@@ -149,7 +169,7 @@ describe('CngxNumericInput under Reactive Forms', () => {
     expect(host.control.value).toBe(43.5);
   });
 
-  it.fails('D2: setValue while blurred renders the formatted value and sets the model', () => {
+  it('D2: setValue while blurred renders the formatted value and sets the model', () => {
     const { fixture, input, numeric, host } = mount(RfHost);
 
     host.control.setValue(1234.5);
@@ -178,7 +198,7 @@ describe('CngxNumericInput under Reactive Forms', () => {
     expect(input.disabled).toBe(false);
   });
 
-  it.fails('E: marks the control touched on focusout', () => {
+  it('E: marks the control touched on focusout', () => {
     const { fixture, input, host } = mount(RfHost);
 
     input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
@@ -187,7 +207,7 @@ describe('CngxNumericInput under Reactive Forms', () => {
     expect(host.control.touched).toBe(true);
   });
 
-  it.fails('F: typed text reaches a formControlName inside a formGroup', () => {
+  it('F: typed text reaches a formControlName inside a formGroup', () => {
     const { fixture, input, host } = mount(GroupHost);
 
     typeAndBlur(input, '1234,5', fixture);
@@ -195,7 +215,7 @@ describe('CngxNumericInput under Reactive Forms', () => {
     expect(host.group.value.amount).toBe(1234.5);
   });
 
-  it.fails('G: reset() after typing clears the view and aria-valuenow', () => {
+  it('G: reset() after typing clears the view and aria-valuenow', () => {
     const { fixture, input, host } = mount(RfHost);
     typeAndBlur(input, '7', fixture);
 
@@ -215,5 +235,33 @@ describe('CngxNumericInput under Reactive Forms', () => {
     typeAndBlur(input, '99,25', fixture);
 
     expect(host.model().amount).toBe(99.25);
+  });
+});
+
+describe('CngxNumericInput dev-mode accessor check', () => {
+  function warnings(host: Type<unknown>): number {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      mount(host);
+      return warn.mock.calls.filter(([msg]) => String(msg).startsWith('[cngxNumericInput]')).length;
+    } finally {
+      warn.mockRestore();
+    }
+  }
+
+  it('warns once for [formControl] without CngxFormBridge', () => {
+    expect(warnings(UnbridgedHost)).toBe(1);
+  });
+
+  it('stays silent with CngxFormBridge', () => {
+    expect(warnings(RfHost)).toBe(0);
+  });
+
+  it('stays silent under [formField]', () => {
+    expect(warnings(SignalFormsHost)).toBe(0);
+  });
+
+  it('stays silent on a standalone input', () => {
+    expect(warnings(StandaloneHost)).toBe(0);
   });
 });
