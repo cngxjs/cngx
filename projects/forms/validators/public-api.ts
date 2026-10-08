@@ -5,3 +5,4 @@
 
 export * from './required-true.validator';
 export * from './pattern-match.validator';
+export * from './time.validator';
