@@ -28,7 +28,8 @@ export const STORY: DemoSpec = {
     'CngxInput',
     'CngxInputMask',
   ],
-  setup: `private readonly destroyRef = inject(DestroyRef);
+  setup: `// Add CngxFormBridge to the component's imports: it attaches by selector to [formControl] on the masked input.
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly start = new FormControl('', {
     nonNullable: true,
     validators: [Validators.required, timeRange({ cycle: 24 })],
