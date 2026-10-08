@@ -3,6 +3,7 @@ import {
   Directive,
   type EffectRef,
   effect,
+  ElementRef,
   forwardRef,
   inject,
   Injector,
@@ -75,13 +76,14 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
     },
   ],
   host: {
-    '(focusout)': 'handleFocusOut()',
+    '(focusout)': 'handleFocusOut($event)',
   },
 })
 export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
   private readonly control = inject(CNGX_CONTROL_VALUE) as CngxControlValue<T>;
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   private onChange: ((value: T) => void) | null = null;
   private onTouched: (() => void) | null = null;
@@ -149,10 +151,18 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
     });
   }
 
-  /** Fires `onTouched` when focus leaves the atom's host element. */
-  protected handleFocusOut(): void {
+  /**
+   * Fires `onTouched` when focus leaves the atom's host subtree. A move between
+   * the parts of a composite host (a group's items, the phone input's country
+   * picker and number field) keeps the control untouched: a composite is one control.
+   */
+  protected handleFocusOut(event: FocusEvent): void {
     const callback = this.onTouched;
     if (callback === null) {
+      return;
+    }
+    const next = event.relatedTarget;
+    if (next instanceof Node && this.host.nativeElement.contains(next)) {
       return;
     }
     untracked(() => callback());

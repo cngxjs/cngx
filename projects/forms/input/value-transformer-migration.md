@@ -119,3 +119,7 @@ Nothing to change. The template-variable accessor surface is intact:
   keeps working - Angular synthesises the output from `value = model<T>()`.
   Only the explicit `directive.valueChange.subscribe(...)` API surface is
   gone; use `directive.value.subscribe(...)` instead.
+- Under Reactive Forms, `CngxFormBridge` marks the control touched when focus
+  leaves the atom's host, no longer on every move inside it. A radio, checkbox,
+  button-toggle or chip group becomes touched when focus leaves the group, not
+  when focus moves between its items.

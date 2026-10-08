@@ -41,6 +41,7 @@ class ToggleHost {
 class RadioHost {
   readonly ctrl = new FormControl<string | null>(null);
   @ViewChild('host', { read: CngxRadioGroup }) group!: CngxRadioGroup<string>;
+  @ViewChild('host', { read: ElementRef }) hostEl!: ElementRef<HTMLElement>;
   @ViewChild('host', { read: CngxFormBridge })
   bridge!: CngxFormBridge<string | null>;
 }
@@ -155,6 +156,25 @@ describe('CngxFormBridge', () => {
   // ── Scalar shape ─────────────────────────────────────────────────────
 
   describe('scalar shape (CngxRadioGroup)', () => {
+    it('focusout to a node inside the host leaves the FormControl untouched', () => {
+      TestBed.configureTestingModule({ imports: [RadioHost] });
+      const fixture = TestBed.createComponent(RadioHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const hostEl = fixture.componentInstance.hostEl.nativeElement;
+      const inner = hostEl.querySelector('span')!;
+
+      inner.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: hostEl }));
+      fixture.detectChanges();
+      expect(fixture.componentInstance.ctrl.touched).toBe(false);
+
+      inner.dispatchEvent(
+        new FocusEvent('focusout', { bubbles: true, relatedTarget: document.body }),
+      );
+      fixture.detectChanges();
+      expect(fixture.componentInstance.ctrl.touched).toBe(true);
+    });
+
     it('round-trips the FormControl value as string|null', () => {
       TestBed.configureTestingModule({ imports: [RadioHost] });
       const fixture = TestBed.createComponent(RadioHost);
