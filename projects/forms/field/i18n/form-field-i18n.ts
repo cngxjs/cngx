@@ -27,7 +27,7 @@ import {
 export interface CngxFormFieldI18n {
   /**
    * Message per built-in validator kind (`required`, `requiredTrue`, `email`,
-   * `min`, `max`, `minLength`, `maxLength`, `pattern`, `parse`).
+   * `min`, `max`, `minLength`, `maxLength`, `pattern`, `parse`, `timeRange`).
    */
   readonly errorMessages: ErrorMessageMap;
   /** Message for any other kind that has no registry entry and no own `message`. */
@@ -110,6 +110,7 @@ function formFieldBundleFrom(
       maxLength: bounded('maxLength', section.maxLength, 'count'),
       pattern: () => section.pattern,
       parse: () => section.parse,
+      timeRange: () => section.timeRange,
     },
     invalid: section.invalid,
     errorSummaryItem: section.errorSummaryItem,

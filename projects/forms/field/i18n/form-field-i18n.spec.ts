@@ -44,6 +44,7 @@ describe('CngxFormFieldI18n', () => {
     expect(message(i18n, 'maxLength', { maxLength: 64 })).toBe('Enter at most 64 characters.');
     expect(message(i18n, 'pattern')).toBe('Enter a value in the expected format.');
     expect(message(i18n, 'parse')).toBe('Enter a valid value.');
+    expect(message(i18n, 'timeRange')).toBe('Enter a valid time.');
     expect(message(i18n, 'unknownKind')).toBe('This value is invalid.');
     expect(i18n.errorSummaryItem).toBe('{label}: {message}');
   });
@@ -73,6 +74,13 @@ describe('CngxFormFieldI18n', () => {
     expect(resolveErrorMessage(mockValidationError('pattern'), registry, i18n)).toBe(
       'Enter a value in the expected format.',
     );
+    expect(
+      resolveErrorMessage(
+        mockValidationError('timeRange'),
+        { timeRange: () => 'Use a 24-hour time.' },
+        i18n,
+      ),
+    ).toBe('Use a 24-hour time.');
   });
 
   it('reads the form-field section of the active pack, with English for what it leaves out', () => {
@@ -90,11 +98,13 @@ describe('CngxFormFieldI18n', () => {
       locale: 'de',
       formField: {
         required: 'Pflichtfeld.',
+        timeRange: 'Ungueltige Uhrzeit.',
         maxLength: { one: 'Hoechstens {count} Zeichen.', other: 'Hoechstens {count} Zeichen.' },
         errorSummaryItem: '{label} - {message}',
       },
     });
     expect(message(bundle(), 'required')).toBe('Pflichtfeld.');
+    expect(message(bundle(), 'timeRange')).toBe('Ungueltige Uhrzeit.');
     expect(message(bundle(), 'maxLength', { maxLength: 1200 })).toBe('Hoechstens 1.200 Zeichen.');
     expect(bundle().errorSummaryItem).toBe('{label} - {message}');
     expect(message(bundle(), 'email')).toBe('Enter a valid email address.');
