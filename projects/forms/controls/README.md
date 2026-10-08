@@ -48,6 +48,7 @@ only place in cngx that implements `ControlValueAccessor`.
 | `CngxCheckboxGroup` | `cngx-checkbox-group`, `[cngxCheckboxGroup]` | `T[]` |
 | `CngxButtonMultiToggleGroup` | `cngx-button-multi-toggle-group`, `[cngxButtonMultiToggleGroup]` | `T[]` |
 | `CngxMultiChipGroup` | `cngx-multi-chip-group`, `[cngxMultiChipGroup]` | `T[]` |
+| `CngxInputMask` | `input[cngxInputMask]` | `string` (raw, no literals) |
 
 `CngxChipInput` is intentionally **not** in this list. Its tokenizer
 shape (emits `tokenCreated` events, no `value` model) needs a separate

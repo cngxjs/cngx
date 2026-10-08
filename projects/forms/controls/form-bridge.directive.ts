@@ -23,8 +23,8 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
  *
  * Covers, in both element and attribute form: `cngx-toggle`, `cngx-checkbox`,
  * `cngx-radio-group`, `cngx-checkbox-group`, `cngx-button-toggle-group`,
- * `cngx-button-multi-toggle-group`, `cngx-chip-group`, `cngx-multi-chip-group`, and
- * `[cngxChipInteraction]` (attribute only). Signal Forms (`[field]`) and the Level-3
+ * `cngx-button-multi-toggle-group`, `cngx-chip-group`, `cngx-multi-chip-group`,
+ * `[cngxChipInteraction]` (attribute only), and `input[cngxInputMask]` (attribute only). Signal Forms (`[field]`) and the Level-3
  * select controls bypass this entirely - they provide `CNGX_FORM_FIELD_CONTROL`
  * directly. To bridge a bare self-contained external/Material CVA control into a cngx
  * field, see `CngxBindField`.
@@ -63,7 +63,7 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
  */
 @Directive({
   selector:
-    '[cngxToggle][formControl], [cngxToggle][formControlName], cngx-toggle[formControl], cngx-toggle[formControlName], cngx-checkbox[formControl], cngx-checkbox[formControlName], [cngxCheckbox][formControl], [cngxCheckbox][formControlName], cngx-radio-group[formControl], cngx-radio-group[formControlName], [cngxRadioGroup][formControl], [cngxRadioGroup][formControlName], cngx-checkbox-group[formControl], cngx-checkbox-group[formControlName], [cngxCheckboxGroup][formControl], [cngxCheckboxGroup][formControlName], cngx-button-toggle-group[formControl], cngx-button-toggle-group[formControlName], [cngxButtonToggleGroup][formControl], [cngxButtonToggleGroup][formControlName], cngx-button-multi-toggle-group[formControl], cngx-button-multi-toggle-group[formControlName], [cngxButtonMultiToggleGroup][formControl], [cngxButtonMultiToggleGroup][formControlName], cngx-chip-group[formControl], cngx-chip-group[formControlName], [cngxChipGroup][formControl], [cngxChipGroup][formControlName], cngx-multi-chip-group[formControl], cngx-multi-chip-group[formControlName], [cngxMultiChipGroup][formControl], [cngxMultiChipGroup][formControlName], [cngxChipInteraction][formControl], [cngxChipInteraction][formControlName]',
+    '[cngxToggle][formControl], [cngxToggle][formControlName], cngx-toggle[formControl], cngx-toggle[formControlName], cngx-checkbox[formControl], cngx-checkbox[formControlName], [cngxCheckbox][formControl], [cngxCheckbox][formControlName], cngx-radio-group[formControl], cngx-radio-group[formControlName], [cngxRadioGroup][formControl], [cngxRadioGroup][formControlName], cngx-checkbox-group[formControl], cngx-checkbox-group[formControlName], [cngxCheckboxGroup][formControl], [cngxCheckboxGroup][formControlName], cngx-button-toggle-group[formControl], cngx-button-toggle-group[formControlName], [cngxButtonToggleGroup][formControl], [cngxButtonToggleGroup][formControlName], cngx-button-multi-toggle-group[formControl], cngx-button-multi-toggle-group[formControlName], [cngxButtonMultiToggleGroup][formControl], [cngxButtonMultiToggleGroup][formControlName], cngx-chip-group[formControl], cngx-chip-group[formControlName], [cngxChipGroup][formControl], [cngxChipGroup][formControlName], cngx-multi-chip-group[formControl], cngx-multi-chip-group[formControlName], [cngxMultiChipGroup][formControl], [cngxMultiChipGroup][formControlName], [cngxChipInteraction][formControl], [cngxChipInteraction][formControlName], input[cngxInputMask][formControl], input[cngxInputMask][formControlName]',
   standalone: true,
   exportAs: 'cngxFormBridge',
   providers: [

@@ -15,21 +15,36 @@ import {
 
 ## Signal Forms Integration
 
-Both validators work with Signal Forms `FormControl`:
+Signal Forms validates through schema rules. Use Angular's `required` / `pattern` for the basics and cngx `time()` for time-of-day ranges:
 
 ```typescript
-import { FormControl } from '@angular/forms/signals';
-import { Validators } from '@angular/forms';
+import { signal } from '@angular/core';
+import { form, pattern, required, schema } from '@angular/forms/signals';
+import { time } from '@cngx/forms/validators';
+
+readonly model = signal({ iban: '', start: '' });
+readonly f = form(
+  this.model,
+  schema((root) => {
+    required(root.iban);
+    pattern(root.iban, /^[A-Z]{2}[0-9]{2}/);
+    time(root.start, { cycle: 24 });
+  }),
+);
+```
+
+`patternMatch`, `requiredTrue` and `timeRange` are Reactive Forms `ValidatorFn`s:
+
+```typescript
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { patternMatch, requiredTrue } from '@cngx/forms/validators';
 
-const schema = formGroup({
-  iban: formControl('', {
-    validators: [Validators.required, patternMatch(/^[A-Z]{2}[0-9]{2}/)],
+readonly group = new FormGroup({
+  iban: new FormControl('', {
     nonNullable: true,
+    validators: [Validators.required, patternMatch(/^[A-Z]{2}[0-9]{2}/)],
   }),
-  agreeToTerms: formControl(false, {
-    validators: requiredTrue(),
-  }),
+  agreeToTerms: new FormControl(false, { nonNullable: true, validators: requiredTrue() }),
 });
 ```
 

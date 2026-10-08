@@ -516,6 +516,21 @@ function emitComponentSource(meta, story, importMap) {
         if (tagOpenRe.test(tpl)) return true;
         continue;
       }
+      // `input[cngxInputMask][formControl]`: every attribute must sit on one opening tag.
+      const multiAttrMatch = sel.match(
+        /^([a-z][a-z0-9-]*)?((?:\[[\w-]+(?:[*~|^$]?=[^\]]*)?\]){2,})$/,
+      );
+      if (multiAttrMatch) {
+        const [, tag, attrPart] = multiAttrMatch;
+        const attrs = [...attrPart.matchAll(/\[([\w-]+)/g)].map((m) => m[1]);
+        const openTagRe = new RegExp(String.raw`<${tag ?? '[a-z][a-z0-9-]*'}\b[^>]*>`, 'g');
+        for (const [openTag] of tpl.matchAll(openTagRe)) {
+          if (attrs.every((attr) => new RegExp(String.raw`\b${attr}\b`).test(openTag))) {
+            return true;
+          }
+        }
+        continue;
+      }
       if (tpl.includes(sel)) return true;
     }
     return false;
