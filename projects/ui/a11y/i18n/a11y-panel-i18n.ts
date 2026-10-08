@@ -72,7 +72,7 @@ export function injectA11yPanelSiteCopy(): SiteDefaults {
   let site = SITES.get(copy);
   if (!site) {
     site = {
-      labels: computed(() => copy().labels),
+      labels: computed(() => copy().labels, { equal: recordEqual }),
       options: computed(() => copy().options, { equal: recordEqual }),
     };
     SITES.set(copy, site);

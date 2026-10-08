@@ -94,4 +94,12 @@ describe('formatDisplayValue', () => {
     expect(second.date).toBe(first.date);
     expect(displayFormattersFor('en').date).not.toBe(displayFormattersFor('de').date);
   });
+
+  it('returns the identical formatters object for equal locale and formats', () => {
+    expect(displayFormattersFor('de')).toBe(displayFormattersFor('de'));
+    expect(displayFormattersFor('de', { dateStyle: 'medium' })).toBe(
+      displayFormattersFor('de', { dateStyle: 'medium' }),
+    );
+    expect(displayFormattersFor('de')).not.toBe(displayFormattersFor('en'));
+  });
 });

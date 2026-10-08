@@ -423,6 +423,26 @@ function resolveOptions(
   return resolved;
 }
 
+/** Axis lists are equal when every spec keeps its axis, reset target and options array. */
+function sameAxes(
+  a: readonly CngxA11yPanelAxisSpec[],
+  b: readonly CngxA11yPanelAxisSpec[],
+): boolean {
+  return (
+    a.length === b.length &&
+    a.every(
+      (spec, i) =>
+        spec.axis === b[i].axis && spec.reset === b[i].reset && spec.options === b[i].options,
+    )
+  );
+}
+
+/** Resolved axis lists, memoized per config object and option-label signal. */
+const RESOLVED_AXES = new WeakMap<
+  CngxA11yPanelConfig,
+  WeakMap<Signal<CngxA11yPanelOptionLabels>, Signal<readonly CngxA11yPanelAxisSpec[]>>
+>();
+
 /** The axis list with every option label filled. Kept out of a field initializer for compodocx. */
 function resolveAxes(
   axes: readonly CngxA11yPanelAxisSpec[],
@@ -449,7 +469,19 @@ function resolveAxes(
  * @since 0.1.0
  */
 export function injectA11yPanelAxes(): Signal<readonly CngxA11yPanelAxisSpec[]> {
-  const axes = coerceSignal(injectA11yPanelConfig().axes);
+  const config = injectA11yPanelConfig();
   const optionLabels = injectA11yPanelSiteCopy().options;
-  return computed(() => resolveAxes(axes(), optionLabels()));
+  let byLabels = RESOLVED_AXES.get(config);
+  if (!byLabels) {
+    byLabels = new WeakMap();
+    RESOLVED_AXES.set(config, byLabels);
+  }
+  const cached = byLabels.get(optionLabels);
+  if (cached) {
+    return cached;
+  }
+  const axes = coerceSignal(config.axes);
+  const resolved = computed(() => resolveAxes(axes(), optionLabels()), { equal: sameAxes });
+  byLabels.set(optionLabels, resolved);
+  return resolved;
 }

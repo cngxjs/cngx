@@ -74,6 +74,12 @@ const DISPLAY_DATE_FORMAT: Intl.DateTimeFormatOptions = {
   day: 'numeric',
 };
 
+/** One pair object per cached formatter pair, so equal inputs return the identical object. */
+const DISPLAY_FORMATTERS = new WeakMap<
+  Intl.NumberFormat,
+  WeakMap<Intl.DateTimeFormat, CngxDisplayFormatters>
+>();
+
 /**
  * The number and date formatters a default value display uses for one
  * locale. Resolve with {@link displayFormattersFor}, apply with
@@ -92,8 +98,9 @@ export interface CngxDisplayFormatters {
  * Resolves the formatters for showing a raw value as text in `locale`: dates
  * with `dateFormat` (date-only by default), numbers with `numberFormat` (the
  * `Intl.NumberFormat` defaults by default). Both come from the bounded
- * formatter caches; resolve once per locale and format inside a `computed()`,
- * not per value.
+ * formatter caches, and the same locale and formats return the identical
+ * object, so a `computed()` over it keeps its reference without an `equal`.
+ * Resolve once per locale and format, not per value.
  *
  * ```ts
  * private readonly formatters = computed(() => displayFormattersFor(this.locale()));
@@ -109,10 +116,19 @@ export function displayFormattersFor(
   dateFormat: Intl.DateTimeFormatOptions = DISPLAY_DATE_FORMAT,
   numberFormat: Intl.NumberFormatOptions = DISPLAY_NUMBER_FORMAT,
 ): CngxDisplayFormatters {
-  return {
-    number: numberFormatterFor(locale, numberFormat),
-    date: dateTimeFormatterFor(locale, dateFormat),
-  };
+  const number = numberFormatterFor(locale, numberFormat);
+  const date = dateTimeFormatterFor(locale, dateFormat);
+  let byDate = DISPLAY_FORMATTERS.get(number);
+  if (!byDate) {
+    byDate = new WeakMap();
+    DISPLAY_FORMATTERS.set(number, byDate);
+  }
+  let formatters = byDate.get(date);
+  if (!formatters) {
+    formatters = { number, date };
+    byDate.set(date, formatters);
+  }
+  return formatters;
 }
 
 /**

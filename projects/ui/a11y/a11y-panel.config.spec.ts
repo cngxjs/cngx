@@ -231,6 +231,18 @@ describe('a11y-panel config cascade', () => {
     expect(labelsOf().reset).toBe('Zuruecksetzen');
   });
 
+  it('shares one axes Signal per config and keeps it on an equal recompute', () => {
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off'))],
+    });
+    const axes = TestBed.runInInjectionContext(() => injectA11yPanelAxes());
+    expect(TestBed.runInInjectionContext(() => injectA11yPanelAxes())).toBe(axes);
+    const first = axes();
+    pack.set({ locale: 'de', a11yPanel: { heading: 'Barrierefreiheit' } });
+    expect(axes()).toBe(first);
+  });
+
   it('keeps the resolved option arrays for the same axes and section', () => {
     const axes = TestBed.runInInjectionContext(() => injectA11yPanelAxes());
     const again = TestBed.runInInjectionContext(() => injectA11yPanelAxes());
