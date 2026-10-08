@@ -1,6 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
-import { containsStableRelease, resolveDistTag } from '../publish.mjs';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import {
+  containsStableRelease,
+  createSchematicsVersions,
+  replaceVersionInDist,
+  resolveDistTag,
+} from '../publish.mjs';
 
 describe('resolveDistTag', () => {
   it('lets an explicit --tag win over every derived rule', () => {
@@ -45,5 +54,53 @@ describe('containsStableRelease', () => {
 
   it('is false for an unpublished package', () => {
     expect(containsStableRelease([])).toBe(false);
+  });
+});
+
+describe('replaceVersionInDist', () => {
+  const PLACEHOLDER = '0.0.0-PLACEHOLDER';
+  let dist;
+
+  function seed(relativePath, content) {
+    const file = join(dist, relativePath);
+    mkdirSync(join(file, '..'), { recursive: true });
+    writeFileSync(file, content);
+    return file;
+  }
+
+  beforeEach(() => {
+    dist = mkdtempSync(join(tmpdir(), 'cngx-publish-'));
+  });
+
+  afterEach(() => {
+    rmSync(dist, { recursive: true, force: true });
+  });
+
+  it('rewrites the placeholder in JS bundles and in JSON under schematics/', () => {
+    const fesm = seed('fesm2022/cngx-core.mjs', `const v = '${PLACEHOLDER}';`);
+    const bundle = seed('schematics/ng-add/index.js', `exports.v = '${PLACEHOLDER}';`);
+    const schema = seed('schematics/ng-add/schema.json', `{ "default": "${PLACEHOLDER}" }`);
+
+    replaceVersionInDist(dist, '0.1.0');
+
+    expect(readFileSync(fesm, 'utf8')).toBe(`const v = '0.1.0';`);
+    expect(readFileSync(bundle, 'utf8')).toBe(`exports.v = '0.1.0';`);
+    expect(readFileSync(schema, 'utf8')).toBe(`{ "default": "0.1.0" }`);
+  });
+
+  it('leaves JSON outside schematics/ untouched', () => {
+    const other = seed('i18n/data.json', `{ "v": "${PLACEHOLDER}" }`);
+
+    replaceVersionInDist(dist, '0.1.0');
+
+    expect(readFileSync(other, 'utf8')).toBe(`{ "v": "${PLACEHOLDER}" }`);
+  });
+});
+
+describe('createSchematicsVersions', () => {
+  it('pins the release, the mcp server and the Angular range', () => {
+    expect(
+      createSchematicsVersions({ nextVersion: '0.1.0', mcpVersion: '0.2.0', angularRange: '^21.2.0' }),
+    ).toEqual({ cngx: '0.1.0', mcp: '0.2.0', angular: '^21.2.0' });
   });
 });
