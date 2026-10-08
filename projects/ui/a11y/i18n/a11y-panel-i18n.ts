@@ -1,7 +1,6 @@
 import { computed, inject, InjectionToken, type Signal } from '@angular/core';
 
-import { createSectionBundle, injectLanguageSection } from '@cngx/core/i18n';
-import { createOverrideMerge } from '@cngx/core/utils';
+import { createLanguageSection, createSectionBundle } from '@cngx/core/i18n';
 import { recordEqual } from '@cngx/utils';
 
 import type { CngxA11yPanelAxis, CngxA11yPanelLabels } from '../a11y-panel.config';
@@ -39,16 +38,8 @@ export function a11yPanelCopyFrom(section: CngxA11yPanelLanguageSection): CngxA1
   };
 }
 
-const NO_SECTION: Partial<CngxA11yPanelLanguageSection> = {};
-
 /** @internal The accessibility-panel section of the active pack over the English section. */
-function injectA11yPanelLanguage(): Signal<CngxA11yPanelLanguageSection> {
-  const pack = injectLanguageSection('a11yPanel');
-  return createOverrideMerge(
-    CNGX_A11Y_PANEL_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
+const injectA11yPanelLanguage = createLanguageSection('a11yPanel', CNGX_A11Y_PANEL_LANGUAGE_EN);
 
 /** @internal Builds and reads the section copy. */
 const a11yPanelBundle = createSectionBundle<CngxA11yPanelLanguageSection, CngxA11yPanelCopy>({

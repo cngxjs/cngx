@@ -1,12 +1,8 @@
-import { computed, inject, InjectionToken, isSignal, type Signal } from '@angular/core';
+import { isSignal, type Signal } from '@angular/core';
 
-import { injectLanguageSection } from '@cngx/core/i18n';
-import { createOverrideMerge } from '@cngx/core/utils';
+import { createLanguageSection } from '@cngx/core/i18n';
 
-import {
-  CNGX_BREADCRUMB_LANGUAGE_EN,
-  type CngxBreadcrumbLanguageSection,
-} from './breadcrumb-language-section';
+import { CNGX_BREADCRUMB_LANGUAGE_EN } from './breadcrumb-language-section';
 
 /**
  * A route's breadcrumb data: a plain label, or a `Signal` of one so the crumb
@@ -34,27 +30,11 @@ export function routeLabelText(raw: unknown): string | undefined {
   return typeof text === 'string' && text.length > 0 ? text : undefined;
 }
 
-const NO_SECTION: Partial<CngxBreadcrumbLanguageSection> = {};
-
-/** @internal The breadcrumb section of the active pack over the English section. */
-function breadcrumbSectionFromPack(): Signal<CngxBreadcrumbLanguageSection> {
-  const pack = injectLanguageSection('breadcrumb');
-  return createOverrideMerge(
-    CNGX_BREADCRUMB_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
-
 /**
- * @internal The breadcrumb section of the active pack. Private: consumers
- * override the names through `withBreadcrumbAriaLabels`.
+ * @internal The breadcrumb section of the active pack over the English section,
+ * shared app-wide. Consumers override copy through `withBreadcrumbAriaLabels`.
  */
-const BREADCRUMB_SECTION = new InjectionToken<Signal<CngxBreadcrumbLanguageSection>>(
-  'CngxBreadcrumbSection',
-  { providedIn: 'root', factory: breadcrumbSectionFromPack },
+export const injectBreadcrumbSiteCopy = createLanguageSection(
+  'breadcrumb',
+  CNGX_BREADCRUMB_LANGUAGE_EN,
 );
-
-/** @internal The breadcrumb section at the reading site. Injection context required. */
-export function injectBreadcrumbSiteCopy(): Signal<CngxBreadcrumbLanguageSection> {
-  return inject(BREADCRUMB_SECTION);
-}

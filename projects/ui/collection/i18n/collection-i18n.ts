@@ -1,7 +1,6 @@
-import { computed, inject, InjectionToken, type Signal } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
 
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createOverrideMerge } from '@cngx/core/utils';
+import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
 
 import type { CngxIncrementalListAriaLabels } from '../incremental-list-config';
 import {
@@ -25,16 +24,8 @@ export function collectionLabelsFrom(
   };
 }
 
-const NO_SECTION: Partial<CngxCollectionLanguageSection> = {};
-
 /** @internal The collection section of the active pack over the English section. */
-function injectCollectionLanguage(): Signal<CngxCollectionLanguageSection> {
-  const pack = injectLanguageSection('collection');
-  return createOverrideMerge(
-    CNGX_COLLECTION_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
+const injectCollectionLanguage = createLanguageSection('collection', CNGX_COLLECTION_LANGUAGE_EN);
 
 /** @internal Builds and reads the section labels, formatted for the reading locale. */
 const collectionBundle = createSectionBundle<

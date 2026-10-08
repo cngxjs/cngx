@@ -1,5 +1,5 @@
-import { computed, inject, InjectionToken, type Provider, type Signal } from '@angular/core';
-import { injectLanguageSection } from '@cngx/core/i18n';
+import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
+import { createLanguageSection } from '@cngx/core/i18n';
 import { createOverrideMerge } from '@cngx/core/utils';
 
 import {
@@ -21,16 +21,8 @@ import {
  */
 export type CngxSpeakI18n = CngxSpeakLanguageSection;
 
-const NO_SECTION: Partial<CngxSpeakI18n> = {};
-
-/** The English speak section with the active pack's speak section on top. */
-function speakBundleFromPack(): Signal<CngxSpeakI18n> {
-  const section = injectLanguageSection('speak');
-  return createOverrideMerge(
-    CNGX_SPEAK_LANGUAGE_EN,
-    computed(() => section() ?? NO_SECTION),
-  );
-}
+/** The English speak section with the active pack's speak section on top, shared app-wide. */
+const speakBundleFromPack = createLanguageSection('speak', CNGX_SPEAK_LANGUAGE_EN);
 
 /**
  * DI token for the speak i18n bundle. `providedIn: 'root'`: the `speak`

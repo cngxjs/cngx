@@ -1,7 +1,7 @@
-import { computed, inject, InjectionToken, type Signal } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
 
-import { createSectionBundle, formatMessage, injectLanguageSection } from '@cngx/core/i18n';
-import { createFilledOverrideMerge, createOverrideMerge } from '@cngx/core/utils';
+import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
+import { createFilledOverrideMerge } from '@cngx/core/utils';
 
 import { injectSidenavConfig } from '../config/inject-sidenav-config';
 import type { CngxSidenavLabels } from '../config/sidenav.config';
@@ -22,16 +22,8 @@ export function sidenavLabelsFrom(
   };
 }
 
-const NO_SECTION: Partial<CngxSidenavLanguageSection> = {};
-
 /** @internal The sidenav section of the active pack over the English section. */
-function injectSidenavLanguage(): Signal<CngxSidenavLanguageSection> {
-  const pack = injectLanguageSection('sidenav');
-  return createOverrideMerge(
-    CNGX_SIDENAV_LANGUAGE_EN,
-    computed(() => pack() ?? NO_SECTION),
-  );
-}
+const injectSidenavLanguage = createLanguageSection('sidenav', CNGX_SIDENAV_LANGUAGE_EN);
 
 /** @internal Builds and reads the section labels, formatted for the reading locale. */
 const sidenavBundle = createSectionBundle<CngxSidenavLanguageSection, CngxSidenavLabels>({
