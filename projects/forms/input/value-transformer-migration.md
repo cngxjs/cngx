@@ -98,9 +98,20 @@ the raw value. Without the bridge Angular falls back to its
 `DefaultValueAccessor`, typed text never reaches the control, and the mask warns
 in dev mode.
 
-`CngxNumericInput` and `CngxInputFormat` still run on Angular's
-`DefaultValueAccessor` under `[formControl]`, so the control receives the
-display string the field shows, not the directive's `value` model.
+`CngxNumericInput`, `CngxInputFormat` and `CngxPhoneInput` attach to
+`CngxFormBridge` the same way. Breaking against the `DefaultValueAccessor`
+behaviour they had before:
+
+- `CngxNumericInput`: the control holds `number | null` (the `value` model), no
+  longer the display string (`'1.234,5'`). An initial control value renders
+  formatted instead of being wiped, and paste and arrow keys reach the control.
+- `CngxInputFormat`: the control holds the raw value at all times, no longer the
+  formatted text after blur. Focus and blur emit nothing when `parse` inverts
+  `format`.
+- `CngxPhoneInput`: `[formControl]` works with the bridge imported (it threw
+  NG01203 before).
+
+Without the bridge, numeric and format inputs warn in dev mode like the mask.
 
 ## Path 3 - Standalone usage (no form, no field)
 
@@ -119,6 +130,12 @@ Nothing to change. The template-variable accessor surface is intact:
   keeps working - Angular synthesises the output from `value = model<T>()`.
   Only the explicit `directive.valueChange.subscribe(...)` API surface is
   gone; use `directive.value.subscribe(...)` instead.
+- `CngxPhoneInput.value` is `''` until national digits are typed; it used to
+  hold the dial code (`'1'`) right after load, also under Signal Forms. The
+  field still shows the dial code.
+- `CngxRating` and `CngxPhoneInput` inside `cngx-form-field` mark the field
+  touched when focus leaves the component. The rating never marked it, the
+  phone input marked it on every blur of its number field.
 - Under Reactive Forms, `CngxFormBridge` marks the control touched when focus
   leaves the atom's host, no longer on every move inside it. A radio, checkbox,
   button-toggle or chip group becomes touched when focus leaves the group, not

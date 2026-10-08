@@ -111,7 +111,16 @@ function isAllowedChar(
  *
  * <!-- Integer-only -->
  * <input cngxNumericInput [decimals]="0" [allowNegative]="false" />
+ *
+ * <!-- Signal Forms -->
+ * <input cngxNumericInput [formField]="f.amount" />
+ *
+ * <!-- Reactive Forms: import CngxFormBridge from @cngx/forms/controls -->
+ * <input cngxNumericInput [formControl]="amount" />
  * ```
+ *
+ * A bound form holds `number | null`, the same value as the model, never the
+ * display string.
  *
  * @category forms/input
  * @docsKind primary
