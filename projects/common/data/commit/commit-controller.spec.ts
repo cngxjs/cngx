@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { SIGNAL, type ReactiveNode } from '@angular/core/primitives/signals';
 import { describe, expect, test, beforeEach } from 'vitest';
 
 import {
@@ -325,3 +326,12 @@ describe('CNGX_COMMIT_CONTROLLER_FACTORY', () => {
   });
 });
 
+describe('createCommitController - signal names', () => {
+  test('names isCommitting for the signal graph', () => {
+    const ctrl = createCommitController<string>();
+    const nameOf = (s: object): string | undefined =>
+      (s as unknown as Record<symbol, ReactiveNode>)[SIGNAL].debugName;
+
+    expect(nameOf(ctrl.isCommitting)).toBe('commitController.isCommitting');
+  });
+});
