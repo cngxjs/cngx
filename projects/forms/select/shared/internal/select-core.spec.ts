@@ -113,5 +113,6 @@ describe('createSelectCore - dev descriptor', () => {
     });
     expect(nameOf(core.bindCommitRetry(() => {}))).toBe('selectCore.commitErrorContext');
     expect(nameOf(core.makeErrorContext(() => {}))).toBe('selectCore.errorContext');
+    expect(nameOf(core.selection)).toBe('selectCore.selection');
   });
 });

@@ -493,7 +493,12 @@ export function createSelectCore<T, TCommit>(
   const controllerInstance: SelectionController<T> | null = deps.multiValues
     ? selectionFactory<T>(deps.multiValues)
     : null;
-  const selection = signal<SelectionController<T> | null>(controllerInstance).asReadonly();
+  const selection = signal<SelectionController<T> | null>(
+    controllerInstance,
+    typeof ngDevMode !== 'undefined' && ngDevMode
+      ? { debugName: 'selectCore.selection' }
+      : undefined,
+  ).asReadonly();
   // Release per-value signal caches on teardown; post-destroy reads
   // flip to shared Signal<false> so late bindings stay safe.
   if (controllerInstance) {
