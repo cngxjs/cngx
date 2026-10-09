@@ -12,14 +12,6 @@
       "type": "string",
       "enum": ["minimal", "recommended", "full"],
       "default": "recommended"
-    },
-    "interactive": {
-      "type": "boolean",
-      "default": true
-    },
-    "dryRun": {
-      "type": "boolean",
-      "default": false
     }
   },
   "required": []

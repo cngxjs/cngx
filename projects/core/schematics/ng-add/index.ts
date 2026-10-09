@@ -8,8 +8,6 @@ import { addDependency, InstallBehavior } from '@schematics/angular/utility';
 export interface NgAddOptions {
   readonly project?: string;
   readonly preset?: 'minimal' | 'recommended' | 'full';
-  readonly interactive?: boolean;
-  readonly dryRun?: boolean;
 }
 
 /**

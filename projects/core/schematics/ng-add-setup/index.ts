@@ -5,8 +5,6 @@ import { readWorkspace } from '@schematics/angular/utility';
 export interface NgAddSetupOptions {
   readonly project?: string;
   readonly preset?: 'minimal' | 'recommended' | 'full';
-  readonly interactive?: boolean;
-  readonly dryRun?: boolean;
 }
 
 interface PackageManifest {
@@ -41,12 +39,12 @@ export function ngAddSetup(options: NgAddSetupOptions): Rule {
       material: hasPackage(manifest, '@angular/material'),
       cngxUtils: hasPackage(manifest, '@cngx/utils'),
       isTTY: process.stdout.isTTY === true,
-      interactive: options.interactive !== false,
-      dryRun: options.dryRun === true,
     };
     context.logger.info(`cngx ng-add-setup: detection ${JSON.stringify(facts)}`);
 
-    const canPrompt = facts.isTTY && facts.interactive;
+    // `ng add` strips --interactive and --dry-run before the rule runs, so
+    // the terminal itself is the only signal available here.
+    const canPrompt = facts.isTTY;
     const theme = canPrompt
       ? await select({
           message: 'Which theme should cngx generate?',

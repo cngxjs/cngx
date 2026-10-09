@@ -25,16 +25,6 @@
           { "value": "full", "label": "full - recommended plus AI tooling and the German language pack" }
         ]
       }
-    },
-    "interactive": {
-      "type": "boolean",
-      "description": "Ask the detection-dependent questions when a TTY is attached.",
-      "default": true
-    },
-    "dryRun": {
-      "type": "boolean",
-      "description": "Describe the change plan without writing files or installing packages.",
-      "default": false
     }
   },
   "required": []

@@ -3,7 +3,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 /**
  * Smoke guard for the bundled schematics under dist/. Runs the built
@@ -61,12 +61,28 @@ describe('dist/core/schematics', () => {
     expect(setup.options).toMatchObject({ name: 'ng-add-setup', options: { preset: 'minimal' } });
   });
 
-  it('ng-add-setup writes the spike file without prompting when not interactive', async () => {
-    const tree = await runner.runSchematic('ng-add-setup', { interactive: false }, appTree);
-    const spike = JSON.parse(tree.readText('.cngx/spike.json'));
+  describe('without a terminal', () => {
+    const isTTY = process.stdout.isTTY;
 
-    expect(spike.theme).toBe('cngx');
-    expect(spike.facts).toMatchObject({ projects: ['app'], interactive: false, material: false });
+    afterEach(() => {
+      process.stdout.isTTY = isTTY;
+    });
+
+    it('ng-add-setup writes the spike file without prompting', async () => {
+      process.stdout.isTTY = false;
+      const tree = await runner.runSchematic('ng-add-setup', {}, appTree);
+      const spike = JSON.parse(tree.readText('.cngx/spike.json'));
+
+      expect(spike.theme).toBe('cngx');
+      expect(spike.facts).toMatchObject({ projects: ['app'], isTTY: false, material: false });
+    });
+  });
+
+  it('declares no option the ng add command strips', () => {
+    const schema = JSON.parse(readFileSync(join(ROOT, 'dist', 'core', 'schematics', 'ng-add', 'schema.json'), 'utf8'));
+
+    expect(Object.keys(schema.properties)).not.toContain('dryRun');
+    expect(Object.keys(schema.properties)).not.toContain('interactive');
   });
 });
 
