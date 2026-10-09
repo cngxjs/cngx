@@ -1,4 +1,4 @@
-import { select } from '@inquirer/prompts';
+import select from '@inquirer/select';
 import { type Rule, type SchematicContext, type Tree } from '@angular-devkit/schematics';
 import { readWorkspace } from '@schematics/angular/utility';
 

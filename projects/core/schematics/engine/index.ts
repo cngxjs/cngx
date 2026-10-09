@@ -44,6 +44,20 @@ export { addToArrayLiteral, type ArraySelector, hasArrayLiteral } from './edit/t
 export { findElements, insertAttribute, parseTemplateContent } from './edit/template-edit';
 export { hasStyleImport, insertStyleImport } from './edit/style-edit';
 export { applyChangePlan } from './apply/apply';
+export {
+  canPrompt,
+  type ConfirmQuestion,
+  createPromptFlow,
+  inquirerAdapter,
+  type MultiSelectQuestion,
+  type PromptAdapter,
+  type PromptAnswer,
+  type PromptAnswers,
+  type PromptChoice,
+  type PromptFlow,
+  type PromptFlowOptions,
+  type SelectQuestion,
+} from './prompt/prompt';
 export { type ColorEnv, createPalette, type Palette } from './render/palette';
 export {
   createRenderer,
