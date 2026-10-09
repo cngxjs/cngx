@@ -127,6 +127,17 @@ export function createSchematicsVersions({ nextVersion, mcpVersion, angularRange
   return { cngx: nextVersion, mcp: mcpVersion, angular: angularRange };
 }
 
+// A lib ships its schematics only once its source manifest declares the
+// collection. Until then the bundle stays out of the tarball: the CLI cannot
+// reach a collection the manifest does not name.
+export function declaresSchematics(sourcePkg) {
+  return typeof sourcePkg.schematics === 'string' && sourcePkg.schematics.length > 0;
+}
+
+function readSourcePkg(lib) {
+  return JSON.parse(readFileSync(join(ROOT, 'projects', lib, 'package.json'), 'utf8'));
+}
+
 function readMcpVersion() {
   return JSON.parse(readFileSync(join(ROOT, 'packages', 'mcp', 'package.json'), 'utf8')).version;
 }
@@ -252,7 +263,9 @@ function main() {
     } else {
       run(`npx ng build ${lib}`);
     }
-    if (existsSync(join(ROOT, 'projects', lib, 'schematics'))) {
+    const shipsSchematics =
+      existsSync(join(ROOT, 'projects', lib, 'schematics')) && declaresSchematics(readSourcePkg(lib));
+    if (shipsSchematics) {
       run(`node scripts/build-schematics.mjs ${lib}`);
     }
 
@@ -279,7 +292,7 @@ function main() {
 
     const schematicsVersionsPath = join(ROOT, 'dist', lib, 'schematics', 'versions.json');
     const schematicsVersions =
-      lib === 'core'
+      lib === 'core' && shipsSchematics
         ? createSchematicsVersions({
             nextVersion,
             mcpVersion: readMcpVersion(),

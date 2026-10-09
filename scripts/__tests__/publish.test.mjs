@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   containsStableRelease,
   createSchematicsVersions,
+  declaresSchematics,
   replaceVersionInDist,
   resolveDistTag,
 } from '../publish.mjs';
@@ -102,5 +103,29 @@ describe('createSchematicsVersions', () => {
     expect(
       createSchematicsVersions({ nextVersion: '0.1.0', mcpVersion: '0.2.0', angularRange: '^21.2.0' }),
     ).toEqual({ cngx: '0.1.0', mcp: '0.2.0', angular: '^21.2.0' });
+  });
+});
+
+describe('declaresSchematics', () => {
+  it('ships schematics only when the source manifest names the collection', () => {
+    expect(declaresSchematics({ schematics: './schematics/collection.json' })).toBe(true);
+  });
+
+  it('keeps an undeclared schematics folder out of the tarball', () => {
+    expect(declaresSchematics({ name: '@cngx/core' })).toBe(false);
+    expect(declaresSchematics({ schematics: '' })).toBe(false);
+  });
+});
+
+describe('publishable libs', () => {
+  it('declare no schematics collection yet, so publish skips the spike bundle', () => {
+    const libs = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
+    const declaring = libs.filter((lib) =>
+      declaresSchematics(
+        JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'projects', lib, 'package.json'), 'utf8')),
+      ),
+    );
+
+    expect(declaring).toEqual([]);
   });
 });
