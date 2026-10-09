@@ -41,6 +41,12 @@ describe('findElements', () => {
     ]);
   });
 
+  it('finds matches in every @switch case and @default', () => {
+    const template = '@switch (mode) { @case (1) { <button>A</button> } @case (2) { <button>B</button> } @default { <button>C</button> } }';
+
+    expect(findElements(parseTemplateContent(template), (element) => element.name === 'button')).toHaveLength(3);
+  });
+
   it('returns nothing when no element matches', () => {
     expect(findElements(parseTemplateContent(TEMPLATE), (element) => element.name === 'cngx-select')).toEqual([]);
   });

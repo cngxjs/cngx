@@ -1,8 +1,9 @@
 import { parseTemplate, TmplAstElement, type TmplAstNode } from '@angular/compiler';
 
 // Node fields that hold nested template nodes: element and template
-// children plus the branches of control-flow and defer blocks.
-const NESTED_KEYS = ['children', 'branches', 'cases', 'empty', 'placeholder', 'loading', 'error'] as const;
+// children plus the branches of control-flow and defer blocks. `@switch`
+// nests as `groups[] -> { cases, children }` since Angular 21.
+const NESTED_KEYS = ['children', 'branches', 'groups', 'cases', 'empty', 'placeholder', 'loading', 'error'] as const;
 
 /** Parses an Angular template; parse errors throw instead of yielding a partial tree. */
 export function parseTemplateContent(content: string, url = 'template.html'): readonly TmplAstNode[] {
