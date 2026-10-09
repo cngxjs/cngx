@@ -41,6 +41,7 @@ import type {
   CngxSelectRefreshingVariant,
 } from '../shared/config';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
+import { createHostFocusWithin } from '../shared/internal/host-focus-within';
 import {
   CNGX_FORM_FIELD_CONTROL,
   CngxFieldSkinHost,
@@ -211,6 +212,8 @@ export interface CngxTreeSelectChange<T = unknown> {
     class: 'cngx-tree-select',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
+    '(focusin)': 'hostFocus.handleFocusIn()',
+    '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
   templateUrl: './tree-select.component.html',
   styleUrls: ['../shared/select-base.css', './tree-select.component.css'],
@@ -652,6 +655,10 @@ export class CngxTreeSelect<T = unknown>
    * family (telemetry / controlled-from-outside / test doubles).
    */
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
+  /** @internal Field-facing focus and touched: focus inside the host, panel included. */
+  protected readonly hostFocus = createHostFocusWithin({
+    onLeave: () => this.presenter?.fieldState().markAsTouched(),
+  });
 
   /**
    * Aggregated ARIA projection for the trigger. Structural-equal on
@@ -693,7 +700,7 @@ export class CngxTreeSelect<T = unknown>
   );
 
   readonly id = computed<string>(() => this.resolvedId());
-  readonly focused: Signal<boolean> = this.focusState.focused;
+  readonly focused: Signal<boolean> = this.hostFocus.focusedWithin;
   readonly empty = computed<boolean>(() => this.isEmpty());
   readonly disabled = computed<boolean>(
     () => this.disabledInput() || (this.presenter?.disabled() ?? false),
@@ -1210,7 +1217,6 @@ export class CngxTreeSelect<T = unknown>
   /** @internal */
   protected handleBlur(): void {
     this.focusState.markBlurred();
-    this.presenter?.fieldState().markAsTouched();
   }
 
   protected isEmpty(): boolean {

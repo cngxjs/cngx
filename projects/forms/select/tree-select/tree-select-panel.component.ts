@@ -209,6 +209,19 @@ export class CngxTreeSelectPanel<T = unknown> {
     return () => this.host.handleSelect(node);
   }
 
+  /**
+   * A press anywhere in the tree (row, twisty, slot content) keeps focus on
+   * the container: `CngxActiveDescendant` reads keys only while the container
+   * has focus, and the `tabindex="-1"` twisty would take focus on a click.
+   */
+  protected handleTreeMouseDown(event: MouseEvent): void {
+    event.preventDefault();
+    const container = this.treeContainer()?.nativeElement;
+    if (container && container.ownerDocument.activeElement !== container) {
+      container.focus();
+    }
+  }
+
   protected toggleExpand(event: MouseEvent, node: FlatTreeNode<T>): void {
     event.stopPropagation();
     this.host.treeController.toggle(node.id);

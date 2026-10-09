@@ -398,7 +398,8 @@ function mountVariant(variant: Variant): Promise<Mounted<FieldHost>> {
 }
 
 describe.each(VARIANTS)('$name focus leaves the control', (variant) => {
-  const itOpensIntoPanel = variant.focusesPanelOnOpen ? it.fails : it;
+  const itClosesFromPanel = variant.focusesPanelOnOpen ? it.fails : it;
+
 
   beforeAll(() => {
     polyfillPopover();
@@ -421,7 +422,7 @@ describe.each(VARIANTS)('$name focus leaves the control', (variant) => {
     expect(fieldFocused()).toBe(false);
   });
 
-  itOpensIntoPanel('opening keeps the field focused and untouched', async () => {
+  it('opening keeps the field focused and untouched', async () => {
     const { fixture, owner, open, fieldFocused } = await mountVariant(variant);
     owner.focus();
     await open();
@@ -430,7 +431,7 @@ describe.each(VARIANTS)('$name focus leaves the control', (variant) => {
     expect(fieldFocused()).toBe(true);
   });
 
-  itOpensIntoPanel('closing with Escape leaves the field untouched', async () => {
+  itClosesFromPanel('closing with Escape leaves the field untouched', async () => {
     const { fixture, owner, open } = await mountVariant(variant);
     owner.focus();
     await open();
@@ -490,7 +491,7 @@ describe.each(VARIANTS.filter((v) => v.inPanel))('$name focusable inside the pan
     (document.activeElement as HTMLElement | null)?.blur();
   });
 
-  it.fails('clicking it keeps the field focused and untouched', async () => {
+  it('clicking it keeps the field focused and untouched', async () => {
     const { fixture, owner, open, find, fieldFocused } = await mountVariant(variant);
     owner.focus();
     await open();
@@ -553,7 +554,7 @@ describe('CngxTreeSelect tree container', () => {
     expect(document.activeElement).toBe(tree);
   });
 
-  it.fails('a twisty click keeps focus on the tree and the field untouched', async () => {
+  it('a twisty click keeps focus on the tree and the field untouched', async () => {
     const { fixture, tree, find } = await openTree();
 
     mousePick(find('.cngx-tree-select__twisty'));

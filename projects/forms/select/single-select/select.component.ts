@@ -73,6 +73,7 @@ import {
 } from '../shared/commit-error-announcer';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
+import { createHostFocusWithin } from '../shared/internal/host-focus-within';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -195,6 +196,8 @@ export interface CngxSelectChange<T = unknown> {
     class: 'cngx-select',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
+    '(focusin)': 'hostFocus.handleFocusIn()',
+    '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
   templateUrl: './select.component.html',
   styleUrls: ['../shared/select-base.css', './select.component.css'],
@@ -349,7 +352,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       selected: this.selectedOption(),
       disabled: this.disabled(),
       panelOpen: this.panelOpen(),
-      focused: this.focused(),
+      focused: this.focusState.focused(),
     }),
     {
       equal: (a, b) =>
@@ -374,7 +377,11 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
-  /** @internal */ readonly focused = this.focusState.focused;
+  /** @internal Field-facing focus and touched: focus inside the host, panel included. */
+  protected readonly hostFocus = createHostFocusWithin({
+    onLeave: () => this.presenter?.fieldState().markAsTouched(),
+  });
+  /** @internal */ readonly focused = this.hostFocus.focusedWithin;
 
   readonly empty = computed<boolean>(() => this.isEmpty());
 
@@ -775,7 +782,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected handleBlur(): void {
     this.focusState.markBlurred();
-    this.presenter?.fieldState().markAsTouched();
   }
 
   /** @internal */

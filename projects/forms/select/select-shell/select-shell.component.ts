@@ -119,6 +119,7 @@ import {
   type CngxSelectTriggerLabelContext,
 } from '../shared/template-slots';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
+import { createHostFocusWithin } from '../shared/internal/host-focus-within';
 
 /**
  * Change event emitted by {@link CngxSelectShell.selectionChange} on
@@ -221,6 +222,8 @@ export interface CngxSelectShellChange<T = unknown> {
     class: 'cngx-select-shell',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
+    '(focusin)': 'hostFocus.handleFocusIn()',
+    '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
   templateUrl: './select-shell.component.html',
   styleUrls: ['../shared/select-base.css', './select-shell.component.css'],
@@ -431,7 +434,7 @@ export class CngxSelectShell<T = unknown>
         selected: sel,
         disabled: this.disabled(),
         panelOpen: this.panelOpen(),
-        focused: this.focused(),
+        focused: this.focusState.focused(),
       };
     },
     {
@@ -507,7 +510,11 @@ export class CngxSelectShell<T = unknown>
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
-  readonly focused = this.focusState.focused;
+  /** @internal Field-facing focus and touched: focus inside the host, panel included. */
+  protected readonly hostFocus = createHostFocusWithin({
+    onLeave: () => this.presenter?.fieldState().markAsTouched(),
+  });
+  readonly focused = this.hostFocus.focusedWithin;
 
   readonly empty = computed<boolean>(() => {
     const v = this.value();
@@ -1076,6 +1083,5 @@ export class CngxSelectShell<T = unknown>
   /** @internal */
   protected handleBlur(): void {
     this.focusState.markBlurred();
-    this.presenter?.fieldState().markAsTouched();
   }
 }

@@ -78,6 +78,7 @@ import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
+import { createHostFocusWithin } from '../shared/internal/host-focus-within';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -203,6 +204,8 @@ export interface CngxMultiSelectChange<T = unknown> {
     class: 'cngx-multi-select',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
+    '(focusin)': 'hostFocus.handleFocusIn()',
+    '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
   templateUrl: './multi-select.component.html',
   styleUrls: ['../shared/select-base.css', './multi-select.component.css'],
@@ -388,7 +391,11 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
-  /** @internal */ readonly focused = this.focusState.focused;
+  /** @internal Field-facing focus and touched: focus inside the host, panel included. */
+  protected readonly hostFocus = createHostFocusWithin({
+    onLeave: () => this.presenter?.fieldState().markAsTouched(),
+  });
+  /** @internal */ readonly focused = this.hostFocus.focusedWithin;
 
   readonly empty = computed<boolean>(() => this.isEmpty());
 
@@ -826,7 +833,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected handleBlur(): void {
     this.focusState.markBlurred();
-    this.presenter?.fieldState().markAsTouched();
   }
 
   /** @internal */

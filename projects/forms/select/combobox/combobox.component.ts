@@ -95,6 +95,7 @@ import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
+import { createHostFocusWithin } from '../shared/internal/host-focus-within';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -230,6 +231,8 @@ export interface CngxComboboxChange<T = unknown> {
     class: 'cngx-combobox',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
+    '(focusin)': 'hostFocus.handleFocusIn()',
+    '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
   templateUrl: './combobox.component.html',
   styleUrls: ['../shared/select-base.css', './combobox.component.css'],
@@ -531,7 +534,11 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
-  /** @internal */ readonly focused = this.focusState.focused;
+  /** @internal Field-facing focus and touched: focus inside the host, panel included. */
+  protected readonly hostFocus = createHostFocusWithin({
+    onLeave: () => this.presenter?.fieldState().markAsTouched(),
+  });
+  /** @internal */ readonly focused = this.hostFocus.focusedWithin;
 
   readonly empty = computed<boolean>(() => this.isEmpty());
 
@@ -684,7 +691,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /** @internal - reactive context for the input prefix/suffix template outlets. */
   protected readonly inputSlotContext = computed<CngxSelectInputSlotContext>(
-    () => ({ disabled: this.disabled(), focused: this.focused(), panelOpen: this.panelOpen() }),
+    () => ({ disabled: this.disabled(), focused: this.focusState.focused(), panelOpen: this.panelOpen() }),
     {
       equal: (a, b) =>
         a.disabled === b.disabled && a.focused === b.focused && a.panelOpen === b.panelOpen,
@@ -1043,7 +1050,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected handleBlur(): void {
     this.focusState.markBlurred();
-    this.presenter?.fieldState().markAsTouched();
   }
 
   /** @internal - PageUp/PageDown shared behaviour (±10 option jump). */
