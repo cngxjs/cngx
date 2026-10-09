@@ -98,8 +98,10 @@ export type CngxDevDescriptor =
  */
 export type CngxDevDescriptorInit = WithoutVersion<CngxDevDescriptor>;
 
+/** @internal */
 type WithoutVersion<T> = T extends unknown ? Omit<T, 'version'> : never;
 
+/** @internal */
 const DESCRIPTORS = new WeakMap<object, CngxDevDescriptor>();
 
 /**
@@ -134,7 +136,11 @@ export interface CngxDevDescriptorEntry {
   readonly descriptor: CngxDevDescriptor;
 }
 
-/** Field chains longer than this are not walked. */
+/**
+ * Field chains longer than this are not walked.
+ *
+ * @internal
+ */
 const MAX_DEPTH = 2;
 
 /**
@@ -153,6 +159,7 @@ export function resolveDevDescriptors(instance: object): CngxDevDescriptorEntry[
   return entries;
 }
 
+/** @internal */
 function walkFields(
   owner: object,
   path: readonly string[],
@@ -205,6 +212,7 @@ export interface CngxOverrideProvenance {
  */
 export type CngxControlledProvenance = 'priority' | 'fallback';
 
+/** @internal */
 type Bag = Readonly<Record<PropertyKey, unknown>>;
 
 /**
@@ -242,6 +250,7 @@ export function resolveControlledProvenance(
   return priority == null ? 'fallback' : 'priority';
 }
 
+/** @internal */
 function provenanceOf(merged: Signal<object>): CngxOverrideProvenance | undefined {
   const descriptor = DESCRIPTORS.get(merged);
   switch (descriptor?.kind) {
@@ -263,6 +272,7 @@ function provenanceOf(merged: Signal<object>): CngxOverrideProvenance | undefine
   }
 }
 
+/** @internal */
 function spreadProvenance(value: Bag, overrides: Bag): CngxOverrideProvenance {
   const result: Record<string, CngxValueSource> = {};
   for (const name of Object.keys(value)) {
@@ -271,6 +281,7 @@ function spreadProvenance(value: Bag, overrides: Bag): CngxOverrideProvenance {
   return result;
 }
 
+/** @internal */
 function fillProvenance(
   value: Bag,
   descriptor: CngxDefaultsFillDescriptor,
@@ -301,7 +312,11 @@ function fillProvenance(
   return result;
 }
 
-/** A key the fill restored: one `defaults` has and the merge left nullish. */
+/**
+ * A key the fill restored: one `defaults` has and the merge left nullish.
+ *
+ * @internal
+ */
 function isFilled(defaults: Bag, inner: Bag, name: string): boolean {
   return Object.hasOwn(defaults, name) && inner[name] == null;
 }
@@ -309,6 +324,8 @@ function isFilled(defaults: Bag, inner: Bag, name: string): boolean {
 /**
  * The inner source of a nested key: the inner merge resolved the whole record
  * at once when it was flat, key by key when it was nested.
+ *
+ * @internal
  */
 function chainedSource(
   provenance: CngxValueSource | CngxOverrideProvenance | undefined,
@@ -320,11 +337,16 @@ function chainedSource(
   return provenance?.[name] ?? 'unknown';
 }
 
+/** @internal */
 function asBag(value: unknown): Bag {
   return typeof value === 'object' && value !== null ? (value as Bag) : {};
 }
 
-/** Objects and functions (signals are functions) can key a `WeakMap`. */
+/**
+ * Objects and functions (signals are functions) can key a `WeakMap`.
+ *
+ * @internal
+ */
 function isReference(value: unknown): value is object {
   return (typeof value === 'object' && value !== null) || typeof value === 'function';
 }
