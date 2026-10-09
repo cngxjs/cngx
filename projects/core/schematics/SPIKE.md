@@ -13,7 +13,7 @@ published as `0.1.0-spike.2` to a local verdaccio.
 |-|-|
 |Local registry|verdaccio works; publish from staged copies, not through `publish.mjs`|
 |`ng add @cngx/ui` resolves `@cngx/core`|Yes, in the same run (npm installs core as a peer)|
-|In-rule prompts and the CLI spinner|Open: needs a joint TTY session (see below)|
+|In-rule prompts and the CLI spinner|Clean, in both stages: the CLI install step completes before the rule runs; answers echo on one line; logs stay flat (joint TTY session 2026-10-09)|
 |Material scaffold theme shape|`mat.theme((...))` map API, no `$theme` (confirmed)|
 |`--dry-run` reaches the rule|Only when the package is already installed; tasks never run; the rule cannot see the flag|
 |Two-stage flow|Works: install, then `ng-add-setup` with the new packages resolvable|
@@ -137,6 +137,56 @@ one:
   full - recommended plus AI tooling and the German language pack
 ```
 
+## In-rule prompts under the CLI
+
+Joint session 2026-10-09 in a real terminal (iTerm, zsh), npm 11.21.0 first
+in `PATH`, scratch apps outside the workspace. Two runs:
+
+1. Two-stage, `0.1.0-spike.3`: `@inquirer` `select` in `ng-add-setup`,
+   after the install task.
+2. Single-stage probe, `0.1.0-spike.4`: the same `select` in the `ng-add`
+   rule body, after detection and before any write, with one
+   `NodePackageInstallTask` at the end. Built from
+   `.internal/verdaccio/probe/single-stage-ng-add.ts` into the staged core
+   copy only (`probe/publish-probe.mjs`); the branch source is unchanged.
+
+Single-stage transcript (`ng add @cngx/ui@0.1.0-spike.4`):
+
+```
+✔ Determining Package Manager
+  › Using package manager: npm
+✔ Loading package information
+✔ Confirming installation
+✔ Installing package
+✔ Which cngx setup do you want? recommended - dependencies, theme, a11y providers, lint
+           cngx ng-add: single-stage probe (version 0.1.0-spike.4)
+           cngx ng-add: detection {"projects":["e1-app-2"],"material":false,"isTTY":true}
+✔ Which theme should cngx generate? cngx default
+           cngx ng-add: theme answer "cngx" (prompted: true)
+CREATE .cngx/spike.json (150 bytes)
+UPDATE package.json (888 bytes)
+✔ Packages installed successfully.
+```
+
+Findings:
+
+- The CLI's listr steps all complete before the schematic runs, so no CLI
+  spinner is active while an in-rule prompt is open, in either stage.
+- The `@inquirer` prompt renders its full choice list and collapses to one
+  `✔ question answer` line, the same shape as the CLI's own `x-prompt`.
+- `context.logger` lines are indented by the CLI (about 11 columns in the
+  rule body, 4 inside a `RunSchematicTask`) but never interleave with a
+  prompt or a spinner. Cosmetic only.
+- The CLI's own "Would you like to proceed?" confirmation pauses its
+  spinner itself; it appeared on the second run only and is unrelated to
+  the schematic.
+- Not observed: `listr2` output and `--verbose`. Only the apply phase uses
+  `listr2`, which runs after every prompt has been answered; to be checked
+  in the Phase 2 smoke run.
+
+Verdict: the single-stage shape (detect, prompt, write, one install task at
+the end) runs clean under `ng add`.
+
 ## Node adapter (`HostTree` over `NodeJsSyncHost`) and `HostSink`
 
 Probe against a copy of the scratch app:
@@ -224,20 +274,7 @@ API, the `theme-system()` mixin planned for Phase 3.
 These need a real terminal and a browser and are run together with the
 owner, not delegated:
 
-1. In-rule prompt under the CLI. Driving `ng add` through `script` with
-   piped keystrokes shows the `x-prompt` correctly, but the follow-up
-   install stalls behind the piped stdin, so the in-rule `@inquirer` prompt,
-   the CLI spinner interleaving, `context.logger` output and `listr2` under
-   `--verbose` are not observable that way. Repro in a real terminal:
-
-   ```bash
-   ng add @cngx/ui --registry http://localhost:4873
-   ```
-
-   Watch: does the install spinner stop before the stage-two `select`, does
-   the answer echo cleanly, does the detection log interleave.
-
-2. Material vars-only fidelity. A Material-scaffolded app with only the
+1. Material vars-only fidelity. A Material-scaffolded app with only the
    system and density bridges applied, side by side with the examples
    `/material-lab` widgets; list which component colours diverge. Decides
    whether Phase 3 stays system-only.
@@ -247,12 +284,13 @@ owner, not delegated:
 1. Prompt library: keep `@inquirer` but import the single-prompt packages
    (`@inquirer/select`, `@inquirer/checkbox`, `@inquirer/confirm`) and add
    them as devDependencies instead of `@inquirer/prompts`; `listr2` and
-   `picocolors` stay. Final yes after joint session 1.
+   `picocolors` stay. Confirmed by the joint TTY session (see "In-rule prompts
+under the CLI").
 2. Registry approach: verdaccio with staged copies, as above.
 3. Dry run and prompt switches: the CLI strips `dryRun` and `interactive`,
    so the schema needs option names the CLI passes through (proposal:
    `plan` and `prompts`), and the dry-run plan must be computable in stage
    one.
-4. Material bridge input shape: pending joint session 2.
+4. Material bridge input shape: pending the joint browser session.
 5. Scratch app location: outside the cngx workspace (the plan's in-repo
    scratch path does not work), installed with npm 11.
