@@ -1,5 +1,6 @@
 import { computed, linkedSignal, type Signal } from '@angular/core';
 import type { AsyncStatus } from './async-state';
+import { CNGX_DEV_DESCRIPTORS } from './dev-descriptors';
 
 /**
  * Reactive current/previous pair for arbitrary value transitions.
@@ -97,8 +98,26 @@ export function createTransitionTracker<T = AsyncStatus>(
     equal: (a, b) => eq(a.current, b.current) && eq(a.previous, b.previous),
   });
 
-  return {
-    current: computed(() => state().current),
-    previous: computed(() => state().previous),
+  const tracker: ValueTransition<T> = {
+    current: computed(
+      () => state().current,
+      typeof ngDevMode !== 'undefined' && ngDevMode
+        ? { debugName: 'transitionTracker.current' }
+        : undefined,
+    ),
+    previous: computed(
+      () => state().previous,
+      typeof ngDevMode !== 'undefined' && ngDevMode
+        ? { debugName: 'transitionTracker.previous' }
+        : undefined,
+    ),
   };
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    CNGX_DEV_DESCRIPTORS.tag(tracker, {
+      kind: 'cngx-dev:factory',
+      factory: 'createTransitionTracker',
+      inputs: { source },
+    });
+  }
+  return tracker;
 }

@@ -1,6 +1,9 @@
 import { signal } from '@angular/core';
+import { SIGNAL, type ReactiveNode } from '@angular/core/primitives/signals';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
+
+import { CNGX_DEV_DESCRIPTORS } from './dev-descriptors';
 import {
   CNGX_SELECTION_CONTROLLER_FACTORY,
   createSelectionController,
@@ -408,5 +411,29 @@ describe('createSelectionController', () => {
       expect(calls).toEqual([[[], 'alpha']]);
       expect(values()).toEqual(['alpha']);
     });
+  });
+});
+
+describe('createSelectionController dev descriptor', () => {
+  it('tags the controller with its factory name and inputs', () => {
+    const values = signal<string[]>([]);
+    const controller = createSelectionController(values);
+
+    expect(CNGX_DEV_DESCRIPTORS.read(controller)).toMatchObject({
+      kind: 'cngx-dev:factory',
+      factory: 'createSelectionController',
+      inputs: { values },
+    });
+  });
+
+  it('names the per-value signals the compiler cannot name', () => {
+    const controller = createSelectionController(signal<string[]>([]), {
+      childrenFn: () => [],
+    });
+    const nameOf = (s: object): string | undefined =>
+      (s as unknown as Record<symbol, ReactiveNode>)[SIGNAL].debugName;
+
+    expect(nameOf(controller.isSelected('a'))).toBe('selectionController.isSelected');
+    expect(nameOf(controller.isIndeterminate('a'))).toBe('selectionController.isIndeterminate');
   });
 });

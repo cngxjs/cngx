@@ -1,7 +1,9 @@
 import { signal } from '@angular/core';
+import { SIGNAL, type ReactiveNode } from '@angular/core/primitives/signals';
 import { TestBed } from '@angular/core/testing';
 import type { AsyncStatus } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
+import { CNGX_DEV_DESCRIPTORS } from './dev-descriptors';
 import { createTransitionTracker } from './transition-tracker';
 
 describe('createTransitionTracker', () => {
@@ -118,5 +120,27 @@ describe('createTransitionTracker', () => {
     source.set({ a: 2 });
     expect(tracker.current().a).toBe(2);
     expect(tracker.previous().a).toBe(1);
+  });
+});
+
+describe('createTransitionTracker dev descriptor', () => {
+  it('tags the tracker with its factory name and source', () => {
+    const source = signal<AsyncStatus>('idle');
+    const tracker = createTransitionTracker(source);
+
+    expect(CNGX_DEV_DESCRIPTORS.read(tracker)).toMatchObject({
+      kind: 'cngx-dev:factory',
+      factory: 'createTransitionTracker',
+      inputs: { source },
+    });
+  });
+
+  it('names the current and previous signals for the signal graph', () => {
+    const tracker = createTransitionTracker(signal<AsyncStatus>('idle'));
+    const nameOf = (s: object): string | undefined =>
+      (s as unknown as Record<symbol, ReactiveNode>)[SIGNAL].debugName;
+
+    expect(nameOf(tracker.current)).toBe('transitionTracker.current');
+    expect(nameOf(tracker.previous)).toBe('transitionTracker.previous');
   });
 });
