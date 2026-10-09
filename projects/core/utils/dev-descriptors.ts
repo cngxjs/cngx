@@ -16,7 +16,7 @@ export const CNGX_DEV_DESCRIPTOR_VERSION = 1;
  * @internal
  */
 export interface CngxOverrideMergeDescriptor {
-  readonly version: number;
+  readonly version: typeof CNGX_DEV_DESCRIPTOR_VERSION;
   readonly kind: 'cngx-dev:override-merge';
   readonly defaults: Signal<object>;
   readonly overrides: Signal<object>;
@@ -29,7 +29,7 @@ export interface CngxOverrideMergeDescriptor {
  * @internal
  */
 export interface CngxNestedOverrideMergeDescriptor {
-  readonly version: number;
+  readonly version: typeof CNGX_DEV_DESCRIPTOR_VERSION;
   readonly kind: 'cngx-dev:nested-override-merge';
   readonly defaults: Signal<object>;
   readonly overrides: Signal<object>;
@@ -43,7 +43,7 @@ export interface CngxNestedOverrideMergeDescriptor {
  * @internal
  */
 export interface CngxDefaultsFillDescriptor {
-  readonly version: number;
+  readonly version: typeof CNGX_DEV_DESCRIPTOR_VERSION;
   readonly kind: 'cngx-dev:defaults-fill';
   readonly merged: Signal<object>;
   readonly defaults: Signal<object>;
@@ -57,7 +57,7 @@ export interface CngxDefaultsFillDescriptor {
  * @internal
  */
 export interface CngxControlledSourceDescriptor {
-  readonly version: number;
+  readonly version: typeof CNGX_DEV_DESCRIPTOR_VERSION;
   readonly kind: 'cngx-dev:controlled-source';
   readonly priority: Signal<unknown> | undefined;
   readonly fallback: Signal<unknown>;
@@ -70,7 +70,7 @@ export interface CngxControlledSourceDescriptor {
  * @internal
  */
 export interface CngxFactoryDescriptor {
-  readonly version: number;
+  readonly version: typeof CNGX_DEV_DESCRIPTOR_VERSION;
   readonly kind: 'cngx-dev:factory';
   readonly factory: string;
   readonly inputs: Readonly<Record<string, unknown>>;

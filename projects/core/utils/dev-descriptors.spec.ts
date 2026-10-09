@@ -31,6 +31,20 @@ describe('CNGX_DEV_DESCRIPTORS', () => {
     });
   });
 
+  it('types the stamped version as the literal constant, so consumers can narrow on it', () => {
+    const target = {};
+    CNGX_DEV_DESCRIPTORS.tag(target, {
+      kind: 'cngx-dev:factory',
+      factory: 'createTest',
+      inputs: {},
+    });
+    const descriptor = CNGX_DEV_DESCRIPTORS.read(target);
+
+    const version: typeof CNGX_DEV_DESCRIPTOR_VERSION | undefined = descriptor?.version;
+
+    expect(version).toBe(CNGX_DEV_DESCRIPTOR_VERSION);
+  });
+
   it('reads undefined for an untagged object and for primitives', () => {
     expect(CNGX_DEV_DESCRIPTORS.read({})).toBeUndefined();
     expect(CNGX_DEV_DESCRIPTORS.read('text')).toBeUndefined();
