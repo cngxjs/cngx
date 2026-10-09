@@ -1,5 +1,7 @@
 import { signal } from '@angular/core';
+import { SIGNAL, type ReactiveNode } from '@angular/core/primitives/signals';
 import { TestBed } from '@angular/core/testing';
+import { CNGX_DEV_DESCRIPTORS } from '@cngx/core/utils';
 import { type CngxTreeNode } from '@cngx/utils';
 import { describe, expect, it } from 'vitest';
 import { createTreeController } from './tree-controller';
@@ -264,5 +266,23 @@ describe('createTreeController - derivation contract', () => {
     const t3 = performance.now();
     expect(vis.length).toBe(10_110);
     expect(t3 - t2).toBeLessThan(50);
+  });
+});
+
+describe('createTreeController - dev descriptor', () => {
+  it('tags the controller with its factory name and options', () => {
+    const ctrl = makeController();
+
+    expect(CNGX_DEV_DESCRIPTORS.read(ctrl)).toMatchObject({
+      kind: 'cngx-dev:factory',
+      factory: 'createTreeController',
+    });
+  });
+
+  it('names the per-id expansion signal for the signal graph', () => {
+    const ctrl = makeController();
+    const node = (ctrl.isExpanded('a') as unknown as Record<symbol, ReactiveNode>)[SIGNAL];
+
+    expect(node.debugName).toBe('treeController.isExpanded');
   });
 });
