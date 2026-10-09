@@ -148,7 +148,10 @@ export function createAsyncState<T>(options?: CreateAsyncStateOptions): MutableA
     CNGX_DEV_DESCRIPTORS.tag(mutation, {
       kind: 'cngx-dev:factory',
       factory: 'createAsyncState',
-      inputs: { options },
+      // The inner manual state carries its own tag; listing it here is the
+      // only way an inspector reaches it, since the mutation exposes its
+      // signals, not the state object.
+      inputs: { options, state },
     });
   }
   return mutation;

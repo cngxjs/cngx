@@ -125,4 +125,12 @@ describe('createAsyncState dev descriptor', () => {
       inputs: { options },
     });
   });
+
+  it('links to the inner manual state, which carries its own descriptor', () => {
+    const state = TestBed.runInInjectionContext(() => createAsyncState<string>());
+    const descriptor = CNGX_DEV_DESCRIPTORS.read(state);
+    const inner = descriptor?.kind === 'cngx-dev:factory' ? descriptor.inputs['state'] : undefined;
+
+    expect(CNGX_DEV_DESCRIPTORS.read(inner)).toMatchObject({ factory: 'createManualState' });
+  });
 });
