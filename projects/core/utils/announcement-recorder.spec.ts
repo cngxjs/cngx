@@ -131,6 +131,64 @@ describe('createAnnouncementRecorder', () => {
     ]);
   });
 
+  describe('writes sharing a batch with the region appearing', () => {
+    it('records an append after an empty insertion as a mutation', async () => {
+      start();
+      const el = region({ 'aria-live': 'polite', 'aria-atomic': 'true' });
+
+      host.append(el);
+      el.textContent = 'Copied';
+      await observed();
+
+      expect(recorder.entries()).toEqual([
+        expect.objectContaining({ text: 'Copied', origin: 'mutation' }),
+      ]);
+    });
+
+    it('records an insertion with text and a later append as two entries', async () => {
+      start();
+      const log = region({ role: 'log' }, 'First');
+
+      host.append(log);
+      const line = document.createElement('p');
+      line.textContent = 'Second';
+      log.append(line);
+      await observed();
+
+      expect(recorder.entries().map((entry) => [entry.text, entry.origin])).toEqual([
+        ['First', 'insertion'],
+        ['Second', 'mutation'],
+      ]);
+    });
+
+    it('records a region rewritten after its insertion once, as an insertion', async () => {
+      start();
+      const el = region({ role: 'status' }, 'Draft');
+
+      host.append(el);
+      el.textContent = 'Final';
+      await observed();
+
+      expect(recorder.entries()).toEqual([
+        expect.objectContaining({ text: 'Final', origin: 'insertion' }),
+      ]);
+    });
+
+    it('records text written before an element became live as part of became-live', async () => {
+      const el = document.createElement('div');
+      host.append(el);
+      start();
+
+      el.textContent = 'Ready';
+      el.setAttribute('role', 'status');
+      await observed();
+
+      expect(recorder.entries()).toEqual([
+        expect.objectContaining({ text: 'Ready', origin: 'became-live' }),
+      ]);
+    });
+  });
+
   it('counts an identical write after a clear as a new entry', async () => {
     const el = region({ 'aria-live': 'polite' });
     host.append(el);

@@ -183,12 +183,41 @@ export function createAnnouncementRecorder(
     });
   };
 
-  const register = (region: Element, origin: 'insertion' | 'became-live'): void => {
-    const text = readText(region, false);
+  // A region that appeared in this batch at record `since`. The text it held
+  // then is its current text minus what later records in the batch appended.
+  // Under fake timers a later write (CngxLiveAnnouncer's 16 ms write after
+  // it inserts an empty region) shares the batch, but a browser runs it as a
+  // separate task, so it must still read as a mutation. When a later record
+  // removed or rewrote text inside the region, the earlier state is not
+  // recoverable, so the whole batch counts toward the appearance. Returns the
+  // record index up to which the appearance accounts for the region's changes.
+  const register = (
+    region: Element,
+    origin: 'insertion' | 'became-live',
+    since: number,
+    records: readonly MutationRecord[],
+  ): number => {
+    const appended = new Set<Node>();
+    let rewritten = false;
+    for (let i = since + 1; i < records.length && !rewritten; i++) {
+      const rec = records[i];
+      if (rec.type === 'attributes' || !region.contains(rec.target)) {
+        continue;
+      }
+      if (rec.type === 'characterData' || rec.removedNodes.length > 0) {
+        rewritten = true;
+        continue;
+      }
+      for (const node of Array.from(rec.addedNodes)) {
+        appended.add(node);
+      }
+    }
+    const text = readText(region, false, rewritten ? undefined : appended);
     regions.set(region, { lastText: text });
     if (text !== '') {
       record(region, text, origin);
     }
+    return rewritten ? records.length : since;
   };
 
   const closestRegion = (node: Node): Element | null => {
@@ -206,54 +235,58 @@ export function createAnnouncementRecorder(
   };
 
   const handle = (records: readonly MutationRecord[]): void => {
-    const inserted = new Set<Element>();
-    const becameLive = new Set<Element>();
+    const inserted = new Map<Element, number>();
+    const becameLive = new Map<Element, number>();
+    const coveredUpTo = new Map<Element, number>();
     const added = new Map<Element, string[]>();
     let removedAny = false;
 
-    for (const rec of records) {
+    records.forEach((rec, index) => {
       if (rec.type !== 'childList') {
-        continue;
+        return;
       }
       for (const node of Array.from(rec.addedNodes)) {
         if (node instanceof Element && root.contains(node)) {
           for (const region of liveRegionsIn(node)) {
-            inserted.add(region);
+            if (!inserted.has(region)) {
+              inserted.set(region, index);
+            }
           }
         }
       }
       removedAny ||= rec.removedNodes.length > 0;
-    }
+    });
 
-    for (const rec of records) {
+    records.forEach((rec, index) => {
       if (rec.type !== 'attributes' || !(rec.target instanceof Element)) {
-        continue;
+        return;
       }
       const target = rec.target;
       const live = target.isConnected && isLive(target);
       if (!live) {
         regions.delete(target);
-        continue;
+        becameLive.delete(target);
+        return;
       }
-      if (!regions.has(target) && !inserted.has(target)) {
-        becameLive.add(target);
+      if (!regions.has(target) && !inserted.has(target) && !becameLive.has(target)) {
+        becameLive.set(target, index);
       }
+    });
+
+    for (const [region, since] of inserted) {
+      coveredUpTo.set(region, register(region, 'insertion', since, records));
+    }
+    for (const [region, since] of becameLive) {
+      coveredUpTo.set(region, register(region, 'became-live', since, records));
     }
 
-    for (const region of inserted) {
-      register(region, 'insertion');
-    }
-    for (const region of becameLive) {
-      register(region, 'became-live');
-    }
-
-    for (const rec of records) {
+    records.forEach((rec, index) => {
       if (rec.type === 'attributes') {
-        continue;
+        return;
       }
       const region = closestRegion(rec.target);
-      if (!region || inserted.has(region) || becameLive.has(region)) {
-        continue;
+      if (!region || index <= (coveredUpTo.get(region) ?? -1)) {
+        return;
       }
       const texts = added.get(region) ?? [];
       if (rec.type === 'characterData') {
@@ -264,7 +297,7 @@ export function createAnnouncementRecorder(
         }
       }
       added.set(region, texts);
-    }
+    });
 
     for (const [region, texts] of added) {
       const state = regions.get(region);
@@ -395,13 +428,17 @@ function liveRegionsIn(node: Node): Element[] {
 /**
  * Text AT would read from `node`: text nodes, minus `hidden` /
  * `aria-hidden="true"` descendants and script, style and template content.
- * `excludeSelf` applies the same exclusion to `node` itself.
+ * `excludeSelf` applies the same exclusion to `node` itself; `skip` leaves
+ * out the given nodes and their subtrees.
  *
  * @internal
  */
-function readText(node: Node, excludeSelf: boolean): string {
+function readText(node: Node, excludeSelf: boolean, skip?: ReadonlySet<Node>): string {
   const parts: string[] = [];
   const walk = (current: Node, isSelf: boolean): void => {
+    if (skip?.has(current)) {
+      return;
+    }
     if (current.nodeType === Node.TEXT_NODE) {
       parts.push(current.textContent ?? '');
       return;
