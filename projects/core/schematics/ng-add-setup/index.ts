@@ -8,8 +8,8 @@ const SPIKE_FILE = '.cngx/spike.json';
 
 /**
  * Stage two smoke. Logs what detection sees, asks one question when a TTY
- * is attached, writes one file. Exists only to answer the Phase 0 spike
- * questions; the real stage two replaces it in Phase 4.
+ * is attached, writes one file. A probe for the CLI behaviour recorded in
+ * SPIKE.md, not the onboarding itself.
  */
 export function ngAddSetup(options: NgAddOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {

@@ -19,7 +19,7 @@ published as `0.1.0-spike.2` to a local verdaccio.
 |Two-stage flow|Works: install, then `ng-add-setup` with the new packages resolvable|
 |`HostTree` over `NodeJsSyncHost`|Works with `readWorkspace` and `addRootProvider` unchanged|
 |`@angular/compiler` inside the schematic|Resolves from the consumer install (ESM, loaded through `require`)|
-|Bundle size|+246 KB packed / +814 KB unpacked on `@cngx/core`; 493 KB of it is avoidable|
+|Bundle size|+246 KB packed / +814 KB unpacked on `@cngx/core` once shipped; 493 KB of it is avoidable; no release ships it before the manifest declares `schematics`|
 |Material vars-only fidelity|Open: needs a joint browser session (see below)|
 |`HostSink` write-back|Works; commits a `HostTree` without own action iteration|
 
@@ -94,14 +94,17 @@ npm 7+ installs `@cngx/core` as a peer of `@cngx/ui`, so the shim takes the
 (`RunSchematicTask('@cngx/core', 'ng-add')`) is covered by the dist smoke
 test only. The CLI writes the entry package with a caret
 (`^0.1.0-spike.2`); Phase 4 has to rewrite it to the exact lockstep version.
+The other `@cngx/*` pins are exact, and an older pin the app already
+declares is replaced and logged.
 
 ## `--dry-run`
 
 `ng add` strips `interactive`, `dryRun`, `force`, `defaults`, `registry`,
 `verbose` and `skipConfirmation` before calling the schematic
-(`@angular/cli/src/commands/add/cli.js:544`). The schema's `interactive` and
-`dryRun` options therefore always arrive as their schema defaults; the rule
-cannot tell a dry run from a real one through options.
+(`@angular/cli/src/commands/add/cli.js:544`). Options with those names
+would always arrive as their schema defaults, so the schema no longer
+declares them; the rule cannot tell a dry run from a real one through
+options.
 
 - Package not installed: `ng add @cngx/ui --dry-run` never reaches a rule.
   The CLI dry-runs its own `npm view` and fails with "Unable to load package
@@ -178,8 +181,13 @@ Attribution of the minified stage two: `iconv-lite` 493 KB, `chardet`
 prompt (`external-editor`) that the aggregate `@inquirer/prompts` drags in;
 they do not tree-shake. Importing the single packages (`@inquirer/select`,
 `@inquirer/checkbox`, `@inquirer/confirm`) instead of the aggregate should
-drop the stage-two bundle to roughly 110 KB minified. Add `minify: true` to
-the esbuild build as well.
+drop the stage-two bundle to roughly 110 KB minified. The build already
+minifies; the sizes above are from before that and `minify` alone took the
+stage-two bundle from 810 KB to 602 KB.
+
+`scripts/publish.mjs` builds the schematics only for a lib whose source
+`package.json` declares `schematics`, so no release carries the bundle
+before Phase 4 adds that key.
 
 ## Material scaffold
 
@@ -208,8 +216,8 @@ html {
 ```
 
 No `$theme` variable exists, so `cngx-material.theme($theme)` cannot be fed
-from the scaffold. Confirms backlog row 120 and the `theme-system()` input
-planned for Phase 3.
+from the scaffold. Confirms the need for a bridge input that takes the map
+API, the `theme-system()` mixin planned for Phase 3.
 
 ## Open: joint sessions
 
