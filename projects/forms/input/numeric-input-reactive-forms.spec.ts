@@ -58,6 +58,21 @@ class SignalFormsHost {
 }
 
 @Component({
+  selector: 'numeric-rf-host-8',
+  template: `
+    <form [formGroup]="group" (ngSubmit)="submitted.set(group.value.amount)">
+      <input cngxNumericInput [locale]="'de-DE'" formControlName="amount" />
+      <button type="submit">Save</button>
+    </form>
+  `,
+  imports: [CngxNumericInput, ReactiveFormsModule, CngxFormBridge],
+})
+class SubmitHost {
+  readonly group = new FormGroup({ amount: new FormControl<number | null>(null) });
+  readonly submitted = signal<number | null | undefined>(undefined);
+}
+
+@Component({
   selector: 'numeric-rf-host-6',
   template: `<input cngxNumericInput [formControl]="control" />`,
   imports: [CngxNumericInput, ReactiveFormsModule],
@@ -109,6 +124,11 @@ function typeAndBlur(
   blur(input, fixture);
 }
 
+function typeKey(input: HTMLInputElement, text: string): void {
+  input.value = text;
+  input.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' }));
+}
+
 function paste(input: HTMLInputElement, text: string): void {
   const event = new Event('paste', { bubbles: true, cancelable: true });
   Object.defineProperty(event, 'clipboardData', { value: { getData: () => text } });
@@ -145,6 +165,39 @@ describe('CngxNumericInput under Reactive Forms', () => {
     expect(emissions).toBe(0);
     expect(host.control.value).toBe(1234.5);
     expect(host.control.pristine).toBe(true);
+  });
+
+  it.fails('typing without blur updates the control', () => {
+    const { fixture, input, host } = mount(RfHost);
+    focus(input, fixture);
+
+    typeKey(input, '12');
+    flush(fixture);
+
+    expect(host.control.value).toBe(12);
+    expect(host.control.dirty).toBe(true);
+  });
+
+  it.fails('Enter submit without blur reads the typed value', () => {
+    const { fixture, input, host } = mount(SubmitHost);
+    focus(input, fixture);
+
+    typeKey(input, '1234,5');
+    (fixture.nativeElement as HTMLElement)
+      .querySelector('form')!
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+    expect(host.submitted()).toBe(1234.5);
+  });
+
+  it.fails('Signal Forms: typing without blur updates the field', () => {
+    const { fixture, input, host } = mount(SignalFormsHost);
+    focus(input, fixture);
+
+    typeKey(input, '12');
+    flush(fixture);
+
+    expect(host.model().amount).toBe(12);
   });
 
   it('B2: renders an initial control value and stays pristine', () => {

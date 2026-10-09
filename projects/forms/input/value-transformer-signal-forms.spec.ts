@@ -87,6 +87,27 @@ describe('value-transformer directives - Signal-Forms style two-way binding', ()
     });
   });
 
+  describe('CngxNumericInput per keystroke', () => {
+    it.fails('[(value)]: typing without blur updates the host signal', () => {
+      TestBed.configureTestingModule({
+        providers: [{ provide: LOCALE_ID, useValue: 'en-US' }],
+      });
+      const fixture = TestBed.createComponent(NumericHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+
+      input.dispatchEvent(new FocusEvent('focus'));
+      TestBed.flushEffects();
+      input.value = '42';
+      input.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' }));
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.hostValue()).toBe(42);
+    });
+  });
+
   describe('CngxInputFormat', () => {
     it('host signal -> directive -> formatted DOM', () => {
       const fixture = TestBed.createComponent(FormatHost);

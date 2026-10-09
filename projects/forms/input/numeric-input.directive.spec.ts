@@ -7,6 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { CngxFieldSkinHost, provideFormField, withFieldSkin } from '@cngx/forms/field';
 import { CNGX_LOCALE } from '@cngx/core/utils';
 import { CngxInput } from './input.directive';
+import { withCurrency } from './currency.feature';
 import { provideInputConfig, withNumericDefaults } from './input-config';
 import { CngxNumericInput } from './numeric-input.directive';
 
@@ -94,6 +95,20 @@ function typeChar(input: HTMLInputElement, char: string, pos?: number): boolean 
     cancelable: true,
   });
   return input.dispatchEvent(event);
+}
+
+function typeText(input: HTMLInputElement, text: string, init: InputEventInit = {}): void {
+  input.value = text;
+  input.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', ...init }));
+}
+
+@Component({
+  template: `<input cngxNumericInput [(value)]="value" />`,
+  imports: [CngxNumericInput],
+})
+class CurrencyHost {
+  readonly value = signal<number | null>(1234.5);
+  readonly directive = viewChild.required(CngxNumericInput);
 }
 
 function focus(input: HTMLInputElement): void {
@@ -481,6 +496,155 @@ describe('CngxNumericInput', () => {
       directive.value.set(7);
       flush(fixture);
       expect(directive.numericValue()).toBe(7);
+    });
+  });
+
+  describe('per-keystroke commit', () => {
+    it.fails('typing 12 updates value before blur and keeps the text', () => {
+      const { directive, fixture, input } = setup();
+      focus(input);
+      flush(fixture);
+      typeText(input, '1');
+      flush(fixture);
+      typeText(input, '12');
+      flush(fixture);
+
+      expect(directive.value()).toBe(12);
+      expect(input.value).toBe('12');
+    });
+
+    it.fails('1 under min=10 holds 1 while focused: invalid, text unchanged', () => {
+      const { directive, fixture, input } = setup({ min: 10 });
+      focus(input);
+      flush(fixture);
+      typeText(input, '1');
+      flush(fixture);
+
+      expect(directive.value()).toBe(1);
+      expect(directive.isValid()).toBe(false);
+      expect(input.value).toBe('1');
+    });
+
+    it.fails('de-DE: a trailing decimal comma stays in the text, value 1', () => {
+      const { directive, fixture, input } = setup({ locale: 'de-DE' });
+      focus(input);
+      flush(fixture);
+      typeText(input, '1,');
+      flush(fixture);
+
+      expect(directive.value()).toBe(1);
+      expect(input.value).toBe('1,');
+    });
+
+    it.fails('de-DE: 1,50 stays 1,50 with value 1.5', () => {
+      const { directive, fixture, input } = setup({ locale: 'de-DE' });
+      focus(input);
+      flush(fixture);
+      typeText(input, '1,50');
+      flush(fixture);
+
+      expect(directive.value()).toBe(1.5);
+      expect(input.value).toBe('1,50');
+    });
+
+    it.fails('a lone minus writes null and keeps the minus', () => {
+      const { directive, fixture, input } = setup();
+      directive.setValue(5);
+      flush(fixture);
+      focus(input);
+      flush(fixture);
+      typeText(input, '-');
+      flush(fixture);
+
+      expect(directive.value()).toBe(null);
+      expect(input.value).toBe('-');
+    });
+
+    it.fails('aria-valuenow follows the typed value before blur', () => {
+      const { fixture, input } = setup();
+      focus(input);
+      flush(fixture);
+      typeText(input, '12');
+      flush(fixture);
+
+      expect(input.getAttribute('aria-valuenow')).toBe('12');
+    });
+
+    it.fails('an IME composition commits once, after compositionend', () => {
+      const { directive, fixture, input } = setup();
+      directive.setValue(3);
+      flush(fixture);
+      const emitted: (number | null)[] = [];
+      directive.value.subscribe((v) => emitted.push(v));
+      focus(input);
+      flush(fixture);
+
+      input.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }));
+      typeText(input, '1', { isComposing: true, inputType: 'insertCompositionText' });
+      flush(fixture);
+      typeText(input, '12', { isComposing: true, inputType: 'insertCompositionText' });
+      flush(fixture);
+      expect(directive.value()).toBe(3);
+
+      input.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, data: '12' }));
+      flush(fixture);
+
+      expect(directive.value()).toBe(12);
+      expect(emitted).toEqual([12]);
+    });
+
+    for (const dropped of ['Infinity', '0x1F', '1e400']) {
+      it.fails(`a dropped ${dropped} never reaches the model, typed or on blur`, () => {
+        const { directive, fixture, input } = setup();
+        focus(input);
+        flush(fixture);
+        typeText(input, dropped, { inputType: 'insertFromDrop' });
+        flush(fixture);
+        expect(directive.value()).toBe(null);
+
+        blur(input);
+        flush(fixture);
+        expect(directive.value()).toBe(null);
+      });
+    }
+
+    it('blur still clamps a typed 1 to min=10 and formats', () => {
+      const { directive, fixture, input } = setup({ min: 10 });
+      focus(input);
+      flush(fixture);
+      typeText(input, '1');
+      flush(fixture);
+      blur(input);
+      flush(fixture);
+
+      expect(directive.value()).toBe(10);
+      expect(input.value).toBe('10');
+    });
+
+    it('a programmatic write while focused still renders', () => {
+      const { directive, fixture, input } = setup();
+      focus(input);
+      flush(fixture);
+      directive.setValue(5);
+      flush(fixture);
+
+      expect(input.value).toBe('5');
+    });
+
+    it('a blurred currency display keeps its value after the directive input dispatch', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: LOCALE_ID, useValue: 'en-US' },
+          provideInputConfig(withCurrency({ code: 'USD' })),
+        ],
+      });
+      const fixture = TestBed.createComponent(CurrencyHost);
+      flush(fixture);
+      const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+
+      expect(input.value).toBe('1,234.50');
+      expect(fixture.componentInstance.value()).toBe(1234.5);
+      expect(fixture.componentInstance.directive().value()).toBe(1234.5);
     });
   });
 
