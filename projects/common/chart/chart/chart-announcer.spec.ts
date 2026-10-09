@@ -7,9 +7,13 @@ import {
   signal,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { provideLocale } from '@cngx/core/utils';
+import {
+  createAnnouncementRecorder,
+  provideLocale,
+  type CngxAnnouncementRecorder,
+} from '@cngx/core/utils';
 
 import { provideChartI18n, withChartI18nLabels } from '../i18n/chart-i18n';
 import { CngxChartAnnouncer } from './chart-announcer.component';
@@ -170,5 +174,44 @@ describe('CngxChartAnnouncer - copy flip', () => {
     fixture.componentInstance.sig.set({ kind: 'threshold-cross', threshold: 2, direction: 'up' });
     fixture.detectChanges();
     expect(assertive.textContent?.trim()).toBe('Schwelle 2 überschritten');
+  });
+});
+
+describe('CngxChartAnnouncer - recorded', () => {
+  let recorder: CngxAnnouncementRecorder | undefined;
+
+  afterEach(() => {
+    recorder?.destroy();
+  });
+
+  it('records a trend flip as polite and a threshold crossing as assertive', async () => {
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    recorder = createAnnouncementRecorder({ owner: () => null });
+
+    fixture.componentInstance.sig.set({ kind: 'trend-flip', from: 'flat', to: 'up' });
+    fixture.detectChanges();
+    await Promise.resolve();
+    fixture.componentInstance.sig.set({ kind: 'threshold-cross', threshold: 80, direction: 'up' });
+    fixture.detectChanges();
+    await Promise.resolve();
+
+    expect(
+      recorder.entries().map(({ text, politeness, role, origin }) => ({
+        text: stripBidiIsolates(text),
+        politeness,
+        role,
+        origin,
+      })),
+    ).toEqual([
+      { text: 'Trend changed to up', politeness: 'polite', role: 'status', origin: 'mutation' },
+      {
+        text: 'Threshold 80 crossed',
+        politeness: 'assertive',
+        role: 'alert',
+        origin: 'mutation',
+      },
+    ]);
   });
 });
