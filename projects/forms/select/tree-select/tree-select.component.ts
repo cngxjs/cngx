@@ -658,6 +658,11 @@ export class CngxTreeSelect<T = unknown>
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
     onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    owner: () => this.triggerBtn()?.nativeElement,
+    restoreFocus: this.config.restoreFocus,
+    suppressOpenOnFocus: (active) => {
+      this.suppressOpenOnFocus = active;
+    },
   });
 
   /**
@@ -786,6 +791,7 @@ export class CngxTreeSelect<T = unknown>
     return this.selection.isIndeterminate(value)();
   }
   handleRetry(): void {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const fn = this.retryFn();
     if (fn) {
       fn();
@@ -845,6 +851,7 @@ export class CngxTreeSelect<T = unknown>
     this.popoverRef()?.show();
   }
   close(): void {
+    this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
   toggle(): void {
@@ -1107,6 +1114,7 @@ export class CngxTreeSelect<T = unknown>
   /** @internal */
   protected handleChipRemoveClick(event: Event, opt: CngxTreeSelectedItem<T>): void {
     event.stopPropagation();
+    this.hostFocus.refocusOwnerBeforeRemoval();
     this.removeSelectedItem(opt);
   }
 
@@ -1133,7 +1141,7 @@ export class CngxTreeSelect<T = unknown>
 
   /** @internal - stable remove callback for `*cngxTreeSelectChip` context. */
   protected chipRemoveFor(opt: CngxTreeSelectedItem<T>): () => void {
-    return this.chipRemovalHandler.removeFor(opt);
+    return this.hostFocus.withRefocus(this.chipRemovalHandler.removeFor(opt));
   }
 
   /**
@@ -1168,6 +1176,7 @@ export class CngxTreeSelect<T = unknown>
 
   /** @internal - exposed for the `*cngxSelectClearButton` slot. */
   protected readonly clearAll: () => void = () => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const previous = untracked(() => [...this.values()]);
     if (previous.length === 0) {
       return;

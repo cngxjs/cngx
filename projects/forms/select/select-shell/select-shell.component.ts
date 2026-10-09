@@ -482,6 +482,7 @@ export class CngxSelectShell<T = unknown>
    * @internal
    */
   private readonly handleClearAction = (): void => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
     if (current === undefined || current === null) {
       return;
@@ -513,6 +514,11 @@ export class CngxSelectShell<T = unknown>
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
     onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    owner: () => this.triggerBtn()?.nativeElement,
+    restoreFocus: this.config.restoreFocus,
+    suppressOpenOnFocus: (active) => {
+      this.suppressOpenOnFocus = active;
+    },
   });
   readonly focused = this.hostFocus.focusedWithin;
 
@@ -662,6 +668,7 @@ export class CngxSelectShell<T = unknown>
       if (this.commitMode() === 'pessimistic') {
         const pop = this.popoverRef();
         if (pop?.isVisible()) {
+          this.hostFocus.refocusOwnerBeforeClose();
           pop.hide();
         }
       }
@@ -672,6 +679,7 @@ export class CngxSelectShell<T = unknown>
       if (status === 'pending' && this.commitMode() === 'optimistic') {
         const pop = this.popoverRef();
         if (pop?.isVisible()) {
+          this.hostFocus.refocusOwnerBeforeClose();
           pop.hide();
         }
       }
@@ -855,6 +863,7 @@ export class CngxSelectShell<T = unknown>
     // Lifecycle + routing in createADActivationDispatcher; value-shape
     // work (snapshot, finalize) stays here.
     createADActivationDispatcher<T, T>({
+      beforeHide: () => this.hostFocus.refocusOwnerBeforeClose(),
       listboxRef: this.listboxRef,
       core: this.core,
       popoverRef: this.popoverRef,
@@ -906,6 +915,7 @@ export class CngxSelectShell<T = unknown>
     this.popoverRef()?.show();
   }
   close(): void {
+    this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
   toggle(): void {
@@ -1042,6 +1052,7 @@ export class CngxSelectShell<T = unknown>
 
   /** @internal */
   handleRetry(): void {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const fn = this.retryFn();
     if (fn) {
       fn();
@@ -1052,6 +1063,7 @@ export class CngxSelectShell<T = unknown>
   /** @internal */
   protected handleClearClick(event: Event): void {
     event.stopPropagation();
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
     if (current === undefined || current === null) {
       return;

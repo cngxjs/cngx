@@ -380,6 +380,11 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
     onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    owner: () => this.triggerBtn()?.nativeElement,
+    restoreFocus: this.config.restoreFocus,
+    suppressOpenOnFocus: (active) => {
+      this.suppressOpenOnFocus = active;
+    },
   });
   /** @internal */ readonly focused = this.hostFocus.focusedWithin;
 
@@ -627,6 +632,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       if (this.commitMode() === 'pessimistic') {
         const pop = this.popoverRef();
         if (pop?.isVisible()) {
+          this.hostFocus.refocusOwnerBeforeClose();
           pop.hide();
         }
       }
@@ -639,6 +645,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       if (status === 'pending' && this.commitMode() === 'optimistic') {
         const pop = this.popoverRef();
         if (pop?.isVisible()) {
+          this.hostFocus.refocusOwnerBeforeClose();
           pop.hide();
         }
       }
@@ -669,6 +676,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     // Lifecycle + routing in createADActivationDispatcher; value-shape work
     // stays inline.
     createADActivationDispatcher<T, T>({
+      beforeHide: () => this.hostFocus.refocusOwnerBeforeClose(),
       listboxRef: this.listboxRef,
       core: this.core,
       popoverRef: this.popoverRef,
@@ -710,6 +718,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.popoverRef()?.show();
   }
   close(): void {
+    this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
   toggle(): void {
@@ -736,6 +745,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleRetry(): void {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const fn = this.retryFn();
     if (fn) {
       fn();
@@ -751,6 +761,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal - imperative clear path. Stable reference for ngTemplateOutlet. */
   protected readonly clearCallback: () => void = () => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
     if (current === undefined || current === null) {
       return;

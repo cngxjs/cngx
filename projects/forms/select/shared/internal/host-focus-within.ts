@@ -4,6 +4,15 @@ import { ElementRef, inject, signal, type Signal } from '@angular/core';
 export interface HostFocusWithinOptions {
   /** Runs once focus leaves the host; the variants mark the field touched here. */
   readonly onLeave: () => void;
+  /** The focus owner: the trigger, or the input of an input-owned variant. */
+  readonly owner: () => HTMLElement | undefined;
+  /** `CngxSelectConfig.restoreFocus`; `false` keeps focus where it is on close. */
+  readonly restoreFocus: boolean;
+  /**
+   * Brackets the refocus so an `openOn: 'focus'` trigger does not reopen the
+   * panel - the same window the lifecycle emitter's close restore opens.
+   */
+  readonly suppressOpenOnFocus?: (active: boolean) => void;
 }
 
 /** @internal */
@@ -14,6 +23,21 @@ export interface HostFocusWithin {
   handleFocusIn(): void;
   /** Host `(focusout)` handler; a move to another descendant is not a leave. */
   handleFocusOut(event: FocusEvent): void;
+  /**
+   * Moves focus to the owner before a focused control inside the host goes
+   * away (chip x, clear, clear-all, retry), so the removal does not drop
+   * focus to `body` and read as leaving the field. No-op unless the active
+   * element is inside the host and is not the owner, so a call from outside
+   * the control never steals focus.
+   */
+  refocusOwnerBeforeRemoval(): void;
+  /**
+   * The same before the panel hides: `CngxPopover` blurs focus inside the
+   * panel before hiding it. Skipped under `restoreFocus: false`.
+   */
+  refocusOwnerBeforeClose(): void;
+  /** `remove` with {@link refocusOwnerBeforeRemoval} first; stable per `remove`. */
+  withRefocus(remove: () => void): () => void;
 }
 
 /**
@@ -34,6 +58,22 @@ export interface HostFocusWithin {
 export function createHostFocusWithin(opts: HostFocusWithinOptions): HostFocusWithin {
   const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   const focused = signal(false);
+  const wrapped = new WeakMap<() => void, () => void>();
+
+  const refocusOwnerBeforeRemoval = (): void => {
+    const owner = opts.owner();
+    const active = host.ownerDocument.activeElement;
+    if (!owner || !active || active === owner || !host.contains(active)) {
+      return;
+    }
+    opts.suppressOpenOnFocus?.(true);
+    try {
+      owner.focus();
+    } finally {
+      opts.suppressOpenOnFocus?.(false);
+    }
+  };
+
   return {
     focusedWithin: focused.asReadonly(),
     handleFocusIn: () => {
@@ -46,6 +86,23 @@ export function createHostFocusWithin(opts: HostFocusWithinOptions): HostFocusWi
       }
       focused.set(false);
       opts.onLeave();
+    },
+    refocusOwnerBeforeRemoval,
+    refocusOwnerBeforeClose: () => {
+      if (opts.restoreFocus) {
+        refocusOwnerBeforeRemoval();
+      }
+    },
+    withRefocus: (remove) => {
+      let fn = wrapped.get(remove);
+      if (!fn) {
+        fn = () => {
+          refocusOwnerBeforeRemoval();
+          remove();
+        };
+        wrapped.set(remove, fn);
+      }
+      return fn;
     },
   };
 }

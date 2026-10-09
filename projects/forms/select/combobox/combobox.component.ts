@@ -537,6 +537,11 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
     onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    owner: () => this.inputEl()?.nativeElement,
+    restoreFocus: this.config.restoreFocus,
+    suppressOpenOnFocus: (active) => {
+      this.suppressOpenOnFocus = active;
+    },
   });
   /** @internal */ readonly focused = this.hostFocus.focusedWithin;
 
@@ -908,7 +913,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /** @internal - stable per-option `remove()` closure for chip slots. */
   protected chipRemoveFor(opt: CngxSelectOptionDef<T>): () => void {
-    return this.chipRemovalHandler.removeFor(opt);
+    return this.hostFocus.withRefocus(this.chipRemovalHandler.removeFor(opt));
   }
 
   constructor() {
@@ -923,6 +928,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     // Lifecycle + routing in createADActivationDispatcher; the array-shape
     // toggle/finalize closures live in createArrayToggleDispatch.
     createADActivationDispatcher<T, T[]>({
+      beforeHide: () => this.hostFocus.refocusOwnerBeforeClose(),
       listboxRef: this.listboxRef,
       core: this.core,
       closeOnSelect: false,
@@ -967,6 +973,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     this.popoverRef()?.show();
   }
   close(): void {
+    this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
   toggle(): void {
@@ -1000,6 +1007,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleRetry(): void {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const fn = this.retryFn();
     if (fn) {
       fn();
@@ -1010,6 +1018,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected handleChipRemoveClick(event: Event, opt: CngxSelectOptionDef<T>): void {
     event.stopPropagation();
+    this.hostFocus.refocusOwnerBeforeRemoval();
     this.chipRemovalHandler.removeByValue(opt);
   }
 
@@ -1032,7 +1041,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal - imperative clear-all used by slot + default button. */
-  protected readonly clearAllCallback: () => void = this.toggleDispatch.clearAll;
+  protected readonly clearAllCallback: () => void = this.hostFocus.withRefocus(
+    this.toggleDispatch.clearAll,
+  );
 
   /** @internal */
   // True only inside the lifecycle emitter's post-close focus restore -

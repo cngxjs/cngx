@@ -475,6 +475,8 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
     onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    owner: () => this.inputEl()?.nativeElement,
+    restoreFocus: this.config.restoreFocus,
   });
   /** @internal */ readonly focused = this.hostFocus.focusedWithin;
   readonly empty = computed<boolean>(() => this.isEmpty());
@@ -888,7 +890,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   /** @internal - stable per-option `remove()` closure for chip slots. */
   protected chipRemoveFor(opt: CngxSelectOptionDef<T>): () => void {
-    return this.chipRemovalHandler.removeFor(opt);
+    return this.hostFocus.withRefocus(this.chipRemovalHandler.removeFor(opt));
   }
 
   constructor() {
@@ -901,6 +903,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     });
 
     createADActivationDispatcher<T, T[]>({
+      beforeHide: () => this.hostFocus.refocusOwnerBeforeClose(),
       listboxRef: this.listboxRef,
       core: this.core,
       closeOnSelect: false,
@@ -965,6 +968,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     this.popoverRef()?.show();
   }
   close(): void {
+    this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
   toggle(): void {
@@ -1017,6 +1021,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   }).handleClickOutside;
 
   protected handleRetry(): void {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const fn = this.retryFn();
     if (fn) {
       fn();
@@ -1026,6 +1031,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   protected handleChipRemoveClick(event: Event, opt: CngxSelectOptionDef<T>): void {
     event.stopPropagation();
+    this.hostFocus.refocusOwnerBeforeRemoval();
     this.chipRemovalHandler.removeByValue(opt);
   }
 
@@ -1045,6 +1051,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   /** @internal */
   protected readonly clearAllCallback: () => void = () => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const previous = [...this.values()];
     if (previous.length === 0) {
       return;

@@ -22,6 +22,12 @@ export interface ADActivationDispatcherOptions<T, V> {
   readonly core: CngxSelectCore<T, V>;
   /** Popover to hide after a non-commit activation when `closeOnSelect`. */
   readonly popoverRef?: Signal<CngxPopover | null | undefined>;
+  /**
+   * Runs right before that hide. The variants move focus back to the trigger
+   * here when it sits inside the panel (a search input), since the popover
+   * blurs focus inside the panel on hide.
+   */
+  readonly beforeHide?: () => void;
   /** Single-select: `true`. Multi/combobox/typeahead: `false`. */
   readonly closeOnSelect: boolean;
   /** Non-null routes to {@link onCommit}; null to {@link onActivate}. */
@@ -62,6 +68,7 @@ export function createADActivationDispatcher<T, V>(
         }
         options.onActivate(value, opt);
         if (options.closeOnSelect) {
+          options.beforeHide?.();
           options.popoverRef?.()?.hide();
         }
       });

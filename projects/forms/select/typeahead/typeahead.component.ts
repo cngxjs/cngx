@@ -383,6 +383,11 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
     onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    owner: () => this.inputEl()?.nativeElement,
+    restoreFocus: this.config.restoreFocus,
+    suppressOpenOnFocus: (active) => {
+      this.suppressOpenOnFocus = active;
+    },
   });
   /** @internal */ readonly focused = this.hostFocus.focusedWithin;
   readonly empty = computed<boolean>(() => this.value() === undefined);
@@ -675,6 +680,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
     // closeOnSelect: picking hides the panel and seeds the input.
     createADActivationDispatcher<T, T>({
+      beforeHide: () => this.hostFocus.refocusOwnerBeforeClose(),
       listboxRef: this.listboxRef,
       core: this.core,
       popoverRef: this.popoverRef,
@@ -723,6 +729,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     this.popoverRef()?.show();
   }
   close(): void {
+    this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
   toggle(): void {
@@ -750,6 +757,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   }).handleClickOutside;
 
   protected handleRetry(): void {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const fn = this.retryFn();
     if (fn) {
       fn();
@@ -764,6 +772,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected readonly clearCallback: () => void = () => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
     if (current === undefined) {
       return;

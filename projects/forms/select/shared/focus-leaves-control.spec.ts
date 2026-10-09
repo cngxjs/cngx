@@ -265,15 +265,13 @@ interface FieldHost {
 interface Variant {
   readonly name: string;
   readonly host: Type<FieldHost>;
-  readonly component: Type<{ open(): void }>;
+  readonly component: Type<{ open(): void; close(): void }>;
   /** Removes one selected value; chip variants only. */
   readonly chipRemove?: boolean;
   /** Clears the whole value. */
   readonly clear: string;
   /** A focusable inside the panel, besides the options. */
   readonly inPanel?: string;
-  /** Opening moves focus from the trigger into the panel. */
-  readonly focusesPanelOnOpen?: boolean;
 }
 
 const VARIANTS: readonly Variant[] = [
@@ -333,7 +331,6 @@ const VARIANTS: readonly Variant[] = [
     component: CngxTreeSelect,
     chipRemove: true,
     clear: '.cngx-tree-select__clear-all',
-    focusesPanelOnOpen: true,
   },
 ];
 
@@ -353,6 +350,7 @@ interface Mounted<H> {
   readonly outside: HTMLElement;
   readonly fieldFocused: () => boolean;
   readonly open: () => Promise<void>;
+  readonly close: () => Promise<void>;
   readonly find: (selector: string) => HTMLElement;
 }
 
@@ -372,6 +370,7 @@ async function mount<H>(
   const formField = root.querySelector<HTMLElement>('cngx-form-field')!;
   const instance = fixture.debugElement.query(By.directive(component)).componentInstance as {
     open(): void;
+    close(): void;
   };
   return {
     fixture,
@@ -381,6 +380,10 @@ async function mount<H>(
     fieldFocused: () => formField.classList.contains('cngx-field--focused'),
     open: async () => {
       instance.open();
+      await settle(fixture);
+    },
+    close: async () => {
+      instance.close();
       await settle(fixture);
     },
     find: (selector) => {
@@ -398,9 +401,6 @@ function mountVariant(variant: Variant): Promise<Mounted<FieldHost>> {
 }
 
 describe.each(VARIANTS)('$name focus leaves the control', (variant) => {
-  const itClosesFromPanel = variant.focusesPanelOnOpen ? it.fails : it;
-
-
   beforeAll(() => {
     polyfillPopover();
   });
@@ -431,7 +431,7 @@ describe.each(VARIANTS)('$name focus leaves the control', (variant) => {
     expect(fieldFocused()).toBe(true);
   });
 
-  itClosesFromPanel('closing with Escape leaves the field untouched', async () => {
+  it('closing with Escape leaves the field untouched', async () => {
     const { fixture, owner, open } = await mountVariant(variant);
     owner.focus();
     await open();
@@ -444,20 +444,17 @@ describe.each(VARIANTS)('$name focus leaves the control', (variant) => {
     expect(fixture.componentInstance.ref.touched()).toBe(false);
   });
 
-  it.fails(
-    'clicking the clear control leaves the field untouched with focus on the owner',
-    async () => {
-      const { fixture, owner, find } = await mountVariant(variant);
-      owner.focus();
-      await settle(fixture);
+  it('clicking the clear control leaves the field untouched with focus on the owner', async () => {
+    const { fixture, owner, find } = await mountVariant(variant);
+    owner.focus();
+    await settle(fixture);
 
-      mousePick(find(variant.clear));
-      await settle(fixture);
+    mousePick(find(variant.clear));
+    await settle(fixture);
 
-      expect(fixture.componentInstance.ref.touched()).toBe(false);
-      expect(document.activeElement).toBe(owner);
-    },
-  );
+    expect(fixture.componentInstance.ref.touched()).toBe(false);
+    expect(document.activeElement).toBe(owner);
+  });
 });
 
 describe.each(VARIANTS.filter((v) => v.chipRemove))('$name chip removal', (variant) => {
@@ -469,7 +466,7 @@ describe.each(VARIANTS.filter((v) => v.chipRemove))('$name chip removal', (varia
     (document.activeElement as HTMLElement | null)?.blur();
   });
 
-  it.fails('clicking a chip x leaves the field untouched with focus on the owner', async () => {
+  it('clicking a chip x leaves the field untouched with focus on the owner', async () => {
     const { fixture, owner, find } = await mountVariant(variant);
     owner.focus();
     await settle(fixture);
@@ -506,6 +503,61 @@ describe.each(VARIANTS.filter((v) => v.inPanel))('$name focusable inside the pan
   });
 });
 
+describe.each(VARIANTS.filter((v) => v.inPanel))('$name panel closing from inside', (variant) => {
+  beforeAll(() => {
+    polyfillPopover();
+  });
+
+  afterEach(() => {
+    (document.activeElement as HTMLElement | null)?.blur();
+  });
+
+  it('closing while focus is inside the panel leaves the field untouched with focus on the owner', async () => {
+    const { fixture, owner, open, close, find } = await mountVariant(variant);
+    owner.focus();
+    await open();
+    find(variant.inPanel!).focus();
+    await settle(fixture);
+
+    await close();
+
+    expect(fixture.componentInstance.ref.touched()).toBe(false);
+    expect(document.activeElement).toBe(owner);
+  });
+});
+
+describe('CngxSelectShell pick from the search input', () => {
+  beforeAll(() => {
+    polyfillPopover();
+  });
+
+  afterEach(() => {
+    (document.activeElement as HTMLElement | null)?.blur();
+  });
+
+  it('a mouse pick while the search input has focus leaves the field untouched', async () => {
+    const { fixture, owner, open, find, root } = await mount(
+      'CngxSelectShell',
+      SelectShellHost,
+      CngxSelectShell,
+    );
+    owner.focus();
+    await open();
+    find('.cngx-select-search__input').focus();
+    await settle(fixture);
+
+    const green = Array.from(root.querySelectorAll<HTMLElement>('[role="option"]')).find((el) =>
+      el.textContent?.includes('Green'),
+    )!;
+    mousePick(green);
+    await settle(fixture);
+
+    expect(fixture.componentInstance.ref.value()).toBe('green');
+    expect(fixture.componentInstance.ref.touched()).toBe(false);
+    expect(document.activeElement).toBe(owner);
+  });
+});
+
 describe('CngxSelect retry inside the panel', () => {
   beforeAll(() => {
     polyfillPopover();
@@ -515,7 +567,7 @@ describe('CngxSelect retry inside the panel', () => {
     (document.activeElement as HTMLElement | null)?.blur();
   });
 
-  it.fails('clicking retry leaves the field untouched with focus on the owner', async () => {
+  it('clicking retry leaves the field untouched with focus on the owner', async () => {
     const { fixture, owner, open, find } = await mount(
       'CngxSelect retry',
       SelectRetryHost,
