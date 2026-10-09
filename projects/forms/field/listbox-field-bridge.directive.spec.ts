@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxListbox, CngxOption } from '@cngx/common/interactive';
+import { mousePick } from '@cngx/testing';
 
 import { CngxFormField } from './form-field.component';
 import { CNGX_FORM_FIELD_CONTROL } from './form-field.token';
@@ -256,5 +257,46 @@ describe('CngxListboxFieldBridge - empty field mount', () => {
     fixture.detectChanges();
     flush(fixture);
     expect(fixture.componentInstance.ref.value()).toEqual([]);
+  });
+});
+
+@Component({
+  template: `
+    <cngx-form-field [field]="field">
+      <div cngxListbox cngxListboxFieldBridge [label]="'Choice'" tabindex="0">
+        <div cngxOption value="a">A</div>
+        <div cngxOption value="b">B</div>
+      </div>
+    </cngx-form-field>
+    <button type="button">Outside</button>
+  `,
+  imports: [CngxFormField, CngxListbox, CngxListboxFieldBridge, CngxOption],
+})
+class MousePickHost {
+  readonly _mock = createMockField<string>({ name: 'choice', value: 'a' });
+  readonly field = this._mock.accessor;
+  readonly ref: MockFieldRef<string> = this._mock.ref;
+}
+
+describe('CngxListboxFieldBridge - mouse pick', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [MousePickHost] });
+  });
+
+  it('a mouse pick then leaving marks the field touched', () => {
+    const fixture = TestBed.createComponent(MousePickHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const root = fixture.nativeElement as HTMLElement;
+    const option = root.querySelectorAll<HTMLElement>('[role="option"]')[1];
+
+    mousePick(option);
+    flush(fixture);
+    expect(document.activeElement).toBe(root.querySelector('[role="listbox"]'));
+    expect(fixture.componentInstance.ref.touched()).toBe(false);
+
+    root.querySelector<HTMLElement>('button')!.focus();
+    flush(fixture);
+    expect(fixture.componentInstance.ref.touched()).toBe(true);
   });
 });

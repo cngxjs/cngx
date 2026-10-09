@@ -24,6 +24,13 @@ import { CNGX_OPTION_STATUS_HOST, type CngxOptionStatus } from './option-status-
  * Click highlights + activates, `pointerenter` highlights only. Provides a stable
  * unique id on the host element for `aria-activedescendant` resolution.
  *
+ * An option never takes DOM focus. A mouse press keeps focus where it is: on
+ * the external owner (a select trigger, a combobox or search input), or on the
+ * enclosing `role="listbox"` when that listbox is its own tab stop
+ * (`tabindex="0"`), which the press focuses if focus is elsewhere. Focusable
+ * content inside an option, or a `tabindex` placed on the option itself, does
+ * not receive focus from a click.
+ *
  * Selection state (`isSelected`) is driven externally by the enclosing listbox.
  * In V1 of the stack, `CngxListbox` reads `value()` via the AD item list and
  * exposes its own selection through `CngxOption.isSelected()`.
@@ -64,6 +71,7 @@ import { CNGX_OPTION_STATUS_HOST, type CngxOptionStatus } from './option-status-
     '[attr.data-status]': 'statusSignal()?.kind ?? null',
     '[class.cngx-option--hidden]': 'hidden()',
     '[attr.hidden]': 'hidden() || null',
+    '(mousedown)': 'handleMouseDown($event)',
     '(click)': 'handleClick()',
     '(pointerenter)': 'handlePointerEnter()',
   },
@@ -208,6 +216,21 @@ export class CngxOption implements CngxAdItemHandle {
       return;
     }
     this.interactionHost?.activate(this.value());
+  }
+
+  // The focus default of mousedown would pull focus off the owner (a select
+  // trigger, a search input) and the owner reads that blur as "left the field".
+  // A listbox that is its own tab stop still gets the focus the click gave it.
+  protected handleMouseDown(event: MouseEvent): void {
+    event.preventDefault();
+    const host = this.elementRef.nativeElement as HTMLElement;
+    const listbox = host.closest<HTMLElement>('[role="listbox"]');
+    if (!listbox?.hasAttribute('tabindex') || listbox.tabIndex < 0) {
+      return;
+    }
+    if (!listbox.contains(host.ownerDocument.activeElement)) {
+      listbox.focus();
+    }
   }
 
   protected handlePointerEnter(): void {

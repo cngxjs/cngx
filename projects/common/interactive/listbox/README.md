@@ -109,6 +109,8 @@ When the trigger element is itself an `<input cngxListboxSearch cngxListboxTrigg
 
 `Backspace` on an empty input fires `(backspaceOnEmpty)` on the trigger - the tag-input "delete trailing chip" path lives at the trigger so consumers wire a single subscription.
 
+Options never take DOM focus. A mouse press on an option cancels the focus move of `mousedown`, so a trigger, a combobox input or a search input keeps focus through the pick and does not see a blur. A listbox that is its own tab stop (`tabindex="0"`) is focused by the press when focus is elsewhere, so arrow keys work right after a click. Focusable content inside an option does not receive focus from a click.
+
 ## See also
 
 - [API on compodocx](https://cngxjs.github.io/cngx/) for inputs, outputs, signals, and tokens.

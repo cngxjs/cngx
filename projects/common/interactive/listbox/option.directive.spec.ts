@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
+import { mousePick } from '@cngx/testing';
 
 import { CngxOption } from './option.directive';
 import { CngxOptionGroup } from './option-group.directive';
@@ -248,5 +249,76 @@ describe('CngxOptionGroup', () => {
     ad.highlightByValue('b');
     TestBed.flushEffects();
     expect(ad.activeValue()).toBe('b');
+  });
+});
+
+@Component({
+  template: `
+    <div cngxActiveDescendant role="listbox" aria-label="Fruits" tabindex="0" data-testid="owned">
+      <div cngxOption value="a">Apple</div>
+      <div cngxOption value="b" [disabled]="true">Banana</div>
+    </div>
+    <input aria-label="Search fruits" data-testid="owner-input" />
+    <div cngxActiveDescendant role="listbox" aria-label="Results" data-testid="external">
+      <div cngxOption value="x">Xigua</div>
+    </div>
+  `,
+  imports: [CngxActiveDescendant, CngxOption],
+})
+class OptionPressHost {}
+
+describe('CngxOption mouse press', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [OptionPressHost] });
+  });
+
+  function setup(): { root: HTMLElement } {
+    const fixture = TestBed.createComponent(OptionPressHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    return { root: fixture.nativeElement as HTMLElement };
+  }
+
+  function option(root: HTMLElement, label: string): HTMLElement {
+    const match = Array.from(root.querySelectorAll<HTMLElement>('[role="option"]')).find(
+      (el) => el.textContent?.trim() === label,
+    );
+    if (!match) {
+      throw new Error(`no option "${label}"`);
+    }
+    return match;
+  }
+
+  it('mousedown on an option is default-prevented', () => {
+    const { root } = setup();
+
+    expect(mousePick(option(root, 'Apple')).defaultPrevented).toBe(true);
+  });
+
+  it('mousedown on a disabled option is default-prevented', () => {
+    const { root } = setup();
+
+    expect(mousePick(option(root, 'Banana')).defaultPrevented).toBe(true);
+  });
+
+  it('an option click focuses an unfocused tabindex=0 listbox owner', () => {
+    const { root } = setup();
+    const input = root.querySelector<HTMLElement>('[data-testid="owner-input"]')!;
+    input.focus();
+
+    mousePick(option(root, 'Apple'));
+
+    expect(document.activeElement).toBe(root.querySelector('[data-testid="owned"]'));
+  });
+
+  it('an input-owned listbox keeps focus on the input', () => {
+    const { root } = setup();
+    const input = root.querySelector<HTMLElement>('[data-testid="owner-input"]')!;
+    input.focus();
+
+    mousePick(option(root, 'Xigua'));
+
+    expect(document.activeElement).toBe(input);
   });
 });
