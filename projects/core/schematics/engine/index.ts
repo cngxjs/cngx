@@ -14,3 +14,29 @@ export {
   parseManifest,
   readOwnVersion,
 } from './manifest/manifest';
+
+export {
+  type AddDependency,
+  type AddImport,
+  type AddProvider,
+  type Change,
+  type CreateFile,
+  type EditFile,
+  type JsonEntry,
+  type JsonPath,
+  type Note,
+  type Provenance,
+  type ProviderCall,
+  type SkippedStep,
+  skipChange,
+  type StepResult,
+  type WriteJson,
+} from './plan/change';
+export { type ChangePlan, createChangePlan, describeChangePlan } from './plan/plan';
+export {
+  createProvenanceStamp,
+  hasProvenanceMarker,
+  hasProvenanceStamp,
+  withProvenanceMarker,
+} from './plan/provenance';
+export { applyChangePlan } from './apply/apply';

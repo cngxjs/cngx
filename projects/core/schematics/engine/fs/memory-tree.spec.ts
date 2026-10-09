@@ -16,13 +16,14 @@ describe('createMemoryTree', () => {
     expect(tree.getDir('src/app').subfiles).toEqual(['app.config.ts']);
   });
 
-  it('treats seeded files as existing: overwrite works, create fails', () => {
+  it('keeps seeded files in the backend: no actions until a rule writes', () => {
     const tree = createMemoryTree(SEED);
 
+    expect(tree.actions).toEqual([]);
     tree.overwrite('package.json', '{}\n');
 
     expect(tree.readText('package.json')).toBe('{}\n');
-    expect(() => tree.create('package.json', '{}\n')).toThrow();
+    expect(tree.actions.map((action) => action.kind)).toEqual(['o']);
   });
 
   it('starts empty without a seed', () => {
