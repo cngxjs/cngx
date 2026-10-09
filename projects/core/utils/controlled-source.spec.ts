@@ -140,6 +140,16 @@ describe('createControlledSource provenance', () => {
     expect(resolveControlledProvenance(source)).toBe('fallback');
   });
 
+  it('resolves undefined instead of throwing when the priority source cannot be read', () => {
+    const unset = computed<string | undefined>(() => {
+      throw new Error('NG0950: input is required but no value is available yet');
+    });
+    const source = createControlledSource(unset, signal('x'));
+
+    expect(() => resolveControlledProvenance(source)).not.toThrow();
+    expect(resolveControlledProvenance(source)).toBeUndefined();
+  });
+
   it('resolves undefined for a signal the factory did not create', () => {
     expect(resolveControlledProvenance(signal('x'))).toBeUndefined();
   });

@@ -253,23 +253,26 @@ type Bag = Readonly<Record<PropertyKey, unknown>>;
  * `createNestedOverrideMerge` or `createDefaultsFill` result got it from.
  * Derived on read from the descriptor the merge tagged in dev mode; every
  * signal is read inside `untracked`, so a calling `computed` or `effect` does
- * not subscribe through it. `undefined` for an untagged signal, which includes
- * every signal in a production build. Only string keys are listed: a symbol
- * key on a bundle has no entry.
+ * not subscribe through it. Unlike {@link resolveDevDescriptors}, provenance
+ * needs current values, so this evaluates the merge and its sides; a read that
+ * throws yields `undefined` instead of propagating. `undefined` for an untagged
+ * signal too, which includes every signal in a production build. Only string
+ * keys are listed: a symbol key on a bundle has no entry.
  *
  * @internal
  */
 export function resolveOverrideProvenance(
   merged: Signal<object>,
 ): CngxOverrideProvenance | undefined {
-  return untracked(() => provenanceOf(merged));
+  return readSafely(() => provenanceOf(merged));
 }
 
 /**
  * Resolves which side of a `createControlledSource` result currently wins:
  * `'priority'` when the priority source yields a value other than `null` or
  * `undefined`, else `'fallback'` (the `??` rule of the source itself). Reads
- * inside `untracked`; `undefined` for an untagged signal.
+ * inside `untracked`. `undefined` for an untagged signal, and when reading the
+ * priority source throws (a required `input()` read before it is set).
  *
  * @internal
  */
@@ -280,8 +283,21 @@ export function resolveControlledProvenance(
   if (descriptor?.kind !== 'cngx-dev:controlled-source') {
     return undefined;
   }
-  const priority = untracked(() => descriptor.priority?.());
-  return priority == null ? 'fallback' : 'priority';
+  return readSafely(() => (descriptor.priority?.() == null ? 'fallback' : 'priority'));
+}
+
+/**
+ * Runs `read` untracked and turns a throw into `undefined`: an inspector must
+ * never break the app it inspects.
+ *
+ * @internal
+ */
+function readSafely<T>(read: () => T): T | undefined {
+  try {
+    return untracked(read);
+  } catch {
+    return undefined;
+  }
 }
 
 /** @internal */

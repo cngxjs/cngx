@@ -111,6 +111,16 @@ describe('override-merge provenance', () => {
     expect(resolveOverrideProvenance(second)).toEqual({ open: 'override', close: 'default' });
   });
 
+  it('resolves undefined instead of throwing when a side cannot be read', () => {
+    const overrides = computed<Partial<Labels>>(() => {
+      throw new Error('NG0950: input is required but no value is available yet');
+    });
+    const merged = createOverrideMerge<Labels>({ open: 'Open', close: 'Close' }, overrides);
+
+    expect(() => resolveOverrideProvenance(merged)).not.toThrow();
+    expect(resolveOverrideProvenance(merged)).toBeUndefined();
+  });
+
   it('resolves undefined for a signal no merge created', () => {
     expect(resolveOverrideProvenance(signal({ open: 'Open' }))).toBeUndefined();
   });
