@@ -1,7 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { chain, externalSchematic, type Rule, type SchematicContext, type Tree } from '@angular-devkit/schematics';
+import {
+  chain,
+  externalSchematic,
+  type Rule,
+  type SchematicContext,
+  SchematicsException,
+  type Tree,
+} from '@angular-devkit/schematics';
 import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schematics/tasks';
 import { addDependency, ExistingBehavior, InstallBehavior } from '@schematics/angular/utility';
 
@@ -19,12 +26,29 @@ function readOwnVersion(): string {
   return manifest.version;
 }
 
+/**
+ * Matched by name, not `instanceof`: the CLI and the app can each carry their
+ * own copy of `@angular-devkit/schematics`, and the engine throws from the
+ * CLI's copy.
+ */
+function isUnresolvedCollection(error: unknown): boolean {
+  return error instanceof Error && error.constructor.name === 'CollectionCannotBeResolvedException';
+}
+
+/**
+ * `false` only when the package manager has not placed core yet. Any other
+ * failure (a broken or incompatible core install) is reported, not retried.
+ */
 function isCoreResolvable(context: SchematicContext): boolean {
   try {
     context.engine.createCollection(CORE);
     return true;
-  } catch {
-    return false;
+  } catch (error: unknown) {
+    if (isUnresolvedCollection(error)) {
+      return false;
+    }
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new SchematicsException(`${CORE} is installed but its ng-add collection failed to load: ${reason}`);
   }
 }
 

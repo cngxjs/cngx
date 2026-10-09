@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -117,5 +118,21 @@ describe('dist/ui/schematics ng-add shim', () => {
     expect(manifest.dependencies['@cngx/core']).toBe(version);
     expect(runner.tasks.map((task) => task.name)).toEqual(['node-package', 'run-schematic']);
     expect(delegate.options).toMatchObject({ collection: '@cngx/core', name: 'ng-add', options: { preset: 'minimal' } });
+  });
+
+  it('reports a broken @cngx/core install instead of treating it as missing', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'cngx-broken-core-'));
+    try {
+      writeFileSync(join(dir, 'collection.json'), '{ not json');
+      const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
+      runner.registerCollection('@cngx/core', join(dir, 'collection.json'));
+
+      await expect(runner.runSchematic('ng-add', {}, appTree)).rejects.toThrow(
+        /@cngx\/core is installed but its ng-add collection failed to load/,
+      );
+      expect(runner.tasks).toEqual([]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
