@@ -63,6 +63,17 @@ describe('override-merge provenance', () => {
     expect(resolveOverrideProvenance(fromNull)).toEqual({ open: 'filled', close: 'override' });
   });
 
+  it('resolves filled over a nullish default, since the fill writes the default value', () => {
+    const defaults: Labels = { open: null, close: 'Close' };
+    const filled = createDefaultsFill(
+      createOverrideMerge<Labels>(defaults, { open: undefined }),
+      defaults,
+    );
+
+    expect(filled().open).toBeNull();
+    expect(resolveOverrideProvenance(filled)).toEqual({ open: 'filled', close: 'default' });
+  });
+
   it('resolves a nested defaults fill key by key, chaining to the nested merge', () => {
     const defaults: StatusLabels = { title: 'Status', status: { busy: 'Busy', idle: 'Idle' } };
     const inner = createNestedOverrideMerge<StatusLabels, 'status'>(
