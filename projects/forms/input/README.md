@@ -196,8 +196,11 @@ Sets `inputmode="decimal"` and `role="spinbutton"` with ARIA `aria-valuemin`/`ar
 
 Forms: Signal Forms binds `[formField]` to the `value` model. Reactive Forms binds
 `[formControl]` / `[formControlName]` and imports `CngxFormBridge` from `@cngx/forms/controls`.
-Either way the form holds `number | null`, never the display string. The model commits on
-blur, paste and arrow keys, not per keystroke.
+Either way the form holds `number | null`, never the display string. The model follows every
+keystroke with the parsed number, so a form submitted with Enter sees what was typed. Typing is
+not clamped or rounded: `1` under `[min]="10"` stays `1` (and invalid) until blur, which clamps
+to `min`/`max`, rounds to `decimals` and formats. Text that is not a plain number (`-`,
+`Infinity`, `0x1F`, `1e5`) yields `null`.
 
 ```ts
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
