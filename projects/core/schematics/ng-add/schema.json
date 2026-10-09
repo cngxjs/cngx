@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "CngxNgAdd",
+  "title": "cngx ng-add",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "The project to add cngx to.",
+      "$default": {
+        "$source": "projectName"
+      }
+    },
+    "preset": {
+      "type": "string",
+      "description": "How much of the onboarding to apply.",
+      "enum": ["minimal", "recommended", "full"],
+      "default": "recommended",
+      "x-prompt": {
+        "message": "Which cngx setup do you want?",
+        "type": "list",
+        "items": [
+          { "value": "minimal", "label": "minimal - dependencies only" },
+          { "value": "recommended", "label": "recommended - dependencies, theme, a11y providers, lint" },
+          { "value": "full", "label": "full - recommended plus AI tooling and the German language pack" }
+        ]
+      }
+    }
+  },
+  "required": []
+}

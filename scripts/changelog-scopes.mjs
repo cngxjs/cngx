@@ -14,6 +14,7 @@ export const LIBRARY_SCOPES = [
   'core',
   'core/theming',
   'core/i18n',
+  'core/schematics',
   'common',
   'common/a11y',
   'common/audio',

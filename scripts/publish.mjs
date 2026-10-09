@@ -10,8 +10,8 @@
 //   node scripts/publish.mjs --registry <url> ...      # override npm registry
 
 import { execSync } from 'node:child_process';
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
-import { resolve, join } from 'node:path';
+import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { resolve, join, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
@@ -98,24 +98,48 @@ function publishedVersions(lib, registryFlag) {
   }
 }
 
-function walkJs(dir) {
+// Files that may carry the version placeholder: JS everywhere, plus the
+// JSON under dist/<lib>/schematics the schematics read at runtime.
+function walkVersioned(dir, schematicsDir) {
   const entries = readdirSync(dir, { withFileTypes: true });
   const files = [];
   for (const entry of entries) {
     const full = join(dir, entry.name);
-    if (entry.isDirectory()) files.push(...walkJs(full));
+    if (entry.isDirectory()) files.push(...walkVersioned(full, schematicsDir));
     else if (entry.name.endsWith('.js') || entry.name.endsWith('.mjs')) files.push(full);
+    else if (entry.name.endsWith('.json') && full.startsWith(schematicsDir + sep)) files.push(full);
   }
   return files;
 }
 
-function replaceVersionInDist(distDir, nextVersion) {
-  for (const file of walkJs(distDir)) {
+export function replaceVersionInDist(distDir, nextVersion) {
+  for (const file of walkVersioned(distDir, join(distDir, 'schematics'))) {
     const content = readFileSync(file, 'utf8');
     if (content.includes(PLACEHOLDER)) {
       writeFileSync(file, content.replaceAll(PLACEHOLDER, nextVersion));
     }
   }
+}
+
+// What `ng add` pins: the cngx release it ships with, the @cngx/mcp server
+// compatible with it, and the Angular range @cngx/core peers on.
+export function createSchematicsVersions({ nextVersion, mcpVersion, angularRange }) {
+  return { cngx: nextVersion, mcp: mcpVersion, angular: angularRange };
+}
+
+// A lib ships its schematics only once its source manifest declares the
+// collection. Until then the bundle stays out of the tarball: the CLI cannot
+// reach a collection the manifest does not name.
+export function declaresSchematics(sourcePkg) {
+  return typeof sourcePkg.schematics === 'string' && sourcePkg.schematics.length > 0;
+}
+
+function readSourcePkg(lib) {
+  return JSON.parse(readFileSync(join(ROOT, 'projects', lib, 'package.json'), 'utf8'));
+}
+
+function readMcpVersion() {
+  return JSON.parse(readFileSync(join(ROOT, 'packages', 'mcp', 'package.json'), 'utf8')).version;
 }
 
 function run(cmd, cwd = ROOT) {
@@ -239,6 +263,11 @@ function main() {
     } else {
       run(`npx ng build ${lib}`);
     }
+    const shipsSchematics =
+      existsSync(join(ROOT, 'projects', lib, 'schematics')) && declaresSchematics(readSourcePkg(lib));
+    if (shipsSchematics) {
+      run(`node scripts/build-schematics.mjs ${lib}`);
+    }
 
     const distPkgPath = join(ROOT, 'dist', lib, 'package.json');
     const distPkg = JSON.parse(readFileSync(distPkgPath, 'utf8'));
@@ -261,6 +290,16 @@ function main() {
       }
     }
 
+    const schematicsVersionsPath = join(ROOT, 'dist', lib, 'schematics', 'versions.json');
+    const schematicsVersions =
+      lib === 'core' && shipsSchematics
+        ? createSchematicsVersions({
+            nextVersion,
+            mcpVersion: readMcpVersion(),
+            angularRange: distPkg.peerDependencies['@angular/core'],
+          })
+        : null;
+
     const distTag = resolveDistTag({
       nextVersion,
       explicitTag: tag,
@@ -269,11 +308,17 @@ function main() {
 
     if (!dryRun) {
       writeFileSync(distPkgPath, JSON.stringify(distPkg, null, 2) + '\n');
+      if (schematicsVersions) {
+        writeFileSync(schematicsVersionsPath, JSON.stringify(schematicsVersions, null, 2) + '\n');
+      }
       replaceVersionInDist(join(ROOT, 'dist', lib), nextVersion);
       run(`npm publish --access public --tag ${distTag}${registryFlag}`, join(ROOT, 'dist', lib));
       console.log(`  Published @cngx/${lib}@${nextVersion} (dist-tag ${distTag})`);
     } else {
       console.log(`  Would publish @cngx/${lib}@${nextVersion} (dist/${lib}, dist-tag ${distTag})`);
+      if (schematicsVersions) {
+        console.log(`  Would write dist/${lib}/schematics/versions.json ${JSON.stringify(schematicsVersions)}`);
+      }
     }
   }
 
