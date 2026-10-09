@@ -44,3 +44,13 @@ export { addToArrayLiteral, type ArraySelector, hasArrayLiteral } from './edit/t
 export { findElements, insertAttribute, parseTemplateContent } from './edit/template-edit';
 export { hasStyleImport, insertStyleImport } from './edit/style-edit';
 export { applyChangePlan } from './apply/apply';
+export { type ColorEnv, createPalette, type Palette } from './render/palette';
+export {
+  createRenderer,
+  type PreflightItem,
+  type PreflightStatus,
+  type Renderer,
+  type RendererOptions,
+  type RenderLogger,
+  type Verbosity,
+} from './render/renderer';

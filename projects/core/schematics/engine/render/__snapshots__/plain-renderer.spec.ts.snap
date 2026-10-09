@@ -1,0 +1,14 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`createPlainRenderer > prints the described plan as the todo list 1`] = `
+[
+  "info Planned (3):",
+  "info   + Add @cngx/core@0.1.0 - lockstep with @cngx/ui",
+  "info   + Import cngx.css - global stylesheet",
+  "info   + Run npx @cngx/doctor - checks the wiring",
+  "info Already in place (1):",
+  "info   = Add provideA11yPreferences - already provided",
+  "info Warnings (1):",
+  "info   ! no eslint config found",
+]
+`;
