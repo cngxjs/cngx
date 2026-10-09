@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { MARKER, deriveNeedles, scanBundle } from '../devtools-prod-strip-check.mjs';
+import { MARKER, deriveNeedles, scanBundle, sourceFiles } from '../devtools-prod-strip-check.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const SCRIPT = join(ROOT, 'scripts', 'devtools-prod-strip-check.mjs');
@@ -76,6 +76,13 @@ describe('devtools-prod-strip-check - needle derivation', () => {
 
     expect(violations).toHaveLength(1);
     expect(violations[0].reason).toBe('not a plain string literal');
+  });
+
+  it('walks the library sources and skips the schematics tooling roots', () => {
+    const files = sourceFiles('projects').map((file) => file.split('\\').join('/'));
+
+    expect(files).toContain('projects/core/utils/dev-descriptors.ts');
+    expect(files.filter((file) => /^projects\/[^/]+\/schematics\//.test(file))).toEqual([]);
   });
 
   it('finds no non-conforming debugName in the real projects/** tree', () => {

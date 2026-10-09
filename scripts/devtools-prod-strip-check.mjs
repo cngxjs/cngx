@@ -20,8 +20,10 @@
 // Usage: node scripts/devtools-prod-strip-check.mjs [--dist <dir>] [--source <dir>]
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
+
+import { isToolingRoot } from './__tests__/source-roots.mjs';
 
 export const MARKER = 'cngx-dev:';
 export const DEBUG_NAME_PATTERN = /^[a-z][A-Za-z0-9]*(\.[a-z][A-Za-z0-9]*)+$/;
@@ -90,6 +92,8 @@ function isSpec(path) {
   return /\.spec\.ts$/.test(path);
 }
 
+// Tooling roots (`projects/*/schematics`) never reach a browser bundle, so
+// they are skipped like in every other guard that walks projects/.
 function collect(dir, accept) {
   const out = [];
   for (const name of readdirSync(dir)) {
@@ -97,6 +101,9 @@ function collect(dir, accept) {
       continue;
     }
     const abs = join(dir, name);
+    if (isToolingRoot(relative(process.cwd(), abs).split(sep).join('/'))) {
+      continue;
+    }
     if (statSync(abs).isDirectory()) {
       out.push(...collect(abs, accept));
     } else if (accept(name)) {
@@ -104,6 +111,13 @@ function collect(dir, accept) {
     }
   }
   return out;
+}
+
+// The library sources the needles are derived from, repo-relative.
+export function sourceFiles(dir = DEFAULT_SOURCE) {
+  return collect(resolve(dir), (name) => name.endsWith('.ts')).map((abs) =>
+    relative(process.cwd(), abs),
+  );
 }
 
 function readAll(dir, accept) {
