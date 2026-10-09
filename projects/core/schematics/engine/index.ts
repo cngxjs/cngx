@@ -34,6 +34,7 @@ export {
   type WriteJson,
 } from './plan/change';
 export { type ChangePlan, createChangePlan, describeChangePlan } from './plan/plan';
+export { createReport, type Report, type ReportLink } from './plan/report';
 export {
   createProvenanceStamp,
   hasProvenanceMarker,

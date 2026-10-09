@@ -9,6 +9,8 @@ export interface NgAddOptions {
   readonly preset?: NgAddPreset;
   /** `false` answers every question from flags and preset defaults. */
   readonly prompts?: boolean;
+  /** Print only the summary. */
+  readonly quiet?: boolean;
 }
 
 export interface PackageManifest {

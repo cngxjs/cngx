@@ -1,3 +1,5 @@
+import { type Rule, type SchematicContext } from '@angular-devkit/schematics';
+import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
 import { readWorkspace } from '@schematics/angular/utility';
 import { describe, expect, it } from 'vitest';
 
@@ -42,5 +44,15 @@ describe('runRule', () => {
 
     expect(JSON.parse(run.tree.readContent('package.json')).dependencies['@cngx/core']).toBe('0.1.0');
     expect(run.logs).toContain('Replacing @cngx/core@^0.0.1 with 0.1.0 so every @cngx package stays on one version.');
+  });
+
+  it('records the tasks the rule schedules', async () => {
+    const rule: Rule = (_tree, context: SchematicContext) => {
+      context.addTask(new NodePackageInstallTask());
+    };
+
+    const run = await runRule(rule, createFixtureTree());
+
+    expect(run.tasks).toEqual(['node-package']);
   });
 });
