@@ -250,7 +250,12 @@ export function createDefaultsFill<T extends object>(
   const defaultsSignal = coerceSignal(defaults);
   const filled =
     key === undefined
-      ? computed<T>(() => fillNullish(merged(), defaultsSignal()), { equal: recordEqual })
+      ? computed<T>(() => fillNullish(merged(), defaultsSignal()), {
+          equal: recordEqual,
+          ...(typeof ngDevMode !== 'undefined' && ngDevMode
+            ? { debugName: 'defaultsFill.filled' }
+            : {}),
+        })
       : computed<T>(
           () => {
             const base = defaultsSignal();
@@ -260,7 +265,12 @@ export function createDefaultsFill<T extends object>(
               [key]: fillNullish((merged()[key] ?? {}) as object, base[key] as object),
             } as T;
           },
-          { equal: nestedEqual<T>(key) },
+          {
+            equal: nestedEqual<T>(key),
+            ...(typeof ngDevMode !== 'undefined' && ngDevMode
+              ? { debugName: 'defaultsFill.filled' }
+              : {}),
+          },
         );
   if (typeof ngDevMode !== 'undefined' && ngDevMode) {
     // The tag goes on the fill, never on `merged`: that one carries the inner

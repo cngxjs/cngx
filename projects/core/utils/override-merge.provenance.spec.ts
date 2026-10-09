@@ -1,4 +1,5 @@
 import { computed, signal } from '@angular/core';
+import { SIGNAL, type ReactiveNode } from '@angular/core/primitives/signals';
 import { describe, expect, it } from 'vitest';
 
 import { CNGX_DEV_DESCRIPTORS, resolveOverrideProvenance } from './dev-descriptors';
@@ -128,5 +129,20 @@ describe('override-merge provenance', () => {
     panel();
 
     expect(runs).toBe(1);
+  });
+
+  it('names both shapes of the defaults fill for the signal graph', () => {
+    const defaults: StatusLabels = { title: 'Status', status: { busy: 'Busy', idle: 'Idle' } };
+    const flat = createDefaultsFill(createOverrideMerge<StatusLabels>(defaults, {}), defaults);
+    const nested = createDefaultsFill<StatusLabels, 'status'>(
+      createNestedOverrideMerge<StatusLabels, 'status'>(defaults, {}, 'status'),
+      defaults,
+      'status',
+    );
+    const nameOf = (s: object): string | undefined =>
+      (s as unknown as Record<symbol, ReactiveNode>)[SIGNAL].debugName;
+
+    expect(nameOf(flat)).toBe('defaultsFill.filled');
+    expect(nameOf(nested)).toBe('defaultsFill.filled');
   });
 });
