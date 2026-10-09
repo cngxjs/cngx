@@ -88,7 +88,7 @@ describe('value-transformer directives - Signal-Forms style two-way binding', ()
   });
 
   describe('CngxNumericInput per keystroke', () => {
-    it.fails('[(value)]: typing without blur updates the host signal', () => {
+    it('[(value)]: typing without blur updates the host signal', () => {
       TestBed.configureTestingModule({
         providers: [{ provide: LOCALE_ID, useValue: 'en-US' }],
       });

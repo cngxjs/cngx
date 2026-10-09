@@ -47,7 +47,16 @@ function detectSeparators(locale: string): { decimal: string; group: string } {
 }
 
 /**
- * Parse a locale-formatted string into a number.
+ * Optional sign, digits, at most one `.`, at least one digit. Rejects what
+ * `Number()` would otherwise accept from dropped or composed text:
+ * `Infinity`, hex (`0x1F`), exponents (`1e400`).
+ * @internal
+ */
+const PLAIN_NUMBER = /^[+-]?(?:\d+\.?\d*|\.\d+)$/;
+
+/**
+ * Parse a locale-formatted string into a number; `null` for anything that is
+ * not a plain decimal number after separator normalisation.
  * @internal
  */
 function parseLocaleNumber(value: string, locale: string): number | null {
@@ -56,7 +65,7 @@ function parseLocaleNumber(value: string, locale: string): number | null {
   }
   const { decimal, group } = detectSeparators(locale);
 
-  let normalized = value;
+  let normalized = value.trim();
   if (group) {
     normalized = normalized.replaceAll(group, '');
   }
@@ -64,8 +73,11 @@ function parseLocaleNumber(value: string, locale: string): number | null {
     normalized = normalized.replace(decimal, '.');
   }
 
+  if (!PLAIN_NUMBER.test(normalized)) {
+    return null;
+  }
   const num = Number(normalized);
-  return Number.isNaN(num) ? null : num;
+  return Number.isFinite(num) ? num : null;
 }
 
 /**
@@ -96,6 +108,10 @@ function isAllowedChar(
  *
  * Keeps `type="text"` (no browser spinners, no scroll-to-change) and uses
  * `Intl.NumberFormat` for formatting. Shows raw value on focus, formatted value on blur.
+ *
+ * The `value` model follows every keystroke with the parsed number, not clamped
+ * or rounded, so a form submitted with Enter sees what the user typed. Blur
+ * clamps to `min`/`max`, rounds to `decimals` and formats.
  *
  * Supports Arrow Up/Down (+ Shift) for increment/decrement with `min`/`max` clamping.
  *
@@ -180,6 +196,8 @@ function isAllowedChar(
     '(focus)': 'handleFocus()',
     '(blur)': 'handleBlur()',
     '(paste)': 'handlePaste($event)',
+    '(input)': 'handleInput($event)',
+    '(compositionend)': 'handleCompositionEnd()',
   },
 })
 export class CngxNumericInput {
@@ -245,7 +263,11 @@ export class CngxNumericInput {
   );
   private readonly resolvedStep = computed(() => this.step() ?? this.config.numericStep ?? 1);
 
-  /** Primary value channel. `null` when empty or invalid. */
+  /**
+   * Primary value channel. `null` when empty or invalid. Follows every keystroke
+   * with the parsed number (not clamped, not rounded); blur clamps to `min`/`max`,
+   * rounds to `decimals` and formats.
+   */
   readonly value = model<number | null>(null, { alias: 'value' });
 
   // CngxFormBridge writes whatever the form holds (`null` after reset(), a foreign
@@ -301,20 +323,27 @@ export class CngxNumericInput {
     }
 
     // Sync formatted value to DOM; the input event notifies co-located CngxInput / matInput.
+    // Effect-local, not a signal: tells the focus transition apart from re-runs while focused.
+    let wasFocused = false;
     effect(() => {
       const focused = this.focusedState();
       const value = this.normalizedValue();
       const { decimal } = this.separators();
       const formatOnBlur = this.formatOnBlur();
       // Tracked so a blurred flip between locales that share separators still re-formats.
-      this.activeLocale();
+      const locale = this.activeLocale();
 
       untracked(() => {
         const el = this.el.nativeElement;
         const prevValue = el.value;
 
         if (focused) {
-          if (value != null) {
+          // While typing, the text already means the model value (`1,`, `1,50`):
+          // rewriting it would fight the keystroke. The focus transition always
+          // swaps the formatted display for the raw text.
+          const textMatchesValue =
+            wasFocused && value != null && parseLocaleNumber(el.value, locale) === value;
+          if (value != null && !textMatchesValue) {
             const raw = decimal === '.' ? String(value) : String(value).replace('.', decimal);
             if (el.value !== raw) {
               el.value = raw;
@@ -334,6 +363,7 @@ export class CngxNumericInput {
           el.dispatchEvent(new Event('input', { bubbles: true }));
         }
       });
+      wasFocused = focused;
     });
   }
 
@@ -433,6 +463,26 @@ export class CngxNumericInput {
     }
   }
 
+  /**
+   * @internal - commits the parsed text per keystroke while focused. Blurred
+   * dispatches (the formatted display) never re-parse; focused dispatches from
+   * paste, arrow keys and external writes carry text that already parses to the
+   * model, so the write is a no-op.
+   */
+  protected handleInput(event: Event): void {
+    if (!this.focusedState() || (event as InputEvent).isComposing) {
+      return;
+    }
+    this.commitTyped();
+  }
+
+  /** @internal - an IME composition commits once, when it ends. */
+  protected handleCompositionEnd(): void {
+    if (this.focusedState()) {
+      this.commitTyped();
+    }
+  }
+
   /** @internal */
   protected handleFocus(): void {
     this.editLocale.set(this.resolvedLocale());
@@ -484,6 +534,10 @@ export class CngxNumericInput {
     this.updateValue(clamped);
     this.writeDisplay(this.toEditText(clamped));
     this.el.nativeElement.select();
+  }
+
+  private commitTyped(): void {
+    this.updateValue(parseLocaleNumber(this.el.nativeElement.value, this.activeLocale()));
   }
 
   private toEditText(value: number): string {

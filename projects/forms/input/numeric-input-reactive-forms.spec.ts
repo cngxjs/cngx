@@ -167,7 +167,7 @@ describe('CngxNumericInput under Reactive Forms', () => {
     expect(host.control.pristine).toBe(true);
   });
 
-  it.fails('typing without blur updates the control', () => {
+  it('typing without blur updates the control', () => {
     const { fixture, input, host } = mount(RfHost);
     focus(input, fixture);
 
@@ -178,7 +178,7 @@ describe('CngxNumericInput under Reactive Forms', () => {
     expect(host.control.dirty).toBe(true);
   });
 
-  it.fails('Enter submit without blur reads the typed value', () => {
+  it('Enter submit without blur reads the typed value', () => {
     const { fixture, input, host } = mount(SubmitHost);
     focus(input, fixture);
 
@@ -190,7 +190,7 @@ describe('CngxNumericInput under Reactive Forms', () => {
     expect(host.submitted()).toBe(1234.5);
   });
 
-  it.fails('Signal Forms: typing without blur updates the field', () => {
+  it('Signal Forms: typing without blur updates the field', () => {
     const { fixture, input, host } = mount(SignalFormsHost);
     focus(input, fixture);
 

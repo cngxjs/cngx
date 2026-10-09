@@ -500,7 +500,7 @@ describe('CngxNumericInput', () => {
   });
 
   describe('per-keystroke commit', () => {
-    it.fails('typing 12 updates value before blur and keeps the text', () => {
+    it('typing 12 updates value before blur and keeps the text', () => {
       const { directive, fixture, input } = setup();
       focus(input);
       flush(fixture);
@@ -513,7 +513,7 @@ describe('CngxNumericInput', () => {
       expect(input.value).toBe('12');
     });
 
-    it.fails('1 under min=10 holds 1 while focused: invalid, text unchanged', () => {
+    it('1 under min=10 holds 1 while focused: invalid, text unchanged', () => {
       const { directive, fixture, input } = setup({ min: 10 });
       focus(input);
       flush(fixture);
@@ -525,7 +525,7 @@ describe('CngxNumericInput', () => {
       expect(input.value).toBe('1');
     });
 
-    it.fails('de-DE: a trailing decimal comma stays in the text, value 1', () => {
+    it('de-DE: a trailing decimal comma stays in the text, value 1', () => {
       const { directive, fixture, input } = setup({ locale: 'de-DE' });
       focus(input);
       flush(fixture);
@@ -536,7 +536,7 @@ describe('CngxNumericInput', () => {
       expect(input.value).toBe('1,');
     });
 
-    it.fails('de-DE: 1,50 stays 1,50 with value 1.5', () => {
+    it('de-DE: 1,50 stays 1,50 with value 1.5', () => {
       const { directive, fixture, input } = setup({ locale: 'de-DE' });
       focus(input);
       flush(fixture);
@@ -547,7 +547,7 @@ describe('CngxNumericInput', () => {
       expect(input.value).toBe('1,50');
     });
 
-    it.fails('a lone minus writes null and keeps the minus', () => {
+    it('a lone minus writes null and keeps the minus', () => {
       const { directive, fixture, input } = setup();
       directive.setValue(5);
       flush(fixture);
@@ -560,7 +560,7 @@ describe('CngxNumericInput', () => {
       expect(input.value).toBe('-');
     });
 
-    it.fails('aria-valuenow follows the typed value before blur', () => {
+    it('aria-valuenow follows the typed value before blur', () => {
       const { fixture, input } = setup();
       focus(input);
       flush(fixture);
@@ -570,7 +570,7 @@ describe('CngxNumericInput', () => {
       expect(input.getAttribute('aria-valuenow')).toBe('12');
     });
 
-    it.fails('an IME composition commits once, after compositionend', () => {
+    it('an IME composition commits once, after compositionend', () => {
       const { directive, fixture, input } = setup();
       directive.setValue(3);
       flush(fixture);
@@ -594,7 +594,7 @@ describe('CngxNumericInput', () => {
     });
 
     for (const dropped of ['Infinity', '0x1F', '1e400']) {
-      it.fails(`a dropped ${dropped} never reaches the model, typed or on blur`, () => {
+      it(`a dropped ${dropped} never reaches the model, typed or on blur`, () => {
         const { directive, fixture, input } = setup();
         focus(input);
         flush(fixture);
