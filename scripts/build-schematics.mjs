@@ -16,11 +16,14 @@
 // options from one source.
 
 import { build } from 'esbuild';
+import { execFileSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const TSC = createRequire(import.meta.url).resolve('typescript/bin/tsc');
 const LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
 const CORE_NG_ADD_SCHEMA = join(ROOT, 'projects', 'core', 'schematics', 'ng-add', 'schema.json');
 
@@ -45,6 +48,16 @@ function entryPoints(srcRoot) {
     .filter((entry) => entry.isDirectory() && !NON_ENTRY_DIRS.has(entry.name))
     .map((entry) => join(srcRoot, entry.name, 'index.ts'))
     .filter((file) => existsSync(file));
+}
+
+// esbuild strips types without checking them; a type error must fail the
+// build, not ship.
+function typeCheck(lib, tsconfig) {
+  try {
+    execFileSync(process.execPath, [TSC, '-p', tsconfig, '--noEmit'], { cwd: ROOT, stdio: 'inherit' });
+  } catch {
+    fail(`type errors in projects/${lib}/schematics.`);
+  }
 }
 
 function copyInto(srcRoot, outRoot, relativePath) {
@@ -81,6 +94,9 @@ async function buildLib(lib) {
     fail(`projects/${lib}/schematics has no <folder>/index.ts entry.`);
   }
 
+  const tsconfig = join(srcRoot, 'tsconfig.json');
+  typeCheck(lib, tsconfig);
+
   await build({
     entryPoints: entries,
     outdir: outRoot,
@@ -90,7 +106,8 @@ async function buildLib(lib) {
     format: 'cjs',
     target: 'node20',
     external: EXTERNAL,
-    tsconfig: join(srcRoot, 'tsconfig.json'),
+    tsconfig,
+    minify: true,
     logLevel: 'warning',
     legalComments: 'none',
   });
