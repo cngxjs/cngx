@@ -39,6 +39,11 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
  *   back into the effect.
  * - `registerOnChange` skips its first run - initial value is delivered
  *   via `writeValue` per CVA contract.
+ * - A write through the atom's `value` model (typing, a click, `value.set`)
+ *   reaches the control synchronously via the model's `subscribe`, so a form
+ *   submitted in the same task (Enter right after a keystroke) reads it. The
+ *   effect stays for changes that bypass `set` (a parent `[value]` binding);
+ *   after a synchronous forward it sees `lastSeen` and does nothing.
  * - `writeValue` stamps `lastSeen`; the change-listener short-circuits on
  *   `Object.is` so the RF→atom→RF round-trip never re-emits.
  *
@@ -107,37 +112,53 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
   }
 
   /**
-   * Installs a tracked effect over `control.value()`. First run is the
+   * Forwards atom writes into `fn(value)`: synchronously on every write through
+   * the `value` model, and through a tracked effect over `control.value()` for
+   * changes that do not go through `set`. The effect's first run is the
    * post-mount baseline (CVA contract - initial value was delivered via
-   * `writeValue`); every subsequent change forwards through `fn(value)`
-   * inside `untracked()`.
+   * `writeValue`). Both paths share the `lastSeen` guard, so a value forwards
+   * once.
    */
   registerOnChange(fn: (value: T) => void): void {
     this.onChange = fn;
     if (this.effectRef !== null) {
       return;
     }
+    const subscription = this.control.value.subscribe((value) => {
+      if (this.lastSeen === CngxFormBridge.UNSET) {
+        // Not observed yet: the effect takes the baseline on its first run.
+        return;
+      }
+      this.forward(value);
+    });
     this.effectRef = effect(
       () => {
         const value = this.control.value();
-        if (this.lastSeen !== CngxFormBridge.UNSET && Object.is(value, this.lastSeen)) {
-          return;
-        }
-        const wasFirstObservation = this.lastSeen === CngxFormBridge.UNSET;
-        this.lastSeen = value;
-        if (wasFirstObservation) {
+        if (this.lastSeen === CngxFormBridge.UNSET) {
           // CVA contract: registerOnChange listens for future changes only.
+          this.lastSeen = value;
           return;
         }
-        const callback = this.onChange;
-        if (callback === null) {
-          return;
-        }
-        untracked(() => callback(value));
+        this.forward(value);
       },
       { injector: this.injector },
     );
-    this.destroyRef.onDestroy(() => this.effectRef?.destroy());
+    this.destroyRef.onDestroy(() => {
+      subscription.unsubscribe();
+      this.effectRef?.destroy();
+    });
+  }
+
+  private forward(value: T): void {
+    if (Object.is(value, this.lastSeen)) {
+      return;
+    }
+    this.lastSeen = value;
+    const callback = this.onChange;
+    if (callback === null) {
+      return;
+    }
+    untracked(() => callback(value));
   }
 
   registerOnTouched(fn: () => void): void {
