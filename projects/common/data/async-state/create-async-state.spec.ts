@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { CNGX_DEV_DESCRIPTORS } from '@cngx/core/utils';
 import { createAsyncState, type MutableAsyncState } from './create-async-state';
 import { CngxAsyncRegistry } from '../async-registry/async-registry';
 import { provideAsyncRegistry } from '../async-registry/provide-async-registry';
@@ -110,5 +111,18 @@ describe('createAsyncState registry enrollment', () => {
 
     void state.execute(() => new Promise<string>(() => {}));
     expect(registry.isAnythingLoading()).toBe(false);
+  });
+});
+
+describe('createAsyncState dev descriptor', () => {
+  it('tags the mutation state with its factory name and options', () => {
+    const options = { label: 'Save' };
+    const state = TestBed.runInInjectionContext(() => createAsyncState<string>(options));
+
+    expect(CNGX_DEV_DESCRIPTORS.read(state)).toMatchObject({
+      kind: 'cngx-dev:factory',
+      factory: 'createAsyncState',
+      inputs: { options },
+    });
   });
 });

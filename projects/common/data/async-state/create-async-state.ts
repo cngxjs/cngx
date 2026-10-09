@@ -1,5 +1,5 @@
 import { DestroyRef, inject } from '@angular/core';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { CNGX_DEV_DESCRIPTORS, type CngxAsyncState } from '@cngx/core/utils';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
 import { createManualState, type ManualAsyncState } from './create-manual-state';
@@ -90,7 +90,7 @@ export function createAsyncState<T>(options?: CreateAsyncStateOptions): MutableA
     }
   }
 
-  return {
+  const mutation: MutableAsyncState<T> = {
     status: state.status,
     data: state.data,
     error: state.error,
@@ -144,4 +144,12 @@ export function createAsyncState<T>(options?: CreateAsyncStateOptions): MutableA
       state.reset();
     },
   };
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    CNGX_DEV_DESCRIPTORS.tag(mutation, {
+      kind: 'cngx-dev:factory',
+      factory: 'createAsyncState',
+      inputs: { options },
+    });
+  }
+  return mutation;
 }
