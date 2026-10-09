@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,11 +20,17 @@ function fixture(files) {
   return dir;
 }
 
-function check(dist, source) {
-  return spawnSync(process.execPath, [SCRIPT, '--dist', dist, '--source', source], {
-    cwd: ROOT,
-    encoding: 'utf8',
-  });
+// A library build carrying every needle the fixtures below derive.
+const LIB_DIST = {
+  'core/fesm2022/cngx-core-utils.mjs': `t({ kind: '${MARKER}factory' }); c(f, { debugName: 'transitionTracker.current' });`,
+};
+
+function check(dist, source, libDist = fixture(LIB_DIST)) {
+  return spawnSync(
+    process.execPath,
+    [SCRIPT, '--dist', dist, '--lib-dist', libDist, '--source', source],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
 }
 
 const CLEAN_SOURCE = { 'lib/a.ts': 'export const a = 1;\n' };
@@ -86,14 +92,12 @@ describe('devtools-prod-strip-check - needle derivation', () => {
   });
 
   it('finds no non-conforming debugName in the real projects/** tree', () => {
-    const result = spawnSync(
-      process.execPath,
-      [SCRIPT, '--dist', fixture({ 'main.js': 'console.log(1);' }), '--source', 'projects'],
-      { cwd: ROOT, encoding: 'utf8' },
-    );
+    const files = sourceFiles('projects').map((path) => ({
+      path,
+      text: readFileSync(join(ROOT, path), 'utf8'),
+    }));
 
-    expect(result.stderr).toBe('');
-    expect(result.status).toBe(0);
+    expect(deriveNeedles(files).violations).toEqual([]);
   });
 });
 
@@ -150,6 +154,36 @@ describe('devtools-prod-strip-check - bundle scan', () => {
 
     expect(result.status).toBe(2);
     expect(result.stderr).toContain('npm run build:examples');
+  });
+
+  it('exits 2 when the library build is missing', () => {
+    const result = check(
+      fixture({ 'main.js': '' }),
+      fixture(CLEAN_SOURCE),
+      join(tmpdir(), 'prod-strip-missing-lib'),
+    );
+
+    expect(result.status).toBe(2);
+    expect(result.stderr).toContain('npm run build:libs');
+  });
+
+  it('exits 4 when a derived needle is missing from the library build', () => {
+    const source = fixture({ 'lib/t.ts': "computed(fn, { debugName: 'selectCore.selection' });" });
+    const result = check(fixture({ 'main.js': '' }), source);
+
+    expect(result.status).toBe(4);
+    expect(result.stderr).toContain('selectCore.selection');
+  });
+
+  it('exits 4 when the library build lacks the marker', () => {
+    const result = check(
+      fixture({ 'main.js': '' }),
+      fixture(CLEAN_SOURCE),
+      fixture({ 'core/fesm2022/cngx-core-utils.mjs': 'export const nothing = 1;' }),
+    );
+
+    expect(result.status).toBe(4);
+    expect(result.stderr).toContain(MARKER);
   });
 
   it('exits 3 when a hand-written debugName breaks the naming contract', () => {

@@ -13,11 +13,17 @@
 //   member chain in app code (`host.treeController.isExpanded(id)`), but a
 //   debugName can only reach a bundle as a string literal.
 //
-// Exit codes: 0 clean, 1 needle found in the bundle, 2 bundle directory
-// missing (a skipped build must not pass), 3 a hand-written `debugName` breaks
-// the naming contract.
+// Positive control: every needle must be present in the library build
+// (dist/<lib>/fesm2022/*.mjs), where the dev branches survive. A needle the
+// library build does not contain means the derivation no longer matches the
+// emitted code, and a clean production scan would prove nothing.
 //
-// Usage: node scripts/devtools-prod-strip-check.mjs [--dist <dir>] [--source <dir>]
+// Exit codes: 0 clean, 1 needle found in the production bundle, 2 bundle or
+// library build missing (a skipped build must not pass), 3 a hand-written
+// `debugName` breaks the naming contract, 4 a needle is missing from the
+// library build.
+//
+// Usage: node scripts/devtools-prod-strip-check.mjs [--dist <dir>] [--lib-dist <dir>] [--source <dir>]
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
@@ -29,6 +35,7 @@ export const MARKER = 'cngx-dev:';
 export const DEBUG_NAME_PATTERN = /^[a-z][A-Za-z0-9]*(\.[a-z][A-Za-z0-9]*)+$/;
 
 const DEFAULT_DIST = 'dist/examples/browser';
+const DEFAULT_LIB_DIST = 'dist';
 const DEFAULT_SOURCE = 'projects';
 const SKIPPED_DIRS = new Set(['node_modules', 'dist', '.angular']);
 
@@ -134,6 +141,7 @@ function argValue(argv, flag, fallback) {
 
 export function run(argv) {
   const dist = resolve(argValue(argv, '--dist', DEFAULT_DIST));
+  const libDist = resolve(argValue(argv, '--lib-dist', DEFAULT_LIB_DIST));
   const source = resolve(argValue(argv, '--source', DEFAULT_SOURCE));
 
   const { needles, violations } = deriveNeedles(readAll(source, (name) => name.endsWith('.ts')));
@@ -148,6 +156,30 @@ export function run(argv) {
       '  A hand-written debugName must be a plain string literal matching <owner>.<signal>.\n',
     );
     return 3;
+  }
+
+  if (!existsSync(libDist)) {
+    process.stderr.write(
+      `prod-strip - no library build at ${relative(process.cwd(), libDist)}. Run npm run build:libs first.\n`,
+    );
+    return 2;
+  }
+  const libraryHits = scanBundle(
+    readAll(libDist, (name) => name.endsWith('.mjs')),
+    needles,
+  );
+  const missing = needles.filter((needle) => !libraryHits.some((hit) => hit.needle === needle));
+  if (missing.length > 0) {
+    process.stderr.write(
+      `prod-strip - ${missing.length} needle(s) missing from the library build, so the scan would prove nothing:\n`,
+    );
+    for (const needle of missing) {
+      process.stderr.write(`  ${JSON.stringify(needle)}\n`);
+    }
+    process.stderr.write(
+      '  Rebuild with npm run build:libs; if it persists, the derivation drifted.\n',
+    );
+    return 4;
   }
 
   if (!existsSync(dist)) {
