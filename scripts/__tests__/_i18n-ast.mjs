@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 
 import ts from 'typescript';
 
+import { isToolingRoot } from './source-roots.mjs';
+
 // Shared scanner for the two i18n guards (`user-facing-string-coverage` and
 // `reactive-i18n-coverage`): the repo walk, the TS-AST helpers, the
 // component-template hand-off (inline `template:` and `templateUrl` files),
@@ -27,7 +29,8 @@ export const CONFIG_READ = /\b(?:config|cfg|i18n|labels|messages|glyphs|defaults
 
 /**
  * Every published source under `relDir` whose basename matches `extension`,
- * skipping specs, fixtures, declaration files and {@link SKIPPED_DIRS}.
+ * skipping specs, fixtures, declaration files, {@link SKIPPED_DIRS} and the
+ * tooling roots (`source-roots.mjs`).
  *
  * @param {string} relDir repo-relative directory
  * @param {RegExp} extension
@@ -38,7 +41,7 @@ export function walkSources(relDir, extension) {
   for (const entry of readdirSync(resolve(REPO_ROOT, relDir))) {
     const rel = `${relDir}/${entry}`;
     if (statSync(resolve(REPO_ROOT, rel)).isDirectory()) {
-      if (!SKIPPED_DIRS.has(entry)) {
+      if (!SKIPPED_DIRS.has(entry) && !isToolingRoot(rel)) {
         out.push(...walkSources(rel, extension));
       }
     } else if (
