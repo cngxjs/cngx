@@ -6,6 +6,7 @@ import { form } from '@angular/forms/signals';
 import { CngxFormBridge } from '@cngx/forms/controls';
 import { CngxFormField } from '@cngx/forms/field';
 import { CngxSelect } from '@cngx/forms/select';
+import { mousePick } from '@cngx/testing';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { loadAllMaskPresets } from '../mask-presets/registry';
 import { CngxPhoneInput } from './phone-input.component';
@@ -88,6 +89,34 @@ function leave(
   from.dispatchEvent(new FocusEvent('blur', { relatedTarget: to }));
   from.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: to }));
   flush(fixture);
+}
+
+// jsdom does not implement the Popover API - polyfill so the country picker can open.
+function polyfillPopover(): void {
+  const proto = HTMLElement.prototype as unknown as {
+    showPopover?: () => void;
+    hidePopover?: () => void;
+    togglePopover?: (force?: boolean) => boolean;
+  };
+  if (typeof proto.showPopover !== 'function') {
+    proto.showPopover = function (this: HTMLElement) {
+      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
+      this.setAttribute('data-popover-open', 'true');
+      this.dispatchEvent(new Event('toggle', { bubbles: false }));
+    };
+    proto.hidePopover = function (this: HTMLElement) {
+      this.removeAttribute('data-popover-open');
+      this.dispatchEvent(new Event('toggle', { bubbles: false }));
+    };
+    proto.togglePopover = function (this: HTMLElement) {
+      if (this.hasAttribute('data-popover-open')) {
+        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
+        return false;
+      }
+      (this as HTMLElement & { showPopover: () => void }).showPopover();
+      return true;
+    };
+  }
 }
 
 afterEach(() => {
@@ -185,6 +214,7 @@ describe('CngxPhoneInput under Reactive Forms', () => {
 
 describe('CngxPhoneInput touched inside cngx-form-field', () => {
   beforeAll(async () => {
+    polyfillPopover();
     await loadAllMaskPresets();
   });
 
@@ -202,5 +232,21 @@ describe('CngxPhoneInput touched inside cngx-form-field', () => {
     leave(trigger, null, fixture);
 
     expect(host.f.phone().touched()).toBe(true);
+  });
+
+  it.fails('T3: picking a country with the mouse leaves the field untouched', async () => {
+    const { fixture, select, trigger, host } = await mount(SignalFormsHost);
+    trigger.focus();
+    (select.componentInstance as CngxSelect<string>).open();
+    await settle(fixture);
+    const option = (select.nativeElement as HTMLElement).querySelectorAll<HTMLElement>(
+      '[role="option"]',
+    )[1];
+
+    mousePick(option);
+    await settle(fixture);
+
+    expect(host.f.phone().touched()).toBe(false);
+    expect(document.activeElement).toBe(trigger);
   });
 });
