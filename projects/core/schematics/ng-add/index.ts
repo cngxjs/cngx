@@ -1,8 +1,7 @@
 import { chain, type Rule, type SchematicContext, type Tree } from '@angular-devkit/schematics';
 import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schematics/tasks';
 
-import { addLockstepDependency } from '../shared/lockstep';
-import { type NgAddOptions, readOwnVersion } from '../shared/manifest';
+import { addLockstepDependency, type NgAddOptions, readOwnVersion } from '../engine';
 
 /**
  * Stage one. Plans the dependency changes, installs once, then chains the

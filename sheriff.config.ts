@@ -37,6 +37,19 @@ export const config: SheriffConfig = {
   excludeRoot: true,
 
   modules: {
+    // Build-time tooling, not library code: every lib's schematics folder
+    // (core's engine plus the ng-add shims) is its own module, declared
+    // before the lib rows so `projects/<lib>/<entry>` does not claim it.
+    // Literal rows: a leading `projects/<lib>/schematics` placeholder
+    // retags unrelated folders (projects/testing lands on `root`).
+    'projects/utils/schematics': ['tooling:schematics'],
+    'projects/core/schematics': ['tooling:schematics'],
+    'projects/common/schematics': ['tooling:schematics'],
+    'projects/interop/schematics': ['tooling:schematics'],
+    'projects/forms/schematics': ['tooling:schematics'],
+    'projects/data-display/schematics': ['tooling:schematics'],
+    'projects/ui/schematics': ['tooling:schematics'],
+    'projects/themes/schematics': ['tooling:schematics'],
     // Specific-before-generic — the primary root rule catches files at
     // `projects/utils/<file>.ts` after the src/ wrapper drop; the
     // `<entry>` rule still picks up secondaries like rxjs-interop/.
@@ -122,6 +135,10 @@ export const config: SheriffConfig = {
     'lib:data-display': ['lib:utils', 'lib:core', 'lib:common', 'lib:data-display'],
     'lib:interop':      ['lib:utils', 'lib:core', 'lib:common', 'lib:interop'],
     'lib:ui':           ['lib:utils', 'lib:core', 'lib:common', 'lib:forms', 'lib:data-display', 'lib:interop', 'lib:ui'],
+
+    // Schematics import only each other (shims reach the core engine
+    // barrel); no runtime lib lists this tag, so nothing ships them.
+    'tooling:schematics': ['tooling:schematics'],
 
     // Tooling / fixtures / demos can pull from any lib.
     'lib:testing':      anyTag,

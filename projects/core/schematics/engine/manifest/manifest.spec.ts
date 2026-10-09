@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { declaredRange, parseManifest, readOwnVersion } from '../../projects/core/schematics/shared/manifest.ts';
+import { declaredRange, parseManifest, readOwnVersion } from './manifest';
 
 describe('parseManifest', () => {
   it('reads version and both dependency maps', () => {
@@ -40,7 +40,7 @@ describe('declaredRange', () => {
 });
 
 describe('readOwnVersion', () => {
-  let pkg;
+  let pkg: string;
 
   beforeEach(() => {
     pkg = mkdtempSync(join(tmpdir(), 'cngx-own-version-'));

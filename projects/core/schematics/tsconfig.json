@@ -11,5 +11,6 @@
     "experimentalDecorators": false,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts"],
+  "exclude": ["testing/fixtures/**"]
 }

@@ -162,13 +162,107 @@ module.exports = tseslint.config(
         },
     },
 
+    // Schematics (core and every lib's ng-add shim) run in Node under the
+    // Angular CLI. The engine is a functional core behind one barrel; only
+    // the terminal renderer and prompt adapters may wrap a class-based
+    // library. Specs are ignored below, so none of this covers them.
+    {
+        files: ['projects/*/schematics/**/*.ts'],
+        languageOptions: {
+            globals: {
+                __dirname: 'readonly',
+                __filename: 'readonly',
+                require: 'readonly',
+                module: 'readonly',
+                process: 'readonly',
+                Buffer: 'readonly',
+                console: 'readonly',
+            },
+        },
+        rules: {
+            'no-restricted-syntax': [
+                'error',
+                { selector: 'ClassDeclaration', message: 'The schematics engine is functional: no classes outside engine/render and engine/prompt.' },
+                { selector: 'ThisExpression', message: 'The schematics engine is functional: no `this` outside engine/render and engine/prompt.' },
+            ],
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        { group: ['**/engine/*/**', '**/engine/*'], message: 'Import the schematics engine through its barrel (`engine`) only.' },
+                    ],
+                },
+            ],
+            'no-param-reassign': ['error', { props: true }],
+            'prefer-const': 'error',
+        },
+    },
+    // Inside engine/ modules import each other directly.
+    {
+        files: ['projects/core/schematics/engine/**/*.ts'],
+        rules: {
+            'no-restricted-imports': 'off',
+        },
+    },
+    // Shims reach core only through the engine barrel.
+    {
+        files: ['projects/*/schematics/**/*.ts'],
+        ignores: ['projects/core/schematics/**'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        { group: ['**/engine/*/**', '**/engine/*'], message: 'Import the schematics engine through its barrel (`engine`) only.' },
+                        { group: ['**/core/schematics/**', '!**/core/schematics/engine'], message: 'A shim imports nothing from @cngx/core schematics but the engine barrel.' },
+                    ],
+                },
+            ],
+        },
+    },
+    // Detection and plan steps are pure: time, git and environment enter as
+    // parameters, never read here.
+    {
+        files: ['projects/core/schematics/ng-add/detect/**/*.ts', 'projects/core/schematics/ng-add/steps/**/*.ts'],
+        rules: {
+            'no-restricted-syntax': [
+                'error',
+                { selector: 'ClassDeclaration', message: 'The schematics engine is functional: no classes outside engine/render and engine/prompt.' },
+                { selector: 'ThisExpression', message: 'The schematics engine is functional: no `this` outside engine/render and engine/prompt.' },
+                { selector: 'Identifier[name="Date"]', message: 'Pure step: take the time as a `now: string` parameter.' },
+                { selector: 'Identifier[name="process"]', message: 'Pure step: take the environment as a parameter.' },
+            ],
+            'no-restricted-imports': [
+                'error',
+                {
+                    paths: ['node:child_process', 'node:fs', 'node:os', 'child_process', 'fs', 'os'].map((name) => ({
+                        name,
+                        message: 'Pure step: no I/O. Read through the Tree or take the value as a parameter.',
+                    })),
+                    patterns: [
+                        { group: ['**/engine/*/**', '**/engine/*'], message: 'Import the schematics engine through its barrel (`engine`) only.' },
+                    ],
+                },
+            ],
+        },
+    },
+    // Shell adapters wrapping listr2 and @inquirer may use classes.
+    {
+        files: ['projects/core/schematics/engine/render/**/*.ts', 'projects/core/schematics/engine/prompt/**/*.ts'],
+        rules: {
+            'no-restricted-syntax': 'off',
+        },
+    },
+
     // Ignored paths
     {
         ignores: ['dist/', 'packages/**/dist/', 'packages/**/testing/**', 'node_modules/', '.angular/', 'out-tsc/', 'docs/', '.internal/', '**/*.spec.ts', 'playwright.config.ts', 'e2e/', 'sheriff.config.ts', 'projects/**/examples/**',
             // examples/** stays out (generated features, stories, app source),
             // but examples/e2e is gated in CI now, so it is linted.
             'examples/src/**', 'examples/stories/**', 'examples/fixtures/**',
-            'examples/dev-tools/**', 'examples/*.ts'],
+            'examples/dev-tools/**', 'examples/*.ts',
+            // Fixture apps for schematic specs: consumer code, not cngx source.
+            'projects/*/schematics/testing/fixtures/**'],
     },
 
     // Re-enable rules that Prettier disables but we want to enforce.
