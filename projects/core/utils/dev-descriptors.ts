@@ -1,4 +1,5 @@
 import { isSignal, untracked, type Signal } from '@angular/core';
+import { SIGNAL, type ReactiveNode } from '@angular/core/primitives/signals';
 
 /**
  * Version of the {@link CngxDevDescriptor} union. Any change to a descriptor
@@ -147,11 +148,12 @@ const MAX_DEPTH = 2;
  * Lists every tagged value among the own fields of `instance`, TypeScript
  * `private` fields included. A tagged factory result is descended into, so a
  * select core's nested selection controller is found too; untagged objects are
- * not, which keeps the walk bounded. Inside a tagged factory result, a signal
- * field whose current value is tagged counts as that value (the select core
- * hands its controller out as `selection: Signal<SelectionController>`); the
- * signal is read once, untracked, and a read that throws is skipped. Signals on
- * `instance` itself are never read, so an unset required input cannot throw.
+ * not, which keeps the walk bounded. Inside a tagged factory result, a plain
+ * state signal whose current value is tagged counts as that value (the select
+ * core hands its controller out as `selection: Signal<SelectionController>`).
+ * Only nodes of kind `signal` are read, untracked: a `computed` or
+ * `linkedSignal` is never evaluated, so inspecting does no work the app did
+ * not ask for. Signals on `instance` itself are never read.
  * Stops at a field chain of two and visits each object once, so cycles
  * terminate. Getters are never invoked.
  *
@@ -191,20 +193,28 @@ function walkFields(
 }
 
 /**
- * The current value of an untagged signal, read untracked; any other value as
- * is. A read that throws yields `undefined`.
+ * The current value of an untagged state signal, read untracked; any other
+ * value, a derived signal included, as is. Reading a state signal runs no
+ * computation and cannot throw.
  *
  * @internal
  */
 function unwrapSignal(value: unknown): unknown {
-  if (!isSignal(value) || DESCRIPTORS.has(value)) {
+  if (!isSignal(value) || DESCRIPTORS.has(value) || !isStateSignal(value)) {
     return value;
   }
-  try {
-    return untracked(value);
-  } catch {
-    return undefined;
-  }
+  return untracked(value);
+}
+
+/**
+ * `true` for a writable signal or its read-only view, `false` for a
+ * `computed`, `linkedSignal`, `input` or any other derived node.
+ *
+ * @internal
+ */
+function isStateSignal(value: Signal<unknown>): boolean {
+  const node = (value as unknown as Record<symbol, ReactiveNode | undefined>)[SIGNAL];
+  return node?.kind === 'signal';
 }
 
 /**

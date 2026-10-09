@@ -1,4 +1,4 @@
-import { computed, signal } from '@angular/core';
+import { computed, linkedSignal, signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -84,13 +84,32 @@ describe('resolveDevDescriptors', () => {
     expect(entries[1].descriptor).toBe(CNGX_DEV_DESCRIPTORS.read(selection));
   });
 
-  it('skips a signal in a tagged factory result whose read throws', () => {
-    const throwing = computed(() => {
-      throw new Error('not ready');
+  it('resolves through a read-only view of a state signal', () => {
+    const selection = factoryResult('createSelectionController', {});
+    const host = {
+      core: factoryResult('createSelectCore', { selection: signal(selection).asReadonly() }),
+    };
+
+    expect(resolveDevDescriptors(host).map((entry) => entry.path)).toEqual([
+      ['core'],
+      ['core', 'selection'],
+    ]);
+  });
+
+  it('never evaluates a computed or linkedSignal in a tagged factory result', () => {
+    let reads = 0;
+    const derived = computed(() => {
+      reads++;
+      return factoryResult('createSelectionController', {});
     });
-    const host = { core: factoryResult('createSelectCore', { throwing }) };
+    const linked = linkedSignal(() => {
+      reads++;
+      return factoryResult('createSelectionController', {});
+    });
+    const host = { core: factoryResult('createSelectCore', { derived, linked }) };
 
     expect(resolveDevDescriptors(host).map((entry) => entry.path)).toEqual([['core']]);
+    expect(reads).toBe(0);
   });
 
   it('never reads a signal on the instance itself', () => {
