@@ -7,8 +7,8 @@ import {
   type Tree,
 } from '@angular-devkit/schematics';
 import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schematics/tasks';
-import { addDependency, ExistingBehavior, InstallBehavior } from '@schematics/angular/utility';
 
+import { addLockstepDependency } from '../../../core/schematics/shared/lockstep';
 import { type NgAddOptions, readOwnVersion } from '../../../core/schematics/shared/manifest';
 
 const CORE = '@cngx/core';
@@ -47,10 +47,7 @@ function isCoreResolvable(context: SchematicContext): boolean {
  */
 export function ngAdd(options: NgAddOptions): Rule {
   return (_tree: Tree, context: SchematicContext) => {
-    const addCore = addDependency(CORE, readOwnVersion(__dirname), {
-      install: InstallBehavior.None,
-      existing: ExistingBehavior.Skip,
-    });
+    const addCore = addLockstepDependency(CORE, readOwnVersion(__dirname));
 
     if (isCoreResolvable(context)) {
       return chain([addCore, externalSchematic(CORE, 'ng-add', options)]);

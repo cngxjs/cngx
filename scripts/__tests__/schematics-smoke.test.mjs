@@ -135,4 +135,40 @@ describe('dist/ui/schematics ng-add shim', () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it('replaces an older @cngx pin with the lockstep version and says so', async () => {
+    const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
+    runner.registerCollection('@cngx/core', requireDist(CORE_COLLECTION));
+    const pinned = await runner.runSchematic('ng-add', {}, appTree);
+    const manifest = JSON.parse(pinned.readText('package.json'));
+    manifest.dependencies['@cngx/core'] = '0.0.1';
+    manifest.dependencies['@cngx/utils'] = '0.0.1';
+    pinned.overwrite('package.json', JSON.stringify(manifest, null, 2));
+    const messages = [];
+    runner.logger.subscribe((entry) => messages.push(entry.message));
+
+    const tree = await runner.runSchematic('ng-add', {}, pinned);
+    const result = JSON.parse(tree.readText('package.json'));
+
+    expect(result.dependencies['@cngx/core']).toBe(version);
+    expect(result.dependencies['@cngx/utils']).toBe(version);
+    expect(messages).toEqual(
+      expect.arrayContaining([
+        `Replacing @cngx/core@0.0.1 with ${version} so every @cngx package stays on one version.`,
+        `Replacing @cngx/utils@0.0.1 with ${version} so every @cngx package stays on one version.`,
+      ]),
+    );
+  });
+
+  it('stays silent when the app already pins the lockstep version', async () => {
+    const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
+    runner.registerCollection('@cngx/core', requireDist(CORE_COLLECTION));
+    const onboarded = await runner.runSchematic('ng-add', {}, appTree);
+    const messages = [];
+    runner.logger.subscribe((entry) => messages.push(entry.message));
+
+    await runner.runSchematic('ng-add', {}, onboarded);
+
+    expect(messages.filter((message) => message.startsWith('Replacing'))).toEqual([]);
+  });
 });

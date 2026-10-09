@@ -1,7 +1,7 @@
 import { chain, type Rule, type SchematicContext, type Tree } from '@angular-devkit/schematics';
 import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schematics/tasks';
-import { addDependency, InstallBehavior } from '@schematics/angular/utility';
 
+import { addLockstepDependency } from '../shared/lockstep';
 import { type NgAddOptions, readOwnVersion } from '../shared/manifest';
 
 /**
@@ -14,7 +14,7 @@ export function ngAdd(options: NgAddOptions): Rule {
     context.logger.info(`cngx ng-add: stage one (version ${version})`);
 
     return chain([
-      addDependency('@cngx/utils', version, { install: InstallBehavior.None }),
+      addLockstepDependency('@cngx/utils', version),
       (_innerTree: Tree, innerContext: SchematicContext) => {
         const installTask = innerContext.addTask(new NodePackageInstallTask());
         innerContext.addTask(new RunSchematicTask('ng-add-setup', { ...options }), [installTask]);
