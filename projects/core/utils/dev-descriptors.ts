@@ -254,7 +254,8 @@ type Bag = Readonly<Record<PropertyKey, unknown>>;
  * Derived on read from the descriptor the merge tagged in dev mode; every
  * signal is read inside `untracked`, so a calling `computed` or `effect` does
  * not subscribe through it. `undefined` for an untagged signal, which includes
- * every signal in a production build.
+ * every signal in a production build. Only string keys are listed: a symbol
+ * key on a bundle has no entry.
  *
  * @internal
  */
