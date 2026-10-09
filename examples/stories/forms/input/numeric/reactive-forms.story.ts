@@ -46,7 +46,7 @@ export const STORY: DemoSpec = {
       <input cngxInput cngxNumericInput [locale]="'de-DE'" [decimals]="2" [formControl]="amount" />
       <cngx-field-errors />
     </cngx-form-field>
-    <button type="submit" class="chip">Submit</button>
+    <button type="submit" class="chip" style="justify-self:start">Submit</button>
   </form>`,
   setupChrome: `protected handleToggleDisabled(): void {
     if (this.amount.disabled) {
