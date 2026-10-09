@@ -5,9 +5,11 @@ import { insertImport } from '@schematics/angular/utility/ast-utils';
 import { applyToUpdateRecorder } from '@schematics/angular/utility/change';
 import { JSONFile } from '@schematics/angular/utility/json-file';
 
+import { insertStyleImport } from '../edit/style-edit';
 import { addLockstepDependency } from '../manifest/lockstep';
 import {
   type AddImport,
+  type AddStyleImport,
   type Change,
   type CreateFile,
   type EditFile,
@@ -51,6 +53,16 @@ function renderCall(call: ProviderCall, external: (symbol: string, module: strin
   return `${external(call.symbol, call.module)}(${args})`;
 }
 
+function addStyleImport(change: AddStyleImport): Rule {
+  return (tree: Tree) => {
+    const content = tree.readText(change.path);
+    const next = insertStyleImport(content, change.statement);
+    if (next !== content) {
+      tree.overwrite(change.path, next);
+    }
+  };
+}
+
 function writeJson(change: WriteJson): Rule {
   return (tree: Tree) => {
     if (!tree.exists(change.path)) {
@@ -76,6 +88,8 @@ function toRule(change: Change): Rule {
       return addLockstepDependency(change.name, change.version);
     case 'add-provider':
       return addRootProvider(change.project, ({ code, external }) => code`${renderCall(change.call, external)}`);
+    case 'add-style-import':
+      return addStyleImport(change);
     case 'write-json':
       return writeJson(change);
     case 'note':

@@ -19,6 +19,7 @@ export {
   type AddDependency,
   type AddImport,
   type AddProvider,
+  type AddStyleImport,
   type Change,
   type CreateFile,
   type EditFile,
@@ -39,4 +40,7 @@ export {
   hasProvenanceStamp,
   withProvenanceMarker,
 } from './plan/provenance';
+export { addToArrayLiteral, type ArraySelector, hasArrayLiteral } from './edit/ts-edit';
+export { findElements, insertAttribute, parseTemplateContent } from './edit/template-edit';
+export { hasStyleImport, insertStyleImport } from './edit/style-edit';
 export { applyChangePlan } from './apply/apply';

@@ -109,6 +109,25 @@ describe('applyChangePlan', () => {
     expect(config).toMatch(/import \{ [^}]*\bwithPersistence\b[^}]* \} from '@cngx\/core';/);
   });
 
+  it('places a style import before the first rule', async () => {
+    const tree = await apply(
+      [
+        {
+          ...BASE,
+          kind: 'add-style-import',
+          id: 's',
+          path: 'src/styles.scss',
+          statement: "@import '@cngx/themes/cngx.css';",
+        },
+      ],
+      createMemoryTree({ 'src/styles.scss': "@use '@angular/material' as mat;\nhtml {}\n" }),
+    );
+
+    expect(tree.readText('src/styles.scss')).toBe(
+      "@use '@angular/material' as mat;\n@import '@cngx/themes/cngx.css';\nhtml {}\n",
+    );
+  });
+
   it('writes json entries and creates the file when missing', async () => {
     const tree = await apply(
       [

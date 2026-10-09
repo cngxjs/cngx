@@ -55,6 +55,13 @@ export interface AddProvider extends ChangeBase {
   readonly call: ProviderCall;
 }
 
+/** An `@use` / `@import` placed before the first rule of a stylesheet. */
+export interface AddStyleImport extends ChangeBase {
+  readonly kind: 'add-style-import';
+  readonly path: string;
+  readonly statement: string;
+}
+
 export type JsonPath = readonly (string | number)[];
 export type JsonEntry = readonly [path: JsonPath, value: JsonValue];
 
@@ -69,7 +76,15 @@ export interface Note extends ChangeBase {
   readonly kind: 'note';
 }
 
-export type Change = CreateFile | EditFile | AddImport | AddDependency | AddProvider | WriteJson | Note;
+export type Change =
+  | CreateFile
+  | EditFile
+  | AddImport
+  | AddDependency
+  | AddProvider
+  | AddStyleImport
+  | WriteJson
+  | Note;
 
 /** A change a step did not plan because its effect is already in place. */
 export interface SkippedStep {
