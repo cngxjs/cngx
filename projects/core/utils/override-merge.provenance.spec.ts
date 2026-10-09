@@ -19,6 +19,13 @@ interface StatusLabels {
   readonly status: { readonly busy: string | undefined; readonly idle: string | undefined };
 }
 
+const SYMBOL_LABELS: unique symbol = Symbol('labels');
+
+interface SymbolKeyed {
+  readonly title: string;
+  readonly [SYMBOL_LABELS]: { readonly busy: string };
+}
+
 describe('override-merge provenance', () => {
   it('resolves an overridden key as override and the rest as default', () => {
     const merged = createOverrideMerge<Labels>({ open: 'Open', close: 'Close' }, { open: 'Go' });
@@ -87,6 +94,28 @@ describe('override-merge provenance', () => {
       title: 'default',
       status: { busy: 'filled', idle: 'override' },
     });
+  });
+
+  it('lists no entry for a symbol key on a nested merge or fill', () => {
+    const defaults: SymbolKeyed = { title: 'Status', [SYMBOL_LABELS]: { busy: 'Busy' } };
+    const merged = createNestedOverrideMerge<SymbolKeyed, typeof SYMBOL_LABELS>(
+      defaults,
+      { title: 'State' },
+      SYMBOL_LABELS,
+    );
+    const filled = createDefaultsFill<SymbolKeyed, typeof SYMBOL_LABELS>(
+      merged,
+      defaults,
+      SYMBOL_LABELS,
+    );
+
+    for (const provenance of [
+      resolveOverrideProvenance(merged),
+      resolveOverrideProvenance(filled),
+    ]) {
+      expect(provenance).toEqual({ title: expect.any(String) });
+      expect(Object.getOwnPropertySymbols(provenance)).toEqual([]);
+    }
   });
 
   it('keeps the inner merge descriptor intact after a fill is created over it', () => {

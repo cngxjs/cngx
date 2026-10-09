@@ -309,7 +309,10 @@ function provenanceOf(merged: Signal<object>): CngxOverrideProvenance | undefine
     case 'cngx-dev:nested-override-merge': {
       const value = merged() as Bag;
       const overrides = descriptor.overrides() as Bag;
-      const key = descriptor.key as string;
+      const key = descriptor.key;
+      if (typeof key !== 'string') {
+        return spreadProvenance(value, overrides);
+      }
       return {
         ...spreadProvenance(value, overrides),
         [key]: spreadProvenance(asBag(value[key]), asBag(overrides[key])),
@@ -345,8 +348,8 @@ function fillProvenance(
       ? 'filled'
       : (innerProvenance?.[name] ?? 'unknown');
   }
-  const key = descriptor.key as string | undefined;
-  if (key === undefined) {
+  const key = descriptor.key;
+  if (typeof key !== 'string') {
     return result;
   }
   const nestedInner = asBag(inner[key]);
