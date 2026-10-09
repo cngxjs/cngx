@@ -1,7 +1,7 @@
 {
   "extends": "../../core/schematics/tsconfig.json",
   "compilerOptions": {
-    "rootDir": "."
+    "rootDir": "../.."
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts", "../../core/schematics/shared/**/*.ts"]
 }

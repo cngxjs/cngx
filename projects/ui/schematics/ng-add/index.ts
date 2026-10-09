@@ -1,6 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-
 import {
   chain,
   externalSchematic,
@@ -12,19 +9,9 @@ import {
 import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schematics/tasks';
 import { addDependency, ExistingBehavior, InstallBehavior } from '@schematics/angular/utility';
 
-const CORE = '@cngx/core';
+import { type NgAddOptions, readOwnVersion } from '../../../core/schematics/shared/manifest';
 
-/**
- * The bundle sits at `dist/<lib>/schematics/ng-add/index.js`; the package
- * manifest two folders up carries the release version every @cngx package
- * shares.
- */
-function readOwnVersion(): string {
-  const manifest = JSON.parse(readFileSync(join(__dirname, '..', '..', 'package.json'), 'utf8')) as {
-    readonly version: string;
-  };
-  return manifest.version;
-}
+const CORE = '@cngx/core';
 
 /**
  * Matched by name, not `instanceof`: the CLI and the app can each carry their
@@ -58,9 +45,9 @@ function isCoreResolvable(context: SchematicContext): boolean {
  * peers), the shim delegates in the same run; otherwise it installs core
  * first and runs its ng-add as a follow-up task.
  */
-export function ngAdd(options: Readonly<Record<string, unknown>>): Rule {
+export function ngAdd(options: NgAddOptions): Rule {
   return (_tree: Tree, context: SchematicContext) => {
-    const addCore = addDependency(CORE, readOwnVersion(), {
+    const addCore = addDependency(CORE, readOwnVersion(__dirname), {
       install: InstallBehavior.None,
       existing: ExistingBehavior.Skip,
     });

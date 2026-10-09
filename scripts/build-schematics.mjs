@@ -36,7 +36,7 @@ const EXTERNAL = [
 ];
 
 // Folders that are bundled into the entries, never entries themselves.
-const NON_ENTRY_DIRS = new Set(['engine', 'testing', 'node_modules']);
+const NON_ENTRY_DIRS = new Set(['engine', 'shared', 'testing', 'node_modules']);
 
 function fail(message) {
   console.error(`build-schematics: ${message}`);

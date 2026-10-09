@@ -2,42 +2,25 @@ import { select } from '@inquirer/prompts';
 import { type Rule, type SchematicContext, type Tree } from '@angular-devkit/schematics';
 import { readWorkspace } from '@schematics/angular/utility';
 
-export interface NgAddSetupOptions {
-  readonly project?: string;
-  readonly preset?: 'minimal' | 'recommended' | 'full';
-}
-
-interface PackageManifest {
-  readonly dependencies?: Readonly<Record<string, string>>;
-  readonly devDependencies?: Readonly<Record<string, string>>;
-}
+import { declaredRange, type NgAddOptions, parseManifest } from '../shared/manifest';
 
 const SPIKE_FILE = '.cngx/spike.json';
-
-function readManifest(tree: Tree): PackageManifest {
-  const raw = tree.readText('package.json');
-  return JSON.parse(raw) as PackageManifest;
-}
-
-function hasPackage(manifest: PackageManifest, name: string): boolean {
-  return name in (manifest.dependencies ?? {}) || name in (manifest.devDependencies ?? {});
-}
 
 /**
  * Stage two smoke. Logs what detection sees, asks one question when a TTY
  * is attached, writes one file. Exists only to answer the Phase 0 spike
  * questions; the real stage two replaces it in Phase 4.
  */
-export function ngAddSetup(options: NgAddSetupOptions): Rule {
+export function ngAddSetup(options: NgAddOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {
     const workspace = await readWorkspace(tree);
-    const manifest = readManifest(tree);
+    const manifest = parseManifest(tree.readText('package.json'));
     const projects = [...workspace.projects.keys()];
     const facts = {
       projects,
       project: options.project ?? projects[0] ?? null,
-      material: hasPackage(manifest, '@angular/material'),
-      cngxUtils: hasPackage(manifest, '@cngx/utils'),
+      material: declaredRange(manifest, '@angular/material') !== undefined,
+      cngxUtils: declaredRange(manifest, '@cngx/utils') !== undefined,
       isTTY: process.stdout.isTTY === true,
     };
     context.logger.info(`cngx ng-add-setup: detection ${JSON.stringify(facts)}`);
