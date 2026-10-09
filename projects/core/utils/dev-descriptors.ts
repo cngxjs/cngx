@@ -1,4 +1,4 @@
-import type { Signal } from '@angular/core';
+import { untracked, type Signal } from '@angular/core';
 
 /**
  * Version of the {@link CngxDevDescriptor} union. Any change to a descriptor
@@ -175,6 +175,153 @@ function walkFields(
       walkFields(value, fieldPath, visited, entries);
     }
   }
+}
+
+/**
+ * Where one key of a merged bundle got its value: `'override'` when the key is
+ * present in the overrides (an explicit `undefined` included, matching the
+ * spread), `'default'` otherwise, `'filled'` when a defaults fill restored it
+ * from a nullish merged value, and `'unknown'` when a fill wraps a signal that
+ * is not a tagged merge, so the fill cannot tell the other two apart.
+ *
+ * @internal
+ */
+export type CngxValueSource = 'override' | 'default' | 'filled' | 'unknown';
+
+/**
+ * Per-key provenance of a merged bundle. The nested record of a nested merge
+ * or nested fill resolves key by key into its own map.
+ *
+ * @internal
+ */
+export interface CngxOverrideProvenance {
+  readonly [key: string]: CngxValueSource | CngxOverrideProvenance;
+}
+
+/**
+ * Which side of a controlled source currently wins.
+ *
+ * @internal
+ */
+export type CngxControlledProvenance = 'priority' | 'fallback';
+
+type Bag = Readonly<Record<PropertyKey, unknown>>;
+
+/**
+ * Resolves, per key of the current value, where a `createOverrideMerge`,
+ * `createNestedOverrideMerge` or `createDefaultsFill` result got it from.
+ * Derived on read from the descriptor the merge tagged in dev mode; every
+ * signal is read inside `untracked`, so a calling `computed` or `effect` does
+ * not subscribe through it. `undefined` for an untagged signal, which includes
+ * every signal in a production build.
+ *
+ * @internal
+ */
+export function resolveOverrideProvenance(
+  merged: Signal<object>,
+): CngxOverrideProvenance | undefined {
+  return untracked(() => provenanceOf(merged));
+}
+
+/**
+ * Resolves which side of a `createControlledSource` result currently wins:
+ * `'priority'` when the priority source yields a value other than `null` or
+ * `undefined`, else `'fallback'` (the `??` rule of the source itself). Reads
+ * inside `untracked`; `undefined` for an untagged signal.
+ *
+ * @internal
+ */
+export function resolveControlledProvenance(
+  source: Signal<unknown>,
+): CngxControlledProvenance | undefined {
+  const descriptor = DESCRIPTORS.get(source);
+  if (descriptor?.kind !== 'cngx-dev:controlled-source') {
+    return undefined;
+  }
+  const priority = untracked(() => descriptor.priority?.());
+  return priority == null ? 'fallback' : 'priority';
+}
+
+function provenanceOf(merged: Signal<object>): CngxOverrideProvenance | undefined {
+  const descriptor = DESCRIPTORS.get(merged);
+  switch (descriptor?.kind) {
+    case 'cngx-dev:override-merge':
+      return spreadProvenance(merged() as Bag, descriptor.overrides() as Bag);
+    case 'cngx-dev:nested-override-merge': {
+      const value = merged() as Bag;
+      const overrides = descriptor.overrides() as Bag;
+      const key = descriptor.key as string;
+      return {
+        ...spreadProvenance(value, overrides),
+        [key]: spreadProvenance(asBag(value[key]), asBag(overrides[key])),
+      };
+    }
+    case 'cngx-dev:defaults-fill':
+      return fillProvenance(merged() as Bag, descriptor);
+    default:
+      return undefined;
+  }
+}
+
+function spreadProvenance(value: Bag, overrides: Bag): CngxOverrideProvenance {
+  const result: Record<string, CngxValueSource> = {};
+  for (const name of Object.keys(value)) {
+    result[name] = Object.hasOwn(overrides, name) ? 'override' : 'default';
+  }
+  return result;
+}
+
+function fillProvenance(
+  value: Bag,
+  descriptor: CngxDefaultsFillDescriptor,
+): CngxOverrideProvenance {
+  const inner = descriptor.merged() as Bag;
+  const defaults = descriptor.defaults() as Bag;
+  const innerProvenance = provenanceOf(descriptor.merged);
+  const result: Record<string, CngxValueSource | CngxOverrideProvenance> = {};
+  for (const name of Object.keys(value)) {
+    result[name] = isFilled(defaults, inner, name)
+      ? 'filled'
+      : (innerProvenance?.[name] ?? 'unknown');
+  }
+  const key = descriptor.key as string | undefined;
+  if (key === undefined) {
+    return result;
+  }
+  const nestedInner = asBag(inner[key]);
+  const nestedDefaults = asBag(defaults[key]);
+  const nestedProvenance = innerProvenance?.[key];
+  const nested: Record<string, CngxValueSource | CngxOverrideProvenance> = {};
+  for (const name of Object.keys(asBag(value[key]))) {
+    nested[name] = isFilled(nestedDefaults, nestedInner, name)
+      ? 'filled'
+      : chainedSource(nestedProvenance, name);
+  }
+  result[key] = nested;
+  return result;
+}
+
+/** A key the fill restored: one `defaults` has and the merge left nullish. */
+function isFilled(defaults: Bag, inner: Bag, name: string): boolean {
+  return Object.hasOwn(defaults, name) && inner[name] == null;
+}
+
+/**
+ * The inner source of a nested key: the inner merge resolved the whole record
+ * at once when it was flat, key by key when it was nested.
+ */
+function chainedSource(
+  provenance: CngxValueSource | CngxOverrideProvenance | undefined,
+  name: string,
+): CngxValueSource | CngxOverrideProvenance {
+  if (typeof provenance === 'string') {
+    return provenance;
+  }
+  return provenance?.[name] ?? 'unknown';
+}
+
+function asBag(value: unknown): Bag {
+  return typeof value === 'object' && value !== null ? (value as Bag) : {};
 }
 
 /** Objects and functions (signals are functions) can key a `WeakMap`. */

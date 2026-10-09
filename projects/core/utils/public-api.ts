@@ -83,7 +83,10 @@ export {
 export {
   CNGX_DEV_DESCRIPTOR_VERSION,
   CNGX_DEV_DESCRIPTORS,
+  resolveControlledProvenance,
   resolveDevDescriptors,
+  resolveOverrideProvenance,
+  type CngxControlledProvenance,
   type CngxControlledSourceDescriptor,
   type CngxDefaultsFillDescriptor,
   type CngxDevDescriptor,
@@ -92,4 +95,6 @@ export {
   type CngxFactoryDescriptor,
   type CngxNestedOverrideMergeDescriptor,
   type CngxOverrideMergeDescriptor,
+  type CngxOverrideProvenance,
+  type CngxValueSource,
 } from './dev-descriptors';
