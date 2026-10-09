@@ -1,4 +1,5 @@
-import { computed, linkedSignal, signal } from '@angular/core';
+import { computed, linkedSignal, signal, type Signal } from '@angular/core';
+import { SIGNAL, type ReactiveNode } from '@angular/core/primitives/signals';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -183,5 +184,28 @@ describe('resolveDevDescriptors', () => {
 
     expect(resolveDevDescriptors(host)).toEqual([]);
     expect(reads).toBe(0);
+  });
+});
+
+// resolveDevDescriptors unwraps only nodes of kind 'signal'. `kind` comes from
+// @angular/core/primitives/signals, which is outside Angular's semver promise;
+// if an Angular update renames or drops it, this block fails first and names
+// the cause, instead of the walker silently finding nothing behind a signal.
+describe('Angular ReactiveNode kind contract the descriptor walk relies on', () => {
+  const kindOf = (s: Signal<unknown>): unknown =>
+    (s as unknown as Record<symbol, ReactiveNode | undefined>)[SIGNAL]?.kind;
+
+  it('reports a writable signal and its read-only view as kind signal', () => {
+    const state = signal(0);
+
+    expect(kindOf(state)).toBe('signal');
+    expect(kindOf(state.asReadonly())).toBe('signal');
+  });
+
+  it('reports derived nodes with a kind other than signal', () => {
+    const state = signal(0);
+
+    expect(kindOf(computed(() => state()))).toBe('computed');
+    expect(kindOf(linkedSignal(() => state()))).toBe('linkedSignal');
   });
 });
