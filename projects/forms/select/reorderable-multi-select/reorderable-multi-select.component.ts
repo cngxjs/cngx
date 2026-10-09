@@ -87,6 +87,7 @@ import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
+import { createHostFocusWithin } from '../shared/internal/host-focus-within';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -217,6 +218,8 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
     class: 'cngx-reorderable-multi-select',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
+    '(focusin)': 'hostFocus.handleFocusIn()',
+    '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
   templateUrl: './reorderable-multi-select.component.html',
   styleUrls: ['../shared/select-base.css', './reorderable-multi-select.component.css'],
@@ -447,7 +450,16 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
-  /** @internal */ readonly focused = this.focusState.focused;
+  /** @internal Field-facing focus and touched: focus inside the host, panel included. */
+  protected readonly hostFocus = createHostFocusWithin({
+    onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    owner: () => this.triggerBtn()?.nativeElement,
+    restoreFocus: this.config.restoreFocus,
+    suppressOpenOnFocus: (active) => {
+      this.suppressOpenOnFocus = active;
+    },
+  });
+  /** @internal */ readonly focused = this.hostFocus.focusedWithin;
 
   readonly empty = computed<boolean>(() => this.isEmpty());
 
@@ -591,9 +603,10 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
   /** @internal */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() =>
-    this.commitHandler.retryLast(),
-  );
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
+    this.commitHandler.retryLast();
+  });
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
   private readonly virtualSetup = setupVirtualization<T, T[]>({
@@ -826,6 +839,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     });
 
     createADActivationDispatcher<T, T[]>({
+      beforeHide: () => this.hostFocus.refocusOwnerBeforeClose(),
       listboxRef: this.listboxRef,
       core: this.core,
       closeOnSelect: false,
@@ -858,6 +872,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     this.popoverRef()?.show();
   }
   close(): void {
+    this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
   toggle(): void {
@@ -884,6 +899,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
 
   /** @internal */
   protected handleRetry(): void {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const fn = this.retryFn();
     if (fn) {
       fn();
@@ -894,12 +910,13 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   protected handleChipRemoveClick(event: Event, opt: CngxSelectOptionDef<T>): void {
     event.stopPropagation();
+    this.hostFocus.refocusOwnerBeforeRemoval();
     this.chipRemovalHandler.removeByValue(opt);
   }
 
   /** @internal - stable per-option `remove()` closure for chip slots. */
   protected chipRemoveFor(opt: CngxSelectOptionDef<T>): () => void {
-    return this.chipRemovalHandler.removeFor(opt);
+    return this.hostFocus.withRefocus(this.chipRemovalHandler.removeFor(opt));
   }
 
   /** @internal */
@@ -909,7 +926,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   }
 
   /** @internal - imperative clear-all used by slot + default button. */
-  protected readonly clearAllCallback: () => void = this.toggleDispatch.clearAll;
+  protected readonly clearAllCallback: () => void = this.hostFocus.withRefocus(
+    this.toggleDispatch.clearAll,
+  );
 
   /** @internal */
   // True only inside the lifecycle emitter's post-close focus restore -
@@ -927,7 +946,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   protected handleBlur(): void {
     this.focusState.markBlurred();
-    this.presenter?.fieldState().markAsTouched();
   }
 
   /** @internal */

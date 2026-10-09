@@ -41,6 +41,7 @@ import type {
   CngxSelectRefreshingVariant,
 } from '../shared/config';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
+import { createHostFocusWithin } from '../shared/internal/host-focus-within';
 import {
   CNGX_FORM_FIELD_CONTROL,
   CngxFieldSkinHost,
@@ -211,6 +212,8 @@ export interface CngxTreeSelectChange<T = unknown> {
     class: 'cngx-tree-select',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
+    '(focusin)': 'hostFocus.handleFocusIn()',
+    '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
   templateUrl: './tree-select.component.html',
   styleUrls: ['../shared/select-base.css', './tree-select.component.css'],
@@ -652,6 +655,15 @@ export class CngxTreeSelect<T = unknown>
    * family (telemetry / controlled-from-outside / test doubles).
    */
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
+  /** @internal Field-facing focus and touched: focus inside the host, panel included. */
+  protected readonly hostFocus = createHostFocusWithin({
+    onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    owner: () => this.triggerBtn()?.nativeElement,
+    restoreFocus: this.config.restoreFocus,
+    suppressOpenOnFocus: (active) => {
+      this.suppressOpenOnFocus = active;
+    },
+  });
 
   /**
    * Aggregated ARIA projection for the trigger. Structural-equal on
@@ -693,7 +705,7 @@ export class CngxTreeSelect<T = unknown>
   );
 
   readonly id = computed<string>(() => this.resolvedId());
-  readonly focused: Signal<boolean> = this.focusState.focused;
+  readonly focused: Signal<boolean> = this.hostFocus.focusedWithin;
   readonly empty = computed<boolean>(() => this.isEmpty());
   readonly disabled = computed<boolean>(
     () => this.disabledInput() || (this.presenter?.disabled() ?? false),
@@ -728,7 +740,10 @@ export class CngxTreeSelect<T = unknown>
 
   // Stable retry closure - recreating per CD cycle churns
   // `*ngTemplateOutlet` consumers of the commit-error context.
-  private readonly commitRetryBound: () => void = () => this.commitHandler.retryLast();
+  private readonly commitRetryBound: () => void = () => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
+    this.commitHandler.retryLast();
+  };
 
   /** @internal */
   readonly commitErrorContext = computed<CngxSelectCommitErrorContext<T>>(
@@ -779,6 +794,7 @@ export class CngxTreeSelect<T = unknown>
     return this.selection.isIndeterminate(value)();
   }
   handleRetry(): void {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const fn = this.retryFn();
     if (fn) {
       fn();
@@ -838,6 +854,7 @@ export class CngxTreeSelect<T = unknown>
     this.popoverRef()?.show();
   }
   close(): void {
+    this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
   toggle(): void {
@@ -1100,6 +1117,7 @@ export class CngxTreeSelect<T = unknown>
   /** @internal */
   protected handleChipRemoveClick(event: Event, opt: CngxTreeSelectedItem<T>): void {
     event.stopPropagation();
+    this.hostFocus.refocusOwnerBeforeRemoval();
     this.removeSelectedItem(opt);
   }
 
@@ -1126,7 +1144,7 @@ export class CngxTreeSelect<T = unknown>
 
   /** @internal - stable remove callback for `*cngxTreeSelectChip` context. */
   protected chipRemoveFor(opt: CngxTreeSelectedItem<T>): () => void {
-    return this.chipRemovalHandler.removeFor(opt);
+    return this.hostFocus.withRefocus(this.chipRemovalHandler.removeFor(opt));
   }
 
   /**
@@ -1161,6 +1179,7 @@ export class CngxTreeSelect<T = unknown>
 
   /** @internal - exposed for the `*cngxSelectClearButton` slot. */
   protected readonly clearAll: () => void = () => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const previous = untracked(() => [...this.values()]);
     if (previous.length === 0) {
       return;
@@ -1210,7 +1229,6 @@ export class CngxTreeSelect<T = unknown>
   /** @internal */
   protected handleBlur(): void {
     this.focusState.markBlurred();
-    this.presenter?.fieldState().markAsTouched();
   }
 
   protected isEmpty(): boolean {

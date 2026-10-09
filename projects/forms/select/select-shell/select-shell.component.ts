@@ -119,6 +119,7 @@ import {
   type CngxSelectTriggerLabelContext,
 } from '../shared/template-slots';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
+import { createHostFocusWithin } from '../shared/internal/host-focus-within';
 
 /**
  * Change event emitted by {@link CngxSelectShell.selectionChange} on
@@ -221,6 +222,8 @@ export interface CngxSelectShellChange<T = unknown> {
     class: 'cngx-select-shell',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
+    '(focusin)': 'hostFocus.handleFocusIn()',
+    '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
   templateUrl: './select-shell.component.html',
   styleUrls: ['../shared/select-base.css', './select-shell.component.css'],
@@ -431,7 +434,7 @@ export class CngxSelectShell<T = unknown>
         selected: sel,
         disabled: this.disabled(),
         panelOpen: this.panelOpen(),
-        focused: this.focused(),
+        focused: this.focusState.focused(),
       };
     },
     {
@@ -479,6 +482,7 @@ export class CngxSelectShell<T = unknown>
    * @internal
    */
   private readonly handleClearAction = (): void => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
     if (current === undefined || current === null) {
       return;
@@ -507,7 +511,16 @@ export class CngxSelectShell<T = unknown>
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
-  readonly focused = this.focusState.focused;
+  /** @internal Field-facing focus and touched: focus inside the host, panel included. */
+  protected readonly hostFocus = createHostFocusWithin({
+    onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    owner: () => this.triggerBtn()?.nativeElement,
+    restoreFocus: this.config.restoreFocus,
+    suppressOpenOnFocus: (active) => {
+      this.suppressOpenOnFocus = active;
+    },
+  });
+  readonly focused = this.hostFocus.focusedWithin;
 
   readonly empty = computed<boolean>(() => {
     const v = this.value();
@@ -655,6 +668,7 @@ export class CngxSelectShell<T = unknown>
       if (this.commitMode() === 'pessimistic') {
         const pop = this.popoverRef();
         if (pop?.isVisible()) {
+          this.hostFocus.refocusOwnerBeforeClose();
           pop.hide();
         }
       }
@@ -665,6 +679,7 @@ export class CngxSelectShell<T = unknown>
       if (status === 'pending' && this.commitMode() === 'optimistic') {
         const pop = this.popoverRef();
         if (pop?.isVisible()) {
+          this.hostFocus.refocusOwnerBeforeClose();
           pop.hide();
         }
       }
@@ -672,9 +687,10 @@ export class CngxSelectShell<T = unknown>
     onError: (err) => this.commitError.emit(err),
   });
 
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() =>
-    this.scalarHandler.retryLast(),
-  );
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
+    this.scalarHandler.retryLast();
+  });
 
   /**
    * Keyboard typeahead controller. Drives typeahead-while-closed and
@@ -848,6 +864,7 @@ export class CngxSelectShell<T = unknown>
     // Lifecycle + routing in createADActivationDispatcher; value-shape
     // work (snapshot, finalize) stays here.
     createADActivationDispatcher<T, T>({
+      beforeHide: () => this.hostFocus.refocusOwnerBeforeClose(),
       listboxRef: this.listboxRef,
       core: this.core,
       popoverRef: this.popoverRef,
@@ -899,6 +916,7 @@ export class CngxSelectShell<T = unknown>
     this.popoverRef()?.show();
   }
   close(): void {
+    this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
   toggle(): void {
@@ -1035,6 +1053,7 @@ export class CngxSelectShell<T = unknown>
 
   /** @internal */
   handleRetry(): void {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const fn = this.retryFn();
     if (fn) {
       fn();
@@ -1045,6 +1064,7 @@ export class CngxSelectShell<T = unknown>
   /** @internal */
   protected handleClearClick(event: Event): void {
     event.stopPropagation();
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
     if (current === undefined || current === null) {
       return;
@@ -1076,6 +1096,5 @@ export class CngxSelectShell<T = unknown>
   /** @internal */
   protected handleBlur(): void {
     this.focusState.markBlurred();
-    this.presenter?.fieldState().markAsTouched();
   }
 }

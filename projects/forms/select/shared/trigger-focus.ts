@@ -1,10 +1,12 @@
 import { InjectionToken, signal, type Signal, type WritableSignal } from '@angular/core';
 
 /**
- * Focus-state slot shared by every select-family trigger. Variant-
- * specific reactions (openOn cascade, clearOnBlur, autofocus,
- * `markAsTouched` forwarding) stay in each variant's
- * `handleFocus`/`handleBlur`.
+ * Focus-state slot shared by every select-family trigger. It tracks focus on
+ * the trigger (or the combobox input) only and feeds the display binding and
+ * the slot contexts' `focused`. The field-facing `focused` and `touched` come
+ * from focus entering and leaving the whole host, the open panel included.
+ * Variant-specific reactions (openOn cascade, clearOnBlur, autofocus) stay in
+ * each variant's `handleFocus`/`handleBlur`.
  *
  * @category forms/select
  */

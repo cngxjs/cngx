@@ -90,6 +90,7 @@ import {
 } from '../shared/commit-error-announcer';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
+import { createHostFocusWithin } from '../shared/internal/host-focus-within';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -207,6 +208,8 @@ export interface CngxTypeaheadChange<T = unknown> {
     class: 'cngx-typeahead',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
+    '(focusin)': 'hostFocus.handleFocusIn()',
+    '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
   templateUrl: './typeahead.component.html',
   styleUrls: ['../shared/select-base.css', './typeahead.component.css'],
@@ -377,7 +380,16 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
-  /** @internal */ readonly focused = this.focusState.focused;
+  /** @internal Field-facing focus and touched: focus inside the host, panel included. */
+  protected readonly hostFocus = createHostFocusWithin({
+    onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    owner: () => this.inputEl()?.nativeElement,
+    restoreFocus: this.config.restoreFocus,
+    suppressOpenOnFocus: (active) => {
+      this.suppressOpenOnFocus = active;
+    },
+  });
+  /** @internal */ readonly focused = this.hostFocus.focusedWithin;
   readonly empty = computed<boolean>(() => this.value() === undefined);
 
   /** @internal Folded substring match of the option label in the reading locale. */
@@ -516,7 +528,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   /** @internal - reactive context for the input prefix/suffix template outlets. */
   protected readonly inputSlotContext = computed<CngxSelectInputSlotContext>(
-    () => ({ disabled: this.disabled(), focused: this.focused(), panelOpen: this.panelOpen() }),
+    () => ({ disabled: this.disabled(), focused: this.focusState.focused(), panelOpen: this.panelOpen() }),
     {
       equal: (a, b) =>
         a.disabled === b.disabled && a.focused === b.focused && a.panelOpen === b.panelOpen,
@@ -529,9 +541,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
   /** @internal */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() =>
-    this.scalarHandler.retryLast(),
-  );
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
+    this.scalarHandler.retryLast();
+  });
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
   private readonly virtualSetup = setupVirtualization<T, T>({
@@ -668,6 +681,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
     // closeOnSelect: picking hides the panel and seeds the input.
     createADActivationDispatcher<T, T>({
+      beforeHide: () => this.hostFocus.refocusOwnerBeforeClose(),
       listboxRef: this.listboxRef,
       core: this.core,
       popoverRef: this.popoverRef,
@@ -716,6 +730,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     this.popoverRef()?.show();
   }
   close(): void {
+    this.hostFocus.refocusOwnerBeforeClose();
     this.popoverRef()?.hide();
   }
   toggle(): void {
@@ -743,6 +758,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   }).handleClickOutside;
 
   protected handleRetry(): void {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const fn = this.retryFn();
     if (fn) {
       fn();
@@ -757,6 +773,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected readonly clearCallback: () => void = () => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
     const current = this.value();
     if (current === undefined) {
       return;
@@ -788,7 +805,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   protected handleBlur(): void {
     this.focusState.markBlurred();
-    this.presenter?.fieldState().markAsTouched();
     // Snap input back to `displayWith(value)` when text drifted from
     // the committed value. Disable via `[clearOnBlur]="false"`.
     if (this.clearOnBlur()) {
