@@ -8,8 +8,7 @@ import {
 } from '@angular-devkit/schematics';
 import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schematics/tasks';
 
-import { addLockstepDependency } from '../../../core/schematics/shared/lockstep';
-import { type NgAddOptions, readOwnVersion } from '../../../core/schematics/shared/manifest';
+import { addLockstepDependency, type NgAddOptions, readOwnVersion } from '../../../core/schematics/engine';
 
 const CORE = '@cngx/core';
 

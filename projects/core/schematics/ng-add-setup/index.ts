@@ -2,7 +2,7 @@ import { select } from '@inquirer/prompts';
 import { type Rule, type SchematicContext, type Tree } from '@angular-devkit/schematics';
 import { readWorkspace } from '@schematics/angular/utility';
 
-import { declaredRange, type NgAddOptions, parseManifest } from '../shared/manifest';
+import { declaredRange, type NgAddOptions, parseManifest } from '../engine';
 
 const SPIKE_FILE = '.cngx/spike.json';
 

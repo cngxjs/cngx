@@ -3,5 +3,5 @@
   "compilerOptions": {
     "rootDir": "../.."
   },
-  "include": ["**/*.ts", "../../core/schematics/shared/**/*.ts"]
+  "include": ["**/*.ts", "../../core/schematics/engine/**/*.ts"]
 }

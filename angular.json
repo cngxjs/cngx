@@ -107,7 +107,8 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "tsConfig": "projects/core/tsconfig.spec.json",
-            "setupFiles": ["projects/testing/setup/vitest-setup.ts"]
+            "setupFiles": ["projects/testing/setup/vitest-setup.ts"],
+            "exclude": ["schematics/**"]
           }
         },
         "lint": {
