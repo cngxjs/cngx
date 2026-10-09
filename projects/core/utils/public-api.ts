@@ -74,3 +74,22 @@ export {
   type SelectionController,
   type SelectionControllerOptions,
 } from './selection-controller';
+// This block ships `@internal` dev-mode diagnostics. They are exported
+// through `public-api.ts` so the devtools and testing entries of other
+// libraries can read them across the secondary-entry boundary (ng-packagr has
+// no cross-entry private surface). Each declaration carries its own
+// `@internal` tag, which hides it from generated docs and the LLM-md export.
+// Precedent: `@cngx/common/tabs` factory helpers.
+export {
+  CNGX_DEV_DESCRIPTOR_VERSION,
+  CNGX_DEV_DESCRIPTORS,
+  resolveDevDescriptors,
+  type CngxControlledSourceDescriptor,
+  type CngxDefaultsFillDescriptor,
+  type CngxDevDescriptor,
+  type CngxDevDescriptorEntry,
+  type CngxDevDescriptorInit,
+  type CngxFactoryDescriptor,
+  type CngxNestedOverrideMergeDescriptor,
+  type CngxOverrideMergeDescriptor,
+} from './dev-descriptors';
