@@ -146,9 +146,8 @@ in `PATH`, scratch apps outside the workspace. Two runs:
    after the install task.
 2. Single-stage probe, `0.1.0-spike.4`: the same `select` in the `ng-add`
    rule body, after detection and before any write, with one
-   `NodePackageInstallTask` at the end. Built from
-   `.internal/verdaccio/probe/single-stage-ng-add.ts` into the staged core
-   copy only (`probe/publish-probe.mjs`); the branch source is unchanged.
+   `NodePackageInstallTask` at the end. A local probe entry bundled into
+   the staged core copy only; the branch source is unchanged.
 
 Single-stage transcript (`ng add @cngx/ui@0.1.0-spike.4`):
 
