@@ -235,6 +235,10 @@ jobs:
       # its prebuild hook, so the production build validates against a fresh tree.
       - name: Build examples app
         run: npm run build:examples
+      # Reuses the production build above: fails when a `cngx-dev:` marker or a
+      # hand-written debugName reaches the bundle (dev-only code not stripped).
+      - name: Check production bundle for dev-only code
+        run: node scripts/devtools-prod-strip-check.mjs
 
   # The standalone @cngx/eslint-plugin package lives under packages/ (no npm
   # workspace), so it carries its own package-lock and needs its own install

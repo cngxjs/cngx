@@ -1,10 +1,6 @@
-import {
-  computed,
-  InjectionToken,
-  signal,
-  type Signal,
-  type WritableSignal,
-} from '@angular/core';
+import { computed, InjectionToken, signal, type Signal, type WritableSignal } from '@angular/core';
+
+import { CNGX_DEV_DESCRIPTORS } from './dev-descriptors';
 
 /**
  * Configuration options for `createSelectionController`.
@@ -105,7 +101,12 @@ export interface SelectionController<T> {
  *
  * @internal
  */
-const POST_DESTROY_FALSE: Signal<boolean> = signal(false).asReadonly();
+const POST_DESTROY_FALSE: Signal<boolean> = signal(
+  false,
+  typeof ngDevMode !== 'undefined' && ngDevMode
+    ? { debugName: 'selectionController.destroyed' }
+    : undefined,
+).asReadonly();
 
 /**
  * Create a signal-based selection engine that reads and writes an external
@@ -179,7 +180,12 @@ export function createSelectionController<T>(
     const key = keyFn(value);
     let sig = selectedCache.get(key);
     if (!sig) {
-      sig = computed(() => membership().has(key));
+      sig = computed(
+        () => membership().has(key),
+        typeof ngDevMode !== 'undefined' && ngDevMode
+          ? { debugName: 'selectionController.isSelected' }
+          : undefined,
+      );
       selectedCache.set(key, sig);
       evictOldest(selectedCache);
     }
@@ -187,7 +193,12 @@ export function createSelectionController<T>(
   };
 
   // Shared always-false signal for flat-list indeterminate.
-  const FALSE = signal(false).asReadonly();
+  const FALSE = signal(
+    false,
+    typeof ngDevMode !== 'undefined' && ngDevMode
+      ? { debugName: 'selectionController.flatIndeterminate' }
+      : undefined,
+  ).asReadonly();
   const indeterminateCache = new Map<unknown, Signal<boolean>>();
   const isIndeterminate = (value: T): Signal<boolean> => {
     if (destroyed) {
@@ -199,33 +210,38 @@ export function createSelectionController<T>(
     const key = keyFn(value);
     let sig = indeterminateCache.get(key);
     if (!sig) {
-      sig = computed(() => {
-        const map = membership();
-        const visited = new Set<unknown>();
-        const descendants: T[] = [];
-        const walk = (v: T): void => {
-          const k = keyFn(v);
-          if (visited.has(k)) {
-            return;
+      sig = computed(
+        () => {
+          const map = membership();
+          const visited = new Set<unknown>();
+          const descendants: T[] = [];
+          const walk = (v: T): void => {
+            const k = keyFn(v);
+            if (visited.has(k)) {
+              return;
+            }
+            visited.add(k);
+            for (const c of childrenFn(v)) {
+              descendants.push(c);
+              walk(c);
+            }
+          };
+          walk(value);
+          if (descendants.length === 0) {
+            return false;
           }
-          visited.add(k);
-          for (const c of childrenFn(v)) {
-            descendants.push(c);
-            walk(c);
+          let sel = 0;
+          for (const d of descendants) {
+            if (map.has(keyFn(d))) {
+              sel++;
+            }
           }
-        };
-        walk(value);
-        if (descendants.length === 0) {
-          return false;
-        }
-        let sel = 0;
-        for (const d of descendants) {
-          if (map.has(keyFn(d))) {
-            sel++;
-          }
-        }
-        return sel > 0 && sel < descendants.length;
-      });
+          return sel > 0 && sel < descendants.length;
+        },
+        typeof ngDevMode !== 'undefined' && ngDevMode
+          ? { debugName: 'selectionController.isIndeterminate' }
+          : undefined,
+      );
       indeterminateCache.set(key, sig);
       evictOldest(indeterminateCache);
     }
@@ -289,7 +305,7 @@ export function createSelectionController<T>(
     indeterminateCache.clear();
   };
 
-  return {
+  const controller: SelectionController<T> = {
     selected,
     selectedCount,
     isEmpty,
@@ -304,6 +320,14 @@ export function createSelectionController<T>(
     set: setFn,
     destroy,
   };
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    CNGX_DEV_DESCRIPTORS.tag(controller, {
+      kind: 'cngx-dev:factory',
+      factory: 'createSelectionController',
+      inputs: { values, options },
+    });
+  }
+  return controller;
 }
 
 /**

@@ -14,6 +14,7 @@ import {
   flattenTree,
   isNodeVisible,
 } from '@cngx/utils';
+import { CNGX_DEV_DESCRIPTORS } from '@cngx/core/utils';
 import { CNGX_TREE_CONFIG } from './tree-config';
 
 /**
@@ -214,7 +215,12 @@ export const CNGX_TREE_CONTROLLER_FACTORY = new InjectionToken<CngxTreeControlle
  *
  * @internal
  */
-const POST_DESTROY_FALSE: Signal<boolean> = signal(false).asReadonly();
+const POST_DESTROY_FALSE: Signal<boolean> = signal(
+  false,
+  typeof ngDevMode !== 'undefined' && ngDevMode
+    ? { debugName: 'treeController.destroyed' }
+    : undefined,
+).asReadonly();
 
 /** @internal */
 function flatEq<T>(a: readonly FlatTreeNode<T>[], b: readonly FlatTreeNode<T>[]): boolean {
@@ -395,7 +401,12 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
     }
     let sig = expandedCache.get(id);
     if (!sig) {
-      sig = computed(() => expandedIds().has(id));
+      sig = computed(
+        () => expandedIds().has(id),
+        typeof ngDevMode !== 'undefined' && ngDevMode
+          ? { debugName: 'treeController.isExpanded' }
+          : undefined,
+      );
       expandedCache.set(id, sig);
       evictOldestIfOverLimit();
     }
@@ -525,7 +536,7 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
     expandedCache.clear();
   };
 
-  return {
+  const controller: CngxTreeController<T> = {
     flatNodes,
     visibleNodes,
     expandedIds,
@@ -544,4 +555,12 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
     firstChildOf,
     destroy,
   };
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    CNGX_DEV_DESCRIPTORS.tag(controller, {
+      kind: 'cngx-dev:factory',
+      factory: 'createTreeController',
+      inputs: { opts },
+    });
+  }
+  return controller;
 }

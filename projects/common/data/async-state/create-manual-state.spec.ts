@@ -1,4 +1,5 @@
 import { describe, expect, it, beforeEach } from 'vitest';
+import { CNGX_DEV_DESCRIPTORS } from '@cngx/core/utils';
 import { createManualState, type ManualAsyncState } from './create-manual-state';
 
 describe('createManualState', () => {
@@ -143,5 +144,16 @@ describe('createManualState', () => {
     expect(state.status()).toBe('success');
     expect(state.error()).toBeUndefined();
     expect(state.progress()).toBeUndefined();
+  });
+});
+
+describe('createManualState dev descriptor', () => {
+  it('tags the state with its factory name', () => {
+    const state = createManualState<string>();
+
+    expect(CNGX_DEV_DESCRIPTORS.read(state)).toMatchObject({
+      kind: 'cngx-dev:factory',
+      factory: 'createManualState',
+    });
   });
 });

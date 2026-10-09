@@ -1,5 +1,10 @@
 import { computed, signal } from '@angular/core';
-import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
+import {
+  buildAsyncStateView,
+  CNGX_DEV_DESCRIPTORS,
+  type AsyncStatus,
+  type CngxAsyncState,
+} from '@cngx/core/utils';
 
 /**
  * Writable extension of `CngxAsyncState` for manual control.
@@ -58,11 +63,16 @@ export function createManualState<T>(): ManualAsyncState<T> {
     data: dataState.asReadonly(),
     error: errorState.asReadonly(),
     progress: progressState.asReadonly(),
-    isFirstLoad: computed(() => !hadSuccess()),
+    isFirstLoad: computed(
+      () => !hadSuccess(),
+      typeof ngDevMode !== 'undefined' && ngDevMode
+        ? { debugName: 'manualState.isFirstLoad' }
+        : undefined,
+    ),
     lastUpdated: lastUpdatedState.asReadonly(),
   });
 
-  return {
+  const state: ManualAsyncState<T> = {
     ...view,
 
     set(newStatus: AsyncStatus): void {
@@ -105,4 +115,12 @@ export function createManualState<T>(): ManualAsyncState<T> {
       hadSuccess.set(false);
     },
   };
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    CNGX_DEV_DESCRIPTORS.tag(state, {
+      kind: 'cngx-dev:factory',
+      factory: 'createManualState',
+      inputs: {},
+    });
+  }
+  return state;
 }

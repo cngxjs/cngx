@@ -3,6 +3,7 @@ import { computed, type Signal } from '@angular/core';
 import { recordEqual } from '@cngx/utils';
 
 import { coerceSignal } from './coerce.util';
+import { CNGX_DEV_DESCRIPTORS } from './dev-descriptors';
 
 const NO_OVERRIDES: object = {};
 
@@ -50,6 +51,13 @@ export function createOverrideMerge<T extends object>(
   const merged = computed<T>(() => ({ ...defaultsSignal(), ...overridesSignal() }), {
     equal: recordEqual,
   });
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    CNGX_DEV_DESCRIPTORS.tag(merged, {
+      kind: 'cngx-dev:override-merge',
+      defaults: defaultsSignal,
+      overrides: overridesSignal,
+    });
+  }
   byOverrides.set(overridesKey, merged);
   return merged;
 }
@@ -147,6 +155,14 @@ export function createNestedOverrideMerge<T extends object, K extends RecordKeys
     },
     { equal: nestedEqual<T>(key) },
   );
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    CNGX_DEV_DESCRIPTORS.tag(merged, {
+      kind: 'cngx-dev:nested-override-merge',
+      defaults: defaultsSignal,
+      overrides: overridesSignal,
+      key,
+    });
+  }
   byKey.set(key, merged);
   return merged;
 }
@@ -234,7 +250,12 @@ export function createDefaultsFill<T extends object>(
   const defaultsSignal = coerceSignal(defaults);
   const filled =
     key === undefined
-      ? computed<T>(() => fillNullish(merged(), defaultsSignal()), { equal: recordEqual })
+      ? computed<T>(() => fillNullish(merged(), defaultsSignal()), {
+          equal: recordEqual,
+          ...(typeof ngDevMode !== 'undefined' && ngDevMode
+            ? { debugName: 'defaultsFill.filled' }
+            : {}),
+        })
       : computed<T>(
           () => {
             const base = defaultsSignal();
@@ -244,8 +265,23 @@ export function createDefaultsFill<T extends object>(
               [key]: fillNullish((merged()[key] ?? {}) as object, base[key] as object),
             } as T;
           },
-          { equal: nestedEqual<T>(key) },
+          {
+            equal: nestedEqual<T>(key),
+            ...(typeof ngDevMode !== 'undefined' && ngDevMode
+              ? { debugName: 'defaultsFill.filled' }
+              : {}),
+          },
         );
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    // The tag goes on the fill, never on `merged`: that one carries the inner
+    // merge's own descriptor, which the fill's provenance chains to.
+    CNGX_DEV_DESCRIPTORS.tag(filled, {
+      kind: 'cngx-dev:defaults-fill',
+      merged,
+      defaults: defaultsSignal,
+      key,
+    });
+  }
   byKey.set(key ?? FLAT, filled);
   return filled;
 }

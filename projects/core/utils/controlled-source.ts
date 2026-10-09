@@ -1,5 +1,7 @@
 import { computed, type Signal } from '@angular/core';
 
+import { CNGX_DEV_DESCRIPTORS } from './dev-descriptors';
+
 /**
  * Derives a controlled/uncontrolled source signal: a higher-precedence
  * `priority` source wins over a lower-precedence `fallback` source. Precedence
@@ -45,5 +47,9 @@ export function createControlledSource<T>(
   priority: Signal<T | undefined> | undefined,
   fallback: Signal<T>,
 ): Signal<T> {
-  return computed(() => priority?.() ?? fallback());
+  const source = computed(() => priority?.() ?? fallback());
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    CNGX_DEV_DESCRIPTORS.tag(source, { kind: 'cngx-dev:controlled-source', priority, fallback });
+  }
+  return source;
 }

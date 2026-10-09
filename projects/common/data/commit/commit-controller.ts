@@ -138,7 +138,12 @@ export function createCommitController<T>(): CngxCommitController<T> {
 
   return {
     state: slot,
-    isCommitting: computed(() => slot.isPending()),
+    isCommitting: computed(
+      () => slot.isPending(),
+      typeof ngDevMode !== 'undefined' && ngDevMode
+        ? { debugName: 'commitController.isCommitting' }
+        : undefined,
+    ),
     intendedValue: intendedState.asReadonly(),
 
     begin(runner, intended, previous, handlers) {
