@@ -270,6 +270,19 @@ describe('CngxFormBridge', () => {
       expect(fn).toHaveBeenLastCalledWith(false);
     });
 
+    it('forwards a model write to the control synchronously, before any effect flush', () => {
+      TestBed.configureTestingModule({ imports: [ToggleHost] });
+      const fixture = TestBed.createComponent(ToggleHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const host = fixture.componentInstance;
+
+      host.toggle.value.set(true);
+
+      expect(host.ctrl.value).toBe(true);
+      expect(host.ctrl.dirty).toBe(true);
+    });
+
     it('does NOT re-fire fn when writeValue lands the same value (lastSeen guard)', () => {
       TestBed.configureTestingModule({ imports: [ToggleHost] });
       const fixture = TestBed.createComponent(ToggleHost);

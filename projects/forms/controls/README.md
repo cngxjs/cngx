@@ -125,7 +125,7 @@ to remember on the consumer side.
 | Hook | Behaviour |
 |-|-|
 | `writeValue(v)` | Stamps `lastSeen`, then writes `control.value.set(v)`. The change-listener effect short-circuits via `Object.is(value, lastSeen)` so the round-trip never echoes back into `onChange`. |
-| `registerOnChange(fn)` | Installs a single `effect()` over `control.value()`. The first observation is the post-mount baseline (CVA contract). Every subsequent change forwards through `untracked(() => fn(value))`. |
+| `registerOnChange(fn)` | Subscribes to the atom's `value` model, so every write through `set` (typing, a click) reaches the control synchronously: a form submitted with Enter right after a keystroke reads it. An `effect()` over `control.value()` covers changes that bypass `set` (a parent `[value]` binding); its first observation is the post-mount baseline (CVA contract). Both paths forward through `untracked(() => fn(value))` and share the `lastSeen` guard, so a value forwards once. |
 | `registerOnTouched(fn)` | Stored. Fired from the host's `(focusout)` listener. |
 | `setDisabledState(b)` | `untracked(() => control.disabled.set(b))`. |
 

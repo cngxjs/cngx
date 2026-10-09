@@ -136,6 +136,12 @@ Nothing to change. The template-variable accessor surface is intact:
 - `CngxRating` and `CngxPhoneInput` inside `cngx-form-field` mark the field
   touched when focus leaves the component. The rating never marked it, the
   phone input marked it on every blur of its number field.
+- `CngxNumericInput.value` (the Signal Forms field, `[(value)]` and the Reactive
+  Forms control) now changes on every keystroke with the parsed number, not
+  clamped and not rounded; `min`/`max` and `decimals` apply on blur as before.
+  Text that is not a plain number (a lone `-`, `Infinity`, hex, exponents)
+  yields `null`, while typing and on blur or paste, and blur no longer restores
+  the previous number for such text: `-` then blur leaves the field empty.
 - Under Reactive Forms, `CngxFormBridge` marks the control touched when focus
   leaves the atom's host, no longer on every move inside it. A radio, checkbox,
   button-toggle or chip group becomes touched when focus leaves the group, not
