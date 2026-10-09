@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 
 import {
+  CNGX_DEV_DESCRIPTORS,
   CNGX_SELECTION_CONTROLLER_FACTORY,
   type AsyncStatus,
   type CngxAsyncState,
@@ -601,7 +602,12 @@ export function createSelectCore<T, TCommit>(
         option: togglingOption(),
         retry,
       }),
-      { equal: (a, b) => Object.is(a.error, b.error) && Object.is(a.option, b.option) },
+      {
+        equal: (a, b) => Object.is(a.error, b.error) && Object.is(a.option, b.option),
+        ...(typeof ngDevMode !== 'undefined' && ngDevMode
+          ? { debugName: 'selectCore.commitErrorContext' }
+          : {}),
+      },
     );
   }
 
@@ -612,7 +618,12 @@ export function createSelectCore<T, TCommit>(
         error: deps.state()?.error(),
         retry,
       }),
-      { equal: (a, b) => Object.is(a.error, b.error) },
+      {
+        equal: (a, b) => Object.is(a.error, b.error),
+        ...(typeof ngDevMode !== 'undefined' && ngDevMode
+          ? { debugName: 'selectCore.errorContext' }
+          : {}),
+      },
     );
   }
 
@@ -701,7 +712,7 @@ export function createSelectCore<T, TCommit>(
     });
   }
 
-  return {
+  const core: CngxSelectCore<T, TCommit> = {
     effectiveOptions,
     flatOptions,
     unfilteredFlatOptions,
@@ -750,6 +761,14 @@ export function createSelectCore<T, TCommit>(
     announce,
     panelHostAdapter,
   };
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    CNGX_DEV_DESCRIPTORS.tag(core, {
+      kind: 'cngx-dev:factory',
+      factory: 'createSelectCore',
+      inputs: { deps, announcerInputs },
+    });
+  }
+  return core;
 }
 
 /**

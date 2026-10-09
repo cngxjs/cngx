@@ -1,8 +1,10 @@
 import { effect, signal } from '@angular/core';
+import { SIGNAL, type ReactiveNode } from '@angular/core/primitives/signals';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
+import { CNGX_DEV_DESCRIPTORS } from '@cngx/core/utils';
 
 import {
   provideSelectConfig,
@@ -89,5 +91,27 @@ describe('createSelectCore - selection announcement', () => {
     picked.set({ ...RED });
     TestBed.tick();
     expect(live).toHaveBeenLastCalledWith('Auswahl: Red gewählt', 'polite');
+  });
+});
+
+describe('createSelectCore - dev descriptor', () => {
+  it('tags the core with its factory name and names its retry-context signals', () => {
+    const coreDeps = deps();
+    const core = TestBed.runInInjectionContext(() =>
+      createSelectCore(coreDeps, {
+        announceChanges: signal(null),
+        announceTemplate: signal(null),
+      }),
+    );
+    const nameOf = (s: object): string | undefined =>
+      (s as unknown as Record<symbol, ReactiveNode>)[SIGNAL].debugName;
+
+    expect(CNGX_DEV_DESCRIPTORS.read(core)).toMatchObject({
+      kind: 'cngx-dev:factory',
+      factory: 'createSelectCore',
+      inputs: { deps: coreDeps },
+    });
+    expect(nameOf(core.bindCommitRetry(() => {}))).toBe('selectCore.commitErrorContext');
+    expect(nameOf(core.makeErrorContext(() => {}))).toBe('selectCore.errorContext');
   });
 });
