@@ -20,7 +20,7 @@ published as `0.1.0-spike.2` to a local verdaccio.
 |`HostTree` over `NodeJsSyncHost`|Works with `readWorkspace` and `addRootProvider` unchanged|
 |`@angular/compiler` inside the schematic|Resolves from the consumer install (ESM, loaded through `require`)|
 |Bundle size|+246 KB packed / +814 KB unpacked on `@cngx/core` once shipped; 493 KB of it is avoidable; no release ships it before the manifest declares `schematics`|
-|Material vars-only fidelity|Open: needs a joint browser session (see below)|
+|Material vars-only fidelity|Superseded: full fidelity through a define-theme carrier (compile probe 2026-10-09); visual sign-off moves to the Phase 3 joint session|
 |`HostSink` write-back|Works; commits a `HostTree` without own action iteration|
 
 Decisions for the owner before Phase 1 are listed at the end.
@@ -276,8 +276,13 @@ owner, not delegated:
 
 1. Material vars-only fidelity. A Material-scaffolded app with only the
    system and density bridges applied, side by side with the examples
-   `/material-lab` widgets; list which component colours diverge. Decides
-   whether Phase 3 stays system-only.
+   `/material-lab` widgets; list which component colours diverge.
+   Superseded 2026-10-09: every M3 branch of the bridges already reads
+   `var(--mat-sys-*)`, so `theme-system($density)` wraps the unchanged
+   `theme($theme)` with a `mat.define-theme` object that only carries the
+   version and the density scale. A compile probe showed full fidelity with
+   no palette value reaching a `--cngx-*` token. The side-by-side check
+   stays as the visual sign-off of Phase 3, done jointly.
 
 ## Decisions for the owner before Phase 1
 
@@ -291,6 +296,7 @@ under the CLI").
    so the schema needs option names the CLI passes through (proposal:
    `plan` and `prompts`), and the dry-run plan must be computable in stage
    one.
-4. Material bridge input shape: pending the joint browser session.
+4. Material bridge input shape: decided 2026-10-09, `theme-system($density)`
+   as a define-theme carrier over `theme($theme)` (see open item 1).
 5. Scratch app location: outside the cngx workspace (the plan's in-repo
    scratch path does not work), installed with npm 11.
