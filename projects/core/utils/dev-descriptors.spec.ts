@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { computed, signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -72,6 +72,53 @@ describe('resolveDevDescriptors', () => {
     const paths = resolveDevDescriptors(host).map((entry) => entry.path);
 
     expect(paths).toEqual([['core'], ['core', 'selection']]);
+  });
+
+  it('resolves a tagged value held in a signal of a tagged factory result', () => {
+    const selection = factoryResult('createSelectionController', {});
+    const host = { core: factoryResult('createSelectCore', { selection: signal(selection) }) };
+
+    const entries = resolveDevDescriptors(host);
+
+    expect(entries.map((entry) => entry.path)).toEqual([['core'], ['core', 'selection']]);
+    expect(entries[1].descriptor).toBe(CNGX_DEV_DESCRIPTORS.read(selection));
+  });
+
+  it('skips a signal in a tagged factory result whose read throws', () => {
+    const throwing = computed(() => {
+      throw new Error('not ready');
+    });
+    const host = { core: factoryResult('createSelectCore', { throwing }) };
+
+    expect(resolveDevDescriptors(host).map((entry) => entry.path)).toEqual([['core']]);
+  });
+
+  it('never reads a signal on the instance itself', () => {
+    let reads = 0;
+    const counted = computed(() => {
+      reads++;
+      return factoryResult('createTransitionTracker', {});
+    });
+    const host = { counted };
+
+    expect(resolveDevDescriptors(host)).toEqual([]);
+    expect(reads).toBe(0);
+  });
+
+  it('subscribes a calling computed to nothing it reads', () => {
+    const held = signal<object>(factoryResult('createSelectionController', {}));
+    const host = { core: factoryResult('createSelectCore', { held }) };
+    let runs = 0;
+    const panel = computed(() => {
+      runs++;
+      return resolveDevDescriptors(host);
+    });
+
+    panel();
+    held.set(factoryResult('createSelectionController', {}));
+    panel();
+
+    expect(runs).toBe(1);
   });
 
   it('does not descend into untagged objects', () => {

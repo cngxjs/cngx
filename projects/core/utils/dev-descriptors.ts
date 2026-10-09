@@ -1,4 +1,4 @@
-import { untracked, type Signal } from '@angular/core';
+import { isSignal, untracked, type Signal } from '@angular/core';
 
 /**
  * Version of the {@link CngxDevDescriptor} union. Any change to a descriptor
@@ -147,8 +147,13 @@ const MAX_DEPTH = 2;
  * Lists every tagged value among the own fields of `instance`, TypeScript
  * `private` fields included. A tagged factory result is descended into, so a
  * select core's nested selection controller is found too; untagged objects are
- * not, which keeps the walk bounded. Stops at a field chain of two and visits
- * each object once, so cycles terminate. Getters are never invoked.
+ * not, which keeps the walk bounded. Inside a tagged factory result, a signal
+ * field whose current value is tagged counts as that value (the select core
+ * hands its controller out as `selection: Signal<SelectionController>`); the
+ * signal is read once, untracked, and a read that throws is skipped. Signals on
+ * `instance` itself are never read, so an unset required input cannot throw.
+ * Stops at a field chain of two and visits each object once, so cycles
+ * terminate. Getters are never invoked.
  *
  * @internal
  */
@@ -167,7 +172,8 @@ function walkFields(
   entries: CngxDevDescriptorEntry[],
 ): void {
   for (const name of Object.getOwnPropertyNames(owner)) {
-    const value = Object.getOwnPropertyDescriptor(owner, name)?.value as unknown;
+    const field = Object.getOwnPropertyDescriptor(owner, name)?.value as unknown;
+    const value = path.length > 0 ? unwrapSignal(field) : field;
     if (!isReference(value) || visited.has(value)) {
       continue;
     }
@@ -181,6 +187,23 @@ function walkFields(
     if (descriptor.kind === 'cngx-dev:factory' && fieldPath.length < MAX_DEPTH) {
       walkFields(value, fieldPath, visited, entries);
     }
+  }
+}
+
+/**
+ * The current value of an untagged signal, read untracked; any other value as
+ * is. A read that throws yields `undefined`.
+ *
+ * @internal
+ */
+function unwrapSignal(value: unknown): unknown {
+  if (!isSignal(value) || DESCRIPTORS.has(value)) {
+    return value;
+  }
+  try {
+    return untracked(value);
+  } catch {
+    return undefined;
   }
 }
 
