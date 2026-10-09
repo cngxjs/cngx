@@ -100,6 +100,15 @@ describe('devtools-prod-strip-check - bundle scan', () => {
     ]);
   });
 
+  it('counts a debugName only as a whole quoted string, never as a member chain', () => {
+    const name = 'treeController.isExpanded';
+    const text = `o=r.host.${name}(n.id);a="${name}";b='${name}';c=\`${name}\`;d="${name}.x"`;
+
+    const hits = scanBundle([{ path: 'main.js', text }], [MARKER, name]);
+
+    expect(hits.map((hit) => text[hit.offset - 1])).toEqual(['"', "'", '`']);
+  });
+
   it('passes a clean bundle', () => {
     const result = check(fixture({ 'main.js': 'console.log(1);' }), fixture(CLEAN_SOURCE));
 

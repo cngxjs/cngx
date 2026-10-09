@@ -9,6 +9,9 @@
 //   Compiler-inserted names never appear in source, so only hand-written ones
 //   need checking. A hand-written name must be a dotted `<owner>.<signal>`
 //   string literal, so the needle is specific enough to search a bundle for.
+//   It only counts as a hit when quoted: a dotted name can also read as a
+//   member chain in app code (`host.treeController.isExpanded(id)`), but a
+//   debugName can only reach a bundle as a string literal.
 //
 // Exit codes: 0 clean, 1 needle found in the bundle, 2 bundle directory
 // missing (a skipped build must not pass), 3 a hand-written `debugName` breaks
@@ -58,20 +61,29 @@ export function deriveNeedles(files) {
   return { needles, violations };
 }
 
+const QUOTES = new Set(["'", '"', '`']);
+
 // `files` is [{ path, text }] of bundle chunks. Returns one hit per needle
-// occurrence.
+// occurrence: the marker anywhere, a debugName only as a whole quoted string.
 export function scanBundle(files, needles) {
   const hits = [];
   for (const { path, text } of files) {
     for (const needle of needles) {
       let offset = text.indexOf(needle);
       while (offset !== -1) {
-        hits.push({ file: path, offset, needle });
+        if (needle === MARKER || isQuoted(text, offset, needle.length)) {
+          hits.push({ file: path, offset, needle });
+        }
         offset = text.indexOf(needle, offset + needle.length);
       }
     }
   }
   return hits;
+}
+
+function isQuoted(text, offset, length) {
+  const before = text[offset - 1];
+  return QUOTES.has(before) && text[offset + length] === before;
 }
 
 function isSpec(path) {
