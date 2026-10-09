@@ -290,13 +290,13 @@ describe('CngxOption mouse press', () => {
     return match;
   }
 
-  it.fails('mousedown on an option is default-prevented', () => {
+  it('mousedown on an option is default-prevented', () => {
     const { root } = setup();
 
     expect(mousePick(option(root, 'Apple')).defaultPrevented).toBe(true);
   });
 
-  it.fails('mousedown on a disabled option is default-prevented', () => {
+  it('mousedown on a disabled option is default-prevented', () => {
     const { root } = setup();
 
     expect(mousePick(option(root, 'Banana')).defaultPrevented).toBe(true);
@@ -312,7 +312,7 @@ describe('CngxOption mouse press', () => {
     expect(document.activeElement).toBe(root.querySelector('[data-testid="owned"]'));
   });
 
-  it.fails('an input-owned listbox keeps focus on the input', () => {
+  it('an input-owned listbox keeps focus on the input', () => {
     const { root } = setup();
     const input = root.querySelector<HTMLElement>('[data-testid="owner-input"]')!;
     input.focus();

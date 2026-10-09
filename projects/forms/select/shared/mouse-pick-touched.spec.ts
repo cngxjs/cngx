@@ -278,7 +278,7 @@ describe.each(VARIANTS)('$name mouse pick', (variant) => {
     (document.activeElement as HTMLElement | null)?.blur();
   });
 
-  it.fails('a mouse pick leaves the field untouched and focus on the owner', async () => {
+  it('a mouse pick leaves the field untouched and focus on the owner', async () => {
     const { fixture, owner, open, option } = await mount(variant);
     owner.focus();
     await open();

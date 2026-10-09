@@ -234,7 +234,7 @@ describe('CngxPhoneInput touched inside cngx-form-field', () => {
     expect(host.f.phone().touched()).toBe(true);
   });
 
-  it.fails('T3: picking a country with the mouse leaves the field untouched', async () => {
+  it('T3: picking a country with the mouse leaves the field untouched', async () => {
     const { fixture, select, trigger, host } = await mount(SignalFormsHost);
     trigger.focus();
     (select.componentInstance as CngxSelect<string>).open();
