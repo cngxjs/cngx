@@ -740,7 +740,10 @@ export class CngxTreeSelect<T = unknown>
 
   // Stable retry closure - recreating per CD cycle churns
   // `*ngTemplateOutlet` consumers of the commit-error context.
-  private readonly commitRetryBound: () => void = () => this.commitHandler.retryLast();
+  private readonly commitRetryBound: () => void = () => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
+    this.commitHandler.retryLast();
+  };
 
   /** @internal */
   readonly commitErrorContext = computed<CngxSelectCommitErrorContext<T>>(

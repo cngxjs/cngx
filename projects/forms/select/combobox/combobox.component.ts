@@ -713,9 +713,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal - errorContext signal (wired once with the retry handler). */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
   /** @internal - commitErrorContext signal (wired once with retry handler). */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() =>
-    this.commitHandler.retryLast(),
-  );
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
+    this.commitHandler.retryLast();
+  });
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
   private readonly virtualSetup = setupVirtualization<T, T[]>({

@@ -1,4 +1,5 @@
 import { Component, type Type } from '@angular/core';
+import { Subject } from 'rxjs';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -20,6 +21,7 @@ import { CngxSelectShell } from '../select-shell/select-shell.component';
 import { CngxSelect } from '../single-select/select.component';
 import { CngxTreeSelect } from '../tree-select/tree-select.component';
 import { CngxTypeahead } from '../typeahead/typeahead.component';
+import type { CngxSelectCommitAction } from './commit-action.types';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from './option.model';
 import { CngxSelectAction } from './template-slots';
 
@@ -253,6 +255,33 @@ class TreeSelectHost {
 class SelectRetryHost {
   readonly state: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
+  private readonly mock = createMockField<string | undefined>({ name: 'color', value: undefined });
+  readonly field = this.mock.accessor;
+  readonly ref: MockFieldRef<string | undefined> = this.mock.ref;
+}
+
+@Component({
+  selector: 'flc-select-commit-retry',
+  template: `
+    <cngx-form-field [field]="field">
+      <cngx-select
+        [label]="'Color'"
+        [options]="options"
+        [commitAction]="commitAction"
+        [commitMode]="'pessimistic'"
+      />
+    </cngx-form-field>
+    <button type="button">Outside</button>
+  `,
+  imports: [CngxFormField, CngxSelect],
+})
+class SelectCommitRetryHost {
+  readonly options = OPTIONS;
+  pending: Subject<string | undefined> | null = null;
+  readonly commitAction: CngxSelectCommitAction<string> = () => {
+    this.pending = new Subject<string | undefined>();
+    return this.pending.asObservable();
+  };
   private readonly mock = createMockField<string | undefined>({ name: 'color', value: undefined });
   readonly field = this.mock.accessor;
   readonly ref: MockFieldRef<string | undefined> = this.mock.ref;
@@ -580,6 +609,42 @@ describe('CngxSelect retry inside the panel', () => {
     mousePick(find('button.cngx-select__error-retry'));
     await settle(fixture);
 
+    expect(fixture.componentInstance.ref.touched()).toBe(false);
+    expect(document.activeElement).toBe(owner);
+  });
+});
+
+describe('CngxSelect commit-error retry inside the panel', () => {
+  beforeAll(() => {
+    polyfillPopover();
+  });
+
+  afterEach(() => {
+    (document.activeElement as HTMLElement | null)?.blur();
+  });
+
+  it('clicking the commit-error retry leaves the field untouched with focus on the owner', async () => {
+    const { fixture, owner, open, find, root } = await mount(
+      'CngxSelect commit retry',
+      SelectCommitRetryHost,
+      CngxSelect,
+    );
+    owner.focus();
+    await open();
+    const green = Array.from(root.querySelectorAll<HTMLElement>('[role="option"]')).find((el) =>
+      el.textContent?.includes('Green'),
+    )!;
+    mousePick(green);
+    await settle(fixture);
+    fixture.componentInstance.pending!.error(new Error('save failed'));
+    await settle(fixture);
+
+    const retry = find('.cngx-select__commit-error .cngx-select__error-retry');
+    const firstAttempt = fixture.componentInstance.pending;
+    mousePick(retry);
+    await settle(fixture);
+
+    expect(fixture.componentInstance.pending).not.toBe(firstAttempt);
     expect(fixture.componentInstance.ref.touched()).toBe(false);
     expect(document.activeElement).toBe(owner);
   });

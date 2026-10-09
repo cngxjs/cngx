@@ -687,9 +687,10 @@ export class CngxSelectShell<T = unknown>
     onError: (err) => this.commitError.emit(err),
   });
 
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() =>
-    this.scalarHandler.retryLast(),
-  );
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() => {
+    this.hostFocus.refocusOwnerBeforeRemoval();
+    this.scalarHandler.retryLast();
+  });
 
   /**
    * Keyboard typeahead controller. Drives typeahead-while-closed and
