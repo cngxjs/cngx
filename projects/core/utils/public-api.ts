@@ -98,3 +98,11 @@ export {
   type CngxOverrideProvenance,
   type CngxValueSource,
 } from './dev-descriptors';
+export {
+  createAnnouncementRecorder,
+  type CngxAnnouncementOrigin,
+  type CngxAnnouncementRecorder,
+  type CngxAnnouncementRecorderOptions,
+  type CngxAnnouncementSuppression,
+  type CngxRecordedAnnouncement,
+} from './announcement-recorder';

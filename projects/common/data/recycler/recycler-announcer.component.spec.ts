@@ -1,6 +1,13 @@
-import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
+import {
+  Component,
+  provideZonelessChangeDetection,
+  signal,
+  type WritableSignal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it, beforeEach } from 'vitest';
+import { afterEach, describe, expect, it, beforeEach } from 'vitest';
+
+import { createAnnouncementRecorder, type CngxAnnouncementRecorder } from '@cngx/core/utils';
 
 import { CngxRecyclerAnnouncer } from './recycler-announcer.component';
 import type { CngxRecycler } from './recycler';
@@ -80,5 +87,47 @@ describe('CngxRecyclerAnnouncer', () => {
     fixture.detectChanges();
     const span = fixture.nativeElement.querySelector('[aria-live]') as HTMLElement;
     expect(span.classList.contains('cngx-sr-only')).toBe(true);
+  });
+});
+
+describe('CngxRecyclerAnnouncer recorded', () => {
+  let recorder: CngxAnnouncementRecorder | undefined;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+  });
+
+  afterEach(() => {
+    recorder?.destroy();
+  });
+
+  it('records one polite entry when a range change updates the announcement', async () => {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    recorder = createAnnouncementRecorder({ owner: () => null });
+
+    (fixture.componentInstance.recycler.announcement as WritableSignal<string>).set(
+      '20 more items loaded. 60 total.',
+    );
+    fixture.detectChanges();
+    await Promise.resolve();
+
+    expect(
+      recorder.entries().map(({ text, politeness, origin, suppressedBy }) => ({
+        text,
+        politeness,
+        origin,
+        suppressedBy,
+      })),
+    ).toEqual([
+      {
+        text: '20 more items loaded. 60 total.',
+        politeness: 'polite',
+        origin: 'mutation',
+        suppressedBy: null,
+      },
+    ]);
   });
 });
