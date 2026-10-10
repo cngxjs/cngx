@@ -51,7 +51,7 @@ Every story exports a single `STORY` constant typed as `DemoSpec`
 | `moduleImports` | Extra `import …;` lines emitted at the top of the generated component file. Filtered to what's actually referenced. |
 | `imports` | Class names that go into the component's `@Component.imports` array. |
 | `hostDirectives` | Class names attached to the host element via `hostDirectives`. Required when a service uses `inject(X, { host: true })`. |
-| `setup` | TypeScript class-body statements for the **artifact**. Emitted into the live class AND shown in the TypeScript code panel. |
+| `setup` | TypeScript class-body statements for the **artifact**. Emitted into the live class AND shown as the class body in the TypeScript code panel. Members sit at two spaces; a first line flush on the backtick line counts as sitting at member column. |
 | `template` | Angular template fragment for the **artifact**. Rendered live AND shown in the Template code panel. |
 | `setupChrome` | TypeScript class-body for **demo chrome** - mode toggles, fail flags, log buffers. Live in the class, hidden from the displayed TypeScript panel. |
 | `templateChrome` | Template fragment for **demo chrome** - radio rows, fail checkboxes, state readouts. Live below the artifact, hidden from the displayed Template panel. |
@@ -65,6 +65,23 @@ Every story exports a single `STORY` constant typed as `DemoSpec`
 The split exists so the displayed code panels show only what the docs
 are supposed to teach. Live rendering uses both halves; the displayed
 source uses only `template` / `setup`.
+
+The TypeScript panel shows the full component a consumer would write
+for the artifact:
+
+- the `@angular/core` import, detected from `setup` and `viewProviders`;
+- the other import lines, filtered to what `setup`, `template` and the
+  decorator reference;
+- the `@Component` decorator with the generated `selector`,
+  `changeDetection`, `imports`, `hostDirectives` and `viewProviders`, and
+  `templateUrl: './<story-file-base>.html'` naming the Template panel;
+- `export class <ClassName> { … }` around `setup`.
+
+The panel's `imports` drops a cngx class whose selector appears only in
+the chrome templates. Non-cngx entries (`ReactiveFormsModule`,
+`JsonPipe`) stay, as in the live decorator. A selector-bound directive
+such as `CngxFormBridge` shows up there by itself, so a story does not
+need a comment telling the reader to import it.
 
 | Half | Contents |
 |-|-|

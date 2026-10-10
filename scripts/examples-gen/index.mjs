@@ -20,6 +20,7 @@ import {
   escapeRegExp,
   filterImportLine,
   importedSymbols,
+  indent,
   stripCommentsForScan,
   templateUsesClass,
 } from './code-panel.mjs';
@@ -397,14 +398,6 @@ function buildTagPairs(story) {
 
 // Emit component source
 
-function indent(s, n) {
-  const pad = ' '.repeat(n);
-  return s
-    .split('\n')
-    .map((l) => (l.length ? pad + l : l))
-    .join('\n');
-}
-
 function emitComponentSource(meta, story, importMap) {
   const { lines } = buildImports(story, importMap, meta.featureDepth);
 
@@ -457,7 +450,14 @@ function emitComponentSource(meta, story, importMap) {
     `  protected readonly _exRefs: readonly { label: string; href: string }[] = [${refEntries}];`,
   ].join('\n');
 
-  const sourceTs = buildDisplayedTs({ story, importLines: lines });
+  const sourceTs = buildDisplayedTs({
+    story,
+    importLines: lines,
+    selector: meta.selector,
+    className: meta.className,
+    fileBase: meta.fileBase,
+    selectorMap: meta.selectorMap,
+  });
   // Strip chrome blocks from the displayed template. Even when a story has
   // migrated chrome into `templateChrome`, stray button-row blocks in the
   // remaining `template` are still scrubbed defensively.
@@ -683,6 +683,7 @@ async function main() {
         storyRelPath: 'examples/stories/' + relPath,
         selector,
         className,
+        fileBase,
         featureDepth,
         selectorMap,
       },

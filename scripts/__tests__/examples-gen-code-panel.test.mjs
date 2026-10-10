@@ -142,21 +142,40 @@ describe('buildDisplayedTs', () => {
     expect(ts).not.toContain("from 'rxjs'");
   });
 
-  it('renders the filtered import lines and the dedented setup', () => {
+  it('renders the core import, the filtered imports, the decorator and the class', () => {
     expect(buildDisplayedTs({ story: maskStory, importLines: maskImportLines, ...maskMeta })).toBe(
       [
+        "import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';",
         "import { FormControl, ReactiveFormsModule } from '@angular/forms';",
         "import { CngxFormBridge } from '@cngx/forms/controls';",
         "import { CngxInputMask } from '@cngx/forms/input';",
-        "import { CngxDebugPanel } from '@cngx/ui/debug';",
         '',
-        'private readonly destroyRef = inject(DestroyRef);',
+        '@Component({',
+        "  selector: 'app-mask-reactive-forms',",
+        '  changeDetection: ChangeDetectionStrategy.OnPush,',
+        '  imports: [ReactiveFormsModule, CngxFormBridge, CngxInputMask],',
+        "  templateUrl: './reactive-forms.html',",
+        '})',
+        'export class MaskReactiveForms {',
+        '  private readonly destroyRef = inject(DestroyRef);',
         "  protected readonly start = new FormControl('', { nonNullable: true });",
+        '}',
       ].join('\n'),
     );
   });
 
-  it.fails('renders the @Component decorator with the template-matched imports', () => {
+  it('renders an empty class when setup is empty', () => {
+    const ts = buildDisplayedTs({
+      story: menuStory,
+      importLines: menuImportLines,
+      ...meta('MenuScroll', 'scroll'),
+    });
+    expect(ts.endsWith("  templateUrl: './scroll.html',\n})\nexport class MenuScroll {}")).toBe(
+      true,
+    );
+  });
+
+  it('renders the @Component decorator with the template-matched imports', () => {
     const ts = buildDisplayedTs({ story: maskStory, importLines: maskImportLines, ...maskMeta });
     expect(ts).toContain(
       [
@@ -170,7 +189,7 @@ describe('buildDisplayedTs', () => {
     );
   });
 
-  it.fails('wraps setup in the class at member column', () => {
+  it('wraps setup in the class at member column', () => {
     const ts = buildDisplayedTs({ story: maskStory, importLines: maskImportLines, ...maskMeta });
     expect(ts).toContain(
       [
@@ -182,23 +201,20 @@ describe('buildDisplayedTs', () => {
     );
   });
 
-  it.fails('shows the @angular/core line from setup, not from setupChrome', () => {
+  it('shows the @angular/core line from setup, not from setupChrome', () => {
     const ts = buildDisplayedTs({ story: maskStory, importLines: maskImportLines, ...maskMeta });
     expect(ts.split('\n')[0]).toBe(
       "import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';",
     );
   });
 
-  it.fails(
-    'leaves a Cngx class that only the chrome uses out of the decorator and the imports',
-    () => {
-      const ts = buildDisplayedTs({ story: maskStory, importLines: maskImportLines, ...maskMeta });
-      expect(ts).toContain('@Component({');
-      expect(ts).not.toContain('CngxDebugPanel');
-    },
-  );
+  it('leaves a Cngx class that only the chrome uses out of the decorator and the imports', () => {
+    const ts = buildDisplayedTs({ story: maskStory, importLines: maskImportLines, ...maskMeta });
+    expect(ts).toContain('@Component({');
+    expect(ts).not.toContain('CngxDebugPanel');
+  });
 
-  it.fails('imports every symbol the viewProviders name', () => {
+  it('imports every symbol the viewProviders name', () => {
     const ts = buildDisplayedTs({
       story: menuStory,
       importLines: menuImportLines,
@@ -210,7 +226,7 @@ describe('buildDisplayedTs', () => {
     expect(ts).toContain('  viewProviders: [provideMenuConfigAt(withDismissOnScroll(true))],');
   });
 
-  it.fails('imports the hostDirectives and lists them in the decorator', () => {
+  it('imports the hostDirectives and lists them in the decorator', () => {
     const ts = buildDisplayedTs({
       story: hostStory,
       importLines: hostImportLines,
@@ -222,20 +238,20 @@ describe('buildDisplayedTs', () => {
 });
 
 describe('dedentClassBody', () => {
-  it.fails('treats a flush line 1 as member column when the rest sits at 2', () => {
+  it('treats a flush line 1 as member column when the rest sits at 2', () => {
     expect(panel.dedentClassBody('a = 1;\n  b = 2;')).toBe('a = 1;\nb = 2;');
   });
 
-  it.fails('keeps the extra indent of a continuation line', () => {
+  it('keeps the extra indent of a continuation line', () => {
     const quota = 'readonly x = compute(\n    1,\n    2);';
     expect(panel.dedentClassBody(quota)).toBe('readonly x = compute(\n  1,\n  2);');
   });
 
-  it.fails('leaves a single line unchanged', () => {
+  it('leaves a single line unchanged', () => {
     expect(panel.dedentClassBody('a = 1;')).toBe('a = 1;');
   });
 
-  it.fails('leaves a flush line 1 with the rest at 0 unchanged', () => {
+  it('leaves a flush line 1 with the rest at 0 unchanged', () => {
     expect(panel.dedentClassBody('a = 1;\nb = 2;')).toBe('a = 1;\nb = 2;');
   });
 });

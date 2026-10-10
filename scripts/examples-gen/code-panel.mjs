@@ -158,24 +158,93 @@ export function templateUsesClass(cls, tpl, selectorMap) {
   return false;
 }
 
+const indentOf = (line) => /^[ \t]*/.exec(line)[0].length;
+
 /**
- * The text of the TypeScript code panel. `importLines` are the live
- * component's import lines; they are filtered a second time against the
- * artifact half (`setup` + `template`), so imports only the chrome needs
- * (rxjs `delay`, fail-flag helpers, log buffers) drop out.
+ * Dedent for a class body. Story `setup` strings usually start flush on the
+ * backtick line while every later member sits at two spaces, so `dedent`
+ * finds a minimum of 0 and leaves the later lines shifted. Here a flush
+ * line 1 counts as sitting at member column: the base indent is
+ * `min(2, minIndent(lines 2..n))`, sliced from lines 2..n only. Every other
+ * shape goes through `dedent`.
  */
-export function buildDisplayedTs({ story, importLines }) {
-  const scan = stripCommentsForScan(story.setup ?? '') + '\n' + (story.template ?? '');
-  const isReferenced = (id) => {
-    if ((story.imports ?? []).includes(id)) return true;
-    return new RegExp(String.raw`\b${escapeRegExp(id)}\b`).test(scan);
-  };
-  const sourceImports = importLines
+export function dedentClassBody(s) {
+  const lines = String(s).split('\n');
+  const [first, ...rest] = lines;
+  const meaningfulRest = rest.filter((l) => l.trim().length > 0);
+  const flushFirst = first.trim().length > 0 && indentOf(first) === 0;
+  if (!flushFirst || meaningfulRest.length === 0) {
+    return dedent(s);
+  }
+  const base = Math.min(2, ...meaningfulRest.map(indentOf));
+  return [first, ...rest.map((l) => l.slice(base))].join('\n').replace(/\s+$/, '');
+}
+
+export function indent(s, n) {
+  const pad = ' '.repeat(n);
+  return s
+    .split('\n')
+    .map((l) => (l.length ? pad + l : l))
+    .join('\n');
+}
+
+/**
+ * The text of the TypeScript code panel: the component a consumer would
+ * write for the artifact half of a story. The decorator mirrors the live one
+ * (`imports`, `hostDirectives`, `viewProviders`), with Cngx `imports` matched
+ * against `template` alone, so a class only the chrome uses drops out, and
+ * `templateUrl` naming the Template panel. `importLines` are the live
+ * component's import lines, filtered a second time against what the panel
+ * shows (`setup`, `template`, the decorator), so imports only the chrome
+ * needs (rxjs `delay`, fail-flag helpers, log buffers) drop out.
+ */
+export function buildDisplayedTs({
+  story,
+  importLines,
+  selector,
+  className,
+  fileBase,
+  selectorMap,
+}) {
+  const classText = stripCommentsForScan(story.setup ?? '');
+  const template = story.template ?? '';
+  const hostDirectives = (story.hostDirectives ?? []).filter(Boolean);
+  const viewProviders = (story.viewProviders ?? []).filter(Boolean);
+  const imports = (story.imports ?? []).filter((cls) =>
+    templateUsesClass(cls, template, selectorMap),
+  );
+
+  const coreSymbols = [
+    'ChangeDetectionStrategy',
+    'Component',
+    ...coreSymbolsFor(classText, viewProviders),
+  ];
+  const coreLine = `import { ${coreSymbols.join(', ')} } from '@angular/core';`;
+
+  const scan = [classText, template, ...hostDirectives, ...viewProviders].join('\n');
+  const explicitRefs = new Set([...imports, ...hostDirectives]);
+  const isReferenced = (id) =>
+    explicitRefs.has(id) || new RegExp(String.raw`\b${escapeRegExp(id)}\b`).test(scan);
+  const otherLines = importLines
     .filter((l) => !l.includes("from '@angular/core'"))
     .map((line) => filterImportLine(line, isReferenced))
-    .filter((l) => l !== null)
-    .join('\n')
-    .trim();
-  const dedentedSetup = dedent(story.setup ?? '');
-  return [sourceImports, dedentedSetup].filter(Boolean).join('\n\n').trim();
+    .filter((l) => l !== null);
+
+  const decorator = [
+    '@Component({',
+    `  selector: '${selector}',`,
+    '  changeDetection: ChangeDetectionStrategy.OnPush,',
+    ...(imports.length > 0 ? [`  imports: [${imports.join(', ')}],`] : []),
+    ...(hostDirectives.length > 0 ? [`  hostDirectives: [${hostDirectives.join(', ')}],`] : []),
+    ...(viewProviders.length > 0 ? [`  viewProviders: [${viewProviders.join(', ')}],`] : []),
+    `  templateUrl: './${fileBase}.html',`,
+    '})',
+  ].join('\n');
+
+  const body = dedentClassBody(story.setup ?? '');
+  const classBlock = body
+    ? `export class ${className} {\n${indent(body, 2)}\n}`
+    : `export class ${className} {}`;
+
+  return [[coreLine, ...otherLines].join('\n'), `${decorator}\n${classBlock}`].join('\n\n');
 }
