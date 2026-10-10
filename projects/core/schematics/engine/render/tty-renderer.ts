@@ -17,6 +17,14 @@ export type TtyListrOptions = Omit<
   'concurrent' | 'exitOnError'
 >;
 
+/**
+ * listr2 defaults for the plan list. A collapsed skip renders as one
+ * `↓ label - reason` line; uncollapsed, listr2 marks it with the warning
+ * icon and repeats the message on a second line, which reads as a problem
+ * for what is an idempotent hit.
+ */
+export const TTY_LISTR_DEFAULTS = { rendererOptions: { collapseSkips: true } } as const;
+
 type TtyOptions = Pick<RendererOptions, 'color' | 'verbosity' | 'logger' | 'listr'>;
 
 // One task per planned change in plan order, then the idempotent hits as
@@ -59,7 +67,7 @@ export function createTtyRenderer(options: TtyOptions): Renderer {
         await new Listr<ListrContext, ListrRendererValue, ListrRendererValue>(
           todoTasks(plan, color),
           {
-            rendererOptions: { collapseSkips: false },
+            ...TTY_LISTR_DEFAULTS,
             ...listr,
             concurrent: false,
             exitOnError: false,

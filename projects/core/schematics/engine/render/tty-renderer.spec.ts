@@ -5,7 +5,7 @@ import { type Change } from '../plan/change';
 import { createChangePlan } from '../plan/plan';
 import { createPalette } from './palette';
 import { type RenderLogger } from './renderer';
-import { createTtyRenderer } from './tty-renderer';
+import { createTtyRenderer, TTY_LISTR_DEFAULTS } from './tty-renderer';
 
 const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
 
@@ -124,5 +124,9 @@ describe('createTtyRenderer', () => {
     renderer.summary(['cngx is set up.']);
 
     expect(lines).toEqual(['info cngx is set up.']);
+  });
+
+  it('collapses skipped tasks so an idempotent hit is not shown as a warning', () => {
+    expect(TTY_LISTR_DEFAULTS.rendererOptions.collapseSkips).toBe(true);
   });
 });
