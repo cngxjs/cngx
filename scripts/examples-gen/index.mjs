@@ -14,13 +14,15 @@ import { readFile, writeFile, readdir, mkdir, rm } from 'node:fs/promises';
 import { join, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  buildDisplayedHtml,
   buildDisplayedTs,
   coreSymbolsFor,
-  dedent,
   escapeRegExp,
   filterImportLine,
   importedSymbols,
   indent,
+  isSelectorSource,
+  selectorsInSource,
   stripCommentsForScan,
   templateUsesClass,
 } from './code-panel.mjs';
@@ -61,38 +63,6 @@ function tsQuote(s) {
 
 function backtickEscape(s) {
   return String(s).replaceAll('\\', '\\\\').replaceAll('`', '\\`').replaceAll('${', '\\${');
-}
-
-/**
- * Strip demo-chrome divs from a displayed template - `event-grid`/`event-row`
- * (state readouts), `button-row`/`status-row` (config toggles), `cngx-ex-chrome`
- * (explicit opt-in marker). Walks balanced <div>/</div> so nested chrome
- * inside an outer chrome block is removed together. The live rendered
- * template keeps everything; this only affects the Template-panel display
- * and complements the `templateChrome` field for sections that haven't
- * been migrated to the split yet.
- */
-function stripDemoChrome(html) {
-  const opener =
-    /<div\b[^>]*\bclass=["'][^"']*\b(?:event-grid|event-row|button-row|status-row|cngx-ex-chrome)\b[^"']*["'][^>]*>/g;
-  let result = html;
-  while (true) {
-    opener.lastIndex = 0;
-    const m = opener.exec(result);
-    if (!m) break;
-    let depth = 1;
-    let i = m.index + m[0].length;
-    while (i < result.length && depth > 0) {
-      const next = result.slice(i).match(/<\/?div\b[^>]*>/);
-      if (!next) break;
-      const absIdx = i + next.index;
-      if (next[0].startsWith('</')) depth--;
-      else depth++;
-      i = absIdx + next[0].length;
-    }
-    result = result.slice(0, m.index).replace(/\s*$/, '') + result.slice(i);
-  }
-  return result;
 }
 
 // Allowlist of inline-formatting tags that may appear in story `description`
@@ -253,41 +223,14 @@ async function buildPublicApiImportMap() {
 
 async function buildSelectorMap() {
   const map = new Map();
-  for await (const file of walkFiles(
-    join(ROOT, 'projects'),
-    (p) => p.endsWith('.ts') && !p.endsWith('.spec.ts') && !p.endsWith('public-api.ts'),
-  )) {
+  for await (const file of walkFiles(join(ROOT, 'projects'), isSelectorSource)) {
     let src;
     try {
       src = await readFile(file, 'utf8');
     } catch {
       continue;
     }
-    for (const classMatch of src.matchAll(/\bexport\s+(?:abstract\s+)?class\s+([A-Z]\w*)/g)) {
-      const className = classMatch[1];
-      const before = src.slice(0, classMatch.index);
-      const selectorMatches = [...before.matchAll(/selector:\s*['"]([^'"]+)['"]/g)];
-      const exportAsMatches = [...before.matchAll(/exportAs:\s*['"]([^'"]+)['"]/g)];
-      if (selectorMatches.length === 0 && exportAsMatches.length === 0) continue;
-      const selectors = [];
-      if (selectorMatches.length > 0) {
-        const last = selectorMatches.at(-1);
-        selectors.push(
-          ...last[1]
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean),
-        );
-      }
-      if (exportAsMatches.length > 0) {
-        const last = exportAsMatches.at(-1);
-        selectors.push(
-          ...last[1]
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean),
-        );
-      }
+    for (const [className, selectors] of selectorsInSource(src)) {
       const existing = map.get(className) ?? [];
       map.set(className, [...new Set([...existing, ...selectors])]);
     }
@@ -461,7 +404,7 @@ function emitComponentSource(meta, story, importMap) {
   // Strip chrome blocks from the displayed template. Even when a story has
   // migrated chrome into `templateChrome`, stray button-row blocks in the
   // remaining `template` are still scrubbed defensively.
-  const sourceHtml = dedent(stripDemoChrome(story.template));
+  const sourceHtml = buildDisplayedHtml(story.template);
   const sourceFields = [
     `  protected readonly _exTs: string = \`${backtickEscape(sourceTs)}\`;`,
     `  protected readonly _exHtml: string = \`${backtickEscape(sourceHtml)}\`;`,
