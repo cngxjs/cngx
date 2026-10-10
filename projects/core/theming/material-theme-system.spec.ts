@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { compileThemeEntry } from '@cngx/testing/sass';
 
@@ -59,8 +59,11 @@ function activeHexDeclarations(declarations: readonly string[]): readonly string
 }
 
 describe('theme-system', () => {
-  const css = compileMapApp();
-  const declarations = cngxDeclarations(css);
+  let declarations: readonly string[];
+
+  beforeAll(() => {
+    declarations = cngxDeclarations(compileMapApp());
+  });
 
   it('maps the system surface onto the map-API --mat-sys-* value', () => {
     expect(declarations).toContain('--cngx-color-surface: var(--mat-sys-surface)');
@@ -88,11 +91,9 @@ describe('theme-system', () => {
       expect(declaration).toMatch(/^--cngx-(sidenav|nav-link)-/);
     }
   });
-});
 
-describe('theme', () => {
-  it('emits the same --cngx-* declarations for a define-theme object of the same density', () => {
-    expect(cngxDeclarations(compileThemeObjectApp())).toEqual(cngxDeclarations(compileMapApp()));
+  it('emits the same --cngx-* declarations as theme() with a define-theme object of the same density', () => {
+    expect(cngxDeclarations(compileThemeObjectApp())).toEqual(declarations);
   });
 });
 
