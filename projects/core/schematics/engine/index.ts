@@ -34,6 +34,7 @@ export {
   type WriteJson,
 } from './plan/change';
 export { type ChangePlan, createChangePlan, describeChangePlan } from './plan/plan';
+export { createReport, type Report, type ReportLink } from './plan/report';
 export {
   createProvenanceStamp,
   hasProvenanceMarker,
@@ -44,3 +45,27 @@ export { addToArrayLiteral, type ArraySelector, hasArrayLiteral } from './edit/t
 export { findElements, insertAttribute, parseTemplateContent } from './edit/template-edit';
 export { hasStyleImport, insertStyleImport } from './edit/style-edit';
 export { applyChangePlan } from './apply/apply';
+export {
+  canPrompt,
+  type ConfirmQuestion,
+  createPromptFlow,
+  inquirerAdapter,
+  type MultiSelectQuestion,
+  type PromptAdapter,
+  type PromptAnswer,
+  type PromptAnswers,
+  type PromptChoice,
+  type PromptFlow,
+  type PromptFlowOptions,
+  type SelectQuestion,
+} from './prompt/prompt';
+export { type ColorEnv, createPalette, type Palette } from './render/palette';
+export {
+  createRenderer,
+  type PreflightItem,
+  type PreflightStatus,
+  type Renderer,
+  type RendererOptions,
+  type RenderLogger,
+  type Verbosity,
+} from './render/renderer';

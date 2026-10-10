@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
 
 import { logging } from '@angular-devkit/core';
-import { callRule, type Rule, type Schematic, type Tree } from '@angular-devkit/schematics';
+import { callRule, type Rule, type Schematic, type SchematicContext, type Tree } from '@angular-devkit/schematics';
 import { SchematicTestRunner, UnitTestTree } from '@angular-devkit/schematics/testing';
 import { lastValueFrom, of } from 'rxjs';
 
@@ -59,6 +59,8 @@ export interface RuleRun {
   readonly tree: UnitTestTree;
   /** Every message the rule logged, in order. */
   readonly logs: readonly string[];
+  /** The name of every task the rule scheduled, in order. */
+  readonly tasks: readonly string[];
 }
 
 export async function runRule(rule: Rule, tree: Tree): Promise<RuleRun> {
@@ -69,6 +71,14 @@ export async function runRule(rule: Rule, tree: Tree): Promise<RuleRun> {
   // outside a collection has none, so it gets a described stand-in.
   const schematic = { description: { name: 'run-rule' } } as unknown as Schematic<object, object>;
   const context = schematicRunner().engine.createContext(schematic, { logger });
-  const result = await lastValueFrom(callRule(rule, of(tree), context));
-  return { tree: new UnitTestTree(result), logs };
+  const tasks: string[] = [];
+  const recording: SchematicContext = {
+    ...context,
+    addTask: (task, dependencies) => {
+      tasks.push(task.toConfiguration().name);
+      return context.addTask(task, dependencies);
+    },
+  };
+  const result = await lastValueFrom(callRule(rule, of(tree), recording));
+  return { tree: new UnitTestTree(result), logs, tasks };
 }

@@ -1,7 +1,8 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gzipSync } from 'node:zlib';
 
 import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -51,15 +52,18 @@ describe('dist/core/schematics', () => {
     expect(manifest.dependencies['@cngx/utils']).toBe(version);
   });
 
-  it('ng-add installs once and chains ng-add-setup after the install', async () => {
-    await runner.runSchematic('ng-add', { preset: 'minimal' }, appTree);
-    // The test runner records task configurations without their dependency
-    // ids, so the scheduling order stands in for the install -> setup edge.
-    const names = runner.tasks.map((task) => task.name);
-    const setup = runner.tasks.find((task) => task.name === 'run-schematic');
+  it('ng-add is one stage: the install is its only task', async () => {
+    // runSchematic writes into the tree it is given, so a fresh app keeps the
+    // dependency planned (an onboarded app installs nothing).
+    await runner.runSchematic('ng-add', { preset: 'minimal' }, await createAppTree(runner));
 
-    expect(names).toEqual(['node-package', 'run-schematic']);
-    expect(setup.options).toMatchObject({ name: 'ng-add-setup', options: { preset: 'minimal' } });
+    expect(runner.tasks.map((task) => task.name)).toEqual(['node-package']);
+  });
+
+  it('ships no setup stage in the collection', () => {
+    const collection = JSON.parse(readFileSync(CORE_COLLECTION, 'utf8'));
+
+    expect(Object.keys(collection.schematics)).toEqual(['ng-add']);
   });
 
   describe('without a terminal', () => {
@@ -69,13 +73,15 @@ describe('dist/core/schematics', () => {
       process.stdout.isTTY = isTTY;
     });
 
-    it('ng-add-setup writes the spike file without prompting', async () => {
+    it('ng-add prints the plan and the summary without prompting', async () => {
       process.stdout.isTTY = false;
-      const tree = await runner.runSchematic('ng-add-setup', {}, appTree);
-      const spike = JSON.parse(tree.readText('.cngx/spike.json'));
+      const messages = [];
+      runner.logger.subscribe((entry) => messages.push(entry.message));
 
-      expect(spike.theme).toBe('cngx');
-      expect(spike.facts).toMatchObject({ projects: ['app'], isTTY: false, material: false });
+      const tree = await runner.runSchematic('ng-add', {}, await createAppTree(runner));
+
+      expect(messages).toEqual(expect.arrayContaining(['Planned (1):', 'cngx planned 1 change.']));
+      expect(tree.exists('.cngx/spike.json')).toBe(false);
     });
   });
 
@@ -84,6 +90,7 @@ describe('dist/core/schematics', () => {
 
     expect(Object.keys(schema.properties)).not.toContain('dryRun');
     expect(Object.keys(schema.properties)).not.toContain('interactive');
+    expect(Object.keys(schema.properties)).not.toContain('verbose');
   });
 });
 
@@ -100,13 +107,12 @@ describe('dist/ui/schematics ng-add shim', () => {
   it('delegates to @cngx/core ng-add in the same run when core resolves', async () => {
     const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
     runner.registerCollection('@cngx/core', requireDist(CORE_COLLECTION));
-    const tree = await runner.runSchematic('ng-add', { preset: 'full' }, appTree);
+    const tree = await runner.runSchematic('ng-add', { preset: 'full' }, await createAppTree(runner));
     const manifest = JSON.parse(tree.readText('package.json'));
-    const setup = runner.tasks.find((task) => task.name === 'run-schematic');
 
     expect(manifest.dependencies['@cngx/core']).toBe(version);
     expect(manifest.dependencies['@cngx/utils']).toBe(version);
-    expect(setup.options).toMatchObject({ name: 'ng-add-setup', options: { preset: 'full' } });
+    expect(runner.tasks.map((task) => task.name)).toEqual(['node-package']);
   });
 
   it('installs @cngx/core first and runs its ng-add as a task when core is missing', async () => {
@@ -171,4 +177,46 @@ describe('dist/ui/schematics ng-add shim', () => {
 
     expect(messages.filter((message) => message.startsWith('Replacing'))).toEqual([]);
   });
+});
+
+// Every schematic entry ships inside a published package, so its size is
+// paid on every install. The budget leaves room for the onboarding steps on
+// top of the bundled renderer and prompt libraries.
+const MAX_MINIFIED = 200 * 1024;
+const MAX_GZIP = 70 * 1024;
+// A shim only adds core and delegates; it pulls nothing from the renderer
+// or the prompts, which `sideEffects: false` on the source package lets
+// esbuild drop.
+const MAX_SHIM_MINIFIED = 20 * 1024;
+
+function schematicEntries() {
+  const dist = join(ROOT, 'dist');
+  return readdirSync(dist, { withFileTypes: true })
+    .filter((lib) => lib.isDirectory() && existsSync(join(dist, lib.name, 'schematics')))
+    .flatMap((lib) =>
+      readdirSync(join(dist, lib.name, 'schematics'), { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => join(lib.name, 'schematics', entry.name, 'index.js'))
+        .filter((file) => existsSync(join(dist, file))),
+    );
+}
+
+describe('schematic bundle budget', () => {
+  it('finds the built entries', () => {
+    expect(schematicEntries()).toEqual(expect.arrayContaining(['core/schematics/ng-add/index.js', 'ui/schematics/ng-add/index.js']));
+  });
+
+  it.each(schematicEntries())('keeps dist/%s under 200 KB minified and 70 KB gzip', (file) => {
+    const content = readFileSync(join(ROOT, 'dist', file));
+
+    expect(content.length).toBeLessThanOrEqual(MAX_MINIFIED);
+    expect(gzipSync(content).length).toBeLessThanOrEqual(MAX_GZIP);
+  });
+
+  it.each(schematicEntries().filter((file) => !file.startsWith('core/')))(
+    'keeps the shim dist/%s under 20 KB minified',
+    (file) => {
+      expect(readFileSync(join(ROOT, 'dist', file)).length).toBeLessThanOrEqual(MAX_SHIM_MINIFIED);
+    },
+  );
 });

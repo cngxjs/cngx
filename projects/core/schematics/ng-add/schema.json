@@ -25,6 +25,16 @@
           { "value": "full", "label": "full - recommended plus AI tooling and the German language pack" }
         ]
       }
+    },
+    "prompts": {
+      "type": "boolean",
+      "description": "Ask the detection-dependent questions when a terminal is attached. Pass false in CI runs under a pseudo-terminal; flags and preset defaults answer instead.",
+      "default": true
+    },
+    "quiet": {
+      "type": "boolean",
+      "description": "Print only the summary, not the planned changes.",
+      "default": false
     }
   },
   "required": []

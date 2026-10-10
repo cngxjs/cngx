@@ -1,0 +1,15 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ngAdd > prints the described plan, then the summary 1`] = `
+[
+  "Planned (1):",
+  "  + Add @cngx/utils@0.0.0-PLACEHOLDER - every @cngx package stays on one version",
+  "cngx planned 1 change.",
+  "Files:",
+  "  package.json",
+  "Next steps:",
+  "  Run \`npx @cngx/doctor\` to check the wiring.",
+  "Docs:",
+  "  cngx documentation: https://cngxjs.github.io/cngx/",
+]
+`;

@@ -5,13 +5,6 @@
       "description": "Adds the cngx libraries to an Angular application.",
       "factory": "./ng-add/index#ngAdd",
       "schema": "./ng-add/schema.json"
-    },
-    "ng-add-setup": {
-      "description": "Second ng-add stage: runs after the package install on the committed tree.",
-      "factory": "./ng-add-setup/index#ngAddSetup",
-      "schema": "./ng-add-setup/schema.json",
-      "hidden": true,
-      "private": true
     }
   }
 }
