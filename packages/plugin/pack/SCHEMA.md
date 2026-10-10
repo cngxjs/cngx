@@ -43,3 +43,16 @@ for the async surface above.
 `pack-manifest.json` records, per generated artifact, the source input and its
 content hash at generation time. The drift-check recomputes those hashes and
 fails when a shipped artifact falls behind its source.
+
+The drift-check also recomputes the recipe set and every recipe body from the
+stories, with the generator's own selection and renderer. It fails when a
+qualifying folder has no recorded recipe, when a folder's representative story
+changed, when a recorded recipe file is missing, when a committed recipe body
+differs from the re-rendered one, and when a recorded recipe is no longer
+selected. Orphans are never pruned automatically: the check, and with it
+`plugin:release`, halts until the manifest entry and the recipe file are removed
+by hand.
+
+Recipes are pure generator output. The optional `a11y` and `theming` fields are
+generator-owned; a hand-added field is overwritten on the next run and flagged as
+a stale body until then.

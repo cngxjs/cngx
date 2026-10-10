@@ -1,10 +1,12 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import {
+  collectStoryEntries,
   demonstratesAsync,
+  expectedRecipes,
   renderRecipe,
   selectRecipeStories,
   storyToRecipe,
@@ -116,6 +118,41 @@ describe('selectRecipeStories', () => {
     const selected = selectRecipeStories(entries);
     expect(selected).toHaveLength(1);
     expect(selected[0].slug).toBe('basic-happy-path');
+  });
+});
+
+describe('expectedRecipes', () => {
+  it('skips a folder whose representative yields no recipe', () => {
+    const entries = [
+      {
+        path: 'examples/stories/common/interactive/async-click/basic-happy-path.story.ts',
+        story: ASYNC_STORY,
+      },
+      {
+        path: 'examples/stories/common/data/async/basic.story.ts',
+        story: { title: 'plain', setup: 'readonly s = createAsyncState(load);' },
+      },
+    ];
+    expect(expectedRecipes(entries)).toEqual([
+      {
+        artifact: 'pack/recipes/common-interactive-async-click.md',
+        source: entries[0].path,
+        body: renderRecipe(storyToRecipe(ASYNC_STORY)),
+      },
+    ]);
+  });
+});
+
+describe('collectStoryEntries', () => {
+  it('parses every committed story without an onError call', () => {
+    const errors = [];
+    const entries = collectStoryEntries((path, err) => errors.push(`${path}: ${err.message}`));
+    expect(errors).toEqual([]);
+    const storyFiles = readdirSync(resolve(here, '../../examples/stories'), {
+      recursive: true,
+    }).filter((file) => file.endsWith('.story.ts'));
+    expect(storyFiles.length).toBeGreaterThan(800);
+    expect(entries).toHaveLength(storyFiles.length);
   });
 });
 

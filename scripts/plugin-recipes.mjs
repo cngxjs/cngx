@@ -14,6 +14,7 @@ import { parseStory } from './examples-gen/story.mjs';
 import { computeSourceHash, upsertManifestEntry } from './plugin-token-reference.mjs';
 
 const STORIES_ROOT = 'examples/stories';
+const PLUGIN_ROOT = 'packages/plugin';
 const RECIPES_DIR = 'packages/plugin/pack/recipes';
 const MANIFEST = 'packages/plugin/pack/pack-manifest.json';
 
@@ -134,6 +135,10 @@ const demoFolder = (storyPath) => relative(STORIES_ROOT, storyPath).replace(/\/[
 const exampleSlug = (storyPath) => storyPath.replace(/^.*\//, '').replace(/\.story\.ts$/, '');
 const recipeName = (folder) => folder.replace(/\//g, '-');
 
+export function recipeArtifact(folder) {
+  return `pack/recipes/${recipeName(folder)}.md`;
+}
+
 // Within a folder's async examples, prefer the plainest one: a basic/happy-path
 // slug first, then an explicitly async/state slug, then the shortest title.
 function representativeRank(slug) {
@@ -178,30 +183,43 @@ export function selectRecipeStories(entries) {
   return [...byFolder.values()].sort((a, b) => a.folder.localeCompare(b.folder));
 }
 
+// The recipes the pack ships for these stories: one `{ artifact, source, body }`
+// per selected folder whose representative yields a recipe. The generator
+// writes exactly this list and the drift check compares against it.
+export function expectedRecipes(entries) {
+  return selectRecipeStories(entries).flatMap((entry) => {
+    const recipe = storyToRecipe(entry.story);
+    if (!recipe) {
+      return [];
+    }
+    return [
+      { artifact: recipeArtifact(entry.folder), source: entry.path, body: renderRecipe(recipe) },
+    ];
+  });
+}
+
 function main() {
-  const entries = collectStoryEntries(() => {});
+  const entries = collectStoryEntries((path, err) => {
+    process.stderr.write(`Skipping ${path}: ${err.message}\n`);
+  });
 
   const selected = selectRecipeStories(entries);
+  const recipes = expectedRecipes(entries);
   mkdirSync(resolve(RECIPES_DIR), { recursive: true });
 
   let manifest = JSON.parse(readFileSync(resolve(MANIFEST), 'utf8'));
-  let written = 0;
-  for (const entry of selected) {
-    const recipe = storyToRecipe(entry.story);
-    if (!recipe) {
-      continue;
-    }
-    const name = recipeName(entry.folder);
-    writeFileSync(resolve(RECIPES_DIR, `${name}.md`), renderRecipe(recipe));
+  for (const recipe of recipes) {
+    writeFileSync(resolve(PLUGIN_ROOT, recipe.artifact), recipe.body);
     manifest = upsertManifestEntry(manifest, {
-      artifact: `pack/recipes/${name}.md`,
-      source: entry.path,
-      contentHash: computeSourceHash(readFileSync(entry.path)),
+      artifact: recipe.artifact,
+      source: recipe.source,
+      contentHash: computeSourceHash(readFileSync(recipe.source)),
     });
-    written += 1;
   }
   writeFileSync(resolve(MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`);
-  process.stdout.write(`recipes: ${written} written from ${selected.length} async demo folders\n`);
+  process.stdout.write(
+    `recipes: ${recipes.length} written from ${selected.length} async demo folders\n`,
+  );
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
