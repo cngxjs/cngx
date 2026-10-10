@@ -67,6 +67,7 @@ readonly saveState = injectAsyncState(() => this.save$);
 - **ARIA atomic**: `aria-atomic="false"` when action button present (avoids re-announcing on click)
 - **ARIA busy**: `aria-busy` set when state is loading
 - **Screen reader**: Alert content is announced automatically on visibility change
+- **Dismissal**: A manual dismiss is confirmed politely through `CngxLiveAnnouncer`, a body-level region that outlives the alert, so the confirmation is spoken even when the consumer removes the alert on `(dismissed)`. Inside an open modal dialog the region is outside the modal tree and the confirmation is not spoken
 
 
 

@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
+import { createManualState } from '@cngx/common/data';
 import { CngxDialog } from '@cngx/common/dialog';
 import {
   createAnnouncementRecorder,
@@ -16,11 +17,12 @@ import { CngxBannerOutlet } from './banner/banner-outlet';
 import { CngxToaster, provideToasts } from './toast/toast.service';
 import { CngxToastOutlet } from './toast/toast-outlet';
 
-// Recorder coverage for three template regions that never touch
-// CngxLiveAnnouncer, plus the routed announcer itself. Each entry's `origin`
-// is pinned as observed: toast and banner messages render as a new element
-// already holding role and text, which some screen readers do not announce
-// for role="status".
+// Recorder coverage for the toast and banner template regions, which never
+// touch CngxLiveAnnouncer, the alert (host role plus a dismissal routed
+// through the announcer), and the routed announcer itself. Each entry's
+// `origin` is pinned as observed: toast and banner messages render as a new
+// element already holding role and text, which some screen readers do not
+// announce for role="status".
 
 const observed = () => Promise.resolve();
 
@@ -50,6 +52,42 @@ class FeedbackHost {
 })
 class ModalHost {
   readonly dialog = viewChild.required(CngxDialog);
+}
+
+@Component({
+  template: `
+    <cngx-alert severity="error" [state]="state" [closable]="true">Upload failed</cngx-alert>
+  `,
+  imports: [CngxAlert],
+})
+class StateAlertHost {
+  readonly state = createManualState<string>();
+}
+
+@Component({
+  template: `
+    <dialog cngxDialog #dlg="cngxDialog">
+      <cngx-alert severity="error" [closable]="true">Upload failed</cngx-alert>
+    </dialog>
+  `,
+  imports: [CngxDialog, CngxAlert],
+})
+class ModalAlertHost {
+  readonly dialog = viewChild.required(CngxDialog);
+}
+
+@Component({
+  template: `
+    @if (!dismissed()) {
+      <cngx-alert severity="error" [closable]="true" (dismissed)="dismissed.set(true)">
+        Upload failed
+      </cngx-alert>
+    }
+  `,
+  imports: [CngxAlert],
+})
+class DestroyOnDismissHost {
+  readonly dismissed = signal(false);
 }
 
 // jsdom does not implement showModal / show / close. Unconditional instance
@@ -155,19 +193,45 @@ describe('announcement recorder over ui/feedback', () => {
         },
       ]);
     });
+  });
 
-    it('records the alert host as became-live and its own aria-live span as a mutation', async () => {
-      const fixture = await mount();
+  describe('CngxAlert', () => {
+    function dismissButton(fixture: { nativeElement: HTMLElement }): HTMLButtonElement {
+      return fixture.nativeElement.querySelector(
+        '.cngx-alert__dismiss button',
+      ) as HTMLButtonElement;
+    }
+
+    // click -> settle -> 16 ms -> observe: the announcer's clear and its write
+    // reach the observer in separate batches, as they do in a browser.
+    async function dismiss(fixture: {
+      nativeElement: HTMLElement;
+      detectChanges(): void;
+    }): Promise<void> {
+      dismissButton(fixture).click();
+      await settle(fixture);
+      vi.advanceTimersByTime(16);
+      await observed();
+    }
+
+    const dismissedEntry = {
+      text: 'Alert dismissed',
+      role: null,
+      politeness: 'polite',
+      origin: 'mutation',
+      suppressedBy: null,
+    };
+
+    it('records the alert host as became-live and its dismissal through the shared announcer', async () => {
+      const fixture = TestBed.createComponent(FeedbackHost);
+      await settle(fixture);
+      startRecording();
 
       fixture.componentInstance.alertShown.set(true);
       await settle(fixture);
       const hostEntries = recorder.entries().map(summary);
 
-      const dismiss = fixture.nativeElement.querySelector(
-        '.cngx-alert__dismiss button',
-      ) as HTMLButtonElement;
-      dismiss.click();
-      await settle(fixture);
+      await dismiss(fixture);
 
       expect(hostEntries).toEqual([
         {
@@ -178,17 +242,84 @@ describe('announcement recorder over ui/feedback', () => {
           suppressedBy: null,
         },
       ]);
-      // Observed, not endorsed: the dismiss announcement lands in the same
-      // pass that sets `hidden` on the host, so AT would not speak it.
-      expect(recorder.entries().slice(1).map(summary)).toEqual([
-        {
-          text: 'Alert dismissed',
-          role: null,
-          politeness: 'polite',
-          origin: 'mutation',
-          suppressedBy: 'hidden',
-        },
+      expect(recorder.entries().slice(1).map(summary)).toEqual([dismissedEntry]);
+      expect(fixture.nativeElement.querySelector('cngx-alert [aria-live]')).toBeNull();
+    });
+
+    it('re-shows a [state] alert without the previous dismiss text', async () => {
+      const fixture = TestBed.createComponent(StateAlertHost);
+      await settle(fixture);
+      startRecording();
+      const state = fixture.componentInstance.state;
+
+      state.setError('boom');
+      await settle(fixture);
+      await dismiss(fixture);
+      state.reset();
+      await settle(fixture);
+      state.setError('boom');
+      await settle(fixture);
+
+      const entries = recorder.entries().map(summary);
+      expect(entries.at(-1)).toEqual({
+        text: 'Upload failed',
+        role: 'alert',
+        politeness: 'assertive',
+        origin: 'became-live',
+        suppressedBy: null,
+      });
+    });
+
+    it('records one announcement per dismiss across two cycles', async () => {
+      const fixture = TestBed.createComponent(StateAlertHost);
+      await settle(fixture);
+      startRecording();
+      const state = fixture.componentInstance.state;
+
+      state.setError('boom');
+      await settle(fixture);
+      await dismiss(fixture);
+      state.reset();
+      await settle(fixture);
+      state.setError('boom');
+      await settle(fixture);
+      await dismiss(fixture);
+
+      expect(
+        recorder
+          .entries()
+          .map(summary)
+          .filter((entry) => entry.text === 'Alert dismissed'),
+      ).toEqual([dismissedEntry, dismissedEntry]);
+    });
+
+    it('records a dismissal inside an open modal CngxDialog as suppressed by aria-modal', async () => {
+      const fixture = TestBed.createComponent(ModalAlertHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      stubDialogElement(fixture.nativeElement.querySelector('dialog'));
+      fixture.componentInstance.dialog().open();
+      vi.advanceTimersByTime(16);
+      await settle(fixture);
+      expect(fixture.nativeElement.querySelector('dialog').getAttribute('aria-modal')).toBe('true');
+      startRecording();
+
+      await dismiss(fixture);
+
+      expect(recorder.entries().map(summary)).toEqual([
+        { ...dismissedEntry, suppressedBy: 'aria-modal' },
       ]);
+    });
+
+    it('announces the dismissal after a destroy-on-dismiss host removes the alert', async () => {
+      const fixture = TestBed.createComponent(DestroyOnDismissHost);
+      await settle(fixture);
+      startRecording();
+
+      await dismiss(fixture);
+
+      expect(fixture.nativeElement.querySelector('cngx-alert')).toBeNull();
+      expect(recorder.entries().map(summary)).toEqual([dismissedEntry]);
     });
   });
 
