@@ -184,6 +184,10 @@ describe('dist/ui/schematics ng-add shim', () => {
 // top of the bundled renderer and prompt libraries.
 const MAX_MINIFIED = 200 * 1024;
 const MAX_GZIP = 70 * 1024;
+// A shim only adds core and delegates; it pulls nothing from the renderer
+// or the prompts, which `sideEffects: false` on the source package lets
+// esbuild drop.
+const MAX_SHIM_MINIFIED = 20 * 1024;
 
 function schematicEntries() {
   const dist = join(ROOT, 'dist');
@@ -208,4 +212,11 @@ describe('schematic bundle budget', () => {
     expect(content.length).toBeLessThanOrEqual(MAX_MINIFIED);
     expect(gzipSync(content).length).toBeLessThanOrEqual(MAX_GZIP);
   });
+
+  it.each(schematicEntries().filter((file) => !file.startsWith('core/')))(
+    'keeps the shim dist/%s under 20 KB minified',
+    (file) => {
+      expect(readFileSync(join(ROOT, 'dist', file)).length).toBeLessThanOrEqual(MAX_SHIM_MINIFIED);
+    },
+  );
 });

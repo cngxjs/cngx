@@ -1,5 +1,6 @@
 {
   "name": "@cngx/core-schematics-src",
   "private": true,
-  "type": "commonjs"
+  "type": "commonjs",
+  "sideEffects": false
 }
