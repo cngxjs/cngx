@@ -9,7 +9,11 @@ import { readdirSync, readFileSync, statSync, writeFileSync, mkdirSync } from 'n
 import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { importedSymbols } from './examples-gen/code-panel.mjs';
+import {
+  buildDisplayedHtml,
+  dedentClassBody,
+  importedSymbols,
+} from './examples-gen/code-panel.mjs';
 import { parseStory } from './examples-gen/story.mjs';
 import { computeSourceHash, upsertManifestEntry } from './plugin-token-reference.mjs';
 
@@ -55,8 +59,11 @@ export function storyToRecipe(story) {
   if (symbols.length === 0) {
     return null;
   }
-  const template = normalizeDashes((story.template ?? '').trim());
-  const setup = normalizeDashes((story.setup ?? '').trim());
+  // Both fields render as the code panels show them: the template through the
+  // Template panel builder (chrome divs out, markup dedent), the setup through
+  // the class-body dedent.
+  const template = normalizeDashes(buildDisplayedHtml(story.template).trim());
+  const setup = normalizeDashes(dedentClassBody(story.setup ?? '').trim());
   // The template is the composition surface a recipe teaches, so it is the
   // wiring. The class setup that backs it rides alongside as its own field
   // rather than replacing the template (the old "longer wins" rule hid the

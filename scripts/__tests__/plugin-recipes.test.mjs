@@ -97,6 +97,32 @@ describe('storyToRecipe', () => {
     expect(recipe).not.toHaveProperty('setup');
   });
 
+  it('renders a flush-first-line template at the column of line 1', () => {
+    const template = '<cngx-select [items]="state.value()">\n      <span>x</span>\n    </cngx-select>';
+    expect(storyToRecipe({ ...ASYNC_STORY, template }).wiring).toBe(
+      '<cngx-select [items]="state.value()">\n  <span>x</span>\n</cngx-select>',
+    );
+  });
+
+  it('drops a button-row chrome div from the wiring', () => {
+    const template = [
+      '<cngx-select [items]="state.value()"></cngx-select>',
+      '<div class="button-row">',
+      '  <button type="button" (click)="reload()">Reload</button>',
+      '</div>',
+    ].join('\n');
+    expect(storyToRecipe({ ...ASYNC_STORY, template }).wiring).toBe(
+      '<cngx-select [items]="state.value()"></cngx-select>',
+    );
+  });
+
+  it('renders a flush-first-line setup with its members at column 0', () => {
+    const setup = 'readonly state = createAsyncState(load);\n  readonly open = signal(false);';
+    expect(storyToRecipe({ ...ASYNC_STORY, setup }).setup).toBe(
+      'readonly state = createAsyncState(load);\nreadonly open = signal(false);',
+    );
+  });
+
   it('returns null when no cngx symbol resolves', () => {
     expect(storyToRecipe({ title: 'plain', template: '<div></div>' })).toBeNull();
   });

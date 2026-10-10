@@ -16,41 +16,41 @@ createRetry() wraps any AsyncAction with bounded retries (defaults: 3 attempts, 
 
 ```ts
 private readonly flakyAction = () => new Promise<void>((resolve, reject) =>
-    setTimeout(() => (Math.random() > 0.6
-      ? resolve()
-      : reject(new Error('Network error'))), 500),
-  );
+  setTimeout(() => (Math.random() > 0.6
+    ? resolve()
+    : reject(new Error('Network error'))), 500),
+);
 
-  private readonly retryTuple = createRetry(this.flakyAction, {
-    maxAttempts: 3,
-    delay: 800,
-    backoff: 'exponential',
-  });
+private readonly retryTuple = createRetry(this.flakyAction, {
+  maxAttempts: 3,
+  delay: 800,
+  backoff: 'exponential',
+});
 
-  protected readonly retryAction = this.retryTuple[0];
-  protected readonly retryState = this.retryTuple[1];
+protected readonly retryAction = this.retryTuple[0];
+protected readonly retryState = this.retryTuple[1];
 ```
 
 ## Wiring
 
 ```html
 <div class="demo-inline-actions">
-    <button
-      [cngxAsyncClick]="retryAction"
-      #btn="cngxAsyncClick"
-      type="button"
-      class="chip"
-      [style.background]="btn.succeeded() ? 'var(--cngx-color-success)' : btn.failed() ? 'var(--cngx-color-danger)' : ''"
-    >
-      @if (btn.pending()) {
-        Attempt {{ retryState.attempt() }}/{{ retryState.maxAttempts() }}...
-      } @else if (btn.succeeded()) {
-        Success!
-      } @else if (btn.failed()) {
-        All retries failed
-      } @else {
-        Flaky Save
-      }
-    </button>
-  </div>
+  <button
+    [cngxAsyncClick]="retryAction"
+    #btn="cngxAsyncClick"
+    type="button"
+    class="chip"
+    [style.background]="btn.succeeded() ? 'var(--cngx-color-success)' : btn.failed() ? 'var(--cngx-color-danger)' : ''"
+  >
+    @if (btn.pending()) {
+      Attempt {{ retryState.attempt() }}/{{ retryState.maxAttempts() }}...
+    } @else if (btn.succeeded()) {
+      Success!
+    } @else if (btn.failed()) {
+      All retries failed
+    } @else {
+      Flaky Save
+    }
+  </button>
+</div>
 ```

@@ -16,7 +16,7 @@ Array-valued chart: an empty array is a natural empty state, so the four-state m
 
 ```ts
 protected readonly stateDemoData: readonly number[] = [10, 14, 18, 16, 22, 28, 32];
-  protected readonly state = createManualState<readonly number[]>();
+protected readonly state = createManualState<readonly number[]>();
 ```
 
 ## Wiring

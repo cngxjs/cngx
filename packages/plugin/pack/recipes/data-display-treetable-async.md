@@ -18,36 +18,36 @@ The treetable never loads anything itself: the consumer owns the data flow (crea
 
 ```ts
 protected readonly loadState = createManualState<Node<Employee>[]>();
-  protected readonly tree = computed(() => this.loadState.data() ?? []);
-  protected readonly failNextLoad = signal(false);
+protected readonly tree = computed(() => this.loadState.data() ?? []);
+protected readonly failNextLoad = signal(false);
 
-  constructor() {
-    this.reload();
-  }
+constructor() {
+  this.reload();
+}
 
-  protected reload(): void {
-    this.loadState.set(this.loadState.isFirstLoad() ? 'loading' : 'refreshing');
-    setTimeout(() => {
-      if (this.failNextLoad()) {
-        this.failNextLoad.set(false);
-        this.loadState.setError(new Error('Org service unavailable'));
-        return;
-      }
-      this.loadState.setSuccess([ORG_TREE]);
-    }, 900);
-  }
+protected reload(): void {
+  this.loadState.set(this.loadState.isFirstLoad() ? 'loading' : 'refreshing');
+  setTimeout(() => {
+    if (this.failNextLoad()) {
+      this.failNextLoad.set(false);
+      this.loadState.setError(new Error('Org service unavailable'));
+      return;
+    }
+    this.loadState.setSuccess([ORG_TREE]);
+  }, 900);
+}
 ```
 
 ## Wiring
 
 ```html
 <cngx-treetable [tree]="tree()" [state]="loadState" (retry)="reload()">
-    <ng-template cngxError let-error let-retry="retry">
-      <p>Load failed: {{ $any(error).message }}</p>
-      <button type="button" class="chip" (click)="retry()">Retry</button>
-    </ng-template>
-    <ng-template cngxEmpty>
-      <p>No employees loaded.</p>
-    </ng-template>
-  </cngx-treetable>
+  <ng-template cngxError let-error let-retry="retry">
+    <p>Load failed: {{ $any(error).message }}</p>
+    <button type="button" class="chip" (click)="retry()">Retry</button>
+  </ng-template>
+  <ng-template cngxEmpty>
+    <p>No employees loaded.</p>
+  </ng-template>
+</cngx-treetable>
 ```

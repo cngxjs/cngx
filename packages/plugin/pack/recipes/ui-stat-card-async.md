@@ -22,13 +22,13 @@ protected readonly revenue = createManualState<number>();
 
 ```html
 <cngx-stat-card
-    [state]="revenue"
-    loadingTreatment="skeleton"
-    live="polite"
-    style="max-width:260px"
-  >
-    <span cngxStatLabel>Revenue</span>
-    <cngx-metric cngxStatValue [value]="1.2" unit="M EUR" />
-    <span cngxStatCaption>vs. last quarter</span>
-  </cngx-stat-card>
+  [state]="revenue"
+  loadingTreatment="skeleton"
+  live="polite"
+  style="max-width:260px"
+>
+  <span cngxStatLabel>Revenue</span>
+  <cngx-metric cngxStatValue [value]="1.2" unit="M EUR" />
+  <span cngxStatCaption>vs. last quarter</span>
+</cngx-stat-card>
 ```

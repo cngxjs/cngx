@@ -18,43 +18,43 @@ The timeline takes the state and nothing else - it never asks where the rows cam
 ```ts
 protected readonly feed = createAsyncState<{ id: number; at: Date; summary: string }[]>();
 
-  // The rows, once. The timeline reads them through [state]; the DataSource
-  // republishes the same computed for a CDK consumer sitting next to it.
-  private readonly rows = computed(() => this.feed.data() ?? []);
-  private readonly source = injectDataSource(this.rows);
-  protected readonly streamed = toSignal(this.source.connect(), {
-    initialValue: [] as { id: number; at: Date; summary: string }[],
-  });
+// The rows, once. The timeline reads them through [state]; the DataSource
+// republishes the same computed for a CDK consumer sitting next to it.
+private readonly rows = computed(() => this.feed.data() ?? []);
+private readonly source = injectDataSource(this.rows);
+protected readonly streamed = toSignal(this.source.connect(), {
+  initialValue: [] as { id: number; at: Date; summary: string }[],
+});
 
-  protected readonly at = (event: { at: Date }): Date => event.at;
-  protected readonly byId = (event: { id: number }): number => event.id;
+protected readonly at = (event: { at: Date }): Date => event.at;
+protected readonly byId = (event: { id: number }): number => event.id;
 
-  protected load(): Promise<void> {
-    return this.feed.execute(
-      () =>
-        new Promise((resolve) => {
-          setTimeout(() => resolve(this.nextBatch()), 900);
-        }),
-    );
-  }
+protected load(): Promise<void> {
+  return this.feed.execute(
+    () =>
+      new Promise((resolve) => {
+        setTimeout(() => resolve(this.nextBatch()), 900);
+      }),
+  );
+}
 ```
 
 ## Wiring
 
 ```html
 <cngx-timeline
-    [state]="feed"
-    [dateAccessor]="at"
-    [idAccessor]="byId"
-    [skeletonRowCount]="3"
-    groupBy="day"
-    aria-label="Deployment history"
-  >
-    <ng-template [cngxTimelineItem]="feed.data()" let-event let-last="last">
-      <cngx-timeline-item [position]="last ? 'last' : 'middle'" status="done">
-        <cngx-time cngxTimelineTime [date]="event.at" />
-        <p style="margin:0">{{ event.summary }}</p>
-      </cngx-timeline-item>
-    </ng-template>
-  </cngx-timeline>
+  [state]="feed"
+  [dateAccessor]="at"
+  [idAccessor]="byId"
+  [skeletonRowCount]="3"
+  groupBy="day"
+  aria-label="Deployment history"
+>
+  <ng-template [cngxTimelineItem]="feed.data()" let-event let-last="last">
+    <cngx-timeline-item [position]="last ? 'last' : 'middle'" status="done">
+      <cngx-time cngxTimelineTime [date]="event.at" />
+      <p style="margin:0">{{ event.summary }}</p>
+    </cngx-timeline-item>
+  </ng-template>
+</cngx-timeline>
 ```

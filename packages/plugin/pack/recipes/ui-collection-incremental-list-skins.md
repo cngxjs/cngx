@@ -16,18 +16,18 @@ skin="card" sits the list on an elevated, rounded surface with row dividers - su
 
 ```ts
 protected readonly people: Person[] = PEOPLE.slice(0, 5);
-  protected readonly listState = createManualState<Person[]>();
-  constructor() {
-    this.listState.setSuccess(this.people);
-  }
+protected readonly listState = createManualState<Person[]>();
+constructor() {
+  this.listState.setSuccess(this.people);
+}
 ```
 
 ## Wiring
 
 ```html
 <cngx-incremental-list skin="card" [state]="listState" [total]="people.length" [pageSize]="5">
-    <ng-template cngxIncrementalItem let-p>
-      <strong>{{ p.name }}</strong> - {{ p.role }}, {{ p.location }}
-    </ng-template>
-  </cngx-incremental-list>
+  <ng-template cngxIncrementalItem let-p>
+    <strong>{{ p.name }}</strong> - {{ p.role }}, {{ p.location }}
+  </ng-template>
+</cngx-incremental-list>
 ```

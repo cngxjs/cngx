@@ -18,25 +18,25 @@ The *cngxPaginatorLoading structural slot in isolation - project a template insi
 
 ```ts
 protected readonly pageIndex = signal(2);
-  protected readonly loading = createManualState<unknown>();
+protected readonly loading = createManualState<unknown>();
 
-  constructor() {
-    this.loading.set('loading');
-  }
+constructor() {
+  this.loading.set('loading');
+}
 ```
 
 ## Wiring
 
 ```html
 <cngx-paginator
-    [total]="120"
-    [state]="loading"
-    [pageIndex]="pageIndex()"
-    (pageIndexChange)="pageIndex.set($event)"
-  >
-    <ng-template cngxPaginatorLoading>
-      <span class="event-value">Loading rows…</span>
-    </ng-template>
-    <cngx-pgn-pages />
-  </cngx-paginator>
+  [total]="120"
+  [state]="loading"
+  [pageIndex]="pageIndex()"
+  (pageIndexChange)="pageIndex.set($event)"
+>
+  <ng-template cngxPaginatorLoading>
+    <span class="event-value">Loading rows…</span>
+  </ng-template>
+  <cngx-pgn-pages />
+</cngx-paginator>
 ```

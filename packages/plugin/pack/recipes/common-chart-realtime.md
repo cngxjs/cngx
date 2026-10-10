@@ -20,31 +20,31 @@ The buffer caps at 1000 samples and downsamples to 600 perceptually-faithful poi
 
 ```ts
 protected readonly buffer = injectChartBuffer<number>({
-    capacity: 1000,
-    downsampleTo: 600,
-    xAccessor: (_d, i) => i,
-    yAccessor: (d) => d,
-  });
-  protected readonly connection = createManualState<unknown>();
+  capacity: 1000,
+  downsampleTo: 600,
+  xAccessor: (_d, i) => i,
+  yAccessor: (d) => d,
+});
+protected readonly connection = createManualState<unknown>();
 ```
 
 ## Wiring
 
 ```html
 <div class="cngx-ex-chart-frame">
-    <cngx-chart
-      #chart
-      [data]="buffer.points()"
-      [connectionState]="connection"
-      [width]="480"
-      [height]="200"
-      aria-label="Live streaming telemetry buffered through injectChartBuffer."
-    >
-      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 600]"></svg:g>
-      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 130]"></svg:g>
-      <svg:g cngxLine></svg:g>
-      <svg:g cngxThreshold [value]="80" [label]="'alert'" [dashed]="true"></svg:g>
-    </cngx-chart>
-    <cngx-chart-announcer [cngxChartAnnouncer]="chart" />
-  </div>
+  <cngx-chart
+    #chart
+    [data]="buffer.points()"
+    [connectionState]="connection"
+    [width]="480"
+    [height]="200"
+    aria-label="Live streaming telemetry buffered through injectChartBuffer."
+  >
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 600]"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 130]"></svg:g>
+    <svg:g cngxLine></svg:g>
+    <svg:g cngxThreshold [value]="80" [label]="'alert'" [dashed]="true"></svg:g>
+  </cngx-chart>
+  <cngx-chart-announcer [cngxChartAnnouncer]="chart" />
+</div>
 ```

@@ -16,35 +16,35 @@ The organism cannot work the reason out for itself - only the consumer knows whe
 
 ```ts
 protected readonly feed = createManualState<{ id: number; at: Date; summary: string }[]>();
-  protected readonly reason = signal<'first-use' | 'no-results' | 'cleared'>('first-use');
+protected readonly reason = signal<'first-use' | 'no-results' | 'cleared'>('first-use');
 
-  protected readonly at = (event: { at: Date }): Date => event.at;
-  protected readonly byId = (event: { id: number }): number => event.id;
+protected readonly at = (event: { at: Date }): Date => event.at;
+protected readonly byId = (event: { id: number }): number => event.id;
 ```
 
 ## Wiring
 
 ```html
 <cngx-timeline
-    [state]="feed"
-    [dateAccessor]="at"
-    [idAccessor]="byId"
-    [emptyReason]="reason()"
-    groupBy="day"
-  >
-    <ng-template cngxTimelineEmpty let-reason>
-      @switch (reason) {
-        @case ('no-results') { <p style="margin:0">No events match this filter.</p> }
-        @case ('cleared') { <p style="margin:0">History cleared.</p> }
-        @default { <p style="margin:0">Nothing has happened on this account yet.</p> }
-      }
-    </ng-template>
+  [state]="feed"
+  [dateAccessor]="at"
+  [idAccessor]="byId"
+  [emptyReason]="reason()"
+  groupBy="day"
+>
+  <ng-template cngxTimelineEmpty let-reason>
+    @switch (reason) {
+      @case ('no-results') { <p style="margin:0">No events match this filter.</p> }
+      @case ('cleared') { <p style="margin:0">History cleared.</p> }
+      @default { <p style="margin:0">Nothing has happened on this account yet.</p> }
+    }
+  </ng-template>
 
-    <ng-template [cngxTimelineItem]="feed.data()" let-event let-last="last">
-      <cngx-timeline-item [position]="last ? 'last' : 'middle'" status="done">
-        <cngx-time cngxTimelineTime [date]="event.at" />
-        <p style="margin:0">{{ event.summary }}</p>
-      </cngx-timeline-item>
-    </ng-template>
-  </cngx-timeline>
+  <ng-template [cngxTimelineItem]="feed.data()" let-event let-last="last">
+    <cngx-timeline-item [position]="last ? 'last' : 'middle'" status="done">
+      <cngx-time cngxTimelineTime [date]="event.at" />
+      <p style="margin:0">{{ event.summary }}</p>
+    </cngx-timeline-item>
+  </ng-template>
+</cngx-timeline>
 ```

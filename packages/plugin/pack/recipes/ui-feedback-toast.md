@@ -19,29 +19,29 @@ Zero-handler integration: a button driven by a CngxAsyncState shows a success or
 
 ```ts
 protected readonly saveState = createManualState<string>();
-  protected simulateSave(): void {
-    this.saveState.set('pending');
-    setTimeout(() => this.saveState.setSuccess('done'), 1500);
-  }
-  protected simulateError(): void {
-    this.saveState.set('pending');
-    setTimeout(() => this.saveState.setError('Network timeout'), 1500);
-  }
+protected simulateSave(): void {
+  this.saveState.set('pending');
+  setTimeout(() => this.saveState.setSuccess('done'), 1500);
+}
+protected simulateError(): void {
+  this.saveState.set('pending');
+  setTimeout(() => this.saveState.setError('Network timeout'), 1500);
+}
 ```
 
 ## Wiring
 
 ```html
 <div class="demo-inline-actions" style="margin-bottom:12px">
-    <button (click)="simulateSave()"
-      [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true"
-      class="chip" type="button">
-      {{ saveState.isPending() ? 'Saving...' : 'Save (1.5s)' }}
-    </button>
-    <button (click)="simulateError()"
-      [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true"
-      class="chip" type="button">
-      Simulate Error (1.5s)
-    </button>
-  </div>
+  <button (click)="simulateSave()"
+    [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true"
+    class="chip" type="button">
+    {{ saveState.isPending() ? 'Saving...' : 'Save (1.5s)' }}
+  </button>
+  <button (click)="simulateError()"
+    [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true"
+    class="chip" type="button">
+    Simulate Error (1.5s)
+  </button>
+</div>
 ```
