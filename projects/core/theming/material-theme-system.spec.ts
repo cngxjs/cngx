@@ -95,3 +95,23 @@ describe('theme', () => {
     expect(cngxDeclarations(compileThemeObjectApp())).toEqual(cngxDeclarations(compileMapApp()));
   });
 });
+
+describe('theme-system density', () => {
+  function compileDensity(density: string): string {
+    return compileThemeEntry(`
+@use 'material/theme' as cngx-material;
+
+html {
+  @include cngx-material.theme-system(${density});
+}
+`);
+  }
+
+  it.each(['1', '-5', '-1.5', '-2px', "'compact'"])('rejects %s', (density) => {
+    expect(() => compileDensity(density)).toThrow(/expected an integer from 0 to -4/);
+  });
+
+  it.each(['0', '-4'])('accepts the scale boundary %s', (density) => {
+    expect(() => compileDensity(density)).not.toThrow();
+  });
+});
