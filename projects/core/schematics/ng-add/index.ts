@@ -98,7 +98,7 @@ export function ngAdd(options: NgAddOptions): Rule {
 
     return chain([
       applyChangePlan(plan),
-      () => renderer.summary(createSummary(createReport(plan))),
+      () => renderer.summary(createSummary(createReport(plan), options.quiet !== true)),
       scheduleInstall(plan),
     ]);
   };

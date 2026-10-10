@@ -70,6 +70,14 @@ describe('ngAdd', () => {
     expect(run.tasks).toEqual([]);
     expect(run.logs).toContain('  = Add @cngx/utils@' + VERSION + ' - already pinned');
     expect(run.logs).toContain('cngx is already set up; nothing changed.');
+    expect(run.logs).toContain('1 step already in place.');
+    expect(run.logs).not.toContain('Already in place:');
+  });
+
+  it('names the idempotent hits in the summary when quiet, since no plan list ran', async () => {
+    const run = await runRule(ngAdd({ quiet: true }), pinnedTree());
+
+    expect(run.logs).toEqual(expect.arrayContaining(['Already in place:', '  Add @cngx/utils@' + VERSION]));
   });
 
   it('prints only the summary when quiet', async () => {
