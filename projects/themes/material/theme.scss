@@ -162,8 +162,10 @@
 //
 // The define-theme object below is a carrier only. In M3 every bridge reads
 // `var(--mat-sys-*)`, which the consumer's `mat.theme` emits; the carrier
-// contributes the M3 version and the density scale, and its palette never
-// reaches a `--cngx-*` token. `$density` must match the map's `density` value.
+// contributes the M3 version and the density scale. Its palette is never an
+// active `--cngx-*` value: the sidenav and nav-link bridges carry it only as the
+// fallback of `var(--mat-sys-*, <hex>)`, which never fires once `mat.theme`
+// has run. `$density` must match the map's `density` value.
 @mixin theme-system($density: 0) {
   @include theme(mat.define-theme((density: (scale: $density))));
 }

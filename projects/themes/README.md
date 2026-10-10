@@ -64,7 +64,7 @@ html {
 }
 ```
 
-Fidelity is the same as `theme($theme)`: in M3 every bridge reads the `--mat-sys-*` values `mat.theme` emits, so only the density scale has to be passed along.
+Fidelity is the same as `theme($theme)`: in M3 every bridge reads the `--mat-sys-*` values `mat.theme` emits, so only the density scale has to be passed along. The mixin builds an internal `mat.define-theme` object for that; its default palette shows up only as the fallback in a few `var(--mat-sys-*, <hex>)` reads (sidenav, nav-link) and never applies while `mat.theme` is included.
 
 Selective wiring stays available for apps that ship a subset: include `material/system-bridge` once, then only the component bridges you use:
 

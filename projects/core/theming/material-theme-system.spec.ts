@@ -7,8 +7,8 @@ import { compileThemeEntry } from '@cngx/testing/sass';
  * the entry point for apps scaffolded by `ng add @angular/material`, which emit
  * the map API `mat.theme((...))` and carry no `$theme` object. The mixin feeds a
  * `mat.define-theme` carrier into the unchanged `theme($theme)`; in M3 the
- * carrier only contributes the version and the density scale, every color
- * reads `var(--mat-sys-*)` from the consumer's `mat.theme`.
+ * carrier only contributes the version and the density scale, every active
+ * color reads `var(--mat-sys-*)` from the consumer's `mat.theme`.
  *
  * Lives in core's test target because the asserted system and density tokens
  * are declared by `@cngx/core/theming`, and `projects/themes` has no test target.
@@ -32,13 +32,13 @@ html {
 `);
 }
 
-function compileThemeObjectApp(): string {
+function compileThemeObjectApp(color = ''): string {
   return compileThemeEntry(`
 @use '@angular/material' as mat;
 @use 'material/theme' as cngx-material;
 
 html {
-  @include cngx-material.theme(mat.define-theme((density: (scale: -2))));
+  @include cngx-material.theme(mat.define-theme((${color} density: (scale: -2))));
 }
 `);
 }
@@ -47,6 +47,15 @@ function cngxDeclarations(css: string): readonly string[] {
   return [...css.matchAll(/(--cngx-[a-z0-9-]+)\s*:\s*([^;}]+)[;}]/g)].map(
     (m) => `${m[1]}: ${m[2].trim().replace(/\s+/g, ' ')}`,
   );
+}
+
+const HEX = /#[0-9a-f]{3,8}\b/i;
+const MAT_SYS_HEX_FALLBACK =
+  /^--cngx-[a-z0-9-]+: var\(\s*--mat-sys-[a-z0-9-]+,\s*#[0-9a-f]{3,8}\s*\)$/i;
+
+// Hex values outside a `var(--mat-sys-*, <hex>)` fallback, i.e. hex the consumer would see.
+function activeHexDeclarations(declarations: readonly string[]): readonly string[] {
+  return declarations.filter((d) => HEX.test(d) && !MAT_SYS_HEX_FALLBACK.test(d));
 }
 
 describe('theme-system', () => {
@@ -65,11 +74,19 @@ describe('theme-system', () => {
     expect(declarations).toContain('--cngx-space-sm: 6px');
   });
 
-  it('lets no carrier palette hex reach a --cngx-* color token', () => {
-    const hexColors = declarations.filter(
-      (d) => d.startsWith('--cngx-color-') && /#[0-9a-f]{3,8}\b/i.test(d),
+  it('keeps every active --cngx-* hex independent of the carrier palette', () => {
+    const redCarrier = cngxDeclarations(
+      compileThemeObjectApp('color: (primary: mat.$red-palette),'),
     );
-    expect(hexColors).toEqual([]);
+    expect(activeHexDeclarations(declarations)).toEqual(activeHexDeclarations(redCarrier));
+  });
+
+  it('carries carrier hex only as a var(--mat-sys-*) fallback', () => {
+    const fallbacks = declarations.filter((d) => MAT_SYS_HEX_FALLBACK.test(d));
+    expect(fallbacks.length).toBeGreaterThan(0);
+    for (const declaration of fallbacks) {
+      expect(declaration).toMatch(/^--cngx-(sidenav|nav-link)-/);
+    }
   });
 });
 
