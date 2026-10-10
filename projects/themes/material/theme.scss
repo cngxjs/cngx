@@ -150,3 +150,20 @@
   @include trend.theme($theme);
   @include treetable.theme($theme);
 }
+
+// Entry point for apps on Material's map API, the shape `ng add
+// @angular/material` scaffolds: `mat.theme((color: ..., density: ...))` emits
+// the `--mat-sys-*` tokens and leaves no `$theme` object behind.
+//
+//   html {
+//     @include mat.theme((color: (primary: mat.$azure-palette), density: -2));
+//     @include cngx-material.theme-system(-2);
+//   }
+//
+// The define-theme object below is a carrier only. In M3 every bridge reads
+// `var(--mat-sys-*)`, which the consumer's `mat.theme` emits; the carrier
+// contributes the M3 version and the density scale, and its palette never
+// reaches a `--cngx-*` token. `$density` must match the map's `density` value.
+@mixin theme-system($density: 0) {
+  @include theme(mat.define-theme((density: (scale: $density))));
+}

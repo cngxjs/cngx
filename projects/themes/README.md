@@ -52,6 +52,20 @@ html {
 }
 ```
 
+Apps scaffolded by `ng add @angular/material` use the map API `mat.theme((...))`, which leaves no `$theme` object. Use `theme-system($density)` there, with the same density value as the map:
+
+```scss
+@use '@angular/material' as mat;
+@use '@cngx/themes/material/theme' as cngx-material;
+
+html {
+  @include mat.theme((color: (primary: mat.$azure-palette), density: -2));
+  @include cngx-material.theme-system(-2);
+}
+```
+
+Fidelity is the same as `theme($theme)`: in M3 every bridge reads the `--mat-sys-*` values `mat.theme` emits, so only the density scale has to be passed along.
+
 Selective wiring stays available for apps that ship a subset: include `material/system-bridge` once, then only the component bridges you use:
 
 ```scss
