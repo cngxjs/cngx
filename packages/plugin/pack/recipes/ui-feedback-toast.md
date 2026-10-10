@@ -32,7 +32,7 @@ protected readonly saveState = createManualState<string>();
 ## Wiring
 
 ```html
-<div class="button-row" style="margin-bottom:12px">
+<div class="demo-inline-actions" style="margin-bottom:12px">
     <button (click)="simulateSave()"
       [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true"
       class="chip" type="button">
