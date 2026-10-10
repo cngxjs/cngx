@@ -17,6 +17,7 @@ import {
 } from '@angular/core';
 import { createMediaQuerySignal, type CngxAsyncState } from '@cngx/core/utils';
 
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CngxCloseButton } from '@cngx/common/interactive';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
@@ -179,7 +180,6 @@ export class CngxAlertAction {}
         (click)="handleDismiss()"
       />
     }
-    <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">{{ announcement() }}</span>
   `,
   styleUrls: ['../styles/feedback-severity.css', './alert.css'],
 })
@@ -187,6 +187,7 @@ export class CngxAlert {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
   private readonly i18n = injectFeedbackI18n();
   private readonly destroyRef = inject(DestroyRef);
+  private readonly announcer = inject(CngxLiveAnnouncer);
 
   /** Alert severity - determines visual style, default icon, and ARIA role. */
   readonly severity = input<AlertSeverity>('info');
@@ -236,7 +237,6 @@ export class CngxAlert {
   private readonly manualDismissed = signal(false);
   private readonly autoDismissed = signal(false);
   private readonly collapsedState = signal(false);
-  private readonly announcementState = signal('');
 
   /** @internal - animation phase, drives host CSS classes. */
   protected readonly visibilityPhase = signal<AlertVisibilityPhase>('hidden');
@@ -334,9 +334,6 @@ export class CngxAlert {
     this.isVisible();
     return untracked(() => this.i18n().dismissLabel);
   });
-
-  /** @internal - SR announcement text for state transitions. */
-  protected readonly announcement = this.announcementState.asReadonly();
 
   private readonly effectiveCollapseDelay = computed(
     () => this.collapseDelay() ?? this.autoDismissDelay() ?? 5000,
@@ -457,7 +454,7 @@ export class CngxAlert {
     this.manualDismissed.set(true);
     this.autoDismissTimer.clear();
     this.collapseTimer.clear();
-    this.announcementState.set(untracked(() => this.i18n().announcements.alertDismissed));
+    this.announcer.announce(untracked(() => this.i18n().announcements.alertDismissed));
     this.dismissed.emit();
   }
 

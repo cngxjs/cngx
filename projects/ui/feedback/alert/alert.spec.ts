@@ -27,6 +27,11 @@ function flushAll(fixture: { detectChanges(): void }): void {
   fixture.detectChanges();
 }
 
+/** The body-level polite region `CngxLiveAnnouncer` writes into. */
+function announcerRegion(): HTMLElement | null {
+  return document.body.querySelector(':scope > [aria-live="polite"]');
+}
+
 // ── Test Host ───────────────────────────────────────────────────
 
 @Component({
@@ -544,9 +549,10 @@ describe('CngxAlert', () => {
 
     (alert.querySelector('cngx-close-button') as HTMLElement).click();
     fixture.detectChanges();
+    vi.advanceTimersByTime(16);
 
-    const srRegion = alert.querySelector('[aria-live]');
-    expect(srRegion?.textContent).toContain('Alert dismissed');
+    expect(announcerRegion()?.textContent).toBe('Alert dismissed');
+    expect(alert.querySelector('[aria-live]')).toBeNull();
   });
 
   it('pins the dismiss close-button with flex-shrink: 0 to survive narrow widths', () => {
@@ -584,7 +590,8 @@ describe('CngxAlert', () => {
 
     (alert.querySelector('.cngx-alert__dismiss button') as HTMLButtonElement).click();
     flushAll(fixture);
-    const live = alert.querySelector('[aria-live="polite"]')!;
+    vi.advanceTimersByTime(16);
+    const live = announcerRegion()!;
     expect(live.textContent!.trim()).toBe('Verworfen');
 
     copy.set({});
