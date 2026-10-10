@@ -22,7 +22,7 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/TR/selectors-4/#the-focus-visible-pseudo',
     },
   ],
-  template: `  <div class="button-row">
+  template: `  <div class="demo-inline-actions">
     <button type="button"
             id="cngx-focus-visible-button-a"
             cngxFocusVisible

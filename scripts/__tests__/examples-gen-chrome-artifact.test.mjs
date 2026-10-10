@@ -38,7 +38,7 @@ describe('examples chrome divs', () => {
     expect(stories.filter((s) => s.story === null).map((s) => s.route)).toEqual([]);
   });
 
-  it.fails('no story wraps an artifact element in a chrome-class div', () => {
+  it('no story wraps an artifact element in a chrome-class div', () => {
     const map = selectorMap();
     const hits = stories
       .filter((s) => s.story)

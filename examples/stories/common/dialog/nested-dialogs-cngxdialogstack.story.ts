@@ -31,7 +31,7 @@ export const STORY: DemoSpec = {
         Reset All
       </button>
     </div>
-    <div class="button-row" style="justify-content:flex-end">
+    <div class="demo-inline-actions" style="justify-content:flex-end">
       <button type="button" class="chip" cngxDialogClose>Close Settings</button>
     </div>
 
@@ -39,7 +39,7 @@ export const STORY: DemoSpec = {
     <dialog cngxDialog #confirmReset="cngxDialog">
       <h2 cngxDialogTitle>Reset all settings?</h2>
       <p cngxDialogDescription>This will restore all settings to their factory defaults. You cannot undo this.</p>
-      <div class="button-row" style="margin-top:16px;justify-content:flex-end">
+      <div class="demo-inline-actions" style="margin-top:16px;justify-content:flex-end">
         <button type="button" class="chip" [cngxDialogClose]="false">Keep Settings</button>
         <button type="button" class="chip chip--danger" [cngxDialogClose]="true">Reset</button>
       </div>

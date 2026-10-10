@@ -103,6 +103,14 @@ double as the markers the generator falls back to if a story still
 puts chrome in `template`. New stories should write chrome into
 `templateChrome` directly.
 
+The Template panel strips every div with one of these classes, so they
+are for chrome only. A layout wrapper around artifact markup (a row of
+dialog-close buttons, a trigger next to a drawer) uses
+`demo-inline-actions`, which has the same flex layout as `button-row`, or
+no class at all. `scripts/__tests__/examples-gen-chrome-artifact.test.mjs`
+fails when a cngx class the panel decorator lists is only used inside a
+chrome div.
+
 A setup decl belongs in `setupChrome` when it's only read or written
 by `templateChrome`. If both halves use it (`commitMode` is set by
 the chrome's radios and read by the artifact's `[commitMode]` input),

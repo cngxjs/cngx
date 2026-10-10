@@ -25,7 +25,7 @@ export const STORY: DemoSpec = {
   <dialog cngxDialog role="alertdialog" [closeOnBackdropClick]="false" #alertDlg="cngxDialog">
     <h2 cngxDialogTitle>Session Expired</h2>
     <p>Your session has expired. Please log in again to continue.</p>
-    <div class="button-row" style="margin-top:16px;justify-content:flex-end">
+    <div class="demo-inline-actions" style="margin-top:16px;justify-content:flex-end">
       <button type="button" class="chip chip--active" [cngxDialogClose]="undefined">OK</button>
     </div>
   </dialog>`,

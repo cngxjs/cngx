@@ -26,7 +26,7 @@ export const STORY: DemoSpec = {
   <dialog cngxDialog #declDlg="cngxDialog">
     <h2 cngxDialogTitle>Delete item?</h2>
     <p cngxDialogDescription>This action cannot be undone. The item will be permanently removed.</p>
-    <div class="button-row" style="margin-top:16px;justify-content:flex-end">
+    <div class="demo-inline-actions" style="margin-top:16px;justify-content:flex-end">
       <button type="button" class="chip" [cngxDialogClose]="false">Cancel</button>
       <button type="button" class="chip chip--active" [cngxDialogClose]="true">Delete</button>
     </div>

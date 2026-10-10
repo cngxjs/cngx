@@ -34,7 +34,7 @@ export const STORY: DemoSpec = {
     'CngxBackdrop',
   ],
   template: `  <div cngxDrawer #drawer="cngxDrawer" [cngxScrollLock]="drawer.opened()" class="demo-drawer-container demo-drawer-container--bordered">
-    <div class="button-row" style="padding: 0.5rem;">
+    <div class="demo-inline-actions" style="padding: 0.5rem;">
       <button type="button" class="sort-btn"
               [cngxAriaExpanded]="drawer.opened()" [controls]="'basic-panel'"
               (click)="drawer.toggle()">
