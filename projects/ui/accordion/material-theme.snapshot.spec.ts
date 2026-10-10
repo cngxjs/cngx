@@ -1,7 +1,6 @@
-import { resolve } from 'node:path';
-
-import { compileString } from 'sass';
 import { describe, expect, it } from 'vitest';
+
+import { compileThemeEntry } from '@cngx/testing/sass';
 
 /**
  * Baseline for the Material bridge in
@@ -27,9 +26,6 @@ import { describe, expect, it } from 'vitest';
  * net next to the symbols it protects. Mirrors `material-theme.snapshot.spec.ts`
  * next to the breadcrumb, the tabs, and the stepper.
  */
-
-const REPO_ROOT = resolve(__dirname, '../../..');
-const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'projects/themes')];
 
 interface CompileOptions {
   themeVersion: 'v1' | 'v0';
@@ -91,36 +87,41 @@ function parseCustomPropertyDeclarations(css: string): Record<string, string> {
 }
 
 function compileAndExtract(opts: CompileOptions): Record<string, string> {
-  const result = compileString(buildEntry(opts), {
-    loadPaths: LOAD_PATHS,
-    style: 'expanded',
-    quietDeps: true,
-  });
-  return parseCustomPropertyDeclarations(result.css);
+  return parseCustomPropertyDeclarations(compileThemeEntry(buildEntry(opts)));
 }
 
 describe('Material accordion-theme bridge baseline', () => {
   describe('theme() - base organism (ships on every accordion)', () => {
     it('v1 light: resolved --cngx-* declarations match the baseline', () => {
-      expect(compileAndExtract({ themeVersion: 'v1', variant: 'light', mixin: 'theme' })).toMatchSnapshot();
+      expect(
+        compileAndExtract({ themeVersion: 'v1', variant: 'light', mixin: 'theme' }),
+      ).toMatchSnapshot();
     });
 
     it('v1 dark: resolved --cngx-* declarations match the baseline', () => {
-      expect(compileAndExtract({ themeVersion: 'v1', variant: 'dark', mixin: 'theme' })).toMatchSnapshot();
+      expect(
+        compileAndExtract({ themeVersion: 'v1', variant: 'dark', mixin: 'theme' }),
+      ).toMatchSnapshot();
     });
 
     it('v0 light: resolved --cngx-* declarations match the baseline', () => {
-      expect(compileAndExtract({ themeVersion: 'v0', variant: 'light', mixin: 'theme' })).toMatchSnapshot();
+      expect(
+        compileAndExtract({ themeVersion: 'v0', variant: 'light', mixin: 'theme' }),
+      ).toMatchSnapshot();
     });
   });
 
   describe('skins() - per-skin refinements (full aggregation only)', () => {
     it('v1 light: resolved --cngx-* declarations match the baseline', () => {
-      expect(compileAndExtract({ themeVersion: 'v1', variant: 'light', mixin: 'skins' })).toMatchSnapshot();
+      expect(
+        compileAndExtract({ themeVersion: 'v1', variant: 'light', mixin: 'skins' }),
+      ).toMatchSnapshot();
     });
 
     it('v0 light: resolved --cngx-* declarations match the baseline', () => {
-      expect(compileAndExtract({ themeVersion: 'v0', variant: 'light', mixin: 'skins' })).toMatchSnapshot();
+      expect(
+        compileAndExtract({ themeVersion: 'v0', variant: 'light', mixin: 'skins' }),
+      ).toMatchSnapshot();
     });
   });
 });

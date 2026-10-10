@@ -1,7 +1,6 @@
-import { resolve } from 'node:path';
-
-import { compileString } from 'sass';
 import { describe, expect, it } from 'vitest';
+
+import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
 
 /**
  * Token-name contract for the field Material bridge
@@ -12,9 +11,6 @@ import { describe, expect, it } from 'vitest';
  * typography, and the sibling-scoped form-errors pair). Co-located with
  * the consumer because `projects/themes/material/` has no test target.
  */
-
-const REPO_ROOT = resolve(__dirname, '../../..');
-const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'projects/themes')];
 
 function compiledCss(themeVersion: 'v1' | 'v0'): string {
   const entry =
@@ -39,12 +35,11 @@ $theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)))
 
 @include bridge.theme($theme);
 `;
-  return compileString(entry, { loadPaths: LOAD_PATHS }).css;
+  return compileThemeEntry(entry);
 }
 
-function emittedTokenNames(themeVersion: 'v1' | 'v0'): string[] {
-  const css = compiledCss(themeVersion);
-  return [...new Set([...css.matchAll(/--cngx-[a-z0-9-]+(?=:)/g)].map((m) => m[0]))].sort();
+function bridgeTokenNames(themeVersion: 'v1' | 'v0'): readonly string[] {
+  return emittedTokenNames(compiledCss(themeVersion));
 }
 
 describe('field Material bridge', () => {
@@ -65,7 +60,7 @@ describe('field Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(emittedTokenNames('v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames('v1')).toEqual(CONSUMED);
   });
 
   it('reaches a skinned control that sits outside any cngx-form-field (M3)', () => {
@@ -92,7 +87,7 @@ describe('field Material bridge', () => {
   });
 
   it('emits a consumed-name subset (M2)', () => {
-    const names = emittedTokenNames('v0');
+    const names = bridgeTokenNames('v0');
     expect(names.length).toBeGreaterThan(0);
     for (const name of names) {
       expect(CONSUMED).toContain(name);
@@ -114,7 +109,7 @@ describe('field Material bridge', () => {
 // surface, for every warn palette in either scheme.
 describe('field Material bridge M2 error contrast', () => {
   function m2(scheme: 'light' | 'dark', warn: string): Record<string, string> {
-    const css = compileString(
+    const css = compileThemeEntry(
       `
 @use 'sass:color';
 @use '@angular/material' as mat;
@@ -133,8 +128,7 @@ probe {
   --card: #{color.ie-hex-str(mat.get-theme-color($theme, background, card))};
 }
 `,
-      { loadPaths: LOAD_PATHS },
-    ).css;
+    );
     const pick = (pattern: RegExp): string => {
       const hit = css.match(pattern);
       if (!hit) {
@@ -142,7 +136,8 @@ probe {
       }
       return hit[1];
     };
-    const probe = (name: string): string => `#${pick(new RegExp(`--${name}: #FF([0-9A-F]{6})`)).toLowerCase()}`;
+    const probe = (name: string): string =>
+      `#${pick(new RegExp(`--${name}: #FF([0-9A-F]{6})`)).toLowerCase()}`;
     return {
       error: pick(/cngx-form-field\)\s*\{[^}]*--cngx-field-error-color: (#[0-9a-f]{6})/),
       formErrorsScope: pick(/cngx-form-errors\)\s*\{[^}]*--cngx-field-error-color: (#[0-9a-f]{6})/),
@@ -213,15 +208,14 @@ describe('system Material bridge', () => {
             primary: mat.m2-define-palette(mat.$m2-indigo-palette),
             accent: mat.m2-define-palette(mat.$m2-pink-palette),
           )));`;
-    return compileString(
+    return compileThemeEntry(
       `
 @use '@angular/material' as mat;
 @use 'material/system-bridge' as bridge;
 ${theme}
 html { @include bridge.theme($theme); }
 `,
-      { loadPaths: LOAD_PATHS },
-    ).css;
+    );
   }
 
   it('maps the strong primary, primary text and danger text rungs (M3)', () => {
@@ -243,7 +237,7 @@ html { @include bridge.theme($theme); }
 // against the page and the card the system surface maps to.
 describe('system Material bridge M2 danger text contrast', () => {
   function m2(scheme: 'light' | 'dark', warn: string, primary = 'indigo'): Record<string, string> {
-    const css = compileString(
+    const css = compileThemeEntry(
       `
 @use 'sass:color';
 @use '@angular/material' as mat;
@@ -263,8 +257,7 @@ probe {
   --card: #{color.ie-hex-str(mat.get-theme-color($theme, background, card))};
 }
 `,
-      { loadPaths: LOAD_PATHS },
-    ).css;
+    );
     const pick = (pattern: RegExp): string => {
       const hit = css.match(pattern);
       if (!hit) {
@@ -272,7 +265,8 @@ probe {
       }
       return hit[1];
     };
-    const probe = (name: string): string => `#${pick(new RegExp(`--${name}: #FF([0-9A-F]{6})`)).toLowerCase()}`;
+    const probe = (name: string): string =>
+      `#${pick(new RegExp(`--${name}: #FF([0-9A-F]{6})`)).toLowerCase()}`;
     return {
       danger: pick(/--cngx-color-danger: (#[0-9a-f]{6})/),
       dangerText: pick(/--cngx-color-danger-text: (#[0-9a-f]{6})/),

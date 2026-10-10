@@ -1,7 +1,6 @@
-import { resolve } from 'node:path';
-
-import { compileString } from 'sass';
 import { describe, expect, it } from 'vitest';
+
+import { compileThemeEntry } from '@cngx/testing/sass';
 
 /**
  * Phase 0 baseline for the Material bridge mixin in
@@ -27,9 +26,6 @@ import { describe, expect, it } from 'vitest';
  * the cngx-stepper organism keeps the consumer-side regression net
  * close to the symbols it protects.
  */
-
-const REPO_ROOT = resolve(__dirname, '../../..');
-const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'projects/themes')];
 
 interface CompileOptions {
   themeVersion: 'v1' | 'v0';
@@ -92,12 +88,7 @@ function parseCustomPropertyDeclarations(css: string): Record<string, string> {
 }
 
 function compileAndExtract(opts: CompileOptions): Record<string, string> {
-  const result = compileString(buildEntry(opts), {
-    loadPaths: LOAD_PATHS,
-    style: 'expanded',
-    quietDeps: true,
-  });
-  return parseCustomPropertyDeclarations(result.css);
+  return parseCustomPropertyDeclarations(compileThemeEntry(buildEntry(opts)));
 }
 
 const SKIN_PROPERTY_PREFIXES = {
@@ -221,7 +212,7 @@ describe('Material stepper-theme mixin baseline', () => {
     // to host + descendants (select-theme precedent) or the bridge
     // values resolve to the initial-value at the read sites.
     it('theme() broadcasts the stepper block to host + descendants', () => {
-      const css = compileString(
+      const css = compileThemeEntry(
         `
 @use '@angular/material' as mat;
 @use 'material/stepper-theme' as stepper;
@@ -236,8 +227,7 @@ $theme: mat.define-theme((
 
 @include stepper.theme($theme);
 `,
-        { loadPaths: LOAD_PATHS, style: 'expanded', quietDeps: true },
-      ).css;
+      );
       const broadcast = css.match(/:where\(cngx-stepper, cngx-stepper \*\)\s*\{[^}]*\}/);
       expect(broadcast).not.toBeNull();
       expect(broadcast![0]).toContain('--cngx-step-indicator-font-size:');

@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { compileString } from 'sass';
 import { describe, expect, it } from 'vitest';
+
+import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
 
 /**
  * Token-name contract for the segmented-progress Material bridge
@@ -14,7 +15,6 @@ import { describe, expect, it } from 'vitest';
  */
 
 const REPO_ROOT = resolve(__dirname, '../../..');
-const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'projects/themes')];
 
 function compileBridge(themeVersion: 'v1' | 'v0'): string {
   const entry =
@@ -39,12 +39,11 @@ $theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)))
 
 @include bridge.theme($theme);
 `;
-  return compileString(entry, { loadPaths: LOAD_PATHS }).css;
+  return compileThemeEntry(entry);
 }
 
-function emittedTokenNames(themeVersion: 'v1' | 'v0'): string[] {
-  const css = compileBridge(themeVersion);
-  return [...new Set([...css.matchAll(/--cngx-[a-z0-9-]+(?=:)/g)].map((m) => m[0]))].sort();
+function bridgeTokenNames(themeVersion: 'v1' | 'v0'): readonly string[] {
+  return emittedTokenNames(compileBridge(themeVersion));
 }
 
 describe('segmented-progress Material bridge', () => {
@@ -57,11 +56,11 @@ describe('segmented-progress Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(emittedTokenNames('v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames('v1')).toEqual(CONSUMED);
   });
 
   it('emits the same names (M2)', () => {
-    expect(emittedTokenNames('v0')).toEqual(CONSUMED);
+    expect(bridgeTokenNames('v0')).toEqual(CONSUMED);
   });
 
   it('maps todo, done, active and error onto surface-variant, primary and error (M3)', () => {

@@ -83,7 +83,8 @@
       "@cngx/interop/query": ["projects/interop/query/public-api.ts"],
       "@cngx/interop/signals": ["projects/interop/signals/public-api.ts"],
       "@cngx/testing": ["projects/testing/index.ts"],
-      "@cngx/testing/geometry": ["projects/testing/geometry/index.ts"]
+      "@cngx/testing/geometry": ["projects/testing/geometry/index.ts"],
+      "@cngx/testing/sass": ["projects/testing/sass/index.ts"]
     }
   },
   "angularCompilerOptions": {
