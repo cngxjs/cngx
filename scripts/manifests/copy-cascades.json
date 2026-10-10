@@ -1,0 +1,1102 @@
+{
+  "$schema": "./copy-cascades.schema.json",
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "class": "CngxDelta",
+      "file": "projects/common/data/display/delta/delta.component.ts",
+      "line": 122,
+      "member": "resolvedLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "label" },
+        { "kind": "bundle-fn", "field": "i18n", "path": ["deltaLabel"], "token": "CNGX_KPI_I18N" }
+      ]
+    },
+    {
+      "class": "CngxGoal",
+      "file": "projects/common/data/display/goal/goal.component.ts",
+      "line": 98,
+      "member": "valueText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "valueTextFormat" },
+        { "kind": "bundle", "field": "i18n", "path": ["goalValueText"], "token": "CNGX_KPI_I18N" }
+      ]
+    },
+    {
+      "class": "CngxTrend",
+      "file": "projects/common/data/display/trend/trend.component.ts",
+      "line": 90,
+      "member": "resolvedLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "label" },
+        { "kind": "bundle-fn", "field": "i18n", "path": ["trendLabel"], "token": "CNGX_KPI_I18N" }
+      ]
+    },
+    {
+      "class": "CngxAvatar",
+      "file": "projects/common/display/avatar/avatar.component.ts",
+      "line": 106,
+      "member": "statusAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "statusLabel" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["avatarStatus"],
+          "token": "CNGX_DISPLAY_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxChip",
+      "file": "projects/common/display/chip/chip.component.ts",
+      "line": 124,
+      "member": "resolvedRemoveAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "removeAriaLabel" },
+        { "kind": "bundle", "field": "i18n", "path": ["chipRemove"], "token": "CNGX_DISPLAY_I18N" }
+      ]
+    },
+    {
+      "class": "CngxSegmentedProgress",
+      "file": "projects/common/display/segmented-progress/segmented-progress.component.ts",
+      "line": 128,
+      "member": "valueText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "valueTextFormat" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["segmentedProgressValueText"],
+          "token": "CNGX_DISPLAY_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxAsyncClick",
+      "file": "projects/common/interactive/async-click/async-click.directive.ts",
+      "line": 244,
+      "member": "announcement",
+      "enclosing": "untracked",
+      "tiers": [
+        { "kind": "input", "field": "succeededAnnouncement" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["asyncClickSucceeded"],
+          "token": "CNGX_INTERACTIVE_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxAsyncClick",
+      "file": "projects/common/interactive/async-click/async-click.directive.ts",
+      "line": 247,
+      "member": "announcement",
+      "enclosing": "untracked",
+      "tiers": [
+        { "kind": "input", "field": "failedAnnouncement" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["asyncClickFailed"],
+          "token": "CNGX_INTERACTIVE_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxBreadcrumb",
+      "file": "projects/common/interactive/breadcrumb/breadcrumb.directive.ts",
+      "line": 55,
+      "member": "resolvedLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "label" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["breadcrumb"],
+          "token": "CNGX_INTERACTIVE_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxCopyBlock",
+      "file": "projects/common/interactive/copy/copy-block.ts",
+      "line": 92,
+      "member": "resolvedButtonLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "buttonLabel" },
+        { "kind": "bundle", "field": "i18n", "path": ["copy"], "token": "CNGX_INTERACTIVE_I18N" }
+      ]
+    },
+    {
+      "class": "CngxCopyBlock",
+      "file": "projects/common/interactive/copy/copy-block.ts",
+      "line": 94,
+      "member": "resolvedCopiedLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "copiedLabel" },
+        { "kind": "bundle", "field": "i18n", "path": ["copied"], "token": "CNGX_INTERACTIVE_I18N" }
+      ]
+    },
+    {
+      "class": "CngxCopyBlock",
+      "file": "projects/common/interactive/copy/copy-block.ts",
+      "line": 103,
+      "member": "liveAnnouncement",
+      "enclosing": "untracked",
+      "tiers": [
+        { "kind": "input", "field": "srAnnouncement" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["copiedAnnouncement"],
+          "token": "CNGX_INTERACTIVE_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxRangeSlider",
+      "file": "projects/common/interactive/slider/range-slider.component.ts",
+      "line": 126,
+      "member": "resolvedStartLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "startLabel" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["rangeMinimum"],
+          "token": "CNGX_INTERACTIVE_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxRangeSlider",
+      "file": "projects/common/interactive/slider/range-slider.component.ts",
+      "line": 128,
+      "member": "resolvedEndLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "endLabel" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["rangeMaximum"],
+          "token": "CNGX_INTERACTIVE_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxExpandableText",
+      "file": "projects/common/layout/text/expandable-text.ts",
+      "line": 155,
+      "member": "resolvedMoreLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "moreLabel" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["expandableTextMore"],
+          "token": "CNGX_LAYOUT_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxExpandableText",
+      "file": "projects/common/layout/text/expandable-text.ts",
+      "line": 158,
+      "member": "resolvedLessLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "lessLabel" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["expandableTextLess"],
+          "token": "CNGX_LAYOUT_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxStepperCount",
+      "file": "projects/common/stepper/stepper-count.ts",
+      "line": 153,
+      "member": "label",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "format" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["textStepperFormat"],
+          "token": "CNGX_STEPPER_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxStepperCount",
+      "file": "projects/common/stepper/stepper-count.ts",
+      "line": 167,
+      "member": "liveLabel",
+      "enclosing": "untracked",
+      "tiers": [
+        { "kind": "input", "field": "format" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["textStepperFormat"],
+          "token": "CNGX_STEPPER_I18N"
+        }
+      ]
+    },
+    {
+      "class": null,
+      "file": "projects/common/stepper/stepper-host-attrs.ts",
+      "line": 95,
+      "member": "createStepperAccname",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "ariaLabel" },
+        {
+          "kind": "bundle",
+          "field": "ariaLabels",
+          "path": ["stepperRegion"],
+          "token": "CNGX_STEPPER_CONFIG"
+        },
+        {
+          "kind": "bundle",
+          "field": "inputs",
+          "path": ["i18n", "stepperLabel"],
+          "token": "CNGX_STEPPER_I18N"
+        }
+      ]
+    },
+    {
+      "class": null,
+      "file": "projects/common/tabs/announcements/tab-group-announcements.ts",
+      "line": 157,
+      "member": "createTabGroupAnnouncements.resolvedAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "ariaLabel" },
+        {
+          "kind": "bundle",
+          "field": "ariaLabels",
+          "path": ["tabsRegion"],
+          "token": "CNGX_TABS_CONFIG"
+        },
+        { "kind": "bundle", "field": "i18n", "path": ["tabsLabel"], "token": "CNGX_TABS_I18N" }
+      ]
+    },
+    {
+      "class": "CngxFileDrop",
+      "file": "projects/forms/input/file-drop.directive.ts",
+      "line": 118,
+      "member": "resolvedAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "ariaLabel" },
+        {
+          "kind": "bundle",
+          "field": "ariaLabels",
+          "path": ["fileDropZone"],
+          "token": "CNGX_INPUT_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxActionMultiSelect",
+      "file": "projects/forms/select/action-multi-select/action-multi-select.component.ts",
+      "line": 291,
+      "member": "resolvedClearButtonAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "clearButtonAriaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "clearButton"],
+          "token": "CNGX_SELECT_CONFIG"
+        },
+        {
+          "kind": "bundle",
+          "field": "selectCopy",
+          "path": ["resetSelection"],
+          "token": "CNGX_LANGUAGE_PACK"
+        }
+      ]
+    },
+    {
+      "class": "CngxActionMultiSelect",
+      "file": "projects/forms/select/action-multi-select/action-multi-select.component.ts",
+      "line": 298,
+      "member": "resolvedChipRemoveAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "chipRemoveAriaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "chipRemove"],
+          "token": "CNGX_SELECT_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxActionSelect",
+      "file": "projects/forms/select/action-select/action-select.component.ts",
+      "line": 277,
+      "member": "resolvedClearButtonAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "clearButtonAriaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "clearButton"],
+          "token": "CNGX_SELECT_CONFIG"
+        },
+        {
+          "kind": "bundle",
+          "field": "selectCopy",
+          "path": ["resetSelection"],
+          "token": "CNGX_LANGUAGE_PACK"
+        }
+      ]
+    },
+    {
+      "class": "CngxCombobox",
+      "file": "projects/forms/select/combobox/combobox.component.ts",
+      "line": 368,
+      "member": "resolvedClearButtonAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "clearButtonAriaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "clearButton"],
+          "token": "CNGX_SELECT_CONFIG"
+        },
+        {
+          "kind": "bundle",
+          "field": "selectCopy",
+          "path": ["resetSelection"],
+          "token": "CNGX_LANGUAGE_PACK"
+        }
+      ]
+    },
+    {
+      "class": "CngxCombobox",
+      "file": "projects/forms/select/combobox/combobox.component.ts",
+      "line": 377,
+      "member": "resolvedChipRemoveAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "chipRemoveAriaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "chipRemove"],
+          "token": "CNGX_SELECT_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxSelectSearch",
+      "file": "projects/forms/select/declarative/select-search.component.ts",
+      "line": 65,
+      "member": "resolvedPlaceholder",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "placeholder" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["fallbackLabels", "searchPlaceholder"],
+          "token": "CNGX_SELECT_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxSelectSearch",
+      "file": "projects/forms/select/declarative/select-search.component.ts",
+      "line": 86,
+      "member": "resolvedAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "ariaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "searchInput"],
+          "token": "CNGX_SELECT_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxMultiSelect",
+      "file": "projects/forms/select/multi-select/multi-select.component.ts",
+      "line": 267,
+      "member": "resolvedClearButtonAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "clearButtonAriaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "clearButton"],
+          "token": "CNGX_SELECT_CONFIG"
+        },
+        {
+          "kind": "bundle",
+          "field": "selectCopy",
+          "path": ["resetSelection"],
+          "token": "CNGX_LANGUAGE_PACK"
+        }
+      ]
+    },
+    {
+      "class": "CngxMultiSelect",
+      "file": "projects/forms/select/multi-select/multi-select.component.ts",
+      "line": 274,
+      "member": "resolvedChipRemoveAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "chipRemoveAriaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "chipRemove"],
+          "token": "CNGX_SELECT_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxReorderableMultiSelect",
+      "file": "projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts",
+      "line": 277,
+      "member": "resolvedClearButtonAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "clearButtonAriaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "clearButton"],
+          "token": "CNGX_SELECT_CONFIG"
+        },
+        {
+          "kind": "bundle",
+          "field": "selectCopy",
+          "path": ["resetSelection"],
+          "token": "CNGX_LANGUAGE_PACK"
+        }
+      ]
+    },
+    {
+      "class": "CngxReorderableMultiSelect",
+      "file": "projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts",
+      "line": 284,
+      "member": "resolvedChipRemoveAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "chipRemoveAriaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "chipRemove"],
+          "token": "CNGX_SELECT_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxSelectShell",
+      "file": "projects/forms/select/select-shell/select-shell.component.ts",
+      "line": 270,
+      "member": "resolvedClearButtonAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "clearButtonAriaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "clearButton"],
+          "token": "CNGX_SELECT_CONFIG"
+        },
+        {
+          "kind": "bundle",
+          "field": "selectCopy",
+          "path": ["clearSelection"],
+          "token": "CNGX_LANGUAGE_PACK"
+        }
+      ]
+    },
+    {
+      "class": "CngxSelect",
+      "file": "projects/forms/select/single-select/select.component.ts",
+      "line": 255,
+      "member": "resolvedClearButtonAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "clearButtonAriaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "clearButton"],
+          "token": "CNGX_SELECT_CONFIG"
+        },
+        {
+          "kind": "bundle",
+          "field": "selectCopy",
+          "path": ["clearSelection"],
+          "token": "CNGX_LANGUAGE_PACK"
+        }
+      ]
+    },
+    {
+      "class": "CngxTreeSelect",
+      "file": "projects/forms/select/tree-select/tree-select.component.ts",
+      "line": 322,
+      "member": "resolvedTwistyExpandLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "twistyExpandLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "treeExpand"],
+          "token": "CNGX_SELECT_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxTreeSelect",
+      "file": "projects/forms/select/tree-select/tree-select.component.ts",
+      "line": 327,
+      "member": "resolvedTwistyCollapseLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "twistyCollapseLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "treeCollapse"],
+          "token": "CNGX_SELECT_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxTreeSelect",
+      "file": "projects/forms/select/tree-select/tree-select.component.ts",
+      "line": 336,
+      "member": "resolvedClearButtonAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "clearButtonAriaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "clearButton"],
+          "token": "CNGX_SELECT_CONFIG"
+        },
+        {
+          "kind": "bundle",
+          "field": "selectCopy",
+          "path": ["resetSelection"],
+          "token": "CNGX_LANGUAGE_PACK"
+        }
+      ]
+    },
+    {
+      "class": "CngxTreeSelect",
+      "file": "projects/forms/select/tree-select/tree-select.component.ts",
+      "line": 343,
+      "member": "resolvedChipRemoveAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "chipRemoveAriaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "chipRemove"],
+          "token": "CNGX_SELECT_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxTypeahead",
+      "file": "projects/forms/select/typeahead/typeahead.component.ts",
+      "line": 270,
+      "member": "resolvedClearButtonAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "clearButtonAriaLabel" },
+        {
+          "kind": "bundle",
+          "field": "config",
+          "path": ["ariaLabels", "clearButton"],
+          "token": "CNGX_SELECT_CONFIG"
+        },
+        {
+          "kind": "bundle",
+          "field": "selectCopy",
+          "path": ["resetSelection"],
+          "token": "CNGX_LANGUAGE_PACK"
+        }
+      ]
+    },
+    {
+      "class": "CngxAccordionItem",
+      "file": "projects/ui/accordion/accordion-item.component.ts",
+      "line": 132,
+      "member": "resolvedDisabledReason",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "disabledReason" },
+        {
+          "kind": "bundle",
+          "field": "copy",
+          "path": ["disabledReason"],
+          "token": "CNGX_LANGUAGE_PACK"
+        }
+      ]
+    },
+    {
+      "class": "CngxActionButton",
+      "file": "projects/ui/action-button/action-button.ts",
+      "line": 294,
+      "member": "effectiveAnnouncement",
+      "enclosing": "untracked",
+      "tiers": [
+        { "kind": "input", "field": "succeededAnnouncement" },
+        { "kind": "input", "field": "succeededLabel" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["asyncClickSucceeded"],
+          "token": "CNGX_INTERACTIVE_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxActionButton",
+      "file": "projects/ui/action-button/action-button.ts",
+      "line": 300,
+      "member": "effectiveAnnouncement",
+      "enclosing": "untracked",
+      "tiers": [
+        { "kind": "input", "field": "failedAnnouncement" },
+        { "kind": "input", "field": "failedLabel" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["asyncClickFailed"],
+          "token": "CNGX_INTERACTIVE_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxBreadcrumbBar",
+      "file": "projects/ui/breadcrumb/breadcrumb-bar.component.ts",
+      "line": 155,
+      "member": "resolvedLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "label" },
+        {
+          "kind": "bundle",
+          "field": "ariaLabels",
+          "path": ["bar"],
+          "token": "CNGX_BREADCRUMB_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxBreadcrumbOverflow",
+      "file": "projects/ui/breadcrumb/breadcrumb-overflow.component.ts",
+      "line": 80,
+      "member": "resolvedTriggerLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "triggerLabel" },
+        {
+          "kind": "bundle",
+          "field": "ariaLabels",
+          "path": ["overflowTrigger"],
+          "token": "CNGX_BREADCRUMB_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxBreadcrumbOverflow",
+      "file": "projects/ui/breadcrumb/breadcrumb-overflow.component.ts",
+      "line": 83,
+      "member": "resolvedMenuLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "menuLabel" },
+        {
+          "kind": "bundle",
+          "field": "ariaLabels",
+          "path": ["overflowMenu"],
+          "token": "CNGX_BREADCRUMB_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxBreadcrumbSiblings",
+      "file": "projects/ui/breadcrumb/breadcrumb-siblings.component.ts",
+      "line": 79,
+      "member": "resolvedTriggerLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "triggerLabel" },
+        {
+          "kind": "bundle",
+          "field": "ariaLabels",
+          "path": ["siblingsTrigger"],
+          "token": "CNGX_BREADCRUMB_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxBreadcrumbSiblings",
+      "file": "projects/ui/breadcrumb/breadcrumb-siblings.component.ts",
+      "line": 82,
+      "member": "resolvedMenuLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "menuLabel" },
+        {
+          "kind": "bundle",
+          "field": "ariaLabels",
+          "path": ["siblingsMenu"],
+          "token": "CNGX_BREADCRUMB_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxCommandPalette",
+      "file": "projects/ui/command-palette/palette/command-palette.component.ts",
+      "line": 133,
+      "member": "resolvedAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "ariaLabel" },
+        {
+          "kind": "bundle",
+          "field": "copy",
+          "path": ["paletteLabel"],
+          "token": "CNGX_COMMAND_PALETTE_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxDgaFilterField",
+      "file": "projects/ui/data-grid-accordion/data-grid-filter-field.component.ts",
+      "line": 68,
+      "member": "resolvedLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "label" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["filter"],
+          "token": "CNGX_DATA_GRID_ACCORDION_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxDgaFilter",
+      "file": "projects/ui/data-grid-accordion/data-grid-filter.directive.ts",
+      "line": 61,
+      "member": "resolvedAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "ariaLabel" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["filterRows"],
+          "token": "CNGX_DATA_GRID_ACCORDION_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxDgaSortHeader",
+      "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
+      "line": 150,
+      "member": "statusText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "ascendingLabel" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["sortAscending"],
+          "token": "CNGX_DATA_GRID_ACCORDION_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxDgaSortHeader",
+      "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
+      "line": 153,
+      "member": "statusText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "descendingLabel" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["sortDescending"],
+          "token": "CNGX_DATA_GRID_ACCORDION_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxDgaSortHeader",
+      "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
+      "line": 155,
+      "member": "statusText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "notSortedLabel" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["sortNone"],
+          "token": "CNGX_DATA_GRID_ACCORDION_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxDgaSortHeader",
+      "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
+      "line": 200,
+      "member": "announcementTemplate",
+      "enclosing": "method",
+      "tiers": [
+        { "kind": "input", "field": "ascendingAnnouncement" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["sortAnnouncedAscending"],
+          "token": "CNGX_DATA_GRID_ACCORDION_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxDgaSortHeader",
+      "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
+      "line": 203,
+      "member": "announcementTemplate",
+      "enclosing": "method",
+      "tiers": [
+        { "kind": "input", "field": "descendingAnnouncement" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["sortAnnouncedDescending"],
+          "token": "CNGX_DATA_GRID_ACCORDION_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxDgaSortHeader",
+      "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
+      "line": 205,
+      "member": "announcementTemplate",
+      "enclosing": "method",
+      "tiers": [
+        { "kind": "input", "field": "clearedAnnouncement" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["sortAnnouncedCleared"],
+          "token": "CNGX_DATA_GRID_ACCORDION_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxProgress",
+      "file": "projects/ui/feedback/loading/progress.ts",
+      "line": 139,
+      "member": "resolvedLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "label" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["progressLabel"],
+          "token": "CNGX_FEEDBACK_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxPaginator",
+      "file": "projects/ui/paginator/paginator.component.ts",
+      "line": 173,
+      "member": "resolvedAriaLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "ariaLabel" },
+        {
+          "kind": "bundle",
+          "field": "ariaLabels",
+          "path": ["label"],
+          "token": "CNGX_PAGINATOR_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxSidenav",
+      "file": "projects/ui/sidenav/sidenav.ts",
+      "line": 232,
+      "member": "resolvedResizeLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "resizeLabel" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["resizeHandle"],
+          "token": "CNGX_SIDENAV_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxSpeakButton",
+      "file": "projects/ui/speak/speak-button.ts",
+      "line": 105,
+      "member": "resolvedLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "stopLabel" },
+        { "kind": "bundle", "field": "i18n", "path": ["stopSpeaking"], "token": "CNGX_SPEAK_I18N" }
+      ]
+    },
+    {
+      "class": "CngxSpeakButton",
+      "file": "projects/ui/speak/speak-button.ts",
+      "line": 106,
+      "member": "resolvedLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "readAloudLabel" },
+        { "kind": "bundle", "field": "i18n", "path": ["readAloud"], "token": "CNGX_SPEAK_I18N" }
+      ]
+    },
+    {
+      "class": "CngxStatCard",
+      "file": "projects/ui/stat-card/stat-card.component.ts",
+      "line": 333,
+      "member": "resolvedBusyLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "busyLabel" },
+        {
+          "kind": "bundle",
+          "field": "ariaLabels",
+          "path": ["busy"],
+          "token": "CNGX_STAT_CARD_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxStatCard",
+      "file": "projects/ui/stat-card/stat-card.component.ts",
+      "line": 337,
+      "member": "resolvedErrorText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "errorText" },
+        {
+          "kind": "bundle",
+          "field": "ariaLabels",
+          "path": ["errorFallback"],
+          "token": "CNGX_STAT_CARD_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxStatCard",
+      "file": "projects/ui/stat-card/stat-card.component.ts",
+      "line": 341,
+      "member": "resolvedErrorDescription",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "errorDescription" },
+        {
+          "kind": "bundle",
+          "field": "ariaLabels",
+          "path": ["errorDescription"],
+          "token": "CNGX_STAT_CARD_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxStatCard",
+      "file": "projects/ui/stat-card/stat-card.component.ts",
+      "line": 345,
+      "member": "resolvedStaleText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "staleText" },
+        {
+          "kind": "bundle",
+          "field": "ariaLabels",
+          "path": ["staleFallback"],
+          "token": "CNGX_STAT_CARD_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxStatCard",
+      "file": "projects/ui/stat-card/stat-card.component.ts",
+      "line": 349,
+      "member": "resolvedEmptyText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "emptyText" },
+        {
+          "kind": "bundle",
+          "field": "ariaLabels",
+          "path": ["emptyFallback"],
+          "token": "CNGX_STAT_CARD_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxTimeline",
+      "file": "projects/ui/timeline/timeline.component.ts",
+      "line": 439,
+      "member": "listLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "ariaLabel" },
+        {
+          "kind": "bundle",
+          "field": "configLabels",
+          "path": ["timelineRegion"],
+          "token": "CNGX_TIMELINE_CONFIG"
+        },
+        { "kind": "literal", "value": null }
+      ]
+    }
+  ]
+}
