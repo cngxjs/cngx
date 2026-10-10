@@ -1,7 +1,8 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gzipSync } from 'node:zlib';
 
 import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -175,5 +176,36 @@ describe('dist/ui/schematics ng-add shim', () => {
     await runner.runSchematic('ng-add', {}, onboarded);
 
     expect(messages.filter((message) => message.startsWith('Replacing'))).toEqual([]);
+  });
+});
+
+// Every schematic entry ships inside a published package, so its size is
+// paid on every install. The budget leaves room for the onboarding steps on
+// top of the bundled renderer and prompt libraries.
+const MAX_MINIFIED = 200 * 1024;
+const MAX_GZIP = 70 * 1024;
+
+function schematicEntries() {
+  const dist = join(ROOT, 'dist');
+  return readdirSync(dist, { withFileTypes: true })
+    .filter((lib) => lib.isDirectory() && existsSync(join(dist, lib.name, 'schematics')))
+    .flatMap((lib) =>
+      readdirSync(join(dist, lib.name, 'schematics'), { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => join(lib.name, 'schematics', entry.name, 'index.js'))
+        .filter((file) => existsSync(join(dist, file))),
+    );
+}
+
+describe('schematic bundle budget', () => {
+  it('finds the built entries', () => {
+    expect(schematicEntries()).toEqual(expect.arrayContaining(['core/schematics/ng-add/index.js', 'ui/schematics/ng-add/index.js']));
+  });
+
+  it.each(schematicEntries())('keeps dist/%s under 200 KB minified and 70 KB gzip', (file) => {
+    const content = readFileSync(join(ROOT, 'dist', file));
+
+    expect(content.length).toBeLessThanOrEqual(MAX_MINIFIED);
+    expect(gzipSync(content).length).toBeLessThanOrEqual(MAX_GZIP);
   });
 });
