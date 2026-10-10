@@ -356,7 +356,7 @@ describe('buildDisplayedTs import lines', () => {
     );
   });
 
-  it.fails('merges two import lines from the same module into one', () => {
+  it('merges two import lines from the same module into one', () => {
     const s = { imports: ['CngxA', 'CngxB'], setup: '', template: '<cngx-a /><cngx-b />' };
     const block = importBlock(
       lines("import { CngxA } from '@cngx/x';", "import { CngxB, CngxA } from '@cngx/x';"),
@@ -392,5 +392,17 @@ describe('dedentMarkup', () => {
   it('matches dedent when every line is indented', () => {
     const tpl = '\n  <div>\n    <p>a</p>\n  </div>\n';
     expect(panel.dedentMarkup(tpl)).toBe(panel.dedent(tpl));
+  });
+});
+
+describe('mergeImportLines', () => {
+  it('passes a non-named import through', () => {
+    const lines = ["import * as d3 from 'd3';", "import * as d3 from 'd3';"];
+    expect(panel.mergeImportLines(lines)).toEqual(lines);
+  });
+
+  it('keeps a single line without a semicolon unchanged', () => {
+    const lines = ["import { A,B } from 'x'", "import { C } from 'y';"];
+    expect(panel.mergeImportLines(lines)).toEqual(lines);
   });
 });

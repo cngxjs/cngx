@@ -331,6 +331,44 @@ export function displayImportPath(line) {
 }
 
 /**
+ * Merges named import lines from the same module (and the same `type`-ness)
+ * into the first one, specifiers in first-seen order. A story's
+ * `moduleImports` line and a generator-added line can name one package
+ * twice. A module named once keeps its line byte-identical; non-named
+ * imports pass through.
+ */
+export function mergeImportLines(lines) {
+  const groups = new Map();
+  const out = [];
+  for (const line of lines) {
+    const parsed = parseNamedImport(line);
+    if (!parsed) {
+      out.push(line);
+      continue;
+    }
+    const key = `${parsed.isType ? 'type ' : ''}${parsed.module}`;
+    const group = groups.get(key);
+    if (!group) {
+      groups.set(key, { at: out.length, parsed, specifiers: [...parsed.specifiers], count: 1 });
+      out.push(line);
+      continue;
+    }
+    group.count++;
+    for (const spec of parsed.specifiers) {
+      if (!group.specifiers.includes(spec)) {
+        group.specifiers.push(spec);
+      }
+    }
+  }
+  for (const { at, parsed, specifiers, count } of groups.values()) {
+    if (count > 1) {
+      out[at] = `${parsed.head} ${specifiers.join(', ')} ${parsed.tail.trim()}`;
+    }
+  }
+  return out;
+}
+
+/**
  * The text of the TypeScript code panel: the component a consumer would
  * write for the artifact half of a story. The decorator mirrors the live one
  * (`imports`, `hostDirectives`, `viewProviders`), with Cngx `imports` matched
@@ -367,11 +405,13 @@ export function buildDisplayedTs({
   const explicitRefs = new Set([...imports, ...hostDirectives]);
   const isReferenced = (id) =>
     explicitRefs.has(id) || new RegExp(String.raw`\b${escapeRegExp(id)}\b`).test(scan);
-  const otherLines = importLines
-    .filter((l) => !l.includes("from '@angular/core'"))
-    .map((line) => filterImportLine(line, isReferenced))
-    .filter((l) => l !== null)
-    .map(displayImportPath);
+  const otherLines = mergeImportLines(
+    importLines
+      .filter((l) => !l.includes("from '@angular/core'"))
+      .map((line) => filterImportLine(line, isReferenced))
+      .filter((l) => l !== null)
+      .map(displayImportPath),
+  );
 
   const decorator = [
     '@Component({',
