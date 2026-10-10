@@ -342,13 +342,13 @@ describe('buildDisplayedTs import lines', () => {
   const importBlock = (importLines, s = story) =>
     buildDisplayedTs({ story: s, importLines, ...meta('X', 'x') }).split('\n\n')[0];
 
-  it.fails('shows the shared fixtures barrel as ./fixtures', () => {
+  it('shows the shared fixtures barrel as ./fixtures', () => {
     expect(importBlock(lines("import { PEOPLE } from '../../../../../../fixtures';"))).toContain(
       "import { PEOPLE } from './fixtures';",
     );
   });
 
-  it.fails('shows a story-local _fixtures file under ./fixtures', () => {
+  it('shows a story-local _fixtures file under ./fixtures', () => {
     const line =
       "import { DemoMountCounter } from '../../../_fixtures/demo-mount-counter.component';";
     expect(importBlock(lines(line))).toContain(

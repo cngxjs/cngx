@@ -318,6 +318,19 @@ export function indent(s, n) {
 }
 
 /**
+ * The fixture path a reader of the TypeScript panel sees. The live component
+ * imports fixtures at its generated depth (`'../../../../../../fixtures'`),
+ * which means nothing outside the examples app, so the panel shows the
+ * shared barrel as `'./fixtures'` and a story-local `_fixtures/<file>` as
+ * `'./fixtures/<file>'`. Other lines pass through.
+ */
+export function displayImportPath(line) {
+  return line
+    .replace(/'(?:\.\.\/)+fixtures'/, "'./fixtures'")
+    .replace(/'(?:\.\.\/)+_fixtures\/([^']+)'/, "'./fixtures/$1'");
+}
+
+/**
  * The text of the TypeScript code panel: the component a consumer would
  * write for the artifact half of a story. The decorator mirrors the live one
  * (`imports`, `hostDirectives`, `viewProviders`), with Cngx `imports` matched
@@ -357,7 +370,8 @@ export function buildDisplayedTs({
   const otherLines = importLines
     .filter((l) => !l.includes("from '@angular/core'"))
     .map((line) => filterImportLine(line, isReferenced))
-    .filter((l) => l !== null);
+    .filter((l) => l !== null)
+    .map(displayImportPath);
 
   const decorator = [
     '@Component({',

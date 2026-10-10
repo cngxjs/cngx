@@ -210,7 +210,9 @@ all of it.
   You usually don't need to spell out `moduleImports` for cngx symbols
   unless aliased.
 - Rewrites `../../fixtures/...` paths to the depth of the generated
-  component.
+  component. The TypeScript panel shows them as `./fixtures` (and a
+  story-local `../_fixtures/<file>` as `./fixtures/<file>`); only the live
+  component keeps the depth-rewritten path.
 - Copies co-located helper files referenced as `from './foo'` in
   `moduleImports` into the feature directory.
 
