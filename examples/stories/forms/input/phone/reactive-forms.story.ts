@@ -19,8 +19,7 @@ export const STORY: DemoSpec = {
     "import { CngxPhoneInput } from '@cngx/forms/input';",
   ],
   imports: ['ReactiveFormsModule', 'CngxFormBridge', 'CngxPhoneInput'],
-  setup: `// Add CngxFormBridge to the component's imports: it attaches by selector to [formControl] on cngx-phone-input.
-  protected readonly phone = new FormControl('', { nonNullable: true });`,
+  setup: `protected readonly phone = new FormControl('', { nonNullable: true });`,
   template: `
   <div style="display:grid;gap:16px;max-width:360px">
     <cngx-phone-input ariaLabel="Phone number" [formControl]="phone" />

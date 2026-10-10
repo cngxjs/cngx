@@ -27,8 +27,7 @@ export const STORY: DemoSpec = {
     'CngxInput',
     'CngxNumericInput',
   ],
-  setup: `// Add CngxFormBridge to the component's imports: it attaches by selector to [formControl] on the numeric input.
-  private readonly destroyRef = inject(DestroyRef);
+  setup: `private readonly destroyRef = inject(DestroyRef);
   protected readonly amount = new FormControl<number | null>(null, {
     validators: [Validators.required],
   });

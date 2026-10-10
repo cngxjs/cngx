@@ -27,8 +27,7 @@ export const STORY: DemoSpec = {
     'CngxInput',
     'CngxInputFormat',
   ],
-  setup: `// Add CngxFormBridge to the component's imports: it attaches by selector to [formControl] on the formatted input.
-  private readonly destroyRef = inject(DestroyRef);
+  setup: `private readonly destroyRef = inject(DestroyRef);
   protected readonly groupDigits = (raw: string) => raw.replace(/(\\d{4})(?=\\d)/g, '$1 ');
   protected readonly ungroupDigits = (display: string) => display.replace(/\\s/g, '');
   protected readonly account = new FormControl('', {
