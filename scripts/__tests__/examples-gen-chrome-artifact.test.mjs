@@ -8,7 +8,7 @@ import {
   isSelectorSource,
   selectorsInSource,
 } from '../examples-gen/code-panel.mjs';
-import { parseStory } from '../plugin-recipes.mjs';
+import { parseStory } from '../examples-gen/story.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const STORIES = join(ROOT, 'examples', 'stories');
@@ -29,13 +29,17 @@ function selectorMap() {
 }
 
 describe('examples chrome divs', () => {
-  const stories = filesUnder(STORIES, (f) => f.endsWith('.story.ts')).map((file) => ({
-    route: relative(STORIES, file).replace(/\.story\.ts$/, ''),
-    story: parseStory(readFileSync(file, 'utf8')),
-  }));
+  const stories = filesUnder(STORIES, (f) => f.endsWith('.story.ts')).map((file) => {
+    const route = relative(STORIES, file).replace(/\.story\.ts$/, '');
+    try {
+      return { route, story: parseStory(readFileSync(file, 'utf8'), route) };
+    } catch (err) {
+      return { route, error: err.message };
+    }
+  });
 
   it('parses every story', () => {
-    expect(stories.filter((s) => s.story === null).map((s) => s.route)).toEqual([]);
+    expect(stories.filter((s) => s.error).map((s) => s.error)).toEqual([]);
   });
 
   it('no story wraps an artifact element in a chrome-class div', () => {

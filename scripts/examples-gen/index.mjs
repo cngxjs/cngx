@@ -26,6 +26,7 @@ import {
   stripCommentsForScan,
   templateUsesClass,
 } from './code-panel.mjs';
+import { parseStory } from './story.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..');
@@ -242,10 +243,7 @@ async function buildSelectorMap() {
 
 async function loadStory(storyPath) {
   const content = await readFile(storyPath, 'utf8');
-  const stripped = content.replace(/^import type[^\n]+\n/m, '');
-  const match = stripped.match(/export const STORY[^=]*=\s*([\s\S]+?);?\s*$/);
-  if (!match) throw new Error(`No STORY export in ${storyPath}`);
-  return new Function(`return (${match[1]})`)();
+  return parseStory(content, storyPath);
 }
 
 // Component imports

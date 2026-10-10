@@ -4,17 +4,13 @@
 // representative. Each recipe is a projection of the canonical story - its
 // title, its description, the cngx symbols it composes, and the artifact
 // template (chrome excluded) as the wiring.
-//
-// parseStory evaluates the story object literal with new Function. That is safe
-// here and only here: the input is first-party committed source under
-// examples/stories, the generator runs at build time (never in the shipped
-// plugin), and a story that fails to evaluate is skipped, not fatal. This
-// mirrors examples-gen's loadStory. Do not point it at untrusted input.
 
 import { readdirSync, readFileSync, statSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { importedSymbols } from './examples-gen/code-panel.mjs';
+import { parseStory } from './examples-gen/story.mjs';
 import { computeSourceHash, upsertManifestEntry } from './plugin-token-reference.mjs';
 
 const STORIES_ROOT = 'examples/stories';
@@ -30,19 +26,6 @@ const ASYNC_API =
 const normalizeDashes = (text) => text.replace(/\s*[\u2014\u2013]\s*/g, ' - ');
 const stripHtml = (text) => (text ?? '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 
-export function parseStory(source) {
-  const stripped = source.replace(/^import type[^\n]+\n/m, '');
-  const match = stripped.match(/export const STORY[^=]*=\s*([\s\S]+?);?\s*$/);
-  if (!match) {
-    return null;
-  }
-  try {
-    return new Function(`return (${match[1]})`)();
-  } catch {
-    return null;
-  }
-}
-
 export function demonstratesAsync(story) {
   const blob = [
     story.setup ?? '',
@@ -53,17 +36,6 @@ export function demonstratesAsync(story) {
   return ASYNC_API.test(blob);
 }
 
-function cngxSymbolsFromImport(line) {
-  const match = line.match(/import\s+(?:type\s+)?\{([^}]+)\}/);
-  if (!match) {
-    return [];
-  }
-  return match[1]
-    .split(',')
-    .map((part) => part.trim().replace(/^type\s+/, '').split(/\s+as\s+/).pop()?.trim())
-    .filter((name) => name && /^Cngx/.test(name));
-}
-
 export function recipeSymbols(story) {
   const api = (Array.isArray(story.apiComponents) ? story.apiComponents : []).filter((name) =>
     /^Cngx/.test(name),
@@ -71,8 +43,8 @@ export function recipeSymbols(story) {
   if (api.length > 0) {
     return [...new Set(api)];
   }
-  const imported = (Array.isArray(story.moduleImports) ? story.moduleImports : []).flatMap(
-    cngxSymbolsFromImport,
+  const imported = (Array.isArray(story.moduleImports) ? story.moduleImports : []).flatMap((line) =>
+    importedSymbols(line).filter((name) => /^Cngx/.test(name)),
   );
   return [...new Set(imported)];
 }
@@ -144,6 +116,20 @@ function* walkStories(root) {
   }
 }
 
+// Every story under STORIES_ROOT as `{ path, story }`. A story that does not
+// parse is left out and handed to `onError(path, err)`.
+export function collectStoryEntries(onError) {
+  const entries = [];
+  for (const path of walkStories(STORIES_ROOT)) {
+    try {
+      entries.push({ path, story: parseStory(readFileSync(path, 'utf8'), path) });
+    } catch (err) {
+      onError(path, err);
+    }
+  }
+  return entries;
+}
+
 const demoFolder = (storyPath) => relative(STORIES_ROOT, storyPath).replace(/\/[^/]+\.story\.ts$/, '');
 const exampleSlug = (storyPath) => storyPath.replace(/^.*\//, '').replace(/\.story\.ts$/, '');
 const recipeName = (folder) => folder.replace(/\//g, '-');
@@ -193,13 +179,7 @@ export function selectRecipeStories(entries) {
 }
 
 function main() {
-  const entries = [];
-  for (const path of walkStories(STORIES_ROOT)) {
-    const story = parseStory(readFileSync(path, 'utf8'));
-    if (story) {
-      entries.push({ path, story });
-    }
-  }
+  const entries = collectStoryEntries(() => {});
 
   const selected = selectRecipeStories(entries);
   mkdirSync(resolve(RECIPES_DIR), { recursive: true });
