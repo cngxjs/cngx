@@ -1195,6 +1195,27 @@ describe('reactive i18n coverage', () => {
     expect(unresolved).toEqual([]);
   });
 
+  it('reads the select copy behind injectSelectCopy as copy', () => {
+    const sf = PROGRAM.getSourceFile(
+      resolve(REPO_ROOT, 'projects/forms/select/single-select/select.component.ts'),
+    );
+    let read;
+    const find = (node) => {
+      if (
+        ts.isPropertyAccessExpression(node) &&
+        node.getText() === 'this.selectCopy().clearSelection'
+      ) {
+        read = node;
+      }
+      node.forEachChild(find);
+    };
+    find(sf);
+    expect(originOf(MODEL, read, new Map())).toEqual({
+      kind: 'signal',
+      token: 'CNGX_LANGUAGE_PACK',
+    });
+  });
+
   it('lists exactly the copy tokens in the localisation guide table', () => {
     const guide = guideTableTokens(readRepoFile('core-concepts/i18n.md') ?? '').sort();
     const copy = COPY_TOKENS.filter((t) => t.kind !== 'locale')

@@ -594,6 +594,8 @@ export const HELPERS = [
 export const LOCALE_READERS = {
   injectLocale: 'CNGX_LOCALE',
   injectLanguageSection: 'CNGX_LANGUAGE_PACK',
+  // The select section of the pack, resolved per locale behind a private token.
+  injectSelectCopy: 'CNGX_LANGUAGE_PACK',
 };
 
 /**
