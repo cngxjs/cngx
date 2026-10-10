@@ -13,6 +13,16 @@
 import { readFile, writeFile, readdir, mkdir, rm } from 'node:fs/promises';
 import { join, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  buildDisplayedTs,
+  coreSymbolsFor,
+  dedent,
+  escapeRegExp,
+  filterImportLine,
+  importedSymbols,
+  stripCommentsForScan,
+  templateUsesClass,
+} from './code-panel.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..');
@@ -46,12 +56,6 @@ function tsQuote(s) {
       .replaceAll("'", String.raw`\'`) +
     "'"
   );
-}
-
-function stripCommentsForScan(s) {
-  return String(s ?? '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/\/\/[^\n]*/g, '');
 }
 
 function backtickEscape(s) {
@@ -88,25 +92,6 @@ function stripDemoChrome(html) {
     result = result.slice(0, m.index).replace(/\s*$/, '') + result.slice(i);
   }
   return result;
-}
-
-function dedent(s) {
-  const lines = String(s).split('\n');
-  const meaningful = lines.filter((l) => l.trim().length > 0);
-  if (meaningful.length === 0) return '';
-  let minIndent = Infinity;
-  for (const l of meaningful) {
-    const m = new RegExp(/^[ \t]*/).exec(l);
-    minIndent = Math.min(minIndent, m[0].length);
-  }
-  if (!Number.isFinite(minIndent) || minIndent === 0) {
-    return s.replace(/^\s*\n/, '').replace(/\s+$/, '');
-  }
-  return lines
-    .map((l) => l.slice(minIndent))
-    .join('\n')
-    .replace(/^\s*\n/, '')
-    .replace(/\s+$/, '');
 }
 
 // Allowlist of inline-formatting tags that may appear in story `description`
@@ -319,21 +304,6 @@ async function loadStory(storyPath) {
   return new Function(`return (${match[1]})`)();
 }
 
-function importedSymbols(importLine) {
-  const m = importLine.match(/import\s+(?:type\s+)?\{([^}]+)\}/);
-  if (!m) return [];
-  return m[1]
-    .split(',')
-    .map((s) => {
-      const parts = s
-        .trim()
-        .replace(/^type\s+/, '')
-        .split(/\s+as\s+/);
-      return (parts.length > 1 ? parts[1] : parts[0])?.trim();
-    })
-    .filter(Boolean);
-}
-
 // Component imports
 
 function buildImports(story, importMap, featureDepth) {
@@ -348,40 +318,10 @@ function buildImports(story, importMap, featureDepth) {
     '\n' +
     (story.templateChromeBefore ?? '');
 
-  // viewProviders expressions live in the class decorator, so @angular/core
-  // symbols referenced only there (inject, forwardRef, DI tokens' deps)
-  // must count as used too - moduleImports lines from @angular/core are
-  // dropped wholesale below, leaving this detection as the only source.
-  const setupAndProviders = setup + '\n' + (story.viewProviders ?? []).join('\n');
-
-  const usesSignal = /\bsignal\s*[<(]/.test(setup);
-  const usesComputed = /\bcomputed\s*[<(]/.test(setup);
-  const usesInject = /\binject\s*\(/.test(setupAndProviders);
-  const usesAfterRender = /\bafterNextRender\s*\(/.test(setup);
-  const usesEffect = /\beffect\s*\(/.test(setup);
-  const usesViewChild = /\bviewChild\b/.test(setup);
-  const usesElementRef = /\bElementRef\b/.test(setup);
-  const usesDestroyRef = /\bDestroyRef\b/.test(setup);
-  const usesUntracked = /\buntracked\s*\(/.test(setup);
-  const usesLinkedSignal = /\blinkedSignal\s*[<(]/.test(setup);
-  const usesForwardRef = /\bforwardRef\s*\(/.test(setupAndProviders);
-  const usesTemplateRef = /\bTemplateRef\b/.test(setupAndProviders);
-
   const coreSymbols = [
     'ChangeDetectionStrategy',
     'Component',
-    ...(usesAfterRender ? ['afterNextRender'] : []),
-    ...(usesComputed ? ['computed'] : []),
-    ...(usesDestroyRef ? ['DestroyRef'] : []),
-    ...(usesEffect ? ['effect'] : []),
-    ...(usesElementRef ? ['ElementRef'] : []),
-    ...(usesForwardRef ? ['forwardRef'] : []),
-    ...(usesInject ? ['inject'] : []),
-    ...(usesLinkedSignal ? ['linkedSignal'] : []),
-    ...(usesSignal ? ['signal'] : []),
-    ...(usesTemplateRef ? ['TemplateRef'] : []),
-    ...(usesUntracked ? ['untracked'] : []),
-    ...(usesViewChild ? ['viewChild'] : []),
+    ...coreSymbolsFor(setup, story.viewProviders),
   ];
 
   const coreLine = `import { ${coreSymbols.join(', ')} } from '@angular/core';`;
@@ -395,27 +335,8 @@ function buildImports(story, importMap, featureDepth) {
 
   function isReferenced(id) {
     if (explicitRefs.has(id)) return true;
-    const re = new RegExp(String.raw`\b${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\b`);
+    const re = new RegExp(String.raw`\b${escapeRegExp(id)}\b`);
     return re.test(scanText);
-  }
-
-  function filterImportLine(line) {
-    const match = line.match(
-      /^(\s*import\s*(?:type\s+)?\{)([^}]+)(\}\s*from\s*['"][^'"]+['"];?\s*)$/,
-    );
-    if (!match) return line;
-    const [, head, body, tail] = match;
-    const kept = body
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .filter((spec) => {
-        const parts = spec.replace(/^type\s+/, '').split(/\s+as\s+/);
-        const id = (parts.length > 1 ? parts[1] : parts[0])?.trim();
-        return isReferenced(id);
-      });
-    if (kept.length === 0) return null;
-    return `${head} ${kept.join(', ')} ${tail.trim()}`;
   }
 
   const upPrefix = '../'.repeat(featureDepth);
@@ -430,7 +351,7 @@ function buildImports(story, importMap, featureDepth) {
 
   const filteredModuleImports = (story.moduleImports ?? [])
     .filter((l) => !/from\s*['"]@angular\/core['"]/.test(l))
-    .map(filterImportLine)
+    .map((line) => filterImportLine(line, isReferenced))
     .filter((l) => l !== null)
     .map(rewritePaths);
 
@@ -493,48 +414,9 @@ function emitComponentSource(meta, story, importMap) {
     (story.templateChrome ?? '') +
     '\n' +
     (story.templateChromeBefore ?? '');
-  const tplImports = (story.imports ?? []).filter((cls) => {
-    if (!cls.startsWith('Cngx')) return true;
-    if (new RegExp(String.raw`\b${cls}\b`).test(tpl)) return true;
-    const selectors = meta.selectorMap?.get(cls) ?? [];
-    if (selectors.length === 0) return true;
-    for (const sel of selectors) {
-      const elementMatch = sel.match(/^[a-z][a-z0-9-]*$/);
-      if (elementMatch) {
-        if (new RegExp(`<${sel}(?![a-z0-9-])`).test(tpl)) return true;
-        continue;
-      }
-      const attrMatch = sel.match(/^\[([\w-]+)(?:[*~|^$]?=[^\]]*)?\]$/);
-      if (attrMatch) {
-        if (new RegExp(String.raw`\b${attrMatch[1]}\b`).test(tpl)) return true;
-        continue;
-      }
-      const compoundMatch = sel.match(/^([a-z][a-z0-9-]*)\[([\w-]+)(?:[*~|^$]?=[^\]]*)?\]$/);
-      if (compoundMatch) {
-        const [, tag, attr] = compoundMatch;
-        const tagOpenRe = new RegExp(String.raw`<${tag}\b[^>]*\b${attr}\b`);
-        if (tagOpenRe.test(tpl)) return true;
-        continue;
-      }
-      // `input[cngxInputMask][formControl]`: every attribute must sit on one opening tag.
-      const multiAttrMatch = sel.match(
-        /^([a-z][a-z0-9-]*)?((?:\[[\w-]+(?:[*~|^$]?=[^\]]*)?\]){2,})$/,
-      );
-      if (multiAttrMatch) {
-        const [, tag, attrPart] = multiAttrMatch;
-        const attrs = [...attrPart.matchAll(/\[([\w-]+)/g)].map((m) => m[1]);
-        const openTagRe = new RegExp(String.raw`<${tag ?? '[a-z][a-z0-9-]*'}\b[^>]*>`, 'g');
-        for (const [openTag] of tpl.matchAll(openTagRe)) {
-          if (attrs.every((attr) => new RegExp(String.raw`\b${attr}\b`).test(openTag))) {
-            return true;
-          }
-        }
-        continue;
-      }
-      if (tpl.includes(sel)) return true;
-    }
-    return false;
-  });
+  const tplImports = (story.imports ?? []).filter((cls) =>
+    templateUsesClass(cls, tpl, meta.selectorMap),
+  );
   const decoratorImports = tplImports.length > 0 ? `\n  imports: [${tplImports.join(', ')}],` : '';
 
   const storyHostDirectives = (story.hostDirectives ?? []).filter(Boolean);
@@ -575,39 +457,7 @@ function emitComponentSource(meta, story, importMap) {
     `  protected readonly _exRefs: readonly { label: string; href: string }[] = [${refEntries}];`,
   ].join('\n');
 
-  // Displayed _exTs: filter imports a SECOND time against `setup` only.
-  // The earlier buildImports() scanned setup + setupChrome to keep the live
-  // class compiling; here we re-scan to drop imports the chrome-only code
-  // would have needed (rxjs `delay`, fail-flag helpers, log buffers, etc.).
-  const setupOnlyScan = stripCommentsForScan(story.setup ?? '') + '\n' + (story.template ?? '');
-  const sourceImports = lines
-    .filter((l) => !l.includes("from '@angular/core'"))
-    .map((line) => {
-      const match = line.match(
-        /^(\s*import\s*(?:type\s+)?\{)([^}]+)(\}\s*from\s*['"][^'"]+['"];?\s*)$/,
-      );
-      if (!match) return line;
-      const [, head, body, tail] = match;
-      const kept = body
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .filter((spec) => {
-          const parts = spec.replace(/^type\s+/, '').split(/\s+as\s+/);
-          const id = (parts.length > 1 ? parts[1] : parts[0])?.trim();
-          if ((story.imports ?? []).includes(id)) return true;
-          return new RegExp(String.raw`\b${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\b`).test(
-            setupOnlyScan,
-          );
-        });
-      if (kept.length === 0) return null;
-      return `${head} ${kept.join(', ')} ${tail.trim()}`;
-    })
-    .filter((l) => l !== null)
-    .join('\n')
-    .trim();
-  const dedentedSetup = dedent(story.setup ?? '');
-  const sourceTs = [sourceImports, dedentedSetup].filter(Boolean).join('\n\n').trim();
+  const sourceTs = buildDisplayedTs({ story, importLines: lines });
   // Strip chrome blocks from the displayed template. Even when a story has
   // migrated chrome into `templateChrome`, stray button-row blocks in the
   // remaining `template` are still scrubbed defensively.
