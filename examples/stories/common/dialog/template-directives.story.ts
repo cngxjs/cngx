@@ -43,7 +43,7 @@ export const STORY: DemoSpec = {
         Email
         <input [(ngModel)]="formData.email" name="email" type="email" class="demo-dialog-input" />
       </label>
-      <div class="button-row" style="justify-content:flex-end">
+      <div class="demo-inline-actions" style="justify-content:flex-end">
         <!-- cngxDialogClose without value: calls dismiss() -->
         <button type="button" class="chip" cngxDialogClose>Cancel</button>
         <!-- Form submit calls close() with the typed result -->

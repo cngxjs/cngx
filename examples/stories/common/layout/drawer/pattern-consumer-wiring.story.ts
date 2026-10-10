@@ -43,7 +43,7 @@ export const STORY: DemoSpec = {
   template: `  <div cngxDrawer #drawer="cngxDrawer"
        (focusin)="onFocusIn($event)" (focusout)="onFocusOut($event)"
        class="demo-drawer-container demo-drawer-container--bordered">
-    <div class="button-row" style="padding: 0.5rem;">
+    <div class="demo-inline-actions" style="padding: 0.5rem;">
       <button id="pcw-trigger" type="button" class="sort-btn"
               [cngxAriaExpanded]="drawer.opened()" [controls]="'pcw-panel'"
               (click)="drawer.toggle()">

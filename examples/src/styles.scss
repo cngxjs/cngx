@@ -545,7 +545,8 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
 .status-row,
 .button-row,
 .filter-row,
-.search-row {
+.search-row,
+.demo-inline-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;

@@ -1,6 +1,7 @@
-// Pure helpers shared by the live example component and its TypeScript code
-// panel. No fs access, so scripts/__tests__ can import this module without
-// running the generator (index.mjs calls main() on import).
+// Pure helpers shared by the live example component and its code panels,
+// plus the selector extraction the generator and the chrome guard spec read.
+// No fs access, so scripts/__tests__ can import this module without running
+// the generator (index.mjs calls main() on import).
 
 export function stripCommentsForScan(s) {
   return String(s ?? '')
@@ -27,19 +28,42 @@ export function dedent(s) {
     .replace(/\s+$/, '');
 }
 
+/** The local name of one import specifier: `type A` -> `A`, `a as b` -> `b`. */
+export function localName(spec) {
+  const parts = spec
+    .trim()
+    .replace(/^type\s+/, '')
+    .split(/\s+as\s+/);
+  return (parts.length > 1 ? parts[1] : parts[0])?.trim();
+}
+
 export function importedSymbols(importLine) {
   const m = importLine.match(/import\s+(?:type\s+)?\{([^}]+)\}/);
   if (!m) return [];
-  return m[1]
-    .split(',')
-    .map((s) => {
-      const parts = s
-        .trim()
-        .replace(/^type\s+/, '')
-        .split(/\s+as\s+/);
-      return (parts.length > 1 ? parts[1] : parts[0])?.trim();
-    })
-    .filter(Boolean);
+  return m[1].split(',').map(localName).filter(Boolean);
+}
+
+/**
+ * Splits a one-line named import into `head` (`import {` or `import type {`),
+ * the trimmed `specifiers`, `tail` (`} from '<module>';`), `isType` and
+ * `module`. Returns `null` for any other line.
+ */
+export function parseNamedImport(line) {
+  const match = line.match(
+    /^(\s*import\s*(?:type\s+)?\{)([^}]+)(\}\s*from\s*['"]([^'"]+)['"];?\s*)$/,
+  );
+  if (!match) return null;
+  const [, head, body, tail, module] = match;
+  return {
+    head,
+    specifiers: body
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+    tail,
+    isType: /\btype\s*\{$/.test(head),
+    module,
+  };
 }
 
 export function escapeRegExp(s) {
@@ -92,22 +116,11 @@ export function coreSymbolsFor(classText, providersText) {
  * when it is not a named import.
  */
 export function filterImportLine(line, isReferenced) {
-  const match = line.match(
-    /^(\s*import\s*(?:type\s+)?\{)([^}]+)(\}\s*from\s*['"][^'"]+['"];?\s*)$/,
-  );
-  if (!match) return line;
-  const [, head, body, tail] = match;
-  const kept = body
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .filter((spec) => {
-      const parts = spec.replace(/^type\s+/, '').split(/\s+as\s+/);
-      const id = (parts.length > 1 ? parts[1] : parts[0])?.trim();
-      return isReferenced(id);
-    });
+  const parsed = parseNamedImport(line);
+  if (!parsed) return line;
+  const kept = parsed.specifiers.filter((spec) => isReferenced(localName(spec)));
   if (kept.length === 0) return null;
-  return `${head} ${kept.join(', ')} ${tail.trim()}`;
+  return `${parsed.head} ${kept.join(', ')} ${parsed.tail.trim()}`;
 }
 
 /**
@@ -158,7 +171,123 @@ export function templateUsesClass(cls, tpl, selectorMap) {
   return false;
 }
 
+/**
+ * Strip demo-chrome divs from a displayed template - `event-grid`/`event-row`
+ * (state readouts), `button-row`/`status-row` (config toggles), `cngx-ex-chrome`
+ * (explicit opt-in marker). Walks balanced <div>/</div> so nested chrome
+ * inside an outer chrome block is removed together. The live rendered
+ * template keeps everything; this only affects the Template-panel display
+ * and complements the `templateChrome` field for sections that haven't
+ * been migrated to the split yet.
+ */
+export function stripDemoChrome(html) {
+  const opener =
+    /<div\b[^>]*\bclass=["'][^"']*\b(?:event-grid|event-row|button-row|status-row|cngx-ex-chrome)\b[^"']*["'][^>]*>/g;
+  let result = html;
+  while (true) {
+    opener.lastIndex = 0;
+    const m = opener.exec(result);
+    if (!m) break;
+    let depth = 1;
+    let i = m.index + m[0].length;
+    while (i < result.length && depth > 0) {
+      const next = result.slice(i).match(/<\/?div\b[^>]*>/);
+      if (!next) break;
+      const absIdx = i + next.index;
+      if (next[0].startsWith('</')) depth--;
+      else depth++;
+      i = absIdx + next[0].length;
+    }
+    result = result.slice(0, m.index).replace(/\s*$/, '') + result.slice(i);
+  }
+  return result;
+}
+
+/** The Template panel text: the artifact `template` minus chrome divs, dedented. */
+export function buildDisplayedHtml(template) {
+  return dedentMarkup(stripDemoChrome(template ?? ''));
+}
+
+/**
+ * Cngx classes the panel decorator lists (they match the raw `template`) whose
+ * only use sits inside a chrome div, so the Template panel hides them.
+ */
+export function chromeHiddenClasses(story, selectorMap) {
+  const template = story.template ?? '';
+  const shown = stripDemoChrome(template);
+  return (story.imports ?? []).filter(
+    (cls) =>
+      cls.startsWith('Cngx') &&
+      templateUsesClass(cls, template, selectorMap) &&
+      !templateUsesClass(cls, shown, selectorMap),
+  );
+}
+
+/** Whether a file under projects/ can declare a selector the generator maps. */
+export function isSelectorSource(path) {
+  return path.endsWith('.ts') && !path.endsWith('.spec.ts') && !path.endsWith('public-api.ts');
+}
+
+/**
+ * `[className, selectors]` for every exported class in `src` with a
+ * `selector:` or `exportAs:` before it (the last one of each wins).
+ */
+export function selectorsInSource(src) {
+  const entries = [];
+  for (const classMatch of src.matchAll(/\bexport\s+(?:abstract\s+)?class\s+([A-Z]\w*)/g)) {
+    const className = classMatch[1];
+    const before = src.slice(0, classMatch.index);
+    const selectorMatches = [...before.matchAll(/selector:\s*['"]([^'"]+)['"]/g)];
+    const exportAsMatches = [...before.matchAll(/exportAs:\s*['"]([^'"]+)['"]/g)];
+    if (selectorMatches.length === 0 && exportAsMatches.length === 0) continue;
+    const selectors = [];
+    if (selectorMatches.length > 0) {
+      const last = selectorMatches.at(-1);
+      selectors.push(
+        ...last[1]
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+      );
+    }
+    if (exportAsMatches.length > 0) {
+      const last = exportAsMatches.at(-1);
+      selectors.push(
+        ...last[1]
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+      );
+    }
+    entries.push([className, selectors]);
+  }
+  return entries;
+}
+
 const indentOf = (line) => /^[ \t]*/.exec(line)[0].length;
+
+/**
+ * Dedent for template markup. A template that starts flush on the backtick
+ * line has a minimum indent of 0, so `dedent` leaves every later line
+ * shifted. In balanced markup the least-indented later line is a sibling of
+ * line 1 or its closing tag, so that indent is line 1's column: it is sliced
+ * from lines 2..n and line 1 stays as is. Every other shape goes through
+ * `dedent`.
+ */
+export function dedentMarkup(s) {
+  const lines = String(s).split('\n');
+  const [first, ...rest] = lines;
+  const meaningfulRest = rest.filter((l) => l.trim().length > 0);
+  const flushFirst = first.trim().length > 0 && indentOf(first) === 0;
+  if (!flushFirst || meaningfulRest.length === 0) {
+    return dedent(s);
+  }
+  const base = Math.min(...meaningfulRest.map(indentOf));
+  if (base === 0) {
+    return dedent(s);
+  }
+  return [first, ...rest.map((l) => l.slice(base))].join('\n').replace(/\s+$/, '');
+}
 
 /**
  * Dedent for a class body. Story `setup` strings usually start flush on the
@@ -186,6 +315,57 @@ export function indent(s, n) {
     .split('\n')
     .map((l) => (l.length ? pad + l : l))
     .join('\n');
+}
+
+/**
+ * The fixture path a reader of the TypeScript panel sees. The live component
+ * imports fixtures at its generated depth (`'../../../../../../fixtures'`),
+ * which means nothing outside the examples app, so the panel shows the
+ * shared barrel as `'./fixtures'` and a story-local `_fixtures/<file>` as
+ * `'./fixtures/<file>'`. Other lines pass through.
+ */
+export function displayImportPath(line) {
+  return line
+    .replace(/'(?:\.\.\/)+fixtures'/, "'./fixtures'")
+    .replace(/'(?:\.\.\/)+_fixtures\/([^']+)'/, "'./fixtures/$1'");
+}
+
+/**
+ * Merges named import lines from the same module (and the same `type`-ness)
+ * into the first one, specifiers in first-seen order. A story's
+ * `moduleImports` line and a generator-added line can name one package
+ * twice. A module named once keeps its line byte-identical; non-named
+ * imports pass through.
+ */
+export function mergeImportLines(lines) {
+  const groups = new Map();
+  const out = [];
+  for (const line of lines) {
+    const parsed = parseNamedImport(line);
+    if (!parsed) {
+      out.push(line);
+      continue;
+    }
+    const key = `${parsed.isType ? 'type ' : ''}${parsed.module}`;
+    const group = groups.get(key);
+    if (!group) {
+      groups.set(key, { at: out.length, parsed, specifiers: [...parsed.specifiers], count: 1 });
+      out.push(line);
+      continue;
+    }
+    group.count++;
+    for (const spec of parsed.specifiers) {
+      if (!group.specifiers.includes(spec)) {
+        group.specifiers.push(spec);
+      }
+    }
+  }
+  for (const { at, parsed, specifiers, count } of groups.values()) {
+    if (count > 1) {
+      out[at] = `${parsed.head} ${specifiers.join(', ')} ${parsed.tail.trim()}`;
+    }
+  }
+  return out;
 }
 
 /**
@@ -225,10 +405,13 @@ export function buildDisplayedTs({
   const explicitRefs = new Set([...imports, ...hostDirectives]);
   const isReferenced = (id) =>
     explicitRefs.has(id) || new RegExp(String.raw`\b${escapeRegExp(id)}\b`).test(scan);
-  const otherLines = importLines
-    .filter((l) => !l.includes("from '@angular/core'"))
-    .map((line) => filterImportLine(line, isReferenced))
-    .filter((l) => l !== null);
+  const otherLines = mergeImportLines(
+    importLines
+      .filter((l) => !l.includes("from '@angular/core'"))
+      .map((line) => filterImportLine(line, isReferenced))
+      .filter((l) => l !== null)
+      .map(displayImportPath),
+  );
 
   const decorator = [
     '@Component({',

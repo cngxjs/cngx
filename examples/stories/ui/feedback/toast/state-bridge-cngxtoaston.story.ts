@@ -26,7 +26,7 @@ export const STORY: DemoSpec = {
     this.saveState.set('pending');
     setTimeout(() => this.saveState.setError('Network timeout'), 1500);
   }`,
-  template: `  <div class="button-row" style="margin-bottom:12px">
+  template: `  <div class="demo-inline-actions" style="margin-bottom:12px">
     <button (click)="simulateSave()"
       [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true"
       class="chip" type="button">

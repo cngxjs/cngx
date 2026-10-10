@@ -52,7 +52,7 @@ Every story exports a single `STORY` constant typed as `DemoSpec`
 | `imports` | Class names that go into the component's `@Component.imports` array. |
 | `hostDirectives` | Class names attached to the host element via `hostDirectives`. Required when a service uses `inject(X, { host: true })`. |
 | `setup` | TypeScript class-body statements for the **artifact**. Emitted into the live class AND shown as the class body in the TypeScript code panel. Members sit at two spaces; a first line flush on the backtick line counts as sitting at member column. |
-| `template` | Angular template fragment for the **artifact**. Rendered live AND shown in the Template code panel. |
+| `template` | Angular template fragment for the **artifact**. Rendered live AND shown in the Template code panel. A first line flush on the backtick line is aligned with the least-indented later line. |
 | `setupChrome` | TypeScript class-body for **demo chrome** - mode toggles, fail flags, log buffers. Live in the class, hidden from the displayed TypeScript panel. |
 | `templateChrome` | Template fragment for **demo chrome** - radio rows, fail checkboxes, state readouts. Live below the artifact, hidden from the displayed Template panel. |
 | `templateChromeBefore` | Chrome that should render **above** the artifact instead of below: usage hints, intro callouts. Same stripping rules as `templateChrome`. |
@@ -102,6 +102,14 @@ These classes carry their styling from `examples/src/styles.scss` and
 double as the markers the generator falls back to if a story still
 puts chrome in `template`. New stories should write chrome into
 `templateChrome` directly.
+
+The Template panel strips every div with one of these classes, so they
+are for chrome only. A layout wrapper around artifact markup (a row of
+dialog-close buttons, a trigger next to a drawer) uses
+`demo-inline-actions`, which has the same flex layout as `button-row`, or
+no class at all. `scripts/__tests__/examples-gen-chrome-artifact.test.mjs`
+fails when a cngx class the panel decorator lists is only used inside a
+chrome div.
 
 A setup decl belongs in `setupChrome` when it's only read or written
 by `templateChrome`. If both halves use it (`commitMode` is set by
@@ -210,7 +218,9 @@ all of it.
   You usually don't need to spell out `moduleImports` for cngx symbols
   unless aliased.
 - Rewrites `../../fixtures/...` paths to the depth of the generated
-  component.
+  component. The TypeScript panel shows them as `./fixtures` (and a
+  story-local `../_fixtures/<file>` as `./fixtures/<file>`); only the live
+  component keeps the depth-rewritten path.
 - Copies co-located helper files referenced as `from './foo'` in
   `moduleImports` into the feature directory.
 

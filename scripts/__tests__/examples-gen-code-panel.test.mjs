@@ -255,3 +255,154 @@ describe('dedentClassBody', () => {
     expect(panel.dedentClassBody('a = 1;\nb = 2;')).toBe('a = 1;\nb = 2;');
   });
 });
+
+describe('parseNamedImport', () => {
+  it('splits a type import into its parts', () => {
+    expect(panel.parseNamedImport("import type { A, B } from '@cngx/x';")).toEqual({
+      head: 'import type {',
+      specifiers: ['A', 'B'],
+      tail: "} from '@cngx/x';",
+      isType: true,
+      module: '@cngx/x',
+    });
+  });
+
+  it('keeps an aliased specifier verbatim', () => {
+    const parsed = panel.parseNamedImport("import { a as b } from 'x'");
+    expect(parsed.specifiers).toEqual(['a as b']);
+    expect(parsed.isType).toBe(false);
+  });
+
+  it('returns null for a line that is not a named import', () => {
+    expect(panel.parseNamedImport("import * as d3 from 'd3';")).toBeNull();
+  });
+});
+
+describe('stripDemoChrome', () => {
+  it('removes a chrome div with its nested divs and keeps the rest', () => {
+    const tpl = '<p>a</p>\n<div class="button-row"><div><button>x</button></div></div>\n<p>b</p>';
+    expect(panel.stripDemoChrome(tpl)).toBe('<p>a</p>\n<p>b</p>');
+  });
+});
+
+describe('selectorsInSource', () => {
+  it('returns the selector and exportAs of an exported class', () => {
+    const src = "@Directive({ selector: '[cngxX], cngx-x', exportAs: 'cngxX' })\nexport class CngxX {}";
+    expect(panel.selectorsInSource(src)).toEqual([['CngxX', ['[cngxX]', 'cngx-x', 'cngxX']]]);
+  });
+});
+
+describe('chromeHiddenClasses', () => {
+  const dialogMap = new Map([['CngxDialogClose', ['[cngxDialogClose]']]]);
+  const dialogStory = (wrapperClass) => ({
+    imports: ['CngxDialogClose'],
+    template: `<dialog>\n  <div class="${wrapperClass}">\n    <button [cngxDialogClose]="true">OK</button>\n  </div>\n</dialog>`,
+  });
+
+  it('lists a class whose only use sits inside a chrome div', () => {
+    expect(panel.chromeHiddenClasses(dialogStory('button-row'), dialogMap)).toEqual([
+      'CngxDialogClose',
+    ]);
+  });
+
+  it('lists nothing when the wrapper is not a chrome class', () => {
+    expect(panel.chromeHiddenClasses(dialogStory('demo-inline-actions'), dialogMap)).toEqual([]);
+  });
+});
+
+describe('buildDisplayedHtml', () => {
+  it('dedents an indented template', () => {
+    expect(panel.buildDisplayedHtml('\n    <p>a</p>\n    <p>b</p>\n  ')).toBe('<p>a</p>\n<p>b</p>');
+  });
+
+  it('aligns the children and closing tag of a flush first line', () => {
+    const quota = '<div style="gap:8px">\n    <span>Quota</span>\n    <cngx-goal />\n  </div>';
+    expect(panel.buildDisplayedHtml(quota)).toBe(
+      '<div style="gap:8px">\n  <span>Quota</span>\n  <cngx-goal />\n</div>',
+    );
+  });
+
+  it('aligns siblings that follow a flush self-closed first line', () => {
+    expect(panel.buildDisplayedHtml('<cngx-a />\n    <cngx-b />\n    <cngx-c />')).toBe(
+      '<cngx-a />\n<cngx-b />\n<cngx-c />',
+    );
+  });
+});
+
+describe('buildDisplayedTs import lines', () => {
+  const story = {
+    imports: [],
+    setup: 'protected readonly people = PEOPLE;\nprotected readonly c = DemoMountCounter;',
+    template: '<p>{{ people.length }}</p>',
+  };
+  const lines = (...rest) => [
+    "import { ChangeDetectionStrategy, Component } from '@angular/core';",
+    ...rest,
+  ];
+  const importBlock = (importLines, s = story) =>
+    buildDisplayedTs({ story: s, importLines, ...meta('X', 'x') }).split('\n\n')[0];
+
+  it('shows the shared fixtures barrel as ./fixtures', () => {
+    expect(importBlock(lines("import { PEOPLE } from '../../../../../../fixtures';"))).toContain(
+      "import { PEOPLE } from './fixtures';",
+    );
+  });
+
+  it('shows a story-local _fixtures file under ./fixtures', () => {
+    const line =
+      "import { DemoMountCounter } from '../../../_fixtures/demo-mount-counter.component';";
+    expect(importBlock(lines(line))).toContain(
+      "import { DemoMountCounter } from './fixtures/demo-mount-counter.component';",
+    );
+  });
+
+  it('merges two import lines from the same module into one', () => {
+    const s = { imports: ['CngxA', 'CngxB'], setup: '', template: '<cngx-a /><cngx-b />' };
+    const block = importBlock(
+      lines("import { CngxA } from '@cngx/x';", "import { CngxB, CngxA } from '@cngx/x';"),
+      s,
+    );
+    expect(block.split('\n').filter((l) => l.includes("'@cngx/x'"))).toEqual([
+      "import { CngxA, CngxB } from '@cngx/x';",
+    ]);
+  });
+
+  it('keeps a type import from the same module on its own line', () => {
+    const s = { imports: ['CngxA'], setup: 'readonly t: T | null = null;', template: '<cngx-a />' };
+    const block = importBlock(
+      lines("import { CngxA } from '@cngx/x';", "import type { T } from '@cngx/x';"),
+      s,
+    );
+    expect(block.split('\n').filter((l) => l.includes("'@cngx/x'"))).toEqual([
+      "import { CngxA } from '@cngx/x';",
+      "import type { T } from '@cngx/x';",
+    ]);
+  });
+});
+
+describe('dedentMarkup', () => {
+  it('leaves a single line unchanged', () => {
+    expect(panel.dedentMarkup('<p>a</p>')).toBe('<p>a</p>');
+  });
+
+  it('leaves a flush line 1 with the rest at 0 unchanged', () => {
+    expect(panel.dedentMarkup('<p>a</p>\n<p>b</p>')).toBe('<p>a</p>\n<p>b</p>');
+  });
+
+  it('matches dedent when every line is indented', () => {
+    const tpl = '\n  <div>\n    <p>a</p>\n  </div>\n';
+    expect(panel.dedentMarkup(tpl)).toBe(panel.dedent(tpl));
+  });
+});
+
+describe('mergeImportLines', () => {
+  it('passes a non-named import through', () => {
+    const lines = ["import * as d3 from 'd3';", "import * as d3 from 'd3';"];
+    expect(panel.mergeImportLines(lines)).toEqual(lines);
+  });
+
+  it('keeps a single line without a semicolon unchanged', () => {
+    const lines = ["import { A,B } from 'x'", "import { C } from 'y';"];
+    expect(panel.mergeImportLines(lines)).toEqual(lines);
+  });
+});

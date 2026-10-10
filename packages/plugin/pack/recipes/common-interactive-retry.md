@@ -34,7 +34,7 @@ private readonly flakyAction = () => new Promise<void>((resolve, reject) =>
 ## Wiring
 
 ```html
-<div class="button-row">
+<div class="demo-inline-actions">
     <button
       [cngxAsyncClick]="retryAction"
       #btn="cngxAsyncClick"

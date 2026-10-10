@@ -32,7 +32,7 @@ export const STORY: DemoSpec = {
   protected readonly retryAction = this.retryTuple[0];
   protected readonly retryState = this.retryTuple[1];`,
   template: `
-  <div class="button-row">
+  <div class="demo-inline-actions">
     <button
       [cngxAsyncClick]="retryAction"
       #btn="cngxAsyncClick"
