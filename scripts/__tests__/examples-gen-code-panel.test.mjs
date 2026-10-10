@@ -315,14 +315,14 @@ describe('buildDisplayedHtml', () => {
     expect(panel.buildDisplayedHtml('\n    <p>a</p>\n    <p>b</p>\n  ')).toBe('<p>a</p>\n<p>b</p>');
   });
 
-  it.fails('aligns the children and closing tag of a flush first line', () => {
+  it('aligns the children and closing tag of a flush first line', () => {
     const quota = '<div style="gap:8px">\n    <span>Quota</span>\n    <cngx-goal />\n  </div>';
     expect(panel.buildDisplayedHtml(quota)).toBe(
       '<div style="gap:8px">\n  <span>Quota</span>\n  <cngx-goal />\n</div>',
     );
   });
 
-  it.fails('aligns siblings that follow a flush self-closed first line', () => {
+  it('aligns siblings that follow a flush self-closed first line', () => {
     expect(panel.buildDisplayedHtml('<cngx-a />\n    <cngx-b />\n    <cngx-c />')).toBe(
       '<cngx-a />\n<cngx-b />\n<cngx-c />',
     );
@@ -377,5 +377,20 @@ describe('buildDisplayedTs import lines', () => {
       "import { CngxA } from '@cngx/x';",
       "import type { T } from '@cngx/x';",
     ]);
+  });
+});
+
+describe('dedentMarkup', () => {
+  it('leaves a single line unchanged', () => {
+    expect(panel.dedentMarkup('<p>a</p>')).toBe('<p>a</p>');
+  });
+
+  it('leaves a flush line 1 with the rest at 0 unchanged', () => {
+    expect(panel.dedentMarkup('<p>a</p>\n<p>b</p>')).toBe('<p>a</p>\n<p>b</p>');
+  });
+
+  it('matches dedent when every line is indented', () => {
+    const tpl = '\n  <div>\n    <p>a</p>\n  </div>\n';
+    expect(panel.dedentMarkup(tpl)).toBe(panel.dedent(tpl));
   });
 });

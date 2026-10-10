@@ -52,7 +52,7 @@ Every story exports a single `STORY` constant typed as `DemoSpec`
 | `imports` | Class names that go into the component's `@Component.imports` array. |
 | `hostDirectives` | Class names attached to the host element via `hostDirectives`. Required when a service uses `inject(X, { host: true })`. |
 | `setup` | TypeScript class-body statements for the **artifact**. Emitted into the live class AND shown as the class body in the TypeScript code panel. Members sit at two spaces; a first line flush on the backtick line counts as sitting at member column. |
-| `template` | Angular template fragment for the **artifact**. Rendered live AND shown in the Template code panel. |
+| `template` | Angular template fragment for the **artifact**. Rendered live AND shown in the Template code panel. A first line flush on the backtick line is aligned with the least-indented later line. |
 | `setupChrome` | TypeScript class-body for **demo chrome** - mode toggles, fail flags, log buffers. Live in the class, hidden from the displayed TypeScript panel. |
 | `templateChrome` | Template fragment for **demo chrome** - radio rows, fail checkboxes, state readouts. Live below the artifact, hidden from the displayed Template panel. |
 | `templateChromeBefore` | Chrome that should render **above** the artifact instead of below: usage hints, intro callouts. Same stripping rules as `templateChrome`. |

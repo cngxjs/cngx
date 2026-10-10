@@ -205,7 +205,7 @@ export function stripDemoChrome(html) {
 
 /** The Template panel text: the artifact `template` minus chrome divs, dedented. */
 export function buildDisplayedHtml(template) {
-  return dedent(stripDemoChrome(template ?? ''));
+  return dedentMarkup(stripDemoChrome(template ?? ''));
 }
 
 /**
@@ -265,6 +265,29 @@ export function selectorsInSource(src) {
 }
 
 const indentOf = (line) => /^[ \t]*/.exec(line)[0].length;
+
+/**
+ * Dedent for template markup. A template that starts flush on the backtick
+ * line has a minimum indent of 0, so `dedent` leaves every later line
+ * shifted. In balanced markup the least-indented later line is a sibling of
+ * line 1 or its closing tag, so that indent is line 1's column: it is sliced
+ * from lines 2..n and line 1 stays as is. Every other shape goes through
+ * `dedent`.
+ */
+export function dedentMarkup(s) {
+  const lines = String(s).split('\n');
+  const [first, ...rest] = lines;
+  const meaningfulRest = rest.filter((l) => l.trim().length > 0);
+  const flushFirst = first.trim().length > 0 && indentOf(first) === 0;
+  if (!flushFirst || meaningfulRest.length === 0) {
+    return dedent(s);
+  }
+  const base = Math.min(...meaningfulRest.map(indentOf));
+  if (base === 0) {
+    return dedent(s);
+  }
+  return [first, ...rest.map((l) => l.slice(base))].join('\n').replace(/\s+$/, '');
+}
 
 /**
  * Dedent for a class body. Story `setup` strings usually start flush on the
