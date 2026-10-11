@@ -823,6 +823,42 @@ describe('createAnnouncementRecorder', () => {
       expect(summaries()).toEqual([{ text: 'Ready', origin: 'insertion', busy: true }]);
     });
 
+    it('replays an alert inserted under busy when busy clears', async () => {
+      const wrapper = busyWrapper();
+      start();
+
+      wrapper.append(region({ role: 'alert' }, 'Disk full'));
+      await observed();
+      wrapper.removeAttribute('aria-busy');
+      await observed();
+
+      expect(
+        recorder.entries().map(({ text, origin, busy, role }) => ({ text, origin, busy, role })),
+      ).toEqual([
+        { text: 'Disk full', origin: 'insertion', busy: true, role: 'alert' },
+        { text: 'Disk full', origin: 'busy-cleared', busy: false, role: 'alert' },
+      ]);
+    });
+
+    it('replays the current text of an alert that became live under busy', async () => {
+      const el = region({}, 'Upload failed');
+      const wrapper = busyWrapper(el);
+      start();
+
+      el.setAttribute('role', 'alert');
+      await observed();
+      el.textContent = 'Upload failed, retry';
+      await observed();
+      wrapper.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries().at(-1)).toEqual({
+        text: 'Upload failed, retry',
+        origin: 'busy-cleared',
+        busy: false,
+      });
+    });
+
     it('keeps a region that became live under busy out of the flip', async () => {
       const el = region({}, 'Uploaded');
       const wrapper = busyWrapper(el);

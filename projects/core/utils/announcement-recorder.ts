@@ -220,8 +220,9 @@ const CANDIDATE_SELECTOR = '[aria-live],[role]';
  * repeated; removed or overwritten text is left out). A write landing in the
  * same observer batch as the flip joins that entry; with nothing deferred
  * before it, it records one non-busy `'mutation'` entry instead. An
- * `'insertion'` or `'became-live'` under busy is never replayed by the flip,
- * and text inside `hidden` / `aria-hidden` descendants is never recorded.
+ * `'insertion'` or `'became-live'` under busy is replayed by the flip only
+ * for role `alert`, the one role heard on appearance; text inside `hidden` /
+ * `aria-hidden` descendants is never recorded.
  *
  * Known limits:
  * - no layout-based visibility (`display:none`, `visibility:hidden`); jsdom
@@ -339,15 +340,24 @@ export function createAnnouncementRecorder(
       }
     }
     const text = readText(region, false, rewritten ? undefined : appended);
-    // An appearance is never deferred: the busy flip replays writes, not
-    // insertions. A region moved while tracked keeps its deferred writes; if
-    // the move took it out of busy, the flip pass below reads them.
-    const deferred = regions.get(region)?.deferred ?? new Set<Node>();
-    regions.set(region, { lastText: text, deferred });
-    if (text !== '') {
-      record(region, text, origin);
+    const covered = rewritten ? records.length : since;
+    // A region moved while tracked keeps its deferred writes; if the move
+    // took it out of busy, the flip pass below reads them.
+    const state: RegionState = {
+      lastText: text,
+      deferred: regions.get(region)?.deferred ?? new Set<Node>(),
+    };
+    regions.set(region, state);
+    if (text === '') {
+      return covered;
     }
-    return rewritten ? records.length : since;
+    record(region, text, origin);
+    // Only an alert is heard on appearance, so only an alert appearing under
+    // busy is replayed by the flip; a status appearance stays unheard.
+    if (isBusy(region) && primaryRole(region) === 'alert') {
+      defer(state, [region]);
+    }
+    return covered;
   };
 
   const closestRegion = (node: Node): Element | null => {
@@ -656,7 +666,7 @@ function presentText(region: Element, nodes: readonly Node[]): string {
     ),
   );
   const outermost = [...present].filter((node) => !hasAncestorIn(node, present, region));
-  return normalise(outermost.map((node) => readText(node, true)).join(' '));
+  return normalise(outermost.map((node) => readText(node, node !== region)).join(' '));
 }
 
 /** @internal */
