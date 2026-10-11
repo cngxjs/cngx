@@ -105,6 +105,16 @@ describe('askOnboarding', () => {
     expect(answers).toMatchObject({ preset: 'full', i18n: 'de', runtimeSwitch: false, lint: true, feedback: true });
   });
 
+  it('selects every package and the detected editors when the schema registry passes empty lists', async () => {
+    const { answers } = await ask(
+      createFacts({ editors: { claude: true, cursor: false, vscode: false } }),
+      { preset: 'full', libs: [], aiTools: [] },
+      false,
+    );
+    expect(answers.libs).toHaveLength(7);
+    expect(answers.aiTools).toEqual(['claude']);
+  });
+
   it('rejects a flag value no question offers', async () => {
     await expect(ask(createFacts(), { libs: ['charts'] })).rejects.toThrow('"charts" is not a valid answer for libs.');
   });
@@ -113,5 +123,9 @@ describe('askOnboarding', () => {
 describe('givenAnswers', () => {
   it('keeps only the answer flags that were given', () => {
     expect(givenAnswers({ preset: 'full', quiet: true, lint: false, libs: ['ui'] })).toEqual({ lint: false, libs: ['ui'] });
+  });
+
+  it('reads the empty list the schema registry fills in for an unset array as not given', () => {
+    expect(givenAnswers({ libs: [], aiTools: [] })).toEqual({});
   });
 });

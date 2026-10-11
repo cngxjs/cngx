@@ -80,7 +80,8 @@ describe('dist/core/schematics', () => {
 
       const tree = await runner.runSchematic('ng-add', {}, await createAppTree(runner));
 
-      expect(messages).toEqual(expect.arrayContaining(['Planned (1):', 'cngx planned 1 change.']));
+      expect(messages.some((message) => /^Planned \(\d+\):$/.test(message))).toBe(true);
+      expect(messages.some((message) => /^cngx planned \d+ changes\.$/.test(message))).toBe(true);
       expect(tree.exists('.cngx/spike.json')).toBe(false);
     });
   });

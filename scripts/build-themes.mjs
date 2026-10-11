@@ -28,9 +28,16 @@ const ROOT = resolve(__dirname, '..');
 const SRC = join(ROOT, 'projects', 'themes');
 const DEST = join(ROOT, 'dist', 'themes');
 
+// The ng-add shim sources; scripts/build-schematics.mjs bundles them into
+// dist/themes/schematics after this copy.
+const SKIP = new Set([join(SRC, 'schematics'), join(SRC, 'node_modules')]);
+
 function copyRecursive(srcDir, destDir) {
   mkdirSync(destDir, { recursive: true });
   for (const entry of readdirSync(srcDir)) {
+    if (SKIP.has(join(srcDir, entry))) {
+      continue;
+    }
     const fullSrc = join(srcDir, entry);
     const fullDest = join(destDir, entry);
     const stat = statSync(fullSrc);

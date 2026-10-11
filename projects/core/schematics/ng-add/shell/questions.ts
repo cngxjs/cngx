@@ -47,18 +47,25 @@ export function presetDefaults(preset: NgAddPreset, facts: ProjectFacts): Onboar
   return recommended;
 }
 
+// The devkit schema registry fills every unset array option with `[]`
+// (`addUndefinedDefaults`), so an empty list means "not given", never "none".
+function givenValue(options: NgAddOptions, key: (typeof ANSWER_KEYS)[number]): NgAddOptions[typeof key] {
+  const value = options[key];
+  return Array.isArray(value) && value.length === 0 ? undefined : value;
+}
+
 /** The answer flags given on the command line, keyed like the questions. */
 export function givenAnswers(options: NgAddOptions): PromptAnswers {
   return Object.fromEntries(
     ANSWER_KEYS.flatMap((key) => {
-      const value = options[key];
+      const value = givenValue(options, key);
       return value === undefined ? [] : [[key, value]];
     }),
   );
 }
 
 function flag<T>(options: NgAddOptions, key: (typeof ANSWER_KEYS)[number], fallback: T): T {
-  const value = options[key];
+  const value = givenValue(options, key);
   return value === undefined ? fallback : (value as T);
 }
 

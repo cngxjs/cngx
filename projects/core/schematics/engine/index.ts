@@ -47,6 +47,7 @@ export { addToArrayLiteral, type ArraySelector, hasArrayLiteral } from './edit/t
 export { findElements, insertAttribute, parseTemplateContent } from './edit/template-edit';
 export { hasStyleImport, insertStyleImport } from './edit/style-edit';
 export { applyChangePlan } from './apply/apply';
+export { delegateNgAdd } from './shim/delegate-ng-add';
 export {
   DEFAULT_ESLINT_PLUGIN_VERSION,
   DEFAULT_MCP_VERSION,
