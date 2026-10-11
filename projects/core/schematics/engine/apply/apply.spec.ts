@@ -110,6 +110,54 @@ describe('applyChangePlan', () => {
     expect(config).toMatch(/import \{ [^}]*\bwithPersistence\b[^}]* \} from '@cngx\/core';/);
   });
 
+  it('renders a reference argument as a bare identifier', async () => {
+    const tree = await apply(
+      [
+        {
+          ...BASE,
+          kind: 'add-provider',
+          id: 'p',
+          project: 'app',
+          call: {
+            symbol: 'provideCngxI18n',
+            module: '@cngx/core/i18n',
+            args: [
+              {
+                symbol: 'withPack',
+                module: '@cngx/core/i18n',
+                args: [{ symbol: 'CNGX_LANGUAGE_DE', module: '@cngx/core/i18n/de', reference: true }],
+              },
+            ],
+          },
+        },
+      ],
+      await createApp(),
+    );
+    const config = tree.readText('projects/app/src/app/app.config.ts');
+
+    expect(config).toContain('provideCngxI18n(withPack(CNGX_LANGUAGE_DE))');
+    expect(config).toContain("import { CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';");
+  });
+
+  it('writes a literal argument as is and imports nothing for it', async () => {
+    const tree = await apply(
+      [
+        {
+          ...BASE,
+          kind: 'add-provider',
+          id: 'p',
+          project: 'app',
+          call: { symbol: 'provideDirection', module: '@cngx/core', args: [{ literal: "'rtl'" }] },
+        },
+      ],
+      await createApp(),
+    );
+    const config = tree.readText('projects/app/src/app/app.config.ts');
+
+    expect(config).toContain("provideDirection('rtl')");
+    expect(config).toContain("import { provideDirection } from '@cngx/core';");
+  });
+
   it('places a style import before the first rule', async () => {
     const tree = await apply(
       [

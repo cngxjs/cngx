@@ -29,6 +29,7 @@ export {
   type Note,
   type Provenance,
   type ProviderCall,
+  type ProviderLiteral,
   type SkippedStep,
   skipChange,
   type StepResult,

@@ -42,11 +42,18 @@ export interface AddDependency extends ChangeBase {
   readonly version: string;
 }
 
+/** A literal argument written as is, such as `'rtl'`; it imports nothing. */
+export interface ProviderLiteral {
+  readonly literal: string;
+}
+
 /** A call expression such as `provideA11yPreferences(withPersistence())`. */
 export interface ProviderCall {
   readonly symbol: string;
   readonly module: string;
-  readonly args?: readonly ProviderCall[];
+  readonly args?: readonly (ProviderCall | ProviderLiteral)[];
+  /** Rendered as the bare identifier, not a call: `withPack(CNGX_LANGUAGE_DE)`. */
+  readonly reference?: boolean;
 }
 
 export interface AddProvider extends ChangeBase {

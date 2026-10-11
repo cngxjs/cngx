@@ -41,6 +41,8 @@ export interface ProjectFacts {
   readonly cngxThemePath: string | undefined;
   /** The file holding the root providers: `app.config.ts` or the root NgModule. */
   readonly appConfigPath: string;
+  /** Every `provide*()` call already in that file. */
+  readonly rootProviders: readonly string[];
   readonly material: MaterialFacts;
   readonly editors: EditorFacts;
   readonly eslintConfigPath: string | undefined;
@@ -299,6 +301,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     cngxStylesheet: importsCngxStylesheet(tree, entries),
     cngxThemePath: existingCngxTheme(tree, sourceRoot, entries),
     appConfigPath,
+    rootProviders: providers,
     material: detectMaterial(tree, manifest, entries),
     editors: {
       claude: tree.exists('CLAUDE.md') || hasEntries(tree, '.claude'),
