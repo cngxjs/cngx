@@ -22,11 +22,11 @@ protected readonly saveAction = () => of(undefined).pipe(delay(800));
 
 ```html
 <button type="button" [cngxAsyncClick]="saveAction" #btn="cngxAsyncClick">
-    @switch (btn.status()) {
-      @case ('pending') { Saving... }
-      @case ('success') { Saved! }
-      @case ('error') { Failed }
-      @default { Save }
-    }
-  </button>
+  @switch (btn.status()) {
+    @case ('pending') { Saving... }
+    @case ('success') { Saved! }
+    @case ('error') { Failed }
+    @default { Save }
+  }
+</button>
 ```

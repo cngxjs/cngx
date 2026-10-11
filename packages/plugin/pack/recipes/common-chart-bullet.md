@@ -22,17 +22,17 @@ protected readonly state = createManualState<number>();
 
 ```html
 <div style="max-width:400px">
-    <cngx-bullet
-      [actual]="78"
-      [target]="80"
-      [max]="100"
-      [state]="state"
-      [ranges]="[
-        { from: 0, to: 50, color: 'color-mix(in oklch, currentColor 10%, transparent)', label: 'poor' },
-        { from: 50, to: 75, color: 'color-mix(in oklch, currentColor 18%, transparent)', label: 'fair' },
-        { from: 75, to: 100, color: 'color-mix(in oklch, currentColor 28%, transparent)', label: 'good' }
-      ]"
-      aria-label="Demo bullet"
-    />
-  </div>
+  <cngx-bullet
+    [actual]="78"
+    [target]="80"
+    [max]="100"
+    [state]="state"
+    [ranges]="[
+      { from: 0, to: 50, color: 'color-mix(in oklch, currentColor 10%, transparent)', label: 'poor' },
+      { from: 50, to: 75, color: 'color-mix(in oklch, currentColor 18%, transparent)', label: 'fair' },
+      { from: 75, to: 100, color: 'color-mix(in oklch, currentColor 28%, transparent)', label: 'good' }
+    ]"
+    aria-label="Demo bullet"
+  />
+</div>
 ```

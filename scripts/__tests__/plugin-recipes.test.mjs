@@ -1,10 +1,12 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import {
+  collectStoryEntries,
   demonstratesAsync,
+  expectedRecipes,
   renderRecipe,
   selectRecipeStories,
   storyToRecipe,
@@ -95,6 +97,32 @@ describe('storyToRecipe', () => {
     expect(recipe).not.toHaveProperty('setup');
   });
 
+  it('renders a flush-first-line template at the column of line 1', () => {
+    const template = '<cngx-select [items]="state.value()">\n      <span>x</span>\n    </cngx-select>';
+    expect(storyToRecipe({ ...ASYNC_STORY, template }).wiring).toBe(
+      '<cngx-select [items]="state.value()">\n  <span>x</span>\n</cngx-select>',
+    );
+  });
+
+  it('drops a button-row chrome div from the wiring', () => {
+    const template = [
+      '<cngx-select [items]="state.value()"></cngx-select>',
+      '<div class="button-row">',
+      '  <button type="button" (click)="reload()">Reload</button>',
+      '</div>',
+    ].join('\n');
+    expect(storyToRecipe({ ...ASYNC_STORY, template }).wiring).toBe(
+      '<cngx-select [items]="state.value()"></cngx-select>',
+    );
+  });
+
+  it('renders a flush-first-line setup with its members at column 0', () => {
+    const setup = 'readonly state = createAsyncState(load);\n  readonly open = signal(false);';
+    expect(storyToRecipe({ ...ASYNC_STORY, setup }).setup).toBe(
+      'readonly state = createAsyncState(load);\nreadonly open = signal(false);',
+    );
+  });
+
   it('returns null when no cngx symbol resolves', () => {
     expect(storyToRecipe({ title: 'plain', template: '<div></div>' })).toBeNull();
   });
@@ -116,6 +144,41 @@ describe('selectRecipeStories', () => {
     const selected = selectRecipeStories(entries);
     expect(selected).toHaveLength(1);
     expect(selected[0].slug).toBe('basic-happy-path');
+  });
+});
+
+describe('expectedRecipes', () => {
+  it('skips a folder whose representative yields no recipe', () => {
+    const entries = [
+      {
+        path: 'examples/stories/common/interactive/async-click/basic-happy-path.story.ts',
+        story: ASYNC_STORY,
+      },
+      {
+        path: 'examples/stories/common/data/async/basic.story.ts',
+        story: { title: 'plain', setup: 'readonly s = createAsyncState(load);' },
+      },
+    ];
+    expect(expectedRecipes(entries)).toEqual([
+      {
+        artifact: 'pack/recipes/common-interactive-async-click.md',
+        source: entries[0].path,
+        body: renderRecipe(storyToRecipe(ASYNC_STORY)),
+      },
+    ]);
+  });
+});
+
+describe('collectStoryEntries', () => {
+  it('parses every committed story without an onError call', () => {
+    const errors = [];
+    const entries = collectStoryEntries((path, err) => errors.push(`${path}: ${err.message}`));
+    expect(errors).toEqual([]);
+    const storyFiles = readdirSync(resolve(here, '../../examples/stories'), {
+      recursive: true,
+    }).filter((file) => file.endsWith('.story.ts'));
+    expect(storyFiles.length).toBeGreaterThan(800);
+    expect(entries).toHaveLength(storyFiles.length);
   });
 });
 

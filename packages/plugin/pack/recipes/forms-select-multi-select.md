@@ -16,17 +16,17 @@ CngxMultiSelect - multi-value selection with a chip strip trigger. Same async/co
 
 ```ts
 protected readonly multiAsyncValues = signal<string[]>([]);
-  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
-    createManualState<CngxSelectOptionsInput<string>>();
+protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+  createManualState<CngxSelectOptionsInput<string>>();
 ```
 
 ## Wiring
 
 ```html
 <cngx-multi-select
-    [label]="'Topics'"
-    [state]="multiAsyncState"
-    [(values)]="multiAsyncValues"
-    placeholder="Choose topics…"
-  />
+  [label]="'Topics'"
+  [state]="multiAsyncState"
+  [(values)]="multiAsyncValues"
+  placeholder="Choose topics…"
+/>
 ```

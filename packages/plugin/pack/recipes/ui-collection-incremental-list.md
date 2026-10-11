@@ -16,18 +16,18 @@ The empty view is one of the five slot regions. A projected *cngxIncrementalEmpt
 
 ```ts
 protected readonly listState = createManualState<Person[]>();
-  protected readonly pageSize = signal(5);
-  constructor() {
-    this.listState.setSuccess([]);
-  }
+protected readonly pageSize = signal(5);
+constructor() {
+  this.listState.setSuccess([]);
+}
 ```
 
 ## Wiring
 
 ```html
 <cngx-incremental-list [state]="listState" [total]="0" [pageSize]="pageSize()">
-    <ng-template cngxIncrementalItem let-p>
-      <strong>{{ p.name }}</strong> - {{ p.role }}
-    </ng-template>
-  </cngx-incremental-list>
+  <ng-template cngxIncrementalItem let-p>
+    <strong>{{ p.name }}</strong> - {{ p.role }}
+  </ng-template>
+</cngx-incremental-list>
 ```

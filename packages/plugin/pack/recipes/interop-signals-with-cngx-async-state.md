@@ -16,56 +16,56 @@ The feature contributes one createManualState per key via withProps - no hand-wr
 
 ```ts
 private readonly UsersStore = signalStore(
-    withCngxAsyncState<Person[]>()('users'),
-    withMethods((store) => ({
-      load: (fail: boolean) =>
-        timer(900)
-          .pipe(
-            map(() => {
-              if (fail) {
-                throw new Error('Users endpoint unavailable');
-              }
-              return PEOPLE.slice(0, 5);
-            }),
-            tapAsyncState(store.usersSink),
-          )
-          .subscribe({
-            // The sink already captured the failure as state; an empty error
-            // callback keeps the global ErrorHandler out of the demo console.
-            error: () => {},
+  withCngxAsyncState<Person[]>()('users'),
+  withMethods((store) => ({
+    load: (fail: boolean) =>
+      timer(900)
+        .pipe(
+          map(() => {
+            if (fail) {
+              throw new Error('Users endpoint unavailable');
+            }
+            return PEOPLE.slice(0, 5);
           }),
-    })),
-  );
+          tapAsyncState(store.usersSink),
+        )
+        .subscribe({
+          // The sink already captured the failure as state; an empty error
+          // callback keeps the global ErrorHandler out of the demo console.
+          error: () => {},
+        }),
+  })),
+);
 
-  protected readonly store = new this.UsersStore();
+protected readonly store = new this.UsersStore();
 
-  constructor() {
-    this.store.load(false);
-  }
+constructor() {
+  this.store.load(false);
+}
 ```
 
 ## Wiring
 
 ```html
 <cngx-async-container [state]="store.usersState" ariaLabel="Users">
-    <ng-template cngxAsyncSkeleton>
-      <div class="demo-stack--tight" style="display:flex;flex-direction:column">
-        @for (i of [1, 2, 3]; track i) {
-          <div class="demo-skeleton-bar" style="height:24px"></div>
-        }
-      </div>
-    </ng-template>
+  <ng-template cngxAsyncSkeleton>
+    <div class="demo-stack--tight" style="display:flex;flex-direction:column">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="demo-skeleton-bar" style="height:24px"></div>
+      }
+    </div>
+  </ng-template>
 
-    <ng-template cngxAsyncContent let-data>
-      <ul style="list-style:none;padding:0;margin:0">
-        @for (person of data; track person.name) {
-          <li>{{ person.name }} ({{ person.role }})</li>
-        }
-      </ul>
-    </ng-template>
+  <ng-template cngxAsyncContent let-data>
+    <ul style="list-style:none;padding:0;margin:0">
+      @for (person of data; track person.name) {
+        <li>{{ person.name }} ({{ person.role }})</li>
+      }
+    </ul>
+  </ng-template>
 
-    <ng-template cngxAsyncError let-err>
-      <p style="margin:0">Load failed: {{ $any(err).message }}</p>
-    </ng-template>
-  </cngx-async-container>
+  <ng-template cngxAsyncError let-err>
+    <p style="margin:0">Load failed: {{ $any(err).message }}</p>
+  </ng-template>
+</cngx-async-container>
 ```

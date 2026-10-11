@@ -205,6 +205,11 @@
       "artifact": "pack/recipes/interop-signals-with-cngx-async-state.md",
       "source": "examples/stories/interop/signals/with-cngx-async-state/signalstore-async-feature.story.ts",
       "contentHash": "sha256:00974363a2cccb1bbbf2b1ddae0102932bfb86567066a76fdd91b817ef8cffa5"
+    },
+    {
+      "artifact": "pack/recipes/core-i18n-language-pack.md",
+      "source": "examples/stories/core/i18n/language-pack/live-switch-common.story.ts",
+      "contentHash": "sha256:db547fe4938de233c30be4dc3e5fb6a84659a50ce4c14d48e3827fc80471128f"
     }
   ],
   "theming": {

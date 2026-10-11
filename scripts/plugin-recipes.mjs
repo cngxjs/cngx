@@ -4,20 +4,21 @@
 // representative. Each recipe is a projection of the canonical story - its
 // title, its description, the cngx symbols it composes, and the artifact
 // template (chrome excluded) as the wiring.
-//
-// parseStory evaluates the story object literal with new Function. That is safe
-// here and only here: the input is first-party committed source under
-// examples/stories, the generator runs at build time (never in the shipped
-// plugin), and a story that fails to evaluate is skipped, not fatal. This
-// mirrors examples-gen's loadStory. Do not point it at untrusted input.
 
 import { readdirSync, readFileSync, statSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import {
+  buildDisplayedHtml,
+  dedentClassBody,
+  importedSymbols,
+} from './examples-gen/code-panel.mjs';
+import { parseStory } from './examples-gen/story.mjs';
 import { computeSourceHash, upsertManifestEntry } from './plugin-token-reference.mjs';
 
 const STORIES_ROOT = 'examples/stories';
+const PLUGIN_ROOT = 'packages/plugin';
 const RECIPES_DIR = 'packages/plugin/pack/recipes';
 const MANIFEST = 'packages/plugin/pack/pack-manifest.json';
 
@@ -30,19 +31,6 @@ const ASYNC_API =
 const normalizeDashes = (text) => text.replace(/\s*[\u2014\u2013]\s*/g, ' - ');
 const stripHtml = (text) => (text ?? '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 
-export function parseStory(source) {
-  const stripped = source.replace(/^import type[^\n]+\n/m, '');
-  const match = stripped.match(/export const STORY[^=]*=\s*([\s\S]+?);?\s*$/);
-  if (!match) {
-    return null;
-  }
-  try {
-    return new Function(`return (${match[1]})`)();
-  } catch {
-    return null;
-  }
-}
-
 export function demonstratesAsync(story) {
   const blob = [
     story.setup ?? '',
@@ -53,17 +41,6 @@ export function demonstratesAsync(story) {
   return ASYNC_API.test(blob);
 }
 
-function cngxSymbolsFromImport(line) {
-  const match = line.match(/import\s+(?:type\s+)?\{([^}]+)\}/);
-  if (!match) {
-    return [];
-  }
-  return match[1]
-    .split(',')
-    .map((part) => part.trim().replace(/^type\s+/, '').split(/\s+as\s+/).pop()?.trim())
-    .filter((name) => name && /^Cngx/.test(name));
-}
-
 export function recipeSymbols(story) {
   const api = (Array.isArray(story.apiComponents) ? story.apiComponents : []).filter((name) =>
     /^Cngx/.test(name),
@@ -71,8 +48,8 @@ export function recipeSymbols(story) {
   if (api.length > 0) {
     return [...new Set(api)];
   }
-  const imported = (Array.isArray(story.moduleImports) ? story.moduleImports : []).flatMap(
-    cngxSymbolsFromImport,
+  const imported = (Array.isArray(story.moduleImports) ? story.moduleImports : []).flatMap((line) =>
+    importedSymbols(line).filter((name) => /^Cngx/.test(name)),
   );
   return [...new Set(imported)];
 }
@@ -82,8 +59,11 @@ export function storyToRecipe(story) {
   if (symbols.length === 0) {
     return null;
   }
-  const template = normalizeDashes((story.template ?? '').trim());
-  const setup = normalizeDashes((story.setup ?? '').trim());
+  // Both fields render as the code panels show them: the template through the
+  // Template panel builder (chrome divs out, markup dedent), the setup through
+  // the class-body dedent.
+  const template = normalizeDashes(buildDisplayedHtml(story.template).trim());
+  const setup = normalizeDashes(dedentClassBody(story.setup ?? '').trim());
   // The template is the composition surface a recipe teaches, so it is the
   // wiring. The class setup that backs it rides alongside as its own field
   // rather than replacing the template (the old "longer wins" rule hid the
@@ -144,9 +124,27 @@ function* walkStories(root) {
   }
 }
 
+// Every story under STORIES_ROOT as `{ path, story }`. A story that does not
+// parse is left out and handed to `onError(path, err)`.
+export function collectStoryEntries(onError) {
+  const entries = [];
+  for (const path of walkStories(STORIES_ROOT)) {
+    try {
+      entries.push({ path, story: parseStory(readFileSync(path, 'utf8'), path) });
+    } catch (err) {
+      onError(path, err);
+    }
+  }
+  return entries;
+}
+
 const demoFolder = (storyPath) => relative(STORIES_ROOT, storyPath).replace(/\/[^/]+\.story\.ts$/, '');
 const exampleSlug = (storyPath) => storyPath.replace(/^.*\//, '').replace(/\.story\.ts$/, '');
 const recipeName = (folder) => folder.replace(/\//g, '-');
+
+export function recipeArtifact(folder) {
+  return `pack/recipes/${recipeName(folder)}.md`;
+}
 
 // Within a folder's async examples, prefer the plainest one: a basic/happy-path
 // slug first, then an explicitly async/state slug, then the shortest title.
@@ -192,36 +190,43 @@ export function selectRecipeStories(entries) {
   return [...byFolder.values()].sort((a, b) => a.folder.localeCompare(b.folder));
 }
 
-function main() {
-  const entries = [];
-  for (const path of walkStories(STORIES_ROOT)) {
-    const story = parseStory(readFileSync(path, 'utf8'));
-    if (story) {
-      entries.push({ path, story });
+// The recipes the pack ships for these stories: one `{ artifact, source, body }`
+// per selected folder whose representative yields a recipe. The generator
+// writes exactly this list and the drift check compares against it.
+export function expectedRecipes(entries) {
+  return selectRecipeStories(entries).flatMap((entry) => {
+    const recipe = storyToRecipe(entry.story);
+    if (!recipe) {
+      return [];
     }
-  }
+    return [
+      { artifact: recipeArtifact(entry.folder), source: entry.path, body: renderRecipe(recipe) },
+    ];
+  });
+}
+
+function main() {
+  const entries = collectStoryEntries((path, err) => {
+    process.stderr.write(`Skipping ${path}: ${err.message}\n`);
+  });
 
   const selected = selectRecipeStories(entries);
+  const recipes = expectedRecipes(entries);
   mkdirSync(resolve(RECIPES_DIR), { recursive: true });
 
   let manifest = JSON.parse(readFileSync(resolve(MANIFEST), 'utf8'));
-  let written = 0;
-  for (const entry of selected) {
-    const recipe = storyToRecipe(entry.story);
-    if (!recipe) {
-      continue;
-    }
-    const name = recipeName(entry.folder);
-    writeFileSync(resolve(RECIPES_DIR, `${name}.md`), renderRecipe(recipe));
+  for (const recipe of recipes) {
+    writeFileSync(resolve(PLUGIN_ROOT, recipe.artifact), recipe.body);
     manifest = upsertManifestEntry(manifest, {
-      artifact: `pack/recipes/${name}.md`,
-      source: entry.path,
-      contentHash: computeSourceHash(readFileSync(entry.path)),
+      artifact: recipe.artifact,
+      source: recipe.source,
+      contentHash: computeSourceHash(readFileSync(recipe.source)),
     });
-    written += 1;
   }
   writeFileSync(resolve(MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`);
-  process.stdout.write(`recipes: ${written} written from ${selected.length} async demo folders\n`);
+  process.stdout.write(
+    `recipes: ${recipes.length} written from ${selected.length} async demo folders\n`,
+  );
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
