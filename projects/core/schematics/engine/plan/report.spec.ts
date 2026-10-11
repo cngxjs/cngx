@@ -80,6 +80,28 @@ describe('createReport', () => {
     expect(createReport(PLAN).files).toEqual(['package.json', 'src/styles.css']);
   });
 
+  it('lists the file a provider goes into when the step names it', () => {
+    const plan = createChangePlan([
+      {
+        changes: [
+          {
+            kind: 'add-provider',
+            id: 'provider:a11y',
+            label: 'Provide the a11y preferences',
+            reason: 'r',
+            provenance: PROVENANCE,
+            project: 'app',
+            path: 'src/app/app.config.ts',
+            call: { symbol: 'provideA11yPreferences', module: '@cngx/core' },
+          },
+        ],
+        skipped: [],
+      },
+    ]);
+
+    expect(createReport(plan).files).toEqual(['src/app/app.config.ts']);
+  });
+
   it('carries the skipped steps and warnings', () => {
     const report = createReport(PLAN);
 

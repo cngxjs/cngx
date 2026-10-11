@@ -28,8 +28,6 @@ const DOCS: ReportLink = { label: 'cngx documentation', url: 'https://cngxjs.git
 // The doctor checks the wiring the virtual tree cannot see, so it leads.
 const DOCTOR = 'Run `npx @cngx/doctor` to check the wiring.';
 
-// `add-provider` names no file: `addRootProvider` finds the app config or
-// the bootstrap call itself, so the label carries it instead.
 function touchedFile(change: Change): string | undefined {
   switch (change.kind) {
     case 'create-file':
@@ -43,6 +41,7 @@ function touchedFile(change: Change): string | undefined {
     case 'add-style-entry':
       return 'angular.json';
     case 'add-provider':
+      return change.path;
     case 'note':
       return undefined;
     default: {

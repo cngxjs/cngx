@@ -34,6 +34,7 @@ describe('planProviders', () => {
     expect(provided(result)).toEqual(['provideA11yPreferences(withPersistence())']);
     expect(byId(result, 'provider:a11y-preferences')).toMatchObject({
       project: 'fixture-app',
+      path: 'src/app/app.config.ts',
       call: { module: '@cngx/core', args: [{ symbol: 'withPersistence', module: '@cngx/core' }] },
     });
   });

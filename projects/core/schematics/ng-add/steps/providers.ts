@@ -193,7 +193,13 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
   const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
   const languageFile = posix.join(posix.dirname(facts.appConfigPath), `${LANGUAGE_FILE}.ts`);
   const changes = wantedProviders(facts, answers).flatMap((wanted): readonly Change[] => {
-    const provider: Change = { kind: 'add-provider', ...wanted, provenance, project: facts.project };
+    const provider: Change = {
+      kind: 'add-provider',
+      ...wanted,
+      provenance,
+      project: facts.project,
+      path: facts.appConfigPath,
+    };
     if (wanted.id !== 'provider:i18n' || !answers.runtimeSwitch) {
       return [provider];
     }
