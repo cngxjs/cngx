@@ -4150,3 +4150,36 @@ mat-icon.demo-breadcrumb-icon {
 .demo-force-collapse .cngx-stepper::after {
   --cngx-stepper-collapse: 1;
 }
+
+/* Side-by-side frame for the core preference scope stories (CngxDensity,
+   CngxMotionScope, CngxContrast, CngxDir): an unscoped panel next to a scoped
+   one. Spacing, border and muted copy read the very tokens the scopes
+   re-resolve, so the scoped panel visibly diverges from its twin. */
+.demo-scope-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.demo-scope-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-sm, 8px);
+  padding: var(--cngx-space-md, 16px);
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-inline-start-width: 4px;
+  border-radius: 8px;
+  background: var(--cngx-color-surface, transparent);
+  color: var(--cngx-color-text, inherit);
+}
+
+.demo-scope-panel h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.demo-scope-panel p {
+  margin: 0;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
