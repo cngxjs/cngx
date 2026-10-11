@@ -337,9 +337,12 @@ export function createAnnouncementRecorder(
       }
     }
     const text = readText(region, false, rewritten ? undefined : appended);
-    regions.set(region, { lastText: text, deferred: new Set() });
+    // An appearance is never deferred: the busy flip replays writes, not
+    // insertions. A region moved while tracked keeps its deferred writes.
+    const deferred = regions.get(region)?.deferred ?? new Set<Node>();
+    regions.set(region, { lastText: text, deferred });
     if (text !== '') {
-      record(region, text, origin, [region]);
+      record(region, text, origin, []);
     }
     return rewritten ? records.length : since;
   };

@@ -793,6 +793,74 @@ describe('createAnnouncementRecorder', () => {
       expect(summaries()).toEqual([{ text: 'Loaded', origin: 'busy-cleared', busy: false }]);
     });
 
+    it('keeps a region inserted under busy an insertion, with no busy-cleared entry', async () => {
+      const wrapper = busyWrapper();
+      start();
+
+      wrapper.append(region({ role: 'status' }, 'Ready'));
+      await observed();
+      wrapper.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries()).toEqual([{ text: 'Ready', origin: 'insertion', busy: true }]);
+    });
+
+    it('keeps a region that became live under busy out of the flip', async () => {
+      const el = region({}, 'Uploaded');
+      const wrapper = busyWrapper(el);
+      start();
+
+      el.setAttribute('role', 'status');
+      await observed();
+      wrapper.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries()).toEqual([{ text: 'Uploaded', origin: 'became-live', busy: true }]);
+    });
+
+    it('keeps the busy writes of a log moved while busy, without its history', async () => {
+      const log = region({ role: 'log' });
+      const wrapper = busyWrapper();
+      const other = document.createElement('div');
+      wrapper.append(log, other);
+      start();
+
+      const appendLine = (text: string) => {
+        const line = document.createElement('p');
+        line.textContent = text;
+        log.append(line);
+      };
+      wrapper.removeAttribute('aria-busy');
+      appendLine('A');
+      await observed();
+      appendLine('B');
+      await observed();
+      wrapper.setAttribute('aria-busy', 'true');
+      appendLine('C');
+      await observed();
+      other.append(log);
+      await observed();
+      wrapper.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries().at(-1)).toEqual({ text: 'C', origin: 'busy-cleared', busy: false });
+    });
+
+    it('records nothing for a region that stops being live while deferred', async () => {
+      const log = region({ role: 'log', 'aria-busy': 'true' });
+      host.append(log);
+      start();
+
+      log.textContent = 'Draft';
+      await observed();
+      log.removeAttribute('role');
+      await observed();
+      log.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries()).toEqual([{ text: 'Draft', origin: 'mutation', busy: true }]);
+    });
+
     it('records nothing for an unrelated attribute change while still busy', async () => {
       const el = region({ 'aria-live': 'polite' });
       const wrapper = busyWrapper(el);
