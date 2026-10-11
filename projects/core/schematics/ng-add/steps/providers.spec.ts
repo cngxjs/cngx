@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 
 import { type AddProvider, type Change, type ProviderCall, type ProviderLiteral, type StepResult } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
+import { selectedLibs } from './dependencies';
+import { CNGX_LIBS, type CngxLib } from './model';
 import { planProviders, RTL_LANGUAGES } from './providers';
 
 function render(call: ProviderCall | ProviderLiteral): string {
@@ -65,8 +67,8 @@ describe('planProviders', () => {
     expect(provided(withoutUi)).not.toContain('provideFeedback(withToasts(), withAlerts(), withBanners())');
     expect(byId(withoutUi, 'provider:feedback')).toMatchObject({
       kind: 'note',
-      label: 'Skip the feedback providers',
-      reason: 'toasts, alerts and banners come from @cngx/ui, which is not selected',
+      label: 'Skip toasts, alerts and banners',
+      reason: 'it comes from @cngx/ui, which is not selected',
     });
     expect(byId(planProviders(createFacts(), createAnswers({ feedback: true }), VERSIONS), 'provider:feedback')).toMatchObject({
       call: { module: '@cngx/ui/feedback' },
@@ -146,6 +148,39 @@ describe('planProviders', () => {
         }),
       ]);
     });
+  });
+
+  it('skips the @cngx/core providers with a note when core is not selected', () => {
+    const result = planProviders(
+      createFacts({ sourceLocale: 'ar' }),
+      createAnswers({ libs: ['utils'], theme: 'none', i18n: 'de' }),
+      VERSIONS,
+    );
+
+    expect(provided(result)).toEqual([]);
+    expect(result.changes.map((change) => [change.kind, change.label, change.reason])).toEqual([
+      ['note', 'Skip the a11y preferences', 'it comes from @cngx/core, which is not selected'],
+      ['note', 'Skip the rtl direction', 'it comes from @cngx/core, which is not selected'],
+      ['note', 'Skip the German language pack', 'it comes from @cngx/core, which is not selected'],
+    ]);
+  });
+
+  it('imports nothing from a @cngx package the selection leaves out', () => {
+    const modules = (call: ProviderCall | ProviderLiteral): readonly string[] =>
+      'literal' in call ? [] : [call.module, ...(call.args ?? []).flatMap(modules)];
+    const selections: readonly (readonly CngxLib[])[] = [['utils'], ['core'], ['common'], ['forms'], ['ui'], [...CNGX_LIBS]];
+
+    for (const libs of selections) {
+      const answers = createAnswers({ libs, theme: 'none', i18n: 'de', feedback: true, floatingFallback: true });
+      const result = planProviders(createFacts({ sourceLocale: 'he' }), answers, VERSIONS);
+      const imported = result.changes
+        .filter((change): change is AddProvider => change.kind === 'add-provider')
+        .flatMap((change) => modules(change.call))
+        .filter((module) => module.startsWith('@cngx/'))
+        .map((module) => module.split('/')[1]);
+
+      expect(imported.filter((lib) => !selectedLibs(libs).some((selected) => selected === lib))).toEqual([]);
+    }
   });
 
   it('skips providers the app already has', () => {

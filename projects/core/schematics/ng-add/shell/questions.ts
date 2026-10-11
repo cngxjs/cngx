@@ -67,6 +67,7 @@ export function givenAnswers(options: NgAddOptions): PromptAnswers {
 const THEMES: readonly ThemeChoice[] = ['cngx', 'material', 'none'];
 
 const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
+const isLanguage = (value: unknown): value is 'en' | 'de' => value === 'en' || value === 'de';
 const isTheme = (value: unknown): value is ThemeChoice => THEMES.some((theme) => theme === value);
 const isAiTools = (value: unknown): value is readonly AiTool[] =>
   Array.isArray(value) && value.every((tool) => AI_TOOLS.some((known) => known === tool));
@@ -110,6 +111,8 @@ export async function askOnboarding(
     choices: CNGX_LIBS.map((lib) => ({ value: lib, name: `@cngx/${lib}` })),
     default: defaults.libs,
   });
+  const selected = selectedLibs(libs);
+  const hasCore = selected.includes('core');
   const theme = facts.material.present
     ? await flow.select<ThemeChoice>({
         key: 'theme',
@@ -122,15 +125,20 @@ export async function askOnboarding(
         default: defaults.theme,
       })
     : flag(options, 'theme', isTheme, defaults.theme);
-  const i18n = await flow.select<'en' | 'de'>({
-    key: 'i18n',
-    message: 'Which language should cngx speak?',
-    choices: [
-      { value: 'en', name: 'English only' },
-      { value: 'de', name: 'German, with the English fallback' },
-    ],
-    default: defaults.i18n,
-  });
+  // The language pack and the a11y preferences come from @cngx/core; without
+  // it there is nothing to ask, and a preset default must not turn into a
+  // "skipped" note the user never asked for.
+  const i18n = hasCore
+    ? await flow.select<'en' | 'de'>({
+        key: 'i18n',
+        message: 'Which language should cngx speak?',
+        choices: [
+          { value: 'en', name: 'English only' },
+          { value: 'de', name: 'German, with the English fallback' },
+        ],
+        default: defaults.i18n,
+      })
+    : flag(options, 'i18n', isLanguage, 'en');
   // A flag the question cannot ask about is kept, so the step can say why it
   // does not apply instead of dropping it.
   const runtimeSwitch =
@@ -149,7 +157,7 @@ export async function askOnboarding(
           message: `Add the cngx lint rules to ${facts.eslintConfig.path}?`,
           default: defaults.lint,
         });
-  const feedback = selectedLibs(libs).includes('ui')
+  const feedback = selected.includes('ui')
     ? await flow.confirm({
         key: 'feedback',
         message: 'Provide toasts, alerts and banners at the root?',
@@ -165,8 +173,8 @@ export async function askOnboarding(
     runtimeSwitch,
     lint,
     feedback,
-    a11yPreferences: flag(options, 'a11yPreferences', isBoolean, defaults.a11yPreferences),
-    floatingFallback: flag(options, 'floatingFallback', isBoolean, defaults.floatingFallback),
+    a11yPreferences: flag(options, 'a11yPreferences', isBoolean, defaults.a11yPreferences && hasCore),
+    floatingFallback: flag(options, 'floatingFallback', isBoolean, defaults.floatingFallback && selected.includes('common')),
     aiTools: flag(options, 'aiTools', isAiTools, defaults.aiTools),
   };
 }

@@ -120,6 +120,19 @@ describe('askOnboarding', () => {
     expect(answers.aiTools).toEqual(['claude']);
   });
 
+  it('asks nothing core provides and drops those preset defaults when core is not selected', async () => {
+    const { asked, answers } = await ask(createFacts(), { preset: 'full', libs: ['utils'] });
+
+    expect(asked).toEqual([]);
+    expect(answers).toMatchObject({ i18n: 'en', a11yPreferences: false, floatingFallback: false, feedback: false });
+  });
+
+  it('keeps an explicit core answer without core, so the step can say why it is skipped', async () => {
+    const { answers } = await ask(createFacts(), { libs: ['utils'], i18n: 'de', a11yPreferences: true });
+
+    expect(answers).toMatchObject({ i18n: 'de', a11yPreferences: true });
+  });
+
   it('rejects an answer flag of the wrong shape', async () => {
     await expect(ask(createFacts(), { aiTools: ['emacs'] })).rejects.toThrow('["emacs"] is not a valid answer for aiTools.');
     await expect(ask(createFacts(), { theme: 'dark' } as unknown as NgAddOptions)).rejects.toThrow(

@@ -278,6 +278,15 @@ describe('ngAdd', () => {
     expect(second.logs.some((line) => line.startsWith('Git: '))).toBe(false);
   });
 
+  it('writes no @cngx/core import into a utils-only app', async () => {
+    const run = await runRule(ngAdd({ libs: ['utils'] }), createFixtureTree());
+
+    expect(run.tree.readContent('src/app/app.config.ts')).not.toContain('@cngx');
+    expect(Object.keys(json<{ dependencies: Record<string, string> }>(run.tree, 'package.json').dependencies)).not.toContain(
+      '@cngx/core',
+    );
+  });
+
   it('installs only the packages for minimal', async () => {
     const run = await runRule(ngAdd({ preset: 'minimal' }), createFixtureTree());
 

@@ -10,7 +10,7 @@ import {
 } from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
 import { selectedLibs } from './dependencies';
-import { type OnboardingAnswers, type Versions } from './model';
+import { type CngxLib, type OnboardingAnswers, type Versions } from './model';
 
 // Same list as the runtime direction lookup in @cngx/core/i18n
 // (`provide-i18n.ts`); the spec keeps them in step.
@@ -59,50 +59,13 @@ function renderLanguageFile(version: string, german: boolean): string {
   ].join('\n');
 }
 
-interface Refused {
-  readonly id: string;
-  readonly label: string;
-  readonly reason: string;
-}
-
-// Answers that ask for something the selected packages cannot provide.
-function refusedProviders(answers: OnboardingAnswers): readonly Refused[] {
-  const libs = selectedLibs(answers.libs);
-  return [
-    ...(answers.feedback && !libs.includes('ui')
-      ? [
-          {
-            id: 'provider:feedback',
-            label: 'Skip the feedback providers',
-            reason: 'toasts, alerts and banners come from @cngx/ui, which is not selected',
-          },
-        ]
-      : []),
-    ...(answers.floatingFallback && !libs.includes('common')
-      ? [
-          {
-            id: 'provider:floating-fallback',
-            label: 'Skip the floating positioning fallback',
-            reason: 'it comes from @cngx/common, which is not selected',
-          },
-        ]
-      : []),
-    ...(answers.runtimeSwitch && answers.i18n !== 'de'
-      ? [
-          {
-            id: 'provider:i18n',
-            label: 'Skip runtime language switching',
-            reason: 'it switches to the German pack; pass --i18n=de with it',
-          },
-        ]
-      : []),
-  ];
-}
-
 interface Wanted {
   readonly id: string;
-  readonly label: string;
+  /** What is provided, as in "Provide <subject>" or "Skip <subject>". */
+  readonly subject: string;
   readonly reason: string;
+  /** The package the provider comes from; without it selected it is skipped with a note. */
+  readonly lib: CngxLib;
   readonly call: ProviderCall;
 }
 
@@ -118,67 +81,52 @@ function i18nPack(answers: OnboardingAnswers): ProviderCall {
 }
 
 function wantedProviders(facts: ProjectFacts, answers: OnboardingAnswers): readonly Wanted[] {
-  const libs = selectedLibs(answers.libs);
   const feedback = (symbol: string): ProviderCall => ({ symbol, module: '@cngx/ui/feedback' });
-  return [
-    ...(answers.a11yPreferences
-      ? [
-          {
-            id: 'provider:a11y-preferences',
-            label: 'Provide the a11y preferences',
-            reason: 'density, text scale, motion and contrast stay inert without it',
-            call: {
-              symbol: 'provideA11yPreferences',
-              module: '@cngx/core',
-              args: [{ symbol: 'withPersistence', module: '@cngx/core' }],
-            },
-          },
-        ]
-      : []),
-    ...(isRtl(facts.sourceLocale)
-      ? [
-          {
-            id: 'provider:direction',
-            label: 'Provide the rtl direction',
-            reason: `the source locale ${facts.sourceLocale ?? ''} is written right to left`,
-            call: { symbol: 'provideDirection', module: '@cngx/core', args: [{ literal: "'rtl'" }] },
-          },
-        ]
-      : []),
-    ...(answers.feedback && libs.includes('ui')
-      ? [
-          {
-            id: 'provider:feedback',
-            label: 'Provide toasts, alerts and banners',
-            reason: 'CngxToaster, CngxAlerter and CngxBanner are not provided at the root',
-            call: {
-              ...feedback('provideFeedback'),
-              args: [feedback('withToasts'), feedback('withAlerts'), feedback('withBanners')],
-            },
-          },
-        ]
-      : []),
-    ...(answers.floatingFallback && libs.includes('common')
-      ? [
-          {
-            id: 'provider:floating-fallback',
-            label: 'Provide the floating positioning fallback',
-            reason: 'positions popovers where CSS anchor positioning is missing',
-            call: { symbol: 'provideFloatingFallback', module: '@cngx/common/popover' },
-          },
-        ]
-      : []),
-    ...(answers.i18n === 'de'
-      ? [
-          {
-            id: 'provider:i18n',
-            label: 'Provide the German language pack',
-            reason: answers.runtimeSwitch ? 'switchable at runtime' : 'every cngx string in German',
-            call: i18nPack(answers),
-          },
-        ]
-      : []),
+  const wanted: readonly (Wanted | false)[] = [
+    answers.a11yPreferences && {
+      id: 'provider:a11y-preferences',
+      subject: 'the a11y preferences',
+      reason: 'density, text scale, motion and contrast stay inert without it',
+      lib: 'core',
+      call: {
+        symbol: 'provideA11yPreferences',
+        module: '@cngx/core',
+        args: [{ symbol: 'withPersistence', module: '@cngx/core' }],
+      },
+    },
+    isRtl(facts.sourceLocale) && {
+      id: 'provider:direction',
+      subject: 'the rtl direction',
+      reason: `the source locale ${facts.sourceLocale ?? ''} is written right to left`,
+      lib: 'core',
+      call: { symbol: 'provideDirection', module: '@cngx/core', args: [{ literal: "'rtl'" }] },
+    },
+    answers.feedback && {
+      id: 'provider:feedback',
+      subject: 'toasts, alerts and banners',
+      reason: 'CngxToaster, CngxAlerter and CngxBanner are not provided at the root',
+      lib: 'ui',
+      call: {
+        ...feedback('provideFeedback'),
+        args: [feedback('withToasts'), feedback('withAlerts'), feedback('withBanners')],
+      },
+    },
+    answers.floatingFallback && {
+      id: 'provider:floating-fallback',
+      subject: 'the floating positioning fallback',
+      reason: 'positions popovers where CSS anchor positioning is missing',
+      lib: 'common',
+      call: { symbol: 'provideFloatingFallback', module: '@cngx/common/popover' },
+    },
+    answers.i18n === 'de' && {
+      id: 'provider:i18n',
+      subject: 'the German language pack',
+      reason: answers.runtimeSwitch ? 'switchable at runtime' : 'every cngx string in German',
+      lib: 'core',
+      call: i18nPack(answers),
+    },
   ];
+  return wanted.filter((entry): entry is Wanted => entry !== false);
 }
 
 /**
@@ -192,15 +140,20 @@ function wantedProviders(facts: ProjectFacts, answers: OnboardingAnswers): reado
 export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
   const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
   const languageFile = posix.join(posix.dirname(facts.appConfigPath), `${LANGUAGE_FILE}.ts`);
-  const changes = wantedProviders(facts, answers).flatMap((wanted): readonly Change[] => {
+  const libs = selectedLibs(answers.libs);
+  const wanted = wantedProviders(facts, answers);
+  const changes = wanted.filter(({ lib }) => libs.includes(lib)).flatMap((entry): readonly Change[] => {
     const provider: Change = {
       kind: 'add-provider',
-      ...wanted,
+      id: entry.id,
+      label: `Provide ${entry.subject}`,
+      reason: entry.reason,
+      call: entry.call,
       provenance,
       project: facts.project,
       path: facts.appConfigPath,
     };
-    if (wanted.id !== 'provider:i18n' || !answers.runtimeSwitch) {
+    if (entry.id !== 'provider:i18n' || !answers.runtimeSwitch) {
       return [provider];
     }
     const file: Change = {
@@ -218,11 +171,28 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
     const symbol = change.kind === 'add-provider' ? change.call.symbol : 'provideCngxI18n';
     return facts.rootProviders.includes(symbol);
   };
-  const notes: readonly Change[] = refusedProviders(answers).map((refused) => ({
-    kind: 'note',
-    ...refused,
-    provenance,
-  }));
+  const unserved: readonly Change[] = wanted
+    .filter(({ lib }) => !libs.includes(lib))
+    .map(({ id, subject, lib }) => ({
+      kind: 'note',
+      id,
+      label: `Skip ${subject}`,
+      reason: `it comes from @cngx/${lib}, which is not selected`,
+      provenance,
+    }));
+  const switchWithoutPack: readonly Change[] =
+    answers.runtimeSwitch && answers.i18n !== 'de'
+      ? [
+          {
+            kind: 'note',
+            id: 'provider:i18n',
+            label: 'Skip runtime language switching',
+            reason: 'it switches to the German pack; pass --i18n=de with it',
+            provenance,
+          },
+        ]
+      : [];
+  const notes = [...unserved, ...switchWithoutPack];
   return {
     changes: [...changes.filter((change) => !isProvided(change)), ...notes],
     skipped: changes.filter(isProvided).map((change) => skipChange(change, 'already provided')),
