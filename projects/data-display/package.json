@@ -35,5 +35,6 @@
   "sideEffects": false,
   "exports": {
     "./theming/*.css": "./theming/*.css"
-  }
+  },
+  "schematics": "./schematics/collection.json"
 }

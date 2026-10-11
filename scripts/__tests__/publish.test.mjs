@@ -131,14 +131,15 @@ describe('declaresSchematics', () => {
 });
 
 describe('publishable libs', () => {
-  it('declare no schematics collection yet, so publish skips the spike bundle', () => {
-    const libs = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
-    const declaring = libs.filter((lib) =>
-      declaresSchematics(
-        JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'projects', lib, 'package.json'), 'utf8')),
-      ),
-    );
+  const libs = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
+  const sourcePkg = (lib) =>
+    JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'projects', lib, 'package.json'), 'utf8'));
 
-    expect(declaring).toEqual([]);
+  it('all eight declare their schematics collection, so publish ships every ng-add', () => {
+    expect(libs.filter((lib) => declaresSchematics(sourcePkg(lib)))).toEqual(libs);
+  });
+
+  it('group every package for ng update on core', () => {
+    expect(sourcePkg('core')['ng-update']).toEqual({ packageGroup: libs.map((lib) => `@cngx/${lib}`) });
   });
 });

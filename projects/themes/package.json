@@ -46,5 +46,6 @@
     "./example-brand.css": "./example-brand.css",
     "./material/*": "./material/*.scss",
     "./material/*.scss": "./material/*.scss"
-  }
+  },
+  "schematics": "./schematics/collection.json"
 }
