@@ -618,6 +618,79 @@ describe('createAnnouncementRecorder', () => {
       expect(summaries()).toEqual([{ text: 'Loaded', origin: 'mutation', busy: false }]);
     });
 
+    it('keeps text deferred in an earlier batch when a write shares the batch with the flip', async () => {
+      const log = region({ role: 'log', 'aria-busy': 'true' });
+      host.append(log);
+      start();
+
+      const appendLine = (text: string) => {
+        const line = document.createElement('p');
+        line.textContent = text;
+        log.append(line);
+      };
+      appendLine('First');
+      await observed();
+      appendLine('Second');
+      log.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries()).toEqual([
+        { text: 'First', origin: 'mutation', busy: true },
+        { text: 'First Second', origin: 'busy-cleared', busy: false },
+      ]);
+    });
+
+    it('records nothing for a non-atomic region emptied while busy', async () => {
+      const log = region({ role: 'log', 'aria-busy': 'true' });
+      host.append(log);
+      start();
+
+      log.textContent = 'Draft';
+      await observed();
+      log.textContent = '';
+      await observed();
+      log.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries()).toEqual([{ text: 'Draft', origin: 'mutation', busy: true }]);
+    });
+
+    it('records only the text a non-atomic region still holds when overwritten while busy', async () => {
+      const log = region({ role: 'log', 'aria-busy': 'true' });
+      host.append(log);
+      start();
+
+      log.textContent = 'Draft';
+      await observed();
+      log.textContent = 'Final';
+      await observed();
+      log.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries().at(-1)).toEqual({ text: 'Final', origin: 'busy-cleared', busy: false });
+    });
+
+    it('reads a deferred node and a later write inside it once', async () => {
+      const log = region({ role: 'log', 'aria-busy': 'true' });
+      host.append(log);
+      start();
+
+      const line = document.createElement('p');
+      line.textContent = 'Upload';
+      log.append(line);
+      await observed();
+      line.append(' done');
+      await observed();
+      log.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries().at(-1)).toEqual({
+        text: 'Upload done',
+        origin: 'busy-cleared',
+        busy: false,
+      });
+    });
+
     it('records nothing for an unrelated attribute change while still busy', async () => {
       const el = region({ 'aria-live': 'polite' });
       const wrapper = busyWrapper(el);
