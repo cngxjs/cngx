@@ -245,6 +245,14 @@ describe('ngAdd', () => {
     });
   });
 
+  it('notes the AI tooling a full run detects instead of dropping it silently', async () => {
+    const run = await runRule(ngAdd({ preset: 'full' }), createFixtureTree('standalone-app', { 'CLAUDE.md': '# app\n' }));
+
+    expect(run.logs).toContain(
+      '  Skip the AI tooling configs - the MCP and agent configs for claude are not written by this release yet',
+    );
+  });
+
   it('refuses an Angular version below 21.2', async () => {
     const tree = createFixtureTree('standalone-app', { 'package.json': withDependencies({ '@angular/core': '^20.3.0' }) });
 

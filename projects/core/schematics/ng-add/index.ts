@@ -17,6 +17,7 @@ import {
 import { detectProject, type ProjectFacts } from './detect/detect';
 import { type GitState, readGitState } from './shell/git-state';
 import { askOnboarding, givenAnswers } from './shell/questions';
+import { planAiTools } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
 import { createSummary } from './steps/finish';
 import { planLint } from './steps/lint';
@@ -26,7 +27,7 @@ import { planProviders } from './steps/providers';
 import { planTheme } from './steps/theme';
 
 /** The plan steps in apply order; the install manifest follows them. */
-const STEPS: readonly Step[] = [planDependencies, planTheme, planProviders, planLint];
+const STEPS: readonly Step[] = [planDependencies, planTheme, planProviders, planLint, planAiTools];
 
 const MIN_ANGULAR: readonly [number, number] = [21, 2];
 
