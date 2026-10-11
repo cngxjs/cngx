@@ -222,6 +222,9 @@ const CANDIDATE_SELECTOR = '[aria-live],[role]';
  *   `display: block` still concatenates with its neighbour, and an inline
  *   custom element gains a space (`Inbox<x-count>3</x-count>` records
  *   `Inbox 3`, where browsers compute `Inbox3`);
+ * - a non-atomic `'busy-cleared'` entry joins its texts in write order, like
+ *   the mutation path; a node prepended or inserted before earlier busy
+ *   writes therefore reads out of DOM order;
  * - a native `showModal()` dialog without `aria-modal` is not seen as modal;
  * - regions inside shadow roots are not observed;
  * - writes are seen when the `MutationObserver` callback runs (a microtask),
