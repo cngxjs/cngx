@@ -1,7 +1,14 @@
 import { type workspaces } from '@angular-devkit/core';
 import { posix } from 'node:path';
 
-import { declaredRange, hasStyleImport, type PackageManifest, parseManifest, type Tree } from '../../engine';
+import {
+  declaredRange,
+  hasArrayLiteral,
+  hasStyleImport,
+  type PackageManifest,
+  parseManifest,
+  type Tree,
+} from '../../engine';
 
 export type MaterialThemeShape = 'map-api' | 'define-theme' | 'm2' | 'prebuilt' | 'none';
 
@@ -14,6 +21,15 @@ export interface MaterialFacts {
   readonly themeVariable: string | undefined;
   /** The density the theme declares; 0 when it declares none. */
   readonly density: number;
+}
+
+export interface EslintConfigFacts {
+  readonly path: string;
+  readonly module: 'esm' | 'cjs';
+  /** The default export is an array literal, bare or wrapped in `defineConfig([...])`. */
+  readonly editable: boolean;
+  /** `@cngx/eslint-plugin` is already loaded. */
+  readonly wired: boolean;
 }
 
 export interface EditorFacts {
@@ -45,7 +61,8 @@ export interface ProjectFacts {
   readonly rootProviders: readonly string[];
   readonly material: MaterialFacts;
   readonly editors: EditorFacts;
-  readonly eslintConfigPath: string | undefined;
+  /** The eslint flat config; `undefined` when the app has none. */
+  readonly eslintConfig: EslintConfigFacts | undefined;
   readonly ssr: boolean;
   readonly sourceLocale: string | undefined;
   readonly maturity: 'fresh' | 'existing';
@@ -210,6 +227,21 @@ function existingCngxTheme(tree: Tree, sourceRoot: string, entries: readonly str
   );
 }
 
+function detectEslintConfig(tree: Tree): EslintConfigFacts | undefined {
+  const path = ESLINT_FLAT_CONFIGS.find((candidate) => tree.exists(candidate));
+  if (path === undefined) {
+    return undefined;
+  }
+  const content = tree.readText(path);
+  const esm = path.endsWith('.mjs') || (path.endsWith('.js') && /^\s*(import\s|export\s)/m.test(content));
+  return {
+    path,
+    module: esm ? 'esm' : 'cjs',
+    editable: hasArrayLiteral(content, { kind: 'default-export' }),
+    wired: content.includes('@cngx/eslint-plugin'),
+  };
+}
+
 function sourceFiles(tree: Tree, root: string): readonly string[] {
   const files: string[] = [];
   tree.getDir(root).visit((path) => {
@@ -308,7 +340,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
       cursor: tree.exists('.cursorrules') || hasEntries(tree, '.cursor'),
       vscode: hasEntries(tree, '.vscode'),
     },
-    eslintConfigPath: ESLINT_FLAT_CONFIGS.find((path) => tree.exists(path)),
+    eslintConfig: detectEslintConfig(tree),
     ssr:
       options['server'] !== undefined ||
       options['ssr'] !== undefined ||

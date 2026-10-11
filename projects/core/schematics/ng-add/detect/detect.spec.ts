@@ -104,7 +104,7 @@ describe('detectProject', () => {
       rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
       material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
       editors: { claude: false, cursor: false, vscode: false },
-      eslintConfigPath: undefined,
+      eslintConfig: undefined,
       ssr: false,
       sourceLocale: undefined,
       maturity: 'fresh',
@@ -305,9 +305,38 @@ describe('detectProject', () => {
   });
 
   it('finds the eslint flat config in js, mjs or cjs', async () => {
-    expect((await detect({ 'eslint.config.mjs': 'export default [];' })).eslintConfigPath).toBe('eslint.config.mjs');
-    expect((await detect({ 'eslint.config.cjs': 'module.exports = [];' })).eslintConfigPath).toBe('eslint.config.cjs');
-    expect((await detect({ '.eslintrc.json': '{}' })).eslintConfigPath).toBeUndefined();
+    expect((await detect({ 'eslint.config.mjs': 'export default [];' })).eslintConfig).toEqual({
+      path: 'eslint.config.mjs',
+      module: 'esm',
+      editable: true,
+      wired: false,
+    });
+    expect((await detect({ 'eslint.config.cjs': 'module.exports = [];' })).eslintConfig?.module).toBe('cjs');
+    expect((await detect({ '.eslintrc.json': '{}' })).eslintConfig).toBeUndefined();
+  });
+
+  it('reads the module format, editability and cngx wiring of an eslint.config.js', async () => {
+    const angularEslint = `// @ts-check
+const eslint = require("@eslint/js");
+const { defineConfig } = require("eslint/config");
+
+module.exports = defineConfig([
+  { files: ["**/*.ts"] },
+]);
+`;
+    expect((await detect({ 'eslint.config.js': angularEslint })).eslintConfig).toEqual({
+      path: 'eslint.config.js',
+      module: 'cjs',
+      editable: true,
+      wired: false,
+    });
+    const esm = "import cngx from '@cngx/eslint-plugin';\nexport default tseslint.config({ files: [] });\n";
+    expect((await detect({ 'eslint.config.js': esm })).eslintConfig).toEqual({
+      path: 'eslint.config.js',
+      module: 'esm',
+      editable: false,
+      wired: true,
+    });
   });
 
   it('detects SSR from the build options or the @angular/ssr dependency', async () => {

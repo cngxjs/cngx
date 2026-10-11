@@ -86,6 +86,18 @@ describe('applyChangePlan', () => {
     expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/core']).toBe('0.1.0');
   });
 
+  it('adds a dev dependency off the lockstep and keeps an existing range', async () => {
+    const change: Change = { ...BASE, kind: 'add-dependency', id: 'd', name: '@cngx/eslint-plugin', version: '0.2.0', dev: true };
+    const added = await apply([change], createMemoryTree({ 'package.json': '{ "devDependencies": {} }\n' }));
+    const kept = await apply(
+      [change],
+      createMemoryTree({ 'package.json': '{ "devDependencies": { "@cngx/eslint-plugin": "^0.1.0" } }\n' }),
+    );
+
+    expect(JSON.parse(added.readText('package.json')).devDependencies['@cngx/eslint-plugin']).toBe('0.2.0');
+    expect(JSON.parse(kept.readText('package.json')).devDependencies['@cngx/eslint-plugin']).toBe('^0.1.0');
+  });
+
   it('adds a nested provider call with its imports to app.config.ts', async () => {
     const tree = await apply(
       [

@@ -1,6 +1,13 @@
 import { chain, noop, type Rule, SchematicsException, type Tree } from '@angular-devkit/schematics';
 import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeScript/lib/typescript';
-import { addRootProvider, updateWorkspace } from '@schematics/angular/utility';
+import {
+  addDependency,
+  addRootProvider,
+  DependencyType,
+  ExistingBehavior,
+  InstallBehavior,
+  updateWorkspace,
+} from '@schematics/angular/utility';
 import { insertImport } from '@schematics/angular/utility/ast-utils';
 import { applyToUpdateRecorder } from '@schematics/angular/utility/change';
 import { JSONFile } from '@schematics/angular/utility/json-file';
@@ -119,7 +126,13 @@ function toRule(change: Change): Rule {
     case 'add-import':
       return addImport(change);
     case 'add-dependency':
-      return addLockstepDependency(change.name, change.version);
+      return change.dev === true
+        ? addDependency(change.name, change.version, {
+            type: DependencyType.Dev,
+            install: InstallBehavior.None,
+            existing: ExistingBehavior.Skip,
+          })
+        : addLockstepDependency(change.name, change.version);
     case 'add-provider':
       return addRootProvider(change.project, ({ code, external }) => code`${renderCall(change.call, external)}`);
     case 'add-style-import':

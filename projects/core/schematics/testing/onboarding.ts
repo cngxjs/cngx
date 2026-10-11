@@ -22,7 +22,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
     rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
     material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
     editors: { claude: false, cursor: false, vscode: false },
-    eslintConfigPath: undefined,
+    eslintConfig: undefined,
     ssr: false,
     sourceLocale: undefined,
     maturity: 'fresh',
