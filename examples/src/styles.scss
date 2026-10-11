@@ -1636,6 +1636,25 @@ button.chip:disabled {
   color: var(--cngx-color-text);
   border-radius: 6px;
 }
+// Demo-only resizable frame for the sidenav auto-mode story. Auto mode docks
+// at a 64rem layout width, past the 640px artifact cap, so the artifact that
+// holds this frame drops the cap and the frame resizes freely across the
+// threshold. The layout inside fills the frame, so frame width = layout width.
+.cngx-ex-artifact:has(> .demo-sidenav-resizable) {
+  --demo-artifact-max-width: none;
+}
+.demo-sidenav-resizable {
+  resize: horizontal;
+  overflow: auto;
+  width: 40rem;
+  min-width: 20rem;
+  max-width: none;
+  border: 1px dashed var(--cngx-color-border, var(--cngx-ex-border, #cbd5e1));
+  border-radius: var(--cngx-radius-sm, 4px);
+}
+.demo-sidenav-resizable > .demo-sidenav__container {
+  margin-top: 0;
+}
 
 // Tag-family demo helpers. Stories under common/display/tag share these
 // so individual templates don't scatter thematic CSS inline.
