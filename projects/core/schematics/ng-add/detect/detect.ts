@@ -23,6 +23,8 @@ export interface EditorFacts {
 /** Everything the plan steps branch on, read once before any question. */
 export interface ProjectFacts {
   readonly project: string;
+  /** The app's `package.json`; steps read declared ranges from it. */
+  readonly manifest: PackageManifest;
   readonly angularVersion: string | undefined;
   readonly bootstrap: 'standalone' | 'ngmodule';
   readonly zoneless: boolean;
@@ -244,6 +246,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
 
   return {
     project: projectName,
+    manifest,
     angularVersion: versionOf(declaredRange(manifest, '@angular/core')),
     bootstrap: standalone ? 'standalone' : 'ngmodule',
     zoneless: !includesZone(options['polyfills']) && !providers.includes('provideZoneChangeDetection'),

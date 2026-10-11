@@ -7,6 +7,16 @@ export type NgAddPreset = 'minimal' | 'recommended' | 'full';
 export interface NgAddOptions {
   readonly project?: string;
   readonly preset?: NgAddPreset;
+  /** Each answer below is asked when a terminal is attached and left unset. */
+  readonly libs?: readonly string[];
+  readonly theme?: 'cngx' | 'material' | 'none';
+  readonly i18n?: 'en' | 'de';
+  readonly runtimeSwitch?: boolean;
+  readonly lint?: boolean;
+  readonly a11yPreferences?: boolean;
+  readonly feedback?: boolean;
+  readonly floatingFallback?: boolean;
+  readonly aiTools?: readonly string[];
   /** `false` answers every question from flags and preset defaults. */
   readonly prompts?: boolean;
   /** Print only the summary. */

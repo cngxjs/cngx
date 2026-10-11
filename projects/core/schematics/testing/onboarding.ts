@@ -1,0 +1,55 @@
+import { parseManifest } from '../engine';
+import { type ProjectFacts } from '../ng-add/detect/detect';
+import { CNGX_LIBS, type OnboardingAnswers, type Versions } from '../ng-add/steps/model';
+
+export const VERSIONS: Versions = { cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.0' };
+
+/** The stock standalone fixture app as facts, so a step spec states only what differs. */
+export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts {
+  return {
+    project: 'fixture-app',
+    manifest: parseManifest(JSON.stringify({ dependencies: { '@angular/core': '^21.2.0' } })),
+    angularVersion: '21.2.0',
+    bootstrap: 'standalone',
+    zoneless: true,
+    signalForms: false,
+    stylesKind: 'css',
+    stylesPath: 'src/styles.css',
+    appConfigPath: 'src/app/app.config.ts',
+    material: { present: false, themeShape: 'none', themePath: undefined, density: 0 },
+    editors: { claude: false, cursor: false, vscode: false },
+    eslintConfigPath: undefined,
+    ssr: false,
+    sourceLocale: undefined,
+    maturity: 'fresh',
+    ...overrides,
+  };
+}
+
+/** The `recommended` answers for the stock app. */
+export function createAnswers(overrides: Partial<OnboardingAnswers> = {}): OnboardingAnswers {
+  return {
+    preset: 'recommended',
+    libs: [...CNGX_LIBS],
+    theme: 'cngx',
+    i18n: 'en',
+    runtimeSwitch: false,
+    lint: true,
+    a11yPreferences: true,
+    feedback: false,
+    floatingFallback: false,
+    aiTools: [],
+    ...overrides,
+  };
+}
+
+/** Freezes a step input all the way down, so a mutating step throws in a spec. */
+export function deepFreeze<T>(value: T): T {
+  if (typeof value === 'object' && value !== null && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    for (const key of Object.keys(value)) {
+      deepFreeze((value as Record<string, unknown>)[key]);
+    }
+  }
+  return value;
+}

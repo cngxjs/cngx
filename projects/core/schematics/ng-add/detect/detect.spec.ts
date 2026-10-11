@@ -1,6 +1,7 @@
 import { readWorkspace } from '@schematics/angular/utility';
 import { describe, expect, it } from 'vitest';
 
+import { parseManifest } from '../../engine';
 import { createFixtureTree } from '../../testing/run-schematic';
 import { detectProject, type ProjectFacts } from './detect';
 
@@ -89,6 +90,7 @@ describe('detectProject', () => {
   it('reads the stock standalone app', async () => {
     expect(await detect()).toEqual({
       project: 'fixture-app',
+      manifest: parseManifest(createFixtureTree().readText('package.json')),
       angularVersion: '21.2.0',
       bootstrap: 'standalone',
       zoneless: true,

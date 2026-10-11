@@ -112,6 +112,20 @@ describe('the ng-add collection', () => {
     ];
 
     expect(Object.keys(SCHEMA.properties).filter((name) => stripped.includes(name))).toEqual([]);
-    expect(Object.keys(SCHEMA.properties)).toEqual(['project', 'preset', 'prompts', 'quiet']);
+    expect(Object.keys(SCHEMA.properties)).toEqual([
+      'project',
+      'preset',
+      'libs',
+      'theme',
+      'i18n',
+      'runtimeSwitch',
+      'lint',
+      'a11yPreferences',
+      'feedback',
+      'floatingFallback',
+      'aiTools',
+      'prompts',
+      'quiet',
+    ]);
   });
 });
