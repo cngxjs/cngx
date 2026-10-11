@@ -19,7 +19,7 @@ export function planAiTools(_facts: ProjectFacts, answers: OnboardingAnswers, ve
     changes: [
       {
         kind: 'note',
-        id: 'ai-tools',
+        id: 'ai-tools:configs',
         label: 'Skip the AI tooling configs',
         reason: `the MCP and agent configs for ${list(answers.aiTools)} are not written by this release yet`,
         provenance,

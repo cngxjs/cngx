@@ -1,6 +1,6 @@
-import { parseManifest } from '../engine';
+import { CNGX_LIBS, parseManifest } from '../engine';
 import { type ProjectFacts } from '../ng-add/detect/detect';
-import { CNGX_LIBS, type OnboardingAnswers, type Versions } from '../ng-add/steps/model';
+import { type OnboardingAnswers, type Versions } from '../ng-add/steps/model';
 
 export const VERSIONS: Versions = { cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.0' };
 

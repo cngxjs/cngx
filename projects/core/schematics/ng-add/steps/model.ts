@@ -1,21 +1,20 @@
-import { type NgAddPreset, type ReleaseVersions, type StepResult } from '../../engine';
+import {
+  type AiTool,
+  type CngxLib,
+  type Language,
+  type NgAddPreset,
+  type ReleaseVersions,
+  type StepResult,
+  type ThemeChoice,
+} from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
-
-/** Every package `ng add` can select; `@cngx/themes` follows the theme answer. */
-export const CNGX_LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui'] as const;
-
-export type CngxLib = (typeof CNGX_LIBS)[number];
-
-export type ThemeChoice = 'cngx' | 'material' | 'none';
-
-export type AiTool = 'claude' | 'cursor' | 'vscode';
 
 /** The typed answers every step reads, from flags, prompts or the preset. */
 export interface OnboardingAnswers {
   readonly preset: NgAddPreset;
   readonly libs: readonly CngxLib[];
   readonly theme: ThemeChoice;
-  readonly i18n: 'en' | 'de';
+  readonly i18n: Language;
   readonly runtimeSwitch: boolean;
   readonly lint: boolean;
   readonly a11yPreferences: boolean;

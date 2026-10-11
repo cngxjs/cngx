@@ -1,7 +1,20 @@
-import { type NgAddOptions, type NgAddPreset, type PromptAnswers, type PromptFlow } from '../../engine';
+import {
+  AI_TOOLS,
+  type AiTool,
+  CNGX_LIBS,
+  type CngxLib,
+  type Language,
+  LANGUAGES,
+  type NgAddOptions,
+  type NgAddPreset,
+  type PromptAnswers,
+  type PromptFlow,
+  THEME_CHOICES,
+  type ThemeChoice,
+} from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
 import { selectedLibs } from '../steps/dependencies';
-import { type AiTool, CNGX_LIBS, type CngxLib, type OnboardingAnswers, type ThemeChoice } from '../steps/model';
+import { type OnboardingAnswers } from '../steps/model';
 
 const ANSWER_KEYS = [
   'libs',
@@ -15,7 +28,6 @@ const ANSWER_KEYS = [
   'aiTools',
 ] as const;
 
-const AI_TOOLS: readonly AiTool[] = ['claude', 'cursor', 'vscode'];
 
 /** The answers a preset gives before any flag or question. */
 export function presetDefaults(preset: NgAddPreset, facts: ProjectFacts): OnboardingAnswers {
@@ -64,11 +76,10 @@ export function givenAnswers(options: NgAddOptions): PromptAnswers {
   );
 }
 
-const THEMES: readonly ThemeChoice[] = ['cngx', 'material', 'none'];
 
 const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
-const isLanguage = (value: unknown): value is 'en' | 'de' => value === 'en' || value === 'de';
-const isTheme = (value: unknown): value is ThemeChoice => THEMES.some((theme) => theme === value);
+const isLanguage = (value: unknown): value is Language => LANGUAGES.some((language) => language === value);
+const isTheme = (value: unknown): value is ThemeChoice => THEME_CHOICES.some((theme) => theme === value);
 const isAiTools = (value: unknown): value is readonly AiTool[] =>
   Array.isArray(value) && value.every((tool) => AI_TOOLS.some((known) => known === tool));
 
@@ -129,7 +140,7 @@ export async function askOnboarding(
   // it there is nothing to ask, and a preset default must not turn into a
   // "skipped" note the user never asked for.
   const i18n = hasCore
-    ? await flow.select<'en' | 'de'>({
+    ? await flow.select<Language>({
         key: 'i18n',
         message: 'Which language should cngx speak?',
         choices: [

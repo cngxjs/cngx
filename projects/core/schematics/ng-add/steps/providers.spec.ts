@@ -3,10 +3,17 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { type AddProvider, type Change, type ProviderCall, type ProviderLiteral, type StepResult } from '../../engine';
+import {
+  type AddProvider,
+  type Change,
+  CNGX_LIBS,
+  type CngxLib,
+  type ProviderCall,
+  type ProviderLiteral,
+  type StepResult,
+} from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
 import { selectedLibs } from './dependencies';
-import { CNGX_LIBS, type CngxLib } from './model';
 import { planProviders, RTL_LANGUAGES } from './providers';
 
 function render(call: ProviderCall | ProviderLiteral): string {

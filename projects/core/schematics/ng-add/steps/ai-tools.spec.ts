@@ -14,7 +14,7 @@ describe('planAiTools', () => {
     expect(result.changes).toEqual([
       expect.objectContaining({
         kind: 'note',
-        id: 'ai-tools',
+        id: 'ai-tools:configs',
         label: 'Skip the AI tooling configs',
         reason: 'the MCP and agent configs for claude and vscode are not written by this release yet',
       }),

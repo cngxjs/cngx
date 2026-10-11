@@ -1,30 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-export type NgAddPreset = 'minimal' | 'recommended' | 'full';
-
-/** The options every `ng add @cngx/<lib>` forwards to the core onboarding. */
-export interface NgAddOptions {
-  readonly project?: string;
-  readonly preset?: NgAddPreset;
-  /** Each answer below is asked when a terminal is attached and left unset. */
-  readonly libs?: readonly string[];
-  readonly theme?: 'cngx' | 'material' | 'none';
-  readonly i18n?: 'en' | 'de';
-  readonly runtimeSwitch?: boolean;
-  readonly lint?: boolean;
-  readonly a11yPreferences?: boolean;
-  readonly feedback?: boolean;
-  readonly floatingFallback?: boolean;
-  readonly aiTools?: readonly string[];
-  /** Skip the confirmation an existing app gets before apply. */
-  readonly yes?: boolean;
-  /** `false` answers every question from flags and preset defaults. */
-  readonly prompts?: boolean;
-  /** Print only the summary. */
-  readonly quiet?: boolean;
-}
-
 export interface PackageManifest {
   readonly version?: string;
   readonly dependencies: Readonly<Record<string, string>>;

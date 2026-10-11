@@ -3,7 +3,14 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { DEFAULT_ESLINT_PLUGIN_VERSION } from '../engine';
+import {
+  AI_TOOLS,
+  CNGX_LIBS,
+  DEFAULT_ESLINT_PLUGIN_VERSION,
+  LANGUAGES,
+  NG_ADD_PRESETS,
+  THEME_CHOICES,
+} from '../engine';
 import { createFixtureTree, readFixture, runRule } from '../testing/run-schematic';
 import { ngAdd } from './index';
 
@@ -313,6 +320,16 @@ describe('ngAdd', () => {
 describe('the ng-add collection', () => {
   it('is a single stage with no setup schematic', () => {
     expect(Object.keys(COLLECTION.schematics)).toEqual(['ng-add']);
+  });
+
+  it('offers exactly the answer vocabulary the steps understand', () => {
+    const enums = SCHEMA.properties as Record<string, { enum?: readonly string[]; items?: { enum?: readonly string[] } }>;
+
+    expect(enums['preset'].enum).toEqual(NG_ADD_PRESETS);
+    expect(enums['libs'].items?.enum).toEqual(CNGX_LIBS);
+    expect(enums['theme'].enum).toEqual(THEME_CHOICES);
+    expect(enums['i18n'].enum).toEqual(LANGUAGES);
+    expect(enums['aiTools'].items?.enum).toEqual(AI_TOOLS);
   });
 
   it('declares no option the ng add command strips', () => {

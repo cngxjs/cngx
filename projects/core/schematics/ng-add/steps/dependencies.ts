@@ -1,6 +1,14 @@
-import { type Change, declaredRange, type PackageManifest, type Provenance, type StepResult } from '../../engine';
+import {
+  type Change,
+  CNGX_LIBS,
+  type CngxLib,
+  declaredRange,
+  type PackageManifest,
+  type Provenance,
+  type StepResult,
+} from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
-import { CNGX_LIBS, type CngxLib, type OnboardingAnswers, type Versions } from './model';
+import { type OnboardingAnswers, type Versions } from './model';
 
 // The @cngx peers each package declares (projects/<lib>/package.json).
 const LIB_PEERS: Readonly<Record<CngxLib, readonly CngxLib[]>> = {

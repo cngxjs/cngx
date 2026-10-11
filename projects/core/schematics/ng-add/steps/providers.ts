@@ -2,6 +2,7 @@ import { posix } from 'node:path';
 
 import {
   type Change,
+  type CngxLib,
   createProvenanceStamp,
   type Provenance,
   type ProviderCall,
@@ -10,7 +11,7 @@ import {
 } from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
 import { selectedLibs } from './dependencies';
-import { type CngxLib, type OnboardingAnswers, type Versions } from './model';
+import { type OnboardingAnswers, type Versions } from './model';
 
 // Same list as the runtime direction lookup in @cngx/core/i18n
 // (`provide-i18n.ts`); the spec keeps them in step.
