@@ -427,7 +427,10 @@ export class CngxSidenav {
         if (!viaAutoOpen) {
           const activeEl = this.doc.activeElement;
           this.restoreTarget = activeEl instanceof HTMLElement ? activeEl : null;
-          void this.focusTrap.focusFirstTabbableElementWhenReady();
+          // preventScroll: the rail is still translated off-canvas when focus
+          // lands, and the layout (overflow: hidden) is script-scrollable, so a
+          // scrolling focus() shifts the whole layout by the rail width.
+          void this.focusTrap.focusFirstTabbableElementWhenReady({ preventScroll: true });
         }
       } else if (!active && wasOverlayActive) {
         const target = this.restoreTarget;

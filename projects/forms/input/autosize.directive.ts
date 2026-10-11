@@ -78,7 +78,7 @@ export class CngxAutosize {
     if (maxR == null) {
       return 'hidden';
     }
-    const maxH = this.computeMaxHeight(maxR);
+    const maxH = this.heightForRows(maxR);
     return this.heightState() >= maxH ? 'auto' : 'hidden';
   });
 
@@ -93,8 +93,9 @@ export class CngxAutosize {
   /** Force recalculation of the textarea height. */
   resize(): void {
     const el = this.el.nativeElement;
-    const minH = this.computeMinHeight(this.minRows());
-    const maxH = this.maxRows() != null ? this.computeMaxHeight(this.maxRows()!) : Infinity;
+    const maxR = this.maxRows();
+    const minH = this.heightForRows(this.minRows());
+    const maxH = maxR != null ? this.heightForRows(maxR) : Infinity;
 
     // Collapse to read scrollHeight, then restore.
     const prevHeight = el.style.height;
@@ -102,7 +103,9 @@ export class CngxAutosize {
     const scrollH = el.scrollHeight;
     el.style.height = prevHeight;
 
-    const targetH = clamp(scrollH, minH, maxH);
+    // scrollHeight covers content + padding only; the host is border-box, so
+    // the border has to be added back or the last line is clipped by it.
+    const targetH = clamp(scrollH + this.borderTop + this.borderBottom, minH, maxH);
     el.style.height = `${targetH}px`;
     this.heightState.set(targetH);
   }
@@ -117,17 +120,8 @@ export class CngxAutosize {
     this.borderBottom = Number.parseFloat(style.borderBottomWidth) || 0;
   }
 
-  private computeMinHeight(rows: number): number {
-    return (
-      rows * this.lineHeight +
-      this.paddingTop +
-      this.paddingBottom +
-      this.borderTop +
-      this.borderBottom
-    );
-  }
-
-  private computeMaxHeight(rows: number): number {
+  /** Border-box height of `rows` text rows; the shared basis for the min and max bounds. */
+  private heightForRows(rows: number): number {
     return (
       rows * this.lineHeight +
       this.paddingTop +
