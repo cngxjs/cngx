@@ -8,8 +8,11 @@ import { REPO_ROOT, commentFreeText, walkSources } from './_i18n-ast.mjs';
 
 /**
  * Published testing entries stay runner-agnostic: a Jasmine or Jest consumer
- * imports them without resolving Vitest. So no runner global (`vi`, `jest`,
- * `jasmine`) and no value import from `vitest` in their non-spec source. A
+ * imports them without resolving Vitest. So no runner namespace (`vi`, `jest`,
+ * `jasmine`), no call to a bare runner global (`expect`, `spyOn`, `fail`, the
+ * hook registrars) and no value import from `vitest` in their non-spec
+ * source. A helper that registers its own `afterEach` teardown is bound to
+ * whichever runner defines it, so cleanup stays the caller's. A
  * `testing/vitest/` entry is the one place that may name Vitest, and only
  * through `import type` and a `declare module 'vitest'` augmentation, both of
  * which vanish from the emitted JavaScript.
@@ -21,6 +24,43 @@ import { REPO_ROOT, commentFreeText, walkSources } from './_i18n-ast.mjs';
 
 const RUNNER_GLOBAL = /\b(vi|jest|jasmine)\./g;
 const DYNAMIC_VITEST = /\b(?:import|require)\s*\(\s*['"]vitest['"]\s*\)/g;
+const BARE_RUNNER_GLOBALS = new Set([
+  'expect',
+  'spyOn',
+  'fail',
+  'pending',
+  'beforeEach',
+  'afterEach',
+  'beforeAll',
+  'afterAll',
+]);
+
+/**
+ * Names the source binds itself (imports, functions, variables, parameters),
+ * so a local `fail` helper is not mistaken for the runner global.
+ *
+ * @param {ts.SourceFile} sf
+ * @returns {Set<string>}
+ */
+function localBindings(sf) {
+  const names = new Set();
+  const visit = (node) => {
+    const name = node.name;
+    const binds =
+      ts.isImportSpecifier(node) ||
+      ts.isImportClause(node) ||
+      ts.isNamespaceImport(node) ||
+      ts.isFunctionDeclaration(node) ||
+      ts.isVariableDeclaration(node) ||
+      ts.isParameter(node);
+    if (binds && name && ts.isIdentifier(name)) {
+      names.add(name.text);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  return names;
+}
 
 /**
  * @param {string} relDir repo-relative directory
@@ -61,6 +101,20 @@ export function scanSource(path, text) {
   for (const match of code.matchAll(DYNAMIC_VITEST)) {
     report(match.index, 'runtime load of vitest');
   }
+
+  const local = localBindings(sf);
+  const visitCalls = (node) => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      BARE_RUNNER_GLOBALS.has(node.expression.text) &&
+      !local.has(node.expression.text)
+    ) {
+      report(node.getStart(sf), `runner global \`${node.expression.text}()\``);
+    }
+    ts.forEachChild(node, visitCalls);
+  };
+  visitCalls(sf);
 
   for (const stmt of sf.statements) {
     const from = stmt.moduleSpecifier;
@@ -117,6 +171,29 @@ describe('testing-entry-runner-agnostic - scanner', () => {
   it('reports jest and jasmine globals', () => {
     const text = 'jest.fn();\njasmine.clock();\n';
     expect(scanSource(ENTRY, text)).toHaveLength(2);
+  });
+
+  it('reports a bare runner global call such as a self-registered teardown', () => {
+    const text = 'export function createKit() {\n  afterEach(() => stop());\n}\n';
+    expect(scanSource(ENTRY, text)).toEqual([`${ENTRY}:2 runner global \`afterEach()\``]);
+  });
+
+  it('reports expect and spyOn calls', () => {
+    const text = 'expect(a).toBe(1);\nspyOn(obj, "m");\n';
+    expect(scanSource(ENTRY, text)).toHaveLength(2);
+  });
+
+  it('accepts a bare runner global in a JSDoc example or a string', () => {
+    const text =
+      "/**\n * ```ts\n * afterEach(() => capture.stop());\n * ```\n */\nexport const s = 'expect(x)';\n";
+    expect(scanSource(ENTRY, text)).toEqual([]);
+  });
+
+  it('accepts a method or a local binding with a runner-global name', () => {
+    const text =
+      'function fail(reason: string): never {\n  throw new Error(reason);\n}\n' +
+      'fail("x");\nexport const r = assert.expect(1);\n';
+    expect(scanSource(ENTRY, text)).toEqual([]);
   });
 
   it('accepts a runner global inside a JSDoc example', () => {
