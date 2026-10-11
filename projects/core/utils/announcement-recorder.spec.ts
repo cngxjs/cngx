@@ -864,6 +864,26 @@ describe('createAnnouncementRecorder', () => {
       expect(summaries().at(-1)).toEqual({ text: 'C', origin: 'busy-cleared', busy: false });
     });
 
+    it('reads the busy writes of a log moved out of the busy subtree', async () => {
+      const log = region({ role: 'log' });
+      const wrapper = busyWrapper(log);
+      start();
+
+      const line = document.createElement('p');
+      line.textContent = 'Saved';
+      log.append(line);
+      await observed();
+      host.append(log);
+      await observed();
+
+      expect(summaries()).toEqual([
+        { text: 'Saved', origin: 'mutation', busy: true },
+        { text: 'Saved', origin: 'insertion', busy: false },
+        { text: 'Saved', origin: 'busy-cleared', busy: false },
+      ]);
+      expect(wrapper.contains(log)).toBe(false);
+    });
+
     it('records nothing for a region that stops being live while deferred', async () => {
       const log = region({ role: 'log', 'aria-busy': 'true' });
       host.append(log);

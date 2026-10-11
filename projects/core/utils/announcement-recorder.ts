@@ -212,8 +212,9 @@ const CANDIDATE_SELECTOR = '[aria-live],[role]';
  * `<strong>3</strong> results` stays `'3 results'`.
  *
  * A write under `aria-busy="true"` (on the region or an ancestor) records
- * `busy: true`. When busy clears and the region's last entry was such a
- * deferred write, the recorder adds a `'busy-cleared'` entry with what AT
+ * `busy: true`. When the region leaves busy (`aria-busy` clears, or a move
+ * takes it out of the busy subtree) and its last write was such a deferred
+ * write, the recorder adds a `'busy-cleared'` entry with what AT
  * reads then: an atomic region's whole current text, a non-atomic region's
  * text written while busy that it still holds (earlier history is not
  * repeated; removed or overwritten text is left out). A write landing in the
@@ -275,36 +276,13 @@ export function createAnnouncementRecorder(
     return recorder;
   }
 
-  const record = (
-    region: Element,
-    text: string,
-    origin: CngxAnnouncementOrigin,
-    nodes: readonly Node[],
-  ): void => {
-    const busy = isBusy(region);
-    const state = regions.get(region);
-    if (state && busy) {
-      // Re-adding moves a rewritten node to the newest end, so eviction
-      // drops the least recently written node first.
-      for (const node of nodes) {
-        state.deferred.delete(node);
-        state.deferred.add(node);
-      }
-      for (const oldest of state.deferred) {
-        if (state.deferred.size <= limit) {
-          break;
-        }
-        state.deferred.delete(oldest);
-      }
-    } else if (state) {
-      state.deferred.clear();
-    }
+  const record = (region: Element, text: string, origin: CngxAnnouncementOrigin): void => {
     const entry: CngxRecordedAnnouncement = {
       time: Date.now(),
       text,
       politeness: politenessOf(region),
       role: region.getAttribute('role'),
-      busy,
+      busy: isBusy(region),
       suppressedBy: suppressionOf(region),
       origin,
       region,
@@ -314,6 +292,21 @@ export function createAnnouncementRecorder(
       const next = [...list, entry];
       return next.length > limit ? next.slice(next.length - limit) : next;
     });
+  };
+
+  // Re-adding moves a rewritten node to the newest end, so eviction drops
+  // the least recently written node first.
+  const defer = (state: RegionState, nodes: readonly Node[]): void => {
+    for (const node of nodes) {
+      state.deferred.delete(node);
+      state.deferred.add(node);
+    }
+    for (const oldest of state.deferred) {
+      if (state.deferred.size <= limit) {
+        break;
+      }
+      state.deferred.delete(oldest);
+    }
   };
 
   // A region that appeared in this batch at record `since`. The text it held
@@ -347,11 +340,12 @@ export function createAnnouncementRecorder(
     }
     const text = readText(region, false, rewritten ? undefined : appended);
     // An appearance is never deferred: the busy flip replays writes, not
-    // insertions. A region moved while tracked keeps its deferred writes.
+    // insertions. A region moved while tracked keeps its deferred writes; if
+    // the move took it out of busy, the flip pass below reads them.
     const deferred = regions.get(region)?.deferred ?? new Set<Node>();
     regions.set(region, { lastText: text, deferred });
     if (text !== '') {
-      record(region, text, origin, []);
+      record(region, text, origin);
     }
     return rewritten ? records.length : since;
   };
@@ -454,7 +448,8 @@ export function createAnnouncementRecorder(
       }
       // A non-busy write onto text deferred in an earlier batch is the
       // moment AT reads both, so it records one busy-cleared entry.
-      const flushes = state.deferred.size > 0 && !isBusy(region);
+      const busy = isBusy(region);
+      const flushes = state.deferred.size > 0 && !busy;
       let text = normalise(texts.join(' '));
       if (isAtomic(region)) {
         text = current;
@@ -462,23 +457,20 @@ export function createAnnouncementRecorder(
         text = presentText(region, [...state.deferred, ...nodes]);
       }
       if (text !== '') {
-        record(region, text, flushes ? 'busy-cleared' : 'mutation', nodes);
+        record(region, text, flushes ? 'busy-cleared' : 'mutation');
+      }
+      if (busy) {
+        defer(state, nodes);
+      } else {
+        state.deferred.clear();
       }
     }
 
-    // Runs after the mutation pass, which flushed every region it recorded a
-    // write for; a region whose write it skipped (no visible change) still
-    // holds its deferred nodes and is flushed here.
-    const cleared: Element[] = [];
-    for (const rec of records) {
-      if (
-        rec.attributeName === 'aria-busy' &&
-        rec.target instanceof Element &&
-        rec.target.getAttribute('aria-busy') !== 'true'
-      ) {
-        cleared.push(rec.target);
-      }
-    }
+    // A region holding deferred writes that is no longer busy left busy in
+    // this batch, by `aria-busy` clearing or by a move out of the busy
+    // subtree. Runs after the mutation pass, which flushed every region it
+    // recorded a write for; one whose write it skipped (no visible change)
+    // still holds its deferred nodes and is flushed here.
     for (const [region, state] of regions) {
       if (state.deferred.size === 0 || isBusy(region)) {
         continue;
@@ -488,15 +480,12 @@ export function createAnnouncementRecorder(
       if (!region.isConnected || !root.contains(region)) {
         continue;
       }
-      if (!cleared.some((target) => target.contains(region))) {
-        continue;
-      }
       const text = isAtomic(region)
         ? readText(region, false)
         : presentText(region, [...state.deferred]);
       state.deferred.clear();
       if (text !== '') {
-        record(region, text, 'busy-cleared', []);
+        record(region, text, 'busy-cleared');
       }
     }
 
