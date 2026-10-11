@@ -27,7 +27,11 @@ export type CngxAnnouncementOrigin = 'mutation' | 'insertion' | 'became-live';
 export interface CngxRecordedAnnouncement {
   /** `Date.now()` when the observer saw the write. */
   readonly time: number;
-  /** Whitespace-collapsed text: the whole region when atomic, else the added text. */
+  /**
+   * Whitespace-collapsed text: the whole region when atomic, else the added
+   * text. Text of a block-level element (by HTML default display), a `<br>`
+   * or a custom element reads as a separate word; inline text concatenates.
+   */
   readonly text: string;
   readonly politeness: 'polite' | 'assertive';
   readonly role: string | null;
@@ -81,6 +85,61 @@ const ATOMIC_ROLES = new Set(['status', 'alert']);
 /** @internal */
 const SKIPPED_TAGS = new Set(['SCRIPT', 'STYLE', 'TEMPLATE']);
 
+/**
+ * Tags whose HTML default display is not inline (`block`, `list-item`,
+ * `table-*`) plus `BR`. Their text reads as a separate word; custom elements
+ * (tag name with `-`) are treated the same without being listed.
+ *
+ * @internal
+ */
+const SEPARATING_TAGS = new Set([
+  'ADDRESS',
+  'ARTICLE',
+  'ASIDE',
+  'BLOCKQUOTE',
+  'BR',
+  'CAPTION',
+  'DD',
+  'DETAILS',
+  'DIALOG',
+  'DIV',
+  'DL',
+  'DT',
+  'FIELDSET',
+  'FIGCAPTION',
+  'FIGURE',
+  'FOOTER',
+  'FORM',
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'H5',
+  'H6',
+  'HEADER',
+  'HGROUP',
+  'HR',
+  'LEGEND',
+  'LI',
+  'MAIN',
+  'MENU',
+  'NAV',
+  'OL',
+  'P',
+  'PRE',
+  'SEARCH',
+  'SECTION',
+  'SUMMARY',
+  'TABLE',
+  'TBODY',
+  'TD',
+  'TFOOT',
+  'TH',
+  'THEAD',
+  'TR',
+  'UL',
+]);
+
 /** @internal */
 const OBSERVED_ATTRIBUTES = [
   'aria-live',
@@ -117,11 +176,18 @@ const CANDIDATE_SELECTOR = '[aria-live],[role]';
  * clear is one entry. Atomic regions (`aria-atomic="true"`, or role `status`
  * / `alert` without `aria-atomic="false"`) record their whole text, others
  * only the added text. Text inside `hidden` or `aria-hidden="true"`
- * descendants is left out, as AT leaves it out.
+ * descendants is left out, as AT leaves it out. Text of adjacent block-level
+ * elements is separated by a space, decided by tag (HTML default display not
+ * inline, plus `<br>` and every custom element), so `<div>Upload failed</div>
+ * <div>Alert dismissed</div>` records `'Upload failed Alert dismissed'` while
+ * `<strong>3</strong> results` stays `'3 results'`.
  *
  * Known limits:
  * - no layout-based visibility (`display:none`, `visibility:hidden`); jsdom
  *   has no layout, so such a write records `suppressedBy: null`;
+ * - the separator follows the tag, not computed style: an inline tag styled
+ *   `display: block` still concatenates with its neighbour, and an inline
+ *   custom element gains a space (`Inbox 3`), which is what AT reads anyway;
  * - a native `showModal()` dialog without `aria-modal` is not seen as modal;
  * - regions inside shadow roots are not observed;
  * - writes are seen when the `MutationObserver` callback runs (a microtask),
@@ -429,7 +495,8 @@ function liveRegionsIn(node: Node): Element[] {
  * Text AT would read from `node`: text nodes, minus `hidden` /
  * `aria-hidden="true"` descendants and script, style and template content.
  * `excludeSelf` applies the same exclusion to `node` itself; `skip` leaves
- * out the given nodes and their subtrees.
+ * out the given nodes and their subtrees. A separating element's text is
+ * padded with spaces, which `normalise` collapses.
  *
  * @internal
  */
@@ -449,8 +516,15 @@ function readText(node: Node, excludeSelf: boolean, skip?: ReadonlySet<Node>): s
     if ((!isSelf || excludeSelf) && isExcluded(current)) {
       return;
     }
+    const separates = isSeparating(current);
+    if (separates) {
+      parts.push(' ');
+    }
     for (const child of Array.from(current.childNodes)) {
       walk(child, false);
+    }
+    if (separates) {
+      parts.push(' ');
     }
   };
   walk(node, true);
@@ -464,6 +538,11 @@ function isExcluded(el: Element): boolean {
     el.hasAttribute('hidden') ||
     el.getAttribute('aria-hidden') === 'true'
   );
+}
+
+/** @internal */
+function isSeparating(el: Element): boolean {
+  return SEPARATING_TAGS.has(el.tagName) || el.tagName.includes('-');
 }
 
 /** @internal */

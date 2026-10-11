@@ -245,6 +245,58 @@ describe('createAnnouncementRecorder', () => {
     expect(texts()).toEqual(['3 results for "cat"']);
   });
 
+  describe('text separation', () => {
+    async function recordAtomic(html: string): Promise<string[]> {
+      const el = region({ 'aria-live': 'polite', 'aria-atomic': 'true' });
+      host.append(el);
+      start();
+
+      el.innerHTML = html;
+      await observed();
+      return texts();
+    }
+
+    it('separates adjacent block children', async () => {
+      expect(await recordAtomic('<div>Upload failed</div><div>Alert dismissed</div>')).toEqual([
+        'Upload failed Alert dismissed',
+      ]);
+    });
+
+    it.each([
+      ['<strong>3</strong> results', '3 results'],
+      ['un<em>believ</em>able', 'unbelievable'],
+    ])('leaves inline text %s unchanged', async (html, expected) => {
+      expect(await recordAtomic(html)).toEqual([expected]);
+    });
+
+    it('separates text around a br', async () => {
+      expect(await recordAtomic('A<br>B')).toEqual(['A B']);
+    });
+
+    it('separates adjacent custom elements', async () => {
+      expect(await recordAtomic('<cngx-a>Inbox</cngx-a><cngx-b>Sent</cngx-b>')).toEqual([
+        'Inbox Sent',
+      ]);
+    });
+
+    it('collapses already-spaced block text to one space', async () => {
+      expect(await recordAtomic('<p>A </p><p> B</p>')).toEqual(['A B']);
+    });
+
+    it('separates a block child from its sibling text in the added text of a non-atomic region', async () => {
+      const log = region({ role: 'log' });
+      host.append(log);
+      start();
+
+      const line = document.createElement('span');
+      line.innerHTML = 'Retry<div>3 left</div>';
+      log.append(line);
+      await observed();
+
+      expect(texts()).toEqual(['Retry 3 left']);
+    });
+  });
+
   it('records nothing when content is only removed', async () => {
     const el = region({ role: 'status' });
     el.innerHTML = '<span>A</span><span>B</span>';
