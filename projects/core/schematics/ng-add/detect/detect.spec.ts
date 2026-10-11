@@ -378,8 +378,14 @@ module.exports = defineConfig([
     });
   });
 
-  it('reads each source file once', async () => {
-    const tree = createFixtureTree('standalone-app', { 'src/app/other.ts': SECOND_COMPONENT });
+  it('reads each source file and stylesheet once', async () => {
+    const tree = createFixtureTree('standalone-app', {
+      'src/app/other.ts': SECOND_COMPONENT,
+      'package.json': withPackage({ '@angular/material': '^21.2.0' }),
+      'angular.json': withWorkspaceStyles(['src/material-theme.scss', 'src/styles.scss']),
+      'src/material-theme.scss': MAP_API_THEME,
+      'src/styles.scss': '',
+    });
     const workspace = await readWorkspace(tree);
     const reads = new Map<string, number>();
     const readText = tree.readText.bind(tree);

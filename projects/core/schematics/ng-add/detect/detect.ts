@@ -180,7 +180,10 @@ function themeInFile(path: string, content: string): MaterialFacts | undefined {
   return undefined;
 }
 
-function detectMaterial(tree: Tree, manifest: PackageManifest, entries: readonly string[]): MaterialFacts {
+// File content by path, read once per detection run; `undefined` when absent.
+type Read = (path: string) => string | undefined;
+
+function detectMaterial(read: Read, manifest: PackageManifest, entries: readonly string[]): MaterialFacts {
   const none: MaterialFacts = {
     present: false,
     themeShape: 'none',
@@ -195,7 +198,8 @@ function detectMaterial(tree: Tree, manifest: PackageManifest, entries: readonly
     if (entry.includes(PREBUILT_THEME)) {
       return { present: true, themeShape: 'prebuilt', themePath: entry, themeVariable: undefined, density: 0 };
     }
-    const theme = entry.endsWith('.scss') && tree.exists(entry) ? themeInFile(entry, tree.readText(entry)) : undefined;
+    const content = entry.endsWith('.scss') ? read(entry) : undefined;
+    const theme = content === undefined ? undefined : themeInFile(entry, content);
     if (theme !== undefined) {
       return theme;
     }
@@ -203,26 +207,22 @@ function detectMaterial(tree: Tree, manifest: PackageManifest, entries: readonly
   return { ...none, present: true };
 }
 
-function readIfExists(tree: Tree, path: string | undefined): string {
-  return path !== undefined && tree.exists(path) ? tree.readText(path) : '';
-}
-
-function importsCngxStylesheet(tree: Tree, entries: readonly string[]): boolean {
+function importsCngxStylesheet(read: Read, entries: readonly string[]): boolean {
   return (
     entries.includes(CNGX_STYLESHEET) ||
     entries
       .filter(isLocalStylesheet)
-      .some((entry) => hasStyleImport(readIfExists(tree, entry), `@import '${CNGX_STYLESHEET}';`))
+      .some((entry) => hasStyleImport(read(entry) ?? '', `@import '${CNGX_STYLESHEET}';`))
   );
 }
 
-function existingCngxTheme(tree: Tree, sourceRoot: string, entries: readonly string[]): string | undefined {
+function existingCngxTheme(tree: Tree, read: Read, sourceRoot: string, entries: readonly string[]): string | undefined {
   const generated = ['cngx-theme.css', 'cngx-theme.scss']
     .map((name) => posix.join(sourceRoot, name))
     .find((path) => tree.exists(path));
   return (
     generated ??
-    entries.find((entry) => entry.endsWith('.scss') && readIfExists(tree, entry).includes(MATERIAL_BRIDGE))
+    entries.find((entry) => entry.endsWith('.scss') && (read(entry) ?? '').includes(MATERIAL_BRIDGE))
   );
 }
 
@@ -304,15 +304,20 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
 
   // One read per source file feeds every source-derived fact.
   const sources = sourceFiles(tree, sourceRoot).map((path) => ({ path, content: tree.readText(path) }));
-  const contents = new Map(sources.map(({ path, content }) => [path, content]));
-  const read = (path: string): string => contents.get(path) ?? (tree.exists(path) ? tree.readText(path) : '');
+  const contents = new Map<string, string | undefined>(sources.map(({ path, content }) => [path, content]));
+  const read: Read = (path) => {
+    if (!contents.has(path)) {
+      contents.set(path, tree.exists(path) ? tree.readText(path) : undefined);
+    }
+    return contents.get(path);
+  };
 
   const mainOption = options['browser'] ?? options['main'];
   const mainPath = typeof mainOption === 'string' ? mainOption : posix.join(sourceRoot, 'main.ts');
-  const main = read(mainPath);
+  const main = read(mainPath) ?? '';
   const standalone = !/bootstrapModule\s*\(/.test(main);
   const appConfigPath = rootProvidersPath(mainPath, main, standalone, sourceRoot);
-  const providers = providerNames(read(appConfigPath));
+  const providers = providerNames(read(appConfigPath) ?? '');
 
   const entries = styleEntries(options);
   const stylesPath = globalStylesheet(entries);
@@ -334,11 +339,11 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     signalForms: sources.some(({ content }) => /['"]@angular\/forms\/signals['"]/.test(content)),
     stylesKind: stylesPath?.endsWith('.scss') === true ? 'scss' : 'css',
     stylesPath,
-    cngxStylesheet: importsCngxStylesheet(tree, entries),
-    cngxThemePath: existingCngxTheme(tree, sourceRoot, entries),
+    cngxStylesheet: importsCngxStylesheet(read, entries),
+    cngxThemePath: existingCngxTheme(tree, read, sourceRoot, entries),
     appConfigPath,
     rootProviders: providers,
-    material: detectMaterial(tree, manifest, entries),
+    material: detectMaterial(read, manifest, entries),
     editors: {
       claude: tree.exists('CLAUDE.md') || hasEntries(tree, '.claude'),
       cursor: tree.exists('.cursorrules') || hasEntries(tree, '.cursor'),
