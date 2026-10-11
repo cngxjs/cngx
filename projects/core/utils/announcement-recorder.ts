@@ -261,6 +261,13 @@ export function createAnnouncementRecorder(
       for (const node of nodes) {
         state.deferred.add(node);
       }
+      // A region that never leaves busy must not grow without bound.
+      const excess = state.deferred.size - limit;
+      if (excess > 0) {
+        for (const oldest of [...state.deferred].slice(0, excess)) {
+          state.deferred.delete(oldest);
+        }
+      }
     } else if (state) {
       state.deferred.clear();
     }
@@ -439,6 +446,11 @@ export function createAnnouncementRecorder(
     }
     for (const [region, state] of regions) {
       if (state.deferred.size === 0 || isBusy(region)) {
+        continue;
+      }
+      // The purge below has not run yet; a region removed in this batch is
+      // still in the map but is never read.
+      if (!region.isConnected || !root.contains(region)) {
         continue;
       }
       if (!cleared.some((target) => target.contains(region))) {

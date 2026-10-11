@@ -691,6 +691,41 @@ describe('createAnnouncementRecorder', () => {
       });
     });
 
+    it('records nothing for a region removed in the batch that clears busy', async () => {
+      const el = region({ 'aria-live': 'polite' });
+      const wrapper = busyWrapper(el);
+      start();
+
+      el.textContent = 'Loaded';
+      await observed();
+      wrapper.removeAttribute('aria-busy');
+      wrapper.remove();
+      await observed();
+
+      expect(summaries()).toEqual([{ text: 'Loaded', origin: 'mutation', busy: true }]);
+    });
+
+    it('keeps at most limit deferred writes for a region that stays busy', async () => {
+      const log = region({ role: 'log', 'aria-busy': 'true' });
+      host.append(log);
+      start({ limit: 2 });
+
+      for (const text of ['one', 'two', 'three']) {
+        const line = document.createElement('p');
+        line.textContent = text;
+        log.append(line);
+        await observed();
+      }
+      log.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries().at(-1)).toEqual({
+        text: 'two three',
+        origin: 'busy-cleared',
+        busy: false,
+      });
+    });
+
     it('records nothing for an unrelated attribute change while still busy', async () => {
       const el = region({ 'aria-live': 'polite' });
       const wrapper = busyWrapper(el);
