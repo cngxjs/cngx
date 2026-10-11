@@ -5,6 +5,7 @@ import { createSummary } from './finish';
 
 const REPORT: Report = {
   changes: ['Add @cngx/utils@0.1.0'],
+  notes: [],
   files: ['package.json'],
   skipped: [{ id: 'style-import', label: 'Import cngx.css', reason: 'already imported' }],
   warnings: [],
@@ -24,6 +25,18 @@ describe('createSummary', () => {
       '  Run `npx @cngx/doctor` to check the wiring.',
       'Docs:',
       '  cngx documentation: https://cngxjs.github.io/cngx/',
+    ]);
+  });
+
+  it('lists the notes a step left instead of a change', () => {
+    const lines = createSummary(
+      { ...REPORT, notes: ['Skip the eslint entry - no eslint flat config (eslint.config.js, .mjs or .cjs) found'] },
+      true,
+    );
+
+    expect(lines.slice(3, 5)).toEqual([
+      'Notes:',
+      '  Skip the eslint entry - no eslint flat config (eslint.config.js, .mjs or .cjs) found',
     ]);
   });
 

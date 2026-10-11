@@ -69,8 +69,11 @@ describe('createReport', () => {
       'Add @cngx/utils@0.1.0',
       'Import cngx.css',
       'Add provideA11yPreferences(withPersistence())',
-      'Note',
     ]);
+  });
+
+  it('lists notes apart from the changes', () => {
+    expect(createReport(PLAN).notes).toEqual(['Note - r']);
   });
 
   it('lists each touched file once and leaves out changes without a file', () => {

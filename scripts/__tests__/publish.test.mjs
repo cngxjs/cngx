@@ -99,10 +99,15 @@ describe('replaceVersionInDist', () => {
 });
 
 describe('createSchematicsVersions', () => {
-  it('pins the release, the mcp server and the Angular range', () => {
+  it('pins the release, the mcp server, the eslint plugin and the Angular range', () => {
     expect(
-      createSchematicsVersions({ nextVersion: '0.1.0', mcpVersion: '0.2.0', angularRange: '^21.2.0' }),
-    ).toEqual({ cngx: '0.1.0', mcp: '0.2.0', angular: '^21.2.0' });
+      createSchematicsVersions({
+        nextVersion: '0.1.0',
+        mcpVersion: '0.2.0',
+        eslintPluginVersion: '0.2.1',
+        angularRange: '^21.2.0',
+      }),
+    ).toEqual({ cngx: '0.1.0', mcp: '0.2.0', eslintPlugin: '0.2.1', angular: '^21.2.0' });
   });
 });
 

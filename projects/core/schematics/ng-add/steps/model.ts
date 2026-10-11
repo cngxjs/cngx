@@ -1,4 +1,4 @@
-import { type NgAddPreset, type StepResult } from '../../engine';
+import { type NgAddPreset, type ReleaseVersions, type StepResult } from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
 
 /** Every package `ng add` can select; `@cngx/themes` follows the theme answer. */
@@ -25,10 +25,6 @@ export interface OnboardingAnswers {
 }
 
 /** The release versions a run pins; `versions.json` at publish time. */
-export interface Versions {
-  readonly cngx: string;
-  readonly mcp: string;
-  readonly eslintPlugin: string;
-}
+export type Versions = ReleaseVersions;
 
 export type Step = (facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions) => StepResult;

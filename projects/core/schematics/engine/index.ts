@@ -48,6 +48,14 @@ export { findElements, insertAttribute, parseTemplateContent } from './edit/temp
 export { hasStyleImport, insertStyleImport } from './edit/style-edit';
 export { applyChangePlan } from './apply/apply';
 export {
+  DEFAULT_ESLINT_PLUGIN_VERSION,
+  DEFAULT_MCP_VERSION,
+  parseVersions,
+  type ReleaseVersions,
+  type ResolvedVersions,
+  resolveVersions,
+} from './versions';
+export {
   canPrompt,
   type ConfirmQuestion,
   createPromptFlow,
