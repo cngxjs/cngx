@@ -13,6 +13,12 @@
 // bottom-sheet as a centred plain <dialog>, ripples invisible, etc.
 @import '../../projects/themes/cngx.css';
 
+// Material tabs bridge skin: paints the classes [cngxMatTabs] / [cngxMatTabNav]
+// project onto Material's tab buttons and links (rejection outline, has-errors
+// badge). A standalone asset the consumer imports once, because a @Directive
+// cannot ship a styleUrl; cngx.css deliberately leaves the Material sheets out.
+@import '../../projects/ui/mat-tabs/styles/mat-tabs.css';
+
 :root {
   // `color-scheme` is owned by the foundation (`projects/core/theming/
   // system-tokens.css`). It flips based on `data-color-scheme` and the
