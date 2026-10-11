@@ -1,8 +1,9 @@
 import { signal, type Signal } from '@angular/core';
 
 /**
- * Why assistive technology would not speak a recorded write, judged from
- * attributes at write time. `null` means nothing attribute-based suppresses it.
+ * Why assistive technology would not speak a recorded entry, judged from
+ * attributes when the observer handles the batch (for `'busy-cleared'`, the
+ * batch that clears busy). `null` means nothing attribute-based suppresses it.
  *
  * @internal
  */
@@ -61,7 +62,11 @@ export interface CngxRecordedAnnouncement {
 export interface CngxAnnouncementRecorderOptions {
   /** Subtree to observe. Defaults to the global `document`. */
   readonly root?: Node;
-  /** Maximum entries kept; the oldest are dropped first. Defaults to 200. */
+  /**
+   * Maximum entries kept, and maximum writes a region defers while busy; the
+   * oldest (least recently written) are dropped first, so a flip after more
+   * busy writes than `limit` leaves the earliest out. Defaults to 200.
+   */
   readonly limit?: number;
   /** Names the owner of a region. Defaults to the owning Angular component's class name. */
   readonly owner?: (region: Element) => string | null;
@@ -213,7 +218,9 @@ const CANDIDATE_SELECTOR = '[aria-live],[role]';
  * text written while busy that it still holds (earlier history is not
  * repeated; removed or overwritten text is left out). A write landing in the
  * same observer batch as the flip joins that entry; with nothing deferred
- * before it, it records one non-busy `'mutation'` entry instead.
+ * before it, it records one non-busy `'mutation'` entry instead. An
+ * `'insertion'` or `'became-live'` under busy is never replayed by the flip,
+ * and text inside `hidden` / `aria-hidden` descendants is never recorded.
  *
  * Known limits:
  * - no layout-based visibility (`display:none`, `visibility:hidden`); jsdom
@@ -459,8 +466,9 @@ export function createAnnouncementRecorder(
       }
     }
 
-    // Runs after the mutation pass, which already flushed every region
-    // written in this batch.
+    // Runs after the mutation pass, which flushed every region it recorded a
+    // write for; a region whose write it skipped (no visible change) still
+    // holds its deferred nodes and is flushed here.
     const cleared: Element[] = [];
     for (const rec of records) {
       if (
