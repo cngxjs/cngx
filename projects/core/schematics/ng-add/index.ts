@@ -29,21 +29,26 @@ import { planTheme } from './steps/theme';
 /** The plan steps in apply order; the install manifest follows them. */
 const STEPS: readonly Step[] = [planDependencies, planTheme, planProviders, planLint, planAiTools];
 
-const MIN_ANGULAR: readonly [number, number] = [21, 2];
-
 // `CI=false` and `CI=0` are how some runners say "not CI".
 function isCi(env: NodeJS.ProcessEnv): boolean {
   const ci = env['CI'];
   return ci !== undefined && ci !== '' && ci !== 'false' && ci !== '0';
 }
 
-function assertSupportedAngular(facts: ProjectFacts): void {
-  const [major, minor] = (facts.angularVersion ?? '').split('.').map(Number);
-  const supported =
-    major !== undefined && minor !== undefined && (major > MIN_ANGULAR[0] || (major === MIN_ANGULAR[0] && minor >= MIN_ANGULAR[1]));
+function majorMinor(version: string | undefined): readonly [number, number] | undefined {
+  const match = /(\d+)\.(\d+)/.exec(version ?? '');
+  return match === null ? undefined : [Number(match[1]), Number(match[2])];
+}
+
+// The floor is the `@angular/core` range @cngx/core peers on, stamped into
+// versions.json at publish time.
+function assertSupportedAngular(facts: ProjectFacts, peerRange: string): void {
+  const [minMajor, minMinor] = majorMinor(peerRange) ?? [0, 0];
+  const app = majorMinor(facts.angularVersion);
+  const supported = app !== undefined && (app[0] > minMajor || (app[0] === minMajor && app[1] >= minMinor));
   if (!supported) {
     const declared = facts.manifest.dependencies['@angular/core'] ?? 'no @angular/core dependency';
-    throw new SchematicsException(`cngx needs Angular ${MIN_ANGULAR.join('.')} or newer; this app declares ${declared}.`);
+    throw new SchematicsException(`cngx needs Angular ${minMajor}.${minMinor} or newer; this app declares ${declared}.`);
   }
 }
 
@@ -81,7 +86,7 @@ export function ngAdd(options: NgAddOptions): Rule {
     });
 
     const facts = detectProject(tree, await readWorkspace(tree), options.project);
-    assertSupportedAngular(facts);
+    assertSupportedAngular(facts, versions.angular);
 
     const flow = createPromptFlow({
       canPrompt: interactive && options.preset !== 'minimal',

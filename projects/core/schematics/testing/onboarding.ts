@@ -2,7 +2,7 @@ import { CNGX_LIBS, parseManifest } from '../engine';
 import { type ProjectFacts } from '../ng-add/detect/detect';
 import { type OnboardingAnswers, type Versions } from '../ng-add/steps/model';
 
-export const VERSIONS: Versions = { cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.0' };
+export const VERSIONS: Versions = { cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.0', angular: '^21.2.0' };
 
 /** The stock standalone fixture app as facts, so a step spec states only what differs. */
 export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts {

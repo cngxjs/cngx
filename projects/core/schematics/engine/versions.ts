@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { readOwnVersion } from './manifest/manifest';
+import { readOwnPeerRange, readOwnVersion } from './manifest/manifest';
 import { isRecord } from './plan/text';
 
 /** The release versions a run pins. */
@@ -9,6 +9,8 @@ export interface ReleaseVersions {
   readonly cngx: string;
   readonly mcp: string;
   readonly eslintPlugin: string;
+  /** The `@angular/core` range `@cngx/core` peers on; `ng add` refuses an older app. */
+  readonly angular: string;
 }
 
 export interface ResolvedVersions {
@@ -22,7 +24,6 @@ export interface ResolvedVersions {
 export const DEFAULT_MCP_VERSION = '0.2.0';
 export const DEFAULT_ESLINT_PLUGIN_VERSION = '0.2.0';
 
-
 /** The pins of a `versions.json` body; `undefined` when it is not JSON or a pin is missing. */
 export function parseVersions(content: string): ReleaseVersions | undefined {
   let parsed: unknown;
@@ -34,11 +35,16 @@ export function parseVersions(content: string): ReleaseVersions | undefined {
   if (!isRecord(parsed)) {
     return undefined;
   }
-  const { cngx, mcp, eslintPlugin } = parsed;
-  if (typeof cngx !== 'string' || typeof mcp !== 'string' || typeof eslintPlugin !== 'string') {
+  const { cngx, mcp, eslintPlugin, angular } = parsed;
+  if (
+    typeof cngx !== 'string' ||
+    typeof mcp !== 'string' ||
+    typeof eslintPlugin !== 'string' ||
+    typeof angular !== 'string'
+  ) {
     return undefined;
   }
-  return { cngx, mcp, eslintPlugin };
+  return { cngx, mcp, eslintPlugin, angular };
 }
 
 export type ReadText = (path: string) => string | undefined;
@@ -54,8 +60,8 @@ const readIfPresent: ReadText = (path) => {
 /**
  * The versions `scripts/publish.mjs` wrote next to the bundles
  * (`dist/core/schematics/versions.json`). A local build has none: the cngx
- * version then comes from the package's own manifest, the others from the
- * defaults above, and the run says so.
+ * version and the Angular range then come from the package's own manifest,
+ * the other pins from the defaults above, and the run says so.
  */
 export function resolveVersions(bundleDir: string, read: ReadText = readIfPresent): ResolvedVersions {
   const path = join(bundleDir, '..', 'versions.json');
@@ -65,7 +71,12 @@ export function resolveVersions(bundleDir: string, read: ReadText = readIfPresen
     return { versions: published };
   }
   return {
-    versions: { cngx: readOwnVersion(bundleDir), mcp: DEFAULT_MCP_VERSION, eslintPlugin: DEFAULT_ESLINT_PLUGIN_VERSION },
+    versions: {
+      cngx: readOwnVersion(bundleDir),
+      mcp: DEFAULT_MCP_VERSION,
+      eslintPlugin: DEFAULT_ESLINT_PLUGIN_VERSION,
+      angular: readOwnPeerRange(bundleDir, '@angular/core'),
+    },
     warning: `No usable versions.json next to the schematics; pinning @cngx/mcp@${DEFAULT_MCP_VERSION} and @cngx/eslint-plugin@${DEFAULT_ESLINT_PLUGIN_VERSION} (a local build).`,
   };
 }

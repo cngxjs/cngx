@@ -12,15 +12,15 @@ import {
   resolveVersions,
 } from './versions';
 
-const PUBLISHED = JSON.stringify({ cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.1', angular: '^21.2.0' });
+const PUBLISHED = JSON.stringify({ cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.1', angular: '^21.2.0', extra: 1 });
 
 describe('parseVersions', () => {
-  it('reads the three pins and ignores the rest', () => {
-    expect(parseVersions(PUBLISHED)).toEqual({ cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.1' });
+  it('reads the four pins and ignores the rest', () => {
+    expect(parseVersions(PUBLISHED)).toEqual({ cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.1', angular: '^21.2.0' });
   });
 
   it('rejects a body with a missing pin', () => {
-    expect(parseVersions(JSON.stringify({ cngx: '0.1.0', mcp: '0.3.0' }))).toBeUndefined();
+    expect(parseVersions(JSON.stringify({ cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.0' }))).toBeUndefined();
     expect(parseVersions('[]')).toBeUndefined();
     expect(parseVersions('{ not json')).toBeUndefined();
   });
@@ -34,7 +34,10 @@ describe('resolveVersions', () => {
     pkg = mkdtempSync(join(tmpdir(), 'cngx-versions-'));
     bundleDir = join(pkg, 'schematics', 'ng-add');
     mkdirSync(bundleDir, { recursive: true });
-    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ version: '0.1.0-rc.9' }));
+    writeFileSync(
+      join(pkg, 'package.json'),
+      JSON.stringify({ version: '0.1.0-rc.9', peerDependencies: { '@angular/core': '^21.2.0' } }),
+    );
   });
 
   afterEach(() => {
@@ -49,7 +52,7 @@ describe('resolveVersions', () => {
     };
 
     expect(resolveVersions(bundleDir, read)).toEqual({
-      versions: { cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.1' },
+      versions: { cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.1', angular: '^21.2.0' },
     });
     expect(paths).toEqual([join(pkg, 'schematics', 'versions.json')]);
   });
@@ -61,6 +64,7 @@ describe('resolveVersions', () => {
       cngx: '0.1.0-rc.9',
       mcp: DEFAULT_MCP_VERSION,
       eslintPlugin: DEFAULT_ESLINT_PLUGIN_VERSION,
+      angular: '^21.2.0',
     });
     expect(resolved.warning).toContain('a local build');
   });
