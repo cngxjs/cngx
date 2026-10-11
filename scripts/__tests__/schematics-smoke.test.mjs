@@ -1,11 +1,12 @@
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
 import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { NodeModulesEngineHost } from '@angular-devkit/schematics/tools';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 /**
  * Smoke guard for the bundled schematics under dist/. Runs the built
@@ -82,7 +83,7 @@ describe('dist/core/schematics', () => {
 
       expect(messages.some((message) => /^Planned \(\d+\):$/.test(message))).toBe(true);
       expect(messages.some((message) => /^cngx planned \d+ changes\.$/.test(message))).toBe(true);
-      expect(tree.exists('.cngx/spike.json')).toBe(false);
+      expect(tree.exists('.cngx/install.json')).toBe(true);
     });
   });
 
@@ -92,6 +93,33 @@ describe('dist/core/schematics', () => {
     expect(Object.keys(schema.properties)).not.toContain('dryRun');
     expect(Object.keys(schema.properties)).not.toContain('interactive');
     expect(Object.keys(schema.properties)).not.toContain('verbose');
+  });
+});
+
+// The CLI finds a collection through `require.resolve('<pkg>/package.json')`
+// and fails hard on anything but MODULE_NOT_FOUND, so a package whose
+// `exports` map hides its manifest cannot answer `ng add`.
+describe('every published package as the CLI resolves it', () => {
+  const LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
+  let modules;
+
+  beforeAll(() => {
+    modules = mkdtempSync(join(tmpdir(), 'cngx-resolve-'));
+    mkdirSync(join(modules, 'node_modules', '@cngx'), { recursive: true });
+    for (const lib of LIBS) {
+      symlinkSync(join(ROOT, 'dist', lib), join(modules, 'node_modules', '@cngx', lib), 'dir');
+    }
+  });
+
+  afterAll(() => {
+    rmSync(modules, { recursive: true, force: true });
+  });
+
+  it.each(LIBS)('loads the ng-add collection of @cngx/%s through its package.json', (lib) => {
+    requireDist(join(ROOT, 'dist', lib, 'schematics', 'collection.json'));
+    const host = new NodeModulesEngineHost([modules]);
+
+    expect(Object.keys(host.createCollectionDescription(`@cngx/${lib}`).schematics)).toContain('ng-add');
   });
 });
 
