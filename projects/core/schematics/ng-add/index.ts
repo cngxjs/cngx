@@ -103,6 +103,9 @@ export function ngAdd(options: NgAddOptions): Rule {
     const changesFiles = plan.changes.some((change) => change.kind !== 'note');
     if (facts.maturity === 'existing' && changesFiles && options.yes !== true) {
       renderer.note(GIT_LINES[readGitState(process.cwd())]);
+      if (!interactive) {
+        renderer.note('No terminal to confirm in; applying the plan. Pass --yes to apply without this line.');
+      }
       const confirm = createPromptFlow({ canPrompt: interactive });
       const proceed = await confirm.confirm({ key: 'apply', message: 'Apply these changes?', default: true });
       if (!proceed) {

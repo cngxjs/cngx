@@ -94,7 +94,10 @@ describe('planDependencies', () => {
     expect(added(planDependencies(facts, createAnswers(), VERSIONS))).toContain('@angular/cdk@~21.2.4');
   });
 
-  it('adds @floating-ui/dom only on request', () => {
+  it('adds @floating-ui/dom only on request and only with @cngx/common', () => {
+    expect(
+      added(planDependencies(createFacts(), createAnswers({ floatingFallback: true, libs: ['utils'], theme: 'none' }), VERSIONS)),
+    ).toEqual(['@cngx/utils@0.1.0']);
     expect(added(planDependencies(createFacts(), createAnswers(), VERSIONS))).not.toContain('@floating-ui/dom@^1.0.0');
     expect(added(planDependencies(createFacts(), createAnswers({ floatingFallback: true }), VERSIONS))).toContain(
       '@floating-ui/dom@^1.0.0',

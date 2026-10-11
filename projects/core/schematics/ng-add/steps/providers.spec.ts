@@ -60,9 +60,13 @@ describe('planProviders', () => {
     expect(provided(planProviders(createFacts(), createAnswers({ feedback: true }), VERSIONS))).toContain(
       'provideFeedback(withToasts(), withAlerts(), withBanners())',
     );
-    expect(provided(planProviders(createFacts(), createAnswers({ feedback: true, libs: ['forms'] }), VERSIONS))).not.toContain(
-      'provideFeedback(withToasts(), withAlerts(), withBanners())',
-    );
+    const withoutUi = planProviders(createFacts(), createAnswers({ feedback: true, libs: ['forms'] }), VERSIONS);
+    expect(provided(withoutUi)).not.toContain('provideFeedback(withToasts(), withAlerts(), withBanners())');
+    expect(byId(withoutUi, 'provider:feedback')).toMatchObject({
+      kind: 'note',
+      label: 'Skip the feedback providers',
+      reason: 'toasts, alerts and banners come from @cngx/ui, which is not selected',
+    });
     expect(byId(planProviders(createFacts(), createAnswers({ feedback: true }), VERSIONS), 'provider:feedback')).toMatchObject({
       call: { module: '@cngx/ui/feedback' },
     });
@@ -72,9 +76,16 @@ describe('planProviders', () => {
     const result = planProviders(createFacts(), createAnswers({ floatingFallback: true }), VERSIONS);
     expect(provided(result)).toContain('provideFloatingFallback()');
     expect(byId(result, 'provider:floating-fallback')).toMatchObject({ call: { module: '@cngx/common/popover' } });
-    expect(
-      provided(planProviders(createFacts(), createAnswers({ floatingFallback: true, libs: ['utils'], theme: 'none' }), VERSIONS)),
-    ).not.toContain('provideFloatingFallback()');
+    const withoutCommon = planProviders(
+      createFacts(),
+      createAnswers({ floatingFallback: true, libs: ['utils'], theme: 'none' }),
+      VERSIONS,
+    );
+    expect(provided(withoutCommon)).not.toContain('provideFloatingFallback()');
+    expect(byId(withoutCommon, 'provider:floating-fallback')).toMatchObject({
+      kind: 'note',
+      label: 'Skip the floating positioning fallback',
+    });
   });
 
   it('provides the German pack for i18n de', () => {
@@ -124,11 +135,15 @@ describe('planProviders', () => {
       expect(byId(result, 'provider:i18n-file')).toMatchObject({ path: 'src/config/cngx-language.ts' });
     });
 
-    it('has no effect without the German pack', () => {
-      expect(planProviders(createFacts(), createAnswers({ runtimeSwitch: true, a11yPreferences: false }), VERSIONS)).toEqual({
-        changes: [],
-        skipped: [],
-      });
+    it('says why it does not apply without the German pack', () => {
+      const result = planProviders(createFacts(), createAnswers({ runtimeSwitch: true, a11yPreferences: false }), VERSIONS);
+      expect(result.changes).toEqual([
+        expect.objectContaining({
+          kind: 'note',
+          label: 'Skip runtime language switching',
+          reason: 'it switches to the German pack; pass --i18n=de with it',
+        }),
+      ]);
     });
   });
 

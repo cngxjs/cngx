@@ -111,13 +111,16 @@ export async function askOnboarding(
     ],
     default: defaults.i18n,
   });
+  // A flag the question cannot ask about is kept, so the step can say why it
+  // does not apply instead of dropping it.
   const runtimeSwitch =
-    i18n === 'de' &&
-    (await flow.confirm({
-      key: 'runtimeSwitch',
-      message: 'Switch between English and German at runtime?',
-      default: defaults.runtimeSwitch,
-    }));
+    i18n === 'de'
+      ? await flow.confirm({
+          key: 'runtimeSwitch',
+          message: 'Switch between English and German at runtime?',
+          default: defaults.runtimeSwitch,
+        })
+      : flag(options, 'runtimeSwitch', false);
   const lint =
     facts.eslintConfig === undefined
       ? flag(options, 'lint', defaults.lint)
@@ -126,13 +129,13 @@ export async function askOnboarding(
           message: `Add the cngx lint rules to ${facts.eslintConfig.path}?`,
           default: defaults.lint,
         });
-  const feedback =
-    selectedLibs(libs).includes('ui') &&
-    (await flow.confirm({
-      key: 'feedback',
-      message: 'Provide toasts, alerts and banners at the root?',
-      default: defaults.feedback,
-    }));
+  const feedback = selectedLibs(libs).includes('ui')
+    ? await flow.confirm({
+        key: 'feedback',
+        message: 'Provide toasts, alerts and banners at the root?',
+        default: defaults.feedback,
+      })
+    : flag(options, 'feedback', false);
 
   return {
     preset,

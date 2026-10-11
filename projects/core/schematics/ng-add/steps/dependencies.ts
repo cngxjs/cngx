@@ -98,7 +98,8 @@ function merge(results: readonly StepResult[]): StepResult {
 /**
  * Pins every selected @cngx package and its peers to the exact release,
  * `@cngx/themes` when a theme is wanted and installable, the CDK at the app's
- * Angular range when a package needs it, and `@floating-ui/dom` on request.
+ * Angular range when a package needs it, and `@floating-ui/dom` on request
+ * when `@cngx/common` (which provides the fallback) is selected.
  * `@angular/material` is never added: the bridge themes an app that has it.
  */
 export function planDependencies(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
@@ -115,7 +116,7 @@ export function planDependencies(facts: ProjectFacts, answers: OnboardingAnswers
     ...(libs.some((lib) => NEEDS_CDK.includes(lib))
       ? [thirdPartyDependency(facts.manifest, '@angular/cdk', angularRange, 'a peer of the selected @cngx packages', provenance)]
       : []),
-    ...(answers.floatingFallback
+    ...(answers.floatingFallback && libs.includes('common')
       ? [thirdPartyDependency(facts.manifest, FLOATING_UI, FLOATING_UI_RANGE, 'positions popovers where CSS anchor positioning is missing', provenance)]
       : []),
   ]);

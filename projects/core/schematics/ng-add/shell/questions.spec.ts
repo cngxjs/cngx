@@ -86,6 +86,11 @@ describe('askOnboarding', () => {
     expect(answers.feedback).toBe(false);
   });
 
+  it('keeps an explicit answer whose question does not apply, so the step can say why', async () => {
+    const { answers } = await ask(createFacts(), { libs: ['forms'], feedback: true, i18n: 'en', runtimeSwitch: true });
+    expect(answers).toMatchObject({ feedback: true, runtimeSwitch: true });
+  });
+
   it('lets flags answer and asks nothing they cover', async () => {
     const { asked, answers } = await ask(createFacts({ eslintConfig: ESLINT }), {
       libs: ['ui'],

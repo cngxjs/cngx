@@ -235,6 +235,7 @@ describe('ngAdd', () => {
       const run = await runRule(ngAdd({}), existing());
 
       expect(run.logs.filter((line) => line.startsWith('Git: '))).toHaveLength(1);
+      expect(run.logs).toContain('No terminal to confirm in; applying the plan. Pass --yes to apply without this line.');
       expect(run.tree.exists('src/cngx-theme.css')).toBe(true);
     });
 

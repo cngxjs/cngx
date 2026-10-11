@@ -59,6 +59,46 @@ function renderLanguageFile(version: string, german: boolean): string {
   ].join('\n');
 }
 
+interface Refused {
+  readonly id: string;
+  readonly label: string;
+  readonly reason: string;
+}
+
+// Answers that ask for something the selected packages cannot provide.
+function refusedProviders(answers: OnboardingAnswers): readonly Refused[] {
+  const libs = selectedLibs(answers.libs);
+  return [
+    ...(answers.feedback && !libs.includes('ui')
+      ? [
+          {
+            id: 'provider:feedback',
+            label: 'Skip the feedback providers',
+            reason: 'toasts, alerts and banners come from @cngx/ui, which is not selected',
+          },
+        ]
+      : []),
+    ...(answers.floatingFallback && !libs.includes('common')
+      ? [
+          {
+            id: 'provider:floating-fallback',
+            label: 'Skip the floating positioning fallback',
+            reason: 'it comes from @cngx/common, which is not selected',
+          },
+        ]
+      : []),
+    ...(answers.runtimeSwitch && answers.i18n !== 'de'
+      ? [
+          {
+            id: 'provider:i18n',
+            label: 'Skip runtime language switching',
+            reason: 'it switches to the German pack; pass --i18n=de with it',
+          },
+        ]
+      : []),
+  ];
+}
+
 interface Wanted {
   readonly id: string;
   readonly label: string;
@@ -146,7 +186,8 @@ function wantedProviders(facts: ProjectFacts, answers: OnboardingAnswers): reado
  * root NgModule; `addRootProvider` finds either): the a11y preferences, the
  * rtl direction for an RTL source locale, the feedback services, the
  * floating fallback and the language pack. A provider already present is
- * skipped, so a second run plans nothing.
+ * skipped, so a second run plans nothing; an answer the selected packages
+ * cannot serve gets a note.
  */
 export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
   const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
@@ -171,8 +212,13 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
     const symbol = change.kind === 'add-provider' ? change.call.symbol : 'provideCngxI18n';
     return facts.rootProviders.includes(symbol);
   };
+  const notes: readonly Change[] = refusedProviders(answers).map((refused) => ({
+    kind: 'note',
+    ...refused,
+    provenance,
+  }));
   return {
-    changes: changes.filter((change) => !isProvided(change)),
+    changes: [...changes.filter((change) => !isProvided(change)), ...notes],
     skipped: changes.filter(isProvided).map((change) => skipChange(change, 'already provided')),
   };
 }
