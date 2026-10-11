@@ -73,6 +73,19 @@ describe('CngxSidenav focus management', () => {
     expect(mockTrap.focusFirstTabbableElementWhenReady).toHaveBeenCalled();
   });
 
+  it('moves focus into the rail without scrolling the layout', () => {
+    // The rail is still translated off-canvas when focus lands; a scrolling
+    // focus() would shift the layout (overflow: hidden is script-scrollable)
+    // by the rail width and drag the content out of the viewport.
+    const { fixture, host } = setup();
+    host.open.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(mockTrap.focusFirstTabbableElementWhenReady).toHaveBeenCalledWith({
+      preventScroll: true,
+    });
+  });
+
   it('does not enable the trap in side mode even when open', () => {
     const { fixture, host } = setup();
     host.mode.set('side');
