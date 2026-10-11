@@ -25,9 +25,14 @@ function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/** The pins of a `versions.json` body; `undefined` when a pin is missing. */
+/** The pins of a `versions.json` body; `undefined` when it is not JSON or a pin is missing. */
 export function parseVersions(content: string): ReleaseVersions | undefined {
-  const parsed: unknown = JSON.parse(content);
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    return undefined;
+  }
   if (!isRecord(parsed)) {
     return undefined;
   }

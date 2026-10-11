@@ -158,4 +158,14 @@ describe('parseInstallManifest', () => {
     expect(parseInstallManifest('{ "schemaVersion": 2, "steps": [] }')).toBeUndefined();
     expect(parseInstallManifest('not json')).toBeUndefined();
   });
+
+  it('reads a hand-edited manifest with a malformed step or field as no previous install', () => {
+    const manifest = firstRun();
+
+    expect(parseInstallManifest(JSON.stringify({ ...manifest, steps: [null] }))).toBeUndefined();
+    expect(parseInstallManifest(JSON.stringify({ ...manifest, steps: [{ id: 'x', outcome: 'done' }] }))).toBeUndefined();
+    expect(parseInstallManifest(JSON.stringify({ ...manifest, cngxVersion: 1 }))).toBeUndefined();
+    expect(parseInstallManifest(JSON.stringify({ ...manifest, answers: [] }))).toBeUndefined();
+    expect(parseInstallManifest(JSON.stringify(manifest))).toEqual(manifest);
+  });
 });

@@ -22,6 +22,7 @@ describe('parseVersions', () => {
   it('rejects a body with a missing pin', () => {
     expect(parseVersions(JSON.stringify({ cngx: '0.1.0', mcp: '0.3.0' }))).toBeUndefined();
     expect(parseVersions('[]')).toBeUndefined();
+    expect(parseVersions('{ not json')).toBeUndefined();
   });
 });
 

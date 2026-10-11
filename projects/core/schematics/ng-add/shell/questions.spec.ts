@@ -120,6 +120,13 @@ describe('askOnboarding', () => {
     expect(answers.aiTools).toEqual(['claude']);
   });
 
+  it('rejects an answer flag of the wrong shape', async () => {
+    await expect(ask(createFacts(), { aiTools: ['emacs'] })).rejects.toThrow('["emacs"] is not a valid answer for aiTools.');
+    await expect(ask(createFacts(), { theme: 'dark' } as unknown as NgAddOptions)).rejects.toThrow(
+      '"dark" is not a valid answer for theme.',
+    );
+  });
+
   it('rejects a flag value no question offers', async () => {
     await expect(ask(createFacts(), { libs: ['charts'] })).rejects.toThrow('"charts" is not a valid answer for libs.');
   });

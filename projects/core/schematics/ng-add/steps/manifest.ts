@@ -42,10 +42,64 @@ export function parseInstallManifest(content: string): InstallManifest | undefin
   } catch {
     return undefined;
   }
-  if (!isRecord(parsed) || parsed['schemaVersion'] !== SCHEMA_VERSION || !Array.isArray(parsed['steps'])) {
+  return isRecord(parsed) ? readManifest(parsed) : undefined;
+}
+
+function isProvenance(value: unknown): value is Provenance {
+  return isRecord(value) && typeof value['source'] === 'string' && typeof value['version'] === 'string';
+}
+
+function isInstalledStep(value: unknown): value is InstalledStep {
+  return (
+    isRecord(value) &&
+    typeof value['id'] === 'string' &&
+    value['outcome'] === 'satisfied' &&
+    isProvenance(value['provenance'])
+  );
+}
+
+// A user may have edited the file; anything short of the full shape reads
+// as no previous install, and the run writes a fresh one.
+function readManifest(parsed: Readonly<Record<string, unknown>>): InstallManifest | undefined {
+  const {
+    schemaVersion,
+    cngxVersion,
+    mcpVersion,
+    eslintPluginVersion,
+    angularVersion,
+    preset,
+    answers,
+    steps,
+    facts,
+    createdAt,
+    updatedAt,
+  } = parsed;
+  const strings = [cngxVersion, mcpVersion, eslintPluginVersion, preset, createdAt, updatedAt];
+  if (
+    schemaVersion !== SCHEMA_VERSION ||
+    !strings.every((value) => typeof value === 'string') ||
+    !(typeof angularVersion === 'string' || angularVersion === null) ||
+    !isRecord(answers) ||
+    !isRecord(facts) ||
+    !Array.isArray(steps) ||
+    !steps.every(isInstalledStep)
+  ) {
     return undefined;
   }
-  return parsed as unknown as InstallManifest;
+  return {
+    schemaVersion,
+    cngxVersion: String(cngxVersion),
+    mcpVersion: String(mcpVersion),
+    eslintPluginVersion: String(eslintPluginVersion),
+    angularVersion,
+    preset: String(preset),
+    // Parsed from JSON, so every value is JSON.
+    answers: answers as Readonly<Record<string, JsonValue>>,
+    steps,
+    facts: facts as Readonly<Record<string, JsonValue>>,
+    createdAt: String(createdAt),
+    updatedAt: String(updatedAt),
+  };
 }
 
 function canonical(value: unknown): string {

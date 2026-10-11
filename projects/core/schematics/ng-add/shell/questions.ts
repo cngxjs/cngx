@@ -64,9 +64,29 @@ export function givenAnswers(options: NgAddOptions): PromptAnswers {
   );
 }
 
-function flag<T>(options: NgAddOptions, key: (typeof ANSWER_KEYS)[number], fallback: T): T {
+const THEMES: readonly ThemeChoice[] = ['cngx', 'material', 'none'];
+
+const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
+const isTheme = (value: unknown): value is ThemeChoice => THEMES.some((theme) => theme === value);
+const isAiTools = (value: unknown): value is readonly AiTool[] =>
+  Array.isArray(value) && value.every((tool) => AI_TOOLS.some((known) => known === tool));
+
+// A flag the schema let through must still be one this step understands;
+// `ng add` validates against schema.json, a programmatic caller may not.
+function flag<T>(
+  options: NgAddOptions,
+  key: (typeof ANSWER_KEYS)[number],
+  isValid: (value: unknown) => value is T,
+  fallback: T,
+): T {
   const value = givenValue(options, key);
-  return value === undefined ? fallback : (value as T);
+  if (value === undefined) {
+    return fallback;
+  }
+  if (!isValid(value)) {
+    throw new Error(`${JSON.stringify(value)} is not a valid answer for ${key}.`);
+  }
+  return value;
 }
 
 /**
@@ -101,7 +121,7 @@ export async function askOnboarding(
         ],
         default: defaults.theme,
       })
-    : flag<ThemeChoice>(options, 'theme', defaults.theme);
+    : flag(options, 'theme', isTheme, defaults.theme);
   const i18n = await flow.select<'en' | 'de'>({
     key: 'i18n',
     message: 'Which language should cngx speak?',
@@ -120,10 +140,10 @@ export async function askOnboarding(
           message: 'Switch between English and German at runtime?',
           default: defaults.runtimeSwitch,
         })
-      : flag(options, 'runtimeSwitch', false);
+      : flag(options, 'runtimeSwitch', isBoolean, false);
   const lint =
     facts.eslintConfig === undefined
-      ? flag(options, 'lint', defaults.lint)
+      ? flag(options, 'lint', isBoolean, defaults.lint)
       : await flow.confirm({
           key: 'lint',
           message: `Add the cngx lint rules to ${facts.eslintConfig.path}?`,
@@ -135,7 +155,7 @@ export async function askOnboarding(
         message: 'Provide toasts, alerts and banners at the root?',
         default: defaults.feedback,
       })
-    : flag(options, 'feedback', false);
+    : flag(options, 'feedback', isBoolean, false);
 
   return {
     preset,
@@ -145,8 +165,8 @@ export async function askOnboarding(
     runtimeSwitch,
     lint,
     feedback,
-    a11yPreferences: flag(options, 'a11yPreferences', defaults.a11yPreferences),
-    floatingFallback: flag(options, 'floatingFallback', defaults.floatingFallback),
-    aiTools: flag<readonly AiTool[]>(options, 'aiTools', defaults.aiTools),
+    a11yPreferences: flag(options, 'a11yPreferences', isBoolean, defaults.a11yPreferences),
+    floatingFallback: flag(options, 'floatingFallback', isBoolean, defaults.floatingFallback),
+    aiTools: flag(options, 'aiTools', isAiTools, defaults.aiTools),
   };
 }
