@@ -916,6 +916,34 @@ describe('createAnnouncementRecorder', () => {
       expect(summaries().at(-1)).toEqual({ text: '3 of 3', origin: 'busy-cleared', busy: false });
     });
 
+    it('evicts the least recently written node first, counting a rewrite as a write', async () => {
+      const log = region({ role: 'log', 'aria-busy': 'true' });
+      host.append(log);
+      start({ limit: 2 });
+
+      const counter = document.createTextNode('1 of 3');
+      log.append(counter);
+      await observed();
+      const line = document.createElement('p');
+      line.textContent = 'Uploading';
+      log.append(line);
+      await observed();
+      counter.data = '2 of 3';
+      await observed();
+      const done = document.createElement('p');
+      done.textContent = 'Done';
+      log.append(done);
+      await observed();
+      log.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries().at(-1)).toEqual({
+        text: '2 of 3 Done',
+        origin: 'busy-cleared',
+        busy: false,
+      });
+    });
+
     it('records nothing for an unrelated attribute change while still busy', async () => {
       const el = region({ 'aria-live': 'polite' });
       const wrapper = busyWrapper(el);

@@ -277,15 +277,17 @@ export function createAnnouncementRecorder(
     const busy = isBusy(region);
     const state = regions.get(region);
     if (state && busy) {
+      // Re-adding moves a rewritten node to the newest end, so eviction
+      // drops the least recently written node first.
       for (const node of nodes) {
+        state.deferred.delete(node);
         state.deferred.add(node);
       }
-      // A region that never leaves busy must not grow without bound.
-      const excess = state.deferred.size - limit;
-      if (excess > 0) {
-        for (const oldest of [...state.deferred].slice(0, excess)) {
-          state.deferred.delete(oldest);
+      for (const oldest of state.deferred) {
+        if (state.deferred.size <= limit) {
+          break;
         }
+        state.deferred.delete(oldest);
       }
     } else if (state) {
       state.deferred.clear();
@@ -651,13 +653,25 @@ function isBusy(region: Element): boolean {
  * @internal
  */
 function presentText(region: Element, nodes: readonly Node[]): string {
-  const present = [...new Set(nodes)].filter(
-    (node) => node.isConnected && region.contains(node) && !isHiddenWithin(region, node),
+  const present = new Set(
+    nodes.filter(
+      (node) => node.isConnected && region.contains(node) && !isHiddenWithin(region, node),
+    ),
   );
-  const outermost = present.filter(
-    (node) => !present.some((other) => other !== node && other.contains(node)),
-  );
-  return normalise(outermost.map((node) => readText(node, node !== region)).join(' '));
+  const outermost = [...present].filter((node) => !hasAncestorIn(node, present, region));
+  return normalise(outermost.map((node) => readText(node, true)).join(' '));
+}
+
+/** @internal */
+function hasAncestorIn(node: Node, candidates: ReadonlySet<Node>, region: Element): boolean {
+  let current = node.parentNode;
+  while (current && current !== region) {
+    if (candidates.has(current)) {
+      return true;
+    }
+    current = current.parentNode;
+  }
+  return false;
 }
 
 /**
