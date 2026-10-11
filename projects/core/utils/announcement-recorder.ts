@@ -1,8 +1,9 @@
 import { signal, type Signal } from '@angular/core';
 
 /**
- * Why assistive technology would not speak a recorded write, judged from
- * attributes at write time. `null` means nothing attribute-based suppresses it.
+ * Why assistive technology would not speak a recorded entry, judged from
+ * attributes when the observer handles the batch (for `'busy-cleared'`, the
+ * batch that clears busy). `null` means nothing attribute-based suppresses it.
  *
  * @internal
  */
@@ -13,11 +14,13 @@ export type CngxAnnouncementSuppression = 'hidden' | 'aria-hidden' | 'inert' | '
  * - `'mutation'`: text changed inside a region that was already live;
  * - `'insertion'`: the region was inserted already holding text;
  * - `'became-live'`: an element holding text became live through an attribute
- *   change (`role` or `aria-live` set later).
+ *   change (`role` or `aria-live` set later);
+ * - `'busy-cleared'`: `aria-busy` cleared on the region or an ancestor after
+ *   text was written while busy; the entry holds what AT reads after the flip.
  *
  * @internal
  */
-export type CngxAnnouncementOrigin = 'mutation' | 'insertion' | 'became-live';
+export type CngxAnnouncementOrigin = 'mutation' | 'insertion' | 'became-live' | 'busy-cleared';
 
 /**
  * One text a live region exposed, as observed in the DOM.
@@ -27,13 +30,25 @@ export type CngxAnnouncementOrigin = 'mutation' | 'insertion' | 'became-live';
 export interface CngxRecordedAnnouncement {
   /** `Date.now()` when the observer saw the write. */
   readonly time: number;
-  /** Whitespace-collapsed text: the whole region when atomic, else the added text. */
+  /**
+   * Whitespace-collapsed text: the whole region when atomic, else the added
+   * text. Text of a block-level element (by HTML default display), a `<br>`
+   * or a custom element reads as a separate word; inline text concatenates.
+   */
   readonly text: string;
   readonly politeness: 'polite' | 'assertive';
   readonly role: string | null;
-  /** The region or an ancestor carried `aria-busy="true"` at write time. */
+  /**
+   * The region or an ancestor carried `aria-busy="true"` when the observer
+   * saw the write. Always `false` on a `'busy-cleared'` entry.
+   */
   readonly busy: boolean;
   readonly suppressedBy: CngxAnnouncementSuppression | null;
+  /**
+   * How the text reached the region. A write under `aria-busy` records
+   * `busy: true`; the text AT reads once busy clears follows as a separate
+   * `'busy-cleared'` entry.
+   */
   readonly origin: CngxAnnouncementOrigin;
   readonly region: Element;
   readonly owner: string | null;
@@ -47,7 +62,11 @@ export interface CngxRecordedAnnouncement {
 export interface CngxAnnouncementRecorderOptions {
   /** Subtree to observe. Defaults to the global `document`. */
   readonly root?: Node;
-  /** Maximum entries kept; the oldest are dropped first. Defaults to 200. */
+  /**
+   * Maximum entries kept, and maximum writes a region defers while busy; the
+   * oldest (least recently written) are dropped first, so a flip after more
+   * busy writes than `limit` leaves the earliest out. Defaults to 200.
+   */
   readonly limit?: number;
   /** Names the owner of a region. Defaults to the owning Angular component's class name. */
   readonly owner?: (region: Element) => string | null;
@@ -60,6 +79,10 @@ export interface CngxAnnouncementRecorderOptions {
  */
 export interface CngxAnnouncementRecorder {
   readonly entries: Signal<readonly CngxRecordedAnnouncement[]>;
+  /**
+   * Empties `entries`. Region state is kept, so a busy flip after `clear()`
+   * still records text written while busy before it.
+   */
   clear(): void;
   destroy(): void;
 }
@@ -67,6 +90,8 @@ export interface CngxAnnouncementRecorder {
 /** @internal */
 interface RegionState {
   lastText: string;
+  /** Nodes written while busy since the last non-busy entry; the flip reads their current text. */
+  deferred: Set<Node>;
 }
 
 /** @internal */
@@ -80,6 +105,69 @@ const ATOMIC_ROLES = new Set(['status', 'alert']);
 
 /** @internal */
 const SKIPPED_TAGS = new Set(['SCRIPT', 'STYLE', 'TEMPLATE']);
+
+/**
+ * HTML local names whose default display is not inline (`block`,
+ * `list-item`, `table-*`) plus `br`. Their text reads as a separate word;
+ * custom elements (local name with `-`) are treated the same without being
+ * listed. Matched in the HTML namespace only, so SVG / MathML names with a
+ * `-` (`font-face`, `annotation-xml`) do not separate.
+ *
+ * @internal
+ */
+const SEPARATING_TAGS = new Set([
+  'address',
+  'article',
+  'aside',
+  'blockquote',
+  'br',
+  'caption',
+  'center',
+  'dd',
+  'details',
+  'dialog',
+  'div',
+  'dl',
+  'dt',
+  'fieldset',
+  'figcaption',
+  'figure',
+  'footer',
+  'form',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'header',
+  'hgroup',
+  'hr',
+  'legend',
+  'li',
+  'main',
+  'menu',
+  'nav',
+  'ol',
+  'optgroup',
+  'option',
+  'p',
+  'pre',
+  'search',
+  'section',
+  'summary',
+  'table',
+  'tbody',
+  'td',
+  'tfoot',
+  'th',
+  'thead',
+  'tr',
+  'ul',
+]);
+
+/** @internal */
+const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
 /** @internal */
 const OBSERVED_ATTRIBUTES = [
@@ -117,11 +205,35 @@ const CANDIDATE_SELECTOR = '[aria-live],[role]';
  * clear is one entry. Atomic regions (`aria-atomic="true"`, or role `status`
  * / `alert` without `aria-atomic="false"`) record their whole text, others
  * only the added text. Text inside `hidden` or `aria-hidden="true"`
- * descendants is left out, as AT leaves it out.
+ * descendants is left out, as AT leaves it out. Text of adjacent block-level
+ * elements is separated by a space, decided by tag (HTML default display not
+ * inline, plus `<br>` and every custom element), so `<div>Upload failed</div>
+ * <div>Alert dismissed</div>` records `'Upload failed Alert dismissed'` while
+ * `<strong>3</strong> results` stays `'3 results'`.
+ *
+ * A write under `aria-busy="true"` (on the region or an ancestor) records
+ * `busy: true`. When the region leaves busy (`aria-busy` clears, or a move
+ * takes it out of the busy subtree) and its last write was such a deferred
+ * write, the recorder adds a `'busy-cleared'` entry with what AT
+ * reads then: an atomic region's whole current text, a non-atomic region's
+ * text written while busy that it still holds (earlier history is not
+ * repeated; removed or overwritten text is left out). A write landing in the
+ * same observer batch as the flip joins that entry; with nothing deferred
+ * before it, it records one non-busy `'mutation'` entry instead. An
+ * `'insertion'` or `'became-live'` under busy is replayed by the flip only
+ * for role `alert`, the one role heard on appearance; text inside `hidden` /
+ * `aria-hidden` descendants is never recorded.
  *
  * Known limits:
  * - no layout-based visibility (`display:none`, `visibility:hidden`); jsdom
  *   has no layout, so such a write records `suppressedBy: null`;
+ * - the separator follows the tag, not computed style: an inline tag styled
+ *   `display: block` still concatenates with its neighbour, and an inline
+ *   custom element gains a space (`Inbox<x-count>3</x-count>` records
+ *   `Inbox 3`, where browsers compute `Inbox3`);
+ * - a non-atomic `'busy-cleared'` entry joins its texts in write order, like
+ *   the mutation path; a node prepended or inserted before earlier busy
+ *   writes therefore reads out of DOM order;
  * - a native `showModal()` dialog without `aria-modal` is not seen as modal;
  * - regions inside shadow roots are not observed;
  * - writes are seen when the `MutationObserver` callback runs (a microtask),
@@ -171,7 +283,7 @@ export function createAnnouncementRecorder(
       text,
       politeness: politenessOf(region),
       role: region.getAttribute('role'),
-      busy: region.closest('[aria-busy="true"]') !== null,
+      busy: isBusy(region),
       suppressedBy: suppressionOf(region),
       origin,
       region,
@@ -181,6 +293,27 @@ export function createAnnouncementRecorder(
       const next = [...list, entry];
       return next.length > limit ? next.slice(next.length - limit) : next;
     });
+  };
+
+  // Re-adding moves a rewritten node to the newest end, so eviction drops
+  // the least recently written node first. Removed nodes go first: they can
+  // never be read again and must not push present text out of the bound.
+  const defer = (state: RegionState, nodes: readonly Node[]): void => {
+    for (const node of nodes) {
+      state.deferred.delete(node);
+      state.deferred.add(node);
+    }
+    for (const node of state.deferred) {
+      if (!node.isConnected) {
+        state.deferred.delete(node);
+      }
+    }
+    for (const oldest of state.deferred) {
+      if (state.deferred.size <= limit) {
+        break;
+      }
+      state.deferred.delete(oldest);
+    }
   };
 
   // A region that appeared in this batch at record `since`. The text it held
@@ -213,11 +346,24 @@ export function createAnnouncementRecorder(
       }
     }
     const text = readText(region, false, rewritten ? undefined : appended);
-    regions.set(region, { lastText: text });
-    if (text !== '') {
-      record(region, text, origin);
+    const covered = rewritten ? records.length : since;
+    // A region moved while tracked keeps its deferred writes; if the move
+    // took it out of busy, the flip pass below reads them.
+    const state: RegionState = {
+      lastText: text,
+      deferred: regions.get(region)?.deferred ?? new Set<Node>(),
+    };
+    regions.set(region, state);
+    if (text === '') {
+      return covered;
     }
-    return rewritten ? records.length : since;
+    record(region, text, origin);
+    // Only an alert is heard on appearance, so only an alert appearing under
+    // busy is replayed by the flip; a status appearance stays unheard.
+    if (isBusy(region) && primaryRole(region) === 'alert') {
+      defer(state, [region]);
+    }
+    return covered;
   };
 
   const closestRegion = (node: Node): Element | null => {
@@ -238,7 +384,7 @@ export function createAnnouncementRecorder(
     const inserted = new Map<Element, number>();
     const becameLive = new Map<Element, number>();
     const coveredUpTo = new Map<Element, number>();
-    const added = new Map<Element, string[]>();
+    const added = new Map<Element, { texts: string[]; nodes: Node[] }>();
     let removedAny = false;
 
     records.forEach((rec, index) => {
@@ -288,18 +434,23 @@ export function createAnnouncementRecorder(
       if (!region || index <= (coveredUpTo.get(region) ?? -1)) {
         return;
       }
-      const texts = added.get(region) ?? [];
+      if (isHiddenWithin(region, rec.target)) {
+        return;
+      }
+      const additions = added.get(region) ?? { texts: [], nodes: [] };
       if (rec.type === 'characterData') {
-        texts.push(rec.target.textContent ?? '');
+        additions.texts.push(rec.target.textContent ?? '');
+        additions.nodes.push(rec.target);
       } else {
         for (const node of Array.from(rec.addedNodes)) {
-          texts.push(readText(node, true));
+          additions.texts.push(readText(node, true));
+          additions.nodes.push(node);
         }
       }
-      added.set(region, texts);
+      added.set(region, additions);
     });
 
-    for (const [region, texts] of added) {
+    for (const [region, { texts, nodes }] of added) {
       const state = regions.get(region);
       if (!state) {
         continue;
@@ -311,9 +462,46 @@ export function createAnnouncementRecorder(
       if (current === '' || current === previous || !hadAdditions) {
         continue;
       }
-      const text = isAtomic(region) ? current : normalise(texts.join(' '));
+      // A non-busy write onto text deferred in an earlier batch is the
+      // moment AT reads both, so it records one busy-cleared entry.
+      const busy = isBusy(region);
+      const flushes = state.deferred.size > 0 && !busy;
+      let text = normalise(texts.join(' '));
+      if (isAtomic(region)) {
+        text = current;
+      } else if (flushes) {
+        text = presentText(region, [...state.deferred, ...nodes]);
+      }
       if (text !== '') {
-        record(region, text, 'mutation');
+        record(region, text, flushes ? 'busy-cleared' : 'mutation');
+      }
+      if (busy) {
+        defer(state, nodes);
+      } else {
+        state.deferred.clear();
+      }
+    }
+
+    // A region holding deferred writes that is no longer busy left busy in
+    // this batch, by `aria-busy` clearing or by a move out of the busy
+    // subtree. Runs after the mutation pass, which flushed every region it
+    // recorded a write for; one whose write it skipped (no visible change)
+    // still holds its deferred nodes and is flushed here.
+    for (const [region, state] of regions) {
+      if (state.deferred.size === 0 || isBusy(region)) {
+        continue;
+      }
+      // The purge below has not run yet; a region removed in this batch is
+      // still in the map but is never read.
+      if (!region.isConnected || !root.contains(region)) {
+        continue;
+      }
+      const text = isAtomic(region)
+        ? readText(region, false)
+        : presentText(region, [...state.deferred]);
+      state.deferred.clear();
+      if (text !== '') {
+        record(region, text, 'busy-cleared');
       }
     }
 
@@ -327,7 +515,7 @@ export function createAnnouncementRecorder(
   };
 
   for (const region of liveRegionsIn(root)) {
-    regions.set(region, { lastText: readText(region, false) });
+    regions.set(region, { lastText: readText(region, false), deferred: new Set() });
   }
 
   observer = new MutationObserver(handle);
@@ -429,7 +617,8 @@ function liveRegionsIn(node: Node): Element[] {
  * Text AT would read from `node`: text nodes, minus `hidden` /
  * `aria-hidden="true"` descendants and script, style and template content.
  * `excludeSelf` applies the same exclusion to `node` itself; `skip` leaves
- * out the given nodes and their subtrees.
+ * out the given nodes and their subtrees. A separating element's text is
+ * padded with spaces, which `normalise` collapses.
  *
  * @internal
  */
@@ -449,12 +638,74 @@ function readText(node: Node, excludeSelf: boolean, skip?: ReadonlySet<Node>): s
     if ((!isSelf || excludeSelf) && isExcluded(current)) {
       return;
     }
+    const separates = isSeparating(current);
+    if (separates) {
+      parts.push(' ');
+    }
     for (const child of Array.from(current.childNodes)) {
       walk(child, false);
+    }
+    if (separates) {
+      parts.push(' ');
     }
   };
   walk(node, true);
   return normalise(parts.join(''));
+}
+
+/** @internal */
+function isBusy(region: Element): boolean {
+  return region.closest('[aria-busy="true"]') !== null;
+}
+
+/**
+ * Text of the given nodes still inside `region`, each read once: a node
+ * inside another listed node is covered by it, and the region itself (an
+ * alert that appeared under busy) covers every node. Removed or overwritten
+ * nodes contribute nothing, so the result is what the region holds now.
+ *
+ * @internal
+ */
+function presentText(region: Element, nodes: readonly Node[]): string {
+  if (nodes.includes(region)) {
+    return readText(region, false);
+  }
+  const present = new Set(
+    nodes.filter(
+      (node) => node.isConnected && region.contains(node) && !isHiddenWithin(region, node),
+    ),
+  );
+  const outermost = [...present].filter((node) => !hasAncestorIn(node, present, region));
+  return normalise(outermost.map((node) => readText(node, true)).join(' '));
+}
+
+/** @internal */
+function hasAncestorIn(node: Node, candidates: ReadonlySet<Node>, region: Element): boolean {
+  let current = node.parentNode;
+  while (current && current !== region) {
+    if (candidates.has(current)) {
+      return true;
+    }
+    current = current.parentNode;
+  }
+  return false;
+}
+
+/**
+ * `node`, or an element between it and `region`, is excluded from what AT
+ * reads (`hidden`, `aria-hidden="true"`, script / style / template).
+ *
+ * @internal
+ */
+function isHiddenWithin(region: Element, node: Node): boolean {
+  let current: Element | null = node instanceof Element ? node : node.parentElement;
+  while (current && current !== region) {
+    if (isExcluded(current)) {
+      return true;
+    }
+    current = current.parentElement;
+  }
+  return false;
 }
 
 /** @internal */
@@ -464,6 +715,14 @@ function isExcluded(el: Element): boolean {
     el.hasAttribute('hidden') ||
     el.getAttribute('aria-hidden') === 'true'
   );
+}
+
+/** @internal */
+function isSeparating(el: Element): boolean {
+  if (el.namespaceURI !== HTML_NAMESPACE) {
+    return false;
+  }
+  return SEPARATING_TAGS.has(el.localName) || el.localName.includes('-');
 }
 
 /** @internal */
