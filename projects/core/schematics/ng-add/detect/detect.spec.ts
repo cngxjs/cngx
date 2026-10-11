@@ -91,14 +91,17 @@ describe('detectProject', () => {
     expect(await detect()).toEqual({
       project: 'fixture-app',
       manifest: parseManifest(createFixtureTree().readText('package.json')),
+      sourceRoot: 'src',
       angularVersion: '21.2.0',
       bootstrap: 'standalone',
       zoneless: true,
       signalForms: false,
       stylesKind: 'css',
       stylesPath: 'src/styles.css',
+      cngxStylesheet: false,
+      cngxThemePath: undefined,
       appConfigPath: 'src/app/app.config.ts',
-      material: { present: false, themeShape: 'none', themePath: undefined, density: 0 },
+      material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
       editors: { claude: false, cursor: false, vscode: false },
       eslintConfigPath: undefined,
       ssr: false,
@@ -180,6 +183,7 @@ describe('detectProject', () => {
         present: true,
         themeShape: 'map-api',
         themePath: 'src/styles.scss',
+        themeVariable: undefined,
         density: 0,
       });
     });
@@ -196,6 +200,7 @@ describe('detectProject', () => {
         present: true,
         themeShape: 'map-api',
         themePath: 'src/material-theme.scss',
+        themeVariable: undefined,
         density: -2,
       });
     });
@@ -219,6 +224,7 @@ describe('detectProject', () => {
         present: true,
         themeShape: 'define-theme',
         themePath: 'src/styles.scss',
+        themeVariable: 'theme',
         density: -2,
       });
     });
@@ -230,6 +236,7 @@ describe('detectProject', () => {
         'src/styles.scss': M2_THEME,
       });
       expect(facts.material.themeShape).toBe('m2');
+      expect(facts.material.themeVariable).toBe('theme');
     });
 
     it('reads a prebuilt theme entry', async () => {
@@ -244,6 +251,7 @@ describe('detectProject', () => {
         present: true,
         themeShape: 'prebuilt',
         themePath: '@angular/material/prebuilt-themes/azure-blue.css',
+        themeVariable: undefined,
         density: 0,
       });
       expect(facts.stylesPath).toBe('src/styles.css');
@@ -251,7 +259,36 @@ describe('detectProject', () => {
 
     it('reports no theme when Material is installed but unthemed', async () => {
       const facts = await detect({ 'package.json': withPackage({ '@angular/material': '^21.2.0' }) });
-      expect(facts.material).toEqual({ present: true, themeShape: 'none', themePath: undefined, density: 0 });
+      expect(facts.material).toEqual({
+        present: true,
+        themeShape: 'none',
+        themePath: undefined,
+        themeVariable: undefined,
+        density: 0,
+      });
+    });
+  });
+
+  describe('cngx theme wiring', () => {
+    it('sees cngx.css imported by a global stylesheet or listed as a style entry', async () => {
+      expect((await detect({ 'src/styles.css': "@import '@cngx/themes/cngx.css';\n" })).cngxStylesheet).toBe(true);
+      expect(
+        (await detect({ 'angular.json': withWorkspaceStyles(['@cngx/themes/cngx.css', 'src/styles.css']) })).cngxStylesheet,
+      ).toBe(true);
+      const inThemeFile = await detect({
+        'angular.json': withWorkspaceStyles(['src/material-theme.scss', 'src/styles.css']),
+        'src/material-theme.scss': `@import '@cngx/themes/cngx.css';\n${DEFINE_THEME}`,
+      });
+      expect(inThemeFile.cngxStylesheet).toBe(true);
+    });
+
+    it('finds a generated theme file or a stylesheet already using the Material bridge', async () => {
+      expect((await detect({ 'src/cngx-theme.css': '' })).cngxThemePath).toBe('src/cngx-theme.css');
+      const bridged = await detect({
+        'angular.json': withWorkspaceStyles(['src/styles.scss']),
+        'src/styles.scss': `${DEFINE_THEME}@use '@cngx/themes/material/theme' as cngx-material;\n`,
+      });
+      expect(bridged.cngxThemePath).toBe('src/styles.scss');
     });
   });
 

@@ -1,6 +1,6 @@
 import { chain, noop, type Rule, SchematicsException, type Tree } from '@angular-devkit/schematics';
 import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeScript/lib/typescript';
-import { addRootProvider } from '@schematics/angular/utility';
+import { addRootProvider, updateWorkspace } from '@schematics/angular/utility';
 import { insertImport } from '@schematics/angular/utility/ast-utils';
 import { applyToUpdateRecorder } from '@schematics/angular/utility/change';
 import { JSONFile } from '@schematics/angular/utility/json-file';
@@ -9,6 +9,7 @@ import { insertStyleImport } from '../edit/style-edit';
 import { addLockstepDependency } from '../manifest/lockstep';
 import {
   type AddImport,
+  type AddStyleEntry,
   type AddStyleImport,
   type Change,
   type CreateFile,
@@ -63,6 +64,29 @@ function addStyleImport(change: AddStyleImport): Rule {
   };
 }
 
+function styleInput(entry: unknown): unknown {
+  return typeof entry === 'object' && entry !== null && 'input' in entry ? entry.input : entry;
+}
+
+// Inserted the way `ng add @angular/material` adds its theme file, through
+// the workspace API, so the user's formatting of angular.json survives.
+function addStyleEntry(change: AddStyleEntry): Rule {
+  return updateWorkspace((workspace) => {
+    const options = workspace.projects.get(change.project)?.targets.get('build')?.options;
+    if (options === undefined) {
+      throw new SchematicsException(`Project "${change.project}" has no build target to add ${change.path} to.`);
+    }
+    const styles = Array.isArray(options['styles']) ? [...options['styles']] : [];
+    const inputs = styles.map(styleInput);
+    if (inputs.includes(change.path)) {
+      return;
+    }
+    const after = change.after === undefined ? -1 : inputs.indexOf(change.after);
+    styles.splice(after === -1 ? styles.length : after + 1, 0, change.path);
+    options['styles'] = styles;
+  });
+}
+
 function writeJson(change: WriteJson): Rule {
   return (tree: Tree) => {
     if (!tree.exists(change.path)) {
@@ -90,6 +114,8 @@ function toRule(change: Change): Rule {
       return addRootProvider(change.project, ({ code, external }) => code`${renderCall(change.call, external)}`);
     case 'add-style-import':
       return addStyleImport(change);
+    case 'add-style-entry':
+      return addStyleEntry(change);
     case 'write-json':
       return writeJson(change);
     case 'note':

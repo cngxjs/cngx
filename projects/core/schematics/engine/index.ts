@@ -19,6 +19,7 @@ export {
   type AddDependency,
   type AddImport,
   type AddProvider,
+  type AddStyleEntry,
   type AddStyleImport,
   type Change,
   type CreateFile,

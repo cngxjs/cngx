@@ -62,6 +62,15 @@ export interface AddStyleImport extends ChangeBase {
   readonly statement: string;
 }
 
+/** A global stylesheet entry in the build target's `styles` array. */
+export interface AddStyleEntry extends ChangeBase {
+  readonly kind: 'add-style-entry';
+  readonly project: string;
+  readonly path: string;
+  /** Insert right after this entry; appended when absent. */
+  readonly after?: string;
+}
+
 export type JsonPath = readonly (string | number)[];
 export type JsonEntry = readonly [path: JsonPath, value: JsonValue];
 
@@ -83,6 +92,7 @@ export type Change =
   | AddDependency
   | AddProvider
   | AddStyleImport
+  | AddStyleEntry
   | WriteJson
   | Note;
 

@@ -1,5 +1,6 @@
 import { dirname, join } from 'node:path';
 
+import { type Tree } from '@angular-devkit/schematics';
 import { SchematicTestRunner, type UnitTestTree } from '@angular-devkit/schematics/testing';
 import { lastValueFrom } from 'rxjs';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -126,6 +127,43 @@ describe('applyChangePlan', () => {
     expect(tree.readText('src/styles.scss')).toBe(
       "@use '@angular/material' as mat;\n@import '@cngx/themes/cngx.css';\nhtml {}\n",
     );
+  });
+
+  describe('add-style-entry', () => {
+    function styles(tree: Tree): unknown {
+      const workspace = JSON.parse(tree.readText('angular.json')) as {
+        projects: Record<string, { architect: { build: { options: { styles: unknown } } } }>;
+      };
+      return workspace.projects['app'].architect.build.options.styles;
+    }
+
+    function entry(path: string, after?: string): Change {
+      return { ...BASE, kind: 'add-style-entry', id: 'e', project: 'app', path, after };
+    }
+
+    it('inserts the entry right after the named one', async () => {
+      const seeded = await apply([entry('projects/app/src/material-theme.scss')], await createApp());
+      const tree = await apply([entry('projects/app/src/cngx-theme.scss', 'projects/app/src/styles.css')], seeded);
+
+      expect(styles(tree)).toEqual([
+        'projects/app/src/styles.css',
+        'projects/app/src/cngx-theme.scss',
+        'projects/app/src/material-theme.scss',
+      ]);
+    });
+
+    it('appends when the named entry is absent and adds an entry once', async () => {
+      const once = await apply([entry('projects/app/src/cngx-theme.css', 'src/missing.css')], await createApp());
+      const twice = await apply([entry('projects/app/src/cngx-theme.css')], once);
+
+      expect(styles(twice)).toEqual(['projects/app/src/styles.css', 'projects/app/src/cngx-theme.css']);
+    });
+
+    it('refuses a project without a build target', async () => {
+      await expect(apply([{ ...entry('a.css'), project: 'missing' } as Change], await createApp())).rejects.toThrow(
+        'Project "missing" has no build target to add a.css to.',
+      );
+    });
   });
 
   it('writes json entries and creates the file when missing', async () => {

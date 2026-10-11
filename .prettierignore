@@ -9,3 +9,6 @@
 
 # Fixture apps for schematic specs mirror real `ng new` output byte for byte
 projects/*/schematics/testing/fixtures/
+
+# Generated, drift-guarded against its generator output byte for byte
+projects/core/schematics/ng-add/steps/theme-tokens.generated.ts

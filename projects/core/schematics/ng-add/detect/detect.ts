@@ -1,7 +1,7 @@
 import { type workspaces } from '@angular-devkit/core';
 import { posix } from 'node:path';
 
-import { declaredRange, type PackageManifest, parseManifest, type Tree } from '../../engine';
+import { declaredRange, hasStyleImport, type PackageManifest, parseManifest, type Tree } from '../../engine';
 
 export type MaterialThemeShape = 'map-api' | 'define-theme' | 'm2' | 'prebuilt' | 'none';
 
@@ -10,6 +10,8 @@ export interface MaterialFacts {
   readonly themeShape: MaterialThemeShape;
   /** The style entry the theme was found in; `undefined` without a theme. */
   readonly themePath: string | undefined;
+  /** The Sass variable holding a `define-theme` or M2 theme object. */
+  readonly themeVariable: string | undefined;
   /** The density the theme declares; 0 when it declares none. */
   readonly density: number;
 }
@@ -25,6 +27,7 @@ export interface ProjectFacts {
   readonly project: string;
   /** The app's `package.json`; steps read declared ranges from it. */
   readonly manifest: PackageManifest;
+  readonly sourceRoot: string;
   readonly angularVersion: string | undefined;
   readonly bootstrap: 'standalone' | 'ngmodule';
   readonly zoneless: boolean;
@@ -32,6 +35,10 @@ export interface ProjectFacts {
   readonly stylesKind: 'css' | 'scss';
   /** The global stylesheet; `undefined` when the build lists none. */
   readonly stylesPath: string | undefined;
+  /** `@cngx/themes/cngx.css` is imported by a global stylesheet or listed as a style entry. */
+  readonly cngxStylesheet: boolean;
+  /** The file already wiring a cngx theme: a `cngx-theme.*` file or a stylesheet using the Material bridge. */
+  readonly cngxThemePath: string | undefined;
   /** The file holding the root providers: `app.config.ts` or the root NgModule. */
   readonly appConfigPath: string;
   readonly material: MaterialFacts;
@@ -57,6 +64,9 @@ const SCAFFOLD_PROVIDERS = new Set([
 const ESLINT_FLAT_CONFIGS = ['eslint.config.js', 'eslint.config.mjs', 'eslint.config.cjs'];
 
 const PREBUILT_THEME = '@angular/material/prebuilt-themes/';
+
+const CNGX_STYLESHEET = '@cngx/themes/cngx.css';
+const MATERIAL_BRIDGE = '@cngx/themes/material/theme';
 
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -133,30 +143,39 @@ function themeInFile(path: string, content: string): MaterialFacts | undefined {
     return undefined;
   }
   const ns = namespace === '*' ? '' : `${escape(namespace)}\\.`;
+  const themeVariable = new RegExp(
+    `\\$([\\w-]+)\\s*:\\s*${ns}(?:define-theme|(?:m2-)?define-(?:light|dark)-theme)\\s*\\(`,
+  ).exec(content)?.[1];
   const defineTheme = new RegExp(`${ns}define-theme\\s*\\(`).exec(content);
   if (defineTheme !== null) {
     const density = integerAfter(content, defineTheme.index, /density\s*:\s*\(\s*scale\s*:\s*(-?\d+)/);
-    return { present: true, themeShape: 'define-theme', themePath: path, density };
+    return { present: true, themeShape: 'define-theme', themePath: path, themeVariable, density };
   }
   if (new RegExp(`${ns}(m2-)?define-(light|dark)-theme\\s*\\(`).test(content)) {
-    return { present: true, themeShape: 'm2', themePath: path, density: 0 };
+    return { present: true, themeShape: 'm2', themePath: path, themeVariable, density: 0 };
   }
   const mapApi = new RegExp(`${ns}theme\\s*\\(\\s*\\(`).exec(content);
   if (mapApi !== null) {
     const density = integerAfter(content, mapApi.index, /density\s*:\s*(-?\d+)/);
-    return { present: true, themeShape: 'map-api', themePath: path, density };
+    return { present: true, themeShape: 'map-api', themePath: path, themeVariable: undefined, density };
   }
   return undefined;
 }
 
 function detectMaterial(tree: Tree, manifest: PackageManifest, entries: readonly string[]): MaterialFacts {
-  const none: MaterialFacts = { present: false, themeShape: 'none', themePath: undefined, density: 0 };
+  const none: MaterialFacts = {
+    present: false,
+    themeShape: 'none',
+    themePath: undefined,
+    themeVariable: undefined,
+    density: 0,
+  };
   if (declaredRange(manifest, '@angular/material') === undefined) {
     return none;
   }
   for (const entry of entries) {
     if (entry.includes(PREBUILT_THEME)) {
-      return { present: true, themeShape: 'prebuilt', themePath: entry, density: 0 };
+      return { present: true, themeShape: 'prebuilt', themePath: entry, themeVariable: undefined, density: 0 };
     }
     const theme = entry.endsWith('.scss') && tree.exists(entry) ? themeInFile(entry, tree.readText(entry)) : undefined;
     if (theme !== undefined) {
@@ -164,6 +183,29 @@ function detectMaterial(tree: Tree, manifest: PackageManifest, entries: readonly
     }
   }
   return { ...none, present: true };
+}
+
+function readIfExists(tree: Tree, path: string | undefined): string {
+  return path !== undefined && tree.exists(path) ? tree.readText(path) : '';
+}
+
+function importsCngxStylesheet(tree: Tree, entries: readonly string[]): boolean {
+  return (
+    entries.includes(CNGX_STYLESHEET) ||
+    entries
+      .filter(isLocalStylesheet)
+      .some((entry) => hasStyleImport(readIfExists(tree, entry), `@import '${CNGX_STYLESHEET}';`))
+  );
+}
+
+function existingCngxTheme(tree: Tree, sourceRoot: string, entries: readonly string[]): string | undefined {
+  const generated = ['cngx-theme.css', 'cngx-theme.scss']
+    .map((name) => posix.join(sourceRoot, name))
+    .find((path) => tree.exists(path));
+  return (
+    generated ??
+    entries.find((entry) => entry.endsWith('.scss') && readIfExists(tree, entry).includes(MATERIAL_BRIDGE))
+  );
 }
 
 function sourceFiles(tree: Tree, root: string): readonly string[] {
@@ -247,12 +289,15 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   return {
     project: projectName,
     manifest,
+    sourceRoot,
     angularVersion: versionOf(declaredRange(manifest, '@angular/core')),
     bootstrap: standalone ? 'standalone' : 'ngmodule',
     zoneless: !includesZone(options['polyfills']) && !providers.includes('provideZoneChangeDetection'),
     signalForms: sources.some((path) => /['"]@angular\/forms\/signals['"]/.test(tree.readText(path))),
     stylesKind: stylesPath?.endsWith('.scss') === true ? 'scss' : 'css',
     stylesPath,
+    cngxStylesheet: importsCngxStylesheet(tree, entries),
+    cngxThemePath: existingCngxTheme(tree, sourceRoot, entries),
     appConfigPath,
     material: detectMaterial(tree, manifest, entries),
     editors: {

@@ -38,6 +38,8 @@ function touchedFile(change: Change): string | undefined {
       return change.path;
     case 'add-dependency':
       return 'package.json';
+    case 'add-style-entry':
+      return 'angular.json';
     case 'add-provider':
     case 'note':
       return undefined;
