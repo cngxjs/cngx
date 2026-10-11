@@ -68,6 +68,10 @@
       "items": { "type": "string", "enum": ["claude", "cursor", "vscode"] },
       "uniqueItems": true
     },
+    "yes": {
+      "type": "boolean",
+      "description": "Apply the plan to an existing app without asking for confirmation first."
+    },
     "prompts": {
       "type": "boolean",
       "description": "Ask the detection-dependent questions when a terminal is attached. Pass false in CI runs under a pseudo-terminal; flags and preset defaults answer instead.",

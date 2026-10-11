@@ -17,6 +17,8 @@ export interface NgAddOptions {
   readonly feedback?: boolean;
   readonly floatingFallback?: boolean;
   readonly aiTools?: readonly string[];
+  /** Skip the confirmation an existing app gets before apply. */
+  readonly yes?: boolean;
   /** `false` answers every question from flags and preset defaults. */
   readonly prompts?: boolean;
   /** Print only the summary. */

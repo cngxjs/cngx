@@ -63,6 +63,6 @@ export function resolveVersions(bundleDir: string, read: ReadText = readIfPresen
   }
   return {
     versions: { cngx: readOwnVersion(bundleDir), mcp: DEFAULT_MCP_VERSION, eslintPlugin: DEFAULT_ESLINT_PLUGIN_VERSION },
-    warning: `No usable ${path}; pinning @cngx/mcp@${DEFAULT_MCP_VERSION} and @cngx/eslint-plugin@${DEFAULT_ESLINT_PLUGIN_VERSION} (a local build).`,
+    warning: `No usable versions.json next to the schematics; pinning @cngx/mcp@${DEFAULT_MCP_VERSION} and @cngx/eslint-plugin@${DEFAULT_ESLINT_PLUGIN_VERSION} (a local build).`,
   };
 }

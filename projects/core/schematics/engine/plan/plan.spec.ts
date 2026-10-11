@@ -73,6 +73,25 @@ describe('describeChangePlan', () => {
     );
   });
 
+  it('lists notes apart from the planned changes', () => {
+    const plan = createChangePlan([
+      {
+        changes: [
+          {
+            kind: 'note',
+            id: 'lint:config',
+            label: 'Skip the eslint entry',
+            reason: 'no eslint flat config found',
+            provenance: { source: 'ng-add', version: '0.1.0' },
+          },
+        ],
+        skipped: [],
+      },
+    ]);
+
+    expect(describeChangePlan(plan)).toBe(['Notes (1):', '  - Skip the eslint entry - no eslint flat config found'].join('\n'));
+  });
+
   it('omits empty sections', () => {
     expect(describeChangePlan(createChangePlan([DEPENDENCIES]))).toBe(
       ['Planned (1):', '  + Add @cngx/core@0.1.0 - lockstep with @cngx/ui'].join('\n'),
