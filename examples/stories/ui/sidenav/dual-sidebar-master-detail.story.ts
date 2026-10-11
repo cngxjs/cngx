@@ -41,11 +41,12 @@ export const STORY: DemoSpec = {
     <cngx-sidenav-content class="demo-sidenav__content--compact">
       <h3 class="demo-sidenav__content-title demo-sidenav__content-title--small">Orders</h3>
       @for (item of items; track item) {
-        <div class="demo-sidenav__order-item"
-             [class.is-selected]="selectedItem() === item"
-             (click)="selectItem(item)">
+        <button type="button" class="demo-sidenav__order-item"
+                [class.is-selected]="selectedItem() === item"
+                [attr.aria-current]="selectedItem() === item ? 'true' : null"
+                (click)="selectItem(item)">
           {{ item }}
-        </div>
+        </button>
       }
     </cngx-sidenav-content>
 

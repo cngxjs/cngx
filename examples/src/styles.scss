@@ -1591,6 +1591,12 @@ button.chip:disabled {
   color: var(--cngx-color-text-muted);
 }
 .demo-sidenav__order-item {
+  display: block;
+  width: 100%;
+  text-align: start;
+  font: inherit;
+  color: inherit;
+  background: transparent;
   padding: 0.5rem 0.75rem;
   margin-bottom: 0.5rem;
   border: 1px solid var(--cngx-color-border);
