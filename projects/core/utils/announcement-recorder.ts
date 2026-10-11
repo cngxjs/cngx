@@ -95,59 +95,67 @@ const ATOMIC_ROLES = new Set(['status', 'alert']);
 const SKIPPED_TAGS = new Set(['SCRIPT', 'STYLE', 'TEMPLATE']);
 
 /**
- * Tags whose HTML default display is not inline (`block`, `list-item`,
- * `table-*`) plus `BR`. Their text reads as a separate word; custom elements
- * (tag name with `-`) are treated the same without being listed.
+ * HTML local names whose default display is not inline (`block`,
+ * `list-item`, `table-*`) plus `br`. Their text reads as a separate word;
+ * custom elements (local name with `-`) are treated the same without being
+ * listed. Matched in the HTML namespace only, so SVG / MathML names with a
+ * `-` (`font-face`, `annotation-xml`) do not separate.
  *
  * @internal
  */
 const SEPARATING_TAGS = new Set([
-  'ADDRESS',
-  'ARTICLE',
-  'ASIDE',
-  'BLOCKQUOTE',
-  'BR',
-  'CAPTION',
-  'DD',
-  'DETAILS',
-  'DIALOG',
-  'DIV',
-  'DL',
-  'DT',
-  'FIELDSET',
-  'FIGCAPTION',
-  'FIGURE',
-  'FOOTER',
-  'FORM',
-  'H1',
-  'H2',
-  'H3',
-  'H4',
-  'H5',
-  'H6',
-  'HEADER',
-  'HGROUP',
-  'HR',
-  'LEGEND',
-  'LI',
-  'MAIN',
-  'MENU',
-  'NAV',
-  'OL',
-  'P',
-  'PRE',
-  'SEARCH',
-  'SECTION',
-  'SUMMARY',
-  'TABLE',
-  'TBODY',
-  'TD',
-  'TFOOT',
-  'TH',
-  'THEAD',
-  'TR',
-  'UL',
+  'address',
+  'article',
+  'aside',
+  'blockquote',
+  'br',
+  'caption',
+  'center',
+  'dd',
+  'details',
+  'dialog',
+  'div',
+  'dl',
+  'dt',
+  'fieldset',
+  'figcaption',
+  'figure',
+  'footer',
+  'form',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'header',
+  'hgroup',
+  'hr',
+  'legend',
+  'li',
+  'main',
+  'menu',
+  'nav',
+  'ol',
+  'optgroup',
+  'option',
+  'p',
+  'pre',
+  'search',
+  'section',
+  'summary',
+  'table',
+  'tbody',
+  'td',
+  'tfoot',
+  'th',
+  'thead',
+  'tr',
+  'ul',
 ]);
+
+/** @internal */
+const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
 /** @internal */
 const OBSERVED_ATTRIBUTES = [
@@ -644,7 +652,10 @@ function isExcluded(el: Element): boolean {
 
 /** @internal */
 function isSeparating(el: Element): boolean {
-  return SEPARATING_TAGS.has(el.tagName) || el.tagName.includes('-');
+  if (el.namespaceURI !== HTML_NAMESPACE) {
+    return false;
+  }
+  return SEPARATING_TAGS.has(el.localName) || el.localName.includes('-');
 }
 
 /** @internal */

@@ -279,6 +279,59 @@ describe('createAnnouncementRecorder', () => {
       ]);
     });
 
+    it('separates adjacent options', async () => {
+      const el = region({ 'aria-live': 'polite', 'aria-atomic': 'true' });
+      host.append(el);
+      start();
+
+      const options = ['Red', 'Green'].map((label) => {
+        const option = document.createElement('option');
+        option.textContent = label;
+        return option;
+      });
+      el.append(...options);
+      await observed();
+
+      expect(texts()).toEqual(['Red Green']);
+    });
+
+    it('does not separate a non-HTML element whose name contains a dash', async () => {
+      const el = region({ 'aria-live': 'polite', 'aria-atomic': 'true' });
+      host.append(el);
+      start();
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const fontFace = document.createElementNS('http://www.w3.org/2000/svg', 'font-face');
+      fontFace.textContent = 'believ';
+      svg.append('un', fontFace, 'able');
+      el.append(svg);
+      await observed();
+
+      expect(texts()).toEqual(['unbelievable']);
+    });
+
+    it('separates block children in an XHTML document with lowercase tag names', async () => {
+      const xhtml = 'http://www.w3.org/1999/xhtml';
+      const doc = document.implementation.createDocument(xhtml, 'html');
+      const body = doc.createElementNS(xhtml, 'body');
+      doc.documentElement.append(body);
+      const el = doc.createElementNS(xhtml, 'div');
+      el.setAttribute('aria-live', 'polite');
+      el.setAttribute('aria-atomic', 'true');
+      body.append(el);
+      recorder = createAnnouncementRecorder({ root: body, owner: () => null });
+
+      for (const label of ['Upload failed', 'Alert dismissed']) {
+        const block = doc.createElementNS(xhtml, 'div');
+        block.textContent = label;
+        el.append(block);
+      }
+      await observed();
+
+      expect(el.tagName).toBe('div');
+      expect(texts()).toEqual(['Upload failed Alert dismissed']);
+    });
+
     it('collapses already-spaced block text to one space', async () => {
       expect(await recordAtomic('<p>A </p><p> B</p>')).toEqual(['A B']);
     });
