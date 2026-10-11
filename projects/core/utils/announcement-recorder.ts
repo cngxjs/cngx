@@ -296,11 +296,17 @@ export function createAnnouncementRecorder(
   };
 
   // Re-adding moves a rewritten node to the newest end, so eviction drops
-  // the least recently written node first.
+  // the least recently written node first. Removed nodes go first: they can
+  // never be read again and must not push present text out of the bound.
   const defer = (state: RegionState, nodes: readonly Node[]): void => {
     for (const node of nodes) {
       state.deferred.delete(node);
       state.deferred.add(node);
+    }
+    for (const node of state.deferred) {
+      if (!node.isConnected) {
+        state.deferred.delete(node);
+      }
     }
     for (const oldest of state.deferred) {
       if (state.deferred.size <= limit) {

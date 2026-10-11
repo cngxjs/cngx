@@ -972,6 +972,34 @@ describe('createAnnouncementRecorder', () => {
       expect(summaries().at(-1)).toEqual({ text: '3 of 3', origin: 'busy-cleared', busy: false });
     });
 
+    it('does not let a removed busy write push present text out of the bound', async () => {
+      const log = region({ role: 'log', 'aria-busy': 'true' });
+      host.append(log);
+      start({ limit: 2 });
+
+      const appendLine = (text: string) => {
+        const line = document.createElement('p');
+        line.textContent = text;
+        log.append(line);
+        return line;
+      };
+      appendLine('First');
+      await observed();
+      const draft = appendLine('Draft');
+      await observed();
+      draft.remove();
+      appendLine('Final');
+      await observed();
+      log.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries().at(-1)).toEqual({
+        text: 'First Final',
+        origin: 'busy-cleared',
+        busy: false,
+      });
+    });
+
     it('evicts the least recently written node first, counting a rewrite as a write', async () => {
       const log = region({ role: 'log', 'aria-busy': 'true' });
       host.append(log);
