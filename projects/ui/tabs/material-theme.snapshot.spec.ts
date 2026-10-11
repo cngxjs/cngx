@@ -1,7 +1,6 @@
-import { resolve } from 'node:path';
-
-import { compileString } from 'sass';
 import { describe, expect, it } from 'vitest';
+
+import { compileThemeEntry } from '@cngx/testing/sass';
 
 /**
  * Baseline for the Material bridge in
@@ -26,9 +25,6 @@ import { describe, expect, it } from 'vitest';
  * consumer-side regression net next to the symbols it protects. Mirrors
  * `material-theme.snapshot.spec.ts` next to the stepper.
  */
-
-const REPO_ROOT = resolve(__dirname, '../../..');
-const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'projects/themes')];
 
 interface CompileOptions {
   themeVersion: 'v1' | 'v0';
@@ -86,22 +82,13 @@ function parseCustomPropertyDeclarations(css: string): Record<string, string> {
   while ((match = re.exec(css)) !== null) {
     // Collapse runs AND paren-adjacent whitespace: a source-side line
     // break inside color-mix(...) is formatting, not a value change.
-    out[match[1]] = match[2]
-      .trim()
-      .replace(/\s+/g, ' ')
-      .replace(/\( /g, '(')
-      .replace(/ \)/g, ')');
+    out[match[1]] = match[2].trim().replace(/\s+/g, ' ').replace(/\( /g, '(').replace(/ \)/g, ')');
   }
   return Object.fromEntries(Object.entries(out).sort(([a], [b]) => a.localeCompare(b)));
 }
 
 function compileAndExtract(opts: CompileOptions): Record<string, string> {
-  const result = compileString(buildEntry(opts), {
-    loadPaths: LOAD_PATHS,
-    style: 'expanded',
-    quietDeps: true,
-  });
-  return parseCustomPropertyDeclarations(result.css);
+  return parseCustomPropertyDeclarations(compileThemeEntry(buildEntry(opts)));
 }
 
 describe('Material tabs-theme bridge baseline', () => {
@@ -129,7 +116,7 @@ describe('Material tabs-theme bridge baseline', () => {
     // theme() places the token via _rejection-icon-typography; the public
     // mixin trio (color/typography/density) must survive for consumers
     // who include the mixins individually under their own selector.
-    const css = compileString(
+    const css = compileThemeEntry(
       `
 @use '@angular/material' as mat;
 @use 'material/tabs-theme' as tabs;
@@ -146,8 +133,7 @@ $theme: mat.define-theme((
   @include tabs.typography($theme);
 }
 `,
-      { loadPaths: LOAD_PATHS, style: 'expanded', quietDeps: true },
-    ).css;
+    );
     expect(css).toContain('--cngx-tab-rejection-icon-font-size:');
   });
 });

@@ -1,7 +1,6 @@
-import { resolve } from 'node:path';
-
-import { compileString } from 'sass';
 import { describe, expect, it } from 'vitest';
+
+import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
 
 /**
  * Token-name contract for the treetable Material bridge
@@ -11,10 +10,7 @@ import { describe, expect, it } from 'vitest';
  * and `--cngx-treetable-row-color` (real name: `-cell-color`).
  */
 
-const REPO_ROOT = resolve(__dirname, '../../..');
-const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'projects/themes')];
-
-function emittedTokenNames(themeVersion: 'v1' | 'v0'): string[] {
+function bridgeTokenNames(themeVersion: 'v1' | 'v0'): readonly string[] {
   const theme =
     themeVersion === 'v1'
       ? `$theme: mat.define-theme((
@@ -31,8 +27,7 @@ ${theme}
 
 @include bridge.theme($theme);
 `;
-  const css = compileString(entry, { loadPaths: LOAD_PATHS }).css;
-  return [...new Set([...css.matchAll(/--cngx-[a-z0-9-]+(?=:)/g)].map((m) => m[0]))].sort();
+  return emittedTokenNames(compileThemeEntry(entry));
 }
 
 describe('treetable Material bridge', () => {
@@ -47,11 +42,11 @@ describe('treetable Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(emittedTokenNames('v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames('v1')).toEqual(CONSUMED);
   });
 
   it('emits a consumed-name subset (M2)', () => {
-    const names = emittedTokenNames('v0');
+    const names = bridgeTokenNames('v0');
     expect(names.length).toBeGreaterThan(0);
     for (const name of names) {
       expect(CONSUMED).toContain(name);

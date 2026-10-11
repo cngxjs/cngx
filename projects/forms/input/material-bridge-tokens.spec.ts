@@ -1,7 +1,6 @@
-import { resolve } from 'node:path';
-
-import { compileString } from 'sass';
 import { describe, expect, it } from 'vitest';
+
+import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
 
 /**
  * Token-name contracts for the Material bridges whose consumers live in
@@ -13,10 +12,7 @@ import { describe, expect, it } from 'vitest';
  * `projects/common/interactive/material-bridge-tokens.spec.ts`.
  */
 
-const REPO_ROOT = resolve(__dirname, '../../..');
-const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'projects/themes')];
-
-function emittedTokenNames(bridge: string, themeVersion: 'v1' | 'v0'): string[] {
+function bridgeTokenNames(bridge: string, themeVersion: 'v1' | 'v0'): readonly string[] {
   const entry =
     themeVersion === 'v1'
       ? `
@@ -39,8 +35,7 @@ $theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)))
 
 @include bridge.theme($theme);
 `;
-  const css = compileString(entry, { loadPaths: LOAD_PATHS }).css;
-  return [...new Set([...css.matchAll(/--cngx-[a-z0-9-]+(?=:)/g)].map((m) => m[0]))].sort();
+  return emittedTokenNames(compileThemeEntry(entry));
 }
 
 describe('rating Material bridge', () => {
@@ -53,11 +48,11 @@ describe('rating Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(emittedTokenNames('rating-theme', 'v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames('rating-theme', 'v1')).toEqual(CONSUMED);
   });
 
   it('emits a consumed-name subset (M2)', () => {
-    const names = emittedTokenNames('rating-theme', 'v0');
+    const names = bridgeTokenNames('rating-theme', 'v0');
     expect(names.length).toBeGreaterThan(0);
     for (const name of names) {
       expect(CONSUMED).toContain(name);
@@ -70,6 +65,6 @@ describe('phone-input Material bridge', () => {
   // geometry) have no Material counterpart, and the disabled parts fade by
   // the system-bridged field recipe
   it.each(['v1', 'v0'] as const)('emits no token names (%s)', (version) => {
-    expect(emittedTokenNames('phone-input-theme', version)).toEqual([]);
+    expect(bridgeTokenNames('phone-input-theme', version)).toEqual([]);
   });
 });

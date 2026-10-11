@@ -1,7 +1,6 @@
-import { resolve } from 'node:path';
-
-import { compileString } from 'sass';
 import { describe, expect, it } from 'vitest';
+
+import { compileThemeEntry } from '@cngx/testing/sass';
 
 /**
  * M2 contrast contract for the filter-builder Material bridge
@@ -12,11 +11,8 @@ import { describe, expect, it } from 'vitest';
  * `projects/themes/material/` has no test target.
  */
 
-const REPO_ROOT = resolve(__dirname, '../../..');
-const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'projects/themes')];
-
 function m2(scheme: 'light' | 'dark', warn: string): Record<string, string> {
-  const css = compileString(
+  const css = compileThemeEntry(
     `
 @use 'sass:color';
 @use '@angular/material' as mat;
@@ -35,8 +31,7 @@ probe {
   --card: #{color.ie-hex-str(mat.get-theme-color($theme, background, card))};
 }
 `,
-    { loadPaths: LOAD_PATHS },
-  ).css;
+  );
   const pick = (pattern: RegExp): string => {
     const hit = css.match(pattern);
     if (!hit) {
@@ -44,7 +39,8 @@ probe {
     }
     return hit[1];
   };
-  const probe = (name: string): string => `#${pick(new RegExp(`--${name}: #FF([0-9A-F]{6})`)).toLowerCase()}`;
+  const probe = (name: string): string =>
+    `#${pick(new RegExp(`--${name}: #FF([0-9A-F]{6})`)).toLowerCase()}`;
   return {
     errorFg: pick(/--cngx-filter-builder-error-fg: (#[0-9a-f]{6})/),
     warn: probe('warn'),
@@ -83,15 +79,14 @@ describe('filter-builder Material bridge M2 error contrast', () => {
   });
 
   it('keeps the M3 error role as is', () => {
-    const css = compileString(
+    const css = compileThemeEntry(
       `
 @use '@angular/material' as mat;
 @use 'material/filter-builder-theme' as bridge;
 $theme: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette)));
 @include bridge.theme($theme);
 `,
-      { loadPaths: LOAD_PATHS },
-    ).css;
+    );
     expect(css).toContain('--cngx-filter-builder-error-fg: var(--mat-sys-error)');
   });
 });

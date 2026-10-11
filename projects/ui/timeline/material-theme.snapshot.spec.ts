@@ -1,7 +1,6 @@
-import { resolve } from 'node:path';
-
-import { compileString } from 'sass';
 import { describe, expect, it } from 'vitest';
+
+import { compileThemeEntry } from '@cngx/testing/sass';
 
 /**
  * Baseline for the Material bridge in
@@ -23,9 +22,6 @@ import { describe, expect, it } from 'vitest';
  * `ng-package.json` and is not wired into `npm run test`; this keeps the
  * consumer-side regression net next to the symbols it protects.
  */
-
-const REPO_ROOT = resolve(__dirname, '../../..');
-const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'projects/themes')];
 
 interface CompileOptions {
   themeVersion: 'v1' | 'v0';
@@ -78,22 +74,13 @@ function parseCustomPropertyDeclarations(css: string): Record<string, string> {
   const re = /(--cngx-[a-z0-9-]+)\s*:\s*([^;}]+)[;}]/g;
   let match: RegExpExecArray | null;
   while ((match = re.exec(css)) !== null) {
-    out[match[1]] = match[2]
-      .trim()
-      .replace(/\s+/g, ' ')
-      .replace(/\( /g, '(')
-      .replace(/ \)/g, ')');
+    out[match[1]] = match[2].trim().replace(/\s+/g, ' ').replace(/\( /g, '(').replace(/ \)/g, ')');
   }
   return Object.fromEntries(Object.entries(out).sort(([a], [b]) => a.localeCompare(b)));
 }
 
 function compileAndExtract(opts: CompileOptions): Record<string, string> {
-  const result = compileString(buildEntry(opts), {
-    loadPaths: LOAD_PATHS,
-    style: 'expanded',
-    quietDeps: true,
-  });
-  return parseCustomPropertyDeclarations(result.css);
+  return parseCustomPropertyDeclarations(compileThemeEntry(buildEntry(opts)));
 }
 
 describe('Material timeline-theme bridge baseline', () => {

@@ -1,7 +1,6 @@
-import { resolve } from 'node:path';
-
-import { compileString } from 'sass';
 import { describe, expect, it } from 'vitest';
+
+import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
 
 /**
  * Token-name contract for the Material bridges whose consumers live in
@@ -18,10 +17,7 @@ import { describe, expect, it } from 'vitest';
  * no test target.
  */
 
-const REPO_ROOT = resolve(__dirname, '../../..');
-const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'projects/themes')];
-
-function emittedTokenNames(bridge: string, themeVersion: 'v1' | 'v0'): string[] {
+function bridgeTokenNames(bridge: string, themeVersion: 'v1' | 'v0'): readonly string[] {
   const entry =
     themeVersion === 'v1'
       ? `
@@ -44,8 +40,7 @@ $theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)))
 
 @include bridge.theme($theme);
 `;
-  const css = compileString(entry, { loadPaths: LOAD_PATHS }).css;
-  return [...new Set([...css.matchAll(/--cngx-[a-z0-9-]+(?=:)/g)].map((m) => m[0]))].sort();
+  return emittedTokenNames(compileThemeEntry(entry));
 }
 
 describe('interactive-controls Material bridge', () => {
@@ -63,7 +58,7 @@ describe('interactive-controls Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(emittedTokenNames('interactive-controls-theme', 'v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames('interactive-controls-theme', 'v1')).toEqual(CONSUMED);
   });
 
   it('state-scopes the checked thumb to on-primary (M3)', () => {
@@ -77,17 +72,15 @@ $theme: mat.define-theme((
 
 @include bridge.theme($theme);
 `;
-    const css = compileString(entry, { loadPaths: LOAD_PATHS }).css;
-    const checkedBlock = css.match(
-      /:where\(\.cngx-toggle--checked[^{]*\{[^}]*\}/,
-    )?.[0];
+    const css = compileThemeEntry(entry);
+    const checkedBlock = css.match(/:where\(\.cngx-toggle--checked[^{]*\{[^}]*\}/)?.[0];
     expect(checkedBlock).toContain('--cngx-toggle-thumb-bg: var(--mat-sys-on-primary)');
     // the resting broadcast keeps the outline thumb
     expect(css).toContain('--cngx-toggle-thumb-bg: var(--mat-sys-outline)');
   });
 
   it('emits a consumed-name subset (M2)', () => {
-    const names = emittedTokenNames('interactive-controls-theme', 'v0');
+    const names = bridgeTokenNames('interactive-controls-theme', 'v0');
     expect(names.length).toBeGreaterThan(0);
     for (const name of names) {
       expect(CONSUMED).toContain(name);
@@ -107,11 +100,11 @@ describe('copy-block Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(emittedTokenNames('copy-block-theme', 'v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames('copy-block-theme', 'v1')).toEqual(CONSUMED);
   });
 
   it('emits a consumed-name subset (M2)', () => {
-    const names = emittedTokenNames('copy-block-theme', 'v0');
+    const names = bridgeTokenNames('copy-block-theme', 'v0');
     expect(names.length).toBeGreaterThan(0);
     for (const name of names) {
       expect(CONSUMED).toContain(name);
@@ -124,11 +117,11 @@ describe('ripple Material bridge', () => {
   const CONSUMED = ['--cngx-ripple-color', '--cngx-ripple-duration', '--cngx-ripple-opacity'];
 
   it('emits only consumed token names (M3)', () => {
-    expect(emittedTokenNames('ripple-theme', 'v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames('ripple-theme', 'v1')).toEqual(CONSUMED);
   });
 
   it('emits a consumed-name subset (M2)', () => {
-    const names = emittedTokenNames('ripple-theme', 'v0');
+    const names = bridgeTokenNames('ripple-theme', 'v0');
     expect(names.length).toBeGreaterThan(0);
     for (const name of names) {
       expect(CONSUMED).toContain(name);
@@ -146,7 +139,7 @@ $theme: mat.define-theme((
 
 @include bridge.theme($theme);
 `;
-    const css = compileString(entry, { loadPaths: LOAD_PATHS }).css;
+    const css = compileThemeEntry(entry);
     // formerly the only unlayered bridge besides filter-builder - an
     // unlayered rule would beat any layered consumer override
     expect(css).toMatch(/@layer cngx\.components\s*\{/);
@@ -170,11 +163,11 @@ describe('button-toggle Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(emittedTokenNames('button-toggle-theme', 'v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames('button-toggle-theme', 'v1')).toEqual(CONSUMED);
   });
 
   it('emits a consumed-name subset (M2)', () => {
-    const names = emittedTokenNames('button-toggle-theme', 'v0');
+    const names = bridgeTokenNames('button-toggle-theme', 'v0');
     expect(names.length).toBeGreaterThan(0);
     for (const name of names) {
       expect(CONSUMED).toContain(name);
@@ -192,7 +185,7 @@ $theme: mat.define-theme((
 
 @include bridge.theme($theme);
 `;
-    const css = compileString(entry, { loadPaths: LOAD_PATHS }).css;
+    const css = compileThemeEntry(entry);
     expect(css).toMatch(/@layer cngx\.components\s*\{/);
     const block = css.match(
       /:where\(cngx-button-toggle-group, cngx-button-multi-toggle-group, button\[cngxButtonToggle\]\)\s*\{[^}]*\}/,

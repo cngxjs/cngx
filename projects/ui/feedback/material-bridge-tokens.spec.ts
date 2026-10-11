@@ -1,7 +1,6 @@
-import { resolve } from 'node:path';
-
-import { compileString } from 'sass';
 import { describe, expect, it } from 'vitest';
+
+import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
 
 /**
  * Token-name contract for the feedback Material bridge
@@ -20,9 +19,6 @@ import { describe, expect, it } from 'vitest';
  * next to the sidenav) because `projects/themes/material/` carries no
  * test target.
  */
-
-const REPO_ROOT = resolve(__dirname, '../../..');
-const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'projects/themes')];
 
 function compiledTheme(themeVersion: 'v1' | 'v0'): string {
   const entry =
@@ -47,12 +43,11 @@ $theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)))
 
 @include feedback.theme($theme);
 `;
-  return compileString(entry, { loadPaths: LOAD_PATHS }).css;
+  return compileThemeEntry(entry);
 }
 
-function emittedTokenNames(themeVersion: 'v1' | 'v0'): string[] {
-  const css = compiledTheme(themeVersion);
-  return [...new Set([...css.matchAll(/--cngx-[a-z0-9-]+(?=:)/g)].map((m) => m[0]))].sort();
+function bridgeTokenNames(themeVersion: 'v1' | 'v0'): readonly string[] {
+  return emittedTokenNames(compiledTheme(themeVersion));
 }
 
 describe('feedback Material bridge', () => {
@@ -158,11 +153,11 @@ describe('feedback Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(emittedTokenNames('v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames('v1')).toEqual(CONSUMED);
   });
 
   it('emits a consumed-name subset (M2)', () => {
-    const names = emittedTokenNames('v0');
+    const names = bridgeTokenNames('v0');
     expect(names.length).toBeGreaterThan(0);
     for (const name of names) {
       expect(CONSUMED).toContain(name);
@@ -233,7 +228,7 @@ describe('feedback Material bridge', () => {
 
   it('does not resurrect the dead dismiss families', () => {
     for (const themeVersion of ['v1', 'v0'] as const) {
-      for (const name of emittedTokenNames(themeVersion)) {
+      for (const name of bridgeTokenNames(themeVersion)) {
         expect(name).not.toMatch(/-dismiss-/);
       }
     }
