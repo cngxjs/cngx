@@ -332,6 +332,12 @@ describe('the ng-add collection', () => {
     expect(enums['aiTools'].items?.enum).toEqual(AI_TOOLS);
   });
 
+  it('promises no editor config in the aiTools help while the step only notes it', () => {
+    const description = (SCHEMA.properties['aiTools'] as { description: string }).description;
+
+    expect(description).toContain('writes no editor config yet');
+  });
+
   it('declares no option the ng add command strips', () => {
     const stripped = [
       'interactive',
