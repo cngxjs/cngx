@@ -415,6 +415,9 @@ export function createAnnouncementRecorder(
       if (!region || index <= (coveredUpTo.get(region) ?? -1)) {
         return;
       }
+      if (isHiddenWithin(region, rec.target)) {
+        return;
+      }
       const additions = added.get(region) ?? { texts: [], nodes: [] };
       if (rec.type === 'characterData') {
         additions.texts.push(rec.target.textContent ?? '');
@@ -648,11 +651,30 @@ function isBusy(region: Element): boolean {
  * @internal
  */
 function presentText(region: Element, nodes: readonly Node[]): string {
-  const present = [...new Set(nodes)].filter((node) => node.isConnected && region.contains(node));
+  const present = [...new Set(nodes)].filter(
+    (node) => node.isConnected && region.contains(node) && !isHiddenWithin(region, node),
+  );
   const outermost = present.filter(
     (node) => !present.some((other) => other !== node && other.contains(node)),
   );
   return normalise(outermost.map((node) => readText(node, node !== region)).join(' '));
+}
+
+/**
+ * `node`, or an element between it and `region`, is excluded from what AT
+ * reads (`hidden`, `aria-hidden="true"`, script / style / template).
+ *
+ * @internal
+ */
+function isHiddenWithin(region: Element, node: Node): boolean {
+  let current: Element | null = node instanceof Element ? node : node.parentElement;
+  while (current && current !== region) {
+    if (isExcluded(current)) {
+      return true;
+    }
+    current = current.parentElement;
+  }
+  return false;
 }
 
 /** @internal */

@@ -373,6 +373,24 @@ describe('createAnnouncementRecorder', () => {
     expect(texts()).toEqual(['Saved']);
   });
 
+  it('leaves a write inside an aria-hidden descendant out of the added text', async () => {
+    const log = region({ role: 'log' });
+    log.innerHTML = '<span aria-hidden="true">idle</span>';
+    host.append(log);
+    start();
+
+    const line = document.createElement('p');
+    line.textContent = 'Row';
+    log.append(line);
+    (log.firstElementChild?.firstChild as Text).data = 'spin';
+    const glyph = document.createElement('b');
+    glyph.textContent = '*';
+    log.firstElementChild?.append(glyph);
+    await observed();
+
+    expect(texts()).toEqual(['Row']);
+  });
+
   it('records characterData changes on an existing text node', async () => {
     const el = region({ 'aria-live': 'polite' }, 'Page 1');
     host.append(el);
@@ -859,6 +877,43 @@ describe('createAnnouncementRecorder', () => {
       await observed();
 
       expect(summaries()).toEqual([{ text: 'Draft', origin: 'mutation', busy: true }]);
+    });
+
+    it('leaves a hidden glyph written in a busy batch out of both entries', async () => {
+      const log = region({ role: 'log', 'aria-busy': 'true' });
+      log.innerHTML = '<span aria-hidden="true">idle</span>';
+      host.append(log);
+      start();
+
+      const line = document.createElement('p');
+      line.textContent = 'Row';
+      log.append(line);
+      (log.firstElementChild?.firstChild as Text).data = 'spin';
+      await observed();
+      log.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries()).toEqual([
+        { text: 'Row', origin: 'mutation', busy: true },
+        { text: 'Row', origin: 'busy-cleared', busy: false },
+      ]);
+    });
+
+    it('reads a text node rewritten while busy at its current value on the flip', async () => {
+      const log = region({ role: 'log', 'aria-busy': 'true' });
+      const text = document.createTextNode('');
+      log.append(text);
+      host.append(log);
+      start();
+
+      text.data = '1 of 3';
+      await observed();
+      text.data = '3 of 3';
+      await observed();
+      log.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries().at(-1)).toEqual({ text: '3 of 3', origin: 'busy-cleared', busy: false });
     });
 
     it('records nothing for an unrelated attribute change while still busy', async () => {
