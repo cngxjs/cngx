@@ -779,6 +779,20 @@ describe('createAnnouncementRecorder', () => {
       });
     });
 
+    it('still records a write deferred before clear() on the flip after it', async () => {
+      const el = region({ 'aria-live': 'polite' });
+      const wrapper = busyWrapper(el);
+      start();
+
+      el.textContent = 'Loaded';
+      await observed();
+      recorder.clear();
+      wrapper.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries()).toEqual([{ text: 'Loaded', origin: 'busy-cleared', busy: false }]);
+    });
+
     it('records nothing for an unrelated attribute change while still busy', async () => {
       const el = region({ 'aria-live': 'polite' });
       const wrapper = busyWrapper(el);

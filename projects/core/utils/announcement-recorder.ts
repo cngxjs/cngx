@@ -37,7 +37,10 @@ export interface CngxRecordedAnnouncement {
   readonly text: string;
   readonly politeness: 'polite' | 'assertive';
   readonly role: string | null;
-  /** The region or an ancestor carried `aria-busy="true"` at write time. */
+  /**
+   * The region or an ancestor carried `aria-busy="true"` when the observer
+   * saw the write. Always `false` on a `'busy-cleared'` entry.
+   */
   readonly busy: boolean;
   readonly suppressedBy: CngxAnnouncementSuppression | null;
   /**
@@ -71,6 +74,10 @@ export interface CngxAnnouncementRecorderOptions {
  */
 export interface CngxAnnouncementRecorder {
   readonly entries: Signal<readonly CngxRecordedAnnouncement[]>;
+  /**
+   * Empties `entries`. Region state is kept, so a busy flip after `clear()`
+   * still records text written while busy before it.
+   */
   clear(): void;
   destroy(): void;
 }
@@ -213,7 +220,8 @@ const CANDIDATE_SELECTOR = '[aria-live],[role]';
  *   has no layout, so such a write records `suppressedBy: null`;
  * - the separator follows the tag, not computed style: an inline tag styled
  *   `display: block` still concatenates with its neighbour, and an inline
- *   custom element gains a space (`Inbox 3`), which is what AT reads anyway;
+ *   custom element gains a space (`Inbox<x-count>3</x-count>` records
+ *   `Inbox 3`, where browsers compute `Inbox3`);
  * - a native `showModal()` dialog without `aria-modal` is not seen as modal;
  * - regions inside shadow roots are not observed;
  * - writes are seen when the `MutationObserver` callback runs (a microtask),
