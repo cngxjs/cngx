@@ -466,6 +466,172 @@ describe('createAnnouncementRecorder', () => {
     expect(recorder.entries().map((entry) => entry.busy)).toEqual([true, false]);
   });
 
+  describe('busy flip', () => {
+    function busyWrapper(...children: Element[]): HTMLElement {
+      const wrapper = document.createElement('div');
+      wrapper.setAttribute('aria-busy', 'true');
+      wrapper.append(...children);
+      host.append(wrapper);
+      return wrapper;
+    }
+
+    const summaries = () =>
+      recorder.entries().map(({ text, origin, busy }) => ({ text, origin, busy }));
+
+    it('records the deferred text as busy-cleared once aria-busy is removed', async () => {
+      const el = region({ 'aria-live': 'polite' });
+      const wrapper = busyWrapper(el);
+      start();
+
+      el.textContent = 'Loaded';
+      await observed();
+      wrapper.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries()).toEqual([
+        { text: 'Loaded', origin: 'mutation', busy: true },
+        { text: 'Loaded', origin: 'busy-cleared', busy: false },
+      ]);
+    });
+
+    it('records only the appends made while busy for a log, not its earlier history', async () => {
+      const log = region({ role: 'log' });
+      host.append(log);
+      start();
+
+      const appendLine = (text: string) => {
+        const line = document.createElement('p');
+        line.textContent = text;
+        log.append(line);
+      };
+      appendLine('Earlier');
+      await observed();
+      log.setAttribute('aria-busy', 'true');
+      appendLine('Second');
+      await observed();
+      appendLine('Third');
+      await observed();
+      log.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries()).toEqual([
+        { text: 'Earlier', origin: 'mutation', busy: false },
+        { text: 'Second', origin: 'mutation', busy: true },
+        { text: 'Third', origin: 'mutation', busy: true },
+        { text: 'Second Third', origin: 'busy-cleared', busy: false },
+      ]);
+    });
+
+    it('records the whole current text of an atomic status region', async () => {
+      const el = region({ role: 'status', 'aria-busy': 'true' });
+      host.append(el);
+      start();
+
+      el.textContent = 'Saving';
+      await observed();
+      el.innerHTML = '<span>Saved</span> <span>3 items</span>';
+      await observed();
+      el.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries().at(-1)).toEqual({
+        text: 'Saved 3 items',
+        origin: 'busy-cleared',
+        busy: false,
+      });
+    });
+
+    it('records nothing when the region is empty at the flip', async () => {
+      const el = region({ role: 'status', 'aria-busy': 'true' });
+      host.append(el);
+      start();
+
+      el.textContent = 'Saving';
+      await observed();
+      el.textContent = '';
+      await observed();
+      el.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries()).toEqual([{ text: 'Saving', origin: 'mutation', busy: true }]);
+    });
+
+    it('treats aria-busy="false" like removal', async () => {
+      const el = region({ 'aria-live': 'polite' });
+      const wrapper = busyWrapper(el);
+      start();
+
+      el.textContent = 'Loaded';
+      await observed();
+      wrapper.setAttribute('aria-busy', 'false');
+      await observed();
+
+      expect(summaries().at(-1)).toEqual({
+        text: 'Loaded',
+        origin: 'busy-cleared',
+        busy: false,
+      });
+    });
+
+    it('records every region below an ancestor flip that has a deferred write', async () => {
+      const first = region({ 'aria-live': 'polite' });
+      const second = region({ role: 'status' });
+      const wrapper = busyWrapper(first, second);
+      start();
+
+      first.textContent = 'Rows loaded';
+      second.textContent = '12 results';
+      await observed();
+      wrapper.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries().filter((entry) => entry.origin === 'busy-cleared')).toEqual([
+        { text: 'Rows loaded', origin: 'busy-cleared', busy: false },
+        { text: '12 results', origin: 'busy-cleared', busy: false },
+      ]);
+    });
+
+    it('records nothing on a flip with no deferred write before it', async () => {
+      const el = region({ 'aria-live': 'polite' });
+      host.append(el);
+      start();
+
+      el.textContent = 'Ready';
+      await observed();
+      el.setAttribute('aria-busy', 'true');
+      await observed();
+      el.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries()).toEqual([{ text: 'Ready', origin: 'mutation', busy: false }]);
+    });
+
+    it('records one non-busy mutation when the write and the flip share a batch', async () => {
+      const el = region({ 'aria-live': 'polite' });
+      const wrapper = busyWrapper(el);
+      start();
+
+      el.textContent = 'Loaded';
+      wrapper.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries()).toEqual([{ text: 'Loaded', origin: 'mutation', busy: false }]);
+    });
+
+    it('records nothing for an unrelated attribute change while still busy', async () => {
+      const el = region({ 'aria-live': 'polite' });
+      const wrapper = busyWrapper(el);
+      start();
+
+      el.textContent = 'Loading';
+      await observed();
+      wrapper.setAttribute('aria-hidden', 'false');
+      await observed();
+
+      expect(summaries()).toEqual([{ text: 'Loading', origin: 'mutation', busy: true }]);
+    });
+  });
+
   describe('suppressedBy', () => {
     it.each([
       ['hidden', 'hidden', ''],

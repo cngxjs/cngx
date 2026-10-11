@@ -13,11 +13,13 @@ export type CngxAnnouncementSuppression = 'hidden' | 'aria-hidden' | 'inert' | '
  * - `'mutation'`: text changed inside a region that was already live;
  * - `'insertion'`: the region was inserted already holding text;
  * - `'became-live'`: an element holding text became live through an attribute
- *   change (`role` or `aria-live` set later).
+ *   change (`role` or `aria-live` set later);
+ * - `'busy-cleared'`: `aria-busy` cleared on the region or an ancestor after
+ *   text was written while busy; the entry holds what AT reads after the flip.
  *
  * @internal
  */
-export type CngxAnnouncementOrigin = 'mutation' | 'insertion' | 'became-live';
+export type CngxAnnouncementOrigin = 'mutation' | 'insertion' | 'became-live' | 'busy-cleared';
 
 /**
  * One text a live region exposed, as observed in the DOM.
@@ -38,6 +40,11 @@ export interface CngxRecordedAnnouncement {
   /** The region or an ancestor carried `aria-busy="true"` at write time. */
   readonly busy: boolean;
   readonly suppressedBy: CngxAnnouncementSuppression | null;
+  /**
+   * How the text reached the region. A write under `aria-busy` records
+   * `busy: true`; the text AT reads once busy clears follows as a separate
+   * `'busy-cleared'` entry.
+   */
   readonly origin: CngxAnnouncementOrigin;
   readonly region: Element;
   readonly owner: string | null;
@@ -71,6 +78,8 @@ export interface CngxAnnouncementRecorder {
 /** @internal */
 interface RegionState {
   lastText: string;
+  /** Texts recorded while busy since the last non-busy entry. */
+  deferred: string[];
 }
 
 /** @internal */
@@ -182,6 +191,13 @@ const CANDIDATE_SELECTOR = '[aria-live],[role]';
  * <div>Alert dismissed</div>` records `'Upload failed Alert dismissed'` while
  * `<strong>3</strong> results` stays `'3 results'`.
  *
+ * A write under `aria-busy="true"` (on the region or an ancestor) records
+ * `busy: true`. When busy clears and the region's last entry was such a
+ * deferred write, the recorder adds a `'busy-cleared'` entry with what AT
+ * reads then: an atomic region's whole current text, a non-atomic region's
+ * texts written while busy (earlier history is not repeated). A write and the
+ * flip in one observer batch record one non-busy `'mutation'` entry only.
+ *
  * Known limits:
  * - no layout-based visibility (`display:none`, `visibility:hidden`); jsdom
  *   has no layout, so such a write records `suppressedBy: null`;
@@ -232,12 +248,17 @@ export function createAnnouncementRecorder(
   }
 
   const record = (region: Element, text: string, origin: CngxAnnouncementOrigin): void => {
+    const busy = region.closest('[aria-busy="true"]') !== null;
+    const state = regions.get(region);
+    if (state) {
+      state.deferred = busy ? [...state.deferred, text] : [];
+    }
     const entry: CngxRecordedAnnouncement = {
       time: Date.now(),
       text,
       politeness: politenessOf(region),
       role: region.getAttribute('role'),
-      busy: region.closest('[aria-busy="true"]') !== null,
+      busy,
       suppressedBy: suppressionOf(region),
       origin,
       region,
@@ -279,7 +300,7 @@ export function createAnnouncementRecorder(
       }
     }
     const text = readText(region, false, rewritten ? undefined : appended);
-    regions.set(region, { lastText: text });
+    regions.set(region, { lastText: text, deferred: [] });
     if (text !== '') {
       record(region, text, origin);
     }
@@ -383,6 +404,32 @@ export function createAnnouncementRecorder(
       }
     }
 
+    // After the mutation pass: a write in this batch already recorded with
+    // `busy: false` and left nothing deferred, so it is not recorded twice.
+    const cleared = records
+      .filter((rec) => rec.type === 'attributes' && rec.attributeName === 'aria-busy')
+      .map((rec) => rec.target)
+      .filter((target): target is Element => target instanceof Element)
+      .filter((target) => target.getAttribute('aria-busy') !== 'true');
+    if (cleared.length > 0) {
+      for (const [region, state] of regions) {
+        const flipped = cleared.some((target) => target.contains(region));
+        if (!flipped || state.deferred.length === 0) {
+          continue;
+        }
+        if (region.closest('[aria-busy="true"]') !== null) {
+          continue;
+        }
+        const text = isAtomic(region)
+          ? readText(region, false)
+          : normalise(state.deferred.join(' '));
+        state.deferred = [];
+        if (text !== '') {
+          record(region, text, 'busy-cleared');
+        }
+      }
+    }
+
     if (removedAny) {
       for (const region of regions.keys()) {
         if (!region.isConnected || !root.contains(region)) {
@@ -393,7 +440,7 @@ export function createAnnouncementRecorder(
   };
 
   for (const region of liveRegionsIn(root)) {
-    regions.set(region, { lastText: readText(region, false) });
+    regions.set(region, { lastText: readText(region, false), deferred: [] });
   }
 
   observer = new MutationObserver(handle);
