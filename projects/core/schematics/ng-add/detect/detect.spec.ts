@@ -378,6 +378,21 @@ module.exports = defineConfig([
     });
   });
 
+  it('reads each source file once', async () => {
+    const tree = createFixtureTree('standalone-app', { 'src/app/other.ts': SECOND_COMPONENT });
+    const workspace = await readWorkspace(tree);
+    const reads = new Map<string, number>();
+    const readText = tree.readText.bind(tree);
+    tree.readText = (path: string) => {
+      reads.set(path, (reads.get(path) ?? 0) + 1);
+      return readText(path);
+    };
+
+    detectProject(tree, workspace);
+
+    expect([...reads].filter(([, count]) => count > 1)).toEqual([]);
+  });
+
   it('leaves the tree untouched', async () => {
     const tree = createFixtureTree();
     const before = tree.files.map((path) => [path, tree.readText(path)]);

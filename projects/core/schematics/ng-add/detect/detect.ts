@@ -303,19 +303,24 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const options = buildOptions(project);
   const manifest = parseManifest(tree.readText('package.json'));
 
+  // One read per source file feeds every source-derived fact.
+  const sources = sourceFiles(tree, sourceRoot).map((path) => ({ path, content: tree.readText(path) }));
+  const contents = new Map(sources.map(({ path, content }) => [path, content]));
+  const read = (path: string): string => contents.get(path) ?? (tree.exists(path) ? tree.readText(path) : '');
+
   const mainOption = options['browser'] ?? options['main'];
   const mainPath = typeof mainOption === 'string' ? mainOption : posix.join(sourceRoot, 'main.ts');
-  const main = tree.exists(mainPath) ? tree.readText(mainPath) : '';
+  const main = read(mainPath);
   const standalone = !/bootstrapModule\s*\(/.test(main);
   const appConfigPath = rootProvidersPath(mainPath, main, standalone, sourceRoot);
-  const appConfig = tree.exists(appConfigPath) ? tree.readText(appConfigPath) : '';
-  const providers = providerNames(appConfig);
+  const providers = providerNames(read(appConfigPath));
 
   const entries = styleEntries(options);
   const stylesPath = globalStylesheet(entries);
-  const sources = sourceFiles(tree, sourceRoot);
-  const appSources = sources.filter((path) => path.startsWith(posix.join(sourceRoot, 'app') + '/'));
-  const componentCount = appSources.filter((path) => /@Component\s*\(/.test(tree.readText(path))).length;
+  const appRoot = `${posix.join(sourceRoot, 'app')}/`;
+  const componentCount = sources.filter(
+    ({ path, content }) => path.startsWith(appRoot) && /@Component\s*\(/.test(content),
+  ).length;
 
   const hasOtherUi = OTHER_UI_LIBRARIES.some((library) => declaredRange(manifest, library) !== undefined);
   const hasOwnProviders = providers.some((provider) => !SCAFFOLD_PROVIDERS.has(provider));
@@ -327,7 +332,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     angularVersion: versionOf(declaredRange(manifest, '@angular/core')),
     bootstrap: standalone ? 'standalone' : 'ngmodule',
     zoneless: !includesZone(options['polyfills']) && !providers.includes('provideZoneChangeDetection'),
-    signalForms: sources.some((path) => /['"]@angular\/forms\/signals['"]/.test(tree.readText(path))),
+    signalForms: sources.some(({ content }) => /['"]@angular\/forms\/signals['"]/.test(content)),
     stylesKind: stylesPath?.endsWith('.scss') === true ? 'scss' : 'css',
     stylesPath,
     cngxStylesheet: importsCngxStylesheet(tree, entries),
