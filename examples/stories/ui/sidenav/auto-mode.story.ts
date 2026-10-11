@@ -49,9 +49,8 @@ export const STORY: DemoSpec = {
   templateChrome: `<div class="button-row" style="margin-top: 12px">
     <button class="sort-btn" type="button" (click)="setFrameWidth('40rem')">Width 40rem</button>
     <button class="sort-btn" type="button" (click)="setFrameWidth('72rem')">Width 72rem</button>
-    <button class="sort-btn" type="button" (click)="navOpen.set(!navOpen())">
-      {{ navOpen() ? 'Close' : 'Open' }}
-    </button>
+    <button class="sort-btn" type="button" (click)="navOpen.set(true)">Open</button>
+    <button class="sort-btn" type="button" (click)="navOpen.set(false)">Close</button>
     <button class="sort-btn" type="button" (click)="pinned.set(!pinned())">
       {{ pinned() ? 'Back to auto' : 'Pin mode="over"' }}
     </button>

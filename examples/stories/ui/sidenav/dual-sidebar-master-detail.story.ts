@@ -70,9 +70,8 @@ export const STORY: DemoSpec = {
     <button class="sort-btn" type="button" (click)="leftOpen.set(!leftOpen())">
       Left: {{ leftOpen() ? 'open' : 'closed' }}
     </button>
-    <button class="sort-btn" type="button" (click)="rightOpen.set(!rightOpen())">
-      Right: {{ rightOpen() ? 'open' : 'closed' }}
-    </button>
+    <button class="sort-btn" type="button" (click)="rightOpen.set(true)">Open right</button>
+    <button class="sort-btn" type="button" (click)="rightOpen.set(false)">Close right</button>
   </div>
 <div class="status-row" style="margin-top: 0.5rem;">
     <span class="status-badge" [class.active]="leftOpen()">left: {{ leftOpen() ? 'open' : 'closed' }}</span>
