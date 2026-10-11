@@ -128,6 +128,13 @@ export function createSchematicsVersions({ nextVersion, mcpVersion, eslintPlugin
   return { cngx: nextVersion, mcp: mcpVersion, eslintPlugin: eslintPluginVersion, angular: angularRange };
 }
 
+// The build of one lib without its schematics: those follow only through the
+// declaresSchematics gate below. `npm run build:<lib>` would bundle them
+// unconditionally.
+export function libBuildCommand(lib) {
+  return CSS_ONLY_LIBS.has(lib) ? 'node scripts/build-themes.mjs' : `npx ng build ${lib}`;
+}
+
 // A lib ships its schematics only once its source manifest declares the
 // collection. Until then the bundle stays out of the tarball: the CLI cannot
 // reach a collection the manifest does not name.
@@ -259,11 +266,7 @@ function main() {
     console.log(`\n[${lib}]`);
 
     console.log('  Building...');
-    if (CSS_ONLY_LIBS.has(lib)) {
-      run(`npm run build:${lib}`);
-    } else {
-      run(`npx ng build ${lib}`);
-    }
+    run(libBuildCommand(lib));
     const shipsSchematics =
       existsSync(join(ROOT, 'projects', lib, 'schematics')) && declaresSchematics(readSourcePkg(lib));
     if (shipsSchematics) {

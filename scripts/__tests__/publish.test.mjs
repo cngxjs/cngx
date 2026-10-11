@@ -8,6 +8,7 @@ import {
   containsStableRelease,
   createSchematicsVersions,
   declaresSchematics,
+  libBuildCommand,
   replaceVersionInDist,
   resolveDistTag,
 } from '../publish.mjs';
@@ -108,6 +109,13 @@ describe('createSchematicsVersions', () => {
         angularRange: '^21.2.0',
       }),
     ).toEqual({ cngx: '0.1.0', mcp: '0.2.0', eslintPlugin: '0.2.1', angular: '^21.2.0' });
+  });
+});
+
+describe('libBuildCommand', () => {
+  it('builds a lib without its schematics, which only the declaresSchematics gate adds', () => {
+    expect(libBuildCommand('core')).toBe('npx ng build core');
+    expect(libBuildCommand('themes')).toBe('node scripts/build-themes.mjs');
   });
 });
 

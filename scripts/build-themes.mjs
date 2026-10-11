@@ -19,7 +19,7 @@
  * the real version before `npm publish`.
  */
 
-import { mkdirSync, copyFileSync, readdirSync, statSync } from 'node:fs';
+import { mkdirSync, copyFileSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { resolve, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -50,6 +50,10 @@ function copyRecursive(srcDir, destDir) {
   }
 }
 
+// A fresh output folder, as ng-packagr gives every other lib: a schematics
+// bundle from an earlier `npm run build:themes` must not ride along into a
+// publish that does not declare it.
+rmSync(DEST, { recursive: true, force: true });
 copyRecursive(SRC, DEST);
 
 console.log(`\nBuilt @cngx/themes to ${DEST}`);
