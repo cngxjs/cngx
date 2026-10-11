@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { readOwnVersion } from './manifest/manifest';
+import { isRecord } from './plan/text';
 
 /** The release versions a run pins. */
 export interface ReleaseVersions {
@@ -21,9 +22,6 @@ export interface ResolvedVersions {
 export const DEFAULT_MCP_VERSION = '0.2.0';
 export const DEFAULT_ESLINT_PLUGIN_VERSION = '0.2.0';
 
-function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 /** The pins of a `versions.json` body; `undefined` when it is not JSON or a pin is missing. */
 export function parseVersions(content: string): ReleaseVersions | undefined {

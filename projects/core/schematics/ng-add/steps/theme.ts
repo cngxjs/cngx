@@ -9,12 +9,11 @@ import {
   type StepResult,
   withProvenanceMarker,
 } from '../../engine';
-import { type ProjectFacts } from '../detect/detect';
+import { CNGX_STYLESHEET, type ProjectFacts } from '../detect/detect';
 import { missingThemePeers, selectedLibs } from './dependencies';
 import { type OnboardingAnswers, type Versions } from './model';
 import { BASE_TOKENS, type BaseToken } from './theme-tokens.generated';
 
-const CNGX_STYLESHEET = '@cngx/themes/cngx.css';
 const STYLESHEET_IMPORT = `@import '${CNGX_STYLESHEET}';`;
 const BRIDGE_USE = "@use '@cngx/themes/material/theme' as cngx-material;";
 const BRIDGE_MARKER = 'theme:bridge';

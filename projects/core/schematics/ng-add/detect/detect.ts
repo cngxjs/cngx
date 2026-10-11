@@ -5,6 +5,7 @@ import {
   declaredRange,
   hasArrayLiteral,
   hasStyleImport,
+  isRecord,
   type PackageManifest,
   parseManifest,
   type Tree,
@@ -84,12 +85,10 @@ const ESLINT_FLAT_CONFIGS = ['eslint.config.js', 'eslint.config.mjs', 'eslint.co
 
 const PREBUILT_THEME = '@angular/material/prebuilt-themes/';
 
-const CNGX_STYLESHEET = '@cngx/themes/cngx.css';
+/** The one stylesheet every cngx app loads. */
+export const CNGX_STYLESHEET = '@cngx/themes/cngx.css';
 const MATERIAL_BRIDGE = '@cngx/themes/material/theme';
 
-function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function resolveProject(
   workspace: workspaces.WorkspaceDefinition,

@@ -1,10 +1,7 @@
-import { type Provenance, type StepResult } from '../../engine';
+import { joinNames, type Provenance, type StepResult } from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
 import { type OnboardingAnswers, type Versions } from './model';
 
-function list(names: readonly string[]): string {
-  return names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
-}
 
 /**
  * The AI tooling answer is recorded, but no release writes editor configs
@@ -21,7 +18,7 @@ export function planAiTools(_facts: ProjectFacts, answers: OnboardingAnswers, ve
         kind: 'note',
         id: 'ai-tools:configs',
         label: 'Skip the AI tooling configs',
-        reason: `the MCP and agent configs for ${list(answers.aiTools)} are not written by this release yet`,
+        reason: `the MCP and agent configs for ${joinNames(answers.aiTools)} are not written by this release yet`,
         provenance,
       },
     ],

@@ -3,6 +3,7 @@ import {
   CNGX_LIBS,
   type CngxLib,
   declaredRange,
+  joinNames,
   type PackageManifest,
   type Provenance,
   type StepResult,
@@ -40,9 +41,6 @@ export function missingThemePeers(libs: readonly CngxLib[]): readonly CngxLib[] 
   return THEME_PEERS.filter((lib) => !libs.includes(lib));
 }
 
-function list(names: readonly string[]): string {
-  return names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
-}
 
 function cngxDependency(manifest: PackageManifest, name: string, version: string, provenance: Provenance): StepResult {
   const existing = declaredRange(manifest, name);
@@ -88,7 +86,7 @@ function themeRefusal(missing: readonly CngxLib[], provenance: Provenance): Step
         kind: 'note',
         id: 'dependency:@cngx/themes',
         label: 'Skip @cngx/themes',
-        reason: `cngx.css imports the CSS of ${list(names)}; select them or pass --theme=none`,
+        reason: `cngx.css imports the CSS of ${joinNames(names)}; select them or pass --theme=none`,
         provenance,
       },
     ],

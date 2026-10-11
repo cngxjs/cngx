@@ -1,6 +1,6 @@
 import { type JsonValue } from '@angular-devkit/core';
 
-import { type ChangePlan, type Provenance, type StepResult, type WriteJson } from '../../engine';
+import { type ChangePlan, isRecord, type Provenance, type StepResult, type WriteJson } from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
 import { type OnboardingAnswers, type Versions } from './model';
 
@@ -30,9 +30,6 @@ export interface InstallManifest {
   readonly updatedAt: string;
 }
 
-function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 /** A previous manifest; `undefined` when the body is not one cngx wrote. */
 export function parseInstallManifest(content: string): InstallManifest | undefined {
