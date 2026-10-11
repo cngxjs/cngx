@@ -103,7 +103,9 @@ export class CngxAutosize {
     const scrollH = el.scrollHeight;
     el.style.height = prevHeight;
 
-    const targetH = clamp(scrollH, minH, maxH);
+    // scrollHeight covers content + padding only; the host is border-box, so
+    // the border has to be added back or the last line is clipped by it.
+    const targetH = clamp(scrollH + this.borderTop + this.borderBottom, minH, maxH);
     el.style.height = `${targetH}px`;
     this.heightState.set(targetH);
   }

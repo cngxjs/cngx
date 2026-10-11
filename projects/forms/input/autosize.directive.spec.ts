@@ -128,5 +128,12 @@ describe('CngxAutosize', () => {
       expect(directive.height()).toBe(50);
       expect(textarea.style.overflowY).toBe('auto');
     });
+
+    it('adds the border to scrollHeight when the content grows between the bounds', () => {
+      // 3 rows of content: scrollHeight = 30 content + 6 padding. The host is
+      // border-box, so the border-box height must also hold the 4px border.
+      const { directive } = setupBoxModel(36);
+      expect(directive.height()).toBe(36 + 4);
+    });
   });
 });
