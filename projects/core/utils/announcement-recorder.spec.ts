@@ -840,6 +840,27 @@ describe('createAnnouncementRecorder', () => {
       ]);
     });
 
+    it('reads a non-atomic alert that appeared under busy once, with its later writes', async () => {
+      const wrapper = busyWrapper();
+      start();
+
+      const alert = region({ role: 'alert', 'aria-atomic': 'false' }, 'Error');
+      wrapper.append(alert);
+      await observed();
+      const retry = document.createElement('p');
+      retry.textContent = 'Retry';
+      alert.append(retry);
+      await observed();
+      wrapper.removeAttribute('aria-busy');
+      await observed();
+
+      expect(summaries().at(-1)).toEqual({
+        text: 'Error Retry',
+        origin: 'busy-cleared',
+        busy: false,
+      });
+    });
+
     it('replays the current text of an alert that became live under busy', async () => {
       const el = region({}, 'Upload failed');
       const wrapper = busyWrapper(el);

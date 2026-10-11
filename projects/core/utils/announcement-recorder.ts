@@ -660,19 +660,23 @@ function isBusy(region: Element): boolean {
 
 /**
  * Text of the given nodes still inside `region`, each read once: a node
- * inside another listed node is covered by it. Removed or overwritten nodes
- * contribute nothing, so the result is what the region holds now.
+ * inside another listed node is covered by it, and the region itself (an
+ * alert that appeared under busy) covers every node. Removed or overwritten
+ * nodes contribute nothing, so the result is what the region holds now.
  *
  * @internal
  */
 function presentText(region: Element, nodes: readonly Node[]): string {
+  if (nodes.includes(region)) {
+    return readText(region, false);
+  }
   const present = new Set(
     nodes.filter(
       (node) => node.isConnected && region.contains(node) && !isHiddenWithin(region, node),
     ),
   );
   const outermost = [...present].filter((node) => !hasAncestorIn(node, present, region));
-  return normalise(outermost.map((node) => readText(node, node !== region)).join(' '));
+  return normalise(outermost.map((node) => readText(node, true)).join(' '));
 }
 
 /** @internal */
