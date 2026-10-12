@@ -112,6 +112,20 @@ function walkVersioned(dir, schematicsDir) {
   return files;
 }
 
+// Workspace convention: every publishable lib declares its cross-@cngx
+// runtime imports as PLACEHOLDER peers. Rewriting them in place makes the
+// published package lock to the wave it ships with, which keeps the
+// cross-package version graph consistent. Mutates and returns `distPkg`.
+export function stampManifest(distPkg, nextVersion) {
+  distPkg.version = nextVersion;
+  for (const dep of Object.keys(distPkg.peerDependencies ?? {})) {
+    if (distPkg.peerDependencies[dep] === PLACEHOLDER) {
+      distPkg.peerDependencies[dep] = nextVersion;
+    }
+  }
+  return distPkg;
+}
+
 // A tarball that still names the placeholder cannot be installed: the version
 // or a cross-@cngx peer would resolve to nothing. Checked on the rewritten
 // manifest, before anything is written or published.
@@ -289,19 +303,7 @@ function main() {
       console.warn(`  Warning: expected "${PLACEHOLDER}", found "${distPkg.version}"`);
     }
 
-    distPkg.version = nextVersion;
-
-    // Workspace convention: every publishable lib declares its
-    // cross-@cngx runtime imports as PLACEHOLDER peers. Rewrite those
-    // inline so the published package locks to the wave it ships
-    // with - keeps the cross-package version graph consistent.
-    if (distPkg.peerDependencies) {
-      for (const dep of Object.keys(distPkg.peerDependencies)) {
-        if (distPkg.peerDependencies[dep] === PLACEHOLDER) {
-          distPkg.peerDependencies[dep] = nextVersion;
-        }
-      }
-    }
+    stampManifest(distPkg, nextVersion);
 
     const leftover = findPlaceholders(distPkg);
     if (leftover.length > 0) {
