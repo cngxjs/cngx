@@ -44,6 +44,9 @@ export function getThemeTokens(docs: DocsIndex, name: string): ThemeTokensResult
   };
 }
 
+/** A question this tool answers; the ng-add helper README lists it. */
+export const example = 'Which custom properties theme CngxChip?';
+
 export function registerGetThemeTokens(server: McpServer, docs: DocsIndex): void {
   server.registerTool(
     'get_theme_tokens',

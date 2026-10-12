@@ -1,0 +1,110 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderHelperReadme > renders the stamped readme for the chosen editors 1`] = `
+"<!-- cngx:generated 1b842b43 -->
+<!-- ng-add, @cngx 0.1.0 -->
+<!-- cngx:fingerprint 3fbe3505 -->
+
+# cngx in this project
+
+\`ng add\` set up cngx 0.1.0 here and wrote this file. A later \`ng add\`
+run regenerates it, so edits made here are not kept.
+
+## Installed
+
+- \`@cngx/utils@0.1.0\`
+- \`@cngx/core@0.1.0\`
+- \`@cngx/common@0.1.0\`
+- \`@cngx/interop@0.1.0\`
+- \`@cngx/forms@0.1.0\`
+- \`@cngx/data-display@0.1.0\`
+- \`@cngx/ui@0.1.0\`
+- \`@cngx/themes@0.1.0\`
+
+## MCP server
+
+Your coding agent asks the \`cngx\` MCP server (\`@cngx/mcp@0.3.0\`)
+about components, inputs, slots, theme tokens and DI tokens instead of
+guessing them. It runs locally through \`npx\`, answers offline from the cngx
+API snapshot it bundles, and needs no account or key.
+
+Configured in:
+
+- \`.mcp.json\`
+- \`.vscode/mcp.json\`
+
+A marked cngx block in \`AGENTS.md\` tells the agent to ask the server.
+
+### Tools
+
+| Tool | What it answers | Try asking |
+|-|-|-|
+| \`find_component\` | Find cngx component, directive, or service | Which cngx component renders a searchable single select? |
+| \`get_api\` | Get cngx component API | What inputs and outputs does CngxSelect take? |
+| \`get_config\` | Get a cngx configuration cascade | How do I set app-wide defaults for CngxSelect? |
+| \`get_di_tokens\` | Get cngx DI tokens | Which DI tokens configure the select family? |
+| \`get_slots\` | Get cngx component template slots | Which template slots can I override on CngxSelect? |
+| \`get_story_example\` | Get cngx example URLs | Show me a working example of CngxTreeSelect. |
+| \`get_theme_tokens\` | Get cngx component theming tokens | Which custom properties theme CngxChip? |
+| \`list_components\` | List cngx components, directives, and services | Which directives does @cngx/common ship? |
+| \`migrate_usage\` | Diff two cngx releases | What breaks between cngx 0.1.0-rc.5 and 0.1.0? |
+
+### Resources
+
+| URI | Content |
+|-|-|
+| \`cngx://catalog\` | Every cngx component, directive, and injectable service as { name, kind, selector, category, lib }, sorted by name. The browse view of list_components. |
+| \`cngx://tokens\` | The top-level DI injection tokens as { name, file, description }. |
+| \`cngx://provenance\` | Snapshot meta: cngx version, generatedAt, schemaVersion, compodocx version. |
+| \`cngx://api/{name}\` | One component or directive's API surface (inputs, outputs, signal flag, host bindings, methods) by class name or selector. An unknown name yields an empty resource. |
+| \`cngx://llms\` | The llms.txt-equivalent entry index - documented-exports counts, API-reference pointer links and the package list - composed offline from the bundled snapshot. |
+| \`cngx://llms-full\` | The verbatim compodocx llm-md dump - the full API export with every artifact's selector, inputs, outputs, description and live-example URLs - served offline from the bundled snapshot. The companion to the cngx://llms index; an absent dump yields an empty resource. |
+
+### Prompts
+
+| Prompt | Use |
+|-|-|
+| \`wire_component\` | Frame wiring one cngx component and name the tools to ground against. |
+| \`theme_component\` | Frame theming one cngx component through its exposed custom properties. |
+| \`migrate_cngx\` | Frame a cross-version cngx migration grounded in migrate_usage. |
+
+## Check that it runs
+
+- Claude Code: run \`claude mcp list\` in this folder; \`cngx\` is listed once you approve the project server.
+- VS Code: run \`MCP: List Servers\` from the command palette and start \`cngx\`.
+
+## Turn it off
+
+Delete the \`cngx\` entry from each config file listed above, and the block
+between \`<!-- cngx:agents -->\` and \`<!-- /cngx:agents -->\` in \`AGENTS.md\`.
+Nothing else in the project depends on the server.
+
+\`ng add\` does not remember a removal: a later run that sets up the editor
+again writes both back, and the \`full\` preset sets up every editor it
+detects. To keep it off, leave the editor unticked in the AI tooling
+question, or run \`ng add\` without \`--preset=full\`.
+
+## Claude Code plugin
+
+The cngx plugin adds cngx skills and edit checks to Claude Code and starts
+its own copy of the MCP server. To use it, run \`/plugin marketplace add
+cngxjs/cngx\`, then \`/plugin install cngx@cngxjs\` in Claude Code, and delete
+the \`cngx\` entry from \`.mcp.json\`, so Claude Code runs one cngx server, not two.
+
+## Clients outside this project
+
+\`ng add\` writes only project files. To use the server in Claude Desktop or
+in every Cursor project, add the same entry to that client's own config by
+hand (\`claude_desktop_config.json\`, \`~/.cursor/mcp.json\`):
+
+\`\`\`json
+{
+  "mcpServers": {
+    "cngx": { "command": "npx", "args": ["-y", "@cngx/mcp@0.3.0"] }
+  }
+}
+\`\`\`
+
+Docs: https://cngxjs.github.io/cngx/
+"
+`;

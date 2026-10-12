@@ -8,17 +8,19 @@ import {
   type Change,
   CNGX_LIBS,
   type CngxLib,
-  type ProviderCall,
-  type ProviderLiteral,
+  type ProviderArg,
   type StepResult,
 } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
 import { selectedLibs } from './dependencies';
 import { planProviders, RTL_LANGUAGES } from './providers';
 
-function render(call: ProviderCall | ProviderLiteral): string {
+function render(call: ProviderArg): string {
   if ('literal' in call) {
     return call.literal;
+  }
+  if ('array' in call) {
+    return `[${call.array.map(render).join(', ')}]`;
   }
   if (call.reference === true) {
     return call.symbol;
@@ -84,14 +86,23 @@ describe('planProviders', () => {
 
   it('provides the floating fallback on request when common is installed', () => {
     const result = planProviders(createFacts(), createAnswers({ floatingFallback: true }), VERSIONS);
-    expect(provided(result)).toContain('provideFloatingFallback()');
-    expect(byId(result, 'provider:floating-fallback')).toMatchObject({ call: { module: '@cngx/common/popover' } });
+    expect(provided(result)).toContain('provideFloatingFallback(computePosition, [flip(), shift()])');
+    expect(byId(result, 'provider:floating-fallback')).toMatchObject({
+      call: {
+        symbol: 'provideFloatingFallback',
+        module: '@cngx/common/popover',
+        args: [
+          { symbol: 'computePosition', module: '@floating-ui/dom', reference: true },
+          { array: [{ symbol: 'flip', module: '@floating-ui/dom' }, { symbol: 'shift', module: '@floating-ui/dom' }] },
+        ],
+      },
+    });
     const withoutCommon = planProviders(
       createFacts(),
       createAnswers({ floatingFallback: true, libs: ['utils'], theme: 'none' }),
       VERSIONS,
     );
-    expect(provided(withoutCommon)).not.toContain('provideFloatingFallback()');
+    expect(provided(withoutCommon)).not.toContain('provideFloatingFallback(computePosition, [flip(), shift()])');
     expect(byId(withoutCommon, 'provider:floating-fallback')).toMatchObject({
       kind: 'note',
       label: 'Skip the floating positioning fallback',
@@ -173,8 +184,12 @@ describe('planProviders', () => {
   });
 
   it('imports nothing from a @cngx package the selection leaves out', () => {
-    const modules = (call: ProviderCall | ProviderLiteral): readonly string[] =>
-      'literal' in call ? [] : [call.module, ...(call.args ?? []).flatMap(modules)];
+    const modules = (call: ProviderArg): readonly string[] => {
+      if ('literal' in call) {
+        return [];
+      }
+      return 'array' in call ? call.array.flatMap(modules) : [call.module, ...(call.args ?? []).flatMap(modules)];
+    };
     const selections: readonly (readonly CngxLib[])[] = [['utils'], ['core'], ['common'], ['forms'], ['ui'], [...CNGX_LIBS]];
 
     for (const libs of selections) {

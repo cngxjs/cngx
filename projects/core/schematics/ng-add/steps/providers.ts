@@ -70,6 +70,8 @@ interface Wanted {
   readonly call: ProviderCall;
 }
 
+const FLOATING_UI = '@floating-ui/dom';
+
 function i18nPack(answers: OnboardingAnswers): ProviderCall {
   const pack: ProviderCall = answers.runtimeSwitch
     ? { symbol: LANGUAGE_SIGNAL, module: `./${LANGUAGE_FILE}`, reference: true }
@@ -117,7 +119,15 @@ function wantedProviders(facts: ProjectFacts, answers: OnboardingAnswers): reado
       subject: 'the floating positioning fallback',
       reason: 'positions popovers where CSS anchor positioning is missing',
       lib: 'common',
-      call: { symbol: 'provideFloatingFallback', module: '@cngx/common/popover' },
+      // The fallback takes Floating UI's functions; cngx never imports @floating-ui/dom itself.
+      call: {
+        symbol: 'provideFloatingFallback',
+        module: '@cngx/common/popover',
+        args: [
+          { symbol: 'computePosition', module: FLOATING_UI, reference: true },
+          { array: [{ symbol: 'flip', module: FLOATING_UI }, { symbol: 'shift', module: FLOATING_UI }] },
+        ],
+      },
     },
     answers.i18n === 'de' && {
       id: 'provider:i18n',

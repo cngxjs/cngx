@@ -7,6 +7,7 @@ import {
   type PackageManifest,
   type Provenance,
   type StepResult,
+  type ThemeChoice,
 } from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
 import { type OnboardingAnswers, type Versions } from './model';
@@ -41,6 +42,14 @@ export function missingThemePeers(libs: readonly CngxLib[]): readonly CngxLib[] 
   return THEME_PEERS.filter((lib) => !libs.includes(lib));
 }
 
+/**
+ * Every `@cngx/*` package installed for the selected libs (from `selectedLibs`),
+ * `@cngx/themes` only when it can be.
+ */
+export function cngxPackages(libs: readonly CngxLib[], theme: ThemeChoice): readonly string[] {
+  const withTheme = theme !== 'none' && missingThemePeers(libs).length === 0;
+  return [...libs.map((lib) => `@cngx/${lib}`), ...(withTheme ? ['@cngx/themes'] : [])];
+}
 
 function cngxDependency(manifest: PackageManifest, name: string, version: string, provenance: Provenance): StepResult {
   const existing = declaredRange(manifest, name);
@@ -112,8 +121,7 @@ export function planDependencies(facts: ProjectFacts, answers: OnboardingAnswers
   const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
   const libs = selectedLibs(answers.libs);
   const missing = answers.theme === 'none' ? [] : missingThemePeers(libs);
-  const withTheme = answers.theme !== 'none' && missing.length === 0;
-  const packages = [...libs.map((lib) => `@cngx/${lib}`), ...(withTheme ? ['@cngx/themes'] : [])];
+  const packages = cngxPackages(libs, answers.theme);
   const angularRange = declaredRange(facts.manifest, '@angular/core') ?? `^${facts.angularVersion ?? '21.2.0'}`;
 
   return merge([

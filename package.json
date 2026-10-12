@@ -27,6 +27,7 @@
     "check:prod-strip": "npm run build:examples && node scripts/devtools-prod-strip-check.mjs",
     "manifest:copy": "node scripts/copy-cascade-manifest.mjs",
     "schematics:tokens": "node scripts/schematics-token-comments.mjs",
+    "schematics:mcp": "node scripts/schematics-mcp-capabilities.mjs",
     "test:e2e:examples": "playwright test --config=examples/playwright.config.ts",
     "test:e2e:examples:update": "playwright test --config=examples/playwright.config.ts --update-snapshots",
     "examples:generate": "node scripts/examples-gen/index.mjs",

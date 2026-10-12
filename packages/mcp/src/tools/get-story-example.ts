@@ -44,6 +44,9 @@ export function getStoryExample(docs: DocsIndex, name: string): StoryExampleResu
   };
 }
 
+/** A question this tool answers; the ng-add helper README lists it. */
+export const example = 'Show me a working example of CngxTreeSelect.';
+
 export function registerGetStoryExample(server: McpServer, docs: DocsIndex): void {
   server.registerTool(
     'get_story_example',

@@ -104,6 +104,11 @@ describe('detectProject', () => {
       rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
       material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
       editors: { claude: false, cursor: false, vscode: false },
+      mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'absent' },
+      mcpPins: { claude: undefined, cursor: undefined, vscode: undefined },
+      agentsMd: 'absent',
+      claudeInstructions: undefined,
+      helperReadme: undefined,
       eslintConfig: undefined,
       ssr: false,
       sourceLocale: undefined,
@@ -302,6 +307,71 @@ describe('detectProject', () => {
     });
     expect(facts.editors).toEqual({ claude: true, cursor: true, vscode: true });
     expect((await detect({ 'CLAUDE.md': '' })).editors.claude).toBe(true);
+  });
+
+  it('reads each editor mcp config under its own key, comments included', async () => {
+    const facts = await detect({
+      '.mcp.json': JSON.stringify({ mcpServers: { other: { command: 'other' } } }),
+      '.cursor/mcp.json': JSON.stringify({ mcpServers: { cngx: { command: 'npx' } } }),
+      '.vscode/mcp.json': '// workspace servers\n{ "servers": { "cngx": { "command": "npx" } } }',
+    });
+    expect(facts.mcpConfigs).toEqual({ claude: 'present', cursor: 'wired', vscode: 'wired' });
+  });
+
+  it('does not take a cngx server under the wrong key as wired', async () => {
+    const facts = await detect({ '.vscode/mcp.json': JSON.stringify({ mcpServers: { cngx: {} } }) });
+    expect(facts.mcpConfigs.vscode).toBe('present');
+  });
+
+  it('marks an mcp config that is not a JSON object as invalid', async () => {
+    const facts = await detect({ '.mcp.json': '{ "mcpServers": ', '.cursor/mcp.json': '[]' });
+    expect(facts.mcpConfigs).toMatchObject({ claude: 'invalid', cursor: 'invalid' });
+  });
+
+  it('reads the @cngx/mcp version an existing cngx entry pins', async () => {
+    const facts = await detect({
+      '.mcp.json': JSON.stringify({ mcpServers: { cngx: { command: 'npx', args: ['-y', '@cngx/mcp@0.2.0'] } } }),
+      '.vscode/mcp.json': JSON.stringify({ servers: { cngx: { command: 'cngx-mcp' } } }),
+    });
+    expect(facts.mcpPins).toEqual({ claude: '0.2.0', cursor: undefined, vscode: undefined });
+  });
+
+  it('marks a servers key cngx cannot add an entry to as invalid', async () => {
+    const facts = await detect({
+      '.mcp.json': JSON.stringify({ mcpServers: null }),
+      '.cursor/mcp.json': JSON.stringify({ mcpServers: 'none' }),
+      '.vscode/mcp.json': JSON.stringify({ servers: [] }),
+    });
+    expect(facts.mcpConfigs).toEqual({ claude: 'invalid', cursor: 'invalid', vscode: 'invalid' });
+  });
+
+  it('finds the cngx block in AGENTS.md', async () => {
+    expect((await detect({ 'AGENTS.md': '# Agents\n' })).agentsMd).toBe('present');
+    expect((await detect({ 'AGENTS.md': '# Agents\n<!-- cngx:agents -->\n' })).agentsMd).toBe('wired');
+  });
+
+  it('finds the Claude Code instructions in the root first, then where ng new --ai-config puts them', async () => {
+    expect((await detect({ '.claude/CLAUDE.md': '# Rules\n' })).claudeInstructions).toEqual({
+      path: '.claude/CLAUDE.md',
+      state: 'present',
+    });
+    expect(
+      (await detect({ 'CLAUDE.md': '<!-- cngx:agents -->\n', '.claude/CLAUDE.md': '# Rules\n' })).claudeInstructions,
+    ).toEqual({ path: 'CLAUDE.md', state: 'wired' });
+  });
+
+  it('tells a generated helper readme from one someone else wrote', async () => {
+    const generated = await detect({ '.cngx/README.md': '<!-- cngx:generated 0123abcd -->\n# cngx\n' });
+    const foreign = await detect({ '.cngx/README.md': '# Notes\n' });
+
+    expect(generated.helperReadme).toEqual({ generated: true, fingerprint: undefined });
+    expect(foreign.helperReadme?.generated).toBe(false);
+  });
+
+  it('reads the recorded fingerprint, whatever a formatter or a CRLF checkout did to the body', async () => {
+    const readme = '<!-- cngx:generated 0123abcd -->\r\n<!-- cngx:fingerprint 89abcdef -->\r\n\r\n| Tool  |\r\n| ----- |\r\n';
+
+    expect((await detect({ '.cngx/README.md': readme })).helperReadme).toEqual({ generated: true, fingerprint: '89abcdef' });
   });
 
   it('finds the eslint flat config in js, mjs or cjs', async () => {

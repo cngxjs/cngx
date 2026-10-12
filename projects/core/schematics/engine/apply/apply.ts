@@ -21,8 +21,7 @@ import {
   type Change,
   type CreateFile,
   type EditFile,
-  type ProviderCall,
-  type ProviderLiteral,
+  type ProviderArg,
   type WriteJson,
 } from '../plan/change';
 import { type ChangePlan } from '../plan/plan';
@@ -57,12 +56,12 @@ function addImport(change: AddImport): Rule {
   };
 }
 
-function renderCall(
-  call: ProviderCall | ProviderLiteral,
-  external: (symbol: string, module: string) => string,
-): string {
+function renderCall(call: ProviderArg, external: (symbol: string, module: string) => string): string {
   if ('literal' in call) {
     return call.literal;
+  }
+  if ('array' in call) {
+    return `[${call.array.map((item) => renderCall(item, external)).join(', ')}]`;
   }
   if (call.reference === true) {
     return external(call.symbol, call.module);

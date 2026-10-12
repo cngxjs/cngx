@@ -110,6 +110,7 @@ async function buildLib(lib) {
     minify: true,
     logLevel: 'warning',
     legalComments: 'none',
+    loader: { '.tpl': 'text' },
   });
 
   for (const file of ['collection.json', join('migrations', 'migrations.json'), ...schemaFiles(srcRoot)]) {
