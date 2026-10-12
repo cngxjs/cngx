@@ -68,6 +68,14 @@ export const config: SheriffConfig = {
       `entry:i18n-${pack}`,
       'scope:lib',
     ],
+    // Specific-before-generic: the optional Vitest matchers are their own
+    // module, nested in the test kit like the i18n packs.
+    'projects/core/testing/vitest': [
+      'lib:core',
+      'level:1',
+      'entry:testing-vitest',
+      'scope:test',
+    ],
     // Specific-before-generic: a published test kit, never imported by
     // library source (scripts/__tests__/testing-entry-import-fence.test.mjs).
     'projects/core/testing': [

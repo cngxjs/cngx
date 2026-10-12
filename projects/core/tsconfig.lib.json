@@ -13,7 +13,8 @@
       "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"],
       "@cngx/core": ["dist/core/types/cngx-core.d.ts"],
       "@cngx/core/utils": ["dist/core/types/cngx-core-utils.d.ts"],
-      "@cngx/core/i18n": ["dist/core/types/cngx-core-i18n.d.ts"]
+      "@cngx/core/i18n": ["dist/core/types/cngx-core-i18n.d.ts"],
+      "@cngx/core/testing": ["dist/core/types/cngx-core-testing.d.ts"]
     }
   },
   "include": [
