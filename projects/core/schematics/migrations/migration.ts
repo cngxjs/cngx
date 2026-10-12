@@ -16,13 +16,13 @@ import {
   type StepResult,
 } from '../engine';
 import { detectProject } from '../ng-add/detect/detect';
+import { readInstallManifest } from '../ng-add/shell/install-manifest';
 import {
   INSTALL_MANIFEST_PATH,
   type InstallManifest,
-  planManifestReruns,
-  readManifest,
-  updateManifest,
+  planManifestUpdate,
 } from '../ng-add/steps/manifest';
+import { planManifestReruns } from '../ng-add/steps/reruns';
 
 /** What one release migrates: renames as data, codemods for the rest. */
 export interface Migration {
@@ -35,7 +35,10 @@ export interface Migration {
 }
 
 function note(id: string, label: string, reason: string, version: string): StepResult {
-  return { changes: [{ kind: 'note', id, label, reason, provenance: { source: 'ng-update', version } }], skipped: [] };
+  return {
+    changes: [{ kind: 'note', id, label, reason, provenance: { source: 'ng-update', version } }],
+    skipped: [],
+  };
 }
 
 function errorMessage(error: unknown): string {
@@ -57,10 +60,19 @@ async function planReruns(
   }
   const project = manifest.facts['project'];
   try {
-    const facts = detectProject(tree, await readWorkspace(tree), typeof project === 'string' ? project : undefined);
+    const facts = detectProject(
+      tree,
+      await readWorkspace(tree),
+      typeof project === 'string' ? project : undefined,
+    );
     return planManifestReruns(facts, manifest, versions);
   } catch (error) {
-    return note('manifest:project', 'Re-run the recorded install steps', errorMessage(error), versions.cngx);
+    return note(
+      'manifest:project',
+      'Re-run the recorded install steps',
+      errorMessage(error),
+      versions.cngx,
+    );
   }
 }
 
@@ -89,14 +101,19 @@ export function createMigration(migration: Migration): Rule {
     // The entry sits one folder below `schematics/`, where versions.json lives.
     const { versions, warning } = resolveVersions(join(migration.bundleDir, '..'));
     const provenance = { source: 'ng-update', version: versions.cngx };
-    const manifest = readManifest(tree);
+    const manifest = readInstallManifest(tree);
     const renames = planRenames(migration.renames, tree, provenance);
     const renamed = previewRenames(tree, renames);
     const reruns = await planReruns(renamed, manifest, versions);
     const record =
       manifest === undefined
         ? { changes: [], skipped: [] }
-        : updateManifest(manifest, versions, createChangePlan([reruns]), new Date().toISOString());
+        : planManifestUpdate(
+            manifest,
+            versions,
+            createChangePlan([reruns]),
+            new Date().toISOString(),
+          );
     const plan = createChangePlan(
       [renames, planCodemods(migration.codemods, renamed, manifest), reruns, record],
       warning === undefined ? [] : [warning],

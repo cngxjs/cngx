@@ -1,16 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { type ChangePlan, createChangePlan, createMemoryTree, type JsonEntry, type StepResult } from '../../engine';
+import { type ChangePlan, createChangePlan, type JsonEntry, type StepResult } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
 import {
   type InstallManifest,
   isSameInstall,
   parseInstallManifest,
   planManifest,
-  planManifestReruns,
-  readManifest,
-  recordedAnswers,
-  updateManifest,
+  planManifestUpdate,
 } from './manifest';
 
 const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
@@ -179,33 +176,6 @@ describe('parseInstallManifest', () => {
   });
 });
 
-describe('readManifest', () => {
-  it('reads the install manifest from the tree', () => {
-    const tree = createMemoryTree({ '.cngx/install.json': JSON.stringify(firstRun()) });
-
-    expect(readManifest(tree)).toEqual(firstRun());
-  });
-
-  it('reads no manifest from a tree without one or with a foreign file', () => {
-    expect(readManifest(createMemoryTree())).toBeUndefined();
-    expect(readManifest(createMemoryTree({ '.cngx/install.json': '[]' }))).toBeUndefined();
-  });
-});
-
-describe('recordedAnswers', () => {
-  it('reads the answers an install recorded', () => {
-    expect(recordedAnswers(firstRun())).toEqual(createAnswers());
-  });
-
-  it('reads no answers when one is missing or outside the vocabulary', () => {
-    const manifest = firstRun();
-
-    expect(recordedAnswers({ ...manifest, answers: { ...manifest.answers, theme: 'brand' } })).toBeUndefined();
-    expect(recordedAnswers({ ...manifest, answers: { ...manifest.answers, libs: ['core', 'charts'] } })).toBeUndefined();
-    expect(recordedAnswers({ ...manifest, answers: { preset: 'recommended' } })).toBeUndefined();
-  });
-});
-
 const NEXT = { ...VERSIONS, cngx: '0.2.0', mcp: '0.4.0' } as const;
 
 function installed(ids: readonly string[]): InstallManifest {
@@ -216,67 +186,7 @@ function installed(ids: readonly string[]): InstallManifest {
   };
 }
 
-describe('planManifestReruns', () => {
-  it('regenerates a helper README cngx wrote when the MCP version moved', () => {
-    const facts = createFacts({ helperReadme: { generated: true, fingerprint: 'old' }, mcpConfigs: { claude: 'wired', cursor: 'absent', vscode: 'absent' } });
-
-    const result = planManifestReruns(facts, installed(['helper-readme:file']), NEXT);
-
-    expect(result.changes).toContainEqual(
-      expect.objectContaining({ kind: 'edit-file', id: 'helper-readme:file', path: '.cngx/README.md' }),
-    );
-  });
-
-  it('names a recorded helper README that is gone instead of writing it again', () => {
-    const result = planManifestReruns(createFacts(), installed(['helper-readme:file']), NEXT);
-
-    expect(result.changes).toContainEqual(expect.objectContaining({ kind: 'note', id: 'helper-readme:file' }));
-    expect(result.changes.some((change) => change.kind === 'create-file')).toBe(false);
-  });
-
-  it('leaves the helper README alone while the MCP version stands', () => {
-    const facts = createFacts({ helperReadme: { generated: true, fingerprint: 'old' } });
-
-    const result = planManifestReruns(facts, installed(['helper-readme:file']), { ...NEXT, mcp: VERSIONS.mcp });
-
-    expect(result.changes.map((change) => change.id)).not.toContain('helper-readme:file');
-  });
-
-  it('names a recorded theme step that is no longer in place instead of restoring it', () => {
-    const result = planManifestReruns(createFacts(), installed(['theme:stylesheet', 'theme:file']), NEXT);
-
-    expect(result.changes.map((change) => [change.kind, change.id])).toEqual([
-      ['note', 'theme:stylesheet'],
-      ['note', 'theme:file'],
-    ]);
-    expect(result.changes[0]?.reason).toMatch(/run ng add @cngx\/core to restore it/);
-  });
-
-  it('reports recorded theme steps in place as skipped', () => {
-    const facts = createFacts({ cngxStylesheet: true, cngxThemePath: 'src/cngx-theme.css' });
-
-    const result = planManifestReruns(facts, installed(['theme:stylesheet', 'theme:file', 'theme:entry']), NEXT);
-
-    expect(result.changes).toEqual([]);
-    expect(result.skipped.map((step) => step.id)).toEqual(['theme:stylesheet', 'theme:file', 'theme:entry']);
-  });
-
-  it('says so when the recorded answers cannot be read', () => {
-    const manifest = { ...firstRun(), answers: {} };
-
-    const result = planManifestReruns(createFacts(), manifest, NEXT);
-
-    expect(result.changes).toEqual([expect.objectContaining({ kind: 'note', id: 'manifest:answers' })]);
-  });
-
-  it('does not mutate its inputs', () => {
-    expect(() =>
-      planManifestReruns(deepFreeze(createFacts()), deepFreeze(installed(['theme:file'])), deepFreeze(NEXT)),
-    ).not.toThrow();
-  });
-});
-
-describe('updateManifest', () => {
+describe('planManifestUpdate', () => {
   const RERUN: ChangePlan = createChangePlan([
     {
       changes: [
@@ -295,7 +205,7 @@ describe('updateManifest', () => {
   ]);
 
   it('records the new versions, the re-run steps and the update time', () => {
-    const next = written(updateManifest(installed(['helper-readme:file', 'theme:file']), NEXT, RERUN, SECOND_RUN));
+    const next = written(planManifestUpdate(installed(['helper-readme:file', 'theme:file']), NEXT, RERUN, SECOND_RUN));
 
     expect(Object.keys(next)).toEqual(['cngxVersion', 'mcpVersion', 'steps', 'updatedAt']);
     expect(next).toMatchObject({
@@ -310,7 +220,7 @@ describe('updateManifest', () => {
   });
 
   it('plans no write when versions and steps stand', () => {
-    const result = updateManifest(firstRun(), VERSIONS, createChangePlan([]), SECOND_RUN);
+    const result = planManifestUpdate(firstRun(), VERSIONS, createChangePlan([]), SECOND_RUN);
 
     expect(result.changes).toEqual([]);
     expect(result.skipped).toEqual([
@@ -320,7 +230,7 @@ describe('updateManifest', () => {
 
   it('does not mutate its inputs', () => {
     expect(() =>
-      updateManifest(deepFreeze(firstRun()), deepFreeze(NEXT), deepFreeze(RERUN), SECOND_RUN),
+      planManifestUpdate(deepFreeze(firstRun()), deepFreeze(NEXT), deepFreeze(RERUN), SECOND_RUN),
     ).not.toThrow();
   });
 });

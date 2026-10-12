@@ -22,7 +22,8 @@ import { planDependencies } from './steps/dependencies';
 import { createSummary } from './steps/finish';
 import { planHelperReadme } from './steps/helper-readme';
 import { planLint } from './steps/lint';
-import { planManifest, readManifest } from './steps/manifest';
+import { readInstallManifest } from './shell/install-manifest';
+import { planManifest } from './steps/manifest';
 import { type Step } from './steps/model';
 import { planProviders } from './steps/providers';
 import { planTheme } from './steps/theme';
@@ -98,7 +99,7 @@ export function ngAdd(options: NgAddOptions): Rule {
       STEPS.map((step) => step(facts, answers, versions)),
       warning === undefined ? [] : [warning],
     );
-    const manifest = planManifest(facts, answers, versions, steps, readManifest(tree), new Date().toISOString());
+    const manifest = planManifest(facts, answers, versions, steps, readInstallManifest(tree), new Date().toISOString());
     const plan = createChangePlan([steps, manifest], steps.warnings);
 
     await renderer.todo(plan);
