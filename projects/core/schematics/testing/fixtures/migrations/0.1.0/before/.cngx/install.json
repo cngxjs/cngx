@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "cngxVersion": "0.1.0-rc.4",
+  "mcpVersion": "0.1.0",
+  "eslintPluginVersion": "0.1.0",
+  "angularVersion": "21.2.0",
+  "preset": "minimal",
+  "answers": {
+    "preset": "minimal",
+    "libs": ["utils", "core", "common", "interop", "forms", "data-display", "ui"],
+    "theme": "none",
+    "i18n": "en",
+    "runtimeSwitch": false,
+    "lint": false,
+    "a11yPreferences": false,
+    "feedback": false,
+    "floatingFallback": false,
+    "aiTools": []
+  },
+  "steps": [
+    { "id": "dependency:@cngx/core", "outcome": "satisfied", "provenance": { "source": "ng-add", "version": "0.1.0-rc.4" } },
+    { "id": "dependency:@cngx/ui", "outcome": "satisfied", "provenance": { "source": "ng-add", "version": "0.1.0-rc.4" } }
+  ],
+  "facts": { "project": "fixture-app", "maturity": "fresh" },
+  "createdAt": "2026-10-01T08:00:00.000Z",
+  "updatedAt": "2026-10-01T08:00:00.000Z"
+}

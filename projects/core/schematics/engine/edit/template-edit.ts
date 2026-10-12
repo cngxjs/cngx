@@ -28,6 +28,11 @@ function nestedNodes(node: unknown): readonly unknown[] {
   });
 }
 
+/** Every node in document order, at any depth: elements, templates, blocks and text. */
+export function walkNodes(nodes: readonly unknown[]): readonly unknown[] {
+  return nodes.flatMap((node) => [node, ...walkNodes(nestedNodes(node))]);
+}
+
 /** Every element in document order, at any depth, that matches `predicate`. */
 export function findElements(
   nodes: readonly unknown[],

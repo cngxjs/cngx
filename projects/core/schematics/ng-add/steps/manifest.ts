@@ -39,7 +39,7 @@ export function parseInstallManifest(content: string): InstallManifest | undefin
   } catch {
     return undefined;
   }
-  return isRecord(parsed) ? readManifest(parsed) : undefined;
+  return isRecord(parsed) ? toManifest(parsed) : undefined;
 }
 
 function isProvenance(value: unknown): value is Provenance {
@@ -57,7 +57,7 @@ function isInstalledStep(value: unknown): value is InstalledStep {
 
 // A user may have edited the file; anything short of the full shape reads
 // as no previous install, and the run writes a fresh one.
-function readManifest(parsed: Readonly<Record<string, unknown>>): InstallManifest | undefined {
+function toManifest(parsed: Readonly<Record<string, unknown>>): InstallManifest | undefined {
   const {
     schemaVersion,
     cngxVersion,
@@ -185,6 +185,58 @@ export function planManifest(
     entries: Object.entries(next).map(([key, value]) => [[key], value as JsonValue] as const),
   };
   if (previous !== undefined && isSameInstall(previous, next)) {
+    return {
+      changes: [],
+      skipped: [{ id: change.id, label: change.label, reason: `unchanged since ${previous.updatedAt}` }],
+    };
+  }
+  return { changes: [change], skipped: [] };
+}
+
+/**
+ * The manifest after `ng update`: the new release versions, every step a
+ * migration planned recorded with its provenance, and the earlier steps as
+ * they were. Only the keys that moved are written; unchanged versions and
+ * steps plan no write.
+ */
+export function planManifestUpdate(
+  previous: InstallManifest,
+  versions: Versions,
+  plan: ChangePlan,
+  now: string,
+): StepResult {
+  const planned = new Map(
+    plan.changes.filter((change) => change.kind !== 'note').map((change) => [change.id, change.provenance]),
+  );
+  const kept = previous.steps.map((step) => {
+    const provenance = planned.get(step.id);
+    return provenance === undefined ? step : { ...step, provenance };
+  });
+  const added = [...planned]
+    .filter(([id]) => !previous.steps.some((step) => step.id === id))
+    .map(([id, provenance]) => ({ id, outcome: 'satisfied' as const, provenance }));
+  const next: InstallManifest = {
+    ...previous,
+    cngxVersion: versions.cngx,
+    mcpVersion: versions.mcp,
+    eslintPluginVersion: versions.eslintPlugin,
+    steps: [...kept, ...added],
+    updatedAt: now,
+  };
+  const earlier = new Map(Object.entries(previous).map(([key, value]) => [key, canonical(value)]));
+  const change: WriteJson = {
+    kind: 'write-json',
+    id: 'manifest:install',
+    label: `Update ${INSTALL_MANIFEST_PATH}`,
+    reason: 'records the cngx release this app now runs',
+    provenance: { source: 'ng-update', version: versions.cngx },
+    path: INSTALL_MANIFEST_PATH,
+    // Only the keys that moved, so the rest of the file keeps its formatting.
+    entries: Object.entries(next)
+      .filter(([key, value]) => canonical(value) !== earlier.get(key))
+      .map(([key, value]) => [[key], value as JsonValue] as const),
+  };
+  if (isSameInstall(previous, next)) {
     return {
       changes: [],
       skipped: [{ id: change.id, label: change.label, reason: `unchanged since ${previous.updatedAt}` }],

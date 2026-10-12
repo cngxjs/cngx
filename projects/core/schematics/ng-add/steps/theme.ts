@@ -227,29 +227,28 @@ function themeFile(
   const content = isMapApi
     ? renderMaterialTheme(version, bridge.density, bridge.themePath)
     : renderDefaultTheme(version);
-  return result(
-    [
-      {
-        kind: 'create-file',
-        id: 'theme:file',
-        label: `Create ${path}`,
-        reason: isMapApi ? 'bridges the Material theme to the cngx tokens' : 'every system token, ready to override',
-        provenance,
-        path,
-        content,
-      },
-      {
-        kind: 'add-style-entry',
-        id: 'theme:entry',
-        label: `Add ${path} to the build styles`,
-        reason: `after ${after}, so the cngx layer order is set first`,
-        provenance,
-        project: facts.project,
-        path,
-        after,
-      },
-    ],
-    facts.cngxThemePath,
-    wiredReason,
-  );
+  const file: Change = {
+    kind: 'create-file',
+    id: 'theme:file',
+    label: `Create ${path}`,
+    reason: isMapApi ? 'bridges the Material theme to the cngx tokens' : 'every system token, ready to override',
+    provenance,
+    path,
+    content,
+  };
+  const entry: Change = {
+    kind: 'add-style-entry',
+    id: 'theme:entry',
+    label: `Add ${path} to the build styles`,
+    reason: `after ${after}, so the cngx layer order is set first`,
+    provenance,
+    project: facts.project,
+    path,
+    after,
+  };
+  // A theme file that is gone may still be listed: the entry is in place.
+  if (facts.cngxThemePath === undefined && facts.cngxThemeListed) {
+    return { changes: [file], skipped: [skipChange(entry, `${path} is already in the build styles`)] };
+  }
+  return result([file, entry], facts.cngxThemePath, wiredReason);
 }

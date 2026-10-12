@@ -3,7 +3,7 @@
 exports[`renderHelperReadme > renders the stamped readme for the chosen editors 1`] = `
 "<!-- cngx:generated 1b842b43 -->
 <!-- ng-add, @cngx 0.1.0 -->
-<!-- cngx:fingerprint 3fbe3505 -->
+<!-- cngx:fingerprint 289bd029 -->
 
 # cngx in this project
 
@@ -79,10 +79,9 @@ Delete the \`cngx\` entry from each config file listed above, and the block
 between \`<!-- cngx:agents -->\` and \`<!-- /cngx:agents -->\` in \`AGENTS.md\`.
 Nothing else in the project depends on the server.
 
-\`ng add\` does not remember a removal: a later run that sets up the editor
-again writes both back, and the \`full\` preset sets up every editor it
-detects. To keep it off, leave the editor unticked in the AI tooling
-question, or run \`ng add\` without \`--preset=full\`.
+A later \`ng add\` remembers the removal through \`.cngx/install.json\` and
+leaves both out, the \`full\` preset included. To bring them back, run
+\`ng add\` with the editor named, for example \`--ai-tools claude\`.
 
 ## Claude Code plugin
 

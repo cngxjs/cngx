@@ -43,11 +43,18 @@ function fail(message) {
   process.exit(1);
 }
 
-function entryPoints(srcRoot) {
-  return readdirSync(srcRoot, { withFileTypes: true })
+function indexFiles(dir) {
+  return readdirSync(dir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && !NON_ENTRY_DIRS.has(entry.name))
-    .map((entry) => join(srcRoot, entry.name, 'index.ts'))
+    .map((entry) => join(dir, entry.name, 'index.ts'))
     .filter((file) => existsSync(file));
+}
+
+// One entry per schematic folder, plus one per migration under
+// migrations/<version>/, which migrations.json names as its factory.
+function entryPoints(srcRoot) {
+  const migrations = join(srcRoot, 'migrations');
+  return [...indexFiles(srcRoot), ...(existsSync(migrations) ? indexFiles(migrations) : [])];
 }
 
 // esbuild strips types without checking them; a type error must fail the

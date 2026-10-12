@@ -61,6 +61,9 @@ export {
 export { addToArrayLiteral, type ArraySelector, hasArrayLiteral } from './edit/ts-edit';
 export { findElements, insertAttribute, parseTemplateContent } from './edit/template-edit';
 export { hasStyleImport, insertStyleImport } from './edit/style-edit';
+export { EMPTY_RENAME_TABLE, type MemberRename, type RenameTable } from './migrate/rename-table';
+export { planRenames } from './migrate/plan-renames';
+export { type Codemod, planCodemods } from './migrate/codemod';
 export { applyChangePlan } from './apply/apply';
 export { delegateNgAdd } from './shim/delegate-ng-add';
 export {

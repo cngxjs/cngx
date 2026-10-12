@@ -139,7 +139,10 @@ describe('publishable libs', () => {
     expect(libs.filter((lib) => declaresSchematics(sourcePkg(lib)))).toEqual(libs);
   });
 
-  it('group every package for ng update on core', () => {
-    expect(sourcePkg('core')['ng-update']).toEqual({ packageGroup: libs.map((lib) => `@cngx/${lib}`) });
+  it('group every package for ng update on core and name its migrations', () => {
+    expect(sourcePkg('core')['ng-update']).toEqual({
+      migrations: './schematics/migrations/migrations.json',
+      packageGroup: libs.map((lib) => `@cngx/${lib}`),
+    });
   });
 });

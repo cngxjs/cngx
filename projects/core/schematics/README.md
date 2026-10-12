@@ -8,13 +8,14 @@ other package ships a one-line shim that delegates to it.
 
 ```
 projects/core/schematics/
-  collection.json        ng-add (ng update follows with the first migration)
+  collection.json        ng-add
   engine/                the functional core, one barrel (index.ts)
     fs/                  Tree adapters: memory (specs) and node (CLI runs)
     plan/                Change model, ChangePlan, provenance, report
     edit/                pure TS, template and style edits
     apply/               applyChangePlan: the one effectful step, a Rule
     manifest/            package.json reading, lockstep pins
+    migrate/             rename table, planRenames and the Codemod contract
     prompt/              prompt flow over @inquirer (shell adapter)
     render/              todo list and summary, listr2 or plain lines
     shim/                delegateNgAdd, the body of every package shim
@@ -25,6 +26,10 @@ projects/core/schematics/
     detect/              detectProject(tree, workspace): ProjectFacts
     steps/               pure plan<Step>(facts, answers, versions) per concern
     shell/               questions, git state
+  migrations/
+    migrations.json      the ng update collection, one entry per release
+    migration.ts         createMigration: renames, codemods, manifest re-runs
+    <version>/index.ts   one migration per release
   testing/               fixture apps and runRule for specs
 projects/<lib>/schematics/
   collection.json, tsconfig.json, ng-add/index.ts   the shim
@@ -68,11 +73,33 @@ the type check until all three exist.
 
 ## Generators and migrations
 
-`ng-add` is the only schematic today. A generator is a new folder with an
+`ng-add` is the only generator today. A generator is a new folder with an
 `index.ts` entry (the build bundles every `<folder>/index.ts`) and a
-`collection.json` entry. Migrations and the `ng-update.migrations` key arrive
-together with the first `migrations/migrations.json`, so `ng update` never
-points at a missing file.
+`collection.json` entry.
+
+`ng update @cngx/core` runs `migrations/migrations.json`, named by the
+`ng-update.migrations` key next to the `packageGroup`. A release with a
+breaking change adds a migration:
+
+1. `migrations/<version>/index.ts` returns `createMigration({ version,
+   renames, codemods, bundleDir: __dirname })` (the build bundles every
+   `migrations/<folder>/index.ts`).
+2. Renames are data: a `RenameTable` on top of `EMPTY_RENAME_TABLE` for
+   classes, selectors, inputs, outputs, `exportAs` names, tokens and import
+   paths. `planRenames` turns it into one edit per file plus a note for
+   every spot it cannot reach. Anything a table cannot say is a `Codemod`
+   that reads the renamed tree and plans changes.
+3. A `migrations.json` entry `migration-v<version>` with the version and
+   `./<version>/index#migrate`. A second breaking change in the same release
+   adds its own entry `migration-v<version>-<slug>` with the folder
+   `<version>-<slug>`, so every breaking PR brings a new key.
+4. A spec next to the entry and a fixture pair under
+   `testing/fixtures/migrations/<folder>/{before,after}` holding only the
+   files that differ from the stock app.
+
+Every migration also re-runs the install steps `.cngx/install.json` records
+(the theme, and the helper README once the MCP version moved) and records the
+new release in it. It never writes back a file that is gone; it names it.
 
 ## Build and test
 

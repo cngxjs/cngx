@@ -76,6 +76,16 @@ describe('planTheme', () => {
     ]);
   });
 
+  it('plans the theme file again but not its build entry when only the file is gone', () => {
+    const result = planTheme(createFacts({ cngxStylesheet: true, cngxThemeListed: true }), createAnswers(), VERSIONS);
+
+    expect(result.changes.map((change) => change.id)).toEqual(['theme:file']);
+    expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([
+      ['theme:stylesheet', 'already imported'],
+      ['theme:entry', 'src/cngx-theme.css is already in the build styles'],
+    ]);
+  });
+
   describe('the default theme file', () => {
     const file = renderDefaultTheme(VERSIONS.cngx);
 
