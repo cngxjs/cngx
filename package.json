@@ -70,6 +70,7 @@
     "publish:rc:dry": "node scripts/publish.mjs --dry-run --bump prerelease",
     "pack:libs": "node scripts/pack-libs.mjs",
     "pack:check": "node scripts/pack-libs.mjs --check",
+    "test:consumer": "node scripts/consumer-fixture.mjs",
     "check:peers": "node scripts/peer-deps-guard.mjs",
     "e2e": "playwright test"
   },
