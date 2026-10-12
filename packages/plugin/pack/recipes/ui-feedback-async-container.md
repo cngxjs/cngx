@@ -1,12 +1,12 @@
 ---
 title: "CngxAsync: one line"
-whenToUse: "Bare-minimum binding: *cngxAsync=\"state; let data\" on a single element. No skeleton, no error template, just content rendered when the state succeeds."
+whenToUse: "Bare-minimum binding: *cngxAsync=\"state; let data\" on a single element. No skeleton, no error template, just content rendered when the state succeeds. The story loads once on open. Each \"First load\" button starts from scratch (loading phase, then content, empty or error); \"Refresh\" and \"Refresh fails\" run against the loaded list. Every load takes 1.5s. Without templates every state but content renders nothing, so the stage stays empty during the first load, after an empty result and after a first-load error; a failed refresh keeps the old list."
 symbols: [CngxAsync, CngxAsyncContainer]
 ---
 
 # CngxAsync: one line
 
-Bare-minimum binding: *cngxAsync="state; let data" on a single element. No skeleton, no error template, just content rendered when the state succeeds.
+Bare-minimum binding: *cngxAsync="state; let data" on a single element. No skeleton, no error template, just content rendered when the state succeeds. The story loads once on open. Each "First load" button starts from scratch (loading phase, then content, empty or error); "Refresh" and "Refresh fails" run against the loaded list. Every load takes 1.5s. Without templates every state but content renders nothing, so the stage stays empty during the first load, after an empty result and after a first-load error; a failed refresh keeps the old list.
 
 ## Symbols
 
@@ -17,18 +17,6 @@ Bare-minimum binding: *cngxAsync="state; let data" on a single element. No skele
 
 ```ts
 protected readonly simple = createManualState<string[]>();
-protected loadSimple(): void {
-  this.simple.set('loading');
-  setTimeout(() => this.simple.setSuccess(['Alice', 'Bob', 'Charlie']), 2000);
-}
-protected emptySimple(): void {
-  this.simple.set('loading');
-  setTimeout(() => this.simple.setSuccess([]), 2000);
-}
-protected errorSimple(): void {
-  this.simple.set('loading');
-  setTimeout(() => this.simple.setError('Network error'), 2000);
-}
 ```
 
 ## Wiring

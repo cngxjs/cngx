@@ -3578,8 +3578,40 @@ cngx-radio-group .cngx-radio + .cngx-radio {
 }
 
 .demo-skeleton-bar {
-  background: var(--cngx-skeleton-bg, #e5e7eb);
+  // Tint of the text colour, so the bar reads in both schemes; no
+  // --cngx-skeleton-bg here, its registered light initial-value would win.
+  background: color-mix(in oklch, currentColor 14%, transparent);
   border-radius: 4px;
+  animation: demo-skeleton-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes demo-skeleton-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-skeleton-bar {
+    animation: none;
+  }
+}
+
+// Async-state stories mark their readout with `.demo-async-readout`; the
+// artifact then gets a fixed stage, so a view that renders nothing (idle, or
+// a state without a template) neither collapses the layout nor looks broken.
+.cngx-ex-artifact:has(~ .cngx-ex-chrome .demo-async-readout) {
+  box-sizing: border-box;
+  min-height: 11rem;
+  padding: 12px;
+  border: 1px dashed var(--cngx-ex-border, #d1d5db);
+  border-radius: 6px;
+}
+
+.cngx-ex-artifact:has(~ .cngx-ex-chrome .demo-async-readout):not(:has(*))::before {
+  content: 'Nothing rendered in this state';
+  color: var(--cngx-ex-faint, #6b7280);
+  font-size: 0.8125rem;
 }
 
 .demo-card-tile {

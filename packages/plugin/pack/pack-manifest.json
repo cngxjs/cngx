@@ -139,7 +139,7 @@
     {
       "artifact": "pack/recipes/ui-feedback-async-container.md",
       "source": "examples/stories/ui/feedback/async-container/cngxasync-one-line.story.ts",
-      "contentHash": "sha256:b57b2205f7da152baf1004cd0d04bd6be87e8de33986b943429bb5116c1e0d75"
+      "contentHash": "sha256:893527905cddc54c9e02c79b603a6c3ef037aa9fce5183b8c97f92db1092883b"
     },
     {
       "artifact": "pack/recipes/ui-feedback-toast.md",
