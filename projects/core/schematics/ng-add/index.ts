@@ -20,6 +20,7 @@ import { askOnboarding, givenAnswers } from './shell/questions';
 import { planAiTools } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
 import { createSummary } from './steps/finish';
+import { planHelperReadme } from './steps/helper-readme';
 import { planLint } from './steps/lint';
 import { INSTALL_MANIFEST_PATH, parseInstallManifest, planManifest } from './steps/manifest';
 import { type Step } from './steps/model';
@@ -27,7 +28,7 @@ import { planProviders } from './steps/providers';
 import { planTheme } from './steps/theme';
 
 /** The plan steps in apply order; the install manifest follows them. */
-const STEPS: readonly Step[] = [planDependencies, planTheme, planProviders, planLint, planAiTools];
+const STEPS: readonly Step[] = [planDependencies, planTheme, planProviders, planLint, planAiTools, planHelperReadme];
 
 // `CI=false` and `CI=0` are how some runners say "not CI".
 function isCi(env: NodeJS.ProcessEnv): boolean {

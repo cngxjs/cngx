@@ -4,8 +4,10 @@ import { posix } from 'node:path';
 
 import {
   type AiTool,
+  contentFingerprint,
   declaredRange,
   hasArrayLiteral,
+  hasProvenanceStamp,
   hasStyleImport,
   isRecord,
   type PackageManifest,
@@ -54,6 +56,15 @@ export const MCP_CONFIGS: Readonly<Record<AiTool, { readonly path: string; reado
  */
 export type McpConfigState = 'absent' | 'present' | 'wired' | 'invalid';
 
+/** The helper README the AI tooling step writes. */
+export const HELPER_README_PATH = '.cngx/README.md';
+
+export interface HelperReadmeFacts {
+  /** It starts with a cngx provenance stamp; otherwise someone else wrote it. */
+  readonly generated: boolean;
+  readonly fingerprint: string;
+}
+
 /** Opens the block cngx writes into `AGENTS.md`; a later run finds it. */
 export const AGENTS_MARKER = '<!-- cngx:agents -->';
 
@@ -83,6 +94,8 @@ export interface ProjectFacts {
   readonly mcpConfigs: Readonly<Record<AiTool, McpConfigState>>;
   /** `AGENTS.md`: missing, present, or already carrying the cngx block. */
   readonly agentsMd: 'absent' | 'present' | 'wired';
+  /** `.cngx/README.md`; `undefined` when there is none. */
+  readonly helperReadme: HelperReadmeFacts | undefined;
   /** The eslint flat config; `undefined` when the app has none. */
   readonly eslintConfig: EslintConfigFacts | undefined;
   readonly ssr: boolean;
@@ -297,6 +310,13 @@ function agentsMdState(read: Read): ProjectFacts['agentsMd'] {
   return content.includes(AGENTS_MARKER) ? 'wired' : 'present';
 }
 
+function helperReadmeOf(read: Read): HelperReadmeFacts | undefined {
+  const content = read(HELPER_README_PATH);
+  return content === undefined
+    ? undefined
+    : { generated: hasProvenanceStamp(content), fingerprint: contentFingerprint(content) };
+}
+
 function hasEntries(tree: Tree, dir: string): boolean {
   const entry = tree.getDir(dir);
   return entry.subfiles.length > 0 || entry.subdirs.length > 0;
@@ -401,6 +421,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
       vscode: mcpConfigState(tree, MCP_CONFIGS.vscode.path, MCP_CONFIGS.vscode.key),
     },
     agentsMd: agentsMdState(read),
+    helperReadme: helperReadmeOf(read),
     eslintConfig: detectEslintConfig(tree),
     ssr:
       options['server'] !== undefined ||

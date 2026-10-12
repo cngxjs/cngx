@@ -50,9 +50,11 @@ export { type ChangePlan, createChangePlan, describeChangePlan } from './plan/pl
 export { createReport, type Report, type ReportLink } from './plan/report';
 export { isRecord, joinNames } from './plan/text';
 export {
+  contentFingerprint,
   createProvenanceStamp,
   hasProvenanceMarker,
   hasProvenanceStamp,
+  type StampComment,
   withProvenanceMarker,
 } from './plan/provenance';
 export { addToArrayLiteral, type ArraySelector, hasArrayLiteral } from './edit/ts-edit';

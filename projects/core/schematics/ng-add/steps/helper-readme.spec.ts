@@ -1,0 +1,100 @@
+import { describe, expect, it } from 'vitest';
+
+import { contentFingerprint, type EditFile } from '../../engine';
+import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
+import { fillTemplate, planHelperReadme, renderHelperReadme } from './helper-readme';
+import { MCP_TOOLS } from './mcp-capabilities.generated';
+
+const AI_ANSWERS = createAnswers({ aiTools: ['claude', 'vscode'] });
+
+describe('fillTemplate', () => {
+  it('fills every placeholder', () => {
+    expect(fillTemplate('{{a}} and {{b}}', { a: '1', b: '2' })).toBe('1 and 2');
+  });
+
+  it('refuses a placeholder without a value', () => {
+    expect(() => fillTemplate('{{missing}}', {})).toThrow('helper-readme.md.tpl uses {{missing}}, which has no value.');
+  });
+});
+
+describe('renderHelperReadme', () => {
+  it('renders the stamped readme for the chosen editors', () => {
+    expect(renderHelperReadme(AI_ANSWERS, VERSIONS)).toMatchSnapshot();
+  });
+
+  it('lists every generated tool with its example question', () => {
+    const readme = renderHelperReadme(AI_ANSWERS, VERSIONS);
+
+    for (const tool of MCP_TOOLS) {
+      expect(readme).toContain(`| \`${tool.name}\` | ${tool.title} | ${tool.example} |`);
+    }
+  });
+
+  it('starts with an html provenance stamp and leaves no placeholder behind', () => {
+    const readme = renderHelperReadme(AI_ANSWERS, VERSIONS);
+
+    expect(readme).toMatch(/^<!-- cngx:generated [0-9a-f]{8} -->\n<!-- ng-add, @cngx 0\.1\.0 -->\n/);
+    expect(readme).not.toMatch(/\{\{\w+\}\}/);
+    expect(readme).not.toContain(String.fromCodePoint(0x2014));
+  });
+
+  it('lists only the configs of the chosen editors', () => {
+    const readme = renderHelperReadme(createAnswers({ aiTools: ['cursor'] }), VERSIONS);
+
+    expect(readme).toContain('- `.cursor/mcp.json`');
+    expect(readme).not.toContain('- `.mcp.json`');
+    expect(readme).toContain('Cursor: open Cursor Settings');
+    expect(readme).not.toContain('claude mcp list');
+  });
+});
+
+describe('planHelperReadme', () => {
+  it('plans nothing without an editor', () => {
+    expect(planHelperReadme(createFacts(), createAnswers(), VERSIONS)).toEqual({ changes: [], skipped: [] });
+  });
+
+  it('creates the readme when there is none', () => {
+    const [change] = planHelperReadme(createFacts(), AI_ANSWERS, VERSIONS).changes;
+
+    expect(change).toMatchObject({
+      kind: 'create-file',
+      id: 'helper-readme:file',
+      path: '.cngx/README.md',
+      content: renderHelperReadme(AI_ANSWERS, VERSIONS),
+    });
+  });
+
+  it('skips a generated readme that is already current', () => {
+    const content = renderHelperReadme(AI_ANSWERS, VERSIONS);
+    const facts = createFacts({ helperReadme: { generated: true, fingerprint: contentFingerprint(content) } });
+
+    expect(planHelperReadme(facts, AI_ANSWERS, VERSIONS)).toEqual({
+      changes: [],
+      skipped: [{ id: 'helper-readme:file', label: 'Update .cngx/README.md', reason: 'already up to date' }],
+    });
+  });
+
+  it('regenerates a generated readme whose inputs moved', () => {
+    const facts = createFacts({ helperReadme: { generated: true, fingerprint: '00000000' } });
+    const [change] = planHelperReadme(facts, AI_ANSWERS, { ...VERSIONS, mcp: '0.4.0' }).changes as EditFile[];
+
+    expect(change).toMatchObject({ kind: 'edit-file', path: '.cngx/README.md' });
+    expect(change?.edit('old')).toContain('@cngx/mcp@0.4.0');
+  });
+
+  it('leaves a readme cngx did not write alone and says so', () => {
+    const facts = createFacts({ helperReadme: { generated: false, fingerprint: '00000000' } });
+
+    expect(planHelperReadme(facts, AI_ANSWERS, VERSIONS).changes).toEqual([
+      expect.objectContaining({
+        kind: 'note',
+        label: 'Skip .cngx/README.md',
+        reason: '.cngx/README.md exists and cngx did not write it; it is left as it is',
+      }),
+    ]);
+  });
+
+  it('does not mutate its inputs', () => {
+    expect(() => planHelperReadme(deepFreeze(createFacts()), deepFreeze(AI_ANSWERS), deepFreeze(VERSIONS))).not.toThrow();
+  });
+});

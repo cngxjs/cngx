@@ -1,4 +1,4 @@
-const STAMP = /^\/\* cngx:generated [0-9a-f]{8} \*\/\r?\n/;
+const STAMP = /^(?:\/\* cngx:generated [0-9a-f]{8} \*\/|<!-- cngx:generated [0-9a-f]{8} -->)\r?\n/;
 const MARKER_ID = /^[a-z0-9][a-z0-9:@/._-]*$/i;
 
 // FNV-1a, 32 bit. Identifies source and version in eight hex digits; not a
@@ -12,12 +12,25 @@ function shortHash(input: string): string {
   return hash.toString(16).padStart(8, '0');
 }
 
+/** How a stamp line is commented: a block comment for code and CSS, an HTML comment for markdown. */
+export type StampComment = 'block' | 'html';
+
+function comment(text: string, style: StampComment): string {
+  return style === 'html' ? `<!-- ${text} -->` : `/* ${text} */`;
+}
+
 /**
  * Header lines for a file cngx generates. A later run that finds them knows
  * the file is its own and leaves it alone instead of overwriting it.
  */
-export function createProvenanceStamp(source: string, version: string): string {
-  return `/* cngx:generated ${shortHash(`${source}@${version}`)} */\n/* ${source}, @cngx ${version} */\n`;
+export function createProvenanceStamp(source: string, version: string, style: StampComment = 'block'): string {
+  const generated = comment(`cngx:generated ${shortHash(`${source}@${version}`)}`, style);
+  return `${generated}\n${comment(`${source}, @cngx ${version}`, style)}\n`;
+}
+
+/** Eight hex digits that change with the content; tells a stale generated file from a current one. */
+export function contentFingerprint(content: string): string {
+  return shortHash(content);
 }
 
 export function hasProvenanceStamp(content: string): boolean {

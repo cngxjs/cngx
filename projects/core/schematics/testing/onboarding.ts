@@ -24,6 +24,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
     editors: { claude: false, cursor: false, vscode: false },
     mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'absent' },
     agentsMd: 'absent',
+    helperReadme: undefined,
     eslintConfig: undefined,
     ssr: false,
     sourceLocale: undefined,

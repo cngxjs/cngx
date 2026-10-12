@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { createProvenanceStamp, hasProvenanceMarker, hasProvenanceStamp, withProvenanceMarker } from './provenance';
+import {
+  contentFingerprint,
+  createProvenanceStamp,
+  hasProvenanceMarker,
+  hasProvenanceStamp,
+  withProvenanceMarker,
+} from './provenance';
 
 const IMPORT_LINE = "@import '@cngx/themes/cngx.css';\n";
 
@@ -14,6 +20,13 @@ describe('createProvenanceStamp', () => {
     expect(rest).toBe('');
   });
 
+  it('writes html comments for a markdown file', () => {
+    const [first, second] = createProvenanceStamp('ng-add', '0.1.0', 'html').split('\n');
+
+    expect(first).toMatch(/^<!-- cngx:generated [0-9a-f]{8} -->$/);
+    expect(second).toBe('<!-- ng-add, @cngx 0.1.0 -->');
+  });
+
   it('is deterministic per source and version', () => {
     expect(createProvenanceStamp('ng-add', '0.1.0')).toBe(createProvenanceStamp('ng-add', '0.1.0'));
     expect(createProvenanceStamp('ng-add', '0.1.0')).not.toBe(createProvenanceStamp('ng-add', '0.2.0'));
@@ -23,6 +36,7 @@ describe('createProvenanceStamp', () => {
 describe('hasProvenanceStamp', () => {
   it('finds a stamp at the start of a file', () => {
     expect(hasProvenanceStamp(`${createProvenanceStamp('ng-add', '0.1.0')}:root {}\n`)).toBe(true);
+    expect(hasProvenanceStamp(`${createProvenanceStamp('ng-add', '0.1.0', 'html')}# Title\n`)).toBe(true);
   });
 
   it('ignores a stamp further down and a hand-written look-alike', () => {
@@ -56,5 +70,13 @@ describe('hasProvenanceMarker', () => {
     expect(hasProvenanceMarker(content, 'theme-import')).toBe(true);
     expect(hasProvenanceMarker(content, 'theme')).toBe(false);
     expect(hasProvenanceMarker(IMPORT_LINE, 'theme-import')).toBe(false);
+  });
+});
+
+describe('contentFingerprint', () => {
+  it('is eight hex digits that follow the content', () => {
+    expect(contentFingerprint('# a\n')).toMatch(/^[0-9a-f]{8}$/);
+    expect(contentFingerprint('# a\n')).toBe(contentFingerprint('# a\n'));
+    expect(contentFingerprint('# a\n')).not.toBe(contentFingerprint('# b\n'));
   });
 });

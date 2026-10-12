@@ -106,6 +106,7 @@ describe('detectProject', () => {
       editors: { claude: false, cursor: false, vscode: false },
       mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'absent' },
       agentsMd: 'absent',
+      helperReadme: undefined,
       eslintConfig: undefined,
       ssr: false,
       sourceLocale: undefined,
@@ -328,6 +329,14 @@ describe('detectProject', () => {
   it('finds the cngx block in AGENTS.md', async () => {
     expect((await detect({ 'AGENTS.md': '# Agents\n' })).agentsMd).toBe('present');
     expect((await detect({ 'AGENTS.md': '# Agents\n<!-- cngx:agents -->\n' })).agentsMd).toBe('wired');
+  });
+
+  it('tells a generated helper readme from one someone else wrote', async () => {
+    const generated = await detect({ '.cngx/README.md': '<!-- cngx:generated 0123abcd -->\n# cngx\n' });
+    const foreign = await detect({ '.cngx/README.md': '# Notes\n' });
+
+    expect(generated.helperReadme).toEqual({ generated: true, fingerprint: expect.stringMatching(/^[0-9a-f]{8}$/) });
+    expect(foreign.helperReadme?.generated).toBe(false);
   });
 
   it('finds the eslint flat config in js, mjs or cjs', async () => {
