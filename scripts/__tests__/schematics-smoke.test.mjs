@@ -96,6 +96,46 @@ describe('dist/core/schematics', () => {
   });
 });
 
+describe('dist/core/schematics migrations', () => {
+  const MIGRATIONS = join(ROOT, 'dist', 'core', 'schematics', 'migrations', 'migrations.json');
+  let runner;
+  let version;
+
+  beforeAll(() => {
+    runner = new SchematicTestRunner('@cngx/core', requireDist(MIGRATIONS));
+    version = JSON.parse(readFileSync(join(ROOT, 'dist', 'core', 'package.json'), 'utf8')).version;
+  });
+
+  it('is the collection the package.json ng-update entry names', () => {
+    const manifest = JSON.parse(readFileSync(join(ROOT, 'dist', 'core', 'package.json'), 'utf8'));
+
+    expect(join(ROOT, 'dist', 'core', manifest['ng-update'].migrations)).toBe(MIGRATIONS);
+  });
+
+  it('the 0.1.0 migration records the installed release in the manifest', async () => {
+    const ngAdd = new SchematicTestRunner('@cngx/core', requireDist(CORE_COLLECTION));
+    const onboarded = await ngAdd.runSchematic('ng-add', { preset: 'minimal' }, await createAppTree(ngAdd));
+    const installed = JSON.parse(onboarded.readText('.cngx/install.json'));
+    onboarded.overwrite('.cngx/install.json', JSON.stringify({ ...installed, cngxVersion: '0.1.0-rc.0' }, null, 2));
+
+    const tree = await runner.runSchematic('migration-v0.1.0', {}, onboarded);
+
+    expect(JSON.parse(tree.readText('.cngx/install.json')).cngxVersion).toBe(version);
+  });
+
+  it('keeps every migration bundle under 256 KB minified', () => {
+    const dir = join(ROOT, 'dist', 'core', 'schematics', 'migrations');
+    const bundles = readdirSync(dir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => join(dir, entry.name, 'index.js'));
+
+    expect(bundles.length).toBeGreaterThan(0);
+    for (const bundle of bundles) {
+      expect(readFileSync(bundle).length).toBeLessThan(256 * 1024);
+    }
+  });
+});
+
 // The CLI finds a collection through `require.resolve('<pkg>/package.json')`
 // and fails hard on anything but MODULE_NOT_FOUND, so a package whose
 // `exports` map hides its manifest cannot answer `ng add`.

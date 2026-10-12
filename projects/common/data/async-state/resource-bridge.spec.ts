@@ -1,4 +1,6 @@
 import { signal, type Resource, type ResourceStatus } from '@angular/core';
+import { httpResource, provideHttpClient, type HttpResourceRef } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -87,19 +89,58 @@ describe('fromResource', () => {
 });
 
 describe('fromHttpResource', () => {
-  it('shares the bridge core and adds the 0-100 progress mapping', () => {
-    const fake = fakeResource<string[]>();
-    const progress = signal<number | undefined>(undefined);
-    const httpRef = Object.assign(Object.create(Object.getPrototypeOf(fake.ref)), fake.ref, {
+  function fakeHttpResource<T>() {
+    const fake = fakeResource<T>();
+    const progress = signal<{ loaded: number; total?: number } | undefined>(undefined);
+    const ref = Object.assign(Object.create(Object.getPrototypeOf(fake.ref)), fake.ref, {
       progress: progress.asReadonly(),
+    }) as Parameters<typeof fromHttpResource<T>>[0];
+    return { fake, progress, ref };
+  }
+
+  it('accepts a real httpResource() ref at the type level', () => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
     });
-    const state = TestBed.runInInjectionContext(() => fromHttpResource(httpRef));
+    const state = TestBed.runInInjectionContext(() => {
+      const res: HttpResourceRef<string[] | undefined> = httpResource<string[]>(() => ({
+        url: '/api/items',
+        reportProgress: true,
+      }));
+      // Typed parameter assignment: compiles only when HttpResourceRef fits the bridge input.
+      const input: Parameters<typeof fromHttpResource<string[] | undefined>>[0] = res;
+      return fromHttpResource(input);
+    });
+    expect(state.progress()).toBeUndefined();
+    TestBed.inject(HttpTestingController).match('/api/items');
+  });
+
+  it('maps loaded/total to a rounded 0-100 progress when the total is known', () => {
+    const { progress, ref } = fakeHttpResource<string[]>();
+    const state = TestBed.runInInjectionContext(() => fromHttpResource(ref));
 
     expect(state.progress()).toBeUndefined();
-    progress.set(0.375);
+    progress.set({ loaded: 375, total: 1000 });
     expect(state.progress()).toBe(38);
-    progress.set(2);
+    progress.set({ loaded: 1000, total: 1000 });
     expect(state.progress()).toBe(100);
+    progress.set({ loaded: 1500, total: 1000 });
+    expect(state.progress()).toBe(100);
+  });
+
+  it('reports undefined progress when the total is unknown or zero', () => {
+    const { progress, ref } = fakeHttpResource<string[]>();
+    const state = TestBed.runInInjectionContext(() => fromHttpResource(ref));
+
+    progress.set({ loaded: 512 });
+    expect(state.progress()).toBeUndefined();
+    progress.set({ loaded: 0, total: 0 });
+    expect(state.progress()).toBeUndefined();
+  });
+
+  it('shares the bridge core with fromResource', () => {
+    const { fake, ref } = fakeHttpResource<string[]>();
+    const state = TestBed.runInInjectionContext(() => fromHttpResource(ref));
 
     // isFirstLoad carries the idle clause the old copy had dropped.
     expect(state.isFirstLoad()).toBe(true);

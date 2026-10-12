@@ -285,6 +285,24 @@ describe('ngAdd', () => {
       expect(second.tree.files.map((path) => [path, second.tree.readContent(path)])).toEqual(files);
     });
 
+    it('remembers a removed cngx server and agent block until --ai-tools asks for them again', async () => {
+      const tree = createFixtureTree('standalone-app', { 'src/app/other.ts': SECOND_COMPONENT, 'CLAUDE.md': '' });
+      const first = await runRule(ngAdd({ preset: 'full', yes: true }), tree);
+      first.tree.overwrite('.mcp.json', '{ "mcpServers": {} }\n');
+      first.tree.overwrite('CLAUDE.md', '');
+
+      const second = await runRule(ngAdd({ preset: 'full', yes: true }), first.tree);
+
+      expect(second.tree.readText('.mcp.json')).toBe('{ "mcpServers": {} }\n');
+      expect(second.tree.readText('CLAUDE.md')).toBe('');
+      expect(second.logs.join('\n')).toContain('removed since the last install; pass --ai-tools claude to add it back');
+
+      const third = await runRule(ngAdd({ preset: 'full', aiTools: ['claude'], yes: true }), second.tree);
+
+      expect(json<{ mcpServers: object }>(third.tree, '.mcp.json').mcpServers).toHaveProperty('cngx');
+      expect(third.tree.readText('CLAUDE.md')).toContain('<!-- cngx:agents -->');
+    });
+
     it('appends to the files ng new --ai-config wrote and creates no CLAUDE.md of its own', async () => {
       const tree = createFixtureTree('standalone-app', {
         'src/app/other.ts': SECOND_COMPONENT,

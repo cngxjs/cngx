@@ -119,3 +119,26 @@ jobs:
           subjectPatternError: |
             The PR title subject "{subject}" must start with a lower-case letter
             (imperative mood, no leading capital, no trailing period).
+
+  # A `!` title is a breaking change: it ships an ng update migration (a new
+  # key in projects/core/schematics/migrations/migrations.json) or says
+  # "Migration: not migratable" in the body. The decision lives in
+  # scripts/migration-gate.mjs, unit-tested in scripts/__tests__.
+  migration-gate:
+    name: Migration gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Require a migration for a breaking change
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: node scripts/migration-gate.mjs

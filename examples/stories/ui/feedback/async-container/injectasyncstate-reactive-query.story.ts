@@ -65,7 +65,7 @@ export const STORY: DemoSpec = {
       </div>
     </ng-template>
   </cngx-async-container>`,
-  templateChrome: `<div class="event-grid" style="margin-bottom:12px">
+  templateChrome: `<div class="event-grid demo-async-readout" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Status</span>
       <span class="event-value">{{ people.status() }}</span>
@@ -77,6 +77,10 @@ export const STORY: DemoSpec = {
     <div class="event-row">
       <span class="event-label">isRefreshing</span>
       <span class="event-value">{{ people.isRefreshing() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Renders</span>
+      <span class="event-value">{{ people.isFirstLoad() && people.isBusy() ? 'skeleton template' : people.isEmpty() ? 'empty template' : people.isRefreshing() ? 'content, refresh bar on top' : 'content template' }}</span>
     </div>
     <div class="event-row">
       <span class="event-label">Filter</span>

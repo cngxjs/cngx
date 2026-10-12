@@ -38,7 +38,9 @@ export function resolveSelectConfig(): Required<
   const user = injectSelectConfigSource();
   return {
     ...resolveSelectLabels(user),
-    panelWidth: user.panelWidth ?? CNGX_SELECT_DEFAULTS.panelWidth,
+    // `null` means natural width, so only an unset key takes the default.
+    panelWidth:
+      user.panelWidth === undefined ? CNGX_SELECT_DEFAULTS.panelWidth : user.panelWidth,
     loadingVariant: user.loadingVariant ?? CNGX_SELECT_DEFAULTS.loadingVariant,
     skeletonRowCount: user.skeletonRowCount ?? CNGX_SELECT_DEFAULTS.skeletonRowCount,
     refreshingVariant: user.refreshingVariant ?? CNGX_SELECT_DEFAULTS.refreshingVariant,

@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import { type ChangePlan, createChangePlan, type JsonEntry, type StepResult } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
-import { type InstallManifest, isSameInstall, parseInstallManifest, planManifest } from './manifest';
+import {
+  type InstallManifest,
+  isSameInstall,
+  parseInstallManifest,
+  planManifest,
+  planManifestUpdate,
+} from './manifest';
 
 const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
 const FIRST_RUN = '2026-10-11T10:00:00.000Z';
@@ -167,5 +173,64 @@ describe('parseInstallManifest', () => {
     expect(parseInstallManifest(JSON.stringify({ ...manifest, cngxVersion: 1 }))).toBeUndefined();
     expect(parseInstallManifest(JSON.stringify({ ...manifest, answers: [] }))).toBeUndefined();
     expect(parseInstallManifest(JSON.stringify(manifest))).toEqual(manifest);
+  });
+});
+
+const NEXT = { ...VERSIONS, cngx: '0.2.0', mcp: '0.4.0' } as const;
+
+function installed(ids: readonly string[]): InstallManifest {
+  return {
+    ...firstRun(),
+    answers: JSON.parse(JSON.stringify(createAnswers({ aiTools: ['claude'] }))) as InstallManifest['answers'],
+    steps: ids.map((id) => ({ id, outcome: 'satisfied' as const, provenance: PROVENANCE })),
+  };
+}
+
+describe('planManifestUpdate', () => {
+  const RERUN: ChangePlan = createChangePlan([
+    {
+      changes: [
+        {
+          kind: 'edit-file',
+          id: 'helper-readme:file',
+          label: 'Update .cngx/README.md',
+          reason: 'r',
+          provenance: { source: 'ng-add helper-readme', version: '0.2.0' },
+          path: '.cngx/README.md',
+          edit: (content) => content,
+        },
+      ],
+      skipped: [],
+    },
+  ]);
+
+  it('records the new versions, the re-run steps and the update time', () => {
+    const next = written(planManifestUpdate(installed(['helper-readme:file', 'theme:file']), NEXT, RERUN, SECOND_RUN));
+
+    expect(Object.keys(next)).toEqual(['cngxVersion', 'mcpVersion', 'steps', 'updatedAt']);
+    expect(next).toMatchObject({
+      cngxVersion: '0.2.0',
+      mcpVersion: '0.4.0',
+      updatedAt: SECOND_RUN,
+      steps: [
+        { id: 'helper-readme:file', outcome: 'satisfied', provenance: { source: 'ng-add helper-readme', version: '0.2.0' } },
+        { id: 'theme:file', outcome: 'satisfied', provenance: PROVENANCE },
+      ],
+    });
+  });
+
+  it('plans no write when versions and steps stand', () => {
+    const result = planManifestUpdate(firstRun(), VERSIONS, createChangePlan([]), SECOND_RUN);
+
+    expect(result.changes).toEqual([]);
+    expect(result.skipped).toEqual([
+      { id: 'manifest:install', label: 'Update .cngx/install.json', reason: `unchanged since ${FIRST_RUN}` },
+    ]);
+  });
+
+  it('does not mutate its inputs', () => {
+    expect(() =>
+      planManifestUpdate(deepFreeze(firstRun()), deepFreeze(NEXT), deepFreeze(RERUN), SECOND_RUN),
+    ).not.toThrow();
   });
 });

@@ -61,6 +61,14 @@ describe('renderHelperReadme', () => {
     expect(readme).toContain('- `.mcp.json`\n- `.vscode/mcp.json`: no `servers` object cngx can add to; add `servers.cngx` by hand\n');
   });
 
+  it('leaves out an editor whose cngx server the user removed', () => {
+    const readme = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS, new Set(['ai-tools:claude']));
+
+    expect(readme).toContain('- `.vscode/mcp.json`');
+    expect(readme).not.toContain('- `.mcp.json`');
+    expect(readme).not.toContain('claude mcp list');
+  });
+
   it('keeps an editor whose config still declares a cngx server when this run does not choose it', () => {
     const facts = createFacts({
       mcpConfigs: { claude: 'wired', cursor: 'absent', vscode: 'absent' },
@@ -84,11 +92,11 @@ describe('renderHelperReadme', () => {
     expect(readme).toContain('- `.cursor/mcp.json`: its own cngx entry, running no `@cngx/mcp` version cngx can read\n');
   });
 
-  it('says that a removal is not remembered and how to keep the server off', () => {
+  it('says that a removal is remembered and how to bring the server back', () => {
     const readme = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS);
 
-    expect(readme).toContain('`ng add` does not remember a removal');
-    expect(readme).toContain('leave the editor unticked in the AI tooling\nquestion');
+    expect(readme).toContain('A later `ng add` remembers the removal through `.cngx/install.json`');
+    expect(readme).toContain('`ng add` with the editor named, for example `--ai-tools claude`.');
   });
 
   it('describes the Claude Code plugin only when Claude Code is chosen', () => {
@@ -97,7 +105,7 @@ describe('renderHelperReadme', () => {
 
     expect(withClaude).toContain('delete\nthe `cngx` entry from `.mcp.json`, so Claude Code runs one cngx server, not two.');
     expect(withoutClaude).not.toContain('## Claude Code plugin');
-    expect(withoutClaude).toContain('without `--preset=full`.\n\n## Clients outside this project');
+    expect(withoutClaude).toContain('for example `--ai-tools claude`.\n\n## Clients outside this project');
   });
 });
 

@@ -19,12 +19,42 @@ function walk(dir: string): readonly string[] {
   });
 }
 
-/** Every file of a fixture app, keyed by its path relative to the app root. */
-export function readFixture(name: FixtureName): Readonly<Record<string, string>> {
-  const root = join(FIXTURES, name);
+function readFiles(root: string): Readonly<Record<string, string>> {
   return Object.fromEntries(
     walk(root).map((file) => [relative(root, file).split(sep).join('/'), readFileSync(file, 'utf8')]),
   );
+}
+
+/** Every file of a fixture app, keyed by its path relative to the app root. */
+export function readFixture(name: FixtureName): Readonly<Record<string, string>> {
+  return readFiles(join(FIXTURES, name));
+}
+
+export interface MigrationFixture {
+  /** The stock app with the `before/` files on top: the tree a migration runs on. */
+  readonly before: Readonly<Record<string, string>>;
+  /** The stock app with the `before/` and then the `after/` files on top: the tree it leaves. */
+  readonly after: Readonly<Record<string, string>>;
+}
+
+/**
+ * `fixtures/migrations/<name>/{before,after}`. Both folders hold only what
+ * differs from the stock standalone app, so a pair states the migration's
+ * effect and nothing else: `after/` lists every file the migration writes.
+ */
+export function readMigrationFixture(name: string): MigrationFixture {
+  const root = join(FIXTURES, 'migrations', name);
+  const before = { ...readFixture('standalone-app'), ...readFiles(join(root, 'before')) };
+  return { before, after: { ...before, ...readFiles(join(root, 'after')) } };
+}
+
+/** Every file of a tree, keyed by its path without the leading slash. */
+export function readTree(tree: Tree): Readonly<Record<string, string>> {
+  const files: [string, string][] = [];
+  tree.visit((path) => {
+    files.push([path.slice(1), tree.readText(path)]);
+  });
+  return Object.fromEntries(files.sort(([a], [b]) => a.localeCompare(b)));
 }
 
 /**

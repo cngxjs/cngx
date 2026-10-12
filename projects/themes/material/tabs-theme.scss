@@ -139,10 +139,10 @@
 // "More" overflow popover -> Material `mat-menu`. The overflow surface is a
 // bare `[popover]` element (`.cngx-tab-overflow__panel`). Its
 // `--cngx-tab-overflow-popover-*` / `--cngx-tab-overflow-item-*` tokens are
-// the theming interface, but the component does not yet apply the panel
-// tokens to the live element, so the bridge both sets the Material values on
-// those tokens and wires them onto the real panel here. Set + consumed on the
-// same element, so the tokens' `inherits: false` registration is satisfied.
+// the theming interface; the component applies them to the live panel, and
+// the bridge sets the Material values on those tokens and wires them onto the
+// same element. Set + consumed on the panel itself, so the tokens that
+// register `inherits: false` are satisfied.
 // A `surface-container` card on the level-2 elevation, extra-small corner
 // radius, on-surface text, 8px block padding - reads as a mat-menu.
 @mixin _overflow-panel($theme) {

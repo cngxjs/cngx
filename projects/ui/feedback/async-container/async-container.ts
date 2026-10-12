@@ -152,7 +152,7 @@ export class CngxAsyncErrorTpl {
       />
     }
 
-    @switch (activeView()) {
+    @switch (renderedView()) {
       @case ('skeleton') {
         @if (skeletonVisible() && skeletonTpl(); as tpl) {
           <ng-container *ngTemplateOutlet="tpl.templateRef" />
@@ -244,12 +244,26 @@ export class CngxAsyncContainer<T> {
    * @internal - flash-suppressed first-load skeleton view. A sub-`showDelay` first
    * load never renders the skeleton outlet; once shown it holds for `minDwell`. The
    * region `aria-busy` stays truthful (`state().isBusy()`); only the visual is gated.
+   * See {@link renderedView} for which exits wait for the hold.
    */
   protected readonly skeletonVisible = createVisibilityGate(
     computed(() => this.activeView() === 'skeleton'),
     this.showDelay,
     this.minDwell,
   );
+
+  /**
+   * @internal - the view the template renders. While a shown first-load skeleton
+   * is still inside its `minDwell`, a `content` or `empty` result waits and swaps
+   * in when the dwell ends. An `error` replaces the skeleton immediately, and a
+   * reset to idle (`none`) clears it immediately. The live-region announcement
+   * follows the status, not this view, so AT hears the result without the delay.
+   */
+  protected readonly renderedView = computed<AsyncView>(() => {
+    const view = this.activeView();
+    const waitsForDwell = view === 'content' || view === 'empty';
+    return waitsForDwell && this.skeletonVisible() ? 'skeleton' : view;
+  });
 
   /** @internal - flash-suppressed refresh bar, gated by the same showDelay + minDwell. */
   protected readonly refreshVisible = createVisibilityGate(

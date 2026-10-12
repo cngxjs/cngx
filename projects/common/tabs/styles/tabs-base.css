@@ -338,13 +338,15 @@
   }
 
   /**
-   * Corner radius of the close / add affordance buttons.
+   * Corner radius of the close / add affordance buttons. The default
+   * pill radius draws a circle on the square glyph buttons and a pill
+   * when the add button grows around a projected text label.
    * @group State / Dismissable
    */
   @property --cngx-tab-affordance-radius {
     syntax: '*';
     inherits: false;
-    initial-value: 50%;
+    initial-value: 9999px;
   }
 
   /**
@@ -566,7 +568,7 @@
     height: var(--cngx-tab-affordance-size, 1.25rem);
     padding: 0;
     border: 0;
-    border-radius: var(--cngx-tab-affordance-radius, 50%);
+    border-radius: var(--cngx-tab-affordance-radius, 9999px);
     background: transparent;
     color: inherit;
     font: inherit;
@@ -583,9 +585,17 @@
     z-index: 1;
   }
 
+  /*
+   * A glyph keeps the square hit target; a projected text label
+   * (`*cngxTabAddIcon`) widens the button instead of spilling over it.
+   */
   .cngx-tabs__add {
+    width: auto;
+    min-width: var(--cngx-tab-affordance-size, 1.25rem);
+    padding-inline: calc(var(--cngx-tab-gap, 0.5rem) / 2);
     margin-inline-start: var(--cngx-tab-gap, 0.5rem);
     align-self: center;
+    white-space: nowrap;
   }
 
   .cngx-tabs__close:hover,

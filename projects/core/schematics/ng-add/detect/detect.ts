@@ -104,6 +104,8 @@ export interface ProjectFacts {
   readonly cngxStylesheet: boolean;
   /** The file already wiring a cngx theme: a `cngx-theme.*` file or a stylesheet using the Material bridge. */
   readonly cngxThemePath: string | undefined;
+  /** A generated `cngx-theme.*` is listed in the build styles, whether or not the file is still there. */
+  readonly cngxThemeListed: boolean;
   /** The file holding the root providers: `app.config.ts` or the root NgModule. */
   readonly appConfigPath: string;
   /** Every `provide*()` call already in that file. */
@@ -471,6 +473,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     stylesPath,
     cngxStylesheet: importsCngxStylesheet(read, entries),
     cngxThemePath: existingCngxTheme(tree, read, sourceRoot, entries),
+    cngxThemeListed: ['cngx-theme.css', 'cngx-theme.scss'].some((name) => entries.includes(posix.join(sourceRoot, name))),
     appConfigPath,
     rootProviders: providers,
     material: detectMaterial(read, manifest, entries),

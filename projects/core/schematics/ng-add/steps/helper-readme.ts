@@ -42,9 +42,12 @@ const CLAUDE_PLUGIN = [
 
 // Every editor the README describes: the ones this run sets up and the ones
 // whose config already declares a cngx server, so a re-run with a different
-// editor choice never drops a server that is still configured.
-function documentedTools(facts: ProjectFacts, answers: OnboardingAnswers): readonly AiTool[] {
-  return AI_TOOLS.filter((tool) => answers.aiTools.includes(tool) || facts.mcpConfigs[tool] === 'wired');
+// editor choice never drops a server that is still configured. A server the
+// user removed (`withdrawn`) is not described as set up.
+function documentedTools(facts: ProjectFacts, answers: OnboardingAnswers, withdrawn: ReadonlySet<string>): readonly AiTool[] {
+  return AI_TOOLS.filter(
+    (tool) => facts.mcpConfigs[tool] === 'wired' || (answers.aiTools.includes(tool) && !withdrawn.has(`ai-tools:${tool}`)),
+  );
 }
 
 // A config the AI tooling step could not edit is listed with what to do,
@@ -79,8 +82,8 @@ export function fillTemplate(template: string, values: Readonly<Record<string, s
   });
 }
 
-function renderBody(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): string {
-  const tools = documentedTools(facts, answers);
+function renderBody(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions, withdrawn: ReadonlySet<string>): string {
+  const tools = documentedTools(facts, answers, withdrawn);
   const body = fillTemplate(TEMPLATE, {
     version: versions.cngx,
     mcpVersion: versions.mcp,
@@ -88,7 +91,11 @@ function renderBody(facts: ProjectFacts, answers: OnboardingAnswers, versions: V
       .map((name) => `- \`${name}@${versions.cngx}\``)
       .join('\n'),
     configs: tools.map((tool) => configLine(tool, facts, versions.mcp)).join('\n'),
-    instructions: joinNames(instructionTargets(facts, { ...answers, aiTools: tools }).map((target) => `\`${target.path}\``)),
+    instructions: joinNames(
+      instructionTargets(facts, { ...answers, aiTools: tools })
+        .filter((target) => !withdrawn.has(target.id))
+        .map((target) => `\`${target.path}\``),
+    ),
     tools: MCP_TOOLS.map((tool) => row([`\`${tool.name}\``, tool.title, tool.example])).join('\n'),
     resources: MCP_RESOURCES.map((resource) => row([`\`${resource.uri}\``, resource.description])).join('\n'),
     prompts: MCP_PROMPTS.map((prompt) => row([`\`${prompt.name}\``, prompt.description])).join('\n'),
@@ -99,8 +106,13 @@ function renderBody(facts: ProjectFacts, answers: OnboardingAnswers, versions: V
 }
 
 /** The README with its stamp and the fingerprint of its body, which a later run compares against. */
-export function renderHelperReadme(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): string {
-  const body = renderBody(facts, answers, versions);
+export function renderHelperReadme(
+  facts: ProjectFacts,
+  answers: OnboardingAnswers,
+  versions: Versions,
+  withdrawn: ReadonlySet<string> = new Set(),
+): string {
+  const body = renderBody(facts, answers, versions, withdrawn);
   const stamp = createProvenanceStamp(SOURCE, versions.cngx, 'html');
   return `${stamp}${helperReadmeFingerprintLine(contentFingerprint(body))}\n\n${body}`;
 }
@@ -111,13 +123,18 @@ export function renderHelperReadme(facts: ProjectFacts, answers: OnboardingAnswe
  * regenerated when its inputs change, and never written over a file cngx did
  * not generate.
  */
-export function planHelperReadme(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
-  if (documentedTools(facts, answers).length === 0) {
+export function planHelperReadme(
+  facts: ProjectFacts,
+  answers: OnboardingAnswers,
+  versions: Versions,
+  withdrawn: ReadonlySet<string> = new Set(),
+): StepResult {
+  if (documentedTools(facts, answers, withdrawn).length === 0) {
     return { changes: [], skipped: [] };
   }
   const provenance: Provenance = { source: SOURCE, version: versions.cngx };
-  const fingerprint = contentFingerprint(renderBody(facts, answers, versions));
-  const content = renderHelperReadme(facts, answers, versions);
+  const fingerprint = contentFingerprint(renderBody(facts, answers, versions, withdrawn));
+  const content = renderHelperReadme(facts, answers, versions, withdrawn);
   const existing = facts.helperReadme;
   const base = {
     id: 'helper-readme:file',

@@ -49,7 +49,7 @@ test.describe('German language pack', () => {
 
   test('async-container refresh indicator', async ({ page }) => {
     await openDe(page, 'ui/feedback/async-container/cngx-async-container-full-control-toast');
-    await page.getByRole('button', { name: 'Load', exact: true }).click();
+    await page.getByRole('button', { name: 'First load', exact: true }).click();
     await expect(page.locator('cngx-async-container')).toContainText('Gamma');
     await page.getByRole('button', { name: 'Refresh', exact: true }).click();
     const indicator = page.locator('cngx-async-container cngx-loading-indicator');

@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxAsyncContainer: full control with toast',
   subtitle: 'Four templates, built-in refresh bar, integrated toast on success/error. Uses <code>createManualState</code> for demo control.',
-  description: 'Full surface variant: skeleton, content, empty, and error templates all overridden, plus the integrated toast bridge fires on success/error transitions. Four buttons exercise every state path.',
+  description: 'Full surface variant: skeleton, content, empty, and error templates all overridden, plus the integrated toast bridge fires on success/error transitions. The story loads once on open. The "First load" buttons start from scratch and walk skeleton, then content, empty or error; "Refresh" keeps the list on screen under the built-in refresh bar, "Refresh fails" keeps it and adds the error template below. Every load takes 1.5s and ends in a toast.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -14,25 +14,44 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncEmptyTpl, CngxAsyncErrorTpl } from \'@cngx/ui/feedback\';',
-    'import { createManualState } from \'@cngx/common/data\';',
+    'import { createManualState, resolveAsyncView } from \'@cngx/common/data\';',
   ],
   imports: ['CngxAsyncContainer', 'CngxAsyncSkeletonTpl', 'CngxAsyncContentTpl', 'CngxAsyncEmptyTpl', 'CngxAsyncErrorTpl'],
-  setup: `protected readonly manual = createManualState<string[]>();
-  protected loadManual(): void {
-    this.manual.set('loading');
-    setTimeout(() => this.manual.setSuccess(['Alpha', 'Beta', 'Gamma']), 2000);
+  setup: `protected readonly manual = createManualState<string[]>();`,
+  setupChrome: `private readonly names = ['Alpha', 'Beta', 'Gamma'];
+  private ticket = 0;
+  protected readonly view = computed(() =>
+    resolveAsyncView(this.manual.status(), this.manual.isFirstLoad(), this.manual.isEmpty()),
+  );
+  constructor() {
+    this.firstLoad();
   }
-  protected refreshManual(): void {
-    this.manual.set('refreshing');
-    setTimeout(() => this.manual.setSuccess(['Alpha', 'Beta', 'Gamma', 'Delta']), 2000);
+  protected firstLoad(): void {
+    this.run(true, () => this.manual.setSuccess(this.names));
   }
-  protected errorManual(): void {
-    this.manual.set('loading');
-    setTimeout(() => this.manual.setError('Connection refused'), 2000);
+  protected firstLoadFails(): void {
+    this.run(true, () => this.manual.setError('Connection refused'));
   }
-  protected emptyManual(): void {
-    this.manual.set('loading');
-    setTimeout(() => this.manual.setSuccess([]), 2000);
+  protected loadsEmpty(): void {
+    this.run(true, () => this.manual.setSuccess([]));
+  }
+  protected refresh(): void {
+    this.run(false, () => this.manual.setSuccess([...this.names, 'Delta']));
+  }
+  protected refreshFails(): void {
+    this.run(false, () => this.manual.setError('Connection refused'));
+  }
+  private run(fromScratch: boolean, settle: () => void): void {
+    const ticket = ++this.ticket;
+    if (fromScratch) {
+      this.manual.reset();
+    }
+    this.manual.set(fromScratch ? 'loading' : 'refreshing');
+    setTimeout(() => ticket === this.ticket && settle(), 1500);
+  }
+  protected idle(): void {
+    this.ticket++;
+    this.manual.reset();
   }`,
   template: `  <cngx-async-container [state]="manual" ariaLabel="Items"
     toastSuccess="Loaded successfully" toastError="Failed to load">
@@ -64,25 +83,30 @@ export const STORY: DemoSpec = {
       <div class="demo-error-block">
         <p style="margin:0 0 8px;font-size:1.125rem">Load failed</p>
         <p style="margin:0 0 12px;opacity:0.8">{{ err }}</p>
-        <button (click)="loadManual()" class="chip" type="button">Retry</button>
+        <button (click)="firstLoad()" class="chip" type="button">Retry</button>
       </div>
     </ng-template>
   </cngx-async-container>`,
-  templateChrome: `<div class="button-row" style="margin-bottom:16px">
-    <button (click)="loadManual()" class="chip" type="button">Load</button>
-    <button (click)="emptyManual()" class="chip" type="button">Empty</button>
-    <button (click)="errorManual()" class="chip" type="button">Error</button>
-    <button (click)="refreshManual()" class="chip" type="button" [disabled]="manual.isFirstLoad()">Refresh</button>
-    <button (click)="manual.reset()" class="chip" type="button">Reset</button>
+  templateChrome: `<div class="button-row" style="margin-top:12px">
+    <button (click)="firstLoad()" class="chip" type="button">First load</button>
+    <button (click)="loadsEmpty()" class="chip" type="button">First load, empty</button>
+    <button (click)="firstLoadFails()" class="chip" type="button">First load fails</button>
+    <button (click)="refresh()" class="chip" type="button" [disabled]="manual.isFirstLoad()">Refresh</button>
+    <button (click)="refreshFails()" class="chip" type="button" [disabled]="manual.isFirstLoad()">Refresh fails</button>
+    <button (click)="idle()" class="chip" type="button">Reset to idle</button>
   </div>
-<div class="event-grid" style="margin-bottom:12px">
+  <div class="event-grid demo-async-readout" style="margin-top:12px">
     <div class="event-row">
-      <span class="event-label">Status</span>
+      <span class="event-label">status</span>
       <span class="event-value">{{ manual.status() }}</span>
     </div>
     <div class="event-row">
       <span class="event-label">isFirstLoad</span>
       <span class="event-value">{{ manual.isFirstLoad() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Renders</span>
+      <span class="event-value">{{ view() === 'none' ? 'nothing (idle)' : view() === 'content+error' ? 'content and error templates' : view() + ' template' }}</span>
     </div>
   </div>`,
 };

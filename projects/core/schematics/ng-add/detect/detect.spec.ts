@@ -100,6 +100,7 @@ describe('detectProject', () => {
       stylesPath: 'src/styles.css',
       cngxStylesheet: false,
       cngxThemePath: undefined,
+      cngxThemeListed: false,
       appConfigPath: 'src/app/app.config.ts',
       rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
       material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
@@ -295,6 +296,14 @@ describe('detectProject', () => {
         'src/styles.scss': `${DEFINE_THEME}@use '@cngx/themes/material/theme' as cngx-material;\n`,
       });
       expect(bridged.cngxThemePath).toBe('src/styles.scss');
+    });
+
+    it('sees a generated theme listed in the build styles even when the file is gone', async () => {
+      const listed = await detect({ 'angular.json': withWorkspaceStyles(['src/styles.css', 'src/cngx-theme.css']) });
+
+      expect(listed.cngxThemeListed).toBe(true);
+      expect(listed.cngxThemePath).toBeUndefined();
+      expect((await detect({})).cngxThemeListed).toBe(false);
     });
   });
 

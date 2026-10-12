@@ -1,0 +1,10 @@
+{
+  "$schema": "../../../../node_modules/@angular-devkit/schematics/collection-schema.json",
+  "schematics": {
+    "migration-v0.1.0": {
+      "version": "0.1.0",
+      "description": "Re-runs the recorded install steps and records the installed cngx release in .cngx/install.json.",
+      "factory": "./0.1.0/index#migrate"
+    }
+  }
+}
