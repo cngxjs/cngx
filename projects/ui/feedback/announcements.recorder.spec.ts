@@ -434,7 +434,7 @@ describe('announcement recorder over ui/feedback', () => {
     });
 
     it('hears an announce() after advancing 16 ms and awaiting a microtask', async () => {
-      const capture = createAnnouncementCapture();
+      capture = createAnnouncementCapture();
       TestBed.inject(CngxLiveAnnouncer).announce('Saved');
       vi.advanceTimersByTime(16);
       await Promise.resolve();
