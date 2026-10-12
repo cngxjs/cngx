@@ -28,4 +28,7 @@ What kind of change does this PR introduce?
 
 <!-- If this PR contains a breaking change, please describe the impact and migration path for existing applications below. -->
 
+<!-- A breaking change (`!` in the title) adds an ng update migration: a new key in projects/core/schematics/migrations/migrations.json. When no codemod can do the change, write "not migratable" after the colon below; the migration-gate check reads that line. -->
+Migration:
+
 ### Other information
