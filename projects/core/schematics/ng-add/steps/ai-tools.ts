@@ -46,7 +46,7 @@ function mcpConfig(tool: AiTool, facts: ProjectFacts, versions: Versions, proven
           kind: 'note',
           id: change.id,
           label: `Skip ${path}`,
-          reason: `it is not a JSON object cngx can edit; add ${key}.cngx by hand`,
+          reason: `it has no ${key} object cngx can add to; add ${key}.cngx by hand`,
           provenance,
         },
       ],

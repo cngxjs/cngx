@@ -311,7 +311,15 @@ function mcpConfigState(tree: Tree, path: string, key: string): McpConfigState {
       return 'invalid';
     }
     const servers = root[key];
-    return isRecord(servers) && servers['cngx'] !== undefined ? 'wired' : 'present';
+    if (servers === undefined) {
+      return 'present';
+    }
+    // A key cngx cannot add an entry to (an array, null, a string) would make
+    // the JSON write throw at apply time.
+    if (!isRecord(servers)) {
+      return 'invalid';
+    }
+    return servers['cngx'] === undefined ? 'present' : 'wired';
   } catch {
     return 'invalid';
   }

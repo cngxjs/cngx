@@ -51,7 +51,7 @@ describe('renderHelperReadme', () => {
     const facts = createFacts({ mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'invalid' } });
     const readme = renderHelperReadme(facts, AI_ANSWERS, VERSIONS);
 
-    expect(readme).toContain('- `.mcp.json`\n- `.vscode/mcp.json`: not a JSON object cngx can edit; add `servers.cngx` by hand\n');
+    expect(readme).toContain('- `.mcp.json`\n- `.vscode/mcp.json`: no `servers` object cngx can add to; add `servers.cngx` by hand\n');
   });
 
   it('describes the Claude Code plugin only when Claude Code is chosen', () => {

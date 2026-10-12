@@ -301,6 +301,16 @@ describe('ngAdd', () => {
     });
   });
 
+  it('leaves a config whose servers key is not an object untouched and says so', async () => {
+    const run = await runRule(
+      ngAdd({ preset: 'full' }),
+      createFixtureTree('standalone-app', { '.vscode/mcp.json': '{ "servers": [] }\n' }),
+    );
+
+    expect(run.tree.readText('.vscode/mcp.json')).toBe('{ "servers": [] }\n');
+    expect(run.logs).toContain('  Skip .vscode/mcp.json - it has no servers object cngx can add to; add servers.cngx by hand');
+  });
+
   it('registers the mcp server for the editors a full run detects, next to the servers already there', async () => {
     const run = await runRule(
       ngAdd({ preset: 'full' }),

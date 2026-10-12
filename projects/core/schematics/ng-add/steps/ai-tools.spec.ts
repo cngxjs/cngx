@@ -55,7 +55,7 @@ describe('planAiTools', () => {
       kind: 'note',
       id: 'ai-tools:vscode',
       label: 'Skip .vscode/mcp.json',
-      reason: 'it is not a JSON object cngx can edit; add servers.cngx by hand',
+      reason: 'it has no servers object cngx can add to; add servers.cngx by hand',
     });
   });
 

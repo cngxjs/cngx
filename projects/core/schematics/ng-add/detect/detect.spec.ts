@@ -327,6 +327,15 @@ describe('detectProject', () => {
     expect(facts.mcpConfigs).toMatchObject({ claude: 'invalid', cursor: 'invalid' });
   });
 
+  it('marks a servers key cngx cannot add an entry to as invalid', async () => {
+    const facts = await detect({
+      '.mcp.json': JSON.stringify({ mcpServers: null }),
+      '.cursor/mcp.json': JSON.stringify({ mcpServers: 'none' }),
+      '.vscode/mcp.json': JSON.stringify({ servers: [] }),
+    });
+    expect(facts.mcpConfigs).toEqual({ claude: 'invalid', cursor: 'invalid', vscode: 'invalid' });
+  });
+
   it('finds the cngx block in AGENTS.md', async () => {
     expect((await detect({ 'AGENTS.md': '# Agents\n' })).agentsMd).toBe('present');
     expect((await detect({ 'AGENTS.md': '# Agents\n<!-- cngx:agents -->\n' })).agentsMd).toBe('wired');

@@ -44,7 +44,7 @@ const CLAUDE_PLUGIN = [
 function configLine(tool: AiTool, facts: ProjectFacts): string {
   const { path, key } = MCP_CONFIGS[tool];
   return facts.mcpConfigs[tool] === 'invalid'
-    ? `- \`${path}\`: not a JSON object cngx can edit; add \`${key}.cngx\` by hand`
+    ? `- \`${path}\`: no \`${key}\` object cngx can add to; add \`${key}.cngx\` by hand`
     : `- \`${path}\``;
 }
 
