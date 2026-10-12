@@ -10,7 +10,7 @@ CDK and Material are opt-in primitives, not foundations.
 
 > **State is derived, not managed. Communication is architecture, not an afterthought.**
 
-Angular 21+, Signal-native, no NgModules. Seven packages, 41 surgical secondary entry points, `sideEffects: false`. Five-level dependency hierarchy enforced by Sheriff.
+Angular 21+, Signal-native, no NgModules. Eight packages, 41 surgical secondary entry points, `sideEffects: false`. Five-level dependency hierarchy enforced by Sheriff.
 
 ---
 
