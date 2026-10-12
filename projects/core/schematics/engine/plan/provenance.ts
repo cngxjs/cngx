@@ -28,9 +28,13 @@ export function createProvenanceStamp(source: string, version: string, style: St
   return `${generated}\n${comment(`${source}, @cngx ${version}`, style)}\n`;
 }
 
-/** Eight hex digits that change with the content; tells a stale generated file from a current one. */
+/**
+ * Eight hex digits that change with the content; tells a stale generated
+ * file from a current one. Line endings are left out, so a checkout that
+ * turns the file into CRLF (`core.autocrlf`) still reads as current.
+ */
 export function contentFingerprint(content: string): string {
-  return shortHash(content);
+  return shortHash(content.replace(/\r\n/g, '\n'));
 }
 
 export function hasProvenanceStamp(content: string): boolean {

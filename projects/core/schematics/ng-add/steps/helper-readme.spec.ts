@@ -90,6 +90,13 @@ describe('planHelperReadme', () => {
     });
   });
 
+  it('skips a current readme that a checkout turned into CRLF', () => {
+    const content = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS).replace(/\n/g, '\r\n');
+    const facts = createFacts({ helperReadme: { generated: true, fingerprint: contentFingerprint(content) } });
+
+    expect(planHelperReadme(facts, AI_ANSWERS, VERSIONS).changes).toEqual([]);
+  });
+
   it('regenerates a generated readme whose inputs moved', () => {
     const facts = createFacts({ helperReadme: { generated: true, fingerprint: '00000000' } });
     const [change] = planHelperReadme(facts, AI_ANSWERS, { ...VERSIONS, mcp: '0.4.0' }).changes as EditFile[];

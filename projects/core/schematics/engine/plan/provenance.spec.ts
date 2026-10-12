@@ -79,4 +79,8 @@ describe('contentFingerprint', () => {
     expect(contentFingerprint('# a\n')).toBe(contentFingerprint('# a\n'));
     expect(contentFingerprint('# a\n')).not.toBe(contentFingerprint('# b\n'));
   });
+
+  it('ignores CRLF line endings', () => {
+    expect(contentFingerprint('# a\r\nb\r\n')).toBe(contentFingerprint('# a\nb\n'));
+  });
 });
