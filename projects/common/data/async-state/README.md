@@ -124,20 +124,21 @@ readonly items = fromResource(this.res);
 
 ### `fromHttpResource<T>(ref: HttpResourceRef<T>): CngxAsyncState<T>`
 
-Same as `fromResource` but additionally maps HTTP progress (0–1 float) to `progress` (0–100 integer). Avoids hard `@angular/common/http` import via structural interface typing.
+Same as `fromResource` but additionally maps the latest `HttpProgressEvent` to `progress` (0-100 integer, `loaded / total` rounded and clamped; `undefined` while the total is unknown or zero). Angular only emits progress events when the request sets `reportProgress: true`. Avoids hard `@angular/common/http` import via structural interface typing.
 
 **Requires:** Injection context.
 
 **Returns:** `CngxAsyncState<T>` with `progress` signal wired from HTTP events.
 
 ```typescript
-private readonly res = httpResource<Item[]>({
+private readonly res = httpResource<Item[]>(() => ({
   url: '/api/items',
   params: { q: this.filter() },
-});
+  reportProgress: true,
+}));
 
 readonly items = fromHttpResource(this.res);
-// items.progress() tracks upload/download 0–100
+// items.progress() tracks download progress 0-100
 ```
 
 ## RxJS Operators
