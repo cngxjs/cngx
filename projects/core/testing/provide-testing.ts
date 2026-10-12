@@ -13,10 +13,11 @@ import { provideLoadingConfig, withMinDwell, withShowDelay } from '@cngx/core/ut
  *
  * What it pins:
  *
- * - **Loading timing.** Show delay and min dwell are `0`, so a loading surface
- *   shows on the same flush its state turns busy and hides on the flush it
- *   settles. No fake clock is needed to see a skeleton or a spinner. The
- *   spinner-vs-skeleton cutoff keeps its default.
+ * - **Loading timing.** Show delay and min dwell are `0`, so there is no
+ *   delay to compute. Both are still timers: a loading surface shows after
+ *   one zero-length timer turn (a fake-clock advance of `0`, or one macrotask
+ *   with real timers) and hides once its state settled and a second turn ran
+ *   the min-dwell timer. The spinner-vs-skeleton cutoff keeps its default.
  * - **Language.** The English pack with the document language off: the locale
  *   is `en` and nothing is written to `<html lang>` or `<html dir>`, so one
  *   spec cannot leak a language into the next in a shared document. The

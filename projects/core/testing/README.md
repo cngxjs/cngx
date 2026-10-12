@@ -5,14 +5,14 @@ Test kits for specs that render cngx. Nothing here belongs in an application bun
 ## What it is
 
 - **`provideCngxTesting()`** - one provider that makes cngx deterministic under `TestBed`: zero show delay and min dwell for loading surfaces, the English pack with locale `en`, direction `ltr`, and no writes to `<html>`. The pinned locale outranks `LOCALE_ID`, also one provided on a component; override it with `provideLocale` or a pack.
-
 - **`createAsyncStateMock<T>()`** - a hand-driven `CngxAsyncState<T>` for components that take a `[state]` input. `set({ status, firstLoad, empty, data, error, progress, lastUpdated })` drives it; every derived flag comes from the same kernel real producers use (`buildAsyncStateView`), so it cannot drift from them. Emptiness is the spec-driven `empty` flag, not derived from `data`.
+- **`injectTransitionLog(source, { injector?, equal? })`** - records the distinct values a signal settles on, so a spec asserts the sequence (`['idle', 'loading', 'success']`), not only the end state. Values are observed per effect flush: flush after each step you want to see.
 
 More kits land in this entry as they ship.
 
 ## When you reach for it
 
-Your spec renders a cngx component and you want to assert what it shows without racing its timing. Loading surfaces debounce their indicator and hold it for a minimum dwell; under `provideCngxTesting()` both are `0`, so the skeleton or spinner appears on the flush the state turns busy and disappears on the flush it settles.
+Your spec renders a cngx component and you want to assert what it shows without racing its timing. Loading surfaces debounce their indicator and hold it for a minimum dwell; under `provideCngxTesting()` both are `0`, so there is no delay to compute. Both are still timers: the skeleton or spinner appears after one zero-length timer turn and disappears once the state settled and a second turn ran the min-dwell timer. See "Loading timings" for how to take a turn under each runner.
 
 ## Usage
 
@@ -40,6 +40,20 @@ providers: [
 ```
 
 Keep `withDocumentLanguage('off')` in that override. Without it, `provideCngxI18n` writes the pack's language and direction to `<html>`, which leaks into later specs when the runner shares one document.
+
+## Loading timings
+
+There is no helper that advances the clock for you: moving a fake clock is runner API, and the timings are already readable through DI. Read them, then advance your runner's own clock:
+
+```ts
+const { showDelay, minDwell } = TestBed.runInInjectionContext(injectLoadingConfig);
+
+vi.advanceTimersByTime(showDelay); // Vitest
+jasmine.clock().tick(showDelay); // Jasmine
+tick(showDelay); // fakeAsync
+```
+
+Under `provideCngxTesting()` both are `0`. A zero-delay `setTimeout` is still a timer: with fake timers it needs an advance (`vi.advanceTimersByTime(0)`), with real timers a macrotask. Showing takes one turn; the min-dwell timer is scheduled when the indicator shows, so hiding needs a second. Timing inputs bound on a single component (for example `[showDelay]` / `[minDwell]` on an async container) are not part of the config read; advance by the value you bound.
 
 ## Runners
 
