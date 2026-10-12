@@ -32,12 +32,33 @@ function wiredReason(path: string, pin: string | undefined, mcpVersion: string):
   return `${path} already declares a cngx server, pinned to @cngx/mcp@${pin} (this release pins ${mcpVersion})`;
 }
 
-function mcpConfig(tool: AiTool, facts: ProjectFacts, versions: Versions, provenance: Provenance): StepResult {
+function aiToolId(tool: AiTool): string {
+  return `ai-tools:${tool}`;
+}
+
+// A target the user removed stays out: recorded as skipped, so the manifest
+// keeps the id and the next run still knows, and named in a note, since a
+// collapsed skip line would not tell the user why their file stays as it is.
+function withdrawnResult(change: Change, readers: readonly AiTool[], provenance: Provenance): StepResult {
+  const reason = `removed since the last install; pass --ai-tools ${readers.join(',')} to add it back`;
+  return {
+    changes: [{ kind: 'note', id: change.id, label: `Leave out: ${change.label}`, reason, provenance }],
+    skipped: [skipChange(change, reason)],
+  };
+}
+
+function mcpConfig(
+  tool: AiTool,
+  facts: ProjectFacts,
+  versions: Versions,
+  provenance: Provenance,
+  withdrawn: ReadonlySet<string>,
+): StepResult {
   const { path, key } = MCP_CONFIGS[tool];
   const state = facts.mcpConfigs[tool];
   const change: Change = {
     kind: 'write-json',
-    id: `ai-tools:${tool}`,
+    id: aiToolId(tool),
     label: `Add the cngx MCP server to ${path}`,
     reason: `${EDITOR_NAMES[tool]} answers cngx questions from @cngx/mcp@${versions.mcp}`,
     provenance,
@@ -46,6 +67,9 @@ function mcpConfig(tool: AiTool, facts: ProjectFacts, versions: Versions, proven
   };
   if (state === 'wired') {
     return { changes: [], skipped: [skipChange(change, wiredReason(path, facts.mcpPins[tool], versions.mcp))] };
+  }
+  if (withdrawn.has(change.id)) {
+    return withdrawnResult(change, [tool], provenance);
   }
   if (state === 'invalid') {
     return {
@@ -119,20 +143,46 @@ export function instructionTargets(facts: ProjectFacts, answers: OnboardingAnswe
   return [...claudeTarget, ...agentsTarget];
 }
 
-function instructionBlock(target: InstructionTarget, provenance: Provenance): StepResult {
+function instructionBlock(target: InstructionTarget, provenance: Provenance, withdrawn: ReadonlySet<string>): StepResult {
   const { id, path } = target;
   const label = `Point ${path} at the cngx MCP server`;
   const reason = `read by ${joinNames(target.readers.map((tool) => EDITOR_NAMES[tool]))}`;
-  if (target.state === 'absent') {
-    return {
-      changes: [{ kind: 'create-file', id, label, reason, provenance, path, content: AGENTS_BLOCK }],
-      skipped: [],
-    };
+  const change: Change =
+    target.state === 'absent'
+      ? { kind: 'create-file', id, label, reason, provenance, path, content: AGENTS_BLOCK }
+      : { kind: 'edit-file', id, label, reason, provenance, path, edit: appendAgentsBlock };
+  if (target.state === 'wired') {
+    return { changes: [], skipped: [skipChange(change, `${path} already carries the cngx block`)] };
   }
-  const change: Change = { kind: 'edit-file', id, label, reason, provenance, path, edit: appendAgentsBlock };
-  return target.state === 'wired'
-    ? { changes: [], skipped: [skipChange(change, `${path} already carries the cngx block`)] }
-    : { changes: [change], skipped: [] };
+  if (withdrawn.has(id)) {
+    return withdrawnResult(change, target.readers, provenance);
+  }
+  return { changes: [change], skipped: [] };
+}
+
+/**
+ * The AI tooling targets the last install set up that are gone now: a
+ * recorded cngx server entry or agent block the user removed. An editor
+ * passed explicitly with `--ai-tools` is asked for again and never counts as
+ * removed; a preset or prompt default does not tell a choice apart, so it
+ * respects the removal.
+ */
+export function withdrawnAiTargets(
+  facts: ProjectFacts,
+  answers: OnboardingAnswers,
+  installed: readonly string[],
+  explicit: readonly AiTool[],
+): ReadonlySet<string> {
+  const recorded = new Set(installed);
+  const asked = (readers: readonly AiTool[]): boolean => readers.some((tool) => explicit.includes(tool));
+  const servers = answers.aiTools
+    .filter((tool) => !asked([tool]))
+    .filter((tool) => facts.mcpConfigs[tool] === 'absent' || facts.mcpConfigs[tool] === 'present')
+    .map(aiToolId);
+  const blocks = instructionTargets(facts, answers)
+    .filter((target) => target.state !== 'wired' && !asked(target.readers))
+    .map((target) => target.id);
+  return new Set([...servers, ...blocks].filter((id) => recorded.has(id)));
 }
 
 /**
@@ -140,16 +190,22 @@ function instructionBlock(target: InstructionTarget, provenance: Provenance): St
  * project-local config, next to any server already there, and appends a
  * marked cngx block to each instruction file those editors read. Nothing
  * outside the project is written; an existing `cngx` server entry and an
- * existing block are left as they are.
+ * existing block are left as they are, and a `withdrawn` one (see
+ * `withdrawnAiTargets`) stays out.
  */
-export function planAiTools(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
+export function planAiTools(
+  facts: ProjectFacts,
+  answers: OnboardingAnswers,
+  versions: Versions,
+  withdrawn: ReadonlySet<string> = new Set(),
+): StepResult {
   if (answers.aiTools.length === 0) {
     return { changes: [], skipped: [] };
   }
   const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
   const results = [
-    ...answers.aiTools.map((tool) => mcpConfig(tool, facts, versions, provenance)),
-    ...instructionTargets(facts, answers).map((target) => instructionBlock(target, provenance)),
+    ...answers.aiTools.map((tool) => mcpConfig(tool, facts, versions, provenance, withdrawn)),
+    ...instructionTargets(facts, answers).map((target) => instructionBlock(target, provenance, withdrawn)),
   ];
   return {
     changes: results.flatMap((result) => result.changes),

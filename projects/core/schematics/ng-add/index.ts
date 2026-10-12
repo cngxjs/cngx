@@ -17,7 +17,7 @@ import {
 import { detectProject, type ProjectFacts } from './detect/detect';
 import { type GitState, readGitState } from './shell/git-state';
 import { askOnboarding, givenAnswers } from './shell/questions';
-import { planAiTools } from './steps/ai-tools';
+import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
 import { createSummary } from './steps/finish';
 import { planHelperReadme } from './steps/helper-readme';
@@ -28,8 +28,20 @@ import { type Step } from './steps/model';
 import { planProviders } from './steps/providers';
 import { planTheme } from './steps/theme';
 
-/** The plan steps in apply order; the install manifest follows them. */
-const STEPS: readonly Step[] = [planDependencies, planTheme, planProviders, planLint, planAiTools, planHelperReadme];
+/**
+ * The plan steps in apply order; the install manifest follows them. The AI
+ * tooling steps leave out what the user removed since the last install.
+ */
+function planSteps(withdrawn: ReadonlySet<string>): readonly Step[] {
+  return [
+    planDependencies,
+    planTheme,
+    planProviders,
+    planLint,
+    (facts, answers, versions) => planAiTools(facts, answers, versions, withdrawn),
+    (facts, answers, versions) => planHelperReadme(facts, answers, versions, withdrawn),
+  ];
+}
 
 // `CI=false` and `CI=0` are how some runners say "not CI".
 function isCi(env: NodeJS.ProcessEnv): boolean {
@@ -95,11 +107,14 @@ export function ngAdd(options: NgAddOptions): Rule {
       answers: givenAnswers(options),
     });
     const answers = await askOnboarding(facts, options, flow);
+    const previous = readInstallManifest(tree);
+    const installed = previous?.steps.map((step) => step.id) ?? [];
+    const withdrawn = withdrawnAiTargets(facts, answers, installed, options.aiTools ?? []);
     const steps = createChangePlan(
-      STEPS.map((step) => step(facts, answers, versions)),
+      planSteps(withdrawn).map((step) => step(facts, answers, versions)),
       warning === undefined ? [] : [warning],
     );
-    const manifest = planManifest(facts, answers, versions, steps, readInstallManifest(tree), new Date().toISOString());
+    const manifest = planManifest(facts, answers, versions, steps, previous, new Date().toISOString());
     const plan = createChangePlan([steps, manifest], steps.warnings);
 
     await renderer.todo(plan);

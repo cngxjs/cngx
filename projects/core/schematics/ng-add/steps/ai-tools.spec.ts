@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { type EditFile } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
-import { instructionTargets, planAiTools } from './ai-tools';
+import { instructionTargets, planAiTools, withdrawnAiTargets } from './ai-tools';
 
 const NPX = { command: 'npx', args: ['-y', '@cngx/mcp@0.3.0'] };
 
@@ -173,5 +173,62 @@ describe('planAiTools', () => {
         deepFreeze(VERSIONS),
       ),
     ).not.toThrow();
+  });
+});
+
+describe('withdrawnAiTargets', () => {
+  const ALL = createAnswers({ aiTools: ['claude', 'cursor', 'vscode'] });
+  const INSTALLED = ['ai-tools:claude', 'ai-tools:cursor', 'ai-tools:agents'];
+
+  it('reads a recorded MCP entry that is gone as removed by the user', () => {
+    const facts = createFacts({ mcpConfigs: { claude: 'absent', cursor: 'wired', vscode: 'absent' }, agentsMd: 'wired' });
+
+    expect([...withdrawnAiTargets(facts, ALL, INSTALLED, [])]).toEqual(['ai-tools:claude']);
+  });
+
+  it('reads a recorded agent block that is gone as removed, whether the file stays or not', () => {
+    const wired = { claude: 'wired', cursor: 'wired', vscode: 'absent' } as const;
+
+    expect([...withdrawnAiTargets(createFacts({ mcpConfigs: wired, agentsMd: 'present' }), ALL, INSTALLED, [])]).toEqual([
+      'ai-tools:agents',
+    ]);
+    expect([...withdrawnAiTargets(createFacts({ mcpConfigs: wired, agentsMd: 'absent' }), ALL, INSTALLED, [])]).toEqual([
+      'ai-tools:agents',
+    ]);
+  });
+
+  it('withdraws nothing an explicit --ai-tools asks for again', () => {
+    const facts = createFacts({ mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'absent' }, agentsMd: 'absent' });
+
+    expect([...withdrawnAiTargets(facts, ALL, INSTALLED, ['claude'])]).toEqual(['ai-tools:cursor']);
+  });
+
+  it('withdraws nothing the last install did not record', () => {
+    expect([...withdrawnAiTargets(createFacts(), ALL, [], [])]).toEqual([]);
+  });
+});
+
+describe('planAiTools with withdrawn targets', () => {
+  it('records a withdrawn target as left out instead of writing it again', () => {
+    const answers = createAnswers({ aiTools: ['claude', 'cursor'] });
+    const result = planAiTools(createFacts(), answers, VERSIONS, new Set(['ai-tools:claude', 'ai-tools:agents']));
+
+    expect(result.changes.map((change) => [change.kind, change.id])).toEqual([
+      ['note', 'ai-tools:claude'],
+      ['write-json', 'ai-tools:cursor'],
+      ['note', 'ai-tools:agents'],
+    ]);
+    expect(result.skipped).toEqual([
+      {
+        id: 'ai-tools:claude',
+        label: 'Add the cngx MCP server to .mcp.json',
+        reason: 'removed since the last install; pass --ai-tools claude to add it back',
+      },
+      {
+        id: 'ai-tools:agents',
+        label: 'Point AGENTS.md at the cngx MCP server',
+        reason: 'removed since the last install; pass --ai-tools claude,cursor to add it back',
+      },
+    ]);
   });
 });
