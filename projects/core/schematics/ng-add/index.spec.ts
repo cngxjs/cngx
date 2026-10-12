@@ -99,6 +99,19 @@ const SECOND_COMPONENT = `import { Component } from '@angular/core';
 export class Other {}
 `;
 
+// The head of what `ng new --ai-config` writes into each rules file (@schematics/angular 21.2).
+const ANGULAR_AI_RULES = `
+You are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.
+
+## TypeScript Best Practices
+
+- Use strict type checking
+`;
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function json<T>(tree: Tree, path: string): T {
   return JSON.parse(tree.readContent(path)) as T;
 }
@@ -251,6 +264,41 @@ describe('ngAdd', () => {
 
       expect(run.logs.some((line) => line.startsWith('Git: '))).toBe(false);
     });
+
+    it('wires the AI tooling into an app that has editor files but none from ng new --ai-config', async () => {
+      const tree = createFixtureTree('standalone-app', {
+        'src/app/other.ts': SECOND_COMPONENT,
+        'CLAUDE.md': '# Team rules\n\nUse pnpm.\n',
+        '.vscode/settings.json': '{}',
+        '.mcp.json': JSON.stringify({ mcpServers: { tooling: { command: 'node', args: ['tools/mcp.js'] } } }, null, 2),
+      });
+      const first = await runRule(ngAdd({ preset: 'full', yes: true }), tree);
+
+      expect(first.tree.readText('CLAUDE.md')).toMatch(/^# Team rules\n\nUse pnpm\.\n\n<!-- cngx:agents -->\n/);
+      expect(first.tree.readText('AGENTS.md')).toMatch(/^<!-- cngx:agents -->\n/);
+      expect(Object.keys(json<{ mcpServers: object }>(first.tree, '.mcp.json').mcpServers)).toEqual(['tooling', 'cngx']);
+      expect(json<{ servers: object }>(first.tree, '.vscode/mcp.json').servers).toHaveProperty('cngx');
+      expect(first.tree.readText('.cngx/README.md')).toContain('A marked cngx block in `CLAUDE.md` and `AGENTS.md`');
+
+      const files = first.tree.files.map((path) => [path, first.tree.readContent(path)]);
+      const second = await runRule(ngAdd({ preset: 'full', yes: true }), first.tree);
+      expect(second.tree.files.map((path) => [path, second.tree.readContent(path)])).toEqual(files);
+    });
+
+    it('appends to the files ng new --ai-config wrote and creates no CLAUDE.md of its own', async () => {
+      const tree = createFixtureTree('standalone-app', {
+        'src/app/other.ts': SECOND_COMPONENT,
+        'AGENTS.md': ANGULAR_AI_RULES,
+        '.claude/CLAUDE.md': ANGULAR_AI_RULES,
+        '.cursor/rules/cursor.mdc': `---\ncontext: true\n---\n${ANGULAR_AI_RULES}`,
+      });
+      const run = await runRule(ngAdd({ preset: 'full', yes: true }), tree);
+
+      expect(run.tree.readText('.claude/CLAUDE.md')).toMatch(new RegExp(`^${escapeRegExp(ANGULAR_AI_RULES)}\n<!-- cngx:agents -->\n`));
+      expect(run.tree.readText('AGENTS.md')).toMatch(new RegExp(`^${escapeRegExp(ANGULAR_AI_RULES)}\n<!-- cngx:agents -->\n`));
+      expect(run.tree.readText('.cursor/rules/cursor.mdc')).toBe(`---\ncontext: true\n---\n${ANGULAR_AI_RULES}`);
+      expect(run.tree.exists('CLAUDE.md')).toBe(false);
+    });
   });
 
   it('registers the mcp server for the editors a full run detects, next to the servers already there', async () => {
@@ -267,7 +315,8 @@ describe('ngAdd', () => {
       mcpServers: { other: { command: 'other' }, cngx: { command: 'npx', args: ['-y', expect.stringMatching(/^@cngx\/mcp@/)] } },
     });
     expect(run.tree.exists('.cursor/mcp.json')).toBe(false);
-    expect(run.tree.readText('AGENTS.md')).toMatch(/^# Agents\n\n<!-- cngx:agents -->\n/);
+    expect(run.tree.readText('CLAUDE.md')).toMatch(/^# app\n\n<!-- cngx:agents -->\n/);
+    expect(run.tree.readText('AGENTS.md')).toBe('# Agents\n');
     expect(run.tree.readText('.cngx/README.md')).toContain('## Claude Code plugin');
   });
 

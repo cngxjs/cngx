@@ -65,7 +65,15 @@ export interface HelperReadmeFacts {
   readonly fingerprint: string;
 }
 
-/** Opens the block cngx writes into `AGENTS.md`; a later run finds it. */
+/** An agent instruction file: missing, present, or already carrying the cngx block. */
+export type InstructionState = 'absent' | 'present' | 'wired';
+
+export interface ClaudeInstructions {
+  readonly path: 'CLAUDE.md' | '.claude/CLAUDE.md';
+  readonly state: Exclude<InstructionState, 'absent'>;
+}
+
+/** Opens the block cngx writes into agent instruction files; a later run finds it. */
 export const AGENTS_MARKER = '<!-- cngx:agents -->';
 
 /** Everything the plan steps branch on, read once before any question. */
@@ -93,7 +101,14 @@ export interface ProjectFacts {
   readonly editors: EditorFacts;
   readonly mcpConfigs: Readonly<Record<AiTool, McpConfigState>>;
   /** `AGENTS.md`: missing, present, or already carrying the cngx block. */
-  readonly agentsMd: 'absent' | 'present' | 'wired';
+  readonly agentsMd: InstructionState;
+  /**
+   * The project instructions Claude Code reads: `CLAUDE.md`, else
+   * `.claude/CLAUDE.md` (where `ng new --ai-config=claude` puts it);
+   * `undefined` when there is neither. Claude Code reads `AGENTS.md` only
+   * without one.
+   */
+  readonly claudeInstructions: ClaudeInstructions | undefined;
   /** `.cngx/README.md`; `undefined` when there is none. */
   readonly helperReadme: HelperReadmeFacts | undefined;
   /** The eslint flat config; `undefined` when the app has none. */
@@ -302,12 +317,22 @@ function mcpConfigState(tree: Tree, path: string, key: string): McpConfigState {
   }
 }
 
-function agentsMdState(read: Read): ProjectFacts['agentsMd'] {
-  const content = read('AGENTS.md');
+function instructionState(read: Read, path: string): InstructionState {
+  const content = read(path);
   if (content === undefined) {
     return 'absent';
   }
   return content.includes(AGENTS_MARKER) ? 'wired' : 'present';
+}
+
+function claudeInstructionsOf(read: Read): ClaudeInstructions | undefined {
+  for (const path of ['CLAUDE.md', '.claude/CLAUDE.md'] as const) {
+    const state = instructionState(read, path);
+    if (state !== 'absent') {
+      return { path, state };
+    }
+  }
+  return undefined;
 }
 
 function helperReadmeOf(read: Read): HelperReadmeFacts | undefined {
@@ -420,7 +445,8 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
       cursor: mcpConfigState(tree, MCP_CONFIGS.cursor.path, MCP_CONFIGS.cursor.key),
       vscode: mcpConfigState(tree, MCP_CONFIGS.vscode.path, MCP_CONFIGS.vscode.key),
     },
-    agentsMd: agentsMdState(read),
+    agentsMd: instructionState(read, 'AGENTS.md'),
+    claudeInstructions: claudeInstructionsOf(read),
     helperReadme: helperReadmeOf(read),
     eslintConfig: detectEslintConfig(tree),
     ssr:

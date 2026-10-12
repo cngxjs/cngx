@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { type EditFile } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
-import { planAiTools } from './ai-tools';
+import { instructionTargets, planAiTools } from './ai-tools';
 
 const NPX = { command: 'npx', args: ['-y', '@cngx/mcp@0.3.0'] };
 
@@ -98,6 +98,56 @@ describe('planAiTools', () => {
     const result = planAiTools(createFacts(), createAnswers({ aiTools: ['claude'] }), VERSIONS);
 
     expect(result.changes.map((change) => change.id)).toEqual(['ai-tools:claude', 'ai-tools:agents']);
+  });
+
+  it('puts the block where Claude Code reads it and skips AGENTS.md for Claude alone', () => {
+    const facts = createFacts({ claudeInstructions: { path: '.claude/CLAUDE.md', state: 'present' } });
+    const result = planAiTools(facts, createAnswers({ aiTools: ['claude'] }), VERSIONS);
+
+    expect(result.changes).toContainEqual(
+      expect.objectContaining({
+        kind: 'edit-file',
+        id: 'ai-tools:claude-instructions',
+        path: '.claude/CLAUDE.md',
+        label: 'Point .claude/CLAUDE.md at the cngx MCP server',
+        reason: 'read by Claude Code',
+      }),
+    );
+    expect(result.changes.some((change) => change.id === 'ai-tools:agents')).toBe(false);
+  });
+
+  it('skips a Claude instruction file that already carries the block', () => {
+    const facts = createFacts({ claudeInstructions: { path: 'CLAUDE.md', state: 'wired' } });
+    const result = planAiTools(facts, createAnswers({ aiTools: ['claude'] }), VERSIONS);
+
+    expect(result.skipped).toContainEqual(
+      expect.objectContaining({ id: 'ai-tools:claude-instructions', reason: 'CLAUDE.md already carries the cngx block' }),
+    );
+  });
+
+  describe('instructionTargets', () => {
+    it('serves Claude Code through AGENTS.md when the app has no CLAUDE.md', () => {
+      expect(instructionTargets(createFacts(), createAnswers({ aiTools: ['claude', 'cursor'] }))).toEqual([
+        { id: 'ai-tools:agents', path: 'AGENTS.md', state: 'absent', readers: ['claude', 'cursor'] },
+      ]);
+    });
+
+    it('gives Claude Code its own file and AGENTS.md the other editors', () => {
+      const facts = createFacts({ claudeInstructions: { path: 'CLAUDE.md', state: 'present' }, agentsMd: 'present' });
+
+      expect(instructionTargets(facts, createAnswers({ aiTools: ['claude', 'vscode'] }))).toEqual([
+        { id: 'ai-tools:claude-instructions', path: 'CLAUDE.md', state: 'present', readers: ['claude'] },
+        { id: 'ai-tools:agents', path: 'AGENTS.md', state: 'present', readers: ['vscode'] },
+      ]);
+    });
+
+    it('ignores a CLAUDE.md when Claude Code was not chosen', () => {
+      const facts = createFacts({ claudeInstructions: { path: 'CLAUDE.md', state: 'present' } });
+
+      expect(instructionTargets(facts, createAnswers({ aiTools: ['cursor'] })).map((target) => target.path)).toEqual([
+        'AGENTS.md',
+      ]);
+    });
   });
 
   it('does not mutate its inputs', () => {

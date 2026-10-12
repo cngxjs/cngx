@@ -3,6 +3,7 @@ import {
   type Change,
   contentFingerprint,
   createProvenanceStamp,
+  joinNames,
   type Provenance,
   skipChange,
   type StepResult,
@@ -12,6 +13,7 @@ import { HELPER_README_PATH, MCP_CONFIGS, type ProjectFacts } from '../detect/de
 // the esbuild text loader, so there is no module boundary to check.
 // eslint-disable-next-line @softarc/sheriff/dependency-rule, @softarc/sheriff/encapsulation
 import TEMPLATE from '../templates/helper-readme.md.tpl';
+import { instructionTargets } from './ai-tools';
 import { cngxPackages } from './dependencies';
 import { MCP_PROMPTS, MCP_RESOURCES, MCP_TOOLS } from './mcp-capabilities.generated';
 import { type OnboardingAnswers, type Versions } from './model';
@@ -71,7 +73,7 @@ export function renderHelperReadme(facts: ProjectFacts, answers: OnboardingAnswe
       .map((name) => `- \`${name}@${versions.cngx}\``)
       .join('\n'),
     configs: answers.aiTools.map((tool) => configLine(tool, facts)).join('\n'),
-    instructions: '`AGENTS.md`',
+    instructions: joinNames(instructionTargets(facts, answers).map((target) => `\`${target.path}\``)),
     tools: MCP_TOOLS.map((tool) => row([`\`${tool.name}\``, tool.title, tool.example])).join('\n'),
     resources: MCP_RESOURCES.map((resource) => row([`\`${resource.uri}\``, resource.description])).join('\n'),
     prompts: MCP_PROMPTS.map((prompt) => row([`\`${prompt.name}\``, prompt.description])).join('\n'),

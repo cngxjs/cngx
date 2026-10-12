@@ -106,6 +106,7 @@ describe('detectProject', () => {
       editors: { claude: false, cursor: false, vscode: false },
       mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'absent' },
       agentsMd: 'absent',
+      claudeInstructions: undefined,
       helperReadme: undefined,
       eslintConfig: undefined,
       ssr: false,
@@ -329,6 +330,16 @@ describe('detectProject', () => {
   it('finds the cngx block in AGENTS.md', async () => {
     expect((await detect({ 'AGENTS.md': '# Agents\n' })).agentsMd).toBe('present');
     expect((await detect({ 'AGENTS.md': '# Agents\n<!-- cngx:agents -->\n' })).agentsMd).toBe('wired');
+  });
+
+  it('finds the Claude Code instructions in the root first, then where ng new --ai-config puts them', async () => {
+    expect((await detect({ '.claude/CLAUDE.md': '# Rules\n' })).claudeInstructions).toEqual({
+      path: '.claude/CLAUDE.md',
+      state: 'present',
+    });
+    expect(
+      (await detect({ 'CLAUDE.md': '<!-- cngx:agents -->\n', '.claude/CLAUDE.md': '# Rules\n' })).claudeInstructions,
+    ).toEqual({ path: 'CLAUDE.md', state: 'wired' });
   });
 
   it('tells a generated helper readme from one someone else wrote', async () => {
