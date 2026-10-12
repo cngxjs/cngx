@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { Injector, signal } from '@angular/core';
+import {
+  Component,
+  EnvironmentInjector,
+  Injector,
+  createEnvironmentInjector,
+  signal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import {
@@ -128,5 +134,49 @@ describe('injectTransitionLog', () => {
     TestBed.tick();
 
     expect(log.values()).toEqual(['idle', 'loading', 'success', 'refreshing']);
+  });
+
+  it('records the starting value on the first flush, not at the call', () => {
+    const status = signal('idle');
+    const log = record(status);
+    expect(log.values()).toEqual([]);
+
+    status.set('loading');
+    TestBed.tick();
+    expect(log.values()).toEqual(['loading']);
+  });
+
+  it('stops recording when its injector is destroyed', () => {
+    const status = signal('idle');
+    const injector = createEnvironmentInjector([], TestBed.inject(EnvironmentInjector));
+    const log = injectTransitionLog(status, { injector });
+    TestBed.tick();
+
+    injector.destroy();
+    status.set('loading');
+    TestBed.tick();
+
+    expect(log.values()).toEqual(['idle']);
+  });
+
+  it('records in a component and stops when the component is destroyed', () => {
+    const status = signal('idle');
+
+    @Component({ selector: 'cngx-transition-log-host', template: '' })
+    class Host {
+      readonly log = injectTransitionLog(status);
+    }
+
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    status.set('loading');
+    fixture.detectChanges();
+    const { log } = fixture.componentInstance;
+
+    fixture.destroy();
+    status.set('success');
+    TestBed.tick();
+
+    expect(log.values()).toEqual(['idle', 'loading']);
   });
 });
