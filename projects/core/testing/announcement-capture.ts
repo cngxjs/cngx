@@ -1,0 +1,98 @@
+import { computed, type Signal } from '@angular/core';
+import {
+  createAnnouncementRecorder,
+  resolveHeardAnnouncements,
+  type CngxRecordedAnnouncement,
+} from '@cngx/core/utils';
+import { arrayEqual } from '@cngx/utils';
+
+/**
+ * Options for {@link createAnnouncementCapture}.
+ *
+ * @category core/testing
+ * @since 0.1.0
+ */
+export interface CngxAnnouncementCaptureOptions {
+  /** Subtree to observe. Defaults to the global `document`. */
+  readonly root?: Node;
+  /** Maximum entries kept; the oldest are dropped first. Defaults to 200. */
+  readonly limit?: number;
+}
+
+/**
+ * The handle {@link createAnnouncementCapture} returns.
+ *
+ * @category core/testing
+ * @since 0.1.0
+ */
+export interface CngxAnnouncementCapture {
+  /** Every text a live region exposed, heard or not, oldest first. */
+  readonly entries: Signal<readonly CngxRecordedAnnouncement[]>;
+  /**
+   * The texts assistive technology is expected to speak, oldest first:
+   * `entries` filtered through `resolveHeardAnnouncements`. Keeps its array
+   * reference while the heard texts do not change.
+   */
+  readonly heard: Signal<readonly string[]>;
+  /** Empties `entries` and `heard`. Recording continues. */
+  clear(): void;
+  /** Stops recording. `entries` and `heard` keep what they hold. */
+  stop(): void;
+}
+
+/**
+ * Captures what a screen reader is expected to hear while a spec runs, by
+ * observing every live region in the DOM. `heard` is the assertion target;
+ * `entries` holds every recorded write, including the ones not heard, with
+ * the facts (`origin`, `busy`, `suppressedBy`) that explain why.
+ *
+ * What counts as heard is decided by `resolveHeardAnnouncements`: a text
+ * change in a live region and the text read when `aria-busy` clears are
+ * heard; a write that is hidden, inert, outside an open `aria-modal` element
+ * or under `aria-busy` is not; a region inserted already holding its text is
+ * heard only for `role="alert"`, because `status`, `log` and bare
+ * `aria-live` regions are announced inconsistently on insertion.
+ *
+ * ```ts
+ * const capture = createAnnouncementCapture();
+ * TestBed.inject(CngxLiveAnnouncer).announce('Saved');
+ * vi.advanceTimersByTime(16);
+ * await Promise.resolve();
+ *
+ * expect(capture.heard()).toEqual(['Saved']);
+ * capture.stop();
+ * ```
+ *
+ * Timing: writes are seen when the `MutationObserver` callback runs, a
+ * microtask after the write, and `CngxLiveAnnouncer` writes 16 ms after
+ * `announce()`. Under fake timers, advance the clock by 16 ms and then
+ * `await Promise.resolve()` before reading; with real timers, await a timeout
+ * longer than 16 ms. Writes made directly into a region (a template binding
+ * after change detection, or plain DOM) need only the microtask. Under Jasmine, advance with `jasmine.clock().tick`;
+ * the capture uses no runner API.
+ *
+ * Text already in a region when the capture starts is not recorded, so start
+ * it after mounting and before acting. Call `stop()` in `afterEach`: the
+ * observer otherwise keeps running into later specs that share the document.
+ *
+ * @param options The subtree to observe and how many entries to keep.
+ *
+ * @category core/testing
+ * @since 0.1.0
+ * @relatedTo resolveHeardAnnouncements, createAnnouncementRecorder
+ */
+export function createAnnouncementCapture(
+  options: CngxAnnouncementCaptureOptions = {},
+): CngxAnnouncementCapture {
+  const recorder = createAnnouncementRecorder({ root: options.root, limit: options.limit });
+  const heard = computed(
+    () => resolveHeardAnnouncements(recorder.entries()).map((entry) => entry.text),
+    { equal: arrayEqual },
+  );
+  return {
+    entries: recorder.entries,
+    heard,
+    clear: () => recorder.clear(),
+    stop: () => recorder.destroy(),
+  };
+}
