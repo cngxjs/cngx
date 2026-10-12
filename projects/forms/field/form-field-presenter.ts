@@ -23,6 +23,15 @@ import {
 } from './form-field.token';
 
 /**
+ * Narrows a Signal Forms `min`/`max` read to the numeric bound the presenter
+ * formats; any other value type (a date or string bound) reads as unset.
+ * @internal
+ */
+function numericBound(bound: unknown): number | undefined {
+  return typeof bound === 'number' ? bound : undefined;
+}
+
+/**
  * Picks the matching formatter for a min/max pair and returns its output, or
  * `undefined` when neither bound is set.
  * @internal
@@ -247,9 +256,9 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
   /** Maximum string length from `maxLength()` validator, or `undefined`. */
   readonly maxLength = computed(() => this.fieldState().maxLength?.());
   /** Minimum numeric value from `min()` validator, or `undefined`. */
-  readonly min = computed(() => this.fieldState().min?.());
+  readonly min = computed(() => numericBound(this.fieldState().min?.()));
   /** Maximum numeric value from `max()` validator, or `undefined`. */
-  readonly max = computed(() => this.fieldState().max?.());
+  readonly max = computed(() => numericBound(this.fieldState().max?.()));
   /** Regex patterns from `pattern()` validators. */
   readonly pattern = computed(() => this.fieldState().pattern());
 
