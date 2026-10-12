@@ -1,5 +1,6 @@
 import {
   computed,
+  EnvironmentInjector,
   inject,
   InjectionToken,
   type Provider,
@@ -32,6 +33,15 @@ export const CNGX_COMMAND_SOURCE = new InjectionToken<readonly CngxCommandSource
 );
 
 /**
+ * @internal Per-level registry: the sources of every `provideCommands` level
+ * above, plus this level's own. Resolved once per injector by the factory in
+ * `provideCommands`; not part of the public API.
+ */
+const CNGX_COMMAND_REGISTRY = new InjectionToken<readonly CngxCommandSource[]>(
+  'CNGX_COMMAND_REGISTRY',
+);
+
+/**
  * Registers one or more command sources. Each source becomes a `multi` entry
  * on {@link CNGX_COMMAND_SOURCE}; call `provideCommands` from several app parts
  * and `injectCommands` merges all of them.
@@ -52,7 +62,23 @@ export const CNGX_COMMAND_SOURCE = new InjectionToken<readonly CngxCommandSource
  * @since 0.1.0
  */
 export function provideCommands(...sources: CngxCommandSource[]): Provider[] {
-  return sources.map((source) => ({ provide: CNGX_COMMAND_SOURCE, useValue: source, multi: true }));
+  // Empty call: the parent registry flows through untouched.
+  if (sources.length === 0) {
+    return [];
+  }
+  return [
+    ...sources.map((source) => ({ provide: CNGX_COMMAND_SOURCE, useValue: source, multi: true })),
+    {
+      provide: CNGX_COMMAND_REGISTRY,
+      // The nearest CNGX_COMMAND_SOURCE is this level's own multi list, so the
+      // same factory works for environment, providers and viewProviders scopes.
+      useFactory: () =>
+        mergeSources(
+          inject(CNGX_COMMAND_REGISTRY, { skipSelf: true, optional: true }) ?? [],
+          inject(CNGX_COMMAND_SOURCE, { optional: true }) ?? [],
+        ),
+    },
+  ];
 }
 
 /**
@@ -68,8 +94,20 @@ export function provideCommands(...sources: CngxCommandSource[]): Provider[] {
  * @since 0.1.0
  */
 export function injectCommands(): Signal<readonly CngxCommand[]> {
-  const sources = inject(CNGX_COMMAND_SOURCE, { optional: true }) ?? [];
+  // A node resolves its element chain before its environment chain, so a
+  // routed component under a shell registry never reaches the route's
+  // registry. Read both trees once and join them: environment scopes first.
+  const sources = mergeSources(
+    inject(EnvironmentInjector).get(CNGX_COMMAND_REGISTRY, null) ?? [],
+    inject(CNGX_COMMAND_REGISTRY, { optional: true }) ?? [],
+    inject(CNGX_COMMAND_SOURCE, { optional: true }) ?? [],
+  );
   return computed(() => sources.flatMap(readSource), { equal: commandsEqual });
+}
+
+/** @internal Concatenates in argument order and drops repeated source references. */
+function mergeSources(...lists: (readonly CngxCommandSource[])[]): readonly CngxCommandSource[] {
+  return [...new Set(lists.flat())];
 }
 
 /** @internal Reads a source, unwrapping a signal or passing an array through. */
