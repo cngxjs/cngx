@@ -1,0 +1,108 @@
+name: Consumer compat
+
+# Installs the packed libs into fresh Angular apps and builds them, the way a
+# consumer would. Slow (a full `ng new` + install per row), so it runs nightly,
+# on demand, and on PRs that touch what a consumer installs.
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'projects/*/package.json'
+      - 'scripts/consumer-fixture.mjs'
+      - 'scripts/pack-libs.mjs'
+      - 'scripts/peer-deps-guard.mjs'
+      - '.github/workflows/consumer-compat.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: consumer-compat-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build all libraries
+        run: npm run build:libs
+      - name: Pack and lint the tarballs
+        run: npm run pack:check
+      - name: Upload tarballs
+        uses: actions/upload-artifact@v4
+        with:
+          name: tarballs
+          path: .consumer-compat/tarballs/*.tgz
+          retention-days: 1
+
+  fixture:
+    needs: pack
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Lowest version the peer range allows, without any optional peer.
+          - { angular: '21.2.0', variant: minimal }
+          - { angular: '21', variant: full }
+          - { angular: '21', variant: zone }
+          - { angular: '21', variant: ssr }
+    name: angular-${{ matrix.angular }}-${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+      - name: Download tarballs
+        uses: actions/download-artifact@v4
+        with:
+          name: tarballs
+          path: .consumer-compat/tarballs
+      - name: Build the fixture app
+        run: node scripts/consumer-fixture.mjs --angular ${{ matrix.angular }} --variant ${{ matrix.variant }}
+
+  # The peer ranges name Angular 21 only. This row installs the same tarballs
+  # into Angular 22 ignoring the declared peers, to show whether the code runs
+  # there. Informational until the ranges are widened; then it moves into the
+  # strict matrix above without --ignore-peers.
+  forward-compat:
+    needs: pack
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [full, minimal]
+    name: angular-22-${{ matrix.variant }}-ignoring-peers
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+      - name: Download tarballs
+        uses: actions/download-artifact@v4
+        with:
+          name: tarballs
+          path: .consumer-compat/tarballs
+      - name: Build the fixture app
+        run: node scripts/consumer-fixture.mjs --angular 22 --variant ${{ matrix.variant }} --ignore-peers
