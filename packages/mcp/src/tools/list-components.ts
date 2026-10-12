@@ -43,6 +43,9 @@ export function listComponents(docs: DocsIndex, opts: ListComponentsOptions = {}
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/** A question this tool answers; the ng-add helper README lists it. */
+export const example = 'Which directives does @cngx/common ship?';
+
 export function registerListComponents(server: McpServer, docs: DocsIndex): void {
   server.registerTool(
     'list_components',

@@ -187,6 +187,9 @@ export function getConfig(docs: DocsIndex, name: string): ConfigResult | null {
   };
 }
 
+/** A question this tool answers; the ng-add helper README lists it. */
+export const example = 'How do I set app-wide defaults for CngxSelect?';
+
 export function registerGetConfig(server: McpServer, docs: DocsIndex): void {
   server.registerTool(
     'get_config',

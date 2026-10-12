@@ -32,6 +32,9 @@ export function findComponents(docs: DocsIndex, query: string): FindComponentMat
   }));
 }
 
+/** A question this tool answers; the ng-add helper README lists it. */
+export const example = 'Which cngx component renders a searchable single select?';
+
 export function registerFindComponent(server: McpServer, docs: DocsIndex): void {
   server.registerTool(
     'find_component',

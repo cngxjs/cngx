@@ -78,6 +78,9 @@ export function getApi(docs: DocsIndex, name: string): ApiResult | null {
   };
 }
 
+/** A question this tool answers; the ng-add helper README lists it. */
+export const example = 'What inputs and outputs does CngxSelect take?';
+
 export function registerGetApi(server: McpServer, docs: DocsIndex): void {
   server.registerTool(
     'get_api',

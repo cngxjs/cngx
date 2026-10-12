@@ -27,6 +27,9 @@ export function getDiTokens(docs: DocsIndex, query?: string): DiTokenView[] {
     }));
 }
 
+/** A question this tool answers; the ng-add helper README lists it. */
+export const example = 'Which DI tokens configure the select family?';
+
 export function registerGetDiTokens(server: McpServer, docs: DocsIndex): void {
   server.registerTool(
     'get_di_tokens',

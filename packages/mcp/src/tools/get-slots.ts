@@ -32,6 +32,9 @@ export function getSlots(docs: DocsIndex, name: string): SlotsResult | null {
   };
 }
 
+/** A question this tool answers; the ng-add helper README lists it. */
+export const example = 'Which template slots can I override on CngxSelect?';
+
 export function registerGetSlots(server: McpServer, docs: DocsIndex): void {
   server.registerTool(
     'get_slots',

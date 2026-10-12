@@ -65,6 +65,9 @@ export function migrateUsage(bundled: DocsIndex, args: MigrateUsageArgs, deps: M
   };
 }
 
+/** A question this tool answers; the ng-add helper README lists it. */
+export const example = 'What breaks between cngx 0.1.0-rc.5 and 0.1.0?';
+
 export function registerMigrateUsage(server: McpServer, docs: DocsIndex): void {
   server.registerTool(
     'migrate_usage',
