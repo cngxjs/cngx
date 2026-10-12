@@ -3584,7 +3584,8 @@ cngx-radio-group .cngx-radio + .cngx-radio {
 
 .demo-card-tile {
   padding: 8px 12px;
-  background: var(--cngx-card-bg, #f8fafc);
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
   border-radius: 4px;
 }
 
