@@ -11,11 +11,6 @@ import {
 
 type TextPattern = string | RegExp;
 
-interface MatcherResult {
-  readonly pass: boolean;
-  readonly message: () => string;
-}
-
 const SUPPRESSION_WORDS: Record<CngxAnnouncementSuppression, string> = {
   hidden: 'inside a hidden element',
   'aria-hidden': 'inside an aria-hidden="true" element',
@@ -95,12 +90,13 @@ function regionWords(entry: CngxRecordedAnnouncement): string {
  */
 function unheardWords(entry: CngxRecordedAnnouncement): string {
   const reason = resolveUnheardReason(entry);
+  // The null check only narrows the type: 'suppressed' implies a suppressedBy.
   if (reason === 'suppressed' && entry.suppressedBy !== null) {
     return `suppressed, ${SUPPRESSION_WORDS[entry.suppressedBy]}`;
   }
   if (reason === 'busy') {
-    // A busy write is replayed by the flip only when the same entry would be
-    // heard without busy; an appearing non-alert region is not replayed.
+    // The recorder's flip replays exactly the busy entries the judgement would
+    // hear without busy; both read one rule in @cngx/core/utils.
     const replayed = resolveUnheardReason({ ...entry, busy: false }) === null;
     return replayed
       ? 'written under aria-busy="true"; it counts as heard only through a later busy-cleared entry'
@@ -178,7 +174,10 @@ function withFallback(lines: string[], expected: TextPattern): string[] {
  */
 export const cngxAnnouncementMatchers = {
   /** Asserts one heard text equals the string, or matches the RegExp. */
-  toHaveHeard(received: unknown, expected: TextPattern): MatcherResult {
+  toHaveHeard(
+    received: unknown,
+    expected: string | RegExp,
+  ): { pass: boolean; message: () => string } {
     assertCapture(received, 'toHaveHeard');
     assertPattern(expected, 'toHaveHeard');
     const heard = received.heard();
@@ -199,7 +198,10 @@ export const cngxAnnouncementMatchers = {
   },
 
   /** Asserts the heard texts contain the expected ones in this order, other texts allowed between. */
-  toHaveHeardInOrder(received: unknown, expected: readonly TextPattern[]): MatcherResult {
+  toHaveHeardInOrder(
+    received: unknown,
+    expected: readonly (string | RegExp)[],
+  ): { pass: boolean; message: () => string } {
     assertCapture(received, 'toHaveHeardInOrder');
     assertPatternList(expected, 'toHaveHeardInOrder');
     const heard = received.heard();
