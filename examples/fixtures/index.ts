@@ -1,6 +1,13 @@
 export { PEOPLE, type Person } from './people.fixture';
 export { ORG_TREE, type Employee } from './employees-tree.fixture';
 export { type DJProduct, type DJCategory } from './dummyjson.fixture';
+export { createIsolatedRoot, type IsolatedRoot } from './isolated-root.fixture';
+export {
+  DEMO_PARTIAL_PACK,
+  demoPackParam,
+  reloadWithPack,
+  type DemoPackParam,
+} from './i18n-pack.fixture';
 export {
   FILTER_BUILDER_FIELDS,
   FILTER_BUILDER_PEOPLE,

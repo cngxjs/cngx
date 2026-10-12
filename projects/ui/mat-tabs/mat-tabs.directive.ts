@@ -213,7 +213,7 @@ export class CngxMatTabs {
   // Shared with `[cngxMatTabNav]` - one body, two hosts (Pillar 3).
   // Structural equal lives in the factory so the projector doesn't
   // churn on no-op aggregator re-emissions.
-  private readonly aggregatedErrorTabs = createAggregatedErrorTabs(this.presenter);
+  private readonly aggregatedErrorTabs = createAggregatedErrorTabs(this.presenter, this.i18n);
 
   constructor() {
     const matTabsConfig = this.matTabsConfig;

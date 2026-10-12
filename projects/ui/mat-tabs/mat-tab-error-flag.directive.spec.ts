@@ -105,3 +105,75 @@ describe('CngxMatTabErrorFlag attribute directive', () => {
     expect(presenter.tabs()[0].errorMessage()).toBeUndefined();
   });
 });
+
+describe('CngxMatTabErrorFlag header decoration', () => {
+  async function settle(fixture: ComponentFixture<unknown>): Promise<void> {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+  }
+
+  function tabButtons(fixture: ComponentFixture<unknown>): HTMLElement[] {
+    return Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('.mat-mdc-tab'),
+    );
+  }
+
+  test('a string flag badges the tab button and describes it with the message', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(FlagHostCmp);
+    await settle(fixture);
+    const id = presenterOf(fixture).tabs()[0].id;
+    const [one, two] = tabButtons(fixture);
+    expect(one.classList.contains('cngx-mat-tab--has-errors')).toBe(false);
+    expect(one.getAttribute('aria-describedby')).toBeNull();
+
+    fixture.componentInstance.flag.set('Required fields missing');
+    await settle(fixture);
+
+    expect(one.classList.contains('cngx-mat-tab--has-errors')).toBe(true);
+    expect(one.getAttribute('aria-describedby') ?? '').toContain(`${id}-errors`);
+    const span = one.querySelector(`span.cngx-sr-only[id="${id}-errors"]`);
+    expect(span?.textContent).toBe('Required fields missing');
+    expect(two.classList.contains('cngx-mat-tab--has-errors')).toBe(false);
+  });
+
+  test('a boolean flag falls back to the i18n error-count phrase', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(FlagHostCmp);
+    await settle(fixture);
+    const id = presenterOf(fixture).tabs()[0].id;
+
+    fixture.componentInstance.flag.set(true);
+    await settle(fixture);
+
+    const [one] = tabButtons(fixture);
+    expect(one.classList.contains('cngx-mat-tab--has-errors')).toBe(true);
+    const span = one.querySelector(`span.cngx-sr-only[id="${id}-errors"]`);
+    expect(span?.textContent).toBe('1 error');
+  });
+
+  test('clearing the flag removes the badge, the descriptor and the describedby ref', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(FlagHostCmp);
+    await settle(fixture);
+    const id = presenterOf(fixture).tabs()[0].id;
+
+    fixture.componentInstance.flag.set('Required fields missing');
+    await settle(fixture);
+    fixture.componentInstance.flag.set(false);
+    await settle(fixture);
+
+    const [one] = tabButtons(fixture);
+    expect(one.classList.contains('cngx-mat-tab--has-errors')).toBe(false);
+    expect(one.querySelector(`span.cngx-sr-only[id="${id}-errors"]`)).toBeNull();
+    expect(one.getAttribute('aria-describedby')).toBeNull();
+  });
+});

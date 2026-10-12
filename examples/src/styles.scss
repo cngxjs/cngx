@@ -6,12 +6,22 @@
 // fallbacks all ship from the cngx theming layers (reset/base/components),
 // imported below.
 
+// Material system tokens for the Material demos (see the `html` block below).
+// @use must precede every other rule, the CSS @imports included.
+@use '@angular/material' as mat;
+
 // Foundation: layer-order + system tokens + reset + base + aggregated
 // directive default CSS (bottom-sheet, backdrop, badge, divider, ripple,
 // async). @Directives cannot ship styleUrl so this single import is the
 // only path that delivers their defaults — leaving it out renders
 // bottom-sheet as a centred plain <dialog>, ripples invisible, etc.
 @import '../../projects/themes/cngx.css';
+
+// Material tabs bridge skin: paints the classes [cngxMatTabs] / [cngxMatTabNav]
+// project onto Material's tab buttons and links (rejection outline, has-errors
+// badge). A standalone asset the consumer imports once, because a @Directive
+// cannot ship a styleUrl; cngx.css deliberately leaves the Material sheets out.
+@import '../../projects/ui/mat-tabs/styles/mat-tabs.css';
 
 :root {
   // `color-scheme` is owned by the foundation (`projects/core/theming/
@@ -1171,6 +1181,18 @@ button.chip[aria-pressed='true'],
 }
 .cngx-ex-form-error:empty {
   visibility: hidden;
+}
+
+// Demo-only stacked form layout: label above field, used by the live
+// announcer and typed control stories.
+.cngx-ex-stack-form {
+  display: grid;
+  gap: var(--cngx-ex-stack-form-gap, 8px);
+  max-width: var(--cngx-ex-stack-form-max-width, 360px);
+  justify-items: start;
+}
+.cngx-ex-stack-form > input {
+  justify-self: stretch;
 }
 
 // Demo-only motion chrome for reduced-motion stories. Keyframes are
@@ -3951,11 +3973,24 @@ cngx-radio-group .cngx-radio + .cngx-radio {
   opacity: 0.6;
 }
 
-// Material theme — the prebuilt azure-blue palette so mat-select panels
-// render with proper Material chrome inside the demos. Imported here
-// alongside the cngx foundation so the dev server picks it up via HMR
-// (the angular.json `styles` array only reloads on full rebuild).
-@import '../../node_modules/@angular/material/prebuilt-themes/azure-blue.css';
+// Material theme: the azure-blue palette (same as the prebuilt azure-blue.css
+// this replaces) so Material widgets render with proper chrome in the demos.
+// `theme-type: color-scheme` emits light-dark() values, so Material follows the
+// same color-scheme flip as the cngx foundation instead of staying light on a
+// dark page. Roboto is loaded in index.html.
+html {
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+        theme-type: color-scheme,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
 
 // Demo-only accent for the stepper `chips` skin stories (matches the
 // reference screenshot). Static demo styling, not a library default;
@@ -4149,4 +4184,37 @@ mat-icon.demo-breadcrumb-icon {
    every layered one regardless of specificity or source order. */
 .demo-force-collapse .cngx-stepper::after {
   --cngx-stepper-collapse: 1;
+}
+
+/* Side-by-side frame for the core preference scope stories (CngxDensity,
+   CngxMotionScope, CngxContrast, CngxDir): an unscoped panel next to a scoped
+   one. Spacing, border and muted copy read the very tokens the scopes
+   re-resolve, so the scoped panel visibly diverges from its twin. */
+.demo-scope-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.demo-scope-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-sm, 8px);
+  padding: var(--cngx-space-md, 16px);
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-inline-start-width: 4px;
+  border-radius: 8px;
+  background: var(--cngx-color-surface, transparent);
+  color: var(--cngx-color-text, inherit);
+}
+
+.demo-scope-panel h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.demo-scope-panel p {
+  margin: 0;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
 }

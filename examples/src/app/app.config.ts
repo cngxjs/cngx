@@ -1,7 +1,14 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, type Provider } from '@angular/core';
+import {
+  ApplicationConfig,
+  provideBrowserGlobalErrorListeners,
+  type EnvironmentProviders,
+  type Provider,
+} from '@angular/core';
 import { provideRouter, TitleStrategy, withHashLocation } from '@angular/router';
 import { provideContrast, provideDensity, provideMotion, provideTextScale } from '@cngx/core';
 import { provideDialog } from '@cngx/common/dialog';
+import { provideCngxI18n, withDocumentLanguage, withPack, withPartialPack } from '@cngx/core/i18n';
+import { CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';
 import {
   provideFormField,
   withErrorMessages,
@@ -17,6 +24,7 @@ import {
 } from '@cngx/ui/feedback';
 
 import { DE_PACK, DEMO_LANG } from '../../fixtures/i18n-de.fixture';
+import { DEMO_PARTIAL_PACK, demoPackParam } from '../../fixtures/i18n-pack.fixture';
 import { routes } from './app.routes';
 import { CngxExamplesTitleStrategy } from './cngx-examples-title-strategy';
 
@@ -59,7 +67,12 @@ const fieldSkin = initialFieldSkin();
 // reference language pack and starts its language Signal in German.
 // LOCALE_ID is left alone, so Angular pipes in demo chrome need no
 // registerLocaleData; cngx formats through CNGX_LOCALE.
+// When `?pack=` is also given, the language file wins and `?lang=de` is
+// ignored, so the pack stories show the pack alone.
 function initialLanguagePack(): Provider[] {
+  if (demoPackParam() !== null) {
+    return [];
+  }
   try {
     if (new URLSearchParams(location.search).get('lang') !== 'de') {
       return [];
@@ -70,6 +83,23 @@ function initialLanguagePack(): Provider[] {
     // location may be unavailable; fall back to the English defaults.
   }
   return [];
+}
+
+// `?pack=de` / `?pack=partial` (before the hash) install the language file
+// through the real provideCngxI18n at the app root. The pack is app-wide:
+// every component reads its copy from root-shared tokens, so only a root
+// call reaches it. withDocumentLanguage('off') leaves the live page's
+// <html lang> / <html dir> alone; the pack stories show 'on' on a detached
+// document instead.
+function initialCngxPack(): EnvironmentProviders[] {
+  switch (demoPackParam()) {
+    case 'de':
+      return [provideCngxI18n(withPack(CNGX_LANGUAGE_DE), withDocumentLanguage('off'))];
+    case 'partial':
+      return [provideCngxI18n(withPartialPack(DEMO_PARTIAL_PACK), withDocumentLanguage('off'))];
+    default:
+      return [];
+  }
 }
 
 export const appConfig: ApplicationConfig = {
@@ -133,6 +163,7 @@ export const appConfig: ApplicationConfig = {
     // root-level access requires opting in via with*() feature functions.
     provideFeedback(withAlerts(), withBanners(), withToasts()),
     ...initialLanguagePack(),
+    ...initialCngxPack(),
     // CngxDialogOpener for imperative `dialog.open(Component)` usage.
     // Demo-only: stories that teach the programmatic path inject the opener
     // from this root provider so they do not need their own ApplicationConfig.

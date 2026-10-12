@@ -308,8 +308,7 @@
               }
             ],
             "styles": [
-              "examples/src/styles.scss",
-              "node_modules/@angular/material/prebuilt-themes/azure-blue.css"
+              "examples/src/styles.scss"
             ]
           },
           "configurations": {
