@@ -15,7 +15,7 @@ import { HELPER_README_PATH, MCP_CONFIGS, type ProjectFacts } from '../detect/de
 // eslint-disable-next-line @softarc/sheriff/dependency-rule, @softarc/sheriff/encapsulation
 import TEMPLATE from '../templates/helper-readme.md.tpl';
 import { instructionTargets } from './ai-tools';
-import { cngxPackages } from './dependencies';
+import { cngxPackages, selectedLibs } from './dependencies';
 import { MCP_PROMPTS, MCP_RESOURCES, MCP_TOOLS } from './mcp-capabilities.generated';
 import { type OnboardingAnswers, type Versions } from './model';
 
@@ -84,7 +84,7 @@ export function renderHelperReadme(facts: ProjectFacts, answers: OnboardingAnswe
   const body = fillTemplate(TEMPLATE, {
     version: versions.cngx,
     mcpVersion: versions.mcp,
-    packages: cngxPackages(answers)
+    packages: cngxPackages(selectedLibs(answers.libs), answers.theme)
       .map((name) => `- \`${name}@${versions.cngx}\``)
       .join('\n'),
     configs: tools.map((tool) => configLine(tool, facts, versions.mcp)).join('\n'),

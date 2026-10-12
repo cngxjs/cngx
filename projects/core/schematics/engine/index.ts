@@ -54,7 +54,6 @@ export {
   createProvenanceStamp,
   hasProvenanceMarker,
   hasProvenanceStamp,
-  type StampComment,
   withProvenanceMarker,
 } from './plan/provenance';
 export { addToArrayLiteral, type ArraySelector, hasArrayLiteral } from './edit/ts-edit';
