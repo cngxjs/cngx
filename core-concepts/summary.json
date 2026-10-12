@@ -28,6 +28,10 @@
         "file": "async-state-machine.md"
     },
     {
+        "title": "Testing",
+        "file": "testing.md"
+    },
+    {
         "title": "Store Bridges & Async Observability",
         "file": "store-bridges-and-observability.md"
     },
