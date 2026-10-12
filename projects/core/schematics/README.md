@@ -88,8 +88,9 @@ minified). `@angular-devkit/*`, `@schematics/angular`, `typescript` and
 `@angular/compiler` stay external: they come from the consumer's CLI install.
 Budgets: 256 KB minified / 90 KB gzip per entry, 20 KB per shim.
 `scripts/publish.mjs` writes `dist/core/schematics/versions.json` (the cngx,
-`@cngx/mcp` and `@cngx/eslint-plugin` pins) and ships a lib's bundle only when
-its source `package.json` declares `schematics`.
+`@cngx/mcp` and `@cngx/eslint-plugin` pins, plus the `@angular/core` range
+`@cngx/core` peers on, which `ng add` refuses an older app against) and ships a
+lib's bundle only when its source `package.json` declares `schematics`.
 
 ## CLI behaviour worth knowing
 
