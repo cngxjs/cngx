@@ -1,0 +1,27 @@
+import { type Tree } from '../fs/tree';
+import { type StepResult } from '../plan/change';
+import { type ChangePlan, createChangePlan } from '../plan/plan';
+
+/**
+ * A hand-written migration step for what a rename table cannot express: a
+ * changed provider signature, a removed input with a replacement pattern.
+ * It reads the tree the way detection does and plans changes; it never
+ * writes, `applyChangePlan` does. `manifest` is the app's install record,
+ * typed by the caller so the engine stays free of the onboarding model.
+ */
+export interface Codemod<TManifest> {
+  readonly id: string;
+  /** The release the codemod migrates from and the one it migrates to. */
+  readonly from: string;
+  readonly to: string;
+  readonly plan: (tree: Tree, manifest: TManifest) => StepResult;
+}
+
+/** Every codemod's plan, in list order, as one change plan. */
+export function planCodemods<TManifest>(
+  codemods: readonly Codemod<TManifest>[],
+  tree: Tree,
+  manifest: TManifest,
+): ChangePlan {
+  return createChangePlan(codemods.map((codemod) => codemod.plan(tree, manifest)));
+}

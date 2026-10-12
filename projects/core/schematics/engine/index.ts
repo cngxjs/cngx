@@ -59,9 +59,19 @@ export {
   withProvenanceMarker,
 } from './plan/provenance';
 export { addToArrayLiteral, type ArraySelector, hasArrayLiteral } from './edit/ts-edit';
-export { findElements, insertAttribute, parseTemplateContent } from './edit/template-edit';
+export { findElements, insertAttribute, parseTemplateContent, walkNodes } from './edit/template-edit';
 export { hasStyleImport, insertStyleImport } from './edit/style-edit';
+export {
+  EMPTY_RENAME_TABLE,
+  isEmptyRenameTable,
+  type MemberRename,
+  type RenameTable,
+  renameInSource,
+  renameInTemplate,
+} from './migrate/rename-table';
+export { type Codemod, planCodemods } from './migrate/codemod';
 export { applyChangePlan } from './apply/apply';
+export { applyRenameTable } from './apply/rename';
 export { delegateNgAdd } from './shim/delegate-ng-add';
 export {
   DEFAULT_ESLINT_PLUGIN_VERSION,
