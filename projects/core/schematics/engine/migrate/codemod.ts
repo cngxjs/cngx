@@ -8,12 +8,12 @@ import { type ChangePlan, createChangePlan } from '../plan/plan';
  * It reads the tree the way detection does and plans changes; it never
  * writes, `applyChangePlan` does. `manifest` is the app's install record,
  * typed by the caller so the engine stays free of the onboarding model.
+ * The release it belongs to is its migration's `migrations.json` entry;
+ * `ng update` picks the entries to run, so a codemod repeats no version.
  */
 export interface Codemod<TManifest> {
+  /** Names the codemod in a migration's list; its changes carry their own ids. */
   readonly id: string;
-  /** The release the codemod migrates from and the one it migrates to. */
-  readonly from: string;
-  readonly to: string;
   readonly plan: (tree: Tree, manifest: TManifest) => StepResult;
 }
 

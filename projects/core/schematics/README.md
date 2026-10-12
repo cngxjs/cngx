@@ -13,9 +13,9 @@ projects/core/schematics/
     fs/                  Tree adapters: memory (specs) and node (CLI runs)
     plan/                Change model, ChangePlan, provenance, report
     edit/                pure TS, template and style edits
-    apply/               applyChangePlan and applyRenameTable: the effectful Rules
+    apply/               applyChangePlan: the one effectful step, a Rule
     manifest/            package.json reading, lockstep pins
-    migrate/             pure rename-table transforms and the Codemod contract
+    migrate/             rename table, planRenames and the Codemod contract
     prompt/              prompt flow over @inquirer (shell adapter)
     render/              todo list and summary, listr2 or plain lines
     shim/                delegateNgAdd, the body of every package shim
@@ -85,8 +85,10 @@ breaking change adds a migration:
    renames, codemods, bundleDir: __dirname })` (the build bundles every
    `migrations/<version>/index.ts`).
 2. Renames are data: a `RenameTable` on top of `EMPTY_RENAME_TABLE` for
-   classes, selectors, inputs, outputs, tokens and import paths. Anything a
-   table cannot say is a `Codemod` that reads the tree and plans changes.
+   classes, selectors, inputs, outputs, `exportAs` names, tokens and import
+   paths. `planRenames` turns it into one edit per file plus a note for
+   every spot it cannot reach. Anything a table cannot say is a `Codemod`
+   that reads the renamed tree and plans changes.
 3. A `migrations.json` entry with the version and `./<version>/index#migrate`.
 4. A spec next to the entry and a fixture pair under
    `testing/fixtures/migrations/<version>/{before,after}` holding only the

@@ -16,15 +16,11 @@ function note(id: string): Change {
 
 const READS_CONFIG: Codemod<Manifest> = {
   id: 'reads-config',
-  from: '0.1.0',
-  to: '0.2.0',
   plan: (tree) => ({ changes: tree.exists('src/app/app.config.ts') ? [note('config')] : [], skipped: [] }),
 };
 
 const READS_MANIFEST: Codemod<Manifest> = {
   id: 'reads-manifest',
-  from: '0.1.0',
-  to: '0.2.0',
   plan: (_tree, manifest) => ({
     changes: [],
     skipped: [{ id: `theme:${manifest.theme}`, label: 'Theme', reason: 'already migrated' }],

@@ -20,8 +20,6 @@ const RENAMES: RenameTable = {
 
 const ADDS_NOTE: Codemod<InstallManifest | undefined> = {
   id: 'card-elevation',
-  from: '0.1.0',
-  to: '0.2.0',
   plan: (tree) => ({
     changes: tree.readText('src/app/app.ts').includes('elevated')
       ? [
@@ -61,18 +59,20 @@ describe('createMigration', () => {
     expect(readTree(tree)).toEqual(after);
   });
 
-  it('names every renamed file and prints the codemod plan', async () => {
+  it('prints the renames and the codemod plan before applying them', async () => {
     const { before } = readMigrationFixture('rename');
 
     const { logs } = await runRule(migration([ADDS_NOTE]), createMemoryTree(before));
 
     expect(logs[0]).toBe('cngx 0.2.0 migration');
+    expect(logs[1]).toContain('Rename cngx APIs in src/app/app.html - renamed in this cngx release');
+    expect(logs[1]).toContain('Rename cngx APIs in src/app/app.ts - renamed in this cngx release');
     expect(logs[1]).toContain('Review the card elevation - `elevated` became a skin');
-    expect([...logs.slice(2)].sort()).toEqual(['Renamed cngx APIs in src/app/app.html', 'Renamed cngx APIs in src/app/app.ts']);
+    expect(logs).toHaveLength(2);
   });
 
-  it('plans the codemods on the tree before the renames', async () => {
-    const { before } = readMigrationFixture('rename');
+  it('plans the codemods on the renamed tree and leaves the real tree to the apply', async () => {
+    const { before, after } = readMigrationFixture('rename');
     const seen: string[] = [];
     const spy: Codemod<InstallManifest | undefined> = {
       ...ADDS_NOTE,
@@ -84,7 +84,7 @@ describe('createMigration', () => {
 
     await runRule(migration([spy]), createMemoryTree(before));
 
-    expect(seen).toEqual([before['src/app/app.html']]);
+    expect(seen).toEqual([after['src/app/app.html']]);
   });
 
   it('is idempotent', async () => {

@@ -1,15 +1,15 @@
 import { join } from 'node:path';
 
-import { chain, type Rule, type SchematicContext, type Tree } from '@angular-devkit/schematics';
+import { type Rule, type SchematicContext, type Tree } from '@angular-devkit/schematics';
 import { readWorkspace } from '@schematics/angular/utility';
 
 import {
   applyChangePlan,
-  applyRenameTable,
   type Codemod,
   createChangePlan,
   describeChangePlan,
   planCodemods,
+  planRenames,
   type ReleaseVersions,
   type RenameTable,
   resolveVersions,
@@ -64,27 +64,46 @@ async function planReruns(
   }
 }
 
+// The tree as it reads once the renames are applied, so codemods and
+// re-runs plan against the new names. A branch: the real tree changes
+// only when the plan is applied.
+function previewRenames(tree: Tree, renames: StepResult): Tree {
+  const preview = tree.branch();
+  for (const change of renames.changes) {
+    if (change.kind === 'edit-file') {
+      preview.overwrite(change.path, change.edit(preview.readText(change.path)));
+    }
+  }
+  return preview;
+}
+
 /**
- * One `ng update` migration: rename what the table names across the
- * workspace, plan the codemods, re-run the install steps the manifest
- * records, and record the new release in it. The plan is printed before it
- * is applied, so nothing changes unannounced.
+ * One `ng update` migration: plan the renames across the workspace, plan
+ * the codemods and the re-run of the install steps against the renamed
+ * tree, and record the new release in the manifest. The whole plan is
+ * printed before it is applied, so nothing changes unannounced; the
+ * manifest records only the install steps, not the renames.
  */
 export function createMigration(migration: Migration): Rule {
   return async (tree: Tree, context: SchematicContext) => {
     // The entry sits one folder below `schematics/`, where versions.json lives.
     const { versions, warning } = resolveVersions(join(migration.bundleDir, '..'));
+    const provenance = { source: 'ng-update', version: versions.cngx };
     const manifest = readManifest(tree);
-    const steps = createChangePlan(
-      [planCodemods(migration.codemods, tree, manifest), await planReruns(tree, manifest, versions)],
+    const renames = planRenames(migration.renames, tree, provenance);
+    const renamed = previewRenames(tree, renames);
+    const reruns = await planReruns(renamed, manifest, versions);
+    const record =
+      manifest === undefined
+        ? { changes: [], skipped: [] }
+        : updateManifest(manifest, versions, createChangePlan([reruns]), new Date().toISOString());
+    const plan = createChangePlan(
+      [renames, planCodemods(migration.codemods, renamed, manifest), reruns, record],
       warning === undefined ? [] : [warning],
     );
-    const record =
-      manifest === undefined ? { changes: [], skipped: [] } : updateManifest(manifest, versions, steps, new Date().toISOString());
-    const plan = createChangePlan([steps, record], steps.warnings);
 
     context.logger.info(`cngx ${migration.version} migration`);
     context.logger.info(describeChangePlan(plan));
-    return chain([applyRenameTable(migration.renames), applyChangePlan(plan)]);
+    return applyChangePlan(plan);
   };
 }
