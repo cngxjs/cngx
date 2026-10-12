@@ -68,6 +68,9 @@
     "publish:dry": "node scripts/publish.mjs --dry-run --bump patch",
     "publish:rc": "node scripts/publish.mjs --bump prerelease",
     "publish:rc:dry": "node scripts/publish.mjs --dry-run --bump prerelease",
+    "pack:libs": "node scripts/pack-libs.mjs",
+    "pack:check": "node scripts/pack-libs.mjs --check",
+    "check:peers": "node scripts/peer-deps-guard.mjs",
     "e2e": "playwright test"
   },
   "private": true,
@@ -99,6 +102,7 @@
     "@angular/build": "^21.2.2",
     "@angular/cli": "^21.2.2",
     "@angular/compiler-cli": "^21.2.4",
+    "@arethetypeswrong/cli": "^0.18.5",
     "@cngxjs/compodocx": "^0.8.0",
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
@@ -127,6 +131,7 @@
     "picocolors": "1.1.1",
     "playwright-ng-schematics": "^21.0.9",
     "prettier": "^3.8.1",
+    "publint": "^0.3.25",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.56.1",
     "vitest": "^4.0.8"
