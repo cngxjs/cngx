@@ -220,6 +220,21 @@
       "artifact": "pack/recipes/ui-paginator-paginator-behaviors.md",
       "source": "examples/stories/ui/paginator/paginator-behaviors/config-formats-and-templates.story.ts",
       "contentHash": "sha256:467134a6d04c49ec02414ba128f57b05abd311ae48726d80e9cc5c214100835b"
+    },
+    {
+      "artifact": "pack/recipes/common-data-async-resource.md",
+      "source": "examples/stories/common/data/async-resource/from-resource-and-http-resource.story.ts",
+      "contentHash": "sha256:ae0a9b3681bdd7c47e3e9fd69d9e54593b121520a45cb74c8ce364eb95858cb0"
+    },
+    {
+      "artifact": "pack/recipes/core-utils-aggregate-async-state.md",
+      "source": "examples/stories/core/utils/aggregate-async-state/create-aggregate-async-state.story.ts",
+      "contentHash": "sha256:f0c053e1f80559485c3a81d31002491b93e06563ae4c86243cdbd9aceca10802"
+    },
+    {
+      "artifact": "pack/recipes/core-utils-transition-tracker.md",
+      "source": "examples/stories/core/utils/transition-tracker/status-transitions.story.ts",
+      "contentHash": "sha256:b183db020d6f60e1122fab6750b2b4eb6e4575eefc7233160636405df950e021"
     }
   ],
   "theming": {
