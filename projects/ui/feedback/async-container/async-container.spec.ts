@@ -341,6 +341,97 @@ describe('CngxAsyncContainer', () => {
       expect(container.getAttribute('aria-busy')).toBe('true');
     });
 
+    it('swaps content in without a skeleton when a first load beats showDelay', () => {
+      const { fixture, container, state } = setup();
+      fixture.componentInstance.showDelay.set(120);
+      fixture.componentInstance.minDwell.set(400);
+      state.set('loading');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(100);
+      fixture.detectChanges();
+
+      state.setSuccess(['Alice']);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      expect(query(container, '.skeleton')).toBeNull();
+      expect(query(container, '.content')).toBeTruthy();
+
+      vi.advanceTimersByTime(500);
+      fixture.detectChanges();
+      expect(query(container, '.skeleton')).toBeNull();
+    });
+
+    describe('first-load skeleton hold', () => {
+      // Opens the skeleton with showDelay 0 and minDwell 400, so every exit
+      // below lands 0ms into the 400ms dwell.
+      function showSkeleton() {
+        const ctx = setup();
+        ctx.fixture.componentInstance.minDwell.set(400);
+        ctx.state.set('loading');
+        ctx.fixture.detectChanges();
+        TestBed.flushEffects();
+        openGate(ctx.fixture);
+        expect(query(ctx.container, '.skeleton')).toBeTruthy();
+        return ctx;
+      }
+
+      function settle(fixture: ReturnType<typeof TestBed.createComponent>): void {
+        fixture.detectChanges();
+        TestBed.flushEffects();
+        fixture.detectChanges();
+      }
+
+      it('holds the skeleton for minDwell before content swaps in', () => {
+        const { fixture, container, state } = showSkeleton();
+        state.setSuccess(['Alice']);
+        settle(fixture);
+        expect(query(container, '.skeleton')).toBeTruthy();
+        expect(query(container, '.content')).toBeNull();
+        expect(container.getAttribute('aria-busy')).toBeNull();
+
+        vi.advanceTimersByTime(200);
+        fixture.detectChanges();
+        expect(query(container, '.skeleton')).toBeTruthy();
+
+        vi.advanceTimersByTime(200);
+        fixture.detectChanges();
+        expect(query(container, '.skeleton')).toBeNull();
+        expect(query(container, '.content')).toBeTruthy();
+      });
+
+      it('holds the skeleton for minDwell before the empty view swaps in', () => {
+        const { fixture, container, state } = showSkeleton();
+        state.setSuccess([]);
+        settle(fixture);
+        expect(query(container, '.skeleton')).toBeTruthy();
+        expect(query(container, '.empty')).toBeNull();
+
+        vi.advanceTimersByTime(400);
+        fixture.detectChanges();
+        expect(query(container, '.skeleton')).toBeNull();
+        expect(query(container, '.empty')).toBeTruthy();
+      });
+
+      it('replaces the skeleton with the error view immediately', () => {
+        const { fixture, container, state } = showSkeleton();
+        state.setError('Network failure');
+        settle(fixture);
+        expect(query(container, '.skeleton')).toBeNull();
+        expect(query(container, '.error')).toBeTruthy();
+      });
+
+      it('clears the skeleton immediately on a reset to idle', () => {
+        const { fixture, container, state } = showSkeleton();
+        state.reset();
+        settle(fixture);
+        expect(query(container, '.skeleton')).toBeNull();
+        expect(query(container, '.content')).toBeNull();
+        expect(query(container, '.error')).toBeNull();
+      });
+    });
+
     it('never renders the refresh bar for a sub-showDelay refresh', () => {
       const { fixture, container, state } = setup();
       fixture.componentInstance.showDelay.set(120);

@@ -88,7 +88,7 @@ readonly state = injectAsyncState(() => this.loadItems$);
 
 #### Refresh Indicator
 
-A built-in refresh bar appears when data is visible but loading (refresh scenario). Both the refresh bar and the first-load skeleton view debounce their show/hide through `createVisibilityGate`, so a fast refresh never flashes the bar: they honor `showDelay` and `minDwell` from the `CNGX_LOADING_CONFIG` cascade in `@cngx/core/utils`. Customization via CSS:
+A built-in refresh bar appears when data is visible but loading (refresh scenario). Both the refresh bar and the first-load skeleton view debounce their show/hide through `createVisibilityGate`, so a fast refresh never flashes the bar: they honor `showDelay` and `minDwell` from the `CNGX_LOADING_CONFIG` cascade in `@cngx/core/utils`. A first load faster than `showDelay` never renders the skeleton. Once the skeleton is shown it holds for `minDwell`: a `content` or `empty` result waits and swaps in when the dwell ends, an error replaces the skeleton immediately, and a reset to idle clears it immediately. `aria-busy` and the live-region announcement follow the state, not the held view. Customization via CSS:
 
 ```scss
 .cngx-async-container--refreshing::before {
