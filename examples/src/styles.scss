@@ -3623,7 +3623,8 @@ cngx-radio-group .cngx-radio + .cngx-radio {
 
 .demo-card-cell {
   padding: 16px;
-  background: var(--cngx-card-bg, #f8fafc);
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
   border-radius: 6px;
   text-align: center;
 }
