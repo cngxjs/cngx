@@ -37,6 +37,17 @@ describe('schematics mcp capabilities', () => {
     expect(readFileSync(resolve(ROOT, OUT), 'utf8')).toBe(renderCapabilityModule(readRegistry()));
   });
 
+  it('keeps the module when a tool changes only its logic', () => {
+    const files = readRegistry();
+    const touched = files.map((file) =>
+      file.path.endsWith('/find-component.ts')
+        ? { ...file, text: `${file.text}\nexport const unrelated = 1;\n` }
+        : file,
+    );
+
+    expect(renderCapabilityModule(touched)).toBe(renderCapabilityModule(files));
+  });
+
   it('lists every tool the server registers, each with an example question', () => {
     const index = readFileSync(resolve(ROOT, MCP_REGISTRY_ROOT, 'index.ts'), 'utf8');
     const registered = [...index.matchAll(/^\s*(register\w+)\(server, docs\);/gm)].map(
