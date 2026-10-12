@@ -173,6 +173,17 @@ describe('resolveUnheardReason', () => {
     );
   });
 
+  it.each([
+    ['insertion', 'alert status', null],
+    ['became-live', 'alert status', null],
+    ['insertion', ' alert ', null],
+    ['insertion', 'status alert', 'unreliable-insertion'],
+    ['became-live', 'status alert', 'unreliable-insertion'],
+    ['insertion', '', 'unreliable-insertion'],
+  ] as const)('reads role by its first token: %s with role %j -> %s', (origin, role, reason) => {
+    expect(resolveUnheardReason(entry({ origin, role }))).toBe(reason);
+  });
+
   it('hears a busy flip', () => {
     expect(resolveUnheardReason(entry({ origin: 'busy-cleared', role: 'log' }))).toBeNull();
   });
@@ -245,6 +256,35 @@ describe('heard judgement on recorded entries', () => {
 
     expect(recorder.entries().map((e) => e.origin)).toEqual(['insertion']);
     expect(resolveUnheardReason(recorder.entries()[0])).toBe('unreliable-insertion');
+  });
+
+  it('judges role="alert status" the same with and without busy', async () => {
+    recorder = createAnnouncementRecorder({ root: host, owner: () => null });
+    const plain = document.createElement('div');
+    plain.setAttribute('role', 'alert status');
+    plain.textContent = 'Plain';
+    host.append(plain);
+    await Promise.resolve();
+    const wrapper = document.createElement('div');
+    wrapper.setAttribute('aria-busy', 'true');
+    host.append(wrapper);
+    const busy = document.createElement('div');
+    busy.setAttribute('role', 'alert status');
+    busy.textContent = 'Busy';
+    wrapper.append(busy);
+    await Promise.resolve();
+    wrapper.setAttribute('aria-busy', 'false');
+    await Promise.resolve();
+
+    expect(recorder.entries().map((e) => [e.text, e.origin, e.busy])).toEqual([
+      ['Plain', 'insertion', false],
+      ['Busy', 'insertion', true],
+      ['Busy', 'busy-cleared', false],
+    ]);
+    expect(resolveHeardAnnouncements(recorder.entries()).map((e) => e.text)).toEqual([
+      'Plain',
+      'Busy',
+    ]);
   });
 
   it('maps the heard entries to their text', async () => {

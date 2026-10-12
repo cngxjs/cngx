@@ -1,4 +1,4 @@
-import type { CngxRecordedAnnouncement } from './announcement-recorder';
+import { firstRoleToken, type CngxRecordedAnnouncement } from './announcement-recorder';
 
 /**
  * Why assistive technology is not expected to speak a recorded entry:
@@ -28,7 +28,9 @@ export type CngxUnheardReason = 'suppressed' | 'busy' | 'unreliable-insertion';
  * 3. `'unreliable-insertion'`: a `status`, `log` or bare `aria-live` region
  *    inserted together with its content, or made live after it already held
  *    text, is announced by some screen reader / browser pairs and not by
- *    others. `role="alert"` is announced on insertion, so it passes.
+ *    others. `role="alert"` is announced on insertion, so it passes; `role`
+ *    is read by its first token, as the recorder reads it (`"alert status"`
+ *    is an alert).
  *
  * A text change in a live region (`'mutation'`) or a busy flip
  * (`'busy-cleared'`) is heard unless it is suppressed or busy. Pure: it reads
@@ -54,7 +56,7 @@ export function resolveUnheardReason(entry: CngxRecordedAnnouncement): CngxUnhea
     return 'busy';
   }
   const appeared = entry.origin === 'insertion' || entry.origin === 'became-live';
-  if (appeared && entry.role !== 'alert') {
+  if (appeared && firstRoleToken(entry.role) !== 'alert') {
     return 'unreliable-insertion';
   }
   return null;

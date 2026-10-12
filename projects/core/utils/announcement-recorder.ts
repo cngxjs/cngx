@@ -554,11 +554,22 @@ function isLive(el: Element): boolean {
 
 /** @internal */
 function primaryRole(el: Element): string | null {
-  const role = el.getAttribute('role')?.trim().split(/\s+/)[0];
-  if (!role) {
+  return firstRoleToken(el.getAttribute('role'));
+}
+
+/**
+ * The role a `role` attribute value resolves to: its first token, as in an
+ * ARIA fallback list (`"alert status"` is an alert). Shared with the heard
+ * judgement so both read `role` the same way.
+ *
+ * @internal
+ */
+export function firstRoleToken(role: string | null): string | null {
+  const token = role?.trim().split(/\s+/)[0];
+  if (!token) {
     return null;
   }
-  return role;
+  return token;
 }
 
 /** @internal */
