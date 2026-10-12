@@ -163,6 +163,15 @@ describe('planManifestReruns', () => {
     );
   });
 
+  it('names only the theme file when its build entry is still listed', () => {
+    const facts = createFacts({ cngxStylesheet: true, cngxThemeListed: true });
+
+    const result = rerun(facts, installed(['theme:stylesheet', 'theme:file', 'theme:entry']), NEXT);
+
+    expect(themeChanges(result).map((change) => [change.kind, change.id])).toEqual([['note', 'theme:file']]);
+    expect(result.skipped.map((step) => step.id)).toContain('theme:entry');
+  });
+
   it('reports recorded theme steps in place as skipped', () => {
     const facts = createFacts({ cngxStylesheet: true, cngxThemePath: 'src/cngx-theme.css' });
 
