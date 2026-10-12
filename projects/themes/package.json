@@ -42,9 +42,11 @@
     "*.css"
   ],
   "exports": {
+    "./package.json": "./package.json",
     "./cngx.css": "./cngx.css",
     "./example-brand.css": "./example-brand.css",
     "./material/*": "./material/*.scss",
     "./material/*.scss": "./material/*.scss"
-  }
+  },
+  "schematics": "./schematics/collection.json"
 }

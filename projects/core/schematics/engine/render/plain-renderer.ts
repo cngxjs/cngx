@@ -16,6 +16,8 @@ function changeTarget(change: Change): string {
       return `${change.name}@${change.version}`;
     case 'add-provider':
       return `${change.call.symbol} in project ${change.project}`;
+    case 'add-style-entry':
+      return `${change.path} in the ${change.project} build styles`;
     case 'note':
       return '';
     default: {

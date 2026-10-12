@@ -7,9 +7,20 @@ export { createNodeTree, type NodeTree } from './fs/node-tree';
 
 export { addLockstepDependency } from './manifest/lockstep';
 export {
-  declaredRange,
+  AI_TOOLS,
+  type AiTool,
+  CNGX_LIBS,
+  type CngxLib,
+  type Language,
+  LANGUAGES,
+  NG_ADD_PRESETS,
   type NgAddOptions,
   type NgAddPreset,
+  THEME_CHOICES,
+  type ThemeChoice,
+} from './options';
+export {
+  declaredRange,
   type PackageManifest,
   parseManifest,
   readOwnVersion,
@@ -19,6 +30,7 @@ export {
   type AddDependency,
   type AddImport,
   type AddProvider,
+  type AddStyleEntry,
   type AddStyleImport,
   type Change,
   type CreateFile,
@@ -28,6 +40,7 @@ export {
   type Note,
   type Provenance,
   type ProviderCall,
+  type ProviderLiteral,
   type SkippedStep,
   skipChange,
   type StepResult,
@@ -35,6 +48,7 @@ export {
 } from './plan/change';
 export { type ChangePlan, createChangePlan, describeChangePlan } from './plan/plan';
 export { createReport, type Report, type ReportLink } from './plan/report';
+export { isRecord, joinNames } from './plan/text';
 export {
   createProvenanceStamp,
   hasProvenanceMarker,
@@ -45,6 +59,14 @@ export { addToArrayLiteral, type ArraySelector, hasArrayLiteral } from './edit/t
 export { findElements, insertAttribute, parseTemplateContent } from './edit/template-edit';
 export { hasStyleImport, insertStyleImport } from './edit/style-edit';
 export { applyChangePlan } from './apply/apply';
+export { delegateNgAdd } from './shim/delegate-ng-add';
+export {
+  DEFAULT_ESLINT_PLUGIN_VERSION,
+  DEFAULT_MCP_VERSION,
+  type ReleaseVersions,
+  type ResolvedVersions,
+  resolveVersions,
+} from './versions';
 export {
   canPrompt,
   type ConfirmQuestion,

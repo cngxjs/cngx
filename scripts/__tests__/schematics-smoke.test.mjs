@@ -1,11 +1,12 @@
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
 import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { NodeModulesEngineHost } from '@angular-devkit/schematics/tools';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 /**
  * Smoke guard for the bundled schematics under dist/. Runs the built
@@ -80,8 +81,9 @@ describe('dist/core/schematics', () => {
 
       const tree = await runner.runSchematic('ng-add', {}, await createAppTree(runner));
 
-      expect(messages).toEqual(expect.arrayContaining(['Planned (1):', 'cngx planned 1 change.']));
-      expect(tree.exists('.cngx/spike.json')).toBe(false);
+      expect(messages.some((message) => /^Planned \(\d+\):$/.test(message))).toBe(true);
+      expect(messages.some((message) => /^cngx planned \d+ changes\.$/.test(message))).toBe(true);
+      expect(tree.exists('.cngx/install.json')).toBe(true);
     });
   });
 
@@ -91,6 +93,33 @@ describe('dist/core/schematics', () => {
     expect(Object.keys(schema.properties)).not.toContain('dryRun');
     expect(Object.keys(schema.properties)).not.toContain('interactive');
     expect(Object.keys(schema.properties)).not.toContain('verbose');
+  });
+});
+
+// The CLI finds a collection through `require.resolve('<pkg>/package.json')`
+// and fails hard on anything but MODULE_NOT_FOUND, so a package whose
+// `exports` map hides its manifest cannot answer `ng add`.
+describe('every published package as the CLI resolves it', () => {
+  const LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
+  let modules;
+
+  beforeAll(() => {
+    modules = mkdtempSync(join(tmpdir(), 'cngx-resolve-'));
+    mkdirSync(join(modules, 'node_modules', '@cngx'), { recursive: true });
+    for (const lib of LIBS) {
+      symlinkSync(join(ROOT, 'dist', lib), join(modules, 'node_modules', '@cngx', lib), 'dir');
+    }
+  });
+
+  afterAll(() => {
+    rmSync(modules, { recursive: true, force: true });
+  });
+
+  it.each(LIBS)('loads the ng-add collection of @cngx/%s through its package.json', (lib) => {
+    requireDist(join(ROOT, 'dist', lib, 'schematics', 'collection.json'));
+    const host = new NodeModulesEngineHost([modules]);
+
+    expect(Object.keys(host.createCollectionDescription(`@cngx/${lib}`).schematics)).toContain('ng-add');
   });
 });
 
@@ -180,10 +209,11 @@ describe('dist/ui/schematics ng-add shim', () => {
 });
 
 // Every schematic entry ships inside a published package, so its size is
-// paid on every install. The budget leaves room for the onboarding steps on
-// top of the bundled renderer and prompt libraries.
-const MAX_MINIFIED = 200 * 1024;
-const MAX_GZIP = 70 * 1024;
+// paid on every install. The bundled renderer and prompt libraries take about
+// 140 KB of it (listr2 alone 52 KB); the rest is the onboarding itself, with
+// room for the editor configs the AI tooling step still has to write.
+const MAX_MINIFIED = 256 * 1024;
+const MAX_GZIP = 90 * 1024;
 // A shim only adds core and delegates; it pulls nothing from the renderer
 // or the prompts, which `sideEffects: false` on the source package lets
 // esbuild drop.
@@ -206,7 +236,7 @@ describe('schematic bundle budget', () => {
     expect(schematicEntries()).toEqual(expect.arrayContaining(['core/schematics/ng-add/index.js', 'ui/schematics/ng-add/index.js']));
   });
 
-  it.each(schematicEntries())('keeps dist/%s under 200 KB minified and 70 KB gzip', (file) => {
+  it.each(schematicEntries())('keeps dist/%s under 256 KB minified and 90 KB gzip', (file) => {
     const content = readFileSync(join(ROOT, 'dist', file));
 
     expect(content.length).toBeLessThanOrEqual(MAX_MINIFIED);

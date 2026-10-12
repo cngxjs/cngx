@@ -22,9 +22,55 @@
         "items": [
           { "value": "minimal", "label": "minimal - dependencies only" },
           { "value": "recommended", "label": "recommended - dependencies, theme, a11y providers, lint" },
-          { "value": "full", "label": "full - recommended plus AI tooling and the German language pack" }
+          { "value": "full", "label": "full - recommended plus the German language pack, feedback and the floating fallback" }
         ]
       }
+    },
+    "libs": {
+      "type": "array",
+      "description": "The @cngx packages to install; their @cngx peers follow. Asked when a terminal is attached, otherwise every package.",
+      "items": { "type": "string", "enum": ["utils", "core", "common", "interop", "forms", "data-display", "ui"] },
+      "uniqueItems": true
+    },
+    "theme": {
+      "type": "string",
+      "description": "The generated theme file: the cngx default, the Angular Material bridge, or none.",
+      "enum": ["cngx", "material", "none"]
+    },
+    "i18n": {
+      "type": "string",
+      "description": "The built-in copy: English only, or the German pack as well.",
+      "enum": ["en", "de"]
+    },
+    "runtimeSwitch": {
+      "type": "boolean",
+      "description": "Wire the language pack for switching at runtime instead of a fixed language."
+    },
+    "lint": {
+      "type": "boolean",
+      "description": "Add @cngx/eslint-plugin to the eslint flat config when one exists."
+    },
+    "a11yPreferences": {
+      "type": "boolean",
+      "description": "Provide the accessibility preference axes (density, text scale, motion, contrast) with persistence."
+    },
+    "feedback": {
+      "type": "boolean",
+      "description": "Provide toasts, alerts and banners at the root when @cngx/ui is installed."
+    },
+    "floatingFallback": {
+      "type": "boolean",
+      "description": "Install @floating-ui/dom and provide the popover positioning fallback for browsers without CSS anchor positioning."
+    },
+    "aiTools": {
+      "type": "array",
+      "description": "The editors to set up cngx MCP and agent configs for. Recorded in .cngx/install.json; this release writes no editor config yet and says so in the summary.",
+      "items": { "type": "string", "enum": ["claude", "cursor", "vscode"] },
+      "uniqueItems": true
+    },
+    "yes": {
+      "type": "boolean",
+      "description": "Apply the plan to an existing app without asking for confirmation first."
     },
     "prompts": {
       "type": "boolean",

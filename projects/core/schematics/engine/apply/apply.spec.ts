@@ -1,5 +1,6 @@
 import { dirname, join } from 'node:path';
 
+import { type Tree } from '@angular-devkit/schematics';
 import { SchematicTestRunner, type UnitTestTree } from '@angular-devkit/schematics/testing';
 import { lastValueFrom } from 'rxjs';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -85,6 +86,18 @@ describe('applyChangePlan', () => {
     expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/core']).toBe('0.1.0');
   });
 
+  it('adds a dev dependency off the lockstep and keeps an existing range', async () => {
+    const change: Change = { ...BASE, kind: 'add-dependency', id: 'd', name: '@cngx/eslint-plugin', version: '0.2.0', dev: true };
+    const added = await apply([change], createMemoryTree({ 'package.json': '{ "devDependencies": {} }\n' }));
+    const kept = await apply(
+      [change],
+      createMemoryTree({ 'package.json': '{ "devDependencies": { "@cngx/eslint-plugin": "^0.1.0" } }\n' }),
+    );
+
+    expect(JSON.parse(added.readText('package.json')).devDependencies['@cngx/eslint-plugin']).toBe('0.2.0');
+    expect(JSON.parse(kept.readText('package.json')).devDependencies['@cngx/eslint-plugin']).toBe('^0.1.0');
+  });
+
   it('adds a nested provider call with its imports to app.config.ts', async () => {
     const tree = await apply(
       [
@@ -109,6 +122,54 @@ describe('applyChangePlan', () => {
     expect(config).toMatch(/import \{ [^}]*\bwithPersistence\b[^}]* \} from '@cngx\/core';/);
   });
 
+  it('renders a reference argument as a bare identifier', async () => {
+    const tree = await apply(
+      [
+        {
+          ...BASE,
+          kind: 'add-provider',
+          id: 'p',
+          project: 'app',
+          call: {
+            symbol: 'provideCngxI18n',
+            module: '@cngx/core/i18n',
+            args: [
+              {
+                symbol: 'withPack',
+                module: '@cngx/core/i18n',
+                args: [{ symbol: 'CNGX_LANGUAGE_DE', module: '@cngx/core/i18n/de', reference: true }],
+              },
+            ],
+          },
+        },
+      ],
+      await createApp(),
+    );
+    const config = tree.readText('projects/app/src/app/app.config.ts');
+
+    expect(config).toContain('provideCngxI18n(withPack(CNGX_LANGUAGE_DE))');
+    expect(config).toContain("import { CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';");
+  });
+
+  it('writes a literal argument as is and imports nothing for it', async () => {
+    const tree = await apply(
+      [
+        {
+          ...BASE,
+          kind: 'add-provider',
+          id: 'p',
+          project: 'app',
+          call: { symbol: 'provideDirection', module: '@cngx/core', args: [{ literal: "'rtl'" }] },
+        },
+      ],
+      await createApp(),
+    );
+    const config = tree.readText('projects/app/src/app/app.config.ts');
+
+    expect(config).toContain("provideDirection('rtl')");
+    expect(config).toContain("import { provideDirection } from '@cngx/core';");
+  });
+
   it('places a style import before the first rule', async () => {
     const tree = await apply(
       [
@@ -126,6 +187,43 @@ describe('applyChangePlan', () => {
     expect(tree.readText('src/styles.scss')).toBe(
       "@use '@angular/material' as mat;\n@import '@cngx/themes/cngx.css';\nhtml {}\n",
     );
+  });
+
+  describe('add-style-entry', () => {
+    function styles(tree: Tree): unknown {
+      const workspace = JSON.parse(tree.readText('angular.json')) as {
+        projects: Record<string, { architect: { build: { options: { styles: unknown } } } }>;
+      };
+      return workspace.projects['app'].architect.build.options.styles;
+    }
+
+    function entry(path: string, after?: string): Change {
+      return { ...BASE, kind: 'add-style-entry', id: 'e', project: 'app', path, after };
+    }
+
+    it('inserts the entry right after the named one', async () => {
+      const seeded = await apply([entry('projects/app/src/material-theme.scss')], await createApp());
+      const tree = await apply([entry('projects/app/src/cngx-theme.scss', 'projects/app/src/styles.css')], seeded);
+
+      expect(styles(tree)).toEqual([
+        'projects/app/src/styles.css',
+        'projects/app/src/cngx-theme.scss',
+        'projects/app/src/material-theme.scss',
+      ]);
+    });
+
+    it('appends when the named entry is absent and adds an entry once', async () => {
+      const once = await apply([entry('projects/app/src/cngx-theme.css', 'src/missing.css')], await createApp());
+      const twice = await apply([entry('projects/app/src/cngx-theme.css')], once);
+
+      expect(styles(twice)).toEqual(['projects/app/src/styles.css', 'projects/app/src/cngx-theme.css']);
+    });
+
+    it('refuses a project without a build target', async () => {
+      await expect(apply([{ ...entry('a.css'), project: 'missing' } as Change], await createApp())).rejects.toThrow(
+        'Project "missing" has no build target to add a.css to.',
+      );
+    });
   });
 
   it('writes json entries and creates the file when missing', async () => {

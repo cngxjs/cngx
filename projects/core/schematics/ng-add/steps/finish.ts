@@ -24,7 +24,9 @@ function skippedLines(report: Report, planListed: boolean): readonly string[] {
 }
 
 /**
- * The closing lines of a run, rendered by `renderer.summary`. `planListed`
+ * The closing lines of a run, rendered by `renderer.summary`: the files the
+ * plan touches, what a step refused or left to the user, the steps already
+ * in place, the next steps with the doctor first, and the docs. `planListed`
  * says whether the plan list ran before it (every run except `--quiet`).
  */
 export function createSummary(report: Report, planListed: boolean): readonly string[] {
@@ -35,6 +37,7 @@ export function createSummary(report: Report, planListed: boolean): readonly str
   return [
     headline,
     ...section('Files', report.files),
+    ...section('Notes', report.notes),
     ...skippedLines(report, planListed),
     ...section('Next steps', report.nextSteps),
     ...section(

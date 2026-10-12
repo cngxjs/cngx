@@ -122,9 +122,17 @@ export function replaceVersionInDist(distDir, nextVersion) {
 }
 
 // What `ng add` pins: the cngx release it ships with, the @cngx/mcp server
-// compatible with it, and the Angular range @cngx/core peers on.
-export function createSchematicsVersions({ nextVersion, mcpVersion, angularRange }) {
-  return { cngx: nextVersion, mcp: mcpVersion, angular: angularRange };
+// and @cngx/eslint-plugin compatible with it, and the Angular range
+// @cngx/core peers on.
+export function createSchematicsVersions({ nextVersion, mcpVersion, eslintPluginVersion, angularRange }) {
+  return { cngx: nextVersion, mcp: mcpVersion, eslintPlugin: eslintPluginVersion, angular: angularRange };
+}
+
+// The build of one lib without its schematics: those follow only through the
+// declaresSchematics gate below. `npm run build:<lib>` would bundle them
+// unconditionally.
+export function libBuildCommand(lib) {
+  return CSS_ONLY_LIBS.has(lib) ? 'node scripts/build-themes.mjs' : `npx ng build ${lib}`;
 }
 
 // A lib ships its schematics only once its source manifest declares the
@@ -138,8 +146,8 @@ function readSourcePkg(lib) {
   return JSON.parse(readFileSync(join(ROOT, 'projects', lib, 'package.json'), 'utf8'));
 }
 
-function readMcpVersion() {
-  return JSON.parse(readFileSync(join(ROOT, 'packages', 'mcp', 'package.json'), 'utf8')).version;
+function readPackageVersion(name) {
+  return JSON.parse(readFileSync(join(ROOT, 'packages', name, 'package.json'), 'utf8')).version;
 }
 
 function run(cmd, cwd = ROOT) {
@@ -258,11 +266,7 @@ function main() {
     console.log(`\n[${lib}]`);
 
     console.log('  Building...');
-    if (CSS_ONLY_LIBS.has(lib)) {
-      run(`npm run build:${lib}`);
-    } else {
-      run(`npx ng build ${lib}`);
-    }
+    run(libBuildCommand(lib));
     const shipsSchematics =
       existsSync(join(ROOT, 'projects', lib, 'schematics')) && declaresSchematics(readSourcePkg(lib));
     if (shipsSchematics) {
@@ -295,7 +299,8 @@ function main() {
       lib === 'core' && shipsSchematics
         ? createSchematicsVersions({
             nextVersion,
-            mcpVersion: readMcpVersion(),
+            mcpVersion: readPackageVersion('mcp'),
+            eslintPluginVersion: readPackageVersion('eslint-plugin'),
             angularRange: distPkg.peerDependencies['@angular/core'],
           })
         : null;

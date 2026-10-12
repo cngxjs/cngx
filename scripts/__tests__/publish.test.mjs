@@ -8,6 +8,7 @@ import {
   containsStableRelease,
   createSchematicsVersions,
   declaresSchematics,
+  libBuildCommand,
   replaceVersionInDist,
   resolveDistTag,
 } from '../publish.mjs';
@@ -99,10 +100,22 @@ describe('replaceVersionInDist', () => {
 });
 
 describe('createSchematicsVersions', () => {
-  it('pins the release, the mcp server and the Angular range', () => {
+  it('pins the release, the mcp server, the eslint plugin and the Angular range', () => {
     expect(
-      createSchematicsVersions({ nextVersion: '0.1.0', mcpVersion: '0.2.0', angularRange: '^21.2.0' }),
-    ).toEqual({ cngx: '0.1.0', mcp: '0.2.0', angular: '^21.2.0' });
+      createSchematicsVersions({
+        nextVersion: '0.1.0',
+        mcpVersion: '0.2.0',
+        eslintPluginVersion: '0.2.1',
+        angularRange: '^21.2.0',
+      }),
+    ).toEqual({ cngx: '0.1.0', mcp: '0.2.0', eslintPlugin: '0.2.1', angular: '^21.2.0' });
+  });
+});
+
+describe('libBuildCommand', () => {
+  it('builds a lib without its schematics, which only the declaresSchematics gate adds', () => {
+    expect(libBuildCommand('core')).toBe('npx ng build core');
+    expect(libBuildCommand('themes')).toBe('node scripts/build-themes.mjs');
   });
 });
 
@@ -118,14 +131,15 @@ describe('declaresSchematics', () => {
 });
 
 describe('publishable libs', () => {
-  it('declare no schematics collection yet, so publish skips the spike bundle', () => {
-    const libs = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
-    const declaring = libs.filter((lib) =>
-      declaresSchematics(
-        JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'projects', lib, 'package.json'), 'utf8')),
-      ),
-    );
+  const libs = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
+  const sourcePkg = (lib) =>
+    JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'projects', lib, 'package.json'), 'utf8'));
 
-    expect(declaring).toEqual([]);
+  it('all eight declare their schematics collection, so publish ships every ng-add', () => {
+    expect(libs.filter((lib) => declaresSchematics(sourcePkg(lib)))).toEqual(libs);
+  });
+
+  it('group every package for ng update on core', () => {
+    expect(sourcePkg('core')['ng-update']).toEqual({ packageGroup: libs.map((lib) => `@cngx/${lib}`) });
   });
 });

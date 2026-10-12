@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { declaredRange, parseManifest, readOwnVersion } from './manifest';
+import { declaredRange, parseManifest, readOwnPeerRange, readOwnVersion } from './manifest';
 
 describe('parseManifest', () => {
   it('reads version and both dependency maps', () => {
@@ -12,13 +12,18 @@ describe('parseManifest', () => {
       JSON.stringify({ version: '1.0.0', dependencies: { a: '^1.0.0' }, devDependencies: { b: '~2.0.0' } }),
     );
 
-    expect(manifest).toEqual({ version: '1.0.0', dependencies: { a: '^1.0.0' }, devDependencies: { b: '~2.0.0' } });
+    expect(manifest).toEqual({
+      version: '1.0.0',
+      dependencies: { a: '^1.0.0' },
+      devDependencies: { b: '~2.0.0' },
+      peerDependencies: {},
+    });
   });
 
   it('reads malformed sections as empty and drops non-string ranges', () => {
     const manifest = parseManifest(JSON.stringify({ version: 1, dependencies: ['a'], devDependencies: { b: 2, c: '1' } }));
 
-    expect(manifest).toEqual({ version: undefined, dependencies: {}, devDependencies: { c: '1' } });
+    expect(manifest).toEqual({ version: undefined, dependencies: {}, devDependencies: { c: '1' }, peerDependencies: {} });
   });
 
   it('rejects a body that is not a JSON object', () => {
@@ -61,5 +66,32 @@ describe('readOwnVersion', () => {
     writeFileSync(join(pkg, 'package.json'), '{}');
 
     expect(() => readOwnVersion(join(pkg, 'schematics', 'ng-add'))).toThrow(/No version in/);
+  });
+});
+
+describe('readOwnPeerRange', () => {
+  let pkg: string;
+
+  beforeEach(() => {
+    pkg = mkdtempSync(join(tmpdir(), 'cngx-own-peer-'));
+    mkdirSync(join(pkg, 'schematics', 'ng-add'), { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(pkg, { recursive: true, force: true });
+  });
+
+  it('reads the peer range of the package two folders above the bundle', () => {
+    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ peerDependencies: { '@angular/core': '^21.2.0' } }));
+
+    expect(readOwnPeerRange(join(pkg, 'schematics', 'ng-add'), '@angular/core')).toBe('^21.2.0');
+  });
+
+  it('fails loudly when the peer is not declared', () => {
+    writeFileSync(join(pkg, 'package.json'), JSON.stringify({}));
+
+    expect(() => readOwnPeerRange(join(pkg, 'schematics', 'ng-add'), '@angular/core')).toThrow(
+      'No @angular/core peer in',
+    );
   });
 });

@@ -11,8 +11,10 @@ export interface ReportLink {
  * whole tree or nothing, so there is no applied state to read back.
  */
 export interface Report {
-  /** Every planned change's label, in plan order. */
+  /** Every planned change's label, in plan order; notes are listed apart. */
   readonly changes: readonly string[];
+  /** What a step communicated instead of changing a file: `label - reason`. */
+  readonly notes: readonly string[];
   /** Files the plan touches, each once, in first-touch order. */
   readonly files: readonly string[];
   readonly skipped: readonly SkippedStep[];
@@ -26,8 +28,6 @@ const DOCS: ReportLink = { label: 'cngx documentation', url: 'https://cngxjs.git
 // The doctor checks the wiring the virtual tree cannot see, so it leads.
 const DOCTOR = 'Run `npx @cngx/doctor` to check the wiring.';
 
-// `add-provider` names no file: `addRootProvider` finds the app config or
-// the bootstrap call itself, so the label carries it instead.
 function touchedFile(change: Change): string | undefined {
   switch (change.kind) {
     case 'create-file':
@@ -38,7 +38,10 @@ function touchedFile(change: Change): string | undefined {
       return change.path;
     case 'add-dependency':
       return 'package.json';
+    case 'add-style-entry':
+      return 'angular.json';
     case 'add-provider':
+      return change.path;
     case 'note':
       return undefined;
     default: {
@@ -50,8 +53,10 @@ function touchedFile(change: Change): string | undefined {
 
 export function createReport(plan: ChangePlan): Report {
   const files = plan.changes.map(touchedFile).filter((file): file is string => file !== undefined);
+  const notes = plan.changes.filter((change) => change.kind === 'note');
   return {
-    changes: plan.changes.map((change) => change.label),
+    changes: plan.changes.filter((change) => change.kind !== 'note').map((change) => change.label),
+    notes: notes.map((note) => `${note.label} - ${note.reason}`),
     files: [...new Set(files)],
     skipped: [...plan.skipped],
     warnings: [...plan.warnings],

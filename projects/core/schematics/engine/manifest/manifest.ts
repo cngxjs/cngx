@@ -1,27 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-export type NgAddPreset = 'minimal' | 'recommended' | 'full';
-
-/** The options every `ng add @cngx/<lib>` forwards to the core onboarding. */
-export interface NgAddOptions {
-  readonly project?: string;
-  readonly preset?: NgAddPreset;
-  /** `false` answers every question from flags and preset defaults. */
-  readonly prompts?: boolean;
-  /** Print only the summary. */
-  readonly quiet?: boolean;
-}
+import { isRecord } from '../plan/text';
 
 export interface PackageManifest {
   readonly version?: string;
   readonly dependencies: Readonly<Record<string, string>>;
   readonly devDependencies: Readonly<Record<string, string>>;
+  readonly peerDependencies: Readonly<Record<string, string>>;
 }
 
-function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function stringEntries(value: unknown): Readonly<Record<string, string>> {
   if (!isRecord(value)) {
@@ -42,6 +30,7 @@ export function parseManifest(content: string): PackageManifest {
     version: typeof parsed['version'] === 'string' ? parsed['version'] : undefined,
     dependencies: stringEntries(parsed['dependencies']),
     devDependencies: stringEntries(parsed['devDependencies']),
+    peerDependencies: stringEntries(parsed['peerDependencies']),
   };
 }
 
@@ -51,11 +40,24 @@ export function parseManifest(content: string): PackageManifest {
  * manifest sits two folders up.
  */
 export function readOwnVersion(bundleDir: string): string {
-  const { version } = parseManifest(readFileSync(join(bundleDir, '..', '..', 'package.json'), 'utf8'));
+  const { version } = parseManifest(readFileSync(ownManifestPath(bundleDir), 'utf8'));
   if (version === undefined) {
-    throw new Error(`No version in ${join(bundleDir, '..', '..', 'package.json')}.`);
+    throw new Error(`No version in ${ownManifestPath(bundleDir)}.`);
   }
   return version;
+}
+
+/** The range the package's own manifest peers on for `name`. */
+export function readOwnPeerRange(bundleDir: string, name: string): string {
+  const range = parseManifest(readFileSync(ownManifestPath(bundleDir), 'utf8')).peerDependencies[name];
+  if (range === undefined) {
+    throw new Error(`No ${name} peer in ${ownManifestPath(bundleDir)}.`);
+  }
+  return range;
+}
+
+function ownManifestPath(bundleDir: string): string {
+  return join(bundleDir, '..', '..', 'package.json');
 }
 
 /** The version range the app already declares for `name`, if any. */

@@ -29,8 +29,10 @@ function section(title: string, marker: string, lines: readonly string[]): reado
 
 /** Plain text of the plan for `--dry-run` output and snapshots. */
 export function describeChangePlan(plan: ChangePlan): string {
+  const describe = (change: Change): string => `${change.label} - ${change.reason}`;
   const lines = [
-    ...section('Planned', '+', plan.changes.map((change) => `${change.label} - ${change.reason}`)),
+    ...section('Planned', '+', plan.changes.filter((change) => change.kind !== 'note').map(describe)),
+    ...section('Notes', '-', plan.changes.filter((change) => change.kind === 'note').map(describe)),
     ...section('Already in place', '=', plan.skipped.map((step) => `${step.label} - ${step.reason}`)),
     ...section('Warnings', '!', plan.warnings),
   ];

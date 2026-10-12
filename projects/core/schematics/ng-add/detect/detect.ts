@@ -1,0 +1,360 @@
+import { type workspaces } from '@angular-devkit/core';
+import { posix } from 'node:path';
+
+import {
+  declaredRange,
+  hasArrayLiteral,
+  hasStyleImport,
+  isRecord,
+  type PackageManifest,
+  parseManifest,
+  type Tree,
+} from '../../engine';
+
+export type MaterialThemeShape = 'map-api' | 'define-theme' | 'm2' | 'prebuilt' | 'none';
+
+export interface MaterialFacts {
+  readonly present: boolean;
+  readonly themeShape: MaterialThemeShape;
+  /** The style entry the theme was found in; `undefined` without a theme. */
+  readonly themePath: string | undefined;
+  /** The Sass variable holding a `define-theme` or M2 theme object. */
+  readonly themeVariable: string | undefined;
+  /** The density the theme declares; 0 when it declares none. */
+  readonly density: number;
+}
+
+export interface EslintConfigFacts {
+  readonly path: string;
+  readonly module: 'esm' | 'cjs';
+  /** The default export is an array literal, bare or wrapped in `defineConfig([...])`. */
+  readonly editable: boolean;
+  /** `@cngx/eslint-plugin` is already loaded. */
+  readonly wired: boolean;
+}
+
+export interface EditorFacts {
+  readonly claude: boolean;
+  readonly cursor: boolean;
+  readonly vscode: boolean;
+}
+
+/** Everything the plan steps branch on, read once before any question. */
+export interface ProjectFacts {
+  readonly project: string;
+  /** The app's `package.json`; steps read declared ranges from it. */
+  readonly manifest: PackageManifest;
+  readonly sourceRoot: string;
+  readonly angularVersion: string | undefined;
+  readonly bootstrap: 'standalone' | 'ngmodule';
+  readonly zoneless: boolean;
+  readonly signalForms: boolean;
+  readonly stylesKind: 'css' | 'scss';
+  /** The global stylesheet; `undefined` when the build lists none. */
+  readonly stylesPath: string | undefined;
+  /** `@cngx/themes/cngx.css` is imported by a global stylesheet or listed as a style entry. */
+  readonly cngxStylesheet: boolean;
+  /** The file already wiring a cngx theme: a `cngx-theme.*` file or a stylesheet using the Material bridge. */
+  readonly cngxThemePath: string | undefined;
+  /** The file holding the root providers: `app.config.ts` or the root NgModule. */
+  readonly appConfigPath: string;
+  /** Every `provide*()` call already in that file. */
+  readonly rootProviders: readonly string[];
+  readonly material: MaterialFacts;
+  readonly editors: EditorFacts;
+  /** The eslint flat config; `undefined` when the app has none. */
+  readonly eslintConfig: EslintConfigFacts | undefined;
+  readonly ssr: boolean;
+  readonly sourceLocale: string | undefined;
+  readonly maturity: 'fresh' | 'existing';
+}
+
+const OTHER_UI_LIBRARIES = ['@angular/material', 'primeng', 'tailwindcss', 'bootstrap'];
+
+// What `ng new` 21 puts into the root providers; anything else means someone
+// has already wired the app.
+const SCAFFOLD_PROVIDERS = new Set([
+  'provideBrowserGlobalErrorListeners',
+  'provideRouter',
+  'provideZoneChangeDetection',
+  'provideZonelessChangeDetection',
+  'provideClientHydration',
+]);
+
+const ESLINT_FLAT_CONFIGS = ['eslint.config.js', 'eslint.config.mjs', 'eslint.config.cjs'];
+
+const PREBUILT_THEME = '@angular/material/prebuilt-themes/';
+
+/** The one stylesheet every cngx app loads. */
+export const CNGX_STYLESHEET = '@cngx/themes/cngx.css';
+const MATERIAL_BRIDGE = '@cngx/themes/material/theme';
+
+
+function resolveProject(
+  workspace: workspaces.WorkspaceDefinition,
+  name: string | undefined,
+): readonly [string, workspaces.ProjectDefinition] {
+  const defaultProject = workspace.extensions['defaultProject'];
+  const candidate =
+    name ??
+    (typeof defaultProject === 'string' ? defaultProject : undefined) ??
+    [...workspace.projects].find(([, project]) => project.extensions['projectType'] === 'application')?.[0] ??
+    [...workspace.projects.keys()][0];
+  const project = candidate === undefined ? undefined : workspace.projects.get(candidate);
+  if (candidate === undefined || project === undefined) {
+    throw new Error(`Project "${candidate ?? ''}" not found in angular.json.`);
+  }
+  if (project.extensions['projectType'] === 'library') {
+    throw new Error(`Project "${candidate}" is a library; cngx ng-add sets up an application.`);
+  }
+  return [candidate, project];
+}
+
+function buildOptions(project: workspaces.ProjectDefinition): Readonly<Record<string, unknown>> {
+  return project.targets.get('build')?.options ?? {};
+}
+
+function styleEntries(options: Readonly<Record<string, unknown>>): readonly string[] {
+  const styles = options['styles'];
+  if (!Array.isArray(styles)) {
+    return [];
+  }
+  return styles.flatMap((entry: unknown) => {
+    if (typeof entry === 'string') {
+      return [entry];
+    }
+    return isRecord(entry) && typeof entry['input'] === 'string' ? [entry['input']] : [];
+  });
+}
+
+function isLocalStylesheet(path: string): boolean {
+  return /\.s?css$/.test(path) && !path.startsWith('@') && !path.startsWith('node_modules/');
+}
+
+// Same preference as `getProjectStyleFile` in @schematics/angular: a file
+// named `styles.*` wins, otherwise the first local stylesheet.
+function globalStylesheet(entries: readonly string[]): string | undefined {
+  const local = entries.filter(isLocalStylesheet);
+  return local.find((path) => /(^|\/)styles\.s?css$/.test(path)) ?? local[0];
+}
+
+function escape(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function materialNamespace(content: string): string | undefined {
+  const use = /@use\s+['"]@angular\/material['"](?:\s+as\s+([\w-]+|\*))?\s*;/.exec(content);
+  if (use === null) {
+    return undefined;
+  }
+  return use[1] ?? 'mat';
+}
+
+function integerAfter(content: string, from: number, pattern: RegExp): number {
+  const match = pattern.exec(content.slice(from));
+  return match === null ? 0 : Number(match[1]);
+}
+
+function themeInFile(path: string, content: string): MaterialFacts | undefined {
+  const namespace = materialNamespace(content);
+  if (namespace === undefined) {
+    return undefined;
+  }
+  const ns = namespace === '*' ? '' : `${escape(namespace)}\\.`;
+  const themeVariable = new RegExp(
+    `\\$([\\w-]+)\\s*:\\s*${ns}(?:define-theme|(?:m2-)?define-(?:light|dark)-theme)\\s*\\(`,
+  ).exec(content)?.[1];
+  const defineTheme = new RegExp(`${ns}define-theme\\s*\\(`).exec(content);
+  if (defineTheme !== null) {
+    const density = integerAfter(content, defineTheme.index, /density\s*:\s*\(\s*scale\s*:\s*(-?\d+)/);
+    return { present: true, themeShape: 'define-theme', themePath: path, themeVariable, density };
+  }
+  if (new RegExp(`${ns}(m2-)?define-(light|dark)-theme\\s*\\(`).test(content)) {
+    return { present: true, themeShape: 'm2', themePath: path, themeVariable, density: 0 };
+  }
+  const mapApi = new RegExp(`${ns}theme\\s*\\(\\s*\\(`).exec(content);
+  if (mapApi !== null) {
+    const density = integerAfter(content, mapApi.index, /density\s*:\s*(-?\d+)/);
+    return { present: true, themeShape: 'map-api', themePath: path, themeVariable: undefined, density };
+  }
+  return undefined;
+}
+
+// File content by path, read once per detection run; `undefined` when absent.
+type Read = (path: string) => string | undefined;
+
+function detectMaterial(read: Read, manifest: PackageManifest, entries: readonly string[]): MaterialFacts {
+  const none: MaterialFacts = {
+    present: false,
+    themeShape: 'none',
+    themePath: undefined,
+    themeVariable: undefined,
+    density: 0,
+  };
+  if (declaredRange(manifest, '@angular/material') === undefined) {
+    return none;
+  }
+  for (const entry of entries) {
+    if (entry.includes(PREBUILT_THEME)) {
+      return { present: true, themeShape: 'prebuilt', themePath: entry, themeVariable: undefined, density: 0 };
+    }
+    const content = entry.endsWith('.scss') ? read(entry) : undefined;
+    const theme = content === undefined ? undefined : themeInFile(entry, content);
+    if (theme !== undefined) {
+      return theme;
+    }
+  }
+  return { ...none, present: true };
+}
+
+function importsCngxStylesheet(read: Read, entries: readonly string[]): boolean {
+  return (
+    entries.includes(CNGX_STYLESHEET) ||
+    entries
+      .filter(isLocalStylesheet)
+      .some((entry) => hasStyleImport(read(entry) ?? '', `@import '${CNGX_STYLESHEET}';`))
+  );
+}
+
+function existingCngxTheme(tree: Tree, read: Read, sourceRoot: string, entries: readonly string[]): string | undefined {
+  const generated = ['cngx-theme.css', 'cngx-theme.scss']
+    .map((name) => posix.join(sourceRoot, name))
+    .find((path) => tree.exists(path));
+  return (
+    generated ??
+    entries.find((entry) => entry.endsWith('.scss') && (read(entry) ?? '').includes(MATERIAL_BRIDGE))
+  );
+}
+
+function detectEslintConfig(tree: Tree): EslintConfigFacts | undefined {
+  const path = ESLINT_FLAT_CONFIGS.find((candidate) => tree.exists(candidate));
+  if (path === undefined) {
+    return undefined;
+  }
+  const content = tree.readText(path);
+  const esm = path.endsWith('.mjs') || (path.endsWith('.js') && /^\s*(import\s|export\s)/m.test(content));
+  return {
+    path,
+    module: esm ? 'esm' : 'cjs',
+    editable: hasArrayLiteral(content, { kind: 'default-export' }),
+    wired: content.includes('@cngx/eslint-plugin'),
+  };
+}
+
+function sourceFiles(tree: Tree, root: string): readonly string[] {
+  const files: string[] = [];
+  tree.getDir(root).visit((path) => {
+    if (path.endsWith('.ts') && !path.endsWith('.spec.ts')) {
+      files.push(path.replace(/^\//, ''));
+    }
+  });
+  return files;
+}
+
+function hasEntries(tree: Tree, dir: string): boolean {
+  const entry = tree.getDir(dir);
+  return entry.subfiles.length > 0 || entry.subdirs.length > 0;
+}
+
+// Follows the import of the second `bootstrapApplication` argument or the
+// `bootstrapModule` argument; an inline config falls back to the scaffold path.
+function rootProvidersPath(mainPath: string, main: string, standalone: boolean, sourceRoot: string): string {
+  const fallback = posix.join(sourceRoot, 'app', 'app.config.ts');
+  const call = standalone ? /bootstrapApplication\s*\(\s*\w+\s*,\s*(\w+)/ : /bootstrapModule\s*\(\s*(\w+)/;
+  const identifier = call.exec(main)?.[1];
+  if (identifier === undefined) {
+    return fallback;
+  }
+  const specifier = new RegExp(`import\\s*\\{[^}]*\\b${identifier}\\b[^}]*\\}\\s*from\\s*['"](\\.[^'"]+)['"]`).exec(main)?.[1];
+  return specifier === undefined ? fallback : `${posix.join(posix.dirname(mainPath), specifier)}.ts`;
+}
+
+function providerNames(content: string): readonly string[] {
+  return [...content.matchAll(/\b(provide\w+)\s*\(/g)].map((match) => match[1]);
+}
+
+function includesZone(polyfills: unknown): boolean {
+  const entries = Array.isArray(polyfills) ? polyfills : [polyfills];
+  return entries.some((entry) => entry === 'zone.js');
+}
+
+function sourceLocaleOf(project: workspaces.ProjectDefinition): string | undefined {
+  const i18n = project.extensions['i18n'];
+  const locale = isRecord(i18n) ? i18n['sourceLocale'] : undefined;
+  if (typeof locale === 'string') {
+    return locale;
+  }
+  return isRecord(locale) && typeof locale['code'] === 'string' ? locale['code'] : undefined;
+}
+
+function versionOf(range: string | undefined): string | undefined {
+  return range === undefined ? undefined : /\d+\.\d+\.\d+(?:-[\w.]+)?/.exec(range)?.[0];
+}
+
+/**
+ * Reads the facts every onboarding step branches on from the tree and the
+ * parsed workspace. Pure: it only reads, and git state, time and the
+ * environment are not facts (a devkit `Tree` carries no `.git`).
+ */
+export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinition, name?: string): ProjectFacts {
+  const [projectName, project] = resolveProject(workspace, name);
+  const sourceRoot = project.sourceRoot ?? posix.join(project.root, 'src');
+  const options = buildOptions(project);
+  const manifest = parseManifest(tree.readText('package.json'));
+
+  // One read per source file feeds every source-derived fact.
+  const sources = sourceFiles(tree, sourceRoot).map((path) => ({ path, content: tree.readText(path) }));
+  const contents = new Map<string, string | undefined>(sources.map(({ path, content }) => [path, content]));
+  const read: Read = (path) => {
+    if (!contents.has(path)) {
+      contents.set(path, tree.exists(path) ? tree.readText(path) : undefined);
+    }
+    return contents.get(path);
+  };
+
+  const mainOption = options['browser'] ?? options['main'];
+  const mainPath = typeof mainOption === 'string' ? mainOption : posix.join(sourceRoot, 'main.ts');
+  const main = read(mainPath) ?? '';
+  const standalone = !/bootstrapModule\s*\(/.test(main);
+  const appConfigPath = rootProvidersPath(mainPath, main, standalone, sourceRoot);
+  const providers = providerNames(read(appConfigPath) ?? '');
+
+  const entries = styleEntries(options);
+  const stylesPath = globalStylesheet(entries);
+  const appRoot = `${posix.join(sourceRoot, 'app')}/`;
+  const componentCount = sources.filter(
+    ({ path, content }) => path.startsWith(appRoot) && /@Component\s*\(/.test(content),
+  ).length;
+
+  const hasOtherUi = OTHER_UI_LIBRARIES.some((library) => declaredRange(manifest, library) !== undefined);
+  const hasOwnProviders = providers.some((provider) => !SCAFFOLD_PROVIDERS.has(provider));
+
+  return {
+    project: projectName,
+    manifest,
+    sourceRoot,
+    angularVersion: versionOf(declaredRange(manifest, '@angular/core')),
+    bootstrap: standalone ? 'standalone' : 'ngmodule',
+    zoneless: !includesZone(options['polyfills']) && !providers.includes('provideZoneChangeDetection'),
+    signalForms: sources.some(({ content }) => /['"]@angular\/forms\/signals['"]/.test(content)),
+    stylesKind: stylesPath?.endsWith('.scss') === true ? 'scss' : 'css',
+    stylesPath,
+    cngxStylesheet: importsCngxStylesheet(read, entries),
+    cngxThemePath: existingCngxTheme(tree, read, sourceRoot, entries),
+    appConfigPath,
+    rootProviders: providers,
+    material: detectMaterial(read, manifest, entries),
+    editors: {
+      claude: tree.exists('CLAUDE.md') || hasEntries(tree, '.claude'),
+      cursor: tree.exists('.cursorrules') || hasEntries(tree, '.cursor'),
+      vscode: hasEntries(tree, '.vscode'),
+    },
+    eslintConfig: detectEslintConfig(tree),
+    ssr:
+      options['server'] !== undefined ||
+      options['ssr'] !== undefined ||
+      declaredRange(manifest, '@angular/ssr') !== undefined,
+    sourceLocale: sourceLocaleOf(project),
+    maturity: componentCount > 1 || hasOtherUi || hasOwnProviders ? 'existing' : 'fresh',
+  };
+}

@@ -124,30 +124,13 @@ describe('createPromptFlow', () => {
     );
   });
 
-  it('records every answer for the manifest, whichever source gave it', async () => {
-    const { adapter } = scripted();
-    const flow = createPromptFlow({ canPrompt: true, adapter, answers: { theme: 'cngx' } });
-
-    await flow.select(THEME);
-    await flow.multiSelect(TOOLS);
-    await flow.confirm(LINT);
-
-    expect(flow.answers()).toEqual({
-      theme: 'cngx',
-      aiTools: ['claude', 'cursor', 'vscode'],
-      lint: false,
-    });
-  });
-
-  it('hands out snapshots of the answers and leaves its inputs alone', async () => {
+  it('hands out copies of list answers and leaves its inputs alone', async () => {
     const preset = { aiTools: ['cursor'] };
     const flow = createPromptFlow({ canPrompt: false, answers: preset });
 
     const tools = await flow.multiSelect(TOOLS);
-    const first = flow.answers();
-    await flow.confirm(LINT);
 
-    expect(first).toEqual({ aiTools: ['cursor'] });
+    expect(tools).toEqual(['cursor']);
     expect(tools).not.toBe(preset.aiTools);
     expect(preset).toEqual({ aiTools: ['cursor'] });
   });

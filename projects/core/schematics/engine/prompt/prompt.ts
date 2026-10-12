@@ -11,7 +11,7 @@ export interface PromptChoice<T extends string> {
 
 export type PromptAnswer = string | boolean | readonly string[];
 
-/** What the manifest records: one answer per question key. */
+/** Answers given before any question is asked (flags), one per question key. */
 export type PromptAnswers = Readonly<Record<string, PromptAnswer>>;
 
 interface Question<T> {
@@ -43,8 +43,6 @@ export interface PromptFlow {
   select<T extends string>(question: SelectQuestion<T>): Promise<T>;
   multiSelect<T extends string>(question: MultiSelectQuestion<T>): Promise<readonly T[]>;
   confirm(question: ConfirmQuestion): Promise<boolean>;
-  /** Every answer so far, flag, prompt or default alike. */
-  answers(): PromptAnswers;
 }
 
 export interface PromptFlowOptions {
@@ -108,50 +106,39 @@ function given(answers: PromptAnswers, key: string): PromptAnswer | undefined {
 
 /**
  * One question API for the onboarding steps. A given answer wins, then the
- * terminal, then the question's default; whichever answered lands in
- * `answers()` for the install manifest.
+ * terminal, then the question's default.
  */
 export function createPromptFlow({
   canPrompt: interactive,
   answers: preset = {},
   adapter = inquirerAdapter,
 }: PromptFlowOptions): PromptFlow {
-  const recorded: Record<string, PromptAnswer> = {};
-
-  function record<T extends PromptAnswer>(key: string, value: T): T {
-    recorded[key] = value;
-    return value;
-  }
-
   return {
     async select(question) {
       const flag = given(preset, question.key);
       if (typeof flag === 'string') {
         const values = [flag];
         assertChoices(question, values);
-        return record(question.key, values[0]);
+        return values[0];
       }
-      const answer = interactive ? await adapter.select(question) : question.default;
-      return record(question.key, answer);
+      return interactive ? adapter.select(question) : question.default;
     },
     async multiSelect(question) {
       const flag = given(preset, question.key);
       if (isList(flag)) {
         const values = [...flag];
         assertChoices(question, values);
-        return record(question.key, values);
+        return values;
       }
       const answer = interactive ? await adapter.multiSelect(question) : question.default;
-      return record(question.key, [...answer]);
+      return [...answer];
     },
     async confirm(question) {
       const flag = given(preset, question.key);
       if (typeof flag === 'boolean') {
-        return record(question.key, flag);
+        return flag;
       }
-      const answer = interactive ? await adapter.confirm(question) : question.default;
-      return record(question.key, answer);
+      return interactive ? adapter.confirm(question) : question.default;
     },
-    answers: () => ({ ...recorded }),
   };
 }

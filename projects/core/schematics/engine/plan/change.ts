@@ -40,19 +40,36 @@ export interface AddDependency extends ChangeBase {
   readonly kind: 'add-dependency';
   readonly name: string;
   readonly version: string;
+  /**
+   * A devDependency on its own version line (`@cngx/eslint-plugin`); it is
+   * not part of the @cngx lockstep, so an existing range is kept as declared.
+   */
+  readonly dev?: boolean;
+}
+
+/** A literal argument written as is, such as `'rtl'`; it imports nothing. */
+export interface ProviderLiteral {
+  readonly literal: string;
 }
 
 /** A call expression such as `provideA11yPreferences(withPersistence())`. */
 export interface ProviderCall {
   readonly symbol: string;
   readonly module: string;
-  readonly args?: readonly ProviderCall[];
+  readonly args?: readonly (ProviderCall | ProviderLiteral)[];
+  /** Rendered as the bare identifier, not a call: `withPack(CNGX_LANGUAGE_DE)`. */
+  readonly reference?: boolean;
 }
 
 export interface AddProvider extends ChangeBase {
   readonly kind: 'add-provider';
   readonly project: string;
   readonly call: ProviderCall;
+  /**
+   * The app config or root NgModule detection expects `addRootProvider` to
+   * edit; it finds the file itself, so this only names it in the report.
+   */
+  readonly path?: string;
 }
 
 /** An `@use` / `@import` placed before the first rule of a stylesheet. */
@@ -60,6 +77,15 @@ export interface AddStyleImport extends ChangeBase {
   readonly kind: 'add-style-import';
   readonly path: string;
   readonly statement: string;
+}
+
+/** A global stylesheet entry in the build target's `styles` array. */
+export interface AddStyleEntry extends ChangeBase {
+  readonly kind: 'add-style-entry';
+  readonly project: string;
+  readonly path: string;
+  /** Insert right after this entry; appended when absent. */
+  readonly after?: string;
 }
 
 export type JsonPath = readonly (string | number)[];
@@ -83,6 +109,7 @@ export type Change =
   | AddDependency
   | AddProvider
   | AddStyleImport
+  | AddStyleEntry
   | WriteJson
   | Note;
 
