@@ -23,7 +23,12 @@ export type CngxCommandSource = Signal<readonly CngxCommand[]> | readonly CngxCo
  * Multi-token every `provideCommands` call contributes to. App parts register
  * command sets against it without a central list, mirroring `provideCngxMenu`.
  * The generic is the collected array (as with Angular's `HTTP_INTERCEPTORS`),
- * so `inject(CNGX_COMMAND_SOURCE)` returns every contributed source.
+ * so `inject(CNGX_COMMAND_SOURCE)` returns the sources of the nearest level
+ * that provides it.
+ *
+ * This is the low-level form. Register through `provideCommands`, which also
+ * carries a level's sources into every scope below it; a raw multi-provider on
+ * this token joins only the level `injectCommands` resolves as nearest.
  *
  * @category common/command
  * @since 0.1.0
@@ -51,9 +56,16 @@ const CNGX_COMMAND_REGISTRY = new InjectionToken<readonly CngxCommandSource[]>(
  * `viewProviders` - letting a route or component contribute a scoped command
  * set without reaching for the raw {@link CNGX_COMMAND_SOURCE} multi-provider.
  *
+ * A scoped call adds to the sets above it and never hides them, across route
+ * and component scopes: root and route scopes come first (outer to inner), then
+ * component scopes outer to inner. The same source reference registered at two
+ * levels is listed once.
+ *
  * ```ts
  * // app root
  * bootstrapApplication(AppComponent, { providers: [provideCommands(fileCommands)] });
+ * // a lazy route adds its set; its pages see fileCommands + reportCommands
+ * { path: 'reports', providers: [provideCommands(reportCommands)], component: Reports }
  * // or component scope
  * @Component({ viewProviders: [provideCommands(editorCommands)] })
  * ```
@@ -82,7 +94,8 @@ export function provideCommands(...sources: CngxCommandSource[]): Provider[] {
 }
 
 /**
- * Merges every registered {@link CNGX_COMMAND_SOURCE} into one reactive
+ * Merges the command sources registered at this injector level and every level
+ * above it - route and component scopes alike - into one reactive
  * `Signal<readonly CngxCommand[]>`. The merge carries an explicit `equal`
  * (length + per-command identity) so re-emitting an identical set - the same
  * command references in the same order - does not produce a fresh array and
