@@ -287,6 +287,62 @@ describe('heard judgement on recorded entries', () => {
     ]);
   });
 
+  // The flip replays exactly the busy entries the judgement would hear
+  // without busy; callers (the Vitest matchers) phrase 'busy' from that.
+  it('replays a busy entry on the flip exactly when it would be heard without busy', async () => {
+    recorder = createAnnouncementRecorder({ root: host, owner: () => null });
+    const wrapper = document.createElement('div');
+    wrapper.setAttribute('aria-busy', 'true');
+    host.append(wrapper);
+    await Promise.resolve();
+
+    const live = (el: HTMLElement, role: string | null) =>
+      role === null ? el.setAttribute('aria-live', 'polite') : el.setAttribute('role', role);
+    const roles = ['alert', 'alert status', 'status', 'status alert', 'log', null];
+    const origins = ['mutation', 'insertion', 'became-live'] as const;
+    const cases = roles.flatMap((role) => origins.map((origin) => ({ role, origin })));
+    for (const [index, { role, origin }] of cases.entries()) {
+      const text = `Case ${index}`;
+      const region = document.createElement('div');
+      if (origin === 'mutation') {
+        live(region, role);
+        wrapper.append(region);
+        await Promise.resolve();
+        region.textContent = text;
+      } else if (origin === 'insertion') {
+        live(region, role);
+        region.textContent = text;
+        wrapper.append(region);
+      } else {
+        region.textContent = text;
+        wrapper.append(region);
+        await Promise.resolve();
+        live(region, role);
+      }
+      await Promise.resolve();
+    }
+    wrapper.setAttribute('aria-busy', 'false');
+    await Promise.resolve();
+
+    const outcome = cases.map(({ role, origin }, index) => {
+      const own = recorder.entries().filter((e) => e.text === `Case ${index}`);
+      const busy = own.find((e) => e.busy);
+      return {
+        role,
+        origin,
+        replayed: own.some((e) => e.origin === 'busy-cleared'),
+        heardWithoutBusy: busy ? resolveUnheardReason({ ...busy, busy: false }) === null : null,
+      };
+    });
+    for (const row of outcome) {
+      expect(row, `${row.role} ${row.origin}`).toEqual({
+        ...row,
+        replayed: row.origin === 'mutation' || row.role?.startsWith('alert') === true,
+        heardWithoutBusy: row.replayed,
+      });
+    }
+  });
+
   it('maps the heard entries to their text', async () => {
     const polite = document.createElement('div');
     polite.setAttribute('aria-live', 'polite');

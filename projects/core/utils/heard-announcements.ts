@@ -1,4 +1,4 @@
-import { firstRoleToken, type CngxRecordedAnnouncement } from './announcement-recorder';
+import { isHeardOnAppearance, type CngxRecordedAnnouncement } from './announcement-recorder';
 
 /**
  * Why assistive technology is not expected to speak a recorded entry:
@@ -56,7 +56,7 @@ export function resolveUnheardReason(entry: CngxRecordedAnnouncement): CngxUnhea
     return 'busy';
   }
   const appeared = entry.origin === 'insertion' || entry.origin === 'became-live';
-  if (appeared && firstRoleToken(entry.role) !== 'alert') {
+  if (appeared && !isHeardOnAppearance(entry.role)) {
     return 'unreliable-insertion';
   }
   return null;
