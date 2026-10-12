@@ -1,31 +1,30 @@
 ---
-title: "CngxChart: Streaming telemetry with injectChartBuffer"
-whenToUse: "The buffer caps at 1000 samples and downsamples to 600 perceptually-faithful points, so the sine + occasional spike keeps its shape without unbounded DOM growth. Toggle the connection to see the [connectionState] reconnecting overlay - a channel independent of the data [state]."
-symbols: [CngxChart, CngxAxis, CngxLine, CngxThreshold, CngxChartAnnouncer]
+title: "CngxChart: connection lost and reconnecting"
+whenToUse: "The connection channel is independent of the data [state]: the drawn series stays on screen and the overlay sits on top of it. Status error renders the connection-lost overlay inside a role=\"alert\" wrapper, status refreshing renders the reconnecting overlay inside a role=\"status\" wrapper; both wrappers stay library-owned. Both templates receive { $implicit: error, error, width, height, small, plot }, where error is the connection state's current error. createManualState only clears the error on success, so the reconnecting overlay still sees the error that dropped the connection."
+symbols: [CngxChart, CngxChartConnectionError, CngxChartReconnecting, CngxAxis, CngxLine]
 ---
 
-# CngxChart: Streaming telemetry with injectChartBuffer
+# CngxChart: connection lost and reconnecting
 
-The buffer caps at 1000 samples and downsamples to 600 perceptually-faithful points, so the sine + occasional spike keeps its shape without unbounded DOM growth. Toggle the connection to see the [connectionState] reconnecting overlay - a channel independent of the data [state].
+The connection channel is independent of the data [state]: the drawn series stays on screen and the overlay sits on top of it. Status error renders the connection-lost overlay inside a role="alert" wrapper, status refreshing renders the reconnecting overlay inside a role="status" wrapper; both wrappers stay library-owned. Both templates receive { $implicit: error, error, width, height, small, plot }, where error is the connection state's current error. createManualState only clears the error on success, so the reconnecting overlay still sees the error that dropped the connection.
 
 ## Symbols
 
 - `CngxChart`
+- `CngxChartConnectionError`
+- `CngxChartReconnecting`
 - `CngxAxis`
 - `CngxLine`
-- `CngxThreshold`
-- `CngxChartAnnouncer`
 
 ## Setup
 
 ```ts
-protected readonly buffer = injectChartBuffer<number>({
-  capacity: 1000,
-  downsampleTo: 600,
-  xAccessor: (_d, i) => i,
-  yAccessor: (d) => d,
-});
+protected readonly readings: readonly number[] = [18, 22, 21, 26, 30, 28, 33, 31, 35, 34, 38, 36];
 protected readonly connection = createManualState<unknown>();
+protected readonly customSlots = signal(true);
+protected errorText(error: unknown): string {
+  return error instanceof Error ? error.message : 'unknown error';
+}
 ```
 
 ## Wiring
@@ -33,18 +32,30 @@ protected readonly connection = createManualState<unknown>();
 ```html
 <div class="cngx-ex-chart-frame">
   <cngx-chart
-    #chart
-    [data]="buffer.points()"
+    [data]="readings"
     [connectionState]="connection"
     [width]="480"
     [height]="200"
-    aria-label="Live streaming telemetry buffered through injectChartBuffer."
+    aria-label="Server load over the last 12 minutes, in percent."
   >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 600]"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 130]"></svg:g>
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 50]"></svg:g>
     <svg:g cngxLine></svg:g>
-    <svg:g cngxThreshold [value]="80" [label]="'alert'" [dashed]="true"></svg:g>
+    @if (customSlots()) {
+      <ng-template cngxChartConnectionError let-error let-small="small">
+        <span class="demo-chart-connection">
+          <strong>Live feed lost</strong>
+          @if (!small) {
+            <span>{{ errorText(error) }}</span>
+          }
+        </span>
+      </ng-template>
+      <ng-template cngxChartReconnecting let-error let-plot="plot">
+        <span class="demo-chart-connection">
+          Reconnecting after "{{ errorText(error) }}" (plot {{ plot.width }} wide)
+        </span>
+      </ng-template>
+    }
   </cngx-chart>
-  <cngx-chart-announcer [cngxChartAnnouncer]="chart" />
 </div>
 ```

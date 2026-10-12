@@ -111,6 +111,13 @@ describe('coreSymbolsFor', () => {
     expect(coreSymbolsFor('readonly a = signal(1);', [])).toEqual(['signal']);
     expect(coreSymbolsFor('', ['signal(1)'])).toEqual([]);
   });
+
+  it('counts Injector but not a longer injector name', () => {
+    expect(coreSymbolsFor('readonly i = Injector.create({ providers: [] });', [])).toEqual([
+      'Injector',
+    ]);
+    expect(coreSymbolsFor('readonly e = inject(EnvironmentInjector);', [])).toEqual(['inject']);
+  });
 });
 
 describe('filterImportLine', () => {

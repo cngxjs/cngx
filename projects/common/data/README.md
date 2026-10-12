@@ -531,14 +531,17 @@ readonly items = fromResource(this.res);
 
 ## 5. fromHttpResource - Angular httpResource() Bridge
 
-Like `fromResource` but maps HTTP progress (0-1 float) to
-`CngxAsyncState.progress` (0-100 integer).
+Like `fromResource` but maps the latest `HttpProgressEvent` to
+`CngxAsyncState.progress` (0-100 integer, `loaded / total` rounded and
+clamped; `undefined` while the total is unknown or zero). Angular only
+emits progress events when the request sets `reportProgress: true`.
 
 ```typescript
 private readonly res = httpResource<Report>(() => ({
   url: '/api/reports/generate',
   method: 'POST',
   body: { params: this.reportParams() },
+  reportProgress: true,
 }));
 
 readonly report = fromHttpResource(this.res);

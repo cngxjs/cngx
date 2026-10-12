@@ -3578,19 +3578,53 @@ cngx-radio-group .cngx-radio + .cngx-radio {
 }
 
 .demo-skeleton-bar {
-  background: var(--cngx-skeleton-bg, #e5e7eb);
+  // Tint of the text colour, so the bar reads in both schemes; no
+  // --cngx-skeleton-bg here, its registered light initial-value would win.
+  background: color-mix(in oklch, currentColor 14%, transparent);
   border-radius: 4px;
+  animation: demo-skeleton-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes demo-skeleton-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-skeleton-bar {
+    animation: none;
+  }
+}
+
+// Async-state stories mark their readout with `.demo-async-readout`; the
+// artifact then gets a fixed stage, so a view that renders nothing (idle, or
+// a state without a template) neither collapses the layout nor looks broken.
+.cngx-ex-artifact:has(~ .cngx-ex-chrome .demo-async-readout) {
+  box-sizing: border-box;
+  min-height: 11rem;
+  padding: 12px;
+  border: 1px dashed var(--cngx-ex-border, #d1d5db);
+  border-radius: 6px;
+}
+
+.cngx-ex-artifact:has(~ .cngx-ex-chrome .demo-async-readout):not(:has(*))::before {
+  content: 'Nothing rendered in this state';
+  color: var(--cngx-ex-faint, #6b7280);
+  font-size: 0.8125rem;
 }
 
 .demo-card-tile {
   padding: 8px 12px;
-  background: var(--cngx-card-bg, #f8fafc);
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
   border-radius: 4px;
 }
 
 .demo-card-cell {
   padding: 16px;
-  background: var(--cngx-card-bg, #f8fafc);
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
   border-radius: 6px;
   text-align: center;
 }
@@ -4217,4 +4251,447 @@ mat-icon.demo-breadcrumb-icon {
 .demo-scope-panel p {
   margin: 0;
   color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+
+/* Command palette config-templates story: the config-registered row,
+   group-header, empty and footer templates. */
+.demo-cmd-tpl-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cngx-space-sm, 8px);
+  width: 100%;
+}
+
+.demo-cmd-tpl-hint {
+  font-size: 0.75rem;
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+
+.demo-cmd-tpl-group {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cngx-color-primary, #4f46e5);
+}
+
+.demo-cmd-tpl-empty {
+  margin: 0;
+  padding: var(--cngx-space-md, 16px);
+  font-style: italic;
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+
+.demo-cmd-tpl-footer {
+  font-size: 0.8125rem;
+  color: var(--cngx-color-text, inherit);
+}
+
+/* Command palette stories: the open-palette trigger button and the
+   custom-row story's consumer row. Layout only; the highlighted-row tint
+   comes from the palette itself. */
+.demo-cmdk-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-space-sm, 8px);
+}
+
+.demo-cmd-row {
+  display: flex;
+  align-items: center;
+  gap: var(--cngx-space-sm, 8px);
+  width: 100%;
+}
+
+.demo-cmd-row--active .demo-cmd-label {
+  font-weight: 600;
+}
+
+.demo-cmd-icon {
+  flex: 0 0 auto;
+  inline-size: var(--cngx-space-lg, 24px);
+  text-align: center;
+}
+
+.demo-cmd-label {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.demo-cmd-kbd {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+}
+
+/* Command registry story: the hand-built list over injectCommands(). */
+.demo-command-registry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-sm, 8px);
+}
+
+.demo-command-registry__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-xs, 4px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.demo-command-registry__list li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--cngx-space-sm, 8px);
+}
+
+/* Slot override stories: tab overflow trigger and item rows. */
+.demo-overflow-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-space-xs, 4px);
+}
+
+.demo-overflow-trigger__count {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--cngx-ex-highlight-bg, transparent);
+  color: var(--cngx-ex-link, currentColor);
+  font-weight: 600;
+}
+
+.demo-overflow-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-space-sm, 8px);
+}
+
+.demo-overflow-item__index {
+  min-width: 1.5em;
+  font-variant-numeric: tabular-nums;
+  color: var(--cngx-ex-muted, currentColor);
+}
+
+.demo-overflow-item--disabled {
+  font-style: italic;
+}
+
+/* Slot override stories: tab close and add glyphs. */
+.demo-tab-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.demo-tab-glyph--unsaved {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cngx-ex-link, currentColor);
+}
+
+.demo-tab-glyph--add {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Slot override stories: popover panel close and empty slots. */
+.demo-popover-activity {
+  margin: 0;
+  padding-inline-start: 1.25em;
+}
+
+.demo-popover-close {
+  padding: 2px 10px;
+  border: 1px solid var(--cngx-ex-border, currentColor);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.demo-popover-close:focus-visible {
+  outline: 2px solid var(--cngx-ex-focus, currentColor);
+  outline-offset: 2px;
+}
+
+.demo-popover-empty {
+  margin: 0;
+  font-style: italic;
+  color: var(--cngx-ex-muted, inherit);
+}
+
+/* Slot override stories: chart connection overlays. */
+.demo-chart-connection {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--cngx-space-xs, 6px);
+}
+
+/* Slot override stories: typeahead input prefix and suffix. */
+.demo-input-adornment {
+  display: inline-flex;
+  padding-inline: var(--cngx-space-xs, 4px);
+  color: var(--cngx-ex-muted, currentColor);
+}
+
+.demo-input-adornment--active {
+  color: var(--cngx-ex-link, currentColor);
+}
+
+.demo-input-flags {
+  padding-inline: var(--cngx-space-xs, 4px);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: var(--cngx-ex-muted, currentColor);
+}
+
+/* Slot override stories: tree-select custom chip and trigger label. */
+.demo-tree-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-space-xs, 4px);
+  padding: 1px 4px 1px 8px;
+  border: 1px solid var(--cngx-ex-link, currentColor);
+  border-radius: 4px;
+  font-size: 0.8125rem;
+}
+
+.demo-tree-chip__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.demo-tree-chip__remove:focus-visible {
+  outline: 2px solid var(--cngx-ex-focus, currentColor);
+  outline-offset: 1px;
+}
+
+.demo-tree-summary {
+  font-weight: 600;
+}
+
+/* Slot override stories: incremental list first-load placeholder. */
+.demo-list-placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-sm, 8px);
+}
+
+.demo-list-placeholder__row {
+  display: flex;
+  align-items: center;
+  gap: var(--cngx-space-sm, 8px);
+}
+
+.demo-list-placeholder__avatar,
+.demo-list-placeholder__line {
+  background: var(--cngx-ex-border, currentColor);
+  opacity: 0.8;
+}
+
+.demo-list-placeholder__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.demo-list-placeholder__line {
+  width: 60%;
+  height: 12px;
+  border-radius: 6px;
+}
+
+/* Slot override stories: treetable skeleton row and refresh indicator. */
+.demo-treetable-skeleton {
+  display: flex;
+  align-items: center;
+  gap: var(--cngx-space-sm, 8px);
+  padding: 6px 8px;
+}
+
+.demo-treetable-skeleton__index {
+  min-width: 2.5em;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--cngx-ex-muted, currentColor);
+}
+
+.demo-treetable-skeleton__bar {
+  flex: 1;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--cngx-ex-border, currentColor);
+}
+
+.demo-treetable-refresh {
+  font-style: italic;
+  color: var(--cngx-ex-link, currentColor);
+}
+
+/* App-wide config stories (stat card, toc, paginator): two columns that put a
+   configured organism next to a library-default twin. */
+.demo-stat-config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: var(--cngx-space-md, 16px);
+  max-width: 560px;
+}
+
+.demo-toc-config-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+  gap: var(--cngx-space-lg, 24px);
+  align-items: start;
+  max-width: 760px;
+}
+
+.demo-toc-config-rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-sm, 8px);
+}
+
+.demo-toc-config-heading,
+.demo-pgn-config-heading {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--cngx-ex-muted, currentColor);
+}
+
+.demo-toc-config-article {
+  height: 320px;
+  overflow-y: auto;
+}
+
+.demo-toc-config-section {
+  min-height: 220px;
+}
+
+.demo-toc-config-section h3 {
+  margin-top: 0;
+}
+
+.demo-toc-config-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-space-xs, 6px);
+}
+
+.demo-toc-config-marker {
+  inline-size: 6px;
+  block-size: 6px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+}
+
+.demo-toc-config-item--active {
+  font-weight: 600;
+}
+
+.demo-toc-config-item--active .demo-toc-config-marker {
+  background: currentColor;
+}
+
+.demo-pgn-config-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-md, 16px);
+}
+
+.demo-pgn-config-loading {
+  flex-basis: 100%;
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--cngx-ex-link, currentColor);
+}
+
+/* App-wide config stories (stepper, tabs, dialog labels, loading timings): a
+   library-default instance next to a scoped-config twin. */
+.demo-config-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: var(--cngx-space-lg, 24px);
+  align-items: start;
+}
+
+.demo-config-compare--stacked {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.demo-config-compare-pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-sm, 8px);
+  min-width: 0;
+}
+
+.demo-config-compare-heading {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--cngx-ex-muted, currentColor);
+}
+
+.demo-config-compare-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-xs, 4px);
+}
+
+.demo-action-slot-button {
+  display: inline-flex;
+  align-items: center;
+  inline-size: 100%;
+  padding-block: var(--cngx-space-sm, 8px);
+  padding-inline: var(--cngx-space-md, 12px);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.demo-action-slot-button:disabled {
+  color: var(--cngx-ex-muted, currentColor);
+  cursor: default;
+}
+
+.demo-strategy-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
+  margin-block: var(--cngx-space-md, 12px);
+  padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 12px);
+  border: 1px solid var(--cngx-ex-border, currentColor);
+  border-radius: var(--cngx-radius-sm, 6px);
+}
+
+.demo-strategy-picker > legend {
+  padding-inline: var(--cngx-space-xs, 4px);
+  color: var(--cngx-ex-muted, currentColor);
+}
+
+.demo-loading-config-pane {
+  position: relative;
+  min-height: 120px;
+}
+
+.demo-loading-config-list {
+  margin: 0;
+  padding-inline-start: var(--cngx-space-lg, 20px);
 }
