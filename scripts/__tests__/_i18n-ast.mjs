@@ -18,7 +18,8 @@ export const REPO_ROOT = resolve(HERE, '..', '..');
 
 /**
  * Directories whose strings are never library defaults: demo code is
- * consumer-authored, `projects/testing` is not published, and a
+ * consumer-authored, a `testing` folder holds test kits whose strings are
+ * developer-facing (the published `@cngx/core/testing` included), and a
  * `__test-helpers` folder holds spec scaffolding that happens not to carry the
  * `.spec.ts` suffix.
  */
