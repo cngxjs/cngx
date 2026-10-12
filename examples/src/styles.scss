@@ -4586,3 +4586,45 @@ mat-icon.demo-breadcrumb-icon {
   font-style: italic;
   color: var(--cngx-ex-link, currentColor);
 }
+
+/* App-wide config stories (stepper, tabs, dialog labels, loading timings): a
+   library-default instance next to a scoped-config twin. */
+.demo-config-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: var(--cngx-space-lg, 24px);
+  align-items: start;
+}
+
+.demo-config-compare--stacked {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.demo-config-compare-pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-sm, 8px);
+  min-width: 0;
+}
+
+.demo-config-compare-heading {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--cngx-ex-muted, currentColor);
+}
+
+.demo-config-compare-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-xs, 4px);
+}
+
+.demo-loading-config-pane {
+  position: relative;
+  min-height: 120px;
+}
+
+.demo-loading-config-list {
+  margin: 0;
+  padding-inline-start: var(--cngx-space-lg, 20px);
+}
