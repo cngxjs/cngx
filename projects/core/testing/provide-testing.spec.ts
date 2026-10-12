@@ -15,6 +15,7 @@ import {
   injectLocale,
   provideLoadingConfig,
   provideLocale,
+  withMinDwell,
   withShowDelay,
 } from '@cngx/core/utils';
 
@@ -29,15 +30,15 @@ function setup(providers: (EnvironmentProviders | Provider)[]) {
   };
 }
 
-function gateUnderTesting() {
+function gateUnderTesting(overrides: EnvironmentProviders[] = []) {
   vi.useFakeTimers();
-  const { config } = setup([provideCngxTesting()]);
+  const { config } = setup([provideCngxTesting(), ...overrides]);
   const busy = signal(false);
   const visible = TestBed.runInInjectionContext(() =>
     createVisibilityGate(busy, signal(config.showDelay), signal(config.minDwell)),
   );
   TestBed.tick();
-  return { busy, visible };
+  return { busy, visible, config };
 }
 
 // One shared document across spec files (isolate: false): restore <html>.
@@ -62,19 +63,29 @@ describe('provideCngxTesting', () => {
     expect(config.spinnerVsSkeletonCutoff).toBe(CNGX_LOADING_DEFAULTS.spinnerVsSkeletonCutoff);
   });
 
-  it('shows a gated indicator after a 1 ms advance and hides it on the settle flush', () => {
-    const { busy, visible } = gateUnderTesting();
+  it.each([
+    ['the testing defaults', []],
+    [
+      'bound show delay and min dwell',
+      [provideLoadingConfig(withShowDelay(120), withMinDwell(400))],
+    ],
+    ['a bound show delay with zero min dwell', [provideLoadingConfig(withShowDelay(120))]],
+  ])(
+    'shows a gated indicator after a flush and an advance of showDelay + minDwell + 1, then hides it on the settle flush (%s)',
+    (_, overrides) => {
+      const { busy, visible, config } = gateUnderTesting(overrides);
 
-    busy.set(true);
-    TestBed.tick();
-    expect(visible()).toBe(false);
-    vi.advanceTimersByTime(1);
-    expect(visible()).toBe(true);
+      busy.set(true);
+      TestBed.tick();
+      expect(visible()).toBe(false);
+      vi.advanceTimersByTime(config.showDelay + config.minDwell + 1);
+      expect(visible()).toBe(true);
 
-    busy.set(false);
-    TestBed.tick();
-    expect(visible()).toBe(false);
-  });
+      busy.set(false);
+      TestBed.tick();
+      expect(visible()).toBe(false);
+    },
+  );
 
   it('keeps the indicator after the settle flush when the clock only advanced by 0', () => {
     const { busy, visible } = gateUnderTesting();
