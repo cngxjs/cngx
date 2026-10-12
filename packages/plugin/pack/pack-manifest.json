@@ -38,8 +38,8 @@
     },
     {
       "artifact": "pack/recipes/common-chart-realtime.md",
-      "source": "examples/stories/common/chart/realtime/streaming-telemetry.story.ts",
-      "contentHash": "sha256:f911729fa2275d1915ec98d03d45078118baed7f6a3f83ccd7f4a7c2b415274c"
+      "source": "examples/stories/common/chart/realtime/connection-lost-and-reconnecting.story.ts",
+      "contentHash": "sha256:6d0752224a5dfdb20172e4fba0d914717290fefccff39fe9b457e66d1a270129"
     },
     {
       "artifact": "pack/recipes/common-chart-sparkline.md",
@@ -210,6 +210,11 @@
       "artifact": "pack/recipes/core-i18n-language-pack.md",
       "source": "examples/stories/core/i18n/language-pack/live-switch-common.story.ts",
       "contentHash": "sha256:db547fe4938de233c30be4dc3e5fb6a84659a50ce4c14d48e3827fc80471128f"
+    },
+    {
+      "artifact": "pack/recipes/data-display-treetable-slots.md",
+      "source": "examples/stories/data-display/treetable/slots/skeleton-row-and-refresh.story.ts",
+      "contentHash": "sha256:d8d9202274af5747222bf4770f8462fac40f1c0d50231bac49bfc3ccc50f1d96"
     }
   ],
   "theming": {
