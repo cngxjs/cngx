@@ -1,8 +1,13 @@
 import { signal } from '@angular/core';
 import { type AsyncStatus, buildAsyncStateView, type CngxAsyncState } from '@cngx/core/utils';
 
-/** Fields a spec can drive on {@link AsyncStateMock}. */
-export interface AsyncStateMockPatch {
+/**
+ * Fields a spec can drive on {@link CngxAsyncStateMock}.
+ *
+ * @category core/testing
+ * @since 0.1.0
+ */
+export interface CngxAsyncStateMockPatch<T = unknown> {
   /**
    * New status. Every status-derived flag (`isLoading` / `isPending` /
    * `isRefreshing` / `isBusy` / `isSettled`) recomputes from it.
@@ -13,7 +18,7 @@ export interface AsyncStateMockPatch {
   /** Whether the data slot counts as empty. `hasData` recomputes as its negation. */
   empty?: boolean;
   /** Latest data value. Pass `undefined` explicitly to clear the slot. */
-  data?: unknown;
+  data?: T;
   /** Latest error value. Pass `undefined` explicitly to clear the slot. */
   error?: unknown;
   /** Progress 0-100. Pass `undefined` explicitly for indeterminate. */
@@ -22,10 +27,15 @@ export interface AsyncStateMockPatch {
   lastUpdated?: Date | undefined;
 }
 
-/** A `CngxAsyncState` whose signals a spec drives directly. */
-export interface AsyncStateMock extends CngxAsyncState<unknown> {
+/**
+ * A `CngxAsyncState` whose signals a spec drives directly.
+ *
+ * @category core/testing
+ * @since 0.1.0
+ */
+export interface CngxAsyncStateMock<T = unknown> extends CngxAsyncState<T> {
   /** Apply a partial state change. Omitted fields keep their current value. */
-  set(patch: AsyncStateMockPatch): void;
+  set(patch: CngxAsyncStateMockPatch<T>): void;
 }
 
 /**
@@ -38,7 +48,7 @@ export interface AsyncStateMock extends CngxAsyncState<unknown> {
  * combinations a real producer would not reach in one step.
  *
  * ```typescript
- * const state = createAsyncStateMock();
+ * const state = createAsyncStateMock<Item[]>();
  * fixture.componentInstance.state.set(state);
  *
  * state.set({ status: 'loading', firstLoad: true });
@@ -55,17 +65,24 @@ export interface AsyncStateMock extends CngxAsyncState<unknown> {
  * spec-driven `empty` signal (default `false`), not derived from the data
  * shape. That uses the kernel's `isEmpty` source override and keeps `isEmpty` /
  * `hasData` drivable without staging data.
+ *
+ * `T` defaults to `unknown`; pass the component's data type so the mock binds
+ * to a `[state]` input typed `CngxAsyncState<T>` under strict templates.
+ *
+ * @category core/testing
+ * @since 0.1.0
+ * @relatedTo buildAsyncStateView
  */
-export function createAsyncStateMock(): AsyncStateMock {
+export function createAsyncStateMock<T = unknown>(): CngxAsyncStateMock<T> {
   const status = signal<AsyncStatus>('idle');
   const firstLoad = signal(true);
   const empty = signal(false);
-  const data = signal<unknown>(undefined);
+  const data = signal<T | undefined>(undefined);
   const error = signal<unknown>(undefined);
   const progress = signal<number | undefined>(undefined);
   const lastUpdated = signal<Date | undefined>(undefined);
 
-  const view = buildAsyncStateView<unknown>({
+  const view = buildAsyncStateView<T>({
     status,
     data,
     error,
@@ -77,7 +94,7 @@ export function createAsyncStateMock(): AsyncStateMock {
 
   return {
     ...view,
-    set(patch: AsyncStateMockPatch): void {
+    set(patch: CngxAsyncStateMockPatch<T>): void {
       if (patch.status !== undefined) {
         status.set(patch.status);
       }

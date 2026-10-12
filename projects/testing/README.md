@@ -12,7 +12,6 @@ import {
   cngxMatchers,
   createMatchMediaMock,
   createResizeObserverMock,
-  createAsyncStateMock,
   createAudioContextMock,
 } from '@cngx/testing';
 
@@ -23,6 +22,8 @@ import { computedValue, containerState, gridTracks } from '@cngx/testing/geometr
 ## Overview
 
 `@cngx/testing` provides a suite of helpers and mocks specifically designed for testing cngx components and directives in vitest. The library encapsulates common testing patterns like fixture creation, signal mutation, async state flushing, and browser API mocking.
+
+The async-state mock for `[state]` inputs ships in the published `@cngx/core/testing` entry; import it from there.
 
 All utilities assume:
 - **vitest** as the test runner
@@ -252,31 +253,6 @@ expect(directive.size()).toEqual({ width: 500, height: 300 });
 expect(mock.observe.mock.calls.length).toBe(1);
 
 mock.restore(window);
-```
-
-### createAsyncStateMock
-
-A hand-driven `CngxAsyncState` for specs on components that accept `[state]`. The spec sets `status` / `firstLoad` / `empty` / `data` / `error` / `progress` / `lastUpdated` directly instead of standing up a real producer.
-
-```typescript
-function createAsyncStateMock(): AsyncStateMock
-
-interface AsyncStateMock extends CngxAsyncState<unknown> {
-  set(patch: AsyncStateMockPatch): void; // omitted fields keep their value
-}
-```
-
-All derived members come from `buildAsyncStateView` - the same kernel every real producer uses - so the mock cannot drift from the envelope's derivation rules. One deliberate divergence: emptiness is the spec-driven `empty` flag (default `false`), not derived from the data shape, so `isEmpty` / `hasData` stay drivable without staging data. The nullable slots (`data`, `error`, `progress`, `lastUpdated`) clear via an explicit `undefined` in the patch.
-
-#### Example
-
-```typescript
-const state = createAsyncStateMock();
-fixture.componentInstance.state.set(state);
-
-state.set({ status: 'loading', firstLoad: true });
-fixture.detectChanges();
-expect(card.querySelector('.skeleton')).not.toBeNull();
 ```
 
 ### createAudioContextMock

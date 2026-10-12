@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import '@angular/compiler';
-import { createAsyncStateMock } from '@cngx/testing';
-import type { AsyncStatus } from './async-state';
+import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
 
-// Characterization of the shared @cngx/testing async-state mock, co-located
-// with the CngxAsyncState kernel it must stay faithful to (projects/testing
-// has no test runner). The mock delegates to buildAsyncStateView, so these
-// specs pin the derivation contract a component spec relies on.
+import { createAsyncStateMock } from './async-state-mock';
+
+// The mock delegates to buildAsyncStateView, so these specs pin the
+// derivation contract a component spec relies on.
 describe('createAsyncStateMock', () => {
   it('starts idle with the documented defaults', () => {
     const state = createAsyncStateMock();
@@ -30,17 +29,20 @@ describe('createAsyncStateMock', () => {
     ['refreshing', true, false, true, false],
     ['success', false, false, false, true],
     ['error', false, false, false, true],
-  ])('derives the status flags for %s like the kernel', (status, busy, pending, refreshing, settled) => {
-    const state = createAsyncStateMock();
+  ])(
+    'derives the status flags for %s like the kernel',
+    (status, busy, pending, refreshing, settled) => {
+      const state = createAsyncStateMock();
 
-    state.set({ status });
+      state.set({ status });
 
-    expect(state.isLoading()).toBe(busy);
-    expect(state.isBusy()).toBe(busy);
-    expect(state.isPending()).toBe(pending);
-    expect(state.isRefreshing()).toBe(refreshing);
-    expect(state.isSettled()).toBe(settled);
-  });
+      expect(state.isLoading()).toBe(busy);
+      expect(state.isBusy()).toBe(busy);
+      expect(state.isPending()).toBe(pending);
+      expect(state.isRefreshing()).toBe(refreshing);
+      expect(state.isSettled()).toBe(settled);
+    },
+  );
 
   it('recomputes the flags on every status change (the audit repro)', () => {
     const state = createAsyncStateMock();
@@ -108,7 +110,14 @@ describe('createAsyncStateMock', () => {
   it('keeps omitted fields on a partial patch', () => {
     const state = createAsyncStateMock();
     const stamp = new Date('2026-09-08T12:00:00Z');
-    state.set({ status: 'success', firstLoad: false, data: [1, 2], error: 'boom', progress: 100, lastUpdated: stamp });
+    state.set({
+      status: 'success',
+      firstLoad: false,
+      data: [1, 2],
+      error: 'boom',
+      progress: 100,
+      lastUpdated: stamp,
+    });
 
     state.set({ status: 'refreshing' });
 
@@ -117,5 +126,14 @@ describe('createAsyncStateMock', () => {
     expect(state.progress()).toBe(100);
     expect(state.lastUpdated()).toBe(stamp);
     expect(state.isFirstLoad()).toBe(false);
+  });
+
+  it('binds to a CngxAsyncState typed for the component data', () => {
+    const state = createAsyncStateMock<string[]>();
+    const input: CngxAsyncState<string[]> = state;
+
+    state.set({ status: 'success', data: ['a'] });
+
+    expect(input.data()).toEqual(['a']);
   });
 });
