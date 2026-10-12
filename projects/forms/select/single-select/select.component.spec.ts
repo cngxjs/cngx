@@ -1243,6 +1243,44 @@ describe('CngxSelect - config cascade (input > component-scope > app-scope > def
     expect(panel.style.getPropertyValue('--cngx-select-panel-min-width')).toBe('300px');
   });
 
+  it('withPanelWidth(null) sizes the panel to its content, not the trigger', () => {
+    TestBed.configureTestingModule({
+      imports: [ConfigCascadeHost],
+      providers: [provideSelectConfig(withPanelWidth(null))],
+    });
+    const fixture = TestBed.createComponent(ConfigCascadeHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const panel = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-select__panel',
+    ) as HTMLElement;
+    expect(panel.style.getPropertyValue('--cngx-select-panel-min-width')).toBe('auto');
+  });
+
+  it('component-scope withPanelWidth(null) shadows an app-scope width', () => {
+    @Component({
+      selector: 'scoped-natural-host',
+      template: `<cngx-select [label]="'X'" [options]="options" [(value)]="value" />`,
+      imports: [CngxSelect],
+      viewProviders: [...provideSelectConfigAt(withPanelWidth(null))],
+    })
+    class ScopedNaturalHost {
+      readonly options = OPTIONS;
+      readonly value = signal<string | undefined>(undefined);
+    }
+    TestBed.configureTestingModule({
+      imports: [ScopedNaturalHost],
+      providers: [provideSelectConfig(withPanelWidth(200))],
+    });
+    const fixture = TestBed.createComponent(ScopedNaturalHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const panel = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-select__panel',
+    ) as HTMLElement;
+    expect(panel.style.getPropertyValue('--cngx-select-panel-min-width')).toBe('auto');
+  });
+
   it('loadingVariant config applied across instances', () => {
     @Component({
       selector: 'lv-host',
