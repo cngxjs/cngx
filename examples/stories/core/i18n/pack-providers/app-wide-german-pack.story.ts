@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     '<code>provideCngxI18n(withPack(CNGX_LANGUAGE_DE))</code> in the app config replaces every per-token <code>provide*I18n</code> call: each component reads its copy, the locale and the direction from the one German language file.',
   description:
-    "The pack is app-wide: every component reads its copy through root-shared tokens, so the call belongs in <code>bootstrapApplication</code> providers. A <code>provideCngxI18n</code> in a child injector, such as route providers, only moves <code>CNGX_LOCALE</code>, <code>CNGX_DIRECTION</code> and <code>&lt;html lang&gt;</code>; the copy stays with the root pack. This examples app installs the pack at its root only when the page is opened with <code>?pack=de</code>, with <code>withDocumentLanguage('off')</code> so the live page keeps its own <code>&lt;html lang&gt;</code>. Without the parameter the paginator below reads English; reload with the link to see it in German. <code>withDocumentLanguage('on')</code> is the default and writes <code>&lt;html lang&gt;</code> and <code>&lt;html dir&gt;</code> from the pack; the demo shows it on a detached document built by <code>createIsolatedRoot()</code>, a demo fixture, so it never stamps this page.",
+    "The pack is app-wide: every component reads its copy through root-shared tokens, so the call belongs in <code>bootstrapApplication</code> providers. A <code>provideCngxI18n</code> in a child injector, such as route providers, only moves <code>CNGX_LOCALE</code>, <code>CNGX_DIRECTION</code> and <code>&lt;html lang&gt;</code>; the copy stays with the root pack. This examples app installs the pack at its root only when the page is opened with <code>?pack=de</code>, with <code>withDocumentLanguage('off')</code> so the live page keeps its own <code>&lt;html lang&gt;</code>. Without the parameter the paginator below reads English; reload with the button to see it in German. <code>withDocumentLanguage('on')</code> is the default and writes <code>&lt;html lang&gt;</code> and <code>&lt;html dir&gt;</code> from the pack; the demo shows it on a detached document built by <code>createIsolatedRoot()</code>, a demo fixture, so it never stamps this page.",
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -22,7 +22,7 @@ export const STORY: DemoSpec = {
     "import { CNGX_LANGUAGE_PACK, provideCngxI18n, withDocumentLanguage, withPack } from '@cngx/core/i18n';",
     "import { CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';",
     "import { CngxPaginator, CngxPaginatorLoadMore, CngxPaginatorRange, CngxPaginatorStatus } from '@cngx/ui/paginator';",
-    "import { createIsolatedRoot, demoPackParam } from '../../../../fixtures';",
+    "import { createIsolatedRoot, demoPackParam, reloadWithPack } from '../../../../fixtures';",
   ],
   imports: ['CngxPaginator', 'CngxPaginatorRange', 'CngxPaginatorStatus', 'CngxPaginatorLoadMore'],
   setup: `
@@ -48,7 +48,10 @@ export const STORY: DemoSpec = {
     <cngx-pgn-status />
     <cngx-pgn-load-more />
   </cngx-paginator>`,
-  setupChrome: `
+  setupChrome: `protected reload(pack: 'de' | 'partial' | null): void {
+    reloadWithPack(pack);
+  }
+
   protected readonly packParam = demoPackParam();
   protected readonly activePack = inject(CNGX_LANGUAGE_PACK);
   private readonly liveRoot = inject(DOCUMENT).documentElement;
@@ -64,8 +67,8 @@ export const STORY: DemoSpec = {
   }`,
   templateChrome: `
   <div class="button-row">
-    <a href="?pack=de#/core/i18n/pack-providers/app-wide-german-pack">Reload with ?pack=de</a>
-    <a href="./#/core/i18n/pack-providers/app-wide-german-pack">Reload without a pack</a>
+    <button class="sort-btn" type="button" (click)="reload('de')">Reload with ?pack=de</button>
+    <button class="sort-btn" type="button" (click)="reload(null)">Reload without a pack</button>
   </div>
   <div class="event-grid">
     <div class="event-row">

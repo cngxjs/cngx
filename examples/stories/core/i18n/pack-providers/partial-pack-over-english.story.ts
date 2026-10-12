@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     '<code>withPartialPack(pack)</code> accepts a pack with missing sections or keys. Every key it sets replaces the English copy; every key it leaves out reads English, formatted for the pack locale.',
   description:
-    "Where <code>withPack</code> demands a complete pack (a missing key is a compile error), <code>withPartialPack</code> takes gaps. The pack opened with <code>?pack=partial</code> sets <code>locale: 'de'</code> and two paginator keys, <code>range</code> and <code>loadMore</code>; <code>pageStatus</code> and <code>loadMoreReadout</code> stay English, with German number grouping (1.200). A provider takes one pack, the last pack feature wins, so overriding a few keys of the German pack means spreading <code>CNGX_LANGUAGE_DE</code> into the partial pack yourself. Like <code>withPack</code>, the pack is app-wide and belongs in the root providers: the examples app installs it only for <code>?pack=partial</code>. Without the parameter the paginator reads English; reload with the link to apply it.",
+    "Where <code>withPack</code> demands a complete pack (a missing key is a compile error), <code>withPartialPack</code> takes gaps. The pack opened with <code>?pack=partial</code> sets <code>locale: 'de'</code> and two paginator keys, <code>range</code> and <code>loadMore</code>; <code>pageStatus</code> and <code>loadMoreReadout</code> stay English, with German number grouping (1.200). A provider takes one pack, the last pack feature wins, so overriding a few keys of the German pack means spreading <code>CNGX_LANGUAGE_DE</code> into the partial pack yourself. Like <code>withPack</code>, the pack is app-wide and belongs in the root providers: the examples app installs it only for <code>?pack=partial</code>. Without the parameter the paginator reads English; reload with the button to apply it.",
   level: 'organism',
   audience: ['dev'],
   artifact: 'building-block',
@@ -14,7 +14,7 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CNGX_LANGUAGE_PACK } from '@cngx/core/i18n';",
     "import { CngxPaginator, CngxPaginatorLoadMore, CngxPaginatorRange, CngxPaginatorStatus } from '@cngx/ui/paginator';",
-    "import { demoPackParam } from '../../../../fixtures';",
+    "import { demoPackParam, reloadWithPack } from '../../../../fixtures';",
   ],
   imports: ['CngxPaginator', 'CngxPaginatorRange', 'CngxPaginatorStatus', 'CngxPaginatorLoadMore'],
   setup: `
@@ -38,7 +38,10 @@ export const STORY: DemoSpec = {
     <cngx-pgn-status />
     <cngx-pgn-load-more />
   </cngx-paginator>`,
-  setupChrome: `
+  setupChrome: `protected reload(pack: 'de' | 'partial' | null): void {
+    reloadWithPack(pack);
+  }
+
   protected readonly packParam = demoPackParam();
   protected readonly activePack = inject(CNGX_LANGUAGE_PACK);
   protected readonly paginatorKeys = computed(() =>
@@ -46,8 +49,8 @@ export const STORY: DemoSpec = {
   );`,
   templateChrome: `
   <div class="button-row">
-    <a href="?pack=partial#/core/i18n/pack-providers/partial-pack-over-english">Reload with ?pack=partial</a>
-    <a href="./#/core/i18n/pack-providers/partial-pack-over-english">Reload without a pack</a>
+    <button class="sort-btn" type="button" (click)="reload('partial')">Reload with ?pack=partial</button>
+    <button class="sort-btn" type="button" (click)="reload(null)">Reload without a pack</button>
   </div>
   <div class="event-grid">
     <div class="event-row">
