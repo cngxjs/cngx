@@ -301,6 +301,15 @@ describe('ngAdd', () => {
     });
   });
 
+  it('keeps a configured editor in the readme when a later run chooses another', async () => {
+    const first = await runRule(ngAdd({ aiTools: ['claude'] }), createFixtureTree('standalone-app', { '.vscode/settings.json': '{}' }));
+    const second = await runRule(ngAdd({ preset: 'full' }), first.tree);
+    const readme = second.tree.readText('.cngx/README.md');
+
+    expect(readme).toContain('- `.mcp.json`\n- `.vscode/mcp.json`\n');
+    expect(readme).toContain('claude mcp list');
+  });
+
   it('leaves a config whose servers key is not an object untouched and says so', async () => {
     const run = await runRule(
       ngAdd({ preset: 'full' }),

@@ -100,6 +100,8 @@ export interface ProjectFacts {
   readonly material: MaterialFacts;
   readonly editors: EditorFacts;
   readonly mcpConfigs: Readonly<Record<AiTool, McpConfigState>>;
+  /** The `@cngx/mcp` version a `wired` config pins; `undefined` when none is found. */
+  readonly mcpPins: Readonly<Record<AiTool, string | undefined>>;
   /** `AGENTS.md`: missing, present, or already carrying the cngx block. */
   readonly agentsMd: InstructionState;
   /**
@@ -300,29 +302,41 @@ function sourceFiles(tree: Tree, root: string): readonly string[] {
   return files;
 }
 
+interface McpConfigFacts {
+  readonly state: McpConfigState;
+  readonly pin: string | undefined;
+}
+
+const MCP_PACKAGE = /^@cngx\/mcp@(.+)$/;
+
+// The version an existing cngx entry runs, read from `npx -y @cngx/mcp@<v>`.
+function mcpPinOf(entry: unknown): string | undefined {
+  const args = isRecord(entry) ? entry['args'] : undefined;
+  if (!Array.isArray(args)) {
+    return undefined;
+  }
+  const match = args.map((arg) => (typeof arg === 'string' ? MCP_PACKAGE.exec(arg) : null)).find((found) => found !== null);
+  return match?.[1];
+}
+
 // JSONFile reads JSONC, so a commented `.vscode/mcp.json` still counts as editable.
-function mcpConfigState(tree: Tree, path: string, key: string): McpConfigState {
+function mcpConfigOf(tree: Tree, path: string, key: string): McpConfigFacts {
   if (!tree.exists(path)) {
-    return 'absent';
+    return { state: 'absent', pin: undefined };
   }
+  let root: unknown;
   try {
-    const root: unknown = new JSONFile(tree, path).get([]);
-    if (!isRecord(root)) {
-      return 'invalid';
-    }
-    const servers = root[key];
-    if (servers === undefined) {
-      return 'present';
-    }
-    // A key cngx cannot add an entry to (an array, null, a string) would make
-    // the JSON write throw at apply time.
-    if (!isRecord(servers)) {
-      return 'invalid';
-    }
-    return servers['cngx'] === undefined ? 'present' : 'wired';
+    root = new JSONFile(tree, path).get([]);
   } catch {
-    return 'invalid';
+    return { state: 'invalid', pin: undefined };
   }
+  const servers = isRecord(root) ? root[key] : undefined;
+  if (!isRecord(root) || (servers !== undefined && !isRecord(servers))) {
+    // Not an object cngx can add an entry to: the JSON write would throw at apply time.
+    return { state: 'invalid', pin: undefined };
+  }
+  const entry = servers?.['cngx'];
+  return entry === undefined ? { state: 'present', pin: undefined } : { state: 'wired', pin: mcpPinOf(entry) };
 }
 
 function instructionState(read: Read, path: string): InstructionState {
@@ -425,6 +439,12 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     ({ path, content }) => path.startsWith(appRoot) && /@Component\s*\(/.test(content),
   ).length;
 
+  const mcpConfigs: Readonly<Record<AiTool, McpConfigFacts>> = {
+    claude: mcpConfigOf(tree, MCP_CONFIGS.claude.path, MCP_CONFIGS.claude.key),
+    cursor: mcpConfigOf(tree, MCP_CONFIGS.cursor.path, MCP_CONFIGS.cursor.key),
+    vscode: mcpConfigOf(tree, MCP_CONFIGS.vscode.path, MCP_CONFIGS.vscode.key),
+  };
+
   const hasOtherUi = OTHER_UI_LIBRARIES.some((library) => declaredRange(manifest, library) !== undefined);
   const hasOwnProviders = providers.some((provider) => !SCAFFOLD_PROVIDERS.has(provider));
 
@@ -449,9 +469,14 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
       vscode: hasEntries(tree, '.vscode'),
     },
     mcpConfigs: {
-      claude: mcpConfigState(tree, MCP_CONFIGS.claude.path, MCP_CONFIGS.claude.key),
-      cursor: mcpConfigState(tree, MCP_CONFIGS.cursor.path, MCP_CONFIGS.cursor.key),
-      vscode: mcpConfigState(tree, MCP_CONFIGS.vscode.path, MCP_CONFIGS.vscode.key),
+      claude: mcpConfigs.claude.state,
+      cursor: mcpConfigs.cursor.state,
+      vscode: mcpConfigs.vscode.state,
+    },
+    mcpPins: {
+      claude: mcpConfigs.claude.pin,
+      cursor: mcpConfigs.cursor.pin,
+      vscode: mcpConfigs.vscode.pin,
     },
     agentsMd: instructionState(read, 'AGENTS.md'),
     claudeInstructions: claudeInstructionsOf(read),

@@ -24,6 +24,14 @@ function serverEntry(tool: AiTool, mcpVersion: string): JsonValue {
   return tool === 'claude' ? command : { type: 'stdio', ...command };
 }
 
+// An existing entry is never rewritten; a different pin is named, not hidden.
+function wiredReason(path: string, pin: string | undefined, mcpVersion: string): string {
+  if (pin === undefined || pin === mcpVersion) {
+    return `${path} already declares a cngx server`;
+  }
+  return `${path} already declares a cngx server, pinned to @cngx/mcp@${pin} (this release pins ${mcpVersion})`;
+}
+
 function mcpConfig(tool: AiTool, facts: ProjectFacts, versions: Versions, provenance: Provenance): StepResult {
   const { path, key } = MCP_CONFIGS[tool];
   const state = facts.mcpConfigs[tool];
@@ -37,7 +45,7 @@ function mcpConfig(tool: AiTool, facts: ProjectFacts, versions: Versions, proven
     entries: [[[key, 'cngx'], serverEntry(tool, versions.mcp)]],
   };
   if (state === 'wired') {
-    return { changes: [], skipped: [skipChange(change, `${path} already declares a cngx server`)] };
+    return { changes: [], skipped: [skipChange(change, wiredReason(path, facts.mcpPins[tool], versions.mcp))] };
   }
   if (state === 'invalid') {
     return {

@@ -23,6 +23,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
     material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
     editors: { claude: false, cursor: false, vscode: false },
     mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'absent' },
+    mcpPins: { claude: undefined, cursor: undefined, vscode: undefined },
     agentsMd: 'absent',
     claudeInstructions: undefined,
     helperReadme: undefined,

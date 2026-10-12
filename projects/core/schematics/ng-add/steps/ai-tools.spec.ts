@@ -47,6 +47,21 @@ describe('planAiTools', () => {
     );
   });
 
+  it('names a different pin of an existing cngx entry instead of rewriting it', () => {
+    const facts = createFacts({
+      mcpConfigs: { claude: 'wired', cursor: 'absent', vscode: 'absent' },
+      mcpPins: { claude: '0.2.0', cursor: undefined, vscode: undefined },
+    });
+    const result = planAiTools(facts, createAnswers({ aiTools: ['claude'] }), VERSIONS);
+
+    expect(result.skipped).toContainEqual(
+      expect.objectContaining({
+        id: 'ai-tools:claude',
+        reason: '.mcp.json already declares a cngx server, pinned to @cngx/mcp@0.2.0 (this release pins 0.3.0)',
+      }),
+    );
+  });
+
   it('says so instead of editing a config that is not a JSON object', () => {
     const facts = createFacts({ mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'invalid' } });
     const [change] = planAiTools(facts, createAnswers({ aiTools: ['vscode'] }), VERSIONS).changes;

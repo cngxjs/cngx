@@ -54,6 +54,29 @@ describe('renderHelperReadme', () => {
     expect(readme).toContain('- `.mcp.json`\n- `.vscode/mcp.json`: no `servers` object cngx can add to; add `servers.cngx` by hand\n');
   });
 
+  it('keeps an editor whose config still declares a cngx server when this run does not choose it', () => {
+    const facts = createFacts({
+      mcpConfigs: { claude: 'wired', cursor: 'absent', vscode: 'absent' },
+      mcpPins: { claude: '0.3.0', cursor: undefined, vscode: undefined },
+    });
+    const readme = renderHelperReadme(facts, createAnswers({ aiTools: ['vscode'] }), VERSIONS);
+
+    expect(readme).toContain('- `.mcp.json`\n- `.vscode/mcp.json`\n');
+    expect(readme).toContain('claude mcp list');
+    expect(readme).toContain('## Claude Code plugin');
+  });
+
+  it('names the version an existing entry runs when it differs from this release', () => {
+    const facts = createFacts({
+      mcpConfigs: { claude: 'wired', cursor: 'wired', vscode: 'absent' },
+      mcpPins: { claude: '0.2.0', cursor: undefined, vscode: undefined },
+    });
+    const readme = renderHelperReadme(facts, createAnswers({ aiTools: ['claude', 'cursor'] }), VERSIONS);
+
+    expect(readme).toContain('- `.mcp.json`: its own cngx entry, running `@cngx/mcp@0.2.0`\n');
+    expect(readme).toContain('- `.cursor/mcp.json`: its own cngx entry, running no `@cngx/mcp` version cngx can read\n');
+  });
+
   it('describes the Claude Code plugin only when Claude Code is chosen', () => {
     const withClaude = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS);
     const withoutClaude = renderHelperReadme(createFacts(), createAnswers({ aiTools: ['cursor'] }), VERSIONS);
@@ -67,6 +90,14 @@ describe('renderHelperReadme', () => {
 describe('planHelperReadme', () => {
   it('plans nothing without an editor', () => {
     expect(planHelperReadme(createFacts(), createAnswers(), VERSIONS)).toEqual({ changes: [], skipped: [] });
+  });
+
+  it('writes the readme for a configured editor even when this run chose none', () => {
+    const facts = createFacts({ mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'wired' } });
+
+    expect(planHelperReadme(facts, createAnswers(), VERSIONS).changes).toEqual([
+      expect.objectContaining({ kind: 'create-file', path: '.cngx/README.md' }),
+    ]);
   });
 
   it('creates the readme when there is none', () => {

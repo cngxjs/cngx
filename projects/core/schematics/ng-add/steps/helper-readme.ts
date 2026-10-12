@@ -1,4 +1,5 @@
 import {
+  AI_TOOLS,
   type AiTool,
   type Change,
   contentFingerprint,
@@ -39,13 +40,26 @@ const CLAUDE_PLUGIN = [
   '',
 ].join('\n');
 
+// Every editor the README describes: the ones this run sets up and the ones
+// whose config already declares a cngx server, so a re-run with a different
+// editor choice never drops a server that is still configured.
+function documentedTools(facts: ProjectFacts, answers: OnboardingAnswers): readonly AiTool[] {
+  return AI_TOOLS.filter((tool) => answers.aiTools.includes(tool) || facts.mcpConfigs[tool] === 'wired');
+}
+
 // A config the AI tooling step could not edit is listed with what to do,
-// never as configured.
-function configLine(tool: AiTool, facts: ProjectFacts): string {
+// never as configured; an existing entry with another pin is named as such.
+function configLine(tool: AiTool, facts: ProjectFacts, mcpVersion: string): string {
   const { path, key } = MCP_CONFIGS[tool];
-  return facts.mcpConfigs[tool] === 'invalid'
-    ? `- \`${path}\`: no \`${key}\` object cngx can add to; add \`${key}.cngx\` by hand`
-    : `- \`${path}\``;
+  const pin = facts.mcpPins[tool];
+  if (facts.mcpConfigs[tool] === 'invalid') {
+    return `- \`${path}\`: no \`${key}\` object cngx can add to; add \`${key}.cngx\` by hand`;
+  }
+  if (facts.mcpConfigs[tool] === 'wired' && pin !== mcpVersion) {
+    const runs = pin === undefined ? 'no `@cngx/mcp` version cngx can read' : `\`@cngx/mcp@${pin}\``;
+    return `- \`${path}\`: its own cngx entry, running ${runs}`;
+  }
+  return `- \`${path}\``;
 }
 
 const cell = (text: string): string => text.replace(/\|/g, '\\|');
@@ -66,19 +80,20 @@ export function fillTemplate(template: string, values: Readonly<Record<string, s
 }
 
 export function renderHelperReadme(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): string {
+  const tools = documentedTools(facts, answers);
   const body = fillTemplate(TEMPLATE, {
     version: versions.cngx,
     mcpVersion: versions.mcp,
     packages: cngxPackages(answers)
       .map((name) => `- \`${name}@${versions.cngx}\``)
       .join('\n'),
-    configs: answers.aiTools.map((tool) => configLine(tool, facts)).join('\n'),
-    instructions: joinNames(instructionTargets(facts, answers).map((target) => `\`${target.path}\``)),
+    configs: tools.map((tool) => configLine(tool, facts, versions.mcp)).join('\n'),
+    instructions: joinNames(instructionTargets(facts, { ...answers, aiTools: tools }).map((target) => `\`${target.path}\``)),
     tools: MCP_TOOLS.map((tool) => row([`\`${tool.name}\``, tool.title, tool.example])).join('\n'),
     resources: MCP_RESOURCES.map((resource) => row([`\`${resource.uri}\``, resource.description])).join('\n'),
     prompts: MCP_PROMPTS.map((prompt) => row([`\`${prompt.name}\``, prompt.description])).join('\n'),
-    verify: answers.aiTools.map((tool) => `- ${VERIFY[tool]}`).join('\n'),
-    plugin: answers.aiTools.includes('claude') ? CLAUDE_PLUGIN : '',
+    verify: tools.map((tool) => `- ${VERIFY[tool]}`).join('\n'),
+    plugin: tools.includes('claude') ? CLAUDE_PLUGIN : '',
   });
   return `${createProvenanceStamp(SOURCE, versions.cngx, 'html')}\n${body}`;
 }
@@ -90,7 +105,7 @@ export function renderHelperReadme(facts: ProjectFacts, answers: OnboardingAnswe
  * not generate.
  */
 export function planHelperReadme(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
-  if (answers.aiTools.length === 0) {
+  if (documentedTools(facts, answers).length === 0) {
     return { changes: [], skipped: [] };
   }
   const provenance: Provenance = { source: SOURCE, version: versions.cngx };

@@ -105,6 +105,7 @@ describe('detectProject', () => {
       material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
       editors: { claude: false, cursor: false, vscode: false },
       mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'absent' },
+      mcpPins: { claude: undefined, cursor: undefined, vscode: undefined },
       agentsMd: 'absent',
       claudeInstructions: undefined,
       helperReadme: undefined,
@@ -325,6 +326,14 @@ describe('detectProject', () => {
   it('marks an mcp config that is not a JSON object as invalid', async () => {
     const facts = await detect({ '.mcp.json': '{ "mcpServers": ', '.cursor/mcp.json': '[]' });
     expect(facts.mcpConfigs).toMatchObject({ claude: 'invalid', cursor: 'invalid' });
+  });
+
+  it('reads the @cngx/mcp version an existing cngx entry pins', async () => {
+    const facts = await detect({
+      '.mcp.json': JSON.stringify({ mcpServers: { cngx: { command: 'npx', args: ['-y', '@cngx/mcp@0.2.0'] } } }),
+      '.vscode/mcp.json': JSON.stringify({ servers: { cngx: { command: 'cngx-mcp' } } }),
+    });
+    expect(facts.mcpPins).toEqual({ claude: '0.2.0', cursor: undefined, vscode: undefined });
   });
 
   it('marks a servers key cngx cannot add an entry to as invalid', async () => {
