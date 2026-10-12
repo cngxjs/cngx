@@ -12,7 +12,7 @@ More kits land in this entry as they ship.
 
 ## When you reach for it
 
-Your spec renders a cngx component and you want to assert what it shows without racing its timing. Loading surfaces debounce their indicator and hold it for a minimum dwell; under `provideCngxTesting()` both are `0`, so there is no delay to compute. Both are still timers: the skeleton or spinner appears after one zero-length timer turn and disappears once the state settled and a second turn ran the min-dwell timer. See "Loading timings" for how to take a turn under each runner.
+Your spec renders a cngx component and you want to assert what it shows without racing its timing. Loading surfaces debounce their indicator and hold it for a minimum dwell; under `provideCngxTesting()` both are `0`, so there is no delay to compute. Both are still timers, though: see "Loading timings" for the one advance that shows the skeleton or spinner and lets it hide on the flush after the state settles.
 
 ## Usage
 
@@ -53,7 +53,7 @@ jasmine.clock().tick(showDelay); // Jasmine
 tick(showDelay); // fakeAsync
 ```
 
-Under `provideCngxTesting()` both are `0`. A zero-delay `setTimeout` is still a timer: with fake timers it needs an advance (`vi.advanceTimersByTime(0)`), with real timers a macrotask. Showing takes one turn; the min-dwell timer is scheduled when the indicator shows, so hiding needs a second. Timing inputs bound on a single component (for example `[showDelay]` / `[minDwell]` on an async container) are not part of the config read; advance by the value you bound.
+Under `provideCngxTesting()` both are `0`, but a zero-delay `setTimeout` is still a timer, and the min-dwell timer is only scheduled when the indicator shows. After the state turns busy, advance the fake clock by `1` ms (`vi.advanceTimersByTime(1)` under Vitest): that runs the show timer and the min-dwell timer it schedules, so the indicator is visible and hides on the flush after the state settles. An advance of `0` runs only the show timer, and the indicator then stays visible after the state settles until the clock moves again. With real timers, let two macrotasks pass. Timing inputs bound on a single component (for example `[showDelay]` / `[minDwell]` on an async container) are not part of the config read; advance by the value you bound.
 
 ## Runners
 
