@@ -215,6 +215,11 @@
       "artifact": "pack/recipes/data-display-treetable-slots.md",
       "source": "examples/stories/data-display/treetable/slots/skeleton-row-and-refresh.story.ts",
       "contentHash": "sha256:d8d9202274af5747222bf4770f8462fac40f1c0d50231bac49bfc3ccc50f1d96"
+    },
+    {
+      "artifact": "pack/recipes/ui-paginator-paginator-behaviors.md",
+      "source": "examples/stories/ui/paginator/paginator-behaviors/config-formats-and-templates.story.ts",
+      "contentHash": "sha256:467134a6d04c49ec02414ba128f57b05abd311ae48726d80e9cc5c214100835b"
     }
   ],
   "theming": {

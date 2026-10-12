@@ -93,6 +93,7 @@ export function coreSymbolsFor(classText, providersText) {
   const usesLinkedSignal = /\blinkedSignal\s*[<(]/.test(classText);
   const usesForwardRef = /\bforwardRef\s*\(/.test(classAndProviders);
   const usesTemplateRef = /\bTemplateRef\b/.test(classAndProviders);
+  const usesInjector = /(?<![\w$])Injector\b/.test(classText);
 
   return [
     ...(usesAfterRender ? ['afterNextRender'] : []),
@@ -102,6 +103,7 @@ export function coreSymbolsFor(classText, providersText) {
     ...(usesElementRef ? ['ElementRef'] : []),
     ...(usesForwardRef ? ['forwardRef'] : []),
     ...(usesInject ? ['inject'] : []),
+    ...(usesInjector ? ['Injector'] : []),
     ...(usesLinkedSignal ? ['linkedSignal'] : []),
     ...(usesSignal ? ['signal'] : []),
     ...(usesTemplateRef ? ['TemplateRef'] : []),

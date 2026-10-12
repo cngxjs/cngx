@@ -4509,3 +4509,80 @@ mat-icon.demo-breadcrumb-icon {
   font-style: italic;
   color: var(--cngx-ex-link, currentColor);
 }
+
+/* App-wide config stories (stat card, toc, paginator): two columns that put a
+   configured organism next to a library-default twin. */
+.demo-stat-config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: var(--cngx-space-md, 16px);
+  max-width: 560px;
+}
+
+.demo-toc-config-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+  gap: var(--cngx-space-lg, 24px);
+  align-items: start;
+  max-width: 760px;
+}
+
+.demo-toc-config-rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-sm, 8px);
+}
+
+.demo-toc-config-heading,
+.demo-pgn-config-heading {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--cngx-ex-muted, currentColor);
+}
+
+.demo-toc-config-article {
+  height: 320px;
+  overflow-y: auto;
+}
+
+.demo-toc-config-section {
+  min-height: 220px;
+}
+
+.demo-toc-config-section h3 {
+  margin-top: 0;
+}
+
+.demo-toc-config-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-space-xs, 6px);
+}
+
+.demo-toc-config-marker {
+  inline-size: 6px;
+  block-size: 6px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+}
+
+.demo-toc-config-item--active {
+  font-weight: 600;
+}
+
+.demo-toc-config-item--active .demo-toc-config-marker {
+  background: currentColor;
+}
+
+.demo-pgn-config-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-md, 16px);
+}
+
+.demo-pgn-config-loading {
+  flex-basis: 100%;
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--cngx-ex-link, currentColor);
+}
