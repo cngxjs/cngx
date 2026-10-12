@@ -9,7 +9,7 @@ import {
   skipChange,
   type StepResult,
 } from '../../engine';
-import { HELPER_README_PATH, MCP_CONFIGS, type ProjectFacts } from '../detect/detect';
+import { HELPER_README_PATH, helperReadmeFingerprintLine, MCP_CONFIGS, type ProjectFacts } from '../detect/detect';
 // Sheriff resolves TypeScript modules only; the template is text, bundled by
 // the esbuild text loader, so there is no module boundary to check.
 // eslint-disable-next-line @softarc/sheriff/dependency-rule, @softarc/sheriff/encapsulation
@@ -79,7 +79,7 @@ export function fillTemplate(template: string, values: Readonly<Record<string, s
   });
 }
 
-export function renderHelperReadme(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): string {
+function renderBody(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): string {
   const tools = documentedTools(facts, answers);
   const body = fillTemplate(TEMPLATE, {
     version: versions.cngx,
@@ -95,7 +95,14 @@ export function renderHelperReadme(facts: ProjectFacts, answers: OnboardingAnswe
     verify: tools.map((tool) => `- ${VERIFY[tool]}`).join('\n'),
     plugin: tools.includes('claude') ? CLAUDE_PLUGIN : '',
   });
-  return `${createProvenanceStamp(SOURCE, versions.cngx, 'html')}\n${body}`;
+  return body;
+}
+
+/** The README with its stamp and the fingerprint of its body, which a later run compares against. */
+export function renderHelperReadme(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): string {
+  const body = renderBody(facts, answers, versions);
+  const stamp = createProvenanceStamp(SOURCE, versions.cngx, 'html');
+  return `${stamp}${helperReadmeFingerprintLine(contentFingerprint(body))}\n\n${body}`;
 }
 
 /**
@@ -109,6 +116,7 @@ export function planHelperReadme(facts: ProjectFacts, answers: OnboardingAnswers
     return { changes: [], skipped: [] };
   }
   const provenance: Provenance = { source: SOURCE, version: versions.cngx };
+  const fingerprint = contentFingerprint(renderBody(facts, answers, versions));
   const content = renderHelperReadme(facts, answers, versions);
   const existing = facts.helperReadme;
   const base = {
@@ -142,7 +150,7 @@ export function planHelperReadme(facts: ProjectFacts, answers: OnboardingAnswers
     path: HELPER_README_PATH,
     edit: () => content,
   };
-  return existing.fingerprint === contentFingerprint(content)
+  return existing.fingerprint === fingerprint
     ? { changes: [], skipped: [skipChange(update, 'already up to date')] }
     : { changes: [update], skipped: [] };
 }

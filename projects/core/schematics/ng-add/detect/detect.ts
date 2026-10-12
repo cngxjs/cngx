@@ -4,7 +4,6 @@ import { posix } from 'node:path';
 
 import {
   type AiTool,
-  contentFingerprint,
   declaredRange,
   hasArrayLiteral,
   hasProvenanceStamp,
@@ -62,8 +61,20 @@ export const HELPER_README_PATH = '.cngx/README.md';
 export interface HelperReadmeFacts {
   /** It starts with a cngx provenance stamp; otherwise someone else wrote it. */
   readonly generated: boolean;
-  readonly fingerprint: string;
+  /** The fingerprint of the render cngx wrote; `undefined` when the file carries none. */
+  readonly fingerprint: string | undefined;
 }
+
+/**
+ * Records the fingerprint of the rendered README in the file itself. The CLI
+ * may run the app's Prettier over generated files, so hashing what is on disk
+ * would read a formatted current README as stale; the comment line survives.
+ */
+export function helperReadmeFingerprintLine(fingerprint: string): string {
+  return `<!-- cngx:fingerprint ${fingerprint} -->`;
+}
+
+const FINGERPRINT_LINE = /<!-- cngx:fingerprint ([0-9a-f]{8}) -->/;
 
 /** An agent instruction file: missing, present, or already carrying the cngx block. */
 export type InstructionState = 'absent' | 'present' | 'wired';
@@ -361,7 +372,7 @@ function helperReadmeOf(read: Read): HelperReadmeFacts | undefined {
   const content = read(HELPER_README_PATH);
   return content === undefined
     ? undefined
-    : { generated: hasProvenanceStamp(content), fingerprint: contentFingerprint(content) };
+    : { generated: hasProvenanceStamp(content), fingerprint: FINGERPRINT_LINE.exec(content)?.[1] };
 }
 
 function hasEntries(tree: Tree, dir: string): boolean {

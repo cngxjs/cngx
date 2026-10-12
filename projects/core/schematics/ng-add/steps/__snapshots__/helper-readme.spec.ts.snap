@@ -3,6 +3,7 @@
 exports[`renderHelperReadme > renders the stamped readme for the chosen editors 1`] = `
 "<!-- cngx:generated 1b842b43 -->
 <!-- ng-add, @cngx 0.1.0 -->
+<!-- cngx:fingerprint 3fbe3505 -->
 
 # cngx in this project
 

@@ -301,6 +301,17 @@ describe('ngAdd', () => {
     });
   });
 
+  it('plans nothing for a current readme the app formatter rewrote', async () => {
+    const first = await runRule(ngAdd({ preset: 'full' }), createFixtureTree('standalone-app', { 'CLAUDE.md': '' }));
+    const formatted = first.tree.readText('.cngx/README.md').replace('|-|-|-|', '| ---- | --------------- | ---------- |');
+    first.tree.overwrite('.cngx/README.md', formatted);
+
+    const second = await runRule(ngAdd({ preset: 'full' }), first.tree);
+
+    expect(second.tree.readText('.cngx/README.md')).toBe(formatted);
+    expect(second.logs).toContain('cngx is already set up; nothing changed.');
+  });
+
   it('keeps a configured editor in the readme when a later run chooses another', async () => {
     const first = await runRule(ngAdd({ aiTools: ['claude'] }), createFixtureTree('standalone-app', { '.vscode/settings.json': '{}' }));
     const second = await runRule(ngAdd({ preset: 'full' }), first.tree);

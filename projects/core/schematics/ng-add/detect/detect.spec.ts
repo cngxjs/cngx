@@ -364,8 +364,14 @@ describe('detectProject', () => {
     const generated = await detect({ '.cngx/README.md': '<!-- cngx:generated 0123abcd -->\n# cngx\n' });
     const foreign = await detect({ '.cngx/README.md': '# Notes\n' });
 
-    expect(generated.helperReadme).toEqual({ generated: true, fingerprint: expect.stringMatching(/^[0-9a-f]{8}$/) });
+    expect(generated.helperReadme).toEqual({ generated: true, fingerprint: undefined });
     expect(foreign.helperReadme?.generated).toBe(false);
+  });
+
+  it('reads the recorded fingerprint, whatever a formatter or a CRLF checkout did to the body', async () => {
+    const readme = '<!-- cngx:generated 0123abcd -->\r\n<!-- cngx:fingerprint 89abcdef -->\r\n\r\n| Tool  |\r\n| ----- |\r\n';
+
+    expect((await detect({ '.cngx/README.md': readme })).helperReadme).toEqual({ generated: true, fingerprint: '89abcdef' });
   });
 
   it('finds the eslint flat config in js, mjs or cjs', async () => {

@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { contentFingerprint, type EditFile } from '../../engine';
+import { type EditFile } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
 import { fillTemplate, planHelperReadme, renderHelperReadme } from './helper-readme';
 import { MCP_TOOLS } from './mcp-capabilities.generated';
 
 const AI_ANSWERS = createAnswers({ aiTools: ['claude', 'vscode'] });
+
+// What detection reads back from the README this spec's answers render.
+function recordedFingerprint(): string | undefined {
+  return /<!-- cngx:fingerprint ([0-9a-f]{8}) -->/.exec(renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS))?.[1];
+}
 
 describe('fillTemplate', () => {
   it('fills every placeholder', () => {
@@ -33,7 +38,9 @@ describe('renderHelperReadme', () => {
   it('starts with an html provenance stamp and leaves no placeholder behind', () => {
     const readme = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS);
 
-    expect(readme).toMatch(/^<!-- cngx:generated [0-9a-f]{8} -->\n<!-- ng-add, @cngx 0\.1\.0 -->\n/);
+    expect(readme).toMatch(
+      /^<!-- cngx:generated [0-9a-f]{8} -->\n<!-- ng-add, @cngx 0\.1\.0 -->\n<!-- cngx:fingerprint [0-9a-f]{8} -->\n\n# cngx/,
+    );
     expect(readme).not.toMatch(/\{\{\w+\}\}/);
     expect(readme).not.toContain(String.fromCodePoint(0x2014));
   });
@@ -118,9 +125,8 @@ describe('planHelperReadme', () => {
     });
   });
 
-  it('skips a generated readme that is already current', () => {
-    const content = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS);
-    const facts = createFacts({ helperReadme: { generated: true, fingerprint: contentFingerprint(content) } });
+  it('skips a generated readme whose recorded fingerprint matches the render', () => {
+    const facts = createFacts({ helperReadme: { generated: true, fingerprint: recordedFingerprint() } });
 
     expect(planHelperReadme(facts, AI_ANSWERS, VERSIONS)).toEqual({
       changes: [],
@@ -128,11 +134,12 @@ describe('planHelperReadme', () => {
     });
   });
 
-  it('skips a current readme that a checkout turned into CRLF', () => {
-    const content = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS).replace(/\n/g, '\r\n');
-    const facts = createFacts({ helperReadme: { generated: true, fingerprint: contentFingerprint(content) } });
+  it('regenerates a generated readme that records no fingerprint', () => {
+    const facts = createFacts({ helperReadme: { generated: true, fingerprint: undefined } });
 
-    expect(planHelperReadme(facts, AI_ANSWERS, VERSIONS).changes).toEqual([]);
+    expect(planHelperReadme(facts, AI_ANSWERS, VERSIONS).changes).toEqual([
+      expect.objectContaining({ kind: 'edit-file', path: '.cngx/README.md' }),
+    ]);
   });
 
   it('regenerates a generated readme whose inputs moved', () => {
