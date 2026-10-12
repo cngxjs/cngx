@@ -7,3 +7,8 @@ export {
   type CngxAsyncStateMockPatch,
 } from './async-state-mock';
 export { provideCngxTesting } from './provide-testing';
+export {
+  injectTransitionLog,
+  type CngxTransitionLog,
+  type CngxTransitionLogOptions,
+} from './transition-log';
