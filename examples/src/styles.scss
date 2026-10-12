@@ -4254,6 +4254,42 @@ mat-icon.demo-breadcrumb-icon {
   color: var(--cngx-color-text, inherit);
 }
 
+/* Command palette stories: the open-palette trigger button and the
+   custom-row story's consumer row. Layout only; the highlighted-row tint
+   comes from the palette itself. */
+.demo-cmdk-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-space-sm, 8px);
+}
+
+.demo-cmd-row {
+  display: flex;
+  align-items: center;
+  gap: var(--cngx-space-sm, 8px);
+  width: 100%;
+}
+
+.demo-cmd-row--active .demo-cmd-label {
+  font-weight: 600;
+}
+
+.demo-cmd-icon {
+  flex: 0 0 auto;
+  inline-size: var(--cngx-space-lg, 24px);
+  text-align: center;
+}
+
+.demo-cmd-label {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.demo-cmd-kbd {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+}
+
 /* Command registry story: the hand-built list over injectCommands(). */
 .demo-command-registry {
   display: flex;
