@@ -4218,3 +4218,60 @@ mat-icon.demo-breadcrumb-icon {
   margin: 0;
   color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
 }
+
+/* Command palette config-templates story: the config-registered row,
+   group-header, empty and footer templates. */
+.demo-cmd-tpl-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cngx-space-sm, 8px);
+  width: 100%;
+}
+
+.demo-cmd-tpl-hint {
+  font-size: 0.75rem;
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+
+.demo-cmd-tpl-group {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cngx-color-primary, #4f46e5);
+}
+
+.demo-cmd-tpl-empty {
+  margin: 0;
+  padding: var(--cngx-space-md, 16px);
+  font-style: italic;
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+
+.demo-cmd-tpl-footer {
+  font-size: 0.8125rem;
+  color: var(--cngx-color-text, inherit);
+}
+
+/* Command registry story: the hand-built list over injectCommands(). */
+.demo-command-registry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-sm, 8px);
+}
+
+.demo-command-registry__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-xs, 4px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.demo-command-registry__list li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--cngx-space-sm, 8px);
+}
