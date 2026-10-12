@@ -10,6 +10,7 @@ import {
   THEME_CHOICES,
 } from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
+import { withdrawnAiTargets } from './ai-tools';
 import { planHelperReadme } from './helper-readme';
 import { INSTALL_MANIFEST_PATH, type InstallManifest } from './manifest';
 import { type OnboardingAnswers, type Versions } from './model';
@@ -138,6 +139,9 @@ export function planManifestReruns(
     };
   }
   const recorded = new Set(manifest.steps.map((step) => step.id));
+  // ng update asks for no editor, so every removal the user made since the
+  // install holds, the same way a later `ng add` respects it.
+  const withdrawn = withdrawnAiTargets(facts, answers, [...recorded], []);
   const theme =
     manifest.cngxVersion === versions.cngx
       ? NO_CHANGES
@@ -151,7 +155,7 @@ export function planManifestReruns(
     manifest.mcpVersion === versions.mcp
       ? NO_CHANGES
       : restoreNotes(
-          planHelperReadme(facts, answers, versions),
+          planHelperReadme(facts, answers, versions, withdrawn),
           (change) => change.kind === 'create-file',
           recorded,
           provenance,

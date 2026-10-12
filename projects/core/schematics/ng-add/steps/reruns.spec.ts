@@ -100,6 +100,26 @@ describe('planManifestReruns', () => {
     );
   });
 
+  it('leaves an editor the user removed out of the regenerated README', () => {
+    const facts = createFacts({
+      helperReadme: { generated: true, fingerprint: 'old' },
+      mcpConfigs: { claude: 'present', cursor: 'absent', vscode: 'wired' },
+      mcpPins: { claude: undefined, cursor: undefined, vscode: '0.3.0' },
+    });
+    const manifest = {
+      ...installed(['helper-readme:file', 'ai-tools:claude', 'ai-tools:vscode']),
+      answers: JSON.parse(JSON.stringify(createAnswers({ aiTools: ['claude', 'vscode'] }))) as InstallManifest['answers'],
+    };
+
+    const readme = rerun(facts, manifest, NEXT).changes.find((change) => change.id === 'helper-readme:file');
+
+    expect(readme?.kind).toBe('edit-file');
+    const content = readme?.kind === 'edit-file' ? readme.edit('') : '';
+    expect(content).toContain('- `.vscode/mcp.json`');
+    expect(content).not.toContain('- `.mcp.json`');
+    expect(content).not.toContain('claude mcp list');
+  });
+
   it('names a recorded helper README that is gone instead of writing it again', () => {
     const result = rerun(createFacts(), installed(['helper-readme:file']), NEXT);
 
