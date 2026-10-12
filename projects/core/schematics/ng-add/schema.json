@@ -64,7 +64,7 @@
     },
     "aiTools": {
       "type": "array",
-      "description": "The editors to set up cngx MCP and agent configs for. Recorded in .cngx/install.json; this release writes no editor config yet and says so in the summary.",
+      "description": "The editors to set up the cngx MCP server for: the server entry in their project MCP config, a marked cngx block in the agent instructions (AGENTS.md, or CLAUDE.md for Claude Code) and .cngx/README.md.",
       "items": { "type": "string", "enum": ["claude", "cursor", "vscode"] },
       "uniqueItems": true
     },
