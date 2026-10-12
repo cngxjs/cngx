@@ -4,7 +4,7 @@ Test kits for specs that render cngx. Nothing here belongs in an application bun
 
 ## What it is
 
-- **`provideCngxTesting()`** - one provider that makes cngx deterministic under `TestBed`: zero show delay and min dwell for loading surfaces, the English pack with locale `en`, direction `ltr`, and no writes to `<html>`.
+- **`provideCngxTesting()`** - one provider that makes cngx deterministic under `TestBed`: zero show delay and min dwell for loading surfaces, the English pack with locale `en`, direction `ltr`, and no writes to `<html>`. The pinned locale outranks `LOCALE_ID`, also one provided on a component; override it with `provideLocale` or a pack.
 
 More kits land in this entry as they ship.
 
@@ -45,8 +45,8 @@ The helpers use no runner globals, so they work the same under Vitest, Jasmine /
 
 ## What it does not pin
 
-- **Motion.** No cngx runtime reads the motion preference token, so pinning it changes nothing under jsdom. A browser-mode suite that wants reduced motion adds `provideMotion('reduced')` itself; that sets `<html data-motion>` and never removes it.
-- **Transition settle time.** `onTransitionDone` keeps its 50 ms fallback timer.
+- **Motion.** No cngx runtime reads the motion preference token, so pinning it changes nothing under jsdom. A browser-mode suite that wants reduced motion adds `provideMotion('reduced')` itself; that sets `<html data-motion>` and leaves it in place when the test module is torn down, so remove it after the spec.
+- **Transition settle time.** `onTransitionDone` keeps its fallback timer: the computed transition time plus 50 ms, which is 50 ms under jsdom.
 
 ## Peer dependencies
 

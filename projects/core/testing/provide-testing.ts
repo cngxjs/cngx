@@ -19,7 +19,10 @@ import { provideLoadingConfig, withMinDwell, withShowDelay } from '@cngx/core/ut
  *   spinner-vs-skeleton cutoff keeps its default.
  * - **Language.** The English pack with the document language off: the locale
  *   is `en` and nothing is written to `<html lang>` or `<html dir>`, so one
- *   spec cannot leak a language into the next in a shared document.
+ *   spec cannot leak a language into the next in a shared document. The
+ *   pinned locale outranks `LOCALE_ID` at every level, a component-level
+ *   `{ provide: LOCALE_ID, useValue: 'de-DE' }` included; a spec that tests
+ *   another locale overrides it with `provideLocale` or a pack.
  * - **Direction.** `ltr`, independent of `<html dir>`.
  *
  * Nothing it provides writes to the DOM.
@@ -42,8 +45,10 @@ import { provideLoadingConfig, withMinDwell, withShowDelay } from '@cngx/core/ut
  * Motion is not pinned: no cngx runtime reads the motion preference token,
  * so pinning it would change nothing under jsdom. Browser-mode suites that
  * want reduced motion add `provideMotion('reduced')` themselves; it sets
- * `<html data-motion>` and never removes it, so restore the attribute after
- * the spec. `onTransitionDone` keeps its 50 ms fallback timer either way.
+ * `<html data-motion>` and leaves it in place when the test module is torn
+ * down, so remove the attribute after the spec. Either way,
+ * `onTransitionDone` keeps its fallback timer: the computed transition time
+ * plus 50 ms, which is 50 ms under jsdom, where no stylesheet loads.
  *
  * @category core/testing
  * @since 0.1.0
