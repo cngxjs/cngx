@@ -170,6 +170,23 @@ describe('createAnnouncementCapture', () => {
     expect(capture.heard()).toEqual(['Two', 'Three']);
   });
 
+  it('bounds the writes a busy region defers by limit', async () => {
+    const log = region({ role: 'log', 'aria-busy': 'true' });
+    host.append(log);
+    capture = createAnnouncementCapture({ root: host, limit: 2 });
+
+    for (const text of ['One', 'Two', 'Three']) {
+      const line = document.createElement('p');
+      line.textContent = text;
+      log.append(line);
+      await observed();
+    }
+    log.setAttribute('aria-busy', 'false');
+    await observed();
+
+    expect(capture.heard()).toEqual(['Two Three']);
+  });
+
   describe('timing of a write 16 ms after the call', () => {
     function announceLater(target: HTMLElement, text: string): void {
       setTimeout(() => {

@@ -15,7 +15,11 @@ import { arrayEqual } from '@cngx/utils';
 export interface CngxAnnouncementCaptureOptions {
   /** Subtree to observe. Defaults to the global `document`. */
   readonly root?: Node;
-  /** Maximum entries kept; the oldest are dropped first. Defaults to 200. */
+  /**
+   * Maximum entries kept, and maximum writes a region defers while busy; the
+   * oldest are dropped first, so a busy flip after more busy writes than
+   * `limit` leaves the earliest out of the heard text. Defaults to 200.
+   */
   readonly limit?: number;
 }
 
