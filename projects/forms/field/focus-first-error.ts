@@ -10,6 +10,9 @@ import type { FieldTree } from '@angular/forms/signals';
  *
  * Call after `submit()` fails or after manually touching all fields.
  *
+ * Generic over the form model, so a typed tree such as `form(signal({ ... }))`
+ * passes without a cast, also in apps compiled without `strictNullChecks`.
+ *
  * @param tree The root FieldTree of the form.
  * @returns `true` if a field was focused, `false` if no focusable error found.
  *
@@ -24,7 +27,7 @@ import type { FieldTree } from '@angular/forms/signals';
  *
  * @category forms/field
  */
-export function focusFirstError(tree: FieldTree<unknown>): boolean {
+export function focusFirstError<TModel>(tree: FieldTree<TModel>): boolean {
   const state = tree();
   const errors = state.errorSummary();
 
