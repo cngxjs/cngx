@@ -40,7 +40,7 @@ export function isBreakingTitle(title) {
 /** The literal `Migration: not migratable` line, outside HTML comments. */
 export function saysNotMigratable(body) {
   const visible = (body ?? '').replace(/<!--[\s\S]*?-->/g, '');
-  return /^\s*Migration:\s*not migratable\s*$/im.test(visible);
+  return /^Migration:[ \t]*not migratable[ \t]*\r?$/m.test(visible);
 }
 
 export function checkMigrationGate({ title, body, base, head }) {
@@ -63,16 +63,21 @@ export function checkMigrationGate({ title, body, base, head }) {
   };
 }
 
-function readBase(ref) {
-  try {
-    return execFileSync('git', ['show', `origin/${ref}:${MIGRATIONS_PATH}`], {
-      cwd: ROOT,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    });
-  } catch {
+const git = (args) =>
+  execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+
+/**
+ * migrations.json on the base branch; `undefined` only when git lists no
+ * such file there. A missing base ref or any other git failure throws, so
+ * the gate fails closed instead of counting every head key as new.
+ */
+export function readBase(ref, exec = git) {
+  const base = `origin/${ref}`;
+  exec(['rev-parse', '--verify', '--quiet', `${base}^{commit}`]);
+  if (exec(['ls-tree', '--name-only', base, '--', MIGRATIONS_PATH]).trim() === '') {
     return undefined;
   }
+  return exec(['show', `${base}:${MIGRATIONS_PATH}`]);
 }
 
 function readHead() {
@@ -82,12 +87,16 @@ function readHead() {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const { PR_TITLE = '', PR_BODY = '', BASE_REF = 'main' } = process.env;
-  const verdict = checkMigrationGate({
-    title: PR_TITLE,
-    body: PR_BODY,
-    base: readBase(BASE_REF),
-    head: readHead(),
-  });
+  let base;
+  try {
+    base = readBase(BASE_REF);
+  } catch (error) {
+    console.error(
+      `migration-gate: cannot read ${MIGRATIONS_PATH} on origin/${BASE_REF}: ${error.message}`,
+    );
+    process.exit(1);
+  }
+  const verdict = checkMigrationGate({ title: PR_TITLE, body: PR_BODY, base, head: readHead() });
   console.log(`migration-gate: ${verdict.message}`);
   process.exit(verdict.ok ? 0 : 1);
 }

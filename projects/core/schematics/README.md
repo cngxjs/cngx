@@ -83,15 +83,18 @@ breaking change adds a migration:
 
 1. `migrations/<version>/index.ts` returns `createMigration({ version,
    renames, codemods, bundleDir: __dirname })` (the build bundles every
-   `migrations/<version>/index.ts`).
+   `migrations/<folder>/index.ts`).
 2. Renames are data: a `RenameTable` on top of `EMPTY_RENAME_TABLE` for
    classes, selectors, inputs, outputs, `exportAs` names, tokens and import
    paths. `planRenames` turns it into one edit per file plus a note for
    every spot it cannot reach. Anything a table cannot say is a `Codemod`
    that reads the renamed tree and plans changes.
-3. A `migrations.json` entry with the version and `./<version>/index#migrate`.
+3. A `migrations.json` entry `migration-v<version>` with the version and
+   `./<version>/index#migrate`. A second breaking change in the same release
+   adds its own entry `migration-v<version>-<slug>` with the folder
+   `<version>-<slug>`, so every breaking PR brings a new key.
 4. A spec next to the entry and a fixture pair under
-   `testing/fixtures/migrations/<version>/{before,after}` holding only the
+   `testing/fixtures/migrations/<folder>/{before,after}` holding only the
    files that differ from the stock app.
 
 Every migration also re-runs the install steps `.cngx/install.json` records

@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   checkMigrationGate,
   isBreakingTitle,
+  MIGRATIONS_PATH,
   newMigrationKeys,
+  readBase,
   saysNotMigratable,
 } from '../migration-gate.mjs';
 
@@ -78,10 +80,60 @@ describe('isBreakingTitle', () => {
 describe('saysNotMigratable', () => {
   it('reads the literal line outside HTML comments', () => {
     expect(saysNotMigratable('Text\n\nMigration: not migratable\n')).toBe(true);
-    expect(saysNotMigratable('Migration:   Not Migratable  ')).toBe(true);
+    expect(saysNotMigratable('Text\r\nMigration: not migratable\r\n')).toBe(true);
     expect(saysNotMigratable('<!-- Migration: not migratable -->\nMigration:')).toBe(false);
+  });
+
+  it('reads only the exact line', () => {
+    expect(saysNotMigratable('Migration: Not Migratable')).toBe(false);
+    expect(saysNotMigratable('  Migration: not migratable')).toBe(false);
+    expect(saysNotMigratable('Migration:\nnot migratable')).toBe(false);
     expect(saysNotMigratable('Migration: none')).toBe(false);
     expect(saysNotMigratable(undefined)).toBe(false);
+  });
+});
+
+describe('readBase', () => {
+  function fakeGit(answers) {
+    const calls = [];
+    const exec = (args) => {
+      calls.push(args.join(' '));
+      const answer = answers[args[0]];
+      if (answer instanceof Error) {
+        throw answer;
+      }
+      return answer ?? '';
+    };
+    return { exec, calls };
+  }
+
+  it('reads the file the base branch has', () => {
+    const { exec, calls } = fakeGit({ 'ls-tree': `${MIGRATIONS_PATH}\n`, show: BASE });
+
+    expect(readBase('main', exec)).toBe(BASE);
+    expect(calls).toEqual([
+      'rev-parse --verify --quiet origin/main^{commit}',
+      `ls-tree --name-only origin/main -- ${MIGRATIONS_PATH}`,
+      `show origin/main:${MIGRATIONS_PATH}`,
+    ]);
+  });
+
+  it('reads no file only when git lists none on the base branch', () => {
+    const { exec } = fakeGit({ 'ls-tree': '' });
+
+    expect(readBase('main', exec)).toBeUndefined();
+  });
+
+  it('fails closed when the base ref is missing', () => {
+    const { exec } = fakeGit({ 'rev-parse': new Error('unknown revision') });
+
+    expect(() => readBase('main', exec)).toThrow('unknown revision');
+  });
+
+  it('fails closed when git cannot show the listed file', () => {
+    const { exec } = fakeGit({ 'ls-tree': MIGRATIONS_PATH, show: new Error('bad object') });
+
+    expect(() => readBase('main', exec)).toThrow('bad object');
   });
 });
 

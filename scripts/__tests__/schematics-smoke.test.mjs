@@ -96,9 +96,6 @@ describe('dist/core/schematics', () => {
   });
 });
 
-// The CLI finds a collection through `require.resolve('<pkg>/package.json')`
-// and fails hard on anything but MODULE_NOT_FOUND, so a package whose
-// `exports` map hides its manifest cannot answer `ng add`.
 describe('dist/core/schematics migrations', () => {
   const MIGRATIONS = join(ROOT, 'dist', 'core', 'schematics', 'migrations', 'migrations.json');
   let runner;
@@ -139,6 +136,9 @@ describe('dist/core/schematics migrations', () => {
   });
 });
 
+// The CLI finds a collection through `require.resolve('<pkg>/package.json')`
+// and fails hard on anything but MODULE_NOT_FOUND, so a package whose
+// `exports` map hides its manifest cannot answer `ng add`.
 describe('every published package as the CLI resolves it', () => {
   const LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
   let modules;

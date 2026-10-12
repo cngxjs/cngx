@@ -18,6 +18,15 @@ const FIXTURES = join(SCHEMATICS, 'testing', 'fixtures', 'migrations');
 const collection = JSON.parse(readFileSync(join(MIGRATIONS, 'migrations.json'), 'utf8'));
 const entries = Object.entries(collection.schematics);
 
+// `migration-v<version>` for a release's first migration; a later breaking
+// change in the same release adds `migration-v<version>-<slug>`, so every
+// breaking PR brings its own key. The folder is the key without the prefix.
+const KEY = /^migration-v(\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?)(-[a-z][a-z0-9-]*)?$/;
+
+function folderOf(key) {
+  return key.slice('migration-v'.length);
+}
+
 function nonEmpty(dir) {
   return existsSync(dir) && readdirSync(dir, { recursive: true }).length > 0;
 }
@@ -28,23 +37,25 @@ describe('migrations.json', () => {
   });
 
   it.each(entries)('%s is well formed', (key, entry) => {
-    expect(key).toBe(`migration-v${entry.version}`);
-    expect(entry.version).toMatch(/^\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?$/);
+    const match = KEY.exec(key);
+
+    expect(match, `${key} is not migration-v<version>[-<slug>]`).not.toBeNull();
+    expect(entry.version).toBe(match?.[1]);
     expect(entry.description).toEqual(expect.any(String));
-    expect(entry.factory).toBe(`./${entry.version}/index#migrate`);
+    expect(entry.factory).toBe(`./${folderOf(key)}/index#migrate`);
   });
 
-  it.each(entries)('%s resolves to an exported factory with a spec', (_key, entry) => {
-    const dir = join(MIGRATIONS, entry.version);
+  it.each(entries)('%s resolves to an exported factory with a spec', (key) => {
+    const dir = join(MIGRATIONS, folderOf(key));
     const source = readFileSync(join(dir, 'index.ts'), 'utf8');
 
     expect(source).toMatch(/export function migrate\(/);
     expect(existsSync(join(dir, 'index.spec.ts'))).toBe(true);
   });
 
-  it.each(entries)('%s has a before and after fixture', (_key, entry) => {
-    expect(nonEmpty(join(FIXTURES, entry.version, 'before'))).toBe(true);
-    expect(nonEmpty(join(FIXTURES, entry.version, 'after'))).toBe(true);
+  it.each(entries)('%s has a before and after fixture', (key) => {
+    expect(nonEmpty(join(FIXTURES, folderOf(key), 'before'))).toBe(true);
+    expect(nonEmpty(join(FIXTURES, folderOf(key), 'after'))).toBe(true);
   });
 
   it('has an entry for every migration folder', () => {
@@ -53,6 +64,6 @@ describe('migrations.json', () => {
       .map((entry) => entry.name)
       .sort();
 
-    expect(folders).toEqual(entries.map(([, entry]) => entry.version).sort());
+    expect(folders).toEqual(entries.map(([key]) => folderOf(key)).sort());
   });
 });
