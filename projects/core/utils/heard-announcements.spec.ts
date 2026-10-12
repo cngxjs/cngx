@@ -42,46 +42,102 @@ function entry(overrides: Partial<CngxRecordedAnnouncement> = {}): CngxRecordedA
   };
 }
 
-function expectedReason(
+type Row = readonly [
   origin: CngxAnnouncementOrigin,
   role: string | null,
   busy: boolean,
   suppressedBy: CngxRecordedAnnouncement['suppressedBy'],
-): CngxUnheardReason | null {
-  if (suppressedBy !== null) {
-    return 'suppressed';
-  }
-  if (busy) {
-    return 'busy';
-  }
-  if ((origin === 'insertion' || origin === 'became-live') && role !== 'alert') {
-    return 'unreliable-insertion';
-  }
-  return null;
-}
+  reason: CngxUnheardReason | null,
+];
 
-const ROWS = ORIGINS.flatMap((origin) =>
-  ROLES.flatMap((role) =>
-    BUSY.flatMap((busy) =>
-      SUPPRESSED.map((suppressedBy) => ({
-        origin,
-        role,
-        busy,
-        suppressedBy,
-        reason: expectedReason(origin, role, busy, suppressedBy),
-      })),
-    ),
-  ),
-);
+// Written out row by row so the expectation is not a second copy of the rule.
+const ROWS: readonly Row[] = [
+  ['mutation', 'status', false, null, null],
+  ['mutation', 'status', false, 'aria-hidden', 'suppressed'],
+  ['mutation', 'status', true, null, 'busy'],
+  ['mutation', 'status', true, 'aria-hidden', 'suppressed'],
+  ['mutation', 'alert', false, null, null],
+  ['mutation', 'alert', false, 'aria-hidden', 'suppressed'],
+  ['mutation', 'alert', true, null, 'busy'],
+  ['mutation', 'alert', true, 'aria-hidden', 'suppressed'],
+  ['mutation', 'log', false, null, null],
+  ['mutation', 'log', false, 'aria-hidden', 'suppressed'],
+  ['mutation', 'log', true, null, 'busy'],
+  ['mutation', 'log', true, 'aria-hidden', 'suppressed'],
+  ['mutation', null, false, null, null],
+  ['mutation', null, false, 'aria-hidden', 'suppressed'],
+  ['mutation', null, true, null, 'busy'],
+  ['mutation', null, true, 'aria-hidden', 'suppressed'],
+  ['insertion', 'status', false, null, 'unreliable-insertion'],
+  ['insertion', 'status', false, 'aria-hidden', 'suppressed'],
+  ['insertion', 'status', true, null, 'busy'],
+  ['insertion', 'status', true, 'aria-hidden', 'suppressed'],
+  ['insertion', 'alert', false, null, null],
+  ['insertion', 'alert', false, 'aria-hidden', 'suppressed'],
+  ['insertion', 'alert', true, null, 'busy'],
+  ['insertion', 'alert', true, 'aria-hidden', 'suppressed'],
+  ['insertion', 'log', false, null, 'unreliable-insertion'],
+  ['insertion', 'log', false, 'aria-hidden', 'suppressed'],
+  ['insertion', 'log', true, null, 'busy'],
+  ['insertion', 'log', true, 'aria-hidden', 'suppressed'],
+  ['insertion', null, false, null, 'unreliable-insertion'],
+  ['insertion', null, false, 'aria-hidden', 'suppressed'],
+  ['insertion', null, true, null, 'busy'],
+  ['insertion', null, true, 'aria-hidden', 'suppressed'],
+  ['became-live', 'status', false, null, 'unreliable-insertion'],
+  ['became-live', 'status', false, 'aria-hidden', 'suppressed'],
+  ['became-live', 'status', true, null, 'busy'],
+  ['became-live', 'status', true, 'aria-hidden', 'suppressed'],
+  ['became-live', 'alert', false, null, null],
+  ['became-live', 'alert', false, 'aria-hidden', 'suppressed'],
+  ['became-live', 'alert', true, null, 'busy'],
+  ['became-live', 'alert', true, 'aria-hidden', 'suppressed'],
+  ['became-live', 'log', false, null, 'unreliable-insertion'],
+  ['became-live', 'log', false, 'aria-hidden', 'suppressed'],
+  ['became-live', 'log', true, null, 'busy'],
+  ['became-live', 'log', true, 'aria-hidden', 'suppressed'],
+  ['became-live', null, false, null, 'unreliable-insertion'],
+  ['became-live', null, false, 'aria-hidden', 'suppressed'],
+  ['became-live', null, true, null, 'busy'],
+  ['became-live', null, true, 'aria-hidden', 'suppressed'],
+  ['busy-cleared', 'status', false, null, null],
+  ['busy-cleared', 'status', false, 'aria-hidden', 'suppressed'],
+  ['busy-cleared', 'status', true, null, 'busy'],
+  ['busy-cleared', 'status', true, 'aria-hidden', 'suppressed'],
+  ['busy-cleared', 'alert', false, null, null],
+  ['busy-cleared', 'alert', false, 'aria-hidden', 'suppressed'],
+  ['busy-cleared', 'alert', true, null, 'busy'],
+  ['busy-cleared', 'alert', true, 'aria-hidden', 'suppressed'],
+  ['busy-cleared', 'log', false, null, null],
+  ['busy-cleared', 'log', false, 'aria-hidden', 'suppressed'],
+  ['busy-cleared', 'log', true, null, 'busy'],
+  ['busy-cleared', 'log', true, 'aria-hidden', 'suppressed'],
+  ['busy-cleared', null, false, null, null],
+  ['busy-cleared', null, false, 'aria-hidden', 'suppressed'],
+  ['busy-cleared', null, true, null, 'busy'],
+  ['busy-cleared', null, true, 'aria-hidden', 'suppressed'],
+];
 
 describe('resolveUnheardReason', () => {
-  it('covers every origin x role x busy x suppression combination', () => {
-    expect(ROWS).toHaveLength(64);
+  it('covers every origin x role x busy x suppression combination once', () => {
+    const combinations = ORIGINS.flatMap((origin) =>
+      ROLES.flatMap((role) =>
+        BUSY.flatMap((busy) =>
+          SUPPRESSED.map((suppressedBy) => JSON.stringify([origin, role, busy, suppressedBy])),
+        ),
+      ),
+    );
+    const covered = ROWS.map(([origin, role, busy, suppressedBy]) =>
+      JSON.stringify([origin, role, busy, suppressedBy]),
+    );
+
+    expect(new Set(covered).size).toBe(ROWS.length);
+    expect([...covered].sort()).toEqual([...combinations].sort());
   });
 
   it.each(ROWS)(
-    'origin $origin, role $role, busy $busy, suppressedBy $suppressedBy -> $reason',
-    ({ origin, role, busy, suppressedBy, reason }) => {
+    'origin %s, role %s, busy %s, suppressedBy %s -> %s',
+    (origin, role, busy, suppressedBy, reason) => {
       expect(resolveUnheardReason(entry({ origin, role, busy, suppressedBy }))).toBe(reason);
     },
   );
