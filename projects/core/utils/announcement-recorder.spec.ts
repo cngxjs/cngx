@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { createAnnouncementRecorder as createPublicAnnouncementRecorder } from '@cngx/core/utils';
+
 import { createAnnouncementRecorder, type CngxAnnouncementRecorder } from './announcement-recorder';
 
 const observed = () => Promise.resolve();
@@ -1228,5 +1230,17 @@ describe('createAnnouncementRecorder', () => {
     await observed();
 
     expect(texts()).toEqual(['From the document']);
+  });
+
+  it('is public API of @cngx/core/utils', async () => {
+    const el = region({ 'aria-live': 'polite' });
+    host.append(el);
+    recorder = createPublicAnnouncementRecorder({ root: host, owner: () => null });
+
+    el.textContent = 'Public';
+    await observed();
+
+    expect(createPublicAnnouncementRecorder).toBe(createAnnouncementRecorder);
+    expect(texts()).toEqual(['Public']);
   });
 });

@@ -5,7 +5,8 @@ import { signal, type Signal } from '@angular/core';
  * attributes when the observer handles the batch (for `'busy-cleared'`, the
  * batch that clears busy). `null` means nothing attribute-based suppresses it.
  *
- * @internal
+ * @category core/utils
+ * @since 0.1.0
  */
 export type CngxAnnouncementSuppression = 'hidden' | 'aria-hidden' | 'inert' | 'aria-modal';
 
@@ -18,14 +19,16 @@ export type CngxAnnouncementSuppression = 'hidden' | 'aria-hidden' | 'inert' | '
  * - `'busy-cleared'`: `aria-busy` cleared on the region or an ancestor after
  *   text was written while busy; the entry holds what AT reads after the flip.
  *
- * @internal
+ * @category core/utils
+ * @since 0.1.0
  */
 export type CngxAnnouncementOrigin = 'mutation' | 'insertion' | 'became-live' | 'busy-cleared';
 
 /**
  * One text a live region exposed, as observed in the DOM.
  *
- * @internal
+ * @category core/utils
+ * @since 0.1.0
  */
 export interface CngxRecordedAnnouncement {
   /** `Date.now()` when the observer saw the write. */
@@ -57,7 +60,8 @@ export interface CngxRecordedAnnouncement {
 /**
  * Options for {@link createAnnouncementRecorder}.
  *
- * @internal
+ * @category core/utils
+ * @since 0.1.0
  */
 export interface CngxAnnouncementRecorderOptions {
   /** Subtree to observe. Defaults to the global `document`. */
@@ -75,7 +79,8 @@ export interface CngxAnnouncementRecorderOptions {
 /**
  * The handle {@link createAnnouncementRecorder} returns.
  *
- * @internal
+ * @category core/utils
+ * @since 0.1.0
  */
 export interface CngxAnnouncementRecorder {
   readonly entries: Signal<readonly CngxRecordedAnnouncement[]>;
@@ -235,6 +240,9 @@ const CANDIDATE_SELECTOR = '[aria-live],[role]';
  *   the mutation path; a node prepended or inserted before earlier busy
  *   writes therefore reads out of DOM order;
  * - a native `showModal()` dialog without `aria-modal` is not seen as modal;
+ * - with stacked modals, a region inside a covered modal records
+ *   `suppressedBy: null`: only a region outside every open `aria-modal`
+ *   element counts as suppressed, so the error leans toward over-reporting;
  * - regions inside shadow roots are not observed;
  * - writes are seen when the `MutationObserver` callback runs (a microtask),
  *   and `CngxLiveAnnouncer` writes 16 ms after `announce()`, so a test
@@ -249,7 +257,9 @@ const CANDIDATE_SELECTOR = '[aria-live],[role]';
  * recorder.destroy();
  * ```
  *
- * @internal
+ * @category core/utils
+ * @since 0.1.0
+ * @relatedTo createAnnouncementCapture, resolveHeardAnnouncements, CngxLiveAnnouncer
  */
 export function createAnnouncementRecorder(
   options: CngxAnnouncementRecorderOptions = {},
