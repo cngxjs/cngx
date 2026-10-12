@@ -12,7 +12,6 @@ import {
   input,
   model,
   output,
-  signal,
   untracked,
   type ElementRef,
   type Signal,
@@ -300,6 +299,11 @@ export class CngxSelectShell<T = unknown>
    * Two-way bindable search term. Drives per-option visibility through
    * `CngxOptionFilterHost` and filters the listbox AD so keyboard nav
    * skips hidden options. Empty string disables the filter.
+   *
+   * The model's own `searchTermChange` output fires on every change of the
+   * term. The seed `''` never emits: a model only emits when its value
+   * changes, so server-driven autocomplete consumers don't fire a blank
+   * search at hydrate time.
    */
   readonly searchTerm = model<string>('');
 
@@ -312,8 +316,8 @@ export class CngxSelectShell<T = unknown>
   readonly searchMatchFn = input<CngxSelectMatchFn<T> | null>(null);
 
   /**
-   * Debounce for `searchTermChange` (ms). Forward-compatible input -
-   * the shipped `CNGX_SEARCH_EFFECTS_FACTORY` emits immediately;
+   * Debounce for the search pipeline (ms). Forward-compatible input -
+   * the shipped `CNGX_SEARCH_EFFECTS_FACTORY` acts immediately;
    * consumers overriding the factory read this signal to size their
    * pipeline.
    */
@@ -326,12 +330,6 @@ export class CngxSelectShell<T = unknown>
   readonly retry = output<void>();
   readonly commitError = output<unknown>();
   readonly stateChange = output<AsyncStatus>();
-  /**
-   * Live search term emitted via `CNGX_SEARCH_EFFECTS_FACTORY`. The
-   * factory's `skipInitial` gate suppresses the seed `''` emission so
-   * server-driven autocomplete consumers don't fire a blank search.
-   */
-  readonly searchTermChange = output<string>();
 
   /**
    * Direct top-level entries projected by the consumer:
@@ -714,14 +712,6 @@ export class CngxSelectShell<T = unknown>
    */
   private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
 
-  /**
-   * Tracks whether the seed `searchTermChange` emission has fired.
-   * Combined with `skipInitial` to suppress the hydrate-time `''`.
-   *
-   * @internal
-   */
-  private readonly hasEmittedInitial = signal(false);
-
   /** Currently selected option resolved against the derived option model. */
   readonly selected = computed<CngxSelectOptionDef<T> | null>(() => this.selectedOption(), {
     equal: (a, b) => {
@@ -904,11 +894,6 @@ export class CngxSelectShell<T = unknown>
       panelOpen: this.panelOpen,
       disabled: this.disabled,
       open: () => this.open(),
-      emit: {
-        hasEmittedInitial: this.hasEmittedInitial,
-        skipInitial: signal(true),
-        onEmit: (term) => this.searchTermChange.emit(term),
-      },
     });
   }
 
