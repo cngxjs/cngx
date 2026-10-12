@@ -4619,6 +4619,40 @@ mat-icon.demo-breadcrumb-icon {
   gap: var(--cngx-space-xs, 4px);
 }
 
+.demo-action-slot-button {
+  display: inline-flex;
+  align-items: center;
+  inline-size: 100%;
+  padding-block: var(--cngx-space-sm, 8px);
+  padding-inline: var(--cngx-space-md, 12px);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.demo-action-slot-button:disabled {
+  color: var(--cngx-ex-muted, currentColor);
+  cursor: default;
+}
+
+.demo-strategy-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
+  margin-block: var(--cngx-space-md, 12px);
+  padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 12px);
+  border: 1px solid var(--cngx-ex-border, currentColor);
+  border-radius: var(--cngx-radius-sm, 6px);
+}
+
+.demo-strategy-picker > legend {
+  padding-inline: var(--cngx-space-xs, 4px);
+  color: var(--cngx-ex-muted, currentColor);
+}
+
 .demo-loading-config-pane {
   position: relative;
   min-height: 120px;
