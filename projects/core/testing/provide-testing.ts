@@ -15,11 +15,11 @@ import { provideLoadingConfig, withMinDwell, withShowDelay } from '@cngx/core/ut
  *
  * - **Loading timing.** Show delay and min dwell are `0`, so there is no
  *   delay to compute. Both are still timers, and the min-dwell timer is only
- *   scheduled when the indicator shows. Advance a fake clock by `1` ms after
- *   the state turns busy (with real timers, let two macrotasks pass): the
- *   indicator shows with its dwell already over, so it hides on the flush
- *   after the state settles. An advance of `0` runs the show timer only.
- *   The spinner-vs-skeleton cutoff keeps its default.
+ *   scheduled when the indicator shows: after the state turns busy, advance a
+ *   fake clock by `showDelay + minDwell + 1` (here `1`; with real timers, let
+ *   two macrotasks pass). The indicator then shows with its dwell over and
+ *   hides on the flush after the state settles. An advance of `0` runs the
+ *   show timer only. The spinner-vs-skeleton cutoff keeps its default.
  * - **Language.** The English pack with the document language off: the locale
  *   is `en` and nothing is written to `<html lang>` or `<html dir>`, so one
  *   spec cannot leak a language into the next in a shared document. The

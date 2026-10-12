@@ -48,12 +48,16 @@ There is no helper that advances the clock for you: moving a fake clock is runne
 ```ts
 const { showDelay, minDwell } = TestBed.runInInjectionContext(injectLoadingConfig);
 
-vi.advanceTimersByTime(showDelay); // Vitest
-jasmine.clock().tick(showDelay); // Jasmine
-tick(showDelay); // fakeAsync
+state.set({ status: 'loading' });
+vi.advanceTimersByTime(showDelay + minDwell + 1); // indicator shown, min dwell over
+
+state.set({ status: 'success' });
+fixture.detectChanges(); // indicator gone
 ```
 
-Under `provideCngxTesting()` both are `0`, but a zero-delay `setTimeout` is still a timer, and the min-dwell timer is only scheduled when the indicator shows. After the state turns busy, advance the fake clock by `1` ms (`vi.advanceTimersByTime(1)` under Vitest): that runs the show timer and the min-dwell timer it schedules, so the indicator is visible and hides on the flush after the state settles. An advance of `0` runs only the show timer, and the indicator then stays visible after the state settles until the clock moves again. With real timers, let two macrotasks pass. Timing inputs bound on a single component (for example `[showDelay]` / `[minDwell]` on an async container) are not part of the config read; advance by the value you bound.
+The min-dwell timer is only scheduled when the indicator shows, so one advance has to cover both timers. The extra millisecond matters when a timer is `0`, as under `provideCngxTesting()`: a zero-delay timer scheduled while the clock advances runs only once the clock moves past it, so an advance of exactly `showDelay + minDwell` leaves the indicator up after the state settles. Under Jasmine or `fakeAsync`, make the same advance with `jasmine.clock().tick` or `tick`. With real timers, let two macrotasks pass.
+
+Timing inputs bound on a single component (for example `[showDelay]` / `[minDwell]` on an async container) are not part of the config read; use the values you bound in the same sum.
 
 ## Runners
 
