@@ -10,7 +10,7 @@ CDK and Material are opt-in primitives, not foundations.
 
 > **State is derived, not managed. Communication is architecture, not an afterthought.**
 
-Angular 21+, Signal-native, no NgModules. Eight packages, 41 surgical secondary entry points, `sideEffects: false`. Five-level dependency hierarchy enforced by Sheriff.
+Angular 21+, Signal-native, no NgModules. Eight packages, 56 surgical secondary entry points, `sideEffects: false`. Five-level dependency hierarchy enforced by Sheriff.
 
 ---
 
@@ -28,7 +28,7 @@ Manual install:
 npm install @cngx/ui @cngx/themes @angular/cdk
 ```
 
-Install only what your code imports. Cross-package dependencies are declared as peers, so transitive resolution does the right thing. Add `@angular/material` only if you import one of the three `mat-*` entries.
+Install only what your code imports. Cross-package dependencies are declared as peers, so transitive resolution does the right thing. Add `@angular/material` only if you import one of the four `mat-*` entries.
 
 Single-import default theme:
 
@@ -110,7 +110,7 @@ Angular-aware, non-rendering primitives. Zero CDK.
 
 ### `@cngx/common` - Level 2
 
-Atoms and molecules across 12 entries.
+Atoms and molecules across 14 entries.
 
 - `a11y` - roving tabindex, focus trap, live region, ...
 - `interactive` - listbox, menu, ripple, nav, expandable, checkbox, radio, button-toggle, reorder, hierarchical-nav, async-click, copy, speak, ...
@@ -123,7 +123,7 @@ CDK appears in exactly two spots: `a11y/focus-trap` (CDK's `FocusTrap`) and `dat
 
 ### `@cngx/forms` - Level 3
 
-Forms organisms across 7 entries. 130 source files, zero CDK touchpoints.
+Forms organisms across 6 entries. 130 source files, zero CDK touchpoints.
 
 - `field` - Signal Forms bridge.
 - `controls` - CVA adapter for Reactive Forms.
@@ -139,12 +139,12 @@ Data-display organisms.
 
 ### `@cngx/ui` - Level 4
 
-Mostly self-contained organisms across 14 entries. Peer-deps: `@angular/cdk`, `@angular/common`, `@angular/core` only.
+Mostly self-contained organisms across 26 entries. Peer-deps: `@angular/cdk`, `@angular/common`, `@angular/core` only.
 
 - Pure cngx: `action-button`, `empty-state`, `feedback`, `layout`, `sidenav`, `skeleton`, `speak`, `stepper`, `tabs`.
 - `feedback` ships toasts, banners, alerts via `provideFeedback(...)`.
 - `overlay` is the one entry that uses `@angular/cdk/overlay` + `cdk/portal` as its engine.
-- Three Material opt-ins: `mat-stepper`, `mat-tabs`, `material` (paginator wrapper).
+- Four Material opt-ins: `mat-accordion`, `mat-paginator`, `mat-stepper`, `mat-tabs`.
 
 ### `@cngx/themes`
 
@@ -293,7 +293,7 @@ The only way to lie to assistive tech is to break the signal that also lies to t
 RxJS is only at the I/O boundary (HTTP, WebSocket, DOM streams) and never exposed on the public API.
 - **Typed end to end.** `model<T>()`, `input<T>()`, `Field<T>`, `CngxAsyncState<T>`. 
 **_Zero_** `any` in the codebase, zero `as` casts, strict TypeScript across all libs.
-- **Surgical imports.** 41 secondary entry points means `import { CngxRovingTabindex } from '@cngx/common/a11y'` pulls in roving tabindex, not the entire common surface. 
+- **Surgical imports.** 56 secondary entry points means `import { CngxRovingTabindex } from '@cngx/common/a11y'` pulls in roving tabindex, not the entire common surface. 
 `sideEffects: false` plus standalone-by-default plus no NgModules means tree-shaking actually works.
 - **Runnable docs, not snippets.** Every component's Examples tab embeds the live demo as a naked iframe, side-by-side with its API. 
 The code panel shows the actual artifact (no chrome, no toggles, no fail-flag plumbing) so you can copy-paste what you actually need. Selected components (`@playground` tag) ship a Stackblitz launcher with pinned dependencies. 
