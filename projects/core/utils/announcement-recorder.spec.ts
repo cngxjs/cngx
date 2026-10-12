@@ -508,6 +508,19 @@ describe('createAnnouncementRecorder', () => {
     expect(recorder.entries()).toEqual([]);
   });
 
+  it('keeps a role list as written and resolves it by its first token', async () => {
+    const el = region({ role: 'alert status' });
+    host.append(el);
+    start();
+
+    el.textContent = 'Failed';
+    await observed();
+
+    expect(recorder.entries()).toEqual([
+      expect.objectContaining({ role: 'alert status', politeness: 'assertive' }),
+    ]);
+  });
+
   it('shows a politeness flip on the next entry', async () => {
     const el = region({ 'aria-live': 'polite' });
     host.append(el);

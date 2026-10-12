@@ -39,13 +39,22 @@ export interface CngxRecordedAnnouncement {
    * or a custom element reads as a separate word; inline text concatenates.
    */
   readonly text: string;
+  /**
+   * The region's `aria-live` value when it is `polite` or `assertive`, else
+   * `assertive` for role `alert` and `polite` for every other live role.
+   */
   readonly politeness: 'polite' | 'assertive';
+  /**
+   * The region's `role` attribute as written, `null` when absent. A role
+   * list resolves to its first token (`"alert status"` is an alert).
+   */
   readonly role: string | null;
   /**
    * The region or an ancestor carried `aria-busy="true"` when the observer
    * saw the write. Always `false` on a `'busy-cleared'` entry.
    */
   readonly busy: boolean;
+  /** Why AT would not speak the write, judged from attributes; `null` when nothing suppresses it. */
   readonly suppressedBy: CngxAnnouncementSuppression | null;
   /**
    * How the text reached the region. A write under `aria-busy` records
@@ -53,7 +62,13 @@ export interface CngxRecordedAnnouncement {
    * `'busy-cleared'` entry.
    */
   readonly origin: CngxAnnouncementOrigin;
+  /** The live region element the text belongs to. */
   readonly region: Element;
+  /**
+   * The region's owner from the `owner` option. By default the class name of
+   * the Angular component that owns the region, read through the dev-mode
+   * `ng` global; `null` outside dev mode or when no component owns it.
+   */
   readonly owner: string | null;
 }
 
@@ -83,12 +98,17 @@ export interface CngxAnnouncementRecorderOptions {
  * @since 0.1.0
  */
 export interface CngxAnnouncementRecorder {
+  /** The recorded entries, oldest first, at most `limit`. */
   readonly entries: Signal<readonly CngxRecordedAnnouncement[]>;
   /**
    * Empties `entries`. Region state is kept, so a busy flip after `clear()`
    * still records text written while busy before it.
    */
   clear(): void;
+  /**
+   * Stops observing. `entries` keeps what it holds; mutations the observer
+   * has not delivered yet are dropped.
+   */
   destroy(): void;
 }
 
