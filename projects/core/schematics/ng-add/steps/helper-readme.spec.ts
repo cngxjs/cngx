@@ -77,13 +77,20 @@ describe('renderHelperReadme', () => {
     expect(readme).toContain('- `.cursor/mcp.json`: its own cngx entry, running no `@cngx/mcp` version cngx can read\n');
   });
 
+  it('says that a removal is not remembered and how to keep the server off', () => {
+    const readme = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS);
+
+    expect(readme).toContain('`ng add` does not remember a removal');
+    expect(readme).toContain('leave the editor unticked in the AI tooling\nquestion');
+  });
+
   it('describes the Claude Code plugin only when Claude Code is chosen', () => {
     const withClaude = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS);
     const withoutClaude = renderHelperReadme(createFacts(), createAnswers({ aiTools: ['cursor'] }), VERSIONS);
 
     expect(withClaude).toContain('delete\nthe `cngx` entry from `.mcp.json`, so Claude Code runs one cngx server, not two.');
     expect(withoutClaude).not.toContain('## Claude Code plugin');
-    expect(withoutClaude).toContain('Nothing else in the project depends on the server.\n\n## Clients outside this project');
+    expect(withoutClaude).toContain('without `--preset=full`.\n\n## Clients outside this project');
   });
 });
 

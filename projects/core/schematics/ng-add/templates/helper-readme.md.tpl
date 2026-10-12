@@ -48,6 +48,11 @@ Delete the `cngx` entry from each config file listed above, and the block
 between `<!-- cngx:agents -->` and `<!-- /cngx:agents -->` in {{instructions}}.
 Nothing else in the project depends on the server.
 
+`ng add` does not remember a removal: a later run that sets up the editor
+again writes both back, and the `full` preset sets up every editor it
+detects. To keep it off, leave the editor unticked in the AI tooling
+question, or run `ng add` without `--preset=full`.
+
 {{plugin}}## Clients outside this project
 
 `ng add` writes only project files. To use the server in Claude Desktop or

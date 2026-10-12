@@ -78,6 +78,11 @@ Delete the \`cngx\` entry from each config file listed above, and the block
 between \`<!-- cngx:agents -->\` and \`<!-- /cngx:agents -->\` in \`AGENTS.md\`.
 Nothing else in the project depends on the server.
 
+\`ng add\` does not remember a removal: a later run that sets up the editor
+again writes both back, and the \`full\` preset sets up every editor it
+detects. To keep it off, leave the editor unticked in the AI tooling
+question, or run \`ng add\` without \`--preset=full\`.
+
 ## Claude Code plugin
 
 The cngx plugin adds cngx skills and edit checks to Claude Code and starts
