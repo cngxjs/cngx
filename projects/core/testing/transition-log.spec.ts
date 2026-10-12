@@ -66,6 +66,17 @@ describe('injectTransitionLog', () => {
     expect(log.values()).toEqual(['loading']);
   });
 
+  it('keeps the snapshot when clear has nothing to drop', () => {
+    const status = signal('idle');
+    const log = record(status);
+    TestBed.tick();
+    log.clear();
+
+    const empty = log.values();
+    log.clear();
+    expect(Object.is(log.values(), empty)).toBe(true);
+  });
+
   it('freezes the log on stop', () => {
     const status = signal('idle');
     const log = record(status);

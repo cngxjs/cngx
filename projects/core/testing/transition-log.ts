@@ -101,6 +101,9 @@ export function injectTransitionLog<T>(
   return {
     values: () => (snapshot ??= Object.freeze([...entries])),
     clear: () => {
+      if (entries.length === 0) {
+        return;
+      }
       entries.length = 0;
       snapshot = undefined;
     },
