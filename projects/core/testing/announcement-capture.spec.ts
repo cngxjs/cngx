@@ -169,6 +169,18 @@ describe('createAnnouncementCapture', () => {
     expect(capture.heard()).toEqual(['Before']);
   });
 
+  it('drops a write the observer has not delivered yet when stopped', async () => {
+    const polite = region({ 'aria-live': 'polite' });
+    host.append(polite);
+    start();
+
+    polite.textContent = 'Pending';
+    capture.stop();
+    await observed();
+
+    expect(capture.entries()).toEqual([]);
+  });
+
   it('keeps the heard reference across an entry that is not heard', async () => {
     const polite = region({ 'aria-live': 'polite' });
     host.append(polite);

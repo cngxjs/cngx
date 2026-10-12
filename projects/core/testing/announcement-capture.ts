@@ -44,7 +44,11 @@ export interface CngxAnnouncementCapture {
   readonly heard: Signal<readonly string[]>;
   /** Empties `entries` and `heard`. Recording continues. */
   clear(): void;
-  /** Stops recording. `entries` and `heard` keep what they hold. */
+  /**
+   * Stops recording. `entries` and `heard` keep what they hold; writes the
+   * observer has not delivered yet (made since the last microtask) are
+   * dropped, not recorded.
+   */
   stop(): void;
 }
 

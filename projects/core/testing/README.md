@@ -83,9 +83,34 @@ What counts as heard is `resolveHeardAnnouncements` from `@cngx/core/utils`:
 
 A success toast is such a `status` insertion, so it shows up in `entries()` but not in `heard()`. Use `resolveUnheardReason(entry)` to see why an entry is missing from `heard()`.
 
+## Vitest matchers
+
+`@cngx/core/testing/vitest` exports `cngxAnnouncementMatchers` (`toHaveHeard`, `toHaveHeardInOrder`). Importing the entry registers nothing; register the matchers once in the Vitest setup file, which also brings their types into the program:
+
+```ts
+import { expect } from 'vitest';
+import { cngxAnnouncementMatchers } from '@cngx/core/testing/vitest';
+
+expect.extend(cngxAnnouncementMatchers);
+```
+
+```ts
+expect(capture).toHaveHeard('Saved');
+expect(capture).toHaveHeardInOrder(['Loading', /^\d+ results$/]);
+expect(capture).not.toHaveHeard('Upload failed');
+```
+
+`toHaveHeard` compares a string exactly and tests a RegExp; `toHaveHeardInOrder` passes when the heard texts contain the expected ones in this order, other texts allowed between. A failure lists the heard texts and, for each recorded entry that matches but was not heard, the reason in words:
+
+```text
+expected the capture to have heard "Saved"
+heard: "Save failed"
+"Saved" was recorded but not heard: role="status" region inserted with its content; only role="alert" is announced reliably when it appears
+```
+
 ## Runners
 
-The helpers use no runner globals, so they work the same under Vitest, Jasmine / Karma and Jest. Advancing a fake clock stays with your runner (`vi.advanceTimersByTime`, `jasmine.clock().tick`, `tick` from `fakeAsync`).
+The helpers use no runner globals, so they work the same under Vitest, Jasmine / Karma and Jest. Only the matchers are Vitest-specific; under other runners, assert on `capture.heard()`. Advancing a fake clock stays with your runner (`vi.advanceTimersByTime`, `jasmine.clock().tick`, `tick` from `fakeAsync`).
 
 ## What it does not pin
 
@@ -94,4 +119,4 @@ The helpers use no runner globals, so they work the same under Vitest, Jasmine /
 
 ## Peer dependencies
 
-`@angular/core`, `@cngx/utils`.
+`@angular/core`, `@cngx/utils`. The `@cngx/core/testing/vitest` entry also needs `vitest` 4 (`^4.0.0`), for its types only: it is an optional peer of `@cngx/core`, and a project that never imports the entry never resolves it.

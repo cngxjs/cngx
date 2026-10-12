@@ -430,7 +430,11 @@ describe('announcement recorder over ui/feedback', () => {
         ['Save failed', 'alert', 'insertion'],
         ['Saved', 'status', 'insertion'],
       ]);
-      expect(capture.heard()).toEqual(['Save failed']);
+      expect(capture).toHaveHeard('Save failed');
+      expect(capture).not.toHaveHeard('Saved');
+      expect(() => expect(capture).toHaveHeard('Saved')).toThrow(
+        '"Saved" was recorded but not heard: role="status" region inserted with its content',
+      );
     });
 
     it('hears an announce() after advancing 16 ms and awaiting a microtask', async () => {

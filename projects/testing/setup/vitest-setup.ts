@@ -34,7 +34,9 @@
  * reference.
  *
  * Besides teardown, this file registers the shared DOM matchers
- * (`cngxMatchers`) on every suite - see the note above `expect.extend` below.
+ * (`cngxMatchers`) and the published announcement matchers
+ * (`cngxAnnouncementMatchers`) on every suite - see the note above
+ * `expect.extend` below.
  *
  * A spec needing more teardown than this does it itself. File-local hooks run
  * first - vitest's default `sequence.hooks: 'stack'` runs "after" hooks in
@@ -43,12 +45,17 @@
  */
 import { afterAll, afterEach, expect, vi } from 'vitest';
 
+import { cngxAnnouncementMatchers } from '@cngx/core/testing/vitest';
+
 import { cngxMatchers } from '../matchers/dom-matchers';
 
 // The matchers' `declare module 'vitest'` augmentation is program-wide, so
 // registration lives here as well: every target that type-checks
 // toHaveClass/toHaveAttribute/toHaveCSSVariable also gets their runtime.
+// The published announcement matchers ride along so the repo's own specs
+// assert with them exactly as a consumer would.
 expect.extend(cngxMatchers);
+expect.extend(cngxAnnouncementMatchers);
 
 afterEach(() => {
   vi.useRealTimers();

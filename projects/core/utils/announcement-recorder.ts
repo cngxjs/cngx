@@ -388,9 +388,9 @@ export function createAnnouncementRecorder(
       return covered;
     }
     record(region, text, origin);
-    // Only an alert is heard on appearance, so only an alert appearing under
-    // busy is replayed by the flip; a status appearance stays unheard.
-    if (isBusy(region) && primaryRole(region) === 'alert') {
+    // Only an appearance that is heard at all is replayed by the flip; a
+    // status appearance stays unheard.
+    if (isBusy(region) && isHeardOnAppearance(region.getAttribute('role'))) {
       defer(state, [region]);
     }
     return covered;
@@ -578,13 +578,25 @@ function primaryRole(el: Element): string | null {
 }
 
 /**
- * The role a `role` attribute value resolves to: its first token, as in an
- * ARIA fallback list (`"alert status"` is an alert). Shared with the heard
- * judgement so both read `role` the same way.
+ * Whether a region is announced when it appears already holding its text
+ * (`'insertion'` / `'became-live'`): only `role="alert"`, read by the first
+ * token of `role` (`"alert status"` is an alert). The one rule both the busy
+ * flip (which appearances it replays) and the heard judgement (which
+ * appearances count) read, so the two cannot disagree.
  *
  * @internal
  */
-export function firstRoleToken(role: string | null): string | null {
+export function isHeardOnAppearance(role: string | null): boolean {
+  return firstRoleToken(role) === 'alert';
+}
+
+/**
+ * The role a `role` attribute value resolves to: its first token, as in an
+ * ARIA fallback list (`"alert status"` is an alert).
+ *
+ * @internal
+ */
+function firstRoleToken(role: string | null): string | null {
   const token = role?.trim().split(/\s+/)[0];
   if (!token) {
     return null;
