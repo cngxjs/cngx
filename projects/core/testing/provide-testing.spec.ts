@@ -1,17 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { EnvironmentProviders, Provider } from '@angular/core';
+import { LOCALE_ID, type EnvironmentProviders, type Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { injectDirection } from '@cngx/core';
-import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
+import {
+  CNGX_LANGUAGE_PACK,
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+} from '@cngx/core/i18n';
 import {
   CNGX_LOADING_DEFAULTS,
   injectLoadingConfig,
   injectLocale,
   provideLoadingConfig,
+  provideLocale,
   withShowDelay,
 } from '@cngx/core/utils';
 
-import { provideCngxTesting } from './provide-testing';
+import { provideCngxTesting } from './public-api';
 
 function setup(providers: (EnvironmentProviders | Provider)[]) {
   TestBed.configureTestingModule({ providers });
@@ -44,10 +50,20 @@ describe('provideCngxTesting', () => {
     expect(config.spinnerVsSkeletonCutoff).toBe(CNGX_LOADING_DEFAULTS.spinnerVsSkeletonCutoff);
   });
 
-  it('reports locale en and direction ltr', () => {
+  it('reads the English pack and reports locale en and direction ltr under <html dir="rtl">', () => {
+    root.dir = 'rtl';
     const { locale, direction } = setup([provideCngxTesting()]);
+    expect(TestBed.inject(CNGX_LANGUAGE_PACK)()).toEqual({ locale: 'en' });
     expect(locale()).toBe('en');
     expect(direction()).toBe('ltr');
+  });
+
+  it('outranks LOCALE_ID and yields to a later provideLocale', () => {
+    expect(setup([{ provide: LOCALE_ID, useValue: 'de-DE' }, provideCngxTesting()]).locale()).toBe(
+      'en',
+    );
+    TestBed.resetTestingModule();
+    expect(setup([provideCngxTesting(), provideLocale('fr-FR')]).locale()).toBe('fr-FR');
   });
 
   it('leaves <html> untouched after a flush', () => {
