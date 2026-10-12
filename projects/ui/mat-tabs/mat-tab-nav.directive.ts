@@ -87,7 +87,7 @@ export class CngxMatTabNav {
   private readonly i18n = injectTabsI18n();
 
   private readonly rejectionState = createRejectionState(this.presenter, this.i18n);
-  private readonly aggregatedErrorTabs = createAggregatedErrorTabs(this.presenter);
+  private readonly aggregatedErrorTabs = createAggregatedErrorTabs(this.presenter, this.i18n);
 
   constructor() {
     mountLiveRegionAnnouncer({

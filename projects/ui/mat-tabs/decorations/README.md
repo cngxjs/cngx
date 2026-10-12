@@ -46,7 +46,7 @@ The slot template renders inside the library-owned `<span class="cngx-sr-only">`
 |Directive|Selector|Context fields|Drives|
 |-|-|-|-|
 |`CngxMatTabRejectionContent`|`ng-template[cngxMatTabRejectionContent]`|`failedHandleId`, `originLabel`, `fallbackText`|Sticky rejection descriptor after `commitAction` rejects a tab change|
-|`CngxMatTabAggregatorContent`|`ng-template[cngxMatTabAggregatorContent]`|`count`, `label`, `announcement`|Per-tab descriptor when a bound `[cngxMatTabError]` aggregator's `shouldShow()` flips true|
+|`CngxMatTabAggregatorContent`|`ng-template[cngxMatTabAggregatorContent]`|`count`, `label`, `announcement`|Per-tab descriptor while the tab is in error: a bound `[cngxMatTabError]` aggregator's `shouldShow()` is true, or a direct `[cngxMatTabErrorFlag]` / link `[error]` is set|
 
 Both slots are single-template-per-host (Material owns the button chrome; the cngx descriptor span is the only consumer-visible seam). Cascade order on the rejection slot: per-instance template > `CNGX_MAT_TABS_CONFIG.templates.rejection` (planned) > library i18n fallback.
 

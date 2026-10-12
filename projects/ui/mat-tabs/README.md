@@ -111,6 +111,24 @@ commit-action rejection lifecycle - a tab can carry both
 the `--has-errors` badge slightly when both classes co-occur so the
 two signals read as distinct.
 
+### Direct error flag
+
+When one value already says "this tab is invalid", skip the
+aggregator: `[cngxMatTabErrorFlag]` takes a `string | boolean`. It
+lands the same `--has-errors` class, descriptor span and
+`aria-describedby` token as `[cngxMatTabError]`. The descriptor text
+resolves aggregator `announcement()` -> the flag's string -> the
+`tabHasErrors(count)` phrase from `CNGX_TABS_I18N`, so a bare `true`
+still reads "1 error". `false` or `''` clears everything. On
+`<nav mat-tab-nav-bar cngxMatTabNav>` the `[error]` input of
+`[cngxMatTabLink]` does the same for `.mat-mdc-tab-link`.
+
+```html
+<mat-tab label="Profile" [cngxMatTabErrorFlag]="nameInvalid() ? 'Name is required' : false">
+  …
+</mat-tab>
+```
+
 ## Smart overflow
 
 `[cngxMatTabs]` ships a smart overflow story: when Material's tab

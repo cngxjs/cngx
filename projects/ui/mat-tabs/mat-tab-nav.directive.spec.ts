@@ -151,6 +151,21 @@ class TwoWayNavHostCmp {
   readonly idx = signal(0);
 }
 
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabNav, CngxMatTabLink],
+  template: `
+    <nav mat-tab-nav-bar cngxMatTabNav [tabPanel]="panel" aria-label="Sections">
+      <a mat-tab-link cngxMatTabLink id="a" label="A" [active]="true">A</a>
+      <a mat-tab-link cngxMatTabLink id="b" label="B" [active]="false" [error]="errB()">B</a>
+    </nav>
+    <mat-tab-nav-panel #panel>panel</mat-tab-nav-panel>
+  `,
+})
+class DirectErrorNavHostCmp {
+  readonly errB = signal<string | boolean>(false);
+}
+
 function navPresenter(
   fixture: ReturnType<typeof TestBed.createComponent>,
 ): CngxTabGroupPresenter {
@@ -232,6 +247,34 @@ describe('CngxMatTabNav native nav-bar bridge', () => {
     await fixture.whenStable();
     expect(links[1].classList.contains('cngx-mat-tab--has-errors')).toBe(false);
     expect(links[1].querySelector('span.cngx-sr-only#b-errors')).toBeNull();
+  });
+
+  it('lands a direct [error] on the matching .mat-mdc-tab-link and clears it', async () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(DirectErrorNavHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const links = tabLinks(fixture);
+    expect(links[1].classList.contains('cngx-mat-tab--has-errors')).toBe(false);
+
+    fixture.componentInstance.errB.set('Unsaved changes');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(links[1].classList.contains('cngx-mat-tab--has-errors')).toBe(true);
+    expect(links[1].getAttribute('aria-describedby') ?? '').toContain('b-errors');
+    expect(links[1].querySelector('span.cngx-sr-only#b-errors')?.textContent).toBe(
+      'Unsaved changes',
+    );
+    expect(links[0].classList.contains('cngx-mat-tab--has-errors')).toBe(false);
+
+    fixture.componentInstance.errB.set(false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(links[1].classList.contains('cngx-mat-tab--has-errors')).toBe(false);
+    expect(links[1].querySelector('span.cngx-sr-only#b-errors')).toBeNull();
+    expect(links[1].getAttribute('aria-describedby')).toBeNull();
   });
 
   it('mounts no eager live region - it delegates to the shared CngxLiveAnnouncer', async () => {

@@ -11,7 +11,11 @@ import { CNGX_MAT_TABS_REGISTRY_HOST } from './mat-tabs-registry.directive';
  * `string | boolean` writes the per-handle `directError` slot, which
  * folds into the handle's `hasError` / `errorMessage`. A non-empty
  * string doubles as the SR descriptor message; `true` marks the tab
- * invalid with no message; `false` / `''` clear it.
+ * invalid with no message; `false` / `''` clear it. The folded state
+ * drives the same header decoration as the aggregator: the
+ * `cngx-mat-tab--has-errors` badge plus an SR-only descriptor span
+ * referenced through `aria-describedby` (message, else the
+ * `tabHasErrors` i18n phrase), removed again when the flag clears.
  *
  * Symmetric with `[cngxMatTabError]` (one directive, one
  * responsibility - Pillar 3): the aggregator stays the rich

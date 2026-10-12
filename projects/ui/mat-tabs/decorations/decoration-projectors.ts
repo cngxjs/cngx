@@ -382,8 +382,9 @@ export function createMatTabRejectionDecoration(
 }
 
 /**
- * One per-tab error-aggregator decoration entry. Caller pre-filters
- * to handles whose `shouldShow() === true`.
+ * One per-tab error decoration entry. Caller pre-filters to handles
+ * whose folded `hasError()` is `true` (direct flag or a revealed
+ * aggregator).
  *
  * `count` / `label` feed the optional `*cngxMatTabAggregatorContent`
  * slot context ({@link CngxMatTabAggregatorContentContext}); the
@@ -407,7 +408,7 @@ export interface CngxMatTabAggregatorErrorEntry {
 export interface CngxMatTabAggregatorDecorationOptions {
   readonly hostEl: HTMLElement;
   /**
-   * Reactive list of tabs whose bound aggregator wants reveal -
+   * Reactive list of tabs in error (folded `hasError()`) -
    * caller pre-filters; sole effect-trigger.
    */
   readonly errorTabs: Signal<readonly CngxMatTabAggregatorErrorEntry[]>;
