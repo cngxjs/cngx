@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSelect: app-wide config with provideCngxSelectAt',
   subtitle:
-    "One <code>provideCngxSelectAt(...)</code> retunes every select in its subtree: <code>withPanelWidth(400)</code> gives every panel a 400px minimum width instead of the trigger width, <code>withCaret(false)</code> drops the trigger caret, <code>withSelectionIndicator</code> plus <code>withSelectionIndicatorPosition('before')</code> move the checkmark ahead of the label, <code>withChipOverflow('truncate')</code> with <code>withMaxVisibleChips(2)</code> folds extra chips into a <code>+N</code> badge, and <code>withDismissOn('escape')</code> keeps the panel open on an outside click.",
+    "One <code>provideCngxSelectAt(...)</code> retunes every select in its subtree: <code>withPanelWidth(null)</code> lets each panel size to its options instead of matching the trigger width, <code>withCaret(false)</code> drops the trigger caret, <code>withSelectionIndicator</code> plus <code>withSelectionIndicatorPosition('before')</code> move the checkmark ahead of the label, <code>withChipOverflow('truncate')</code> with <code>withMaxVisibleChips(2)</code> folds extra chips into a <code>+N</code> badge, and <code>withDismissOn('escape')</code> keeps the panel open on an outside click.",
   description:
     'Both panes render the same single select and multi select; only the right pane sits under the scoped config. <code>provideCngxSelect</code> returns <code>EnvironmentProviders</code> for bootstrap, so a subtree uses the <code>At</code> twin, which returns plain providers. A <code>viewProviders</code> entry would reach both panes, so the demo builds the scope with <code>Injector.create</code> and hands it to <code>ngTemplateOutlet</code>. Open a right-pane panel and click elsewhere on the page: it stays open until you press Escape or pick an option. The left pane closes on either. The toggle below rebuilds the scope with <code>withSelectionIndicator(false)</code>, which hides the checkmark entirely.',
   level: 'organism',
@@ -24,7 +24,7 @@ export const STORY: DemoSpec = {
     Injector.create({
       parent: this.injector,
       providers: provideCngxSelectAt(
-        withPanelWidth(400),
+        withPanelWidth(null),
         withCaret(false),
         withSelectionIndicator(this.showIndicator()),
         withSelectionIndicatorPosition('before'),

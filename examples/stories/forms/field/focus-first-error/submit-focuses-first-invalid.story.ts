@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
     },
   ],
   moduleImports: [
-    "import { email, form, FormField, min, required, schema, submit, type FieldTree } from '@angular/forms/signals';",
+    "import { email, form, FormField, min, required, schema, submit } from '@angular/forms/signals';",
     "import { CngxFieldErrors, CngxFormField, CngxLabel, focusFirstError } from '@cngx/forms/field';",
     "import { CngxInput } from '@cngx/forms/input';",
   ],
@@ -40,8 +40,7 @@ export const STORY: DemoSpec = {
   protected async handleSubmit(event: Event): Promise<void> {
     event.preventDefault();
     const saved = await submit(this.booking, async () => undefined);
-    // The parameter is typed FieldTree<unknown>, which a typed form tree does not satisfy.
-    this.focused.set(saved ? null : focusFirstError(this.booking as unknown as FieldTree<unknown>));
+    this.focused.set(saved ? null : focusFirstError(this.booking));
   }`,
   template: `  <form class="demo-form" novalidate (submit)="handleSubmit($event)">
     <cngx-form-field [field]="booking.fullName">
