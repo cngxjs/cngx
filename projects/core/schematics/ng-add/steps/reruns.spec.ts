@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { createChangePlan, type JsonEntry, type StepResult } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
 import { type InstallManifest, planManifest } from './manifest';
+import { type ProjectFacts } from '../detect/detect';
+import { type OnboardingAnswers, type Versions } from './model';
 import { planManifestReruns, readRecordedAnswers } from './reruns';
 
 const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
@@ -31,26 +33,36 @@ function firstRun(): InstallManifest {
   );
 }
 
+// What a preset answers before any flag; the shell passes `presetDefaults`.
+function defaultsFor(preset: OnboardingAnswers['preset']): OnboardingAnswers {
+  return createAnswers({ preset, floatingFallback: preset === 'full' });
+}
+
+const read = (manifest: InstallManifest) => readRecordedAnswers(manifest, defaultsFor);
+const rerun = (facts: ProjectFacts, manifest: InstallManifest, versions: Versions) =>
+  planManifestReruns(facts, manifest, versions, defaultsFor);
+
 describe('readRecordedAnswers', () => {
   it('reads the answers an install recorded', () => {
-    expect(readRecordedAnswers(firstRun())).toEqual(createAnswers());
+    expect(read(firstRun())).toEqual(createAnswers());
   });
 
-  it('reads no answers when one is missing or outside the vocabulary', () => {
-    const manifest = firstRun();
+  it('fills an answer a newer release added from the recorded preset default', () => {
+    const { floatingFallback: _dropped, aiTools: _alsoDropped, ...older } = firstRun().answers;
 
-    expect(
-      readRecordedAnswers({ ...manifest, answers: { ...manifest.answers, theme: 'brand' } }),
-    ).toBeUndefined();
-    expect(
-      readRecordedAnswers({
-        ...manifest,
-        answers: { ...manifest.answers, libs: ['core', 'charts'] },
-      }),
-    ).toBeUndefined();
-    expect(
-      readRecordedAnswers({ ...manifest, answers: { preset: 'recommended' } }),
-    ).toBeUndefined();
+    expect(read({ ...firstRun(), answers: { ...older, preset: 'full' } })).toEqual(
+      createAnswers({ preset: 'full', floatingFallback: true, aiTools: [] }),
+    );
+  });
+
+  it('reads no answers when the preset is missing or a recorded answer is outside the vocabulary', () => {
+    const manifest = firstRun();
+    const { preset: _preset, ...withoutPreset } = manifest.answers;
+
+    expect(read({ ...manifest, answers: { ...manifest.answers, theme: 'brand' } })).toBeUndefined();
+    expect(read({ ...manifest, answers: { ...manifest.answers, libs: ['core', 'charts'] } })).toBeUndefined();
+    expect(read({ ...manifest, answers: { ...manifest.answers, lint: 'yes' } })).toBeUndefined();
+    expect(read({ ...manifest, answers: withoutPreset })).toBeUndefined();
   });
 });
 
@@ -77,7 +89,7 @@ describe('planManifestReruns', () => {
       mcpConfigs: { claude: 'wired', cursor: 'absent', vscode: 'absent' },
     });
 
-    const result = planManifestReruns(facts, installed(['helper-readme:file']), NEXT);
+    const result = rerun(facts, installed(['helper-readme:file']), NEXT);
 
     expect(result.changes).toContainEqual(
       expect.objectContaining({
@@ -89,7 +101,7 @@ describe('planManifestReruns', () => {
   });
 
   it('names a recorded helper README that is gone instead of writing it again', () => {
-    const result = planManifestReruns(createFacts(), installed(['helper-readme:file']), NEXT);
+    const result = rerun(createFacts(), installed(['helper-readme:file']), NEXT);
 
     expect(result.changes).toContainEqual(
       expect.objectContaining({ kind: 'note', id: 'helper-readme:file' }),
@@ -100,7 +112,7 @@ describe('planManifestReruns', () => {
   it('leaves the helper README alone while the MCP version stands', () => {
     const facts = createFacts({ helperReadme: { generated: true, fingerprint: 'old' } });
 
-    const result = planManifestReruns(facts, installed(['helper-readme:file']), {
+    const result = rerun(facts, installed(['helper-readme:file']), {
       ...NEXT,
       mcp: VERSIONS.mcp,
     });
@@ -109,7 +121,7 @@ describe('planManifestReruns', () => {
   });
 
   it('names a recorded theme step that is no longer in place instead of restoring it', () => {
-    const result = planManifestReruns(
+    const result = rerun(
       createFacts(),
       installed(['theme:stylesheet', 'theme:file']),
       NEXT,
@@ -124,7 +136,7 @@ describe('planManifestReruns', () => {
   });
 
   it('names a theme step the answers ask for that was never installed', () => {
-    const result = planManifestReruns(createFacts(), installed(['theme:file']), NEXT);
+    const result = rerun(createFacts(), installed(['theme:file']), NEXT);
 
     expect(result.changes.find((change) => change.id === 'theme:stylesheet')?.reason).toMatch(
       /never installed; run ng add @cngx\/core to add it/,
@@ -134,7 +146,7 @@ describe('planManifestReruns', () => {
   it('reports recorded theme steps in place as skipped', () => {
     const facts = createFacts({ cngxStylesheet: true, cngxThemePath: 'src/cngx-theme.css' });
 
-    const result = planManifestReruns(
+    const result = rerun(
       facts,
       installed(['theme:stylesheet', 'theme:file', 'theme:entry']),
       NEXT,
@@ -151,7 +163,7 @@ describe('planManifestReruns', () => {
   it('says so when the recorded answers cannot be read', () => {
     const manifest = { ...firstRun(), answers: {} };
 
-    const result = planManifestReruns(createFacts(), manifest, NEXT);
+    const result = rerun(createFacts(), manifest, NEXT);
 
     expect(result.changes).toEqual([
       expect.objectContaining({ kind: 'note', id: 'manifest:answers' }),
@@ -160,7 +172,7 @@ describe('planManifestReruns', () => {
 
   it('does not mutate its inputs', () => {
     expect(() =>
-      planManifestReruns(
+      rerun(
         deepFreeze(createFacts()),
         deepFreeze(installed(['theme:file'])),
         deepFreeze(NEXT),

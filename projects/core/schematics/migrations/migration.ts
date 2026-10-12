@@ -17,6 +17,7 @@ import {
 } from '../engine';
 import { detectProject } from '../ng-add/detect/detect';
 import { readInstallManifest } from '../ng-add/shell/install-manifest';
+import { presetDefaults } from '../ng-add/shell/questions';
 import {
   INSTALL_MANIFEST_PATH,
   type InstallManifest,
@@ -65,7 +66,7 @@ async function planReruns(
       await readWorkspace(tree),
       typeof project === 'string' ? project : undefined,
     );
-    return planManifestReruns(facts, manifest, versions);
+    return planManifestReruns(facts, manifest, versions, (preset) => presetDefaults(preset, facts));
   } catch (error) {
     return note(
       'manifest:project',

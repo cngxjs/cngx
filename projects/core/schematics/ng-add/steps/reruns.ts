@@ -4,6 +4,7 @@ import {
   CNGX_LIBS,
   LANGUAGES,
   NG_ADD_PRESETS,
+  type NgAddPreset,
   type Provenance,
   type StepResult,
   THEME_CHOICES,
@@ -22,46 +23,61 @@ function listOf<T extends string>(vocabulary: readonly T[], value: unknown): val
   return Array.isArray(value) && value.every((entry) => oneOf(vocabulary, entry));
 }
 
+/** What a preset answers before any flag or question; the shell passes `presetDefaults`. */
+export type PresetDefaults = (preset: NgAddPreset) => OnboardingAnswers;
+
+// A missing answer reads as the preset default, so a manifest written before
+// a release added a question still re-runs; a recorded answer outside the
+// vocabulary (or of the wrong type) rejects the whole record.
+function answerOr<T>(value: unknown, valid: (value: unknown) => value is T, fallback: T): T | undefined {
+  if (value === undefined) {
+    return fallback;
+  }
+  return valid(value) ? value : undefined;
+}
+
+const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
+
 /**
  * The answers the last install recorded, read back against today's answer
- * vocabulary; `undefined` when one is missing or no longer a valid answer.
+ * vocabulary. The preset is required; every other missing answer is the
+ * preset's default. `undefined` when the preset is missing or a recorded
+ * answer is no longer valid.
  */
-export function readRecordedAnswers(manifest: InstallManifest): OnboardingAnswers | undefined {
-  const {
+export function readRecordedAnswers(manifest: InstallManifest, defaultsFor: PresetDefaults): OnboardingAnswers | undefined {
+  const recorded = manifest.answers;
+  const preset = recorded['preset'];
+  if (!oneOf(NG_ADD_PRESETS, preset)) {
+    return undefined;
+  }
+  const defaults = defaultsFor(preset);
+  const answers = {
     preset,
-    libs,
-    theme,
-    i18n,
-    runtimeSwitch,
-    lint,
-    a11yPreferences,
-    feedback,
-    floatingFallback,
-    aiTools,
-  } = manifest.answers;
-  const flags = [runtimeSwitch, lint, a11yPreferences, feedback, floatingFallback];
+    libs: answerOr(recorded['libs'], (value) => listOf(CNGX_LIBS, value), defaults.libs),
+    theme: answerOr(recorded['theme'], (value) => oneOf(THEME_CHOICES, value), defaults.theme),
+    i18n: answerOr(recorded['i18n'], (value) => oneOf(LANGUAGES, value), defaults.i18n),
+    runtimeSwitch: answerOr(recorded['runtimeSwitch'], isBoolean, defaults.runtimeSwitch),
+    lint: answerOr(recorded['lint'], isBoolean, defaults.lint),
+    a11yPreferences: answerOr(recorded['a11yPreferences'], isBoolean, defaults.a11yPreferences),
+    feedback: answerOr(recorded['feedback'], isBoolean, defaults.feedback),
+    floatingFallback: answerOr(recorded['floatingFallback'], isBoolean, defaults.floatingFallback),
+    aiTools: answerOr(recorded['aiTools'], (value) => listOf(AI_TOOLS, value), defaults.aiTools),
+  };
+  const { libs, theme, i18n, runtimeSwitch, lint, a11yPreferences, feedback, floatingFallback, aiTools } = answers;
   if (
-    !oneOf(NG_ADD_PRESETS, preset) ||
-    !listOf(CNGX_LIBS, libs) ||
-    !oneOf(THEME_CHOICES, theme) ||
-    !oneOf(LANGUAGES, i18n) ||
-    !listOf(AI_TOOLS, aiTools) ||
-    !flags.every((flag) => typeof flag === 'boolean')
+    libs === undefined ||
+    theme === undefined ||
+    i18n === undefined ||
+    runtimeSwitch === undefined ||
+    lint === undefined ||
+    a11yPreferences === undefined ||
+    feedback === undefined ||
+    floatingFallback === undefined ||
+    aiTools === undefined
   ) {
     return undefined;
   }
-  return {
-    preset,
-    libs,
-    theme,
-    i18n,
-    runtimeSwitch: runtimeSwitch === true,
-    lint: lint === true,
-    a11yPreferences: a11yPreferences === true,
-    feedback: feedback === true,
-    floatingFallback: floatingFallback === true,
-    aiTools,
-  };
+  return { preset, libs, theme, i18n, runtimeSwitch, lint, a11yPreferences, feedback, floatingFallback, aiTools };
 }
 
 const NO_CHANGES: StepResult = { changes: [], skipped: [] };
@@ -103,9 +119,10 @@ export function planManifestReruns(
   facts: ProjectFacts,
   manifest: InstallManifest,
   versions: Versions,
+  defaultsFor: PresetDefaults,
 ): StepResult {
   const provenance: Provenance = { source: 'ng-update', version: versions.cngx };
-  const answers = readRecordedAnswers(manifest);
+  const answers = readRecordedAnswers(manifest, defaultsFor);
   if (answers === undefined) {
     return {
       changes: [
