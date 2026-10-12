@@ -59,16 +59,15 @@ export const cngxMatchers = {
   },
 };
 
-/** Type augmentation for vitest's expect. */
+/**
+ * Type augmentation for vitest's expect, through `Matchers<T>`: Vitest 4's
+ * one extension interface, which both `Assertion` and `expect` extend. Same
+ * form as the published `@cngx/core/testing/vitest` matchers.
+ */
 declare module 'vitest' {
-  interface Assertion<T> {
+  interface Matchers<T> {
     toHaveClass(className: string): T;
     toHaveAttribute(name: string, value?: string): T;
     toHaveCSSVariable(name: string, value: string): T;
-  }
-  interface AsymmetricMatchersContaining {
-    toHaveClass(className: string): unknown;
-    toHaveAttribute(name: string, value?: string): unknown;
-    toHaveCSSVariable(name: string, value: string): unknown;
   }
 }
