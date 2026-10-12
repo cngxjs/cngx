@@ -6,6 +6,10 @@
 // fallbacks all ship from the cngx theming layers (reset/base/components),
 // imported below.
 
+// Material system tokens for the Material demos (see the `html` block below).
+// @use must precede every other rule, the CSS @imports included.
+@use '@angular/material' as mat;
+
 // Foundation: layer-order + system tokens + reset + base + aggregated
 // directive default CSS (bottom-sheet, backdrop, badge, divider, ripple,
 // async). @Directives cannot ship styleUrl so this single import is the
@@ -3969,11 +3973,24 @@ cngx-radio-group .cngx-radio + .cngx-radio {
   opacity: 0.6;
 }
 
-// Material theme — the prebuilt azure-blue palette so mat-select panels
-// render with proper Material chrome inside the demos. Imported here
-// alongside the cngx foundation so the dev server picks it up via HMR
-// (the angular.json `styles` array only reloads on full rebuild).
-@import '../../node_modules/@angular/material/prebuilt-themes/azure-blue.css';
+// Material theme: the azure-blue palette (same as the prebuilt azure-blue.css
+// this replaces) so Material widgets render with proper chrome in the demos.
+// `theme-type: color-scheme` emits light-dark() values, so Material follows the
+// same color-scheme flip as the cngx foundation instead of staying light on a
+// dark page. Roboto is loaded in index.html.
+html {
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+        theme-type: color-scheme,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
 
 // Demo-only accent for the stepper `chips` skin stories (matches the
 // reference screenshot). Static demo styling, not a library default;
