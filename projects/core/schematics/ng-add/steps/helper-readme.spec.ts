@@ -19,11 +19,11 @@ describe('fillTemplate', () => {
 
 describe('renderHelperReadme', () => {
   it('renders the stamped readme for the chosen editors', () => {
-    expect(renderHelperReadme(AI_ANSWERS, VERSIONS)).toMatchSnapshot();
+    expect(renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS)).toMatchSnapshot();
   });
 
   it('lists every generated tool with its example question', () => {
-    const readme = renderHelperReadme(AI_ANSWERS, VERSIONS);
+    const readme = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS);
 
     for (const tool of MCP_TOOLS) {
       expect(readme).toContain(`| \`${tool.name}\` | ${tool.title} | ${tool.example} |`);
@@ -31,7 +31,7 @@ describe('renderHelperReadme', () => {
   });
 
   it('starts with an html provenance stamp and leaves no placeholder behind', () => {
-    const readme = renderHelperReadme(AI_ANSWERS, VERSIONS);
+    const readme = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS);
 
     expect(readme).toMatch(/^<!-- cngx:generated [0-9a-f]{8} -->\n<!-- ng-add, @cngx 0\.1\.0 -->\n/);
     expect(readme).not.toMatch(/\{\{\w+\}\}/);
@@ -39,7 +39,7 @@ describe('renderHelperReadme', () => {
   });
 
   it('lists only the configs of the chosen editors', () => {
-    const readme = renderHelperReadme(createAnswers({ aiTools: ['cursor'] }), VERSIONS);
+    const readme = renderHelperReadme(createFacts(), createAnswers({ aiTools: ['cursor'] }), VERSIONS);
 
     expect(readme).toContain('- `.cursor/mcp.json`');
     expect(readme).not.toContain('- `.mcp.json`');
@@ -47,9 +47,16 @@ describe('renderHelperReadme', () => {
     expect(readme).not.toContain('claude mcp list');
   });
 
+  it('lists a config cngx could not edit with what to do instead of as configured', () => {
+    const facts = createFacts({ mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'invalid' } });
+    const readme = renderHelperReadme(facts, AI_ANSWERS, VERSIONS);
+
+    expect(readme).toContain('- `.mcp.json`\n- `.vscode/mcp.json`: not a JSON object cngx can edit; add `servers.cngx` by hand\n');
+  });
+
   it('describes the Claude Code plugin only when Claude Code is chosen', () => {
-    const withClaude = renderHelperReadme(AI_ANSWERS, VERSIONS);
-    const withoutClaude = renderHelperReadme(createAnswers({ aiTools: ['cursor'] }), VERSIONS);
+    const withClaude = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS);
+    const withoutClaude = renderHelperReadme(createFacts(), createAnswers({ aiTools: ['cursor'] }), VERSIONS);
 
     expect(withClaude).toContain('delete\nthe `cngx` entry from `.mcp.json`, so Claude Code runs one cngx server, not two.');
     expect(withoutClaude).not.toContain('## Claude Code plugin');
@@ -69,12 +76,12 @@ describe('planHelperReadme', () => {
       kind: 'create-file',
       id: 'helper-readme:file',
       path: '.cngx/README.md',
-      content: renderHelperReadme(AI_ANSWERS, VERSIONS),
+      content: renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS),
     });
   });
 
   it('skips a generated readme that is already current', () => {
-    const content = renderHelperReadme(AI_ANSWERS, VERSIONS);
+    const content = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS);
     const facts = createFacts({ helperReadme: { generated: true, fingerprint: contentFingerprint(content) } });
 
     expect(planHelperReadme(facts, AI_ANSWERS, VERSIONS)).toEqual({

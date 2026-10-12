@@ -37,6 +37,15 @@ const CLAUDE_PLUGIN = [
   '',
 ].join('\n');
 
+// A config the AI tooling step could not edit is listed with what to do,
+// never as configured.
+function configLine(tool: AiTool, facts: ProjectFacts): string {
+  const { path, key } = MCP_CONFIGS[tool];
+  return facts.mcpConfigs[tool] === 'invalid'
+    ? `- \`${path}\`: not a JSON object cngx can edit; add \`${key}.cngx\` by hand`
+    : `- \`${path}\``;
+}
+
 const cell = (text: string): string => text.replace(/\|/g, '\\|');
 
 function row(cells: readonly string[]): string {
@@ -54,14 +63,15 @@ export function fillTemplate(template: string, values: Readonly<Record<string, s
   });
 }
 
-export function renderHelperReadme(answers: OnboardingAnswers, versions: Versions): string {
+export function renderHelperReadme(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): string {
   const body = fillTemplate(TEMPLATE, {
     version: versions.cngx,
     mcpVersion: versions.mcp,
     packages: cngxPackages(answers)
       .map((name) => `- \`${name}@${versions.cngx}\``)
       .join('\n'),
-    configs: [...answers.aiTools.map((tool) => `- \`${MCP_CONFIGS[tool].path}\``), '- `AGENTS.md`'].join('\n'),
+    configs: answers.aiTools.map((tool) => configLine(tool, facts)).join('\n'),
+    instructions: '`AGENTS.md`',
     tools: MCP_TOOLS.map((tool) => row([`\`${tool.name}\``, tool.title, tool.example])).join('\n'),
     resources: MCP_RESOURCES.map((resource) => row([`\`${resource.uri}\``, resource.description])).join('\n'),
     prompts: MCP_PROMPTS.map((prompt) => row([`\`${prompt.name}\``, prompt.description])).join('\n'),
@@ -82,7 +92,7 @@ export function planHelperReadme(facts: ProjectFacts, answers: OnboardingAnswers
     return { changes: [], skipped: [] };
   }
   const provenance: Provenance = { source: SOURCE, version: versions.cngx };
-  const content = renderHelperReadme(answers, versions);
+  const content = renderHelperReadme(facts, answers, versions);
   const existing = facts.helperReadme;
   const base = {
     id: 'helper-readme:file',

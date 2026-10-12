@@ -31,7 +31,8 @@ Configured in:
 
 - \`.mcp.json\`
 - \`.vscode/mcp.json\`
-- \`AGENTS.md\`
+
+A marked cngx block in \`AGENTS.md\` tells the agent to ask the server.
 
 ### Tools
 

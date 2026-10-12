@@ -18,6 +18,8 @@ Configured in:
 
 {{configs}}
 
+A marked cngx block in {{instructions}} tells the agent to ask the server.
+
 ### Tools
 
 | Tool | What it answers | Try asking |
@@ -43,7 +45,7 @@ Configured in:
 ## Turn it off
 
 Delete the `cngx` entry from each config file listed above, and the block
-between `<!-- cngx:agents -->` and `<!-- /cngx:agents -->` in `AGENTS.md`.
+between `<!-- cngx:agents -->` and `<!-- /cngx:agents -->` in {{instructions}}.
 Nothing else in the project depends on the server.
 
 {{plugin}}## Clients outside this project
