@@ -119,4 +119,4 @@ The helpers use no runner globals, so they work the same under Vitest, Jasmine /
 
 ## Peer dependencies
 
-`@angular/core`, `@cngx/utils`. The `@cngx/core/testing/vitest` entry also needs `vitest` 4 or later, for its types only: it is an optional peer of `@cngx/core`, and a project that never imports the entry never resolves it.
+`@angular/core`, `@cngx/utils`. The `@cngx/core/testing/vitest` entry also needs `vitest` 4 (`^4.0.0`), for its types only: it is an optional peer of `@cngx/core`, and a project that never imports the entry never resolves it.
