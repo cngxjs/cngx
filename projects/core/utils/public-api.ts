@@ -82,6 +82,11 @@ export {
   type CngxAnnouncementSuppression,
   type CngxRecordedAnnouncement,
 } from './announcement-recorder';
+export {
+  resolveHeardAnnouncements,
+  resolveUnheardReason,
+  type CngxUnheardReason,
+} from './heard-announcements';
 // This block ships `@internal` dev-mode diagnostics. They are exported
 // through `public-api.ts` so the devtools and testing entries of other
 // libraries can read them across the secondary-entry boundary (ng-packagr has
