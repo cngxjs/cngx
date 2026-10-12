@@ -41,6 +41,7 @@ export interface CngxTransitionLog<T> {
  * ```ts
  * const state = createAsyncStateMock();
  * const log = TestBed.runInInjectionContext(() => injectTransitionLog(state.status));
+ * TestBed.tick(); // records the starting 'idle'
  *
  * state.set({ status: 'loading' });
  * TestBed.tick();
@@ -53,7 +54,8 @@ export interface CngxTransitionLog<T> {
  * The same assertion reads `expect(log.values()).toEqual([...])` under Jasmine
  * and Jest; the log uses no runner API.
  *
- * Values are observed per effect flush, not per write. Signals coalesce
+ * Values are observed per effect flush, not per write: the starting value
+ * lands on the first flush after the call, not at the call. Signals coalesce
  * synchronous changes, so `loading` then `success` set in one task without a
  * flush between them records only `success`. Flush (`TestBed.tick()`, or
  * `fixture.detectChanges()` for a component) after each step you want to see.
@@ -63,7 +65,8 @@ export interface CngxTransitionLog<T> {
  * assertion, not rendered, and the effect that fills it writes no signal.
  *
  * Call it in an injection context, or pass `{ injector }`. The effect lives as
- * long as that injector; `stop()` ends it earlier.
+ * long as that injector, or as the component when called in one; `stop()`
+ * ends it earlier.
  *
  * @param source The signal (or any reactive read) to record.
  * @param options Injector and equality for consecutive values.
