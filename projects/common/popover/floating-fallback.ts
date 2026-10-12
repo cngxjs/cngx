@@ -2,20 +2,29 @@ import { InjectionToken, type Provider } from '@angular/core';
 
 import type { PopoverPlacement } from './popover.types';
 
+// Declared as a method so TypeScript checks its parameters bivariantly: the
+// real `computePosition` narrows `placement` to Floating UI's `Placement`
+// union and `middleware` to its `Middleware` type, and a function-type
+// alias would reject it under `strictFunctionTypes`. The library only ever
+// passes valid placements and middleware objects.
+interface ComputePositionSignature {
+  computePosition(
+    reference: HTMLElement,
+    floating: HTMLElement,
+    options?: {
+      placement?: string;
+      middleware?: unknown[];
+    },
+  ): Promise<{ x: number; y: number; placement: string }>;
+}
+
 /**
  * Signature matching `@floating-ui/dom` `computePosition`.
  * The consumer provides the actual function - the library never imports it directly.
  *
  * @category common/popover
  */
-export type ComputePositionFn = (
-  reference: HTMLElement,
-  floating: HTMLElement,
-  options?: {
-    placement?: string;
-    middleware?: unknown[];
-  },
-) => Promise<{ x: number; y: number; placement: string }>;
+export type ComputePositionFn = ComputePositionSignature['computePosition'];
 
 /**
  * Configuration for the Floating UI positioning fallback.
