@@ -209,10 +209,11 @@ describe('dist/ui/schematics ng-add shim', () => {
 });
 
 // Every schematic entry ships inside a published package, so its size is
-// paid on every install. The budget leaves room for the onboarding steps on
-// top of the bundled renderer and prompt libraries.
-const MAX_MINIFIED = 200 * 1024;
-const MAX_GZIP = 70 * 1024;
+// paid on every install. The bundled renderer and prompt libraries take about
+// 140 KB of it (listr2 alone 52 KB); the rest is the onboarding itself, with
+// room for the editor configs the AI tooling step still has to write.
+const MAX_MINIFIED = 256 * 1024;
+const MAX_GZIP = 90 * 1024;
 // A shim only adds core and delegates; it pulls nothing from the renderer
 // or the prompts, which `sideEffects: false` on the source package lets
 // esbuild drop.
@@ -235,7 +236,7 @@ describe('schematic bundle budget', () => {
     expect(schematicEntries()).toEqual(expect.arrayContaining(['core/schematics/ng-add/index.js', 'ui/schematics/ng-add/index.js']));
   });
 
-  it.each(schematicEntries())('keeps dist/%s under 200 KB minified and 70 KB gzip', (file) => {
+  it.each(schematicEntries())('keeps dist/%s under 256 KB minified and 90 KB gzip', (file) => {
     const content = readFileSync(join(ROOT, 'dist', file));
 
     expect(content.length).toBeLessThanOrEqual(MAX_MINIFIED);

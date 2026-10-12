@@ -86,7 +86,7 @@ points at a missing file.
 `build-schematics.mjs` type-checks, then bundles each entry with esbuild (cjs,
 minified). `@angular-devkit/*`, `@schematics/angular`, `typescript` and
 `@angular/compiler` stay external: they come from the consumer's CLI install.
-Budgets: 200 KB minified / 70 KB gzip per entry, 20 KB per shim.
+Budgets: 256 KB minified / 90 KB gzip per entry, 20 KB per shim.
 `scripts/publish.mjs` writes `dist/core/schematics/versions.json` (the cngx,
 `@cngx/mcp` and `@cngx/eslint-plugin` pins) and ships a lib's bundle only when
 its source `package.json` declares `schematics`.
