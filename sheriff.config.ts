@@ -68,6 +68,14 @@ export const config: SheriffConfig = {
       `entry:i18n-${pack}`,
       'scope:lib',
     ],
+    // Specific-before-generic: a published test kit, never imported by
+    // library source (scripts/__tests__/testing-entry-import-fence.test.mjs).
+    'projects/core/testing': [
+      'lib:core',
+      'level:1',
+      'entry:testing',
+      'scope:test',
+    ],
     'projects/core': ['lib:core', 'level:1', 'entry:primary', 'scope:lib'],
     'projects/core/<entry>': ({ entry }) => [
       'lib:core',
