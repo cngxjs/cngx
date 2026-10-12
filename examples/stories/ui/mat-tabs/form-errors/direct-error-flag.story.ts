@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     "<code>[cngxMatTabErrorFlag]</code> marks one <code>&lt;mat-tab&gt;</code> of a <code>cngxMatTabs</code> group invalid from a plain <code>string | boolean</code> - no aggregator. A non-empty string is the error message, <code>true</code> marks the tab invalid without one, <code>false</code> or <code>''</code> clears it, and a bare <code>cngxMatTabErrorFlag</code> attribute counts as <code>true</code>.",
   description:
-    "The flag is the simple-case sibling of <code>[cngxMatTabError]</code>. Both write a per-tab slot on the same tab handle: <code>[cngxMatTabError]</code> takes a <code>CngxErrorAggregator</code> (several sources, reveal gating, a count and an announcement - see the instrumentation story), while the flag takes the one value you already have, here derived from each Reactive form's status. The flag folds into the handle's <code>hasError()</code> and <code>errorMessage()</code> that every consumer of the tab-group host reads; the readout below shows those two signals per tab. Profile passes a message string, Account passes a bare boolean, Notifications has no flag. Clear a field to flip its tab invalid; fill it again to clear the flag. On the Material bridge the header badge and its SR descriptor are projected from the aggregator channel only, so the flag does not decorate the <code>.mat-mdc-tab</code> button; bind <code>[cngxMatTabError]</code> when the header itself must show the error.",
+    'The flag is the simple-case sibling of <code>[cngxMatTabError]</code>. Both write a per-tab slot on the same tab handle: <code>[cngxMatTabError]</code> takes a <code>CngxErrorAggregator</code> (several sources, reveal gating, a count and an announcement - see the instrumentation story), while the flag takes the one value you already have, here derived from each Reactive form\'s status. The flag folds into the handle\'s <code>hasError()</code> and <code>errorMessage()</code>, and that folded state drives the same header decoration as the aggregator: the Material tab button gains the <code>cngx-mat-tab--has-errors</code> badge and an SR-only descriptor referenced through <code>aria-describedby</code>. Profile passes a message string, so its descriptor reads the message; Account passes a bare boolean, so its descriptor falls back to the localised error-count phrase ("1 error"); Notifications has no flag. Clear a field to flip its tab invalid; fill it again and the badge, the descriptor and the <code>aria-describedby</code> reference are removed.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
@@ -76,13 +76,15 @@ export const STORY: DemoSpec = {
   </mat-tab-group>`,
   templateChromeBefore: `
   <p style="margin-bottom:12px">
-    Clear the name or break the email address, then watch the readout: the tab's
-    handle turns invalid, with the flag's message when it is a string.
+    Clear the name or break the email address: the tab header gains the error badge,
+    and the readout shows the handle state the flag writes plus the descriptor text a
+    screen reader hears through <code>aria-describedby</code>.
   </p>`,
   setupChrome: `
   // The presenter is the tab-group host cngxMatTabs composes; its handles
   // carry the folded error state the flag writes.
   private readonly presenter = viewChild(CngxTabGroupPresenter);
+  private readonly group = viewChild(CngxMatTabs, { read: ElementRef });
   protected readonly handleRows = computed(() =>
     (this.presenter()?.tabs() ?? []).map((tab) => ({
       id: tab.id,
@@ -90,13 +92,26 @@ export const STORY: DemoSpec = {
       hasError: tab.hasError(),
       message: tab.errorMessage() ?? 'none',
     })),
-  );`,
+  );
+
+  // Reads the descriptor the decoration projects onto each tab button. A
+  // DOM read, so it re-runs on every check rather than from a signal.
+  protected descriptorFor(index: number): string {
+    const host = this.group()?.nativeElement as HTMLElement | undefined;
+    const button = host?.querySelectorAll('.mat-mdc-tab')[index];
+    const ref = button?.getAttribute('aria-describedby');
+    if (!button || !ref) {
+      return 'none';
+    }
+    const span = button.querySelector('[id="' + ref.split(' ').pop() + '"]');
+    return span?.textContent ?? 'none';
+  }`,
   templateChrome: `
   <div class="event-grid" style="margin-top:12px">
-    @for (row of handleRows(); track row.id) {
+    @for (row of handleRows(); track row.id; let i = $index) {
       <div class="event-row">
         <span class="event-label">{{ row.label }}</span>
-        <span class="event-value">hasError {{ row.hasError }} / errorMessage {{ row.message }}</span>
+        <span class="event-value">hasError {{ row.hasError }} / errorMessage {{ row.message }} / described by "{{ descriptorFor(i) }}"</span>
       </div>
     }
   </div>`,
