@@ -105,18 +105,6 @@ function agentsMd(facts: ProjectFacts, provenance: Provenance): StepResult {
     : { changes: [change], skipped: [] };
 }
 
-// A project cannot install a plugin for its users; the plugin brings the
-// cngx skills on top of the MCP server, so the run says how to add it.
-function claudePlugin(provenance: Provenance): Change {
-  return {
-    kind: 'note',
-    id: 'ai-tools:claude-plugin',
-    label: 'Add the cngx Claude Code plugin',
-    reason: 'run `/plugin marketplace add cngxjs/cngx`, then `/plugin install cngx@cngxjs` in Claude Code',
-    provenance,
-  };
-}
-
 /**
  * Registers the pinned `@cngx/mcp` server in each chosen editor's
  * project-local config, next to any server already there, and adds a cngx
@@ -132,9 +120,8 @@ export function planAiTools(facts: ProjectFacts, answers: OnboardingAnswers, ver
     ...answers.aiTools.map((tool) => mcpConfig(tool, facts, versions, provenance)),
     agentsMd(facts, provenance),
   ];
-  const plugin = answers.aiTools.includes('claude') ? [claudePlugin(provenance)] : [];
   return {
-    changes: [...results.flatMap((result) => result.changes), ...plugin],
+    changes: results.flatMap((result) => result.changes),
     skipped: results.flatMap((result) => result.skipped),
   };
 }

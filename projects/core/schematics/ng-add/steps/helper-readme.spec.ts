@@ -46,6 +46,15 @@ describe('renderHelperReadme', () => {
     expect(readme).toContain('Cursor: open Cursor Settings');
     expect(readme).not.toContain('claude mcp list');
   });
+
+  it('describes the Claude Code plugin only when Claude Code is chosen', () => {
+    const withClaude = renderHelperReadme(AI_ANSWERS, VERSIONS);
+    const withoutClaude = renderHelperReadme(createAnswers({ aiTools: ['cursor'] }), VERSIONS);
+
+    expect(withClaude).toContain('delete\nthe `cngx` entry from `.mcp.json`, so Claude Code runs one cngx server, not two.');
+    expect(withoutClaude).not.toContain('## Claude Code plugin');
+    expect(withoutClaude).toContain('Nothing else in the project depends on the server.\n\n## Clients outside this project');
+  });
 });
 
 describe('planHelperReadme', () => {

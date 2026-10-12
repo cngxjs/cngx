@@ -77,6 +77,13 @@ Delete the \`cngx\` entry from each config file listed above, and the block
 between \`<!-- cngx:agents -->\` and \`<!-- /cngx:agents -->\` in \`AGENTS.md\`.
 Nothing else in the project depends on the server.
 
+## Claude Code plugin
+
+The cngx plugin adds cngx skills and edit checks to Claude Code and starts
+its own copy of the MCP server. To use it, run \`/plugin marketplace add
+cngxjs/cngx\`, then \`/plugin install cngx@cngxjs\` in Claude Code, and delete
+the \`cngx\` entry from \`.mcp.json\`, so Claude Code runs one cngx server, not two.
+
 ## Clients outside this project
 
 \`ng add\` writes only project files. To use the server in Claude Desktop or

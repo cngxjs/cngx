@@ -46,7 +46,7 @@ Delete the `cngx` entry from each config file listed above, and the block
 between `<!-- cngx:agents -->` and `<!-- /cngx:agents -->` in `AGENTS.md`.
 Nothing else in the project depends on the server.
 
-## Clients outside this project
+{{plugin}}## Clients outside this project
 
 `ng add` writes only project files. To use the server in Claude Desktop or
 in every Cursor project, add the same entry to that client's own config by

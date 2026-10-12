@@ -268,9 +268,7 @@ describe('ngAdd', () => {
     });
     expect(run.tree.exists('.cursor/mcp.json')).toBe(false);
     expect(run.tree.readText('AGENTS.md')).toMatch(/^# Agents\n\n<!-- cngx:agents -->\n/);
-    expect(run.logs).toContain(
-      '  Add the cngx Claude Code plugin - run `/plugin marketplace add cngxjs/cngx`, then `/plugin install cngx@cngxjs` in Claude Code',
-    );
+    expect(run.tree.readText('.cngx/README.md')).toContain('## Claude Code plugin');
   });
 
   it('refuses an Angular version below 21.2', async () => {

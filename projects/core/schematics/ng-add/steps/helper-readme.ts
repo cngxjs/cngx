@@ -24,6 +24,19 @@ const VERIFY: Readonly<Record<AiTool, string>> = {
   vscode: 'VS Code: run `MCP: List Servers` from the command palette and start `cngx`.',
 };
 
+// The plugin starts its own MCP server, pinned by the plugin release; with the
+// project entry next to it Claude Code would run two cngx servers.
+const CLAUDE_PLUGIN = [
+  '## Claude Code plugin',
+  '',
+  'The cngx plugin adds cngx skills and edit checks to Claude Code and starts',
+  'its own copy of the MCP server. To use it, run `/plugin marketplace add',
+  'cngxjs/cngx`, then `/plugin install cngx@cngxjs` in Claude Code, and delete',
+  'the `cngx` entry from `.mcp.json`, so Claude Code runs one cngx server, not two.',
+  '',
+  '',
+].join('\n');
+
 const cell = (text: string): string => text.replace(/\|/g, '\\|');
 
 function row(cells: readonly string[]): string {
@@ -53,6 +66,7 @@ export function renderHelperReadme(answers: OnboardingAnswers, versions: Version
     resources: MCP_RESOURCES.map((resource) => row([`\`${resource.uri}\``, resource.description])).join('\n'),
     prompts: MCP_PROMPTS.map((prompt) => row([`\`${prompt.name}\``, prompt.description])).join('\n'),
     verify: answers.aiTools.map((tool) => `- ${VERIFY[tool]}`).join('\n'),
+    plugin: answers.aiTools.includes('claude') ? CLAUDE_PLUGIN : '',
   });
   return `${createProvenanceStamp(SOURCE, versions.cngx, 'html')}\n${body}`;
 }

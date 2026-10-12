@@ -94,18 +94,10 @@ describe('planAiTools', () => {
     expect(result.skipped).toContainEqual(expect.objectContaining({ id: 'ai-tools:agents' }));
   });
 
-  it('tells a Claude Code user how to add the plugin, which a project cannot install', () => {
-    const withClaude = planAiTools(createFacts(), createAnswers({ aiTools: ['claude'] }), VERSIONS);
-    const withoutClaude = planAiTools(createFacts(), createAnswers({ aiTools: ['vscode'] }), VERSIONS);
+  it('leaves the plugin to the readme, so a run never plans a second cngx server', () => {
+    const result = planAiTools(createFacts(), createAnswers({ aiTools: ['claude'] }), VERSIONS);
 
-    expect(withClaude.changes).toContainEqual(
-      expect.objectContaining({
-        kind: 'note',
-        id: 'ai-tools:claude-plugin',
-        reason: 'run `/plugin marketplace add cngxjs/cngx`, then `/plugin install cngx@cngxjs` in Claude Code',
-      }),
-    );
-    expect(withoutClaude.changes.some((change) => change.id === 'ai-tools:claude-plugin')).toBe(false);
+    expect(result.changes.map((change) => change.id)).toEqual(['ai-tools:claude', 'ai-tools:agents']);
   });
 
   it('does not mutate its inputs', () => {
