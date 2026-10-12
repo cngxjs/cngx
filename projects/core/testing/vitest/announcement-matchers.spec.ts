@@ -205,6 +205,19 @@ describe('cngxAnnouncementMatchers', () => {
       );
     });
 
+    it('says a missing text was never recorded, as toHaveHeard does', async () => {
+      await politeWrites(['Loading']);
+
+      expect(() => expect(capture).toHaveHeardInOrder(['Loading', /Saved/])).toThrow(
+        [
+          'expected the capture to have heard in order: "Loading", /Saved/',
+          'heard: "Loading"',
+          'missing after "Loading": /Saved/',
+          'nothing matching /Saved/ was recorded',
+        ].join('\n'),
+      );
+    });
+
     it('fails .not with the heard texts', async () => {
       await politeWrites(['Loading', 'Done']);
 

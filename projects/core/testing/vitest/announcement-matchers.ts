@@ -122,8 +122,31 @@ function unheardLines(
   return [...new Set(lines)];
 }
 
+function nothingRecorded(pattern: TextPattern): string {
+  return `nothing matching ${show(pattern)} was recorded`;
+}
+
 function withFallback(lines: string[], expected: TextPattern): string[] {
-  return lines.length > 0 ? lines : [`nothing matching ${show(expected)} was recorded`];
+  return lines.length > 0 ? lines : [nothingRecorded(expected)];
+}
+
+/**
+ * Why an in-order text is missing beyond its unheard entries: heard, but out
+ * of order; or never recorded at all, phrased as `toHaveHeard` phrases it.
+ */
+function missingNote(
+  capture: CngxAnnouncementCapture,
+  heard: readonly string[],
+  missing: TextPattern,
+  after: string,
+): string[] {
+  if (heard.some((text) => matches(text, missing))) {
+    return [`${show(missing)} was heard, but not${after}`];
+  }
+  if (unheardLines(capture, [missing]).length > 0) {
+    return [];
+  }
+  return [nothingRecorded(missing)];
 }
 
 /**
@@ -224,14 +247,11 @@ export const cngxAnnouncementMatchers = {
         }
         const missing = expected[found];
         const after = found === 0 ? '' : ` after ${show(expected[found - 1])}`;
-        const outOfOrder = heard.some((text) => matches(text, missing))
-          ? [`${show(missing)} was heard, but not${after}`]
-          : [];
         return [
           `expected the capture to have heard in order: ${list}`,
           showHeard(heard),
           `missing${after}: ${show(missing)}`,
-          ...outOfOrder,
+          ...missingNote(received, heard, missing, after),
           ...unheardLines(received, expected.slice(found)),
         ].join('\n');
       },
