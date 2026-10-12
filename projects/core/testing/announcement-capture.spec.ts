@@ -84,6 +84,41 @@ describe('createAnnouncementCapture', () => {
     expect(capture.heard()).toEqual(['3 results']);
   });
 
+  it('hears an alert made live while holding text, not a status', async () => {
+    const alert = region({}, 'Upload failed');
+    const status = region({}, 'Saved');
+    host.append(alert, status);
+    start();
+
+    alert.setAttribute('role', 'alert');
+    status.setAttribute('role', 'status');
+    await observed();
+
+    expect(capture.entries().map((entry) => [entry.text, entry.origin])).toEqual([
+      ['Upload failed', 'became-live'],
+      ['Saved', 'became-live'],
+    ]);
+    expect(capture.heard()).toEqual(['Upload failed']);
+  });
+
+  it('counts the same text once unless the region was emptied between', async () => {
+    const polite = region({ 'aria-live': 'polite' });
+    host.append(polite);
+    start();
+
+    polite.textContent = 'Saved';
+    await observed();
+    polite.textContent = 'Saved';
+    await observed();
+    expect(capture.heard()).toEqual(['Saved']);
+
+    polite.textContent = '';
+    await observed();
+    polite.textContent = 'Saved';
+    await observed();
+    expect(capture.heard()).toEqual(['Saved', 'Saved']);
+  });
+
   it('keeps writes inside hidden and behind an open aria-modal in entries only', async () => {
     const hidden = region({ 'aria-live': 'polite', hidden: '' });
     const behind = region({ 'aria-live': 'polite' });
