@@ -253,11 +253,23 @@ describe('ngAdd', () => {
     });
   });
 
-  it('notes the AI tooling a full run detects instead of dropping it silently', async () => {
-    const run = await runRule(ngAdd({ preset: 'full' }), createFixtureTree('standalone-app', { 'CLAUDE.md': '# app\n' }));
+  it('registers the mcp server for the editors a full run detects, next to the servers already there', async () => {
+    const run = await runRule(
+      ngAdd({ preset: 'full' }),
+      createFixtureTree('standalone-app', {
+        'CLAUDE.md': '# app\n',
+        '.mcp.json': JSON.stringify({ mcpServers: { other: { command: 'other' } } }, null, 2),
+        'AGENTS.md': '# Agents\n',
+      }),
+    );
 
+    expect(json<Record<string, unknown>>(run.tree, '.mcp.json')).toEqual({
+      mcpServers: { other: { command: 'other' }, cngx: { command: 'npx', args: ['-y', expect.stringMatching(/^@cngx\/mcp@/)] } },
+    });
+    expect(run.tree.exists('.cursor/mcp.json')).toBe(false);
+    expect(run.tree.readText('AGENTS.md')).toMatch(/^# Agents\n\n<!-- cngx:agents -->\n/);
     expect(run.logs).toContain(
-      '  Skip the AI tooling configs - the MCP and agent configs for claude are not written by this release yet',
+      '  Add the cngx Claude Code plugin - run `/plugin marketplace add cngxjs/cngx`, then `/plugin install cngx@cngxjs` in Claude Code',
     );
   });
 
@@ -272,6 +284,7 @@ describe('ngAdd', () => {
     ['a Material css app', MATERIAL_CSS_APP],
     ['a define-theme scss app', DEFINE_THEME_SCSS_APP],
     ['an app with an eslint config', { 'eslint.config.js': ESLINT_CONFIG }],
+    ['an app with editor configs', { 'CLAUDE.md': '', '.vscode/mcp.json': '{ "servers": {} }', 'AGENTS.md': '# Agents\n' }],
   ])('changes nothing on a second run over %s', async (_name, overrides) => {
     const first = await runRule(ngAdd({ preset: 'full' }), createFixtureTree('standalone-app', overrides));
     const files = first.tree.files.map((path) => [path, first.tree.readContent(path)]);

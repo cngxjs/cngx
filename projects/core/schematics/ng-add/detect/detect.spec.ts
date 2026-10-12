@@ -104,6 +104,8 @@ describe('detectProject', () => {
       rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
       material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
       editors: { claude: false, cursor: false, vscode: false },
+      mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'absent' },
+      agentsMd: 'absent',
       eslintConfig: undefined,
       ssr: false,
       sourceLocale: undefined,
@@ -302,6 +304,30 @@ describe('detectProject', () => {
     });
     expect(facts.editors).toEqual({ claude: true, cursor: true, vscode: true });
     expect((await detect({ 'CLAUDE.md': '' })).editors.claude).toBe(true);
+  });
+
+  it('reads each editor mcp config under its own key, comments included', async () => {
+    const facts = await detect({
+      '.mcp.json': JSON.stringify({ mcpServers: { other: { command: 'other' } } }),
+      '.cursor/mcp.json': JSON.stringify({ mcpServers: { cngx: { command: 'npx' } } }),
+      '.vscode/mcp.json': '// workspace servers\n{ "servers": { "cngx": { "command": "npx" } } }',
+    });
+    expect(facts.mcpConfigs).toEqual({ claude: 'present', cursor: 'wired', vscode: 'wired' });
+  });
+
+  it('does not take a cngx server under the wrong key as wired', async () => {
+    const facts = await detect({ '.vscode/mcp.json': JSON.stringify({ mcpServers: { cngx: {} } }) });
+    expect(facts.mcpConfigs.vscode).toBe('present');
+  });
+
+  it('marks an mcp config that is not a JSON object as invalid', async () => {
+    const facts = await detect({ '.mcp.json': '{ "mcpServers": ', '.cursor/mcp.json': '[]' });
+    expect(facts.mcpConfigs).toMatchObject({ claude: 'invalid', cursor: 'invalid' });
+  });
+
+  it('finds the cngx block in AGENTS.md', async () => {
+    expect((await detect({ 'AGENTS.md': '# Agents\n' })).agentsMd).toBe('present');
+    expect((await detect({ 'AGENTS.md': '# Agents\n<!-- cngx:agents -->\n' })).agentsMd).toBe('wired');
   });
 
   it('finds the eslint flat config in js, mjs or cjs', async () => {

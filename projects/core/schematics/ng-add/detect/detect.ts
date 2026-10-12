@@ -1,7 +1,9 @@
 import { type workspaces } from '@angular-devkit/core';
+import { JSONFile } from '@schematics/angular/utility/json-file';
 import { posix } from 'node:path';
 
 import {
+  type AiTool,
   declaredRange,
   hasArrayLiteral,
   hasStyleImport,
@@ -39,6 +41,22 @@ export interface EditorFacts {
   readonly vscode: boolean;
 }
 
+/** Where each editor reads a project-local MCP server, and under which key. */
+export const MCP_CONFIGS: Readonly<Record<AiTool, { readonly path: string; readonly key: string }>> = {
+  claude: { path: '.mcp.json', key: 'mcpServers' },
+  cursor: { path: '.cursor/mcp.json', key: 'mcpServers' },
+  vscode: { path: '.vscode/mcp.json', key: 'servers' },
+};
+
+/**
+ * An editor's MCP config: missing, present without a `cngx` server, already
+ * declaring one, or not JSON cngx can edit.
+ */
+export type McpConfigState = 'absent' | 'present' | 'wired' | 'invalid';
+
+/** Opens the block cngx writes into `AGENTS.md`; a later run finds it. */
+export const AGENTS_MARKER = '<!-- cngx:agents -->';
+
 /** Everything the plan steps branch on, read once before any question. */
 export interface ProjectFacts {
   readonly project: string;
@@ -62,6 +80,9 @@ export interface ProjectFacts {
   readonly rootProviders: readonly string[];
   readonly material: MaterialFacts;
   readonly editors: EditorFacts;
+  readonly mcpConfigs: Readonly<Record<AiTool, McpConfigState>>;
+  /** `AGENTS.md`: missing, present, or already carrying the cngx block. */
+  readonly agentsMd: 'absent' | 'present' | 'wired';
   /** The eslint flat config; `undefined` when the app has none. */
   readonly eslintConfig: EslintConfigFacts | undefined;
   readonly ssr: boolean;
@@ -251,6 +272,31 @@ function sourceFiles(tree: Tree, root: string): readonly string[] {
   return files;
 }
 
+// JSONFile reads JSONC, so a commented `.vscode/mcp.json` still counts as editable.
+function mcpConfigState(tree: Tree, path: string, key: string): McpConfigState {
+  if (!tree.exists(path)) {
+    return 'absent';
+  }
+  try {
+    const root: unknown = new JSONFile(tree, path).get([]);
+    if (!isRecord(root)) {
+      return 'invalid';
+    }
+    const servers = root[key];
+    return isRecord(servers) && servers['cngx'] !== undefined ? 'wired' : 'present';
+  } catch {
+    return 'invalid';
+  }
+}
+
+function agentsMdState(read: Read): ProjectFacts['agentsMd'] {
+  const content = read('AGENTS.md');
+  if (content === undefined) {
+    return 'absent';
+  }
+  return content.includes(AGENTS_MARKER) ? 'wired' : 'present';
+}
+
 function hasEntries(tree: Tree, dir: string): boolean {
   const entry = tree.getDir(dir);
   return entry.subfiles.length > 0 || entry.subdirs.length > 0;
@@ -349,6 +395,12 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
       cursor: tree.exists('.cursorrules') || hasEntries(tree, '.cursor'),
       vscode: hasEntries(tree, '.vscode'),
     },
+    mcpConfigs: {
+      claude: mcpConfigState(tree, MCP_CONFIGS.claude.path, MCP_CONFIGS.claude.key),
+      cursor: mcpConfigState(tree, MCP_CONFIGS.cursor.path, MCP_CONFIGS.cursor.key),
+      vscode: mcpConfigState(tree, MCP_CONFIGS.vscode.path, MCP_CONFIGS.vscode.key),
+    },
+    agentsMd: agentsMdState(read),
     eslintConfig: detectEslintConfig(tree),
     ssr:
       options['server'] !== undefined ||
