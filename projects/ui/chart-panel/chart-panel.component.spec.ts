@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { createAsyncStateMock, type AsyncStateMock } from '@cngx/testing';
+import { createAsyncStateMock, type CngxAsyncStateMock } from '@cngx/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxChartPanel, type CngxChartPanelLegendPosition } from './chart-panel.component';
@@ -114,7 +114,7 @@ class ChromeHost {
 }
 
 describe('CngxChartPanel chrome', () => {
-  let state: AsyncStateMock;
+  let state: CngxAsyncStateMock;
 
   beforeEach(() => {
     state = createAsyncStateMock();
@@ -369,7 +369,7 @@ class ConsumerActionsHost {
 }
 
 describe('CngxChartPanelActions busy semantics', () => {
-  let state: AsyncStateMock;
+  let state: CngxAsyncStateMock;
 
   beforeEach(() => {
     state = createAsyncStateMock();

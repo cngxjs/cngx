@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { createAsyncStateMock, type AsyncStateMock } from '@cngx/testing';
+import { createAsyncStateMock, type CngxAsyncStateMock } from '@cngx/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -20,12 +20,12 @@ import { CngxIncrementalList } from './incremental-list.component';
   template: `<cngx-incremental-list [total]="0" [state]="state()" />`,
 })
 class IncrementalListHost {
-  readonly state = signal<AsyncStateMock | undefined>(undefined);
+  readonly state = signal<CngxAsyncStateMock | undefined>(undefined);
 }
 
 let mountedRoot: HTMLElement | null = null;
 
-function mount(): { host: HTMLElement; state: AsyncStateMock } {
+function mount(): { host: HTMLElement; state: CngxAsyncStateMock } {
   const fixture = TestBed.createComponent(IncrementalListHost);
   const state = createAsyncStateMock();
   // First-load error: renders the built-in `.cngx-incremental-list__error`

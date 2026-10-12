@@ -7,7 +7,7 @@ import {
   type CngxAsyncState,
   type CngxLoadingTreatment,
 } from '@cngx/core/utils';
-import { createAsyncStateMock, type AsyncStateMock } from '@cngx/testing';
+import { createAsyncStateMock, type CngxAsyncStateMock } from '@cngx/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CngxStatCardAriaLabels } from './config/stat-card.config';
@@ -67,7 +67,7 @@ class TestHost {
 }
 
 describe('CngxStatCard', () => {
-  let state: AsyncStateMock;
+  let state: CngxAsyncStateMock;
 
   beforeEach(() => {
     state = createAsyncStateMock();
@@ -247,7 +247,7 @@ describe('CngxStatCard', () => {
 });
 
 describe('CngxStatCard loading treatment', () => {
-  let state: AsyncStateMock;
+  let state: CngxAsyncStateMock;
 
   beforeEach(() => {
     state = createAsyncStateMock();
@@ -353,7 +353,7 @@ describe('CngxStatCard loading treatment', () => {
 });
 
 describe('CngxStatCard live region', () => {
-  let state: AsyncStateMock;
+  let state: CngxAsyncStateMock;
 
   beforeEach(() => {
     state = createAsyncStateMock();

@@ -6,6 +6,8 @@ Test kits for specs that render cngx. Nothing here belongs in an application bun
 
 - **`provideCngxTesting()`** - one provider that makes cngx deterministic under `TestBed`: zero show delay and min dwell for loading surfaces, the English pack with locale `en`, direction `ltr`, and no writes to `<html>`. The pinned locale outranks `LOCALE_ID`, also one provided on a component; override it with `provideLocale` or a pack.
 
+- **`createAsyncStateMock<T>()`** - a hand-driven `CngxAsyncState<T>` for components that take a `[state]` input. `set({ status, firstLoad, empty, data, error, progress, lastUpdated })` drives it; every derived flag comes from the same kernel real producers use (`buildAsyncStateView`), so it cannot drift from them. Emptiness is the spec-driven `empty` flag, not derived from `data`.
+
 More kits land in this entry as they ship.
 
 ## When you reach for it

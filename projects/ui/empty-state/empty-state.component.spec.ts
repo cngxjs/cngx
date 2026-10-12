@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { createAsyncStateMock, type AsyncStateMock } from '@cngx/testing';
+import { createAsyncStateMock, type CngxAsyncStateMock } from '@cngx/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CngxEmptyState } from './empty-state.component';
 
@@ -83,7 +83,7 @@ describe('CngxEmptyState', () => {
       imports: [CngxEmptyState],
     })
     class StateHost {
-      state: AsyncStateMock = createAsyncStateMock();
+      state: CngxAsyncStateMock = createAsyncStateMock();
     }
 
     function setupWithState() {
