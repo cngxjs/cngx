@@ -112,6 +112,15 @@ function walkVersioned(dir, schematicsDir) {
   return files;
 }
 
+// A tarball that still names the placeholder cannot be installed: the version
+// or a cross-@cngx peer would resolve to nothing. Checked on the rewritten
+// manifest, before anything is written or published.
+export function findPlaceholders(distPkg) {
+  return Object.entries(distPkg)
+    .filter(([, value]) => JSON.stringify(value).includes(PLACEHOLDER))
+    .map(([key]) => key);
+}
+
 export function replaceVersionInDist(distDir, nextVersion) {
   for (const file of walkVersioned(distDir, join(distDir, 'schematics'))) {
     const content = readFileSync(file, 'utf8');
@@ -292,6 +301,12 @@ function main() {
           distPkg.peerDependencies[dep] = nextVersion;
         }
       }
+    }
+
+    const leftover = findPlaceholders(distPkg);
+    if (leftover.length > 0) {
+      console.error(`  Refusing to publish @cngx/${lib}: ${PLACEHOLDER} left in package.json field(s) ${leftover.join(', ')}`);
+      process.exit(1);
     }
 
     const schematicsVersionsPath = join(ROOT, 'dist', lib, 'schematics', 'versions.json');

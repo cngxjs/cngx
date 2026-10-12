@@ -8,6 +8,7 @@ import {
   containsStableRelease,
   createSchematicsVersions,
   declaresSchematics,
+  findPlaceholders,
   libBuildCommand,
   replaceVersionInDist,
   resolveDistTag,
@@ -144,5 +145,21 @@ describe('publishable libs', () => {
       migrations: './schematics/migrations/migrations.json',
       packageGroup: libs.map((lib) => `@cngx/${lib}`),
     });
+  });
+});
+
+describe('findPlaceholders', () => {
+  it('reports the manifest fields that still carry the placeholder', () => {
+    const pkg = {
+      version: '0.0.0-PLACEHOLDER',
+      peerDependencies: { '@cngx/core': '0.0.0-PLACEHOLDER', '@angular/core': '^21.2.0' },
+      description: 'plain',
+    };
+    expect(findPlaceholders(pkg)).toEqual(['version', 'peerDependencies']);
+  });
+
+  it('accepts a fully rewritten manifest', () => {
+    const pkg = { version: '0.1.0', peerDependencies: { '@cngx/core': '0.1.0' } };
+    expect(findPlaceholders(pkg)).toEqual([]);
   });
 });
