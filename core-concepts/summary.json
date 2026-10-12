@@ -4,6 +4,14 @@
         "file": "the-cngx-way.md"
     },
     {
+        "title": "Install",
+        "file": "install.md"
+    },
+    {
+        "title": "Update",
+        "file": "update.md"
+    },
+    {
         "title": "The Three Pillars",
         "file": "three-pillars.md"
     },

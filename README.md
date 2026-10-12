@@ -17,6 +17,14 @@ Angular 21+, Signal-native, no NgModules. Seven packages, 41 surgical secondary 
 ## Installation
 
 ```bash
+ng add @cngx/ui
+```
+
+One run pins the `@cngx/*` packages, adds the theme, wires the root providers and the lint rules, and records the install in `.cngx/install.json`. Every package ships the same `ng add`; `--preset=minimal|recommended|full` sets how much it does. `ng update @cngx/core` moves all packages to the next release and runs its migrations. See [Install](./core-concepts/install.md) and [Update](./core-concepts/update.md).
+
+Manual install:
+
+```bash
 npm install @cngx/ui @cngx/themes @angular/cdk
 ```
 

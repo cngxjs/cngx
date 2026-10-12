@@ -41,6 +41,12 @@ CNGX repository present:
 npx @cngx/mcp
 ```
 
+`ng add @cngx/core --ai-tools claude` (or `cursor`, `vscode`) registers the
+server in the editor's project config, adds a marked block to the agent
+instructions, and writes `.cngx/README.md` with the server's tools, how to check
+that it runs, and how to turn it off. The `full` preset does the same for every
+editor folder it finds. See [Install](install.md#ai-tooling).
+
 It is read-only over source, and every tool answers offline against the bundled
 snapshot by default. The server reaches the network only when a caller asks for
 another release: `migrate_usage` always spans two versions, and the shape and
