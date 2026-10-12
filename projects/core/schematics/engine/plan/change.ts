@@ -52,11 +52,19 @@ export interface ProviderLiteral {
   readonly literal: string;
 }
 
+/** An array literal argument such as `[flip(), shift()]`. */
+export interface ProviderArray {
+  readonly array: readonly ProviderArg[];
+}
+
+/** An argument of a provider call. */
+export type ProviderArg = ProviderCall | ProviderLiteral | ProviderArray;
+
 /** A call expression such as `provideA11yPreferences(withPersistence())`. */
 export interface ProviderCall {
   readonly symbol: string;
   readonly module: string;
-  readonly args?: readonly (ProviderCall | ProviderLiteral)[];
+  readonly args?: readonly ProviderArg[];
   /** Rendered as the bare identifier, not a call: `withPack(CNGX_LANGUAGE_DE)`. */
   readonly reference?: boolean;
 }

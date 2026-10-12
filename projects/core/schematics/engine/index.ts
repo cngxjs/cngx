@@ -39,6 +39,8 @@ export {
   type JsonPath,
   type Note,
   type Provenance,
+  type ProviderArg,
+  type ProviderArray,
   type ProviderCall,
   type ProviderLiteral,
   type SkippedStep,

@@ -151,6 +151,30 @@ describe('applyChangePlan', () => {
     expect(config).toContain("import { CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';");
   });
 
+  it('renders an array argument and imports every call inside it', async () => {
+    const floating = (symbol: string) => ({ symbol, module: '@floating-ui/dom' });
+    const tree = await apply(
+      [
+        {
+          ...BASE,
+          kind: 'add-provider',
+          id: 'p',
+          project: 'app',
+          call: {
+            symbol: 'provideFloatingFallback',
+            module: '@cngx/common/popover',
+            args: [{ ...floating('computePosition'), reference: true }, { array: [floating('flip'), floating('shift')] }],
+          },
+        },
+      ],
+      await createApp(),
+    );
+    const config = tree.readText('projects/app/src/app/app.config.ts');
+
+    expect(config).toContain('provideFloatingFallback(computePosition, [flip(), shift()])');
+    expect(config).toMatch(/import \{ [^}]*\bcomputePosition\b[^}]*\bflip\b[^}]*\bshift\b[^}]* \} from '@floating-ui\/dom';/);
+  });
+
   it('writes a literal argument as is and imports nothing for it', async () => {
     const tree = await apply(
       [
