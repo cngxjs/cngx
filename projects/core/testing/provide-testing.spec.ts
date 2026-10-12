@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { LOCALE_ID, type EnvironmentProviders, type Provider } from '@angular/core';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { LOCALE_ID, signal, type EnvironmentProviders, type Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { injectDirection } from '@cngx/core';
 import {
@@ -10,6 +10,7 @@ import {
 } from '@cngx/core/i18n';
 import {
   CNGX_LOADING_DEFAULTS,
+  createVisibilityGate,
   injectLoadingConfig,
   injectLocale,
   provideLoadingConfig,
@@ -26,6 +27,17 @@ function setup(providers: (EnvironmentProviders | Provider)[]) {
     locale: TestBed.runInInjectionContext(() => injectLocale()),
     direction: TestBed.runInInjectionContext(() => injectDirection()),
   };
+}
+
+function gateUnderTesting() {
+  vi.useFakeTimers();
+  const { config } = setup([provideCngxTesting()]);
+  const busy = signal(false);
+  const visible = TestBed.runInInjectionContext(() =>
+    createVisibilityGate(busy, signal(config.showDelay), signal(config.minDwell)),
+  );
+  TestBed.tick();
+  return { busy, visible };
 }
 
 // One shared document across spec files (isolate: false): restore <html>.
@@ -48,6 +60,35 @@ describe('provideCngxTesting', () => {
     expect(config.showDelay).toBe(0);
     expect(config.minDwell).toBe(0);
     expect(config.spinnerVsSkeletonCutoff).toBe(CNGX_LOADING_DEFAULTS.spinnerVsSkeletonCutoff);
+  });
+
+  it('shows a gated indicator after a 1 ms advance and hides it on the settle flush', () => {
+    const { busy, visible } = gateUnderTesting();
+
+    busy.set(true);
+    TestBed.tick();
+    expect(visible()).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(visible()).toBe(true);
+
+    busy.set(false);
+    TestBed.tick();
+    expect(visible()).toBe(false);
+  });
+
+  it('keeps the indicator after the settle flush when the clock only advanced by 0', () => {
+    const { busy, visible } = gateUnderTesting();
+
+    busy.set(true);
+    TestBed.tick();
+    vi.advanceTimersByTime(0);
+    expect(visible()).toBe(true);
+
+    busy.set(false);
+    TestBed.tick();
+    expect(visible()).toBe(true);
+    vi.advanceTimersByTime(1);
+    expect(visible()).toBe(false);
   });
 
   it('reads the English pack and reports locale en and direction ltr under <html dir="rtl">', () => {
