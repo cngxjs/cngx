@@ -4,62 +4,101 @@ import { resolve } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
-import { REPO_ROOT, commentFreeText, walkSources } from './_i18n-ast.mjs';
+import { REPO_ROOT, walkSources } from './_i18n-ast.mjs';
 
 /**
  * Published testing entries stay runner-agnostic: a Jasmine or Jest consumer
- * imports them without resolving Vitest. So no runner namespace (`vi`, `jest`,
- * `jasmine`), no call to a bare runner global (`expect`, `spyOn`, `fail`, the
- * hook registrars) and no value import from `vitest` in their non-spec
- * source. A helper that registers its own `afterEach` teardown is bound to
- * whichever runner defines it, so cleanup stays the caller's. A
- * `testing/vitest/` entry is the one place that may name Vitest, and only
- * through `import type` and a `declare module 'vitest'` augmentation, both of
- * which vanish from the emitted JavaScript.
+ * imports them without resolving Vitest. So no runner namespace (`vi`,
+ * `jest`, `jasmine`), no bare runner global (`expect`, `spyOn`, `fail`, the
+ * suite and hook registrars) and no value import from `vitest`, its subpaths
+ * or `@vitest/*` in their non-spec source. A helper that registers its own
+ * `afterEach` teardown is bound to whichever runner defines it, so cleanup
+ * stays the caller's. A `testing/vitest/` entry is the one place that may name
+ * Vitest, and only through erased imports and a `declare module 'vitest'`
+ * augmentation, all of which vanish from the emitted JavaScript.
+ *
+ * Comments and string literals never count: the scan walks the AST, and a
+ * checker over the file tells a runner global from a local binding of the
+ * same name, scope by scope.
  *
  * The entries are derived from disk: every `projects/**\/testing/` folder with
  * an `ng-package.json`. Unpublished helper folders (`projects/testing`,
  * `forms/field/testing`) have none and are not scanned.
  */
 
-const RUNNER_GLOBAL = /\b(vi|jest|jasmine)\./g;
-const DYNAMIC_VITEST = /\b(?:import|require)\s*\(\s*['"]vitest['"]\s*\)/g;
-const BARE_RUNNER_GLOBALS = new Set([
+const RUNNER_GLOBALS = new Set([
+  'vi',
+  'jest',
+  'jasmine',
   'expect',
   'spyOn',
   'fail',
   'pending',
+  'describe',
+  'fdescribe',
+  'xdescribe',
+  'it',
+  'fit',
+  'xit',
+  'test',
   'beforeEach',
   'afterEach',
   'beforeAll',
   'afterAll',
 ]);
+const GLOBAL_OBJECTS = new Set(['globalThis', 'window', 'self', 'global']);
+
+/** `vitest`, its subpaths and the `@vitest/*` packages. */
+function isVitestSpecifier(node) {
+  if (!node || !ts.isStringLiteralLike(node)) {
+    return false;
+  }
+  const s = node.text;
+  return s === 'vitest' || s.startsWith('vitest/') || s.startsWith('@vitest/');
+}
+
+/** Every binding of an import or export clause is type-only, so emit drops it. */
+function isErased(clause) {
+  if (!clause) {
+    return false;
+  }
+  if (clause.isTypeOnly) {
+    return true;
+  }
+  const named = ts.isImportClause(clause) ? clause.namedBindings : clause.exportClause;
+  const hasDefault = ts.isImportClause(clause) && clause.name !== undefined;
+  return (
+    !hasDefault &&
+    named !== undefined &&
+    (ts.isNamedImports(named) || ts.isNamedExports(named)) &&
+    named.elements.every((el) => el.isTypeOnly)
+  );
+}
 
 /**
- * Names the source binds itself (imports, functions, variables, parameters),
- * so a local `fail` helper is not mistaken for the runner global.
+ * No declaration behind the name. In a type position the checker answers an
+ * unresolved name with a declaration-less error symbol instead of `undefined`.
+ *
+ * @param {ts.Symbol | undefined} symbol
+ */
+function isUnresolved(symbol) {
+  return !symbol?.declarations?.length;
+}
+
+/**
+ * A checker over the one file, with no lib and no resolution: a runner global
+ * resolves to no symbol, while a local binding of the same name (a parameter,
+ * a `fail` helper) does, scope by scope.
  *
  * @param {ts.SourceFile} sf
- * @returns {Set<string>}
+ * @returns {ts.TypeChecker}
  */
-function localBindings(sf) {
-  const names = new Set();
-  const visit = (node) => {
-    const name = node.name;
-    const binds =
-      ts.isImportSpecifier(node) ||
-      ts.isImportClause(node) ||
-      ts.isNamespaceImport(node) ||
-      ts.isFunctionDeclaration(node) ||
-      ts.isVariableDeclaration(node) ||
-      ts.isParameter(node);
-    if (binds && name && ts.isIdentifier(name)) {
-      names.add(name.text);
-    }
-    ts.forEachChild(node, visit);
-  };
-  visit(sf);
-  return names;
+function singleFileChecker(sf) {
+  const options = { noLib: true, noResolve: true, types: [], allowJs: false };
+  const host = ts.createCompilerHost(options);
+  host.getSourceFile = (name) => (name === sf.fileName ? sf : undefined);
+  host.fileExists = (name) => name === sf.fileName;
+  return ts.createProgram([sf.fileName], options, host).getTypeChecker();
 }
 
 /**
@@ -88,72 +127,80 @@ function findTestingEntries(relDir) {
  */
 export function scanSource(path, text) {
   const sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-  const code = commentFreeText(sf);
+  const checker = singleFileChecker(sf);
   const inVitestEntry = path.includes('/testing/vitest/');
   const out = [];
-  const report = (pos, message) => {
-    out.push(`${path}:${sf.getLineAndCharacterOfPosition(pos).line + 1} ${message}`);
+  const report = (node, message) => {
+    out.push(`${path}:${sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1} ${message}`);
   };
 
-  for (const match of code.matchAll(RUNNER_GLOBAL)) {
-    report(match.index, `runner global \`${match[1]}.\``);
-  }
-  for (const match of code.matchAll(DYNAMIC_VITEST)) {
-    report(match.index, 'runtime load of vitest');
-  }
-
-  const local = localBindings(sf);
-  const visitCalls = (node) => {
+  const visit = (node) => {
+    const parent = node.parent;
     if (
-      ts.isCallExpression(node) &&
-      ts.isIdentifier(node.expression) &&
-      BARE_RUNNER_GLOBALS.has(node.expression.text) &&
-      !local.has(node.expression.text)
+      ts.isIdentifier(node) &&
+      RUNNER_GLOBALS.has(node.text) &&
+      !(ts.isPropertyAccessExpression(parent) && parent.name === node) &&
+      !(ts.isQualifiedName(parent) && parent.right === node) &&
+      isUnresolved(checker.getSymbolAtLocation(node))
     ) {
-      report(node.getStart(sf), `runner global \`${node.expression.text}()\``);
-    }
-    ts.forEachChild(node, visitCalls);
-  };
-  visitCalls(sf);
-
-  for (const stmt of sf.statements) {
-    const from = stmt.moduleSpecifier;
-    const fromVitest = from && ts.isStringLiteral(from) && from.text === 'vitest';
-    if (ts.isImportDeclaration(stmt) && fromVitest) {
-      const typeOnly = stmt.importClause?.isTypeOnly === true;
-      if (!(inVitestEntry && typeOnly)) {
-        report(
-          stmt.getStart(sf),
-          inVitestEntry ? 'value import from vitest' : 'import from vitest',
-        );
+      report(node, `runner global \`${node.text}\``);
+    } else if (
+      ts.isPropertyAccessExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      GLOBAL_OBJECTS.has(node.expression.text) &&
+      RUNNER_GLOBALS.has(node.name.text)
+    ) {
+      report(node, `runner global \`${node.expression.text}.${node.name.text}\``);
+    } else if (
+      ts.isCallExpression(node) &&
+      (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+        (ts.isIdentifier(node.expression) && node.expression.text === 'require')) &&
+      isVitestSpecifier(node.arguments[0])
+    ) {
+      report(node, 'runtime load of vitest');
+    } else if (ts.isImportDeclaration(node) && isVitestSpecifier(node.moduleSpecifier)) {
+      if (!inVitestEntry) {
+        report(node, 'import from vitest');
+      } else if (!isErased(node.importClause)) {
+        report(node, 'value import from vitest');
       }
-    } else if (ts.isExportDeclaration(stmt) && fromVitest) {
-      if (!(inVitestEntry && stmt.isTypeOnly)) {
-        report(stmt.getStart(sf), 're-export from vitest');
+    } else if (ts.isExportDeclaration(node) && isVitestSpecifier(node.moduleSpecifier)) {
+      if (!(inVitestEntry && isErased(node))) {
+        report(node, 're-export from vitest');
       }
     } else if (
-      ts.isModuleDeclaration(stmt) &&
-      ts.isStringLiteral(stmt.name) &&
-      stmt.name.text === 'vitest' &&
-      !inVitestEntry
+      ts.isImportEqualsDeclaration(node) &&
+      ts.isExternalModuleReference(node.moduleReference) &&
+      isVitestSpecifier(node.moduleReference.expression)
     ) {
-      report(stmt.getStart(sf), "declare module 'vitest' outside a testing/vitest entry");
+      report(node, 'runtime load of vitest');
+    } else if (ts.isModuleDeclaration(node) && isVitestSpecifier(node.name) && !inVitestEntry) {
+      report(node, "declare module 'vitest' outside a testing/vitest entry");
     }
-  }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
   return out;
 }
 
 describe('testing-entry-runner-agnostic', () => {
   const entries = findTestingEntries('projects');
+  const files = entries.flatMap((entry) => walkSources(entry, /\.ts$/));
 
-  it('finds at least one published testing entry', () => {
+  it('finds the published testing entries and scans their sources', () => {
     expect(entries).toContain('projects/core/testing');
+    expect(files).toEqual(
+      expect.arrayContaining([
+        'projects/core/testing/public-api.ts',
+        'projects/core/testing/provide-testing.ts',
+      ]),
+    );
   });
 
   it('keeps every published testing entry free of runner globals and vitest values', () => {
-    const violations = entries
-      .flatMap((entry) => walkSources(entry, /\.ts$/))
-      .flatMap((path) => scanSource(path, readFileSync(resolve(REPO_ROOT, path), 'utf8')));
+    const violations = files.flatMap((path) =>
+      scanSource(path, readFileSync(resolve(REPO_ROOT, path), 'utf8')),
+    );
     expect(violations).toEqual([]);
   });
 });
@@ -162,44 +209,55 @@ describe('testing-entry-runner-agnostic - scanner', () => {
   const ENTRY = 'projects/core/testing/kit.ts';
   const VITEST_ENTRY = 'projects/core/testing/vitest/matchers.ts';
 
-  it('reports a runner global', () => {
+  it('reports a runner namespace', () => {
     expect(scanSource(ENTRY, 'export const spy = vi.fn();\n')).toEqual([
-      `${ENTRY}:1 runner global \`vi.\``,
+      `${ENTRY}:1 runner global \`vi\``,
     ]);
   });
 
-  it('reports jest and jasmine globals', () => {
-    const text = 'jest.fn();\njasmine.clock();\n';
-    expect(scanSource(ENTRY, text)).toHaveLength(2);
+  it('reports jest and jasmine namespaces, also in a type position', () => {
+    const text = 'jest.fn();\njasmine.clock();\nexport let s: jasmine.Spy;\n';
+    expect(scanSource(ENTRY, text)).toHaveLength(3);
   });
 
-  it('reports a bare runner global call such as a self-registered teardown', () => {
+  it('reports a self-registered teardown', () => {
     const text = 'export function createKit() {\n  afterEach(() => stop());\n}\n';
-    expect(scanSource(ENTRY, text)).toEqual([`${ENTRY}:2 runner global \`afterEach()\``]);
+    expect(scanSource(ENTRY, text)).toEqual([`${ENTRY}:2 runner global \`afterEach\``]);
   });
 
-  it('reports expect and spyOn calls', () => {
-    const text = 'expect(a).toBe(1);\nspyOn(obj, "m");\n';
-    expect(scanSource(ENTRY, text)).toHaveLength(2);
-  });
-
-  it('accepts a bare runner global in a JSDoc example or a string', () => {
+  it('reports expect, spyOn and the suite registrars', () => {
     const text =
-      "/**\n * ```ts\n * afterEach(() => capture.stop());\n * ```\n */\nexport const s = 'expect(x)';\n";
+      'expect(a).toBe(1);\nspyOn(obj, "m");\ndescribe("s", () => it("t", () => {}));\ntest("u", () => {});\nxit("v", () => {});\nfit("w", () => {});\n';
+    expect(scanSource(ENTRY, text)).toHaveLength(7);
+  });
+
+  it('reports a runner global reached through a global object', () => {
+    const text = 'globalThis.expect(1);\nwindow.jasmine.clock();\n';
+    expect(scanSource(ENTRY, text)).toEqual([
+      `${ENTRY}:1 runner global \`globalThis.expect\``,
+      `${ENTRY}:2 runner global \`window.jasmine\``,
+    ]);
+  });
+
+  it('accepts runner globals in comments, JSDoc examples and strings', () => {
+    const text =
+      '/**\n * ```ts\n * afterEach(() => capture.stop());\n * vi.advanceTimersByTime(120);\n * ```\n */\n' +
+      "// expect(x)\nexport const s = 'vi.useFakeTimers expect(x)';\nexport const t = `jest.fn()`;\n";
     expect(scanSource(ENTRY, text)).toEqual([]);
   });
 
   it('accepts a method or a local binding with a runner-global name', () => {
     const text =
       'function fail(reason: string): never {\n  throw new Error(reason);\n}\n' +
-      'fail("x");\nexport const r = assert.expect(1);\n';
+      'fail("x");\nexport const r = assert.expect(1);\nexport const o = { it: 1 };\n';
     expect(scanSource(ENTRY, text)).toEqual([]);
   });
 
-  it('accepts a runner global inside a JSDoc example', () => {
+  it('resolves a local binding per scope, not per file', () => {
     const text =
-      '/**\n * ```ts\n * vi.advanceTimersByTime(120);\n * ```\n */\nexport const a = 1;\n';
-    expect(scanSource(ENTRY, text)).toEqual([]);
+      'export function check(expect: (v: number) => void) {\n  expect(1);\n}\n' +
+      'export function leak() {\n  expect(2);\n}\n';
+    expect(scanSource(ENTRY, text)).toEqual([`${ENTRY}:5 runner global \`expect\``]);
   });
 
   it('accepts a name that only ends in a runner global', () => {
@@ -211,16 +269,33 @@ describe('testing-entry-runner-agnostic - scanner', () => {
     expect(scanSource(ENTRY, text)).toEqual([`${ENTRY}:1 import from vitest`]);
   });
 
-  it('reports a value import from vitest in a testing/vitest entry', () => {
-    const text = "import { expect } from 'vitest';\n";
-    expect(scanSource(VITEST_ENTRY, text)).toEqual([`${VITEST_ENTRY}:1 value import from vitest`]);
+  it('reports vitest subpaths and @vitest packages', () => {
+    const text = "import { a } from 'vitest/utils';\nimport { b } from '@vitest/expect';\n";
+    expect(scanSource(VITEST_ENTRY, text)).toEqual([
+      `${VITEST_ENTRY}:1 value import from vitest`,
+      `${VITEST_ENTRY}:2 value import from vitest`,
+    ]);
   });
 
-  it('accepts a type-only import and the augmentation in a testing/vitest entry', () => {
+  it('reports a value or side-effect import from vitest in a testing/vitest entry', () => {
+    const text = "import { expect } from 'vitest';\nimport 'vitest';\n";
+    expect(scanSource(VITEST_ENTRY, text)).toEqual([
+      `${VITEST_ENTRY}:1 value import from vitest`,
+      `${VITEST_ENTRY}:2 value import from vitest`,
+    ]);
+  });
+
+  it('accepts erased imports and the augmentation in a testing/vitest entry', () => {
     const text =
       "import type { Assertion } from 'vitest';\n" +
+      "import { type AsymmetricMatchersContaining } from 'vitest';\n" +
       "declare module 'vitest' {\n  interface Assertion<T> { toHaveHeard(text: string): T }\n}\n";
     expect(scanSource(VITEST_ENTRY, text)).toEqual([]);
+  });
+
+  it('reports a mixed type and value import in a testing/vitest entry', () => {
+    const text = "import { type Assertion, expect } from 'vitest';\n";
+    expect(scanSource(VITEST_ENTRY, text)).toHaveLength(1);
   });
 
   it('reports the augmentation outside a testing/vitest entry', () => {
@@ -229,8 +304,10 @@ describe('testing-entry-runner-agnostic - scanner', () => {
   });
 
   it('reports a runtime load of vitest even in a testing/vitest entry', () => {
-    expect(scanSource(VITEST_ENTRY, "const v = await import('vitest');\n")).toEqual([
+    const text = "const v = await import('vitest');\nconst w = require('@vitest/spy');\n";
+    expect(scanSource(VITEST_ENTRY, text)).toEqual([
       `${VITEST_ENTRY}:1 runtime load of vitest`,
+      `${VITEST_ENTRY}:2 runtime load of vitest`,
     ]);
   });
 });
