@@ -136,6 +136,42 @@ describe('renameInSource', () => {
     );
   });
 
+  it('keeps the exported name of a local re-export bound', () => {
+    const source = [
+      "import { CngxOldCard } from '@cngx/common/card';",
+      'export { CngxOldCard };',
+      'export { CngxOldCard as Card };',
+      '',
+    ].join('\n');
+
+    expect(renameInSource(TABLE)(source)).toBe(
+      [
+        "import { CngxCard } from '@cngx/common/card';",
+        'export { CngxCard as CngxOldCard };',
+        'export { CngxCard as Card };',
+        '',
+      ].join('\n'),
+    );
+  });
+
+  it('leaves destructuring keys and bindings alone', () => {
+    const source = [
+      "import { CngxOldCard } from '@cngx/common/card';",
+      'const { CngxOldCard: picked } = registry;',
+      'const use = CngxOldCard;',
+      '',
+    ].join('\n');
+
+    expect(renameInSource(TABLE)(source)).toBe(
+      [
+        "import { CngxCard } from '@cngx/common/card';",
+        'const { CngxOldCard: picked } = registry;',
+        'const use = CngxCard;',
+        '',
+      ].join('\n'),
+    );
+  });
+
   it('renames inside an inline template', () => {
     const source = [
       "@Component({ template: '<cngx-old-card [heading]=\"t\"></cngx-old-card>' })",

@@ -65,7 +65,10 @@ function applyEdits(content: string, edits: readonly TextEdit[]): string {
   const unique = [...new Map(edits.map((edit) => [edit.start, edit])).values()];
   return unique
     .sort((a, b) => b.start - a.start)
-    .reduce((text, edit) => `${text.slice(0, edit.start)}${edit.text}${text.slice(edit.end)}`, content);
+    .reduce(
+      (text, edit) => `${text.slice(0, edit.start)}${edit.text}${text.slice(edit.end)}`,
+      content,
+    );
 }
 
 // A cheap pre-check, so a file that names nothing in the table is never parsed.
@@ -92,7 +95,11 @@ interface Keyed {
 
 type TemplateHost = TmplAstElement | TmplAstTemplate;
 
-function keyEdit(attribute: Keyed, renames: Readonly<Record<string, string>>, content: string): TextEdit[] {
+function keyEdit(
+  attribute: Keyed,
+  renames: Readonly<Record<string, string>>,
+  content: string,
+): TextEdit[] {
   if (attribute.keySpan === undefined) {
     return [];
   }
@@ -116,8 +123,13 @@ function hostNames(host: TemplateHost, content: string): ReadonlySet<string> {
   return new Set([tagName(host), ...keys]);
 }
 
-function memberRenames(renames: readonly MemberRename[], names: ReadonlySet<string>): Readonly<Record<string, string>> {
-  return Object.fromEntries(renames.filter((rename) => names.has(rename.owner)).map((rename) => [rename.from, rename.to]));
+function memberRenames(
+  renames: readonly MemberRename[],
+  names: ReadonlySet<string>,
+): Readonly<Record<string, string>> {
+  return Object.fromEntries(
+    renames.filter((rename) => names.has(rename.owner)).map((rename) => [rename.from, rename.to]),
+  );
 }
 
 function tagEdits(host: TemplateHost, table: RenameTable, content: string): TextEdit[] {
@@ -143,7 +155,9 @@ function hostEdits(host: TemplateHost, table: RenameTable, content: string): Tex
   const templateAttrs = host instanceof TmplAstTemplate ? host.templateAttrs : [];
   return [
     ...tagEdits(host, table, content),
-    ...[...host.attributes, ...host.inputs, ...templateAttrs].flatMap((attribute) => keyEdit(attribute, inputs, content)),
+    ...[...host.attributes, ...host.inputs, ...templateAttrs].flatMap((attribute) =>
+      keyEdit(attribute, inputs, content),
+    ),
     ...host.outputs.flatMap((output) => keyEdit(output, outputs, content)),
   ];
 }
@@ -160,7 +174,8 @@ export function renameInTemplate(table: RenameTable): (content: string) => strin
       return content;
     }
     const hosts = walkNodes(parseTemplateContent(content)).filter(
-      (node): node is TemplateHost => node instanceof TmplAstElement || node instanceof TmplAstTemplate,
+      (node): node is TemplateHost =>
+        node instanceof TmplAstElement || node instanceof TmplAstTemplate,
     );
     return applyEdits(
       content,
@@ -173,7 +188,10 @@ function isCngxModule(specifier: string): boolean {
   return specifier.startsWith('@cngx/');
 }
 
-function stringRange(literal: ts.StringLiteralLike, source: ts.SourceFile): Pick<TextEdit, 'start' | 'end'> {
+function stringRange(
+  literal: ts.StringLiteralLike,
+  source: ts.SourceFile,
+): Pick<TextEdit, 'start' | 'end'> {
   return { start: literal.getStart(source) + 1, end: literal.getEnd() - 1 };
 }
 
@@ -183,7 +201,9 @@ function moduleSpecifier(statement: ts.Statement): ts.StringLiteral | undefined 
   return specifier !== undefined && ts.isStringLiteral(specifier) ? specifier : undefined;
 }
 
-function namedElements(statement: ts.Statement): readonly (ts.ImportSpecifier | ts.ExportSpecifier)[] {
+function namedElements(
+  statement: ts.Statement,
+): readonly (ts.ImportSpecifier | ts.ExportSpecifier)[] {
   if (ts.isImportDeclaration(statement)) {
     const bindings = statement.importClause?.namedBindings;
     return bindings !== undefined && ts.isNamedImports(bindings) ? bindings.elements : [];
@@ -232,11 +252,15 @@ function importPass(source: ts.SourceFile, table: RenameTable): ImportPass {
       return [];
     }
     const moved = table.importPaths[specifier.text];
-    const pathEdit = moved === undefined ? [] : [{ ...stringRange(specifier, source), text: moved }];
+    const pathEdit =
+      moved === undefined ? [] : [{ ...stringRange(specifier, source), text: moved }];
     if (!isCngxModule(specifier.text)) {
       return [{ edits: pathEdit, locals: {} }];
     }
-    return [{ edits: pathEdit, locals: {} }, ...namedElements(statement).map((element) => specifierEdit(element, names, source))];
+    return [
+      { edits: pathEdit, locals: {} },
+      ...namedElements(statement).map((element) => specifierEdit(element, names, source)),
+    ];
   });
   return {
     edits: passes.flatMap((pass) => pass.edits),
@@ -244,7 +268,9 @@ function importPass(source: ts.SourceFile, table: RenameTable): ImportPass {
   };
 }
 
-// Positions where an identifier is a name, not a reference to the import.
+// Positions where an identifier is a name, not a reference to the import:
+// a member or key name, a destructuring key or binding, an import or
+// export alias.
 function isNameOnly(node: ts.Identifier): boolean {
   const parent = node.parent;
   return (
@@ -256,21 +282,43 @@ function isNameOnly(node: ts.Identifier): boolean {
       ts.isMethodDeclaration(parent) ||
       ts.isMethodSignature(parent) ||
       ts.isGetAccessor(parent) ||
-      ts.isSetAccessor(parent)) &&
+      ts.isSetAccessor(parent) ||
+      ts.isBindingElement(parent)) &&
       parent.name === node) ||
+    (ts.isBindingElement(parent) && parent.propertyName === node) ||
+    (ts.isExportSpecifier(parent) &&
+      (parent.parent.parent.moduleSpecifier !== undefined ||
+        (parent.propertyName !== undefined && parent.name === node))) ||
     ts.isImportSpecifier(parent) ||
-    ts.isExportSpecifier(parent) ||
     ts.isImportClause(parent)
   );
 }
 
-function referenceEdits(source: ts.SourceFile, locals: Readonly<Record<string, string>>): TextEdit[] {
+// The text that replaces a reference. A shorthand property and a local
+// `export { Old }` keep the old name on the outside.
+function referenceText(node: ts.Identifier, to: string): string {
+  const parent = node.parent;
+  if (ts.isShorthandPropertyAssignment(parent)) {
+    return `${node.text}: ${to}`;
+  }
+  if (ts.isExportSpecifier(parent) && parent.propertyName === undefined) {
+    return `${to} as ${node.text}`;
+  }
+  return to;
+}
+
+function referenceEdits(
+  source: ts.SourceFile,
+  locals: Readonly<Record<string, string>>,
+): TextEdit[] {
   const edits: TextEdit[] = [];
   const visit = (node: ts.Node): void => {
     if (ts.isIdentifier(node) && Object.hasOwn(locals, node.text) && !isNameOnly(node)) {
-      const to = locals[node.text];
-      const shorthand = ts.isShorthandPropertyAssignment(node.parent);
-      edits.push({ start: node.getStart(source), end: node.getEnd(), text: shorthand ? `${node.text}: ${to}` : to });
+      edits.push({
+        start: node.getStart(source),
+        end: node.getEnd(),
+        text: referenceText(node, locals[node.text]),
+      });
     }
     ts.forEachChild(node, visit);
   };
@@ -315,12 +363,23 @@ function templateEdits(source: ts.SourceFile, content: string, table: RenameTabl
  * shares an old name stays.
  */
 export function renameInSource(table: RenameTable): (content: string) => string {
-  const names = [...templateNames(table), ...Object.keys(table.classes), ...Object.keys(table.tokens), ...Object.keys(table.importPaths)];
+  const names = [
+    ...templateNames(table),
+    ...Object.keys(table.classes),
+    ...Object.keys(table.tokens),
+    ...Object.keys(table.importPaths),
+  ];
   return (content) => {
     if (!mentionsAny(content, names)) {
       return content;
     }
-    const source = ts.createSourceFile('rename.ts', content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const source = ts.createSourceFile(
+      'rename.ts',
+      content,
+      ts.ScriptTarget.Latest,
+      true,
+      ts.ScriptKind.TS,
+    );
     const imports = importPass(source, table);
     return applyEdits(content, [
       ...imports.edits,
