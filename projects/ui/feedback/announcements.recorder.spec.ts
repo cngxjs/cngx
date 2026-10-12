@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { createManualState } from '@cngx/common/data';
 import { CngxDialog } from '@cngx/common/dialog';
+import { createAnnouncementCapture, type CngxAnnouncementCapture } from '@cngx/core/testing';
 import {
   createAnnouncementRecorder,
   type CngxAnnouncementRecorder,
@@ -403,6 +404,66 @@ describe('announcement recorder over ui/feedback', () => {
       await observed();
 
       expect(recorder.entries().map((entry) => entry.text)).toEqual(['Menu closed']);
+    });
+  });
+
+  describe('createAnnouncementCapture', () => {
+    let capture: CngxAnnouncementCapture;
+
+    afterEach(() => capture?.stop());
+
+    // A success toast renders as a new role="status" element already holding
+    // its text, which screen readers announce inconsistently, so the capture
+    // keeps it in entries but not in heard. The expectation flips once the
+    // toast outlet writes into a persistent region instead.
+    it('hears an error toast and keeps a success toast out of heard', async () => {
+      const fixture = TestBed.createComponent(FeedbackHost);
+      await settle(fixture);
+      capture = createAnnouncementCapture();
+
+      const toaster = TestBed.inject(CngxToaster);
+      toaster.show({ message: 'Saved', severity: 'success' });
+      toaster.show({ message: 'Save failed', severity: 'error' });
+      await settle(fixture);
+
+      expect(capture.entries().map((entry) => [entry.text, entry.role, entry.origin])).toEqual([
+        ['Save failed', 'alert', 'insertion'],
+        ['Saved', 'status', 'insertion'],
+      ]);
+      expect(capture.heard()).toEqual(['Save failed']);
+    });
+
+    it('hears an announce() after advancing 16 ms and awaiting a microtask', async () => {
+      capture = createAnnouncementCapture();
+      TestBed.inject(CngxLiveAnnouncer).announce('Saved');
+      vi.advanceTimersByTime(16);
+      await Promise.resolve();
+
+      expect(capture.heard()).toEqual(['Saved']);
+      capture.stop();
+    });
+
+    it('does not see an announce() before the 16 ms have passed', async () => {
+      capture = createAnnouncementCapture();
+      TestBed.inject(CngxLiveAnnouncer).announce('Saved');
+      vi.advanceTimersByTime(15);
+      await Promise.resolve();
+      expect(capture.heard()).toEqual([]);
+
+      vi.advanceTimersByTime(1);
+      expect(capture.heard()).toEqual([]);
+      await Promise.resolve();
+      expect(capture.heard()).toEqual(['Saved']);
+    });
+
+    it('hears an announce() under real timers after a timeout longer than 16 ms', async () => {
+      vi.useRealTimers();
+      capture = createAnnouncementCapture();
+
+      TestBed.inject(CngxLiveAnnouncer).announce('Saved');
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(capture.heard()).toEqual(['Saved']);
     });
   });
 });

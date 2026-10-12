@@ -2,6 +2,11 @@
  * @module @cngx/core/testing
  */
 export {
+  createAnnouncementCapture,
+  type CngxAnnouncementCapture,
+  type CngxAnnouncementCaptureOptions,
+} from './announcement-capture';
+export {
   createAsyncStateMock,
   type CngxAsyncStateMock,
   type CngxAsyncStateMockPatch,

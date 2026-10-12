@@ -5,7 +5,8 @@ import { signal, type Signal } from '@angular/core';
  * attributes when the observer handles the batch (for `'busy-cleared'`, the
  * batch that clears busy). `null` means nothing attribute-based suppresses it.
  *
- * @internal
+ * @category core/utils
+ * @since 0.1.0
  */
 export type CngxAnnouncementSuppression = 'hidden' | 'aria-hidden' | 'inert' | 'aria-modal';
 
@@ -18,14 +19,16 @@ export type CngxAnnouncementSuppression = 'hidden' | 'aria-hidden' | 'inert' | '
  * - `'busy-cleared'`: `aria-busy` cleared on the region or an ancestor after
  *   text was written while busy; the entry holds what AT reads after the flip.
  *
- * @internal
+ * @category core/utils
+ * @since 0.1.0
  */
 export type CngxAnnouncementOrigin = 'mutation' | 'insertion' | 'became-live' | 'busy-cleared';
 
 /**
  * One text a live region exposed, as observed in the DOM.
  *
- * @internal
+ * @category core/utils
+ * @since 0.1.0
  */
 export interface CngxRecordedAnnouncement {
   /** `Date.now()` when the observer saw the write. */
@@ -36,13 +39,22 @@ export interface CngxRecordedAnnouncement {
    * or a custom element reads as a separate word; inline text concatenates.
    */
   readonly text: string;
+  /**
+   * The region's `aria-live` value when it is `polite` or `assertive`, else
+   * `assertive` for role `alert` and `polite` for every other live role.
+   */
   readonly politeness: 'polite' | 'assertive';
+  /**
+   * The region's `role` attribute as written, `null` when absent. A role
+   * list resolves to its first token (`"alert status"` is an alert).
+   */
   readonly role: string | null;
   /**
    * The region or an ancestor carried `aria-busy="true"` when the observer
    * saw the write. Always `false` on a `'busy-cleared'` entry.
    */
   readonly busy: boolean;
+  /** Why AT would not speak the write, judged from attributes; `null` when nothing suppresses it. */
   readonly suppressedBy: CngxAnnouncementSuppression | null;
   /**
    * How the text reached the region. A write under `aria-busy` records
@@ -50,14 +62,21 @@ export interface CngxRecordedAnnouncement {
    * `'busy-cleared'` entry.
    */
   readonly origin: CngxAnnouncementOrigin;
+  /** The live region element the text belongs to. */
   readonly region: Element;
+  /**
+   * The region's owner from the `owner` option. By default the class name of
+   * the Angular component that owns the region, read through the dev-mode
+   * `ng` global; `null` outside dev mode or when no component owns it.
+   */
   readonly owner: string | null;
 }
 
 /**
  * Options for {@link createAnnouncementRecorder}.
  *
- * @internal
+ * @category core/utils
+ * @since 0.1.0
  */
 export interface CngxAnnouncementRecorderOptions {
   /** Subtree to observe. Defaults to the global `document`. */
@@ -75,15 +94,21 @@ export interface CngxAnnouncementRecorderOptions {
 /**
  * The handle {@link createAnnouncementRecorder} returns.
  *
- * @internal
+ * @category core/utils
+ * @since 0.1.0
  */
 export interface CngxAnnouncementRecorder {
+  /** The recorded entries, oldest first, at most `limit`. */
   readonly entries: Signal<readonly CngxRecordedAnnouncement[]>;
   /**
    * Empties `entries`. Region state is kept, so a busy flip after `clear()`
    * still records text written while busy before it.
    */
   clear(): void;
+  /**
+   * Stops observing. `entries` keeps what it holds; mutations the observer
+   * has not delivered yet are dropped.
+   */
   destroy(): void;
 }
 
@@ -235,6 +260,9 @@ const CANDIDATE_SELECTOR = '[aria-live],[role]';
  *   the mutation path; a node prepended or inserted before earlier busy
  *   writes therefore reads out of DOM order;
  * - a native `showModal()` dialog without `aria-modal` is not seen as modal;
+ * - with stacked modals, a region inside a covered modal records
+ *   `suppressedBy: null`: only a region outside every open `aria-modal`
+ *   element counts as suppressed, so the error leans toward over-reporting;
  * - regions inside shadow roots are not observed;
  * - writes are seen when the `MutationObserver` callback runs (a microtask),
  *   and `CngxLiveAnnouncer` writes 16 ms after `announce()`, so a test
@@ -249,7 +277,9 @@ const CANDIDATE_SELECTOR = '[aria-live],[role]';
  * recorder.destroy();
  * ```
  *
- * @internal
+ * @category core/utils
+ * @since 0.1.0
+ * @relatedTo createAnnouncementCapture, resolveHeardAnnouncements, CngxLiveAnnouncer
  */
 export function createAnnouncementRecorder(
   options: CngxAnnouncementRecorderOptions = {},
@@ -544,11 +574,22 @@ function isLive(el: Element): boolean {
 
 /** @internal */
 function primaryRole(el: Element): string | null {
-  const role = el.getAttribute('role')?.trim().split(/\s+/)[0];
-  if (!role) {
+  return firstRoleToken(el.getAttribute('role'));
+}
+
+/**
+ * The role a `role` attribute value resolves to: its first token, as in an
+ * ARIA fallback list (`"alert status"` is an alert). Shared with the heard
+ * judgement so both read `role` the same way.
+ *
+ * @internal
+ */
+export function firstRoleToken(role: string | null): string | null {
+  const token = role?.trim().split(/\s+/)[0];
+  if (!token) {
     return null;
   }
-  return role;
+  return token;
 }
 
 /** @internal */

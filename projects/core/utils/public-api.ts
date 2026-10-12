@@ -74,6 +74,19 @@ export {
   type SelectionController,
   type SelectionControllerOptions,
 } from './selection-controller';
+export {
+  createAnnouncementRecorder,
+  type CngxAnnouncementOrigin,
+  type CngxAnnouncementRecorder,
+  type CngxAnnouncementRecorderOptions,
+  type CngxAnnouncementSuppression,
+  type CngxRecordedAnnouncement,
+} from './announcement-recorder';
+export {
+  resolveHeardAnnouncements,
+  resolveUnheardReason,
+  type CngxUnheardReason,
+} from './heard-announcements';
 // This block ships `@internal` dev-mode diagnostics. They are exported
 // through `public-api.ts` so the devtools and testing entries of other
 // libraries can read them across the secondary-entry boundary (ng-packagr has
@@ -98,11 +111,3 @@ export {
   type CngxOverrideProvenance,
   type CngxValueSource,
 } from './dev-descriptors';
-export {
-  createAnnouncementRecorder,
-  type CngxAnnouncementOrigin,
-  type CngxAnnouncementRecorder,
-  type CngxAnnouncementRecorderOptions,
-  type CngxAnnouncementSuppression,
-  type CngxRecordedAnnouncement,
-} from './announcement-recorder';

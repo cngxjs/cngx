@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { createAnnouncementRecorder as createPublicAnnouncementRecorder } from '@cngx/core/utils';
+
 import { createAnnouncementRecorder, type CngxAnnouncementRecorder } from './announcement-recorder';
 
 const observed = () => Promise.resolve();
@@ -504,6 +506,19 @@ describe('createAnnouncementRecorder', () => {
     await observed();
 
     expect(recorder.entries()).toEqual([]);
+  });
+
+  it('keeps a role list as written and resolves it by its first token', async () => {
+    const el = region({ role: 'alert status' });
+    host.append(el);
+    start();
+
+    el.textContent = 'Failed';
+    await observed();
+
+    expect(recorder.entries()).toEqual([
+      expect.objectContaining({ role: 'alert status', politeness: 'assertive' }),
+    ]);
   });
 
   it('shows a politeness flip on the next entry', async () => {
@@ -1228,5 +1243,17 @@ describe('createAnnouncementRecorder', () => {
     await observed();
 
     expect(texts()).toEqual(['From the document']);
+  });
+
+  it('is public API of @cngx/core/utils', async () => {
+    const el = region({ 'aria-live': 'polite' });
+    host.append(el);
+    recorder = createPublicAnnouncementRecorder({ root: host, owner: () => null });
+
+    el.textContent = 'Public';
+    await observed();
+
+    expect(createPublicAnnouncementRecorder).toBe(createAnnouncementRecorder);
+    expect(texts()).toEqual(['Public']);
   });
 });
