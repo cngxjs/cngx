@@ -84,6 +84,43 @@ describe('devtools-prod-strip-check - needle derivation', () => {
     expect(violations[0].reason).toBe('not a plain string literal');
   });
 
+  it('adds the literal code of every helper call', () => {
+    const { needles } = deriveNeedles([
+      {
+        path: 'lib/a.ts',
+        text: [
+          "if (dev) { cngxDevWarn('CNGX0001', 'a'); }",
+          "// cngxDevWarn('CNGX0002', 'in a comment')",
+          "cngxDevError('CNGX0003', 'b');",
+          "log('x', 'CNGX0004');",
+          "cngxDevWarn(code, 'not a literal');",
+        ].join('\n'),
+      },
+    ]);
+
+    expect(needles).toEqual([MARKER, 'CNGX0001', 'CNGX0003']);
+  });
+
+  it('adds the doc URL of the helper', () => {
+    const url = 'https://example.test/additional-documentation/error-codes/';
+    const { needles } = deriveNeedles([
+      { path: 'utils/dev-message.ts', text: `export const CNGX_ERROR_DOCS_URL =\n  '${url}';` },
+    ]);
+
+    expect(needles).toEqual([MARKER, url]);
+  });
+
+  it('ignores codes and the doc URL in spec files', () => {
+    const { needles } = deriveNeedles([
+      {
+        path: 'lib/a.spec.ts',
+        text: "cngxDevWarn('CNGX0001', 'a'); const CNGX_ERROR_DOCS_URL = 'https://x.test/';",
+      },
+    ]);
+
+    expect(needles).toEqual([MARKER]);
+  });
+
   it('walks the library sources and skips the schematics tooling roots', () => {
     const files = sourceFiles('projects').map((file) => file.split('\\').join('/'));
 
@@ -118,6 +155,23 @@ describe('devtools-prod-strip-check - bundle scan', () => {
     const hits = scanBundle([{ path: 'main.js', text }], [MARKER, name]);
 
     expect(hits.map((hit) => text[hit.offset - 1])).toEqual(['"', "'", '`']);
+  });
+
+  it('counts a code as a hit only as a whole quoted string', () => {
+    const text = `w("CNGX0001","m");x='CNGX0001: inline';y=\`see CNGX0001\`;z=CNGX00011`;
+
+    const hits = scanBundle([{ path: 'main.js', text }], ['CNGX0001']);
+
+    expect(hits).toEqual([{ file: 'main.js', offset: 3, needle: 'CNGX0001' }]);
+  });
+
+  it('fails a bundle that still carries a coded helper call', () => {
+    const source = fixture({ 'lib/a.ts': "cngxDevWarn('CNGX0001', 'm');" });
+    const libDist = fixture({ ...LIB_DIST, 'core/fesm2022/cngx-core.mjs': "w('CNGX0001','m');" });
+    const result = check(fixture({ 'main.js': 'w("CNGX0001","m")' }), source, libDist);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('CNGX0001');
   });
 
   it('passes a clean bundle', () => {

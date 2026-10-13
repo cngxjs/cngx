@@ -12,8 +12,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import * as prettier from 'prettier';
-import ts from 'typescript';
-
+import { collectHelperCalls } from './dev-diagnostics.mjs';
 import { sourceFiles } from './devtools-prod-strip-check.mjs';
 import { DEFAULT_BASE_URL } from './llms-publish.mjs';
 
@@ -41,7 +40,6 @@ export const CODE_RANGES = [
 
 export const SUMMARY_NODE_TITLE = 'Error Codes';
 
-const HELPERS = { cngxDevWarn: 'warn', cngxDevError: 'error' };
 const CODE_PATTERN = /^CNGX\d{4}$/;
 const PAGE_FILE = /^cngx\d{4}\.md$/;
 const RETIRED = /^> Retired in \S+\.$/m;
@@ -55,46 +53,6 @@ export function libOf(file) {
 export function rangeOf(code) {
   const n = Number(code.slice(4));
   return CODE_RANGES.find((r) => n >= r.from && n <= r.to);
-}
-
-/**
- * Every `cngxDevWarn` / `cngxDevError` call in `files` ([{ path, text }]).
- * `code` is the first argument when it is a string literal, else null.
- *
- * @returns {{ file: string; line: number; severity: 'warn' | 'error'; code: string | null; node: ts.CallExpression; sf: ts.SourceFile }[]}
- */
-export function collectHelperCalls(files) {
-  const out = [];
-  for (const { path, text } of files) {
-    if (!text.includes('cngxDev')) {
-      continue;
-    }
-    const sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-    const visit = (node) => {
-      if (
-        ts.isCallExpression(node) &&
-        ts.isIdentifier(node.expression) &&
-        Object.hasOwn(HELPERS, node.expression.text)
-      ) {
-        const first = node.arguments[0];
-        const code =
-          first && (ts.isStringLiteral(first) || ts.isNoSubstitutionTemplateLiteral(first))
-            ? first.text
-            : null;
-        out.push({
-          file: path,
-          line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1,
-          severity: HELPERS[node.expression.text],
-          code,
-          node,
-          sf,
-        });
-      }
-      ts.forEachChild(node, visit);
-    };
-    visit(sf);
-  }
-  return out;
 }
 
 /**

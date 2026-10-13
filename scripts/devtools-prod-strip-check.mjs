@@ -12,6 +12,12 @@
 //   It only counts as a hit when quoted: a dotted name can also read as a
 //   member chain in app code (`host.treeController.isExpanded(id)`), but a
 //   debugName can only reach a bundle as a string literal.
+// - every `CNGXnnnn` code passed as the literal first argument of
+//   `cngxDevWarn` / `cngxDevError`: a call that survives keeps its code, so
+//   the code proves the whole call (and its message) left the bundle.
+// - the `CNGX_ERROR_DOCS_URL` literal of `projects/utils/dev-message.ts`: it
+//   ships only while some helper call survives.
+// Code and URL count only as whole quoted strings, like a debugName.
 //
 // Positive control: every needle must be present in the library build
 // (dist/<lib>/fesm2022/*.mjs), where the dev branches survive. A needle the
@@ -30,6 +36,7 @@ import { join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { isToolingRoot } from './__tests__/source-roots.mjs';
+import { collectHelperCalls } from './dev-diagnostics.mjs';
 
 export const MARKER = 'cngx-dev:';
 export const DEBUG_NAME_PATTERN = /^[a-z][A-Za-z0-9]*(\.[a-z][A-Za-z0-9]*)+$/;
@@ -67,8 +74,22 @@ export function deriveNeedles(files) {
       }
     }
   }
+  const libraryFiles = files.filter(({ path }) => !isSpec(path));
+  for (const { code } of collectHelperCalls(libraryFiles)) {
+    if (code !== null && !needles.includes(code)) {
+      needles.push(code);
+    }
+  }
+  for (const { text } of libraryFiles) {
+    const url = DOCS_URL_DECLARATION.exec(text)?.[2];
+    if (url && !needles.includes(url)) {
+      needles.push(url);
+    }
+  }
   return { needles, violations };
 }
+
+const DOCS_URL_DECLARATION = /\bconst CNGX_ERROR_DOCS_URL\s*=\s*(['"])([^'"\n]+)\1/;
 
 const QUOTES = new Set(["'", '"', '`']);
 

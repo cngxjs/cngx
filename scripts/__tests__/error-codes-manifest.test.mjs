@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { collectHelperCalls } from '../dev-diagnostics.mjs';
 import {
   CODE_RANGES,
   DOCS_BASE_URL,
@@ -12,7 +13,6 @@ import {
   SUMMARY_NODE_TITLE,
   SUMMARY_PATH,
   buildCodes,
-  collectHelperCalls,
   generate,
   manifestOf,
   parsePage,
