@@ -3,9 +3,13 @@ import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeSc
 /**
  * Which array literal to edit: the default export (`export default [...]`,
  * `module.exports = [...]`, or the first array argument of a wrapper call
- * such as `defineConfig([...])`), or the initializer of a named variable.
+ * such as `defineConfig([...])`), the initializer of a named variable, or
+ * the first object property of that name holding an array (`providers: [...]`).
  */
-export type ArraySelector = { readonly kind: 'default-export' } | { readonly kind: 'variable'; readonly name: string };
+export type ArraySelector =
+  | { readonly kind: 'default-export' }
+  | { readonly kind: 'variable'; readonly name: string }
+  | { readonly kind: 'property'; readonly name: string };
 
 function unwrap(expression: ts.Expression): ts.ArrayLiteralExpression | undefined {
   if (ts.isArrayLiteralExpression(expression)) {
@@ -54,7 +58,22 @@ function variableInitializer(statement: ts.Statement, name: string): ts.Expressi
   return declaration?.initializer;
 }
 
+function propertyArray(node: ts.Node, name: string): ts.ArrayLiteralExpression | undefined {
+  if (
+    ts.isPropertyAssignment(node) &&
+    (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name)) &&
+    node.name.text === name &&
+    ts.isArrayLiteralExpression(node.initializer)
+  ) {
+    return node.initializer;
+  }
+  return ts.forEachChild(node, (child) => propertyArray(child, name));
+}
+
 function findArray(source: ts.SourceFile, selector: ArraySelector): ts.ArrayLiteralExpression | undefined {
+  if (selector.kind === 'property') {
+    return propertyArray(source, selector.name);
+  }
   for (const statement of source.statements) {
     const expression =
       selector.kind === 'default-export' ? defaultExport(statement) : variableInitializer(statement, selector.name);

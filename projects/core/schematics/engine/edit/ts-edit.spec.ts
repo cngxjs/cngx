@@ -47,6 +47,30 @@ export default [
     );
   });
 
+  it('selects the first property of that name holding an array, one element per line', () => {
+    const config = `export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes),
+    { provide: TitleStrategy, useClass: AppTitleStrategy },
+  ],
+};
+`;
+
+    expect(addToArrayLiteral(config, { kind: 'property', name: 'providers' }, 'provideA11yPreferences()')).toBe(
+      `export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes),
+    { provide: TitleStrategy, useClass: AppTitleStrategy },
+    provideA11yPreferences(),
+  ],
+};
+`,
+    );
+    expect(hasArrayLiteral('export const x = { providers: provide() };', { kind: 'property', name: 'providers' })).toBe(
+      false,
+    );
+  });
+
   it('is idempotent', () => {
     const once = addToArrayLiteral(FLAT_CONFIG, DEFAULT, ITEM);
 

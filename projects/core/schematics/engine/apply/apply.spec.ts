@@ -131,6 +131,43 @@ describe('applyChangePlan', () => {
     expect(config).toMatch(/import \{ [^}]*\bwithPersistence\b[^}]* \} from '@cngx\/core';/);
   });
 
+  it('puts the provider on its own line in a multi-line providers array, callee first in its imports', async () => {
+    const config = `import { ApplicationConfig } from '@angular/core';
+import { TitleStrategy } from '@angular/router';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    { provide: TitleStrategy, useClass: AppTitleStrategy },
+  ],
+};
+`;
+    const change: Change = {
+      ...BASE,
+      kind: 'add-provider',
+      id: 'p',
+      project: 'app',
+      path: 'src/app/app.config.ts',
+      call: {
+        symbol: 'provideA11yPreferences',
+        module: '@cngx/core',
+        args: [{ symbol: 'withPersistence', module: '@cngx/core' }],
+      },
+    };
+    const tree = await apply([change, change], createMemoryTree({ 'src/app/app.config.ts': config }));
+
+    expect(tree.readText('src/app/app.config.ts')).toBe(`import { ApplicationConfig } from '@angular/core';
+import { TitleStrategy } from '@angular/router';
+import { provideA11yPreferences, withPersistence } from '@cngx/core';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    { provide: TitleStrategy, useClass: AppTitleStrategy },
+    provideA11yPreferences(withPersistence()),
+  ],
+};
+`);
+  });
+
   it('renders a reference argument as a bare identifier', async () => {
     const tree = await apply(
       [

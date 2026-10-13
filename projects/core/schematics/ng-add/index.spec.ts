@@ -193,6 +193,12 @@ describe('ngAdd', () => {
         fixture['src/styles.scss'],
       );
       expect(run.tree.readContent('package.json').endsWith('}\n')).toBe(true);
+      if (preset !== 'minimal') {
+        expect(run.tree.readContent('src/app/app.config.ts')).toContain(
+          '    { provide: TitleStrategy, useClass: AppTitleStrategy },\n    provideA11yPreferences(withPersistence()),\n',
+        );
+        expect(run.tree.readContent('src/app/app.config.ts')).toMatch(/import \{ provideA11yPreferences, withPersistence[ ,}]/);
+      }
     });
 
     it('changes nothing on a second run', async () => {
