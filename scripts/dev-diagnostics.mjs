@@ -118,6 +118,35 @@ export function isLexicallyGuarded(node) {
   return false;
 }
 
+const isStatic = (node) => node.modifiers?.some((m) => m.kind === ts.SyntaxKind.StaticKeyword);
+
+/**
+ * Does `node` run while its module loads? A dev build does not define
+ * `ngDevMode`; Angular sets it lazily (`initNgDevMode()` when the first
+ * component is defined), so a guard read at module load can see it undefined
+ * and freeze the production branch into a dev build. Code inside a function,
+ * a method, an accessor or an instance field initialiser runs later; a static
+ * block or a static field initialiser runs with the module.
+ */
+export function runsAtModuleLoad(node) {
+  for (let current = node.parent; current; current = current.parent) {
+    if (ts.isClassStaticBlockDeclaration(current)) {
+      return true;
+    }
+    if (ts.isPropertyDeclaration(current)) {
+      return isStatic(current);
+    }
+    if (ts.isFunctionLike(current)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** The violation text for a guard `runsAtModuleLoad` reports. */
+export const MODULE_LOAD_GUARD =
+  'sits behind a dev-mode guard evaluated at module load, before Angular sets ngDevMode; move the guard into a function or getter';
+
 /**
  * Every `cngxDevWarn` / `cngxDevError` call in `files` ([{ path, text }]).
  * `code` is the first argument when it is a string literal, else null.
@@ -752,6 +781,12 @@ export function collectWrapperUses(files, wrappers) {
           file: path,
           line: lineOf(sf, node),
           problem: `dev wrapper ${node.getText(sf)} is used as a value outside a dev-mode guard`,
+        });
+      } else if ((nameValue || memberValue) && runsAtModuleLoad(node)) {
+        problems.push({
+          file: path,
+          line: lineOf(sf, node),
+          problem: `dev wrapper ${node.getText(sf)} ${MODULE_LOAD_GUARD}`,
         });
       }
       ts.forEachChild(node, visit);

@@ -7,7 +7,8 @@
 // R1  no reference to the global `console` outside dev-message.ts, unless the
 //     file is in the shrink-only baseline or in RAW_CONSOLE_EXEMPT.
 // R2  every helper call has a `CNGXnnnn` literal first argument and a lexical
-//     inline guard.
+//     inline guard inside a function: a guard read at module load can run
+//     before Angular sets `ngDevMode` in a dev build (also for R4).
 // R3  the code lies in the calling file's lib range.
 // R4  every direct call and every value use of a guard-first dev wrapper is
 //     lexically guarded, and no wrapper is a class or object-literal member:
@@ -20,6 +21,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import {
   HELPER_FILE,
+  MODULE_LOAD_GUARD,
   collectHelperCalls,
   collectHelperMisuse,
   collectWrapperPlacementProblems,
@@ -31,6 +33,7 @@ import {
   lineOf,
   localNgDevModeLines,
   parse,
+  runsAtModuleLoad,
 } from '../dev-diagnostics.mjs';
 import { libOf, rangeOf, readSources } from '../error-codes-manifest.mjs';
 import { RAW_CONSOLE_BASELINE } from './raw-console-baseline.mjs';
@@ -184,6 +187,8 @@ export function checkSources(files) {
     }
     if (!isLexicallyGuarded(call.node)) {
       violations.push(`${where} R2 ${call.code ?? 'call'} is not behind an inline ngDevMode guard`);
+    } else if (runsAtModuleLoad(call.node)) {
+      violations.push(`${where} R2 ${call.code ?? 'call'} ${MODULE_LOAD_GUARD}`);
     }
   }
 
@@ -207,6 +212,10 @@ export function checkSources(files) {
     if (!isLexicallyGuarded(call.node)) {
       violations.push(
         `${call.file}:${call.line} R4 dev wrapper ${call.name}() is called unguarded`,
+      );
+    } else if (runsAtModuleLoad(call.node)) {
+      violations.push(
+        `${call.file}:${call.line} R4 dev wrapper ${call.name}() ${MODULE_LOAD_GUARD}`,
       );
     }
   }
@@ -293,8 +302,9 @@ describe('raw-console guard - R1 raw console', () => {
 });
 
 describe('raw-console guard - R2/R3 helper calls', () => {
-  const ok = (body) => expect(fixture(body).violations).toEqual([]);
-  const fails = (body) => expect(fixture(body).violations).not.toEqual([]);
+  const inFunction = (body) => `function host() {\ndoWork();\n${body}\n}`;
+  const ok = (body) => expect(fixture(inFunction(body)).violations).toEqual([]);
+  const fails = (body) => expect(fixture(inFunction(body)).violations).not.toEqual([]);
 
   it('passes an if guard and a guard with trailing conjuncts', () => {
     ok(`if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); }`);
@@ -336,12 +346,13 @@ describe('raw-console guard - R2/R3 helper calls', () => {
   });
 
   it('fails a variable code and a code outside the lib range', () => {
-    expect(fixture(`if (${GUARD}) { cngxDevWarn(code, 'm'); }`).violations).toEqual([
-      "projects/core/a.ts:1 R2 the first argument must be a 'CNGXnnnn' string literal",
-    ]);
-    expect(fixture(`if (${GUARD}) { cngxDevWarn('CNGX1001', 'm'); }`).violations).toEqual([
-      'projects/core/a.ts:1 R3 CNGX1001 lies outside the core range',
-    ]);
+    expect(
+      fixture(`function f() { doWork(); if (${GUARD}) { cngxDevWarn(code, 'm'); } }`).violations,
+    ).toEqual(["projects/core/a.ts:1 R2 the first argument must be a 'CNGXnnnn' string literal"]);
+    expect(
+      fixture(`function f() { doWork(); if (${GUARD}) { cngxDevWarn('CNGX1001', 'm'); } }`)
+        .violations,
+    ).toEqual(['projects/core/a.ts:1 R3 CNGX1001 lies outside the core range']);
   });
 });
 
@@ -372,7 +383,7 @@ describe('raw-console guard - R2 helper references', () => {
   it('passes a plain import and a direct call', () => {
     expect(
       fixture(
-        `import { cngxDevWarn } from '@cngx/utils';\nif (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); }`,
+        `import { cngxDevWarn } from '@cngx/utils';\nfunction f() { doWork(); if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } }`,
       ).violations,
     ).toEqual([]);
   });
@@ -387,7 +398,7 @@ describe('raw-console guard - R2 helper references', () => {
     ]);
     expect(
       fixture(
-        `declare const ngDevMode: boolean | undefined;\nif (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); }`,
+        `declare const ngDevMode: boolean | undefined;\nfunction f() { doWork(); if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } }`,
       ).violations,
     ).toEqual([]);
   });
@@ -432,7 +443,7 @@ describe('raw-console guard - R4 dev wrappers', () => {
         "  cngxDevWarn('CNGX0001', name);",
         '}',
         "warnX('unguarded caller argument');",
-        `if (${GUARD}) { warnX('guarded'); }`,
+        `function run() { doWork(); if (${GUARD}) { warnX('guarded'); } }`,
       ].join('\n'),
     );
     expect(wrappers.map((w) => w.name)).toEqual(['warnX']);
@@ -446,7 +457,7 @@ describe('raw-console guard - R4 dev wrappers', () => {
         `  if (${NEGATED}) { return noop; }`,
         "  return () => cngxDevWarn('CNGX0001', String(limit));",
         '}',
-        `const hook = opt ?? (${GUARD} ? defaultWarn(3) : noop);`,
+        `function wire() { return opt ?? (${GUARD} ? defaultWarn(3) : noop); }`,
       ].join('\n'),
     );
     expect(wrappers.map((w) => w.name)).toEqual(['defaultWarn']);
@@ -668,7 +679,9 @@ describe('raw-console guard - R4 dev wrappers', () => {
     expect(sink('const config = { sink: DEFAULT_SINK };').violations).toEqual([
       'projects/core/a.ts:5 R4 dev wrapper DEFAULT_SINK is used as a value outside a dev-mode guard',
     ]);
-    expect(sink(`const hook = opt ?? (${GUARD} ? DEFAULT_SINK : noop);`).violations).toEqual([]);
+    expect(
+      sink(`function wire() { return opt ?? (${GUARD} ? DEFAULT_SINK : noop); }`).violations,
+    ).toEqual([]);
   });
 
   it('passes a guarded value use in an object-literal property initialiser', () => {
@@ -678,10 +691,61 @@ describe('raw-console guard - R4 dev wrappers', () => {
         `  if (${NEGATED}) { return; }`,
         "  cngxDevWarn('CNGX0001', slot);",
         '};',
-        `const config = { sink: ${GUARD} ? DEFAULT_SINK : () => undefined };`,
+        `function config() { return { sink: ${GUARD} ? DEFAULT_SINK : () => undefined }; }`,
       ].join('\n'),
     );
     expect(wrappers.map((w) => w.name)).toEqual(['DEFAULT_SINK']);
+    expect(violations).toEqual([]);
+  });
+});
+
+describe('raw-console guard - guards evaluated at module load', () => {
+  const SINK = [
+    'const DEFAULT_SINK = (slot: string) => {',
+    `  if (${NEGATED}) { return; }`,
+    "  cngxDevWarn('CNGX0001', slot);",
+    '};',
+  ].join('\n');
+
+  it('fails a guarded helper call at module level', () => {
+    expect(fixture(`if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); }`).violations).toEqual([
+      `projects/core/a.ts:1 R2 CNGX0001 ${MODULE_LOAD_GUARD}`,
+    ]);
+  });
+
+  it('fails a guarded wrapper call and value use at module level', () => {
+    const { violations } = fixture(
+      [
+        SINK,
+        `${GUARD} && DEFAULT_SINK('x');`,
+        `export const DEFAULTS = { sink: ${GUARD} ? DEFAULT_SINK : () => undefined };`,
+      ].join('\n'),
+    );
+    expect(violations).toEqual([
+      `projects/core/a.ts:6 R4 dev wrapper DEFAULT_SINK ${MODULE_LOAD_GUARD}`,
+      `projects/core/a.ts:5 R4 dev wrapper DEFAULT_SINK() ${MODULE_LOAD_GUARD}`,
+    ]);
+  });
+
+  it('fails a guard in a static field or static block, passes an instance field', () => {
+    const shape = (member) =>
+      fixture(`${SINK}\nclass C {\n  ${member}\n}`).violations.filter((v) =>
+        v.includes('module load'),
+      );
+    expect(shape(`static sink = ${GUARD} ? DEFAULT_SINK : undefined;`)).toHaveLength(1);
+    expect(shape(`static { if (${GUARD}) { DEFAULT_SINK('x'); } }`)).toHaveLength(1);
+    expect(shape(`sink = ${GUARD} ? DEFAULT_SINK : undefined;`)).toEqual([]);
+  });
+
+  it('passes the same value use read through a getter', () => {
+    const { violations } = fixture(
+      [
+        SINK,
+        'export const DEFAULTS = {',
+        `  get sink() { return ${GUARD} ? DEFAULT_SINK : undefined; },`,
+        '};',
+      ].join('\n'),
+    );
     expect(violations).toEqual([]);
   });
 });
