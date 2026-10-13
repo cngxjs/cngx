@@ -53,7 +53,10 @@ const EXPECTED_INDIRECT_SINKS = [];
  * adds its wrapper here in the same commit, and a wrapper that loses its
  * guard-first shape drops out of the derived set and fails this pin.
  */
-const EXPECTED_DEV_WRAPPERS = [];
+const EXPECTED_DEV_WRAPPERS = [
+  'projects/forms/filter-builder/filter-builder-operators.ts#warnUnknownFilterOperatorOnce',
+  'projects/forms/input/reactive-forms-channel.ts#injectDefaultAccessorWarning',
+];
 
 const CODE_PATTERN = /^CNGX\d{4}$/;
 const GLOBAL_HOSTS = new Set(['globalThis', 'window', 'self']);

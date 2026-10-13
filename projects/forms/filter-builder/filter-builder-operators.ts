@@ -8,6 +8,8 @@
  * arms.
  */
 
+import { cngxDevWarn } from '@cngx/utils';
+
 declare const ngDevMode: boolean | undefined;
 
 /**
@@ -229,14 +231,15 @@ const warnedUnknownOperators = new Set<string>();
  * console; the evaluation result stays a conservative `false` either way.
  */
 export function warnUnknownFilterOperatorOnce(operator: string): void {
-  if (typeof ngDevMode !== 'undefined' && !ngDevMode) {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
     return;
   }
   if (warnedUnknownOperators.has(operator)) {
     return;
   }
   warnedUnknownOperators.add(operator);
-  console.warn(
+  cngxDevWarn(
+    'CNGX2001',
     `[CngxFilterBuilder] unknown operator "${operator}" - the expression evaluates to false ` +
       `for every item. Register an evaluation via withOperators({ ${operator}: { evaluate: ... } }).`,
   );

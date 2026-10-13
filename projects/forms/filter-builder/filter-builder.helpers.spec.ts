@@ -416,8 +416,10 @@ describe('evaluateExpression - operator registry routing', () => {
       const expr = createFilterExpression('name', 'unknownOpRegistryRoutingSpec', 'x');
       expect(evaluateExpression(expr, item, FIELD_NAME)).toBe(false);
       expect(evaluateExpression(expr, item, FIELD_NAME)).toBe(false);
-      const matching = warn.mock.calls.filter((c) =>
-        String(c[0]).includes('unknownOpRegistryRoutingSpec'),
+      const matching = warn.mock.calls.filter(
+        (c) =>
+          String(c[0]).startsWith('CNGX2001: ') &&
+          String(c[0]).includes('unknownOpRegistryRoutingSpec'),
       );
       expect(matching).toHaveLength(1);
     } finally {

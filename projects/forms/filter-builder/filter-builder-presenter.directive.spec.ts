@@ -413,7 +413,7 @@ describe('CngxFilterBuilderPresenter - dev-mode guards', () => {
     const fixture = TestBed.createComponent(EmptyFieldsHost);
     fixture.detectChanges();
     await TestBed.inject(ApplicationRef).whenStable();
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('no fields provided'));
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(/^CNGX2002: .*no fields provided/));
   });
 
   it('warns when value() references unknown field keys', async () => {
@@ -434,7 +434,9 @@ describe('CngxFilterBuilderPresenter - dev-mode guards', () => {
     const fixture = TestBed.createComponent(UnknownFieldHost);
     fixture.detectChanges();
     await TestBed.inject(ApplicationRef).whenStable();
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('unknown field key(s): bogus'));
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringMatching(/^CNGX2003: .*unknown field key\(s\): bogus/),
+    );
   });
 });
 
@@ -465,7 +467,7 @@ describe('CngxFilterBuilderPresenter - maxNestingDepth guard', () => {
     TestBed.flushEffects();
     const inner = directive.tree().filters[0];
     expect(inner.type === 'group' && inner.filters.length).toBe(0);
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('maxNestingDepth'));
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(/^CNGX2004: .*maxNestingDepth/));
   });
 });
 

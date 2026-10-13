@@ -256,7 +256,8 @@ describe('CngxInputMask dev-mode accessor check', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     try {
       mount(host);
-      return warn.mock.calls.filter(([msg]) => String(msg).startsWith('[cngxInputMask]')).length;
+      return warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX2006: [cngxInputMask]'))
+        .length;
     } finally {
       warn.mockRestore();
     }

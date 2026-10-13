@@ -8,6 +8,7 @@ import {
   type WritableSignal,
 } from '@angular/core';
 import { DefaultValueAccessor, NgControl } from '@angular/forms';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * The disabled flag `CngxFormBridge.setDisabledState` writes through
@@ -39,13 +40,16 @@ export function injectFormDisabled(el: ElementRef<HTMLInputElement>): WritableSi
  * @internal
  */
 export function injectDefaultAccessorWarning(message: string): void {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return;
+  }
   const injector = inject(Injector);
   // Resolved lazily: injecting NgControl at construction cycles through
   // NG_VALUE_ACCESSOR -> CngxFormBridge -> CNGX_CONTROL_VALUE -> the host directive.
   afterNextRender(() => {
     const ngControl = injector.get(NgControl, null, { self: true });
     if (ngControl?.valueAccessor instanceof DefaultValueAccessor) {
-      console.warn(message);
+      cngxDevWarn('CNGX2006', message);
     }
   });
 }

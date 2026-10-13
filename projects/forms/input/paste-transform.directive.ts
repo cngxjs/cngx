@@ -1,4 +1,6 @@
 import { Directive, ElementRef, inject, input } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
+
 import { CngxInputMask } from './input-mask.directive';
 
 /**
@@ -51,7 +53,8 @@ export class CngxPasteTransform {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       const mask = inject(CngxInputMask, { optional: true, self: true });
       if (mask) {
-        console.warn(
+        cngxDevWarn(
+          'CNGX2005',
           '[cngxPasteTransform]: stacked on a cngxInputMask input - both directives ' +
             'cancel the native paste and insert independently, so pasted text is ' +
             'applied twice through uncoordinated paths. Remove cngxPasteTransform; ' +

@@ -94,6 +94,30 @@
             {
                 "title": "CNGX0901",
                 "file": "error-codes/cngx0901.md"
+            },
+            {
+                "title": "CNGX2001",
+                "file": "error-codes/cngx2001.md"
+            },
+            {
+                "title": "CNGX2002",
+                "file": "error-codes/cngx2002.md"
+            },
+            {
+                "title": "CNGX2003",
+                "file": "error-codes/cngx2003.md"
+            },
+            {
+                "title": "CNGX2004",
+                "file": "error-codes/cngx2004.md"
+            },
+            {
+                "title": "CNGX2005",
+                "file": "error-codes/cngx2005.md"
+            },
+            {
+                "title": "CNGX2006",
+                "file": "error-codes/cngx2006.md"
             }
         ]
     }
