@@ -4,12 +4,13 @@ import {
   type Change,
   createProvenanceStamp,
   hasProvenanceMarker,
+  insertLeadingStyleImport,
   type Provenance,
   skipChange,
   type StepResult,
   withProvenanceMarker,
 } from '../../engine';
-import { CNGX_STYLESHEET, type ProjectFacts } from '../detect/detect';
+import { CNGX_LAYERS_FILE, CNGX_STYLESHEET, type ProjectFacts } from '../detect/detect';
 import { missingThemePeers, selectedLibs } from './dependencies';
 import { type OnboardingAnswers, type Versions } from './model';
 import { BASE_TOKENS, type BaseToken } from './theme-tokens.generated';
@@ -17,6 +18,8 @@ import { BASE_TOKENS, type BaseToken } from './theme-tokens.generated';
 const STYLESHEET_IMPORT = `@import '${CNGX_STYLESHEET}';`;
 const BRIDGE_USE = "@use '@cngx/themes/material/theme' as cngx-material;";
 const BRIDGE_MARKER = 'theme:bridge';
+const LAYERS_IMPORT = `@import './${CNGX_LAYERS_FILE}';`;
+const LAYER_ORDER = '@layer theme, base, cngx, components, utilities;';
 const SOURCE = 'ng-add theme';
 const COMMENT_WIDTH = 96;
 
@@ -84,6 +87,55 @@ function renderMaterialTheme(version: string, density: number, themePath: string
   ].join('\n');
 }
 
+/** The Tailwind v4 layer order file: preflight below every cngx layer, utilities above them. */
+export function renderLayerOrder(version: string): string {
+  return [
+    createProvenanceStamp(SOURCE, version).trimEnd(),
+    '/*',
+    ' * Loaded before every other import so it declares the cascade layer order',
+    ' * first: Tailwind preflight (base) stays below the cngx layers, Tailwind',
+    ' * utilities stay above them. Inline in the global stylesheet it would come',
+    ' * too late, since the bundler places every imported file ahead of it.',
+    ' */',
+    LAYER_ORDER,
+    '',
+  ].join('\n');
+}
+
+// Tailwind v4 declares its layers in the expanded body of the global
+// stylesheet, after every imported file, so cngx.css would sit below its
+// preflight. A file imported first fixes the order.
+function layerOrder(facts: ProjectFacts, provenance: Provenance, version: string): StepResult {
+  const stylesPath = facts.stylesPath;
+  if (stylesPath === undefined || facts.tailwind?.layered !== true) {
+    return { changes: [], skipped: [] };
+  }
+  const path = posix.join(posix.dirname(stylesPath), CNGX_LAYERS_FILE);
+  const planned: readonly Change[] = [
+    {
+      kind: 'create-file',
+      id: 'theme:layer-order-file',
+      label: `Create ${path}`,
+      reason: 'declares the Tailwind and cngx cascade layer order',
+      provenance,
+      path,
+      content: renderLayerOrder(version),
+    },
+    {
+      kind: 'edit-file',
+      id: 'theme:layer-order',
+      label: 'Order the Tailwind and cngx cascade layers',
+      reason: 'Tailwind preflight must not override cngx component styles; utilities still win',
+      provenance,
+      path: stylesPath,
+      edit: (content) => insertLeadingStyleImport(content, LAYERS_IMPORT),
+    },
+  ];
+  return facts.tailwind.orderDeclared
+    ? { changes: [], skipped: planned.map((change) => skipChange(change, `already imported in ${stylesPath}`)) }
+    : { changes: planned, skipped: [] };
+}
+
 function appendBridge(variable: string): (content: string) => string {
   return (content) => {
     if (hasProvenanceMarker(content, BRIDGE_MARKER)) {
@@ -128,7 +180,9 @@ function result(planned: readonly Change[], wired: string | undefined, reason: s
  * `cngx-theme.scss`; a `define-theme` or M2 object is bridged in the file
  * that defines it, since a separate file cannot see the variable. Every
  * global entry it adds follows the stylesheet that imports `cngx.css`, so
- * the layer order `cngx.css` declares is in place before any cngx layer.
+ * the layer order `cngx.css` declares is in place before any cngx layer. A
+ * Tailwind v4 app also gets `cngx-layers.css`, imported first, which puts
+ * the cngx layers between Tailwind preflight and its utilities.
  */
 export function planTheme(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
   const installable = missingThemePeers(selectedLibs(answers.libs)).length === 0;
@@ -208,9 +262,11 @@ export function planTheme(facts: ProjectFacts, answers: OnboardingAnswers, versi
         )
       : themeFile(facts, bridge, after, provenance, versions.cngx, wiredReason);
 
+  const layerSteps = layerOrder(facts, provenance, versions.cngx);
+
   return {
-    changes: [...stylesheetStep.changes, ...fallbackNote, ...themeSteps.changes],
-    skipped: [...stylesheetStep.skipped, ...themeSteps.skipped],
+    changes: [...layerSteps.changes, ...stylesheetStep.changes, ...fallbackNote, ...themeSteps.changes],
+    skipped: [...layerSteps.skipped, ...stylesheetStep.skipped, ...themeSteps.skipped],
   };
 }
 

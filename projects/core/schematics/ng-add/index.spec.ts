@@ -189,11 +189,16 @@ describe('ngAdd', () => {
           ? ['package.json']
           : ['angular.json', 'package.json', 'src/app/app.config.ts', 'src/styles.scss'],
       );
-      expect(run.tree.readContent('src/styles.scss').replace("@import '@cngx/themes/cngx.css';\n", '')).toBe(
-        fixture['src/styles.scss'],
-      );
+      const styles = run.tree.readContent('src/styles.scss');
+      expect(
+        styles.replace("@import './cngx-layers.css';\n", '').replace("@import '@cngx/themes/cngx.css';\n", ''),
+      ).toBe(fixture['src/styles.scss']);
       expect(run.tree.readContent('package.json').endsWith('}\n')).toBe(true);
       if (preset !== 'minimal') {
+        expect(styles.startsWith("@import './cngx-layers.css';\n@import 'tailwindcss';\n@import '@cngx/themes/cngx.css';\n")).toBe(
+          true,
+        );
+        expect(run.tree.readContent('src/cngx-layers.css')).toContain('@layer theme, base, cngx, components, utilities;');
         expect(run.tree.readContent('src/app/app.config.ts')).toContain(
           '    { provide: TitleStrategy, useClass: AppTitleStrategy },\n    provideA11yPreferences(withPersistence()),\n',
         );
