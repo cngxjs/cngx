@@ -6,6 +6,7 @@
 export * from './array';
 export * from './clamp';
 export * from './decimal-places';
+export * from './dev-message';
 export * from './equality';
 export * from './tree';
 export * from './version';

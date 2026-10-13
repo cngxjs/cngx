@@ -1,4 +1,5 @@
-import { computed, isDevMode, signal, type Signal } from '@angular/core';
+import { computed, signal, type Signal } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * Configuration for {@link createKeyedRegistry} / {@link createSlotRegistry}.
@@ -88,8 +89,9 @@ export function createKeyedRegistry<T>(options?: RegistryOptions): KeyedRegistry
       return;
     }
     if (current.has(key)) {
-      if (isDevMode()) {
-        console.warn(
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        cngxDevWarn(
+          'CNGX0004',
           `${name}: "${key}" is already registered. The existing instance stays ` +
             'live (swap-is-noop); unregister it first for a true swap.',
         );
