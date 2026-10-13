@@ -190,8 +190,10 @@ function reflectDocumentLanguage(): void {
  * is resolved once in the root injector, so a call in a lazy route's
  * `providers` or another child injector switches the locale and the
  * direction there but leaves the copy on the root pack (dev warning
- * `CNGX0005`). Switch languages at runtime through a `Signal` in
- * {@link withPack} instead.
+ * `CNGX0005`). To change copy for a subtree, use the per-token overrides
+ * (`provide*I18n` with their `with*` features) there, and `provideLocaleAt`
+ * for its number and date format. To switch the app's language at runtime,
+ * pass a `Signal` to {@link withPack}.
  *
  * ```ts
  * bootstrapApplication(App, { providers: [provideCngxI18n(withPack(de))] });
