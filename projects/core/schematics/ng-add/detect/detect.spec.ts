@@ -117,6 +117,27 @@ describe('detectProject', () => {
     } satisfies ProjectFacts);
   });
 
+  it('reads the existing tailwind app as an existing scss app without eslint', async () => {
+    const tree = createFixtureTree('existing-tailwind-app');
+    const facts = detectProject(tree, await readWorkspace(tree));
+
+    expect(facts).toMatchObject({
+      project: 'tailwind-app',
+      bootstrap: 'standalone',
+      zoneless: true,
+      stylesKind: 'scss',
+      stylesPath: 'src/styles.scss',
+      rootProviders: [
+        'provideBrowserGlobalErrorListeners',
+        'provideRouter',
+        'provideHttpClient',
+        'provideAppInitializer',
+      ],
+      eslintConfig: undefined,
+      maturity: 'existing',
+    });
+  });
+
   it('resolves the named project and refuses an unknown one', async () => {
     expect((await detect({}, 'fixture-app')).project).toBe('fixture-app');
     await expect(detect({}, 'missing')).rejects.toThrow('Project "missing" not found in angular.json.');

@@ -170,6 +170,43 @@ describe('ngAdd', () => {
     });
   });
 
+  describe.each(['minimal', 'recommended', 'full'] as const)('the existing tailwind app with the %s preset', (preset) => {
+    const fixture = readFixture('existing-tailwind-app');
+
+    it('prints the described plan, then the summary', async () => {
+      const run = await runRule(ngAdd({ preset, yes: true }), createFixtureTree('existing-tailwind-app'));
+
+      expect(run.logs).toMatchSnapshot();
+    });
+
+    it('edits the files it plans in place and leaves every other file as it was', async () => {
+      const run = await runRule(ngAdd({ preset, yes: true }), createFixtureTree('existing-tailwind-app'));
+      const changed = Object.keys(fixture).filter((path) => run.tree.readContent(path) !== fixture[path]);
+
+      expect(Object.keys(fixture).filter((path) => !run.tree.exists(path))).toEqual([]);
+      expect(changed).toEqual(
+        preset === 'minimal'
+          ? ['package.json']
+          : ['angular.json', 'package.json', 'src/app/app.config.ts', 'src/styles.scss'],
+      );
+      expect(run.tree.readContent('src/styles.scss').replace("@import '@cngx/themes/cngx.css';\n", '')).toBe(
+        fixture['src/styles.scss'],
+      );
+    });
+
+    it('changes nothing on a second run', async () => {
+      const first = await runRule(ngAdd({ preset, yes: true }), createFixtureTree('existing-tailwind-app'));
+      const files = first.tree.files.map((path) => [path, first.tree.readContent(path)]);
+
+      const second = await runRule(ngAdd({ preset, yes: true }), first.tree);
+
+      expect(second.tree.files.map((path) => [path, second.tree.readContent(path)])).toEqual(files);
+      expect(second.tree.readContent('.cngx/install.json')).toBe(first.tree.readContent('.cngx/install.json'));
+      expect(second.tasks).toEqual([]);
+      expect(second.logs).toContain('cngx is already set up; nothing changed.');
+    });
+  });
+
   describe('a standalone css app', () => {
     it('pins the lockstep graph, imports cngx.css, adds the theme and the a11y providers', async () => {
       const run = await runRule(ngAdd({}), createFixtureTree());
