@@ -10,7 +10,7 @@ import { createMemoryTree } from '../engine';
 
 const FIXTURES = join(__dirname, 'fixtures');
 
-export type FixtureName = 'standalone-app';
+export type FixtureName = 'standalone-app' | 'existing-tailwind-app';
 
 function walk(dir: string): readonly string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
