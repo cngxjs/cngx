@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PLATFORM_ID, signal, type EnvironmentProviders, type Provider } from '@angular/core';
+import {
+  createEnvironmentInjector,
+  EnvironmentInjector,
+  PLATFORM_ID,
+  signal,
+  type EnvironmentProviders,
+  type Provider,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { injectDirection, provideDirection } from '@cngx/core';
 import { injectLocale } from '@cngx/core/utils';
@@ -271,5 +278,28 @@ describe('provideCngxI18n locale and direction', () => {
     TestBed.tick();
     expect(direction()).toBe('ltr');
     expect(root.dir).toBe('rtl');
+  });
+});
+
+describe('provideCngxI18n scope', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('does not warn in the root injector', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    setup([provideCngxI18n(withPack(DE), withDocumentLanguage('off'))]);
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('warns CNGX0005 in a child environment injector', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    TestBed.configureTestingModule({});
+    const child = createEnvironmentInjector(
+      [provideCngxI18n(withPack(DE), withDocumentLanguage('off'))],
+      TestBed.inject(EnvironmentInjector),
+    );
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX0005'));
+    expect(child.get(CNGX_LANGUAGE_PACK)().locale).toBe('de');
+    child.destroy();
   });
 });

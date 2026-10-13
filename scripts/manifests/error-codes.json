@@ -53,6 +53,16 @@
       "files": ["projects/core/utils/registry.ts"]
     },
     {
+      "code": "CNGX0005",
+      "lib": "core",
+      "severity": "warn",
+      "title": "Language pack provided below the root injector",
+      "page": "core-concepts/error-codes/cngx0005.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0005.html",
+      "status": "active",
+      "files": ["projects/core/i18n/provide-i18n.ts"]
+    },
+    {
       "code": "CNGX0901",
       "lib": "utils",
       "severity": "warn",

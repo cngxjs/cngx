@@ -1,7 +1,9 @@
 import { DOCUMENT } from '@angular/common';
 import {
+  ApplicationRef,
   computed,
   effect,
+  EnvironmentInjector,
   inject,
   InjectionToken,
   makeEnvironmentProviders,
@@ -14,7 +16,7 @@ import {
 } from '@angular/core';
 import { CNGX_DIRECTION, type CngxDirection } from '@cngx/core';
 import { CNGX_LOCALE, coerceSignal, memoize } from '@cngx/core/utils';
-import { recordEqual } from '@cngx/utils';
+import { cngxDevWarn, recordEqual } from '@cngx/utils';
 
 import { canonicalLocale } from './format-message';
 import type {
@@ -184,6 +186,13 @@ function reflectDocumentLanguage(): void {
  * {@link withDocumentLanguage} is `'off'`. A `provideLocale()` or
  * `provideDirection()` listed after this call wins.
  *
+ * Root only: call it in the application config. The copy of every cngx lib
+ * is resolved once in the root injector, so a call in a lazy route's
+ * `providers` or another child injector switches the locale and the
+ * direction there but leaves the copy on the root pack (dev warning
+ * `CNGX0005`). Switch languages at runtime through a `Signal` in
+ * {@link withPack} instead.
+ *
  * ```ts
  * bootstrapApplication(App, { providers: [provideCngxI18n(withPack(de))] });
  * ```
@@ -227,6 +236,18 @@ export function provideCngxI18n(...features: readonly CngxI18nFeature[]): Enviro
       },
       { provide: CNGX_DIRECTION, useExisting: PACK_DIRECTION },
       provideEnvironmentInitializer(reflectDocumentLanguage),
+    );
+  }
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    providers.push(
+      provideEnvironmentInitializer(() => {
+        if (inject(EnvironmentInjector) !== inject(ApplicationRef).injector) {
+          cngxDevWarn(
+            'CNGX0005',
+            '[cngx/i18n] provideCngxI18n() in a child injector switches the locale and the direction but not the copy; call it in the application config.',
+          );
+        }
+      }),
     );
   }
   return makeEnvironmentProviders(providers);
