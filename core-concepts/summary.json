@@ -92,6 +92,10 @@
                 "file": "error-codes/cngx0004.md"
             },
             {
+                "title": "CNGX0005",
+                "file": "error-codes/cngx0005.md"
+            },
+            {
                 "title": "CNGX0901",
                 "file": "error-codes/cngx0901.md"
             },
