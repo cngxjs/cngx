@@ -19,6 +19,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
     cngxStylesheet: false,
     cngxThemePath: undefined,
     cngxThemeListed: false,
+    tailwind: undefined,
     appConfigPath: 'src/app/app.config.ts',
     rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
     material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },

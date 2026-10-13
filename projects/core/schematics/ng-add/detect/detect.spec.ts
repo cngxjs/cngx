@@ -101,6 +101,7 @@ describe('detectProject', () => {
       cngxStylesheet: false,
       cngxThemePath: undefined,
       cngxThemeListed: false,
+      tailwind: undefined,
       appConfigPath: 'src/app/app.config.ts',
       rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
       material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
@@ -127,6 +128,7 @@ describe('detectProject', () => {
       zoneless: true,
       stylesKind: 'scss',
       stylesPath: 'src/styles.scss',
+      tailwind: { major: 4, layered: true, orderDeclared: false },
       rootProviders: [
         'provideBrowserGlobalErrorListeners',
         'provideRouter',
@@ -486,6 +488,49 @@ module.exports = defineConfig([
     };
     expect((await detect({ 'angular.json': workspace('ar') })).sourceLocale).toBe('ar');
     expect((await detect({ 'angular.json': workspace({ code: 'he', baseHref: '/he/' }) })).sourceLocale).toBe('he');
+  });
+
+  describe('Tailwind', () => {
+    const scssStyles = (content: string, tailwind = '^4.1.12'): Record<string, string> => ({
+      'package.json': withPackage({ tailwindcss: tailwind }),
+      'angular.json': withWorkspaceStyles(['src/styles.scss']),
+      'src/styles.scss': content,
+    });
+
+    it('reads a v4 import in the global stylesheet as layered', async () => {
+      expect((await detect(scssStyles("@import 'tailwindcss';\n"))).tailwind).toEqual({
+        major: 4,
+        layered: true,
+        orderDeclared: false,
+      });
+    });
+
+    it('reads v3 directives as unlayered', async () => {
+      const directives = '@tailwind base;\n@tailwind components;\n@tailwind utilities;\n';
+      expect((await detect(scssStyles(directives, '^3.4.17'))).tailwind).toEqual({
+        major: 3,
+        layered: false,
+        orderDeclared: false,
+      });
+    });
+
+    it('reads no Tailwind when the app does not declare it', async () => {
+      expect((await detect({ 'src/styles.css': "@import 'tailwindcss';\n" })).tailwind).toBeUndefined();
+    });
+
+    it('sees the layer order file imported, but not an inline layer statement', async () => {
+      const imported = await detect(scssStyles("@import './cngx-layers.css';\n@import 'tailwindcss';\n"));
+      expect(imported.tailwind?.orderDeclared).toBe(true);
+
+      const inline = await detect(
+        scssStyles("@layer theme, base, cngx, components, utilities;\n@import 'tailwindcss';\n"),
+      );
+      expect(inline.tailwind?.orderDeclared).toBe(false);
+    });
+
+    it('falls back to the import shape for a range without a version', async () => {
+      expect((await detect(scssStyles("@import 'tailwindcss';\n", 'latest'))).tailwind?.major).toBe(4);
+    });
   });
 
   describe('maturity', () => {
