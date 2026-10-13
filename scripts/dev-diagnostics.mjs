@@ -8,6 +8,9 @@ import ts from 'typescript';
 
 const HELPERS = { cngxDevWarn: 'warn', cngxDevError: 'error' };
 
+/** The one file that declares the helpers and may call `console` directly. */
+export const HELPER_FILE = 'projects/utils/dev-message.ts';
+
 export const parse = (path, text) =>
   ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 
@@ -168,7 +171,7 @@ export function collectHelperCalls(files) {
 export function collectHelperMisuse(files) {
   const out = [];
   for (const { path, text } of files) {
-    if (!text.includes('cngxDev') || path.endsWith('utils/dev-message.ts')) {
+    if (!text.includes('cngxDev') || path === HELPER_FILE) {
       continue;
     }
     const sf = parse(path, text);
@@ -302,13 +305,78 @@ function functionName(node) {
     (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) &&
     ts.isVariableDeclaration(node.parent) &&
     node.parent.initializer === node &&
-    ts.isIdentifier(node.parent.name) &&
-    ts.isVariableDeclarationList(node.parent.parent) &&
-    node.parent.parent.flags & ts.NodeFlags.Const
+    ts.isIdentifier(node.parent.name)
   ) {
     return node.parent.name.text;
   }
   return null;
+}
+
+/** The innermost enclosing function that has a callable name, or null. */
+const namedFunctionOf = (node) => {
+  for (let fn = node.parent; fn; fn = fn.parent) {
+    if (functionName(fn)) {
+      return fn;
+    }
+  }
+  return null;
+};
+
+const isPositiveGuardedIf = (statement) =>
+  ts.isIfStatement(statement) && !statement.elseStatement && startsWithGuard(statement.expression);
+
+/**
+ * Why the innermost named function around a helper call is a dev-only
+ * function that is not written guard-first, or null. Such a function is a
+ * wrapper in all but shape: its callers' arguments would ship, and R4 could
+ * not see them. Every dev-only function must open with the negated early
+ * return.
+ */
+function wrapperShapeProblem(fn) {
+  const body = fn.body;
+  if (!body) {
+    return null;
+  }
+  if (!ts.isBlock(body)) {
+    const inner = unparen(body);
+    const devOnly =
+      startsWithGuard(inner) ||
+      (ts.isConditionalExpression(inner) && startsWithGuard(inner.condition));
+    return devOnly ? 'is an expression-body dev-only function' : null;
+  }
+  const statements = body.statements;
+  if (statements.length === 0 || isEarlyReturn(statements[0])) {
+    return null;
+  }
+  if (statements.slice(1).some(isEarlyReturn)) {
+    return 'opens with code before its ngDevMode early return';
+  }
+  if (statements.every(isPositiveGuardedIf)) {
+    return 'wraps its whole body in an ngDevMode if';
+  }
+  return null;
+}
+
+/**
+ * Dev-only functions around helper calls that are not guard-first.
+ *
+ * @returns {{ file: string; line: number; name: string; problem: string }[]}
+ */
+export function collectWrapperShapeProblems(calls) {
+  const seen = new Set();
+  const out = [];
+  for (const { node, file, sf } of calls) {
+    const fn = namedFunctionOf(node);
+    if (!fn || seen.has(fn)) {
+      continue;
+    }
+    seen.add(fn);
+    const problem = wrapperShapeProblem(fn);
+    if (problem) {
+      out.push({ file, line: lineOf(sf, fn), name: functionName(fn), problem });
+    }
+  }
+  return out;
 }
 
 const exportSpecifiers = new WeakMap();
@@ -347,6 +415,21 @@ const exportNamesOf = (node, name, sf) => {
   return [...(inline ? [name] : []), ...(exportSpecifiersOf(sf).get(name) ?? [])];
 };
 
+/** Is the module-level function `name` the default export of `sf`? */
+const isDefaultExport = (node, name, sf) => {
+  const isDefaultModifier = node.modifiers?.some((m) => m.kind === ts.SyntaxKind.DefaultKeyword);
+  const assigned = sf.statements.some(
+    (s) =>
+      ts.isExportAssignment(s) &&
+      !s.isExportEquals &&
+      ts.isIdentifier(s.expression) &&
+      s.expression.text === name,
+  );
+  return Boolean(
+    isDefaultModifier || assigned || exportSpecifiersOf(sf).get(name)?.includes('default'),
+  );
+};
+
 /**
  * Every guard-first function that contains a helper call: a dev wrapper.
  *
@@ -371,8 +454,10 @@ export function collectWrappers(calls) {
         seen.set(fn, {
           file,
           name,
+          line: lineOf(sf, fn),
           kind: isMember ? 'method' : 'function',
           exportedAs: isMember ? [] : exportNamesOf(fn, name, sf),
+          defaultExport: !isMember && isDefaultExport(fn, name, sf),
         });
       }
     }
@@ -389,6 +474,14 @@ export function collectWrapperUses(files, wrappers) {
   const exportedNames = new Set(wrappers.flatMap((w) => w.exportedAs));
   const calls = [];
   const indirect = [];
+  // Forms R4 cannot follow by name fail closed instead of passing unseen.
+  const untraceable = wrappers
+    .filter((w) => w.defaultExport)
+    .map((w) => ({
+      file: w.file,
+      line: w.line,
+      problem: `dev wrapper ${w.name} is a default export; export it by name`,
+    }));
   for (const { path, text } of files) {
     const local = wrappers.filter((w) => w.file === path);
     if (local.length === 0 && ![...exportedNames].some((name) => text.includes(name))) {
@@ -397,6 +490,7 @@ export function collectWrapperUses(files, wrappers) {
     const sf = parse(path, text);
     const names = new Set(local.filter((w) => w.kind === 'function').map((w) => w.name));
     const methods = new Set(local.filter((w) => w.kind === 'method').map((w) => w.name));
+    const namespaces = new Set();
     for (const statement of sf.statements) {
       const bindings = ts.isImportDeclaration(statement) && statement.importClause?.namedBindings;
       if (bindings && ts.isNamedImports(bindings)) {
@@ -406,8 +500,33 @@ export function collectWrapperUses(files, wrappers) {
           }
         }
       }
+      if (bindings && ts.isNamespaceImport(bindings)) {
+        namespaces.add(bindings.name.text);
+      }
+      const reexports =
+        ts.isExportDeclaration(statement) &&
+        statement.moduleSpecifier &&
+        statement.exportClause &&
+        ts.isNamedExports(statement.exportClause)
+          ? statement.exportClause.elements
+          : [];
+      for (const element of reexports) {
+        const original = (element.propertyName ?? element.name).text;
+        if (exportedNames.has(original) && original !== element.name.text) {
+          untraceable.push({
+            file: path,
+            line: lineOf(sf, element),
+            problem: `dev wrapper ${original} is re-exported as ${element.name.text}; keep its name`,
+          });
+        }
+      }
     }
-    if (names.size === 0 && methods.size === 0) {
+    const isNamespaceMember = (node) =>
+      ts.isPropertyAccessExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      namespaces.has(node.expression.text) &&
+      exportedNames.has(node.name.text);
+    if (names.size === 0 && methods.size === 0 && namespaces.size === 0) {
       continue;
     }
     const visit = (node) => {
@@ -418,7 +537,7 @@ export function collectWrapperUses(files, wrappers) {
           ts.isPropertyAccessExpression(callee) &&
           methods.has(callee.name.text) &&
           !(ts.isIdentifier(callee.expression) && callee.expression.text === 'console');
-        if (byName || byMember) {
+        if (byName || byMember || isNamespaceMember(callee)) {
           calls.push({ file: path, line: lineOf(sf, node), name: callee.getText(sf), node });
         }
       }
@@ -427,7 +546,7 @@ export function collectWrapperUses(files, wrappers) {
       }
       const memberValue =
         ts.isPropertyAccessExpression(node) &&
-        methods.has(node.name.text) &&
+        (methods.has(node.name.text) || isNamespaceMember(node)) &&
         !(ts.isCallExpression(node.parent) && node.parent.expression === node);
       if (memberValue) {
         indirect.push({ file: path, line: lineOf(sf, node), name: node.getText(sf) });
@@ -436,7 +555,7 @@ export function collectWrapperUses(files, wrappers) {
     };
     visit(sf);
   }
-  return { calls, indirect };
+  return { calls, indirect, untraceable };
 }
 
 function isValueUse(node) {

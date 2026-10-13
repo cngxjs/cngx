@@ -230,10 +230,9 @@ export function renderSummary(summary) {
  * The library sources the call sites are read from, as [{ path, text }]:
  * `projects/**` minus specs, tooling roots and the unpublished
  * `projects/testing`. The published `testing` entries of the libs stay in.
- * Run from the repo root, like every script that walks `projects/`.
  */
 export function readSources() {
-  return sourceFiles('projects')
+  return sourceFiles('projects', REPO_ROOT)
     .map((path) => path.split('\\').join('/'))
     .filter((path) => !path.endsWith('.spec.ts') && !path.startsWith('projects/testing/'))
     .map((path) => ({ path, text: readFileSync(resolve(REPO_ROOT, path), 'utf8') }));

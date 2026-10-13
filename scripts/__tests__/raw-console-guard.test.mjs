@@ -18,8 +18,10 @@ import ts from 'typescript';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import {
+  HELPER_FILE,
   collectHelperCalls,
   collectHelperMisuse,
+  collectWrapperShapeProblems,
   collectWrapperUses,
   collectWrappers,
   isLexicallyGuarded,
@@ -46,7 +48,6 @@ const RAW_CONSOLE_EXEMPT = [];
  */
 const EXPECTED_INDIRECT_SINKS = [];
 
-const HELPER_FILE = 'projects/utils/dev-message.ts';
 const CODE_PATTERN = /^CNGX\d{4}$/;
 const GLOBAL_HOSTS = new Set(['globalThis', 'window', 'self']);
 
@@ -184,7 +185,15 @@ export function checkSources(files) {
   }
 
   const wrappers = collectWrappers(helperCalls);
-  const { calls, indirect } = collectWrapperUses(files, wrappers);
+  const { calls, indirect, untraceable } = collectWrapperUses(files, wrappers);
+  for (const shape of collectWrapperShapeProblems(helperCalls)) {
+    violations.push(
+      `${shape.file}:${shape.line} R4 ${shape.name} ${shape.problem}; open it with the negated ngDevMode early return`,
+    );
+  }
+  for (const entry of untraceable) {
+    violations.push(`${entry.file}:${entry.line} R4 ${entry.problem}`);
+  }
   for (const call of calls) {
     if (!isLexicallyGuarded(call.node)) {
       violations.push(
@@ -343,6 +352,14 @@ describe('raw-console guard - R2 helper references', () => {
     expect(misuse("export { cngxDevWarn } from '@cngx/utils';")).toHaveLength(1);
   });
 
+  it('checks a file that only looks like the helper file', () => {
+    const { violations } = fixture(
+      "import { cngxDevWarn as w } from '@cngx/utils';",
+      'projects/core/utils/dev-message.ts',
+    );
+    expect(violations).toHaveLength(1);
+  });
+
   it('passes a plain import and a direct call', () => {
     expect(
       fixture(
@@ -353,8 +370,9 @@ describe('raw-console guard - R2 helper references', () => {
 
   it('fails a guard whose ngDevMode is a local binding, but allows the ambient declare', () => {
     expect(
-      fixture(`function f(ngDevMode: boolean) { if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } }`)
-        .violations,
+      fixture(
+        `function f(ngDevMode: boolean) { doWork(); if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } }`,
+      ).violations,
     ).toEqual([
       'projects/core/a.ts:1 R2 a local ngDevMode shadows the global; its guards never fold in production',
     ]);
@@ -387,6 +405,7 @@ describe('raw-console guard - R4 dev wrappers', () => {
         'class R {',
         '  register(k: string) {',
         `    if (${GUARD} && this.has(k)) { cngxDevWarn('CNGX0004', k); }`,
+        '    this.keys.add(k);',
         '  }',
         '  run() { this.register("a"); }',
         '}',
@@ -499,6 +518,55 @@ describe('raw-console guard - R4 dev wrappers', () => {
     expect(indirect).toEqual([{ file: 'projects/core/a.ts', line: 3, name: 'this.warnM' }]);
   });
 
+  it('fails a dev-only function that is not guard-first', () => {
+    const shape = (text) => fixture(text).violations.filter((v) => v.includes('early return'));
+    expect(shape(`const warnE = (m: string) => ${GUARD} && cngxDevWarn('CNGX0001', m);`)).toEqual([
+      'projects/core/a.ts:1 R4 warnE is an expression-body dev-only function; open it with the negated ngDevMode early return',
+    ]);
+    expect(
+      shape(
+        `function warnS(m: string) { const t = m.trim(); if (${NEGATED}) { return; } cngxDevWarn('CNGX0001', t); }`,
+      ),
+    ).toHaveLength(1);
+    expect(
+      shape(`function warnI(m: string) { if (${GUARD}) { cngxDevWarn('CNGX0001', m); } }`),
+    ).toHaveLength(1);
+    expect(
+      shape(`let warnL = (m: string) => ${GUARD} ? cngxDevWarn('CNGX0001', m) : undefined;`),
+    ).toHaveLength(1);
+  });
+
+  it('follows a wrapper called through a namespace import', () => {
+    const { violations } = checkSources([
+      {
+        path: 'projects/core/warn.ts',
+        text: `export function warnN() { if (${NEGATED}) { return; } cngxDevWarn('CNGX0001', 'm'); }`,
+      },
+      { path: 'projects/core/use.ts', text: "import * as d from './warn';\nd.warnN('x');" },
+    ]);
+    expect(violations).toEqual([
+      'projects/core/use.ts:2 R4 dev wrapper d.warnN() is called unguarded',
+    ]);
+  });
+
+  it('fails a default-exported wrapper and a renamed re-export', () => {
+    const { violations } = checkSources([
+      {
+        path: 'projects/core/warn.ts',
+        text: `export function warnR() { if (${NEGATED}) { return; } cngxDevWarn('CNGX0001', 'm'); }`,
+      },
+      {
+        path: 'projects/core/def.ts',
+        text: `export default function warnD() { if (${NEGATED}) { return; } cngxDevWarn('CNGX0002', 'm'); }`,
+      },
+      { path: 'projects/core/barrel.ts', text: "export { warnR as warnQ } from './warn';" },
+    ]);
+    expect(violations).toEqual([
+      'projects/core/def.ts:1 R4 dev wrapper warnD is a default export; export it by name',
+      'projects/core/barrel.ts:1 R4 dev wrapper warnR is re-exported as warnQ; keep its name',
+    ]);
+  });
+
   it('reports a guard-first const arrow passed as a value as indirect', () => {
     const { wrappers, indirect, violations } = fixture(
       [
@@ -547,8 +615,9 @@ describe('raw-console guard - projects/**', () => {
     ).toEqual([]);
   });
 
-  it('gives every exemption a reason', () => {
+  it('gives every exemption a reason and drops exemptions that cover nothing', () => {
     expect(RAW_CONSOLE_EXEMPT.filter((e) => !e.reason?.trim())).toEqual([]);
+    expect(RAW_CONSOLE_EXEMPT.filter((e) => !result.raw.has(e.file))).toEqual([]);
   });
 
   it('reports exactly the reviewed indirect dev sinks', () => {

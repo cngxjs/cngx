@@ -122,18 +122,18 @@ function isSpec(path) {
 
 // Tooling roots (`projects/*/schematics`) never reach a browser bundle, so
 // they are skipped like in every other guard that walks projects/.
-function collect(dir, accept) {
+function collect(dir, accept, root = process.cwd()) {
   const out = [];
   for (const name of readdirSync(dir)) {
     if (SKIPPED_DIRS.has(name)) {
       continue;
     }
     const abs = join(dir, name);
-    if (isToolingRoot(relative(process.cwd(), abs).split(sep).join('/'))) {
+    if (isToolingRoot(relative(root, abs).split(sep).join('/'))) {
       continue;
     }
     if (statSync(abs).isDirectory()) {
-      out.push(...collect(abs, accept));
+      out.push(...collect(abs, accept, root));
     } else if (accept(name)) {
       out.push(abs);
     }
@@ -141,10 +141,11 @@ function collect(dir, accept) {
   return out;
 }
 
-// The library sources the needles are derived from, repo-relative.
-export function sourceFiles(dir = DEFAULT_SOURCE) {
-  return collect(resolve(dir), (name) => name.endsWith('.ts')).map((abs) =>
-    relative(process.cwd(), abs),
+// The library sources the needles are derived from, relative to `root`
+// (the repo root; defaults to the working directory).
+export function sourceFiles(dir = DEFAULT_SOURCE, root = process.cwd()) {
+  return collect(resolve(root, dir), (name) => name.endsWith('.ts'), root).map((abs) =>
+    relative(root, abs),
   );
 }
 
