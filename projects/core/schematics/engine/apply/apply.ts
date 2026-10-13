@@ -1,7 +1,6 @@
 import { chain, noop, type Rule, SchematicsException, type Tree } from '@angular-devkit/schematics';
 import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeScript/lib/typescript';
 import {
-  addDependency,
   addRootProvider,
   DependencyType,
   ExistingBehavior,
@@ -20,7 +19,8 @@ import {
   promoteTypeOnlyImport,
   topLevelBindings,
 } from '../edit/ts-edit';
-import { addLockstepDependency, keepManifestNewline } from '../manifest/lockstep';
+import { addDependency } from '../manifest/add-dependency';
+import { addLockstepDependency } from '../manifest/lockstep';
 import {
   type AddImport,
   type AddProvider,
@@ -186,13 +186,11 @@ function toRule(change: Change): Rule {
       return addImport(change);
     case 'add-dependency':
       return change.dev === true
-        ? keepManifestNewline(
-            addDependency(change.name, change.version, {
-              type: DependencyType.Dev,
-              install: InstallBehavior.None,
-              existing: ExistingBehavior.Skip,
-            }),
-          )
+        ? addDependency(change.name, change.version, {
+            type: DependencyType.Dev,
+            install: InstallBehavior.None,
+            existing: ExistingBehavior.Skip,
+          })
         : addLockstepDependency(change.name, change.version);
     case 'add-provider':
       return addProvider(change);
