@@ -59,6 +59,12 @@ reference at two levels lists it once. A `viewProviders` set stays invisible to
 projected content, as for any `viewProviders` entry; use `providers` when
 content children need it.
 
+Command ids are unique in the merged list. A command whose `id` is already
+registered further out replaces that command in place: the innermost scope (or,
+on one level, the later registration) wins, and the entry keeps the position of
+the first occurrence. Reuse an id on purpose to swap a global command for a
+scoped version; give unrelated commands distinct ids.
+
 Register through `provideCommands`. A raw `CNGX_COMMAND_SOURCE` multi-provider
 joins only the level `injectCommands()` resolves as nearest; it is not carried
 into deeper scopes.

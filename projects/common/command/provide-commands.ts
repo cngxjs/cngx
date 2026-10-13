@@ -59,7 +59,9 @@ const CNGX_COMMAND_REGISTRY = new InjectionToken<readonly CngxCommandSource[]>(
  * A scoped call adds to the sets above it and never hides them, across route
  * and component scopes: root and route scopes come first (outer to inner), then
  * component scopes outer to inner. The same source reference registered at two
- * levels is listed once.
+ * levels is listed once. Command ids are unique in the merged list: a command
+ * whose `id` is already registered further out replaces that command in place,
+ * so a scope can swap a global command for its own version.
  *
  * ```ts
  * // app root
@@ -115,7 +117,20 @@ export function injectCommands(): Signal<readonly CngxCommand[]> {
     inject(CNGX_COMMAND_REGISTRY, { optional: true }) ?? [],
     inject(CNGX_COMMAND_SOURCE, { optional: true }) ?? [],
   );
-  return computed(() => sources.flatMap(readSource), { equal: commandsEqual });
+  return computed(() => dedupeById(sources.flatMap(readSource)), { equal: commandsEqual });
+}
+
+/**
+ * @internal Keeps one command per `id`: the last registration (the innermost
+ * scope) wins, at the position of the first. A Map keeps a key's insertion slot
+ * when its value is replaced.
+ */
+function dedupeById(commands: readonly CngxCommand[]): readonly CngxCommand[] {
+  const byId = new Map<string, CngxCommand>();
+  for (const command of commands) {
+    byId.set(command.id, command);
+  }
+  return byId.size === commands.length ? commands : [...byId.values()];
 }
 
 /** @internal Concatenates in argument order and drops repeated source references. */

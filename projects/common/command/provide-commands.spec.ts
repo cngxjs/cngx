@@ -326,3 +326,50 @@ describe('provideCommands / injectCommands scope inheritance', () => {
     });
   });
 });
+
+describe('provideCommands / injectCommands id dedupe', () => {
+  it('an inner scope replaces an outer command with the same id, in the outer position', () => {
+    @Component({
+      template: '',
+      viewProviders: [provideCommands([cmd('x', { label: 'scoped' }), cmd('c')])],
+    })
+    class Host {
+      readonly commands = injectCommands();
+    }
+    TestBed.configureTestingModule({
+      providers: [provideCommands([cmd('x', { label: 'global' }), cmd('b')])],
+    });
+
+    const commands = TestBed.createComponent(Host).componentInstance.commands;
+    expect(ids(commands)).toEqual(['x', 'b', 'c']);
+    expect(commands()[0].label).toBe('scoped');
+  });
+
+  it('on one level, the later registration of an id wins', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCommands([cmd('x', { label: 'first' })]),
+        provideCommands([cmd('x', { label: 'second' })]),
+      ],
+    });
+
+    const commands = merged();
+    expect(ids(commands)).toEqual(['x']);
+    expect(commands()[0].label).toBe('second');
+  });
+
+  it('keeps the deduped array stable when an identical set is re-emitted', () => {
+    const a = cmd('a');
+    const x1 = cmd('x');
+    const x2 = cmd('x');
+    const source = signal<readonly CngxCommand[]>([a, x1, x2]);
+    TestBed.configureTestingModule({ providers: [provideCommands(source)] });
+    const commands = merged();
+
+    const first = commands();
+    source.set([a, x1, x2]);
+
+    expect(first).toEqual([a, x2]);
+    expect(commands()).toBe(first);
+  });
+});

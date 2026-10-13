@@ -67,7 +67,8 @@ for programmatic control.
 The static registry is `provideCommands(...sources)` - each source an array or
 a `Signal<readonly CngxCommand[]>`, merged reactively. Scoped calls in a lazy
 route or a component add to the root set, so a palette inside a feature lists
-the global commands plus the feature's own. A `CngxCommand` is pure
+the global commands plus the feature's own; a scoped command that reuses a
+global command's `id` replaces it there. A `CngxCommand` is pure
 data plus `run()`: `id`, `label`, optional `keywords`, `group`, `icon`,
 `disabled` (a `Signal<boolean>`), `disabledReason`, and an `unknown` `data`
 payload the row slot narrows.
