@@ -6,11 +6,11 @@ import {
   type Signal,
   effect,
   inject,
-  isDevMode,
   signal,
   untracked,
 } from '@angular/core';
 import { observeResize } from '@cngx/common/layout';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * Reactive scroll state of a container element.
@@ -130,8 +130,9 @@ export function createScrollObserver(
     if (typeof elementRef !== 'string' || typeof MutationObserver === 'undefined') {
       return;
     }
-    if (isDevMode()) {
-      console.warn(
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      cngxDevWarn(
+        'CNGX1013',
         `recycler scrollElement '${elementRef}' not found on first render; ` +
           'it will attach automatically once it mounts. If it never does, check the selector.',
       );

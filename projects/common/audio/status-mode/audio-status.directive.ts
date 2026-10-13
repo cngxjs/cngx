@@ -6,10 +6,10 @@ import {
   effect,
   inject,
   input,
-  isDevMode,
   untracked,
 } from '@angular/core';
 import { CNGX_STATEFUL, type CngxAsyncState, createTransitionTracker } from '@cngx/core/utils';
+import { cngxDevError } from '@cngx/utils';
 
 import { injectCngxAudio } from '../inject-audio';
 import { sameStringMap } from '../internal/same-string-map';
@@ -83,18 +83,20 @@ export class CngxAudioStatus {
   });
 
   constructor() {
-    if (isDevMode()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       // One-shot post-binding check, not a reactive node.
       afterNextRender(() => {
         const parsed = parseStatusBindings(this.spec());
         if (parsed.domEventKeys.length > 0) {
-          console.error(
+          cngxDevError(
+            'CNGX1004',
             `[cngxAudioStatus] DOM-event keys "${parsed.domEventKeys.join(', ')}" are not lifecycle ` +
               'statuses. Use [cngxAudio] for DOM-event bindings.',
           );
         }
         if (this.state() === undefined && !this.statefulFallback) {
-          console.error(
+          cngxDevError(
+            'CNGX1005',
             '[cngxAudioStatus] No state source. Bind [state]="state" explicitly or place inside a ' +
               'component that provides CNGX_STATEFUL.',
           );

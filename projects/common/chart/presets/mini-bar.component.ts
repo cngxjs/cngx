@@ -136,11 +136,13 @@ export class CngxMiniBar {
   protected readonly showsMeterValue = computed(() => this.activeView() === 'content');
 
   constructor() {
-    warnIfUnnamedPreset(
-      'cngx-mini-bar',
-      'Bind [label] or [aria-label].',
-      () => (this.ariaLabel() ?? this.label()) !== null,
-    );
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnIfUnnamedPreset(
+        'cngx-mini-bar',
+        'Bind [label] or [aria-label].',
+        () => (this.ariaLabel() ?? this.label()) !== null,
+      );
+    }
   }
 
   protected readonly percent = computed(

@@ -5,16 +5,7 @@
 
 export const RAW_CONSOLE_BASELINE = {
   common: [
-    { file: 'projects/common/audio/engine/audio-engine.ts', count: 1 },
-    { file: 'projects/common/audio/event-mode/audio.directive.ts', count: 2 },
-    { file: 'projects/common/audio/status-mode/audio-status.directive.ts', count: 2 },
-    { file: 'projects/common/card/card-timestamp.component.ts', count: 1 },
-    { file: 'projects/common/chart/chart/chart.component.ts', count: 3 },
-    { file: 'projects/common/chart/presets/preset-state.ts', count: 1 },
     { file: 'projects/common/data/paginate/paginate-routing.directive.ts', count: 1 },
-    { file: 'projects/common/data/recycler/recycler.ts', count: 2 },
-    { file: 'projects/common/data/recycler/scroll-observer.ts', count: 1 },
-    { file: 'projects/common/dialog/dialog/dialog.directive.ts', count: 2 },
     { file: 'projects/common/display/status/status.component.ts', count: 2 },
     { file: 'projects/common/display/tag-group/tag-group.component.ts', count: 1 },
     { file: 'projects/common/display/time/time.component.ts', count: 1 },

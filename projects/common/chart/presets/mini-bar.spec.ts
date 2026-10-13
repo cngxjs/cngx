@@ -183,7 +183,7 @@ describe('CngxMiniBar - unnamed-meter dev warning', () => {
     await fixture.whenStable();
     expect(
       warn.mock.calls.some(
-        (c) => String(c[0]).includes('cngx-mini-bar') && String(c[0]).includes('accessible name'),
+        (c) => String(c[0]).includes('CNGX1010: cngx-mini-bar') && String(c[0]).includes('accessible name'),
       ),
     ).toBe(true);
   });

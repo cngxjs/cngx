@@ -542,7 +542,7 @@ describe('injectRecycler', () => {
         estimateSize: 100,
         layout: 'grid',
       });
-      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('requires explicit `columns`'));
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('CNGX1011: [CngxRecycler] layout: "grid" requires explicit `columns`'));
       // Still functional - degrades to single-column list
       expect(recycler.start()).toBe(0);
       errorSpy.mockRestore();

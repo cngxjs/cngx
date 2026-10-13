@@ -205,7 +205,7 @@ describe('CngxChart', () => {
     const fixture = TestBed.createComponent(NonNumericHost);
     fixture.detectChanges();
     TestBed.tick();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CngxChart: data is non-numeric'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX1007: CngxChart: data is non-numeric'));
     warn.mockRestore();
   });
 
@@ -1601,7 +1601,9 @@ describe('CngxChart - overlay slot', () => {
     ) as HTMLElement;
     expect(chart.querySelectorAll('.cngx-chart__overlay-frame').length).toBe(1);
     expect(chart.textContent).toContain('first');
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('more than one *cngxChartOverlay'));
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('CNGX1008: CngxChart: more than one *cngxChartOverlay'),
+    );
     warn.mockRestore();
   });
 

@@ -73,6 +73,156 @@
       "files": ["projects/utils/tree.ts"]
     },
     {
+      "code": "CNGX1001",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Unknown earcon",
+      "page": "core-concepts/error-codes/cngx1001.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1001.html",
+      "status": "active",
+      "files": ["projects/common/audio/engine/audio-engine.ts"]
+    },
+    {
+      "code": "CNGX1002",
+      "lib": "common",
+      "severity": "error",
+      "title": "Lifecycle key bound on `[cngxAudio]`",
+      "page": "core-concepts/error-codes/cngx1002.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1002.html",
+      "status": "active",
+      "files": ["projects/common/audio/event-mode/audio.directive.ts"]
+    },
+    {
+      "code": "CNGX1003",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Unrecognised event key on `[cngxAudio]`",
+      "page": "core-concepts/error-codes/cngx1003.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1003.html",
+      "status": "active",
+      "files": ["projects/common/audio/event-mode/audio.directive.ts"]
+    },
+    {
+      "code": "CNGX1004",
+      "lib": "common",
+      "severity": "error",
+      "title": "DOM-event key bound on `[cngxAudioStatus]`",
+      "page": "core-concepts/error-codes/cngx1004.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1004.html",
+      "status": "active",
+      "files": ["projects/common/audio/status-mode/audio-status.directive.ts"]
+    },
+    {
+      "code": "CNGX1005",
+      "lib": "common",
+      "severity": "error",
+      "title": "No state source for `[cngxAudioStatus]`",
+      "page": "core-concepts/error-codes/cngx1005.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1005.html",
+      "status": "active",
+      "files": ["projects/common/audio/status-mode/audio-status.directive.ts"]
+    },
+    {
+      "code": "CNGX1006",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Invalid Date bound to a timestamp",
+      "page": "core-concepts/error-codes/cngx1006.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1006.html",
+      "status": "active",
+      "files": ["projects/common/card/card-timestamp.component.ts"]
+    },
+    {
+      "code": "CNGX1007",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Non-numeric chart data without a summary accessor",
+      "page": "core-concepts/error-codes/cngx1007.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1007.html",
+      "status": "active",
+      "files": ["projects/common/chart/chart/chart.component.ts"]
+    },
+    {
+      "code": "CNGX1008",
+      "lib": "common",
+      "severity": "warn",
+      "title": "More than one chart overlay",
+      "page": "core-concepts/error-codes/cngx1008.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1008.html",
+      "status": "active",
+      "files": ["projects/common/chart/chart/chart.component.ts"]
+    },
+    {
+      "code": "CNGX1009",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Two chart axes share one orientation",
+      "page": "core-concepts/error-codes/cngx1009.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1009.html",
+      "status": "active",
+      "files": ["projects/common/chart/chart/chart.component.ts"]
+    },
+    {
+      "code": "CNGX1010",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Chart preset without an accessible name",
+      "page": "core-concepts/error-codes/cngx1010.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1010.html",
+      "status": "active",
+      "files": ["projects/common/chart/presets/preset-state.ts"]
+    },
+    {
+      "code": "CNGX1011",
+      "lib": "common",
+      "severity": "error",
+      "title": "Grid recycler without columns",
+      "page": "core-concepts/error-codes/cngx1011.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1011.html",
+      "status": "active",
+      "files": ["projects/common/data/recycler/recycler.ts"]
+    },
+    {
+      "code": "CNGX1012",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Per-index size estimate on a large recycler",
+      "page": "core-concepts/error-codes/cngx1012.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1012.html",
+      "status": "active",
+      "files": ["projects/common/data/recycler/recycler.ts"]
+    },
+    {
+      "code": "CNGX1013",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Recycler scroll element not found on first render",
+      "page": "core-concepts/error-codes/cngx1013.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1013.html",
+      "status": "active",
+      "files": ["projects/common/data/recycler/scroll-observer.ts"]
+    },
+    {
+      "code": "CNGX1014",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Second dialog title or description registered",
+      "page": "core-concepts/error-codes/cngx1014.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1014.html",
+      "status": "active",
+      "files": ["projects/common/dialog/dialog/dialog.directive.ts"]
+    },
+    {
+      "code": "CNGX1015",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Non-modal dialog without a live region",
+      "page": "core-concepts/error-codes/cngx1015.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1015.html",
+      "status": "active",
+      "files": ["projects/common/dialog/dialog/dialog.directive.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

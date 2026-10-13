@@ -187,6 +187,6 @@ describe('CngxAudio directive', () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const { fixture } = setup({ spec: 'pending:tap' });
     await fixture.whenStable();
-    expect(error).toHaveBeenCalledWith(expect.stringContaining('[cngxAudioStatus]'));
+    expect(error).toHaveBeenCalledWith(expect.stringContaining('CNGX1002: [cngxAudio]'));
   });
 });

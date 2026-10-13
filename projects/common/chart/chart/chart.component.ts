@@ -9,7 +9,6 @@ import {
   ElementRef,
   inject,
   input,
-  isDevMode,
   type Signal,
   untracked,
   ViewEncapsulation,
@@ -18,6 +17,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { CngxResizeObserver } from '@cngx/common/layout';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import { createTransitionTracker, nextUid, type CngxAsyncState } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 import { type CngxAxisPosition, type CngxAxisType } from '../axis/axis-position';
 import { CNGX_CHART_AXIS } from '../axis/chart-axis';
 import { CngxThreshold } from '../layers/threshold.component';
@@ -724,7 +724,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
       destroyRef: this.destroyRef,
     });
 
-    if (isDevMode()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       afterNextRender(() => {
         if (this.summaryAccessor() !== DEFAULT_SUMMARY_ACCESSOR) {
           return;
@@ -737,7 +737,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
         if (Number.isFinite(projected)) {
           return;
         }
-        console.warn(
+        cngxDevWarn(
+          'CNGX1007',
           'CngxChart: data is non-numeric and no [summaryAccessor] is bound. ' +
             'Auto-Summary and the SR data-table will silently fall back to NaN. ' +
             'Bind [summaryAccessor]="(d) => d.yourField" or pass a numeric data array.',
@@ -745,7 +746,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
       });
       afterNextRender(() => {
         if (this.overlaySlots().length > 1) {
-          console.warn(
+          cngxDevWarn(
+            'CNGX1008',
             'CngxChart: more than one *cngxChartOverlay projected; only the first renders. ' +
               'Compose multiple overlays inside a single overlay template.',
           );
@@ -756,7 +758,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
         const horizontal = axes.filter((a) => isHorizontalPosition(a.position()));
         const vertical = axes.filter((a) => isVerticalPosition(a.position()));
         if (horizontal.length > 1 || vertical.length > 1) {
-          console.warn(
+          cngxDevWarn(
+            'CNGX1009',
             'CngxChart: multiple axes share one orientation; only the first drives ' +
               'the scale, the rest render their line and ticks but their [domain] ' +
               'is silently ignored. Mount one X and one Y axis per chart.',
