@@ -1,4 +1,4 @@
-import { isDevMode } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * Sink callback invoked by `[cngxMatTabs]`'s aggregator-decoration
@@ -34,10 +34,11 @@ export type CngxMatTabHalfWiredSlotSink = (
 export const CNGX_DEFAULT_HALF_WIRED_SLOT_SINK: CngxMatTabHalfWiredSlotSink = (
   missing,
 ) => {
-  if (!isDevMode()) {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
     return;
   }
-  console.warn(
+  cngxDevWarn(
+    'CNGX3006',
     '[cngxMatTabs] aggregator-content slot half-wired - ' +
       `\`${missing}\` is missing while the other half is supplied. ` +
       'The decoration projector will silently fall back to the ' +

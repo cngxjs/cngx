@@ -11,7 +11,6 @@ import {
   inject,
   Injector,
   input,
-  isDevMode,
   linkedSignal,
   signal,
   type Signal,
@@ -57,6 +56,7 @@ import {
   type CngxTabsPanelMode,
   type CngxTabsSkin,
 } from '@cngx/common/tabs';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * CNGX tab-group organism. \
@@ -306,13 +306,14 @@ export class CngxTabGroup implements CngxTabPanelHost {
       this.activePanelHasFocusable.set(panel?.querySelector(CNGX_FOCUSABLE_SELECTOR) != null);
     });
 
-    if (isDevMode()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       // One-shot post-mount check: icon-only hides the label, so a
       // missing *cngxTabIcon template leaves the tab visually empty.
       // afterNextRender runs once, off the reactive graph.
       afterNextRender(() => {
         if (this.hostAttrs.resolvedIconLayout() === 'only' && !this.iconSlot()) {
-          console.warn(
+          cngxDevWarn(
+            'CNGX3011',
             "[cngx-tab-group] iconLayout='only' but no *cngxTabIcon template " +
               'is provided - tabs render no icon and the label is visually ' +
               "hidden. Provide an <ng-template cngxTabIcon> or use 'start' / 'end' / 'top'.",

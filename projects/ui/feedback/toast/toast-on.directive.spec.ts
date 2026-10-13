@@ -100,7 +100,9 @@ describe('CngxToastOn', () => {
     const fixture = TestBed.createComponent(MissingSourceHost);
     fixture.detectChanges();
     TestBed.tick();
-    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/No state source/));
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringMatching(/^CNGX3002: \[cngxToastOn\] No state source/),
+    );
     spy.mockRestore();
   });
 

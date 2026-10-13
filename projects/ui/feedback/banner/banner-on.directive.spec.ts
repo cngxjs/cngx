@@ -92,7 +92,9 @@ describe('CngxBannerOn', () => {
     const fixture = TestBed.createComponent(MissingSourceHost);
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/No state source/));
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringMatching(/^CNGX3002: \[cngxBannerOn\] No state source/),
+    );
     spy.mockRestore();
   });
 

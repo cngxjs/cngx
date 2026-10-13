@@ -1222,6 +1222,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     try {
       onGiveUp?.();
       expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(String(warnSpy.mock.calls[0][0])).toContain('CNGX3007: [CngxMatTabs]');
       expect(String(warnSpy.mock.calls[0][0])).toContain('12 attempts');
     } finally {
       warnSpy.mockRestore();

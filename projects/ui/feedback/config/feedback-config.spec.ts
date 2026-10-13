@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   CNGX_FEEDBACK_CONFIG,
+  injectErrorDetail,
   provideFeedback,
   withAlerts,
   withToasts,
@@ -50,5 +51,30 @@ describe('provideFeedback merge rule', () => {
     expect(config.alertDefaultDuration).toBe(3000);
     expect(config.alertDedupWindow).toBe(250);
     expect(config.alertMaxVisible).toBe(2);
+  });
+});
+
+describe('injectErrorDetail default', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  const detailFor = (error: unknown) =>
+    TestBed.runInInjectionContext(() => injectErrorDetail())(error);
+
+  it('shows no detail and writes nothing in production', () => {
+    vi.stubGlobal('ngDevMode', false);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    expect(detailFor(new Error('boom'))).toBeUndefined();
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('shows the raw text and warns once with CNGX3004 in dev mode', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    expect(detailFor(new Error('boom'))).toBe('boom');
+    expect(detailFor(new Error('boom'))).toBe('boom');
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0][0])).toMatch(/^CNGX3004: \[cngx\/feedback\]/);
   });
 });

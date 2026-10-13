@@ -11,13 +11,14 @@ describe('CNGX_DEFAULT_HALF_WIRED_SLOT_SINK', () => {
 
   afterEach(() => {
     warnSpy.mockRestore();
+    vi.unstubAllGlobals();
   });
 
   it('writes through to console.warn in dev-mode', () => {
     CNGX_DEFAULT_HALF_WIRED_SLOT_SINK('contentTemplate');
     expect(warnSpy).toHaveBeenCalledTimes(1);
     const message = String(warnSpy.mock.calls[0][0]);
-    expect(message).toContain('aggregator-content slot half-wired');
+    expect(message).toContain('CNGX3006: [cngxMatTabs] aggregator-content slot half-wired');
     expect(message).toContain('contentTemplate');
   });
 
@@ -25,5 +26,11 @@ describe('CNGX_DEFAULT_HALF_WIRED_SLOT_SINK', () => {
     CNGX_DEFAULT_HALF_WIRED_SLOT_SINK('viewContainerRef');
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(String(warnSpy.mock.calls[0][0])).toContain('viewContainerRef');
+  });
+
+  it('writes nothing in production', () => {
+    vi.stubGlobal('ngDevMode', false);
+    CNGX_DEFAULT_HALF_WIRED_SLOT_SINK('contentTemplate');
+    expect(warnSpy).not.toHaveBeenCalled();
   });
 });

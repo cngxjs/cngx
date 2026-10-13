@@ -1601,7 +1601,9 @@ describe('CngxTabGroup cngxTabIcon slot', () => {
       // synchronously - no fake-timer / whenStable hang vector.
       TestBed.tick();
       expect(
-        warn.mock.calls.some((c) => String(c[0]).includes("iconLayout='only'")),
+        warn.mock.calls.some((c) =>
+          String(c[0]).includes("CNGX3011: [cngx-tab-group] iconLayout='only'"),
+        ),
       ).toBe(true);
     } finally {
       warn.mockRestore();

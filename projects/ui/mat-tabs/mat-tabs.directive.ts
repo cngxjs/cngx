@@ -9,7 +9,6 @@ import {
   Injectable,
   inject,
   Injector,
-  isDevMode,
   Renderer2,
   type Signal,
   type TemplateRef,
@@ -31,6 +30,7 @@ import {
   type CngxTabPanelHost,
 } from '@cngx/common/tabs';
 import { CngxTabOverflow } from '@cngx/ui/tabs';
+import { cngxDevWarn } from '@cngx/utils';
 
 import {
   createMatTabAggregatorDecoration,
@@ -281,8 +281,9 @@ export class CngxMatTabs {
         return () => undefined;
       },
       onGiveUp: () => {
-        if (isDevMode()) {
-          console.warn(
+        if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+          cngxDevWarn(
+            'CNGX3007',
             `[CngxMatTabs] Could not anchor <cngx-tab-overflow> after ${anchorMaxAttempts} ` +
               'attempts - .mat-mdc-tab-header was not found inside the ' +
               'host. The More popover will fall back to a sibling-of-' +

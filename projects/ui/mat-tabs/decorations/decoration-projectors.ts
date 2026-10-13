@@ -4,7 +4,6 @@ import {
   effect,
   type EmbeddedViewRef,
   type Injector,
-  isDevMode,
   type Renderer2,
   runInInjectionContext,
   type Signal,
@@ -12,6 +11,7 @@ import {
   untracked,
   type ViewContainerRef,
 } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { CNGX_DEFAULT_HALF_WIRED_SLOT_SINK } from './half-wired-slot-sink';
 import type { CngxMatTabAggregatorContentContext } from './mat-tab-aggregator-content.directive';
@@ -321,7 +321,9 @@ export function createMatTabRejectionDecoration(
       retryAttempts = 0;
       const sink =
         opts.onMaxRetriesReached ??
-        defaultRetryCeilingWarn(maxRetryAttempts, 'rejection');
+        (typeof ngDevMode !== 'undefined' && ngDevMode
+          ? defaultRetryCeilingWarn(maxRetryAttempts, 'rejection')
+          : noop);
       sink();
       return;
     }
@@ -484,8 +486,12 @@ export function createMatTabAggregatorDecoration(
   if (!isFullyWired() && (opts.contentTemplate || opts.viewContainerRef)) {
     const missing: 'contentTemplate' | 'viewContainerRef' =
       opts.contentTemplate ? 'viewContainerRef' : 'contentTemplate';
-    const sink = opts.onHalfWiredSlot ?? CNGX_DEFAULT_HALF_WIRED_SLOT_SINK;
-    sink(missing);
+    const sink =
+      opts.onHalfWiredSlot ??
+      (typeof ngDevMode !== 'undefined' && ngDevMode
+        ? CNGX_DEFAULT_HALF_WIRED_SLOT_SINK
+        : undefined);
+    sink?.(missing);
   }
 
   const decorated = new Map<
@@ -668,7 +674,10 @@ export function createMatTabAggregatorDecoration(
     if (retryAttempts >= maxRetryAttempts) {
       retryAttempts = 0;
       const sink =
-        opts.onMaxRetriesReached ?? defaultRetryCeilingWarn(maxRetryAttempts, 'aggregator');
+        opts.onMaxRetriesReached ??
+        (typeof ngDevMode !== 'undefined' && ngDevMode
+          ? defaultRetryCeilingWarn(maxRetryAttempts, 'aggregator')
+          : noop);
       sink();
       return;
     }
@@ -703,15 +712,18 @@ export function createMatTabAggregatorDecoration(
   });
 }
 
+const noop = (): void => undefined;
+
 function defaultRetryCeilingWarn(
   max: number,
   decoration: 'aggregator' | 'rejection',
 ): () => void {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return noop;
+  }
   return () => {
-    if (!isDevMode()) {
-      return;
-    }
-    console.warn(
+    cngxDevWarn(
+      'CNGX3005',
       `[cngxMatTabs] ${decoration} decoration retry ceiling reached ` +
         `(${max} attempts) - MatTabHeader did not render ` +
         '`.mat-mdc-tab` buttons within the expected window. Likely ' +

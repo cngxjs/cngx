@@ -24,7 +24,7 @@ import {
 } from '@cngx/core/utils';
 import { CNGX_HOVER_INTENT_DEFAULTS, CngxHoverIntent } from '@cngx/common/interactive';
 import { CNGX_CONTAINER_SIZE } from '@cngx/common/layout';
-import { clamp } from '@cngx/utils';
+import { clamp, cngxDevWarn } from '@cngx/utils';
 
 import { injectSidenavConfig, injectSidenavLabels } from './config/inject-sidenav-config';
 import { CNGX_SIDENAV } from './sidenav-token';
@@ -403,7 +403,8 @@ export class CngxSidenav {
         this.mode() === 'auto' &&
         !this.container
       ) {
-        console.warn(
+        cngxDevWarn(
+          'CNGX3010',
           '[cngx-sidenav] auto mode needs a <cngx-sidenav-layout> (or [cngxContainer]) ancestor; rendering as over.',
         );
       }
