@@ -28,6 +28,7 @@ import {
   type CngxAsyncState,
 } from '@cngx/core/utils';
 import { CngxToastOn, CngxToaster, injectErrorDetail, injectFeedbackI18n } from '@cngx/ui/feedback';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * Visual variant for the action button - maps to a CSS class.
@@ -349,7 +350,8 @@ export class CngxActionButton {
       this.externalToastOn &&
       (this.toastSuccess() || this.toastError())
     ) {
-      console.warn(
+      cngxDevWarn(
+        'CNGX3008',
         'CngxActionButton: [toastSuccess]/[toastError] inputs and [cngxToastOn] ' +
           'on the same element will fire duplicate toasts. Use one or the other.',
       );

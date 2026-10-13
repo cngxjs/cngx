@@ -1,5 +1,6 @@
-import { afterNextRender, Directive, computed, inject, input, isDevMode } from '@angular/core';
+import { afterNextRender, Directive, computed, inject, input } from '@angular/core';
 import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
+import { cngxDevError } from '@cngx/utils';
 
 import { injectErrorDetail } from '../config/feedback-config';
 import { injectFeedbackI18n } from '../config/feedback-i18n';
@@ -107,12 +108,13 @@ export class CngxToastOn {
     }
     this.toastService = this.toast;
 
-    if (isDevMode()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       // afterNextRender, not effect - one-shot post-binding check, no dead
       // node in the reactive graph for the directive's lifetime.
       afterNextRender(() => {
         if (this.state() === undefined && !this.statefulFallback) {
-          console.error(
+          cngxDevError(
+            'CNGX3002',
             '[cngxToastOn] No state source. Bind [cngxToastOn]="state" explicitly or ' +
               'place inside a component that provides CNGX_STATEFUL.',
           );

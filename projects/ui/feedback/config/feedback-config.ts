@@ -3,7 +3,6 @@ import {
   type EnvironmentProviders,
   inject,
   InjectionToken,
-  isDevMode,
   type Provider,
   type Type,
   makeEnvironmentProviders,
@@ -11,6 +10,7 @@ import {
 
 import { CNGX_CLOSE_ICON } from '@cngx/common/interactive';
 import { CNGX_LOADING_CONFIG, CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 import type { AlertSeverity } from '../alert/alert';
 import { CngxAlerter } from '../alert/alerter.service';
@@ -378,9 +378,15 @@ const WARNED = new WeakSet<EnvironmentInjector>();
 function rawErrorDetailWithWarning(injector: EnvironmentInjector): CngxErrorDetailFn {
   return (error) => {
     const detail = rawErrorText(error);
-    if (detail !== undefined && !WARNED.has(injector)) {
+    if (
+      typeof ngDevMode !== 'undefined' &&
+      ngDevMode &&
+      detail !== undefined &&
+      !WARNED.has(injector)
+    ) {
       WARNED.add(injector);
-      console.warn(
+      cngxDevWarn(
+        'CNGX3004',
         '[cngx/feedback] Showing the raw error text as the error detail. Production builds ' +
           'show no detail here: map errors to user-facing text with ' +
           'provideFeedback(withErrorDetail(...)).',
@@ -431,7 +437,7 @@ export function injectErrorDetail(): CngxErrorDetailFn {
   if (mapped) {
     return mapped;
   }
-  if (!isDevMode()) {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
     return noErrorDetail;
   }
   return rawErrorDetailWithWarning(inject(EnvironmentInjector));

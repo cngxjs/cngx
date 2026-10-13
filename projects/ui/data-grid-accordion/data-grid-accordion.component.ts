@@ -21,6 +21,7 @@ import { coerceNumberProperty } from '@cngx/core/utils';
 import { CngxScrollEdges, observeResize, type ResizeObserverHost } from '@cngx/common/layout';
 import { CngxAccordion } from '@cngx/common/interactive';
 import { CngxFilter, CngxSort } from '@cngx/common/data';
+import { cngxDevWarn } from '@cngx/utils';
 
 import {
   CNGX_DATA_GRID_ACCORDION,
@@ -368,7 +369,8 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
         }
         const over = this.rows().find((row) => row.cells().length > tracks);
         if (over) {
-          console.warn(
+          cngxDevWarn(
+            'CNGX3009',
             `CngxDataGridAccordion: a row projects ${over.cells().length} cells but the ` +
               `shared column template has ${tracks} tracks - the extra cells land in ` +
               'implicit tracks and misalign silently. Match every row to the header ' +

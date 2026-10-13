@@ -828,7 +828,9 @@ describe('CngxSidenav auto mode', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { nav } = mount(StandaloneRailHost);
     expect(nav.effectiveMode()).toBe('over');
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('auto mode needs'));
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('CNGX3010: [cngx-sidenav] auto mode needs'),
+    );
   });
 
   it('keeps the rail open and unhidden when a wide layout narrows under focus', () => {

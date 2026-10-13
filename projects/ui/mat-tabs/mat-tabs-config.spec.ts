@@ -17,7 +17,10 @@ import {
   withMatTabRejectionTemplate,
 } from './mat-tabs-config';
 import type { CngxMatTabRejectionContentContext } from './decorations/mat-tab-rejection-content.directive';
-import type { CngxMatTabHalfWiredSlotSink } from './decorations/half-wired-slot-sink';
+import {
+  CNGX_DEFAULT_HALF_WIRED_SLOT_SINK,
+  type CngxMatTabHalfWiredSlotSink,
+} from './decorations/half-wired-slot-sink';
 
 describe('provideMatTabsConfig + injectMatTabsConfig', () => {
   let warnSpy: ReturnType<typeof vi.spyOn>;
@@ -28,6 +31,7 @@ describe('provideMatTabsConfig + injectMatTabsConfig', () => {
 
   afterEach(() => {
     warnSpy.mockRestore();
+    vi.unstubAllGlobals();
   });
 
   function inject1<T>(fn: () => T): T {
@@ -68,6 +72,40 @@ describe('provideMatTabsConfig + injectMatTabsConfig', () => {
     });
     const config = inject1(() => injectMatTabsConfig());
     expect(config.anchorMaxAttempts).toBe(20);
+  });
+
+  it('resolves the default half-wired sink to the dev warning in dev mode', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const config = inject1(() => injectMatTabsConfig());
+    expect(config.halfWiredSlotSink).toBe(CNGX_DEFAULT_HALF_WIRED_SLOT_SINK);
+  });
+
+  it('resolves the default half-wired sink to a silent no-op in production', () => {
+    vi.stubGlobal('ngDevMode', false);
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const config = inject1(() => injectMatTabsConfig());
+    expect(config.halfWiredSlotSink).not.toBe(CNGX_DEFAULT_HALF_WIRED_SLOT_SINK);
+    expect(inject1(() => injectMatTabsConfig()).halfWiredSlotSink).toBe(config.halfWiredSlotSink);
+    config.halfWiredSlotSink('contentTemplate');
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it('keeps a consumer half-wired sink firing in production', () => {
+    vi.stubGlobal('ngDevMode', false);
+    const customSink = vi.fn<CngxMatTabHalfWiredSlotSink>();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideMatTabsConfig(withHalfWiredSlotSink(customSink)),
+      ],
+    });
+    const config = inject1(() => injectMatTabsConfig());
+    config.halfWiredSlotSink('viewContainerRef');
+    expect(customSink).toHaveBeenCalledWith('viewContainerRef');
   });
 
   it('overrides halfWiredSlotSink via withHalfWiredSlotSink', () => {

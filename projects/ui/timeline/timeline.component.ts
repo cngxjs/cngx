@@ -7,7 +7,6 @@ import {
   contentChild,
   inject,
   input,
-  isDevMode,
   output,
   ViewEncapsulation,
   type Signal,
@@ -42,6 +41,7 @@ import {
   type CngxAsyncState,
 } from '@cngx/core/utils';
 import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui/skeleton';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { createTimelineSlots } from './slot-cascade';
 import { createTimelineFallbackCopy, TIMELINE_NO_LABELS } from './timeline-labels';
@@ -486,13 +486,14 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
   protected trackItem = (index: number, item: T): unknown => this.idAccessor()?.(item) ?? item;
 
   constructor() {
-    if (isDevMode()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       // afterNextRender, not an effect: this is a one-shot authoring check,
       // and a dead node in the reactive graph is worse than a missed
       // re-check after a runtime mode swap nobody does.
       afterNextRender(() => {
         if (this.mode() === 'activity' && this.placement() === 'alternate') {
-          console.warn(
+          cngxDevWarn(
+            'CNGX3013',
             '[cngx-timeline] placement="alternate" is ignored in mode="activity" - ' +
               'alternating a scan-feed defeats the scan, so every row renders at the ' +
               'start side. Use mode="narrative" to alternate.',

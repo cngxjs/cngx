@@ -85,6 +85,9 @@ export interface CngxMatTabsConfig {
   readonly templates?: CngxMatTabsTemplates;
 }
 
+/** Production default for `halfWiredSlotSink`: one reference, so reads stay identical. */
+const SILENT_HALF_WIRED_SLOT_SINK: CngxMatTabHalfWiredSlotSink = () => undefined;
+
 /**
  * Library defaults for `[cngxMatTabs]`. Source of truth for every
  * key on {@link CngxMatTabsConfig}. Consumed by
@@ -94,7 +97,13 @@ export interface CngxMatTabsConfig {
  */
 export const CNGX_MAT_TABS_CONFIG_DEFAULTS = {
   anchorMaxAttempts: 5,
-  halfWiredSlotSink: CNGX_DEFAULT_HALF_WIRED_SLOT_SINK,
+  // A getter, so the guard is read when the config resolves, after Angular set
+  // `ngDevMode`; production folds it and drops the dev sink from the bundle.
+  get halfWiredSlotSink(): CngxMatTabHalfWiredSlotSink {
+    return typeof ngDevMode !== 'undefined' && ngDevMode
+      ? CNGX_DEFAULT_HALF_WIRED_SLOT_SINK
+      : SILENT_HALF_WIRED_SLOT_SINK;
+  },
   templates: {},
 } as const satisfies Required<CngxMatTabsConfig>;
 

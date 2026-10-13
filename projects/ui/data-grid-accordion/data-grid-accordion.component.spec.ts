@@ -418,6 +418,7 @@ describe('CngxDataGridAccordion column derivation', () => {
     // The extra cells land in implicit grid tracks and misalign silently -
     // the only surface for the mistake is this warning.
     expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain('CNGX3009: CngxDataGridAccordion');
     expect(warn.mock.calls[0][0]).toContain('4 cells');
     expect(warn.mock.calls[0][0]).toContain('3 tracks');
     warn.mockRestore();

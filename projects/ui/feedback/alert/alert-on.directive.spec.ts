@@ -143,7 +143,9 @@ describe('CngxAlertOn', () => {
     const fixture = TestBed.createComponent(MissingSourceHost);
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/No state source/));
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringMatching(/^CNGX3002: \[cngxAlertOn\] No state source/),
+    );
     spy.mockRestore();
   });
 
@@ -187,6 +189,7 @@ describe('CngxAlertOn', () => {
         String(text).includes('withErrorDetail'),
       );
       expect(warnings).toHaveLength(1);
+      expect(String(warnings[0][0])).toContain('CNGX3004: [cngx/feedback]');
       expect(String(warnings[0][0])).toContain('Production builds show no detail');
     });
 

@@ -144,7 +144,17 @@ describe('CngxTocRouterSync', () => {
 
     expect(() => toc.activated.emit({ id: 'intro', label: 'Intro' })).not.toThrow();
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toContain('CngxTocRouterSync');
+    expect(warn.mock.calls[0][0]).toContain('CNGX3001: CngxTocRouterSync');
+  });
+
+  it('writes nothing to the console without a Router in production', () => {
+    vi.stubGlobal('ngDevMode', false);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    TestBed.configureTestingModule({ providers: [] });
+    const { toc } = setup();
+
+    expect(() => toc.activated.emit({ id: 'intro', label: 'Intro' })).not.toThrow();
+    expect(warn).not.toHaveBeenCalled();
   });
 
   it('stops writing the fragment after the directive is destroyed', () => {

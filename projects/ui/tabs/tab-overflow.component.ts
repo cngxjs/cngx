@@ -10,7 +10,6 @@ import {
   effect,
   ElementRef,
   inject,
-  isDevMode,
   linkedSignal,
   untracked,
   viewChild,
@@ -34,6 +33,7 @@ import {
   type CngxTabHandle,
   type CngxTabPanelHost,
 } from '@cngx/common/tabs';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * Structural equal for `hiddenTabs` - same ids in same order.
@@ -254,8 +254,9 @@ export class CngxTabOverflow {
       return () => cancelAnimationFrame(handle);
     },
     onGiveUp: () => {
-      if (isDevMode()) {
-        console.warn(
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        cngxDevWarn(
+          'CNGX3012',
           '[CngxTabOverflow] Strip wrapper not found after 60 attach ' +
             'attempts; the More popover will not surface clipped tabs. ' +
             'Verify the molecule is projected inside <cngx-tab-group> ' +

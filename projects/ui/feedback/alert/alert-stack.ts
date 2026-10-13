@@ -9,13 +9,13 @@ import {
   inject,
   Injector,
   input,
-  isDevMode,
   linkedSignal,
   untracked,
   ViewEncapsulation,
 } from '@angular/core';
 
 import { CngxCloseButton } from '@cngx/common/interactive';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { injectFeedbackI18n } from '../config/feedback-i18n';
@@ -289,7 +289,7 @@ export class CngxAlertStack {
   });
 
   constructor() {
-    if (isDevMode()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       const warned = new Set<string>();
       effect(() => {
         if (this.overflowCount() === 0) {
@@ -303,7 +303,8 @@ export class CngxAlertStack {
         }
         warned.add(pair);
         untracked(() =>
-          console.warn(
+          cngxDevWarn(
+            'CNGX3003',
             `[CngxAlertStack] The overflow aria-label "${name}" does not contain its visible ` +
               `label "${visible}" (WCAG 2.5.3). Make alertOverflow(count) include ` +
               'alertOverflowVisible(count).',

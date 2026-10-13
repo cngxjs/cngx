@@ -11,6 +11,7 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { type ActivatedRouteSnapshot, NavigationEnd, type Route, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { CNGX_BREADCRUMB_SIBLINGS_SOURCE } from './breadcrumb-siblings-source.token';
 import type { CngxBreadcrumbSiblingsSource } from './breadcrumb-siblings-source.token';
@@ -123,12 +124,15 @@ export class CngxBreadcrumbSiblingsRouterSync implements CngxBreadcrumbSiblingsS
   constructor() {
     const router = this.router;
     if (!router) {
-      afterNextRender(() => {
-        console.warn(
-          'CngxBreadcrumbSiblingsRouterSync: no Router available - directive is a no-op. ' +
-            'Provide @angular/router via provideRouter(...) to enable router-driven siblings.',
-        );
-      });
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        afterNextRender(() => {
+          cngxDevWarn(
+            'CNGX3001',
+            'CngxBreadcrumbSiblingsRouterSync: no Router available - directive is a no-op. ' +
+              'Provide @angular/router via provideRouter(...) to enable router-driven siblings.',
+          );
+        });
+      }
       this.siblings = signal<readonly CngxBreadcrumbSibling[]>([]).asReadonly();
       return;
     }

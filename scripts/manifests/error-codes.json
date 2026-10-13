@@ -133,6 +133,144 @@
       "files": ["projects/forms/input/reactive-forms-channel.ts"]
     },
     {
+      "code": "CNGX3001",
+      "lib": "ui",
+      "severity": "warn",
+      "title": "No Router for a router-sync directive",
+      "page": "core-concepts/error-codes/cngx3001.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3001.html",
+      "status": "active",
+      "files": [
+        "projects/ui/breadcrumb/breadcrumb-router-sync.directive.ts",
+        "projects/ui/breadcrumb/breadcrumb-siblings-router-sync.directive.ts",
+        "projects/ui/toc/toc-router-sync.directive.ts"
+      ]
+    },
+    {
+      "code": "CNGX3002",
+      "lib": "ui",
+      "severity": "error",
+      "title": "No state source for a feedback bridge",
+      "page": "core-concepts/error-codes/cngx3002.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3002.html",
+      "status": "active",
+      "files": [
+        "projects/ui/feedback/alert/alert-on.directive.ts",
+        "projects/ui/feedback/banner/banner-on.directive.ts",
+        "projects/ui/feedback/toast/toast-on.directive.ts"
+      ]
+    },
+    {
+      "code": "CNGX3003",
+      "lib": "ui",
+      "severity": "warn",
+      "title": "Alert overflow label does not contain its visible text",
+      "page": "core-concepts/error-codes/cngx3003.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3003.html",
+      "status": "active",
+      "files": ["projects/ui/feedback/alert/alert-stack.ts"]
+    },
+    {
+      "code": "CNGX3004",
+      "lib": "ui",
+      "severity": "warn",
+      "title": "Raw error text shown as error detail",
+      "page": "core-concepts/error-codes/cngx3004.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3004.html",
+      "status": "active",
+      "files": ["projects/ui/feedback/config/feedback-config.ts"]
+    },
+    {
+      "code": "CNGX3005",
+      "lib": "ui",
+      "severity": "warn",
+      "title": "Mat-tabs decoration retry ceiling reached",
+      "page": "core-concepts/error-codes/cngx3005.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3005.html",
+      "status": "active",
+      "files": ["projects/ui/mat-tabs/decorations/decoration-projectors.ts"]
+    },
+    {
+      "code": "CNGX3006",
+      "lib": "ui",
+      "severity": "warn",
+      "title": "Mat-tabs aggregator slot half-wired",
+      "page": "core-concepts/error-codes/cngx3006.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3006.html",
+      "status": "active",
+      "files": ["projects/ui/mat-tabs/decorations/half-wired-slot-sink.ts"]
+    },
+    {
+      "code": "CNGX3007",
+      "lib": "ui",
+      "severity": "warn",
+      "title": "Mat-tabs overflow could not anchor",
+      "page": "core-concepts/error-codes/cngx3007.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3007.html",
+      "status": "active",
+      "files": ["projects/ui/mat-tabs/mat-tabs.directive.ts"]
+    },
+    {
+      "code": "CNGX3008",
+      "lib": "ui",
+      "severity": "warn",
+      "title": "Action button toasts configured twice",
+      "page": "core-concepts/error-codes/cngx3008.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3008.html",
+      "status": "active",
+      "files": ["projects/ui/action-button/action-button.ts"]
+    },
+    {
+      "code": "CNGX3009",
+      "lib": "ui",
+      "severity": "warn",
+      "title": "Data-grid-accordion row has more cells than columns",
+      "page": "core-concepts/error-codes/cngx3009.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3009.html",
+      "status": "active",
+      "files": ["projects/ui/data-grid-accordion/data-grid-accordion.component.ts"]
+    },
+    {
+      "code": "CNGX3010",
+      "lib": "ui",
+      "severity": "warn",
+      "title": "Sidenav auto mode without a layout",
+      "page": "core-concepts/error-codes/cngx3010.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3010.html",
+      "status": "active",
+      "files": ["projects/ui/sidenav/sidenav.ts"]
+    },
+    {
+      "code": "CNGX3011",
+      "lib": "ui",
+      "severity": "warn",
+      "title": "Icon-only tabs without an icon template",
+      "page": "core-concepts/error-codes/cngx3011.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3011.html",
+      "status": "active",
+      "files": ["projects/ui/tabs/tab-group.component.ts"]
+    },
+    {
+      "code": "CNGX3012",
+      "lib": "ui",
+      "severity": "warn",
+      "title": "Tab overflow could not find the tab strip",
+      "page": "core-concepts/error-codes/cngx3012.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3012.html",
+      "status": "active",
+      "files": ["projects/ui/tabs/tab-overflow.component.ts"]
+    },
+    {
+      "code": "CNGX3013",
+      "lib": "ui",
+      "severity": "warn",
+      "title": "Alternate placement ignored in an activity timeline",
+      "page": "core-concepts/error-codes/cngx3013.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3013.html",
+      "status": "active",
+      "files": ["projects/ui/timeline/timeline.component.ts"]
+    },
+    {
       "code": "CNGX4001",
       "lib": "data-display",
       "severity": "warn",
