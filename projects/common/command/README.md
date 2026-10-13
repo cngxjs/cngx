@@ -66,8 +66,10 @@ the first occurrence. Reuse an id on purpose to swap a global command for a
 scoped version; give unrelated commands distinct ids.
 
 Register through `provideCommands`. A raw `CNGX_COMMAND_SOURCE` multi-provider
-joins only the level `injectCommands()` resolves as nearest; it is not carried
-into deeper scopes.
+is carried into deeper scopes only from a level that also calls
+`provideCommands`. On any other level it is read only when that level is the
+nearest one `injectCommands()` resolves, and a nested `provideCommands` scope
+does not see it.
 
 A source is either a static list or a reactive `Signal` - a signal source lets a
 contributor add, remove, or disable commands live:

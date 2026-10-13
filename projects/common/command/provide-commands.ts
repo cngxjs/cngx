@@ -27,8 +27,10 @@ export type CngxCommandSource = Signal<readonly CngxCommand[]> | readonly CngxCo
  * that provides it.
  *
  * This is the low-level form. Register through `provideCommands`, which also
- * carries a level's sources into every scope below it; a raw multi-provider on
- * this token joins only the level `injectCommands` resolves as nearest.
+ * carries a level's sources into every scope below it. A raw multi-provider on
+ * this token is carried down only from a level that also calls
+ * `provideCommands`; on any other level it is read only when that level is the
+ * one `injectCommands` resolves as nearest.
  *
  * @category common/command
  * @since 0.1.0
