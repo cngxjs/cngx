@@ -4,11 +4,6 @@
 // matches the source exactly. Removed once every lib is migrated.
 
 export const RAW_CONSOLE_BASELINE = {
-  utils: [{ file: 'projects/utils/tree.ts', count: 1 }],
-  core: [
-    { file: 'projects/core/i18n/format-message.ts', count: 3 },
-    { file: 'projects/core/utils/registry.ts', count: 1 },
-  ],
   common: [
     { file: 'projects/common/audio/engine/audio-engine.ts', count: 1 },
     { file: 'projects/common/audio/event-mode/audio.directive.ts', count: 2 },

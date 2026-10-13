@@ -83,6 +83,7 @@ describe('flattenTree duplicate-id warning', () => {
     flattenTree(tree, () => 'same-id', labelFn);
     expect(warn).toHaveBeenCalled();
     expect(String(warn.mock.calls[0]?.[0])).toContain('duplicate node id "same-id"');
+    expect(String(warn.mock.calls[0]?.[0])).toContain('CNGX0901');
     warn.mockRestore();
   });
 

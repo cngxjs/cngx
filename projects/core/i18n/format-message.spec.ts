@@ -75,6 +75,7 @@ describe('formatMessage', () => {
     expect(formatMessage(errors, { count: 1200 }, 'xx_YY_bad')).toBe('1,200 errors');
     expect(formatMessage(errors, { count: 1 }, 'xx_YY_bad')).toBe('1 error');
     expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX0001'));
   });
 
   it('calls a function message with the arguments and the locale', () => {
@@ -90,11 +91,13 @@ describe('formatMessage', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     expect(formatMessage('Hello {name}', {}, 'en')).toBe('Hello {name}');
     expect(warn).toHaveBeenCalledOnce();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX0003'));
   });
 
   it('warns and uses other when a plural message has no numeric count', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     expect(formatMessage({ one: 'one', other: 'many' }, { count: 'x' }, 'en')).toBe('many');
     expect(warn).toHaveBeenCalledOnce();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX0002'));
   });
 });

@@ -1,5 +1,5 @@
-import { isDevMode } from '@angular/core';
 import { memoize, numberFormatterFor } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 import type { CngxPluralMessage } from './language-pack';
 
@@ -45,8 +45,11 @@ export const canonicalLocale = memoize(
     try {
       return Intl.getCanonicalLocales(locale)[0] ?? FALLBACK_LOCALE;
     } catch {
-      if (isDevMode()) {
-        console.warn(`[cngx/i18n] "${locale}" is not a BCP 47 locale; reading it as English.`);
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        cngxDevWarn(
+          'CNGX0001',
+          `[cngx/i18n] "${locale}" is not a BCP 47 locale; reading it as English.`,
+        );
       }
       return FALLBACK_LOCALE;
     }
@@ -65,8 +68,9 @@ function selectPluralForm(
 ): string {
   const count = args['count'];
   if (typeof count !== 'number') {
-    if (isDevMode()) {
-      console.warn(
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      cngxDevWarn(
+        'CNGX0002',
         `[cngx/i18n] plural message without a numeric "count" argument: "${message.other}"`,
       );
     }
@@ -110,8 +114,8 @@ export function formatMessage(
   return template.replace(PLACEHOLDER, (placeholder, name: string) => {
     const value = args[name];
     if (value === undefined) {
-      if (isDevMode()) {
-        console.warn(`[cngx/i18n] no argument for ${placeholder} in "${template}"`);
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        cngxDevWarn('CNGX0003', `[cngx/i18n] no argument for ${placeholder} in "${template}"`);
       }
       return placeholder;
     }

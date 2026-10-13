@@ -11,5 +11,56 @@
     { "lib": "data-display", "from": 4000, "to": 4999 },
     { "lib": "interop", "from": 5000, "to": 5999 }
   ],
-  "codes": []
+  "codes": [
+    {
+      "code": "CNGX0001",
+      "lib": "core",
+      "severity": "warn",
+      "title": "Locale is not a BCP 47 tag",
+      "page": "core-concepts/error-codes/cngx0001.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0001.html",
+      "status": "active",
+      "files": ["projects/core/i18n/format-message.ts"]
+    },
+    {
+      "code": "CNGX0002",
+      "lib": "core",
+      "severity": "warn",
+      "title": "Plural message without a numeric count",
+      "page": "core-concepts/error-codes/cngx0002.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0002.html",
+      "status": "active",
+      "files": ["projects/core/i18n/format-message.ts"]
+    },
+    {
+      "code": "CNGX0003",
+      "lib": "core",
+      "severity": "warn",
+      "title": "No argument for a placeholder",
+      "page": "core-concepts/error-codes/cngx0003.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0003.html",
+      "status": "active",
+      "files": ["projects/core/i18n/format-message.ts"]
+    },
+    {
+      "code": "CNGX0004",
+      "lib": "core",
+      "severity": "warn",
+      "title": "Registry key already registered",
+      "page": "core-concepts/error-codes/cngx0004.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0004.html",
+      "status": "active",
+      "files": ["projects/core/utils/registry.ts"]
+    },
+    {
+      "code": "CNGX0901",
+      "lib": "utils",
+      "severity": "warn",
+      "title": "Duplicate node id in a tree",
+      "page": "core-concepts/error-codes/cngx0901.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0901.html",
+      "status": "active",
+      "files": ["projects/utils/tree.ts"]
+    }
+  ]
 }

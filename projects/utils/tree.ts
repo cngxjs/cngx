@@ -7,6 +7,8 @@
  * public signatures).
  */
 
+import { cngxDevWarn } from './dev-message';
+
 /**
  * Input shape for a hierarchical tree. Consumers supply this; library never
  * mutates it. `children` may be omitted for leaves.
@@ -95,8 +97,9 @@ export function flattenTree<T>(
       const path = [...basePath, i];
       const id = idFn(node.value, path);
       if (seenIds) {
-        if (seenIds.has(id)) {
-          console.warn(
+        if (typeof ngDevMode !== 'undefined' && ngDevMode && seenIds.has(id)) {
+          cngxDevWarn(
+            'CNGX0901',
             `[cngx] flattenTree: duplicate node id "${id}". Ids must be unique across ` +
               `the forest - a non-injective idFn corrupts parentIds chains and visibility.`,
           );

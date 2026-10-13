@@ -28,6 +28,7 @@ describe('createKeyedRegistry', () => {
     expect(registry.get('a')).toBe('first');
     expect(warn).toHaveBeenCalledOnce();
     expect(warn.mock.calls[0][0]).toContain('TestRegistry');
+    expect(warn.mock.calls[0][0]).toContain('CNGX0004');
     warn.mockRestore();
   });
 

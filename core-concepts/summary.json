@@ -70,5 +70,31 @@
     {
         "title": "Localisation",
         "file": "i18n.md"
+    },
+    {
+        "title": "Error Codes",
+        "file": "error-codes/index.md",
+        "children": [
+            {
+                "title": "CNGX0001",
+                "file": "error-codes/cngx0001.md"
+            },
+            {
+                "title": "CNGX0002",
+                "file": "error-codes/cngx0002.md"
+            },
+            {
+                "title": "CNGX0003",
+                "file": "error-codes/cngx0003.md"
+            },
+            {
+                "title": "CNGX0004",
+                "file": "error-codes/cngx0004.md"
+            },
+            {
+                "title": "CNGX0901",
+                "file": "error-codes/cngx0901.md"
+            }
+        ]
     }
 ]
