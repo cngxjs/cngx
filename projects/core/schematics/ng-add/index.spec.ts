@@ -219,6 +219,35 @@ describe('ngAdd', () => {
     });
   });
 
+  describe('a tailwind app cngx cannot order', () => {
+    it('notes Tailwind v3 and writes no layer order file', async () => {
+      const manifest = JSON.parse(readFixture('existing-tailwind-app')['package.json']) as {
+        dependencies: Record<string, string>;
+      };
+      const run = await runRule(
+        ngAdd({ yes: true }),
+        createFixtureTree('existing-tailwind-app', {
+          'package.json': `${JSON.stringify({ ...manifest, dependencies: { ...manifest.dependencies, tailwindcss: '^3.4.17' } }, null, 2)}\n`,
+          'src/styles.scss': '@tailwind base;\n@tailwind components;\n@tailwind utilities;\n',
+        }),
+      );
+
+      expect(run.tree.exists('src/cngx-layers.css')).toBe(false);
+      expect(run.logs.some((line) => line.includes('Tailwind v3 preflight overrides cngx component styles'))).toBe(true);
+    });
+
+    it('notes a layer order file someone else wrote and leaves it alone', async () => {
+      const run = await runRule(
+        ngAdd({ yes: true }),
+        createFixtureTree('existing-tailwind-app', { 'src/cngx-layers.css': '@layer reset, app;\n' }),
+      );
+
+      expect(run.tree.readContent('src/cngx-layers.css')).toBe('@layer reset, app;\n');
+      expect(run.tree.readContent('src/styles.scss')).not.toContain('cngx-layers.css');
+      expect(run.logs.some((line) => line.includes('src/cngx-layers.css exists and was not written by cngx'))).toBe(true);
+    });
+  });
+
   describe('a standalone css app', () => {
     it('pins the lockstep graph, imports cngx.css, adds the theme and the a11y providers', async () => {
       const run = await runRule(ngAdd({}), createFixtureTree());

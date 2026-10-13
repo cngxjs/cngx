@@ -1,7 +1,7 @@
 import { readWorkspace } from '@schematics/angular/utility';
 import { describe, expect, it } from 'vitest';
 
-import { parseManifest } from '../../engine';
+import { createProvenanceStamp, parseManifest } from '../../engine';
 import { createFixtureTree } from '../../testing/run-schematic';
 import { detectProject, type ProjectFacts } from './detect';
 
@@ -128,7 +128,7 @@ describe('detectProject', () => {
       zoneless: true,
       stylesKind: 'scss',
       stylesPath: 'src/styles.scss',
-      tailwind: { major: 4, layered: true, orderDeclared: false },
+      tailwind: { major: 4, layered: true, orderTarget: 'src/styles.scss', orderDeclared: false, layersFile: 'absent' },
       rootProviders: [
         'provideBrowserGlobalErrorListeners',
         'provideRouter',
@@ -501,17 +501,15 @@ module.exports = defineConfig([
       expect((await detect(scssStyles("@import 'tailwindcss';\n"))).tailwind).toEqual({
         major: 4,
         layered: true,
+        orderTarget: 'src/styles.scss',
         orderDeclared: false,
+        layersFile: 'absent',
       });
     });
 
     it('reads v3 directives as unlayered', async () => {
       const directives = '@tailwind base;\n@tailwind components;\n@tailwind utilities;\n';
-      expect((await detect(scssStyles(directives, '^3.4.17'))).tailwind).toEqual({
-        major: 3,
-        layered: false,
-        orderDeclared: false,
-      });
+      expect((await detect(scssStyles(directives, '^3.4.17'))).tailwind).toMatchObject({ major: 3, layered: false });
     });
 
     it('reads no Tailwind when the app does not declare it', async () => {
@@ -526,6 +524,29 @@ module.exports = defineConfig([
         scssStyles("@layer theme, base, cngx, components, utilities;\n@import 'tailwindcss';\n"),
       );
       expect(inline.tailwind?.orderDeclared).toBe(false);
+    });
+
+    it('reads Tailwind from any global stylesheet and targets the first one in the build', async () => {
+      const facts = await detect({
+        'package.json': withPackage({ tailwindcss: '^4.1.12' }),
+        'angular.json': withWorkspaceStyles(['src/theme/material.scss', 'src/tailwind.css', 'src/styles.scss']),
+        'src/theme/material.scss': DEFINE_THEME,
+        'src/tailwind.css': "@import 'tailwindcss';\n",
+        'src/styles.scss': '',
+      });
+
+      expect(facts.tailwind).toMatchObject({ layered: true, orderTarget: 'src/theme/material.scss' });
+    });
+
+    it('tells a generated layer order file from one someone else wrote', async () => {
+      const generated = await detect({
+        ...scssStyles("@import 'tailwindcss';\n"),
+        'src/cngx-layers.css': `${createProvenanceStamp('ng-add theme', '0.1.0')}@layer theme, base, cngx, components, utilities;\n`,
+      });
+      expect(generated.tailwind?.layersFile).toBe('generated');
+
+      const foreign = await detect({ ...scssStyles("@import 'tailwindcss';\n"), 'src/cngx-layers.css': '@layer a, b;\n' });
+      expect(foreign.tailwind?.layersFile).toBe('foreign');
     });
 
     it('falls back to the import shape for a range without a version', async () => {

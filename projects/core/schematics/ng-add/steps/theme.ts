@@ -102,38 +102,69 @@ export function renderLayerOrder(version: string): string {
   ].join('\n');
 }
 
-// Tailwind v4 declares its layers in the expanded body of the global
-// stylesheet, after every imported file, so cngx.css would sit below its
-// preflight. A file imported first fixes the order.
+const INSTALL_GUIDE = 'see Tailwind in the cngx install guide';
+
+function layerNote(provenance: Provenance, label: string, reason: string): StepResult {
+  return { changes: [{ kind: 'note', id: 'theme:layer-order', label, reason, provenance }], skipped: [] };
+}
+
+// Tailwind v4 declares its layers in the expanded body of the stylesheet
+// that imports it, after every imported file, so cngx.css would sit below
+// its preflight. A file imported first in the first global stylesheet fixes
+// the order for the whole bundle.
 function layerOrder(facts: ProjectFacts, provenance: Provenance, version: string): StepResult {
-  const stylesPath = facts.stylesPath;
-  if (stylesPath === undefined || facts.tailwind?.layered !== true) {
+  const tailwind = facts.tailwind;
+  if (tailwind === undefined) {
     return { changes: [], skipped: [] };
   }
-  const path = posix.join(posix.dirname(stylesPath), CNGX_LAYERS_FILE);
-  const planned: readonly Change[] = [
-    {
-      kind: 'create-file',
-      id: 'theme:layer-order-file',
-      label: `Create ${path}`,
-      reason: 'declares the Tailwind and cngx cascade layer order',
+  if (tailwind.major < 4) {
+    return layerNote(
       provenance,
-      path,
-      content: renderLayerOrder(version),
-    },
-    {
-      kind: 'edit-file',
-      id: 'theme:layer-order',
-      label: 'Order the Tailwind and cngx cascade layers',
-      reason: 'Tailwind preflight must not override cngx component styles; utilities still win',
+      'Tailwind v3 preflight overrides cngx component styles',
+      `its rules are unlayered and no layer order changes that; upgrade to v4 (${INSTALL_GUIDE})`,
+    );
+  }
+  const target = tailwind.orderTarget;
+  if (!tailwind.layered || target === undefined) {
+    return layerNote(
       provenance,
-      path: stylesPath,
-      edit: (content) => insertLeadingStyleImport(content, LAYERS_IMPORT),
-    },
-  ];
-  return facts.tailwind.orderDeclared
-    ? { changes: [], skipped: planned.map((change) => skipChange(change, `already imported in ${stylesPath}`)) }
-    : { changes: planned, skipped: [] };
+      'Order the Tailwind and cngx cascade layers by hand',
+      `no global stylesheet imports tailwindcss directly (${INSTALL_GUIDE})`,
+    );
+  }
+  const path = posix.join(posix.dirname(target), CNGX_LAYERS_FILE);
+  const file: Change = {
+    kind: 'create-file',
+    id: 'theme:layer-order-file',
+    label: `Create ${path}`,
+    reason: 'declares the Tailwind and cngx cascade layer order',
+    provenance,
+    path,
+    content: renderLayerOrder(version),
+  };
+  const order: Change = {
+    kind: 'edit-file',
+    id: 'theme:layer-order',
+    label: 'Order the Tailwind and cngx cascade layers',
+    reason: 'Tailwind preflight must not override cngx component styles; utilities still win',
+    provenance,
+    path: target,
+    edit: (content) => insertLeadingStyleImport(content, LAYERS_IMPORT),
+  };
+  if (tailwind.orderDeclared) {
+    return { changes: [], skipped: [file, order].map((change) => skipChange(change, 'already imported')) };
+  }
+  if (tailwind.layersFile === 'foreign') {
+    return layerNote(
+      provenance,
+      'Order the Tailwind and cngx cascade layers by hand',
+      `${path} exists and was not written by cngx (${INSTALL_GUIDE})`,
+    );
+  }
+  if (tailwind.layersFile === 'generated') {
+    return { changes: [order], skipped: [skipChange(file, `${path} is already there`)] };
+  }
+  return { changes: [file, order], skipped: [] };
 }
 
 function appendBridge(variable: string): (content: string) => string {
@@ -181,8 +212,9 @@ function result(planned: readonly Change[], wired: string | undefined, reason: s
  * that defines it, since a separate file cannot see the variable. Every
  * global entry it adds follows the stylesheet that imports `cngx.css`, so
  * the layer order `cngx.css` declares is in place before any cngx layer. A
- * Tailwind v4 app also gets `cngx-layers.css`, imported first, which puts
- * the cngx layers between Tailwind preflight and its utilities.
+ * Tailwind v4 app also gets `cngx-layers.css`, imported first in the first
+ * global stylesheet, which puts the cngx layers between Tailwind preflight
+ * and its utilities; a setup it cannot order gets a note saying why.
  */
 export function planTheme(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
   const installable = missingThemePeers(selectedLibs(answers.libs)).length === 0;
