@@ -373,3 +373,59 @@ describe('provideCommands / injectCommands id dedupe', () => {
     expect(commands()).toBe(first);
   });
 });
+
+describe('provideCommands / injectCommands raw token and content visibility', () => {
+  it('a raw source on a level that also calls provideCommands is carried into nested scopes', () => {
+    @Component({ template: '', viewProviders: [provideCommands([cmd('b')])] })
+    class Host {
+      readonly commands = injectCommands();
+    }
+    TestBed.configureTestingModule({
+      providers: [
+        provideCommands([cmd('a')]),
+        { provide: CNGX_COMMAND_SOURCE, useValue: [cmd('r')], multi: true },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(Host);
+    expect(ids(fixture.componentInstance.commands)).toEqual(['a', 'r', 'b']);
+  });
+
+  it('a raw source on a level without provideCommands is not carried into a nested provideCommands scope', () => {
+    @Component({ template: '', viewProviders: [provideCommands([cmd('b')])] })
+    class Host {
+      readonly commands = injectCommands();
+    }
+    TestBed.configureTestingModule({
+      providers: [{ provide: CNGX_COMMAND_SOURCE, useValue: [cmd('r')], multi: true }],
+    });
+
+    const fixture = TestBed.createComponent(Host);
+    expect(ids(fixture.componentInstance.commands)).toEqual(['b']);
+  });
+
+  it('projected content sees a providers set', () => {
+    @Component({ selector: 'cngx-test-content-child', template: '' })
+    class ContentChild {
+      readonly commands = injectCommands();
+    }
+    @Component({
+      selector: 'cngx-test-scoped',
+      template: '<ng-content />',
+      providers: [provideCommands([cmd('b')])],
+    })
+    class Scoped {}
+    @Component({
+      imports: [Scoped, ContentChild],
+      template: '<cngx-test-scoped><cngx-test-content-child /></cngx-test-scoped>',
+    })
+    class Host {}
+    TestBed.configureTestingModule({ providers: [provideCommands([cmd('a')])] });
+
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const child = fixture.debugElement.query(By.directive(ContentChild))
+      .componentInstance as ContentChild;
+    expect(ids(child.commands)).toEqual(['a', 'b']);
+  });
+});
