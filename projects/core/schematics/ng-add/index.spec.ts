@@ -192,6 +192,7 @@ describe('ngAdd', () => {
       expect(run.tree.readContent('src/styles.scss').replace("@import '@cngx/themes/cngx.css';\n", '')).toBe(
         fixture['src/styles.scss'],
       );
+      expect(run.tree.readContent('package.json').endsWith('}\n')).toBe(true);
     });
 
     it('changes nothing on a second run', async () => {

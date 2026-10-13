@@ -86,6 +86,15 @@ describe('applyChangePlan', () => {
     expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/core']).toBe('0.1.0');
   });
 
+  it('keeps the trailing newline of package.json, and adds none it did not have', async () => {
+    const change: Change = { ...BASE, kind: 'add-dependency', id: 'd', name: '@cngx/core', version: '0.1.0' };
+    const ended = await apply([change], createMemoryTree({ 'package.json': '{\n  "dependencies": {}\n}\n' }));
+    const bare = await apply([change], createMemoryTree({ 'package.json': '{\n  "dependencies": {}\n}' }));
+
+    expect(ended.readText('package.json')).toBe('{\n  "dependencies": {\n    "@cngx/core": "0.1.0"\n  }\n}\n');
+    expect(bare.readText('package.json')).toBe('{\n  "dependencies": {\n    "@cngx/core": "0.1.0"\n  }\n}');
+  });
+
   it('adds a dev dependency off the lockstep and keeps an existing range', async () => {
     const change: Change = { ...BASE, kind: 'add-dependency', id: 'd', name: '@cngx/eslint-plugin', version: '0.2.0', dev: true };
     const added = await apply([change], createMemoryTree({ 'package.json': '{ "devDependencies": {} }\n' }));

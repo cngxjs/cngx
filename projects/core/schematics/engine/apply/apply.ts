@@ -149,6 +149,26 @@ function toRule(change: Change): Rule {
   }
 }
 
+// `addDependency` rewrites package.json through `JSON.stringify`, which drops
+// the trailing newline npm and every editor leave behind.
+function keepTrailingNewline(path: string, rules: readonly Rule[]): Rule {
+  return (tree: Tree) => {
+    const ended = tree.exists(path) && tree.readText(path).endsWith('\n');
+    return chain([
+      ...rules,
+      (after: Tree) => {
+        if (!ended || !after.exists(path)) {
+          return;
+        }
+        const content = after.readText(path);
+        if (!content.endsWith('\n')) {
+          after.overwrite(path, `${content}\n`);
+        }
+      },
+    ]);
+  };
+}
+
 /**
  * The one effectful step: turns the plan into a Rule, one Rule per change in
  * plan order. Nothing reports back; what changed is `plan.changes`, what was
@@ -156,5 +176,5 @@ function toRule(change: Change): Rule {
  * step that misses an existing file fails loudly instead of clobbering it.
  */
 export function applyChangePlan(plan: ChangePlan): Rule {
-  return chain(plan.changes.map(toRule));
+  return keepTrailingNewline('package.json', plan.changes.map(toRule));
 }
