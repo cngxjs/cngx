@@ -490,6 +490,16 @@ describe('detectProject', () => {
       expect(await majorOf('8.0.0 - 9.1.0')).toBe(9);
     });
 
+    it('reads the major of a prerelease range, not a digit of its tag', async () => {
+      const majorOf = async (range: string): Promise<number | undefined> =>
+        (await detect(withDevPackage({ eslint: range }))).eslintStack.eslintMajor;
+      expect(await majorOf('^9.0.0-rc.1')).toBe(9);
+      expect(await majorOf('^10.0.0-alpha.0')).toBe(10);
+      expect(await majorOf('~8.57.0-beta.2+build.5')).toBe(8);
+      expect(await majorOf('<9.0.0-rc.0')).toBe(8);
+      expect(await majorOf('>=9.0.0-rc.0')).toBeUndefined();
+    });
+
     it('reads no major for an open, unreadable or missing range, so it never blocks', async () => {
       const majorOf = async (range: string): Promise<number | undefined> =>
         (await detect(withDevPackage({ eslint: range }))).eslintStack.eslintMajor;

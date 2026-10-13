@@ -408,6 +408,8 @@ function detectEslintConfig(tree: Tree): EslintConfigFacts | undefined {
 
 // `A - B` reaches B; `<N` reaches N - 1 (`<9.1` still reaches 9), `<=N`
 // reaches N; `^X`, `~X` and `X.x` stay on X; `>`/`>=` alone are open.
+// A prerelease or build suffix (`-rc.1`, `+sha`) is consumed with its
+// version, so its digits never read as a version of their own.
 function highestMajorOf(alternative: string): number | undefined {
   const hyphen = /^\S+\s+-\s+v?(\d+)/.exec(alternative);
   if (hyphen !== null) {
@@ -415,7 +417,7 @@ function highestMajorOf(alternative: string): number | undefined {
   }
   const uppers: number[] = [];
   let pinned: number | undefined;
-  for (const [, operator, major, rest] of alternative.matchAll(/(<=|<|>=|>|\^|~|=)?\s*v?(\d+)((?:\.(?:\d+|[xX*]))*)/g)) {
+  for (const [, operator, major, rest] of alternative.matchAll(/(<=|<|>=|>|\^|~|=)?\s*v?(\d+)((?:\.(?:\d+|[xX*]))*)(?:[-+][0-9A-Za-z.+-]*)?/g)) {
     if (operator === '<') {
       uppers.push(/[1-9]/.test(rest) ? Number(major) : Number(major) - 1);
     } else if (operator === '<=') {
