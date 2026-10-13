@@ -8,6 +8,8 @@ import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
 import { NodeModulesEngineHost } from '@angular-devkit/schematics/tools';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
+import { declaresSchematics } from '../publish.mjs';
+
 /**
  * Smoke guard for the bundled schematics under dist/. Runs the built
  * collection, not the sources, so it proves the esbuild bundle resolves its
@@ -259,21 +261,24 @@ const MAX_GZIP = 90 * 1024;
 // esbuild drop.
 const MAX_SHIM_MINIFIED = 20 * 1024;
 
+// The entries come from the source manifests, not from dist/: a lib that
+// declares its collection but builds no bundle fails here instead of
+// dropping out of the budget.
+const MIGRATION_ENTRIES = ['core/schematics/migrations/0.1.0/index.js'];
+
 function schematicEntries() {
-  const dist = join(ROOT, 'dist');
-  return readdirSync(dist, { withFileTypes: true })
-    .filter((lib) => lib.isDirectory() && existsSync(join(dist, lib.name, 'schematics')))
-    .flatMap((lib) =>
-      readdirSync(join(dist, lib.name, 'schematics'), { withFileTypes: true })
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => join(lib.name, 'schematics', entry.name, 'index.js'))
-        .filter((file) => existsSync(join(dist, file))),
-    );
+  const projects = join(ROOT, 'projects');
+  const declared = readdirSync(projects, { withFileTypes: true })
+    .filter((lib) => lib.isDirectory() && existsSync(join(projects, lib.name, 'package.json')))
+    .filter((lib) => declaresSchematics(JSON.parse(readFileSync(join(projects, lib.name, 'package.json'), 'utf8'))))
+    .map((lib) => join(lib.name, 'schematics', 'ng-add', 'index.js'));
+  return [...declared, ...MIGRATION_ENTRIES];
 }
 
 describe('schematic bundle budget', () => {
-  it('finds the built entries', () => {
+  it('finds a built entry for every declared collection', () => {
     expect(schematicEntries()).toEqual(expect.arrayContaining(['core/schematics/ng-add/index.js', 'ui/schematics/ng-add/index.js']));
+    expect(schematicEntries().filter((file) => !existsSync(join(ROOT, 'dist', file)))).toEqual([]);
   });
 
   it.each(schematicEntries())('keeps dist/%s under 256 KB minified and 90 KB gzip', (file) => {
