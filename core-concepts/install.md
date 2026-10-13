@@ -78,8 +78,8 @@ attached:
   with the English fallback.
 - **Runtime switch.** Only for German: switch between English and German at
   runtime instead of a fixed language.
-- **Lint rules.** Only when an ESLint flat config exists: add the cngx rules
-  to it.
+- **Lint rules.** Only when an ESLint 9 flat config exists: add the cngx
+  rules to it.
 - **Feedback services.** Only when `@cngx/ui` is selected: provide toasts,
   alerts and banners at the root.
 
@@ -122,7 +122,7 @@ under a pseudo-terminal.
 
 |Target|When|What|
 |-|-|-|
-|`package.json`|always|Every selected `@cngx/*` package and its peers, pinned to the exact release; `@cngx/themes` when a theme is chosen; `@angular/cdk` at the app's Angular range when a package needs it; `@floating-ui/dom` for the fallback; `@cngx/eslint-plugin` as a devDependency for the lint rules. `@angular/material` is never added.|
+|`package.json`|always|Every selected `@cngx/*` package and its peers, pinned to the exact release; `@cngx/themes` when a theme is chosen; `@angular/cdk` at the app's Angular range when a package needs it; `@floating-ui/dom` for the fallback; `@cngx/eslint-plugin` as a devDependency for the lint rules, and `@angular-eslint/template-parser` on the `angular-eslint` version line when the app declares `angular-eslint` but not the parser. `@angular/material` is never added.|
 |Global styles|theme chosen|An import of `@cngx/themes/cngx.css` ahead of every cngx layer.|
 |`cngx-layers.css`|theme chosen, Tailwind v4|Next to the first global stylesheet of the build: one `@layer` statement that puts the cngx layers between Tailwind preflight and the Tailwind utilities. See [Tailwind](#tailwind).|
 |First global stylesheet|theme chosen, Tailwind v4|An import of `./cngx-layers.css` before every other `@import`.|
@@ -131,7 +131,7 @@ under a pseudo-terminal.
 |`angular.json`|theme chosen|The theme file added to the build styles, after the stylesheet that imports `cngx.css`.|
 |App config or root NgModule|per answer|`provideA11yPreferences(withPersistence())`, `provideDirection('rtl')` for a right-to-left source locale, `provideFeedback(withToasts(), withAlerts(), withBanners())`, `provideFloatingFallback(computePosition, [flip(), shift()])`, `provideCngxI18n(withPack(...))`.|
 |`cngx-language.ts`|German with runtime switch|Next to the app config: a `cngxLanguagePack` signal. Set it to switch every cngx string at runtime.|
-|ESLint flat config|lint rules|`...cngx.configs.recommended` in the exported array. A config it cannot edit safely gets a note instead.|
+|ESLint flat config|lint rules|`...cngx.configs.recommended` in the exported array of `eslint.config.js`, `.mjs`, `.cjs`, `.ts`, `.mts` or `.cts`. It needs ESLint 9 or later and a TypeScript parser (`typescript-eslint`, `@typescript-eslint/parser` or `angular-eslint`): the cngx rules lint TypeScript through the app's own setup. A legacy `.eslintrc*` config gets a note with the migration command, `npx @eslint/migrate-config <file>`; run `ng add` again afterwards. ESLint below 9, a stack without a TypeScript parser, or a config it cannot edit safely gets a note and no edit or dependency.|
 |`.cngx/install.json`|always|The install manifest (below).|
 |MCP configs, agent block, `.cngx/README.md`|editors chosen|See [AI tooling](#ai-tooling).|
 
