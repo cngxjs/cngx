@@ -1,0 +1,15 @@
+{
+  "$schema": "./error-codes.schema.json",
+  "schemaVersion": 1,
+  "docsBaseUrl": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/",
+  "ranges": [
+    { "lib": "core", "from": 1, "to": 899 },
+    { "lib": "utils", "from": 900, "to": 999 },
+    { "lib": "common", "from": 1000, "to": 1999 },
+    { "lib": "forms", "from": 2000, "to": 2999 },
+    { "lib": "ui", "from": 3000, "to": 3999 },
+    { "lib": "data-display", "from": 4000, "to": 4999 },
+    { "lib": "interop", "from": 5000, "to": 5999 }
+  ],
+  "codes": []
+}
