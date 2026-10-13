@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { hasStyleImport, insertStyleImport } from './style-edit';
+import { hasStyleImport, insertLeadingStyleImport, insertStyleImport } from './style-edit';
 
 const CNGX = "@import '@cngx/themes/cngx.css';";
 
@@ -57,6 +57,45 @@ html {
     const once = insertStyleImport(MATERIAL_SCSS, CNGX);
 
     expect(insertStyleImport(once, CNGX)).toBe(once);
+  });
+});
+
+describe('insertLeadingStyleImport', () => {
+  const LAYERS = "@import './cngx-layers.css';";
+
+  it('goes before the first import of a css file', () => {
+    const content = `@import 'tailwindcss';\n${CNGX}\n\nbody {}\n`;
+
+    expect(insertLeadingStyleImport(content, LAYERS)).toBe(`${LAYERS}\n@import 'tailwindcss';\n${CNGX}\n\nbody {}\n`);
+  });
+
+  it('keeps @charset, @use and @forward in front of it in scss', () => {
+    const content = `@charset "UTF-8";\n@use 'sass:map';\n@forward 'tokens';\n@import 'tailwindcss';\n.x {}\n`;
+
+    expect(insertLeadingStyleImport(content, LAYERS)).toBe(
+      `@charset "UTF-8";\n@use 'sass:map';\n@forward 'tokens';\n${LAYERS}\n@import 'tailwindcss';\n.x {}\n`,
+    );
+  });
+
+  it('stays below a leading comment preamble', () => {
+    const content = "// Global styles\n/* imports; in order */\n@import 'tailwindcss';\n";
+
+    expect(insertLeadingStyleImport(content, LAYERS)).toBe(
+      `// Global styles\n/* imports; in order */\n${LAYERS}\n@import 'tailwindcss';\n`,
+    );
+  });
+
+  it('falls back to the end of the preamble without an import', () => {
+    expect(insertLeadingStyleImport("@use 'a';\n.x {}\n", LAYERS)).toBe(`@use 'a';\n${LAYERS}\n.x {}\n`);
+    expect(insertLeadingStyleImport('', LAYERS)).toBe(`${LAYERS}\n`);
+  });
+
+  it('is idempotent and leaves the input alone', () => {
+    const content = "@import 'tailwindcss';\n";
+    const once = insertLeadingStyleImport(content, LAYERS);
+
+    expect(insertLeadingStyleImport(once, LAYERS)).toBe(once);
+    expect(content).toBe("@import 'tailwindcss';\n");
   });
 });
 
