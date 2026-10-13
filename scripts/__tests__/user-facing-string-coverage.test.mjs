@@ -108,7 +108,7 @@ const OVERRIDE_TOKEN =
 const DEV_GUARD = /\b(?:isDevMode|ngDevMode)\b/;
 
 /** A call that only ever writes to a developer's console. */
-const DEV_CALL = /^console\.|(?:^|\.)warn[A-Z]\w*$/;
+const DEV_CALL = /^console\.|(?:^|\.)warn[A-Z]\w*$|^cngxDev(?:Warn|Error)$/;
 
 /**
  * @typedef {'override-source' | 'config-fallback' | 'dev-message' | 'uncovered' | 'unscannable'} StringCoverage
@@ -1163,6 +1163,20 @@ describe('user-facing string scanner', () => {
       'dev-message',
       'dev-message',
     ]);
+  });
+
+  it('classifies a literal in a multi-line cngxDevWarn call as dev copy', () => {
+    const source = [
+      'cngxDevWarn(',
+      "  'CNGX1001',",
+      "  'The projector falls back to textContent. ' +",
+      "    'Wire both halves on the directive (or neither).',",
+      ');',
+    ].join('\n');
+    expect(
+      scanSource(source, 'x.ts').every((f) => f.coverage === 'dev-message'),
+    ).toBe(true);
+    expect(scanSource(source, 'x.ts').length).toBeGreaterThan(0);
   });
 
   it('ignores event-key names and token debug names', () => {
