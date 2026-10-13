@@ -89,6 +89,7 @@ describe('provideMatTabsConfig + injectMatTabsConfig', () => {
     });
     const config = inject1(() => injectMatTabsConfig());
     expect(config.halfWiredSlotSink).not.toBe(CNGX_DEFAULT_HALF_WIRED_SLOT_SINK);
+    expect(inject1(() => injectMatTabsConfig()).halfWiredSlotSink).toBe(config.halfWiredSlotSink);
     config.halfWiredSlotSink('contentTemplate');
     expect(warnSpy).not.toHaveBeenCalled();
   });
