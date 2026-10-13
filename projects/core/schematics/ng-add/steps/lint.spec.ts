@@ -103,7 +103,7 @@ export default [
         kind: 'note',
         label: 'Skip the eslint entry',
         reason:
-          'no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found; set one up with `ng add angular-eslint`, then run ng add again',
+          'no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found; set one up with `ng add angular-eslint`, then run `ng add @cngx/core` again',
       }),
     ]);
     expect(planLint(eslintApp({ eslintConfig: config({ editable: false }) }), createAnswers(), VERSIONS).changes).toEqual([
@@ -158,7 +158,7 @@ export default [
             kind: 'note',
             id: 'lint:config',
             reason:
-              '@cngx/eslint-plugin needs ESLint 9 or later and this app declares eslint ^8.57.0; update eslint to 9 or later or run `ng add angular-eslint`, then run ng add again',
+              '@cngx/eslint-plugin needs ESLint 9 or later and this app declares eslint ^8.57.0; raise eslint to `^9` in devDependencies and reinstall, or run `ng add angular-eslint`, then run `ng add @cngx/core` again',
           }),
         ],
         skipped: [],
@@ -167,13 +167,13 @@ export default [
         { manifest: parseManifest(JSON.stringify({ devDependencies: { eslint: '^8.57.0', 'angular-eslint': '18.4.0' } })) },
         { eslintMajor: 8 },
       );
-      expect(notes(blocked(managed))[0][1]).toContain('update eslint to 9 or later (with angular-eslint: `ng update angular-eslint`)');
+      expect(notes(blocked(managed))[0][1]).toContain('raise eslint to `^9` in devDependencies and reinstall (with angular-eslint: `ng update angular-eslint`)');
     });
 
     it('names the migration command for a legacy eslintrc config', () => {
       const facts = eslintApp({ eslintConfig: undefined, legacyEslintConfig: '.eslintrc.json' });
       expect(notes(blocked(facts))).toEqual([
-        ['lint:config', '.eslintrc.json is a legacy config; migrate with `npx @eslint/migrate-config .eslintrc.json`, then run ng add again'],
+        ['lint:config', '.eslintrc.json is a legacy config; migrate with `npx @eslint/migrate-config .eslintrc.json`, then run `ng add @cngx/core` again'],
       ]);
       expect(blocked(facts).changes).toHaveLength(1);
     });
@@ -190,7 +190,7 @@ export default [
           kind: 'note',
           id: 'lint:config',
           reason:
-            'the cngx rules lint TypeScript through your typescript-eslint setup; add typescript-eslint or run `ng add angular-eslint`, then run ng add again',
+            'the cngx rules lint TypeScript through your typescript-eslint setup; add typescript-eslint or run `ng add angular-eslint`, then run `ng add @cngx/core` again',
         }),
       ]);
     });
@@ -223,7 +223,7 @@ export default [
             kind: 'note',
             id: 'lint:config',
             reason:
-              '@cngx/eslint-plugin loads @angular-eslint/template-parser; add it as a devDependency or run `ng add angular-eslint`, then run ng add again',
+              '@cngx/eslint-plugin loads @angular-eslint/template-parser; add it as a devDependency or run `ng add angular-eslint`, then run `ng add @cngx/core` again',
           }),
         ],
         skipped: [],

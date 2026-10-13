@@ -42,14 +42,14 @@ function addImport(content: string, statement: string): string {
 // necessarily eslint itself, so the note names it only as the way in.
 function eslintUpdate(facts: ProjectFacts): string {
   return declaredRange(facts.manifest, ANGULAR_ESLINT) === undefined
-    ? 'update eslint to 9 or later or run `ng add angular-eslint`'
-    : 'update eslint to 9 or later (with angular-eslint: `ng update angular-eslint`)';
+    ? 'raise eslint to `^9` in devDependencies and reinstall, or run `ng add angular-eslint`'
+    : 'raise eslint to `^9` in devDependencies and reinstall (with angular-eslint: `ng update angular-eslint`)';
 }
 
 // The flat config the plugin can run in, or why there is none and what to run next.
 function compatibleConfig(facts: ProjectFacts): EslintConfigFacts | { readonly reason: string } {
   const { eslintConfig: config, legacyEslintConfig: legacy, eslintStack: stack } = facts;
-  const then = 'then run ng add again';
+  const then = 'then run `ng add @cngx/core` again';
   if (stack.eslintMajor !== undefined && stack.eslintMajor < 9) {
     const declared = declaredRange(facts.manifest, 'eslint') ?? '';
     return { reason: `${PLUGIN} needs ESLint 9 or later and this app declares eslint ${declared}; ${eslintUpdate(facts)}, ${then}` };

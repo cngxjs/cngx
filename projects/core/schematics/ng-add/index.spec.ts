@@ -280,7 +280,7 @@ describe('ngAdd', () => {
       const run = await runRule(ngAdd({}), createFixtureTree());
 
       expect(run.logs).toContain(
-        '  Skip the eslint entry - no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found; set one up with `ng add angular-eslint`, then run ng add again',
+        '  Skip the eslint entry - no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found; set one up with `ng add angular-eslint`, then run `ng add @cngx/core` again',
       );
       expect(run.tree.exists('eslint.config.js')).toBe(false);
     });
@@ -306,7 +306,7 @@ describe('ngAdd', () => {
     );
 
     expect(run.logs.filter((line) => line.startsWith('  Skip the eslint entry'))).toEqual([
-      '  Skip the eslint entry - .eslintrc.json is a legacy config; migrate with `npx @eslint/migrate-config .eslintrc.json`, then run ng add again',
+      '  Skip the eslint entry - .eslintrc.json is a legacy config; migrate with `npx @eslint/migrate-config .eslintrc.json`, then run `ng add @cngx/core` again',
     ]);
     expect(run.tree.readContent('.eslintrc.json')).toBe('{ "root": true }\n');
     expect(run.tree.files.filter((path) => path.includes('eslint.config'))).toEqual([]);
