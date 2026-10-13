@@ -124,8 +124,8 @@ under a pseudo-terminal.
 |-|-|-|
 |`package.json`|always|Every selected `@cngx/*` package and its peers, pinned to the exact release; `@cngx/themes` when a theme is chosen; `@angular/cdk` at the app's Angular range when a package needs it; `@floating-ui/dom` for the fallback; `@cngx/eslint-plugin` as a devDependency for the lint rules. `@angular/material` is never added.|
 |Global styles|theme chosen|An import of `@cngx/themes/cngx.css` ahead of every cngx layer.|
-|`cngx-layers.css`|theme chosen, Tailwind v4|Next to the global stylesheet: one `@layer` statement that puts the cngx layers between Tailwind preflight and the Tailwind utilities. See [Tailwind](#tailwind).|
-|Global styles|theme chosen, Tailwind v4|An import of `./cngx-layers.css` before every other `@import`.|
+|`cngx-layers.css`|theme chosen, Tailwind v4|Next to the first global stylesheet of the build: one `@layer` statement that puts the cngx layers between Tailwind preflight and the Tailwind utilities. See [Tailwind](#tailwind).|
+|First global stylesheet|theme chosen, Tailwind v4|An import of `./cngx-layers.css` before every other `@import`.|
 |`src/cngx-theme.css`|cngx theme|Every system token, commented out at its default, with what it controls. Uncomment a token to override it.|
 |`src/cngx-theme.scss`|Material theme with a `mat.theme()` map|The bridge from the Material system tokens to the cngx tokens. A `define-theme` or M2 theme object is bridged in the file that defines it instead.|
 |`angular.json`|theme chosen|The theme file added to the build styles, after the stylesheet that imports `cngx.css`.|
@@ -151,7 +151,9 @@ below Tailwind. Preflight in `base` then zeroes the padding, margin and
 border of every cngx component.
 
 On a Tailwind v4 app the schematic writes `cngx-layers.css` next to the
-global stylesheet and imports it before every other import:
+first global stylesheet in the build `styles` and imports it there, before
+every other import. The bundle starts with that file, so the order holds
+even when Tailwind or a Material theme lives in another style entry:
 
 ```scss
 @import './cngx-layers.css';
@@ -165,7 +167,9 @@ global stylesheet and imports it before every other import:
 
 The resulting order is `theme, base, cngx.*, components, utilities, app`:
 preflight stays below cngx, a utility class such as `p-8` on a cngx
-component still wins, and your `app` layer comes last.
+component still wins, and your `app` layer comes last. Classes a Tailwind
+plugin puts into `components` also beat cngx when both style the same
+element; that is the consumer's class winning over the library default.
 
 The statement has to live in its own file. Written inline at the top of
 `styles.scss` it still lands after every imported file, so it comes too
@@ -173,12 +177,17 @@ late to order anything.
 
 Tailwind v3 (`@tailwind base;` and friends) emits unlayered rules. They beat
 every cngx layer, utilities and preflight alike, and no layer statement
-changes that, so the schematic adds nothing there. Upgrading to v4 is the
-way to get preflight below cngx.
+changes that, so the schematic writes no file and plans a note instead.
+Upgrading to v4 is the way to get preflight below cngx.
+
+It also plans a note, and writes nothing, when no global stylesheet imports
+`tailwindcss` directly (Tailwind behind another file of your own) or when a
+`cngx-layers.css` it did not write is already there. Add the import by hand
+in both cases.
 
 Without the schematic, create the file and the import by hand as shown
-above. Keep the import first in the global stylesheet: after `@use` and
-`@forward`, before any other `@import`.
+above. Keep the import first in the first global stylesheet: after `@use`
+and `@forward`, before any other `@import`.
 
 ---
 
