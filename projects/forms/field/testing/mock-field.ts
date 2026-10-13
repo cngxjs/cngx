@@ -24,8 +24,8 @@ export interface MockFieldRef<T = unknown> extends CngxFieldRef<T> {
   readonly disabledReasons: WritableSignal<readonly { readonly message?: string }[]>;
   readonly minLength: WritableSignal<number | undefined>;
   readonly maxLength: WritableSignal<number | undefined>;
-  readonly min: WritableSignal<number | undefined>;
-  readonly max: WritableSignal<number | undefined>;
+  readonly min: WritableSignal<unknown>;
+  readonly max: WritableSignal<unknown>;
   readonly pattern: WritableSignal<readonly RegExp[]>;
   readonly errorSummary: WritableSignal<ValidationError.WithFieldTree[]>;
   readonly submitting: WritableSignal<boolean>;
@@ -50,8 +50,9 @@ export interface MockFieldOptions<T = unknown> {
   errors?: ValidationError.WithFieldTree[];
   minLength?: number;
   maxLength?: number;
-  min?: number;
-  max?: number;
+  /** Any bound type: Signal Forms 22 reads the field's own value type. */
+  min?: unknown;
+  max?: unknown;
 }
 
 /**
@@ -85,8 +86,8 @@ export function createMockField<T = string>(
     disabledReasons: signal([]),
     minLength: signal(opts.minLength),
     maxLength: signal(opts.maxLength),
-    min: signal(opts.min),
-    max: signal(opts.max),
+    min: signal<unknown>(opts.min),
+    max: signal<unknown>(opts.max),
     pattern: signal([]),
     errorSummary: signal(opts.errors ?? []),
     submitting: signal(false),
