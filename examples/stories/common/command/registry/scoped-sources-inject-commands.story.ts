@@ -48,8 +48,14 @@ export const STORY: DemoSpec = {
   }`,
   template: `  <div class="demo-command-registry">
     <div class="demo-inline-actions">
-      <button type="button" [attr.aria-pressed]="pluginActive()" (click)="handleTogglePlugin()">
-        {{ pluginActive() ? 'Remove' : 'Add' }} plugin command
+      <button
+        type="button"
+        class="chip"
+        [class.chip--active]="pluginActive()"
+        [attr.aria-pressed]="pluginActive()"
+        (click)="handleTogglePlugin()"
+      >
+        Plugin command
       </button>
       <label>
         Filter
@@ -69,7 +75,7 @@ export const STORY: DemoSpec = {
     <ul class="demo-command-registry__list" aria-label="Commands">
       @for (entry of results(); track entry.command.id) {
         <li>
-          <button type="button" (click)="handleRun(entry.command)">{{ entry.command.label }}</button>
+          <button type="button" class="chip" (click)="handleRun(entry.command)">{{ entry.command.label }}</button>
           <span class="demo-hint demo-hint--small">{{ entry.command.group }}, score {{ entry.score }}</span>
         </li>
       } @empty {

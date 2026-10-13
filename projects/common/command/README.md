@@ -42,6 +42,35 @@ bootstrapApplication(AppComponent, {
 export class EditorView {}
 ```
 
+A scoped call adds to the commands above it and never hides them. That holds
+across both injector trees: a lazy route's `providers` and a shell component's
+`viewProviders` around the `<router-outlet>` both reach the routed page, on top
+of the root set.
+
+```typescript
+// root: FILE_COMMANDS; route: REPORT_COMMANDS; shell: NAV_COMMANDS
+{ path: 'reports', providers: [provideCommands(REPORT_COMMANDS)], component: Reports }
+// injectCommands() inside Reports -> FILE, REPORT, NAV
+```
+
+Order is root and route scopes first (outer to inner), then component scopes
+outer to inner, each in registration order. Registering the same source
+reference at two levels lists it once. A `viewProviders` set stays invisible to
+projected content, as for any `viewProviders` entry; use `providers` when
+content children need it.
+
+Command ids are unique in the merged list. A command whose `id` is already
+registered further out replaces that command in place: the innermost scope (or,
+on one level, the later registration) wins, and the entry keeps the position of
+the first occurrence. Reuse an id on purpose to swap a global command for a
+scoped version; give unrelated commands distinct ids.
+
+Register through `provideCommands`. A raw `CNGX_COMMAND_SOURCE` multi-provider
+is carried into deeper scopes only from a level that also calls
+`provideCommands`. On any other level it is read only when that level is the
+nearest one `injectCommands()` resolves, and a nested `provideCommands` scope
+does not see it.
+
 A source is either a static list or a reactive `Signal` - a signal source lets a
 contributor add, remove, or disable commands live:
 
