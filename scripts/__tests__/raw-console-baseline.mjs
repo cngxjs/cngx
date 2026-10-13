@@ -46,8 +46,6 @@ export const RAW_CONSOLE_BASELINE = {
   ],
   ui: [
     { file: 'projects/ui/action-button/action-button.ts', count: 1 },
-    { file: 'projects/ui/breadcrumb/breadcrumb-router-sync.directive.ts', count: 1 },
-    { file: 'projects/ui/breadcrumb/breadcrumb-siblings-router-sync.directive.ts', count: 1 },
     { file: 'projects/ui/data-grid-accordion/data-grid-accordion.component.ts', count: 1 },
     { file: 'projects/ui/feedback/alert/alert-on.directive.ts', count: 1 },
     { file: 'projects/ui/feedback/alert/alert-stack.ts', count: 1 },
@@ -61,6 +59,5 @@ export const RAW_CONSOLE_BASELINE = {
     { file: 'projects/ui/tabs/tab-group.component.ts', count: 1 },
     { file: 'projects/ui/tabs/tab-overflow.component.ts', count: 1 },
     { file: 'projects/ui/timeline/timeline.component.ts', count: 1 },
-    { file: 'projects/ui/toc/toc-router-sync.directive.ts', count: 1 },
   ],
 };

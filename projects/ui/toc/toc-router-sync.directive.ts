@@ -1,6 +1,7 @@
 import { afterNextRender, Directive, inject } from '@angular/core';
 import { outputToObservable, takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { CNGX_TOC } from './toc-token';
 
@@ -14,7 +15,11 @@ import { CNGX_TOC } from './toc-token';
  * @internal
  */
 function warnRouterAbsent(directive: string, enables: string): void {
-  console.warn(
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return;
+  }
+  cngxDevWarn(
+    'CNGX3001',
     `${directive}: no Router available - directive is a no-op. ` +
       `Provide @angular/router via provideRouter(...) to enable ${enables}.`,
   );
@@ -52,7 +57,9 @@ export class CngxTocRouterSync {
 
   constructor() {
     if (!this.router || !this.route) {
-      afterNextRender(() => warnRouterAbsent('CngxTocRouterSync', 'fragment deep-linking'));
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        afterNextRender(() => warnRouterAbsent('CngxTocRouterSync', 'fragment deep-linking'));
+      }
       return;
     }
     const router = this.router;

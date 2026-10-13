@@ -52,6 +52,7 @@ const EXPECTED_DEV_WRAPPERS = [
   'projects/forms/filter-builder/filter-builder-operators.ts#warnUnknownFilterOperatorOnce',
   'projects/data-display/treetable/treetable.component.ts#warnUnlabeledColumns',
   'projects/forms/input/reactive-forms-channel.ts#injectDefaultAccessorWarning',
+  'projects/ui/toc/toc-router-sync.directive.ts#warnRouterAbsent',
 ];
 
 const CODE_PATTERN = /^CNGX\d{4}$/;

@@ -123,6 +123,20 @@
       "files": ["projects/forms/input/reactive-forms-channel.ts"]
     },
     {
+      "code": "CNGX3001",
+      "lib": "ui",
+      "severity": "warn",
+      "title": "No Router for a router-sync directive",
+      "page": "core-concepts/error-codes/cngx3001.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3001.html",
+      "status": "active",
+      "files": [
+        "projects/ui/breadcrumb/breadcrumb-router-sync.directive.ts",
+        "projects/ui/breadcrumb/breadcrumb-siblings-router-sync.directive.ts",
+        "projects/ui/toc/toc-router-sync.directive.ts"
+      ]
+    },
+    {
       "code": "CNGX4001",
       "lib": "data-display",
       "severity": "warn",

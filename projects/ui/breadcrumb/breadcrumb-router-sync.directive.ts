@@ -11,6 +11,7 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { type ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
 import type { CngxBreadcrumbItemsSource } from './breadcrumb-items-source.token';
@@ -114,12 +115,15 @@ export class CngxBreadcrumbRouterSync implements CngxBreadcrumbItemsSource {
   constructor() {
     const router = this.router;
     if (!router) {
-      afterNextRender(() => {
-        console.warn(
-          'CngxBreadcrumbRouterSync: no Router available - directive is a no-op. ' +
-            'Provide @angular/router via provideRouter(...) to enable router-driven crumbs.',
-        );
-      });
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        afterNextRender(() => {
+          cngxDevWarn(
+            'CNGX3001',
+            'CngxBreadcrumbRouterSync: no Router available - directive is a no-op. ' +
+              'Provide @angular/router via provideRouter(...) to enable router-driven crumbs.',
+          );
+        });
+      }
       this.crumbs = signal<readonly CngxBreadcrumbCrumb[]>([]).asReadonly();
       return;
     }
