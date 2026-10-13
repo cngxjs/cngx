@@ -118,6 +118,10 @@
             {
                 "title": "CNGX2006",
                 "file": "error-codes/cngx2006.md"
+            },
+            {
+                "title": "CNGX4001",
+                "file": "error-codes/cngx4001.md"
             }
         ]
     }

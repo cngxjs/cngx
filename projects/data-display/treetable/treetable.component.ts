@@ -38,7 +38,7 @@ import {
   formatDisplayValue,
   injectLocale,
 } from '@cngx/core/utils';
-import { arrayEqual } from '@cngx/utils';
+import { arrayEqual, cngxDevWarn } from '@cngx/utils';
 import { CngxTreetableRow } from './treetable-row.directive';
 import {
   CngxCellTpl,
@@ -730,7 +730,7 @@ export class CngxTreetable<T = unknown> {
       });
     });
 
-    if (isDevBuild()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       this.warnUnlabeledColumns();
     }
   }
@@ -741,6 +741,9 @@ export class CngxTreetable<T = unknown> {
    * template. Production shows `unlabeledColumn` there instead.
    */
   private warnUnlabeledColumns(): void {
+    if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+      return;
+    }
     const warned = new Set<string>();
     effect(() => {
       const { columnLabels } = this.labels();
@@ -756,7 +759,8 @@ export class CngxTreetable<T = unknown> {
             continue;
           }
           warned.add(col);
-          console.warn(
+          cngxDevWarn(
+            'CNGX4001',
             `[CngxTreetable] column "${col}" has no header label - production shows ` +
               `the unlabeledColumn text instead of the key. Add it to columnLabels ` +
               `(withTreetableLabels or the language pack) or project a *cngxHeader template.`,

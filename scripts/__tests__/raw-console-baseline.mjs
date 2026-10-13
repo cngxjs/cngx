@@ -44,7 +44,6 @@ export const RAW_CONSOLE_BASELINE = {
     { file: 'projects/common/timeline/grouping.ts', count: 1 },
     { file: 'projects/common/timeline/timeline-item.component.ts', count: 1 },
   ],
-  'data-display': [{ file: 'projects/data-display/treetable/treetable.component.ts', count: 1 }],
   ui: [
     { file: 'projects/ui/action-button/action-button.ts', count: 1 },
     { file: 'projects/ui/breadcrumb/breadcrumb-router-sync.directive.ts', count: 1 },

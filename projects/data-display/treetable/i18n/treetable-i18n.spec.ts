@@ -268,6 +268,7 @@ describe('CngxTreetable header and cell copy', () => {
     fixture.detectChanges();
     expect(headerTexts(fixture)).toEqual(['Title', 'Size', 'Modified']);
     const messages = warn.mock.calls.map((call: unknown[]) => String(call[0]));
+    expect(messages.every((m: string) => m.startsWith('CNGX4001: [CngxTreetable]'))).toBe(true);
     expect(messages.filter((m: string) => m.includes('"size"'))).toHaveLength(1);
     expect(messages.filter((m: string) => m.includes('"modified"'))).toHaveLength(1);
     expect(messages.some((m: string) => m.includes('"name"'))).toBe(false);

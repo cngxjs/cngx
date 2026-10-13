@@ -55,6 +55,7 @@ const EXPECTED_INDIRECT_SINKS = [];
  */
 const EXPECTED_DEV_WRAPPERS = [
   'projects/forms/filter-builder/filter-builder-operators.ts#warnUnknownFilterOperatorOnce',
+  'projects/data-display/treetable/treetable.component.ts#warnUnlabeledColumns',
   'projects/forms/input/reactive-forms-channel.ts#injectDefaultAccessorWarning',
 ];
 
