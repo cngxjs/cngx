@@ -74,8 +74,10 @@ export interface AddProvider extends ChangeBase {
   readonly project: string;
   readonly call: ProviderCall;
   /**
-   * The app config or root NgModule detection expects `addRootProvider` to
-   * edit; it finds the file itself, so this only names it in the report.
+   * The app config or root NgModule detection found. Apply edits it in place
+   * when it holds exactly one root providers array and the call's imports
+   * bind cleanly; otherwise `addRootProvider` resolves the file from the
+   * bootstrap call itself.
    */
   readonly path?: string;
 }

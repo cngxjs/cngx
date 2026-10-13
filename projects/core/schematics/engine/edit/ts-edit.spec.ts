@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { addToArrayLiteral, type ArraySelector, countPropertyArrays, hasArrayLiteral, topLevelBindings } from './ts-edit';
+import { addToArrayLiteral, type ArraySelector, countArrayLiterals, hasArrayLiteral, topLevelBindings } from './ts-edit';
+
+const ROOT_PROVIDERS: ArraySelector = { kind: 'root-providers' };
 
 const DEFAULT: ArraySelector = { kind: 'default-export' };
 const ITEM = '...cngx.configs.recommended';
@@ -47,7 +49,7 @@ export default [
     );
   });
 
-  it('selects the first property of that name holding an array, one element per line', () => {
+  it('selects the root providers array, one element per line', () => {
     const config = `export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
@@ -56,7 +58,7 @@ export default [
 };
 `;
 
-    expect(addToArrayLiteral(config, { kind: 'property', name: 'providers' }, 'provideA11yPreferences()')).toBe(
+    expect(addToArrayLiteral(config, ROOT_PROVIDERS, 'provideA11yPreferences()')).toBe(
       `export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
@@ -65,9 +67,6 @@ export default [
   ],
 };
 `,
-    );
-    expect(hasArrayLiteral('export const x = { providers: provide() };', { kind: 'property', name: 'providers' })).toBe(
-      false,
     );
   });
 
@@ -90,15 +89,39 @@ describe('hasArrayLiteral', () => {
   });
 });
 
-describe('countPropertyArrays', () => {
-  it('counts every property of that name holding an array, nested ones included', () => {
-    const content = `const a = { providers: [] };
-export const config = { providers: [{ deps: [], providers: [] }], imports: [] };
-const b = { providers: provide() };
+describe('countArrayLiterals', () => {
+  it('counts the providers arrays of every root config shape', () => {
+    const shapes = [
+      'export const appConfig: ApplicationConfig = { providers: [] };',
+      'export const appConfig = { providers: [] } satisfies ApplicationConfig;',
+      'export const appConfig = ({ providers: [] }) as ApplicationConfig;',
+      '@NgModule({ providers: [] }) export class AppModule {}',
+      'bootstrapApplication(App, { providers: [] });',
+    ];
+
+    expect(shapes.map((content) => countArrayLiterals(content, ROOT_PROVIDERS))).toEqual([1, 1, 1, 1, 1]);
+  });
+
+  it('skips providers arrays outside a root config and a root config without an array', () => {
+    const content = `const routes: Routes = [{ path: '', providers: [provideAdmin()] }];
+const untyped = { providers: [] };
+export const appConfig: ApplicationConfig = { providers: rootProviders };
 `;
 
-    expect(countPropertyArrays(content, 'providers')).toBe(3);
-    expect(countPropertyArrays(content, 'imports')).toBe(1);
+    expect(countArrayLiterals(content, ROOT_PROVIDERS)).toBe(0);
+  });
+
+  it('counts each root config, so two read as ambiguous', () => {
+    const content = `export const serverConfig: ApplicationConfig = { providers: [] };
+export const appConfig: ApplicationConfig = { providers: [{ provide: X, useValue: { providers: [] } }] };
+`;
+
+    expect(countArrayLiterals(content, ROOT_PROVIDERS)).toBe(2);
+  });
+
+  it('reads 0 or 1 for the other selectors', () => {
+    expect(countArrayLiterals(FLAT_CONFIG, DEFAULT)).toBe(1);
+    expect(countArrayLiterals('export const x = 1;', DEFAULT)).toBe(0);
   });
 });
 

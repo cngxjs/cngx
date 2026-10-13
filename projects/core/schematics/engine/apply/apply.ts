@@ -13,7 +13,7 @@ import { applyToUpdateRecorder } from '@schematics/angular/utility/change';
 import { JSONFile } from '@schematics/angular/utility/json-file';
 
 import { insertStyleImport } from '../edit/style-edit';
-import { addToArrayLiteral, type ArraySelector, countPropertyArrays, topLevelBindings } from '../edit/ts-edit';
+import { addToArrayLiteral, type ArraySelector, countArrayLiterals, topLevelBindings } from '../edit/ts-edit';
 import { addLockstepDependency, keepManifestNewline } from '../manifest/lockstep';
 import {
   type AddImport,
@@ -77,7 +77,7 @@ function renderCall(call: ProviderArg, external: (symbol: string, module: string
   return `${callee}(${args})`;
 }
 
-const PROVIDERS = { kind: 'property', name: 'providers' } as const satisfies ArraySelector;
+const ROOT_PROVIDERS: ArraySelector = { kind: 'root-providers' };
 
 // Every name the call imports is free in the file or already imported from
 // the same module; anything else needs the aliasing `addRootProvider` does.
@@ -88,15 +88,15 @@ function importsFit(content: string, imports: readonly (readonly [string, string
 
 // `addRootProvider` appends `, <call>` right behind the last element, so in a
 // multi-line array the provider lands on its neighbour's line. When the
-// planned file has exactly one providers array and the imports bind cleanly,
-// append there in the array's own layout; otherwise `addRootProvider` finds
-// the spot and aliases a clashing name.
+// planned file holds exactly one root providers array and the imports bind
+// cleanly, append there in the array's own layout; otherwise `addRootProvider`
+// resolves the file from the bootstrap call and aliases a clashing name.
 function addProvider(change: AddProvider): Rule {
   const fallback = addRootProvider(change.project, ({ code, external }) => code`${renderCall(change.call, external)}`);
   return (tree: Tree) => {
     const path = change.path;
     const content = path !== undefined && tree.exists(path) ? tree.readText(path) : undefined;
-    if (path === undefined || content === undefined || countPropertyArrays(content, PROVIDERS.name) !== 1) {
+    if (path === undefined || content === undefined || countArrayLiterals(content, ROOT_PROVIDERS) !== 1) {
       return fallback;
     }
     const imports: (readonly [string, string])[] = [];
@@ -107,7 +107,7 @@ function addProvider(change: AddProvider): Rule {
     if (!importsFit(content, imports)) {
       return fallback;
     }
-    const next = addToArrayLiteral(content, PROVIDERS, expression);
+    const next = addToArrayLiteral(content, ROOT_PROVIDERS, expression);
     if (next === content) {
       return undefined;
     }

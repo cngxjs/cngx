@@ -4,12 +4,13 @@ import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeSc
  * Which array literal to edit: the default export (`export default [...]`,
  * `module.exports = [...]`, or the first array argument of a wrapper call
  * such as `defineConfig([...])`), the initializer of a named variable, or
- * the first object property of that name holding an array (`providers: [...]`).
+ * the `providers` array of a root config: an object typed `ApplicationConfig`,
+ * the `@NgModule` argument, or the inline config of `bootstrapApplication`.
  */
 export type ArraySelector =
   | { readonly kind: 'default-export' }
   | { readonly kind: 'variable'; readonly name: string }
-  | { readonly kind: 'property'; readonly name: string };
+  | { readonly kind: 'root-providers' };
 
 function unwrap(expression: ts.Expression): ts.ArrayLiteralExpression | undefined {
   if (ts.isArrayLiteralExpression(expression)) {
@@ -58,24 +59,74 @@ function variableInitializer(statement: ts.Statement, name: string): ts.Expressi
   return declaration?.initializer;
 }
 
-function propertyArrays(node: ts.Node, name: string): readonly ts.ArrayLiteralExpression[] {
-  const own =
-    ts.isPropertyAssignment(node) &&
-    (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name)) &&
-    node.name.text === name &&
-    ts.isArrayLiteralExpression(node.initializer)
-      ? [node.initializer]
-      : [];
-  const nested: ts.ArrayLiteralExpression[] = [];
+function isApplicationConfigType(type: ts.TypeNode | undefined): boolean {
+  return (
+    type !== undefined &&
+    ts.isTypeReferenceNode(type) &&
+    ts.isIdentifier(type.typeName) &&
+    type.typeName.text === 'ApplicationConfig'
+  );
+}
+
+// The object literal behind `x: ApplicationConfig = {...}`, `{...} satisfies
+// ApplicationConfig` or `{...} as ApplicationConfig`.
+function applicationConfigLiteral(expression: ts.Expression, typed: boolean): ts.ObjectLiteralExpression | undefined {
+  if (ts.isParenthesizedExpression(expression)) {
+    return applicationConfigLiteral(expression.expression, typed);
+  }
+  if (ts.isAsExpression(expression) || ts.isSatisfiesExpression(expression)) {
+    return applicationConfigLiteral(expression.expression, typed || isApplicationConfigType(expression.type));
+  }
+  return typed && ts.isObjectLiteralExpression(expression) ? expression : undefined;
+}
+
+function calleeName(call: ts.CallExpression): string | undefined {
+  return ts.isIdentifier(call.expression) ? call.expression.text : undefined;
+}
+
+// Which argument of these calls is a root config object.
+const ROOT_CONFIG_ARGUMENT: ReadonlyMap<string, number> = new Map([
+  ['NgModule', 0],
+  ['bootstrapApplication', 1],
+]);
+
+function rootConfigOf(node: ts.Node): ts.ObjectLiteralExpression | undefined {
+  if (ts.isVariableDeclaration(node) && node.initializer !== undefined) {
+    return applicationConfigLiteral(node.initializer, isApplicationConfigType(node.type));
+  }
+  if (!ts.isCallExpression(node)) {
+    return undefined;
+  }
+  const argument = ROOT_CONFIG_ARGUMENT.get(calleeName(node) ?? '');
+  const config = argument === undefined ? undefined : node.arguments[argument];
+  return config !== undefined && ts.isObjectLiteralExpression(config) ? config : undefined;
+}
+
+function rootConfigs(node: ts.Node): readonly ts.ObjectLiteralExpression[] {
+  const own = rootConfigOf(node);
+  const nested: ts.ObjectLiteralExpression[] = [];
   ts.forEachChild(node, (child) => {
-    nested.push(...propertyArrays(child, name));
+    nested.push(...rootConfigs(child));
   });
-  return [...own, ...nested];
+  return own === undefined ? nested : [own, ...nested];
+}
+
+function rootProvidersArrays(source: ts.SourceFile): readonly ts.ArrayLiteralExpression[] {
+  return rootConfigs(source).flatMap((config) =>
+    config.properties.flatMap((property) =>
+      ts.isPropertyAssignment(property) &&
+      ts.isIdentifier(property.name) &&
+      property.name.text === 'providers' &&
+      ts.isArrayLiteralExpression(property.initializer)
+        ? [property.initializer]
+        : [],
+    ),
+  );
 }
 
 function findArray(source: ts.SourceFile, selector: ArraySelector): ts.ArrayLiteralExpression | undefined {
-  if (selector.kind === 'property') {
-    return propertyArrays(source, selector.name)[0];
+  if (selector.kind === 'root-providers') {
+    return rootProvidersArrays(source)[0];
   }
   for (const statement of source.statements) {
     const expression =
@@ -96,9 +147,13 @@ export function hasArrayLiteral(content: string, selector: ArraySelector): boole
   return findArray(parse(content), selector) !== undefined;
 }
 
-/** How many object properties named `name` hold an array literal, nested ones included. */
-export function countPropertyArrays(content: string, name: string): number {
-  return propertyArrays(parse(content), name).length;
+/** How many array literals the selector matches; more than one makes it ambiguous. */
+export function countArrayLiterals(content: string, selector: ArraySelector): number {
+  const source = parse(content);
+  if (selector.kind === 'root-providers') {
+    return rootProvidersArrays(source).length;
+  }
+  return findArray(source, selector) === undefined ? 0 : 1;
 }
 
 function declaredName(statement: ts.Statement): readonly string[] {

@@ -207,17 +207,17 @@ export const appConfig: ApplicationConfig = {
       expect(config).toContain('provideA11yPreferences(withPersistence_alias())');
     });
 
-    it('when the file holds more than one providers array', async () => {
+    it('when the file holds more than one root providers array', async () => {
       const tree = await createApp();
       tree.overwrite(
         CONFIG_PATH,
         `import { ApplicationConfig } from '@angular/core';
 
-const nested = { providers: [] };
+export const serverConfig: ApplicationConfig = { providers: [] };
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    nested,
+    serverConfig.providers,
   ],
 };
 `,
@@ -225,9 +225,76 @@ export const appConfig: ApplicationConfig = {
 
       const config = (await apply([PERSISTENCE], tree)).readText(CONFIG_PATH);
 
-      expect(config).toContain('const nested = { providers: [] };');
+      expect(config).toContain('export const serverConfig: ApplicationConfig = { providers: [] };');
       expect(config).toContain("import { provideA11yPreferences, withPersistence } from '@cngx/core';");
-      expect(config).toContain('    nested, provideA11yPreferences(withPersistence()),\n');
+      expect(config).toContain('    serverConfig.providers, provideA11yPreferences(withPersistence()),\n');
+    });
+
+    it('when the planned file does not exist', async () => {
+      const tree = await createApp();
+
+      const config = (await apply([{ ...PERSISTENCE, path: 'projects/app/src/app/missing.ts' }], tree)).readText(CONFIG_PATH);
+
+      expect(config).toContain('provideA11yPreferences(withPersistence())');
+      expect(tree.exists('projects/app/src/app/missing.ts')).toBe(false);
+    });
+  });
+
+  describe('edits the root providers array in place', () => {
+    const PATH = 'src/app/app.config.ts';
+    const PERSISTENCE: Change = {
+      ...BASE,
+      kind: 'add-provider',
+      id: 'p',
+      project: 'app',
+      path: PATH,
+      call: {
+        symbol: 'provideA11yPreferences',
+        module: '@cngx/core',
+        args: [{ symbol: 'withPersistence', module: '@cngx/core' }],
+      },
+    };
+
+    async function edited(config: string): Promise<string> {
+      return (await apply([PERSISTENCE], createMemoryTree({ [PATH]: config }))).readText(PATH);
+    }
+
+    it('past a route-level providers array', async () => {
+      const config = await edited(`import { ApplicationConfig } from '@angular/core';
+
+const routes: Routes = [{ path: 'admin', providers: [provideAdmin()] }];
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes),
+  ],
+};
+`);
+
+      expect(config).toContain("{ path: 'admin', providers: [provideAdmin()] }");
+      expect(config).toContain('    provideRouter(routes),\n    provideA11yPreferences(withPersistence()),\n  ],');
+    });
+
+    it('fills an empty array', async () => {
+      const config = await edited(
+        "import { ApplicationConfig } from '@angular/core';\n\nexport const appConfig: ApplicationConfig = { providers: [] };\n",
+      );
+
+      expect(config).toContain('{ providers: [provideA11yPreferences(withPersistence())] }');
+    });
+
+    it('adds to an import of the same module', async () => {
+      const config = await edited(`import { withPersistence } from '@cngx/core';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes),
+  ],
+};
+`);
+
+      expect(config).toContain("import { withPersistence, provideA11yPreferences } from '@cngx/core';");
+      expect(config).toContain('    provideA11yPreferences(withPersistence()),\n');
     });
   });
 
