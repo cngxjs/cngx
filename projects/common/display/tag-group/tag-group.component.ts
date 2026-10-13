@@ -7,11 +7,11 @@ import {
   contentChild,
   contentChildren,
   input,
-  isDevMode,
   type Signal,
   untracked,
   ViewEncapsulation,
 } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { injectTagConfig } from '../tag/config/inject-tag-config';
 import { injectResolvedTagTemplate } from '../tag/shared/inject-resolved-template';
@@ -275,19 +275,22 @@ export class CngxTagGroup implements CngxTagGroupHost {
     // Dev-mode advisory: `[label]` without `[semanticList]="true"` lands
     // `aria-label` on a bare `<div>` - AT reads the label but won't
     // announce "list, N items". One-shot, tree-shaken in prod.
-    afterNextRender(() => {
-      const { label, semanticList } = untracked(() => ({
-        label: this.label(),
-        semanticList: this.semanticList(),
-      }));
-      if (isDevMode() && label && !semanticList) {
-        console.warn(
-          '[cngx-tag-group] [label] is bound without [semanticList]="true"; ' +
-            'the aria-label lands on a generic <div>. Add ' +
-            '[semanticList]="true" to expose role="list" + aria-label, ' +
-            'or remove [label].',
-        );
-      }
-    });
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      afterNextRender(() => {
+        const { label, semanticList } = untracked(() => ({
+          label: this.label(),
+          semanticList: this.semanticList(),
+        }));
+        if (label && !semanticList) {
+          cngxDevWarn(
+            'CNGX1018',
+            '[cngx-tag-group] [label] is bound without [semanticList]="true"; ' +
+              'the aria-label lands on a generic <div>. Add ' +
+              '[semanticList]="true" to expose role="list" + aria-label, ' +
+              'or remove [label].',
+          );
+        }
+      });
+    }
   }
 }

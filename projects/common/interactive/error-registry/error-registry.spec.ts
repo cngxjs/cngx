@@ -111,7 +111,7 @@ describe('CngxErrorRegistry', () => {
       registry.registerScope('a', makeScope('a'));
       registry.registerScope('a', makeScope('a'));
       expect(warn).toHaveBeenCalledTimes(1);
-      expect(warn.mock.calls[0][0]).toContain('scope named "a"');
+      expect(warn.mock.calls[0][0]).toContain('CNGX1021: CngxErrorRegistry: a scope named "a"');
       warn.mockRestore();
     });
   });

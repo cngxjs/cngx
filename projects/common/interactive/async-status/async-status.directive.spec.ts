@@ -160,7 +160,7 @@ describe('CngxAsyncStatus', () => {
       const fixture = TestBed.createComponent(CoPlacedHost);
       fixture.detectChanges();
       expect(warnSpy).toHaveBeenCalledTimes(1);
-      expect(warnSpy.mock.calls[0][0]).toContain('both bind aria-busy');
+      expect(warnSpy.mock.calls[0][0]).toContain('CNGX1019: CngxAsyncStatus:');
     });
   });
 });

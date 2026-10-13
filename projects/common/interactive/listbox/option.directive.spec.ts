@@ -180,7 +180,7 @@ describe('CngxOption', () => {
         fixture.detectChanges();
 
         expect(errorSpy).toHaveBeenCalledWith(
-          expect.stringContaining('has no label and no textContent'),
+          expect.stringContaining('CNGX1023: <cngx-option> at '),
         );
       } finally {
         errorSpy.mockRestore();

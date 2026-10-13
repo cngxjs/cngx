@@ -7,12 +7,12 @@ import {
   ElementRef,
   inject,
   input,
-  isDevMode,
   linkedSignal,
   untracked,
 } from '@angular/core';
 
 import { coerceSignal, nextUid } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 import {
   CNGX_HOVER_INTENT_DEFAULTS,
@@ -254,10 +254,11 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
       });
     });
 
-    if (isDevMode()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       afterNextRender(() => {
         if (this.menuItem === null) {
-          console.warn(
+          cngxDevWarn(
+            'CNGX1024',
             '[cngxMenuItemSubmenu] applied without a sibling [cngxMenuItem] on the same host element. ' +
               'The surrounding CngxMenuTrigger cannot route ArrowRight / activation to this submenu ' +
               'because CngxActiveDescendant only highlights CngxMenuItem nodes. ' +
@@ -265,7 +266,8 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
           );
         }
         if (!this.wired() && !this.wiring) {
-          console.warn(
+          cngxDevWarn(
+            'CNGX1025',
             '[cngxMenuItemSubmenu] has no popover/menu source. Bind [cngxMenuItemSubmenu] and ' +
               '[submenuMenu], or provide CNGX_MENU_SUBMENU_WIRING from a wrapping component. ' +
               'The brain stays inert (no aria-haspopup / aria-expanded) until one is present.',
@@ -296,6 +298,9 @@ export function __resetSubmenuFallbackWarnings(doc: Document): void {
 }
 /** @internal */
 function warnMissingSubmenuFallbacks(popoverEl: HTMLElement): void {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return;
+  }
   const doc = popoverEl.ownerDocument;
   if (submenuFallbackWarnedDocs.has(doc)) {
     return;
@@ -305,7 +310,8 @@ function warnMissingSubmenuFallbacks(popoverEl: HTMLElement): void {
     return;
   }
   submenuFallbackWarnedDocs.add(doc);
-  console.warn(
+  cngxDevWarn(
+    'CNGX1026',
     'CngxMenuItemSubmenu: the companion popover ships without [positionTryFallbacks]. ' +
       'Submenus that clip the viewport edge will not flip without a try-fallback chain. ' +
       'Wire the recommended default:\n\n' +

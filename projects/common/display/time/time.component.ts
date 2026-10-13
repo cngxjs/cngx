@@ -4,10 +4,10 @@ import {
   computed,
   effect,
   input,
-  isDevMode,
   ViewEncapsulation,
 } from '@angular/core';
 import { dateTimeFormatterFor, injectLocale, memoize } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * Unit ladder for the relative formatter, smallest first. Each `amount` is the
@@ -134,10 +134,11 @@ export class CngxTime {
   });
 
   constructor() {
-    if (isDevMode()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       effect(() => {
         if (!this.isValidDate()) {
-          console.warn(
+          cngxDevWarn(
+            'CNGX1006',
             '[CngxTime] [date] resolved to an Invalid Date - rendering empty. ' +
               'Check the bound value (bad ISO string?).',
           );

@@ -1,4 +1,5 @@
-import { computed, Injectable, isDevMode, signal, type Signal } from '@angular/core';
+import { computed, Injectable, signal, type Signal } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 import type { CngxErrorAggregatorContract } from '../error-aggregator/error-aggregator.token';
 import type { CngxErrorScopeContract } from '../error-scope/error-scope.token';
 import { mapKeySetEqual, shallowReadonlyArrayEqual } from './equal-fns';
@@ -86,8 +87,9 @@ export class CngxErrorRegistry {
     if (current.get(name) === scope) {
       return;
     }
-    if (isDevMode() && current.has(name)) {
-      console.warn(
+    if (typeof ngDevMode !== 'undefined' && ngDevMode && current.has(name)) {
+      cngxDevWarn(
+        'CNGX1021',
         `CngxErrorRegistry: a scope named "${name}" is already registered. ` +
           'The existing instance stays live (swap-is-noop); unregister it first for a true swap.',
       );
@@ -133,8 +135,9 @@ export class CngxErrorRegistry {
     if (current.get(name) === aggregator) {
       return;
     }
-    if (isDevMode() && current.has(name)) {
-      console.warn(
+    if (typeof ngDevMode !== 'undefined' && ngDevMode && current.has(name)) {
+      cngxDevWarn(
+        'CNGX1021',
         `CngxErrorRegistry: an aggregator named "${name}" is already registered. ` +
           'The existing instance stays live (swap-is-noop); unregister it first for a true swap.',
       );

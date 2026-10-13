@@ -5,13 +5,13 @@ import {
   ElementRef,
   inject,
   input,
-  isDevMode,
   signal,
   type Signal,
 } from '@angular/core';
 
 import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx/common/a11y';
 import { nextUid } from '@cngx/core/utils';
+import { cngxDevError } from '@cngx/utils';
 
 import { CNGX_OPTION_CONTAINER } from './option-container';
 import { CNGX_OPTION_FILTER_HOST } from './option-filter-host';
@@ -191,8 +191,9 @@ export class CngxOption implements CngxAdItemHandle {
     afterNextRender(() => {
       const el = this.elementRef.nativeElement as HTMLElement;
       this.textContentSnapshot.set((el.textContent ?? '').trim());
-      if (isDevMode() && !this.label()) {
-        console.error(
+      if (typeof ngDevMode !== 'undefined' && ngDevMode && !this.label()) {
+        cngxDevError(
+          'CNGX1023',
           `<cngx-option> at ${this.id} has no label and no textContent. ` +
             `Label is required for AT and trigger display.`,
         );

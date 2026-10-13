@@ -6,18 +6,6 @@
 export const RAW_CONSOLE_BASELINE = {
   common: [
     { file: 'projects/common/data/paginate/paginate-routing.directive.ts', count: 1 },
-    { file: 'projects/common/display/status/status.component.ts', count: 2 },
-    { file: 'projects/common/display/tag-group/tag-group.component.ts', count: 1 },
-    { file: 'projects/common/display/time/time.component.ts', count: 1 },
-    { file: 'projects/common/interactive/async-status/async-status.directive.ts', count: 1 },
-    { file: 'projects/common/interactive/error-registry/aggregator-contract.ts', count: 1 },
-    { file: 'projects/common/interactive/error-registry/error-registry.ts', count: 2 },
-    { file: 'projects/common/interactive/listbox/option-group.directive.ts', count: 1 },
-    { file: 'projects/common/interactive/listbox/option.directive.ts', count: 1 },
-    { file: 'projects/common/interactive/menu/menu-item-submenu.directive.ts', count: 3 },
-    { file: 'projects/common/interactive/menu/menu.directive.ts', count: 1 },
-    { file: 'projects/common/interactive/reorder/reorder.directive.ts', count: 1 },
-    { file: 'projects/common/interactive/tree-controller/tree-controller.ts', count: 2 },
     { file: 'projects/common/layout/observers/intersection-observer.directive.ts', count: 1 },
     { file: 'projects/common/layout/router/warn-router-absent.ts', count: 1 },
     { file: 'projects/common/layout/scroll/infinite-scroll.directive.ts', count: 1 },

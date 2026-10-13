@@ -435,3 +435,29 @@ describe('CngxReorder under dir=rtl', () => {
     expect(host.reorders.at(-1)?.toIndex).toBe(1);
   });
 });
+
+@Component({
+  template: `
+    <ul [cngxReorder]="values" itemSelector=".row">
+      <li class="row">Alpha</li>
+      <li class="row" data-reorder-index="1">Bravo</li>
+    </ul>
+  `,
+  imports: [CngxReorder],
+})
+class MisconfiguredHost {
+  readonly values = signal<readonly Item[]>(ITEMS.slice(0, 2)).asReadonly();
+}
+
+describe('CngxReorder dev-mode check', () => {
+  it('warns with CNGX1028 when matched items carry no data-reorder-index', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    TestBed.configureTestingModule({ imports: [MisconfiguredHost] });
+    const fixture = TestBed.createComponent(MisconfiguredHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('CNGX1028: [CngxReorder] 1 element(s) match itemSelector ".row"'),
+    );
+  });
+});

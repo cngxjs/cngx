@@ -7,15 +7,50 @@ import {
   computed,
   inject,
   input,
-  isDevMode,
   output,
   signal,
   type Signal,
 } from '@angular/core';
-import { clamp } from '@cngx/utils';
+import { clamp, cngxDevWarn } from '@cngx/utils';
 import { injectDirection, resolveInlineStep } from '@cngx/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, fromEvent, map, merge, switchMap, takeUntil, tap } from 'rxjs';
+
+/**
+ * Dev only: after the first render, warns when elements match
+ * `itemSelector` but carry no numeric `data-reorder-index`. Registers its
+ * own `afterNextRender`, so call it in the injection context. A module
+ * function, not a method: a class keeps its methods in the bundle, and an
+ * emptied method still pulls `cngxDevWarn` into the production build.
+ */
+function wireDevModeCheck(hostEl: HTMLElement, itemSelector: Signal<string>): void {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return;
+  }
+  afterNextRender(() => {
+    const items = hostEl.querySelectorAll(itemSelector());
+    if (items.length === 0) {
+      // Not an error - an empty strip is a legitimate idle state.
+      // Only warn when the consumer probably forgot to wire the attr.
+      return;
+    }
+    let misconfigured = 0;
+    items.forEach((el: Element) => {
+      const idx = (el as HTMLElement).dataset['reorderIndex'];
+      if (idx == null || !Number.isFinite(Number(idx))) {
+        misconfigured += 1;
+      }
+    });
+    if (misconfigured > 0) {
+      cngxDevWarn(
+        'CNGX1028',
+        `[CngxReorder] ${misconfigured} element(s) match itemSelector ` +
+          `"${itemSelector()}" but carry no numeric data-reorder-index. ` +
+          'Pointer / keyboard moves targeting them will be ignored.',
+      );
+    }
+  });
+}
 
 /**
  * Modifier key that arms the keyboard-reorder handler. Plain arrow keys
@@ -205,7 +240,9 @@ export class CngxReorder<T = unknown> {
   constructor() {
     this.wirePointer();
     this.wireKeyboard();
-    this.wireDevModeCheck();
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      wireDevModeCheck(this.hostEl, this.itemSelector);
+    }
     this.destroyRef.onDestroy(() => {
       for (const cleanup of [...this.pendingSuppressorCleanups]) {
         cleanup();
@@ -395,34 +432,6 @@ export class CngxReorder<T = unknown> {
         takeUntilDestroyed(),
       )
       .subscribe();
-  }
-
-  private wireDevModeCheck(): void {
-    if (!isDevMode()) {
-      return;
-    }
-    afterNextRender(() => {
-      const items = this.hostEl.querySelectorAll(this.itemSelector());
-      if (items.length === 0) {
-        // Not an error - an empty strip is a legitimate idle state.
-        // Only warn when the consumer probably forgot to wire the attr.
-        return;
-      }
-      let misconfigured = 0;
-      items.forEach((el: Element) => {
-        const idx = (el as HTMLElement).dataset['reorderIndex'];
-        if (idx == null || !Number.isFinite(Number(idx))) {
-          misconfigured += 1;
-        }
-      });
-      if (misconfigured > 0) {
-        console.warn(
-          `[CngxReorder] ${misconfigured} element(s) match itemSelector ` +
-            `"${this.itemSelector()}" but carry no numeric data-reorder-index. ` +
-            'Pointer / keyboard moves targeting them will be ignored.',
-        );
-      }
-    });
   }
 
   private parseIndex(el: HTMLElement): number {

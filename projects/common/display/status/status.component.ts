@@ -7,9 +7,9 @@ import {
   ElementRef,
   inject,
   input,
-  isDevMode,
   ViewEncapsulation,
 } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 /** Semantic health of a {@link CngxStatus}. */
 export type StatusTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
@@ -110,18 +110,20 @@ export class CngxStatus {
   protected readonly glyphChar = computed(() => TONE_GLYPH[this.tone()]);
 
   constructor() {
-    if (isDevMode()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       afterNextRender(() => {
         const el = this.elRef.nativeElement as HTMLElement;
         if (!this.label() && !el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby')) {
-          console.warn(
+          cngxDevWarn(
+            'CNGX1016',
             'cngx-status: no `label` and no external `aria-label`/`aria-labelledby`; ' +
               'the status has no accessible name and reads only as a coloured dot. ' +
               'Set [label] or an aria-label on the host.',
           );
         }
         if (!this.glyph() && !this.label()) {
-          console.warn(
+          cngxDevWarn(
+            'CNGX1017',
             'cngx-status: [glyph]="false" with no visible `label`; a bare coloured ' +
               'dot is colour-only for a sighted colour-blind reader even with an ' +
               'aria-label. Set [label] or show the glyph.',

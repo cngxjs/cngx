@@ -110,7 +110,7 @@ describe('CNGX_OPTION_CONTAINER', () => {
       fixture.detectChanges();
 
       expect(errorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Nested option groups are unsupported'),
+        expect.stringContaining('CNGX1022: [cngxOptionGroup] Nested option groups are unsupported'),
       );
     } finally {
       errorSpy.mockRestore();
