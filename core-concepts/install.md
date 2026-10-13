@@ -78,8 +78,10 @@ attached:
   with the English fallback.
 - **Runtime switch.** Only for German: switch between English and German at
   runtime instead of a fixed language.
-- **Lint rules.** Only when an ESLint 9 flat config exists: add the cngx
-  rules to it.
+- **Lint rules.** Only when an ESLint flat config exists: add the cngx
+  rules to it. The entry lands only on a stack the plugin runs in (see
+  the ESLint row below); otherwise the step leaves a note with the next
+  command.
 - **Feedback services.** Only when `@cngx/ui` is selected: provide toasts,
   alerts and banners at the root.
 
