@@ -13,7 +13,13 @@ import { applyToUpdateRecorder } from '@schematics/angular/utility/change';
 import { JSONFile } from '@schematics/angular/utility/json-file';
 
 import { insertStyleImport } from '../edit/style-edit';
-import { addToArrayLiteral, type ArraySelector, countArrayLiterals, topLevelBindings } from '../edit/ts-edit';
+import {
+  addToArrayLiteral,
+  type ArraySelector,
+  countArrayLiterals,
+  promoteTypeOnlyImport,
+  topLevelBindings,
+} from '../edit/ts-edit';
 import { addLockstepDependency, keepManifestNewline } from '../manifest/lockstep';
 import {
   type AddImport,
@@ -79,11 +85,15 @@ function renderCall(call: ProviderArg, external: (symbol: string, module: string
 
 const ROOT_PROVIDERS: ArraySelector = { kind: 'root-providers' };
 
-// Every name the call imports is free in the file or already imported from
-// the same module; anything else needs the aliasing `addRootProvider` does.
+// Every name the call imports is free in the file or imported from the same
+// module (a type-only import of it gets promoted); anything else needs the
+// aliasing `addRootProvider` does.
 function importsFit(content: string, imports: readonly (readonly [string, string])[]): boolean {
   const bindings = topLevelBindings(content);
-  return imports.every(([symbol, module]) => !bindings.has(symbol) || bindings.get(symbol) === module);
+  return imports.every(([symbol, module]) => {
+    const binding = bindings.get(symbol);
+    return binding === undefined || binding.module === module;
+  });
 }
 
 // `addRootProvider` appends `, <call>` right behind the last element, so in a
@@ -107,10 +117,11 @@ function addProvider(change: AddProvider): Rule {
     if (!importsFit(content, imports)) {
       return fallback;
     }
-    const next = addToArrayLiteral(content, ROOT_PROVIDERS, expression);
-    if (next === content) {
+    const added = addToArrayLiteral(content, ROOT_PROVIDERS, expression);
+    if (added === content) {
       return undefined;
     }
+    const next = imports.reduce((text, [symbol, module]) => promoteTypeOnlyImport(text, symbol, module), added);
     tree.overwrite(path, next);
     for (const [symbol, module] of imports) {
       insertImportInto(tree, path, symbol, module);

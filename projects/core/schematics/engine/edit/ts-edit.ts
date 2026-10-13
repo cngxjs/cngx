@@ -156,11 +156,19 @@ export function countArrayLiterals(content: string, selector: ArraySelector): nu
   return findArray(source, selector) === undefined ? 0 : 1;
 }
 
-function declaredName(statement: ts.Statement): readonly string[] {
+function boundNames(name: ts.BindingName): readonly string[] {
+  if (ts.isIdentifier(name)) {
+    return [name.text];
+  }
+  return name.elements.flatMap((element) => (ts.isBindingElement(element) ? boundNames(element.name) : []));
+}
+
+function declaredNames(statement: ts.Statement): readonly string[] {
   if (ts.isVariableStatement(statement)) {
-    return statement.declarationList.declarations.flatMap((declaration) =>
-      ts.isIdentifier(declaration.name) ? [declaration.name.text] : [],
-    );
+    return statement.declarationList.declarations.flatMap((declaration) => boundNames(declaration.name));
+  }
+  if (ts.isImportEqualsDeclaration(statement)) {
+    return [statement.name.text];
   }
   const named =
     ts.isClassDeclaration(statement) ||
@@ -171,39 +179,111 @@ function declaredName(statement: ts.Statement): readonly string[] {
   return named && statement.name !== undefined ? [statement.name.text] : [];
 }
 
-function namedBindings(bindings: ts.NamedImportBindings | undefined): readonly string[] {
+interface ImportedName {
+  readonly name: string;
+  readonly typeOnly: boolean;
+}
+
+function namedBindings(bindings: ts.NamedImportBindings | undefined): readonly ImportedName[] {
   if (bindings === undefined) {
     return [];
   }
   if (ts.isNamespaceImport(bindings)) {
-    return [bindings.name.text];
+    return [{ name: bindings.name.text, typeOnly: false }];
   }
-  return bindings.elements.map((element) => element.name.text);
+  return bindings.elements.map((element) => ({ name: element.name.text, typeOnly: element.isTypeOnly }));
 }
 
-function importedNames(statement: ts.ImportDeclaration): readonly (readonly [string, string])[] {
+function importedNames(statement: ts.ImportDeclaration): readonly (readonly [string, TopLevelBinding])[] {
   const module = ts.isStringLiteral(statement.moduleSpecifier) ? statement.moduleSpecifier.text : '';
   const clause = statement.importClause;
   if (clause === undefined) {
     return [];
   }
-  const names = [...(clause.name ? [clause.name.text] : []), ...namedBindings(clause.namedBindings)];
-  return names.map((name) => [name, module] as const);
+  const names = [
+    ...(clause.name ? [{ name: clause.name.text, typeOnly: false }] : []),
+    ...namedBindings(clause.namedBindings),
+  ];
+  return names.map(({ name, typeOnly }) => [name, { module, typeOnly: clause.isTypeOnly || typeOnly }] as const);
+}
+
+/** How a top-level name is bound: imported from `module`, or declared in the file (`module` undefined). */
+export interface TopLevelBinding {
+  readonly module: string | undefined;
+  readonly typeOnly: boolean;
+}
+
+const DECLARED: TopLevelBinding = { module: undefined, typeOnly: false };
+
+/**
+ * Every top-level name of the file. A caller adding `import { x } from 'm'`
+ * checks that `x` is unbound or imported from `m`; a type-only import from
+ * `m` needs `promoteTypeOnlyImport` first.
+ */
+export function topLevelBindings(content: string): ReadonlyMap<string, TopLevelBinding> {
+  return new Map(
+    parse(content).statements.flatMap((statement): readonly (readonly [string, TopLevelBinding])[] =>
+      ts.isImportDeclaration(statement)
+        ? importedNames(statement)
+        : declaredNames(statement).map((name) => [name, DECLARED] as const),
+    ),
+  );
+}
+
+function typeOnlyImport(
+  source: ts.SourceFile,
+  symbol: string,
+  module: string,
+): { readonly clause: ts.ImportClause; readonly elements: ts.NodeArray<ts.ImportSpecifier> } | undefined {
+  for (const statement of source.statements) {
+    const clause = ts.isImportDeclaration(statement) ? statement.importClause : undefined;
+    const bindings = clause?.namedBindings;
+    const fromModule =
+      ts.isImportDeclaration(statement) &&
+      ts.isStringLiteral(statement.moduleSpecifier) &&
+      statement.moduleSpecifier.text === module;
+    if (clause === undefined || bindings === undefined || !fromModule || !ts.isNamedImports(bindings)) {
+      continue;
+    }
+    if (bindings.elements.some((element) => element.name.text === symbol)) {
+      return { clause, elements: bindings.elements };
+    }
+  }
+  return undefined;
 }
 
 /**
- * Every top-level name of the file: an imported name maps to its module, a
- * declared one to `undefined`. A caller adding `import { x } from 'm'` checks
- * that `x` is unbound or already bound to `m`.
+ * Turns the type-only import of `symbol` from `module` into a value import,
+ * so a call can use it. A type-only clause keeps its other names as types
+ * through the inline `type` modifier. Returns the content unchanged when no
+ * such import exists.
  */
-export function topLevelBindings(content: string): ReadonlyMap<string, string | undefined> {
-  return new Map(
-    parse(content).statements.flatMap((statement): readonly (readonly [string, string | undefined])[] =>
-      ts.isImportDeclaration(statement)
-        ? importedNames(statement)
-        : declaredName(statement).map((name) => [name, undefined] as const),
-    ),
-  );
+export function promoteTypeOnlyImport(content: string, symbol: string, module: string): string {
+  const source = parse(content);
+  const found = typeOnlyImport(source, symbol, module);
+  if (found === undefined) {
+    return content;
+  }
+  const { clause, elements } = found;
+  const edits: (readonly [number, number, string])[] = [];
+  for (const element of elements) {
+    const start = element.getStart(source);
+    if (element.name.text === symbol && element.isTypeOnly) {
+      const keyword = /^type\s+/.exec(content.slice(start))?.[0] ?? '';
+      edits.push([start, start + keyword.length, '']);
+    }
+    if (element.name.text !== symbol && clause.isTypeOnly && !element.isTypeOnly) {
+      edits.push([start, start, 'type ']);
+    }
+  }
+  if (clause.isTypeOnly) {
+    const start = clause.getStart(source);
+    const keyword = /^type\s+/.exec(content.slice(start))?.[0] ?? '';
+    edits.push([start, start + keyword.length, '']);
+  }
+  return edits
+    .sort(([a], [b]) => b - a)
+    .reduce((text, [from, to, insert]) => `${text.slice(0, from)}${insert}${text.slice(to)}`, content);
 }
 
 function indentOf(content: string, position: number): string {

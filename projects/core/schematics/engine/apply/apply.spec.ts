@@ -283,6 +283,18 @@ export const appConfig: ApplicationConfig = {
       expect(config).toContain('{ providers: [provideA11yPreferences(withPersistence())] }');
     });
 
+    it('promotes a type-only import of the same name from the same module', async () => {
+      const config = await edited(`import type { CngxA11yAxes, withPersistence } from '@cngx/core';
+
+export const appConfig: ApplicationConfig = {
+  providers: [],
+};
+`);
+
+      expect(config).toContain("import { type CngxA11yAxes, withPersistence, provideA11yPreferences } from '@cngx/core';");
+      expect(config).toContain('providers: [provideA11yPreferences(withPersistence())]');
+    });
+
     it('adds to an import of the same module', async () => {
       const config = await edited(`import { withPersistence } from '@cngx/core';
 
