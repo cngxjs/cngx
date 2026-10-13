@@ -130,6 +130,18 @@ function withDependencies(dependencies: Record<string, string>): string {
   return JSON.stringify(manifest, null, 2);
 }
 
+function withDevDependencies(devDependencies: Record<string, string>): string {
+  const manifest = JSON.parse(readFixture('standalone-app')['package.json']) as Record<string, any>;
+  manifest['devDependencies'] = { ...manifest['devDependencies'], ...devDependencies };
+  return JSON.stringify(manifest, null, 2);
+}
+
+// What `ng add angular-eslint` leaves behind: a flat config and the three packages.
+const ESLINT_APP = {
+  'eslint.config.js': ESLINT_CONFIG,
+  'package.json': withDevDependencies({ 'angular-eslint': '21.3.0', eslint: '^9.39.0', 'typescript-eslint': '8.56.1' }),
+};
+
 function styles(tree: Tree): unknown {
   return json<{ projects: Record<string, any> }>(tree, 'angular.json').projects['fixture-app'].architect.build.options
     .styles;
@@ -268,20 +280,37 @@ describe('ngAdd', () => {
       const run = await runRule(ngAdd({}), createFixtureTree());
 
       expect(run.logs).toContain(
-        '  Skip the eslint entry - no eslint flat config (eslint.config.js, .mjs or .cjs) found',
+        '  Skip the eslint entry - no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found',
       );
       expect(run.tree.exists('eslint.config.js')).toBe(false);
     });
   });
 
   it('extends an eslint flat config and pins the plugin as a devDependency', async () => {
-    const run = await runRule(ngAdd({}), createFixtureTree('standalone-app', { 'eslint.config.js': ESLINT_CONFIG }));
+    const run = await runRule(ngAdd({}), createFixtureTree('standalone-app', ESLINT_APP));
+    const devDependencies = json<{ devDependencies: Record<string, string> }>(run.tree, 'package.json').devDependencies;
 
     expect(run.tree.readContent('eslint.config.js')).toContain("const cngx = require('@cngx/eslint-plugin');");
     expect(run.tree.readContent('eslint.config.js')).toContain('  ...cngx.configs.recommended,\n]);');
-    expect(json<{ devDependencies: Record<string, string> }>(run.tree, 'package.json').devDependencies['@cngx/eslint-plugin']).toBe(
-      DEFAULT_ESLINT_PLUGIN_VERSION,
+    expect(devDependencies['@cngx/eslint-plugin']).toBe(DEFAULT_ESLINT_PLUGIN_VERSION);
+    expect(devDependencies['@angular-eslint/template-parser']).toBe('21.3.0');
+  });
+
+  it('leaves a legacy eslintrc app alone and names the migration command', async () => {
+    const run = await runRule(
+      ngAdd({}),
+      createFixtureTree('standalone-app', {
+        '.eslintrc.json': '{ "root": true }\n',
+        'package.json': withDevDependencies({ eslint: '^9.39.0', 'typescript-eslint': '8.56.1' }),
+      }),
     );
+
+    expect(run.logs.filter((line) => line.startsWith('  Skip the eslint entry'))).toEqual([
+      '  Skip the eslint entry - .eslintrc.json is a legacy config; migrate with `npx @eslint/migrate-config .eslintrc.json`, then run ng add again',
+    ]);
+    expect(run.tree.readContent('.eslintrc.json')).toBe('{ "root": true }\n');
+    expect(run.tree.files.filter((path) => path.includes('eslint.config'))).toEqual([]);
+    expect(json<{ devDependencies: Record<string, string> }>(run.tree, 'package.json').devDependencies['@cngx/eslint-plugin']).toBeUndefined();
   });
 
   it('bridges the Material map API of a css app after its global stylesheet', async () => {
@@ -456,7 +485,7 @@ describe('ngAdd', () => {
     ['a standalone css app', {}],
     ['a Material css app', MATERIAL_CSS_APP],
     ['a define-theme scss app', DEFINE_THEME_SCSS_APP],
-    ['an app with an eslint config', { 'eslint.config.js': ESLINT_CONFIG }],
+    ['an app with an eslint config', ESLINT_APP],
     ['an app with editor configs', { 'CLAUDE.md': '', '.vscode/mcp.json': '{ "servers": {} }', 'AGENTS.md': '# Agents\n' }],
   ])('changes nothing on a second run over %s', async (_name, overrides) => {
     const first = await runRule(ngAdd({ preset: 'full' }), createFixtureTree('standalone-app', overrides));

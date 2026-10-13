@@ -1,17 +1,20 @@
 import {
   addToArrayLiteral,
   type Change,
+  declaredRange,
   type Provenance,
   skipChange,
   type StepResult,
   withProvenanceMarker,
 } from '../../engine';
-import { type ProjectFacts } from '../detect/detect';
+import { type EslintConfigFacts, type ProjectFacts } from '../detect/detect';
 import { type OnboardingAnswers, type Versions } from './model';
 
 const PLUGIN = '@cngx/eslint-plugin';
 const ENTRY = '...cngx.configs.recommended';
 const MARKER = 'lint:import';
+const TEMPLATE_PARSER = '@angular-eslint/template-parser';
+const ANGULAR_ESLINT = 'angular-eslint';
 
 // The plugin is CommonJS with `export =`, so both module systems take it as
 // the default export.
@@ -35,25 +38,76 @@ function addImport(content: string, statement: string): string {
   return `${content.slice(0, at)}\n${statement}${content.slice(at)}`;
 }
 
+// The flat config the plugin can run in, or why there is none. A missing
+// template parser is not a blocker: it gets its own change.
+function compatibleConfig(facts: ProjectFacts): EslintConfigFacts | { readonly reason: string } {
+  const { eslintConfig: config, legacyEslintConfig: legacy, eslintStack: stack } = facts;
+  if (stack.eslintMajor !== undefined && stack.eslintMajor < 9) {
+    return { reason: `${PLUGIN} needs ESLint 9 or later; this app declares eslint ${declaredRange(facts.manifest, 'eslint') ?? ''}` };
+  }
+  if (config === undefined && legacy !== undefined) {
+    return { reason: `${legacy} is a legacy config; migrate with \`npx @eslint/migrate-config ${legacy}\`, then run ng add again` };
+  }
+  if (config === undefined) {
+    return { reason: 'no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found' };
+  }
+  if (!stack.typescriptParser) {
+    return { reason: 'the cngx rules lint TypeScript through your typescript-eslint setup; add typescript-eslint, then run ng add again' };
+  }
+  if (!config.editable) {
+    return { reason: `${config.path} exports no array cngx can extend; add ${ENTRY} by hand` };
+  }
+  return config;
+}
+
+// The plugin loads the Angular template parser. With `angular-eslint`
+// declared it is pinned on that version line; otherwise the app picks it.
+function templateParser(facts: ProjectFacts, provenance: Provenance): StepResult {
+  const id = `dependency:${TEMPLATE_PARSER}`;
+  if (facts.eslintStack.templateParser) {
+    return { changes: [], skipped: [{ id, label: `Add ${TEMPLATE_PARSER}`, reason: 'already declared' }] };
+  }
+  const range = declaredRange(facts.manifest, ANGULAR_ESLINT);
+  if (range === undefined) {
+    const note: Change = {
+      kind: 'note',
+      id: 'lint:template-parser',
+      label: `Skip ${TEMPLATE_PARSER}`,
+      reason: `${PLUGIN} parses templates with ${TEMPLATE_PARSER}; add it as a devDependency`,
+      provenance,
+    };
+    return { changes: [note], skipped: [] };
+  }
+  const dependency: Change = {
+    kind: 'add-dependency',
+    id,
+    label: `Add ${TEMPLATE_PARSER}@${range}`,
+    reason: `${PLUGIN} parses templates with it; same version line as ${ANGULAR_ESLINT}`,
+    provenance,
+    name: TEMPLATE_PARSER,
+    version: range,
+    dev: true,
+  };
+  return { changes: [dependency], skipped: [] };
+}
+
 /**
  * Adds `@cngx/eslint-plugin` as a devDependency and its recommended blocks to
  * the flat config's exported array (bare, or inside `defineConfig([...])`).
  * The plugin keeps its own version line, pinned from `versions.json` like
- * `@cngx/mcp`. A config cngx cannot edit safely gets a note instead.
+ * `@cngx/mcp`. An ESLint setup the plugin cannot run in, or a config cngx
+ * cannot edit safely, gets one note naming the reason and the next step, and
+ * no edit or dependency.
  */
 export function planLint(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
   if (!answers.lint) {
     return { changes: [], skipped: [] };
   }
   const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
-  const config = facts.eslintConfig;
-  if (config?.editable !== true) {
-    const reason =
-      config === undefined
-        ? 'no eslint flat config (eslint.config.js, .mjs or .cjs) found'
-        : `${config.path} exports no array cngx can extend; add ${ENTRY} by hand`;
+  const config = compatibleConfig(facts);
+  if ('reason' in config) {
     return {
-      changes: [{ kind: 'note', id: 'lint:config', label: 'Skip the eslint entry', reason, provenance }],
+      changes: [{ kind: 'note', id: 'lint:config', label: 'Skip the eslint entry', reason: config.reason, provenance }],
       skipped: [],
     };
   }
@@ -77,11 +131,13 @@ export function planLint(facts: ProjectFacts, answers: OnboardingAnswers, versio
     path: config.path,
     edit: (content) => addToArrayLiteral(addImport(content, importStatement(config.module)), { kind: 'default-export' }, ENTRY),
   };
-  const declared = facts.manifest.devDependencies[PLUGIN] ?? facts.manifest.dependencies[PLUGIN];
+  const declared = declaredRange(facts.manifest, PLUGIN);
+  const parser = templateParser(facts, provenance);
   return {
-    changes: [...(declared === undefined ? [dependency] : []), ...(config.wired ? [] : [entry])],
+    changes: [...(declared === undefined ? [dependency] : []), ...parser.changes, ...(config.wired ? [] : [entry])],
     skipped: [
       ...(declared === undefined ? [] : [skipChange(dependency, `already declared as ${declared}`)]),
+      ...parser.skipped,
       ...(config.wired ? [skipChange(entry, `already loaded in ${config.path}`)] : []),
     ],
   };
