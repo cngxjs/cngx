@@ -28,7 +28,7 @@ function config(overrides: Partial<EslintConfigFacts> = {}): EslintConfigFacts {
   return { path: 'eslint.config.js', module: 'cjs', editable: true, wired: false, ...overrides };
 }
 
-const STACK: EslintStackFacts = { eslintMajor: 9, templateParser: true, typescriptParser: true };
+const STACK: EslintStackFacts = { eslintMajor: 9, templateParser: true, typescriptParser: true, angularEslint: undefined };
 
 const PARSER_MANIFEST = parseManifest(JSON.stringify({ devDependencies: { '@angular-eslint/template-parser': '^21.0.0' } }));
 
@@ -165,7 +165,7 @@ export default [
       });
       const managed = eslintApp(
         { manifest: parseManifest(JSON.stringify({ devDependencies: { eslint: '^8.57.0', 'angular-eslint': '18.4.0' } })) },
-        { eslintMajor: 8 },
+        { eslintMajor: 8, angularEslint: '18.4.0' },
       );
       expect(notes(blocked(managed))[0][1]).toContain('raise eslint to `^9` in devDependencies and reinstall (with angular-eslint: `ng update angular-eslint`)');
     });
@@ -200,7 +200,7 @@ export default [
     it('pins it on the angular-eslint version line when angular-eslint is declared', () => {
       const facts = eslintApp(
         { manifest: parseManifest(JSON.stringify({ devDependencies: { 'angular-eslint': '21.3.0' } })) },
-        { templateParser: false },
+        { templateParser: false, angularEslint: '21.3.0' },
       );
       const result = planLint(facts, createAnswers(), VERSIONS);
 
@@ -240,7 +240,12 @@ export default [
   it('does not mutate its inputs', () => {
     expect(() =>
       planLint(
-        deepFreeze(eslintApp({ manifest: parseManifest(JSON.stringify({ devDependencies: { 'angular-eslint': '^21.0.0' } })) }, { templateParser: false })),
+        deepFreeze(
+          eslintApp(
+            { manifest: parseManifest(JSON.stringify({ devDependencies: { 'angular-eslint': '^21.0.0' } })) },
+            { templateParser: false, angularEslint: '^21.0.0' },
+          ),
+        ),
         deepFreeze(createAnswers()),
         deepFreeze(VERSIONS),
       ),

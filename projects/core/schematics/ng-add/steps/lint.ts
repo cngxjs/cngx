@@ -41,7 +41,7 @@ function addImport(content: string, statement: string): string {
 // `ng update angular-eslint` moves the angular-eslint packages, not
 // necessarily eslint itself, so the note names it only as the way in.
 function eslintUpdate(facts: ProjectFacts): string {
-  return declaredRange(facts.manifest, ANGULAR_ESLINT) === undefined
+  return facts.eslintStack.angularEslint === undefined
     ? 'raise eslint to `^9` in devDependencies and reinstall, or run `ng add angular-eslint`'
     : 'raise eslint to `^9` in devDependencies and reinstall (with angular-eslint: `ng update angular-eslint`)';
 }
@@ -67,7 +67,7 @@ function compatibleConfig(facts: ProjectFacts): EslintConfigFacts | { readonly r
   }
   // The plugin imports the template parser when it loads; without it ESLint
   // fails before linting a file. With angular-eslint declared it is added below.
-  if (!stack.templateParser && declaredRange(facts.manifest, ANGULAR_ESLINT) === undefined) {
+  if (!stack.templateParser && stack.angularEslint === undefined) {
     return { reason: `${PLUGIN} loads ${TEMPLATE_PARSER}; add it as a devDependency or run \`ng add angular-eslint\`, ${then}` };
   }
   if (!config.editable) {
@@ -84,7 +84,7 @@ function templateParser(facts: ProjectFacts, provenance: Provenance): StepResult
   if (declared !== undefined) {
     return { changes: [], skipped: [{ id, label: `Add ${TEMPLATE_PARSER}`, reason: `already declared as ${declared}` }] };
   }
-  const range = declaredRange(facts.manifest, ANGULAR_ESLINT);
+  const range = facts.eslintStack.angularEslint;
   if (range === undefined) {
     return { changes: [], skipped: [] };
   }

@@ -113,7 +113,7 @@ describe('detectProject', () => {
       helperReadme: undefined,
       eslintConfig: undefined,
       legacyEslintConfig: undefined,
-      eslintStack: { eslintMajor: undefined, templateParser: false, typescriptParser: false },
+      eslintStack: { eslintMajor: undefined, templateParser: false, typescriptParser: false, angularEslint: undefined },
       ssr: false,
       sourceLocale: undefined,
       maturity: 'fresh',
@@ -522,6 +522,11 @@ describe('detectProject', () => {
       expect(declared.eslintStack.templateParser).toBe(true);
       const meta = await detect(withDevPackage({ 'angular-eslint': '^21.0.0' }));
       expect(meta.eslintStack.templateParser).toBe(false);
+    });
+
+    it('records the declared angular-eslint range for the template parser version line', async () => {
+      expect((await detect(withDevPackage({ 'angular-eslint': '21.3.0' }))).eslintStack.angularEslint).toBe('21.3.0');
+      expect((await detect(withDevPackage({ eslint: '^9.0.0' }))).eslintStack.angularEslint).toBeUndefined();
     });
   });
 

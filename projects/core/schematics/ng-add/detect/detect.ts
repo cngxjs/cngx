@@ -48,6 +48,8 @@ export interface EslintStackFacts {
   readonly templateParser: boolean;
   /** `typescript-eslint`, `@typescript-eslint/parser` or `angular-eslint` is declared. */
   readonly typescriptParser: boolean;
+  /** The declared `angular-eslint` range; the template parser follows its version line. */
+  readonly angularEslint: string | undefined;
 }
 
 export interface EditorFacts {
@@ -449,6 +451,7 @@ function detectEslintStack(manifest: PackageManifest): EslintStackFacts {
     eslintMajor: highestMajor(declaredRange(manifest, 'eslint')),
     templateParser: declaredRange(manifest, '@angular-eslint/template-parser') !== undefined,
     typescriptParser: TYPESCRIPT_PARSERS.some((name) => declaredRange(manifest, name) !== undefined),
+    angularEslint: declaredRange(manifest, 'angular-eslint'),
   };
 }
 
