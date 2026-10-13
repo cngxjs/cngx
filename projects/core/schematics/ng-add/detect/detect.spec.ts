@@ -143,6 +143,36 @@ describe('detectProject', () => {
     await expect(detect({}, 'missing')).rejects.toThrow('Project "missing" not found in angular.json.');
   });
 
+  describe('in a workspace with several projects', () => {
+    function workspaceWith(defaultProject?: string): string {
+      const workspace = JSON.parse(createFixtureTree().readText('angular.json')) as {
+        projects: Record<string, Record<string, unknown>>;
+      } & Record<string, unknown>;
+      const app = workspace.projects['fixture-app'];
+      workspace.projects = {
+        'shared-lib': { ...app, root: 'projects/shared-lib', projectType: 'library' },
+        'admin-app': { ...app, root: 'projects/admin-app' },
+        'fixture-app': app,
+      };
+      if (defaultProject !== undefined) {
+        workspace['defaultProject'] = defaultProject;
+      }
+      return JSON.stringify(workspace);
+    }
+
+    it('takes --project first', async () => {
+      expect((await detect({ 'angular.json': workspaceWith('admin-app') }, 'fixture-app')).project).toBe('fixture-app');
+    });
+
+    it('takes defaultProject when --project is unset', async () => {
+      expect((await detect({ 'angular.json': workspaceWith('fixture-app') })).project).toBe('fixture-app');
+    });
+
+    it('takes the first application, past a library, without either', async () => {
+      expect((await detect({ 'angular.json': workspaceWith() })).project).toBe('admin-app');
+    });
+  });
+
   it('refuses a library project', async () => {
     const workspace = JSON.parse(createFixtureTree().readText('angular.json')) as {
       projects: Record<string, Record<string, unknown>>;
