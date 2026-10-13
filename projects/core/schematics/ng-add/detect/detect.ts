@@ -36,6 +36,11 @@ export interface EslintConfigFacts {
   readonly wired: boolean;
 }
 
+/** An `.eslintrc*` config ESLint 9 no longer reads. */
+export interface LegacyEslintConfigFacts {
+  readonly path: string;
+}
+
 /** The ESLint packages the app declares; the plugin runs on ESLint 9 or later. */
 export interface EslintStackFacts {
   /**
@@ -173,7 +178,7 @@ export interface ProjectFacts {
   /** The eslint flat config; `undefined` when the app has none. */
   readonly eslintConfig: EslintConfigFacts | undefined;
   /** An `.eslintrc*` config ESLint 9 no longer reads; `undefined` when there is none. */
-  readonly legacyEslintConfig: string | undefined;
+  readonly legacyEslintConfig: LegacyEslintConfigFacts | undefined;
   readonly eslintStack: EslintStackFacts;
   readonly ssr: boolean;
   readonly sourceLocale: string | undefined;
@@ -209,6 +214,11 @@ const ESLINT_LEGACY_CONFIGS = [
   '.eslintrc.yaml',
   '.eslintrc.yml',
 ];
+
+function detectLegacyEslintConfig(tree: Tree): LegacyEslintConfigFacts | undefined {
+  const path = ESLINT_LEGACY_CONFIGS.find((candidate) => tree.exists(candidate));
+  return path === undefined ? undefined : { path };
+}
 
 const TYPESCRIPT_PARSERS = ['typescript-eslint', '@typescript-eslint/parser', 'angular-eslint'];
 
@@ -647,7 +657,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     claudeInstructions: claudeInstructionsOf(read),
     helperReadme: helperReadmeOf(read),
     eslintConfig: detectEslintConfig(tree),
-    legacyEslintConfig: ESLINT_LEGACY_CONFIGS.find((path) => tree.exists(path)),
+    legacyEslintConfig: detectLegacyEslintConfig(tree),
     eslintStack: detectEslintStack(manifest),
     ssr:
       options['server'] !== undefined ||

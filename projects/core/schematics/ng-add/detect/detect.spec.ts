@@ -464,7 +464,7 @@ describe('detectProject', () => {
 
   it('finds a legacy eslintrc config in every name ESLint 8 read', async () => {
     for (const path of ['.eslintrc', '.eslintrc.json', '.eslintrc.js', '.eslintrc.cjs', '.eslintrc.yaml', '.eslintrc.yml']) {
-      expect((await detect({ [path]: '{}' })).legacyEslintConfig).toBe(path);
+      expect((await detect({ [path]: '{}' })).legacyEslintConfig).toEqual({ path });
     }
     expect((await detect({ 'eslint.config.js': 'export default [];' })).legacyEslintConfig).toBeUndefined();
   });

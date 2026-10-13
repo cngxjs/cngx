@@ -171,7 +171,7 @@ export default [
     });
 
     it('names the migration command for a legacy eslintrc config', () => {
-      const facts = eslintApp({ eslintConfig: undefined, legacyEslintConfig: '.eslintrc.json' });
+      const facts = eslintApp({ eslintConfig: undefined, legacyEslintConfig: { path: '.eslintrc.json' } });
       expect(notes(blocked(facts))).toEqual([
         ['lint:config', '.eslintrc.json is a legacy config; migrate with `npx @eslint/migrate-config .eslintrc.json`, then run `ng add @cngx/core` again'],
       ]);
@@ -179,7 +179,7 @@ export default [
     });
 
     it('prefers a flat config over a leftover eslintrc', () => {
-      const result = blocked(eslintApp({ legacyEslintConfig: '.eslintrc.json' }));
+      const result = blocked(eslintApp({ legacyEslintConfig: { path: '.eslintrc.json' } }));
       expect(notes(result)).toEqual([]);
       expect(byId(result, 'lint:config')?.kind).toBe('edit-file');
     });

@@ -55,7 +55,7 @@ function compatibleConfig(facts: ProjectFacts): EslintConfigFacts | { readonly r
     return { reason: `${PLUGIN} needs ESLint 9 or later and this app declares eslint ${declared}; ${eslintUpdate(facts)}, ${then}` };
   }
   if (config === undefined && legacy !== undefined) {
-    return { reason: `${legacy} is a legacy config; migrate with \`npx @eslint/migrate-config ${legacy}\`, ${then}` };
+    return { reason: `${legacy.path} is a legacy config; migrate with \`npx @eslint/migrate-config ${legacy.path}\`, ${then}` };
   }
   if (config === undefined) {
     return { reason: `no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found; set one up with \`ng add angular-eslint\`, ${then}` };
