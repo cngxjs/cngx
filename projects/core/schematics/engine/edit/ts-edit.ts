@@ -313,7 +313,8 @@ export function addToArrayLiteral(content: string, selector: ArraySelector, item
   }
   const last = elements[elements.length - 1];
   const multiline = content.slice(array.getStart(source), close).includes('\n');
-  const separator = multiline ? `,\n${indentOf(content, last.getStart(source))}` : ', ';
+  const newline = content.includes('\r\n') ? '\r\n' : '\n';
+  const separator = multiline ? `,${newline}${indentOf(content, last.getStart(source))}` : ', ';
   // Inserting right after the last element keeps a trailing comma behind
   // the new one.
   const insertAt = last.getEnd();

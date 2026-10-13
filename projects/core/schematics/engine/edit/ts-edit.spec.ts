@@ -34,6 +34,14 @@ export default [
 `);
   });
 
+  it('keeps the CRLF line endings of the file', () => {
+    const crlf = FLAT_CONFIG.replace(/\n/g, '\r\n');
+
+    expect(addToArrayLiteral(crlf, DEFAULT, ITEM)).toBe(
+      crlf.replace('  js.configs.recommended,\r\n', `  js.configs.recommended,\r\n  ${ITEM},\r\n`),
+    );
+  });
+
   it('appends inline to a single-line array', () => {
     expect(addToArrayLiteral('export default [a, b];\n', DEFAULT, ITEM)).toBe(`export default [a, b, ${ITEM}];\n`);
   });
