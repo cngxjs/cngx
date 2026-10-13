@@ -38,7 +38,11 @@ export interface EslintConfigFacts {
 
 /** The ESLint packages the app declares; the plugin runs on ESLint 9 or later. */
 export interface EslintStackFacts {
-  /** The major of the declared `eslint` range; `undefined` when none is declared or readable. */
+  /**
+   * The highest major the declared `eslint` range admits (`^8 || ^9` is 9);
+   * `undefined` when none is declared or the range is open upward or
+   * unreadable, so an unknown range never blocks.
+   */
   readonly eslintMajor: number | undefined;
   /** `@angular-eslint/template-parser` is declared; the plugin loads it for templates. */
   readonly templateParser: boolean;
@@ -402,10 +406,45 @@ function detectEslintConfig(tree: Tree): EslintConfigFacts | undefined {
   };
 }
 
+// `A - B` reaches B; `<N` reaches N - 1 (`<9.1` still reaches 9), `<=N`
+// reaches N; `^X`, `~X` and `X.x` stay on X; `>`/`>=` alone are open.
+function highestMajorOf(alternative: string): number | undefined {
+  const hyphen = /^\S+\s+-\s+v?(\d+)/.exec(alternative);
+  if (hyphen !== null) {
+    return Number(hyphen[1]);
+  }
+  const uppers: number[] = [];
+  let pinned: number | undefined;
+  for (const [, operator, major, rest] of alternative.matchAll(/(<=|<|>=|>|\^|~|=)?\s*v?(\d+)((?:\.(?:\d+|[xX*]))*)/g)) {
+    if (operator === '<') {
+      uppers.push(/[1-9]/.test(rest) ? Number(major) : Number(major) - 1);
+    } else if (operator === '<=') {
+      uppers.push(Number(major));
+    } else if (operator !== '>' && operator !== '>=') {
+      pinned = Number(major);
+    }
+  }
+  return uppers.length > 0 ? Math.min(...uppers) : pinned;
+}
+
+function highestMajor(range: string | undefined): number | undefined {
+  if (range === undefined) {
+    return undefined;
+  }
+  let highest = 0;
+  for (const alternative of range.split('||')) {
+    const major = highestMajorOf(alternative.trim());
+    if (major === undefined) {
+      return undefined;
+    }
+    highest = Math.max(highest, major);
+  }
+  return highest;
+}
+
 function detectEslintStack(manifest: PackageManifest): EslintStackFacts {
-  const major = /\d+/.exec(declaredRange(manifest, 'eslint') ?? '')?.[0];
   return {
-    eslintMajor: major === undefined ? undefined : Number(major),
+    eslintMajor: highestMajor(declaredRange(manifest, 'eslint')),
     templateParser: declaredRange(manifest, '@angular-eslint/template-parser') !== undefined,
     typescriptParser: TYPESCRIPT_PARSERS.some((name) => declaredRange(manifest, name) !== undefined),
   };

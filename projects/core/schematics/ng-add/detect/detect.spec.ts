@@ -475,12 +475,27 @@ describe('detectProject', () => {
       return { 'package.json': JSON.stringify({ ...manifest, devDependencies }) };
     };
 
-    it('reads the ESLint major from the declared range', async () => {
+    it('reads the highest ESLint major the declared range admits', async () => {
       const majorOf = async (range: string): Promise<number | undefined> =>
         (await detect(withDevPackage({ eslint: range }))).eslintStack.eslintMajor;
       expect(await majorOf('^8.57.0')).toBe(8);
+      expect(await majorOf('~8.1.0')).toBe(8);
+      expect(await majorOf('8.x')).toBe(8);
       expect(await majorOf('^9.0.0')).toBe(9);
-      expect(await majorOf('>=9')).toBe(9);
+      expect(await majorOf('^8.57.0 || ^9.0.0')).toBe(9);
+      expect(await majorOf('>=8 <10')).toBe(9);
+      expect(await majorOf('<9')).toBe(8);
+      expect(await majorOf('<9.1')).toBe(9);
+      expect(await majorOf('<=8.57.0')).toBe(8);
+      expect(await majorOf('8.0.0 - 9.1.0')).toBe(9);
+    });
+
+    it('reads no major for an open, unreadable or missing range, so it never blocks', async () => {
+      const majorOf = async (range: string): Promise<number | undefined> =>
+        (await detect(withDevPackage({ eslint: range }))).eslintStack.eslintMajor;
+      expect(await majorOf('>=8')).toBeUndefined();
+      expect(await majorOf('^8.57.0 || >=9')).toBeUndefined();
+      expect(await majorOf('*')).toBeUndefined();
       expect(await majorOf('latest')).toBeUndefined();
       expect((await detect()).eslintStack.eslintMajor).toBeUndefined();
     });

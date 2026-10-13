@@ -280,7 +280,7 @@ describe('ngAdd', () => {
       const run = await runRule(ngAdd({}), createFixtureTree());
 
       expect(run.logs).toContain(
-        '  Skip the eslint entry - no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found',
+        '  Skip the eslint entry - no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found; set one up with `ng add angular-eslint`, then run ng add again',
       );
       expect(run.tree.exists('eslint.config.js')).toBe(false);
     });

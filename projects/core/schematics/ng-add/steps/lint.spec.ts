@@ -100,7 +100,8 @@ export default [
       expect.objectContaining({
         kind: 'note',
         label: 'Skip the eslint entry',
-        reason: 'no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found',
+        reason:
+          'no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found; set one up with `ng add angular-eslint`, then run ng add again',
       }),
     ]);
     expect(planLint(eslintApp({ eslintConfig: config({ editable: false }) }), createAnswers(), VERSIONS).changes).toEqual([
@@ -142,7 +143,7 @@ export default [
   describe('an ESLint setup the plugin cannot run in', () => {
     const blocked = (facts: ProjectFacts): StepResult => planLint(facts, createAnswers(), VERSIONS);
 
-    it('notes ESLint below 9 and adds nothing', () => {
+    it('notes ESLint below 9 with the command that updates it and adds nothing', () => {
       const facts = eslintApp(
         { manifest: parseManifest(JSON.stringify({ devDependencies: { eslint: '^8.57.0' } })) },
         { eslintMajor: 8 },
@@ -152,11 +153,17 @@ export default [
           expect.objectContaining({
             kind: 'note',
             id: 'lint:config',
-            reason: '@cngx/eslint-plugin needs ESLint 9 or later; this app declares eslint ^8.57.0',
+            reason:
+              '@cngx/eslint-plugin needs ESLint 9 or later and this app declares eslint ^8.57.0; update with `ng add angular-eslint`, then run ng add again',
           }),
         ],
         skipped: [],
       });
+      const managed = eslintApp(
+        { manifest: parseManifest(JSON.stringify({ devDependencies: { eslint: '^8.57.0', 'angular-eslint': '18.4.0' } })) },
+        { eslintMajor: 8 },
+      );
+      expect(notes(blocked(managed))[0][1]).toContain('update with `ng update angular-eslint`');
     });
 
     it('names the migration command for a legacy eslintrc config', () => {
@@ -179,7 +186,7 @@ export default [
           kind: 'note',
           id: 'lint:config',
           reason:
-            'the cngx rules lint TypeScript through your typescript-eslint setup; add typescript-eslint, then run ng add again',
+            'the cngx rules lint TypeScript through your typescript-eslint setup; add typescript-eslint or run `ng add angular-eslint`, then run ng add again',
         }),
       ]);
     });
@@ -203,17 +210,20 @@ export default [
       expect(byId(result, 'lint:config')?.kind).toBe('edit-file');
     });
 
-    it('notes it without angular-eslint and still wires the config', () => {
+    it('blocks the entry without angular-eslint, since the plugin cannot load without it', () => {
       const result = planLint(eslintApp({}, { templateParser: false }), createAnswers(), VERSIONS);
 
-      expect(notes(result)).toEqual([
-        [
-          'lint:template-parser',
-          '@cngx/eslint-plugin parses templates with @angular-eslint/template-parser; add it as a devDependency',
+      expect(result).toEqual({
+        changes: [
+          expect.objectContaining({
+            kind: 'note',
+            id: 'lint:config',
+            reason:
+              '@cngx/eslint-plugin loads @angular-eslint/template-parser; add it as a devDependency or run `ng add angular-eslint`, then run ng add again',
+          }),
         ],
-      ]);
-      expect(byId(result, 'dependency:@angular-eslint/template-parser')).toBeUndefined();
-      expect(byId(result, 'lint:config')?.kind).toBe('edit-file');
+        skipped: [],
+      });
     });
 
     it('adds nothing when it is declared', () => {

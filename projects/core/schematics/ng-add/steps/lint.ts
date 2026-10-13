@@ -38,21 +38,35 @@ function addImport(content: string, statement: string): string {
   return `${content.slice(0, at)}\n${statement}${content.slice(at)}`;
 }
 
-// The flat config the plugin can run in, or why there is none. A missing
-// template parser is not a blocker: it gets its own change.
+// What the app runs to get a stack the plugin works in. `ng add
+// angular-eslint` sets up ESLint 9, a flat config and both parsers.
+function setupCommand(facts: ProjectFacts): string {
+  return declaredRange(facts.manifest, ANGULAR_ESLINT) === undefined ? '`ng add angular-eslint`' : '`ng update angular-eslint`';
+}
+
+// The flat config the plugin can run in, or why there is none and what to run next.
 function compatibleConfig(facts: ProjectFacts): EslintConfigFacts | { readonly reason: string } {
   const { eslintConfig: config, legacyEslintConfig: legacy, eslintStack: stack } = facts;
+  const then = 'then run ng add again';
   if (stack.eslintMajor !== undefined && stack.eslintMajor < 9) {
-    return { reason: `${PLUGIN} needs ESLint 9 or later; this app declares eslint ${declaredRange(facts.manifest, 'eslint') ?? ''}` };
+    const declared = declaredRange(facts.manifest, 'eslint') ?? '';
+    return { reason: `${PLUGIN} needs ESLint 9 or later and this app declares eslint ${declared}; update with ${setupCommand(facts)}, ${then}` };
   }
   if (config === undefined && legacy !== undefined) {
-    return { reason: `${legacy} is a legacy config; migrate with \`npx @eslint/migrate-config ${legacy}\`, then run ng add again` };
+    return { reason: `${legacy} is a legacy config; migrate with \`npx @eslint/migrate-config ${legacy}\`, ${then}` };
   }
   if (config === undefined) {
-    return { reason: 'no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found' };
+    return { reason: `no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found; set one up with \`ng add angular-eslint\`, ${then}` };
   }
   if (!stack.typescriptParser) {
-    return { reason: 'the cngx rules lint TypeScript through your typescript-eslint setup; add typescript-eslint, then run ng add again' };
+    return {
+      reason: `the cngx rules lint TypeScript through your typescript-eslint setup; add typescript-eslint or run \`ng add angular-eslint\`, ${then}`,
+    };
+  }
+  // The plugin imports the template parser when it loads; without it ESLint
+  // fails before linting a file. With angular-eslint declared it is added below.
+  if (!stack.templateParser && declaredRange(facts.manifest, ANGULAR_ESLINT) === undefined) {
+    return { reason: `${PLUGIN} loads ${TEMPLATE_PARSER}; add it as a devDependency or run \`ng add angular-eslint\`, ${then}` };
   }
   if (!config.editable) {
     return { reason: `${config.path} exports no array cngx can extend; add ${ENTRY} by hand` };
@@ -60,23 +74,13 @@ function compatibleConfig(facts: ProjectFacts): EslintConfigFacts | { readonly r
   return config;
 }
 
-// The plugin loads the Angular template parser. With `angular-eslint`
-// declared it is pinned on that version line; otherwise the app picks it.
+// Pinned on the angular-eslint version line; `compatibleConfig` already
+// stopped an app that declares neither.
 function templateParser(facts: ProjectFacts, provenance: Provenance): StepResult {
   const id = `dependency:${TEMPLATE_PARSER}`;
-  if (facts.eslintStack.templateParser) {
-    return { changes: [], skipped: [{ id, label: `Add ${TEMPLATE_PARSER}`, reason: 'already declared' }] };
-  }
   const range = declaredRange(facts.manifest, ANGULAR_ESLINT);
-  if (range === undefined) {
-    const note: Change = {
-      kind: 'note',
-      id: 'lint:template-parser',
-      label: `Skip ${TEMPLATE_PARSER}`,
-      reason: `${PLUGIN} parses templates with ${TEMPLATE_PARSER}; add it as a devDependency`,
-      provenance,
-    };
-    return { changes: [note], skipped: [] };
+  if (facts.eslintStack.templateParser || range === undefined) {
+    return { changes: [], skipped: [{ id, label: `Add ${TEMPLATE_PARSER}`, reason: 'already declared' }] };
   }
   const dependency: Change = {
     kind: 'add-dependency',
