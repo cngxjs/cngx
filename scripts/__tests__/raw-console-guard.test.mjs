@@ -15,15 +15,17 @@
 import { performance } from 'node:perf_hooks';
 
 import ts from 'typescript';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import {
   collectHelperCalls,
+  collectHelperMisuse,
   collectWrapperUses,
   collectWrappers,
   isLexicallyGuarded,
   isNameOfDeclaration,
   lineOf,
+  localNgDevModeLines,
   parse,
 } from '../dev-diagnostics.mjs';
 import { libOf, rangeOf, readSources } from '../error-codes-manifest.mjs';
@@ -36,6 +38,13 @@ import { RAW_CONSOLE_BASELINE } from './raw-console-baseline.mjs';
  * @type {{ file: string; reason: string }[]}
  */
 const RAW_CONSOLE_EXEMPT = [];
+
+/**
+ * Dev wrappers used as a value instead of called by name (`file#name`). Their
+ * invocation stays in production; only the guarded body strips. Exact list:
+ * a new entry is a reviewed decision, not a side effect.
+ */
+const EXPECTED_INDIRECT_SINKS = [];
 
 const HELPER_FILE = 'projects/utils/dev-message.ts';
 const CODE_PATTERN = /^CNGX\d{4}$/;
@@ -53,6 +62,39 @@ function singleFileChecker(sf) {
   return ts.createProgram([sf.fileName], options, host).getTypeChecker();
 }
 
+/** `node` through parentheses, `as`, `satisfies`, `!` and `<T>` casts. */
+const unwrap = (node) => {
+  let current = node;
+  while (
+    ts.isParenthesizedExpression(current) ||
+    ts.isAsExpression(current) ||
+    ts.isSatisfiesExpression(current) ||
+    ts.isNonNullExpression(current) ||
+    ts.isTypeAssertionExpression(current)
+  ) {
+    current = current.expression;
+  }
+  return current;
+};
+
+const isGlobalHost = (node) => {
+  const inner = node && unwrap(node);
+  return Boolean(inner && ts.isIdentifier(inner) && GLOBAL_HOSTS.has(inner.text));
+};
+
+/** `{ console } = globalThis` / `{ console: c } = window`: the key read off a global. */
+const isDestructuredFromGlobal = (node) => {
+  const element = node.parent;
+  const isKey = element.propertyName ? element.propertyName === node : element.name === node;
+  const declaration = element.parent?.parent;
+  return (
+    isKey &&
+    ts.isObjectBindingPattern(element.parent) &&
+    ts.isVariableDeclaration(declaration) &&
+    isGlobalHost(declaration.initializer)
+  );
+};
+
 /** Lines of every reference to the global `console` in one file. */
 export function rawConsoleLines(path, text) {
   if (!text.includes('console')) {
@@ -60,12 +102,15 @@ export function rawConsoleLines(path, text) {
   }
   const sf = parse(path, text);
   let checker;
+  const isUnresolved = (resolve) => {
+    checker ??= singleFileChecker(sf);
+    return !resolve(checker)?.declarations?.length;
+  };
   const lines = [];
   const visit = (node) => {
     if (
       ts.isElementAccessExpression(node) &&
-      ts.isIdentifier(node.expression) &&
-      GLOBAL_HOSTS.has(node.expression.text) &&
+      isGlobalHost(node.expression) &&
       ts.isStringLiteralLike(node.argumentExpression) &&
       node.argumentExpression.text === 'console'
     ) {
@@ -74,12 +119,19 @@ export function rawConsoleLines(path, text) {
     if (ts.isIdentifier(node) && node.text === 'console') {
       const parent = node.parent;
       if (ts.isPropertyAccessExpression(parent) && parent.name === node) {
-        if (ts.isIdentifier(parent.expression) && GLOBAL_HOSTS.has(parent.expression.text)) {
+        if (isGlobalHost(parent.expression)) {
           lines.push(lineOf(sf, node));
         }
-      } else if (!isNameOfDeclaration(node) && !ts.isBindingElement(parent)) {
-        checker ??= singleFileChecker(sf);
-        if (!checker.getSymbolAtLocation(node)?.declarations?.length) {
+      } else if (ts.isBindingElement(parent)) {
+        if (isDestructuredFromGlobal(node)) {
+          lines.push(lineOf(sf, node));
+        }
+      } else if (ts.isShorthandPropertyAssignment(parent)) {
+        if (isUnresolved((c) => c.getShorthandAssignmentValueSymbol(parent))) {
+          lines.push(lineOf(sf, node));
+        }
+      } else if (!isNameOfDeclaration(node)) {
+        if (isUnresolved((c) => c.getSymbolAtLocation(node))) {
           lines.push(lineOf(sf, node));
         }
       }
@@ -125,12 +177,29 @@ export function checkSources(files) {
     }
   }
 
+  for (const misuse of collectHelperMisuse(files)) {
+    violations.push(
+      `${misuse.file}:${misuse.line} R2 ${misuse.reason}; call the helper directly by its own name`,
+    );
+  }
+
   const wrappers = collectWrappers(helperCalls);
   const { calls, indirect } = collectWrapperUses(files, wrappers);
   for (const call of calls) {
     if (!isLexicallyGuarded(call.node)) {
       violations.push(
         `${call.file}:${call.line} R4 dev wrapper ${call.name}() is called unguarded`,
+      );
+    }
+  }
+
+  const guardedFiles = new Map(
+    [...helperCalls, ...calls].map((c) => [c.file, c.node.getSourceFile()]),
+  );
+  for (const [file, sf] of guardedFiles) {
+    for (const line of localNgDevModeLines(sf)) {
+      violations.push(
+        `${file}:${line} R2 a local ngDevMode shadows the global; its guards never fold in production`,
       );
     }
   }
@@ -168,6 +237,22 @@ describe('raw-console guard - R1 raw console', () => {
       ].join('\n'),
     );
     expect(raw.get('projects/core/a.ts')).toBe(5);
+  });
+
+  it('counts console destructured from a global and read off a cast host', () => {
+    const { raw } = fixture(
+      [
+        "const { console } = globalThis; console.warn('a');",
+        'const { console: c2 } = window as any;',
+        "(globalThis as any).console.error('b');",
+        "(window!)['console'].log('c');",
+      ].join('\n'),
+    );
+    expect(raw.get('projects/core/a.ts')).toBe(4);
+  });
+
+  it('counts a shorthand property that reads the global console', () => {
+    expect(fixture('const bag = { console };').raw.get('projects/core/a.ts')).toBe(1);
   });
 
   it('ignores comments, strings and a local console binding', () => {
@@ -239,6 +324,45 @@ describe('raw-console guard - R2/R3 helper calls', () => {
     expect(fixture(`if (${GUARD}) { cngxDevWarn('CNGX1001', 'm'); }`).violations).toEqual([
       'projects/core/a.ts:1 R3 CNGX1001 lies outside the core range',
     ]);
+  });
+});
+
+describe('raw-console guard - R2 helper references', () => {
+  const misuse = (text) =>
+    fixture(text).violations.filter((v) => v.includes('call the helper directly'));
+
+  it('fails an aliased import, a namespace member, .call and a value use', () => {
+    expect(misuse("import { cngxDevWarn as w } from '@cngx/utils';")).toHaveLength(1);
+    expect(
+      misuse(
+        `import * as u from '@cngx/utils';\nif (${GUARD}) { u.cngxDevWarn('CNGX0001', 'm'); }`,
+      ),
+    ).toHaveLength(1);
+    expect(misuse(`if (${GUARD}) { cngxDevWarn.call(null, 'CNGX0001', 'm'); }`)).toHaveLength(1);
+    expect(misuse('const sink = cngxDevError;')).toHaveLength(1);
+    expect(misuse("export { cngxDevWarn } from '@cngx/utils';")).toHaveLength(1);
+  });
+
+  it('passes a plain import and a direct call', () => {
+    expect(
+      fixture(
+        `import { cngxDevWarn } from '@cngx/utils';\nif (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); }`,
+      ).violations,
+    ).toEqual([]);
+  });
+
+  it('fails a guard whose ngDevMode is a local binding, but allows the ambient declare', () => {
+    expect(
+      fixture(`function f(ngDevMode: boolean) { if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } }`)
+        .violations,
+    ).toEqual([
+      'projects/core/a.ts:1 R2 a local ngDevMode shadows the global; its guards never fold in production',
+    ]);
+    expect(
+      fixture(
+        `declare const ngDevMode: boolean | undefined;\nif (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); }`,
+      ).violations,
+    ).toEqual([]);
   });
 });
 
@@ -329,6 +453,52 @@ describe('raw-console guard - R4 dev wrappers', () => {
     expect(violations).toEqual(['projects/core/use.ts:2 R4 dev wrapper w() is called unguarded']);
   });
 
+  it('treats a guard-first class-field arrow as a wrapper and matches any receiver', () => {
+    const { wrappers, violations } = fixture(
+      [
+        'class D {',
+        `  private readonly warnF = () => { if (${NEGATED}) { return; } cngxDevWarn('CNGX0001', 'm'); };`,
+        `  #warnP() { if (${NEGATED}) { return; } cngxDevWarn('CNGX0002', 'm'); }`,
+        '  run(other: D) { this.warnF(); this.#warnP(); other.warnF(); }',
+        '}',
+      ].join('\n'),
+    );
+    expect(wrappers.map((w) => w.name).sort()).toEqual(['#warnP', 'warnF']);
+    expect(violations).toEqual([
+      'projects/core/a.ts:4 R4 dev wrapper this.warnF() is called unguarded',
+      'projects/core/a.ts:4 R4 dev wrapper this.#warnP() is called unguarded',
+      'projects/core/a.ts:4 R4 dev wrapper other.warnF() is called unguarded',
+    ]);
+  });
+
+  it('follows a wrapper exported through an export specifier', () => {
+    const { violations } = checkSources([
+      {
+        path: 'projects/core/warn.ts',
+        text: `function warnS() { if (${NEGATED}) { return; } cngxDevWarn('CNGX0001', 'm'); }\nexport { warnS as warnShared };`,
+      },
+      {
+        path: 'projects/core/use.ts',
+        text: "import { warnShared } from './warn';\nwarnShared();",
+      },
+    ]);
+    expect(violations).toEqual([
+      'projects/core/use.ts:2 R4 dev wrapper warnShared() is called unguarded',
+    ]);
+  });
+
+  it('reports a method wrapper read as a value as indirect', () => {
+    const { indirect } = fixture(
+      [
+        'class D {',
+        `  warnM() { if (${NEGATED}) { return; } cngxDevWarn('CNGX0001', 'm'); }`,
+        '  run() { afterNextRender(this.warnM); }',
+        '}',
+      ].join('\n'),
+    );
+    expect(indirect).toEqual([{ file: 'projects/core/a.ts', line: 3, name: 'this.warnM' }]);
+  });
+
   it('reports a guard-first const arrow passed as a value as indirect', () => {
     const { wrappers, indirect, violations } = fixture(
       [
@@ -346,9 +516,13 @@ describe('raw-console guard - R4 dev wrappers', () => {
 });
 
 describe('raw-console guard - projects/**', () => {
-  const started = performance.now();
-  const result = checkSources(readSources());
-  const elapsed = performance.now() - started;
+  let result;
+  let elapsed;
+  beforeAll(() => {
+    const started = performance.now();
+    result = checkSources(readSources());
+    elapsed = performance.now() - started;
+  });
 
   it('runs in under 5 s', () => {
     expect(elapsed).toBeLessThan(5000);
@@ -377,7 +551,8 @@ describe('raw-console guard - projects/**', () => {
     expect(RAW_CONSOLE_EXEMPT.filter((e) => !e.reason?.trim())).toEqual([]);
   });
 
-  it('reports indirect dev sinks', () => {
-    expect(result.indirect.every((use) => typeof use.name === 'string')).toBe(true);
+  it('reports exactly the reviewed indirect dev sinks', () => {
+    const sinks = [...new Set(result.indirect.map((use) => `${use.file}#${use.name}`))].sort();
+    expect(sinks).toEqual([...EXPECTED_INDIRECT_SINKS].sort());
   });
 });

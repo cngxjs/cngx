@@ -155,6 +155,91 @@ export function collectHelperCalls(files) {
   return out;
 }
 
+/**
+ * Every reference to `cngxDevWarn` / `cngxDevError` that is not a direct call
+ * through the helper's own name: an aliased import, a namespace member, a
+ * re-export, `.call` / `.apply`, or the helper used as a value. Each would
+ * hide a diagnostic from the guard, the manifest and the prod-strip needles,
+ * which all key on the direct call. `projects/utils/dev-message.ts` declares
+ * the helpers and is skipped.
+ *
+ * @returns {{ file: string; line: number; reason: string }[]}
+ */
+export function collectHelperMisuse(files) {
+  const out = [];
+  for (const { path, text } of files) {
+    if (!text.includes('cngxDev') || path.endsWith('utils/dev-message.ts')) {
+      continue;
+    }
+    const sf = parse(path, text);
+    const report = (node, reason) => out.push({ file: path, line: lineOf(sf, node), reason });
+    const visit = (node) => {
+      if (
+        (ts.isIdentifier(node) || ts.isStringLiteral(node)) &&
+        Object.hasOwn(HELPERS, node.text)
+      ) {
+        const parent = node.parent;
+        if (ts.isCallExpression(parent) && parent.expression === node) {
+          // direct call: collected by collectHelperCalls
+        } else if (ts.isImportSpecifier(parent)) {
+          if (parent.propertyName) {
+            report(node, `aliased import of ${node.text}`);
+          }
+        } else if (ts.isExportSpecifier(parent)) {
+          report(node, `re-export of ${node.text}`);
+        } else if (ts.isPropertyAccessExpression(parent) && parent.name === node) {
+          report(node, `${node.text} called through a namespace or object`);
+        } else if (ts.isElementAccessExpression(parent) && parent.argumentExpression === node) {
+          report(node, `${node.text} read by element access`);
+        } else if (ts.isIdentifier(node)) {
+          report(node, `${node.text} used as a value`);
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(sf);
+  }
+  return out;
+}
+
+const isAmbient = (node) => {
+  for (let current = node; current; current = current.parent) {
+    if (current.modifiers?.some((m) => m.kind === ts.SyntaxKind.DeclareKeyword)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
+ * Lines that declare a local `ngDevMode` (variable, parameter, function,
+ * import). A guard reading such a binding never folds in production. The
+ * ambient `declare const ngDevMode` that types the global is allowed.
+ */
+export function localNgDevModeLines(sf) {
+  const lines = [];
+  const visit = (node) => {
+    const name = node.name;
+    const declares =
+      (ts.isVariableDeclaration(node) ||
+        ts.isParameter(node) ||
+        ts.isBindingElement(node) ||
+        ts.isFunctionDeclaration(node) ||
+        ts.isImportSpecifier(node) ||
+        ts.isImportClause(node) ||
+        ts.isNamespaceImport(node)) &&
+      name &&
+      ts.isIdentifier(name) &&
+      name.text === 'ngDevMode';
+    if (declares && !isAmbient(node)) {
+      lines.push(lineOf(sf, node));
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  return lines;
+}
+
 export const isNameOfDeclaration = (node) => {
   const parent = node.parent;
   return (
@@ -170,10 +255,21 @@ export const isNameOfDeclaration = (node) => {
   );
 };
 
+const nameText = (name) =>
+  name && (ts.isIdentifier(name) || ts.isPrivateIdentifier(name)) ? name.text : null;
+
+const isClassFieldFunction = (node) =>
+  (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) &&
+  ts.isPropertyDeclaration(node.parent) &&
+  node.parent.initializer === node;
+
 /** The name a function-like node is called by, or null. */
 function functionName(node) {
-  if ((ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) && node.name) {
-    return ts.isIdentifier(node.name) ? node.name.text : null;
+  if (ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) {
+    return nameText(node.name);
+  }
+  if (isClassFieldFunction(node)) {
+    return nameText(node.parent.name);
   }
   if (
     (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) &&
@@ -188,13 +284,40 @@ function functionName(node) {
   return null;
 }
 
-const isExported = (node) => {
+const exportSpecifiers = new WeakMap();
+
+/** Local name -> exported names, from `export { a, b as c }` in `sf`. */
+function exportSpecifiersOf(sf) {
+  let map = exportSpecifiers.get(sf);
+  if (!map) {
+    map = new Map();
+    for (const statement of sf.statements) {
+      const clause =
+        ts.isExportDeclaration(statement) && !statement.moduleSpecifier && statement.exportClause;
+      if (clause && ts.isNamedExports(clause)) {
+        for (const element of clause.elements) {
+          const local = (element.propertyName ?? element.name).text;
+          map.set(local, [...(map.get(local) ?? []), element.name.text]);
+        }
+      }
+    }
+    exportSpecifiers.set(sf, map);
+  }
+  return map;
+}
+
+/** The names a module-level function is exported under (empty when not). */
+const exportNamesOf = (node, name, sf) => {
   const holder = ts.isFunctionDeclaration(node) ? node : node.parent?.parent?.parent;
-  return Boolean(
+  const isTopLevel =
     holder &&
-    (ts.isFunctionDeclaration(holder) || ts.isVariableStatement(holder)) &&
-    holder.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword),
-  );
+    holder.parent === sf &&
+    (ts.isFunctionDeclaration(holder) || ts.isVariableStatement(holder));
+  if (!isTopLevel) {
+    return [];
+  }
+  const inline = holder.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+  return [...(inline ? [name] : []), ...(exportSpecifiersOf(sf).get(name) ?? [])];
 };
 
 /**
@@ -204,7 +327,7 @@ const isExported = (node) => {
  */
 export function collectWrappers(calls) {
   const seen = new Map();
-  for (const { node, file } of calls) {
+  for (const { node, file, sf } of calls) {
     for (let fn = node.parent; fn; fn = fn.parent) {
       const name = functionName(fn);
       if (!name || seen.has(fn)) {
@@ -217,11 +340,12 @@ export function collectWrappers(calls) {
         body.statements.length > 0 &&
         isEarlyReturn(body.statements[0])
       ) {
+        const isMember = ts.isMethodDeclaration(fn) || isClassFieldFunction(fn);
         seen.set(fn, {
           file,
           name,
-          kind: ts.isMethodDeclaration(fn) ? 'method' : 'function',
-          exported: isExported(fn),
+          kind: isMember ? 'method' : 'function',
+          exportedAs: isMember ? [] : exportNamesOf(fn, name, sf),
         });
       }
     }
@@ -231,10 +355,11 @@ export function collectWrappers(calls) {
 
 /**
  * Direct calls of a wrapper (by name in its own file, by imported name
- * elsewhere) and wrapper references used as values.
+ * elsewhere; a method wrapper through any receiver in its own file) and
+ * wrapper references used as values.
  */
 export function collectWrapperUses(files, wrappers) {
-  const exportedNames = new Set(wrappers.filter((w) => w.exported).map((w) => w.name));
+  const exportedNames = new Set(wrappers.flatMap((w) => w.exportedAs));
   const calls = [];
   const indirect = [];
   for (const { path, text } of files) {
@@ -262,16 +387,23 @@ export function collectWrapperUses(files, wrappers) {
       if (ts.isCallExpression(node)) {
         const callee = node.expression;
         const byName = ts.isIdentifier(callee) && names.has(callee.text);
-        const byThis =
+        const byMember =
           ts.isPropertyAccessExpression(callee) &&
-          callee.expression.kind === ts.SyntaxKind.ThisKeyword &&
-          methods.has(callee.name.text);
-        if (byName || byThis) {
+          methods.has(callee.name.text) &&
+          !(ts.isIdentifier(callee.expression) && callee.expression.text === 'console');
+        if (byName || byMember) {
           calls.push({ file: path, line: lineOf(sf, node), name: callee.getText(sf), node });
         }
       }
       if (ts.isIdentifier(node) && names.has(node.text) && isValueUse(node)) {
         indirect.push({ file: path, line: lineOf(sf, node), name: node.text });
+      }
+      const memberValue =
+        ts.isPropertyAccessExpression(node) &&
+        methods.has(node.name.text) &&
+        !(ts.isCallExpression(node.parent) && node.parent.expression === node);
+      if (memberValue) {
+        indirect.push({ file: path, line: lineOf(sf, node), name: node.getText(sf) });
       }
       ts.forEachChild(node, visit);
     };
@@ -295,6 +427,9 @@ function isValueUse(node) {
     return false;
   }
   if (ts.isPropertyAccessExpression(parent) && parent.name === node) {
+    return false;
+  }
+  if (ts.isExportAssignment(parent)) {
     return false;
   }
   return !isNameOfDeclaration(node);
