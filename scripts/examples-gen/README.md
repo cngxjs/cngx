@@ -69,7 +69,10 @@ source uses only `template` / `setup`.
 The TypeScript panel shows the full component a consumer would write
 for the artifact:
 
-- the `@angular/core` import, detected from `setup` and `viewProviders`;
+- the `@angular/core` import, detected from `setup` and `viewProviders`,
+  plus any `@angular/core` specifier a `moduleImports` line declares and
+  `setup` or `viewProviders` reference (for symbols the generator does not
+  detect itself, such as `afterEveryRender` or `viewChildren`);
 - the other import lines, filtered to what `setup`, `template` and the
   decorator reference;
 - the `@Component` decorator with the generated `selector`,

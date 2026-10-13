@@ -17,6 +17,7 @@ import {
   buildDisplayedHtml,
   buildDisplayedTs,
   coreSymbolsFor,
+  declaredCoreSpecifiers,
   escapeRegExp,
   filterImportLine,
   importedSymbols,
@@ -263,17 +264,14 @@ function buildImports(story, importMap, featureDepth) {
   const coreSymbols = [
     'ChangeDetectionStrategy',
     'Component',
-    ...coreSymbolsFor(setup, story.viewProviders),
+    ...coreSymbolsFor(setup, story.viewProviders, declaredCoreSpecifiers(story.moduleImports)),
   ];
 
   const coreLine = `import { ${coreSymbols.join(', ')} } from '@angular/core';`;
 
   const viewProvidersText = (story.viewProviders ?? []).join('\n');
   const scanText = setup + '\n' + tpl + '\n' + viewProvidersText;
-  const explicitRefs = new Set([
-    ...(story.imports ?? []),
-    ...(story.hostDirectives ?? []),
-  ]);
+  const explicitRefs = new Set([...(story.imports ?? []), ...(story.hostDirectives ?? [])]);
 
   function isReferenced(id) {
     if (explicitRefs.has(id)) return true;
@@ -361,9 +359,7 @@ function emitComponentSource(meta, story, importMap) {
 
   const storyViewProviders = (story.viewProviders ?? []).filter(Boolean);
   const decoratorViewProviders =
-    storyViewProviders.length > 0
-      ? `\n  viewProviders: [${storyViewProviders.join(', ')}],`
-      : '';
+    storyViewProviders.length > 0 ? `\n  viewProviders: [${storyViewProviders.join(', ')}],` : '';
 
   // Live class body - setup (artifact code) + setupChrome (instrumentation).
   // The displayed _exTs panel below shows setup only.
@@ -455,7 +451,12 @@ function emitComponentSource(meta, story, importMap) {
   const chromeBeforeBlock = chromeBefore
     ? `<section class="cngx-ex-chrome cngx-ex-chrome--before">\n${indent(chromeBefore, 2)}\n</section>`
     : '';
-  const mainBody = [chromeBeforeBlock, artifactBlock, chromeBlock, sourceBlocks.replace(/^    /gm, '')]
+  const mainBody = [
+    chromeBeforeBlock,
+    artifactBlock,
+    chromeBlock,
+    sourceBlocks.replace(/^    /gm, ''),
+  ]
     .filter(Boolean)
     .join('\n');
 
