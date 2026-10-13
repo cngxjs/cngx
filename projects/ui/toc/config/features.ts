@@ -62,10 +62,20 @@ export function withTocSpy(payload: NonNullable<CngxTocConfig['spy']>): CngxTocC
  * `*cngxTocItem` slot and before the built-in plain-label rendering, so every
  * un-slotted toc renders the same custom item markup.
  *
+ * A `TemplateRef` exists only once a view renders, so it cannot go into
+ * `viewProviders` or the root providers. Build the scope from the rendered
+ * template and hand it to `ngTemplateOutlet`:
+ *
  * ```ts
- * @Component({
- *   viewProviders: [provideTocConfigAt(withTocTemplates({ item: myItemTpl }))],
- * })
+ * private readonly injector = inject(Injector);
+ * private readonly itemTpl = viewChild.required<TemplateRef<CngxTocItemContext>>('tocItem');
+ * protected readonly tocScope = computed(() =>
+ *   Injector.create({
+ *     parent: this.injector,
+ *     providers: [provideTocConfigAt(withTocTemplates({ item: this.itemTpl() }))],
+ *   }),
+ * );
+ * // <ng-container *ngTemplateOutlet="tocTpl; injector: tocScope()" />
  * ```
  *
  * @category ui/toc

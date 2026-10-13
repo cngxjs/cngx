@@ -192,9 +192,12 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
 };
 
 /**
- * Configuration cascade token. Resolution priority (high to low):
- * per-instance Input, then `provideCngxPaginatorConfig(...)` at the
- * application root, then the library defaults.
+ * Configuration cascade token. Resolution priority (high -> low):
+ *   1. Per-instance Input binding.
+ *   2. `provideCngxPaginatorConfigAt(...)` in a parent component's
+ *      `viewProviders` (component-scoped override).
+ *   3. `provideCngxPaginatorConfig(...)` at the application root.
+ *   4. Library defaults.
  *
  * @category ui/paginator
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
@@ -437,10 +440,22 @@ export function withPaginatorPageSizeOptions(
  * per-instance `*cngxPaginatorLoading` slot still wins over this tier; it only
  * applies where no instance slot is projected.
  *
+ * A `TemplateRef` exists only once a view renders, so it cannot go into the
+ * root providers or `viewProviders`. Build the scope from the rendered
+ * template and hand it to `ngTemplateOutlet`:
+ *
  * ```ts
- * provideCngxPaginatorConfig(
- *   withPaginatorTemplates({ loading: myBrandedSpinnerTemplate }),
+ * private readonly injector = inject(Injector);
+ * private readonly spinnerTpl = viewChild.required<TemplateRef<void>>('spinner');
+ * protected readonly pagerScope = computed(() =>
+ *   Injector.create({
+ *     parent: this.injector,
+ *     providers: [
+ *       provideCngxPaginatorConfigAt(withPaginatorTemplates({ loading: this.spinnerTpl() })),
+ *     ],
+ *   }),
  * );
+ * // <ng-container *ngTemplateOutlet="pagerTpl; injector: pagerScope()" />
  * ```
  *
  * @category ui/paginator
