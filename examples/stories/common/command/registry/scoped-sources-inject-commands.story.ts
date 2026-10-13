@@ -55,7 +55,7 @@ export const STORY: DemoSpec = {
         [attr.aria-pressed]="pluginActive()"
         (click)="handleTogglePlugin()"
       >
-        {{ pluginActive() ? 'Remove' : 'Add' }} plugin command
+        Plugin command
       </button>
       <label>
         Filter

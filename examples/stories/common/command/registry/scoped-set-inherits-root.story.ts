@@ -43,7 +43,7 @@ export const STORY: DemoSpec = {
     </div>
     <div class="event-row">
       <span class="event-label">Editor scope</span>
-      <span class="event-value">{{ editor()?.commands()?.length ?? 0 }} commands (outer + editor)</span>
+      <span class="event-value">{{ editor()?.commands().length ?? 0 }} commands (outer + editor)</span>
     </div>
   </div>`,
 };
