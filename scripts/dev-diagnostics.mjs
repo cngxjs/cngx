@@ -307,8 +307,7 @@ const isObjectMember = (node) =>
 /**
  * An argument-less function an object literal carries (`{ onGiveUp: () => ... }`).
  * It has no caller arguments that could ship, and its guarded body already
- * folds, so it is neither held to guard-first nor counted as a wrapper or an
- * indirect sink.
+ * folds, so it is neither held to guard-first nor counted as a wrapper.
  */
 const isArgumentlessObjectMember = (node) => isObjectMember(node) && node.parameters.length === 0;
 
@@ -644,21 +643,40 @@ export function collectWrappers(calls) {
   return [...seen.values()];
 }
 
+const PLACEMENT = {
+  method: 'is a class member',
+  property: 'is an object-literal member',
+};
+
+/**
+ * Wrappers production keeps referenced by where they live. A class keeps its
+ * methods in the bundle, and an object literal keeps its members, so the
+ * emptied body still imports the helper and its doc URL. A module-level
+ * function whose callers are all guarded is unreferenced and tree-shaken.
+ *
+ * @returns {{ file: string; line: number; problem: string }[]}
+ */
+export function collectWrapperPlacementProblems(wrappers) {
+  return wrappers
+    .filter((w) => Object.hasOwn(PLACEMENT, w.kind))
+    .map((w) => ({
+      file: w.file,
+      line: w.line,
+      problem: `dev wrapper ${w.name} ${PLACEMENT[w.kind]}; move it to module level so production tree-shakes it`,
+    }));
+}
+
 /**
  * Direct calls of a wrapper (by name in its own file, by imported name
- * elsewhere; a method wrapper through any receiver in its own file) and
- * wrapper references used as values.
+ * elsewhere; a method wrapper through any receiver in its own file), plus the
+ * problems R4 fails: a wrapper used as a value outside a dev-mode guard (the
+ * reference keeps it, the helper and the doc URL in production) and forms R4
+ * cannot follow by name.
  */
 export function collectWrapperUses(files, wrappers) {
   const exportedNames = new Set(wrappers.flatMap((w) => w.exportedAs));
   const calls = [];
-  // A wrapper an object literal carries is a value by construction: reported
-  // as an indirect sink where it is declared.
-  const indirect = wrappers
-    .filter((w) => w.kind === 'property')
-    .map((w) => ({ file: w.file, line: w.line, name: w.name }));
-  // Forms R4 cannot follow by name fail closed instead of passing unseen.
-  const untraceable = wrappers
+  const problems = wrappers
     .filter((w) => w.defaultExport)
     .map((w) => ({
       file: w.file,
@@ -696,7 +714,7 @@ export function collectWrapperUses(files, wrappers) {
       for (const element of reexports) {
         const original = (element.propertyName ?? element.name).text;
         if (exportedNames.has(original) && original !== element.name.text) {
-          untraceable.push({
+          problems.push({
             file: path,
             line: lineOf(sf, element),
             problem: `dev wrapper ${original} is re-exported as ${element.name.text}; keep its name`,
@@ -724,21 +742,23 @@ export function collectWrapperUses(files, wrappers) {
           calls.push({ file: path, line: lineOf(sf, node), name: callee.getText(sf), node });
         }
       }
-      if (ts.isIdentifier(node) && names.has(node.text) && isValueUse(node)) {
-        indirect.push({ file: path, line: lineOf(sf, node), name: node.text });
-      }
+      const nameValue = ts.isIdentifier(node) && names.has(node.text) && isValueUse(node);
       const memberValue =
         ts.isPropertyAccessExpression(node) &&
         (methods.has(node.name.text) || isNamespaceMember(node)) &&
         !(ts.isCallExpression(node.parent) && node.parent.expression === node);
-      if (memberValue) {
-        indirect.push({ file: path, line: lineOf(sf, node), name: node.getText(sf) });
+      if ((nameValue || memberValue) && !isLexicallyGuarded(node)) {
+        problems.push({
+          file: path,
+          line: lineOf(sf, node),
+          problem: `dev wrapper ${node.getText(sf)} is used as a value outside a dev-mode guard`,
+        });
       }
       ts.forEachChild(node, visit);
     };
     visit(sf);
   }
-  return { calls, indirect, untraceable };
+  return { calls, problems };
 }
 
 function isValueUse(node) {

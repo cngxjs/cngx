@@ -9,8 +9,9 @@
 // R2  every helper call has a `CNGXnnnn` literal first argument and a lexical
 //     inline guard.
 // R3  the code lies in the calling file's lib range.
-// R4  every direct call of a guard-first dev wrapper is lexically guarded;
-//     a wrapper used as a value (indirect sink) is reported, not failed.
+// R4  every direct call and every value use of a guard-first dev wrapper is
+//     lexically guarded, and no wrapper is a class or object-literal member:
+//     a wrapper production still references ships the helper and its doc URL.
 
 import { performance } from 'node:perf_hooks';
 
@@ -21,6 +22,7 @@ import {
   HELPER_FILE,
   collectHelperCalls,
   collectHelperMisuse,
+  collectWrapperPlacementProblems,
   collectWrapperShapeProblems,
   collectWrapperUses,
   collectWrappers,
@@ -40,13 +42,6 @@ import { RAW_CONSOLE_BASELINE } from './raw-console-baseline.mjs';
  * @type {{ file: string; reason: string }[]}
  */
 const RAW_CONSOLE_EXEMPT = [];
-
-/**
- * Dev wrappers used as a value instead of called by name (`file#name`). Their
- * invocation stays in production; only the guarded body strips. Exact list:
- * a new entry is a reviewed decision, not a side effect.
- */
-const EXPECTED_INDIRECT_SINKS = [];
 
 /**
  * Every dev wrapper (`file#name`) the guard derives. Exact list: a migration
@@ -157,7 +152,7 @@ export function rawConsoleLines(path, text) {
 /**
  * Runs R1-R4 over `files` ([{ path, text }]).
  *
- * @returns {{ raw: Map<string, number>; violations: string[]; wrappers: ReturnType<typeof collectWrappers>; indirect: { file: string; line: number; name: string }[] }}
+ * @returns {{ raw: Map<string, number>; violations: string[]; wrappers: ReturnType<typeof collectWrappers> }}
  */
 export function checkSources(files) {
   const raw = new Map();
@@ -196,13 +191,13 @@ export function checkSources(files) {
   }
 
   const wrappers = collectWrappers(helperCalls);
-  const { calls, indirect, untraceable } = collectWrapperUses(files, wrappers);
+  const { calls, problems } = collectWrapperUses(files, wrappers);
   for (const shape of collectWrapperShapeProblems(helperCalls)) {
     violations.push(
       `${shape.file}:${shape.line} R4 ${shape.name} ${shape.problem}; open it with the negated ngDevMode early return`,
     );
   }
-  for (const entry of untraceable) {
+  for (const entry of [...collectWrapperPlacementProblems(wrappers), ...problems]) {
     violations.push(`${entry.file}:${entry.line} R4 ${entry.problem}`);
   }
   for (const call of calls) {
@@ -223,7 +218,7 @@ export function checkSources(files) {
       );
     }
   }
-  return { raw, violations, wrappers, indirect };
+  return { raw, violations, wrappers };
 }
 
 /** The baseline as a flat `file -> count` map. */
@@ -320,7 +315,7 @@ describe('raw-console guard - R2/R3 helper calls', () => {
 
   it('passes a negated early return earlier in the function', () => {
     ok(`function f() { if (${NEGATED}) { return; } doWork(); cngxDevWarn('CNGX0001', 'm'); }`);
-    ok(`class A { m() { if (${NEGATED}) { return 1; } cngxDevWarn('CNGX0001', 'm'); } }`);
+    ok(`class A { m() { prep(); if (${NEGATED}) { return 1; } cngxDevWarn('CNGX0001', 'm'); } }`);
   });
 
   it('fails isDevMode() and a trailing guard', () => {
@@ -465,6 +460,7 @@ describe('raw-console guard - R4 dev wrappers', () => {
       ].join('\n'),
     );
     expect(violations).toEqual([
+      'projects/core/a.ts:2 R4 dev wrapper warnY is a class member; move it to module level so production tree-shakes it',
       'projects/core/a.ts:3 R4 dev wrapper this.warnY() is called unguarded',
     ]);
   });
@@ -495,6 +491,8 @@ describe('raw-console guard - R4 dev wrappers', () => {
     );
     expect(wrappers.map((w) => w.name).sort()).toEqual(['#warnP', 'warnF']);
     expect(violations).toEqual([
+      'projects/core/a.ts:2 R4 dev wrapper warnF is a class member; move it to module level so production tree-shakes it',
+      'projects/core/a.ts:3 R4 dev wrapper #warnP is a class member; move it to module level so production tree-shakes it',
       'projects/core/a.ts:4 R4 dev wrapper this.warnF() is called unguarded',
       'projects/core/a.ts:4 R4 dev wrapper this.#warnP() is called unguarded',
       'projects/core/a.ts:4 R4 dev wrapper other.warnF() is called unguarded',
@@ -517,8 +515,8 @@ describe('raw-console guard - R4 dev wrappers', () => {
     ]);
   });
 
-  it('reports a method wrapper read as a value as indirect', () => {
-    const { indirect } = fixture(
+  it('fails a guard-first method and its unguarded value use', () => {
+    const { violations } = fixture(
       [
         'class D {',
         `  warnM() { if (${NEGATED}) { return; } cngxDevWarn('CNGX0001', 'm'); }`,
@@ -526,7 +524,23 @@ describe('raw-console guard - R4 dev wrappers', () => {
         '}',
       ].join('\n'),
     );
-    expect(indirect).toEqual([{ file: 'projects/core/a.ts', line: 3, name: 'this.warnM' }]);
+    expect(violations).toEqual([
+      'projects/core/a.ts:2 R4 dev wrapper warnM is a class member; move it to module level so production tree-shakes it',
+      'projects/core/a.ts:3 R4 dev wrapper this.warnM is used as a value outside a dev-mode guard',
+    ]);
+  });
+
+  it('passes the same body as a module-level function with a guarded caller', () => {
+    const { wrappers, violations } = fixture(
+      [
+        `function warnM(id: string) { if (${NEGATED}) { return; } cngxDevWarn('CNGX0001', id); }`,
+        'class D {',
+        `  run() { if (${GUARD}) { warnM(this.id); } }`,
+        '}',
+      ].join('\n'),
+    );
+    expect(wrappers.map((w) => w.kind)).toEqual(['function']);
+    expect(violations).toEqual([]);
   });
 
   it('fails a dev-only function that is not guard-first', () => {
@@ -585,22 +599,19 @@ describe('raw-console guard - R4 dev wrappers', () => {
   });
 
   it('leaves an argument-less object-property callback alone', () => {
-    const { wrappers, indirect, violations } = fixture(
+    const { wrappers, violations } = fixture(
       `const opts = { onGiveUp: () => { if (${GUARD}) { cngxDevWarn('CNGX0001', 'gave up'); } } };`,
     );
-    expect({ wrappers, indirect, violations }).toEqual({
-      wrappers: [],
-      indirect: [],
-      violations: [],
-    });
+    expect({ wrappers, violations }).toEqual({ wrappers: [], violations: [] });
   });
 
-  it('reports a guard-first object-property arrow as indirect and fails a non-guard-first one', () => {
+  it('fails a guard-first object-literal member with a parameter and a non-guard-first one', () => {
     const guardFirst = fixture(
       `const config = { onWarn: (m: string) => { if (${NEGATED}) { return; } cngxDevWarn('CNGX0001', m); } };`,
     );
-    expect(guardFirst.indirect).toEqual([{ file: 'projects/core/a.ts', line: 1, name: 'onWarn' }]);
-    expect(guardFirst.violations).toEqual([]);
+    expect(guardFirst.violations).toEqual([
+      'projects/core/a.ts:1 R4 dev wrapper onWarn is an object-literal member; move it to module level so production tree-shakes it',
+    ]);
     const devOnly = fixture(
       `const config = { onWarn: (m: string) => { if (${GUARD}) { cngxDevWarn('CNGX0001', m); } } };`,
     );
@@ -640,18 +651,34 @@ describe('raw-console guard - R4 dev wrappers', () => {
     ]);
   });
 
-  it('reports a guard-first const arrow passed as a value as indirect', () => {
-    const { wrappers, indirect, violations } = fixture(
+  it('fails a guard-first const arrow passed as a value outside a guard', () => {
+    const sink = (use) =>
+      fixture(
+        [
+          'export const DEFAULT_SINK = (slot: string) => {',
+          `  if (${NEGATED}) { return; }`,
+          "  cngxDevWarn('CNGX0001', slot);",
+          '};',
+          use,
+        ].join('\n'),
+      );
+    expect(sink('const config = { sink: DEFAULT_SINK };').violations).toEqual([
+      'projects/core/a.ts:5 R4 dev wrapper DEFAULT_SINK is used as a value outside a dev-mode guard',
+    ]);
+    expect(sink(`const hook = opt ?? (${GUARD} ? DEFAULT_SINK : noop);`).violations).toEqual([]);
+  });
+
+  it('passes a guarded value use in an object-literal property initialiser', () => {
+    const { wrappers, violations } = fixture(
       [
-        'export const DEFAULT_SINK = (slot: string) => {',
+        'const DEFAULT_SINK = (slot: string) => {',
         `  if (${NEGATED}) { return; }`,
         "  cngxDevWarn('CNGX0001', slot);",
         '};',
-        'const config = { sink: DEFAULT_SINK };',
+        `const config = { sink: ${GUARD} ? DEFAULT_SINK : () => undefined };`,
       ].join('\n'),
     );
     expect(wrappers.map((w) => w.name)).toEqual(['DEFAULT_SINK']);
-    expect(indirect).toEqual([{ file: 'projects/core/a.ts', line: 5, name: 'DEFAULT_SINK' }]);
     expect(violations).toEqual([]);
   });
 });
@@ -691,11 +718,6 @@ describe('raw-console guard - projects/**', () => {
   it('gives every exemption a reason and drops exemptions that cover nothing', () => {
     expect(RAW_CONSOLE_EXEMPT.filter((e) => !e.reason?.trim())).toEqual([]);
     expect(RAW_CONSOLE_EXEMPT.filter((e) => !result.raw.has(e.file))).toEqual([]);
-  });
-
-  it('reports exactly the reviewed indirect dev sinks', () => {
-    const sinks = [...new Set(result.indirect.map((use) => `${use.file}#${use.name}`))].sort();
-    expect(sinks).toEqual([...EXPECTED_INDIRECT_SINKS].sort());
   });
 
   it('derives exactly the reviewed dev wrappers', () => {
