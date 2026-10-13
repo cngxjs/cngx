@@ -43,6 +43,8 @@ export const SUMMARY_NODE_TITLE = 'Error Codes';
 const CODE_PATTERN = /^CNGX\d{4}$/;
 const PAGE_FILE = /^cngx\d{4}\.md$/;
 const RETIRED = /^> Retired in \S+\.$/m;
+/** The sections every code page carries, after its `## <title>`. */
+const PAGE_SECTIONS = ['Why', 'Fix'];
 
 /** The lib a repo-relative `projects/<lib>/...` path belongs to. */
 export function libOf(file) {
@@ -58,12 +60,15 @@ export function rangeOf(code) {
 /**
  * Parses one code page. `name` is the file name (`cngx0001.md`).
  *
- * @returns {{ name: string; code: string | null; title: string | null; retired: boolean }}
+ * @returns {{ name: string; code: string | null; title: string | null; retired: boolean; missingSections: string[] }}
  */
 export function parsePage(name, text) {
   const h1 = /^# (.+)$/m.exec(text)?.[1].trim() ?? null;
   const h2 = /^## (.+)$/m.exec(text)?.[1].trim() ?? null;
-  return { name, code: h1, title: h2, retired: RETIRED.test(text) };
+  const missingSections = PAGE_SECTIONS.filter(
+    (section) => !new RegExp(`^### ${section}\\s*$`, 'm').test(text),
+  );
+  return { name, code: h1, title: h2, retired: RETIRED.test(text), missingSections };
 }
 
 /** Every code page under `dir` (files named `cngx<nnnn>.md`). */
@@ -121,6 +126,9 @@ export function buildCodes(calls, pages, { hasIndex = true } = {}) {
     }
     if (!page.title) {
       errors.push(`${page.name}: no "## <title>" heading`);
+    }
+    for (const section of page.missingSections) {
+      errors.push(`${page.name}: no "### ${section}" section`);
     }
     pageByCode.set(page.code, page);
   }

@@ -169,6 +169,14 @@ describe('error-code manifest generator', () => {
     ]);
   });
 
+  it('fails on a page without its Why or Fix section', () => {
+    const { errors } = buildCodes(
+      [call('projects/core/a.ts', 'CNGX0001')],
+      [parsePage('cngx0001.md', '# CNGX0001\n\n## Title\n\n### Why\n\nBecause.\n')],
+    );
+    expect(errors).toEqual(['cngx0001.md: no "### Fix" section']);
+  });
+
   it('fails on a page whose H1 does not pin its file name', () => {
     const { errors } = buildCodes([], [parsePage('cngx0001.md', '# CNGX0002\n\n## T\n')]);
     expect(errors).toEqual(['cngx0001.md: the H1 must be "# CNGX0001", found "CNGX0002"']);
