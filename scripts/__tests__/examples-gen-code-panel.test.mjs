@@ -345,8 +345,7 @@ describe('stripDemoChrome', () => {
 
 describe('selectorsInSource', () => {
   it('returns the selector and exportAs of an exported class', () => {
-    const src =
-      "@Directive({ selector: '[cngxX], cngx-x', exportAs: 'cngxX' })\nexport class CngxX {}";
+    const src = "@Directive({ selector: '[cngxX], cngx-x', exportAs: 'cngxX' })\nexport class CngxX {}";
     expect(panel.selectorsInSource(src)).toEqual([['CngxX', ['[cngxX]', 'cngx-x', 'cngxX']]]);
   });
 });

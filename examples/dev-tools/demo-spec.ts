@@ -155,15 +155,7 @@ export type ControlSpec =
       max?: number;
       step?: number;
     }
-  | {
-      key: string;
-      type: 'range';
-      label: string;
-      min: number;
-      max: number;
-      default: number;
-      step?: number;
-    }
+  | { key: string; type: 'range'; label: string; min: number; max: number; default: number; step?: number }
   | { key: string; type: 'select'; label: string; options: SelectOption[]; default: string };
 
 export interface SelectOption {
