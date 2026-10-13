@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  assertPinsPublished,
   containsStableRelease,
   createSchematicsVersions,
   declaresSchematics,
@@ -111,6 +112,37 @@ describe('createSchematicsVersions', () => {
         angularRange: '^21.2.0',
       }),
     ).toEqual({ cngx: '0.1.0', mcp: '0.2.0', eslintPlugin: '0.2.1', angular: '^21.2.0' });
+  });
+});
+
+describe('assertPinsPublished', () => {
+  const pins = { mcpVersion: '0.2.0', eslintPluginVersion: '0.2.1' };
+
+  it('passes when every pinned version is on npm', () => {
+    const asked = [];
+    const view = (spec) => {
+      asked.push(spec);
+      return `${spec.slice(spec.lastIndexOf('@') + 1)}\n`;
+    };
+
+    expect(() => assertPinsPublished(pins, view)).not.toThrow();
+    expect(asked).toEqual(['@cngx/mcp@0.2.0', '@cngx/eslint-plugin@0.2.1']);
+  });
+
+  it('refuses a pin npm does not list', () => {
+    const view = (spec) => (spec.startsWith('@cngx/eslint-plugin') ? '' : '0.2.0');
+
+    expect(() => assertPinsPublished(pins, view)).toThrow(
+      '@cngx/eslint-plugin@0.2.1 is not on npm; publish it first',
+    );
+  });
+
+  it('fails closed when the lookup throws', () => {
+    const view = () => {
+      throw new Error('E404');
+    };
+
+    expect(() => assertPinsPublished(pins, view)).toThrow('could not look up @cngx/mcp@0.2.0 on npm: E404');
   });
 });
 

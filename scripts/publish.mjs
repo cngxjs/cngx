@@ -151,6 +151,28 @@ export function createSchematicsVersions({ nextVersion, mcpVersion, eslintPlugin
   return { cngx: nextVersion, mcp: mcpVersion, eslintPlugin: eslintPluginVersion, angular: angularRange };
 }
 
+// Every pin createSchematicsVersions writes must resolve on the registry, or
+// `ng add` installs a version that does not exist. `view` returns what
+// `npm view <name>@<version> version` prints; a lookup that throws fails
+// closed, since an unreachable registry proves nothing.
+export function assertPinsPublished({ mcpVersion, eslintPluginVersion }, view) {
+  const pins = [
+    ['@cngx/mcp', mcpVersion],
+    ['@cngx/eslint-plugin', eslintPluginVersion],
+  ];
+  for (const [name, version] of pins) {
+    let found;
+    try {
+      found = view(`${name}@${version}`);
+    } catch (error) {
+      throw new Error(`could not look up ${name}@${version} on npm: ${error.message}`);
+    }
+    if (found?.trim() !== version) {
+      throw new Error(`${name}@${version} is not on npm; publish it first`);
+    }
+  }
+}
+
 // The build of one lib without its schematics: those follow only through the
 // declaresSchematics gate below. `npm run build:<lib>` would bundle them
 // unconditionally.
@@ -167,6 +189,10 @@ export function declaresSchematics(sourcePkg) {
 
 function readSourcePkg(lib) {
   return JSON.parse(readFileSync(join(ROOT, 'projects', lib, 'package.json'), 'utf8'));
+}
+
+function shipsSchematics(lib) {
+  return existsSync(join(ROOT, 'projects', lib, 'schematics')) && declaresSchematics(readSourcePkg(lib));
 }
 
 function readPackageVersion(name) {
@@ -285,14 +311,30 @@ function main() {
 
   const registryFlag = registry ? ` --registry ${registry}` : '';
 
+  if (libs.includes('core') && shipsSchematics('core')) {
+    try {
+      assertPinsPublished(
+        { mcpVersion: readPackageVersion('mcp'), eslintPluginVersion: readPackageVersion('eslint-plugin') },
+        (spec) =>
+          execSync(`npm view ${spec} version${registryFlag}`, {
+            cwd: ROOT,
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'pipe'],
+          }),
+      );
+    } catch (error) {
+      console.error(`Refusing to publish: ${error.message}`);
+      process.exit(1);
+    }
+  }
+
   for (const lib of libs) {
     console.log(`\n[${lib}]`);
 
     console.log('  Building...');
     run(libBuildCommand(lib));
-    const shipsSchematics =
-      existsSync(join(ROOT, 'projects', lib, 'schematics')) && declaresSchematics(readSourcePkg(lib));
-    if (shipsSchematics) {
+    const libShipsSchematics = shipsSchematics(lib);
+    if (libShipsSchematics) {
       run(`node scripts/build-schematics.mjs ${lib}`);
     }
 
@@ -313,7 +355,7 @@ function main() {
 
     const schematicsVersionsPath = join(ROOT, 'dist', lib, 'schematics', 'versions.json');
     const schematicsVersions =
-      lib === 'core' && shipsSchematics
+      lib === 'core' && libShipsSchematics
         ? createSchematicsVersions({
             nextVersion,
             mcpVersion: readPackageVersion('mcp'),
