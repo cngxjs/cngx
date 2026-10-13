@@ -36,6 +36,16 @@ export interface EslintConfigFacts {
   readonly wired: boolean;
 }
 
+/** The ESLint packages the app declares; the plugin runs on ESLint 9 or later. */
+export interface EslintStackFacts {
+  /** The major of the declared `eslint` range; `undefined` when none is declared or readable. */
+  readonly eslintMajor: number | undefined;
+  /** `@angular-eslint/template-parser` is declared; the plugin loads it for templates. */
+  readonly templateParser: boolean;
+  /** `typescript-eslint`, `@typescript-eslint/parser` or `angular-eslint` is declared. */
+  readonly typescriptParser: boolean;
+}
+
 export interface EditorFacts {
   readonly claude: boolean;
   readonly cursor: boolean;
@@ -156,6 +166,9 @@ export interface ProjectFacts {
   readonly helperReadme: HelperReadmeFacts | undefined;
   /** The eslint flat config; `undefined` when the app has none. */
   readonly eslintConfig: EslintConfigFacts | undefined;
+  /** An `.eslintrc*` config ESLint 9 no longer reads; `undefined` when there is none. */
+  readonly legacyEslintConfig: string | undefined;
+  readonly eslintStack: EslintStackFacts;
   readonly ssr: boolean;
   readonly sourceLocale: string | undefined;
   readonly maturity: 'fresh' | 'existing';
@@ -173,7 +186,25 @@ const SCAFFOLD_PROVIDERS = new Set([
   'provideClientHydration',
 ]);
 
-const ESLINT_FLAT_CONFIGS = ['eslint.config.js', 'eslint.config.mjs', 'eslint.config.cjs'];
+const ESLINT_FLAT_CONFIGS = [
+  'eslint.config.js',
+  'eslint.config.mjs',
+  'eslint.config.cjs',
+  'eslint.config.ts',
+  'eslint.config.mts',
+  'eslint.config.cts',
+];
+
+const ESLINT_LEGACY_CONFIGS = [
+  '.eslintrc',
+  '.eslintrc.json',
+  '.eslintrc.js',
+  '.eslintrc.cjs',
+  '.eslintrc.yaml',
+  '.eslintrc.yml',
+];
+
+const TYPESCRIPT_PARSERS = ['typescript-eslint', '@typescript-eslint/parser', 'angular-eslint'];
 
 const PREBUILT_THEME = '@angular/material/prebuilt-themes/';
 
@@ -361,12 +392,22 @@ function detectEslintConfig(tree: Tree): EslintConfigFacts | undefined {
     return undefined;
   }
   const content = tree.readText(path);
-  const esm = path.endsWith('.mjs') || (path.endsWith('.js') && /^\s*(import\s|export\s)/m.test(content));
+  // `.js` and `.ts` follow their syntax; the explicit extensions fix the format.
+  const esm = /\.m[jt]s$/.test(path) || (/\.[jt]s$/.test(path) && /^\s*(import\s|export\s)/m.test(content));
   return {
     path,
     module: esm ? 'esm' : 'cjs',
     editable: hasArrayLiteral(content, { kind: 'default-export' }),
     wired: content.includes('@cngx/eslint-plugin'),
+  };
+}
+
+function detectEslintStack(manifest: PackageManifest): EslintStackFacts {
+  const major = /\d+/.exec(declaredRange(manifest, 'eslint') ?? '')?.[0];
+  return {
+    eslintMajor: major === undefined ? undefined : Number(major),
+    templateParser: declaredRange(manifest, '@angular-eslint/template-parser') !== undefined,
+    typescriptParser: TYPESCRIPT_PARSERS.some((name) => declaredRange(manifest, name) !== undefined),
   };
 }
 
@@ -562,6 +603,8 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     claudeInstructions: claudeInstructionsOf(read),
     helperReadme: helperReadmeOf(read),
     eslintConfig: detectEslintConfig(tree),
+    legacyEslintConfig: ESLINT_LEGACY_CONFIGS.find((path) => tree.exists(path)),
+    eslintStack: detectEslintStack(manifest),
     ssr:
       options['server'] !== undefined ||
       options['ssr'] !== undefined ||

@@ -30,6 +30,8 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
     claudeInstructions: undefined,
     helperReadme: undefined,
     eslintConfig: undefined,
+    legacyEslintConfig: undefined,
+    eslintStack: { eslintMajor: undefined, templateParser: false, typescriptParser: false },
     ssr: false,
     sourceLocale: undefined,
     maturity: 'fresh',
