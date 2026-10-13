@@ -38,10 +38,12 @@ function addImport(content: string, statement: string): string {
   return `${content.slice(0, at)}\n${statement}${content.slice(at)}`;
 }
 
-// What the app runs to get a stack the plugin works in. `ng add
-// angular-eslint` sets up ESLint 9, a flat config and both parsers.
-function setupCommand(facts: ProjectFacts): string {
-  return declaredRange(facts.manifest, ANGULAR_ESLINT) === undefined ? '`ng add angular-eslint`' : '`ng update angular-eslint`';
+// `ng update angular-eslint` moves the angular-eslint packages, not
+// necessarily eslint itself, so the note names it only as the way in.
+function eslintUpdate(facts: ProjectFacts): string {
+  return declaredRange(facts.manifest, ANGULAR_ESLINT) === undefined
+    ? 'update eslint to 9 or later or run `ng add angular-eslint`'
+    : 'update eslint to 9 or later (with angular-eslint: `ng update angular-eslint`)';
 }
 
 // The flat config the plugin can run in, or why there is none and what to run next.
@@ -50,7 +52,7 @@ function compatibleConfig(facts: ProjectFacts): EslintConfigFacts | { readonly r
   const then = 'then run ng add again';
   if (stack.eslintMajor !== undefined && stack.eslintMajor < 9) {
     const declared = declaredRange(facts.manifest, 'eslint') ?? '';
-    return { reason: `${PLUGIN} needs ESLint 9 or later and this app declares eslint ${declared}; update with ${setupCommand(facts)}, ${then}` };
+    return { reason: `${PLUGIN} needs ESLint 9 or later and this app declares eslint ${declared}; ${eslintUpdate(facts)}, ${then}` };
   }
   if (config === undefined && legacy !== undefined) {
     return { reason: `${legacy} is a legacy config; migrate with \`npx @eslint/migrate-config ${legacy}\`, ${then}` };
@@ -75,12 +77,16 @@ function compatibleConfig(facts: ProjectFacts): EslintConfigFacts | { readonly r
 }
 
 // Pinned on the angular-eslint version line; `compatibleConfig` already
-// stopped an app that declares neither.
+// stopped an app that declares neither, so that case plans nothing here.
 function templateParser(facts: ProjectFacts, provenance: Provenance): StepResult {
   const id = `dependency:${TEMPLATE_PARSER}`;
+  const declared = declaredRange(facts.manifest, TEMPLATE_PARSER);
+  if (declared !== undefined) {
+    return { changes: [], skipped: [{ id, label: `Add ${TEMPLATE_PARSER}`, reason: `already declared as ${declared}` }] };
+  }
   const range = declaredRange(facts.manifest, ANGULAR_ESLINT);
-  if (facts.eslintStack.templateParser || range === undefined) {
-    return { changes: [], skipped: [{ id, label: `Add ${TEMPLATE_PARSER}`, reason: 'already declared' }] };
+  if (range === undefined) {
+    return { changes: [], skipped: [] };
   }
   const dependency: Change = {
     kind: 'add-dependency',

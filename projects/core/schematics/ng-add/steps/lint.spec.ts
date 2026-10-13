@@ -30,9 +30,11 @@ function config(overrides: Partial<EslintConfigFacts> = {}): EslintConfigFacts {
 
 const STACK: EslintStackFacts = { eslintMajor: 9, templateParser: true, typescriptParser: true };
 
+const PARSER_MANIFEST = parseManifest(JSON.stringify({ devDependencies: { '@angular-eslint/template-parser': '^21.0.0' } }));
+
 // An app whose ESLint stack the plugin runs in; a spec states only what differs.
 function eslintApp(overrides: Partial<ProjectFacts> = {}, stack: Partial<EslintStackFacts> = {}): ProjectFacts {
-  return createFacts({ eslintConfig: config(), eslintStack: { ...STACK, ...stack }, ...overrides });
+  return createFacts({ eslintConfig: config(), eslintStack: { ...STACK, ...stack }, manifest: PARSER_MANIFEST, ...overrides });
 }
 
 function notes(result: StepResult): readonly (readonly [string, string])[] {
@@ -121,14 +123,16 @@ export default [
   it('skips a declared plugin and an already wired config', () => {
     const facts = eslintApp({
       eslintConfig: config({ wired: true }),
-      manifest: parseManifest(JSON.stringify({ devDependencies: { '@cngx/eslint-plugin': '^0.1.0' } })),
+      manifest: parseManifest(
+        JSON.stringify({ devDependencies: { '@cngx/eslint-plugin': '^0.1.0', '@angular-eslint/template-parser': '^21.0.0' } }),
+      ),
     });
     const result = planLint(facts, createAnswers(), VERSIONS);
 
     expect(result.changes).toEqual([]);
     expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([
       ['dependency:@cngx/eslint-plugin', 'already declared as ^0.1.0'],
-      ['dependency:@angular-eslint/template-parser', 'already declared'],
+      ['dependency:@angular-eslint/template-parser', 'already declared as ^21.0.0'],
       ['lint:config', 'already loaded in eslint.config.js'],
     ]);
   });
@@ -154,7 +158,7 @@ export default [
             kind: 'note',
             id: 'lint:config',
             reason:
-              '@cngx/eslint-plugin needs ESLint 9 or later and this app declares eslint ^8.57.0; update with `ng add angular-eslint`, then run ng add again',
+              '@cngx/eslint-plugin needs ESLint 9 or later and this app declares eslint ^8.57.0; update eslint to 9 or later or run `ng add angular-eslint`, then run ng add again',
           }),
         ],
         skipped: [],
@@ -163,7 +167,7 @@ export default [
         { manifest: parseManifest(JSON.stringify({ devDependencies: { eslint: '^8.57.0', 'angular-eslint': '18.4.0' } })) },
         { eslintMajor: 8 },
       );
-      expect(notes(blocked(managed))[0][1]).toContain('update with `ng update angular-eslint`');
+      expect(notes(blocked(managed))[0][1]).toContain('update eslint to 9 or later (with angular-eslint: `ng update angular-eslint`)');
     });
 
     it('names the migration command for a legacy eslintrc config', () => {
