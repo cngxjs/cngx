@@ -151,10 +151,29 @@ export function createSchematicsVersions({ nextVersion, mcpVersion, eslintPlugin
   return { cngx: nextVersion, mcp: mcpVersion, eslintPlugin: eslintPluginVersion, angular: angularRange };
 }
 
+// `npm view <name>@<version> version` exits 1 with E404 for a version the
+// registry does not list; that is an answer, so it reads as nothing printed.
+// Any other failure keeps only npm's error code, not its stderr.
+export function npmViewVersion(spec, registryFlag = '', exec = execSync) {
+  try {
+    return exec(`npm view ${spec} version${registryFlag}`, {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+  } catch (error) {
+    const code = /npm error code (\S+)/.exec(String(error.stderr ?? ''))?.[1];
+    if (code === 'E404') {
+      return '';
+    }
+    throw new Error(code ?? `npm view exited with ${error.status ?? 'no status'}`);
+  }
+}
+
 // Every pin createSchematicsVersions writes must resolve on the registry, or
 // `ng add` installs a version that does not exist. `view` returns what
-// `npm view <name>@<version> version` prints; a lookup that throws fails
-// closed, since an unreachable registry proves nothing.
+// `npm view` prints, empty for an unlisted version; a lookup that throws
+// fails closed, since an unreachable registry proves nothing.
 export function assertPinsPublished({ mcpVersion, eslintPluginVersion }, view) {
   const pins = [
     ['@cngx/mcp', mcpVersion],
@@ -315,12 +334,7 @@ function main() {
     try {
       assertPinsPublished(
         { mcpVersion: readPackageVersion('mcp'), eslintPluginVersion: readPackageVersion('eslint-plugin') },
-        (spec) =>
-          execSync(`npm view ${spec} version${registryFlag}`, {
-            cwd: ROOT,
-            encoding: 'utf8',
-            stdio: ['ignore', 'pipe', 'pipe'],
-          }),
+        (spec) => npmViewVersion(spec, registryFlag),
       );
     } catch (error) {
       console.error(`Refusing to publish: ${error.message}`);
