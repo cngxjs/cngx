@@ -261,18 +261,31 @@ const MAX_GZIP = 90 * 1024;
 // esbuild drop.
 const MAX_SHIM_MINIFIED = 20 * 1024;
 
-// The entries come from the source manifests, not from dist/: a lib that
-// declares its collection but builds no bundle fails here instead of
+// The entries come from the source manifests, not from dist/: every factory a
+// declared collection or an `ng-update` migrations file names must have a
+// built bundle, so a declared entry missing from dist/ fails here instead of
 // dropping out of the budget.
-const MIGRATION_ENTRIES = ['core/schematics/migrations/0.1.0/index.js'];
+function factoryEntries(lib, manifest) {
+  const dir = dirname(manifest);
+  const { schematics } = JSON.parse(readFileSync(join(ROOT, 'projects', lib, manifest), 'utf8'));
+  return Object.values(schematics).map(({ factory }) => join(lib, dir, `${factory.split('#')[0]}.js`));
+}
 
 function schematicEntries() {
   const projects = join(ROOT, 'projects');
-  const declared = readdirSync(projects, { withFileTypes: true })
+  return readdirSync(projects, { withFileTypes: true })
     .filter((lib) => lib.isDirectory() && existsSync(join(projects, lib.name, 'package.json')))
-    .filter((lib) => declaresSchematics(JSON.parse(readFileSync(join(projects, lib.name, 'package.json'), 'utf8'))))
-    .map((lib) => join(lib.name, 'schematics', 'ng-add', 'index.js'));
-  return [...declared, ...MIGRATION_ENTRIES];
+    .flatMap((lib) => {
+      const pkg = JSON.parse(readFileSync(join(projects, lib.name, 'package.json'), 'utf8'));
+      if (!declaresSchematics(pkg)) {
+        return [];
+      }
+      const migrations = pkg['ng-update']?.migrations;
+      return [
+        ...factoryEntries(lib.name, pkg.schematics),
+        ...(migrations === undefined ? [] : factoryEntries(lib.name, migrations)),
+      ];
+    });
 }
 
 describe('schematic bundle budget', () => {
