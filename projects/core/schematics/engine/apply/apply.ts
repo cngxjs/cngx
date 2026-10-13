@@ -14,7 +14,7 @@ import { JSONFile } from '@schematics/angular/utility/json-file';
 
 import { insertStyleImport } from '../edit/style-edit';
 import { addToArrayLiteral, type ArraySelector, hasArrayLiteral } from '../edit/ts-edit';
-import { addLockstepDependency } from '../manifest/lockstep';
+import { addLockstepDependency, keepManifestNewline } from '../manifest/lockstep';
 import {
   type AddImport,
   type AddProvider,
@@ -164,11 +164,13 @@ function toRule(change: Change): Rule {
       return addImport(change);
     case 'add-dependency':
       return change.dev === true
-        ? addDependency(change.name, change.version, {
-            type: DependencyType.Dev,
-            install: InstallBehavior.None,
-            existing: ExistingBehavior.Skip,
-          })
+        ? keepManifestNewline(
+            addDependency(change.name, change.version, {
+              type: DependencyType.Dev,
+              install: InstallBehavior.None,
+              existing: ExistingBehavior.Skip,
+            }),
+          )
         : addLockstepDependency(change.name, change.version);
     case 'add-provider':
       return addProvider(change);
@@ -187,26 +189,6 @@ function toRule(change: Change): Rule {
   }
 }
 
-// `addDependency` rewrites package.json through `JSON.stringify`, which drops
-// the trailing newline npm and every editor leave behind.
-function keepTrailingNewline(path: string, rules: readonly Rule[]): Rule {
-  return (tree: Tree) => {
-    const ended = tree.exists(path) && tree.readText(path).endsWith('\n');
-    return chain([
-      ...rules,
-      (after: Tree) => {
-        if (!ended || !after.exists(path)) {
-          return;
-        }
-        const content = after.readText(path);
-        if (!content.endsWith('\n')) {
-          after.overwrite(path, `${content}\n`);
-        }
-      },
-    ]);
-  };
-}
-
 /**
  * The one effectful step: turns the plan into a Rule, one Rule per change in
  * plan order. Nothing reports back; what changed is `plan.changes`, what was
@@ -214,5 +196,5 @@ function keepTrailingNewline(path: string, rules: readonly Rule[]): Rule {
  * step that misses an existing file fails loudly instead of clobbering it.
  */
 export function applyChangePlan(plan: ChangePlan): Rule {
-  return keepTrailingNewline('package.json', plan.changes.map(toRule));
+  return chain(plan.changes.map(toRule));
 }

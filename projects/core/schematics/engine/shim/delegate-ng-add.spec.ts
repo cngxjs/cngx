@@ -74,6 +74,7 @@ describe('delegateNgAdd', () => {
     const { tree, tasks } = await run(runner);
 
     expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/core']).toBe(VERSION);
+    expect(tree.readText('package.json').endsWith('}\n')).toBe(true);
     expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ preset: 'minimal' });
     expect(tasks).toEqual([]);
   });
@@ -82,6 +83,7 @@ describe('delegateNgAdd', () => {
     const { tree, tasks, logs } = await run(createRunner());
 
     expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/core']).toBe(VERSION);
+    expect(tree.readText('package.json').endsWith('}\n')).toBe(true);
     expect(tree.exists('delegated.json')).toBe(false);
     expect(tasks).toEqual(['node-package', 'run-schematic']);
     expect(logs).toContain('@cngx/core is not installed yet; installing it before its ng-add runs.');

@@ -25,6 +25,18 @@ function declared(tree: Tree): Record<string, string> {
 }
 
 describe('addLockstepDependency', () => {
+  it('keeps the trailing newline of package.json, and adds none it did not have', async () => {
+    const context = { logger: new logging.Logger('lockstep-spec') } as unknown as SchematicContext;
+    const pin = (manifest: string) =>
+      lastValueFrom(callRule(addLockstepDependency('@cngx/core', '0.1.0'), createMemoryTree({ 'package.json': manifest }), context));
+
+    const ended = await pin('{\n  "dependencies": {\n    "@cngx/core": "^0.0.9"\n  }\n}\n');
+    const bare = await pin('{\n  "dependencies": {}\n}');
+
+    expect(ended.readText('package.json')).toBe('{\n  "dependencies": {\n    "@cngx/core": "0.1.0"\n  }\n}\n');
+    expect(bare.readText('package.json')).toBe('{\n  "dependencies": {\n    "@cngx/core": "0.1.0"\n  }\n}');
+  });
+
   it('adds the package at the exact version', async () => {
     const { tree, messages } = await run({});
 
