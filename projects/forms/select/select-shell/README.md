@@ -56,7 +56,7 @@ Custom value / label / disabled extraction (data-* attrs, signal-typed labels, a
 
 `[(searchTerm)]` is a two-way model. The shell wires it through `CngxOptionFilterHost` and hides non-matching options from both the visible list and the AD index, so keyboard nav skips filtered-out rows. Default match: case-insensitive substring on the label. Replace via `[searchMatchFn]` for fuzzy / server-hint matching.
 
-The projected `<cngx-select-search>` calls into the shell through `CNGX_SELECT_SHELL_SEARCH_HOST` - no ancestor injection. `(searchTermChange)` fires after the debounce gate; the seed `''` emission is suppressed so server-driven autocomplete consumers don't fire a blank search at hydrate time.
+The projected `<cngx-select-search>` calls into the shell through `CNGX_SELECT_SHELL_SEARCH_HOST` - no ancestor injection. `(searchTermChange)` is the `searchTerm` model's own change output: it fires on every change and never for the seed `''`, so server-driven autocomplete consumers don't fire a blank search at hydrate time.
 
 ## Async + commit
 

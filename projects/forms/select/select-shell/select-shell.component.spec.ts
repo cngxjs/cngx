@@ -904,7 +904,7 @@ describe('CngxSelectShell - factory token wiring', () => {
       .componentInstance as CngxSelectShell<string>;
 
     const emissions: string[] = [];
-    shell.searchTermChange.subscribe((term) => emissions.push(term));
+    shell.searchTerm.subscribe((term) => emissions.push(term));
 
     shell.searchTerm.set('foo');
     flush(fixture);

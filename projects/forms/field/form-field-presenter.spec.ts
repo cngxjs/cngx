@@ -558,6 +558,12 @@ describe('CngxFormFieldPresenter', () => {
       expect(presenter.max()).toBe(100);
     });
 
+    it('reads a non-numeric min/max bound as unset', () => {
+      setup({ min: '2026-01-01', max: '2026-12-31' });
+      expect(presenter.min()).toBeUndefined();
+      expect(presenter.max()).toBeUndefined();
+    });
+
     it('minLength/maxLength are undefined when not set', () => {
       setup();
       expect(presenter.minLength()).toBeUndefined();

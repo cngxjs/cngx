@@ -35,8 +35,14 @@ export interface CngxFieldRef<T = unknown> {
   readonly disabledReasons: Signal<readonly { readonly message?: string }[]>;
   readonly minLength?: Signal<number | undefined>;
   readonly maxLength?: Signal<number | undefined>;
-  readonly min?: Signal<number | undefined>;
-  readonly max?: Signal<number | undefined>;
+  /**
+   * Typed `unknown` on purpose: Signal Forms 21 reads `number | undefined`,
+   * 22 reads the field's own value type (a string field yields a string).
+   * Readers narrow to the numeric bound they understand.
+   */
+  readonly min?: Signal<unknown>;
+  /** See {@link CngxFieldRef.min}. */
+  readonly max?: Signal<unknown>;
   readonly pattern: Signal<readonly RegExp[]>;
   readonly errorSummary: Signal<ValidationError.WithFieldTree[]>;
   readonly submitting: Signal<boolean>;
