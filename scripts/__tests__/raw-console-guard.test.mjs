@@ -48,6 +48,13 @@ const RAW_CONSOLE_EXEMPT = [];
  */
 const EXPECTED_INDIRECT_SINKS = [];
 
+/**
+ * Every dev wrapper (`file#name`) the guard derives. Exact list: a migration
+ * adds its wrapper here in the same commit, and a wrapper that loses its
+ * guard-first shape drops out of the derived set and fails this pin.
+ */
+const EXPECTED_DEV_WRAPPERS = [];
+
 const CODE_PATTERN = /^CNGX\d{4}$/;
 const GLOBAL_HOSTS = new Set(['globalThis', 'window', 'self']);
 
@@ -573,6 +580,17 @@ describe('raw-console guard - R4 dev wrappers', () => {
     expect(fixture(cache).wrappers).toEqual([]);
   });
 
+  it('leaves an argument-less object-property callback alone', () => {
+    const { wrappers, indirect, violations } = fixture(
+      `const opts = { onGiveUp: () => { if (${GUARD}) { cngxDevWarn('CNGX0001', 'gave up'); } } };`,
+    );
+    expect({ wrappers, indirect, violations }).toEqual({
+      wrappers: [],
+      indirect: [],
+      violations: [],
+    });
+  });
+
   it('reports a guard-first object-property arrow as indirect and fails a non-guard-first one', () => {
     const guardFirst = fixture(
       `const config = { onWarn: (m: string) => { if (${NEGATED}) { return; } cngxDevWarn('CNGX0001', m); } };`,
@@ -674,5 +692,10 @@ describe('raw-console guard - projects/**', () => {
   it('reports exactly the reviewed indirect dev sinks', () => {
     const sinks = [...new Set(result.indirect.map((use) => `${use.file}#${use.name}`))].sort();
     expect(sinks).toEqual([...EXPECTED_INDIRECT_SINKS].sort());
+  });
+
+  it('derives exactly the reviewed dev wrappers', () => {
+    const wrappers = result.wrappers.map((w) => `${w.file}#${w.name}`).sort();
+    expect(wrappers).toEqual([...EXPECTED_DEV_WRAPPERS].sort());
   });
 });

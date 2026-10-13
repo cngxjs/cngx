@@ -304,6 +304,14 @@ const isObjectMember = (node) =>
   isPropertyFunction(node) ||
   (ts.isMethodDeclaration(node) && ts.isObjectLiteralExpression(node.parent));
 
+/**
+ * An argument-less function an object literal carries (`{ onGiveUp: () => ... }`).
+ * It has no caller arguments that could ship, and its guarded body already
+ * folds, so it is neither held to guard-first nor counted as a wrapper or an
+ * indirect sink.
+ */
+const isArgumentlessObjectMember = (node) => isObjectMember(node) && node.parameters.length === 0;
+
 /** The name a function-like node is called by, or null. */
 function functionName(node) {
   if (ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) {
@@ -451,10 +459,14 @@ const usedOnlyWithin = (names, root, regions) => {
 };
 
 /**
- * Does the function do nothing in production? True when its body has at
- * least one dev-only statement and no production statement. A local whose
- * only readers are dev-only statements counts as dev-only too, and every
- * statement after a negated early return is dev-only.
+ * A syntactic approximation of "this function only works for dev mode": its
+ * body has at least one dev-guarded statement and every other top-level
+ * statement is control flow, warn-once bookkeeping, or a local read only by
+ * dev statements. Statements after a negated early return count as dev-only.
+ * Anything else, including a registration (`effect`, `afterNextRender`) or a
+ * loop, counts as production work, so a wrapper built from those is not
+ * recognised here; the pinned wrapper list in the raw-console guard catches it
+ * when it loses its guard-first shape.
  */
 function isDevOnlyBody(fn, collections) {
   const body = fn.body;
@@ -506,6 +518,9 @@ function isDevOnlyBody(fn, collections) {
  */
 function wrapperShapeProblem(fn, sf) {
   const body = fn.body;
+  if (isArgumentlessObjectMember(fn)) {
+    return null;
+  }
   if (
     !body ||
     (ts.isBlock(body) && body.statements.length > 0 && isEarlyReturn(body.statements[0]))
@@ -603,7 +618,7 @@ export function collectWrappers(calls) {
   for (const { node, file, sf } of calls) {
     for (let fn = node.parent; fn; fn = fn.parent) {
       const name = functionName(fn);
-      if (!name || seen.has(fn)) {
+      if (!name || seen.has(fn) || isArgumentlessObjectMember(fn)) {
         continue;
       }
       const body = fn.body;
