@@ -86,6 +86,15 @@ describe('applyChangePlan', () => {
     expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/core']).toBe('0.1.0');
   });
 
+  it('keeps the trailing newline of package.json for a dev dependency, and adds none it did not have', async () => {
+    const change: Change = { ...BASE, kind: 'add-dependency', id: 'd', name: '@cngx/eslint-plugin', version: '0.2.0', dev: true };
+    const ended = await apply([change], createMemoryTree({ 'package.json': '{\n  "devDependencies": {}\n}\n' }));
+    const bare = await apply([change], createMemoryTree({ 'package.json': '{\n  "devDependencies": {}\n}' }));
+
+    expect(ended.readText('package.json')).toBe('{\n  "devDependencies": {\n    "@cngx/eslint-plugin": "0.2.0"\n  }\n}\n');
+    expect(bare.readText('package.json')).toBe('{\n  "devDependencies": {\n    "@cngx/eslint-plugin": "0.2.0"\n  }\n}');
+  });
+
   it('adds a dev dependency off the lockstep and keeps an existing range', async () => {
     const change: Change = { ...BASE, kind: 'add-dependency', id: 'd', name: '@cngx/eslint-plugin', version: '0.2.0', dev: true };
     const added = await apply([change], createMemoryTree({ 'package.json': '{ "devDependencies": {} }\n' }));
@@ -120,6 +129,185 @@ describe('applyChangePlan', () => {
     expect(config).toContain('provideA11yPreferences(withPersistence())');
     expect(config).toMatch(/import \{ [^}]*\bprovideA11yPreferences\b[^}]* \} from '@cngx\/core';/);
     expect(config).toMatch(/import \{ [^}]*\bwithPersistence\b[^}]* \} from '@cngx\/core';/);
+  });
+
+  it('puts the provider on its own line in a multi-line providers array, callee first in its imports', async () => {
+    const config = `import { ApplicationConfig } from '@angular/core';
+import { TitleStrategy } from '@angular/router';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    { provide: TitleStrategy, useClass: AppTitleStrategy },
+  ],
+};
+`;
+    const change: Change = {
+      ...BASE,
+      kind: 'add-provider',
+      id: 'p',
+      project: 'app',
+      path: 'src/app/app.config.ts',
+      call: {
+        symbol: 'provideA11yPreferences',
+        module: '@cngx/core',
+        args: [{ symbol: 'withPersistence', module: '@cngx/core' }],
+      },
+    };
+    const tree = await apply([change, change], createMemoryTree({ 'src/app/app.config.ts': config }));
+
+    expect(tree.readText('src/app/app.config.ts')).toBe(`import { ApplicationConfig } from '@angular/core';
+import { TitleStrategy } from '@angular/router';
+import { provideA11yPreferences, withPersistence } from '@cngx/core';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    { provide: TitleStrategy, useClass: AppTitleStrategy },
+    provideA11yPreferences(withPersistence()),
+  ],
+};
+`);
+  });
+
+  describe('falls back to addRootProvider', () => {
+    const CONFIG_PATH = 'projects/app/src/app/app.config.ts';
+    const PERSISTENCE: Change = {
+      ...BASE,
+      kind: 'add-provider',
+      id: 'p',
+      project: 'app',
+      path: CONFIG_PATH,
+      call: {
+        symbol: 'provideA11yPreferences',
+        module: '@cngx/core',
+        args: [{ symbol: 'withPersistence', module: '@cngx/core' }],
+      },
+    };
+
+    it('when a name the call imports is already bound to another module', async () => {
+      const tree = await createApp();
+      tree.overwrite(
+        CONFIG_PATH,
+        `import { ApplicationConfig } from '@angular/core';
+import { withPersistence } from './storage';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    withPersistence(),
+  ],
+};
+`,
+      );
+
+      const config = (await apply([PERSISTENCE], tree)).readText(CONFIG_PATH);
+
+      expect(config).toContain("import { withPersistence } from './storage';");
+      expect(config).toContain(
+        "import { provideA11yPreferences, withPersistence as withPersistence_alias } from '@cngx/core';",
+      );
+      expect(config).toContain('provideA11yPreferences(withPersistence_alias())');
+    });
+
+    it('when the file holds more than one root providers array', async () => {
+      const tree = await createApp();
+      tree.overwrite(
+        CONFIG_PATH,
+        `import { ApplicationConfig } from '@angular/core';
+
+export const serverConfig: ApplicationConfig = { providers: [] };
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    serverConfig.providers,
+  ],
+};
+`,
+      );
+
+      const config = (await apply([PERSISTENCE], tree)).readText(CONFIG_PATH);
+
+      expect(config).toContain('export const serverConfig: ApplicationConfig = { providers: [] };');
+      expect(config).toContain("import { provideA11yPreferences, withPersistence } from '@cngx/core';");
+      expect(config).toContain('    serverConfig.providers, provideA11yPreferences(withPersistence()),\n');
+    });
+
+    it('when the planned file does not exist', async () => {
+      const tree = await createApp();
+
+      const config = (await apply([{ ...PERSISTENCE, path: 'projects/app/src/app/missing.ts' }], tree)).readText(CONFIG_PATH);
+
+      expect(config).toContain('provideA11yPreferences(withPersistence())');
+      expect(tree.exists('projects/app/src/app/missing.ts')).toBe(false);
+    });
+  });
+
+  describe('edits the root providers array in place', () => {
+    const PATH = 'src/app/app.config.ts';
+    const PERSISTENCE: Change = {
+      ...BASE,
+      kind: 'add-provider',
+      id: 'p',
+      project: 'app',
+      path: PATH,
+      call: {
+        symbol: 'provideA11yPreferences',
+        module: '@cngx/core',
+        args: [{ symbol: 'withPersistence', module: '@cngx/core' }],
+      },
+    };
+
+    async function edited(config: string): Promise<string> {
+      return (await apply([PERSISTENCE], createMemoryTree({ [PATH]: config }))).readText(PATH);
+    }
+
+    it('past a route-level providers array', async () => {
+      const config = await edited(`import { ApplicationConfig } from '@angular/core';
+
+const routes: Routes = [{ path: 'admin', providers: [provideAdmin()] }];
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes),
+  ],
+};
+`);
+
+      expect(config).toContain("{ path: 'admin', providers: [provideAdmin()] }");
+      expect(config).toContain('    provideRouter(routes),\n    provideA11yPreferences(withPersistence()),\n  ],');
+    });
+
+    it('fills an empty array', async () => {
+      const config = await edited(
+        "import { ApplicationConfig } from '@angular/core';\n\nexport const appConfig: ApplicationConfig = { providers: [] };\n",
+      );
+
+      expect(config).toContain('{ providers: [provideA11yPreferences(withPersistence())] }');
+    });
+
+    it('promotes a type-only import of the same name from the same module', async () => {
+      const config = await edited(`import type { CngxA11yAxes, withPersistence } from '@cngx/core';
+
+export const appConfig: ApplicationConfig = {
+  providers: [],
+};
+`);
+
+      expect(config).toContain("import { type CngxA11yAxes, withPersistence, provideA11yPreferences } from '@cngx/core';");
+      expect(config).toContain('providers: [provideA11yPreferences(withPersistence())]');
+    });
+
+    it('adds to an import of the same module', async () => {
+      const config = await edited(`import { withPersistence } from '@cngx/core';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes),
+  ],
+};
+`);
+
+      expect(config).toContain("import { withPersistence, provideA11yPreferences } from '@cngx/core';");
+      expect(config).toContain('    provideA11yPreferences(withPersistence()),\n');
+    });
   });
 
   it('renders a reference argument as a bare identifier', async () => {

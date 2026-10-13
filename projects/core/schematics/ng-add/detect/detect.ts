@@ -84,6 +84,32 @@ export interface ClaudeInstructions {
   readonly state: Exclude<InstructionState, 'absent'>;
 }
 
+/** `cngx-layers.css` next to the order target: missing, written by cngx, or someone else's. */
+export type LayersFileState = 'absent' | 'generated' | 'foreign';
+
+/** Tailwind CSS as the app declares and loads it. */
+export interface TailwindFacts {
+  /** The major of the declared `tailwindcss` range. */
+  readonly major: number;
+  /** A global stylesheet imports `tailwindcss` (v4), so its rules sit in cascade layers. */
+  readonly layered: boolean;
+  /**
+   * The first local stylesheet in the build styles. The bundle starts with
+   * it, so the layer order file is imported there.
+   */
+  readonly orderTarget: string | undefined;
+  /**
+   * A global stylesheet already imports `cngx-layers.css`. An inline
+   * `@layer` statement does not count: the bundler places it after every
+   * imported file, so it cannot order layers the imports already declared.
+   */
+  readonly orderDeclared: boolean;
+  readonly layersFile: LayersFileState;
+}
+
+/** The file that orders the Tailwind and cngx cascade layers; it loads before every other import. */
+export const CNGX_LAYERS_FILE = 'cngx-layers.css';
+
 /** Opens the block cngx writes into agent instruction files; a later run finds it. */
 export const AGENTS_MARKER = '<!-- cngx:agents -->';
 
@@ -106,6 +132,8 @@ export interface ProjectFacts {
   readonly cngxThemePath: string | undefined;
   /** A generated `cngx-theme.*` is listed in the build styles, whether or not the file is still there. */
   readonly cngxThemeListed: boolean;
+  /** `undefined` when the app does not declare `tailwindcss`. */
+  readonly tailwind: TailwindFacts | undefined;
   /** The file holding the root providers: `app.config.ts` or the root NgModule. */
   readonly appConfigPath: string;
   /** Every `provide*()` call already in that file. */
@@ -278,6 +306,43 @@ function importsCngxStylesheet(read: Read, entries: readonly string[]): boolean 
       .filter(isLocalStylesheet)
       .some((entry) => hasStyleImport(read(entry) ?? '', `@import '${CNGX_STYLESHEET}';`))
   );
+}
+
+// The major of a declared range; an unreadable range (`latest`) falls back
+// to the generation the stylesheet import shape implies.
+function majorOf(range: string, layered: boolean): number {
+  const major = /\d+/.exec(range)?.[0];
+  if (major !== undefined) {
+    return Number(major);
+  }
+  return layered ? 4 : 3;
+}
+
+function detectTailwind(read: Read, manifest: PackageManifest, entries: readonly string[]): TailwindFacts | undefined {
+  const range = declaredRange(manifest, 'tailwindcss');
+  if (range === undefined) {
+    return undefined;
+  }
+  const local = entries.filter(isLocalStylesheet);
+  const contents = local.map((entry) => read(entry) ?? '');
+  const layered = contents.some((content) => hasStyleImport(content, "@import 'tailwindcss';"));
+  const layersImport = new RegExp(`@import\\s+(['"])(?:[^'"]*/)?${escape(CNGX_LAYERS_FILE)}\\1`);
+  const orderTarget = local[0];
+  const layersContent = orderTarget === undefined ? undefined : read(posix.join(posix.dirname(orderTarget), CNGX_LAYERS_FILE));
+  return {
+    major: majorOf(range, layered),
+    layered,
+    orderTarget,
+    orderDeclared: contents.some((content) => layersImport.test(content)),
+    layersFile: layersFileState(layersContent),
+  };
+}
+
+function layersFileState(content: string | undefined): LayersFileState {
+  if (content === undefined) {
+    return 'absent';
+  }
+  return hasProvenanceStamp(content) ? 'generated' : 'foreign';
 }
 
 function existingCngxTheme(tree: Tree, read: Read, sourceRoot: string, entries: readonly string[]): string | undefined {
@@ -474,6 +539,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     cngxStylesheet: importsCngxStylesheet(read, entries),
     cngxThemePath: existingCngxTheme(tree, read, sourceRoot, entries),
     cngxThemeListed: ['cngx-theme.css', 'cngx-theme.scss'].some((name) => entries.includes(posix.join(sourceRoot, name))),
+    tailwind: detectTailwind(read, manifest, entries),
     appConfigPath,
     rootProviders: providers,
     material: detectMaterial(read, manifest, entries),

@@ -14,6 +14,25 @@ describe('readFixture', () => {
       expect.arrayContaining(['angular.json', 'package.json', 'src/main.ts', 'src/app/app.config.ts', 'src/styles.css']),
     );
   });
+
+  it('reads the existing tailwind app, dotfiles included', () => {
+    expect(Object.keys(readFixture('existing-tailwind-app')).sort()).toEqual([
+      '.postcssrc.json',
+      '.prettierrc',
+      'angular.json',
+      'package.json',
+      'src/app/app.config.ts',
+      'src/app/app.html',
+      'src/app/app.routes.ts',
+      'src/app/app.ts',
+      'src/app/shell/shell.ts',
+      'src/index.html',
+      'src/main.ts',
+      'src/styles.scss',
+      'tsconfig.app.json',
+      'tsconfig.json',
+    ]);
+  });
 });
 
 describe('createFixtureTree', () => {
@@ -21,6 +40,12 @@ describe('createFixtureTree', () => {
     const workspace = await readWorkspace(createFixtureTree());
 
     expect([...workspace.projects.keys()]).toEqual(['fixture-app']);
+  });
+
+  it('reads the existing tailwind app as a workspace', async () => {
+    const workspace = await readWorkspace(createFixtureTree('existing-tailwind-app'));
+
+    expect([...workspace.projects.keys()]).toEqual(['tailwind-app']);
   });
 
   it('applies overrides on top of the stock files', () => {

@@ -1,0 +1,30 @@
+import { logging } from '@angular-devkit/core';
+import { callRule, type SchematicContext } from '@angular-devkit/schematics';
+import { DependencyType, InstallBehavior } from '@schematics/angular/utility';
+import { lastValueFrom } from 'rxjs';
+import { describe, expect, it } from 'vitest';
+
+import { createMemoryTree } from '../fs/memory-tree';
+import { addDependency } from './add-dependency';
+
+const context = { logger: new logging.Logger('add-dependency-spec') } as unknown as SchematicContext;
+
+async function add(manifest: string): Promise<string> {
+  const rule = addDependency('@cngx/eslint-plugin', '0.2.0', { type: DependencyType.Dev, install: InstallBehavior.None });
+  const tree = await lastValueFrom(callRule(rule, createMemoryTree({ 'package.json': manifest }), context));
+  return tree.readText('package.json');
+}
+
+describe('addDependency', () => {
+  it('adds the dependency the way @schematics/angular does', async () => {
+    expect(JSON.parse(await add('{ "devDependencies": {} }\n')).devDependencies).toEqual({ '@cngx/eslint-plugin': '0.2.0' });
+  });
+
+  it('keeps the trailing newline of package.json', async () => {
+    expect(await add('{\n  "devDependencies": {}\n}\n')).toBe('{\n  "devDependencies": {\n    "@cngx/eslint-plugin": "0.2.0"\n  }\n}\n');
+  });
+
+  it('adds no newline the file did not have', async () => {
+    expect(await add('{\n  "devDependencies": {}\n}')).toBe('{\n  "devDependencies": {\n    "@cngx/eslint-plugin": "0.2.0"\n  }\n}');
+  });
+});

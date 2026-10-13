@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { type Change, hasProvenanceStamp, type StepResult } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
-import { type MaterialFacts } from '../detect/detect';
-import { planTheme, renderDefaultTheme } from './theme';
+import { type MaterialFacts, type TailwindFacts } from '../detect/detect';
+import { planTheme, renderDefaultTheme, renderLayerOrder } from './theme';
 import { BASE_TOKENS } from './theme-tokens.generated';
 
 function byId(result: StepResult, id: string): Change | undefined {
@@ -84,6 +84,131 @@ describe('planTheme', () => {
       ['theme:stylesheet', 'already imported'],
       ['theme:entry', 'src/cngx-theme.css is already in the build styles'],
     ]);
+  });
+
+  describe('Tailwind', () => {
+    const tailwind = (overrides: Partial<TailwindFacts> = {}): TailwindFacts => ({
+      major: 4,
+      layered: true,
+      orderTarget: 'src/styles.scss',
+      orderDeclared: false,
+      layersFile: 'absent',
+      ...overrides,
+    });
+    const scss = { stylesKind: 'scss', stylesPath: 'src/styles.scss' } as const;
+    const layerIds = (result: StepResult): readonly string[] =>
+      [...result.changes, ...result.skipped].map((change) => change.id).filter((id) => id.startsWith('theme:layer'));
+
+    it('creates the layer order file next to the first global stylesheet and imports it first', () => {
+      const result = planTheme(createFacts({ ...scss, tailwind: tailwind() }), createAnswers(), VERSIONS);
+
+      expect(result.changes.map((change) => [change.id, change.kind])).toEqual([
+        ['theme:layer-order-file', 'create-file'],
+        ['theme:layer-order', 'edit-file'],
+        ['theme:stylesheet', 'add-style-import'],
+        ['theme:file', 'create-file'],
+        ['theme:entry', 'add-style-entry'],
+      ]);
+      expect(byId(result, 'theme:layer-order-file')).toMatchObject({ path: 'src/cngx-layers.css' });
+      expect(content(byId(result, 'theme:layer-order-file'))).toBe(renderLayerOrder(VERSIONS.cngx));
+      const order = byId(result, 'theme:layer-order');
+      expect(order).toMatchObject({
+        path: 'src/styles.scss',
+        label: 'Order the Tailwind and cngx cascade layers',
+        reason: 'Tailwind preflight must not override cngx component styles; utilities still win',
+      });
+      const edited = order?.kind === 'edit-file' ? order.edit("@import 'tailwindcss';\n") : '';
+      expect(edited).toBe("@import './cngx-layers.css';\n@import 'tailwindcss';\n");
+      expect(order?.kind === 'edit-file' ? order.edit(edited) : '').toBe(edited);
+    });
+
+    it('orders the layers in a Material theme file that loads before the global stylesheet', () => {
+      const facts = createFacts({
+        ...scss,
+        material: material({ themeShape: 'define-theme', themePath: 'src/theme/material.scss', themeVariable: 'theme' }),
+        tailwind: tailwind({ orderTarget: 'src/theme/material.scss' }),
+      });
+      const result = planTheme(facts, createAnswers({ theme: 'material' }), VERSIONS);
+
+      expect(byId(result, 'theme:layer-order-file')).toMatchObject({ path: 'src/theme/cngx-layers.css' });
+      expect(byId(result, 'theme:layer-order')).toMatchObject({ path: 'src/theme/material.scss' });
+      expect(byId(result, 'theme:stylesheet')).toMatchObject({ path: 'src/theme/material.scss' });
+    });
+
+    it('declares preflight below cngx and the utilities above it, provenance-stamped', () => {
+      const file = renderLayerOrder(VERSIONS.cngx);
+
+      expect(hasProvenanceStamp(file)).toBe(true);
+      expect(file.trimEnd().endsWith('@layer theme, base, cngx, components, utilities;')).toBe(true);
+      expect(file).not.toContain(String.fromCodePoint(0x2014));
+    });
+
+    it('skips both under the same ids when the order file is already imported', () => {
+      const facts = createFacts({ ...scss, cngxStylesheet: true, tailwind: tailwind({ orderDeclared: true, layersFile: 'generated' }) });
+      const result = planTheme(facts, createAnswers(), VERSIONS);
+
+      expect(result.changes.map((change) => change.id)).toEqual(['theme:file', 'theme:entry']);
+      expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([
+        ['theme:layer-order-file', 'already imported'],
+        ['theme:layer-order', 'already imported'],
+        ['theme:stylesheet', 'already imported'],
+      ]);
+    });
+
+    it('imports a generated layer order file that is no longer imported', () => {
+      const result = planTheme(createFacts({ ...scss, tailwind: tailwind({ layersFile: 'generated' }) }), createAnswers(), VERSIONS);
+
+      expect(byId(result, 'theme:layer-order')).toMatchObject({ kind: 'edit-file' });
+      expect(byId(result, 'theme:layer-order-file')).toBeUndefined();
+      expect(result.skipped).toContainEqual(
+        expect.objectContaining({ id: 'theme:layer-order-file', reason: 'src/cngx-layers.css is already there' }),
+      );
+    });
+
+    it('notes a layer order file someone else wrote instead of overwriting it', () => {
+      const result = planTheme(createFacts({ ...scss, tailwind: tailwind({ layersFile: 'foreign' }) }), createAnswers(), VERSIONS);
+
+      expect(layerIds(result)).toEqual(['theme:layer-order']);
+      expect(byId(result, 'theme:layer-order')).toMatchObject({
+        kind: 'note',
+        label: 'Order the Tailwind and cngx cascade layers by hand',
+        reason: 'src/cngx-layers.css exists and was not written by cngx (see Tailwind in the cngx install guide)',
+      });
+    });
+
+    it('notes that Tailwind v3 preflight overrides cngx', () => {
+      const facts = createFacts({ ...scss, tailwind: tailwind({ major: 3, layered: false }) });
+      const result = planTheme(facts, createAnswers(), VERSIONS);
+
+      expect(layerIds(result)).toEqual(['theme:layer-order']);
+      expect(byId(result, 'theme:layer-order')).toMatchObject({
+        kind: 'note',
+        label: 'Tailwind v3 preflight overrides cngx component styles',
+      });
+    });
+
+    it('notes a v4 app whose global stylesheets do not import tailwindcss', () => {
+      const result = planTheme(createFacts({ ...scss, tailwind: tailwind({ layered: false }) }), createAnswers(), VERSIONS);
+
+      expect(byId(result, 'theme:layer-order')).toMatchObject({
+        kind: 'note',
+        label: 'Order the Tailwind and cngx cascade layers by hand',
+        reason: 'no global stylesheet imports tailwindcss directly (see Tailwind in the cngx install guide)',
+      });
+    });
+
+    it('plans no layer order without Tailwind or for theme none', () => {
+      expect(layerIds(planTheme(createFacts(scss), createAnswers(), VERSIONS))).toEqual([]);
+      expect(planTheme(createFacts({ ...scss, tailwind: tailwind() }), createAnswers({ theme: 'none' }), VERSIONS)).toEqual({
+        changes: [],
+        skipped: [],
+      });
+    });
+
+    it('does not mutate its inputs', () => {
+      const facts = deepFreeze(createFacts({ ...scss, tailwind: tailwind() }));
+      expect(() => planTheme(facts, deepFreeze(createAnswers()), deepFreeze(VERSIONS))).not.toThrow();
+    });
   });
 
   describe('the default theme file', () => {

@@ -1,4 +1,5 @@
 const PREAMBLE_AT_RULE = /^@(use|forward|import|charset)\b/;
+const IMPORT_RULE = /^@import\b/;
 const IMPORT_URL = /^@(?:use|forward|import)\s+(['"])(.+?)\1/;
 
 // End offset of the statement starting at `start`: the `;` that is not inside
@@ -30,8 +31,9 @@ function lineEnd(content: string, from: number): number {
 
 // Offset right after the last leading @use/@forward/@import/@charset
 // statement, skipping blank lines and comments between them. 0 when the
-// file starts with anything else.
-function preambleEnd(content: string): number {
+// file starts with anything else. With `stopBefore`, the offset of the first
+// leading statement that matches it instead, when there is one.
+function preambleEnd(content: string, stopBefore?: RegExp): number {
   let position = 0;
   let insertAt = 0;
   while (position < content.length) {
@@ -44,6 +46,8 @@ function preambleEnd(content: string): number {
     } else if (head.startsWith('/*')) {
       const close = content.indexOf('*/', at + 2);
       position = close === -1 ? content.length : close + 2;
+    } else if (stopBefore?.test(head) === true) {
+      return at;
     } else if (PREAMBLE_AT_RULE.test(head)) {
       position = lineEnd(content, statementEnd(content, at));
       insertAt = position;
@@ -81,6 +85,22 @@ export function insertStyleImport(content: string, statement: string): string {
     return content;
   }
   const at = preambleEnd(content);
+  const needsNewline = at > 0 && !content.slice(0, at).endsWith('\n');
+  return `${content.slice(0, at)}${needsNewline ? '\n' : ''}${statement.trim()}\n${content.slice(at)}`;
+}
+
+/**
+ * Places `statement` before the first `@import`, so the file it loads comes
+ * ahead of every other imported file in the bundle. `@charset`, `@use` and
+ * `@forward` stay in front: Sass rejects a `@use` that follows an `@import`,
+ * and hoists plain CSS imports above the module output anyway. Without an
+ * `@import` it lands where {@link insertStyleImport} puts it.
+ */
+export function insertLeadingStyleImport(content: string, statement: string): string {
+  if (hasStyleImport(content, statement)) {
+    return content;
+  }
+  const at = preambleEnd(content, IMPORT_RULE);
   const needsNewline = at > 0 && !content.slice(0, at).endsWith('\n');
   return `${content.slice(0, at)}${needsNewline ? '\n' : ''}${statement.trim()}\n${content.slice(at)}`;
 }

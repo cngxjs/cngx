@@ -1,8 +1,11 @@
 import { type Rule, type SchematicContext, type Tree } from '@angular-devkit/schematics';
-import { addDependency, ExistingBehavior, InstallBehavior } from '@schematics/angular/utility';
+import { ExistingBehavior, InstallBehavior } from '@schematics/angular/utility';
 import { JSONFile } from '@schematics/angular/utility/json-file';
 
+import { addDependency } from './add-dependency';
 import { declaredRange, parseManifest } from './manifest';
+
+const MANIFEST = 'package.json';
 
 /**
  * Pins `name` to the exact release being added. Every `@cngx/*` package peers
@@ -12,13 +15,13 @@ import { declaredRange, parseManifest } from './manifest';
  */
 export function addLockstepDependency(name: string, version: string): Rule {
   return (tree: Tree, context: SchematicContext) => {
-    const existing = declaredRange(parseManifest(tree.readText('package.json')), name);
+    const existing = declaredRange(parseManifest(tree.readText(MANIFEST)), name);
     if (existing !== undefined && existing !== version) {
       context.logger.info(`Replacing ${name}@${existing} with ${version} so every @cngx package stays on one version.`);
       // addDependency warns about every replaced specifier on its own and
       // never looks at devDependencies; with the old entry gone from both it
       // only adds, so the replacement is announced once and no stale pin stays.
-      const manifest = new JSONFile(tree, 'package.json');
+      const manifest = new JSONFile(tree, MANIFEST);
       manifest.remove(['dependencies', name]);
       manifest.remove(['devDependencies', name]);
     }

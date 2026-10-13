@@ -1,7 +1,6 @@
 import { chain, noop, type Rule, SchematicsException, type Tree } from '@angular-devkit/schematics';
 import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeScript/lib/typescript';
 import {
-  addDependency,
   addRootProvider,
   DependencyType,
   ExistingBehavior,
@@ -13,9 +12,18 @@ import { applyToUpdateRecorder } from '@schematics/angular/utility/change';
 import { JSONFile } from '@schematics/angular/utility/json-file';
 
 import { insertStyleImport } from '../edit/style-edit';
+import {
+  addToArrayLiteral,
+  type ArraySelector,
+  countArrayLiterals,
+  promoteTypeOnlyImport,
+  topLevelBindings,
+} from '../edit/ts-edit';
+import { addDependency } from '../manifest/add-dependency';
 import { addLockstepDependency } from '../manifest/lockstep';
 import {
   type AddImport,
+  type AddProvider,
   type AddStyleEntry,
   type AddStyleImport,
   type Change,
@@ -47,13 +55,15 @@ function editFile(change: EditFile): Rule {
   };
 }
 
+function insertImportInto(tree: Tree, path: string, symbol: string, module: string): void {
+  const source = ts.createSourceFile(path, tree.readText(path), ts.ScriptTarget.Latest, true);
+  const recorder = tree.beginUpdate(path);
+  applyToUpdateRecorder(recorder, [insertImport(source, path, symbol, module)]);
+  tree.commitUpdate(recorder);
+}
+
 function addImport(change: AddImport): Rule {
-  return (tree: Tree) => {
-    const source = ts.createSourceFile(change.path, tree.readText(change.path), ts.ScriptTarget.Latest, true);
-    const recorder = tree.beginUpdate(change.path);
-    applyToUpdateRecorder(recorder, [insertImport(source, change.path, change.symbol, change.module)]);
-    tree.commitUpdate(recorder);
-  };
+  return (tree: Tree) => insertImportInto(tree, change.path, change.symbol, change.module);
 }
 
 function renderCall(call: ProviderArg, external: (symbol: string, module: string) => string): string {
@@ -66,8 +76,58 @@ function renderCall(call: ProviderArg, external: (symbol: string, module: string
   if (call.reference === true) {
     return external(call.symbol, call.module);
   }
+  // The callee first: `external` imports in call order, so the provider
+  // leads its own import specifiers.
+  const callee = external(call.symbol, call.module);
   const args = (call.args ?? []).map((arg) => renderCall(arg, external)).join(', ');
-  return `${external(call.symbol, call.module)}(${args})`;
+  return `${callee}(${args})`;
+}
+
+const ROOT_PROVIDERS: ArraySelector = { kind: 'root-providers' };
+
+// Every name the call imports is free in the file or imported from the same
+// module (a type-only import of it gets promoted); anything else needs the
+// aliasing `addRootProvider` does.
+function importsFit(content: string, imports: readonly (readonly [string, string])[]): boolean {
+  const bindings = topLevelBindings(content);
+  return imports.every(([symbol, module]) => {
+    const binding = bindings.get(symbol);
+    return binding === undefined || binding.module === module;
+  });
+}
+
+// `addRootProvider` appends `, <call>` right behind the last element, so in a
+// multi-line array the provider lands on its neighbour's line. When the
+// planned file holds exactly one root providers array and the imports bind
+// cleanly, append there in the array's own layout; otherwise `addRootProvider`
+// resolves the file from the bootstrap call and aliases a clashing name.
+function addProvider(change: AddProvider): Rule {
+  const fallback = addRootProvider(change.project, ({ code, external }) => code`${renderCall(change.call, external)}`);
+  return (tree: Tree) => {
+    const path = change.path;
+    const content = path !== undefined && tree.exists(path) ? tree.readText(path) : undefined;
+    if (path === undefined || content === undefined || countArrayLiterals(content, ROOT_PROVIDERS) !== 1) {
+      return fallback;
+    }
+    const imports: (readonly [string, string])[] = [];
+    const expression = renderCall(change.call, (symbol, module) => {
+      imports.push([symbol, module]);
+      return symbol;
+    });
+    if (!importsFit(content, imports)) {
+      return fallback;
+    }
+    const added = addToArrayLiteral(content, ROOT_PROVIDERS, expression);
+    if (added === content) {
+      return undefined;
+    }
+    const next = imports.reduce((text, [symbol, module]) => promoteTypeOnlyImport(text, symbol, module), added);
+    tree.overwrite(path, next);
+    for (const [symbol, module] of imports) {
+      insertImportInto(tree, path, symbol, module);
+    }
+    return undefined;
+  };
 }
 
 function addStyleImport(change: AddStyleImport): Rule {
@@ -133,7 +193,7 @@ function toRule(change: Change): Rule {
           })
         : addLockstepDependency(change.name, change.version);
     case 'add-provider':
-      return addRootProvider(change.project, ({ code, external }) => code`${renderCall(change.call, external)}`);
+      return addProvider(change);
     case 'add-style-import':
       return addStyleImport(change);
     case 'add-style-entry':

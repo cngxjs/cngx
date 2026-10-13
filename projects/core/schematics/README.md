@@ -132,8 +132,12 @@ lib's bundle only when its source `package.json` declares `schematics`.
   and collapse to one answer line each. The shim fallback (core not placed by
   the package manager yet) installs core and runs its ng-add as a
   `RunSchematicTask`; prompts render the same way there.
-- `addRootProvider` covers standalone app configs and root NgModules alike; it
-  appends to the last provider line of a standalone config.
+- A provider goes on its own line of the root providers array (an object
+  typed `ApplicationConfig`, the `@NgModule` argument or the inline
+  `bootstrapApplication` config) when the planned file holds exactly one and
+  the call's imports bind cleanly. Otherwise `addRootProvider` places it: it
+  covers standalone app configs and root NgModules alike, aliases a clashing
+  import, and appends to the last provider line.
 - Material's own ng-add writes a `mat.theme((...))` map with `density: 0` into
   the scss global stylesheet, or into a new `src/material-theme.scss` placed
   first in the build styles of a css app. The bridge entry cngx adds follows
