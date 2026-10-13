@@ -244,7 +244,9 @@ export function evaluateExpression<TItem>(
   }
   const def = resolveOperatorDef(expr.operator, options?.operators);
   if (!def) {
-    warnUnknownFilterOperatorOnce(expr.operator);
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnUnknownFilterOperatorOnce(expr.operator);
+    }
     return false;
   }
   const record = item as Record<string, unknown>;

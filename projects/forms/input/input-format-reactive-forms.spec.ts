@@ -247,7 +247,9 @@ describe('CngxInputFormat dev-mode accessor check', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     try {
       mount(host);
-      return warn.mock.calls.filter(([msg]) => String(msg).startsWith('[cngxInputFormat]')).length;
+      return warn.mock.calls.filter(([msg]) =>
+        String(msg).startsWith('CNGX2006: [cngxInputFormat]'),
+      ).length;
     } finally {
       warn.mockRestore();
     }

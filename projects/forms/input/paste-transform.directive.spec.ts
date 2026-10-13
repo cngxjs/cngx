@@ -58,7 +58,7 @@ describe('CngxPasteTransform', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const fixture = TestBed.createComponent(MaskedHost);
     fixture.detectChanges();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('[cngxPasteTransform]'));
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^CNGX2005: \[cngxPasteTransform\]/));
     warn.mockRestore();
   });
 

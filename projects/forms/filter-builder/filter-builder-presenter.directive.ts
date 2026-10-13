@@ -7,13 +7,13 @@ import {
   inject,
   Injector,
   input,
-  isDevMode,
   model,
   signal,
   untracked,
   type Signal,
 } from '@angular/core';
 import { injectLocale, nextUid } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 import { CngxFormFieldPresenter, type CngxFormFieldControl } from '@cngx/forms/field';
 
 import type {
@@ -193,24 +193,25 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
       }
     });
 
-    afterNextRender(() => {
-      if (!isDevMode()) {
-        return;
-      }
-      if (this.fields().length === 0) {
-        console.warn(
-          '[CngxFilterBuilder] no fields provided - empty-state branch will always render.',
-        );
-      }
-      const fieldKeys = new Set(this.fields().map((f) => f.key));
-      const unknown = new Set<string>();
-      collectExpressionFieldKeys(this.tree(), fieldKeys, unknown);
-      if (unknown.size > 0) {
-        console.warn(
-          `[CngxFilterBuilder] value() references unknown field key(s): ${[...unknown].join(', ')}`,
-        );
-      }
-    });
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      afterNextRender(() => {
+        if (this.fields().length === 0) {
+          cngxDevWarn(
+            'CNGX2002',
+            '[CngxFilterBuilder] no fields provided - empty-state branch will always render.',
+          );
+        }
+        const fieldKeys = new Set(this.fields().map((f) => f.key));
+        const unknown = new Set<string>();
+        collectExpressionFieldKeys(this.tree(), fieldKeys, unknown);
+        if (unknown.size > 0) {
+          cngxDevWarn(
+            'CNGX2003',
+            `[CngxFilterBuilder] value() references unknown field key(s): ${[...unknown].join(', ')}`,
+          );
+        }
+      });
+    }
   }
 
   addExpression(path: readonly number[], expression: FilterExpression): void {
@@ -225,8 +226,9 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    */
   addGroup(path: readonly number[], group: FilterGroup): void {
     if (path.length >= this.config.maxNestingDepth) {
-      if (isDevMode()) {
-        console.warn(
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        cngxDevWarn(
+          'CNGX2004',
           `[CngxFilterBuilder] addGroup at depth ${path.length + 1} exceeds maxNestingDepth ` +
             `${this.config.maxNestingDepth} - ignored. Raise it via withMaxNestingDepth(...).`,
         );

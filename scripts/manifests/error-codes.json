@@ -61,6 +61,76 @@
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0901.html",
       "status": "active",
       "files": ["projects/utils/tree.ts"]
+    },
+    {
+      "code": "CNGX2001",
+      "lib": "forms",
+      "severity": "warn",
+      "title": "Unknown filter operator",
+      "page": "core-concepts/error-codes/cngx2001.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2001.html",
+      "status": "active",
+      "files": ["projects/forms/filter-builder/filter-builder-operators.ts"]
+    },
+    {
+      "code": "CNGX2002",
+      "lib": "forms",
+      "severity": "warn",
+      "title": "Filter builder has no fields",
+      "page": "core-concepts/error-codes/cngx2002.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2002.html",
+      "status": "active",
+      "files": ["projects/forms/filter-builder/filter-builder-presenter.directive.ts"]
+    },
+    {
+      "code": "CNGX2003",
+      "lib": "forms",
+      "severity": "warn",
+      "title": "Filter value references an unknown field",
+      "page": "core-concepts/error-codes/cngx2003.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2003.html",
+      "status": "active",
+      "files": ["projects/forms/filter-builder/filter-builder-presenter.directive.ts"]
+    },
+    {
+      "code": "CNGX2004",
+      "lib": "forms",
+      "severity": "warn",
+      "title": "Filter group exceeds the maximum nesting depth",
+      "page": "core-concepts/error-codes/cngx2004.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2004.html",
+      "status": "active",
+      "files": ["projects/forms/filter-builder/filter-builder-presenter.directive.ts"]
+    },
+    {
+      "code": "CNGX2005",
+      "lib": "forms",
+      "severity": "warn",
+      "title": "cngxPasteTransform stacked on cngxInputMask",
+      "page": "core-concepts/error-codes/cngx2005.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2005.html",
+      "status": "active",
+      "files": ["projects/forms/input/paste-transform.directive.ts"]
+    },
+    {
+      "code": "CNGX2006",
+      "lib": "forms",
+      "severity": "warn",
+      "title": "Input bound through DefaultValueAccessor",
+      "page": "core-concepts/error-codes/cngx2006.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2006.html",
+      "status": "active",
+      "files": ["projects/forms/input/reactive-forms-channel.ts"]
+    },
+    {
+      "code": "CNGX4001",
+      "lib": "data-display",
+      "severity": "warn",
+      "title": "Treetable column has no header label",
+      "page": "core-concepts/error-codes/cngx4001.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx4001.html",
+      "status": "active",
+      "files": ["projects/data-display/treetable/treetable.component.ts"]
     }
   ]
 }
