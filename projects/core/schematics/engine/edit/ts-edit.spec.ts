@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { addToArrayLiteral, type ArraySelector, hasArrayLiteral } from './ts-edit';
+import { addToArrayLiteral, type ArraySelector, countPropertyArrays, hasArrayLiteral, topLevelBindings } from './ts-edit';
 
 const DEFAULT: ArraySelector = { kind: 'default-export' };
 const ITEM = '...cngx.configs.recommended';
@@ -87,5 +87,42 @@ describe('hasArrayLiteral', () => {
     expect(hasArrayLiteral(FLAT_CONFIG, DEFAULT)).toBe(true);
     expect(hasArrayLiteral('export default config;\n', DEFAULT)).toBe(false);
     expect(hasArrayLiteral('const config = [];\n', { kind: 'variable', name: 'missing' })).toBe(false);
+  });
+});
+
+describe('countPropertyArrays', () => {
+  it('counts every property of that name holding an array, nested ones included', () => {
+    const content = `const a = { providers: [] };
+export const config = { providers: [{ deps: [], providers: [] }], imports: [] };
+const b = { providers: provide() };
+`;
+
+    expect(countPropertyArrays(content, 'providers')).toBe(3);
+    expect(countPropertyArrays(content, 'imports')).toBe(1);
+  });
+});
+
+describe('topLevelBindings', () => {
+  it('maps imported names to their module and declared names to undefined', () => {
+    const content = `import def, { a, b as c } from 'm';
+import * as ns from 'n';
+import 'side-effect';
+class K {}
+function f() {}
+const v = 1, w = 2;
+export interface I {}
+`;
+
+    expect([...topLevelBindings(content)]).toEqual([
+      ['def', 'm'],
+      ['a', 'm'],
+      ['c', 'm'],
+      ['ns', 'n'],
+      ['K', undefined],
+      ['f', undefined],
+      ['v', undefined],
+      ['w', undefined],
+      ['I', undefined],
+    ]);
   });
 });

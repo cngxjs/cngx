@@ -168,6 +168,69 @@ export const appConfig: ApplicationConfig = {
 `);
   });
 
+  describe('falls back to addRootProvider', () => {
+    const CONFIG_PATH = 'projects/app/src/app/app.config.ts';
+    const PERSISTENCE: Change = {
+      ...BASE,
+      kind: 'add-provider',
+      id: 'p',
+      project: 'app',
+      path: CONFIG_PATH,
+      call: {
+        symbol: 'provideA11yPreferences',
+        module: '@cngx/core',
+        args: [{ symbol: 'withPersistence', module: '@cngx/core' }],
+      },
+    };
+
+    it('when a name the call imports is already bound to another module', async () => {
+      const tree = await createApp();
+      tree.overwrite(
+        CONFIG_PATH,
+        `import { ApplicationConfig } from '@angular/core';
+import { withPersistence } from './storage';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    withPersistence(),
+  ],
+};
+`,
+      );
+
+      const config = (await apply([PERSISTENCE], tree)).readText(CONFIG_PATH);
+
+      expect(config).toContain("import { withPersistence } from './storage';");
+      expect(config).toContain(
+        "import { provideA11yPreferences, withPersistence as withPersistence_alias } from '@cngx/core';",
+      );
+      expect(config).toContain('provideA11yPreferences(withPersistence_alias())');
+    });
+
+    it('when the file holds more than one providers array', async () => {
+      const tree = await createApp();
+      tree.overwrite(
+        CONFIG_PATH,
+        `import { ApplicationConfig } from '@angular/core';
+
+const nested = { providers: [] };
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    nested,
+  ],
+};
+`,
+      );
+
+      const config = (await apply([PERSISTENCE], tree)).readText(CONFIG_PATH);
+
+      expect(config).toContain('const nested = { providers: [] };');
+      expect(config).toContain("import { provideA11yPreferences, withPersistence } from '@cngx/core';");
+      expect(config).toContain('    nested, provideA11yPreferences(withPersistence()),\n');
+    });
+  });
+
   it('renders a reference argument as a bare identifier', async () => {
     const tree = await apply(
       [

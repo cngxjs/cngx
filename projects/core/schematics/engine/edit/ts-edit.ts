@@ -58,21 +58,24 @@ function variableInitializer(statement: ts.Statement, name: string): ts.Expressi
   return declaration?.initializer;
 }
 
-function propertyArray(node: ts.Node, name: string): ts.ArrayLiteralExpression | undefined {
-  if (
+function propertyArrays(node: ts.Node, name: string): readonly ts.ArrayLiteralExpression[] {
+  const own =
     ts.isPropertyAssignment(node) &&
     (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name)) &&
     node.name.text === name &&
     ts.isArrayLiteralExpression(node.initializer)
-  ) {
-    return node.initializer;
-  }
-  return ts.forEachChild(node, (child) => propertyArray(child, name));
+      ? [node.initializer]
+      : [];
+  const nested: ts.ArrayLiteralExpression[] = [];
+  ts.forEachChild(node, (child) => {
+    nested.push(...propertyArrays(child, name));
+  });
+  return [...own, ...nested];
 }
 
 function findArray(source: ts.SourceFile, selector: ArraySelector): ts.ArrayLiteralExpression | undefined {
   if (selector.kind === 'property') {
-    return propertyArray(source, selector.name);
+    return propertyArrays(source, selector.name)[0];
   }
   for (const statement of source.statements) {
     const expression =
@@ -91,6 +94,61 @@ function parse(content: string): ts.SourceFile {
 
 export function hasArrayLiteral(content: string, selector: ArraySelector): boolean {
   return findArray(parse(content), selector) !== undefined;
+}
+
+/** How many object properties named `name` hold an array literal, nested ones included. */
+export function countPropertyArrays(content: string, name: string): number {
+  return propertyArrays(parse(content), name).length;
+}
+
+function declaredName(statement: ts.Statement): readonly string[] {
+  if (ts.isVariableStatement(statement)) {
+    return statement.declarationList.declarations.flatMap((declaration) =>
+      ts.isIdentifier(declaration.name) ? [declaration.name.text] : [],
+    );
+  }
+  const named =
+    ts.isClassDeclaration(statement) ||
+    ts.isFunctionDeclaration(statement) ||
+    ts.isEnumDeclaration(statement) ||
+    ts.isInterfaceDeclaration(statement) ||
+    ts.isTypeAliasDeclaration(statement);
+  return named && statement.name !== undefined ? [statement.name.text] : [];
+}
+
+function namedBindings(bindings: ts.NamedImportBindings | undefined): readonly string[] {
+  if (bindings === undefined) {
+    return [];
+  }
+  if (ts.isNamespaceImport(bindings)) {
+    return [bindings.name.text];
+  }
+  return bindings.elements.map((element) => element.name.text);
+}
+
+function importedNames(statement: ts.ImportDeclaration): readonly (readonly [string, string])[] {
+  const module = ts.isStringLiteral(statement.moduleSpecifier) ? statement.moduleSpecifier.text : '';
+  const clause = statement.importClause;
+  if (clause === undefined) {
+    return [];
+  }
+  const names = [...(clause.name ? [clause.name.text] : []), ...namedBindings(clause.namedBindings)];
+  return names.map((name) => [name, module] as const);
+}
+
+/**
+ * Every top-level name of the file: an imported name maps to its module, a
+ * declared one to `undefined`. A caller adding `import { x } from 'm'` checks
+ * that `x` is unbound or already bound to `m`.
+ */
+export function topLevelBindings(content: string): ReadonlyMap<string, string | undefined> {
+  return new Map(
+    parse(content).statements.flatMap((statement): readonly (readonly [string, string | undefined])[] =>
+      ts.isImportDeclaration(statement)
+        ? importedNames(statement)
+        : declaredName(statement).map((name) => [name, undefined] as const),
+    ),
+  );
 }
 
 function indentOf(content: string, position: number): string {
