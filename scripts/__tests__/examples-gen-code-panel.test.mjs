@@ -4,7 +4,13 @@ import { describe, expect, it } from 'vitest';
 // rewrites examples/src/app/features.
 import * as panel from '../examples-gen/code-panel.mjs';
 
-const { buildDisplayedTs, coreSymbolsFor, filterImportLine, templateUsesClass } = panel;
+const {
+  buildDisplayedTs,
+  coreSymbolsFor,
+  declaredCoreSpecifiers,
+  filterImportLine,
+  templateUsesClass,
+} = panel;
 
 const selectorMap = new Map([
   [
@@ -118,6 +124,35 @@ describe('coreSymbolsFor', () => {
     ]);
     expect(coreSymbolsFor('readonly e = inject(EnvironmentInjector);', [])).toEqual(['inject']);
   });
+
+  it('keeps a declared core symbol the class uses, sorted into the detected ones', () => {
+    const declared = ['afterEveryRender', 'viewChildren', 'output'];
+    expect(
+      coreSymbolsFor(
+        'readonly a = signal(1);\nprivate readonly r = afterEveryRender(() => {});',
+        [],
+        declared,
+      ),
+    ).toEqual(['afterEveryRender', 'signal']);
+  });
+
+  it('keeps a declared symbol only the providers use, and drops unused and duplicate ones', () => {
+    expect(coreSymbolsFor('', ['provideX(inject(Y))'], ['inject', 'output', 'Component'])).toEqual([
+      'inject',
+    ]);
+  });
+});
+
+describe('declaredCoreSpecifiers', () => {
+  it('reads the @angular/core specifiers verbatim and ignores other modules', () => {
+    expect(
+      declaredCoreSpecifiers([
+        "import { afterEveryRender, viewChildren as kids } from '@angular/core';",
+        "import type { Signal } from '@angular/core';",
+        "import { DOCUMENT } from '@angular/common';",
+      ]),
+    ).toEqual(['afterEveryRender', 'viewChildren as kids', 'type Signal']);
+  });
 });
 
 describe('filterImportLine', () => {
@@ -205,6 +240,22 @@ describe('buildDisplayedTs', () => {
         "  protected readonly start = new FormControl('', { nonNullable: true });",
         '}',
       ].join('\n'),
+    );
+  });
+
+  it('keeps a declared core import the artifact uses', () => {
+    const story = {
+      imports: [],
+      setup: "private readonly rows = viewChildren<ElementRef>('row');",
+      setupChrome: 'private readonly tick = afterEveryRender(() => {});',
+      template: '<p #row>a</p>',
+    };
+    const importLines = [
+      "import { afterEveryRender, ChangeDetectionStrategy, Component, ElementRef, viewChildren } from '@angular/core';",
+    ];
+    const ts = buildDisplayedTs({ story, importLines, ...meta('RowList', 'rows') });
+    expect(ts.split('\n')[0]).toBe(
+      "import { ChangeDetectionStrategy, Component, ElementRef, viewChildren } from '@angular/core';",
     );
   });
 

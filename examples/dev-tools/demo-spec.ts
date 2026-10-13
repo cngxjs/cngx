@@ -94,7 +94,10 @@ export interface DemoSpec {
   /**
    * Additional TypeScript import statements inserted at the top of the
    * generated component file. Use for fixture imports, rxjs-interop, or any
-   * non-Angular-core dep.
+   * non-Angular-core dep. Common `@angular/core` symbols (`signal`,
+   * `computed`, `inject`, `viewChild`, ...) are detected from `setup`; declare
+   * any other core symbol here (`afterEveryRender`, `viewChildren`, `output`)
+   * and it joins the generated `@angular/core` import when referenced.
    *
    * Example: `["import { PEOPLE, type Person } from '../../../fixtures';"]`
    */

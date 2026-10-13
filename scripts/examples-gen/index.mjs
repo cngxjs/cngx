@@ -17,6 +17,7 @@ import {
   buildDisplayedHtml,
   buildDisplayedTs,
   coreSymbolsFor,
+  declaredCoreSpecifiers,
   escapeRegExp,
   filterImportLine,
   importedSymbols,
@@ -263,7 +264,7 @@ function buildImports(story, importMap, featureDepth) {
   const coreSymbols = [
     'ChangeDetectionStrategy',
     'Component',
-    ...coreSymbolsFor(setup, story.viewProviders),
+    ...coreSymbolsFor(setup, story.viewProviders, declaredCoreSpecifiers(story.moduleImports)),
   ];
 
   const coreLine = `import { ${coreSymbols.join(', ')} } from '@angular/core';`;

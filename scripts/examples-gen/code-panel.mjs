@@ -71,14 +71,34 @@ export function escapeRegExp(s) {
 }
 
 /**
+ * The `@angular/core` specifiers that `importLines` declare, verbatim
+ * (`type Signal`, `a as b`). A story's `moduleImports` go through here so a
+ * core symbol the generator does not detect itself (`afterEveryRender`,
+ * `viewChildren`, `output`, ...) is kept instead of dropped with the rest of
+ * the `@angular/core` lines.
+ */
+export function declaredCoreSpecifiers(importLines) {
+  return (importLines ?? []).flatMap((line) => {
+    const parsed = parseNamedImport(line);
+    if (!parsed || parsed.module !== '@angular/core') return [];
+    return parsed.isType
+      ? parsed.specifiers.map((spec) => `type ${spec.replace(/^type\s+/, '')}`)
+      : parsed.specifiers;
+  });
+}
+
+const CALLER_CORE_SYMBOLS = new Set(['ChangeDetectionStrategy', 'Component']);
+
+/**
  * The conditional `@angular/core` symbols a class needs, sorted as the
  * import line lists them. `classText` is the comment-stripped class body;
  * `providersText` holds the `viewProviders` expressions, which only count
  * for the symbols a decorator expression can use (`inject`, `forwardRef`,
- * `TemplateRef`). `ChangeDetectionStrategy` and `Component` are the
- * caller's.
+ * `TemplateRef`). `declared` are specifiers from {@link declaredCoreSpecifiers}:
+ * each one the class or the providers reference joins the detected set.
+ * `ChangeDetectionStrategy` and `Component` are the caller's.
  */
-export function coreSymbolsFor(classText, providersText) {
+export function coreSymbolsFor(classText, providersText, declared = []) {
   const classAndProviders = classText + '\n' + (providersText ?? []).join('\n');
 
   const usesSignal = /\bsignal\s*[<(]/.test(classText);
@@ -95,7 +115,7 @@ export function coreSymbolsFor(classText, providersText) {
   const usesTemplateRef = /\bTemplateRef\b/.test(classAndProviders);
   const usesInjector = /(?<![\w$])Injector\b/.test(classText);
 
-  return [
+  const detected = [
     ...(usesAfterRender ? ['afterNextRender'] : []),
     ...(usesComputed ? ['computed'] : []),
     ...(usesDestroyRef ? ['DestroyRef'] : []),
@@ -110,6 +130,24 @@ export function coreSymbolsFor(classText, providersText) {
     ...(usesUntracked ? ['untracked'] : []),
     ...(usesViewChild ? ['viewChild'] : []),
   ];
+  const names = new Set(detected.map(localName));
+  const extra = [];
+  for (const spec of declared) {
+    const name = localName(spec);
+    const referenced = new RegExp(String.raw`(?<![\w$])${escapeRegExp(name)}(?![\w$])`).test(
+      classAndProviders,
+    );
+    if (names.has(name) || CALLER_CORE_SYMBOLS.has(name) || !referenced) {
+      continue;
+    }
+    names.add(name);
+    extra.push(spec);
+  }
+  if (extra.length === 0) {
+    return detected;
+  }
+  const key = (spec) => localName(spec).toLowerCase();
+  return [...detected, ...extra].sort((a, b) => (key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0));
 }
 
 /**
@@ -399,7 +437,7 @@ export function buildDisplayedTs({
   const coreSymbols = [
     'ChangeDetectionStrategy',
     'Component',
-    ...coreSymbolsFor(classText, viewProviders),
+    ...coreSymbolsFor(classText, viewProviders, declaredCoreSpecifiers(importLines)),
   ];
   const coreLine = `import { ${coreSymbols.join(', ')} } from '@angular/core';`;
 
