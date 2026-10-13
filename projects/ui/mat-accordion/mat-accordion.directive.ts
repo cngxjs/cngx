@@ -114,8 +114,9 @@ export class CngxMatAccordion {
    * open-set stores for that panel - making a pre-populated
    * `[(openIds)]` model addressable (the generated
    * `cngx-mat-panel-N` ids are unknowable to consumers). The
-   * function must return a stable, unique id per panel instance;
-   * `MatExpansionPanel.id` (consumer-assignable) is a natural key.
+   * function must return a stable, unique id per panel instance.
+   * `MatExpansionPanel.id` is a readonly id the CDK generates, so it is
+   * not known up front; key panels from your own data instead.
    * Unbound, ids fall back to generated `nextUid` values. Swapping
    * the bound function at runtime re-keys future events but does not
    * migrate ids already stored in `openIds` - bind it once.
