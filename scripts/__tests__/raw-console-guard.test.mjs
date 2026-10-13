@@ -536,6 +536,57 @@ describe('raw-console guard - R4 dev wrappers', () => {
     ).toHaveLength(1);
   });
 
+  it('fails dev-only functions by what they do, not by their shape', () => {
+    const shape = (text) => fixture(text).violations.filter((v) => v.includes('early return'));
+    const closureFactory = [
+      'function defaultCeilingWarn(limit: number) {',
+      `  return () => { if (${GUARD}) { cngxDevWarn('CNGX0001', String(limit)); } };`,
+      '}',
+    ].join('\n');
+    const warnOncePreamble = [
+      'const warnedDocs = new WeakSet<object>();',
+      'function warnApi(doc: object) {',
+      '  if (warnedDocs.has(doc)) { return; }',
+      '  warnedDocs.add(doc);',
+      `  if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); }`,
+      '}',
+    ].join('\n');
+    const devOnlyLocal = `function warnT(m: string) { const t = m.trim(); if (${GUARD}) { cngxDevWarn('CNGX0001', t); } }`;
+    expect(shape(closureFactory)).toEqual([
+      'projects/core/a.ts:1 R4 defaultCeilingWarn is a dev-only function that is not guard-first; open it with the negated ngDevMode early return',
+    ]);
+    expect(shape(warnOncePreamble)).toHaveLength(1);
+    expect(shape(devOnlyLocal)).toHaveLength(1);
+  });
+
+  it('keeps a production function with a guarded warning out of R4', () => {
+    const cache = [
+      'const cache = new Map<string, number>();',
+      'function lookup(k: string) {',
+      `  if (cache.has(k)) { if (${GUARD}) { cngxDevWarn('CNGX0001', k); } }`,
+      '  cache.set(k, 1);',
+      '  return cache.get(k);',
+      '}',
+      "lookup('x');",
+    ].join('\n');
+    expect(fixture(cache).violations).toEqual([]);
+    expect(fixture(cache).wrappers).toEqual([]);
+  });
+
+  it('reports a guard-first object-property arrow as indirect and fails a non-guard-first one', () => {
+    const guardFirst = fixture(
+      `const config = { onWarn: (m: string) => { if (${NEGATED}) { return; } cngxDevWarn('CNGX0001', m); } };`,
+    );
+    expect(guardFirst.indirect).toEqual([{ file: 'projects/core/a.ts', line: 1, name: 'onWarn' }]);
+    expect(guardFirst.violations).toEqual([]);
+    const devOnly = fixture(
+      `const config = { onWarn: (m: string) => { if (${GUARD}) { cngxDevWarn('CNGX0001', m); } } };`,
+    );
+    expect(devOnly.violations).toEqual([
+      'projects/core/a.ts:1 R4 onWarn is a dev-only function that is not guard-first; open it with the negated ngDevMode early return',
+    ]);
+  });
+
   it('follows a wrapper called through a namespace import', () => {
     const { violations } = checkSources([
       {

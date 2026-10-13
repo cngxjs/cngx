@@ -293,12 +293,23 @@ const isClassFieldFunction = (node) =>
   ts.isPropertyDeclaration(node.parent) &&
   node.parent.initializer === node;
 
+/** `{ onWarn: (m) => ... }`: a function stored as an object-literal property. */
+const isPropertyFunction = (node) =>
+  (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) &&
+  ts.isPropertyAssignment(node.parent) &&
+  node.parent.initializer === node;
+
+/** A function an object literal carries as a value (property or shorthand method). */
+const isObjectMember = (node) =>
+  isPropertyFunction(node) ||
+  (ts.isMethodDeclaration(node) && ts.isObjectLiteralExpression(node.parent));
+
 /** The name a function-like node is called by, or null. */
 function functionName(node) {
   if (ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) {
     return nameText(node.name);
   }
-  if (isClassFieldFunction(node)) {
+  if (isClassFieldFunction(node) || isPropertyFunction(node)) {
     return nameText(node.parent.name);
   }
   if (
@@ -322,39 +333,191 @@ const namedFunctionOf = (node) => {
   return null;
 };
 
-const isPositiveGuardedIf = (statement) =>
-  ts.isIfStatement(statement) && !statement.elseStatement && startsWithGuard(statement.expression);
+/** A module-level `Set` / `Map` whose name says it records what was already reported. */
+const WARN_ONCE_NAME = /warn|seen|report|logged/i;
+
+function warnOnceCollections(sf) {
+  const names = new Set();
+  for (const statement of sf.statements) {
+    if (!ts.isVariableStatement(statement)) {
+      continue;
+    }
+    for (const declaration of statement.declarationList.declarations) {
+      const init = declaration.initializer && unparen(declaration.initializer);
+      const isCollection =
+        init &&
+        ts.isNewExpression(init) &&
+        ts.isIdentifier(init.expression) &&
+        /^(?:Weak)?(?:Set|Map)$/.test(init.expression.text);
+      if (
+        isCollection &&
+        ts.isIdentifier(declaration.name) &&
+        WARN_ONCE_NAME.test(declaration.name.text)
+      ) {
+        names.add(declaration.name.text);
+      }
+    }
+  }
+  return names;
+}
+
+/** `x.has(...)` / `x.add(...)` / ... on a warn-once collection. */
+const isWarnOnceCall = (expression, collections) => {
+  const inner = unparen(expression);
+  return (
+    ts.isCallExpression(inner) &&
+    ts.isPropertyAccessExpression(inner.expression) &&
+    ts.isIdentifier(inner.expression.expression) &&
+    collections.has(inner.expression.expression.text)
+  );
+};
+
+const isFunctionLike = (node) =>
+  ts.isArrowFunction(node) || ts.isFunctionExpression(node) || ts.isFunctionDeclaration(node);
+
+/**
+ * Classifies one statement of a function body: `dev` runs only in dev mode,
+ * `neutral` does no observable production work (control flow, warn-once
+ * bookkeeping), `prod` is everything else.
+ */
+function classifyStatement(statement, collections) {
+  if (isEarlyReturn(statement)) {
+    return 'neutral';
+  }
+  if (ts.isIfStatement(statement) && !statement.elseStatement) {
+    if (startsWithGuard(statement.expression)) {
+      return 'dev';
+    }
+    const inner = ts.isBlock(statement.thenStatement)
+      ? [...statement.thenStatement.statements]
+      : [statement.thenStatement];
+    const kinds = inner.map((s) => classifyStatement(s, collections));
+    const conditionIsBookkeeping =
+      !hasCall(statement.expression) ||
+      isWarnOnceCall(statement.expression, collections) ||
+      (ts.isPrefixUnaryExpression(unparen(statement.expression)) &&
+        isWarnOnceCall(unparen(statement.expression).operand, collections));
+    if (conditionIsBookkeeping && kinds.every((k) => k !== 'prod')) {
+      return kinds.includes('dev') ? 'dev' : 'neutral';
+    }
+    return 'prod';
+  }
+  if (ts.isExpressionStatement(statement)) {
+    if (startsWithGuard(statement.expression)) {
+      return 'dev';
+    }
+    return isWarnOnceCall(statement.expression, collections) ? 'neutral' : 'prod';
+  }
+  if (ts.isReturnStatement(statement)) {
+    if (!statement.expression) {
+      return 'neutral';
+    }
+    const value = unparen(statement.expression);
+    return isFunctionLike(value) && isDevOnlyBody(value, collections) ? 'dev' : 'prod';
+  }
+  return 'prod';
+}
+
+const hasCall = (node) => {
+  let found = false;
+  const visit = (child) => {
+    if (found) {
+      return;
+    }
+    if (ts.isCallExpression(child)) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(child, visit);
+  };
+  visit(node);
+  return found;
+};
+
+/** Is every identifier reference to `names` inside one of `regions`? */
+const usedOnlyWithin = (names, root, regions) => {
+  let outside = false;
+  const visit = (node) => {
+    if (outside) {
+      return;
+    }
+    if (ts.isIdentifier(node) && names.has(node.text) && !ts.isVariableDeclaration(node.parent)) {
+      outside = !regions.some((region) => node.pos >= region.pos && node.end <= region.end);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(root);
+  return !outside;
+};
+
+/**
+ * Does the function do nothing in production? True when its body has at
+ * least one dev-only statement and no production statement. A local whose
+ * only readers are dev-only statements counts as dev-only too, and every
+ * statement after a negated early return is dev-only.
+ */
+function isDevOnlyBody(fn, collections) {
+  const body = fn.body;
+  if (!body) {
+    return false;
+  }
+  if (!ts.isBlock(body)) {
+    const inner = unparen(body);
+    return (
+      startsWithGuard(inner) ||
+      (ts.isConditionalExpression(inner) && startsWithGuard(inner.condition)) ||
+      (isFunctionLike(inner) && isDevOnlyBody(inner, collections))
+    );
+  }
+  const statements = [...body.statements];
+  const earlyReturn = statements.findIndex(isEarlyReturn);
+  const kinds = statements.map((statement, index) => {
+    if (earlyReturn !== -1 && index > earlyReturn) {
+      return 'dev';
+    }
+    return ts.isVariableStatement(statement)
+      ? 'pending'
+      : classifyStatement(statement, collections);
+  });
+  const devRegions = statements.filter(
+    (_, index) => kinds[index] === 'dev' || kinds[index] === 'neutral',
+  );
+  statements.forEach((statement, index) => {
+    if (kinds[index] !== 'pending') {
+      return;
+    }
+    const names = new Set(
+      statement.declarationList.declarations
+        .map((d) => d.name)
+        .filter(ts.isIdentifier)
+        .map((name) => name.text),
+    );
+    kinds[index] = usedOnlyWithin(names, body, devRegions) ? 'neutral' : 'prod';
+  });
+  return kinds.includes('dev') && !kinds.includes('prod');
+}
 
 /**
  * Why the innermost named function around a helper call is a dev-only
  * function that is not written guard-first, or null. Such a function is a
- * wrapper in all but shape: its callers' arguments would ship, and R4 could
- * not see them. Every dev-only function must open with the negated early
- * return.
+ * wrapper in all but shape: its callers' arguments and its own work would
+ * ship, and R4 could not see its callers. Every dev-only function must open
+ * with the negated early return.
  */
-function wrapperShapeProblem(fn) {
+function wrapperShapeProblem(fn, sf) {
   const body = fn.body;
-  if (!body) {
+  if (
+    !body ||
+    (ts.isBlock(body) && body.statements.length > 0 && isEarlyReturn(body.statements[0]))
+  ) {
     return null;
   }
-  if (!ts.isBlock(body)) {
-    const inner = unparen(body);
-    const devOnly =
-      startsWithGuard(inner) ||
-      (ts.isConditionalExpression(inner) && startsWithGuard(inner.condition));
-    return devOnly ? 'is an expression-body dev-only function' : null;
-  }
-  const statements = body.statements;
-  if (statements.length === 0 || isEarlyReturn(statements[0])) {
+  if (!isDevOnlyBody(fn, warnOnceCollections(sf))) {
     return null;
   }
-  if (statements.slice(1).some(isEarlyReturn)) {
-    return 'opens with code before its ngDevMode early return';
-  }
-  if (statements.every(isPositiveGuardedIf)) {
-    return 'wraps its whole body in an ngDevMode if';
-  }
-  return null;
+  return ts.isBlock(body)
+    ? 'is a dev-only function that is not guard-first'
+    : 'is an expression-body dev-only function';
 }
 
 /**
@@ -371,7 +534,7 @@ export function collectWrapperShapeProblems(calls) {
       continue;
     }
     seen.add(fn);
-    const problem = wrapperShapeProblem(fn);
+    const problem = wrapperShapeProblem(fn, sf);
     if (problem) {
       out.push({ file, line: lineOf(sf, fn), name: functionName(fn), problem });
     }
@@ -450,12 +613,13 @@ export function collectWrappers(calls) {
         body.statements.length > 0 &&
         isEarlyReturn(body.statements[0])
       ) {
-        const isMember = ts.isMethodDeclaration(fn) || isClassFieldFunction(fn);
+        const isMember =
+          ts.isMethodDeclaration(fn) || isClassFieldFunction(fn) || isObjectMember(fn);
         seen.set(fn, {
           file,
           name,
           line: lineOf(sf, fn),
-          kind: isMember ? 'method' : 'function',
+          kind: isObjectMember(fn) ? 'property' : isMember ? 'method' : 'function',
           exportedAs: isMember ? [] : exportNamesOf(fn, name, sf),
           defaultExport: !isMember && isDefaultExport(fn, name, sf),
         });
@@ -473,7 +637,11 @@ export function collectWrappers(calls) {
 export function collectWrapperUses(files, wrappers) {
   const exportedNames = new Set(wrappers.flatMap((w) => w.exportedAs));
   const calls = [];
-  const indirect = [];
+  // A wrapper an object literal carries is a value by construction: reported
+  // as an indirect sink where it is declared.
+  const indirect = wrappers
+    .filter((w) => w.kind === 'property')
+    .map((w) => ({ file: w.file, line: w.line, name: w.name }));
   // Forms R4 cannot follow by name fail closed instead of passing unseen.
   const untraceable = wrappers
     .filter((w) => w.defaultExport)
