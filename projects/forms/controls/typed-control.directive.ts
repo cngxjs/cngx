@@ -18,7 +18,7 @@ import { type AbstractControl, FormGroupDirective } from '@angular/forms';
  * ```html
  * <form [formGroup]="form">
  *   <input formControlName="email" cngxTypedControl="email" #email="cngxTypedControl" />
- *   @if (email.control?.hasError('required')) {
+ *   @if (email.control()?.hasError('required')) {
  *     <span>Email is required</span>
  *   }
  * </form>

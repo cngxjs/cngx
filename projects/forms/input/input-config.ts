@@ -254,7 +254,7 @@ export function injectInputConfig(): InputConfig {
  *   validators - reach for `libphonenumber-js` when you need real validation.
  * - Consumer entries merge per key onto the built-ins and win on collision.
  * - Resolved as `{ ...PHONE_PATTERNS, ...config.phonePatterns }[region]`,
- *   falling back to US when the region is absent.
+ *   falling back to a generic `+000000000000` mask when the region is absent.
  * - Region comes from `phone:<REGION>` or the app locale (`CNGX_LOCALE`, default the nearest `LOCALE_ID`).
  * - Pattern tokens: `0` = required digit, literals pass through.
  *
