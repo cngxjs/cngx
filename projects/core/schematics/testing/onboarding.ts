@@ -31,7 +31,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
     helperReadme: undefined,
     eslintConfig: undefined,
     legacyEslintConfig: undefined,
-    eslintStack: { eslintMajor: undefined, templateParser: false, typescriptParser: false, angularEslint: undefined },
+    eslintStack: { eslintMajor: undefined, templateParser: false, typescriptParser: false, angularEslint: undefined, templateParserMajor: undefined },
     ssr: false,
     sourceLocale: undefined,
     maturity: 'fresh',

@@ -113,7 +113,7 @@ describe('detectProject', () => {
       helperReadme: undefined,
       eslintConfig: undefined,
       legacyEslintConfig: undefined,
-      eslintStack: { eslintMajor: undefined, templateParser: false, typescriptParser: false, angularEslint: undefined },
+      eslintStack: { eslintMajor: undefined, templateParser: false, typescriptParser: false, angularEslint: undefined, templateParserMajor: undefined },
       ssr: false,
       sourceLocale: undefined,
       maturity: 'fresh',
@@ -527,6 +527,15 @@ describe('detectProject', () => {
     it('records the declared angular-eslint range for the template parser version line', async () => {
       expect((await detect(withDevPackage({ 'angular-eslint': '21.3.0' }))).eslintStack.angularEslint).toBe('21.3.0');
       expect((await detect(withDevPackage({ eslint: '^9.0.0' }))).eslintStack.angularEslint).toBeUndefined();
+    });
+
+    it('reads the template parser line from its own range, else from angular-eslint', async () => {
+      const majorOf = async (packages: Record<string, string>): Promise<number | undefined> =>
+        (await detect(withDevPackage(packages))).eslintStack.templateParserMajor;
+      expect(await majorOf({ 'angular-eslint': '18.4.0' })).toBe(18);
+      expect(await majorOf({ 'angular-eslint': '^21.0.0', '@angular-eslint/template-parser': '^18.0.0' })).toBe(18);
+      expect(await majorOf({ 'angular-eslint': '>=18' })).toBeUndefined();
+      expect(await majorOf({ eslint: '^9.0.0' })).toBeUndefined();
     });
   });
 

@@ -15,6 +15,8 @@ const ENTRY = '...cngx.configs.recommended';
 const MARKER = 'lint:import';
 const TEMPLATE_PARSER = '@angular-eslint/template-parser';
 const ANGULAR_ESLINT = 'angular-eslint';
+// The plugin's `@angular-eslint/template-parser` peer range is `>=19`.
+const TEMPLATE_PARSER_MIN_MAJOR = 19;
 
 // The plugin is CommonJS with `export =`, so both module systems take it as
 // the default export.
@@ -46,6 +48,14 @@ function eslintUpdate(facts: ProjectFacts): string {
     : 'raise eslint to `^9` in devDependencies and reinstall (with angular-eslint: `ng update angular-eslint`)';
 }
 
+// `ng update angular-eslint` moves a parser angular-eslint manages; a parser
+// declared on its own moves by hand.
+function templateParserUpdate(facts: ProjectFacts): string {
+  return facts.eslintStack.angularEslint === undefined
+    ? `raise ${TEMPLATE_PARSER} to \`^${TEMPLATE_PARSER_MIN_MAJOR}\` in devDependencies and reinstall`
+    : 'run `ng update angular-eslint`';
+}
+
 // The flat config the plugin can run in, or why there is none and what to run next.
 function compatibleConfig(facts: ProjectFacts): EslintConfigFacts | { readonly reason: string } {
   const { eslintConfig: config, legacyEslintConfig: legacy, eslintStack: stack } = facts;
@@ -63,6 +73,13 @@ function compatibleConfig(facts: ProjectFacts): EslintConfigFacts | { readonly r
   if (!stack.typescriptParser) {
     return {
       reason: `the cngx rules lint TypeScript through your typescript-eslint setup; add typescript-eslint or run \`ng add angular-eslint\`, ${then}`,
+    };
+  }
+  // Below the peer floor the plugin install fails with a peer conflict, both
+  // for a declared parser and for one pinned on the angular-eslint line.
+  if (stack.templateParserMajor !== undefined && stack.templateParserMajor < TEMPLATE_PARSER_MIN_MAJOR) {
+    return {
+      reason: `${PLUGIN} needs ${TEMPLATE_PARSER} ${TEMPLATE_PARSER_MIN_MAJOR} or later and this app is on the ${stack.templateParserMajor} line; ${templateParserUpdate(facts)}, ${then}`,
     };
   }
   // The plugin imports the template parser when it loads; without it ESLint

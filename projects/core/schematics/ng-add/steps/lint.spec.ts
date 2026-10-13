@@ -28,7 +28,13 @@ function config(overrides: Partial<EslintConfigFacts> = {}): EslintConfigFacts {
   return { path: 'eslint.config.js', module: 'cjs', editable: true, wired: false, ...overrides };
 }
 
-const STACK: EslintStackFacts = { eslintMajor: 9, templateParser: true, typescriptParser: true, angularEslint: undefined };
+const STACK: EslintStackFacts = {
+  eslintMajor: 9,
+  templateParser: true,
+  typescriptParser: true,
+  angularEslint: undefined,
+  templateParserMajor: undefined,
+};
 
 const PARSER_MANIFEST = parseManifest(JSON.stringify({ devDependencies: { '@angular-eslint/template-parser': '^21.0.0' } }));
 
@@ -228,6 +234,37 @@ export default [
         ],
         skipped: [],
       });
+    });
+
+    it('blocks an angular-eslint line below the plugin peer instead of pinning the parser on it', () => {
+      const result = planLint(
+        eslintApp({}, { templateParser: false, angularEslint: '18.4.0', templateParserMajor: 18 }),
+        createAnswers(),
+        VERSIONS,
+      );
+
+      expect(result).toEqual({
+        changes: [
+          expect.objectContaining({
+            kind: 'note',
+            id: 'lint:config',
+            reason:
+              '@cngx/eslint-plugin needs @angular-eslint/template-parser 19 or later and this app is on the 18 line; run `ng update angular-eslint`, then run `ng add @cngx/core` again',
+          }),
+        ],
+        skipped: [],
+      });
+    });
+
+    it('names the manual raise for a parser declared below the peer without angular-eslint', () => {
+      const result = planLint(eslintApp({}, { templateParserMajor: 18 }), createAnswers(), VERSIONS);
+
+      expect(notes(result)).toEqual([
+        [
+          'lint:config',
+          '@cngx/eslint-plugin needs @angular-eslint/template-parser 19 or later and this app is on the 18 line; raise @angular-eslint/template-parser to `^19` in devDependencies and reinstall, then run `ng add @cngx/core` again',
+        ],
+      ]);
     });
 
     it('adds nothing when it is declared', () => {
