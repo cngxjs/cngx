@@ -16,7 +16,10 @@
 //   `cngxDevWarn` / `cngxDevError`: a call that survives keeps its code, so
 //   the code proves the whole call (and its message) left the bundle.
 // - the `CNGX_ERROR_DOCS_URL` literal of `projects/utils/dev-message.ts`: it
-//   ships only while some helper call survives.
+//   ships only while some helper call survives. It is a second line of
+//   defence: the code needle alone proves a surviving call. The URL stays a
+//   quoted literal in the minified production chunk (verified 2026-10-13
+//   with an `isDevMode()`-guarded call against dist/examples/browser).
 // Code and URL count only as whole quoted strings, like a debugName.
 //
 // Positive control: every needle must be present in the library build
@@ -36,7 +39,7 @@ import { join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { isToolingRoot } from './__tests__/source-roots.mjs';
-import { collectHelperCalls } from './dev-diagnostics.mjs';
+import { collectDocsUrls, collectHelperCalls } from './dev-diagnostics.mjs';
 
 export const MARKER = 'cngx-dev:';
 export const DEBUG_NAME_PATTERN = /^[a-z][A-Za-z0-9]*(\.[a-z][A-Za-z0-9]*)+$/;
@@ -80,16 +83,13 @@ export function deriveNeedles(files) {
       needles.push(code);
     }
   }
-  for (const { text } of libraryFiles) {
-    const url = DOCS_URL_DECLARATION.exec(text)?.[2];
-    if (url && !needles.includes(url)) {
+  for (const url of collectDocsUrls(libraryFiles)) {
+    if (!needles.includes(url)) {
       needles.push(url);
     }
   }
   return { needles, violations };
 }
-
-const DOCS_URL_DECLARATION = /\bconst CNGX_ERROR_DOCS_URL\s*=\s*(['"])([^'"\n]+)\1/;
 
 const QUOTES = new Set(["'", '"', '`']);
 

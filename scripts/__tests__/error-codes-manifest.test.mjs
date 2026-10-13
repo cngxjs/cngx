@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { collectHelperCalls } from '../dev-diagnostics.mjs';
+import { collectDocsUrls, collectHelperCalls } from '../dev-diagnostics.mjs';
 import {
   CODE_RANGES,
   DOCS_BASE_URL,
@@ -16,6 +16,7 @@ import {
   generate,
   manifestOf,
   parsePage,
+  summaryNodeOf,
   withSummaryNode,
 } from '../error-codes-manifest.mjs';
 import { DEFAULT_BASE_URL } from '../llms-publish.mjs';
@@ -173,6 +174,22 @@ describe('error-code manifest generator', () => {
     expect(errors).toEqual(['cngx0001.md: the H1 must be "# CNGX0001", found "CNGX0002"']);
   });
 
+  it('fails when codes exist but the overview page is missing', () => {
+    const { errors } = buildCodes([call('projects/core/a.ts', 'CNGX0001')], [page('CNGX0001')], {
+      hasIndex: false,
+    });
+    expect(errors).toEqual([
+      'core-concepts/error-codes/index.md is missing; the Error Codes node needs it',
+    ]);
+    expect(buildCodes([], [], { hasIndex: false }).errors).toEqual([]);
+  });
+
+  it('reads the summary node alone, so other summary entries never count as drift', () => {
+    const node = withSummaryNode([], [{ code: 'CNGX0001' }])[0];
+    expect(summaryNodeOf([{ title: 'Install', file: 'x.md' }, node])).toEqual(node);
+    expect(summaryNodeOf([{ title: 'Install', file: 'x.md' }])).toBeNull();
+  });
+
   it('nests one child per code under the Error Codes node, and writes none without codes', () => {
     const summary = [{ title: 'Install', file: 'install.md' }];
     expect(withSummaryNode(summary, [])).toEqual(summary);
@@ -219,10 +236,11 @@ describe('error-code manifest', () => {
   });
 
   it('matches the Error Codes node of core-concepts/summary.json', async () => {
+    const committed = summaryNodeOf(JSON.parse(readFileSync(SUMMARY_PATH, 'utf-8')));
     expect(
-      (await generated).summary === readFileSync(SUMMARY_PATH, 'utf-8'),
-      'core-concepts/summary.json is stale. Run `npm run manifest:error-codes`.',
-    ).toBe(true);
+      committed,
+      'The Error Codes node of core-concepts/summary.json is stale. Run `npm run manifest:error-codes`.',
+    ).toEqual((await generated).summaryNode);
   });
 
   it('conforms to the schema', () => {
@@ -245,8 +263,9 @@ describe('error-code manifest', () => {
   });
 
   it('links the runtime helper to the published doc pages', () => {
-    const source = readFileSync(resolve(REPO_ROOT, 'projects/utils/dev-message.ts'), 'utf-8');
-    const literal = /CNGX_ERROR_DOCS_URL\s*=\s*'([^']+)'/.exec(source)?.[1];
+    const path = 'projects/utils/dev-message.ts';
+    const text = readFileSync(resolve(REPO_ROOT, path), 'utf-8');
+    const [literal] = collectDocsUrls([{ path, text }]);
     expect(literal).toBe(`${DEFAULT_BASE_URL}/additional-documentation/error-codes/`);
     expect(literal).toBe(DOCS_BASE_URL);
   });

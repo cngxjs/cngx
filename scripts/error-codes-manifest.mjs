@@ -82,8 +82,9 @@ export function readPages(dir = PAGES_DIR) {
  *
  * @param {{ file: string; severity: string; code: string | null }[]} calls
  * @param {ReturnType<typeof parsePage>[]} pages
+ * @param {{ hasIndex?: boolean }} [options] whether `error-codes/index.md` exists
  */
-export function buildCodes(calls, pages) {
+export function buildCodes(calls, pages, { hasIndex = true } = {}) {
   const errors = [];
   const byCode = new Map();
   for (const call of calls) {
@@ -159,6 +160,9 @@ export function buildCodes(calls, pages) {
       files: retired ? [] : [...entry.files].sort(),
     };
   });
+  if (codes.length > 0 && !hasIndex) {
+    errors.push('core-concepts/error-codes/index.md is missing; the Error Codes node needs it');
+  }
   return { codes, errors };
 }
 
@@ -212,6 +216,11 @@ export function withSummaryNode(summary, codes) {
   return next;
 }
 
+/** The `Error Codes` node of a parsed `summary.json`, or null. */
+export function summaryNodeOf(summary) {
+  return summary.find((entry) => entry.title === SUMMARY_NODE_TITLE) ?? null;
+}
+
 /** `summary.json` keeps its four-space layout. */
 export function renderSummary(summary) {
   return `${JSON.stringify(summary, null, 4)}\n`;
@@ -230,18 +239,27 @@ export function readSources() {
     .map((path) => ({ path, text: readFileSync(resolve(REPO_ROOT, path), 'utf8') }));
 }
 
-/** Generates both outputs from the repo; `errors` is empty when it is consistent. */
+/**
+ * Generates both outputs from the repo; `errors` is empty when it is
+ * consistent. The generator owns only the `Error Codes` node of
+ * `summary.json`: `summaryStale` compares that node alone, and the file is
+ * rewritten only when the node changes, so a hand edit elsewhere in it is
+ * never reformatted or reported.
+ */
 export async function generate() {
-  const { codes, errors } = buildCodes(collectHelperCalls(readSources()), readPages());
+  const { codes, errors } = buildCodes(collectHelperCalls(readSources()), readPages(), {
+    hasIndex: existsSync(resolve(PAGES_DIR, 'index.md')),
+  });
   const manifest = await renderManifest(codes);
-  const summary = renderSummary(
-    withSummaryNode(JSON.parse(readFileSync(SUMMARY_PATH, 'utf8')), codes),
-  );
-  return { codes, errors, manifest, summary };
+  const current = JSON.parse(readFileSync(SUMMARY_PATH, 'utf8'));
+  const next = withSummaryNode(current, codes);
+  const summaryNode = summaryNodeOf(next);
+  const summaryStale = JSON.stringify(summaryNodeOf(current)) !== JSON.stringify(summaryNode);
+  return { codes, errors, manifest, summary: renderSummary(next), summaryNode, summaryStale };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const { codes, errors, manifest, summary } = await generate();
+  const { codes, errors, manifest, summary, summaryStale } = await generate();
   if (errors.length > 0) {
     console.error(`error-codes - ${errors.length} problem(s):`);
     for (const error of errors) {
@@ -250,11 +268,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     process.exit(1);
   }
   const currentManifest = existsSync(MANIFEST_PATH) ? readFileSync(MANIFEST_PATH, 'utf8') : '';
-  const currentSummary = readFileSync(SUMMARY_PATH, 'utf8');
   if (process.argv.includes('--check')) {
-    if (currentManifest !== manifest || currentSummary !== summary) {
+    if (currentManifest !== manifest || summaryStale) {
       console.error(
-        'scripts/manifests/error-codes.json or core-concepts/summary.json is stale. ' +
+        'scripts/manifests/error-codes.json or the Error Codes node of core-concepts/summary.json is stale. ' +
           'Run `npm run manifest:error-codes`.',
       );
       process.exit(1);
@@ -263,7 +280,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     if (currentManifest !== manifest) {
       writeFileSync(MANIFEST_PATH, manifest);
     }
-    if (currentSummary !== summary) {
+    if (summaryStale) {
       writeFileSync(SUMMARY_PATH, summary);
     }
     console.log(`Wrote scripts/manifests/error-codes.json (${codes.length} code(s))`);

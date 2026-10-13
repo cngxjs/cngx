@@ -240,6 +240,33 @@ export function localNgDevModeLines(sf) {
   return lines;
 }
 
+/**
+ * The string value of every `const CNGX_ERROR_DOCS_URL = '...'` declaration
+ * in `files`. Read from the AST, so a commented-out declaration never counts.
+ */
+export function collectDocsUrls(files) {
+  const out = [];
+  for (const { path, text } of files) {
+    if (!text.includes('CNGX_ERROR_DOCS_URL')) {
+      continue;
+    }
+    const visit = (node) => {
+      if (
+        ts.isVariableDeclaration(node) &&
+        ts.isIdentifier(node.name) &&
+        node.name.text === 'CNGX_ERROR_DOCS_URL' &&
+        node.initializer &&
+        ts.isStringLiteralLike(node.initializer)
+      ) {
+        out.push(node.initializer.text);
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(parse(path, text));
+  }
+  return out;
+}
+
 export const isNameOfDeclaration = (node) => {
   const parent = node.parent;
   return (

@@ -110,6 +110,17 @@ describe('devtools-prod-strip-check - needle derivation', () => {
     expect(needles).toEqual([MARKER, url]);
   });
 
+  it('ignores a commented-out doc URL declaration', () => {
+    const { needles } = deriveNeedles([
+      {
+        path: 'utils/dev-message.ts',
+        text: "// export const CNGX_ERROR_DOCS_URL = 'https://old.test/';\nexport const x = 1;",
+      },
+    ]);
+
+    expect(needles).toEqual([MARKER]);
+  });
+
   it('ignores codes and the doc URL in spec files', () => {
     const { needles } = deriveNeedles([
       {

@@ -13,7 +13,7 @@ CNGX0001: [cngx/i18n] "de_DE" is not a BCP 47 locale; reading it as English. Fin
 
 The text after the code says what happened at that call site. The page says why CNGX checks it and how to fix it.
 
-Diagnostics are development-only. They sit behind Angular's `ngDevMode` flag, so a production build drops the check, the message and the code. A console entry with a `CNGX` code in production means a CNGX bug; please report it.
+Diagnostics are development-only. The message and its code sit behind Angular's `ngDevMode` flag, so a production build drops both; the behaviour around them (an English fallback, a kept placeholder) stays the same. A console entry with a `CNGX` code in production means a CNGX bug; please report it.
 
 ## Ranges
 
