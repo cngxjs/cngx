@@ -66,7 +66,7 @@ The chip strip freezes during a commit in flight (`reorderDisabled = disabled() 
 
 ### Chip drag-handle override
 
-Three-stage cascade - directive wins over Input, Input wins over the default `CNGX_SELECT_GLYPHS.dragHandle` (`⋮⋮`):
+No grip renders by default - the whole chip is the drag surface. Two-stage cascade when you want one: the directive wins over the `[chipDragHandle]` Input, whose app-wide default comes from `withDefaultDragHandle`:
 
 ```html
 <cngx-reorderable-multi-select [options]="people" [(values)]="values">
@@ -118,8 +118,8 @@ All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) plus:
 Modifier defaults to `Ctrl`; configurable via
 `provideReorderableSelectConfig(withReorderKeyboardModifier('alt'))`.
 
-Pointer drag works regardless of keyboard modifier - drag a chip's
-handle (`⋮⋮` or your custom slot template) to reorder. Escape during a
+Pointer drag works regardless of keyboard modifier - drag a chip (or
+its custom handle, when one is configured) to reorder. Escape during a
 drag cancels without commit; pointer release commits.
 
 ## Configuration
