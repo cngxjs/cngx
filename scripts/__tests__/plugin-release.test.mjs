@@ -1,6 +1,16 @@
+import { readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { describe, expect, it } from 'vitest';
 
 import { bumpMcpPin, bumpPluginManifest, parseArgs } from '../plugin-release.mjs';
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+
+function readJson(...segments) {
+  return JSON.parse(readFileSync(join(ROOT, ...segments), 'utf8'));
+}
 
 describe('bumpPluginManifest', () => {
   it('sets the version and preserves every other field', () => {
@@ -44,5 +54,14 @@ describe('parseArgs', () => {
       mcp: null,
       dryRun: false,
     });
+  });
+});
+
+describe('plugin mcp pin', () => {
+  it('runs the @cngx/mcp version the repo ships', () => {
+    const { version } = readJson('packages', 'mcp', 'package.json');
+    const { args } = readJson('packages', 'plugin', '.mcp.json').mcpServers.cngx;
+
+    expect(args).toContain(`@cngx/mcp@${version}`);
   });
 });

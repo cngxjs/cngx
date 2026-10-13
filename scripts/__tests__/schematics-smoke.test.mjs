@@ -8,6 +8,8 @@ import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
 import { NodeModulesEngineHost } from '@angular-devkit/schematics/tools';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
+import { declaresSchematics } from '../publish.mjs';
+
 /**
  * Smoke guard for the bundled schematics under dist/. Runs the built
  * collection, not the sources, so it proves the esbuild bundle resolves its
@@ -259,21 +261,37 @@ const MAX_GZIP = 90 * 1024;
 // esbuild drop.
 const MAX_SHIM_MINIFIED = 20 * 1024;
 
+// The entries come from the source manifests, not from dist/: every factory a
+// declared collection or an `ng-update` migrations file names must have a
+// built bundle, so a declared entry missing from dist/ fails here instead of
+// dropping out of the budget.
+function factoryEntries(lib, manifest) {
+  const dir = dirname(manifest);
+  const { schematics } = JSON.parse(readFileSync(join(ROOT, 'projects', lib, manifest), 'utf8'));
+  return Object.values(schematics).map(({ factory }) => join(lib, dir, `${factory.split('#')[0]}.js`));
+}
+
 function schematicEntries() {
-  const dist = join(ROOT, 'dist');
-  return readdirSync(dist, { withFileTypes: true })
-    .filter((lib) => lib.isDirectory() && existsSync(join(dist, lib.name, 'schematics')))
-    .flatMap((lib) =>
-      readdirSync(join(dist, lib.name, 'schematics'), { withFileTypes: true })
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => join(lib.name, 'schematics', entry.name, 'index.js'))
-        .filter((file) => existsSync(join(dist, file))),
-    );
+  const projects = join(ROOT, 'projects');
+  return readdirSync(projects, { withFileTypes: true })
+    .filter((lib) => lib.isDirectory() && existsSync(join(projects, lib.name, 'package.json')))
+    .flatMap((lib) => {
+      const pkg = JSON.parse(readFileSync(join(projects, lib.name, 'package.json'), 'utf8'));
+      if (!declaresSchematics(pkg)) {
+        return [];
+      }
+      const migrations = pkg['ng-update']?.migrations;
+      return [
+        ...factoryEntries(lib.name, pkg.schematics),
+        ...(migrations === undefined ? [] : factoryEntries(lib.name, migrations)),
+      ];
+    });
 }
 
 describe('schematic bundle budget', () => {
-  it('finds the built entries', () => {
+  it('finds a built entry for every declared collection', () => {
     expect(schematicEntries()).toEqual(expect.arrayContaining(['core/schematics/ng-add/index.js', 'ui/schematics/ng-add/index.js']));
+    expect(schematicEntries().filter((file) => !existsSync(join(ROOT, 'dist', file)))).toEqual([]);
   });
 
   it.each(schematicEntries())('keeps dist/%s under 256 KB minified and 90 KB gzip', (file) => {

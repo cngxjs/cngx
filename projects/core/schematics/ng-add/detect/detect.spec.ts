@@ -112,6 +112,8 @@ describe('detectProject', () => {
       claudeInstructions: undefined,
       helperReadme: undefined,
       eslintConfig: undefined,
+      legacyEslintConfig: undefined,
+      eslintStack: { eslintMajor: undefined, templateParser: false, typescriptParser: false, angularEslint: undefined, templateParserMajor: undefined },
       ssr: false,
       sourceLocale: undefined,
       maturity: 'fresh',
@@ -436,7 +438,7 @@ describe('detectProject', () => {
     expect((await detect({ '.cngx/README.md': readme })).helperReadme).toEqual({ generated: true, fingerprint: '89abcdef' });
   });
 
-  it('finds the eslint flat config in js, mjs or cjs', async () => {
+  it('finds the eslint flat config in js, mjs, cjs, ts, mts or cts', async () => {
     expect((await detect({ 'eslint.config.mjs': 'export default [];' })).eslintConfig).toEqual({
       path: 'eslint.config.mjs',
       module: 'esm',
@@ -444,7 +446,97 @@ describe('detectProject', () => {
       wired: false,
     });
     expect((await detect({ 'eslint.config.cjs': 'module.exports = [];' })).eslintConfig?.module).toBe('cjs');
+    expect((await detect({ 'eslint.config.ts': 'export default [];' })).eslintConfig).toEqual({
+      path: 'eslint.config.ts',
+      module: 'esm',
+      editable: true,
+      wired: false,
+    });
+    expect((await detect({ 'eslint.config.mts': 'export default [];' })).eslintConfig?.module).toBe('esm');
+    expect((await detect({ 'eslint.config.cts': 'module.exports = [];' })).eslintConfig).toEqual({
+      path: 'eslint.config.cts',
+      module: 'cjs',
+      editable: true,
+      wired: false,
+    });
     expect((await detect({ '.eslintrc.json': '{}' })).eslintConfig).toBeUndefined();
+  });
+
+  it('finds a legacy eslintrc config in every name ESLint 8 read', async () => {
+    for (const path of ['.eslintrc', '.eslintrc.json', '.eslintrc.js', '.eslintrc.cjs', '.eslintrc.yaml', '.eslintrc.yml']) {
+      expect((await detect({ [path]: '{}' })).legacyEslintConfig).toEqual({ path });
+    }
+    expect((await detect({ 'eslint.config.js': 'export default [];' })).legacyEslintConfig).toBeUndefined();
+  });
+
+  describe('eslint stack', () => {
+    const withDevPackage = (devDependencies: Record<string, string>): Record<string, string> => {
+      const manifest = JSON.parse(createFixtureTree().readText('package.json')) as Record<string, unknown>;
+      return { 'package.json': JSON.stringify({ ...manifest, devDependencies }) };
+    };
+
+    it('reads the highest ESLint major the declared range admits', async () => {
+      const majorOf = async (range: string): Promise<number | undefined> =>
+        (await detect(withDevPackage({ eslint: range }))).eslintStack.eslintMajor;
+      expect(await majorOf('^8.57.0')).toBe(8);
+      expect(await majorOf('~8.1.0')).toBe(8);
+      expect(await majorOf('8.x')).toBe(8);
+      expect(await majorOf('^9.0.0')).toBe(9);
+      expect(await majorOf('^8.57.0 || ^9.0.0')).toBe(9);
+      expect(await majorOf('>=8 <10')).toBe(9);
+      expect(await majorOf('<9')).toBe(8);
+      expect(await majorOf('<9.1')).toBe(9);
+      expect(await majorOf('<=8.57.0')).toBe(8);
+      expect(await majorOf('8.0.0 - 9.1.0')).toBe(9);
+    });
+
+    it('reads the major of a prerelease range, not a digit of its tag', async () => {
+      const majorOf = async (range: string): Promise<number | undefined> =>
+        (await detect(withDevPackage({ eslint: range }))).eslintStack.eslintMajor;
+      expect(await majorOf('^9.0.0-rc.1')).toBe(9);
+      expect(await majorOf('^10.0.0-alpha.0')).toBe(10);
+      expect(await majorOf('~8.57.0-beta.2+build.5')).toBe(8);
+      expect(await majorOf('<9.0.0-rc.0')).toBe(8);
+      expect(await majorOf('>=9.0.0-rc.0')).toBeUndefined();
+    });
+
+    it('reads no major for an open, unreadable or missing range, so it never blocks', async () => {
+      const majorOf = async (range: string): Promise<number | undefined> =>
+        (await detect(withDevPackage({ eslint: range }))).eslintStack.eslintMajor;
+      expect(await majorOf('>=8')).toBeUndefined();
+      expect(await majorOf('^8.57.0 || >=9')).toBeUndefined();
+      expect(await majorOf('*')).toBeUndefined();
+      expect(await majorOf('latest')).toBeUndefined();
+      expect((await detect()).eslintStack.eslintMajor).toBeUndefined();
+    });
+
+    it('takes typescript-eslint, its parser or angular-eslint as a TypeScript parser', async () => {
+      for (const name of ['typescript-eslint', '@typescript-eslint/parser', 'angular-eslint']) {
+        expect((await detect(withDevPackage({ eslint: '^9.0.0', [name]: '^8.0.0' }))).eslintStack.typescriptParser).toBe(true);
+      }
+      expect((await detect(withDevPackage({ eslint: '^9.0.0' }))).eslintStack.typescriptParser).toBe(false);
+    });
+
+    it('sees the template parser only when it is declared itself', async () => {
+      const declared = await detect(withDevPackage({ '@angular-eslint/template-parser': '^21.0.0' }));
+      expect(declared.eslintStack.templateParser).toBe(true);
+      const meta = await detect(withDevPackage({ 'angular-eslint': '^21.0.0' }));
+      expect(meta.eslintStack.templateParser).toBe(false);
+    });
+
+    it('records the declared angular-eslint range for the template parser version line', async () => {
+      expect((await detect(withDevPackage({ 'angular-eslint': '21.3.0' }))).eslintStack.angularEslint).toBe('21.3.0');
+      expect((await detect(withDevPackage({ eslint: '^9.0.0' }))).eslintStack.angularEslint).toBeUndefined();
+    });
+
+    it('reads the template parser line from its own range, else from angular-eslint', async () => {
+      const majorOf = async (packages: Record<string, string>): Promise<number | undefined> =>
+        (await detect(withDevPackage(packages))).eslintStack.templateParserMajor;
+      expect(await majorOf({ 'angular-eslint': '18.4.0' })).toBe(18);
+      expect(await majorOf({ 'angular-eslint': '^21.0.0', '@angular-eslint/template-parser': '^18.0.0' })).toBe(18);
+      expect(await majorOf({ 'angular-eslint': '>=18' })).toBeUndefined();
+      expect(await majorOf({ eslint: '^9.0.0' })).toBeUndefined();
+    });
   });
 
   it('reads the module format, editability and cngx wiring of an eslint.config.js', async () => {

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { type Change, parseManifest, type StepResult } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
-import { type EslintConfigFacts } from '../detect/detect';
+import { type EslintConfigFacts, type EslintStackFacts, type ProjectFacts } from '../detect/detect';
 import { planLint } from './lint';
 
 const ANGULAR_ESLINT_CJS = `// @ts-check
@@ -28,6 +28,25 @@ function config(overrides: Partial<EslintConfigFacts> = {}): EslintConfigFacts {
   return { path: 'eslint.config.js', module: 'cjs', editable: true, wired: false, ...overrides };
 }
 
+const STACK: EslintStackFacts = {
+  eslintMajor: 9,
+  templateParser: true,
+  typescriptParser: true,
+  angularEslint: undefined,
+  templateParserMajor: undefined,
+};
+
+const PARSER_MANIFEST = parseManifest(JSON.stringify({ devDependencies: { '@angular-eslint/template-parser': '^21.0.0' } }));
+
+// An app whose ESLint stack the plugin runs in; a spec states only what differs.
+function eslintApp(overrides: Partial<ProjectFacts> = {}, stack: Partial<EslintStackFacts> = {}): ProjectFacts {
+  return createFacts({ eslintConfig: config(), eslintStack: { ...STACK, ...stack }, manifest: PARSER_MANIFEST, ...overrides });
+}
+
+function notes(result: StepResult): readonly (readonly [string, string])[] {
+  return result.changes.flatMap((change) => (change.kind === 'note' ? [[change.id, change.reason] as const] : []));
+}
+
 function byId(result: StepResult, id: string): Change | undefined {
   return result.changes.find((change) => change.id === id);
 }
@@ -39,7 +58,7 @@ function edit(result: StepResult, content: string): string {
 
 describe('planLint', () => {
   it('adds the plugin as a pinned devDependency and its recommended blocks to a CommonJS config', () => {
-    const result = planLint(createFacts({ eslintConfig: config() }), createAnswers(), VERSIONS);
+    const result = planLint(eslintApp(), createAnswers(), VERSIONS);
 
     expect(byId(result, 'dependency:@cngx/eslint-plugin')).toMatchObject({
       kind: 'add-dependency',
@@ -63,7 +82,7 @@ module.exports = defineConfig([
 
   it('uses a default import in an ES module config', () => {
     const result = planLint(
-      createFacts({ eslintConfig: config({ path: 'eslint.config.mjs', module: 'esm' }) }),
+      eslintApp({ eslintConfig: config({ path: 'eslint.config.mjs', module: 'esm' }) }),
       createAnswers(),
       VERSIONS,
     );
@@ -79,7 +98,7 @@ export default [
   });
 
   it('edits idempotently', () => {
-    const result = planLint(createFacts({ eslintConfig: config() }), createAnswers(), VERSIONS);
+    const result = planLint(eslintApp(), createAnswers(), VERSIONS);
     const once = edit(result, ANGULAR_ESLINT_CJS);
     expect(edit(result, once)).toBe(once);
   });
@@ -89,10 +108,11 @@ export default [
       expect.objectContaining({
         kind: 'note',
         label: 'Skip the eslint entry',
-        reason: 'no eslint flat config (eslint.config.js, .mjs or .cjs) found',
+        reason:
+          'no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found; set one up with `ng add angular-eslint`, then run `ng add @cngx/core` again',
       }),
     ]);
-    expect(planLint(createFacts({ eslintConfig: config({ editable: false }) }), createAnswers(), VERSIONS).changes).toEqual([
+    expect(planLint(eslintApp({ eslintConfig: config({ editable: false }) }), createAnswers(), VERSIONS).changes).toEqual([
       expect.objectContaining({
         reason: 'eslint.config.js exports no array cngx can extend; add ...cngx.configs.recommended by hand',
       }),
@@ -107,22 +127,168 @@ export default [
   });
 
   it('skips a declared plugin and an already wired config', () => {
-    const facts = createFacts({
+    const facts = eslintApp({
       eslintConfig: config({ wired: true }),
-      manifest: parseManifest(JSON.stringify({ devDependencies: { '@cngx/eslint-plugin': '^0.1.0' } })),
+      manifest: parseManifest(
+        JSON.stringify({ devDependencies: { '@cngx/eslint-plugin': '^0.1.0', '@angular-eslint/template-parser': '^21.0.0' } }),
+      ),
     });
     const result = planLint(facts, createAnswers(), VERSIONS);
 
     expect(result.changes).toEqual([]);
     expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([
       ['dependency:@cngx/eslint-plugin', 'already declared as ^0.1.0'],
+      ['dependency:@angular-eslint/template-parser', 'already declared as ^21.0.0'],
       ['lint:config', 'already loaded in eslint.config.js'],
     ]);
   });
 
+  it('edits a TypeScript flat config like an ES module one', () => {
+    const result = planLint(eslintApp({ eslintConfig: config({ path: 'eslint.config.ts', module: 'esm' }) }), createAnswers(), VERSIONS);
+
+    expect(byId(result, 'lint:config')).toMatchObject({ kind: 'edit-file', path: 'eslint.config.ts' });
+    expect(edit(result, FLAT_ESM)).toContain("import cngx from '@cngx/eslint-plugin';");
+  });
+
+  describe('an ESLint setup the plugin cannot run in', () => {
+    const blocked = (facts: ProjectFacts): StepResult => planLint(facts, createAnswers(), VERSIONS);
+
+    it('notes ESLint below 9 with the command that updates it and adds nothing', () => {
+      const facts = eslintApp(
+        { manifest: parseManifest(JSON.stringify({ devDependencies: { eslint: '^8.57.0' } })) },
+        { eslintMajor: 8 },
+      );
+      expect(blocked(facts)).toEqual({
+        changes: [
+          expect.objectContaining({
+            kind: 'note',
+            id: 'lint:config',
+            reason:
+              '@cngx/eslint-plugin needs ESLint 9 or later and this app declares eslint ^8.57.0; raise eslint to `^9` in devDependencies and reinstall, or run `ng add angular-eslint`, then run `ng add @cngx/core` again',
+          }),
+        ],
+        skipped: [],
+      });
+      const managed = eslintApp(
+        { manifest: parseManifest(JSON.stringify({ devDependencies: { eslint: '^8.57.0', 'angular-eslint': '18.4.0' } })) },
+        { eslintMajor: 8, angularEslint: '18.4.0' },
+      );
+      expect(notes(blocked(managed))[0][1]).toContain('raise eslint to `^9` in devDependencies and reinstall (with angular-eslint: `ng update angular-eslint`)');
+    });
+
+    it('names the migration command for a legacy eslintrc config', () => {
+      const facts = eslintApp({ eslintConfig: undefined, legacyEslintConfig: { path: '.eslintrc.json' } });
+      expect(notes(blocked(facts))).toEqual([
+        ['lint:config', '.eslintrc.json is a legacy config; migrate with `npx @eslint/migrate-config .eslintrc.json`, then run `ng add @cngx/core` again'],
+      ]);
+      expect(blocked(facts).changes).toHaveLength(1);
+    });
+
+    it('prefers a flat config over a leftover eslintrc', () => {
+      const result = blocked(eslintApp({ legacyEslintConfig: { path: '.eslintrc.json' } }));
+      expect(notes(result)).toEqual([]);
+      expect(byId(result, 'lint:config')?.kind).toBe('edit-file');
+    });
+
+    it('notes a stack without a TypeScript parser', () => {
+      expect(blocked(eslintApp({}, { typescriptParser: false })).changes).toEqual([
+        expect.objectContaining({
+          kind: 'note',
+          id: 'lint:config',
+          reason:
+            'the cngx rules lint TypeScript through your typescript-eslint setup; add typescript-eslint or run `ng add angular-eslint`, then run `ng add @cngx/core` again',
+        }),
+      ]);
+    });
+  });
+
+  describe('the template parser', () => {
+    it('pins it on the angular-eslint version line when angular-eslint is declared', () => {
+      const facts = eslintApp(
+        { manifest: parseManifest(JSON.stringify({ devDependencies: { 'angular-eslint': '21.3.0' } })) },
+        { templateParser: false, angularEslint: '21.3.0' },
+      );
+      const result = planLint(facts, createAnswers(), VERSIONS);
+
+      expect(byId(result, 'dependency:@angular-eslint/template-parser')).toMatchObject({
+        kind: 'add-dependency',
+        name: '@angular-eslint/template-parser',
+        version: '21.3.0',
+        dev: true,
+      });
+      expect(notes(result)).toEqual([]);
+      expect(byId(result, 'lint:config')?.kind).toBe('edit-file');
+    });
+
+    it('blocks the entry without angular-eslint, since the plugin cannot load without it', () => {
+      const result = planLint(eslintApp({}, { templateParser: false }), createAnswers(), VERSIONS);
+
+      expect(result).toEqual({
+        changes: [
+          expect.objectContaining({
+            kind: 'note',
+            id: 'lint:config',
+            reason:
+              '@cngx/eslint-plugin loads @angular-eslint/template-parser; add it as a devDependency or run `ng add angular-eslint`, then run `ng add @cngx/core` again',
+          }),
+        ],
+        skipped: [],
+      });
+    });
+
+    it('blocks an angular-eslint line below the plugin peer instead of pinning the parser on it', () => {
+      const result = planLint(
+        eslintApp({}, { templateParser: false, angularEslint: '18.4.0', templateParserMajor: 18 }),
+        createAnswers(),
+        VERSIONS,
+      );
+
+      expect(result).toEqual({
+        changes: [
+          expect.objectContaining({
+            kind: 'note',
+            id: 'lint:config',
+            reason:
+              '@cngx/eslint-plugin needs @angular-eslint/template-parser 19 or later and this app is on the 18 line; run `ng update angular-eslint`, then run `ng add @cngx/core` again',
+          }),
+        ],
+        skipped: [],
+      });
+    });
+
+    it('names the manual raise for a parser declared below the peer without angular-eslint', () => {
+      const result = planLint(eslintApp({}, { templateParserMajor: 18 }), createAnswers(), VERSIONS);
+
+      expect(notes(result)).toEqual([
+        [
+          'lint:config',
+          '@cngx/eslint-plugin needs @angular-eslint/template-parser 19 or later and this app is on the 18 line; raise @angular-eslint/template-parser to `^19` in devDependencies and reinstall, then run `ng add @cngx/core` again',
+        ],
+      ]);
+    });
+
+    it('adds nothing when it is declared', () => {
+      const result = planLint(eslintApp(), createAnswers(), VERSIONS);
+      expect(result.changes.map((change) => change.id)).toEqual(['dependency:@cngx/eslint-plugin', 'lint:config']);
+      expect(result.skipped.map((step) => step.id)).toEqual(['dependency:@angular-eslint/template-parser']);
+    });
+  });
+
   it('does not mutate its inputs', () => {
     expect(() =>
-      planLint(deepFreeze(createFacts({ eslintConfig: config() })), deepFreeze(createAnswers()), deepFreeze(VERSIONS)),
+      planLint(
+        deepFreeze(
+          eslintApp(
+            { manifest: parseManifest(JSON.stringify({ devDependencies: { 'angular-eslint': '^21.0.0' } })) },
+            { templateParser: false, angularEslint: '^21.0.0' },
+          ),
+        ),
+        deepFreeze(createAnswers()),
+        deepFreeze(VERSIONS),
+      ),
+    ).not.toThrow();
+    expect(() =>
+      planLint(deepFreeze(eslintApp({}, { eslintMajor: 8 })), deepFreeze(createAnswers()), deepFreeze(VERSIONS)),
     ).not.toThrow();
   });
 });

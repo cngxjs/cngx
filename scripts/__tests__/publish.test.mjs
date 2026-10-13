@@ -5,11 +5,13 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  assertPinsPublished,
   containsStableRelease,
   createSchematicsVersions,
   declaresSchematics,
   findPlaceholders,
   libBuildCommand,
+  npmViewVersion,
   replaceVersionInDist,
   resolveDistTag,
   stampManifest,
@@ -111,6 +113,83 @@ describe('createSchematicsVersions', () => {
         angularRange: '^21.2.0',
       }),
     ).toEqual({ cngx: '0.1.0', mcp: '0.2.0', eslintPlugin: '0.2.1', angular: '^21.2.0' });
+  });
+});
+
+describe('assertPinsPublished', () => {
+  const pins = { mcpVersion: '0.2.0', eslintPluginVersion: '0.2.1' };
+
+  it('passes when every pinned version is on npm', () => {
+    const asked = [];
+    const view = (spec) => {
+      asked.push(spec);
+      return `${spec.slice(spec.lastIndexOf('@') + 1)}\n`;
+    };
+
+    expect(() => assertPinsPublished(pins, view)).not.toThrow();
+    expect(asked).toEqual(['@cngx/mcp@0.2.0', '@cngx/eslint-plugin@0.2.1']);
+  });
+
+  it('refuses a pin npm does not list', () => {
+    const view = (spec) => (spec.startsWith('@cngx/eslint-plugin') ? '' : '0.2.0');
+
+    expect(() => assertPinsPublished(pins, view)).toThrow(
+      '@cngx/eslint-plugin@0.2.1 is not on npm; publish it first',
+    );
+  });
+
+  it('fails closed when the lookup throws', () => {
+    const view = () => {
+      throw new Error('ENOTFOUND');
+    };
+
+    expect(() => assertPinsPublished(pins, view)).toThrow('could not look up @cngx/mcp@0.2.0 on npm: ENOTFOUND');
+  });
+
+  it('refuses an E404 from npm view as not on npm', () => {
+    const exec = () => {
+      throw Object.assign(new Error('Command failed'), {
+        status: 1,
+        stderr: 'npm warn noise\nnpm error code E404\nnpm error 404 No match found for version 0.2.1\n',
+      });
+    };
+    const view = (spec) => (spec.startsWith('@cngx/mcp') ? '0.2.0\n' : npmViewVersion(spec, '', exec));
+
+    expect(() => assertPinsPublished(pins, view)).toThrow(
+      '@cngx/eslint-plugin@0.2.1 is not on npm; publish it first',
+    );
+  });
+});
+
+describe('npmViewVersion', () => {
+  it('asks npm for the version on the given registry', () => {
+    const commands = [];
+    const exec = (command) => {
+      commands.push(command);
+      return '0.2.0\n';
+    };
+
+    expect(npmViewVersion('@cngx/mcp@0.2.0', ' --registry http://localhost:4873', exec)).toBe('0.2.0\n');
+    expect(commands).toEqual(['npm view @cngx/mcp@0.2.0 version --registry http://localhost:4873']);
+  });
+
+  it('reports any other npm failure by its error code only', () => {
+    const exec = () => {
+      throw Object.assign(new Error('Command failed'), {
+        status: 1,
+        stderr: 'npm warn noise\nnpm error code ENOTFOUND\nnpm error network request failed\n',
+      });
+    };
+
+    expect(() => npmViewVersion('@cngx/mcp@0.2.0', '', exec)).toThrow(/^ENOTFOUND$/);
+  });
+
+  it('falls back to the exit status when npm names no error code', () => {
+    const exec = () => {
+      throw Object.assign(new Error('Command failed'), { status: 127, stderr: '' });
+    };
+
+    expect(() => npmViewVersion('@cngx/mcp@0.2.0', '', exec)).toThrow('npm view exited with 127');
   });
 });
 
