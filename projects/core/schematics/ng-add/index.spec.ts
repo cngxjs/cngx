@@ -440,10 +440,12 @@ describe('the ng-add collection', () => {
     expect(enums['aiTools'].items?.enum).toEqual(AI_TOOLS);
   });
 
-  it('promises no editor config in the aiTools help while the step only notes it', () => {
+  it('describes the editor configs the aiTools step writes', () => {
     const description = (SCHEMA.properties['aiTools'] as { description: string }).description;
 
-    expect(description).toContain('writes no editor config yet');
+    expect(description).toContain('project MCP config');
+    expect(description).toContain('.cngx/README.md');
+    expect(description).not.toContain('writes no editor config');
   });
 
   it('declares no option the ng add command strips', () => {
