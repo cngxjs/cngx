@@ -77,3 +77,4 @@ CNGX_LLM_REFERENCE.md
 /examples/src/app/features/
 /examples/src/app/app.routes.ts
 /examples/src/app/_routes-meta.ts
+.consumer-compat

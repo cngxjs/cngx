@@ -8,9 +8,11 @@ import {
   containsStableRelease,
   createSchematicsVersions,
   declaresSchematics,
+  findPlaceholders,
   libBuildCommand,
   replaceVersionInDist,
   resolveDistTag,
+  stampManifest,
 } from '../publish.mjs';
 
 describe('resolveDistTag', () => {
@@ -144,5 +146,38 @@ describe('publishable libs', () => {
       migrations: './schematics/migrations/migrations.json',
       packageGroup: libs.map((lib) => `@cngx/${lib}`),
     });
+  });
+});
+
+describe('findPlaceholders', () => {
+  it('reports the manifest fields that still carry the placeholder', () => {
+    const pkg = {
+      version: '0.0.0-PLACEHOLDER',
+      peerDependencies: { '@cngx/core': '0.0.0-PLACEHOLDER', '@angular/core': '^21.2.0' },
+      description: 'plain',
+    };
+    expect(findPlaceholders(pkg)).toEqual(['version', 'peerDependencies']);
+  });
+
+  it('accepts a fully rewritten manifest', () => {
+    const pkg = { version: '0.1.0', peerDependencies: { '@cngx/core': '0.1.0' } };
+    expect(findPlaceholders(pkg)).toEqual([]);
+  });
+});
+
+describe('stampManifest', () => {
+  it('rewrites the version and the cross-@cngx placeholder peers only', () => {
+    const pkg = {
+      version: '0.0.0-PLACEHOLDER',
+      peerDependencies: { '@cngx/core': '0.0.0-PLACEHOLDER', '@angular/core': '^21.2.0' },
+    };
+    const stamped = stampManifest(pkg, '0.1.0');
+    expect(stamped.version).toBe('0.1.0');
+    expect(stamped.peerDependencies).toEqual({ '@cngx/core': '0.1.0', '@angular/core': '^21.2.0' });
+    expect(findPlaceholders(stamped)).toEqual([]);
+  });
+
+  it('copes with a manifest without peers', () => {
+    expect(stampManifest({ version: '0.0.0-PLACEHOLDER' }, '1.0.0')).toEqual({ version: '1.0.0' });
   });
 });

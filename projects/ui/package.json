@@ -29,7 +29,10 @@
     "@cngx/common": "0.0.0-PLACEHOLDER",
     "@angular/cdk": "^21.2.0",
     "@angular/common": "^21.2.0",
-    "@angular/core": "^21.2.0"
+    "@angular/core": "^21.2.0",
+    "rxjs": "^7.8.0",
+    "@angular/router": "^21.2.0",
+    "@angular/material": "^21.2.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"
@@ -38,5 +41,13 @@
   "exports": {
     "./theming/*.css": "./theming/*.css"
   },
-  "schematics": "./schematics/collection.json"
+  "schematics": "./schematics/collection.json",
+  "peerDependenciesMeta": {
+    "@angular/router": {
+      "optional": true
+    },
+    "@angular/material": {
+      "optional": true
+    }
+  }
 }
