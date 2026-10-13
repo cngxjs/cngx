@@ -3,12 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { CNGX_SELECT_GLYPHS, type CngxSelectGlyphKey } from './internal/glyphs';
 
 describe('CNGX_SELECT_GLYPHS', () => {
-  it('exposes the five expected glyph keys', () => {
+  it('exposes the four expected glyph keys', () => {
     expect(Object.keys(CNGX_SELECT_GLYPHS).sort()).toEqual([
       'caret',
       'clear',
       'commitError',
-      'dragHandle',
       'treeTwisty',
     ]);
   });
@@ -25,7 +24,6 @@ describe('CNGX_SELECT_GLYPHS', () => {
     expect(CNGX_SELECT_GLYPHS.clear).toBe('✕');
     expect(CNGX_SELECT_GLYPHS.caret).toBe('▾');
     expect(CNGX_SELECT_GLYPHS.treeTwisty).toBe('▸');
-    expect(CNGX_SELECT_GLYPHS.dragHandle).toBe('⋮⋮');
     expect(CNGX_SELECT_GLYPHS.commitError).toBe('!');
   });
 

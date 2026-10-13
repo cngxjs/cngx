@@ -608,8 +608,10 @@ export class CngxMultiSelectChip<T = unknown> {
 
 /**
  * `*cngxMultiSelectChipHandle` slot - reorderable chip drag-handle glyph.
- * Cascade: this slot > `[chipDragHandle]` Input > default `⋮⋮`. Handle
- * span stays `aria-hidden="true"` (AT reads `[reorderAriaLabel]` instead).
+ * Cascade: this slot > `[chipDragHandle]` Input (app-wide default via
+ * `withDefaultDragHandle`). With neither, no grip renders and the whole chip
+ * is the drag surface. Handle span stays `aria-hidden="true"` (AT reads
+ * `[reorderAriaLabel]` instead).
  *
  * ```html
  * <cngx-reorderable-multi-select ...>

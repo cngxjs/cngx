@@ -285,12 +285,14 @@ Variant components declare 13 `contentChild` queries inline (Angular's AOT compi
 
 ### Internal `CNGX_SELECT_GLYPHS` const
 
-Default glyphs for the slots that fall back to a single character (`✕ ▾ ▸ ⋮⋮ !`) live in `shared/glyphs.ts` as a plain `as const` object. **NOT exported** - the const exists only to absorb internal duplicates.
-onsumers override via:
+Default glyphs for the slots that fall back to a single character (`✕ ▾ ▸ !`) live in `shared/internal/glyphs.ts` as a plain `as const` object. **NOT exported** - the const exists only to absorb internal duplicates.
+Consumers override via:
 
-1. `*cngxSelectClearButton` / `*cngxSelectCaret` / `*cngxMultiSelectChipHandle` directives (highest precedence).
-2. `[clearGlyph]` / `[caretGlyph]` / `[chipDragHandle]` Inputs (mid).
+1. `*cngxSelectClearButton` / `*cngxSelectCaret` directives (highest precedence).
+2. `[clearGlyph]` / `[caretGlyph]` Inputs (mid).
 3. `CNGX_SELECT_GLYPHS.<key>` falls back automatically (lowest).
+
+The reorderable chip drag handle has no glyph fallback: `*cngxMultiSelectChipHandle` wins over `[chipDragHandle]` (app-wide default via `withDefaultDragHandle`), and with neither no grip renders.
 
 The library deliberately ships no `<cngx-icon>` / `<cngx-button>` component - we assume consumers bring their own design system.
 The const stays tree-shakeable; calls drop from the bundle when unused.

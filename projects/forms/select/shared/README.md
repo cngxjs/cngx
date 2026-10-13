@@ -402,7 +402,7 @@ Used internally by the registry + by tree-select for tree-specific slots that ar
 
 ### `glyphs.ts`
 
-**Internal-only**, NOT exported from `public-api.ts`. The 5 default glyph strings (`✕ ▾ ▸ ⋮⋮ !`) shared by the slot fallbacks.
+**Internal-only**, NOT exported from `public-api.ts`. The 4 default glyph strings (`✕ ▾ ▸ !`) shared by the slot fallbacks.
 Plain `as const` object - tree-shakeable, `aria-hidden` stays at the call site.
 
 | Symbol | Purpose |
