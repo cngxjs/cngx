@@ -6,23 +6,24 @@ declare const ngDevMode: boolean | undefined;
  * Error thrown by cngx for a misuse or a broken precondition, carrying a
  * stable `code`. In development the message reads
  * `CNGXnnnn: <message> Find more at <url>`; in a production build it is the
- * bare code (`CNGX1045`), so the message text and the doc link never ship.
+ * bare code (`CNGXnnnn`), so the message text and the doc link never ship. A
+ * check that sits in a dev-only branch is removed from production entirely.
  *
  * Branch on the class and the code, never on the message text:
  *
  * ```typescript
  * try {
- *   state.updateAtPath(path, node);
+ *   runTheCall();
  * } catch (err) {
- *   if (err instanceof CngxRuntimeError && err.code === 'CNGX2010') {
- *     // handle the stale path
+ *   if (err instanceof CngxRuntimeError) {
+ *     report(err.code); // the same in development and production
  *   }
  * }
  * ```
  *
  * Call-site contract: the code is a string literal in the lib's range, and the
  * message sits behind the inline guard, so the production build drops its
- * text: `throw new CngxRuntimeError('CNGX1045', typeof ngDevMode !==
+ * text: `throw new CngxRuntimeError('CNGXnnnn', typeof ngDevMode !==
  * 'undefined' && ngDevMode && 'message')`. A construction that already sits
  * in a dev-only branch may pass a plain message. Both rules are checked by
  * `scripts/__tests__/raw-throw-guard.test.mjs`.
