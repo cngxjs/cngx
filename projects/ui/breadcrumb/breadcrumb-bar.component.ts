@@ -65,6 +65,18 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
  * @slot cngxBreadcrumbItemAccessory Trailing control on a crumb, e.g. a siblings dropdown trigger.
  * @slot cngxBreadcrumbOverflowItem Replaces a row inside the collapsed-crumbs menu.
  * <example-url>http://localhost:4200/#/ui/breadcrumb/basic/explicit-items</example-url>
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/skins/variants</example-url>
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/skins/chips</example-url>
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/skins/editorial</example-url>
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/skins/header</example-url>
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/skins/iconlabel</example-url>
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/skins/icononly</example-url>
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/skins/metro</example-url>
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/skins/path</example-url>
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/skins/record</example-url>
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/skins/ribbon</example-url>
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/skins/shell</example-url>
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/skins/toolbar</example-url>
  */
 @Component({
   selector: 'cngx-breadcrumb',

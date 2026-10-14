@@ -5,6 +5,7 @@
     "projects/**/*.spec.ts",
     "examples/**/*",
     "projects/**/examples/**/*",
+    "projects/**/schematics/**/*",
     "projects/testing/**/*"
   ]
 }

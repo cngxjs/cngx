@@ -31,8 +31,8 @@ A cross-level violation fails the lint stage in CI.
 |0|`@cngx/utils`|Framework-agnostic utilities. Source files import zero `@angular/*` packages. Pure functions, types, tree helpers, RxJS interop helpers.|
 |1|`@cngx/core`|Angular-aware primitives that do not render. DI tokens, coercion helpers, async state machine, transition tracker, selection controller, key combos.|
 |2|`@cngx/common`|Atoms and molecules, plus pure-CNGX organisms. Single-responsibility directives across a11y, interactive, popover, display, card, data, dialog, layout, chart, tabs, stepper. CDK touched in exactly two spots (`a11y/focus-trap`, `data/data-source`). Never imports `@angular/material`.|
-|3|`@cngx/forms`, `@cngx/data-display`|Organisms in a feature domain. `@cngx/forms` (controls, validators, field bridges, select family, filter-builder, input) has zero CDK touchpoints. `@cngx/data-display/treetable` uses `@angular/cdk/table` + `SelectionModel`. Neither lib may import `@angular/material`.|
-|4|`@cngx/ui`|Organisms that need overlay engineering or opt into Material. CDK is used only in `overlay` (via `cdk/overlay` + `cdk/portal`). Three of the thirteen secondary entries opt into Material (`mat-stepper`, `mat-tabs`, `material`); the other ten (`action-button`, `empty-state`, `feedback`, `layout`, `overlay`, `sidenav`, `skeleton`, `speak`, `stepper`, `tabs`) need neither CDK nor Material.|
+|3|`@cngx/forms`, `@cngx/data-display`, `@cngx/interop`|Organisms in a feature domain, plus the bridges from external async ecosystems. `@cngx/forms` (controls, validators, field bridges, select family, filter-builder, input) has zero CDK touchpoints. `@cngx/data-display/treetable` uses `@angular/cdk/table`; selection and expansion are signal models. `@cngx/interop` projects TanStack Query results (`query`) and NgRx SignalStore state (`signals`) onto `CngxAsyncState`. None of them imports `@angular/material`.|
+|4|`@cngx/ui`|The organism layer, 26 secondary entries. CDK and Material are opt-in per entry: CDK in `overlay` (via `cdk/overlay` + `cdk/portal`) and `sidenav`, Material in the four bridges `mat-accordion`, `mat-paginator`, `mat-stepper`, `mat-tabs`. The other twenty entries need neither CDK nor Material.|
 
 ---
 
@@ -47,7 +47,7 @@ Level N may import Levels 0 through N-1. Never Levels N+1 or higher.
 <div>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 640" width="100%">
   <title>@cngx package dependency graph</title>
-  <desc>Six published packages plus a placeholder for future L3 libs. ui at the top in L4, forms / placeholder / data-display in L3, common in L2, core in L1, utils at the base in L0. Arrows point downward, encoding import direction.</desc>
+  <desc>Seven published packages. ui at the top in L4, forms / interop / data-display in L3, common in L2, core in L1, utils at the base in L0. Arrows point downward, encoding import direction.</desc>
   <defs>
     <marker id="arrow-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M2 1L8 5L2 9" fill="none" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -71,9 +71,11 @@ Level N may import Levels 0 through N-1. Never Levels N+1 or higher.
   </g>
   <g fill="none" stroke-width="1">
     <line x1="270" y1="116" x2="170" y2="180" stroke="#1D9E75" stroke-opacity="0.7" marker-end="url(#arrow-teal)"/>
+    <line x1="340" y1="116" x2="340" y2="180" stroke="#1D9E75" stroke-opacity="0.7" marker-end="url(#arrow-teal)"/>
     <line x1="410" y1="116" x2="510" y2="180" stroke="#1D9E75" stroke-opacity="0.7" marker-end="url(#arrow-teal)"/>
     <line x1="110" y1="236" x2="300" y2="300" stroke="#7F7C70" stroke-opacity="0.55" marker-end="url(#arrow-gray)"/>
     <line x1="570" y1="236" x2="380" y2="300" stroke="#7F7C70" stroke-opacity="0.55" marker-end="url(#arrow-gray)"/>
+    <line x1="340" y1="236" x2="340" y2="300" stroke="#7F7C70" stroke-opacity="0.55" marker-end="url(#arrow-gray)"/>
     <line x1="340" y1="356" x2="340" y2="420" stroke="#7F7C70" stroke-opacity="0.55" marker-end="url(#arrow-gray)"/>
     <line x1="340" y1="476" x2="340" y2="540" stroke="#7F7C70" stroke-opacity="0.55" marker-end="url(#arrow-gray)"/>
   </g>
@@ -81,7 +83,7 @@ Level N may import Levels 0 through N-1. Never Levels N+1 or higher.
     <g>
       <rect x="240" y="60" width="200" height="56" rx="8" fill="#085041" stroke="#5DCAA5" stroke-width="0.5"/>
       <text x="340" y="82" font-size="14" font-weight="500" fill="#9FE1CB">@cngx/ui</text>
-      <text x="340" y="100" font-size="12" fill="#5DCAA5">Overlay, Material opt-in</text>
+      <text x="340" y="100" font-size="12" fill="#5DCAA5">Organisms, CDK/Material opt-in</text>
     </g>
     <g>
       <rect x="10" y="180" width="200" height="56" rx="8" fill="#3C3489" stroke="#AFA9EC" stroke-width="0.5"/>
@@ -89,8 +91,9 @@ Level N may import Levels 0 through N-1. Never Levels N+1 or higher.
       <text x="110" y="220" font-size="12" fill="#AFA9EC">Selects, validators, field</text>
     </g>
     <g>
-      <rect x="240" y="180" width="200" height="56" rx="8" fill="none" stroke="#8B86C9" stroke-opacity="0.7" stroke-width="0.7" stroke-dasharray="5,4"/>
-      <text x="340" y="208" font-size="12" font-style="italic" fill="#7F7AB8" fill-opacity="0.95">+ weitere L3-Libs</text>
+      <rect x="240" y="180" width="200" height="56" rx="8" fill="#3C3489" stroke="#AFA9EC" stroke-width="0.5"/>
+      <text x="340" y="202" font-size="14" font-weight="500" fill="#CECBF6">@cngx/interop</text>
+      <text x="340" y="220" font-size="12" fill="#AFA9EC">TanStack, NgRx bridges</text>
     </g>
     <g>
       <rect x="470" y="180" width="200" height="56" rx="8" fill="#3C3489" stroke="#AFA9EC" stroke-width="0.5"/>
@@ -146,9 +149,9 @@ Two atoms intentionally reach into CDK because there is no cheaper way to expres
 
 Material is forbidden by ESLint at this level.
 
-### Level 3 - `@cngx/forms` and `@cngx/data-display`
+### Level 3 - `@cngx/forms`, `@cngx/data-display` and `@cngx/interop`
 
-`@cngx/forms` and `@cngx/data-display` host **organisms in a feature domain**.
+`@cngx/forms` and `@cngx/data-display` host **organisms in a feature domain**. `@cngx/interop` sits beside them and bridges external async ecosystems into the cngx async contract.
 
 The select family (`@cngx/forms/select`) composes `CngxListbox`, `CngxActiveDescendant`, `CngxPopover`, `CngxFormFieldPresenter`, and several factories into nine self-contained dropdown surfaces:
 
@@ -164,23 +167,31 @@ The select family (`@cngx/forms/select`) composes `CngxListbox`, `CngxActiveDesc
 
 `@cngx/forms` has zero CDK touchpoints. Listbox keyboard handling, active-descendant, and selection state are hand-rolled on top of `@cngx/common` primitives.
 
-`@cngx/data-display/treetable` is the one place where CDK earns its weight at Level 3. It consumes `@angular/cdk/table` and CDK's `SelectionModel`.
+`@cngx/data-display/treetable` is the one place where CDK earns its weight at Level 3. It consumes `@angular/cdk/table`; selection and expansion are signal models (`model<ReadonlySet<string>>`).
 
-Neither lib may import `@angular/material`.
+`@cngx/interop` ships two entries, each an adapter onto `CngxAsyncState`:
+
+- `query` - `fromQuery` projects a TanStack Query result.
+- `signals` - `withCngxAsyncState` is an `@ngrx/signals` store feature.
+
+Both foreign packages are optional peer dependencies. The adapters render nothing; every cngx async surface consumes their output natively.
+
+None of the three libs imports `@angular/material`.
 
 ### Level 4 - `@cngx/ui`
 
-`@cngx/ui` is the only lib that may import `@angular/material`, and even there the opt-in is surgical. Out of thirteen secondary entries only `mat-stepper`, `mat-tabs`, and `material` touch Material.
+`@cngx/ui` is the organism layer. Its 26 secondary entries compose atoms and molecules from the lower levels into self-contained features: layout, overlay, feedback, stepper, tabs, accordion, paginator, sidenav, breadcrumb, timeline, command palette, data-grid accordion and more.
 
-The remaining ten host organisms whose primary purpose is one of:
+It is also the only lib that may import `@angular/material`, and the opt-in is per entry:
 
-- Overlay engineering (`overlay` uses `cdk/overlay` + `cdk/portal`)
-- Composed layout (`layout`, `sidenav`)
-- Feedback / skeleton / speak shells that need no third-party UI toolkit at all
+- Material: the four bridges `mat-accordion`, `mat-paginator`, `mat-stepper`, `mat-tabs`. Each one re-uses the brain of its pure-CNGX twin.
+- CDK: `overlay` uses `cdk/overlay` + `cdk/portal` as its engine, `sidenav` takes its focus trap from `cdk/a11y`.
+
+The remaining twenty entries need neither CDK nor Material.
 
 <aside class="cc-note">
 
-**Note.** A component that can be built without `@angular/material` and without overlay infrastructure does not belong in `@cngx/ui`. It belongs in `@cngx/common`.
+**Note.** An atom or molecule does not belong in `@cngx/ui`, whatever toolkit it touches. It belongs in `@cngx/common`. An entry lives in `@cngx/ui` because it is an organism, not because it uses CDK or Material.
 
 </aside>
 
@@ -198,8 +209,9 @@ A library is defined by **what it hosts**, not by which framework toolkit it hap
 - **`@cngx/forms`** - forms-related organisms (controls, validators, field bridges, the entire select family, filter-builder, input).
 
     Zero CDK touchpoints across the lib. Listbox/active-descendant/selection state is rolled by hand on top of `@cngx/common`.
-- **`@cngx/data-display`** - organisms whose job is to display tabular or hierarchical data. `treetable` uses `@angular/cdk/table` + `SelectionModel`. Never imports `@angular/material`.
-- **`@cngx/ui`** - organisms that need overlay engineering or opt into Material. CDK only in `overlay`. Material only in `mat-stepper`, `mat-tabs`, and `material`.
+- **`@cngx/data-display`** - organisms whose job is to display tabular or hierarchical data. `treetable` uses `@angular/cdk/table`; selection is a signal model. Never imports `@angular/material`.
+- **`@cngx/interop`** - adapters from external async ecosystems (TanStack Query, NgRx SignalStore) onto `CngxAsyncState`. No UI.
+- **`@cngx/ui`** - the organism layer. CDK in `overlay` and `sidenav`. Material only in the four bridges `mat-accordion`, `mat-paginator`, `mat-stepper`, `mat-tabs`.
 
 ### Placement test
 
@@ -256,7 +268,7 @@ Each `tsconfig.lib.json` redirects intra-lib cross-secondary imports to the buil
 ### Pipeline
 
 ```
-utils -> core -> common -> forms / data-display -> ui
+utils -> core -> common -> interop -> forms -> data-display -> ui -> themes
 ```
 
 ### Sheriff classification
@@ -282,12 +294,12 @@ The hierarchy is not bureaucracy. It is a **dependency budget**:
     The `no-restricted-imports` block in `eslint.config.js` fails the lint stage on any `@angular/material` import.
 
     The rule exists because Material is heavy, opinionated, and changes on its own schedule. CNGX atoms and data-display organisms must remain portable across Material's lifecycle.
-- `@cngx/ui` is the only place where Material's API drift can land, and even there only `mat-stepper`, `mat-tabs`, and `material` opt in. The rest of the library is insulated.
+- `@cngx/ui` is the only place where Material's API drift can land, and even there only the four bridges `mat-accordion`, `mat-paginator`, `mat-stepper`, `mat-tabs` opt in. The rest of the library is insulated.
 
 ### Why insulation matters
 
 This insulation is what makes the instrumentation pattern inside `@cngx/ui` possible at all.
 
-The brain lives in a pure-CNGX twin (`@cngx/ui/stepper`, `@cngx/ui/tabs`) at a level where Material cannot leak in.
+The brain lives in a pure-CNGX twin (`@cngx/ui/accordion`, `@cngx/ui/paginator`, `@cngx/ui/stepper`, `@cngx/ui/tabs`) in an entry where Material cannot leak in.
 
-The Material twin (`@cngx/ui/mat-stepper`, `@cngx/ui/mat-tabs`) is a thin bridge that re-uses the brain via host directives.
+The Material twin (`@cngx/ui/mat-accordion`, `@cngx/ui/mat-paginator`, `@cngx/ui/mat-stepper`, `@cngx/ui/mat-tabs`) is a thin bridge that re-uses the brain via host directives.

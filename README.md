@@ -10,7 +10,7 @@ CDK and Material are opt-in primitives, not foundations.
 
 > **State is derived, not managed. Communication is architecture, not an afterthought.**
 
-Angular 21+, Signal-native, no NgModules. Eight packages, 56 surgical secondary entry points, `sideEffects: false`. Five-level dependency hierarchy enforced by Sheriff.
+Angular 21+, Signal-native, no NgModules. Eight packages, 57 surgical secondary entry points, `sideEffects: false`. Five-level dependency hierarchy enforced by Sheriff.
 
 ---
 
@@ -123,7 +123,7 @@ CDK appears in exactly two spots: `a11y/focus-trap` (CDK's `FocusTrap`) and `dat
 
 ### `@cngx/forms` - Level 3
 
-Forms organisms across 6 entries. 130 source files, zero CDK touchpoints.
+Forms organisms across 6 entries. 179 source files, zero CDK touchpoints.
 
 - `field` - Signal Forms bridge.
 - `controls` - CVA adapter for Reactive Forms.
@@ -141,9 +141,9 @@ Data-display organisms.
 
 Mostly self-contained organisms across 26 entries. Peer-deps: `@angular/cdk`, `@angular/common`, `@angular/core` only.
 
-- Pure cngx: `action-button`, `empty-state`, `feedback`, `layout`, `sidenav`, `skeleton`, `speak`, `stepper`, `tabs`.
+- Pure cngx: `action-button`, `empty-state`, `feedback`, `layout`, `skeleton`, `speak`, `stepper`, `tabs`.
 - `feedback` ships toasts, banners, alerts via `provideFeedback(...)`.
-- `overlay` is the one entry that uses `@angular/cdk/overlay` + `cdk/portal` as its engine.
+- Two entries use `@angular/cdk`: `overlay` runs on `cdk/overlay` + `cdk/portal` as its engine, `sidenav` takes its focus trap from `cdk/a11y`.
 - Four Material opt-ins: `mat-accordion`, `mat-paginator`, `mat-stepper`, `mat-tabs`.
 
 ### `@cngx/themes`
@@ -158,11 +158,11 @@ Plain-CSS theme bundle. No JS, no SCSS at runtime in the default bundle.
 
 ## Tooling & LLM support
 
-Beyond the libraries, cngx ships tooling for authoring and for LLM coding agents. All three packages are published on npm at `0.1.0`.
+Beyond the libraries, cngx ships tooling for authoring and for LLM coding agents. All three packages are published on npm.
 
 ### `@cngx/eslint-plugin`
 
-Lint rules that enforce the cngx conventions - signal-first APIs, no artifact suffixes on class names, the bridge-input rule, the layer hierarchy.
+ESLint flat-config rules for consumer apps, static analysis only. Signal hygiene: no `effect()` in `ngOnInit`, no `BehaviorSubject` for local state, and an opt-in `untracked()` check inside effects. Wiring contracts: `model()` instead of an `input` + `xChange` output pair, no `input.required()` on bridge inputs, and `cngxMenuTrigger` paired with `cngxPopoverTrigger` in templates.
 
 ### `@cngx/mcp`
 
@@ -293,7 +293,7 @@ The only way to lie to assistive tech is to break the signal that also lies to t
 RxJS is only at the I/O boundary (HTTP, WebSocket, DOM streams) and never exposed on the public API.
 - **Typed end to end.** `model<T>()`, `input<T>()`, `Field<T>`, `CngxAsyncState<T>`. 
 **_Zero_** `any` in the codebase, zero `as` casts, strict TypeScript across all libs.
-- **Surgical imports.** 56 secondary entry points means `import { CngxRovingTabindex } from '@cngx/common/a11y'` pulls in roving tabindex, not the entire common surface. 
+- **Surgical imports.** 57 secondary entry points means `import { CngxRovingTabindex } from '@cngx/common/a11y'` pulls in roving tabindex, not the entire common surface. 
 `sideEffects: false` plus standalone-by-default plus no NgModules means tree-shaking actually works.
 - **Runnable docs, not snippets.** Every component's Examples tab embeds the live demo as a naked iframe, side-by-side with its API. 
 The code panel shows the actual artifact (no chrome, no toggles, no fail-flag plumbing) so you can copy-paste what you actually need. Selected components (`@playground` tag) ship a Stackblitz launcher with pinned dependencies. 
