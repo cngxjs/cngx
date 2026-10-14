@@ -38,6 +38,7 @@ function triggerIntersection(isIntersecting: boolean): void {
     [enabled]="enabled()"
     [loading]="loading()"
     [debounceMs]="debounceMs()"
+    [root]="root()"
     (loadMore)="onLoadMore()"
   ></div>`,
   imports: [CngxInfiniteScroll],
@@ -46,6 +47,7 @@ class Host {
   readonly enabled = signal(true);
   readonly loading = signal(false);
   readonly debounceMs = signal(200);
+  readonly root = signal<string | null>(null);
   readonly directive = viewChild.required(CngxInfiniteScroll);
   loadMoreCount = 0;
   onLoadMore(): void {
@@ -213,5 +215,20 @@ describe('CngxInfiniteScroll', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(mockDisconnect).toHaveBeenCalled();
+  });
+
+  it('warns in dev mode when the root selector matches no element', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture, host } = setup();
+    expect(warn).not.toHaveBeenCalled();
+
+    host.root.set('.does-not-exist');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0][0]).toContain('CNGX1032: [cngxInfiniteScroll]');
+    expect(warn.mock.calls[0][0]).toContain('.does-not-exist');
+    warn.mockRestore();
   });
 });

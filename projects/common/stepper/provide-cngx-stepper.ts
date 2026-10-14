@@ -1,9 +1,5 @@
-import {
-  type EnvironmentProviders,
-  isDevMode,
-  makeEnvironmentProviders,
-  type Provider,
-} from '@angular/core';
+import { type EnvironmentProviders, makeEnvironmentProviders, type Provider } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { provideStepperI18n, type CngxStepperI18nFeature } from './i18n/stepper-i18n';
 import {
@@ -42,8 +38,9 @@ function partitionFeatures(features: readonly CngxStepperFeature[]): Partitioned
       continue;
     }
     // Unbranded feature - drop + dev-warn (mirrors `provideCngxTabs`).
-    if (isDevMode()) {
-      console.warn(
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      cngxDevWarn(
+        'CNGX1041',
         '[provideCngxStepper] Dropped feature without a `_target` ' +
           'discriminator. Brand config-side mutators with ' +
           '`defineStepperConfigFeature(...)` (or use a `with*` helper) ' +

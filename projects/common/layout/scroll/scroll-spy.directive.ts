@@ -1,14 +1,6 @@
 import { DOCUMENT } from '@angular/common';
-import {
-  afterNextRender,
-  Directive,
-  effect,
-  inject,
-  input,
-  isDevMode,
-  output,
-  signal,
-} from '@angular/core';
+import { afterNextRender, Directive, effect, inject, input, output, signal } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * Tracks which section is currently most visible in the viewport.
@@ -110,9 +102,10 @@ export class CngxScrollSpy {
       .map((id) => this.doc.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
 
-    if (isDevMode() && elements.length < ids.length) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode && elements.length < ids.length) {
       const missing = ids.filter((id) => !this.doc.getElementById(id));
-      console.warn(
+      cngxDevWarn(
+        'CNGX1033',
         `[cngxScrollSpy] section id(s) not found: ${missing.join(', ')}. ` +
           'Late-rendered sections are not observed - re-bind [cngxScrollSpy] once they exist.',
       );
@@ -123,8 +116,9 @@ export class CngxScrollSpy {
     }
 
     const resolvedRoot = rootSelector ? this.doc.querySelector(rootSelector) : null;
-    if (isDevMode() && rootSelector && !resolvedRoot) {
-      console.warn(
+    if (typeof ngDevMode !== 'undefined' && ngDevMode && rootSelector && !resolvedRoot) {
+      cngxDevWarn(
+        'CNGX1032',
         `[cngxScrollSpy] root selector "${rootSelector}" matched no element - ` +
           'falling back to the viewport. A late-rendered root needs a re-bind of [root].',
       );

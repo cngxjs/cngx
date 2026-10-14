@@ -8,7 +8,6 @@ import {
   inject,
   Injector,
   input,
-  isDevMode,
   signal,
   untracked,
 } from '@angular/core';
@@ -23,6 +22,7 @@ import {
   onTransitionDone,
   type TransitionDoneHandle,
 } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 import {
   ANCHOR_AREA_PROPERTY,
@@ -131,15 +131,28 @@ function installGlobalOutsideClickListener(doc: Document): void {
 
 /** @internal Tracks which Documents have already warned about missing Popover API. */
 const popoverApiWarnedDocs = new WeakSet<Document>();
+
+/**
+ * @internal - test hook. Resets the per-Document warning suppression so
+ * specs can exercise the warning path against a shared jsdom Document.
+ * Do not call from production code.
+ */
+export function __resetPopoverApiWarnings(doc: Document): void {
+  popoverApiWarnedDocs.delete(doc);
+}
 /** @internal */
 function warnMissingPopoverApi(el: HTMLElement): void {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return;
+  }
   const doc = el.ownerDocument;
-  if (popoverApiWarnedDocs.has(doc) || !isDevMode()) {
+  if (popoverApiWarnedDocs.has(doc)) {
     return;
   }
   if (typeof el.showPopover !== 'function') {
     popoverApiWarnedDocs.add(doc);
-    console.warn(
+    cngxDevWarn(
+      'CNGX1036',
       'CngxPopover: The native Popover API is not supported in this browser. ' +
         'Install @oddbird/popover-polyfill and import it in your polyfills:\n\n' +
         '  npm install @oddbird/popover-polyfill\n' +
@@ -162,11 +175,15 @@ export function __resetFloatingMiddlewareWarnings(doc: Document): void {
 }
 /** @internal */
 function warnMissingFloatingMiddleware(doc: Document): void {
-  if (floatingMiddlewareWarnedDocs.has(doc) || !isDevMode()) {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return;
+  }
+  if (floatingMiddlewareWarnedDocs.has(doc)) {
     return;
   }
   floatingMiddlewareWarnedDocs.add(doc);
-  console.warn(
+  cngxDevWarn(
+    'CNGX1037',
     'CngxPopover: provideFloatingFallback(computePosition) was registered without middleware. ' +
       'Popovers in browsers without CSS Anchor Positioning will clip against the viewport edge ' +
       'because no flip/shift recovery is configured. Pass middleware on registration:\n\n' +
@@ -602,7 +619,9 @@ export class CngxPopover {
 
   /** Open the popover. No-op if not `closed`. */
   show(): void {
-    warnMissingPopoverApi(this.elRef.nativeElement);
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnMissingPopoverApi(this.elRef.nativeElement);
+    }
     if (this.stateSignal() !== 'closed') {
       return;
     }
@@ -787,7 +806,11 @@ export class CngxPopover {
     if (!this.anchorElement()) {
       return;
     }
-    if ((this.floatingFallback?.middleware ?? []).length === 0) {
+    if (
+      typeof ngDevMode !== 'undefined' &&
+      ngDevMode &&
+      (this.floatingFallback?.middleware ?? []).length === 0
+    ) {
       warnMissingFloatingMiddleware(this.popoverElement.ownerDocument);
     }
     this.floatingPositioner.start();

@@ -1,9 +1,5 @@
-import {
-  type EnvironmentProviders,
-  isDevMode,
-  makeEnvironmentProviders,
-  type Provider,
-} from '@angular/core';
+import { type EnvironmentProviders, makeEnvironmentProviders, type Provider } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { provideTabsI18n, type CngxTabsI18nFeature } from './i18n/tabs-i18n';
 import { provideTabsConfig, provideTabsConfigAt, type CngxTabsConfigFeature } from './tabs-config';
@@ -38,8 +34,9 @@ function partitionFeatures(features: readonly CngxTabsFeature[]): PartitionedFea
     // Unbranded feature - runtime escape from the `_target` type.
     // Drop with dev-warn so an i18n-shaped override never lands
     // silently in `CNGX_TABS_CONFIG`.
-    if (isDevMode()) {
-      console.warn(
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      cngxDevWarn(
+        'CNGX1041',
         '[provideCngxTabs] Dropped feature without a `_target` ' +
           'discriminator. Brand config-side mutators with ' +
           '`defineTabsConfigFeature(...)` (or use a `with*` helper) ' +

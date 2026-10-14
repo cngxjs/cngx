@@ -384,6 +384,9 @@ describe('CngxTimelineItem', () => {
         mountOpposite('link');
 
         expect(warnings(warn)).toBe(1);
+        const [message, row] = warn.mock.calls[0];
+        expect(message).toContain('CNGX1043: [cngx-timeline-item]');
+        expect(row).toBeInstanceOf(HTMLElement);
         warn.mockRestore();
       });
 

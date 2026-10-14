@@ -391,6 +391,136 @@
       ]
     },
     {
+      "code": "CNGX1032",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Root selector matched no element",
+      "page": "core-concepts/error-codes/cngx1032.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1032.html",
+      "status": "active",
+      "files": [
+        "projects/common/layout/observers/intersection-observer.directive.ts",
+        "projects/common/layout/scroll/infinite-scroll.directive.ts",
+        "projects/common/layout/scroll/scroll-spy.directive.ts"
+      ]
+    },
+    {
+      "code": "CNGX1033",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Scroll-spy section not found",
+      "page": "core-concepts/error-codes/cngx1033.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1033.html",
+      "status": "active",
+      "files": ["projects/common/layout/scroll/scroll-spy.directive.ts"]
+    },
+    {
+      "code": "CNGX1034",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Sticky header in a container that cannot scroll",
+      "page": "core-concepts/error-codes/cngx1034.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1034.html",
+      "status": "active",
+      "files": ["projects/common/layout/scroll/sticky-header.directive.ts"]
+    },
+    {
+      "code": "CNGX1035",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Confirm popover action without an action",
+      "page": "core-concepts/error-codes/cngx1035.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1035.html",
+      "status": "active",
+      "files": ["projects/common/popover/popover-action.component.ts"]
+    },
+    {
+      "code": "CNGX1036",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Native Popover API not available",
+      "page": "core-concepts/error-codes/cngx1036.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1036.html",
+      "status": "active",
+      "files": ["projects/common/popover/popover.directive.ts"]
+    },
+    {
+      "code": "CNGX1037",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Floating fallback registered without middleware",
+      "page": "core-concepts/error-codes/cngx1037.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1037.html",
+      "status": "active",
+      "files": ["projects/common/popover/popover.directive.ts"]
+    },
+    {
+      "code": "CNGX1038",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Stepper control and async click on one element",
+      "page": "core-concepts/error-codes/cngx1038.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1038.html",
+      "status": "active",
+      "files": [
+        "projects/common/stepper/controls/stepper-next.directive.ts",
+        "projects/common/stepper/controls/stepper-previous.directive.ts"
+      ]
+    },
+    {
+      "code": "CNGX1039",
+      "lib": "common",
+      "severity": "warn",
+      "title": "More than six steps at one level",
+      "page": "core-concepts/error-codes/cngx1039.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1039.html",
+      "status": "active",
+      "files": ["projects/common/stepper/presenter.directive.ts"]
+    },
+    {
+      "code": "CNGX1040",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Commit controller ignored the settle option",
+      "page": "core-concepts/error-codes/cngx1040.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1040.html",
+      "status": "active",
+      "files": ["projects/common/stepper/presenter.directive.ts"]
+    },
+    {
+      "code": "CNGX1041",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Feature dropped for a missing `_target`",
+      "page": "core-concepts/error-codes/cngx1041.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1041.html",
+      "status": "active",
+      "files": [
+        "projects/common/stepper/provide-cngx-stepper.ts",
+        "projects/common/tabs/provide-cngx-tabs.ts"
+      ]
+    },
+    {
+      "code": "CNGX1042",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Timeline date accessor produced an invalid date",
+      "page": "core-concepts/error-codes/cngx1042.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1042.html",
+      "status": "active",
+      "files": ["projects/common/timeline/grouping.ts"]
+    },
+    {
+      "code": "CNGX1043",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Focusable content in a timeline opposite slot",
+      "page": "core-concepts/error-codes/cngx1043.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1043.html",
+      "status": "active",
+      "files": ["projects/common/timeline/timeline-item.component.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

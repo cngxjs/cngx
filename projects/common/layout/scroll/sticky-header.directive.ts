@@ -7,10 +7,10 @@ import {
   ElementRef,
   inject,
   input,
-  isDevMode,
   output,
   signal,
 } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * Communicates when a sticky-positioned element becomes stuck.
@@ -98,11 +98,13 @@ export class CngxStickyHeader {
       // dep-less effect). The 1px tolerance absorbs sub-pixel layout and browser-zoom
       // rounding: "cannot meaningfully scroll" instead of exact equality.
       if (
-        isDevMode() &&
+        typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
         scrollport &&
         scrollport.scrollHeight - scrollport.clientHeight <= 1
       ) {
-        console.warn(
+        cngxDevWarn(
+          'CNGX1034',
           '[cngxStickyHeader] resolves against a scroll container that cannot scroll ' +
             'in the block axis (client height equals scroll height), so this header ' +
             'will never pin. Give the scrollport a bounded block-size, or drop ' +

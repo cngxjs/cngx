@@ -6,10 +6,10 @@ import {
   ElementRef,
   inject,
   input,
-  isDevMode,
   output,
   signal,
 } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * Observes whether the host element is visible in the viewport or a scroll container.
@@ -93,8 +93,9 @@ export class CngxIntersectionObserver {
       const rootMargin = this.rootMargin();
       const threshold = this.threshold();
       const resolvedRoot = root ? this.doc.querySelector(root) : null;
-      if (isDevMode() && root && !resolvedRoot) {
-        console.warn(
+      if (typeof ngDevMode !== 'undefined' && ngDevMode && root && !resolvedRoot) {
+        cngxDevWarn(
+          'CNGX1032',
           `[cngxIntersectionObserver] root selector "${root}" matched no element - ` +
             'falling back to the viewport. A late-rendered root needs a re-bind of [root].',
         );

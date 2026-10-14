@@ -65,6 +65,8 @@ const EXPECTED_DEV_WRAPPERS = [
   'projects/common/interactive/reorder/reorder.directive.ts#wireDevModeCheck',
   'projects/common/layout/router/warn-router-absent.ts#warnRouterAbsent',
   'projects/common/tabs/router-absent-warning.ts#warnTabsRouterAbsent',
+  'projects/common/popover/popover.directive.ts#warnMissingPopoverApi',
+  'projects/common/popover/popover.directive.ts#warnMissingFloatingMiddleware',
 ];
 
 const CODE_PATTERN = /^CNGX\d{4}$/;
