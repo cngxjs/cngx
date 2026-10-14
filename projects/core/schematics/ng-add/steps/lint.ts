@@ -2,6 +2,7 @@ import {
   addToArrayLiteral,
   type Change,
   declaredRange,
+  insertAfterImports,
   type Provenance,
   skipChange,
   type StepResult,
@@ -23,21 +24,6 @@ const TEMPLATE_PARSER_MIN_MAJOR = 19;
 function importStatement(module: 'esm' | 'cjs'): string {
   const statement = module === 'esm' ? `import cngx from '${PLUGIN}';` : `const cngx = require('${PLUGIN}');`;
   return withProvenanceMarker(statement, MARKER);
-}
-
-const IMPORT_LINE = /^(?:import\s[^\n]*|(?:const|let|var)\s[^\n]*=\s*require\([^\n]*\)[^\n]*)$/gm;
-
-// After the last top-level import or require line; at the top when there is none.
-function addImport(content: string, statement: string): string {
-  if (content.includes(PLUGIN)) {
-    return content;
-  }
-  const last = [...content.matchAll(IMPORT_LINE)].pop();
-  if (last === undefined) {
-    return `${statement}\n${content}`;
-  }
-  const at = last.index + last[0].length;
-  return `${content.slice(0, at)}\n${statement}${content.slice(at)}`;
 }
 
 // `ng update angular-eslint` moves the angular-eslint packages, not
@@ -156,7 +142,12 @@ export function planLint(facts: ProjectFacts, answers: OnboardingAnswers, versio
     reason: 'the recommended cngx rules for TypeScript and templates',
     provenance,
     path: config.path,
-    edit: (content) => addToArrayLiteral(addImport(content, importStatement(config.module)), { kind: 'default-export' }, ENTRY),
+    edit: (content) =>
+      addToArrayLiteral(
+        content.includes(PLUGIN) ? content : insertAfterImports(content, importStatement(config.module)),
+        { kind: 'default-export' },
+        ENTRY,
+      ),
   };
   const declared = declaredRange(facts.manifest, PLUGIN);
   const parser = templateParser(facts, provenance);

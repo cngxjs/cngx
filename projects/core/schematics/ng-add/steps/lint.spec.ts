@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Change, parseManifest, type StepResult } from '../../engine';
+import { type Change, hasArrayLiteral, parseManifest, type StepResult } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
 import { type EslintConfigFacts, type EslintStackFacts, type ProjectFacts } from '../detect/detect';
 import { planLint } from './lint';
@@ -95,6 +95,28 @@ export default [
   ...cngx.configs.recommended,
 ];
 `);
+  });
+
+  it('inserts the plugin import after a last import that spans several lines', () => {
+    const result = planLint(eslintApp({ eslintConfig: config({ path: 'eslint.config.mjs', module: 'esm' }) }), createAnswers(), VERSIONS);
+    const content = `import eslint from '@eslint/js';
+import {
+  a,
+  b,
+} from 'x';
+
+export default [
+  eslint.configs.recommended,
+];
+`;
+
+    const edited = edit(result, content);
+
+    expect(edited).toContain(`} from 'x';
+import cngx from '@cngx/eslint-plugin'; /* cngx:lint:import */
+`);
+    expect(hasArrayLiteral(edited, { kind: 'default-export' })).toBe(true);
+    expect(edited).toContain('  ...cngx.configs.recommended,\n];');
   });
 
   it('edits idempotently', () => {

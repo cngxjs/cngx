@@ -286,6 +286,43 @@ export function promoteTypeOnlyImport(content: string, symbol: string, module: s
     .reduce((text, [from, to, insert]) => `${text.slice(0, from)}${insert}${text.slice(to)}`, content);
 }
 
+function isRequireCall(expression: ts.Expression): boolean {
+  if (ts.isPropertyAccessExpression(expression)) {
+    return isRequireCall(expression.expression);
+  }
+  return ts.isCallExpression(expression) && calleeName(expression) === 'require';
+}
+
+function isImportStatement(statement: ts.Statement): boolean {
+  if (ts.isImportDeclaration(statement) || ts.isImportEqualsDeclaration(statement)) {
+    return true;
+  }
+  return (
+    ts.isVariableStatement(statement) &&
+    statement.declarationList.declarations.some(
+      (declaration) => declaration.initializer !== undefined && isRequireCall(declaration.initializer),
+    )
+  );
+}
+
+/**
+ * Inserts `statement` on its own line after the last top-level import, import
+ * equals, or `require(...)` declaration (also `require(...).x`), so an import
+ * spanning several lines stays whole. A comment trailing that import on its
+ * last line stays on it. Prepends when the file imports nothing.
+ */
+export function insertAfterImports(content: string, statement: string): string {
+  const newline = content.includes('\r\n') ? '\r\n' : '\n';
+  const last = parse(content).statements.filter(isImportStatement).pop();
+  if (last === undefined) {
+    return `${statement}${newline}${content}`;
+  }
+  const lineBreak = content.indexOf('\n', last.getEnd());
+  const lineEnd = lineBreak === -1 ? content.length : lineBreak;
+  const at = content[lineEnd - 1] === '\r' ? lineEnd - 1 : lineEnd;
+  return `${content.slice(0, at)}${newline}${statement}${content.slice(at)}`;
+}
+
 function indentOf(content: string, position: number): string {
   const lineStart = content.lastIndexOf('\n', position - 1) + 1;
   return /^[ \t]*/.exec(content.slice(lineStart))?.[0] ?? '';

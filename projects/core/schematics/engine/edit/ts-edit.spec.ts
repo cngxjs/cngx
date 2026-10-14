@@ -5,6 +5,7 @@ import {
   type ArraySelector,
   countArrayLiterals,
   hasArrayLiteral,
+  insertAfterImports,
   promoteTypeOnlyImport,
   topLevelBindings,
 } from './ts-edit';
@@ -203,5 +204,82 @@ describe('promoteTypeOnlyImport', () => {
     expect(promoteTypeOnlyImport(content, 'b', 'm')).toBe(content);
     expect(promoteTypeOnlyImport(content, 'c', 'm')).toBe(content);
     expect(promoteTypeOnlyImport(content, 'x', 'm')).toBe(content);
+  });
+});
+
+describe('insertAfterImports', () => {
+  const STATEMENT = "import cngx from '@cngx/eslint-plugin';";
+
+  it('inserts after the closing line of a multi-line named import', () => {
+    const content = `import js from '@eslint/js';
+import {
+  a,
+  b,
+} from 'x';
+
+export default [];
+`;
+
+    expect(insertAfterImports(content, STATEMENT)).toBe(`import js from '@eslint/js';
+import {
+  a,
+  b,
+} from 'x';
+${STATEMENT}
+
+export default [];
+`);
+  });
+
+  it('inserts after a multi-line destructured require and a require property access', () => {
+    const content = `const js = require('@eslint/js').default;
+const {
+  defineConfig,
+} = require('eslint/config');
+
+module.exports = defineConfig([]);
+`;
+
+    expect(insertAfterImports(content, 'const cngx = require("p");')).toBe(`const js = require('@eslint/js').default;
+const {
+  defineConfig,
+} = require('eslint/config');
+const cngx = require("p");
+
+module.exports = defineConfig([]);
+`);
+  });
+
+  it('counts a type-only import and an import equals declaration', () => {
+    expect(insertAfterImports("import type { A } from 'a';\nconst b = 1;\n", STATEMENT)).toBe(
+      `import type { A } from 'a';\n${STATEMENT}\nconst b = 1;\n`,
+    );
+    expect(insertAfterImports("import a = require('a');\nconst b = 1;\n", STATEMENT)).toBe(
+      `import a = require('a');\n${STATEMENT}\nconst b = 1;\n`,
+    );
+  });
+
+  it('ignores an import inside a comment and keeps a trailing comment on its import', () => {
+    const content = `import a from 'a'; // keep
+/*
+import b from 'b';
+*/
+export default [];
+`;
+
+    expect(insertAfterImports(content, STATEMENT)).toBe(`import a from 'a'; // keep
+${STATEMENT}
+/*
+import b from 'b';
+*/
+export default [];
+`);
+  });
+
+  it('prepends when the file imports nothing, keeping CRLF line endings', () => {
+    expect(insertAfterImports('export default [];\n', STATEMENT)).toBe(`${STATEMENT}\nexport default [];\n`);
+    expect(insertAfterImports("import a from 'a';\r\nexport default [];\r\n", STATEMENT)).toBe(
+      `import a from 'a';\r\n${STATEMENT}\r\nexport default [];\r\n`,
+    );
   });
 });
