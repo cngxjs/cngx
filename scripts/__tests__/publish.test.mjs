@@ -1,13 +1,15 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   assertPinsPublished,
   assertReleaseMigration,
+  checkReleaseMigrations,
   containsStableRelease,
   createSchematicsVersions,
   declaresSchematics,
@@ -15,6 +17,7 @@ import {
   libBuildCommand,
   npmViewVersion,
   REFRESH_FACTORY,
+  refreshMigrationKey,
   replaceVersionInDist,
   resolveDistTag,
   stampManifest,
@@ -265,6 +268,8 @@ describe('stampManifest', () => {
   });
 });
 
+const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+
 const SOURCE_COLLECTION = {
   schematics: {
     'migration-v0.1.0': { version: '0.1.0', description: 'first', factory: './0.1.0/index#migrate' },
@@ -295,15 +300,84 @@ describe('stampRefreshMigration', () => {
   });
 });
 
+describe('stampRefreshMigration on a collection the CLI cannot load', () => {
+  it('refuses a collection without a schematics map', () => {
+    expect(() => stampRefreshMigration({}, '0.1.1')).toThrow('the ng update collection has no schematics map');
+    expect(() => stampRefreshMigration({ schematics: [] }, '0.1.1')).toThrow('no schematics map');
+  });
+});
+
 describe('assertReleaseMigration', () => {
-  it('accepts a collection with an entry for the release', () => {
-    expect(() => assertReleaseMigration(stampRefreshMigration(SOURCE_COLLECTION, '0.1.1'), '0.1.1')).not.toThrow();
+  const everyModule = () => true;
+
+  it('accepts an entry for the release whose factory module exists', () => {
+    const seen = [];
+
+    assertReleaseMigration(stampRefreshMigration(SOURCE_COLLECTION, '0.1.1'), '0.1.1', (module) => {
+      seen.push(module);
+      return true;
+    });
+
+    expect(seen).toEqual(['./refresh/index']);
   });
 
-  it('refuses a collection without one', () => {
-    expect(() => assertReleaseMigration(SOURCE_COLLECTION, '0.1.1')).toThrow(
+  it('refuses a collection without an entry for the release', () => {
+    expect(() => assertReleaseMigration(SOURCE_COLLECTION, '0.1.1', everyModule)).toThrow(
       'the ng update collection has no migration for 0.1.1',
     );
+  });
+
+  it('refuses a stamped refresh entry whose factory module is missing', () => {
+    expect(() =>
+      assertReleaseMigration(stampRefreshMigration(SOURCE_COLLECTION, '0.1.1'), '0.1.1', () => false),
+    ).toThrow(`the ng update migration ${refreshMigrationKey('0.1.1')} for 0.1.1 names no factory module`);
+  });
+
+  it('refuses a release migration of its own whose factory module is missing', () => {
+    expect(() =>
+      assertReleaseMigration(SOURCE_COLLECTION, '0.1.0', (module) => module !== './0.1.0/index'),
+    ).toThrow('the ng update migration migration-v0.1.0 for 0.1.0 names no factory module');
+  });
+});
+
+describe('checkReleaseMigrations', () => {
+  const SOURCE = join(ROOT_DIR, 'projects', 'core', 'schematics', 'migrations', 'migrations.json');
+
+  it('passes the source collection for a release with and without its own migration', () => {
+    expect(Object.keys(checkReleaseMigrations(SOURCE, '0.1.0', '.ts').schematics)).toEqual(['migration-v0.1.0']);
+    expect(checkReleaseMigrations(SOURCE, '0.1.1', '.ts').schematics[refreshMigrationKey('0.1.1')]?.factory).toBe(
+      REFRESH_FACTORY,
+    );
+  });
+
+  it('looks for each factory module next to the collection with the given extension', () => {
+    const asked = [];
+    const read = () => JSON.stringify(SOURCE_COLLECTION);
+    const exists = (path) => {
+      asked.push(path);
+      return true;
+    };
+
+    checkReleaseMigrations('/dist/core/schematics/migrations/migrations.json', '0.1.1', '.js', read, exists);
+
+    expect(asked).toEqual([join('/dist/core/schematics/migrations', 'refresh', 'index.js')]);
+  });
+
+  it('refuses a release whose refresh bundle the build dropped', () => {
+    const read = () => JSON.stringify(SOURCE_COLLECTION);
+
+    expect(() => checkReleaseMigrations('/dist/migrations.json', '0.1.1', '.js', read, () => false)).toThrow(
+      'names no factory module',
+    );
+  });
+
+  it('refuses a collection that is missing or not JSON', () => {
+    const missing = () => {
+      throw new Error('ENOENT: no such file');
+    };
+
+    expect(() => checkReleaseMigrations('/dist/migrations.json', '0.1.1', '.js', missing)).toThrow('ENOENT');
+    expect(() => checkReleaseMigrations('/dist/migrations.json', '0.1.1', '.js', () => '{ not json')).toThrow();
   });
 });
 

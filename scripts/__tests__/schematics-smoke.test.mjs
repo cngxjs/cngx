@@ -8,7 +8,7 @@ import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
 import { NodeModulesEngineHost } from '@angular-devkit/schematics/tools';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { assertReleaseMigration, declaresSchematics, stampRefreshMigration } from '../publish.mjs';
+import { checkReleaseMigrations, declaresSchematics } from '../publish.mjs';
 
 /**
  * Smoke guard for the bundled schematics under dist/. Runs the built
@@ -132,8 +132,7 @@ describe('dist/core/schematics migrations', () => {
     const onboarded = await ngAdd.runSchematic('ng-add', { preset: 'minimal' }, await createAppTree(ngAdd));
     const installed = JSON.parse(onboarded.readText('.cngx/install.json'));
     onboarded.overwrite('.cngx/install.json', JSON.stringify({ ...installed, cngxVersion: '0.1.0' }, null, 2));
-    const stamped = stampRefreshMigration(JSON.parse(readFileSync(MIGRATIONS, 'utf8')), '0.1.1');
-    assertReleaseMigration(stamped, '0.1.1');
+    const stamped = checkReleaseMigrations(MIGRATIONS, '0.1.1', '.js');
     const copy = join(dirname(MIGRATIONS), 'migrations.smoke-refresh.json');
     writeFileSync(copy, JSON.stringify(stamped));
 

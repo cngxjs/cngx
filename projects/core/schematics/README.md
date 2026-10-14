@@ -111,9 +111,12 @@ entry keyed to it. The source `migrations.json` holds only the hand-written
 keys. At release time `scripts/publish.mjs` adds
 `migration-v<release>-refresh` (factory `./refresh/index#migrate`) to
 `dist/core/schematics/migrations/migrations.json` for a release that brings
-no entry of its own; a release with its own migration gets none. Publish
-refuses a core release whose collection still has no entry for it.
-`npm run publish:dry` prints the entry it would add.
+no entry of its own; a release with its own migration gets none. Before
+anything is published, publish checks the source collection: it must parse,
+and every entry for the release must name a factory whose `index.ts`
+exists. After the core build it checks the dist collection the same way
+against the bundled `index.js`, before core publishes. `npm run publish:dry`
+runs both checks and prints the entry it would add.
 
 ## Build and test
 

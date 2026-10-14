@@ -11,7 +11,7 @@
 
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
-import { resolve, join, sep } from 'node:path';
+import { dirname, resolve, join, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
@@ -22,6 +22,7 @@ const LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui
 // a dedicated node script that copies sources to dist/<lib>/.
 const CSS_ONLY_LIBS = new Set(['themes']);
 const PLACEHOLDER = '0.0.0-PLACEHOLDER';
+const SOURCE_MIGRATIONS = join(ROOT, 'projects', 'core', 'schematics', 'migrations', 'migrations.json');
 
 function readRootPkg() {
   return JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
@@ -155,12 +156,20 @@ export function createSchematicsVersions({ nextVersion, mcpVersion, eslintPlugin
 // `ng update`, relative to dist/core/schematics/migrations/.
 export const REFRESH_FACTORY = './refresh/index#migrate';
 
+export function refreshMigrationKey(version) {
+  return `migration-v${version}-refresh`;
+}
+
 // The Angular CLI runs the entries whose version lies in (from, to], so a
 // core release reaches every updating app only through an entry keyed to it.
 // A release that brings its own migration keeps it; any other gets the
-// refresh entry. Returns a new collection; the input is left as it is.
+// refresh entry. Returns a new collection; the input is left as it is. A
+// collection without a `schematics` map is not one the CLI can load.
 export function stampRefreshMigration(collection, nextVersion) {
-  const schematics = collection.schematics ?? {};
+  const schematics = collection?.schematics;
+  if (typeof schematics !== 'object' || schematics === null || Array.isArray(schematics)) {
+    throw new Error('the ng update collection has no schematics map');
+  }
   if (Object.values(schematics).some((entry) => entry.version === nextVersion)) {
     return collection;
   }
@@ -168,7 +177,7 @@ export function stampRefreshMigration(collection, nextVersion) {
     ...collection,
     schematics: {
       ...schematics,
-      [`migration-v${nextVersion}-refresh`]: {
+      [refreshMigrationKey(nextVersion)]: {
         version: nextVersion,
         description: `Re-runs the recorded install steps and records cngx ${nextVersion} in .cngx/install.json.`,
         factory: REFRESH_FACTORY,
@@ -177,13 +186,28 @@ export function stampRefreshMigration(collection, nextVersion) {
   };
 }
 
-// Fails closed: a core release whose collection has no entry for it would
-// leave every updating app with a stale install record.
-export function assertReleaseMigration(collection, nextVersion) {
-  const keyed = Object.values(collection.schematics ?? {}).some((entry) => entry.version === nextVersion);
-  if (!keyed) {
+// Every entry keyed to the release must name a factory module that exists:
+// `moduleExists` gets the factory path without `#export`, relative to the
+// collection. An entry pointing at nothing would fail every `ng update`.
+export function assertReleaseMigration(collection, nextVersion, moduleExists) {
+  const entries = Object.entries(collection.schematics).filter(([, entry]) => entry.version === nextVersion);
+  if (entries.length === 0) {
     throw new Error(`the ng update collection has no migration for ${nextVersion}`);
   }
+  const unresolved = entries
+    .filter(([, entry]) => typeof entry.factory !== 'string' || !moduleExists(entry.factory.split('#')[0]))
+    .map(([key]) => key);
+  if (unresolved.length > 0) {
+    throw new Error(`the ng update migration ${unresolved.join(', ')} for ${nextVersion} names no factory module`);
+  }
+}
+
+// Reads a migrations collection, stamps the release and checks it; a module
+// exists when `<path><extension>` is a file next to the collection.
+export function checkReleaseMigrations(collectionPath, nextVersion, extension, read = readFileSync, exists = existsSync) {
+  const stamped = stampRefreshMigration(JSON.parse(read(collectionPath, 'utf8')), nextVersion);
+  assertReleaseMigration(stamped, nextVersion, (module) => exists(join(dirname(collectionPath), `${module}${extension}`)));
+  return stamped;
 }
 
 // `npm view <name>@<version> version` exits 1 with E404 for a version the
@@ -371,6 +395,9 @@ function main() {
         { mcpVersion: readPackageVersion('mcp'), eslintPluginVersion: readPackageVersion('eslint-plugin') },
         (spec) => npmViewVersion(spec, registryFlag),
       );
+      // The build copies migrations.json and bundles every migrations/<folder>/index.ts,
+      // so a source collection that checks out here builds one that does too.
+      checkReleaseMigrations(SOURCE_MIGRATIONS, nextVersion, '.ts');
     } catch (error) {
       console.error(`Refusing to publish: ${error.message}`);
       process.exit(1);
@@ -414,18 +441,19 @@ function main() {
         : null;
 
     const migrationsPath = join(ROOT, 'dist', lib, 'schematics', 'migrations', 'migrations.json');
-    const migrations = schematicsVersions ? JSON.parse(readFileSync(migrationsPath, 'utf8')) : null;
-    const stampedMigrations = migrations ? stampRefreshMigration(migrations, nextVersion) : null;
-    if (stampedMigrations) {
+    let stampedMigrations = null;
+    if (schematicsVersions) {
+      // The source passed the pre-flight; a failure here is a build that
+      // dropped the collection or a bundle, and stops before core publishes.
       try {
-        assertReleaseMigration(stampedMigrations, nextVersion);
+        stampedMigrations = checkReleaseMigrations(migrationsPath, nextVersion, '.js');
       } catch (error) {
         console.error(`  Refusing to publish @cngx/${lib}: ${error.message}`);
         process.exit(1);
       }
     }
-    const refreshKey = `migration-v${nextVersion}-refresh`;
-    const addsRefresh = stampedMigrations !== migrations;
+    const refreshKey = refreshMigrationKey(nextVersion);
+    const addsRefresh = stampedMigrations !== null && refreshKey in stampedMigrations.schematics;
 
     const distTag = resolveDistTag({
       nextVersion,
