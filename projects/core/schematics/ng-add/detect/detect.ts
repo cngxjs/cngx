@@ -9,8 +9,10 @@ import {
   hasProvenanceStamp,
   hasStyleImport,
   isRecord,
+  type LanguagePackArgument,
   type PackageManifest,
   parseManifest,
+  readProviderCalls,
   type Tree,
 } from '../../engine';
 
@@ -111,8 +113,11 @@ export interface ClaudeInstructions {
   readonly state: Exclude<InstructionState, 'absent'>;
 }
 
-/** `cngx-layers.css` next to the order target: missing, written by cngx, or someone else's. */
-export type LayersFileState = 'absent' | 'generated' | 'foreign';
+/**
+ * A file cngx generates (`cngx-layers.css`, `cngx-language.ts`): missing,
+ * written by cngx (it carries the provenance stamp), or someone else's.
+ */
+export type GeneratedFileState = 'absent' | 'generated' | 'foreign';
 
 /** Tailwind CSS as the app declares and loads it. */
 export interface TailwindFacts {
@@ -131,11 +136,15 @@ export interface TailwindFacts {
    * imported file, so it cannot order layers the imports already declared.
    */
   readonly orderDeclared: boolean;
-  readonly layersFile: LayersFileState;
+  /** `cngx-layers.css` next to the order target. */
+  readonly layersFile: GeneratedFileState;
 }
 
 /** The file that orders the Tailwind and cngx cascade layers; it loads before every other import. */
 export const CNGX_LAYERS_FILE = 'cngx-layers.css';
+
+/** The file holding the runtime language switch signal, next to the root providers file. */
+export const CNGX_LANGUAGE_FILE = 'cngx-language.ts';
 
 /** Opens the block cngx writes into agent instruction files; a later run finds it. */
 export const AGENTS_MARKER = '<!-- cngx:agents -->';
@@ -165,6 +174,10 @@ export interface ProjectFacts {
   readonly appConfigPath: string;
   /** Every `provide*()` call already in that file. */
   readonly rootProviders: readonly string[];
+  /** `cngx-language.ts` next to `appConfigPath`. */
+  readonly languageFile: GeneratedFileState;
+  /** The pack a `provideCngxI18n(withPack(...))` there passes; `undefined` when none. */
+  readonly languagePack: LanguagePackArgument | undefined;
   readonly material: MaterialFacts;
   readonly editors: EditorFacts;
   readonly mcpConfigs: Readonly<Record<AiTool, McpConfigState>>;
@@ -387,11 +400,11 @@ function detectTailwind(read: Read, manifest: PackageManifest, entries: readonly
     layered,
     orderTarget,
     orderDeclared: contents.some((content) => layersImport.test(content)),
-    layersFile: layersFileState(layersContent),
+    layersFile: generatedFileState(layersContent),
   };
 }
 
-function layersFileState(content: string | undefined): LayersFileState {
+function generatedFileState(content: string | undefined): GeneratedFileState {
   if (content === undefined) {
     return 'absent';
   }
@@ -564,10 +577,6 @@ function rootProvidersPath(mainPath: string, main: string, standalone: boolean, 
   return specifier === undefined ? fallback : `${posix.join(posix.dirname(mainPath), specifier)}.ts`;
 }
 
-function providerNames(content: string): readonly string[] {
-  return [...content.matchAll(/\b(provide\w+)\s*\(/g)].map((match) => match[1]);
-}
-
 function includesZone(polyfills: unknown): boolean {
   const entries = Array.isArray(polyfills) ? polyfills : [polyfills];
   return entries.some((entry) => entry === 'zone.js');
@@ -612,7 +621,8 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const main = read(mainPath) ?? '';
   const standalone = !/bootstrapModule\s*\(/.test(main);
   const appConfigPath = rootProvidersPath(mainPath, main, standalone, sourceRoot);
-  const providers = providerNames(read(appConfigPath) ?? '');
+  const providerCalls = readProviderCalls(read(appConfigPath) ?? '');
+  const providers = providerCalls.names;
 
   const entries = styleEntries(options);
   const stylesPath = globalStylesheet(entries);
@@ -646,6 +656,8 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     tailwind: detectTailwind(read, manifest, entries),
     appConfigPath,
     rootProviders: providers,
+    languageFile: generatedFileState(read(posix.join(posix.dirname(appConfigPath), CNGX_LANGUAGE_FILE))),
+    languagePack: providerCalls.languagePack,
     material: detectMaterial(read, manifest, entries),
     editors: {
       claude: tree.exists('CLAUDE.md') || hasEntries(tree, '.claude'),

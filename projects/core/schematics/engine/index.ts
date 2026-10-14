@@ -58,7 +58,14 @@ export {
   hasProvenanceStamp,
   withProvenanceMarker,
 } from './plan/provenance';
-export { addToArrayLiteral, type ArraySelector, hasArrayLiteral } from './edit/ts-edit';
+export {
+  addToArrayLiteral,
+  type ArraySelector,
+  hasArrayLiteral,
+  insertAfterImports,
+  type LanguagePackArgument,
+  readProviderCalls,
+} from './edit/ts-edit';
 export { findElements, insertAttribute, parseTemplateContent } from './edit/template-edit';
 export { hasStyleImport, insertLeadingStyleImport, insertStyleImport } from './edit/style-edit';
 export { EMPTY_RENAME_TABLE, type MemberRename, type RenameTable } from './migrate/rename-table';

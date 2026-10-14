@@ -500,6 +500,32 @@ describe('ngAdd', () => {
     expect(second.logs.some((line) => line.startsWith('Git: '))).toBe(false);
   });
 
+  it('brings a removed language provider back over the generated language file', async () => {
+    const first = await runRule(ngAdd({ i18n: 'de', runtimeSwitch: true, yes: true }), createFixtureTree());
+    const config = first.tree.readContent('src/app/app.config.ts');
+    const language = first.tree.readContent('src/app/cngx-language.ts');
+    first.tree.overwrite('src/app/app.config.ts', config.replace(/\s*provideCngxI18n\(withPack\(cngxLanguagePack\)\),?/, ''));
+    expect(first.tree.readContent('src/app/app.config.ts')).not.toContain('provideCngxI18n(');
+
+    const second = await runRule(ngAdd({ i18n: 'de', runtimeSwitch: true, yes: true }), first.tree);
+
+    expect(second.tree.readContent('src/app/app.config.ts')).toContain('provideCngxI18n(withPack(cngxLanguagePack))');
+    expect(second.tree.readContent('src/app/cngx-language.ts')).toBe(language);
+  });
+
+  it('creates the language file and names the provider edit when the German pack is already provided', async () => {
+    const first = await runRule(ngAdd({ i18n: 'de', yes: true }), createFixtureTree());
+    const config = first.tree.readContent('src/app/app.config.ts');
+
+    const second = await runRule(ngAdd({ i18n: 'de', runtimeSwitch: true, yes: true }), first.tree);
+
+    expect(second.tree.exists('src/app/cngx-language.ts')).toBe(true);
+    expect(second.tree.readContent('src/app/app.config.ts')).toBe(config);
+    expect(config.match(/provideCngxI18n\(/g)).toHaveLength(1);
+    expect(second.logs.join('\n')).toContain('Switch the language at runtime');
+    expect(second.logs.join('\n')).toContain('`withPack(CNGX_LANGUAGE_DE)`');
+  });
+
   it('writes no @cngx/core import into a utils-only app', async () => {
     const run = await runRule(ngAdd({ libs: ['utils'] }), createFixtureTree());
 

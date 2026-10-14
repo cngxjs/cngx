@@ -104,6 +104,8 @@ describe('detectProject', () => {
       tailwind: undefined,
       appConfigPath: 'src/app/app.config.ts',
       rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
+      languageFile: 'absent',
+      languagePack: undefined,
       material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
       editors: { claude: false, cursor: false, vscode: false },
       mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'absent' },
@@ -139,6 +141,33 @@ describe('detectProject', () => {
       ],
       eslintConfig: undefined,
       maturity: 'existing',
+    });
+  });
+
+  it('tells a generated language file next to the app config from one someone else wrote', async () => {
+    const generated = await detect({
+      'src/app/cngx-language.ts': `${createProvenanceStamp('ng-add providers', '0.1.0')}export const cngxLanguagePack = 1;\n`,
+    });
+    expect(generated.languageFile).toBe('generated');
+
+    const foreign = await detect({ 'src/app/cngx-language.ts': 'export const language = 1;\n' });
+    expect(foreign.languageFile).toBe('foreign');
+  });
+
+  it('reads the language pack the app config passes', async () => {
+    const config = `import { ApplicationConfig } from '@angular/core';
+import { provideCngxI18n, withPack } from '@cngx/core/i18n';
+import { CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideCngxI18n(withPack(CNGX_LANGUAGE_DE))]
+};
+`;
+
+    expect((await detect({ 'src/app/app.config.ts': config })).languagePack).toEqual({
+      text: 'CNGX_LANGUAGE_DE',
+      name: 'CNGX_LANGUAGE_DE',
+      module: '@cngx/core/i18n/de',
     });
   });
 
@@ -659,6 +688,29 @@ module.exports = defineConfig([
 
     it('calls an app with providers beyond the scaffold existing', async () => {
       expect((await detect({ 'src/app/app.config.ts': CONFIG_WITH_PROVIDERS })).maturity).toBe('existing');
+    });
+
+    it('ignores a provider in a comment or a string', async () => {
+      const config = `import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+
+// provideFeedback(withToasts()),
+const hint = 'provideFeedback(';
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideBrowserGlobalErrorListeners()]
+};
+`;
+
+      const facts = await detect({ 'src/app/app.config.ts': config });
+
+      expect(facts.rootProviders).toEqual(['provideBrowserGlobalErrorListeners']);
+      expect(facts.maturity).toBe('fresh');
+    });
+
+    it('still counts a real provider call', async () => {
+      const facts = await detect({ 'src/app/app.config.ts': CONFIG_WITH_PROVIDERS });
+
+      expect(facts.rootProviders).toEqual(['provideBrowserGlobalErrorListeners', 'provideHttpClient']);
     });
 
     it('keeps the scaffold providers fresh', async () => {

@@ -156,11 +156,150 @@ describe('planProviders', () => {
       expect(byId(result, 'provider:i18n-file')).toMatchObject({ path: 'src/config/cngx-language.ts' });
     });
 
+    it('keeps a generated language file and still provides the pack from it', () => {
+      const result = planProviders(
+        createFacts({ languageFile: 'generated' }),
+        createAnswers({ i18n: 'de', runtimeSwitch: true, a11yPreferences: false }),
+        VERSIONS,
+      );
+
+      expect(result.changes.map((change) => [change.kind, change.id])).toEqual([['add-provider', 'provider:i18n']]);
+      expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([['provider:i18n-file', 'already generated']]);
+    });
+
+    it('notes a language file cngx did not write and plans neither the file nor the provider', () => {
+      const result = planProviders(
+        createFacts({ languageFile: 'foreign' }),
+        createAnswers({ i18n: 'de', runtimeSwitch: true, a11yPreferences: false }),
+        VERSIONS,
+      );
+
+      expect(result.changes).toEqual([
+        expect.objectContaining({
+          kind: 'note',
+          id: 'provider:i18n-file',
+          label: 'Keep src/app/cngx-language.ts',
+          reason: 'cngx did not write it, so runtime language switching is skipped; move it aside and run `ng add @cngx/core` again',
+        }),
+      ]);
+      expect(result.skipped).toEqual([]);
+    });
+
+    it('names the edit when an existing language provider passes another pack', () => {
+      const result = planProviders(
+        createFacts({ rootProviders: ['provideCngxI18n'], languagePack: { text: 'CNGX_LANGUAGE_DE', name: 'CNGX_LANGUAGE_DE', module: '@cngx/core/i18n/de' } }),
+        createAnswers({ i18n: 'de', runtimeSwitch: true, a11yPreferences: false }),
+        VERSIONS,
+      );
+
+      expect(result.changes).toEqual([
+        expect.objectContaining({ kind: 'create-file', id: 'provider:i18n-file', path: 'src/app/cngx-language.ts' }),
+        expect.objectContaining({
+          kind: 'note',
+          id: 'provider:i18n-pack',
+          label: 'Switch the language at runtime',
+          reason:
+            "provideCngxI18n in src/app/app.config.ts passes `withPack(CNGX_LANGUAGE_DE)`; pass `withPack(cngxLanguagePack)` with cngxLanguagePack imported from './cngx-language'",
+        }),
+      ]);
+      expect(result.skipped).toEqual([]);
+    });
+
+    it('takes an aliased or namespaced cngxLanguagePack as a wired switch', () => {
+      for (const text of ['pack', 'lang.cngxLanguagePack']) {
+        const result = planProviders(
+          createFacts({
+            rootProviders: ['provideCngxI18n'],
+            languageFile: 'generated',
+            languagePack: { text, name: 'cngxLanguagePack', module: './cngx-language' },
+          }),
+          createAnswers({ i18n: 'de', runtimeSwitch: true, a11yPreferences: false }),
+          VERSIONS,
+        );
+
+        expect(result.changes).toEqual([]);
+        expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([
+          ['provider:i18n', 'already provided'],
+          ['provider:i18n-file', 'already generated'],
+        ]);
+      }
+    });
+
+    it('takes a cngxLanguagePack from another module as no switch and names the edit', () => {
+      const result = planProviders(
+        createFacts({
+          rootProviders: ['provideCngxI18n'],
+          languageFile: 'generated',
+          languagePack: { text: 'cngxLanguagePack', name: 'cngxLanguagePack', module: '@acme/i18n' },
+        }),
+        createAnswers({ i18n: 'de', runtimeSwitch: true, a11yPreferences: false }),
+        VERSIONS,
+      );
+
+      expect(result.changes.map((change) => [change.kind, change.id])).toEqual([['note', 'provider:i18n-pack']]);
+    });
+
+    it('leaves a language file cngx did not write alone when the provider already passes its signal', () => {
+      const result = planProviders(
+        createFacts({
+          rootProviders: ['provideCngxI18n'],
+          languageFile: 'foreign',
+          languagePack: { text: 'cngxLanguagePack', name: 'cngxLanguagePack', module: './cngx-language' },
+        }),
+        createAnswers({ i18n: 'de', runtimeSwitch: true, a11yPreferences: false }),
+        VERSIONS,
+      );
+
+      expect(result.changes).toEqual([]);
+      expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([
+        ['provider:i18n', 'already provided'],
+        ['provider:i18n-file', 'cngx did not write it; provideCngxI18n already passes cngxLanguagePack'],
+      ]);
+    });
+
+    it('names the edit for a language provider without a pack', () => {
+      const result = planProviders(
+        createFacts({ rootProviders: ['provideCngxI18n'], languageFile: 'generated' }),
+        createAnswers({ i18n: 'de', runtimeSwitch: true, a11yPreferences: false }),
+        VERSIONS,
+      );
+
+      expect(result.changes).toEqual([
+        expect.objectContaining({ kind: 'note', reason: expect.stringContaining('passes no pack;') }),
+      ]);
+      expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([['provider:i18n-file', 'already generated']]);
+    });
+
+    it('keeps the plain skip without the runtime switch', () => {
+      const result = planProviders(
+        createFacts({ rootProviders: ['provideCngxI18n'], languagePack: { text: 'CNGX_LANGUAGE_DE', name: 'CNGX_LANGUAGE_DE', module: '@cngx/core/i18n/de' } }),
+        createAnswers({ i18n: 'de', a11yPreferences: false }),
+        VERSIONS,
+      );
+
+      expect(result.changes).toEqual([]);
+      expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([['provider:i18n', 'already provided']]);
+    });
+
+    it('names the pack it keeps when an existing language provider passes its own', () => {
+      const result = planProviders(
+        createFacts({ rootProviders: ['provideCngxI18n'], languagePack: { text: 'MY_PACK', name: 'MY_PACK', module: './my-pack' } }),
+        createAnswers({ i18n: 'de', a11yPreferences: false }),
+        VERSIONS,
+      );
+
+      expect(result.changes).toEqual([]);
+      expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([
+        ['provider:i18n', 'already passes `withPack(MY_PACK)`; cngx keeps that pack'],
+      ]);
+    });
+
     it('says why it does not apply without the German pack', () => {
       const result = planProviders(createFacts(), createAnswers({ runtimeSwitch: true, a11yPreferences: false }), VERSIONS);
       expect(result.changes).toEqual([
         expect.objectContaining({
           kind: 'note',
+          id: 'provider:i18n-switch',
           label: 'Skip runtime language switching',
           reason: 'it switches to the German pack; pass --i18n=de with it',
         }),
@@ -206,15 +345,38 @@ describe('planProviders', () => {
   });
 
   it('skips providers the app already has', () => {
-    const facts = createFacts({ rootProviders: ['provideRouter', 'provideA11yPreferences', 'provideCngxI18n'] });
+    const facts = createFacts({
+      rootProviders: ['provideRouter', 'provideA11yPreferences', 'provideCngxI18n'],
+      languageFile: 'generated',
+      languagePack: { text: 'cngxLanguagePack', name: 'cngxLanguagePack', module: './cngx-language' },
+    });
     const result = planProviders(facts, createAnswers({ i18n: 'de', runtimeSwitch: true }), VERSIONS);
 
     expect(result.changes).toEqual([]);
     expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([
       ['provider:a11y-preferences', 'already provided'],
-      ['provider:i18n-file', 'already provided'],
       ['provider:i18n', 'already provided'],
+      ['provider:i18n-file', 'already generated'],
     ]);
+  });
+
+  it('names the edit when an existing language provider passes no pack for German', () => {
+    const result = planProviders(
+      createFacts({ rootProviders: ['provideCngxI18n'] }),
+      createAnswers({ i18n: 'de', a11yPreferences: false }),
+      VERSIONS,
+    );
+
+    expect(result.changes).toEqual([
+      expect.objectContaining({
+        kind: 'note',
+        id: 'provider:i18n-pack',
+        label: 'Use the German language pack',
+        reason:
+          "provideCngxI18n in src/app/app.config.ts passes no pack; pass `withPack(CNGX_LANGUAGE_DE)` with CNGX_LANGUAGE_DE imported from '@cngx/core/i18n/de'",
+      }),
+    ]);
+    expect(result.skipped).toEqual([]);
   });
 
   it('keeps its RTL list in step with the runtime list of @cngx/core/i18n', () => {

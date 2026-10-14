@@ -286,6 +286,183 @@ export function promoteTypeOnlyImport(content: string, symbol: string, module: s
     .reduce((text, [from, to, insert]) => `${text.slice(0, from)}${insert}${text.slice(to)}`, content);
 }
 
+function collectCalls(node: ts.Node, calls: ts.CallExpression[]): readonly ts.CallExpression[] {
+  if (ts.isCallExpression(node)) {
+    calls.push(node);
+  }
+  ts.forEachChild(node, (child) => {
+    collectCalls(child, calls);
+  });
+  return calls;
+}
+
+interface ImportedSymbol {
+  readonly module: string;
+  /** The name the module exports; `*` for a namespace import, `default` for a default import. */
+  readonly name: string;
+}
+
+// What a top-level import binds `local` to.
+function importOf(source: ts.SourceFile, local: string): ImportedSymbol | undefined {
+  for (const statement of source.statements) {
+    const clause = ts.isImportDeclaration(statement) ? statement.importClause : undefined;
+    const specifier = ts.isImportDeclaration(statement) ? statement.moduleSpecifier : undefined;
+    if (clause === undefined || specifier === undefined || !ts.isStringLiteral(specifier)) {
+      continue;
+    }
+    const module = specifier.text;
+    if (clause.name?.text === local) {
+      return { module, name: 'default' };
+    }
+    const bindings = clause.namedBindings;
+    if (bindings !== undefined && ts.isNamespaceImport(bindings) && bindings.name.text === local) {
+      return { module, name: '*' };
+    }
+    const element =
+      bindings !== undefined && ts.isNamedImports(bindings)
+        ? bindings.elements.find((candidate) => candidate.name.text === local)
+        : undefined;
+    if (element !== undefined) {
+      return { module, name: (element.propertyName ?? element.name).text };
+    }
+  }
+  return undefined;
+}
+
+/** A symbol as its module exports it; `module` is undefined when the file does not import it. */
+export interface SymbolReference {
+  readonly name: string;
+  readonly module: string | undefined;
+}
+
+// What an expression refers to: an aliased import resolves to the imported
+// name, `ns.x` over a namespace import to `x` from that module.
+function referenceOf(source: ts.SourceFile, expression: ts.Expression): SymbolReference {
+  if (ts.isIdentifier(expression)) {
+    const imported = importOf(source, expression.text);
+    const named = imported !== undefined && imported.name !== '*' && imported.name !== 'default';
+    return { name: named ? imported.name : expression.text, module: imported?.module };
+  }
+  if (ts.isPropertyAccessExpression(expression)) {
+    const root = ts.isIdentifier(expression.expression) ? importOf(source, expression.expression.text) : undefined;
+    return { name: expression.name.text, module: root?.name === '*' ? root.module : undefined };
+  }
+  return { name: expression.getText(source), module: undefined };
+}
+
+/** The pack a `provideCngxI18n(withPack(...))` call passes. */
+export interface LanguagePackArgument extends SymbolReference {
+  /** The argument as written, e.g. `CNGX_LANGUAGE_DE` or `lang.cngxLanguagePack`. */
+  readonly text: string;
+}
+
+/** The `provideX(...)` calls of a root providers file, read from its syntax tree. */
+export interface ProviderCalls {
+  /**
+   * Every `provideX(...)` name in source order, as its module exports it:
+   * called bare, through an import alias, or through a namespace (`ns.provideX`).
+   */
+  readonly names: readonly string[];
+  /**
+   * The first `withPack(...)` argument inside a `provideCngxI18n(...)` call;
+   * `undefined` when there is no such call or it passes no pack.
+   */
+  readonly languagePack: LanguagePackArgument | undefined;
+}
+
+/**
+ * Reads the provider calls of a file in one pass over its syntax tree, so a
+ * call inside a comment or a string never counts.
+ */
+export function readProviderCalls(content: string): ProviderCalls {
+  const source = parse(content);
+  const named = collectCalls(source, []).map((call) => ({ call, name: referenceOf(source, call.expression).name }));
+  const pack = named
+    .filter(({ name }) => name === 'provideCngxI18n')
+    .flatMap(({ call }) => call.arguments.filter(ts.isCallExpression))
+    .find((call) => referenceOf(source, call.expression).name === 'withPack')?.arguments[0];
+  return {
+    names: named.flatMap(({ name }) => (/^provide\w/.test(name) ? [name] : [])),
+    languagePack: pack === undefined ? undefined : { text: pack.getText(source), ...referenceOf(source, pack) },
+  };
+}
+
+function isRequireCall(expression: ts.Expression): boolean {
+  if (ts.isPropertyAccessExpression(expression)) {
+    return isRequireCall(expression.expression);
+  }
+  return ts.isCallExpression(expression) && calleeName(expression) === 'require';
+}
+
+function isImportStatement(statement: ts.Statement): boolean {
+  if (ts.isImportDeclaration(statement) || ts.isImportEqualsDeclaration(statement)) {
+    return true;
+  }
+  return (
+    ts.isVariableStatement(statement) &&
+    statement.declarationList.declarations.some(
+      (declaration) => declaration.initializer !== undefined && isRequireCall(declaration.initializer),
+    )
+  );
+}
+
+function isDirective(statement: ts.Statement): boolean {
+  return ts.isExpressionStatement(statement) && ts.isStringLiteral(statement.expression);
+}
+
+interface InsertionPoint {
+  readonly at: number;
+  /** More code shares the line after `at`, so the insertion must end its own line too. */
+  readonly codeFollows: boolean;
+}
+
+// Where a line of its own goes after the statement ending at `position`: the
+// end of that line, past a trailing comment (also a block comment that runs
+// onto later lines), or right after the statement and its comment when more
+// code shares the line.
+function insertionPoint(content: string, position: number): InsertionPoint {
+  const trailing = ts.getTrailingCommentRanges(content, position) ?? [];
+  const from = trailing.length === 0 ? position : trailing[trailing.length - 1].end;
+  const lineBreak = content.indexOf('\n', from);
+  const end = lineBreak === -1 ? content.length : lineBreak;
+  const lineEnd = content[end - 1] === '\r' ? end - 1 : end;
+  const codeFollows = content.slice(from, lineEnd).trim() !== '';
+  return { at: codeFollows ? from : lineEnd, codeFollows };
+}
+
+// Where a statement goes in front of everything but a shebang and the
+// directive prologue (`'use strict'`), which must stay first.
+function headerEnd(content: string, statements: readonly ts.Statement[]): InsertionPoint | undefined {
+  const firstOther = statements.findIndex((statement) => !isDirective(statement));
+  const prologue = firstOther === -1 ? statements : statements.slice(0, firstOther);
+  const directive = prologue[prologue.length - 1];
+  if (directive !== undefined) {
+    return insertionPoint(content, directive.getEnd());
+  }
+  const shebang = ts.getShebang(content);
+  return shebang === undefined ? undefined : insertionPoint(content, shebang.length);
+}
+
+/**
+ * Inserts `statement` on its own line after the last top-level import, import
+ * equals, or `require(...)` declaration (also `require(...).x`), so an import
+ * spanning several lines stays whole. A comment trailing that import stays
+ * with it, and code sharing its line moves to the next line. Without imports
+ * it goes after a shebang and the directive prologue, else at the top.
+ */
+export function insertAfterImports(content: string, statement: string): string {
+  const newline = content.includes('\r\n') ? '\r\n' : '\n';
+  const statements = parse(content).statements;
+  const last = statements.filter(isImportStatement).pop();
+  const point = last === undefined ? headerEnd(content, statements) : insertionPoint(content, last.getEnd());
+  if (point === undefined) {
+    return `${statement}${newline}${content}`;
+  }
+  const rest = content.slice(point.at);
+  const after = point.codeFollows ? `${newline}${rest.replace(/^[ \t]+/, '')}` : rest;
+  return `${content.slice(0, point.at)}${newline}${statement}${after}`;
+}
+
 function indentOf(content: string, position: number): string {
   const lineStart = content.lastIndexOf('\n', position - 1) + 1;
   return /^[ \t]*/.exec(content.slice(lineStart))?.[0] ?? '';
