@@ -156,6 +156,35 @@ describe('planProviders', () => {
       expect(byId(result, 'provider:i18n-file')).toMatchObject({ path: 'src/config/cngx-language.ts' });
     });
 
+    it('keeps a generated language file and still provides the pack from it', () => {
+      const result = planProviders(
+        createFacts({ languageFile: 'generated' }),
+        createAnswers({ i18n: 'de', runtimeSwitch: true, a11yPreferences: false }),
+        VERSIONS,
+      );
+
+      expect(result.changes.map((change) => [change.kind, change.id])).toEqual([['add-provider', 'provider:i18n']]);
+      expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([['provider:i18n-file', 'already generated']]);
+    });
+
+    it('notes a language file cngx did not write and plans neither the file nor the provider', () => {
+      const result = planProviders(
+        createFacts({ languageFile: 'foreign' }),
+        createAnswers({ i18n: 'de', runtimeSwitch: true, a11yPreferences: false }),
+        VERSIONS,
+      );
+
+      expect(result.changes).toEqual([
+        expect.objectContaining({
+          kind: 'note',
+          id: 'provider:i18n',
+          label: 'Skip runtime language switching',
+          reason: 'src/app/cngx-language.ts exists and cngx did not write it; move it aside and run `ng add @cngx/core` again',
+        }),
+      ]);
+      expect(result.skipped).toEqual([]);
+    });
+
     it('says why it does not apply without the German pack', () => {
       const result = planProviders(createFacts(), createAnswers({ runtimeSwitch: true, a11yPreferences: false }), VERSIONS);
       expect(result.changes).toEqual([
@@ -206,14 +235,17 @@ describe('planProviders', () => {
   });
 
   it('skips providers the app already has', () => {
-    const facts = createFacts({ rootProviders: ['provideRouter', 'provideA11yPreferences', 'provideCngxI18n'] });
+    const facts = createFacts({
+      rootProviders: ['provideRouter', 'provideA11yPreferences', 'provideCngxI18n'],
+      languageFile: 'generated',
+    });
     const result = planProviders(facts, createAnswers({ i18n: 'de', runtimeSwitch: true }), VERSIONS);
 
     expect(result.changes).toEqual([]);
     expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([
       ['provider:a11y-preferences', 'already provided'],
-      ['provider:i18n-file', 'already provided'],
       ['provider:i18n', 'already provided'],
+      ['provider:i18n-file', 'already generated'],
     ]);
   });
 

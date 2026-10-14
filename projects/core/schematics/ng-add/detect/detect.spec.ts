@@ -104,6 +104,7 @@ describe('detectProject', () => {
       tailwind: undefined,
       appConfigPath: 'src/app/app.config.ts',
       rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
+      languageFile: 'absent',
       material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
       editors: { claude: false, cursor: false, vscode: false },
       mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'absent' },
@@ -140,6 +141,16 @@ describe('detectProject', () => {
       eslintConfig: undefined,
       maturity: 'existing',
     });
+  });
+
+  it('tells a generated language file next to the app config from one someone else wrote', async () => {
+    const generated = await detect({
+      'src/app/cngx-language.ts': `${createProvenanceStamp('ng-add providers', '0.1.0')}export const cngxLanguagePack = 1;\n`,
+    });
+    expect(generated.languageFile).toBe('generated');
+
+    const foreign = await detect({ 'src/app/cngx-language.ts': 'export const language = 1;\n' });
+    expect(foreign.languageFile).toBe('foreign');
   });
 
   it('resolves the named project and refuses an unknown one', async () => {

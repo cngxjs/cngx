@@ -112,8 +112,11 @@ export interface ClaudeInstructions {
   readonly state: Exclude<InstructionState, 'absent'>;
 }
 
-/** `cngx-layers.css` next to the order target: missing, written by cngx, or someone else's. */
-export type LayersFileState = 'absent' | 'generated' | 'foreign';
+/**
+ * A file cngx generates (`cngx-layers.css`, `cngx-language.ts`): missing,
+ * written by cngx (it carries the provenance stamp), or someone else's.
+ */
+export type GeneratedFileState = 'absent' | 'generated' | 'foreign';
 
 /** Tailwind CSS as the app declares and loads it. */
 export interface TailwindFacts {
@@ -132,11 +135,15 @@ export interface TailwindFacts {
    * imported file, so it cannot order layers the imports already declared.
    */
   readonly orderDeclared: boolean;
-  readonly layersFile: LayersFileState;
+  /** `cngx-layers.css` next to the order target. */
+  readonly layersFile: GeneratedFileState;
 }
 
 /** The file that orders the Tailwind and cngx cascade layers; it loads before every other import. */
 export const CNGX_LAYERS_FILE = 'cngx-layers.css';
+
+/** The file holding the runtime language switch signal, next to the root providers file. */
+export const CNGX_LANGUAGE_FILE = 'cngx-language.ts';
 
 /** Opens the block cngx writes into agent instruction files; a later run finds it. */
 export const AGENTS_MARKER = '<!-- cngx:agents -->';
@@ -166,6 +173,8 @@ export interface ProjectFacts {
   readonly appConfigPath: string;
   /** Every `provide*()` call already in that file. */
   readonly rootProviders: readonly string[];
+  /** `cngx-language.ts` next to `appConfigPath`. */
+  readonly languageFile: GeneratedFileState;
   readonly material: MaterialFacts;
   readonly editors: EditorFacts;
   readonly mcpConfigs: Readonly<Record<AiTool, McpConfigState>>;
@@ -388,11 +397,11 @@ function detectTailwind(read: Read, manifest: PackageManifest, entries: readonly
     layered,
     orderTarget,
     orderDeclared: contents.some((content) => layersImport.test(content)),
-    layersFile: layersFileState(layersContent),
+    layersFile: generatedFileState(layersContent),
   };
 }
 
-function layersFileState(content: string | undefined): LayersFileState {
+function generatedFileState(content: string | undefined): GeneratedFileState {
   if (content === undefined) {
     return 'absent';
   }
@@ -643,6 +652,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     tailwind: detectTailwind(read, manifest, entries),
     appConfigPath,
     rootProviders: providers,
+    languageFile: generatedFileState(read(posix.join(posix.dirname(appConfigPath), CNGX_LANGUAGE_FILE))),
     material: detectMaterial(read, manifest, entries),
     editors: {
       claude: tree.exists('CLAUDE.md') || hasEntries(tree, '.claude'),

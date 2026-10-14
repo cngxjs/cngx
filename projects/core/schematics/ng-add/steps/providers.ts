@@ -9,7 +9,7 @@ import {
   skipChange,
   type StepResult,
 } from '../../engine';
-import { type ProjectFacts } from '../detect/detect';
+import { CNGX_LANGUAGE_FILE, type ProjectFacts } from '../detect/detect';
 import { selectedLibs } from './dependencies';
 import { type OnboardingAnswers, type Versions } from './model';
 
@@ -32,7 +32,7 @@ export const RTL_LANGUAGES: ReadonlySet<string> = new Set([
   'yi',
 ]);
 
-const LANGUAGE_FILE = 'cngx-language';
+const LANGUAGE_MODULE = `./${posix.basename(CNGX_LANGUAGE_FILE, '.ts')}`;
 const LANGUAGE_SIGNAL = 'cngxLanguagePack';
 
 function isRtl(locale: string | undefined): boolean {
@@ -74,7 +74,7 @@ const FLOATING_UI = '@floating-ui/dom';
 
 function i18nPack(answers: OnboardingAnswers): ProviderCall {
   const pack: ProviderCall = answers.runtimeSwitch
-    ? { symbol: LANGUAGE_SIGNAL, module: `./${LANGUAGE_FILE}`, reference: true }
+    ? { symbol: LANGUAGE_SIGNAL, module: LANGUAGE_MODULE, reference: true }
     : { symbol: 'CNGX_LANGUAGE_DE', module: '@cngx/core/i18n/de', reference: true };
   return {
     symbol: 'provideCngxI18n',
@@ -150,10 +150,28 @@ function wantedProviders(facts: ProjectFacts, answers: OnboardingAnswers): reado
  */
 export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
   const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
-  const languageFile = posix.join(posix.dirname(facts.appConfigPath), `${LANGUAGE_FILE}.ts`);
+  const languageFile = posix.join(posix.dirname(facts.appConfigPath), CNGX_LANGUAGE_FILE);
   const libs = selectedLibs(answers.libs);
   const wanted = wantedProviders(facts, answers);
-  const changes = wanted.filter(({ lib }) => libs.includes(lib)).flatMap((entry): readonly Change[] => {
+  const file: Change = {
+    kind: 'create-file',
+    id: 'provider:i18n-file',
+    label: `Create ${languageFile}`,
+    reason: 'the signal that switches the language pack',
+    provenance,
+    path: languageFile,
+    content: renderLanguageFile(versions.cngx, startsGerman(facts.sourceLocale)),
+  };
+  // A file someone else wrote is never overwritten, and the provider would
+  // import a signal it may not export.
+  const foreignFile: Change = {
+    kind: 'note',
+    id: 'provider:i18n',
+    label: 'Skip runtime language switching',
+    reason: `${languageFile} exists and cngx did not write it; move it aside and run \`ng add @cngx/core\` again`,
+    provenance,
+  };
+  const providers = wanted.filter(({ lib }) => libs.includes(lib)).flatMap((entry): readonly Change[] => {
     const provider: Change = {
       kind: 'add-provider',
       id: entry.id,
@@ -167,21 +185,14 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
     if (entry.id !== 'provider:i18n' || !answers.runtimeSwitch) {
       return [provider];
     }
-    const file: Change = {
-      kind: 'create-file',
-      id: 'provider:i18n-file',
-      label: `Create ${languageFile}`,
-      reason: 'the signal that switches the language pack',
-      provenance,
-      path: languageFile,
-      content: renderLanguageFile(versions.cngx, startsGerman(facts.sourceLocale)),
-    };
-    return [file, provider];
+    if (facts.languageFile === 'foreign') {
+      return [foreignFile];
+    }
+    return facts.languageFile === 'absent' ? [file, provider] : [provider];
   });
-  const isProvided = (change: Change): boolean => {
-    const symbol = change.kind === 'add-provider' ? change.call.symbol : 'provideCngxI18n';
-    return facts.rootProviders.includes(symbol);
-  };
+  const switching = answers.runtimeSwitch && providers.some((change) => change.kind === 'add-provider' && change.id === 'provider:i18n');
+  const isProvided = (change: Change): boolean =>
+    change.kind === 'add-provider' && facts.rootProviders.includes(change.call.symbol);
   const unserved: readonly Change[] = wanted
     .filter(({ lib }) => !libs.includes(lib))
     .map(({ id, subject, lib }) => ({
@@ -204,8 +215,10 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
         ]
       : [];
   const notes = [...unserved, ...switchWithoutPack];
+  const generatedFile =
+    switching && facts.languageFile === 'generated' ? [skipChange(file, 'already generated')] : [];
   return {
-    changes: [...changes.filter((change) => !isProvided(change)), ...notes],
-    skipped: changes.filter(isProvided).map((change) => skipChange(change, 'already provided')),
+    changes: [...providers.filter((change) => !isProvided(change)), ...notes],
+    skipped: [...providers.filter(isProvided).map((change) => skipChange(change, 'already provided')), ...generatedFile],
   };
 }
