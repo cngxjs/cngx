@@ -286,6 +286,25 @@ export function promoteTypeOnlyImport(content: string, symbol: string, module: s
     .reduce((text, [from, to, insert]) => `${text.slice(0, from)}${insert}${text.slice(to)}`, content);
 }
 
+function callsIn(node: ts.Node): readonly ts.CallExpression[] {
+  const calls: ts.CallExpression[] = ts.isCallExpression(node) ? [node] : [];
+  ts.forEachChild(node, (child) => {
+    calls.push(...callsIn(child));
+  });
+  return calls;
+}
+
+/**
+ * The name of every `provideX(...)` call in the file, in source order. Read
+ * from the syntax tree, so a call inside a comment or a string never counts.
+ */
+export function providerCallNames(content: string): readonly string[] {
+  return callsIn(parse(content)).flatMap((call) => {
+    const name = calleeName(call);
+    return name !== undefined && /^provide\w/.test(name) ? [name] : [];
+  });
+}
+
 function isRequireCall(expression: ts.Expression): boolean {
   if (ts.isPropertyAccessExpression(expression)) {
     return isRequireCall(expression.expression);

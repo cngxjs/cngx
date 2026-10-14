@@ -661,6 +661,29 @@ module.exports = defineConfig([
       expect((await detect({ 'src/app/app.config.ts': CONFIG_WITH_PROVIDERS })).maturity).toBe('existing');
     });
 
+    it('ignores a provider in a comment or a string', async () => {
+      const config = `import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+
+// provideFeedback(withToasts()),
+const hint = 'provideFeedback(';
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideBrowserGlobalErrorListeners()]
+};
+`;
+
+      const facts = await detect({ 'src/app/app.config.ts': config });
+
+      expect(facts.rootProviders).toEqual(['provideBrowserGlobalErrorListeners']);
+      expect(facts.maturity).toBe('fresh');
+    });
+
+    it('still counts a real provider call', async () => {
+      const facts = await detect({ 'src/app/app.config.ts': CONFIG_WITH_PROVIDERS });
+
+      expect(facts.rootProviders).toEqual(['provideBrowserGlobalErrorListeners', 'provideHttpClient']);
+    });
+
     it('keeps the scaffold providers fresh', async () => {
       expect((await detect({ 'src/app/app.config.ts': ZONED_CONFIG })).maturity).toBe('fresh');
     });

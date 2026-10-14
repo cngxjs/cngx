@@ -11,6 +11,7 @@ import {
   isRecord,
   type PackageManifest,
   parseManifest,
+  providerCallNames,
   type Tree,
 } from '../../engine';
 
@@ -564,10 +565,6 @@ function rootProvidersPath(mainPath: string, main: string, standalone: boolean, 
   return specifier === undefined ? fallback : `${posix.join(posix.dirname(mainPath), specifier)}.ts`;
 }
 
-function providerNames(content: string): readonly string[] {
-  return [...content.matchAll(/\b(provide\w+)\s*\(/g)].map((match) => match[1]);
-}
-
 function includesZone(polyfills: unknown): boolean {
   const entries = Array.isArray(polyfills) ? polyfills : [polyfills];
   return entries.some((entry) => entry === 'zone.js');
@@ -612,7 +609,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const main = read(mainPath) ?? '';
   const standalone = !/bootstrapModule\s*\(/.test(main);
   const appConfigPath = rootProvidersPath(mainPath, main, standalone, sourceRoot);
-  const providers = providerNames(read(appConfigPath) ?? '');
+  const providers = providerCallNames(read(appConfigPath) ?? '');
 
   const entries = styleEntries(options);
   const stylesPath = globalStylesheet(entries);

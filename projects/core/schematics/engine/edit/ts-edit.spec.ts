@@ -7,6 +7,7 @@ import {
   hasArrayLiteral,
   insertAfterImports,
   promoteTypeOnlyImport,
+  providerCallNames,
   topLevelBindings,
 } from './ts-edit';
 
@@ -281,5 +282,27 @@ export default [];
     expect(insertAfterImports("import a from 'a';\r\nexport default [];\r\n", STATEMENT)).toBe(
       `import a from 'a';\r\n${STATEMENT}\r\nexport default [];\r\n`,
     );
+  });
+});
+
+describe('providerCallNames', () => {
+  it('names every provide call in source order, nested ones included', () => {
+    const content = `export const appConfig = {
+  providers: [provideRouter(routes), provideCngxI18n(withPack(pack)), provideHttpClient(withFetch())],
+};
+`;
+
+    expect(providerCallNames(content)).toEqual(['provideRouter', 'provideCngxI18n', 'provideHttpClient']);
+  });
+
+  it('skips calls in comments and strings, member calls and a bare provide', () => {
+    const content = `// provideFeedback()
+/* provideToasts() */
+const label = 'provideAlerts(';
+const x = this.provideLocal();
+provide(token);
+`;
+
+    expect(providerCallNames(content)).toEqual([]);
   });
 });
