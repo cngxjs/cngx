@@ -119,6 +119,20 @@ import cngx from '@cngx/eslint-plugin'; /* cngx:lint:import */
     expect(edited).toContain('  ...cngx.configs.recommended,\n];');
   });
 
+  it('keeps a config parseable when the export shares the last import line', () => {
+    const result = planLint(eslintApp({ eslintConfig: config({ path: 'eslint.config.mjs', module: 'esm' }) }), createAnswers(), VERSIONS);
+
+    const edited = edit(result, "import eslint from '@eslint/js'; export default [\n  eslint.configs.recommended,\n];\n");
+
+    expect(edited).toBe(`import eslint from '@eslint/js';
+import cngx from '@cngx/eslint-plugin'; /* cngx:lint:import */
+export default [
+  eslint.configs.recommended,
+  ...cngx.configs.recommended,
+];
+`);
+  });
+
   it('edits idempotently', () => {
     const result = planLint(eslintApp(), createAnswers(), VERSIONS);
     const once = edit(result, ANGULAR_ESLINT_CJS);

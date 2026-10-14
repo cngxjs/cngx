@@ -290,6 +290,18 @@ export default [];
 `);
   });
 
+  it('moves code that shares the last import line below the inserted statement', () => {
+    expect(insertAfterImports("import a from 'a'; export default [\n  a,\n];\n", STATEMENT)).toBe(
+      `import a from 'a';\n${STATEMENT}\nexport default [\n  a,\n];\n`,
+    );
+    expect(insertAfterImports("const a = require('a'); /* c */ module.exports = [a];\n", 'const p = require("p");')).toBe(
+      "const a = require('a'); /* c */\nconst p = require(\"p\");\nmodule.exports = [a];\n",
+    );
+    expect(insertAfterImports("'use strict'; module.exports = [];\n", 'const p = require("p");')).toBe(
+      "'use strict';\nconst p = require(\"p\");\nmodule.exports = [];\n",
+    );
+  });
+
   it('keeps a shebang and the directive prologue first in a file without imports', () => {
     expect(insertAfterImports('#!/usr/bin/env node\nmodule.exports = [];\n', 'const p = require("p");')).toBe(
       '#!/usr/bin/env node\nconst p = require("p");\nmodule.exports = [];\n',

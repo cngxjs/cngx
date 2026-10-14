@@ -391,46 +391,57 @@ function isDirective(statement: ts.Statement): boolean {
   return ts.isExpressionStatement(statement) && ts.isStringLiteral(statement.expression);
 }
 
-// The end of the line `position` sits on, before its line break. A comment
-// trailing there counts as part of the line, also a block comment that runs
-// onto later lines.
-function lineEnd(content: string, position: number): number {
+interface InsertionPoint {
+  readonly at: number;
+  /** More code shares the line after `at`, so the insertion must end its own line too. */
+  readonly codeFollows: boolean;
+}
+
+// Where a line of its own goes after the statement ending at `position`: the
+// end of that line, past a trailing comment (also a block comment that runs
+// onto later lines), or right after the statement and its comment when more
+// code shares the line.
+function insertionPoint(content: string, position: number): InsertionPoint {
   const trailing = ts.getTrailingCommentRanges(content, position) ?? [];
   const from = trailing.length === 0 ? position : trailing[trailing.length - 1].end;
   const lineBreak = content.indexOf('\n', from);
   const end = lineBreak === -1 ? content.length : lineBreak;
-  return content[end - 1] === '\r' ? end - 1 : end;
+  const lineEnd = content[end - 1] === '\r' ? end - 1 : end;
+  const codeFollows = content.slice(from, lineEnd).trim() !== '';
+  return { at: codeFollows ? from : lineEnd, codeFollows };
 }
 
 // Where a statement goes in front of everything but a shebang and the
 // directive prologue (`'use strict'`), which must stay first.
-function headerEnd(content: string, statements: readonly ts.Statement[]): number | undefined {
+function headerEnd(content: string, statements: readonly ts.Statement[]): InsertionPoint | undefined {
   const firstOther = statements.findIndex((statement) => !isDirective(statement));
   const prologue = firstOther === -1 ? statements : statements.slice(0, firstOther);
   const directive = prologue[prologue.length - 1];
   if (directive !== undefined) {
-    return lineEnd(content, directive.getEnd());
+    return insertionPoint(content, directive.getEnd());
   }
   const shebang = ts.getShebang(content);
-  return shebang === undefined ? undefined : lineEnd(content, shebang.length);
+  return shebang === undefined ? undefined : insertionPoint(content, shebang.length);
 }
 
 /**
  * Inserts `statement` on its own line after the last top-level import, import
  * equals, or `require(...)` declaration (also `require(...).x`), so an import
  * spanning several lines stays whole. A comment trailing that import stays
- * with it. Without imports it goes after a shebang and the directive
- * prologue, else at the top.
+ * with it, and code sharing its line moves to the next line. Without imports
+ * it goes after a shebang and the directive prologue, else at the top.
  */
 export function insertAfterImports(content: string, statement: string): string {
   const newline = content.includes('\r\n') ? '\r\n' : '\n';
   const statements = parse(content).statements;
   const last = statements.filter(isImportStatement).pop();
-  const at = last === undefined ? headerEnd(content, statements) : lineEnd(content, last.getEnd());
-  if (at === undefined) {
+  const point = last === undefined ? headerEnd(content, statements) : insertionPoint(content, last.getEnd());
+  if (point === undefined) {
     return `${statement}${newline}${content}`;
   }
-  return `${content.slice(0, at)}${newline}${statement}${content.slice(at)}`;
+  const rest = content.slice(point.at);
+  const after = point.codeFollows ? `${newline}${rest.replace(/^[ \t]+/, '')}` : rest;
+  return `${content.slice(0, point.at)}${newline}${statement}${after}`;
 }
 
 function indentOf(content: string, position: number): string {
