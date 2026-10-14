@@ -14,10 +14,8 @@ import {
   untracked,
 } from '@angular/core';
 
+import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import {
-  buildAsyncStateView,
-  type AsyncStatus,
-  type CngxAsyncState,
   coerceSignal,
   hasTransition,
   nextUid,
@@ -69,8 +67,8 @@ function warnDoubleRegistration(
 
 /**
  * Non-modal dialogs are silent to SR: warn when no `aria-live` region sits
- * next to the trigger. Module function for the same reason as
- * {@link warnDoubleRegistration}.
+ * next to the trigger. A module function for the same reason as
+ * `warnDoubleRegistration`.
  */
 function warnNonModalA11y(id: string, trigger: HTMLElement | null): void {
   if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
@@ -483,7 +481,8 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
       );
     }
     this.registeredTitle.set(handle);
-    return () => this.registeredTitle.update((current) => (current === handle ? null : current));
+    return () =>
+      this.registeredTitle.update((current) => (current === handle ? null : current));
   }
 
   /**
@@ -662,8 +661,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
 
   protected handlePointerDown(event: PointerEvent): void {
     this.pointerDownOnBackdrop =
-      event.target === this.dialogElement &&
-      this.isOutsideContentRect(event.clientX, event.clientY);
+      event.target === this.dialogElement && this.isOutsideContentRect(event.clientX, event.clientY);
   }
 
   protected handleClick(event: MouseEvent): void {
