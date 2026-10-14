@@ -32,6 +32,9 @@ declare const ngDevMode: boolean | undefined;
  * fold away in production even when a message reaches it. Without Angular,
  * `ngDevMode` is undefined and only the bare code is thrown.
  *
+ * Pass `{ cause }` as the third argument when the error wraps a caught one,
+ * so the original error stays reachable in both builds.
+ *
  * @category utils
  * @since 0.1.0
  * @relatedTo CngxErrorCode
@@ -40,11 +43,12 @@ export class CngxRuntimeError extends Error {
   override readonly name = 'CngxRuntimeError';
   readonly code: CngxErrorCode;
 
-  constructor(code: CngxErrorCode, message?: string | false | null) {
+  constructor(code: CngxErrorCode, message?: string | false | null, options?: ErrorOptions) {
     super(
       typeof ngDevMode !== 'undefined' && ngDevMode && message
         ? formatDiagnostic(code, message)
         : code,
+      options,
     );
     this.code = code;
   }

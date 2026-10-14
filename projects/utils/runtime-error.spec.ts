@@ -30,6 +30,15 @@ describe('CngxRuntimeError', () => {
     });
   });
 
+  it('keeps the cause of a wrapped error in both builds', () => {
+    const cause = new Error('inner');
+    vi.stubGlobal('ngDevMode', true);
+    expect(new CngxRuntimeError('CNGX0902', 'm', { cause }).cause).toBe(cause);
+    vi.stubGlobal('ngDevMode', false);
+    expect(new CngxRuntimeError('CNGX0902', false, { cause }).cause).toBe(cause);
+    expect(new CngxRuntimeError('CNGX0902').cause).toBeUndefined();
+  });
+
   describe('in production', () => {
     it('drops a plain message and keeps the bare code', () => {
       vi.stubGlobal('ngDevMode', false);
