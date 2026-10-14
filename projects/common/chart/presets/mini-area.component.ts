@@ -77,6 +77,11 @@ import { injectPresetState } from './preset-state';
       cngx-mini-area {
         display: inline-block;
         line-height: 0;
+        /**
+         * Fill colour of the area layer inside the mini area. Derived from --cngx-mini-area-color.
+         * @type <color>
+         * @group Surface
+         */
         --cngx-area-fill: var(--cngx-mini-area-color, var(--cngx-chart-primary, currentColor));
       }
       cngx-mini-area .cngx-preset-skeleton {

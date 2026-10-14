@@ -173,6 +173,11 @@
      consistently and a consumer opts out once. A single value is robust, but a
      consumer range label on threshold/band escalates - isolate fences the run
      against surrounding RTL text. Consumer opt-out: set to normal. */
+  /**
+   * `unicode-bidi` of every numeric chart label (axis ticks, legend, threshold and band labels). Set to `normal` to opt out of isolation.
+   * @type <string>
+   * @group Typography
+   */
   --cngx-chart-numeric-bidi: isolate;
 }
 

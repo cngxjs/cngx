@@ -104,6 +104,11 @@ const TWO_PI = Math.PI * 2;
         display: inline-block;
         position: relative;
         line-height: 0;
+        /**
+         * Stroke colour of the donut value arc.
+         * @type <color>
+         * @group Surface
+         */
         --cngx-donut-color: var(--cngx-chart-primary, currentColor);
       }
       cngx-donut .cngx-donut__track {

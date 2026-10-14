@@ -75,6 +75,11 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
       cngx-mini-bar {
         display: inline-block;
         width: var(--cngx-mini-bar-width, 80px);
+        /**
+         * Colour of the mini bar fill. Derived from --cngx-bar-color.
+         * @type <color>
+         * @group Surface
+         */
         --cngx-mini-bar-color: var(--cngx-bar-color, var(--cngx-chart-primary, currentColor));
       }
       cngx-mini-bar .cngx-mini-bar__label {

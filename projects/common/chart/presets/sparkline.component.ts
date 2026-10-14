@@ -90,7 +90,17 @@ import { injectPresetState } from './preset-state';
       cngx-sparkline {
         display: inline-block;
         line-height: 0;
+        /**
+         * Stroke colour of the sparkline line layer. Derived from --cngx-sparkline-color.
+         * @type <color>
+         * @group Surface
+         */
         --cngx-line-color: var(--cngx-sparkline-color, var(--cngx-chart-primary, currentColor));
+        /**
+         * Fill colour of the sparkline area layer. Derived from --cngx-sparkline-color.
+         * @type <color>
+         * @group Surface
+         */
         --cngx-area-fill: var(--cngx-sparkline-color, var(--cngx-chart-primary, currentColor));
       }
       cngx-sparkline .cngx-preset-skeleton {
