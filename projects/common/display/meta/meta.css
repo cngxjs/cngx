@@ -1,4 +1,9 @@
 .cngx-meta {
+  /**
+   * Gap between the parts of a meta item.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-meta-gap: var(--cngx-space-xs, 0.35em);
   display: inline-flex;
   align-items: baseline;

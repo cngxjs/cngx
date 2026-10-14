@@ -77,7 +77,17 @@ import { injectPresetState, warnIfUnnamedPreset } from './preset-state';
       cngx-deviation-bar {
         display: inline-block;
         width: var(--cngx-deviation-bar-width, 100px);
+        /**
+         * Fill colour of a positive deviation.
+         * @type <color>
+         * @group Surface
+         */
         --cngx-deviation-positive: var(--cngx-chart-success, #1f9d55);
+        /**
+         * Fill colour of a negative deviation.
+         * @type <color>
+         * @group Surface
+         */
         --cngx-deviation-negative: var(--cngx-chart-danger, #d2452f);
       }
       cngx-deviation-bar .cngx-deviation-bar__track {

@@ -8,6 +8,11 @@
  * here. Per-segment colour keys off `[data-state]`.
  */
 .cngx-segmented-progress {
+  /**
+   * Gap between the progress segments.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-segmented-progress-gap: var(--cngx-space-xs, 0.25rem);
   display: flex;
   align-items: center;

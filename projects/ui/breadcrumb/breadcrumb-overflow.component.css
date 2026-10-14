@@ -49,6 +49,11 @@
   /* Derive the dropdown-row spacing from the density scale on the rows
      themselves (they own these tokens; the popover chrome does not);
      --cngx-space-* inherits in from a root [data-density]. */
+  /**
+   * Block and inline padding of the overflow menu list.
+   * @type <length> <length>
+   * @group Layout
+   */
   --cngx-breadcrumb-overflow-menu-padding: var(--cngx-space-xs, 0.25rem) 0;
   margin: 0;
   padding: var(--cngx-breadcrumb-overflow-menu-padding, 0.25rem 0);
@@ -57,6 +62,11 @@
 }
 
 .cngx-breadcrumb__overflow-item {
+  /**
+   * Padding of each collapsed-crumb row in the overflow menu.
+   * @type <length> <length>
+   * @group Layout
+   */
   --cngx-breadcrumb-overflow-item-padding: var(--cngx-space-sm, 0.5em) var(--cngx-space-sm, 0.6em);
   display: flex;
   align-items: center;

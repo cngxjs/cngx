@@ -57,9 +57,19 @@
     --cngx-accordion-region-padding: 0 0 1.5rem calc(2.6ch + 1.25rem);
     /* Hairline is owned per item (border-block-start) below, not by the base
        divider - so drop the base border-block-end + group top border. */
+    /**
+     * Border of the divider below each item and above the group. Skins set it to `none` when they paint their own frame.
+     * @type <line-width> <line-style> <color>
+     * @group Skin
+     */
     --cngx-accordion-divider: none;
     /* Focus ring tracks the skin accent (the open-index / hover colour), not the
        base default blue. */
+    /**
+     * Colour of the header focus outline.
+     * @type <color>
+     * @group Skin
+     */
     --cngx-accordion-focus-color: var(--cngx-color-primary, #1d4ed8);
   }
 
@@ -125,6 +135,11 @@
   :scope {
     display: flex;
     gap: var(--cngx-space-sm, 0.75rem);
+    /**
+     * Top border of the group. Card skins set it to `none`.
+     * @type <line-width> <line-style> <color>
+     * @group Skin
+     */
     --cngx-accordion-group-border-block-start: none;
     --cngx-accordion-divider: none;
     /* Horizontal inset lives on the heading row (below), not the header button,
@@ -218,6 +233,11 @@
     background: var(--cngx-accordion-group-bg, var(--cngx-color-surface, #fff));
     /* Single hairline value shared by the frame edge and the row dividers so they
        read as one system, not a faint frame around hard grey rules. */
+    /**
+     * Faint line colour shared by skin frames and row dividers.
+     * @type <color>
+     * @group Skin
+     */
     --cngx-accordion-hairline: color-mix(in srgb, var(--cngx-color-text, #0f1320) 6%, transparent);
     border: var(--cngx-accordion-frame-border-width, 1px) solid
       var(--cngx-accordion-frame-border, var(--cngx-accordion-hairline));
@@ -227,18 +247,33 @@
     /* Row dividers match the frame hairline (base default is the hard grey border
        colour). */
     --cngx-accordion-divider: 1px solid var(--cngx-accordion-hairline);
+    /**
+     * Marker style of the item chevron: `plus-minus` draws a boxed plus, `none` hides it, unset keeps the chevron.
+     * @type <string>
+     * @group Skin
+     */
     --cngx-accordion-marker: plus-minus;
     /* POC `--surface-2`: the palette ships no alt-surface token, so derive one by
        nudging surface toward text - a faint tint on light, a slight lift on dark.
        Mixed in oklab (perceptually uniform): an srgb mix at this ratio barely
        moves a near-black surface, so the lift would vanish in dark mode. Used for
        the marker tile and the row hover so both track the scheme. */
+    /**
+     * Alternate surface fill for the plus-minus marker box and the header hover.
+     * @type <color>
+     * @group Skin
+     */
     --cngx-accordion-alt-surface: color-mix(
       in oklab,
       var(--cngx-color-surface, #fff) 93%,
       var(--cngx-color-text, #0f1320) 7%
     );
     /* POC `.ctrl` box = 28px; title -> box gap = --sp-3 (0.75rem). */
+    /**
+     * Width and height of the plus-minus marker box.
+     * @type <length>
+     * @group Skin
+     */
     --cngx-accordion-marker-size: 1.75rem;
     --cngx-accordion-header-gap: 0.75rem;
     /* POC `.pm summary` padding = --sp-5 (1.25rem); body 0 1.25rem 1.25rem. */
@@ -332,6 +367,11 @@
 
   /* Title fades on hover (set via the token so it composes with the base). */
   .cngx-accordion-item__header:hover {
+    /**
+     * Text colour of the item header button.
+     * @type <color>
+     * @group Skin
+     */
     --cngx-accordion-header-color: var(--cngx-color-text-muted, #6b7280);
   }
 }
@@ -467,6 +507,11 @@
        dark on the light band (dark mode) - always the inverse of the surface, so
        the band flips automatically per scheme. */
     --cngx-accordion-header-color: var(--cngx-color-surface, #fff);
+    /**
+     * Text colour of the item subtitle.
+     * @type <color>
+     * @group Skin
+     */
     --cngx-accordion-subtitle-color: color-mix(
       in oklab,
       var(--cngx-color-surface, #fff) 62%,
@@ -554,7 +599,17 @@
    override and the OS default via `@media`, the latter guarded so an explicit
    light choice still wins. */
 [data-color-scheme='dark'] .cngx-accordion-group[data-skin='section-bands'] {
+  /**
+   * Background of the section-bands heading band.
+   * @type <color>
+   * @group Skin
+   */
   --cngx-accordion-band-bg: color-mix(in oklab, var(--cngx-color-text, #f2f4fa) 87%, var(--cngx-color-surface, #13151d));
+  /**
+   * Background of the section-bands heading band on hover.
+   * @type <color>
+   * @group Skin
+   */
   --cngx-accordion-band-bg-hover: color-mix(in oklab, var(--cngx-color-text, #f2f4fa) 79%, var(--cngx-color-surface, #13151d));
 }
 
@@ -718,6 +773,11 @@
      priority label stays projected in the leading slot. A raw
      --cngx-accordion-spine-color override still wins for bespoke hues. */
   .cngx-accordion-item[data-severity='error'] {
+    /**
+     * Colour of the severity-spine column on an expanded item.
+     * @type <color>
+     * @group Skin
+     */
     --cngx-accordion-spine-color: var(--cngx-color-danger, #dc2626);
   }
 

@@ -25,41 +25,101 @@
 
 @layer cngx.tokens {
   :root {
+    /**
+     * Background tint of info alerts and banners.
+     * @type <color>
+     * @group Severity
+     */
     --cngx-feedback-info-bg: oklch(from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.96 0.025 h);
+    /**
+     * Border colour of info alerts and banners.
+     * @type <color>
+     * @group Severity
+     */
     --cngx-feedback-info-border: oklch(
       from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.85 0.07 h
     );
+    /**
+     * Colour of the info severity icon in alerts and banners, and the info toast accent.
+     * @type <color>
+     * @group Severity
+     */
     --cngx-feedback-info-icon: color-mix(
       in oklab,
       var(--cngx-color-info, oklch(0.65 0.12 240)) 90%,
       var(--cngx-color-text, oklch(0.2 0.01 250))
     );
+    /**
+     * Background tint of success alerts and banners.
+     * @type <color>
+     * @group Severity
+     */
     --cngx-feedback-success-bg: oklch(
       from var(--cngx-color-success, oklch(0.6 0.15 145)) 0.96 0.04 h
     );
+    /**
+     * Border colour of success alerts and banners.
+     * @type <color>
+     * @group Severity
+     */
     --cngx-feedback-success-border: oklch(
       from var(--cngx-color-success, oklch(0.6 0.15 145)) 0.85 0.1 h
     );
+    /**
+     * Colour of the success severity icon in alerts and banners, and the success toast accent.
+     * @type <color>
+     * @group Severity
+     */
     --cngx-feedback-success-icon: color-mix(
       in oklab,
       var(--cngx-color-success, oklch(0.6 0.15 145)) 90%,
       var(--cngx-color-text, oklch(0.2 0.01 250))
     );
+    /**
+     * Background tint of warning alerts and banners.
+     * @type <color>
+     * @group Severity
+     */
     --cngx-feedback-warning-bg: oklch(
       from var(--cngx-color-warning, oklch(0.72 0.15 75)) 0.97 0.04 h
     );
+    /**
+     * Border colour of warning alerts and banners.
+     * @type <color>
+     * @group Severity
+     */
     --cngx-feedback-warning-border: oklch(
       from var(--cngx-color-warning, oklch(0.72 0.15 75)) 0.86 0.1 h
     );
+    /**
+     * Colour of the warning severity icon in alerts and banners, and the warning toast accent.
+     * @type <color>
+     * @group Severity
+     */
     --cngx-feedback-warning-icon: color-mix(
       in oklab,
       var(--cngx-color-warning, oklch(0.72 0.15 75)) 90%,
       var(--cngx-color-text, oklch(0.2 0.01 250))
     );
+    /**
+     * Background tint of error alerts and banners.
+     * @type <color>
+     * @group Severity
+     */
     --cngx-feedback-error-bg: oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.96 0.025 h);
+    /**
+     * Border colour of error alerts and banners.
+     * @type <color>
+     * @group Severity
+     */
     --cngx-feedback-error-border: oklch(
       from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.85 0.08 h
     );
+    /**
+     * Colour of the error severity icon in alerts and banners, and the error toast accent.
+     * @type <color>
+     * @group Severity
+     */
     --cngx-feedback-error-icon: color-mix(
       in oklab,
       var(--cngx-color-danger, oklch(0.6 0.18 25)) 90%,

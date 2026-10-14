@@ -41,6 +41,12 @@
      organism ships its own chevron slot, so hide the inherited one through the
      token the Track-B skin exposes for exactly this - not a blanket ::after
      reset. */
+  /**
+   * Display of the Track-B skin's `::after` twisty on the item header. Set to
+   * `none` because the item renders its own chevron.
+   * @type <string>
+   * @group Layout
+   */
   --cngx-accordion-twisty-display: none;
   display: flex;
   align-items: center;

@@ -1,6 +1,21 @@
 :host {
+  /**
+   * Gap of the host's column flex layout that holds the star row.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-rating-gap: var(--cngx-space-xs, 0.25rem);
+  /**
+   * Gap between the individual stars.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-rating-item-gap: var(--cngx-space-xs, 0.125rem);
+  /**
+   * Padding around each star button.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-rating-item-padding: var(--cngx-space-xs, 0.125rem);
   display: inline-flex;
   flex-direction: column;

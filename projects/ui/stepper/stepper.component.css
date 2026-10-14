@@ -1242,6 +1242,12 @@
          below cannot drift; the inline padding clears the same notch. Mirrors
          the existing --cngx-step-chevron-vertical-notch token and lets a
          consumer tune the arrow. */
+      /**
+       * Depth of the chevron arrow notch in horizontal orientation. The
+       * step's inline padding grows by the same amount to clear it.
+       * @type <length>
+       * @group Skin / path-chevron
+       */
       --cngx-step-chevron-horizontal-notch: 0.75rem;
       flex: 1 1 0;
       clip-path: polygon(

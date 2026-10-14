@@ -17,9 +17,29 @@
    * SET rule would silently opt out of density.
    */
   .cngx-a11y-panel {
+    /**
+     * Gap between the preference axes in the panel body.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-a11y-panel-gap: var(--cngx-space-md, 1rem);
+    /**
+     * Gap between an axis label and its control.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-a11y-panel-axis-gap: var(--cngx-space-sm, 0.5rem);
+    /**
+     * Inline padding of the reset button.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-a11y-panel-reset-pad-x: var(--cngx-space-md, 1rem);
+    /**
+     * Block padding of the reset button.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-a11y-panel-reset-pad-y: var(--cngx-space-sm, 0.5rem);
   }
 

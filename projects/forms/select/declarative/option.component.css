@@ -41,10 +41,20 @@
      cngx-option host carries no .cngx-select__option class, so the base's
      element-scoped SET does not reach it - this is the host's own SET, not a
      duplicate. 0.375rem 0.5rem -> xs sm (block 6px tie -> xs). */
+  /**
+   * Padding of the option row.
+   * @type <length> <length>
+   * @group Layout
+   */
   --cngx-select-option-padding: var(--cngx-space-xs) var(--cngx-space-sm);
   /* option-row gap 0.5rem -> sm; SET identically to the data-mode
      .cngx-select__option (select-base.css) so declarative and data rows stay
      locked at every density. */
+  /**
+   * Gap between the parts of the option row, such as the check indicator and the label.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-option-gap: var(--cngx-space-sm);
   display: flex;
   align-items: center;

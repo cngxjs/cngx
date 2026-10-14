@@ -105,7 +105,17 @@ interface RangeRendering {
       cngx-bullet {
         display: block;
         width: var(--cngx-bullet-width, 200px);
+        /**
+         * Colour of the actual-value bar.
+         * @type <color>
+         * @group Surface
+         */
         --cngx-bullet-actual-color: var(--cngx-chart-primary, currentColor);
+        /**
+         * Colour of the target marker.
+         * @type <color>
+         * @group Surface
+         */
         --cngx-bullet-target-color: var(--cngx-chart-text-color, currentColor);
       }
       cngx-bullet .cngx-bullet__track {

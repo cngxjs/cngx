@@ -10,9 +10,29 @@
   /* Panel spacing tokens (input/row/listbox/chip) are SET on the panel's own
      host in command-panel.component.css; the palette host owns only the
      surface-level tokens below. */
+  /**
+   * Gap between the keyboard legends in the footer.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-command-footer-gap: var(--cngx-space-md, 1rem);
+  /**
+   * Block padding of the footer.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-command-footer-pad-y: var(--cngx-space-sm, 0.5rem);
+  /**
+   * Inline padding of the footer.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-command-footer-pad-x: var(--cngx-space-md, 1rem);
+  /**
+   * Padding of the loading, empty and error state blocks.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-command-state-pad: var(--cngx-space-lg, 1.5rem);
 
   padding: 0;

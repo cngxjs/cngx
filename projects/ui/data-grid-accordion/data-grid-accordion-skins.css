@@ -1,6 +1,6 @@
 /**
  * @overview
- * The eight opt-in visual skins for `<cngx-data-grid-accordion>`. Pairs with the
+ * The six opt-in visual skins for `<cngx-data-grid-accordion>`. Pairs with the
  * structural `data-grid-accordion.component.css` / `data-grid-row.component.css`
  * in this same entry - those own the flat base grid, the chevron, the region,
  * and the a11y wiring; this file owns only the per-skin paint.
@@ -64,6 +64,11 @@
 
     /* Overflow is scrolled, never dropped: under ~38rem the grid scrolls sideways
        with the invoice + status columns intact instead of hiding them. */
+    /**
+     * Minimum inline size of the grid. Below it the host scrolls sideways instead of dropping columns.
+     * @type <length>
+     * @group Skin
+     */
     --cngx-dga-min-width: 38rem;
 
     /* POC gaps / paddings: --sp-3 gutter, row block from the density scale
@@ -71,6 +76,11 @@
     --cngx-dga-col-gap: 0.75rem;
     --cngx-dga-row-py: var(--cngx-space-sm, 8px);
     --cngx-dga-row-px: 1rem;
+    /**
+     * Font size of the row summary cells.
+     * @type <length>
+     * @group Skin
+     */
     --cngx-dga-fs: 0.875rem;
     /* Inset accent detail zone reads with generous padding (POC --sp-4/--sp-5). */
     --cngx-dga-region-padding: 1rem 1.25rem;
@@ -93,10 +103,20 @@
        derivation from the foundation tokens is the fallback, so the skin is unchanged
        without the bridge. The `-mat` token is deliberately UNregistered so the var()
        fallback fires (a registered @property would pin it to a fixed initial). */
+    /**
+     * Alternate surface the skins paint on zebra rows, detail regions, header and footer strips.
+     * @type <color>
+     * @group Skin
+     */
     --cngx-dga-surface-alt: var(
       --cngx-dga-surface-alt-mat,
       color-mix(in oklab, var(--cngx-color-surface, #fff) 96%, var(--cngx-color-text, #0f1320))
     );
+    /**
+     * Stronger alternate surface the skins paint on the column head, footer and gutter strips.
+     * @type <color>
+     * @group Skin
+     */
     --cngx-dga-surface-strong: var(
       --cngx-dga-surface-strong-mat,
       color-mix(in oklab, var(--cngx-color-surface, #fff) 90%, var(--cngx-color-text, #0f1320))
@@ -185,6 +205,11 @@
        (e.g. a check-mark "2"). A narrow margin in front of the framed sheet holds
        the disclosure chevron; the synthesised row-number gutter (`::before` below)
        follows as its own column. */
+    /**
+     * Width of the leading chevron track.
+     * @type <length>
+     * @group Skin
+     */
     --cngx-dga-lead: 1.5rem;
 
     /* Same @property trap as the ledger skin: `--cngx-dga-border-color` and
@@ -750,6 +775,11 @@
     --cngx-dga-row-py: var(--cngx-space-sm, 8px);
     --cngx-dga-row-px: 0;
     --cngx-dga-fs: 0.875rem;
+    /**
+     * Font size of the column head.
+     * @type <length>
+     * @group Skin
+     */
     --cngx-dga-head-fs: 0.75rem;
 
     /* Detail zone reads as a note under the label column: indent past the leading

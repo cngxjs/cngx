@@ -7,35 +7,53 @@
  * - `--cngx-dot-step-completed-fill`; upcoming dots use
  * - `--cngx-dot-step-upcoming-bg`. Material consumers see
  * - `--mat-sys-primary` via the stepper-theme extension.
- *
- * @group Surface
  */
 
 @layer cngx.tokens {
+  /**
+   * Diameter of each dot.
+   * @group Layout
+   */
   @property --cngx-dot-step-size {
     syntax: '*';
     inherits: true;
     initial-value: 0.625rem;
   }
 
+  /**
+   * Gap between adjacent dots in the row.
+   * @group Layout
+   */
   @property --cngx-dot-step-gap {
     syntax: '*';
     inherits: true;
     initial-value: 0.5rem;
   }
 
+  /**
+   * Fill of the active dot. Derives from `--cngx-step-active-fill`.
+   * @group State / Active
+   */
   @property --cngx-dot-step-active-fill {
     syntax: '*';
     inherits: true;
     initial-value: oklch(0.66 0.19 50);
   }
 
+  /**
+   * Fill of a completed dot. Derives from `--cngx-step-completed-color`, then `--cngx-color-success`.
+   * @group State / Completed
+   */
   @property --cngx-dot-step-completed-fill {
     syntax: '*';
     inherits: true;
     initial-value: oklch(0.5 0.15 145);
   }
 
+  /**
+   * Fill of an upcoming dot. Derives from `--cngx-step-indicator-bg`.
+   * @group State / Resting
+   */
   @property --cngx-dot-step-upcoming-bg {
     syntax: '*';
     inherits: true;

@@ -457,6 +457,11 @@
     --cngx-step-chips-padding-inline: var(--cngx-space-md);
     --cngx-step-chips-padding-block: var(--cngx-space-sm);
     --cngx-step-breadcrumb-gap: var(--cngx-space-sm);
+    /**
+     * Block padding of each step in the vertical pill-segment skin.
+     * @type <length>
+     * @group Skin / pill-segment
+     */
     --cngx-step-pill-vertical-padding-block: var(--cngx-space-md);
     /* Group-header chip padding (inherits:true, read on the group-header
        descendant). Block 0.125rem has no rung, so it is half xs like the
@@ -481,6 +486,14 @@
      template. A consumer overrides the collapse by writing this property on
      the same pseudo-element from an unlayered rule. */
   .cngx-stepper::after {
+    /**
+     * Collapse flag read by the component from `.cngx-stepper::after`.
+     * `1` swaps to the configured compact variant, `0` keeps the classic
+     * strip. Set to `1` by the container query below `30rem`; override it
+     * on the same pseudo-element to move the breakpoint.
+     * @type <number>
+     * @group Layout
+     */
     --cngx-stepper-collapse: 0;
   }
 

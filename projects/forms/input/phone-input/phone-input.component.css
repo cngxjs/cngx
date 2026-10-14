@@ -1,4 +1,9 @@
 :host {
+  /**
+   * Gap between the country selector and the number input.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-phone-input-gap: var(--cngx-space-sm, 0.5rem);
   display: inline-flex;
   align-items: stretch;

@@ -422,6 +422,11 @@
     --cngx-tab-gap: var(--cngx-space-sm);
     --cngx-tab-strip-padding: var(--cngx-space-sm) 0;
     --cngx-tab-padding: var(--cngx-space-sm) var(--cngx-space-sm);
+    /**
+     * Gutter between the strip and the panel in vertical orientation.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-tab-vertical-gap: var(--cngx-space-md);
     display: block;
   }
