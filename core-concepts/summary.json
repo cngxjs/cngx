@@ -60,6 +60,10 @@
         "file": "agent-tooling.md"
     },
     {
+        "title": "Lint Rules",
+        "file": "lint-rules.md"
+    },
+    {
         "title": "RTL Support",
         "file": "rtl-support.md"
     },
