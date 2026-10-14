@@ -710,7 +710,7 @@
     {
       "class": "CngxBreadcrumbBar",
       "file": "projects/ui/breadcrumb/breadcrumb-bar.component.ts",
-      "line": 155,
+      "line": 167,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -1084,7 +1084,7 @@
     {
       "class": "CngxTimeline",
       "file": "projects/ui/timeline/timeline.component.ts",
-      "line": 439,
+      "line": 440,
       "member": "listLabel",
       "enclosing": "computed",
       "tiers": [
