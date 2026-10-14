@@ -12,8 +12,8 @@ function isInputCall(value: TSESTree.Expression | null | undefined): boolean {
 
 /**
  * Flags a class that declares both `input(x)` and `output(xChange)`. That pair
- * compiles but only binds one-way; a two-way bindable value is a single
- * `model()`. Pairs on the declared field names (the common authoring shape);
+ * compiles and even supports `[(x)]`, but it spreads one value over two
+ * declarations; a two-way bindable value is a single `model()`. Pairs on the declared field names (the common authoring shape);
  * alias-renamed bindings are out of scope.
  */
 export const modelForTwoWay = createRule({

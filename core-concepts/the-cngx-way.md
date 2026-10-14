@@ -46,7 +46,7 @@ CNGX uses two orthogonal axes:
 - **Package levels** are the import budget enforced by Sheriff.
 - **Atomic taxonomy** (atom / molecule / organism) describes how a unit is composed inside a lib.
 
-See [Layered Design](layered-design.md) for the full table and the enforcement story.
+See [Layered Design](layered-design.html) for the full table and the enforcement story.
 
 ### Package levels (enforced by Sheriff)
 
@@ -81,7 +81,7 @@ Atoms and molecules are terminal: they have no skin to eject.
 - **Not a state store.** No global data layer. CNGX gives you the primitives to keep local component state predictable and derived.
 - **Not a Material replacement.** Where Material is the right answer, CNGX instruments it (`@cngx/ui/mat-stepper`, `@cngx/ui/mat-tabs`) via attribute directives that attach a Signal-native brain to the existing Material markup.
 
-    See [Instrumentation Pattern](instrumentation-pattern.md).
+    See [Instrumentation Pattern](instrumentation-pattern.html).
 
 ---
 

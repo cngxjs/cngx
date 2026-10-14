@@ -72,7 +72,7 @@ export const RULE_METADATA = {
     astSurface: 'ts',
     messages: {
       useModelForTwoWay:
-        'An input(x) plus output(xChange) pair only binds one-way. Use a single model() for two-way binding.',
+        'An input(x) plus output(xChange) pair spreads one two-way value over two declarations. Use a single model() instead.',
     },
     fixHint: 'Replace the matching input()/output() pair with a single model().',
     recommendedSeverity: 'error',

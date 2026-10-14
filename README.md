@@ -162,7 +162,7 @@ Beyond the libraries, cngx ships tooling for authoring and for LLM coding agents
 
 ### `@cngx/eslint-plugin`
 
-ESLint flat-config rules for consumer apps, static analysis only. Signal hygiene: no `effect()` in `ngOnInit`, no `BehaviorSubject` for local state, and an opt-in `untracked()` check inside effects. Wiring contracts: `model()` instead of an `input` + `xChange` output pair, no `input.required()` on bridge inputs, and `cngxMenuTrigger` paired with `cngxPopoverTrigger` in templates.
+ESLint flat-config rules for consumer apps, static analysis only. Signal hygiene: no `effect()` in `ngOnInit`, no `BehaviorSubject` for local state, and an opt-in `untracked()` check inside effects. Wiring contracts: `model()` instead of an `input` + `xChange` output pair, no `input.required()` on bridge inputs, and `cngxMenuTrigger` paired with `cngxPopoverTrigger` in templates. See [Lint Rules](./core-concepts/lint-rules.md).
 
 ### `@cngx/mcp`
 
