@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { collectDocsUrls, collectHelperCalls } from '../dev-diagnostics.mjs';
+import { collectDocsUrls, collectHelperCalls, collectRuntimeErrors } from '../dev-diagnostics.mjs';
 import {
   CODE_RANGES,
   DOCS_BASE_URL,
@@ -17,6 +17,7 @@ import {
   manifestOf,
   parsePage,
   summaryNodeOf,
+  throwCall,
   withSummaryNode,
 } from '../error-codes-manifest.mjs';
 import { DEFAULT_BASE_URL } from '../llms-publish.mjs';
@@ -26,6 +27,9 @@ const SCHEMA = JSON.parse(
 );
 
 const call = (file, code, severity = 'warn') => ({ file, line: 1, code, severity });
+const GUARD = "typeof ngDevMode !== 'undefined' && ngDevMode";
+/** `throwCall` rows for the runtime errors in one source file. */
+const throws = (file, text) => collectRuntimeErrors([{ path: file, text }]).map(throwCall);
 const page = (code, title = `Title of ${code}`, extra = '', noun = 'warning') =>
   parsePage(
     `${code.toLowerCase()}.md`,
@@ -66,6 +70,9 @@ const schemaViolations = (manifest) => {
     }
     if (!codeDef.properties.severity.enum.includes(entry.severity)) {
       out.push(`${entry.code} severity ${entry.severity}`);
+    }
+    if (!codeDef.properties.production.enum.includes(entry.production)) {
+      out.push(`${entry.code} production ${entry.production}`);
     }
     if (!codeDef.properties.status.enum.includes(entry.status)) {
       out.push(`${entry.code} status ${entry.status}`);
@@ -111,12 +118,109 @@ describe('error-code manifest generator', () => {
         code: 'CNGX0001',
         lib: 'core',
         severity: 'warn',
+        production: 'stripped',
         title: 'Locale is not BCP 47',
         page: 'core-concepts/error-codes/cngx0001.md',
         url: `${DOCS_BASE_URL}cngx0001.html`,
         status: 'active',
         files: ['projects/core/a.ts', 'projects/core/b.ts'],
       },
+    ]);
+  });
+
+  it('collects runtime errors with their code and guard classification, skipping comments', () => {
+    const rows = collectRuntimeErrors([
+      {
+        path: 'projects/common/a.ts',
+        text: [
+          "// new CngxRuntimeError('CNGX1009', 'in a comment')",
+          'function f() {',
+          `  throw new CngxRuntimeError('CNGX1001', ${GUARD} && 'a');`,
+          '}',
+          'function g() {',
+          `  if (${GUARD}) { throw new CngxRuntimeError('CNGX1002', 'b'); }`,
+          '}',
+          "const e = new CngxRuntimeError(code, 'c');",
+        ].join('\n'),
+      },
+    ]);
+    expect(
+      rows.map(({ code, line, devOnly, messageGuarded, atModuleLoad }) => ({
+        code,
+        line,
+        devOnly,
+        messageGuarded,
+        atModuleLoad,
+      })),
+    ).toEqual([
+      { code: 'CNGX1001', line: 3, devOnly: false, messageGuarded: true, atModuleLoad: false },
+      { code: 'CNGX1002', line: 6, devOnly: true, messageGuarded: false, atModuleLoad: false },
+      { code: null, line: 8, devOnly: false, messageGuarded: false, atModuleLoad: true },
+    ]);
+  });
+
+  it('records a runtime error as severity throw that keeps its code in production', () => {
+    const { codes, errors } = buildCodes(
+      throws(
+        'projects/common/a.ts',
+        `function f() { throw new CngxRuntimeError('CNGX1001', ${GUARD} && 'm'); }`,
+      ),
+      [page('CNGX1001', undefined, '', 'error')],
+    );
+    expect(errors).toEqual([]);
+    expect(codes[0]).toMatchObject({ severity: 'throw', production: 'code-only' });
+  });
+
+  it('records a dev-only runtime error as stripped', () => {
+    const { codes, errors } = buildCodes(
+      throws(
+        'projects/common/a.ts',
+        `function f() { if (!(${GUARD})) { return; } throw new CngxRuntimeError('CNGX1001', 'm'); }`,
+      ),
+      [page('CNGX1001', undefined, '', 'error')],
+    );
+    expect(errors).toEqual([]);
+    expect(codes[0]).toMatchObject({ severity: 'throw', production: 'stripped' });
+  });
+
+  it('asks for the error sections on a thrown code', () => {
+    const { errors } = buildCodes(
+      throws('projects/common/a.ts', "function f() { throw new CngxRuntimeError('CNGX1001'); }"),
+      [page('CNGX1001')],
+    );
+    expect(errors).toEqual([
+      'cngx1001.md: no "### Fixing the error" section',
+      'cngx1001.md: no "### Debugging the error" section',
+    ]);
+  });
+
+  it('fails on a code used by a console helper and a runtime error', () => {
+    const { errors } = buildCodes(
+      [
+        call('projects/common/a.ts', 'CNGX1001', 'error'),
+        ...throws(
+          'projects/common/b.ts',
+          "function f() { throw new CngxRuntimeError('CNGX1001'); }",
+        ),
+      ],
+      [page('CNGX1001', undefined, '', 'error')],
+    );
+    expect(errors).toEqual(['CNGX1001 is emitted with two severities (error, throw)']);
+  });
+
+  it('fails on a code thrown both dev-only and in production', () => {
+    const { errors } = buildCodes(
+      throws(
+        'projects/common/a.ts',
+        [
+          "function f() { throw new CngxRuntimeError('CNGX1001'); }",
+          `function g() { if (${GUARD}) { throw new CngxRuntimeError('CNGX1001', 'm'); } }`,
+        ].join('\n'),
+      ),
+      [page('CNGX1001', undefined, '', 'error')],
+    );
+    expect(errors).toEqual([
+      'CNGX1001 is thrown both dev-only and in production; give each condition its own code',
     ]);
   });
 
@@ -135,7 +239,13 @@ describe('error-code manifest generator', () => {
   it('keeps a retired page as a retired entry', () => {
     const { codes, errors } = buildCodes([], [page('CNGX0001', 'Gone', '> Retired in 0.2.0.\n\n')]);
     expect(errors).toEqual([]);
-    expect(codes[0]).toMatchObject({ status: 'retired', severity: null, files: [], lib: 'core' });
+    expect(codes[0]).toMatchObject({
+      status: 'retired',
+      severity: null,
+      production: null,
+      files: [],
+      lib: 'core',
+    });
   });
 
   it('fails on a call site naming a retired code', () => {
@@ -288,11 +398,23 @@ describe('error-code manifest', () => {
 
   it('admits every shape the generator produces', () => {
     const { codes } = buildCodes(
-      [call('projects/core/a.ts', 'CNGX0001'), call('projects/core/a.ts', 'CNGX0002', 'error')],
+      [
+        call('projects/core/a.ts', 'CNGX0001'),
+        call('projects/core/a.ts', 'CNGX0002', 'error'),
+        ...throws(
+          'projects/core/b.ts',
+          [
+            "function f() { throw new CngxRuntimeError('CNGX0004'); }",
+            `function g() { if (${GUARD}) { throw new CngxRuntimeError('CNGX0005', 'm'); } }`,
+          ].join('\n'),
+        ),
+      ],
       [
         page('CNGX0001'),
         page('CNGX0002', undefined, '', 'error'),
         page('CNGX0003', 'Gone', '> Retired in 0.2.0.\n\n'),
+        page('CNGX0004', undefined, '', 'error'),
+        page('CNGX0005', undefined, '', 'error'),
       ],
     );
     expect(schemaViolations(manifestOf(codes))).toEqual([]);
