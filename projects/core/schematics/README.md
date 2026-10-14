@@ -27,7 +27,7 @@ projects/core/schematics/
     steps/               pure plan<Step>(facts, answers, versions) per concern
     shell/               questions, git state, renderer options for ng add and ng update
   migrations/
-    migrations.json      the ng update collection, one entry per release
+    migrations.json      the ng update collection, hand-written entries only
     migration.ts         createMigration: renames, codemods, manifest re-runs
     <version>/index.ts   one migration per release with breaking changes
     refresh/index.ts     the migration of every other release (keyed at publish)

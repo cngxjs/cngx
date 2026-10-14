@@ -7,7 +7,7 @@
 
 <aside class="cc-tldr">
 
-Run `ng update @cngx/core`. Every `@cngx/*` package moves to the same release, the migration of each release in between runs, and since every release carries one, the install steps recorded in `.cngx/install.json` are re-checked on every update. The plan prints before anything changes and a summary follows, as with `ng add`.
+Run `ng update @cngx/core`. Every `@cngx/*` package moves to the same release, the migration of each release in between runs, and since every release from 0.1.0 on carries one, the install steps recorded in `.cngx/install.json` are re-checked on every update. The plan prints before anything changes and a summary follows, as with `ng add`.
 
 </aside>
 
@@ -40,7 +40,9 @@ ng update @cngx/core --dry-run
 
 ## Migrations
 
-Every release carries a migration keyed to its version. `ng update` runs
+From 0.1.0 on, every release carries a migration keyed to its version; the
+0.1.0 release candidates carry none, so an update between two of them runs
+nothing. `ng update` runs
 the entries whose version lies above the installed release and up to the
 target release, in order. A release with breaking changes brings its own
 migration; every other release gets a `refresh` entry, added to the
@@ -64,9 +66,10 @@ release candidates before it are covered by the written migration guides.
 Like a `refresh` entry, it re-checks the recorded install steps and records
 the release in the manifest.
 
-An update across several releases runs each entry once. The first one moves
-the manifest to the target release; the ones after it find it in place and
-plan nothing for it.
+An update across several releases runs each entry once, and each prints its
+own plan and summary headed by its release. The first one moves the manifest
+to the target release; the ones after it find it in place, and their
+headline says that this migration found nothing to change.
 
 ---
 
