@@ -374,6 +374,19 @@ describe('raw-console guard - R2 helper references', () => {
     expect(misuse("export { cngxDevWarn } from '@cngx/utils';")).toHaveLength(1);
   });
 
+  it('allows the utils barrel to re-export the helpers by name, nothing else', () => {
+    const reExport = "export { cngxDevError, cngxDevWarn } from './dev-message';";
+    expect(misuse(reExport)).toHaveLength(2);
+    expect(fixture(reExport, 'projects/utils/public-api.ts').violations).toEqual([]);
+    expect(
+      fixture("export { cngxDevWarn as w } from './dev-message';", 'projects/utils/public-api.ts')
+        .violations,
+    ).toHaveLength(1);
+    expect(
+      fixture("export { cngxDevWarn } from './other';", 'projects/utils/public-api.ts').violations,
+    ).toHaveLength(1);
+  });
+
   it('checks a file that only looks like the helper file', () => {
     const { violations } = fixture(
       "import { cngxDevWarn as w } from '@cngx/utils';",

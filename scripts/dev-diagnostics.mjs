@@ -11,6 +11,14 @@ const HELPERS = { cngxDevWarn: 'warn', cngxDevError: 'error' };
 /** The one file that declares the helpers and may call `console` directly. */
 export const HELPER_FILE = 'projects/utils/dev-message.ts';
 
+/** The utils barrel, which re-exports the helpers by name from `HELPER_FILE`. */
+const HELPER_BARREL = 'projects/utils/public-api.ts';
+
+const isBarrelReExport = (path, specifier) =>
+  path === HELPER_BARREL &&
+  !specifier.propertyName &&
+  specifier.parent.parent.moduleSpecifier?.text === './dev-message';
+
 export const parse = (path, text) =>
   ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 
@@ -193,7 +201,8 @@ export function collectHelperCalls(files) {
  * re-export, `.call` / `.apply`, or the helper used as a value. Each would
  * hide a diagnostic from the guard, the manifest and the prod-strip needles,
  * which all key on the direct call. `projects/utils/dev-message.ts` declares
- * the helpers and is skipped.
+ * the helpers and is skipped; the utils barrel may re-export them unaliased
+ * from it.
  *
  * @returns {{ file: string; line: number; reason: string }[]}
  */
@@ -218,7 +227,9 @@ export function collectHelperMisuse(files) {
             report(node, `aliased import of ${node.text}`);
           }
         } else if (ts.isExportSpecifier(parent)) {
-          report(node, `re-export of ${node.text}`);
+          if (!isBarrelReExport(path, parent)) {
+            report(node, `re-export of ${node.text}`);
+          }
         } else if (ts.isPropertyAccessExpression(parent) && parent.name === node) {
           report(node, `${node.text} called through a namespace or object`);
         } else if (ts.isElementAccessExpression(parent) && parent.argumentExpression === node) {
