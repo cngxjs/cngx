@@ -332,6 +332,24 @@ describe('planProviders', () => {
     ]);
   });
 
+  it('names the edit when an existing language provider passes no pack for German', () => {
+    const result = planProviders(
+      createFacts({ rootProviders: ['provideCngxI18n'] }),
+      createAnswers({ i18n: 'de', a11yPreferences: false }),
+      VERSIONS,
+    );
+
+    expect(result.changes).toEqual([
+      expect.objectContaining({
+        kind: 'note',
+        label: 'Use the German language pack',
+        reason:
+          "provideCngxI18n in src/app/app.config.ts passes no pack; pass `withPack(CNGX_LANGUAGE_DE)` with CNGX_LANGUAGE_DE imported from '@cngx/core/i18n/de'",
+      }),
+    ]);
+    expect(result.skipped).toEqual([]);
+  });
+
   it('keeps its RTL list in step with the runtime list of @cngx/core/i18n', () => {
     const source = readFileSync(join(__dirname, '../../../i18n/provide-i18n.ts'), 'utf8');
     const block = /const RTL_LANGUAGES = new Set\(\[([^\]]*)\]\)/.exec(source)?.[1] ?? '';
