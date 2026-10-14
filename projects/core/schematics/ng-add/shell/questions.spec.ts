@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { createPromptFlow, type NgAddOptions, type PromptAdapter } from '../../engine';
+import {
+  type AiTool,
+  createPromptFlow,
+  type MultiSelectQuestion,
+  type NgAddOptions,
+  type PromptAdapter,
+  type PromptChoice,
+} from '../../engine';
 import { createFacts } from '../../testing/onboarding';
 import { type ProjectFacts } from '../detect/detect';
 import { askOnboarding, givenAnswers, presetDefaults } from './questions';
@@ -32,15 +39,44 @@ function recordingAdapter(asked: string[]): PromptAdapter {
   };
 }
 
-async function ask(facts: ProjectFacts, options: NgAddOptions = {}, interactive = true) {
+async function ask(
+  facts: ProjectFacts,
+  options: NgAddOptions = {},
+  interactive = true,
+  installed: readonly string[] = [],
+  adapter?: PromptAdapter,
+) {
   const asked: string[] = [];
   const flow = createPromptFlow({
     canPrompt: interactive,
     answers: givenAnswers(options),
-    adapter: recordingAdapter(asked),
+    adapter: adapter ?? recordingAdapter(asked),
   });
-  return { answers: await askOnboarding(facts, options, flow), asked };
+  const { answers, explicitAiTools } = await askOnboarding(facts, options, flow, installed);
+  return { answers, explicitAiTools, asked };
 }
+
+// Records the AI tooling choices and answers them with `picks`.
+function editorPicker(picks: readonly AiTool[]) {
+  const shown: PromptChoice<string>[] = [];
+  const adapter: PromptAdapter = {
+    ...recordingAdapter([]),
+    multiSelect: <T extends string>(question: MultiSelectQuestion<T>) => {
+      if (question.key !== 'aiTools') {
+        return Promise.resolve(question.default);
+      }
+      shown.push(...question.choices);
+      return Promise.resolve(
+        question.choices
+          .map((choice) => choice.value)
+          .filter((value) => picks.some((pick) => pick === value)),
+      );
+    },
+  };
+  return { adapter, shown };
+}
+
+const CLAUDE_ONLY = { claude: true, cursor: false, vscode: false } as const;
 
 describe('presetDefaults', () => {
   it('installs only the packages for minimal', () => {
@@ -67,22 +103,22 @@ describe('presetDefaults', () => {
 describe('askOnboarding', () => {
   it('asks the packages, language and feedback for a plain app', async () => {
     const { asked } = await ask(createFacts());
-    expect(asked).toEqual(['libs', 'i18n', 'feedback']);
+    expect(asked).toEqual(['libs', 'i18n', 'feedback', 'aiTools']);
   });
 
   it('asks the theme only with Material and the lint entry only with an eslint config', async () => {
     const { asked } = await ask(createFacts({ material: MATERIAL, eslintConfig: ESLINT }));
-    expect(asked).toEqual(['libs', 'theme', 'i18n', 'lint', 'feedback']);
+    expect(asked).toEqual(['libs', 'theme', 'i18n', 'lint', 'feedback', 'aiTools']);
   });
 
   it('asks about runtime switching only for German', async () => {
     const { asked } = await ask(createFacts(), { i18n: 'de' });
-    expect(asked).toEqual(['libs', 'runtimeSwitch', 'feedback']);
+    expect(asked).toEqual(['libs', 'runtimeSwitch', 'feedback', 'aiTools']);
   });
 
   it('skips the feedback question when @cngx/ui is not selected', async () => {
     const { asked, answers } = await ask(createFacts(), { libs: ['forms'] });
-    expect(asked).toEqual(['i18n']);
+    expect(asked).toEqual(['i18n', 'aiTools']);
     expect(answers.feedback).toBe(false);
   });
 
@@ -99,6 +135,7 @@ describe('askOnboarding', () => {
       feedback: true,
       theme: 'none',
       floatingFallback: true,
+      aiTools: ['cursor'],
     });
     expect(asked).toEqual([]);
     expect(answers).toMatchObject({ libs: ['ui'], lint: false, feedback: true, theme: 'none', floatingFallback: true });
@@ -123,7 +160,7 @@ describe('askOnboarding', () => {
   it('asks nothing core provides and drops those preset defaults when core is not selected', async () => {
     const { asked, answers } = await ask(createFacts(), { preset: 'full', libs: ['utils'] });
 
-    expect(asked).toEqual([]);
+    expect(asked).toEqual(['aiTools']);
     expect(answers).toMatchObject({ i18n: 'en', a11yPreferences: false, floatingFallback: false, feedback: false });
   });
 
@@ -134,10 +171,80 @@ describe('askOnboarding', () => {
   });
 
   it('rejects an answer flag of the wrong shape', async () => {
-    await expect(ask(createFacts(), { aiTools: ['emacs'] } as unknown as NgAddOptions)).rejects.toThrow('["emacs"] is not a valid answer for aiTools.');
+    await expect(
+      ask(createFacts(), { aiTools: ['emacs'] } as unknown as NgAddOptions),
+    ).rejects.toThrow('"emacs" is not a valid answer for aiTools.');
     await expect(ask(createFacts(), { theme: 'dark' } as unknown as NgAddOptions)).rejects.toThrow(
       '"dark" is not a valid answer for theme.',
     );
+  });
+
+  it('asks which editors get the cngx mcp server, with the detected ones preselected', async () => {
+    const { adapter, shown } = editorPicker(['claude']);
+    const { answers } = await ask(
+      createFacts({ editors: { claude: true, cursor: false, vscode: true } }),
+      {},
+      true,
+      [],
+      adapter,
+    );
+
+    expect(shown).toEqual([
+      { value: 'claude', name: 'Claude Code', checked: true },
+      { value: 'cursor', name: 'Cursor', checked: false },
+      { value: 'vscode', name: 'VS Code', checked: true },
+    ]);
+    expect(answers.aiTools).toEqual(['claude']);
+  });
+
+  it('does not preselect an editor whose cngx server the user removed since the last install', async () => {
+    const { adapter, shown } = editorPicker([]);
+    await ask(
+      createFacts({
+        editors: CLAUDE_ONLY,
+        mcpConfigs: { claude: 'present', cursor: 'absent', vscode: 'absent' },
+      }),
+      {},
+      true,
+      ['ai-tools:claude'],
+      adapter,
+    );
+
+    expect(shown.find((choice) => choice.value === 'claude')?.checked).toBe(false);
+  });
+
+  it('counts an interactive pick as explicit, so it overrides a recorded removal', async () => {
+    const { adapter } = editorPicker(['claude']);
+    const { explicitAiTools } = await ask(
+      createFacts({ editors: CLAUDE_ONLY }),
+      {},
+      true,
+      ['ai-tools:claude'],
+      adapter,
+    );
+
+    expect(explicitAiTools).toEqual(['claude']);
+  });
+
+  it('lets the --ai-tools flag answer the question and counts it as explicit', async () => {
+    const { asked, answers, explicitAiTools } = await ask(createFacts({ editors: CLAUDE_ONLY }), {
+      aiTools: ['vscode'],
+    });
+
+    expect(asked).not.toContain('aiTools');
+    expect(answers.aiTools).toEqual(['vscode']);
+    expect(explicitAiTools).toEqual(['vscode']);
+  });
+
+  it('answers the editors with the preset default without a terminal and counts nothing as explicit', async () => {
+    const { answers, explicitAiTools } = await ask(
+      createFacts({ editors: CLAUDE_ONLY }),
+      { preset: 'full' },
+      false,
+    );
+
+    expect(answers.aiTools).toEqual(['claude']);
+    expect(explicitAiTools).toEqual([]);
   });
 
   it('rejects a flag value no question offers', async () => {

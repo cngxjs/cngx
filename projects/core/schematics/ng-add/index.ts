@@ -95,10 +95,10 @@ export function ngAdd(options: NgAddOptions): Rule {
       canPrompt: interactive && options.preset !== 'minimal',
       answers: givenAnswers(options),
     });
-    const answers = await askOnboarding(facts, options, flow);
     const previous = readInstallManifest(tree);
     const installed = previous?.steps.map((step) => step.id) ?? [];
-    const withdrawn = withdrawnAiTargets(facts, answers, installed, options.aiTools ?? []);
+    const { answers, explicitAiTools } = await askOnboarding(facts, options, flow, installed);
+    const withdrawn = withdrawnAiTargets(facts, answers, installed, explicitAiTools);
     const steps = createChangePlan(
       planSteps(withdrawn).map((step) => step(facts, answers, versions)),
       warning === undefined ? [] : [warning],

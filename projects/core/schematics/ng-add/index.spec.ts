@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   AI_TOOLS,
@@ -29,6 +29,27 @@ const SCHEMA = JSON.parse(readFileSync(join(__dirname, 'schema.json'), 'utf8')) 
 };
 
 type Tree = ReturnType<typeof createFixtureTree>;
+
+// The terminal side of an interactive run: every question keeps its
+// preselection or default, the AI tooling question answers `editorPicks`.
+const terminal = vi.hoisted(() => ({ editorPicks: [] as string[] }));
+
+vi.mock('@inquirer/checkbox', () => ({
+  default: (question: { message: string; choices: { value: string; checked?: boolean }[] }) =>
+    Promise.resolve(
+      question.message.includes('MCP server')
+        ? terminal.editorPicks
+        : question.choices
+            .filter((choice) => choice.checked === true)
+            .map((choice) => choice.value),
+    ),
+}));
+vi.mock('@inquirer/select', () => ({
+  default: (question: { default: string }) => Promise.resolve(question.default),
+}));
+vi.mock('@inquirer/confirm', () => ({
+  default: (question: { default: boolean }) => Promise.resolve(question.default),
+}));
 
 const MAP_API_THEME = `@use '@angular/material' as mat;
 
@@ -408,6 +429,28 @@ describe('ngAdd', () => {
 
       expect(json<{ mcpServers: object }>(third.tree, '.mcp.json').mcpServers).toHaveProperty('cngx');
       expect(third.tree.readText('CLAUDE.md')).toContain('<!-- cngx:agents -->');
+    });
+
+    it('brings a removed cngx server back when the user picks its editor in the question', async () => {
+      const tree = createFixtureTree('standalone-app', {
+        'src/app/other.ts': SECOND_COMPONENT,
+        'CLAUDE.md': '',
+      });
+      const first = await runRule(ngAdd({ preset: 'full', yes: true }), tree);
+      first.tree.overwrite('.mcp.json', '{ "mcpServers": {} }\n');
+      vi.stubEnv('CI', '');
+      process.stdout.isTTY = true;
+      terminal.editorPicks = ['claude'];
+      try {
+        const second = await runRule(ngAdd({ yes: true, quiet: true }), first.tree);
+
+        expect(json<{ mcpServers: object }>(second.tree, '.mcp.json').mcpServers).toHaveProperty(
+          'cngx',
+        );
+      } finally {
+        terminal.editorPicks = [];
+        vi.unstubAllEnvs();
+      }
     });
 
     it('appends to the files ng new --ai-config wrote and creates no CLAUDE.md of its own', async () => {
