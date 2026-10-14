@@ -4,6 +4,7 @@ import {
   type Change,
   type CngxLib,
   createProvenanceStamp,
+  type LanguagePackArgument,
   type Provenance,
   type ProviderCall,
   skipChange,
@@ -34,6 +35,15 @@ export const RTL_LANGUAGES: ReadonlySet<string> = new Set([
 
 const LANGUAGE_MODULE = `./${posix.basename(CNGX_LANGUAGE_FILE, '.ts')}`;
 const LANGUAGE_SIGNAL = 'cngxLanguagePack';
+
+function isLanguageSignal(pack: LanguagePackArgument | undefined): boolean {
+  const module = pack?.module;
+  return (
+    pack?.name === LANGUAGE_SIGNAL &&
+    module !== undefined &&
+    posix.basename(module).replace(/\.[cm]?[jt]s$/, '') === posix.basename(CNGX_LANGUAGE_FILE, '.ts')
+  );
+}
 
 function isRtl(locale: string | undefined): boolean {
   const language = locale?.split(/[-_]/)[0]?.toLowerCase();
@@ -170,9 +180,9 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
     path: languageFile,
     content: renderLanguageFile(versions.cngx, startsGerman(facts.sourceLocale)),
   };
-  // The provider already passes the switch signal, whatever the import calls it.
-  const switchWired =
-    facts.rootProviders.includes('provideCngxI18n') && facts.languagePack?.name === LANGUAGE_SIGNAL;
+  // The provider already passes the switch signal from the language file,
+  // whatever the import calls it.
+  const switchWired = isLanguageSignal(facts.languagePack);
   // A file someone else wrote is never overwritten, and the provider would
   // import a signal it may not export.
   const foreignFile: Change = {

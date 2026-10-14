@@ -64,7 +64,6 @@ export {
   hasArrayLiteral,
   insertAfterImports,
   type LanguagePackArgument,
-  type ProviderCalls,
   readProviderCalls,
 } from './edit/ts-edit';
 export { findElements, insertAttribute, parseTemplateContent } from './edit/template-edit';

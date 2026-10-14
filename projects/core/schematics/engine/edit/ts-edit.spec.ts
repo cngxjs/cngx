@@ -362,7 +362,23 @@ provide(token);
 export const providers = [provideCngxI18n(withPack(pack))];
 `;
 
-    expect(readProviderCalls(content).languagePack).toEqual({ text: 'pack', name: 'cngxLanguagePack' });
+    expect(readProviderCalls(content).languagePack).toEqual({
+      text: 'pack',
+      name: 'cngxLanguagePack',
+      module: './cngx-language',
+    });
+  });
+
+  it('resolves aliased provider callees and a namespace import to their module', () => {
+    const content = `import { provideCngxI18n as i18n, withPack as pack } from '@cngx/core/i18n';
+import * as lang from '../cngx-language';
+export const providers = [i18n(pack(lang.cngxLanguagePack))];
+`;
+
+    expect(readProviderCalls(content)).toEqual({
+      names: ['provideCngxI18n'],
+      languagePack: { text: 'lang.cngxLanguagePack', name: 'cngxLanguagePack', module: '../cngx-language' },
+    });
   });
 
   it('reads no pack without the provider, without a pack, or for a withPack elsewhere', () => {

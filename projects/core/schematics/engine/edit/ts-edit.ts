@@ -296,50 +296,72 @@ function collectCalls(node: ts.Node, calls: ts.CallExpression[]): readonly ts.Ca
   return calls;
 }
 
-// `x(...)` and `ns.x(...)` both name `x`.
-function calledName(call: ts.CallExpression): string | undefined {
-  const callee = call.expression;
-  return ts.isPropertyAccessExpression(callee) ? callee.name.text : calleeName(call);
+interface ImportedSymbol {
+  readonly module: string;
+  /** The name the module exports; `*` for a namespace import, `default` for a default import. */
+  readonly name: string;
 }
 
-// The local name an import binds, mapped back to the name its module exports.
-function importedAs(source: ts.SourceFile, local: string): string | undefined {
+// What a top-level import binds `local` to.
+function importOf(source: ts.SourceFile, local: string): ImportedSymbol | undefined {
   for (const statement of source.statements) {
-    const bindings = ts.isImportDeclaration(statement) ? statement.importClause?.namedBindings : undefined;
+    const clause = ts.isImportDeclaration(statement) ? statement.importClause : undefined;
+    const specifier = ts.isImportDeclaration(statement) ? statement.moduleSpecifier : undefined;
+    if (clause === undefined || specifier === undefined || !ts.isStringLiteral(specifier)) {
+      continue;
+    }
+    const module = specifier.text;
+    if (clause.name?.text === local) {
+      return { module, name: 'default' };
+    }
+    const bindings = clause.namedBindings;
+    if (bindings !== undefined && ts.isNamespaceImport(bindings) && bindings.name.text === local) {
+      return { module, name: '*' };
+    }
     const element =
       bindings !== undefined && ts.isNamedImports(bindings)
         ? bindings.elements.find((candidate) => candidate.name.text === local)
         : undefined;
     if (element !== undefined) {
-      return (element.propertyName ?? element.name).text;
+      return { module, name: (element.propertyName ?? element.name).text };
     }
   }
   return undefined;
 }
 
-// What an argument refers to as its module exports it: `ns.x` names `x`, an
-// aliased import names the imported symbol.
-function referencedName(source: ts.SourceFile, expression: ts.Expression): string {
-  if (ts.isPropertyAccessExpression(expression)) {
-    return expression.name.text;
-  }
+/** A symbol as its module exports it; `module` is undefined when the file does not import it. */
+export interface SymbolReference {
+  readonly name: string;
+  readonly module: string | undefined;
+}
+
+// What an expression refers to: an aliased import resolves to the imported
+// name, `ns.x` over a namespace import to `x` from that module.
+function referenceOf(source: ts.SourceFile, expression: ts.Expression): SymbolReference {
   if (ts.isIdentifier(expression)) {
-    return importedAs(source, expression.text) ?? expression.text;
+    const imported = importOf(source, expression.text);
+    const named = imported !== undefined && imported.name !== '*' && imported.name !== 'default';
+    return { name: named ? imported.name : expression.text, module: imported?.module };
   }
-  return expression.getText(source);
+  if (ts.isPropertyAccessExpression(expression)) {
+    const root = ts.isIdentifier(expression.expression) ? importOf(source, expression.expression.text) : undefined;
+    return { name: expression.name.text, module: root?.name === '*' ? root.module : undefined };
+  }
+  return { name: expression.getText(source), module: undefined };
 }
 
 /** The pack a `provideCngxI18n(withPack(...))` call passes. */
-export interface LanguagePackArgument {
+export interface LanguagePackArgument extends SymbolReference {
   /** The argument as written, e.g. `CNGX_LANGUAGE_DE` or `lang.cngxLanguagePack`. */
   readonly text: string;
-  /** The exported symbol it refers to, through an import alias or a namespace. */
-  readonly name: string;
 }
 
 /** The `provideX(...)` calls of a root providers file, read from its syntax tree. */
 export interface ProviderCalls {
-  /** Every `provideX(...)` name in source order, called bare or through a namespace (`ns.provideX`). */
+  /**
+   * Every `provideX(...)` name in source order, as its module exports it:
+   * called bare, through an import alias, or through a namespace (`ns.provideX`).
+   */
   readonly names: readonly string[];
   /**
    * The first `withPack(...)` argument inside a `provideCngxI18n(...)` call;
@@ -354,17 +376,14 @@ export interface ProviderCalls {
  */
 export function readProviderCalls(content: string): ProviderCalls {
   const source = parse(content);
-  const calls = collectCalls(source, []);
-  const pack = calls
-    .filter((call) => calledName(call) === 'provideCngxI18n')
-    .flatMap((call) => call.arguments.filter(ts.isCallExpression))
-    .find((call) => calledName(call) === 'withPack')?.arguments[0];
+  const named = collectCalls(source, []).map((call) => ({ call, name: referenceOf(source, call.expression).name }));
+  const pack = named
+    .filter(({ name }) => name === 'provideCngxI18n')
+    .flatMap(({ call }) => call.arguments.filter(ts.isCallExpression))
+    .find((call) => referenceOf(source, call.expression).name === 'withPack')?.arguments[0];
   return {
-    names: calls.flatMap((call) => {
-      const name = calledName(call);
-      return name !== undefined && /^provide\w/.test(name) ? [name] : [];
-    }),
-    languagePack: pack === undefined ? undefined : { text: pack.getText(source), name: referencedName(source, pack) },
+    names: named.flatMap(({ name }) => (/^provide\w/.test(name) ? [name] : [])),
+    languagePack: pack === undefined ? undefined : { text: pack.getText(source), ...referenceOf(source, pack) },
   };
 }
 
