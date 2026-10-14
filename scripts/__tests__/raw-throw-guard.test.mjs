@@ -4,15 +4,17 @@
 // `typeof ngDevMode !== 'undefined' && ngDevMode`, which the production build
 // folds to `false`.
 //
-// T1  no `throw` whose operand constructs or calls `Error` or another
-//     `...Error` class anywhere inside it (`Object.assign(new Error(), ...)`
-//     counts), unless the file is in the shrink-only baseline or in
-//     RAW_THROW_EXEMPT. `throw <identifier>` counts when that binding is
-//     initialised or assigned a raw error anywhere in the file (a captured
-//     outer `const`, a reassigned `let`); a rethrow of a caught value passes.
-//     Not covered: an error built inside a called function (`throw make()`),
-//     `Promise.reject(...)`, and classes whose name does not end in `Error`
-//     (`DOMException`).
+// T1  no `throw` and no `Promise.reject(...)` whose operand builds a raw
+//     error: it constructs or calls `Error`, another `...Error` class or
+//     `DOMException` anywhere inside it (`Object.assign(new Error(), ...)`
+//     counts), or calls a function of the same file that returns one
+//     (`throw make()`, also through further local factories). Allowed only
+//     in a file of the shrink-only baseline or RAW_THROW_EXEMPT.
+//     `throw <identifier>` counts when that binding is initialised or
+//     assigned a raw error anywhere in the file (a captured outer `const`, a
+//     reassigned `let`); a rethrow of a caught value passes. Not covered: a
+//     factory imported from another module, and a factory that returns a
+//     variable instead of the construction.
 // T2  every `new CngxRuntimeError` has a `CNGXnnnn` literal first argument in
 //     the file's lib range.
 // T3  the message is an `&&` chain starting with the guard, unless the
@@ -102,10 +104,19 @@ const constructedName = (operand) => {
   return ts.isPropertyAccessExpression(callee) ? callee.name.text : null;
 };
 
-const isRawErrorName = (name) => name !== null && name !== RUNTIME_ERROR && name.endsWith('Error');
+/** Error classes whose name does not end in `Error`. */
+const RAW_ERROR_CLASSES = new Set(['DOMException']);
 
-/** Does `expr` construct or call a raw error class, outside nested functions? */
-const buildsRawError = (expr) => {
+const isRawErrorName = (name) =>
+  name !== null &&
+  name !== RUNTIME_ERROR &&
+  (name.endsWith('Error') || RAW_ERROR_CLASSES.has(name));
+
+/**
+ * Does `expr` construct or call a raw error class, or call a local factory
+ * (`isFactoryCall`), outside nested functions?
+ */
+const buildsRawError = (expr, isFactoryCall = () => false) => {
   let found = false;
   const visit = (node) => {
     if (found || ts.isFunctionLike(node)) {
@@ -113,7 +124,7 @@ const buildsRawError = (expr) => {
     }
     if (
       (ts.isNewExpression(node) || ts.isCallExpression(node)) &&
-      isRawErrorName(constructedName(node))
+      (isRawErrorName(constructedName(node)) || isFactoryCall(node))
     ) {
       found = true;
       return;
@@ -123,6 +134,73 @@ const buildsRawError = (expr) => {
   visit(expr);
   return found;
 };
+
+/** A named function of the file: a declaration or a const bound to an arrow / function expression. */
+const namedFunctions = (sf) => {
+  const out = [];
+  const visit = (node) => {
+    if (ts.isFunctionDeclaration(node) && node.name && node.body) {
+      out.push({ name: node.name, fn: node });
+    }
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.initializer &&
+      (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer))
+    ) {
+      out.push({ name: node.name, fn: node.initializer });
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  return out;
+};
+
+/** Does the function return an expression that `builds`? Nested functions are not its returns. */
+const returnsRawError = (fn, builds) => {
+  if (!ts.isBlock(fn.body)) {
+    return builds(fn.body);
+  }
+  let found = false;
+  const visit = (node) => {
+    if (found || ts.isFunctionLike(node)) {
+      return;
+    }
+    if (ts.isReturnStatement(node) && node.expression && builds(node.expression)) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(fn.body, visit);
+  return found;
+};
+
+/**
+ * The symbols of the file's local error factories, to a fixpoint: a function
+ * that returns a raw error, or the result of another local factory.
+ */
+function localFactories(sf, symbolOf) {
+  const factories = new Set();
+  const isFactoryCall = (node) =>
+    ts.isCallExpression(node) &&
+    ts.isIdentifier(unwrap(node.expression)) &&
+    factories.has(symbolOf(unwrap(node.expression)));
+  const builds = (expr) => buildsRawError(expr, isFactoryCall);
+  const candidates = namedFunctions(sf);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const { name, fn } of candidates) {
+      const symbol = symbolOf(name);
+      if (symbol && !factories.has(symbol) && returnsRawError(fn, builds)) {
+        factories.add(symbol);
+        grew = true;
+      }
+    }
+  }
+  return isFactoryCall;
+}
 
 const ASSIGNMENTS = new Set([
   ts.SyntaxKind.EqualsToken,
@@ -136,14 +214,14 @@ const ASSIGNMENTS = new Set([
  * error. Resolved through the checker, so a same-named binding in another
  * scope is a different symbol.
  */
-function rawErrorBindings(sf, symbolOf) {
+function rawErrorBindings(sf, symbolOf, builds) {
   const out = new Set();
   const visit = (node) => {
     if (
       ts.isVariableDeclaration(node) &&
       ts.isIdentifier(node.name) &&
       node.initializer &&
-      buildsRawError(node.initializer)
+      builds(node.initializer)
     ) {
       out.add(symbolOf(node.name));
     }
@@ -151,7 +229,7 @@ function rawErrorBindings(sf, symbolOf) {
       ts.isBinaryExpression(node) &&
       ASSIGNMENTS.has(node.operatorToken.kind) &&
       ts.isIdentifier(unwrap(node.left)) &&
-      buildsRawError(node.right)
+      builds(node.right)
     ) {
       out.add(symbolOf(unwrap(node.left)));
     }
@@ -162,26 +240,46 @@ function rawErrorBindings(sf, symbolOf) {
   return out;
 }
 
-/** Lines of every raw error throw (T1) in one file. */
+/** `Promise.reject(x)`: the rejected operand, else null. */
+const rejectedOperand = (node) => {
+  if (!ts.isCallExpression(node)) {
+    return null;
+  }
+  const callee = unwrap(node.expression);
+  const isReject =
+    ts.isPropertyAccessExpression(callee) &&
+    ts.isIdentifier(callee.expression) &&
+    callee.expression.text === 'Promise' &&
+    callee.name.text === 'reject';
+  return isReject && node.arguments.length > 0 ? node.arguments[0] : null;
+};
+
+/** Lines of every raw error throw or rejection (T1) in one file. */
 export function rawThrowLines(path, text) {
-  if (!text.includes('throw')) {
+  if (!text.includes('throw') && !text.includes('Promise.reject')) {
     return [];
   }
   const sf = parse(path, text);
   let checker;
   const symbolOf = (id) => (checker ??= singleFileChecker(sf)).getSymbolAtLocation(id);
+  let isFactoryCall;
+  const builds = (expr) => {
+    isFactoryCall ??= localFactories(sf, symbolOf);
+    return buildsRawError(expr, isFactoryCall);
+  };
   let bindings;
-  const isRawThrow = (statement) => {
-    const operand = unwrap(statement.expression);
+  const isRawOperand = (expr) => {
+    const operand = unwrap(expr);
     if (!ts.isIdentifier(operand)) {
-      return buildsRawError(operand);
+      return builds(operand);
     }
-    bindings ??= rawErrorBindings(sf, symbolOf);
+    bindings ??= rawErrorBindings(sf, symbolOf, builds);
     return bindings.has(symbolOf(operand));
   };
   const lines = [];
   const visit = (node) => {
-    if (ts.isThrowStatement(node) && isRawThrow(node)) {
+    const operand = ts.isThrowStatement(node) ? node.expression : rejectedOperand(node);
+    if (operand && isRawOperand(operand)) {
       lines.push(lineOf(sf, node));
     }
     ts.forEachChild(node, visit);
@@ -394,6 +492,51 @@ describe('raw-throw guard - T1 raw throws', () => {
         '    throw outer;',
         '  };',
         '}',
+      ].join('\n'),
+    );
+    expect(raw.get('projects/common/a.ts')).toBe(2);
+  });
+
+  it('counts a local factory, also through a further factory, and DOMException', () => {
+    const { raw } = fixture(
+      [
+        "function make() { return new Error('a'); }",
+        'const wrap = () => make();',
+        'const typed = (m: string) => new TypeError(m);',
+        'function f() {',
+        '  if (a) { throw make(); }',
+        '  if (b) { throw wrap(); }',
+        "  if (c) { throw typed('c'); }",
+        "  throw new DOMException('d');",
+        '}',
+      ].join('\n'),
+    );
+    expect(raw.get('projects/common/a.ts')).toBe(4);
+  });
+
+  it('passes a factory of CngxRuntimeError and a function that only builds an error inside', () => {
+    const { raw } = fixture(
+      [
+        "function make() { return new CngxRuntimeError('CNGX1001'); }",
+        "function other() { const ignored = () => new Error('x'); return 1; }",
+        'function f() {',
+        '  if (a) { throw make(); }',
+        '  throw other();',
+        '}',
+      ].join('\n'),
+    );
+    expect(raw.size).toBe(0);
+  });
+
+  it('counts a rejection with a raw error, not one that passes a caught value on', () => {
+    const { raw } = fixture(
+      [
+        "function f() { return Promise.reject(new Error('a')); }",
+        'function g() {',
+        "  const e = new RangeError('b');",
+        '  return Promise.reject(e);',
+        '}',
+        'function h(err: unknown) { return Promise.reject(err); }',
       ].join('\n'),
     );
     expect(raw.get('projects/common/a.ts')).toBe(2);
