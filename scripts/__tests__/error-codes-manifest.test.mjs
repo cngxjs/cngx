@@ -26,8 +26,11 @@ const SCHEMA = JSON.parse(
 );
 
 const call = (file, code, severity = 'warn') => ({ file, line: 1, code, severity });
-const page = (code, title = `Title of ${code}`, extra = '') =>
-  parsePage(`${code.toLowerCase()}.md`, `# ${code}\n\n## ${title}\n\n${extra}### Why\n\n### Fix\n`);
+const page = (code, title = `Title of ${code}`, extra = '', noun = 'warning') =>
+  parsePage(
+    `${code.toLowerCase()}.md`,
+    `# ${code}\n\n## ${title}\n\n${extra}Intro.\n\n### Fixing the ${noun}\n\n### Debugging the ${noun}\n`,
+  );
 
 /** Every schema violation in a manifest, as readable rows. */
 const schemaViolations = (manifest) => {
@@ -169,12 +172,39 @@ describe('error-code manifest generator', () => {
     ]);
   });
 
-  it('fails on a page without its Why or Fix section', () => {
+  it('fails on a page without its Fixing or Debugging section', () => {
     const { errors } = buildCodes(
       [call('projects/core/a.ts', 'CNGX0001')],
-      [parsePage('cngx0001.md', '# CNGX0001\n\n## Title\n\n### Why\n\nBecause.\n')],
+      [parsePage('cngx0001.md', '# CNGX0001\n\n## Title\n\n### Fixing the warning\n\nDo this.\n')],
     );
-    expect(errors).toEqual(['cngx0001.md: no "### Fix" section']);
+    expect(errors).toEqual(['cngx0001.md: no "### Debugging the warning" section']);
+  });
+
+  it('names the sections after the severity of the code', () => {
+    const { errors } = buildCodes(
+      [call('projects/core/a.ts', 'CNGX0001', 'error')],
+      [page('CNGX0001')],
+    );
+    expect(errors).toEqual([
+      'cngx0001.md: no "### Fixing the error" section',
+      'cngx0001.md: no "### Debugging the error" section',
+    ]);
+  });
+
+  it('accepts an error page for an error code', () => {
+    const { errors } = buildCodes(
+      [call('projects/core/a.ts', 'CNGX0001', 'error')],
+      [page('CNGX0001', undefined, '', 'error')],
+    );
+    expect(errors).toEqual([]);
+  });
+
+  it('accepts either noun on a retired page', () => {
+    const { errors } = buildCodes(
+      [],
+      [page('CNGX0001', 'Gone', '> Retired in 0.2.0.\n\n', 'error')],
+    );
+    expect(errors).toEqual([]);
   });
 
   it('fails on a page whose H1 does not pin its file name', () => {
@@ -259,7 +289,11 @@ describe('error-code manifest', () => {
   it('admits every shape the generator produces', () => {
     const { codes } = buildCodes(
       [call('projects/core/a.ts', 'CNGX0001'), call('projects/core/a.ts', 'CNGX0002', 'error')],
-      [page('CNGX0001'), page('CNGX0002'), page('CNGX0003', 'Gone', '> Retired in 0.2.0.\n\n')],
+      [
+        page('CNGX0001'),
+        page('CNGX0002', undefined, '', 'error'),
+        page('CNGX0003', 'Gone', '> Retired in 0.2.0.\n\n'),
+      ],
     );
     expect(schemaViolations(manifestOf(codes))).toEqual([]);
   });

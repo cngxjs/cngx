@@ -31,10 +31,13 @@ Each library emits codes in its own range, so the code tells you where to look.
 
 ## Reading a page
 
-Each code has one page, listed in the sidebar under this one. A page has two parts:
+Each code has one page, listed in the sidebar under this one. A page has three parts:
 
-- **Why** - the condition CNGX detected and what it does instead (warns and falls back, or leaves the feature inactive).
-- **Fix** - the change that makes the message go away.
+- **The intro** - what triggers the message, why CNGX checks it, and what goes wrong when it is ignored, usually with an example of the failing code.
+- **Fixing the warning** (or **error**) - the change that makes the message go away, with one or more options and their code.
+- **Debugging the warning** (or **error**) - what the message tells you, when the check runs, and how to find the place that caused it.
+
+A warning flags a likely mistake that CNGX works around. An error flags a setup that leaves a feature broken or wrong; it is still a console message, not a thrown exception.
 
 One code stands for one condition. A code is never reused: when a check is removed, its page stays and says in which version the code was retired.
 

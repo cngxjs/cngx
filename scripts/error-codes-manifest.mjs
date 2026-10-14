@@ -43,8 +43,13 @@ export const SUMMARY_NODE_TITLE = 'Error Codes';
 const CODE_PATTERN = /^CNGX\d{4}$/;
 const PAGE_FILE = /^cngx\d{4}\.md$/;
 const RETIRED = /^> Retired in \S+\.$/m;
-/** The sections every code page carries, after its `## <title>`. */
-const PAGE_SECTIONS = ['Why', 'Fix'];
+/**
+ * The sections every code page carries after its intro, named after the
+ * code's severity: `### Fixing the warning` / `### Debugging the warning`
+ * for `warn`, `... the error` for `error` (the shape of Angular's error pages).
+ */
+const PAGE_SECTIONS = ['Fixing', 'Debugging'];
+const SEVERITY_NOUN = { warn: 'warning', error: 'error' };
 
 /** The lib a repo-relative `projects/<lib>/...` path belongs to. */
 export function libOf(file) {
@@ -60,15 +65,25 @@ export function rangeOf(code) {
 /**
  * Parses one code page. `name` is the file name (`cngx0001.md`).
  *
- * @returns {{ name: string; code: string | null; title: string | null; retired: boolean; missingSections: string[] }}
+ * @returns {{ name: string; code: string | null; title: string | null; retired: boolean; sections: string[] }}
  */
 export function parsePage(name, text) {
   const h1 = /^# (.+)$/m.exec(text)?.[1].trim() ?? null;
   const h2 = /^## (.+)$/m.exec(text)?.[1].trim() ?? null;
-  const missingSections = PAGE_SECTIONS.filter(
-    (section) => !new RegExp(`^### ${section}\\s*$`, 'm').test(text),
-  );
-  return { name, code: h1, title: h2, retired: RETIRED.test(text), missingSections };
+  const sections = [...text.matchAll(/^### (.+?)\s*$/gm)].map((m) => m[1]);
+  return { name, code: h1, title: h2, retired: RETIRED.test(text), sections };
+}
+
+/**
+ * The required sections `page` lacks. `noun` is `warning` or `error` from the
+ * code's severity; without one (a retired page, or a code with two severities,
+ * which fails on its own) either noun passes.
+ */
+function missingSections(page, noun) {
+  const nouns = noun ? [noun] : Object.values(SEVERITY_NOUN);
+  return PAGE_SECTIONS.filter(
+    (verb) => !nouns.some((n) => page.sections.includes(`${verb} the ${n}`)),
+  ).map((verb) => `${verb} the ${noun ?? 'warning|error'}`);
 }
 
 /** Every code page under `dir` (files named `cngx<nnnn>.md`). */
@@ -127,7 +142,9 @@ export function buildCodes(calls, pages, { hasIndex = true } = {}) {
     if (!page.title) {
       errors.push(`${page.name}: no "## <title>" heading`);
     }
-    for (const section of page.missingSections) {
+    const severities = byCode.get(page.code)?.severities;
+    const noun = severities?.size === 1 ? SEVERITY_NOUN[[...severities][0]] : undefined;
+    for (const section of missingSections(page, noun)) {
       errors.push(`${page.name}: no "### ${section}" section`);
     }
     pageByCode.set(page.code, page);
