@@ -376,6 +376,21 @@
       "files": ["projects/common/interactive/tree-controller/tree-controller.ts"]
     },
     {
+      "code": "CNGX1031",
+      "lib": "common",
+      "severity": "warn",
+      "title": "No Router for a router-sync directive",
+      "page": "core-concepts/error-codes/cngx1031.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1031.html",
+      "status": "active",
+      "files": [
+        "projects/common/data/paginate/paginate-routing.directive.ts",
+        "projects/common/layout/router/warn-router-absent.ts",
+        "projects/common/stepper/router-sync.directive.ts",
+        "projects/common/tabs/router-absent-warning.ts"
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

@@ -63,6 +63,8 @@ const EXPECTED_DEV_WRAPPERS = [
   'projects/common/dialog/dialog/dialog.directive.ts#warnNonModalA11y',
   'projects/common/interactive/menu/menu-item-submenu.directive.ts#warnMissingSubmenuFallbacks',
   'projects/common/interactive/reorder/reorder.directive.ts#wireDevModeCheck',
+  'projects/common/layout/router/warn-router-absent.ts#warnRouterAbsent',
+  'projects/common/tabs/router-absent-warning.ts#warnTabsRouterAbsent',
 ];
 
 const CODE_PATTERN = /^CNGX\d{4}$/;

@@ -207,6 +207,21 @@ describe('CngxTabsRouteSync', () => {
     presenter.select(1);
     expect(presenter.activeIndex()).toBe(1);
     expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0][0]).toContain('CNGX1031: CngxTabsRouteSync');
+  });
+
+  it('writes nothing to the console without a Router in production', async () => {
+    vi.stubGlobal('ngDevMode', false);
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+    });
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const fixture = TestBed.createComponent(RouteHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    expect(warnSpy).not.toHaveBeenCalled();
   });
 
   it('seeds the active tab from the current URL on mount', async () => {

@@ -220,6 +220,10 @@
                 "file": "error-codes/cngx1030.md"
             },
             {
+                "title": "CNGX1031",
+                "file": "error-codes/cngx1031.md"
+            },
+            {
                 "title": "CNGX2001",
                 "file": "error-codes/cngx2001.md"
             },

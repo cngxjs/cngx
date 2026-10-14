@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxPaginate } from './paginate.directive';
@@ -28,6 +28,37 @@ async function settle(harness: RouterTestingHarness): Promise<void> {
 }
 
 describe('CngxPaginateRouting', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  test('dev-warns with CNGX1031 and no-ops without a Router', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const fixture = TestBed.createComponent(RoutedHost);
+    fixture.detectChanges();
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain('CNGX1031: [cngxPaginateRouting]');
+  });
+
+  test('writes nothing to the console without a Router in production', () => {
+    vi.stubGlobal('ngDevMode', false);
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const fixture = TestBed.createComponent(RoutedHost);
+    fixture.detectChanges();
+
+    expect(warn).not.toHaveBeenCalled();
+  });
+
   test('URL -> brain: a deep-linked ?page / ?pageSize lands on the brain', async () => {
     TestBed.configureTestingModule({
       providers: [

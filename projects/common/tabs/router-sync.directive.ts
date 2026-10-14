@@ -110,7 +110,9 @@ export class CngxTabsFragmentSync implements AfterContentInit {
 
   constructor() {
     if (!this.router) {
-      afterNextRender(() => warnTabsRouterAbsent('CngxTabsFragmentSync', 'deep-linking'));
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        afterNextRender(() => warnTabsRouterAbsent('CngxTabsFragmentSync', 'deep-linking'));
+      }
       return;
     }
     const router = this.router;

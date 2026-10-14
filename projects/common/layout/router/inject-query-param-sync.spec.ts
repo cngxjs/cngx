@@ -37,6 +37,7 @@ describe('injectQueryParamSync', () => {
   });
 
   afterEach(() => {
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
     TestBed.resetTestingModule();
   });
@@ -135,6 +136,24 @@ describe('injectQueryParamSync', () => {
     await flush();
 
     expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain('CNGX1031: injectQueryParamSync');
+    expect(state()).toBe(false);
+  });
+
+  it('writes nothing to the console without a Router in production', async () => {
+    vi.stubGlobal('ngDevMode', false);
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const injector = Injector.create({ providers: [{ provide: Router, useValue: null }] });
+    const state = signal(false);
+    runInInjectionContext(injector, () => injectQueryParamSync(state, { param: 'nav' }));
+    TestBed.tick();
+    await flush();
+
+    expect(warn).not.toHaveBeenCalled();
     expect(state()).toBe(false);
   });
 

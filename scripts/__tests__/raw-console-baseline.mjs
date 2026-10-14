@@ -5,9 +5,7 @@
 
 export const RAW_CONSOLE_BASELINE = {
   common: [
-    { file: 'projects/common/data/paginate/paginate-routing.directive.ts', count: 1 },
     { file: 'projects/common/layout/observers/intersection-observer.directive.ts', count: 1 },
-    { file: 'projects/common/layout/router/warn-router-absent.ts', count: 1 },
     { file: 'projects/common/layout/scroll/infinite-scroll.directive.ts', count: 1 },
     { file: 'projects/common/layout/scroll/scroll-spy.directive.ts', count: 2 },
     { file: 'projects/common/layout/scroll/sticky-header.directive.ts', count: 1 },
@@ -17,9 +15,7 @@ export const RAW_CONSOLE_BASELINE = {
     { file: 'projects/common/stepper/controls/stepper-previous.directive.ts', count: 1 },
     { file: 'projects/common/stepper/presenter.directive.ts', count: 2 },
     { file: 'projects/common/stepper/provide-cngx-stepper.ts', count: 1 },
-    { file: 'projects/common/stepper/router-sync.directive.ts', count: 1 },
     { file: 'projects/common/tabs/provide-cngx-tabs.ts', count: 1 },
-    { file: 'projects/common/tabs/router-absent-warning.ts', count: 1 },
     { file: 'projects/common/timeline/grouping.ts', count: 1 },
     { file: 'projects/common/timeline/timeline-item.component.ts', count: 1 },
   ],
