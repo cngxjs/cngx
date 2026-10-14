@@ -178,8 +178,8 @@ describe('planProviders', () => {
         expect.objectContaining({
           kind: 'note',
           id: 'provider:i18n-file',
-          label: 'Skip runtime language switching',
-          reason: 'src/app/cngx-language.ts exists and cngx did not write it; move it aside and run `ng add @cngx/core` again',
+          label: 'Keep src/app/cngx-language.ts',
+          reason: 'cngx did not write it, so runtime language switching is skipped; move it aside and run `ng add @cngx/core` again',
         }),
       ]);
       expect(result.skipped).toEqual([]);
@@ -279,6 +279,19 @@ describe('planProviders', () => {
 
       expect(result.changes).toEqual([]);
       expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([['provider:i18n', 'already provided']]);
+    });
+
+    it('names the pack it keeps when an existing language provider passes its own', () => {
+      const result = planProviders(
+        createFacts({ rootProviders: ['provideCngxI18n'], languagePack: { text: 'MY_PACK', name: 'MY_PACK', module: './my-pack' } }),
+        createAnswers({ i18n: 'de', a11yPreferences: false }),
+        VERSIONS,
+      );
+
+      expect(result.changes).toEqual([]);
+      expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([
+        ['provider:i18n', 'already passes `withPack(MY_PACK)`; cngx keeps that pack'],
+      ]);
     });
 
     it('says why it does not apply without the German pack', () => {

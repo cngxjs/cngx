@@ -161,10 +161,12 @@ function wantedProviders(facts: ProjectFacts, answers: OnboardingAnswers): reado
  * rtl direction for an RTL source locale, the feedback services, the
  * floating fallback and the language pack. A provider already present is
  * skipped, so a second run plans nothing; an answer the selected packages
- * cannot serve gets a note. With the runtime switch, `cngx-language.ts` is
- * created only when missing, a file cngx did not write blocks the switch with
- * a note, and a language provider passing another pack (or, for German,
- * none) gets a note naming the one edit instead of being rewritten.
+ * cannot serve gets a note. An existing language provider is never
+ * rewritten: with the runtime switch it gets a note naming the one edit
+ * unless it already passes the signal from `cngx-language.ts`; without it,
+ * one passing no pack gets that note and one passing its own pack is kept,
+ * with the skip naming that pack. `cngx-language.ts` is created only when
+ * missing; a file cngx did not write blocks the switch with a note.
  */
 export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
   const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
@@ -188,8 +190,8 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
   const foreignFile: Change = {
     kind: 'note',
     id: 'provider:i18n-file',
-    label: 'Skip runtime language switching',
-    reason: `${languageFile} exists and cngx did not write it; move it aside and run \`ng add @cngx/core\` again`,
+    label: `Keep ${languageFile}`,
+    reason: 'cngx did not write it, so runtime language switching is skipped; move it aside and run `ng add @cngx/core` again',
     provenance,
   };
   const providers = wanted.filter(({ lib }) => libs.includes(lib)).flatMap((entry): readonly Change[] => {
@@ -262,10 +264,16 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
         },
       ]
     : [];
+  // A kept pack other than the one asked for is named, so the skip never
+  // reads as if German were in place.
+  const providedReason = (change: Change): string =>
+    change.id === 'provider:i18n' && facts.languagePack !== undefined && facts.languagePack.name !== pack.symbol
+      ? `already passes \`withPack(${facts.languagePack.text})\`; cngx keeps that pack`
+      : 'already provided';
   return {
     changes: [...providers.filter((change) => !isProvided(change)), ...packEdit, ...notes],
     skipped: [
-      ...provided.filter((change) => !needsPackEdit(change)).map((change) => skipChange(change, 'already provided')),
+      ...provided.filter((change) => !needsPackEdit(change)).map((change) => skipChange(change, providedReason(change))),
       ...existingFile,
     ],
   };
