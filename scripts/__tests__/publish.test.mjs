@@ -1,20 +1,24 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   assertPinsPublished,
+  assertReleaseMigration,
   containsStableRelease,
   createSchematicsVersions,
   declaresSchematics,
   findPlaceholders,
   libBuildCommand,
   npmViewVersion,
+  REFRESH_FACTORY,
   replaceVersionInDist,
   resolveDistTag,
   stampManifest,
+  stampRefreshMigration,
 } from '../publish.mjs';
 
 describe('resolveDistTag', () => {
@@ -258,5 +262,92 @@ describe('stampManifest', () => {
 
   it('copes with a manifest without peers', () => {
     expect(stampManifest({ version: '0.0.0-PLACEHOLDER' }, '1.0.0')).toEqual({ version: '1.0.0' });
+  });
+});
+
+const SOURCE_COLLECTION = {
+  schematics: {
+    'migration-v0.1.0': { version: '0.1.0', description: 'first', factory: './0.1.0/index#migrate' },
+  },
+};
+
+describe('stampRefreshMigration', () => {
+  it('keys a refresh entry to a release without its own migration', () => {
+    const stamped = stampRefreshMigration(SOURCE_COLLECTION, '0.1.1');
+
+    expect(stamped.schematics['migration-v0.1.1-refresh']).toEqual({
+      version: '0.1.1',
+      description: expect.stringContaining('0.1.1'),
+      factory: REFRESH_FACTORY,
+    });
+    expect(stamped.schematics['migration-v0.1.0']).toEqual(SOURCE_COLLECTION.schematics['migration-v0.1.0']);
+    expect(Object.keys(SOURCE_COLLECTION.schematics)).toEqual(['migration-v0.1.0']);
+  });
+
+  it('leaves a release that brings its own migration alone', () => {
+    expect(stampRefreshMigration(SOURCE_COLLECTION, '0.1.0')).toBe(SOURCE_COLLECTION);
+  });
+
+  it('keys a prerelease as it is', () => {
+    const stamped = stampRefreshMigration(SOURCE_COLLECTION, '0.1.1-rc.0');
+
+    expect(stamped.schematics['migration-v0.1.1-rc.0-refresh']?.version).toBe('0.1.1-rc.0');
+  });
+});
+
+describe('assertReleaseMigration', () => {
+  it('accepts a collection with an entry for the release', () => {
+    expect(() => assertReleaseMigration(stampRefreshMigration(SOURCE_COLLECTION, '0.1.1'), '0.1.1')).not.toThrow();
+  });
+
+  it('refuses a collection without one', () => {
+    expect(() => assertReleaseMigration(SOURCE_COLLECTION, '0.1.1')).toThrow(
+      'the ng update collection has no migration for 0.1.1',
+    );
+  });
+});
+
+// `ng update` picks entries by `>from <=to` with prereleases included
+// (@angular/cli/src/commands/update/utilities/migration.js). The range is
+// rebuilt here with the CLI's own semver; the first case fails when the CLI
+// changes how it builds it, so the cases below never test a stale copy.
+describe('Angular CLI migration range', () => {
+  const cliRequire = createRequire(createRequire(import.meta.url).resolve('@angular/cli/package.json'));
+  const semver = cliRequire('semver');
+  const MIGRATION_JS = join(
+    dirname(cliRequire.resolve('@angular/cli/package.json')),
+    'src/commands/update/utilities/migration.js',
+  );
+
+  function selects(from, to, version) {
+    const range = new semver.Range(
+      '>' + (semver.prerelease(from) ? from.split('-')[0] + '-0' : from) + ' <=' + to.split('-')[0],
+    );
+    return semver.satisfies(version, range, { includePrerelease: true });
+  }
+
+  it('is the range the installed CLI builds', () => {
+    const source = readFileSync(MIGRATION_JS, 'utf8');
+
+    expect(source).toContain(
+      "new semver.Range('>' + (semver.prerelease(from) ? from.split('-')[0] + '-0' : from) + ' <=' + to.split('-')[0])",
+    );
+    expect(source).toContain('{ includePrerelease: true }');
+  });
+
+  it('selects the refresh entry of a stable release', () => {
+    expect(selects('0.1.0', '0.1.1', '0.1.1')).toBe(true);
+  });
+
+  it('selects the refresh entry of a prerelease', () => {
+    expect(selects('0.1.0', '0.1.1-rc.0', '0.1.1-rc.0')).toBe(true);
+  });
+
+  it('selects the entry of the release candidate from an earlier candidate', () => {
+    expect(selects('0.1.1-rc.0', '0.1.1-rc.1', '0.1.1-rc.1')).toBe(true);
+  });
+
+  it('skips the entry of the release an app already runs', () => {
+    expect(selects('0.1.1', '0.1.2', '0.1.1')).toBe(false);
   });
 });

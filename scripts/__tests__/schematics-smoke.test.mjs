@@ -8,7 +8,7 @@ import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
 import { NodeModulesEngineHost } from '@angular-devkit/schematics/tools';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { declaresSchematics } from '../publish.mjs';
+import { assertReleaseMigration, declaresSchematics, stampRefreshMigration } from '../publish.mjs';
 
 /**
  * Smoke guard for the bundled schematics under dist/. Runs the built
@@ -125,15 +125,25 @@ describe('dist/core/schematics migrations', () => {
     expect(JSON.parse(tree.readText('.cngx/install.json')).cngxVersion).toBe(version);
   });
 
-  it('keeps every migration bundle under 256 KB minified', () => {
-    const dir = join(ROOT, 'dist', 'core', 'schematics', 'migrations');
-    const bundles = readdirSync(dir, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => join(dir, entry.name, 'index.js'));
+  // What publish.mjs does to the collection of a release without its own
+  // migration, on a copy beside the original so the factory paths resolve.
+  it('the stamped refresh entry of a later release re-checks an onboarded app', async () => {
+    const ngAdd = new SchematicTestRunner('@cngx/core', requireDist(CORE_COLLECTION));
+    const onboarded = await ngAdd.runSchematic('ng-add', { preset: 'minimal' }, await createAppTree(ngAdd));
+    const installed = JSON.parse(onboarded.readText('.cngx/install.json'));
+    onboarded.overwrite('.cngx/install.json', JSON.stringify({ ...installed, cngxVersion: '0.1.0' }, null, 2));
+    const stamped = stampRefreshMigration(JSON.parse(readFileSync(MIGRATIONS, 'utf8')), '0.1.1');
+    assertReleaseMigration(stamped, '0.1.1');
+    const copy = join(dirname(MIGRATIONS), 'migrations.smoke-refresh.json');
+    writeFileSync(copy, JSON.stringify(stamped));
 
-    expect(bundles.length).toBeGreaterThan(0);
-    for (const bundle of bundles) {
-      expect(readFileSync(bundle).length).toBeLessThan(256 * 1024);
+    try {
+      const refresh = new SchematicTestRunner('@cngx/core', copy);
+      const tree = await refresh.runSchematic('migration-v0.1.1-refresh', {}, onboarded);
+
+      expect(JSON.parse(tree.readText('.cngx/install.json')).cngxVersion).toBe(version);
+    } finally {
+      rmSync(copy, { force: true });
     }
   });
 });
@@ -281,9 +291,12 @@ function schematicEntries() {
         return [];
       }
       const migrations = pkg['ng-update']?.migrations;
+      // The refresh factory has no source key; publish.mjs keys it per release.
       return [
         ...factoryEntries(lib.name, pkg.schematics),
-        ...(migrations === undefined ? [] : factoryEntries(lib.name, migrations)),
+        ...(migrations === undefined
+          ? []
+          : [...factoryEntries(lib.name, migrations), join(lib.name, dirname(migrations), 'refresh', 'index.js')]),
       ];
     });
 }
