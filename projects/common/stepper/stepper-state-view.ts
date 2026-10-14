@@ -128,7 +128,10 @@ export function createStepperStateView(inputs: {
  *
  * The optional `messageOf` resolver lets callers surface a per-step
  * reason (a direct `[error]` string or the first aggregator label) in the
- * single-error case instead of the generic `errored` status word. When
+ * single-error case instead of the generic `errored` status word. The
+ * reason is still prefixed with the step label (`"Payment: Card declined"`),
+ * because the summary line stays visible while another step is active and
+ * a bare reason would read as belonging to the active step. When
  * omitted - or when it returns `undefined`/`''` - the helper produces
  * byte-identical output to the no-resolver form, so existing callers
  * (the classic mobile-collapse summary) are a guaranteed no-op.
@@ -155,13 +158,9 @@ export function resolveStepperErrorSummary(
   if (count === 1) {
     const node = stepsOnly()[view.firstErrorIndex()];
     const custom = node ? messageOf?.(node) : undefined;
-    if (custom !== undefined && custom !== '') {
-      return custom;
-    }
+    const detail = custom !== undefined && custom !== '' ? custom : i18n.statusLabels.errored;
     const label = node ? untracked(node.label) : undefined;
-    return label
-      ? i18n.stepWithDetail(label, i18n.statusLabels.errored)
-      : i18n.statusLabels.errored;
+    return label ? i18n.stepWithDetail(label, detail) : detail;
   }
   return i18n.stepHasErrors(count);
 }

@@ -193,7 +193,7 @@ describe('CngxTextStepper', () => {
     const text = fixture.nativeElement.querySelector(
       '.cngx-text-stepper__error-text',
     ) as HTMLElement;
-    expect(text.textContent?.trim()).toBe('Card declined');
+    expect(stripBidiIsolates(text.textContent?.trim())).toBe('Payment: Card declined');
   });
 
   it('error line keeps the shipped markup contract (block class, role="status", hidden glyph)', () => {

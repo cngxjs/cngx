@@ -161,9 +161,18 @@ describe('resolveStepperErrorSummary', () => {
   });
 
   describe('optional messageOf resolver', () => {
-    it('surfaces a resolved per-step message in the single-error case', () => {
+    it('prefixes a resolved per-step message with the step label', () => {
       const stepsOnly = signal<readonly CngxStepNode[]>([
         stubNode({ id: 'Payment', flatIndex: 0, label: () => 'Payment' }),
+      ]);
+      const view = { errorCount: signal(1), firstErrorIndex: signal(0) };
+      const summary = resolveStepperErrorSummary(view, stepsOnly, i18n, () => 'Card declined');
+      expect(summary).toBe('Payment: Card declined');
+    });
+
+    it('surfaces the bare message when the errored step has no label', () => {
+      const stepsOnly = signal<readonly CngxStepNode[]>([
+        stubNode({ id: 'a', flatIndex: 0, label: () => '' }),
       ]);
       const view = { errorCount: signal(1), firstErrorIndex: signal(0) };
       const summary = resolveStepperErrorSummary(view, stepsOnly, i18n, () => 'Card declined');
