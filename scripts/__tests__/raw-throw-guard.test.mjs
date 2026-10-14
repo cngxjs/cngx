@@ -5,8 +5,11 @@
 // folds to `false`.
 //
 // T1  no `throw` whose operand constructs or calls `Error` or another
-//     `...Error` class, unless the file is in the shrink-only baseline or in
-//     RAW_THROW_EXEMPT. `throw <identifier>` (a rethrow) passes.
+//     `...Error` class anywhere inside it (`Object.assign(new Error(), ...)`
+//     counts), unless the file is in the shrink-only baseline or in
+//     RAW_THROW_EXEMPT. `throw <identifier>` counts when a declaration of
+//     that name in the enclosing function builds a raw error; a rethrow of a
+//     caught value passes.
 // T2  every `new CngxRuntimeError` has a `CNGXnnnn` literal first argument in
 //     the file's lib range.
 // T3  the message is an `&&` chain starting with the guard, unless the
@@ -94,6 +97,67 @@ const constructedName = (operand) => {
   return ts.isPropertyAccessExpression(callee) ? callee.name.text : null;
 };
 
+const isRawErrorName = (name) => name !== null && name !== RUNTIME_ERROR && name.endsWith('Error');
+
+/** Does `expr` construct or call a raw error class, outside nested functions? */
+const buildsRawError = (expr) => {
+  let found = false;
+  const visit = (node) => {
+    if (found || ts.isFunctionLike(node)) {
+      return;
+    }
+    if (
+      (ts.isNewExpression(node) || ts.isCallExpression(node)) &&
+      isRawErrorName(constructedName(node))
+    ) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(expr);
+  return found;
+};
+
+/** The innermost function (or the file) a node runs in. */
+const scopeOf = (node) => {
+  let current = node.parent;
+  while (current && !ts.isFunctionLike(current) && !ts.isSourceFile(current)) {
+    current = current.parent;
+  }
+  return current;
+};
+
+/** Does a variable named `name` in `scope` hold a raw error built in place? */
+const bindsRawError = (scope, name) => {
+  let found = false;
+  const visit = (node) => {
+    if (found) {
+      return;
+    }
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.name.text === name &&
+      node.initializer &&
+      buildsRawError(node.initializer)
+    ) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(scope, visit);
+  return found;
+};
+
+const isRawThrow = (statement) => {
+  const operand = unwrap(statement.expression);
+  return ts.isIdentifier(operand)
+    ? bindsRawError(scopeOf(statement), operand.text)
+    : buildsRawError(operand);
+};
+
 /** Lines of every raw error throw (T1) in one file. */
 export function rawThrowLines(path, text) {
   if (!text.includes('throw')) {
@@ -102,11 +166,8 @@ export function rawThrowLines(path, text) {
   const sf = parse(path, text);
   const lines = [];
   const visit = (node) => {
-    if (ts.isThrowStatement(node)) {
-      const name = constructedName(node.expression);
-      if (name !== null && name !== RUNTIME_ERROR && name.endsWith('Error')) {
-        lines.push(lineOf(sf, node));
-      }
+    if (ts.isThrowStatement(node) && isRawThrow(node)) {
+      lines.push(lineOf(sf, node));
     }
     ts.forEachChild(node, visit);
   };
@@ -262,6 +323,38 @@ describe('raw-throw guard - T1 raw throws', () => {
       ].join('\n'),
     );
     expect(raw.get('projects/common/a.ts')).toBe(4);
+  });
+
+  it('counts a raw error wrapped in a call or bound to a local before the throw', () => {
+    const { raw } = fixture(
+      [
+        'function f() {',
+        "  if (a) { throw Object.assign(new Error('a'), { status: 1 }); }",
+        "  const e = new TypeError('b');",
+        '  throw e;',
+        '}',
+        'function g() {',
+        "  let err = cond ? new Error('c') : null;",
+        '  throw err;',
+        '}',
+      ].join('\n'),
+    );
+    expect(raw.get('projects/common/a.ts')).toBe(3);
+  });
+
+  it('passes a rethrow of a caught value and a local that holds no raw error', () => {
+    const { raw } = fixture(
+      [
+        'function f() {',
+        '  try { work(); } catch (err) { throw err; }',
+        "  const e = new CngxRuntimeError('CNGX1001');",
+        '  throw e;',
+        '}',
+        "function g() { const e = new Error('elsewhere'); return e; }",
+        'function h(e: unknown) { throw e; }',
+      ].join('\n'),
+    );
+    expect(raw.size).toBe(0);
   });
 
   it('passes a CngxRuntimeError throw and a thrown non-error value', () => {
