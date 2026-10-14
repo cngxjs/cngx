@@ -1,4 +1,4 @@
-// Every error the libs throw is a `CngxRuntimeError` (`projects/utils/runtime-error.ts`)
+// A library throw constructs a `CngxRuntimeError` (`projects/utils/runtime-error.ts`)
 // with a code, so a consumer can match it and a production build ships only
 // the code. The message sits behind the inline guard
 // `typeof ngDevMode !== 'undefined' && ngDevMode`, which the production build
@@ -7,9 +7,12 @@
 // T1  no `throw` whose operand constructs or calls `Error` or another
 //     `...Error` class anywhere inside it (`Object.assign(new Error(), ...)`
 //     counts), unless the file is in the shrink-only baseline or in
-//     RAW_THROW_EXEMPT. `throw <identifier>` counts when a declaration of
-//     that name in the enclosing function builds a raw error; a rethrow of a
-//     caught value passes.
+//     RAW_THROW_EXEMPT. `throw <identifier>` counts when that binding is
+//     initialised or assigned a raw error anywhere in the file (a captured
+//     outer `const`, a reassigned `let`); a rethrow of a caught value passes.
+//     Not covered: an error built inside a called function (`throw make()`),
+//     `Promise.reject(...)`, and classes whose name does not end in `Error`
+//     (`DOMException`).
 // T2  every `new CngxRuntimeError` has a `CNGXnnnn` literal first argument in
 //     the file's lib range.
 // T3  the message is an `&&` chain starting with the guard, unless the
@@ -35,6 +38,7 @@ import {
   lineOf,
   localNgDevModeLines,
   parse,
+  singleFileChecker,
 } from '../dev-diagnostics.mjs';
 import { libOf, rangeOf, readSources } from '../error-codes-manifest.mjs';
 import { RAW_THROW_BASELINE } from './raw-throw-baseline.mjs';
@@ -119,44 +123,43 @@ const buildsRawError = (expr) => {
   return found;
 };
 
-/** The innermost function (or the file) a node runs in. */
-const scopeOf = (node) => {
-  let current = node.parent;
-  while (current && !ts.isFunctionLike(current) && !ts.isSourceFile(current)) {
-    current = current.parent;
-  }
-  return current;
-};
+const ASSIGNMENTS = new Set([
+  ts.SyntaxKind.EqualsToken,
+  ts.SyntaxKind.QuestionQuestionEqualsToken,
+  ts.SyntaxKind.BarBarEqualsToken,
+  ts.SyntaxKind.AmpersandAmpersandEqualsToken,
+]);
 
-/** Does a variable named `name` in `scope` hold a raw error built in place? */
-const bindsRawError = (scope, name) => {
-  let found = false;
+/**
+ * The symbols of every binding in `sf` that is initialised or assigned a raw
+ * error. Resolved through the checker, so a same-named binding in another
+ * scope is a different symbol.
+ */
+function rawErrorBindings(sf, symbolOf) {
+  const out = new Set();
   const visit = (node) => {
-    if (found) {
-      return;
-    }
     if (
       ts.isVariableDeclaration(node) &&
       ts.isIdentifier(node.name) &&
-      node.name.text === name &&
       node.initializer &&
       buildsRawError(node.initializer)
     ) {
-      found = true;
-      return;
+      out.add(symbolOf(node.name));
+    }
+    if (
+      ts.isBinaryExpression(node) &&
+      ASSIGNMENTS.has(node.operatorToken.kind) &&
+      ts.isIdentifier(unwrap(node.left)) &&
+      buildsRawError(node.right)
+    ) {
+      out.add(symbolOf(unwrap(node.left)));
     }
     ts.forEachChild(node, visit);
   };
-  ts.forEachChild(scope, visit);
-  return found;
-};
-
-const isRawThrow = (statement) => {
-  const operand = unwrap(statement.expression);
-  return ts.isIdentifier(operand)
-    ? bindsRawError(scopeOf(statement), operand.text)
-    : buildsRawError(operand);
-};
+  visit(sf);
+  out.delete(undefined);
+  return out;
+}
 
 /** Lines of every raw error throw (T1) in one file. */
 export function rawThrowLines(path, text) {
@@ -164,6 +167,17 @@ export function rawThrowLines(path, text) {
     return [];
   }
   const sf = parse(path, text);
+  let checker;
+  const symbolOf = (id) => (checker ??= singleFileChecker(sf)).getSymbolAtLocation(id);
+  let bindings;
+  const isRawThrow = (statement) => {
+    const operand = unwrap(statement.expression);
+    if (!ts.isIdentifier(operand)) {
+      return buildsRawError(operand);
+    }
+    bindings ??= rawErrorBindings(sf, symbolOf);
+    return bindings.has(symbolOf(operand));
+  };
   const lines = [];
   const visit = (node) => {
     if (ts.isThrowStatement(node) && isRawThrow(node)) {
@@ -340,6 +354,38 @@ describe('raw-throw guard - T1 raw throws', () => {
       ].join('\n'),
     );
     expect(raw.get('projects/common/a.ts')).toBe(3);
+  });
+
+  it('follows the binding: a reassigned let and a captured outer const count', () => {
+    const { raw } = fixture(
+      [
+        'function f() {',
+        '  let e;',
+        "  e = new Error('a');",
+        '  throw e;',
+        '}',
+        "const outer = new RangeError('b');",
+        'function g() {',
+        '  return () => {',
+        '    throw outer;',
+        '  };',
+        '}',
+      ].join('\n'),
+    );
+    expect(raw.get('projects/common/a.ts')).toBe(2);
+  });
+
+  it('does not count a same-named local of a nested function', () => {
+    const { raw } = fixture(
+      [
+        'function f(e: unknown) {',
+        "  const inner = () => { const e = new Error('x'); return e; };",
+        '  inner();',
+        '  throw e;',
+        '}',
+      ].join('\n'),
+    );
+    expect(raw.size).toBe(0);
   });
 
   it('passes a rethrow of a caught value and a local that holds no raw error', () => {

@@ -34,6 +34,7 @@ import {
   localNgDevModeLines,
   parse,
   runsAtModuleLoad,
+  singleFileChecker,
 } from '../dev-diagnostics.mjs';
 import { libOf, rangeOf, readSources } from '../error-codes-manifest.mjs';
 
@@ -70,18 +71,6 @@ const EXPECTED_DEV_WRAPPERS = [
 
 const CODE_PATTERN = /^CNGX\d{4}$/;
 const GLOBAL_HOSTS = new Set(['globalThis', 'window', 'self']);
-
-/**
- * A checker over the one file, with no lib and no resolution: the global
- * `console` resolves to no symbol, a local binding of the same name does.
- */
-function singleFileChecker(sf) {
-  const options = { noLib: true, noResolve: true, types: [], allowJs: false };
-  const host = ts.createCompilerHost(options);
-  host.getSourceFile = (name) => (name === sf.fileName ? sf : undefined);
-  host.fileExists = (name) => name === sf.fileName;
-  return ts.createProgram([sf.fileName], options, host).getTypeChecker();
-}
 
 /** `node` through parentheses, `as`, `satisfies`, `!` and `<T>` casts. */
 const unwrap = (node) => {

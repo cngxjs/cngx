@@ -25,6 +25,19 @@ export const parse = (path, text) =>
 
 export const lineOf = (sf, node) => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
 
+/**
+ * A checker over the one file, with no lib and no resolution: a global
+ * resolves to no symbol, a local binding of the same name does, and two
+ * same-named bindings in different scopes resolve to different symbols.
+ */
+export function singleFileChecker(sf) {
+  const options = { noLib: true, noResolve: true, types: [], allowJs: false };
+  const host = ts.createCompilerHost(options);
+  host.getSourceFile = (name) => (name === sf.fileName ? sf : undefined);
+  host.fileExists = (name) => name === sf.fileName;
+  return ts.createProgram([sf.fileName], options, host).getTypeChecker();
+}
+
 const unparen = (node) => {
   let current = node;
   while (ts.isParenthesizedExpression(current)) {
