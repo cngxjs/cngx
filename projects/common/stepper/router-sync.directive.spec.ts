@@ -98,6 +98,8 @@ describe('CngxStepperRouterSync', () => {
 
   afterEach(() => {
     TestBed.resetTestingModule();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('calls router.navigate with a fragment when activeStepId changes', async () => {
@@ -132,6 +134,32 @@ describe('CngxStepperRouterSync', () => {
       const fixture = TestBed.createComponent(HostCmp);
       fixture.detectChanges();
     }).not.toThrow();
+  });
+
+  it('dev-warns once with CNGX1031 when Router is not provided', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain('CNGX1031: CngxStepperRouterSync');
+  });
+
+  it('writes nothing to the console without a Router in production', () => {
+    vi.stubGlobal('ngDevMode', false);
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+
+    expect(warn).not.toHaveBeenCalled();
   });
 
   it('falls back to provideStepperConfig defaults when Inputs unbound', async () => {

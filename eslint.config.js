@@ -62,6 +62,26 @@ module.exports = tseslint.config(
         },
     },
 
+    // Library sources: every dev diagnostic goes through cngxDevWarn /
+    // cngxDevError behind the inline ngDevMode guard, so a raw console call
+    // is an error in the editor. The raw-console guard in test:scripts is the
+    // CI check for the same rule.
+    {
+        files: ['projects/**/*.ts'],
+        ignores: ['projects/**/*.spec.ts', 'projects/*/schematics/**', 'projects/testing/**'],
+        rules: {
+            // Explicit options: a severity-only entry would inherit the
+            // global block's `allow` list and keep console.warn legal.
+            'no-console': ['error', {}],
+        },
+    },
+    {
+        files: ['projects/utils/dev-message.ts'],
+        rules: {
+            'no-console': 'off',
+        },
+    },
+
     // libs: no class suffixes, require host metadata, cngx prefix 
     {
         files: ['projects/core/**/*.ts', 'projects/forms/**/*.ts', 'projects/ui/**/*.ts', 'projects/common/**/*.ts'],

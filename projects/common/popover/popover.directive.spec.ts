@@ -4,7 +4,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { provideDirection } from '@cngx/core';
 
-import { CngxPopover, __resetFloatingMiddlewareWarnings } from './popover.directive';
+import {
+  CngxPopover,
+  __resetFloatingMiddlewareWarnings,
+  __resetPopoverApiWarnings,
+} from './popover.directive';
 import {
   CNGX_FLOATING_FALLBACK,
   type ComputePositionFn,
@@ -543,6 +547,54 @@ describe('CngxPopover', () => {
     });
   });
 
+  describe('missing Popover API warning', () => {
+    it('warns once per Document when the element has no showPopover', () => {
+      __resetPopoverApiWarnings(document);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      try {
+        TestBed.configureTestingModule({ imports: [BasicHost] });
+        const { fixture, popoverEl } = setup(BasicHost);
+        (popoverEl as unknown as Record<string, unknown>)['showPopover'] = undefined;
+        const host = fixture.componentInstance as BasicHost;
+        host.popover().show();
+        host.popover().show();
+        expect(host.popover().state()).toBe('closed');
+        const apiWarns = warnSpy.mock.calls.filter((call) =>
+          String(call[0]).includes('Popover API is not supported'),
+        );
+        expect(apiWarns).toHaveLength(1);
+        expect(apiWarns[0][0]).toContain('CNGX1036: CngxPopover');
+      } finally {
+        warnSpy.mockRestore();
+        __resetPopoverApiWarnings(document);
+      }
+    });
+  });
+
+  describe('without the Popover API', () => {
+    it('stays closed and opens once the API is available', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      try {
+        TestBed.configureTestingModule({ imports: [BasicHost] });
+        const { fixture, popoverEl } = setup(BasicHost);
+        const rec = popoverEl as unknown as Record<string, unknown>;
+        const showPopover = rec['showPopover'];
+        rec['showPopover'] = undefined;
+        const host = fixture.componentInstance as BasicHost;
+
+        host.popover().show();
+        expect(host.popover().state()).toBe('closed');
+
+        rec['showPopover'] = showPopover;
+        host.popover().show();
+        expect(host.popover().state()).toBe('opening');
+        expect(popoverEl.showPopover).toHaveBeenCalledTimes(1);
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+  });
+
   describe('floating fallback middleware warning', () => {
     it('warns once when provideFloatingFallback ships without middleware', () => {
       __resetFloatingMiddlewareWarnings(document);
@@ -561,6 +613,7 @@ describe('CngxPopover', () => {
           String(call[0]).includes('provideFloatingFallback'),
         );
         expect(middlewareWarn).toBeDefined();
+        expect(middlewareWarn![0]).toContain('CNGX1037: CngxPopover');
         expect(middlewareWarn![0]).toContain('flip()');
         expect(middlewareWarn![0]).toContain('shift()');
       } finally {

@@ -9,7 +9,6 @@ import {
   effect,
   inject,
   input,
-  isDevMode,
   untracked,
   ViewEncapsulation,
   viewChild,
@@ -22,6 +21,7 @@ import {
   CngxSucceeded,
   type AsyncAction,
 } from '@cngx/common/interactive';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { CNGX_POPOVER_PANEL_CONFIG } from './popover-panel.config';
 import { CngxPopover } from './popover.directive';
@@ -201,10 +201,11 @@ export class CngxPopoverAction {
 
     this.destroyRef.onDestroy(() => this.clearCloseOnSuccessTimer());
 
-    if (isDevMode()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       afterNextRender(() => {
         if (this.role() === 'confirm' && !this.action()) {
-          console.warn(
+          cngxDevWarn(
+            'CNGX1035',
             'CngxPopoverAction: role="confirm" without an [action] renders a button whose ' +
               'click does nothing. Bind [action] or use role="dismiss".',
           );

@@ -1,5 +1,6 @@
 import { InjectionToken, linkedSignal, type Signal } from '@angular/core';
 import { memoize } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * One rendered band of a timeline - a calendar bucket plus the items that
@@ -287,7 +288,8 @@ export function createTimelineGrouping<T>(
         dated.some((entry) => Number.isNaN(entry.date.getTime()))
       ) {
         warnedInvalidDate = true;
-        console.warn(
+        cngxDevWarn(
+          'CNGX1042',
           'createTimelineGrouping: dateAccessor produced an invalid date for at least one ' +
             'item. Those items cluster into a single band whose header renders ' +
             '"Invalid Date" - check the accessor and the raw values it reads.',

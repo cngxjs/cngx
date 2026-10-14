@@ -4,7 +4,6 @@ import {
   Directive,
   inject,
   input,
-  isDevMode,
   model,
   signal,
   type Signal,
@@ -18,6 +17,7 @@ import {
   type CngxAsyncState,
   type StatusTransition,
 } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 import type { Observable } from 'rxjs';
 
 import {
@@ -331,11 +331,12 @@ export class CngxStepperPresenter implements CngxStepperHost {
   );
 
   constructor() {
-    if (isDevMode()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       afterNextRender(() => {
         const stepNodes = this.flatSteps().filter((n) => n.kind === 'step');
         if (stepNodes.length > 6 && stepNodes.every((n) => n.parentId === null)) {
-          console.warn(
+          cngxDevWarn(
+            'CNGX1039',
             '[cngx-stepper] more than 6 steps at the same depth; consider wrapping logical groups in <cngx-step-group> for better UX',
           );
         }
@@ -582,8 +583,9 @@ export class CngxStepperPresenter implements CngxStepperHost {
    */
   private cancelAndSettleCommit(): void {
     this.commitController.cancel({ settle: true });
-    if (isDevMode() && this.commitState.status() === 'pending') {
-      console.warn(
+    if (typeof ngDevMode !== 'undefined' && ngDevMode && this.commitState.status() === 'pending') {
+      cngxDevWarn(
+        'CNGX1040',
         '[cngxStepper] the commit controller ignored cancel({ settle: true }) - busy stays ' +
           'latched. Honor the settle option in your CNGX_COMMIT_CONTROLLER_FACTORY override.',
       );

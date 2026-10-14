@@ -308,6 +308,7 @@ describe('CngxPopoverAction', () => {
           String(call[0]).includes('CngxPopoverAction'),
         );
         expect(actionWarn).toBeDefined();
+        expect(actionWarn![0]).toContain('CNGX1035: CngxPopoverAction');
       } finally {
         warnSpy.mockRestore();
       }

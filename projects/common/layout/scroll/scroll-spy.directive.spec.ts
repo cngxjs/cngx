@@ -25,6 +25,7 @@ vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
   template: `
     <nav
       [cngxScrollSpy]="sections()"
+      [root]="root()"
       #spy="cngxScrollSpy"
       (activeIdChange)="activeId = $event"
     ></nav>
@@ -36,6 +37,7 @@ vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
 })
 class TestHost {
   readonly sections = signal(['intro', 'features', 'pricing']);
+  readonly root = signal<string | null>(null);
   activeId: string | null = null;
 }
 
@@ -119,7 +121,23 @@ describe('CngxScrollSpy', () => {
     TestBed.flushEffects();
 
     expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0][0]).toContain('CNGX1033: [cngxScrollSpy]');
     expect(warn.mock.calls[0][0]).toContain('missing-a, missing-b');
+    warn.mockRestore();
+  });
+
+  it('warns in dev mode when the root selector matches no element', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture } = setup();
+    expect(warn).not.toHaveBeenCalled();
+
+    fixture.componentInstance.root.set('.does-not-exist');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0][0]).toContain('CNGX1032: [cngxScrollSpy]');
+    expect(warn.mock.calls[0][0]).toContain('.does-not-exist');
     warn.mockRestore();
   });
 });

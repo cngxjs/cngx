@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { CngxPaginate } from './paginate.directive';
 
@@ -76,7 +77,8 @@ export class CngxPaginateRouting implements OnInit {
     const route = this.route;
     if (!router || !route) {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-        console.warn(
+        cngxDevWarn(
+          'CNGX1031',
           '[cngxPaginateRouting]: no Router available - directive is a no-op. ' +
             'Provide @angular/router via provideRouter(...) to enable URL-synced pagination.',
         );

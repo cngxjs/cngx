@@ -129,6 +129,8 @@ describe('CngxTabsFragmentSync', () => {
 
   afterEach(() => {
     TestBed.resetTestingModule();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('writes a fragment when activeId changes', async () => {
@@ -294,6 +296,33 @@ describe('CngxTabsFragmentSync', () => {
       fixture.detectChanges();
     }).not.toThrow();
     warnSpy.mockRestore();
+  });
+
+  it('dev-warns once with CNGX1031 when Router is not provided', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const fixture = TestBed.createComponent(FragmentHost);
+    fixture.detectChanges();
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain('CNGX1031: CngxTabsFragmentSync');
+    expect(warn.mock.calls[0][0]).toContain('to enable deep-linking.');
+  });
+
+  it('writes nothing to the console without a Router in production', () => {
+    vi.stubGlobal('ngDevMode', false);
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const fixture = TestBed.createComponent(FragmentHost);
+    fixture.detectChanges();
+
+    expect(warn).not.toHaveBeenCalled();
   });
 
   it('reads the initial fragment on mount and selects the matching tab', async () => {

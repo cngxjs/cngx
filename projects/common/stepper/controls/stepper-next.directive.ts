@@ -6,11 +6,11 @@ import {
   ElementRef,
   inject,
   input,
-  isDevMode,
   type Signal,
 } from '@angular/core';
 
 import { CngxAsyncClick } from '@cngx/common/interactive';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { injectStepperI18n } from '../i18n/stepper-i18n';
 import { CNGX_STEPPER_HOST, type CngxStepperHost } from '../stepper-host.token';
@@ -115,8 +115,9 @@ export class CngxStepperNext {
       }
     });
 
-    if (isDevMode() && this.coPlacedAsyncClick) {
-      console.warn(
+    if (typeof ngDevMode !== 'undefined' && ngDevMode && this.coPlacedAsyncClick) {
+      cngxDevWarn(
+        'CNGX1038',
         'CngxStepperNext: [cngxStepperNext] and [cngxAsyncClick] on the same element ' +
           'both gate aria-disabled. Use one or the other.',
       );

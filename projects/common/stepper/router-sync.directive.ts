@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
+import { cngxDevWarn } from '@cngx/utils';
 import { filter } from 'rxjs/operators';
 
 import { injectStepperConfig } from './stepper-config';
@@ -81,12 +82,15 @@ export class CngxStepperRouterSync implements AfterContentInit {
 
   constructor() {
     if (!this.router) {
-      afterNextRender(() => {
-        console.warn(
-          'CngxStepperRouterSync: no Router available - directive is a no-op. ' +
-            'Provide @angular/router via provideRouter(...) to enable deep-linking.',
-        );
-      });
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        afterNextRender(() => {
+          cngxDevWarn(
+            'CNGX1031',
+            'CngxStepperRouterSync: no Router available - directive is a no-op. ' +
+              'Provide @angular/router via provideRouter(...) to enable deep-linking.',
+          );
+        });
+      }
       return;
     }
     const router = this.router;

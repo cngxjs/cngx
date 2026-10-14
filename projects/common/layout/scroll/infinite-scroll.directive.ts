@@ -6,12 +6,12 @@ import {
   ElementRef,
   inject,
   input,
-  isDevMode,
   output,
   untracked,
   type Signal,
 } from '@angular/core';
 import { createTransitionTracker } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * Infinite scroll trigger using `IntersectionObserver`.
@@ -125,8 +125,9 @@ export class CngxInfiniteScroll {
 
       const isLoading = () => this.loading();
       const resolvedRoot = root ? this.doc.querySelector(root) : null;
-      if (isDevMode() && root && !resolvedRoot) {
-        console.warn(
+      if (typeof ngDevMode !== 'undefined' && ngDevMode && root && !resolvedRoot) {
+        cngxDevWarn(
+          'CNGX1032',
           `[cngxInfiniteScroll] root selector "${root}" matched no element - ` +
             'falling back to the viewport. A late-rendered root needs a re-bind of [root].',
         );

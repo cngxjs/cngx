@@ -1,3 +1,5 @@
+import { cngxDevWarn } from '@cngx/utils';
+
 /**
  * Single dev-warning both tab sync directives emit when `@angular/router`
  * is not provided. Shared so the message stays identical across
@@ -9,7 +11,11 @@
  * @internal
  */
 export function warnTabsRouterAbsent(directive: string, enables: string): void {
-  console.warn(
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return;
+  }
+  cngxDevWarn(
+    'CNGX1031',
     `${directive}: no Router available - directive is a no-op. ` +
       `Provide @angular/router via provideRouter(...) to enable ${enables}.`,
   );

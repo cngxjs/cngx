@@ -1,10 +1,15 @@
-import { Component, signal } from '@angular/core';
+import { Component, type Provider, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Subject, of, throwError } from 'rxjs';
 
+import {
+  CNGX_COMMIT_CONTROLLER_FACTORY,
+  createCommitController,
+  type CngxCommitController,
+} from '@cngx/common/data';
 import { CngxStep, CngxStepGroup } from '@cngx/common/stepper';
 
 import { CngxStepperPresenter } from './presenter.directive';
@@ -615,7 +620,7 @@ describe('CngxStepperPresenter', () => {
       fixture.detectChanges();
       await flushMicrotasks();
       expect(warnSpy).toHaveBeenCalledTimes(1);
-      expect(warnSpy.mock.calls[0][0]).toContain('more than 6 steps');
+      expect(warnSpy.mock.calls[0][0]).toContain('CNGX1039: [cngx-stepper] more than 6 steps');
     });
 
     it('does not warn when 7+ steps are wrapped in at least one CngxStepGroup', async () => {
@@ -796,10 +801,10 @@ describe('CngxStepperPresenter', () => {
 });
 
 describe('CngxStepperPresenter - back-nav supersede and rollback origin', () => {
-  function commitSetup(mode: 'optimistic' | 'pessimistic') {
+  function commitSetup(mode: 'optimistic' | 'pessimistic', providers: Provider[] = []) {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection(), ...providers],
     });
     @Component({
       standalone: true,
@@ -854,6 +859,27 @@ describe('CngxStepperPresenter - back-nav supersede and rollback origin', () => 
     expect(presenter.activeStepIndex()).toBe(0);
     expect(presenter.busy()).toBe(false);
     expect(presenter.commitState.status()).toBe('idle');
+  });
+
+  it('dev-warns with CNGX1040 when a custom commit controller ignores the settle option', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const ignoresSettle = <T>(): CngxCommitController<T> => {
+      const inner = createCommitController<T>();
+      return { ...inner, cancel: () => inner.cancel() };
+    };
+    try {
+      const { presenter } = commitSetup('pessimistic', [
+        { provide: CNGX_COMMIT_CONTROLLER_FACTORY, useValue: ignoresSettle },
+      ]);
+      presenter.select(1);
+      presenter.reset();
+
+      expect(presenter.busy()).toBe(true);
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toContain('CNGX1040: [cngxStepper]');
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it('optimistic rollback lands on the last truly-committed index, not the superseded hop', () => {

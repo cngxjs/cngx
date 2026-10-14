@@ -4,6 +4,7 @@ import { warnRouterAbsent } from './warn-router-absent';
 
 describe('warnRouterAbsent', () => {
   afterEach(() => {
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
@@ -14,9 +15,18 @@ describe('warnRouterAbsent', () => {
 
     expect(warn).toHaveBeenCalledTimes(1);
     const message = warn.mock.calls[0][0] as string;
-    expect(message).toContain('CngxSidenavRouterSync');
+    expect(message).toContain('CNGX1031: CngxSidenavRouterSync');
     expect(message).toContain('no Router available');
     expect(message).toContain('provideRouter(...)');
     expect(message).toContain('deep-linking');
+  });
+
+  it('writes nothing to the console in production', () => {
+    vi.stubGlobal('ngDevMode', false);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    warnRouterAbsent('CngxSidenavRouterSync', 'deep-linking');
+
+    expect(warn).not.toHaveBeenCalled();
   });
 });

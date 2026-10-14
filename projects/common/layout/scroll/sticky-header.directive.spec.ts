@@ -200,8 +200,9 @@ describe('CngxStickyHeader scrollport resolution', () => {
     expect(observerOptions?.root).toBe(scrollport);
     expect(dir.isSticky()).toBe(false);
     expect(warn).toHaveBeenCalled();
-    expect(warn.mock.calls[0][0]).toMatch(/cngxStickyHeader/);
+    expect(warn.mock.calls[0][0]).toContain('CNGX1034: [cngxStickyHeader]');
     expect(warn.mock.calls[0][0]).toMatch(/never pin/);
+    expect(warn.mock.calls[0][1]).toEqual({ host: expect.any(HTMLElement), scrollport });
     warn.mockRestore();
   });
 

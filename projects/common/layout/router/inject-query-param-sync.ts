@@ -59,7 +59,9 @@ export function injectQueryParamSync<T = boolean>(
   const router = inject(Router, { optional: true });
 
   if (!router) {
-    warnRouterAbsent('injectQueryParamSync', 'query-param URL sync');
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnRouterAbsent('injectQueryParamSync', 'query-param URL sync');
+    }
     return;
   }
 

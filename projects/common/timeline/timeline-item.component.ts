@@ -9,10 +9,10 @@ import {
   ElementRef,
   inject,
   input,
-  isDevMode,
   ViewEncapsulation,
 } from '@angular/core';
 import { coerceSignal, type CngxAsyncState } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { CngxTimelineConnector, type TimelineConnectorPosition } from './connector.component';
 import { CNGX_TIMELINE_MARKER_HOST } from './marker-host.token';
@@ -314,14 +314,15 @@ export class CngxTimelineItem {
   );
 
   constructor() {
-    if (isDevMode()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       // afterNextRender, not an effect: this is a one-shot authoring check
       // on projected content, and the reactive graph has no business
       // carrying it. Runs once per row, after its content exists.
       afterNextRender(() => {
         const opposite = this.host.nativeElement.querySelector(':scope > [cngxTimelineOpposite]');
         if (opposite?.querySelector(FOCUSABLE)) {
-          console.warn(
+          cngxDevWarn(
+            'CNGX1043',
             '[cngx-timeline-item] focusable content inside [cngxTimelineOpposite]. ' +
               'The slot projects ahead of the row body, so under placement="end" or ' +
               '"alternate" it takes focus before the row it belongs to while painting ' +

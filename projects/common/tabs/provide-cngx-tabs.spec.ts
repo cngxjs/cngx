@@ -147,6 +147,7 @@ describe('provideCngxTabs', () => {
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining('without a `_target` discriminator'),
       );
+      expect(warnSpy.mock.calls[0][0]).toContain('CNGX1041: [provideCngxTabs]');
     });
 
     it('still routes branded siblings correctly when an unbranded feature is mixed in', () => {
