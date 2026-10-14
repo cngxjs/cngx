@@ -1,13 +1,15 @@
 import { join } from 'node:path';
 
-import { type Rule, type SchematicContext, type Tree } from '@angular-devkit/schematics';
+import { chain, type Rule, type SchematicContext, type Tree } from '@angular-devkit/schematics';
 import { readWorkspace } from '@schematics/angular/utility';
 
 import {
   applyChangePlan,
   type Codemod,
   createChangePlan,
-  describeChangePlan,
+  createPalette,
+  createRenderer,
+  createReport,
   planCodemods,
   planRenames,
   type ReleaseVersions,
@@ -18,6 +20,8 @@ import {
 import { detectProject } from '../ng-add/detect/detect';
 import { readInstallManifest } from '../ng-add/shell/install-manifest';
 import { presetDefaults } from '../ng-add/shell/questions';
+import { readTerminal } from '../ng-add/shell/terminal';
+import { createSummary } from '../ng-add/steps/finish';
 import {
   INSTALL_MANIFEST_PATH,
   type InstallManifest,
@@ -94,8 +98,9 @@ function previewRenames(tree: Tree, renames: StepResult): Tree {
  * One `ng update` migration: plan the renames across the workspace, plan
  * the codemods and the re-run of the install steps against the renamed
  * tree, and record the new release in the manifest. The whole plan is
- * printed before it is applied, so nothing changes unannounced; the
- * manifest records only the install steps, not the renames.
+ * printed before it is applied and summarised after, through the renderer
+ * `ng add` uses, so nothing changes unannounced; the manifest records only
+ * the install steps, not the renames.
  */
 export function createMigration(migration: Migration): Rule {
   return async (tree: Tree, context: SchematicContext) => {
@@ -120,8 +125,19 @@ export function createMigration(migration: Migration): Rule {
       warning === undefined ? [] : [warning],
     );
 
+    const { isTTY } = readTerminal(process.env, process.stdout);
+    const renderer = createRenderer({
+      isTTY,
+      color: createPalette(process.env, isTTY),
+      verbosity: 'normal',
+      logger: context.logger,
+    });
+
     context.logger.info(`cngx ${migration.version ?? versions.cngx} migration`);
-    context.logger.info(describeChangePlan(plan));
-    return applyChangePlan(plan);
+    await renderer.todo(plan);
+    return chain([
+      applyChangePlan(plan),
+      () => renderer.summary(createSummary(createReport(plan), true)),
+    ]);
   };
 }

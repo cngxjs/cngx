@@ -42,13 +42,17 @@ function migration(codemods: readonly Codemod<InstallManifest | undefined>[] = [
 }
 
 describe('createMigration', () => {
+  const isTTY = process.stdout.isTTY;
+
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-10-12T12:00:00.000Z'));
+    process.stdout.isTTY = false;
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    process.stdout.isTTY = isTTY;
   });
 
   it('applies the rename table across sources and templates', async () => {
@@ -65,10 +69,12 @@ describe('createMigration', () => {
     const { logs } = await runRule(migration([ADDS_NOTE]), createMemoryTree(before));
 
     expect(logs[0]).toBe('cngx 0.2.0 migration');
-    expect(logs[1]).toContain('Rename cngx APIs in src/app/app.html - renamed in this cngx release');
-    expect(logs[1]).toContain('Rename cngx APIs in src/app/app.ts - renamed in this cngx release');
-    expect(logs[1]).toContain('Review the card elevation - `elevated` became a skin');
-    expect(logs).toHaveLength(2);
+    expect(logs[1]).toBe('Planned (2):');
+    expect(logs).toContain('  + Rename cngx APIs in src/app/app.html - renamed in this cngx release');
+    expect(logs).toContain('  + Rename cngx APIs in src/app/app.ts - renamed in this cngx release');
+    expect(logs.join('\n')).toContain('Review the card elevation - `elevated` became a skin');
+    expect(logs.indexOf('cngx planned 2 changes.')).toBeGreaterThan(logs.indexOf('Planned (2):'));
+    expect(logs).toContain('Next steps:');
   });
 
   it('plans the codemods on the renamed tree and leaves the real tree to the apply', async () => {

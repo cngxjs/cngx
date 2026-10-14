@@ -41,13 +41,17 @@ function manifestOf(files: Readonly<Record<string, string>>): InstallManifest {
 }
 
 describe('refresh migration', () => {
+  const isTTY = process.stdout.isTTY;
+
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date(NOW));
+    process.stdout.isTTY = false;
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    process.stdout.isTTY = isTTY;
   });
 
   it('moves the manifest to the release the bundle ships', async () => {
@@ -70,7 +74,7 @@ describe('refresh migration', () => {
     const { tree, logs } = await runRule(migrate(), createMemoryTree(onboardedWithAiTools()));
     const files = readTree(tree);
 
-    expect(logs[1]).toContain('Update .cngx/README.md');
+    expect(logs.join('\n')).toContain('Update .cngx/README.md');
     expect(files['.cngx/README.md']).toContain(`\`@cngx/mcp@${DEFAULT_MCP_VERSION}\``);
     expect(files['.cngx/README.md']).not.toContain('older README');
     expect(manifestOf(files).mcpVersion).toBe(DEFAULT_MCP_VERSION);
@@ -84,12 +88,17 @@ describe('refresh migration', () => {
     expect(tree.actions).toEqual([]);
   });
 
-  it('names the missing manifest once and changes nothing', async () => {
+  it('plans one note for a missing manifest and changes nothing', async () => {
     const app = readFixture('standalone-app');
 
     const { tree, logs } = await runRule(migrate(), createMemoryTree(app));
 
     expect(readTree(tree)).toEqual(app);
-    expect(logs[1]?.match(/no \.cngx\/install\.json from ng add/g)).toHaveLength(1);
+    expect(
+      logs.filter((line) =>
+        line.startsWith('  - Re-run the recorded install steps - no .cngx/install.json'),
+      ),
+    ).toHaveLength(1);
+    expect(logs).toContain('Next steps:');
   });
 });
