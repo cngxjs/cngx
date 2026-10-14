@@ -1,13 +1,14 @@
 import { join } from 'node:path';
 
-import { type Rule, type SchematicContext, type Tree } from '@angular-devkit/schematics';
+import { chain, type Rule, type SchematicContext, type Tree } from '@angular-devkit/schematics';
 import { readWorkspace } from '@schematics/angular/utility';
 
 import {
   applyChangePlan,
   type Codemod,
   createChangePlan,
-  describeChangePlan,
+  createRenderer,
+  createReport,
   planCodemods,
   planRenames,
   type ReleaseVersions,
@@ -18,6 +19,8 @@ import {
 import { detectProject } from '../ng-add/detect/detect';
 import { readInstallManifest } from '../ng-add/shell/install-manifest';
 import { presetDefaults } from '../ng-add/shell/questions';
+import { createShellRendererOptions } from '../ng-add/shell/terminal';
+import { createSummary, type SummaryHeadlines } from '../ng-add/steps/finish';
 import {
   INSTALL_MANIFEST_PATH,
   type InstallManifest,
@@ -27,8 +30,6 @@ import { planManifestReruns } from '../ng-add/steps/reruns';
 
 /** What one release migrates: renames as data, codemods for the rest. */
 export interface Migration {
-  /** The release this migration brings an app to. */
-  readonly version: string;
   readonly renames: RenameTable;
   readonly codemods: readonly Codemod<InstallManifest | undefined>[];
   /** `__dirname` of the migration entry, `schematics/migrations/<version>`. */
@@ -40,6 +41,26 @@ function note(id: string, label: string, reason: string, version: string): StepR
     changes: [{ kind: 'note', id, label, reason, provenance: { source: 'ng-update', version } }],
     skipped: [],
   };
+}
+
+// Each migration of a multi-release update prints its own summary, so the
+// headline names the release; a later entry finding nothing is not misread
+// as the whole update having changed nothing.
+function headlines(version: string): SummaryHeadlines {
+  return {
+    changed: (changes) => `cngx ${version} migration planned ${changes}.`,
+    unchanged: `cngx ${version} migration found nothing to change.`,
+  };
+}
+
+// The release names come from the collection entry that ran: the CLI hands
+// every schematic its entry, `version` included. A run outside a collection
+// falls back to the release the bundle ships.
+function entryVersion(context: SchematicContext): string | undefined {
+  const { description } = context.schematic;
+  return 'version' in description && typeof description.version === 'string'
+    ? description.version
+    : undefined;
 }
 
 function errorMessage(error: unknown): string {
@@ -94,8 +115,9 @@ function previewRenames(tree: Tree, renames: StepResult): Tree {
  * One `ng update` migration: plan the renames across the workspace, plan
  * the codemods and the re-run of the install steps against the renamed
  * tree, and record the new release in the manifest. The whole plan is
- * printed before it is applied, so nothing changes unannounced; the
- * manifest records only the install steps, not the renames.
+ * printed before it is applied and summarised after, through the renderer
+ * `ng add` uses, so nothing changes unannounced; the manifest records only
+ * the install steps, not the renames.
  */
 export function createMigration(migration: Migration): Rule {
   return async (tree: Tree, context: SchematicContext) => {
@@ -120,8 +142,16 @@ export function createMigration(migration: Migration): Rule {
       warning === undefined ? [] : [warning],
     );
 
-    context.logger.info(`cngx ${migration.version} migration`);
-    context.logger.info(describeChangePlan(plan));
-    return applyChangePlan(plan);
+    const renderer = createRenderer(
+      createShellRendererOptions(process.env, process.stdout, context.logger, false),
+    );
+
+    const release = entryVersion(context) ?? versions.cngx;
+    context.logger.info(`cngx ${release} migration`);
+    await renderer.todo(plan);
+    return chain([
+      applyChangePlan(plan),
+      () => renderer.summary(createSummary(createReport(plan), true, headlines(release))),
+    ]);
   };
 }

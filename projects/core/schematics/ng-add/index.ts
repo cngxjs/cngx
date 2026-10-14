@@ -7,7 +7,6 @@ import {
   canPrompt,
   type ChangePlan,
   createChangePlan,
-  createPalette,
   createPromptFlow,
   createRenderer,
   createReport,
@@ -17,6 +16,7 @@ import {
 import { detectProject, type ProjectFacts } from './detect/detect';
 import { type GitState, readGitState } from './shell/git-state';
 import { askOnboarding, givenAnswers } from './shell/questions';
+import { createShellRendererOptions } from './shell/terminal';
 import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
 import { createSummary } from './steps/finish';
@@ -41,12 +41,6 @@ function planSteps(withdrawn: ReadonlySet<string>): readonly Step[] {
     (facts, answers, versions) => planAiTools(facts, answers, versions, withdrawn),
     (facts, answers, versions) => planHelperReadme(facts, answers, versions, withdrawn),
   ];
-}
-
-// `CI=false` and `CI=0` are how some runners say "not CI".
-function isCi(env: NodeJS.ProcessEnv): boolean {
-  const ci = env['CI'];
-  return ci !== undefined && ci !== '' && ci !== 'false' && ci !== '0';
 }
 
 function majorMinor(version: string | undefined): readonly [number, number] | undefined {
@@ -90,14 +84,9 @@ function scheduleInstall(plan: ChangePlan): Rule {
 export function ngAdd(options: NgAddOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {
     const { versions, warning } = resolveVersions(__dirname);
-    const isTTY = process.stdout.isTTY === true && !isCi(process.env);
-    const interactive = canPrompt(isTTY, options.prompts);
-    const renderer = createRenderer({
-      isTTY,
-      color: createPalette(process.env, isTTY),
-      verbosity: options.quiet === true ? 'quiet' : 'normal',
-      logger: context.logger,
-    });
+    const rendererOptions = createShellRendererOptions(process.env, process.stdout, context.logger, options.quiet === true);
+    const interactive = canPrompt(rendererOptions.isTTY, options.prompts);
+    const renderer = createRenderer(rendererOptions);
 
     const facts = detectProject(tree, await readWorkspace(tree), options.project);
     assertSupportedAngular(facts, versions.angular);

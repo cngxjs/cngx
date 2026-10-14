@@ -66,6 +66,13 @@ describe('createSummary', () => {
     expect(lines).not.toContain('Already in place:');
   });
 
+  it('takes the headlines of the command that ran', () => {
+    const headlines = { changed: (changes: string) => `update planned ${changes}.`, unchanged: 'update found nothing.' };
+
+    expect(createSummary({ ...REPORT, changes: ['a', 'b'] }, true, headlines)[0]).toBe('update planned 2 changes.');
+    expect(createSummary({ ...REPORT, changes: [] }, true, headlines)[0]).toBe('update found nothing.');
+  });
+
   it('does not mutate the report', () => {
     const before = JSON.stringify(REPORT);
 

@@ -1,20 +1,28 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   assertPinsPublished,
+  assertReleaseMigration,
+  checkReleaseMigrations,
+  releaseMigrationKeys,
   containsStableRelease,
   createSchematicsVersions,
   declaresSchematics,
   findPlaceholders,
   libBuildCommand,
   npmViewVersion,
+  REFRESH_FACTORY,
+  refreshMigrationKey,
   replaceVersionInDist,
   resolveDistTag,
   stampManifest,
+  stampRefreshMigration,
 } from '../publish.mjs';
 
 describe('resolveDistTag', () => {
@@ -258,5 +266,170 @@ describe('stampManifest', () => {
 
   it('copes with a manifest without peers', () => {
     expect(stampManifest({ version: '0.0.0-PLACEHOLDER' }, '1.0.0')).toEqual({ version: '1.0.0' });
+  });
+});
+
+const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+
+const SOURCE_COLLECTION = {
+  schematics: {
+    'migration-v0.1.0': { version: '0.1.0', description: 'first', factory: './0.1.0/index#migrate' },
+  },
+};
+
+describe('stampRefreshMigration', () => {
+  it('keys a refresh entry to a release without its own migration', () => {
+    const stamped = stampRefreshMigration(SOURCE_COLLECTION, '0.1.1');
+
+    expect(stamped.schematics['migration-v0.1.1-refresh']).toEqual({
+      version: '0.1.1',
+      description: expect.stringContaining('0.1.1'),
+      factory: REFRESH_FACTORY,
+    });
+    expect(stamped.schematics['migration-v0.1.0']).toEqual(SOURCE_COLLECTION.schematics['migration-v0.1.0']);
+    expect(Object.keys(SOURCE_COLLECTION.schematics)).toEqual(['migration-v0.1.0']);
+  });
+
+  it('leaves a release that brings its own migration alone', () => {
+    expect(stampRefreshMigration(SOURCE_COLLECTION, '0.1.0')).toBe(SOURCE_COLLECTION);
+  });
+
+  it('keys a prerelease as it is', () => {
+    const stamped = stampRefreshMigration(SOURCE_COLLECTION, '0.1.1-rc.0');
+
+    expect(stamped.schematics['migration-v0.1.1-rc.0-refresh']?.version).toBe('0.1.1-rc.0');
+  });
+});
+
+describe('stampRefreshMigration on a collection the CLI cannot load', () => {
+  it('refuses a collection without a schematics map', () => {
+    expect(() => stampRefreshMigration({}, '0.1.1')).toThrow('the ng update collection has no schematics map');
+    expect(() => stampRefreshMigration({ schematics: [] }, '0.1.1')).toThrow('no schematics map');
+  });
+});
+
+describe('releaseMigrationKeys', () => {
+  it('names the entries keyed to the release, own or stamped', () => {
+    expect(releaseMigrationKeys(SOURCE_COLLECTION, '0.1.0')).toEqual(['migration-v0.1.0']);
+    expect(releaseMigrationKeys(stampRefreshMigration(SOURCE_COLLECTION, '0.1.1'), '0.1.1')).toEqual([
+      refreshMigrationKey('0.1.1'),
+    ]);
+    expect(releaseMigrationKeys(SOURCE_COLLECTION, '0.1.1')).toEqual([]);
+  });
+});
+
+describe('assertReleaseMigration', () => {
+  it('accepts an entry for the release whose factory module exists', () => {
+    const seen = [];
+
+    assertReleaseMigration(stampRefreshMigration(SOURCE_COLLECTION, '0.1.1'), '0.1.1', (module) => {
+      seen.push(module);
+      return true;
+    });
+
+    expect(seen).toEqual(['./refresh/index']);
+  });
+
+  it('refuses a stamped refresh entry whose factory module is missing', () => {
+    expect(() =>
+      assertReleaseMigration(stampRefreshMigration(SOURCE_COLLECTION, '0.1.1'), '0.1.1', () => false),
+    ).toThrow(`the ng update migration ${refreshMigrationKey('0.1.1')} for 0.1.1 names no factory module`);
+  });
+
+  it('refuses a release migration of its own whose factory module is missing', () => {
+    expect(() =>
+      assertReleaseMigration(SOURCE_COLLECTION, '0.1.0', (module) => module !== './0.1.0/index'),
+    ).toThrow('the ng update migration migration-v0.1.0 for 0.1.0 names no factory module');
+  });
+});
+
+describe('checkReleaseMigrations', () => {
+  const SOURCE = join(ROOT_DIR, 'projects', 'core', 'schematics', 'migrations', 'migrations.json');
+
+  it('passes the source collection for a release with and without its own migration', () => {
+    expect(Object.keys(checkReleaseMigrations(SOURCE, '0.1.0', '.ts').schematics)).toEqual(['migration-v0.1.0']);
+    expect(checkReleaseMigrations(SOURCE, '0.1.1', '.ts').schematics[refreshMigrationKey('0.1.1')]?.factory).toBe(
+      REFRESH_FACTORY,
+    );
+  });
+
+  it('looks for each factory module next to the collection with the given extension', () => {
+    const asked = [];
+    const read = () => JSON.stringify(SOURCE_COLLECTION);
+    const exists = (path) => {
+      asked.push(path);
+      return true;
+    };
+
+    checkReleaseMigrations('/dist/core/schematics/migrations/migrations.json', '0.1.1', '.js', read, exists);
+
+    expect(asked).toEqual([join('/dist/core/schematics/migrations', 'refresh', 'index.js')]);
+  });
+
+  it('refuses a release whose refresh bundle the build dropped', () => {
+    const read = () => JSON.stringify(SOURCE_COLLECTION);
+
+    expect(() => checkReleaseMigrations('/dist/migrations.json', '0.1.1', '.js', read, () => false)).toThrow(
+      'names no factory module',
+    );
+  });
+
+  it('refuses a collection that is missing or not JSON', () => {
+    const missing = () => {
+      throw new Error('ENOENT: no such file');
+    };
+
+    expect(() => checkReleaseMigrations('/dist/migrations.json', '0.1.1', '.js', missing)).toThrow('ENOENT');
+    expect(() => checkReleaseMigrations('/dist/migrations.json', '0.1.1', '.js', () => '{ not json')).toThrow();
+  });
+});
+
+// `ng update` picks entries by `>from <=to` with prereleases included
+// (@angular/cli/src/commands/update/utilities/migration.js). The range is
+// rebuilt here with the CLI's own semver; the first case fails when the CLI
+// changes how it builds it, so the cases below never test a stale copy.
+describe('Angular CLI migration range', () => {
+  const cliRequire = createRequire(createRequire(import.meta.url).resolve('@angular/cli/package.json'));
+  const semver = cliRequire('semver');
+  const MIGRATION_JS = join(
+    dirname(cliRequire.resolve('@angular/cli/package.json')),
+    'src/commands/update/utilities/migration.js',
+  );
+
+  function selects(from, to, version) {
+    const range = new semver.Range(
+      '>' + (semver.prerelease(from) ? from.split('-')[0] + '-0' : from) + ' <=' + to.split('-')[0],
+    );
+    return semver.satisfies(version, range, { includePrerelease: true });
+  }
+
+  it('is the range the installed CLI builds', () => {
+    const source = readFileSync(MIGRATION_JS, 'utf8');
+
+    expect(source).toContain(
+      "new semver.Range('>' + (semver.prerelease(from) ? from.split('-')[0] + '-0' : from) + ' <=' + to.split('-')[0])",
+    );
+    expect(source).toContain('{ includePrerelease: true }');
+  });
+
+  it('selects the refresh entry of a stable release', () => {
+    expect(selects('0.1.0', '0.1.1', '0.1.1')).toBe(true);
+  });
+
+  it('selects the refresh entry of a prerelease', () => {
+    expect(selects('0.1.0', '0.1.1-rc.0', '0.1.1-rc.0')).toBe(true);
+  });
+
+  it('selects the entry of the release candidate from an earlier candidate', () => {
+    expect(selects('0.1.1-rc.0', '0.1.1-rc.1', '0.1.1-rc.1')).toBe(true);
+  });
+
+  it('selects the stable entry and the later candidate entry between two candidates', () => {
+    expect(selects('0.1.0-rc.8', '0.1.0-rc.9', '0.1.0')).toBe(true);
+    expect(selects('0.1.0-rc.8', '0.1.0-rc.9', '0.1.0-rc.9')).toBe(true);
+  });
+
+  it('skips the entry of the release an app already runs', () => {
+    expect(selects('0.1.1', '0.1.2', '0.1.1')).toBe(false);
   });
 });

@@ -23,6 +23,8 @@ const entries = Object.entries(collection.schematics);
 // breaking PR brings its own key. The folder is the key without the prefix.
 const KEY = /^migration-v(\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?)(-[a-z][a-z0-9-]*)?$/;
 
+const REFRESH = 'refresh';
+
 function folderOf(key) {
   return key.slice('migration-v'.length);
 }
@@ -58,12 +60,18 @@ describe('migrations.json', () => {
     expect(nonEmpty(join(FIXTURES, folderOf(key), 'after'))).toBe(true);
   });
 
-  it('has an entry for every migration folder', () => {
+  // `refresh/` has no key here: publish.mjs keys it to every release that
+  // ships no migration of its own, in the published collection only.
+  it('has an entry for every migration folder but the refresh factory', () => {
     const folders = readdirSync(MIGRATIONS, { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
       .sort();
 
-    expect(folders).toEqual(entries.map(([key]) => folderOf(key)).sort());
+    expect(folders).toEqual([...entries.map(([key]) => folderOf(key)), REFRESH].sort());
+  });
+
+  it('keeps the refresh factory out of the hand-written keys', () => {
+    expect(entries.map(([, entry]) => entry.factory)).not.toContain(`./${REFRESH}/index#migrate`);
   });
 });

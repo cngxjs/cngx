@@ -93,13 +93,38 @@ export interface RuleRun {
   readonly tasks: readonly string[];
 }
 
-export async function runRule(rule: Rule, tree: Tree): Promise<RuleRun> {
+/** A collection entry as the CLI hands it to the schematic it runs. */
+export type CollectionEntry = Readonly<Record<string, unknown>>;
+
+/** The entry `key` of the source `migrations/migrations.json`, with its name. */
+export function readMigrationEntry(key: string): CollectionEntry {
+  const collection = JSON.parse(
+    readFileSync(join(__dirname, '..', 'migrations', 'migrations.json'), 'utf8'),
+  ) as {
+    readonly schematics: Readonly<Record<string, CollectionEntry>>;
+  };
+  const entry = collection.schematics[key];
+  if (entry === undefined) {
+    throw new Error(`migrations.json has no entry ${key}.`);
+  }
+  return { ...entry, name: key };
+}
+
+/** Runs `rule` on `tree`; `entry` stands in for the collection entry a CLI run passes. */
+export async function runRule(
+  rule: Rule,
+  tree: Tree,
+  entry: CollectionEntry = {},
+): Promise<RuleRun> {
   const logger = new logging.Logger('run-rule');
   const logs: string[] = [];
-  logger.subscribe((entry) => logs.push(entry.message));
+  logger.subscribe((record) => logs.push(record.message));
   // The engine names the rule's child logger after the schematic; a rule run
   // outside a collection has none, so it gets a described stand-in.
-  const schematic = { description: { name: 'run-rule' } } as unknown as Schematic<object, object>;
+  const schematic = { description: { name: 'run-rule', ...entry } } as unknown as Schematic<
+    object,
+    object
+  >;
   const context = schematicRunner().engine.createContext(schematic, { logger });
   const tasks: string[] = [];
   const recording: SchematicContext = {

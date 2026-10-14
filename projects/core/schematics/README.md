@@ -25,11 +25,12 @@ projects/core/schematics/
     schema.json          options; x-prompt only for preset
     detect/              detectProject(tree, workspace): ProjectFacts
     steps/               pure plan<Step>(facts, answers, versions) per concern
-    shell/               questions, git state
+    shell/               questions, git state, renderer options for ng add and ng update
   migrations/
-    migrations.json      the ng update collection, one entry per release
+    migrations.json      the ng update collection, hand-written entries only
     migration.ts         createMigration: renames, codemods, manifest re-runs
-    <version>/index.ts   one migration per release
+    <version>/index.ts   one migration per release with breaking changes
+    refresh/index.ts     the migration of every other release (keyed at publish)
   testing/               fixture apps and runRule for specs
 projects/<lib>/schematics/
   collection.json, tsconfig.json, ng-add/index.ts   the shim
@@ -81,9 +82,10 @@ the type check until all three exist.
 `ng-update.migrations` key next to the `packageGroup`. A release with a
 breaking change adds a migration:
 
-1. `migrations/<version>/index.ts` returns `createMigration({ version,
-   renames, codemods, bundleDir: __dirname })` (the build bundles every
-   `migrations/<folder>/index.ts`).
+1. `migrations/<version>/index.ts` returns `createMigration({ renames,
+   codemods, bundleDir: __dirname })` (the build bundles every
+   `migrations/<folder>/index.ts`). The release it names comes from its
+   `migrations.json` entry, which the CLI hands to the run.
 2. Renames are data: a `RenameTable` on top of `EMPTY_RENAME_TABLE` for
    classes, selectors, inputs, outputs, `exportAs` names, tokens and import
    paths. `planRenames` turns it into one edit per file plus a note for
@@ -98,8 +100,25 @@ breaking change adds a migration:
    files that differ from the stock app.
 
 Every migration also re-runs the install steps `.cngx/install.json` records
-(the theme, and the helper README once the MCP version moved) and records the
-new release in it. It never writes back a file that is gone; it names it.
+(the theme once the cngx version moved, the helper README once the MCP
+version moved) and records the new release in it. It never writes back a file
+that is gone; it names it. Every hand-written migration goes through
+`createMigration`, so it re-checks the manifest steps as well; there is no
+second path that skips them.
+
+The Angular CLI runs the entries whose version lies above the installed
+release and up to the target, so a release reaches an app only through an
+entry keyed to it. The source `migrations.json` holds only the hand-written
+keys. At release time `scripts/publish.mjs` adds
+`migration-v<release>-refresh` (factory `./refresh/index#migrate`) to
+`dist/core/schematics/migrations/migrations.json` for a release that brings
+no entry of its own; a release with its own migration gets none. Before
+anything is published, publish checks the source collection: it must parse,
+and every entry for the release must name a factory whose `index.ts`
+exists. Publish then builds every lib before the first `npm publish` and
+checks the dist collection the same way against the bundled `index.js`, so a
+refusal never leaves part of the release on the registry. `npm run
+publish:dry` runs both checks and prints the entry it would add.
 
 ## Build and test
 
@@ -116,8 +135,9 @@ minified). `@angular-devkit/*`, `@schematics/angular`, `typescript` and
 Budgets: 256 KB minified / 90 KB gzip per entry, 20 KB per shim.
 `scripts/publish.mjs` writes `dist/core/schematics/versions.json` (the cngx,
 `@cngx/mcp` and `@cngx/eslint-plugin` pins, plus the `@angular/core` range
-`@cngx/core` peers on, which `ng add` refuses an older app against) and ships a
-lib's bundle only when its source `package.json` declares `schematics`.
+`@cngx/core` peers on, which `ng add` refuses an older app against), stamps the
+`refresh` entry into the dist migrations collection, and ships a lib's bundle
+only when its source `package.json` declares `schematics`.
 
 ## CLI behaviour worth knowing
 
