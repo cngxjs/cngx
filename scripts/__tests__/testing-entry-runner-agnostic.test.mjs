@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
+import { singleFileChecker } from '../dev-diagnostics.mjs';
 import { REPO_ROOT, walkSources } from './_i18n-ast.mjs';
 
 /**
@@ -83,22 +84,6 @@ function isErased(clause) {
  */
 function isUnresolved(symbol) {
   return !symbol?.declarations?.length;
-}
-
-/**
- * A checker over the one file, with no lib and no resolution: a runner global
- * resolves to no symbol, while a local binding of the same name (a parameter,
- * a `fail` helper) does, scope by scope.
- *
- * @param {ts.SourceFile} sf
- * @returns {ts.TypeChecker}
- */
-function singleFileChecker(sf) {
-  const options = { noLib: true, noResolve: true, types: [], allowJs: false };
-  const host = ts.createCompilerHost(options);
-  host.getSourceFile = (name) => (name === sf.fileName ? sf : undefined);
-  host.fileExists = (name) => name === sf.fileName;
-  return ts.createProgram([sf.fileName], options, host).getTypeChecker();
 }
 
 /**
