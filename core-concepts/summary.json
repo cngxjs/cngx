@@ -282,6 +282,10 @@
                 "file": "error-codes/cngx1043.md"
             },
             {
+                "title": "CNGX1044",
+                "file": "error-codes/cngx1044.md"
+            },
+            {
                 "title": "CNGX2001",
                 "file": "error-codes/cngx2001.md"
             },

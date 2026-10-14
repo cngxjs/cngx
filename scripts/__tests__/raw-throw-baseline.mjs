@@ -10,10 +10,6 @@ export const RAW_THROW_BASELINE = {
     { file: 'projects/common/chart/scales/ordinal.ts', count: 1 },
     { file: 'projects/common/data/async-state/operators.ts', count: 1 },
     { file: 'projects/common/interactive/button-toggle/button-toggle.directive.ts', count: 2 },
-    {
-      file: 'projects/common/interactive/chip-interaction/chip-interaction.directive.ts',
-      count: 1,
-    },
     { file: 'projects/common/interactive/tree-controller/tree-controller.ts', count: 1 },
     { file: 'projects/common/stepper/step-group.directive.ts', count: 1 },
     { file: 'projects/common/stepper/step.directive.ts', count: 1 },

@@ -570,6 +570,17 @@
       "files": ["projects/common/timeline/timeline-item.component.ts"]
     },
     {
+      "code": "CNGX1044",
+      "lib": "common",
+      "severity": "throw",
+      "production": "stripped",
+      "title": "Standalone chip inside a chip group",
+      "page": "core-concepts/error-codes/cngx1044.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1044.html",
+      "status": "active",
+      "files": ["projects/common/interactive/chip-interaction/chip-interaction.directive.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",
