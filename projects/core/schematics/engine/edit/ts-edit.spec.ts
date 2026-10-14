@@ -6,6 +6,7 @@ import {
   countArrayLiterals,
   hasArrayLiteral,
   insertAfterImports,
+  languagePackArgument,
   promoteTypeOnlyImport,
   providerCallNames,
   topLevelBindings,
@@ -304,5 +305,20 @@ provide(token);
 `;
 
     expect(providerCallNames(content)).toEqual([]);
+  });
+});
+
+describe('languagePackArgument', () => {
+  it('reads the pack passed to withPack inside provideCngxI18n', () => {
+    expect(languagePackArgument('const p = [provideCngxI18n(withPack(CNGX_LANGUAGE_DE))];')).toBe('CNGX_LANGUAGE_DE');
+    expect(languagePackArgument('const p = [provideCngxI18n(withLabels(x), withPack(cngxLanguagePack))];')).toBe(
+      'cngxLanguagePack',
+    );
+  });
+
+  it('reads nothing without the provider, without a pack, or for a withPack elsewhere', () => {
+    expect(languagePackArgument('const p = [provideRouter(routes)];')).toBeUndefined();
+    expect(languagePackArgument('const p = [provideCngxI18n()];')).toBeUndefined();
+    expect(languagePackArgument('const p = [provideOther(withPack(X))]; // provideCngxI18n(withPack(Y))')).toBeUndefined();
   });
 });

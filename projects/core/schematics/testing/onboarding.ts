@@ -23,6 +23,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
     appConfigPath: 'src/app/app.config.ts',
     rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
     languageFile: 'absent',
+    languagePack: undefined,
     material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
     editors: { claude: false, cursor: false, vscode: false },
     mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'absent' },

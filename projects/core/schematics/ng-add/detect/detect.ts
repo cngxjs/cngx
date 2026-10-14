@@ -9,6 +9,7 @@ import {
   hasProvenanceStamp,
   hasStyleImport,
   isRecord,
+  languagePackArgument,
   type PackageManifest,
   parseManifest,
   providerCallNames,
@@ -175,6 +176,8 @@ export interface ProjectFacts {
   readonly rootProviders: readonly string[];
   /** `cngx-language.ts` next to `appConfigPath`. */
   readonly languageFile: GeneratedFileState;
+  /** The pack a `provideCngxI18n(withPack(...))` there passes, as source text; `undefined` when none. */
+  readonly languagePack: string | undefined;
   readonly material: MaterialFacts;
   readonly editors: EditorFacts;
   readonly mcpConfigs: Readonly<Record<AiTool, McpConfigState>>;
@@ -618,7 +621,8 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const main = read(mainPath) ?? '';
   const standalone = !/bootstrapModule\s*\(/.test(main);
   const appConfigPath = rootProvidersPath(mainPath, main, standalone, sourceRoot);
-  const providers = providerCallNames(read(appConfigPath) ?? '');
+  const appConfig = read(appConfigPath) ?? '';
+  const providers = providerCallNames(appConfig);
 
   const entries = styleEntries(options);
   const stylesPath = globalStylesheet(entries);
@@ -653,6 +657,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     appConfigPath,
     rootProviders: providers,
     languageFile: generatedFileState(read(posix.join(posix.dirname(appConfigPath), CNGX_LANGUAGE_FILE))),
+    languagePack: languagePackArgument(appConfig),
     material: detectMaterial(read, manifest, entries),
     editors: {
       claude: tree.exists('CLAUDE.md') || hasEntries(tree, '.claude'),

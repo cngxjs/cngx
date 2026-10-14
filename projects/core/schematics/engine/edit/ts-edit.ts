@@ -305,6 +305,20 @@ export function providerCallNames(content: string): readonly string[] {
   });
 }
 
+/**
+ * The source text of the first `withPack(...)` argument inside a
+ * `provideCngxI18n(...)` call, e.g. `CNGX_LANGUAGE_DE`; `undefined` when the
+ * file has no such call or it passes no pack.
+ */
+export function languagePackArgument(content: string): string | undefined {
+  const source = parse(content);
+  const pack = callsIn(source)
+    .filter((call) => calleeName(call) === 'provideCngxI18n')
+    .flatMap((call) => call.arguments.filter(ts.isCallExpression))
+    .find((call) => calleeName(call) === 'withPack')?.arguments[0];
+  return pack?.getText(source);
+}
+
 function isRequireCall(expression: ts.Expression): boolean {
   if (ts.isPropertyAccessExpression(expression)) {
     return isRequireCall(expression.expression);

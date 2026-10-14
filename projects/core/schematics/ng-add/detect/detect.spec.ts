@@ -105,6 +105,7 @@ describe('detectProject', () => {
       appConfigPath: 'src/app/app.config.ts',
       rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
       languageFile: 'absent',
+      languagePack: undefined,
       material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
       editors: { claude: false, cursor: false, vscode: false },
       mcpConfigs: { claude: 'absent', cursor: 'absent', vscode: 'absent' },
@@ -151,6 +152,19 @@ describe('detectProject', () => {
 
     const foreign = await detect({ 'src/app/cngx-language.ts': 'export const language = 1;\n' });
     expect(foreign.languageFile).toBe('foreign');
+  });
+
+  it('reads the language pack the app config passes', async () => {
+    const config = `import { ApplicationConfig } from '@angular/core';
+import { provideCngxI18n, withPack } from '@cngx/core/i18n';
+import { CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideCngxI18n(withPack(CNGX_LANGUAGE_DE))]
+};
+`;
+
+    expect((await detect({ 'src/app/app.config.ts': config })).languagePack).toBe('CNGX_LANGUAGE_DE');
   });
 
   it('resolves the named project and refuses an unknown one', async () => {

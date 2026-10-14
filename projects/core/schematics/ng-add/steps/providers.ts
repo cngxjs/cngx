@@ -146,7 +146,10 @@ function wantedProviders(facts: ProjectFacts, answers: OnboardingAnswers): reado
  * rtl direction for an RTL source locale, the feedback services, the
  * floating fallback and the language pack. A provider already present is
  * skipped, so a second run plans nothing; an answer the selected packages
- * cannot serve gets a note.
+ * cannot serve gets a note. With the runtime switch, `cngx-language.ts` is
+ * created only when missing, a file cngx did not write blocks the switch with
+ * a note, and a language provider passing another pack gets a note naming
+ * the one edit instead of being rewritten.
  */
 export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
   const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
@@ -217,8 +220,28 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
   const notes = [...unserved, ...switchWithoutPack];
   const generatedFile =
     switching && facts.languageFile === 'generated' ? [skipChange(file, 'already generated')] : [];
+  // A provider that passes another pack is not rewritten; the switch needs
+  // one edit there, so the run names it instead of skipping silently.
+  const provided = providers.filter(isProvided);
+  const blocksSwitch = (change: Change): boolean =>
+    switching && change.id === 'provider:i18n' && facts.languagePack !== LANGUAGE_SIGNAL;
+  const current = facts.languagePack === undefined ? 'no pack' : `\`withPack(${facts.languagePack})\``;
+  const switchEdit: readonly Change[] = provided.some(blocksSwitch)
+    ? [
+        {
+          kind: 'note',
+          id: 'provider:i18n',
+          label: 'Switch the language at runtime',
+          reason: `provideCngxI18n in ${facts.appConfigPath} passes ${current}; pass \`withPack(${LANGUAGE_SIGNAL})\` with ${LANGUAGE_SIGNAL} imported from '${LANGUAGE_MODULE}'`,
+          provenance,
+        },
+      ]
+    : [];
   return {
-    changes: [...providers.filter((change) => !isProvided(change)), ...notes],
-    skipped: [...providers.filter(isProvided).map((change) => skipChange(change, 'already provided')), ...generatedFile],
+    changes: [...providers.filter((change) => !isProvided(change)), ...switchEdit, ...notes],
+    skipped: [
+      ...provided.filter((change) => !blocksSwitch(change)).map((change) => skipChange(change, 'already provided')),
+      ...generatedFile,
+    ],
   };
 }
