@@ -73,7 +73,13 @@
     },
     {
         "title": "Localisation",
-        "file": "i18n.md"
+        "file": "i18n.md",
+        "children": [
+            {
+                "title": "Localisation Migration",
+                "file": "i18n-migration.md"
+            }
+        ]
     },
     {
         "title": "Error Codes",

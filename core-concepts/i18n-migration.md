@@ -449,7 +449,7 @@ Work through it once per app; each step points back to the bullets above.
 - [ ] Replace programmatic reads of a copy input (`instance.label()`) that expected the default; an unbound copy input now reads `undefined`, and the rendered text comes from the token.
 - [ ] Reshape the formatter keys you override: stepper `stepRolledBack`, tabs `previousTab` / `nextTab`, timeline `groupLabel` (now receives the locale), select `commitFailedMessage`; move `stepCompleted` / `stepErrored` overrides to `statusLabels`.
 - [ ] Forward the stepper i18n Signal in custom `createMatStepHandle` overrides.
-- [ ] Move your translations into one language file per language: start from `CNGX_LANGUAGE_EN` (`@cngx/core/i18n/en`) or load `CNGX_LANGUAGE_DE` (`@cngx/core/i18n/de`), and call `provideCngxI18n(withPack(pack))` once in the app config, as shown in [Language files](./i18n.md#language-files).
+- [ ] Move your translations into one language file per language: start from `CNGX_LANGUAGE_EN` (`@cngx/core/i18n/en`) or load `CNGX_LANGUAGE_DE` (`@cngx/core/i18n/de`), and call `provideCngxI18n(withPack(pack))` once in the app config, as shown in [Language files](../localisation.html#language-files).
 - [ ] Delete the per-token `provide*I18n(...)` / `with*Labels(...)` calls the pack now covers; keep only the ones that override single keys on top of it, or that scope copy to a subtree.
 - [ ] Replace a hand-rolled language Signal (`computed(() => isDe() ? bundle : {})` per token) with the pack Signal: `languagePack.set(...)` switches every area, `CNGX_LOCALE`, `<html lang>` and `<html dir>` in one pass.
 - [ ] If your app sets `lang` and `dir` itself, add `withDocumentLanguage('off')`.
