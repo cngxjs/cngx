@@ -331,15 +331,26 @@ provide(token);
   });
 
   it('reads the pack passed to withPack inside provideCngxI18n, bare or namespaced', () => {
-    expect(readProviderCalls('const p = [provideCngxI18n(withPack(CNGX_LANGUAGE_DE))];').languagePack).toBe(
-      'CNGX_LANGUAGE_DE',
-    );
-    expect(readProviderCalls('const p = [provideCngxI18n(withLabels(x), withPack(cngxLanguagePack))];').languagePack).toBe(
-      'cngxLanguagePack',
-    );
-    expect(readProviderCalls('const p = [i18n.provideCngxI18n(i18n.withPack(lang.cngxLanguagePack))];').languagePack).toBe(
-      'lang.cngxLanguagePack',
-    );
+    expect(readProviderCalls('const p = [provideCngxI18n(withPack(CNGX_LANGUAGE_DE))];').languagePack).toEqual({
+      text: 'CNGX_LANGUAGE_DE',
+      name: 'CNGX_LANGUAGE_DE',
+    });
+    expect(readProviderCalls('const p = [provideCngxI18n(withLabels(x), withPack(cngxLanguagePack))];').languagePack).toEqual({
+      text: 'cngxLanguagePack',
+      name: 'cngxLanguagePack',
+    });
+    expect(readProviderCalls('const p = [i18n.provideCngxI18n(i18n.withPack(lang.cngxLanguagePack))];').languagePack).toEqual({
+      text: 'lang.cngxLanguagePack',
+      name: 'cngxLanguagePack',
+    });
+  });
+
+  it('names the exported symbol behind an aliased import', () => {
+    const content = `import { cngxLanguagePack as pack } from './cngx-language';
+export const providers = [provideCngxI18n(withPack(pack))];
+`;
+
+    expect(readProviderCalls(content).languagePack).toEqual({ text: 'pack', name: 'cngxLanguagePack' });
   });
 
   it('reads no pack without the provider, without a pack, or for a withPack elsewhere', () => {

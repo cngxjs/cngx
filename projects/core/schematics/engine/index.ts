@@ -63,6 +63,7 @@ export {
   type ArraySelector,
   hasArrayLiteral,
   insertAfterImports,
+  type LanguagePackArgument,
   type ProviderCalls,
   readProviderCalls,
 } from './edit/ts-edit';

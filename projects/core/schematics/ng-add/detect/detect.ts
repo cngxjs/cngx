@@ -9,6 +9,7 @@ import {
   hasProvenanceStamp,
   hasStyleImport,
   isRecord,
+  type LanguagePackArgument,
   type PackageManifest,
   parseManifest,
   readProviderCalls,
@@ -175,8 +176,8 @@ export interface ProjectFacts {
   readonly rootProviders: readonly string[];
   /** `cngx-language.ts` next to `appConfigPath`. */
   readonly languageFile: GeneratedFileState;
-  /** The pack a `provideCngxI18n(withPack(...))` there passes, as source text; `undefined` when none. */
-  readonly languagePack: string | undefined;
+  /** The pack a `provideCngxI18n(withPack(...))` there passes; `undefined` when none. */
+  readonly languagePack: LanguagePackArgument | undefined;
   readonly material: MaterialFacts;
   readonly editors: EditorFacts;
   readonly mcpConfigs: Readonly<Record<AiTool, McpConfigState>>;

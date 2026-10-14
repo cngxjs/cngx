@@ -164,7 +164,10 @@ export const appConfig: ApplicationConfig = {
 };
 `;
 
-    expect((await detect({ 'src/app/app.config.ts': config })).languagePack).toBe('CNGX_LANGUAGE_DE');
+    expect((await detect({ 'src/app/app.config.ts': config })).languagePack).toEqual({
+      text: 'CNGX_LANGUAGE_DE',
+      name: 'CNGX_LANGUAGE_DE',
+    });
   });
 
   it('resolves the named project and refuses an unknown one', async () => {

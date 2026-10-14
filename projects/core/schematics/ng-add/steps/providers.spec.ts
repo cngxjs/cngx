@@ -187,7 +187,7 @@ describe('planProviders', () => {
 
     it('names the edit when an existing language provider passes another pack', () => {
       const result = planProviders(
-        createFacts({ rootProviders: ['provideCngxI18n'], languagePack: 'CNGX_LANGUAGE_DE' }),
+        createFacts({ rootProviders: ['provideCngxI18n'], languagePack: { text: 'CNGX_LANGUAGE_DE', name: 'CNGX_LANGUAGE_DE' } }),
         createAnswers({ i18n: 'de', runtimeSwitch: true, a11yPreferences: false }),
         VERSIONS,
       );
@@ -205,6 +205,44 @@ describe('planProviders', () => {
       expect(result.skipped).toEqual([]);
     });
 
+    it('takes an aliased or namespaced cngxLanguagePack as a wired switch', () => {
+      for (const text of ['pack', 'lang.cngxLanguagePack']) {
+        const result = planProviders(
+          createFacts({
+            rootProviders: ['provideCngxI18n'],
+            languageFile: 'generated',
+            languagePack: { text, name: 'cngxLanguagePack' },
+          }),
+          createAnswers({ i18n: 'de', runtimeSwitch: true, a11yPreferences: false }),
+          VERSIONS,
+        );
+
+        expect(result.changes).toEqual([]);
+        expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([
+          ['provider:i18n', 'already provided'],
+          ['provider:i18n-file', 'already generated'],
+        ]);
+      }
+    });
+
+    it('leaves a language file cngx did not write alone when the provider already passes its signal', () => {
+      const result = planProviders(
+        createFacts({
+          rootProviders: ['provideCngxI18n'],
+          languageFile: 'foreign',
+          languagePack: { text: 'cngxLanguagePack', name: 'cngxLanguagePack' },
+        }),
+        createAnswers({ i18n: 'de', runtimeSwitch: true, a11yPreferences: false }),
+        VERSIONS,
+      );
+
+      expect(result.changes).toEqual([]);
+      expect(result.skipped.map((step) => [step.id, step.reason])).toEqual([
+        ['provider:i18n', 'already provided'],
+        ['provider:i18n-file', 'cngx did not write it; provideCngxI18n already passes cngxLanguagePack'],
+      ]);
+    });
+
     it('names the edit for a language provider without a pack', () => {
       const result = planProviders(
         createFacts({ rootProviders: ['provideCngxI18n'], languageFile: 'generated' }),
@@ -220,7 +258,7 @@ describe('planProviders', () => {
 
     it('keeps the plain skip without the runtime switch', () => {
       const result = planProviders(
-        createFacts({ rootProviders: ['provideCngxI18n'], languagePack: 'CNGX_LANGUAGE_DE' }),
+        createFacts({ rootProviders: ['provideCngxI18n'], languagePack: { text: 'CNGX_LANGUAGE_DE', name: 'CNGX_LANGUAGE_DE' } }),
         createAnswers({ i18n: 'de', a11yPreferences: false }),
         VERSIONS,
       );
@@ -282,7 +320,7 @@ describe('planProviders', () => {
     const facts = createFacts({
       rootProviders: ['provideRouter', 'provideA11yPreferences', 'provideCngxI18n'],
       languageFile: 'generated',
-      languagePack: 'cngxLanguagePack',
+      languagePack: { text: 'cngxLanguagePack', name: 'cngxLanguagePack' },
     });
     const result = planProviders(facts, createAnswers({ i18n: 'de', runtimeSwitch: true }), VERSIONS);
 

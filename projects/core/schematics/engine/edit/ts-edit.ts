@@ -302,16 +302,50 @@ function calledName(call: ts.CallExpression): string | undefined {
   return ts.isPropertyAccessExpression(callee) ? callee.name.text : calleeName(call);
 }
 
+// The local name an import binds, mapped back to the name its module exports.
+function importedAs(source: ts.SourceFile, local: string): string | undefined {
+  for (const statement of source.statements) {
+    const bindings = ts.isImportDeclaration(statement) ? statement.importClause?.namedBindings : undefined;
+    const element =
+      bindings !== undefined && ts.isNamedImports(bindings)
+        ? bindings.elements.find((candidate) => candidate.name.text === local)
+        : undefined;
+    if (element !== undefined) {
+      return (element.propertyName ?? element.name).text;
+    }
+  }
+  return undefined;
+}
+
+// What an argument refers to as its module exports it: `ns.x` names `x`, an
+// aliased import names the imported symbol.
+function referencedName(source: ts.SourceFile, expression: ts.Expression): string {
+  if (ts.isPropertyAccessExpression(expression)) {
+    return expression.name.text;
+  }
+  if (ts.isIdentifier(expression)) {
+    return importedAs(source, expression.text) ?? expression.text;
+  }
+  return expression.getText(source);
+}
+
+/** The pack a `provideCngxI18n(withPack(...))` call passes. */
+export interface LanguagePackArgument {
+  /** The argument as written, e.g. `CNGX_LANGUAGE_DE` or `lang.cngxLanguagePack`. */
+  readonly text: string;
+  /** The exported symbol it refers to, through an import alias or a namespace. */
+  readonly name: string;
+}
+
 /** The `provideX(...)` calls of a root providers file, read from its syntax tree. */
 export interface ProviderCalls {
   /** Every `provideX(...)` name in source order, called bare or through a namespace (`ns.provideX`). */
   readonly names: readonly string[];
   /**
-   * The source text of the first `withPack(...)` argument inside a
-   * `provideCngxI18n(...)` call, e.g. `CNGX_LANGUAGE_DE`; `undefined` when
-   * there is no such call or it passes no pack.
+   * The first `withPack(...)` argument inside a `provideCngxI18n(...)` call;
+   * `undefined` when there is no such call or it passes no pack.
    */
-  readonly languagePack: string | undefined;
+  readonly languagePack: LanguagePackArgument | undefined;
 }
 
 /**
@@ -330,7 +364,7 @@ export function readProviderCalls(content: string): ProviderCalls {
       const name = calledName(call);
       return name !== undefined && /^provide\w/.test(name) ? [name] : [];
     }),
-    languagePack: pack?.getText(source),
+    languagePack: pack === undefined ? undefined : { text: pack.getText(source), name: referencedName(source, pack) },
   };
 }
 

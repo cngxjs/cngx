@@ -9,7 +9,7 @@ import {
   skipChange,
   type StepResult,
 } from '../../engine';
-import { CNGX_LANGUAGE_FILE, type ProjectFacts } from '../detect/detect';
+import { CNGX_LANGUAGE_FILE, type GeneratedFileState, type ProjectFacts } from '../detect/detect';
 import { selectedLibs } from './dependencies';
 import { type OnboardingAnswers, type Versions } from './model';
 
@@ -165,6 +165,9 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
     path: languageFile,
     content: renderLanguageFile(versions.cngx, startsGerman(facts.sourceLocale)),
   };
+  // The provider already passes the switch signal, whatever the import calls it.
+  const switchWired =
+    facts.rootProviders.includes('provideCngxI18n') && facts.languagePack?.name === LANGUAGE_SIGNAL;
   // A file someone else wrote is never overwritten, and the provider would
   // import a signal it may not export.
   const foreignFile: Change = {
@@ -188,7 +191,7 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
     if (entry.id !== 'provider:i18n' || !answers.runtimeSwitch) {
       return [provider];
     }
-    if (facts.languageFile === 'foreign') {
+    if (facts.languageFile === 'foreign' && !switchWired) {
       return [foreignFile];
     }
     return facts.languageFile === 'absent' ? [file, provider] : [provider];
@@ -218,14 +221,19 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
         ]
       : [];
   const notes = [...unserved, ...switchWithoutPack];
-  const generatedFile =
-    switching && facts.languageFile === 'generated' ? [skipChange(file, 'already generated')] : [];
+  const fileSkip: Readonly<Record<GeneratedFileState, string | undefined>> = {
+    absent: undefined,
+    generated: 'already generated',
+    foreign: `cngx did not write it; provideCngxI18n already passes ${LANGUAGE_SIGNAL}`,
+  };
+  const fileReason = switching ? fileSkip[facts.languageFile] : undefined;
+  const existingFile = fileReason === undefined ? [] : [skipChange(file, fileReason)];
   // A provider that passes another pack is not rewritten; the switch needs
   // one edit there, so the run names it instead of skipping silently.
   const provided = providers.filter(isProvided);
   const blocksSwitch = (change: Change): boolean =>
-    switching && change.id === 'provider:i18n' && facts.languagePack !== LANGUAGE_SIGNAL;
-  const current = facts.languagePack === undefined ? 'no pack' : `\`withPack(${facts.languagePack})\``;
+    switching && change.id === 'provider:i18n' && !switchWired;
+  const current = facts.languagePack === undefined ? 'no pack' : `\`withPack(${facts.languagePack.text})\``;
   const switchEdit: readonly Change[] = provided.some(blocksSwitch)
     ? [
         {
@@ -241,7 +249,7 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
     changes: [...providers.filter((change) => !isProvided(change)), ...switchEdit, ...notes],
     skipped: [
       ...provided.filter((change) => !blocksSwitch(change)).map((change) => skipChange(change, 'already provided')),
-      ...generatedFile,
+      ...existingFile,
     ],
   };
 }
