@@ -5,7 +5,7 @@
 // fold, so the message text would ship.
 //
 // R1  no reference to the global `console` outside dev-message.ts, unless the
-//     file is in the shrink-only baseline or in RAW_CONSOLE_EXEMPT.
+//     file is in RAW_CONSOLE_EXEMPT.
 // R2  every helper call has a `CNGXnnnn` literal first argument and a lexical
 //     inline guard inside a function: a guard read at module load can run
 //     before Angular sets `ngDevMode` in a dev build (also for R4).
@@ -36,7 +36,6 @@ import {
   runsAtModuleLoad,
 } from '../dev-diagnostics.mjs';
 import { libOf, rangeOf, readSources } from '../error-codes-manifest.mjs';
-import { RAW_CONSOLE_BASELINE } from './raw-console-baseline.mjs';
 
 /**
  * Files allowed to reference `console` directly. Starts empty; every entry
@@ -242,13 +241,7 @@ export function checkSources(files) {
   return { raw, violations, wrappers };
 }
 
-/** The baseline as a flat `file -> count` map. */
-const baselineMap = () =>
-  new Map(
-    Object.values(RAW_CONSOLE_BASELINE).flatMap((rows) => rows.map((r) => [r.file, r.count])),
-  );
-
-/** The raw sites grouped per lib, in the baseline's own shape. */
+/** The raw sites grouped per lib, for the failure message. */
 export function groupPerLib(raw) {
   const out = {};
   for (const [file, count] of [...raw].sort(([a], [b]) => a.localeCompare(b))) {
@@ -776,18 +769,12 @@ describe('raw-console guard - projects/**', () => {
     expect(result.violations).toEqual([]);
   });
 
-  it('matches the shrink-only baseline exactly (drop a row when you migrate a file)', () => {
+  it('has no raw console reference outside the exemptions', () => {
     const exempt = new Set(RAW_CONSOLE_EXEMPT.map((e) => e.file));
     const actual = new Map([...result.raw].filter(([file]) => !exempt.has(file)));
-    const expected = baselineMap();
-    const drift = [...new Set([...actual.keys(), ...expected.keys()])]
-      .filter((file) => actual.get(file) !== expected.get(file))
-      .map(
-        (file) => `${file}: source ${actual.get(file) ?? 0}, baseline ${expected.get(file) ?? 0}`,
-      );
     expect(
-      drift,
-      `Raw console references drifted. Current state, per lib:\n${JSON.stringify(groupPerLib(actual), null, 2)}`,
+      [...actual.keys()],
+      `Raw console references found; route them through cngxDevWarn / cngxDevError. Per lib:\n${JSON.stringify(groupPerLib(actual), null, 2)}`,
     ).toEqual([]);
   });
 
