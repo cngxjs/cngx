@@ -44,8 +44,23 @@
 
 /* Size presets mirror CngxAvatar so the pill and overlap track the avatars. */
 .cngx-avatar-group--xs {
+  /**
+   * Inline and block size of the `+N` overflow pill. Each size preset sets it to match the avatars.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-avatar-group-pill-size: 1.5rem;
+  /**
+   * Inline-start margin of every avatar after the first and of the overflow pill. A negative value stacks the discs under their predecessor.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-avatar-group-overlap: -0.375rem;
+  /**
+   * Font size of the `+N` count in the overflow pill.
+   * @type <length>
+   * @group Typography
+   */
   --cngx-avatar-group-pill-font-size: 0.625rem;
 }
 .cngx-avatar-group--sm {

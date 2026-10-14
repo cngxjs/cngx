@@ -1,4 +1,9 @@
 .cngx-meta-list {
+  /**
+   * Row and column gap between the wrapped meta items.
+   * @type <length> <length>
+   * @group Layout
+   */
   --cngx-meta-list-gap: var(--cngx-space-sm, 0.4rem) var(--cngx-space-md, 1.2rem);
   display: flex;
   flex-wrap: wrap;
