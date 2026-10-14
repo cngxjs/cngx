@@ -352,7 +352,7 @@ describe('CngxDotStepper', () => {
       err = signal<string | boolean>('Card declined');
     }
 
-    it('surfaces the real [error] message below the dot row', () => {
+    it('surfaces the real [error] message below the dot row, prefixed with the step label', () => {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(ErrHost);
       fixture.detectChanges();
@@ -360,7 +360,7 @@ describe('CngxDotStepper', () => {
         '.cngx-dot-stepper__error-text',
       ) as HTMLElement;
       expect(line).not.toBeNull();
-      expect(line.textContent?.trim()).toBe('Card declined');
+      expect(stripBidiIsolates(line.textContent?.trim())).toBe('Two: Card declined');
     });
 
     it('keeps the status region mounted but empty when no step errors (live-region contract)', () => {
