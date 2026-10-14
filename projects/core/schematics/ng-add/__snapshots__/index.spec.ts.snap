@@ -2,6 +2,10 @@
 
 exports[`ngAdd > the existing tailwind app with the full preset > prints the described plan, then the summary 1`] = `
 [
+  "Preflight:",
+  "  ok Angular ^21.2.0 (cngx needs 21.2 or newer)",
+  "  ok Project tailwind-app (existing app)",
+  "  ok Git working tree clean (review the cngx changes with git diff afterwards)",
   "Planned (20):",
   "  + Add @cngx/utils@0.0.0-PLACEHOLDER - every @cngx package stays on one version",
   "  + Add @cngx/core@0.0.0-PLACEHOLDER - every @cngx package stays on one version",
@@ -47,6 +51,10 @@ exports[`ngAdd > the existing tailwind app with the full preset > prints the des
 
 exports[`ngAdd > the existing tailwind app with the minimal preset > prints the described plan, then the summary 1`] = `
 [
+  "Preflight:",
+  "  ok Angular ^21.2.0 (cngx needs 21.2 or newer)",
+  "  ok Project tailwind-app (existing app)",
+  "  ok Git working tree clean (review the cngx changes with git diff afterwards)",
   "Planned (9):",
   "  + Add @cngx/utils@0.0.0-PLACEHOLDER - every @cngx package stays on one version",
   "  + Add @cngx/core@0.0.0-PLACEHOLDER - every @cngx package stays on one version",
@@ -72,6 +80,10 @@ exports[`ngAdd > the existing tailwind app with the minimal preset > prints the 
 
 exports[`ngAdd > the existing tailwind app with the recommended preset > prints the described plan, then the summary 1`] = `
 [
+  "Preflight:",
+  "  ok Angular ^21.2.0 (cngx needs 21.2 or newer)",
+  "  ok Project tailwind-app (existing app)",
+  "  ok Git working tree clean (review the cngx changes with git diff afterwards)",
   "Planned (16):",
   "  + Add @cngx/utils@0.0.0-PLACEHOLDER - every @cngx package stays on one version",
   "  + Add @cngx/core@0.0.0-PLACEHOLDER - every @cngx package stays on one version",
@@ -113,6 +125,10 @@ exports[`ngAdd > the existing tailwind app with the recommended preset > prints 
 
 exports[`ngAdd > the full preset > prints the described plan, then the summary 1`] = `
 [
+  "Preflight:",
+  "  ok Angular ^21.2.0 (cngx needs 21.2 or newer)",
+  "  ok Project fixture-app (fresh app)",
+  "  ok Git working tree clean (review the cngx changes with git diff afterwards)",
   "Planned (18):",
   "  + Add @cngx/utils@0.0.0-PLACEHOLDER - every @cngx package stays on one version",
   "  + Add @cngx/core@0.0.0-PLACEHOLDER - every @cngx package stays on one version",
@@ -155,6 +171,10 @@ exports[`ngAdd > the full preset > prints the described plan, then the summary 1
 
 exports[`ngAdd > the minimal preset > prints the described plan, then the summary 1`] = `
 [
+  "Preflight:",
+  "  ok Angular ^21.2.0 (cngx needs 21.2 or newer)",
+  "  ok Project fixture-app (fresh app)",
+  "  ok Git working tree clean (review the cngx changes with git diff afterwards)",
   "Planned (9):",
   "  + Add @cngx/utils@0.0.0-PLACEHOLDER - every @cngx package stays on one version",
   "  + Add @cngx/core@0.0.0-PLACEHOLDER - every @cngx package stays on one version",
@@ -180,6 +200,10 @@ exports[`ngAdd > the minimal preset > prints the described plan, then the summar
 
 exports[`ngAdd > the recommended preset > prints the described plan, then the summary 1`] = `
 [
+  "Preflight:",
+  "  ok Angular ^21.2.0 (cngx needs 21.2 or newer)",
+  "  ok Project fixture-app (fresh app)",
+  "  ok Git working tree clean (review the cngx changes with git diff afterwards)",
   "Planned (14):",
   "  + Add @cngx/utils@0.0.0-PLACEHOLDER - every @cngx package stays on one version",
   "  + Add @cngx/core@0.0.0-PLACEHOLDER - every @cngx package stays on one version",

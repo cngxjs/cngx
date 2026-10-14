@@ -25,7 +25,7 @@ projects/core/schematics/
     schema.json          options; x-prompt only for preset
     detect/              detectProject(tree, workspace): ProjectFacts
     steps/               pure plan<Step>(facts, answers, versions) per concern
-    shell/               questions, git state, renderer options for ng add and ng update
+    shell/               questions, preflight checklist, git state, renderer options for ng add and ng update
   migrations/
     migrations.json      the ng update collection, hand-written entries only
     migration.ts         createMigration: renames, codemods, manifest re-runs

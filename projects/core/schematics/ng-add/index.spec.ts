@@ -32,7 +32,10 @@ type Tree = ReturnType<typeof createFixtureTree>;
 
 // The terminal side of an interactive run: every question keeps its
 // preselection or default, the AI tooling question answers `editorPicks`.
-const terminal = vi.hoisted(() => ({ editorPicks: [] as string[] }));
+// The git state is fixed, so the checklist does not follow the worktree.
+const terminal = vi.hoisted(() => ({ editorPicks: [] as string[], git: 'clean' }));
+
+vi.mock('./shell/git-state', () => ({ readGitState: () => terminal.git }));
 
 vi.mock('@inquirer/checkbox', () => ({
   default: (question: { message: string; choices: { value: string; checked?: boolean }[] }) =>
@@ -379,18 +382,42 @@ describe('ngAdd', () => {
   describe('an existing app', () => {
     const existing = () => createFixtureTree('standalone-app', { 'src/app/other.ts': SECOND_COMPONENT });
 
-    it('states the git state before it applies', async () => {
+    it('applies without a terminal to confirm in and says so', async () => {
       const run = await runRule(ngAdd({}), existing());
 
-      expect(run.logs.filter((line) => line.startsWith('Git: '))).toHaveLength(1);
       expect(run.logs).toContain('No terminal to confirm in; applying the plan. Pass --yes to apply without this line.');
       expect(run.tree.exists('src/cngx-theme.css')).toBe(true);
+    });
+
+    it('lists the preflight checklist before the plan', async () => {
+      const run = await runRule(ngAdd({ yes: true }), existing());
+      const preflight = run.logs.indexOf('Preflight:');
+
+      expect(run.logs.slice(preflight + 1, preflight + 4)).toEqual([
+        expect.stringMatching(/^ {2}ok Angular \S+ \(cngx needs \d+\.\d+ or newer\)$/),
+        '  ok Project fixture-app (existing app)',
+        '  ok Git working tree clean (review the cngx changes with git diff afterwards)',
+      ]);
+      expect(preflight).toBeLessThan(run.logs.findIndex((line) => line.startsWith('Planned')));
+    });
+
+    it('warns about uncommitted changes in the preflight checklist', async () => {
+      terminal.git = 'dirty';
+      try {
+        const run = await runRule(ngAdd({ yes: true }), existing());
+
+        expect(run.logs).toContain(
+          '  ! Git working tree has uncommitted changes (the cngx changes will mix with them in git diff)',
+        );
+      } finally {
+        terminal.git = 'clean';
+      }
     });
 
     it('skips the confirmation with --yes', async () => {
       const run = await runRule(ngAdd({ yes: true }), existing());
 
-      expect(run.logs.some((line) => line.startsWith('Git: '))).toBe(false);
+      expect(run.logs.some((line) => line.startsWith('No terminal to confirm in'))).toBe(false);
     });
 
     it('wires the AI tooling into an app that has editor files but none from ng new --ai-config', async () => {
@@ -540,7 +567,7 @@ describe('ngAdd', () => {
     expect(second.tasks).toEqual([]);
     expect(second.logs).toContain('cngx is already set up; nothing changed.');
     expect(second.logs.some((line) => line.startsWith('Planned'))).toBe(false);
-    expect(second.logs.some((line) => line.startsWith('Git: '))).toBe(false);
+    expect(second.logs.some((line) => line.startsWith('No terminal to confirm in'))).toBe(false);
   });
 
   it('brings a removed language provider back over the generated language file', async () => {

@@ -12,8 +12,8 @@ const run: GitExec = (file, args, options) =>
   execFileSync(file, [...args], { ...options, stdio: [...options.stdio] });
 
 /**
- * Whether the app has uncommitted work, for the confirm line an existing app
- * sees before apply. Shell only: no plan step reads it, and outside a
+ * Whether the app has uncommitted work, for the git line of the preflight
+ * checklist. Shell only: no plan step reads it, and outside a
  * repository (or without git) it is `unknown`, never an error.
  */
 export function readGitState(cwd: string, exec: GitExec = run): GitState {
