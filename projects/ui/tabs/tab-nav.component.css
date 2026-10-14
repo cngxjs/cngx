@@ -46,6 +46,11 @@
          density; --cngx-tab-gap matches the group host SET. */
       --cngx-tab-gap: var(--cngx-space-sm);
       --cngx-tab-padding: calc(var(--cngx-space-sm) + 2px) var(--cngx-space-md);
+      /**
+       * Gap between the items inside a tab link.
+       * @type <length>
+       * @group Layout
+       */
       --cngx-tab-affordance-gap: var(--cngx-space-xs);
       /* The line indicator reads as the brand accent (see tab-group). */
       --cngx-tab-active-indicator-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
@@ -167,8 +172,26 @@
    */
   @scope (.cngx-tab-nav[data-skin='pill']) {
     :scope {
+      /**
+       * Surface that the active tab fuses with under the `contained` skin
+       * (the panel surface) and the active-pill fill under the `pill` skin.
+       * Set from `--cngx-color-surface` / `--cngx-color-primary` via the
+       * per-skin `:scope` assignment.
+       * @type <color>
+       * @group Skin
+       */
       --cngx-tab-active-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      /**
+       * Text color of the active pill (paints against `--cngx-tab-active-bg`).
+       * @type <color>
+       * @group Skin
+       */
       --cngx-tab-pill-active-color: var(--cngx-color-on-primary, oklch(1 0 0));
+      /**
+       * Resting-pill hover fill under the `pill` skin.
+       * @type <color>
+       * @group Skin
+       */
       --cngx-tab-pill-hover-bg: color-mix(
         in oklch,
         var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%,
@@ -232,7 +255,18 @@
    */
   @scope (.cngx-tab-nav[data-skin='pill-outline']) {
     :scope {
+      /**
+       * Accent color of the `pill-outline` skin - paints the active tab's
+       * text and border, and the resting-tab hover border.
+       * @type <color>
+       * @group Skin
+       */
       --cngx-tab-pill-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      /**
+       * Tinted fill behind the active tab under the `pill-outline` skin.
+       * @type <color>
+       * @group Skin
+       */
       --cngx-tab-pill-outline-bg: color-mix(
         in oklch,
         var(--cngx-tab-pill-outline-color, oklch(0.66 0.19 50)) 12%,
@@ -303,12 +337,23 @@
    */
   @scope (.cngx-tab-nav[data-skin='segmented']) {
     :scope {
+      /**
+       * Muted track the tabs sit in under the `segmented` skin.
+       * @type <color>
+       * @group Skin
+       */
       --cngx-tab-segmented-track-bg: color-mix(
         in oklch,
         var(--cngx-color-surface, oklch(1 0 0)),
         var(--cngx-color-border, oklch(0.88 0.005 250)) 25%
       );
       --cngx-tab-active-bg: var(--cngx-color-surface, oklch(1 0 0));
+      /**
+       * Resting-tab hover fill under the `segmented` skin - a faint lift off
+       * the track, kept short of the raised active surface.
+       * @type <color>
+       * @group Skin
+       */
       --cngx-tab-segmented-hover-bg: color-mix(
         in oklch,
         var(--cngx-color-surface, oklch(1 0 0)),
@@ -387,12 +432,29 @@
   @scope (.cngx-tab-nav[data-skin='contained']) {
     :scope {
       --cngx-tab-active-bg: var(--cngx-color-surface, oklch(1 0 0));
+      /**
+       * Resting-tab surface under the `contained` skin - kept visibly set
+       * back from the active tab so tabs read as controls, not headings.
+       * @type <color>
+       * @group Skin
+       */
       --cngx-tab-inactive-bg: color-mix(
         in oklch,
         var(--cngx-color-surface, oklch(1 0 0)),
         var(--cngx-color-border, oklch(0.88 0.005 250)) 25%
       );
+      /**
+       * Border color of the contained skin's tab + panel box.
+       * @type <color>
+       * @group Skin
+       */
       --cngx-tab-surface-border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+      /**
+       * Color of the `contained` skin's top (inline-start for vertical)
+       * accent bar under the active tab.
+       * @type <color>
+       * @group Skin
+       */
       --cngx-tab-contained-accent-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
       /* Folder tabs share a 1px seam - no gap between links. */
       gap: 0;
@@ -528,6 +590,12 @@
  */
 @media (prefers-color-scheme: dark) {
   .cngx-tab-nav[data-skin='segmented'] {
+    /**
+     * Drop shadow that raises the active tab off the track under the
+     * `segmented` skin.
+     * @type <shadow>
+     * @group Skin
+     */
     --cngx-tab-segmented-active-shadow: 0 1px 3px oklch(0 0 0 / 0.3);
   }
 }
