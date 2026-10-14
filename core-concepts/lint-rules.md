@@ -109,7 +109,7 @@ that sets the rule to the level you want.
 ## Signal hygiene
 
 These two rules hold the line between signal state and everything else. Both enforce
-[Pillar 1](the-three-pillars.html), derivation over management: state lives in signals, and
+[Pillar 1](the-three-pillars.html#1-ableitung-statt-verwaltung-derivation-over-management), derivation over management: state lives in signals, and
 every derived value is computed from it rather than synced by hand.
 
 ### `no-effect-in-ngoninit`
@@ -192,7 +192,7 @@ Flags an `input()` or `input.required()` field `x` on a class that also declares
 The pair compiles and even supports the `[(x)]` banana-in-a-box syntax, but it spreads
 one value over two declarations and loses the single writable signal `model()` gives
 you. CNGX makes every two-way bindable atom a `model()`. See
-[`model<T>()` for two-way bindable atoms](signal-first-internals.html#inputs-and-outputs).
+[`model<T>()` for two-way bindable atoms](signal-first-internals.html#modellttgt-for-two-way-bindable-atoms).
 
 ```ts
 // flagged
@@ -219,8 +219,8 @@ A bridge directive reads its state from an input, and falls back to the injected
 when no input is bound. `input.required()` breaks that path: the template now demands a
 binding the fallback exists to make unnecessary. Bridge inputs stay optional, with a
 transform that turns the empty string of a bare attribute into `undefined`. This is the
-bridge-input rule from [Pillar 3](the-three-pillars.html) and
-[`input.required<T>()` only when the consumer must provide](signal-first-internals.html#inputs-and-outputs).
+bridge-input rule from [Pillar 3](the-three-pillars.html#3-komposition-statt-konfiguration-composition-over-configuration) and
+[`input.required<T>()` only when the consumer must provide](signal-first-internals.html#inputrequiredlttgt-only-when-the-consumer-must-provide).
 
 ```ts
 // flagged
@@ -264,7 +264,7 @@ it runs on `**/*.html` under the Angular template parser.
 `CngxMenuTrigger` wires the menu behavior only and sets no CSS anchor. A menu panel
 rendered into a popover positions against the anchor `cngxPopoverTrigger` establishes.
 Without it the panel opens unanchored, at the top-left of the viewport. Splitting the
-two is deliberate composition ([Pillar 3](the-three-pillars.html)): each directive owns one
+two is deliberate composition ([Pillar 3](the-three-pillars.html#3-komposition-statt-konfiguration-composition-over-configuration)): each directive owns one
 responsibility, and the rule makes sure you compose both.
 
 ```html
