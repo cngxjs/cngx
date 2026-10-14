@@ -338,21 +338,49 @@ function isImportStatement(statement: ts.Statement): boolean {
   );
 }
 
+function isDirective(statement: ts.Statement): boolean {
+  return ts.isExpressionStatement(statement) && ts.isStringLiteral(statement.expression);
+}
+
+// The end of the line `position` sits on, before its line break. A comment
+// trailing there counts as part of the line, also a block comment that runs
+// onto later lines.
+function lineEnd(content: string, position: number): number {
+  const trailing = ts.getTrailingCommentRanges(content, position) ?? [];
+  const from = trailing.length === 0 ? position : trailing[trailing.length - 1].end;
+  const lineBreak = content.indexOf('\n', from);
+  const end = lineBreak === -1 ? content.length : lineBreak;
+  return content[end - 1] === '\r' ? end - 1 : end;
+}
+
+// Where a statement goes in front of everything but a shebang and the
+// directive prologue (`'use strict'`), which must stay first.
+function headerEnd(content: string, statements: readonly ts.Statement[]): number | undefined {
+  const firstOther = statements.findIndex((statement) => !isDirective(statement));
+  const prologue = firstOther === -1 ? statements : statements.slice(0, firstOther);
+  const directive = prologue[prologue.length - 1];
+  if (directive !== undefined) {
+    return lineEnd(content, directive.getEnd());
+  }
+  const shebang = ts.getShebang(content);
+  return shebang === undefined ? undefined : lineEnd(content, shebang.length);
+}
+
 /**
  * Inserts `statement` on its own line after the last top-level import, import
  * equals, or `require(...)` declaration (also `require(...).x`), so an import
- * spanning several lines stays whole. A comment trailing that import on its
- * last line stays on it. Prepends when the file imports nothing.
+ * spanning several lines stays whole. A comment trailing that import stays
+ * with it. Without imports it goes after a shebang and the directive
+ * prologue, else at the top.
  */
 export function insertAfterImports(content: string, statement: string): string {
   const newline = content.includes('\r\n') ? '\r\n' : '\n';
-  const last = parse(content).statements.filter(isImportStatement).pop();
-  if (last === undefined) {
+  const statements = parse(content).statements;
+  const last = statements.filter(isImportStatement).pop();
+  const at = last === undefined ? headerEnd(content, statements) : lineEnd(content, last.getEnd());
+  if (at === undefined) {
     return `${statement}${newline}${content}`;
   }
-  const lineBreak = content.indexOf('\n', last.getEnd());
-  const lineEnd = lineBreak === -1 ? content.length : lineBreak;
-  const at = content[lineEnd - 1] === '\r' ? lineEnd - 1 : lineEnd;
   return `${content.slice(0, at)}${newline}${statement}${content.slice(at)}`;
 }
 

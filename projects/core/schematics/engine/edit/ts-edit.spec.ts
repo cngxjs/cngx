@@ -278,6 +278,31 @@ export default [];
 `);
   });
 
+  it('inserts after a block comment that opens on the last import line', () => {
+    const content = `import a from 'a'; /* first
+second */
+export default [];
+`;
+
+    expect(insertAfterImports(content, STATEMENT)).toBe(`import a from 'a'; /* first
+second */
+${STATEMENT}
+export default [];
+`);
+  });
+
+  it('keeps a shebang and the directive prologue first in a file without imports', () => {
+    expect(insertAfterImports('#!/usr/bin/env node\nmodule.exports = [];\n', 'const p = require("p");')).toBe(
+      '#!/usr/bin/env node\nconst p = require("p");\nmodule.exports = [];\n',
+    );
+    expect(insertAfterImports("#!/usr/bin/env node\n'use strict'; // strict\nmodule.exports = [];\n", 'const p = require("p");')).toBe(
+      "#!/usr/bin/env node\n'use strict'; // strict\nconst p = require(\"p\");\nmodule.exports = [];\n",
+    );
+    expect(insertAfterImports('"use strict";\nconst x = require("x");\n', 'const p = require("p");')).toBe(
+      '"use strict";\nconst x = require("x");\nconst p = require("p");\n',
+    );
+  });
+
   it('prepends when the file imports nothing, keeping CRLF line endings', () => {
     expect(insertAfterImports('export default [];\n', STATEMENT)).toBe(`${STATEMENT}\nexport default [];\n`);
     expect(insertAfterImports("import a from 'a';\r\nexport default [];\r\n", STATEMENT)).toBe(
