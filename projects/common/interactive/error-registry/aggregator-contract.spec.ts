@@ -264,3 +264,22 @@ describe('createErrorAggregatorContract', () => {
     expect(witness.mock.calls.length).toBe(baseline + 1);
   });
 });
+
+describe('createErrorAggregatorContract dev diagnostics', () => {
+  it('warns with CNGX1020 when a second source reuses a registered key', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const contract = createErrorAggregatorContract({
+      sourcesState: makeSources(),
+      scope: signal<CngxErrorScopeContract | null>(null).asReadonly(),
+      locale: EN_US,
+    });
+
+    contract.addSource({ key: 'email', condition: signal(false).asReadonly(), label: 'A' });
+    contract.addSource({ key: 'email', condition: signal(true).asReadonly(), label: 'B' });
+
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('CNGX1020: CngxErrorAggregator: an error source with key "email"'),
+    );
+  });
+});

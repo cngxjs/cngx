@@ -124,7 +124,7 @@ describe('createAudioEngine', () => {
       engine.armAutoplay();
       engine.play('does-not-exist');
       expect(engine.lastPlayed()).toBeNull();
-      expect(warn).toHaveBeenCalled();
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX1001: [cngxAudio] Unknown earcon'));
     });
 
     it('warns once per unknown earcon name, not on every play', () => {

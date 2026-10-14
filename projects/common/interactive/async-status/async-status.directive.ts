@@ -4,12 +4,12 @@ import {
   contentChild,
   inject,
   input,
-  isDevMode,
   type Signal,
   type TemplateRef,
 } from '@angular/core';
 
 import type { CngxAsyncState } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { CngxAsyncClick } from '../async-click/async-click.directive';
 import { CngxFailed, CngxPending, CngxSucceeded } from '../async-click/async-status-templates';
@@ -92,8 +92,9 @@ export class CngxAsyncStatus {
   private readonly coPlacedAsyncClick = inject(CngxAsyncClick, { self: true, optional: true });
 
   constructor() {
-    if (isDevMode() && this.coPlacedAsyncClick) {
-      console.warn(
+    if (typeof ngDevMode !== 'undefined' && ngDevMode && this.coPlacedAsyncClick) {
+      cngxDevWarn(
+        'CNGX1019',
         'CngxAsyncStatus: [cngxAsyncStatus] and [cngxAsyncClick] on the same element ' +
           'both bind aria-busy. Use one or the other.',
       );

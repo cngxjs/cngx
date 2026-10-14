@@ -7,12 +7,11 @@ import {
   computed,
   effect,
   inject,
-  isDevMode,
   isSignal,
   signal,
   untracked,
 } from '@angular/core';
-import { clamp } from '@cngx/utils';
+import { clamp, cngxDevError, cngxDevWarn } from '@cngx/utils';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
 import {
@@ -353,8 +352,9 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   const overscan = config.overscan ?? 5;
   const isGrid = (config.layout ?? 'list') === 'grid';
 
-  if (isGrid && config.columns == null && isDevMode()) {
-    console.error(
+  if (typeof ngDevMode !== 'undefined' && ngDevMode && isGrid && config.columns == null) {
+    cngxDevError(
+      'CNGX1011',
       '[CngxRecycler] layout: "grid" requires explicit `columns`. Falling back to columns=1.',
     );
   }
@@ -371,10 +371,16 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   // per-index measurement - it carries no O(n) per-frame cost, so exclude it
   // from the variable-height warning (a reactive scalar estimate is a
   // sanctioned pattern; see the resolveSize note below).
-  if (typeof config.estimateSize === 'function' && !isSignal(config.estimateSize) && isDevMode()) {
+  if (
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    typeof config.estimateSize === 'function' &&
+    !isSignal(config.estimateSize)
+  ) {
     const count = config.totalCount();
     if (count > 10_000) {
-      console.warn(
+      cngxDevWarn(
+        'CNGX1012',
         `[CngxRecycler] estimateSize as a function with ${count} items has O(n) ` +
           `per-frame cost. Consider using a fixed estimateSize for large datasets.`,
       );

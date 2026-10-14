@@ -1,4 +1,5 @@
-import { computed, isDevMode, untracked, type Signal, type WritableSignal } from '@angular/core';
+import { computed, untracked, type Signal, type WritableSignal } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 import { memoize } from '@cngx/core/utils';
 import type {
   CngxErrorAggregatorContract,
@@ -144,8 +145,14 @@ export function createErrorAggregatorContract(
     announcement,
     addSource(entry) {
       const current = sourcesState();
-      if (isDevMode() && current.has(entry.key) && current.get(entry.key) !== entry) {
-        console.warn(
+      if (
+        typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        current.has(entry.key) &&
+        current.get(entry.key) !== entry
+      ) {
+        cngxDevWarn(
+          'CNGX1020',
           `CngxErrorAggregator: an error source with key "${entry.key}" is already ` +
             'registered; the new entry replaces it (last-wins). Use unique keys per source.',
         );

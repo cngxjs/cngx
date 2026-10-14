@@ -83,7 +83,7 @@ describe('CngxStatus', () => {
     fixture.componentInstance.label.set(undefined);
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(warn.mock.calls.some((c) => String(c[0]).includes('[glyph]="false"'))).toBe(true);
+    expect(warn.mock.calls.some((c) => String(c[0]).includes('CNGX1017: cngx-status: [glyph]="false"'))).toBe(true);
   });
 
   it('does not warn colour-only when the glyph is hidden but a label is present', async () => {
@@ -110,7 +110,7 @@ describe('CngxStatus', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(warn).toHaveBeenCalledOnce();
-    expect(warn.mock.calls[0][0]).toContain('cngx-status');
+    expect(warn.mock.calls[0][0]).toContain('CNGX1016: cngx-status');
   });
 
   it('does not warn when a label is present', async () => {

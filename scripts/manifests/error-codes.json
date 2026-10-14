@@ -73,6 +73,309 @@
       "files": ["projects/utils/tree.ts"]
     },
     {
+      "code": "CNGX1001",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Unknown earcon",
+      "page": "core-concepts/error-codes/cngx1001.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1001.html",
+      "status": "active",
+      "files": ["projects/common/audio/engine/audio-engine.ts"]
+    },
+    {
+      "code": "CNGX1002",
+      "lib": "common",
+      "severity": "error",
+      "title": "Lifecycle key bound on `[cngxAudio]`",
+      "page": "core-concepts/error-codes/cngx1002.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1002.html",
+      "status": "active",
+      "files": ["projects/common/audio/event-mode/audio.directive.ts"]
+    },
+    {
+      "code": "CNGX1003",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Unrecognised event key on `[cngxAudio]`",
+      "page": "core-concepts/error-codes/cngx1003.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1003.html",
+      "status": "active",
+      "files": ["projects/common/audio/event-mode/audio.directive.ts"]
+    },
+    {
+      "code": "CNGX1004",
+      "lib": "common",
+      "severity": "error",
+      "title": "DOM-event key bound on `[cngxAudioStatus]`",
+      "page": "core-concepts/error-codes/cngx1004.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1004.html",
+      "status": "active",
+      "files": ["projects/common/audio/status-mode/audio-status.directive.ts"]
+    },
+    {
+      "code": "CNGX1005",
+      "lib": "common",
+      "severity": "error",
+      "title": "No state source for `[cngxAudioStatus]`",
+      "page": "core-concepts/error-codes/cngx1005.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1005.html",
+      "status": "active",
+      "files": ["projects/common/audio/status-mode/audio-status.directive.ts"]
+    },
+    {
+      "code": "CNGX1006",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Invalid Date bound to a timestamp",
+      "page": "core-concepts/error-codes/cngx1006.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1006.html",
+      "status": "active",
+      "files": [
+        "projects/common/card/card-timestamp.component.ts",
+        "projects/common/display/time/time.component.ts"
+      ]
+    },
+    {
+      "code": "CNGX1007",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Non-numeric chart data without a summary accessor",
+      "page": "core-concepts/error-codes/cngx1007.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1007.html",
+      "status": "active",
+      "files": ["projects/common/chart/chart/chart.component.ts"]
+    },
+    {
+      "code": "CNGX1008",
+      "lib": "common",
+      "severity": "warn",
+      "title": "More than one chart overlay",
+      "page": "core-concepts/error-codes/cngx1008.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1008.html",
+      "status": "active",
+      "files": ["projects/common/chart/chart/chart.component.ts"]
+    },
+    {
+      "code": "CNGX1009",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Two chart axes share one orientation",
+      "page": "core-concepts/error-codes/cngx1009.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1009.html",
+      "status": "active",
+      "files": ["projects/common/chart/chart/chart.component.ts"]
+    },
+    {
+      "code": "CNGX1010",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Chart preset without an accessible name",
+      "page": "core-concepts/error-codes/cngx1010.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1010.html",
+      "status": "active",
+      "files": ["projects/common/chart/presets/preset-state.ts"]
+    },
+    {
+      "code": "CNGX1011",
+      "lib": "common",
+      "severity": "error",
+      "title": "Grid recycler without columns",
+      "page": "core-concepts/error-codes/cngx1011.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1011.html",
+      "status": "active",
+      "files": ["projects/common/data/recycler/recycler.ts"]
+    },
+    {
+      "code": "CNGX1012",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Per-index size estimate on a large recycler",
+      "page": "core-concepts/error-codes/cngx1012.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1012.html",
+      "status": "active",
+      "files": ["projects/common/data/recycler/recycler.ts"]
+    },
+    {
+      "code": "CNGX1013",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Recycler scroll element not found on first render",
+      "page": "core-concepts/error-codes/cngx1013.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1013.html",
+      "status": "active",
+      "files": ["projects/common/data/recycler/scroll-observer.ts"]
+    },
+    {
+      "code": "CNGX1014",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Second dialog title or description registered",
+      "page": "core-concepts/error-codes/cngx1014.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1014.html",
+      "status": "active",
+      "files": ["projects/common/dialog/dialog/dialog.directive.ts"]
+    },
+    {
+      "code": "CNGX1015",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Non-modal dialog without a live region",
+      "page": "core-concepts/error-codes/cngx1015.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1015.html",
+      "status": "active",
+      "files": ["projects/common/dialog/dialog/dialog.directive.ts"]
+    },
+    {
+      "code": "CNGX1016",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Status without an accessible name",
+      "page": "core-concepts/error-codes/cngx1016.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1016.html",
+      "status": "active",
+      "files": ["projects/common/display/status/status.component.ts"]
+    },
+    {
+      "code": "CNGX1017",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Status reduced to a bare coloured dot",
+      "page": "core-concepts/error-codes/cngx1017.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1017.html",
+      "status": "active",
+      "files": ["projects/common/display/status/status.component.ts"]
+    },
+    {
+      "code": "CNGX1018",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Tag group label without a semantic list",
+      "page": "core-concepts/error-codes/cngx1018.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1018.html",
+      "status": "active",
+      "files": ["projects/common/display/tag-group/tag-group.component.ts"]
+    },
+    {
+      "code": "CNGX1019",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Two directives bind `aria-busy` on one element",
+      "page": "core-concepts/error-codes/cngx1019.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1019.html",
+      "status": "active",
+      "files": ["projects/common/interactive/async-status/async-status.directive.ts"]
+    },
+    {
+      "code": "CNGX1020",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Duplicate error source key",
+      "page": "core-concepts/error-codes/cngx1020.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1020.html",
+      "status": "active",
+      "files": ["projects/common/interactive/error-registry/aggregator-contract.ts"]
+    },
+    {
+      "code": "CNGX1021",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Duplicate name in the error registry",
+      "page": "core-concepts/error-codes/cngx1021.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1021.html",
+      "status": "active",
+      "files": ["projects/common/interactive/error-registry/error-registry.ts"]
+    },
+    {
+      "code": "CNGX1022",
+      "lib": "common",
+      "severity": "error",
+      "title": "Nested option groups",
+      "page": "core-concepts/error-codes/cngx1022.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1022.html",
+      "status": "active",
+      "files": ["projects/common/interactive/listbox/option-group.directive.ts"]
+    },
+    {
+      "code": "CNGX1023",
+      "lib": "common",
+      "severity": "error",
+      "title": "Option without a label",
+      "page": "core-concepts/error-codes/cngx1023.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1023.html",
+      "status": "active",
+      "files": ["projects/common/interactive/listbox/option.directive.ts"]
+    },
+    {
+      "code": "CNGX1024",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Submenu directive without a menu item",
+      "page": "core-concepts/error-codes/cngx1024.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1024.html",
+      "status": "active",
+      "files": ["projects/common/interactive/menu/menu-item-submenu.directive.ts"]
+    },
+    {
+      "code": "CNGX1025",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Submenu without a popover or menu",
+      "page": "core-concepts/error-codes/cngx1025.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1025.html",
+      "status": "active",
+      "files": ["projects/common/interactive/menu/menu-item-submenu.directive.ts"]
+    },
+    {
+      "code": "CNGX1026",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Submenu popover without position fallbacks",
+      "page": "core-concepts/error-codes/cngx1026.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1026.html",
+      "status": "active",
+      "files": ["projects/common/interactive/menu/menu-item-submenu.directive.ts"]
+    },
+    {
+      "code": "CNGX1027",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Menu host is not focusable",
+      "page": "core-concepts/error-codes/cngx1027.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1027.html",
+      "status": "active",
+      "files": ["projects/common/interactive/menu/menu.directive.ts"]
+    },
+    {
+      "code": "CNGX1028",
+      "lib": "common",
+      "severity": "warn",
+      "title": "Reorder items without an index",
+      "page": "core-concepts/error-codes/cngx1028.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1028.html",
+      "status": "active",
+      "files": ["projects/common/interactive/reorder/reorder.directive.ts"]
+    },
+    {
+      "code": "CNGX1029",
+      "lib": "common",
+      "severity": "error",
+      "title": "Duplicate tree node id",
+      "page": "core-concepts/error-codes/cngx1029.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1029.html",
+      "status": "active",
+      "files": ["projects/common/interactive/tree-controller/tree-controller.ts"]
+    },
+    {
+      "code": "CNGX1030",
+      "lib": "common",
+      "severity": "error",
+      "title": "Duplicate tree selection key",
+      "page": "core-concepts/error-codes/cngx1030.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1030.html",
+      "status": "active",
+      "files": ["projects/common/interactive/tree-controller/tree-controller.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

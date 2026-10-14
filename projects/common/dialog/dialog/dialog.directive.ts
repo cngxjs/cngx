@@ -8,7 +8,6 @@ import {
   ElementRef,
   inject,
   input,
-  isDevMode,
   Renderer2,
   signal,
   type Signal,
@@ -24,6 +23,7 @@ import {
   type TransitionDoneHandle,
 } from '@cngx/core/utils';
 import { createScrollLock } from '@cngx/common/layout';
+import { cngxDevWarn } from '@cngx/utils';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
 import { injectDialogConfig } from '../config/dialog-config';
@@ -37,6 +37,54 @@ import { CngxDialogStack } from './dialog-stack';
 import { CngxDialogTitle } from './dialog-title.directive';
 import { CngxDialogDescription } from './dialog-description.directive';
 import { applySrOnly } from './sr-only';
+
+/**
+ * The registry is single-slot per kind, so a second live registration
+ * silently wins - surface the authoring error instead of letting the
+ * two open paths resolve different labelling. A module function, not a
+ * method: a class keeps its methods in the bundle, and an emptied method
+ * still pulls `cngxDevWarn` into the production build.
+ */
+function warnDoubleRegistration(
+  id: string,
+  kind: 'title' | 'description',
+  current: DialogLabelHandle | null,
+  next: DialogLabelHandle,
+): void {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return;
+  }
+  if (current === null || current === next) {
+    return;
+  }
+  cngxDevWarn(
+    'CNGX1014',
+    `CngxDialog [${id}]: a second ${kind} registered while another ` +
+      `is live. The dialog references one ${kind} id - the newest registration ` +
+      `wins. Remove the extra cngxDialog${kind === 'title' ? 'Title' : 'Description'} element.`,
+  );
+}
+
+/**
+ * Non-modal dialogs are silent to SR: warn when no `aria-live` region sits
+ * next to the trigger. A module function for the same reason as
+ * `warnDoubleRegistration`.
+ */
+function warnNonModalA11y(id: string, trigger: HTMLElement | null): void {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return;
+  }
+  const parent = trigger?.parentElement;
+  if (parent && !parent.querySelector('[aria-live]')) {
+    cngxDevWarn(
+      'CNGX1015',
+      `CngxDialog [${id}]: Non-modal dialog opened without an ` +
+        '`aria-live` region near the trigger. Screen reader users will not ' +
+        'be notified that the dialog appeared. Add `aria-live="polite"` to a ' +
+        'sibling element that announces the dialog presence.',
+    );
+  }
+}
 
 /**
  * Signal-driven state machine for native `<dialog>`.
@@ -424,7 +472,14 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
    * @internal CNGX_DIALOG_ARIA_REGISTRY implementation - not public API.
    */
   registerTitle(handle: DialogLabelHandle): () => void {
-    this.warnDoubleRegistration('title', untracked(this.registeredTitle), handle);
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnDoubleRegistration(
+        untracked(this.idSignal),
+        'title',
+        untracked(this.registeredTitle),
+        handle,
+      );
+    }
     this.registeredTitle.set(handle);
     return () =>
       this.registeredTitle.update((current) => (current === handle ? null : current));
@@ -436,7 +491,14 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
    * @internal CNGX_DIALOG_ARIA_REGISTRY implementation - not public API.
    */
   registerDescription(handle: DialogLabelHandle): () => void {
-    this.warnDoubleRegistration('description', untracked(this.registeredDescription), handle);
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnDoubleRegistration(
+        untracked(this.idSignal),
+        'description',
+        untracked(this.registeredDescription),
+        handle,
+      );
+    }
     this.registeredDescription.set(handle);
     return () =>
       this.registeredDescription.update((current) => (current === handle ? null : current));
@@ -484,7 +546,9 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
       this.dialogStack.push(this.idSignal());
     } else {
       dialog.show();
-      this.warnNonModalA11y();
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        warnNonModalA11y(this.idSignal(), this.triggerElement());
+      }
     }
 
     // Transition to open after browser paints the opening class
@@ -730,45 +794,5 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
   private releaseScrollLock(): void {
     this.scrollLockRelease?.();
     this.scrollLockRelease = null;
-  }
-
-  /**
-   * The registry is single-slot per kind, so a second live registration
-   * silently wins - surface the authoring error instead of letting the
-   * two open paths resolve different labelling.
-   */
-  private warnDoubleRegistration(
-    kind: 'title' | 'description',
-    current: DialogLabelHandle | null,
-    next: DialogLabelHandle,
-  ): void {
-    if (!isDevMode() || current === null || current === next) {
-      return;
-    }
-    console.warn(
-      `CngxDialog [${this.idSignal()}]: a second ${kind} registered while another ` +
-        `is live. The dialog references one ${kind} id - the newest registration ` +
-        `wins. Remove the extra cngxDialog${kind === 'title' ? 'Title' : 'Description'} element.`,
-    );
-  }
-
-  private warnNonModalA11y(): void {
-    if (!isDevMode()) {
-      return;
-    }
-
-    // Non-modal dialogs are silent to SR. Warn if no aria-live sibling found.
-    const trigger = this.triggerElement();
-    if (trigger) {
-      const parent = trigger.parentElement;
-      if (parent && !parent.querySelector('[aria-live]')) {
-        console.warn(
-          `CngxDialog [${this.idSignal()}]: Non-modal dialog opened without an ` +
-            '`aria-live` region near the trigger. Screen reader users will not ' +
-            'be notified that the dialog appeared. Add `aria-live="polite"` to a ' +
-            'sibling element that announces the dialog presence.',
-        );
-      }
-    }
   }
 }

@@ -378,9 +378,32 @@ describe('CngxDialog', () => {
       // FullDialogHost's declarative title is already registered.
       const release = dialog.registerTitle({ id: signal('rogue-title') });
       expect(warnSpy).toHaveBeenCalledTimes(1);
-      expect(warnSpy.mock.calls[0][0]).toContain('second title');
+      expect(warnSpy.mock.calls[0][0]).toContain('CNGX1014: CngxDialog [');
+      expect(warnSpy.mock.calls[0][0]).toContain(`[${dialog.id()}]: a second title`);
 
       release();
+    });
+
+    it('warns in dev mode when a non-modal dialog opens with no aria-live region by the trigger', () => {
+      const { fixture } = setup(ModalToggleHost);
+      fixture.componentInstance.modal.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const container = document.createElement('div');
+      const trigger = document.createElement('button');
+      container.appendChild(trigger);
+      document.body.appendChild(container);
+      trigger.focus();
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      try {
+        const dialog = fixture.componentInstance.dialog();
+        dialog.open();
+        expect(warnSpy).toHaveBeenCalledWith(
+          expect.stringContaining(`CNGX1015: CngxDialog [${dialog.id()}]: Non-modal dialog opened`),
+        );
+      } finally {
+        container.remove();
+      }
     });
 
     it('does not warn when the first description registers', () => {

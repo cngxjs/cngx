@@ -58,6 +58,11 @@ const EXPECTED_DEV_WRAPPERS = [
   'projects/ui/toc/toc-router-sync.directive.ts#warnRouterAbsent',
   'projects/ui/mat-tabs/decorations/decoration-projectors.ts#defaultRetryCeilingWarn',
   'projects/ui/mat-tabs/decorations/half-wired-slot-sink.ts#CNGX_DEFAULT_HALF_WIRED_SLOT_SINK',
+  'projects/common/chart/presets/preset-state.ts#warnIfUnnamedPreset',
+  'projects/common/dialog/dialog/dialog.directive.ts#warnDoubleRegistration',
+  'projects/common/dialog/dialog/dialog.directive.ts#warnNonModalA11y',
+  'projects/common/interactive/menu/menu-item-submenu.directive.ts#warnMissingSubmenuFallbacks',
+  'projects/common/interactive/reorder/reorder.directive.ts#wireDevModeCheck',
 ];
 
 const CODE_PATTERN = /^CNGX\d{4}$/;

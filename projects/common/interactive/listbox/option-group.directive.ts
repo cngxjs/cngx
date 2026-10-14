@@ -4,9 +4,9 @@ import {
   contentChildren,
   Directive,
   input,
-  isDevMode,
   type Signal,
 } from '@angular/core';
+import { cngxDevError } from '@cngx/utils';
 
 import { CNGX_OPTION_CONTAINER } from './option-container';
 import { CngxOption } from './option.directive';
@@ -60,13 +60,16 @@ export class CngxOptionGroup {
   });
 
   constructor() {
-    afterNextRender(() => {
-      if (isDevMode() && this.nestedGroupsQuery().length > 0) {
-        console.error(
-          '[cngxOptionGroup] Nested option groups are unsupported. ' +
-            'Use CngxTreeSelect for arbitrary tree shapes.',
-        );
-      }
-    });
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      afterNextRender(() => {
+        if (this.nestedGroupsQuery().length > 0) {
+          cngxDevError(
+            'CNGX1022',
+            '[cngxOptionGroup] Nested option groups are unsupported. ' +
+              'Use CngxTreeSelect for arbitrary tree shapes.',
+          );
+        }
+      });
+    }
   }
 }

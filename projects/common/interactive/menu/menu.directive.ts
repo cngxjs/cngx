@@ -1,4 +1,4 @@
-import { Directive, ElementRef, inject, input, isDevMode, signal, untracked } from '@angular/core';
+import { Directive, ElementRef, inject, input, signal, untracked } from '@angular/core';
 import {
   outputFromObservable,
   outputToObservable,
@@ -7,6 +7,7 @@ import {
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { coerceSignal } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
@@ -123,9 +124,15 @@ export class CngxMenu implements CngxMenuHost {
    */
   focus(): void {
     const el = this.elementRef.nativeElement;
-    if (isDevMode() && el.tabIndex < 0 && !warnedFocusHosts.has(el)) {
+    if (
+      typeof ngDevMode !== 'undefined' &&
+      ngDevMode &&
+      el.tabIndex < 0 &&
+      !warnedFocusHosts.has(el)
+    ) {
       warnedFocusHosts.add(el);
-      console.warn(
+      cngxDevWarn(
+        'CNGX1027',
         'CngxMenu.focus(): host element has tabindex < 0; focus() will silently no-op. ' +
           'Add tabindex="0" to the cngxMenu host so the menu container receives keyboard focus.',
       );

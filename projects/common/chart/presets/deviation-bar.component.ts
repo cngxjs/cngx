@@ -155,11 +155,13 @@ export class CngxDeviationBar {
   protected readonly showsMeterValue = computed(() => this.activeView() === 'content');
 
   constructor() {
-    warnIfUnnamedPreset(
-      'cngx-deviation-bar',
-      'Bind [aria-label].',
-      () => this.ariaLabel() !== null,
-    );
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnIfUnnamedPreset(
+        'cngx-deviation-bar',
+        'Bind [aria-label].',
+        () => this.ariaLabel() !== null,
+      );
+    }
   }
 
   /**

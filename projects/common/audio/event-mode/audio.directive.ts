@@ -8,9 +8,9 @@ import {
   effect,
   inject,
   input,
-  isDevMode,
   untracked,
 } from '@angular/core';
+import { cngxDevError, cngxDevWarn } from '@cngx/utils';
 
 import { injectCngxAudio } from '../inject-audio';
 import { sameStringMap } from '../internal/same-string-map';
@@ -88,18 +88,20 @@ export class CngxAudio {
 
     this.destroyRef.onDestroy(() => this.unbindAll());
 
-    if (isDevMode()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       // One-shot post-binding check, not a reactive node.
       afterNextRender(() => {
         const parsed = parseEventBindings(this.spec());
         if (parsed.lifecycleKeys.length > 0) {
-          console.error(
+          cngxDevError(
+            'CNGX1002',
             `[cngxAudio] Lifecycle keys "${parsed.lifecycleKeys.join(', ')}" are not DOM events. ` +
               'Use [cngxAudioStatus] for lifecycle bindings.',
           );
         }
         if (parsed.unknownKeys.length > 0) {
-          console.warn(
+          cngxDevWarn(
+            'CNGX1003',
             `[cngxAudio] Unrecognised event keys "${parsed.unknownKeys.join(', ')}". ` +
               'Expected one of: click, focus, blur, pointerenter, pointerleave, submit, change, input.',
           );

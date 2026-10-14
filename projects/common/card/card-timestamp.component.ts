@@ -4,10 +4,10 @@ import {
   computed,
   effect,
   input,
-  isDevMode,
   ViewEncapsulation,
 } from '@angular/core';
 import { dateTimeFormatterFor, injectLocale } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { injectCardI18n } from './i18n/card-i18n';
 
@@ -166,10 +166,11 @@ export class CngxCardTimestamp {
   });
 
   constructor() {
-    if (isDevMode()) {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       effect(() => {
         if (!this.isValidDate()) {
-          console.warn(
+          cngxDevWarn(
+            'CNGX1006',
             '[CngxCardTimestamp] [date] resolved to an Invalid Date - rendering empty. ' +
               'Check the bound value (bad ISO string?).',
           );

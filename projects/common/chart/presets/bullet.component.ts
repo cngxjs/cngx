@@ -179,7 +179,9 @@ export class CngxBullet {
   protected readonly showsMeterValue = computed(() => this.activeView() === 'content');
 
   constructor() {
-    warnIfUnnamedPreset('cngx-bullet', 'Bind [aria-label].', () => this.ariaLabel() !== null);
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnIfUnnamedPreset('cngx-bullet', 'Bind [aria-label].', () => this.ariaLabel() !== null);
+    }
   }
 
   protected readonly maxValue = computed(() => {

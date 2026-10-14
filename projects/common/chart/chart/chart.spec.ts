@@ -205,7 +205,32 @@ describe('CngxChart', () => {
     const fixture = TestBed.createComponent(NonNumericHost);
     fixture.detectChanges();
     TestBed.tick();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CngxChart: data is non-numeric'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX1007: CngxChart: data is non-numeric'));
+    warn.mockRestore();
+  });
+
+  it('warns in dev-mode when two axes share one orientation', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis],
+      template: `
+        <cngx-chart [data]="data" [width]="100" [height]="50">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxAxis position="top" type="linear" [domain]="[0, 20]"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class TwoHorizontalAxesHost {
+      data: readonly number[] = [1, 2, 3];
+    }
+    TestBed.configureTestingModule({ imports: [TwoHorizontalAxesHost] });
+    const fixture = TestBed.createComponent(TwoHorizontalAxesHost);
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('CNGX1009: CngxChart: multiple axes share one orientation'),
+    );
     warn.mockRestore();
   });
 
@@ -1601,7 +1626,9 @@ describe('CngxChart - overlay slot', () => {
     ) as HTMLElement;
     expect(chart.querySelectorAll('.cngx-chart__overlay-frame').length).toBe(1);
     expect(chart.textContent).toContain('first');
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('more than one *cngxChartOverlay'));
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('CNGX1008: CngxChart: more than one *cngxChartOverlay'),
+    );
     warn.mockRestore();
   });
 

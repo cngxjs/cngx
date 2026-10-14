@@ -340,7 +340,7 @@ describe('CngxMenuItemSubmenu - applied without a sibling [cngxMenuItem]', () =>
         String(call[0]).includes('cngxMenuItemSubmenu'),
       );
       expect(submenuWarn).toBeDefined();
-      expect(submenuWarn![0]).toContain('cngxMenuItem');
+      expect(submenuWarn![0]).toContain('CNGX1024: [cngxMenuItemSubmenu]');
     } finally {
       warnSpy.mockRestore();
     }
@@ -421,6 +421,7 @@ describe('CngxMenuItemSubmenu submenu try-fallbacks dev warning', () => {
         String(call[0]).includes('positionTryFallbacks'),
       );
       expect(fallbackWarn.length).toBe(1);
+      expect(fallbackWarn[0][0]).toContain('CNGX1026: CngxMenuItemSubmenu:');
       expect(fallbackWarn[0][0]).toContain('CNGX_SUBMENU_TRY_FALLBACKS');
     } finally {
       warnSpy.mockRestore();

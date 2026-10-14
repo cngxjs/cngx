@@ -1,14 +1,7 @@
 import { DOCUMENT } from '@angular/common';
-import {
-  DestroyRef,
-  InjectionToken,
-  type Signal,
-  effect,
-  inject,
-  isDevMode,
-  signal,
-} from '@angular/core';
+import { DestroyRef, InjectionToken, type Signal, effect, inject, signal } from '@angular/core';
 import { injectMediaQuery } from '@cngx/common/layout';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { createAutoplayGate } from '../autoplay-gate/autoplay-gate';
 import { createDebouncer } from '../debouncer/debouncer';
@@ -294,9 +287,10 @@ export const createAudioEngine: CngxAudioEngineFactory = (options) => {
       }
       const earcon = earcons.get(name);
       if (!earcon) {
-        if (isDevMode() && !warnedUnknownEarcons.has(name)) {
+        if (typeof ngDevMode !== 'undefined' && ngDevMode && !warnedUnknownEarcons.has(name)) {
           warnedUnknownEarcons.add(name);
-          console.warn(
+          cngxDevWarn(
+            'CNGX1001',
             `[cngxAudio] Unknown earcon "${name}". Register it via withEarcons({...}) or engine.register(name, config).`,
           );
         }

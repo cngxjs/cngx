@@ -378,7 +378,7 @@ describe('CngxTagGroup', () => {
     flush(fixture);
     expect(warnSpy).toHaveBeenCalledTimes(1);
     const message = String(warnSpy.mock.calls[0]?.[0] ?? '');
-    expect(message).toContain('[cngx-tag-group]');
+    expect(message).toContain('CNGX1018: [cngx-tag-group]');
     expect(message).toContain('[semanticList]');
     warnSpy.mockRestore();
   });

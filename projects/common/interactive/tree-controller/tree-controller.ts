@@ -1,15 +1,8 @@
-import {
-  computed,
-  inject,
-  InjectionToken,
-  isDevMode,
-  signal,
-  type Signal,
-  untracked,
-} from '@angular/core';
+import { computed, inject, InjectionToken, signal, type Signal, untracked } from '@angular/core';
 import {
   type CngxTreeNode,
   type FlatTreeNode,
+  cngxDevError,
   collectDescendantValues,
   flattenTree,
   isNodeVisible,
@@ -310,13 +303,14 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
     const byValue = new Map<unknown, FlatTreeNode<T>>();
     const firstChildById = new Map<string, FlatTreeNode<T>>();
     for (const n of flatNodes()) {
-      if (isDevMode()) {
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         // A colliding id/key silently shadows the earlier node in every
         // O(1) lookup (expansion, selection, focus) - surface the
         // authoring error instead of dropping nodes.
         if (byId.has(n.id) && !reportedDuplicates.has(`id:${n.id}`)) {
           reportedDuplicates.add(`id:${n.id}`);
-          console.error(
+          cngxDevError(
+            'CNGX1029',
             `createTreeController: duplicate node id "${n.id}" from nodeIdFn - ` +
               'the earlier node is shadowed in id lookups. Ids must be unique.',
           );
@@ -324,7 +318,8 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
         const key = keyFn(n.value);
         if (byValue.has(key) && !reportedDuplicates.has(`key:${String(key)}`)) {
           reportedDuplicates.add(`key:${String(key)}`);
-          console.error(
+          cngxDevError(
+            'CNGX1030',
             `createTreeController: duplicate selection key "${String(key)}" from keyFn - ` +
               'the earlier node is shadowed in selection lookups. Keys must be unique.',
           );
