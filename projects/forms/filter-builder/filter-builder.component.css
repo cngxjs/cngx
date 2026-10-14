@@ -445,6 +445,11 @@
          via its inheritable tokens - caret at label size (the 1.25em
          default caret line-box is what inflates a default trigger), tap
          floor to 2rem. */
+      /**
+       * Font size of the builder host, inherited by its controls.
+       * @type <length>
+       * @group Typography
+       */
       --cngx-filter-builder-control-font-size: var(--cngx-font-size-sm);
       --cngx-filter-builder-action-font-size: var(--cngx-font-size-sm);
       --cngx-select-caret-size: 1em;
