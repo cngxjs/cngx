@@ -177,7 +177,7 @@ describe('planProviders', () => {
       expect(result.changes).toEqual([
         expect.objectContaining({
           kind: 'note',
-          id: 'provider:i18n',
+          id: 'provider:i18n-file',
           label: 'Skip runtime language switching',
           reason: 'src/app/cngx-language.ts exists and cngx did not write it; move it aside and run `ng add @cngx/core` again',
         }),
@@ -196,7 +196,7 @@ describe('planProviders', () => {
         expect.objectContaining({ kind: 'create-file', id: 'provider:i18n-file', path: 'src/app/cngx-language.ts' }),
         expect.objectContaining({
           kind: 'note',
-          id: 'provider:i18n',
+          id: 'provider:i18n-pack',
           label: 'Switch the language at runtime',
           reason:
             "provideCngxI18n in src/app/app.config.ts passes `withPack(CNGX_LANGUAGE_DE)`; pass `withPack(cngxLanguagePack)` with cngxLanguagePack imported from './cngx-language'",
@@ -272,6 +272,7 @@ describe('planProviders', () => {
       expect(result.changes).toEqual([
         expect.objectContaining({
           kind: 'note',
+          id: 'provider:i18n-switch',
           label: 'Skip runtime language switching',
           reason: 'it switches to the German pack; pass --i18n=de with it',
         }),
@@ -342,6 +343,7 @@ describe('planProviders', () => {
     expect(result.changes).toEqual([
       expect.objectContaining({
         kind: 'note',
+        id: 'provider:i18n-pack',
         label: 'Use the German language pack',
         reason:
           "provideCngxI18n in src/app/app.config.ts passes no pack; pass `withPack(CNGX_LANGUAGE_DE)` with CNGX_LANGUAGE_DE imported from '@cngx/core/i18n/de'",

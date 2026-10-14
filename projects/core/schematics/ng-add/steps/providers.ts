@@ -177,7 +177,7 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
   // import a signal it may not export.
   const foreignFile: Change = {
     kind: 'note',
-    id: 'provider:i18n',
+    id: 'provider:i18n-file',
     label: 'Skip runtime language switching',
     reason: `${languageFile} exists and cngx did not write it; move it aside and run \`ng add @cngx/core\` again`,
     provenance,
@@ -218,7 +218,7 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
       ? [
           {
             kind: 'note',
-            id: 'provider:i18n',
+            id: 'provider:i18n-switch',
             label: 'Skip runtime language switching',
             reason: 'it switches to the German pack; pass --i18n=de with it',
             provenance,
@@ -245,7 +245,7 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
     ? [
         {
           kind: 'note',
-          id: 'provider:i18n',
+          id: 'provider:i18n-pack',
           label: answers.runtimeSwitch ? 'Switch the language at runtime' : 'Use the German language pack',
           reason: `provideCngxI18n in ${facts.appConfigPath} passes ${current}; pass \`withPack(${pack.symbol})\` with ${pack.symbol} imported from '${pack.module}'`,
           provenance,
