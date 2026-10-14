@@ -11,12 +11,13 @@ import {
   createRenderer,
   createReport,
   type NgAddOptions,
+  type Provenance,
   resolveVersions,
 } from '../engine';
 import { detectProject, type ProjectFacts } from './detect/detect';
 import { readGitState } from './shell/git-state';
 import { angularSupport, preflightItems } from './shell/preflight';
-import { askOnboarding, givenAnswers } from './shell/questions';
+import { askOnboarding, givenAnswers, presetChangeNote, presetDefaults } from './shell/questions';
 import { createShellRendererOptions, isCi } from './shell/terminal';
 import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
@@ -27,6 +28,7 @@ import { readInstallManifest } from './shell/install-manifest';
 import { planManifest } from './steps/manifest';
 import { type Step } from './steps/model';
 import { planProviders } from './steps/providers';
+import { readRecordedAnswers } from './steps/reruns';
 import { planTheme } from './steps/theme';
 
 /**
@@ -114,10 +116,24 @@ export function ngAdd(options: NgAddOptions): Rule {
     });
     const previous = readInstallManifest(tree);
     const installed = previous?.steps.map((step) => step.id) ?? [];
-    const { answers, explicitAiTools } = await askOnboarding(facts, options, flow, installed);
+    const recorded =
+      previous === undefined
+        ? undefined
+        : readRecordedAnswers(previous, (preset) => presetDefaults(preset, facts));
+    const { answers, explicitAiTools } = await askOnboarding(
+      facts,
+      options,
+      flow,
+      installed,
+      recorded,
+    );
     const withdrawn = withdrawnAiTargets(facts, answers, installed, explicitAiTools);
+    const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
     const steps = createChangePlan(
-      planSteps(withdrawn).map((step) => step(facts, answers, versions)),
+      [
+        ...planSteps(withdrawn).map((step) => step(facts, answers, versions)),
+        presetChangeNote(options, recorded, provenance),
+      ],
       warning === undefined ? [] : [warning],
     );
     const manifest = planManifest(facts, answers, versions, steps, previous, new Date().toISOString());

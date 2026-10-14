@@ -9,6 +9,8 @@ import {
   type NgAddPreset,
   type PromptAnswers,
   type PromptFlow,
+  type Provenance,
+  type StepResult,
   THEME_CHOICES,
   type ThemeChoice,
 } from '../../engine';
@@ -114,22 +116,55 @@ export interface Onboarding {
 }
 
 /**
+ * The note a re-run plans when it starts from another preset than the one
+ * the last install recorded, so the reset to that preset's defaults is said,
+ * not silent. Empty on a first install or with the recorded preset.
+ */
+export function presetChangeNote(
+  options: NgAddOptions,
+  recorded: OnboardingAnswers | undefined,
+  provenance: Provenance,
+): StepResult {
+  const preset = options.preset ?? 'recommended';
+  if (recorded === undefined || recorded.preset === preset) {
+    return { changes: [], skipped: [] };
+  }
+  return {
+    changes: [
+      {
+        kind: 'note',
+        id: 'answers:preset',
+        label: `Start from the ${preset} preset`,
+        reason: `the last install used ${recorded.preset}, so its answers are not reused; pass --preset=${recorded.preset} to keep them`,
+        provenance,
+      },
+    ],
+    skipped: [],
+  };
+}
+
+/**
  * Asks only what detection leaves open: the packages, the theme when Material
  * is present, the language, the lint entry when an eslint config exists, the
  * feedback providers when `@cngx/ui` is selected and the editors that get the
  * cngx MCP server, with the detected ones preselected unless the user removed
  * the server the last install wired (`installed` holds its step ids). A flag
- * answers its question; without a terminal the preset default does.
- * `minimal` asks nothing.
+ * answers its question; without a terminal the default does. The defaults
+ * are the `recorded` answers of the last install when this run keeps its
+ * preset, else the preset's. `minimal` asks nothing.
  */
 export async function askOnboarding(
   facts: ProjectFacts,
   options: NgAddOptions,
   flow: PromptFlow,
   installed: readonly string[],
+  recorded?: OnboardingAnswers,
 ): Promise<Onboarding> {
   const preset = options.preset ?? 'recommended';
-  const defaults = presetDefaults(preset, facts);
+  // A re-run with the recorded preset starts from the recorded answers, so a
+  // run without flags or a terminal keeps every earlier choice.
+  const rerun = recorded?.preset === preset ? recorded : undefined;
+  const defaults = rerun ?? presetDefaults(preset, facts);
 
   const libs = await flow.multiSelect<CngxLib>({
     key: 'libs',
@@ -196,7 +231,9 @@ export async function askOnboarding(
     choices: AI_TOOLS.map((tool) => ({
       value: tool,
       name: EDITOR_NAMES[tool],
-      checked: facts.editors[tool] && !removedMcpServer(facts, installed, tool),
+      checked:
+        (rerun === undefined ? facts.editors[tool] : rerun.aiTools.includes(tool)) &&
+        !removedMcpServer(facts, installed, tool),
     })),
     default: defaults.aiTools,
   });

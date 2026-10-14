@@ -74,7 +74,7 @@
     },
     "prompts": {
       "type": "boolean",
-      "description": "Ask the detection-dependent questions when a terminal is attached. Pass false in CI runs under a pseudo-terminal; flags and preset defaults answer instead.",
+      "description": "Ask the detection-dependent questions when a terminal is attached. Pass false in CI runs under a pseudo-terminal; flags, the recorded answers of a re-run and the preset defaults answer instead.",
       "default": true
     },
     "quiet": {

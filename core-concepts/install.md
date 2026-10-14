@@ -42,7 +42,7 @@ install. Nothing outside the project is written.
    planned.
 3. **Ask.** With a terminal attached it asks the open questions (below). A
    flag on the command line answers its question; without a terminal the
-   preset answers.
+   preset answers, or on a re-run the answers the last install recorded.
 4. **Plan.** Every step contributes changes to one plan. The list you see,
    the `--dry-run` output, the summary and the manifest are all read from
    that plan, so they cannot disagree. Notes (what a step refused or left to
@@ -120,7 +120,7 @@ Every answer has a flag. A flag skips its question.
 |`--floating-fallback`|boolean|Install `@floating-ui/dom` and provide the popover positioning fallback (needs `@cngx/common`).|
 |`--ai-tools`|`claude`, `cursor`, `vscode`|The editors to set up the cngx MCP server and agent instructions for. Answers the AI tooling question.|
 |`--yes`|boolean|Apply to an existing app without the confirmation.|
-|`--prompts`|boolean, default `true`|`--no-prompts` answers every question from flags and preset defaults.|
+|`--prompts`|boolean, default `true`|`--no-prompts` answers every question from flags, the recorded answers of a re-run and the preset defaults.|
 |`--quiet`|boolean|Print only the summary, not the planned changes.|
 
 For CI and scripted runs, pass the answers and skip the questions:
@@ -248,6 +248,13 @@ To add something later, run it again with the new answer:
 ```bash
 ng add @cngx/core --feedback
 ```
+
+A re-run with the preset the last install used starts from the answers it
+recorded in `.cngx/install.json`: a run without flags or a terminal keeps
+the German pack or the editors you chose earlier, and a question shows them
+as its default. A flag or an answer in the terminal still changes one. A
+re-run with another preset starts from that preset's defaults instead, and
+the plan says so in a note.
 
 A newer cngx release comes in through `ng update @cngx/core`, not through
 `ng add` (see [Update](update.html)). `ng add @cngx/<package>@<newer>` on

@@ -545,6 +545,29 @@ describe('ngAdd', () => {
     expect(second.logs).toContain('cngx is already set up; nothing changed.');
   });
 
+  it('keeps the recorded answers on a re-run without flags or a terminal', async () => {
+    const first = await runRule(
+      ngAdd({ i18n: 'de', aiTools: ['claude'], yes: true }),
+      createFixtureTree('standalone-app', { 'CLAUDE.md': '' }),
+    );
+    const files = first.tree.files.map((path) => [path, first.tree.readContent(path)]);
+
+    const second = await runRule(ngAdd({ yes: true }), first.tree);
+
+    expect(second.tree.files.map((path) => [path, second.tree.readContent(path)])).toEqual(files);
+    expect(second.logs).toContain('cngx is already set up; nothing changed.');
+  });
+
+  it('names a re-run that starts from another preset than the recorded one', async () => {
+    const first = await runRule(ngAdd({ yes: true }), createFixtureTree());
+
+    const second = await runRule(ngAdd({ preset: 'full', yes: true }), first.tree);
+
+    expect(second.logs).toContain(
+      '  - Start from the full preset - the last install used recommended, so its answers are not reused; pass --preset=recommended to keep them',
+    );
+  });
+
   it('keeps a configured editor in the readme when a later run chooses another', async () => {
     const first = await runRule(ngAdd({ aiTools: ['claude'] }), createFixtureTree('standalone-app', { '.vscode/settings.json': '{}' }));
     const second = await runRule(ngAdd({ preset: 'full' }), first.tree);

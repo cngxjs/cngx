@@ -10,7 +10,8 @@ import {
 } from '../../engine';
 import { createFacts } from '../../testing/onboarding';
 import { type ProjectFacts } from '../detect/detect';
-import { askOnboarding, givenAnswers, presetDefaults } from './questions';
+import { type OnboardingAnswers } from '../steps/model';
+import { askOnboarding, givenAnswers, presetChangeNote, presetDefaults } from './questions';
 
 const ESLINT = { path: 'eslint.config.js', module: 'cjs', editable: true, wired: false } as const;
 const MATERIAL = {
@@ -45,6 +46,7 @@ async function ask(
   interactive = true,
   installed: readonly string[] = [],
   adapter?: PromptAdapter,
+  recorded?: OnboardingAnswers,
 ) {
   const asked: string[] = [];
   const flow = createPromptFlow({
@@ -52,7 +54,13 @@ async function ask(
     answers: givenAnswers(options),
     adapter: adapter ?? recordingAdapter(asked),
   });
-  const { answers, explicitAiTools } = await askOnboarding(facts, options, flow, installed);
+  const { answers, explicitAiTools } = await askOnboarding(
+    facts,
+    options,
+    flow,
+    installed,
+    recorded,
+  );
   return { answers, explicitAiTools, asked };
 }
 
@@ -247,6 +255,68 @@ describe('askOnboarding', () => {
     expect(explicitAiTools).toEqual([]);
   });
 
+  it('starts a re-run with the recorded preset from the recorded answers', async () => {
+    const recorded = {
+      ...presetDefaults('recommended', createFacts()),
+      i18n: 'de',
+      aiTools: ['claude'],
+    } as const;
+    const { answers, explicitAiTools } = await ask(
+      createFacts(),
+      {},
+      false,
+      [],
+      undefined,
+      recorded,
+    );
+
+    expect(answers).toMatchObject({ preset: 'recommended', i18n: 'de', aiTools: ['claude'] });
+    expect(explicitAiTools).toEqual([]);
+  });
+
+  it('lets a flag override a recorded answer', async () => {
+    const recorded = { ...presetDefaults('recommended', createFacts()), i18n: 'de' } as const;
+    const { answers } = await ask(createFacts(), { i18n: 'en' }, false, [], undefined, recorded);
+
+    expect(answers.i18n).toBe('en');
+  });
+
+  it('starts from the preset defaults when the run picks another preset than the recorded one', async () => {
+    const recorded = { ...presetDefaults('recommended', createFacts()), i18n: 'en' } as const;
+    const { answers } = await ask(
+      createFacts(),
+      { preset: 'full' },
+      false,
+      [],
+      undefined,
+      recorded,
+    );
+
+    expect(answers).toMatchObject({ preset: 'full', i18n: 'de', feedback: true });
+  });
+
+  it('preselects the recorded editors on a re-run instead of every detected one', async () => {
+    const { adapter, shown } = editorPicker([]);
+    const recorded = {
+      ...presetDefaults('recommended', createFacts()),
+      aiTools: ['claude'],
+    } as const;
+    await ask(
+      createFacts({ editors: { claude: true, cursor: false, vscode: true } }),
+      {},
+      true,
+      [],
+      adapter,
+      recorded,
+    );
+
+    expect(shown.map((choice) => [choice.value, choice.checked])).toEqual([
+      ['claude', true],
+      ['cursor', false],
+      ['vscode', false],
+    ]);
+  });
+
   it('rejects a flag value no question offers', async () => {
     await expect(ask(createFacts(), { libs: ['charts'] } as unknown as NgAddOptions)).rejects.toThrow('"charts" is not a valid answer for libs.');
   });
@@ -259,5 +329,28 @@ describe('givenAnswers', () => {
 
   it('reads the empty list the schema registry fills in for an unset array as not given', () => {
     expect(givenAnswers({ libs: [], aiTools: [] })).toEqual({});
+  });
+});
+
+describe('presetChangeNote', () => {
+  const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
+  const recorded = presetDefaults('full', createFacts());
+
+  it('names a re-run that starts from another preset than the recorded one', () => {
+    expect(presetChangeNote({}, recorded, PROVENANCE).changes).toEqual([
+      {
+        kind: 'note',
+        id: 'answers:preset',
+        label: 'Start from the recommended preset',
+        reason:
+          'the last install used full, so its answers are not reused; pass --preset=full to keep them',
+        provenance: PROVENANCE,
+      },
+    ]);
+  });
+
+  it('plans nothing on a first install or with the recorded preset', () => {
+    expect(presetChangeNote({}, undefined, PROVENANCE).changes).toEqual([]);
+    expect(presetChangeNote({ preset: 'full' }, recorded, PROVENANCE).changes).toEqual([]);
   });
 });
