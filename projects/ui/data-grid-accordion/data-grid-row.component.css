@@ -35,6 +35,11 @@
      organism ships its own chevron slot, so suppress the inherited one through
      the token the Track-B skin exposes for exactly this (accordion-item
      precedent) - not a blanket ::after reset. */
+  /**
+   * Display of the Track-B accordion skin's `::after` twisty on the row summary. Set to `none` because the row renders its own chevron.
+   * @type <string>
+   * @group Layout
+   */
   --cngx-accordion-twisty-display: none;
   /* Span every column on grid row 1, painted beneath the cells layer (`z-index: 0`),
      so the trigger is the full-width click target. */

@@ -269,15 +269,40 @@
      `var()` fallback, so the derivation is a SET here, not a fallback. Values
      snap to the nearest rung (row-py 12px -> space-sm, tighter for data rows;
      row-px 16px = space-md, exact; region 12/16px -> space-sm/space-md). */
+  /**
+   * Block padding of the row summary, header and footer.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-dga-row-py: var(--cngx-space-sm, 8px);
+  /**
+   * Inline padding at the leading and trailing edge of the rows.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-dga-row-px: var(--cngx-space-md, 16px);
+  /**
+   * Padding of the expanded row region.
+   * @type <length> <length>
+   * @group Layout
+   */
   --cngx-dga-region-padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
+  /**
+   * Gap between grid columns.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-dga-col-gap: var(--cngx-space-sm, 8px);
   /* SET the divider colour to the adaptive theme token. `--cngx-dga-border-color`
      is a registered `@property` with a fixed light initial-value, so every
      `var(--cngx-dga-border-color, ...)` fallback in the base look is defeated and
      the unskinned grid keeps light hairlines in dark mode. The named skins escape
      it the same way inside their own `:scope`; the flat default needs it too. */
+  /**
+   * Colour of the row dividers and the grid frame lines.
+   * @type <color>
+   * @group Surface
+   */
   --cngx-dga-border-color: var(--cngx-color-border, #d1d5db);
 }
 
@@ -292,6 +317,11 @@
 /* Drop the last row's divider so it never doubles with the footer's own top rule
    (the named skins do the same inside their scope). */
 .cngx-data-grid-accordion:not([data-skin]) .cngx-dga-row:last-of-type {
+  /**
+   * Border below each row. Set to `none` to drop the divider.
+   * @type <line-width> <line-style> <color>
+   * @group Surface
+   */
   --cngx-dga-row-divider: none;
 }
 
