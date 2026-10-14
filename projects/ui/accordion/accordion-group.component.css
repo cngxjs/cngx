@@ -8,8 +8,23 @@
      (feedback_property_inherits_false_trap); a skin sets its own gap via its
      `@scope` `:scope` (same specificity, wins by scope-proximity). Snaps:
      heading/header 8px -> sm; title 2px -> xs (shift 2->4). */
+  /**
+   * Gap between the leading, title and meta cells of the item heading row.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-accordion-heading-gap: var(--cngx-space-sm, 0.5rem);
+  /**
+   * Gap between the title block and the chevron inside the header button.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-accordion-header-gap: var(--cngx-space-sm, 0.5rem);
+  /**
+   * Gap between the item title and its subtitle.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-accordion-title-gap: var(--cngx-space-xs, 0.125rem);
   /* Flat default: a block stack with a top divider. Card / grid / framed skins
      set display, gap, and the surface box directly through their
@@ -34,6 +49,11 @@
    group host reaches the item dividers too; skins that set `--cngx-accordion-divider`
    are unaffected (that token wins in the `var()` chain). */
 .cngx-accordion-group:not([data-skin]) {
+  /**
+   * Colour of the default group and item divider lines.
+   * @type <color>
+   * @group Surface
+   */
   --cngx-accordion-border-color: var(--cngx-color-border, #d1d5db);
   /* Derive the unskinned default header/region padding from the density scale so
      a global `[data-density]` re-scales it. The tokens are registered `@property`
@@ -42,6 +62,16 @@
      item inherits (reference_property_color_initial_defeats_fallback). Nearest
      rung: 0.75rem 1rem -> space-sm space-md (block 12px -> 8px; inline 16px exact).
      Named skins own their own padding inside their `[data-skin]` scope. */
+  /**
+   * Padding of the item header button.
+   * @type <length> <length>
+   * @group Layout
+   */
   --cngx-accordion-header-padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
+  /**
+   * Padding of the expanded item region.
+   * @type <length> <length>
+   * @group Layout
+   */
   --cngx-accordion-region-padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
 }
