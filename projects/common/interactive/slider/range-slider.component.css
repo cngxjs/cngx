@@ -4,8 +4,23 @@
  * host; the track gradient paints the fill band and each thumb carries its own
  * --cngx-slider-fraction. */
 cngx-range-slider {
+  /**
+   * Distance between the track and the combined value label.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-slider-value-gap: var(--cngx-space-xs, 0.25rem);
+  /**
+   * Distance between the track and the value bubble.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-slider-bubble-gap: var(--cngx-space-sm, 0.5rem);
+  /**
+   * Padding of the value bubble.
+   * @type <length> <length>
+   * @group Layout
+   */
   --cngx-slider-bubble-padding: var(--cngx-space-xs, 0.125rem) var(--cngx-space-sm, 0.4rem);
   position: relative;
   display: flex;
@@ -22,8 +37,23 @@ cngx-range-slider[aria-disabled='true'] {
   /* Disabled by colour, never opacity (the field recipe): fill and thumb ring
    * take the disabled colour, the track a faint text tint, and the value
    * labels inherit the disabled text colour. */
+  /**
+   * Colour of the fill band between the thumbs. The disabled state sets it to a muted text tint.
+   * @type <color>
+   * @group State
+   */
   --cngx-slider-fill-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+  /**
+   * Border colour of the thumb rings. The disabled state sets it to a muted text tint.
+   * @type <color>
+   * @group State
+   */
   --cngx-slider-thumb-border-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
+  /**
+   * Colour of the track outside the fill band. The disabled state sets it to a faint text tint.
+   * @type <color>
+   * @group State
+   */
   --cngx-slider-track-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 12%, transparent);
   color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
 }
