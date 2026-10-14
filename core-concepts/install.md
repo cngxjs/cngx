@@ -31,22 +31,32 @@ install. Nothing outside the project is written.
    build styles and whether they are CSS or Sass, the app config (standalone
    `app.config.ts` or a root NgModule), the source locale, an Angular Material
    theme, an ESLint flat config, editor folders (`.claude`, `.cursor`,
-   `.vscode`), and an earlier `.cngx/install.json`. An app older than the
-   Angular range `@cngx/core` supports is refused before anything is planned.
-2. **Ask.** With a terminal attached it asks the open questions (below). A
+   `.vscode`), and an earlier `.cngx/install.json`.
+2. **Preflight.** A short checklist before any question: the app's Angular
+   range against the one `@cngx/core` supports, the project and whether it
+   counts as fresh or existing, and the git state. Uncommitted changes or a
+   missing repository are flagged, since the cngx changes then have no clean
+   `git diff` to review against. An app older than the supported Angular
+   range shows its failed line, then the run stops before anything is
+   planned.
+3. **Ask.** With a terminal attached it asks the open questions (below). A
    flag on the command line answers its question; without a terminal the
    preset answers.
-3. **Plan.** Every step contributes changes to one plan. The list you see,
+4. **Plan.** Every step contributes changes to one plan. The list you see,
    the `--dry-run` output, the summary and the manifest are all read from
-   that plan, so they cannot disagree.
-4. **Confirm.** An app that already has components, its own providers or
+   that plan, so they cannot disagree. Notes (what a step refused or left to
+   you) follow the list; they are not tasks.
+5. **Confirm.** An app that already has components, its own providers or
    another UI library (Material, PrimeNG, Tailwind, Bootstrap) counts as
    existing and gets one `Apply these changes?` before anything is written.
-   A fresh app gets no confirmation.
-5. **Apply and summarise.** The summary lists the files touched, the notes
+   That question needs a terminal: under CI, without a terminal, or with
+   `--no-prompts`, the plan applies and one line says which of them kept
+   the question away. `--yes` skips the question and the line. A fresh app gets no
+   confirmation.
+6. **Apply and summarise.** The summary lists the files touched, the notes
    (what a step refused or left to you), the steps already in place, and the
    next steps.
-6. **Install.** One package install at the end, for every dependency the
+7. **Install.** One package install at the end, for every dependency the
    plan added.
 
 ---
@@ -55,7 +65,7 @@ install. Nothing outside the project is written.
 
 |Preset|What it sets up|
 |-|-|
-|`minimal`|The packages only. No theme, no providers, no lint rules. Asks nothing beyond the package choice.|
+|`minimal`|The packages only. No theme, no providers, no lint rules. Asks none of the questions below; flags and the preset answer them.|
 |`recommended` (default)|The packages, the theme, the accessibility preference providers and the lint rules.|
 |`full`|`recommended` plus the German language pack, the root feedback services (toasts, alerts, banners), the popover positioning fallback, and the MCP setup for every editor folder found in the project.|
 
@@ -67,8 +77,8 @@ ng add @cngx/ui --preset=minimal
 
 ## Questions
 
-The run asks only what detection leaves open, and only with a terminal
-attached:
+The run asks only what detection leaves open, only with a terminal
+attached, and nothing at all for `minimal`:
 
 - **Packages.** Which `@cngx/*` packages to install. Their `@cngx` peers
   follow automatically.
@@ -84,6 +94,11 @@ attached:
   command.
 - **Feedback services.** Only when `@cngx/ui` is selected: provide toasts,
   alerts and banners at the root.
+- **AI tooling.** Which editors (Claude Code, Cursor, VS Code) get the cngx
+  MCP server. The editors whose folder the project has are preselected,
+  except one whose cngx server you removed since the last install. Picking
+  an editor here brings its removed server back, like `--ai-tools`. See
+  [AI tooling](#ai-tooling).
 
 ---
 
@@ -94,7 +109,7 @@ Every answer has a flag. A flag skips its question.
 |Flag|Values|Effect|
 |-|-|-|
 |`--preset`|`minimal`, `recommended`, `full`|How much of the onboarding to apply.|
-|`--libs`|`utils`, `core`, `common`, `interop`, `forms`, `data-display`, `ui`|The packages to install. Default: all of them.|
+|`--libs`|`utils`, `core`, `common`, `interop`, `forms`, `data-display`, `ui`|The packages to install. Default: all of them. `@cngx/themes` needs `core`, `common`, `forms`, `data-display` and `ui` (`cngx.css` imports their CSS); a set without one of them gets a note naming the missing packages and no theme.|
 |`--theme`|`cngx`, `material`, `none`|The generated theme file.|
 |`--i18n`|`en`, `de`|The built-in copy.|
 |`--runtime-switch`|boolean|Wire the language pack for switching at runtime.|
@@ -102,7 +117,7 @@ Every answer has a flag. A flag skips its question.
 |`--a11y-preferences`|boolean|Provide the density, text scale, motion and contrast axes with persistence.|
 |`--feedback`|boolean|Provide toasts, alerts and banners at the root (needs `@cngx/ui`).|
 |`--floating-fallback`|boolean|Install `@floating-ui/dom` and provide the popover positioning fallback (needs `@cngx/common`).|
-|`--ai-tools`|`claude`, `cursor`, `vscode`|The editors to set up the cngx MCP server and agent instructions for.|
+|`--ai-tools`|`claude`, `cursor`, `vscode`|The editors to set up the cngx MCP server and agent instructions for. Answers the AI tooling question.|
 |`--yes`|boolean|Apply to an existing app without the confirmation.|
 |`--prompts`|boolean, default `true`|`--no-prompts` answers every question from flags and preset defaults.|
 |`--quiet`|boolean|Print only the summary, not the planned changes.|
@@ -132,7 +147,7 @@ under a pseudo-terminal.
 |`src/cngx-theme.scss`|Material theme with a `mat.theme()` map|The bridge from the Material system tokens to the cngx tokens. A `define-theme` or M2 theme object is bridged in the file that defines it instead.|
 |`angular.json`|theme chosen|The theme file added to the build styles, after the stylesheet that imports `cngx.css`.|
 |App config or root NgModule|per answer|`provideA11yPreferences(withPersistence())`, `provideDirection('rtl')` for a right-to-left source locale, `provideFeedback(withToasts(), withAlerts(), withBanners())`, `provideFloatingFallback(computePosition, [flip(), shift()])`, `provideCngxI18n(withPack(...))`.|
-|`cngx-language.ts`|German with runtime switch|Next to the app config: a `cngxLanguagePack` signal. Set it to switch every cngx string at runtime.|
+|`cngx-language.ts`|German with runtime switch|Next to the app config: a `cngxLanguagePack` signal. Set it to switch every cngx string at runtime. When the app already provides `provideCngxI18n(...)` without that signal, the provider is not rewritten: the file is still created and a note names the one edit, `withPack(cngxLanguagePack)` imported from `./cngx-language`.|
 |ESLint flat config|lint rules|`...cngx.configs.recommended` in the exported array of `eslint.config.js`, `.mjs`, `.cjs`, `.ts`, `.mts` or `.cts`. It needs ESLint 9 or later and a TypeScript parser (`typescript-eslint`, `@typescript-eslint/parser` or `angular-eslint`): the cngx rules lint TypeScript through the app's own setup. The plugin also loads `@angular-eslint/template-parser` 19 or later; with `angular-eslint` declared it is added on that version line. Every case it cannot wire gets one note with the next command and no edit or dependency: ESLint below 9 (raise `eslint` to `^9` in devDependencies and reinstall; with `angular-eslint`, `ng update angular-eslint` moves its packages, without it `ng add angular-eslint` sets up ESLint 9), no flat config, no TypeScript parser or no template parser (`ng add angular-eslint`), a template parser line below 19 (`ng update angular-eslint`, or raise the parser itself), a legacy `.eslintrc*` config (`npx @eslint/migrate-config <file>`). Run `ng add @cngx/core` again afterwards. A config it cannot edit safely gets a note to add the entry by hand.|
 |`.cngx/install.json`|always|The install manifest (below).|
 |MCP configs, agent block, `.cngx/README.md`|editors chosen|See [AI tooling](#ai-tooling).|
@@ -233,6 +248,12 @@ To add something later, run it again with the new answer:
 ng add @cngx/core --feedback
 ```
 
+A newer cngx release comes in through `ng update @cngx/core`, not through
+`ng add` (see [Update](update.html)). `ng add @cngx/<package>@<newer>` on
+an installed app installs one package at the new release while the rest of
+the group stays on the old one, and npm refuses the mismatched
+cross-package peers with `ERESOLVE`.
+
 ---
 
 ## The install manifest
@@ -251,8 +272,9 @@ previous install, and the next run writes a fresh one.
 
 ## AI tooling
 
-With `--ai-tools` (or the `full` preset, which picks every editor folder it
-finds), the run registers the pinned `@cngx/mcp` server in each chosen
+For the editors picked in the AI tooling question (or passed with
+`--ai-tools`; without a terminal the `full` preset picks every editor folder
+it finds), the run registers the pinned `@cngx/mcp` server in each chosen
 editor's project config, next to any server already there:
 
 |Editor|MCP config|Instructions|
@@ -264,7 +286,7 @@ editor's project config, next to any server already there:
 The instruction file gets a block between `<!-- cngx:agents -->` and
 `<!-- /cngx:agents -->` that tells the agent to ask the server instead of
 guessing an API. An existing `cngx` server entry is never rewritten; when it
-pins a different `@cngx/mcp` version, the summary names both.
+pins a different `@cngx/mcp` version, the plan list names both pins.
 
 `.cngx/README.md` documents the setup: the installed packages, where the
 server is configured, its tools, resources and prompts, how to check that it
@@ -272,8 +294,9 @@ runs, and how to turn it off. It is regenerated when its inputs change and is
 never written over a file cngx did not generate.
 
 Removing the `cngx` entry or the block is remembered through the manifest: a
-later run, the `full` preset included, leaves them out. Name the editor to
-bring them back:
+later run, the `full` preset included, leaves them out, and the AI tooling
+question no longer preselects that editor. Pick the editor in the question,
+or name it, to bring them back:
 
 ```bash
 ng add @cngx/core --ai-tools claude
