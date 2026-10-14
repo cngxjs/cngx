@@ -10,6 +10,18 @@ import { createTtyRenderer, TTY_LISTR_DEFAULTS } from './tty-renderer';
 const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
 
 function change(id: string, label: string): Change {
+  return {
+    kind: 'create-file',
+    id,
+    label,
+    reason: `because ${id}`,
+    provenance: PROVENANCE,
+    path: `${id}.ts`,
+    content: '',
+  };
+}
+
+function note(id: string, label: string): Change {
   return { kind: 'note', id, label, reason: `because ${id}`, provenance: PROVENANCE };
 }
 
@@ -97,6 +109,35 @@ describe('createTtyRenderer', () => {
     expect(events.find((entry) => entry.event === 'MESSAGE')?.data).toEqual({
       skip: 'Import cngx.css - already imported',
     });
+  });
+
+  it('lists notes once below the task list instead of as completed tasks', async () => {
+    const { renderer, events, lines } = tty();
+    const plan = createChangePlan([
+      {
+        changes: [change('dependency', 'Add @cngx/core'), note('lint', 'Skip the eslint entry')],
+        skipped: [],
+      },
+    ]);
+
+    await renderer.todo(plan);
+
+    expect(finished(events)).toEqual(['COMPLETED Add @cngx/core - because dependency']);
+    expect(
+      events.some((entry) => entry.task?.title?.includes('Skip the eslint entry') === true),
+    ).toBe(false);
+    expect(lines).toEqual(['info Notes (1):', 'info   - Skip the eslint entry - because lint']);
+  });
+
+  it('starts no task list for a plan of notes only', async () => {
+    const { renderer, events, lines } = tty();
+
+    await renderer.todo(
+      createChangePlan([{ changes: [note('lint', 'Skip the eslint entry')], skipped: [] }]),
+    );
+
+    expect(events).toEqual([]);
+    expect(lines).toEqual(['info Notes (1):', 'info   - Skip the eslint entry - because lint']);
   });
 
   it('prints warnings through the logger after the list', async () => {
