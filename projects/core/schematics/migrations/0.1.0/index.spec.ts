@@ -1,10 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMemoryTree } from '../../engine';
-import { readFixture, readMigrationFixture, readTree, runRule } from '../../testing/run-schematic';
+import { readFixture, readMigrationEntry, readMigrationFixture, readTree, runRule } from '../../testing/run-schematic';
 import { migrate } from './index';
 
 const NOW = '2026-10-12T12:00:00.000Z';
+
+const ENTRY = readMigrationEntry('migration-v0.1.0');
 
 describe('migration 0.1.0', () => {
   const isTTY = process.stdout.isTTY;
@@ -23,7 +25,7 @@ describe('migration 0.1.0', () => {
   it('renames nothing and records the release in the install manifest', async () => {
     const { before, after } = readMigrationFixture('0.1.0');
 
-    const { tree } = await runRule(migrate(), createMemoryTree(before));
+    const { tree } = await runRule(migrate(), createMemoryTree(before), ENTRY);
 
     expect(readTree(tree)).toEqual(after);
   });
@@ -31,7 +33,7 @@ describe('migration 0.1.0', () => {
   it('prints the plan before it applies it and the summary after', async () => {
     const { before } = readMigrationFixture('0.1.0');
 
-    const { logs } = await runRule(migrate(), createMemoryTree(before));
+    const { logs } = await runRule(migrate(), createMemoryTree(before), ENTRY);
 
     expect(logs[0]).toBe('cngx 0.1.0 migration');
     expect(logs[1]).toBe('Planned (1):');
@@ -44,7 +46,7 @@ describe('migration 0.1.0', () => {
   it('changes nothing on a second run', async () => {
     const { after } = readMigrationFixture('0.1.0');
 
-    const { tree, logs } = await runRule(migrate(), createMemoryTree(after));
+    const { tree, logs } = await runRule(migrate(), createMemoryTree(after), ENTRY);
 
     expect(tree.actions).toEqual([]);
     expect(logs.join('\n')).toContain('Update .cngx/install.json - unchanged since');
@@ -54,7 +56,7 @@ describe('migration 0.1.0', () => {
   it('runs on an app without an install manifest and says what it skipped', async () => {
     const app = readFixture('standalone-app');
 
-    const { tree, logs } = await runRule(migrate(), createMemoryTree(app));
+    const { tree, logs } = await runRule(migrate(), createMemoryTree(app), ENTRY);
 
     expect(readTree(tree)).toEqual(app);
     expect(logs.join('\n')).toContain('no .cngx/install.json from ng add; only the renames and codemods ran');
@@ -68,7 +70,7 @@ describe('migration 0.1.0', () => {
       '.cngx/install.json': JSON.stringify({ ...manifest, facts: { ...manifest.facts, project: 'gone' } }),
     });
 
-    const { logs } = await runRule(migrate(), tree);
+    const { logs } = await runRule(migrate(), tree, ENTRY);
 
     expect(logs.join('\n')).toContain('Project "gone" not found in angular.json.');
   });

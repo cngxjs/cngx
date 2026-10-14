@@ -11,5 +11,5 @@ import { createMigration } from '../migration';
  * the `@cngx/mcp` release moved, then moves the manifest to 0.1.0.
  */
 export function migrate(): Rule {
-  return createMigration({ version: '0.1.0', renames: EMPTY_RENAME_TABLE, codemods: [], bundleDir: __dirname });
+  return createMigration({ renames: EMPTY_RENAME_TABLE, codemods: [], bundleDir: __dirname });
 }

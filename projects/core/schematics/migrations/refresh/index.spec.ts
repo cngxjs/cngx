@@ -63,12 +63,24 @@ describe('refresh migration', () => {
     expect(readTree(tree)).toEqual(after);
   });
 
-  it('takes the release for its header from versions.json', async () => {
+  it('falls back to the release in versions.json outside a collection', async () => {
     const { before, after } = readMigrationFixture('0.1.0');
 
     const { logs } = await runRule(migrate(), createMemoryTree(before));
 
     expect(logs[0]).toBe(`cngx ${manifestOf(after).cngxVersion} migration`);
+  });
+
+  it('names the release of the collection entry that ran', async () => {
+    const { before } = readMigrationFixture('0.1.0');
+
+    const { logs } = await runRule(migrate(), createMemoryTree(before), {
+      name: 'migration-v0.1.1-refresh',
+      version: '0.1.1',
+    });
+
+    expect(logs[0]).toBe('cngx 0.1.1 migration');
+    expect(logs).toContain('cngx 0.1.1 migration planned 1 change.');
   });
 
   it('regenerates the helper README once the MCP release moved', async () => {

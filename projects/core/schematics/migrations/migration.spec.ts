@@ -38,8 +38,11 @@ const ADDS_NOTE: Codemod<InstallManifest | undefined> = {
 
 // A migration entry sits one folder below this one.
 function migration(codemods: readonly Codemod<InstallManifest | undefined>[] = []) {
-  return createMigration({ version: '0.2.0', renames: RENAMES, codemods, bundleDir: join(__dirname, '0.2.0') });
+  return createMigration({ renames: RENAMES, codemods, bundleDir: join(__dirname, '0.2.0') });
 }
+
+// The entry a CLI run of the synthetic release would pass.
+const ENTRY = { name: 'migration-v0.2.0', version: '0.2.0' };
 
 describe('createMigration', () => {
   const isTTY = process.stdout.isTTY;
@@ -58,7 +61,7 @@ describe('createMigration', () => {
   it('applies the rename table across sources and templates', async () => {
     const { before, after } = readMigrationFixture('rename');
 
-    const { tree } = await runRule(migration(), createMemoryTree(before));
+    const { tree } = await runRule(migration(), createMemoryTree(before), ENTRY);
 
     expect(readTree(tree)).toEqual(after);
   });
@@ -66,7 +69,7 @@ describe('createMigration', () => {
   it('prints the renames and the codemod plan before applying them', async () => {
     const { before } = readMigrationFixture('rename');
 
-    const { logs } = await runRule(migration([ADDS_NOTE]), createMemoryTree(before));
+    const { logs } = await runRule(migration([ADDS_NOTE]), createMemoryTree(before), ENTRY);
 
     expect(logs[0]).toBe('cngx 0.2.0 migration');
     expect(logs[1]).toBe('Planned (2):');
@@ -88,7 +91,7 @@ describe('createMigration', () => {
       },
     };
 
-    await runRule(migration([spy]), createMemoryTree(before));
+    await runRule(migration([spy]), createMemoryTree(before), ENTRY);
 
     expect(seen).toEqual([after['src/app/app.html']]);
   });
@@ -96,7 +99,7 @@ describe('createMigration', () => {
   it('is idempotent', async () => {
     const { after } = readMigrationFixture('rename');
 
-    const { tree } = await runRule(migration(), createMemoryTree(after));
+    const { tree } = await runRule(migration(), createMemoryTree(after), ENTRY);
 
     expect(tree.actions).toEqual([]);
   });

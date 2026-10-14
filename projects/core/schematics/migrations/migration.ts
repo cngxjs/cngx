@@ -30,8 +30,6 @@ import { planManifestReruns } from '../ng-add/steps/reruns';
 
 /** What one release migrates: renames as data, codemods for the rest. */
 export interface Migration {
-  /** The release this migration brings an app to; a refresh takes it from `versions.json`. */
-  readonly version?: string;
   readonly renames: RenameTable;
   readonly codemods: readonly Codemod<InstallManifest | undefined>[];
   /** `__dirname` of the migration entry, `schematics/migrations/<version>`. */
@@ -55,8 +53,9 @@ function headlines(version: string): SummaryHeadlines {
   };
 }
 
-// The collection entry that ran: the CLI hands every schematic its entry,
-// `version` included, so a refresh keyed to an older release names that one.
+// The release names come from the collection entry that ran: the CLI hands
+// every schematic its entry, `version` included. A run outside a collection
+// falls back to the release the bundle ships.
 function entryVersion(context: SchematicContext): string | undefined {
   const { description } = context.schematic;
   return 'version' in description && typeof description.version === 'string'
@@ -147,7 +146,7 @@ export function createMigration(migration: Migration): Rule {
       createShellRendererOptions(process.env, process.stdout, context.logger, false),
     );
 
-    const release = migration.version ?? entryVersion(context) ?? versions.cngx;
+    const release = entryVersion(context) ?? versions.cngx;
     context.logger.info(`cngx ${release} migration`);
     await renderer.todo(plan);
     return chain([

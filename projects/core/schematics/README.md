@@ -82,9 +82,10 @@ the type check until all three exist.
 `ng-update.migrations` key next to the `packageGroup`. A release with a
 breaking change adds a migration:
 
-1. `migrations/<version>/index.ts` returns `createMigration({ version,
-   renames, codemods, bundleDir: __dirname })` (the build bundles every
-   `migrations/<folder>/index.ts`).
+1. `migrations/<version>/index.ts` returns `createMigration({ renames,
+   codemods, bundleDir: __dirname })` (the build bundles every
+   `migrations/<folder>/index.ts`). The release it names comes from its
+   `migrations.json` entry, which the CLI hands to the run.
 2. Renames are data: a `RenameTable` on top of `EMPTY_RENAME_TABLE` for
    classes, selectors, inputs, outputs, `exportAs` names, tokens and import
    paths. `planRenames` turns it into one edit per file plus a note for
