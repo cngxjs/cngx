@@ -1,9 +1,26 @@
+/**
+ * @overview
+ * Theming surface of the breadcrumb bar. Base tokens set the list gap,
+ * link decoration, separator glyph and the container-driven crumb cap.
+ *
+ * A skin is picked with the bar's `skin` input or the `skin` key of
+ * `provideBreadcrumbConfig` and reflected onto `[data-skin]` on the host.
+ * Each skin owns a `--cngx-breadcrumb-<skin>-*` token family. Skin colour
+ * tokens are reassigned inside the skin scope from the `--cngx-color-*`
+ * theme variables, so override them on the host or below.
+ */
+
 .cngx-breadcrumb {
   /* Derive the default bar gap from the scale so a global [data-density]
      compacts the unskinned breadcrumb (SET-from-scale rule; the skins derive
      their own contained/pill spacing, but the base list gap was pinned to the
      0.5rem fallback). 0.5rem -> sm. Read on the __list descendant; plain custom
      property, so this host SET cascades. */
+  /**
+   * Gap between the crumbs and separators in the list.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-breadcrumb-gap: var(--cngx-space-sm, 0.5rem);
   display: block;
   font: inherit;
@@ -47,6 +64,13 @@
    initial-value would defeat the var(token, fallback) that keeps LTR. The
    token also makes the separator consumer-themeable. */
 .cngx-breadcrumb:dir(rtl) {
+  /**
+   * Separator glyph rendered by the chevron-delimited skins (header, chips,
+   * iconlabel, icononly, shell, record). Swapped to the left-pointing chevron
+   * under RTL.
+   * @type <string>
+   * @group Skin
+   */
   --cngx-breadcrumb-separator: '\2039';
 }
 
@@ -135,105 +159,150 @@
   initial-value: 2;
 }
 
-/** Link text-decoration under the `plain` skin (retints the shared link-decoration leaf token). @group Skin */
+/**
+ * Link text-decoration under the `plain` skin (retints the shared link-decoration leaf token).
+ * @group Skin
+ */
 @property --cngx-breadcrumb-plain-link-decoration {
   syntax: '*';
   inherits: true;
   initial-value: none;
 }
 
-/** Inline padding of the `contained` list surface. @group Skin */
+/**
+ * Inline padding of the `contained` list surface.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-contained-padding {
   syntax: '*';
   inherits: true;
   initial-value: 0.375rem 0.75rem;
 }
 
-/** Surface fill of the `contained` list box (set adaptively from `--cngx-color-surface` in `:scope`). @group Skin */
+/**
+ * Surface fill of the `contained` list box (set adaptively from `--cngx-color-surface` in `:scope`).
+ * @group Skin
+ */
 @property --cngx-breadcrumb-contained-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: #f4f4f5;
 }
 
-/** Border width + style of the `contained` box. @group Skin */
+/**
+ * Border width + style of the `contained` box.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-contained-border {
   syntax: '*';
   inherits: true;
   initial-value: 1px solid;
 }
 
-/** Border colour of the `contained` box (set adaptively from `--cngx-color-border` in `:scope`). @group Skin */
+/**
+ * Border colour of the `contained` box (set adaptively from `--cngx-color-border` in `:scope`).
+ * @group Skin
+ */
 @property --cngx-breadcrumb-contained-border-color {
   syntax: '<color>';
   inherits: true;
   initial-value: #e4e4e7;
 }
 
-/** Corner radius of the `contained` box. @group Skin */
+/**
+ * Corner radius of the `contained` box.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-contained-radius {
   syntax: '*';
   inherits: true;
   initial-value: 0.375rem;
 }
 
-/** Track fill of the segmented `pill` bar. @group Skin */
+/**
+ * Track fill of the segmented `pill` bar.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-pill-track-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.97 0.005 250);
 }
 
-/** Track border of the segmented `pill` bar. @group Skin */
+/**
+ * Track border of the segmented `pill` bar.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-pill-track-border {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.88 0.005 250);
 }
 
-/** Corner radius of the `pill` track and its segments. @group Skin */
+/**
+ * Corner radius of the `pill` track and its segments.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-pill-radius {
   syntax: '*';
   inherits: true;
   initial-value: 999px;
 }
 
-/** Resting segment label colour under the `pill` skin. @group Skin */
+/**
+ * Resting segment label colour under the `pill` skin.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-pill-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.5 0.01 250);
 }
 
-/** Hover segment fill under the `pill` skin. @group Skin */
+/**
+ * Hover segment fill under the `pill` skin.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-pill-hover-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.95 0.03 50);
 }
 
-/** Hover segment label colour under the `pill` skin. @group Skin */
+/**
+ * Hover segment label colour under the `pill` skin.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-pill-hover-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
 
-/** Active-segment fill under the `pill` skin. @group Skin */
+/**
+ * Active-segment fill under the `pill` skin.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-pill-active-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.66 0.19 50);
 }
 
-/** Active-segment label colour under the `pill` skin. @group Skin */
+/**
+ * Active-segment label colour under the `pill` skin.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-pill-active-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
 
-/** Segment font size under the `pill` skin. @group Skin */
+/**
+ * Segment font size under the `pill` skin.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-pill-font-size {
   syntax: '*';
   inherits: true;
@@ -242,6 +311,11 @@
 
 @scope (.cngx-breadcrumb[data-skin='plain']) {
   :scope {
+    /**
+     * Text decoration of the crumb links. The `plain` skin sets it from `--cngx-breadcrumb-plain-link-decoration`.
+     * @type <text-decoration>
+     * @group Typography
+     */
     --cngx-breadcrumb-link-decoration: var(--cngx-breadcrumb-plain-link-decoration, none);
   }
 }
@@ -336,41 +410,73 @@
    knobs. */
 
 /* 03 Chevron Ribbon */
+/**
+ * Ribbon skin: resting fill of each chevron segment.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-ribbon-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.97 0.005 250);
 }
+/**
+ * Ribbon skin: resting label colour of the segments.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-ribbon-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.5 0.01 250);
 }
+/**
+ * Ribbon skin: segment fill on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-ribbon-hover-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.95 0.03 50);
 }
+/**
+ * Ribbon skin: segment label colour on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-ribbon-hover-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
+/**
+ * Ribbon skin: fill of the current-page segment.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-ribbon-active-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.66 0.19 50);
 }
+/**
+ * Ribbon skin: label colour of the current-page segment.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-ribbon-active-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
+/**
+ * Ribbon skin: font size of the segment labels.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-ribbon-font-size {
   syntax: '*';
   inherits: true;
   initial-value: 0.875rem;
 }
+/**
+ * Ribbon skin: corner radius of the flat outer edge of the first segment.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-ribbon-radius {
   syntax: '*';
   inherits: true;
@@ -412,6 +518,11 @@
        scaleX(-1) the element, which would also mirror the child label text.
        The arrow depth is one token so the LTR base and RTL mirror cannot
        drift, and a consumer can tune the chevron. */
+    /**
+     * Ribbon skin: depth of the chevron arrow cut into each segment. The RTL mirror reads the same value.
+     * @type <length>
+     * @group Skin
+     */
     --cngx-breadcrumb-ribbon-notch: 12px;
     display: inline-flex;
     align-items: center;
@@ -490,16 +601,28 @@
 }
 
 /* 06 Editorial Gradient */
+/**
+ * Editorial skin: start colour of the gradient underline that wipes in on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-editorial-accent {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.66 0.19 50);
 }
+/**
+ * Editorial skin: link text colour, also mixed into the end stop of the underline and current-page gradients.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-editorial-text {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
+/**
+ * Editorial skin: font size of the links and the mid-dot separator.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-editorial-font-size {
   syntax: '*';
   inherits: true;
@@ -577,31 +700,55 @@
 }
 
 /* 13 Page Header */
+/**
+ * Header skin: resting colour of the ancestor links.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-header-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.5 0.01 250);
 }
+/**
+ * Header skin: link background on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-header-hover-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.97 0.005 250);
 }
+/**
+ * Header skin: link colour on hover and colour of the current-page title.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-header-text {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
+/**
+ * Header skin: font size of the ancestor links and the chevron separator.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-header-font-size {
   syntax: '*';
   inherits: true;
   initial-value: 0.875rem;
 }
+/**
+ * Header skin: font size of the current-page crumb, which wraps to its own row as the page title.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-header-leaf-font-size {
   syntax: '*';
   inherits: true;
   initial-value: 1.125rem;
 }
+/**
+ * Header skin: corner radius of the links.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-header-radius {
   syntax: '*';
   inherits: true;
@@ -676,36 +823,64 @@
 }
 
 /* 14 Metro Line */
+/**
+ * Metro skin: border of the station dots, plus the dot fill and halo on the current page.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-metro-accent {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.66 0.19 50);
 }
+/**
+ * Metro skin: resting fill of the station dots.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-metro-surface {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(1 0 0);
 }
+/**
+ * Metro skin: station dot fill on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-metro-hover-dot {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.95 0.03 50);
 }
+/**
+ * Metro skin: resting link label colour.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-metro-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.5 0.01 250);
 }
+/**
+ * Metro skin: link label colour on hover and on the current page.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-metro-active-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
+/**
+ * Metro skin: colour of the rail that replaces the separator between stations.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-metro-rail {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.8 0.06 50);
 }
+/**
+ * Metro skin: font size of the link labels.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-metro-font-size {
   syntax: '*';
   inherits: true;
@@ -790,51 +965,91 @@
 }
 
 /* 15 Dense Toolbar */
+/**
+ * Toolbar skin: fill of the toolbar strip.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-toolbar-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(1 0 0);
 }
+/**
+ * Toolbar skin: outer border colour of the strip.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-toolbar-border-strong {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.78 0.01 250);
 }
+/**
+ * Toolbar skin: colour of the divider between cells.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-toolbar-cell-border {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.88 0.005 250);
 }
+/**
+ * Toolbar skin: resting cell label colour.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-toolbar-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.5 0.01 250);
 }
+/**
+ * Toolbar skin: cell fill on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-toolbar-hover-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.97 0.005 250);
 }
+/**
+ * Toolbar skin: cell label colour on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-toolbar-hover-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
+/**
+ * Toolbar skin: fill of the current-page cell.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-toolbar-active-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.95 0.03 50);
 }
+/**
+ * Toolbar skin: label colour of the current-page cell.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-toolbar-active-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.52 0.13 50);
 }
+/**
+ * Toolbar skin: font size of the cell labels.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-toolbar-font-size {
   syntax: '*';
   inherits: true;
   initial-value: 0.875rem;
 }
+/**
+ * Toolbar skin: corner radius of the strip.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-toolbar-radius {
   syntax: '*';
   inherits: true;
@@ -912,56 +1127,100 @@
 }
 
 /* 18 Quiet Chips */
+/**
+ * Chips skin: resting chip fill.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-chips-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(1 0 0);
 }
+/**
+ * Chips skin: resting chip border colour.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-chips-border {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.88 0.005 250);
 }
+/**
+ * Chips skin: resting chip label colour.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-chips-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.5 0.01 250);
 }
+/**
+ * Chips skin: chip border colour on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-chips-hover-border {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.78 0.01 250);
 }
+/**
+ * Chips skin: chip fill on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-chips-hover-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.97 0.005 250);
 }
+/**
+ * Chips skin: chip label colour on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-chips-hover-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
+/**
+ * Chips skin: fill of the current-page chip.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-chips-active-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.95 0.03 50);
 }
+/**
+ * Chips skin: border colour of the current-page chip.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-chips-active-border {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.82 0.08 50);
 }
+/**
+ * Chips skin: label colour of the current-page chip.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-chips-active-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.52 0.13 50);
 }
+/**
+ * Chips skin: font size of the chip labels and the chevron separator.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-chips-font-size {
   syntax: '*';
   inherits: true;
   initial-value: 0.875rem;
 }
+/**
+ * Chips skin: corner radius of the chips.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-chips-radius {
   syntax: '*';
   inherits: true;
@@ -1043,51 +1302,91 @@
 /* 04 File Path - monospace explorer; leading folder/file icons ride the
    `*cngxBreadcrumbIcon` slot (consumer content, rendered inside the link). The
    skin only paints; the icon slot leads the label natively. */
+/**
+ * Path skin: fill of the track behind the crumbs.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-path-track-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.97 0.005 250);
 }
+/**
+ * Path skin: border colour of the track.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-path-track-border {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.88 0.005 250);
 }
+/**
+ * Path skin: resting link colour.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-path-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.5 0.01 250);
 }
+/**
+ * Path skin: link background on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-path-hover-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(1 0 0);
 }
+/**
+ * Path skin: link colour on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-path-hover-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
+/**
+ * Path skin: colour of the current-page link.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-path-active-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.52 0.13 50);
 }
+/**
+ * Path skin: separator colour.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-path-sep-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.5 0.01 250);
 }
+/**
+ * Path skin: corner radius of the track.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-path-radius {
   syntax: '*';
   inherits: true;
   initial-value: 8px;
 }
+/**
+ * Path skin: corner radius of each link.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-path-link-radius {
   syntax: '*';
   inherits: true;
   initial-value: 4px;
 }
+/**
+ * Path skin: font size of the links.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-path-font-size {
   syntax: '*';
   inherits: true;
@@ -1149,36 +1448,64 @@
 /* 11 Icon + Label - each crumb carries a leading icon through the
    `*cngxBreadcrumbIcon` slot (consumer content, decorative, rendered inside the
    link). The skin paints the pill; the icon slot leads the label natively. */
+/**
+ * Iconlabel skin: resting crumb colour; the leading icon inherits it.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-iconlabel-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.5 0.01 250);
 }
+/**
+ * Iconlabel skin: link background on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-iconlabel-hover-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.97 0.005 250);
 }
+/**
+ * Iconlabel skin: link colour on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-iconlabel-hover-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
+/**
+ * Iconlabel skin: background of the current-page link.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-iconlabel-active-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.95 0.03 50);
 }
+/**
+ * Iconlabel skin: label and icon colour of the current-page crumb.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-iconlabel-active-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.52 0.13 50);
 }
+/**
+ * Iconlabel skin: corner radius of the links.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-iconlabel-radius {
   syntax: '*';
   inherits: true;
   initial-value: 999px;
 }
+/**
+ * Iconlabel skin: font size of the link labels and the chevron separator.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-iconlabel-font-size {
   syntax: '*';
   inherits: true;
@@ -1258,46 +1585,82 @@
    stays the accessible name (Pillar 2); a pure-CSS tooltip surfaces it from
    `[data-label]` on hover and keyboard focus. The leading icon rides the
    `*cngxBreadcrumbIcon` slot (consumer content). */
+/**
+ * Icononly skin: resting colour of the icon squares.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-icononly-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.5 0.01 250);
 }
+/**
+ * Icononly skin: icon square background on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-icononly-hover-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.97 0.005 250);
 }
+/**
+ * Icononly skin: icon square colour on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-icononly-hover-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
+/**
+ * Icononly skin: fill of the current-page icon square.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-icononly-active-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.66 0.19 50);
 }
+/**
+ * Icononly skin: icon colour of the current-page square.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-icononly-active-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
+/**
+ * Icononly skin: background of the label tooltip shown on hover and focus.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-icononly-tip-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
+/**
+ * Icononly skin: text colour of the label tooltip.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-icononly-tip-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(1 0 0);
 }
+/**
+ * Icononly skin: corner radius of the icon squares and the tooltip.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-icononly-radius {
   syntax: '*';
   inherits: true;
   initial-value: 4px;
 }
+/**
+ * Icononly skin: font size of the chevron separator.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-icononly-font-size {
   syntax: '*';
   inherits: true;
@@ -1404,36 +1767,64 @@
 /* 16 Product Shell - the root is a product chip (an initial mark), the rest a
    muted path. The `.product-mark` rides the `*cngxBreadcrumbIcon` slot, gated on
    index 0 in the consumer markup. */
+/**
+ * Shell skin: resting link colour.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-shell-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.5 0.01 250);
 }
+/**
+ * Shell skin: link background on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-shell-hover-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.97 0.005 250);
 }
+/**
+ * Shell skin: link colour on hover, on the current page and on the root product crumb.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-shell-text {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
+/**
+ * Shell skin: fill of the root product mark.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-shell-mark-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.66 0.19 50);
 }
+/**
+ * Shell skin: text colour of the root product mark.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-shell-mark-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(1 0 0);
 }
+/**
+ * Shell skin: font size of the links and the chevron separator.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-shell-font-size {
   syntax: '*';
   inherits: true;
   initial-value: 0.875rem;
 }
+/**
+ * Shell skin: corner radius of the links.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-shell-radius {
   syntax: '*';
   inherits: true;
@@ -1515,46 +1906,82 @@
    label ride the trailing `*cngxBreadcrumbItemAccessory` slot, both gated on the
    terminal crumb in the consumer markup. The dot is decorative (`aria-hidden`);
    the status label carries the semantics (Pillar 2). */
+/**
+ * Record skin: resting link colour.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-record-color {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.5 0.01 250);
 }
+/**
+ * Record skin: link background on hover.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-record-hover-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.97 0.005 250);
 }
+/**
+ * Record skin: link colour on hover and on the current page.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-record-text {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.2 0.01 250);
 }
+/**
+ * Record skin: fill of the record chip that wraps the terminal crumb.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-record-chip-bg {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(1 0 0);
 }
+/**
+ * Record skin: border colour of the record chip.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-record-chip-border {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.78 0.01 250);
 }
+/**
+ * Record skin: colour of the status dot, its halo and the status label.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-record-status {
   syntax: '<color>';
   inherits: true;
   initial-value: oklch(0.7 0.17 145);
 }
+/**
+ * Record skin: font size of the links and the chevron separator.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-record-font-size {
   syntax: '*';
   inherits: true;
   initial-value: 0.875rem;
 }
+/**
+ * Record skin: corner radius of the links.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-record-radius {
   syntax: '*';
   inherits: true;
   initial-value: 4px;
 }
+/**
+ * Record skin: corner radius of the record chip.
+ * @group Skin
+ */
 @property --cngx-breadcrumb-record-chip-radius {
   syntax: '*';
   inherits: true;
