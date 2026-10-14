@@ -29,7 +29,8 @@ projects/core/schematics/
   migrations/
     migrations.json      the ng update collection, one entry per release
     migration.ts         createMigration: renames, codemods, manifest re-runs
-    <version>/index.ts   one migration per release
+    <version>/index.ts   one migration per release with breaking changes
+    refresh/index.ts     the migration of every other release (keyed at publish)
   testing/               fixture apps and runRule for specs
 projects/<lib>/schematics/
   collection.json, tsconfig.json, ng-add/index.ts   the shim
@@ -98,8 +99,21 @@ breaking change adds a migration:
    files that differ from the stock app.
 
 Every migration also re-runs the install steps `.cngx/install.json` records
-(the theme, and the helper README once the MCP version moved) and records the
-new release in it. It never writes back a file that is gone; it names it.
+(the theme once the cngx version moved, the helper README once the MCP
+version moved) and records the new release in it. It never writes back a file
+that is gone; it names it. Every hand-written migration goes through
+`createMigration`, so it re-checks the manifest steps as well; there is no
+second path that skips them.
+
+The Angular CLI runs the entries whose version lies above the installed
+release and up to the target, so a release reaches an app only through an
+entry keyed to it. The source `migrations.json` holds only the hand-written
+keys. At release time `scripts/publish.mjs` adds
+`migration-v<release>-refresh` (factory `./refresh/index#migrate`) to
+`dist/core/schematics/migrations/migrations.json` for a release that brings
+no entry of its own; a release with its own migration gets none. Publish
+refuses a core release whose collection still has no entry for it.
+`npm run publish:dry` prints the entry it would add.
 
 ## Build and test
 
@@ -116,8 +130,9 @@ minified). `@angular-devkit/*`, `@schematics/angular`, `typescript` and
 Budgets: 256 KB minified / 90 KB gzip per entry, 20 KB per shim.
 `scripts/publish.mjs` writes `dist/core/schematics/versions.json` (the cngx,
 `@cngx/mcp` and `@cngx/eslint-plugin` pins, plus the `@angular/core` range
-`@cngx/core` peers on, which `ng add` refuses an older app against) and ships a
-lib's bundle only when its source `package.json` declares `schematics`.
+`@cngx/core` peers on, which `ng add` refuses an older app against), stamps the
+`refresh` entry into the dist migrations collection, and ships a lib's bundle
+only when its source `package.json` declares `schematics`.
 
 ## CLI behaviour worth knowing
 

@@ -3,7 +3,7 @@
   "schematics": {
     "migration-v0.1.0": {
       "version": "0.1.0",
-      "description": "Re-runs the recorded install steps and records the installed cngx release in .cngx/install.json.",
+      "description": "Re-checks the recorded install steps (the theme once the cngx release moved, .cngx/README.md once the @cngx/mcp release moved) and records the installed cngx release in .cngx/install.json.",
       "factory": "./0.1.0/index#migrate"
     }
   }
