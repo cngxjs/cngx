@@ -27,8 +27,8 @@ import { planManifestReruns } from '../ng-add/steps/reruns';
 
 /** What one release migrates: renames as data, codemods for the rest. */
 export interface Migration {
-  /** The release this migration brings an app to. */
-  readonly version: string;
+  /** The release this migration brings an app to; a refresh takes it from `versions.json`. */
+  readonly version?: string;
   readonly renames: RenameTable;
   readonly codemods: readonly Codemod<InstallManifest | undefined>[];
   /** `__dirname` of the migration entry, `schematics/migrations/<version>`. */
@@ -120,7 +120,7 @@ export function createMigration(migration: Migration): Rule {
       warning === undefined ? [] : [warning],
     );
 
-    context.logger.info(`cngx ${migration.version} migration`);
+    context.logger.info(`cngx ${migration.version ?? versions.cngx} migration`);
     context.logger.info(describeChangePlan(plan));
     return applyChangePlan(plan);
   };
