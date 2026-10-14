@@ -15,7 +15,7 @@ The text after the code says what happened at that call site. The page says why 
 
 Console diagnostics are development-only. The message and its code sit behind Angular's `ngDevMode` flag, so a production build drops both; the behaviour around them (an English fallback, a kept placeholder) stays the same. A console entry with a `CNGX` code in production means a CNGX bug; please report it.
 
-Thrown errors are different: most of them still throw in production, with the bare code as their message, so a `CNGX` code in a production error is expected. See [Thrown errors](#thrown-errors).
+Thrown errors are different: a thrown error that is not development-only also throws in production, with the bare code as its message, so a `CNGX` code in a production error is expected. See [Thrown errors](#thrown-errors).
 
 ## Ranges
 
@@ -43,7 +43,7 @@ CNGX1044: CngxChipInteraction must NOT be used inside <cngx-chip-group> / <cngx-
 
 What happens in a production build depends on the check:
 
-- **Most thrown errors** guard a precondition the code cannot continue without. They still throw in production, but the message is only the code (`CNGXnnnn`). The text and the link are dropped, the code stays, so a production error report still tells you which page to read.
+- **Precondition errors** guard something the code cannot continue without. They throw in production too, but the message is only the code (`CNGXnnnn`). The text and the link are dropped, the code stays, so a production error report still tells you which page to read.
 - **Development-only checks** catch a setup mistake that is visible during development, such as `CNGX1044` above. A production build removes the check together with its code, so it never throws there. Its page says so.
 
 `scripts/manifests/error-codes.json` in the repository marks each code as `"production": "code-only"` (still thrown, bare code) or `"stripped"` (removed).
