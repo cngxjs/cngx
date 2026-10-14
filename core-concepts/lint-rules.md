@@ -48,7 +48,7 @@ The TypeScript rules run under whatever TypeScript parser your config already se
 
 `ng add` wires all of this for you when the app has a flat config: it adds the
 devDependency and spreads `configs.recommended` into the exported array. See
-[Install](install.md) for the cases it cannot wire and the note it leaves instead.
+[Install](install.html) for the cases it cannot wire and the note it leaves instead.
 
 ### Flat config
 
@@ -109,7 +109,7 @@ that sets the rule to the level you want.
 ## Signal hygiene
 
 These two rules hold the line between signal state and everything else. Both enforce
-[Pillar 1](three-pillars.md), derivation over management: state lives in signals, and
+[Pillar 1](the-three-pillars.html), derivation over management: state lives in signals, and
 every derived value is computed from it rather than synced by hand.
 
 ### `no-effect-in-ngoninit`
@@ -120,7 +120,7 @@ form of the hook.
 `effect()` resolves its `Injector` from the injection context. The constructor and field
 initializers run inside one; `ngOnInit` runs after it has closed, so the call throws
 `NG0203` at runtime. The rule turns that runtime error into a lint error. See
-[Effect rules](signal-first-internals.md#effect-rules).
+[Effect rules](signal-first-internals.html#effect-rules).
 
 ```ts
 // flagged
@@ -152,7 +152,7 @@ keep everything that depends on it in sync yourself. A `signal()` puts the same 
 the reactive graph, where `computed()` derives from it and templates read it without a
 subscription. RxJS stays at the boundary (HTTP, WebSockets, DOM streams), which is why
 services are out of scope: an `@Injectable` or an undecorated class keeping a genuine
-stream is not flagged. See [RxJS at the boundary](signal-first-internals.md#rxjs-at-the-boundary).
+stream is not flagged. See [RxJS at the boundary](signal-first-internals.html#rxjs-at-the-boundary).
 
 ```ts
 // flagged
@@ -192,7 +192,7 @@ Flags an `input()` or `input.required()` field `x` on a class that also declares
 The pair compiles and even supports the `[(x)]` banana-in-a-box syntax, but it spreads
 one value over two declarations and loses the single writable signal `model()` gives
 you. CNGX makes every two-way bindable atom a `model()`. See
-[`model<T>()` for two-way bindable atoms](signal-first-internals.md#inputs-and-outputs).
+[`model<T>()` for two-way bindable atoms](signal-first-internals.html#inputs-and-outputs).
 
 ```ts
 // flagged
@@ -219,8 +219,8 @@ A bridge directive reads its state from an input, and falls back to the injected
 when no input is bound. `input.required()` breaks that path: the template now demands a
 binding the fallback exists to make unnecessary. Bridge inputs stay optional, with a
 transform that turns the empty string of a bare attribute into `undefined`. This is the
-bridge-input rule from [Pillar 3](three-pillars.md) and
-[`input.required<T>()` only when the consumer must provide](signal-first-internals.md#inputs-and-outputs).
+bridge-input rule from [Pillar 3](the-three-pillars.html) and
+[`input.required<T>()` only when the consumer must provide](signal-first-internals.html#inputs-and-outputs).
 
 ```ts
 // flagged
@@ -264,7 +264,7 @@ it runs on `**/*.html` under the Angular template parser.
 `CngxMenuTrigger` wires the menu behavior only and sets no CSS anchor. A menu panel
 rendered into a popover positions against the anchor `cngxPopoverTrigger` establishes.
 Without it the panel opens unanchored, at the top-left of the viewport. Splitting the
-two is deliberate composition ([Pillar 3](three-pillars.md)): each directive owns one
+two is deliberate composition ([Pillar 3](the-three-pillars.html)): each directive owns one
 responsibility, and the rule makes sure you compose both.
 
 ```html
@@ -292,7 +292,7 @@ Service methods read signals internally: dedup flags, queues, their own state. C
 from an effect without `untracked()`, every one of those reads becomes a dependency of
 the effect, so the effect re-fires on the callee's own state changes. That is the
 reactive loop that freezes a tab. Wrapping the call keeps the effect subscribed only to
-what it reads directly. See [Untracked](signal-first-internals.md#untracked).
+what it reads directly. See [Untracked](signal-first-internals.html#untracked).
 
 ```ts
 // flagged
@@ -369,5 +369,5 @@ check metadata in the same record shape as `RULE_METADATA`, so a doctor finding 
 lint finding read the same way.
 
 The agents and skills cite the id of a finding either tool owns and defer the verdict to
-it. See [The mechanical layer](agent-tooling.md#the-mechanical-layer) in Agent Tooling
+it. See [The mechanical layer](agent-tooling.html#the-mechanical-layer) in Agent Tooling
 for how the agents route to both.

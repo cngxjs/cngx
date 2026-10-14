@@ -192,7 +192,7 @@ tools own it:
   scope can decide, such as an `effect()` created in `ngOnInit`, a service call in
   an `effect()` left outside `untracked()`, or a two-way binding wired as an
   `input()` plus `output()` pair instead of a `model()`. Every rule, its rationale
-  and its options are on [Lint Rules](lint-rules.md).
+  and its options are on [Lint Rules](lint-rules.html).
 - **`@cngx/doctor`** carries the project-wiring checks - the ones that need a
   whole-project view: `toaster-without-withtoasts` (a feedback surface used without
   its root opt-in), `track-b-css-not-imported` (a directive whose theming stylesheet
