@@ -114,9 +114,10 @@ keys. At release time `scripts/publish.mjs` adds
 no entry of its own; a release with its own migration gets none. Before
 anything is published, publish checks the source collection: it must parse,
 and every entry for the release must name a factory whose `index.ts`
-exists. After the core build it checks the dist collection the same way
-against the bundled `index.js`, before core publishes. `npm run publish:dry`
-runs both checks and prints the entry it would add.
+exists. Publish then builds every lib before the first `npm publish` and
+checks the dist collection the same way against the bundled `index.js`, so a
+refusal never leaves part of the release on the registry. `npm run
+publish:dry` runs both checks and prints the entry it would add.
 
 ## Build and test
 

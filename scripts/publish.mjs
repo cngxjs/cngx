@@ -404,6 +404,9 @@ function main() {
     }
   }
 
+  // Every lib is built and checked before the first `npm publish`, so a
+  // refusal never leaves part of the lockstep release on the registry.
+  const releases = [];
   for (const lib of libs) {
     console.log(`\n[${lib}]`);
 
@@ -429,7 +432,6 @@ function main() {
       process.exit(1);
     }
 
-    const schematicsVersionsPath = join(ROOT, 'dist', lib, 'schematics', 'versions.json');
     const schematicsVersions =
       lib === 'core' && libShipsSchematics
         ? createSchematicsVersions({
@@ -441,19 +443,17 @@ function main() {
         : null;
 
     const migrationsPath = join(ROOT, 'dist', lib, 'schematics', 'migrations', 'migrations.json');
-    let stampedMigrations = null;
+    let migrations = null;
     if (schematicsVersions) {
       // The source passed the pre-flight; a failure here is a build that
-      // dropped the collection or a bundle, and stops before core publishes.
+      // dropped the collection or a bundle.
       try {
-        stampedMigrations = checkReleaseMigrations(migrationsPath, nextVersion, '.js');
+        migrations = checkReleaseMigrations(migrationsPath, nextVersion, '.js');
       } catch (error) {
         console.error(`  Refusing to publish @cngx/${lib}: ${error.message}`);
         process.exit(1);
       }
     }
-    const refreshKey = refreshMigrationKey(nextVersion);
-    const addsRefresh = stampedMigrations !== null && refreshKey in stampedMigrations.schematics;
 
     const distTag = resolveDistTag({
       nextVersion,
@@ -461,13 +461,23 @@ function main() {
       hasStableRelease: tag ? false : containsStableRelease(publishedVersions(lib, registryFlag)),
     });
 
+    releases.push({ lib, distPkg, distPkgPath, schematicsVersions, migrations, migrationsPath, distTag });
+  }
+
+  for (const { lib, distPkg, distPkgPath, schematicsVersions, migrations, migrationsPath, distTag } of releases) {
+    console.log(`\n[${lib}]`);
+    const migrationsFile = `dist/${lib}/schematics/migrations/migrations.json`;
+    const refreshKey = refreshMigrationKey(nextVersion);
+    const addsRefresh = migrations !== null && refreshKey in migrations.schematics;
+
     if (!dryRun) {
       writeFileSync(distPkgPath, JSON.stringify(distPkg, null, 2) + '\n');
       if (schematicsVersions) {
-        writeFileSync(schematicsVersionsPath, JSON.stringify(schematicsVersions, null, 2) + '\n');
+        writeFileSync(join(ROOT, 'dist', lib, 'schematics', 'versions.json'), JSON.stringify(schematicsVersions, null, 2) + '\n');
       }
       if (addsRefresh) {
-        writeFileSync(migrationsPath, JSON.stringify(stampedMigrations, null, 2) + '\n');
+        writeFileSync(migrationsPath, JSON.stringify(migrations, null, 2) + '\n');
+        console.log(`  Added ${refreshKey} to ${migrationsFile}`);
       }
       replaceVersionInDist(join(ROOT, 'dist', lib), nextVersion);
       run(`npm publish --access public --tag ${distTag}${registryFlag}`, join(ROOT, 'dist', lib));
@@ -478,9 +488,9 @@ function main() {
         console.log(`  Would write dist/${lib}/schematics/versions.json ${JSON.stringify(schematicsVersions)}`);
       }
       if (addsRefresh) {
-        console.log(`  Would add ${refreshKey} to dist/${lib}/schematics/migrations/migrations.json`);
-      } else if (stampedMigrations) {
-        console.log(`  Keeps the migration of ${nextVersion} in dist/${lib}/schematics/migrations/migrations.json`);
+        console.log(`  Would add ${refreshKey} to ${migrationsFile}`);
+      } else if (migrations) {
+        console.log(`  Keeps the migration of ${nextVersion} in ${migrationsFile}`);
       }
     }
   }
