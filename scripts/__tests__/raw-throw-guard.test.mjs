@@ -19,8 +19,9 @@
 //     construction itself is dev-only; a guarded construction does not run at
 //     module load, where `ngDevMode` can still be undefined in a dev build.
 // T4  `CngxRuntimeError` is only constructed, tested with `instanceof`,
-//     imported, exported or named in a type: an alias or any other value use
-//     hides the construction from T2/T3, the manifest and the prod-strip check.
+//     imported, exported or named in a type: an alias, a namespace or
+//     element access (`ns['CngxRuntimeError']`) or any other value use hides
+//     the construction from T2/T3, the manifest and the prod-strip check.
 //
 // The walk is `readSources`, shared with the raw-console guard, the manifest
 // and the prod-strip check: specs, tooling roots, example folders and
@@ -189,6 +190,20 @@ export function rawThrowLines(path, text) {
   return lines;
 }
 
+/** Is the identifier a type name: `T`, `ns.T`, `typeof T` or `import('x').T`? */
+const isTypeName = (node) => {
+  let current = node;
+  while (ts.isQualifiedName(current.parent) && current.parent.right === current) {
+    current = current.parent;
+  }
+  const parent = current.parent;
+  return (
+    ts.isTypeReferenceNode(parent) ||
+    ts.isTypeQueryNode(parent) ||
+    (ts.isImportTypeNode(parent) && parent.qualifier === current)
+  );
+};
+
 /** Why a `CngxRuntimeError` identifier is not an allowed use (T4), or null. */
 function misuseOf(node, path) {
   const parent = node.parent;
@@ -205,7 +220,7 @@ function misuseOf(node, path) {
   if (ts.isImportSpecifier(parent) || ts.isExportSpecifier(parent)) {
     return parent.propertyName ? `${RUNTIME_ERROR} is aliased` : null;
   }
-  if (ts.isTypeReferenceNode(parent) || ts.isTypeQueryNode(parent)) {
+  if (isTypeName(node)) {
     return null;
   }
   if (ts.isClassDeclaration(parent) && parent.name === node && path === RUNTIME_ERROR_FILE) {
@@ -230,6 +245,15 @@ function collectRuntimeErrorMisuse(path, text) {
       if (reason) {
         out.push(`${path}:${lineOf(sf, node)} T4 ${reason}; construct it with new`);
       }
+    }
+    if (
+      ts.isElementAccessExpression(node) &&
+      ts.isStringLiteralLike(node.argumentExpression) &&
+      node.argumentExpression.text === RUNTIME_ERROR
+    ) {
+      out.push(
+        `${path}:${lineOf(sf, node)} T4 ${RUNTIME_ERROR} is read by element access; construct it with new`,
+      );
     }
     ts.forEachChild(node, visit);
   };
@@ -524,6 +548,19 @@ describe('raw-throw guard - T4 references', () => {
     ).toEqual([]);
   });
 
+  it('passes qualified and import-type names in type positions', () => {
+    expect(
+      fixture(
+        [
+          "type A = typeof import('@cngx/utils').CngxRuntimeError;",
+          "type B = import('@cngx/utils').CngxRuntimeError;",
+          'type C = utils.CngxRuntimeError;',
+          'type D = typeof utils.CngxRuntimeError;',
+        ].join('\n'),
+      ).violations,
+    ).toEqual([]);
+  });
+
   it('allows the declaration only in runtime-error.ts', () => {
     const declaration = 'export class CngxRuntimeError extends Error {}';
     expect(fixture(declaration, RUNTIME_ERROR_FILE).violations).toEqual([]);
@@ -540,6 +577,11 @@ describe('raw-throw guard - T4 references', () => {
       'projects/common/a.ts:1 T4 CngxRuntimeError is read through a namespace or object; construct it with new',
     ]);
     expect(fixture('const E = CngxRuntimeError;').violations).toHaveLength(1);
+    expect(
+      fixture("function f() { throw new u['CngxRuntimeError']('CNGX1001'); }").violations,
+    ).toEqual([
+      'projects/common/a.ts:1 T4 CngxRuntimeError is read by element access; construct it with new',
+    ]);
     expect(fixture('class Mine extends CngxRuntimeError {}').violations).toHaveLength(1);
   });
 });
