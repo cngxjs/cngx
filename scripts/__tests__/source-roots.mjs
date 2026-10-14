@@ -16,3 +16,15 @@ const TOOLING_ROOT = /^projects\/[^/]+\/schematics$/;
 export function isToolingRoot(relDir) {
   return TOOLING_ROOT.test(relDir);
 }
+
+/**
+ * Example code under `projects/<lib>/<entry>/examples/` is demo material, not
+ * reachable from any `public-api.ts`. The guards and the error-code manifest
+ * read library sources only, so they agree on one file set.
+ *
+ * @param {string} relPath repo-relative file path, posix separators
+ * @returns {boolean}
+ */
+export function isExampleSource(relPath) {
+  return relPath.includes('/examples/');
+}

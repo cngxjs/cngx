@@ -16,6 +16,7 @@ import * as prettier from 'prettier';
 import { collectHelperCalls, collectRuntimeErrors } from './dev-diagnostics.mjs';
 import { sourceFiles } from './devtools-prod-strip-check.mjs';
 import { DEFAULT_BASE_URL } from './llms-publish.mjs';
+import { isExampleSource } from './__tests__/source-roots.mjs';
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -273,13 +274,18 @@ export function renderSummary(summary) {
 
 /**
  * The library sources the call sites are read from, as [{ path, text }]:
- * `projects/**` minus specs, tooling roots and the unpublished
- * `projects/testing`. The published `testing` entries of the libs stay in.
+ * `projects/**` minus specs, tooling roots, example folders and the
+ * unpublished `projects/testing`. The published `testing` entries of the libs stay in.
  */
 export function readSources() {
   return sourceFiles('projects', REPO_ROOT)
     .map((path) => path.split('\\').join('/'))
-    .filter((path) => !path.endsWith('.spec.ts') && !path.startsWith('projects/testing/'))
+    .filter(
+      (path) =>
+        !path.endsWith('.spec.ts') &&
+        !path.startsWith('projects/testing/') &&
+        !isExampleSource(path),
+    )
     .map((path) => ({ path, text: readFileSync(resolve(REPO_ROOT, path), 'utf8') }));
 }
 

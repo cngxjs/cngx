@@ -16,8 +16,9 @@
 //     imported, exported or named in a type: an alias or any other value use
 //     hides the construction from T2/T3, the manifest and the prod-strip check.
 //
-// The walk is the raw-console guard's (`readSources`), minus `/examples/`
-// folders: example code is not library code.
+// The walk is `readSources`, shared with the raw-console guard, the manifest
+// and the prod-strip check: specs, tooling roots, example folders and
+// `projects/testing` are out.
 
 import { performance } from 'node:perf_hooks';
 
@@ -34,6 +35,7 @@ import {
 } from '../dev-diagnostics.mjs';
 import { libOf, rangeOf, readSources } from '../error-codes-manifest.mjs';
 import { RAW_THROW_BASELINE } from './raw-throw-baseline.mjs';
+import { isExampleSource } from './source-roots.mjs';
 
 /**
  * Files allowed to throw a raw error. Exact count: a new throw in an exempt
@@ -63,8 +65,6 @@ const RAW_THROW_EXEMPT = [
 /** The file that declares the class; its own declaration is no value use. */
 const RUNTIME_ERROR_FILE = 'projects/utils/runtime-error.ts';
 const CODE_PATTERN = /^CNGX\d{4}$/;
-
-const inScope = (path) => !/\/examples\//.test(path);
 
 /** `node` through parentheses, `as`, `satisfies`, `!` and `<T>` casts. */
 const unwrap = (node) => {
@@ -168,7 +168,7 @@ function collectRuntimeErrorMisuse(path, text) {
  * @returns {{ raw: Map<string, number>; violations: string[] }}
  */
 export function checkSources(allFiles) {
-  const files = allFiles.filter(({ path }) => inScope(path));
+  const files = allFiles.filter(({ path }) => !isExampleSource(path));
   const raw = new Map();
   const violations = [];
   for (const { path, text } of files) {

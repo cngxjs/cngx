@@ -5,7 +5,8 @@
 //
 // The needles are derived from source, never kept by hand:
 // - the `cngx-dev:` marker every dev descriptor `kind` carries;
-// - every hand-written `debugName` value in projects/** (specs excluded).
+// - every hand-written `debugName` value in projects/** (specs and example
+//   folders excluded).
 //   Compiler-inserted names never appear in source, so only hand-written ones
 //   need checking. A hand-written name must be a dotted `<owner>.<signal>`
 //   string literal, so the needle is specific enough to search a bundle for.
@@ -49,7 +50,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { isToolingRoot } from './__tests__/source-roots.mjs';
+import { isExampleSource, isToolingRoot } from './__tests__/source-roots.mjs';
 import { collectDocsUrls, collectHelperCalls, collectRuntimeErrors } from './dev-diagnostics.mjs';
 
 export const MARKER = 'cngx-dev:';
@@ -66,10 +67,10 @@ const SKIPPED_DIRS = new Set(['node_modules', 'dist', '.angular']);
 export function deriveNeedles(files) {
   const needles = [MARKER];
   const violations = [];
-  for (const { path, text } of files) {
-    if (isSpec(path)) {
-      continue;
-    }
+  const libraryFiles = files.filter(
+    ({ path }) => !isSpec(path) && !isExampleSource(path.split(sep).join('/')),
+  );
+  for (const { path, text } of libraryFiles) {
     for (const match of text.matchAll(/\bdebugName\s*:\s*/g)) {
       const start = match.index + match[0].length;
       const line = text.slice(0, match.index).split('\n').length;
@@ -89,7 +90,6 @@ export function deriveNeedles(files) {
       }
     }
   }
-  const libraryFiles = files.filter(({ path }) => !isSpec(path));
   for (const { code } of collectHelperCalls(libraryFiles)) {
     if (code !== null && !needles.includes(code)) {
       needles.push(code);
