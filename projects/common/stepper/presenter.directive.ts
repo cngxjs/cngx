@@ -17,8 +17,8 @@ import {
   type CngxAsyncState,
   type StatusTransition,
 } from '@cngx/core/utils';
-import type { Observable } from 'rxjs';
 import { cngxDevWarn } from '@cngx/utils';
+import type { Observable } from 'rxjs';
 
 import {
   CNGX_STEPPER_COMMIT_HANDLER_FACTORY,
