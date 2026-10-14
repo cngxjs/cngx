@@ -29,6 +29,11 @@
   /* Derive the header padding from the scale so a global [data-density]
      compacts it; SET identically on the data-mode base header so the two stay
      locked. 0.25rem 0.5rem -> xs sm. */
+  /**
+   * Padding of the group header label.
+   * @type <length> <length>
+   * @group Layout
+   */
   --cngx-select-optgroup-padding: var(--cngx-space-xs) var(--cngx-space-sm);
   padding: var(--cngx-select-optgroup-padding, 0.25rem 0.5rem);
   font-size: 0.75rem;

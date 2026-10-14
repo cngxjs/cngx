@@ -36,7 +36,17 @@
      the search field. search-padding 0.5rem -> sm; input-padding 0.375/0.5 ->
      xs/sm (block 6px tie -> xs, matching the option snap). Both cascade to the
      descendant input. */
+  /**
+   * Padding around the search field, inside the divider.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-select-search-padding: var(--cngx-space-sm);
+  /**
+   * Padding inside the search input.
+   * @type <length> <length>
+   * @group Layout
+   */
   --cngx-select-search-input-padding: var(--cngx-space-xs) var(--cngx-space-sm);
   display: block;
   padding: var(--cngx-select-search-padding, 0.5rem);

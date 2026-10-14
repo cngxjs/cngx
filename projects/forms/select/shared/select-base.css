@@ -1045,6 +1045,11 @@
     --cngx-select-option-padding: var(--cngx-space-xs) var(--cngx-space-sm);
     /* option-row gap 0.5rem -> sm; SET here so the data-mode row derives and
        stays locked to the declarative cngx-option host (option.component.css). */
+    /**
+     * Gap between the parts of the option row, such as the check indicator and the label.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-option-gap: var(--cngx-space-sm);
     display: flex;
     align-items: center;
@@ -1094,6 +1099,11 @@
     /* message-padding 0.5/0.75 -> sm/sm (0.75rem -> 8, matching the family
        snap) so a global [data-density] compacts the loading / empty rows like
        the option / skeleton rows already do. */
+    /**
+     * Padding of the loading and empty message rows in the panel.
+     * @type <length> <length>
+     * @group Layout
+     */
     --cngx-select-message-padding: var(--cngx-space-sm) var(--cngx-space-sm);
     padding: var(--cngx-select-message-padding, 0.5rem 0.75rem);
     font-style: italic;
