@@ -74,6 +74,16 @@ describe('CngxChipInteraction', () => {
       expect((err as CngxRuntimeError).code).toBe('CNGX1044');
     });
 
+    it('skips the check when ngDevMode is off, as in a production build', async () => {
+      vi.stubGlobal('ngDevMode', false);
+      try {
+        const handleError = await renderReportingErrors(InGroupHost);
+        expect(handleError).not.toHaveBeenCalled();
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    });
+
     it('reports nothing for a chip outside a group', async () => {
       const handleError = await renderReportingErrors(Host);
       expect(handleError).not.toHaveBeenCalled();
