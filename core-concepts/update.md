@@ -7,7 +7,7 @@
 
 <aside class="cc-tldr">
 
-Run `ng update @cngx/core`. Every `@cngx/*` package moves to the same release, the migration of each release in between runs, and since every release from 0.1.0 on carries one, the install steps recorded in `.cngx/install.json` are re-checked on every update. The plan prints before anything changes and a summary follows, as with `ng add`.
+Run `ng update @cngx/core`. Every `@cngx/*` package moves to the same release, and the migrations the target release ships run: each hand-written migration between the installed and the target release, plus the entry keyed to the target itself. Every release after 0.1.0-rc.8 carries that entry, so the install steps recorded in `.cngx/install.json` are re-checked on every update. The plan prints before anything changes and a summary follows, as with `ng add`.
 
 </aside>
 
@@ -40,15 +40,15 @@ ng update @cngx/core --dry-run
 
 ## Migrations
 
-From 0.1.0 on, every release carries a migration keyed to its version. The
-0.1.0 release candidates carry none of their own; the CLI compares against
-the target without its prerelease tag, so an update between two of them
-runs the `0.1.0` migration. `ng update` runs
-the entries whose version lies above the installed release and up to the
-target release, in order. A release with breaking changes brings its own
-migration; every other release gets a `refresh` entry, added to the
-published package at release time, that renames nothing and only does the
-install re-runs. A migration does three things:
+`ng update` reads the migrations from the release it installs. They are the
+hand-written migrations of every release with breaking changes, plus one
+entry keyed to the target release itself: its own migration when it brings
+one, otherwise a `refresh` entry that is added to the published package at
+release time, renames nothing and only does the install re-runs. Every
+release after 0.1.0-rc.8 carries that entry. The CLI runs the entries whose
+version lies above the installed release and up to the target, compared
+without the target's prerelease tag, in version order. A migration does
+three things:
 
 - **Renames.** Classes, selectors, inputs, outputs, `exportAs` names, DI
   tokens and import paths that a release renamed are rewritten in your
@@ -65,12 +65,17 @@ left to you), how many steps were already in place, and the next steps.
 The first migration, `0.1.0`, renames nothing: the breaking changes of the
 release candidates before it are covered by the written migration guides.
 Like a `refresh` entry, it re-checks the recorded install steps and records
-the release in the manifest.
+the installed release in the manifest. Because the CLI compares against the
+target without its prerelease tag, an update from one 0.1.0 release
+candidate to a later one runs the `0.1.0` migration next to the later
+candidate's own entry.
 
-An update across several releases runs each entry once, and each prints its
-own plan and summary headed by its release. The first one moves the manifest
-to the target release; the ones after it find it in place, and their
-headline says that this migration found nothing to change.
+An update across several releases runs every hand-written migration in that
+range and the target's entry. It runs no `refresh` entry of a release in
+between: those ship only with their own release. Each entry prints its own
+plan and summary headed by its release. The first one moves the manifest to
+the target release; the ones after it find it in place, and their headline
+says that this migration found nothing to change.
 
 ---
 

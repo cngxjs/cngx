@@ -424,8 +424,9 @@ describe('Angular CLI migration range', () => {
     expect(selects('0.1.1-rc.0', '0.1.1-rc.1', '0.1.1-rc.1')).toBe(true);
   });
 
-  it('selects the stable entry between two candidates of that release', () => {
-    expect(selects('0.1.0-rc.7', '0.1.0-rc.8', '0.1.0')).toBe(true);
+  it('selects the stable entry and the later candidate entry between two candidates', () => {
+    expect(selects('0.1.0-rc.8', '0.1.0-rc.9', '0.1.0')).toBe(true);
+    expect(selects('0.1.0-rc.8', '0.1.0-rc.9', '0.1.0-rc.9')).toBe(true);
   });
 
   it('skips the entry of the release an app already runs', () => {

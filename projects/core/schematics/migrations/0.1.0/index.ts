@@ -8,7 +8,8 @@ import { createMigration } from '../migration';
  * nothing: breaking changes before it stay documented in the
  * `core-concepts/*-migration.md` guides. From the manifest it re-checks the
  * theme once the cngx release moved and regenerates `.cngx/README.md` once
- * the `@cngx/mcp` release moved, then moves the manifest to 0.1.0.
+ * the `@cngx/mcp` release moved, then moves the manifest to the release
+ * being installed (a later candidate's, on a candidate-to-candidate update).
  */
 export function migrate(): Rule {
   return createMigration({ renames: EMPTY_RENAME_TABLE, codemods: [], bundleDir: __dirname });
