@@ -1,11 +1,22 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { CNGX_ERROR_DOCS_URL } from './dev-message';
+import { CNGX_ERROR_DOCS_URL, type CngxErrorCode } from './dev-message';
 import { CngxRuntimeError } from './runtime-error';
 
 describe('CngxRuntimeError', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  it('types a code as CNGX plus exactly four digits', () => {
+    const code: CngxErrorCode = 'CNGX0902';
+    // @ts-expect-error -- a sign is not a digit
+    const signed: CngxErrorCode = 'CNGX-1';
+    // @ts-expect-error -- exponent notation is a number, not four digits
+    const exponent: CngxErrorCode = 'CNGX1e3';
+    // @ts-expect-error -- five digits
+    const long: CngxErrorCode = 'CNGX12345';
+    expect([code, signed, exponent, long]).toHaveLength(4);
   });
 
   describe('in development', () => {

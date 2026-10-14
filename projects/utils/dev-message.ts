@@ -1,5 +1,8 @@
+/** @internal */
+type CngxDigit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+
 /**
- * Shape of a cngx diagnostic code: `CNGX` plus four digits, for example
+ * Shape of a cngx diagnostic code: `CNGX` plus exactly four digits, for example
  * `CNGX0901`. One type for both channels: the console diagnostics written by
  * `cngxDevWarn` / `cngxDevError` and the `code` of a thrown
  * `CngxRuntimeError`. The shape is typed here; existence, uniqueness and the
@@ -10,7 +13,7 @@
  * @since 0.1.0
  * @relatedTo CngxRuntimeError
  */
-export type CngxErrorCode = `CNGX${number}`;
+export type CngxErrorCode = `CNGX${CngxDigit}${CngxDigit}${CngxDigit}${CngxDigit}`;
 
 /**
  * Base URL of the per-code doc pages. A code's page is
