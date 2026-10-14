@@ -122,6 +122,16 @@ export type CngxIncrementalListSkin = 'plain' | 'divided' | 'card';
  * @slot cngxIncrementalEmpty Rendered when the list resolves to nothing.
  * @slot cngxIncrementalError Rendered when a page fetch fails; gets the error and a retry callback.
  * @slot cngxIncrementalEnd Rendered once after the last page, e.g. an end-of-results marker.
+ * <example-url>http://localhost:4200/#/ui/collection/incremental-list/load-more-trigger</example-url>
+ * <example-url>http://localhost:4200/#/ui/collection/incremental-list/infinite-trigger</example-url>
+ * <example-url>http://localhost:4200/#/ui/collection/incremental-list/virtualized</example-url>
+ * <example-url>http://localhost:4200/#/ui/collection/incremental-list/custom-loading-slot</example-url>
+ * <example-url>http://localhost:4200/#/ui/collection/incremental-list/empty</example-url>
+ * <example-url>http://localhost:4200/#/ui/collection/incremental-list/end-reached</example-url>
+ * <example-url>http://localhost:4200/#/ui/collection/incremental-list/error-retry</example-url>
+ * <example-url>http://localhost:4200/#/ui/collection/incremental-list/skins/plain</example-url>
+ * <example-url>http://localhost:4200/#/ui/collection/incremental-list/skins/divided</example-url>
+ * <example-url>http://localhost:4200/#/ui/collection/incremental-list/skins/card</example-url>
  */
 @Component({
   selector: 'cngx-incremental-list',

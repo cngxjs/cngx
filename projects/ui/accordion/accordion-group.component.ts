@@ -42,7 +42,15 @@ import { injectAccordionConfig } from './config/inject-accordion-config';
  * <example-url>http://localhost:4200/#/ui/accordion/multi-open/independent</example-url>
  * <example-url>http://localhost:4200/#/ui/accordion/controlled-open/initial-open</example-url>
  * <example-url>http://localhost:4200/#/ui/accordion/config/app-wide-labels</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/skins/bento</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/skins/categorized</example-url>
  * <example-url>http://localhost:4200/#/ui/accordion/skins/editorial</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/skins/lux</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/skins/plus-minus</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/skins/primary-frame</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/skins/section-bands</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/skins/severity-spine</example-url>
+ * <example-url>http://localhost:4200/#/ui/accordion/skins/timeline</example-url>
  */
 @Component({
   selector: 'cngx-accordion-group',
