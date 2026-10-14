@@ -101,6 +101,23 @@ describe('devtools-prod-strip-check - needle derivation', () => {
     expect(needles).toEqual([MARKER, 'CNGX0001', 'CNGX0003']);
   });
 
+  it('adds the code of a dev-only runtime error, never a code-only one', () => {
+    const guard = "typeof ngDevMode !== 'undefined' && ngDevMode";
+    const { needles, runtime } = deriveNeedles([
+      {
+        path: 'lib/a.ts',
+        text: [
+          `function f() { if (${guard}) { throw new CngxRuntimeError('CNGX1001', 'm'); } }`,
+          `function g() { throw new CngxRuntimeError('CNGX1002', ${guard} && 'm'); }`,
+        ].join('\n'),
+      },
+      { path: 'lib/a.spec.ts', text: "throw new CngxRuntimeError('CNGX1003');" },
+    ]);
+
+    expect(needles).toEqual([MARKER, 'CNGX1001']);
+    expect(runtime).toEqual({ devOnly: ['CNGX1001'], codeOnly: ['CNGX1002'] });
+  });
+
   it('adds the doc URL of the helper', () => {
     const url = 'https://example.test/additional-documentation/error-codes/';
     const { needles } = deriveNeedles([
@@ -249,6 +266,63 @@ describe('devtools-prod-strip-check - bundle scan', () => {
 
     expect(result.status).toBe(4);
     expect(result.stderr).toContain(MARKER);
+  });
+
+  it('exits 4 when a runtime-error code is missing from the library build', () => {
+    const source = fixture({
+      'lib/a.ts': "function f() { throw new CngxRuntimeError('CNGX1002'); }",
+    });
+    const result = check(fixture({ 'main.js': 'throw new E("CNGX1002")' }), source);
+
+    expect(result.status).toBe(4);
+    expect(result.stderr).toContain('CNGX1002');
+  });
+
+  describe('liveness', () => {
+    const CODE_ONLY = { 'lib/a.ts': "function f() { throw new CngxRuntimeError('CNGX1002'); }" };
+    const LIB_WITH_CODE = { ...LIB_DIST, 'common/fesm2022/cngx-common.mjs': "new E('CNGX1002')" };
+
+    it('passes when a code-only code reaches the production bundle', () => {
+      const result = check(
+        fixture({ 'main.js': 'throw new E("CNGX1002")' }),
+        fixture(CODE_ONLY),
+        fixture(LIB_WITH_CODE),
+      );
+
+      expect(result.status).toBe(0);
+    });
+
+    it('exits 5 when code-only constructions exist but none is in the bundle', () => {
+      const result = check(
+        fixture({ 'main.js': 'console.log(1);' }),
+        fixture(CODE_ONLY),
+        fixture(LIB_WITH_CODE),
+      );
+
+      expect(result.status).toBe(5);
+      expect(result.stderr).toContain('CNGX1002');
+    });
+
+    it('is skipped while no code-only construction exists', () => {
+      const result = check(fixture({ 'main.js': 'console.log(1);' }), fixture(CLEAN_SOURCE));
+
+      expect(result.status).toBe(0);
+    });
+
+    it('fails a surviving dev-only throw code as a needle, not on liveness', () => {
+      const guard = "typeof ngDevMode !== 'undefined' && ngDevMode";
+      const source = fixture({
+        'lib/a.ts': `function f() { if (${guard}) { throw new CngxRuntimeError('CNGX1001', 'm'); } }`,
+      });
+      const libDist = fixture({
+        ...LIB_DIST,
+        'common/fesm2022/cngx-common.mjs': "new E('CNGX1001')",
+      });
+      const result = check(fixture({ 'main.js': 'throw new E("CNGX1001")' }), source, libDist);
+
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('CNGX1001');
+    });
   });
 
   it('exits 3 when a hand-written debugName breaks the naming contract', () => {
