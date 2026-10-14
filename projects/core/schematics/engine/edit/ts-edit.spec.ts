@@ -6,9 +6,8 @@ import {
   countArrayLiterals,
   hasArrayLiteral,
   insertAfterImports,
-  languagePackArgument,
   promoteTypeOnlyImport,
-  providerCallNames,
+  readProviderCalls,
   topLevelBindings,
 } from './ts-edit';
 
@@ -311,39 +310,41 @@ export default [];
   });
 });
 
-describe('providerCallNames', () => {
-  it('names every provide call in source order, nested ones included', () => {
+describe('readProviderCalls', () => {
+  it('names every provide call in source order, nested and namespaced ones included', () => {
     const content = `export const appConfig = {
-  providers: [provideRouter(routes), provideCngxI18n(withPack(pack)), provideHttpClient(withFetch())],
+  providers: [provideRouter(routes), provideCngxI18n(withPack(pack)), ngHttp.provideHttpClient(withFetch())],
 };
 `;
 
-    expect(providerCallNames(content)).toEqual(['provideRouter', 'provideCngxI18n', 'provideHttpClient']);
+    expect(readProviderCalls(content).names).toEqual(['provideRouter', 'provideCngxI18n', 'provideHttpClient']);
   });
 
-  it('skips calls in comments and strings, member calls and a bare provide', () => {
+  it('skips calls in comments and strings and a bare provide', () => {
     const content = `// provideFeedback()
 /* provideToasts() */
 const label = 'provideAlerts(';
-const x = this.provideLocal();
 provide(token);
 `;
 
-    expect(providerCallNames(content)).toEqual([]);
+    expect(readProviderCalls(content)).toEqual({ names: [], languagePack: undefined });
   });
-});
 
-describe('languagePackArgument', () => {
-  it('reads the pack passed to withPack inside provideCngxI18n', () => {
-    expect(languagePackArgument('const p = [provideCngxI18n(withPack(CNGX_LANGUAGE_DE))];')).toBe('CNGX_LANGUAGE_DE');
-    expect(languagePackArgument('const p = [provideCngxI18n(withLabels(x), withPack(cngxLanguagePack))];')).toBe(
+  it('reads the pack passed to withPack inside provideCngxI18n, bare or namespaced', () => {
+    expect(readProviderCalls('const p = [provideCngxI18n(withPack(CNGX_LANGUAGE_DE))];').languagePack).toBe(
+      'CNGX_LANGUAGE_DE',
+    );
+    expect(readProviderCalls('const p = [provideCngxI18n(withLabels(x), withPack(cngxLanguagePack))];').languagePack).toBe(
       'cngxLanguagePack',
+    );
+    expect(readProviderCalls('const p = [i18n.provideCngxI18n(i18n.withPack(lang.cngxLanguagePack))];').languagePack).toBe(
+      'lang.cngxLanguagePack',
     );
   });
 
-  it('reads nothing without the provider, without a pack, or for a withPack elsewhere', () => {
-    expect(languagePackArgument('const p = [provideRouter(routes)];')).toBeUndefined();
-    expect(languagePackArgument('const p = [provideCngxI18n()];')).toBeUndefined();
-    expect(languagePackArgument('const p = [provideOther(withPack(X))]; // provideCngxI18n(withPack(Y))')).toBeUndefined();
+  it('reads no pack without the provider, without a pack, or for a withPack elsewhere', () => {
+    expect(readProviderCalls('const p = [provideRouter(routes)];').languagePack).toBeUndefined();
+    expect(readProviderCalls('const p = [provideCngxI18n()];').languagePack).toBeUndefined();
+    expect(readProviderCalls('const p = [provideOther(withPack(X))]; // provideCngxI18n(withPack(Y))').languagePack).toBeUndefined();
   });
 });

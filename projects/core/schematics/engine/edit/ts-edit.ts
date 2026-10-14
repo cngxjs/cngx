@@ -286,37 +286,52 @@ export function promoteTypeOnlyImport(content: string, symbol: string, module: s
     .reduce((text, [from, to, insert]) => `${text.slice(0, from)}${insert}${text.slice(to)}`, content);
 }
 
-function callsIn(node: ts.Node): readonly ts.CallExpression[] {
-  const calls: ts.CallExpression[] = ts.isCallExpression(node) ? [node] : [];
+function collectCalls(node: ts.Node, calls: ts.CallExpression[]): readonly ts.CallExpression[] {
+  if (ts.isCallExpression(node)) {
+    calls.push(node);
+  }
   ts.forEachChild(node, (child) => {
-    calls.push(...callsIn(child));
+    collectCalls(child, calls);
   });
   return calls;
 }
 
-/**
- * The name of every `provideX(...)` call in the file, in source order. Read
- * from the syntax tree, so a call inside a comment or a string never counts.
- */
-export function providerCallNames(content: string): readonly string[] {
-  return callsIn(parse(content)).flatMap((call) => {
-    const name = calleeName(call);
-    return name !== undefined && /^provide\w/.test(name) ? [name] : [];
-  });
+// `x(...)` and `ns.x(...)` both name `x`.
+function calledName(call: ts.CallExpression): string | undefined {
+  const callee = call.expression;
+  return ts.isPropertyAccessExpression(callee) ? callee.name.text : calleeName(call);
+}
+
+/** The `provideX(...)` calls of a root providers file, read from its syntax tree. */
+export interface ProviderCalls {
+  /** Every `provideX(...)` name in source order, called bare or through a namespace (`ns.provideX`). */
+  readonly names: readonly string[];
+  /**
+   * The source text of the first `withPack(...)` argument inside a
+   * `provideCngxI18n(...)` call, e.g. `CNGX_LANGUAGE_DE`; `undefined` when
+   * there is no such call or it passes no pack.
+   */
+  readonly languagePack: string | undefined;
 }
 
 /**
- * The source text of the first `withPack(...)` argument inside a
- * `provideCngxI18n(...)` call, e.g. `CNGX_LANGUAGE_DE`; `undefined` when the
- * file has no such call or it passes no pack.
+ * Reads the provider calls of a file in one pass over its syntax tree, so a
+ * call inside a comment or a string never counts.
  */
-export function languagePackArgument(content: string): string | undefined {
+export function readProviderCalls(content: string): ProviderCalls {
   const source = parse(content);
-  const pack = callsIn(source)
-    .filter((call) => calleeName(call) === 'provideCngxI18n')
+  const calls = collectCalls(source, []);
+  const pack = calls
+    .filter((call) => calledName(call) === 'provideCngxI18n')
     .flatMap((call) => call.arguments.filter(ts.isCallExpression))
-    .find((call) => calleeName(call) === 'withPack')?.arguments[0];
-  return pack?.getText(source);
+    .find((call) => calledName(call) === 'withPack')?.arguments[0];
+  return {
+    names: calls.flatMap((call) => {
+      const name = calledName(call);
+      return name !== undefined && /^provide\w/.test(name) ? [name] : [];
+    }),
+    languagePack: pack?.getText(source),
+  };
 }
 
 function isRequireCall(expression: ts.Expression): boolean {

@@ -9,10 +9,9 @@ import {
   hasProvenanceStamp,
   hasStyleImport,
   isRecord,
-  languagePackArgument,
   type PackageManifest,
   parseManifest,
-  providerCallNames,
+  readProviderCalls,
   type Tree,
 } from '../../engine';
 
@@ -621,8 +620,8 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const main = read(mainPath) ?? '';
   const standalone = !/bootstrapModule\s*\(/.test(main);
   const appConfigPath = rootProvidersPath(mainPath, main, standalone, sourceRoot);
-  const appConfig = read(appConfigPath) ?? '';
-  const providers = providerCallNames(appConfig);
+  const providerCalls = readProviderCalls(read(appConfigPath) ?? '');
+  const providers = providerCalls.names;
 
   const entries = styleEntries(options);
   const stylesPath = globalStylesheet(entries);
@@ -657,7 +656,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     appConfigPath,
     rootProviders: providers,
     languageFile: generatedFileState(read(posix.join(posix.dirname(appConfigPath), CNGX_LANGUAGE_FILE))),
-    languagePack: languagePackArgument(appConfig),
+    languagePack: providerCalls.languagePack,
     material: detectMaterial(read, manifest, entries),
     editors: {
       claude: tree.exists('CLAUDE.md') || hasEntries(tree, '.claude'),

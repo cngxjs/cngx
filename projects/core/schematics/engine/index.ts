@@ -63,8 +63,8 @@ export {
   type ArraySelector,
   hasArrayLiteral,
   insertAfterImports,
-  languagePackArgument,
-  providerCallNames,
+  type ProviderCalls,
+  readProviderCalls,
 } from './edit/ts-edit';
 export { findElements, insertAttribute, parseTemplateContent } from './edit/template-edit';
 export { hasStyleImport, insertLeadingStyleImport, insertStyleImport } from './edit/style-edit';
