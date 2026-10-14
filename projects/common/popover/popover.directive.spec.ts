@@ -556,11 +556,9 @@ describe('CngxPopover', () => {
         const { fixture, popoverEl } = setup(BasicHost);
         (popoverEl as unknown as Record<string, unknown>)['showPopover'] = undefined;
         const host = fixture.componentInstance as BasicHost;
-        // Without the polyfill the native call after the warning throws; the
-        // failed open leaves the state past 'closed', so the second show()
-        // returns right after the (suppressed) check.
-        expect(() => host.popover().show()).toThrow(TypeError);
         host.popover().show();
+        host.popover().show();
+        expect(host.popover().state()).toBe('closed');
         const apiWarns = warnSpy.mock.calls.filter((call) =>
           String(call[0]).includes('Popover API is not supported'),
         );
@@ -569,6 +567,30 @@ describe('CngxPopover', () => {
       } finally {
         warnSpy.mockRestore();
         __resetPopoverApiWarnings(document);
+      }
+    });
+  });
+
+  describe('without the Popover API', () => {
+    it('stays closed and opens once the API is available', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      try {
+        TestBed.configureTestingModule({ imports: [BasicHost] });
+        const { fixture, popoverEl } = setup(BasicHost);
+        const rec = popoverEl as unknown as Record<string, unknown>;
+        const showPopover = rec['showPopover'];
+        rec['showPopover'] = undefined;
+        const host = fixture.componentInstance as BasicHost;
+
+        host.popover().show();
+        expect(host.popover().state()).toBe('closed');
+
+        rec['showPopover'] = showPopover;
+        host.popover().show();
+        expect(host.popover().state()).toBe('opening');
+        expect(popoverEl.showPopover).toHaveBeenCalledTimes(1);
+      } finally {
+        warnSpy.mockRestore();
       }
     });
   });

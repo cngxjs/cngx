@@ -625,6 +625,12 @@ export class CngxPopover {
     if (this.stateSignal() !== 'closed') {
       return;
     }
+    // Without the native Popover API (no polyfill) the open cannot happen.
+    // Bail before any state change, so the popover stays closed and can open
+    // once a polyfill lands instead of latching in 'opening'.
+    if (typeof this.elRef.nativeElement.showPopover !== 'function') {
+      return;
+    }
     // Snapshot the pre-open focus target before showPopover() runs -
     // autofocus content inside the panel lands right after that call,
     // and a post-CD capture (the trigger's effect) would store the
