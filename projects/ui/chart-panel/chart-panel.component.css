@@ -16,12 +16,37 @@
     flex-direction: column;
 
     /* Spacing - SET from the scale so density tracks. */
+    /**
+     * Gap between the header, chart body, legend and footer.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-chart-panel-gap: var(--cngx-space-md, 1rem);
+    /**
+     * Gap between the title block and the actions in the header.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-chart-panel-header-gap: var(--cngx-space-sm, 0.5rem);
     /* Half an xs rung - the scale has no finer step, and calc keeps it tracking
        density instead of pinning a literal. */
+    /**
+     * Gap between the title and the subtitle.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-chart-panel-heading-gap: calc(var(--cngx-space-xs, 0.25rem) / 2);
+    /**
+     * Padding of the panel.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-chart-panel-padding: var(--cngx-space-md, 1rem);
+    /**
+     * Gap between items in the footer and in the actions row.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-chart-panel-footer-gap: var(--cngx-space-xs, 0.25rem);
 
     gap: var(--cngx-chart-panel-gap);

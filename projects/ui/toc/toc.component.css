@@ -6,9 +6,29 @@
 
 cngx-toc {
   /* Density-tracked spacing (SET from scale). */
+  /**
+   * Inline indent of each nested list level.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-toc-indent: var(--cngx-space-lg, 1rem);
+  /**
+   * Gap between links in a list and above a nested list.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-toc-gap: var(--cngx-space-xs, 0.25rem);
+  /**
+   * Block padding of each link.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-toc-link-pad-block: var(--cngx-space-xs, 0.25rem);
+  /**
+   * Inline padding of each link.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-toc-link-pad-inline: var(--cngx-space-sm, 0.5rem);
 
   display: block;

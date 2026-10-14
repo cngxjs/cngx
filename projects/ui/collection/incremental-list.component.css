@@ -15,10 +15,35 @@
     display: block;
 
     /* Spacing - SET from the scale so density tracks. */
+    /**
+     * Block padding of each list item.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-incremental-list-item-padding: var(--cngx-space-sm, 0.5rem);
+    /**
+     * Padding of the status messages and the error blocks.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-incremental-list-message-padding: var(--cngx-space-md, 1rem);
+    /**
+     * Gap between the error text and the retry button.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-incremental-list-error-gap: var(--cngx-space-sm, 0.5rem);
+    /**
+     * Inline padding of the list in the `card` skin.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-incremental-list-card-padding: var(--cngx-space-md, 1rem);
+    /**
+     * Padding of the retry button.
+     * @type <length> <length>
+     * @group Layout
+     */
     --cngx-incremental-list-button-padding: var(--cngx-space-xs, 0.25rem) var(--cngx-space-md, 1rem);
 
     color: var(--cngx-incremental-list-text, var(--cngx-color-text, oklch(0.2 0.01 250)));

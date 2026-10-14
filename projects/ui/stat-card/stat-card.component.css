@@ -18,10 +18,35 @@
     position: relative;
 
     /* Spacing - SET from the scale so density tracks. */
+    /**
+     * Gap between the rows of the stat body.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-stat-card-gap: var(--cngx-space-sm, 0.5rem);
+    /**
+     * Gap between items within a stat row and within the footer.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-stat-card-row-gap: var(--cngx-space-xs, 0.25rem);
+    /**
+     * Space above the visualisation slot.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-stat-card-viz-margin: var(--cngx-space-sm, 0.5rem);
+    /**
+     * Block-start padding of the footer.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-stat-card-footer-padding: var(--cngx-space-xs, 0.25rem);
+    /**
+     * Inset of the refresh indicator from the top and inline-end corner.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-stat-card-refresh-inset: var(--cngx-space-sm, 0.5rem);
 
     /* Every view branch reserves the same block, so switching skeleton ->
@@ -29,6 +54,11 @@
        these would otherwise reflow on every refresh. Not a density rung: this
        is a layout floor matched to the label + value + caption rhythm, so it
        stays a plain token. */
+    /**
+     * Minimum block size of the stat, spinner, error and empty bodies, so swapping between them does not resize the card.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-stat-card-body-min-height: 6rem;
   }
 }
@@ -183,6 +213,11 @@
          through the skeleton entry's token to the foundation border colour,
          which already carries the light/dark distinction - so the bones adapt
          even when @cngx/ui/skeleton's own CSS is not on the page. */
+      /**
+       * Fill of the skeleton bars and the base colour of their shimmer. Resolves from `--cngx-stat-card-skeleton-color`, then `--cngx-skeleton-bg`.
+       * @type <color>
+       * @group State
+       */
       --cngx-stat-card-skeleton-base: var(
         --cngx-stat-card-skeleton-color,
         var(--cngx-skeleton-bg, var(--cngx-color-border, oklch(0.88 0.005 250)))

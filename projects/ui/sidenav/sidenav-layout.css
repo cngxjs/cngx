@@ -62,6 +62,13 @@
      against an *ancestor* query container of the element it styles, so a
      rule whose subject is the container itself matches nothing. */
   cngx-sidenav-layout > cngx-sidenav {
+    /**
+     * Docking flag written on the rail: `1` when the layout is at least 64rem
+     * wide, else `0`. In `auto` mode the sidenav docks (`side`) on `1` and
+     * overlays (`over`) on `0`.
+     * @type <number>
+     * @group Layout
+     */
     --cngx-sidenav-layout-wide: 0;
   }
 
