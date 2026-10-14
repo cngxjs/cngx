@@ -17,7 +17,7 @@ import { detectProject, type ProjectFacts } from './detect/detect';
 import { readGitState } from './shell/git-state';
 import { angularSupport, preflightItems } from './shell/preflight';
 import { askOnboarding, givenAnswers } from './shell/questions';
-import { createShellRendererOptions } from './shell/terminal';
+import { createShellRendererOptions, isCi } from './shell/terminal';
 import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
 import { createSummary } from './steps/finish';
@@ -53,6 +53,30 @@ function assertSupportedAngular(facts: ProjectFacts, peerRange: string): void {
       `cngx needs Angular ${floor} or newer; this app declares ${declared}.`,
     );
   }
+}
+
+/** Why the run cannot ask before it applies to an existing app. */
+interface ConfirmContext {
+  readonly isTTY: boolean;
+  readonly ci: boolean;
+  readonly prompts: boolean | undefined;
+}
+
+// The line an existing app sees when the plan applies without a confirm;
+// `undefined` when the terminal asks. CI comes first: it also hides the
+// terminal.
+function unconfirmedApplyLine({ isTTY, ci, prompts }: ConfirmContext): string | undefined {
+  const pass = 'Pass --yes to apply without this line.';
+  if (ci) {
+    return `Running under CI; applying the plan without a confirm. ${pass}`;
+  }
+  if (!isTTY) {
+    return `No terminal to confirm in; applying the plan. ${pass}`;
+  }
+  if (prompts === false) {
+    return `Prompts are off (--no-prompts); applying the plan without a confirm. ${pass}`;
+  }
+  return undefined;
 }
 
 function scheduleInstall(plan: ChangePlan): Rule {
@@ -103,8 +127,13 @@ export function ngAdd(options: NgAddOptions): Rule {
 
     const changesFiles = plan.changes.some((change) => change.kind !== 'note');
     if (facts.maturity === 'existing' && changesFiles && options.yes !== true) {
-      if (!interactive) {
-        renderer.note('No terminal to confirm in; applying the plan. Pass --yes to apply without this line.');
+      const unconfirmed = unconfirmedApplyLine({
+        isTTY: rendererOptions.isTTY,
+        ci: isCi(process.env),
+        prompts: options.prompts,
+      });
+      if (unconfirmed !== undefined) {
+        renderer.note(unconfirmed);
       }
       const confirm = createPromptFlow({ canPrompt: interactive });
       const proceed = await confirm.confirm({ key: 'apply', message: 'Apply these changes?', default: true });

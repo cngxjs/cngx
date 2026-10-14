@@ -383,10 +383,48 @@ describe('ngAdd', () => {
     const existing = () => createFixtureTree('standalone-app', { 'src/app/other.ts': SECOND_COMPONENT });
 
     it('applies without a terminal to confirm in and says so', async () => {
-      const run = await runRule(ngAdd({}), existing());
+      vi.stubEnv('CI', '');
+      try {
+        const run = await runRule(ngAdd({}), existing());
 
-      expect(run.logs).toContain('No terminal to confirm in; applying the plan. Pass --yes to apply without this line.');
-      expect(run.tree.exists('src/cngx-theme.css')).toBe(true);
+        expect(run.logs).toContain(
+          'No terminal to confirm in; applying the plan. Pass --yes to apply without this line.',
+        );
+        expect(run.tree.exists('src/cngx-theme.css')).toBe(true);
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it('names CI as the reason it applies without a confirm', async () => {
+      vi.stubEnv('CI', 'true');
+      process.stdout.isTTY = true;
+      try {
+        const run = await runRule(ngAdd({}), existing());
+
+        expect(run.logs).toContain(
+          'Running under CI; applying the plan without a confirm. Pass --yes to apply without this line.',
+        );
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it('names --no-prompts as the reason it applies without a confirm on a terminal', async () => {
+      vi.stubEnv('CI', '');
+      vi.stubEnv('NO_COLOR', '1');
+      process.stdout.isTTY = true;
+      try {
+        const run = await runRule(ngAdd({ prompts: false }), existing());
+
+        expect(run.logs).toContain(
+          'Prompts are off (--no-prompts); applying the plan without a confirm. Pass --yes to apply without this line.',
+        );
+        expect(run.logs.some((line) => line.startsWith('No terminal to confirm in'))).toBe(false);
+        expect(run.tree.exists('src/cngx-theme.css')).toBe(true);
+      } finally {
+        vi.unstubAllEnvs();
+      }
     });
 
     it('lists the preflight checklist before the plan', async () => {
