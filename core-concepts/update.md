@@ -40,9 +40,10 @@ ng update @cngx/core --dry-run
 
 ## Migrations
 
-From 0.1.0 on, every release carries a migration keyed to its version; the
-0.1.0 release candidates carry none, so an update between two of them runs
-nothing. `ng update` runs
+From 0.1.0 on, every release carries a migration keyed to its version. The
+0.1.0 release candidates carry none of their own; the CLI compares against
+the target without its prerelease tag, so an update between two of them
+runs the `0.1.0` migration. `ng update` runs
 the entries whose version lies above the installed release and up to the
 target release, in order. A release with breaking changes brings its own
 migration; every other release gets a `refresh` entry, added to the
