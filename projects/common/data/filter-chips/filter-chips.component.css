@@ -2,6 +2,11 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  /**
+   * Gap between the filter chips, in both the row and the vertical layout.
+   * @type <length>
+   * @group Layout
+   */
   --cngx-filter-chips-gap: var(--cngx-space-sm, 8px);
   gap: var(--cngx-filter-chips-gap, 8px);
 }

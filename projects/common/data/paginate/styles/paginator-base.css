@@ -68,15 +68,55 @@
          infinite-padding 0.9rem   -> md    (+1.6px)
        overflow-cell-padding stays 0 (deliberate 0-keep: fixed square grid
        cells sized by --cngx-paginator-overflow-cell-size, not compactness). */
+    /**
+     * Padding of every paginator button.
+     * @type <length> <length>
+     * @group Layout
+     */
     --cngx-paginator-button-padding: 0 var(--cngx-space-sm);
+    /**
+     * Padding of the go-to-page input.
+     * @type <length> <length>
+     * @group Layout
+     */
     --cngx-paginator-goto-padding: 0 var(--cngx-space-sm);
     --cngx-paginator-option-padding: 0 var(--cngx-space-sm);
     --cngx-paginator-panel-padding: var(--cngx-space-xs);
+    /**
+     * Gap between the value and the caret in the select trigger.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-paginator-select-gap: var(--cngx-space-xs);
+    /**
+     * Gap between the cells of the ellipsis overflow grid.
+     * @type <length>
+     * @group Popover
+     */
     --cngx-paginator-overflow-gap: var(--cngx-space-xs);
+    /**
+     * Gap between the chips of the alphabetical / category strip.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-paginator-alpha-gap: var(--cngx-space-sm);
+    /**
+     * Gap between the items of the infinite-scroll trigger row.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-paginator-infinite-gap: var(--cngx-space-sm);
+    /**
+     * Gap between the label and the count in the load-more trigger.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-paginator-load-more-gap: var(--cngx-space-sm);
+    /**
+     * Padding of the infinite-scroll trigger row.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-paginator-infinite-padding: var(--cngx-space-md);
     gap: var(--cngx-paginator-row-gap, 0.75rem);
     font-family: var(
@@ -476,12 +516,24 @@
      * (target-min initial 0px), so the slot degrades to the bare dot size and
      * the geometry below is unchanged on fine pointers.
      */
+    /**
+     * Hit padding around each dot, derived so the dot button reaches
+     * `--cngx-target-min`. `0px` while no touch-target floor is active.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-paginator-dot-pad: max(
       (var(--cngx-target-min, 0px) - var(--cngx-paginator-dot-size, 0.5rem)) / 2,
       0px
     );
     /* Layout size of one dot button (visual + hit padding); the viewport clip
        and the track translate both derive from it so the glide stays exact. */
+    /**
+     * Layout size of one dot button (dot size plus hit padding). The
+     * windowed viewport clip and the track translate derive from it.
+     * @type <length>
+     * @group Layout
+     */
     --cngx-paginator-dot-slot: calc(
       var(--cngx-paginator-dot-size, 0.5rem) + 2 * var(--cngx-paginator-dot-pad)
     );
