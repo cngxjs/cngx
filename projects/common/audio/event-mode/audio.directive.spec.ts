@@ -189,4 +189,13 @@ describe('CngxAudio directive', () => {
     await fixture.whenStable();
     expect(error).toHaveBeenCalledWith(expect.stringContaining('CNGX1002: [cngxAudio]'));
   });
+
+  it('dev-warns when an event key is not recognised', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture } = setup({ spec: 'hover:tap' });
+    await fixture.whenStable();
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('CNGX1003: [cngxAudio] Unrecognised event keys "hover"'),
+    );
+  });
 });

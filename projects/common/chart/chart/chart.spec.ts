@@ -209,6 +209,31 @@ describe('CngxChart', () => {
     warn.mockRestore();
   });
 
+  it('warns in dev-mode when two axes share one orientation', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis],
+      template: `
+        <cngx-chart [data]="data" [width]="100" [height]="50">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 10]"></svg:g>
+          <svg:g cngxAxis position="top" type="linear" [domain]="[0, 20]"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class TwoHorizontalAxesHost {
+      data: readonly number[] = [1, 2, 3];
+    }
+    TestBed.configureTestingModule({ imports: [TwoHorizontalAxesHost] });
+    const fixture = TestBed.createComponent(TwoHorizontalAxesHost);
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('CNGX1009: CngxChart: multiple axes share one orientation'),
+    );
+    warn.mockRestore();
+  });
+
   it('does NOT warn when [summaryAccessor] is provided', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     @Component({

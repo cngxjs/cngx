@@ -140,6 +140,9 @@ describe('injectRecycler', () => {
         });
       });
       expect(warn).toHaveBeenCalledOnce();
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('CNGX1012: [CngxRecycler] estimateSize as a function with 20000 items'),
+      );
       warn.mockRestore();
     });
   });

@@ -3,7 +3,7 @@ import { SIGNAL, type ReactiveNode } from '@angular/core/primitives/signals';
 import { TestBed } from '@angular/core/testing';
 import { CNGX_DEV_DESCRIPTORS } from '@cngx/core/utils';
 import { type CngxTreeNode } from '@cngx/utils';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createTreeController } from './tree-controller';
 
 interface Row {
@@ -284,5 +284,52 @@ describe('createTreeController - dev descriptor', () => {
     const node = (ctrl.isExpanded('a') as unknown as Record<symbol, ReactiveNode>)[SIGNAL];
 
     expect(node.debugName).toBe('treeController.isExpanded');
+  });
+});
+
+describe('createTreeController - dev diagnostics', () => {
+  function makeFlat(rows: readonly Row[], keyFn: (v: Row) => unknown) {
+    const nodes = signal<CngxTreeNode<Row>[]>(rows.map((value) => ({ value })));
+    return TestBed.runInInjectionContext(() =>
+      createTreeController<Row>({ nodes, nodeIdFn: (v) => v.id, keyFn }),
+    );
+  }
+
+  it('errors with CNGX1029 once per duplicate node id', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const ctrl = makeFlat(
+      [
+        { id: 'x', name: 'First' },
+        { id: 'x', name: 'Second' },
+      ],
+      (v) => v.name,
+    );
+
+    ctrl.findByValue({ id: 'x', name: 'First' });
+    ctrl.findByValue({ id: 'x', name: 'Second' });
+
+    const duplicateIdErrors = error.mock.calls.filter((c) => String(c[0]).startsWith('CNGX1029:'));
+    expect(duplicateIdErrors).toHaveLength(1);
+    expect(duplicateIdErrors[0][0]).toContain('createTreeController: duplicate node id "x"');
+  });
+
+  it('errors with CNGX1030 when two nodes share a selection key', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const ctrl = makeFlat(
+      [
+        { id: 'a', name: 'Same' },
+        { id: 'b', name: 'Same' },
+      ],
+      (v) => v.name,
+    );
+
+    ctrl.findByValue({ id: 'a', name: 'Same' });
+
+    const duplicateKeyErrors = error.mock.calls.filter((c) => String(c[0]).startsWith('CNGX1030:'));
+    expect(duplicateKeyErrors).toHaveLength(1);
+    expect(duplicateKeyErrors[0][0]).toContain(
+      'createTreeController: duplicate selection key "Same"',
+    );
   });
 });

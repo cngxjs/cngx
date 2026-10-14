@@ -128,6 +128,24 @@ describe('createScrollObserver', () => {
     late.remove();
   });
 
+  it('dev-warns once the late-mount watcher starts for an unresolved selector', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({ template: '' })
+    class Host {
+      readonly state = createScrollObserver('.never-mounts', inject(DestroyRef));
+    }
+
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    TestBed.tick();
+    TestBed.flushEffects();
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("CNGX1013: recycler scrollElement '.never-mounts' not found"),
+    );
+  });
+
   it('disconnects the late-mount observer on attach and never re-resolves', async () => {
     const disconnectSpy = vi.spyOn(MutationObserver.prototype, 'disconnect');
 

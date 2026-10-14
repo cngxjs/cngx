@@ -384,6 +384,28 @@ describe('CngxDialog', () => {
       release();
     });
 
+    it('warns in dev mode when a non-modal dialog opens with no aria-live region by the trigger', () => {
+      const { fixture } = setup(ModalToggleHost);
+      fixture.componentInstance.modal.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const container = document.createElement('div');
+      const trigger = document.createElement('button');
+      container.appendChild(trigger);
+      document.body.appendChild(container);
+      trigger.focus();
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      try {
+        const dialog = fixture.componentInstance.dialog();
+        dialog.open();
+        expect(warnSpy).toHaveBeenCalledWith(
+          expect.stringContaining(`CNGX1015: CngxDialog [${dialog.id()}]: Non-modal dialog opened`),
+        );
+      } finally {
+        container.remove();
+      }
+    });
+
     it('does not warn when the first description registers', () => {
       const { fixture } = setup(ModalToggleHost);
       const dialog = fixture.componentInstance.dialog();
