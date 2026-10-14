@@ -1,9 +1,9 @@
-/** What a run can show and ask: a live terminal, and whether CI runs it. */
-export interface Terminal {
-  /** Interactive terminal and not CI; the renderer and the prompts read it. */
-  readonly isTTY: boolean;
-  readonly ci: boolean;
-}
+import {
+  type ColorEnv,
+  createPalette,
+  type RendererOptions,
+  type RenderLogger,
+} from '../../engine';
 
 /** The slice of `process.stdout` the terminal check reads. */
 export interface TerminalStream {
@@ -11,17 +11,29 @@ export interface TerminalStream {
 }
 
 // `CI=false` and `CI=0` are how some runners say "not CI".
-function isCi(env: NodeJS.ProcessEnv): boolean {
+function isCi(env: ColorEnv): boolean {
   const ci = env['CI'];
   return ci !== undefined && ci !== '' && ci !== 'false' && ci !== '0';
 }
 
 /**
- * Resolved once per run by `ng add` and every `ng update` migration, so both
- * commands pick the same renderer and prompt behaviour. A CI runner with a
- * pseudo terminal still counts as no terminal.
+ * The renderer options of one run, built the same way by `ng add` and every
+ * `ng update` migration, so both pick the same renderer: a live task list on
+ * an interactive, coloured terminal, plain lines everywhere else. A CI
+ * runner with a pseudo terminal counts as no terminal; `isTTY` also decides
+ * whether `ng add` may prompt.
  */
-export function readTerminal(env: NodeJS.ProcessEnv, stdout: TerminalStream): Terminal {
-  const ci = isCi(env);
-  return { isTTY: stdout.isTTY === true && !ci, ci };
+export function createShellRendererOptions(
+  env: ColorEnv,
+  stdout: TerminalStream,
+  logger: RenderLogger,
+  quiet: boolean,
+): RendererOptions {
+  const isTTY = stdout.isTTY === true && !isCi(env);
+  return {
+    isTTY,
+    color: createPalette(env, isTTY),
+    verbosity: quiet ? 'quiet' : 'normal',
+    logger,
+  };
 }

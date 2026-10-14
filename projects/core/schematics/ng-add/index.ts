@@ -7,7 +7,6 @@ import {
   canPrompt,
   type ChangePlan,
   createChangePlan,
-  createPalette,
   createPromptFlow,
   createRenderer,
   createReport,
@@ -17,7 +16,7 @@ import {
 import { detectProject, type ProjectFacts } from './detect/detect';
 import { type GitState, readGitState } from './shell/git-state';
 import { askOnboarding, givenAnswers } from './shell/questions';
-import { readTerminal } from './shell/terminal';
+import { createShellRendererOptions } from './shell/terminal';
 import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
 import { createSummary } from './steps/finish';
@@ -85,14 +84,9 @@ function scheduleInstall(plan: ChangePlan): Rule {
 export function ngAdd(options: NgAddOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {
     const { versions, warning } = resolveVersions(__dirname);
-    const { isTTY } = readTerminal(process.env, process.stdout);
-    const interactive = canPrompt(isTTY, options.prompts);
-    const renderer = createRenderer({
-      isTTY,
-      color: createPalette(process.env, isTTY),
-      verbosity: options.quiet === true ? 'quiet' : 'normal',
-      logger: context.logger,
-    });
+    const rendererOptions = createShellRendererOptions(process.env, process.stdout, context.logger, options.quiet === true);
+    const interactive = canPrompt(rendererOptions.isTTY, options.prompts);
+    const renderer = createRenderer(rendererOptions);
 
     const facts = detectProject(tree, await readWorkspace(tree), options.project);
     assertSupportedAngular(facts, versions.angular);

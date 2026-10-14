@@ -7,7 +7,6 @@ import {
   applyChangePlan,
   type Codemod,
   createChangePlan,
-  createPalette,
   createRenderer,
   createReport,
   planCodemods,
@@ -20,7 +19,7 @@ import {
 import { detectProject } from '../ng-add/detect/detect';
 import { readInstallManifest } from '../ng-add/shell/install-manifest';
 import { presetDefaults } from '../ng-add/shell/questions';
-import { readTerminal } from '../ng-add/shell/terminal';
+import { createShellRendererOptions } from '../ng-add/shell/terminal';
 import { createSummary } from '../ng-add/steps/finish';
 import {
   INSTALL_MANIFEST_PATH,
@@ -125,13 +124,9 @@ export function createMigration(migration: Migration): Rule {
       warning === undefined ? [] : [warning],
     );
 
-    const { isTTY } = readTerminal(process.env, process.stdout);
-    const renderer = createRenderer({
-      isTTY,
-      color: createPalette(process.env, isTTY),
-      verbosity: 'normal',
-      logger: context.logger,
-    });
+    const renderer = createRenderer(
+      createShellRendererOptions(process.env, process.stdout, context.logger, false),
+    );
 
     context.logger.info(`cngx ${migration.version ?? versions.cngx} migration`);
     await renderer.todo(plan);

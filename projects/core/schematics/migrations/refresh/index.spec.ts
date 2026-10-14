@@ -51,6 +51,7 @@ describe('refresh migration', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllEnvs();
     process.stdout.isTTY = isTTY;
   });
 
@@ -86,6 +87,20 @@ describe('refresh migration', () => {
     const { tree } = await runRule(migrate(), createMemoryTree(readTree(first.tree)));
 
     expect(tree.actions).toEqual([]);
+  });
+
+  it('runs under an interactive terminal through the live task list', async () => {
+    const { before, after } = readMigrationFixture('0.1.0');
+    process.stdout.isTTY = true;
+    vi.stubEnv('CI', '');
+    vi.stubEnv('NO_COLOR', '');
+    vi.stubEnv('FORCE_COLOR', '1');
+
+    const { tree, logs } = await runRule(migrate(), createMemoryTree(before));
+
+    expect(readTree(tree)).toEqual(after);
+    expect(logs).not.toContain('Planned (1):');
+    expect(logs).toContain('cngx planned 1 change.');
   });
 
   it('plans one note for a missing manifest and changes nothing', async () => {
