@@ -11,7 +11,7 @@ A CNGX form is three things kept apart: a **shell** (`<cngx-form-field>`) that p
 
 </aside>
 
-This page is the consumer's guide: what the pieces are, how they fit, and why they are shaped this way. For the DI-token contracts underneath, see [Forms Integration](forms-integration.md).
+This page is the consumer's guide: what the pieces are, how they fit, and why they are shaped this way. For the DI-token contracts underneath, see [Forms Integration](forms-integration.html).
 
 ---
 
@@ -255,7 +255,7 @@ All of it is driven by the field's actual validity. You define the rule once; th
 
 ## Why it is built this way
 
-The three [Pillars](three-pillars.md) are visible in every choice above:
+The three [Pillars](the-three-pillars.html) are visible in every choice above:
 
 - **Derivation over management.** The required mark, the error list, the `aria-invalid` state, the hint - none of them are flags you set. They are computed from one source: the field's validity. You cannot get them out of sync because there is nothing to sync.
 - **Communication is architecture.** Accessibility is not a checklist applied to a finished field. The shell *is* the communication layer - label association, error announcement, required exposure, focus management are its entire job. A field that renders is a field that is accessible.
@@ -267,6 +267,6 @@ That is also why the value binding is separable: a control that derives its stat
 
 ## Where to go next
 
-- [Forms Integration](forms-integration.md) - the DI-token contracts, the adapter internals, and the full decision matrix.
-- [The Three Pillars](three-pillars.md) - the principles this design comes from.
-- [The CNGX Way](the-cngx-way.md) - how these ideas show up across the whole library, not just forms.
+- [Forms Integration](forms-integration.html) - the DI-token contracts, the adapter internals, and the full decision matrix.
+- [The Three Pillars](the-three-pillars.html) - the principles this design comes from.
+- [The CNGX Way](the-cngx-way.html) - how these ideas show up across the whole library, not just forms.

@@ -26,7 +26,7 @@ The exit is mechanical, not a rewrite.
 
 This page is about the contract that makes that split work.
 
-The [Instrumentation Pattern](instrumentation-pattern.md) doc covers the same idea applied to Angular Material; here we describe the CNGX-internal authoring rules every organism follows so the decompose split lands cleanly.
+The [Instrumentation Pattern](instrumentation-pattern.html) doc covers the same idea applied to Angular Material; here we describe the CNGX-internal authoring rules every organism follows so the decompose split lands cleanly.
 
 ---
 
@@ -78,7 +78,7 @@ Level-2 atoms in `@cngx/common/*` can provide the token and integrate with form-
 
 ## Three decompose levels
 
-Decompose targets are scoped by atomic level. The operational consequence is short: only organisms can be ejected. See [The CNGX Way](the-cngx-way.md) for the full atomic taxonomy.
+Decompose targets are scoped by atomic level. The operational consequence is short: only organisms can be ejected. See [The CNGX Way](the-cngx-way.html) for the full atomic taxonomy.
 
 ### The taxonomy
 

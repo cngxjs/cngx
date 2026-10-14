@@ -45,7 +45,7 @@ npx @cngx/mcp
 server in the editor's project config, adds a marked block to the agent
 instructions, and writes `.cngx/README.md` with the server's tools, how to check
 that it runs, and how to turn it off. The `full` preset does the same for every
-editor folder it finds. See [Install](install.md#ai-tooling).
+editor folder it finds. See [Install](install.html#ai-tooling).
 
 It is read-only over source, and every tool answers offline against the bundled
 snapshot by default. The server reaches the network only when a caller asks for
@@ -221,6 +221,6 @@ memory, and an edit never lands past a red check. The same discipline runs throu
 every layer: ground the symbol against the live source of record, or it is a guess,
 and a guessed API is a defect rather than a shortcut.
 
-See [The CNGX Way](the-cngx-way.md) for the library architecture these tools
-document, and [The Three Pillars](three-pillars.md) for the bar the review agents
+See [The CNGX Way](the-cngx-way.html) for the library architecture these tools
+document, and [The Three Pillars](the-three-pillars.html) for the bar the review agents
 hold a change to.

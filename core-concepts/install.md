@@ -242,7 +242,7 @@ ng add @cngx/core --feedback
 preset, every answer, and the steps that are satisfied, each with its
 provenance. A `facts` snapshot of what detection saw is kept for reading; it
 is never compared. Commit the file: `ng update` reads it to re-run the
-recorded steps (see [Update](update.md)).
+recorded steps (see [Update](update.html)).
 
 A manifest that was edited into a shape cngx does not recognise reads as no
 previous install, and the next run writes a fresh one.
@@ -279,7 +279,7 @@ bring them back:
 ng add @cngx/core --ai-tools claude
 ```
 
-[Agent Tooling](agent-tooling.md) describes what the server answers.
+[Agent Tooling](agent-tooling.html) describes what the server answers.
 
 ---
 
