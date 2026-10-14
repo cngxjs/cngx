@@ -162,9 +162,10 @@ export function refreshMigrationKey(version) {
 
 // The Angular CLI runs the entries whose version lies in (from, to], so a
 // core release reaches every updating app only through an entry keyed to it.
-// A release that brings its own migration keeps it; any other gets the
-// refresh entry. Returns a new collection; the input is left as it is. A
-// collection without a `schematics` map is not one the CLI can load.
+// A release that brings its own migration keeps its collection as it is (the
+// same object comes back); any other gets the refresh entry in a new
+// collection, the input left as it is. A collection without a `schematics`
+// map is not one the CLI can load.
 export function stampRefreshMigration(collection, nextVersion) {
   const schematics = collection?.schematics;
   if (typeof schematics !== 'object' || schematics === null || Array.isArray(schematics)) {
@@ -186,17 +187,22 @@ export function stampRefreshMigration(collection, nextVersion) {
   };
 }
 
+/** The keys of the entries keyed to the release. */
+export function releaseMigrationKeys(collection, nextVersion) {
+  return Object.entries(collection.schematics)
+    .filter(([, entry]) => entry.version === nextVersion)
+    .map(([key]) => key);
+}
+
 // Every entry keyed to the release must name a factory module that exists:
 // `moduleExists` gets the factory path without `#export`, relative to the
 // collection. An entry pointing at nothing would fail every `ng update`.
+// That an entry exists at all is the stamp's guarantee, not checked here.
 export function assertReleaseMigration(collection, nextVersion, moduleExists) {
-  const entries = Object.entries(collection.schematics).filter(([, entry]) => entry.version === nextVersion);
-  if (entries.length === 0) {
-    throw new Error(`the ng update collection has no migration for ${nextVersion}`);
-  }
-  const unresolved = entries
-    .filter(([, entry]) => typeof entry.factory !== 'string' || !moduleExists(entry.factory.split('#')[0]))
-    .map(([key]) => key);
+  const unresolved = releaseMigrationKeys(collection, nextVersion).filter((key) => {
+    const { factory } = collection.schematics[key];
+    return typeof factory !== 'string' || !moduleExists(factory.split('#')[0]);
+  });
   if (unresolved.length > 0) {
     throw new Error(`the ng update migration ${unresolved.join(', ')} for ${nextVersion} names no factory module`);
   }
@@ -397,7 +403,8 @@ function main() {
       );
       // The build copies migrations.json and bundles every migrations/<folder>/index.ts,
       // so a source collection that checks out here builds one that does too.
-      checkReleaseMigrations(SOURCE_MIGRATIONS, nextVersion, '.ts');
+      const checked = checkReleaseMigrations(SOURCE_MIGRATIONS, nextVersion, '.ts');
+      console.log(`ng update: ${releaseMigrationKeys(checked, nextVersion).join(', ')} (factory checked)`);
     } catch (error) {
       console.error(`Refusing to publish: ${error.message}`);
       process.exit(1);

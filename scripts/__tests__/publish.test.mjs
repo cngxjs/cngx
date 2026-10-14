@@ -10,6 +10,7 @@ import {
   assertPinsPublished,
   assertReleaseMigration,
   checkReleaseMigrations,
+  releaseMigrationKeys,
   containsStableRelease,
   createSchematicsVersions,
   declaresSchematics,
@@ -307,9 +308,17 @@ describe('stampRefreshMigration on a collection the CLI cannot load', () => {
   });
 });
 
-describe('assertReleaseMigration', () => {
-  const everyModule = () => true;
+describe('releaseMigrationKeys', () => {
+  it('names the entries keyed to the release, own or stamped', () => {
+    expect(releaseMigrationKeys(SOURCE_COLLECTION, '0.1.0')).toEqual(['migration-v0.1.0']);
+    expect(releaseMigrationKeys(stampRefreshMigration(SOURCE_COLLECTION, '0.1.1'), '0.1.1')).toEqual([
+      refreshMigrationKey('0.1.1'),
+    ]);
+    expect(releaseMigrationKeys(SOURCE_COLLECTION, '0.1.1')).toEqual([]);
+  });
+});
 
+describe('assertReleaseMigration', () => {
   it('accepts an entry for the release whose factory module exists', () => {
     const seen = [];
 
@@ -319,12 +328,6 @@ describe('assertReleaseMigration', () => {
     });
 
     expect(seen).toEqual(['./refresh/index']);
-  });
-
-  it('refuses a collection without an entry for the release', () => {
-    expect(() => assertReleaseMigration(SOURCE_COLLECTION, '0.1.1', everyModule)).toThrow(
-      'the ng update collection has no migration for 0.1.1',
-    );
   });
 
   it('refuses a stamped refresh entry whose factory module is missing', () => {
