@@ -182,6 +182,30 @@ module.exports = tseslint.config(
         },
     },
 
+    // isDevMode() is a call, so a production build cannot fold the branch it
+    // guards and the dev-only code ships. The typescript-eslint rule key keeps
+    // the core no-restricted-imports blocks above intact: a later block with
+    // the same key would replace their options for overlapping files.
+    {
+        files: ['projects/**/*.ts'],
+        ignores: ['projects/**/*.spec.ts', 'projects/*/schematics/**'],
+        rules: {
+            '@typescript-eslint/no-restricted-imports': [
+                'error',
+                {
+                    paths: [
+                        {
+                            name: '@angular/core',
+                            importNames: ['isDevMode'],
+                            message:
+                                "isDevMode() does not fold in a production build; guard inline with typeof ngDevMode !== 'undefined' && ngDevMode.",
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+
     // Schematics (core and every lib's ng-add shim) run in Node under the
     // Angular CLI. The engine is a functional core behind one barrel; only
     // the terminal renderer and prompt adapters may wrap a class-based
