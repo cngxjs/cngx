@@ -73,7 +73,7 @@ describe('createMigration', () => {
     expect(logs).toContain('  + Rename cngx APIs in src/app/app.html - renamed in this cngx release');
     expect(logs).toContain('  + Rename cngx APIs in src/app/app.ts - renamed in this cngx release');
     expect(logs.join('\n')).toContain('Review the card elevation - `elevated` became a skin');
-    expect(logs.indexOf('cngx planned 2 changes.')).toBeGreaterThan(logs.indexOf('Planned (2):'));
+    expect(logs.indexOf('cngx 0.2.0 migration planned 2 changes.')).toBeGreaterThan(logs.indexOf('Planned (2):'));
     expect(logs).toContain('Next steps:');
   });
 

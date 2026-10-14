@@ -20,7 +20,7 @@ import { detectProject } from '../ng-add/detect/detect';
 import { readInstallManifest } from '../ng-add/shell/install-manifest';
 import { presetDefaults } from '../ng-add/shell/questions';
 import { createShellRendererOptions } from '../ng-add/shell/terminal';
-import { createSummary } from '../ng-add/steps/finish';
+import { createSummary, type SummaryHeadlines } from '../ng-add/steps/finish';
 import {
   INSTALL_MANIFEST_PATH,
   type InstallManifest,
@@ -43,6 +43,25 @@ function note(id: string, label: string, reason: string, version: string): StepR
     changes: [{ kind: 'note', id, label, reason, provenance: { source: 'ng-update', version } }],
     skipped: [],
   };
+}
+
+// Each migration of a multi-release update prints its own summary, so the
+// headline names the release; a later entry finding nothing is not misread
+// as the whole update having changed nothing.
+function headlines(version: string): SummaryHeadlines {
+  return {
+    changed: (changes) => `cngx ${version} migration planned ${changes}.`,
+    unchanged: `cngx ${version} migration found nothing to change.`,
+  };
+}
+
+// The collection entry that ran: the CLI hands every schematic its entry,
+// `version` included, so a refresh keyed to an older release names that one.
+function entryVersion(context: SchematicContext): string | undefined {
+  const { description } = context.schematic;
+  return 'version' in description && typeof description.version === 'string'
+    ? description.version
+    : undefined;
 }
 
 function errorMessage(error: unknown): string {
@@ -128,11 +147,12 @@ export function createMigration(migration: Migration): Rule {
       createShellRendererOptions(process.env, process.stdout, context.logger, false),
     );
 
-    context.logger.info(`cngx ${migration.version ?? versions.cngx} migration`);
+    const release = migration.version ?? entryVersion(context) ?? versions.cngx;
+    context.logger.info(`cngx ${release} migration`);
     await renderer.todo(plan);
     return chain([
       applyChangePlan(plan),
-      () => renderer.summary(createSummary(createReport(plan), true)),
+      () => renderer.summary(createSummary(createReport(plan), true, headlines(release))),
     ]);
   };
 }

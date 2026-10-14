@@ -138,9 +138,13 @@ describe('dist/core/schematics migrations', () => {
 
     try {
       const refresh = new SchematicTestRunner('@cngx/core', copy);
+      const messages = [];
+      refresh.logger.subscribe((entry) => messages.push(entry.message));
       const tree = await refresh.runSchematic('migration-v0.1.1-refresh', {}, onboarded);
 
       expect(JSON.parse(tree.readText('.cngx/install.json')).cngxVersion).toBe(version);
+      expect(messages[0]).toBe('cngx 0.1.1 migration');
+      expect(messages).toContain('cngx 0.1.1 migration planned 1 change.');
     } finally {
       rmSync(copy, { force: true });
     }

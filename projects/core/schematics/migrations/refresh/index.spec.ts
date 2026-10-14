@@ -100,7 +100,7 @@ describe('refresh migration', () => {
 
     expect(readTree(tree)).toEqual(after);
     expect(logs).not.toContain('Planned (1):');
-    expect(logs).toContain('cngx planned 1 change.');
+    expect(logs).toContain(`cngx ${manifestOf(after).cngxVersion} migration planned 1 change.`);
   });
 
   it('plans one note for a missing manifest and changes nothing', async () => {

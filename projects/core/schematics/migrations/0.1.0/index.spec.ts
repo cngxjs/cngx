@@ -36,9 +36,9 @@ describe('migration 0.1.0', () => {
     expect(logs[0]).toBe('cngx 0.1.0 migration');
     expect(logs[1]).toBe('Planned (1):');
     expect(logs).toContain('  + Update .cngx/install.json - records the cngx release this app now runs');
-    expect(logs).toContain('cngx planned 1 change.');
+    expect(logs).toContain('cngx 0.1.0 migration planned 1 change.');
     expect(logs).toContain('Next steps:');
-    expect(logs.indexOf('cngx planned 1 change.')).toBeGreaterThan(logs.indexOf('Planned (1):'));
+    expect(logs.indexOf('cngx 0.1.0 migration planned 1 change.')).toBeGreaterThan(logs.indexOf('Planned (1):'));
   });
 
   it('changes nothing on a second run', async () => {
@@ -48,7 +48,7 @@ describe('migration 0.1.0', () => {
 
     expect(tree.actions).toEqual([]);
     expect(logs.join('\n')).toContain('Update .cngx/install.json - unchanged since');
-    expect(logs).toContain('cngx is already set up; nothing changed.');
+    expect(logs).toContain('cngx 0.1.0 migration found nothing to change.');
   });
 
   it('runs on an app without an install manifest and says what it skipped', async () => {
