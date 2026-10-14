@@ -17,6 +17,18 @@ describe('readGitState', () => {
     expect(readGitState('/app', () => ' M src/app/app.config.ts\n?? notes.md\n')).toBe('dirty');
   });
 
+  it('reads the package install ng add ran before the schematic as install-only', () => {
+    expect(readGitState('/app', () => ' M package.json\n M package-lock.json\n')).toBe(
+      'install-only',
+    );
+    expect(readGitState('/app', () => ' M package.json\n?? pnpm-lock.yaml\n')).toBe('install-only');
+  });
+
+  it('reads the install plus any other change as dirty', () => {
+    expect(readGitState('/app', () => ' M package.json\n M src/main.ts\n')).toBe('dirty');
+    expect(readGitState('/app', () => ' M libs/ui/package.json\n')).toBe('dirty');
+  });
+
   it('reads a folder outside a repository or without git as unknown', () => {
     const fail: GitExec = () => {
       throw new Error('fatal: not a git repository');

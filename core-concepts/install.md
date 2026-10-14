@@ -32,11 +32,12 @@ install. Nothing outside the project is written.
    `app.config.ts` or a root NgModule), the source locale, an Angular Material
    theme, an ESLint flat config, editor folders (`.claude`, `.cursor`,
    `.vscode`), and an earlier `.cngx/install.json`.
-2. **Preflight.** A short checklist before any question: the app's Angular
-   range against the one `@cngx/core` supports, the project and whether it
-   counts as fresh or existing, and the git state. Uncommitted changes or a
-   missing repository are flagged, since the cngx changes then have no clean
-   `git diff` to review against. An app older than the supported Angular
+2. **Preflight.** A short checklist before the cngx questions: the app's
+   Angular range against the one `@cngx/core` supports, the project and
+   whether it counts as fresh or existing, and the git state. Uncommitted
+   changes or a missing repository are flagged, since the cngx changes then
+   have no clean `git diff` to review against. The `package.json` and
+   lockfile edits of the package install `ng add` runs first do not count. An app older than the supported Angular
    range shows its failed line, then the run stops before anything is
    planned.
 3. **Ask.** With a terminal attached it asks the open questions (below). A

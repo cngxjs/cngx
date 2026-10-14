@@ -77,6 +77,20 @@ describe('preflightItems', () => {
     expect(project).toEqual({ label: 'Project fixture-app', status: 'ok', detail: 'existing app' });
   });
 
+  it('reads the package install ng add ran first as a clean tree', () => {
+    const [, , git] = preflightItems({
+      facts: createFacts(),
+      peerRange: PEER_RANGE,
+      git: 'install-only',
+    });
+
+    expect(git).toEqual({
+      label: 'Git working tree clean apart from the package install of ng add',
+      status: 'ok',
+      detail: 'review the cngx changes with git diff afterwards',
+    });
+  });
+
   it('warns about uncommitted changes and a missing repository', () => {
     const git = (state: 'dirty' | 'unknown') =>
       preflightItems({ facts: createFacts(), peerRange: PEER_RANGE, git: state })[2];

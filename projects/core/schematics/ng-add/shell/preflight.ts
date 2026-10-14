@@ -42,6 +42,11 @@ const GIT_ITEMS: Readonly<Record<GitState, PreflightItem>> = {
     status: 'ok',
     detail: 'review the cngx changes with git diff afterwards',
   },
+  'install-only': {
+    label: 'Git working tree clean apart from the package install of ng add',
+    status: 'ok',
+    detail: 'review the cngx changes with git diff afterwards',
+  },
   dirty: {
     label: 'Git working tree has uncommitted changes',
     status: 'warn',
