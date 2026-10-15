@@ -75,7 +75,21 @@ describe('formatMessage', () => {
     expect(formatMessage(errors, { count: 1200 }, 'xx_YY_bad')).toBe('1,200 errors');
     expect(formatMessage(errors, { count: 1 }, 'xx_YY_bad')).toBe('1 error');
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX0001'));
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(/^CNGX0001: \[cngx\/i18n\] "xx_YY_bad" is not a BCP 47 locale; /),
+    );
+  });
+
+  it('warns once per invalid tag even after the tag left the 32-entry format cache', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    warn.mockClear();
+    formatMessage('x', {}, 'evict_me_bad');
+    for (let i = 0; i < 33; i++) {
+      formatMessage('x', {}, `filler-${String.fromCharCode(97 + (i % 26))}${i}`);
+    }
+    formatMessage('x', {}, 'evict_me_bad');
+    const mine = warn.mock.calls.filter(([m]) => /^CNGX0001: .*"evict_me_bad"/.test(String(m)));
+    expect(mine).toHaveLength(1);
   });
 
   it('calls a function message with the arguments and the locale', () => {

@@ -36,6 +36,14 @@ const NUMBER_FORMAT: Intl.NumberFormatOptions = {};
 const FALLBACK_LOCALE = 'en';
 
 /**
+ * @internal Invalid tags CNGX0001 has reported. Separate from the memoize below,
+ * whose 32-entry cache can evict a tag and would otherwise re-warn on its next
+ * read. Capped, so a stream of distinct bad tags cannot grow it without bound.
+ */
+const warnedLocaleTags = new Set<string>();
+const WARNED_LOCALE_TAG_LIMIT = 256;
+
+/**
  * @internal The canonical BCP 47 form of `locale`. A tag `Intl` rejects
  * (`'de_DE'`, `''`) reads as English with one dev warning, so a bad pack
  * `locale` can never make every message throw.
@@ -45,7 +53,13 @@ export const canonicalLocale = memoize(
     try {
       return Intl.getCanonicalLocales(locale)[0] ?? FALLBACK_LOCALE;
     } catch {
-      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      if (
+        typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        !warnedLocaleTags.has(locale) &&
+        warnedLocaleTags.size < WARNED_LOCALE_TAG_LIMIT
+      ) {
+        warnedLocaleTags.add(locale);
         cngxDevWarn(
           'CNGX0001',
           `[cngx/i18n] "${locale}" is not a BCP 47 locale; reading it as English.`,
