@@ -2,6 +2,8 @@ import {
   AI_TOOLS,
   type Change,
   CNGX_LIBS,
+  createNote,
+  createProvenance,
   isBoolean,
   isListOf,
   isOneOf,
@@ -88,15 +90,16 @@ function restoreNotes(
   recorded: ReadonlySet<string>,
   provenance: Provenance,
 ): StepResult {
-  const notes: readonly Change[] = result.changes.filter(restores).map((change) => ({
-    kind: 'note',
-    id: change.id,
-    label: `${change.label} (not in place)`,
-    reason: recorded.has(change.id)
-      ? `recorded in ${INSTALL_MANIFEST_PATH}; run ng add @cngx/core to restore it`
-      : 'the recorded answers ask for it but it was never installed; run ng add @cngx/core to add it',
-    provenance,
-  }));
+  const notes: readonly Change[] = result.changes.filter(restores).map((change) =>
+    createNote({
+      id: change.id,
+      label: `${change.label} (not in place)`,
+      reason: recorded.has(change.id)
+        ? `recorded in ${INSTALL_MANIFEST_PATH}; run ng add @cngx/core to restore it`
+        : 'the recorded answers ask for it but it was never installed; run ng add @cngx/core to add it',
+      provenance,
+    }),
+  );
   return {
     changes: [...result.changes.filter((change) => !restores(change)), ...notes],
     skipped: result.skipped,
@@ -116,18 +119,17 @@ export function planManifestReruns(
   versions: Versions,
   defaultsFor: PresetDefaults,
 ): StepResult {
-  const provenance: Provenance = { source: 'ng-update', version: versions.cngx };
+  const provenance = createProvenance('ng-update', versions.cngx);
   const answers = readRecordedAnswers(manifest, defaultsFor);
   if (answers === undefined) {
     return {
       changes: [
-        {
-          kind: 'note',
+        createNote({
           id: 'manifest:answers',
           label: 'Re-run the recorded install steps',
           reason: `${INSTALL_MANIFEST_PATH} records answers this release cannot read; run ng add @cngx/core to refresh it`,
           provenance,
-        },
+        }),
       ],
       skipped: [],
     };

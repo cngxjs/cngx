@@ -2,6 +2,7 @@ import { type JsonValue } from '@angular-devkit/core';
 
 import {
   type ChangePlan,
+  createProvenance,
   isRecord,
   type Provenance,
   skipChange,
@@ -157,7 +158,7 @@ export function planManifest(
   previous: InstallManifest | undefined,
   now: string,
 ): StepResult {
-  const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
+  const provenance = createProvenance('ng-add', versions.cngx);
   const earlier = new Map((previous?.steps ?? []).map((step) => [step.id, step.provenance]));
   const steps: readonly InstalledStep[] = [
     ...plan.changes
@@ -233,7 +234,7 @@ export function planManifestUpdate(
     id: 'manifest:install',
     label: `Update ${INSTALL_MANIFEST_PATH}`,
     reason: 'records the cngx release this app now runs',
-    provenance: { source: 'ng-update', version: versions.cngx },
+    provenance: createProvenance('ng-update', versions.cngx),
     path: INSTALL_MANIFEST_PATH,
     // Only the keys that moved, so the rest of the file keeps its formatting.
     entries: Object.entries(next)

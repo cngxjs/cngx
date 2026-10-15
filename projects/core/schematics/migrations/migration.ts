@@ -7,6 +7,8 @@ import {
   applyChangePlan,
   type Codemod,
   createChangePlan,
+  createNote,
+  createProvenance,
   createRenderer,
   createReport,
   planCodemods,
@@ -38,7 +40,9 @@ export interface Migration {
 
 function note(id: string, label: string, reason: string, version: string): StepResult {
   return {
-    changes: [{ kind: 'note', id, label, reason, provenance: { source: 'ng-update', version } }],
+    changes: [
+      createNote({ id, label, reason, provenance: createProvenance('ng-update', version) }),
+    ],
     skipped: [],
   };
 }
@@ -123,7 +127,7 @@ export function createMigration(migration: Migration): Rule {
   return async (tree: Tree, context: SchematicContext) => {
     // The entry sits one folder below `schematics/`, where versions.json lives.
     const { versions, warning } = resolveVersions(join(migration.bundleDir, '..'));
-    const provenance = { source: 'ng-update', version: versions.cngx };
+    const provenance = createProvenance('ng-update', versions.cngx);
     const manifest = readInstallManifest(tree);
     const renames = planRenames(migration.renames, tree, provenance);
     const renamed = previewRenames(tree, renames);

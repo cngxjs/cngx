@@ -3,9 +3,11 @@ import {
   type AiTool,
   type Change,
   contentFingerprint,
+  createNote,
+  createProvenance,
   createProvenanceStamp,
   joinNames,
-  type Provenance,
+  type ProvenanceSource,
   skipChange,
   type StepResult,
 } from '../../engine';
@@ -19,7 +21,7 @@ import { cngxPackages, selectedLibs } from './dependencies';
 import { MCP_PROMPTS, MCP_RESOURCES, MCP_TOOLS } from './mcp-capabilities.generated';
 import { type OnboardingAnswers, type Versions } from './model';
 
-const SOURCE = 'ng-add';
+const SOURCE: ProvenanceSource = 'ng-add';
 
 const VERIFY: Readonly<Record<AiTool, string>> = {
   claude: 'Claude Code: run `claude mcp list` in this folder; `cngx` is listed once you approve the project server.',
@@ -132,7 +134,7 @@ export function planHelperReadme(
   if (documentedTools(facts, answers, withdrawn).length === 0) {
     return { changes: [], skipped: [] };
   }
-  const provenance: Provenance = { source: SOURCE, version: versions.cngx };
+  const provenance = createProvenance(SOURCE, versions.cngx);
   const fingerprint = contentFingerprint(renderBody(facts, answers, versions, withdrawn));
   const content = renderHelperReadme(facts, answers, versions, withdrawn);
   const existing = facts.helperReadme;
@@ -150,12 +152,12 @@ export function planHelperReadme(
   if (!existing.generated) {
     return {
       changes: [
-        {
-          ...base,
-          kind: 'note',
+        createNote({
+          id: base.id,
           label: `Skip ${HELPER_README_PATH}`,
           reason: `${HELPER_README_PATH} exists and cngx did not write it; it is left as it is`,
-        },
+          provenance,
+        }),
       ],
       skipped: [],
     };

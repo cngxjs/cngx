@@ -1,6 +1,8 @@
 import {
   addToArrayLiteral,
   type Change,
+  createNote,
+  createProvenance,
   declaredRange,
   insertAfterImports,
   type Provenance,
@@ -116,11 +118,18 @@ export function planLint(facts: ProjectFacts, answers: OnboardingAnswers, versio
   if (!answers.lint) {
     return { changes: [], skipped: [] };
   }
-  const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
+  const provenance = createProvenance('ng-add', versions.cngx);
   const config = compatibleConfig(facts);
   if ('reason' in config) {
     return {
-      changes: [{ kind: 'note', id: 'lint:config', label: 'Skip the eslint entry', reason: config.reason, provenance }],
+      changes: [
+        createNote({
+          id: 'lint:config',
+          label: 'Skip the eslint entry',
+          reason: config.reason,
+          provenance,
+        }),
+      ],
       skipped: [],
     };
   }

@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import {
   type Change,
+  createNote,
   type CreateFile,
+  createProvenance,
   mergeStepResults,
   skipChange,
   type StepResult,
@@ -78,5 +80,36 @@ describe('mergeStepResults', () => {
 
   it('merges nothing into an empty result', () => {
     expect(mergeStepResults([])).toEqual({ changes: [], skipped: [] });
+  });
+});
+
+describe('createProvenance', () => {
+  it('records the generator and the release', () => {
+    expect(createProvenance('ng-update', '0.2.0')).toEqual({
+      source: 'ng-update',
+      version: '0.2.0',
+    });
+  });
+});
+
+describe('createNote', () => {
+  it('builds a note that touches no file', () => {
+    const provenance = createProvenance('ng-add', '0.1.0');
+
+    expect(
+      createNote({ id: 'lint:config', label: 'Skip', reason: 'no config', provenance }),
+    ).toEqual({
+      kind: 'note',
+      id: 'lint:config',
+      label: 'Skip',
+      reason: 'no config',
+      provenance,
+    });
+  });
+
+  it('carries no field beyond a note, whatever the input spreads in', () => {
+    const input = { ...README, provenance: PROVENANCE };
+
+    expect(Object.keys(createNote(input))).toEqual(['kind', 'id', 'label', 'reason', 'provenance']);
   });
 });

@@ -1,7 +1,7 @@
 import { type DirEntry } from '@angular-devkit/schematics';
 
 import { type Tree } from '../fs/tree';
-import { type Change, type Provenance, type StepResult } from '../plan/change';
+import { type Change, createNote, type Provenance, type StepResult } from '../plan/change';
 import {
   createSourceRenamer,
   createTemplateRenamer,
@@ -47,13 +47,12 @@ function filePlan(
     result = rename(content);
   } catch (error) {
     return [
-      {
-        kind: 'note',
+      createNote({
         id: `rename:${path}`,
         label,
         reason: `does not parse, rename it by hand: ${errorMessage(error)}`,
         provenance,
-      },
+      }),
     ];
   }
   const edit: readonly Change[] =
@@ -70,13 +69,14 @@ function filePlan(
             edit: (current) => rename(current).content,
           },
         ];
-  const manual: readonly Change[] = result.manual.map((reason, index) => ({
-    kind: 'note',
-    id: `rename-manual:${path}:${index}`,
-    label: `Review ${path}`,
-    reason,
-    provenance,
-  }));
+  const manual: readonly Change[] = result.manual.map((reason, index) =>
+    createNote({
+      id: `rename-manual:${path}:${index}`,
+      label: `Review ${path}`,
+      reason,
+      provenance,
+    }),
+  );
   return [...edit, ...manual];
 }
 

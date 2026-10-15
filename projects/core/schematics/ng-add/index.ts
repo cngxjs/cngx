@@ -8,10 +8,10 @@ import {
   type ChangePlan,
   createChangePlan,
   createPromptFlow,
+  createProvenance,
   createRenderer,
   createReport,
   type NgAddOptions,
-  type Provenance,
   resolveVersions,
 } from '../engine';
 import { detectProject, type ProjectFacts } from './detect/detect';
@@ -128,7 +128,7 @@ export function ngAdd(options: NgAddOptions): Rule {
       recorded,
     );
     const withdrawn = withdrawnAiTargets(facts, answers, installed, explicitAiTools);
-    const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
+    const provenance = createProvenance('ng-add', versions.cngx);
     const steps = createChangePlan(
       [
         ...planSteps(withdrawn).map((step) => step(facts, answers, versions)),

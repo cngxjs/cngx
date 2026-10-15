@@ -2,6 +2,8 @@ import {
   type Change,
   CNGX_LIBS,
   type CngxLib,
+  createNote,
+  createProvenance,
   declaredRange,
   joinNames,
   mergeStepResults,
@@ -100,13 +102,12 @@ function themeRefusal(missing: readonly CngxLib[], provenance: Provenance): Step
   const names = missing.map((lib) => `@cngx/${lib}`);
   return {
     changes: [
-      {
-        kind: 'note',
+      createNote({
         id: 'dependency:@cngx/themes',
         label: 'Skip @cngx/themes',
         reason: `cngx.css imports the CSS of ${joinNames(names)}; select them or pass --theme=none`,
         provenance,
-      },
+      }),
     ],
     skipped: [],
   };
@@ -120,7 +121,7 @@ function themeRefusal(missing: readonly CngxLib[], provenance: Provenance): Step
  * `@angular/material` is never added: the bridge themes an app that has it.
  */
 export function planDependencies(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
-  const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
+  const provenance = createProvenance('ng-add', versions.cngx);
   const libs = selectedLibs(answers.libs);
   const missing = answers.theme === 'none' ? [] : missingThemePeers(libs);
   const packages = cngxPackages(libs, answers.theme);

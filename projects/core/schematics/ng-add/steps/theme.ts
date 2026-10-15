@@ -2,6 +2,8 @@ import { posix } from 'node:path';
 
 import {
   type Change,
+  createNote,
+  createProvenance,
   createProvenanceStamp,
   hasProvenanceMarker,
   insertLeadingStyleImport,
@@ -106,7 +108,10 @@ export function renderLayerOrder(version: string): string {
 const INSTALL_GUIDE = 'see Tailwind in the cngx install guide';
 
 function layerNote(provenance: Provenance, label: string, reason: string): StepResult {
-  return { changes: [{ kind: 'note', id: 'theme:layer-order', label, reason, provenance }], skipped: [] };
+  return {
+    changes: [createNote({ id: 'theme:layer-order', label, reason, provenance })],
+    skipped: [],
+  };
 }
 
 // Tailwind v4 declares its layers in the expanded body of the stylesheet
@@ -222,7 +227,7 @@ export function planTheme(facts: ProjectFacts, answers: OnboardingAnswers, versi
   if (answers.theme === 'none' || !installable) {
     return { changes: [], skipped: [] };
   }
-  const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
+  const provenance = createProvenance('ng-add', versions.cngx);
   const bridge = answers.theme === 'material' ? materialBridge(facts) : undefined;
 
   // A bridged object lives in Material's own file, which comes first in the
@@ -255,13 +260,12 @@ export function planTheme(facts: ProjectFacts, answers: OnboardingAnswers, versi
   const fallbackNote: readonly Change[] =
     bridge?.kind === 'none'
       ? [
-          {
-            kind: 'note',
+          createNote({
             id: 'theme:material',
             label: 'Use the cngx default theme',
             reason: `${bridge.reason}; the Material bridge needs one`,
             provenance,
-          },
+          }),
         ]
       : [];
 

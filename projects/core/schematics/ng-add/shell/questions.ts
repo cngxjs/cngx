@@ -3,6 +3,7 @@ import {
   type AiTool,
   CNGX_LIBS,
   type CngxLib,
+  createNote,
   isBoolean,
   isOneOf,
   type Language,
@@ -126,13 +127,12 @@ export function presetChangeNote(
   }
   return {
     changes: [
-      {
-        kind: 'note',
+      createNote({
         id: 'answers:preset',
         label: `Start from the ${preset} preset`,
         reason: `the last install used ${recorded.preset}, so its answers are not reused; pass --preset=${recorded.preset} to keep them`,
         provenance,
-      },
+      }),
     ],
     skipped: [],
   };

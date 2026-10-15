@@ -3,9 +3,10 @@ import { posix } from 'node:path';
 import {
   type Change,
   type CngxLib,
+  createNote,
+  createProvenance,
   createProvenanceStamp,
   type LanguagePackArgument,
-  type Provenance,
   type ProviderCall,
   skipChange,
   type StepResult,
@@ -169,7 +170,7 @@ function wantedProviders(facts: ProjectFacts, answers: OnboardingAnswers): reado
  * missing; a file cngx did not write blocks the switch with a note.
  */
 export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
-  const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
+  const provenance = createProvenance('ng-add', versions.cngx);
   const languageFile = posix.join(posix.dirname(facts.appConfigPath), CNGX_LANGUAGE_FILE);
   const libs = selectedLibs(answers.libs);
   const wanted = wantedProviders(facts, answers);
@@ -187,13 +188,12 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
   const switchWired = isLanguageSignal(facts.languagePack);
   // A file someone else wrote is never overwritten, and the provider would
   // import a signal it may not export.
-  const foreignFile: Change = {
-    kind: 'note',
+  const foreignFile = createNote({
     id: 'provider:i18n-file',
     label: `Keep ${languageFile}`,
     reason: 'cngx did not write it, so runtime language switching is skipped; move it aside and run `ng add @cngx/core` again',
     provenance,
-  };
+  });
   const providers = wanted.filter(({ lib }) => libs.includes(lib)).flatMap((entry): readonly Change[] => {
     const provider: Change = {
       kind: 'add-provider',
@@ -218,23 +218,23 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
     change.kind === 'add-provider' && facts.rootProviders.includes(change.call.symbol);
   const unserved: readonly Change[] = wanted
     .filter(({ lib }) => !libs.includes(lib))
-    .map(({ id, subject, lib }) => ({
-      kind: 'note',
-      id,
-      label: `Skip ${subject}`,
-      reason: `it comes from @cngx/${lib}, which is not selected`,
-      provenance,
-    }));
+    .map(({ id, subject, lib }) =>
+      createNote({
+        id,
+        label: `Skip ${subject}`,
+        reason: `it comes from @cngx/${lib}, which is not selected`,
+        provenance,
+      }),
+    );
   const switchWithoutPack: readonly Change[] =
     answers.runtimeSwitch && answers.i18n !== 'de'
       ? [
-          {
-            kind: 'note',
+          createNote({
             id: 'provider:i18n-switch',
             label: 'Skip runtime language switching',
             reason: 'it switches to the German pack; pass --i18n=de with it',
             provenance,
-          },
+          }),
         ]
       : [];
   const notes = [...unserved, ...switchWithoutPack];
@@ -255,13 +255,12 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
   const current = facts.languagePack === undefined ? 'no pack' : `\`withPack(${facts.languagePack.text})\``;
   const packEdit: readonly Change[] = provided.some(needsPackEdit)
     ? [
-        {
-          kind: 'note',
+        createNote({
           id: 'provider:i18n-pack',
           label: answers.runtimeSwitch ? 'Switch the language at runtime' : 'Use the German language pack',
           reason: `provideCngxI18n in ${facts.appConfigPath} passes ${current}; pass \`withPack(${pack.symbol})\` with ${pack.symbol} imported from '${pack.module}'`,
           provenance,
-        },
+        }),
       ]
     : [];
   // A kept pack other than the one asked for is named, so the skip never
