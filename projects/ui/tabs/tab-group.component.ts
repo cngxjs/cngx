@@ -311,7 +311,7 @@ export class CngxTabGroup implements CngxTabPanelHost {
       // missing *cngxTabIcon template leaves the tab visually empty.
       // afterNextRender runs once, off the reactive graph.
       afterNextRender(() => {
-        if (this.hostAttrs.resolvedIconLayout() === 'only' && !this.iconSlot()) {
+        if (this.hostAttrs.resolvedIconLayout() === 'only' && !this.templates.icon()) {
           cngxDevWarn(
             'CNGX3011',
             "[cngx-tab-group] iconLayout='only' but no *cngxTabIcon template " +
