@@ -76,7 +76,8 @@ const RAW_THROW_EXEMPT = [
   {
     file: 'projects/forms/select/shared/__test-helpers/field-skin-host.ts',
     count: 1,
-    reason: 'spec-only harness, not reachable from any public-api.ts',
+    reason:
+      'spec-only harness; excluded-path-import-boundary.test.mjs fails any library import of a __test-helpers file',
   },
   {
     file: 'projects/forms/filter-builder/filter-builder.helpers.ts',
