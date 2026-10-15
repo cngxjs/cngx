@@ -25,7 +25,7 @@ projects/core/schematics/
     schema.json          options; x-prompt only for preset
     detect/              detectProject(tree, workspace): ProjectFacts
     steps/               pure plan<Step>(facts, answers, versions) per concern
-    shell/               questions, preflight checklist, git state
+    shell/               questions, preflight checklist, git state, install manifest reader
   migrations/
     migrations.json      the ng update collection, hand-written entries only
     migration.ts         createMigration: renames, codemods, manifest re-runs
@@ -62,7 +62,7 @@ projects/<lib>/schematics/
    files.
 2. Write `steps/<step>.ts` as `(facts, answers, versions) => StepResult` and
    its spec against `createFacts` / `createAnswers` from `testing/onboarding.ts`.
-3. Append it to `STEPS` in `ng-add/index.ts`, extend the fixture matrix in
+3. Add it to `planSteps` in `ng-add/index.ts` (apply order), extend the fixture matrix in
    `ng-add/index.spec.ts`, and update the per-preset snapshots.
 4. A new answer gets a `schema.json` property (a list or boolean as a `oneOf`
    in the branch order the smoke guard checks), a field on `NgAddFlags`,
@@ -128,6 +128,7 @@ publish:dry` runs both checks and prints the entry it would add.
 |`npm run test:schematics`|specs, vitest in Node (`ng test core` excludes the folder)|
 |`npm run build:<lib>`|`ng build <lib>` then `scripts/build-schematics.mjs <lib>`|
 |`npm run schematics:tokens`|regenerate `steps/theme-tokens.generated.ts` from `system-tokens.css`|
+|`npm run schematics:mcp`|regenerate `steps/mcp-capabilities.generated.ts` (the helper README capability table) from the `@cngx/mcp` registrations|
 |`npm run test:scripts`|dist smoke run, bundle budgets, token drift, publish gate|
 
 `build-schematics.mjs` type-checks, then bundles each entry with esbuild (cjs,
