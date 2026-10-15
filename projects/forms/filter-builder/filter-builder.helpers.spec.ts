@@ -111,6 +111,16 @@ describe('unknown filter logic (CNGX2013)', () => {
     expect(() => ensureFilterTreeIds(nested)).toThrow(coded);
   });
 
+  it('describes a logic value that has no usable toString instead of failing on it', () => {
+    const tree = { ...persisted(), logic: Object.create(null) } as unknown as FilterGroup;
+    expect(() => ensureFilterTreeIds(tree)).toThrow(
+      expect.objectContaining({
+        code: 'CNGX2013',
+        message: expect.stringMatching(/^CNGX2013: Unknown filter logic "\[object Object\]"; /),
+      }),
+    );
+  });
+
   it('throws when a tree that skipped the boundary is evaluated', () => {
     const predicate = toFilterPredicate(persisted(), FIELDS)!;
     expect(() => predicate({ name: 'alice' })).toThrow(coded);

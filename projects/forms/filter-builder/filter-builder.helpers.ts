@@ -92,11 +92,21 @@ export function createFilterExpression<TValue = unknown>(
  * (deserialised JSON, presets, persisted snapshots) run this once at the
  * boundary; the presenter already invokes it on initial read and on every
  * external write through `value`. A group whose `logic` is not `'and'`,
- * `'or'` or `'xor'` throws CNGX2013 here, at the write, rather than later
- * inside the predicate.
+ * `'or'` or `'xor'` throws CNGX2013 here. In the presenter that is its `value`
+ * effect, reported through the `ErrorHandler`; the invalid tree stays in
+ * `value`, so a `predicate()` read of it throws CNGX2013 again.
  */
 export function ensureFilterTreeIds(tree: FilterGroup): FilterGroup {
   return normaliseGroupIds(tree);
+}
+
+/** @internal `String(logic)`, or the `[object X]` tag for a value without a usable `toString`. */
+function describeLogic(logic: unknown): string {
+  try {
+    return String(logic);
+  } catch {
+    return Object.prototype.toString.call(logic);
+  }
 }
 
 /** @internal */
@@ -105,7 +115,7 @@ function throwUnknownLogic(logic: unknown): never {
     'CNGX2013',
     typeof ngDevMode !== 'undefined' &&
       ngDevMode &&
-      `Unknown filter logic "${String(logic)}"; a FilterGroup's logic must be 'and', 'or' or 'xor'. ` +
+      `Unknown filter logic "${describeLogic(logic)}"; a FilterGroup's logic must be 'and', 'or' or 'xor'. ` +
         'Normalise deserialised or persisted trees before they reach the filter builder.',
   );
 }
