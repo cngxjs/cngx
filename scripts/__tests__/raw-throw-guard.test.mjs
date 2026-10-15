@@ -8,9 +8,9 @@
 //     `new CngxRuntimeError(...)` constructed in place or the variable of an
 //     enclosing `catch` clause (a rethrow). Anything else counts as a raw
 //     site: a raw `Error`, a local holding one, a factory or method call, a
-//     non-error value. A raw site is allowed only in a file of the shrink-only
-//     baseline or RAW_THROW_EXEMPT. The rule is an allowlist, so no way of
-//     building the error escapes it. Out of scope, per the plan: other error
+//     non-error value. A raw site is allowed only in a file of
+//     RAW_THROW_EXEMPT. The rule is an allowlist, so no way of building the
+//     error escapes it. Out of scope, per the plan: other error
 //     channels (`throwError(...)`, `subscriber.error(...)`) and `Error`
 //     objects stored as state instead of thrown.
 // T2  every `new CngxRuntimeError` has a `CNGXnnnn` literal first argument in
@@ -43,7 +43,6 @@ import {
   unwrap,
 } from '../dev-diagnostics.mjs';
 import { libOf, rangeOf, readSources } from '../error-codes-manifest.mjs';
-import { RAW_THROW_BASELINE } from './raw-throw-baseline.mjs';
 import { isLibrarySource } from './source-roots.mjs';
 
 /**
@@ -259,11 +258,7 @@ export function checkSources(allFiles) {
   return { raw, violations };
 }
 
-/** The baseline as a flat `file -> count` map. */
-const baselineMap = () =>
-  new Map(Object.values(RAW_THROW_BASELINE).flatMap((rows) => rows.map((r) => [r.file, r.count])));
-
-/** The raw sites grouped per lib, in the baseline's own shape. */
+/** The raw sites grouped per lib, for the failure message. */
 export function groupPerLib(raw) {
   const out = {};
   for (const [file, count] of [...raw].sort(([a], [b]) => a.localeCompare(b))) {
@@ -557,18 +552,12 @@ describe('raw-throw guard - projects/**', () => {
     expect(exemptionProblems(result.raw)).toEqual([]);
   });
 
-  it('matches the shrink-only baseline exactly (drop a row when you migrate a file)', () => {
+  it('has no raw throw outside the exemptions', () => {
     const exempt = new Set(RAW_THROW_EXEMPT.map((e) => e.file));
     const actual = new Map([...result.raw].filter(([file]) => !exempt.has(file)));
-    const expected = baselineMap();
-    const drift = [...new Set([...actual.keys(), ...expected.keys()])]
-      .filter((file) => actual.get(file) !== expected.get(file))
-      .map(
-        (file) => `${file}: source ${actual.get(file) ?? 0}, baseline ${expected.get(file) ?? 0}`,
-      );
     expect(
-      drift,
-      `Raw throws drifted; throw CngxRuntimeError instead. Current state, per lib:\n${JSON.stringify(groupPerLib(actual), null, 2)}`,
+      [...actual.keys()],
+      `Raw throws found; throw CngxRuntimeError instead. Per lib:\n${JSON.stringify(groupPerLib(actual), null, 2)}`,
     ).toEqual([]);
   });
 });
