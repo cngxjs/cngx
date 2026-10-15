@@ -38,7 +38,8 @@ export interface RingBuffer<T> {
  * is allocated once; no growth, no per-push allocation.
  *
  * @param capacity positive integer maximum element count.
- * @throws when `capacity` is not a positive integer.
+ * @throws `CngxRuntimeError` (`CNGX1050`) when `capacity` is not a positive
+ *   integer.
  *
  * @category common/chart/buffer
  */

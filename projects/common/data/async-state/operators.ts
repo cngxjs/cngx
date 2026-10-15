@@ -159,7 +159,8 @@ export function tapAsyncProgress<E>(
  * 5. Call `setError(err)` on error
  *
  * The output Observable emits the **response body** (not HttpEvents).
- * Throws if the response body is `null`.
+ * Throws a `CngxRuntimeError` with code `CNGX1054` if the response body is
+ * `null`; the sink receives it through `setError(err)`.
  *
  * ```typescript
  * readonly upload = createManualState<UploadResult>();

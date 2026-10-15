@@ -36,8 +36,8 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * `CNGX_BUTTON_MULTI_TOGGLE_GROUP` (multi, toolbar) - never the
  * concrete group class - both with `{ optional: true }`.
  *
- * Exactly one parent must be present; the constructor throws when both or
- * neither resolve. The resolved parent is stored as a discriminated
+ * Exactly one parent must be present; the constructor throws a
+ * `CngxRuntimeError` when both (`CNGX1052`) or neither (`CNGX1053`) resolve. The resolved parent is stored as a discriminated
  * union (`{ mode: 'single' | 'multi'; group }`) so every downstream
  * branch narrows without non-null assertions.
  *

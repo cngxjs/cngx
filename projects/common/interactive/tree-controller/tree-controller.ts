@@ -36,7 +36,8 @@ export interface CngxTreeControllerOptions<T> {
    * rather than a positional fallback.
    *
    * Resolution: per-options > app-wide `provideTreeConfig` default >
-   * dev-mode error. At least one source must provide the function.
+   * `CngxRuntimeError` `CNGX1051`. At least one source must provide the
+   * function.
    */
   readonly nodeIdFn?: (value: T, path: readonly number[]) => string;
   /**
