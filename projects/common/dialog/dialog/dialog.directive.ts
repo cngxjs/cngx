@@ -66,22 +66,22 @@ function warnDoubleRegistration(
 }
 
 /**
- * Non-modal dialogs are silent to SR: warn when no `aria-live` region sits
- * next to the trigger. A module function for the same reason as
- * `warnDoubleRegistration`.
+ * A non-modal dialog keeps focus on the page, so the only announcement is
+ * the title text the dialog writes into its own live region on open. Warn
+ * when there is no title text to announce. A module function for the same
+ * reason as `warnDoubleRegistration`.
  */
-function warnNonModalA11y(id: string, trigger: HTMLElement | null): void {
+function warnNonModalA11y(id: string, titleText: string): void {
   if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
     return;
   }
-  const parent = trigger?.parentElement;
-  if (parent && !parent.querySelector('[aria-live]')) {
+  if (titleText === '') {
     cngxDevWarn(
       'CNGX1015',
-      `CngxDialog [${id}]: Non-modal dialog opened without an ` +
-        '`aria-live` region near the trigger. Screen reader users will not ' +
-        'be notified that the dialog appeared. Add `aria-live="polite"` to a ' +
-        'sibling element that announces the dialog presence.',
+      `CngxDialog [${id}]: Non-modal dialog opened without a title. ` +
+        'A non-modal dialog leaves focus on the page and is announced only by ' +
+        'reading its title into its live region; with no title text, screen reader ' +
+        'users are not told it appeared. Add a [cngxDialogTitle] element with text.',
     );
   }
 }
@@ -405,6 +405,11 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
 
   private liveRegion: HTMLSpanElement | null = null;
 
+  /** The title text the open announcement reads; `''` when there is none. */
+  private currentTitleText(): string {
+    return (this.titleDirective() ?? this.registeredTitle())?.textContent?.() ?? '';
+  }
+
   /**
    * The modal mode latched at `open()`. Everything that depends on how the
    * dialog actually opened derives from this - scroll-lock release, stack
@@ -419,9 +424,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
 
     effect(() => {
       if (this.lifecycleSignal() === 'open') {
-        const titleText = untracked(
-          () => (this.titleDirective() ?? this.registeredTitle())?.textContent?.() ?? '',
-        );
+        const titleText = untracked(() => this.currentTitleText());
         if (titleText && this.liveRegion) {
           this.liveRegion.textContent = titleText;
           // Clear after one frame so subsequent opens re-announce
@@ -547,7 +550,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
     } else {
       dialog.show();
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-        warnNonModalA11y(this.idSignal(), this.triggerElement());
+        warnNonModalA11y(this.idSignal(), this.currentTitleText());
       }
     }
 
