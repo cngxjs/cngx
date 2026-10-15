@@ -34,6 +34,7 @@ import type {
   PopoverState,
   TooltipTriggerMode,
 } from './popover.types';
+import { warnMissingPopoverApi } from './popover.directive';
 
 /** @internal Small debounce to prevent SR announcement storms during rapid Tab navigation. */
 const FOCUS_DEBOUNCE_MS = 50;
@@ -233,6 +234,14 @@ export class CngxTooltip {
   /** Show the tooltip immediately (bypassing delay). */
   show(): void {
     if (!this.enabled() || this.stateSignal() !== 'closed') {
+      return;
+    }
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnMissingPopoverApi(this.tooltipEl!, 'CngxTooltip');
+    }
+    // Without the Popover API the open cannot happen; stay closed instead of
+    // latching in 'opening', so the tooltip opens once a polyfill lands.
+    if (typeof this.tooltipEl!.showPopover !== 'function') {
       return;
     }
     this.stateSignal.set('opening');

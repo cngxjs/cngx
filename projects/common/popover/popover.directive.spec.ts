@@ -15,10 +15,7 @@ import {
   FLOATING_PLACEMENT,
   provideFloatingFallback,
 } from './floating-fallback';
-import {
-  CNGX_POPOVER_ARROW_BOUNDS,
-  type CngxPopoverArrowBounds,
-} from './popover-arrow-bounds';
+import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
 import type { PopoverPositionTryFallback } from './popover.types';
 
 // Test helpers
@@ -563,7 +560,7 @@ describe('CngxPopover', () => {
           String(call[0]).includes('Popover API is not supported'),
         );
         expect(apiWarns).toHaveLength(1);
-        expect(apiWarns[0][0]).toContain('CNGX1036: CngxPopover');
+        expect(apiWarns[0][0]).toMatch(/^CNGX1036: CngxPopover: The native Popover API/);
       } finally {
         warnSpy.mockRestore();
         __resetPopoverApiWarnings(document);
