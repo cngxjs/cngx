@@ -62,7 +62,7 @@ describe('applyChangePlan', () => {
   });
 
   it('refuses a change kind it has no mapping for', () => {
-    const unknown = { ...BASE, kind: 'add-import', id: 'i', path: 'main.ts' } as unknown as Change;
+    const unknown = { ...BASE, kind: 'unknown-kind', id: 'i', path: 'main.ts' } as unknown as Change;
 
     expect(() => applyChangePlan(createChangePlan([{ changes: [unknown], skipped: [] }]))).toThrow(
       'No apply mapping for change',
