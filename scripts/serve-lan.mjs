@@ -15,11 +15,18 @@ import { pathToFileURL } from 'node:url';
 
 export const PORT = 4200;
 
+// VPN and point-to-point tunnels (macOS utun, WireGuard, PPP, ...) carry an
+// IPv4 address too, but a phone on the Wi-Fi cannot reach it.
+const TUNNEL_INTERFACE = /^(utun|tun|tap|ppp|ipsec|wg|zt)/i;
+
 // `interfaces` is the shape of `os.networkInterfaces()`. Returns the external
 // IPv4 addresses, the ones a phone on the same network can reach.
 export function listLanAddresses(interfaces) {
   const addresses = [];
-  for (const entries of Object.values(interfaces)) {
+  for (const [name, entries] of Object.entries(interfaces)) {
+    if (TUNNEL_INTERFACE.test(name)) {
+      continue;
+    }
     for (const entry of entries ?? []) {
       const isIpv4 = entry.family === 'IPv4' || entry.family === 4;
       if (isIpv4 && !entry.internal) {

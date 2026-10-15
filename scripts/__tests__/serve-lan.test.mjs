@@ -19,6 +19,17 @@ describe('serve-lan - listLanAddresses', () => {
     expect(addresses).toEqual(['192.168.1.23', '10.0.0.7']);
   });
 
+  it('drops vpn and point-to-point tunnel interfaces', () => {
+    const addresses = listLanAddresses({
+      en0: [{ address: '192.168.1.74', family: 'IPv4', internal: false }],
+      utun7: [{ address: '192.0.2.4', family: 'IPv4', internal: false }],
+      wg0: [{ address: '10.8.0.2', family: 'IPv4', internal: false }],
+      ppp0: [{ address: '10.64.0.9', family: 'IPv4', internal: false }],
+    });
+
+    expect(addresses).toEqual(['192.168.1.74']);
+  });
+
   it('accepts the numeric family older Node versions report', () => {
     expect(
       listLanAddresses({ eth0: [{ address: '172.16.0.4', family: 4, internal: false }] }),
