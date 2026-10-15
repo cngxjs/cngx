@@ -4,6 +4,8 @@
 export { CngxAriaExpanded } from './aria/aria-expanded.directive';
 export { CngxLiveRegion } from './aria/live-region.directive';
 export { CngxLiveAnnouncer, type AriaLivePoliteness } from './aria/live-announcer';
+export { createScopedLiveRegion, type CngxScopedLiveRegion } from './aria/scoped-live-region';
+export type { CngxPendingAnnouncement } from './aria/live-region-pair';
 export { CngxAutofocus } from './focus/autofocus.directive';
 export {
   CngxFocusRestore,
