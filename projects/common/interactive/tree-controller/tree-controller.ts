@@ -217,7 +217,6 @@ const POST_DESTROY_FALSE: Signal<boolean> = signal(
     : undefined,
 ).asReadonly();
 
-/** @internal */
 /**
  * `String(key)` for the CNGX1030 report, or the `[object X]` tag when the key
  * cannot be converted (a null-prototype object has no `toString`).
@@ -230,6 +229,7 @@ function describeKey(key: unknown): string {
   }
 }
 
+/** @internal */
 function flatEq<T>(a: readonly FlatTreeNode<T>[], b: readonly FlatTreeNode<T>[]): boolean {
   if (a === b) {
     return true;

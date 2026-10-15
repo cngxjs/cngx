@@ -17,13 +17,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, fromEvent, map, merge, switchMap, takeUntil, tap } from 'rxjs';
 
 /**
- * Dev only: after the first render, warns when elements match
- * `itemSelector` but carry no numeric `data-reorder-index`. Registers its
- * own `afterNextRender`, so call it in the injection context. A module
- * function, not a method: a class keeps its methods in the bundle, and an
- * emptied method still pulls `cngxDevWarn` into the production build.
- */
-/**
  * The item's `data-reorder-index` as a non-negative integer, or `-1`. The
  * gesture handlers and the CNGX1028 check read indexes the same way.
  */
@@ -39,6 +32,13 @@ function parseReorderIndex(el: HTMLElement): number {
   return n;
 }
 
+/**
+ * Dev only: after the first render, warns when elements match
+ * `itemSelector` but carry no valid `data-reorder-index`. Registers its
+ * own `afterNextRender`, so call it in the injection context. A module
+ * function, not a method: a class keeps its methods in the bundle, and an
+ * emptied method still pulls `cngxDevWarn` into the production build.
+ */
 function wireDevModeCheck(hostEl: HTMLElement, itemSelector: Signal<string>): void {
   if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
     return;
