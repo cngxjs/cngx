@@ -418,9 +418,27 @@ describe('CngxDataGridAccordion column derivation', () => {
     // The extra cells land in implicit grid tracks and misalign silently -
     // the only surface for the mistake is this warning.
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toContain('CNGX3009: CngxDataGridAccordion');
-    expect(warn.mock.calls[0][0]).toContain('4 cells');
-    expect(warn.mock.calls[0][0]).toContain('3 tracks');
+    expect(warn.mock.calls[0][0]).toMatch(
+      /^CNGX3009: CngxDataGridAccordion: a row projects 4 cells but the shared column template has 3 tracks - /,
+    );
+    warn.mockRestore();
+  });
+
+  it('counts the [columns] tracks instead of the header cells when the escape hatch is set', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    warn.mockClear();
+    TestBed.configureTestingModule({ imports: [ColumnsTrackHost] });
+    const fixture = TestBed.createComponent(ColumnsTrackHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(warn.mock.calls.some(([m]) => /^CNGX3009: /.test(String(m)))).toBe(false);
+
+    fixture.componentInstance.columns.set('9ch 1fr');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const calls = warn.mock.calls.filter(([m]) => /^CNGX3009: /.test(String(m)));
+    expect(calls).toHaveLength(1);
+    expect(calls[0][0]).toMatch(/^CNGX3009: CngxDataGridAccordion: a row projects 3 cells but the shared column template has 2 tracks - /);
     warn.mockRestore();
   });
 
@@ -453,6 +471,25 @@ describe('CngxDataGridAccordion column derivation', () => {
   imports: [CngxDataGridAccordion, CngxDataGridHeader, CngxDataGridRow, CngxDgCell],
 })
 class OverflowHost {}
+
+@Component({
+  template: `<cngx-data-grid-accordion [columns]="columns()">
+    <cngx-dga-header>
+      <span cngxDgaCell>ID</span>
+      <span cngxDgaCell>Name</span>
+    </cngx-dga-header>
+    <cngx-dga-row panelId="a">
+      <span cngxDgaCell>1</span>
+      <span cngxDgaCell primary>Alpha</span>
+      <span cngxDgaCell>120</span>
+      Detail
+    </cngx-dga-row>
+  </cngx-data-grid-accordion>`,
+  imports: [CngxDataGridAccordion, CngxDataGridHeader, CngxDataGridRow, CngxDgCell],
+})
+class ColumnsTrackHost {
+  readonly columns = signal('[id] 9ch [name] repeat(1, minmax(0, 1fr)) auto');
+}
 
 @Component({
   template: `<cngx-data-grid-accordion [multi]="true" [(openIds)]="open">
