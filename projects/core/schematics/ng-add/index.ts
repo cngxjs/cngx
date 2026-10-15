@@ -14,7 +14,8 @@ import {
   createShellRendererOptions,
   createSummary,
   isCi,
-  type NgAddOptions,
+  type NgAddFlags,
+  parseNgAddOptions,
   resolveVersions,
 } from '../engine';
 import { detectProject, type ProjectFacts } from './detect/detect';
@@ -96,10 +97,12 @@ function scheduleInstall(plan: ChangePlan): Rule {
  * and install once at the end. Nothing in here needs the installed packages:
  * the engine and prompts are bundled and `@schematics/angular` comes from the
  * CLI. Under `--dry-run` the same rule runs and the CLI drops the writes and
- * the task.
+ * the task. `flags` are parsed once here; everything below reads the typed
+ * options.
  */
-export function ngAdd(options: NgAddOptions): Rule {
+export function ngAdd(flags: NgAddFlags): Rule {
   return async (tree: Tree, context: SchematicContext) => {
+    const options = parseNgAddOptions(flags);
     const { versions, warning } = resolveVersions(__dirname);
     const rendererOptions = createShellRendererOptions(process.env, process.stdout, context.logger, options.quiet === true);
     const interactive = canPrompt(rendererOptions.isTTY, options.prompts);

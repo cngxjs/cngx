@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 
 import {
   AI_TOOLS,
@@ -11,7 +11,7 @@ import {
   NG_ADD_PRESETS,
   THEME_CHOICES,
 } from '../engine';
-import { createFixtureTree, readFixture, runRule } from '../testing/run-schematic';
+import { createFixtureTree, readFixture, readTree, runRule } from '../testing/run-schematic';
 import { ngAdd } from './index';
 
 // Specs run the source rule, so the version is core's source manifest.
@@ -687,6 +687,34 @@ describe('ngAdd', () => {
     expect(run.tasks).toEqual(['node-package']);
     expect(run.logs.some((line) => line.includes('?'))).toBe(false);
   });
+
+  // Before the install `ng add` parses flags without the schema's types, so
+  // a list arrives as one comma string and `--lint=false` as "false".
+  it('plans the flags ng add passes before the install like the typed ones', async () => {
+    // install.json stamps the run time; both runs must see the same clock.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-15T12:00:00Z'));
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    const typed = await runRule(
+      ngAdd({ aiTools: ['claude', 'vscode'], libs: ['core', 'forms'], lint: false }),
+      createFixtureTree(),
+    );
+    const scalar = await runRule(ngAdd({ aiTools: 'claude,vscode', libs: 'core,forms', lint: 'false' }), createFixtureTree());
+
+    expect(scalar.logs).toEqual(typed.logs);
+    expect(readTree(scalar.tree)).toEqual(readTree(typed.tree));
+  });
+
+  it('stops on an unknown or repeated list entry with the shared message', async () => {
+    await expect(runRule(ngAdd({ aiTools: 'emacs' }), createFixtureTree())).rejects.toThrow(
+      '"emacs" is not a valid answer for aiTools. Expected one of: claude, cursor, vscode.',
+    );
+    await expect(runRule(ngAdd({ aiTools: 'claude,claude' }), createFixtureTree())).rejects.toThrow(
+      '"claude" is not a valid answer for aiTools.',
+    );
+  });
 });
 
 describe('the ng-add collection', () => {
@@ -695,13 +723,19 @@ describe('the ng-add collection', () => {
   });
 
   it('offers exactly the answer vocabulary the steps understand', () => {
-    const enums = SCHEMA.properties as Record<string, { enum?: readonly string[]; items?: { enum?: readonly string[] } }>;
+    interface Branch {
+      type?: string;
+      enum?: readonly string[];
+      items?: { enum?: readonly string[] };
+    }
+    const enums = SCHEMA.properties as Record<string, Branch & { oneOf?: readonly Branch[] }>;
+    const listEnum = (key: string) => enums[key].oneOf?.find((branch) => branch.type === 'array')?.items?.enum;
 
     expect(enums['preset'].enum).toEqual(NG_ADD_PRESETS);
-    expect(enums['libs'].items?.enum).toEqual(CNGX_LIBS);
+    expect(listEnum('libs')).toEqual(CNGX_LIBS);
     expect(enums['theme'].enum).toEqual(THEME_CHOICES);
     expect(enums['i18n'].enum).toEqual(LANGUAGES);
-    expect(enums['aiTools'].items?.enum).toEqual(AI_TOOLS);
+    expect(listEnum('aiTools')).toEqual(AI_TOOLS);
   });
 
   it('describes the editor configs the aiTools step writes', () => {

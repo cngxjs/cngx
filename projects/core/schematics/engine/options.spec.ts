@@ -12,26 +12,38 @@ import {
   isOneOf,
   LANGUAGES,
   NG_ADD_PRESETS,
+  type NgAddFlags,
+  parseNgAddOptions,
   THEME_CHOICES,
 } from './options';
 
-interface SchemaProperty {
+interface SchemaBranch {
+  readonly type?: string;
   readonly enum?: readonly string[];
-  readonly default?: unknown;
   readonly items?: { readonly enum?: readonly string[] };
   readonly uniqueItems?: boolean;
+}
+
+interface SchemaProperty extends SchemaBranch {
+  readonly default?: unknown;
+  readonly oneOf?: readonly SchemaBranch[];
 }
 
 const SCHEMA = JSON.parse(readFileSync(join(__dirname, '..', 'ng-add', 'schema.json'), 'utf8')) as {
   properties: Record<string, SchemaProperty>;
 };
 
+// A list property takes a comma string or an array; the vocabulary sits on the array branch.
+function arrayBranch(key: string): SchemaBranch | undefined {
+  return SCHEMA.properties[key].oneOf?.find((branch) => branch.type === 'array');
+}
+
 const VOCABULARY = [
   ['preset', NG_ADD_PRESETS, SCHEMA.properties['preset'].enum],
-  ['libs', CNGX_LIBS, SCHEMA.properties['libs'].items?.enum],
+  ['libs', CNGX_LIBS, arrayBranch('libs')?.items?.enum],
   ['theme', THEME_CHOICES, SCHEMA.properties['theme'].enum],
   ['i18n', LANGUAGES, SCHEMA.properties['i18n'].enum],
-  ['aiTools', AI_TOOLS, SCHEMA.properties['aiTools'].items?.enum],
+  ['aiTools', AI_TOOLS, arrayBranch('aiTools')?.items?.enum],
 ] as const;
 
 describe('the ng-add answer vocabulary', () => {
@@ -49,8 +61,8 @@ describe('the ng-add answer vocabulary', () => {
   });
 
   it('declares the array answers unique, so a repeated flag cannot select twice', () => {
-    expect(SCHEMA.properties['libs'].uniqueItems).toBe(true);
-    expect(SCHEMA.properties['aiTools'].uniqueItems).toBe(true);
+    expect(arrayBranch('libs')?.uniqueItems).toBe(true);
+    expect(arrayBranch('aiTools')?.uniqueItems).toBe(true);
   });
 });
 
@@ -87,5 +99,68 @@ describe('invalidAnswer', () => {
     expect(invalidAnswer('theme', ['dark'], THEME_CHOICES).message).toBe(
       '"dark" is not a valid answer for theme. Expected one of: cngx, material, none.',
     );
+  });
+});
+
+describe('parseNgAddOptions', () => {
+  it('splits a comma list and trims each entry', () => {
+    expect(parseNgAddOptions({ aiTools: 'claude,vscode' }).aiTools).toEqual(['claude', 'vscode']);
+    expect(parseNgAddOptions({ libs: 'core, forms , ui' }).libs).toEqual(['core', 'forms', 'ui']);
+  });
+
+  it('reads a single entry as a one-entry list', () => {
+    expect(parseNgAddOptions({ aiTools: 'claude' }).aiTools).toEqual(['claude']);
+  });
+
+  it('takes an array as it is', () => {
+    expect(parseNgAddOptions({ libs: ['core', 'ui'] }).libs).toEqual(['core', 'ui']);
+  });
+
+  it('names an unknown list entry', () => {
+    expect(() => parseNgAddOptions({ aiTools: 'claude,emacs' })).toThrow(
+      '"emacs" is not a valid answer for aiTools. Expected one of: claude, cursor, vscode.',
+    );
+    expect(() => parseNgAddOptions({ libs: ['charts'] })).toThrow('"charts" is not a valid answer for libs.');
+  });
+
+  it('rejects an empty list entry', () => {
+    expect(() => parseNgAddOptions({ libs: 'core,,ui' })).toThrow('"" is not a valid answer for libs.');
+    expect(() => parseNgAddOptions({ aiTools: '' })).toThrow('"" is not a valid answer for aiTools.');
+  });
+
+  it('rejects a repeated list entry, as the array branch does with uniqueItems', () => {
+    expect(() => parseNgAddOptions({ aiTools: 'claude,claude' })).toThrow(
+      '"claude" is not a valid answer for aiTools. Expected one of: claude, cursor, vscode.',
+    );
+  });
+
+  it('maps the pre-install boolean strings and passes real booleans through', () => {
+    expect(parseNgAddOptions({ lint: 'false', yes: 'true', quiet: false, prompts: true })).toMatchObject({
+      lint: false,
+      yes: true,
+      quiet: false,
+      prompts: true,
+    });
+  });
+
+  it('rejects a boolean flag that reads like neither', () => {
+    expect(() => parseNgAddOptions({ lint: 'no' } as unknown as NgAddFlags)).toThrow(
+      '"no" is not a valid answer for lint. Expected one of: true, false.',
+    );
+  });
+
+  it('names an unknown theme or language', () => {
+    expect(() => parseNgAddOptions({ theme: 'dark' })).toThrow(
+      '"dark" is not a valid answer for theme. Expected one of: cngx, material, none.',
+    );
+    expect(() => parseNgAddOptions({ i18n: 'fr' })).toThrow('"fr" is not a valid answer for i18n.');
+  });
+
+  it('reads an undefined or empty list as not given', () => {
+    expect(parseNgAddOptions({ libs: [], aiTools: undefined })).toMatchObject({ libs: undefined, aiTools: undefined });
+  });
+
+  it('keeps project and preset as given', () => {
+    expect(parseNgAddOptions({ project: 'app', preset: 'full' })).toMatchObject({ project: 'app', preset: 'full' });
   });
 });

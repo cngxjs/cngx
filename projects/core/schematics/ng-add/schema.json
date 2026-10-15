@@ -27,10 +27,15 @@
       }
     },
     "libs": {
-      "type": "array",
       "description": "The @cngx packages to install; their @cngx peers follow. Asked when a terminal is attached, otherwise every package.",
-      "items": { "type": "string", "enum": ["utils", "core", "common", "interop", "forms", "data-display", "ui"] },
-      "uniqueItems": true
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "array",
+          "items": { "type": "string", "enum": ["utils", "core", "common", "interop", "forms", "data-display", "ui"] },
+          "uniqueItems": true
+        }
+      ]
     },
     "theme": {
       "type": "string",
@@ -43,42 +48,47 @@
       "enum": ["en", "de"]
     },
     "runtimeSwitch": {
-      "type": "boolean",
+      "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["true", "false"] }],
       "description": "Wire the language pack for switching at runtime instead of a fixed language."
     },
     "lint": {
-      "type": "boolean",
+      "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["true", "false"] }],
       "description": "Add @cngx/eslint-plugin to the eslint flat config when one exists."
     },
     "a11yPreferences": {
-      "type": "boolean",
+      "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["true", "false"] }],
       "description": "Provide the accessibility preference axes (density, text scale, motion, contrast) with persistence."
     },
     "feedback": {
-      "type": "boolean",
+      "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["true", "false"] }],
       "description": "Provide toasts, alerts and banners at the root when @cngx/ui is installed."
     },
     "floatingFallback": {
-      "type": "boolean",
+      "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["true", "false"] }],
       "description": "Install @floating-ui/dom and provide the popover positioning fallback for browsers without CSS anchor positioning."
     },
     "aiTools": {
-      "type": "array",
       "description": "The editors to set up the cngx MCP server for: the server entry in their project MCP config, a marked cngx block in the agent instructions (AGENTS.md, or CLAUDE.md for Claude Code) and .cngx/README.md. Asked when a terminal is attached, with the detected editors preselected.",
-      "items": { "type": "string", "enum": ["claude", "cursor", "vscode"] },
-      "uniqueItems": true
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "array",
+          "items": { "type": "string", "enum": ["claude", "cursor", "vscode"] },
+          "uniqueItems": true
+        }
+      ]
     },
     "yes": {
-      "type": "boolean",
+      "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["true", "false"] }],
       "description": "Apply the plan to an existing app without asking for confirmation first."
     },
     "prompts": {
-      "type": "boolean",
+      "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["true", "false"] }],
       "description": "Ask the detection-dependent questions when a terminal is attached. Pass false in CI runs under a pseudo-terminal; flags, the recorded answers of a re-run and the preset defaults answer instead.",
       "default": true
     },
     "quiet": {
-      "type": "boolean",
+      "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["true", "false"] }],
       "description": "Print only the summary, not the planned changes.",
       "default": false
     }

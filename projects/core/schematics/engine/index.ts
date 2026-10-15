@@ -19,8 +19,10 @@ export {
   type Language,
   LANGUAGES,
   NG_ADD_PRESETS,
+  type NgAddFlags,
   type NgAddOptions,
   type NgAddPreset,
+  parseNgAddOptions,
   THEME_CHOICES,
   type ThemeChoice,
 } from './options';

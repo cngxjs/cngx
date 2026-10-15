@@ -10,7 +10,7 @@ import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schema
 
 import { addLockstepDependency } from '../manifest/lockstep';
 import { readOwnVersion } from '../manifest/manifest';
-import { type NgAddOptions } from '../options';
+import { type NgAddFlags } from '../options';
 import { errorMessage } from '../plan/text';
 
 const CORE = '@cngx/core';
@@ -48,9 +48,10 @@ function isCoreResolvable(context: SchematicContext): boolean {
  * placed core (npm installs peers), the shim delegates in the same run;
  * otherwise it installs core first and runs its ng-add as a follow-up task.
  * A shim re-exports this as its `ngAdd` factory; the CLI passes only the
- * options, so `bundleDir` is the shim bundle's own folder.
+ * options, so `bundleDir` is the shim bundle's own folder. The flags go to
+ * core as the CLI handed them over; core parses them.
  */
-export function delegateNgAdd(options: NgAddOptions, bundleDir: string = __dirname): Rule {
+export function delegateNgAdd(options: NgAddFlags, bundleDir: string = __dirname): Rule {
   return (_tree: Tree, context: SchematicContext) => {
     const addCore = addLockstepDependency(CORE, readOwnVersion(bundleDir));
 

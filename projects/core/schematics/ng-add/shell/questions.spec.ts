@@ -155,10 +155,10 @@ describe('askOnboarding', () => {
     expect(answers).toMatchObject({ preset: 'full', i18n: 'de', runtimeSwitch: false, lint: true, feedback: true });
   });
 
-  it('selects every package and the detected editors when the schema registry passes empty lists', async () => {
+  it('selects every package and the detected editors when no list flag is given', async () => {
     const { answers } = await ask(
       createFacts({ editors: { claude: true, cursor: false, vscode: false } }),
-      { preset: 'full', libs: [], aiTools: [] },
+      { preset: 'full' },
       false,
     );
     expect(answers.libs).toHaveLength(7);
@@ -178,13 +178,10 @@ describe('askOnboarding', () => {
     expect(answers).toMatchObject({ i18n: 'de', a11yPreferences: true });
   });
 
-  it('rejects an answer flag of the wrong shape', async () => {
+  it('rejects a list flag entry the question does not offer', async () => {
     await expect(
       ask(createFacts(), { aiTools: ['emacs'] } as unknown as NgAddOptions),
     ).rejects.toThrow('"emacs" is not a valid answer for aiTools.');
-    await expect(ask(createFacts(), { theme: 'dark' } as unknown as NgAddOptions)).rejects.toThrow(
-      '"dark" is not a valid answer for theme. Expected one of: cngx, material, none.',
-    );
   });
 
   it('asks which editors get the cngx mcp server, with the detected ones preselected', async () => {
@@ -327,8 +324,8 @@ describe('givenAnswers', () => {
     expect(givenAnswers({ preset: 'full', quiet: true, lint: false, libs: ['ui'] })).toEqual({ lint: false, libs: ['ui'] });
   });
 
-  it('reads the empty list the schema registry fills in for an unset array as not given', () => {
-    expect(givenAnswers({ libs: [], aiTools: [] })).toEqual({});
+  it('drops the answers the parsed options leave undefined', () => {
+    expect(givenAnswers({ libs: undefined, aiTools: undefined, lint: undefined })).toEqual({});
   });
 });
 
