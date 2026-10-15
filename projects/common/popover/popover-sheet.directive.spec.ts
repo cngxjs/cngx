@@ -650,6 +650,39 @@ describe('CngxPopoverSheet', () => {
       expect(ctx.host.reasons).toEqual(['backdrop']);
     });
 
+    it('swallows the click that follows an outside-tap close', () => {
+      const ctx = setup();
+      openFromOpener(ctx);
+      const check = ctx.q<HTMLInputElement>('.page-check');
+      check.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(ctx.host.popover().state()).toBe('closed');
+      expect(check.hasAttribute('inert')).toBe(false);
+
+      check.click();
+      expect(check.checked).toBe(false);
+      check.click();
+      expect(check.checked).toBe(true);
+    });
+
+    it('never swallows a click after the next pointerdown or after the timeout', () => {
+      vi.useFakeTimers();
+      const ctx = setup((h) => h.closeOnRequest.set(false));
+      openFromOpener(ctx);
+      const item = ctx.q<HTMLButtonElement>('.item');
+      const clicked = vi.fn();
+      item.addEventListener('click', clicked);
+
+      ctx.root.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      item.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      item.click();
+      expect(clicked).toHaveBeenCalledTimes(1);
+
+      ctx.root.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      vi.advanceTimersByTime(600);
+      item.click();
+      expect(clicked).toHaveBeenCalledTimes(2);
+    });
+
     it('detaches the listener after close and never listens while anchored', () => {
       const ctx = setup();
       openFromOpener(ctx);

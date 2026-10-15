@@ -48,6 +48,8 @@ const SETTLING_ATTRIBUTE = 'data-cngx-sheet-settling';
 const SETTLING_FRAME_CAP = 4;
 const LIVE_REGION_SELECTOR = '[aria-live], [role="status"], [role="alert"], [role="log"]';
 const FOCUS_TRAP_ANCHOR_CLASS = 'cdk-focus-trap-anchor';
+// Longer than a tap's pointerdown-to-click gap, shorter than a second tap.
+const CLICK_SWALLOW_MS = 600;
 
 // Not in lib.dom yet; Chromium only (Android back gesture, Escape).
 interface CloseWatcherLike {
@@ -233,11 +235,24 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
   // The page siblings are inert, so a tap outside the panel lands on a
   // non-inert ancestor; the popover ::backdrop does not catch taps (S7).
   private readonly outsidePointerDown = (event: PointerEvent): void => {
+    this.disarmClickSwallow();
     const target = event.target;
     if (target instanceof Node && this.host.contains(target)) {
       return;
     }
+    this.armClickSwallow();
     this.requestClose('backdrop');
+  };
+
+  // Closing on pointerdown releases inert before the gesture's click lands,
+  // so that click would hit the page element under the tap (S7). Swallow the
+  // one click that belongs to this gesture; the next pointerdown or a short
+  // timeout disarms it, so a later tap is never eaten.
+  private clickSwallowTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly swallowClick = (event: MouseEvent): void => {
+    event.preventDefault();
+    event.stopPropagation();
+    this.disarmClickSwallow();
   };
 
   constructor() {
@@ -261,7 +276,10 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
       });
     });
 
-    inject(DestroyRef).onDestroy(() => this.release());
+    inject(DestroyRef).onDestroy(() => {
+      this.release();
+      this.disarmClickSwallow();
+    });
   }
 
   /** @internal Seam call from `CngxPopover.show()`, after `showPopover()`. */
@@ -394,6 +412,19 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
       }
     };
     this.closeWatcher = watcher;
+  }
+
+  private armClickSwallow(): void {
+    this.doc.addEventListener('click', this.swallowClick, true);
+    this.clickSwallowTimer = setTimeout(() => this.disarmClickSwallow(), CLICK_SWALLOW_MS);
+  }
+
+  private disarmClickSwallow(): void {
+    this.doc.removeEventListener('click', this.swallowClick, true);
+    if (this.clickSwallowTimer !== null) {
+      clearTimeout(this.clickSwallowTimer);
+      this.clickSwallowTimer = null;
+    }
   }
 
   private disarmCloseWatcher(): void {
