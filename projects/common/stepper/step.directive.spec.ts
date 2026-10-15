@@ -94,10 +94,7 @@ describe('CngxStep', () => {
       readonly error = signal<string | boolean>(false);
     }
 
-    function setup(): {
-      fixture: ReturnType<typeof TestBed.createComponent<ErrorHost>>;
-      node: () => ReturnType<CngxStepperPresenter['flatSteps']>[number];
-    } {
+    function setup(): { fixture: ReturnType<typeof TestBed.createComponent<ErrorHost>>; node: () => ReturnType<CngxStepperPresenter['flatSteps']>[number] } {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(ErrorHost);
       fixture.detectChanges();
@@ -113,7 +110,7 @@ describe('CngxStep', () => {
       expect(node().errorMessage?.()).toBeUndefined();
     });
 
-    it('[error]="\'msg\'" drives the error state and exposes the message', () => {
+    it("[error]=\"'msg'\" drives the error state and exposes the message", () => {
       const { fixture, node } = setup();
       fixture.componentInstance.error.set('Card declined');
       fixture.detectChanges();

@@ -158,7 +158,7 @@ describe('CngxTabLink', () => {
     expect(handle('profile')?.hasError()).toBe(true);
   });
 
-  it('[error]="\'msg\'" exposes the string through the handle errorMessage', () => {
+  it("[error]=\"'msg'\" exposes the string through the handle errorMessage", () => {
     const { fixture, handle } = setup();
     expect(handle('profile')?.errorMessage()).toBeUndefined();
     fixture.componentInstance.profileError.set('Required fields missing');

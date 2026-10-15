@@ -53,7 +53,9 @@ describe('createRingBuffer', () => {
       expect.objectContaining({
         name: 'CngxRuntimeError',
         code: 'CNGX1050',
-        message: expect.stringContaining(`got ${got}`),
+        message: expect.stringMatching(
+          new RegExp(`^CNGX1050: createRingBuffer: capacity must be a positive integer, got ${got} `),
+        ),
       });
     expect(() => createRingBuffer<number>(0)).toThrow(coded('0'));
     expect(() => createRingBuffer<number>(-1)).toThrow(coded('-1'));

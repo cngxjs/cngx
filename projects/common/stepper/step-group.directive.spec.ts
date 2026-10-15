@@ -59,9 +59,7 @@ class CustomIdHost {}
 // Keyed by label() (stable post-detectChanges). The group's own id is an
 // auto-generated nextUid - the realistic grouped-stepper pattern, where
 // the registration id and this.id() agree at every read.
-function groupsOf(fixture: {
-  debugElement: import('@angular/core').DebugElement;
-}): Map<string, CngxStepGroup> {
+function groupsOf(fixture: { debugElement: import('@angular/core').DebugElement }): Map<string, CngxStepGroup> {
   const map = new Map<string, CngxStepGroup>();
   for (const de of fixture.debugElement.queryAll(By.directive(CngxStepGroup))) {
     const g = de.injector.get(CngxStepGroup);
