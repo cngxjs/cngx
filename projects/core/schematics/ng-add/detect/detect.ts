@@ -10,6 +10,7 @@ import {
   hasStyleImport,
   isRecord,
   type LanguagePackArgument,
+  listFiles,
   type PackageManifest,
   parseManifest,
   readProviderCalls,
@@ -489,14 +490,8 @@ function detectEslintStack(manifest: PackageManifest): EslintStackFacts {
   };
 }
 
-function sourceFiles(tree: Tree, root: string): readonly string[] {
-  const files: string[] = [];
-  tree.getDir(root).visit((path) => {
-    if (path.endsWith('.ts') && !path.endsWith('.spec.ts')) {
-      files.push(path.replace(/^\//, ''));
-    }
-  });
-  return files;
+function isSourceFile(path: string): boolean {
+  return path.endsWith('.ts') && !path.endsWith('.spec.ts');
 }
 
 interface McpConfigFacts {
@@ -609,7 +604,10 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const manifest = parseManifest(tree.readText('package.json'));
 
   // One read per source file feeds every source-derived fact.
-  const sources = sourceFiles(tree, sourceRoot).map((path) => ({ path, content: tree.readText(path) }));
+  const sources = listFiles(tree, sourceRoot, { accept: isSourceFile }).map((path) => ({
+    path,
+    content: tree.readText(path),
+  }));
   const contents = new Map<string, string | undefined>(sources.map(({ path, content }) => [path, content]));
   const read: Read = (path) => {
     if (!contents.has(path)) {

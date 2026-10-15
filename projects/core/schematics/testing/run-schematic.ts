@@ -6,7 +6,7 @@ import { callRule, type Rule, type Schematic, type SchematicContext, type Tree }
 import { SchematicTestRunner, UnitTestTree } from '@angular-devkit/schematics/testing';
 import { lastValueFrom, of } from 'rxjs';
 
-import { createMemoryTree } from '../engine';
+import { createMemoryTree, listFiles } from '../engine';
 
 const FIXTURES = join(__dirname, 'fixtures');
 
@@ -50,11 +50,7 @@ export function readMigrationFixture(name: string): MigrationFixture {
 
 /** Every file of a tree, keyed by its path without the leading slash. */
 export function readTree(tree: Tree): Readonly<Record<string, string>> {
-  const files: [string, string][] = [];
-  tree.visit((path) => {
-    files.push([path.slice(1), tree.readText(path)]);
-  });
-  return Object.fromEntries(files.sort(([a], [b]) => a.localeCompare(b)));
+  return Object.fromEntries(listFiles(tree, '/').map((path) => [path, tree.readText(path)]));
 }
 
 /**

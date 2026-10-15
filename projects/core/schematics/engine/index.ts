@@ -4,6 +4,7 @@
 export type { Tree } from './fs/tree';
 export { createMemoryTree } from './fs/memory-tree';
 export { createNodeTree, type NodeTree } from './fs/node-tree';
+export { listFiles, type ListFilesOptions } from './fs/walk';
 
 export { addLockstepDependency } from './manifest/lockstep';
 export {
