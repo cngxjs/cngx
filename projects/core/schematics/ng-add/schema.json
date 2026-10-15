@@ -64,7 +64,7 @@
     },
     "aiTools": {
       "type": "array",
-      "description": "The editors to set up the cngx MCP server for: the server entry in their project MCP config, a marked cngx block in the agent instructions (AGENTS.md, or CLAUDE.md for Claude Code) and .cngx/README.md.",
+      "description": "The editors to set up the cngx MCP server for: the server entry in their project MCP config, a marked cngx block in the agent instructions (AGENTS.md, or CLAUDE.md for Claude Code) and .cngx/README.md. Asked when a terminal is attached, with the detected editors preselected.",
       "items": { "type": "string", "enum": ["claude", "cursor", "vscode"] },
       "uniqueItems": true
     },
@@ -74,7 +74,7 @@
     },
     "prompts": {
       "type": "boolean",
-      "description": "Ask the detection-dependent questions when a terminal is attached. Pass false in CI runs under a pseudo-terminal; flags and preset defaults answer instead.",
+      "description": "Ask the detection-dependent questions when a terminal is attached. Pass false in CI runs under a pseudo-terminal; flags, the recorded answers of a re-run and the preset defaults answer instead.",
       "default": true
     },
     "quiet": {

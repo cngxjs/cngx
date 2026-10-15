@@ -82,6 +82,7 @@ describe('createPromptFlow', () => {
     expect(await flow.multiSelect(TOOLS)).toEqual(['claude']);
     expect(await flow.confirm(LINT)).toBe(true);
     expect(asked).toEqual([]);
+    expect(flow.interactive).toBe(false);
   });
 
   it('asks the terminal when it can prompt', async () => {
@@ -92,6 +93,7 @@ describe('createPromptFlow', () => {
     expect(await flow.multiSelect(TOOLS)).toEqual(['claude', 'cursor', 'vscode']);
     expect(await flow.confirm(LINT)).toBe(false);
     expect(asked).toEqual(['theme', 'aiTools', 'lint']);
+    expect(flow.interactive).toBe(true);
   });
 
   it('never asks a question a flag already answered', async () => {

@@ -9,11 +9,13 @@ const PLAN = createChangePlan([
   {
     changes: [
       {
-        kind: 'note',
+        kind: 'create-file',
         id: 'a',
         label: 'A',
         reason: 'r',
         provenance: { source: 'ng-add', version: '0.1.0' },
+        path: 'a.ts',
+        content: '',
       },
     ],
     skipped: [],

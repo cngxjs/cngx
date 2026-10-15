@@ -9,10 +9,13 @@ import {
   type NgAddPreset,
   type PromptAnswers,
   type PromptFlow,
+  type Provenance,
+  type StepResult,
   THEME_CHOICES,
   type ThemeChoice,
 } from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
+import { EDITOR_NAMES, removedMcpServer } from '../steps/ai-tools';
 import { selectedLibs } from '../steps/dependencies';
 import { type OnboardingAnswers } from '../steps/model';
 
@@ -78,10 +81,10 @@ export function givenAnswers(options: NgAddOptions): PromptAnswers {
 
 
 const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
-const isLanguage = (value: unknown): value is Language => LANGUAGES.some((language) => language === value);
-const isTheme = (value: unknown): value is ThemeChoice => THEME_CHOICES.some((theme) => theme === value);
-const isAiTools = (value: unknown): value is readonly AiTool[] =>
-  Array.isArray(value) && value.every((tool) => AI_TOOLS.some((known) => known === tool));
+const isLanguage = (value: unknown): value is Language =>
+  LANGUAGES.some((language) => language === value);
+const isTheme = (value: unknown): value is ThemeChoice =>
+  THEME_CHOICES.some((theme) => theme === value);
 
 // A flag the schema let through must still be one this step understands;
 // `ng add` validates against schema.json, a programmatic caller may not.
@@ -101,20 +104,67 @@ function flag<T>(
   return value;
 }
 
+/** The answers of one run and the editors the user asked for by name. */
+export interface Onboarding {
+  readonly answers: OnboardingAnswers;
+  /**
+   * The `--ai-tools` flag, else the editors picked in the question; empty
+   * when the preset default answered. Only these override a removal the
+   * last install recorded (`withdrawnAiTargets`).
+   */
+  readonly explicitAiTools: readonly AiTool[];
+}
+
+/**
+ * The note a re-run plans when it starts from another preset than the one
+ * the last install recorded, so the reset to that preset's defaults is said,
+ * not silent. Empty on a first install or with the recorded preset.
+ */
+export function presetChangeNote(
+  options: NgAddOptions,
+  recorded: OnboardingAnswers | undefined,
+  provenance: Provenance,
+): StepResult {
+  const preset = options.preset ?? 'recommended';
+  if (recorded === undefined || recorded.preset === preset) {
+    return { changes: [], skipped: [] };
+  }
+  return {
+    changes: [
+      {
+        kind: 'note',
+        id: 'answers:preset',
+        label: `Start from the ${preset} preset`,
+        reason: `the last install used ${recorded.preset}, so its answers are not reused; pass --preset=${recorded.preset} to keep them`,
+        provenance,
+      },
+    ],
+    skipped: [],
+  };
+}
+
 /**
  * Asks only what detection leaves open: the packages, the theme when Material
- * is present, the language, the lint entry when an eslint config exists and
- * the feedback providers when `@cngx/ui` is selected. A flag answers its
- * question; without a terminal the preset default does. `minimal` asks
- * nothing.
+ * is present, the language, the lint entry when an eslint config exists, the
+ * feedback providers when `@cngx/ui` is selected and the editors that get the
+ * cngx MCP server, with the detected ones preselected unless the user removed
+ * the server the last install wired (`installed` holds its step ids). A flag
+ * answers its question; without a terminal the default does. The defaults
+ * are the `recorded` answers of the last install when this run keeps its
+ * preset, else the preset's. `minimal` asks nothing.
  */
 export async function askOnboarding(
   facts: ProjectFacts,
   options: NgAddOptions,
   flow: PromptFlow,
-): Promise<OnboardingAnswers> {
+  installed: readonly string[],
+  recorded?: OnboardingAnswers,
+): Promise<Onboarding> {
   const preset = options.preset ?? 'recommended';
-  const defaults = presetDefaults(preset, facts);
+  // A re-run with the recorded preset starts from the recorded answers, so a
+  // run without flags or a terminal keeps every earlier choice.
+  const rerun = recorded?.preset === preset ? recorded : undefined;
+  const defaults = rerun ?? presetDefaults(preset, facts);
 
   const libs = await flow.multiSelect<CngxLib>({
     key: 'libs',
@@ -175,17 +225,43 @@ export async function askOnboarding(
         default: defaults.feedback,
       })
     : flag(options, 'feedback', isBoolean, false);
+  const aiTools = await flow.multiSelect<AiTool>({
+    key: 'aiTools',
+    message: 'Which editors should get the cngx MCP server?',
+    choices: AI_TOOLS.map((tool) => ({
+      value: tool,
+      name: EDITOR_NAMES[tool],
+      checked:
+        (rerun === undefined ? facts.editors[tool] : rerun.aiTools.includes(tool)) &&
+        !removedMcpServer(facts, installed, tool),
+    })),
+    default: defaults.aiTools,
+  });
+  const answeredByName = givenValue(options, 'aiTools') !== undefined || flow.interactive;
 
   return {
-    preset,
-    libs,
-    theme,
-    i18n,
-    runtimeSwitch,
-    lint,
-    feedback,
-    a11yPreferences: flag(options, 'a11yPreferences', isBoolean, defaults.a11yPreferences && hasCore),
-    floatingFallback: flag(options, 'floatingFallback', isBoolean, defaults.floatingFallback && selected.includes('common')),
-    aiTools: flag(options, 'aiTools', isAiTools, defaults.aiTools),
+    answers: {
+      preset,
+      libs,
+      theme,
+      i18n,
+      runtimeSwitch,
+      lint,
+      feedback,
+      a11yPreferences: flag(
+        options,
+        'a11yPreferences',
+        isBoolean,
+        defaults.a11yPreferences && hasCore,
+      ),
+      floatingFallback: flag(
+        options,
+        'floatingFallback',
+        isBoolean,
+        defaults.floatingFallback && selected.includes('common'),
+      ),
+      aiTools,
+    },
+    explicitAiTools: answeredByName ? aiTools : [],
   };
 }

@@ -11,7 +11,8 @@ import {
 import { AGENTS_MARKER, type InstructionState, MCP_CONFIGS, type ProjectFacts } from '../detect/detect';
 import { type OnboardingAnswers, type Versions } from './model';
 
-const EDITOR_NAMES: Readonly<Record<AiTool, string>> = {
+/** The editor names the plan and the AI tooling question show. */
+export const EDITOR_NAMES: Readonly<Record<AiTool, string>> = {
   claude: 'Claude Code',
   cursor: 'Cursor',
   vscode: 'VS Code',
@@ -34,6 +35,19 @@ function wiredReason(path: string, pin: string | undefined, mcpVersion: string):
 
 function aiToolId(tool: AiTool): string {
   return `ai-tools:${tool}`;
+}
+
+/**
+ * Whether the last install wired the cngx server for `tool` and the user
+ * removed it since: the step is recorded, the config no longer declares it.
+ */
+export function removedMcpServer(
+  facts: ProjectFacts,
+  installed: readonly string[],
+  tool: AiTool,
+): boolean {
+  const state = facts.mcpConfigs[tool];
+  return installed.includes(aiToolId(tool)) && (state === 'absent' || state === 'present');
 }
 
 // A target the user removed stays out: recorded as skipped, so the manifest
@@ -163,9 +177,9 @@ function instructionBlock(target: InstructionTarget, provenance: Provenance, wit
 /**
  * The AI tooling targets the last install set up that are gone now: a
  * recorded cngx server entry or agent block the user removed. An editor
- * passed explicitly with `--ai-tools` is asked for again and never counts as
- * removed; a preset or prompt default does not tell a choice apart, so it
- * respects the removal.
+ * in `explicit` (passed with `--ai-tools` or picked in the AI tooling
+ * question) is asked for again and never counts as removed; a preset default
+ * does not tell a choice apart, so it respects the removal.
  */
 export function withdrawnAiTargets(
   facts: ProjectFacts,
@@ -173,16 +187,15 @@ export function withdrawnAiTargets(
   installed: readonly string[],
   explicit: readonly AiTool[],
 ): ReadonlySet<string> {
-  const recorded = new Set(installed);
   const asked = (readers: readonly AiTool[]): boolean => readers.some((tool) => explicit.includes(tool));
   const servers = answers.aiTools
-    .filter((tool) => !asked([tool]))
-    .filter((tool) => facts.mcpConfigs[tool] === 'absent' || facts.mcpConfigs[tool] === 'present')
+    .filter((tool) => !asked([tool]) && removedMcpServer(facts, installed, tool))
     .map(aiToolId);
   const blocks = instructionTargets(facts, answers)
     .filter((target) => target.state !== 'wired' && !asked(target.readers))
-    .map((target) => target.id);
-  return new Set([...servers, ...blocks].filter((id) => recorded.has(id)));
+    .map((target) => target.id)
+    .filter((id) => installed.includes(id));
+  return new Set([...servers, ...blocks]);
 }
 
 /**

@@ -40,6 +40,8 @@ export interface PromptAdapter {
 }
 
 export interface PromptFlow {
+  /** Whether a question no flag answers reaches the terminal. */
+  readonly interactive: boolean;
   select<T extends string>(question: SelectQuestion<T>): Promise<T>;
   multiSelect<T extends string>(question: MultiSelectQuestion<T>): Promise<readonly T[]>;
   confirm(question: ConfirmQuestion): Promise<boolean>;
@@ -114,6 +116,7 @@ export function createPromptFlow({
   adapter = inquirerAdapter,
 }: PromptFlowOptions): PromptFlow {
   return {
+    interactive,
     async select(question) {
       const flag = given(preset, question.key);
       if (typeof flag === 'string') {

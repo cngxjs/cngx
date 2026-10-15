@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   AI_TOOLS,
@@ -29,6 +29,30 @@ const SCHEMA = JSON.parse(readFileSync(join(__dirname, 'schema.json'), 'utf8')) 
 };
 
 type Tree = ReturnType<typeof createFixtureTree>;
+
+// The terminal side of an interactive run: every question keeps its
+// preselection or default, the AI tooling question answers `editorPicks`.
+// The git state is fixed, so the checklist does not follow the worktree.
+const terminal = vi.hoisted(() => ({ editorPicks: [] as string[], git: 'clean' }));
+
+vi.mock('./shell/git-state', () => ({ readGitState: () => terminal.git }));
+
+vi.mock('@inquirer/checkbox', () => ({
+  default: (question: { message: string; choices: { value: string; checked?: boolean }[] }) =>
+    Promise.resolve(
+      question.message.includes('MCP server')
+        ? terminal.editorPicks
+        : question.choices
+            .filter((choice) => choice.checked === true)
+            .map((choice) => choice.value),
+    ),
+}));
+vi.mock('@inquirer/select', () => ({
+  default: (question: { default: string }) => Promise.resolve(question.default),
+}));
+vi.mock('@inquirer/confirm', () => ({
+  default: (question: { default: boolean }) => Promise.resolve(question.default),
+}));
 
 const MAP_API_THEME = `@use '@angular/material' as mat;
 
@@ -358,18 +382,80 @@ describe('ngAdd', () => {
   describe('an existing app', () => {
     const existing = () => createFixtureTree('standalone-app', { 'src/app/other.ts': SECOND_COMPONENT });
 
-    it('states the git state before it applies', async () => {
-      const run = await runRule(ngAdd({}), existing());
+    it('applies without a terminal to confirm in and says so', async () => {
+      vi.stubEnv('CI', '');
+      try {
+        const run = await runRule(ngAdd({}), existing());
 
-      expect(run.logs.filter((line) => line.startsWith('Git: '))).toHaveLength(1);
-      expect(run.logs).toContain('No terminal to confirm in; applying the plan. Pass --yes to apply without this line.');
-      expect(run.tree.exists('src/cngx-theme.css')).toBe(true);
+        expect(run.logs).toContain(
+          'No terminal to confirm in; applying the plan. Pass --yes to apply without this line.',
+        );
+        expect(run.tree.exists('src/cngx-theme.css')).toBe(true);
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it('names CI as the reason it applies without a confirm', async () => {
+      vi.stubEnv('CI', 'true');
+      process.stdout.isTTY = true;
+      try {
+        const run = await runRule(ngAdd({}), existing());
+
+        expect(run.logs).toContain(
+          'Running under CI; applying the plan without a confirm. Pass --yes to apply without this line.',
+        );
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it('names --no-prompts as the reason it applies without a confirm on a terminal', async () => {
+      vi.stubEnv('CI', '');
+      vi.stubEnv('NO_COLOR', '1');
+      process.stdout.isTTY = true;
+      try {
+        const run = await runRule(ngAdd({ prompts: false }), existing());
+
+        expect(run.logs).toContain(
+          'Prompts are off (--no-prompts); applying the plan without a confirm. Pass --yes to apply without this line.',
+        );
+        expect(run.logs.some((line) => line.startsWith('No terminal to confirm in'))).toBe(false);
+        expect(run.tree.exists('src/cngx-theme.css')).toBe(true);
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it('lists the preflight checklist before the plan', async () => {
+      const run = await runRule(ngAdd({ yes: true }), existing());
+      const preflight = run.logs.indexOf('Preflight:');
+
+      expect(run.logs.slice(preflight + 1, preflight + 4)).toEqual([
+        expect.stringMatching(/^ {2}ok Angular \S+ \(cngx needs \d+\.\d+ or newer\)$/),
+        '  ok Project fixture-app (existing app)',
+        '  ok Git working tree clean (review the cngx changes with git diff afterwards)',
+      ]);
+      expect(preflight).toBeLessThan(run.logs.findIndex((line) => line.startsWith('Planned')));
+    });
+
+    it('warns about uncommitted changes in the preflight checklist', async () => {
+      terminal.git = 'dirty';
+      try {
+        const run = await runRule(ngAdd({ yes: true }), existing());
+
+        expect(run.logs).toContain(
+          '  ! Git working tree has uncommitted changes (the cngx changes will mix with them in git diff)',
+        );
+      } finally {
+        terminal.git = 'clean';
+      }
     });
 
     it('skips the confirmation with --yes', async () => {
       const run = await runRule(ngAdd({ yes: true }), existing());
 
-      expect(run.logs.some((line) => line.startsWith('Git: '))).toBe(false);
+      expect(run.logs.some((line) => line.startsWith('No terminal to confirm in'))).toBe(false);
     });
 
     it('wires the AI tooling into an app that has editor files but none from ng new --ai-config', async () => {
@@ -410,6 +496,28 @@ describe('ngAdd', () => {
       expect(third.tree.readText('CLAUDE.md')).toContain('<!-- cngx:agents -->');
     });
 
+    it('brings a removed cngx server back when the user picks its editor in the question', async () => {
+      const tree = createFixtureTree('standalone-app', {
+        'src/app/other.ts': SECOND_COMPONENT,
+        'CLAUDE.md': '',
+      });
+      const first = await runRule(ngAdd({ preset: 'full', yes: true }), tree);
+      first.tree.overwrite('.mcp.json', '{ "mcpServers": {} }\n');
+      vi.stubEnv('CI', '');
+      process.stdout.isTTY = true;
+      terminal.editorPicks = ['claude'];
+      try {
+        const second = await runRule(ngAdd({ yes: true, quiet: true }), first.tree);
+
+        expect(json<{ mcpServers: object }>(second.tree, '.mcp.json').mcpServers).toHaveProperty(
+          'cngx',
+        );
+      } finally {
+        terminal.editorPicks = [];
+        vi.unstubAllEnvs();
+      }
+    });
+
     it('appends to the files ng new --ai-config wrote and creates no CLAUDE.md of its own', async () => {
       const tree = createFixtureTree('standalone-app', {
         'src/app/other.ts': SECOND_COMPONENT,
@@ -435,6 +543,29 @@ describe('ngAdd', () => {
 
     expect(second.tree.readText('.cngx/README.md')).toBe(formatted);
     expect(second.logs).toContain('cngx is already set up; nothing changed.');
+  });
+
+  it('keeps the recorded answers on a re-run without flags or a terminal', async () => {
+    const first = await runRule(
+      ngAdd({ i18n: 'de', aiTools: ['claude'], yes: true }),
+      createFixtureTree('standalone-app', { 'CLAUDE.md': '' }),
+    );
+    const files = first.tree.files.map((path) => [path, first.tree.readContent(path)]);
+
+    const second = await runRule(ngAdd({ yes: true }), first.tree);
+
+    expect(second.tree.files.map((path) => [path, second.tree.readContent(path)])).toEqual(files);
+    expect(second.logs).toContain('cngx is already set up; nothing changed.');
+  });
+
+  it('names a re-run that starts from another preset than the recorded one', async () => {
+    const first = await runRule(ngAdd({ yes: true }), createFixtureTree());
+
+    const second = await runRule(ngAdd({ preset: 'full', yes: true }), first.tree);
+
+    expect(second.logs).toContain(
+      '  - Start from the full preset - the last install used recommended, so its answers are not reused; pass --preset=recommended to keep them',
+    );
   });
 
   it('keeps a configured editor in the readme when a later run chooses another', async () => {
@@ -497,7 +628,7 @@ describe('ngAdd', () => {
     expect(second.tasks).toEqual([]);
     expect(second.logs).toContain('cngx is already set up; nothing changed.');
     expect(second.logs.some((line) => line.startsWith('Planned'))).toBe(false);
-    expect(second.logs.some((line) => line.startsWith('Git: '))).toBe(false);
+    expect(second.logs.some((line) => line.startsWith('No terminal to confirm in'))).toBe(false);
   });
 
   it('brings a removed language provider back over the generated language file', async () => {

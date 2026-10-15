@@ -10,8 +10,12 @@ export interface TerminalStream {
   readonly isTTY?: boolean;
 }
 
-// `CI=false` and `CI=0` are how some runners say "not CI".
-function isCi(env: ColorEnv): boolean {
+/**
+ * Whether the run is under CI. `CI=false` and `CI=0` are how some runners
+ * say "not CI". The renderer options read it, and `ng add` names it as the
+ * reason an existing app is applied without a confirm.
+ */
+export function isCi(env: ColorEnv): boolean {
   const ci = env['CI'];
   return ci !== undefined && ci !== '' && ci !== 'false' && ci !== '0';
 }

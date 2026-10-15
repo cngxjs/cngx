@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { type RenderLogger } from '../../engine';
-import { createShellRendererOptions } from './terminal';
+import { createShellRendererOptions, isCi } from './terminal';
 
 const LOGGER: RenderLogger = {
   info: () => undefined,
@@ -49,5 +49,18 @@ describe('createShellRendererOptions', () => {
 
   it('prints only the summary under --quiet', () => {
     expect(options({}, true, true).verbosity).toBe('quiet');
+  });
+});
+
+describe('isCi', () => {
+  it('reads a set CI variable as CI', () => {
+    expect(isCi({ CI: 'true' })).toBe(true);
+    expect(isCi({ CI: '1' })).toBe(true);
+  });
+
+  it('reads an unset, empty, false or 0 CI variable as not CI', () => {
+    for (const env of [{}, { CI: '' }, { CI: 'false' }, { CI: '0' }]) {
+      expect(isCi(env)).toBe(false);
+    }
   });
 });

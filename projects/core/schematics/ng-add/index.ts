@@ -11,12 +11,14 @@ import {
   createRenderer,
   createReport,
   type NgAddOptions,
+  type Provenance,
   resolveVersions,
 } from '../engine';
 import { detectProject, type ProjectFacts } from './detect/detect';
-import { type GitState, readGitState } from './shell/git-state';
-import { askOnboarding, givenAnswers } from './shell/questions';
-import { createShellRendererOptions } from './shell/terminal';
+import { readGitState } from './shell/git-state';
+import { angularSupport, preflightItems } from './shell/preflight';
+import { askOnboarding, givenAnswers, presetChangeNote, presetDefaults } from './shell/questions';
+import { createShellRendererOptions, isCi } from './shell/terminal';
 import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
 import { createSummary } from './steps/finish';
@@ -26,6 +28,7 @@ import { readInstallManifest } from './shell/install-manifest';
 import { planManifest } from './steps/manifest';
 import { type Step } from './steps/model';
 import { planProviders } from './steps/providers';
+import { readRecordedAnswers } from './steps/reruns';
 import { planTheme } from './steps/theme';
 
 /**
@@ -43,28 +46,40 @@ function planSteps(withdrawn: ReadonlySet<string>): readonly Step[] {
   ];
 }
 
-function majorMinor(version: string | undefined): readonly [number, number] | undefined {
-  const match = /(\d+)\.(\d+)/.exec(version ?? '');
-  return match === null ? undefined : [Number(match[1]), Number(match[2])];
-}
-
 // The floor is the `@angular/core` range @cngx/core peers on, stamped into
-// versions.json at publish time.
+// versions.json at publish time. The preflight line shows the refusal first.
 function assertSupportedAngular(facts: ProjectFacts, peerRange: string): void {
-  const [minMajor, minMinor] = majorMinor(peerRange) ?? [0, 0];
-  const app = majorMinor(facts.angularVersion);
-  const supported = app !== undefined && (app[0] > minMajor || (app[0] === minMajor && app[1] >= minMinor));
+  const { supported, floor, declared } = angularSupport(facts, peerRange);
   if (!supported) {
-    const declared = facts.manifest.dependencies['@angular/core'] ?? 'no @angular/core dependency';
-    throw new SchematicsException(`cngx needs Angular ${minMajor}.${minMinor} or newer; this app declares ${declared}.`);
+    throw new SchematicsException(
+      `cngx needs Angular ${floor} or newer; this app declares ${declared}.`,
+    );
   }
 }
 
-const GIT_LINES: Readonly<Record<GitState, string>> = {
-  clean: 'Git: working tree clean; review the cngx changes with git diff afterwards.',
-  dirty: 'Git: uncommitted changes; the cngx changes will mix with them in git diff.',
-  unknown: 'Git: no repository found; there is no diff to review the cngx changes against.',
-};
+/** Why the run cannot ask before it applies to an existing app. */
+interface ConfirmContext {
+  readonly isTTY: boolean;
+  readonly ci: boolean;
+  readonly prompts: boolean | undefined;
+}
+
+// The line an existing app sees when the plan applies without a confirm;
+// `undefined` when the terminal asks. CI comes first: it also hides the
+// terminal.
+function unconfirmedApplyLine({ isTTY, ci, prompts }: ConfirmContext): string | undefined {
+  const pass = 'Pass --yes to apply without this line.';
+  if (ci) {
+    return `Running under CI; applying the plan without a confirm. ${pass}`;
+  }
+  if (!isTTY) {
+    return `No terminal to confirm in; applying the plan. ${pass}`;
+  }
+  if (prompts === false) {
+    return `Prompts are off (--no-prompts); applying the plan without a confirm. ${pass}`;
+  }
+  return undefined;
+}
 
 function scheduleInstall(plan: ChangePlan): Rule {
   return (_tree: Tree, context: SchematicContext) => {
@@ -75,11 +90,12 @@ function scheduleInstall(plan: ChangePlan): Rule {
 }
 
 /**
- * The whole onboarding in one stage: detect, ask, plan, print the plan,
- * confirm on an existing app, apply, summarise, and install once at the
- * end. Nothing in here needs the installed packages: the engine and prompts
- * are bundled and `@schematics/angular` comes from the CLI. Under
- * `--dry-run` the same rule runs and the CLI drops the writes and the task.
+ * The whole onboarding in one stage: detect, print the preflight checklist,
+ * ask, plan, print the plan, confirm on an existing app, apply, summarise,
+ * and install once at the end. Nothing in here needs the installed packages:
+ * the engine and prompts are bundled and `@schematics/angular` comes from the
+ * CLI. Under `--dry-run` the same rule runs and the CLI drops the writes and
+ * the task.
  */
 export function ngAdd(options: NgAddOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {
@@ -89,18 +105,35 @@ export function ngAdd(options: NgAddOptions): Rule {
     const renderer = createRenderer(rendererOptions);
 
     const facts = detectProject(tree, await readWorkspace(tree), options.project);
+    renderer.preflight(
+      preflightItems({ facts, peerRange: versions.angular, git: readGitState(process.cwd()) }),
+    );
     assertSupportedAngular(facts, versions.angular);
 
     const flow = createPromptFlow({
       canPrompt: interactive && options.preset !== 'minimal',
       answers: givenAnswers(options),
     });
-    const answers = await askOnboarding(facts, options, flow);
     const previous = readInstallManifest(tree);
     const installed = previous?.steps.map((step) => step.id) ?? [];
-    const withdrawn = withdrawnAiTargets(facts, answers, installed, options.aiTools ?? []);
+    const recorded =
+      previous === undefined
+        ? undefined
+        : readRecordedAnswers(previous, (preset) => presetDefaults(preset, facts));
+    const { answers, explicitAiTools } = await askOnboarding(
+      facts,
+      options,
+      flow,
+      installed,
+      recorded,
+    );
+    const withdrawn = withdrawnAiTargets(facts, answers, installed, explicitAiTools);
+    const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
     const steps = createChangePlan(
-      planSteps(withdrawn).map((step) => step(facts, answers, versions)),
+      [
+        ...planSteps(withdrawn).map((step) => step(facts, answers, versions)),
+        presetChangeNote(options, recorded, provenance),
+      ],
       warning === undefined ? [] : [warning],
     );
     const manifest = planManifest(facts, answers, versions, steps, previous, new Date().toISOString());
@@ -110,9 +143,13 @@ export function ngAdd(options: NgAddOptions): Rule {
 
     const changesFiles = plan.changes.some((change) => change.kind !== 'note');
     if (facts.maturity === 'existing' && changesFiles && options.yes !== true) {
-      renderer.note(GIT_LINES[readGitState(process.cwd())]);
-      if (!interactive) {
-        renderer.note('No terminal to confirm in; applying the plan. Pass --yes to apply without this line.');
+      const unconfirmed = unconfirmedApplyLine({
+        isTTY: rendererOptions.isTTY,
+        ci: isCi(process.env),
+        prompts: options.prompts,
+      });
+      if (unconfirmed !== undefined) {
+        renderer.note(unconfirmed);
       }
       const confirm = createPromptFlow({ canPrompt: interactive });
       const proceed = await confirm.confirm({ key: 'apply', message: 'Apply these changes?', default: true });
