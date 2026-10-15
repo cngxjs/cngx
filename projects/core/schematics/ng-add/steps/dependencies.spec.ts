@@ -1,6 +1,9 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
-import { type AddDependency, parseManifest } from '../../engine';
+import { type AddDependency, CNGX_LIBS, parseManifest } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
 import {
   canInstallTheme,
@@ -34,6 +37,30 @@ describe('missingThemePeers', () => {
   it('lists the packages @cngx/themes imports CSS from that are not selected', () => {
     expect(missingThemePeers(selectedLibs(['forms']))).toEqual(['data-display', 'ui']);
     expect(missingThemePeers(selectedLibs(['forms', 'ui', 'data-display']))).toEqual([]);
+  });
+});
+
+// projects/<lib>/package.json, the source the peer tables repeat.
+function cngxPeers(lib: string): readonly string[] {
+  const path = join(__dirname, '..', '..', '..', '..', lib, 'package.json');
+  const manifest = JSON.parse(readFileSync(path, 'utf8')) as {
+    readonly peerDependencies?: Readonly<Record<string, string>>;
+  };
+  return Object.keys(manifest.peerDependencies ?? {})
+    .filter((name) => name.startsWith('@cngx/'))
+    .map((name) => name.slice('@cngx/'.length))
+    .sort();
+}
+
+describe('the @cngx peer tables', () => {
+  it.each(CNGX_LIBS)('select the peers projects/%s/package.json declares', (lib) => {
+    const peers = selectedLibs([lib]).filter((selected) => selected !== lib);
+
+    expect([...peers].sort()).toEqual(cngxPeers(lib));
+  });
+
+  it('refuse the theme for exactly the peers projects/themes/package.json declares', () => {
+    expect([...missingThemePeers([])].sort()).toEqual(cngxPeers('themes'));
   });
 });
 
