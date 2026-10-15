@@ -26,6 +26,8 @@ import ts from 'typescript';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 export const PUBLISHED_LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui'];
+/** Every package a release builds, packs and publishes: the libs plus `@cngx/themes`. */
+export const PACKED_LIBS = [...PUBLISHED_LIBS, 'themes'];
 export const ALLOWED_DEPENDENCIES = new Set(['tslib']);
 const PLACEHOLDER = '0.0.0-PLACEHOLDER';
 

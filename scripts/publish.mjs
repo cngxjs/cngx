@@ -14,9 +14,10 @@ import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve, join, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { PACKED_LIBS } from './peer-deps-guard.mjs';
+
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
 
 // CSS-only libs that don't have an angular.json build target - built via
 // a dedicated node script that copies sources to dist/<lib>/.
@@ -356,7 +357,7 @@ function parseArgs() {
   }
 
   // Default to all libs when none specified
-  if (!result.libs.length) result.libs = [...LIBS];
+  if (!result.libs.length) result.libs = [...PACKED_LIBS];
 
   return result;
 }
@@ -370,8 +371,8 @@ function main() {
   }
 
   for (const lib of libs) {
-    if (!LIBS.includes(lib)) {
-      console.error(`Unknown lib "${lib}". Available: ${LIBS.join(', ')}`);
+    if (!PACKED_LIBS.includes(lib)) {
+      console.error(`Unknown lib "${lib}". Available: ${PACKED_LIBS.join(', ')}`);
       process.exit(1);
     }
   }

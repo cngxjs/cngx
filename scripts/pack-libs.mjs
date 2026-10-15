@@ -20,11 +20,11 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { publint } from 'publint';
 import { formatMessage } from 'publint/utils';
 
-import { PUBLISHED_LIBS } from './peer-deps-guard.mjs';
+import { PACKED_LIBS } from './peer-deps-guard.mjs';
 import { findPlaceholders, replaceVersionInDist, stampManifest } from './publish.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-export const PACKED_LIBS = [...PUBLISHED_LIBS, 'themes'];
+export { PACKED_LIBS };
 
 // are-the-types-wrong rules accepted on purpose. false-cjs is the same
 // missing "type": "module" as below; internal-resolution-error only shows for
