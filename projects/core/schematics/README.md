@@ -17,7 +17,7 @@ projects/core/schematics/
     manifest/            package.json reading, lockstep pins
     migrate/             rename table, planRenames and the Codemod contract
     prompt/              prompt flow over @inquirer (shell adapter)
-    render/              todo list and summary, listr2 or plain lines
+    render/              todo list, summary and terminal options, listr2 or plain lines
     shim/                delegateNgAdd, the body of every package shim
     versions.ts          versions.json with the local-build fallback
   ng-add/
@@ -25,7 +25,7 @@ projects/core/schematics/
     schema.json          options; x-prompt only for preset
     detect/              detectProject(tree, workspace): ProjectFacts
     steps/               pure plan<Step>(facts, answers, versions) per concern
-    shell/               questions, preflight checklist, git state, renderer options for ng add and ng update
+    shell/               questions, preflight checklist, git state
   migrations/
     migrations.json      the ng update collection, hand-written entries only
     migration.ts         createMigration: renames, codemods, manifest re-runs

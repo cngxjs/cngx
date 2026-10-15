@@ -1,4 +1,4 @@
-import { type Report } from '../../engine';
+import { type Report } from '../plan/report';
 
 function section(title: string, lines: readonly string[]): readonly string[] {
   return lines.length === 0 ? [] : [`${title}:`, ...lines.map((line) => `  ${line}`)];

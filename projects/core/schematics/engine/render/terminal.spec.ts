@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { type RenderLogger } from '../../engine';
+import { type RenderLogger } from './renderer';
 import { createShellRendererOptions, isCi } from './terminal';
 
 const LOGGER: RenderLogger = {

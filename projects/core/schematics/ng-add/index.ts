@@ -11,6 +11,9 @@ import {
   createProvenance,
   createRenderer,
   createReport,
+  createShellRendererOptions,
+  createSummary,
+  isCi,
   type NgAddOptions,
   resolveVersions,
 } from '../engine';
@@ -18,10 +21,8 @@ import { detectProject, type ProjectFacts } from './detect/detect';
 import { readGitState } from './shell/git-state';
 import { angularSupport, preflightItems } from './shell/preflight';
 import { askOnboarding, givenAnswers, presetChangeNote, presetDefaults } from './shell/questions';
-import { createShellRendererOptions, isCi } from './shell/terminal';
 import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
-import { createSummary } from './steps/finish';
 import { planHelperReadme } from './steps/helper-readme';
 import { planLint } from './steps/lint';
 import { readInstallManifest } from './shell/install-manifest';

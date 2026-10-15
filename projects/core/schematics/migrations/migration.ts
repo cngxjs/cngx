@@ -11,6 +11,8 @@ import {
   createProvenance,
   createRenderer,
   createReport,
+  createShellRendererOptions,
+  createSummary,
   errorMessage,
   planCodemods,
   planRenames,
@@ -18,12 +20,11 @@ import {
   type RenameTable,
   resolveVersions,
   type StepResult,
+  type SummaryHeadlines,
 } from '../engine';
 import { detectProject } from '../ng-add/detect/detect';
 import { readInstallManifest } from '../ng-add/shell/install-manifest';
 import { presetDefaults } from '../ng-add/shell/questions';
-import { createShellRendererOptions } from '../ng-add/shell/terminal';
-import { createSummary, type SummaryHeadlines } from '../ng-add/steps/finish';
 import {
   INSTALL_MANIFEST_PATH,
   type InstallManifest,
