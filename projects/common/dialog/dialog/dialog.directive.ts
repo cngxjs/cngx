@@ -426,6 +426,11 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
     effect(() => {
       if (this.lifecycleSignal() === 'open') {
         const titleText = untracked(() => this.currentTitleText());
+        // Checked where the announcement reads the title: an opener-created
+        // dialog's title only exists once its content view has rendered.
+        if (typeof ngDevMode !== 'undefined' && ngDevMode && !untracked(this.openedAsModal)) {
+          warnNonModalA11y(untracked(this.idSignal), titleText);
+        }
         if (titleText && this.liveRegion) {
           this.liveRegion.textContent = titleText;
           // Clear after one frame so subsequent opens re-announce
@@ -550,9 +555,6 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
       this.dialogStack.push(this.idSignal());
     } else {
       dialog.show();
-      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-        warnNonModalA11y(this.idSignal(), this.currentTitleText());
-      }
     }
 
     // Transition to open after browser paints the opening class
