@@ -2,6 +2,7 @@ import { type DirEntry } from '@angular-devkit/schematics';
 
 import { type Tree } from '../fs/tree';
 import { type Change, createNote, type Provenance, type StepResult } from '../plan/change';
+import { errorMessage } from '../plan/text';
 import {
   createSourceRenamer,
   createTemplateRenamer,
@@ -29,10 +30,6 @@ function sourceFiles(dir: DirEntry): readonly string[] {
     .filter((name) => !SKIPPED_DIRS.has(name))
     .flatMap((name) => sourceFiles(dir.dir(name)));
   return [...files, ...nested].sort();
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }
 
 function filePlan(

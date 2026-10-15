@@ -11,6 +11,7 @@ import {
   createProvenance,
   createRenderer,
   createReport,
+  errorMessage,
   planCodemods,
   planRenames,
   type ReleaseVersions,
@@ -65,10 +66,6 @@ function entryVersion(context: SchematicContext): string | undefined {
   return 'version' in description && typeof description.version === 'string'
     ? description.version
     : undefined;
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }
 
 async function planReruns(

@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { isRecord, joinNames } from './text';
+import { errorMessage, isRecord, joinNames } from './text';
+
+describe('errorMessage', () => {
+  it('reads the message of an Error and stringifies anything else', () => {
+    expect(errorMessage(new SyntaxError('Unexpected token'))).toBe('Unexpected token');
+    expect(errorMessage('plain text')).toBe('plain text');
+    expect(errorMessage(42)).toBe('42');
+    expect(errorMessage(undefined)).toBe('undefined');
+  });
+});
 
 describe('isRecord', () => {
   it('accepts plain objects only', () => {
