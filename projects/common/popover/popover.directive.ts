@@ -34,6 +34,10 @@ import {
 } from './anchor-positioning';
 import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
 import {
+  CNGX_POPOVER_PRESENTATION,
+  type CngxPopoverPresentationSeam,
+} from './popover-presentation';
+import {
   CNGX_FLOATING_FALLBACK,
   createFloatingPositioner,
   FLOATING_PLACEMENT,
@@ -305,6 +309,36 @@ export class CngxPopover {
     return this._arrowBounds;
   }
 
+  /**
+   * Presentation seam resolved lazily on first use, same reason as
+   * {@link getArrowBounds}: the modifier providing it constructs after this
+   * directive. `self: true` keeps a popover nested inside a sheet's host from
+   * picking up the outer sheet's seam.
+   */
+  private _presentationSeam: CngxPopoverPresentationSeam | null | undefined = undefined;
+  private presentationSeam(): CngxPopoverPresentationSeam | null {
+    if (this._presentationSeam === undefined) {
+      this._presentationSeam = this._injector.get(CNGX_POPOVER_PRESENTATION, null, {
+        self: true,
+      });
+    }
+    return this._presentationSeam;
+  }
+
+  /**
+   * `false` while a presentation modifier lays the panel out as a sheet or
+   * fullscreen. Gates every anchor, margin, fallback and floating write:
+   * inline styles beat author CSS, so the sheet stylesheet cannot win
+   * against them.
+   */
+  private readonly anchored = computed(
+    () => (this.presentationSeam()?.presentation() ?? 'anchored') === 'anchored',
+  );
+
+  // Re-entrancy guard for hide(): a hide() / toggle() from inside the
+  // seam's onHide() must not start a second close.
+  private hiding = false;
+
   /** Anchor-relative placement. */
   readonly placement = input<PopoverPlacement>('bottom');
 
@@ -531,7 +565,7 @@ export class CngxPopover {
   readonly isVisible = computed(() => this.stateSignal() !== 'closed');
 
   protected readonly cssAnchorRef = computed(() =>
-    SUPPORTS_ANCHOR ? `--cngx-pop-${this.idSignal()}` : null,
+    SUPPORTS_ANCHOR && this.anchored() ? `--cngx-pop-${this.idSignal()}` : null,
   );
 
   /**
@@ -556,7 +590,9 @@ export class CngxPopover {
   );
 
   protected readonly cssMargin = computed(() =>
-    SUPPORTS_ANCHOR ? resolveAnchorMargin(this.effectivePlacement(), this.offset()) : null,
+    SUPPORTS_ANCHOR && this.anchored()
+      ? resolveAnchorMargin(this.effectivePlacement(), this.offset())
+      : null,
   );
 
   /**
@@ -566,6 +602,9 @@ export class CngxPopover {
    * gating on `SUPPORTS_ANCHOR` would only suppress a harmless write.
    */
   protected readonly cssPositionTryFallbacks = computed(() => {
+    if (!this.anchored()) {
+      return null;
+    }
     const list = this.effectivePositionTryFallbacks();
     return list.length > 0 ? list.join(', ') : null;
   });
@@ -574,12 +613,33 @@ export class CngxPopover {
     // Host binding needs a static property name; position-area/inset-area name flips per browser.
     if (SUPPORTS_ANCHOR) {
       effect(() => {
-        this.elRef.nativeElement.style.setProperty(
-          ANCHOR_AREA_PROPERTY,
-          POSITION_AREA[this.effectivePlacement()],
-        );
+        const style = this.elRef.nativeElement.style;
+        if (!this.anchored()) {
+          style.removeProperty(ANCHOR_AREA_PROPERTY);
+          return;
+        }
+        style.setProperty(ANCHOR_AREA_PROPERTY, POSITION_AREA[this.effectivePlacement()]);
       });
     }
+    // A presentation flip while open: leaving the anchored layout stops the
+    // floating engine and drops the arrow geometry; coming back re-positions
+    // right away instead of waiting for the next scroll or resize.
+    effect(() => {
+      const anchored = this.anchored();
+      untracked(() => {
+        if (this.stateSignal() === 'closed') {
+          return;
+        }
+        if (!anchored) {
+          this.floatingPositioner?.stop();
+          this._arrowOffset.set(null);
+          this.resolvedEdgeSignal.set(null);
+          return;
+        }
+        this.applyFloatingPosition();
+        requestAnimationFrame(() => this.updateArrowOffset());
+      });
+    });
     effect(() => {
       const desired = this.controlledOpen();
       if (desired === undefined) {
@@ -649,6 +709,11 @@ export class CngxPopover {
     openPopovers.add(this);
     this.stateSignal.set('opening');
     this.elRef.nativeElement.showPopover();
+    // The host binding writes aria-hidden on the next change detection; the
+    // seam may move focus into the panel right now, which must not land
+    // under a stale aria-hidden="true".
+    this.elRef.nativeElement.setAttribute('aria-hidden', 'false');
+    this.presentationSeam()?.onShown();
     installGlobalEscapeListener(this.doc);
     installGlobalOutsideClickListener(this.doc);
     this.applyFloatingPosition();
@@ -670,7 +735,16 @@ export class CngxPopover {
     if (this.stateSignal() === 'closed' || this.stateSignal() === 'closing') {
       return;
     }
-    this.startClosing();
+    if (this.hiding) {
+      return;
+    }
+    this.hiding = true;
+    try {
+      this.presentationSeam()?.onHide();
+      this.startClosing();
+    } finally {
+      this.hiding = false;
+    }
   }
 
   /** Toggle between open and closed. */
@@ -806,7 +880,7 @@ export class CngxPopover {
    * and the consumer has provided the fallback via `provideFloatingFallback()`.
    */
   private applyFloatingPosition(): void {
-    if (SUPPORTS_ANCHOR || !this.floatingPositioner) {
+    if (SUPPORTS_ANCHOR || !this.floatingPositioner || !this.anchored()) {
       return;
     }
     if (!this.anchorElement()) {
@@ -830,6 +904,9 @@ export class CngxPopover {
    * anchor sits outside the panel's inline extent.
    */
   private updateArrowOffset(): void {
+    if (!this.anchored()) {
+      return;
+    }
     const anchor = this.anchorElement();
     if (!anchor) {
       this._arrowOffset.set(null);
