@@ -205,7 +205,11 @@ describe('CngxChart', () => {
     const fixture = TestBed.createComponent(NonNumericHost);
     fixture.detectChanges();
     TestBed.tick();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX1007: CngxChart: data is non-numeric'));
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^CNGX1007: CngxChart: data is non-numeric .*Bind \[summaryAccessor\] to a stable component field/,
+      ),
+    );
     warn.mockRestore();
   });
 

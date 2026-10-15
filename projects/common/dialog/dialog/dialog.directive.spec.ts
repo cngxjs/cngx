@@ -390,8 +390,11 @@ describe('CngxDialog', () => {
       // FullDialogHost's declarative title is already registered.
       const release = dialog.registerTitle({ id: signal('rogue-title') });
       expect(warnSpy).toHaveBeenCalledTimes(1);
-      expect(warnSpy.mock.calls[0][0]).toContain('CNGX1014: CngxDialog [');
-      expect(warnSpy.mock.calls[0][0]).toContain(`[${dialog.id()}]: a second title`);
+      expect(warnSpy.mock.calls[0][0]).toMatch(
+        new RegExp(
+          `^CNGX1014: CngxDialog \\[${dialog.id()}\\]: a second title registered while another is live\\. .*a template-declared title wins over a registered one`,
+        ),
+      );
 
       release();
     });

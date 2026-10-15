@@ -160,7 +160,9 @@ describe('CngxMenu', () => {
     try {
       menu.focus();
       expect(warn).toHaveBeenCalledTimes(1);
-      expect(warn.mock.calls[0][0]).toContain('CNGX1027: CngxMenu.focus(): host element has tabindex');
+      expect(warn.mock.calls[0][0]).toMatch(
+        /^CNGX1027: CngxMenu\.focus\(\): host element has tabindex < 0; with tabindex="-1" focus\(\) still lands /,
+      );
       // Warning is deduplicated per host element.
       menu.focus();
       expect(warn).toHaveBeenCalledTimes(1);

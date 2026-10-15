@@ -23,6 +23,18 @@ class TestHost {
 })
 class AttrHost {}
 
+@Component({
+  template: `<cngx-status tone="danger" aria-label="Database down" />`,
+  imports: [CngxStatus],
+})
+class AriaLabelOnlyHost {}
+
+@Component({
+  template: `<cngx-status tone="danger" aria-hidden="true" /> Degraded`,
+  imports: [CngxStatus],
+})
+class HiddenDotHost {}
+
 describe('CngxStatus', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [TestHost] }));
   afterEach(() => vi.restoreAllMocks());
@@ -110,7 +122,23 @@ describe('CngxStatus', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(warn).toHaveBeenCalledOnce();
-    expect(warn.mock.calls[0][0]).toContain('CNGX1016: cngx-status');
+    expect(warn.mock.calls[0][0]).toMatch(/^CNGX1016: cngx-status: no `label`; /);
+  });
+
+  it('warns CNGX1016 for an aria-label on the role-less host, which is no valid name', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(AriaLabelOnlyHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(warn.mock.calls.filter((c) => /^CNGX1016: /.test(String(c[0])))).toHaveLength(1);
+  });
+
+  it('does not warn CNGX1016 for a host hidden with aria-hidden="true"', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(HiddenDotHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(warn.mock.calls.some((c) => /^CNGX1016: /.test(String(c[0])))).toBe(false);
   });
 
   it('does not warn when a label is present', async () => {

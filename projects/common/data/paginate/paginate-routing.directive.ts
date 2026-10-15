@@ -79,7 +79,7 @@ export class CngxPaginateRouting implements OnInit {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         cngxDevWarn(
           'CNGX1031',
-          '[cngxPaginateRouting]: no Router available - directive is a no-op. ' +
+          '[cngxPaginateRouting]: no Router / ActivatedRoute available - directive is a no-op. ' +
             'Provide @angular/router via provideRouter(...) to enable URL-synced pagination.',
         );
       }

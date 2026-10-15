@@ -60,8 +60,9 @@ function warnDoubleRegistration(
   cngxDevWarn(
     'CNGX1014',
     `CngxDialog [${id}]: a second ${kind} registered while another ` +
-      `is live. The dialog references one ${kind} id - the newest registration ` +
-      `wins. Remove the extra cngxDialog${kind === 'title' ? 'Title' : 'Description'} element.`,
+      `is live. The dialog references one ${kind} id, and both elements render it; a ` +
+      `template-declared ${kind} wins over a registered one. Remove the extra ` +
+      `cngxDialog${kind === 'title' ? 'Title' : 'Description'} element.`,
   );
 }
 

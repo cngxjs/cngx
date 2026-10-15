@@ -741,7 +741,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
           'CNGX1007',
           'CngxChart: data is non-numeric and no [summaryAccessor] is bound. ' +
             'Auto-Summary and the SR data-table will silently fall back to NaN. ' +
-            'Bind [summaryAccessor]="(d) => d.yourField" or pass a numeric data array.',
+            'Bind [summaryAccessor] to a stable component field (summaryAccessor = (d: Row) => d.value) ' +
+            'or pass a numeric data array.',
         );
       });
       afterNextRender(() => {

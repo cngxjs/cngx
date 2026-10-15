@@ -113,12 +113,12 @@ export class CngxStatus {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       afterNextRender(() => {
         const el = this.elRef.nativeElement as HTMLElement;
-        if (!this.label() && !el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby')) {
+        if (!this.label() && el.getAttribute('aria-hidden') !== 'true') {
           cngxDevWarn(
             'CNGX1016',
-            'cngx-status: no `label` and no external `aria-label`/`aria-labelledby`; ' +
-              'the status has no accessible name and reads only as a coloured dot. ' +
-              'Set [label] or an aria-label on the host.',
+            'cngx-status: no `label`; the status has no accessible name and reads only as a ' +
+              'coloured dot. Set [label]: the host has no role, so an aria-label or ' +
+              'aria-labelledby on it is not a valid name.',
           );
         }
         if (!this.glyph() && !this.label()) {
