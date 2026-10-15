@@ -57,7 +57,7 @@ export {
   type StepResult,
   type WriteJson,
 } from './plan/change';
-export { type ChangePlan, createChangePlan, describeChangePlan } from './plan/plan';
+export { type ChangePlan, createChangePlan } from './plan/plan';
 export { createReport, type Report, type ReportLink } from './plan/report';
 export { errorMessage, isRecord, joinNames } from './plan/text';
 export {
@@ -78,7 +78,6 @@ export {
 export {
   hasStyleImport,
   insertLeadingStyleImport,
-  insertStyleImport,
   styleEntryPath,
 } from './edit/style-edit';
 export { EMPTY_RENAME_TABLE, type MemberRename, type RenameTable } from './migrate/rename-table';
@@ -106,7 +105,7 @@ export {
   type PromptFlowOptions,
   type SelectQuestion,
 } from './prompt/prompt';
-export { type ColorEnv, createPalette, type Palette } from './render/palette';
+export { type ColorEnv, type Palette } from './render/palette';
 export {
   createRenderer,
   type PreflightItem,
