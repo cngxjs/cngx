@@ -1,6 +1,6 @@
 import { afterNextRender, Directive, computed, inject, input } from '@angular/core';
 import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
-import { cngxDevError } from '@cngx/utils';
+import { cngxDevError, CngxRuntimeError } from '@cngx/utils';
 
 import { injectErrorDetail } from '../config/feedback-config';
 import { injectFeedbackI18n } from '../config/feedback-i18n';
@@ -101,9 +101,12 @@ export class CngxToastOn {
 
   constructor() {
     if (!this.toast) {
-      throw new Error(
-        '[cngxToastOn] CngxToaster not found. ' +
-          'Add withToasts() to provideFeedback() or call provideToasts() in your providers.',
+      throw new CngxRuntimeError(
+        'CNGX3016',
+        typeof ngDevMode !== 'undefined' &&
+          ngDevMode &&
+          '[cngxToastOn] CngxToaster not found. ' +
+            'Add withToasts() to provideFeedback() or call provideToasts() in your providers.',
       );
     }
     this.toastService = this.toast;

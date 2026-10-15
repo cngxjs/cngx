@@ -243,4 +243,15 @@ describe('CngxAlertOn', () => {
       expect(stripBidiIsolates(failWith('Zeitlimit'))).toBe('Save failed (Zeitlimit)');
     });
   });
+
+  it('throws CNGX3015 without a CngxAlerter provider', () => {
+    TestBed.configureTestingModule({ imports: [ExplicitHost] });
+    expect(() => TestBed.createComponent(ExplicitHost)).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX3015',
+        message: expect.stringMatching(/^CNGX3015: \[cngxAlertOn\] CngxAlerter not found\./),
+      }),
+    );
+  });
 });

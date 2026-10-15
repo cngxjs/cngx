@@ -8,6 +8,8 @@ import {
   untracked,
 } from '@angular/core';
 
+import { CngxRuntimeError } from '@cngx/utils';
+
 import type { AlertSeverity } from '../alert/alert';
 import { CngxBanner } from './banner.service';
 
@@ -92,8 +94,12 @@ export class CngxBannerTrigger {
 
   constructor() {
     if (!this.banner) {
-      throw new Error(
-        '[cngx-banner-trigger] CngxBanner not found. ' + 'Add withBanners() to provideFeedback().',
+      throw new CngxRuntimeError(
+        'CNGX3017',
+        typeof ngDevMode !== 'undefined' &&
+          ngDevMode &&
+          '[cngx-banner-trigger] CngxBanner not found. ' +
+            'Add withBanners() to provideFeedback().',
       );
     }
     const banner = this.banner;

@@ -121,4 +121,15 @@ describe('CngxBannerOn', () => {
     TestBed.flushEffects();
     expect(stripBidiIsolates(banner.banners()[0].config.message)).toBe('Sync failed: Quota exceeded');
   });
+
+  it('throws CNGX3017 without a CngxBanner provider', () => {
+    TestBed.configureTestingModule({ imports: [ExplicitHost] });
+    expect(() => TestBed.createComponent(ExplicitHost)).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX3017',
+        message: expect.stringMatching(/^CNGX3017: \[cngxBannerOn\] CngxBanner not found\./),
+      }),
+    );
+  });
 });

@@ -201,6 +201,14 @@ describe('CngxToast', () => {
 
   it('throws without a CngxToaster provider', () => {
     TestBed.configureTestingModule({ imports: [MessageHost] });
-    expect(() => TestBed.createComponent(MessageHost)).toThrowError(/withToasts/);
+    expect(() => TestBed.createComponent(MessageHost)).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX3016',
+        message: expect.stringMatching(
+          /^CNGX3016: \[cngx-toast\] CngxToaster not found\..*withToasts/,
+        ),
+      }),
+    );
   });
 });

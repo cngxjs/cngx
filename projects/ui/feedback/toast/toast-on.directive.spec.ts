@@ -154,4 +154,15 @@ describe('CngxToastOn', () => {
     TestBed.flushEffects();
     expect(stripBidiIsolates(toaster.toasts()[0].config.message)).toBe('Save failed: Offline');
   });
+
+  it('throws CNGX3016 without a CngxToaster provider', () => {
+    TestBed.configureTestingModule({ imports: [ExplicitHost] });
+    expect(() => TestBed.createComponent(ExplicitHost)).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX3016',
+        message: expect.stringMatching(/^CNGX3016: \[cngxToastOn\] CngxToaster not found\./),
+      }),
+    );
+  });
 });

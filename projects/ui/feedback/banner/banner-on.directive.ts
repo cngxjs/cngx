@@ -1,6 +1,6 @@
 import { afterNextRender, Directive, computed, inject, input } from '@angular/core';
 import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
-import { cngxDevError } from '@cngx/utils';
+import { cngxDevError, CngxRuntimeError } from '@cngx/utils';
 
 import { injectErrorDetail } from '../config/feedback-config';
 import { injectFeedbackI18n } from '../config/feedback-i18n';
@@ -76,8 +76,11 @@ export class CngxBannerOn {
 
   constructor() {
     if (!this.bannerService) {
-      throw new Error(
-        '[cngxBannerOn] CngxBanner not found. ' + 'Add withBanners() to provideFeedback().',
+      throw new CngxRuntimeError(
+        'CNGX3017',
+        typeof ngDevMode !== 'undefined' &&
+          ngDevMode &&
+          '[cngxBannerOn] CngxBanner not found. ' + 'Add withBanners() to provideFeedback().',
       );
     }
     const banner = this.bannerService;

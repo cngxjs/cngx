@@ -1,3 +1,5 @@
+import { CngxRuntimeError } from '@cngx/utils';
+
 import type { FilterExpression, FilterGroup, FilterNode } from './filter-builder.types';
 
 /**
@@ -31,7 +33,11 @@ export function getNodeAtPath(root: FilterGroup, path: readonly number[]): Filte
   return current;
 }
 
-/** Replace the node at `path` via `updater`. Returns the original `root` when no descendant changed (identity-preserving). */
+/**
+ * Replace the node at `path` via `updater`. Returns the original `root` when no descendant
+ * changed (identity-preserving). Throws `CNGX2009` when a root replacement is not a group,
+ * `CNGX2010` on an out-of-range index and `CNGX2011` when the path crosses an expression.
+ */
 export function updateAtPath(
   root: FilterGroup,
   path: readonly number[],
@@ -40,7 +46,12 @@ export function updateAtPath(
   if (path.length === 0) {
     const next = updater(root);
     if (next.type !== 'group') {
-      throw new Error('updateAtPath: root replacement must remain a FilterGroup');
+      throw new CngxRuntimeError(
+        'CNGX2009',
+        typeof ngDevMode !== 'undefined' &&
+          ngDevMode &&
+          'updateAtPath: root replacement must remain a FilterGroup',
+      );
     }
     return next === root ? root : next;
   }
@@ -57,7 +68,12 @@ function updateGroupAtPath(
   const index = path[depth] ?? -1;
   const child = group.filters[index];
   if (!child) {
-    throw new Error(`updateAtPath: invalid path ${JSON.stringify(path)}`);
+    throw new CngxRuntimeError(
+      'CNGX2010',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        `updateAtPath: invalid path ${JSON.stringify(path)}`,
+    );
   }
 
   let nextChild: FilterNode;
@@ -65,8 +81,11 @@ function updateGroupAtPath(
     nextChild = updater(child);
   } else {
     if (child.type !== 'group') {
-      throw new Error(
-        `updateAtPath: cannot descend into expression at ${JSON.stringify(path.slice(0, depth + 1))}`,
+      throw new CngxRuntimeError(
+        'CNGX2011',
+        typeof ngDevMode !== 'undefined' &&
+          ngDevMode &&
+          `updateAtPath: cannot descend into expression at ${JSON.stringify(path.slice(0, depth + 1))}`,
       );
     }
     nextChild = updateGroupAtPath(child, path, depth + 1, updater);
@@ -81,10 +100,13 @@ function updateGroupAtPath(
   return { ...group, filters: nextFilters };
 }
 
-/** Remove the node at `path`. Throws on empty path - the root cannot be removed. */
+/** Remove the node at `path`. Throws `CNGX2012` on empty path - the root cannot be removed. */
 export function removeAtPath(root: FilterGroup, path: readonly number[]): FilterGroup {
   if (path.length === 0) {
-    throw new Error('removeAtPath: cannot remove the root');
+    throw new CngxRuntimeError(
+      'CNGX2012',
+      typeof ngDevMode !== 'undefined' && ngDevMode && 'removeAtPath: cannot remove the root',
+    );
   }
   return removeFromGroupAtPath(root, path, 0);
 }
@@ -121,7 +143,7 @@ function removeFromGroupAtPath(
   return { ...group, filters: nextFilters };
 }
 
-/** Append `child` to the group at `path`. Throws when `path` does not resolve to a group. */
+/** Append `child` to the group at `path`. Throws `CNGX2010` / `CNGX2011` when `path` does not resolve to a group. */
 export function appendAtPath(
   root: FilterGroup,
   path: readonly number[],
@@ -133,7 +155,12 @@ export function appendAtPath(
 
   return updateAtPath(root, path, (node) => {
     if (node.type !== 'group') {
-      throw new Error(`appendAtPath: cannot append to non-group at ${JSON.stringify(path)}`);
+      throw new CngxRuntimeError(
+        'CNGX2011',
+        typeof ngDevMode !== 'undefined' &&
+          ngDevMode &&
+          `appendAtPath: cannot append to non-group at ${JSON.stringify(path)}`,
+      );
     }
     return { ...node, filters: [...node.filters, child] };
   });
