@@ -581,6 +581,31 @@ describe('raw-throw guard - T3 messages', () => {
   });
 });
 
+describe('raw-throw guard - T3 shadows and module load', () => {
+  const construct = `throw new CngxRuntimeError('CNGX1001', ${GUARD} && 'm');`;
+
+  it('fails a class, enum, namespace or import-equals named ngDevMode', () => {
+    for (const shadow of [
+      'class ngDevMode {}',
+      'enum ngDevMode { On }',
+      'namespace ngDevMode { export const on = true; }',
+      "import ngDevMode = require('./dev');",
+    ]) {
+      expect(fixture(`${shadow}\nfunction f() { ${construct} }`).violations).toEqual([
+        'projects/common/a.ts:1 T3 a local ngDevMode shadows the global; its guards never fold in production',
+      ]);
+    }
+  });
+
+  it('fails a guarded construction inside a function invoked at module scope', () => {
+    expect(fixture(`(() => { ${construct} })();`).violations).toEqual([
+      `projects/common/a.ts:1 T3 CNGX1001 ${MODULE_LOAD_GUARD}`,
+    ]);
+    expect(fixture(`(function () { ${construct} })();`).violations).toHaveLength(1);
+    expect(fixture(`const run = () => { ${construct} };`).violations).toEqual([]);
+  });
+});
+
 describe('raw-throw guard - T4 references', () => {
   it('passes new, instanceof, plain imports and exports, and type positions', () => {
     expect(

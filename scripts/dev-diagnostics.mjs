@@ -250,7 +250,8 @@ const isStatic = (node) => node.modifiers?.some((m) => m.kind === ts.SyntaxKind.
  * component is defined), so a guard read at module load can see it undefined
  * and freeze the production branch into a dev build. Code inside a function,
  * a method, an accessor or an instance field initialiser runs later; a static
- * block or a static field initialiser runs with the module.
+ * block, a static field initialiser or a function invoked in place (an IIFE)
+ * runs with the code around it.
  */
 export function runsAtModuleLoad(node) {
   for (let current = node.parent; current; current = current.parent) {
@@ -260,12 +261,24 @@ export function runsAtModuleLoad(node) {
     if (ts.isPropertyDeclaration(current)) {
       return isStatic(current);
     }
-    if (ts.isFunctionLike(current)) {
+    if (ts.isFunctionLike(current) && !isInvokedInPlace(current)) {
       return false;
     }
   }
   return true;
 }
+
+/** `(() => ...)()` / `(function () { ... })()`: a function expression called where it is written. */
+const isInvokedInPlace = (fn) => {
+  if (!ts.isArrowFunction(fn) && !ts.isFunctionExpression(fn)) {
+    return false;
+  }
+  let callee = fn;
+  while (ts.isParenthesizedExpression(callee.parent)) {
+    callee = callee.parent;
+  }
+  return ts.isCallExpression(callee.parent) && callee.parent.expression === callee;
+};
 
 /** The violation text for a guard `runsAtModuleLoad` reports. */
 export const MODULE_LOAD_GUARD =
@@ -434,8 +447,9 @@ export const isAmbient = (node) => {
 
 /**
  * Lines that declare a local `ngDevMode` (variable, parameter, function,
- * import). A guard reading such a binding never folds in production. The
- * ambient `declare const ngDevMode` that types the global is allowed.
+ * class, enum, namespace, import, `import =`). A guard reading such a binding
+ * never folds in production. The ambient `declare const ngDevMode` that types
+ * the global is allowed.
  */
 export function localNgDevModeLines(sf) {
   const lines = [];
@@ -446,6 +460,10 @@ export function localNgDevModeLines(sf) {
         ts.isParameter(node) ||
         ts.isBindingElement(node) ||
         ts.isFunctionDeclaration(node) ||
+        ts.isClassDeclaration(node) ||
+        ts.isEnumDeclaration(node) ||
+        ts.isModuleDeclaration(node) ||
+        ts.isImportEqualsDeclaration(node) ||
         ts.isImportSpecifier(node) ||
         ts.isImportClause(node) ||
         ts.isNamespaceImport(node)) &&

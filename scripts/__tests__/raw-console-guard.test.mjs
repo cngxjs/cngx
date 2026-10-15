@@ -798,6 +798,30 @@ describe('raw-console guard - guards evaluated at module load', () => {
     expect(shape(`sink = ${GUARD} ? DEFAULT_SINK : undefined;`)).toEqual([]);
   });
 
+  it('fails a guarded helper call inside a function invoked at module scope', () => {
+    expect(
+      fixture(`(() => { if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } })();`).violations,
+    ).toEqual([`projects/core/a.ts:1 R2 CNGX0001 ${MODULE_LOAD_GUARD}`]);
+    expect(
+      fixture(`function host() { (() => { if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } })(); }`)
+        .violations,
+    ).toEqual([]);
+  });
+
+  it('fails a class, enum, namespace or import-equals named ngDevMode', () => {
+    const call = `function f() { doWork(); if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } }`;
+    for (const shadow of [
+      'class ngDevMode {}',
+      'enum ngDevMode { On }',
+      'namespace ngDevMode { export const on = true; }',
+      "import ngDevMode = require('./dev');",
+    ]) {
+      expect(fixture(`${shadow}\n${call}`).violations).toEqual([
+        'projects/core/a.ts:1 R2 a local ngDevMode shadows the global; its guards never fold in production',
+      ]);
+    }
+  });
+
   it('passes the same value use read through a getter', () => {
     const { violations } = fixture(
       [
