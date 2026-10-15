@@ -156,16 +156,17 @@ export class CngxStickyHeader {
   /**
    * The nearest ancestor that is a scroll container in the block axis - the scrollport
    * `position: sticky` resolves against. Walks up from the host's parent to the first
-   * ancestor whose computed `overflow-y` is not `visible`; `null` means no such
-   * ancestor, i.e. the header sticks to the viewport. A used `overflow-x` other than
-   * `visible` coerces the computed `overflow-y` to `auto`, so this also catches a
-   * horizontal scroll container (e.g. a data grid that scrolls sideways).
+   * ancestor whose computed `overflow-y` is `auto`, `scroll` or `hidden`; `null` means
+   * no such ancestor, i.e. the header sticks to the viewport. `clip` clips without
+   * creating a scroll container, so it is skipped. A used `overflow-x` of `auto`,
+   * `scroll` or `hidden` coerces the computed `overflow-y` to `auto`, so this also
+   * catches a horizontal scroll container (e.g. a data grid that scrolls sideways).
    */
   private resolveScrollParent(host: HTMLElement): HTMLElement | null {
     const view = this.doc.defaultView;
     for (let node = host.parentElement; node; node = node.parentElement) {
       const overflowY = view?.getComputedStyle(node).overflowY;
-      if (overflowY && overflowY !== 'visible') {
+      if (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'hidden') {
         return node;
       }
     }

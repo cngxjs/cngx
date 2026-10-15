@@ -182,10 +182,25 @@ describe('CngxMiniBar - unnamed-meter dev warning', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(
-      warn.mock.calls.some(
-        (c) => String(c[0]).includes('CNGX1010: cngx-mini-bar') && String(c[0]).includes('accessible name'),
+      warn.mock.calls.some((c) =>
+        /^CNGX1010: cngx-mini-bar: role="meter" has no accessible name - /.test(String(c[0])),
       ),
     ).toBe(true);
+  });
+
+  it('treats an empty [aria-label] as unnamed', async () => {
+    @Component({
+      standalone: true,
+      imports: [CngxMiniBar],
+      template: `<cngx-mini-bar [value]="50" [label]="'CPU'" [aria-label]="''" />`,
+    })
+    class EmptyNameHost {}
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    TestBed.configureTestingModule({ imports: [EmptyNameHost] });
+    const fixture = TestBed.createComponent(EmptyNameHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(warn.mock.calls.filter((c) => /^CNGX1010: cngx-mini-bar: /.test(String(c[0])))).toHaveLength(1);
   });
 
   it('does not warn when the visible label supplies the accessible name', async () => {

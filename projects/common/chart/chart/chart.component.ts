@@ -569,8 +569,9 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly overlaySlot = contentChild(CngxChartOverlay);
   // Only the first overlay renders (contentChild above). This parallel
   // query exists solely to warn in dev when a consumer projects more
-  // than one, since the extra templates drop silently otherwise.
-  private readonly overlaySlots = contentChildren(CngxChartOverlay);
+  // than one, since the extra templates drop silently otherwise. Descendants,
+  // like the contentChild above, so a nested second overlay is counted too.
+  private readonly overlaySlots = contentChildren(CngxChartOverlay, { descendants: true });
 
   /** Resolved consumer-projected loading template (null when no slot bound). */
   protected readonly loadingTpl = computed(() => this.loadingSlot()?.templateRef ?? null);

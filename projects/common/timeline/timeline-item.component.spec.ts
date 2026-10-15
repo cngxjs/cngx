@@ -385,8 +385,41 @@ describe('CngxTimelineItem', () => {
 
         expect(warnings(warn)).toBe(1);
         const [message, row] = warn.mock.calls[0];
-        expect(message).toContain('CNGX1043: [cngx-timeline-item]');
+        expect(message).toMatch(/^CNGX1043: \[cngx-timeline-item\] focusable content/);
         expect(row).toBeInstanceOf(HTMLElement);
+        warn.mockRestore();
+      });
+
+      it('warns when the slot element itself is focusable or a second slot holds a control', () => {
+        @Component({
+          selector: 'cngx-timeline-opposite-self-host',
+          standalone: true,
+          imports: [CngxTimelineItem, CngxTimelineOpposite],
+          template: `
+            <cngx-timeline-item>
+              <a cngxTimelineOpposite href="#somewhere">2019</a>
+              <p>Founded</p>
+            </cngx-timeline-item>
+            <cngx-timeline-item>
+              <span cngxTimelineOpposite>2020</span>
+              <span cngxTimelineOpposite><button type="button">Edit</button></span>
+              <p>Grew</p>
+            </cngx-timeline-item>
+          `,
+        })
+        class OppositeSelfHost {}
+
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        TestBed.configureTestingModule({ imports: [OppositeSelfHost] });
+        const fixture = TestBed.createComponent(OppositeSelfHost);
+        fixture.detectChanges();
+        TestBed.tick();
+
+        const calls = warn.mock.calls.filter(([m]) => /^CNGX1043: /.test(String(m)));
+        expect(calls).toHaveLength(2);
+        expect(calls[0][0]).toMatch(
+          /^CNGX1043: \[cngx-timeline-item\] focusable content inside \[cngxTimelineOpposite\]\. /,
+        );
         warn.mockRestore();
       });
 

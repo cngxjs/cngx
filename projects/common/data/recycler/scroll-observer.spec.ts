@@ -142,8 +142,40 @@ describe('createScrollObserver', () => {
     TestBed.flushEffects();
 
     expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining("CNGX1013: recycler scrollElement '.never-mounts' not found"),
+      expect.stringMatching(/^CNGX1013: recycler scrollElement '\.never-mounts' not found on first render; /),
     );
+  });
+
+  it('does not warn when the selector resolves by the time the first render settles', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const el = sizedDiv('mounts-in-time', 240);
+    document.body.appendChild(el);
+    // The container is missing at the effect's first resolve and present at the
+    // after-render one: a viewport rendered later in the same change detection pass.
+    const query = document.querySelector.bind(document);
+    let firstLookup = true;
+    vi.spyOn(document, 'querySelector').mockImplementation((selector: string) => {
+      if (selector === '.mounts-in-time' && firstLookup) {
+        firstLookup = false;
+        return null;
+      }
+      return query(selector);
+    });
+    @Component({ template: '' })
+    class Host {
+      readonly state = createScrollObserver('.mounts-in-time', inject(DestroyRef));
+    }
+
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    TestBed.tick();
+    TestBed.flushEffects();
+
+    const mine = warn.mock.calls.filter(([m]) => /^CNGX1013: .*'\.mounts-in-time'/.test(String(m)));
+    expect(mine).toEqual([]);
+    expect(fixture.componentInstance.state.element()).toBe(el);
+    el.remove();
   });
 
   it('disconnects the late-mount observer on attach and never re-resolves', async () => {

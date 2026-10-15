@@ -190,7 +190,7 @@ export class CngxBullet {
 
   constructor() {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      warnIfUnnamedPreset('cngx-bullet', 'Bind [aria-label].', () => this.ariaLabel() !== null);
+      warnIfUnnamedPreset('cngx-bullet', 'Bind [aria-label].', () => !!this.ariaLabel());
     }
   }
 

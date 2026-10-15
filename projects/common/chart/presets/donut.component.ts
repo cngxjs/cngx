@@ -172,7 +172,7 @@ export class CngxDonut {
       warnIfUnnamedPreset(
         'cngx-donut',
         'Bind [label] or [aria-label].',
-        () => (this.ariaLabel() ?? this.label()) !== null,
+        () => !!(this.ariaLabel() ?? this.label()),
       );
     }
   }

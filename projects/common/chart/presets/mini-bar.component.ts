@@ -145,7 +145,7 @@ export class CngxMiniBar {
       warnIfUnnamedPreset(
         'cngx-mini-bar',
         'Bind [label] or [aria-label].',
-        () => (this.ariaLabel() ?? this.label()) !== null,
+        () => !!(this.ariaLabel() ?? this.label()),
       );
     }
   }
