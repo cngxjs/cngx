@@ -3,8 +3,8 @@ import { type Palette } from './palette';
 import { createPlainRenderer } from './plain-renderer';
 import { createTtyRenderer, type TtyListrOptions } from './tty-renderer';
 
-/** `quiet` prints only the summary; `verbose` adds what each change touches. */
-export type Verbosity = 'quiet' | 'normal' | 'verbose';
+/** `quiet` prints only the summary. */
+export type Verbosity = 'quiet' | 'normal';
 
 export type PreflightStatus = 'ok' | 'warn' | 'fail';
 

@@ -84,17 +84,12 @@ describe('createPlainRenderer', () => {
     expect(lines).toMatchSnapshot();
   });
 
-  it('adds what each change touches when verbose', async () => {
-    const { lines, renderer: plain } = renderer('verbose');
+  it('lists only the described plan, no per-change details', async () => {
+    const { lines, renderer: plain } = renderer('normal');
 
     await plain.todo(PLAN);
 
-    expect(lines.slice(lines.indexOf('info Details:'))).toEqual([
-      'info Details:',
-      'info   dependency:@cngx/core: add-dependency @cngx/core@0.1.0',
-      'info   style-import: add-style-import src/styles.css',
-      'info   note:doctor: note',
-    ]);
+    expect(lines).not.toContain('info Details:');
   });
 
   it('prints the preflight checklist with one level per status', () => {
@@ -126,7 +121,7 @@ describe('createPlainRenderer', () => {
   });
 
   it('strips ANSI under NO_COLOR even on a terminal', async () => {
-    const { lines, renderer: plain } = renderer('verbose', { NO_COLOR: '1' }, true);
+    const { lines, renderer: plain } = renderer('normal', { NO_COLOR: '1' }, true);
 
     plain.preflight([{ label: 'Angular 21.2.1', status: 'ok' }]);
     await plain.todo(PLAN);
@@ -154,7 +149,7 @@ describe('createPlainRenderer', () => {
   it('does not mutate the plan', async () => {
     const before = JSON.stringify(PLAN);
 
-    await renderer('verbose').renderer.todo(PLAN);
+    await renderer('normal').renderer.todo(PLAN);
 
     expect(JSON.stringify(PLAN)).toBe(before);
   });
