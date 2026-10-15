@@ -16,10 +16,11 @@ import { resolve } from 'node:path';
 //      a width condition is either enrolled below with a reason (overlay
 //      modality, or a pending migration) or it fails.
 //
-// Both manifest halves are empty: A1 slice 2 moved the last legacy detections
-// onto the contract. They stay in the file as the documented seam - re-adding
-// an entry is a conscious edit with a one-clause reason, and the suite below
-// asserts the lists are empty so nobody grows one quietly.
+// A1 slice 2 moved the last legacy detections onto the contract. The tier
+// half stays empty; the viewport half admits only overlay modality (rule 2 of
+// the contract: a popover becoming a bottom sheet). Adding an entry is a
+// conscious edit with a one-clause reason, and the ratchet below keeps the
+// lists from growing quietly.
 //
 // Preference queries (`prefers-*`, `forced-colors`, `hover`, `pointer`) are not
 // responsive rules and never enter the scan. Style queries
@@ -34,7 +35,12 @@ const TIERS: readonly string[] = ['20rem', '30rem', '48rem', '64rem'];
 const TIER_EXCEPTIONS: ReadonlyArray<{ file: string; note: string }> = [];
 
 /** `@media` rules carrying a width condition on in-flow layout. */
-const VIEWPORT_MEDIA_ALLOWED: ReadonlyArray<{ file: string; note: string }> = [];
+const VIEWPORT_MEDIA_ALLOWED: ReadonlyArray<{ file: string; note: string }> = [
+  {
+    file: 'projects/common/theming/components/cngx-popover-sheet.css',
+    note: 'overlay modality: popover becomes a bottom sheet (responsive-by-default rule 2)',
+  },
+];
 
 const tierExceptionFiles = new Set(TIER_EXCEPTIONS.map((entry) => entry.file));
 const viewportAllowedFiles = new Set(VIEWPORT_MEDIA_ALLOWED.map((entry) => entry.file));
@@ -154,9 +160,15 @@ describe('container-query contract', () => {
 });
 
 describe('container-query exception ratchet', () => {
-  it('carries no exceptions - adding one is a conscious edit', () => {
+  it('carries no tier exceptions - adding one is a conscious edit', () => {
     expect(TIER_EXCEPTIONS).toEqual([]);
-    expect(VIEWPORT_MEDIA_ALLOWED).toEqual([]);
+  });
+
+  it('admits viewport media only for overlay modality', () => {
+    const otherReasons = VIEWPORT_MEDIA_ALLOWED.filter(
+      (entry) => !entry.note.startsWith('overlay modality:'),
+    ).map((entry) => entry.file);
+    expect(otherReasons).toEqual([]);
   });
 });
 
