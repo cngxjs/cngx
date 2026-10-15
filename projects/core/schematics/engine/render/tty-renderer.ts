@@ -26,7 +26,7 @@ export type TtyListrOptions = Omit<
  */
 export const TTY_LISTR_DEFAULTS = { rendererOptions: { collapseSkips: true } } as const;
 
-type TtyOptions = Pick<RendererOptions, 'color' | 'verbosity' | 'logger' | 'listr'>;
+type TtyOptions = Pick<RendererOptions, 'color' | 'quiet' | 'logger' | 'listr'>;
 
 const isNote = (change: Change): boolean => change.kind === 'note';
 

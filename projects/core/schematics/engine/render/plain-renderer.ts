@@ -1,11 +1,10 @@
 import { describeChangePlan } from '../plan/plan';
 import { type PreflightItem, type Renderer, type RendererOptions } from './renderer';
 
-type PlainOptions = Pick<RendererOptions, 'color' | 'verbosity' | 'logger'>;
+type PlainOptions = Pick<RendererOptions, 'color' | 'quiet' | 'logger'>;
 
 /** Line output through the logger: CI, `NO_COLOR`, `--quiet`, no terminal. */
-export function createPlainRenderer({ color, verbosity, logger }: PlainOptions): Renderer {
-  const quiet = verbosity === 'quiet';
+export function createPlainRenderer({ color, quiet, logger }: PlainOptions): Renderer {
 
   function preflightLine(item: PreflightItem): void {
     const text = item.detail === undefined ? item.label : `${item.label} (${item.detail})`;

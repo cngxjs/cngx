@@ -18,7 +18,7 @@ describe('createShellRendererOptions', () => {
 
     expect(result.isTTY).toBe(true);
     expect(result.color.enabled).toBe(true);
-    expect(result.verbosity).toBe('normal');
+    expect(result.quiet).toBe(false);
     expect(result.logger).toBe(LOGGER);
   });
 
@@ -48,7 +48,7 @@ describe('createShellRendererOptions', () => {
   });
 
   it('prints only the summary under --quiet', () => {
-    expect(options({}, true, true).verbosity).toBe('quiet');
+    expect(options({}, true, true).quiet).toBe(true);
   });
 });
 

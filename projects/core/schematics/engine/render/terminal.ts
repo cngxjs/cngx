@@ -33,7 +33,7 @@ export function createShellRendererOptions(
   return {
     isTTY,
     color: createPalette(env, isTTY),
-    verbosity: quiet ? 'quiet' : 'normal',
+    quiet,
     logger,
   };
 }

@@ -114,7 +114,6 @@ export {
   type Renderer,
   type RendererOptions,
   type RenderLogger,
-  type Verbosity,
 } from './render/renderer';
 export { createSummary, type SummaryHeadlines } from './render/summary';
 export { createShellRendererOptions, isCi, type TerminalStream } from './render/terminal';
