@@ -163,6 +163,12 @@ describe('parseNgAddOptions', () => {
   it('keeps project and preset as given', () => {
     expect(parseNgAddOptions({ project: 'app', preset: 'full' })).toMatchObject({ project: 'app', preset: 'full' });
   });
+
+  it('names an unknown preset instead of falling back to recommended', () => {
+    expect(() => parseNgAddOptions({ preset: 'everything' })).toThrow(
+      '"everything" is not a valid answer for preset. Expected one of: minimal, recommended, full.',
+    );
+  });
 });
 
 describe('createRepeatedAnswerError', () => {

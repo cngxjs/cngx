@@ -83,7 +83,7 @@ type BooleanFlag = boolean | 'true' | 'false';
  */
 export interface NgAddFlags {
   readonly project?: string;
-  readonly preset?: NgAddPreset;
+  readonly preset?: string;
   readonly libs?: string | readonly string[];
   readonly theme?: string;
   readonly i18n?: string;
@@ -152,7 +152,7 @@ function parseBoolean(key: string, raw: boolean | string | undefined): boolean |
 export function parseNgAddOptions(raw: NgAddFlags): NgAddOptions {
   return {
     project: raw.project,
-    preset: raw.preset,
+    preset: parseChoice('preset', NG_ADD_PRESETS, raw.preset),
     libs: parseList('libs', CNGX_LIBS, raw.libs),
     theme: parseChoice('theme', THEME_CHOICES, raw.theme),
     i18n: parseChoice('i18n', LANGUAGES, raw.i18n),
