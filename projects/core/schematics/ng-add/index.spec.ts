@@ -458,6 +458,43 @@ describe('ngAdd', () => {
       expect(run.logs.some((line) => line.startsWith('No terminal to confirm in'))).toBe(false);
     });
 
+    // Before the install `ng add` hands `--yes=false` / `--prompts=false` /
+    // `--quiet=true` over as strings; they must switch the same behaviour.
+    describe('with the control switches as strings', () => {
+      afterEach(() => {
+        vi.unstubAllEnvs();
+      });
+
+      it('confirms on "false" and skips the confirmation on "true" for --yes', async () => {
+        vi.stubEnv('CI', '');
+        const confirming = await runRule(ngAdd({ yes: 'false' }), existing());
+        const skipping = await runRule(ngAdd({ yes: 'true' }), existing());
+
+        expect(confirming.logs).toContain(
+          'No terminal to confirm in; applying the plan. Pass --yes to apply without this line.',
+        );
+        expect(skipping.logs.some((line) => line.startsWith('No terminal to confirm in'))).toBe(false);
+      });
+
+      it('turns the prompts off on a terminal for --prompts "false"', async () => {
+        vi.stubEnv('CI', '');
+        vi.stubEnv('NO_COLOR', '1');
+        process.stdout.isTTY = true;
+        const run = await runRule(ngAdd({ prompts: 'false' }), existing());
+
+        expect(run.logs).toContain(
+          'Prompts are off (--no-prompts); applying the plan without a confirm. Pass --yes to apply without this line.',
+        );
+      });
+
+      it('prints only the summary for --quiet "true"', async () => {
+        const run = await runRule(ngAdd({ quiet: 'true', yes: 'true' }), existing());
+
+        expect(run.logs[0]).toMatch(/^cngx planned \d+ changes\.$/);
+        expect(run.logs.some((line) => line.startsWith('Planned'))).toBe(false);
+      });
+    });
+
     it('wires the AI tooling into an app that has editor files but none from ng new --ai-config', async () => {
       const tree = createFixtureTree('standalone-app', {
         'src/app/other.ts': SECOND_COMPONENT,
