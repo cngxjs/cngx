@@ -144,3 +144,11 @@ export interface StepResult {
 export function skipChange(change: Change, reason: string): SkippedStep {
   return { id: change.id, label: change.label, reason };
 }
+
+/** Concatenates step results in step order, changes and skips alike. */
+export function mergeStepResults(results: readonly StepResult[]): StepResult {
+  return {
+    changes: results.flatMap((result) => result.changes),
+    skipped: results.flatMap((result) => result.skipped),
+  };
+}

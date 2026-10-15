@@ -1,6 +1,5 @@
 import { type Tree } from '../fs/tree';
-import { type StepResult } from '../plan/change';
-import { type ChangePlan, createChangePlan } from '../plan/plan';
+import { mergeStepResults, type StepResult } from '../plan/change';
 
 /**
  * A hand-written migration step for what a rename table cannot express: a
@@ -17,11 +16,11 @@ export interface Codemod<TManifest> {
   readonly plan: (tree: Tree, manifest: TManifest) => StepResult;
 }
 
-/** Every codemod's plan, in list order, as one change plan. */
+/** Every codemod's plan, in list order, as one step result. */
 export function planCodemods<TManifest>(
   codemods: readonly Codemod<TManifest>[],
   tree: Tree,
   manifest: TManifest,
-): ChangePlan {
-  return createChangePlan(codemods.map((codemod) => codemod.plan(tree, manifest)));
+): StepResult {
+  return mergeStepResults(codemods.map((codemod) => codemod.plan(tree, manifest)));
 }

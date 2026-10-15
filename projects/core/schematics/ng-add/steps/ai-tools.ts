@@ -4,6 +4,7 @@ import {
   type AiTool,
   type Change,
   joinNames,
+  mergeStepResults,
   type Provenance,
   skipChange,
   type StepResult,
@@ -220,8 +221,5 @@ export function planAiTools(
     ...answers.aiTools.map((tool) => mcpConfig(tool, facts, versions, provenance, withdrawn)),
     ...instructionTargets(facts, answers).map((target) => instructionBlock(target, provenance, withdrawn)),
   ];
-  return {
-    changes: results.flatMap((result) => result.changes),
-    skipped: results.flatMap((result) => result.skipped),
-  };
+  return mergeStepResults(results);
 }

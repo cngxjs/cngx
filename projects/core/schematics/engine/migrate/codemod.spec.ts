@@ -35,11 +35,19 @@ describe('planCodemods', () => {
 
     expect(plan.changes.map((change) => change.id)).toEqual(['config']);
     expect(plan.skipped.map((step) => step.id)).toEqual(['theme:cngx']);
-    expect(plan.warnings).toEqual([]);
+  });
+
+  it('returns a step result, not a change plan, so no warning channel can be dropped', () => {
+    expect(
+      Object.keys(planCodemods([READS_CONFIG], createMemoryTree(), { theme: 'cngx' })),
+    ).toEqual(['changes', 'skipped']);
   });
 
   it('plans nothing without codemods', () => {
-    expect(planCodemods([], createMemoryTree(), { theme: 'cngx' })).toEqual({ changes: [], skipped: [], warnings: [] });
+    expect(planCodemods([], createMemoryTree(), { theme: 'cngx' })).toEqual({
+      changes: [],
+      skipped: [],
+    });
   });
 
   it('never writes the tree', () => {

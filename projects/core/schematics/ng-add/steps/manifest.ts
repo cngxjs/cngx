@@ -1,6 +1,13 @@
 import { type JsonValue } from '@angular-devkit/core';
 
-import { type ChangePlan, isRecord, type Provenance, type StepResult, type WriteJson } from '../../engine';
+import {
+  type ChangePlan,
+  isRecord,
+  type Provenance,
+  skipChange,
+  type StepResult,
+  type WriteJson,
+} from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
 import { type OnboardingAnswers, type Versions } from './model';
 
@@ -185,10 +192,7 @@ export function planManifest(
     entries: Object.entries(next).map(([key, value]) => [[key], value as JsonValue] as const),
   };
   if (previous !== undefined && isSameInstall(previous, next)) {
-    return {
-      changes: [],
-      skipped: [{ id: change.id, label: change.label, reason: `unchanged since ${previous.updatedAt}` }],
-    };
+    return { changes: [], skipped: [skipChange(change, `unchanged since ${previous.updatedAt}`)] };
   }
   return { changes: [change], skipped: [] };
 }
@@ -237,10 +241,7 @@ export function planManifestUpdate(
       .map(([key, value]) => [[key], value as JsonValue] as const),
   };
   if (isSameInstall(previous, next)) {
-    return {
-      changes: [],
-      skipped: [{ id: change.id, label: change.label, reason: `unchanged since ${previous.updatedAt}` }],
-    };
+    return { changes: [], skipped: [skipChange(change, `unchanged since ${previous.updatedAt}`)] };
   }
   return { changes: [change], skipped: [] };
 }

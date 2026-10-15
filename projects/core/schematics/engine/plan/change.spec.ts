@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Change, type CreateFile, skipChange, type StepResult } from './change';
+import {
+  type Change,
+  type CreateFile,
+  mergeStepResults,
+  skipChange,
+  type StepResult,
+} from './change';
 
 const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
 
@@ -46,5 +52,31 @@ describe('skipChange', () => {
     skipChange(change, 'already there');
 
     expect(change).toEqual(README);
+  });
+});
+
+describe('mergeStepResults', () => {
+  const note = (id: string): Change => ({
+    kind: 'note',
+    id,
+    label: id,
+    reason: 'spec',
+    provenance: PROVENANCE,
+  });
+
+  it('concatenates changes and skips in step order', () => {
+    const merged = mergeStepResults([
+      planReadme([]),
+      { changes: [note('first')], skipped: [{ id: 'a', label: 'A', reason: 'in place' }] },
+      planReadme(['.cngx/README.md']),
+      { changes: [note('second')], skipped: [] },
+    ]);
+
+    expect(merged.changes.map((change) => change.id)).toEqual(['helper-readme', 'first', 'second']);
+    expect(merged.skipped.map((step) => step.id)).toEqual(['a', 'helper-readme']);
+  });
+
+  it('merges nothing into an empty result', () => {
+    expect(mergeStepResults([])).toEqual({ changes: [], skipped: [] });
   });
 });

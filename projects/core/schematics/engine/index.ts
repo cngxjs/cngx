@@ -40,6 +40,7 @@ export {
   type EditFile,
   type JsonEntry,
   type JsonPath,
+  mergeStepResults,
   type Note,
   type Provenance,
   type ProviderArg,

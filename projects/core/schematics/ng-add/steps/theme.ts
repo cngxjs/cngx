@@ -5,6 +5,7 @@ import {
   createProvenanceStamp,
   hasProvenanceMarker,
   insertLeadingStyleImport,
+  mergeStepResults,
   type Provenance,
   skipChange,
   type StepResult,
@@ -296,10 +297,12 @@ export function planTheme(facts: ProjectFacts, answers: OnboardingAnswers, versi
 
   const layerSteps = layerOrder(facts, provenance, versions.cngx);
 
-  return {
-    changes: [...layerSteps.changes, ...stylesheetStep.changes, ...fallbackNote, ...themeSteps.changes],
-    skipped: [...layerSteps.skipped, ...stylesheetStep.skipped, ...themeSteps.skipped],
-  };
+  return mergeStepResults([
+    layerSteps,
+    stylesheetStep,
+    { changes: fallbackNote, skipped: [] },
+    themeSteps,
+  ]);
 }
 
 function themeFile(

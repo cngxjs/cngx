@@ -6,6 +6,7 @@ import {
   isListOf,
   isOneOf,
   LANGUAGES,
+  mergeStepResults,
   NG_ADD_PRESETS,
   type NgAddPreset,
   type Provenance,
@@ -153,8 +154,5 @@ export function planManifestReruns(
           recorded,
           provenance,
         );
-  return {
-    changes: [...theme.changes, ...readme.changes],
-    skipped: [...theme.skipped, ...readme.skipped],
-  };
+  return mergeStepResults([theme, readme]);
 }

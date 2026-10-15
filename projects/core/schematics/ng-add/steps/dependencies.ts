@@ -4,8 +4,10 @@ import {
   type CngxLib,
   declaredRange,
   joinNames,
+  mergeStepResults,
   type PackageManifest,
   type Provenance,
+  skipChange,
   type StepResult,
   type ThemeChoice,
 } from '../../engine';
@@ -66,7 +68,7 @@ function cngxDependency(manifest: PackageManifest, name: string, version: string
     version,
   };
   if (existing === version) {
-    return { changes: [], skipped: [{ id: change.id, label: change.label, reason: 'already pinned' }] };
+    return { changes: [], skipped: [skipChange(change, 'already pinned')] };
   }
   return { changes: [change], skipped: [] };
 }
@@ -78,13 +80,20 @@ function thirdPartyDependency(
   reason: string,
   provenance: Provenance,
 ): StepResult {
-  const id = `dependency:${name}`;
-  const label = `Add ${name}@${range}`;
+  const change: Change = {
+    kind: 'add-dependency',
+    id: `dependency:${name}`,
+    label: `Add ${name}@${range}`,
+    reason,
+    provenance,
+    name,
+    version: range,
+  };
   const existing = declaredRange(manifest, name);
   if (existing !== undefined) {
-    return { changes: [], skipped: [{ id, label, reason: `already declared as ${existing}` }] };
+    return { changes: [], skipped: [skipChange(change, `already declared as ${existing}`)] };
   }
-  return { changes: [{ kind: 'add-dependency', id, label, reason, provenance, name, version: range }], skipped: [] };
+  return { changes: [change], skipped: [] };
 }
 
 function themeRefusal(missing: readonly CngxLib[], provenance: Provenance): StepResult {
@@ -103,13 +112,6 @@ function themeRefusal(missing: readonly CngxLib[], provenance: Provenance): Step
   };
 }
 
-function merge(results: readonly StepResult[]): StepResult {
-  return {
-    changes: results.flatMap((result) => result.changes),
-    skipped: results.flatMap((result) => result.skipped),
-  };
-}
-
 /**
  * Pins every selected @cngx package and its peers to the exact release,
  * `@cngx/themes` when a theme is wanted and installable, the CDK at the app's
@@ -124,7 +126,7 @@ export function planDependencies(facts: ProjectFacts, answers: OnboardingAnswers
   const packages = cngxPackages(libs, answers.theme);
   const angularRange = declaredRange(facts.manifest, '@angular/core') ?? `^${facts.angularVersion ?? '21.2.0'}`;
 
-  return merge([
+  return mergeStepResults([
     ...packages.map((name) => cngxDependency(facts.manifest, name, versions.cngx, provenance)),
     ...(missing.length > 0 ? [themeRefusal(missing, provenance)] : []),
     ...(libs.some((lib) => NEEDS_CDK.includes(lib))
