@@ -5,8 +5,8 @@
 //
 // The needles are derived from source, never kept by hand:
 // - the `cngx-dev:` marker every dev descriptor `kind` carries;
-// - every hand-written `debugName` value in projects/** (specs and example
-//   folders excluded).
+// - every hand-written `debugName` value in the library sources
+//   (`isLibrarySource`: no specs, no `projects/testing`, no example folders).
 //   Compiler-inserted names never appear in source, so only hand-written ones
 //   need checking. A hand-written name must be a dotted `<owner>.<signal>`
 //   string literal, so the needle is specific enough to search a bundle for.
@@ -50,7 +50,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { isExampleSource, isToolingRoot } from './__tests__/source-roots.mjs';
+import { isLibrarySource, isToolingRoot } from './__tests__/source-roots.mjs';
 import { collectDocsUrls, collectHelperCalls, collectRuntimeErrors } from './dev-diagnostics.mjs';
 
 export const MARKER = 'cngx-dev:';
@@ -67,9 +67,7 @@ const SKIPPED_DIRS = new Set(['node_modules', 'dist', '.angular']);
 export function deriveNeedles(files) {
   const needles = [MARKER];
   const violations = [];
-  const libraryFiles = files.filter(
-    ({ path }) => !isSpec(path) && !isExampleSource(path.split(sep).join('/')),
-  );
+  const libraryFiles = files.filter(({ path }) => isLibrarySource(path.split(sep).join('/')));
   for (const { path, text } of libraryFiles) {
     for (const match of text.matchAll(/\bdebugName\s*:\s*/g)) {
       const start = match.index + match[0].length;
@@ -138,10 +136,6 @@ export function scanBundle(files, needles) {
 function isQuoted(text, offset, length) {
   const before = text[offset - 1];
   return QUOTES.has(before) && text[offset + length] === before;
-}
-
-function isSpec(path) {
-  return /\.spec\.ts$/.test(path);
 }
 
 // Tooling roots (`projects/*/schematics`) never reach a browser bundle, so

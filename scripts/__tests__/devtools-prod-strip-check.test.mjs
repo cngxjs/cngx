@@ -118,6 +118,18 @@ describe('devtools-prod-strip-check - needle derivation', () => {
     expect(runtime).toEqual({ devOnly: ['CNGX1001'], codeOnly: ['CNGX1002'] });
   });
 
+  it('derives nothing from projects/testing', () => {
+    const { needles, runtime } = deriveNeedles([
+      {
+        path: 'projects/testing/mocks/mock.ts',
+        text: "if (dev) { cngxDevWarn('CNGX0001', 'a'); } throw new CngxRuntimeError('CNGX0002');",
+      },
+    ]);
+
+    expect(needles).toEqual([MARKER]);
+    expect(runtime).toEqual({ devOnly: [], codeOnly: [] });
+  });
+
   it('derives nothing from example folders', () => {
     const { needles, runtime, violations } = deriveNeedles([
       {

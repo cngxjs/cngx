@@ -44,7 +44,7 @@ import {
 } from '../dev-diagnostics.mjs';
 import { libOf, rangeOf, readSources } from '../error-codes-manifest.mjs';
 import { RAW_THROW_BASELINE } from './raw-throw-baseline.mjs';
-import { isExampleSource } from './source-roots.mjs';
+import { isLibrarySource } from './source-roots.mjs';
 
 /**
  * Files allowed to throw a raw error. Exact count: a new throw in an exempt
@@ -212,7 +212,7 @@ function collectRuntimeErrorMisuse(path, text) {
  * @returns {{ raw: Map<string, number>; violations: string[] }}
  */
 export function checkSources(allFiles) {
-  const files = allFiles.filter(({ path }) => !isExampleSource(path));
+  const files = allFiles.filter(({ path }) => isLibrarySource(path));
   const raw = new Map();
   const violations = [];
   for (const { path, text } of files) {
