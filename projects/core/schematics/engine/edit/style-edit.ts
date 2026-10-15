@@ -1,3 +1,5 @@
+import { isRecord } from '../plan/text';
+
 const PREAMBLE_AT_RULE = /^@(use|forward|import|charset)\b/;
 const IMPORT_RULE = /^@import\b/;
 const IMPORT_URL = /^@(?:use|forward|import)\s+(['"])(.+?)\1/;
@@ -103,4 +105,15 @@ export function insertLeadingStyleImport(content: string, statement: string): st
   const at = preambleEnd(content, IMPORT_RULE);
   const needsNewline = at > 0 && !content.slice(0, at).endsWith('\n');
   return `${content.slice(0, at)}${needsNewline ? '\n' : ''}${statement.trim()}\n${content.slice(at)}`;
+}
+
+/**
+ * The path a build `styles` entry loads: the entry itself, or the `input` of
+ * an object entry (`{ input, bundleName, inject }`). Anything else has none.
+ */
+export function styleEntryPath(entry: unknown): string | undefined {
+  if (typeof entry === 'string') {
+    return entry;
+  }
+  return isRecord(entry) && typeof entry['input'] === 'string' ? entry['input'] : undefined;
 }

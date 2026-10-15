@@ -36,7 +36,8 @@ function wiredReason(path: string, pin: string | undefined, mcpVersion: string):
   return `${path} already declares a cngx server, pinned to @cngx/mcp@${pin} (this release pins ${mcpVersion})`;
 }
 
-function aiToolId(tool: AiTool): string {
+/** The step id of one editor's cngx MCP server entry. */
+export function aiToolId(tool: AiTool): string {
   return `ai-tools:${tool}`;
 }
 

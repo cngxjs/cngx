@@ -13,7 +13,12 @@ import {
   type StepResult,
   withProvenanceMarker,
 } from '../../engine';
-import { CNGX_LAYERS_FILE, CNGX_STYLESHEET, type ProjectFacts } from '../detect/detect';
+import {
+  CNGX_LAYERS_FILE,
+  CNGX_STYLESHEET,
+  CNGX_THEME_FILES,
+  type ProjectFacts,
+} from '../detect/detect';
 import { canInstallTheme, selectedLibs } from './dependencies';
 import { type OnboardingAnswers, type Versions } from './model';
 import { BASE_TOKENS, type BaseToken } from './theme-tokens.generated';
@@ -317,7 +322,10 @@ function themeFile(
   wiredReason: string,
 ): StepResult {
   const isMapApi = bridge?.kind === 'map-api';
-  const path = posix.join(facts.sourceRoot, isMapApi ? 'cngx-theme.scss' : 'cngx-theme.css');
+  const path = posix.join(
+    facts.sourceRoot,
+    isMapApi ? CNGX_THEME_FILES.scss : CNGX_THEME_FILES.css,
+  );
   const content = isMapApi
     ? renderMaterialTheme(version, bridge.density, bridge.themePath)
     : renderDefaultTheme(version);

@@ -16,7 +16,7 @@ import { HELPER_README_PATH, helperReadmeFingerprintLine, MCP_CONFIGS, type Proj
 // the esbuild text loader, so there is no module boundary to check.
 // eslint-disable-next-line @softarc/sheriff/dependency-rule, @softarc/sheriff/encapsulation
 import TEMPLATE from '../templates/helper-readme.md.tpl';
-import { instructionTargets } from './ai-tools';
+import { aiToolId, instructionTargets } from './ai-tools';
 import { cngxPackages, selectedLibs } from './dependencies';
 import { MCP_PROMPTS, MCP_RESOURCES, MCP_TOOLS } from './mcp-capabilities.generated';
 import { type OnboardingAnswers, type Versions } from './model';
@@ -48,7 +48,9 @@ const CLAUDE_PLUGIN = [
 // user removed (`withdrawn`) is not described as set up.
 function documentedTools(facts: ProjectFacts, answers: OnboardingAnswers, withdrawn: ReadonlySet<string>): readonly AiTool[] {
   return AI_TOOLS.filter(
-    (tool) => facts.mcpConfigs[tool] === 'wired' || (answers.aiTools.includes(tool) && !withdrawn.has(`ai-tools:${tool}`)),
+    (tool) =>
+      facts.mcpConfigs[tool] === 'wired' ||
+      (answers.aiTools.includes(tool) && !withdrawn.has(aiToolId(tool))),
   );
 }
 

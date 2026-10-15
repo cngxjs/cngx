@@ -13,6 +13,7 @@ import {
   type PackageManifest,
   parseManifest,
   readProviderCalls,
+  styleEntryPath,
   type Tree,
 } from '../../engine';
 
@@ -142,6 +143,9 @@ export interface TailwindFacts {
 
 /** The file that orders the Tailwind and cngx cascade layers; it loads before every other import. */
 export const CNGX_LAYERS_FILE = 'cngx-layers.css';
+
+/** The theme file cngx generates in the source root: CSS for the default theme, SCSS for a Material map. */
+export const CNGX_THEME_FILES = { css: 'cngx-theme.css', scss: 'cngx-theme.scss' } as const;
 
 /** The file holding the runtime language switch signal, next to the root providers file. */
 export const CNGX_LANGUAGE_FILE = 'cngx-language.ts';
@@ -278,10 +282,8 @@ function styleEntries(options: Readonly<Record<string, unknown>>): readonly stri
     return [];
   }
   return styles.flatMap((entry: unknown) => {
-    if (typeof entry === 'string') {
-      return [entry];
-    }
-    return isRecord(entry) && typeof entry['input'] === 'string' ? [entry['input']] : [];
+    const path = styleEntryPath(entry);
+    return path === undefined ? [] : [path];
   });
 }
 
@@ -412,7 +414,7 @@ function generatedFileState(content: string | undefined): GeneratedFileState {
 }
 
 function existingCngxTheme(tree: Tree, read: Read, sourceRoot: string, entries: readonly string[]): string | undefined {
-  const generated = ['cngx-theme.css', 'cngx-theme.scss']
+  const generated = Object.values(CNGX_THEME_FILES)
     .map((name) => posix.join(sourceRoot, name))
     .find((path) => tree.exists(path));
   return (
@@ -652,7 +654,9 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     stylesPath,
     cngxStylesheet: importsCngxStylesheet(read, entries),
     cngxThemePath: existingCngxTheme(tree, read, sourceRoot, entries),
-    cngxThemeListed: ['cngx-theme.css', 'cngx-theme.scss'].some((name) => entries.includes(posix.join(sourceRoot, name))),
+    cngxThemeListed: Object.values(CNGX_THEME_FILES).some((name) =>
+      entries.includes(posix.join(sourceRoot, name)),
+    ),
     tailwind: detectTailwind(read, manifest, entries),
     appConfigPath,
     rootProviders: providers,
