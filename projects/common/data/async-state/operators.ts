@@ -9,6 +9,8 @@ import {
   tap,
 } from 'rxjs';
 
+import { CngxRuntimeError } from '@cngx/utils';
+
 /**
  * Minimal write interface for async state operators.
  *
@@ -191,7 +193,12 @@ export function tapHttpAsyncState<T>(
         }),
         map((response) => {
           if (response.body == null) {
-            throw new Error('tapHttpAsyncState: response body is null');
+            throw new CngxRuntimeError(
+              'CNGX1054',
+              typeof ngDevMode !== 'undefined' &&
+                ngDevMode &&
+                'tapHttpAsyncState: response body is null',
+            );
           }
           return response.body;
         }),

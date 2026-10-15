@@ -77,14 +77,10 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
 
   it('Space and Enter on a focused toggle pick it', () => {
     const { fixture, host, toggles } = setup();
-    toggles[0].el.dispatchEvent(
-      new KeyboardEvent('keydown', { key: ' ', cancelable: true }),
-    );
+    toggles[0].el.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', cancelable: true }));
     fixture.detectChanges();
     expect(host.v()).toBe('grid');
-    toggles[1].el.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }),
-    );
+    toggles[1].el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
     fixture.detectChanges();
     expect(host.v()).toBe('list');
   });
@@ -138,9 +134,7 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
     const { fixture, host, toggles } = setup();
     host.off.set(true);
     fixture.detectChanges();
-    toggles.forEach(({ el }) =>
-      expect(el.getAttribute('aria-disabled')).toBe('true'),
-    );
+    toggles.forEach(({ el }) => expect(el.getAttribute('aria-disabled')).toBe('true'));
     toggles[0].el.click();
     fixture.detectChanges();
     expect(host.v()).toBeUndefined();
@@ -191,9 +185,7 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
     @Component({
       template: `
         <cngx-button-toggle-group label="Layout" [(value)]="v">
-          <button cngxButtonToggle value="grid" [cngxDescribedBy]="hint()">
-            Grid
-          </button>
+          <button cngxButtonToggle value="grid" [cngxDescribedBy]="hint()">Grid</button>
         </cngx-button-toggle-group>
       `,
       imports: [CngxButtonToggleGroup, CngxButtonToggle],
@@ -232,7 +224,13 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
 
     expect(() => {
       TestBed.createComponent(Orphan).detectChanges();
-    }).toThrow(/CngxButtonToggle requires a parent/);
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1053',
+        message: expect.stringMatching(/^CNGX1053: CngxButtonToggle requires a parent/),
+      }),
+    );
   });
 
   it('CngxButtonToggle with both single AND multi parents throws (exactly-one contract)', () => {
@@ -244,11 +242,7 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
           </cngx-button-multi-toggle-group>
         </cngx-button-toggle-group>
       `,
-      imports: [
-        CngxButtonToggleGroup,
-        CngxButtonMultiToggleGroup,
-        CngxButtonToggle,
-      ],
+      imports: [CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxButtonToggle],
     })
     class DualParent {
       v = signal<string | undefined>(undefined);
@@ -257,13 +251,23 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
 
     expect(() => {
       TestBed.createComponent(DualParent).detectChanges();
-    }).toThrow(/both CngxButtonToggleGroup and CngxButtonMultiToggleGroup/);
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1052',
+        message: expect.stringMatching(
+          /^CNGX1052: CngxButtonToggle: both CngxButtonToggleGroup and CngxButtonMultiToggleGroup/,
+        ),
+      }),
+    );
   });
 
   describe('aria-invalid + aria-errormessage symmetric semantics', () => {
     it('aria-invalid reflects invalid() alone (no form-field host)', () => {
       @Component({
-        template: `<cngx-button-toggle-group label="L" [(invalid)]="bad"><button cngxButtonToggle [value]="'a'">A</button></cngx-button-toggle-group>`,
+        template: `<cngx-button-toggle-group label="L" [(invalid)]="bad"
+          ><button cngxButtonToggle [value]="'a'">A</button></cngx-button-toggle-group
+        >`,
         imports: [CngxButtonToggleGroup, CngxButtonToggle],
       })
       class InvalidHost {
@@ -281,7 +285,9 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
 
     it('aria-invalid reflects errorState() alone (form-field host showError=true)', () => {
       @Component({
-        template: `<cngx-button-toggle-group label="L"><button cngxButtonToggle [value]="'a'">A</button></cngx-button-toggle-group>`,
+        template: `<cngx-button-toggle-group label="L"
+          ><button cngxButtonToggle [value]="'a'">A</button></cngx-button-toggle-group
+        >`,
         imports: [CngxButtonToggleGroup, CngxButtonToggle],
         providers: [
           {
@@ -303,7 +309,9 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
 
     it('aria-errormessage tracks errorMessageId regardless of invalid state when bound', () => {
       @Component({
-        template: `<cngx-button-toggle-group label="L" [errorMessageId]="msgId()" [(invalid)]="bad"><button cngxButtonToggle [value]="'a'">A</button></cngx-button-toggle-group>`,
+        template: `<cngx-button-toggle-group label="L" [errorMessageId]="msgId()" [(invalid)]="bad"
+          ><button cngxButtonToggle [value]="'a'">A</button></cngx-button-toggle-group
+        >`,
         imports: [CngxButtonToggleGroup, CngxButtonToggle],
       })
       class MsgHost {
@@ -352,7 +360,8 @@ describe('CngxButtonToggleGroup stateful discovery', () => {
     discoveredState.reset();
     const fixture = TestBed.createComponent(DiscoveryHost);
     fixture.detectChanges();
-    const el = fixture.debugElement.query(By.directive(CngxButtonToggleGroup)).nativeElement as HTMLElement;
+    const el = fixture.debugElement.query(By.directive(CngxButtonToggleGroup))
+      .nativeElement as HTMLElement;
     expect(el.getAttribute('aria-busy')).toBeNull();
 
     discoveredState.set('loading');
@@ -365,7 +374,8 @@ describe('CngxButtonToggleGroup stateful discovery', () => {
     discoveredState.set('loading');
     const fixture = TestBed.createComponent(DiscoveryOverrideHost);
     fixture.detectChanges();
-    const el = fixture.debugElement.query(By.directive(CngxButtonToggleGroup)).nativeElement as HTMLElement;
+    const el = fixture.debugElement.query(By.directive(CngxButtonToggleGroup))
+      .nativeElement as HTMLElement;
     expect(el.getAttribute('aria-busy')).toBeNull();
 
     fixture.componentInstance.inputState.set('loading');
@@ -378,7 +388,8 @@ describe('CngxButtonToggleGroup stateful discovery', () => {
     discoveredState.set('loading');
     const fixture = TestBed.createComponent(DiscoveryBareAttrHost);
     fixture.detectChanges();
-    const el = fixture.debugElement.query(By.directive(CngxButtonToggleGroup)).nativeElement as HTMLElement;
+    const el = fixture.debugElement.query(By.directive(CngxButtonToggleGroup))
+      .nativeElement as HTMLElement;
     expect(el.getAttribute('aria-busy')).toBe('true');
     discoveredState.reset();
   });

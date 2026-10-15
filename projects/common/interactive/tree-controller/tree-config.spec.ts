@@ -23,10 +23,7 @@ interface Row {
 const tree: CngxTreeNode<Row>[] = [
   {
     value: { id: 'a', name: 'Alpha' },
-    children: [
-      { value: { id: 'a1', name: 'Alpha-1' } },
-      { value: { id: 'a2', name: 'Alpha-2' } },
-    ],
+    children: [{ value: { id: 'a1', name: 'Alpha-1' } }, { value: { id: 'a2', name: 'Alpha-2' } }],
   },
 ];
 
@@ -43,9 +40,7 @@ describe('provideTreeConfig - app-wide defaults', () => {
 
   it('per-options nodeIdFn overrides the config default', () => {
     TestBed.configureTestingModule({
-      providers: [
-        provideTreeConfig(withDefaultNodeIdFn<Row>((v) => `config:${v.id}`)),
-      ],
+      providers: [provideTreeConfig(withDefaultNodeIdFn<Row>((v) => `config:${v.id}`))],
     });
     const ctrl = TestBed.runInInjectionContext(() =>
       createTreeController<Row>({
@@ -59,10 +54,14 @@ describe('provideTreeConfig - app-wide defaults', () => {
   it('throws in dev mode when neither options nor config provide nodeIdFn', () => {
     TestBed.configureTestingModule({ providers: [] });
     expect(() =>
-      TestBed.runInInjectionContext(() =>
-        createTreeController<Row>({ nodes: signal(tree) }),
-      ),
-    ).toThrow(/nodeIdFn/);
+      TestBed.runInInjectionContext(() => createTreeController<Row>({ nodes: signal(tree) })),
+    ).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1051',
+        message: expect.stringMatching(/^CNGX1051: createTreeController: `nodeIdFn` is required/),
+      }),
+    );
   });
 
   it('withDefaultLabelFn / withDefaultKeyFn flow through to the controller', () => {

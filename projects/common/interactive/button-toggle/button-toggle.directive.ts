@@ -1,5 +1,6 @@
 import { Directive, computed, inject, input } from '@angular/core';
 import { CngxRovingItem } from '@cngx/common/a11y';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import {
   CNGX_BUTTON_MULTI_TOGGLE_GROUP,
@@ -200,11 +201,14 @@ function resolveParent<T>(): ParentResolution<T> {
     optional: true,
   });
   if (single && multi) {
-    throw new Error(
-      'CngxButtonToggle: both CngxButtonToggleGroup and ' +
-        'CngxButtonMultiToggleGroup parents are present in the injector ' +
-        'tree. Exactly one is required - single + multi semantics are ' +
-        'incompatible.',
+    throw new CngxRuntimeError(
+      'CNGX1052',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        'CngxButtonToggle: both CngxButtonToggleGroup and ' +
+          'CngxButtonMultiToggleGroup parents are present in the injector ' +
+          'tree. Exactly one is required - single + multi semantics are ' +
+          'incompatible.',
     );
   }
   if (single) {
@@ -213,8 +217,11 @@ function resolveParent<T>(): ParentResolution<T> {
   if (multi) {
     return { mode: 'multi', group: multi };
   }
-  throw new Error(
-    'CngxButtonToggle requires a parent CngxButtonToggleGroup or ' +
-      'CngxButtonMultiToggleGroup to provide the value contract.',
+  throw new CngxRuntimeError(
+    'CNGX1053',
+    typeof ngDevMode !== 'undefined' &&
+      ngDevMode &&
+      'CngxButtonToggle requires a parent CngxButtonToggleGroup or ' +
+        'CngxButtonMultiToggleGroup to provide the value contract.',
   );
 }

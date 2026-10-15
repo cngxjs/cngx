@@ -2,6 +2,7 @@ import { computed, inject, InjectionToken, signal, type Signal, untracked } from
 import {
   type CngxTreeNode,
   type FlatTreeNode,
+  CngxRuntimeError,
   cngxDevError,
   collectDescendantValues,
   flattenTree,
@@ -269,10 +270,13 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
     opts.nodeIdFn ??
     (config.defaultNodeIdFn as ((v: T, path: readonly number[]) => string) | undefined);
   if (!resolvedNodeIdFn) {
-    throw new Error(
-      'createTreeController: `nodeIdFn` is required. Provide it via ' +
-        'CngxTreeControllerOptions.nodeIdFn or app-wide through ' +
-        '`provideTreeConfig(withDefaultNodeIdFn(...))`.',
+    throw new CngxRuntimeError(
+      'CNGX1051',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        'createTreeController: `nodeIdFn` is required. Provide it via ' +
+          'CngxTreeControllerOptions.nodeIdFn or app-wide through ' +
+          '`provideTreeConfig(withDefaultNodeIdFn(...))`.',
     );
   }
   const resolvedLabelFn = opts.labelFn ?? (config.defaultLabelFn as ((v: T) => string) | undefined);

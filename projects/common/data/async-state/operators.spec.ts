@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { EMPTY, Subject, of, throwError } from 'rxjs';
 
+import { CngxRuntimeError } from '@cngx/utils';
+
 import { createManualState } from './create-manual-state';
 import { tapAsyncProgress, tapAsyncState, tapHttpAsyncState } from './operators';
 
@@ -64,14 +66,25 @@ describe('tapAsyncState', () => {
 describe('tapHttpAsyncState', () => {
   it('extracts the response body and reports progress', () => {
     const state = createManualState<string>();
-    of(
-      { type: 1, loaded: 50, total: 100 },
-      { type: 4, body: 'result' },
-    )
+    of({ type: 1, loaded: 50, total: 100 }, { type: 4, body: 'result' })
       .pipe(tapHttpAsyncState(state))
       .subscribe();
     expect(state.status()).toBe('success');
     expect(state.data()).toBe('result');
+  });
+
+  it('puts a CNGX1054 CngxRuntimeError into the state when the response body is null', () => {
+    const state = createManualState<string>();
+    of({ type: 4, body: null })
+      .pipe(tapHttpAsyncState(state))
+      .subscribe({ error: () => undefined });
+    expect(state.status()).toBe('error');
+    const err = state.error();
+    expect(err).toBeInstanceOf(CngxRuntimeError);
+    expect((err as CngxRuntimeError).code).toBe('CNGX1054');
+    expect((err as CngxRuntimeError).message).toMatch(
+      /^CNGX1054: tapHttpAsyncState: response body is null/,
+    );
   });
 
   it('cancellation before the response resets the sink to idle', () => {
@@ -112,10 +125,7 @@ describe('tapAsyncProgress', () => {
 
   it('ignores progress events without a positive total', () => {
     const s = sink();
-    of(
-      { type: 1, loaded: 10, total: 0 },
-      { type: 1, loaded: 10, total: null },
-    )
+    of({ type: 1, loaded: 10, total: 0 }, { type: 1, loaded: 10, total: null })
       .pipe(tapAsyncProgress(s))
       .subscribe();
     expect(s.calls).toEqual([]);
@@ -128,7 +138,9 @@ describe('tapAsyncProgress', () => {
       { type: 1, loaded: 5, total: 10 },
       { type: 4, body: { ok: true } },
     ];
-    of(...events).pipe(tapAsyncProgress(s)).subscribe((e) => seen.push(e));
+    of(...events)
+      .pipe(tapAsyncProgress(s))
+      .subscribe((e) => seen.push(e));
     expect(seen).toEqual(events);
   });
 });
