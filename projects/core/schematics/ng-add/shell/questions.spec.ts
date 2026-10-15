@@ -181,7 +181,7 @@ describe('askOnboarding', () => {
   it('rejects a list flag entry the question does not offer', async () => {
     await expect(
       ask(createFacts(), { aiTools: ['emacs'] } as unknown as NgAddOptions),
-    ).rejects.toThrow('"emacs" is not a valid answer for aiTools.');
+    ).rejects.toThrow('"emacs" is not a valid answer for --ai-tools.');
   });
 
   it('asks which editors get the cngx mcp server, with the detected ones preselected', async () => {
@@ -315,7 +315,7 @@ describe('askOnboarding', () => {
   });
 
   it('rejects a flag value no question offers', async () => {
-    await expect(ask(createFacts(), { libs: ['charts'] } as unknown as NgAddOptions)).rejects.toThrow('"charts" is not a valid answer for libs.');
+    await expect(ask(createFacts(), { libs: ['charts'] } as unknown as NgAddOptions)).rejects.toThrow('"charts" is not a valid answer for --libs.');
   });
 });
 

@@ -709,10 +709,10 @@ describe('ngAdd', () => {
 
   it('stops on an unknown or repeated list entry and names it', async () => {
     await expect(runRule(ngAdd({ aiTools: 'emacs' }), createFixtureTree())).rejects.toThrow(
-      '"emacs" is not a valid answer for aiTools. Expected one of: claude, cursor, vscode.',
+      '"emacs" is not a valid answer for --ai-tools. Expected one of: claude, cursor, vscode.',
     );
     await expect(runRule(ngAdd({ aiTools: 'claude,claude' }), createFixtureTree())).rejects.toThrow(
-      '"claude" is given more than once for aiTools.',
+      '"claude" is given more than once for --ai-tools.',
     );
   });
 });

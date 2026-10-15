@@ -114,7 +114,7 @@ describe('createPromptFlow', () => {
     const flow = createPromptFlow({ canPrompt: false, answers: { theme: 'bootstrap' } });
 
     await expect(flow.select(THEME)).rejects.toThrow(
-      '"bootstrap" is not a valid answer for theme. Expected one of: cngx, material.',
+      '"bootstrap" is not a valid answer for --theme. Expected one of: cngx, material.',
     );
   });
 
@@ -122,7 +122,7 @@ describe('createPromptFlow', () => {
     const flow = createPromptFlow({ canPrompt: false, answers: { aiTools: ['claude', 'zed'] } });
 
     await expect(flow.multiSelect(TOOLS)).rejects.toThrow(
-      '"zed" is not a valid answer for aiTools.',
+      '"zed" is not a valid answer for --ai-tools.',
     );
   });
 

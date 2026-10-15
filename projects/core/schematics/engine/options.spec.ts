@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   AI_TOOLS,
   CNGX_LIBS,
+  createEmptyEntryError,
   createInvalidAnswerError,
   isBoolean,
   isListOf,
@@ -92,13 +93,13 @@ describe('the answer guards', () => {
 describe('createInvalidAnswerError', () => {
   it('names every rejected entry and the allowed answers', () => {
     expect(createInvalidAnswerError('aiTools', ['emacs', 'zed'], AI_TOOLS).message).toBe(
-      '"emacs", "zed" is not a valid answer for aiTools. Expected one of: claude, cursor, vscode.',
+      '"emacs", "zed" is not a valid answer for --ai-tools. Expected one of: claude, cursor, vscode.',
     );
   });
 
   it('reads the same for a single scalar flag', () => {
     expect(createInvalidAnswerError('theme', ['dark'], THEME_CHOICES).message).toBe(
-      '"dark" is not a valid answer for theme. Expected one of: cngx, material, none.',
+      '"dark" is not a valid answer for --theme. Expected one of: cngx, material, none.',
     );
   });
 });
@@ -119,19 +120,22 @@ describe('parseNgAddOptions', () => {
 
   it('names an unknown list entry', () => {
     expect(() => parseNgAddOptions({ aiTools: 'claude,emacs' })).toThrow(
-      '"emacs" is not a valid answer for aiTools. Expected one of: claude, cursor, vscode.',
+      '"emacs" is not a valid answer for --ai-tools. Expected one of: claude, cursor, vscode.',
     );
-    expect(() => parseNgAddOptions({ libs: ['charts'] })).toThrow('"charts" is not a valid answer for libs.');
+    expect(() => parseNgAddOptions({ libs: ['charts'] })).toThrow('"charts" is not a valid answer for --libs.');
   });
 
   it('rejects an empty list entry', () => {
-    expect(() => parseNgAddOptions({ libs: 'core,,ui' })).toThrow('"" is not a valid answer for libs.');
-    expect(() => parseNgAddOptions({ aiTools: '' })).toThrow('"" is not a valid answer for aiTools.');
+    expect(() => parseNgAddOptions({ libs: 'core,,ui' })).toThrow(
+      '--libs has an empty entry. Separate the values with single commas, for example --libs utils,core.',
+    );
+    expect(() => parseNgAddOptions({ libs: 'core,' })).toThrow('--libs has an empty entry.');
+    expect(() => parseNgAddOptions({ aiTools: '' })).toThrow('--ai-tools has an empty entry.');
   });
 
   it('rejects a repeated list entry, as the array branch does with uniqueItems', () => {
-    expect(() => parseNgAddOptions({ aiTools: 'claude,claude' })).toThrow('"claude" is given more than once for aiTools.');
-    expect(() => parseNgAddOptions({ libs: 'core,ui,core,ui,core' })).toThrow('"core", "ui" are given more than once for libs.');
+    expect(() => parseNgAddOptions({ aiTools: 'claude,claude' })).toThrow('"claude" is given more than once for --ai-tools.');
+    expect(() => parseNgAddOptions({ libs: 'core,ui,core,ui,core' })).toThrow('"core", "ui" are given more than once for --libs.');
   });
 
   it('maps the pre-install boolean strings and passes real booleans through', () => {
@@ -145,15 +149,15 @@ describe('parseNgAddOptions', () => {
 
   it('rejects a boolean flag that reads like neither', () => {
     expect(() => parseNgAddOptions({ lint: 'no' } as unknown as NgAddFlags)).toThrow(
-      '"no" is not a valid answer for lint. Expected one of: true, false.',
+      '"no" is not a valid answer for --lint. Expected one of: true, false.',
     );
   });
 
   it('names an unknown theme or language', () => {
     expect(() => parseNgAddOptions({ theme: 'dark' })).toThrow(
-      '"dark" is not a valid answer for theme. Expected one of: cngx, material, none.',
+      '"dark" is not a valid answer for --theme. Expected one of: cngx, material, none.',
     );
-    expect(() => parseNgAddOptions({ i18n: 'fr' })).toThrow('"fr" is not a valid answer for i18n.');
+    expect(() => parseNgAddOptions({ i18n: 'fr' })).toThrow('"fr" is not a valid answer for --i18n.');
   });
 
   it('reads an undefined or empty list as not given', () => {
@@ -166,13 +170,21 @@ describe('parseNgAddOptions', () => {
 
   it('names an unknown preset instead of falling back to recommended', () => {
     expect(() => parseNgAddOptions({ preset: 'everything' })).toThrow(
-      '"everything" is not a valid answer for preset. Expected one of: minimal, recommended, full.',
+      '"everything" is not a valid answer for --preset. Expected one of: minimal, recommended, full.',
     );
   });
 });
 
 describe('createRepeatedAnswerError', () => {
   it('names the repeated entry without calling it invalid', () => {
-    expect(createRepeatedAnswerError('aiTools', ['claude']).message).toBe('"claude" is given more than once for aiTools.');
+    expect(createRepeatedAnswerError('aiTools', ['claude']).message).toBe('"claude" is given more than once for --ai-tools.');
+  });
+});
+
+describe('createEmptyEntryError', () => {
+  it('names the flag and shows the comma form', () => {
+    expect(createEmptyEntryError('aiTools', AI_TOOLS).message).toBe(
+      '--ai-tools has an empty entry. Separate the values with single commas, for example --ai-tools claude,cursor.',
+    );
   });
 });

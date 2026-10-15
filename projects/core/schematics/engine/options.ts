@@ -36,16 +36,30 @@ export function isBoolean(value: unknown): value is boolean {
   return typeof value === 'boolean';
 }
 
+// The messages name the flag the way the user typed it (`--ai-tools`), not
+// the schema key (`aiTools`).
+function flagName(key: string): string {
+  return `--${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`;
+}
+
 /** The message for a list flag that names an entry more than once. */
 export function createRepeatedAnswerError(key: string, entries: readonly string[]): Error {
   const verb = entries.length === 1 ? 'is' : 'are';
-  return new Error(`"${entries.join('", "')}" ${verb} given more than once for ${key}.`);
+  return new Error(`"${entries.join('", "')}" ${verb} given more than once for ${flagName(key)}.`);
+}
+
+/** The message for a comma list with an empty slot (`core,,ui`, `core,`, `--libs=`). */
+export function createEmptyEntryError(key: string, allowed: readonly string[]): Error {
+  const flag = flagName(key);
+  return new Error(
+    `${flag} has an empty entry. Separate the values with single commas, for example ${flag} ${allowed.slice(0, 2).join(',')}.`,
+  );
 }
 
 /** The one message for a flag or prompt answer outside its vocabulary. */
 export function createInvalidAnswerError(key: string, entries: readonly string[], allowed: readonly string[]): Error {
   return new Error(
-    `"${entries.join('", "')}" is not a valid answer for ${key}. Expected one of: ${allowed.join(', ')}.`,
+    `"${entries.join('", "')}" is not a valid answer for ${flagName(key)}. Expected one of: ${allowed.join(', ')}.`,
   );
 }
 
@@ -113,6 +127,9 @@ function parseList<T extends string>(
   const entries = typeof raw === 'string' ? raw.split(',').map((entry) => entry.trim()) : raw;
   if (entries.length === 0) {
     return undefined;
+  }
+  if (entries.includes('')) {
+    throw createEmptyEntryError(key, vocabulary);
   }
   if (!isListOf(vocabulary, entries)) {
     throw createInvalidAnswerError(key, entries.filter((entry) => !isOneOf(vocabulary, entry)), vocabulary);
