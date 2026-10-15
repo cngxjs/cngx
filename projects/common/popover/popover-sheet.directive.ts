@@ -96,10 +96,13 @@ type CloseWatcherCtor = new () => CloseWatcherLike;
  * ```
  *
  * @category common/popover
+ * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-sheet.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPopover, CngxSwipeDismiss, CngxFocusTrap, createPinnedScrollLock, createScopedLiveRegion
+ * <example-url>http://localhost:4200/#/common/popover/sheet/bottom-sheet</example-url>
+ * <example-url>http://localhost:4200/#/common/popover/sheet/fullscreen-search</example-url>
  */
 @Directive({
   selector: '[cngxPopoverSheet]',
