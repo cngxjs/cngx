@@ -29,7 +29,6 @@ export {
   declaredRange,
   type PackageManifest,
   parseManifest,
-  readOwnVersion,
 } from './manifest/manifest';
 export { planThirdPartyDependency } from './manifest/third-party';
 
@@ -76,7 +75,6 @@ export {
   type LanguagePackArgument,
   readProviderCalls,
 } from './edit/ts-edit';
-export { findElements, insertAttribute, parseTemplateContent } from './edit/template-edit';
 export {
   hasStyleImport,
   insertLeadingStyleImport,
@@ -99,7 +97,6 @@ export {
   canPrompt,
   type ConfirmQuestion,
   createPromptFlow,
-  inquirerAdapter,
   type MultiSelectQuestion,
   type PromptAdapter,
   type PromptAnswer,

@@ -1,4 +1,4 @@
-import { parseTemplate, TmplAstElement, type TmplAstNode } from '@angular/compiler';
+import { parseTemplate, type TmplAstNode } from '@angular/compiler';
 
 // Node fields that hold nested template nodes: element and template
 // children plus the branches of control-flow and defer blocks. `@switch`
@@ -31,21 +31,4 @@ function nestedNodes(node: unknown): readonly unknown[] {
 /** Every node in document order, at any depth: elements, templates, blocks and text. */
 export function walkNodes(nodes: readonly unknown[]): readonly unknown[] {
   return nodes.flatMap((node) => [node, ...walkNodes(nestedNodes(node))]);
-}
-
-/** Every element in document order, at any depth, that matches `predicate`. */
-export function findElements(
-  nodes: readonly unknown[],
-  predicate: (element: TmplAstElement) => boolean,
-): readonly TmplAstElement[] {
-  return nodes.flatMap((node) => {
-    const self = node instanceof TmplAstElement && predicate(node) ? [node] : [];
-    return [...self, ...findElements(nestedNodes(node), predicate)];
-  });
-}
-
-/** Inserts `attribute` (e.g. `cngxRipple` or `[skin]="'outline'"`) right after the tag name. */
-export function insertAttribute(content: string, element: TmplAstElement, attribute: string): string {
-  const offset = element.startSourceSpan.start.offset + 1 + element.name.length;
-  return `${content.slice(0, offset)} ${attribute}${content.slice(offset)}`;
 }

@@ -73,7 +73,7 @@ let runner: SchematicTestRunner | undefined;
  * loadable here (their factories are TypeScript), so specs run rules
  * directly through `runRule`.
  */
-export function schematicRunner(): SchematicTestRunner {
+function schematicRunner(): SchematicTestRunner {
   runner ??= new SchematicTestRunner(
     '@schematics/angular',
     join(dirname(require.resolve('@schematics/angular/package.json')), 'collection.json'),
