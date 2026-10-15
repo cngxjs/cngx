@@ -240,7 +240,7 @@
       "lib": "common",
       "severity": "warn",
       "production": "stripped",
-      "title": "Non-modal dialog without a live region",
+      "title": "Non-modal dialog without a title",
       "page": "core-concepts/error-codes/cngx1015.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1015.html",
       "status": "active",
