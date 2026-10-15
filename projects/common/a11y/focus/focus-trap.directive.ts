@@ -7,6 +7,8 @@ import {
   ElementRef,
   inject,
   input,
+  type Signal,
+  signal,
   untracked,
 } from '@angular/core';
 
@@ -64,42 +66,80 @@ export class CngxFocusTrap {
   /** Whether to auto-focus the first tabbable element when the trap activates. */
   readonly autoFocus = input<boolean>(true);
 
+  private readonly enabledSource = signal<Signal<boolean> | null>(null);
+  private readonly autoFocusOverride = signal<boolean | null>(null);
+
   /**
-   * Readable alias of `enabled` for `exportAs` consumers
+   * The enabled state the trap actually follows: a composer's source
+   * (see {@link setEnabledSource}) wins over the `[enabled]` input.
+   */
+  private readonly effectiveEnabled = computed(() => this.enabledSource()?.() ?? this.enabled());
+
+  /**
+   * Readable alias of the effective enabled state for `exportAs` consumers
    * (`trap.isActive()` reads better than re-binding the input).
    */
-  readonly isActive = computed(() => this.enabled());
+  readonly isActive = computed(() => this.effectiveEnabled());
 
-  private readonly trap: FocusTrap;
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly factory = inject(FocusTrapFactory);
+  private trap: FocusTrap | null = null;
 
   constructor() {
-    const el = inject(ElementRef<HTMLElement>);
-    this.trap = inject(FocusTrapFactory).create(el.nativeElement as HTMLElement);
-
-    // Track ONLY enabled: with autoFocus inside the tracked zone, flipping
-    // [autoFocus] while the trap is active would re-run the effect and yank
-    // focus back to the first tabbable element. The CDK calls are service
-    // work, not dependencies.
+    // Track ONLY the effective enabled state: with autoFocus inside the
+    // tracked zone, flipping [autoFocus] while the trap is active would
+    // re-run the effect and yank focus back to the first tabbable element.
+    // The CDK calls are service work, not dependencies.
     effect(() => {
-      const enabled = this.enabled();
+      const enabled = this.effectiveEnabled();
       untracked(() => {
-        this.trap.enabled = enabled;
-        if (enabled && this.autoFocus()) {
-          void this.trap.focusFirstTabbableElementWhenReady();
+        if (!enabled && !this.trap) {
+          return;
+        }
+        const trap = this.ensureTrap();
+        trap.enabled = enabled;
+        if (enabled && !trap.hasAttached()) {
+          trap.attachAnchors();
+        }
+        if (enabled && (this.autoFocusOverride() ?? this.autoFocus())) {
+          void trap.focusFirstTabbableElementWhenReady();
         }
       });
     });
 
-    inject(DestroyRef).onDestroy(() => this.trap.destroy());
+    inject(DestroyRef).onDestroy(() => this.trap?.destroy());
+  }
+
+  /**
+   * @internal Drive the trap from a composer's signal instead of the
+   * `[enabled]` input. `null` defers back to the input.
+   */
+  setEnabledSource(source: Signal<boolean> | null): void {
+    this.enabledSource.set(source);
+  }
+
+  /**
+   * @internal Install or clear the programmatic `autoFocus` override.
+   * `null` defers back to the `[autoFocus]` input.
+   */
+  setAutoFocusOverride(value: boolean | null): void {
+    this.autoFocusOverride.set(value);
   }
 
   /** Programmatically focus the first tabbable element within the trap. */
   focusFirst(): void {
-    void this.trap.focusFirstTabbableElementWhenReady();
+    void this.ensureTrap().focusFirstTabbableElementWhenReady();
   }
 
   /** Programmatically focus the last tabbable element within the trap. */
   focusLast(): void {
-    void this.trap.focusLastTabbableElementWhenReady();
+    void this.ensureTrap().focusLastTabbableElementWhenReady();
+  }
+
+  // Deferred anchors: the CDK sentinels are inserted on the first enable,
+  // so a trap that is never enabled leaves the DOM untouched.
+  private ensureTrap(): FocusTrap {
+    this.trap ??= this.factory.create(this.host, true);
+    return this.trap;
   }
 }

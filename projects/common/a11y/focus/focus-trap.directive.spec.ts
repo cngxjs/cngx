@@ -1,12 +1,14 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxFocusTrap } from './focus-trap.directive';
-import { FocusTrapFactory } from '@angular/cdk/a11y';
+import { FocusTrapFactory, InteractivityChecker } from '@angular/cdk/a11y';
 
 let mockTrap: {
   enabled: boolean;
+  hasAttached: ReturnType<typeof vi.fn>;
+  attachAnchors: ReturnType<typeof vi.fn>;
   focusFirstTabbableElementWhenReady: ReturnType<typeof vi.fn>;
   focusLastTabbableElementWhenReady: ReturnType<typeof vi.fn>;
   destroy: ReturnType<typeof vi.fn>;
@@ -27,9 +29,14 @@ class TestHost {
 }
 
 describe('CngxFocusTrap', () => {
+  let createSpy: ReturnType<typeof vi.fn>;
+
   beforeEach(() => {
+    createSpy = vi.fn(() => mockTrap);
     mockTrap = {
       enabled: false,
+      hasAttached: vi.fn(() => mockTrap.attachAnchors.mock.calls.length > 0),
+      attachAnchors: vi.fn(() => true),
       focusFirstTabbableElementWhenReady: vi.fn(),
       focusLastTabbableElementWhenReady: vi.fn(),
       destroy: vi.fn(),
@@ -40,7 +47,7 @@ describe('CngxFocusTrap', () => {
       providers: [
         {
           provide: FocusTrapFactory,
-          useValue: { create: vi.fn(() => mockTrap) },
+          useValue: { create: createSpy },
         },
       ],
     });
@@ -59,6 +66,29 @@ describe('CngxFocusTrap', () => {
   it('trap is disabled initially', () => {
     setup();
     expect(mockTrap.enabled).toBe(false);
+  });
+
+  it('does not create the trap before the first enable', () => {
+    setup();
+    expect(createSpy).not.toHaveBeenCalled();
+  });
+
+  it('creates the trap with deferred anchors and attaches them on the first enable', () => {
+    const { fixture, host } = setup();
+    host.enabled.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(createSpy).toHaveBeenCalledWith(expect.any(HTMLElement), true);
+    expect(mockTrap.attachAnchors).toHaveBeenCalledTimes(1);
+
+    host.enabled.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    host.enabled.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(createSpy).toHaveBeenCalledTimes(1);
+    expect(mockTrap.attachAnchors).toHaveBeenCalledTimes(1);
   });
 
   it('enables trap when enabled input becomes true', () => {
@@ -95,9 +125,68 @@ describe('CngxFocusTrap', () => {
   });
 
   it('destroys trap on component destroy', () => {
-    const { fixture } = setup();
+    const { fixture, host } = setup();
+    host.enabled.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
     fixture.destroy();
     expect(mockTrap.destroy).toHaveBeenCalled();
+  });
+
+  it('is safe to destroy before the first enable', () => {
+    const { fixture } = setup();
+    expect(() => fixture.destroy()).not.toThrow();
+    expect(mockTrap.destroy).not.toHaveBeenCalled();
+  });
+
+  it('lets an enabled source win over the input and defers back on null', () => {
+    const { fixture, dir, host } = setup();
+    const source = signal(true);
+    dir.setEnabledSource(source);
+    TestBed.flushEffects();
+    expect(mockTrap.enabled).toBe(true);
+    expect(dir.isActive()).toBe(true);
+
+    host.enabled.set(true);
+    source.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(mockTrap.enabled).toBe(false);
+
+    dir.setEnabledSource(null);
+    TestBed.flushEffects();
+    expect(mockTrap.enabled).toBe(true);
+  });
+
+  it('follows a computed enabled source', () => {
+    const { dir } = setup();
+    const open = signal(false);
+    dir.setEnabledSource(computed(() => open()));
+    TestBed.flushEffects();
+    expect(createSpy).not.toHaveBeenCalled();
+    open.set(true);
+    TestBed.flushEffects();
+    expect(mockTrap.enabled).toBe(true);
+  });
+
+  it('suppresses auto focus while the override is false', () => {
+    const { fixture, dir, host } = setup();
+    dir.setAutoFocusOverride(false);
+    host.enabled.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(mockTrap.focusFirstTabbableElementWhenReady).not.toHaveBeenCalled();
+  });
+
+  it('does not refocus when the auto focus override flips while active', () => {
+    const { fixture, dir, host } = setup();
+    dir.setAutoFocusOverride(false);
+    host.enabled.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    dir.setAutoFocusOverride(null);
+    TestBed.flushEffects();
+    expect(mockTrap.focusFirstTabbableElementWhenReady).not.toHaveBeenCalled();
   });
 
   it('does not refocus when autoFocus flips while the trap is active', () => {
@@ -116,5 +205,75 @@ describe('CngxFocusTrap', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(mockTrap.focusFirstTabbableElementWhenReady).toHaveBeenCalledTimes(1);
+  });
+});
+
+@Component({
+  template: `
+    <div class="host" cngxFocusTrap [enabled]="enabled()">
+      <button class="first">First</button>
+      <button class="last">Last</button>
+    </div>
+  `,
+  imports: [CngxFocusTrap],
+})
+class RealTrapHost {
+  enabled = signal(false);
+}
+
+describe('CngxFocusTrap with the CDK factory', () => {
+  function setup() {
+    // jsdom reports every element as zero-sized, so the CDK checker would
+    // treat the buttons as invisible and skip them.
+    TestBed.configureTestingModule({
+      imports: [RealTrapHost],
+      providers: [
+        {
+          provide: InteractivityChecker,
+          useValue: {
+            isFocusable: (el: Element) => el.tagName === 'BUTTON',
+            isTabbable: (el: Element) => el.tagName === 'BUTTON',
+            isVisible: () => true,
+            isDisabled: () => false,
+          },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(RealTrapHost);
+    document.body.appendChild(fixture.nativeElement as HTMLElement);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const el = fixture.nativeElement as HTMLElement;
+    const dir = fixture.debugElement.query(By.directive(CngxFocusTrap)).injector.get(CngxFocusTrap);
+    const sentinels = () => el.querySelectorAll('.cdk-focus-trap-anchor').length;
+    return { fixture, el, dir, sentinels };
+  }
+
+  afterEach(() => {
+    document.body.replaceChildren();
+  });
+
+  it('inserts no sentinel nodes before the first enable', () => {
+    const { sentinels } = setup();
+    expect(sentinels()).toBe(0);
+  });
+
+  it('inserts the sentinel nodes on the first enable', () => {
+    const { fixture, sentinels } = setup();
+    fixture.componentInstance.enabled.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(sentinels()).toBe(2);
+  });
+
+  it('focuses the first and last tabbable element before the first enable without sentinels', async () => {
+    const { el, dir, sentinels } = setup();
+    dir.focusFirst();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(document.activeElement).toBe(el.querySelector('.first'));
+    dir.focusLast();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(document.activeElement).toBe(el.querySelector('.last'));
+    expect(sentinels()).toBe(0);
   });
 });
