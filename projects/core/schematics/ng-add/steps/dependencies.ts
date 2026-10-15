@@ -46,13 +46,20 @@ export function missingThemePeers(libs: readonly CngxLib[]): readonly CngxLib[] 
   return THEME_PEERS.filter((lib) => !libs.includes(lib));
 }
 
+/** A theme is wanted and the selected libs (from `selectedLibs`) carry every peer it needs. */
+export function canInstallTheme(libs: readonly CngxLib[], theme: ThemeChoice): boolean {
+  return theme !== 'none' && missingThemePeers(libs).length === 0;
+}
+
 /**
  * Every `@cngx/*` package installed for the selected libs (from `selectedLibs`),
  * `@cngx/themes` only when it can be.
  */
 export function cngxPackages(libs: readonly CngxLib[], theme: ThemeChoice): readonly string[] {
-  const withTheme = theme !== 'none' && missingThemePeers(libs).length === 0;
-  return [...libs.map((lib) => `@cngx/${lib}`), ...(withTheme ? ['@cngx/themes'] : [])];
+  return [
+    ...libs.map((lib) => `@cngx/${lib}`),
+    ...(canInstallTheme(libs, theme) ? ['@cngx/themes'] : []),
+  ];
 }
 
 function cngxDependency(manifest: PackageManifest, name: string, version: string, provenance: Provenance): StepResult {
@@ -75,11 +82,23 @@ function cngxDependency(manifest: PackageManifest, name: string, version: string
   return { changes: [change], skipped: [] };
 }
 
-function thirdPartyDependency(
+/** A package outside the cngx lockstep, added at `range` unless the app already declares it. */
+export interface ThirdPartyDependency {
+  readonly name: string;
+  readonly range: string;
+  readonly reason: string;
+  /** Added to devDependencies. */
+  readonly dev?: boolean;
+}
+
+/**
+ * Adds a third-party package the app lacks. One the app already declares,
+ * at any range, is kept and skipped under the same id and label, so a
+ * planned and a skipped run read the same.
+ */
+export function planThirdPartyDependency(
   manifest: PackageManifest,
-  name: string,
-  range: string,
-  reason: string,
+  { name, range, reason, dev }: ThirdPartyDependency,
   provenance: Provenance,
 ): StepResult {
   const change: Change = {
@@ -90,6 +109,7 @@ function thirdPartyDependency(
     provenance,
     name,
     version: range,
+    ...(dev === true ? { dev } : {}),
   };
   const existing = declaredRange(manifest, name);
   if (existing !== undefined) {
@@ -131,10 +151,30 @@ export function planDependencies(facts: ProjectFacts, answers: OnboardingAnswers
     ...packages.map((name) => cngxDependency(facts.manifest, name, versions.cngx, provenance)),
     ...(missing.length > 0 ? [themeRefusal(missing, provenance)] : []),
     ...(libs.some((lib) => NEEDS_CDK.includes(lib))
-      ? [thirdPartyDependency(facts.manifest, '@angular/cdk', angularRange, 'a peer of the selected @cngx packages', provenance)]
+      ? [
+          planThirdPartyDependency(
+            facts.manifest,
+            {
+              name: '@angular/cdk',
+              range: angularRange,
+              reason: 'a peer of the selected @cngx packages',
+            },
+            provenance,
+          ),
+        ]
       : []),
     ...(answers.floatingFallback && libs.includes('common')
-      ? [thirdPartyDependency(facts.manifest, FLOATING_UI, FLOATING_UI_RANGE, 'positions popovers where CSS anchor positioning is missing', provenance)]
+      ? [
+          planThirdPartyDependency(
+            facts.manifest,
+            {
+              name: FLOATING_UI,
+              range: FLOATING_UI_RANGE,
+              reason: 'positions popovers where CSS anchor positioning is missing',
+            },
+            provenance,
+          ),
+        ]
       : []),
   ]);
 }

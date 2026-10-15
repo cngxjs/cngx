@@ -14,7 +14,7 @@ import {
   withProvenanceMarker,
 } from '../../engine';
 import { CNGX_LAYERS_FILE, CNGX_STYLESHEET, type ProjectFacts } from '../detect/detect';
-import { missingThemePeers, selectedLibs } from './dependencies';
+import { canInstallTheme, selectedLibs } from './dependencies';
 import { type OnboardingAnswers, type Versions } from './model';
 import { BASE_TOKENS, type BaseToken } from './theme-tokens.generated';
 
@@ -223,8 +223,7 @@ function result(planned: readonly Change[], wired: string | undefined, reason: s
  * and its utilities; a setup it cannot order gets a note saying why.
  */
 export function planTheme(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
-  const installable = missingThemePeers(selectedLibs(answers.libs)).length === 0;
-  if (answers.theme === 'none' || !installable) {
+  if (!canInstallTheme(selectedLibs(answers.libs), answers.theme)) {
     return { changes: [], skipped: [] };
   }
   const provenance = createProvenance('ng-add', versions.cngx);
