@@ -168,6 +168,22 @@ injectQueryParamSync(this.tab, {
 - `onSyncError(err)` receives `router.navigate` rejections - no silent failures.
 - Returns `void`; it wires effects on the caller's signal and tears them down with the injection context.
 
+## createPinnedScrollLock
+
+```typescript
+const release = createPinnedScrollLock(document.documentElement);
+// ... bottom sheet open ...
+release();
+```
+
+Ref-counted scroll lock for overlays pinned to the bottom of the viewport. `createScrollLock` sets `overflow: hidden` on the root, which iOS Safari ignores once the page is scrolled: the page keeps scrolling and the visual viewport drifts, so a bottom-fixed sheet ends above the visible bottom. The pinned lock also fixes `body` at `top: -scrollY` and scrolls back to the saved position on the last release.
+
+### Notes
+
+- Shares the root overflow count with `createScrollLock`, so interleaved owners never restore each other's styles.
+- The release function is idempotent.
+- `CngxDialog` and `CngxScrollLock` keep `createScrollLock`.
+
 ## Other Exports
 
 `CngxIntersectionObserver`, `CngxResizeObserver`, `CngxScrollLock`, `CngxBackdrop`,
