@@ -5,9 +5,11 @@ type CngxDigit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
  * Shape of a cngx diagnostic code: `CNGX` plus exactly four digits, for example
  * `CNGX0901`. One type for both channels: the console diagnostics written by
  * `cngxDevWarn` / `cngxDevError` and the `code` of a thrown
- * `CngxRuntimeError`. The shape is typed here; existence, uniqueness and the
- * lib range are checked by `scripts/__tests__/raw-console-guard.test.mjs` and
- * `scripts/__tests__/raw-throw-guard.test.mjs`.
+ * `CngxRuntimeError`. The shape is typed here. That every call site passes a
+ * literal code in its lib range is checked by
+ * `scripts/__tests__/raw-console-guard.test.mjs` and
+ * `scripts/__tests__/raw-throw-guard.test.mjs`; that every code has its page,
+ * one severity and one lib is checked by `scripts/error-codes-manifest.mjs`.
  *
  * @category utils
  * @since 0.1.0

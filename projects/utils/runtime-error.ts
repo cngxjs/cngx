@@ -4,10 +4,11 @@ declare const ngDevMode: boolean | undefined;
 
 /**
  * Error thrown by cngx for a misuse or a broken precondition, carrying a
- * stable `code`. In development the message reads
- * `CNGXnnnn: <message> Find more at <url>`; in a production build it is the
- * bare code (`CNGXnnnn`), so the message text and the doc link never ship. A
- * check that sits in a dev-only branch is removed from production entirely.
+ * stable `code`. In development, when a message is passed, the message reads
+ * `CNGXnnnn: <message> Find more at <url>`, otherwise it is the bare code. In
+ * a production build it is always the bare code (`CNGXnnnn`), so the message
+ * text and the doc link never ship. A check that sits in a dev-only branch is
+ * removed from production entirely.
  *
  * Branch on the class and the code, never on the message text:
  *

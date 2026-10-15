@@ -35,7 +35,7 @@ Each library emits codes in its own range, so the code tells you where to look.
 
 Some misuse cannot be worked around, for example a directive placed outside the parent it needs. CNGX throws a `CngxRuntimeError` there, with the same code and page as a console diagnostic.
 
-In development the message reads like a console diagnostic:
+In development, when the throw site passes a message, it reads like a console diagnostic:
 
 ```text
 CNGX1044: CngxChipInteraction must NOT be used inside <cngx-chip-group> / <cngx-multi-chip-group>; use [cngxChipInGroup] instead. Find more at https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1044.html
