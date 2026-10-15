@@ -341,6 +341,34 @@ export default [
       expect(byId(planned, id)?.label).toBe('Add @angular-eslint/template-parser@21.3.0');
     });
 
+    it('names the declared range of a parser off the angular-eslint line', () => {
+      const result = planLint(
+        eslintApp(
+          {
+            manifest: parseManifest(
+              JSON.stringify({
+                devDependencies: {
+                  'angular-eslint': '21.3.0',
+                  '@angular-eslint/template-parser': '^21.0.0',
+                },
+              }),
+            ),
+          },
+          { angularEslint: '21.3.0', templateParserMajor: 21 },
+        ),
+        createAnswers(),
+        VERSIONS,
+      );
+
+      expect(
+        result.skipped.find((step) => step.id === 'dependency:@angular-eslint/template-parser'),
+      ).toEqual({
+        id: 'dependency:@angular-eslint/template-parser',
+        label: 'Add @angular-eslint/template-parser@^21.0.0',
+        reason: 'already declared as ^21.0.0',
+      });
+    });
+
     it('adds nothing when it is declared', () => {
       const result = planLint(eslintApp(), createAnswers(), VERSIONS);
       expect(result.changes.map((change) => change.id)).toEqual(['dependency:@cngx/eslint-plugin', 'lint:config']);

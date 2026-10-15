@@ -83,11 +83,11 @@ function compatibleConfig(facts: ProjectFacts): EslintConfigFacts | { readonly r
   return config;
 }
 
-// Pinned on the angular-eslint version line; a parser declared without
-// angular-eslint is kept at its own range. `compatibleConfig` already stopped
-// an app that declares neither, so that case plans nothing here.
+// Pinned on the angular-eslint version line; a declared parser is kept at its
+// own range, which its skip line names. `compatibleConfig` already stopped an
+// app that declares neither, so that case plans nothing here.
 function templateParser(facts: ProjectFacts, provenance: Provenance): StepResult {
-  const range = facts.eslintStack.angularEslint ?? declaredRange(facts.manifest, TEMPLATE_PARSER);
+  const range = declaredRange(facts.manifest, TEMPLATE_PARSER) ?? facts.eslintStack.angularEslint;
   if (range === undefined) {
     return { changes: [], skipped: [] };
   }
