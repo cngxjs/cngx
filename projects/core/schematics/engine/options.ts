@@ -37,13 +37,13 @@ export function isBoolean(value: unknown): value is boolean {
 }
 
 /** The message for a list flag that names an entry more than once. */
-export function repeatedAnswer(key: string, entries: readonly string[]): Error {
+export function createRepeatedAnswerError(key: string, entries: readonly string[]): Error {
   const verb = entries.length === 1 ? 'is' : 'are';
   return new Error(`"${entries.join('", "')}" ${verb} given more than once for ${key}.`);
 }
 
 /** The one message for a flag or prompt answer outside its vocabulary. */
-export function invalidAnswer(key: string, entries: readonly string[], allowed: readonly string[]): Error {
+export function createInvalidAnswerError(key: string, entries: readonly string[], allowed: readonly string[]): Error {
   return new Error(
     `"${entries.join('", "')}" is not a valid answer for ${key}. Expected one of: ${allowed.join(', ')}.`,
   );
@@ -115,11 +115,11 @@ function parseList<T extends string>(
     return undefined;
   }
   if (!isListOf(vocabulary, entries)) {
-    throw invalidAnswer(key, entries.filter((entry) => !isOneOf(vocabulary, entry)), vocabulary);
+    throw createInvalidAnswerError(key, entries.filter((entry) => !isOneOf(vocabulary, entry)), vocabulary);
   }
   const repeated = entries.filter((entry, index) => entries.indexOf(entry) !== index);
   if (repeated.length > 0) {
-    throw repeatedAnswer(key, [...new Set(repeated)]);
+    throw createRepeatedAnswerError(key, [...new Set(repeated)]);
   }
   return entries;
 }
@@ -129,7 +129,7 @@ function parseChoice<T extends string>(key: string, vocabulary: readonly T[], ra
     return undefined;
   }
   if (!isOneOf(vocabulary, raw)) {
-    throw invalidAnswer(key, [raw], vocabulary);
+    throw createInvalidAnswerError(key, [raw], vocabulary);
   }
   return raw;
 }
@@ -139,7 +139,7 @@ function parseBoolean(key: string, raw: boolean | string | undefined): boolean |
     return raw;
   }
   if (!isOneOf(BOOLEAN_FLAG_VALUES, raw)) {
-    throw invalidAnswer(key, [raw], BOOLEAN_FLAG_VALUES);
+    throw createInvalidAnswerError(key, [raw], BOOLEAN_FLAG_VALUES);
   }
   return raw === 'true';
 }

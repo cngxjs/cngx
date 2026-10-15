@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   AI_TOOLS,
   CNGX_LIBS,
-  invalidAnswer,
+  createInvalidAnswerError,
   isBoolean,
   isListOf,
   isOneOf,
@@ -14,7 +14,7 @@ import {
   NG_ADD_PRESETS,
   type NgAddFlags,
   parseNgAddOptions,
-  repeatedAnswer,
+  createRepeatedAnswerError,
   THEME_CHOICES,
 } from './options';
 
@@ -89,15 +89,15 @@ describe('the answer guards', () => {
   });
 });
 
-describe('invalidAnswer', () => {
+describe('createInvalidAnswerError', () => {
   it('names every rejected entry and the allowed answers', () => {
-    expect(invalidAnswer('aiTools', ['emacs', 'zed'], AI_TOOLS).message).toBe(
+    expect(createInvalidAnswerError('aiTools', ['emacs', 'zed'], AI_TOOLS).message).toBe(
       '"emacs", "zed" is not a valid answer for aiTools. Expected one of: claude, cursor, vscode.',
     );
   });
 
   it('reads the same for a single scalar flag', () => {
-    expect(invalidAnswer('theme', ['dark'], THEME_CHOICES).message).toBe(
+    expect(createInvalidAnswerError('theme', ['dark'], THEME_CHOICES).message).toBe(
       '"dark" is not a valid answer for theme. Expected one of: cngx, material, none.',
     );
   });
@@ -165,8 +165,8 @@ describe('parseNgAddOptions', () => {
   });
 });
 
-describe('repeatedAnswer', () => {
+describe('createRepeatedAnswerError', () => {
   it('names the repeated entry without calling it invalid', () => {
-    expect(repeatedAnswer('aiTools', ['claude']).message).toBe('"claude" is given more than once for aiTools.');
+    expect(createRepeatedAnswerError('aiTools', ['claude']).message).toBe('"claude" is given more than once for aiTools.');
   });
 });
