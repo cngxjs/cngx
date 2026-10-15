@@ -233,11 +233,11 @@ export class CngxTooltip {
 
   /** Show the tooltip immediately (bypassing delay). */
   show(): void {
-    if (!this.enabled() || this.stateSignal() !== 'closed') {
-      return;
-    }
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       warnMissingPopoverApi(this.tooltipEl!, 'CngxTooltip');
+    }
+    if (!this.enabled() || this.stateSignal() !== 'closed') {
+      return;
     }
     // Without the Popover API the open cannot happen; stay closed instead of
     // latching in 'opening', so the tooltip opens once a polyfill lands.
