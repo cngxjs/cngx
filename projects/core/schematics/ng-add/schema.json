@@ -27,7 +27,7 @@
       }
     },
     "libs": {
-      "description": "The @cngx packages to install; their @cngx peers follow. Asked when a terminal is attached, otherwise every package.",
+      "description": "The @cngx packages to install, comma-separated (--libs core,forms); their @cngx peers follow. Asked when a terminal is attached, otherwise every package.",
       "oneOf": [
         { "type": "string" },
         {
@@ -68,7 +68,7 @@
       "description": "Install @floating-ui/dom and provide the popover positioning fallback for browsers without CSS anchor positioning."
     },
     "aiTools": {
-      "description": "The editors to set up the cngx MCP server for: the server entry in their project MCP config, a marked cngx block in the agent instructions (AGENTS.md, or CLAUDE.md for Claude Code) and .cngx/README.md. Asked when a terminal is attached, with the detected editors preselected.",
+      "description": "The editors to set up the cngx MCP server for, comma-separated (--ai-tools claude,vscode): the server entry in their project MCP config, a marked cngx block in the agent instructions (AGENTS.md, or CLAUDE.md for Claude Code) and .cngx/README.md. Asked when a terminal is attached, with the detected editors preselected.",
       "oneOf": [
         { "type": "string" },
         {

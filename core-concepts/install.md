@@ -110,18 +110,23 @@ Every answer has a flag. A flag skips its question.
 |Flag|Values|Effect|
 |-|-|-|
 |`--preset`|`minimal`, `recommended`, `full`|How much of the onboarding to apply.|
-|`--libs`|`utils`, `core`, `common`, `interop`, `forms`, `data-display`, `ui`|The packages to install. Default: all of them. `@cngx/themes` needs `core`, `common`, `forms`, `data-display` and `ui` (`cngx.css` imports their CSS); a set without one of them gets a note naming the missing packages and no theme.|
+|`--libs`|`utils`, `core`, `common`, `interop`, `forms`, `data-display`, `ui`, comma-separated (`--libs core,forms`)|The packages to install. Default: all of them. `@cngx/themes` needs `core`, `common`, `forms`, `data-display` and `ui` (`cngx.css` imports their CSS); a set without one of them gets a note naming the missing packages and no theme.|
 |`--theme`|`cngx`, `material`, `none`|The generated theme file.|
 |`--i18n`|`en`, `de`|The built-in copy.|
-|`--runtime-switch`|boolean|Wire the language pack for switching at runtime.|
-|`--lint`|boolean|Add `@cngx/eslint-plugin` to the flat config.|
-|`--a11y-preferences`|boolean|Provide the density, text scale, motion and contrast axes with persistence.|
-|`--feedback`|boolean|Provide toasts, alerts and banners at the root (needs `@cngx/ui`).|
-|`--floating-fallback`|boolean|Install `@floating-ui/dom` and provide the popover positioning fallback (needs `@cngx/common`).|
-|`--ai-tools`|`claude`, `cursor`, `vscode`|The editors to set up the cngx MCP server and agent instructions for. Answers the AI tooling question.|
-|`--yes`|boolean|Apply to an existing app without the confirmation.|
-|`--prompts`|boolean, default `true`|`--no-prompts` answers every question from flags, the recorded answers of a re-run and the preset defaults.|
-|`--quiet`|boolean|Print only the summary, not the planned changes.|
+|`--runtime-switch`|`--runtime-switch`, `--no-runtime-switch`|Wire the language pack for switching at runtime.|
+|`--lint`|`--lint`, `--no-lint`|Add `@cngx/eslint-plugin` to the flat config.|
+|`--a11y-preferences`|`--a11y-preferences`, `--no-a11y-preferences`|Provide the density, text scale, motion and contrast axes with persistence.|
+|`--feedback`|`--feedback`, `--no-feedback`|Provide toasts, alerts and banners at the root (needs `@cngx/ui`).|
+|`--floating-fallback`|`--floating-fallback`, `--no-floating-fallback`|Install `@floating-ui/dom` and provide the popover positioning fallback (needs `@cngx/common`).|
+|`--ai-tools`|`claude`, `cursor`, `vscode`, comma-separated (`--ai-tools claude,vscode`)|The editors to set up the cngx MCP server and agent instructions for. Answers the AI tooling question.|
+|`--yes`|`--yes`|Apply to an existing app without the confirmation.|
+|`--prompts`|`--prompts`, `--no-prompts`, default `true`|`--no-prompts` answers every question from flags, the recorded answers of a re-run and the preset defaults.|
+|`--quiet`|`--quiet`|Print only the summary, not the planned changes.|
+
+A boolean flag also takes `=true` or `=false` (`--lint=false`). A list flag
+takes its values in one comma-separated argument: repeating the flag
+(`--libs core --libs forms`) or separating the values with spaces
+(`--libs core forms`) keeps only the last value.
 
 For CI and scripted runs, pass the answers and skip the questions:
 
@@ -307,7 +312,7 @@ question no longer preselects that editor. Pick the editor in the question,
 or name it, to bring them back:
 
 ```bash
-ng add @cngx/core --ai-tools claude
+ng add @cngx/core --ai-tools claude,vscode
 ```
 
 [Agent Tooling](agent-tooling.html) describes what the server answers.

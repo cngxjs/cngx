@@ -64,9 +64,10 @@ projects/<lib>/schematics/
    its spec against `createFacts` / `createAnswers` from `testing/onboarding.ts`.
 3. Append it to `STEPS` in `ng-add/index.ts`, extend the fixture matrix in
    `ng-add/index.spec.ts`, and update the per-preset snapshots.
-4. A new answer gets a `schema.json` property, a field on `NgAddOptions` and
-   `OnboardingAnswers`, and a question in `shell/questions.ts` only when
-   detection leaves it open.
+4. A new answer gets a `schema.json` property (a list or boolean as a `oneOf`
+   in the branch order the smoke guard checks), a field on `NgAddFlags`,
+   `NgAddOptions` and `OnboardingAnswers`, a case in `parseNgAddOptions`, and
+   a question in `shell/questions.ts` only when detection leaves it open.
 
 A change kind the engine does not know yet goes into `plan/change.ts` with its
 apply mapping, report file and renderer target; the exhaustive switches fail
@@ -144,8 +145,19 @@ only when its source `package.json` declares `schematics`.
 - `ng add` strips `interactive`, `dryRun`, `force`, `defaults`, `registry`,
   `verbose` and `skipConfirmation` before the rule runs, so the schema uses
   none of those names. `prompts` and `yes` are the schematic's own switches.
-- The devkit schema registry fills every unset array option with `[]`; an
-  empty list therefore reads as "not given".
+- Before the package is installed, `ng add` parses the command line without
+  the schema's option types. A list flag reaches the rule as one string
+  (`--ai-tools claude,vscode` is `"claude,vscode"`) and `--lint=false` as the
+  string `"false"`; only a second `ng add` of an installed package sees typed
+  values. `schema.json` therefore admits both forms (a list's string branch
+  comes first, a boolean's boolean branch), and `parseNgAddOptions` turns
+  either into `NgAddOptions` once at the ng-add entry.
+- The comma form is the only multi-value spelling. The CLI keeps the last
+  value of a repeated flag (`--libs core --libs forms`) or a space-separated
+  list (`--libs core forms`) and warns.
+- A list flag has no `[]` default: the registry fills none for a `oneOf`
+  property, so an unset list arrives as `undefined`. The parser also reads a
+  programmatic `[]` as "not given".
 - `ng add <pkg> --dry-run` for a package that is not installed never reaches a
   rule. Preview with `ng add`, then `ng g @cngx/core:ng-add --dry-run`.
 - Prompts run inside the rule after the CLI's install spinner has finished,
