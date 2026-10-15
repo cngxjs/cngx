@@ -2,6 +2,8 @@ import checkbox from '@inquirer/checkbox';
 import confirm from '@inquirer/confirm';
 import select from '@inquirer/select';
 
+import { isOneOf } from '../options';
+
 export interface PromptChoice<T extends string> {
   readonly value: T;
   readonly name: string;
@@ -88,11 +90,11 @@ function assertChoices<T extends string>(
   question: SelectQuestion<T> | MultiSelectQuestion<T>,
   values: readonly string[],
 ): asserts values is readonly T[] {
-  const allowed = new Set<string>(question.choices.map((choice) => choice.value));
-  const unknown = values.filter((value) => !allowed.has(value));
+  const allowed = question.choices.map((choice) => choice.value);
+  const unknown = values.filter((value) => !isOneOf(allowed, value));
   if (unknown.length > 0) {
     throw new Error(
-      `"${unknown.join('", "')}" is not a valid answer for ${question.key}. Expected one of: ${[...allowed].join(', ')}.`,
+      `"${unknown.join('", "')}" is not a valid answer for ${question.key}. Expected one of: ${allowed.join(', ')}.`,
     );
   }
 }

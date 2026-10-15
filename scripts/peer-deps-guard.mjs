@@ -23,9 +23,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import ts from 'typescript';
 
+import { PUBLISHED_LIBS } from './cngx-libs.mjs';
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-export const PUBLISHED_LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui'];
 export const ALLOWED_DEPENDENCIES = new Set(['tslib']);
 const PLACEHOLDER = '0.0.0-PLACEHOLDER';
 

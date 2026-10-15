@@ -8,20 +8,21 @@ import {
   type ChangePlan,
   createChangePlan,
   createPromptFlow,
+  createProvenance,
   createRenderer,
   createReport,
+  createShellRendererOptions,
+  createSummary,
+  isCi,
   type NgAddOptions,
-  type Provenance,
   resolveVersions,
 } from '../engine';
 import { detectProject, type ProjectFacts } from './detect/detect';
 import { readGitState } from './shell/git-state';
 import { angularSupport, preflightItems } from './shell/preflight';
 import { askOnboarding, givenAnswers, presetChangeNote, presetDefaults } from './shell/questions';
-import { createShellRendererOptions, isCi } from './shell/terminal';
 import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
-import { createSummary } from './steps/finish';
 import { planHelperReadme } from './steps/helper-readme';
 import { planLint } from './steps/lint';
 import { readInstallManifest } from './shell/install-manifest';
@@ -128,7 +129,7 @@ export function ngAdd(options: NgAddOptions): Rule {
       recorded,
     );
     const withdrawn = withdrawnAiTargets(facts, answers, installed, explicitAiTools);
-    const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
+    const provenance = createProvenance('ng-add', versions.cngx);
     const steps = createChangePlan(
       [
         ...planSteps(withdrawn).map((step) => step(facts, answers, versions)),

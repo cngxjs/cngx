@@ -6,6 +6,13 @@ export interface Provenance {
   readonly version: string;
 }
 
+/** The generators that plan changes; a manifest written by hand may carry any string. */
+export type ProvenanceSource = 'ng-add' | 'ng-update';
+
+export function createProvenance(source: ProvenanceSource, version: string): Provenance {
+  return { source, version };
+}
+
 interface ChangeBase {
   /** Stable across runs and across the planned and the skipped channel. */
   readonly id: string;
@@ -112,6 +119,10 @@ export interface Note extends ChangeBase {
   readonly kind: 'note';
 }
 
+export function createNote({ id, label, reason, provenance }: Omit<Note, 'kind'>): Note {
+  return { kind: 'note', id, label, reason, provenance };
+}
+
 export type Change =
   | CreateFile
   | EditFile
@@ -143,4 +154,12 @@ export interface StepResult {
  */
 export function skipChange(change: Change, reason: string): SkippedStep {
   return { id: change.id, label: change.label, reason };
+}
+
+/** Concatenates step results in step order, changes and skips alike. */
+export function mergeStepResults(results: readonly StepResult[]): StepResult {
+  return {
+    changes: results.flatMap((result) => result.changes),
+    skipped: results.flatMap((result) => result.skipped),
+  };
 }

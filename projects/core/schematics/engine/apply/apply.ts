@@ -11,7 +11,7 @@ import { insertImport } from '@schematics/angular/utility/ast-utils';
 import { applyToUpdateRecorder } from '@schematics/angular/utility/change';
 import { JSONFile } from '@schematics/angular/utility/json-file';
 
-import { insertStyleImport } from '../edit/style-edit';
+import { insertStyleImport, styleEntryPath } from '../edit/style-edit';
 import {
   addToArrayLiteral,
   type ArraySelector,
@@ -140,10 +140,6 @@ function addStyleImport(change: AddStyleImport): Rule {
   };
 }
 
-function styleInput(entry: unknown): unknown {
-  return typeof entry === 'object' && entry !== null && 'input' in entry ? entry.input : entry;
-}
-
 // Inserted the way `ng add @angular/material` adds its theme file, through
 // the workspace API, so the user's formatting of angular.json survives.
 function addStyleEntry(change: AddStyleEntry): Rule {
@@ -153,7 +149,7 @@ function addStyleEntry(change: AddStyleEntry): Rule {
       throw new SchematicsException(`Project "${change.project}" has no build target to add ${change.path} to.`);
     }
     const styles = Array.isArray(options['styles']) ? [...options['styles']] : [];
-    const inputs = styles.map(styleInput);
+    const inputs = styles.map(styleEntryPath);
     if (inputs.includes(change.path)) {
       return;
     }

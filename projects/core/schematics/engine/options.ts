@@ -19,6 +19,23 @@ export type Language = (typeof LANGUAGES)[number];
 export const AI_TOOLS = ['claude', 'cursor', 'vscode'] as const;
 export type AiTool = (typeof AI_TOOLS)[number];
 
+/** `value` is one entry of `vocabulary`; an answer read from a flag or a record is `unknown`. */
+export function isOneOf<T extends string>(vocabulary: readonly T[], value: unknown): value is T {
+  return vocabulary.some((entry) => entry === value);
+}
+
+/** `value` is an array whose every entry is one of `vocabulary`. */
+export function isListOf<T extends string>(
+  vocabulary: readonly T[],
+  value: unknown,
+): value is readonly T[] {
+  return Array.isArray(value) && value.every((entry) => isOneOf(vocabulary, entry));
+}
+
+export function isBoolean(value: unknown): value is boolean {
+  return typeof value === 'boolean';
+}
+
 /** The options every `ng add @cngx/<lib>` forwards to the core onboarding. */
 export interface NgAddOptions {
   readonly project?: string;

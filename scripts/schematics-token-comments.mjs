@@ -19,15 +19,12 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { normalizeDashes } from './normalize-dashes.mjs';
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 export const SOURCE = 'projects/core/theming/system-tokens.css';
 export const OUT = 'projects/core/schematics/ng-add/steps/theme-tokens.generated.ts';
-
-// Source JSDoc may carry em/en dashes; the generated file lands in consumer
-// apps, so they become a plain hyphen.
-const DASHES = new RegExp(String.raw`\s*[\u2014\u2013]\s*`, 'g');
-const normalizeDashes = (text) => text.replace(DASHES, ' - ');
 
 function docText(block) {
   const lines = block

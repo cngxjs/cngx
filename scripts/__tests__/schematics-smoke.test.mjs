@@ -8,6 +8,7 @@ import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
 import { NodeModulesEngineHost } from '@angular-devkit/schematics/tools';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
+import { PACKED_LIBS } from '../cngx-libs.mjs';
 import { checkReleaseMigrations, declaresSchematics } from '../publish.mjs';
 
 /**
@@ -155,13 +156,12 @@ describe('dist/core/schematics migrations', () => {
 // and fails hard on anything but MODULE_NOT_FOUND, so a package whose
 // `exports` map hides its manifest cannot answer `ng add`.
 describe('every published package as the CLI resolves it', () => {
-  const LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
   let modules;
 
   beforeAll(() => {
     modules = mkdtempSync(join(tmpdir(), 'cngx-resolve-'));
     mkdirSync(join(modules, 'node_modules', '@cngx'), { recursive: true });
-    for (const lib of LIBS) {
+    for (const lib of PACKED_LIBS) {
       symlinkSync(join(ROOT, 'dist', lib), join(modules, 'node_modules', '@cngx', lib), 'dir');
     }
   });
@@ -170,12 +170,17 @@ describe('every published package as the CLI resolves it', () => {
     rmSync(modules, { recursive: true, force: true });
   });
 
-  it.each(LIBS)('loads the ng-add collection of @cngx/%s through its package.json', (lib) => {
-    requireDist(join(ROOT, 'dist', lib, 'schematics', 'collection.json'));
-    const host = new NodeModulesEngineHost([modules]);
+  it.each(PACKED_LIBS)(
+    'loads the ng-add collection of @cngx/%s through its package.json',
+    (lib) => {
+      requireDist(join(ROOT, 'dist', lib, 'schematics', 'collection.json'));
+      const host = new NodeModulesEngineHost([modules]);
 
-    expect(Object.keys(host.createCollectionDescription(`@cngx/${lib}`).schematics)).toContain('ng-add');
-  });
+      expect(Object.keys(host.createCollectionDescription(`@cngx/${lib}`).schematics)).toContain(
+        'ng-add',
+      );
+    },
+  );
 });
 
 describe('dist/ui/schematics ng-add shim', () => {

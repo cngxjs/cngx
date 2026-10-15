@@ -4,6 +4,7 @@
 export type { Tree } from './fs/tree';
 export { createMemoryTree } from './fs/memory-tree';
 export { createNodeTree, type NodeTree } from './fs/node-tree';
+export { listFiles, type ListFilesOptions } from './fs/walk';
 
 export { addLockstepDependency } from './manifest/lockstep';
 export {
@@ -11,6 +12,9 @@ export {
   type AiTool,
   CNGX_LIBS,
   type CngxLib,
+  isBoolean,
+  isListOf,
+  isOneOf,
   type Language,
   LANGUAGES,
   NG_ADD_PRESETS,
@@ -25,6 +29,7 @@ export {
   parseManifest,
   readOwnVersion,
 } from './manifest/manifest';
+export { planThirdPartyDependency } from './manifest/third-party';
 
 export {
   type AddDependency,
@@ -33,12 +38,16 @@ export {
   type AddStyleEntry,
   type AddStyleImport,
   type Change,
+  createNote,
   type CreateFile,
+  createProvenance,
   type EditFile,
   type JsonEntry,
   type JsonPath,
+  mergeStepResults,
   type Note,
   type Provenance,
+  type ProvenanceSource,
   type ProviderArg,
   type ProviderArray,
   type ProviderCall,
@@ -50,7 +59,7 @@ export {
 } from './plan/change';
 export { type ChangePlan, createChangePlan, describeChangePlan } from './plan/plan';
 export { createReport, type Report, type ReportLink } from './plan/report';
-export { isRecord, joinNames } from './plan/text';
+export { errorMessage, isRecord, joinNames } from './plan/text';
 export {
   contentFingerprint,
   createProvenanceStamp,
@@ -67,7 +76,12 @@ export {
   readProviderCalls,
 } from './edit/ts-edit';
 export { findElements, insertAttribute, parseTemplateContent } from './edit/template-edit';
-export { hasStyleImport, insertLeadingStyleImport, insertStyleImport } from './edit/style-edit';
+export {
+  hasStyleImport,
+  insertLeadingStyleImport,
+  insertStyleImport,
+  styleEntryPath,
+} from './edit/style-edit';
 export { EMPTY_RENAME_TABLE, type MemberRename, type RenameTable } from './migrate/rename-table';
 export { planRenames } from './migrate/plan-renames';
 export { type Codemod, planCodemods } from './migrate/codemod';
@@ -104,3 +118,5 @@ export {
   type RenderLogger,
   type Verbosity,
 } from './render/renderer';
+export { createSummary, type SummaryHeadlines } from './render/summary';
+export { createShellRendererOptions, isCi, type TerminalStream } from './render/terminal';

@@ -2,10 +2,15 @@ import {
   type Change,
   CNGX_LIBS,
   type CngxLib,
+  createNote,
+  createProvenance,
   declaredRange,
   joinNames,
+  mergeStepResults,
   type PackageManifest,
+  planThirdPartyDependency,
   type Provenance,
+  skipChange,
   type StepResult,
   type ThemeChoice,
 } from '../../engine';
@@ -42,13 +47,20 @@ export function missingThemePeers(libs: readonly CngxLib[]): readonly CngxLib[] 
   return THEME_PEERS.filter((lib) => !libs.includes(lib));
 }
 
+/** A theme is wanted and the selected libs (from `selectedLibs`) carry every peer it needs. */
+export function canInstallTheme(libs: readonly CngxLib[], theme: ThemeChoice): boolean {
+  return theme !== 'none' && missingThemePeers(libs).length === 0;
+}
+
 /**
  * Every `@cngx/*` package installed for the selected libs (from `selectedLibs`),
  * `@cngx/themes` only when it can be.
  */
 export function cngxPackages(libs: readonly CngxLib[], theme: ThemeChoice): readonly string[] {
-  const withTheme = theme !== 'none' && missingThemePeers(libs).length === 0;
-  return [...libs.map((lib) => `@cngx/${lib}`), ...(withTheme ? ['@cngx/themes'] : [])];
+  return [
+    ...libs.map((lib) => `@cngx/${lib}`),
+    ...(canInstallTheme(libs, theme) ? ['@cngx/themes'] : []),
+  ];
 }
 
 function cngxDependency(manifest: PackageManifest, name: string, version: string, provenance: Provenance): StepResult {
@@ -66,47 +78,23 @@ function cngxDependency(manifest: PackageManifest, name: string, version: string
     version,
   };
   if (existing === version) {
-    return { changes: [], skipped: [{ id: change.id, label: change.label, reason: 'already pinned' }] };
+    return { changes: [], skipped: [skipChange(change, 'already pinned')] };
   }
   return { changes: [change], skipped: [] };
-}
-
-function thirdPartyDependency(
-  manifest: PackageManifest,
-  name: string,
-  range: string,
-  reason: string,
-  provenance: Provenance,
-): StepResult {
-  const id = `dependency:${name}`;
-  const label = `Add ${name}@${range}`;
-  const existing = declaredRange(manifest, name);
-  if (existing !== undefined) {
-    return { changes: [], skipped: [{ id, label, reason: `already declared as ${existing}` }] };
-  }
-  return { changes: [{ kind: 'add-dependency', id, label, reason, provenance, name, version: range }], skipped: [] };
 }
 
 function themeRefusal(missing: readonly CngxLib[], provenance: Provenance): StepResult {
   const names = missing.map((lib) => `@cngx/${lib}`);
   return {
     changes: [
-      {
-        kind: 'note',
+      createNote({
         id: 'dependency:@cngx/themes',
         label: 'Skip @cngx/themes',
         reason: `cngx.css imports the CSS of ${joinNames(names)}; select them or pass --theme=none`,
         provenance,
-      },
+      }),
     ],
     skipped: [],
-  };
-}
-
-function merge(results: readonly StepResult[]): StepResult {
-  return {
-    changes: results.flatMap((result) => result.changes),
-    skipped: results.flatMap((result) => result.skipped),
   };
 }
 
@@ -118,20 +106,40 @@ function merge(results: readonly StepResult[]): StepResult {
  * `@angular/material` is never added: the bridge themes an app that has it.
  */
 export function planDependencies(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
-  const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
+  const provenance = createProvenance('ng-add', versions.cngx);
   const libs = selectedLibs(answers.libs);
   const missing = answers.theme === 'none' ? [] : missingThemePeers(libs);
   const packages = cngxPackages(libs, answers.theme);
   const angularRange = declaredRange(facts.manifest, '@angular/core') ?? `^${facts.angularVersion ?? '21.2.0'}`;
 
-  return merge([
+  return mergeStepResults([
     ...packages.map((name) => cngxDependency(facts.manifest, name, versions.cngx, provenance)),
     ...(missing.length > 0 ? [themeRefusal(missing, provenance)] : []),
     ...(libs.some((lib) => NEEDS_CDK.includes(lib))
-      ? [thirdPartyDependency(facts.manifest, '@angular/cdk', angularRange, 'a peer of the selected @cngx packages', provenance)]
+      ? [
+          planThirdPartyDependency(
+            facts.manifest,
+            {
+              name: '@angular/cdk',
+              range: angularRange,
+              reason: 'a peer of the selected @cngx packages',
+            },
+            provenance,
+          ),
+        ]
       : []),
     ...(answers.floatingFallback && libs.includes('common')
-      ? [thirdPartyDependency(facts.manifest, FLOATING_UI, FLOATING_UI_RANGE, 'positions popovers where CSS anchor positioning is missing', provenance)]
+      ? [
+          planThirdPartyDependency(
+            facts.manifest,
+            {
+              name: FLOATING_UI,
+              range: FLOATING_UI_RANGE,
+              reason: 'positions popovers where CSS anchor positioning is missing',
+            },
+            provenance,
+          ),
+        ]
       : []),
   ]);
 }

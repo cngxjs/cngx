@@ -2,7 +2,13 @@ import {
   AI_TOOLS,
   type Change,
   CNGX_LIBS,
+  createNote,
+  createProvenance,
+  isBoolean,
+  isListOf,
+  isOneOf,
   LANGUAGES,
+  mergeStepResults,
   NG_ADD_PRESETS,
   type NgAddPreset,
   type Provenance,
@@ -15,14 +21,6 @@ import { planHelperReadme } from './helper-readme';
 import { INSTALL_MANIFEST_PATH, type InstallManifest } from './manifest';
 import { type OnboardingAnswers, type Versions } from './model';
 import { planTheme } from './theme';
-
-function oneOf<T extends string>(vocabulary: readonly T[], value: unknown): value is T {
-  return vocabulary.some((entry) => entry === value);
-}
-
-function listOf<T extends string>(vocabulary: readonly T[], value: unknown): value is readonly T[] {
-  return Array.isArray(value) && value.every((entry) => oneOf(vocabulary, entry));
-}
 
 /** What a preset answers before any flag or question; the shell passes `presetDefaults`. */
 export type PresetDefaults = (preset: NgAddPreset) => OnboardingAnswers;
@@ -37,8 +35,6 @@ function answerOr<T>(value: unknown, valid: (value: unknown) => value is T, fall
   return valid(value) ? value : undefined;
 }
 
-const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
-
 /**
  * The answers the last install recorded, read back against today's answer
  * vocabulary. The preset is required; every other missing answer is the
@@ -48,21 +44,21 @@ const isBoolean = (value: unknown): value is boolean => typeof value === 'boolea
 export function readRecordedAnswers(manifest: InstallManifest, defaultsFor: PresetDefaults): OnboardingAnswers | undefined {
   const recorded = manifest.answers;
   const preset = recorded['preset'];
-  if (!oneOf(NG_ADD_PRESETS, preset)) {
+  if (!isOneOf(NG_ADD_PRESETS, preset)) {
     return undefined;
   }
   const defaults = defaultsFor(preset);
   const answers = {
     preset,
-    libs: answerOr(recorded['libs'], (value) => listOf(CNGX_LIBS, value), defaults.libs),
-    theme: answerOr(recorded['theme'], (value) => oneOf(THEME_CHOICES, value), defaults.theme),
-    i18n: answerOr(recorded['i18n'], (value) => oneOf(LANGUAGES, value), defaults.i18n),
+    libs: answerOr(recorded['libs'], (value) => isListOf(CNGX_LIBS, value), defaults.libs),
+    theme: answerOr(recorded['theme'], (value) => isOneOf(THEME_CHOICES, value), defaults.theme),
+    i18n: answerOr(recorded['i18n'], (value) => isOneOf(LANGUAGES, value), defaults.i18n),
     runtimeSwitch: answerOr(recorded['runtimeSwitch'], isBoolean, defaults.runtimeSwitch),
     lint: answerOr(recorded['lint'], isBoolean, defaults.lint),
     a11yPreferences: answerOr(recorded['a11yPreferences'], isBoolean, defaults.a11yPreferences),
     feedback: answerOr(recorded['feedback'], isBoolean, defaults.feedback),
     floatingFallback: answerOr(recorded['floatingFallback'], isBoolean, defaults.floatingFallback),
-    aiTools: answerOr(recorded['aiTools'], (value) => listOf(AI_TOOLS, value), defaults.aiTools),
+    aiTools: answerOr(recorded['aiTools'], (value) => isListOf(AI_TOOLS, value), defaults.aiTools),
   };
   const { libs, theme, i18n, runtimeSwitch, lint, a11yPreferences, feedback, floatingFallback, aiTools } = answers;
   if (
@@ -94,15 +90,16 @@ function restoreNotes(
   recorded: ReadonlySet<string>,
   provenance: Provenance,
 ): StepResult {
-  const notes: readonly Change[] = result.changes.filter(restores).map((change) => ({
-    kind: 'note',
-    id: change.id,
-    label: `${change.label} (not in place)`,
-    reason: recorded.has(change.id)
-      ? `recorded in ${INSTALL_MANIFEST_PATH}; run ng add @cngx/core to restore it`
-      : 'the recorded answers ask for it but it was never installed; run ng add @cngx/core to add it',
-    provenance,
-  }));
+  const notes: readonly Change[] = result.changes.filter(restores).map((change) =>
+    createNote({
+      id: change.id,
+      label: `${change.label} (not in place)`,
+      reason: recorded.has(change.id)
+        ? `recorded in ${INSTALL_MANIFEST_PATH}; run ng add @cngx/core to restore it`
+        : 'the recorded answers ask for it but it was never installed; run ng add @cngx/core to add it',
+      provenance,
+    }),
+  );
   return {
     changes: [...result.changes.filter((change) => !restores(change)), ...notes],
     skipped: result.skipped,
@@ -122,18 +119,17 @@ export function planManifestReruns(
   versions: Versions,
   defaultsFor: PresetDefaults,
 ): StepResult {
-  const provenance: Provenance = { source: 'ng-update', version: versions.cngx };
+  const provenance = createProvenance('ng-update', versions.cngx);
   const answers = readRecordedAnswers(manifest, defaultsFor);
   if (answers === undefined) {
     return {
       changes: [
-        {
-          kind: 'note',
+        createNote({
           id: 'manifest:answers',
           label: 'Re-run the recorded install steps',
           reason: `${INSTALL_MANIFEST_PATH} records answers this release cannot read; run ng add @cngx/core to refresh it`,
           provenance,
-        },
+        }),
       ],
       skipped: [],
     };
@@ -160,8 +156,5 @@ export function planManifestReruns(
           recorded,
           provenance,
         );
-  return {
-    changes: [...theme.changes, ...readme.changes],
-    skipped: [...theme.skipped, ...readme.skipped],
-  };
+  return mergeStepResults([theme, readme]);
 }

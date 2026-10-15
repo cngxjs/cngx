@@ -3,6 +3,9 @@ import {
   type AiTool,
   CNGX_LIBS,
   type CngxLib,
+  createNote,
+  isBoolean,
+  isOneOf,
   type Language,
   LANGUAGES,
   type NgAddOptions,
@@ -79,13 +82,6 @@ export function givenAnswers(options: NgAddOptions): PromptAnswers {
   );
 }
 
-
-const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
-const isLanguage = (value: unknown): value is Language =>
-  LANGUAGES.some((language) => language === value);
-const isTheme = (value: unknown): value is ThemeChoice =>
-  THEME_CHOICES.some((theme) => theme === value);
-
 // A flag the schema let through must still be one this step understands;
 // `ng add` validates against schema.json, a programmatic caller may not.
 function flag<T>(
@@ -131,13 +127,12 @@ export function presetChangeNote(
   }
   return {
     changes: [
-      {
-        kind: 'note',
+      createNote({
         id: 'answers:preset',
         label: `Start from the ${preset} preset`,
         reason: `the last install used ${recorded.preset}, so its answers are not reused; pass --preset=${recorded.preset} to keep them`,
         provenance,
-      },
+      }),
     ],
     skipped: [],
   };
@@ -185,7 +180,7 @@ export async function askOnboarding(
         ],
         default: defaults.theme,
       })
-    : flag(options, 'theme', isTheme, defaults.theme);
+    : flag(options, 'theme', (value) => isOneOf(THEME_CHOICES, value), defaults.theme);
   // The language pack and the a11y preferences come from @cngx/core; without
   // it there is nothing to ask, and a preset default must not turn into a
   // "skipped" note the user never asked for.
@@ -199,7 +194,7 @@ export async function askOnboarding(
         ],
         default: defaults.i18n,
       })
-    : flag(options, 'i18n', isLanguage, 'en');
+    : flag(options, 'i18n', (value) => isOneOf(LANGUAGES, value), 'en');
   // A flag the question cannot ask about is kept, so the step can say why it
   // does not apply instead of dropping it.
   const runtimeSwitch =

@@ -1,8 +1,12 @@
 import {
   addToArrayLiteral,
   type Change,
+  createNote,
+  createProvenance,
   declaredRange,
   insertAfterImports,
+  mergeStepResults,
+  planThirdPartyDependency,
   type Provenance,
   skipChange,
   type StepResult,
@@ -79,29 +83,24 @@ function compatibleConfig(facts: ProjectFacts): EslintConfigFacts | { readonly r
   return config;
 }
 
-// Pinned on the angular-eslint version line; `compatibleConfig` already
-// stopped an app that declares neither, so that case plans nothing here.
+// Pinned on the angular-eslint version line; a declared parser is kept at its
+// own range, which its skip line names. `compatibleConfig` already stopped an
+// app that declares neither, so that case plans nothing here.
 function templateParser(facts: ProjectFacts, provenance: Provenance): StepResult {
-  const id = `dependency:${TEMPLATE_PARSER}`;
-  const declared = declaredRange(facts.manifest, TEMPLATE_PARSER);
-  if (declared !== undefined) {
-    return { changes: [], skipped: [{ id, label: `Add ${TEMPLATE_PARSER}`, reason: `already declared as ${declared}` }] };
-  }
-  const range = facts.eslintStack.angularEslint;
+  const range = declaredRange(facts.manifest, TEMPLATE_PARSER) ?? facts.eslintStack.angularEslint;
   if (range === undefined) {
     return { changes: [], skipped: [] };
   }
-  const dependency: Change = {
-    kind: 'add-dependency',
-    id,
-    label: `Add ${TEMPLATE_PARSER}@${range}`,
-    reason: `${PLUGIN} parses templates with it; same version line as ${ANGULAR_ESLINT}`,
+  return planThirdPartyDependency(
+    facts.manifest,
+    {
+      name: TEMPLATE_PARSER,
+      range,
+      reason: `${PLUGIN} parses templates with it; same version line as ${ANGULAR_ESLINT}`,
+      dev: true,
+    },
     provenance,
-    name: TEMPLATE_PARSER,
-    version: range,
-    dev: true,
-  };
-  return { changes: [dependency], skipped: [] };
+  );
 }
 
 /**
@@ -116,25 +115,32 @@ export function planLint(facts: ProjectFacts, answers: OnboardingAnswers, versio
   if (!answers.lint) {
     return { changes: [], skipped: [] };
   }
-  const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
+  const provenance = createProvenance('ng-add', versions.cngx);
   const config = compatibleConfig(facts);
   if ('reason' in config) {
     return {
-      changes: [{ kind: 'note', id: 'lint:config', label: 'Skip the eslint entry', reason: config.reason, provenance }],
+      changes: [
+        createNote({
+          id: 'lint:config',
+          label: 'Skip the eslint entry',
+          reason: config.reason,
+          provenance,
+        }),
+      ],
       skipped: [],
     };
   }
 
-  const dependency: Change = {
-    kind: 'add-dependency',
-    id: `dependency:${PLUGIN}`,
-    label: `Add ${PLUGIN}@${versions.eslintPlugin}`,
-    reason: 'lint rules for the cngx signal idioms and wiring contracts',
+  const plugin = planThirdPartyDependency(
+    facts.manifest,
+    {
+      name: PLUGIN,
+      range: versions.eslintPlugin,
+      reason: 'lint rules for the cngx signal idioms and wiring contracts',
+      dev: true,
+    },
     provenance,
-    name: PLUGIN,
-    version: versions.eslintPlugin,
-    dev: true,
-  };
+  );
   const entry: Change = {
     kind: 'edit-file',
     id: 'lint:config',
@@ -149,14 +155,8 @@ export function planLint(facts: ProjectFacts, answers: OnboardingAnswers, versio
         ENTRY,
       ),
   };
-  const declared = declaredRange(facts.manifest, PLUGIN);
-  const parser = templateParser(facts, provenance);
-  return {
-    changes: [...(declared === undefined ? [dependency] : []), ...parser.changes, ...(config.wired ? [] : [entry])],
-    skipped: [
-      ...(declared === undefined ? [] : [skipChange(dependency, `already declared as ${declared}`)]),
-      ...parser.skipped,
-      ...(config.wired ? [skipChange(entry, `already loaded in ${config.path}`)] : []),
-    ],
-  };
+  const configStep: StepResult = config.wired
+    ? { changes: [], skipped: [skipChange(entry, `already loaded in ${config.path}`)] }
+    : { changes: [entry], skipped: [] };
+  return mergeStepResults([plugin, templateParser(facts, provenance), configStep]);
 }

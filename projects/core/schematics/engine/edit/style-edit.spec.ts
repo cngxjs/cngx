@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { hasStyleImport, insertLeadingStyleImport, insertStyleImport } from './style-edit';
+import {
+  hasStyleImport,
+  insertLeadingStyleImport,
+  insertStyleImport,
+  styleEntryPath,
+} from './style-edit';
 
 const CNGX = "@import '@cngx/themes/cngx.css';";
 
@@ -111,5 +116,19 @@ describe('hasStyleImport', () => {
 
   it('rejects a statement that is not a module load', () => {
     expect(() => hasStyleImport('', 'body {}')).toThrow('Not a style import statement');
+  });
+});
+
+describe('styleEntryPath', () => {
+  it('reads a plain entry and the input of an object entry', () => {
+    expect(styleEntryPath('src/styles.scss')).toBe('src/styles.scss');
+    expect(styleEntryPath({ input: 'src/theme.scss', inject: false })).toBe('src/theme.scss');
+  });
+
+  it('finds no path in an entry without a string input', () => {
+    expect(styleEntryPath({ bundleName: 'theme' })).toBeUndefined();
+    expect(styleEntryPath({ input: 42 })).toBeUndefined();
+    expect(styleEntryPath(['src/styles.css'])).toBeUndefined();
+    expect(styleEntryPath(null)).toBeUndefined();
   });
 });

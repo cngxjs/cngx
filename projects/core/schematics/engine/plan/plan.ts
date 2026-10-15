@@ -1,4 +1,4 @@
-import { type Change, type SkippedStep, type StepResult } from './change';
+import { type Change, mergeStepResults, type SkippedStep, type StepResult } from './change';
 
 /**
  * The one derived source of an onboarding run. The todo list, `--dry-run`
@@ -13,11 +13,7 @@ export interface ChangePlan {
 
 /** Concatenates the step results in step order. */
 export function createChangePlan(results: readonly StepResult[], warnings: readonly string[] = []): ChangePlan {
-  return {
-    changes: results.flatMap((result) => result.changes),
-    skipped: results.flatMap((result) => result.skipped),
-    warnings: [...warnings],
-  };
+  return { ...mergeStepResults(results), warnings: [...warnings] };
 }
 
 function section(title: string, marker: string, lines: readonly string[]): readonly string[] {

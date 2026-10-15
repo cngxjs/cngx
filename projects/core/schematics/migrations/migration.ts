@@ -7,20 +7,24 @@ import {
   applyChangePlan,
   type Codemod,
   createChangePlan,
+  createNote,
+  createProvenance,
   createRenderer,
   createReport,
+  createShellRendererOptions,
+  createSummary,
+  errorMessage,
   planCodemods,
   planRenames,
   type ReleaseVersions,
   type RenameTable,
   resolveVersions,
   type StepResult,
+  type SummaryHeadlines,
 } from '../engine';
 import { detectProject } from '../ng-add/detect/detect';
 import { readInstallManifest } from '../ng-add/shell/install-manifest';
 import { presetDefaults } from '../ng-add/shell/questions';
-import { createShellRendererOptions } from '../ng-add/shell/terminal';
-import { createSummary, type SummaryHeadlines } from '../ng-add/steps/finish';
 import {
   INSTALL_MANIFEST_PATH,
   type InstallManifest,
@@ -38,7 +42,9 @@ export interface Migration {
 
 function note(id: string, label: string, reason: string, version: string): StepResult {
   return {
-    changes: [{ kind: 'note', id, label, reason, provenance: { source: 'ng-update', version } }],
+    changes: [
+      createNote({ id, label, reason, provenance: createProvenance('ng-update', version) }),
+    ],
     skipped: [],
   };
 }
@@ -61,10 +67,6 @@ function entryVersion(context: SchematicContext): string | undefined {
   return 'version' in description && typeof description.version === 'string'
     ? description.version
     : undefined;
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }
 
 async function planReruns(
@@ -123,7 +125,7 @@ export function createMigration(migration: Migration): Rule {
   return async (tree: Tree, context: SchematicContext) => {
     // The entry sits one folder below `schematics/`, where versions.json lives.
     const { versions, warning } = resolveVersions(join(migration.bundleDir, '..'));
-    const provenance = { source: 'ng-update', version: versions.cngx };
+    const provenance = createProvenance('ng-update', versions.cngx);
     const manifest = readInstallManifest(tree);
     const renames = planRenames(migration.renames, tree, provenance);
     const renamed = previewRenames(tree, renames);

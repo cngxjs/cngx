@@ -3,7 +3,16 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { AI_TOOLS, CNGX_LIBS, LANGUAGES, NG_ADD_PRESETS, THEME_CHOICES } from './options';
+import {
+  AI_TOOLS,
+  CNGX_LIBS,
+  isBoolean,
+  isListOf,
+  isOneOf,
+  LANGUAGES,
+  NG_ADD_PRESETS,
+  THEME_CHOICES,
+} from './options';
 
 interface SchemaProperty {
   readonly enum?: readonly string[];
@@ -41,5 +50,27 @@ describe('the ng-add answer vocabulary', () => {
   it('declares the array answers unique, so a repeated flag cannot select twice', () => {
     expect(SCHEMA.properties['libs'].uniqueItems).toBe(true);
     expect(SCHEMA.properties['aiTools'].uniqueItems).toBe(true);
+  });
+});
+
+describe('the answer guards', () => {
+  it('accepts an entry of the vocabulary and rejects anything else', () => {
+    expect(isOneOf(THEME_CHOICES, 'material')).toBe(true);
+    expect(isOneOf(THEME_CHOICES, 'bootstrap')).toBe(false);
+    expect(isOneOf(THEME_CHOICES, undefined)).toBe(false);
+    expect(isOneOf(LANGUAGES, ['en'])).toBe(false);
+  });
+
+  it('accepts a list only when every entry is in the vocabulary', () => {
+    expect(isListOf(CNGX_LIBS, ['core', 'ui'])).toBe(true);
+    expect(isListOf(CNGX_LIBS, [])).toBe(true);
+    expect(isListOf(CNGX_LIBS, ['core', 'themes'])).toBe(false);
+    expect(isListOf(AI_TOOLS, 'claude')).toBe(false);
+  });
+
+  it('accepts a boolean and nothing that only reads like one', () => {
+    expect(isBoolean(false)).toBe(true);
+    expect(isBoolean('true')).toBe(false);
+    expect(isBoolean(0)).toBe(false);
   });
 });

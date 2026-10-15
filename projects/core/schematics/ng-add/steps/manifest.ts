@@ -1,6 +1,14 @@
 import { type JsonValue } from '@angular-devkit/core';
 
-import { type ChangePlan, isRecord, type Provenance, type StepResult, type WriteJson } from '../../engine';
+import {
+  type ChangePlan,
+  createProvenance,
+  isRecord,
+  type Provenance,
+  skipChange,
+  type StepResult,
+  type WriteJson,
+} from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
 import { type OnboardingAnswers, type Versions } from './model';
 
@@ -150,7 +158,7 @@ export function planManifest(
   previous: InstallManifest | undefined,
   now: string,
 ): StepResult {
-  const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
+  const provenance = createProvenance('ng-add', versions.cngx);
   const earlier = new Map((previous?.steps ?? []).map((step) => [step.id, step.provenance]));
   const steps: readonly InstalledStep[] = [
     ...plan.changes
@@ -185,10 +193,7 @@ export function planManifest(
     entries: Object.entries(next).map(([key, value]) => [[key], value as JsonValue] as const),
   };
   if (previous !== undefined && isSameInstall(previous, next)) {
-    return {
-      changes: [],
-      skipped: [{ id: change.id, label: change.label, reason: `unchanged since ${previous.updatedAt}` }],
-    };
+    return { changes: [], skipped: [skipChange(change, `unchanged since ${previous.updatedAt}`)] };
   }
   return { changes: [change], skipped: [] };
 }
@@ -229,7 +234,7 @@ export function planManifestUpdate(
     id: 'manifest:install',
     label: `Update ${INSTALL_MANIFEST_PATH}`,
     reason: 'records the cngx release this app now runs',
-    provenance: { source: 'ng-update', version: versions.cngx },
+    provenance: createProvenance('ng-update', versions.cngx),
     path: INSTALL_MANIFEST_PATH,
     // Only the keys that moved, so the rest of the file keeps its formatting.
     entries: Object.entries(next)
@@ -237,10 +242,7 @@ export function planManifestUpdate(
       .map(([key, value]) => [[key], value as JsonValue] as const),
   };
   if (isSameInstall(previous, next)) {
-    return {
-      changes: [],
-      skipped: [{ id: change.id, label: change.label, reason: `unchanged since ${previous.updatedAt}` }],
-    };
+    return { changes: [], skipped: [skipChange(change, `unchanged since ${previous.updatedAt}`)] };
   }
   return { changes: [change], skipped: [] };
 }

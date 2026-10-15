@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Usage:
 //   node scripts/build-schematics.mjs <lib>   # one lib
-//   node scripts/build-schematics.mjs         # every lib in LIBS with a schematics folder
+//   node scripts/build-schematics.mjs         # every lib in PACKED_LIBS with a schematics folder
 //
 // Bundles projects/<lib>/schematics into dist/<lib>/schematics after
 // `ng build <lib>`. ng-packagr secondary entries are browser builds, so the
@@ -22,9 +22,10 @@ import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { PACKED_LIBS } from './cngx-libs.mjs';
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const TSC = createRequire(import.meta.url).resolve('typescript/bin/tsc');
-const LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui', 'themes'];
 const CORE_NG_ADD_SCHEMA = join(ROOT, 'projects', 'core', 'schematics', 'ng-add', 'schema.json');
 
 const EXTERNAL = [
@@ -132,13 +133,13 @@ async function buildLib(lib) {
 }
 
 const requested = process.argv[2];
-if (requested && !LIBS.includes(requested)) {
-  fail(`unknown lib "${requested}". Expected one of: ${LIBS.join(', ')}.`);
+if (requested && !PACKED_LIBS.includes(requested)) {
+  fail(`unknown lib "${requested}". Expected one of: ${PACKED_LIBS.join(', ')}.`);
 }
 
 const libs = requested
   ? [requested]
-  : LIBS.filter((lib) => existsSync(join(ROOT, 'projects', lib, 'schematics')));
+  : PACKED_LIBS.filter((lib) => existsSync(join(ROOT, 'projects', lib, 'schematics')));
 for (const lib of libs) {
   await buildLib(lib);
 }

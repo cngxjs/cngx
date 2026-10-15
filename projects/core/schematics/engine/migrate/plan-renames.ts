@@ -1,7 +1,7 @@
-import { type DirEntry } from '@angular-devkit/schematics';
-
 import { type Tree } from '../fs/tree';
-import { type Change, type Provenance, type StepResult } from '../plan/change';
+import { listFiles } from '../fs/walk';
+import { type Change, createNote, type Provenance, type StepResult } from '../plan/change';
+import { errorMessage } from '../plan/text';
 import {
   createSourceRenamer,
   createTemplateRenamer,
@@ -21,18 +21,8 @@ const SKIPPED_DIRS = new Set([
   '.cngx',
 ]);
 
-function sourceFiles(dir: DirEntry): readonly string[] {
-  const files = dir.subfiles
-    .filter((file) => file.endsWith('.html') || (file.endsWith('.ts') && !file.endsWith('.d.ts')))
-    .map((file) => `${dir.path}/${file}`.replace(/^\/+/, ''));
-  const nested = dir.subdirs
-    .filter((name) => !SKIPPED_DIRS.has(name))
-    .flatMap((name) => sourceFiles(dir.dir(name)));
-  return [...files, ...nested].sort();
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
+function isSourceFile(path: string): boolean {
+  return path.endsWith('.html') || (path.endsWith('.ts') && !path.endsWith('.d.ts'));
 }
 
 function filePlan(
@@ -47,13 +37,12 @@ function filePlan(
     result = rename(content);
   } catch (error) {
     return [
-      {
-        kind: 'note',
+      createNote({
         id: `rename:${path}`,
         label,
         reason: `does not parse, rename it by hand: ${errorMessage(error)}`,
         provenance,
-      },
+      }),
     ];
   }
   const edit: readonly Change[] =
@@ -70,13 +59,14 @@ function filePlan(
             edit: (current) => rename(current).content,
           },
         ];
-  const manual: readonly Change[] = result.manual.map((reason, index) => ({
-    kind: 'note',
-    id: `rename-manual:${path}:${index}`,
-    label: `Review ${path}`,
-    reason,
-    provenance,
-  }));
+  const manual: readonly Change[] = result.manual.map((reason, index) =>
+    createNote({
+      id: `rename-manual:${path}:${index}`,
+      label: `Review ${path}`,
+      reason,
+      provenance,
+    }),
+  );
   return [...edit, ...manual];
 }
 
@@ -92,7 +82,8 @@ export function planRenames(table: RenameTable, tree: Tree, provenance: Provenan
   }
   const inSource = createSourceRenamer(table);
   const inTemplate = createTemplateRenamer(table);
-  const changes = sourceFiles(tree.getDir('/')).flatMap((path) =>
+  const files = listFiles(tree, '/', { skipDirs: SKIPPED_DIRS, accept: isSourceFile });
+  const changes = files.flatMap((path) =>
     filePlan(path, tree.readText(path), path.endsWith('.html') ? inTemplate : inSource, provenance),
   );
   return { changes, skipped: [] };

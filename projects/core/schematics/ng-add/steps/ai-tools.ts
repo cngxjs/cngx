@@ -3,7 +3,10 @@ import { type JsonValue } from '@angular-devkit/core';
 import {
   type AiTool,
   type Change,
+  createNote,
+  createProvenance,
   joinNames,
+  mergeStepResults,
   type Provenance,
   skipChange,
   type StepResult,
@@ -33,7 +36,8 @@ function wiredReason(path: string, pin: string | undefined, mcpVersion: string):
   return `${path} already declares a cngx server, pinned to @cngx/mcp@${pin} (this release pins ${mcpVersion})`;
 }
 
-function aiToolId(tool: AiTool): string {
+/** The step id of one editor's cngx MCP server entry. */
+export function aiToolId(tool: AiTool): string {
   return `ai-tools:${tool}`;
 }
 
@@ -56,7 +60,9 @@ export function removedMcpServer(
 function withdrawnResult(change: Change, readers: readonly AiTool[], provenance: Provenance): StepResult {
   const reason = `removed since the last install; pass --ai-tools ${readers.join(',')} to add it back`;
   return {
-    changes: [{ kind: 'note', id: change.id, label: `Leave out: ${change.label}`, reason, provenance }],
+    changes: [
+      createNote({ id: change.id, label: `Leave out: ${change.label}`, reason, provenance }),
+    ],
     skipped: [skipChange(change, reason)],
   };
 }
@@ -88,13 +94,12 @@ function mcpConfig(
   if (state === 'invalid') {
     return {
       changes: [
-        {
-          kind: 'note',
+        createNote({
           id: change.id,
           label: `Skip ${path}`,
           reason: `it has no ${key} object cngx can add to; add ${key}.cngx by hand`,
           provenance,
-        },
+        }),
       ],
       skipped: [],
     };
@@ -215,13 +220,10 @@ export function planAiTools(
   if (answers.aiTools.length === 0) {
     return { changes: [], skipped: [] };
   }
-  const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
+  const provenance = createProvenance('ng-add', versions.cngx);
   const results = [
     ...answers.aiTools.map((tool) => mcpConfig(tool, facts, versions, provenance, withdrawn)),
     ...instructionTargets(facts, answers).map((target) => instructionBlock(target, provenance, withdrawn)),
   ];
-  return {
-    changes: results.flatMap((result) => result.changes),
-    skipped: results.flatMap((result) => result.skipped),
-  };
+  return mergeStepResults(results);
 }

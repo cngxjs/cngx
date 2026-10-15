@@ -2,16 +2,24 @@ import { posix } from 'node:path';
 
 import {
   type Change,
+  createNote,
+  createProvenance,
   createProvenanceStamp,
   hasProvenanceMarker,
   insertLeadingStyleImport,
+  mergeStepResults,
   type Provenance,
   skipChange,
   type StepResult,
   withProvenanceMarker,
 } from '../../engine';
-import { CNGX_LAYERS_FILE, CNGX_STYLESHEET, type ProjectFacts } from '../detect/detect';
-import { missingThemePeers, selectedLibs } from './dependencies';
+import {
+  CNGX_LAYERS_FILE,
+  CNGX_STYLESHEET,
+  CNGX_THEME_FILES,
+  type ProjectFacts,
+} from '../detect/detect';
+import { canInstallTheme, selectedLibs } from './dependencies';
 import { type OnboardingAnswers, type Versions } from './model';
 import { BASE_TOKENS, type BaseToken } from './theme-tokens.generated';
 
@@ -105,7 +113,10 @@ export function renderLayerOrder(version: string): string {
 const INSTALL_GUIDE = 'see Tailwind in the cngx install guide';
 
 function layerNote(provenance: Provenance, label: string, reason: string): StepResult {
-  return { changes: [{ kind: 'note', id: 'theme:layer-order', label, reason, provenance }], skipped: [] };
+  return {
+    changes: [createNote({ id: 'theme:layer-order', label, reason, provenance })],
+    skipped: [],
+  };
 }
 
 // Tailwind v4 declares its layers in the expanded body of the stylesheet
@@ -217,11 +228,10 @@ function result(planned: readonly Change[], wired: string | undefined, reason: s
  * and its utilities; a setup it cannot order gets a note saying why.
  */
 export function planTheme(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
-  const installable = missingThemePeers(selectedLibs(answers.libs)).length === 0;
-  if (answers.theme === 'none' || !installable) {
+  if (!canInstallTheme(selectedLibs(answers.libs), answers.theme)) {
     return { changes: [], skipped: [] };
   }
-  const provenance: Provenance = { source: 'ng-add', version: versions.cngx };
+  const provenance = createProvenance('ng-add', versions.cngx);
   const bridge = answers.theme === 'material' ? materialBridge(facts) : undefined;
 
   // A bridged object lives in Material's own file, which comes first in the
@@ -254,13 +264,12 @@ export function planTheme(facts: ProjectFacts, answers: OnboardingAnswers, versi
   const fallbackNote: readonly Change[] =
     bridge?.kind === 'none'
       ? [
-          {
-            kind: 'note',
+          createNote({
             id: 'theme:material',
             label: 'Use the cngx default theme',
             reason: `${bridge.reason}; the Material bridge needs one`,
             provenance,
-          },
+          }),
         ]
       : [];
 
@@ -296,10 +305,12 @@ export function planTheme(facts: ProjectFacts, answers: OnboardingAnswers, versi
 
   const layerSteps = layerOrder(facts, provenance, versions.cngx);
 
-  return {
-    changes: [...layerSteps.changes, ...stylesheetStep.changes, ...fallbackNote, ...themeSteps.changes],
-    skipped: [...layerSteps.skipped, ...stylesheetStep.skipped, ...themeSteps.skipped],
-  };
+  return mergeStepResults([
+    layerSteps,
+    stylesheetStep,
+    { changes: fallbackNote, skipped: [] },
+    themeSteps,
+  ]);
 }
 
 function themeFile(
@@ -311,7 +322,10 @@ function themeFile(
   wiredReason: string,
 ): StepResult {
   const isMapApi = bridge?.kind === 'map-api';
-  const path = posix.join(facts.sourceRoot, isMapApi ? 'cngx-theme.scss' : 'cngx-theme.css');
+  const path = posix.join(
+    facts.sourceRoot,
+    isMapApi ? CNGX_THEME_FILES.scss : CNGX_THEME_FILES.css,
+  );
   const content = isMapApi
     ? renderMaterialTheme(version, bridge.density, bridge.themePath)
     : renderDefaultTheme(version);

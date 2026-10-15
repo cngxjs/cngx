@@ -1,9 +1,5 @@
-import {
-  type ColorEnv,
-  createPalette,
-  type RendererOptions,
-  type RenderLogger,
-} from '../../engine';
+import { type ColorEnv, createPalette } from './palette';
+import { type RendererOptions, type RenderLogger } from './renderer';
 
 /** The slice of `process.stdout` the terminal check reads. */
 export interface TerminalStream {

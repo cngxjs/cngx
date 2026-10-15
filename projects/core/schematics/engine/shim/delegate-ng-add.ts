@@ -11,6 +11,7 @@ import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schema
 import { addLockstepDependency } from '../manifest/lockstep';
 import { readOwnVersion } from '../manifest/manifest';
 import { type NgAddOptions } from '../options';
+import { errorMessage } from '../plan/text';
 
 const CORE = '@cngx/core';
 
@@ -35,8 +36,9 @@ function isCoreResolvable(context: SchematicContext): boolean {
     if (isUnresolvedCollection(error)) {
       return false;
     }
-    const reason = error instanceof Error ? error.message : String(error);
-    throw new SchematicsException(`${CORE} is installed but its ng-add collection failed to load: ${reason}`);
+    throw new SchematicsException(
+      `${CORE} is installed but its ng-add collection failed to load: ${errorMessage(error)}`,
+    );
   }
 }
 

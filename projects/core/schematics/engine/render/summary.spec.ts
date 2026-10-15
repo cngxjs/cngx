@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Report } from '../../engine';
-import { createSummary } from './finish';
+import { type Report } from '../plan/report';
+import { createSummary } from './summary';
 
 const REPORT: Report = {
   changes: ['Add @cngx/utils@0.1.0'],

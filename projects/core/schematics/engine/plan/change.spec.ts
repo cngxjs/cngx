@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Change, type CreateFile, skipChange, type StepResult } from './change';
+import {
+  type Change,
+  createNote,
+  type CreateFile,
+  createProvenance,
+  mergeStepResults,
+  skipChange,
+  type StepResult,
+} from './change';
 
 const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
 
@@ -46,5 +54,62 @@ describe('skipChange', () => {
     skipChange(change, 'already there');
 
     expect(change).toEqual(README);
+  });
+});
+
+describe('mergeStepResults', () => {
+  const note = (id: string): Change => ({
+    kind: 'note',
+    id,
+    label: id,
+    reason: 'spec',
+    provenance: PROVENANCE,
+  });
+
+  it('concatenates changes and skips in step order', () => {
+    const merged = mergeStepResults([
+      planReadme([]),
+      { changes: [note('first')], skipped: [{ id: 'a', label: 'A', reason: 'in place' }] },
+      planReadme(['.cngx/README.md']),
+      { changes: [note('second')], skipped: [] },
+    ]);
+
+    expect(merged.changes.map((change) => change.id)).toEqual(['helper-readme', 'first', 'second']);
+    expect(merged.skipped.map((step) => step.id)).toEqual(['a', 'helper-readme']);
+  });
+
+  it('merges nothing into an empty result', () => {
+    expect(mergeStepResults([])).toEqual({ changes: [], skipped: [] });
+  });
+});
+
+describe('createProvenance', () => {
+  it('records the generator and the release', () => {
+    expect(createProvenance('ng-update', '0.2.0')).toEqual({
+      source: 'ng-update',
+      version: '0.2.0',
+    });
+  });
+});
+
+describe('createNote', () => {
+  it('builds a note that touches no file', () => {
+    const provenance = createProvenance('ng-add', '0.1.0');
+
+    expect(
+      createNote({ id: 'lint:config', label: 'Skip', reason: 'no config', provenance }),
+    ).toEqual({
+      kind: 'note',
+      id: 'lint:config',
+      label: 'Skip',
+      reason: 'no config',
+      provenance,
+    });
+  });
+
+  it('carries no field beyond a note, whatever the input spreads in', () => {
+    const input = { ...README, provenance: PROVENANCE };
+
+    expect(Object.keys(createNote(input))).toEqual(['kind', 'id', 'label', 'reason', 'provenance']);
   });
 });

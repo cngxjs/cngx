@@ -19,6 +19,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import ts from 'typescript';
 
+import { normalizeDashes } from './normalize-dashes.mjs';
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 // The one place that knows where the registry lives. When the tool
@@ -29,9 +31,6 @@ export const OUT = 'projects/core/schematics/ng-add/steps/mcp-capabilities.gener
 const TOOLS_DIR = posix.join(MCP_REGISTRY_ROOT, 'tools');
 const RESOURCES = posix.join(MCP_REGISTRY_ROOT, 'resources/register-resources.ts');
 const PROMPTS = posix.join(MCP_REGISTRY_ROOT, 'prompts/register-prompts.ts');
-
-const DASHES = /\s*[\u2014\u2013]\s*/g;
-const normalizeDashes = (text) => text.replace(DASHES, ' - ');
 
 /** The registry source files, in a stable order, relative to the repo root. */
 export function registrySources(root = ROOT) {
