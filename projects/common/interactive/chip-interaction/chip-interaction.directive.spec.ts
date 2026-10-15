@@ -1,10 +1,12 @@
-import { Component, signal } from '@angular/core';
+import { Component, ErrorHandler, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CngxChip } from '@cngx/common/display';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
+import { CngxRuntimeError } from '@cngx/utils';
 
+import { CngxChipGroup } from '../chip-group/chip-group.component';
 import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
 import { CngxChipInteraction } from './chip-interaction.directive';
 
@@ -17,7 +19,8 @@ import { CngxChipInteraction } from './chip-interaction.directive';
       [disabled]="off()"
       [removable]="true"
       (removeRequest)="removed.set(removed() + 1)"
-    >Tag 1</cngx-chip>
+      >Tag 1</cngx-chip
+    >
   `,
   imports: [CngxChip, CngxChipInteraction],
 })
@@ -40,7 +43,53 @@ function setup() {
   };
 }
 
+@Component({
+  template: `
+    <cngx-chip-group label="Tags">
+      <cngx-chip cngxChipInteraction [value]="'tag-1'">Tag 1</cngx-chip>
+    </cngx-chip-group>
+  `,
+  imports: [CngxChip, CngxChipGroup, CngxChipInteraction],
+})
+class InGroupHost {}
+
+async function renderReportingErrors<T>(component: new () => T) {
+  const handleError = vi.fn();
+  TestBed.configureTestingModule({
+    providers: [{ provide: ErrorHandler, useValue: { handleError } }],
+  });
+  const fixture = TestBed.createComponent(component);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  return handleError;
+}
+
 describe('CngxChipInteraction', () => {
+  describe('misuse inside a chip group (CNGX1044)', () => {
+    it('reports a CngxRuntimeError with code CNGX1044 after the first render', async () => {
+      const handleError = await renderReportingErrors(InGroupHost);
+      expect(handleError).toHaveBeenCalledTimes(1);
+      const [err] = handleError.mock.calls[0] as [unknown];
+      expect(err).toBeInstanceOf(CngxRuntimeError);
+      expect((err as CngxRuntimeError).code).toBe('CNGX1044');
+    });
+
+    it('skips the check when ngDevMode is off, as in a production build', async () => {
+      vi.stubGlobal('ngDevMode', false);
+      try {
+        const handleError = await renderReportingErrors(InGroupHost);
+        expect(handleError).not.toHaveBeenCalled();
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    });
+
+    it('reports nothing for a chip outside a group', async () => {
+      const handleError = await renderReportingErrors(Host);
+      expect(handleError).not.toHaveBeenCalled();
+    });
+  });
+
   it('initialises with role=option, aria-selected=false, tabindex=0', () => {
     const { el } = setup();
     expect(el.getAttribute('role')).toBe('option');
@@ -130,7 +179,8 @@ describe('CngxChipInteraction', () => {
           [disabled]="off()"
           [disabledReason]="reason()"
           [cngxDescribedBy]="customId()"
-        >Tag 1</cngx-chip>
+          >Tag 1</cngx-chip
+        >
       `,
       imports: [CngxChip, CngxChipInteraction],
     })
@@ -227,7 +277,14 @@ describe('CngxChipInteraction', () => {
 
     it('aria-errormessage always reflects errorMessageId (independent of invalid)', () => {
       @Component({
-        template: `<cngx-chip cngxChipInteraction [value]="'a'" [(selected)]="b" [errorMessageId]="msgId()" [(invalid)]="bad">A</cngx-chip>`,
+        template: `<cngx-chip
+          cngxChipInteraction
+          [value]="'a'"
+          [(selected)]="b"
+          [errorMessageId]="msgId()"
+          [(invalid)]="bad"
+          >A</cngx-chip
+        >`,
         imports: [CngxChip, CngxChipInteraction],
       })
       class MsgHost {

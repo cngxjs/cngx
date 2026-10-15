@@ -1,12 +1,21 @@
+/** @internal */
+type CngxDigit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+
 /**
- * Shape of a cngx diagnostic code: `CNGX` plus four digits, for example
- * `CNGX0901`. The shape is typed here; existence, uniqueness and the lib range
- * are checked by `scripts/__tests__/raw-console-guard.test.mjs`.
+ * Shape of a cngx diagnostic code: `CNGX` plus exactly four digits, for example
+ * `CNGX0901`. One type for both channels: the console diagnostics written by
+ * `cngxDevWarn` / `cngxDevError` and the `code` of a thrown
+ * `CngxRuntimeError`. The shape is typed here. That every call site passes a
+ * literal code in its lib range is checked by
+ * `scripts/__tests__/raw-console-guard.test.mjs` and
+ * `scripts/__tests__/raw-throw-guard.test.mjs`; that every code has its page,
+ * one severity and one lib is checked by `scripts/error-codes-manifest.mjs`.
  *
- * @internal
  * @category utils
+ * @since 0.1.0
+ * @relatedTo CngxRuntimeError
  */
-export type CngxDevCode = `CNGX${number}`;
+export type CngxErrorCode = `CNGX${CngxDigit}${CngxDigit}${CngxDigit}${CngxDigit}`;
 
 /**
  * Base URL of the per-code doc pages. A code's page is
@@ -18,7 +27,14 @@ export type CngxDevCode = `CNGX${number}`;
 export const CNGX_ERROR_DOCS_URL =
   'https://cngxjs.github.io/cngx/additional-documentation/error-codes/';
 
-function format(code: CngxDevCode, message: string): string {
+/**
+ * Formats a coded diagnostic as `CNGXnnnn: <message> Find more at <url>`.
+ * Shared by the console helpers and `CngxRuntimeError`; not published from
+ * the barrel.
+ *
+ * @internal
+ */
+export function formatDiagnostic(code: CngxErrorCode, message: string): string {
   return `${code}: ${message} Find more at ${CNGX_ERROR_DOCS_URL}${code.toLowerCase()}.html`;
 }
 
@@ -43,8 +59,8 @@ function format(code: CngxDevCode, message: string): string {
  * @internal
  * @category utils
  */
-export function cngxDevWarn(code: CngxDevCode, message: string, ...context: unknown[]): void {
-  console.warn(format(code, message), ...context);
+export function cngxDevWarn(code: CngxErrorCode, message: string, ...context: unknown[]): void {
+  console.warn(formatDiagnostic(code, message), ...context);
 }
 
 /**
@@ -54,6 +70,6 @@ export function cngxDevWarn(code: CngxDevCode, message: string, ...context: unkn
  * @internal
  * @category utils
  */
-export function cngxDevError(code: CngxDevCode, message: string, ...context: unknown[]): void {
-  console.error(format(code, message), ...context);
+export function cngxDevError(code: CngxErrorCode, message: string, ...context: unknown[]): void {
+  console.error(formatDiagnostic(code, message), ...context);
 }

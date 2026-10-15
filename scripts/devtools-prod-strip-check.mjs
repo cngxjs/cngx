@@ -5,7 +5,8 @@
 //
 // The needles are derived from source, never kept by hand:
 // - the `cngx-dev:` marker every dev descriptor `kind` carries;
-// - every hand-written `debugName` value in projects/** (specs excluded).
+// - every hand-written `debugName` value in the library sources
+//   (`isLibrarySource`: no specs, no `projects/testing`, no example folders).
 //   Compiler-inserted names never appear in source, so only hand-written ones
 //   need checking. A hand-written name must be a dotted `<owner>.<signal>`
 //   string literal, so the needle is specific enough to search a bundle for.
@@ -20,17 +21,28 @@
 //   defence: the code needle alone proves a surviving call. The URL stays a
 //   quoted literal in the minified production chunk (verified 2026-10-13
 //   with an `isDevMode()`-guarded call against dist/examples/browser).
+// - every `CNGXnnnn` code of a dev-only `new CngxRuntimeError(...)` (the
+//   construction itself sits behind the inline guard): it leaves the bundle
+//   with its code. A runtime error outside a dev-only branch (`code-only`)
+//   keeps its code in production by design, so its code is never a needle.
 // Code and URL count only as whole quoted strings, like a debugName.
 //
-// Positive control: every needle must be present in the library build
-// (dist/<lib>/fesm2022/*.mjs), where the dev branches survive. A needle the
-// library build does not contain means the derivation no longer matches the
-// emitted code, and a clean production scan would prove nothing.
+// Positive control: every needle, and every runtime-error code, must be
+// present in the library build (dist/<lib>/fesm2022/*.mjs), where the dev
+// branches survive. A needle the library build does not contain means the
+// derivation no longer matches the emitted code, and a clean production scan
+// would prove nothing.
+//
+// Liveness: while a `code-only` construction exists in source, at least one
+// `code-only` code must reach the production bundle (as a whole quoted
+// string). Otherwise no `CngxRuntimeError` is in the bundle and the URL needle
+// proves nothing about its constructor dropping the formatter and the link.
 //
 // Exit codes: 0 clean, 1 needle found in the production bundle, 2 bundle or
 // library build missing (a skipped build must not pass), 3 a hand-written
-// `debugName` breaks the naming contract, 4 a needle is missing from the
-// library build.
+// `debugName` breaks the naming contract, 4 a needle or a runtime-error code
+// is missing from the library build, 5 no `code-only` runtime-error code in
+// the production bundle although source constructs one.
 //
 // Usage: node scripts/devtools-prod-strip-check.mjs [--dist <dir>] [--lib-dist <dir>] [--source <dir>]
 
@@ -38,8 +50,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { isToolingRoot } from './__tests__/source-roots.mjs';
-import { collectDocsUrls, collectHelperCalls } from './dev-diagnostics.mjs';
+import { isLibrarySource, isToolingRoot } from './__tests__/source-roots.mjs';
+import { collectDocsUrls, collectHelperCalls, collectRuntimeErrors } from './dev-diagnostics.mjs';
 
 export const MARKER = 'cngx-dev:';
 export const DEBUG_NAME_PATTERN = /^[a-z][A-Za-z0-9]*(\.[a-z][A-Za-z0-9]*)+$/;
@@ -49,15 +61,14 @@ const DEFAULT_LIB_DIST = 'dist';
 const DEFAULT_SOURCE = 'projects';
 const SKIPPED_DIRS = new Set(['node_modules', 'dist', '.angular']);
 
-// `files` is [{ path, text }] of library sources. Returns the needles plus
-// every `debugName` that breaks the naming contract.
+// `files` is [{ path, text }] of library sources. Returns the needles, the
+// literal runtime-error codes split into dev-only and `code-only`, and every
+// `debugName` that breaks the naming contract.
 export function deriveNeedles(files) {
   const needles = [MARKER];
   const violations = [];
-  for (const { path, text } of files) {
-    if (isSpec(path)) {
-      continue;
-    }
+  const libraryFiles = files.filter(({ path }) => isLibrarySource(path.split(sep).join('/')));
+  for (const { path, text } of libraryFiles) {
     for (const match of text.matchAll(/\bdebugName\s*:\s*/g)) {
       const start = match.index + match[0].length;
       const line = text.slice(0, match.index).split('\n').length;
@@ -77,9 +88,20 @@ export function deriveNeedles(files) {
       }
     }
   }
-  const libraryFiles = files.filter(({ path }) => !isSpec(path));
   for (const { code } of collectHelperCalls(libraryFiles)) {
     if (code !== null && !needles.includes(code)) {
+      needles.push(code);
+    }
+  }
+  const runtime = { devOnly: [], codeOnly: [] };
+  for (const { code, devOnly } of collectRuntimeErrors(libraryFiles)) {
+    const bucket = devOnly ? runtime.devOnly : runtime.codeOnly;
+    if (code !== null && !bucket.includes(code)) {
+      bucket.push(code);
+    }
+  }
+  for (const code of runtime.devOnly) {
+    if (!runtime.codeOnly.includes(code) && !needles.includes(code)) {
       needles.push(code);
     }
   }
@@ -88,7 +110,7 @@ export function deriveNeedles(files) {
       needles.push(url);
     }
   }
-  return { needles, violations };
+  return { needles, runtime, violations };
 }
 
 const QUOTES = new Set(["'", '"', '`']);
@@ -114,10 +136,6 @@ export function scanBundle(files, needles) {
 function isQuoted(text, offset, length) {
   const before = text[offset - 1];
   return QUOTES.has(before) && text[offset + length] === before;
-}
-
-function isSpec(path) {
-  return /\.spec\.ts$/.test(path);
 }
 
 // Tooling roots (`projects/*/schematics`) never reach a browser bundle, so
@@ -166,7 +184,9 @@ export function run(argv) {
   const libDist = resolve(argValue(argv, '--lib-dist', DEFAULT_LIB_DIST));
   const source = resolve(argValue(argv, '--source', DEFAULT_SOURCE));
 
-  const { needles, violations } = deriveNeedles(readAll(source, (name) => name.endsWith('.ts')));
+  const { needles, runtime, violations } = deriveNeedles(
+    readAll(source, (name) => name.endsWith('.ts')),
+  );
   if (violations.length > 0) {
     process.stderr.write(
       `prod-strip - ${violations.length} hand-written debugName(s) break the naming contract:\n`,
@@ -186,11 +206,12 @@ export function run(argv) {
     );
     return 2;
   }
+  const controlled = [...new Set([...needles, ...runtime.devOnly, ...runtime.codeOnly])];
   const libraryHits = scanBundle(
     readAll(libDist, (name) => name.endsWith('.mjs')),
-    needles,
+    controlled,
   );
-  const missing = needles.filter((needle) => !libraryHits.some((hit) => hit.needle === needle));
+  const missing = controlled.filter((needle) => !libraryHits.some((hit) => hit.needle === needle));
   if (missing.length > 0) {
     process.stderr.write(
       `prod-strip - ${missing.length} needle(s) missing from the library build, so the scan would prove nothing:\n`,
@@ -211,10 +232,8 @@ export function run(argv) {
     return 2;
   }
 
-  const hits = scanBundle(
-    readAll(dist, (name) => name.endsWith('.js')),
-    needles,
-  );
+  const bundle = readAll(dist, (name) => name.endsWith('.js'));
+  const hits = scanBundle(bundle, needles);
   if (hits.length > 0) {
     process.stderr.write(
       `prod-strip - ${hits.length} dev-only needle(s) in the production bundle:\n`,
@@ -226,6 +245,17 @@ export function run(argv) {
       "  Guard the code with `typeof ngDevMode !== 'undefined' && ngDevMode`.\n",
     );
     return 1;
+  }
+
+  if (runtime.codeOnly.length > 0 && scanBundle(bundle, runtime.codeOnly).length === 0) {
+    process.stderr.write(
+      `prod-strip - none of the ${runtime.codeOnly.length} code-only runtime-error code(s) is in the production bundle, so the doc-URL needle proves nothing about CngxRuntimeError:\n`,
+    );
+    process.stderr.write(`  ${runtime.codeOnly.map((code) => JSON.stringify(code)).join(', ')}\n`);
+    process.stderr.write(
+      '  The examples app must render at least one artifact that constructs a code-only CngxRuntimeError.\n',
+    );
+    return 5;
   }
 
   process.stdout.write(`prod-strip - clean (${needles.length} needle(s) checked)\n`);

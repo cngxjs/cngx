@@ -13,7 +13,9 @@ CNGX0001: [cngx/i18n] "de_DE" is not a BCP 47 locale; reading it as English. Fin
 
 The text after the code says what happened at that call site. The page says why CNGX checks it and how to fix it.
 
-Diagnostics are development-only. The message and its code sit behind Angular's `ngDevMode` flag, so a production build drops both; the behaviour around them (an English fallback, a kept placeholder) stays the same. A console entry with a `CNGX` code in production means a CNGX bug; please report it.
+Console diagnostics are development-only. The message and its code sit behind Angular's `ngDevMode` flag, so a production build drops both; the behaviour around them (an English fallback, a kept placeholder) stays the same. A console entry with a `CNGX` code in production means a CNGX bug; please report it.
+
+Thrown errors are different: a thrown error that is not development-only also throws in production, with the bare code as its message, so a `CNGX` code in a production error is expected. See [Thrown errors](#thrown-errors).
 
 ## Ranges
 
@@ -28,6 +30,39 @@ Each library emits codes in its own range, so the code tells you where to look.
 |`CNGX3000` - `CNGX3999`|`@cngx/ui`|
 |`CNGX4000` - `CNGX4999`|`@cngx/data-display`|
 |`CNGX5000` - `CNGX5999`|`@cngx/interop`|
+
+## Thrown errors
+
+Some misuse cannot be worked around, for example a directive placed outside the parent it needs. CNGX throws a `CngxRuntimeError` there, with the same code and page as a console diagnostic.
+
+In development, when the throw site passes a message, it reads like a console diagnostic:
+
+```text
+CNGX1044: CngxChipInteraction must NOT be used inside <cngx-chip-group> / <cngx-multi-chip-group>; use [cngxChipInGroup] instead. Find more at https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1044.html
+```
+
+What happens in a production build depends on the check:
+
+- **Precondition errors** guard something the code cannot continue without. They throw in production too, but the message is only the code (`CNGXnnnn`). The text and the link are dropped, the code stays, so a production error report still tells you which page to read.
+- **Development-only checks** catch a setup mistake that is visible during development, such as `CNGX1044` above. A production build removes the check together with its code, so it never throws there. Its page says so.
+
+`scripts/manifests/error-codes.json` in the repository marks each code as `"production": "code-only"` (still thrown, bare code) or `"stripped"` (removed).
+
+To handle a thrown error in code, check the class and the code, never the message:
+
+```typescript
+import { CngxRuntimeError } from '@cngx/utils';
+
+try {
+  runTheCall();
+} catch (err) {
+  if (err instanceof CngxRuntimeError) {
+    report(err.code); // 'CNGXnnnn', the same in development and production
+  }
+}
+```
+
+The message differs between development and production, while `.code` is the same in both.
 
 ## Reading a page
 

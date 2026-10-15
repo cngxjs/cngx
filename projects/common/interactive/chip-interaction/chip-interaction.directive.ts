@@ -8,13 +8,13 @@ import {
   effect,
   inject,
   input,
-  isDevMode,
   model,
   output,
   untracked,
 } from '@angular/core';
 import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from '@cngx/core/tokens';
 import { nextUid } from '@cngx/core/utils';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import { CNGX_CHIP_GROUP_HOST } from '../chip-group/chip-group-host.token';
 import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
@@ -258,7 +258,7 @@ export class CngxChipInteraction<T = unknown>
       });
     });
 
-    if (!isDevMode()) {
+    if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
       return;
     }
     const ancestor = inject(CNGX_CHIP_GROUP_HOST, {
@@ -267,7 +267,8 @@ export class CngxChipInteraction<T = unknown>
     });
     afterNextRender(() => {
       if (ancestor !== null) {
-        throw new Error(
+        throw new CngxRuntimeError(
+          'CNGX1044',
           'CngxChipInteraction must NOT be used inside <cngx-chip-group> / <cngx-multi-chip-group>; use [cngxChipInGroup] instead.',
         );
       }

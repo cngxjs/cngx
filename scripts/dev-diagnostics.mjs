@@ -1,8 +1,9 @@
 // Shared AST collectors for the coded dev diagnostics (`cngxDevWarn` /
-// `cngxDevError`, `projects/utils/dev-message.ts`). The raw-console guard, the
-// error-code manifest and the prod-strip needle derivation read source through
-// these, so the three agree on what a helper call, a guard and a dev wrapper
-// are.
+// `cngxDevError`, `projects/utils/dev-message.ts`) and the coded thrown errors
+// (`CngxRuntimeError`, `projects/utils/runtime-error.ts`). The raw-console and
+// raw-throw guards, the error-code manifest and the prod-strip needle
+// derivation read source through these, so they agree on what a helper call,
+// a runtime error, a guard and a dev wrapper are.
 
 import ts from 'typescript';
 
@@ -11,10 +12,46 @@ const HELPERS = { cngxDevWarn: 'warn', cngxDevError: 'error' };
 /** The one file that declares the helpers and may call `console` directly. */
 export const HELPER_FILE = 'projects/utils/dev-message.ts';
 
+/** The utils barrel, which re-exports the helpers by name from `HELPER_FILE`. */
+const HELPER_BARREL = 'projects/utils/public-api.ts';
+
+const isBarrelReExport = (path, specifier) =>
+  path === HELPER_BARREL &&
+  !specifier.propertyName &&
+  specifier.parent.parent.moduleSpecifier?.text === './dev-message';
+
 export const parse = (path, text) =>
   ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 
 export const lineOf = (sf, node) => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+
+/**
+ * A checker over the one file, with no lib and no resolution: a global
+ * resolves to no symbol, a local binding of the same name does, and two
+ * same-named bindings in different scopes resolve to different symbols.
+ */
+export function singleFileChecker(sf) {
+  const options = { noLib: true, noResolve: true, types: [], allowJs: false };
+  const host = ts.createCompilerHost(options);
+  host.getSourceFile = (name) => (name === sf.fileName ? sf : undefined);
+  host.fileExists = (name) => name === sf.fileName;
+  return ts.createProgram([sf.fileName], options, host).getTypeChecker();
+}
+
+/** `node` through parentheses, `as`, `satisfies`, `!` and `<T>` casts. */
+export const unwrap = (node) => {
+  let current = node;
+  while (
+    ts.isParenthesizedExpression(current) ||
+    ts.isAsExpression(current) ||
+    ts.isSatisfiesExpression(current) ||
+    ts.isNonNullExpression(current) ||
+    ts.isTypeAssertionExpression(current)
+  ) {
+    current = current.expression;
+  }
+  return current;
+};
 
 const unparen = (node) => {
   let current = node;
@@ -187,13 +224,63 @@ export function collectHelperCalls(files) {
   return out;
 }
 
+/** The class whose constructions `collectRuntimeErrors` reads. */
+export const RUNTIME_ERROR = 'CngxRuntimeError';
+
+/**
+ * Every `new CngxRuntimeError(...)` in `files` ([{ path, text }]). `code` is
+ * the first argument when it is a string literal, else null. `devOnly`: the
+ * construction itself sits behind an inline guard, so the production build
+ * drops it with its code. `messageGuarded`: the second argument is an `&&`
+ * chain starting with the guard. `atModuleLoad`: the construction runs while
+ * its module loads, where a guard can see `ngDevMode` still undefined.
+ *
+ * @returns {{ file: string; line: number; code: string | null; devOnly: boolean; messageGuarded: boolean; atModuleLoad: boolean; node: ts.NewExpression; sf: ts.SourceFile }[]}
+ */
+export function collectRuntimeErrors(files) {
+  const out = [];
+  for (const { path, text } of files) {
+    if (!text.includes(RUNTIME_ERROR)) {
+      continue;
+    }
+    const sf = parse(path, text);
+    const visit = (node) => {
+      if (
+        ts.isNewExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === RUNTIME_ERROR
+      ) {
+        const [first, message] = node.arguments ?? [];
+        const code =
+          first && (ts.isStringLiteral(first) || ts.isNoSubstitutionTemplateLiteral(first))
+            ? first.text
+            : null;
+        out.push({
+          file: path,
+          line: lineOf(sf, node),
+          code,
+          devOnly: isLexicallyGuarded(node),
+          messageGuarded: message !== undefined && startsWithGuard(message),
+          atModuleLoad: runsAtModuleLoad(node),
+          node,
+          sf,
+        });
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(sf);
+  }
+  return out;
+}
+
 /**
  * Every reference to `cngxDevWarn` / `cngxDevError` that is not a direct call
  * through the helper's own name: an aliased import, a namespace member, a
  * re-export, `.call` / `.apply`, or the helper used as a value. Each would
  * hide a diagnostic from the guard, the manifest and the prod-strip needles,
  * which all key on the direct call. `projects/utils/dev-message.ts` declares
- * the helpers and is skipped.
+ * the helpers and is skipped; the utils barrel may re-export them unaliased
+ * from it.
  *
  * @returns {{ file: string; line: number; reason: string }[]}
  */
@@ -218,7 +305,9 @@ export function collectHelperMisuse(files) {
             report(node, `aliased import of ${node.text}`);
           }
         } else if (ts.isExportSpecifier(parent)) {
-          report(node, `re-export of ${node.text}`);
+          if (!isBarrelReExport(path, parent)) {
+            report(node, `re-export of ${node.text}`);
+          }
         } else if (ts.isPropertyAccessExpression(parent) && parent.name === node) {
           report(node, `${node.text} called through a namespace or object`);
         } else if (ts.isElementAccessExpression(parent) && parent.argumentExpression === node) {

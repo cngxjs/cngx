@@ -34,6 +34,8 @@ import {
   localNgDevModeLines,
   parse,
   runsAtModuleLoad,
+  singleFileChecker,
+  unwrap,
 } from '../dev-diagnostics.mjs';
 import { libOf, rangeOf, readSources } from '../error-codes-manifest.mjs';
 
@@ -70,33 +72,6 @@ const EXPECTED_DEV_WRAPPERS = [
 
 const CODE_PATTERN = /^CNGX\d{4}$/;
 const GLOBAL_HOSTS = new Set(['globalThis', 'window', 'self']);
-
-/**
- * A checker over the one file, with no lib and no resolution: the global
- * `console` resolves to no symbol, a local binding of the same name does.
- */
-function singleFileChecker(sf) {
-  const options = { noLib: true, noResolve: true, types: [], allowJs: false };
-  const host = ts.createCompilerHost(options);
-  host.getSourceFile = (name) => (name === sf.fileName ? sf : undefined);
-  host.fileExists = (name) => name === sf.fileName;
-  return ts.createProgram([sf.fileName], options, host).getTypeChecker();
-}
-
-/** `node` through parentheses, `as`, `satisfies`, `!` and `<T>` casts. */
-const unwrap = (node) => {
-  let current = node;
-  while (
-    ts.isParenthesizedExpression(current) ||
-    ts.isAsExpression(current) ||
-    ts.isSatisfiesExpression(current) ||
-    ts.isNonNullExpression(current) ||
-    ts.isTypeAssertionExpression(current)
-  ) {
-    current = current.expression;
-  }
-  return current;
-};
 
 const isGlobalHost = (node) => {
   const inner = node && unwrap(node);
@@ -372,6 +347,19 @@ describe('raw-console guard - R2 helper references', () => {
     expect(misuse(`if (${GUARD}) { cngxDevWarn.call(null, 'CNGX0001', 'm'); }`)).toHaveLength(1);
     expect(misuse('const sink = cngxDevError;')).toHaveLength(1);
     expect(misuse("export { cngxDevWarn } from '@cngx/utils';")).toHaveLength(1);
+  });
+
+  it('allows the utils barrel to re-export the helpers by name, nothing else', () => {
+    const reExport = "export { cngxDevError, cngxDevWarn } from './dev-message';";
+    expect(misuse(reExport)).toHaveLength(2);
+    expect(fixture(reExport, 'projects/utils/public-api.ts').violations).toEqual([]);
+    expect(
+      fixture("export { cngxDevWarn as w } from './dev-message';", 'projects/utils/public-api.ts')
+        .violations,
+    ).toHaveLength(1);
+    expect(
+      fixture("export { cngxDevWarn } from './other';", 'projects/utils/public-api.ts').violations,
+    ).toHaveLength(1);
   });
 
   it('checks a file that only looks like the helper file', () => {
