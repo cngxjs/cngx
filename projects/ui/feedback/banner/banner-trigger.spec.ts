@@ -58,4 +58,15 @@ describe('CngxBannerTrigger', () => {
     fixture.destroy();
     expect(banner.banners().length).toBe(0);
   });
+
+  it('throws CNGX3017 without a CngxBanner provider', () => {
+    TestBed.configureTestingModule({ imports: [TriggerHost] });
+    expect(() => TestBed.createComponent(TriggerHost)).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX3017',
+        message: expect.stringMatching(/^CNGX3017: \[cngx-banner-trigger\] CngxBanner not found\./),
+      }),
+    );
+  });
 });

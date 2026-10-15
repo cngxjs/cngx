@@ -1,6 +1,6 @@
 import { afterNextRender, Directive, computed, inject, input } from '@angular/core';
 import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
-import { cngxDevError } from '@cngx/utils';
+import { cngxDevError, CngxRuntimeError } from '@cngx/utils';
 
 import { injectErrorDetail } from '../config/feedback-config';
 import { injectFeedbackI18n } from '../config/feedback-i18n';
@@ -84,9 +84,12 @@ export class CngxAlertOn {
 
   constructor() {
     if (!this.alerter) {
-      throw new Error(
-        '[cngxAlertOn] CngxAlerter not found. ' +
-          'Add withAlerts() to provideFeedback() or provide CngxAlerter in an ancestor component.',
+      throw new CngxRuntimeError(
+        'CNGX3015',
+        typeof ngDevMode !== 'undefined' &&
+          ngDevMode &&
+          '[cngxAlertOn] CngxAlerter not found. ' +
+            'Add withAlerts() to provideFeedback() or provide CngxAlerter in an ancestor component.',
       );
     }
     const alerter = this.alerter;

@@ -977,6 +977,56 @@
       "files": ["projects/ui/timeline/timeline.component.ts"]
     },
     {
+      "code": "CNGX3014",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Sidenav content outside a sidenav layout",
+      "page": "core-concepts/error-codes/cngx3014.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3014.html",
+      "status": "active",
+      "files": ["projects/ui/sidenav/sidenav-content.ts"]
+    },
+    {
+      "code": "CNGX3015",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Alert bridge without a CngxAlerter",
+      "page": "core-concepts/error-codes/cngx3015.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3015.html",
+      "status": "active",
+      "files": ["projects/ui/feedback/alert/alert-on.directive.ts"]
+    },
+    {
+      "code": "CNGX3016",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Toast without a CngxToaster",
+      "page": "core-concepts/error-codes/cngx3016.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3016.html",
+      "status": "active",
+      "files": [
+        "projects/ui/feedback/toast/toast-on.directive.ts",
+        "projects/ui/feedback/toast/toast.component.ts"
+      ]
+    },
+    {
+      "code": "CNGX3017",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Banner without a CngxBanner",
+      "page": "core-concepts/error-codes/cngx3017.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3017.html",
+      "status": "active",
+      "files": [
+        "projects/ui/feedback/banner/banner-on.directive.ts",
+        "projects/ui/feedback/banner/banner-trigger.ts"
+      ]
+    },
+    {
       "code": "CNGX4001",
       "lib": "data-display",
       "severity": "warn",

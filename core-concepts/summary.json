@@ -426,6 +426,22 @@
                 "file": "error-codes/cngx3013.md"
             },
             {
+                "title": "CNGX3014",
+                "file": "error-codes/cngx3014.md"
+            },
+            {
+                "title": "CNGX3015",
+                "file": "error-codes/cngx3015.md"
+            },
+            {
+                "title": "CNGX3016",
+                "file": "error-codes/cngx3016.md"
+            },
+            {
+                "title": "CNGX3017",
+                "file": "error-codes/cngx3017.md"
+            },
+            {
                 "title": "CNGX4001",
                 "file": "error-codes/cngx4001.md"
             }

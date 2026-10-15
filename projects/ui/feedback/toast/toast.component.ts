@@ -12,6 +12,8 @@ import {
   type TemplateRef,
 } from '@angular/core';
 
+import { CngxRuntimeError } from '@cngx/utils';
+
 import type { AlertSeverity } from '../alert/alert';
 import { CngxToaster, type ToastRef } from './toast.service';
 
@@ -124,9 +126,12 @@ export class CngxToast {
 
   constructor() {
     if (!this.toaster) {
-      throw new Error(
-        '[cngx-toast] CngxToaster not found. ' +
-          'Add withToasts() to provideFeedback() or call provideToasts() in your providers.',
+      throw new CngxRuntimeError(
+        'CNGX3016',
+        typeof ngDevMode !== 'undefined' &&
+          ngDevMode &&
+          '[cngx-toast] CngxToaster not found. ' +
+            'Add withToasts() to provideFeedback() or call provideToasts() in your providers.',
       );
     }
 
