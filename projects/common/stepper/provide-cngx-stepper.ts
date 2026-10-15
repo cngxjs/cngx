@@ -42,9 +42,8 @@ function partitionFeatures(features: readonly CngxStepperFeature[]): Partitioned
       cngxDevWarn(
         'CNGX1041',
         '[provideCngxStepper] Dropped feature without a `_target` ' +
-          'discriminator. Brand config-side mutators with ' +
-          '`defineStepperConfigFeature(...)` (or use a `with*` helper) ' +
-          'and i18n-side mutators with `withStepperI18nLabels(...)`.',
+          'discriminator. Pass config through the `with*` helpers of @cngx/common/stepper ' +
+          'and labels through `withStepperI18nLabels(...)`.',
       );
     }
   }

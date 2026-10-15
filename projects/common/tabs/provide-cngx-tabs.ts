@@ -38,9 +38,8 @@ function partitionFeatures(features: readonly CngxTabsFeature[]): PartitionedFea
       cngxDevWarn(
         'CNGX1041',
         '[provideCngxTabs] Dropped feature without a `_target` ' +
-          'discriminator. Brand config-side mutators with ' +
-          '`defineTabsConfigFeature(...)` (or use a `with*` helper) ' +
-          'and i18n-side mutators with `withTabsI18nLabels(...)`.',
+          'discriminator. Pass config through the `with*` helpers of @cngx/common/tabs ' +
+          'and labels through `withTabsI18nLabels(...)`.',
       );
     }
   }

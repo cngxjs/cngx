@@ -144,7 +144,9 @@ describe('provideCngxStepper', () => {
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining('without a `_target` discriminator'),
       );
-      expect(warnSpy.mock.calls[0][0]).toContain('CNGX1041: [provideCngxStepper]');
+      expect(warnSpy.mock.calls[0][0]).toMatch(
+        /^CNGX1041: \[provideCngxStepper\] Dropped feature without a `_target` discriminator\. /,
+      );
     });
 
     it('still routes branded siblings correctly when an unbranded feature is mixed in', () => {
