@@ -14,6 +14,7 @@ import {
   NG_ADD_PRESETS,
   type NgAddFlags,
   parseNgAddOptions,
+  repeatedAnswer,
   THEME_CHOICES,
 } from './options';
 
@@ -129,9 +130,8 @@ describe('parseNgAddOptions', () => {
   });
 
   it('rejects a repeated list entry, as the array branch does with uniqueItems', () => {
-    expect(() => parseNgAddOptions({ aiTools: 'claude,claude' })).toThrow(
-      '"claude" is not a valid answer for aiTools. Expected one of: claude, cursor, vscode.',
-    );
+    expect(() => parseNgAddOptions({ aiTools: 'claude,claude' })).toThrow('"claude" is given more than once for aiTools.');
+    expect(() => parseNgAddOptions({ libs: 'core,ui,core,ui,core' })).toThrow('"core", "ui" are given more than once for libs.');
   });
 
   it('maps the pre-install boolean strings and passes real booleans through', () => {
@@ -162,5 +162,11 @@ describe('parseNgAddOptions', () => {
 
   it('keeps project and preset as given', () => {
     expect(parseNgAddOptions({ project: 'app', preset: 'full' })).toMatchObject({ project: 'app', preset: 'full' });
+  });
+});
+
+describe('repeatedAnswer', () => {
+  it('names the repeated entry without calling it invalid', () => {
+    expect(repeatedAnswer('aiTools', ['claude']).message).toBe('"claude" is given more than once for aiTools.');
   });
 });

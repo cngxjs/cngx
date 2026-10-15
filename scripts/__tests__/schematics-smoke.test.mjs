@@ -133,7 +133,7 @@ describe('dist/core/schematics', () => {
         '"emacs" is not a valid answer for aiTools. Expected one of: claude, cursor, vscode.',
       );
       await expect(runner.runSchematic('ng-add', { aiTools: 'claude,claude' }, appTree)).rejects.toThrow(
-        '"claude" is not a valid answer for aiTools.',
+        '"claude" is given more than once for aiTools.',
       );
     });
   });

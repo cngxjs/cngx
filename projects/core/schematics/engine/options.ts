@@ -36,6 +36,12 @@ export function isBoolean(value: unknown): value is boolean {
   return typeof value === 'boolean';
 }
 
+/** The message for a list flag that names an entry more than once. */
+export function repeatedAnswer(key: string, entries: readonly string[]): Error {
+  const verb = entries.length === 1 ? 'is' : 'are';
+  return new Error(`"${entries.join('", "')}" ${verb} given more than once for ${key}.`);
+}
+
 /** The one message for a flag or prompt answer outside its vocabulary. */
 export function invalidAnswer(key: string, entries: readonly string[], allowed: readonly string[]): Error {
   return new Error(
@@ -113,7 +119,7 @@ function parseList<T extends string>(
   }
   const repeated = entries.filter((entry, index) => entries.indexOf(entry) !== index);
   if (repeated.length > 0) {
-    throw invalidAnswer(key, repeated, vocabulary);
+    throw repeatedAnswer(key, [...new Set(repeated)]);
   }
   return entries;
 }
