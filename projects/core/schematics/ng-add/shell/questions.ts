@@ -4,17 +4,13 @@ import {
   CNGX_LIBS,
   type CngxLib,
   createNote,
-  isBoolean,
-  isOneOf,
   type Language,
-  LANGUAGES,
   type NgAddOptions,
   type NgAddPreset,
   type PromptAnswers,
   type PromptFlow,
   type Provenance,
   type StepResult,
-  THEME_CHOICES,
   type ThemeChoice,
 } from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
@@ -33,7 +29,6 @@ const ANSWER_KEYS = [
   'floatingFallback',
   'aiTools',
 ] as const;
-
 
 /** The answers a preset gives before any flag or question. */
 export function presetDefaults(preset: NgAddPreset, facts: ProjectFacts): OnboardingAnswers {
@@ -65,39 +60,24 @@ export function presetDefaults(preset: NgAddPreset, facts: ProjectFacts): Onboar
   return recommended;
 }
 
-// The devkit schema registry fills every unset array option with `[]`
-// (`addUndefinedDefaults`), so an empty list means "not given", never "none".
-function givenValue(options: NgAddOptions, key: (typeof ANSWER_KEYS)[number]): NgAddOptions[typeof key] {
-  const value = options[key];
-  return Array.isArray(value) && value.length === 0 ? undefined : value;
-}
-
 /** The answer flags given on the command line, keyed like the questions. */
 export function givenAnswers(options: NgAddOptions): PromptAnswers {
   return Object.fromEntries(
     ANSWER_KEYS.flatMap((key) => {
-      const value = givenValue(options, key);
+      const value = options[key];
       return value === undefined ? [] : [[key, value]];
     }),
   );
 }
 
-// A flag the schema let through must still be one this step understands;
-// `ng add` validates against schema.json, a programmatic caller may not.
-function flag<T>(
+// The answer of a flag no question asks about; `parseNgAddOptions` already
+// validated it.
+function flag<K extends (typeof ANSWER_KEYS)[number]>(
   options: NgAddOptions,
-  key: (typeof ANSWER_KEYS)[number],
-  isValid: (value: unknown) => value is T,
-  fallback: T,
-): T {
-  const value = givenValue(options, key);
-  if (value === undefined) {
-    return fallback;
-  }
-  if (!isValid(value)) {
-    throw new Error(`${JSON.stringify(value)} is not a valid answer for ${key}.`);
-  }
-  return value;
+  key: K,
+  fallback: NonNullable<NgAddOptions[K]>,
+): NonNullable<NgAddOptions[K]> {
+  return options[key] ?? fallback;
 }
 
 /** The answers of one run and the editors the user asked for by name. */
@@ -180,7 +160,7 @@ export async function askOnboarding(
         ],
         default: defaults.theme,
       })
-    : flag(options, 'theme', (value) => isOneOf(THEME_CHOICES, value), defaults.theme);
+    : flag(options, 'theme', defaults.theme);
   // The language pack and the a11y preferences come from @cngx/core; without
   // it there is nothing to ask, and a preset default must not turn into a
   // "skipped" note the user never asked for.
@@ -194,7 +174,7 @@ export async function askOnboarding(
         ],
         default: defaults.i18n,
       })
-    : flag(options, 'i18n', (value) => isOneOf(LANGUAGES, value), 'en');
+    : flag(options, 'i18n', 'en');
   // A flag the question cannot ask about is kept, so the step can say why it
   // does not apply instead of dropping it.
   const runtimeSwitch =
@@ -204,10 +184,10 @@ export async function askOnboarding(
           message: 'Switch between English and German at runtime?',
           default: defaults.runtimeSwitch,
         })
-      : flag(options, 'runtimeSwitch', isBoolean, false);
+      : flag(options, 'runtimeSwitch', false);
   const lint =
     facts.eslintConfig === undefined
-      ? flag(options, 'lint', isBoolean, defaults.lint)
+      ? flag(options, 'lint', defaults.lint)
       : await flow.confirm({
           key: 'lint',
           message: `Add the cngx lint rules to ${facts.eslintConfig.path}?`,
@@ -219,7 +199,7 @@ export async function askOnboarding(
         message: 'Provide toasts, alerts and banners at the root?',
         default: defaults.feedback,
       })
-    : flag(options, 'feedback', isBoolean, false);
+    : flag(options, 'feedback', false);
   const aiTools = await flow.multiSelect<AiTool>({
     key: 'aiTools',
     message: 'Which editors should get the cngx MCP server?',
@@ -232,7 +212,7 @@ export async function askOnboarding(
     })),
     default: defaults.aiTools,
   });
-  const answeredByName = givenValue(options, 'aiTools') !== undefined || flow.interactive;
+  const answeredByName = options.aiTools !== undefined || flow.interactive;
 
   return {
     answers: {
@@ -243,18 +223,8 @@ export async function askOnboarding(
       runtimeSwitch,
       lint,
       feedback,
-      a11yPreferences: flag(
-        options,
-        'a11yPreferences',
-        isBoolean,
-        defaults.a11yPreferences && hasCore,
-      ),
-      floatingFallback: flag(
-        options,
-        'floatingFallback',
-        isBoolean,
-        defaults.floatingFallback && selected.includes('common'),
-      ),
+      a11yPreferences: flag(options, 'a11yPreferences', defaults.a11yPreferences && hasCore),
+      floatingFallback: flag(options, 'floatingFallback', defaults.floatingFallback && selected.includes('common')),
       aiTools,
     },
     explicitAiTools: answeredByName ? aiTools : [],

@@ -36,6 +36,33 @@ export function isBoolean(value: unknown): value is boolean {
   return typeof value === 'boolean';
 }
 
+// The messages name the flag the way the user typed it (`--ai-tools`), not
+// the schema key (`aiTools`).
+function flagName(key: string): string {
+  return `--${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`;
+}
+
+/** The message for a list flag that names an entry more than once. */
+export function createRepeatedAnswerError(key: string, entries: readonly string[]): Error {
+  const verb = entries.length === 1 ? 'is' : 'are';
+  return new Error(`"${entries.join('", "')}" ${verb} given more than once for ${flagName(key)}.`);
+}
+
+/** The message for a comma list with an empty slot (`core,,ui`, `core,`, `--libs=`). */
+export function createEmptyEntryError(key: string, allowed: readonly string[]): Error {
+  const flag = flagName(key);
+  return new Error(
+    `${flag} has an empty entry. Separate the values with single commas, for example ${flag} ${allowed.slice(0, 2).join(',')}.`,
+  );
+}
+
+/** The one message for a flag or prompt answer outside its vocabulary. */
+export function createInvalidAnswerError(key: string, entries: readonly string[], allowed: readonly string[]): Error {
+  return new Error(
+    `"${entries.join('", "')}" is not a valid answer for ${flagName(key)}. Expected one of: ${allowed.join(', ')}.`,
+  );
+}
+
 /** The options every `ng add @cngx/<lib>` forwards to the core onboarding. */
 export interface NgAddOptions {
   readonly project?: string;
@@ -56,4 +83,104 @@ export interface NgAddOptions {
   readonly prompts?: boolean;
   /** Print only the summary. */
   readonly quiet?: boolean;
+}
+
+/** A boolean flag as `ng add` passes it before the install (`--lint=false`) or after. */
+type BooleanFlag = boolean | 'true' | 'false';
+
+/**
+ * The options as the CLI hands them over, the input shape of `schema.json`.
+ * `ng add` parses its flags before the package is installed, without the
+ * schema's types: a list arrives as one string (`--ai-tools claude,vscode`)
+ * and `--lint=false` as the string `"false"`. Only an installed package sees
+ * typed values. `parseNgAddOptions` turns either form into `NgAddOptions`.
+ */
+export interface NgAddFlags {
+  readonly project?: string;
+  readonly preset?: string;
+  readonly libs?: string | readonly string[];
+  readonly theme?: string;
+  readonly i18n?: string;
+  readonly runtimeSwitch?: BooleanFlag;
+  readonly lint?: BooleanFlag;
+  readonly a11yPreferences?: BooleanFlag;
+  readonly feedback?: BooleanFlag;
+  readonly floatingFallback?: BooleanFlag;
+  readonly aiTools?: string | readonly string[];
+  readonly yes?: BooleanFlag;
+  readonly prompts?: BooleanFlag;
+  readonly quiet?: BooleanFlag;
+}
+
+const BOOLEAN_FLAG_VALUES = ['true', 'false'] as const;
+
+// A comma list is split here: as a string, a list skips the schema's enum
+// and `uniqueItems`, so every entry is checked and a repeat is rejected.
+function parseList<T extends string>(
+  key: string,
+  vocabulary: readonly T[],
+  raw: string | readonly string[] | undefined,
+): readonly T[] | undefined {
+  if (raw === undefined) {
+    return undefined;
+  }
+  const entries = typeof raw === 'string' ? raw.split(',').map((entry) => entry.trim()) : raw;
+  if (entries.length === 0) {
+    return undefined;
+  }
+  if (entries.includes('')) {
+    throw createEmptyEntryError(key, vocabulary);
+  }
+  if (!isListOf(vocabulary, entries)) {
+    throw createInvalidAnswerError(key, entries.filter((entry) => !isOneOf(vocabulary, entry)), vocabulary);
+  }
+  const repeated = entries.filter((entry, index) => entries.indexOf(entry) !== index);
+  if (repeated.length > 0) {
+    throw createRepeatedAnswerError(key, [...new Set(repeated)]);
+  }
+  return entries;
+}
+
+function parseChoice<T extends string>(key: string, vocabulary: readonly T[], raw: string | undefined): T | undefined {
+  if (raw === undefined) {
+    return undefined;
+  }
+  if (!isOneOf(vocabulary, raw)) {
+    throw createInvalidAnswerError(key, [raw], vocabulary);
+  }
+  return raw;
+}
+
+function parseBoolean(key: string, raw: boolean | string | undefined): boolean | undefined {
+  if (raw === undefined || isBoolean(raw)) {
+    return raw;
+  }
+  if (!isOneOf(BOOLEAN_FLAG_VALUES, raw)) {
+    throw createInvalidAnswerError(key, [raw], BOOLEAN_FLAG_VALUES);
+  }
+  return raw === 'true';
+}
+
+/**
+ * The typed answers of `raw`, validated once at the ng-add entry. A list
+ * given as `undefined` or `[]` reads as not given; a programmatic caller
+ * skips the schema, so every answer is checked against its vocabulary.
+ */
+export function parseNgAddOptions(raw: NgAddFlags): NgAddOptions {
+  return {
+    project: raw.project,
+    preset: parseChoice('preset', NG_ADD_PRESETS, raw.preset),
+    libs: parseList('libs', CNGX_LIBS, raw.libs),
+    theme: parseChoice('theme', THEME_CHOICES, raw.theme),
+    i18n: parseChoice('i18n', LANGUAGES, raw.i18n),
+    runtimeSwitch: parseBoolean('runtimeSwitch', raw.runtimeSwitch),
+    lint: parseBoolean('lint', raw.lint),
+    a11yPreferences: parseBoolean('a11yPreferences', raw.a11yPreferences),
+    feedback: parseBoolean('feedback', raw.feedback),
+    floatingFallback: parseBoolean('floatingFallback', raw.floatingFallback),
+    aiTools: parseList('aiTools', AI_TOOLS, raw.aiTools),
+    yes: parseBoolean('yes', raw.yes),
+    prompts: parseBoolean('prompts', raw.prompts),
+    quiet: parseBoolean('quiet', raw.quiet),
+  };
 }

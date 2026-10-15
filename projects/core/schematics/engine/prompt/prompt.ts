@@ -2,7 +2,7 @@ import checkbox from '@inquirer/checkbox';
 import confirm from '@inquirer/confirm';
 import select from '@inquirer/select';
 
-import { isOneOf } from '../options';
+import { createInvalidAnswerError, isOneOf } from '../options';
 
 export interface PromptChoice<T extends string> {
   readonly value: T;
@@ -93,9 +93,7 @@ function assertChoices<T extends string>(
   const allowed = question.choices.map((choice) => choice.value);
   const unknown = values.filter((value) => !isOneOf(allowed, value));
   if (unknown.length > 0) {
-    throw new Error(
-      `"${unknown.join('", "')}" is not a valid answer for ${question.key}. Expected one of: ${allowed.join(', ')}.`,
-    );
+    throw createInvalidAnswerError(question.key, unknown, allowed);
   }
 }
 

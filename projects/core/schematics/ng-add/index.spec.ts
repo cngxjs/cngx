@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 
 import {
   AI_TOOLS,
@@ -11,7 +11,7 @@ import {
   NG_ADD_PRESETS,
   THEME_CHOICES,
 } from '../engine';
-import { createFixtureTree, readFixture, runRule } from '../testing/run-schematic';
+import { createFixtureTree, readFixture, readTree, runRule } from '../testing/run-schematic';
 import { ngAdd } from './index';
 
 // Specs run the source rule, so the version is core's source manifest.
@@ -458,6 +458,43 @@ describe('ngAdd', () => {
       expect(run.logs.some((line) => line.startsWith('No terminal to confirm in'))).toBe(false);
     });
 
+    // Before the install `ng add` hands `--yes=false` / `--prompts=false` /
+    // `--quiet=true` over as strings; they must switch the same behaviour.
+    describe('with the control switches as strings', () => {
+      afterEach(() => {
+        vi.unstubAllEnvs();
+      });
+
+      it('confirms on "false" and skips the confirmation on "true" for --yes', async () => {
+        vi.stubEnv('CI', '');
+        const confirming = await runRule(ngAdd({ yes: 'false' }), existing());
+        const skipping = await runRule(ngAdd({ yes: 'true' }), existing());
+
+        expect(confirming.logs).toContain(
+          'No terminal to confirm in; applying the plan. Pass --yes to apply without this line.',
+        );
+        expect(skipping.logs.some((line) => line.startsWith('No terminal to confirm in'))).toBe(false);
+      });
+
+      it('turns the prompts off on a terminal for --prompts "false"', async () => {
+        vi.stubEnv('CI', '');
+        vi.stubEnv('NO_COLOR', '1');
+        process.stdout.isTTY = true;
+        const run = await runRule(ngAdd({ prompts: 'false' }), existing());
+
+        expect(run.logs).toContain(
+          'Prompts are off (--no-prompts); applying the plan without a confirm. Pass --yes to apply without this line.',
+        );
+      });
+
+      it('prints only the summary for --quiet "true"', async () => {
+        const run = await runRule(ngAdd({ quiet: 'true', yes: 'true' }), existing());
+
+        expect(run.logs[0]).toMatch(/^cngx planned \d+ changes\.$/);
+        expect(run.logs.some((line) => line.startsWith('Planned'))).toBe(false);
+      });
+    });
+
     it('wires the AI tooling into an app that has editor files but none from ng new --ai-config', async () => {
       const tree = createFixtureTree('standalone-app', {
         'src/app/other.ts': SECOND_COMPONENT,
@@ -687,6 +724,34 @@ describe('ngAdd', () => {
     expect(run.tasks).toEqual(['node-package']);
     expect(run.logs.some((line) => line.includes('?'))).toBe(false);
   });
+
+  // Before the install `ng add` parses flags without the schema's types, so
+  // a list arrives as one comma string and `--lint=false` as "false".
+  it('plans the flags ng add passes before the install like the typed ones', async () => {
+    // install.json stamps the run time; both runs must see the same clock.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-15T12:00:00Z'));
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    const typed = await runRule(
+      ngAdd({ aiTools: ['claude', 'vscode'], libs: ['core', 'forms'], lint: false }),
+      createFixtureTree(),
+    );
+    const scalar = await runRule(ngAdd({ aiTools: 'claude,vscode', libs: 'core,forms', lint: 'false' }), createFixtureTree());
+
+    expect(scalar.logs).toEqual(typed.logs);
+    expect(readTree(scalar.tree)).toEqual(readTree(typed.tree));
+  });
+
+  it('stops on an unknown or repeated list entry and names it', async () => {
+    await expect(runRule(ngAdd({ aiTools: 'emacs' }), createFixtureTree())).rejects.toThrow(
+      '"emacs" is not a valid answer for --ai-tools. Expected one of: claude, cursor, vscode.',
+    );
+    await expect(runRule(ngAdd({ aiTools: 'claude,claude' }), createFixtureTree())).rejects.toThrow(
+      '"claude" is given more than once for --ai-tools.',
+    );
+  });
 });
 
 describe('the ng-add collection', () => {
@@ -695,13 +760,19 @@ describe('the ng-add collection', () => {
   });
 
   it('offers exactly the answer vocabulary the steps understand', () => {
-    const enums = SCHEMA.properties as Record<string, { enum?: readonly string[]; items?: { enum?: readonly string[] } }>;
+    interface Branch {
+      type?: string;
+      enum?: readonly string[];
+      items?: { enum?: readonly string[] };
+    }
+    const enums = SCHEMA.properties as Record<string, Branch & { oneOf?: readonly Branch[] }>;
+    const listEnum = (key: string) => enums[key].oneOf?.find((branch) => branch.type === 'array')?.items?.enum;
 
     expect(enums['preset'].enum).toEqual(NG_ADD_PRESETS);
-    expect(enums['libs'].items?.enum).toEqual(CNGX_LIBS);
+    expect(listEnum('libs')).toEqual(CNGX_LIBS);
     expect(enums['theme'].enum).toEqual(THEME_CHOICES);
     expect(enums['i18n'].enum).toEqual(LANGUAGES);
-    expect(enums['aiTools'].items?.enum).toEqual(AI_TOOLS);
+    expect(listEnum('aiTools')).toEqual(AI_TOOLS);
   });
 
   it('describes the editor configs the aiTools step writes', () => {
