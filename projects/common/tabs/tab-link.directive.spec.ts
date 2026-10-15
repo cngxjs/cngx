@@ -209,7 +209,15 @@ describe('CngxTabLink', () => {
     expect(() => {
       const fixture = TestBed.createComponent(OrphanLink);
       fixture.detectChanges();
-    }).toThrow(/no enclosing CngxTabGroupPresenter/);
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1045',
+        message: expect.stringMatching(
+          /^CNGX1045: CngxTabLink: no enclosing CngxTabGroupPresenter/,
+        ),
+      }),
+    );
   });
 
   describe('SR error-message descriptor', () => {

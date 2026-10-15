@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 
 import { nextUid } from '@cngx/core/utils';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
@@ -125,8 +126,11 @@ export class CngxTab implements OnInit {
 
   constructor() {
     if (!this.host) {
-      throw new Error(
-        'CngxTab: no enclosing CngxTabGroupPresenter found. Wrap the tab inside an element carrying [cngxTabGroup] (or place it inside <cngx-tab-group>).',
+      throw new CngxRuntimeError(
+        'CNGX1045',
+        typeof ngDevMode !== 'undefined' &&
+          ngDevMode &&
+          'CngxTab: no enclosing CngxTabGroupPresenter found. Wrap the tab inside an element carrying [cngxTabGroup] (or place it inside <cngx-tab-group>).',
       );
     }
   }

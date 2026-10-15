@@ -232,7 +232,13 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
 
     expect(() => {
       TestBed.createComponent(Orphan).detectChanges();
-    }).toThrow(/CngxButtonToggle requires a parent/);
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1053',
+        message: expect.stringMatching(/^CNGX1053: CngxButtonToggle requires a parent/),
+      }),
+    );
   });
 
   it('CngxButtonToggle with both single AND multi parents throws (exactly-one contract)', () => {
@@ -257,7 +263,15 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
 
     expect(() => {
       TestBed.createComponent(DualParent).detectChanges();
-    }).toThrow(/both CngxButtonToggleGroup and CngxButtonMultiToggleGroup/);
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1052',
+        message: expect.stringMatching(
+          /^CNGX1052: CngxButtonToggle: both CngxButtonToggleGroup and CngxButtonMultiToggleGroup/,
+        ),
+      }),
+    );
   });
 
   describe('aria-invalid + aria-errormessage symmetric semantics', () => {

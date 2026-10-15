@@ -4,18 +4,6 @@
 // commit drops its rows. Removed once every lib is migrated.
 
 export const RAW_THROW_BASELINE = {
-  common: [
-    { file: 'projects/common/chart/buffer/ring-buffer.ts', count: 1 },
-    { file: 'projects/common/chart/chart/chart-context.ts', count: 1 },
-    { file: 'projects/common/chart/scales/ordinal.ts', count: 1 },
-    { file: 'projects/common/data/async-state/operators.ts', count: 1 },
-    { file: 'projects/common/interactive/button-toggle/button-toggle.directive.ts', count: 2 },
-    { file: 'projects/common/interactive/tree-controller/tree-controller.ts', count: 1 },
-    { file: 'projects/common/stepper/step-group.directive.ts', count: 1 },
-    { file: 'projects/common/stepper/step.directive.ts', count: 1 },
-    { file: 'projects/common/tabs/tab-link.directive.ts', count: 1 },
-    { file: 'projects/common/tabs/tab.directive.ts', count: 1 },
-  ],
   forms: [
     { file: 'projects/forms/controls/typed-control.directive.ts', count: 1 },
     { file: 'projects/forms/filter-builder/filter-builder.utils.ts', count: 5 },

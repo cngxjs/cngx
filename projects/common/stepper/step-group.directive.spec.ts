@@ -88,6 +88,30 @@ describe('CngxStepGroup', () => {
     expect(group.children.length).toBe(2);
   });
 
+  it('throws CNGX1047 when no stepper presenter is on the ancestor', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepGroup],
+      template: `<div cngxStepGroup label="Orphan"></div>`,
+    })
+    class OrphanGroup {}
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    expect(() => {
+      const fixture = TestBed.createComponent(OrphanGroup);
+      fixture.detectChanges();
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1047',
+        message: expect.stringMatching(
+          /^CNGX1047: CngxStepGroup: no enclosing CngxStepperPresenter/,
+        ),
+      }),
+    );
+  });
+
   it('registers bound [id] values (not auto-ids) in DOM order across groups', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],

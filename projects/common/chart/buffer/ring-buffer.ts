@@ -1,3 +1,5 @@
+import { CngxRuntimeError } from '@cngx/utils';
+
 /**
  * Fixed-capacity FIFO ring. Once full, every `push` overwrites the oldest
  * entry - the buffer never grows past `capacity`, so a high-frequency
@@ -36,13 +38,19 @@ export interface RingBuffer<T> {
  * is allocated once; no growth, no per-push allocation.
  *
  * @param capacity positive integer maximum element count.
- * @throws when `capacity` is not a positive integer.
+ * @throws `CngxRuntimeError` (`CNGX1050`) when `capacity` is not a positive
+ *   integer.
  *
  * @category common/chart/buffer
  */
 export function createRingBuffer<T>(capacity: number): RingBuffer<T> {
   if (!Number.isInteger(capacity) || capacity <= 0) {
-    throw new Error(`createRingBuffer: capacity must be a positive integer, got ${capacity}`);
+    throw new CngxRuntimeError(
+      'CNGX1050',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        `createRingBuffer: capacity must be a positive integer, got ${capacity}`,
+    );
   }
 
   const store = new Array<T>(capacity);

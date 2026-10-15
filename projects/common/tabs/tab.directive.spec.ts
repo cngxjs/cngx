@@ -122,7 +122,13 @@ describe('CngxTab', () => {
     expect(() => {
       const fixture = TestBed.createComponent(OrphanTab);
       fixture.detectChanges();
-    }).toThrow(/no enclosing CngxTabGroupPresenter/);
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1045',
+        message: expect.stringMatching(/^CNGX1045: CngxTab: no enclosing CngxTabGroupPresenter/),
+      }),
+    );
   });
 
   it('disabled flag flows through to the registered handle', () => {

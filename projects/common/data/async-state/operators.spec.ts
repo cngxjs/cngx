@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { EMPTY, Subject, of, throwError } from 'rxjs';
 
+import { CngxRuntimeError } from '@cngx/utils';
+
 import { createManualState } from './create-manual-state';
 import { tapAsyncProgress, tapAsyncState, tapHttpAsyncState } from './operators';
 
@@ -72,6 +74,20 @@ describe('tapHttpAsyncState', () => {
       .subscribe();
     expect(state.status()).toBe('success');
     expect(state.data()).toBe('result');
+  });
+
+  it('puts a CNGX1054 CngxRuntimeError into the state when the response body is null', () => {
+    const state = createManualState<string>();
+    of({ type: 4, body: null })
+      .pipe(tapHttpAsyncState(state))
+      .subscribe({ error: () => undefined });
+    expect(state.status()).toBe('error');
+    const err = state.error();
+    expect(err).toBeInstanceOf(CngxRuntimeError);
+    expect((err as CngxRuntimeError).code).toBe('CNGX1054');
+    expect((err as CngxRuntimeError).message).toMatch(
+      /^CNGX1054: tapHttpAsyncState: response body is null/,
+    );
   });
 
   it('cancellation before the response resets the sink to idle', () => {

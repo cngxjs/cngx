@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 
 import { nextUid } from '@cngx/core/utils';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
@@ -162,8 +163,11 @@ export class CngxTabLink implements OnInit {
 
   constructor() {
     if (!this.host) {
-      throw new Error(
-        'CngxTabLink: no enclosing CngxTabGroupPresenter found. Wrap the link inside <cngx-tab-nav> (or an element carrying [cngxTabGroup]).',
+      throw new CngxRuntimeError(
+        'CNGX1045',
+        typeof ngDevMode !== 'undefined' &&
+          ngDevMode &&
+          'CngxTabLink: no enclosing CngxTabGroupPresenter found. Wrap the link inside <cngx-tab-nav> (or an element carrying [cngxTabGroup]).',
       );
     }
     // Mirror the direct-error message into the describedby span. DOM side

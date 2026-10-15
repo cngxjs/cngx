@@ -45,7 +45,15 @@ describe('CngxStep', () => {
     expect(() => {
       const fixture = TestBed.createComponent(Orphan);
       fixture.detectChanges();
-    }).toThrowError(/no enclosing CngxStepperPresenter or CngxStepGroup/);
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1046',
+        message: expect.stringMatching(
+          /^CNGX1046: CngxStep: no enclosing CngxStepperPresenter or CngxStepGroup/,
+        ),
+      }),
+    );
   });
 
   it('state derives from completed / disabled / errored inputs', () => {

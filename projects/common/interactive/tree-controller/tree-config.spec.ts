@@ -56,13 +56,19 @@ describe('provideTreeConfig - app-wide defaults', () => {
     expect(ctrl.flatNodes()[0].id).toBe('local:a');
   });
 
-  it('throws in dev mode when neither options nor config provide nodeIdFn', () => {
+  it('throws CNGX1051 when neither options nor config provide nodeIdFn', () => {
     TestBed.configureTestingModule({ providers: [] });
     expect(() =>
       TestBed.runInInjectionContext(() =>
         createTreeController<Row>({ nodes: signal(tree) }),
       ),
-    ).toThrow(/nodeIdFn/);
+    ).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1051',
+        message: expect.stringMatching(/^CNGX1051: createTreeController: `nodeIdFn` is required/),
+      }),
+    );
   });
 
   it('withDefaultLabelFn / withDefaultKeyFn flow through to the controller', () => {

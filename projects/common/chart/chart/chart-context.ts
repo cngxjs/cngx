@@ -1,5 +1,7 @@
 import { inject, InjectionToken, type Signal } from '@angular/core';
 
+import { CngxRuntimeError } from '@cngx/utils';
+
 /**
  * Numeric input shape every concrete scale accepts. Linear scales take
  * `number`, time scales take `Date | number`, band scales take `string`
@@ -119,11 +121,12 @@ export interface CngxChartContext<TX = XScaleInput, TY = number> {
 export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>('CngxChartContext');
 
 /**
- * Inject the parent chart's reactive context. Throws a clear dev-mode
- * error when the consumer is not mounted as a content child of
- * `<cngx-chart>`. The `consumerName` argument is interpolated into the
- * error message so the consumer-class name surfaces at the call site
- * rather than a generic guard string.
+ * Inject the parent chart's reactive context. Throws a `CngxRuntimeError`
+ * with code `CNGX1048` when the consumer is not mounted as a content child
+ * of `<cngx-chart>`, in development and production alike. The
+ * `consumerName` argument is interpolated into the development message so
+ * the consumer-class name surfaces at the call site rather than a generic
+ * guard string.
  *
  * Use it from custom layer directives mounted on `<svg:g>` hosts to
  * read `plot`, the scales and `renderSvg` the same way the built-in
@@ -136,8 +139,11 @@ export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>('CngxChar
 export function injectChartContext(consumerName: string): CngxChartContext {
   const ctx = inject(CNGX_CHART_CONTEXT, { optional: true });
   if (!ctx) {
-    throw new Error(
-      `${consumerName}: missing CNGX_CHART_CONTEXT - must be a content child of <cngx-chart>`,
+    throw new CngxRuntimeError(
+      'CNGX1048',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        `${consumerName}: missing CNGX_CHART_CONTEXT - must be a content child of <cngx-chart>`,
     );
   }
   return ctx;
