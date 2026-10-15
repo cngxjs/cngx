@@ -305,8 +305,12 @@ function warnMissingSubmenuFallbacks(popoverEl: HTMLElement): void {
   if (submenuFallbackWarnedDocs.has(doc)) {
     return;
   }
+  // A browser without the property reports '' whatever is bound, and flips nothing anyway.
+  if (typeof CSS === 'undefined' || !CSS.supports?.('position-try-fallbacks', 'flip-block')) {
+    return;
+  }
   const resolved = getComputedStyle(popoverEl).getPropertyValue('position-try-fallbacks').trim();
-  if (resolved !== '') {
+  if (resolved !== '' && resolved !== 'none') {
     return;
   }
   submenuFallbackWarnedDocs.add(doc);
@@ -314,9 +318,10 @@ function warnMissingSubmenuFallbacks(popoverEl: HTMLElement): void {
     'CNGX1026',
     'CngxMenuItemSubmenu: the companion popover ships without [positionTryFallbacks]. ' +
       'Submenus that clip the viewport edge will not flip without a try-fallback chain. ' +
-      'Wire the recommended default:\n\n' +
-      "  import { CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';\n\n" +
-      '  <div cngxPopover [positionTryFallbacks]="CNGX_SUBMENU_TRY_FALLBACKS">\n' +
+      'Expose the recommended default as a component field and bind it:\n\n' +
+      "  import { CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';\n" +
+      '  protected readonly submenuFallbacks = CNGX_SUBMENU_TRY_FALLBACKS;\n\n' +
+      '  <div cngxPopover [positionTryFallbacks]="submenuFallbacks">\n' +
       '    <!-- submenu items -->\n' +
       '  </div>\n',
   );

@@ -1,7 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopover } from '@cngx/common/popover';
 
@@ -390,7 +390,15 @@ describe('CngxMenuItemSubmenu submenu try-fallbacks dev warning', () => {
   beforeEach(() => {
     polyfillPopover();
     __resetSubmenuFallbackWarnings(document);
+    vi.stubGlobal('CSS', { supports: () => true });
   });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const fallbackWarnings = (spy: { mock: { calls: unknown[][] } }) =>
+    spy.mock.calls.filter((call) => /^CNGX1026: /.test(String(call[0])));
 
   it('does not warn when CNGX_SUBMENU_TRY_FALLBACKS is wired on the submenu popover', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
@@ -421,8 +429,50 @@ describe('CngxMenuItemSubmenu submenu try-fallbacks dev warning', () => {
         String(call[0]).includes('positionTryFallbacks'),
       );
       expect(fallbackWarn.length).toBe(1);
-      expect(fallbackWarn[0][0]).toContain('CNGX1026: CngxMenuItemSubmenu:');
+      expect(fallbackWarn[0][0]).toMatch(/^CNGX1026: CngxMenuItemSubmenu: /);
       expect(fallbackWarn[0][0]).toContain('CNGX_SUBMENU_TRY_FALLBACKS');
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('stays silent in a browser without position-try-fallbacks', () => {
+    vi.stubGlobal('CSS', { supports: () => false });
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      TestBed.configureTestingModule({ imports: [SubmenuHost] });
+      const fixture = TestBed.createComponent(SubmenuHost);
+      fixture.detectChanges();
+      TestBed.tick();
+      expect(fallbackWarnings(warnSpy)).toEqual([]);
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('treats a computed none as missing', () => {
+    const computed = window.getComputedStyle.bind(window);
+    vi.stubGlobal('getComputedStyle', (el: Element, pseudo?: string | null) => {
+      const style = computed(el, pseudo);
+      return new Proxy(style, {
+        get: (target, key) =>
+          key === 'getPropertyValue'
+            ? (name: string) =>
+                name === 'position-try-fallbacks' ? 'none' : target.getPropertyValue(name)
+            : Reflect.get(target, key, target),
+      });
+    });
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      TestBed.configureTestingModule({ imports: [SubmenuHost] });
+      const fixture = TestBed.createComponent(SubmenuHost);
+      fixture.detectChanges();
+      TestBed.tick();
+      const warnings = fallbackWarnings(warnSpy);
+      expect(warnings).toHaveLength(1);
+      expect(String(warnings[0][0])).toMatch(
+        /^CNGX1026: CngxMenuItemSubmenu: the companion popover ships without \[positionTryFallbacks\]/,
+      );
     } finally {
       warnSpy.mockRestore();
     }
