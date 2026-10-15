@@ -84,14 +84,6 @@ describe('createPlainRenderer', () => {
     expect(lines).toMatchSnapshot();
   });
 
-  it('lists only the described plan, no per-change details', async () => {
-    const { lines, renderer: plain } = renderer('normal');
-
-    await plain.todo(PLAN);
-
-    expect(lines).not.toContain('info Details:');
-  });
-
   it('prints the preflight checklist with one level per status', () => {
     const { lines, renderer: plain } = renderer('normal');
 

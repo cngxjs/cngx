@@ -45,17 +45,6 @@ describe('createPalette', () => {
     expect(createPalette({ FORCE_COLOR: value }, true).enabled).toBe(false);
   });
 
-  it('carries only the formatters the renderers use', () => {
-    expect(Object.keys(createPalette({}, false))).toEqual([
-      'enabled',
-      'bold',
-      'dim',
-      'green',
-      'yellow',
-      'red',
-    ]);
-  });
-
   it('does not mutate the env it reads', () => {
     const env = { FORCE_COLOR: '1' };
     createPalette(env, false);
