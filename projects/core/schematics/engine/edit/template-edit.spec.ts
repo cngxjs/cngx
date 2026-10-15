@@ -39,6 +39,20 @@ describe('walkNodes', () => {
     expect(nodes.filter((node) => node instanceof TmplAstElement && node.name === 'button')).toHaveLength(4);
   });
 
+  it('reaches every @switch case and the @default branch', () => {
+    const template =
+      '@switch (mode) { @case (1) { <button>A</button> } @case (2) { <button>B</button> } @default { <button>C</button> } }';
+    const buttons = walkNodes(parseTemplateContent(template)).filter(
+      (node): node is TmplAstElement => node instanceof TmplAstElement && node.name === 'button',
+    );
+
+    expect(buttons.map((button) => button.children.map((child) => ('value' in child ? child.value : '')).join(''))).toEqual([
+      'A',
+      'B',
+      'C',
+    ]);
+  });
+
   it('returns an empty list for no nodes', () => {
     expect(walkNodes([])).toEqual([]);
   });
