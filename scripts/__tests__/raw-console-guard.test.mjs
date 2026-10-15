@@ -8,7 +8,10 @@
 //     file is in RAW_CONSOLE_EXEMPT.
 // R2  every helper call has a `CNGXnnnn` literal first argument and a lexical
 //     inline guard inside a function: a guard read at module load can run
-//     before Angular sets `ngDevMode` in a dev build (also for R4).
+//     before Angular sets `ngDevMode` in a dev build (also for R4). The
+//     message (argument 2) is a string literal, a template literal or a `+`
+//     concatenation written in place, or a dev wrapper's parameter: a local,
+//     a field or a call result can carry text built before the guard.
 // R3  the code lies in the calling file's lib range.
 // R4  every direct call and every value use of a guard-first dev wrapper is
 //     lexically guarded, and no wrapper is a class or object-literal member:
@@ -167,6 +170,11 @@ export function checkSources(files) {
       if (!range || range.lib !== lib) {
         violations.push(`${where} R3 ${call.code} lies outside the ${lib} range`);
       }
+    }
+    if (!call.messageInline) {
+      violations.push(
+        `${where} R2 ${call.code ?? 'call'} message is not text written in place; inline the string, template or concatenation behind the guard`,
+      );
     }
     if (!isLexicallyGuarded(call.node)) {
       violations.push(`${where} R2 ${call.code ?? 'call'} is not behind an inline ngDevMode guard`);
@@ -333,6 +341,52 @@ describe('raw-console guard - R2/R3 helper calls', () => {
   });
 });
 
+describe('raw-console guard - R2 message text', () => {
+  const messages = (text) =>
+    fixture(text).violations.filter((v) => v.includes('not text written in place'));
+
+  it('fails a message built in a local before the guard, a field and a call result', () => {
+    expect(
+      messages(
+        [
+          'function f(x: unknown) {',
+          "  const m = 'bad value ' + JSON.stringify(x);",
+          `  if (${GUARD}) { cngxDevWarn('CNGX0001', m); }`,
+          '}',
+        ].join('\n'),
+      ),
+    ).toEqual([
+      'projects/core/a.ts:3 R2 CNGX0001 message is not text written in place; inline the string, template or concatenation behind the guard',
+    ]);
+    expect(
+      messages(
+        `class C { m = 'text'; run() { if (${GUARD}) { cngxDevWarn('CNGX0001', this.m); } } }`,
+      ),
+    ).toHaveLength(1);
+    expect(
+      messages(
+        `function f(x: unknown) { if (${GUARD}) { cngxDevWarn('CNGX0001', describe(x)); } }`,
+      ),
+    ).toHaveLength(1);
+    expect(
+      messages(`function f(m: string) { if (${GUARD}) { cngxDevWarn('CNGX0001', m); } }`),
+    ).toHaveLength(1);
+  });
+
+  it('passes a literal, a template, a concatenation and a dev wrapper parameter', () => {
+    expect(
+      messages(
+        [
+          `function a(x: string) { if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } }`,
+          `function b(x: string) { if (${GUARD}) { cngxDevWarn('CNGX0001', \`bad \${x}\`); } }`,
+          `function c(x: string) { if (${GUARD}) { cngxDevWarn('CNGX0001', 'bad ' + x); } }`,
+          `function d(m: string) { if (${NEGATED}) { return; } afterNextRender(() => cngxDevWarn('CNGX0001', m)); }`,
+        ].join('\n'),
+      ),
+    ).toEqual([]);
+  });
+});
+
 describe('raw-console guard - R2 helper references', () => {
   const misuse = (text) =>
     fixture(text).violations.filter((v) => v.includes('call the helper directly'));
@@ -414,7 +468,7 @@ describe('raw-console guard - R4 dev wrappers', () => {
       [
         'class R {',
         '  register(k: string) {',
-        `    if (${GUARD} && this.has(k)) { cngxDevWarn('CNGX0004', k); }`,
+        `    if (${GUARD} && this.has(k)) { cngxDevWarn('CNGX0004', \`\${k}\`); }`,
         '    this.keys.add(k);',
         '  }',
         '  run() { this.register("a"); }',
@@ -445,7 +499,7 @@ describe('raw-console guard - R4 dev wrappers', () => {
       [
         'function defaultWarn(limit: number) {',
         `  if (${NEGATED}) { return noop; }`,
-        "  return () => cngxDevWarn('CNGX0001', String(limit));",
+        "  return () => cngxDevWarn('CNGX0001', `${limit}`);",
         '}',
         `function wire() { return opt ?? (${GUARD} ? defaultWarn(3) : noop); }`,
       ].join('\n'),
@@ -592,7 +646,7 @@ describe('raw-console guard - R4 dev wrappers', () => {
     const cache = [
       'const cache = new Map<string, number>();',
       'function lookup(k: string) {',
-      `  if (cache.has(k)) { if (${GUARD}) { cngxDevWarn('CNGX0001', k); } }`,
+      `  if (cache.has(k)) { if (${GUARD}) { cngxDevWarn('CNGX0001', \`\${k}\`); } }`,
       '  cache.set(k, 1);',
       '  return cache.get(k);',
       '}',
@@ -617,7 +671,7 @@ describe('raw-console guard - R4 dev wrappers', () => {
       'projects/core/a.ts:1 R4 dev wrapper onWarn is an object-literal member; move it to module level so production tree-shakes it',
     ]);
     const devOnly = fixture(
-      `const config = { onWarn: (m: string) => { if (${GUARD}) { cngxDevWarn('CNGX0001', m); } } };`,
+      `const config = { onWarn: (m: string) => { if (${GUARD}) { cngxDevWarn('CNGX0001', \`\${m}\`); } } };`,
     );
     expect(devOnly.violations).toEqual([
       'projects/core/a.ts:1 R4 onWarn is a dev-only function that is not guard-first; open it with the negated ngDevMode early return',

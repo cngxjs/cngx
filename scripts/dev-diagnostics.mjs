@@ -155,6 +155,93 @@ export function isLexicallyGuarded(node) {
   return false;
 }
 
+const checkers = new WeakMap();
+
+/** `singleFileChecker(sf)`, built once per source file. */
+const checkerOf = (sf) => {
+  let checker = checkers.get(sf);
+  if (!checker) {
+    checker = singleFileChecker(sf);
+    checkers.set(sf, checker);
+  }
+  return checker;
+};
+
+/** Text built in place: a string literal, a template literal or a `+` concatenation. */
+const isInlineText = (node) => {
+  const inner = unparen(node);
+  return (
+    ts.isStringLiteral(inner) ||
+    ts.isNoSubstitutionTemplateLiteral(inner) ||
+    ts.isTemplateExpression(inner) ||
+    (ts.isBinaryExpression(inner) && inner.operatorToken.kind === ts.SyntaxKind.PlusToken)
+  );
+};
+
+/**
+ * A parameter of the guard-first function around `node`: a dev wrapper's
+ * message, which R4 holds every caller to build behind a guard.
+ */
+const isWrapperParameter = (node, sf) => {
+  const inner = unwrap(node);
+  if (!ts.isIdentifier(inner)) {
+    return false;
+  }
+  const declaration = checkerOf(sf).getSymbolAtLocation(inner)?.declarations?.[0];
+  const body = declaration && ts.isParameter(declaration) ? declaration.parent.body : undefined;
+  return Boolean(
+    body && ts.isBlock(body) && body.statements.length > 0 && isEarlyReturn(body.statements[0]),
+  );
+};
+
+/**
+ * Is the message built where the guard folds it? A local, a field or a call
+ * result can carry text built before the guard, which then ships; only text
+ * written inline, or a dev wrapper's own parameter, is certain to drop.
+ */
+const isInlineMessage = (node, sf) => isInlineText(node) || isWrapperParameter(node, sf);
+
+/** Is `id` the variable of a `catch` clause that encloses `site`? */
+export function isEnclosingCatchVariable(id, site, sf) {
+  const clause = checkerOf(sf).getSymbolAtLocation(id)?.declarations?.[0]?.parent;
+  if (!clause || !ts.isCatchClause(clause)) {
+    return false;
+  }
+  for (let current = site.parent; current; current = current.parent) {
+    if (current === clause) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Is the options argument of a runtime error free of shipped text? It is
+ * omitted, or `{ cause: <enclosing catch variable> }`: a `new Error('text')`
+ * built for the cause would ship its message with the code.
+ */
+const isPlainOptions = (options, site, sf) => {
+  if (options === undefined) {
+    return true;
+  }
+  const inner = unwrap(options);
+  if (!ts.isObjectLiteralExpression(inner) || inner.properties.length !== 1) {
+    return false;
+  }
+  const [property] = inner.properties;
+  const value = ts.isPropertyAssignment(property)
+    ? unwrap(property.initializer)
+    : ts.isShorthandPropertyAssignment(property)
+      ? property.name
+      : null;
+  return (
+    nameText(property.name) === 'cause' &&
+    value !== null &&
+    ts.isIdentifier(value) &&
+    isEnclosingCatchVariable(value, site, sf)
+  );
+};
+
 const isStatic = (node) => node.modifiers?.some((m) => m.kind === ts.SyntaxKind.StaticKeyword);
 
 /**
@@ -187,8 +274,10 @@ export const MODULE_LOAD_GUARD =
 /**
  * Every `cngxDevWarn` / `cngxDevError` call in `files` ([{ path, text }]).
  * `code` is the first argument when it is a string literal, else null.
+ * `messageInline`: the second argument is text built in place (or a dev
+ * wrapper's parameter), so the guard drops it with the call.
  *
- * @returns {{ file: string; line: number; severity: 'warn' | 'error'; code: string | null; node: ts.CallExpression; sf: ts.SourceFile }[]}
+ * @returns {{ file: string; line: number; severity: 'warn' | 'error'; code: string | null; messageInline: boolean; node: ts.CallExpression; sf: ts.SourceFile }[]}
  */
 export function collectHelperCalls(files) {
   const out = [];
@@ -203,7 +292,7 @@ export function collectHelperCalls(files) {
         ts.isIdentifier(node.expression) &&
         Object.hasOwn(HELPERS, node.expression.text)
       ) {
-        const first = node.arguments[0];
+        const [first, message] = node.arguments;
         const code =
           first && (ts.isStringLiteral(first) || ts.isNoSubstitutionTemplateLiteral(first))
             ? first.text
@@ -213,6 +302,7 @@ export function collectHelperCalls(files) {
           line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1,
           severity: HELPERS[node.expression.text],
           code,
+          messageInline: message !== undefined && isInlineMessage(message, sf),
           node,
           sf,
         });
@@ -234,8 +324,12 @@ export const RUNTIME_ERROR = 'CngxRuntimeError';
  * drops it with its code. `messageGuarded`: the second argument is an `&&`
  * chain starting with the guard. `atModuleLoad`: the construction runs while
  * its module loads, where a guard can see `ngDevMode` still undefined.
+ * `messageInline`: the message (its guarded tail, or the whole message of a
+ * dev-only construction) is text built in place. `optionsPlain`: the third
+ * argument is omitted or `{ cause: <enclosing catch variable> }`, or the
+ * whole construction is dev-only.
  *
- * @returns {{ file: string; line: number; code: string | null; devOnly: boolean; messageGuarded: boolean; atModuleLoad: boolean; node: ts.NewExpression; sf: ts.SourceFile }[]}
+ * @returns {{ file: string; line: number; code: string | null; devOnly: boolean; messageGuarded: boolean; messageInline: boolean; optionsPlain: boolean; atModuleLoad: boolean; node: ts.NewExpression; sf: ts.SourceFile }[]}
  */
 export function collectRuntimeErrors(files) {
   const out = [];
@@ -250,17 +344,22 @@ export function collectRuntimeErrors(files) {
         ts.isIdentifier(node.expression) &&
         node.expression.text === RUNTIME_ERROR
       ) {
-        const [first, message] = node.arguments ?? [];
+        const [first, message, options] = node.arguments ?? [];
         const code =
           first && (ts.isStringLiteral(first) || ts.isNoSubstitutionTemplateLiteral(first))
             ? first.text
             : null;
+        const devOnly = isLexicallyGuarded(node);
+        const messageGuarded = message !== undefined && startsWithGuard(message);
+        const text = messageGuarded ? andLeaves(message).at(-1) : message;
         out.push({
           file: path,
           line: lineOf(sf, node),
           code,
-          devOnly: isLexicallyGuarded(node),
-          messageGuarded: message !== undefined && startsWithGuard(message),
+          devOnly,
+          messageGuarded,
+          messageInline: text === undefined || isInlineMessage(text, sf),
+          optionsPlain: devOnly || isPlainOptions(options, node, sf),
           atModuleLoad: runsAtModuleLoad(node),
           node,
           sf,
