@@ -155,6 +155,17 @@ describe('CngxPopoverSheet geometry', () => {
     expect(Math.round(rect.width)).toBe(vp.width);
   });
 
+  it('renders nothing once a sheet or fullscreen panel is closed', async () => {
+    for (const request of ['sheet', 'fullscreen'] as const) {
+      const { host, panel } = await open((h) => h.request.set(request));
+      expect(computedValue(panel, 'display')).toBe('flex');
+      host.popover().hide();
+      await frames(2);
+      expect(computedValue(panel, 'display')).toBe('none');
+      mountedRoot?.remove();
+    }
+  });
+
   it('writes no anchor, margin or floating inline styles while not anchored', async () => {
     const { panel } = await open();
     expect(panel.style.getPropertyValue(ANCHOR_AREA_PROPERTY)).toBe('');

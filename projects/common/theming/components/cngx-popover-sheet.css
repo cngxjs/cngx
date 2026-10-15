@@ -238,7 +238,6 @@
     max-inline-size: 100%;
     min-inline-size: 0;
     max-block-size: var(--cngx-popover-sheet-max-block-size, 70dvh);
-    display: flex;
     flex-direction: column;
     overflow: hidden;
     border: 0;
@@ -259,6 +258,15 @@
     transition:
       translate var(--cngx-popover-sheet-duration, 200ms) var(--cngx-popover-sheet-easing, ease-out),
       opacity var(--cngx-popover-sheet-duration, 200ms) var(--cngx-popover-sheet-easing, ease-out);
+  }
+
+  /* Open only: a display value on the closed host would override the UA
+   * `[popover]:not(:popover-open) { display: none }` and keep it rendered. */
+  .cngx-popover-sheet:is(
+      [data-cngx-presentation='sheet'],
+      [data-cngx-presentation='fullscreen']
+    ):popover-open {
+    display: flex;
   }
 
   .cngx-popover-sheet[data-cngx-presentation='fullscreen'] {
