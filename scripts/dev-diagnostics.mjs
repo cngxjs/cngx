@@ -422,7 +422,8 @@ export function collectHelperMisuse(files) {
   return out;
 }
 
-const isAmbient = (node) => {
+/** Does `node` sit in an ambient (`declare`) declaration? */
+export const isAmbient = (node) => {
   for (let current = node; current; current = current.parent) {
     if (current.modifiers?.some((m) => m.kind === ts.SyntaxKind.DeclareKeyword)) {
       return true;

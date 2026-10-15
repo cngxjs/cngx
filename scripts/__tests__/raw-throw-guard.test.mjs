@@ -4,7 +4,9 @@
 // `typeof ngDevMode !== 'undefined' && ngDevMode`, which the production build
 // folds to `false`.
 //
-// T1  every `throw` and every `Promise.reject(...)` hands over either a
+// T1  every `throw`, every `Promise.reject(...)`, every call of a
+//     `new Promise((resolve, reject) => ...)` executor's reject parameter and
+//     every global `reportError(...)` hands over either a
 //     `new CngxRuntimeError(...)` constructed in place or the variable of an
 //     enclosing `catch` clause (a rethrow). Anything else counts as a raw
 //     site: a raw `Error`, a local holding one, a factory or method call, a
@@ -13,6 +15,13 @@
 //     error escapes it. Out of scope, per the plan: other error
 //     channels (`throwError(...)`, `subscriber.error(...)`) and `Error`
 //     objects stored as state instead of thrown.
+//
+// Known limits (open bypasses, each needs more than a syntactic read):
+// `Promise.reject` reached through an aliased or nested host
+// (`globalThis.Promise.reject`, `const P = Promise`), by element access
+// (`Promise['reject']`) or through `.call` / `.apply`; `reportError` read off
+// a global host; `gen.throw(...)`; a catch variable reassigned or mutated
+// before its rethrow.
 // T2  every `new CngxRuntimeError` has a `CNGXnnnn` literal first argument in
 //     the file's lib range.
 // T3  the message is an `&&` chain starting with the guard, unless the
@@ -45,6 +54,7 @@ import {
   lineOf,
   localNgDevModeLines,
   parse,
+  singleFileChecker,
   unwrap,
 } from '../dev-diagnostics.mjs';
 import { libOf, rangeOf, readSources } from '../error-codes-manifest.mjs';
@@ -98,12 +108,46 @@ const rejectedOperand = (node) => {
   return isReject ? (node.arguments[0] ?? node) : null;
 };
 
+/** Is `param` the second parameter of an executor passed to `new Promise(...)`? */
+const isExecutorReject = (param) => {
+  const executor = param.parent;
+  const construction = executor.parent;
+  return (
+    executor.parameters?.[1] === param &&
+    ts.isNewExpression(construction) &&
+    construction.arguments?.[0] === executor &&
+    ts.isIdentifier(construction.expression) &&
+    construction.expression.text === 'Promise'
+  );
+};
+
+/**
+ * `reject(x)` inside a `new Promise` executor or a global `reportError(x)`:
+ * the reported operand (the call itself when it has none), else null.
+ */
+const reportedOperand = (node, symbolOf) => {
+  if (!ts.isCallExpression(node)) {
+    return null;
+  }
+  const callee = unwrap(node.expression);
+  if (!ts.isIdentifier(callee)) {
+    return null;
+  }
+  const declaration = symbolOf(callee)?.declarations?.[0];
+  const reports = declaration
+    ? ts.isParameter(declaration) && isExecutorReject(declaration)
+    : callee.text === 'reportError';
+  return reports ? (node.arguments[0] ?? node) : null;
+};
+
 /** Lines of every raw throw or rejection (T1) in one file. */
 export function rawThrowLines(path, text) {
-  if (!text.includes('throw') && !text.includes('Promise.reject')) {
+  if (!text.includes('throw') && !text.includes('Promise') && !text.includes('reportError')) {
     return [];
   }
   const sf = parse(path, text);
+  let checker;
+  const symbolOf = (id) => (checker ??= singleFileChecker(sf)).getSymbolAtLocation(id);
   const isAllowed = (operand, site) => {
     const inner = unwrap(operand);
     return (
@@ -113,7 +157,9 @@ export function rawThrowLines(path, text) {
   };
   const lines = [];
   const visit = (node) => {
-    const operand = ts.isThrowStatement(node) ? node.expression : rejectedOperand(node);
+    const operand = ts.isThrowStatement(node)
+      ? node.expression
+      : (rejectedOperand(node) ?? reportedOperand(node, symbolOf));
     if (operand && !isAllowed(operand, node)) {
       lines.push(lineOf(sf, node));
     }
@@ -361,6 +407,21 @@ describe('raw-throw guard - T1 raw throws', () => {
       ].join('\n'),
     );
     expect(raw.get('projects/common/a.ts')).toBe(2);
+  });
+
+  it('applies the same rule to a Promise executor reject and to reportError', () => {
+    const { raw } = fixture(
+      [
+        "function f() { return new Promise((resolve, rej) => rej(new Error('a'))); }",
+        'function g() { return new Promise((res, reject) => { work(); reject(); }); }',
+        "function h() { reportError(new Error('c')); }",
+        "function i() { return new Promise((res, rej) => rej(new CngxRuntimeError('CNGX1001'))); }",
+        'function j() { return new Promise((res, rej) => { try { work(); } catch (e) { rej(e); } }); }',
+        "function k(reportError: (e: unknown) => void) { reportError(new Error('local')); }",
+        "function l() { return new Promise((res) => res(new Error('value'))); }",
+      ].join('\n'),
+    );
+    expect(raw.get('projects/common/a.ts')).toBe(3);
   });
 
   it('ignores files under an examples folder', () => {

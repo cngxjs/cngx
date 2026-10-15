@@ -5,7 +5,8 @@
 // fold, so the message text would ship.
 //
 // R1  no reference to the global `console` outside dev-message.ts, unless the
-//     file is in RAW_CONSOLE_EXEMPT.
+//     file is in RAW_CONSOLE_EXEMPT. An ambient `declare const console` is
+//     no local binding: it only retypes the global.
 // R2  every helper call has a `CNGXnnnn` literal first argument and a lexical
 //     inline guard inside a function: a guard read at module load can run
 //     before Angular sets `ngDevMode` in a dev build (also for R4). The
@@ -16,6 +17,14 @@
 // R4  every direct call and every value use of a guard-first dev wrapper is
 //     lexically guarded, and no wrapper is a class or object-literal member:
 //     a wrapper production still references ships the helper and its doc URL.
+//
+// Known limits (open bypasses, each needs more than a syntactic read):
+// `console` read off an aliased host (`const g = globalThis; g.console`), a
+// comma or nested host (`(0, globalThis).console`, `window.self.console`),
+// `parent` / `top` / `frames` / `document.defaultView`, a computed key or
+// computed destructuring, `Reflect.get(globalThis, 'console')` and
+// `new Function(...)`; a dev wrapper reached through a dynamic `import()`, a
+// destructured namespace or element access.
 
 import { performance } from 'node:perf_hooks';
 
@@ -32,6 +41,7 @@ import {
   collectWrapperUses,
   collectWrappers,
   isLexicallyGuarded,
+  isAmbient,
   isNameOfDeclaration,
   lineOf,
   localNgDevModeLines,
@@ -103,7 +113,7 @@ export function rawConsoleLines(path, text) {
   let checker;
   const isUnresolved = (resolve) => {
     checker ??= singleFileChecker(sf);
-    return !resolve(checker)?.declarations?.length;
+    return !resolve(checker)?.declarations?.some((declaration) => !isAmbient(declaration));
   };
   const lines = [];
   const visit = (node) => {
@@ -278,6 +288,13 @@ describe('raw-console guard - R1 raw console', () => {
       ].join('\n'),
     );
     expect(raw.size).toBe(0);
+  });
+
+  it('counts console behind an ambient declaration as the global', () => {
+    const { raw } = fixture(
+      ['declare const console: { warn(m: string): void };', "console.warn('a');"].join('\n'),
+    );
+    expect(raw.get('projects/core/a.ts')).toBe(2);
   });
 
   it('allows console in dev-message.ts', () => {
