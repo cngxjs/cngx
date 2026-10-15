@@ -42,6 +42,7 @@ import {
   localNgDevModeLines,
   parse,
   singleFileChecker,
+  unwrap,
 } from '../dev-diagnostics.mjs';
 import { libOf, rangeOf, readSources } from '../error-codes-manifest.mjs';
 import { RAW_THROW_BASELINE } from './raw-throw-baseline.mjs';
@@ -75,21 +76,6 @@ const RAW_THROW_EXEMPT = [
 /** The file that declares the class; its own declaration is no value use. */
 const RUNTIME_ERROR_FILE = 'projects/utils/runtime-error.ts';
 const CODE_PATTERN = /^CNGX\d{4}$/;
-
-/** `node` through parentheses, `as`, `satisfies`, `!` and `<T>` casts. */
-const unwrap = (node) => {
-  let current = node;
-  while (
-    ts.isParenthesizedExpression(current) ||
-    ts.isAsExpression(current) ||
-    ts.isSatisfiesExpression(current) ||
-    ts.isNonNullExpression(current) ||
-    ts.isTypeAssertionExpression(current)
-  ) {
-    current = current.expression;
-  }
-  return current;
-};
 
 /** The class name a `new X()` / `X()` / `new ns.X()` operand constructs or calls. */
 const constructedName = (operand) => {

@@ -35,6 +35,7 @@ import {
   parse,
   runsAtModuleLoad,
   singleFileChecker,
+  unwrap,
 } from '../dev-diagnostics.mjs';
 import { libOf, rangeOf, readSources } from '../error-codes-manifest.mjs';
 
@@ -71,21 +72,6 @@ const EXPECTED_DEV_WRAPPERS = [
 
 const CODE_PATTERN = /^CNGX\d{4}$/;
 const GLOBAL_HOSTS = new Set(['globalThis', 'window', 'self']);
-
-/** `node` through parentheses, `as`, `satisfies`, `!` and `<T>` casts. */
-const unwrap = (node) => {
-  let current = node;
-  while (
-    ts.isParenthesizedExpression(current) ||
-    ts.isAsExpression(current) ||
-    ts.isSatisfiesExpression(current) ||
-    ts.isNonNullExpression(current) ||
-    ts.isTypeAssertionExpression(current)
-  ) {
-    current = current.expression;
-  }
-  return current;
-};
 
 const isGlobalHost = (node) => {
   const inner = node && unwrap(node);

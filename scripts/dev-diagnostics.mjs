@@ -38,6 +38,21 @@ export function singleFileChecker(sf) {
   return ts.createProgram([sf.fileName], options, host).getTypeChecker();
 }
 
+/** `node` through parentheses, `as`, `satisfies`, `!` and `<T>` casts. */
+export const unwrap = (node) => {
+  let current = node;
+  while (
+    ts.isParenthesizedExpression(current) ||
+    ts.isAsExpression(current) ||
+    ts.isSatisfiesExpression(current) ||
+    ts.isNonNullExpression(current) ||
+    ts.isTypeAssertionExpression(current)
+  ) {
+    current = current.expression;
+  }
+  return current;
+};
+
 const unparen = (node) => {
   let current = node;
   while (ts.isParenthesizedExpression(current)) {
