@@ -1181,6 +1181,40 @@ describe('CngxTabOverflow', () => {
     customStrip.remove();
   });
 
+  it('warns CNGX3012 once the strip stays unresolved for 60 attach attempts', async () => {
+    installMockIntersectionObserver();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        {
+          provide: CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
+          useValue: (): CngxTabOverflowDomAdapter => ({
+            resolveStripRoot: () => null,
+            resolveTabButton: () => null,
+          }),
+        },
+      ],
+    });
+    stubPopoverApi();
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.detectChanges();
+    vi.advanceTimersByTime(5000);
+
+    const calls = warn.mock.calls.filter(([m]) => /^CNGX3012: /.test(String(m)));
+    expect(calls).toHaveLength(1);
+    expect(calls[0][0]).toMatch(
+      /^CNGX3012: \[CngxTabOverflow\] Strip wrapper not found after 60 attach attempts; .*a direct child of <cngx-tab-group>, or the one \[cngxMatTabs\] places/,
+    );
+    vi.useRealTimers();
+    warn.mockRestore();
+  });
+
   describe('template-cascade slot directives', () => {
     @Component({
       standalone: true,
