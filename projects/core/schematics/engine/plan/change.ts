@@ -36,13 +36,6 @@ export interface EditFile extends ChangeBase {
   readonly edit: (content: string) => string;
 }
 
-export interface AddImport extends ChangeBase {
-  readonly kind: 'add-import';
-  readonly path: string;
-  readonly symbol: string;
-  readonly module: string;
-}
-
 export interface AddDependency extends ChangeBase {
   readonly kind: 'add-dependency';
   readonly name: string;
@@ -126,7 +119,6 @@ export function createNote({ id, label, reason, provenance }: Omit<Note, 'kind'>
 export type Change =
   | CreateFile
   | EditFile
-  | AddImport
   | AddDependency
   | AddProvider
   | AddStyleImport

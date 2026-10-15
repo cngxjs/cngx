@@ -35,7 +35,6 @@ export { planThirdPartyDependency } from './manifest/third-party';
 
 export {
   type AddDependency,
-  type AddImport,
   type AddProvider,
   type AddStyleEntry,
   type AddStyleImport,

@@ -80,6 +80,14 @@ describe('createReport', () => {
     expect(createReport(PLAN).files).toEqual(['package.json', 'src/styles.css']);
   });
 
+  it('refuses a change kind it has no file mapping for', () => {
+    const unknown = { kind: 'add-import', id: 'i', label: 'l', reason: 'r', path: 'main.ts' } as unknown as Change;
+
+    expect(() => createReport(createChangePlan([{ changes: [unknown], skipped: [] }]))).toThrow(
+      'No file for change',
+    );
+  });
+
   it('lists the file a provider goes into when the step names it', () => {
     const plan = createChangePlan([
       {
