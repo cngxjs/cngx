@@ -12,6 +12,7 @@ export {
   type AiTool,
   CNGX_LIBS,
   type CngxLib,
+  invalidAnswer,
   isBoolean,
   isListOf,
   isOneOf,

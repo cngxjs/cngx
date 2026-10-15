@@ -36,6 +36,13 @@ export function isBoolean(value: unknown): value is boolean {
   return typeof value === 'boolean';
 }
 
+/** The one message for a flag or prompt answer outside its vocabulary. */
+export function invalidAnswer(key: string, entries: readonly string[], allowed: readonly string[]): Error {
+  return new Error(
+    `"${entries.join('", "')}" is not a valid answer for ${key}. Expected one of: ${allowed.join(', ')}.`,
+  );
+}
+
 /** The options every `ng add @cngx/<lib>` forwards to the core onboarding. */
 export interface NgAddOptions {
   readonly project?: string;

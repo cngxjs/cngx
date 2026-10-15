@@ -4,6 +4,7 @@ import {
   CNGX_LIBS,
   type CngxLib,
   createNote,
+  invalidAnswer,
   isBoolean,
   isOneOf,
   type Language,
@@ -34,6 +35,7 @@ const ANSWER_KEYS = [
   'aiTools',
 ] as const;
 
+const BOOLEAN_ANSWERS = ['true', 'false'];
 
 /** The answers a preset gives before any flag or question. */
 export function presetDefaults(preset: NgAddPreset, facts: ProjectFacts): OnboardingAnswers {
@@ -88,6 +90,7 @@ function flag<T>(
   options: NgAddOptions,
   key: (typeof ANSWER_KEYS)[number],
   isValid: (value: unknown) => value is T,
+  allowed: readonly string[],
   fallback: T,
 ): T {
   const value = givenValue(options, key);
@@ -95,7 +98,7 @@ function flag<T>(
     return fallback;
   }
   if (!isValid(value)) {
-    throw new Error(`${JSON.stringify(value)} is not a valid answer for ${key}.`);
+    throw invalidAnswer(key, [String(value)], allowed);
   }
   return value;
 }
@@ -180,7 +183,7 @@ export async function askOnboarding(
         ],
         default: defaults.theme,
       })
-    : flag(options, 'theme', (value) => isOneOf(THEME_CHOICES, value), defaults.theme);
+    : flag(options, 'theme', (value) => isOneOf(THEME_CHOICES, value), THEME_CHOICES, defaults.theme);
   // The language pack and the a11y preferences come from @cngx/core; without
   // it there is nothing to ask, and a preset default must not turn into a
   // "skipped" note the user never asked for.
@@ -194,7 +197,7 @@ export async function askOnboarding(
         ],
         default: defaults.i18n,
       })
-    : flag(options, 'i18n', (value) => isOneOf(LANGUAGES, value), 'en');
+    : flag(options, 'i18n', (value) => isOneOf(LANGUAGES, value), LANGUAGES, 'en');
   // A flag the question cannot ask about is kept, so the step can say why it
   // does not apply instead of dropping it.
   const runtimeSwitch =
@@ -204,10 +207,10 @@ export async function askOnboarding(
           message: 'Switch between English and German at runtime?',
           default: defaults.runtimeSwitch,
         })
-      : flag(options, 'runtimeSwitch', isBoolean, false);
+      : flag(options, 'runtimeSwitch', isBoolean, BOOLEAN_ANSWERS, false);
   const lint =
     facts.eslintConfig === undefined
-      ? flag(options, 'lint', isBoolean, defaults.lint)
+      ? flag(options, 'lint', isBoolean, BOOLEAN_ANSWERS, defaults.lint)
       : await flow.confirm({
           key: 'lint',
           message: `Add the cngx lint rules to ${facts.eslintConfig.path}?`,
@@ -219,7 +222,7 @@ export async function askOnboarding(
         message: 'Provide toasts, alerts and banners at the root?',
         default: defaults.feedback,
       })
-    : flag(options, 'feedback', isBoolean, false);
+    : flag(options, 'feedback', isBoolean, BOOLEAN_ANSWERS, false);
   const aiTools = await flow.multiSelect<AiTool>({
     key: 'aiTools',
     message: 'Which editors should get the cngx MCP server?',
@@ -247,12 +250,14 @@ export async function askOnboarding(
         options,
         'a11yPreferences',
         isBoolean,
+        BOOLEAN_ANSWERS,
         defaults.a11yPreferences && hasCore,
       ),
       floatingFallback: flag(
         options,
         'floatingFallback',
         isBoolean,
+        BOOLEAN_ANSWERS,
         defaults.floatingFallback && selected.includes('common'),
       ),
       aiTools,

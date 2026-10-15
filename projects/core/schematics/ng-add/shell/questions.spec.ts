@@ -183,7 +183,7 @@ describe('askOnboarding', () => {
       ask(createFacts(), { aiTools: ['emacs'] } as unknown as NgAddOptions),
     ).rejects.toThrow('"emacs" is not a valid answer for aiTools.');
     await expect(ask(createFacts(), { theme: 'dark' } as unknown as NgAddOptions)).rejects.toThrow(
-      '"dark" is not a valid answer for theme.',
+      '"dark" is not a valid answer for theme. Expected one of: cngx, material, none.',
     );
   });
 
