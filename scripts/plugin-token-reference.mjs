@@ -9,16 +9,13 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { normalizeDashes } from './normalize-dashes.mjs';
+
 const DEFAULT_DOC = 'packages/mcp/data/documentation.json';
 const OUT = 'packages/plugin/pack/theming-tokens.md';
 const MANIFEST = 'packages/plugin/pack/pack-manifest.json';
 
 const cell = (value) => String(value).replace(/\|/g, '\\|');
-
-// Token descriptions come from source JSDoc that may use em/en dashes (U+2014,
-// U+2013). The shipped reference is a generated artifact, so normalise them to a
-// plain ASCII hyphen rather than distribute em-dashes.
-const normalizeDashes = (text) => text.replace(/\s*[\u2014\u2013]\s*/g, ' - ');
 
 // Source JSDoc wraps long descriptions across lines; a table cell needs one
 // line. Join the wrapped lines with a space instead of truncating at the first
