@@ -22,7 +22,7 @@ import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { PACKED_LIBS } from './peer-deps-guard.mjs';
+import { PACKED_LIBS } from './cngx-libs.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const TSC = createRequire(import.meta.url).resolve('typescript/bin/tsc');

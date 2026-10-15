@@ -8,7 +8,7 @@ import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
 import { NodeModulesEngineHost } from '@angular-devkit/schematics/tools';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { PACKED_LIBS } from '../peer-deps-guard.mjs';
+import { PACKED_LIBS } from '../cngx-libs.mjs';
 import { checkReleaseMigrations, declaresSchematics } from '../publish.mjs';
 
 /**
