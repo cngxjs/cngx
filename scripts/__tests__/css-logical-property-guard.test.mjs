@@ -157,7 +157,9 @@ const SPINNER_SELECTOR = /spinner/;
 const SPINNER_BORDER_LONGHAND = /^border-(?:left|right)-(?:color|width|style)$/;
 
 const BARE_INSET = /(?<![-\w])(left|right)\s*:\s*([^;{}]+)[;}]/g;
-const MARGIN_PADDING_BORDER_INSET = /\b(?:margin|padding|border|inset)-(?:left|right)(?:-[a-z]+)?\b/g;
+// `env(safe-area-inset-left)` is an environment variable name, not a property.
+const MARGIN_PADDING_BORDER_INSET =
+  /(?<!safe-area-)\b(?:margin|padding|border|inset)-(?:left|right)(?:-[a-z]+)?\b/g;
 const PHYSICAL_CORNER_RADIUS = /\bborder-(?:top|bottom)-(?:left|right)-radius\b/g;
 const TEXT_ALIGN_FLOAT = /\b(?:text-align|float)\s*:\s*(?:left|right)\b/g;
 
@@ -257,6 +259,12 @@ describe('css logical-property (RTL) regression guard', () => {
     // but a non-geometry directional prop in a spinner rule is still caught
     expect(findOffenders('.cngx-spinner-label { text-align: left; }')).toHaveLength(1);
     expect(findOffenders('.cngx-spinner-label { padding-left: 8px; }')).toHaveLength(1);
+
+    // env(safe-area-inset-*) names a device inset, not a directional property
+    expect(
+      findOffenders('.x { padding-inline: max(8px, env(safe-area-inset-left), env(safe-area-inset-right)); }'),
+    ).toEqual([]);
+    expect(findOffenders('.x { padding-left: env(safe-area-inset-left); }')).toHaveLength(1);
 
     // allowlist (c) comments are inert
     expect(findOffenders('/* adds a border-left stripe */ .x { color: red; }')).toEqual([]);

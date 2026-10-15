@@ -1,0 +1,353 @@
+/**
+ * @overview
+ * Sheet and fullscreen presentation for `[cngxPopoverSheet]` popovers.
+ *
+ * **Breakpoint**
+ *
+ * Written once, here: `(pointer: coarse) and (max-width: 48rem)` sets
+ * `--cngx-popover-sheet-breakpoint` to `1` on the host, otherwise `0`.
+ * `CngxPopoverSheet` reads that property to resolve its `'auto'` request;
+ * no TypeScript length constant exists. A viewport query is admitted here
+ * because it decides overlay modality, not in-flow layout
+ * (responsive-by-default rule 2).
+ *
+ * **Presentations**
+ *
+ * Visuals key only on `data-cngx-presentation`, which the directive writes:
+ *
+ * - `sheet` - bottom-flush, full inline size, content-sized up to
+ *   `--cngx-popover-sheet-max-block-size`, dimmed `::backdrop`
+ * - `fullscreen` - fills the dynamic viewport (`100dvh`)
+ * - `anchored` - untouched; the popover keeps its anchored layout
+ *
+ * In both non-anchored presentations the host is a non-scrolling flex
+ * column: the `cngxPopoverSheetHeader` part stays put and every other
+ * direct child scrolls. A swipe region inside a scrolling panel never
+ * fires, so only the content below the header may scroll.
+ *
+ * **Settling**
+ *
+ * While `data-cngx-sheet-settling` is present (the first frames after open,
+ * until the panel rect is stable) the host is transparent and holds the
+ * slide start state without a transition, so the one-frame offset of the
+ * pinned scroll lock on iOS is never visible. The slide starts when the
+ * attribute is removed. Opacity keeps the initial focus target focusable.
+ *
+ * **Safe area**
+ *
+ * Inline padding is the larger of the token and both horizontal safe-area
+ * insets, on both edges, so it stays correct in RTL and in either landscape
+ * rotation; the block end pads `env(safe-area-inset-bottom)`. Edge-to-edge
+ * landscape on iOS needs the app to opt into `viewport-fit=cover`.
+ *
+ * **Dark mode**
+ *
+ * Three hooks (`prefers-color-scheme: dark`, `[data-color-scheme="dark"]`,
+ * `.dark`) deepen the shadow and dim the handle.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/popover-sheet-theme` - Material 3 surface
+ */
+
+@layer cngx.tokens {
+  /**
+   * Maximum block size of the `sheet` presentation. Room above it keeps
+   * the page visible behind the backdrop.
+   * @group Layout
+   */
+  @property --cngx-popover-sheet-max-block-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 70dvh;
+  }
+
+  /**
+   * Corner radius of the top edge of the `sheet` presentation.
+   * @group Layout
+   */
+  @property --cngx-popover-sheet-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
+
+  /**
+   * Inline padding of the panel and block padding of the header. SET from
+   * `--cngx-space-md` on the host, so density reaches it.
+   * @group Layout
+   */
+  @property --cngx-popover-sheet-padding {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 16px;
+  }
+
+  /**
+   * Gap between the items of the header row. SET from `--cngx-space-sm`.
+   * @group Layout
+   */
+  @property --cngx-popover-sheet-header-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 8px;
+  }
+
+  /**
+   * Inline size of the decorative drag handle.
+   * @group Handle
+   */
+  @property --cngx-popover-sheet-handle-inline-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 32px;
+  }
+
+  /**
+   * Block size of the decorative drag handle.
+   * @group Handle
+   */
+  @property --cngx-popover-sheet-handle-block-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 4px;
+  }
+
+  /**
+   * Fill of the decorative drag handle. `inherits: true` so the host SET
+   * reaches the handle part.
+   * @group Handle
+   */
+  @property --cngx-popover-sheet-handle-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.8 0.005 250);
+  }
+
+  /**
+   * Panel surface. SET from `--cngx-color-surface` on the host.
+   * @group Surface
+   */
+  @property --cngx-popover-sheet-surface {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Panel text colour. SET from `--cngx-color-text` on the host.
+   * @group Surface
+   */
+  @property --cngx-popover-sheet-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.2 0 0);
+  }
+
+  /**
+   * Drop shadow along the top edge of the `sheet` presentation.
+   * @group Surface
+   */
+  @property --cngx-popover-sheet-shadow {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 -4px 24px oklch(0 0 0 / 0.12);
+  }
+
+  /**
+   * Dimming paint of the `sheet` `::backdrop`. Paint only: taps outside
+   * the panel are handled by the directive, not by the backdrop.
+   * `inherits: true` so the host value reaches the pseudo-element.
+   * @group Surface
+   */
+  @property --cngx-popover-sheet-backdrop {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.32);
+  }
+
+  /**
+   * Duration of the slide in and out. SET from `--cngx-duration-base`.
+   * @group Motion
+   * @relatedTo provideMotion, CngxMotionScope, injectMotion
+   */
+  @property --cngx-popover-sheet-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 200ms;
+  }
+
+  /**
+   * Easing curve of the slide in and out.
+   * @group Motion
+   */
+  @property --cngx-popover-sheet-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: ease-out;
+  }
+
+  /* SET-from-scale: the registered initial values above win over a read-site
+   * var() fallback, so density, motion and foundation colour reach the sheet
+   * only through these host SETs. */
+  :where(.cngx-popover-sheet) {
+    --cngx-popover-sheet-padding: var(--cngx-space-md);
+    --cngx-popover-sheet-header-gap: var(--cngx-space-sm);
+    --cngx-popover-sheet-duration: var(--cngx-duration-base);
+    --cngx-popover-sheet-surface: var(--cngx-color-surface);
+    --cngx-popover-sheet-color: var(--cngx-color-text);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-popover-sheet-shadow: 0 -4px 24px oklch(0 0 0 / 0.5);
+      --cngx-popover-sheet-handle-color: oklch(0.5 0.005 250);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-popover-sheet-shadow: 0 -4px 24px oklch(0 0 0 / 0.5);
+    --cngx-popover-sheet-handle-color: oklch(0.5 0.005 250);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-popover-sheet-shadow: 0 -4px 24px oklch(0 0 0 / 0.12);
+    --cngx-popover-sheet-handle-color: oklch(0.8 0.005 250);
+  }
+}
+
+@layer cngx.components {
+  /* The breakpoint, written once. Unregistered on purpose: the directive
+   * reads the raw value. */
+  .cngx-popover-sheet {
+    --cngx-popover-sheet-breakpoint: 0;
+  }
+
+  @media (pointer: coarse) and (max-width: 48rem) {
+    .cngx-popover-sheet {
+      --cngx-popover-sheet-breakpoint: 1;
+    }
+  }
+
+  .cngx-popover-sheet:is([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen']) {
+    position: fixed;
+    inset: auto 0 0 0;
+    margin: 0;
+    box-sizing: border-box;
+    inline-size: 100%;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    max-block-size: var(--cngx-popover-sheet-max-block-size, 70dvh);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 0;
+    border-start-start-radius: var(--cngx-popover-sheet-radius, 16px);
+    border-start-end-radius: var(--cngx-popover-sheet-radius, 16px);
+    padding-block: 0 env(safe-area-inset-bottom, 0px);
+    /* Symmetric on purpose: the notch side flips with the device rotation,
+     * and the larger inset on both edges stays correct in RTL. */
+    padding-inline: max(
+      var(--cngx-popover-sheet-padding, 16px),
+      env(safe-area-inset-left, 0px),
+      env(safe-area-inset-right, 0px)
+    );
+    background: var(--cngx-popover-sheet-surface, oklch(1 0 0));
+    color: var(--cngx-popover-sheet-color, oklch(0.2 0 0));
+    box-shadow: var(--cngx-popover-sheet-shadow, 0 -4px 24px oklch(0 0 0 / 0.12));
+    translate: 0 0;
+    transition:
+      translate var(--cngx-popover-sheet-duration, 200ms) var(--cngx-popover-sheet-easing, ease-out),
+      opacity var(--cngx-popover-sheet-duration, 200ms) var(--cngx-popover-sheet-easing, ease-out);
+  }
+
+  .cngx-popover-sheet[data-cngx-presentation='fullscreen'] {
+    inset: 0;
+    block-size: 100dvh;
+    max-block-size: 100dvh;
+    border-radius: 0;
+    padding-block-start: env(safe-area-inset-top, 0px);
+    box-shadow: none;
+  }
+
+  .cngx-popover-sheet[data-cngx-presentation='sheet']::backdrop {
+    background: var(--cngx-popover-sheet-backdrop, oklch(0 0 0 / 0.32));
+  }
+
+  /* Slide start and end state. Opening holds it until the popover flips to
+   * open on the next frame; closing returns to it, and CngxPopover waits
+   * for the transition before hiding. */
+  .cngx-popover-sheet:is(
+      [data-cngx-presentation='sheet'],
+      [data-cngx-presentation='fullscreen']
+    ):is(.cngx-popover--opening, .cngx-popover--closing) {
+    translate: 0 100%;
+  }
+
+  .cngx-popover-sheet:is(
+      [data-cngx-presentation='sheet'],
+      [data-cngx-presentation='fullscreen']
+    )[data-cngx-sheet-settling] {
+    opacity: 0;
+    translate: 0 100%;
+    transition: none;
+  }
+
+  /* Only the content below the header scrolls (S5: a swipe region inside a
+   * scrolling panel never fires). */
+  .cngx-popover-sheet:is([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen'])
+    > * {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  .cngx-popover-sheet:is([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen'])
+    > .cngx-popover-sheet-header {
+    flex: none;
+    overflow: visible;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cngx-popover-sheet-header-gap, 8px);
+    padding-block: var(--cngx-popover-sheet-padding, 16px);
+  }
+
+  .cngx-popover-sheet-handle {
+    display: none;
+  }
+
+  .cngx-popover-sheet[data-cngx-presentation='sheet'] .cngx-popover-sheet-handle {
+    display: block;
+    flex: 0 0 100%;
+    inline-size: var(--cngx-popover-sheet-handle-inline-size, 32px);
+    max-inline-size: var(--cngx-popover-sheet-handle-inline-size, 32px);
+    block-size: var(--cngx-popover-sheet-handle-block-size, 4px);
+    margin-inline: auto;
+    border-radius: var(--cngx-popover-sheet-handle-block-size, 4px);
+    background: var(--cngx-popover-sheet-handle-color, oklch(0.8 0.005 250));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cngx-popover-sheet:is([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen']) {
+    transition: none;
+  }
+}
+
+/* forced-colors (WHCM): the sheet surface is bounded by a box-shadow only,
+ * which the forced palette strips, and the handle is a background bar that
+ * flattens to Canvas. Re-draw the top edge and the handle with CanvasText.
+ * Unlayered to beat the layered component rules. */
+@media (forced-colors: active) {
+  .cngx-popover-sheet:is([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen']) {
+    background: Canvas;
+    color: CanvasText;
+    border-block-start: 1px solid CanvasText;
+  }
+
+  .cngx-popover-sheet[data-cngx-presentation='sheet'] .cngx-popover-sheet-handle {
+    background: CanvasText;
+  }
+}
