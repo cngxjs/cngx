@@ -10,6 +10,10 @@
 //     somewhere in the text does not count.
 // S2  a code that no spec can reach is listed in SPEC_COVERAGE_EXEMPT with a
 //     reason; a row whose code gained a spec, or left the manifest, fails.
+//
+// Known limit: the scan is textual, so `^CNGXnnnn` in a comment or a string
+// that never reaches an assertion also counts. It proves an author anchored
+// the code somewhere in the lib's specs, not that the assertion runs.
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
