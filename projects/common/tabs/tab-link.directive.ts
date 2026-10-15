@@ -12,8 +12,8 @@ import {
   signal,
 } from '@angular/core';
 
-import { CngxRuntimeError } from '@cngx/utils';
 import { nextUid } from '@cngx/core/utils';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 

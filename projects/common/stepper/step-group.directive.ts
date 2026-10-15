@@ -9,8 +9,8 @@ import {
   type Signal,
 } from '@angular/core';
 
-import { CngxRuntimeError } from '@cngx/utils';
 import { nextUid } from '@cngx/core/utils';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import { CNGX_STEP_GROUP_HOST, type CngxStepGroupHost } from './step-group-host.token';
 import { injectStepperConfig } from './stepper-config';
