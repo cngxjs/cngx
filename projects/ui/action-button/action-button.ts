@@ -1,5 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -344,17 +345,17 @@ export class CngxActionButton {
 
   constructor() {
     // Double-toast guard, consumer placed [cngxToastOn] on the same element.
-    if (
-      typeof ngDevMode !== 'undefined' &&
-      ngDevMode &&
-      this.externalToastOn &&
-      (this.toastSuccess() || this.toastError())
-    ) {
-      cngxDevWarn(
-        'CNGX3008',
-        'CngxActionButton: [toastSuccess]/[toastError] inputs and [cngxToastOn] ' +
-          'on the same element will fire duplicate toasts. Use one or the other.',
-      );
+    // After the first render: template-bound inputs are unset in the constructor.
+    if (typeof ngDevMode !== 'undefined' && ngDevMode && this.externalToastOn) {
+      afterNextRender(() => {
+        if (this.toastSuccess() || this.toastError()) {
+          cngxDevWarn(
+            'CNGX3008',
+            'CngxActionButton: [toastSuccess]/[toastError] inputs and [cngxToastOn] ' +
+              'on the same element will fire duplicate toasts. Use one or the other.',
+          );
+        }
+      });
     }
 
     const tracker = createTransitionTracker(() => this.effectiveStatus());

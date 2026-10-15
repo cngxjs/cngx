@@ -13,7 +13,7 @@ import {
 import { type CngxAsyncState, buildAsyncStateView, type AsyncStatus } from '@cngx/core/utils';
 import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
 import { stripBidiIsolates } from '@cngx/testing';
-import { CngxToaster, provideFeedback, withErrorDetail } from '@cngx/ui/feedback';
+import { CngxToastOn, CngxToaster, provideFeedback, withErrorDetail } from '@cngx/ui/feedback';
 
 function deferred<T = void>() {
   let resolve!: (value: T) => void;
@@ -176,6 +176,35 @@ class DisabledReasonHost {
 class ExternalFailedTemplateHost {
   readonly mock = buildMockState();
   readonly mockState = this.mock.state;
+  readonly action = () => Promise.resolve();
+}
+
+@Component({
+  template: `
+    <cngx-action-button
+      [action]="action"
+      #btn="cngxActionButton"
+      [cngxToastOn]="btn.state"
+      toastSuccess="Saved!"
+    >
+      Save
+    </cngx-action-button>
+  `,
+  imports: [CngxActionButton, CngxToastOn],
+})
+class DoubleToastHost {
+  readonly action = () => Promise.resolve();
+}
+
+@Component({
+  template: `
+    <cngx-action-button [action]="action" #btn="cngxActionButton" [cngxToastOn]="btn.state">
+      Save
+    </cngx-action-button>
+  `,
+  imports: [CngxActionButton, CngxToastOn],
+})
+class BridgeOnlyHost {
   readonly action = () => Promise.resolve();
 }
 
@@ -637,6 +666,32 @@ describe('CngxActionButton', () => {
 
       expect(showSpy).toHaveBeenCalledTimes(1);
       expect(ab.state.lastUpdated()).toBe(stamp);
+    });
+
+    it('warns CNGX3008 when [cngxToastOn] and toastSuccess share the element', () => {
+      TestBed.configureTestingModule({
+        providers: [{ provide: CngxToaster, useValue: { show: vi.fn() } }],
+      });
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const fixture = TestBed.createComponent(DoubleToastHost);
+      fixture.detectChanges();
+      TestBed.tick();
+
+      const calls = warn.mock.calls.filter(([m]) => /^CNGX3008: /.test(String(m)));
+      expect(calls).toHaveLength(1);
+      expect(calls[0][0]).toMatch(/^CNGX3008: CngxActionButton: \[toastSuccess\]\/\[toastError\] inputs/);
+    });
+
+    it('stays silent for [cngxToastOn] without the button toast inputs', () => {
+      TestBed.configureTestingModule({
+        providers: [{ provide: CngxToaster, useValue: { show: vi.fn() } }],
+      });
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const fixture = TestBed.createComponent(BridgeOnlyHost);
+      fixture.detectChanges();
+      TestBed.tick();
+
+      expect(warn.mock.calls.some(([m]) => /^CNGX3008: /.test(String(m)))).toBe(false);
     });
 
     it('should not toast when toaster is not provided', async () => {
