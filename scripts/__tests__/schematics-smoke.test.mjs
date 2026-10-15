@@ -22,6 +22,18 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CORE_COLLECTION = join(ROOT, 'dist', 'core', 'schematics', 'collection.json');
 const UI_COLLECTION = join(ROOT, 'dist', 'ui', 'schematics', 'collection.json');
 
+// `ng add` parses its flags before the package is installed, without the
+// schema's option types (@angular/cli src/commands/add/cli.js:121-134,
+// `.strict(false)`): `--ai-tools claude,vscode` reaches the schematic as one
+// string and `--lint=false` as "false". The normalize middleware keeps only
+// the last value of a repeated flag
+// (src/command-builder/utilities/normalize-options-middleware.js:25-33), so
+// the comma form is the one multi-value spelling. Verified against this CLI
+// major; a new one must be re-checked (schematics accepted debt 12).
+const VERIFIED_CLI_MAJOR = 21;
+const BOOLEAN_FLAGS = ['runtimeSwitch', 'lint', 'a11yPreferences', 'feedback', 'floatingFallback', 'yes', 'prompts', 'quiet'];
+const PRE_INSTALL_FALSE = Object.fromEntries(BOOLEAN_FLAGS.map((flag) => [flag, 'false']));
+
 function requireDist(file) {
   if (!existsSync(file)) {
     throw new Error(`${file} is missing - run \`npm run build:libs\` first`);
@@ -96,6 +108,63 @@ describe('dist/core/schematics', () => {
     expect(Object.keys(schema.properties)).not.toContain('dryRun');
     expect(Object.keys(schema.properties)).not.toContain('interactive');
     expect(Object.keys(schema.properties)).not.toContain('verbose');
+  });
+
+  describe('with the flags ng add passes before the install', () => {
+    it.each([
+      ['a single list entry', { aiTools: 'claude', libs: 'core' }, { aiTools: ['claude'], libs: ['core'] }],
+      ['a comma list', { aiTools: 'claude,vscode', libs: 'core,forms' }, { aiTools: ['claude', 'vscode'], libs: ['core', 'forms'] }],
+    ])('ng-add records %s and every boolean given as "false"', async (_name, lists, recorded) => {
+      const tree = await runner.runSchematic('ng-add', { ...lists, ...PRE_INSTALL_FALSE }, await createAppTree(runner));
+      const { answers } = JSON.parse(tree.readText('.cngx/install.json'));
+
+      expect(answers).toMatchObject({
+        ...recorded,
+        runtimeSwitch: false,
+        lint: false,
+        a11yPreferences: false,
+        feedback: false,
+        floatingFallback: false,
+      });
+    });
+
+    it('ng-add names an unknown or repeated list entry', async () => {
+      await expect(runner.runSchematic('ng-add', { aiTools: 'emacs' }, appTree)).rejects.toThrow(
+        '"emacs" is not a valid answer for aiTools. Expected one of: claude, cursor, vscode.',
+      );
+      await expect(runner.runSchematic('ng-add', { aiTools: 'claude,claude' }, appTree)).rejects.toThrow(
+        '"claude" is not a valid answer for aiTools.',
+      );
+    });
+  });
+
+  // The CLI types an option by the first branch of its `oneOf`
+  // (src/utilities/json-schema.js:231-236). A list must parse as a string on
+  // both sides of the install; a boolean keeps `--no-flag` once installed.
+  it('orders the schema branches so the pre-install form of every flag validates', () => {
+    const schema = JSON.parse(readFileSync(join(ROOT, 'dist', 'core', 'schematics', 'ng-add', 'schema.json'), 'utf8'));
+    const properties = Object.entries(schema.properties);
+    const branches = (property) => property.oneOf ?? [];
+
+    expect(properties.filter(([, property]) => property.type === 'array' || property.type === 'boolean')).toEqual([]);
+    for (const [name, property] of properties.filter(([, p]) => branches(p).some((branch) => branch.type === 'array'))) {
+      expect([name, branches(property)[0]]).toEqual([name, { type: 'string' }]);
+    }
+    const booleans = properties.filter(([, p]) => branches(p).some((branch) => branch.type === 'boolean'));
+    expect(booleans.map(([name]) => name)).toEqual(BOOLEAN_FLAGS);
+    for (const [name, property] of booleans) {
+      expect([name, branches(property)]).toEqual([name, [{ type: 'boolean' }, { type: 'string', enum: ['true', 'false'] }]]);
+    }
+  });
+
+  it('runs against the @angular/cli major the pre-install flag parsing was verified on', () => {
+    const cli = JSON.parse(readFileSync(join(ROOT, 'node_modules', '@angular', 'cli', 'package.json'), 'utf8'));
+    const major = Number(cli.version.split('.')[0]);
+
+    expect(
+      major,
+      `@angular/cli ${cli.version}: re-check how ng add parses flags before the install (schematics accepted debt 12), then bump VERIFIED_CLI_MAJOR`,
+    ).toBe(VERIFIED_CLI_MAJOR);
   });
 });
 
@@ -202,6 +271,19 @@ describe('dist/ui/schematics ng-add shim', () => {
     expect(manifest.dependencies['@cngx/core']).toBe(version);
     expect(manifest.dependencies['@cngx/utils']).toBe(version);
     expect(runner.tasks.map((task) => task.name)).toEqual(['node-package']);
+  });
+
+  it('forwards the flags ng add passes before the install to the core ng-add unchanged', async () => {
+    const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
+    runner.registerCollection('@cngx/core', requireDist(CORE_COLLECTION));
+    const tree = await runner.runSchematic(
+      'ng-add',
+      { aiTools: 'claude,vscode', libs: 'core', ...PRE_INSTALL_FALSE },
+      await createAppTree(runner),
+    );
+    const { answers } = JSON.parse(tree.readText('.cngx/install.json'));
+
+    expect(answers).toMatchObject({ aiTools: ['claude', 'vscode'], libs: ['core'], lint: false, a11yPreferences: false });
   });
 
   it('installs @cngx/core first and runs its ng-add as a task when core is missing', async () => {
