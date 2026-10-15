@@ -55,7 +55,7 @@ function tty() {
   const { lines, logger } = capture();
   const renderer = createTtyRenderer({
     color: createPalette({}, false),
-    verbosity: 'normal',
+    quiet: false,
     logger,
     listr: { renderer: 'test', rendererOptions: { logger: listrLogger, task: ['title'] } },
   });

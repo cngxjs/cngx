@@ -4,7 +4,7 @@ import { type Change } from '../plan/change';
 import { type ChangePlan, createChangePlan } from '../plan/plan';
 import { createPalette } from './palette';
 import { createPlainRenderer } from './plain-renderer';
-import { type RenderLogger, type Verbosity } from './renderer';
+import { type RenderLogger } from './renderer';
 
 const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
 const ANSI = /\u001b\[/;
@@ -67,38 +67,25 @@ function capture(): Captured {
   };
 }
 
-function renderer(verbosity: Verbosity, env: Readonly<Record<string, string>> = {}, isTTY = false) {
+function renderer(quiet: boolean, env: Readonly<Record<string, string>> = {}, isTTY = false) {
   const { logger, lines } = capture();
   return {
     lines,
-    renderer: createPlainRenderer({ color: createPalette(env, isTTY), verbosity, logger }),
+    renderer: createPlainRenderer({ color: createPalette(env, isTTY), quiet, logger }),
   };
 }
 
 describe('createPlainRenderer', () => {
   it('prints the described plan as the todo list', async () => {
-    const { lines, renderer: plain } = renderer('normal');
+    const { lines, renderer: plain } = renderer(false);
 
     await plain.todo(PLAN);
 
     expect(lines).toMatchSnapshot();
   });
 
-  it('adds what each change touches when verbose', async () => {
-    const { lines, renderer: plain } = renderer('verbose');
-
-    await plain.todo(PLAN);
-
-    expect(lines.slice(lines.indexOf('info Details:'))).toEqual([
-      'info Details:',
-      'info   dependency:@cngx/core: add-dependency @cngx/core@0.1.0',
-      'info   style-import: add-style-import src/styles.css',
-      'info   note:doctor: note',
-    ]);
-  });
-
   it('prints the preflight checklist with one level per status', () => {
-    const { lines, renderer: plain } = renderer('normal');
+    const { lines, renderer: plain } = renderer(false);
 
     plain.preflight([
       { label: 'Angular 21.2.1', status: 'ok' },
@@ -115,7 +102,7 @@ describe('createPlainRenderer', () => {
   });
 
   it('emits only the summary when quiet', async () => {
-    const { lines, renderer: plain } = renderer('quiet');
+    const { lines, renderer: plain } = renderer(true);
 
     plain.preflight([{ label: 'Angular 21.2.1', status: 'ok' }]);
     await plain.todo(PLAN);
@@ -126,7 +113,7 @@ describe('createPlainRenderer', () => {
   });
 
   it('strips ANSI under NO_COLOR even on a terminal', async () => {
-    const { lines, renderer: plain } = renderer('verbose', { NO_COLOR: '1' }, true);
+    const { lines, renderer: plain } = renderer(false, { NO_COLOR: '1' }, true);
 
     plain.preflight([{ label: 'Angular 21.2.1', status: 'ok' }]);
     await plain.todo(PLAN);
@@ -136,7 +123,7 @@ describe('createPlainRenderer', () => {
   });
 
   it('colours the markers when colour is on', () => {
-    const { lines, renderer: plain } = renderer('normal', { FORCE_COLOR: '1' });
+    const { lines, renderer: plain } = renderer(false, { FORCE_COLOR: '1' });
 
     plain.preflight([{ label: 'Angular 21.2.1', status: 'ok' }]);
 
@@ -144,7 +131,7 @@ describe('createPlainRenderer', () => {
   });
 
   it('says so when the plan is empty', async () => {
-    const { lines, renderer: plain } = renderer('normal');
+    const { lines, renderer: plain } = renderer(false);
 
     await plain.todo(createChangePlan([]));
 
@@ -154,7 +141,7 @@ describe('createPlainRenderer', () => {
   it('does not mutate the plan', async () => {
     const before = JSON.stringify(PLAN);
 
-    await renderer('verbose').renderer.todo(PLAN);
+    await renderer(false).renderer.todo(PLAN);
 
     expect(JSON.stringify(PLAN)).toBe(before);
   });

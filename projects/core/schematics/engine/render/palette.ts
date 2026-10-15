@@ -10,7 +10,6 @@ export interface Palette {
   readonly green: Format;
   readonly yellow: Format;
   readonly red: Format;
-  readonly cyan: Format;
 }
 
 export type ColorEnv = Readonly<Record<string, string | undefined>>;
@@ -43,6 +42,5 @@ export function createPalette(env: ColorEnv, isTTY: boolean): Palette {
     green: colors.green,
     yellow: colors.yellow,
     red: colors.red,
-    cyan: colors.cyan,
   };
 }

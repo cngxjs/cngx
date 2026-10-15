@@ -32,7 +32,6 @@ function touchedFile(change: Change): string | undefined {
   switch (change.kind) {
     case 'create-file':
     case 'edit-file':
-    case 'add-import':
     case 'add-style-import':
     case 'write-json':
       return change.path;

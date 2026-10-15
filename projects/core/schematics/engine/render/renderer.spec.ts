@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createChangePlan } from '../plan/plan';
 import { createPalette } from './palette';
-import { createRenderer, type RenderLogger, type Verbosity } from './renderer';
+import { createRenderer, type RenderLogger } from './renderer';
 
 const PLAN = createChangePlan([
   {
@@ -30,7 +30,7 @@ class CountingLogger extends ListrLogger {
   }
 }
 
-function run(isTTY: boolean, env: Readonly<Record<string, string>>, verbosity: Verbosity) {
+function run(isTTY: boolean, env: Readonly<Record<string, string>>, quiet: boolean) {
   const lines: string[] = [];
   const logger: RenderLogger = {
     info: (message) => lines.push(message),
@@ -41,7 +41,7 @@ function run(isTTY: boolean, env: Readonly<Record<string, string>>, verbosity: V
   const renderer = createRenderer({
     isTTY,
     color: createPalette(env, isTTY),
-    verbosity,
+    quiet,
     logger,
     listr: { renderer: 'test', rendererOptions: { logger: listrLogger } },
   });
@@ -50,7 +50,7 @@ function run(isTTY: boolean, env: Readonly<Record<string, string>>, verbosity: V
 
 describe('createRenderer', () => {
   it('uses the task list on an interactive coloured terminal', async () => {
-    const { renderer, lines, listrEvents } = run(true, {}, 'normal');
+    const { renderer, lines, listrEvents } = run(true, {}, false);
 
     await renderer.todo(PLAN);
 
@@ -59,11 +59,11 @@ describe('createRenderer', () => {
   });
 
   it.each([
-    ['no terminal', false, {}, 'normal'],
-    ['NO_COLOR', true, { NO_COLOR: '1' }, 'normal'],
-    ['--quiet', true, {}, 'quiet'],
-  ] as const)('falls back to plain lines for %s', async (_case, isTTY, env, verbosity) => {
-    const { renderer, listrEvents } = run(isTTY, env, verbosity);
+    ['no terminal', false, {}, false],
+    ['NO_COLOR', true, { NO_COLOR: '1' }, false],
+    ['--quiet', true, {}, true],
+  ] as const)('falls back to plain lines for %s', async (_case, isTTY, env, quiet) => {
+    const { renderer, listrEvents } = run(isTTY, env, quiet);
 
     await renderer.todo(PLAN);
 

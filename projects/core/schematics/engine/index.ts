@@ -29,13 +29,11 @@ export {
   declaredRange,
   type PackageManifest,
   parseManifest,
-  readOwnVersion,
 } from './manifest/manifest';
 export { planThirdPartyDependency } from './manifest/third-party';
 
 export {
   type AddDependency,
-  type AddImport,
   type AddProvider,
   type AddStyleEntry,
   type AddStyleImport,
@@ -59,7 +57,7 @@ export {
   type StepResult,
   type WriteJson,
 } from './plan/change';
-export { type ChangePlan, createChangePlan, describeChangePlan } from './plan/plan';
+export { type ChangePlan, createChangePlan } from './plan/plan';
 export { createReport, type Report, type ReportLink } from './plan/report';
 export { errorMessage, isRecord, joinNames } from './plan/text';
 export {
@@ -77,11 +75,9 @@ export {
   type LanguagePackArgument,
   readProviderCalls,
 } from './edit/ts-edit';
-export { findElements, insertAttribute, parseTemplateContent } from './edit/template-edit';
 export {
   hasStyleImport,
   insertLeadingStyleImport,
-  insertStyleImport,
   styleEntryPath,
 } from './edit/style-edit';
 export { EMPTY_RENAME_TABLE, type MemberRename, type RenameTable } from './migrate/rename-table';
@@ -100,7 +96,6 @@ export {
   canPrompt,
   type ConfirmQuestion,
   createPromptFlow,
-  inquirerAdapter,
   type MultiSelectQuestion,
   type PromptAdapter,
   type PromptAnswer,
@@ -110,7 +105,7 @@ export {
   type PromptFlowOptions,
   type SelectQuestion,
 } from './prompt/prompt';
-export { type ColorEnv, createPalette, type Palette } from './render/palette';
+export { type ColorEnv, type Palette } from './render/palette';
 export {
   createRenderer,
   type PreflightItem,
@@ -118,7 +113,6 @@ export {
   type Renderer,
   type RendererOptions,
   type RenderLogger,
-  type Verbosity,
 } from './render/renderer';
 export { createSummary, type SummaryHeadlines } from './render/summary';
 export { createShellRendererOptions, isCi, type TerminalStream } from './render/terminal';

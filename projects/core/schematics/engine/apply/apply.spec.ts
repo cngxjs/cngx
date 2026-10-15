@@ -61,19 +61,11 @@ describe('applyChangePlan', () => {
     expect(tree.readText('a.txt')).toBe('ABC\n');
   });
 
-  it('adds an import once', async () => {
-    const change: Change = {
-      ...BASE,
-      kind: 'add-import',
-      id: 'i',
-      path: 'main.ts',
-      symbol: 'provideA11yPreferences',
-      module: '@cngx/core',
-    };
-    const tree = await apply([change, change], createMemoryTree({ 'main.ts': "import { x } from 'x';\n" }));
+  it('refuses a change kind it has no mapping for', () => {
+    const unknown = { ...BASE, kind: 'unknown-kind', id: 'i', path: 'main.ts' } as unknown as Change;
 
-    expect(tree.readText('main.ts')).toBe(
-      "import { x } from 'x';\nimport { provideA11yPreferences } from '@cngx/core';\n",
+    expect(() => applyChangePlan(createChangePlan([{ changes: [unknown], skipped: [] }]))).toThrow(
+      'No apply mapping for change',
     );
   });
 

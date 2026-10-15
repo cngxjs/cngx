@@ -22,7 +22,6 @@ import {
 import { addDependency } from '../manifest/add-dependency';
 import { addLockstepDependency } from '../manifest/lockstep';
 import {
-  type AddImport,
   type AddProvider,
   type AddStyleEntry,
   type AddStyleImport,
@@ -60,10 +59,6 @@ function insertImportInto(tree: Tree, path: string, symbol: string, module: stri
   const recorder = tree.beginUpdate(path);
   applyToUpdateRecorder(recorder, [insertImport(source, path, symbol, module)]);
   tree.commitUpdate(recorder);
-}
-
-function addImport(change: AddImport): Rule {
-  return (tree: Tree) => insertImportInto(tree, change.path, change.symbol, change.module);
 }
 
 function renderCall(call: ProviderArg, external: (symbol: string, module: string) => string): string {
@@ -178,8 +173,6 @@ function toRule(change: Change): Rule {
       return createFile(change);
     case 'edit-file':
       return editFile(change);
-    case 'add-import':
-      return addImport(change);
     case 'add-dependency':
       return change.dev === true
         ? addDependency(change.name, change.version, {

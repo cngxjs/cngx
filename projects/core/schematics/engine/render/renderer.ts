@@ -3,9 +3,6 @@ import { type Palette } from './palette';
 import { createPlainRenderer } from './plain-renderer';
 import { createTtyRenderer, type TtyListrOptions } from './tty-renderer';
 
-/** `quiet` prints only the summary; `verbose` adds what each change touches. */
-export type Verbosity = 'quiet' | 'normal' | 'verbose';
-
 export type PreflightStatus = 'ok' | 'warn' | 'fail';
 
 /** One line of the preflight checklist (Angular version, workspace, git state). */
@@ -37,7 +34,8 @@ export interface RendererOptions {
   /** Interactive terminal and not CI; the shell resolves it once. */
   readonly isTTY: boolean;
   readonly color: Palette;
-  readonly verbosity: Verbosity;
+  /** `--quiet`: print only the summary. */
+  readonly quiet: boolean;
   readonly logger: RenderLogger;
   /** Overrides for the TTY task list; specs pass listr2's `test` renderer. */
   readonly listr?: TtyListrOptions;
@@ -49,6 +47,6 @@ export interface RendererOptions {
  * logger, which is what CI logs and `NO_COLOR` users read.
  */
 export function createRenderer(options: RendererOptions): Renderer {
-  const live = options.isTTY && options.color.enabled && options.verbosity !== 'quiet';
+  const live = options.isTTY && options.color.enabled && !options.quiet;
   return live ? createTtyRenderer(options) : createPlainRenderer(options);
 }

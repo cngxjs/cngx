@@ -161,10 +161,6 @@ export interface ProjectFacts {
   readonly manifest: PackageManifest;
   readonly sourceRoot: string;
   readonly angularVersion: string | undefined;
-  readonly bootstrap: 'standalone' | 'ngmodule';
-  readonly zoneless: boolean;
-  readonly signalForms: boolean;
-  readonly stylesKind: 'css' | 'scss';
   /** The global stylesheet; `undefined` when the build lists none. */
   readonly stylesPath: string | undefined;
   /** `@cngx/themes/cngx.css` is imported by a global stylesheet or listed as a style entry. */
@@ -204,7 +200,6 @@ export interface ProjectFacts {
   /** An `.eslintrc*` config ESLint 9 no longer reads; `undefined` when there is none. */
   readonly legacyEslintConfig: LegacyEslintConfigFacts | undefined;
   readonly eslintStack: EslintStackFacts;
-  readonly ssr: boolean;
   readonly sourceLocale: string | undefined;
   readonly maturity: 'fresh' | 'existing';
 }
@@ -574,11 +569,6 @@ function rootProvidersPath(mainPath: string, main: string, standalone: boolean, 
   return specifier === undefined ? fallback : `${posix.join(posix.dirname(mainPath), specifier)}.ts`;
 }
 
-function includesZone(polyfills: unknown): boolean {
-  const entries = Array.isArray(polyfills) ? polyfills : [polyfills];
-  return entries.some((entry) => entry === 'zone.js');
-}
-
 function sourceLocaleOf(project: workspaces.ProjectDefinition): string | undefined {
   const i18n = project.extensions['i18n'];
   const locale = isRecord(i18n) ? i18n['sourceLocale'] : undefined;
@@ -603,12 +593,13 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const options = buildOptions(project);
   const manifest = parseManifest(tree.readText('package.json'));
 
-  // One read per source file feeds every source-derived fact.
-  const sources = listFiles(tree, sourceRoot, { accept: isSourceFile }).map((path) => ({
+  // The component count is the only fact read from source contents, so only
+  // the app folder is read up front; the cache serves its files to later reads.
+  const appSources = listFiles(tree, posix.join(sourceRoot, 'app'), { accept: isSourceFile }).map((path) => ({
     path,
     content: tree.readText(path),
   }));
-  const contents = new Map<string, string | undefined>(sources.map(({ path, content }) => [path, content]));
+  const contents = new Map<string, string | undefined>(appSources.map(({ path, content }) => [path, content]));
   const read: Read = (path) => {
     if (!contents.has(path)) {
       contents.set(path, tree.exists(path) ? tree.readText(path) : undefined);
@@ -626,10 +617,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
 
   const entries = styleEntries(options);
   const stylesPath = globalStylesheet(entries);
-  const appRoot = `${posix.join(sourceRoot, 'app')}/`;
-  const componentCount = sources.filter(
-    ({ path, content }) => path.startsWith(appRoot) && /@Component\s*\(/.test(content),
-  ).length;
+  const componentCount = appSources.filter(({ content }) => /@Component\s*\(/.test(content)).length;
 
   const mcpConfigs: Readonly<Record<AiTool, McpConfigFacts>> = {
     claude: mcpConfigOf(tree, MCP_CONFIGS.claude.path, MCP_CONFIGS.claude.key),
@@ -645,10 +633,6 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     manifest,
     sourceRoot,
     angularVersion: versionOf(declaredRange(manifest, '@angular/core')),
-    bootstrap: standalone ? 'standalone' : 'ngmodule',
-    zoneless: !includesZone(options['polyfills']) && !providers.includes('provideZoneChangeDetection'),
-    signalForms: sources.some(({ content }) => /['"]@angular\/forms\/signals['"]/.test(content)),
-    stylesKind: stylesPath?.endsWith('.scss') === true ? 'scss' : 'css',
     stylesPath,
     cngxStylesheet: importsCngxStylesheet(read, entries),
     cngxThemePath: existingCngxTheme(tree, read, sourceRoot, entries),
@@ -682,10 +666,6 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     eslintConfig: detectEslintConfig(tree),
     legacyEslintConfig: detectLegacyEslintConfig(tree),
     eslintStack: detectEslintStack(manifest),
-    ssr:
-      options['server'] !== undefined ||
-      options['ssr'] !== undefined ||
-      declaredRange(manifest, '@angular/ssr') !== undefined,
     sourceLocale: sourceLocaleOf(project),
     maturity: componentCount > 1 || hasOtherUi || hasOwnProviders ? 'existing' : 'fresh',
   };
