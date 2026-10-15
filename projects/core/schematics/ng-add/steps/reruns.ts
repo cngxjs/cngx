@@ -2,6 +2,9 @@ import {
   AI_TOOLS,
   type Change,
   CNGX_LIBS,
+  isBoolean,
+  isListOf,
+  isOneOf,
   LANGUAGES,
   NG_ADD_PRESETS,
   type NgAddPreset,
@@ -16,14 +19,6 @@ import { INSTALL_MANIFEST_PATH, type InstallManifest } from './manifest';
 import { type OnboardingAnswers, type Versions } from './model';
 import { planTheme } from './theme';
 
-function oneOf<T extends string>(vocabulary: readonly T[], value: unknown): value is T {
-  return vocabulary.some((entry) => entry === value);
-}
-
-function listOf<T extends string>(vocabulary: readonly T[], value: unknown): value is readonly T[] {
-  return Array.isArray(value) && value.every((entry) => oneOf(vocabulary, entry));
-}
-
 /** What a preset answers before any flag or question; the shell passes `presetDefaults`. */
 export type PresetDefaults = (preset: NgAddPreset) => OnboardingAnswers;
 
@@ -37,8 +32,6 @@ function answerOr<T>(value: unknown, valid: (value: unknown) => value is T, fall
   return valid(value) ? value : undefined;
 }
 
-const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
-
 /**
  * The answers the last install recorded, read back against today's answer
  * vocabulary. The preset is required; every other missing answer is the
@@ -48,21 +41,21 @@ const isBoolean = (value: unknown): value is boolean => typeof value === 'boolea
 export function readRecordedAnswers(manifest: InstallManifest, defaultsFor: PresetDefaults): OnboardingAnswers | undefined {
   const recorded = manifest.answers;
   const preset = recorded['preset'];
-  if (!oneOf(NG_ADD_PRESETS, preset)) {
+  if (!isOneOf(NG_ADD_PRESETS, preset)) {
     return undefined;
   }
   const defaults = defaultsFor(preset);
   const answers = {
     preset,
-    libs: answerOr(recorded['libs'], (value) => listOf(CNGX_LIBS, value), defaults.libs),
-    theme: answerOr(recorded['theme'], (value) => oneOf(THEME_CHOICES, value), defaults.theme),
-    i18n: answerOr(recorded['i18n'], (value) => oneOf(LANGUAGES, value), defaults.i18n),
+    libs: answerOr(recorded['libs'], (value) => isListOf(CNGX_LIBS, value), defaults.libs),
+    theme: answerOr(recorded['theme'], (value) => isOneOf(THEME_CHOICES, value), defaults.theme),
+    i18n: answerOr(recorded['i18n'], (value) => isOneOf(LANGUAGES, value), defaults.i18n),
     runtimeSwitch: answerOr(recorded['runtimeSwitch'], isBoolean, defaults.runtimeSwitch),
     lint: answerOr(recorded['lint'], isBoolean, defaults.lint),
     a11yPreferences: answerOr(recorded['a11yPreferences'], isBoolean, defaults.a11yPreferences),
     feedback: answerOr(recorded['feedback'], isBoolean, defaults.feedback),
     floatingFallback: answerOr(recorded['floatingFallback'], isBoolean, defaults.floatingFallback),
-    aiTools: answerOr(recorded['aiTools'], (value) => listOf(AI_TOOLS, value), defaults.aiTools),
+    aiTools: answerOr(recorded['aiTools'], (value) => isListOf(AI_TOOLS, value), defaults.aiTools),
   };
   const { libs, theme, i18n, runtimeSwitch, lint, a11yPreferences, feedback, floatingFallback, aiTools } = answers;
   if (
