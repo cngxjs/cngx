@@ -15,13 +15,6 @@
 //     error escapes it. Out of scope, per the plan: other error
 //     channels (`throwError(...)`, `subscriber.error(...)`) and `Error`
 //     objects stored as state instead of thrown.
-//
-// Known limits (open bypasses, each needs more than a syntactic read):
-// `Promise.reject` reached through an aliased or nested host
-// (`globalThis.Promise.reject`, `const P = Promise`), by element access
-// (`Promise['reject']`) or through `.call` / `.apply`; `reportError` read off
-// a global host; `gen.throw(...)`; a catch variable reassigned or mutated
-// before its rethrow.
 // T2  every `new CngxRuntimeError` has a `CNGXnnnn` literal first argument in
 //     the file's lib range.
 // T3  the message is an `&&` chain starting with the guard, unless the
@@ -36,6 +29,19 @@
 //     imported, exported or named in a type: an alias, a namespace or
 //     element access (`ns['CngxRuntimeError']`) or any other value use hides
 //     the construction from T2/T3, the manifest and the prod-strip check.
+//
+// Known limits (open bypasses, each needs more than a syntactic read):
+// `Promise.reject` reached through an aliased or nested host
+// (`globalThis.Promise.reject`, `const P = Promise`), by element access
+// (`Promise['reject']`) or through `.call` / `.apply`; `reportError` read off
+// a global host; `gen.throw(...)`; a catch variable reassigned or mutated
+// before its rethrow.
+// `${m}` or `'' + m` around a local built before the guard has the inline
+// shape and passes the inline-message rule: it checks the message's form,
+// not where the text in its operands was built (many operands are
+// production values, so an identifier inside the template cannot be
+// banned). A dev wrapper's parameter counts as inline; what a caller passes
+// in is checked only for its guard (R4), not for where its text was built.
 //
 // The walk is `readSources`, shared with the raw-console guard, the manifest
 // and the prod-strip check: specs, tooling roots, example folders and

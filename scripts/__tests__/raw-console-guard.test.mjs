@@ -25,6 +25,12 @@
 // computed destructuring, `Reflect.get(globalThis, 'console')` and
 // `new Function(...)`; a dev wrapper reached through a dynamic `import()`, a
 // destructured namespace or element access.
+// `${m}` or `'' + m` around a local built before the guard has the inline
+// shape and passes the inline-message rule: it checks the message's form,
+// not where the text in its operands was built (many operands are
+// production values, so an identifier inside the template cannot be
+// banned). A dev wrapper's parameter counts as inline; what a caller passes
+// in is checked only for its guard (R4), not for where its text was built.
 
 import { performance } from 'node:perf_hooks';
 

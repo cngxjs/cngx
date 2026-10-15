@@ -5,8 +5,8 @@
 // has read. `__test-helpers` folders are read by the guards but hold spec-only
 // harnesses, so library code must not reach them either.
 //
-// B1  no library source outside a `__test-helpers` folder imports, re-exports
-//     or dynamically imports a relative path that lands in a spec, an
+// B1  no library source outside a `__test-helpers` folder imports, re-exports,
+//     `import x = require(...)`s or dynamically imports a relative path that lands in a spec, an
 //     `examples/` folder, `projects/testing` or a `__test-helpers` folder.
 //     Aliased testing entries (`@cngx/testing`, `@cngx/*/testing`) are fenced
 //     by `testing-entry-import-fence.test.mjs`.
@@ -64,6 +64,11 @@ export function boundaryViolations(files) {
       if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
         check(node, node.moduleSpecifier);
       } else if (
+        ts.isImportEqualsDeclaration(node) &&
+        ts.isExternalModuleReference(node.moduleReference)
+      ) {
+        check(node, node.moduleReference.expression);
+      } else if (
         ts.isCallExpression(node) &&
         node.expression.kind === ts.SyntaxKind.ImportKeyword
       ) {
@@ -86,6 +91,7 @@ describe('excluded-path import boundary - scanner', () => {
       "import { host } from '../../../testing/index';",
       "import { harness } from './__test-helpers/field-skin-host';",
       "const lazy = import('./select.spec.ts');",
+      "import legacy = require('./legacy.spec');",
     ].join('\n');
     expect(boundaryViolations([{ path: FILE, text }])).toEqual([
       `${FILE}:1 ./panel.spec (a spec)`,
@@ -93,6 +99,7 @@ describe('excluded-path import boundary - scanner', () => {
       `${FILE}:3 ../../../testing/index (projects/testing)`,
       `${FILE}:4 ./__test-helpers/field-skin-host (a __test-helpers folder)`,
       `${FILE}:5 ./select.spec.ts (a spec)`,
+      `${FILE}:6 ./legacy.spec (a spec)`,
     ]);
   });
 
