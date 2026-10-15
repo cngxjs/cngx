@@ -29,6 +29,7 @@ export {
   parseManifest,
   readOwnVersion,
 } from './manifest/manifest';
+export { planThirdPartyDependency } from './manifest/third-party';
 
 export {
   type AddDependency,

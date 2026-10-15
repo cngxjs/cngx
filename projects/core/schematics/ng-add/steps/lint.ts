@@ -6,13 +6,13 @@ import {
   declaredRange,
   insertAfterImports,
   mergeStepResults,
+  planThirdPartyDependency,
   type Provenance,
   skipChange,
   type StepResult,
   withProvenanceMarker,
 } from '../../engine';
 import { type EslintConfigFacts, type ProjectFacts } from '../detect/detect';
-import { planThirdPartyDependency } from './dependencies';
 import { type OnboardingAnswers, type Versions } from './model';
 
 const PLUGIN = '@cngx/eslint-plugin';
