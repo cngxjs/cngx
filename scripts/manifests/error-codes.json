@@ -799,6 +799,28 @@
       "files": ["projects/common/data/paginate/inject-paginate.ts"]
     },
     {
+      "code": "CNGX1064",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Popover sheet without a name",
+      "page": "core-concepts/error-codes/cngx1064.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1064.html",
+      "status": "active",
+      "files": ["projects/common/popover/popover-sheet.directive.ts"]
+    },
+    {
+      "code": "CNGX1065",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Popover sheet on an auto popover",
+      "page": "core-concepts/error-codes/cngx1065.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1065.html",
+      "status": "active",
+      "files": ["projects/common/popover/popover-sheet.directive.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

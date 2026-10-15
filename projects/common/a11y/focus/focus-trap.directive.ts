@@ -136,6 +136,16 @@ export class CngxFocusTrap {
     void this.ensureTrap().focusLastTabbableElementWhenReady();
   }
 
+  /**
+   * @internal Focus the first tabbable element right now, in the caller's
+   * stack. `focusFirst()` waits for the next render, which is too late for a
+   * composer that must move focus inside the user gesture that opened it.
+   * Returns `false` when nothing inside is tabbable.
+   */
+  focusFirstNow(): boolean {
+    return this.ensureTrap().focusFirstTabbableElement();
+  }
+
   // Deferred anchors: the CDK sentinels are inserted on the first enable,
   // so a trap that is never enabled leaves the DOM untouched.
   private ensureTrap(): FocusTrap {

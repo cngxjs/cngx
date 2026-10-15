@@ -17,6 +17,15 @@ export { CngxPopover } from './popover.directive';
 export { CngxPopoverTrigger } from './popover-trigger.directive';
 export { CngxPopoverAnchor } from './popover-anchor.directive';
 export { CngxTooltip } from './tooltip.directive';
+export type { CngxPopoverPresentation } from './popover-presentation';
+export { CngxPopoverSheet, type CngxPopoverPresentationRequest } from './popover-sheet.directive';
+export type { CngxPopoverSheetCloseReason } from './popover-sheet-host';
+export {
+  CngxPopoverSheetHeader,
+  CngxPopoverSheetTitle,
+  CngxPopoverSheetHandle,
+  CngxPopoverSheetInitialFocus,
+} from './popover-sheet-parts';
 
 // Floating UI fallback (opt-in)
 export {
@@ -49,10 +58,7 @@ export {
 } from './i18n/popover-language-section';
 export { CngxPopoverPanel } from './popover-panel.component';
 export { CngxPopoverAction, type PopoverActionVariant } from './popover-action.component';
-export {
-  CNGX_POPOVER_ARROW_BOUNDS,
-  type CngxPopoverArrowBounds,
-} from './popover-arrow-bounds';
+export { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
 export {
   CngxPopoverArrow,
   type CngxPopoverArrowContext,

@@ -276,4 +276,14 @@ describe('CngxFocusTrap with the CDK factory', () => {
     expect(document.activeElement).toBe(el.querySelector('.last'));
     expect(sentinels()).toBe(0);
   });
+
+  it('focusFirstNow() focuses synchronously and reports whether it found a target', () => {
+    const { el, dir, sentinels } = setup();
+    expect(dir.focusFirstNow()).toBe(true);
+    expect(document.activeElement).toBe(el.querySelector('.first'));
+    expect(sentinels()).toBe(0);
+
+    el.querySelectorAll('button').forEach((b) => b.remove());
+    expect(dir.focusFirstNow()).toBe(false);
+  });
 });
