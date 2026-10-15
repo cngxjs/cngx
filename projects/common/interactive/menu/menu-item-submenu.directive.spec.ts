@@ -340,7 +340,7 @@ describe('CngxMenuItemSubmenu - applied without a sibling [cngxMenuItem]', () =>
         String(call[0]).includes('cngxMenuItemSubmenu'),
       );
       expect(submenuWarn).toBeDefined();
-      expect(submenuWarn![0]).toContain('CNGX1024: [cngxMenuItemSubmenu]');
+      expect(submenuWarn![0]).toMatch(/^CNGX1024: \[cngxMenuItemSubmenu\]/);
     } finally {
       warnSpy.mockRestore();
     }

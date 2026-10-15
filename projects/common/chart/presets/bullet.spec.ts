@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CngxBullet, type CngxBulletRange } from './bullet.component';
 
 @Component({
@@ -70,5 +70,42 @@ describe('CngxBullet', () => {
     expect(host.getAttribute('role')).toBe('meter');
     expect(host.getAttribute('aria-valuenow')).toBe('70');
     expect(host.getAttribute('aria-valuemax')).toBe('100');
+  });
+});
+
+describe('CngxBullet - unnamed-meter dev warning', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxBullet],
+    template: `<cngx-bullet [actual]="70" [aria-label]="name()" />`,
+  })
+  class NameHost {
+    readonly name = signal<string | null>(null);
+  }
+
+  function warningsFor(name: string | null): unknown[][] {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    warn.mockClear();
+    TestBed.configureTestingModule({ imports: [NameHost] });
+    const fixture = TestBed.createComponent(NameHost);
+    fixture.componentInstance.name.set(name);
+    fixture.detectChanges();
+    TestBed.tick();
+    const calls = warn.mock.calls.filter(([m]) => /^CNGX1010: /.test(String(m)));
+    warn.mockRestore();
+    return calls;
+  }
+
+  it('warns CNGX1010 when the meter has no accessible name, an empty one included', () => {
+    for (const name of [null, '']) {
+      TestBed.resetTestingModule();
+      const calls = warningsFor(name);
+      expect(calls).toHaveLength(1);
+      expect(calls[0][0]).toMatch(/^CNGX1010: cngx-bullet: role="meter" has no accessible name - /);
+    }
+  });
+
+  it('stays silent with a bound name', () => {
+    expect(warningsFor('Revenue')).toEqual([]);
   });
 });

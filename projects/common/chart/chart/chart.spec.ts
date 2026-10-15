@@ -233,7 +233,7 @@ describe('CngxChart', () => {
     fixture.detectChanges();
     TestBed.tick();
     expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('CNGX1009: CngxChart: multiple axes share one orientation'),
+      expect.stringMatching(/^CNGX1009: CngxChart: multiple axes share one orientation/),
     );
     warn.mockRestore();
   });

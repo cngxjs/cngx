@@ -298,7 +298,11 @@ describe('provideCngxI18n scope', () => {
       TestBed.inject(EnvironmentInjector),
     );
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX0005'));
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^CNGX0005: \[cngx\/i18n\] provideCngxI18n\(\) in a child injector switches the locale/,
+      ),
+    );
     expect(child.get(CNGX_LANGUAGE_PACK)().locale).toBe('de');
     child.destroy();
   });

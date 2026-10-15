@@ -235,7 +235,7 @@ describe('CngxTimeline layout', () => {
       await fixture.whenStable();
 
       const hits = warn.mock.calls.filter(([first]) =>
-        String(first).includes('CNGX3013: [cngx-timeline] placement="alternate" is ignored'),
+        /^CNGX3013: \[cngx-timeline\] placement="alternate" is ignored/.test(String(first)),
       );
       expect(hits).toHaveLength(1);
     });

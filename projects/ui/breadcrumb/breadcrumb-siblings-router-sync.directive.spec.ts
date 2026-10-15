@@ -370,4 +370,23 @@ describe('CngxBreadcrumbSiblingsRouterSync', () => {
     expect(directive.siblings()).toEqual([]);
     warnSpy.mockRestore();
   });
+  it('warns CNGX3001 when no Router can be injected', () => {
+    // Router is providedIn: 'root', so only an injector that resolves it to null
+    // reaches this branch.
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+    });
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    warnSpy.mockClear();
+    const fixture = TestBed.createComponent(SibNoRouterHost);
+    fixture.detectChanges();
+    TestBed.tick();
+
+    const calls = warnSpy.mock.calls.filter(([m]) => /^CNGX3001: /.test(String(m)));
+    expect(calls).toHaveLength(1);
+    expect(calls[0][0]).toMatch(
+      /^CNGX3001: CngxBreadcrumbSiblingsRouterSync: no Router available - directive is a no-op\. /,
+    );
+    warnSpy.mockRestore();
+  });
 });

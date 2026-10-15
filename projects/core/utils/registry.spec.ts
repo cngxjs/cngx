@@ -27,8 +27,9 @@ describe('createKeyedRegistry', () => {
     registry.register('a', 'second');
     expect(registry.get('a')).toBe('first');
     expect(warn).toHaveBeenCalledOnce();
-    expect(warn.mock.calls[0][0]).toContain('TestRegistry');
-    expect(warn.mock.calls[0][0]).toContain('CNGX0004');
+    expect(warn.mock.calls[0][0]).toMatch(
+      /^CNGX0004: TestRegistry: "a" is already registered\. The existing instance stays live/,
+    );
     warn.mockRestore();
   });
 

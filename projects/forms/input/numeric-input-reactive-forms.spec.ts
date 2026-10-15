@@ -297,7 +297,7 @@ describe('CngxNumericInput dev-mode accessor check', () => {
     try {
       mount(host);
       return warn.mock.calls.filter(([msg]) =>
-        String(msg).startsWith('CNGX2006: [cngxNumericInput]'),
+        /^CNGX2006: \[cngxNumericInput\]/.test(String(msg)),
       ).length;
     } finally {
       warn.mockRestore();

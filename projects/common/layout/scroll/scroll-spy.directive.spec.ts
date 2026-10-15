@@ -121,7 +121,7 @@ describe('CngxScrollSpy', () => {
     TestBed.flushEffects();
 
     expect(warn).toHaveBeenCalledOnce();
-    expect(warn.mock.calls[0][0]).toContain('CNGX1033: [cngxScrollSpy]');
+    expect(warn.mock.calls[0][0]).toMatch(/^CNGX1033: \[cngxScrollSpy\]/);
     expect(warn.mock.calls[0][0]).toContain('missing-a, missing-b');
     warn.mockRestore();
   });
@@ -136,7 +136,7 @@ describe('CngxScrollSpy', () => {
     TestBed.flushEffects();
 
     expect(warn).toHaveBeenCalledOnce();
-    expect(warn.mock.calls[0][0]).toContain('CNGX1032: [cngxScrollSpy]');
+    expect(warn.mock.calls[0][0]).toMatch(/^CNGX1032: \[cngxScrollSpy\]/);
     expect(warn.mock.calls[0][0]).toContain('.does-not-exist');
     warn.mockRestore();
   });

@@ -187,7 +187,7 @@ describe('CngxAudio directive', () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const { fixture } = setup({ spec: 'pending:tap' });
     await fixture.whenStable();
-    expect(error).toHaveBeenCalledWith(expect.stringContaining('CNGX1002: [cngxAudio]'));
+    expect(error).toHaveBeenCalledWith(expect.stringMatching(/^CNGX1002: \[cngxAudio\]/));
   });
 
   it('dev-warns when an event key is not recognised', async () => {
@@ -195,7 +195,7 @@ describe('CngxAudio directive', () => {
     const { fixture } = setup({ spec: 'hover:tap' });
     await fixture.whenStable();
     expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('CNGX1003: [cngxAudio] Unrecognised event keys "hover"'),
+      expect.stringMatching(/^CNGX1003: \[cngxAudio\] Unrecognised event keys "hover"/),
     );
   });
 });

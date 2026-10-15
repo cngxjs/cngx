@@ -105,13 +105,19 @@ describe('formatMessage', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     expect(formatMessage('Hello {name}', {}, 'en')).toBe('Hello {name}');
     expect(warn).toHaveBeenCalledOnce();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX0003'));
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(/^CNGX0003: \[cngx\/i18n\] no argument for \{name\} in "Hello \{name\}"/),
+    );
   });
 
   it('warns and uses other when a plural message has no numeric count', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     expect(formatMessage({ one: 'one', other: 'many' }, { count: 'x' }, 'en')).toBe('many');
     expect(warn).toHaveBeenCalledOnce();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX0002'));
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^CNGX0002: \[cngx\/i18n\] plural message without a numeric "count" argument: "many"/,
+      ),
+    );
   });
 });

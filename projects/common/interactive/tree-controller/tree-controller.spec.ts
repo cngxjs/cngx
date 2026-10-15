@@ -309,9 +309,9 @@ describe('createTreeController - dev diagnostics', () => {
     ctrl.findByValue({ id: 'x', name: 'First' });
     ctrl.findByValue({ id: 'x', name: 'Second' });
 
-    const duplicateIdErrors = error.mock.calls.filter((c) => String(c[0]).startsWith('CNGX1029:'));
+    const duplicateIdErrors = error.mock.calls.filter((c) => /^CNGX1029: /.test(String(c[0])));
     expect(duplicateIdErrors).toHaveLength(1);
-    expect(duplicateIdErrors[0][0]).toContain('createTreeController: duplicate node id "x"');
+    expect(duplicateIdErrors[0][0]).toMatch(/^CNGX1029: createTreeController: duplicate node id "x" /);
   });
 
   it('errors with CNGX1030 when two nodes share a selection key', () => {

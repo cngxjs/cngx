@@ -878,7 +878,7 @@ describe('CngxStepperPresenter - back-nav supersede and rollback origin', () => 
 
       expect(presenter.busy()).toBe(true);
       expect(warn).toHaveBeenCalledTimes(1);
-      expect(warn.mock.calls[0][0]).toContain('CNGX1040: [cngxStepper]');
+      expect(warn.mock.calls[0][0]).toMatch(/^CNGX1040: \[cngxStepper\]/);
     } finally {
       warn.mockRestore();
     }
