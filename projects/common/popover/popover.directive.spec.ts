@@ -15,7 +15,10 @@ import {
   FLOATING_PLACEMENT,
   provideFloatingFallback,
 } from './floating-fallback';
-import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
+import {
+  CNGX_POPOVER_ARROW_BOUNDS,
+  type CngxPopoverArrowBounds,
+} from './popover-arrow-bounds';
 import type { PopoverPositionTryFallback } from './popover.types';
 
 // Test helpers

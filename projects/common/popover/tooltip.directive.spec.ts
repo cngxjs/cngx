@@ -91,15 +91,8 @@ class FallbackTooltipHost {
 
 @Component({
   template: `
-    <button
-      cngxTooltip="Manual tip"
-      [triggers]="'manual'"
-      [tooltipDelay]="0"
-      [closeDelay]="0"
-      id="trigger"
-    >
-      Btn
-    </button>
+    <button cngxTooltip="Manual tip" [triggers]="'manual'" [tooltipDelay]="0" [closeDelay]="0"
+            id="trigger">Btn</button>
   `,
   imports: [CngxTooltip],
 })
@@ -682,7 +675,10 @@ describe('CngxTooltip', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         imports: [PlacementTooltipHost],
-        providers: [provideDirection(direction), provideFloatingFallback(computePosition)],
+        providers: [
+          provideDirection(direction),
+          provideFloatingFallback(computePosition),
+        ],
       });
       const { fixture } = setup(PlacementTooltipHost);
       fixture.componentInstance.placement.set(placement);

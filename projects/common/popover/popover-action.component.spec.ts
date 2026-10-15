@@ -234,7 +234,9 @@ describe('CngxPopoverAction', () => {
       btn.click();
     }
 
-    async function settle(fixture: { detectChanges(): void }): Promise<void> {
+    async function settle(fixture: {
+      detectChanges(): void;
+    }): Promise<void> {
       await vi.advanceTimersByTimeAsync(0);
       fixture.detectChanges();
       TestBed.flushEffects();
