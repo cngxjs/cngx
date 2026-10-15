@@ -240,7 +240,15 @@ describe('createChipRemovalHandler', () => {
         createChipRemovalHandler<T>({
           disabled: signal(false),
         } as Parameters<typeof createChipRemovalHandler<T>>[0]),
-      ).toThrow(/Missing required field/);
+      ).toThrow(
+        expect.objectContaining({
+          name: 'CngxRuntimeError',
+          code: 'CNGX2008',
+          message: expect.stringMatching(
+            /^CNGX2008: \[CngxChipRemovalHandler\] Missing required field\(s\): values, compareWith/,
+          ),
+        }),
+      );
     });
   });
 

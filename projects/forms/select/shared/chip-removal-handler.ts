@@ -1,5 +1,7 @@
 import { InjectionToken, type Signal, type WritableSignal } from '@angular/core';
 
+import { CngxRuntimeError } from '@cngx/utils';
+
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn } from './internal/select-core';
@@ -118,10 +120,13 @@ export function createChipRemovalHandler<
       missing.push('onSyncFinalize');
     }
     if (missing.length > 0) {
-      throw new Error(
-        `[CngxChipRemovalHandler] Missing required field(s): ${missing.join(
-          ', ',
-        )}. Provide them, or pass \`removeOverride\` to bypass the standard body.`,
+      throw new CngxRuntimeError(
+        'CNGX2008',
+        typeof ngDevMode !== 'undefined' &&
+          ngDevMode &&
+          `[CngxChipRemovalHandler] Missing required field(s): ${missing.join(
+            ', ',
+          )}. Provide them, or pass \`removeOverride\` to bypass the standard body.`,
       );
     }
   }

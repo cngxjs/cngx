@@ -350,6 +350,30 @@
                 "file": "error-codes/cngx2006.md"
             },
             {
+                "title": "CNGX2007",
+                "file": "error-codes/cngx2007.md"
+            },
+            {
+                "title": "CNGX2008",
+                "file": "error-codes/cngx2008.md"
+            },
+            {
+                "title": "CNGX2009",
+                "file": "error-codes/cngx2009.md"
+            },
+            {
+                "title": "CNGX2010",
+                "file": "error-codes/cngx2010.md"
+            },
+            {
+                "title": "CNGX2011",
+                "file": "error-codes/cngx2011.md"
+            },
+            {
+                "title": "CNGX2012",
+                "file": "error-codes/cngx2012.md"
+            },
+            {
                 "title": "CNGX3001",
                 "file": "error-codes/cngx3001.md"
             },

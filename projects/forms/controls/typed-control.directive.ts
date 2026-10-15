@@ -1,6 +1,8 @@
 import { computed, Directive, effect, input, inject } from '@angular/core';
 import { type AbstractControl, FormGroupDirective } from '@angular/forms';
 
+import { CngxRuntimeError } from '@cngx/utils';
+
 /**
  * Structural helper that resolves a strongly-typed `AbstractControl<T>` from the
  * enclosing `FormGroup` by name, so reactive-forms templates and host directives
@@ -8,7 +10,8 @@ import { type AbstractControl, FormGroupDirective } from '@angular/forms';
  *
  * Must live inside a `[formGroup]` - it injects `FormGroupDirective` non-optionally,
  * so outside one Angular throws `NullInjectorError`. As a fail-fast guard it also
- * throws when no control matches the given name in the parent group.
+ * throws a `CngxRuntimeError` (`CNGX2007`) when no control matches the given name
+ * in the parent group.
  *
  * Read the resolved control through the `control` signal, via the `exportAs` ref or
  * by injecting the directive. In a template ref the generic stays `unknown`; pass
@@ -51,8 +54,11 @@ export class CngxTypedControl<T = unknown> {
     effect(() => {
       const name = this.cngxTypedControl();
       if (!this.formGroupDir.form.get(name)) {
-        throw new Error(
-          `[cngxTypedControl] No control found with name "${name}" in the parent FormGroup.`,
+        throw new CngxRuntimeError(
+          'CNGX2007',
+          typeof ngDevMode !== 'undefined' &&
+            ngDevMode &&
+            `[cngxTypedControl] No control found with name "${name}" in the parent FormGroup.`,
         );
       }
     });

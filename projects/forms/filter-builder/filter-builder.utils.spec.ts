@@ -74,13 +74,38 @@ describe('filter-builder.utils', () => {
 
     it('throws when the path descends into an expression', () => {
       const root = group([expr('a')]);
-      expect(() => updateAtPath(root, [0, 0], (n) => n)).toThrow(/cannot descend/);
+      expect(() => updateAtPath(root, [0, 0], (n) => n)).toThrow(
+        expect.objectContaining({
+          name: 'CngxRuntimeError',
+          code: 'CNGX2011',
+          message: expect.stringMatching(
+            /^CNGX2011: updateAtPath: cannot descend into expression at \[0\]/,
+          ),
+        }),
+      );
+    });
+
+    it('throws CNGX2010 when the path index is out of range', () => {
+      const root = group([expr('a')]);
+      expect(() => updateAtPath(root, [3], (n) => n)).toThrow(
+        expect.objectContaining({
+          name: 'CngxRuntimeError',
+          code: 'CNGX2010',
+          message: expect.stringMatching(/^CNGX2010: updateAtPath: invalid path \[3\]/),
+        }),
+      );
     });
 
     it('throws when root replacement returns a non-group', () => {
       const root = group([expr('a')]);
       expect(() => updateAtPath(root, [], () => expr('x') as unknown as FilterGroup)).toThrow(
-        /must remain a FilterGroup/,
+        expect.objectContaining({
+          name: 'CngxRuntimeError',
+          code: 'CNGX2009',
+          message: expect.stringMatching(
+            /^CNGX2009: updateAtPath: root replacement must remain a FilterGroup/,
+          ),
+        }),
       );
     });
   });
@@ -109,7 +134,13 @@ describe('filter-builder.utils', () => {
 
     it('refuses to remove the root', () => {
       const root = group([expr('a')]);
-      expect(() => removeAtPath(root, [])).toThrow(/cannot remove the root/);
+      expect(() => removeAtPath(root, [])).toThrow(
+        expect.objectContaining({
+          name: 'CngxRuntimeError',
+          code: 'CNGX2012',
+          message: expect.stringMatching(/^CNGX2012: removeAtPath: cannot remove the root/),
+        }),
+      );
     });
 
     it('returns the same root when the index is out of bounds', () => {
@@ -135,7 +166,15 @@ describe('filter-builder.utils', () => {
 
     it('throws when appending to an expression', () => {
       const root = group([expr('a')]);
-      expect(() => appendAtPath(root, [0], expr('illegal'))).toThrow(/cannot append/);
+      expect(() => appendAtPath(root, [0], expr('illegal'))).toThrow(
+        expect.objectContaining({
+          name: 'CngxRuntimeError',
+          code: 'CNGX2011',
+          message: expect.stringMatching(
+            /^CNGX2011: appendAtPath: cannot append to non-group at \[0\]/,
+          ),
+        }),
+      );
     });
   });
 

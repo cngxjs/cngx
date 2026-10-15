@@ -4,11 +4,6 @@
 // commit drops its rows. Removed once every lib is migrated.
 
 export const RAW_THROW_BASELINE = {
-  forms: [
-    { file: 'projects/forms/controls/typed-control.directive.ts', count: 1 },
-    { file: 'projects/forms/filter-builder/filter-builder.utils.ts', count: 5 },
-    { file: 'projects/forms/select/shared/chip-removal-handler.ts', count: 1 },
-  ],
   ui: [
     { file: 'projects/ui/feedback/alert/alert-on.directive.ts', count: 1 },
     { file: 'projects/ui/feedback/banner/banner-on.directive.ts', count: 1 },
