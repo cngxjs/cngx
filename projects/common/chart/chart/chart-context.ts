@@ -1,5 +1,7 @@
 import { inject, InjectionToken, type Signal } from '@angular/core';
 
+import { CngxRuntimeError } from '@cngx/utils';
+
 /**
  * Numeric input shape every concrete scale accepts. Linear scales take
  * `number`, time scales take `Date | number`, band scales take `string`
@@ -136,8 +138,11 @@ export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>('CngxChar
 export function injectChartContext(consumerName: string): CngxChartContext {
   const ctx = inject(CNGX_CHART_CONTEXT, { optional: true });
   if (!ctx) {
-    throw new Error(
-      `${consumerName}: missing CNGX_CHART_CONTEXT - must be a content child of <cngx-chart>`,
+    throw new CngxRuntimeError(
+      'CNGX1048',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        `${consumerName}: missing CNGX_CHART_CONTEXT - must be a content child of <cngx-chart>`,
     );
   }
   return ctx;

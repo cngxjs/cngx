@@ -23,6 +23,14 @@ describe('createOrdinalScale', () => {
   });
 
   it('throws synchronously when the palette is empty', () => {
-    expect(() => createOrdinalScale(['a'], [])).toThrow(/palette must not be empty/);
+    expect(() => createOrdinalScale(['a'], [])).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1049',
+        message: expect.stringMatching(
+          /^CNGX1049: createOrdinalScale: colors palette must not be empty/,
+        ),
+      }),
+    );
   });
 });

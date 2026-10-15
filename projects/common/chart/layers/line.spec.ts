@@ -81,7 +81,13 @@ describe('CngxLine', () => {
     expect(() => {
       const f = TestBed.createComponent(OrphanLineHost);
       f.detectChanges();
-    }).toThrow(/missing CNGX_CHART_CONTEXT/);
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1048',
+        message: expect.stringMatching(/missing CNGX_CHART_CONTEXT/),
+      }),
+    );
   });
 
   it('cascade guard - a downstream effect on the line component does NOT re-fire when the d string is unchanged', () => {

@@ -158,7 +158,7 @@ describe('CngxTabLink', () => {
     expect(handle('profile')?.hasError()).toBe(true);
   });
 
-  it("[error]=\"'msg'\" exposes the string through the handle errorMessage", () => {
+  it('[error]="\'msg\'" exposes the string through the handle errorMessage', () => {
     const { fixture, handle } = setup();
     expect(handle('profile')?.errorMessage()).toBeUndefined();
     fixture.componentInstance.profileError.set('Required fields missing');
@@ -209,7 +209,15 @@ describe('CngxTabLink', () => {
     expect(() => {
       const fixture = TestBed.createComponent(OrphanLink);
       fixture.detectChanges();
-    }).toThrow(/no enclosing CngxTabGroupPresenter/);
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1045',
+        message: expect.stringMatching(
+          /^CNGX1045: CngxTabLink: no enclosing CngxTabGroupPresenter/,
+        ),
+      }),
+    );
   });
 
   describe('SR error-message descriptor', () => {

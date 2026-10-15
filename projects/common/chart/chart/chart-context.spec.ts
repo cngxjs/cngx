@@ -22,6 +22,14 @@ describe('injectChartContext', () => {
   it('throws a consumer-named error outside <cngx-chart>', () => {
     expect(() =>
       runInInjectionContext(TestBed.inject(Injector), () => injectChartContext('SpecConsumer')),
-    ).toThrowError(/SpecConsumer.*CNGX_CHART_CONTEXT.*content child of <cngx-chart>/);
+    ).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1048',
+        message: expect.stringMatching(
+          /^CNGX1048: SpecConsumer.*CNGX_CHART_CONTEXT.*content child of <cngx-chart>/,
+        ),
+      }),
+    );
   });
 });

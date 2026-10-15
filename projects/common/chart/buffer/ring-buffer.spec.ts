@@ -49,8 +49,14 @@ describe('createRingBuffer', () => {
   });
 
   it('throws on a non-positive or non-integer capacity', () => {
-    expect(() => createRingBuffer<number>(0)).toThrow();
-    expect(() => createRingBuffer<number>(-1)).toThrow();
-    expect(() => createRingBuffer<number>(2.5)).toThrow();
+    const coded = (got: string) =>
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1050',
+        message: expect.stringContaining(`got ${got}`),
+      });
+    expect(() => createRingBuffer<number>(0)).toThrow(coded('0'));
+    expect(() => createRingBuffer<number>(-1)).toThrow(coded('-1'));
+    expect(() => createRingBuffer<number>(2.5)).toThrow(coded('2.5'));
   });
 });

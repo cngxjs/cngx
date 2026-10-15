@@ -59,7 +59,9 @@ class CustomIdHost {}
 // Keyed by label() (stable post-detectChanges). The group's own id is an
 // auto-generated nextUid - the realistic grouped-stepper pattern, where
 // the registration id and this.id() agree at every read.
-function groupsOf(fixture: { debugElement: import('@angular/core').DebugElement }): Map<string, CngxStepGroup> {
+function groupsOf(fixture: {
+  debugElement: import('@angular/core').DebugElement;
+}): Map<string, CngxStepGroup> {
   const map = new Map<string, CngxStepGroup>();
   for (const de of fixture.debugElement.queryAll(By.directive(CngxStepGroup))) {
     const g = de.injector.get(CngxStepGroup);
@@ -86,6 +88,30 @@ describe('CngxStepGroup', () => {
     expect(labels).toEqual(['Group 1', 'A', 'B', 'Trailing']);
     const group = flat.find((n) => n.kind === 'group')!;
     expect(group.children.length).toBe(2);
+  });
+
+  it('throws CNGX1047 when no stepper presenter is on the ancestor', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepGroup],
+      template: `<div cngxStepGroup label="Orphan"></div>`,
+    })
+    class OrphanGroup {}
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    expect(() => {
+      const fixture = TestBed.createComponent(OrphanGroup);
+      fixture.detectChanges();
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1047',
+        message: expect.stringMatching(
+          /^CNGX1047: CngxStepGroup: no enclosing CngxStepperPresenter/,
+        ),
+      }),
+    );
   });
 
   it('registers bound [id] values (not auto-ids) in DOM order across groups', () => {

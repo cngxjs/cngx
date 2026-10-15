@@ -9,6 +9,7 @@ import {
   type Signal,
 } from '@angular/core';
 
+import { CngxRuntimeError } from '@cngx/utils';
 import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_STEP_GROUP_HOST, type CngxStepGroupHost } from './step-group-host.token';
@@ -115,9 +116,12 @@ export class CngxStepGroup implements CngxStepGroupHost, OnInit {
 
   constructor() {
     if (!this.stepperHost) {
-      throw new Error(
-        'CngxStepGroup: no enclosing CngxStepperPresenter found. ' +
-          'Wrap the group inside an element carrying [cngxStepper].',
+      throw new CngxRuntimeError(
+        'CNGX1047',
+        typeof ngDevMode !== 'undefined' &&
+          ngDevMode &&
+          'CngxStepGroup: no enclosing CngxStepperPresenter found. ' +
+            'Wrap the group inside an element carrying [cngxStepper].',
       );
     }
   }

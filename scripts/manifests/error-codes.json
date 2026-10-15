@@ -581,6 +581,75 @@
       "files": ["projects/common/interactive/chip-interaction/chip-interaction.directive.ts"]
     },
     {
+      "code": "CNGX1045",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Tab or tab link outside a tab group",
+      "page": "core-concepts/error-codes/cngx1045.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1045.html",
+      "status": "active",
+      "files": [
+        "projects/common/tabs/tab-link.directive.ts",
+        "projects/common/tabs/tab.directive.ts"
+      ]
+    },
+    {
+      "code": "CNGX1046",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Step outside a stepper",
+      "page": "core-concepts/error-codes/cngx1046.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1046.html",
+      "status": "active",
+      "files": ["projects/common/stepper/step.directive.ts"]
+    },
+    {
+      "code": "CNGX1047",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Step group outside a stepper",
+      "page": "core-concepts/error-codes/cngx1047.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1047.html",
+      "status": "active",
+      "files": ["projects/common/stepper/step-group.directive.ts"]
+    },
+    {
+      "code": "CNGX1048",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Chart layer outside a chart",
+      "page": "core-concepts/error-codes/cngx1048.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1048.html",
+      "status": "active",
+      "files": ["projects/common/chart/chart/chart-context.ts"]
+    },
+    {
+      "code": "CNGX1049",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Ordinal scale with an empty palette",
+      "page": "core-concepts/error-codes/cngx1049.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1049.html",
+      "status": "active",
+      "files": ["projects/common/chart/scales/ordinal.ts"]
+    },
+    {
+      "code": "CNGX1050",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Chart buffer capacity is not a positive integer",
+      "page": "core-concepts/error-codes/cngx1050.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1050.html",
+      "status": "active",
+      "files": ["projects/common/chart/buffer/ring-buffer.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

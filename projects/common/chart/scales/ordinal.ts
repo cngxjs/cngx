@@ -1,3 +1,5 @@
+import { CngxRuntimeError } from '@cngx/utils';
+
 /**
  * Pure-TS ordinal scale. Maps a discrete categorical domain to a
  * cycling palette of values (typically colours). When the domain is
@@ -17,7 +19,12 @@ export function createOrdinalScale<T>(
   colors: readonly string[],
 ): (v: T) => string {
   if (colors.length === 0) {
-    throw new Error('createOrdinalScale: colors palette must not be empty');
+    throw new CngxRuntimeError(
+      'CNGX1049',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        'createOrdinalScale: colors palette must not be empty',
+    );
   }
   const lookup = new Map<T, string>();
   for (let i = 0; i < domain.length; i++) {

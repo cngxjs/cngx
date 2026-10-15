@@ -45,7 +45,15 @@ describe('CngxStep', () => {
     expect(() => {
       const fixture = TestBed.createComponent(Orphan);
       fixture.detectChanges();
-    }).toThrowError(/no enclosing CngxStepperPresenter or CngxStepGroup/);
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1046',
+        message: expect.stringMatching(
+          /^CNGX1046: CngxStep: no enclosing CngxStepperPresenter or CngxStepGroup/,
+        ),
+      }),
+    );
   });
 
   it('state derives from completed / disabled / errored inputs', () => {
@@ -86,7 +94,10 @@ describe('CngxStep', () => {
       readonly error = signal<string | boolean>(false);
     }
 
-    function setup(): { fixture: ReturnType<typeof TestBed.createComponent<ErrorHost>>; node: () => ReturnType<CngxStepperPresenter['flatSteps']>[number] } {
+    function setup(): {
+      fixture: ReturnType<typeof TestBed.createComponent<ErrorHost>>;
+      node: () => ReturnType<CngxStepperPresenter['flatSteps']>[number];
+    } {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(ErrorHost);
       fixture.detectChanges();
@@ -102,7 +113,7 @@ describe('CngxStep', () => {
       expect(node().errorMessage?.()).toBeUndefined();
     });
 
-    it("[error]=\"'msg'\" drives the error state and exposes the message", () => {
+    it('[error]="\'msg\'" drives the error state and exposes the message', () => {
       const { fixture, node } = setup();
       fixture.componentInstance.error.set('Card declined');
       fixture.detectChanges();

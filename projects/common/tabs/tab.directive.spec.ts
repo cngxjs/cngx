@@ -83,9 +83,7 @@ describe('CngxTab', () => {
   it('discovers projected cngxTabLabel + cngxTabContent slots', () => {
     const fixture = TestBed.createComponent(TabHost);
     fixture.detectChanges();
-    const tab = fixture.debugElement
-      .queryAll(By.directive(CngxTab))[0]
-      .injector.get(CngxTab);
+    const tab = fixture.debugElement.queryAll(By.directive(CngxTab))[0].injector.get(CngxTab);
     expect(tab.labelTemplate()).toBeTruthy();
     expect(tab.contentTemplate()).toBeTruthy();
   });
@@ -122,7 +120,13 @@ describe('CngxTab', () => {
     expect(() => {
       const fixture = TestBed.createComponent(OrphanTab);
       fixture.detectChanges();
-    }).toThrow(/no enclosing CngxTabGroupPresenter/);
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1045',
+        message: expect.stringMatching(/^CNGX1045: CngxTab: no enclosing CngxTabGroupPresenter/),
+      }),
+    );
   });
 
   it('disabled flag flows through to the registered handle', () => {
@@ -191,7 +195,7 @@ describe('CngxTab', () => {
       expect(handle().errorMessage()).toBeUndefined();
     });
 
-    it("[error]=\"'msg'\" sets hasError and exposes the message", () => {
+    it('[error]="\'msg\'" sets hasError and exposes the message', () => {
       const { fixture, handle } = setup();
       fixture.componentInstance.error.set('Required fields missing');
       fixture.detectChanges();

@@ -9,6 +9,7 @@ import {
   type Signal,
 } from '@angular/core';
 
+import { CngxRuntimeError } from '@cngx/utils';
 import { nextUid } from '@cngx/core/utils';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
@@ -103,9 +104,12 @@ export class CngxStep implements OnInit {
 
   constructor() {
     if (!this.groupHost && !this.stepperHost) {
-      throw new Error(
-        'CngxStep: no enclosing CngxStepperPresenter or CngxStepGroup found. ' +
-          'Wrap the step inside an element carrying [cngxStepper] or [cngxStepGroup].',
+      throw new CngxRuntimeError(
+        'CNGX1046',
+        typeof ngDevMode !== 'undefined' &&
+          ngDevMode &&
+          'CngxStep: no enclosing CngxStepperPresenter or CngxStepGroup found. ' +
+            'Wrap the step inside an element carrying [cngxStepper] or [cngxStepGroup].',
       );
     }
   }
