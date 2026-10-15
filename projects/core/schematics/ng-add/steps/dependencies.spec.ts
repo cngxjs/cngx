@@ -130,6 +130,17 @@ describe('planDependencies', () => {
     expect(added(planDependencies(facts, createAnswers(), VERSIONS))).toContain('@angular/cdk@~21.2.4');
   });
 
+  it('plans a note instead of a guessed CDK pin when no Angular range is declared', () => {
+    const facts = createFacts({ manifest: parseManifest(JSON.stringify({ dependencies: {} })), angularVersion: '21.2.0' });
+    const result = planDependencies(facts, createAnswers(), VERSIONS);
+
+    expect(added(result).some((name) => name.startsWith('@angular/cdk@'))).toBe(false);
+    expect(result.changes.find((change) => change.id === 'dependency:@angular/cdk')).toMatchObject({
+      kind: 'note',
+      label: 'Add @angular/cdk yourself',
+    });
+  });
+
   it('adds @floating-ui/dom only on request and only with @cngx/common', () => {
     expect(
       added(planDependencies(createFacts(), createAnswers({ floatingFallback: true, libs: ['utils'], theme: 'none' }), VERSIONS)),

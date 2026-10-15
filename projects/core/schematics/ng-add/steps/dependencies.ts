@@ -98,6 +98,30 @@ function themeRefusal(missing: readonly CngxLib[], provenance: Provenance): Step
   };
 }
 
+// assertSupportedAngular refuses an app without a declared @angular/core
+// before any step plans, so the note only guards a direct call.
+function cdkDependency(manifest: PackageManifest, provenance: Provenance): StepResult {
+  const range = declaredRange(manifest, '@angular/core');
+  if (range === undefined) {
+    return {
+      changes: [
+        createNote({
+          id: 'dependency:@angular/cdk',
+          label: 'Add @angular/cdk yourself',
+          reason: 'package.json declares no @angular/core range to match it to',
+          provenance,
+        }),
+      ],
+      skipped: [],
+    };
+  }
+  return planThirdPartyDependency(
+    manifest,
+    { name: '@angular/cdk', range, reason: 'a peer of the selected @cngx packages' },
+    provenance,
+  );
+}
+
 /**
  * Pins every selected @cngx package and its peers to the exact release,
  * `@cngx/themes` when a theme is wanted and installable, the CDK at the app's
@@ -110,24 +134,11 @@ export function planDependencies(facts: ProjectFacts, answers: OnboardingAnswers
   const libs = selectedLibs(answers.libs);
   const missing = answers.theme === 'none' ? [] : missingThemePeers(libs);
   const packages = cngxPackages(libs, answers.theme);
-  const angularRange = declaredRange(facts.manifest, '@angular/core') ?? `^${facts.angularVersion ?? '21.2.0'}`;
 
   return mergeStepResults([
     ...packages.map((name) => cngxDependency(facts.manifest, name, versions.cngx, provenance)),
     ...(missing.length > 0 ? [themeRefusal(missing, provenance)] : []),
-    ...(libs.some((lib) => NEEDS_CDK.includes(lib))
-      ? [
-          planThirdPartyDependency(
-            facts.manifest,
-            {
-              name: '@angular/cdk',
-              range: angularRange,
-              reason: 'a peer of the selected @cngx packages',
-            },
-            provenance,
-          ),
-        ]
-      : []),
+    ...(libs.some((lib) => NEEDS_CDK.includes(lib)) ? [cdkDependency(facts.manifest, provenance)] : []),
     ...(answers.floatingFallback && libs.includes('common')
       ? [
           planThirdPartyDependency(
