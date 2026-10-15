@@ -22,6 +22,8 @@
     "build:mcp": "npm run mcp:snapshot && tsc -p packages/mcp",
     "prestart:examples": "npm run docs:json && npm run examples:generate",
     "start:examples": "ng serve examples --port 4200",
+    "prestart:examples:lan": "npm run docs:json && npm run examples:generate",
+    "start:examples:lan": "node scripts/serve-lan.mjs",
     "prebuild:examples": "npm run docs:json && npm run examples:generate",
     "build:examples": "ng build examples",
     "check:prod-strip": "npm run build:examples && node scripts/devtools-prod-strip-check.mjs",
