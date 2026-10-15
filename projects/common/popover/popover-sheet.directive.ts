@@ -49,6 +49,13 @@ const SETTLING_FRAME_CAP = 4;
 const LIVE_REGION_SELECTOR = '[aria-live], [role="status"], [role="alert"], [role="log"]';
 const FOCUS_TRAP_ANCHOR_CLASS = 'cdk-focus-trap-anchor';
 
+// Not in lib.dom yet; Chromium only (Android back gesture, Escape).
+interface CloseWatcherLike {
+  onclose: (() => void) | null;
+  destroy(): void;
+}
+type CloseWatcherCtor = new () => CloseWatcherLike;
+
 /**
  * Turns a `CngxPopover` into a modal bottom sheet or fullscreen panel on
  * coarse, narrow viewports, and leaves it anchored everywhere else.
@@ -217,6 +224,18 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
   private settlingFrame: number | null = null;
   private warnedTitle = false;
   private warnedMode = false;
+  private closeWatcher: CloseWatcherLike | null = null;
+
+  // Capture phase: the tap must be seen before anything under it reacts.
+  // The page siblings are inert, so a tap outside the panel lands on a
+  // non-inert ancestor; the popover ::backdrop does not catch taps (S7).
+  private readonly outsidePointerDown = (event: PointerEvent): void => {
+    const target = event.target;
+    if (target instanceof Node && this.host.contains(target)) {
+      return;
+    }
+    this.requestClose('backdrop');
+  };
 
   constructor() {
     this.trap.setEnabledSource(computed(() => this.modal() && this.popover.isVisible()));
@@ -335,16 +354,49 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
     this.applyInert();
     this.releaseLock = createPinnedScrollLock(this.doc.documentElement);
     this.startSettling();
+    this.doc.addEventListener('pointerdown', this.outsidePointerDown, true);
+    this.armCloseWatcher();
   }
 
   // Idempotent: hide(), the native toggle, a flip back to anchored and
   // destroy can all reach it.
   private release(): void {
+    this.doc.removeEventListener('pointerdown', this.outsidePointerDown, true);
+    this.disarmCloseWatcher();
     this.restoreInert();
     this.releaseLock?.();
     this.releaseLock = null;
     this.stopSettling();
     this.engaged = false;
+  }
+
+  // Created inside the opening call, so a tap-opened sheet creates it under
+  // the tap's user activation (Chrome groups watchers created without one).
+  // Without CloseWatcher (iOS Safari) the back gesture leaves the page.
+  private armCloseWatcher(): void {
+    const Watcher = (this.win as { CloseWatcher?: CloseWatcherCtor } | null)?.CloseWatcher;
+    if (typeof Watcher !== 'function') {
+      return;
+    }
+    const watcher = new Watcher();
+    watcher.onclose = () => {
+      if (this.closeWatcher === watcher) {
+        this.closeWatcher = null;
+      }
+      this.requestClose('back');
+      // A blocked request leaves the sheet open; the spent watcher would let
+      // the next back gesture navigate away.
+      if (this.engaged && this.closeWatcher === null) {
+        this.armCloseWatcher();
+      }
+    };
+    this.closeWatcher = watcher;
+  }
+
+  private disarmCloseWatcher(): void {
+    const watcher = this.closeWatcher;
+    this.closeWatcher = null;
+    watcher?.destroy();
   }
 
   private applyInert(): void {

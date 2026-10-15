@@ -26,7 +26,7 @@ let breakpoint = '0';
 let resizeCallback: ((entries: unknown[]) => void) | null = null;
 let rafQueue: FrameRequestCallback[] = [];
 
-const fakeWindow = {
+const fakeWindow: Record<string, unknown> = {
   ResizeObserver: class {
     constructor(cb: (entries: unknown[]) => void) {
       resizeCallback = cb;
@@ -189,6 +189,7 @@ describe('CngxPopoverSheet', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    delete fakeWindow['CloseWatcher'];
     document.body.removeAttribute('style');
     document.documentElement.removeAttribute('style');
   });
@@ -636,6 +637,107 @@ describe('CngxPopoverSheet', () => {
       const ctx = setup();
       const handle = ctx.q('.cngx-popover-sheet-handle');
       expect(handle.getAttribute('aria-hidden')).toBe('true');
+    });
+  });
+  describe('outside tap', () => {
+    it('requests a backdrop close for a pointerdown outside the panel only', () => {
+      const ctx = setup((h) => h.closeOnRequest.set(false));
+      openFromOpener(ctx);
+      ctx.q('.item').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(ctx.host.reasons).toEqual([]);
+
+      ctx.root.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(ctx.host.reasons).toEqual(['backdrop']);
+    });
+
+    it('detaches the listener after close and never listens while anchored', () => {
+      const ctx = setup();
+      openFromOpener(ctx);
+      ctx.root.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(ctx.host.reasons).toEqual(['backdrop']);
+      expect(ctx.host.popover().state()).toBe('closed');
+
+      ctx.host.request.set('anchored');
+      ctx.flush();
+      openFromOpener(ctx);
+      ctx.root.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(ctx.host.reasons).toEqual(['backdrop']);
+    });
+  });
+
+  describe('back gesture', () => {
+    let watchers: { onclose: (() => void) | null; destroy: ReturnType<typeof vi.fn> }[];
+
+    beforeEach(() => {
+      watchers = [];
+      fakeWindow['CloseWatcher'] = class {
+        onclose: (() => void) | null = null;
+        destroy = vi.fn();
+        constructor() {
+          watchers.push(this);
+        }
+      };
+    });
+
+    it('creates a watcher on open, closes on back and destroys it on close', () => {
+      const ctx = setup();
+      openFromOpener(ctx);
+      expect(watchers).toHaveLength(1);
+
+      watchers[0].onclose?.();
+      expect(ctx.host.reasons).toEqual(['back']);
+      expect(ctx.host.popover().state()).toBe('closed');
+      expect(watchers).toHaveLength(1);
+    });
+
+    it('destroys the watcher when the sheet closes another way', () => {
+      const ctx = setup();
+      openFromOpener(ctx);
+      ctx.host.popover().hide();
+      expect(watchers[0].destroy).toHaveBeenCalledTimes(1);
+    });
+
+    it('re-arms a fresh watcher after a blocked back and intercepts the next one', () => {
+      const ctx = setup((h) => h.closeOnRequest.set(false));
+      openFromOpener(ctx);
+      watchers[0].onclose?.();
+      expect(ctx.host.popover().state()).not.toBe('closed');
+      expect(watchers).toHaveLength(2);
+
+      watchers[1].onclose?.();
+      expect(ctx.host.reasons).toEqual(['back', 'back']);
+      expect(watchers).toHaveLength(3);
+    });
+
+    it('lets Escape close through CngxPopover and drops a back fired in the same keypress', () => {
+      const ctx = setup();
+      openFromOpener(ctx);
+      const watcher = watchers[0];
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      expect(ctx.host.popover().state()).toBe('closed');
+      expect(ctx.host.reasons).toEqual([]);
+      expect(watcher.destroy).toHaveBeenCalledTimes(1);
+
+      watcher.onclose?.();
+      expect(ctx.host.reasons).toEqual([]);
+      expect(watchers).toHaveLength(1);
+    });
+
+    it('runs onHide() once for an Escape close', () => {
+      const ctx = setup();
+      const closing = vi.fn();
+      ctx.host.closingHandler = closing;
+      openFromOpener(ctx);
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      expect(closing).toHaveBeenCalledTimes(1);
+    });
+
+    it('creates no watcher without CloseWatcher (iOS)', () => {
+      delete fakeWindow['CloseWatcher'];
+      const ctx = setup();
+      openFromOpener(ctx);
+      ctx.host.popover().hide();
+      expect(watchers).toHaveLength(0);
     });
   });
 });
