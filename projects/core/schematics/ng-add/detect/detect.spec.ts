@@ -93,10 +93,6 @@ describe('detectProject', () => {
       manifest: parseManifest(createFixtureTree().readText('package.json')),
       sourceRoot: 'src',
       angularVersion: '21.2.0',
-      bootstrap: 'standalone',
-      zoneless: true,
-      signalForms: false,
-      stylesKind: 'css',
       stylesPath: 'src/styles.css',
       cngxStylesheet: false,
       cngxThemePath: undefined,
@@ -116,7 +112,6 @@ describe('detectProject', () => {
       eslintConfig: undefined,
       legacyEslintConfig: undefined,
       eslintStack: { eslintMajor: undefined, templateParser: false, typescriptParser: false, angularEslint: undefined, templateParserMajor: undefined },
-      ssr: false,
       sourceLocale: undefined,
       maturity: 'fresh',
     } satisfies ProjectFacts);
@@ -128,9 +123,6 @@ describe('detectProject', () => {
 
     expect(facts).toMatchObject({
       project: 'tailwind-app',
-      bootstrap: 'standalone',
-      zoneless: true,
-      stylesKind: 'scss',
       stylesPath: 'src/styles.scss',
       tailwind: { major: 4, layered: true, orderTarget: 'src/styles.scss', orderDeclared: false, layersFile: 'absent' },
       rootProviders: [
@@ -223,9 +215,8 @@ export const appConfig: ApplicationConfig = {
     expect((await detect({ 'package.json': JSON.stringify({ dependencies: {} }) })).angularVersion).toBeUndefined();
   });
 
-  it('detects an NgModule bootstrap and its module as the provider target', async () => {
+  it('takes the root NgModule as the provider target of an NgModule bootstrap', async () => {
     const facts = await detect({ 'src/main.ts': NGMODULE_MAIN });
-    expect(facts.bootstrap).toBe('ngmodule');
     expect(facts.appConfigPath).toBe('src/app/app-module.ts');
   });
 
@@ -234,33 +225,17 @@ export const appConfig: ApplicationConfig = {
     expect((await detect({ 'src/main.ts': main })).appConfigPath).toBe('src/config/root.config.ts');
   });
 
-  it('detects zone-based change detection from polyfills or the app config', async () => {
-    expect((await detect({ 'angular.json': withWorkspaceStyles(['src/styles.css'], { polyfills: ['zone.js'] }) })).zoneless).toBe(
-      false,
-    );
-    expect((await detect({ 'src/app/app.config.ts': ZONED_CONFIG })).zoneless).toBe(false);
-  });
-
-  it('detects Signal Forms from an import under the source root', async () => {
-    const facts = await detect({
-      'src/app/form.ts': "import { form } from '@angular/forms/signals';\nexport const f = form;\n",
-    });
-    expect(facts.signalForms).toBe(true);
-  });
-
-  it('reads the global stylesheet kind from the first build style entry', async () => {
+  it('reads the global stylesheet from the first build style entry', async () => {
     const facts = await detect({
       'angular.json': withWorkspaceStyles([{ input: 'src/styles.scss', bundleName: 'styles' }]),
       'src/styles.scss': '',
     });
-    expect(facts.stylesKind).toBe('scss');
     expect(facts.stylesPath).toBe('src/styles.scss');
   });
 
   it('reads no stylesheet when the build has no style entry', async () => {
     const facts = await detect({ 'angular.json': withWorkspaceStyles([]) });
     expect(facts.stylesPath).toBeUndefined();
-    expect(facts.stylesKind).toBe('css');
   });
 
   describe('Material', () => {
@@ -285,7 +260,6 @@ export const appConfig: ApplicationConfig = {
         'angular.json': withWorkspaceStyles(['src/material-theme.scss', 'src/styles.css']),
         'src/material-theme.scss': MAP_API_THEME.replace('density: 0', 'density: -2'),
       });
-      expect(facts.stylesKind).toBe('css');
       expect(facts.stylesPath).toBe('src/styles.css');
       expect(facts.material).toEqual({
         present: true,
@@ -592,13 +566,6 @@ module.exports = defineConfig([
     });
   });
 
-  it('detects SSR from the build options or the @angular/ssr dependency', async () => {
-    expect((await detect({ 'angular.json': withWorkspaceStyles(['src/styles.css'], { server: 'src/main.server.ts' }) })).ssr).toBe(
-      true,
-    );
-    expect((await detect({ 'package.json': withPackage({ '@angular/ssr': '^21.2.0' }) })).ssr).toBe(true);
-  });
-
   it('reads the i18n source locale in both workspace shapes', async () => {
     const workspace = (sourceLocale: unknown): string => {
       const parsed = JSON.parse(createFixtureTree().readText('angular.json')) as {
@@ -678,6 +645,10 @@ module.exports = defineConfig([
   describe('maturity', () => {
     it('calls an app with more than the root component existing', async () => {
       expect((await detect({ 'src/app/other.ts': SECOND_COMPONENT })).maturity).toBe('existing');
+    });
+
+    it('counts only components under the app folder', async () => {
+      expect((await detect({ 'src/lib/other.ts': SECOND_COMPONENT })).maturity).toBe('fresh');
     });
 
     it('calls an app with another UI library existing', async () => {

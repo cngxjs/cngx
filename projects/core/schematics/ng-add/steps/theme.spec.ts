@@ -95,7 +95,7 @@ describe('planTheme', () => {
       layersFile: 'absent',
       ...overrides,
     });
-    const scss = { stylesKind: 'scss', stylesPath: 'src/styles.scss' } as const;
+    const scss = { stylesPath: 'src/styles.scss' } as const;
     const layerIds = (result: StepResult): readonly string[] =>
       [...result.changes, ...result.skipped].map((change) => change.id).filter((id) => id.startsWith('theme:layer'));
 
