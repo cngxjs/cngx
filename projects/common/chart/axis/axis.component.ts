@@ -2,11 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import { CNGX_CHART_CONTEXT, type CngxChartPlotArea } from '../chart/chart-context';
+import { injectChartContext, type CngxChartPlotArea } from '../chart/chart-context';
 import { CNGX_CHART_AXIS, type CngxChartAxis } from './chart-axis';
 import { dateTimeFormatterFor, injectLocale } from '@cngx/core/utils';
 import { formatChartNumber } from '../chart/format-number';
@@ -299,7 +298,7 @@ export class CngxAxis implements CngxChartAxis {
    */
   readonly axisLabel = input<string | null>(null, { alias: 'label' });
 
-  private readonly ctx = inject(CNGX_CHART_CONTEXT);
+  private readonly ctx = injectChartContext('CngxAxis');
   private readonly locale = injectLocale();
 
   /**

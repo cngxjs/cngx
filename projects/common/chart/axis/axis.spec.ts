@@ -41,6 +41,17 @@ class TestHost {
   formatFn = signal<(v: unknown) => string>((v) => String(v));
 }
 
+@Component({
+  standalone: true,
+  imports: [CngxAxis],
+  template: `
+    <svg>
+      <svg:g cngxAxis position="bottom"></svg:g>
+    </svg>
+  `,
+})
+class OrphanAxisHost {}
+
 describe('CngxAxis', () => {
   beforeEach(() => {
     createResizeObserverMock().install(window);
@@ -48,6 +59,20 @@ describe('CngxAxis', () => {
   });
 
   afterEach(() => vi.unstubAllGlobals());
+
+  it('throws CNGX1048 when mounted without a <cngx-chart> parent', () => {
+    TestBed.configureTestingModule({ imports: [OrphanAxisHost] });
+    expect(() => {
+      const f = TestBed.createComponent(OrphanAxisHost);
+      f.detectChanges();
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1048',
+        message: expect.stringMatching(/^CNGX1048: CngxAxis: missing CNGX_CHART_CONTEXT/),
+      }),
+    );
+  });
 
   function setup(): {
     fixture: ReturnType<typeof TestBed.createComponent<TestHost>>;
