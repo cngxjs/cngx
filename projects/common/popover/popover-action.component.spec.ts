@@ -325,6 +325,7 @@ describe('CngxPopoverAction', () => {
       fixture.detectChanges();
       expect(fixture.componentInstance.action().status()).toBe('idle');
       expect(button.textContent?.trim()).toBe('Broken');
+      expect(button.getAttribute('aria-disabled')).toBe('true');
       expect(popoverEl.hidePopover).not.toHaveBeenCalled();
     });
 

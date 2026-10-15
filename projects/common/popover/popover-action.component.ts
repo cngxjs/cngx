@@ -145,7 +145,11 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
       </span>
     } @else {
       <!-- confirm without [action]: CNGX1035; the click runs nothing -->
-      <button type="button" [class]="'cngx-popover-action cngx-popover-action--' + variant()">
+      <button
+        type="button"
+        aria-disabled="true"
+        [class]="'cngx-popover-action cngx-popover-action--' + variant()"
+      >
         <ng-container *ngTemplateOutlet="idle" />
       </button>
     }
