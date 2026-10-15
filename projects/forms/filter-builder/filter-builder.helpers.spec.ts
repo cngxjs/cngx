@@ -90,6 +90,33 @@ describe('ensureFilterTreeIds', () => {
   });
 });
 
+describe('unknown filter logic (CNGX2013)', () => {
+  const persisted = () =>
+    ({
+      type: 'group',
+      id: 'root',
+      logic: 'AND',
+      negated: false,
+      filters: [createFilterExpression('name', 'eq', 'alice')],
+    }) as unknown as FilterGroup;
+  const coded = expect.objectContaining({
+    name: 'CngxRuntimeError',
+    code: 'CNGX2013',
+    message: expect.stringMatching(/^CNGX2013: Unknown filter logic "AND"; /),
+  });
+
+  it('throws at the boundary in ensureFilterTreeIds, also for a nested group', () => {
+    expect(() => ensureFilterTreeIds(persisted())).toThrow(coded);
+    const nested = createFilterGroup('and', [persisted()]);
+    expect(() => ensureFilterTreeIds(nested)).toThrow(coded);
+  });
+
+  it('throws when a tree that skipped the boundary is evaluated', () => {
+    const predicate = toFilterPredicate(persisted(), FIELDS)!;
+    expect(() => predicate({ name: 'alice' })).toThrow(coded);
+  });
+});
+
 describe('createEmptyFilterRoot', () => {
   it('returns the same frozen reference on every call', () => {
     expect(createEmptyFilterRoot()).toBe(createEmptyFilterRoot());
@@ -196,7 +223,13 @@ describe('toFilterPredicate - logic operators', () => {
       filters: [exprEq('name', 'alice')],
     };
     const predicate = toFilterPredicate(tree, FIELDS)!;
-    expect(() => predicate({ name: 'alice' })).toThrow(/Unhandled FilterLogic variant: rogue/);
+    expect(() => predicate({ name: 'alice' })).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX2013',
+        message: expect.stringMatching(/^CNGX2013: Unknown filter logic "rogue"; /),
+      }),
+    );
   });
 });
 

@@ -1,4 +1,5 @@
 import { nextUid } from '@cngx/core/utils';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import type {
   FilterExpression,
@@ -90,14 +91,30 @@ export function createFilterExpression<TValue = unknown>(
  * the same `tree` reference is returned. Consumers who hand-construct trees
  * (deserialised JSON, presets, persisted snapshots) run this once at the
  * boundary; the presenter already invokes it on initial read and on every
- * external write through `value`.
+ * external write through `value`. A group whose `logic` is not `'and'`,
+ * `'or'` or `'xor'` throws CNGX2013 here, at the write, rather than later
+ * inside the predicate.
  */
 export function ensureFilterTreeIds(tree: FilterGroup): FilterGroup {
   return normaliseGroupIds(tree);
 }
 
 /** @internal */
+function throwUnknownLogic(logic: unknown): never {
+  throw new CngxRuntimeError(
+    'CNGX2013',
+    typeof ngDevMode !== 'undefined' &&
+      ngDevMode &&
+      `Unknown filter logic "${String(logic)}"; a FilterGroup's logic must be 'and', 'or' or 'xor'. ` +
+        'Normalise deserialised or persisted trees before they reach the filter builder.',
+  );
+}
+
+/** @internal */
 function normaliseGroupIds(group: FilterGroup): FilterGroup {
+  if (group.logic !== 'and' && group.logic !== 'or' && group.logic !== 'xor') {
+    throwUnknownLogic(group.logic);
+  }
   const nextFilters: FilterNode[] = [];
   let childrenChanged = false;
   for (const child of group.filters) {
@@ -297,7 +314,7 @@ function evaluateGroup<TItem>(
       break;
     default: {
       const _exhaustive: never = group.logic;
-      throw new Error(`Unhandled FilterLogic variant: ${_exhaustive as string}`);
+      throwUnknownLogic(_exhaustive);
     }
   }
 

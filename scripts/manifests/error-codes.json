@@ -826,6 +826,17 @@
       "files": ["projects/forms/filter-builder/filter-builder.utils.ts"]
     },
     {
+      "code": "CNGX2013",
+      "lib": "forms",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Unknown filter logic",
+      "page": "core-concepts/error-codes/cngx2013.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2013.html",
+      "status": "active",
+      "files": ["projects/forms/filter-builder/filter-builder.helpers.ts"]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",

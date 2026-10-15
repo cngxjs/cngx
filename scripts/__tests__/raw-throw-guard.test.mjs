@@ -79,11 +79,6 @@ const RAW_THROW_EXEMPT = [
     reason:
       'spec-only harness; excluded-path-import-boundary.test.mjs fails any library import of a __test-helpers file',
   },
-  {
-    file: 'projects/forms/filter-builder/filter-builder.helpers.ts',
-    count: 1,
-    reason: 'never exhaustiveness check, unreachable for typed callers',
-  },
 ];
 
 /** The file that declares the class; its own declaration is no value use. */
