@@ -84,8 +84,10 @@ describe('formatMessage', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     warn.mockClear();
     formatMessage('x', {}, 'evict_me_bad');
+    // Valid private-use tags: they evict the bad tag from the format cache without
+    // adding entries to the process-wide set of warned tags.
     for (let i = 0; i < 33; i++) {
-      formatMessage('x', {}, `filler-${String.fromCharCode(97 + (i % 26))}${i}`);
+      formatMessage('x', {}, `en-x-fill${i}`);
     }
     formatMessage('x', {}, 'evict_me_bad');
     const mine = warn.mock.calls.filter(([m]) => /^CNGX0001: .*"evict_me_bad"/.test(String(m)));
