@@ -22,21 +22,27 @@ A marked cngx block in {{instructions}} tells the agent to ask the server.
 
 ### Tools
 
+<!-- prettier-ignore-start -->
 |Tool|What it answers|Try asking|
 |-|-|-|
 {{tools}}
+<!-- prettier-ignore-end -->
 
 ### Resources
 
+<!-- prettier-ignore-start -->
 |URI|Content|
 |-|-|
 {{resources}}
+<!-- prettier-ignore-end -->
 
 ### Prompts
 
+<!-- prettier-ignore-start -->
 |Prompt|Use|
 |-|-|
 {{prompts}}
+<!-- prettier-ignore-end -->
 
 ## Check that it runs
 

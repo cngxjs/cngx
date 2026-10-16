@@ -1,3 +1,4 @@
+import { format } from 'prettier';
 import { describe, expect, it } from 'vitest';
 
 import { type EditFile } from '../../engine';
@@ -46,6 +47,17 @@ describe('renderHelperReadme', () => {
     for (const separator of tableLines.filter((line) => /^\|[-:| ]+\|$/.test(line))) {
       expect(separator).toMatch(/^\|(-\|)+$/);
     }
+  });
+
+  // The Angular CLI runs the app's Prettier over every file a schematic
+  // writes; the tables must come out of it as cngx wrote them.
+  it('keeps every table dense after the CLI formats the file with Prettier', async () => {
+    const readme = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS);
+    const tables = (text: string) => text.split('\n').filter((line) => line.startsWith('|'));
+
+    const formatted = await format(readme, { parser: 'markdown', printWidth: 100 });
+
+    expect(tables(formatted)).toEqual(tables(readme));
   });
 
   it('starts with an html provenance stamp and leaves no placeholder behind', () => {
