@@ -426,10 +426,11 @@ export function collectCascades(model, sourceFiles, root = REPO_ROOT) {
     };
     visit(sf);
   }
-  return entries
-    .map(normalize)
-    .sort((a, b) => a.file.localeCompare(b.file, 'en') || a.line - b.line);
+  return entries.map(normalize).sort((a, b) => byCodePoint(a.file, b.file) || a.line - b.line);
 }
+
+/** Plain code-unit order, the same on every machine (no ICU collation). */
+const byCodePoint = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 
 /**
  * Stable key order, so a regenerated manifest diffs only where the source did.
