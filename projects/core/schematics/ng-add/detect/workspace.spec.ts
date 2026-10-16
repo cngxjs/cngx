@@ -144,6 +144,12 @@ describe('globalStylesheet', () => {
     );
   });
 
+  it('skips a style entry the build does not inject', async () => {
+    const entries = await entriesOf([{ input: 'src/print.scss', inject: false }, 'src/styles.css']);
+    expect(entries).toEqual(['src/styles.css']);
+    expect(globalStylesheet(entries)).toBe('src/styles.css');
+  });
+
   it('reads no stylesheet when the build has no style entry', async () => {
     expect(globalStylesheet(await entriesOf([]))).toBeUndefined();
   });

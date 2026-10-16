@@ -3,7 +3,10 @@ import { isRecord } from '../plan/text';
 const PREAMBLE_AT_RULE = /^@(use|forward|import|charset)\b/;
 const IMPORT_RULE = /^@import\b/;
 const MODULE_RULE = /^@(use|forward)\b/;
-const IMPORT_URL = /^@(?:use|forward|import)\s+(['"])(.+?)\1/;
+// `'x'`, `"x"`, `url('x')` or `url(x)` after the at-rule.
+const IMPORT_URL = /^@(?:use|forward|import)\s+(?:url\(\s*(['"]?)([^'"()\s]+)\1\s*\)|(['"])(.+?)\3)/;
+// Resolution prefixes that load the same file as the bare url.
+const URL_PREFIX = /^(?:~|node_modules\/)/;
 
 // End offset of the statement starting at `start`: the `;` that is not inside
 // quotes or parentheses (`@use 'x' with ($a: 1);`), or the end of input.
@@ -61,21 +64,51 @@ function preambleEnd(content: string, stopBefore?: RegExp): number {
   return insertAt;
 }
 
+// The url a statement loads, without a `~` or `node_modules/` prefix;
+// `undefined` for anything that is not a module load.
+function urlOf(statement: string): string | undefined {
+  const match = IMPORT_URL.exec(statement.trim());
+  const url = match?.[2] ?? match?.[4];
+  return url?.replace(URL_PREFIX, '');
+}
+
 /** The url of an `@use` / `@forward` / `@import` statement. */
 function importUrl(statement: string): string {
-  const url = IMPORT_URL.exec(statement.trim())?.[2];
+  const url = urlOf(statement);
   if (url === undefined) {
     throw new Error(`Not a style import statement: ${statement}`);
   }
   return url;
 }
 
+/**
+ * Every url the stylesheet loads through `@use` / `@forward` / `@import`,
+ * in file order, one statement at a time, so two statements on one line both
+ * count. A statement behind a line comment does not.
+ */
+export function styleImportUrls(content: string): readonly string[] {
+  return content.split('\n').flatMap((line) => {
+    const urls: string[] = [];
+    let position = 0;
+    while (position < line.length) {
+      const end = statementEnd(line, position);
+      const statement = line.slice(position, end);
+      if (statement.trim().startsWith('//')) {
+        break;
+      }
+      const url = urlOf(statement);
+      if (url !== undefined) {
+        urls.push(url);
+      }
+      position = end;
+    }
+    return urls;
+  });
+}
+
 /** Whether the stylesheet already loads the url `statement` loads, through any of the three at-rules. */
 export function hasStyleImport(content: string, statement: string): boolean {
-  const url = importUrl(statement);
-  return content
-    .split('\n')
-    .some((line) => IMPORT_URL.exec(line.trim())?.[2] === url);
+  return styleImportUrls(content).includes(importUrl(statement));
 }
 
 /**
@@ -122,4 +155,9 @@ export function styleEntryPath(entry: unknown): string | undefined {
     return entry;
   }
   return isRecord(entry) && typeof entry['input'] === 'string' ? entry['input'] : undefined;
+}
+
+/** Whether the build injects a `styles` entry into the page; an object entry with `inject: false` is a lazy bundle. */
+export function isInjectedStyleEntry(entry: unknown): boolean {
+  return !isRecord(entry) || entry['inject'] !== false;
 }

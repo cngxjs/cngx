@@ -4,6 +4,7 @@ import {
   hasStyleImport,
   insertLeadingStyleImport,
   insertStyleImport,
+  isInjectedStyleEntry,
   styleEntryPath,
 } from './style-edit';
 
@@ -125,8 +126,37 @@ describe('hasStyleImport', () => {
     expect(hasStyleImport("@import '@cngx/themes/example-brand.css';\n", CNGX)).toBe(false);
   });
 
+  it('matches a url() import, quoted or not', () => {
+    expect(hasStyleImport("@import url('@cngx/themes/cngx.css');\n", CNGX)).toBe(true);
+    expect(hasStyleImport('@import url("@cngx/themes/cngx.css") layer(cngx);\n', CNGX)).toBe(true);
+    expect(hasStyleImport('@import url(@cngx/themes/cngx.css);\n', CNGX)).toBe(true);
+  });
+
+  it('matches a url behind a ~ or node_modules/ prefix', () => {
+    expect(hasStyleImport("@import '~@cngx/themes/cngx.css';\n", CNGX)).toBe(true);
+    expect(hasStyleImport("@import 'node_modules/@cngx/themes/cngx.css';\n", CNGX)).toBe(true);
+    expect(hasStyleImport("@import '@cngx/themes/cngx.css';\n", "@import '~@cngx/themes/cngx.css';")).toBe(true);
+  });
+
+  it('matches the second statement on a line', () => {
+    expect(hasStyleImport("@use '@angular/material' as mat; @import '@cngx/themes/cngx.css';\n", CNGX)).toBe(true);
+  });
+
+  it('does not match a commented-out import', () => {
+    expect(hasStyleImport("// @import '@cngx/themes/cngx.css';\n", CNGX)).toBe(false);
+  });
+
   it('rejects a statement that is not a module load', () => {
     expect(() => hasStyleImport('', 'body {}')).toThrow('Not a style import statement');
+  });
+});
+
+describe('isInjectedStyleEntry', () => {
+  it('skips only an object entry with inject: false', () => {
+    expect(isInjectedStyleEntry('src/styles.scss')).toBe(true);
+    expect(isInjectedStyleEntry({ input: 'src/theme.scss', bundleName: 'theme' })).toBe(true);
+    expect(isInjectedStyleEntry({ input: 'src/theme.scss', inject: true })).toBe(true);
+    expect(isInjectedStyleEntry({ input: 'src/theme.scss', inject: false })).toBe(false);
   });
 });
 

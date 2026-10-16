@@ -1,7 +1,7 @@
 import { type workspaces } from '@angular-devkit/core';
 import { SchematicsException } from '@angular-devkit/schematics';
 
-import { isRecord, parseManifest, styleEntryPath } from '../../engine';
+import { isInjectedStyleEntry, isRecord, parseManifest, styleEntryPath } from '../../engine';
 
 // File content by path, read once per detection run; `undefined` when absent.
 export type Read = (path: string) => string | undefined;
@@ -37,13 +37,15 @@ export function buildOptions(project: workspaces.ProjectDefinition): Readonly<Re
   return project.targets.get('build')?.options ?? {};
 }
 
+// The stylesheets the build injects into the page; a lazy bundle
+// (`inject: false`) is loaded by the app itself, so it is no global style.
 export function styleEntries(options: Readonly<Record<string, unknown>>): readonly string[] {
   const styles = options['styles'];
   if (!Array.isArray(styles)) {
     return [];
   }
   return styles.flatMap((entry: unknown) => {
-    const path = styleEntryPath(entry);
+    const path = isInjectedStyleEntry(entry) ? styleEntryPath(entry) : undefined;
     return path === undefined ? [] : [path];
   });
 }

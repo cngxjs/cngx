@@ -132,6 +132,22 @@ describe('cngx theme wiring', () => {
     expect(importsCngxStylesheet(inThemeFile, ['src/material-theme.scss', 'src/styles.css'])).toBe(true);
   });
 
+  it('sees cngx.css imported one local partial deep', () => {
+    const cngx = "@import '@cngx/themes/cngx.css';\n";
+    const through = (partial: string, statement: string) =>
+      importsCngxStylesheet(readerOf({ 'src/styles.scss': statement, [partial]: cngx }), ['src/styles.scss']);
+    expect(through('src/styles/_vendor.scss', "@use 'styles/vendor';\n")).toBe(true);
+    expect(through('src/vendor.scss', "@import './vendor';\n")).toBe(true);
+    expect(through('src/vendor.css', "@import url('vendor.css');\n")).toBe(true);
+    expect(through('src/vendor.css', "@import 'vendor';\n")).toBe(true);
+    const twoDeep = readerOf({
+      'src/styles.scss': "@use 'a';\n",
+      'src/_a.scss': "@use 'b';\n",
+      'src/_b.scss': cngx,
+    });
+    expect(importsCngxStylesheet(twoDeep, ['src/styles.scss'])).toBe(false);
+  });
+
   it('finds a generated theme file or a stylesheet already using the Material bridge', () => {
     const generated = createFixtureTree('standalone-app', { 'src/cngx-theme.css': '' });
     expect(existingCngxTheme(generated, readerOf({}), 'src', ['src/styles.css'])).toBe('src/cngx-theme.css');
@@ -165,6 +181,10 @@ describe('detectTailwind', () => {
 
   it('sees the layer order file imported, but not an inline layer statement', () => {
     expect(tailwind("@import './cngx-layers.css';\n@import 'tailwindcss';\n")?.orderDeclared).toBe(true);
+    expect(tailwind("@import url('cngx-layers.css'); @import url(tailwindcss);\n")).toMatchObject({
+      layered: true,
+      orderDeclared: true,
+    });
     expect(tailwind("@layer theme, base, cngx, components, utilities;\n@import 'tailwindcss';\n")?.orderDeclared).toBe(
       false,
     );

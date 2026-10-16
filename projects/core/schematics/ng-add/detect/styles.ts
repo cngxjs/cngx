@@ -1,6 +1,13 @@
 import { posix } from 'node:path';
 
-import { declaredRange, hasProvenanceStamp, hasStyleImport, type PackageManifest, type Tree } from '../../engine';
+import {
+  declaredRange,
+  hasProvenanceStamp,
+  hasStyleImport,
+  type PackageManifest,
+  styleImportUrls,
+  type Tree,
+} from '../../engine';
 import { isLocalStylesheet, type Read } from './workspace';
 
 export type MaterialThemeShape = 'map-api' | 'define-theme' | 'm2' | 'prebuilt' | 'none';
@@ -121,12 +128,39 @@ export function detectMaterial(read: Read, manifest: PackageManifest, entries: r
   return { ...none, present: true };
 }
 
+// A url Sass resolves next to the importing file, not a package or a
+// built-in module (`sass:map`).
+function isRelativeUrl(url: string): boolean {
+  return !url.startsWith('@') && !url.includes(':') && !url.startsWith('/');
+}
+
+// The files a relative url can load, the way Sass resolves it: the url as
+// written when it names an extension, else `name.scss`, `_name.scss`, `name.css`.
+function localCandidates(from: string, url: string): readonly string[] {
+  const path = posix.join(posix.dirname(from), url);
+  if (/\.s?css$/.test(path)) {
+    return [path];
+  }
+  const partial = posix.join(posix.dirname(path), `_${posix.basename(path)}`);
+  return [`${path}.scss`, `${partial}.scss`, `${path}.css`];
+}
+
+// The stylesheet itself and every local file it loads, one level deep.
+function withLocalImports(read: Read, entry: string): readonly string[] {
+  const content = read(entry) ?? '';
+  const imported = styleImportUrls(content)
+    .filter(isRelativeUrl)
+    .flatMap((url) => localCandidates(entry, url).map(read).find((file) => file !== undefined) ?? []);
+  return [content, ...imported];
+}
+
 export function importsCngxStylesheet(read: Read, entries: readonly string[]): boolean {
+  const statement = `@import '${CNGX_STYLESHEET}';`;
   return (
     entries.includes(CNGX_STYLESHEET) ||
     entries
       .filter(isLocalStylesheet)
-      .some((entry) => hasStyleImport(read(entry) ?? '', `@import '${CNGX_STYLESHEET}';`))
+      .some((entry) => withLocalImports(read, entry).some((content) => hasStyleImport(content, statement)))
   );
 }
 
@@ -152,14 +186,15 @@ export function detectTailwind(
   const local = entries.filter(isLocalStylesheet);
   const contents = local.map((entry) => read(entry) ?? '');
   const layered = contents.some((content) => hasStyleImport(content, "@import 'tailwindcss';"));
-  const layersImport = new RegExp(`@import\\s+(['"])(?:[^'"]*/)?${escape(CNGX_LAYERS_FILE)}\\1`);
   const orderTarget = local[0];
   const layersContent = orderTarget === undefined ? undefined : read(posix.join(posix.dirname(orderTarget), CNGX_LAYERS_FILE));
   return {
     major: majorOf(range, layered),
     layered,
     orderTarget,
-    orderDeclared: contents.some((content) => layersImport.test(content)),
+    orderDeclared: contents.some((content) =>
+      styleImportUrls(content).some((url) => posix.basename(url) === CNGX_LAYERS_FILE),
+    ),
     layersFile: generatedFileState(layersContent),
   };
 }
