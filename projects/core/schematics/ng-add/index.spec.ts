@@ -427,7 +427,7 @@ describe('ngAdd', () => {
       const run = await runRule(ngAdd({}), createFixtureTree());
 
       expect(run.logs).toContain(
-        '  Skip the eslint entry - no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found; set one up with `ng add angular-eslint`, then run `ng add @cngx/core` again',
+        '  - Skip the eslint entry - no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found; set one up with `ng add angular-eslint`, then run `ng add @cngx/core` again',
       );
       expect(run.tree.exists('eslint.config.js')).toBe(false);
     });
@@ -452,8 +452,8 @@ describe('ngAdd', () => {
       }),
     );
 
-    expect(run.logs.filter((line) => line.startsWith('  Skip the eslint entry'))).toEqual([
-      '  Skip the eslint entry - .eslintrc.json is a legacy config; migrate with `npx @eslint/migrate-config .eslintrc.json`, then run `ng add @cngx/core` again',
+    expect(run.logs.filter((line) => line.startsWith('  - Skip the eslint entry'))).toEqual([
+      '  - Skip the eslint entry - .eslintrc.json is a legacy config; migrate with `npx @eslint/migrate-config .eslintrc.json`, then run `ng add @cngx/core` again',
     ]);
     expect(run.tree.readContent('.eslintrc.json')).toBe('{ "root": true }\n');
     expect(run.tree.files.filter((path) => path.includes('eslint.config'))).toEqual([]);
@@ -492,8 +492,8 @@ describe('ngAdd', () => {
   });
 
   describe('an inline bootstrap config', () => {
-    it('provides into main.ts once over two runs and lists it in the report', async () => {
-      const first = await runRule(ngAdd({ yes: true }), inlineBootstrapApp());
+    it('provides into main.ts once over two runs and lists it in the quiet report', async () => {
+      const first = await runRule(ngAdd({ yes: true, quiet: true }), inlineBootstrapApp());
       const main = first.tree.readContent('src/main.ts');
 
       expect(main.match(/provideA11yPreferences\(/g)).toHaveLength(1);
@@ -716,7 +716,7 @@ describe('ngAdd', () => {
       it('prints only the summary for --quiet "true"', async () => {
         const run = await runRule(ngAdd({ quiet: 'true', yes: 'true' }), existing());
 
-        expect(run.logs[0]).toMatch(/^cngx planned \d+ changes\.$/);
+        expect(run.logs[0]).toMatch(/^cngx applied \d+ changes\.$/);
         expect(run.logs.some((line) => line.startsWith('Planned'))).toBe(false);
       });
     });
@@ -1036,7 +1036,7 @@ describe('ngAdd', () => {
     );
 
     expect(run.tree.readText('.vscode/mcp.json')).toBe('{ "servers": [] }\n');
-    expect(run.logs).toContain('  Skip .vscode/mcp.json - it has no servers object cngx can add to; add servers.cngx by hand');
+    expect(run.logs).toContain('  - Skip .vscode/mcp.json - it has no servers object cngx can add to; add servers.cngx by hand');
   });
 
   it('registers the mcp server for the editors a full run detects, next to the servers already there', async () => {
@@ -1207,8 +1207,20 @@ describe('ngAdd', () => {
   it('prints only the summary when quiet', async () => {
     const run = await runRule(ngAdd({ quiet: true }), createFixtureTree());
 
-    expect(run.logs[0]).toMatch(/^cngx planned \d+ changes\.$/);
+    expect(run.logs[0]).toMatch(/^cngx applied \d+ changes\.$/);
     expect(run.logs.some((line) => line.startsWith('Planned'))).toBe(false);
+  });
+
+  it('says planned instead of applied under --dry-run', async () => {
+    const argv = process.argv;
+    process.argv = [...argv.slice(0, 2), 'add', '@cngx/core', '--dry-run'];
+    try {
+      const run = await runRule(ngAdd({ quiet: true }), createFixtureTree());
+
+      expect(run.logs[0]).toMatch(/^cngx planned \d+ changes\.$/);
+    } finally {
+      process.argv = argv;
+    }
   });
 
   it('asks nothing without a terminal, even with prompts on', async () => {

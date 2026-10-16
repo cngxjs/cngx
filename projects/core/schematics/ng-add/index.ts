@@ -189,7 +189,8 @@ export function ngAdd(flags: NgAddFlags): Rule {
 
     const changesFiles = plan.changes.some((change) => change.kind !== 'note');
     const confirmAhead = facts.maturity === 'existing' && changesFiles && options.yes !== true;
-    await renderer.todo(plan, { pending: readDryRunFlag(process.argv) || (confirmAhead && interactive) });
+    const dryRun = readDryRunFlag(process.argv);
+    await renderer.todo(plan, { pending: dryRun || (confirmAhead && interactive) });
 
     if (confirmAhead) {
       const unconfirmed = unconfirmedApplyLine({
@@ -212,7 +213,13 @@ export function ngAdd(flags: NgAddFlags): Rule {
     const unchanged = new Set<string>();
     return chain([
       applyChangePlan(plan, (id) => unchanged.add(id)),
-      () => renderer.summary(createSummary(createReport(plan, unchanged), options.quiet !== true)),
+      () =>
+        renderer.summary(
+          createSummary(createReport(plan, unchanged), {
+            planListed: options.quiet !== true,
+            outcome: dryRun ? 'planned' : 'applied',
+          }),
+        ),
       scheduleInstall(plan),
     ]);
   };

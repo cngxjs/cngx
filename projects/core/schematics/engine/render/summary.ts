@@ -8,8 +8,6 @@ function plural(count: number, noun: string): string {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
 }
 
-// When the plan list was printed it already names every idempotent hit, so
-// the summary only counts them; under `--quiet` the summary is all there is.
 function skippedLines(report: Report, planListed: boolean): readonly string[] {
   if (report.skipped.length === 0) {
     return [];
@@ -23,37 +21,49 @@ function skippedLines(report: Report, planListed: boolean): readonly string[] {
   );
 }
 
+/** What the run did with its changes: written into the tree, or only planned under `--dry-run`. */
+export type SummaryOutcome = 'applied' | 'planned';
+
 /** The first summary line: `changed` gets the counted changes ("2 changes"). */
 export interface SummaryHeadlines {
-  readonly changed: (changes: string) => string;
+  readonly changed: (changes: string, outcome: SummaryOutcome) => string;
   readonly unchanged: string;
 }
 
+/** How the summary reads the run before it: the plan list printed, and whether it applies. */
+export interface SummaryContext {
+  /** The plan list ran before it (every run except `--quiet`). */
+  readonly planListed: boolean;
+  readonly outcome: SummaryOutcome;
+}
+
 const NG_ADD_HEADLINES: SummaryHeadlines = {
-  changed: (changes) => `cngx planned ${changes}.`,
+  changed: (changes, outcome) => `cngx ${outcome} ${changes}.`,
   unchanged: 'cngx is already set up; nothing changed.',
 };
 
 /**
  * The closing lines of a run, rendered by `renderer.summary`: the files the
  * plan touches, what a step refused or left to the user, the steps already
- * in place, the next steps with the doctor first, and the docs. `planListed`
- * says whether the plan list ran before it (every run except `--quiet`);
- * `headlines` name the command, `ng add` by default.
+ * in place, the next steps with the doctor first, and the docs. When the plan
+ * list ran before it, that list already named every file, note and
+ * idempotent hit, so the summary only counts the hits; under `--quiet` the
+ * summary is all there is and lists them. `headlines` name the command,
+ * `ng add` by default.
  */
 export function createSummary(
   report: Report,
-  planListed: boolean,
+  { planListed, outcome }: SummaryContext,
   headlines: SummaryHeadlines = NG_ADD_HEADLINES,
 ): readonly string[] {
   const headline =
     report.changes.length === 0
       ? headlines.unchanged
-      : headlines.changed(plural(report.changes.length, 'change'));
+      : headlines.changed(plural(report.changes.length, 'change'), outcome);
   return [
     headline,
-    ...section('Files', report.files),
-    ...section('Notes', report.notes),
+    ...(planListed ? [] : section('Files', report.files)),
+    ...(planListed ? [] : section('Notes', report.notes)),
     ...skippedLines(report, planListed),
     ...section('Next steps', report.nextSteps),
     ...section(

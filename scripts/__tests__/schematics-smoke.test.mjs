@@ -159,7 +159,7 @@ describe('dist/core/schematics', () => {
       const tree = await runner.runSchematic('ng-add', {}, await createAppTree(runner));
 
       expect(messages.some((message) => /^Planned \(\d+\):$/.test(message))).toBe(true);
-      expect(messages.some((message) => /^cngx planned \d+ changes\.$/.test(message))).toBe(true);
+      expect(messages.some((message) => /^cngx applied \d+ changes\.$/.test(message))).toBe(true);
       expect(tree.exists('.cngx/install.json')).toBe(true);
     });
   });
@@ -264,7 +264,7 @@ describe('dist/core/schematics migrations', () => {
 
       expect(recordOf(tree).cngxVersion).toBe(version);
       expect(messages[0]).toBe('cngx 0.1.1 migration');
-      expect(messages).toContain('cngx 0.1.1 migration planned 1 change.');
+      expect(messages).toContain('cngx 0.1.1 migration applied 1 change.');
     } finally {
       rmSync(copy, { force: true });
     }

@@ -81,9 +81,12 @@ install. Nothing outside the project is written.
    `--no-prompts`, `--interactive=false` or `--defaults`, the plan applies
    and one line says which of them kept the question away. `--yes` skips the question and the line. A fresh app gets no
    confirmation.
-6. **Apply and summarise.** The summary lists the files touched, the notes
-   (what a step refused or left to you), the steps already in place, and the
-   next steps. A planned change that found its edit already in the file
+6. **Apply and summarise.** The summary opens with `cngx applied <n>
+   changes.` (`cngx planned <n> changes.` under `--dry-run`), counts the
+   steps already in place and names the next steps. The plan list above it
+   already named every change and note, so the summary does not repeat them;
+   under `--quiet` the summary is all that prints and lists the files touched
+   and the notes (what a step refused or left to you). A planned change that found its edit already in the file
    when it ran (an import an earlier change wrote, say) counts as already in
    place, not as a change.
 7. **Install.** One package install at the end, for every dependency the

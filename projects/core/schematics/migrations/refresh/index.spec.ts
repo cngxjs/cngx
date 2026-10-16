@@ -85,7 +85,7 @@ describe('refresh migration', () => {
     });
 
     expect(logs[0]).toBe('cngx 0.1.1 migration');
-    expect(logs).toContain('cngx 0.1.1 migration planned 1 change.');
+    expect(logs).toContain('cngx 0.1.1 migration applied 1 change.');
   });
 
   it('regenerates the helper README once the MCP release moved', async () => {
@@ -117,7 +117,7 @@ describe('refresh migration', () => {
 
     expect(readTree(tree)).toEqual(after);
     expect(logs).not.toContain('Planned (1):');
-    expect(logs).toContain(`cngx ${recordOf(after).cngxVersion} migration planned 1 change.`);
+    expect(logs).toContain(`cngx ${recordOf(after).cngxVersion} migration applied 1 change.`);
   });
 
   it('plans one note for a missing manifest and changes nothing', async () => {
