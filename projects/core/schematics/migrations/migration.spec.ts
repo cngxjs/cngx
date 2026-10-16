@@ -166,9 +166,9 @@ describe('createMigration', () => {
     const { logs: pinned } = await runRule(migration(), createMemoryTree(current), ENTRY);
     const readmeLines = (lines: readonly string[]) => lines.filter((line) => line.startsWith('  - ') && line.includes('.cngx/README.md'));
 
-    expect(readmeLines(readable)).toHaveLength(1);
-    expect(readmeLines(logs)).toEqual(readmeLines(readable));
-    expect(readmeLines(pinned)).toEqual(readmeLines(readable));
+    expect(readmeLines(readable)).toEqual([expect.stringContaining('--project alpha')]);
+    expect(readmeLines(logs)).toEqual([expect.stringContaining('--project beta')]);
+    expect(readmeLines(pinned)).toEqual([expect.stringContaining('--project beta')]);
   });
 
   it('names a recorded project that is gone and leaves its record', async () => {
@@ -176,7 +176,9 @@ describe('createMigration', () => {
 
     const { tree, logs } = await runRule(migration(), createMemoryTree(files), ENTRY);
 
-    expect(logs.join('\n')).toContain('Project "gone" not found in angular.json.');
+    expect(logs).toContain(
+      '  - Re-run the recorded install steps for gone - Project "gone" not found in angular.json. Its record in .cngx/install.json is kept as it is.',
+    );
     expect(recordsOf(tree)['gone']).toEqual(recordsOf(createMemoryTree(files))['gone']);
     expect(recordsOf(tree)['alpha']?.updatedAt).toBe('2026-10-12T12:00:00.000Z');
   });
@@ -189,7 +191,7 @@ describe('createMigration', () => {
 
     expect(tree.readText('.cngx/install.json')).toBe(content);
     expect(logs).toContain(
-      '  - Re-run the recorded install steps - .cngx/install.json exists but cngx cannot read it; run ng add to record this install',
+      '  - Re-run the recorded install steps - .cngx/install.json exists but cngx cannot read it and leaves it as it is; ng add @cngx/core --project <name> keeps it as a copy and starts a new install record',
     );
   });
 });

@@ -34,7 +34,13 @@ import {
   recordedLibs,
   recordedStepIds,
 } from '../ng-add/steps/manifest';
-import { planManifestReruns, type PresetDefaults, readRecordedAnswers, type WorkspaceReadme } from '../ng-add/steps/reruns';
+import {
+  ngAddCommand,
+  planManifestReruns,
+  type PresetDefaults,
+  readRecordedAnswers,
+  type WorkspaceReadme,
+} from '../ng-add/steps/reruns';
 
 /** What one release migrates: renames as data, codemods for the rest. */
 export interface Migration {
@@ -99,8 +105,9 @@ async function planReruns(
     const reason =
       stored.state === 'absent'
         ? `no ${INSTALL_MANIFEST_PATH} from ng add; only the renames and codemods ran`
-        : `${INSTALL_MANIFEST_PATH} exists but cngx cannot read it; run ng add to record this install`;
-    const id = stored.state === 'absent' ? 'manifest:missing' : 'manifest:unreadable';
+        : `${INSTALL_MANIFEST_PATH} exists but cngx cannot read it and leaves it as it is; ${ngAddCommand('<name>')} keeps it as a copy and starts a new install record`;
+    // Not `manifest:unreadable`: that id is the copy ng add plans.
+    const id = stored.state === 'absent' ? 'manifest:missing' : 'manifest:unreadable-note';
     return { reruns: note(id, 'Re-run the recorded install steps', reason, versions.cngx), records: NOTHING };
   }
   const { manifest } = stored;
@@ -113,7 +120,8 @@ async function planReruns(
     try {
       facts = detectProject(tree, workspace, project);
     } catch (error) {
-      reruns.push(note('manifest:project', 'Re-run the recorded install steps', errorMessage(error), versions.cngx));
+      const reason = `${errorMessage(error)} Its record in ${INSTALL_MANIFEST_PATH} is kept as it is.`;
+      reruns.push(note('manifest:project', `Re-run the recorded install steps for ${project}`, reason, versions.cngx));
       continue;
     }
     const defaultsFor = (preset: NgAddPreset) => presetDefaults(preset, facts);

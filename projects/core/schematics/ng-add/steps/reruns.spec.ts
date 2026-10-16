@@ -186,14 +186,14 @@ describe('planManifestReruns', () => {
       ['note', 'theme:file'],
       ['note', 'theme:entry'],
     ]);
-    expect(result.changes[0]?.reason).toMatch(/run ng add @cngx\/core to restore it/);
+    expect(result.changes[0]?.reason).toMatch(/run ng add @cngx\/core --project fixture-app to restore it/);
   });
 
   it('names a theme step the answers ask for that was never installed', () => {
     const result = rerun(createFacts(), installed(['theme:file']), NEXT);
 
     expect(result.changes.find((change) => change.id === 'theme:stylesheet')?.reason).toMatch(
-      /never installed; run ng add @cngx\/core to add it/,
+      /never installed; run ng add @cngx\/core --project fixture-app to add it/,
     );
   });
 
@@ -229,7 +229,13 @@ describe('planManifestReruns', () => {
     const result = rerun(createFacts(), manifest, NEXT);
 
     expect(result.changes).toEqual([
-      expect.objectContaining({ kind: 'note', id: 'manifest:answers' }),
+      expect.objectContaining({
+        kind: 'note',
+        id: 'manifest:answers',
+        label: 'Re-run the recorded install steps for fixture-app',
+        reason:
+          'its record in .cngx/install.json holds answers this release cannot read and is kept as it is; run ng add @cngx/core --project fixture-app to refresh it',
+      }),
     ]);
   });
 

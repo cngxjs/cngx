@@ -80,6 +80,11 @@ export function readRecordedAnswers(manifest: ProjectRecord, defaultsFor: Preset
 
 const NO_CHANGES: StepResult = { changes: [], skipped: [] };
 
+/** The command that refreshes one project's record; in a multi-app workspace ng add needs the project. */
+export function ngAddCommand(project: string): string {
+  return `ng add @cngx/core --project ${project}`;
+}
+
 // ng update never writes back a step that is not in place: it may be one
 // the user removed on purpose, so the run names it and leaves it. A step the
 // manifest recorded is gone; one it did not record was never installed,
@@ -89,6 +94,7 @@ function restoreNotes(
   result: StepResult,
   restores: (change: Change) => boolean,
   recorded: ReadonlySet<string>,
+  project: string,
   provenance: Provenance,
 ): StepResult {
   const notes: readonly Change[] = result.changes.filter(restores).map((change) =>
@@ -96,8 +102,8 @@ function restoreNotes(
       id: change.id,
       label: `${change.label} (not in place)`,
       reason: recorded.has(change.id)
-        ? `recorded in ${INSTALL_MANIFEST_PATH}; run ng add @cngx/core to restore it`
-        : 'the recorded answers ask for it but it was never installed; run ng add @cngx/core to add it',
+        ? `recorded in ${INSTALL_MANIFEST_PATH}; run ${ngAddCommand(project)} to restore it`
+        : `the recorded answers ask for it but it was never installed; run ${ngAddCommand(project)} to add it`,
       provenance,
     }),
   );
@@ -138,8 +144,8 @@ export function planManifestReruns(
       changes: [
         createNote({
           id: 'manifest:answers',
-          label: 'Re-run the recorded install steps',
-          reason: `${INSTALL_MANIFEST_PATH} records answers this release cannot read; run ng add @cngx/core to refresh it`,
+          label: `Re-run the recorded install steps for ${facts.project}`,
+          reason: `its record in ${INSTALL_MANIFEST_PATH} holds answers this release cannot read and is kept as it is; run ${ngAddCommand(facts.project)} to refresh it`,
           provenance,
         }),
       ],
@@ -154,6 +160,7 @@ export function planManifestReruns(
           planTheme(facts, answers, versions),
           (change) => change.kind !== 'note',
           recorded,
+          facts.project,
           provenance,
         );
   return mergeStepResults([theme, planReadmeRerun(facts, manifest, answers, versions, readme, provenance)]);
@@ -178,6 +185,7 @@ function planReadmeRerun(
     planHelperReadme(facts, { ...answers, libs }, versions, withdrawn),
     (change) => change.kind === 'create-file',
     new Set(readme.installed),
+    facts.project,
     provenance,
   );
 }

@@ -89,12 +89,16 @@ that depend on the release:
 
 - The theme steps are checked once the cngx version moved, and reported.
 - `.cngx/README.md`, which names the `@cngx/mcp` version, is regenerated once
-  that version moved, once for the workspace.
+  that version moved, once for the workspace, by the first record whose
+  answers this release can read.
 - Each record notes the new release.
 
 A recorded project that is no longer in `angular.json` is named and its
-record left as it is. A manifest cngx cannot read is named too and left
-alone; run `ng add` to start a new record.
+record left as it is. A record whose answers this release cannot read is
+named with its project and kept; `ng add @cngx/core --project <name>`
+refreshes it. A manifest cngx cannot read is named too and left alone;
+`ng add @cngx/core --project <name>` keeps it as a copy and starts a new
+record.
 
 A re-run never brings back a file you deleted; it names it. A README cngx did
 not write stays as it is. An answer recorded by an older release that the
