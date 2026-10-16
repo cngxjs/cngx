@@ -1272,6 +1272,14 @@ describe('the ng-add collection', () => {
     expect(description).toContain('project MCP config');
     expect(description).toContain('.cngx/README.md');
     expect(description).not.toContain('writes no editor config');
+    expect(description).toContain('--preset=full');
+  });
+
+  it('names the MCP setup in the full preset label', () => {
+    const preset = SCHEMA.properties['preset'] as { 'x-prompt': { items: { value: string; label: string }[] } };
+    const full = preset['x-prompt'].items.find((item) => item.value === 'full');
+
+    expect(full?.label).toContain('MCP server');
   });
 
   it('declares no option the ng add command strips', () => {

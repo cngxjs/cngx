@@ -93,7 +93,7 @@ install. Nothing outside the project is written.
 
 |Preset|What it sets up|
 |-|-|
-|`minimal`|The packages only. No theme, no providers, no lint rules. Asks none of the questions below; flags and the preset answer them.|
+|`minimal`|The packages only. No theme, no lint rules, and no providers apart from `provideDirection('rtl')` for a right-to-left source locale. Asks none of the questions below; flags and the preset answer them.|
 |`recommended` (default)|The packages, the theme, the accessibility preference providers and the lint rules.|
 |`full`|`recommended` plus the German language pack, the root feedback services (toasts, alerts, banners), the popover positioning fallback, and the MCP setup for every editor folder found in the project.|
 
@@ -123,8 +123,11 @@ attached, and nothing at all for `minimal`:
 - **Feedback services.** Only when `@cngx/ui` is selected: provide toasts,
   alerts and banners at the root.
 - **AI tooling.** Which editors (Claude Code, Cursor, VS Code) get the cngx
-  MCP server. The editors whose folder the project has are preselected,
-  except one whose cngx server you removed since the last install. Picking
+  MCP server. The editors the project shows signs of are preselected
+  (`CLAUDE.md` or `.claude/` for Claude Code, `.cursorrules` or `.cursor/`
+  for Cursor, `.vscode/` for VS Code), except one whose cngx server you
+  removed since the last install. Without a terminal only `--preset=full`
+  sets them up. Picking
   an editor here brings its removed server back, like `--ai-tools`. See
   [AI tooling](#ai-tooling).
 
@@ -136,6 +139,7 @@ Every answer has a flag. A flag skips its question.
 
 |Flag|Values|Effect|
 |-|-|-|
+|`--project`|a project name from `angular.json`|The application to onboard. Without it the run takes `defaultProject`, else the first application, and says which one it picked when there are several.|
 |`--preset`|`minimal`, `recommended`, `full`|How much of the onboarding to apply.|
 |`--libs`|`utils`, `core`, `common`, `interop`, `forms`, `data-display`, `ui`, comma-separated (`--libs core,forms`)|The packages to install. Default: all of them. `@cngx/themes` needs `core`, `common`, `forms`, `data-display` and `ui` (`cngx.css` imports their CSS); a set without one of them gets a note naming the missing packages and no theme.|
 |`--theme`|`cngx`, `material`, `none`|The generated theme file.|
@@ -154,7 +158,10 @@ Every answer has a flag. A flag skips its question.
 A boolean flag also takes `=true` or `=false` (`--lint=false`). A list flag
 takes its values in one comma-separated argument: repeating the flag
 (`--libs core --libs forms`) or separating the values with spaces
-(`--libs core forms`) keeps only the last value.
+(`--libs core forms`) keeps only the last value. A value outside a flag's
+list, an empty entry (`--libs core,,ui`) or an entry given twice stops the
+run before anything is planned, with one line naming the flag and the
+values it takes.
 
 For CI and scripted runs, pass the answers and skip the questions:
 

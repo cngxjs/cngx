@@ -22,7 +22,7 @@
         "items": [
           { "value": "minimal", "label": "minimal - dependencies only" },
           { "value": "recommended", "label": "recommended - dependencies, theme, a11y providers, lint" },
-          { "value": "full", "label": "full - recommended plus the German language pack, feedback and the floating fallback" }
+          { "value": "full", "label": "full - recommended plus the German language pack, feedback, the floating fallback and the cngx MCP server for the editors it finds" }
         ]
       }
     },
@@ -68,7 +68,7 @@
       "description": "Install @floating-ui/dom and provide the popover positioning fallback for browsers without CSS anchor positioning."
     },
     "aiTools": {
-      "description": "The editors to set up the cngx MCP server for, comma-separated (--ai-tools claude,vscode): the server entry in their project MCP config, a marked cngx block in the agent instructions (AGENTS.md, or CLAUDE.md for Claude Code) and .cngx/README.md. Asked when a terminal is attached, with the detected editors preselected.",
+      "description": "The editors to set up the cngx MCP server for, comma-separated (--ai-tools claude,vscode): the server entry in their project MCP config, a marked cngx block in the agent instructions (AGENTS.md, or CLAUDE.md for Claude Code) and .cngx/README.md. Asked when a terminal is attached. --preset=full preselects the detected editors (CLAUDE.md or .claude, .cursorrules or .cursor, .vscode) and sets them up without a terminal too; the other presets preselect none.",
       "oneOf": [
         { "type": "string" },
         {
