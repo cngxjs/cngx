@@ -55,6 +55,16 @@ describe('newMigrationKeys', () => {
     expect(newMigrationKeys(BASE, head)).toEqual([]);
   });
 
+  it('lists nothing when the head renames a key of the same migration', () => {
+    const head = JSON.stringify({
+      schematics: {
+        'migration-v0.1.0-select': { version: '0.1.0', factory: './0.1.0/index#migrate', description: 'd' },
+      },
+    });
+
+    expect(newMigrationKeys(BASE, head)).toEqual([]);
+  });
+
   it('lists nothing when the head removes a key', () => {
     expect(newMigrationKeys(BASE, withKeys())).toEqual([]);
   });
