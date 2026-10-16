@@ -284,28 +284,59 @@ export function runsAtModuleLoad(node) {
   return true;
 }
 
+/** `node` up through the parentheses, casts and `!` that wrap it. */
+const upCast = (node) => {
+  let current = node;
+  while (current.parent && unwrap(current.parent) !== current.parent) {
+    if (current.parent.expression !== current) {
+      break;
+    }
+    current = current.parent;
+  }
+  return current;
+};
+
+/** The member name of `x.name` or `x['name']`, else undefined. */
+const memberName = (access) => {
+  if (ts.isPropertyAccessExpression(access)) {
+    return access.name.text;
+  }
+  if (ts.isElementAccessExpression(access) && ts.isStringLiteralLike(access.argumentExpression)) {
+    return access.argumentExpression.text;
+  }
+  return undefined;
+};
+
 /**
- * `(() => ...)()`, `(function () { ... })()` or the same through `.call(...)` /
- * `.apply(...)`: a function expression called where it is written. A callback
- * handed to a synchronous call (`[1].forEach(() => ...)`) is not detected; it
+ * `(() => ...)()`, `(function () { ... })()`, `new (function () { ... })()`,
+ * the same through `.call(...)` / `.apply(...)` (also `['call']`) or a
+ * `.bind(...)` result called right away, and any of these with the function
+ * wrapped in a cast (`as`, `<T>`, `satisfies`, `!`): a function expression
+ * called where it is written. A callback handed to a synchronous call
+ * (`[1].forEach(() => ...)`) or to `Reflect.apply(...)` is not detected; it
  * counts as running later.
  */
 const isInvokedInPlace = (fn) => {
   if (!ts.isArrowFunction(fn) && !ts.isFunctionExpression(fn)) {
     return false;
   }
-  let callee = fn;
-  while (ts.isParenthesizedExpression(callee.parent)) {
-    callee = callee.parent;
+  let callee = upCast(fn);
+  const access = callee.parent;
+  const isAccess =
+    (ts.isPropertyAccessExpression(access) || ts.isElementAccessExpression(access)) &&
+    access.expression === callee;
+  const name = isAccess ? memberName(access) : undefined;
+  if (name === 'call' || name === 'apply') {
+    callee = upCast(access);
+  } else if (name === 'bind') {
+    const bound = access.parent;
+    if (!ts.isCallExpression(bound) || bound.expression !== access) {
+      return false;
+    }
+    callee = upCast(bound);
   }
-  const viaCallOrApply =
-    ts.isPropertyAccessExpression(callee.parent) &&
-    callee.parent.expression === callee &&
-    (callee.parent.name.text === 'call' || callee.parent.name.text === 'apply');
-  if (viaCallOrApply) {
-    callee = callee.parent;
-  }
-  return ts.isCallExpression(callee.parent) && callee.parent.expression === callee;
+  const call = callee.parent;
+  return (ts.isCallExpression(call) || ts.isNewExpression(call)) && call.expression === callee;
 };
 
 /** The violation text for a guard `runsAtModuleLoad` reports. */
