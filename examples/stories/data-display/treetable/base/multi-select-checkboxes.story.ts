@@ -18,10 +18,13 @@ export const STORY: DemoSpec = {
     },
   ],
   moduleImports: [
-    "import { CngxTreetable } from '@cngx/data-display/treetable';",
+    "import { CngxTreetable, provideTreetableAt, withTreetableLabels } from '@cngx/data-display/treetable';",
     "import { ORG_TREE, type Employee } from '../../../../fixtures';",
   ],
   imports: ['CngxTreetable'],
+  viewProviders: [
+    "...provideTreetableAt(withTreetableLabels({ columnLabels: { name: 'Name', role: 'Role', location: 'Location' } }))",
+  ],
   setup: `protected readonly orgTree = ORG_TREE;`,
   setupChrome: `protected handleClear(table: CngxTreetable<Employee>): void {
     table.selectedIds.set(new Set());

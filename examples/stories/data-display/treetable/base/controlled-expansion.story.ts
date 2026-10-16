@@ -12,10 +12,13 @@ export const STORY: DemoSpec = {
   focus: ['behavior'],
   apiComponents: ['CngxTreetable'],
   moduleImports: [
-    "import { CngxTreetable, flattenTree } from '@cngx/data-display/treetable';",
+    "import { CngxTreetable, flattenTree, provideTreetableAt, withTreetableLabels } from '@cngx/data-display/treetable';",
     "import { ORG_TREE } from '../../../../fixtures';",
   ],
   imports: ['CngxTreetable'],
+  viewProviders: [
+    "...provideTreetableAt(withTreetableLabels({ columnLabels: { name: 'Name', role: 'Role', location: 'Location' } }))",
+  ],
   setup: `protected readonly orgTree = ORG_TREE;
   // ReadonlySet matches the model<ReadonlySet<string>> inputs; a
   // signal<Set<string>> two-way binding fails under strictTemplates.
