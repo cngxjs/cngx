@@ -1,6 +1,8 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { inject, Injectable, type OnDestroy, PLATFORM_ID } from '@angular/core';
 
+import { createLiveRegionPair, type CngxLiveRegionPair } from './live-region-pair';
+
 /**
  * Politeness channel for {@link CngxLiveAnnouncer.announce}: `'polite'` queues
  * after the current utterance, `'assertive'` interrupts it immediately.
@@ -8,10 +10,6 @@ import { inject, Injectable, type OnDestroy, PLATFORM_ID } from '@angular/core';
  * @category common/a11y
  */
 export type AriaLivePoliteness = 'polite' | 'assertive';
-
-// One frame. Clear the region this long before writing so an intentionally
-// repeated identical string still registers as a content change for the SR.
-const CLEAR_DELAY_MS = 16;
 
 /**
  * Imperative, reusable polite/assertive live-region announcer.
@@ -50,12 +48,7 @@ export class CngxLiveAnnouncer implements OnDestroy {
   private readonly doc = inject(DOCUMENT);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  private politeRegion: HTMLElement | null = null;
-  private assertiveRegion: HTMLElement | null = null;
-  private readonly pending: Record<AriaLivePoliteness, ReturnType<typeof setTimeout> | null> = {
-    polite: null,
-    assertive: null,
-  };
+  private regions: CngxLiveRegionPair | null = null;
 
   /**
    * Announces `message` through the fixed-politeness live region.
@@ -69,59 +62,12 @@ export class CngxLiveAnnouncer implements OnDestroy {
     if (!this.isBrowser) {
       return;
     }
-    const region = this.ensureRegion(politeness);
-    // Clear first, then write one frame later so repeating the same string
-    // still registers as a content change for the SR. Polite and assertive
-    // keep independent timers so one politeness never cancels the other.
-    region.textContent = '';
-    const existing = this.pending[politeness];
-    if (existing !== null) {
-      clearTimeout(existing);
-    }
-    this.pending[politeness] = setTimeout(() => {
-      region.textContent = message;
-      this.pending[politeness] = null;
-    }, CLEAR_DELAY_MS);
+    this.regions ??= createLiveRegionPair(this.doc.body, this.doc);
+    this.regions.announce(message, politeness);
   }
 
   ngOnDestroy(): void {
-    for (const politeness of ['polite', 'assertive'] as const) {
-      const timer = this.pending[politeness];
-      if (timer !== null) {
-        clearTimeout(timer);
-        this.pending[politeness] = null;
-      }
-    }
-    this.politeRegion?.remove();
-    this.assertiveRegion?.remove();
-    this.politeRegion = null;
-    this.assertiveRegion = null;
-  }
-
-  private ensureRegion(politeness: AriaLivePoliteness): HTMLElement {
-    const existing = politeness === 'polite' ? this.politeRegion : this.assertiveRegion;
-    if (existing) {
-      return existing;
-    }
-    const span = this.doc.createElement('span');
-    span.setAttribute('aria-live', politeness);
-    span.setAttribute('aria-atomic', 'true');
-    span.className = 'cngx-sr-only';
-    span.style.position = 'absolute';
-    span.style.width = '1px';
-    span.style.height = '1px';
-    span.style.padding = '0';
-    span.style.margin = '-1px';
-    span.style.overflow = 'hidden';
-    span.style.clip = 'rect(0, 0, 0, 0)';
-    span.style.whiteSpace = 'nowrap';
-    span.style.border = '0';
-    this.doc.body.appendChild(span);
-    if (politeness === 'polite') {
-      this.politeRegion = span;
-    } else {
-      this.assertiveRegion = span;
-    }
-    return span;
+    this.regions?.destroy();
+    this.regions = null;
   }
 }

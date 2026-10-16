@@ -2933,7 +2933,11 @@ pre.code-block code {
 // no host CSS by default (only `cngx-popover-panel` does) - these classes
 // give the unstyled popover a minimum readable surface so the demo focuses
 // on behaviour, not on raw browser popover defaults.
-.demo-popover-surface {
+// Anchored only: an unlayered surface rule would override the sheet layout of
+// a [cngxPopoverSheet] panel (padding, radius, border).
+.demo-popover-surface:not([data-cngx-presentation='sheet']):not(
+    [data-cngx-presentation='fullscreen']
+  ) {
   padding: 8px 12px;
   font-size: 0.8125rem;
   border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));

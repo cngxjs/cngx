@@ -22,6 +22,8 @@ A component that needs an attribute before it adapts is not responsive; it is co
 3. **The breakpoint lives in the stylesheet, once.** A `@container` rule owns the threshold. When TypeScript needs to know the outcome, the rule writes a custom property and the component reads the resolved value. TypeScript never parses a CSS length and never re-implements the condition.
 4. **Communicated through state, not narrated.** A structural switch changes `aria-hidden`, `aria-modal`, `aria-expanded`; those are already in the `computed()` graph and are the communication. A live region is added only when the switch interrupts the user's current task and no ARIA state reflects it, which is rare enough that no component ships one today.
 
+The shipped case for rule 2 is `[cngxPopoverSheet]` (`@cngx/common/popover`). `cngx-popover-sheet.css` writes `--cngx-popover-sheet-breakpoint` once, inside `@media (pointer: coarse) and (max-width: 48rem)`, and the directive reads that property to switch a popover between its anchored layout and a modal bottom sheet or fullscreen panel. It is the only viewport query the container-query guard admits, enrolled with an `overlay modality:` reason.
+
 ---
 
 ## The tier table

@@ -61,6 +61,25 @@ Use `CngxLiveRegion` when the announcement content is part of your template; use
 - `aria-atomic="false"` is not recommended for mutable regions; keep it `true` (default) for clarity
 
 
+### injectScopedLiveRegion
+
+```typescript
+private readonly region = injectScopedLiveRegion(inject(ElementRef).nativeElement);
+
+protected handleSaveFailed(): void {
+  this.region.announce('Save failed', 'assertive');
+}
+```
+
+Polite and assertive live regions inside a host element instead of `document.body`, with the same clear-then-set timing as `CngxLiveAnnouncer` (both run on one engine). Use it in modal overlays: under `aria-modal`, VoiceOver drops body-level regions and reads them late, after the overlay closes, while a region inside the modal is spoken on every platform.
+
+#### Notes
+
+- Must run in an injection context; the regions are removed on destroy. No-op on the server.
+- `ensure()` creates both regions up front, so they are in the DOM before the first message.
+- `takePending()` cancels writes that have not landed and returns them, so a closing overlay can hand them to `CngxLiveAnnouncer`.
+
+
 ## Accessibility Patterns
 
 ### Disclosure / Accordion

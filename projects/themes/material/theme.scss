@@ -64,6 +64,7 @@
 @use './password-strength-meter-theme' as password-strength-meter;
 @use './phone-input-theme' as phone-input;
 @use './popover-panel-theme' as popover-panel;
+@use './popover-sheet-theme' as popover-sheet;
 @use './rating-theme' as rating;
 @use './ripple-theme' as ripple;
 @use './segmented-progress-theme' as segmented-progress;
@@ -132,6 +133,7 @@
   @include password-strength-meter.theme($theme);
   @include phone-input.theme($theme);
   @include popover-panel.theme($theme);
+  @include popover-sheet.theme($theme);
   @include rating.theme($theme);
   @include ripple.theme($theme);
   @include segmented-progress.theme($theme);

@@ -137,6 +137,46 @@ import { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive
 </cngx-popover-panel>
 ```
 
+## Mobile sheet
+
+Add `cngxPopoverSheet` to a `[cngxPopover]` and the popover opens as a modal bottom sheet on coarse, narrow screens (`(pointer: coarse) and (max-width: 48rem)`, written once in `cngx-popover-sheet.css`) and stays anchored everywhere else.
+
+```html
+<button type="button" [cngxPopoverTrigger]="pop" (click)="pop.show()">Choose city</button>
+<div cngxPopover #pop="cngxPopover" cngxPopoverSheet #sheet="cngxPopoverSheet">
+  <header cngxPopoverSheetHeader cngxSwipeDismiss="down">
+    <span cngxPopoverSheetHandle></span>
+    <h2 cngxPopoverSheetTitle>City</h2>
+    <cngx-close-button label="Close" (click)="sheet.requestClose('close')" />
+  </header>
+  <ul>...</ul>
+</div>
+```
+
+| Input / output | Purpose |
+|-|-|
+| `[cngxPopoverSheet]` | `'auto'` (default) follows the breakpoint; `'anchored'`, `'sheet'`, `'fullscreen'` force a presentation |
+| `[autoPresentation]` | What `'auto'` resolves to on a phone: `'sheet'` (content-sized, default) or `'fullscreen'` (for panels led by a text input) |
+| `[labelledBy]` | Id that names the dialog; wins over `cngxPopoverSheetTitle` |
+| `[closeOnRequest]` | `false` turns close requests into notifications only |
+| `[restoreFocus]` / `[restoreTarget]` | Focus return on close (default: the element focused before open) |
+| `(closeRequested)` | `'swipe'`, `'backdrop'`, `'back'` or `'close'` |
+| `(closing)` | Synchronous, inside `hide()`, with the page already live; move focus here when you restore it yourself |
+
+**Parts.** `cngxPopoverSheetHeader` stays fixed while the rest of the panel scrolls; with `cngxSwipeDismiss="down"` a downward swipe requests a close. `cngxPopoverSheetTitle` names the dialog (put it on the heading, not on the header that also holds buttons). `cngxPopoverSheetHandle` is decorative and always `aria-hidden`; screen-reader users close through the close control because their swipes drive navigation. `cngxPopoverSheetInitialFocus` marks the element that receives focus on open.
+
+**Modality.** Sheet and fullscreen are both modal: `role="dialog"` + `aria-modal="true"`, a focus trap, `inert` on every page sibling (live regions stay live), and a pinned scroll lock (`createPinnedScrollLock`). VoiceOver and TalkBack both read content behind a top-layer popover by touch exploration, so `aria-modal` alone does not contain them; `inert` does.
+
+**Focus.** Focus moves into the panel inside `show()`, in the same call stack as the tap that opened it, so a tap-opened fullscreen search keeps the iOS keyboard. A programmatic `open()` outside a user gesture moves focus but cannot raise the iOS keyboard. On close, the page is live again and focus is back on the opener before the close transition starts.
+
+**Close vectors.** A swipe on the header, a tap outside the panel and the Android back gesture (through `CloseWatcher`) arrive as `closeRequested`. Escape closes through `[closeOnEscape]` on `CngxPopover`. The tap outside does not reach the element underneath it. If your own code also closes the popover on outside clicks, disable that path while the sheet is not anchored, so one tap has one close path. Under VoiceOver a double tap activates the element under the VoiceOver cursor, which stays inside the sheet, so a double tap on the dimmed area does not close it: give every sheet a close control.
+
+**Announcements.** While the sheet is modal, announce through `sheet.announce(message, politeness)`. The message is spoken from a live region inside the panel; VoiceOver ignores body-level regions under `aria-modal` and reads them late, after the sheet closes. A message still pending when the sheet closes is handed to `CngxLiveAnnouncer`.
+
+**Platform limits.** iOS Safari has no `CloseWatcher`: the edge back-swipe navigates back with the sheet open. For edge-to-edge landscape on notched iPhones, the app opts into `viewport-fit=cover` in its viewport meta tag; the sheet pads with the safe-area insets either way.
+
+**Styling.** Tokens are `--cngx-popover-sheet-*` (block size, radius, padding, header gap, handle, surface, colour, shadow, backdrop, duration, easing), documented in `cngx-popover-sheet.css`; the Material bridge is `@cngx/themes/material/popover-sheet-theme`. The sheet rules live in the `cngx.components` layer, so unlayered app CSS on the popover host (padding, border, radius) wins over them; scope such rules to `:not([data-cngx-presentation='sheet'])`.
+
 ## Configuration
 
 ### Global Defaults

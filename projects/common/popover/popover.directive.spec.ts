@@ -1,4 +1,4 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, Directive, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -15,10 +15,12 @@ import {
   FLOATING_PLACEMENT,
   provideFloatingFallback,
 } from './floating-fallback';
+import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
 import {
-  CNGX_POPOVER_ARROW_BOUNDS,
-  type CngxPopoverArrowBounds,
-} from './popover-arrow-bounds';
+  CNGX_POPOVER_PRESENTATION,
+  type CngxPopoverPresentation,
+  type CngxPopoverPresentationSeam,
+} from './popover-presentation';
 import type { PopoverPositionTryFallback } from './popover.types';
 
 // Test helpers
@@ -145,6 +147,38 @@ class OverrideHost {
   readonly bExclusive = signal(true);
   readonly a = viewChild.required('a', { read: CngxPopover });
   readonly b = viewChild.required('b', { read: CngxPopover });
+}
+
+@Directive({
+  selector: '[seamStub]',
+  standalone: true,
+  providers: [{ provide: CNGX_POPOVER_PRESENTATION, useExisting: SeamStub }],
+})
+class SeamStub implements CngxPopoverPresentationSeam {
+  readonly presentation = signal<CngxPopoverPresentation>('anchored');
+  readonly onShown = vi.fn();
+  readonly onHide = vi.fn();
+}
+
+@Component({
+  template: `
+    <div
+      cngxPopover
+      seamStub
+      #pop="cngxPopover"
+      [positionTryFallbacks]="['flip-block']"
+      [closeOnOutsideClick]="true"
+    >
+      Seam
+      <div cngxPopover #inner="cngxPopover" [positionTryFallbacks]="['flip-inline']">Inner</div>
+    </div>
+  `,
+  imports: [CngxPopover, SeamStub],
+})
+class SeamHost {
+  readonly popover = viewChild.required('pop', { read: CngxPopover });
+  readonly inner = viewChild.required('inner', { read: CngxPopover });
+  readonly seam = viewChild.required(SeamStub);
 }
 
 function setup<T>(hostType: new () => T) {
@@ -1065,6 +1099,232 @@ describe('CngxPopover', () => {
 
       const opts = computePosition.mock.calls[0][2] as { placement: string };
       expect(opts.placement).toBe(FLOATING_PLACEMENT['right-start']);
+    });
+  });
+  describe('presentation seam', () => {
+    function seamSetup() {
+      const { fixture, popoverEl } = setup(SeamHost);
+      const host = fixture.componentInstance as SeamHost;
+      return { fixture, popoverEl, popover: host.popover(), seam: host.seam(), host };
+    }
+
+    it('calls onShown() synchronously in show() with aria-hidden already false', () => {
+      const { popover, popoverEl, seam } = seamSetup();
+      let ariaHiddenAtShown: string | null = null;
+      seam.onShown.mockImplementation(() => {
+        ariaHiddenAtShown = popoverEl.getAttribute('aria-hidden');
+      });
+      popover.show();
+      expect(seam.onShown).toHaveBeenCalledTimes(1);
+      expect(ariaHiddenAtShown).toBe('false');
+      expect(popoverEl.showPopover).toHaveBeenCalled();
+    });
+
+    it('calls onHide() once per hide(), before the close starts', () => {
+      const { popover, seam } = seamSetup();
+      let stateAtHide: string | null = null;
+      seam.onHide.mockImplementation(() => {
+        stateAtHide = popover.state();
+      });
+      popover.show();
+      popover.hide();
+      popover.hide();
+      expect(seam.onHide).toHaveBeenCalledTimes(1);
+      expect(stateAtHide).toBe('opening');
+      expect(popover.state()).toBe('closed');
+    });
+
+    it('ignores hide() and toggle() issued from inside onHide() and arms one close wait', () => {
+      vi.useFakeTimers();
+      const { popover, popoverEl, seam } = seamSetup();
+      vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({
+        transitionDuration: '0.2s',
+        transitionProperty: 'opacity',
+        transitionDelay: '0s',
+      } as unknown as CSSStyleDeclaration);
+      const addListener = vi.spyOn(popoverEl, 'addEventListener');
+      seam.onHide.mockImplementation(() => {
+        popover.hide();
+        popover.toggle();
+      });
+
+      popover.show();
+      popover.hide();
+
+      expect(seam.onHide).toHaveBeenCalledTimes(1);
+      expect(popover.state()).toBe('closing');
+      expect(addListener.mock.calls.filter(([type]) => type === 'transitionend')).toHaveLength(1);
+      vi.runAllTimers();
+      expect(popover.state()).toBe('closed');
+    });
+
+    it('does not call the seam of an ancestor popover (self lookup only)', () => {
+      const { host } = seamSetup();
+      stubPopoverElement(host.inner().elementRef.nativeElement);
+      host.inner().show();
+      expect(host.seam().onShown).not.toHaveBeenCalled();
+    });
+
+    it('leaves outside clicks to the presentation modifier while not anchored', () => {
+      const { fixture, popover, seam } = seamSetup();
+      seam.presentation.set('sheet');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      popover.show();
+      document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(popover.state()).not.toBe('closed');
+
+      seam.presentation.set('anchored');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(popover.state()).toBe('closed');
+    });
+
+    it('keeps the anchored path unchanged while the seam reports anchored', () => {
+      const { popoverEl } = seamSetup();
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('flip-block');
+    });
+
+    it('drops position-try-fallbacks while not anchored and writes them back after', () => {
+      const { fixture, popoverEl, seam, host } = seamSetup();
+      const innerEl = popoverEl.querySelector('[cngxpopover]') as HTMLElement;
+      seam.presentation.set('sheet');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
+      expect(innerEl.style.getPropertyValue('position-try-fallbacks')).toBe('flip-inline');
+
+      seam.presentation.set('anchored');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('flip-block');
+      expect(host.popover().state()).toBe('closed');
+    });
+  });
+
+  describe('presentation seam and the arrow geometry', () => {
+    it('reports the placement edge and no offset while not anchored', () => {
+      const { fixture, popoverEl } = setup(SeamHost);
+      const host = fixture.componentInstance as SeamHost;
+      const popover = host.popover();
+      popover.setAnchorElement(document.body);
+      vi.spyOn(popoverEl, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 300, 100, 50));
+      vi.spyOn(document.body, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 100, 40));
+      popover.show();
+      window.dispatchEvent(new Event('resize'));
+      expect(popover.arrowOffset()).not.toBeNull();
+
+      host.seam().presentation.set('sheet');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(popover.arrowOffset()).toBeNull();
+      expect(popover.resolvedEdge()).toBe('bottom');
+    });
+
+    it('cancels a pending arrow frame on destroy', () => {
+      const { fixture } = setup(SeamHost);
+      const host = fixture.componentInstance as SeamHost;
+      const cancel = vi.spyOn(globalThis, 'cancelAnimationFrame');
+      host.seam().presentation.set('sheet');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      host.popover().show();
+      host.seam().presentation.set('anchored');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.destroy();
+      expect(cancel).toHaveBeenCalled();
+    });
+  });
+
+  describe('presentation seam with the floating fallback', () => {
+    function floatingSeamSetup() {
+      const computePosition = vi
+        .fn<ComputePositionFn>()
+        .mockResolvedValue({ x: 10, y: 10, placement: 'bottom' });
+      __resetFloatingMiddlewareWarnings(document);
+      TestBed.configureTestingModule({
+        imports: [SeamHost],
+        providers: [provideFloatingFallback(computePosition, [{ name: 'flip' }])],
+      });
+      const { fixture, popoverEl } = setup(SeamHost);
+      const host = fixture.componentInstance as SeamHost;
+      const popover = host.popover();
+      popover.setAnchorElement(document.body);
+      return { fixture, popoverEl, popover, seam: host.seam(), computePosition };
+    }
+
+    it('clears the fallback position on a flip to sheet and on a later sheet open', async () => {
+      const { fixture, popover, popoverEl, seam } = floatingSeamSetup();
+      popover.show();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(popoverEl.style.top).toBe('10px');
+
+      seam.presentation.set('sheet');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(popoverEl.style.top).toBe('');
+      expect(popoverEl.style.left).toBe('');
+
+      seam.presentation.set('anchored');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      popover.hide();
+      expect(popoverEl.style.top).toBe('10px');
+      seam.presentation.set('fullscreen');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      popover.show();
+      expect(popoverEl.style.top).toBe('');
+    });
+
+    it('drops a position request that resolves after a flip to sheet', async () => {
+      let resolvePosition!: (v: { x: number; y: number; placement: string }) => void;
+      const { fixture, popover, popoverEl, seam, computePosition } = floatingSeamSetup();
+      computePosition.mockReturnValue(
+        new Promise((resolve) => {
+          resolvePosition = resolve as never;
+        }),
+      );
+      popover.show();
+      seam.presentation.set('sheet');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      resolvePosition({ x: 42, y: 42, placement: 'bottom' });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(popoverEl.style.top).toBe('');
+    });
+
+    it('never starts the floating positioner while not anchored', () => {
+      const { fixture, popover, seam, computePosition } = floatingSeamSetup();
+      seam.presentation.set('fullscreen');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      popover.show();
+      document.dispatchEvent(new Event('scroll'));
+      expect(computePosition).not.toHaveBeenCalled();
+    });
+
+    it('stops on a flip to sheet while open and restarts on the flip back', () => {
+      const { fixture, popover, seam, computePosition } = floatingSeamSetup();
+      popover.show();
+      expect(computePosition).toHaveBeenCalledTimes(1);
+
+      seam.presentation.set('sheet');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      document.dispatchEvent(new Event('scroll'));
+      expect(computePosition).toHaveBeenCalledTimes(1);
+      expect(popover.arrowOffset()).toBeNull();
+
+      seam.presentation.set('anchored');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(computePosition).toHaveBeenCalledTimes(2);
+      document.dispatchEvent(new Event('scroll'));
+      expect(computePosition).toHaveBeenCalledTimes(3);
     });
   });
 });

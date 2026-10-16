@@ -56,6 +56,11 @@ const DURATION_DERIVED_FAMILIES: readonly DurationFamily[] = [
     kind: 'real',
   },
   {
+    file: 'projects/common/theming/components/cngx-popover-sheet.css',
+    token: '--cngx-popover-sheet-duration',
+    kind: 'real',
+  },
+  {
     file: 'projects/common/theming/components/cngx-backdrop.css',
     token: '--cngx-backdrop-transition-duration',
     kind: 'real',
@@ -271,7 +276,7 @@ describe('duration-derivation coverage manifest', () => {
   );
 
   it('fixes the manifest size so a bulk edit dropping a family is caught', () => {
-    expect(DURATION_DERIVED_FAMILIES.length).toBe(25);
+    expect(DURATION_DERIVED_FAMILIES.length).toBe(26);
   });
 });
 

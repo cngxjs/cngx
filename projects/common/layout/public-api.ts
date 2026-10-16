@@ -23,7 +23,7 @@ export {
   injectContainerSize,
 } from './observers/container-size';
 export { CngxScrollLock } from './scroll/scroll-lock.directive';
-export { createScrollLock } from './scroll/scroll-lock-core';
+export { createPinnedScrollLock, createScrollLock } from './scroll/scroll-lock-core';
 export { CngxScrollEdges } from './scroll/scroll-edges.directive';
 export {
   createScrollEdges,
