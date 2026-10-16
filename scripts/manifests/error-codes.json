@@ -895,6 +895,22 @@
       "files": ["projects/forms/filter-builder/filter-builder-host.token.ts"]
     },
     {
+      "code": "CNGX2015",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Field bridge without a form field",
+      "page": "core-concepts/error-codes/cngx2015.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2015.html",
+      "status": "active",
+      "files": [
+        "projects/forms/field/bind-field.directive.ts",
+        "projects/forms/field/listbox-field-bridge.directive.ts",
+        "projects/forms/field/range-slider-field-bridge.directive.ts",
+        "projects/forms/field/slider-field-bridge.directive.ts"
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",

@@ -1,4 +1,5 @@
 import { afterRenderEffect, computed, Directive, ElementRef, inject } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { createFieldControlAria } from './field-control-aria';
 import { CngxFormFieldPresenter } from './form-field-presenter';
@@ -77,6 +78,13 @@ export class CngxBindField implements CngxFormFieldControl {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   constructor() {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode && !this.presenter) {
+      cngxDevWarn(
+        'CNGX2015',
+        '[cngxBindField] has no form field to bind to, so it does nothing. Place it inside ' +
+          '<cngx-form-field [field]="...">.',
+      );
+    }
     // matInput binds `[id]` to its own default on the same host; last-writer-wins
     // beats our binding. Force-sync from the presenter so `<label for="…">` survives.
     afterRenderEffect(() => {

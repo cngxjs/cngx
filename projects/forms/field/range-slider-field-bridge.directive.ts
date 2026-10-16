@@ -1,6 +1,7 @@
 import { computed, Directive, effect, inject, untracked } from '@angular/core';
 
 import { CngxRangeSliderTrack } from '@cngx/common/interactive';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { createFieldSync } from './field-sync';
 import { createFieldControlAria } from './field-control-aria';
@@ -86,6 +87,13 @@ export class CngxRangeSliderFieldBridge implements CngxFormFieldControl {
   protected readonly ariaReadonly = this.aria.ariaReadonly;
 
   constructor() {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode && !this.presenter) {
+      cngxDevWarn(
+        'CNGX2015',
+        '[cngxRangeSliderFieldBridge] has no form field to bind to, so it does nothing. Place it inside ' +
+          '<cngx-form-field [field]="...">.',
+      );
+    }
     const presenter = this.presenter;
     if (presenter !== null) {
       // The track's disabled model gates keyboard, pointer and tabindex in the

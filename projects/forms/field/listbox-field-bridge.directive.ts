@@ -1,6 +1,7 @@
 import { computed, Directive, effect, inject, untracked } from '@angular/core';
 
 import { CngxListbox } from '@cngx/common/interactive';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { writeFieldValue } from './field-sync';
 import { createFieldControlAria } from './field-control-aria';
@@ -101,6 +102,13 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
   protected readonly ariaReadonly = this.aria.ariaReadonly;
 
   constructor() {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode && !this.presenter) {
+      cngxDevWarn(
+        'CNGX2015',
+        '[cngxListboxFieldBridge] has no form field to bind to, so it does nothing. Place it inside ' +
+          '<cngx-form-field [field]="...">.',
+      );
+    }
     // Kept as hand-rolled effects rather than createFieldSync: this bridge drives
     // two different writable signals by mode (value in single, selectedValues in
     // multi), and multi's read (undefined -> [] clears the selection) diverges
