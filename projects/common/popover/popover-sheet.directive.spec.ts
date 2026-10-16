@@ -7,6 +7,7 @@ import { WINDOW } from '@cngx/core/tokens';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopover } from './popover.directive';
+import { CngxPopoverTrigger } from './popover-trigger.directive';
 import type { CngxPopoverPresentationRequest } from './popover-sheet.directive';
 import { CngxPopoverSheet } from './popover-sheet.directive';
 import type { CngxPopoverSheetCloseReason } from './popover-sheet-host';
@@ -148,6 +149,19 @@ class SheetHost {
   handleClosing(): void {
     this.closingHandler?.();
   }
+}
+
+@Component({
+  template: `
+    <button type="button" class="trigger" [cngxPopoverTrigger]="pop">Open</button>
+    <div cngxPopover #pop="cngxPopover" [cngxPopoverSheet]="request()">
+      <h2 cngxPopoverSheetTitle>Title</h2>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger, CngxPopoverSheet, CngxPopoverSheetTitle],
+})
+class TriggerSheetHost {
+  readonly request = signal<CngxPopoverPresentationRequest>('anchored');
 }
 
 @Component({
@@ -301,6 +315,26 @@ describe('CngxPopoverSheet', () => {
       flush();
       expect(q('.page-check').hasAttribute('inert')).toBe(false);
       expect(document.body.style.position).toBe('');
+    });
+  });
+
+  describe('trigger hint', () => {
+    it('announces a dialog popup while the sheet is modal', () => {
+      const fixture = TestBed.createComponent(TriggerSheetHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const trigger = (fixture.nativeElement as HTMLElement).querySelector('.trigger')!;
+      expect(trigger.getAttribute('aria-haspopup')).toBe('true');
+
+      fixture.componentInstance.request.set('sheet');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(trigger.getAttribute('aria-haspopup')).toBe('dialog');
+
+      fixture.componentInstance.request.set('anchored');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(trigger.getAttribute('aria-haspopup')).toBe('true');
     });
   });
 

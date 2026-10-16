@@ -557,7 +557,11 @@ export class CngxPopover {
    * the consumer having to set `haspopup` on every trigger element.
    * Consumer-supplied `haspopup` on the trigger still wins.
    */
-  readonly haspopup = this.haspopupState.asReadonly();
+  readonly haspopup = computed<PopoverHaspopup | undefined>(() =>
+    // A sheet or fullscreen presentation is a modal dialog, whatever a
+    // composer installed for the anchored layout.
+    this.anchored() ? this.haspopupState() : 'dialog',
+  );
 
   protected readonly isOpening = computed(() => this.stateSignal() === 'opening');
   protected readonly isOpen = computed(() => this.stateSignal() === 'open');
