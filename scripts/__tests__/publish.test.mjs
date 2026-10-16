@@ -231,6 +231,7 @@ describe('publishable libs', () => {
   it('group every package for ng update on core and name its migrations', () => {
     expect(sourcePkg('core')['ng-update']).toEqual({
       migrations: './schematics/migrations/migrations.json',
+      packageGroupName: '@cngx/core',
       packageGroup: libs.map((lib) => `@cngx/${lib}`),
     });
   });
@@ -262,6 +263,11 @@ describe('stampManifest', () => {
     expect(stamped.version).toBe('0.1.0');
     expect(stamped.peerDependencies).toEqual({ '@cngx/core': '0.1.0', '@angular/core': '^21.2.0' });
     expect(findPlaceholders(stamped)).toEqual([]);
+  });
+
+  it('keeps the ng update package group', () => {
+    const group = { packageGroup: ['@cngx/core', '@cngx/forms'] };
+    expect(stampManifest({ version: '0.0.0-PLACEHOLDER', 'ng-update': group }, '0.1.0')['ng-update']).toEqual(group);
   });
 
   it('copes with a manifest without peers', () => {

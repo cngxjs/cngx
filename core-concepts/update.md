@@ -12,8 +12,8 @@ Run `ng update @cngx/core`. Every `@cngx/*` package moves to the same release, a
 </aside>
 
 The `@cngx/*` packages release in lockstep: one version number for all eight.
-`@cngx/core` declares them as one `ng update` package group and carries the
-migrations, so one command updates the set.
+Every package declares them as one `ng update` package group, named after
+`@cngx/core`, which carries the migrations, so one command updates the set.
 
 ```bash
 ng update @cngx/core
@@ -23,12 +23,13 @@ ng update @cngx/core
 
 ## The package group
 
-`@cngx/core` lists `@cngx/utils`, `@cngx/core`, `@cngx/common`,
+Every `@cngx/*` package lists `@cngx/utils`, `@cngx/core`, `@cngx/common`,
 `@cngx/interop`, `@cngx/forms`, `@cngx/data-display`, `@cngx/ui` and
-`@cngx/themes` as its package group. `ng update` moves every member the app
-depends on to the new release in one step, so the cross-package peers stay
-in agreement. Always update through `@cngx/core`: the group and the
-migrations live there.
+`@cngx/themes` as its package group, and `@cngx/core` names the group. So
+`ng update @cngx/forms` moves the same set as `ng update @cngx/core`: every
+member the app depends on goes to the new release in one step, and the
+cross-package peers stay in agreement. The migrations live in `@cngx/core`
+and run whichever member you name.
 
 Preview the update without writing files:
 
