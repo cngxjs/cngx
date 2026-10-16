@@ -199,6 +199,11 @@ export const appConfig: ApplicationConfig = {
       expect(facts.maturity).toBe('fresh');
     });
 
+    it('counts a dist folder deeper in the source as source, like the rename walk', async () => {
+      expect((await detect({ 'src/app/dist/page.ts': SECOND_COMPONENT })).maturity).toBe('existing');
+      expect((await detect({ 'src/.angular/cache/other.ts': SECOND_COMPONENT })).maturity).toBe('fresh');
+    });
+
     it('ignores a provider in a comment or a string', async () => {
       const config = `import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 
