@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Change, hasArrayLiteral, parseManifest, type StepResult } from '../../engine';
+import { type Change, hasArrayLiteral, importsModule, parseManifest, type StepResult } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
 import { type EslintConfigFacts, type EslintStackFacts, type ProjectFacts } from '../detect/detect';
 import { planLint } from './lint';
@@ -177,6 +177,27 @@ export default [
       ['dependency:@angular-eslint/template-parser', 'already declared as ^21.0.0'],
       ['lint:config', 'already loaded in eslint.config.js'],
     ]);
+  });
+
+  it('inserts the import when the config only names the plugin in a comment', () => {
+    const content = `import eslint from '@eslint/js';
+// import cngx from '@cngx/eslint-plugin';
+
+export default [
+  eslint.configs.recommended,
+];
+`;
+    const result = planLint(
+      eslintApp({ eslintConfig: config({ path: 'eslint.config.mjs', module: 'esm' }) }),
+      createAnswers(),
+      VERSIONS,
+    );
+    const edited = edit(result, content);
+
+    expect(byId(result, 'lint:config')).toMatchObject({ kind: 'edit-file' });
+    expect(importsModule(edited, '@cngx/eslint-plugin')).toBe(true);
+    expect(edited).toContain('  ...cngx.configs.recommended,\n');
+    expect(edit(result, edited)).toBe(edited);
   });
 
   it('edits a TypeScript flat config like an ES module one', () => {

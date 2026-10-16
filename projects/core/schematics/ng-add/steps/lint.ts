@@ -4,6 +4,7 @@ import {
   createNote,
   createProvenance,
   declaredRange,
+  importsModule,
   insertAfterImports,
   mergeStepResults,
   planThirdPartyDependency,
@@ -150,7 +151,7 @@ export function planLint(facts: ProjectFacts, answers: OnboardingAnswers, versio
     path: config.path,
     edit: (content) =>
       addToArrayLiteral(
-        content.includes(PLUGIN) ? content : insertAfterImports(content, importStatement(config.module)),
+        importsModule(content, PLUGIN) ? content : insertAfterImports(content, importStatement(config.module)),
         { kind: 'default-export' },
         ENTRY,
       ),
