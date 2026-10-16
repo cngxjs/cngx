@@ -72,7 +72,7 @@ function configLine(tool: AiTool, facts: ProjectFacts, mcpVersion: string): stri
 const cell = (text: string): string => text.replace(/\|/g, '\\|');
 
 function row(cells: readonly string[]): string {
-  return `| ${cells.map(cell).join(' | ')} |`;
+  return `|${cells.map(cell).join('|')}|`;
 }
 
 /** Fills every `{{name}}`; a placeholder without a value is a template bug, not output. */

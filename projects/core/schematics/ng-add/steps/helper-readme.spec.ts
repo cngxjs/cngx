@@ -31,7 +31,20 @@ describe('renderHelperReadme', () => {
     const readme = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS);
 
     for (const tool of MCP_TOOLS) {
-      expect(readme).toContain(`| \`${tool.name}\` | ${tool.title} | ${tool.example} |`);
+      expect(readme).toContain(`|\`${tool.name}\`|${tool.title}|${tool.example}|`);
+    }
+  });
+
+  it('writes every table dense: no cell padding, minimal separators', () => {
+    const readme = renderHelperReadme(createFacts(), AI_ANSWERS, VERSIONS);
+    const tableLines = readme.split('\n').filter((line) => line.startsWith('|'));
+
+    expect(tableLines.length).toBeGreaterThan(0);
+    for (const line of tableLines) {
+      expect(line).not.toMatch(/(?<!\\)\| | \|/);
+    }
+    for (const separator of tableLines.filter((line) => /^\|[-:| ]+\|$/.test(line))) {
+      expect(separator).toMatch(/^\|(-\|)+$/);
     }
   });
 
