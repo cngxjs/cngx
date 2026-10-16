@@ -16,7 +16,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
     cngxThemePath: undefined,
     cngxThemeListed: false,
     tailwind: undefined,
-    appConfigPath: 'src/app/app.config.ts',
+    rootProvidersFile: 'src/app/app.config.ts',
     rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
     languageFile: 'absent',
     languagePack: undefined,

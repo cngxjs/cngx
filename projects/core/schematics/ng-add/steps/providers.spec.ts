@@ -151,7 +151,7 @@ describe('planProviders', () => {
     });
 
     it('places the file next to an app config outside src/app', () => {
-      const facts = createFacts({ appConfigPath: 'src/config/root.config.ts' });
+      const facts = createFacts({ rootProvidersFile: 'src/config/root.config.ts' });
       const result = planProviders(facts, createAnswers({ i18n: 'de', runtimeSwitch: true }), VERSIONS);
       expect(byId(result, 'provider:i18n-file')).toMatchObject({ path: 'src/config/cngx-language.ts' });
     });

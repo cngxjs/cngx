@@ -1,6 +1,6 @@
 import { posix } from 'node:path';
 
-import { declaredRange, type PackageManifest } from '../../engine';
+import { declaredRange, hasArrayLiteral, type PackageManifest } from '../../engine';
 
 const OTHER_UI_LIBRARIES = ['@angular/material', 'primeng', 'tailwindcss', 'bootstrap'];
 
@@ -19,13 +19,14 @@ export function isSourceFile(path: string): boolean {
 }
 
 // Follows the import of the second `bootstrapApplication` argument or the
-// `bootstrapModule` argument; an inline config falls back to the scaffold path.
+// `bootstrapModule` argument; a providers array written into the bootstrap
+// call keeps main.ts, anything else falls back to the scaffold path.
 export function rootProvidersPath(mainPath: string, main: string, standalone: boolean, sourceRoot: string): string {
   const fallback = posix.join(sourceRoot, 'app', 'app.config.ts');
   const call = standalone ? /bootstrapApplication\s*\(\s*\w+\s*,\s*(\w+)/ : /bootstrapModule\s*\(\s*(\w+)/;
   const identifier = call.exec(main)?.[1];
   if (identifier === undefined) {
-    return fallback;
+    return hasArrayLiteral(main, { kind: 'root-providers' }) ? mainPath : fallback;
   }
   const specifier = new RegExp(`import\\s*\\{[^}]*\\b${identifier}\\b[^}]*\\}\\s*from\\s*['"](\\.[^'"]+)['"]`).exec(main)?.[1];
   return specifier === undefined ? fallback : `${posix.join(posix.dirname(mainPath), specifier)}.ts`;

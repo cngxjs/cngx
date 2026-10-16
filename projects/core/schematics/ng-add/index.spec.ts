@@ -107,6 +107,21 @@ import { App } from './app';
 export class AppModule { }
 `;
 
+// \`ng new\` output with the config written into the bootstrap call.
+const INLINE_MAIN = `import { provideBrowserGlobalErrorListeners } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { App } from './app/app';
+
+bootstrapApplication(App, { providers: [provideBrowserGlobalErrorListeners()] })
+  .catch((err) => console.error(err));
+`;
+
+function inlineBootstrapApp(): Tree {
+  const tree = createFixtureTree('standalone-app', { 'src/main.ts': INLINE_MAIN });
+  tree.delete('src/app/app.config.ts');
+  return tree;
+}
+
 const ESLINT_CONFIG = `// @ts-check
 const { defineConfig } = require("eslint/config");
 
@@ -366,6 +381,30 @@ describe('ngAdd', () => {
     );
 
     expect(run.tree.readContent('src/app/app-module.ts')).toContain('    provideA11yPreferences(withPersistence()),\n');
+  });
+
+  describe('an inline bootstrap config', () => {
+    it('provides into main.ts once over two runs and lists it in the report', async () => {
+      const first = await runRule(ngAdd({ yes: true }), inlineBootstrapApp());
+      const main = first.tree.readContent('src/main.ts');
+
+      expect(main.match(/provideA11yPreferences\(/g)).toHaveLength(1);
+      expect(first.logs).toContain('  src/main.ts');
+
+      const second = await runRule(ngAdd({ yes: true }), first.tree);
+
+      expect(second.tree.readContent('src/main.ts')).toBe(main);
+      expect(second.logs).toContain('cngx is already set up; nothing changed.');
+    });
+
+    it('creates the language file next to main.ts and imports it there', async () => {
+      const run = await runRule(ngAdd({ i18n: 'de', runtimeSwitch: true, yes: true }), inlineBootstrapApp());
+
+      expect(run.tree.exists('src/cngx-language.ts')).toBe(true);
+      expect(run.tree.exists('src/app/cngx-language.ts')).toBe(false);
+      expect(run.tree.readContent('src/main.ts')).toMatch(/import \{ cngxLanguagePack \} from '\.\/cngx-language';/);
+      expect(run.tree.readContent('src/main.ts')).toContain('provideCngxI18n(withPack(cngxLanguagePack))');
+    });
   });
 
   it('provides the rtl direction for an RTL source locale', async () => {

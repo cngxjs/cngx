@@ -95,11 +95,11 @@ export interface ProjectFacts {
   readonly cngxThemeListed: boolean;
   /** `undefined` when the app does not declare `tailwindcss`. */
   readonly tailwind: TailwindFacts | undefined;
-  /** The file holding the root providers: `app.config.ts` or the root NgModule. */
-  readonly appConfigPath: string;
+  /** The file holding the root providers: `app.config.ts`, the root NgModule, or `main.ts` with an inline config. */
+  readonly rootProvidersFile: string;
   /** Every `provide*()` call already in that file. */
   readonly rootProviders: readonly string[];
-  /** `cngx-language.ts` next to `appConfigPath`. */
+  /** `cngx-language.ts` next to `rootProvidersFile`. */
   readonly languageFile: GeneratedFileState;
   /** The pack a `provideCngxI18n(withPack(...))` there passes; `undefined` when none. */
   readonly languagePack: LanguagePackArgument | undefined;
@@ -157,8 +157,8 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const mainPath = typeof mainOption === 'string' ? mainOption : posix.join(sourceRoot, 'main.ts');
   const main = read(mainPath) ?? '';
   const standalone = !/bootstrapModule\s*\(/.test(main);
-  const appConfigPath = rootProvidersPath(mainPath, main, standalone, sourceRoot);
-  const providerCalls = readProviderCalls(read(appConfigPath) ?? '');
+  const rootProvidersFile = rootProvidersPath(mainPath, main, standalone, sourceRoot);
+  const providerCalls = readProviderCalls(read(rootProvidersFile) ?? '');
   const providers = providerCalls.names;
 
   const entries = styleEntries(options);
@@ -179,9 +179,9 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
       entries.includes(posix.join(sourceRoot, name)),
     ),
     tailwind: detectTailwind(read, manifest, entries),
-    appConfigPath,
+    rootProvidersFile,
     rootProviders: providers,
-    languageFile: generatedFileState(read(posix.join(posix.dirname(appConfigPath), CNGX_LANGUAGE_FILE))),
+    languageFile: generatedFileState(read(posix.join(posix.dirname(rootProvidersFile), CNGX_LANGUAGE_FILE))),
     languagePack: providerCalls.languagePack,
     material: detectMaterial(read, manifest, entries),
     editors: {

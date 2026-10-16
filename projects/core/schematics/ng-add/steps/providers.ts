@@ -171,7 +171,7 @@ function wantedProviders(facts: ProjectFacts, answers: OnboardingAnswers): reado
  */
 export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
   const provenance = createProvenance('ng-add', versions.cngx);
-  const languageFile = posix.join(posix.dirname(facts.appConfigPath), CNGX_LANGUAGE_FILE);
+  const languageFile = posix.join(posix.dirname(facts.rootProvidersFile), CNGX_LANGUAGE_FILE);
   const libs = selectedLibs(answers.libs);
   const wanted = wantedProviders(facts, answers);
   const file: Change = {
@@ -203,7 +203,7 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
       call: entry.call,
       provenance,
       project: facts.project,
-      path: facts.appConfigPath,
+      path: facts.rootProvidersFile,
     };
     if (entry.id !== 'provider:i18n' || !answers.runtimeSwitch) {
       return [provider];
@@ -258,7 +258,7 @@ export function planProviders(facts: ProjectFacts, answers: OnboardingAnswers, v
         createNote({
           id: 'provider:i18n-pack',
           label: answers.runtimeSwitch ? 'Switch the language at runtime' : 'Use the German language pack',
-          reason: `provideCngxI18n in ${facts.appConfigPath} passes ${current}; pass \`withPack(${pack.symbol})\` with ${pack.symbol} imported from '${pack.module}'`,
+          reason: `provideCngxI18n in ${facts.rootProvidersFile} passes ${current}; pass \`withPack(${pack.symbol})\` with ${pack.symbol} imported from '${pack.module}'`,
           provenance,
         }),
       ]

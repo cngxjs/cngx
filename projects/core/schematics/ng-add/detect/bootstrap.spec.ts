@@ -27,6 +27,15 @@ describe('rootProvidersPath', () => {
     const main = createFixtureTree().readText('src/main.ts').replace("'./app/app.config'", "'./config/root.config'");
     expect(rootProvidersPath('src/main.ts', main, true, 'src')).toBe('src/config/root.config.ts');
   });
+
+  it('keeps main.ts for a providers array written into the bootstrap call', () => {
+    const main = "bootstrapApplication(App, { providers: [provideBrowserGlobalErrorListeners()] });\n";
+    expect(rootProvidersPath('src/main.ts', main, true, 'src')).toBe('src/main.ts');
+  });
+
+  it('falls back to the scaffold path when main.ts names no config', () => {
+    expect(rootProvidersPath('src/main.ts', 'bootstrapApplication(App);\n', true, 'src')).toBe('src/app/app.config.ts');
+  });
 });
 
 describe('maturityOf', () => {
