@@ -11,6 +11,7 @@ import {
 
 import { CNGX_STEPPER_HOST, type CngxStepNode } from './stepper-host.token';
 import { injectStepperI18n } from './i18n/stepper-i18n';
+import { warnStepperControlUnhosted } from './warn-stepper-unhosted';
 
 /**
  * Minimal contract `CngxStepperCount` reads off the host. A full
@@ -167,4 +168,10 @@ export class CngxStepperCount {
       (this.format() ?? this.i18n().textStepperFormat)(position.current, position.total),
     );
   });
+
+  constructor() {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnStepperControlUnhosted('cngx-stepper-count', this.resolvedHost);
+    }
+  }
 }

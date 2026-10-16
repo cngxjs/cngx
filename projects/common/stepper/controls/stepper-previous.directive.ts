@@ -14,6 +14,7 @@ import { cngxDevWarn } from '@cngx/utils';
 
 import { injectStepperI18n } from '../i18n/stepper-i18n';
 import { CNGX_STEPPER_HOST, type CngxStepperHost } from '../stepper-host.token';
+import { warnStepperControlUnhosted } from '../warn-stepper-unhosted';
 
 /**
  * Turns any clickable element into a stepper "Back" control. Resolves
@@ -71,6 +72,10 @@ export class CngxStepperPrevious {
   private readonly i18n = injectStepperI18n();
 
   constructor() {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnStepperControlUnhosted('cngxStepperPrevious', this.resolvedHost);
+    }
+
     // Fallback accessible name for icon-only hosts: while the element
     // renders no text and the consumer supplied no label of their own,
     // the i18n `previousStep` phrase fills the gap. Re-checked after every

@@ -13,6 +13,7 @@ import { CngxAsyncClick } from '@cngx/common/interactive';
 import { createTransitionTracker } from '@cngx/core/utils';
 
 import { CNGX_STEPPER_HOST, type CngxStepperHost } from '../stepper-host.token';
+import { warnStepperControlUnhosted } from '../warn-stepper-unhosted';
 
 /**
  * Turns any clickable element into a stepper "Finish" control. Unlike
@@ -83,6 +84,10 @@ export class CngxStepperComplete {
   readonly isActive: Signal<boolean> = computed(() => this.resolvedHost()?.isLastStep() ?? false);
 
   constructor() {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnStepperControlUnhosted('cngxStepperComplete', this.resolvedHost);
+    }
+
     const tracker = createTransitionTracker(() => this.runner.status());
     effect(() => {
       if (tracker.current() === 'success' && tracker.previous() !== 'success') {

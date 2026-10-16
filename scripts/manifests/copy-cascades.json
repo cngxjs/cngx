@@ -231,7 +231,7 @@
     {
       "class": "CngxStepperCount",
       "file": "projects/common/stepper/stepper-count.ts",
-      "line": 153,
+      "line": 154,
       "member": "label",
       "enclosing": "computed",
       "tiers": [
@@ -247,7 +247,7 @@
     {
       "class": "CngxStepperCount",
       "file": "projects/common/stepper/stepper-count.ts",
-      "line": 167,
+      "line": 168,
       "member": "liveLabel",
       "enclosing": "untracked",
       "tiers": [

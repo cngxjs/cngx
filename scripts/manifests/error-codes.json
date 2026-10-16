@@ -708,6 +708,17 @@
       ]
     },
     {
+      "code": "CNGX1056",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Stepper control without a stepper",
+      "page": "core-concepts/error-codes/cngx1056.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1056.html",
+      "status": "active",
+      "files": ["projects/common/stepper/warn-stepper-unhosted.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",
