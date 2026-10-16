@@ -13,7 +13,7 @@ import { injectLocale } from '@cngx/core/utils';
 import { createSliderCore, formatSliderValue } from './slider-core';
 import { createSliderInteraction } from './slider-interaction';
 import {
-  CNGX_SLIDER_RANGE,
+  injectSliderRange,
   type CngxSliderRangeHost,
   type CngxSliderThumbPosition,
 } from './range-slider.token';
@@ -84,7 +84,7 @@ export class CngxSliderThumb {
   /** Which end of the range this thumb drives. Bound from the selector. */
   readonly position = input.required<CngxSliderThumbPosition>({ alias: 'cngxSliderThumb' });
 
-  protected readonly range = inject(CNGX_SLIDER_RANGE);
+  protected readonly range = injectSliderRange();
   private readonly el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
   private readonly locale = injectLocale();
 

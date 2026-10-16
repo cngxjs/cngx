@@ -777,6 +777,17 @@
       "files": ["projects/common/interactive/breadcrumb/breadcrumb.token.ts"]
     },
     {
+      "code": "CNGX1062",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Slider thumb outside a range track",
+      "page": "core-concepts/error-codes/cngx1062.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1062.html",
+      "status": "active",
+      "files": ["projects/common/interactive/slider/range-slider.token.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

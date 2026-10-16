@@ -159,3 +159,27 @@ describe('CngxRangeSliderTrack + CngxSliderThumb', () => {
     });
   });
 });
+
+@Component({
+  template: `<span cngxSliderThumb="start"></span>`,
+  imports: [CngxSliderThumb],
+})
+class OrphanThumbHost {}
+
+describe('CngxSliderThumb placement (CNGX1062)', () => {
+  it('throws CNGX1062 outside a range track', () => {
+    expect(() => TestBed.createComponent(OrphanThumbHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1062',
+        message: expect.stringMatching(
+          /^CNGX1062: \[cngxSliderThumb\] must be placed inside an element with \[cngxRangeSliderTrack\], such as <cngx-range-slider>\./,
+        ),
+      }),
+    );
+  });
+
+  it('does not throw inside [cngxRangeSliderTrack]', () => {
+    expect(() => setup()).not.toThrow();
+  });
+});

@@ -1,4 +1,5 @@
-import { InjectionToken, type Signal } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
+import { CngxRuntimeError } from '@cngx/utils';
 
 /** Which end of a range slider a {@link CngxSliderThumb} drives. */
 export type CngxSliderThumbPosition = 'start' | 'end';
@@ -64,3 +65,23 @@ export interface CngxSliderRangeHost {
  * @relatedTo CngxRangeSlider, CngxSliderThumb
  */
 export const CNGX_SLIDER_RANGE = new InjectionToken<CngxSliderRangeHost>('CNGX_SLIDER_RANGE');
+
+/**
+ * Inject the {@link CNGX_SLIDER_RANGE} of the surrounding range track from a
+ * {@link CngxSliderThumb}. Throws a `CngxRuntimeError` with code `CNGX1062`
+ * when no range track is above it, in development and production alike.
+ *
+ * @internal
+ */
+export function injectSliderRange(): CngxSliderRangeHost {
+  const range = inject(CNGX_SLIDER_RANGE, { optional: true });
+  if (!range) {
+    throw new CngxRuntimeError(
+      'CNGX1062',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngxSliderThumb] must be placed inside an element with [cngxRangeSliderTrack], such as <cngx-range-slider>.',
+    );
+  }
+  return range;
+}
