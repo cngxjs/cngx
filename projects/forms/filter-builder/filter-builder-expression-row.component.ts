@@ -19,7 +19,7 @@ import {
   injectFilterBuilderI18n,
   isNativeEditor,
 } from './filter-builder.config';
-import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
+import { injectFilterBuilderHost } from './filter-builder-host.token';
 import {
   CNGX_FILTER_ROW_CONTROLLER_FACTORY,
   type CngxFilterRowWriteSink,
@@ -57,7 +57,7 @@ import type { FilterExpression, FilterFieldDef, FilterNode } from './filter-buil
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxFilterExpressionRow {
-  private readonly host = inject(CNGX_FILTER_BUILDER_HOST);
+  private readonly host = injectFilterBuilderHost('cngx-filter-expression-row');
   private readonly config = injectFilterBuilderConfig();
   protected readonly i18n = injectFilterBuilderI18n();
   protected readonly editors = injectFilterEditors();

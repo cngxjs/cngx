@@ -16,7 +16,7 @@ export function warnTabsRouterAbsent(selector: string, enables: string): void {
   }
   cngxDevWarn(
     'CNGX1031',
-    `[${selector}] no Router available - the URL sync is a no-op. ` +
+    `[${selector}] no Router / ActivatedRoute available - the URL sync is a no-op. ` +
       `Provide @angular/router via provideRouter(...) to enable ${enables}.`,
   );
 }

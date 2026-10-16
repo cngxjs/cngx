@@ -85,9 +85,9 @@ describe('CngxDialogOpener', () => {
       TestBed.flushEffects();
     }
 
-    // The outlet's inputs reach the inner cngxDialog via template bindings,
-    // which propagate on the next change-detection tick - in production that
-    // tick precedes any user interaction; the harness runs it explicitly.
+    // open() applies the outlet's bindings once before the dialog opens; the
+    // rest of the view (content bindings, values set after open) settles on
+    // the next change-detection tick, which the harness runs explicitly.
     function tick(): void {
       TestBed.inject(ApplicationRef).tick();
     }
@@ -206,6 +206,82 @@ describe('CngxDialogOpener', () => {
         trigger.remove();
         fallback.remove();
       }
+    });
+  });
+
+  describe('modal flag', () => {
+    function dialogEl(): HTMLDialogElement {
+      return document.body.querySelector('dialog') as HTMLDialogElement;
+    }
+
+    async function reachOpen(): Promise<void> {
+      TestBed.inject(ApplicationRef).tick();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      TestBed.flushEffects();
+    }
+
+    it('opens with show(), not showModal(), when the config says modal: false', () => {
+      const opener = createOpener();
+      const showModal = vi.spyOn(HTMLDialogElement.prototype, 'showModal').mockClear();
+      const show = vi.spyOn(HTMLDialogElement.prototype, 'show').mockClear();
+
+      const ref = opener.open(TestContent, { modal: false });
+      TestBed.inject(ApplicationRef).tick();
+
+      expect(show).toHaveBeenCalledTimes(1);
+      expect(showModal).not.toHaveBeenCalled();
+      expect(dialogEl().getAttribute('aria-modal')).toBeNull();
+
+      ref.dismiss();
+      TestBed.flushEffects();
+    });
+
+    it('stays modal by default', () => {
+      const opener = createOpener();
+      const showModal = vi.spyOn(HTMLDialogElement.prototype, 'showModal').mockClear();
+      const show = vi.spyOn(HTMLDialogElement.prototype, 'show').mockClear();
+
+      const ref = opener.open(TestContent);
+      TestBed.inject(ApplicationRef).tick();
+
+      expect(showModal).toHaveBeenCalledTimes(1);
+      expect(show).not.toHaveBeenCalled();
+      expect(dialogEl().getAttribute('aria-modal')).toBe('true');
+
+      ref.dismiss();
+      TestBed.flushEffects();
+    });
+
+    it('warns CNGX1015 for an untitled non-modal opener dialog', async () => {
+      const opener = createOpener();
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      warnSpy.mockClear();
+
+      const ref = opener.open(TestContent, { modal: false });
+      await reachOpen();
+
+      const calls = warnSpy.mock.calls.filter(([m]) => /^CNGX1015: /.test(String(m)));
+      expect(calls).toHaveLength(1);
+      expect(calls[0][0]).toMatch(
+        new RegExp(`^CNGX1015: \\[cngxDialog\\] non-modal dialog "${ref.id()}" opened without a title\\. `),
+      );
+
+      ref.dismiss();
+      TestBed.flushEffects();
+    });
+
+    it('does not warn CNGX1015 for a titled non-modal opener dialog', async () => {
+      const opener = createOpener();
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      warnSpy.mockClear();
+
+      const ref = opener.open(LabelledContent, { modal: false });
+      await reachOpen();
+
+      expect(warnSpy.mock.calls.some(([m]) => /^CNGX1015: /.test(String(m)))).toBe(false);
+
+      ref.dismiss();
+      TestBed.flushEffects();
     });
   });
 

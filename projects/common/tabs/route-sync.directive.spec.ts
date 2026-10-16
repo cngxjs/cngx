@@ -188,12 +188,11 @@ describe('CngxTabsRouteSync', () => {
     vi.unstubAllGlobals();
   });
 
-  it('is a graceful no-op that warns once when Router is not provided', async () => {
-    // Provide Router as null explicitly: a prior provideRouter([]) in a
-    // sibling spec leaks a resolvable Router into the shared vitest
-    // worker, which would otherwise mask the no-Router branch.
+  it('is a graceful no-op that warns once without provideRouter(...)', async () => {
+    // No provideRouter(...): Router still resolves (providedIn: 'root'),
+    // ActivatedRoute does not, which is what the directive checks.
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+      providers: [provideZonelessChangeDetection()],
     });
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -209,14 +208,14 @@ describe('CngxTabsRouteSync', () => {
     expect(presenter.activeIndex()).toBe(1);
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(warnSpy.mock.calls[0][0]).toMatch(
-      /^CNGX1031: \[cngxTabsRouteSync\] no Router available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable routed tabs\. Find more at /,
+      /^CNGX1031: \[cngxTabsRouteSync\] no Router \/ ActivatedRoute available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable routed tabs\. Find more at /,
     );
   });
 
-  it('writes nothing to the console without a Router in production', async () => {
+  it('writes nothing to the console without provideRouter(...) in production', async () => {
     vi.stubGlobal('ngDevMode', false);
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+      providers: [provideZonelessChangeDetection()],
     });
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 

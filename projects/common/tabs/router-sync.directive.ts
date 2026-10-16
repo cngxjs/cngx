@@ -10,7 +10,7 @@ import {
   type AfterContentInit,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
 import { warnTabsRouterAbsent } from './router-absent-warning';
@@ -109,7 +109,10 @@ export class CngxTabsFragmentSync implements AfterContentInit {
   private seeded = false;
 
   constructor() {
-    if (!this.router) {
+    // Router is providedIn: 'root' and resolves without provideRouter(...);
+    // ActivatedRoute does not, so it is the "router is set up" signal.
+    const route = inject(ActivatedRoute, { optional: true });
+    if (!this.router || !route) {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         afterNextRender(() => warnTabsRouterAbsent('cngxTabsFragmentSync', 'deep-linking'));
       }

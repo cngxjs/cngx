@@ -16,7 +16,7 @@ export function warnRouterAbsent(enables: string): void {
   }
   cngxDevWarn(
     'CNGX1031',
-    `injectQueryParamSync(): no Router available - the URL sync is a no-op. ` +
+    `injectQueryParamSync(): no Router / ActivatedRoute available - the URL sync is a no-op. ` +
       `Provide @angular/router via provideRouter(...) to enable ${enables}.`,
   );
 }

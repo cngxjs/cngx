@@ -33,9 +33,9 @@ describe('CngxPaginateRouting', () => {
     vi.restoreAllMocks();
   });
 
-  test('dev-warns with CNGX1031 and no-ops without a Router', () => {
+  test('dev-warns with CNGX1031 and no-ops without provideRouter(...)', () => {
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+      providers: [provideZonelessChangeDetection()],
     });
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
@@ -48,10 +48,10 @@ describe('CngxPaginateRouting', () => {
     );
   });
 
-  test('writes nothing to the console without a Router in production', () => {
+  test('writes nothing to the console without provideRouter(...) in production', () => {
     vi.stubGlobal('ngDevMode', false);
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+      providers: [provideZonelessChangeDetection()],
     });
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 

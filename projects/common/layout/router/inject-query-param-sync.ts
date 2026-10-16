@@ -57,15 +57,16 @@ export function injectQueryParamSync<T = boolean>(
   opts: QueryParamSyncOptions<T>,
 ): void {
   const router = inject(Router, { optional: true });
+  // Router is providedIn: 'root' and resolves without provideRouter(...);
+  // ActivatedRoute does not, so it is the "router is set up" signal.
+  const route = inject(ActivatedRoute, { optional: true });
 
-  if (!router) {
+  if (!router || !route) {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       warnRouterAbsent('query-param URL sync');
     }
     return;
   }
-
-  const route = inject(ActivatedRoute);
 
   const paramSignal: Signal<string> = coerceSignal(opts.param);
   const serialize: (value: T) => string | null =

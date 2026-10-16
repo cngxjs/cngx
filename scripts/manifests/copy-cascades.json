@@ -726,7 +726,7 @@
     {
       "class": "CngxBreadcrumbOverflow",
       "file": "projects/ui/breadcrumb/breadcrumb-overflow.component.ts",
-      "line": 80,
+      "line": 87,
       "member": "resolvedTriggerLabel",
       "enclosing": "computed",
       "tiers": [
@@ -742,7 +742,7 @@
     {
       "class": "CngxBreadcrumbOverflow",
       "file": "projects/ui/breadcrumb/breadcrumb-overflow.component.ts",
-      "line": 83,
+      "line": 90,
       "member": "resolvedMenuLabel",
       "enclosing": "computed",
       "tiers": [
