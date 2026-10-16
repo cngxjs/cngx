@@ -106,11 +106,15 @@ export function readMigrationEntry(key: string): CollectionEntry {
   return { ...entry, name: key };
 }
 
-/** Runs `rule` on `tree`; `entry` stands in for the collection entry a CLI run passes. */
+/**
+ * Runs `rule` on `tree`; `entry` stands in for the collection entry a CLI run
+ * passes, `interactive` for the execution option a programmatic caller sets.
+ */
 export async function runRule(
   rule: Rule,
   tree: Tree,
   entry: CollectionEntry = {},
+  interactive?: boolean,
 ): Promise<RuleRun> {
   const logger = new logging.Logger('run-rule');
   const logs: string[] = [];
@@ -121,7 +125,7 @@ export async function runRule(
     object,
     object
   >;
-  const context = schematicRunner().engine.createContext(schematic, { logger });
+  const context = schematicRunner().engine.createContext(schematic, { logger }, { interactive });
   const tasks: string[] = [];
   const recording: SchematicContext = {
     ...context,

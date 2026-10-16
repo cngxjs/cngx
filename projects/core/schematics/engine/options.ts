@@ -161,6 +161,43 @@ function parseBoolean(key: string, raw: boolean | string | undefined): boolean |
   return raw === 'true';
 }
 
+// `--interactive=false` and `--defaults` both stop the CLI's own prompts;
+// the value forms yargs accepts for a boolean option, attached or as the next
+// argument.
+const PROMPTS_OFF: Readonly<Record<string, string>> = {
+  '--interactive': 'false',
+  '--defaults': 'true',
+};
+
+/**
+ * The CLI flag that turns prompts off, the way it was typed (a separate
+ * value reads as `--flag=value`); `undefined` when none does. `ng add`
+ * drops `--interactive` and `--defaults` before the rule runs and never
+ * passes them to the schematic context, so `argv` is the only place left to
+ * read them.
+ */
+export function readPromptFlags(argv: readonly string[]): string | undefined {
+  for (const [index, arg] of argv.entries()) {
+    if (arg === '--no-interactive') {
+      return arg;
+    }
+    const [name, attached] = arg.split('=', 2);
+    const off = PROMPTS_OFF[name];
+    if (off === undefined) {
+      continue;
+    }
+    const next = argv[index + 1];
+    const value = attached ?? (next === 'true' || next === 'false' ? next : undefined);
+    if (value === off) {
+      return `${name}=${value}`;
+    }
+    if (name === '--defaults' && value === undefined) {
+      return arg;
+    }
+  }
+  return undefined;
+}
+
 /**
  * The typed answers of `raw`, validated once at the ng-add entry. A list
  * given as `undefined` or `[]` reads as not given; a programmatic caller

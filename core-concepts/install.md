@@ -62,8 +62,8 @@ install. Nothing outside the project is written.
    or another UI library (Material, PrimeNG, Tailwind, Bootstrap) counts as
    existing and gets one `Apply these changes?` before anything is written.
    That question needs a terminal: under CI, without a terminal, or with
-   `--no-prompts`, the plan applies and one line says which of them kept
-   the question away. `--yes` skips the question and the line. A fresh app gets no
+   `--no-prompts`, `--interactive=false` or `--defaults`, the plan applies
+   and one line says which of them kept the question away. `--yes` skips the question and the line. A fresh app gets no
    confirmation.
 6. **Apply and summarise.** The summary lists the files touched, the notes
    (what a step refused or left to you), the steps already in place, and the
@@ -132,6 +132,7 @@ Every answer has a flag. A flag skips its question.
 |`--ai-tools`|`claude`, `cursor`, `vscode`, comma-separated (`--ai-tools claude,vscode`)|The editors to set up the cngx MCP server and agent instructions for. Answers the AI tooling question.|
 |`--yes`|`--yes`|Apply to an existing app without the confirmation.|
 |`--prompts`|`--prompts`, `--no-prompts`, default `true`|`--no-prompts` answers every question from flags, the recorded answers of a re-run and the preset defaults.|
+|`--interactive`, `--defaults`|`--interactive=false`, `--no-interactive`, `--defaults`|Angular CLI flags; either one also turns the schematic's questions off, like `--no-prompts`.|
 |`--quiet`|`--quiet`|Print only the summary, not the planned changes.|
 
 A boolean flag also takes `=true` or `=false` (`--lint=false`). A list flag
@@ -148,7 +149,8 @@ ng add @cngx/ui --preset=recommended --no-prompts --yes --skip-confirmation
 `--skip-confirmation` belongs to the Angular CLI (it skips the CLI's own
 install prompt); `--yes` skips the schematic's confirmation on an existing
 app. A run without a terminal never asks, so `--no-prompts` matters mostly
-under a pseudo-terminal.
+under a pseudo-terminal. The CLI's `--interactive=false` and `--defaults`
+turn the questions off the same way.
 
 ---
 

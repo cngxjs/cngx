@@ -146,6 +146,11 @@ only when its source `package.json` declares `schematics`.
 - `ng add` strips `interactive`, `dryRun`, `force`, `defaults`, `registry`,
   `verbose` and `skipConfirmation` before the rule runs, so the schema uses
   none of those names. `prompts` and `yes` are the schematic's own switches.
+  The context's `interactive` stays `true` either way (the workflow never
+  passes the flag on), so the shell reads `--interactive=false`,
+  `--no-interactive` and `--defaults` from `process.argv` through the pure
+  `readPromptFlags`, and honours `interactive: false` from a programmatic
+  caller.
 - Before the package is installed, `ng add` parses the command line without
   the schema's option types. A list flag reaches the rule as one string
   (`--ai-tools claude,vscode` is `"claude,vscode"`) and `--lint=false` as the

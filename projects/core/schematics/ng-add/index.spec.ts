@@ -33,22 +33,32 @@ type Tree = ReturnType<typeof createFixtureTree>;
 // The terminal side of an interactive run: every question keeps its
 // preselection or default, the AI tooling question answers `editorPicks`.
 // The git state is fixed, so the checklist does not follow the worktree.
-const terminal = vi.hoisted(() => ({ editorPicks: [] as string[], git: 'clean', confirms: [] as string[] }));
+const terminal = vi.hoisted(() => ({
+  editorPicks: [] as string[],
+  git: 'clean',
+  confirms: [] as string[],
+  asked: [] as string[],
+}));
 
 vi.mock('./shell/git-state', () => ({ readGitState: () => terminal.git }));
 
 vi.mock('@inquirer/checkbox', () => ({
-  default: (question: { message: string; choices: { value: string; checked?: boolean }[] }) =>
-    Promise.resolve(
+  default: (question: { message: string; choices: { value: string; checked?: boolean }[] }) => {
+    terminal.asked.push(question.message);
+    return Promise.resolve(
       question.message.includes('MCP server')
         ? terminal.editorPicks
         : question.choices
             .filter((choice) => choice.checked === true)
             .map((choice) => choice.value),
-    ),
+    );
+  },
 }));
 vi.mock('@inquirer/select', () => ({
-  default: (question: { default: string }) => Promise.resolve(question.default),
+  default: (question: { message: string; default: string }) => {
+    terminal.asked.push(question.message);
+    return Promise.resolve(question.default);
+  },
 }));
 vi.mock('@inquirer/confirm', () => ({
   default: (question: { message: string; default: boolean }) => {
@@ -517,6 +527,57 @@ describe('ngAdd', () => {
         await runRule(ngAdd({}), createFixtureTree('standalone-app', { 'src/features/other.ts': SECOND_COMPONENT }));
 
         expect(terminal.confirms).toContain('Apply these changes?');
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    describe.each([
+      ['--interactive=false', '--interactive=false'],
+      ['--no-interactive', '--no-interactive'],
+      ['--defaults', '--defaults'],
+      ['--defaults=true', '--defaults=true'],
+    ])('with %s on a terminal', (flag, named) => {
+      const argv = process.argv;
+
+      afterEach(() => {
+        process.argv = argv;
+      });
+
+      it('asks nothing and names the flag', async () => {
+        vi.stubEnv('CI', '');
+        vi.stubEnv('NO_COLOR', '1');
+        process.stdout.isTTY = true;
+        process.argv = [...argv.slice(0, 2), 'add', '@cngx/core', flag];
+        terminal.confirms = [];
+        terminal.asked = [];
+        try {
+          const run = await runRule(ngAdd({}), existing());
+
+          expect([...terminal.asked, ...terminal.confirms]).toEqual([]);
+          expect(run.logs).toContain(
+            `Prompts are off (${named}); applying the plan without a confirm. Pass --yes to apply without this line.`,
+          );
+          expect(run.tree.exists('src/cngx-theme.css')).toBe(true);
+        } finally {
+          vi.unstubAllEnvs();
+        }
+      });
+    });
+
+    it('asks nothing on a terminal when a programmatic caller runs it non-interactive', async () => {
+      vi.stubEnv('CI', '');
+      vi.stubEnv('NO_COLOR', '1');
+      process.stdout.isTTY = true;
+      terminal.confirms = [];
+      terminal.asked = [];
+      try {
+        const run = await runRule(ngAdd({}), existing(), {}, false);
+
+        expect([...terminal.asked, ...terminal.confirms]).toEqual([]);
+        expect(run.logs).toContain(
+          'Prompts are off (interactive: false); applying the plan without a confirm. Pass --yes to apply without this line.',
+        );
       } finally {
         vi.unstubAllEnvs();
       }

@@ -15,6 +15,7 @@ import {
   NG_ADD_PRESETS,
   type NgAddFlags,
   parseNgAddOptions,
+  readPromptFlags,
   createRepeatedAnswerError,
   THEME_CHOICES,
 } from './options';
@@ -186,5 +187,26 @@ describe('createEmptyEntryError', () => {
     expect(createEmptyEntryError('aiTools', AI_TOOLS).message).toBe(
       '--ai-tools has an empty entry. Separate the values with single commas, for example --ai-tools claude,cursor.',
     );
+  });
+});
+
+describe('readPromptFlags', () => {
+  const argv = (...flags: string[]) => ['node', 'ng', 'add', '@cngx/core', ...flags];
+
+  it('names the flag that turns prompts off, the way it was typed', () => {
+    expect(readPromptFlags(argv('--interactive=false'))).toBe('--interactive=false');
+    expect(readPromptFlags(argv('--interactive', 'false'))).toBe('--interactive=false');
+    expect(readPromptFlags(argv('--no-interactive'))).toBe('--no-interactive');
+    expect(readPromptFlags(argv('--defaults'))).toBe('--defaults');
+    expect(readPromptFlags(argv('--defaults=true'))).toBe('--defaults=true');
+    expect(readPromptFlags(argv('--defaults', 'true', '--libs', 'core'))).toBe('--defaults=true');
+  });
+
+  it('finds none when the flags leave prompts on', () => {
+    expect(readPromptFlags(argv())).toBeUndefined();
+    expect(readPromptFlags(argv('--interactive'))).toBeUndefined();
+    expect(readPromptFlags(argv('--interactive=true', '--defaults=false'))).toBeUndefined();
+    expect(readPromptFlags(argv('--defaults', 'false'))).toBeUndefined();
+    expect(readPromptFlags(argv('--libs', 'defaults'))).toBeUndefined();
   });
 });

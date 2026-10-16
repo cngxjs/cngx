@@ -22,6 +22,7 @@ export {
   type NgAddOptions,
   type NgAddPreset,
   parseNgAddOptions,
+  readPromptFlags,
   THEME_CHOICES,
   type ThemeChoice,
 } from './options';

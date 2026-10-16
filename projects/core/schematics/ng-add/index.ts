@@ -16,6 +16,7 @@ import {
   isCi,
   type NgAddFlags,
   parseNgAddOptions,
+  readPromptFlags,
   resolveVersions,
 } from '../engine';
 import { detectProject, type ProjectFacts } from './detect/detect';
@@ -76,12 +77,14 @@ interface ConfirmContext {
   readonly isTTY: boolean;
   readonly ci: boolean;
   readonly prompts: boolean | undefined;
+  /** What else turned prompts off: a CLI flag, or a programmatic `interactive: false`. */
+  readonly promptsOff: string | undefined;
 }
 
 // The line an existing app sees when the plan applies without a confirm;
 // `undefined` when the terminal asks. CI comes first: it also hides the
 // terminal.
-function unconfirmedApplyLine({ isTTY, ci, prompts }: ConfirmContext): string | undefined {
+function unconfirmedApplyLine({ isTTY, ci, prompts, promptsOff }: ConfirmContext): string | undefined {
   const pass = 'Pass --yes to apply without this line.';
   if (ci) {
     return `Running under CI; applying the plan without a confirm. ${pass}`;
@@ -89,8 +92,9 @@ function unconfirmedApplyLine({ isTTY, ci, prompts }: ConfirmContext): string | 
   if (!isTTY) {
     return `No terminal to confirm in; applying the plan. ${pass}`;
   }
-  if (prompts === false) {
-    return `Prompts are off (--no-prompts); applying the plan without a confirm. ${pass}`;
+  const off = prompts === false ? '--no-prompts' : promptsOff;
+  if (off !== undefined) {
+    return `Prompts are off (${off}); applying the plan without a confirm. ${pass}`;
   }
   return undefined;
 }
@@ -117,7 +121,8 @@ export function ngAdd(flags: NgAddFlags): Rule {
     const options = parseNgAddOptions(flags);
     const { versions, warning } = resolveVersions(__dirname);
     const rendererOptions = createShellRendererOptions(process.env, process.stdout, context.logger, options.quiet === true);
-    const interactive = canPrompt(rendererOptions.isTTY, options.prompts);
+    const promptsOff = readPromptFlags(process.argv) ?? (context.interactive === false ? 'interactive: false' : undefined);
+    const interactive = canPrompt(rendererOptions.isTTY, options.prompts) && promptsOff === undefined;
     const renderer = createRenderer(rendererOptions);
 
     const facts = detectProject(tree, await readWorkspace(tree), options.project);
@@ -164,6 +169,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
         isTTY: rendererOptions.isTTY,
         ci: isCi(process.env),
         prompts: options.prompts,
+        promptsOff,
       });
       if (unconfirmed !== undefined) {
         renderer.note(unconfirmed);
