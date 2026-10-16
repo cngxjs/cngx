@@ -29,11 +29,6 @@ export interface MobileSheetSpecOptions {
   readonly fill: 'sheet' | 'fullscreen';
   readonly showDone: boolean;
   readonly showInput: boolean;
-  /**
-   * `false` where the variant's toggle path does not announce commit errors
-   * yet (`CngxTreeSelect`); the spec then checks a pessimistic success.
-   */
-  readonly announcesCommitError?: boolean;
   /** Field factory; `@cngx/forms/field/testing` is a spec-only alias. */
   readonly makeField: () => {
     readonly accessor: CngxFieldAccessor;
@@ -324,12 +319,7 @@ export function describeMobileSheet(
       open();
       const inSheet = vi.spyOn(sheet(), 'announce');
       pickSecond();
-      if (opts.announcesCommitError === false) {
-        host.pending!.next(['green']);
-        host.pending!.complete();
-      } else {
-        host.pending!.error(new Error('server down'));
-      }
+      host.pending!.error(new Error('server down'));
       flush(fixture);
       expect(root).not.toHaveBeenCalled();
       expect(inSheet).toHaveBeenCalled();

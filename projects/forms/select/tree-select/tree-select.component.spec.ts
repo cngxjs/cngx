@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { Subject, type Observable } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import type { CngxTreeNode } from '@cngx/utils';
@@ -7,6 +8,8 @@ import { describeCommitControllerCascade } from '../shared/__test-helpers/commit
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
+import { CngxSelectAnnouncer } from '../shared/announcer';
+import { stripBidiIsolates } from '@cngx/testing';
 import {
   provideSelectConfig,
   withAriaLabels,
@@ -407,6 +410,69 @@ describeFieldSkinHost('CngxTreeSelect', CngxTreeSelect, 'cngx-tree-select', () =
   createMockField({ name: 'pick' }).accessor,
 );
 
+describe('CngxTreeSelect - toggle commit error announcement', () => {
+  @Component({
+    imports: [CngxTreeSelect],
+    template: `
+      <cngx-tree-select
+        label="Teams"
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="labelFn"
+        [initiallyExpanded]="'all'"
+        [commitAction]="commitAction"
+        [commitMode]="mode()"
+        [(values)]="values"
+      />
+    `,
+  })
+  class CommitTreeHost {
+    readonly nodes = tree();
+    readonly values = signal<Row[]>([]);
+    readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
+    readonly idFn = (v: Row): string => v.id;
+    readonly labelFn = (v: Row): string => v.name;
+    pending: Subject<Row[]> | null = null;
+    readonly commitAction = (): Observable<Row[]> => {
+      this.pending = new Subject<Row[]>();
+      return this.pending.asObservable();
+    };
+  }
+
+  beforeEach(() => polyfillPopover());
+
+  it.each(['optimistic', 'pessimistic'] as const)(
+    'announces a failed %s toggle assertively with the error detail',
+    (mode) => {
+      const fixture = TestBed.createComponent(CommitTreeHost);
+      fixture.componentInstance.mode.set(mode);
+      fixture.detectChanges();
+      const announce = vi
+        .spyOn(TestBed.inject(CngxSelectAnnouncer), 'announce')
+        .mockImplementation(() => undefined);
+      const tree = fixture.debugElement.query(By.directive(CngxTreeSelect))
+        .componentInstance as CngxTreeSelect<Row>;
+      tree.open();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      (fixture.nativeElement as HTMLElement)
+        .querySelector<HTMLElement>('[role="treeitem"]')!
+        .click();
+      fixture.detectChanges();
+      announce.mockClear();
+
+      fixture.componentInstance.pending!.error(new Error('server down'));
+      fixture.detectChanges();
+
+      expect(announce).toHaveBeenCalledTimes(1);
+      const [message, politeness] = announce.mock.calls[0];
+      expect(stripBidiIsolates(message)).toBe('Teams: Save failed - server down');
+      expect(politeness).toBe('assertive');
+      expect(fixture.componentInstance.values()).toEqual([]);
+    },
+  );
+});
+
 describe('CngxTreeSelect - runtime language switch', () => {
   beforeAll(() => polyfillPopover());
 
@@ -443,7 +509,6 @@ describeMobileSheet('CngxTreeSelect', CngxTreeSelect, 'cngx-tree-select', {
   fill: 'sheet',
   showDone: true,
   showInput: false,
-  announcesCommitError: false,
   initialFocusSelector: '[role="tree"]',
   makeField: () => {
     const { accessor, ref } = createMockField<string[]>({ name: 'pick', value: [] });

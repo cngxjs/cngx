@@ -1135,6 +1135,8 @@ export class CngxTreeSelect<T = unknown>
         if (this.commitMode() === 'optimistic') {
           this.values.set([...(rollbackTo ?? previous)]);
         }
+        // Same order as the array commit handler: rollback, then speak.
+        this.announceCommitError(err);
       },
     });
   }
