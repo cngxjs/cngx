@@ -5,10 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxMenu } from './menu.directive';
 import type { CngxMenuHost } from './menu-host.token';
-import {
-  CngxMenuItemSubmenu,
-  __resetSubmenuFallbackWarnings,
-} from './menu-item-submenu.directive';
+import { CngxMenuItemSubmenu, __resetSubmenuFallbackWarnings } from './menu-item-submenu.directive';
 import { CngxMenuItem } from './menu-item.directive';
 import {
   CNGX_MENU_SUBMENU_WIRING,
