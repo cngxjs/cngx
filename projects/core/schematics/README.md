@@ -153,7 +153,10 @@ Budgets: 256 KB minified / 90 KB gzip per entry, 20 KB per shim.
 `@cngx/mcp` and `@cngx/eslint-plugin` pins, plus the `@angular/core` range
 `@cngx/core` peers on, which `ng add` refuses an older app against), stamps the
 `refresh` entry into the dist migrations collection, and ships a lib's bundle
-only when its source `package.json` declares `schematics`.
+only when its source `package.json` declares `schematics`. Both files come
+from `stampSchematicsDist`, which `scripts/pack-libs.mjs` runs on the staged
+core as well, so a packed core carries the same `versions.json` and refresh
+entry as a published one (versions from the workspace, no registry call).
 
 ## CLI behaviour worth knowing
 
@@ -204,7 +207,18 @@ only when its source `package.json` declares `schematics`.
 
 ## Trying a build against a real app
 
-Scratch apps must live outside this workspace: `ng new` refuses to run inside
+`node scripts/consumer-fixture.mjs --angular 21 --variant schematics` does
+the whole round trip against the tarballs of `scripts/pack-libs.mjs`: a fresh
+app, `ng add @cngx/core` twice (the second must change nothing),
+`ng add @cngx/forms --libs core` (exact pins for utils, core, common, forms),
+`ng update @cngx/core --migrate-only` twice (the second finds nothing), then
+`ng build` and a browser load. It serves the tarballs from a local registry
+for the `@cngx` scope inside the script. `--stale-core <tgz | previous>` adds
+a sandbox with an older core installed, where `ng add @cngx/forms` must
+replace it in the same run; `previous` packs the newest registry release
+below the tarballs.
+
+For anything the fixture does not cover, scratch apps must live outside this workspace: `ng new` refuses to run inside
 it, and an install there resolves the repo's tree. Use npm 11 (npm 10 fails
 on a fresh Angular 21.2 install). Publish staged copies of `dist/*` to a local
 registry (verdaccio on `127.0.0.1:4873`, `@cngx/*` without an uplink), point
