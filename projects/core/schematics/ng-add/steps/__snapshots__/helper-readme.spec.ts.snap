@@ -3,7 +3,7 @@
 exports[`renderHelperReadme > renders the stamped readme for the chosen editors 1`] = `
 "<!-- cngx:generated 1b842b43 -->
 <!-- ng-add, @cngx 0.1.0 -->
-<!-- cngx:fingerprint 289bd029 -->
+<!-- cngx:fingerprint 2b7b08d3 -->
 
 # cngx in this project
 
@@ -37,36 +37,36 @@ A marked cngx block in \`AGENTS.md\` tells the agent to ask the server.
 
 ### Tools
 
-| Tool | What it answers | Try asking |
+|Tool|What it answers|Try asking|
 |-|-|-|
-| \`find_component\` | Find cngx component, directive, or service | Which cngx component renders a searchable single select? |
-| \`get_api\` | Get cngx component API | What inputs and outputs does CngxSelect take? |
-| \`get_config\` | Get a cngx configuration cascade | How do I set app-wide defaults for CngxSelect? |
-| \`get_di_tokens\` | Get cngx DI tokens | Which DI tokens configure the select family? |
-| \`get_slots\` | Get cngx component template slots | Which template slots can I override on CngxSelect? |
-| \`get_story_example\` | Get cngx example URLs | Show me a working example of CngxTreeSelect. |
-| \`get_theme_tokens\` | Get cngx component theming tokens | Which custom properties theme CngxChip? |
-| \`list_components\` | List cngx components, directives, and services | Which directives does @cngx/common ship? |
-| \`migrate_usage\` | Diff two cngx releases | What breaks between cngx 0.1.0-rc.5 and 0.1.0? |
+|\`find_component\`|Find cngx component, directive, or service|Which cngx component renders a searchable single select?|
+|\`get_api\`|Get cngx component API|What inputs and outputs does CngxSelect take?|
+|\`get_config\`|Get a cngx configuration cascade|How do I set app-wide defaults for CngxSelect?|
+|\`get_di_tokens\`|Get cngx DI tokens|Which DI tokens configure the select family?|
+|\`get_slots\`|Get cngx component template slots|Which template slots can I override on CngxSelect?|
+|\`get_story_example\`|Get cngx example URLs|Show me a working example of CngxTreeSelect.|
+|\`get_theme_tokens\`|Get cngx component theming tokens|Which custom properties theme CngxChip?|
+|\`list_components\`|List cngx components, directives, and services|Which directives does @cngx/common ship?|
+|\`migrate_usage\`|Diff two cngx releases|What breaks between cngx 0.1.0-rc.5 and 0.1.0?|
 
 ### Resources
 
-| URI | Content |
+|URI|Content|
 |-|-|
-| \`cngx://catalog\` | Every cngx component, directive, and injectable service as { name, kind, selector, category, lib }, sorted by name. The browse view of list_components. |
-| \`cngx://tokens\` | The top-level DI injection tokens as { name, file, description }. |
-| \`cngx://provenance\` | Snapshot meta: cngx version, generatedAt, schemaVersion, compodocx version. |
-| \`cngx://api/{name}\` | One component or directive's API surface (inputs, outputs, signal flag, host bindings, methods) by class name or selector. An unknown name yields an empty resource. |
-| \`cngx://llms\` | The llms.txt-equivalent entry index - documented-exports counts, API-reference pointer links and the package list - composed offline from the bundled snapshot. |
-| \`cngx://llms-full\` | The verbatim compodocx llm-md dump - the full API export with every artifact's selector, inputs, outputs, description and live-example URLs - served offline from the bundled snapshot. The companion to the cngx://llms index; an absent dump yields an empty resource. |
+|\`cngx://catalog\`|Every cngx component, directive, and injectable service as { name, kind, selector, category, lib }, sorted by name. The browse view of list_components.|
+|\`cngx://tokens\`|The top-level DI injection tokens as { name, file, description }.|
+|\`cngx://provenance\`|Snapshot meta: cngx version, generatedAt, schemaVersion, compodocx version.|
+|\`cngx://api/{name}\`|One component or directive's API surface (inputs, outputs, signal flag, host bindings, methods) by class name or selector. An unknown name yields an empty resource.|
+|\`cngx://llms\`|The llms.txt-equivalent entry index - documented-exports counts, API-reference pointer links and the package list - composed offline from the bundled snapshot.|
+|\`cngx://llms-full\`|The verbatim compodocx llm-md dump - the full API export with every artifact's selector, inputs, outputs, description and live-example URLs - served offline from the bundled snapshot. The companion to the cngx://llms index; an absent dump yields an empty resource.|
 
 ### Prompts
 
-| Prompt | Use |
+|Prompt|Use|
 |-|-|
-| \`wire_component\` | Frame wiring one cngx component and name the tools to ground against. |
-| \`theme_component\` | Frame theming one cngx component through its exposed custom properties. |
-| \`migrate_cngx\` | Frame a cross-version cngx migration grounded in migrate_usage. |
+|\`wire_component\`|Frame wiring one cngx component and name the tools to ground against.|
+|\`theme_component\`|Frame theming one cngx component through its exposed custom properties.|
+|\`migrate_cngx\`|Frame a cross-version cngx migration grounded in migrate_usage.|
 
 ## Check that it runs
 

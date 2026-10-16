@@ -22,19 +22,19 @@ A marked cngx block in {{instructions}} tells the agent to ask the server.
 
 ### Tools
 
-| Tool | What it answers | Try asking |
+|Tool|What it answers|Try asking|
 |-|-|-|
 {{tools}}
 
 ### Resources
 
-| URI | Content |
+|URI|Content|
 |-|-|
 {{resources}}
 
 ### Prompts
 
-| Prompt | Use |
+|Prompt|Use|
 |-|-|
 {{prompts}}
 
