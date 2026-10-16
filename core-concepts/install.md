@@ -56,9 +56,11 @@ install. Nothing outside the project is written.
    applications and no `--project`, the run takes `defaultProject`, else
    the first application; the project line is then a warn that names the
    pick and the other applications, and the run goes on. Pass
-   `--project <name>` to choose. A `package.json` that does not
-   parse, an `angular.json` without projects, or a build style entry whose
-   file is missing stops the run with one line naming the file.
+   `--project <name>` to choose. A local stylesheet listed under the build
+   `styles` but missing on disk fails its own preflight line and stops the
+   run before anything is planned or asked. A `package.json` that does not
+   parse or an `angular.json` without projects stops the run with one line
+   naming the file.
 3. **Ask.** With a terminal attached it asks the open questions (below). A
    flag on the command line answers its question; without a terminal the
    preset answers, or on a re-run the answers the last install recorded.

@@ -78,6 +78,18 @@ function assertBuildTarget(facts: ProjectFacts): void {
   }
 }
 
+// A styles entry the build lists but the disk lacks fails the app's own
+// build too; the preflight line shows it first, and nothing is planned.
+function assertStylesheetsExist(facts: ProjectFacts): void {
+  const missing = facts.missingStyleEntries;
+  if (missing.length > 0) {
+    const verb = missing.length === 1 ? 'is' : 'are';
+    throw new SchematicsException(
+      `${missing.join(', ')} ${verb} listed under styles in angular.json but ${missing.length === 1 ? 'does' : 'do'} not exist; create ${missing.length === 1 ? 'it' : 'them'} or remove the entry.`,
+    );
+  }
+}
+
 /** Why the run cannot ask before it applies to an existing app. */
 interface ConfirmContext {
   readonly isTTY: boolean;
@@ -137,6 +149,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
     );
     assertSupportedAngular(facts, versions.angular);
     assertBuildTarget(facts);
+    assertStylesheetsExist(facts);
 
     const flow = createPromptFlow({
       canPrompt: interactive && options.preset !== 'minimal',

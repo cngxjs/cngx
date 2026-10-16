@@ -123,12 +123,26 @@ function projectItem(facts: ProjectFacts, projectFlag: string | undefined): Pref
     : { label, status: 'ok', detail: maturity };
 }
 
+function stylesheetsItem(missing: readonly string[]): readonly PreflightItem[] {
+  if (missing.length === 0) {
+    return [];
+  }
+  return [
+    {
+      label: `${missing.length === 1 ? 'Stylesheet' : 'Stylesheets'} ${missing.join(', ')}`,
+      status: 'fail',
+      detail: 'listed under styles in angular.json but missing on disk',
+    },
+  ];
+}
+
 /**
  * The checklist printed before any question: the Angular version against
  * the supported floor, the project with its maturity (only an existing app
  * is asked to confirm the plan; a project picked from several applications
- * is a `warn`) and the git state. An Angular version below
- * the floor and a project without a build target are the `fail` lines; the
+ * is a `warn`), a listed stylesheet missing on disk, and the git state. An
+ * Angular version below the floor, a project without a build target and a
+ * missing stylesheet are the `fail` lines; the
  * shell renders them before it refuses the run. A version it cannot read is
  * a `warn`, and the run goes on.
  */
@@ -146,6 +160,7 @@ export function preflightItems({
       detail: angularDetail(facts, angular.supported, angular.floor),
     },
     projectItem(facts, projectFlag),
+    ...stylesheetsItem(facts.missingStyleEntries),
     GIT_ITEMS[git],
   ];
 }

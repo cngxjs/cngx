@@ -1084,7 +1084,9 @@ describe('ngAdd', () => {
       }),
     });
 
-    await expect(runRule(ngAdd({}), tree)).rejects.toThrow(/^src\/missing\.css is planned for .+ but does not exist\.$/);
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow(
+      'src/missing.css is listed under styles in angular.json but does not exist; create it or remove the entry.',
+    );
   });
 
   it('refuses a project without a build target', async () => {

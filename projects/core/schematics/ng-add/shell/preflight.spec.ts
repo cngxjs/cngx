@@ -259,6 +259,18 @@ describe('preflightItems', () => {
     });
   });
 
+  it('fails on a listed stylesheet that is missing on disk and lists nothing when every one exists', () => {
+    const items = (missing: readonly string[]) =>
+      preflightItems({ facts: createFacts({ missingStyleEntries: missing }), peerRange: PEER_RANGE, git: 'clean' });
+
+    expect(items(['src/missing.css', 'src/gone.scss']).find((item) => item.label.startsWith('Stylesheet'))).toEqual({
+      label: 'Stylesheets src/missing.css, src/gone.scss',
+      status: 'fail',
+      detail: 'listed under styles in angular.json but missing on disk',
+    });
+    expect(items([]).some((item) => item.label.startsWith('Stylesheet'))).toBe(false);
+  });
+
   it('warns about uncommitted changes and a missing repository', () => {
     const git = (state: GitState) =>
       preflightItems({ facts: createFacts(), peerRange: PEER_RANGE, git: state })[2];
