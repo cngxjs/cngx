@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A panel led by a search input opens fullscreen on a phone, with focus already in the input so the keyboard comes up with the tap.',
   description:
-    'Set <code>autoPresentation="fullscreen"</code> for panels whose first job is typing. <code>cngxPopoverSheetInitialFocus</code> marks the input; the sheet focuses it synchronously inside <code>show()</code>, which runs within the opening tap, so iOS keeps the soft keyboard open. Below the fixed header only the result list scrolls. On a desktop the same markup stays an anchored panel.',
+    'Set <code>autoPresentation="fullscreen"</code> for panels whose first job is typing. <code>cngxPopoverSheetInitialFocus</code> marks the input; the sheet focuses it synchronously inside <code>show()</code>, which runs within the opening tap, so iOS keeps the soft keyboard open. Below the fixed header only the result list scrolls. The match count is announced through <code>sheet.announce()</code>, which speaks from a live region inside the panel: under <code>aria-modal</code>, VoiceOver ignores regions on the page body. On a desktop the same markup stays an anchored panel.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -34,7 +34,12 @@ export const STORY: DemoSpec = {
   protected readonly matches = computed(() => {
     const q = this.query().trim().toLowerCase();
     return q ? this.countries.filter((c) => c.toLowerCase().includes(q)) : this.countries;
-  });`,
+  });
+  protected handleQuery(value: string, sheet: CngxPopoverSheet): void {
+    this.query.set(value);
+    const count = this.matches().length;
+    sheet.announce(count === 1 ? '1 country matches' : count + ' countries match');
+  }`,
   template: `<button type="button" [cngxPopoverTrigger]="pop" (click)="pop.show()">Search countries</button>
   <div
     cngxPopover
@@ -54,7 +59,7 @@ export const STORY: DemoSpec = {
         aria-label="Search countries"
         style="flex: 1 1 100%"
         [value]="query()"
-        (input)="query.set($any($event.target).value)"
+        (input)="handleQuery($any($event.target).value, sheet)"
       />
     </header>
     <ul style="margin: 0; padding: 0; list-style: none">

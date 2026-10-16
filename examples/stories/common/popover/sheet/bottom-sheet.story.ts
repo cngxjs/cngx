@@ -49,7 +49,7 @@ export const STORY: DemoSpec = {
       #sheet="cngxPopoverSheet"
       [closeOnRequest]="!blockClose()"
       [closeOnEscape]="escapeCloses()"
-      (closeRequested)="lastRequest.set($event)"
+      (closeRequested)="handleCloseRequested($event, sheet)"
     >
       <header cngxPopoverSheetHeader cngxSwipeDismiss="down">
         <span cngxPopoverSheetHandle></span>
@@ -75,7 +75,13 @@ export const STORY: DemoSpec = {
   protected readonly dir = signal<'ltr' | 'rtl'>('ltr');
   protected readonly blockClose = signal(false);
   protected readonly escapeCloses = signal(true);
-  protected readonly lastRequest = signal<string | undefined>(undefined);`,
+  protected readonly lastRequest = signal<string | undefined>(undefined);
+  protected handleCloseRequested(reason: string, sheet: { announce(m: string, p?: 'polite' | 'assertive'): void }): void {
+    this.lastRequest.set(reason);
+    if (this.blockClose()) {
+      sheet.announce('Closing is blocked', 'assertive');
+    }
+  }`,
   templateChrome: `<div class="button-row" role="radiogroup" aria-label="Presentation">
     @for (mode of ['auto', 'sheet', 'fullscreen']; track mode) {
       <label>
