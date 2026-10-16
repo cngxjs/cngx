@@ -2,6 +2,7 @@ import { isRecord } from '../plan/text';
 
 const PREAMBLE_AT_RULE = /^@(use|forward|import|charset)\b/;
 const IMPORT_RULE = /^@import\b/;
+const MODULE_RULE = /^@(use|forward)\b/;
 const IMPORT_URL = /^@(?:use|forward|import)\s+(['"])(.+?)\1/;
 
 // End offset of the statement starting at `start`: the `;` that is not inside
@@ -80,9 +81,14 @@ export function hasStyleImport(content: string, statement: string): boolean {
 /**
  * Places `statement` after the existing `@use` / `@forward` / `@import`
  * lines and before the first rule. Sass rejects or silently drops a module
- * load that follows a rule, so appending is never safe.
+ * load that follows a rule, so appending is never safe. A `@use` or
+ * `@forward` goes through {@link insertLeadingStyleImport} instead: Sass also
+ * rejects one that follows an `@import`.
  */
 export function insertStyleImport(content: string, statement: string): string {
+  if (MODULE_RULE.test(statement.trim())) {
+    return insertLeadingStyleImport(content, statement);
+  }
   if (hasStyleImport(content, statement)) {
     return content;
   }

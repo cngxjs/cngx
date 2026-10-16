@@ -353,7 +353,7 @@ describe('ngAdd', () => {
     const stylesheet = run.tree.readContent('src/styles.scss');
 
     expect(stylesheet).toContain(
-      "@use '@angular/material' as mat;\n@import '@cngx/themes/cngx.css';\n@use '@cngx/themes/material/theme' as cngx-material;\n",
+      "@use '@angular/material' as mat;\n@use '@cngx/themes/material/theme' as cngx-material;\n@import '@cngx/themes/cngx.css';\n",
     );
     expect(stylesheet).toContain('html {\n  @include cngx-material.theme($theme); /* cngx:theme:bridge */\n}\n');
     expect(run.tree.exists('src/cngx-theme.scss')).toBe(false);

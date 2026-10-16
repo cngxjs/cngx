@@ -8,6 +8,7 @@ import {
 } from './style-edit';
 
 const CNGX = "@import '@cngx/themes/cngx.css';";
+const BRIDGE = "@use '@cngx/themes/material/theme' as cngx-material;";
 
 const MATERIAL_SCSS = `// Global styles
 @use '@angular/material' as mat;
@@ -56,6 +57,16 @@ html {
 
   it('does not touch an import further down the file', () => {
     expect(insertStyleImport(".x {}\n@import 'late.css';\n", CNGX)).toBe(`${CNGX}\n.x {}\n@import 'late.css';\n`);
+  });
+
+  it('puts a @use ahead of the first @import', () => {
+    const content = `@use '@angular/material' as mat;\n${CNGX}\n\n.x {}\n`;
+
+    expect(insertStyleImport(content, BRIDGE)).toBe(`@use '@angular/material' as mat;\n${BRIDGE}\n${CNGX}\n\n.x {}\n`);
+  });
+
+  it('puts an @import after a leading @use', () => {
+    expect(insertStyleImport(`${BRIDGE}\n.x {}\n`, CNGX)).toBe(`${BRIDGE}\n${CNGX}\n.x {}\n`);
   });
 
   it('is idempotent', () => {
