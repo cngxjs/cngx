@@ -146,11 +146,12 @@
 
   /**
    * Drop shadow along the top edge of the `sheet` presentation.
+   * `inherits: true` so the dark-mode value set on the root reaches the host.
    * @group Surface
    */
   @property --cngx-popover-sheet-shadow {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0 -4px 24px oklch(0 0 0 / 0.12);
   }
 

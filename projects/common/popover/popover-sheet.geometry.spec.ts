@@ -43,7 +43,7 @@ const HARNESS_STYLES = [
   styleUrls: HARNESS_STYLES,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div [attr.dir]="dir()">
+    <div [attr.dir]="dir()" [attr.data-color-scheme]="scheme()">
       <button type="button" class="trigger" [cngxPopoverTrigger]="pop" style="margin: 40px">
         Open
       </button>
@@ -64,6 +64,7 @@ const HARNESS_STYLES = [
 class SheetGeometryHost {
   readonly request = signal<CngxPopoverPresentationRequest>('sheet');
   readonly dir = signal<'ltr' | 'rtl'>('ltr');
+  readonly scheme = signal<'light' | 'dark' | null>(null);
   readonly rows = signal<readonly number[]>(Array.from({ length: 3 }, (_, i) => i));
   readonly popover = viewChild.required(CngxPopover);
 }
@@ -215,6 +216,16 @@ describe('CngxPopoverSheet geometry', () => {
     }
     await frames(5);
     expect(panel.hasAttribute('data-cngx-sheet-settling')).toBe(false);
+  });
+
+  it('deepens the shadow in dark mode', async () => {
+    const light = await open((h) => h.scheme.set('light'));
+    const lightShadow = computedValue(light.panel, 'box-shadow');
+    mountedRoot?.remove();
+    const dark = await open((h) => h.scheme.set('dark'));
+    const darkShadow = computedValue(dark.panel, 'box-shadow');
+    expect(darkShadow).not.toBe(lightShadow);
+    expect(darkShadow).toContain('0.5');
   });
 
   it('paints a CanvasText top edge under forced colors', async () => {
