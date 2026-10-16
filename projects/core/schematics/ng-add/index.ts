@@ -195,9 +195,10 @@ export function ngAdd(flags: NgAddFlags): Rule {
       }
     }
 
+    const unchanged = new Set<string>();
     return chain([
-      applyChangePlan(plan),
-      () => renderer.summary(createSummary(createReport(plan), options.quiet !== true)),
+      applyChangePlan(plan, (id) => unchanged.add(id)),
+      () => renderer.summary(createSummary(createReport(plan, unchanged), options.quiet !== true)),
       scheduleInstall(plan),
     ]);
   };

@@ -79,7 +79,9 @@ install. Nothing outside the project is written.
    confirmation.
 6. **Apply and summarise.** The summary lists the files touched, the notes
    (what a step refused or left to you), the steps already in place, and the
-   next steps.
+   next steps. A planned change that found its edit already in the file
+   when it ran (an import an earlier change wrote, say) counts as already in
+   place, not as a change.
 7. **Install.** One package install at the end, for every dependency the
    plan added.
 

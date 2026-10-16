@@ -53,7 +53,10 @@ function readPlanned(tree: Tree, change: EditFile | AddStyleImport): string {
   return tree.readText(change.path);
 }
 
-function editFile(change: EditFile): Rule {
+/** Called with the id of a change whose rule found its edit already in place. */
+export type OnUnchanged = (id: string) => void;
+
+function editFile(change: EditFile, onUnchanged: OnUnchanged): Rule {
   return (tree: Tree) => {
     if (change.replaces === true) {
       if (!tree.exists(change.path)) {
@@ -64,9 +67,11 @@ function editFile(change: EditFile): Rule {
     }
     const content = readPlanned(tree, change);
     const next = change.edit(content);
-    if (next !== content) {
-      tree.overwrite(change.path, next);
+    if (next === content) {
+      onUnchanged(change.id);
+      return;
     }
+    tree.overwrite(change.path, next);
   };
 }
 
@@ -112,7 +117,7 @@ function importsFit(content: string, imports: readonly (readonly [string, string
 // planned file holds exactly one root providers array and the imports bind
 // cleanly, append there in the array's own layout; otherwise `addRootProvider`
 // resolves the file from the bootstrap call and aliases a clashing name.
-function addProvider(change: AddProvider): Rule {
+function addProvider(change: AddProvider, onUnchanged: OnUnchanged): Rule {
   const fallback = addRootProvider(change.project, ({ code, external }) => code`${renderCall(change.call, external)}`);
   return (tree: Tree) => {
     const path = change.path;
@@ -130,6 +135,7 @@ function addProvider(change: AddProvider): Rule {
     }
     const added = addToArrayLiteral(content, ROOT_PROVIDERS, expression);
     if (added === content) {
+      onUnchanged(change.id);
       return undefined;
     }
     const next = imports.reduce((text, [symbol, module]) => promoteTypeOnlyImport(text, symbol, module), added);
@@ -141,19 +147,21 @@ function addProvider(change: AddProvider): Rule {
   };
 }
 
-function addStyleImport(change: AddStyleImport): Rule {
+function addStyleImport(change: AddStyleImport, onUnchanged: OnUnchanged): Rule {
   return (tree: Tree) => {
     const content = readPlanned(tree, change);
     const next = insertStyleImport(content, change.statement);
-    if (next !== content) {
-      tree.overwrite(change.path, next);
+    if (next === content) {
+      onUnchanged(change.id);
+      return;
     }
+    tree.overwrite(change.path, next);
   };
 }
 
 // Inserted the way `ng add @angular/material` adds its theme file, through
 // the workspace API, so the user's formatting of angular.json survives.
-function addStyleEntry(change: AddStyleEntry): Rule {
+function addStyleEntry(change: AddStyleEntry, onUnchanged: OnUnchanged): Rule {
   return updateWorkspace((workspace) => {
     const options = workspace.projects.get(change.project)?.targets.get('build')?.options;
     if (options === undefined) {
@@ -162,6 +170,7 @@ function addStyleEntry(change: AddStyleEntry): Rule {
     const styles = Array.isArray(options['styles']) ? [...options['styles']] : [];
     const inputs = styles.map(styleEntryPath);
     if (inputs.includes(change.path)) {
+      onUnchanged(change.id);
       return;
     }
     const after = change.after === undefined ? -1 : inputs.indexOf(change.after);
@@ -183,12 +192,12 @@ function writeJson(change: WriteJson): Rule {
   };
 }
 
-function toRule(change: Change): Rule {
+function toRule(change: Change, onUnchanged: OnUnchanged): Rule {
   switch (change.kind) {
     case 'create-file':
       return createFile(change);
     case 'edit-file':
-      return editFile(change);
+      return editFile(change, onUnchanged);
     case 'add-dependency':
       return change.dev === true
         ? addDependency(change.name, change.version, {
@@ -198,11 +207,11 @@ function toRule(change: Change): Rule {
           })
         : addLockstepDependency(change.name, change.version);
     case 'add-provider':
-      return addProvider(change);
+      return addProvider(change, onUnchanged);
     case 'add-style-import':
-      return addStyleImport(change);
+      return addStyleImport(change, onUnchanged);
     case 'add-style-entry':
-      return addStyleEntry(change);
+      return addStyleEntry(change, onUnchanged);
     case 'write-json':
       return writeJson(change);
     case 'note':
@@ -216,10 +225,12 @@ function toRule(change: Change): Rule {
 
 /**
  * The one effectful step: turns the plan into a Rule, one Rule per change in
- * plan order. Nothing reports back; what changed is `plan.changes`, what was
- * already in place is `plan.skipped`. `create-file` never overwrites, so a
- * step that misses an existing file fails loudly instead of clobbering it.
+ * plan order. A change whose edit is already in the file (a planned import
+ * another change wrote first, a provider the array already holds) writes
+ * nothing and is reported through `onUnchanged`, so the summary can list it
+ * as already in place. `create-file` never overwrites, so a step that
+ * misses an existing file fails loudly instead of clobbering it.
  */
-export function applyChangePlan(plan: ChangePlan): Rule {
-  return chain(plan.changes.map(toRule));
+export function applyChangePlan(plan: ChangePlan, onUnchanged: OnUnchanged = () => undefined): Rule {
+  return chain(plan.changes.map((change) => toRule(change, onUnchanged)));
 }
