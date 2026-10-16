@@ -1,8 +1,12 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, Directive, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CngxFocusTrap } from './focus-trap.directive';
+import {
+  CNGX_FOCUS_TRAP_DRIVER,
+  CngxFocusTrap,
+  type CngxFocusTrapDriver,
+} from './focus-trap.directive';
 import { FocusTrapFactory, InteractivityChecker } from '@angular/cdk/a11y';
 
 let mockTrap: {
@@ -26,6 +30,31 @@ let mockTrap: {
 class TestHost {
   enabled = signal(false);
   autoFocus = signal(true);
+}
+
+// A composer that carries the trap as a host directive and drives it.
+@Directive({
+  selector: '[trapComposer]',
+  standalone: true,
+  hostDirectives: [{ directive: CngxFocusTrap, inputs: ['enabled'], outputs: [] }],
+  providers: [{ provide: CNGX_FOCUS_TRAP_DRIVER, useExisting: TrapComposer }],
+})
+class TrapComposer implements CngxFocusTrapDriver {
+  readonly open = signal(false);
+  readonly focusTrapEnabled = this.open.asReadonly();
+  readonly focusTrapAutoFocus = false;
+}
+
+@Component({
+  template: `
+    <div trapComposer [enabled]="inputEnabled()">
+      <button class="first">First</button>
+    </div>
+  `,
+  imports: [TrapComposer],
+})
+class DriverHost {
+  readonly inputEnabled = signal(true);
 }
 
 describe('CngxFocusTrap', () => {
@@ -139,54 +168,28 @@ describe('CngxFocusTrap', () => {
     expect(mockTrap.destroy).not.toHaveBeenCalled();
   });
 
-  it('lets an enabled source win over the input and defers back on null', () => {
-    const { fixture, dir, host } = setup();
-    const source = signal(true);
-    dir.setEnabledSource(source);
+  it('lets a composer driver win over the input and suppress auto focus', () => {
+    const fixture = TestBed.createComponent(DriverHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const composer = fixture.debugElement
+      .query(By.directive(TrapComposer))
+      .injector.get(TrapComposer);
+    const trap = fixture.debugElement
+      .query(By.directive(CngxFocusTrap))
+      .injector.get(CngxFocusTrap);
+    expect(createSpy).not.toHaveBeenCalled();
+    expect(trap.isActive()).toBe(false);
+
+    composer.open.set(true);
     TestBed.flushEffects();
     expect(mockTrap.enabled).toBe(true);
-    expect(dir.isActive()).toBe(true);
+    expect(trap.isActive()).toBe(true);
+    expect(mockTrap.focusFirstTabbableElementWhenReady).not.toHaveBeenCalled();
 
-    host.enabled.set(true);
-    source.set(false);
-    fixture.detectChanges();
+    composer.open.set(false);
     TestBed.flushEffects();
     expect(mockTrap.enabled).toBe(false);
-
-    dir.setEnabledSource(null);
-    TestBed.flushEffects();
-    expect(mockTrap.enabled).toBe(true);
-  });
-
-  it('follows a computed enabled source', () => {
-    const { dir } = setup();
-    const open = signal(false);
-    dir.setEnabledSource(computed(() => open()));
-    TestBed.flushEffects();
-    expect(createSpy).not.toHaveBeenCalled();
-    open.set(true);
-    TestBed.flushEffects();
-    expect(mockTrap.enabled).toBe(true);
-  });
-
-  it('suppresses auto focus while the override is false', () => {
-    const { fixture, dir, host } = setup();
-    dir.setAutoFocusOverride(false);
-    host.enabled.set(true);
-    fixture.detectChanges();
-    TestBed.flushEffects();
-    expect(mockTrap.focusFirstTabbableElementWhenReady).not.toHaveBeenCalled();
-  });
-
-  it('does not refocus when the auto focus override flips while active', () => {
-    const { fixture, dir, host } = setup();
-    dir.setAutoFocusOverride(false);
-    host.enabled.set(true);
-    fixture.detectChanges();
-    TestBed.flushEffects();
-    dir.setAutoFocusOverride(null);
-    TestBed.flushEffects();
-    expect(mockTrap.focusFirstTabbableElementWhenReady).not.toHaveBeenCalled();
   });
 
   it('does not refocus when autoFocus flips while the trap is active', () => {

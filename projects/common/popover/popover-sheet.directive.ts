@@ -12,7 +12,9 @@ import {
 } from '@angular/core';
 import {
   type AriaLivePoliteness,
+  CNGX_FOCUS_TRAP_DRIVER,
   CngxFocusTrap,
+  type CngxFocusTrapDriver,
   CngxLiveAnnouncer,
   injectScopedLiveRegion,
 } from '@cngx/common/a11y';
@@ -119,6 +121,7 @@ const engagedSheets: CngxPopoverSheet[] = [];
   providers: [
     { provide: CNGX_POPOVER_PRESENTATION, useExisting: CngxPopoverSheet },
     { provide: CNGX_POPOVER_SHEET_HOST, useExisting: CngxPopoverSheet },
+    { provide: CNGX_FOCUS_TRAP_DRIVER, useExisting: CngxPopoverSheet },
   ],
   host: {
     class: 'cngx-popover-sheet',
@@ -131,7 +134,9 @@ const engagedSheets: CngxPopoverSheet[] = [];
     '(beforetoggle)': 'handleBeforeToggle($event)',
   },
 })
-export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopoverSheetPartsHost {
+export class CngxPopoverSheet
+  implements CngxPopoverPresentationSeam, CngxPopoverSheetPartsHost, CngxFocusTrapDriver
+{
   private readonly popover = inject(CngxPopover, { self: true });
   private readonly trap = inject(CngxFocusTrap, { self: true });
   private readonly announcer = inject(CngxLiveAnnouncer);
@@ -202,6 +207,11 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
 
   /** `true` in the sheet and fullscreen presentations. */
   readonly modal = computed(() => this.presentation() !== 'anchored');
+
+  /** @internal Drives the composed `CngxFocusTrap`: Tab stays inside while modal and visible. */
+  readonly focusTrapEnabled = computed(() => this.modal() && this.popover.isVisible());
+  /** @internal The sheet moves focus itself, inside `show()`. */
+  readonly focusTrapAutoFocus = false;
 
   /** @internal */
   readonly titleRegistry = createSlotRegistry<CngxPopoverSheetTitleHandle>();
@@ -278,9 +288,6 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
   };
 
   constructor() {
-    this.trap.setEnabledSource(computed(() => this.modal() && this.popover.isVisible()));
-    this.trap.setAutoFocusOverride(false);
-
     // A breakpoint crossing or request flip while open. Open and close
     // themselves run through onShown() / onHide(), which engage first, so
     // this effect only sees edges nobody handled yet.
