@@ -318,6 +318,16 @@ describe('CngxFilterBuilder - form-field bridge', () => {
 })
 class OrphanControlHost {}
 
+@Component({
+  template: `<div cngxFilterBuilderPresenter [fields]="fields">
+    <div cngxFilterBuilderFormFieldControl></div>
+  </div>`,
+  imports: [CngxFilterBuilderPresenter, CngxFilterBuilderFormFieldControl],
+})
+class AncestorPresenterHost {
+  readonly fields = FIELDS;
+}
+
 describe('CngxFilterBuilderFormFieldControl placement (CNGX2019)', () => {
   it('throws CNGX2019 without a filter-builder presenter', () => {
     expect(() => TestBed.createComponent(OrphanControlHost).detectChanges()).toThrow(
@@ -328,6 +338,12 @@ describe('CngxFilterBuilderFormFieldControl placement (CNGX2019)', () => {
           /^CNGX2019: \[cngxFilterBuilderFormFieldControl\] must be placed on <cngx-filter-builder> or an element with \[cngxFilterBuilderPresenter\]\./,
         ),
       }),
+    );
+  });
+
+  it('throws CNGX2019 when the presenter sits on an ancestor', () => {
+    expect(() => TestBed.createComponent(AncestorPresenterHost).detectChanges()).toThrow(
+      expect.objectContaining({ code: 'CNGX2019', message: expect.stringMatching(/^CNGX2019: /) }),
     );
   });
 

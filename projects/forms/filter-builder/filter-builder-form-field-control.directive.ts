@@ -68,13 +68,14 @@ export class CngxFilterBuilderFormFieldControl {
 /**
  * Inject the {@link CngxFilterBuilderPresenter} that
  * {@link CngxFilterBuilderFormFieldControl} exposes to the form field. Throws
- * a `CngxRuntimeError` with code `CNGX2019` when no presenter is on the
- * element or above it, in development and production alike.
+ * a `CngxRuntimeError` with code `CNGX2019` when no presenter is on the same
+ * element, in development and production alike. A presenter on an ancestor
+ * does not count: the focus tracking reads this element.
  *
  * @internal
  */
 function injectFilterBuilderPresenter(): CngxFilterBuilderPresenter {
-  const presenter = inject(CngxFilterBuilderPresenter, { optional: true });
+  const presenter = inject(CngxFilterBuilderPresenter, { self: true, optional: true });
   if (!presenter) {
     throw new CngxRuntimeError(
       'CNGX2019',
