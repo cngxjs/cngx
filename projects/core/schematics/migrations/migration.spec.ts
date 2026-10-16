@@ -144,6 +144,33 @@ describe('createMigration', () => {
     expect(records['beta']?.updatedAt).toBe('2026-10-12T12:00:00.000Z');
   });
 
+  it('plans the workspace readme once when the first record cannot carry it', async () => {
+    const recorded = twoRecordedApplications();
+    const { projects } = JSON.parse(recorded['.cngx/install.json'] ?? '{}') as InstallManifest;
+    const stale = (record: ProjectRecord | undefined) => ({
+      ...record,
+      mcpVersion: '0.0.1',
+      answers: { ...record?.answers, aiTools: ['claude'] },
+    });
+    const withRecords = (alpha: object) => ({
+      ...recorded,
+      '.cngx/install.json': JSON.stringify({ schemaVersion: 2, projects: { alpha, beta: stale(projects['beta']) } }),
+    });
+    const files = withRecords(stale(projects['alpha']));
+    const unreadable = withRecords({ ...stale(projects['alpha']), answers: { preset: 'gone' } });
+
+    const current = withRecords({ ...stale(projects['alpha']), mcpVersion: '0.2.0' });
+
+    const { logs } = await runRule(migration(), createMemoryTree(unreadable), ENTRY);
+    const { logs: readable } = await runRule(migration(), createMemoryTree(files), ENTRY);
+    const { logs: pinned } = await runRule(migration(), createMemoryTree(current), ENTRY);
+    const readmeLines = (lines: readonly string[]) => lines.filter((line) => line.startsWith('  - ') && line.includes('.cngx/README.md'));
+
+    expect(readmeLines(readable)).toHaveLength(1);
+    expect(readmeLines(logs)).toEqual(readmeLines(readable));
+    expect(readmeLines(pinned)).toEqual(readmeLines(readable));
+  });
+
   it('names a recorded project that is gone and leaves its record', async () => {
     const files = twoRecordedApplications(['alpha', 'gone']);
 

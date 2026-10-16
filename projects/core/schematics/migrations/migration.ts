@@ -16,6 +16,7 @@ import {
   errorMessage,
   planCodemods,
   planRenames,
+  type NgAddPreset,
   type ReleaseVersions,
   type RenameTable,
   resolveVersions,
@@ -29,10 +30,11 @@ import {
   INSTALL_MANIFEST_PATH,
   type InstallManifest,
   planManifestUpdate,
+  type ProjectRecord,
   recordedLibs,
   recordedStepIds,
 } from '../ng-add/steps/manifest';
-import { planManifestReruns, type WorkspaceReadme } from '../ng-add/steps/reruns';
+import { planManifestReruns, type PresetDefaults, readRecordedAnswers, type WorkspaceReadme } from '../ng-add/steps/reruns';
 
 /** What one release migrates: renames as data, codemods for the rest. */
 export interface Migration {
@@ -73,12 +75,19 @@ function entryVersion(context: SchematicContext): string | undefined {
 
 const NOTHING: StepResult = { changes: [], skipped: [] };
 
+// Only a record that reaches the README re-run may carry it: one whose
+// answers this release cannot read, or whose MCP pin did not move, would
+// otherwise use it up and leave every later record without it.
+function carriesReadme(record: ProjectRecord, defaultsFor: PresetDefaults, versions: ReleaseVersions): boolean {
+  return record.mcpVersion !== versions.mcp && readRecordedAnswers(record, defaultsFor) !== undefined;
+}
+
 /**
  * The re-run of every recorded project, each followed by the update of its
- * record. The first project that still resolves carries the workspace-wide
- * helper README, so it is planned once from the libs and steps of every
- * record. A recorded project gone from angular.json is named and its record
- * left as it is.
+ * record. The first project that re-runs the helper README carries it, so
+ * the workspace-wide README is planned once from the libs and steps of
+ * every record. A recorded project gone from angular.json is named and its
+ * record left as it is.
  */
 async function planReruns(
   tree: Tree,
@@ -107,8 +116,12 @@ async function planReruns(
       reruns.push(note('manifest:project', 'Re-run the recorded install steps', errorMessage(error), versions.cngx));
       continue;
     }
-    const rerun = planManifestReruns(facts, record, versions, (preset) => presetDefaults(preset, facts), readme);
-    readme = undefined;
+    const defaultsFor = (preset: NgAddPreset) => presetDefaults(preset, facts);
+    const carrier = readme !== undefined && carriesReadme(record, defaultsFor, versions) ? readme : undefined;
+    const rerun = planManifestReruns(facts, record, versions, defaultsFor, carrier);
+    if (carrier !== undefined) {
+      readme = undefined;
+    }
     reruns.push(rerun);
     records.push(planManifestUpdate(project, record, versions, createChangePlan([rerun]), now));
   }
