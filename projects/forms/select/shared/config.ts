@@ -28,6 +28,7 @@ import type {
   CngxSelectOptionPendingContext,
   CngxSelectPlaceholderContext,
   CngxSelectRefreshingContext,
+  CngxSelectSheetHandleContext,
   CngxSelectTriggerLabelContext,
 } from './template-slots';
 
@@ -55,6 +56,7 @@ export interface CngxSelectTemplateContexts {
   readonly optionPending?: CngxSelectOptionPendingContext;
   readonly optionError?: CngxSelectOptionErrorContext;
   readonly action?: CngxSelectActionContext;
+  readonly sheetHandle?: CngxSelectSheetHandleContext;
 }
 
 /**
@@ -391,6 +393,8 @@ export interface CngxSelectConfig {
     readonly optionError?: TemplateRef<CngxSelectOptionErrorContext> | null;
     /** Honoured only by `CngxActionSelect` and `CngxActionMultiSelect`; the flat variants have no action area. */
     readonly action?: TemplateRef<CngxSelectActionContext> | null;
+    /** Decorative drag handle of the mobile sheet. */
+    readonly sheetHandle?: TemplateRef<CngxSelectSheetHandleContext> | null;
   };
 }
 
@@ -453,6 +457,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     optionPending: null,
     optionError: null,
     action: null,
+    sheetHandle: null,
   },
 };
 

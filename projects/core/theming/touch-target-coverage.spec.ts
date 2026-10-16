@@ -77,6 +77,10 @@ const SIZE_FLOOR_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   { file: 'projects/forms/select/select-shell/select-shell.component.css', note: 'select-shell trigger' },
   // @cngx/forms - shared select panel option row
   { file: 'projects/forms/select/shared/select-base.css', note: 'select panel option row' },
+  {
+    file: 'projects/forms/select/shared/internal/sheet-header/sheet-header.component.css',
+    note: 'select mobile sheet X and Done',
+  },
   // @cngx/forms - input + filter-builder
   { file: 'projects/forms/input/rating/rating.component.css', note: 'rating star' },
   {
@@ -222,7 +226,7 @@ describe('touch-target size-floor coverage manifest', () => {
     // The registry itself (system-tokens.css) declares the token and is not a
     // consumer, so it is excluded by construction. This count is the coarse net
     // alongside the per-file assertions and the source scan below.
-    expect(SIZE_FLOOR_HOSTS.length).toBe(54);
+    expect(SIZE_FLOOR_HOSTS.length).toBe(55);
   });
 });
 

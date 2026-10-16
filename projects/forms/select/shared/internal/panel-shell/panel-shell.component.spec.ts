@@ -139,6 +139,7 @@ function createMockHost(): {
       optionPending: nullTpl,
       optionError: nullTpl,
       action: nullTpl,
+      sheetHandle: nullTpl,
     },
     commitErrorValue: signal(null),
     activeId: signal(null),

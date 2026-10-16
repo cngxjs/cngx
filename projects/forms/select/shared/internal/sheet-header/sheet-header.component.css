@@ -1,0 +1,89 @@
+/**
+ * @overview
+ * Header of a select-family panel presented as a mobile sheet. Hidden while
+ * the panel is anchored; in the sheet and fullscreen presentations it is the
+ * non-scrolling first row of `cngx-popover-sheet.css`.
+ *
+ * `--cngx-select-sheet-header-gap` is SET from the spacing scale, so the
+ * header follows density. X and Done floor their hit area to
+ * `--cngx-target-min`.
+ */
+
+@layer cngx.components {
+  .cngx-select-sheet-header {
+    --cngx-select-sheet-header-gap: var(--cngx-space-sm);
+  }
+
+  .cngx-popover-sheet:not([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen'])
+    > .cngx-select-sheet-header {
+    display: none;
+  }
+
+  .cngx-select-sheet-header__bar {
+    flex: 1 1 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cngx-select-sheet-header-gap, 8px);
+    min-inline-size: 0;
+  }
+
+  .cngx-select-sheet-header__handle {
+    display: none;
+  }
+
+  .cngx-popover-sheet[data-cngx-presentation='sheet'] .cngx-select-sheet-header__handle {
+    display: block;
+    flex: 0 0 100%;
+  }
+
+  .cngx-select-sheet-header__title {
+    flex: 1 1 0;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: var(--cngx-select-sheet-title-weight, 600);
+  }
+
+  .cngx-select-sheet-header__done,
+  .cngx-select-sheet-header__close {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--cngx-target-min, 0px);
+    min-inline-size: var(--cngx-target-min, 0px);
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    padding-inline: var(--cngx-select-sheet-header-gap, 8px);
+    font: inherit;
+  }
+
+  .cngx-select-sheet-header__done[aria-disabled='true'],
+  .cngx-select-sheet-header__close[aria-disabled='true'] {
+    cursor: not-allowed;
+    opacity: var(--cngx-select-sheet-disabled-opacity, 0.5);
+  }
+
+  .cngx-select-sheet-header__done:focus-visible,
+  .cngx-select-sheet-header__close:focus-visible {
+    outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+    outline-offset: 2px;
+  }
+
+  .cngx-select-sheet-header__input,
+  .cngx-select-sheet-header__bar > cngx-select-search {
+    flex: 0 0 100%;
+    min-inline-size: 0;
+  }
+
+  .cngx-select-sheet-header__input {
+    box-sizing: border-box;
+    min-block-size: var(--cngx-target-min, 0px);
+    font: inherit;
+  }
+}

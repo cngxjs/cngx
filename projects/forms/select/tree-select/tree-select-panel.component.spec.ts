@@ -119,6 +119,7 @@ function makeShellHost(): CngxSelectPanelHost {
       optionPending: nullTpl,
       optionError: nullTpl,
       action: nullTpl,
+      sheetHandle: nullTpl,
     },
     commitErrorValue: signal(null),
     activeId: signal(null),
