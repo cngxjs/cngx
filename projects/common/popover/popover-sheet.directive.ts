@@ -65,6 +65,13 @@ type CloseWatcherCtor = new () => CloseWatcherLike;
 // DOM ancestor, and must not close both.
 const engagedSheets: CngxPopoverSheet[] = [];
 
+// How many engaged sheets want each element inert. Several sheets can be
+// open at once (`[exclusive]="false"`), so an element stays inert until the
+// last sheet that claimed it lets go, and one sheet's release never makes
+// the page live under another. Elements inert before any sheet are never
+// claimed and never touched.
+const inertClaims = new WeakMap<HTMLElement, number>();
+
 /**
  * Turns a `CngxPopover` into a modal bottom sheet or fullscreen panel on
  * coarse, narrow viewports, and leaves it anchored everywhere else.
@@ -236,6 +243,9 @@ export class CngxPopoverSheet
   private engaged = false;
   private savedFocus: HTMLElement | null = null;
   private inerted: HTMLElement[] = [];
+  // Own host and ancestors an earlier sheet made inert, lifted while this
+  // sheet is engaged so it stays reachable.
+  private lifted: HTMLElement[] = [];
   private releaseLock: (() => void) | null = null;
   private settlingFrame: number | null = null;
   private warnedTitle = false;
@@ -414,6 +424,7 @@ export class CngxPopoverSheet
     }
     this.savedFocus = this.openerToRestore();
     this.region.ensure();
+    this.liftOwnInert();
     if (moveFocus) {
       this.focusInitial();
     }
@@ -507,6 +518,17 @@ export class CngxPopoverSheet
     watcher?.destroy();
   }
 
+  private liftOwnInert(): void {
+    let node: HTMLElement | null = this.host;
+    while (node && node !== this.doc.body) {
+      if ((inertClaims.get(node) ?? 0) > 0 && node.hasAttribute('inert')) {
+        node.removeAttribute('inert');
+        this.lifted.push(node);
+      }
+      node = node.parentElement;
+    }
+  }
+
   private applyInert(): void {
     const body = this.doc.body;
     let node: HTMLElement = this.host;
@@ -516,6 +538,7 @@ export class CngxPopoverSheet
         if (sibling === node || !(sibling instanceof HTMLElement) || this.skipsInert(sibling)) {
           continue;
         }
+        inertClaims.set(sibling, (inertClaims.get(sibling) ?? 0) + 1);
         sibling.setAttribute('inert', '');
         this.inerted.push(sibling);
       }
@@ -524,8 +547,9 @@ export class CngxPopoverSheet
   }
 
   private skipsInert(el: HTMLElement): boolean {
+    const preExisting = el.hasAttribute('inert') && !inertClaims.get(el);
     return (
-      el.hasAttribute('inert') ||
+      preExisting ||
       el.classList.contains(FOCUS_TRAP_ANCHOR_CLASS) ||
       el.matches(LIVE_REGION_SELECTOR)
     );
@@ -533,9 +557,21 @@ export class CngxPopoverSheet
 
   private restoreInert(): void {
     for (const el of this.inerted) {
+      const claims = (inertClaims.get(el) ?? 1) - 1;
+      if (claims > 0) {
+        inertClaims.set(el, claims);
+        continue;
+      }
+      inertClaims.delete(el);
       el.removeAttribute('inert');
     }
     this.inerted = [];
+    for (const el of this.lifted) {
+      if ((inertClaims.get(el) ?? 0) > 0) {
+        el.setAttribute('inert', '');
+      }
+    }
+    this.lifted = [];
   }
 
   // A message announced right before close would land in a region that is

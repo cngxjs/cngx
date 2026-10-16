@@ -734,6 +734,22 @@ describe('CngxPopoverSheet', () => {
       expect(host.first().state()).not.toBe('closed');
     });
 
+    it('keeps the later sheet reachable and focused while the earlier one is open', () => {
+      const { root } = siblingSetup();
+      const second = root.querySelector('.second')!;
+      expect(second.hasAttribute('inert')).toBe(false);
+      expect(second.contains(document.activeElement)).toBe(true);
+    });
+
+    it('keeps the page inert under the later sheet when the earlier one closes first', () => {
+      const { host, root } = siblingSetup();
+      host.first().hide();
+      expect(root.querySelector('.page-button')!.hasAttribute('inert')).toBe(true);
+      expect(root.querySelector('.second')!.hasAttribute('inert')).toBe(false);
+      host.second().hide();
+      expect(root.querySelector('.page-button')!.hasAttribute('inert')).toBe(false);
+    });
+
     it('makes the earlier sheet inert under the later one and live again after', () => {
       const { host, root } = siblingSetup();
       const first = root.querySelector('.first')!;
