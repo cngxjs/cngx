@@ -211,6 +211,18 @@ class NestedSheetHost {
   readonly inner = viewChild.required('inner', { read: CngxPopover });
 }
 
+@Component({
+  template: `<h2 cngxPopoverSheetTitle>Lost title</h2>`,
+  imports: [CngxPopoverSheetTitle],
+})
+class StrayTitleHost {}
+
+@Component({
+  template: `<div cngxPopoverSheet>No popover</div>`,
+  imports: [CngxPopoverSheet],
+})
+class SheetWithoutPopoverHost {}
+
 describe('CngxPopoverSheet', () => {
   beforeEach(() => {
     breakpoint = '0';
@@ -355,6 +367,32 @@ describe('CngxPopoverSheet', () => {
     });
   });
 
+  describe('misplaced parts', () => {
+    it('throws CNGX1066 for a sheet part outside a sheet', () => {
+      expect(() => TestBed.createComponent(StrayTitleHost).detectChanges()).toThrow(
+        expect.objectContaining({
+          name: 'CngxRuntimeError',
+          code: 'CNGX1066',
+          message: expect.stringMatching(
+            /^CNGX1066: \[cngxPopoverSheetTitle\] must be placed inside an element with \[cngxPopoverSheet\]\./,
+          ),
+        }),
+      );
+    });
+
+    it('throws CNGX1067 for a sheet without a popover on its element', () => {
+      expect(() => TestBed.createComponent(SheetWithoutPopoverHost).detectChanges()).toThrow(
+        expect.objectContaining({
+          name: 'CngxRuntimeError',
+          code: 'CNGX1067',
+          message: expect.stringMatching(
+            /^CNGX1067: \[cngxPopoverSheet\] must be placed on an element with \[cngxPopover\]\./,
+          ),
+        }),
+      );
+    });
+  });
+
   describe('trigger hint', () => {
     it('announces a dialog popup while the sheet is modal', () => {
       const fixture = TestBed.createComponent(TriggerSheetHost);
@@ -399,6 +437,9 @@ describe('CngxPopoverSheet', () => {
       openFromOpener(ctx);
       const calls = warn.mock.calls.filter(([m]) => String(m).startsWith('CNGX1064'));
       expect(calls).toHaveLength(1);
+      expect(String(calls[0][0])).toMatch(
+        /^CNGX1064: \[cngxPopoverSheet\] opened as a modal sheet without a name/,
+      );
     });
 
     it('warns CNGX1065 once when the popover is not manual', () => {
@@ -409,6 +450,9 @@ describe('CngxPopoverSheet', () => {
       openFromOpener(ctx);
       const calls = warn.mock.calls.filter(([m]) => String(m).startsWith('CNGX1065'));
       expect(calls).toHaveLength(1);
+      expect(String(calls[0][0])).toMatch(
+        /^CNGX1065: \[cngxPopoverSheet\] needs mode="manual" on the popover/,
+      );
     });
   });
 

@@ -3,17 +3,17 @@ import { CngxSwipeDismiss } from '@cngx/common/interactive';
 import { nextUid } from '@cngx/core/utils';
 
 import {
-  CNGX_POPOVER_SHEET_HOST,
   type CngxPopoverSheetFocusHandle,
   type CngxPopoverSheetTitleHandle,
+  injectPopoverSheetHost,
 } from './popover-sheet-host';
 
 // Header and handle share the swipe wiring: a CngxSwipeDismiss on the same
 // element closes the sheet through closeRequested (CngxBottomSheet precedent).
-function routeSwipeToSheet(): void {
+function routeSwipeToSheet(part: string): void {
+  const sheet = injectPopoverSheetHost(part);
   const swipe = inject(CngxSwipeDismiss, { self: true, optional: true });
-  const sheet = inject(CNGX_POPOVER_SHEET_HOST, { optional: true });
-  if (!swipe || !sheet) {
+  if (!swipe) {
     return;
   }
   const sub = swipe.swiped.subscribe(() => sheet.requestClose('swipe'));
@@ -35,7 +35,7 @@ function routeSwipeToSheet(): void {
 })
 export class CngxPopoverSheetHeader {
   constructor() {
-    routeSwipeToSheet();
+    routeSwipeToSheet('cngxPopoverSheetHeader');
   }
 }
 
@@ -57,11 +57,9 @@ export class CngxPopoverSheetTitle implements CngxPopoverSheetTitleHandle {
   readonly id = signal(nextUid('cngx-popover-sheet-title')).asReadonly();
 
   constructor() {
-    const sheet = inject(CNGX_POPOVER_SHEET_HOST, { optional: true });
-    if (sheet) {
-      sheet.titleRegistry.register(this);
-      inject(DestroyRef).onDestroy(() => sheet.titleRegistry.unregister(this));
-    }
+    const sheet = injectPopoverSheetHost('cngxPopoverSheetTitle');
+    sheet.titleRegistry.register(this);
+    inject(DestroyRef).onDestroy(() => sheet.titleRegistry.unregister(this));
   }
 }
 
@@ -81,7 +79,7 @@ export class CngxPopoverSheetTitle implements CngxPopoverSheetTitleHandle {
 })
 export class CngxPopoverSheetHandle {
   constructor() {
-    routeSwipeToSheet();
+    routeSwipeToSheet('cngxPopoverSheetHandle');
   }
 }
 
@@ -103,10 +101,8 @@ export class CngxPopoverSheetInitialFocus implements CngxPopoverSheetFocusHandle
   readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   constructor() {
-    const sheet = inject(CNGX_POPOVER_SHEET_HOST, { optional: true });
-    if (sheet) {
-      sheet.initialFocusRegistry.register(this);
-      inject(DestroyRef).onDestroy(() => sheet.initialFocusRegistry.unregister(this));
-    }
+    const sheet = injectPopoverSheetHost('cngxPopoverSheetInitialFocus');
+    sheet.initialFocusRegistry.register(this);
+    inject(DestroyRef).onDestroy(() => sheet.initialFocusRegistry.unregister(this));
   }
 }

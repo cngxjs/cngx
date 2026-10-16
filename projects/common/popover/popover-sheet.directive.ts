@@ -21,7 +21,7 @@ import {
 import { createPinnedScrollLock } from '@cngx/common/layout';
 import { injectWindow } from '@cngx/core/tokens';
 import { createSlotRegistry, createTransitionTracker } from '@cngx/core/utils';
-import { cngxDevWarn } from '@cngx/utils';
+import { cngxDevWarn, CngxRuntimeError } from '@cngx/utils';
 
 import { CngxPopover } from './popover.directive';
 import {
@@ -71,6 +71,21 @@ const engagedSheets: CngxPopoverSheet[] = [];
 // the page live under another. Elements inert before any sheet are never
 // claimed and never touched.
 const inertClaims = new WeakMap<HTMLElement, number>();
+
+// The sheet is a presentation of the popover on its own element; without
+// one there is nothing to present.
+function injectSheetPopover(): CngxPopover {
+  const popover = inject(CngxPopover, { self: true, optional: true });
+  if (!popover) {
+    throw new CngxRuntimeError(
+      'CNGX1067',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngxPopoverSheet] must be placed on an element with [cngxPopover].',
+    );
+  }
+  return popover;
+}
 
 /**
  * Turns a `CngxPopover` into a modal bottom sheet or fullscreen panel on
@@ -144,7 +159,7 @@ const inertClaims = new WeakMap<HTMLElement, number>();
 export class CngxPopoverSheet
   implements CngxPopoverPresentationSeam, CngxPopoverSheetPartsHost, CngxFocusTrapDriver
 {
-  private readonly popover = inject(CngxPopover, { self: true });
+  private readonly popover = injectSheetPopover();
   private readonly trap = inject(CngxFocusTrap, { self: true });
   private readonly announcer = inject(CngxLiveAnnouncer);
   private readonly doc = inject(DOCUMENT);

@@ -1,5 +1,6 @@
-import { InjectionToken, type Signal } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
 import type { SlotRegistry } from '@cngx/core/utils';
+import { CngxRuntimeError } from '@cngx/utils';
 
 /**
  * Why a sheet asked to close: a swipe on the header or handle, a tap outside
@@ -36,3 +37,20 @@ export interface CngxPopoverSheetPartsHost {
 export const CNGX_POPOVER_SHEET_HOST = new InjectionToken<CngxPopoverSheetPartsHost>(
   'CngxPopoverSheetHost',
 );
+
+/**
+ * @internal The sheet a part belongs to. A part outside a sheet would render
+ * nothing useful (an unnamed dialog, a dead swipe), so it throws instead.
+ */
+export function injectPopoverSheetHost(part: string): CngxPopoverSheetPartsHost {
+  const host = inject(CNGX_POPOVER_SHEET_HOST, { optional: true });
+  if (!host) {
+    throw new CngxRuntimeError(
+      'CNGX1066',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        `[${part}] must be placed inside an element with [cngxPopoverSheet].`,
+    );
+  }
+  return host;
+}

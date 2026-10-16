@@ -821,6 +821,28 @@
       "files": ["projects/common/popover/popover-sheet.directive.ts"]
     },
     {
+      "code": "CNGX1066",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Sheet part outside a popover sheet",
+      "page": "core-concepts/error-codes/cngx1066.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1066.html",
+      "status": "active",
+      "files": ["projects/common/popover/popover-sheet-host.ts"]
+    },
+    {
+      "code": "CNGX1067",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Popover sheet without a popover",
+      "page": "core-concepts/error-codes/cngx1067.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1067.html",
+      "status": "active",
+      "files": ["projects/common/popover/popover-sheet.directive.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",
