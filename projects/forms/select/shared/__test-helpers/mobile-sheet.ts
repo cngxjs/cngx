@@ -22,6 +22,8 @@ export interface MobileSheetSpecOptions {
   readonly content?: string;
   /** Standalone imports the projected content needs. */
   readonly contentImports?: readonly Type<unknown>[];
+  /** Where focus lands on open; defaults to the header input, else the listbox. */
+  readonly initialFocusSelector?: string;
   /** Selector of one pickable row inside the panel. */
   readonly optionSelector: string;
   readonly fill: 'sheet' | 'fullscreen';
@@ -210,6 +212,15 @@ export function describeMobileSheet(
       expect(panel.style.getPropertyValue('--cngx-select-panel-min-width')).toBe('');
     });
 
+    it('moves focus to the initial focus target inside the opening call', () => {
+      const { variant, panel } = setup();
+      const selector =
+        opts.initialFocusSelector ??
+        (opts.showInput ? '.cngx-select-sheet-header__input' : '[role="listbox"]');
+      variant.open();
+      expect(document.activeElement).toBe(panel.querySelector(selector));
+    });
+
     it('resolves auto to anchored on a desktop viewport', () => {
       const { fixture, host, panel } = setup();
       host.presentation.set(undefined);
@@ -271,6 +282,37 @@ export function describeMobileSheet(
       expect(drops).toEqual([]);
       expect(host.mock.touched()).toBe(false);
     });
+
+    it.each(['back', 'backdrop', 'success'] as const)(
+      'returns focus to the trigger after a %s close',
+      (vector) => {
+        const { fixture, host, el, panel, variant, open, pickSecond, sheet, page } = setup();
+        if (vector === 'success') {
+          host.mode.set('pessimistic');
+          flush(fixture);
+        }
+        open();
+        expect(panel.contains(document.activeElement)).toBe(true);
+        if (vector === 'back') {
+          sheet().requestClose('back');
+        } else if (vector === 'backdrop') {
+          page().dispatchEvent(new Event('pointerdown', { bubbles: true }));
+        } else {
+          pickSecond();
+          host.pending!.next(undefined);
+          host.pending!.complete();
+          // Multi variants stay open after a pick; close them explicitly.
+          if (variant.panelOpen()) {
+            sheet().requestClose('close');
+          }
+        }
+        flush(fixture);
+        expect(variant.panelOpen()).toBe(false);
+        expect(el.contains(document.activeElement)).toBe(true);
+        expect(panel.contains(document.activeElement)).toBe(false);
+        expect(host.mock.touched()).toBe(false);
+      },
+    );
 
     it('speaks while open from the sheet region only', () => {
       const { fixture, host, open, pickSecond, sheet } = setup();

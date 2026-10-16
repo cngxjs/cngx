@@ -416,7 +416,7 @@
     {
       "class": "CngxSelectSearch",
       "file": "projects/forms/select/declarative/select-search.component.ts",
-      "line": 66,
+      "line": 77,
       "member": "resolvedPlaceholder",
       "enclosing": "computed",
       "tiers": [
@@ -432,7 +432,7 @@
     {
       "class": "CngxSelectSearch",
       "file": "projects/forms/select/declarative/select-search.component.ts",
-      "line": 87,
+      "line": 112,
       "member": "resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -448,7 +448,7 @@
     {
       "class": "CngxMultiSelect",
       "file": "projects/forms/select/multi-select/multi-select.component.ts",
-      "line": 294,
+      "line": 296,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -470,7 +470,7 @@
     {
       "class": "CngxMultiSelect",
       "file": "projects/forms/select/multi-select/multi-select.component.ts",
-      "line": 301,
+      "line": 303,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -486,7 +486,7 @@
     {
       "class": "CngxReorderableMultiSelect",
       "file": "projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts",
-      "line": 307,
+      "line": 309,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -508,7 +508,7 @@
     {
       "class": "CngxReorderableMultiSelect",
       "file": "projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts",
-      "line": 314,
+      "line": 316,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -524,7 +524,7 @@
     {
       "class": "CngxSelectShell",
       "file": "projects/forms/select/select-shell/select-shell.component.ts",
-      "line": 315,
+      "line": 318,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -546,7 +546,7 @@
     {
       "class": "CngxSelect",
       "file": "projects/forms/select/single-select/select.component.ts",
-      "line": 282,
+      "line": 284,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [

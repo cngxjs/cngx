@@ -111,6 +111,8 @@
     <ng-content select="cngx-select-search" />
     <div
       cngxListbox
+      cngxPopoverSheetInitialFocus
+      [attr.tabindex]="sheetWiring.sheetModal() ? 0 : null"
       #lb="cngxListbox"
       [label]="resolvedListboxLabel()"
       [compareWith]="listboxCompareWith()"

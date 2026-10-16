@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  type ElementRef,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 
 import { createListboxKeyForward } from '../shared/internal/listbox-key-forward';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
@@ -41,6 +51,7 @@ import { injectSelectShellSearchHost } from './select-search-host';
   template: `
     <input
       type="search"
+      #searchInput
       class="cngx-select-search__input"
       [value]="host.searchTerm()"
       (input)="handleInput($event)"
@@ -75,6 +86,20 @@ export class CngxSelectSearch {
 
   /** @internal */
   protected readonly host = injectSelectShellSearchHost();
+
+  private readonly inputRef = viewChild.required<ElementRef<HTMLInputElement>>('searchInput');
+
+  constructor() {
+    // Lead the mobile sheet: the shell makes this input its initial focus
+    // once both views exist.
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const release = this.host.registerInitialFocus?.(this.inputRef().nativeElement);
+      if (release) {
+        destroyRef.onDestroy(release);
+      }
+    });
+  }
 
   /**
    * Resolved ARIA label per the cascade above. `null` when neither

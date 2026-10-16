@@ -192,6 +192,8 @@
     <cngx-select-sheet-header />
     <div
       cngxListbox
+      cngxPopoverSheetInitialFocus
+      [attr.tabindex]="sheetWiring.sheetModal() ? 0 : null"
       #lb="cngxListbox"
       [label]="resolvedListboxLabel()"
       [multiple]="true"

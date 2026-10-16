@@ -29,6 +29,7 @@ import { CngxClickOutside, CngxListbox, CngxListboxTrigger } from '@cngx/common/
 import {
   CngxPopover,
   CngxPopoverSheet,
+  CngxPopoverSheetInitialFocus,
   CngxPopoverTrigger,
   type CngxPopoverPresentation,
   type CngxPopoverPresentationRequest,
@@ -198,6 +199,7 @@ export interface CngxMultiSelectChange<T = unknown> {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CngxPopoverSheet,
+    CngxPopoverSheetInitialFocus,
     CngxSelectSheetHeader,
     CngxChip,
     CngxClickOutside,

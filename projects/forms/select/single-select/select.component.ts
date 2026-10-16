@@ -27,6 +27,7 @@ import { CngxClickOutside, CngxListbox, CngxListboxTrigger } from '@cngx/common/
 import {
   CngxPopover,
   CngxPopoverSheet,
+  CngxPopoverSheetInitialFocus,
   CngxPopoverTrigger,
   type CngxPopoverPresentation,
   type CngxPopoverPresentationRequest,
@@ -195,6 +196,7 @@ export interface CngxSelectChange<T = unknown> {
     CngxListboxTrigger,
     CngxPopover,
     CngxPopoverSheet,
+    CngxPopoverSheetInitialFocus,
     CngxPopoverTrigger,
     CngxSelectPanel,
     CngxSelectSheetHeader,

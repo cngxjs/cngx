@@ -38,6 +38,7 @@ import {
 import {
   CngxPopover,
   CngxPopoverSheet,
+  CngxPopoverSheetInitialFocus,
   CngxPopoverTrigger,
   type CngxPopoverPresentation,
   type CngxPopoverPresentationRequest,
@@ -211,6 +212,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CngxPopoverSheet,
+    CngxPopoverSheetInitialFocus,
     CngxSelectSheetHeader,
     CngxChip,
     CngxClickOutside,

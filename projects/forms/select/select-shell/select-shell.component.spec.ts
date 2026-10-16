@@ -1343,6 +1343,12 @@ describe('CngxSelectShell - <cngx-select-search> in the mobile sheet', () => {
     };
   }
 
+  it('focuses the search input on open', () => {
+    const { shell, el } = setupSearch();
+    shell.open();
+    expect(document.activeElement).toBe(el.querySelector('.cngx-select-search__input'));
+  });
+
   it('asks for fullscreen while a search leads the panel, else a sheet', () => {
     const { fixture, host, sheet } = setupSearch();
     expect(sheet().autoPresentation()).toBe('fullscreen');

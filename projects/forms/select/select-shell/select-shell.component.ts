@@ -43,6 +43,7 @@ import {
 import {
   CngxPopover,
   CngxPopoverSheet,
+  CngxPopoverSheetInitialFocus,
   CngxPopoverTrigger,
   type CngxPopoverPresentation,
   type CngxPopoverPresentationRequest,
@@ -213,6 +214,7 @@ export interface CngxSelectShellChange<T = unknown> {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CngxPopoverSheet,
+    CngxPopoverSheetInitialFocus,
     CngxSelectSheetHeader,
     CngxClickOutside,
     CngxListbox,
@@ -258,6 +260,7 @@ export interface CngxSelectShellChange<T = unknown> {
               self.focus();
             }
           },
+          registerInitialFocus: (element) => self.registerSheetInitialFocus(element),
         };
       },
     },
@@ -1121,6 +1124,20 @@ export class CngxSelectShell<T = unknown>
       return;
     }
     this.listboxRef()?.ad.highlightByValue(value);
+  }
+
+  /**
+   * @internal A projected `<cngx-select-search>` leads the sheet. Called once
+   * it has rendered, so it lands after the listbox in the last-wins registry.
+   */
+  registerSheetInitialFocus(element: HTMLElement): () => void {
+    const registry = this.sheetRef()?.initialFocusRegistry;
+    if (!registry) {
+      return () => undefined;
+    }
+    const handle = { element };
+    registry.register(handle);
+    return () => registry.unregister(handle);
   }
 
   /** @internal - click-outside dismissal. */

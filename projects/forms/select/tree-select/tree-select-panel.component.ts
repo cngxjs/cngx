@@ -14,6 +14,7 @@ import {
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { createTypeaheadMatcher, injectLocale } from '@cngx/core/utils';
 import { CngxHierarchicalNav, createTreeAdItems } from '@cngx/common/interactive';
+import { CngxPopoverSheetInitialFocus } from '@cngx/common/popover';
 import { CngxCheckboxIndicator } from '@cngx/common/display';
 import type { FlatTreeNode } from '@cngx/utils';
 
@@ -51,6 +52,7 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    CngxPopoverSheetInitialFocus,
     CngxActiveDescendant,
     CngxCheckboxIndicator,
     CngxHierarchicalNav,
