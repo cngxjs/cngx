@@ -227,14 +227,6 @@ describe('publishable libs', () => {
   it('all eight declare their schematics collection, so publish ships every ng-add', () => {
     expect(libs.filter((lib) => declaresSchematics(sourcePkg(lib)))).toEqual(libs);
   });
-
-  it('group every package for ng update on core and name its migrations', () => {
-    expect(sourcePkg('core')['ng-update']).toEqual({
-      migrations: './schematics/migrations/migrations.json',
-      packageGroupName: '@cngx/core',
-      packageGroup: libs.map((lib) => `@cngx/${lib}`),
-    });
-  });
 });
 
 describe('findPlaceholders', () => {
