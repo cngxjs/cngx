@@ -9,7 +9,7 @@ import {
 import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schematics/tasks';
 
 import { addLockstepDependency } from '../manifest/lockstep';
-import { readOwnName, readOwnVersion } from '../manifest/manifest';
+import { compareVersions, installedVersion, readOwnName, readOwnVersion } from '../manifest/manifest';
 import { CNGX_LIBS, type CngxLib, type NgAddFlags, parseNgAddOptions } from '../options';
 import { errorMessage } from '../plan/text';
 
@@ -25,20 +25,16 @@ function isUnresolvedCollection(error: unknown): boolean {
 }
 
 /**
- * `false` only when the package manager has not placed core yet. Any other
- * failure (a broken or incompatible core install) is reported, not retried.
+ * Loads the installed core's collection. Only reached once the installed
+ * version is known to be current, so any failure (a broken or incompatible
+ * install) is reported, not retried.
  */
-function isCoreResolvable(context: SchematicContext): boolean {
+function loadCore(context: SchematicContext): void {
   try {
     context.engine.createCollection(CORE);
-    return true;
   } catch (error: unknown) {
-    if (isUnresolvedCollection(error)) {
-      return false;
-    }
-    throw new SchematicsException(
-      `${CORE} is installed but its ng-add collection failed to load: ${errorMessage(error)}`,
-    );
+    const reason = isUnresolvedCollection(error) ? 'it cannot be resolved' : errorMessage(error);
+    throw new SchematicsException(`${CORE} is installed but its ng-add collection failed to load: ${reason}`);
   }
 }
 
@@ -62,28 +58,55 @@ function withOwnLib(options: NgAddFlags, ownName: string): NgAddFlags {
   return { ...options, libs: CNGX_LIBS.filter((lib) => libs.has(lib)) };
 }
 
+function installReason(installed: string | undefined, order: number | undefined, ownName: string, version: string): string {
+  if (installed === undefined) {
+    return `${CORE} is not installed yet; installing it before its ng-add runs.`;
+  }
+  if (order === undefined) {
+    return `${CORE} ${installed} is installed with a version cngx cannot read; installing ${version} before its ng-add runs.`;
+  }
+  return `${CORE} ${installed} is installed, older than ${ownName} ${version}; installing ${version} before its ng-add runs.`;
+}
+
 /**
  * The `ng-add` of every @cngx package but core: each answers `ng add` with
- * the same onboarding, owned by @cngx/core. When the package manager already
- * placed core (npm installs peers), the shim delegates in the same run;
- * otherwise it installs core first and runs its ng-add as a follow-up task.
+ * the same onboarding, owned by @cngx/core. The shim reads the installed
+ * core version from its package.json before it loads anything, because the
+ * engine caches the first collection it creates for a name:
+ *
+ * - missing or older than the shim: pin core and the shim's own package,
+ *   install, then run the new core's ng-add as a follow-up task;
+ * - the shim's version: pin both and delegate in the same run;
+ * - newer than the shim: never downgrade; pin nothing and delegate to the
+ *   installed core, whose dependency step pins every selected package to
+ *   its own version.
+ *
  * A shim re-exports this as its `ngAdd` factory; the CLI passes only the
- * options, so `bundleDir` is the shim bundle's own folder. The shim pins its
- * own package beside core, so `ng add @cngx/<lib>` always installs and
- * records `<lib>`; the other flags go to core as the CLI handed them over.
+ * options, so `bundleDir` is the shim bundle's own folder. `ng add
+ * @cngx/<lib>` always installs and records `<lib>`; the other flags go to
+ * core as the CLI handed them over.
  */
 export function delegateNgAdd(options: NgAddFlags, bundleDir: string = __dirname): Rule {
-  return (_tree: Tree, context: SchematicContext) => {
+  return (tree: Tree, context: SchematicContext) => {
     const version = readOwnVersion(bundleDir);
     const ownName = readOwnName(bundleDir);
-    const pins = chain([addLockstepDependency(CORE, version), addLockstepDependency(ownName, version)]);
     const forwarded = withOwnLib(options, ownName);
+    const installed = installedVersion(tree, CORE);
+    const order = installed === undefined ? undefined : compareVersions(installed, version);
 
-    if (isCoreResolvable(context)) {
+    if (order !== undefined && order > 0) {
+      context.logger.info(`${CORE} ${installed} is installed, newer than ${ownName} ${version}; following the installed core.`);
+      loadCore(context);
+      return externalSchematic(CORE, 'ng-add', forwarded);
+    }
+
+    const pins = chain([addLockstepDependency(CORE, version), addLockstepDependency(ownName, version)]);
+    if (order === 0) {
+      loadCore(context);
       return chain([pins, externalSchematic(CORE, 'ng-add', forwarded)]);
     }
 
-    context.logger.info(`${CORE} is not installed yet; installing it before its ng-add runs.`);
+    context.logger.info(installReason(installed, order, ownName, version));
     return chain([
       pins,
       (_innerTree: Tree, innerContext: SchematicContext) => {

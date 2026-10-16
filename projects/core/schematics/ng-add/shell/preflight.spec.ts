@@ -62,6 +62,11 @@ describe('angularSupport', () => {
     });
   });
 
+  it('reads an installed prerelease at its major and minor', () => {
+    expect(angularSupport(withAngular('catalog:', '21.2.0-rc.1'), PEER_RANGE).supported).toBe(true);
+    expect(angularSupport(withAngular('catalog:', '21.1.9-rc.1'), PEER_RANGE).supported).toBe(false);
+  });
+
   it('refuses a caret major below the floor', () => {
     expect(angularSupport(withAngular('^19', '19.0.0'), PEER_RANGE).supported).toBe(false);
   });

@@ -1,4 +1,4 @@
-import { type PreflightItem } from '../../engine';
+import { parseVersion, type PreflightItem } from '../../engine';
 import { ANGULAR_CORE_MANIFEST, type ProjectFacts } from '../detect/detect';
 import { type GitState } from './git-state';
 
@@ -24,16 +24,11 @@ export interface AngularSupport {
 
 const NO_ANGULAR_DEPENDENCY = 'no @angular/core dependency';
 
-function majorMinor(version: string | undefined): readonly [number, number] | undefined {
-  const match = /(\d+)\.(\d+)/.exec(version ?? '');
-  return match === null ? undefined : [Number(match[1]), Number(match[2])];
-}
-
 export function angularSupport(facts: ProjectFacts, peerRange: string): AngularSupport {
-  const [minMajor, minMinor] = majorMinor(peerRange) ?? [0, 0];
-  const app = majorMinor(facts.angularVersion);
+  const { major: minMajor, minor: minMinor } = parseVersion(peerRange) ?? { major: 0, minor: 0 };
+  const app = parseVersion(facts.angularVersion);
   const supported =
-    app === undefined ? undefined : app[0] > minMajor || (app[0] === minMajor && app[1] >= minMinor);
+    app === undefined ? undefined : app.major > minMajor || (app.major === minMajor && app.minor >= minMinor);
   return {
     supported,
     floor: `${minMajor}.${minMinor}`,

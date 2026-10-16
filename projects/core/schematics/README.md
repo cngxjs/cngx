@@ -4,7 +4,10 @@
 the Angular CLI, never in an app bundle. `@cngx/core` owns the onboarding; every
 other package ships a one-line shim that delegates to it. The shim pins its own
 package beside core before it delegates, and folds its lib into a given
-`--libs`, so `ng add @cngx/<lib>` always installs and records `<lib>`.
+`--libs`, so `ng add @cngx/<lib>` always installs and records `<lib>`. It reads
+the installed core version before it loads core: missing or older installs
+the shim's core and runs its ng-add as a follow-up task, newer is followed
+without any pin, so a shim never downgrades core.
 
 ## Layout
 

@@ -55,6 +55,14 @@ async function createAppTree(runner) {
   return runner.runExternalSchematic('@schematics/angular', 'application', { name: 'app' }, workspace);
 }
 
+// The shims read the core the package manager placed before they load it,
+// so a run that should delegate in the same run needs core at the shim's
+// version on disk.
+function withInstalledCore(tree, version) {
+  tree.create('node_modules/@cngx/core/package.json', JSON.stringify({ name: '@cngx/core', version }));
+  return tree;
+}
+
 // The install record ng add keeps for the one project `createAppTree` makes.
 function recordOf(tree) {
   return JSON.parse(tree.readText('.cngx/install.json')).projects.app;
@@ -290,7 +298,7 @@ describe.each(SHIM_LIBS)('dist/%s/schematics ng-add shim', (lib) => {
   it('delegates to @cngx/core ng-add in the same run when core resolves', async () => {
     const runner = new SchematicTestRunner(`@cngx/${lib}`, collection);
     runner.registerCollection('@cngx/core', requireDist(CORE_COLLECTION));
-    const tree = await runner.runSchematic('ng-add', { preset: 'full' }, await createAppTree(runner));
+    const tree = await runner.runSchematic('ng-add', { preset: 'full' }, withInstalledCore(await createAppTree(runner), version));
     const manifest = JSON.parse(tree.readText('package.json'));
 
     expect(manifest.dependencies['@cngx/core']).toBe(version);
@@ -328,11 +336,20 @@ describe('dist/ui/schematics ng-add shim', () => {
     const tree = await runner.runSchematic(
       'ng-add',
       { aiTools: 'claude,vscode', libs: 'core', ...PRE_INSTALL_FALSE },
-      await createAppTree(runner),
+      withInstalledCore(await createAppTree(runner), version),
     );
     const { answers } = recordOf(tree);
 
     expect(answers).toMatchObject({ aiTools: ['claude', 'vscode'], libs: ['core', 'ui'], lint: false, a11yPreferences: false });
+  });
+
+  it('installs its own core version over an older installed core', async () => {
+    const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
+    // dist/ is unstamped (`0.0.0-PLACEHOLDER`); `0.0.0-0` is the one version below it.
+    const tree = await runner.runSchematic('ng-add', {}, withInstalledCore(await createAppTree(runner), '0.0.0-0'));
+
+    expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/core']).toBe(version);
+    expect(runner.tasks.map((task) => task.name)).toEqual(['node-package', 'run-schematic']);
   });
 
   it('reports a broken @cngx/core install instead of treating it as missing', async () => {
@@ -342,7 +359,7 @@ describe('dist/ui/schematics ng-add shim', () => {
       const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
       runner.registerCollection('@cngx/core', join(dir, 'collection.json'));
 
-      await expect(runner.runSchematic('ng-add', {}, appTree)).rejects.toThrow(
+      await expect(runner.runSchematic('ng-add', {}, withInstalledCore(await createAppTree(runner), version))).rejects.toThrow(
         /@cngx\/core is installed but its ng-add collection failed to load/,
       );
       expect(runner.tasks).toEqual([]);
@@ -354,7 +371,7 @@ describe('dist/ui/schematics ng-add shim', () => {
   it('replaces an older @cngx pin with the lockstep version and says so', async () => {
     const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
     runner.registerCollection('@cngx/core', requireDist(CORE_COLLECTION));
-    const pinned = await runner.runSchematic('ng-add', {}, appTree);
+    const pinned = await runner.runSchematic('ng-add', {}, withInstalledCore(await createAppTree(runner), version));
     const manifest = JSON.parse(pinned.readText('package.json'));
     manifest.dependencies['@cngx/core'] = '0.0.1';
     manifest.dependencies['@cngx/utils'] = '0.0.1';
@@ -378,7 +395,7 @@ describe('dist/ui/schematics ng-add shim', () => {
   it('stays silent when the app already pins the lockstep version', async () => {
     const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
     runner.registerCollection('@cngx/core', requireDist(CORE_COLLECTION));
-    const onboarded = await runner.runSchematic('ng-add', {}, appTree);
+    const onboarded = await runner.runSchematic('ng-add', {}, withInstalledCore(await createAppTree(runner), version));
     const messages = [];
     runner.logger.subscribe((entry) => messages.push(entry.message));
 
