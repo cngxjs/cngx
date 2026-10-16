@@ -54,6 +54,17 @@ async function createAppTree(runner) {
   return runner.runExternalSchematic('@schematics/angular', 'application', { name: 'app' }, workspace);
 }
 
+// The install record ng add keeps for the one project `createAppTree` makes.
+function recordOf(tree) {
+  return JSON.parse(tree.readText('.cngx/install.json')).projects.app;
+}
+
+function overwriteRecord(tree, patch) {
+  const manifest = JSON.parse(tree.readText('.cngx/install.json'));
+  const projects = { ...manifest.projects, app: { ...manifest.projects.app, ...patch } };
+  tree.overwrite('.cngx/install.json', JSON.stringify({ ...manifest, projects }, null, 2));
+}
+
 describe('dist/core/schematics', () => {
   let runner;
   let appTree;
@@ -120,7 +131,7 @@ describe('dist/core/schematics', () => {
       ['a comma list', { aiTools: 'claude,vscode', libs: 'core,forms' }, { aiTools: ['claude', 'vscode'], libs: ['core', 'forms'] }],
     ])('ng-add records %s and every boolean given as "false"', async (_name, lists, recorded) => {
       const tree = await runner.runSchematic('ng-add', { ...lists, ...PRE_INSTALL_FALSE }, await createAppTree(runner));
-      const { answers } = JSON.parse(tree.readText('.cngx/install.json'));
+      const { answers } = recordOf(tree);
 
       expect(answers).toMatchObject({
         ...recorded,
@@ -191,12 +202,11 @@ describe('dist/core/schematics migrations', () => {
   it('the 0.1.0 migration records the installed release in the manifest', async () => {
     const ngAdd = new SchematicTestRunner('@cngx/core', requireDist(CORE_COLLECTION));
     const onboarded = await ngAdd.runSchematic('ng-add', { preset: 'minimal' }, await createAppTree(ngAdd));
-    const installed = JSON.parse(onboarded.readText('.cngx/install.json'));
-    onboarded.overwrite('.cngx/install.json', JSON.stringify({ ...installed, cngxVersion: '0.1.0-rc.0' }, null, 2));
+    overwriteRecord(onboarded, { cngxVersion: '0.1.0-rc.0' });
 
     const tree = await runner.runSchematic('migration-v0.1.0', {}, onboarded);
 
-    expect(JSON.parse(tree.readText('.cngx/install.json')).cngxVersion).toBe(version);
+    expect(recordOf(tree).cngxVersion).toBe(version);
   });
 
   // What publish.mjs does to the collection of a release without its own
@@ -204,8 +214,7 @@ describe('dist/core/schematics migrations', () => {
   it('the stamped refresh entry of a later release re-checks an onboarded app', async () => {
     const ngAdd = new SchematicTestRunner('@cngx/core', requireDist(CORE_COLLECTION));
     const onboarded = await ngAdd.runSchematic('ng-add', { preset: 'minimal' }, await createAppTree(ngAdd));
-    const installed = JSON.parse(onboarded.readText('.cngx/install.json'));
-    onboarded.overwrite('.cngx/install.json', JSON.stringify({ ...installed, cngxVersion: '0.1.0' }, null, 2));
+    overwriteRecord(onboarded, { cngxVersion: '0.1.0' });
     const stamped = checkReleaseMigrations(MIGRATIONS, '0.1.1', '.js');
     const copy = join(dirname(MIGRATIONS), 'migrations.smoke-refresh.json');
     writeFileSync(copy, JSON.stringify(stamped));
@@ -216,7 +225,7 @@ describe('dist/core/schematics migrations', () => {
       refresh.logger.subscribe((entry) => messages.push(entry.message));
       const tree = await refresh.runSchematic('migration-v0.1.1-refresh', {}, onboarded);
 
-      expect(JSON.parse(tree.readText('.cngx/install.json')).cngxVersion).toBe(version);
+      expect(recordOf(tree).cngxVersion).toBe(version);
       expect(messages[0]).toBe('cngx 0.1.1 migration');
       expect(messages).toContain('cngx 0.1.1 migration planned 1 change.');
     } finally {
@@ -285,7 +294,7 @@ describe('dist/ui/schematics ng-add shim', () => {
       { aiTools: 'claude,vscode', libs: 'core', ...PRE_INSTALL_FALSE },
       await createAppTree(runner),
     );
-    const { answers } = JSON.parse(tree.readText('.cngx/install.json'));
+    const { answers } = recordOf(tree);
 
     expect(answers).toMatchObject({ aiTools: ['claude', 'vscode'], libs: ['core', 'ui'], lint: false, a11yPreferences: false });
   });

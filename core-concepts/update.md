@@ -82,13 +82,18 @@ says that this migration found nothing to change.
 ## Install re-runs from the manifest
 
 When `.cngx/install.json` exists, every migration, a `refresh` included,
-reads the answers it records (the preset, the theme, the language, the
-editors) and re-checks the steps that depend on the release:
+goes through every project it records, reads the answers of that record
+(the preset, the theme, the language, the editors) and re-checks the steps
+that depend on the release:
 
 - The theme steps are checked once the cngx version moved, and reported.
 - `.cngx/README.md`, which names the `@cngx/mcp` version, is regenerated once
-  that version moved.
-- The manifest records the new release.
+  that version moved, once for the workspace.
+- Each record notes the new release.
+
+A recorded project that is no longer in `angular.json` is named and its
+record left as it is. A manifest cngx cannot read is named too and left
+alone; run `ng add` to start a new record.
 
 A re-run never brings back a file you deleted; it names it. A README cngx did
 not write stays as it is. An answer recorded by an older release that the

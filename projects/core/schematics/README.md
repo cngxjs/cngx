@@ -28,7 +28,7 @@ projects/core/schematics/
     detect/              detectProject(tree, workspace): ProjectFacts in detect.ts,
                          composed from workspace, styles, eslint, ai-tooling, bootstrap
     steps/               pure plan<Step>(facts, answers, versions) per concern
-    shell/               questions, preflight checklist, git state, install manifest reader
+    shell/               questions, preflight checklist, git state, install manifest reader (absent / unreadable / read)
   migrations/
     migrations.json      the ng update collection, hand-written entries only
     migration.ts         createMigration: renames, codemods, manifest re-runs
@@ -106,8 +106,9 @@ breaking change adds a migration:
    files that differ from the stock app.
 
 Every migration also re-runs the install steps `.cngx/install.json` records
-(the theme once the cngx version moved, the helper README once the MCP
-version moved) and records the new release in it. It never writes back a file
+for each project (the theme once the cngx version moved, the helper README
+once the MCP version moved, planned once from the libs and steps of every
+record) and records the new release in each record. It never writes back a file
 that is gone; it names it. Every hand-written migration goes through
 `createMigration`, so it re-checks the manifest steps as well; there is no
 second path that skips them.

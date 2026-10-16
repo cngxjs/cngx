@@ -2,6 +2,7 @@ import {
   AI_TOOLS,
   type Change,
   CNGX_LIBS,
+  type CngxLib,
   createNote,
   createProvenance,
   isBoolean,
@@ -18,7 +19,7 @@ import {
 import { type ProjectFacts } from '../detect/detect';
 import { withdrawnAiTargets } from './ai-tools';
 import { planHelperReadme } from './helper-readme';
-import { INSTALL_MANIFEST_PATH, type InstallManifest } from './manifest';
+import { INSTALL_MANIFEST_PATH, type ProjectRecord } from './manifest';
 import { type OnboardingAnswers, type Versions } from './model';
 import { planTheme } from './theme';
 
@@ -41,7 +42,7 @@ function answerOr<T>(value: unknown, valid: (value: unknown) => value is T, fall
  * preset's default. `undefined` when the preset is missing or a recorded
  * answer is no longer valid.
  */
-export function readRecordedAnswers(manifest: InstallManifest, defaultsFor: PresetDefaults): OnboardingAnswers | undefined {
+export function readRecordedAnswers(manifest: ProjectRecord, defaultsFor: PresetDefaults): OnboardingAnswers | undefined {
   const recorded = manifest.answers;
   const preset = recorded['preset'];
   if (!isOneOf(NG_ADD_PRESETS, preset)) {
@@ -107,17 +108,28 @@ function restoreNotes(
 }
 
 /**
- * The steps `ng update` re-runs from the recorded answers. The theme steps
- * are checked once the cngx version moved and only reported; the helper
- * README, which pins the MCP version, is regenerated once that version
- * moved. Neither brings back a file that is gone, and a README cngx did not
- * write stays as it is.
+ * What the workspace-wide helper README is planned from: the libs and the
+ * step ids of every project's record. One project of a run carries it, so
+ * the README is planned once.
+ */
+export interface WorkspaceReadme {
+  readonly libs: readonly CngxLib[];
+  readonly installed: readonly string[];
+}
+
+/**
+ * The steps `ng update` re-runs from one project's recorded answers. The
+ * theme steps are checked once the cngx version moved and only reported;
+ * the helper README, which pins the MCP version, is regenerated once that
+ * version moved, and only for the project handed `readme`. Neither brings
+ * back a file that is gone, and a README cngx did not write stays as it is.
  */
 export function planManifestReruns(
   facts: ProjectFacts,
-  manifest: InstallManifest,
+  manifest: ProjectRecord,
   versions: Versions,
   defaultsFor: PresetDefaults,
+  readme: WorkspaceReadme | undefined,
 ): StepResult {
   const provenance = createProvenance('ng-update', versions.cngx);
   const answers = readRecordedAnswers(manifest, defaultsFor);
@@ -135,9 +147,6 @@ export function planManifestReruns(
     };
   }
   const recorded = new Set(manifest.steps.map((step) => step.id));
-  // ng update asks for no editor, so every removal the user made since the
-  // install holds, the same way a later `ng add` respects it.
-  const withdrawn = withdrawnAiTargets(facts, answers, [...recorded], []);
   const theme =
     manifest.cngxVersion === versions.cngx
       ? NO_CHANGES
@@ -147,14 +156,28 @@ export function planManifestReruns(
           recorded,
           provenance,
         );
-  const readme =
-    manifest.mcpVersion === versions.mcp
-      ? NO_CHANGES
-      : restoreNotes(
-          planHelperReadme(facts, answers, versions, withdrawn),
-          (change) => change.kind === 'create-file',
-          recorded,
-          provenance,
-        );
-  return mergeStepResults([theme, readme]);
+  return mergeStepResults([theme, planReadmeRerun(facts, manifest, answers, versions, readme, provenance)]);
+}
+
+function planReadmeRerun(
+  facts: ProjectFacts,
+  manifest: ProjectRecord,
+  answers: OnboardingAnswers,
+  versions: Versions,
+  readme: WorkspaceReadme | undefined,
+  provenance: Provenance,
+): StepResult {
+  if (readme === undefined || manifest.mcpVersion === versions.mcp) {
+    return NO_CHANGES;
+  }
+  // ng update asks for no editor, so every removal the user made since the
+  // install holds, the same way a later `ng add` respects it.
+  const withdrawn = withdrawnAiTargets(facts, answers, readme.installed, []);
+  const libs = CNGX_LIBS.filter((lib) => answers.libs.includes(lib) || readme.libs.includes(lib));
+  return restoreNotes(
+    planHelperReadme(facts, { ...answers, libs }, versions, withdrawn),
+    (change) => change.kind === 'create-file',
+    new Set(readme.installed),
+    provenance,
+  );
 }
