@@ -51,6 +51,7 @@ import {
   globalStylesheet,
   hasBuildTarget,
   type Read,
+  applicationsOf,
   resolveProject,
   sourceLocaleOf,
   styleEntries,
@@ -85,6 +86,8 @@ export const CNGX_LANGUAGE_FILE = 'cngx-language.ts';
 /** Everything the plan steps branch on, read once before any question. */
 export interface ProjectFacts {
   readonly project: string;
+  /** Every application in angular.json; the preflight warns when it picked one of several. */
+  readonly applications: readonly string[];
   /** The app's `package.json`; steps read declared ranges from it. */
   readonly manifest: PackageManifest;
   readonly sourceRoot: string;
@@ -185,6 +188,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
 
   return {
     project: projectName,
+    applications: applicationsOf(workspace),
     manifest,
     sourceRoot,
     hasBuildTarget: hasBuildTarget(project),

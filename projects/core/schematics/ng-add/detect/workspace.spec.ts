@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { createFixtureTree } from '../../testing/run-schematic';
 import {
   angularVersionOf,
+  applicationsOf,
   buildOptions,
   globalStylesheet,
   hasBuildTarget,
@@ -59,6 +60,10 @@ describe('resolveProject', () => {
 
     it('takes the first application, past a library, without either', async () => {
       expect(resolveProject(await workspaceOf(workspaceWith()), undefined)[0]).toBe('admin-app');
+    });
+
+    it('lists every application, never a library', async () => {
+      expect(applicationsOf(await workspaceOf(workspaceWith()))).toEqual(['admin-app', 'fixture-app']);
     });
   });
 

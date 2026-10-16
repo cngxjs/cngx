@@ -779,6 +779,18 @@ describe('ngAdd', () => {
   });
 
   describe('a workspace with several applications', () => {
+    it('warns in the preflight when no --project picks one', async () => {
+      const run = await runRule(ngAdd({ yes: true }), twoApplications());
+
+      expect(run.logs).toContain('  ! Project alpha (picked; pass --project to choose) (fresh app; other applications: beta)');
+    });
+
+    it('does not warn when --project names one', async () => {
+      const run = await runRule(ngAdd({ project: 'beta', yes: true }), twoApplications());
+
+      expect(run.logs.some((line) => line.includes('picked; pass --project'))).toBe(false);
+    });
+
     it('keeps one install record per project', async () => {
       const alpha = await runRule(ngAdd({ project: 'alpha', yes: true }), twoApplications());
       const beta = await runRule(ngAdd({ project: 'beta', yes: true }), alpha.tree);

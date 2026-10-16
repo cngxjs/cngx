@@ -50,7 +50,11 @@ install. Nothing outside the project is written.
    (`catalog:`, `workspace:*`, a dist-tag) with nothing installed is a warn
    line, and the run goes on; the `@angular/cdk` pin then becomes a note.
    A project without a `build` target in `angular.json` fails its project
-   line and stops the run the same way. A `package.json` that does not
+   line and stops the run the same way. In a workspace with several
+   applications and no `--project`, the run takes `defaultProject`, else
+   the first application; the project line is then a warn that names the
+   pick and the other applications, and the run goes on. Pass
+   `--project <name>` to choose. A `package.json` that does not
    parse, an `angular.json` without projects, or a build style entry whose
    file is missing stops the run with one line naming the file.
 3. **Ask.** With a terminal attached it asks the open questions (below). A

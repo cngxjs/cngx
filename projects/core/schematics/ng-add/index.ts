@@ -136,7 +136,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
 
     const facts = detectProject(tree, await readWorkspace(tree), options.project);
     renderer.preflight(
-      preflightItems({ facts, peerRange: versions.angular, git: readGitState(process.cwd()) }),
+      preflightItems({ facts, peerRange: versions.angular, git: readGitState(process.cwd()), projectFlag: options.project }),
     );
     assertSupportedAngular(facts, versions.angular);
     assertBuildTarget(facts);
