@@ -266,8 +266,9 @@ const isStatic = (node) => node.modifiers?.some((m) => m.kind === ts.SyntaxKind.
  * component is defined), so a guard read at module load can see it undefined
  * and freeze the production branch into a dev build. Code inside a function,
  * a method, an accessor or an instance field initialiser runs later; a static
- * block, a static field initialiser or a function invoked in place (an IIFE)
- * runs with the code around it.
+ * block, a static field initialiser, a function invoked in place (an IIFE)
+ * and the constructor and instance field initialisers of a class expression
+ * constructed in place (`new (class { ... })()`) run with the code around it.
  */
 export function runsAtModuleLoad(node) {
   for (let current = node.parent; current; current = current.parent) {
@@ -275,7 +276,13 @@ export function runsAtModuleLoad(node) {
       return true;
     }
     if (ts.isPropertyDeclaration(current)) {
-      return isStatic(current);
+      if (isStatic(current)) {
+        return true;
+      }
+      if (!isConstructedInPlace(current.parent)) {
+        return false;
+      }
+      continue;
     }
     if (ts.isFunctionLike(current) && !isInvokedInPlace(current)) {
       return false;
@@ -284,59 +291,88 @@ export function runsAtModuleLoad(node) {
   return true;
 }
 
-/** `node` up through the parentheses, casts and `!` that wrap it. */
-const upCast = (node) => {
+/**
+ * `node` up through the parentheses, casts and `!` that wrap it, and through
+ * a comma expression whose last operand it is (`(0, fn)`).
+ */
+const upCallee = (node) => {
   let current = node;
-  while (current.parent && unwrap(current.parent) !== current.parent) {
-    if (current.parent.expression !== current) {
+  for (let parent = current.parent; parent; parent = current.parent) {
+    const wraps = unwrap(parent) !== parent && parent.expression === current;
+    const lastOperand =
+      ts.isBinaryExpression(parent) &&
+      parent.operatorToken.kind === ts.SyntaxKind.CommaToken &&
+      parent.right === current;
+    if (!wraps && !lastOperand) {
       break;
     }
-    current = current.parent;
+    current = parent;
   }
   return current;
 };
 
-/** The member name of `x.name` or `x['name']`, else undefined. */
-const memberName = (access) => {
-  if (ts.isPropertyAccessExpression(access)) {
+/** The member name of `callee.name` or `callee['name']`, else undefined. */
+const memberOf = (callee) => {
+  const access = callee.parent;
+  if (ts.isPropertyAccessExpression(access) && access.expression === callee) {
     return access.name.text;
   }
-  if (ts.isElementAccessExpression(access) && ts.isStringLiteralLike(access.argumentExpression)) {
+  if (
+    ts.isElementAccessExpression(access) &&
+    access.expression === callee &&
+    ts.isStringLiteralLike(access.argumentExpression)
+  ) {
     return access.argumentExpression.text;
   }
   return undefined;
 };
 
+/** Is `callee` the expression of a call or `new` right above it? */
+const isCalled = (callee) => {
+  const call = callee.parent;
+  return (ts.isCallExpression(call) || ts.isNewExpression(call)) && call.expression === callee;
+};
+
+/** `new (class { ... })()`: a class expression constructed where it is written. */
+const isConstructedInPlace = (cls) => {
+  if (!ts.isClassExpression(cls)) {
+    return false;
+  }
+  const callee = upCallee(cls);
+  return ts.isNewExpression(callee.parent) && callee.parent.expression === callee;
+};
+
 /**
  * `(() => ...)()`, `(function () { ... })()`, `new (function () { ... })()`,
- * the same through `.call(...)` / `.apply(...)` (also `['call']`) or a
- * `.bind(...)` result called right away, and any of these with the function
- * wrapped in a cast (`as`, `<T>`, `satisfies`, `!`): a function expression
- * called where it is written. A callback handed to a synchronous call
+ * the same through `.call(...)` / `.apply(...)` (also `['call']`), through
+ * one `.bind(...)` whose result is called right away or through `.call` /
+ * `.apply`, with the function wrapped in a cast (`as`, `<T>`, `satisfies`,
+ * `!`) or as the last operand of a comma expression (`(0, fn)()`), and the
+ * constructor of a class expression constructed in place: a function called
+ * where it is written. A callback handed to a synchronous call
  * (`[1].forEach(() => ...)`) or to `Reflect.apply(...)` is not detected; it
  * counts as running later.
  */
 const isInvokedInPlace = (fn) => {
+  if (ts.isConstructorDeclaration(fn)) {
+    return isConstructedInPlace(fn.parent);
+  }
   if (!ts.isArrowFunction(fn) && !ts.isFunctionExpression(fn)) {
     return false;
   }
-  let callee = upCast(fn);
-  const access = callee.parent;
-  const isAccess =
-    (ts.isPropertyAccessExpression(access) || ts.isElementAccessExpression(access)) &&
-    access.expression === callee;
-  const name = isAccess ? memberName(access) : undefined;
-  if (name === 'call' || name === 'apply') {
-    callee = upCast(access);
-  } else if (name === 'bind') {
-    const bound = access.parent;
-    if (!ts.isCallExpression(bound) || bound.expression !== access) {
+  let callee = upCallee(fn);
+  if (memberOf(callee) === 'bind') {
+    const bound = callee.parent.parent;
+    if (!ts.isCallExpression(bound) || bound.expression !== callee.parent) {
       return false;
     }
-    callee = upCast(bound);
+    callee = upCallee(bound);
   }
-  const call = callee.parent;
-  return (ts.isCallExpression(call) || ts.isNewExpression(call)) && call.expression === callee;
+  const member = memberOf(callee);
+  if (member === 'call' || member === 'apply') {
+    callee = upCallee(callee.parent);
+  }
+  return isCalled(callee);
 };
 
 /** The violation text for a guard `runsAtModuleLoad` reports. */

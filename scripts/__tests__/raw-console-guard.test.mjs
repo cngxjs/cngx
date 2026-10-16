@@ -28,13 +28,20 @@
 // `new Function(...)`; a dev wrapper reached through a dynamic `import()`, a
 // destructured namespace or element access. A function expression invoked
 // in place is caught: called directly or with `new`, through `.call` /
-// `.apply` (also `['call']` / `['apply']`), as a `.bind(...)` result called
-// right away, and with the function wrapped in parentheses, `as`, `<T>`,
-// `satisfies` or `!`. Still counted as running later: a callback that a
-// synchronous call runs at module load (`[1].forEach(() => ...)`,
-// `Reflect.apply(fn, ...)`), a function expression used as a tag
-// (`` (() => ...)`x` ``), and a function stored in a name first and called
-// at module scope (`const f = () => ...; f();`).
+// `.apply` (also `['call']` / `['apply']`), through one `.bind(...)` whose
+// result is called right away or through `.call` / `.apply`, with the
+// function wrapped in parentheses, `as`, `<T>`, `satisfies` or `!`, or as
+// the last operand of a comma expression (`(0, fn)()`); so are the
+// constructor and instance field initialisers of a class expression
+// constructed in place (`new (class { ... })()`). Still counted as running
+// later: a callback that a synchronous call runs at module load
+// (`[1].forEach(() => ...)`, `Reflect.apply(fn, ...)`), a function
+// expression used as a tag (`` (() => ...)`x` ``), a function stored in a
+// name first and called at module scope (`const f = () => ...; f();`, also
+// a class stored first and constructed later), two chained `.bind(...)`
+// calls, and an accessor or method of a class constructed in place that
+// runs during its construction (`constructor() { this.run(); }` with the
+// guard in `run`).
 // `${m}` or `'' + m` around a local built before the guard has the inline
 // shape and passes the inline-message rule: it checks the message's form,
 // not where the text in its operands was built (many operands are
@@ -858,6 +865,33 @@ describe('raw-console guard - guards evaluated at module load', () => {
       ]);
     }
     expect(fixture(`const run = (function () { ${body} }).bind(null);`).violations).toEqual([]);
+  });
+
+  it('fails a function invoked through a comma callee, bind then call or apply, or a class built in place', () => {
+    const body = `if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); }`;
+    for (const shape of [
+      `(0, () => { ${body} })();`,
+      `(0, function () { ${body} }).call(this);`,
+      `(function () { ${body} }).bind(null).call(this);`,
+      `(() => { ${body} }).bind(null)['apply'](this, []);`,
+      `new (class { constructor() { ${body} } })();`,
+      `new class { constructor() { ${body} } }();`,
+      `new (class { run = (() => { ${body} })(); })();`,
+    ]) {
+      expect(fixture(shape).violations, shape).toEqual([
+        `projects/core/a.ts:1 R2 CNGX0001 ${MODULE_LOAD_GUARD}`,
+      ]);
+    }
+    for (const later of [
+      `const run = (0, () => { ${body} });`,
+      `(() => { ${body} }, 0)();`,
+      `const C = class { constructor() { ${body} } };`,
+      `new (class { run() { ${body} } })();`,
+      `function host() { new (class { constructor() { ${body} } })(); }`,
+    ]) {
+      const atLoad = fixture(later).violations.filter((v) => v.includes('module load'));
+      expect(atLoad, later).toEqual([]);
+    }
   });
 
   it('fails a class, enum, namespace or import-equals named ngDevMode', () => {
