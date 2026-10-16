@@ -10,6 +10,7 @@ import {
   type Signal,
 } from '@angular/core';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
+import { CngxRuntimeError } from '@cngx/utils';
 import { injectInputAriaLabels } from './input-config';
 
 /**
@@ -53,7 +54,7 @@ export class CngxOtpSlot {
   /** The zero-based index of this slot. */
   readonly index = input.required<number>({ alias: 'cngxOtpSlot' });
 
-  private readonly parent = inject(CngxOtpInput);
+  private readonly parent = injectOtpInput();
   private readonly ariaLabels = injectInputAriaLabels();
 
   /** Per-slot accessible label, e.g. `'Digit 1 of 6'`. Config-driven, EN default. */
@@ -291,4 +292,24 @@ export class CngxOtpInput {
     }
     this.focusAt(0);
   }
+}
+
+/**
+ * Inject the surrounding {@link CngxOtpInput} from a {@link CngxOtpSlot}.
+ * Throws a `CngxRuntimeError` with code `CNGX2016` when no `[cngxOtpInput]`
+ * is above the slot, in development and production alike.
+ *
+ * @internal
+ */
+function injectOtpInput(): CngxOtpInput {
+  const parent = inject(CngxOtpInput, { optional: true });
+  if (!parent) {
+    throw new CngxRuntimeError(
+      'CNGX2016',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngxOtpSlot] must be placed inside an element with [cngxOtpInput].',
+    );
+  }
+  return parent;
 }

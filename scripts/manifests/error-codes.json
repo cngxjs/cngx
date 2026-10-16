@@ -969,6 +969,17 @@
       ]
     },
     {
+      "code": "CNGX2016",
+      "lib": "forms",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "OTP slot outside an OTP input",
+      "page": "core-concepts/error-codes/cngx2016.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2016.html",
+      "status": "active",
+      "files": ["projects/forms/input/otp-input.directive.ts"]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",
