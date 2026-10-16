@@ -1,4 +1,7 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
@@ -176,5 +179,19 @@ describe('newestListed', () => {
     expect(newestListed('["0.1.0-rc.6","0.1.0-rc.7"]')).toBe('0.1.0-rc.7');
     expect(newestListed('"0.1.0-rc.7"')).toBe('0.1.0-rc.7');
     expect(newestListed('')).toBeUndefined();
+  });
+});
+
+describe('the consumer-compat workflow', () => {
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+  const workflow = readFileSync(join(root, '.github', 'workflows', 'consumer-compat.yml'), 'utf8');
+
+  it('runs on a pull request that touches the schematics', () => {
+    const paths = /pull_request:\s*\n\s*paths:\n((?:\s*- .+\n)+)/.exec(workflow)?.[1] ?? '';
+    expect(paths).toContain("- 'projects/*/schematics/**'");
+  });
+
+  it('runs the stale-core leg in its schematics row', () => {
+    expect(workflow).toMatch(/variant: schematics, args: '--stale-core previous'/);
   });
 });
