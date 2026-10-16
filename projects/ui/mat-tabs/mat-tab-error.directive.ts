@@ -1,10 +1,8 @@
 import { DestroyRef, Directive, effect, inject, input, untracked } from '@angular/core';
-import { MatTab } from '@angular/material/tabs';
 
-import { CNGX_TAB_GROUP_HOST } from '@cngx/common/tabs';
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
-import { CNGX_MAT_TABS_REGISTRY_HOST } from './mat-tabs-registry.directive';
+import { injectMatTabErrorTarget } from './mat-tab-error-target';
 
 /**
  * Per-tab error-aggregator binding for `[cngxMatTabs]`. Attach to a
@@ -40,11 +38,7 @@ import { CNGX_MAT_TABS_REGISTRY_HOST } from './mat-tabs-registry.directive';
   standalone: true,
 })
 export class CngxMatTabError {
-  private readonly matTab = inject(MatTab, { self: true });
-  private readonly registry = inject(CNGX_MAT_TABS_REGISTRY_HOST, {
-    host: true,
-  });
-  private readonly presenter = inject(CNGX_TAB_GROUP_HOST);
+  private readonly target = injectMatTabErrorTarget('cngxMatTabError');
   private readonly destroyRef = inject(DestroyRef);
 
   readonly aggregator = input<
@@ -68,16 +62,16 @@ export class CngxMatTabError {
       // the effect re-fires once our `MatTab` is registered. The bare
       // read is intentional; full rationale lives in the effect's
       // opening comment above. Do NOT tag as dead code.
-      this.presenter.tabs();
+      this.target.presenter.tabs();
 
       untracked(() => {
-        const setup = this.registry.getHandleSetup(this.matTab);
+        const setup = this.target.registry.getHandleSetup(this.target.matTab);
         setup?.errorAggregator.set(aggregator);
       });
     });
 
     this.destroyRef.onDestroy(() => {
-      const setup = this.registry.getHandleSetup(this.matTab);
+      const setup = this.target.registry.getHandleSetup(this.target.matTab);
       setup?.errorAggregator.set(undefined);
     });
   }

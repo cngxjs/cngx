@@ -68,6 +68,34 @@ class BareAttributeHostCmp {
   protected active = 0;
 }
 
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabError],
+  template: `
+    <mat-tab-group>
+      <mat-tab label="One" [cngxMatTabError]="aggregator">One content</mat-tab>
+    </mat-tab-group>
+  `,
+})
+class NoCngxMatTabsHostCmp {
+  readonly aggregator = makeStubAggregator();
+}
+
+describe('CngxMatTabError placement (CNGX3020)', () => {
+  test('throws inside a <mat-tab-group> without cngxMatTabs', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    expect(() => TestBed.createComponent(NoCngxMatTabsHostCmp).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX3020',
+        message: expect.stringMatching(
+          /^CNGX3020: \[cngxMatTabError\] must be placed on a <mat-tab> inside <mat-tab-group cngxMatTabs>\./,
+        ),
+      }),
+    );
+  });
+});
+
 describe('CngxMatTabError attribute directive', () => {
   test('axis 1: bound contract writes through to presenter.tabs()[i].errorAggregator()', async () => {
     TestBed.configureTestingModule({

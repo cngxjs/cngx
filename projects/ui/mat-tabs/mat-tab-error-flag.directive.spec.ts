@@ -44,6 +44,52 @@ function presenterOf(fixture: ComponentFixture<unknown>): CngxTabGroupPresenter 
   return matEl.injector.get(CngxTabGroupPresenter);
 }
 
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabErrorFlag],
+  template: `
+    <mat-tab-group>
+      <mat-tab label="One" cngxMatTabErrorFlag>One content</mat-tab>
+    </mat-tab-group>
+  `,
+})
+class NoCngxMatTabsHostCmp {}
+
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabs, CngxMatTabErrorFlag],
+  template: `
+    <mat-tab-group cngxMatTabs>
+      <mat-tab label="One"><span cngxMatTabErrorFlag>One content</span></mat-tab>
+    </mat-tab-group>
+  `,
+})
+class NotOnMatTabHostCmp {}
+
+describe('CngxMatTabErrorFlag placement (CNGX3020)', () => {
+  const placementError = expect.objectContaining({
+    name: 'CngxRuntimeError',
+    code: 'CNGX3020',
+    message: expect.stringMatching(
+      /^CNGX3020: \[cngxMatTabErrorFlag\] must be placed on a <mat-tab> inside <mat-tab-group cngxMatTabs>\./,
+    ),
+  });
+
+  test('throws inside a <mat-tab-group> without cngxMatTabs', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    expect(() => TestBed.createComponent(NoCngxMatTabsHostCmp).detectChanges()).toThrow(
+      placementError,
+    );
+  });
+
+  test('throws on an element that is not a <mat-tab>', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    expect(() => TestBed.createComponent(NotOnMatTabHostCmp).detectChanges()).toThrow(
+      placementError,
+    );
+  });
+});
+
 describe('CngxMatTabErrorFlag attribute directive', () => {
   test('string flag lights hasError and surfaces the message; false clears both', async () => {
     TestBed.configureTestingModule({

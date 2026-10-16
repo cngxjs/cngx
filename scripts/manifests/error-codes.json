@@ -1063,6 +1063,17 @@
       "files": ["projects/ui/accordion/accordion-item.component.ts"]
     },
     {
+      "code": "CNGX3020",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Tab error directive outside a cngxMatTabs group",
+      "page": "core-concepts/error-codes/cngx3020.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3020.html",
+      "status": "active",
+      "files": ["projects/ui/mat-tabs/mat-tab-error-target.ts"]
+    },
+    {
       "code": "CNGX4001",
       "lib": "data-display",
       "severity": "warn",

@@ -1,9 +1,6 @@
 import { DestroyRef, Directive, effect, inject, input, untracked } from '@angular/core';
-import { MatTab } from '@angular/material/tabs';
 
-import { CNGX_TAB_GROUP_HOST } from '@cngx/common/tabs';
-
-import { CNGX_MAT_TABS_REGISTRY_HOST } from './mat-tabs-registry.directive';
+import { injectMatTabErrorTarget } from './mat-tab-error-target';
 
 /**
  * Per-tab direct invalid flag for `[cngxMatTabs]` - the simple-case
@@ -40,11 +37,7 @@ import { CNGX_MAT_TABS_REGISTRY_HOST } from './mat-tabs-registry.directive';
   standalone: true,
 })
 export class CngxMatTabErrorFlag {
-  private readonly matTab = inject(MatTab, { self: true });
-  private readonly registry = inject(CNGX_MAT_TABS_REGISTRY_HOST, {
-    host: true,
-  });
-  private readonly presenter = inject(CNGX_TAB_GROUP_HOST);
+  private readonly target = injectMatTabErrorTarget('cngxMatTabErrorFlag');
   private readonly destroyRef = inject(DestroyRef);
 
   readonly error = input<string | boolean, string | boolean>(false, {
@@ -60,16 +53,16 @@ export class CngxMatTabErrorFlag {
       // effect once our handle is registered. `untracked` around the
       // write keeps the slot pump out of the reactive graph.
       const error = this.error();
-      this.presenter.tabs();
+      this.target.presenter.tabs();
 
       untracked(() => {
-        const setup = this.registry.getHandleSetup(this.matTab);
+        const setup = this.target.registry.getHandleSetup(this.target.matTab);
         setup?.directError.set(error);
       });
     });
 
     this.destroyRef.onDestroy(() => {
-      const setup = this.registry.getHandleSetup(this.matTab);
+      const setup = this.target.registry.getHandleSetup(this.target.matTab);
       setup?.directError.set(false);
     });
   }
