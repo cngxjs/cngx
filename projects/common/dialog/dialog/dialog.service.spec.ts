@@ -85,9 +85,9 @@ describe('CngxDialogOpener', () => {
       TestBed.flushEffects();
     }
 
-    // The outlet's inputs reach the inner cngxDialog via template bindings,
-    // which propagate on the next change-detection tick - in production that
-    // tick precedes any user interaction; the harness runs it explicitly.
+    // open() applies the outlet's bindings once before the dialog opens; the
+    // rest of the view (content bindings, values set after open) settles on
+    // the next change-detection tick, which the harness runs explicitly.
     function tick(): void {
       TestBed.inject(ApplicationRef).tick();
     }
