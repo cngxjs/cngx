@@ -273,7 +273,10 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
               'The brain stays inert (no aria-haspopup / aria-expanded) until one is present.',
           );
         }
-        const popover = this.resolvedPopover();
+        // Only a popover bound through the input is the consumer's to configure.
+        // A CNGX_MENU_SUBMENU_WIRING provider owns the placement policy and
+        // installs its fallbacks when it opens the submenu.
+        const popover = this.popover();
         if (popover) {
           warnMissingSubmenuFallbacks(popover.elementRef.nativeElement);
         }

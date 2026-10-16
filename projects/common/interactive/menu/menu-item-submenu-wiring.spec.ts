@@ -5,7 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxMenu } from './menu.directive';
 import type { CngxMenuHost } from './menu-host.token';
-import { CngxMenuItemSubmenu } from './menu-item-submenu.directive';
+import {
+  CngxMenuItemSubmenu,
+  __resetSubmenuFallbackWarnings,
+} from './menu-item-submenu.directive';
 import { CngxMenuItem } from './menu-item.directive';
 import {
   CNGX_MENU_SUBMENU_WIRING,
@@ -155,5 +158,28 @@ describe('CngxMenuItemSubmenu DI wiring fallback', () => {
       expect(el.getAttribute('aria-haspopup')).toBeNull();
       expect(inertWarnings()).toHaveLength(0);
     });
+  });
+});
+
+describe('CngxMenuItemSubmenu fallback check with DI wiring (CNGX1026)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('leaves a popover from CNGX_MENU_SUBMENU_WIRING to the wiring provider', () => {
+    vi.stubGlobal('CSS', { supports: () => true });
+    vi.stubGlobal('getComputedStyle', () => ({ getPropertyValue: () => 'none' }));
+    __resetSubmenuFallbackWarnings(document);
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    warnSpy.mockClear();
+    TestBed.configureTestingModule({ imports: [WiredHost] });
+    const fixture = TestBed.createComponent(WiredHost);
+    fixture.detectChanges();
+    TestBed.tick();
+    const fallbackWarnings = warnSpy.mock.calls.filter((call: unknown[]) =>
+      /^CNGX1026: /.test(String(call[0])),
+    );
+    expect(fallbackWarnings).toEqual([]);
   });
 });
