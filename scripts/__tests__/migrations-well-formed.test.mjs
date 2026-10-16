@@ -78,3 +78,35 @@ describe('migrations.json', () => {
     expect(entries.map(([, entry]) => entry.factory)).not.toContain(`./${REFRESH}/index#migrate`);
   });
 });
+
+describe('well-formed rules', () => {
+  const entry = (version, folder) => ({ version, description: 'x', factory: `./${folder}/index#migrate` });
+  const SPEC = "it('renames the trigger', async () => { await runMigration(migrate, tree); });";
+
+  it('accepts a release key and a slug key derived from the entry version', () => {
+    expect(keyProblems('migration-v0.2.0', entry('0.2.0', '0.2.0'))).toEqual([]);
+    expect(keyProblems('migration-v0.2.0-select', entry('0.2.0', '0.2.0-select'))).toEqual([]);
+    expect(keyProblems('migration-v1.0.0-rc.1-select', entry('1.0.0-rc.1', '1.0.0-rc.1-select'))).toEqual([]);
+  });
+
+  it('rejects a key that does not start with its entry version', () => {
+    expect(keyProblems('migration-v0.2.0-select', entry('0.3.0', '0.2.0-select'))).not.toEqual([]);
+    expect(keyProblems('migration-v0.2.0-Select', entry('0.2.0', '0.2.0-Select'))).not.toEqual([]);
+    expect(keyProblems('migration-0.2.0', entry('0.2.0', '0.2.0'))).not.toEqual([]);
+  });
+
+  it('rejects an empty spec and a spec without a case that runs the migration', () => {
+    expect(specProblems('')).not.toEqual([]);
+    expect(specProblems("it('is pending', () => {});")).not.toEqual([]);
+    expect(specProblems(SPEC)).toEqual([]);
+    expect(specProblems("it('re-runs', async () => { await runRule(createMigration({}), tree); });")).toEqual([]);
+  });
+
+  it('rejects placeholder fixtures and an after that equals before', () => {
+    const before = { '.cngx/install.json': '{"a":1}' };
+
+    expect(fixtureProblems({ '.gitkeep': '' }, { '.gitkeep': '' })).not.toEqual([]);
+    expect(fixtureProblems(before, { ...before })).not.toEqual([]);
+    expect(fixtureProblems(before, { '.cngx/install.json': '{"a":2}' })).toEqual([]);
+  });
+});

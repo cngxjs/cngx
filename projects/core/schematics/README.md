@@ -100,10 +100,15 @@ breaking change adds a migration:
 3. A `migrations.json` entry `migration-v<version>` with the version and
    `./<version>/index#migrate`. A second breaking change in the same release
    adds its own entry `migration-v<version>-<slug>` with the folder
-   `<version>-<slug>`, so every breaking PR brings a new key.
-4. A spec next to the entry and a fixture pair under
+   `<version>-<slug>`, so every breaking PR brings a new key. The guard
+   (`scripts/migrations-well-formed.mjs`) derives the key from the entry's
+   `version`, so the slug is lowercase letters, digits and hyphens.
+4. A spec next to the entry with a case that runs `migrate` or
+   `createMigration`, and a fixture pair under
    `testing/fixtures/migrations/<folder>/{before,after}` holding only the
-   files that differ from the stock app.
+   files that differ from the stock app; `after` must differ from `before`
+   and a `.gitkeep` alone is no fixture. The migration-gate reads only the
+   `!` in a PR title, so a breaking change must carry it.
 
 Every migration also re-runs the install steps `.cngx/install.json` records
 for each project (the theme once the cngx version moved, the helper README
