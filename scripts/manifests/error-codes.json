@@ -743,7 +743,7 @@
     {
       "code": "CNGX1059",
       "lib": "common",
-      "severity": "throw",
+      "severity": "stored",
       "production": "code-only",
       "title": "Commit action completed without a decision",
       "page": "core-concepts/error-codes/cngx1059.md",

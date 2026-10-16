@@ -48,19 +48,26 @@ const RETIRED = /^> Retired in \S+\.$/m;
 /**
  * The sections every code page carries after its intro, named after the
  * code's severity: `### Fixing the warning` / `### Debugging the warning`
- * for `warn`, `... the error` for `error` and `throw` (the shape of Angular's
+ * for `warn`, `... the error` for `error`, `throw` and `stored` (the shape of Angular's
  * error pages).
  */
 const PAGE_SECTIONS = ['Fixing', 'Debugging'];
-const SEVERITY_NOUN = { warn: 'warning', error: 'error', throw: 'error' };
+const SEVERITY_NOUN = { warn: 'warning', error: 'error', throw: 'error', stored: 'error' };
 
 /**
- * A `collectRuntimeErrors` row as a manifest call site: severity `throw`; a
- * dev-only construction is `stripped` with its code, every other one keeps
- * its code in production (`code-only`).
+ * A `collectRuntimeErrors` row as a manifest call site: severity `throw` when
+ * the construction is thrown, `stored` when it is built and handed on (an
+ * error state) instead; a dev-only construction is `stripped` with its code,
+ * every other one keeps its code in production (`code-only`).
  */
-export function throwCall({ file, line, code, devOnly }) {
-  return { file, line, code, severity: 'throw', production: devOnly ? 'stripped' : 'code-only' };
+export function throwCall({ file, line, code, devOnly, thrown }) {
+  return {
+    file,
+    line,
+    code,
+    severity: thrown ? 'throw' : 'stored',
+    production: devOnly ? 'stripped' : 'code-only',
+  };
 }
 
 /** The lib a repo-relative `projects/<lib>/...` path belongs to. */

@@ -332,7 +332,9 @@ export const RUNTIME_ERROR = 'CngxRuntimeError';
 
 /**
  * Every `new CngxRuntimeError(...)` in `files` ([{ path, text }]). `code` is
- * the first argument when it is a string literal, else null. `devOnly`: the
+ * the first argument when it is a string literal, else null. `thrown`: the
+ * construction is the operand of a `throw` statement; otherwise the error is
+ * built and stored (a commit handler's error state). `devOnly`: the
  * construction itself sits behind an inline guard, so the production build
  * drops it with its code. `messageGuarded`: the second argument is an `&&`
  * chain starting with the guard. `atModuleLoad`: the construction runs while
@@ -342,8 +344,17 @@ export const RUNTIME_ERROR = 'CngxRuntimeError';
  * argument is omitted or `{ cause: <enclosing catch variable> }`, or the
  * whole construction is dev-only.
  *
- * @returns {{ file: string; line: number; code: string | null; devOnly: boolean; messageGuarded: boolean; messageInline: boolean; optionsPlain: boolean; atModuleLoad: boolean; node: ts.NewExpression; sf: ts.SourceFile }[]}
+ * @returns {{ file: string; line: number; code: string | null; devOnly: boolean; thrown: boolean; messageGuarded: boolean; messageInline: boolean; optionsPlain: boolean; atModuleLoad: boolean; node: ts.NewExpression; sf: ts.SourceFile }[]}
  */
+/** Is `node` the operand of a `throw` statement (through parentheses)? */
+function isThrownOperand(node) {
+  let parent = node.parent;
+  while (parent && ts.isParenthesizedExpression(parent)) {
+    parent = parent.parent;
+  }
+  return Boolean(parent && ts.isThrowStatement(parent));
+}
+
 export function collectRuntimeErrors(files) {
   const out = [];
   for (const { path, text } of files) {
@@ -370,6 +381,7 @@ export function collectRuntimeErrors(files) {
           line: lineOf(sf, node),
           code,
           devOnly,
+          thrown: isThrownOperand(node),
           messageGuarded,
           messageInline: text === undefined || isInlineMessage(text, sf),
           optionsPlain: devOnly || isPlainOptions(options, node, sf),

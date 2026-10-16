@@ -52,7 +52,7 @@ What happens in a production build depends on the check:
 - **Precondition errors** guard something the code cannot continue without. They throw in production too, but the message is only the code (`CNGXnnnn`). The text and the link are dropped, the code stays, so a production error report still tells you which page to read.
 - **Development-only checks** catch a setup mistake that is visible during development, such as `CNGX1044` above. A production build removes the check together with its code, so it never throws there. Its page says so.
 
-`scripts/manifests/error-codes.json` in the repository marks each code as `"production": "code-only"` (still thrown, bare code) or `"stripped"` (removed).
+`scripts/manifests/error-codes.json` in the repository marks each code as `"production": "code-only"` (still thrown or stored, bare code) or `"stripped"` (removed), and its `severity` as `warn`, `error`, `throw` or `stored`.
 
 To handle a thrown error in code, check the class and the code, never the message:
 
@@ -78,11 +78,12 @@ Each code has one page, listed in the sidebar under this one. A page has three p
 - **Fixing the warning** (or **error**) - the change that makes the message go away, with one or more options and their code.
 - **Debugging the warning** (or **error**) - what the message tells you, when the check runs, and how to find the place that caused it.
 
-A code has one of three severities, named in the page's headings:
+A code has one of four severities. The page headings say warning or error; the intro says which kind of error:
 
 - **Warning** - a likely mistake that CNGX works around. It is a `console.warn` in development and nothing in production.
 - **Error** - a setup that leaves a feature broken or wrong, logged with `console.error` in development and nothing in production. It is a console message, not an exception; the code keeps running.
 - **Thrown error** - a `CngxRuntimeError` the code throws because it cannot continue. Its page says whether the throw stays in production with the bare code or is removed with the check (see [Thrown errors](#thrown-errors)).
+- **Stored error** - a `CngxRuntimeError` that is not thrown but stored as the `error()` of an async or commit state, so the feature reports the failure through its state instead of an exception. It keeps its code in production like a thrown error; read it with the same `instanceof CngxRuntimeError` check.
 
 One code stands for one condition. A code is never reused: when a check is removed, its page stays and says in which version the code was retired.
 

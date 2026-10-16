@@ -159,6 +159,18 @@ describe('error-code manifest generator', () => {
     ]);
   });
 
+  it('records a runtime error that is built and handed on as severity stored', () => {
+    const { codes, errors } = buildCodes(
+      throws(
+        'projects/common/a.ts',
+        `function f(onError: (e: unknown) => void) { onError(new CngxRuntimeError('CNGX1001', ${GUARD} && 'm')); }`,
+      ),
+      [page('CNGX1001', undefined, '', 'error')],
+    );
+    expect(errors).toEqual([]);
+    expect(codes[0]).toMatchObject({ severity: 'stored', production: 'code-only' });
+  });
+
   it('records a runtime error as severity throw that keeps its code in production', () => {
     const { codes, errors } = buildCodes(
       throws(
