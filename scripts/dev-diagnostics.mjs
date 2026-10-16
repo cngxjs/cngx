@@ -167,15 +167,31 @@ const checkerOf = (sf) => {
   return checker;
 };
 
-/** Text built in place: a string literal, a template literal or a `+` concatenation. */
+const isPlus = (node) =>
+  ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.PlusToken;
+
+/** The left-most operand of a `+` concatenation (the node itself when it is none). */
+export const firstOperand = (node) => {
+  let current = unwrap(node);
+  while (isPlus(current)) {
+    current = unwrap(current.left);
+  }
+  return current;
+};
+
+const isLiteralText = (node) =>
+  ts.isStringLiteral(node) ||
+  ts.isNoSubstitutionTemplateLiteral(node) ||
+  ts.isTemplateExpression(node);
+
+/**
+ * Text built in place: a string literal, a template literal or a `+`
+ * concatenation whose first operand is one. `m + ' text'` starts with a value
+ * built elsewhere, which may be the whole message.
+ */
 const isInlineText = (node) => {
   const inner = unparen(node);
-  return (
-    ts.isStringLiteral(inner) ||
-    ts.isNoSubstitutionTemplateLiteral(inner) ||
-    ts.isTemplateExpression(inner) ||
-    (ts.isBinaryExpression(inner) && inner.operatorToken.kind === ts.SyntaxKind.PlusToken)
-  );
+  return isLiteralText(inner) || (isPlus(inner) && isLiteralText(firstOperand(inner)));
 };
 
 /**
@@ -268,13 +284,25 @@ export function runsAtModuleLoad(node) {
   return true;
 }
 
-/** `(() => ...)()` / `(function () { ... })()`: a function expression called where it is written. */
+/**
+ * `(() => ...)()`, `(function () { ... })()` or the same through `.call(...)` /
+ * `.apply(...)`: a function expression called where it is written. A callback
+ * handed to a synchronous call (`[1].forEach(() => ...)`) is not detected; it
+ * counts as running later.
+ */
 const isInvokedInPlace = (fn) => {
   if (!ts.isArrowFunction(fn) && !ts.isFunctionExpression(fn)) {
     return false;
   }
   let callee = fn;
   while (ts.isParenthesizedExpression(callee.parent)) {
+    callee = callee.parent;
+  }
+  const viaCallOrApply =
+    ts.isPropertyAccessExpression(callee.parent) &&
+    callee.parent.expression === callee &&
+    (callee.parent.name.text === 'call' || callee.parent.name.text === 'apply');
+  if (viaCallOrApply) {
     callee = callee.parent;
   }
   return ts.isCallExpression(callee.parent) && callee.parent.expression === callee;

@@ -7,13 +7,17 @@
 //     `code: 'CNGXnnnn'` (a thrown `CngxRuntimeError`) or an anchored
 //     `^CNGXnnnn` (a regex literal or a `RegExp` source). A bare mention in a
 //     comment, a `toContain` or a spy filter that only looks for the code
-//     somewhere in the text does not count.
+//     somewhere in the text does not count, and neither does one inside a
+//     negated assertion (`.not.` between the last `expect(` or `;` before
+//     the mention and the mention itself).
 // S2  a code that no spec can reach is listed in SPEC_COVERAGE_EXEMPT with a
 //     reason; a row whose code gained a spec, or left the manifest, fails.
 //
-// Known limit: the scan is textual, so `^CNGXnnnn` in a comment or a string
+// Known limits: the scan is textual, so `^CNGXnnnn` in a comment or a string
 // that never reaches an assertion also counts. It proves an author anchored
-// the code somewhere in the lib's specs, not that the assertion runs.
+// the code somewhere in the lib's specs, not that the assertion runs. A
+// negation it cannot see textually, such as a matcher held in a variable and
+// used later under `.not.`, still counts.
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -37,9 +41,22 @@ const SPEC_COVERAGE_EXEMPT = [
   },
 ];
 
-/** Does `text` assert `code` in an anchored or structured form? */
+/** Is the mention at `index` part of a `.not.` assertion? */
+function isNegated(text, index) {
+  const start = Math.max(text.lastIndexOf('expect(', index), text.lastIndexOf(';', index));
+  return text.slice(Math.max(start, 0), index).includes('.not.');
+}
+
+/** Does `text` assert `code` in an anchored or structured form, outside a `.not.` assertion? */
 export function assertsCode(text, code) {
-  return text.includes(`code: '${code}'`) || text.includes(`^${code}`);
+  for (const needle of [`code: '${code}'`, `^${code}`]) {
+    for (let index = text.indexOf(needle); index >= 0; index = text.indexOf(needle, index + 1)) {
+      if (!isNegated(text, index)) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 /**
@@ -92,6 +109,24 @@ describe('error-code spec coverage - scanner', () => {
       { path: 'projects/common/b.spec.ts', text: "String(c[0]).startsWith('CNGX1003:')" },
     ];
     expect(uncoveredCodes(codes, specs)).toEqual(['CNGX1001', 'CNGX1002', 'CNGX1003', 'CNGX1004']);
+  });
+
+  it('rejects a mention inside a negated assertion, also across lines', () => {
+    const specs = [
+      {
+        path: 'projects/common/a.spec.ts',
+        text: 'expect(warn).not.toHaveBeenCalledWith(expect.stringMatching(/^CNGX1001: /));',
+      },
+      {
+        path: 'projects/common/b.spec.ts',
+        text: "expect(() => f()).not.toThrow(\n  expect.objectContaining({ code: 'CNGX1002' }),\n);",
+      },
+      {
+        path: 'projects/common/c.spec.ts',
+        text: "expect(spy).not.toHaveBeenCalled();\nconst coded = expect.objectContaining({ code: 'CNGX1003' });",
+      },
+    ];
+    expect(uncoveredCodes(codes, specs)).toEqual(['CNGX1001', 'CNGX1002', 'CNGX1004']);
   });
 });
 

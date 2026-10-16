@@ -6,10 +6,18 @@
 // harnesses, so library code must not reach them either.
 //
 // B1  no library source outside a `__test-helpers` folder imports, re-exports,
-//     `import x = require(...)`s or dynamically imports a relative path that lands in a spec, an
-//     `examples/` folder, `projects/testing` or a `__test-helpers` folder.
+//     `import x = require(...)`s or dynamically imports a relative path that
+//     lands in a spec, an `examples/` folder, `projects/testing` or a
+//     `__test-helpers` folder.
 //     Aliased testing entries (`@cngx/testing`, `@cngx/*/testing`) are fenced
-//     by `testing-entry-import-fence.test.mjs`.
+//     by `testing-entry-import-fence.test.mjs`. A spec matches with or
+//     without its extension, ESM style included (`./x.spec.js`).
+// B2  no library source calls `import(...)` with a specifier that is not a
+//     string literal: where it lands cannot be checked.
+//
+// Known limits: a `require(...)` call is not read (library source is ESM),
+// and a bare specifier that a path alias maps onto an excluded folder is left
+// to the testing-entry fence.
 
 import { posix } from 'node:path';
 
@@ -23,7 +31,7 @@ const TEST_HELPERS = /(^|\/)__test-helpers\//;
 
 /** Why `target` (repo-relative, posix) is outside the guarded source set, or null. */
 export function excludedReason(target) {
-  if (/\.spec(\.ts)?$/.test(target)) {
+  if (/\.spec(\.[cm]?[jt]sx?)?$/.test(target)) {
     return 'a spec';
   }
   if (/(^|\/)examples(\/|$)/.test(target)) {
@@ -72,7 +80,13 @@ export function boundaryViolations(files) {
         ts.isCallExpression(node) &&
         node.expression.kind === ts.SyntaxKind.ImportKeyword
       ) {
-        check(node, node.arguments[0]);
+        const [specifier] = node.arguments;
+        if (specifier && !ts.isStringLiteralLike(specifier)) {
+          out.push(
+            `${path}:${lineOf(sf, node)} import(${specifier.getText(sf)}) (a non-literal specifier)`,
+          );
+        }
+        check(node, specifier);
       }
       ts.forEachChild(node, visit);
     };
@@ -92,6 +106,10 @@ describe('excluded-path import boundary - scanner', () => {
       "import { harness } from './__test-helpers/field-skin-host';",
       "const lazy = import('./select.spec.ts');",
       "import legacy = require('./legacy.spec');",
+      "import { esm } from './panel.spec.js';",
+      "export * from './panel.spec.mjs';",
+      'const dynamic = import(path);',
+      'const built = import(`./${name}.spec`);',
     ].join('\n');
     expect(boundaryViolations([{ path: FILE, text }])).toEqual([
       `${FILE}:1 ./panel.spec (a spec)`,
@@ -100,6 +118,10 @@ describe('excluded-path import boundary - scanner', () => {
       `${FILE}:4 ./__test-helpers/field-skin-host (a __test-helpers folder)`,
       `${FILE}:5 ./select.spec.ts (a spec)`,
       `${FILE}:6 ./legacy.spec (a spec)`,
+      `${FILE}:7 ./panel.spec.js (a spec)`,
+      `${FILE}:8 ./panel.spec.mjs (a spec)`,
+      `${FILE}:9 import(path) (a non-literal specifier)`,
+      `${FILE}:10 import(\`./\${name}.spec\`) (a non-literal specifier)`,
     ]);
   });
 
@@ -108,7 +130,9 @@ describe('excluded-path import boundary - scanner', () => {
       boundaryViolations([
         {
           path: FILE,
-          text: "import { x } from './panel-host';\nimport { y } from '@cngx/core/utils';",
+          text:
+            "import { x } from './panel-host';\nimport { y } from '@cngx/core/utils';\n" +
+            "import { s } from './special.js';\nconst lazy = import('./panel-host');",
         },
         {
           path: 'projects/forms/select/shared/__test-helpers/field-skin-host.ts',
