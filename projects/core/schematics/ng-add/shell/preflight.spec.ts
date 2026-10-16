@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { parseManifest } from '../../engine';
 import { createFacts } from '../../testing/onboarding';
 import { type ProjectFacts } from '../detect/detect';
+import { type GitState } from './git-state';
 import { angularReading, angularSupport, preflightItems } from './preflight';
 
 const PEER_RANGE = '^21.2.0';
@@ -259,7 +260,7 @@ describe('preflightItems', () => {
   });
 
   it('warns about uncommitted changes and a missing repository', () => {
-    const git = (state: 'dirty' | 'unknown') =>
+    const git = (state: GitState) =>
       preflightItems({ facts: createFacts(), peerRange: PEER_RANGE, git: state })[2];
 
     expect(git('dirty')).toEqual({
@@ -267,10 +268,20 @@ describe('preflightItems', () => {
       status: 'warn',
       detail: 'the cngx changes will mix with them in git diff',
     });
-    expect(git('unknown')).toEqual({
+    expect(git('no-repository')).toEqual({
       label: 'No git repository',
       status: 'warn',
       detail: 'there is no diff to review the cngx changes against',
+    });
+    expect(git('no-git')).toEqual({
+      label: 'Git is not installed',
+      status: 'warn',
+      detail: 'there is no diff to review the cngx changes against',
+    });
+    expect(git('unknown')).toEqual({
+      label: 'Git state unreadable',
+      status: 'warn',
+      detail: 'git status failed in this folder; review the cngx changes by hand',
     });
   });
 });

@@ -87,10 +87,20 @@ const GIT_ITEMS: Readonly<Record<GitState, PreflightItem>> = {
     status: 'warn',
     detail: 'the cngx changes will mix with them in git diff',
   },
-  unknown: {
+  'no-repository': {
     label: 'No git repository',
     status: 'warn',
     detail: 'there is no diff to review the cngx changes against',
+  },
+  'no-git': {
+    label: 'Git is not installed',
+    status: 'warn',
+    detail: 'there is no diff to review the cngx changes against',
+  },
+  unknown: {
+    label: 'Git state unreadable',
+    status: 'warn',
+    detail: 'git status failed in this folder; review the cngx changes by hand',
   },
 };
 

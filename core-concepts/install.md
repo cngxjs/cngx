@@ -38,9 +38,11 @@ install. Nothing outside the project is written.
 2. **Preflight.** A short checklist before the cngx questions: the app's
    Angular version against the one `@cngx/core` supports, the project and
    whether it counts as fresh or existing, and the git state. Uncommitted
-   changes or a missing repository are flagged, since the cngx changes then
-   have no clean `git diff` to review against. The `package.json` and
-   lockfile edits of the package install `ng add` runs first do not count.
+   changes, a missing repository, a missing git and a failing `git status`
+   each get their own warn line, since the cngx changes then have no clean
+   `git diff` to review against. The `package.json` and lockfile edits of
+   the package install `ng add` runs first do not count, also when the app
+   sits in a subfolder of its repository.
    The version comes from the installed `@angular/core`, else from the
    `@angular/core` range in `dependencies` or `devDependencies`; the line
    names the installed version when it read one, and says so when the
