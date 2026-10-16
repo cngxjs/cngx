@@ -6,6 +6,7 @@ import { SchematicsException } from '@angular-devkit/schematics';
 import { isRecord } from '../plan/text';
 
 export interface PackageManifest {
+  readonly name?: string;
   readonly version?: string;
   readonly dependencies: Readonly<Record<string, string>>;
   readonly devDependencies: Readonly<Record<string, string>>;
@@ -38,6 +39,7 @@ export function parseManifest(content: string): PackageManifest {
     throw new SchematicsException('package.json is not a JSON object.');
   }
   return {
+    name: typeof parsed['name'] === 'string' ? parsed['name'] : undefined,
     version: typeof parsed['version'] === 'string' ? parsed['version'] : undefined,
     dependencies: stringEntries(parsed['dependencies']),
     devDependencies: stringEntries(parsed['devDependencies']),
@@ -56,6 +58,15 @@ export function readOwnVersion(bundleDir: string): string {
     throw new Error(`No version in ${ownManifestPath(bundleDir)}.`);
   }
   return version;
+}
+
+/** The name of the package this bundle ships in, e.g. `@cngx/forms`. */
+export function readOwnName(bundleDir: string): string {
+  const { name } = parseManifest(readFileSync(ownManifestPath(bundleDir), 'utf8'));
+  if (name === undefined) {
+    throw new Error(`No name in ${ownManifestPath(bundleDir)}.`);
+  }
+  return name;
 }
 
 /** The range the package's own manifest peers on for `name`. */

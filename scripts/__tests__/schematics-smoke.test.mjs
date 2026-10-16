@@ -277,7 +277,7 @@ describe('dist/ui/schematics ng-add shim', () => {
     expect(runner.tasks.map((task) => task.name)).toEqual(['node-package']);
   });
 
-  it('forwards the flags ng add passes before the install to the core ng-add unchanged', async () => {
+  it('forwards the flags ng add passes before the install to the core ng-add, its own lib added', async () => {
     const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
     runner.registerCollection('@cngx/core', requireDist(CORE_COLLECTION));
     const tree = await runner.runSchematic(
@@ -287,7 +287,7 @@ describe('dist/ui/schematics ng-add shim', () => {
     );
     const { answers } = JSON.parse(tree.readText('.cngx/install.json'));
 
-    expect(answers).toMatchObject({ aiTools: ['claude', 'vscode'], libs: ['core'], lint: false, a11yPreferences: false });
+    expect(answers).toMatchObject({ aiTools: ['claude', 'vscode'], libs: ['core', 'ui'], lint: false, a11yPreferences: false });
   });
 
   it('installs @cngx/core first and runs its ng-add as a task when core is missing', async () => {
@@ -297,6 +297,7 @@ describe('dist/ui/schematics ng-add shim', () => {
     const delegate = runner.tasks.find((task) => task.name === 'run-schematic');
 
     expect(manifest.dependencies['@cngx/core']).toBe(version);
+    expect(manifest.dependencies['@cngx/ui']).toBe(version);
     expect(runner.tasks.map((task) => task.name)).toEqual(['node-package', 'run-schematic']);
     expect(delegate.options).toMatchObject({ collection: '@cngx/core', name: 'ng-add', options: { preset: 'minimal' } });
   });
