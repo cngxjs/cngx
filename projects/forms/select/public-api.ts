@@ -149,6 +149,7 @@ export {
   withCaret,
   withRestoreFocus,
   withDismissOn,
+  withMobileSheet,
   withOpenOn,
   withAnnouncer,
   withAriaLabels,

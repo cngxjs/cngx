@@ -68,6 +68,8 @@ const EN_ARIA: CngxResolvedSelectAriaLabels = {
   commitFailedMessage: (label: string) => `${label}: Save failed`,
   searchInput: 'Search options',
   listboxFallback: 'Options',
+  sheetClose: 'Close',
+  sheetDone: 'Done',
 };
 
 function createMockHost(): {

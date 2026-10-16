@@ -416,7 +416,7 @@
     {
       "class": "CngxSelectSearch",
       "file": "projects/forms/select/declarative/select-search.component.ts",
-      "line": 65,
+      "line": 66,
       "member": "resolvedPlaceholder",
       "enclosing": "computed",
       "tiers": [
@@ -432,7 +432,7 @@
     {
       "class": "CngxSelectSearch",
       "file": "projects/forms/select/declarative/select-search.component.ts",
-      "line": 86,
+      "line": 87,
       "member": "resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [

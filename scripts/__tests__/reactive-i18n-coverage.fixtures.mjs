@@ -232,6 +232,7 @@ export const COPY_TOKENS = [
       'restoreFocus',
       'dismissOn',
       'openOn',
+      'mobileSheet',
       'templates',
     ],
     note: 'announcer carries the live-region formatter next to enabled / politeness',

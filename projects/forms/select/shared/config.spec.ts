@@ -12,6 +12,7 @@ import {
   withAnnouncer,
   withAriaLabels,
   withFallbackLabels,
+  withMobileSheet,
   withPanelWidth,
   withTemplates,
   type CngxSelectAnnouncerConfig,
@@ -51,6 +52,16 @@ describe('withAriaLabels', () => {
       'Colours: Save failed',
     );
     expect(config.ariaLabels().listboxFallback).toBe('Options');
+    expect(config.ariaLabels().sheetClose).toBe('Close');
+    expect(config.ariaLabels().sheetDone).toBe('Done');
+  });
+
+  it('carries sheetClose / sheetDone overrides into the resolved config', () => {
+    const config = resolveIn([
+      provideSelectConfig(withAriaLabels({ sheetClose: 'Dismiss', sheetDone: 'Apply' })),
+    ]);
+    expect(config.ariaLabels().sheetClose).toBe('Dismiss');
+    expect(config.ariaLabels().sheetDone).toBe('Apply');
   });
 
   it('carries a listboxFallback override into the resolved config', () => {
@@ -437,5 +448,15 @@ describe('CngxMultiSelectChipContext - optional index', () => {
       index: 4,
     };
     expect(ctx.index).toBe(4);
+  });
+});
+
+describe('withMobileSheet', () => {
+  it('defaults to auto', () => {
+    expect(resolveIn([]).mobileSheet).toBe('auto');
+  });
+
+  it('turns the sheet off app-wide', () => {
+    expect(resolveIn([provideSelectConfig(withMobileSheet('off'))]).mobileSheet).toBe('off');
   });
 });

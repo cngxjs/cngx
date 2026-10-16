@@ -16,6 +16,10 @@ import {
   type SelectionController,
 } from '@cngx/core/utils';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
+import type {
+  CngxPopoverPresentation,
+  CngxPopoverPresentationRequest,
+} from '@cngx/common/popover';
 
 import { CngxFormFieldPresenter, type CngxFormFieldControl } from '@cngx/forms/field';
 
@@ -121,6 +125,12 @@ export interface CngxSelectCoreDeps<T, TCommit> {
 
   /** `null` → inherit config. */
   readonly selectionIndicatorVariant: Signal<'auto' | 'checkbox' | 'checkmark' | 'radio' | null>;
+
+  /** Per-instance `[presentation]`; `undefined` → inherit `CNGX_SELECT_CONFIG.mobileSheet`. */
+  readonly presentationInput?: Signal<CngxPopoverPresentationRequest | undefined>;
+
+  /** Resolved sheet presentation. The trigger-width rule only applies while `'anchored'`. */
+  readonly presentation?: Signal<CngxPopoverPresentation>;
 }
 
 /**
@@ -152,7 +162,13 @@ export interface CngxSelectCore<T, TCommit> {
   readonly showInlineError: Signal<boolean>;
   readonly skeletonIndices: Signal<number[]>;
   readonly panelClassList: Signal<string | readonly string[] | null>;
+  /** `null` outside the anchored presentation: the sheet owns the inline size. */
   readonly panelWidthCss: Signal<string | null>;
+  /**
+   * Presentation the panel asks `CngxPopoverSheet` for:
+   * `[presentation]` → `mobileSheet: 'off'` as `'anchored'` → `'auto'`.
+   */
+  readonly resolvedPresentationRequest: Signal<CngxPopoverPresentationRequest>;
   /** Resolved `CNGX_SELECT_CONFIG.fallbackLabels`; follows a language flip. */
   readonly fallbackLabels: Signal<Required<CngxSelectFallbackLabels>>;
   /** Resolved `CNGX_SELECT_CONFIG.ariaLabels`. Forwarded onto the panel host. */
@@ -417,6 +433,9 @@ export function createSelectCore<T, TCommit>(
   );
 
   const panelWidthCss = computed<string | null>(() => {
+    if ((deps.presentation?.() ?? 'anchored') !== 'anchored') {
+      return null;
+    }
     const w = deps.panelWidth();
     if (w === null) {
       return 'auto';
@@ -426,6 +445,10 @@ export function createSelectCore<T, TCommit>(
     }
     return `${w}px`;
   });
+
+  const resolvedPresentationRequest = computed<CngxPopoverPresentationRequest>(
+    () => deps.presentationInput?.() ?? (config.mobileSheet === 'off' ? 'anchored' : 'auto'),
+  );
 
   const resolvedId = computed<string>(() => {
     const override = deps.idInput();
@@ -728,6 +751,7 @@ export function createSelectCore<T, TCommit>(
     skeletonIndices,
     panelClassList,
     panelWidthCss,
+    resolvedPresentationRequest,
     fallbackLabels: config.fallbackLabels,
     ariaLabels: config.ariaLabels,
     resolvedId,

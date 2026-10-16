@@ -161,6 +161,10 @@ export interface CngxSelectAriaLabels {
    * `'Options'`.
    */
   readonly listboxFallback?: string;
+  /** Close button in the header of the mobile sheet. Default `'Close'`. */
+  readonly sheetClose?: string;
+  /** Done button in the header of the mobile sheet (multi and input variants). Default `'Done'`. */
+  readonly sheetDone?: string;
 }
 
 /**
@@ -349,6 +353,13 @@ export interface CngxSelectConfig {
   /** Open strategy: click, focus, or both. */
   readonly openOn?: 'click' | 'focus' | 'click+focus';
   /**
+   * Mobile presentation. `'auto'` (default) opens the panel as a modal bottom
+   * sheet or fullscreen panel on coarse, narrow viewports and anchored
+   * everywhere else; `'off'` keeps it anchored. A per-instance
+   * `[presentation]` wins.
+   */
+  readonly mobileSheet?: 'auto' | 'off';
+  /**
    * Live-region announcer config. A `Signal` swaps the formatter on a
    * language flip; the next announcement uses it.
    */
@@ -419,6 +430,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   restoreFocus: true,
   dismissOn: 'both',
   openOn: 'click',
+  mobileSheet: 'auto',
   announcer: {
     enabled: true,
     politeness: 'polite',
@@ -702,6 +714,19 @@ export function withRestoreFocus(enabled: boolean): CngxSelectConfigFeature {
  */
 export function withDismissOn(mode: CngxSelectConfig['dismissOn']): CngxSelectConfigFeature {
   return feature({ dismissOn: mode });
+}
+
+/**
+ * Mobile presentation of every select-family panel. `'auto'` (default) opens
+ * it as a modal bottom sheet or fullscreen panel on coarse, narrow viewports
+ * and anchored everywhere else; `'off'` keeps it anchored. A per-instance
+ * `[presentation]` wins.
+ *
+ * @since 0.1.0
+ * @relatedTo CngxPopoverSheet
+ */
+export function withMobileSheet(mode: CngxSelectConfig['mobileSheet']): CngxSelectConfigFeature {
+  return feature({ mobileSheet: mode });
 }
 
 /**
