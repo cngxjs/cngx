@@ -3,13 +3,12 @@ import {
   Component,
   computed,
   contentChild,
-  inject,
   input,
   TemplateRef,
   ViewEncapsulation,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { CngxFormFieldPresenter } from './form-field-presenter';
+import { injectFormFieldPresenter } from './inject-form-field-presenter';
 
 /**
  * Auto-showing required indicator inside a `cngx-form-field`.
@@ -75,7 +74,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
 })
 export class CngxRequired {
   /** @internal */
-  protected readonly presenter = inject(CngxFormFieldPresenter);
+  protected readonly presenter = injectFormFieldPresenter('cngx-required');
 
   /** Optional custom template. Replaces the text marker when provided. */
   protected readonly customTpl = contentChild<TemplateRef<CngxRequiredContext>>(TemplateRef);

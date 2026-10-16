@@ -980,6 +980,20 @@
       "files": ["projects/forms/input/otp-input.directive.ts"]
     },
     {
+      "code": "CNGX2017",
+      "lib": "forms",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Form-field part outside a form field",
+      "page": "core-concepts/error-codes/cngx2017.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2017.html",
+      "status": "active",
+      "files": [
+        "projects/forms/field/inject-form-field-presenter.ts",
+        "projects/forms/input/char-count.component.ts"
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",
