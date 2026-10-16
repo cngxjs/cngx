@@ -20,10 +20,16 @@
 //     QUOTE_EXEMPT with a reason; a row that no longer matches a quote, or
 //     whose quote now passes, fails.
 //
+// Q4  a page with no quote that starts with its own `CNGXnnnn: ` is checked
+//     by nothing above. Those pages are listed in UNQUOTED_PAGES, exactly:
+//     a listed page that gains such a quote, or a new page without one,
+//     fails until the list is updated.
+//
 // Known limits, exactly what is not compared:
+// - every page in UNQUOTED_PAGES: its prose about the message is not
+//   compared with the message at all;
 // - a backticked span that neither follows a Q1 lead-in in a paragraph
-//   about the message nor starts with the page's own `CNGXnnnn: `; pages
-//   that only describe their message in prose are not checked at all;
+//   about the message nor starts with the page's own `CNGXnnnn: `;
 // - the text a wildcard stands for, so a quote that invents the value of
 //   a `${...}` part passes as long as the literal text after it matches;
 // - a quote whose end falls inside a wildcard that is not the last part
@@ -52,6 +58,47 @@ const QUOTE_EXEMPT = [
     quote: 'contentTemplate',
     reason: 'names the value of a part of the message, not its start',
   },
+];
+
+/**
+ * Pages with no quote that starts with their own `CNGXnnnn: `: Q2 has
+ * nothing to compare on them. Exact list (Q4); shrink it by quoting the
+ * message start on the page.
+ */
+const UNQUOTED_PAGES = [
+  'CNGX1006',
+  'CNGX1007',
+  'CNGX1008',
+  'CNGX1009',
+  'CNGX1029',
+  'CNGX1032',
+  'CNGX1044',
+  'CNGX1045',
+  'CNGX1046',
+  'CNGX1047',
+  'CNGX1048',
+  'CNGX1049',
+  'CNGX1051',
+  'CNGX1052',
+  'CNGX1053',
+  'CNGX1064',
+  'CNGX1065',
+  'CNGX2006',
+  'CNGX2007',
+  'CNGX2008',
+  'CNGX2009',
+  'CNGX2010',
+  'CNGX2012',
+  'CNGX3001',
+  'CNGX3002',
+  'CNGX3003',
+  'CNGX3005',
+  'CNGX3006',
+  'CNGX3011',
+  'CNGX3014',
+  'CNGX3015',
+  'CNGX3016',
+  'CNGX3017',
 ];
 
 const LEAD_IN = /(?:starts with|(?:message|it) reads|for example|:)\s*$/;
@@ -158,6 +205,20 @@ export function unexemptedProblems(problems, exempt = QUOTE_EXEMPT) {
   ];
 }
 
+/** Codes of `pages` that carry no quote starting with their own `CNGXnnnn: `, sorted. */
+export function unquotedPages(pages) {
+  return pages
+    .filter(({ code, text }) => {
+      const prefix = `${code}: `;
+      return ![...text.matchAll(SPAN)].some((match) => {
+        const quote = spanText(match[2]);
+        return quote.startsWith(prefix) && quote !== prefix;
+      });
+    })
+    .map(({ code }) => code)
+    .sort();
+}
+
 function readCodePages() {
   return readdirSync(PAGES_DIR)
     .filter((name) => /^cngx\d{4}\.md$/.test(name))
@@ -239,6 +300,15 @@ describe('error-code page quotes - matcher', () => {
     ]);
   });
 
+  it('names the pages without a prefixed quote', () => {
+    const pages = [
+      { code: 'CNGX1002', text: 'The message starts with `CNGX1002: [cngxMenu] has`.' },
+      { code: 'CNGX1001', text: 'The menu warns when it has no label.' },
+      { code: 'CNGX1003', text: 'Only the bare prefix `CNGX1003: ` and a name `[cngxTab]`.' },
+    ];
+    expect(unquotedPages(pages)).toEqual(['CNGX1001', 'CNGX1003']);
+  });
+
   it('reports an exemption row that covers nothing', () => {
     expect(unexemptedProblems([], [{ code: 'CNGX1', quote: 'x', reason: 'r' }])).toEqual([
       'QUOTE_EXEMPT row CNGX1 `x` matches no failing quote',
@@ -257,6 +327,13 @@ describe('error-code page quotes - core-concepts/error-codes', () => {
       problems,
       'Quote the message start as the library prints it, from `CNGXnnnn: ` on, or add a QUOTE_EXEMPT row with a reason',
     ).toEqual([]);
+  });
+
+  it('lists exactly the pages that quote no message start (UNQUOTED_PAGES)', () => {
+    expect(
+      unquotedPages(readCodePages()),
+      'A page gained or lost a `CNGXnnnn: ` quote: update UNQUOTED_PAGES to match',
+    ).toEqual(UNQUOTED_PAGES);
   });
 
   it('gives every exemption a reason', () => {
