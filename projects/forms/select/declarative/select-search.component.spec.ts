@@ -133,3 +133,27 @@ describe('CngxSelectSearch - placeholder cascade', () => {
     expect(input.placeholder).toBe('Filter…');
   });
 });
+
+@Component({
+  template: `<cngx-select-search />`,
+  imports: [CngxSelectSearch],
+})
+class OrphanSearchHost {}
+
+describe('CngxSelectSearch placement (CNGX2018)', () => {
+  it('throws CNGX2018 outside a select shell', () => {
+    expect(() => TestBed.createComponent(OrphanSearchHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX2018',
+        message: expect.stringMatching(
+          /^CNGX2018: \[cngx-select-search\] must be placed inside <cngx-select-shell>\./,
+        ),
+      }),
+    );
+  });
+
+  it('does not throw inside a search host', () => {
+    expect(() => TestBed.createComponent(HostNoLabel).detectChanges()).not.toThrow();
+  });
+});

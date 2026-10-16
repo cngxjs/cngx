@@ -994,6 +994,17 @@
       ]
     },
     {
+      "code": "CNGX2018",
+      "lib": "forms",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Select search outside a select shell",
+      "page": "core-concepts/error-codes/cngx2018.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2018.html",
+      "status": "active",
+      "files": ["projects/forms/select/declarative/select-search-host.ts"]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",
