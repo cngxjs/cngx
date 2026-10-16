@@ -1005,6 +1005,17 @@
       "files": ["projects/forms/select/declarative/select-search-host.ts"]
     },
     {
+      "code": "CNGX2019",
+      "lib": "forms",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Filter-builder form-field control without a filter builder",
+      "page": "core-concepts/error-codes/cngx2019.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2019.html",
+      "status": "active",
+      "files": ["projects/forms/filter-builder/filter-builder-form-field-control.directive.ts"]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",

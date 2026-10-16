@@ -311,3 +311,27 @@ describe('CngxFilterBuilder - form-field bridge', () => {
     expect(presenter.disabled()).toBe(true);
   });
 });
+
+@Component({
+  template: `<div cngxFilterBuilderFormFieldControl></div>`,
+  imports: [CngxFilterBuilderFormFieldControl],
+})
+class OrphanControlHost {}
+
+describe('CngxFilterBuilderFormFieldControl placement (CNGX2019)', () => {
+  it('throws CNGX2019 without a filter-builder presenter', () => {
+    expect(() => TestBed.createComponent(OrphanControlHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX2019',
+        message: expect.stringMatching(
+          /^CNGX2019: \[cngxFilterBuilderFormFieldControl\] must be placed on <cngx-filter-builder> or an element with \[cngxFilterBuilderPresenter\]\./,
+        ),
+      }),
+    );
+  });
+
+  it('does not throw on <cngx-filter-builder>', () => {
+    expect(() => setupSignalFormsHost()).not.toThrow();
+  });
+});
