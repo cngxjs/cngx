@@ -30,22 +30,27 @@ class CountingLogger extends ListrLogger {
   }
 }
 
-function run(isTTY: boolean, env: Readonly<Record<string, string>>, quiet: boolean) {
-  const lines: string[] = [];
-  const logger: RenderLogger = {
+function recording(lines: string[]): RenderLogger {
+  return {
     info: (message) => lines.push(message),
     warn: (message) => lines.push(message),
     error: (message) => lines.push(message),
   };
+}
+
+function run(isTTY: boolean, env: Readonly<Record<string, string>>, quiet: boolean) {
+  const lines: string[] = [];
+  const terminalLines: string[] = [];
   const listrLogger = new CountingLogger();
   const renderer = createRenderer({
     isTTY,
     color: createPalette(env, isTTY),
     quiet,
-    logger,
+    logger: recording(lines),
+    terminal: recording(terminalLines),
     listr: { renderer: 'test', rendererOptions: { logger: listrLogger } },
   });
-  return { renderer, lines, listrEvents: () => listrLogger.events };
+  return { renderer, lines, terminalLines, listrEvents: () => listrLogger.events };
 }
 
 describe('createRenderer', () => {
@@ -68,5 +73,23 @@ describe('createRenderer', () => {
     await renderer.todo(PLAN);
 
     expect(listrEvents()).toBe(0);
+  });
+
+  it('writes the live renderer lines to the terminal, past the CLI logger', () => {
+    const { renderer, lines, terminalLines } = run(true, {}, false);
+
+    renderer.summary(['cngx applied 1 change.']);
+
+    expect(terminalLines).toEqual(['cngx applied 1 change.']);
+    expect(lines).toEqual([]);
+  });
+
+  it('keeps the plain lines on the CLI logger', () => {
+    const { renderer, lines, terminalLines } = run(true, { NO_COLOR: '1' }, false);
+
+    renderer.summary(['cngx applied 1 change.']);
+
+    expect(lines).toEqual(['cngx applied 1 change.']);
+    expect(terminalLines).toEqual([]);
   });
 });

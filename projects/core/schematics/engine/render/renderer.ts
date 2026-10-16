@@ -30,6 +30,8 @@ export interface TodoOptions {
  * `createChangePlan`, the summary lines from the caller.
  */
 export interface Renderer {
+  /** A line that opens a run, such as the release a migration belongs to. */
+  heading(text: string): void;
   preflight(items: readonly PreflightItem[]): void;
   todo(plan: ChangePlan, options?: TodoOptions): Promise<void>;
   summary(lines: readonly string[]): void;
@@ -43,6 +45,12 @@ export interface RendererOptions {
   /** `--quiet`: print only the summary. */
   readonly quiet: boolean;
   readonly logger: RenderLogger;
+  /**
+   * The terminal itself, for the live renderer: its lines start at the left
+   * edge next to the prompts and the task list instead of under the CLI's
+   * logger indent. `undefined` without a terminal.
+   */
+  readonly terminal?: RenderLogger;
   /** Overrides for the TTY task list; specs pass listr2's `test` renderer. */
   readonly listr?: TtyListrOptions;
 }
@@ -54,5 +62,7 @@ export interface RendererOptions {
  */
 export function createRenderer(options: RendererOptions): Renderer {
   const live = options.isTTY && options.color.enabled && !options.quiet;
-  return live ? createTtyRenderer(options) : createPlainRenderer(options);
+  return live
+    ? createTtyRenderer({ ...options, logger: options.terminal ?? options.logger })
+    : createPlainRenderer(options);
 }

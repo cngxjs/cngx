@@ -177,7 +177,7 @@ export function createMigration(migration: Migration): Rule {
     );
 
     const release = entryVersion(context) ?? versions.cngx;
-    context.logger.info(`cngx ${release} migration`);
+    renderer.heading(`cngx ${release} migration`);
     const dryRun = readDryRunFlag(process.argv);
     await renderer.todo(plan, { pending: dryRun });
     const unchanged = new Set<string>();

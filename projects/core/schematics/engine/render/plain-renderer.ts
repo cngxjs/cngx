@@ -31,6 +31,11 @@ export function createPlainRenderer({ color, quiet, logger }: PlainOptions): Ren
   }
 
   return {
+    heading(text) {
+      if (!quiet) {
+        logger.info(color.bold(text));
+      }
+    },
     preflight(items) {
       if (quiet || items.length === 0) {
         return;

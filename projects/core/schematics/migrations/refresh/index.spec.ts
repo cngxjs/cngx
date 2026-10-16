@@ -113,11 +113,21 @@ describe('refresh migration', () => {
     vi.stubEnv('NO_COLOR', '');
     vi.stubEnv('FORCE_COLOR', '1');
 
-    const { tree, logs } = await runRule(migrate(), createMemoryTree(before));
+    const written: string[] = [];
+    const write = vi.spyOn(process.stdout, 'write').mockImplementation((chunk) => {
+      written.push(String(chunk));
+      return true;
+    });
+    try {
+      const { tree, logs } = await runRule(migrate(), createMemoryTree(before));
 
-    expect(readTree(tree)).toEqual(after);
-    expect(logs).not.toContain('Planned (1):');
-    expect(logs).toContain(`cngx ${recordOf(after).cngxVersion} migration applied 1 change.`);
+      expect(readTree(tree)).toEqual(after);
+      expect(logs).toEqual([]);
+      expect(written).not.toContain('Planned (1):\n');
+      expect(written).toContain(`cngx ${recordOf(after).cngxVersion} migration applied 1 change.\n`);
+    } finally {
+      write.mockRestore();
+    }
   });
 
   it('plans one note for a missing manifest and changes nothing', async () => {

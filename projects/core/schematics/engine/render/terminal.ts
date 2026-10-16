@@ -1,9 +1,10 @@
 import { type ColorEnv, createPalette } from './palette';
 import { type RendererOptions, type RenderLogger } from './renderer';
 
-/** The slice of `process.stdout` the terminal check reads. */
+/** The slice of `process.stdout` the terminal check reads and the live renderer writes to. */
 export interface TerminalStream {
   readonly isTTY?: boolean;
+  write?(chunk: string): unknown;
 }
 
 // The Angular CLI's reading of a boolean env variable
@@ -59,5 +60,21 @@ export function createShellRendererOptions(
     color: createPalette(env, isTTY),
     quiet,
     logger,
+    terminal: isTTY ? streamLogger(stdout) : undefined,
   };
+}
+
+// The CLI hands a schematic an indenting child logger, so every line through
+// `context.logger` lands two levels in. The live renderer writes beside the
+// prompts and the task list, which go to the stream straight, so its lines
+// go there too and start at the left edge like theirs.
+function streamLogger(stream: TerminalStream): RenderLogger | undefined {
+  const { write } = stream;
+  if (write === undefined) {
+    return undefined;
+  }
+  const line = (message: string): void => {
+    write.call(stream, `${message}\n`);
+  };
+  return { info: line, warn: line, error: line };
 }

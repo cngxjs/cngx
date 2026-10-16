@@ -126,6 +126,17 @@ describe('createPlainRenderer', () => {
     ]);
   });
 
+  it('prints a heading unless quiet', () => {
+    const loud = renderer(false);
+    const quiet = renderer(true);
+
+    loud.renderer.heading('cngx 0.2.0 migration');
+    quiet.renderer.heading('cngx 0.2.0 migration');
+
+    expect(loud.lines).toEqual(['info cngx 0.2.0 migration']);
+    expect(quiet.lines).toEqual([]);
+  });
+
   it('emits only the summary when quiet', async () => {
     const { lines, renderer: plain } = renderer(true);
 

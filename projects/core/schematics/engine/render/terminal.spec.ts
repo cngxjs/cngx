@@ -91,3 +91,21 @@ describe('canReachPrompts', () => {
     expect(canReachPrompts({ NG_FORCE_TTY: 'true' }, true, {})).toBe(true);
   });
 });
+
+describe('the terminal writer', () => {
+  it('writes whole lines to the stream on a terminal', () => {
+    const written: string[] = [];
+    const result = createShellRendererOptions({}, { isTTY: true, write: (chunk) => written.push(chunk) }, LOGGER, false);
+
+    result.terminal?.info('Preflight:');
+    result.terminal?.warn('  ! warn');
+
+    expect(written).toEqual(['Preflight:\n', '  ! warn\n']);
+  });
+
+  it('is absent without a terminal', () => {
+    const result = createShellRendererOptions({}, { isTTY: false, write: () => true }, LOGGER, false);
+
+    expect(result.terminal).toBeUndefined();
+  });
+});
