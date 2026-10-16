@@ -1,6 +1,7 @@
-import { InjectionToken, type Signal, type WritableSignal } from '@angular/core';
+import { inject, InjectionToken, type Signal, type WritableSignal } from '@angular/core';
 
 import type { CngxFilter, CngxSort } from '@cngx/common/data';
+import { CngxRuntimeError } from '@cngx/utils';
 
 /**
  * UI-local context a {@link CngxDataGridAccordion} exposes so each
@@ -57,3 +58,25 @@ export interface CngxDataGridAccordionContext {
 export const CNGX_DATA_GRID_ACCORDION = new InjectionToken<CngxDataGridAccordionContext>(
   'CNGX_DATA_GRID_ACCORDION',
 );
+
+/**
+ * Inject the {@link CNGX_DATA_GRID_ACCORDION} of the surrounding grid from a
+ * row, filter or sort header. Throws a `CngxRuntimeError` with code
+ * `CNGX3022` when no `<cngx-data-grid-accordion>` is above it, in development
+ * and production alike. `selector` names the part in the development
+ * message.
+ *
+ * @internal
+ */
+export function injectDataGridAccordion(selector: string): CngxDataGridAccordionContext {
+  const grid = inject(CNGX_DATA_GRID_ACCORDION, { optional: true });
+  if (!grid) {
+    throw new CngxRuntimeError(
+      'CNGX3022',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        `[${selector}] must be placed inside <cngx-data-grid-accordion>.`,
+    );
+  }
+  return grid;
+}

@@ -6,7 +6,7 @@ import { formatMessage } from '@cngx/core/i18n';
 import { injectLocale, nextUid } from '@cngx/core/utils';
 
 import { injectDataGridAccordionLabels } from './i18n/data-grid-accordion-i18n';
-import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
+import { injectDataGridAccordion } from './data-grid-accordion.token';
 
 /**
  * Makes a {@link CngxDataGridHeader} cell sort the grid it lives in with a single
@@ -121,7 +121,7 @@ export class CngxDgaSortHeader {
     alias: 'cngxDgaSortAnnounceCleared',
   });
 
-  private readonly grid = inject(CNGX_DATA_GRID_ACCORDION);
+  private readonly grid = injectDataGridAccordion('cngxDgaSortHeader');
   private readonly announcer = inject(CngxLiveAnnouncer);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly renderer = inject(Renderer2);

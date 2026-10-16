@@ -2,7 +2,7 @@ import { DOCUMENT } from '@angular/common';
 import { computed, DestroyRef, Directive, effect, ElementRef, inject, input } from '@angular/core';
 
 import { injectDataGridAccordionLabels } from './i18n/data-grid-accordion-i18n';
-import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
+import { injectDataGridAccordion } from './data-grid-accordion.token';
 
 /**
  * Turns a projected `<input>` into the filter box for the {@link CngxDataGridAccordion}
@@ -61,7 +61,7 @@ export class CngxDgaFilter {
     () => this.ariaLabel() ?? this.labels().filterRows,
   );
 
-  private readonly grid = inject(CNGX_DATA_GRID_ACCORDION);
+  private readonly grid = injectDataGridAccordion('cngxDgaFilter');
   private readonly document = inject(DOCUMENT);
   private readonly element = inject<ElementRef<HTMLInputElement>>(ElementRef).nativeElement;
   private timer: ReturnType<typeof setTimeout> | undefined;

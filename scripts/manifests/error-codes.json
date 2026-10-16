@@ -1267,6 +1267,17 @@
       ]
     },
     {
+      "code": "CNGX3022",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Data-grid part outside a data grid",
+      "page": "core-concepts/error-codes/cngx3022.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3022.html",
+      "status": "active",
+      "files": ["projects/ui/data-grid-accordion/data-grid-accordion.token.ts"]
+    },
+    {
       "code": "CNGX4001",
       "lib": "data-display",
       "severity": "warn",
