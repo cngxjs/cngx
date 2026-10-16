@@ -473,6 +473,20 @@ function schematicEntries() {
     });
 }
 
+// A relative `$schema` points into the workspace's node_modules, which a
+// consumer's install does not have; the shipped collections leave it out.
+describe('shipped collection files', () => {
+  const collections = PACKED_LIBS.flatMap((lib) =>
+    [join(lib, 'schematics', 'collection.json'), join(lib, 'schematics', 'migrations', 'migrations.json')].filter((file) =>
+      existsSync(join(ROOT, 'dist', file)),
+    ),
+  );
+
+  it.each(collections)('dist/%s carries no $schema', (file) => {
+    expect(JSON.parse(readFileSync(join(ROOT, 'dist', file), 'utf8'))).not.toHaveProperty('$schema');
+  });
+});
+
 describe('schematic bundle budget', () => {
   it('finds a built entry for every declared collection', () => {
     expect(schematicEntries()).toEqual(expect.arrayContaining(['core/schematics/ng-add/index.js', 'ui/schematics/ng-add/index.js']));
