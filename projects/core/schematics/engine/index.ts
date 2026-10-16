@@ -121,4 +121,4 @@ export {
   type RenderLogger,
 } from './render/renderer';
 export { createSummary, type SummaryHeadlines } from './render/summary';
-export { createShellRendererOptions, isCi, type TerminalStream } from './render/terminal';
+export { canReachPrompts, createShellRendererOptions, isCi, type TerminalStream } from './render/terminal';

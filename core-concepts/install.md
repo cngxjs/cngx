@@ -73,7 +73,9 @@ install. Nothing outside the project is written.
    own providers, a config written into `bootstrapApplication(App, {...})`,
    or another UI library (Material, PrimeNG, Tailwind, Bootstrap) counts as
    existing and gets one `Apply these changes?` before anything is written.
-   That question needs a terminal: under CI, without a terminal, or with
+   That question needs a terminal on both stdout and stdin, read the way the
+   Angular CLI reads it (`CI=1` or `CI=true` counts as CI, `NG_FORCE_TTY`
+   overrides both): under CI, without a terminal, or with
    `--no-prompts`, `--interactive=false` or `--defaults`, the plan applies
    and one line says which of them kept the question away. `--yes` skips the question and the line. A fresh app gets no
    confirmation.

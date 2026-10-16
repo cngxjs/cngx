@@ -265,13 +265,34 @@ const DEFINE_THEME_SCSS_APP = {
 
 describe('ngAdd', () => {
   const isTTY = process.stdout.isTTY;
+  const stdinIsTTY = process.stdin.isTTY;
 
+  // Prompts need both ends; the cases flip stdout and keep an interactive stdin.
   beforeEach(() => {
     process.stdout.isTTY = false;
+    process.stdin.isTTY = true;
   });
 
   afterEach(() => {
     process.stdout.isTTY = isTTY;
+    process.stdin.isTTY = stdinIsTTY;
+  });
+
+  it('asks nothing on a terminal whose stdin is not interactive', async () => {
+    vi.stubEnv('CI', '');
+    vi.stubEnv('NO_COLOR', '1');
+    process.stdout.isTTY = true;
+    process.stdin.isTTY = false;
+    terminal.confirms = [];
+    terminal.asked = [];
+    try {
+      const run = await runRule(ngAdd({}), createFixtureTree('standalone-app', { 'src/app/other.ts': SECOND_COMPONENT }));
+
+      expect([...terminal.asked, ...terminal.confirms]).toEqual([]);
+      expect(run.logs).toContain('No terminal to confirm in; applying the plan. Pass --yes to apply without this line.');
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   describe.each(['minimal', 'recommended', 'full'] as const)('the %s preset', (preset) => {
