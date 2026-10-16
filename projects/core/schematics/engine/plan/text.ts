@@ -12,3 +12,8 @@ export function errorMessage(error: unknown): string {
 export function joinNames(names: readonly string[]): string {
   return names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
+
+/** The line ending an edit writes: CRLF when the file already uses it, else LF. */
+export function newlineOf(content: string): string {
+  return content.includes('\r\n') ? '\r\n' : '\n';
+}

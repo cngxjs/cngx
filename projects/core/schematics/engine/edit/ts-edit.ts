@@ -1,5 +1,7 @@
 import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeScript/lib/typescript';
 
+import { newlineOf } from '../plan/text';
+
 /**
  * Which array literal to edit: the default export (`export default [...]`,
  * `module.exports = [...]`, or the first array argument of a wrapper call
@@ -497,7 +499,7 @@ function headerEnd(content: string, statements: readonly ts.Statement[]): Insert
  * it goes after a shebang and the directive prologue, else at the top.
  */
 export function insertAfterImports(content: string, statement: string): string {
-  const newline = content.includes('\r\n') ? '\r\n' : '\n';
+  const newline = newlineOf(content);
   const statements = parse(content).statements;
   const last = statements.filter(isImportStatement).pop();
   const point = last === undefined ? headerEnd(content, statements) : insertionPoint(content, last.getEnd());
@@ -533,7 +535,7 @@ export function addToArrayLiteral(content: string, selector: ArraySelector, item
   const close = array.getEnd() - 1;
   const open = array.getStart(source);
   const multiline = content.slice(open, close).includes('\n');
-  const newline = content.includes('\r\n') ? '\r\n' : '\n';
+  const newline = newlineOf(content);
   if (elements.length === 0) {
     if (!multiline) {
       return `${content.slice(0, close)}${item.trim()}${content.slice(close)}`;
