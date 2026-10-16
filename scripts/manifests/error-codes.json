@@ -1344,6 +1344,17 @@
       "files": ["projects/ui/tabs/tab-overflow.component.ts"]
     },
     {
+      "code": "CNGX3024",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Breadcrumb overflow menu outside a breadcrumb",
+      "page": "core-concepts/error-codes/cngx3024.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3024.html",
+      "status": "active",
+      "files": ["projects/ui/breadcrumb/breadcrumb-overflow.component.ts"]
+    },
+    {
       "code": "CNGX4001",
       "lib": "data-display",
       "severity": "warn",
