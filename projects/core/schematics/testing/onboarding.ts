@@ -10,6 +10,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
     project: 'fixture-app',
     manifest: parseManifest(JSON.stringify({ dependencies: { '@angular/core': '^21.2.0' } })),
     sourceRoot: 'src',
+    hasBuildTarget: true,
     angularVersion: '21.2.0',
     angularRange: '^21.2.0',
     stylesPath: 'src/styles.css',

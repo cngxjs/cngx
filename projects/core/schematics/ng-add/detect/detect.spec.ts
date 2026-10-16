@@ -59,6 +59,7 @@ describe('detectProject', () => {
       project: 'fixture-app',
       manifest: parseManifest(createFixtureTree().readText('package.json')),
       sourceRoot: 'src',
+      hasBuildTarget: true,
       angularVersion: '21.2.0',
       angularRange: '^21.2.0',
       stylesPath: 'src/styles.css',

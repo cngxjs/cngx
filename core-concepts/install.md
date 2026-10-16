@@ -45,6 +45,10 @@ install. Nothing outside the project is written.
    before anything is planned. A specifier that carries no version
    (`catalog:`, `workspace:*`, a dist-tag) with nothing installed is a warn
    line, and the run goes on; the `@angular/cdk` pin then becomes a note.
+   A project without a `build` target in `angular.json` fails its project
+   line and stops the run the same way. A `package.json` that does not
+   parse, an `angular.json` without projects, or a build style entry whose
+   file is missing stops the run with one line naming the file.
 3. **Ask.** With a terminal attached it asks the open questions (below). A
    flag on the command line answers its question; without a terminal the
    preset answers, or on a re-run the answers the last install recorded.

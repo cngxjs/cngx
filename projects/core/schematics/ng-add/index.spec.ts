@@ -719,6 +719,41 @@ describe('ngAdd', () => {
     await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.2 or newer; this app declares ^20.3.0.');
   });
 
+  it('names a package.json that does not parse', async () => {
+    const tree = createFixtureTree('standalone-app', { 'package.json': '{ "dependencies": ' });
+
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow(/^package\.json is not valid JSON: .+\.$/);
+  });
+
+  it('names an angular.json without projects', async () => {
+    const workspace = JSON.parse(readFixture('standalone-app')['angular.json']) as Record<string, unknown>;
+    const tree = createFixtureTree('standalone-app', { 'angular.json': JSON.stringify({ ...workspace, projects: {} }) });
+
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow('angular.json lists no projects.');
+  });
+
+  it('names a listed stylesheet that is missing on disk', async () => {
+    const tree = createFixtureTree('standalone-app', {
+      'angular.json': withWorkspace((project) => {
+        project['architect']['build']['options']['styles'] = ['src/missing.css'];
+      }),
+    });
+
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow(/^src\/missing\.css is planned for .+ but does not exist\.$/);
+  });
+
+  it('refuses a project without a build target', async () => {
+    const tree = createFixtureTree('standalone-app', {
+      'angular.json': withWorkspace((project) => {
+        delete project['architect']['build'];
+      }),
+    });
+
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow(
+      'Project "fixture-app" has no build target in angular.json; cngx wires styles and providers through it.',
+    );
+  });
+
   it('refuses an older installed Angular behind a catalog specifier', async () => {
     const tree = createFixtureTree('standalone-app', {
       'package.json': withDependencies({ '@angular/core': 'catalog:' }),

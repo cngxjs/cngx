@@ -71,8 +71,9 @@ const GIT_ITEMS: Readonly<Record<GitState, PreflightItem>> = {
  * The checklist printed before any question: the Angular version against
  * the supported floor, the project with its maturity (only an existing app
  * is asked to confirm the plan) and the git state. An Angular version below
- * the floor is the one `fail`; the shell renders it before it refuses the
- * run. A version it cannot read is a `warn`, and the run goes on.
+ * the floor and a project without a build target are the `fail` lines; the
+ * shell renders them before it refuses the run. A version it cannot read is
+ * a `warn`, and the run goes on.
  */
 export function preflightItems({
   facts,
@@ -89,11 +90,17 @@ export function preflightItems({
           ? `no version to read from it and no installed @angular/core; cngx needs ${angular.floor} or newer`
           : `cngx needs ${angular.floor} or newer`,
     },
-    {
-      label: `Project ${facts.project}`,
-      status: 'ok',
-      detail: facts.maturity === 'fresh' ? 'fresh app' : 'existing app',
-    },
+    facts.hasBuildTarget
+      ? {
+          label: `Project ${facts.project}`,
+          status: 'ok',
+          detail: facts.maturity === 'fresh' ? 'fresh app' : 'existing app',
+        }
+      : {
+          label: `Project ${facts.project}`,
+          status: 'fail',
+          detail: 'no build target in angular.json; cngx wires styles and providers through it',
+        },
     GIT_ITEMS[git],
   ];
 }

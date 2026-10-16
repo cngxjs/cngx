@@ -26,6 +26,10 @@ describe('parseManifest', () => {
     expect(manifest).toEqual({ version: undefined, dependencies: {}, devDependencies: { c: '1' }, peerDependencies: {} });
   });
 
+  it('names a body that does not parse', () => {
+    expect(() => parseManifest('{ "name": ')).toThrow(/^package\.json is not valid JSON: .+\.$/);
+  });
+
   it('rejects a body that is not a JSON object', () => {
     expect(() => parseManifest('[]')).toThrow('package.json is not a JSON object.');
   });

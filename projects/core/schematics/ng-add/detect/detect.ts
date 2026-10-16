@@ -1,4 +1,5 @@
 import { type workspaces } from '@angular-devkit/core';
+import { SchematicsException } from '@angular-devkit/schematics';
 import { posix } from 'node:path';
 
 import {
@@ -47,6 +48,7 @@ import {
   angularVersionOf,
   buildOptions,
   globalStylesheet,
+  hasBuildTarget,
   type Read,
   resolveProject,
   sourceLocaleOf,
@@ -84,6 +86,8 @@ export interface ProjectFacts {
   /** The app's `package.json`; steps read declared ranges from it. */
   readonly manifest: PackageManifest;
   readonly sourceRoot: string;
+  /** angular.json gives the project a `build` target; ng add refuses one without. */
+  readonly hasBuildTarget: boolean;
   /** The installed `@angular/core` version, else the lowest the declared range allows; `undefined` when neither reads. */
   readonly angularVersion: string | undefined;
   /** The `@angular/core` specifier as declared in dependencies or devDependencies, verbatim. */
@@ -140,6 +144,9 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const [projectName, project] = resolveProject(workspace, name);
   const sourceRoot = project.sourceRoot ?? posix.join(project.root, 'src');
   const options = buildOptions(project);
+  if (!tree.exists('package.json')) {
+    throw new SchematicsException('package.json is missing at the workspace root.');
+  }
   const manifest = parseManifest(tree.readText('package.json'));
 
   // The component count is the only fact read from source contents, so only
@@ -175,6 +182,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     project: projectName,
     manifest,
     sourceRoot,
+    hasBuildTarget: hasBuildTarget(project),
     angularVersion: angularVersionOf(read, angularRange),
     angularRange,
     stylesPath,

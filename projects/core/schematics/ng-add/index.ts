@@ -61,6 +61,16 @@ function assertSupportedAngular(facts: ProjectFacts, peerRange: string): void {
   }
 }
 
+// The build target carries the styles and the main file every step plans
+// against; `addStyleEntry` in apply stays the last guard.
+function assertBuildTarget(facts: ProjectFacts): void {
+  if (!facts.hasBuildTarget) {
+    throw new SchematicsException(
+      `Project "${facts.project}" has no build target in angular.json; cngx wires styles and providers through it.`,
+    );
+  }
+}
+
 /** Why the run cannot ask before it applies to an existing app. */
 interface ConfirmContext {
   readonly isTTY: boolean;
@@ -115,6 +125,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
       preflightItems({ facts, peerRange: versions.angular, git: readGitState(process.cwd()) }),
     );
     assertSupportedAngular(facts, versions.angular);
+    assertBuildTarget(facts);
 
     const flow = createPromptFlow({
       canPrompt: interactive && options.preset !== 'minimal',

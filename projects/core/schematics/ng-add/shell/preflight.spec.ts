@@ -110,6 +110,20 @@ describe('preflightItems', () => {
     });
   });
 
+  it('fails the project line for a project without a build target', () => {
+    const [, project] = preflightItems({
+      facts: createFacts({ hasBuildTarget: false }),
+      peerRange: PEER_RANGE,
+      git: 'clean',
+    });
+
+    expect(project).toEqual({
+      label: 'Project fixture-app',
+      status: 'fail',
+      detail: 'no build target in angular.json; cngx wires styles and providers through it',
+    });
+  });
+
   it('names an existing app', () => {
     const [, project] = preflightItems({
       facts: createFacts({ maturity: 'existing' }),

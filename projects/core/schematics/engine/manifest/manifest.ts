@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { SchematicsException } from '@angular-devkit/schematics';
+
 import { isRecord } from '../plan/text';
 
 export interface PackageManifest {
@@ -20,11 +22,20 @@ function stringEntries(value: unknown): Readonly<Record<string, string>> {
   );
 }
 
+function parseJson(content: string): unknown {
+  try {
+    return JSON.parse(content);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new SchematicsException(`package.json is not valid JSON: ${message.replace(/\.$/, '')}.`);
+  }
+}
+
 /** Parses a `package.json` body; malformed sections read as empty. */
 export function parseManifest(content: string): PackageManifest {
-  const parsed: unknown = JSON.parse(content);
+  const parsed = parseJson(content);
   if (!isRecord(parsed)) {
-    throw new Error('package.json is not a JSON object.');
+    throw new SchematicsException('package.json is not a JSON object.');
   }
   return {
     version: typeof parsed['version'] === 'string' ? parsed['version'] : undefined,

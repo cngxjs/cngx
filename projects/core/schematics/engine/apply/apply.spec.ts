@@ -52,6 +52,15 @@ describe('applyChangePlan', () => {
     ).rejects.toThrow('.cngx/README.md already exists; cngx does not overwrite it.');
   });
 
+  it.each([
+    ['edit-file', { kind: 'edit-file', edit: (content: string) => content }],
+    ['add-style-import', { kind: 'add-style-import', statement: "@import '@cngx/themes/cngx.css';" }],
+  ] as const)('names a planned %s target that does not exist', async (_kind, change) => {
+    await expect(
+      apply([{ ...BASE, ...change, id: 'm', label: 'Import cngx.css', path: 'src/missing.css' }]),
+    ).rejects.toThrow('src/missing.css is planned for Import cngx.css but does not exist.');
+  });
+
   it('edits a file through its pure transform', async () => {
     const tree = await apply(
       [{ ...BASE, kind: 'edit-file', id: 'e', path: 'a.txt', edit: (content) => content.toUpperCase() }],

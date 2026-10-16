@@ -1,4 +1,5 @@
 import { type workspaces } from '@angular-devkit/core';
+import { SchematicsException } from '@angular-devkit/schematics';
 
 import { isRecord, parseManifest, styleEntryPath } from '../../engine';
 
@@ -15,14 +16,21 @@ export function resolveProject(
     (typeof defaultProject === 'string' ? defaultProject : undefined) ??
     [...workspace.projects].find(([, project]) => project.extensions['projectType'] === 'application')?.[0] ??
     [...workspace.projects.keys()][0];
-  const project = candidate === undefined ? undefined : workspace.projects.get(candidate);
-  if (candidate === undefined || project === undefined) {
-    throw new Error(`Project "${candidate ?? ''}" not found in angular.json.`);
+  if (candidate === undefined) {
+    throw new SchematicsException('angular.json lists no projects.');
+  }
+  const project = workspace.projects.get(candidate);
+  if (project === undefined) {
+    throw new SchematicsException(`Project "${candidate}" not found in angular.json.`);
   }
   if (project.extensions['projectType'] === 'library') {
-    throw new Error(`Project "${candidate}" is a library; cngx ng-add sets up an application.`);
+    throw new SchematicsException(`Project "${candidate}" is a library; cngx ng-add sets up an application.`);
   }
   return [candidate, project];
+}
+
+export function hasBuildTarget(project: workspaces.ProjectDefinition): boolean {
+  return project.targets.has('build');
 }
 
 export function buildOptions(project: workspaces.ProjectDefinition): Readonly<Record<string, unknown>> {

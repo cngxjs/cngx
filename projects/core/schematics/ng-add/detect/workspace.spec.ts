@@ -1,4 +1,5 @@
 import { type workspaces } from '@angular-devkit/core';
+import { SchematicsException } from '@angular-devkit/schematics';
 import { readWorkspace } from '@schematics/angular/utility';
 import { describe, expect, it } from 'vitest';
 
@@ -7,6 +8,7 @@ import {
   angularVersionOf,
   buildOptions,
   globalStylesheet,
+  hasBuildTarget,
   resolveProject,
   sourceLocaleOf,
   styleEntries,
@@ -60,6 +62,14 @@ describe('resolveProject', () => {
     });
   });
 
+  it('names an angular.json without projects', async () => {
+    const workspace = stockWorkspace();
+    workspace.projects = {};
+    const definition = await workspaceOf(workspace);
+    expect(() => resolveProject(definition, undefined)).toThrow(SchematicsException);
+    expect(() => resolveProject(definition, undefined)).toThrow('angular.json lists no projects.');
+  });
+
   it('refuses a library project', async () => {
     const workspace = stockWorkspace();
     workspace.projects['fixture-app']['projectType'] = 'library';
@@ -67,6 +77,18 @@ describe('resolveProject', () => {
     expect(() => resolveProject(definition, undefined)).toThrow(
       'Project "fixture-app" is a library; cngx ng-add sets up an application.',
     );
+  });
+});
+
+describe('hasBuildTarget', () => {
+  it('tells a project with a build target from one without', async () => {
+    const workspace = stockWorkspace();
+    const withTarget = (await workspaceOf(workspace)).projects.get('fixture-app');
+    workspace.projects['fixture-app'].architect = {} as never;
+    const without = (await workspaceOf(workspace)).projects.get('fixture-app');
+
+    expect(withTarget !== undefined && hasBuildTarget(withTarget)).toBe(true);
+    expect(without !== undefined && hasBuildTarget(without)).toBe(false);
   });
 });
 
