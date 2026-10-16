@@ -34,13 +34,17 @@ install. Nothing outside the project is written.
    theme, an ESLint flat config, editor folders (`.claude`, `.cursor`,
    `.vscode`), and an earlier `.cngx/install.json`.
 2. **Preflight.** A short checklist before the cngx questions: the app's
-   Angular range against the one `@cngx/core` supports, the project and
+   Angular version against the one `@cngx/core` supports, the project and
    whether it counts as fresh or existing, and the git state. Uncommitted
    changes or a missing repository are flagged, since the cngx changes then
    have no clean `git diff` to review against. The `package.json` and
-   lockfile edits of the package install `ng add` runs first do not count. An app older than the supported Angular
-   range shows its failed line, then the run stops before anything is
-   planned.
+   lockfile edits of the package install `ng add` runs first do not count.
+   The version comes from the installed `@angular/core`, else from the
+   `@angular/core` range in `dependencies` or `devDependencies`. An app older
+   than the supported Angular shows its failed line, then the run stops
+   before anything is planned. A specifier that carries no version
+   (`catalog:`, `workspace:*`, a dist-tag) with nothing installed is a warn
+   line, and the run goes on; the `@angular/cdk` pin then becomes a note.
 3. **Ask.** With a terminal attached it asks the open questions (below). A
    flag on the command line answers its question; without a terminal the
    preset answers, or on a re-run the answers the last install recorded.

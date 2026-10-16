@@ -719,6 +719,32 @@ describe('ngAdd', () => {
     await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.2 or newer; this app declares ^20.3.0.');
   });
 
+  it('refuses an older installed Angular behind a catalog specifier', async () => {
+    const tree = createFixtureTree('standalone-app', {
+      'package.json': withDependencies({ '@angular/core': 'catalog:' }),
+      'node_modules/@angular/core/package.json': JSON.stringify({ name: '@angular/core', version: '19.2.3' }),
+    });
+
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.2 or newer; this app declares catalog:.');
+  });
+
+  it('runs on when no Angular version can be read and pins the CDK to the installed version', async () => {
+    const unreadable = await runRule(
+      ngAdd({}),
+      createFixtureTree('standalone-app', { 'package.json': withDependencies({ '@angular/core': 'workspace:*' }) }),
+    );
+    expect(json<{ dependencies: Record<string, string> }>(unreadable.tree, 'package.json').dependencies['@angular/cdk']).toBeUndefined();
+
+    const installed = await runRule(
+      ngAdd({}),
+      createFixtureTree('standalone-app', {
+        'package.json': withDependencies({ '@angular/core': 'catalog:' }),
+        'node_modules/@angular/core/package.json': JSON.stringify({ name: '@angular/core', version: '21.2.5' }),
+      }),
+    );
+    expect(json<{ dependencies: Record<string, string> }>(installed.tree, 'package.json').dependencies['@angular/cdk']).toBe('^21.2.0');
+  });
+
   it.each([
     ['a standalone css app', {}],
     ['a Material css app', MATERIAL_CSS_APP],

@@ -50,9 +50,11 @@ function planSteps(withdrawn: ReadonlySet<string>): readonly Step[] {
 
 // The floor is the `@angular/core` range @cngx/core peers on, stamped into
 // versions.json at publish time. The preflight line shows the refusal first.
+// Only a version read below the floor refuses; one cngx cannot read is the
+// preflight's warn line.
 function assertSupportedAngular(facts: ProjectFacts, peerRange: string): void {
   const { supported, floor, declared } = angularSupport(facts, peerRange);
-  if (!supported) {
+  if (supported === false) {
     throw new SchematicsException(
       `cngx needs Angular ${floor} or newer; this app declares ${declared}.`,
     );

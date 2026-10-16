@@ -44,13 +44,13 @@ import {
   type TailwindFacts,
 } from './styles';
 import {
+  angularVersionOf,
   buildOptions,
   globalStylesheet,
   type Read,
   resolveProject,
   sourceLocaleOf,
   styleEntries,
-  versionOf,
 } from './workspace';
 
 export {
@@ -84,7 +84,10 @@ export interface ProjectFacts {
   /** The app's `package.json`; steps read declared ranges from it. */
   readonly manifest: PackageManifest;
   readonly sourceRoot: string;
+  /** The installed `@angular/core` version, else the lowest the declared range allows; `undefined` when neither reads. */
   readonly angularVersion: string | undefined;
+  /** The `@angular/core` specifier as declared in dependencies or devDependencies, verbatim. */
+  readonly angularRange: string | undefined;
   /** The global stylesheet; `undefined` when the build lists none. */
   readonly stylesPath: string | undefined;
   /** `@cngx/themes/cngx.css` is imported by a global stylesheet or listed as a style entry. */
@@ -166,12 +169,14 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const componentCount = appSources.filter(({ content }) => /@Component\s*\(/.test(content)).length;
 
   const mcpConfigs = mcpConfigsOf(tree);
+  const angularRange = declaredRange(manifest, '@angular/core');
 
   return {
     project: projectName,
     manifest,
     sourceRoot,
-    angularVersion: versionOf(declaredRange(manifest, '@angular/core')),
+    angularVersion: angularVersionOf(read, angularRange),
+    angularRange,
     stylesPath,
     cngxStylesheet: importsCngxStylesheet(read, entries),
     cngxThemePath: existingCngxTheme(tree, read, sourceRoot, entries),

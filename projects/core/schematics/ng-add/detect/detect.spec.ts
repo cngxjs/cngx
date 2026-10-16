@@ -60,6 +60,7 @@ describe('detectProject', () => {
       manifest: parseManifest(createFixtureTree().readText('package.json')),
       sourceRoot: 'src',
       angularVersion: '21.2.0',
+      angularRange: '^21.2.0',
       stylesPath: 'src/styles.css',
       cngxStylesheet: false,
       cngxThemePath: undefined,
@@ -82,6 +83,21 @@ describe('detectProject', () => {
       sourceLocale: undefined,
       maturity: 'fresh',
     } satisfies ProjectFacts);
+  });
+
+  it('reads the Angular version from the installed package and the range from either dependency map', async () => {
+    const manifest = JSON.parse(createFixtureTree().readText('package.json')) as {
+      dependencies: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+    const { '@angular/core': _core, ...dependencies } = manifest.dependencies;
+    const facts = await detect({
+      'package.json': JSON.stringify({ ...manifest, dependencies, devDependencies: { '@angular/core': 'catalog:' } }),
+      'node_modules/@angular/core/package.json': JSON.stringify({ name: '@angular/core', version: '21.2.5' }),
+    });
+
+    expect(facts.angularRange).toBe('catalog:');
+    expect(facts.angularVersion).toBe('21.2.5');
   });
 
   it('reads the existing tailwind app as an existing scss app without eslint', async () => {

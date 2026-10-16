@@ -98,17 +98,35 @@ function themeRefusal(missing: readonly CngxLib[], provenance: Provenance): Step
   };
 }
 
-// assertSupportedAngular refuses an app without a declared @angular/core
-// before any step plans, so the note only guards a direct call.
-function cdkDependency(manifest: PackageManifest, provenance: Provenance): StepResult {
-  const range = declaredRange(manifest, '@angular/core');
+// A specifier the CDK range can copy: plain semver, no protocol
+// (`catalog:`, `workspace:*`, `npm:`) and no dist-tag.
+const PLAIN_SEMVER_RANGE = /^[\s\d.^~<>=|xX*v-]+$/;
+
+/**
+ * The CDK range for the app's Angular: `^<major>.<minor>.0` of the resolved
+ * version, else the declared range when it is plain semver, else `undefined`.
+ */
+function cdkRange(facts: ProjectFacts): string | undefined {
+  const version = /^(\d+)\.(\d+)/.exec(facts.angularVersion ?? '');
+  if (version !== null) {
+    return `^${version[1]}.${version[2]}.0`;
+  }
+  const declared = facts.angularRange;
+  return declared !== undefined && PLAIN_SEMVER_RANGE.test(declared) && /\d/.test(declared) ? declared : undefined;
+}
+
+function cdkDependency(facts: ProjectFacts, provenance: Provenance): StepResult {
+  const range = cdkRange(facts);
   if (range === undefined) {
     return {
       changes: [
         createNote({
           id: 'dependency:@angular/cdk',
           label: 'Add @angular/cdk yourself',
-          reason: 'package.json declares no @angular/core range to match it to',
+          reason:
+            facts.angularRange === undefined
+              ? 'package.json declares no @angular/core range to match it to'
+              : `cngx cannot read an Angular version from ${facts.angularRange}; add the @angular/cdk matching your @angular/core`,
           provenance,
         }),
       ],
@@ -116,7 +134,7 @@ function cdkDependency(manifest: PackageManifest, provenance: Provenance): StepR
     };
   }
   return planThirdPartyDependency(
-    manifest,
+    facts.manifest,
     { name: '@angular/cdk', range, reason: 'a peer of the selected @cngx packages' },
     provenance,
   );
@@ -124,8 +142,8 @@ function cdkDependency(manifest: PackageManifest, provenance: Provenance): StepR
 
 /**
  * Pins every selected @cngx package and its peers to the exact release,
- * `@cngx/themes` when a theme is wanted and installable, the CDK at the app's
- * Angular range when a package needs it, and `@floating-ui/dom` on request
+ * `@cngx/themes` when a theme is wanted and installable, the CDK matching the
+ * app's Angular when a package needs it, and `@floating-ui/dom` on request
  * when `@cngx/common` (which provides the fallback) is selected.
  * `@angular/material` is never added: the bridge themes an app that has it.
  */
@@ -138,7 +156,7 @@ export function planDependencies(facts: ProjectFacts, answers: OnboardingAnswers
   return mergeStepResults([
     ...packages.map((name) => cngxDependency(facts.manifest, name, versions.cngx, provenance)),
     ...(missing.length > 0 ? [themeRefusal(missing, provenance)] : []),
-    ...(libs.some((lib) => NEEDS_CDK.includes(lib)) ? [cdkDependency(facts.manifest, provenance)] : []),
+    ...(libs.some((lib) => NEEDS_CDK.includes(lib)) ? [cdkDependency(facts, provenance)] : []),
     ...(answers.floatingFallback && libs.includes('common')
       ? [
           planThirdPartyDependency(

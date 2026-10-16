@@ -3,7 +3,15 @@ import { readWorkspace } from '@schematics/angular/utility';
 import { describe, expect, it } from 'vitest';
 
 import { createFixtureTree } from '../../testing/run-schematic';
-import { buildOptions, globalStylesheet, resolveProject, sourceLocaleOf, styleEntries, versionOf } from './workspace';
+import {
+  angularVersionOf,
+  buildOptions,
+  globalStylesheet,
+  resolveProject,
+  sourceLocaleOf,
+  styleEntries,
+  versionOf,
+} from './workspace';
 
 type WorkspaceJson = {
   projects: Record<string, { architect: { build: { options: Record<string, unknown> } } } & Record<string, unknown>>;
@@ -65,7 +73,37 @@ describe('resolveProject', () => {
 describe('versionOf', () => {
   it('reads the Angular version from the declared @angular/core range', () => {
     expect(versionOf('~21.2.3')).toBe('21.2.3');
+    expect(versionOf('21.2.5')).toBe('21.2.5');
+    expect(versionOf('>=21.2.0 <22.0.0')).toBe('21.2.0');
+    expect(versionOf('^19')).toBe('19.0.0');
     expect(versionOf(undefined)).toBeUndefined();
+  });
+
+  it.each(['catalog:', 'workspace:*', 'latest', 'next', '21.x', 'npm:@angular/core@21'])(
+    'reads no version from %s',
+    (range) => {
+      expect(versionOf(range)).toBeUndefined();
+    },
+  );
+});
+
+describe('angularVersionOf', () => {
+  const installed = (version: string) => (path: string) =>
+    path === 'node_modules/@angular/core/package.json' ? JSON.stringify({ name: '@angular/core', version }) : undefined;
+
+  it('prefers the installed @angular/core over the declared range', () => {
+    expect(angularVersionOf(installed('21.2.5'), 'catalog:')).toBe('21.2.5');
+    expect(angularVersionOf(installed('21.3.0-rc.1'), '^21.2.0')).toBe('21.3.0-rc.1');
+  });
+
+  it('falls back to the declared range without an installed package', () => {
+    const none = () => undefined;
+    expect(angularVersionOf(none, '~21.2.3')).toBe('21.2.3');
+    expect(angularVersionOf(none, 'workspace:*')).toBeUndefined();
+  });
+
+  it('ignores an installed manifest it cannot read', () => {
+    expect(angularVersionOf(() => '{ not json', '^21.2.0')).toBe('21.2.0');
   });
 });
 

@@ -6,9 +6,10 @@ import { angularSupport, preflightItems } from './preflight';
 
 const PEER_RANGE = '^21.2.0';
 
-const withAngular = (range: string | undefined) =>
+const withAngular = (range: string | undefined, angularVersion = range?.replace(/^\D*/, '')) =>
   createFacts({
-    angularVersion: range?.replace(/^\D*/, ''),
+    angularVersion,
+    angularRange: range,
     manifest: parseManifest(
       JSON.stringify({ dependencies: range === undefined ? {} : { '@angular/core': range } }),
     ),
@@ -31,9 +32,37 @@ describe('angularSupport', () => {
     });
   });
 
-  it('refuses an app without an @angular/core dependency', () => {
+  it('refuses a caret major below the floor', () => {
+    expect(angularSupport(withAngular('^19', '19.0.0'), PEER_RANGE).supported).toBe(false);
+  });
+
+  it('reads the installed version behind a specifier that carries none', () => {
+    expect(angularSupport(withAngular('catalog:', '21.2.5'), PEER_RANGE)).toEqual({
+      supported: true,
+      floor: '21.2',
+      declared: 'catalog:',
+    });
+  });
+
+  it('names a devDependency-only @angular/core', () => {
+    const facts = createFacts({
+      angularRange: '^21.2.0',
+      manifest: parseManifest(JSON.stringify({ devDependencies: { '@angular/core': '^21.2.0' } })),
+    });
+    expect(angularSupport(facts, PEER_RANGE).declared).toBe('^21.2.0');
+  });
+
+  it.each(['catalog:', 'workspace:*', 'latest'])('cannot tell for %s without an installed package', (range) => {
+    expect(angularSupport(withAngular(range, undefined), PEER_RANGE)).toEqual({
+      supported: undefined,
+      floor: '21.2',
+      declared: range,
+    });
+  });
+
+  it('cannot tell for an app without an @angular/core dependency', () => {
     expect(angularSupport(withAngular(undefined), PEER_RANGE)).toEqual({
-      supported: false,
+      supported: undefined,
       floor: '21.2',
       declared: 'no @angular/core dependency',
     });
@@ -64,6 +93,20 @@ describe('preflightItems', () => {
       label: 'Angular ^20.3.0',
       status: 'fail',
       detail: 'cngx needs 21.2 or newer',
+    });
+  });
+
+  it('warns on the Angular line when no version can be read', () => {
+    const [angular] = preflightItems({
+      facts: withAngular('catalog:', undefined),
+      peerRange: PEER_RANGE,
+      git: 'clean',
+    });
+
+    expect(angular).toEqual({
+      label: 'Angular catalog:',
+      status: 'warn',
+      detail: 'no version to read from it and no installed @angular/core; cngx needs 21.2 or newer',
     });
   });
 

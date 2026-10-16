@@ -12,10 +12,11 @@ export interface PreflightInput {
 
 /** The app's Angular against the floor cngx supports. */
 export interface AngularSupport {
-  readonly supported: boolean;
+  /** `undefined` when no version can be read: nothing installed and a specifier that carries none. */
+  readonly supported: boolean | undefined;
   /** `major.minor` of the peer range. */
   readonly floor: string;
-  /** The app's declared `@angular/core` range, or why there is none. */
+  /** The app's declared `@angular/core` specifier, or why there is none. */
   readonly declared: string;
 }
 
@@ -28,12 +29,19 @@ export function angularSupport(facts: ProjectFacts, peerRange: string): AngularS
   const [minMajor, minMinor] = majorMinor(peerRange) ?? [0, 0];
   const app = majorMinor(facts.angularVersion);
   const supported =
-    app !== undefined && (app[0] > minMajor || (app[0] === minMajor && app[1] >= minMinor));
+    app === undefined ? undefined : app[0] > minMajor || (app[0] === minMajor && app[1] >= minMinor);
   return {
     supported,
     floor: `${minMajor}.${minMinor}`,
-    declared: facts.manifest.dependencies['@angular/core'] ?? 'no @angular/core dependency',
+    declared: facts.angularRange ?? 'no @angular/core dependency',
   };
+}
+
+function angularStatus(supported: boolean | undefined): PreflightItem['status'] {
+  if (supported === undefined) {
+    return 'warn';
+  }
+  return supported ? 'ok' : 'fail';
 }
 
 const GIT_ITEMS: Readonly<Record<GitState, PreflightItem>> = {
@@ -62,8 +70,9 @@ const GIT_ITEMS: Readonly<Record<GitState, PreflightItem>> = {
 /**
  * The checklist printed before any question: the Angular version against
  * the supported floor, the project with its maturity (only an existing app
- * is asked to confirm the plan) and the git state. An unsupported Angular is
- * the one `fail`; the shell renders it before it refuses the run.
+ * is asked to confirm the plan) and the git state. An Angular version below
+ * the floor is the one `fail`; the shell renders it before it refuses the
+ * run. A version it cannot read is a `warn`, and the run goes on.
  */
 export function preflightItems({
   facts,
@@ -74,8 +83,11 @@ export function preflightItems({
   return [
     {
       label: `Angular ${angular.declared}`,
-      status: angular.supported ? 'ok' : 'fail',
-      detail: `cngx needs ${angular.floor} or newer`,
+      status: angularStatus(angular.supported),
+      detail:
+        angular.supported === undefined
+          ? `no version to read from it and no installed @angular/core; cngx needs ${angular.floor} or newer`
+          : `cngx needs ${angular.floor} or newer`,
     },
     {
       label: `Project ${facts.project}`,

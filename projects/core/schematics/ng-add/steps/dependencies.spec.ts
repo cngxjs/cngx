@@ -125,13 +125,46 @@ describe('planDependencies', () => {
     ]);
   });
 
-  it('follows the declared Angular range for the CDK', () => {
-    const facts = createFacts({ manifest: parseManifest(JSON.stringify({ dependencies: { '@angular/core': '~21.2.4' } })) });
-    expect(added(planDependencies(facts, createAnswers(), VERSIONS))).toContain('@angular/cdk@~21.2.4');
+  it('pins the CDK to the major and minor of the resolved Angular version', () => {
+    const facts = createFacts({
+      angularVersion: '21.2.5',
+      angularRange: 'catalog:',
+      manifest: parseManifest(JSON.stringify({ dependencies: { '@angular/core': 'catalog:' } })),
+    });
+    expect(added(planDependencies(facts, createAnswers(), VERSIONS))).toContain('@angular/cdk@^21.2.0');
+  });
+
+  it('follows a plain declared range when no version can be resolved from it', () => {
+    const facts = createFacts({
+      angularVersion: undefined,
+      angularRange: '21.x',
+      manifest: parseManifest(JSON.stringify({ dependencies: { '@angular/core': '21.x' } })),
+    });
+    expect(added(planDependencies(facts, createAnswers(), VERSIONS))).toContain('@angular/cdk@21.x');
+  });
+
+  it('plans a note instead of a CDK pin for a specifier that is no range', () => {
+    const facts = createFacts({
+      angularVersion: undefined,
+      angularRange: 'workspace:*',
+      manifest: parseManifest(JSON.stringify({ dependencies: { '@angular/core': 'workspace:*' } })),
+    });
+    const result = planDependencies(facts, createAnswers(), VERSIONS);
+
+    expect(added(result).some((name) => name.startsWith('@angular/cdk@'))).toBe(false);
+    expect(result.changes.find((change) => change.id === 'dependency:@angular/cdk')).toMatchObject({
+      kind: 'note',
+      label: 'Add @angular/cdk yourself',
+      reason: 'cngx cannot read an Angular version from workspace:*; add the @angular/cdk matching your @angular/core',
+    });
   });
 
   it('plans a note instead of a guessed CDK pin when no Angular range is declared', () => {
-    const facts = createFacts({ manifest: parseManifest(JSON.stringify({ dependencies: {} })), angularVersion: '21.2.0' });
+    const facts = createFacts({
+      manifest: parseManifest(JSON.stringify({ dependencies: {} })),
+      angularVersion: undefined,
+      angularRange: undefined,
+    });
     const result = planDependencies(facts, createAnswers(), VERSIONS);
 
     expect(added(result).some((name) => name.startsWith('@angular/cdk@'))).toBe(false);

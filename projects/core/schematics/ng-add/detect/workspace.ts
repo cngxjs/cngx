@@ -1,6 +1,6 @@
 import { type workspaces } from '@angular-devkit/core';
 
-import { isRecord, styleEntryPath } from '../../engine';
+import { isRecord, parseManifest, styleEntryPath } from '../../engine';
 
 // File content by path, read once per detection run; `undefined` when absent.
 export type Read = (path: string) => string | undefined;
@@ -60,6 +60,39 @@ export function sourceLocaleOf(project: workspaces.ProjectDefinition): string | 
   return isRecord(locale) && typeof locale['code'] === 'string' ? locale['code'] : undefined;
 }
 
+// A plain semver specifier (`^21.2.0`, `~21.2`, `>=21.2.0 <22`, `21.2.5`)
+// reads as its lowest version. A protocol (`catalog:`, `workspace:*`,
+// `npm:`), a dist-tag or a wildcard minor carries none.
+const PLAIN_RANGE = /^[\s^~<>=v]*(\d+)(?:\.(\d+))?(?:\.(\d+))?(-[\w.]+)?(?![.\w*])/;
+
 export function versionOf(range: string | undefined): string | undefined {
-  return range === undefined ? undefined : /\d+\.\d+\.\d+(?:-[\w.]+)?/.exec(range)?.[0];
+  const match = PLAIN_RANGE.exec(range ?? '');
+  if (match === null) {
+    return undefined;
+  }
+  const [, major, minor = '0', patch = '0', prerelease = ''] = match;
+  return `${major}.${minor}.${patch}${prerelease}`;
+}
+
+/** Where the package manager put `@angular/core`, relative to the workspace root. */
+export const ANGULAR_CORE_MANIFEST = 'node_modules/@angular/core/package.json';
+
+function installedVersion(content: string | undefined): string | undefined {
+  if (content === undefined) {
+    return undefined;
+  }
+  try {
+    return versionOf(parseManifest(content).version);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * The app's Angular version: the installed `@angular/core` first, since the
+ * CLI installs packages before `ng add` runs, else the lowest version the
+ * declared range allows; `undefined` when neither carries one.
+ */
+export function angularVersionOf(read: Read, range: string | undefined): string | undefined {
+  return installedVersion(read(ANGULAR_CORE_MANIFEST)) ?? versionOf(range);
 }
