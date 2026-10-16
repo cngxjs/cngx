@@ -1,6 +1,7 @@
-import { InjectionToken, type Signal } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
 
 import type { CngxAsyncState, StatusTransition } from '@cngx/core/utils';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
@@ -248,3 +249,29 @@ export interface CngxStepperHost {
  * @since 0.1.0
  */
 export const CNGX_STEPPER_HOST = new InjectionToken<CngxStepperHost>('CngxStepperHost');
+
+/**
+ * Inject the {@link CNGX_STEPPER_HOST} for a stepper add-on directive.
+ * Throws a `CngxRuntimeError` with code `CNGX1055` when no stepper presenter
+ * is found, in development and production alike. With `host: true` the
+ * lookup stops at the declaring template's host, so the presenter has to sit
+ * on the same element or an ancestor in the same template. `selector` names
+ * the add-on in the development message.
+ *
+ * @internal
+ */
+export function injectStepperHost(
+  selector: string,
+  options: { readonly host: boolean },
+): CngxStepperHost {
+  const stepper = inject(CNGX_STEPPER_HOST, { host: options.host, optional: true });
+  if (!stepper) {
+    throw new CngxRuntimeError(
+      'CNGX1055',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        `[${selector}] must be placed on or inside an element with [cngxStepper], such as <cngx-stepper>.`,
+    );
+  }
+  return stepper;
+}

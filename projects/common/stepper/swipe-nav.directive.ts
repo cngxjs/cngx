@@ -1,10 +1,10 @@
-import { computed, Directive, inject, input } from '@angular/core';
+import { computed, Directive, input } from '@angular/core';
 import { injectDirection } from '@cngx/core';
 
 import type { SwipeDirection } from '@cngx/common/interactive';
 
 import { injectStepperConfig } from './stepper-config';
-import { CNGX_STEPPER_HOST } from './stepper-host.token';
+import { injectStepperHost } from './stepper-host.token';
 
 /**
  * Routes a `CngxSwipe` gesture into the stepper presenter so the
@@ -39,7 +39,7 @@ export class CngxStepperSwipeNav {
    */
   readonly mobileSwipe = input<boolean | undefined>(undefined);
 
-  private readonly host = inject(CNGX_STEPPER_HOST);
+  private readonly host = injectStepperHost('cngxStepperSwipeNav', { host: false });
   private readonly config = injectStepperConfig();
   private readonly direction = injectDirection();
 

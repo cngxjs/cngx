@@ -14,7 +14,7 @@ import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
 import { warnTabsRouterAbsent } from './router-absent-warning';
-import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
+import { injectTabGroupHost } from './tab-group-host.token';
 import { injectTabsConfig } from './tabs-config';
 
 /**
@@ -91,7 +91,7 @@ export class CngxTabsFragmentSync implements AfterContentInit {
    */
   readonly replaceUrl = input(true);
 
-  private readonly host = inject(CNGX_TAB_GROUP_HOST, { host: true });
+  private readonly host = injectTabGroupHost('cngxTabsFragmentSync');
   private readonly router = inject(Router, { optional: true });
 
   /**

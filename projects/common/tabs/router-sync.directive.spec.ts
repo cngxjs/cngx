@@ -492,3 +492,26 @@ describe('CngxTabsFragmentSync', () => {
     expect(commitAction).toHaveBeenCalledTimes(1);
   });
 });
+
+@Component({
+  template: `<div cngxTabsFragmentSync></div>`,
+  imports: [CngxTabsFragmentSync],
+})
+class TabsFragmentSyncOrphanHost {}
+
+describe('CngxTabsFragmentSync placement (CNGX1055)', () => {
+  it('throws CNGX1055 on an element without the presenter', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    expect(() => TestBed.createComponent(TabsFragmentSyncOrphanHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1055',
+        message: expect.stringMatching(
+          /^CNGX1055: \[cngxTabsFragmentSync\] must be placed on or inside an element with \[cngxTabGroup\], such as <cngx-tab-group> or <cngx-tab-nav>\./,
+        ),
+      }),
+    );
+  });
+});

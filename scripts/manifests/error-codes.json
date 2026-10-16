@@ -694,6 +694,20 @@
       "files": ["projects/common/data/async-state/operators.ts"]
     },
     {
+      "code": "CNGX1055",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Stepper or tab add-on without its presenter",
+      "page": "core-concepts/error-codes/cngx1055.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1055.html",
+      "status": "active",
+      "files": [
+        "projects/common/stepper/stepper-host.token.ts",
+        "projects/common/tabs/tab-group-host.token.ts"
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

@@ -420,3 +420,26 @@ describe('CngxStepperRouterSync - fragment hygiene and refused seed', () => {
     expect(fragments[fragments.length - 1]).not.toContain('step=locked');
   });
 });
+
+@Component({
+  template: `<div cngxStepperRouterSync></div>`,
+  imports: [CngxStepperRouterSync],
+})
+class StepperRouterSyncOrphanHost {}
+
+describe('CngxStepperRouterSync placement (CNGX1055)', () => {
+  it('throws CNGX1055 on an element without the presenter', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    expect(() => TestBed.createComponent(StepperRouterSyncOrphanHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1055',
+        message: expect.stringMatching(
+          /^CNGX1055: \[cngxStepperRouterSync\] must be placed on or inside an element with \[cngxStepper\], such as <cngx-stepper>\./,
+        ),
+      }),
+    );
+  });
+});
