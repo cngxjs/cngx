@@ -345,8 +345,10 @@ describe('assertReleaseMigration', () => {
 describe('checkReleaseMigrations', () => {
   const SOURCE = join(ROOT_DIR, 'projects', 'core', 'schematics', 'migrations', 'migrations.json');
 
-  it('passes the source collection for a release with and without its own migration', () => {
-    expect(Object.keys(checkReleaseMigrations(SOURCE, '0.1.0', '.ts').schematics)).toEqual(['migration-v0.1.0']);
+  it('keys the refresh entry to any release of the source collection, which holds no hand-written migration', () => {
+    expect(Object.keys(checkReleaseMigrations(SOURCE, '0.1.1', '.ts').schematics)).toEqual([
+      refreshMigrationKey('0.1.1'),
+    ]);
     expect(checkReleaseMigrations(SOURCE, '0.1.1', '.ts').schematics[refreshMigrationKey('0.1.1')]?.factory).toBe(
       REFRESH_FACTORY,
     );

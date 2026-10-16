@@ -45,7 +45,7 @@ function migration(codemods: readonly Codemod<InstallManifest | undefined>[] = [
 // \`beta\` a copy of the stock app under projects/beta.
 function twoRecordedApplications(projects: readonly string[] = ['alpha', 'beta']): Record<string, string> {
   const app = readFixture('standalone-app');
-  const { before } = readMigrationFixture('0.1.0');
+  const { before } = readMigrationFixture('refresh');
   const record = (JSON.parse(before['.cngx/install.json'] ?? '{}') as InstallManifest).projects['fixture-app'];
   const workspace = JSON.parse(app['angular.json'] ?? '{}') as { projects: Record<string, Record<string, unknown>> };
   const alpha = workspace.projects['fixture-app'];

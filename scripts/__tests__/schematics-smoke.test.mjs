@@ -208,16 +208,6 @@ describe('dist/core/schematics migrations', () => {
     expect(join(ROOT, 'dist', 'core', manifest['ng-update'].migrations)).toBe(MIGRATIONS);
   });
 
-  it('the 0.1.0 migration records the installed release in the manifest', async () => {
-    const ngAdd = new SchematicTestRunner('@cngx/core', requireDist(CORE_COLLECTION));
-    const onboarded = await ngAdd.runSchematic('ng-add', { preset: 'minimal' }, await createAppTree(ngAdd));
-    overwriteRecord(onboarded, { cngxVersion: '0.1.0-rc.0' });
-
-    const tree = await runner.runSchematic('migration-v0.1.0', {}, onboarded);
-
-    expect(recordOf(tree).cngxVersion).toBe(version);
-  });
-
   // What publish.mjs does to the collection of a release without its own
   // migration, on a copy beside the original so the factory paths resolve.
   it('the stamped refresh entry of a later release re-checks an onboarded app', async () => {

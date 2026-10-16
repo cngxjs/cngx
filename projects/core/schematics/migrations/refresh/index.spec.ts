@@ -14,7 +14,7 @@ const PROVENANCE = { source: 'ng-add', version: '0.1.0-rc.4' } as const;
 // An app onboarded by an older release with Claude Code wired: the helper
 // README cngx wrote then still pins the MCP release of that install.
 function onboardedWithAiTools(): Readonly<Record<string, string>> {
-  const { before } = readMigrationFixture('0.1.0');
+  const { before } = readMigrationFixture('refresh');
   const manifest = recordOf(before);
   const recorded: ProjectRecord = {
     ...manifest,
@@ -61,7 +61,7 @@ describe('refresh migration', () => {
   });
 
   it('moves the manifest to the release the bundle ships', async () => {
-    const { before, after } = readMigrationFixture('0.1.0');
+    const { before, after } = readMigrationFixture('refresh');
 
     const { tree } = await runRule(migrate(), createMemoryTree(before));
 
@@ -69,7 +69,7 @@ describe('refresh migration', () => {
   });
 
   it('falls back to the release in versions.json outside a collection', async () => {
-    const { before, after } = readMigrationFixture('0.1.0');
+    const { before, after } = readMigrationFixture('refresh');
 
     const { logs } = await runRule(migrate(), createMemoryTree(before));
 
@@ -77,7 +77,7 @@ describe('refresh migration', () => {
   });
 
   it('names the release of the collection entry that ran', async () => {
-    const { before } = readMigrationFixture('0.1.0');
+    const { before } = readMigrationFixture('refresh');
 
     const { logs } = await runRule(migrate(), createMemoryTree(before), {
       name: 'migration-v0.1.1-refresh',
@@ -107,7 +107,7 @@ describe('refresh migration', () => {
   });
 
   it('runs under an interactive terminal through the live task list', async () => {
-    const { before, after } = readMigrationFixture('0.1.0');
+    const { before, after } = readMigrationFixture('refresh');
     process.stdout.isTTY = true;
     vi.stubEnv('CI', '');
     vi.stubEnv('NO_COLOR', '');
