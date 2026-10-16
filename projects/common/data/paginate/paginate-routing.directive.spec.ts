@@ -44,7 +44,7 @@ describe('CngxPaginateRouting', () => {
 
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toMatch(
-      /^CNGX1031: \[cngxPaginateRouting\] no Router \/ ActivatedRoute available - /,
+      /^CNGX1031: \[cngxPaginateRouting\] no Router \/ ActivatedRoute available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable URL-synced pagination\. Find more at /,
     );
   });
 

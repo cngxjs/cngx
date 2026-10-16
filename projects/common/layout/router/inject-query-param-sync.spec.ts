@@ -136,7 +136,9 @@ describe('injectQueryParamSync', () => {
     await flush();
 
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toContain('CNGX1031: injectQueryParamSync');
+    expect(warn.mock.calls[0][0]).toMatch(
+      /^CNGX1031: injectQueryParamSync\(\): no Router available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable query-param URL sync\. Find more at /,
+    );
     expect(state()).toBe(false);
   });
 

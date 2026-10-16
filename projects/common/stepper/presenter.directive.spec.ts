@@ -621,7 +621,7 @@ describe('CngxStepperPresenter', () => {
       await flushMicrotasks();
       expect(warnSpy).toHaveBeenCalledTimes(1);
       expect(warnSpy.mock.calls[0][0]).toMatch(
-        /^CNGX1039: \[cngx-stepper\] more than 6 steps and none inside a \[cngxStepGroup\]; /,
+        /^CNGX1039: \[cngxStepper\] more than 6 steps and none inside a \[cngxStepGroup\]; /,
       );
     });
 

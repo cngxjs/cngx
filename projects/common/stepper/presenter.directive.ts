@@ -337,7 +337,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
         if (stepNodes.length > 6 && stepNodes.every((n) => n.parentId === null)) {
           cngxDevWarn(
             'CNGX1039',
-            '[cngx-stepper] more than 6 steps and none inside a [cngxStepGroup]; consider wrapping logical groups of steps in [cngxStepGroup] for better UX',
+            '[cngxStepper] more than 6 steps and none inside a [cngxStepGroup]; consider wrapping logical groups of steps in [cngxStepGroup] for better UX',
           );
         }
       });

@@ -177,6 +177,20 @@ describe('provideCngxStepperAt', () => {
     TestBed.resetTestingModule();
   });
 
+  it('names itself in the CNGX1041 warning for an unbranded feature', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const stale = ((cfg: CngxStepperConfig) => ({ ...cfg })) as CngxStepperConfigFeature;
+    delete (stale as { _target?: 'config' })._target;
+
+    provideCngxStepperAt(stale satisfies CngxStepperFeature);
+
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0][0]).toMatch(
+      /^CNGX1041: provideCngxStepperAt\(\): dropped feature without a `_target` discriminator\. /,
+    );
+    warnSpy.mockRestore();
+  });
+
   it('component-scoped aggregator dispatches both surfaces (config + i18n)', () => {
     @Component({
       standalone: true,
