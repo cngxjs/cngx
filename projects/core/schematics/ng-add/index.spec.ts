@@ -42,6 +42,19 @@ const terminal = vi.hoisted(() => ({
 
 vi.mock('./shell/git-state', () => ({ readGitState: () => terminal.git }));
 
+// Specs run unstamped, as a local build does; a case that checks the real
+// pins sets `stamped` to the versions a release writes into versions.json.
+const release = vi.hoisted(() => ({ stamped: undefined as { cngx: string; mcp: string; eslintPlugin: string; angular: string } | undefined }));
+
+vi.mock('../engine/versions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../engine/versions')>();
+  return {
+    ...actual,
+    resolveVersions: (...args: Parameters<typeof actual.resolveVersions>) =>
+      release.stamped === undefined ? actual.resolveVersions(...args) : { versions: release.stamped },
+  };
+});
+
 vi.mock('@inquirer/checkbox', () => ({
   default: (question: { message: string; choices: { value: string; checked?: boolean }[] }) => {
     terminal.asked.push(question.message);
@@ -383,11 +396,15 @@ describe('ngAdd', () => {
 
   describe('a standalone css app', () => {
     it('pins the lockstep graph, imports cngx.css, adds the theme and the a11y providers', async () => {
+      release.stamped = { cngx: '0.1.0', mcp: '0.2.0', eslintPlugin: '0.2.0', angular: '^21.2.0' };
+      onTestFinished(() => {
+        release.stamped = undefined;
+      });
       const run = await runRule(ngAdd({}), createFixtureTree());
       const manifest = json<{ dependencies: Record<string, string> }>(run.tree, 'package.json');
 
-      expect(manifest.dependencies['@cngx/ui']).toBe(VERSION);
-      expect(manifest.dependencies['@cngx/themes']).toBe(VERSION);
+      expect(manifest.dependencies['@cngx/ui']).toBe('0.1.0');
+      expect(manifest.dependencies['@cngx/themes']).toBe('0.1.0');
       expect(manifest.dependencies['@angular/cdk']).toBe('^21.2.0');
       expect(run.tree.readContent('src/styles.css').startsWith("@import '@cngx/themes/cngx.css';\n")).toBe(true);
       expect(run.tree.readContent('src/cngx-theme.css')).toContain('@layer cngx.theme {');
@@ -395,6 +412,15 @@ describe('ngAdd', () => {
       expect(run.tree.readContent('src/app/app.config.ts')).toContain('provideA11yPreferences(withPersistence())');
       expect(record(run.tree).preset).toBe('recommended');
       expect(run.tasks).toEqual(['node-package']);
+    });
+
+    it('keeps the declared @cngx versions of an unstamped local build and names pack-libs', async () => {
+      const run = await runRule(ngAdd({}), createFixtureTree());
+      const manifest = json<{ dependencies: Record<string, string> }>(run.tree, 'package.json');
+
+      expect(Object.keys(manifest.dependencies).filter((name) => name.startsWith('@cngx/'))).toEqual([]);
+      expect(run.logs.some((line) => line.includes('Keep the declared @cngx versions') && line.includes('node scripts/pack-libs.mjs'))).toBe(true);
+      expect(VERSION).toBe('0.0.0-PLACEHOLDER');
     });
 
     it('notes the missing eslint config instead of guessing one', async () => {

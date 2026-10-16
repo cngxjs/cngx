@@ -19,6 +19,24 @@ function withDependencies(dependencies: Record<string, string>) {
   });
 }
 
+describe('planDependencies on an unstamped local build', () => {
+  const UNSTAMPED = { ...VERSIONS, cngx: '0.0.0-PLACEHOLDER' };
+
+  it('keeps the declared @cngx ranges, pins none and says how to pin', () => {
+    const result = planDependencies(withDependencies({ '@cngx/core': 'file:../cngx/dist/core' }), createAnswers({ libs: ['core'] }), UNSTAMPED);
+
+    expect(added(result).filter((pin) => pin.startsWith('@cngx/'))).toEqual([]);
+    expect(result.skipped).toContainEqual(
+      expect.objectContaining({ id: 'dependency:@cngx/core', reason: 'kept at file:../cngx/dist/core; an unstamped local build pins no version' }),
+    );
+    const notes = result.changes.filter((change) => change.kind === 'note' && change.id === 'dependency:@cngx');
+    expect(notes).toHaveLength(1);
+    expect(notes[0]?.reason).toBe(
+      'this is an unstamped local build (0.0.0-PLACEHOLDER), which pins no @cngx version; pack the libs with node scripts/pack-libs.mjs and install the tarballs; add @cngx/utils that way',
+    );
+  });
+});
+
 describe('selectedLibs', () => {
   it('adds the @cngx peers of every selected lib in package order', () => {
     expect(selectedLibs(['forms'])).toEqual(['utils', 'core', 'common', 'forms']);

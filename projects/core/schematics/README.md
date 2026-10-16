@@ -157,6 +157,11 @@ only when its source `package.json` declares `schematics`. Both files come
 from `stampSchematicsDist`, which `scripts/pack-libs.mjs` runs on the staged
 core as well, so a packed core carries the same `versions.json` and refresh
 entry as a published one (versions from the workspace, no registry call).
+An unstamped `dist/` (version `0.0.0-PLACEHOLDER`, e.g. through `npm link`)
+pins no `@cngx/*` version: `ng add` keeps the declared ranges and plans one
+note naming `pack-libs`, and a shim follows the installed core or stops when
+there is none. The placeholder is joined at runtime, since the stamping
+rewrites every literal of it in the bundles.
 
 ## CLI behaviour worth knowing
 

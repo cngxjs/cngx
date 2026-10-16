@@ -94,6 +94,7 @@ export { delegateNgAdd } from './shim/delegate-ng-add';
 export {
   DEFAULT_ESLINT_PLUGIN_VERSION,
   DEFAULT_MCP_VERSION,
+  isUnstampedVersion,
   type ReleaseVersions,
   type ResolvedVersions,
   resolveVersions,

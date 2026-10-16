@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,7 +10,7 @@ import { NodeModulesEngineHost } from '@angular-devkit/schematics/tools';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { PACKED_LIBS } from '../cngx-libs.mjs';
-import { checkReleaseMigrations, declaresSchematics } from '../publish.mjs';
+import { checkReleaseMigrations, declaresSchematics, replaceVersionInDist, stampManifest } from '../publish.mjs';
 
 /**
  * Smoke guard for the bundled schematics under dist/. Runs the built
@@ -20,8 +20,35 @@ import { checkReleaseMigrations, declaresSchematics } from '../publish.mjs';
  */
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const CORE_COLLECTION = join(ROOT, 'dist', 'core', 'schematics', 'collection.json');
-const UI_COLLECTION = join(ROOT, 'dist', 'ui', 'schematics', 'collection.json');
+
+// dist/ is an unstamped local build (`0.0.0-PLACEHOLDER`), which pins no
+// version. The pin and shim cases run a copy stamped the way publish stamps
+// a release; it sits under dist/ so the bundles still resolve their
+// externals from the workspace node_modules.
+const STAMPED_ROOT = join(ROOT, 'dist', '.smoke-stamped');
+const STAMPED_VERSION = '0.1.0';
+const stamped = (lib, ...path) => join(STAMPED_ROOT, lib, ...path);
+const CORE_COLLECTION = stamped('core', 'schematics', 'collection.json');
+const UI_COLLECTION = stamped('ui', 'schematics', 'collection.json');
+const UNSTAMPED_CORE_COLLECTION = join(ROOT, 'dist', 'core', 'schematics', 'collection.json');
+
+beforeAll(() => {
+  rmSync(STAMPED_ROOT, { recursive: true, force: true });
+  for (const lib of PACKED_LIBS) {
+    const source = join(ROOT, 'dist', lib);
+    if (!existsSync(join(source, 'schematics'))) {
+      continue;
+    }
+    cpSync(join(source, 'schematics'), stamped(lib, 'schematics'), { recursive: true });
+    const manifest = stampManifest(JSON.parse(readFileSync(join(source, 'package.json'), 'utf8')), STAMPED_VERSION);
+    writeFileSync(stamped(lib, 'package.json'), JSON.stringify(manifest, null, 2));
+    replaceVersionInDist(stamped(lib), STAMPED_VERSION);
+  }
+});
+
+afterAll(() => {
+  rmSync(STAMPED_ROOT, { recursive: true, force: true });
+});
 
 // `ng add` parses its flags before the package is installed, without the
 // schema's option types (@angular/cli src/commands/add/cli.js:121-134,
@@ -81,7 +108,7 @@ describe('dist/core/schematics', () => {
 
   beforeAll(async () => {
     runner = new SchematicTestRunner('@cngx/core', requireDist(CORE_COLLECTION));
-    version = JSON.parse(readFileSync(join(ROOT, 'dist', 'core', 'package.json'), 'utf8')).version;
+    version = JSON.parse(readFileSync(stamped('core', 'package.json'), 'utf8')).version;
     appTree = await createAppTree(runner);
   });
 
@@ -90,6 +117,17 @@ describe('dist/core/schematics', () => {
     const manifest = JSON.parse(tree.readText('package.json'));
 
     expect(manifest.dependencies['@cngx/utils']).toBe(version);
+  });
+
+  it('ng-add of an unstamped local build keeps the declared @cngx versions and names pack-libs', async () => {
+    const unstamped = new SchematicTestRunner('@cngx/core', requireDist(UNSTAMPED_CORE_COLLECTION));
+    const messages = [];
+    unstamped.logger.subscribe((entry) => messages.push(entry.message));
+    const tree = await unstamped.runSchematic('ng-add', { preset: 'minimal' }, await createAppTree(unstamped));
+    const manifest = JSON.parse(tree.readText('package.json'));
+
+    expect(Object.keys(manifest.dependencies).filter((name) => name.startsWith('@cngx/'))).toEqual([]);
+    expect(messages.some((line) => line.includes('Keep the declared @cngx versions') && line.includes('node scripts/pack-libs.mjs'))).toBe(true);
   });
 
   it('ng-add is one stage: the install is its only task', async () => {
@@ -275,13 +313,13 @@ describe('every published package as the CLI resolves it', () => {
 const SHIM_LIBS = PACKED_LIBS.filter((lib) => lib !== 'core');
 
 describe.each(SHIM_LIBS)('dist/%s/schematics ng-add shim', (lib) => {
-  const collection = join(ROOT, 'dist', lib, 'schematics', 'collection.json');
+  const collection = stamped(lib, 'schematics', 'collection.json');
   let appTree;
   let version;
 
   beforeAll(async () => {
     const runner = new SchematicTestRunner(`@cngx/${lib}`, requireDist(collection));
-    version = JSON.parse(readFileSync(join(ROOT, 'dist', lib, 'package.json'), 'utf8')).version;
+    version = JSON.parse(readFileSync(stamped(lib, 'package.json'), 'utf8')).version;
     appTree = await createAppTree(runner);
   });
 
@@ -316,7 +354,7 @@ describe('dist/ui/schematics ng-add shim', () => {
 
   beforeAll(async () => {
     const runner = new SchematicTestRunner('@cngx/ui', requireDist(UI_COLLECTION));
-    version = JSON.parse(readFileSync(join(ROOT, 'dist', 'ui', 'package.json'), 'utf8')).version;
+    version = JSON.parse(readFileSync(stamped('ui', 'package.json'), 'utf8')).version;
     appTree = await createAppTree(runner);
   });
 
@@ -335,8 +373,7 @@ describe('dist/ui/schematics ng-add shim', () => {
 
   it('installs its own core version over an older installed core', async () => {
     const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
-    // dist/ is unstamped (`0.0.0-PLACEHOLDER`); `0.0.0-0` is the one version below it.
-    const tree = await runner.runSchematic('ng-add', {}, withInstalledCore(await createAppTree(runner), '0.0.0-0'));
+    const tree = await runner.runSchematic('ng-add', {}, withInstalledCore(await createAppTree(runner), '0.0.9'));
 
     expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/core']).toBe(version);
     expect(runner.tasks.map((task) => task.name)).toEqual(['node-package', 'run-schematic']);

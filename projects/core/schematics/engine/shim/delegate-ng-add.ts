@@ -12,6 +12,7 @@ import { addLockstepDependency } from '../manifest/lockstep';
 import { compareVersions, installedVersion, readOwnName, readOwnVersion } from '../manifest/manifest';
 import { CNGX_LIBS, type CngxLib, type NgAddFlags, parseNgAddOptions } from '../options';
 import { errorMessage } from '../plan/text';
+import { isUnstampedVersion } from '../versions';
 
 const CORE = '@cngx/core';
 
@@ -93,6 +94,19 @@ export function delegateNgAdd(options: NgAddFlags, bundleDir: string = __dirname
     const forwarded = withOwnLib(options, ownName);
     const installed = installedVersion(tree, CORE);
     const order = installed === undefined ? undefined : compareVersions(installed, version);
+
+    // A local build's placeholder is no version to pin or compare: follow
+    // whatever core is installed, or stop when there is none.
+    if (isUnstampedVersion(version)) {
+      if (installed === undefined) {
+        throw new SchematicsException(
+          `${ownName} is an unstamped local build (${version}) and ${CORE} is not installed; pack the libs with node scripts/pack-libs.mjs and install the tarballs.`,
+        );
+      }
+      context.logger.info(`${ownName} is an unstamped local build (${version}); pinning nothing and following the installed ${CORE} ${installed}.`);
+      loadCore(context);
+      return externalSchematic(CORE, 'ng-add', forwarded);
+    }
 
     if (order !== undefined && order > 0) {
       context.logger.info(`${CORE} ${installed} is installed, newer than ${ownName} ${version}; following the installed core.`);

@@ -5,6 +5,7 @@ import {
   createNote,
   createProvenance,
   declaredRange,
+  isUnstampedVersion,
   joinNames,
   mergeStepResults,
   type PackageManifest,
@@ -83,6 +84,29 @@ function cngxDependency(manifest: PackageManifest, name: string, version: string
   return { changes: [change], skipped: [] };
 }
 
+// An unstamped local build carries a version no registry serves, so it pins
+// nothing: a declared range stays, and one note says how to get real pins.
+function unstampedDependencies(manifest: PackageManifest, packages: readonly string[], version: string, provenance: Provenance): StepResult {
+  const declared = packages.filter((name) => declaredRange(manifest, name) !== undefined);
+  const undeclared = packages.filter((name) => declaredRange(manifest, name) === undefined);
+  const add = undeclared.length === 0 ? '' : `; add ${joinNames(undeclared)} that way`;
+  return {
+    changes: [
+      createNote({
+        id: 'dependency:@cngx',
+        label: 'Keep the declared @cngx versions',
+        reason: `this is an unstamped local build (${version}), which pins no @cngx version; pack the libs with node scripts/pack-libs.mjs and install the tarballs${add}`,
+        provenance,
+      }),
+    ],
+    skipped: declared.map((name) => ({
+      id: `dependency:${name}`,
+      label: `Pin ${name}`,
+      reason: `kept at ${declaredRange(manifest, name)}; an unstamped local build pins no version`,
+    })),
+  };
+}
+
 function themeRefusal(missing: readonly CngxLib[], provenance: Provenance): StepResult {
   const names = missing.map((lib) => `@cngx/${lib}`);
   return {
@@ -159,7 +183,9 @@ export function planDependencies(facts: ProjectFacts, answers: OnboardingAnswers
   const packages = cngxPackages(libs, answers.theme);
 
   return mergeStepResults([
-    ...packages.map((name) => cngxDependency(facts.manifest, name, versions.cngx, provenance)),
+    ...(isUnstampedVersion(versions.cngx)
+      ? [unstampedDependencies(facts.manifest, packages, versions.cngx, provenance)]
+      : packages.map((name) => cngxDependency(facts.manifest, name, versions.cngx, provenance))),
     ...(missing.length > 0 ? [themeRefusal(missing, provenance)] : []),
     ...(libs.some((lib) => NEEDS_CDK.includes(lib)) ? [cdkDependency(facts, provenance)] : []),
     ...(answers.floatingFallback && libs.includes('common')
