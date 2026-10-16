@@ -58,6 +58,11 @@ interface CloseWatcherLike {
 }
 type CloseWatcherCtor = new () => CloseWatcherLike;
 
+// Engaged modal sheets, oldest first. Only the topmost answers an outside
+// tap: a tap on a later sheet is outside an earlier one that is not its
+// DOM ancestor, and must not close both.
+const engagedSheets: CngxPopoverSheet[] = [];
+
 /**
  * Turns a `CngxPopover` into a modal bottom sheet or fullscreen panel on
  * coarse, narrow viewports, and leaves it anchored everywhere else.
@@ -237,6 +242,9 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
   // or Android.
   private readonly outsidePointerDown = (event: PointerEvent): void => {
     this.disarmClickSwallow();
+    if (engagedSheets.at(-1) !== this) {
+      return;
+    }
     const target = event.target;
     if (target instanceof Node && this.host.contains(target)) {
       return;
@@ -397,6 +405,7 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
       return;
     }
     this.engaged = true;
+    engagedSheets.push(this);
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       this.warnOnMisconfiguration();
     }
@@ -440,6 +449,10 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
     this.releaseLock = null;
     this.stopSettling();
     this.engaged = false;
+    const index = engagedSheets.indexOf(this);
+    if (index !== -1) {
+      engagedSheets.splice(index, 1);
+    }
   }
 
   // Created inside the opening call, so a tap-opened sheet creates it under

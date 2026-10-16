@@ -166,6 +166,32 @@ class TriggerSheetHost {
 
 @Component({
   template: `
+    <button type="button" class="page-button">Page</button>
+    <div cngxPopover #first="cngxPopover" cngxPopoverSheet="sheet" class="first">
+      <h2 cngxPopoverSheetTitle>First</h2>
+      <button type="button" class="first-item">First item</button>
+    </div>
+    <!-- Two open sibling popovers need exclusive off; the default evicts the first. -->
+    <div
+      cngxPopover
+      #second="cngxPopover"
+      cngxPopoverSheet="sheet"
+      class="second"
+      [exclusive]="false"
+    >
+      <h2 cngxPopoverSheetTitle>Second</h2>
+      <button type="button" class="second-item">Second item</button>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverSheet, CngxPopoverSheetTitle],
+})
+class SiblingSheetHost {
+  readonly first = viewChild.required('first', { read: CngxPopover });
+  readonly second = viewChild.required('second', { read: CngxPopover });
+}
+
+@Component({
+  template: `
     <button type="button" class="outer-opener">Open</button>
     <div cngxPopover #outer="cngxPopover" cngxPopoverSheet="sheet">
       <h2 cngxPopoverSheetTitle>Outer</h2>
@@ -661,6 +687,49 @@ describe('CngxPopoverSheet', () => {
 
       fixture.componentInstance.outer().hide();
       expect(outerOpener.hasAttribute('inert')).toBe(false);
+    });
+  });
+
+  describe('sibling sheets', () => {
+    function siblingSetup() {
+      const fixture = TestBed.createComponent(SiblingSheetHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const host = fixture.componentInstance;
+      for (const pop of [host.first(), host.second()]) {
+        const rec = pop.elementRef.nativeElement as unknown as Record<string, unknown>;
+        rec['showPopover'] = vi.fn();
+        rec['hidePopover'] = vi.fn();
+      }
+      const root = fixture.nativeElement as HTMLElement;
+      host.first().show();
+      host.second().show();
+      return { host, root };
+    }
+
+    it('keeps the earlier sheet open on a tap inside the later one', () => {
+      const { host, root } = siblingSetup();
+      root
+        .querySelector('.second-item')!
+        .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(host.first().state()).not.toBe('closed');
+      expect(host.second().state()).not.toBe('closed');
+    });
+
+    it('closes only the topmost sheet on a tap outside both', () => {
+      const { host, root } = siblingSetup();
+      root.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(host.second().state()).toBe('closed');
+      expect(host.first().state()).not.toBe('closed');
+    });
+
+    it('makes the earlier sheet inert under the later one and live again after', () => {
+      const { host, root } = siblingSetup();
+      const first = root.querySelector('.first')!;
+      expect(first.hasAttribute('inert')).toBe(true);
+      host.second().hide();
+      expect(first.hasAttribute('inert')).toBe(false);
+      expect(root.querySelector('.page-button')!.hasAttribute('inert')).toBe(true);
     });
   });
 
