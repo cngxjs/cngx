@@ -239,7 +239,7 @@ describe('recordedStepIds and recordedLibs', () => {
 
 describe('planUnreadableManifest', () => {
   it('keeps the file under the copy path and empties it for the new record', () => {
-    const result = planUnreadableManifest('fixture-app', 'not json', '.cngx/install.json.unreadable-2', VERSIONS);
+    const result = planUnreadableManifest('fixture-app', Buffer.from('not json'), '.cngx/install.json.unreadable-2', VERSIONS);
     const [copy, reset] = result.changes;
 
     expect(copy).toMatchObject({
@@ -249,7 +249,7 @@ describe('planUnreadableManifest', () => {
       reason:
         '.cngx/install.json exists but cngx cannot read it; it is kept as .cngx/install.json.unreadable-2 and replaced by a record of fixture-app only',
       path: '.cngx/install.json.unreadable-2',
-      content: 'not json',
+      content: Buffer.from('not json'),
     });
     expect(reset).toMatchObject({ kind: 'edit-file', path: '.cngx/install.json' });
     expect(reset?.kind === 'edit-file' ? reset.edit('not json') : undefined).toBe('{}\n');

@@ -22,7 +22,7 @@ function material(overrides: Partial<MaterialFacts>): MaterialFacts {
 }
 
 function content(change: Change | undefined): string {
-  return change?.kind === 'create-file' ? change.content : '';
+  return change?.kind === 'create-file' ? change.content.toString() : '';
 }
 
 describe('planTheme', () => {

@@ -275,7 +275,7 @@ export function planManifest(
  */
 export function planUnreadableManifest(
   project: string,
-  content: string,
+  content: Buffer,
   copyPath: string,
   versions: Versions,
 ): StepResult {
@@ -297,6 +297,7 @@ export function planUnreadableManifest(
     provenance,
     path: INSTALL_MANIFEST_PATH,
     edit: () => '{}\n',
+    replaces: true,
   };
   return { changes: [copy, reset], skipped: [] };
 }

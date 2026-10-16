@@ -831,6 +831,17 @@ describe('ngAdd', () => {
       );
     });
 
+    it('keeps a file that is not utf-8 byte for byte', async () => {
+      const bytes = Buffer.from([0x7b, 0xff, 0xfe, 0x7d]);
+      const tree = createFixtureTree('standalone-app');
+      tree.create('.cngx/install.json', bytes);
+
+      const run = await runRule(ngAdd({ yes: true }), tree);
+
+      expect(run.tree.read('.cngx/install.json.unreadable')).toEqual(bytes);
+      expect(record(run.tree).preset).toBe('recommended');
+    });
+
     it('never overwrites an earlier copy', async () => {
       const run = await runRule(
         ngAdd({ yes: true }),

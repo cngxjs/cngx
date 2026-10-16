@@ -26,7 +26,8 @@ interface ChangeBase {
 export interface CreateFile extends ChangeBase {
   readonly kind: 'create-file';
   readonly path: string;
-  readonly content: string;
+  /** Text, or the bytes of a file kept as it is. */
+  readonly content: string | Buffer;
 }
 
 export interface EditFile extends ChangeBase {
@@ -34,6 +35,11 @@ export interface EditFile extends ChangeBase {
   readonly path: string;
   /** Pure transform of the current file content. */
   readonly edit: (content: string) => string;
+  /**
+   * The edit ignores the current content, so apply does not read it: a file
+   * that is not UTF-8 text can still be replaced.
+   */
+  readonly replaces?: true;
 }
 
 export interface AddDependency extends ChangeBase {

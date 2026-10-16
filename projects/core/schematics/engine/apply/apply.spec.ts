@@ -70,6 +70,26 @@ describe('applyChangePlan', () => {
     expect(tree.readText('a.txt')).toBe('ABC\n');
   });
 
+  it('replaces a file that is not utf-8 text without reading it', async () => {
+    const tree = createMemoryTree();
+    tree.create('a.json', Buffer.from([0xff, 0xfe]));
+
+    const applied = await apply(
+      [{ ...BASE, kind: 'edit-file', id: 'r', path: 'a.json', edit: () => '{}\n', replaces: true }],
+      tree,
+    );
+
+    expect(applied.readText('a.json')).toBe('{}\n');
+  });
+
+  it('creates a file from bytes', async () => {
+    const bytes = Buffer.from([0x7b, 0xff, 0x7d]);
+
+    const tree = await apply([{ ...BASE, kind: 'create-file', id: 'b', path: 'kept.bin', content: bytes }]);
+
+    expect(tree.read('kept.bin')).toEqual(bytes);
+  });
+
   it('refuses a change kind it has no mapping for', () => {
     const unknown = { ...BASE, kind: 'unknown-kind', id: 'i', path: 'main.ts' } as unknown as Change;
 
