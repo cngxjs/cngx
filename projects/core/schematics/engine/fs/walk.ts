@@ -5,14 +5,16 @@ import { type Tree } from './tree';
 export interface ListFilesOptions {
   /** Directory names never entered, at any depth. */
   readonly skipDirs?: ReadonlySet<string>;
+  /** Directory names skipped directly under `root` only, such as build output a source folder may share a name with. */
+  readonly skipRootDirs?: ReadonlySet<string>;
   /** Keeps a file by its path; every file when left out. */
   readonly accept?: (path: string) => boolean;
 }
 
-function filesIn(dir: DirEntry, skipDirs: ReadonlySet<string>): readonly string[] {
+function filesIn(dir: DirEntry, skipDirs: ReadonlySet<string>, skipHere: ReadonlySet<string> = new Set()): readonly string[] {
   const files = dir.subfiles.map((file) => `${dir.path}/${file}`.replace(/^\/+/, ''));
   const nested = dir.subdirs
-    .filter((name) => !skipDirs.has(name))
+    .filter((name) => !skipDirs.has(name) && !skipHere.has(name))
     .flatMap((name) => filesIn(dir.dir(name), skipDirs));
   return [...files, ...nested];
 }
@@ -25,7 +27,7 @@ function filesIn(dir: DirEntry, skipDirs: ReadonlySet<string>): readonly string[
 export function listFiles(
   tree: Tree,
   root: string,
-  { skipDirs = new Set(), accept = () => true }: ListFilesOptions = {},
+  { skipDirs = new Set(), skipRootDirs = new Set(), accept = () => true }: ListFilesOptions = {},
 ): readonly string[] {
-  return filesIn(tree.getDir(root), skipDirs).filter(accept).sort();
+  return filesIn(tree.getDir(root), skipDirs, skipRootDirs).filter(accept).sort();
 }
