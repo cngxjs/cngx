@@ -57,6 +57,10 @@ jobs:
           - { angular: '21', variant: full }
           - { angular: '21', variant: zone }
           - { angular: '21', variant: ssr }
+          # The required schematics-consumer job runs this variant without a
+          # registry download; nightly adds the leg where an older published
+          # core must be replaced by the packed one in the same ng add.
+          - { angular: '21', variant: schematics, args: '--stale-core previous' }
     name: angular-${{ matrix.angular }}-${{ matrix.variant }}
     steps:
       - uses: actions/checkout@v4
@@ -78,7 +82,7 @@ jobs:
           name: tarballs
           path: .consumer-compat/tarballs
       - name: Build the fixture app
-        run: node scripts/consumer-fixture.mjs --angular ${{ matrix.angular }} --variant ${{ matrix.variant }}
+        run: node scripts/consumer-fixture.mjs --angular ${{ matrix.angular }} --variant ${{ matrix.variant }} ${{ matrix.args }}
 
   # The peer ranges name Angular 21 only. This row installs the same tarballs
   # into Angular 22 ignoring the declared peers, to show whether the code runs

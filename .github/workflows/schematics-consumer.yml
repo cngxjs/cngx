@@ -1,0 +1,57 @@
+name: Schematics consumer
+
+# A real `ng add` and `ng update` against the packed libs, in a fresh app:
+# scripts/consumer-fixture.mjs --variant schematics. Meant as a required
+# check, so it has no workflow-level `paths` (a required check that never
+# reports blocks the PR). The first step reads the job's inputs from
+# scripts/schematics-consumer-inputs.mjs and skips the rest on a PR that
+# touches none of them; a push to main always runs it in full.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: schematics-consumer-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  schematics-consumer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+      - name: Detect changed inputs
+        id: inputs
+        if: github.event_name == 'pull_request'
+        run: node scripts/schematics-consumer-inputs.mjs --base origin/${{ github.base_ref }}
+      - name: Install dependencies
+        if: github.event_name != 'pull_request' || steps.inputs.outputs.changed == 'true'
+        run: npm ci
+      - name: Build all libraries
+        if: github.event_name != 'pull_request' || steps.inputs.outputs.changed == 'true'
+        run: npm run build:libs
+      - name: Pack the tarballs
+        if: github.event_name != 'pull_request' || steps.inputs.outputs.changed == 'true'
+        run: node scripts/pack-libs.mjs
+      # npm 10.9 (bundled with Node 22) crashes with "reading 'edgesOut'" on a
+      # plain install of a fresh Angular 21 app; npm 11 installs it cleanly.
+      - name: Use npm 11 for the fixture install
+        if: github.event_name != 'pull_request' || steps.inputs.outputs.changed == 'true'
+        run: npm install -g npm@11
+      - name: Install Playwright chromium
+        if: github.event_name != 'pull_request' || steps.inputs.outputs.changed == 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Run ng add and ng update in the fixture app
+        if: github.event_name != 'pull_request' || steps.inputs.outputs.changed == 'true'
+        run: node scripts/consumer-fixture.mjs --angular 21 --variant schematics
