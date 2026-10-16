@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { CngxFormFieldPresenter } from '@cngx/forms/field';
+import { CngxRuntimeError } from '@cngx/utils';
 import { injectInputAriaLabels } from './input-config';
 
 /**
@@ -74,7 +75,7 @@ import { injectInputAriaLabels } from './input-config';
   },
 })
 export class CngxCharCount {
-  private readonly presenter = inject(CngxFormFieldPresenter);
+  private readonly presenter = injectCharCountPresenter();
   private readonly el = inject(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ariaLabels = injectInputAriaLabels();
@@ -200,4 +201,26 @@ export interface CngxCharCountContext {
   over: boolean;
   /** Characters remaining until maxLength, or undefined. */
   remaining: number | undefined;
+}
+
+/**
+ * Inject the surrounding {@link CngxFormFieldPresenter} for
+ * {@link CngxCharCount}. Throws a `CngxRuntimeError` with code `CNGX2017`
+ * when no form field is above it, in development and production alike. Same
+ * code and text as the form-field parts in `@cngx/forms/field`, whose helper
+ * is internal to that entry point.
+ *
+ * @internal
+ */
+function injectCharCountPresenter(): CngxFormFieldPresenter {
+  const presenter = inject(CngxFormFieldPresenter, { optional: true });
+  if (!presenter) {
+    throw new CngxRuntimeError(
+      'CNGX2017',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngx-char-count] must be placed inside <cngx-form-field> or an element with [cngxFormFieldPresenter].',
+    );
+  }
+  return presenter;
 }

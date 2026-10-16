@@ -11,8 +11,10 @@
 //     inline guard inside a function: a guard read at module load can run
 //     before Angular sets `ngDevMode` in a dev build (also for R4). The
 //     message (argument 2) is a string literal, a template literal or a `+`
-//     concatenation written in place, or a dev wrapper's parameter: a local,
-//     a field or a call result can carry text built before the guard.
+//     concatenation written in place whose first operand is one of those, or
+//     a dev wrapper's parameter: a local, a field or a call result can carry
+//     text built before the guard, and so can the first operand of
+//     `m + ' text'`.
 // R3  the code lies in the calling file's lib range.
 // R4  every direct call and every value use of a guard-first dev wrapper is
 //     lexically guarded, and no wrapper is a class or object-literal member:
@@ -24,7 +26,10 @@
 // `parent` / `top` / `frames` / `document.defaultView`, a computed key or
 // computed destructuring, `Reflect.get(globalThis, 'console')` and
 // `new Function(...)`; a dev wrapper reached through a dynamic `import()`, a
-// destructured namespace or element access.
+// destructured namespace or element access. A guard inside a callback that a
+// synchronous call runs at module load (`[1].forEach(() => ...)`) counts as
+// running later; a function invoked in place, also through `.call` /
+// `.apply`, is caught.
 // `${m}` or `'' + m` around a local built before the guard has the inline
 // shape and passes the inline-message rule: it checks the message's form,
 // not where the text in its operands was built (many operands are
@@ -395,6 +400,21 @@ describe('raw-console guard - R2 message text', () => {
     expect(
       messages(`function f(m: string) { if (${GUARD}) { cngxDevWarn('CNGX0001', m); } }`),
     ).toHaveLength(1);
+  });
+
+  it('fails a concatenation whose first operand is not literal text', () => {
+    expect(
+      messages(
+        [
+          'function f(x: unknown) {',
+          "  const m = 'bad value ' + JSON.stringify(x);",
+          `  if (${GUARD}) { cngxDevWarn('CNGX0001', m + ''); }`,
+          `  if (${GUARD}) { cngxDevWarn('CNGX0001', m + ' text'); }`,
+          `  if (${GUARD}) { cngxDevWarn('CNGX0001', (describe(x) + ' a') + ' b'); }`,
+          '}',
+        ].join('\n'),
+      ),
+    ).toHaveLength(3);
   });
 
   it('passes a literal, a template, a concatenation and a dev wrapper parameter', () => {
@@ -809,6 +829,9 @@ describe('raw-console guard - guards evaluated at module load', () => {
     expect(
       fixture(`(() => { if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } })();`).violations,
     ).toEqual([`projects/core/a.ts:1 R2 CNGX0001 ${MODULE_LOAD_GUARD}`]);
+    const body = `if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); }`;
+    expect(fixture(`(function () { ${body} }).call(this);`).violations).toHaveLength(1);
+    expect(fixture(`(() => { ${body} }).apply(undefined, []);`).violations).toHaveLength(1);
     expect(
       fixture(`function host() { (() => { if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } })(); }`)
         .violations,

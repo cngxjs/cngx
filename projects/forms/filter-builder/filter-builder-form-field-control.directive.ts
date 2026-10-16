@@ -1,6 +1,7 @@
 import { Directive, ElementRef, inject } from '@angular/core';
 import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field';
 import { CNGX_SELECT_DISABLE_FIELD_SYNC } from '@cngx/forms/select';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
 
@@ -46,7 +47,7 @@ import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive
   },
 })
 export class CngxFilterBuilderFormFieldControl {
-  private readonly presenter = inject(CngxFilterBuilderPresenter);
+  private readonly presenter = injectFilterBuilderPresenter();
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   protected handleFocusIn(): void {
@@ -62,4 +63,26 @@ export class CngxFilterBuilderFormFieldControl {
     }
     this.presenter.setFocused(false);
   }
+}
+
+/**
+ * Inject the {@link CngxFilterBuilderPresenter} that
+ * {@link CngxFilterBuilderFormFieldControl} exposes to the form field. Throws
+ * a `CngxRuntimeError` with code `CNGX2019` when no presenter is on the same
+ * element, in development and production alike. A presenter on an ancestor
+ * does not count: the focus tracking reads this element.
+ *
+ * @internal
+ */
+function injectFilterBuilderPresenter(): CngxFilterBuilderPresenter {
+  const presenter = inject(CngxFilterBuilderPresenter, { self: true, optional: true });
+  if (!presenter) {
+    throw new CngxRuntimeError(
+      'CNGX2019',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngxFilterBuilderFormFieldControl] must be placed on <cngx-filter-builder> or an element with [cngxFilterBuilderPresenter].',
+    );
+  }
+  return presenter;
 }

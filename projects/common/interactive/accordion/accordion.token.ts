@@ -1,4 +1,5 @@
-import { InjectionToken, type Signal } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import type {
   CngxAccordionHeaderHandle,
@@ -51,3 +52,24 @@ export interface CngxAccordionHost {
  * @relatedTo CngxAccordion, CngxAccordionPanel
  */
 export const CNGX_ACCORDION = new InjectionToken<CngxAccordionHost>('CNGX_ACCORDION');
+
+/**
+ * Inject the {@link CNGX_ACCORDION} of the surrounding accordion from a
+ * {@link CngxAccordionPanel}. Throws a `CngxRuntimeError` with code
+ * `CNGX1060` when no accordion is above it, in development and production
+ * alike.
+ *
+ * @internal
+ */
+export function injectAccordionHost(): CngxAccordionHost {
+  const accordion = inject(CNGX_ACCORDION, { optional: true });
+  if (!accordion) {
+    throw new CngxRuntimeError(
+      'CNGX1060',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngxAccordionPanel] must be placed inside an element with [cngxAccordion], such as <cngx-accordion-group>.',
+    );
+  }
+  return accordion;
+}

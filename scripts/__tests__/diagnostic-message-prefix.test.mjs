@@ -24,7 +24,8 @@
 // Known limits: a message passed as an identifier (the parameter of a
 // guard-first dev wrapper) is not read; its wrapper's callers are. A message
 // whose first part is a non-literal expression fails, because its start
-// cannot be checked. P3 follows calls in the declaring file and in files that
+// cannot be checked; that includes a concatenation starting with an
+// identifier (`m + ' text'`), which only a whole-identifier message escapes. P3 follows calls in the declaring file and in files that
 // import the function by a relative path, and checks only string-literal
 // arguments: a selector handed through an object or another variable
 // (`createPaginatorNavCore({ selector })`) is not traced, nor is a call
@@ -107,13 +108,14 @@ function literalTexts(node) {
 
 /**
  * Why the message `node` breaks the prefix rule, or null when it conforms.
- * Returns null for an identifier message (a wrapper parameter).
+ * Returns null for a message that is an identifier as a whole (a wrapper
+ * parameter); a concatenation that starts with one fails.
  */
 export function prefixProblem(node) {
-  const first = firstPart(node);
-  if (ts.isIdentifier(first)) {
+  if (ts.isIdentifier(unwrap(node))) {
     return null;
   }
+  const first = firstPart(node);
   if (ts.isStringLiteral(first) || ts.isNoSubstitutionTemplateLiteral(first)) {
     const ok = SELECTOR_PREFIX.test(first.text) || FUNCTION_PREFIX.test(first.text);
     return ok ? null : `starts with "${first.text.slice(0, 40)}"`;
@@ -273,6 +275,19 @@ describe('diagnostic message prefix - scanner', () => {
       ),
     ];
     expect(messagePrefixViolations(files)).toHaveLength(6);
+  });
+
+  it('rejects a concatenation that starts with an identifier', () => {
+    const files = [
+      `function f(m: string) { cngxDevWarn('CNGX1001', m + ' text'); }`,
+      `function f(m: string) { cngxDevWarn('CNGX1001', m + ''); }`,
+      `function f(m: string) { throw new CngxRuntimeError('CNGX1001', ${guard} && m + '!'); }`,
+    ].map((text, i) => ({ path: `projects/common/x/x${i}.ts`, text }));
+    expect(messagePrefixViolations(files)).toEqual([
+      'projects/common/x/x0.ts:1 starts with a non-literal expression',
+      'projects/common/x/x1.ts:1 starts with a non-literal expression',
+      'projects/common/x/x2.ts:1 starts with a non-literal expression',
+    ]);
   });
 
   it('accepts a token the consumer provides', () => {

@@ -44,7 +44,7 @@ describe('CngxPaginateRouting', () => {
 
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toMatch(
-      /^CNGX1031: \[cngxPaginateRouting\] no Router \/ ActivatedRoute available - /,
+      /^CNGX1031: \[cngxPaginateRouting\] no Router \/ ActivatedRoute available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable URL-synced pagination\. Find more at /,
     );
   });
 
@@ -243,5 +243,36 @@ describe('CngxPaginateRouting', () => {
     await settle(harness);
 
     expect(brainOf(harness).pageIndex()).toBe(1);
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxPaginateRouting],
+  template: `<div cngxPaginateRouting></div>`,
+})
+class OrphanRoutingHost {}
+
+describe('CngxPaginateRouting placement (CNGX1063)', () => {
+  test('throws CNGX1063 without a [cngxPaginate]', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    expect(() => TestBed.createComponent(OrphanRoutingHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1063',
+        message: expect.stringMatching(
+          /^CNGX1063: \[cngxPaginateRouting\] must be placed on or inside an element with \[cngxPaginate\], such as <cngx-paginator>\./,
+        ),
+      }),
+    );
+  });
+
+  test('does not throw on an element with [cngxPaginate]', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    expect(() => TestBed.createComponent(RoutedHost).detectChanges()).not.toThrow();
   });
 });

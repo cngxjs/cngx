@@ -208,7 +208,9 @@ describe('CngxTabsRouteSync', () => {
     presenter.select(1);
     expect(presenter.activeIndex()).toBe(1);
     expect(warnSpy).toHaveBeenCalledTimes(1);
-    expect(warnSpy.mock.calls[0][0]).toContain('CNGX1031: [cngxTabsRouteSync]');
+    expect(warnSpy.mock.calls[0][0]).toMatch(
+      /^CNGX1031: \[cngxTabsRouteSync\] no Router available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable routed tabs\. Find more at /,
+    );
   });
 
   it('writes nothing to the console without a Router in production', async () => {

@@ -19,7 +19,10 @@ interface PartitionedFeatures {
   readonly i18n: CngxTabsI18nFeature[];
 }
 
-function partitionFeatures(features: readonly CngxTabsFeature[]): PartitionedFeatures {
+function partitionFeatures(
+  features: readonly CngxTabsFeature[],
+  caller: 'provideCngxTabs' | 'provideCngxTabsAt',
+): PartitionedFeatures {
   const config: CngxTabsConfigFeature[] = [];
   const i18n: CngxTabsI18nFeature[] = [];
   for (const feat of features) {
@@ -35,12 +38,21 @@ function partitionFeatures(features: readonly CngxTabsFeature[]): PartitionedFea
     // Drop with dev-warn so an i18n-shaped override never lands
     // silently in `CNGX_TABS_CONFIG`.
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      cngxDevWarn(
-        'CNGX1041',
-        'provideCngxTabs(): dropped feature without a `_target` ' +
-          'discriminator. Pass config through the `with*` helpers of @cngx/common/tabs ' +
-          'and labels through `withTabsI18nLabels(...)`.',
-      );
+      if (caller === 'provideCngxTabsAt') {
+        cngxDevWarn(
+          'CNGX1041',
+          'provideCngxTabsAt(): dropped feature without a `_target` ' +
+            'discriminator. Pass config through the `with*` helpers of @cngx/common/tabs ' +
+            'and labels through `withTabsI18nLabels(...)`.',
+        );
+      } else {
+        cngxDevWarn(
+          'CNGX1041',
+          'provideCngxTabs(): dropped feature without a `_target` ' +
+            'discriminator. Pass config through the `with*` helpers of @cngx/common/tabs ' +
+            'and labels through `withTabsI18nLabels(...)`.',
+        );
+      }
     }
   }
   return { config, i18n };
@@ -76,7 +88,7 @@ function partitionFeatures(features: readonly CngxTabsFeature[]): PartitionedFea
  * @relatedTo CngxTabGroup, CngxTabsConfig, provideCngxTabsAt
  */
 export function provideCngxTabs(...features: readonly CngxTabsFeature[]): EnvironmentProviders {
-  const { config, i18n } = partitionFeatures(features);
+  const { config, i18n } = partitionFeatures(features, 'provideCngxTabs');
   return makeEnvironmentProviders([
     provideTabsConfig(...config),
     ...(i18n.length > 0 ? [provideTabsI18n(...i18n)] : []),
@@ -105,7 +117,7 @@ export function provideCngxTabs(...features: readonly CngxTabsFeature[]): Enviro
  * @relatedTo CngxTabGroup, CngxTabsConfig, provideCngxTabs
  */
 export function provideCngxTabsAt(...features: readonly CngxTabsFeature[]): Provider[] {
-  const { config, i18n } = partitionFeatures(features);
+  const { config, i18n } = partitionFeatures(features, 'provideCngxTabsAt');
   return [
     // Gate like i18n: an i18n-only call must not plant an empty config
     // at this injector level and shadow an app-wide provideTabsConfig.

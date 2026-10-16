@@ -1,5 +1,5 @@
-import { Directive, inject } from '@angular/core';
-import { CngxFormFieldPresenter } from './form-field-presenter';
+import { Directive } from '@angular/core';
+import { injectFormFieldPresenter } from './inject-form-field-presenter';
 
 /**
  * Marks the hint element inside a `cngx-form-field`.
@@ -31,5 +31,5 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
 })
 export class CngxHint {
   /** @internal */
-  protected readonly presenter = inject(CngxFormFieldPresenter);
+  protected readonly presenter = injectFormFieldPresenter('cngxHint');
 }

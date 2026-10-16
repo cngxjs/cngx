@@ -1357,3 +1357,37 @@ describe('CngxTabOverflow', () => {
     });
   });
 });
+
+@Component({
+  standalone: true,
+  imports: [CngxTabOverflow],
+  template: `<cngx-tab-overflow></cngx-tab-overflow>`,
+})
+class OrphanOverflowHost {}
+
+describe('CngxTabOverflow placement (CNGX3023)', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    stubPopoverApi();
+    installMockIntersectionObserver();
+  });
+
+  it('throws CNGX3023 outside a tab group', () => {
+    expect(() => TestBed.createComponent(OrphanOverflowHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX3023',
+        message: expect.stringMatching(
+          /^CNGX3023: \[cngx-tab-overflow\] must be placed inside <cngx-tab-group> or <mat-tab-group cngxMatTabs>\./,
+        ),
+      }),
+    );
+  });
+
+  it('does not throw inside <cngx-tab-group>', () => {
+    expect(() => TestBed.createComponent(OverflowHost).detectChanges()).not.toThrow();
+  });
+});

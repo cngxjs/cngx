@@ -267,3 +267,27 @@ class ExplicitMaxHost {
 class MinHost {
   field = signal<CngxFieldAccessor>(createMockField({ name: 'bio' }).accessor);
 }
+
+@Component({
+  template: `<cngx-char-count [max]="10" />`,
+  imports: [CngxCharCount],
+})
+class OrphanCharCountHost {}
+
+describe('CngxCharCount placement (CNGX2017)', () => {
+  it('throws CNGX2017 outside a form field', () => {
+    expect(() => TestBed.createComponent(OrphanCharCountHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX2017',
+        message: expect.stringMatching(
+          /^CNGX2017: \[cngx-char-count\] must be placed inside <cngx-form-field> or an element with \[cngxFormFieldPresenter\]\./,
+        ),
+      }),
+    );
+  });
+
+  it('does not throw inside <cngx-form-field>', () => {
+    expect(() => TestBed.createComponent(TestHost).detectChanges()).not.toThrow();
+  });
+});

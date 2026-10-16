@@ -1,0 +1,309 @@
+// A page that quotes the start of its message has to quote what the code
+// prints. Otherwise a reader searches the console, or the source, for text
+// that is not there.
+//
+// Q1  in a paragraph about the message (it contains the word "message"), a
+//     backticked span right after "starts with", "message reads" / "it
+//     reads", "for example", or after a colon, is a quote. It starts with the
+//     page's own `CNGXnnnn: `. A bare `[selector]` or `fn()` there names the
+//     owner and is not a quote.
+// Q2  every backticked span on a page that starts with its own `CNGXnnnn: `
+//     is a prefix of a message the library prints for that code. Messages
+//     are the ones the repo's collectors extract (`collectHelperCalls`,
+//     `collectRuntimeErrors` in `scripts/dev-diagnostics.mjs`), followed
+//     into the callers of a dev wrapper whose message is a parameter. A
+//     `${...}` part, or any operand that is not literal text, matches any
+//     text in the quote.
+// Q3  a quote that cannot be checked this way is listed in
+//     QUOTE_EXEMPT with a reason; a row that no longer matches a quote, or
+//     whose quote now passes, fails.
+//
+// Known limits: a quote that does not follow one of the Q1 lead-ins is only
+// checked when it already carries the prefix. A wildcard matches any text,
+// so a quote that invents the value of a `${...}` part passes.
+
+import { readFileSync, readdirSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+import ts from 'typescript';
+import { beforeAll, describe, expect, it } from 'vitest';
+
+import {
+  collectHelperCalls,
+  collectRuntimeErrors,
+  collectWrapperUses,
+  collectWrappers,
+  unwrap,
+} from '../dev-diagnostics.mjs';
+import { PAGES_DIR, readSources } from '../error-codes-manifest.mjs';
+
+/**
+ * Quotes the check cannot verify. Exact list; every row needs a reason a
+ * reviewer can check.
+ *
+ * @type {{ code: string; quote: string; reason: string }[]}
+ */
+const QUOTE_EXEMPT = [
+  {
+    code: 'CNGX3006',
+    quote: 'contentTemplate',
+    reason: 'names the value of a part of the message, not its start',
+  },
+];
+
+const WILD = Symbol('wild');
+const LEAD_IN = /(?:starts with|(?:message|it) reads|for example|:)\s*$/;
+/** A bare `[selector]` or `fn()`: names the owner, does not quote the message. */
+const OWNER_ONLY = /^(?:\[[^\]]+\]|[a-z][A-Za-z0-9]*\(\))$/;
+/** A Markdown code span, also one fenced by two backticks to hold a backtick. */
+const SPAN = /(`+)(?!`)([\s\S]*?[^`])\1(?!`)/g;
+
+/** The text of a code span: one leading and trailing space stripped when both are there. */
+const spanText = (raw) => (/^ .* $/s.test(raw) && raw.trim() ? raw.slice(1, -1) : raw);
+
+/** The right-most leaf of an `&&` chain: the message behind a guard. */
+function guardedTail(node) {
+  let current = unwrap(node);
+  while (
+    ts.isBinaryExpression(current) &&
+    current.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
+  ) {
+    current = unwrap(current.right);
+  }
+  return current;
+}
+
+/** A message expression as literal text and WILD parts. */
+export function segmentsOf(node) {
+  const inner = unwrap(node);
+  if (ts.isStringLiteral(inner) || ts.isNoSubstitutionTemplateLiteral(inner)) {
+    return [inner.text];
+  }
+  if (ts.isTemplateExpression(inner)) {
+    return [inner.head.text, ...inner.templateSpans.flatMap((span) => [WILD, span.literal.text])];
+  }
+  if (ts.isBinaryExpression(inner) && inner.operatorToken.kind === ts.SyntaxKind.PlusToken) {
+    return [...segmentsOf(inner.left), ...segmentsOf(inner.right)];
+  }
+  return [WILD];
+}
+
+/** Is `quote` the start of some text that `segments` can produce? */
+export function isPrefixOf(quote, segments, at = 0, index = 0) {
+  if (at === quote.length) {
+    return true;
+  }
+  if (index === segments.length) {
+    return false;
+  }
+  const part = segments[index];
+  if (part === WILD) {
+    for (let next = at; next <= quote.length; next++) {
+      if (isPrefixOf(quote, segments, next, index + 1)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  const rest = quote.slice(at);
+  if (rest.length <= part.length) {
+    return part.startsWith(rest);
+  }
+  return rest.startsWith(part) && isPrefixOf(quote, segments, at + part.length, index + 1);
+}
+
+/** The parameter index `message` reads from in the dev wrapper around it, or -1. */
+function wrapperParameterIndex(message) {
+  const inner = unwrap(message);
+  if (!ts.isIdentifier(inner)) {
+    return -1;
+  }
+  for (let fn = inner.parent; fn; fn = fn.parent) {
+    if (ts.isFunctionLike(fn) && fn.parameters) {
+      return fn.parameters.findIndex(
+        (param) => ts.isIdentifier(param.name) && param.name.text === inner.text,
+      );
+    }
+  }
+  return -1;
+}
+
+/**
+ * Every message the library prints, by code, as segment lists.
+ *
+ * @param {{ path: string; text: string }[]} files
+ * @returns {Map<string, (string | symbol)[][]>}
+ */
+export function messagesByCode(files) {
+  const out = new Map();
+  const add = (code, node) => {
+    if (code && node) {
+      out.set(code, [...(out.get(code) ?? []), segmentsOf(node)]);
+    }
+  };
+  const calls = collectHelperCalls(files);
+  const wrappers = collectWrappers(calls);
+  const { calls: wrapperCalls } = collectWrapperUses(files, wrappers);
+  for (const call of calls) {
+    const message = call.node.arguments[1];
+    const index = message ? wrapperParameterIndex(message) : -1;
+    if (index < 0) {
+      add(call.code, message);
+      continue;
+    }
+    let fn = call.node.parent;
+    while (fn && !ts.isFunctionLike(fn)) {
+      fn = fn.parent;
+    }
+    const name = fn?.name && ts.isIdentifier(fn.name) ? fn.name.text : undefined;
+    const callers = wrapperCalls.filter((use) => use.name.split('.').pop() === name);
+    for (const use of callers) {
+      add(call.code, use.node.arguments[index]);
+    }
+    if (callers.length === 0) {
+      add(call.code, message);
+    }
+  }
+  for (const error of collectRuntimeErrors(files)) {
+    const message = error.node.arguments[1];
+    add(error.code, message && (error.devOnly ? unwrap(message) : guardedTail(message)));
+  }
+  return out;
+}
+
+/**
+ * Every problem with the quotes on `pages` ([{ code, text }]).
+ *
+ * @returns {{ code: string; quote: string; problem: string }[]}
+ */
+export function quoteProblems(pages, messages) {
+  const out = [];
+  for (const { code, text } of pages) {
+    const prefix = `${code}: `;
+    for (const paragraph of text.split(/\n\s*\n/)) {
+      if (paragraph.startsWith('```')) {
+        continue;
+      }
+      const aboutMessage = /\bmessage\b/i.test(paragraph);
+      let previousEnd = 0;
+      for (const match of paragraph.matchAll(SPAN)) {
+        const quote = spanText(match[2]);
+        const leadIn = LEAD_IN.test(paragraph.slice(previousEnd, match.index));
+        previousEnd = match.index + match[0].length;
+        if (aboutMessage && leadIn && !OWNER_ONLY.test(quote) && !quote.startsWith(prefix)) {
+          out.push({ code, quote, problem: `does not start with "${prefix}"` });
+          continue;
+        }
+        if (!quote.startsWith(prefix) || quote === prefix) {
+          continue;
+        }
+        const body = quote.slice(prefix.length);
+        const known = messages.get(code) ?? [];
+        if (!known.some((segments) => isPrefixOf(body, segments))) {
+          out.push({ code, quote, problem: 'is not the start of any message for this code' });
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/** Problems that QUOTE_EXEMPT does not cover, and rows that cover nothing. */
+export function unexemptedProblems(problems, exempt = QUOTE_EXEMPT) {
+  const covers = (row, p) => row.code === p.code && row.quote === p.quote;
+  return [
+    ...problems
+      .filter((p) => !exempt.some((row) => covers(row, p)))
+      .map((p) => `${p.code} \`${p.quote}\` ${p.problem}`),
+    ...exempt
+      .filter((row) => !problems.some((p) => covers(row, p)))
+      .map((row) => `QUOTE_EXEMPT row ${row.code} \`${row.quote}\` matches no failing quote`),
+  ];
+}
+
+function readCodePages() {
+  return readdirSync(PAGES_DIR)
+    .filter((name) => /^cngx\d{4}\.md$/.test(name))
+    .map((name) => ({
+      code: name.slice(0, 8).toUpperCase(),
+      text: readFileSync(resolve(PAGES_DIR, name), 'utf8'),
+    }));
+}
+
+const file = (text) => ({ path: 'projects/common/x/x.ts', text });
+const guard = "typeof ngDevMode !== 'undefined' && ngDevMode";
+
+describe('error-code page quotes - matcher', () => {
+  it('matches literal text, template parts and concatenations as a prefix', () => {
+    const messages = messagesByCode([
+      file(`cngxDevWarn('CNGX1001', '[cngxMenu] has no label; ' + 'bind [aria-label].');`),
+      file(
+        `throw new CngxRuntimeError('CNGX1002', ${guard} && \`flattenTree(): duplicate id "\${id}" in tree\`);`,
+      ),
+    ]);
+    const pages = [
+      {
+        code: 'CNGX1001',
+        text: 'The message starts with `CNGX1001: [cngxMenu] has no label; bind`.',
+      },
+      {
+        code: 'CNGX1002',
+        text: 'The message reads `CNGX1002: flattenTree(): duplicate id "a" in`.',
+      },
+    ];
+    expect(quoteProblems(pages, messages)).toEqual([]);
+  });
+
+  it('follows a dev wrapper into its callers', () => {
+    const messages = messagesByCode([
+      file(
+        `function warn(message: string) { if (!(${guard})) { return; } cngxDevWarn('CNGX1003', message); }\n` +
+          `function f() { if (${guard}) { warn('[cngxTab] lost its group.'); } }`,
+      ),
+    ]);
+    const pages = [{ code: 'CNGX1003', text: 'The message reads `CNGX1003: [cngxTab] lost`.' }];
+    expect(quoteProblems(pages, messages)).toEqual([]);
+  });
+
+  it('rejects a stale quote and a quote without the prefix', () => {
+    const messages = messagesByCode([
+      file(`cngxDevWarn('CNGX1004', 'tapHttpAsyncState(): body is null');`),
+    ]);
+    const pages = [
+      {
+        code: 'CNGX1004',
+        text:
+          'The message starts with `CNGX1004: tapHttpAsyncState: body`.\n\n' +
+          'The message quotes it, for example `body is null`.',
+      },
+    ];
+    expect(quoteProblems(pages, messages).map((p) => p.quote)).toEqual([
+      'CNGX1004: tapHttpAsyncState: body',
+      'body is null',
+    ]);
+  });
+
+  it('reports an exemption row that covers nothing', () => {
+    expect(unexemptedProblems([], [{ code: 'CNGX1', quote: 'x', reason: 'r' }])).toEqual([
+      'QUOTE_EXEMPT row CNGX1 `x` matches no failing quote',
+    ]);
+  });
+});
+
+describe('error-code page quotes - core-concepts/error-codes', () => {
+  let problems;
+  beforeAll(() => {
+    problems = unexemptedProblems(quoteProblems(readCodePages(), messagesByCode(readSources())));
+  });
+
+  it('quotes every message start with its code and as the code prints it', () => {
+    expect(
+      problems,
+      'Quote the message start as the library prints it, from `CNGXnnnn: ` on, or add a QUOTE_EXEMPT row with a reason',
+    ).toEqual([]);
+  });
+
+  it('gives every exemption a reason', () => {
+    expect(QUOTE_EXEMPT.filter((row) => !row.reason?.trim())).toEqual([]);
+  });
+});

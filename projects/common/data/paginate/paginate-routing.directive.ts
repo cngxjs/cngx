@@ -12,7 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { cngxDevWarn } from '@cngx/utils';
 
-import { CngxPaginate } from './paginate.directive';
+import { injectPaginate } from './inject-paginate';
 
 /**
  * Persists a `cngxPaginate` host's page / size in the URL query string, so a
@@ -46,7 +46,7 @@ import { CngxPaginate } from './paginate.directive';
   standalone: true,
 })
 export class CngxPaginateRouting implements OnInit {
-  private readonly paginate = inject(CngxPaginate);
+  private readonly paginate = injectPaginate('cngxPaginateRouting');
   private readonly router = inject(Router, { optional: true });
   private readonly route = inject(ActivatedRoute, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
@@ -79,7 +79,7 @@ export class CngxPaginateRouting implements OnInit {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         cngxDevWarn(
           'CNGX1031',
-          '[cngxPaginateRouting] no Router / ActivatedRoute available - directive is a no-op. ' +
+          '[cngxPaginateRouting] no Router / ActivatedRoute available - the URL sync is a no-op. ' +
             'Provide @angular/router via provideRouter(...) to enable URL-synced pagination.',
         );
       }

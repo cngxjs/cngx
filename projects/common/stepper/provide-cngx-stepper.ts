@@ -25,7 +25,10 @@ interface PartitionedFeatures {
 }
 
 /** @internal */
-function partitionFeatures(features: readonly CngxStepperFeature[]): PartitionedFeatures {
+function partitionFeatures(
+  features: readonly CngxStepperFeature[],
+  caller: 'provideCngxStepper' | 'provideCngxStepperAt',
+): PartitionedFeatures {
   const config: CngxStepperConfigFeature[] = [];
   const i18n: CngxStepperI18nFeature[] = [];
   for (const feat of features) {
@@ -39,12 +42,21 @@ function partitionFeatures(features: readonly CngxStepperFeature[]): Partitioned
     }
     // Unbranded feature - drop + dev-warn (mirrors `provideCngxTabs`).
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      cngxDevWarn(
-        'CNGX1041',
-        'provideCngxStepper(): dropped feature without a `_target` ' +
-          'discriminator. Pass config through the `with*` helpers of @cngx/common/stepper ' +
-          'and labels through `withStepperI18nLabels(...)`.',
-      );
+      if (caller === 'provideCngxStepperAt') {
+        cngxDevWarn(
+          'CNGX1041',
+          'provideCngxStepperAt(): dropped feature without a `_target` ' +
+            'discriminator. Pass config through the `with*` helpers of @cngx/common/stepper ' +
+            'and labels through `withStepperI18nLabels(...)`.',
+        );
+      } else {
+        cngxDevWarn(
+          'CNGX1041',
+          'provideCngxStepper(): dropped feature without a `_target` ' +
+            'discriminator. Pass config through the `with*` helpers of @cngx/common/stepper ' +
+            'and labels through `withStepperI18nLabels(...)`.',
+        );
+      }
     }
   }
   return { config, i18n };
@@ -79,7 +91,7 @@ function partitionFeatures(features: readonly CngxStepperFeature[]): Partitioned
 export function provideCngxStepper(
   ...features: readonly CngxStepperFeature[]
 ): EnvironmentProviders {
-  const { config, i18n } = partitionFeatures(features);
+  const { config, i18n } = partitionFeatures(features, 'provideCngxStepper');
   // `provideStepperConfig` returns EnvironmentProviders, `provideStepperI18n`
   // returns Provider - `makeEnvironmentProviders` takes both.
   return makeEnvironmentProviders([
@@ -107,7 +119,7 @@ export function provideCngxStepper(
  * @category common/stepper
  */
 export function provideCngxStepperAt(...features: readonly CngxStepperFeature[]): Provider[] {
-  const { config, i18n } = partitionFeatures(features);
+  const { config, i18n } = partitionFeatures(features, 'provideCngxStepperAt');
   return [
     // Gate like i18n: an i18n-only call must not plant an empty config
     // at this injector level and shadow an app-wide provideStepperConfig.

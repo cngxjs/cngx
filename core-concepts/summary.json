@@ -346,6 +346,22 @@
                 "file": "error-codes/cngx1059.md"
             },
             {
+                "title": "CNGX1060",
+                "file": "error-codes/cngx1060.md"
+            },
+            {
+                "title": "CNGX1061",
+                "file": "error-codes/cngx1061.md"
+            },
+            {
+                "title": "CNGX1062",
+                "file": "error-codes/cngx1062.md"
+            },
+            {
+                "title": "CNGX1063",
+                "file": "error-codes/cngx1063.md"
+            },
+            {
                 "title": "CNGX2001",
                 "file": "error-codes/cngx2001.md"
             },
@@ -404,6 +420,22 @@
             {
                 "title": "CNGX2015",
                 "file": "error-codes/cngx2015.md"
+            },
+            {
+                "title": "CNGX2016",
+                "file": "error-codes/cngx2016.md"
+            },
+            {
+                "title": "CNGX2017",
+                "file": "error-codes/cngx2017.md"
+            },
+            {
+                "title": "CNGX2018",
+                "file": "error-codes/cngx2018.md"
+            },
+            {
+                "title": "CNGX2019",
+                "file": "error-codes/cngx2019.md"
             },
             {
                 "title": "CNGX3001",
@@ -488,6 +520,14 @@
             {
                 "title": "CNGX3021",
                 "file": "error-codes/cngx3021.md"
+            },
+            {
+                "title": "CNGX3022",
+                "file": "error-codes/cngx3022.md"
+            },
+            {
+                "title": "CNGX3023",
+                "file": "error-codes/cngx3023.md"
             },
             {
                 "title": "CNGX4001",

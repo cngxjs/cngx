@@ -1,6 +1,6 @@
 import { computed, Directive, ElementRef, inject, input } from '@angular/core';
 
-import { CNGX_BREADCRUMB } from './breadcrumb.token';
+import { injectBreadcrumbHost } from './breadcrumb.token';
 
 /**
  * A single crumb. Put `cngxBreadcrumbItem` on the crumb element. Intermediate
@@ -26,7 +26,7 @@ import { CNGX_BREADCRUMB } from './breadcrumb.token';
   },
 })
 export class CngxBreadcrumbItem {
-  private readonly breadcrumb = inject(CNGX_BREADCRUMB);
+  private readonly breadcrumb = injectBreadcrumbHost();
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /**

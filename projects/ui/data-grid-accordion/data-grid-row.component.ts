@@ -16,7 +16,7 @@ import { CNGX_ACCORDION, CngxAccordionPanel } from '@cngx/common/interactive';
 
 import type { CngxDataGridSeverity } from './config/data-grid-accordion.config';
 import { injectDataGridAccordionLabels } from './i18n/data-grid-accordion-i18n';
-import { CNGX_DATA_GRID_ACCORDION } from './data-grid-accordion.token';
+import { injectDataGridAccordion } from './data-grid-accordion.token';
 import { CngxDgCell } from './data-grid-cell.directive';
 import { CngxDgaRowBusy } from './data-grid-row-busy.directive';
 import { CngxDgaRowError } from './data-grid-row-error.directive';
@@ -102,8 +102,10 @@ export class CngxDataGridRow {
    */
   readonly errorMessage = input<string | undefined>(undefined);
 
+  // The grid check runs first: the grid carries the accordion, so a row
+  // outside it reports CNGX3022 instead of a missing CNGX_ACCORDION.
+  protected readonly grid = injectDataGridAccordion('cngx-dga-row');
   private readonly accordion = inject(CNGX_ACCORDION);
-  protected readonly grid = inject(CNGX_DATA_GRID_ACCORDION);
 
   protected readonly regionId = nextUid('cngx-dga-region-');
   protected readonly headerId = nextUid('cngx-dga-header-');

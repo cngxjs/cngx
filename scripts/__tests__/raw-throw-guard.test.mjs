@@ -21,8 +21,9 @@
 //     construction itself is dev-only; a guarded construction does not run at
 //     module load, where `ngDevMode` can still be undefined in a dev build.
 //     The message text (the guarded tail) is a string literal, a template
-//     literal or a `+` concatenation written in place: a local or a call
-//     result can carry text built before the guard. A third argument is
+//     literal or a `+` concatenation written in place whose first operand is
+//     one of those: a local or a call result can carry text built before the
+//     guard, and so can the first operand of `m + ' text'`. A third argument is
 //     omitted or `{ cause: <enclosing catch variable> }` unless the whole
 //     construction is dev-only: a `new Error('text')` cause ships its text.
 // T4  `CngxRuntimeError` is only constructed, tested with `instanceof`,
@@ -35,7 +36,9 @@
 // (`globalThis.Promise.reject`, `const P = Promise`), by element access
 // (`Promise['reject']`) or through `.call` / `.apply`; `reportError` read off
 // a global host; `gen.throw(...)`; a catch variable reassigned or mutated
-// before its rethrow.
+// before its rethrow. A guard inside a callback that a synchronous call runs
+// at module load (`[1].forEach(() => ...)`) counts as running later; a
+// function invoked in place, also through `.call` / `.apply`, is caught.
 // `${m}` or `'' + m` around a local built before the guard has the inline
 // shape and passes the inline-message rule: it checks the message's form,
 // not where the text in its operands was built (many operands are
@@ -533,6 +536,16 @@ describe('raw-throw guard - T3 messages', () => {
     ).toHaveLength(1);
   });
 
+  it('fails a concatenation whose first operand is not literal text', () => {
+    const message = (tail) =>
+      fixture(
+        `function f(m: string) { throw new CngxRuntimeError('CNGX1001', ${GUARD} && ${tail}); }`,
+      ).violations;
+    expect(message("m + ''")).toHaveLength(1);
+    expect(message("m + ' text'")).toHaveLength(1);
+    expect(message("'[cngxX] ' + m")).toEqual([]);
+  });
+
   it('passes a template, a concatenation and a dev wrapper parameter as the message', () => {
     expect(
       fixture(
@@ -604,6 +617,8 @@ describe('raw-throw guard - T3 shadows and module load', () => {
       `projects/common/a.ts:1 T3 CNGX1001 ${MODULE_LOAD_GUARD}`,
     ]);
     expect(fixture(`(function () { ${construct} })();`).violations).toHaveLength(1);
+    expect(fixture(`(function () { ${construct} }).call(this);`).violations).toHaveLength(1);
+    expect(fixture(`(() => { ${construct} }).apply(undefined, []);`).violations).toHaveLength(1);
     expect(fixture(`const run = () => { ${construct} };`).violations).toEqual([]);
   });
 });

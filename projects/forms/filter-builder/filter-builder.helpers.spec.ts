@@ -121,6 +121,27 @@ describe('unknown filter logic (CNGX2013)', () => {
     );
   });
 
+  it('lets an empty group with an unknown or missing logic pass the boundary, like evaluation', () => {
+    const emptyUpper = { ...persisted(), filters: [] } as unknown as FilterGroup;
+    const { logic: _logic, ...emptyMissing } = emptyUpper;
+    for (const tree of [emptyUpper, emptyMissing as unknown as FilterGroup]) {
+      expect(() => ensureFilterTreeIds(tree)).not.toThrow();
+      expect(toFilterPredicate(tree, FIELDS)!({ name: 'alice' })).toBe(true);
+    }
+    const nestedEmpty = createFilterGroup('or', [
+      exprEq('name', 'bob'),
+      emptyUpper,
+    ]);
+    expect(() => ensureFilterTreeIds(nestedEmpty)).not.toThrow();
+    expect(toFilterPredicate(nestedEmpty, FIELDS)!({ name: 'alice' })).toBe(true);
+  });
+
+  it('still throws at the boundary for a non-empty group with logic "AND"', () => {
+    expect(() => ensureFilterTreeIds(persisted())).toThrow(
+      expect.objectContaining({ code: 'CNGX2013', message: expect.stringMatching(/^CNGX2013: /) }),
+    );
+  });
+
   it('throws when a tree that skipped the boundary is evaluated', () => {
     const predicate = toFilterPredicate(persisted(), FIELDS)!;
     expect(() => predicate({ name: 'alice' })).toThrow(

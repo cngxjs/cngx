@@ -91,10 +91,12 @@ export function createFilterExpression<TValue = unknown>(
  * the same `tree` reference is returned. Consumers who hand-construct trees
  * (deserialised JSON, presets, persisted snapshots) run this once at the
  * boundary; the presenter already invokes it on initial read and on every
- * external write through `value`. A group whose `logic` is not `'and'`,
- * `'or'` or `'xor'` throws CNGX2013 here. In the presenter that is its `value`
+ * external write through `value`. A non-empty group whose `logic` is not
+ * `'and'`, `'or'` or `'xor'` throws CNGX2013 here; an empty group never does,
+ * because evaluation ignores its `logic`. In the presenter that is its `value`
  * effect, reported through the `ErrorHandler`; the invalid tree stays in
- * `value`, so a `predicate()` read of it throws CNGX2013 again.
+ * `value`, and calling the function that `predicate()` returns throws CNGX2013
+ * again when it evaluates that group.
  */
 export function ensureFilterTreeIds(tree: FilterGroup): FilterGroup {
   return normaliseGroupIds(tree);
@@ -139,9 +141,15 @@ function throwUnknownLogic(
   );
 }
 
-/** @internal */
+/**
+ * An empty group skips the `logic` check: evaluation ignores `logic` for an
+ * empty group and accepts every item, so the boundary must not reject it.
+ *
+ * @internal
+ */
 function normaliseGroupIds(group: FilterGroup): FilterGroup {
-  if (group.logic !== 'and' && group.logic !== 'or' && group.logic !== 'xor') {
+  const hasKnownLogic = group.logic === 'and' || group.logic === 'or' || group.logic === 'xor';
+  if (group.filters.length > 0 && !hasKnownLogic) {
     throwUnknownLogic(group.logic, 'ensureFilterTreeIds');
   }
   const nextFilters: FilterNode[] = [];

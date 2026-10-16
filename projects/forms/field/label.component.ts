@@ -6,7 +6,7 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import { CngxFormFieldPresenter } from './form-field-presenter';
+import { injectFormFieldPresenter } from './inject-form-field-presenter';
 import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
 
 /**
@@ -91,7 +91,7 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
 })
 export class CngxLabel {
   /** @internal */
-  protected readonly presenter = inject(CngxFormFieldPresenter);
+  protected readonly presenter = injectFormFieldPresenter('cngxLabel');
   private readonly config = inject(CNGX_FORM_FIELD_CONFIG);
 
   /** Whether the associated field is required. */

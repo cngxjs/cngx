@@ -180,6 +180,20 @@ describe('provideCngxTabsAt', () => {
     TestBed.resetTestingModule();
   });
 
+  it('names itself in the CNGX1041 warning for an unbranded feature', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const stale = ((cfg: CngxTabsConfig) => ({ ...cfg })) as CngxTabsConfigFeature;
+    delete (stale as { _target?: 'config' })._target;
+
+    provideCngxTabsAt(stale satisfies CngxTabsFeature);
+
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0][0]).toMatch(
+      /^CNGX1041: provideCngxTabsAt\(\): dropped feature without a `_target` discriminator\. /,
+    );
+    warnSpy.mockRestore();
+  });
+
   it('component-scoped aggregator dispatches both surfaces (config + i18n)', () => {
     @Component({
       standalone: true,

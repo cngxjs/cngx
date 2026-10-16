@@ -1,5 +1,5 @@
-import { computed, Directive, inject } from '@angular/core';
-import { CngxFormFieldPresenter } from './form-field-presenter';
+import { computed, Directive } from '@angular/core';
+import { injectFormFieldPresenter } from './inject-form-field-presenter';
 
 /**
  * Marks a manual error container inside a `cngx-form-field`.
@@ -57,7 +57,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
 })
 export class CngxError {
   /** @internal */
-  protected readonly presenter = inject(CngxFormFieldPresenter);
+  protected readonly presenter = injectFormFieldPresenter('cngxError');
 
   /** @internal */
   protected readonly ariaHidden = computed(() => !this.presenter.showError() || null);

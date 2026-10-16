@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 
-import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
+import { injectSelectShellSearchHost } from './select-search-host';
 
 /**
  * Declarative-mode search element. Projects an `<input type="search">`
@@ -73,7 +73,7 @@ export class CngxSelectSearch {
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
 
   /** @internal */
-  protected readonly host = inject(CNGX_SELECT_SHELL_SEARCH_HOST);
+  protected readonly host = injectSelectShellSearchHost();
 
   /**
    * Resolved ARIA label per the cascade above. `null` when neither

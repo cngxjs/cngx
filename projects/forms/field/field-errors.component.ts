@@ -8,7 +8,7 @@ import {
   untracked,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { CngxFormFieldPresenter } from './form-field-presenter';
+import { injectFormFieldPresenter } from './inject-form-field-presenter';
 import { CNGX_ERROR_MESSAGES } from './form-field.token';
 import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n';
 
@@ -79,7 +79,7 @@ import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n
 })
 export class CngxFieldErrors {
   /** @internal */
-  protected readonly presenter = inject(CngxFormFieldPresenter);
+  protected readonly presenter = injectFormFieldPresenter('cngx-field-errors');
   private readonly errorMap = inject(CNGX_ERROR_MESSAGES);
   private readonly i18n = injectFormFieldI18n();
 

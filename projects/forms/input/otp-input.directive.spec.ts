@@ -130,3 +130,27 @@ describe('CngxOtpInput', () => {
     }
   });
 });
+
+@Component({
+  template: `<input [cngxOtpSlot]="0" />`,
+  imports: [CngxOtpSlot],
+})
+class OrphanSlotHost {}
+
+describe('CngxOtpSlot placement (CNGX2016)', () => {
+  it('throws CNGX2016 outside [cngxOtpInput]', () => {
+    expect(() => TestBed.createComponent(OrphanSlotHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX2016',
+        message: expect.stringMatching(
+          /^CNGX2016: \[cngxOtpSlot\] must be placed inside an element with \[cngxOtpInput\]\./,
+        ),
+      }),
+    );
+  });
+
+  it('does not throw inside [cngxOtpInput]', () => {
+    expect(() => setup()).not.toThrow();
+  });
+});

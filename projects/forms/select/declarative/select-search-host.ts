@@ -1,4 +1,5 @@
-import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
+import { inject, InjectionToken, type ModelSignal, type Signal } from '@angular/core';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import type { CngxListbox } from '@cngx/common/interactive';
 
@@ -38,3 +39,23 @@ export interface CngxSelectShellSearchHost {
 export const CNGX_SELECT_SHELL_SEARCH_HOST = new InjectionToken<CngxSelectShellSearchHost>(
   'CNGX_SELECT_SHELL_SEARCH_HOST',
 );
+
+/**
+ * Inject the {@link CNGX_SELECT_SHELL_SEARCH_HOST} of the surrounding select
+ * shell from `<cngx-select-search>`. Throws a `CngxRuntimeError` with code
+ * `CNGX2018` when no shell is above it, in development and production alike.
+ *
+ * @internal
+ */
+export function injectSelectShellSearchHost(): CngxSelectShellSearchHost {
+  const host = inject(CNGX_SELECT_SHELL_SEARCH_HOST, { optional: true });
+  if (!host) {
+    throw new CngxRuntimeError(
+      'CNGX2018',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngx-select-search] must be placed inside <cngx-select-shell>.',
+    );
+  }
+  return host;
+}

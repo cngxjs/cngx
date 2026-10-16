@@ -755,6 +755,50 @@
       ]
     },
     {
+      "code": "CNGX1060",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Accordion panel outside an accordion",
+      "page": "core-concepts/error-codes/cngx1060.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1060.html",
+      "status": "active",
+      "files": ["projects/common/interactive/accordion/accordion.token.ts"]
+    },
+    {
+      "code": "CNGX1061",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Breadcrumb item outside a breadcrumb",
+      "page": "core-concepts/error-codes/cngx1061.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1061.html",
+      "status": "active",
+      "files": ["projects/common/interactive/breadcrumb/breadcrumb.token.ts"]
+    },
+    {
+      "code": "CNGX1062",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Slider thumb outside a range track",
+      "page": "core-concepts/error-codes/cngx1062.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1062.html",
+      "status": "active",
+      "files": ["projects/common/interactive/slider/range-slider.token.ts"]
+    },
+    {
+      "code": "CNGX1063",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Paginate add-on without a paginate directive",
+      "page": "core-concepts/error-codes/cngx1063.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1063.html",
+      "status": "active",
+      "files": ["projects/common/data/paginate/inject-paginate.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",
@@ -923,6 +967,53 @@
         "projects/forms/field/range-slider-field-bridge.directive.ts",
         "projects/forms/field/slider-field-bridge.directive.ts"
       ]
+    },
+    {
+      "code": "CNGX2016",
+      "lib": "forms",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "OTP slot outside an OTP input",
+      "page": "core-concepts/error-codes/cngx2016.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2016.html",
+      "status": "active",
+      "files": ["projects/forms/input/otp-input.directive.ts"]
+    },
+    {
+      "code": "CNGX2017",
+      "lib": "forms",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Form-field part outside a form field",
+      "page": "core-concepts/error-codes/cngx2017.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2017.html",
+      "status": "active",
+      "files": [
+        "projects/forms/field/inject-form-field-presenter.ts",
+        "projects/forms/input/char-count.component.ts"
+      ]
+    },
+    {
+      "code": "CNGX2018",
+      "lib": "forms",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Select search outside a select shell",
+      "page": "core-concepts/error-codes/cngx2018.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2018.html",
+      "status": "active",
+      "files": ["projects/forms/select/declarative/select-search-host.ts"]
+    },
+    {
+      "code": "CNGX2019",
+      "lib": "forms",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Filter-builder form-field control without a filter builder",
+      "page": "core-concepts/error-codes/cngx2019.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2019.html",
+      "status": "active",
+      "files": ["projects/forms/filter-builder/filter-builder-form-field-control.directive.ts"]
     },
     {
       "code": "CNGX3001",
@@ -1174,6 +1265,28 @@
         "projects/ui/sidenav/sidenav-router-sync.directive.ts",
         "projects/ui/toc/toc-router-sync.directive.ts"
       ]
+    },
+    {
+      "code": "CNGX3022",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Data-grid part outside a data grid",
+      "page": "core-concepts/error-codes/cngx3022.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3022.html",
+      "status": "active",
+      "files": ["projects/ui/data-grid-accordion/data-grid-accordion.token.ts"]
+    },
+    {
+      "code": "CNGX3023",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Tab overflow outside a tab group",
+      "page": "core-concepts/error-codes/cngx3023.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3023.html",
+      "status": "active",
+      "files": ["projects/ui/tabs/tab-overflow.component.ts"]
     },
     {
       "code": "CNGX4001",

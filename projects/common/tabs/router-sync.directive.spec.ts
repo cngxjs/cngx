@@ -308,7 +308,9 @@ describe('CngxTabsFragmentSync', () => {
     fixture.detectChanges();
 
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toContain('CNGX1031: [cngxTabsFragmentSync]');
+    expect(warn.mock.calls[0][0]).toMatch(
+      /^CNGX1031: \[cngxTabsFragmentSync\] no Router available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable deep-linking\. Find more at /,
+    );
     expect(warn.mock.calls[0][0]).toContain('to enable deep-linking.');
   });
 

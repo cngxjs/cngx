@@ -1,9 +1,13 @@
 /**
  * Recommended `position-try-fallbacks` chain for menu submenu popovers.
  *
- * Consumers wire the const on the submenu's `cngxPopover` element:
+ * A template cannot read a module constant, so expose it as a component
+ * field and bind that field on the submenu's `cngxPopover` element:
+ * ```ts
+ * protected readonly submenuFallbacks = CNGX_SUBMENU_TRY_FALLBACKS;
+ * ```
  * ```html
- * <div cngxPopover [positionTryFallbacks]="CNGX_SUBMENU_TRY_FALLBACKS">
+ * <div cngxPopover [positionTryFallbacks]="submenuFallbacks">
  *   <!-- submenu items -->
  * </div>
  * ```

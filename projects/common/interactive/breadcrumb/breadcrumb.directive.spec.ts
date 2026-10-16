@@ -194,3 +194,27 @@ describe('CngxBreadcrumb', () => {
     expect(els[4].hasAttribute('hidden')).toBe(false);
   });
 });
+
+@Component({
+  template: `<a cngxBreadcrumbItem href="#">Home</a>`,
+  imports: [CngxBreadcrumbItem],
+})
+class OrphanItemHost {}
+
+describe('CngxBreadcrumbItem placement (CNGX1061)', () => {
+  it('throws CNGX1061 outside a breadcrumb', () => {
+    expect(() => TestBed.createComponent(OrphanItemHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1061',
+        message: expect.stringMatching(
+          /^CNGX1061: \[cngxBreadcrumbItem\] must be placed inside an element with \[cngxBreadcrumb\]\./,
+        ),
+      }),
+    );
+  });
+
+  it('does not throw inside [cngxBreadcrumb]', () => {
+    expect(() => TestBed.createComponent(Host).detectChanges()).not.toThrow();
+  });
+});
