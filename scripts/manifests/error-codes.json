@@ -1278,6 +1278,17 @@
       "files": ["projects/ui/data-grid-accordion/data-grid-accordion.token.ts"]
     },
     {
+      "code": "CNGX3023",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Tab overflow outside a tab group",
+      "page": "core-concepts/error-codes/cngx3023.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3023.html",
+      "status": "active",
+      "files": ["projects/ui/tabs/tab-overflow.component.ts"]
+    },
+    {
       "code": "CNGX4001",
       "lib": "data-display",
       "severity": "warn",

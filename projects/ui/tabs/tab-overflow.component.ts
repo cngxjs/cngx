@@ -33,7 +33,7 @@ import {
   type CngxTabHandle,
   type CngxTabPanelHost,
 } from '@cngx/common/tabs';
-import { cngxDevWarn } from '@cngx/utils';
+import { CngxRuntimeError, cngxDevWarn } from '@cngx/utils';
 
 /**
  * Structural equal for `hiddenTabs` - same ids in same order.
@@ -134,7 +134,7 @@ function mapBoolEqual(a: ReadonlyMap<string, boolean>, b: ReadonlyMap<string, bo
 export class CngxTabOverflow {
   // Projected via <ng-content>, so DI walks up to the parent's injector.
   // `{ host: true }` would scope to the molecule and miss the provider.
-  protected readonly panelHost: CngxTabPanelHost = inject(CNGX_TAB_PANEL_HOST);
+  protected readonly panelHost: CngxTabPanelHost = injectTabPanelHost();
   protected readonly i18n = injectTabsI18n();
   protected readonly popover = viewChild.required(CngxPopover);
   private readonly adRef = viewChild.required(CngxActiveDescendant);
@@ -394,4 +394,24 @@ export class CngxTabOverflow {
   private resolveStrip(): HTMLElement | null {
     return this.adapter.resolveStripRoot(this.panelHost, this.hostElement);
   }
+}
+
+/**
+ * Inject the {@link CNGX_TAB_PANEL_HOST} of the surrounding tab group for
+ * {@link CngxTabOverflow}. Throws a `CngxRuntimeError` with code `CNGX3023`
+ * when no tab group is above it, in development and production alike.
+ *
+ * @internal
+ */
+function injectTabPanelHost(): CngxTabPanelHost {
+  const host = inject(CNGX_TAB_PANEL_HOST, { optional: true });
+  if (!host) {
+    throw new CngxRuntimeError(
+      'CNGX3023',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngx-tab-overflow] must be placed inside <cngx-tab-group> or <mat-tab-group cngxMatTabs>.',
+    );
+  }
+  return host;
 }
