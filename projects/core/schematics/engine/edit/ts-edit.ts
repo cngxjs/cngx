@@ -485,12 +485,19 @@ export function addToArrayLiteral(content: string, selector: ArraySelector, item
     return content;
   }
   const close = array.getEnd() - 1;
+  const open = array.getStart(source);
+  const multiline = content.slice(open, close).includes('\n');
+  const newline = content.includes('\r\n') ? '\r\n' : '\n';
   if (elements.length === 0) {
-    return `${content.slice(0, close)}${item.trim()}${content.slice(close)}`;
+    if (!multiline) {
+      return `${content.slice(0, close)}${item.trim()}${content.slice(close)}`;
+    }
+    // An empty array across lines holds only whitespace; replace it, so no
+    // whitespace-only line is left above the bracket.
+    const indent = indentOf(content, close);
+    return `${content.slice(0, open + 1)}${newline}${indent}  ${item.trim()}${newline}${indent}${content.slice(close)}`;
   }
   const last = elements[elements.length - 1];
-  const multiline = content.slice(array.getStart(source), close).includes('\n');
-  const newline = content.includes('\r\n') ? '\r\n' : '\n';
   const separator = multiline ? `,${newline}${indentOf(content, last.getStart(source))}` : ', ';
   // Inserting right after the last element keeps a trailing comma behind
   // the new one.

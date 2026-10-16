@@ -52,6 +52,15 @@ export default [
     expect(addToArrayLiteral('module.exports = [];\n', DEFAULT, ITEM)).toBe(`module.exports = [${ITEM}];\n`);
   });
 
+  it('fills an empty multi-line array without leaving a whitespace-only line before the bracket', () => {
+    const content = 'export default [\n    \n];\n';
+
+    expect(addToArrayLiteral(content, DEFAULT, ITEM)).toBe(`export default [\n  ${ITEM}\n];\n`);
+    expect(addToArrayLiteral(content.replace(/\n/g, '\r\n'), DEFAULT, ITEM)).toBe(
+      `export default [\r\n  ${ITEM}\r\n];\r\n`,
+    );
+  });
+
   it('finds the array argument of a wrapper call', () => {
     expect(addToArrayLiteral('export default defineConfig([a]);\n', DEFAULT, ITEM)).toBe(
       `export default defineConfig([a, ${ITEM}]);\n`,
