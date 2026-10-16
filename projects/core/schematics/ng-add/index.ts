@@ -17,6 +17,7 @@ import {
   isCi,
   type NgAddFlags,
   parseNgAddOptions,
+  readDryRunFlag,
   readPromptFlags,
   resolveVersions,
 } from '../engine';
@@ -172,10 +173,11 @@ export function ngAdd(flags: NgAddFlags): Rule {
     const record = planManifest(facts, answers, versions, steps, previous, new Date().toISOString());
     const plan = createChangePlan([steps, unreadable, record], steps.warnings);
 
-    await renderer.todo(plan);
-
     const changesFiles = plan.changes.some((change) => change.kind !== 'note');
-    if (facts.maturity === 'existing' && changesFiles && options.yes !== true) {
+    const confirmAhead = facts.maturity === 'existing' && changesFiles && options.yes !== true;
+    await renderer.todo(plan, { pending: readDryRunFlag(process.argv) || (confirmAhead && interactive) });
+
+    if (confirmAhead) {
       const unconfirmed = unconfirmedApplyLine({
         isTTY: rendererOptions.isTTY,
         ci: isCi(process.env),

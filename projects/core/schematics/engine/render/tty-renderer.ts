@@ -66,7 +66,12 @@ export function createTtyRenderer(options: TtyOptions): Renderer {
 
   return {
     ...plain,
-    async todo(plan) {
+    async todo(plan, todoOptions) {
+      // A ticked task reads as done; before a confirm or under a dry run
+      // nothing is, so the plan prints as the plain renderer's lines.
+      if (todoOptions?.pending === true) {
+        return plain.todo(plan);
+      }
       const tasks = todoTasks(plan, color);
       const notes = plan.changes.filter(isNote);
       if (tasks.length === 0 && notes.length === 0) {

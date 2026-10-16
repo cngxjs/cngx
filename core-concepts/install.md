@@ -65,7 +65,9 @@ install. Nothing outside the project is written.
 4. **Plan.** Every step contributes changes to one plan. The list you see,
    the `--dry-run` output, the summary and the manifest are all read from
    that plan, so they cannot disagree. Notes (what a step refused or left to
-   you) follow the list; they are not tasks.
+   you) follow the list; they are not tasks. Before an `Apply these
+   changes?` and under `--dry-run` the list prints as plain plan lines
+   instead of ticked tasks, since nothing has run yet.
 5. **Confirm.** An app that already has components beyond the root one
    (anywhere under its source root, outside `node_modules` and `dist`), its
    own providers, a config written into `bootstrapApplication(App, {...})`,

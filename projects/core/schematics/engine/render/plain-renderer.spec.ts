@@ -84,6 +84,16 @@ describe('createPlainRenderer', () => {
     expect(lines).toMatchSnapshot();
   });
 
+  it('prints a pending plan the same way, since its lines tick nothing', async () => {
+    const done = renderer(false);
+    const pending = renderer(false);
+
+    await done.renderer.todo(PLAN);
+    await pending.renderer.todo(PLAN, { pending: true });
+
+    expect(pending.lines).toEqual(done.lines);
+  });
+
   it('prints the preflight checklist with one level per status', () => {
     const { lines, renderer: plain } = renderer(false);
 

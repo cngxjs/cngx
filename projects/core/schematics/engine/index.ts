@@ -22,6 +22,7 @@ export {
   type NgAddOptions,
   type NgAddPreset,
   parseNgAddOptions,
+  readDryRunFlag,
   readPromptFlags,
   THEME_CHOICES,
   type ThemeChoice,
