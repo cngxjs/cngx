@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
+import { createListboxKeyForward } from '../shared/internal/listbox-key-forward';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 
 import { injectSelectShellSearchHost } from './select-search-host';
@@ -100,38 +101,8 @@ export class CngxSelectSearch {
    *
    * @internal
    */
-  protected handleKeydown(event: KeyboardEvent): void {
-    const lb = this.host.listboxRef();
-    if (!lb) {
-      return;
-    }
-    const ad = lb.ad;
-    switch (event.key) {
-      case 'ArrowDown':
-        event.preventDefault();
-        ad.highlightNext();
-        break;
-      case 'ArrowUp':
-        event.preventDefault();
-        ad.highlightPrev();
-        break;
-      case 'Home':
-        event.preventDefault();
-        ad.highlightFirst();
-        break;
-      case 'End':
-        event.preventDefault();
-        ad.highlightLast();
-        break;
-      case 'Enter':
-        event.preventDefault();
-        ad.activateCurrent();
-        break;
-      case 'Escape':
-        event.preventDefault();
-        this.host.close();
-        this.host.focus();
-        break;
-    }
-  }
+  protected readonly handleKeydown = createListboxKeyForward(this.host.listboxRef, () => {
+    this.host.close();
+    this.host.focus();
+  });
 }
