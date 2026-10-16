@@ -88,7 +88,9 @@ describe('CngxFilterRow', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    const button = fixture.debugElement.query(By.css('button')).nativeElement as HTMLButtonElement;
+    const button = fixture.debugElement.query(
+      By.css('.cngx-filter-builder__action-button--remove'),
+    ).nativeElement as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     TestBed.flushEffects();
