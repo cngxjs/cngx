@@ -17,6 +17,12 @@ Console diagnostics are development-only. The message and its code sit behind An
 
 Thrown errors are different: a thrown error that is not development-only also throws in production, with the bare code as its message, so a `CNGX` code in a production error is expected. See [Thrown errors](#thrown-errors).
 
+## Production builds and `ngDevMode`
+
+Dropping the messages, the links and the development-only checks depends on the global `ngDevMode` being defined as `false` when your application is bundled for production, so the minifier can remove the branches behind it. Angular itself has the same requirement.
+
+The Angular CLI does this for every production build, including server-side rendering. A build that bundles CNGX without the Angular CLI (Vite or esbuild without the Angular plugin, Rollup, webpack) has to define it itself, for example `define: { ngDevMode: 'false' }` in esbuild or Vite. Without that define, the production bundle keeps every development message, its docs link and every development-only check, and runs them: Angular sets `ngDevMode` itself at startup when the bundle left it undefined.
+
 ## Ranges
 
 Each library emits codes in its own range, so the code tells you where to look.
@@ -72,7 +78,11 @@ Each code has one page, listed in the sidebar under this one. A page has three p
 - **Fixing the warning** (or **error**) - the change that makes the message go away, with one or more options and their code.
 - **Debugging the warning** (or **error**) - what the message tells you, when the check runs, and how to find the place that caused it.
 
-A warning flags a likely mistake that CNGX works around. An error flags a setup that leaves a feature broken or wrong; it is still a console message, not a thrown exception.
+A code has one of three severities, named in the page's headings:
+
+- **Warning** - a likely mistake that CNGX works around. It is a `console.warn` in development and nothing in production.
+- **Error** - a setup that leaves a feature broken or wrong, logged with `console.error` in development and nothing in production. It is a console message, not an exception; the code keeps running.
+- **Thrown error** - a `CngxRuntimeError` the code throws because it cannot continue. Its page says whether the throw stays in production with the bare code or is removed with the check (see [Thrown errors](#thrown-errors)).
 
 One code stands for one condition. A code is never reused: when a check is removed, its page stays and says in which version the code was retired.
 
