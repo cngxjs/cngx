@@ -1,6 +1,7 @@
-import { Directive, effect, inject, input, untracked } from '@angular/core';
+import { Directive, effect, input, untracked } from '@angular/core';
 
-import { CngxPaginate } from './paginate.directive';
+import { injectPaginate } from './inject-paginate';
+import type { CngxPaginate } from './paginate.directive';
 
 /**
  * Wires the reset-on-change behaviour onto a {@link CngxPaginate} brain: when
@@ -61,7 +62,7 @@ export function connectPaginateResetOn(paginate: CngxPaginate, key: () => unknow
   standalone: true,
 })
 export class CngxPaginateResetOn {
-  private readonly paginate = inject(CngxPaginate);
+  private readonly paginate = injectPaginate('cngxPaginateResetOn');
 
   /** The reset key. A change (after mount) jumps the paginator to page 0. */
   readonly key = input<unknown>(undefined, { alias: 'cngxPaginateResetOn' });

@@ -245,3 +245,34 @@ describe('CngxPaginateRouting', () => {
     expect(brainOf(harness).pageIndex()).toBe(1);
   });
 });
+
+@Component({
+  standalone: true,
+  imports: [CngxPaginateRouting],
+  template: `<div cngxPaginateRouting></div>`,
+})
+class OrphanRoutingHost {}
+
+describe('CngxPaginateRouting placement (CNGX1063)', () => {
+  test('throws CNGX1063 without a [cngxPaginate]', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    expect(() => TestBed.createComponent(OrphanRoutingHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1063',
+        message: expect.stringMatching(
+          /^CNGX1063: \[cngxPaginateRouting\] must be placed on or inside an element with \[cngxPaginate\], such as <cngx-paginator>\./,
+        ),
+      }),
+    );
+  });
+
+  test('does not throw on an element with [cngxPaginate]', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    expect(() => TestBed.createComponent(RoutedHost).detectChanges()).not.toThrow();
+  });
+});

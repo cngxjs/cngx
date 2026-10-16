@@ -42,3 +42,29 @@ describe('CngxPaginateResetOn', () => {
     expect(paginate.pageIndex()).toBe(0);
   });
 });
+
+@Component({
+  standalone: true,
+  imports: [CngxPaginateResetOn],
+  template: `<div [cngxPaginateResetOn]="'k'"></div>`,
+})
+class OrphanResetHost {}
+
+describe('CngxPaginateResetOn placement (CNGX1063)', () => {
+  test('throws CNGX1063 without a [cngxPaginate]', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    expect(() => TestBed.createComponent(OrphanResetHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1063',
+        message: expect.stringMatching(
+          /^CNGX1063: \[cngxPaginateResetOn\] must be placed on or inside an element with \[cngxPaginate\], such as <cngx-paginator>\./,
+        ),
+      }),
+    );
+  });
+
+  test('does not throw on an element with [cngxPaginate]', () => {
+    expect(() => setup()).not.toThrow();
+  });
+});

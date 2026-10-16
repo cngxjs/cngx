@@ -358,6 +358,10 @@
                 "file": "error-codes/cngx1062.md"
             },
             {
+                "title": "CNGX1063",
+                "file": "error-codes/cngx1063.md"
+            },
+            {
                 "title": "CNGX2001",
                 "file": "error-codes/cngx2001.md"
             },

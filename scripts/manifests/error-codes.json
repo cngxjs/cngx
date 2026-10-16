@@ -788,6 +788,17 @@
       "files": ["projects/common/interactive/slider/range-slider.token.ts"]
     },
     {
+      "code": "CNGX1063",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Paginate add-on without a paginate directive",
+      "page": "core-concepts/error-codes/cngx1063.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1063.html",
+      "status": "active",
+      "files": ["projects/common/data/paginate/inject-paginate.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",
