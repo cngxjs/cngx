@@ -10,6 +10,7 @@ import { CngxFilterBuilder } from './filter-builder.component';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import { CngxFilterBuilderFormFieldControl } from './filter-builder-form-field-control.directive';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
+import { toFilterPredicate } from './filter-builder.helpers';
 import {
   provideFilterBuilderConfig,
   withCaseInsensitiveStrings,
@@ -436,6 +437,33 @@ describe('CngxFilterBuilderPresenter - dev-mode guards', () => {
     await TestBed.inject(ApplicationRef).whenStable();
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringMatching(/^CNGX2003: .*unknown field key\(s\): bogus/),
+    );
+  });
+});
+
+describe('CngxFilterBuilderPresenter - unknown logic through value (CNGX2013)', () => {
+  const legacy = (filters: FilterGroup['filters']): FilterGroup =>
+    ({ type: 'group', id: 'legacy', logic: 'AND', negated: false, filters }) as unknown as FilterGroup;
+
+  it('accepts an empty group with logic "AND" or no logic and matches every item', () => {
+    const { logic: _logic, ...missing } = legacy([]);
+    for (const value of [legacy([]), missing as unknown as FilterGroup]) {
+      const { directive } = setup({ value });
+      expect(directive.predicate()).toBeNull();
+      expect(toFilterPredicate(directive.tree(), [FIELD_NAME])!({ name: 'x' })).toBe(true);
+    }
+  });
+
+  it('throws CNGX2013 for a non-empty group with logic "AND"', () => {
+    const value = legacy([
+      { type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: 'x' },
+    ]);
+    expect(() => setup({ value })).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX2013',
+        message: expect.stringMatching(/^CNGX2013: ensureFilterTreeIds\(\): /),
+      }),
     );
   });
 });
