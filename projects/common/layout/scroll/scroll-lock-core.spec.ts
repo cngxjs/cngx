@@ -86,6 +86,16 @@ describe('createPinnedScrollLock', () => {
     expect(html.style.overflow).toBe('');
   });
 
+  it('restores only the properties it pinned and keeps styles set meanwhile', () => {
+    body.style.position = 'relative';
+    const release = createPinnedScrollLock(html);
+    body.style.paddingRight = '15px';
+    release();
+    expect(body.style.position).toBe('relative');
+    expect(body.style.paddingRight).toBe('15px');
+    expect(body.style.top).toBe('');
+  });
+
   it('scrolls back to the saved position on the last release only', () => {
     const releaseA = createPinnedScrollLock(html);
     const releaseB = createPinnedScrollLock(html);

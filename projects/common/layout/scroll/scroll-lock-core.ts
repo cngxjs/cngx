@@ -65,9 +65,18 @@ export function createScrollLock(html: HTMLElement): () => void {
   };
 }
 
+// The body properties the pin writes. Only these are saved and restored, so a
+// style another owner sets on body while the pin is held survives the release.
+const PINNED_BODY_PROPERTIES = ['position', 'top', 'inset-inline', 'overflow'] as const;
+
+interface SavedProperty {
+  readonly value: string;
+  readonly priority: string;
+}
+
 interface PinState {
   count: number;
-  readonly bodyCss: string;
+  readonly saved: ReadonlyMap<string, SavedProperty>;
   readonly scrollX: number;
   readonly scrollY: number;
   readonly releaseHtml: () => void;
@@ -122,7 +131,15 @@ export function createPinnedScrollLock(html: HTMLElement): () => void {
     const scrollY = view?.scrollY ?? 0;
     pins.set(html, {
       count: 1,
-      bodyCss: body.style.cssText,
+      saved: new Map(
+        PINNED_BODY_PROPERTIES.map((name) => [
+          name,
+          {
+            value: body.style.getPropertyValue(name),
+            priority: body.style.getPropertyPriority(name),
+          },
+        ]),
+      ),
       scrollX,
       scrollY,
       releaseHtml: createScrollLock(html),
@@ -148,7 +165,13 @@ export function createPinnedScrollLock(html: HTMLElement): () => void {
       return;
     }
     pins.delete(html);
-    body.style.cssText = state.bodyCss;
+    for (const [name, { value, priority }] of state.saved) {
+      if (value) {
+        body.style.setProperty(name, value, priority);
+      } else {
+        body.style.removeProperty(name);
+      }
+    }
     state.releaseHtml();
     view?.scrollTo({ left: state.scrollX, top: state.scrollY, behavior: 'instant' });
   };
