@@ -756,6 +756,7 @@ export class CngxSelectClearButton {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
  * @relatedTo withMobileSheet, CngxPopoverSheetHandle
+ * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/custom-handle</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxSelectSheetHandle]',

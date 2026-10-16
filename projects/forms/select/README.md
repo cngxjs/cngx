@@ -37,9 +37,18 @@ Every variant ships full WAI-ARIA 1.2:
 
 - `role="combobox"` on the focusable trigger.
 - `aria-expanded`, `aria-controls`, `aria-haspopup`, `aria-busy`, `aria-invalid`, `aria-required` all reactive - derived in the `computed` graph.
-- Focus stays on the trigger; the active option is announced via `aria-activedescendant`.
+- Focus stays on the trigger; the active option is announced via `aria-activedescendant`. In the mobile sheet focus moves into the panel (see below).
 - Tree variant: `role="tree"`, per-node `aria-level` / `aria-posinset` / `aria-setsize` / `aria-expanded` / `aria-checked` (true / false / `mixed` for partial cascade selection - APG checkbox-tree).
 - Reorderable variant: chip-strip `role="group"` with manual roving tabindex; reorder moves announced through the live region.
+
+## Mobile sheet
+
+On a touch screen narrower than 48rem every variant opens its panel as a modal sheet: a content-sized bottom sheet, or fullscreen for the variants led by a text input. The sheet is a named `role="dialog"` with `aria-modal`; focus moves in on open and back to the trigger on close, the rest of the page is inert, and announcements are spoken from inside the sheet. The header shows the field label, a close button and, on multi and input variants, Done. Swipe the header down, tap outside or use the Android back gesture to close; while a pessimistic `[commitAction]` is pending the sheet stays open.
+
+- `withMobileSheet('off')` keeps every select in its scope anchored, on phones too.
+- `[presentation]` on a variant forces `'anchored'`, `'sheet'` or `'fullscreen'` and wins over the config.
+- `[sheetLabel]` sets the sheet title when the field label is not the right one.
+- `*cngxSelectSheetHandle` replaces the decorative drag handle.
 
 ## Localisation
 
