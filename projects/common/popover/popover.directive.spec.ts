@@ -162,7 +162,13 @@ class SeamStub implements CngxPopoverPresentationSeam {
 
 @Component({
   template: `
-    <div cngxPopover seamStub #pop="cngxPopover" [positionTryFallbacks]="['flip-block']">
+    <div
+      cngxPopover
+      seamStub
+      #pop="cngxPopover"
+      [positionTryFallbacks]="['flip-block']"
+      [closeOnOutsideClick]="true"
+    >
       Seam
       <div cngxPopover #inner="cngxPopover" [positionTryFallbacks]="['flip-inline']">Inner</div>
     </div>
@@ -1157,6 +1163,22 @@ describe('CngxPopover', () => {
       stubPopoverElement(host.inner().elementRef.nativeElement);
       host.inner().show();
       expect(host.seam().onShown).not.toHaveBeenCalled();
+    });
+
+    it('leaves outside clicks to the presentation modifier while not anchored', () => {
+      const { fixture, popover, seam } = seamSetup();
+      seam.presentation.set('sheet');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      popover.show();
+      document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(popover.state()).not.toBe('closed');
+
+      seam.presentation.set('anchored');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(popover.state()).toBe('closed');
     });
 
     it('keeps the anchored path unchanged while the seam reports anchored', () => {

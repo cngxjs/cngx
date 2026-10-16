@@ -852,7 +852,9 @@ export class CngxPopover {
    * `CngxPopoverAnchor` holds the popover).
    */
   closeIfOutsidePointerDown(target: EventTarget | null): void {
-    if (!this.closeOnOutsideClick()) {
+    // Outside a sheet the presentation modifier owns the tap and routes it
+    // through its close request; hiding here would bypass that policy.
+    if (!this.closeOnOutsideClick() || !this.anchored()) {
       return;
     }
     const node = target as Node | null;
