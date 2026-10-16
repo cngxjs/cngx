@@ -166,7 +166,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
       [
         ...planSteps(withdrawn, recordedLibs(manifest)).map((step) => step(facts, answers, versions)),
         presetChangeNote(options, recorded, provenance),
-        libsFloorNote(answeredLibs, answers.libs, provenance),
+        libsFloorNote(answeredLibs, answers.libs, facts.project, provenance),
       ],
       warning === undefined ? [] : [warning],
     );

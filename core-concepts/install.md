@@ -289,7 +289,7 @@ keeps (`Keep the recorded packages`). A package that is only a peer of the
 others is installed through them and not recorded. `@cngx/themes`,
 `@cngx/mcp` and `@cngx/eslint-plugin` are no lib: the theme answer and the
 tooling steps decide them. To remove a package, delete it from `package.json`
-and from `answers.libs` in `.cngx/install.json`.
+and from `projects.<name>.answers.libs` in `.cngx/install.json`.
 
 A newer cngx release comes in through `ng update @cngx/core`, not through
 `ng add` (see [Update](update.html)). `ng add @cngx/<package>@<newer>` on

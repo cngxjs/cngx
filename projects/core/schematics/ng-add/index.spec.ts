@@ -862,7 +862,7 @@ describe('ngAdd', () => {
 
       expect(recordedLibs(second.tree)).toEqual([...CNGX_LIBS]);
       expect(second.logs).toContain(
-        '  - Keep the recorded packages - @cngx/common, @cngx/interop, @cngx/forms, @cngx/data-display, @cngx/ui stay because the last install recorded them or package.json declares them; to remove one, delete it from package.json and from answers.libs in .cngx/install.json',
+        '  - Keep the recorded packages - @cngx/common, @cngx/interop, @cngx/forms, @cngx/data-display, @cngx/ui stay because the last install recorded them or package.json declares them; to remove one, delete it from package.json and from projects.fixture-app.answers.libs in .cngx/install.json',
       );
     });
 
@@ -875,7 +875,7 @@ describe('ngAdd', () => {
       expect(recordedLibs(second.tree)).toEqual(['core', 'forms']);
       expect(declared(second.tree)['@cngx/forms']).toBe(VERSION);
       expect(second.logs).toContain(
-        '  - Keep the recorded packages - @cngx/forms stays because the last install recorded it or package.json declares it; to remove it, delete it from package.json and from answers.libs in .cngx/install.json',
+        '  - Keep the recorded packages - @cngx/forms stays because the last install recorded it or package.json declares it; to remove it, delete it from package.json and from projects.fixture-app.answers.libs in .cngx/install.json',
       );
     });
 

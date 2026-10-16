@@ -375,6 +375,10 @@ describe('withLibsFloor', () => {
     expect(withLibsFloor(['forms'], declaring('@cngx/utils', '@cngx/core', '@cngx/common'), undefined)).toEqual(['forms']);
   });
 
+  it('records no declared lib that is only a peer of another declared one', () => {
+    expect(withLibsFloor(['core'], declaring('@cngx/common', '@cngx/ui'), undefined)).toEqual(['core', 'ui']);
+  });
+
   it('counts no @cngx package outside the libs', () => {
     expect(withLibsFloor(['core'], declaring('@cngx/themes', '@cngx/mcp', '@cngx/eslint-plugin'), undefined)).toEqual(['core']);
   });
@@ -384,20 +388,20 @@ describe('libsFloorNote', () => {
   const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
 
   it('names the libs the floor kept beyond the answer', () => {
-    expect(libsFloorNote(['core'], ['core', 'forms', 'ui'], PROVENANCE).changes).toEqual([
+    expect(libsFloorNote(['core'], ['core', 'forms', 'ui'], 'fixture-app', PROVENANCE).changes).toEqual([
       {
         kind: 'note',
         id: 'answers:libs',
         label: 'Keep the recorded packages',
         reason:
-          '@cngx/forms, @cngx/ui stay because the last install recorded them or package.json declares them; to remove one, delete it from package.json and from answers.libs in .cngx/install.json',
+          '@cngx/forms, @cngx/ui stay because the last install recorded them or package.json declares them; to remove one, delete it from package.json and from projects.fixture-app.answers.libs in .cngx/install.json',
         provenance: PROVENANCE,
       },
     ]);
   });
 
   it('plans nothing when the answer holds every kept lib or its peers', () => {
-    expect(libsFloorNote(['core', 'forms'], ['core', 'forms'], PROVENANCE).changes).toEqual([]);
-    expect(libsFloorNote(['forms'], ['utils', 'core', 'forms'], PROVENANCE).changes).toEqual([]);
+    expect(libsFloorNote(['core', 'forms'], ['core', 'forms'], 'fixture-app', PROVENANCE).changes).toEqual([]);
+    expect(libsFloorNote(['forms'], ['utils', 'core', 'forms'], 'fixture-app', PROVENANCE).changes).toEqual([]);
   });
 });

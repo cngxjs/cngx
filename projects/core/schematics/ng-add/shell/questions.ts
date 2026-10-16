@@ -95,14 +95,16 @@ export function withLibsFloor(
   facts: ProjectFacts,
   recorded: OnboardingAnswers | undefined,
 ): readonly CngxLib[] {
-  const kept = new Set<CngxLib>([...answered, ...(recorded?.libs ?? [])]);
-  const implied = selectedLibs([...kept]);
-  for (const lib of CNGX_LIBS) {
-    if (!implied.includes(lib) && declaredRange(facts.manifest, `@cngx/${lib}`) !== undefined) {
-      kept.add(lib);
-    }
-  }
-  return CNGX_LIBS.filter((lib) => kept.has(lib));
+  const asked = new Set<CngxLib>([...answered, ...(recorded?.libs ?? [])]);
+  const declared = CNGX_LIBS.filter(
+    (lib) => !asked.has(lib) && declaredRange(facts.manifest, `@cngx/${lib}`) !== undefined,
+  );
+  const kept = CNGX_LIBS.filter((lib) => asked.has(lib) || declared.includes(lib));
+  // Peers are transitive in LIB_PEERS, so one pass against every other kept
+  // lib drops a declared peer of a lib that is itself only declared.
+  return kept.filter(
+    (lib) => asked.has(lib) || !selectedLibs(kept.filter((other) => other !== lib)).includes(lib),
+  );
 }
 
 /** The answers of one run and the editors the user asked for by name. */
@@ -153,6 +155,7 @@ export function presetChangeNote(
 export function libsFloorNote(
   answered: readonly CngxLib[],
   kept: readonly CngxLib[],
+  project: string,
   provenance: Provenance,
 ): StepResult {
   const implied = selectedLibs(answered);
@@ -166,7 +169,7 @@ export function libsFloorNote(
       createNote({
         id: 'answers:libs',
         label: 'Keep the recorded packages',
-        reason: `${added.join(', ')} ${stay} because the last install recorded ${them} or package.json declares ${them}; to remove ${it}, delete it from package.json and from answers.libs in .cngx/install.json`,
+        reason: `${added.join(', ')} ${stay} because the last install recorded ${them} or package.json declares ${them}; to remove ${it}, delete it from package.json and from projects.${project}.answers.libs in .cngx/install.json`,
         provenance,
       }),
     ],
