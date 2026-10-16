@@ -10,6 +10,7 @@ import type { CngxSelectCreateAction } from '../shared/create-action.types';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../shared/option.model';
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 
 type Tag = { readonly id: string; readonly name: string };
 
@@ -436,3 +437,15 @@ describe('CngxActionSelect - dismiss guard', () => {
 describeFieldSkinHost('CngxActionSelect', CngxActionSelect, 'cngx-action-select', () =>
   createMockField({ name: 'pick' }).accessor,
 );
+
+describeMobileSheet('CngxActionSelect', CngxActionSelect, 'cngx-action-select', {
+  inputs: '[options]="options"',
+  optionSelector: '[cngxOption]',
+  fill: 'fullscreen',
+  showDone: true,
+  showInput: true,
+  makeField: () => {
+    const { accessor, ref } = createMockField<string>({ name: 'pick' });
+    return { accessor, touched: () => ref.touched() };
+  },
+});

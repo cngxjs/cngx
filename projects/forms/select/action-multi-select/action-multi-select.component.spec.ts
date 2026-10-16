@@ -8,6 +8,7 @@ import { CngxSelectAction } from '../shared/template-slots';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import {
   CngxActionMultiSelect,
   type CngxActionMultiSelectChange,
@@ -382,3 +383,15 @@ describeCommitControllerCascade('CngxActionMultiSelect');
 describeFieldSkinHost('CngxActionMultiSelect', CngxActionMultiSelect, 'cngx-action-multi-select', () =>
   createMockField({ name: 'pick' }).accessor,
 );
+
+describeMobileSheet('CngxActionMultiSelect', CngxActionMultiSelect, 'cngx-action-multi-select', {
+  inputs: '[options]="options"',
+  optionSelector: '[cngxOption]',
+  fill: 'fullscreen',
+  showDone: true,
+  showInput: true,
+  makeField: () => {
+    const { accessor, ref } = createMockField<string[]>({ name: 'pick', value: [] });
+    return { accessor, touched: () => ref.touched() };
+  },
+});

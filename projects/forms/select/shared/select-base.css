@@ -996,6 +996,16 @@
     width: 100%;
   }
 
+  /* A projected <cngx-select-search> stays put above the scrolling listbox. */
+  .cngx-select__panel.cngx-popover-sheet:is(
+      [data-cngx-presentation='sheet'],
+      [data-cngx-presentation='fullscreen']
+    )
+    > cngx-select-search {
+    flex: none;
+    overflow: visible;
+  }
+
   /* A virtualized panel only ever renders a window of options, so the default
      shrink-to-fit width jitters as the window recycles through options of
      differing widths (proportional digits, variable labels). Lock the width to

@@ -18,6 +18,10 @@ import {
 export interface MobileSheetSpecOptions {
   /** Inputs that make the variant render options, bound on the host below. */
   readonly inputs: string;
+  /** Projected content (declarative options). */
+  readonly content?: string;
+  /** Standalone imports the projected content needs. */
+  readonly contentImports?: readonly Type<unknown>[];
   /** Selector of one pickable row inside the panel. */
   readonly optionSelector: string;
   readonly fill: 'sheet' | 'fullscreen';
@@ -152,10 +156,10 @@ export function describeMobileSheet(
                 [presentation]="presentation()"
                 [commitAction]="commitAction"
                 [commitMode]="mode()"
-              />
+              >${opts.content ?? ''}</${elementSelector}>
             </cngx-form-field>
           `,
-          imports: [CngxFormField, component],
+          imports: [CngxFormField, component, ...(opts.contentImports ?? [])],
         },
       });
       const fixture = TestBed.createComponent(SheetHost);
@@ -290,6 +294,21 @@ export function describeMobileSheet(
     });
 
     if (opts.showInput) {
+      it('keeps the sheet open on Escape in the header input while a pessimistic commit is pending', () => {
+        const { fixture, host, el, variant, panel, open, pickSecond } = setup();
+        host.mode.set('pessimistic');
+        flush(fixture);
+        open();
+        pickSecond();
+        const input = panel.querySelector<HTMLInputElement>('.cngx-select-sheet-header__input')!;
+        input.focus();
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        flush(fixture);
+        expect(variant.panelOpen()).toBe(true);
+        expect(panel.contains(document.activeElement)).toBe(true);
+        expect(el.contains(document.activeElement)).toBe(true);
+      });
+
       it('closes once on Escape in the header input', () => {
         const { fixture, variant, panel, open } = setup();
         const closed = vi.fn();
