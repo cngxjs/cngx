@@ -660,7 +660,7 @@
     {
       "class": "CngxAccordionItem",
       "file": "projects/ui/accordion/accordion-item.component.ts",
-      "line": 132,
+      "line": 133,
       "member": "resolvedDisabledReason",
       "enclosing": "computed",
       "tiers": [
