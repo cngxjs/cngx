@@ -74,6 +74,7 @@ export {
   addToArrayLiteral,
   type ArraySelector,
   hasArrayLiteral,
+  importsModule,
   insertAfterImports,
   type LanguagePackArgument,
   readProviderCalls,

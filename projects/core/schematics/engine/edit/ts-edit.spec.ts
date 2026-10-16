@@ -5,6 +5,7 @@ import {
   type ArraySelector,
   countArrayLiterals,
   hasArrayLiteral,
+  importsModule,
   insertAfterImports,
   promoteTypeOnlyImport,
   readProviderCalls,
@@ -23,6 +24,16 @@ export default [
   js.configs.recommended,
 ];
 `;
+
+describe('importsModule', () => {
+  it('reads import, import-equals and require of the module, commented-out lines aside', () => {
+    expect(importsModule("import cngx from '@cngx/eslint-plugin';\n", '@cngx/eslint-plugin')).toBe(true);
+    expect(importsModule("import cngx = require('@cngx/eslint-plugin');\n", '@cngx/eslint-plugin')).toBe(true);
+    expect(importsModule("const { configs } = require('@cngx/eslint-plugin').default;\n", '@cngx/eslint-plugin')).toBe(true);
+    expect(importsModule("// import cngx from '@cngx/eslint-plugin';\n", '@cngx/eslint-plugin')).toBe(false);
+    expect(importsModule("const name = '@cngx/eslint-plugin';\n", '@cngx/eslint-plugin')).toBe(false);
+  });
+});
 
 describe('addToArrayLiteral', () => {
   it('appends to a multi-line default export and keeps the trailing comma', () => {

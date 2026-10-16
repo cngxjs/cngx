@@ -217,6 +217,6 @@ export function existingCngxTheme(
     .find((path) => tree.exists(path));
   return (
     generated ??
-    entries.find((entry) => entry.endsWith('.scss') && (read(entry) ?? '').includes(MATERIAL_BRIDGE))
+    entries.find((entry) => entry.endsWith('.scss') && hasStyleImport(read(entry) ?? '', `@use '${MATERIAL_BRIDGE}';`))
   );
 }
