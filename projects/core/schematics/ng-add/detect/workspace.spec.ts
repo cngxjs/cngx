@@ -3,6 +3,7 @@ import { SchematicsException } from '@angular-devkit/schematics';
 import { readWorkspace } from '@schematics/angular/utility';
 import { describe, expect, it } from 'vitest';
 
+import { parseVersion } from '../../engine';
 import { createFixtureTree } from '../../testing/run-schematic';
 import {
   angularVersionOf,
@@ -106,10 +107,27 @@ describe('versionOf', () => {
     expect(versionOf(undefined)).toBeUndefined();
   });
 
-  it.each(['catalog:', 'workspace:*', 'latest', 'next', '21.x', 'npm:@angular/core@21'])(
+  it('reads a wildcard minor as its lowest version, like ~21', () => {
+    expect(versionOf('21.x')).toBe('21.0.0');
+    expect(versionOf('21.2.x')).toBe('21.2.0');
+  });
+
+  it.each(['catalog:', 'workspace:*', 'latest', 'next', 'npm:@angular/core@21'])(
     'reads no version from %s',
     (range) => {
       expect(versionOf(range)).toBeUndefined();
+    },
+  );
+
+  it.each(['^21.2.0', '~21', '>=21.2 <22', '21.x', '21.3.0-rc.1', 'catalog:', 'workspace:*', 'latest'])(
+    'agrees with parseVersion on %s',
+    (range) => {
+      const parsed = parseVersion(range);
+      const expected =
+        parsed === undefined
+          ? undefined
+          : `${parsed.major}.${parsed.minor}.${parsed.patch}${parsed.prerelease.length === 0 ? '' : `-${parsed.prerelease.join('.')}`}`;
+      expect(versionOf(range)).toBe(expected);
     },
   );
 });
