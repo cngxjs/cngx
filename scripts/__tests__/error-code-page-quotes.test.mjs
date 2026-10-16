@@ -12,15 +12,25 @@
 //     are the ones the repo's collectors extract (`collectHelperCalls`,
 //     `collectRuntimeErrors` in `scripts/dev-diagnostics.mjs`), followed
 //     into the callers of a dev wrapper whose message is a parameter. A
-//     `${...}` part, or any operand that is not literal text, matches any
-//     text in the quote.
+//     `${...}` part, or any operand that is not literal text, is a
+//     wildcard: it matches any text, but the literal text after it must
+//     then match the quote, so a wildcard ends the comparison only when it
+//     is the last part of the message.
 // Q3  a quote that cannot be checked this way is listed in
 //     QUOTE_EXEMPT with a reason; a row that no longer matches a quote, or
 //     whose quote now passes, fails.
 //
-// Known limits: a quote that does not follow one of the Q1 lead-ins is only
-// checked when it already carries the prefix. A wildcard matches any text,
-// so a quote that invents the value of a `${...}` part passes.
+// Known limits, exactly what is not compared:
+// - a backticked span that neither follows a Q1 lead-in in a paragraph
+//   about the message nor starts with the page's own `CNGXnnnn: `; pages
+//   that only describe their message in prose are not checked at all;
+// - the text a wildcard stands for, so a quote that invents the value of
+//   a `${...}` part passes as long as the literal text after it matches;
+// - a quote whose end falls inside a wildcard that is not the last part
+//   fails, even when the invented value is plausible: quote up to the
+//   next literal text, or stop before the `${...}` part;
+// - a message whose first operand is not literal text is one wildcard
+//   and matches every quote.
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -73,8 +83,21 @@ function guardedTail(node) {
   return current;
 }
 
-/** A message expression as literal text and WILD parts. */
+/**
+ * A message expression as literal text and WILD parts, without empty
+ * literals and with adjacent WILD parts merged, so a WILD is the last
+ * segment exactly when no literal text follows it.
+ */
 export function segmentsOf(node) {
+  return rawSegmentsOf(node).reduce((out, part) => {
+    if (part === '' || (part === WILD && out.at(-1) === WILD)) {
+      return out;
+    }
+    return [...out, part];
+  }, []);
+}
+
+function rawSegmentsOf(node) {
   const inner = unwrap(node);
   if (ts.isStringLiteral(inner) || ts.isNoSubstitutionTemplateLiteral(inner)) {
     return [inner.text];
@@ -83,12 +106,16 @@ export function segmentsOf(node) {
     return [inner.head.text, ...inner.templateSpans.flatMap((span) => [WILD, span.literal.text])];
   }
   if (ts.isBinaryExpression(inner) && inner.operatorToken.kind === ts.SyntaxKind.PlusToken) {
-    return [...segmentsOf(inner.left), ...segmentsOf(inner.right)];
+    return [...rawSegmentsOf(inner.left), ...rawSegmentsOf(inner.right)];
   }
   return [WILD];
 }
 
-/** Is `quote` the start of some text that `segments` can produce? */
+/**
+ * Is `quote` the start of some text that `segments` can produce? A WILD
+ * part consumes the rest of the quote only when it is the last segment;
+ * otherwise the literal text after it must match after the consumed text.
+ */
 export function isPrefixOf(quote, segments, at = 0, index = 0) {
   if (at === quote.length) {
     return true;
@@ -98,7 +125,10 @@ export function isPrefixOf(quote, segments, at = 0, index = 0) {
   }
   const part = segments[index];
   if (part === WILD) {
-    for (let next = at; next <= quote.length; next++) {
+    if (index === segments.length - 1) {
+      return true;
+    }
+    for (let next = at; next < quote.length; next++) {
       if (isPrefixOf(quote, segments, next, index + 1)) {
         return true;
       }
@@ -280,6 +310,23 @@ describe('error-code page quotes - matcher', () => {
     expect(quoteProblems(pages, messages).map((p) => p.quote)).toEqual([
       'CNGX1004: tapHttpAsyncState: body',
       'body is null',
+    ]);
+  });
+
+  it('compares the text after a template part', () => {
+    const messages = messagesByCode([
+      file(`cngxDevWarn('CNGX1005', \`[cngxMenu] item "\${id}" has no label; bind [aria-label].\`);`),
+    ]);
+    const pages = [
+      {
+        code: 'CNGX1005',
+        text:
+          'The message starts with `CNGX1005: [cngxMenu] item "save" has no label; bind`.\n\n' +
+          'The message reads `CNGX1005: [cngxMenu] item "save" lacks a label`.',
+      },
+    ];
+    expect(quoteProblems(pages, messages).map((p) => p.quote)).toEqual([
+      'CNGX1005: [cngxMenu] item "save" lacks a label',
     ]);
   });
 
