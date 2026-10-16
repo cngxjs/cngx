@@ -167,8 +167,26 @@ class StateContextHost {
   readonly state = signal<AsyncStatus>('loading');
 }
 
+@Component({
+  template: `<cngx-accordion-item><span cngxAccordionItemTitle>A</span>Body A</cngx-accordion-item>`,
+  imports: [CngxAccordionItem, CngxAccordionItemTitle],
+})
+class OrphanHost {}
+
 describe('CngxAccordionItem', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [Host] }));
+
+  it('throws CNGX3019 outside an accordion group', () => {
+    expect(() => TestBed.createComponent(OrphanHost)).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX3019',
+        message: expect.stringMatching(
+          /^CNGX3019: \[cngx-accordion-item\] must be placed inside <cngx-accordion-group>\./,
+        ),
+      }),
+    );
+  });
 
   function setup() {
     const fixture = TestBed.createComponent(Host);

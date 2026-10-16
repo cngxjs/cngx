@@ -1052,6 +1052,17 @@
       ]
     },
     {
+      "code": "CNGX3019",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Accordion item outside an accordion group",
+      "page": "core-concepts/error-codes/cngx3019.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3019.html",
+      "status": "active",
+      "files": ["projects/ui/accordion/accordion-item.component.ts"]
+    },
+    {
       "code": "CNGX4001",
       "lib": "data-display",
       "severity": "warn",
