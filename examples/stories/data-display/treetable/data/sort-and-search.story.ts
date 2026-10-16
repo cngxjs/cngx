@@ -16,9 +16,7 @@ export const STORY: DemoSpec = {
     "import { ORG_TREE, type Employee, DEMO_TREETABLE_LABELS } from '../../../../fixtures';",
   ],
   imports: ['CngxTreetable'],
-  viewProviders: [
-    '...provideTreetableAt(withTreetableLabels(DEMO_TREETABLE_LABELS))',
-  ],
+  viewProviders: ['...provideTreetableAt(withTreetableLabels(DEMO_TREETABLE_LABELS))'],
   setup: `protected readonly search = signal('');
   protected readonly sortDirection = signal<'asc' | 'desc'>('asc');
   protected readonly employeeId = (employee: Employee): string => employee.name;

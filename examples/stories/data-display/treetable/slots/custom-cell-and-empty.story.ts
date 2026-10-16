@@ -17,9 +17,7 @@ export const STORY: DemoSpec = {
     "import { ORG_TREE, type Employee, DEMO_TREETABLE_LABELS } from '../../../../fixtures';",
   ],
   imports: ['CngxTreetable', 'CngxCellTpl', 'CngxEmptyTpl', 'CngxTag'],
-  viewProviders: [
-    '...provideTreetableAt(withTreetableLabels(DEMO_TREETABLE_LABELS))',
-  ],
+  viewProviders: ['...provideTreetableAt(withTreetableLabels(DEMO_TREETABLE_LABELS))'],
   setup: `protected readonly tree = signal<CngxTreetableNode<Employee>[]>([ORG_TREE]);
 
   protected tagColor(node: CngxTreetableFlatNode<Employee>): CngxTagColor {

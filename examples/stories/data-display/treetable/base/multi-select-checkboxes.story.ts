@@ -22,9 +22,7 @@ export const STORY: DemoSpec = {
     "import { ORG_TREE, type Employee, DEMO_TREETABLE_LABELS } from '../../../../fixtures';",
   ],
   imports: ['CngxTreetable'],
-  viewProviders: [
-    '...provideTreetableAt(withTreetableLabels(DEMO_TREETABLE_LABELS))',
-  ],
+  viewProviders: ['...provideTreetableAt(withTreetableLabels(DEMO_TREETABLE_LABELS))'],
   setup: `protected readonly orgTree = ORG_TREE;`,
   setupChrome: `protected handleClear(table: CngxTreetable<Employee>): void {
     table.selectedIds.set(new Set());

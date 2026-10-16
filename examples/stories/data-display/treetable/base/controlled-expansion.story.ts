@@ -16,9 +16,7 @@ export const STORY: DemoSpec = {
     "import { ORG_TREE, DEMO_TREETABLE_LABELS } from '../../../../fixtures';",
   ],
   imports: ['CngxTreetable'],
-  viewProviders: [
-    '...provideTreetableAt(withTreetableLabels(DEMO_TREETABLE_LABELS))',
-  ],
+  viewProviders: ['...provideTreetableAt(withTreetableLabels(DEMO_TREETABLE_LABELS))'],
   setup: `protected readonly orgTree = ORG_TREE;
   // ReadonlySet matches the model<ReadonlySet<string>> inputs; a
   // signal<Set<string>> two-way binding fails under strictTemplates.
