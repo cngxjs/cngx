@@ -25,11 +25,13 @@ const CLEAR_DELAY_MS = 16;
 // WINDOW token, so a fake window drives both without touching jsdom globals.
 let breakpoint = '0';
 let resizeCallback: ((entries: unknown[]) => void) | null = null;
+let resizeObservers = 0;
 let rafQueue: FrameRequestCallback[] = [];
 
 const fakeWindow: Record<string, unknown> = {
   ResizeObserver: class {
     constructor(cb: (entries: unknown[]) => void) {
+      resizeObservers += 1;
       resizeCallback = cb;
     }
     observe(): void {
@@ -213,6 +215,7 @@ describe('CngxPopoverSheet', () => {
   beforeEach(() => {
     breakpoint = '0';
     resizeCallback = null;
+    resizeObservers = 0;
     rafQueue = [];
     TestBed.configureTestingModule({
       providers: [
@@ -288,6 +291,14 @@ describe('CngxPopoverSheet', () => {
       host.autoPresentation.set('fullscreen');
       flush();
       expect(panel.getAttribute('data-cngx-presentation')).toBe('fullscreen');
+    });
+
+    it('shares one breakpoint observer across sheets', () => {
+      const fixture = TestBed.createComponent(SiblingSheetHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      setup();
+      expect(resizeObservers).toBe(1);
     });
 
     it('stays anchored while the breakpoint cannot be read', () => {

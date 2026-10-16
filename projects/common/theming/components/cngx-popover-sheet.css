@@ -5,7 +5,7 @@
  * **Breakpoint**
  *
  * Written once, here: `(pointer: coarse) and (max-width: 48rem)` sets
- * `--cngx-popover-sheet-breakpoint` to `1` on the host, otherwise `0`.
+ * `--cngx-popover-sheet-breakpoint` to `1` on the root, otherwise `0`.
  * `CngxPopoverSheet` reads that property to resolve its `'auto'` request;
  * no TypeScript length constant exists. A viewport query is admitted here
  * because it decides overlay modality, not in-flow layout
@@ -249,14 +249,15 @@
 }
 
 @layer cngx.components {
-  /* The breakpoint, written once. Unregistered on purpose: the directive
+  /* The breakpoint, written once, on the root: every sheet shares one
+   * observer that reads it there. Unregistered on purpose: the directive
    * reads the raw value. */
-  .cngx-popover-sheet {
+  :root {
     --cngx-popover-sheet-breakpoint: 0;
   }
 
   @media (pointer: coarse) and (max-width: 48rem) {
-    .cngx-popover-sheet {
+    :root {
       --cngx-popover-sheet-breakpoint: 1;
     }
   }

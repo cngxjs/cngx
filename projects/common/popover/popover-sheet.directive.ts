@@ -16,7 +16,7 @@ import {
   CngxLiveAnnouncer,
   injectScopedLiveRegion,
 } from '@cngx/common/a11y';
-import { createContainerSize, createPinnedScrollLock } from '@cngx/common/layout';
+import { createPinnedScrollLock } from '@cngx/common/layout';
 import { injectWindow } from '@cngx/core/tokens';
 import { createSlotRegistry, createTransitionTracker } from '@cngx/core/utils';
 import { cngxDevWarn } from '@cngx/utils';
@@ -27,6 +27,7 @@ import {
   type CngxPopoverPresentation,
   type CngxPopoverPresentationSeam,
 } from './popover-presentation';
+import { CNGX_POPOVER_SHEET_BREAKPOINT } from './popover-sheet-breakpoint';
 import {
   CNGX_POPOVER_SHEET_HOST,
   type CngxPopoverSheetCloseReason,
@@ -43,7 +44,6 @@ import {
  */
 export type CngxPopoverPresentationRequest = 'auto' | CngxPopoverPresentation;
 
-const BREAKPOINT_PROPERTY = '--cngx-popover-sheet-breakpoint';
 const SETTLING_ATTRIBUTE = 'data-cngx-sheet-settling';
 const SETTLING_FRAME_CAP = 4;
 const LIVE_REGION_SELECTOR = '[aria-live], [role="status"], [role="alert"], [role="log"]';
@@ -189,11 +189,7 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
    */
   readonly closing = output<void>();
 
-  private readonly breakpoint = createContainerSize(
-    this.doc.documentElement,
-    inject(DestroyRef),
-    this.win,
-  ).property(BREAKPOINT_PROPERTY, this.host);
+  private readonly breakpoint = inject(CNGX_POPOVER_SHEET_BREAKPOINT);
 
   /** Resolved presentation, reflected as `data-cngx-presentation`. */
   readonly presentation = computed<CngxPopoverPresentation>(() => {
