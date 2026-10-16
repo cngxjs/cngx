@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Change, type StepResult } from './change';
+import { type Change, type SkippedStep, type StepResult } from './change';
 import { createChangePlan, describeChangePlan, planSections } from './plan';
 
 const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
@@ -140,6 +140,38 @@ describe('planSections', () => {
       'Add @cngx/eslint-plugin@0.1.0',
       'Add @cngx/forms@0.1.0',
     ]);
+  });
+
+  it('folds the lockstep @cngx packages already in place the same way', () => {
+    const pinned = (name: string, reason = 'already pinned'): SkippedStep => ({
+      id: `dependency:@cngx/${name}`,
+      label: `Add @cngx/${name}@0.1.0`,
+      reason,
+    });
+    const plan = createChangePlan([
+      {
+        changes: [],
+        skipped: [
+          pinned('utils'),
+          { id: 'style-import', label: 'Import cngx.css', reason: 'styles.css already imports it' },
+          pinned('core'),
+          pinned('eslint-plugin', 'already declared as ^0.2.0'),
+          { id: 'dependency:@cngx/eslint-plugin', label: 'Add @cngx/eslint-plugin@0.1.0', reason: 'already pinned' },
+        ],
+      },
+    ]);
+
+    expect(planSections(plan)[0]).toEqual({
+      title: 'Already in place',
+      marker: '=',
+      count: 5,
+      items: [
+        { label: 'Add 2 @cngx packages at 0.1.0', reason: 'already pinned' },
+        { label: 'Import cngx.css', reason: 'styles.css already imports it' },
+        { label: 'Add @cngx/eslint-plugin@0.1.0', reason: 'already declared as ^0.2.0' },
+        { label: 'Add @cngx/eslint-plugin@0.1.0', reason: 'already pinned' },
+      ],
+    });
   });
 
   it('prints the folded line in the plain plan text', () => {

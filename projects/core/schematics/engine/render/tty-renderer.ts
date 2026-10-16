@@ -6,7 +6,7 @@ import {
   type ListrTask,
 } from 'listr2';
 
-import { type ChangePlan, planSections } from '../plan/plan';
+import { type ChangePlan, describePlanItem, planSections } from '../plan/plan';
 import { type Palette } from './palette';
 import { createPlainRenderer, formatPlanHeading, formatPlanItem } from './plain-renderer';
 import { type Renderer, type RendererOptions } from './renderer';
@@ -28,13 +28,15 @@ export const TTY_LISTR_DEFAULTS = { rendererOptions: { collapseSkips: true } } a
 type TtyOptions = Pick<RendererOptions, 'color' | 'quiet' | 'logger' | 'listr'>;
 
 // One task per planned line in plan order (the lockstep @cngx additions
-// fold into one), then the idempotent hits as skipped tasks, so the list
-// shows the whole plan. The tasks carry no work: the tree changes run in
+// fold into one), then the idempotent hits as skipped tasks, folded the
+// same way, so the list shows the whole plan. The tasks carry no work: the tree changes run in
 // `applyChangePlan` and the CLI commits them after the rule, so the list is
 // the plan's projection, not a progress meter. A note changes nothing, so it
 // is no task: a ticked note would read as done.
 function todoTasks(plan: ChangePlan, color: Palette): ListrTask[] {
-  const planned = planSections(plan).find((section) => section.marker === '+');
+  const sections = planSections(plan);
+  const planned = sections.find((section) => section.marker === '+');
+  const inPlace = sections.find((section) => section.marker === '=');
   return [
     ...(planned?.items ?? []).map(
       (item): ListrTask => ({
@@ -42,10 +44,10 @@ function todoTasks(plan: ChangePlan, color: Palette): ListrTask[] {
         task: () => undefined,
       }),
     ),
-    ...plan.skipped.map(
-      (step): ListrTask => ({
-        title: step.label,
-        skip: () => `${step.label} - ${step.reason}`,
+    ...(inPlace?.items ?? []).map(
+      (item): ListrTask => ({
+        title: item.label,
+        skip: () => describePlanItem(item),
         task: () => undefined,
       }),
     ),

@@ -35,48 +35,80 @@ export interface PlanSection {
 
 const CNGX_SCOPE = '@cngx/';
 
-// A lockstep dependency: an @cngx package on the release line, not a
-// devDependency on its own version line (`@cngx/eslint-plugin`).
-function isLockstep(change: Change): change is Extract<Change, { kind: 'add-dependency' }> {
-  return change.kind === 'add-dependency' && change.name.startsWith(CNGX_SCOPE) && change.dev !== true;
+// A package on the release line: what one fold line stands for.
+interface Lockstep {
+  readonly name: string;
+  readonly version: string;
 }
 
-// The lockstep additions that share a version and a reason read as one line
+// A lockstep dependency: an @cngx package on the release line, not a
+// devDependency on its own version line (`@cngx/eslint-plugin`).
+function lockstepChange(change: Change): Lockstep | undefined {
+  const lockstep = change.kind === 'add-dependency' && change.name.startsWith(CNGX_SCOPE) && change.dev !== true;
+  return lockstep ? { name: change.name, version: change.version } : undefined;
+}
+
+// The packages on their own version line; a skipped step carries no `dev`
+// flag, so they are named.
+const OWN_VERSION_LINE: ReadonlySet<string> = new Set(['@cngx/eslint-plugin', '@cngx/mcp']);
+const SKIPPED_DEPENDENCY = /^Add (@cngx\/[a-z-]+)@(\S+)$/;
+
+// A skipped step reads as lockstep from its id and label, the same ones the
+// planned change carries (`dependency:@cngx/core`, `Add @cngx/core@0.1.0`).
+function lockstepSkip(step: SkippedStep): Lockstep | undefined {
+  const match = SKIPPED_DEPENDENCY.exec(step.label);
+  if (match === null || step.id !== `dependency:${match[1]}` || OWN_VERSION_LINE.has(match[1])) {
+    return undefined;
+  }
+  return { name: match[1], version: match[2] };
+}
+
+// The lockstep entries that share a version and a reason read as one line
 // (`Add 8 @cngx packages at 0.1.0`), placed where the first of them stood;
-// the plan keeps every change, so the manifest and the report are unaffected.
-function plannedItems(changes: readonly Change[]): readonly PlanItem[] {
-  const groups = new Map<string, Extract<Change, { kind: 'add-dependency' }>[]>();
-  for (const change of changes.filter(isLockstep)) {
-    const key = `${change.version}\n${change.reason}`;
-    groups.set(key, [...(groups.get(key) ?? []), change]);
+// the plan keeps every change and skip, so the manifest and the report are
+// unaffected. `foldedReason` says what the one line carries after the dash.
+function foldLockstep<T extends { readonly label: string; readonly reason: string }>(
+  entries: readonly T[],
+  lockstepOf: (entry: T) => Lockstep | undefined,
+  foldedReason: (group: readonly Lockstep[], reason: string) => string,
+): readonly PlanItem[] {
+  const keyOf = (entry: T, lockstep: Lockstep): string => `${lockstep.version}\n${entry.reason}`;
+  const groups = new Map<string, Lockstep[]>();
+  for (const entry of entries) {
+    const lockstep = lockstepOf(entry);
+    if (lockstep !== undefined) {
+      const key = keyOf(entry, lockstep);
+      groups.set(key, [...(groups.get(key) ?? []), lockstep]);
+    }
   }
   const items: PlanItem[] = [];
   const placed = new Set<string>();
-  for (const change of changes) {
-    const key = isLockstep(change) ? `${change.version}\n${change.reason}` : undefined;
+  for (const entry of entries) {
+    const lockstep = lockstepOf(entry);
+    const key = lockstep === undefined ? undefined : keyOf(entry, lockstep);
     const group = key === undefined ? undefined : groups.get(key);
     if (key === undefined || group === undefined || group.length < 2) {
-      items.push({ label: change.label, reason: change.reason });
+      items.push({ label: entry.label, reason: entry.reason });
       continue;
     }
     if (placed.has(key)) {
       continue;
     }
     placed.add(key);
-    items.push({
-      label: `Add ${group.length} @cngx packages at ${group[0].version}`,
-      reason: group.map((dependency) => dependency.name.slice(CNGX_SCOPE.length)).join(', '),
-    });
+    items.push({ label: `Add ${group.length} @cngx packages at ${group[0].version}`, reason: foldedReason(group, entry.reason) });
   }
   return items;
 }
+
+const packageNames = (group: readonly Lockstep[]): string =>
+  group.map((lockstep) => lockstep.name.slice(CNGX_SCOPE.length)).join(', ');
 
 /** The plan list in print order, empty sections left out. */
 export function planSections(plan: ChangePlan): readonly PlanSection[] {
   const planned = plan.changes.filter((change) => change.kind !== 'note');
   const notes = plan.changes.filter((change) => change.kind === 'note');
   const sections: PlanSection[] = [
-    { title: 'Planned', marker: '+', count: planned.length, items: plannedItems(planned) },
+    { title: 'Planned', marker: '+', count: planned.length, items: foldLockstep(planned, lockstepChange, packageNames) },
     {
       title: 'Notes',
       marker: '-',
@@ -87,7 +119,7 @@ export function planSections(plan: ChangePlan): readonly PlanSection[] {
       title: 'Already in place',
       marker: '=',
       count: plan.skipped.length,
-      items: plan.skipped.map((step) => ({ label: step.label, reason: step.reason })),
+      items: foldLockstep(plan.skipped, lockstepSkip, (_group, reason) => reason),
     },
     { title: 'Warnings', marker: '!', count: plan.warnings.length, items: plan.warnings.map((label) => ({ label })) },
   ];
