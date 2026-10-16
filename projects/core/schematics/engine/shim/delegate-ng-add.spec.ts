@@ -28,9 +28,14 @@ interface RunOptions {
   readonly flags?: NgAddFlags;
   readonly bundle?: string;
   readonly contextOverrides?: Partial<SchematicContext>;
+  /** The @cngx/core version the package manager placed; none when omitted. */
+  readonly installed?: string;
 }
 
-async function run(runner: SchematicTestRunner, { flags = { preset: 'minimal' }, bundle = shimBundle, contextOverrides = {} }: RunOptions = {}) {
+async function run(
+  runner: SchematicTestRunner,
+  { flags = { preset: 'minimal' }, bundle = shimBundle, contextOverrides = {}, installed }: RunOptions = {},
+) {
   const logs: string[] = [];
   const logger = new logging.Logger('delegate-spec');
   logger.subscribe((entry) => logs.push(entry.message));
@@ -49,7 +54,16 @@ async function run(runner: SchematicTestRunner, { flags = { preset: 'minimal' },
     },
   };
   const tree = await lastValueFrom(
-    callRule(delegateNgAdd(flags, bundle), createMemoryTree({ 'package.json': '{ "dependencies": {} }\n' }), recording),
+    callRule(
+      delegateNgAdd(flags, bundle),
+      createMemoryTree({
+        'package.json': '{ "dependencies": {} }\n',
+        ...(installed === undefined
+          ? {}
+          : { 'node_modules/@cngx/core/package.json': JSON.stringify({ name: '@cngx/core', version: installed }) }),
+      }),
+      recording,
+    ),
   );
   return { tree, tasks, taskOptions, logs };
 }
@@ -89,8 +103,8 @@ describe('delegateNgAdd', () => {
     return runner;
   }
 
-  it('pins core and delegates in the same run when core is resolvable', async () => {
-    const { tree, tasks } = await run(resolvingRunner());
+  it('pins core and delegates in the same run when the installed core is the shim version', async () => {
+    const { tree, tasks } = await run(resolvingRunner(), { installed: VERSION });
 
     expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/core']).toBe(VERSION);
     expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/forms']).toBe(VERSION);
@@ -110,6 +124,42 @@ describe('delegateNgAdd', () => {
     expect(logs).toContain('@cngx/core is not installed yet; installing it before its ng-add runs.');
   });
 
+  it('installs the shim core in the same run over an older installed core, without loading it', async () => {
+    const runner = resolvingRunner();
+    let loaded = false;
+    const watching = {
+      ...runner.engine,
+      createCollection: (...args: Parameters<SchematicContext['engine']['createCollection']>) => {
+        loaded = true;
+        return runner.engine.createCollection(...args);
+      },
+    } as unknown as SchematicContext['engine'];
+    const { tree, tasks, taskOptions, logs } = await run(runner, { installed: '0.0.9', contextOverrides: { engine: watching } });
+
+    expect(loaded).toBe(false);
+    expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/core']).toBe(VERSION);
+    expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/forms']).toBe(VERSION);
+    expect(tree.exists('delegated.json')).toBe(false);
+    expect(tasks).toEqual(['node-package', 'run-schematic']);
+    expect(taskOptions[1]).toMatchObject({ collection: '@cngx/core', name: 'ng-add' });
+    expect(logs).toContain(`@cngx/core 0.0.9 is installed, older than @cngx/forms ${VERSION}; installing ${VERSION} before its ng-add runs.`);
+  });
+
+  it('follows a newer installed core without pinning anything', async () => {
+    const { tree, tasks, logs } = await run(resolvingRunner(), { installed: '0.2.0' });
+
+    expect(JSON.parse(tree.readText('package.json')).dependencies).toEqual({});
+    expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ preset: 'minimal' });
+    expect(tasks).toEqual([]);
+    expect(logs).toContain(`@cngx/core 0.2.0 is installed, newer than @cngx/forms ${VERSION}; following the installed core.`);
+  });
+
+  it('reads a prerelease of the shim version as older', async () => {
+    const { tasks } = await run(resolvingRunner(), { installed: `${VERSION}-rc.8` });
+
+    expect(tasks).toEqual(['node-package', 'run-schematic']);
+  });
+
   it('reports a core install whose collection fails to load instead of retrying', async () => {
     const runner = createRunner();
     const broken = {
@@ -119,7 +169,7 @@ describe('delegateNgAdd', () => {
       },
     } as unknown as SchematicContext['engine'];
 
-    await expect(run(runner, { contextOverrides: { engine: broken } })).rejects.toThrow(
+    await expect(run(runner, { installed: VERSION, contextOverrides: { engine: broken } })).rejects.toThrow(
       '@cngx/core is installed but its ng-add collection failed to load: Unexpected token in collection.json',
     );
   });
@@ -128,19 +178,19 @@ describe('delegateNgAdd', () => {
     ['a comma list', 'core'],
     ['a list', ['core']],
   ])('adds its own package to the libs given as %s', async (_form, libs) => {
-    const { tree } = await run(resolvingRunner(), { flags: { libs } });
+    const { tree } = await run(resolvingRunner(), { installed: VERSION, flags: { libs } });
 
     expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ libs: ['core', 'forms'] });
   });
 
   it('keeps the libs in package order and names each once', async () => {
-    const { tree } = await run(resolvingRunner(), { flags: { libs: 'ui,forms,core' } });
+    const { tree } = await run(resolvingRunner(), { installed: VERSION, flags: { libs: 'ui,forms,core' } });
 
     expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ libs: ['core', 'forms', 'ui'] });
   });
 
   it('forwards no libs when the flag is not given', async () => {
-    const { tree } = await run(resolvingRunner(), { flags: {} });
+    const { tree } = await run(resolvingRunner(), { installed: VERSION, flags: {} });
 
     expect(JSON.parse(tree.readText('delegated.json'))).toEqual({});
   });
@@ -152,7 +202,7 @@ describe('delegateNgAdd', () => {
   });
 
   it('pins @cngx/themes but leaves libs to the theme answer', async () => {
-    const { tree } = await run(resolvingRunner(), { flags: { libs: 'core' }, bundle: themesBundle });
+    const { tree } = await run(resolvingRunner(), { installed: VERSION, flags: { libs: 'core' }, bundle: themesBundle });
 
     expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/themes']).toBe(VERSION);
     expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ libs: 'core' });

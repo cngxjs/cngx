@@ -261,6 +261,12 @@ by design), take a fallback path: the first run adds `@cngx/core`, installs,
 then runs core's `ng add` as a follow-up task. That costs one extra install;
 the questions and the result are the same.
 
+The package reads the installed `@cngx/core` version first. An older core is
+replaced the same way: the package pins core to its own release, installs,
+and runs the new core's `ng add`, all in one `ng add`. A newer core is never
+downgraded: the run says so and follows the installed core, which pins every
+selected package to its own release.
+
 ---
 
 ## Running it again

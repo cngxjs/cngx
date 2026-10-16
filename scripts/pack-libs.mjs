@@ -21,7 +21,7 @@ import { publint } from 'publint';
 import { formatMessage } from 'publint/utils';
 
 import { PACKED_LIBS } from './cngx-libs.mjs';
-import { findPlaceholders, replaceVersionInDist, stampManifest } from './publish.mjs';
+import { findPlaceholders, readPackageVersion, replaceVersionInDist, stampManifest, stampSchematicsDist } from './publish.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -99,6 +99,23 @@ function parseArgs(argv) {
   return args;
 }
 
+// The packed core carries what publish adds at release time, so a fixture
+// installs the versions.json `ng add` pins from and the refresh entry
+// `ng update` runs. Versions come from the workspace, never the registry.
+export function stampStagedSchematics(lib, stage, pkg, version) {
+  if (lib !== 'core' || !existsSync(join(stage, 'schematics', 'migrations', 'migrations.json'))) {
+    return false;
+  }
+  stampSchematicsDist({
+    schematicsDir: join(stage, 'schematics'),
+    nextVersion: version,
+    mcpVersion: readPackageVersion('mcp'),
+    eslintPluginVersion: readPackageVersion('eslint-plugin'),
+    angularRange: pkg.peerDependencies['@angular/core'],
+  });
+  return true;
+}
+
 function packLib(lib, version, out) {
   const distDir = join(ROOT, 'dist', lib);
   if (!existsSync(join(distDir, 'package.json'))) {
@@ -111,6 +128,7 @@ function packLib(lib, version, out) {
   const pkg = stampManifest(JSON.parse(readFileSync(manifestPath, 'utf8')), version);
   writeFileSync(manifestPath, JSON.stringify(pkg, null, 2) + '\n');
   replaceVersionInDist(stage, version);
+  stampStagedSchematics(lib, stage, pkg, version);
 
   const [packed] = JSON.parse(
     execFileSync('npm', ['pack', '--json', '--pack-destination', out], { cwd: stage, encoding: 'utf8' }),

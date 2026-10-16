@@ -23,6 +23,7 @@ import {
   resolveDistTag,
   stampManifest,
   stampRefreshMigration,
+  stampSchematicsDist,
 } from '../publish.mjs';
 
 describe('resolveDistTag', () => {
@@ -386,6 +387,60 @@ describe('checkReleaseMigrations', () => {
 // (@angular/cli/src/commands/update/utilities/migration.js). The range is
 // rebuilt here with the CLI's own semver; the first case fails when the CLI
 // changes how it builds it, so the cases below never test a stale copy.
+describe('stampSchematicsDist', () => {
+  let schematicsDir;
+
+  const PINS = { mcpVersion: '0.4.0', eslintPluginVersion: '0.2.0', angularRange: '^21.2.0' };
+
+  function writeCollection(schematics) {
+    mkdirSync(join(schematicsDir, 'migrations', 'refresh'), { recursive: true });
+    writeFileSync(join(schematicsDir, 'migrations', 'refresh', 'index.js'), '');
+    writeFileSync(join(schematicsDir, 'migrations', 'migrations.json'), JSON.stringify({ schematics }));
+  }
+
+  function read(path) {
+    return JSON.parse(readFileSync(join(schematicsDir, path), 'utf8'));
+  }
+
+  beforeEach(() => {
+    schematicsDir = mkdtempSync(join(tmpdir(), 'cngx-stamp-'));
+  });
+
+  afterEach(() => {
+    rmSync(schematicsDir, { recursive: true, force: true });
+  });
+
+  it('writes versions.json and the stamped refresh entry', () => {
+    writeCollection({});
+
+    stampSchematicsDist({ schematicsDir, nextVersion: '0.2.0', ...PINS });
+
+    expect(read('versions.json')).toEqual({ cngx: '0.2.0', mcp: '0.4.0', eslintPlugin: '0.2.0', angular: '^21.2.0' });
+    expect(read('migrations/migrations.json').schematics[refreshMigrationKey('0.2.0')]).toMatchObject({
+      version: '0.2.0',
+      factory: REFRESH_FACTORY,
+    });
+  });
+
+  it('keeps the collection of a release that brings its own migration', () => {
+    const own = { 'migration-v0.2.0': { version: '0.2.0', description: 'd', factory: './0.2.0/index#migrate' } };
+    writeCollection(own);
+    mkdirSync(join(schematicsDir, 'migrations', '0.2.0'));
+    writeFileSync(join(schematicsDir, 'migrations', '0.2.0', 'index.js'), '');
+
+    stampSchematicsDist({ schematicsDir, nextVersion: '0.2.0', ...PINS });
+
+    expect(read('migrations/migrations.json').schematics).toEqual(own);
+  });
+
+  it('refuses a release entry whose factory module is missing and writes nothing', () => {
+    writeCollection({ 'migration-v0.2.0': { version: '0.2.0', description: 'd', factory: './0.2.0/index#migrate' } });
+
+    expect(() => stampSchematicsDist({ schematicsDir, nextVersion: '0.2.0', ...PINS })).toThrow(/names no factory module/);
+    expect(() => read('versions.json')).toThrow();
+  });
+});
+
 describe('Angular CLI migration range', () => {
   const cliRequire = createRequire(createRequire(import.meta.url).resolve('@angular/cli/package.json'));
   const semver = cliRequire('semver');

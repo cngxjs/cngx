@@ -132,11 +132,16 @@ migration. The cngx repository enforces that on pull requests:
   add a new key to `projects/core/schematics/migrations/migrations.json`.
 - A key is one migration: `migration-v<version>` for the first breaking
   change of a release, `migration-v<version>-<slug>` for each further one, so
-  every breaking pull request brings its own key.
+  every breaking pull request brings its own key. `<version>` is the entry's
+  `version`; `<slug>` is lowercase letters, digits and hyphens.
+- The check reads only the `!` in the title. A breaking change without it is
+  not caught, so mark every one.
 - A change that cannot be migrated says so with a line
   `Migration: not migratable` in the pull request body, and the release notes
   describe the manual step.
 
-A separate check makes sure each new key points at a real migration with a
-spec and a before/after fixture pair. How to write one is described in
+A separate check makes sure each new key points at a real migration: an
+exported factory, a spec with a case that runs it, and a before/after fixture
+pair whose `after` differs from `before` (a `.gitkeep` alone does not
+count). How to write one is described in
 `projects/core/schematics/README.md`.

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
 import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
+import { SchematicEngine } from '@angular-devkit/schematics';
 import { NodeModulesEngineHost } from '@angular-devkit/schematics/tools';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
@@ -52,6 +53,14 @@ async function createAppTree(runner) {
     version: '21.2.0',
   });
   return runner.runExternalSchematic('@schematics/angular', 'application', { name: 'app' }, workspace);
+}
+
+// The shims read the core the package manager placed before they load it,
+// so a run that should delegate in the same run needs core at the shim's
+// version on disk.
+function withInstalledCore(tree, version) {
+  tree.create('node_modules/@cngx/core/package.json', JSON.stringify({ name: '@cngx/core', version }));
+  return tree;
 }
 
 // The install record ng add keeps for the one project `createAppTree` makes.
@@ -263,6 +272,52 @@ describe('every published package as the CLI resolves it', () => {
       );
     },
   );
+
+  // A factory path that names a missing export loads as a collection and only
+  // fails when the CLI resolves the rule, so the schematic is created here.
+  it.each(PACKED_LIBS)('resolves the ng-add factory of @cngx/%s', (lib) => {
+    const engine = new SchematicEngine(new NodeModulesEngineHost([modules]));
+
+    expect(() => engine.createCollection(`@cngx/${lib}`).createSchematic('ng-add')).not.toThrow();
+  });
+});
+
+const SHIM_LIBS = PACKED_LIBS.filter((lib) => lib !== 'core');
+
+describe.each(SHIM_LIBS)('dist/%s/schematics ng-add shim', (lib) => {
+  const collection = join(ROOT, 'dist', lib, 'schematics', 'collection.json');
+  let appTree;
+  let version;
+
+  beforeAll(async () => {
+    const runner = new SchematicTestRunner(`@cngx/${lib}`, requireDist(collection));
+    version = JSON.parse(readFileSync(join(ROOT, 'dist', lib, 'package.json'), 'utf8')).version;
+    appTree = await createAppTree(runner);
+  });
+
+  it('delegates to @cngx/core ng-add in the same run when core resolves', async () => {
+    const runner = new SchematicTestRunner(`@cngx/${lib}`, collection);
+    runner.registerCollection('@cngx/core', requireDist(CORE_COLLECTION));
+    const tree = await runner.runSchematic('ng-add', { preset: 'full' }, withInstalledCore(await createAppTree(runner), version));
+    const manifest = JSON.parse(tree.readText('package.json'));
+
+    expect(manifest.dependencies['@cngx/core']).toBe(version);
+    expect(manifest.dependencies['@cngx/utils']).toBe(version);
+    expect(manifest.dependencies[`@cngx/${lib}`]).toBe(version);
+    expect(runner.tasks.map((task) => task.name)).toEqual(['node-package']);
+  });
+
+  it('installs @cngx/core first and runs its ng-add as a task when core is missing', async () => {
+    const runner = new SchematicTestRunner(`@cngx/${lib}`, collection);
+    const tree = await runner.runSchematic('ng-add', { preset: 'minimal' }, appTree);
+    const manifest = JSON.parse(tree.readText('package.json'));
+    const delegate = runner.tasks.find((task) => task.name === 'run-schematic');
+
+    expect(manifest.dependencies['@cngx/core']).toBe(version);
+    expect(manifest.dependencies[`@cngx/${lib}`]).toBe(version);
+    expect(runner.tasks.map((task) => task.name)).toEqual(['node-package', 'run-schematic']);
+    expect(delegate.options).toMatchObject({ collection: '@cngx/core', name: 'ng-add', options: { preset: 'minimal' } });
+  });
 });
 
 describe('dist/ui/schematics ng-add shim', () => {
@@ -275,40 +330,26 @@ describe('dist/ui/schematics ng-add shim', () => {
     appTree = await createAppTree(runner);
   });
 
-  it('delegates to @cngx/core ng-add in the same run when core resolves', async () => {
-    const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
-    runner.registerCollection('@cngx/core', requireDist(CORE_COLLECTION));
-    const tree = await runner.runSchematic('ng-add', { preset: 'full' }, await createAppTree(runner));
-    const manifest = JSON.parse(tree.readText('package.json'));
-
-    expect(manifest.dependencies['@cngx/core']).toBe(version);
-    expect(manifest.dependencies['@cngx/utils']).toBe(version);
-    expect(runner.tasks.map((task) => task.name)).toEqual(['node-package']);
-  });
-
   it('forwards the flags ng add passes before the install to the core ng-add, its own lib added', async () => {
     const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
     runner.registerCollection('@cngx/core', requireDist(CORE_COLLECTION));
     const tree = await runner.runSchematic(
       'ng-add',
       { aiTools: 'claude,vscode', libs: 'core', ...PRE_INSTALL_FALSE },
-      await createAppTree(runner),
+      withInstalledCore(await createAppTree(runner), version),
     );
     const { answers } = recordOf(tree);
 
     expect(answers).toMatchObject({ aiTools: ['claude', 'vscode'], libs: ['core', 'ui'], lint: false, a11yPreferences: false });
   });
 
-  it('installs @cngx/core first and runs its ng-add as a task when core is missing', async () => {
+  it('installs its own core version over an older installed core', async () => {
     const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
-    const tree = await runner.runSchematic('ng-add', { preset: 'minimal' }, appTree);
-    const manifest = JSON.parse(tree.readText('package.json'));
-    const delegate = runner.tasks.find((task) => task.name === 'run-schematic');
+    // dist/ is unstamped (`0.0.0-PLACEHOLDER`); `0.0.0-0` is the one version below it.
+    const tree = await runner.runSchematic('ng-add', {}, withInstalledCore(await createAppTree(runner), '0.0.0-0'));
 
-    expect(manifest.dependencies['@cngx/core']).toBe(version);
-    expect(manifest.dependencies['@cngx/ui']).toBe(version);
+    expect(JSON.parse(tree.readText('package.json')).dependencies['@cngx/core']).toBe(version);
     expect(runner.tasks.map((task) => task.name)).toEqual(['node-package', 'run-schematic']);
-    expect(delegate.options).toMatchObject({ collection: '@cngx/core', name: 'ng-add', options: { preset: 'minimal' } });
   });
 
   it('reports a broken @cngx/core install instead of treating it as missing', async () => {
@@ -318,7 +359,7 @@ describe('dist/ui/schematics ng-add shim', () => {
       const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
       runner.registerCollection('@cngx/core', join(dir, 'collection.json'));
 
-      await expect(runner.runSchematic('ng-add', {}, appTree)).rejects.toThrow(
+      await expect(runner.runSchematic('ng-add', {}, withInstalledCore(await createAppTree(runner), version))).rejects.toThrow(
         /@cngx\/core is installed but its ng-add collection failed to load/,
       );
       expect(runner.tasks).toEqual([]);
@@ -330,7 +371,7 @@ describe('dist/ui/schematics ng-add shim', () => {
   it('replaces an older @cngx pin with the lockstep version and says so', async () => {
     const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
     runner.registerCollection('@cngx/core', requireDist(CORE_COLLECTION));
-    const pinned = await runner.runSchematic('ng-add', {}, appTree);
+    const pinned = await runner.runSchematic('ng-add', {}, withInstalledCore(await createAppTree(runner), version));
     const manifest = JSON.parse(pinned.readText('package.json'));
     manifest.dependencies['@cngx/core'] = '0.0.1';
     manifest.dependencies['@cngx/utils'] = '0.0.1';
@@ -354,7 +395,7 @@ describe('dist/ui/schematics ng-add shim', () => {
   it('stays silent when the app already pins the lockstep version', async () => {
     const runner = new SchematicTestRunner('@cngx/ui', UI_COLLECTION);
     runner.registerCollection('@cngx/core', requireDist(CORE_COLLECTION));
-    const onboarded = await runner.runSchematic('ng-add', {}, appTree);
+    const onboarded = await runner.runSchematic('ng-add', {}, withInstalledCore(await createAppTree(runner), version));
     const messages = [];
     runner.logger.subscribe((entry) => messages.push(entry.message));
 

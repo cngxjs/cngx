@@ -4,7 +4,10 @@
 the Angular CLI, never in an app bundle. `@cngx/core` owns the onboarding; every
 other package ships a one-line shim that delegates to it. The shim pins its own
 package beside core before it delegates, and folds its lib into a given
-`--libs`, so `ng add @cngx/<lib>` always installs and records `<lib>`.
+`--libs`, so `ng add @cngx/<lib>` always installs and records `<lib>`. It reads
+the installed core version before it loads core: missing or older installs
+the shim's core and runs its ng-add as a follow-up task, newer is followed
+without any pin, so a shim never downgrades core.
 
 ## Layout
 
@@ -100,10 +103,15 @@ breaking change adds a migration:
 3. A `migrations.json` entry `migration-v<version>` with the version and
    `./<version>/index#migrate`. A second breaking change in the same release
    adds its own entry `migration-v<version>-<slug>` with the folder
-   `<version>-<slug>`, so every breaking PR brings a new key.
-4. A spec next to the entry and a fixture pair under
+   `<version>-<slug>`, so every breaking PR brings a new key. The guard
+   (`scripts/migrations-well-formed.mjs`) derives the key from the entry's
+   `version`, so the slug is lowercase letters, digits and hyphens.
+4. A spec next to the entry with a case that runs `migrate` or
+   `createMigration`, and a fixture pair under
    `testing/fixtures/migrations/<folder>/{before,after}` holding only the
-   files that differ from the stock app.
+   files that differ from the stock app; `after` must differ from `before`
+   and a `.gitkeep` alone is no fixture. The migration-gate reads only the
+   `!` in a PR title, so a breaking change must carry it.
 
 Every migration also re-runs the install steps `.cngx/install.json` records
 for each project (the theme once the cngx version moved, the helper README
@@ -145,7 +153,10 @@ Budgets: 256 KB minified / 90 KB gzip per entry, 20 KB per shim.
 `@cngx/mcp` and `@cngx/eslint-plugin` pins, plus the `@angular/core` range
 `@cngx/core` peers on, which `ng add` refuses an older app against), stamps the
 `refresh` entry into the dist migrations collection, and ships a lib's bundle
-only when its source `package.json` declares `schematics`.
+only when its source `package.json` declares `schematics`. Both files come
+from `stampSchematicsDist`, which `scripts/pack-libs.mjs` runs on the staged
+core as well, so a packed core carries the same `versions.json` and refresh
+entry as a published one (versions from the workspace, no registry call).
 
 ## CLI behaviour worth knowing
 
@@ -196,7 +207,18 @@ only when its source `package.json` declares `schematics`.
 
 ## Trying a build against a real app
 
-Scratch apps must live outside this workspace: `ng new` refuses to run inside
+`node scripts/consumer-fixture.mjs --angular 21 --variant schematics` does
+the whole round trip against the tarballs of `scripts/pack-libs.mjs`: a fresh
+app, `ng add @cngx/core` twice (the second must change nothing),
+`ng add @cngx/forms --libs core` (exact pins for utils, core, common, forms),
+`ng update @cngx/core --migrate-only` twice (the second finds nothing), then
+`ng build` and a browser load. It serves the tarballs from a local registry
+for the `@cngx` scope inside the script. `--stale-core <tgz | previous>` adds
+a sandbox with an older core installed, where `ng add @cngx/forms` must
+replace it in the same run; `previous` packs the newest registry release
+below the tarballs.
+
+For anything the fixture does not cover, scratch apps must live outside this workspace: `ng new` refuses to run inside
 it, and an install there resolves the repo's tree. Use npm 11 (npm 10 fails
 on a fresh Angular 21.2 install). Publish staged copies of `dist/*` to a local
 registry (verdaccio on `127.0.0.1:4873`, `@cngx/*` without an uplink), point

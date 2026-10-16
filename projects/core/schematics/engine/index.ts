@@ -30,6 +30,7 @@ export {
   declaredRange,
   type PackageManifest,
   parseManifest,
+  parseVersion,
 } from './manifest/manifest';
 export { planThirdPartyDependency } from './manifest/third-party';
 

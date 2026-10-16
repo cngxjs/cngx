@@ -217,6 +217,36 @@ export function checkReleaseMigrations(collectionPath, nextVersion, extension, r
   return stamped;
 }
 
+// The two files a release adds to dist/core/schematics: versions.json (what
+// `ng add` pins) and the migrations collection with the release stamped in.
+// Planning checks every release entry, so nothing is written for a release
+// whose factory is missing; publish plans every lib before the first
+// `npm publish` and writes after, pack-libs does both at once.
+export function planSchematicsStamp({ schematicsDir, nextVersion, mcpVersion, eslintPluginVersion, angularRange }) {
+  const migrationsPath = join(schematicsDir, 'migrations', 'migrations.json');
+  const migrations = checkReleaseMigrations(migrationsPath, nextVersion, '.js');
+  return {
+    schematicsDir,
+    versions: createSchematicsVersions({ nextVersion, mcpVersion, eslintPluginVersion, angularRange }),
+    migrations,
+    migrationsPath,
+    addsRefresh: refreshMigrationKey(nextVersion) in migrations.schematics,
+  };
+}
+
+export function writeSchematicsStamp({ schematicsDir, versions, migrations, migrationsPath, addsRefresh }) {
+  writeFileSync(join(schematicsDir, 'versions.json'), JSON.stringify(versions, null, 2) + '\n');
+  if (addsRefresh) {
+    writeFileSync(migrationsPath, JSON.stringify(migrations, null, 2) + '\n');
+  }
+}
+
+export function stampSchematicsDist(options) {
+  const stamp = planSchematicsStamp(options);
+  writeSchematicsStamp(stamp);
+  return stamp;
+}
+
 // `npm view <name>@<version> version` exits 1 with E404 for a version the
 // registry does not list; that is an answer, so it reads as nothing printed.
 // Any other failure keeps only npm's error code, not its stderr.
@@ -280,7 +310,7 @@ function shipsSchematics(lib) {
   return existsSync(join(ROOT, 'projects', lib, 'schematics')) && declaresSchematics(readSourcePkg(lib));
 }
 
-function readPackageVersion(name) {
+export function readPackageVersion(name) {
   return JSON.parse(readFileSync(join(ROOT, 'packages', name, 'package.json'), 'utf8')).version;
 }
 
@@ -440,23 +470,18 @@ function main() {
       process.exit(1);
     }
 
-    const schematicsVersions =
-      lib === 'core' && libShipsSchematics
-        ? createSchematicsVersions({
-            nextVersion,
-            mcpVersion: readPackageVersion('mcp'),
-            eslintPluginVersion: readPackageVersion('eslint-plugin'),
-            angularRange: distPkg.peerDependencies['@angular/core'],
-          })
-        : null;
-
-    const migrationsPath = join(ROOT, 'dist', lib, 'schematics', 'migrations', 'migrations.json');
-    let migrations = null;
-    if (schematicsVersions) {
+    let stamp = null;
+    if (lib === 'core' && libShipsSchematics) {
       // The source passed the pre-flight; a failure here is a build that
       // dropped the collection or a bundle.
       try {
-        migrations = checkReleaseMigrations(migrationsPath, nextVersion, '.js');
+        stamp = planSchematicsStamp({
+          schematicsDir: join(ROOT, 'dist', lib, 'schematics'),
+          nextVersion,
+          mcpVersion: readPackageVersion('mcp'),
+          eslintPluginVersion: readPackageVersion('eslint-plugin'),
+          angularRange: distPkg.peerDependencies['@angular/core'],
+        });
       } catch (error) {
         console.error(`  Refusing to publish @cngx/${lib}: ${error.message}`);
         process.exit(1);
@@ -469,36 +494,34 @@ function main() {
       hasStableRelease: tag ? false : containsStableRelease(publishedVersions(lib, registryFlag)),
     });
 
-    releases.push({ lib, distPkg, distPkgPath, schematicsVersions, migrations, migrationsPath, distTag });
+    releases.push({ lib, distPkg, distPkgPath, stamp, distTag });
   }
 
-  for (const { lib, distPkg, distPkgPath, schematicsVersions, migrations, migrationsPath, distTag } of releases) {
+  for (const { lib, distPkg, distPkgPath, stamp, distTag } of releases) {
     console.log(`\n[${lib}]`);
     const migrationsFile = `dist/${lib}/schematics/migrations/migrations.json`;
     const refreshKey = refreshMigrationKey(nextVersion);
-    const addsRefresh = migrations !== null && refreshKey in migrations.schematics;
 
     if (!dryRun) {
       writeFileSync(distPkgPath, JSON.stringify(distPkg, null, 2) + '\n');
-      if (schematicsVersions) {
-        writeFileSync(join(ROOT, 'dist', lib, 'schematics', 'versions.json'), JSON.stringify(schematicsVersions, null, 2) + '\n');
-      }
-      if (addsRefresh) {
-        writeFileSync(migrationsPath, JSON.stringify(migrations, null, 2) + '\n');
-        console.log(`  Added ${refreshKey} to ${migrationsFile}`);
+      if (stamp) {
+        writeSchematicsStamp(stamp);
+        if (stamp.addsRefresh) {
+          console.log(`  Added ${refreshKey} to ${migrationsFile}`);
+        }
       }
       replaceVersionInDist(join(ROOT, 'dist', lib), nextVersion);
       run(`npm publish --access public --tag ${distTag}${registryFlag}`, join(ROOT, 'dist', lib));
       console.log(`  Published @cngx/${lib}@${nextVersion} (dist-tag ${distTag})`);
     } else {
       console.log(`  Would publish @cngx/${lib}@${nextVersion} (dist/${lib}, dist-tag ${distTag})`);
-      if (schematicsVersions) {
-        console.log(`  Would write dist/${lib}/schematics/versions.json ${JSON.stringify(schematicsVersions)}`);
-      }
-      if (addsRefresh) {
-        console.log(`  Would add ${refreshKey} to ${migrationsFile}`);
-      } else if (migrations) {
-        console.log(`  Keeps the migration of ${nextVersion} in ${migrationsFile}`);
+      if (stamp) {
+        console.log(`  Would write dist/${lib}/schematics/versions.json ${JSON.stringify(stamp.versions)}`);
+        if (stamp.addsRefresh) {
+          console.log(`  Would add ${refreshKey} to ${migrationsFile}`);
+        } else {
+          console.log(`  Keeps the migration of ${nextVersion} in ${migrationsFile}`);
+        }
       }
     }
   }

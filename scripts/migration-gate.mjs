@@ -18,18 +18,26 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const MIGRATIONS_PATH = 'projects/core/schematics/migrations/migrations.json';
 
-function schematicKeys(json) {
+function schematicEntries(json) {
   if (json === undefined) {
     return [];
   }
   const parsed = JSON.parse(json);
-  return Object.keys(parsed?.schematics ?? {});
+  return Object.entries(parsed?.schematics ?? {});
 }
 
-/** The `schematics` keys the head declares and the base does not; a missing file has none. */
+/**
+ * The `schematics` keys the head declares and the base does not; a missing
+ * file has none. A key whose factory a base entry already names is the same
+ * migration renamed, not a new one.
+ */
 export function newMigrationKeys(baseJson, headJson) {
-  const base = new Set(schematicKeys(baseJson));
-  return schematicKeys(headJson).filter((key) => !base.has(key));
+  const base = schematicEntries(baseJson);
+  const keys = new Set(base.map(([key]) => key));
+  const factories = new Set(base.map(([, entry]) => entry?.factory));
+  return schematicEntries(headJson)
+    .filter(([key, entry]) => !keys.has(key) && !factories.has(entry?.factory))
+    .map(([key]) => key);
 }
 
 /** `type(scope)!: subject` or `type!: subject`. */

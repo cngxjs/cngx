@@ -15,21 +15,38 @@
 //   node scripts/consumer-fixture.mjs --angular 22 --variant ssr
 //   node scripts/consumer-fixture.mjs --angular 21 --variant minimal
 //   node scripts/consumer-fixture.mjs --angular 22 --ignore-peers   # does the code run beyond the declared range?
+//   node scripts/consumer-fixture.mjs --angular 21 --variant schematics
+//   node scripts/consumer-fixture.mjs --angular 21 --variant schematics --stale-core previous
 //
 // Variants:
-//   full      zoneless app with Material, floating-ui and ngrx installed
-//   zone      zone.js app, same installs
-//   ssr       zoneless app with SSR and hydration (the build prerenders)
-//   minimal   no optional peers installed: the build must not need them
+//   full        zoneless app with Material, floating-ui and ngrx installed
+//   zone        zone.js app, same installs
+//   ssr         zoneless app with SSR and hydration (the build prerenders)
+//   minimal     no optional peers installed: the build must not need them
+//   schematics  a real `ng add` and `ng update` against the tarballs: two
+//               ng add runs (the second changes nothing), ng add of a package
+//               shim, two ng update runs (the second finds nothing), then the
+//               onboarded app builds and loads. `--stale-core <tgz | previous>`
+//               adds a second sandbox where an older core is installed and
+//               `ng add @cngx/forms` must replace it in the same run;
+//               `previous` packs the newest registry release below the
+//               tarballs.
+//
+// The schematics variant serves the tarballs from a local registry for the
+// @cngx scope (other @cngx packages are proxied to the public registry), so
+// the exact pins `ng add` writes install the packed release, not a published
+// one of the same version.
 
 import { execFileSync, spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-export const VARIANTS = ['full', 'zone', 'ssr', 'minimal'];
+export const VARIANTS = ['full', 'zone', 'ssr', 'minimal', 'schematics'];
 const MARKER = 'cngx-consumer-ok';
 
 /** `21` / `22.1` are ranges for `ng new`; `21.2.0` is an exact pin. */
@@ -44,14 +61,80 @@ export function variantPlan(variant) {
   if (!VARIANTS.includes(variant)) {
     throw new Error(`Unknown variant "${variant}". Available: ${VARIANTS.join(', ')}`);
   }
-  const minimal = variant === 'minimal';
+  const lean = variant === 'minimal' || variant === 'schematics';
   return {
     variant,
     zoneless: variant !== 'zone',
     ssr: variant === 'ssr',
-    optionalPeers: !minimal,
+    optionalPeers: !lean,
     smoke: variant !== 'ssr',
+    schematics: variant === 'schematics',
   };
+}
+
+export function usageText() {
+  return [
+    'Usage: node scripts/consumer-fixture.mjs --angular <21 | 22 | 21.2.0> [--variant <variant>]',
+    `       [--ignore-peers] [--stale-core <tgz | previous>] [--tarballs <dir>] [--work <dir>]`,
+    `Variants: ${VARIANTS.join(', ')}`,
+  ].join('\n');
+}
+
+// The flags every non-interactive cngx `ng add` in the fixture passes; the
+// version makes the CLI skip its own install, because the tarball already
+// placed the package.
+const NG_ADD_FLAGS = ['--skip-confirmation', '--no-prompts', '--yes', '--lint=false'];
+
+/**
+ * The real-CLI steps of the schematics variant, in order. `expect` is text
+ * the step's output must contain; `clean` asks for an empty
+ * `git status --porcelain` after it; `commit` records the tree after it.
+ */
+export function schematicsSteps(version) {
+  return [
+    { label: 'ng add @cngx/core', args: ['ng', 'add', `@cngx/core@${version}`, ...NG_ADD_FLAGS], commit: true },
+    {
+      label: 'ng add @cngx/core again',
+      args: ['ng', 'add', `@cngx/core@${version}`, ...NG_ADD_FLAGS],
+      expect: 'cngx is already set up; nothing changed.',
+      clean: true,
+    },
+    {
+      label: 'ng add @cngx/forms',
+      args: ['ng', 'add', `@cngx/forms@${version}`, ...NG_ADD_FLAGS, '--libs', 'core'],
+      pins: ['utils', 'core', 'common', 'forms'],
+      commit: true,
+    },
+    {
+      label: 'ng update @cngx/core',
+      args: ['ng', 'update', '@cngx/core', '--migrate-only', '--from', '0.0.1', '--to', version, '--allow-dirty'],
+      commit: true,
+    },
+    {
+      label: 'ng update @cngx/core again',
+      args: ['ng', 'update', '@cngx/core', '--migrate-only', '--from', '0.0.1', '--to', version, '--allow-dirty'],
+      expect: 'found nothing to change',
+      clean: true,
+    },
+  ];
+}
+
+/** The registry document npm reads for one package served from a tarball. */
+export function packument(manifest, tarballUrl, tarball) {
+  const integrity = `sha512-${createHash('sha512').update(tarball).digest('base64')}`;
+  const shasum = createHash('sha1').update(tarball).digest('hex');
+  return {
+    name: manifest.name,
+    'dist-tags': { latest: manifest.version },
+    versions: { [manifest.version]: { ...manifest, dist: { tarball: tarballUrl, integrity, shasum } } },
+  };
+}
+
+/** The newest version `npm view <name>@"<current" version --json` listed; npm prints one version bare. */
+export function newestListed(output) {
+  const parsed = output.trim() === '' ? [] : JSON.parse(output);
+  const versions = Array.isArray(parsed) ? parsed : [parsed];
+  return versions.at(-1);
 }
 
 const ANGULAR_SCOPES = ['@angular/', '@angular-devkit/', '@schematics/'];
@@ -133,6 +216,7 @@ function parseArgs(argv) {
     tarballs: join(ROOT, '.consumer-compat', 'tarballs'),
     // Outside the repo: the Angular CLI refuses `ng new` inside a workspace.
     ignorePeers: false,
+    staleCore: null,
     work: join(tmpdir(), 'cngx-consumer-compat'),
   };
   for (let i = 0; i < argv.length; i++) {
@@ -142,13 +226,18 @@ function parseArgs(argv) {
       case '--tarballs': args.tarballs = resolve(argv[++i]); break;
       case '--ignore-peers': args.ignorePeers = true; break;
       case '--work': args.work = resolve(argv[++i]); break;
+      case '--stale-core': args.staleCore = argv[++i]; break;
       default:
-        console.error(`Unknown argument: ${argv[i]}`);
+        console.error(`Unknown argument: ${argv[i]}\n${usageText()}`);
         process.exit(1);
     }
   }
   if (!args.angular) {
-    console.error('Specify --angular <21 | 22 | 21.2.0>');
+    console.error(usageText());
+    process.exit(1);
+  }
+  if (args.staleCore !== null && args.variant !== 'schematics') {
+    console.error('--stale-core needs --variant schematics');
     process.exit(1);
   }
   return args;
@@ -175,7 +264,7 @@ function angularVersionsInTree(appDir) {
   return [...versions];
 }
 
-async function smoke(appDir) {
+async function smoke(appDir, plan) {
   const { chromium } = await import('@playwright/test');
   const webRoot = join(appDir, 'dist', 'fixture', 'browser');
   const port = 4300 + Math.floor(Math.random() * 500);
@@ -190,10 +279,15 @@ async function smoke(appDir) {
     page.on('pageerror', (error) => errors.push(error.message));
     await new Promise((done) => setTimeout(done, 800));
     await page.goto(`http://127.0.0.1:${port}/`);
-    await page.waitForSelector(`#${MARKER}`, { timeout: 15_000 });
-    const text = await page.textContent(`#${MARKER}`);
-    if (!text?.includes('10')) {
-      errors.push(`probe text unexpected: "${text}"`);
+    // The onboarded app keeps the root component `ng new` wrote.
+    if (plan.schematics) {
+      await page.waitForSelector('app-root', { timeout: 15_000 });
+    } else {
+      await page.waitForSelector(`#${MARKER}`, { timeout: 15_000 });
+      const text = await page.textContent(`#${MARKER}`);
+      if (!text?.includes('10')) {
+        errors.push(`probe text unexpected: "${text}"`);
+      }
     }
   } finally {
     await browser.close();
@@ -202,8 +296,164 @@ async function smoke(appDir) {
   return errors;
 }
 
+// Runs a command without blocking the event loop, so the local registry in
+// this process can answer the npm calls the command makes; echoes and returns
+// the output.
+function runAsync(cmd, args, options = {}) {
+  console.log(`  $ ${cmd} ${args.join(' ')}`);
+  return new Promise((done, fail) => {
+    const child = spawn(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'], ...options });
+    let output = '';
+    const tee = (target) => (chunk) => {
+      output += chunk;
+      target.write(chunk);
+    };
+    child.stdout.on('data', tee(process.stdout));
+    child.stderr.on('data', tee(process.stderr));
+    child.on('error', fail);
+    child.on('close', (code) => {
+      if (code === 0) {
+        done(output);
+      } else {
+        fail(new Error(`${cmd} ${args.join(' ')} exited with ${code}`));
+      }
+    });
+  });
+}
+
+function tarballManifest(file) {
+  return JSON.parse(capture('tar', ['-xzOf', file, 'package/package.json']));
+}
+
+/**
+ * Serves every tarball as the only release of its package on 127.0.0.1;
+ * other @cngx packages are proxied to the public registry. Resolves to the
+ * registry URL and a close function.
+ */
+async function startLocalRegistry(tarballFiles) {
+  const served = new Map();
+  for (const file of tarballFiles) {
+    const manifest = tarballManifest(file);
+    served.set(manifest.name, { manifest, file, tarball: readFileSync(file) });
+  }
+  let base = '';
+  const server = createServer(async (request, response) => {
+    const path = decodeURIComponent((request.url ?? '/').split('?')[0]).replace(/^\//, '');
+    const tarballOf = [...served.values()].find((entry) => path === `-/${entry.manifest.name}.tgz`);
+    if (tarballOf) {
+      response.writeHead(200, { 'content-type': 'application/octet-stream' });
+      response.end(tarballOf.tarball);
+      return;
+    }
+    const entry = served.get(path);
+    if (entry) {
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end(JSON.stringify(packument(entry.manifest, `${base}-/${entry.manifest.name}.tgz`, entry.tarball)));
+      return;
+    }
+    try {
+      const upstream = await fetch(`https://registry.npmjs.org/${path.replace('/', '%2f')}`);
+      response.writeHead(upstream.status, { 'content-type': 'application/json' });
+      response.end(Buffer.from(await upstream.arrayBuffer()));
+    } catch (error) {
+      response.writeHead(502);
+      response.end(String(error));
+    }
+  });
+  await new Promise((done) => server.listen(0, '127.0.0.1', done));
+  base = `http://127.0.0.1:${server.address().port}/`;
+  return { url: base, close: () => new Promise((done) => server.close(done)) };
+}
+
+function git(appDir, args) {
+  return capture('git', ['-c', 'user.email=fixture@cngx.invalid', '-c', 'user.name=fixture', ...args], { cwd: appDir });
+}
+
+function commitAll(appDir, message) {
+  git(appDir, ['add', '-A']);
+  git(appDir, ['commit', '-q', '--allow-empty', '-m', message]);
+}
+
+// The scope routes every @cngx install to the local registry; the rest of npm
+// stays on the default registry.
+function useLocalRegistry(appDir, registryUrl) {
+  writeFileSync(join(appDir, '.npmrc'), `@cngx:registry=${registryUrl}\n`);
+}
+
+async function runSchematicsSteps(appDir, version) {
+  git(appDir, ['init', '-q']);
+  commitAll(appDir, 'fixture');
+  for (const step of schematicsSteps(version)) {
+    console.log(`\n[schematics] ${step.label}`);
+    const output = await runAsync('npx', step.args, { cwd: appDir });
+    if (step.expect && !output.includes(step.expect)) {
+      throw new Error(`${step.label}: expected "${step.expect}" in the output`);
+    }
+    if (step.clean) {
+      const status = git(appDir, ['status', '--porcelain']).trim();
+      if (status !== '') {
+        throw new Error(`${step.label} changed files:\n${status}`);
+      }
+    }
+    if (step.pins) {
+      const { dependencies } = JSON.parse(readFileSync(join(appDir, 'package.json'), 'utf8'));
+      const wrong = step.pins.filter((lib) => dependencies[`@cngx/${lib}`] !== version);
+      if (wrong.length > 0) {
+        throw new Error(`${step.label}: ${wrong.map((lib) => `@cngx/${lib}@${dependencies[`@cngx/${lib}`]}`).join(', ')} is not pinned to ${version}`);
+      }
+    }
+    if (step.commit) {
+      commitAll(appDir, step.label);
+    }
+  }
+}
+
+// `previous` is the newest registry release of @cngx/core below the packed
+// one; anything else is a tarball path.
+function resolveStaleCore(spec, version, sandbox) {
+  if (spec !== 'previous') {
+    return resolve(spec);
+  }
+  const previous = newestListed(capture('npm', ['view', `@cngx/core@<${version}`, 'version', '--json']));
+  if (previous === undefined) {
+    throw new Error(`the registry lists no @cngx/core below ${version}`);
+  }
+  const [packed] = JSON.parse(capture('npm', ['pack', `@cngx/core@${previous}`, '--json', '--pack-destination', sandbox]));
+  return join(sandbox, packed.filename);
+}
+
+/**
+ * An app with an older core installed: `ng add @cngx/forms` must install
+ * the packed core and run its ng-add in the same command, which records the
+ * packed release for the project.
+ */
+async function runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryUrl, staleCore }) {
+  const sandbox = mkdtempSync(join(work, 'stale-core-'));
+  const appDir = join(sandbox, 'fixture');
+  const staleTarball = resolveStaleCore(staleCore, version, sandbox);
+  const stale = tarballManifest(staleTarball).version;
+  console.log(`\nStale core leg: @cngx/core ${stale} installed, packed ${version}\nSandbox: ${sandbox}\n`);
+  run('npx', ['-y', `@angular/cli@${cliSpec}`, 'new', 'fixture', '--defaults', '--skip-git', '--skip-install', '--style=css', '--routing=false', '--ssr=false', '--zoneless=true'], { cwd: sandbox });
+  run('npm', ['install'], { cwd: appDir });
+  const others = tarballFiles.filter((file) => tarballManifest(file).name !== '@cngx/core');
+  // The older core peers on its own release of the other packages; the
+  // stale state is what `ng add` repairs, so npm is told to accept it.
+  run('npm', ['install', '--legacy-peer-deps', staleTarball, ...others], { cwd: appDir });
+  useLocalRegistry(appDir, registryUrl);
+  const output = await runAsync('npx', ['ng', 'add', `@cngx/forms@${version}`, ...NG_ADD_FLAGS], { cwd: appDir });
+  const manifest = JSON.parse(readFileSync(join(appDir, '.cngx', 'install.json'), 'utf8'));
+  const recorded = manifest.projects?.fixture?.cngxVersion;
+  if (recorded !== version) {
+    throw new Error(`stale core leg: .cngx/install.json records ${recorded}, expected ${version}`);
+  }
+  if (/run ng add again/i.test(output)) {
+    throw new Error('stale core leg: the shim asked for a second ng add run');
+  }
+  console.log(`\nStale core leg: @cngx/core ${stale} replaced by ${version} in the same ng add`);
+}
+
 async function main() {
-  const { angular, variant, tarballs, work, ignorePeers } = parseArgs(process.argv.slice(2));
+  const { angular, variant, tarballs, work, ignorePeers, staleCore } = parseArgs(process.argv.slice(2));
   const { cliSpec, exact } = parseAngularSpec(angular);
   const plan = variantPlan(variant);
 
@@ -249,11 +499,31 @@ async function main() {
     throw new Error(`Expected one @angular/core in the tree, found ${versions.join(', ')}`);
   }
 
-  writeFileSync(join(appDir, 'src', 'app', 'app.ts'), renderAppSource(plan));
-  run('npx', ['ng', 'build'], { cwd: appDir });
+  let registry = null;
+  let version = null;
+  if (plan.schematics) {
+    version = tarballManifest(tarballFiles.find((file) => tarballManifest(file).name === '@cngx/core')).version;
+    registry = await startLocalRegistry(tarballFiles);
+    useLocalRegistry(appDir, registry.url);
+  }
+  try {
+    if (plan.schematics) {
+      await runSchematicsSteps(appDir, version);
+    } else {
+      writeFileSync(join(appDir, 'src', 'app', 'app.ts'), renderAppSource(plan));
+    }
+    run('npx', ['ng', 'build'], { cwd: appDir });
+    if (plan.schematics && staleCore !== null) {
+      await runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryUrl: registry.url, staleCore });
+    } else if (plan.schematics) {
+      console.log('\nStale core leg: skipped (pass --stale-core <tgz | previous> to run it)');
+    }
+  } finally {
+    await registry?.close();
+  }
 
   if (plan.smoke) {
-    const errors = await smoke(appDir);
+    const errors = await smoke(appDir, plan);
     if (errors.length > 0) {
       throw new Error(`Browser smoke failed:\n  ${errors.join('\n  ')}`);
     }

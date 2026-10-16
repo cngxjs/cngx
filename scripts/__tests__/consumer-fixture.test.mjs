@@ -1,10 +1,17 @@
+import { createHash } from 'node:crypto';
+
 import { describe, expect, it } from 'vitest';
 
 import {
+  newestListed,
+  packument,
   parseAngularSpec,
   peerInstallSpecs,
   pinAngularDeps,
   renderAppSource,
+  schematicsSteps,
+  usageText,
+  VARIANTS,
   variantPlan,
 } from '../consumer-fixture.mjs';
 
@@ -26,7 +33,8 @@ describe('variantPlan', () => {
     expect(variantPlan('full')).toMatchObject({ zoneless: true, ssr: false, optionalPeers: true, smoke: true });
     expect(variantPlan('zone')).toMatchObject({ zoneless: false });
     expect(variantPlan('ssr')).toMatchObject({ ssr: true, smoke: false });
-    expect(variantPlan('minimal')).toMatchObject({ optionalPeers: false });
+    expect(variantPlan('minimal')).toMatchObject({ optionalPeers: false, schematics: false });
+    expect(variantPlan('schematics')).toMatchObject({ zoneless: true, ssr: false, optionalPeers: false, smoke: true, schematics: true });
   });
 
   it('rejects an unknown variant', () => {
@@ -81,5 +89,72 @@ describe('renderAppSource', () => {
     for (const lib of ['utils', 'core', 'common', 'forms', 'data-display', 'ui', 'interop']) {
       expect(source).toContain(`@cngx/${lib === 'utils' ? 'utils' : `${lib}/`}`);
     }
+  });
+});
+
+describe('usageText', () => {
+  it('names --angular, --stale-core and every variant', () => {
+    const text = usageText();
+
+    expect(text).toContain('--angular');
+    expect(text).toContain('--stale-core');
+    for (const variant of VARIANTS) {
+      expect(text).toContain(variant);
+    }
+  });
+});
+
+describe('schematicsSteps', () => {
+  const steps = schematicsSteps('0.2.0');
+
+  it('runs ng add twice, the shim once and ng update twice, in that order', () => {
+    expect(steps.map((step) => step.args.slice(0, 3).join(' '))).toEqual([
+      'ng add @cngx/core@0.2.0',
+      'ng add @cngx/core@0.2.0',
+      'ng add @cngx/forms@0.2.0',
+      'ng update @cngx/core',
+      'ng update @cngx/core',
+    ]);
+  });
+
+  it('asks every ng add for no prompt and no confirmation', () => {
+    for (const step of steps.filter((entry) => entry.args[1] === 'add')) {
+      expect(step.args).toEqual(expect.arrayContaining(['--skip-confirmation', '--no-prompts', '--yes']));
+    }
+  });
+
+  it('requires the second ng add and the second ng update to change nothing', () => {
+    expect(steps[1]).toMatchObject({ expect: 'cngx is already set up; nothing changed.', clean: true });
+    expect(steps[4]).toMatchObject({ expect: 'found nothing to change', clean: true });
+  });
+
+  it('checks the exact pins after the package shim', () => {
+    expect(steps[2].pins).toEqual(['utils', 'core', 'common', 'forms']);
+  });
+
+  it('migrates from below every release up to the packed one', () => {
+    expect(steps[3].args).toEqual(expect.arrayContaining(['--migrate-only', '--from', '0.0.1', '--to', '0.2.0']));
+  });
+});
+
+describe('packument', () => {
+  it('lists the tarball as the only release, with its integrity', () => {
+    const tarball = Buffer.from('tarball');
+    const document = packument({ name: '@cngx/core', version: '0.2.0' }, 'http://127.0.0.1/-/@cngx/core.tgz', tarball);
+
+    expect(document['dist-tags']).toEqual({ latest: '0.2.0' });
+    expect(document.versions['0.2.0'].dist).toEqual({
+      tarball: 'http://127.0.0.1/-/@cngx/core.tgz',
+      integrity: `sha512-${createHash('sha512').update(tarball).digest('base64')}`,
+      shasum: createHash('sha1').update(tarball).digest('hex'),
+    });
+  });
+});
+
+describe('newestListed', () => {
+  it('reads a list, a single version and nothing', () => {
+    expect(newestListed('["0.1.0-rc.6","0.1.0-rc.7"]')).toBe('0.1.0-rc.7');
+    expect(newestListed('"0.1.0-rc.7"')).toBe('0.1.0-rc.7');
+    expect(newestListed('')).toBeUndefined();
   });
 });
