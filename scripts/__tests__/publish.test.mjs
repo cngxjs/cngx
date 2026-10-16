@@ -6,8 +6,11 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { PACKED_LIBS } from '../cngx-libs.mjs';
+
 import {
   assertPinsPublished,
+  assertWholeGroup,
   assertReleaseMigration,
   checkReleaseMigrations,
   releaseMigrationKeys,
@@ -227,6 +230,18 @@ describe('publishable libs', () => {
 
   it('all eight declare their schematics collection, so publish ships every ng-add', () => {
     expect(libs.filter((lib) => declaresSchematics(sourcePkg(lib)))).toEqual(libs);
+  });
+});
+
+describe('assertWholeGroup', () => {
+  it('passes the whole lockstep group in any order', () => {
+    expect(() => assertWholeGroup([...PACKED_LIBS].reverse())).not.toThrow();
+  });
+
+  it('refuses a partial set and names the missing members', () => {
+    expect(() => assertWholeGroup(['core'])).toThrow(
+      `@cngx/* releases in lockstep; --lib core leaves out ${PACKED_LIBS.filter((lib) => lib !== 'core').join(', ')}. Publish every package, or none.`,
+    );
   });
 });
 

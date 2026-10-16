@@ -3,7 +3,7 @@
 //   node scripts/publish.mjs --bump patch              # all libs, bump patch
 //   node scripts/publish.mjs --bump minor              # all libs, bump minor
 //   node scripts/publish.mjs --version 1.2.3           # all libs, explicit version
-//   node scripts/publish.mjs --lib core --bump patch   # single lib
+//   node scripts/publish.mjs --lib core --bump patch   # refused: every lib releases together
 //   node scripts/publish.mjs --dry-run --bump patch    # preview without publishing
 //   node scripts/publish.mjs --tag next --bump major   # force a dist-tag (default: derived, see resolveDistTag)
 //   node scripts/publish.mjs --skip-git-tag --bump patch  # do not tag/push git
@@ -359,6 +359,18 @@ function regenerateChangelog(tagName) {
   console.log(`  Regenerated CHANGELOG.md for ${tagName}`);
 }
 
+// Every @cngx/* package peers on the others at the exact release and the
+// ng update package group moves them together, so a release names every
+// member or the published graph splits across two versions.
+export function assertWholeGroup(libs) {
+  const missing = PACKED_LIBS.filter((lib) => !libs.includes(lib));
+  if (missing.length > 0) {
+    throw new Error(
+      `@cngx/* releases in lockstep; --lib ${libs.join(' --lib ')} leaves out ${missing.join(', ')}. Publish every package, or none.`,
+    );
+  }
+}
+
 function parseArgs() {
   const args = process.argv.slice(2);
   const result = {
@@ -405,6 +417,12 @@ function main() {
       console.error(`Unknown lib "${lib}". Available: ${PACKED_LIBS.join(', ')}`);
       process.exit(1);
     }
+  }
+  try {
+    assertWholeGroup(libs);
+  } catch (error) {
+    console.error(`Refusing to publish: ${error.message}`);
+    process.exit(1);
   }
 
   const rootPkg = readRootPkg();
