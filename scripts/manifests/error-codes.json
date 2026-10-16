@@ -766,6 +766,17 @@
       "files": ["projects/common/interactive/accordion/accordion.token.ts"]
     },
     {
+      "code": "CNGX1061",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Breadcrumb item outside a breadcrumb",
+      "page": "core-concepts/error-codes/cngx1061.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1061.html",
+      "status": "active",
+      "files": ["projects/common/interactive/breadcrumb/breadcrumb.token.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

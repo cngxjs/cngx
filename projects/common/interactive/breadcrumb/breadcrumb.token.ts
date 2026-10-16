@@ -1,4 +1,5 @@
-import { InjectionToken, type Signal } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
+import { CngxRuntimeError } from '@cngx/utils';
 
 // Type-only edge: erased at compile time (isolatedModules), so no runtime
 // module cycle forms. The only runtime edge is item -> token (inject).
@@ -31,3 +32,24 @@ export interface CngxBreadcrumbHost {
  * @relatedTo CngxBreadcrumb, CngxBreadcrumbItem
  */
 export const CNGX_BREADCRUMB = new InjectionToken<CngxBreadcrumbHost>('CNGX_BREADCRUMB');
+
+/**
+ * Inject the {@link CNGX_BREADCRUMB} of the surrounding breadcrumb from a
+ * {@link CngxBreadcrumbItem}. Throws a `CngxRuntimeError` with code
+ * `CNGX1061` when no breadcrumb is above it, in development and production
+ * alike.
+ *
+ * @internal
+ */
+export function injectBreadcrumbHost(): CngxBreadcrumbHost {
+  const breadcrumb = inject(CNGX_BREADCRUMB, { optional: true });
+  if (!breadcrumb) {
+    throw new CngxRuntimeError(
+      'CNGX1061',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngxBreadcrumbItem] must be placed inside an element with [cngxBreadcrumb].',
+    );
+  }
+  return breadcrumb;
+}
