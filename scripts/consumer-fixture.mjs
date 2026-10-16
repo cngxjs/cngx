@@ -25,7 +25,8 @@
 //   minimal     no optional peers installed: the build must not need them
 //   schematics  a real `ng add` and `ng update` against the tarballs: two
 //               ng add runs (the second changes nothing), ng add of a package
-//               shim, two ng update runs (the second finds nothing), then the
+//               shim (which keeps every lib the first run recorded), two ng
+//               update runs (the second finds nothing), then the
 //               onboarded app builds and loads. `--stale-core <tgz | previous>`
 //               adds a second sandbox where an older core is installed and
 //               `ng add @cngx/forms` must replace it in the same run;
@@ -85,6 +86,16 @@ export function usageText() {
 // placed the package.
 const NG_ADD_FLAGS = ['--skip-confirmation', '--no-prompts', '--yes', '--lint=false'];
 
+// Every lib the first `ng add @cngx/core` records; a later `--libs` answer
+// adds to that floor and never shrinks it.
+const ALL_LIBS = ['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui'];
+
+/** The libs of `expected` that `.cngx/install.json` does not record for `project`. */
+export function missingRecordedLibs(installManifest, project, expected) {
+  const recorded = installManifest.projects?.[project]?.answers?.libs ?? [];
+  return expected.filter((lib) => !recorded.includes(lib));
+}
+
 /**
  * The real-CLI steps of the schematics variant, in order. `expect` is text
  * the step's output must contain; `clean` asks for an empty
@@ -103,6 +114,7 @@ export function schematicsSteps(version) {
       label: 'ng add @cngx/forms',
       args: ['ng', 'add', `@cngx/forms@${version}`, ...NG_ADD_FLAGS, '--libs', 'core'],
       pins: ['utils', 'core', 'common', 'forms'],
+      recordedLibs: ALL_LIBS,
       commit: true,
     },
     {
@@ -400,6 +412,13 @@ async function runSchematicsSteps(appDir, version) {
       const wrong = step.pins.filter((lib) => dependencies[`@cngx/${lib}`] !== version);
       if (wrong.length > 0) {
         throw new Error(`${step.label}: ${wrong.map((lib) => `@cngx/${lib}@${dependencies[`@cngx/${lib}`]}`).join(', ')} is not pinned to ${version}`);
+      }
+    }
+    if (step.recordedLibs) {
+      const installManifest = JSON.parse(readFileSync(join(appDir, '.cngx', 'install.json'), 'utf8'));
+      const missing = missingRecordedLibs(installManifest, 'fixture', step.recordedLibs);
+      if (missing.length > 0) {
+        throw new Error(`${step.label}: .cngx/install.json no longer records ${missing.join(', ')}`);
       }
     }
     if (step.commit) {

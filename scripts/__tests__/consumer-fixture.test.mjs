@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
 import {
+  missingRecordedLibs,
   newestListed,
   packument,
   parseAngularSpec,
@@ -132,8 +133,27 @@ describe('schematicsSteps', () => {
     expect(steps[2].pins).toEqual(['utils', 'core', 'common', 'forms']);
   });
 
+  it('checks that the package shim keeps every recorded lib of the first ng add', () => {
+    expect(steps[2].recordedLibs).toEqual(['utils', 'core', 'common', 'interop', 'forms', 'data-display', 'ui']);
+  });
+
   it('migrates from below every release up to the packed one', () => {
     expect(steps[3].args).toEqual(expect.arrayContaining(['--migrate-only', '--from', '0.0.1', '--to', '0.2.0']));
+  });
+});
+
+describe('missingRecordedLibs', () => {
+  const record = (libs) => ({ projects: { fixture: { answers: { libs } } } });
+
+  it('names every expected lib the install record of the project lacks', () => {
+    expect(missingRecordedLibs(record(['core', 'forms']), 'fixture', ['utils', 'core', 'forms'])).toEqual(['utils']);
+    expect(missingRecordedLibs(record(['utils', 'core', 'forms']), 'fixture', ['core', 'forms'])).toEqual([]);
+  });
+
+  it('names every expected lib when the project or its answers are missing', () => {
+    expect(missingRecordedLibs({ projects: {} }, 'fixture', ['core'])).toEqual(['core']);
+    expect(missingRecordedLibs({}, 'fixture', ['core'])).toEqual(['core']);
+    expect(missingRecordedLibs(record(undefined), 'fixture', ['core'])).toEqual(['core']);
   });
 });
 
