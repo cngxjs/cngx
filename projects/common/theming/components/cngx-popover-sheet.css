@@ -40,6 +40,13 @@
  * rotation; the block end pads `env(safe-area-inset-bottom)`. Edge-to-edge
  * landscape on iOS needs the app to opt into `viewport-fit=cover`.
  *
+ * **Defaults**
+ *
+ * The defaults match `CngxBottomSheet` and `CngxDialog` (16px top corners,
+ * 80dvh cap, a 40 x 4px handle pill centred on its own row, the dialog
+ * shadow, a 50% black backdrop), with phone-sized padding: 16px from
+ * `--cngx-space-md`.
+ *
  * **Dark mode**
  *
  * Three hooks (`prefers-color-scheme: dark`, `[data-color-scheme="dark"]`,
@@ -59,22 +66,23 @@
   @property --cngx-popover-sheet-max-block-size {
     syntax: '*';
     inherits: false;
-    initial-value: 70dvh;
+    initial-value: 80dvh;
   }
 
   /**
-   * Corner radius of the top edge of the `sheet` presentation.
+   * Corner radius shorthand of the `sheet` presentation. Rounded top
+   * corners only, matching the bottom-anchored anatomy.
    * @group Layout
    */
   @property --cngx-popover-sheet-radius {
-    syntax: '<length>';
+    syntax: '*';
     inherits: false;
-    initial-value: 16px;
+    initial-value: 16px 16px 0 0;
   }
 
   /**
-   * Inline padding of the panel and block padding of the header. SET from
-   * `--cngx-space-md` on the host, so density reaches it.
+   * Padding inside the panel. SET from `--cngx-space-md` on the host, so
+   * density reaches it; the safe-area insets win where they are larger.
    * @group Layout
    */
   @property --cngx-popover-sheet-padding {
@@ -84,7 +92,8 @@
   }
 
   /**
-   * Gap between the items of the header row. SET from `--cngx-space-sm`.
+   * Gap between the items of the header row and below it. SET from
+   * `--cngx-space-sm`.
    * @group Layout
    */
   @property --cngx-popover-sheet-header-gap {
@@ -94,17 +103,17 @@
   }
 
   /**
-   * Inline size of the decorative drag handle.
+   * Inline size of the decorative handle pill.
    * @group Handle
    */
   @property --cngx-popover-sheet-handle-inline-size {
     syntax: '<length>';
     inherits: true;
-    initial-value: 32px;
+    initial-value: 40px;
   }
 
   /**
-   * Block size of the decorative drag handle.
+   * Block size of the decorative handle pill.
    * @group Handle
    */
   @property --cngx-popover-sheet-handle-block-size {
@@ -114,8 +123,29 @@
   }
 
   /**
-   * Fill of the decorative drag handle. `inherits: true` so the host SET
-   * reaches the handle part.
+   * Corner radius of the decorative handle pill.
+   * @group Handle
+   */
+  @property --cngx-popover-sheet-handle-radius {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2px;
+  }
+
+  /**
+   * Margin shorthand around the handle pill: centres it and pushes the
+   * header row down. SET from `--cngx-space-md` on the host.
+   * @group Handle
+   */
+  @property --cngx-popover-sheet-handle-margin {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0 auto 16px;
+  }
+
+  /**
+   * Fill of the decorative handle pill. `inherits: true` so the root
+   * dark-mode value reaches the handle part.
    * @group Handle
    */
   @property --cngx-popover-sheet-handle-color {
@@ -145,14 +175,14 @@
   }
 
   /**
-   * Drop shadow along the top edge of the `sheet` presentation.
+   * Drop shadow of the `sheet` presentation, the `CngxDialog` elevation.
    * `inherits: true` so the dark-mode value set on the root reaches the host.
    * @group Surface
    */
   @property --cngx-popover-sheet-shadow {
     syntax: '*';
     inherits: true;
-    initial-value: 0 -4px 24px oklch(0 0 0 / 0.12);
+    initial-value: 0 8px 32px oklch(0 0 0 / 0.12);
   }
 
   /**
@@ -164,7 +194,7 @@
   @property --cngx-popover-sheet-backdrop {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0 0 0 / 0.32);
+    initial-value: oklch(0 0 0 / 0.5);
   }
 
   /**
@@ -185,7 +215,7 @@
   @property --cngx-popover-sheet-easing {
     syntax: '*';
     inherits: false;
-    initial-value: ease-out;
+    initial-value: ease;
   }
 
   /* SET-from-scale: the registered initial values above win over a read-site
@@ -194,6 +224,7 @@
   :where(.cngx-popover-sheet) {
     --cngx-popover-sheet-padding: var(--cngx-space-md);
     --cngx-popover-sheet-header-gap: var(--cngx-space-sm);
+    --cngx-popover-sheet-handle-margin: 0 auto var(--cngx-space-md);
     --cngx-popover-sheet-duration: var(--cngx-duration-base);
     --cngx-popover-sheet-surface: var(--cngx-color-surface);
     --cngx-popover-sheet-color: var(--cngx-color-text);
@@ -201,18 +232,18 @@
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
-      --cngx-popover-sheet-shadow: 0 -4px 24px oklch(0 0 0 / 0.5);
+      --cngx-popover-sheet-shadow: 0 8px 32px oklch(0 0 0 / 0.5);
       --cngx-popover-sheet-handle-color: oklch(0.5 0.005 250);
     }
   }
   [data-color-scheme='dark'],
   .dark {
-    --cngx-popover-sheet-shadow: 0 -4px 24px oklch(0 0 0 / 0.5);
+    --cngx-popover-sheet-shadow: 0 8px 32px oklch(0 0 0 / 0.5);
     --cngx-popover-sheet-handle-color: oklch(0.5 0.005 250);
   }
   [data-color-scheme='light'],
   .light {
-    --cngx-popover-sheet-shadow: 0 -4px 24px oklch(0 0 0 / 0.12);
+    --cngx-popover-sheet-shadow: 0 8px 32px oklch(0 0 0 / 0.12);
     --cngx-popover-sheet-handle-color: oklch(0.8 0.005 250);
   }
 }
@@ -238,13 +269,13 @@
     inline-size: 100%;
     max-inline-size: 100%;
     min-inline-size: 0;
-    max-block-size: var(--cngx-popover-sheet-max-block-size, 70dvh);
+    max-block-size: var(--cngx-popover-sheet-max-block-size, 80dvh);
     flex-direction: column;
     overflow: hidden;
     border: 0;
-    border-start-start-radius: var(--cngx-popover-sheet-radius, 16px);
-    border-start-end-radius: var(--cngx-popover-sheet-radius, 16px);
-    padding-block: 0 env(safe-area-inset-bottom, 0px);
+    border-radius: var(--cngx-popover-sheet-radius, 16px 16px 0 0);
+    padding-block: var(--cngx-popover-sheet-padding, 16px)
+      max(var(--cngx-popover-sheet-padding, 16px), env(safe-area-inset-bottom, 0px));
     /* Symmetric on purpose: the notch side flips with the device rotation,
      * and the larger inset on both edges stays correct in RTL. */
     padding-inline: max(
@@ -254,11 +285,11 @@
     );
     background: var(--cngx-popover-sheet-surface, oklch(1 0 0));
     color: var(--cngx-popover-sheet-color, oklch(0.2 0 0));
-    box-shadow: var(--cngx-popover-sheet-shadow, 0 -4px 24px oklch(0 0 0 / 0.12));
+    box-shadow: var(--cngx-popover-sheet-shadow, 0 8px 32px oklch(0 0 0 / 0.12));
     translate: 0 0;
     transition:
-      translate var(--cngx-popover-sheet-duration, 200ms) var(--cngx-popover-sheet-easing, ease-out),
-      opacity var(--cngx-popover-sheet-duration, 200ms) var(--cngx-popover-sheet-easing, ease-out);
+      translate var(--cngx-popover-sheet-duration, 200ms) var(--cngx-popover-sheet-easing, ease),
+      opacity var(--cngx-popover-sheet-duration, 200ms) var(--cngx-popover-sheet-easing, ease);
   }
 
   /* Open only: a display value on the closed host would override the UA
@@ -275,12 +306,15 @@
     block-size: 100dvh;
     max-block-size: 100dvh;
     border-radius: 0;
-    padding-block-start: env(safe-area-inset-top, 0px);
+    padding-block-start: max(
+      var(--cngx-popover-sheet-padding, 16px),
+      env(safe-area-inset-top, 0px)
+    );
     box-shadow: none;
   }
 
   .cngx-popover-sheet[data-cngx-presentation='sheet']::backdrop {
-    background: var(--cngx-popover-sheet-backdrop, oklch(0 0 0 / 0.32));
+    background: var(--cngx-popover-sheet-backdrop, oklch(0 0 0 / 0.5));
   }
 
   /* Slide start and end state. Opening holds it until the popover flips to
@@ -312,6 +346,7 @@
     overscroll-behavior: contain;
   }
 
+  /* Handle on its own row, title and controls on the next one. */
   .cngx-popover-sheet:is([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen'])
     > .cngx-popover-sheet-header {
     flex: none;
@@ -320,7 +355,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: var(--cngx-popover-sheet-header-gap, 8px);
-    padding-block: var(--cngx-popover-sheet-padding, 16px);
+    padding-block-end: var(--cngx-popover-sheet-header-gap, 8px);
   }
 
   .cngx-popover-sheet-handle {
@@ -330,11 +365,15 @@
   .cngx-popover-sheet[data-cngx-presentation='sheet'] .cngx-popover-sheet-handle {
     display: block;
     flex: 0 0 100%;
-    inline-size: var(--cngx-popover-sheet-handle-inline-size, 32px);
-    max-inline-size: var(--cngx-popover-sheet-handle-inline-size, 32px);
+  }
+
+  .cngx-popover-sheet[data-cngx-presentation='sheet'] .cngx-popover-sheet-handle::before {
+    content: '';
+    display: block;
+    inline-size: var(--cngx-popover-sheet-handle-inline-size, 40px);
     block-size: var(--cngx-popover-sheet-handle-block-size, 4px);
-    margin-inline: auto;
-    border-radius: var(--cngx-popover-sheet-handle-block-size, 4px);
+    margin: var(--cngx-popover-sheet-handle-margin, 0 auto 16px);
+    border-radius: var(--cngx-popover-sheet-handle-radius, 2px);
     background: var(--cngx-popover-sheet-handle-color, oklch(0.8 0.005 250));
   }
 }
@@ -356,7 +395,7 @@
     border-block-start: 1px solid CanvasText;
   }
 
-  .cngx-popover-sheet[data-cngx-presentation='sheet'] .cngx-popover-sheet-handle {
+  .cngx-popover-sheet[data-cngx-presentation='sheet'] .cngx-popover-sheet-handle::before {
     background: CanvasText;
   }
 }

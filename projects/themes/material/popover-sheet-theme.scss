@@ -35,7 +35,8 @@
 
 @mixin shape($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    --cngx-popover-sheet-radius: var(--mat-sys-corner-extra-large, 28px);
+    --cngx-popover-sheet-radius: var(--mat-sys-corner-extra-large, 28px)
+      var(--mat-sys-corner-extra-large, 28px) 0 0;
   }
 }
 

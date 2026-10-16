@@ -129,22 +129,45 @@ describe('CngxPopoverSheet geometry', () => {
       expect(Math.round(rect.bottom)).toBe(vp.height);
       expect(Math.round(rect.left)).toBe(0);
       expect(Math.round(rect.width)).toBe(vp.width);
-      expect(rect.height).toBeLessThan(vp.height * 0.7);
+      expect(rect.height).toBeLessThan(vp.height * 0.8);
     },
   );
+
+  it('paints its own surface and padding despite the bare-popover reset', async () => {
+    const { panel } = await open();
+    expect(computedValue(panel, 'background-color')).not.toBe('rgba(0, 0, 0, 0)');
+    expect(parseFloat(computedValue(panel, 'padding-inline-start'))).toBe(16);
+    expect(parseFloat(computedValue(panel, 'padding-block-start'))).toBe(16);
+  });
+
+  it('centres the handle pill on its own row above the title', async () => {
+    const { panel } = await open();
+    const handle = panel.querySelector<HTMLElement>('.cngx-popover-sheet-handle')!;
+    const title = panel.querySelector<HTMLElement>('[cngxpopoversheettitle]')!;
+    const pill = getComputedStyle(handle, '::before');
+    const handleRect = handle.getBoundingClientRect();
+    const pillWidth = parseFloat(pill.width);
+    const pillLeft = handleRect.left + parseFloat(pill.marginLeft);
+    expect(pillWidth).toBe(40);
+    expect(
+      Math.abs(pillLeft + pillWidth / 2 - (handleRect.left + handleRect.width / 2)),
+    ).toBeLessThanOrEqual(1);
+    expect(title.getBoundingClientRect().top).toBeGreaterThanOrEqual(handleRect.bottom);
+  });
 
   it('caps the sheet block size and scrolls the content, not the host', async () => {
     const { panel } = await open((h) => h.rows.set(Array.from({ length: 60 }, (_, i) => i)));
     const rect = panel.getBoundingClientRect();
     const content = panel.querySelector<HTMLElement>('.content')!;
     const header = panel.querySelector<HTMLElement>('.header')!;
-    expect(Math.abs(rect.height - window.innerHeight * 0.7)).toBeLessThanOrEqual(1);
+    expect(Math.abs(rect.height - window.innerHeight * 0.8)).toBeLessThanOrEqual(1);
     expect(computedValue(panel, 'overflow-y')).toBe('hidden');
     expect(panel.scrollHeight).toBeLessThanOrEqual(panel.clientHeight + 1);
     expect(computedValue(content, 'overflow-y')).toBe('auto');
     expect(content.scrollHeight).toBeGreaterThan(content.clientHeight);
     expect(computedValue(header, 'flex-shrink')).toBe('0');
-    expect(Math.round(header.getBoundingClientRect().top)).toBe(Math.round(rect.top));
+    const paddingTop = parseFloat(computedValue(panel, 'padding-block-start'));
+    expect(Math.round(header.getBoundingClientRect().top)).toBe(Math.round(rect.top + paddingTop));
   });
 
   it('fills the viewport in the fullscreen presentation', async () => {
