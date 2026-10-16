@@ -4,15 +4,16 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { declaredRange, parseManifest, readOwnPeerRange, readOwnVersion } from './manifest';
+import { declaredRange, parseManifest, readOwnName, readOwnPeerRange, readOwnVersion } from './manifest';
 
 describe('parseManifest', () => {
   it('reads version and both dependency maps', () => {
     const manifest = parseManifest(
-      JSON.stringify({ version: '1.0.0', dependencies: { a: '^1.0.0' }, devDependencies: { b: '~2.0.0' } }),
+      JSON.stringify({ name: 'app', version: '1.0.0', dependencies: { a: '^1.0.0' }, devDependencies: { b: '~2.0.0' } }),
     );
 
     expect(manifest).toEqual({
+      name: 'app',
       version: '1.0.0',
       dependencies: { a: '^1.0.0' },
       devDependencies: { b: '~2.0.0' },
@@ -70,6 +71,31 @@ describe('readOwnVersion', () => {
     writeFileSync(join(pkg, 'package.json'), '{}');
 
     expect(() => readOwnVersion(join(pkg, 'schematics', 'ng-add'))).toThrow(/No version in/);
+  });
+});
+
+describe('readOwnName', () => {
+  let pkg: string;
+
+  beforeEach(() => {
+    pkg = mkdtempSync(join(tmpdir(), 'cngx-own-name-'));
+    mkdirSync(join(pkg, 'schematics', 'ng-add'), { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(pkg, { recursive: true, force: true });
+  });
+
+  it('reads the name of the package two folders above the bundle', () => {
+    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: '@cngx/forms', version: '0.1.0' }));
+
+    expect(readOwnName(join(pkg, 'schematics', 'ng-add'))).toBe('@cngx/forms');
+  });
+
+  it('fails loudly when the manifest has no name', () => {
+    writeFileSync(join(pkg, 'package.json'), '{}');
+
+    expect(() => readOwnName(join(pkg, 'schematics', 'ng-add'))).toThrow(/No name in/);
   });
 });
 

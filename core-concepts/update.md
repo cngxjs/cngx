@@ -12,8 +12,8 @@ Run `ng update @cngx/core`. Every `@cngx/*` package moves to the same release, a
 </aside>
 
 The `@cngx/*` packages release in lockstep: one version number for all eight.
-`@cngx/core` declares them as one `ng update` package group and carries the
-migrations, so one command updates the set.
+Every package declares them as one `ng update` package group, named after
+`@cngx/core`, which carries the migrations, so one command updates the set.
 
 ```bash
 ng update @cngx/core
@@ -23,12 +23,13 @@ ng update @cngx/core
 
 ## The package group
 
-`@cngx/core` lists `@cngx/utils`, `@cngx/core`, `@cngx/common`,
+Every `@cngx/*` package lists `@cngx/utils`, `@cngx/core`, `@cngx/common`,
 `@cngx/interop`, `@cngx/forms`, `@cngx/data-display`, `@cngx/ui` and
-`@cngx/themes` as its package group. `ng update` moves every member the app
-depends on to the new release in one step, so the cross-package peers stay
-in agreement. Always update through `@cngx/core`: the group and the
-migrations live there.
+`@cngx/themes` as its package group, and `@cngx/core` names the group. So
+`ng update @cngx/forms` moves the same set as `ng update @cngx/core`: every
+member the app depends on goes to the new release in one step, and the
+cross-package peers stay in agreement. The migrations live in `@cngx/core`
+and run whichever member you name.
 
 Preview the update without writing files:
 
@@ -82,13 +83,22 @@ says that this migration found nothing to change.
 ## Install re-runs from the manifest
 
 When `.cngx/install.json` exists, every migration, a `refresh` included,
-reads the answers it records (the preset, the theme, the language, the
-editors) and re-checks the steps that depend on the release:
+goes through every project it records, reads the answers of that record
+(the preset, the theme, the language, the editors) and re-checks the steps
+that depend on the release:
 
 - The theme steps are checked once the cngx version moved, and reported.
 - `.cngx/README.md`, which names the `@cngx/mcp` version, is regenerated once
-  that version moved.
-- The manifest records the new release.
+  that version moved, once for the workspace, by the first record whose
+  answers this release can read.
+- Each record notes the new release.
+
+A recorded project that is no longer in `angular.json` is named and its
+record left as it is. A record whose answers this release cannot read is
+named with its project and kept; `ng add @cngx/core --project <name>`
+refreshes it. A manifest cngx cannot read is named too and left alone;
+`ng add @cngx/core --project <name>` keeps it as a copy and starts a new
+record.
 
 A re-run never brings back a file you deleted; it names it. A README cngx did
 not write stays as it is. An answer recorded by an older release that the

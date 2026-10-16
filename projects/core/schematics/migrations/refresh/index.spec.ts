@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMemoryTree, createProvenanceStamp, DEFAULT_MCP_VERSION } from '../../engine';
 import { helperReadmeFingerprintLine } from '../../ng-add/detect/detect';
-import { type InstallManifest } from '../../ng-add/steps/manifest';
+import { type InstallManifest, type ProjectRecord } from '../../ng-add/steps/manifest';
 import { readFixture, readMigrationFixture, readTree, runRule } from '../../testing/run-schematic';
 import { migrate } from './index';
 
@@ -15,8 +15,8 @@ const PROVENANCE = { source: 'ng-add', version: '0.1.0-rc.4' } as const;
 // README cngx wrote then still pins the MCP release of that install.
 function onboardedWithAiTools(): Readonly<Record<string, string>> {
   const { before } = readMigrationFixture('0.1.0');
-  const manifest = JSON.parse(before['.cngx/install.json'] ?? '{}') as InstallManifest;
-  const recorded: InstallManifest = {
+  const manifest = recordOf(before);
+  const recorded: ProjectRecord = {
     ...manifest,
     mcpVersion: OLDER_MCP,
     answers: { ...manifest.answers, aiTools: ['claude'] },
@@ -28,7 +28,7 @@ function onboardedWithAiTools(): Readonly<Record<string, string>> {
   };
   return {
     ...before,
-    '.cngx/install.json': JSON.stringify(recorded, null, 2),
+    '.cngx/install.json': JSON.stringify({ schemaVersion: 2, projects: { 'fixture-app': recorded } }, null, 2),
     '.mcp.json': JSON.stringify({
       mcpServers: { cngx: { command: 'npx', args: ['-y', `@cngx/mcp@${OLDER_MCP}`] } },
     }),
@@ -36,8 +36,13 @@ function onboardedWithAiTools(): Readonly<Record<string, string>> {
   };
 }
 
-function manifestOf(files: Readonly<Record<string, string>>): InstallManifest {
-  return JSON.parse(files['.cngx/install.json'] ?? '{}') as InstallManifest;
+function recordOf(files: Readonly<Record<string, string>>): ProjectRecord {
+  const manifest = JSON.parse(files['.cngx/install.json'] ?? '{}') as InstallManifest;
+  const record = manifest.projects['fixture-app'];
+  if (record === undefined) {
+    throw new Error('no install record for fixture-app');
+  }
+  return record;
 }
 
 describe('refresh migration', () => {
@@ -68,7 +73,7 @@ describe('refresh migration', () => {
 
     const { logs } = await runRule(migrate(), createMemoryTree(before));
 
-    expect(logs[0]).toBe(`cngx ${manifestOf(after).cngxVersion} migration`);
+    expect(logs[0]).toBe(`cngx ${recordOf(after).cngxVersion} migration`);
   });
 
   it('names the release of the collection entry that ran', async () => {
@@ -90,7 +95,7 @@ describe('refresh migration', () => {
     expect(logs.join('\n')).toContain('Update .cngx/README.md');
     expect(files['.cngx/README.md']).toContain(`\`@cngx/mcp@${DEFAULT_MCP_VERSION}\``);
     expect(files['.cngx/README.md']).not.toContain('older README');
-    expect(manifestOf(files).mcpVersion).toBe(DEFAULT_MCP_VERSION);
+    expect(recordOf(files).mcpVersion).toBe(DEFAULT_MCP_VERSION);
   });
 
   it('plans nothing on a second run', async () => {
@@ -112,7 +117,7 @@ describe('refresh migration', () => {
 
     expect(readTree(tree)).toEqual(after);
     expect(logs).not.toContain('Planned (1):');
-    expect(logs).toContain(`cngx ${manifestOf(after).cngxVersion} migration planned 1 change.`);
+    expect(logs).toContain(`cngx ${recordOf(after).cngxVersion} migration planned 1 change.`);
   });
 
   it('plans one note for a missing manifest and changes nothing', async () => {

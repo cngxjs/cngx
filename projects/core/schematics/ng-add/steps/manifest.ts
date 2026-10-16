@@ -2,7 +2,12 @@ import { type JsonValue } from '@angular-devkit/core';
 
 import {
   type ChangePlan,
+  CNGX_LIBS,
+  type CngxLib,
+  type CreateFile,
   createProvenance,
+  type EditFile,
+  isListOf,
   isRecord,
   type Provenance,
   skipChange,
@@ -13,7 +18,7 @@ import { type ProjectFacts } from '../detect/detect';
 import { type OnboardingAnswers, type Versions } from './model';
 
 export const INSTALL_MANIFEST_PATH = '.cngx/install.json';
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 export interface InstalledStep {
   readonly id: string;
@@ -22,9 +27,8 @@ export interface InstalledStep {
   readonly provenance: Provenance;
 }
 
-/** `.cngx/install.json`: the inputs of the last real install, not a re-derived state. */
-export interface InstallManifest {
-  readonly schemaVersion: number;
+/** One project's record: the inputs of its last real install, not a re-derived state. */
+export interface ProjectRecord {
   readonly cngxVersion: string;
   readonly mcpVersion: string;
   readonly eslintPluginVersion: string;
@@ -38,8 +42,21 @@ export interface InstallManifest {
   readonly updatedAt: string;
 }
 
+/**
+ * `.cngx/install.json`: one record per project `ng add` ran for. The
+ * README, the editor configs and `package.json` are workspace-wide, the
+ * records are not.
+ */
+export interface InstallManifest {
+  readonly schemaVersion: number;
+  readonly projects: Readonly<Record<string, ProjectRecord>>;
+}
 
-/** A previous manifest; `undefined` when the body is not one cngx wrote. */
+/**
+ * A previous manifest; `undefined` when the body is not one this release
+ * writes. An earlier schema is not read either: no release with schematics
+ * wrote one.
+ */
 export function parseInstallManifest(content: string): InstallManifest | undefined {
   let parsed: unknown;
   try {
@@ -47,7 +64,16 @@ export function parseInstallManifest(content: string): InstallManifest | undefin
   } catch {
     return undefined;
   }
-  return isRecord(parsed) ? toManifest(parsed) : undefined;
+  if (!isRecord(parsed) || parsed['schemaVersion'] !== SCHEMA_VERSION || !isRecord(parsed['projects'])) {
+    return undefined;
+  }
+  const records = Object.entries(parsed['projects']).map(
+    ([project, value]) => [project, isRecord(value) ? toRecord(value) : undefined] as const,
+  );
+  if (!records.every((entry): entry is readonly [string, ProjectRecord] => entry[1] !== undefined)) {
+    return undefined;
+  }
+  return { schemaVersion: SCHEMA_VERSION, projects: Object.fromEntries(records) };
 }
 
 function isProvenance(value: unknown): value is Provenance {
@@ -63,11 +89,10 @@ function isInstalledStep(value: unknown): value is InstalledStep {
   );
 }
 
-// A user may have edited the file; anything short of the full shape reads
-// as no previous install, and the run writes a fresh one.
-function toManifest(parsed: Readonly<Record<string, unknown>>): InstallManifest | undefined {
+// A user may have edited the file; a record short of the full shape makes
+// the whole file unreadable, so no other project's record is dropped silently.
+function toRecord(parsed: Readonly<Record<string, unknown>>): ProjectRecord | undefined {
   const {
-    schemaVersion,
     cngxVersion,
     mcpVersion,
     eslintPluginVersion,
@@ -81,7 +106,6 @@ function toManifest(parsed: Readonly<Record<string, unknown>>): InstallManifest 
   } = parsed;
   const strings = [cngxVersion, mcpVersion, eslintPluginVersion, preset, createdAt, updatedAt];
   if (
-    schemaVersion !== SCHEMA_VERSION ||
     !strings.every((value) => typeof value === 'string') ||
     !(typeof angularVersion === 'string' || angularVersion === null) ||
     !isRecord(answers) ||
@@ -92,7 +116,6 @@ function toManifest(parsed: Readonly<Record<string, unknown>>): InstallManifest 
     return undefined;
   }
   return {
-    schemaVersion,
     cngxVersion: String(cngxVersion),
     mcpVersion: String(mcpVersion),
     eslintPluginVersion: String(eslintPluginVersion),
@@ -133,18 +156,13 @@ function angularLine(version: string | null): string | null {
  * install, and Angular counts by its `major.minor` line, so a patch bump in
  * `node_modules` is too.
  */
-export function isSameInstall(a: InstallManifest, b: InstallManifest): boolean {
-  const key = (manifest: InstallManifest): string =>
+export function isSameInstall(a: ProjectRecord, b: ProjectRecord): boolean {
+  const key = (record: ProjectRecord): string =>
     canonical({
-      preset: manifest.preset,
-      answers: manifest.answers,
-      versions: [
-        manifest.cngxVersion,
-        manifest.mcpVersion,
-        manifest.eslintPluginVersion,
-        angularLine(manifest.angularVersion),
-      ],
-      steps: manifest.steps.map((step) => step.id).sort(),
+      preset: record.preset,
+      answers: record.answers,
+      versions: [record.cngxVersion, record.mcpVersion, record.eslintPluginVersion, angularLine(record.angularVersion)],
+      steps: record.steps.map((step) => step.id).sort(),
     });
   return key(a) === key(b);
 }
@@ -157,19 +175,43 @@ function factsSnapshot(facts: ProjectFacts): Readonly<Record<string, JsonValue>>
 }
 
 /**
- * The install manifest as one more projection of the plan, planned after
- * every other step: a step id the plan changed or skipped is satisfied, a
- * note is not a step. An unchanged install plans nothing, so `updatedAt`
- * moves only with a real change and a second run writes no file.
+ * The step ids every project's record holds. The AI tooling a removal
+ * withdraws is workspace-wide, so one project's record is not enough.
  */
-export function planManifest(
+export function recordedStepIds(manifest: InstallManifest | undefined): readonly string[] {
+  const ids = Object.values(manifest?.projects ?? {}).flatMap((record) => record.steps.map((step) => step.id));
+  return [...new Set(ids)];
+}
+
+/** Every lib of the given lists, once each, in `CNGX_LIBS` order. */
+export function unionLibs(...lists: readonly (readonly CngxLib[])[]): readonly CngxLib[] {
+  return CNGX_LIBS.filter((lib) => lists.some((list) => list.includes(lib)));
+}
+
+/** The libs any project's record answered, in `CNGX_LIBS` order. */
+export function recordedLibs(manifest: InstallManifest | undefined): readonly CngxLib[] {
+  return unionLibs(
+    ...Object.values(manifest?.projects ?? {}).map((record) => {
+      const answered = record.answers['libs'];
+      return isListOf(CNGX_LIBS, answered) ? answered : [];
+    }),
+  );
+}
+
+// A record is plain JSON data; the interface only lacks the index signature
+// `JsonValue` asks for, so the round trip hands over a structural copy.
+function jsonOf(record: ProjectRecord): JsonValue {
+  return JSON.parse(JSON.stringify(record)) as JsonValue;
+}
+
+function nextRecord(
   facts: ProjectFacts,
   answers: OnboardingAnswers,
   versions: Versions,
   plan: ChangePlan,
-  previous: InstallManifest | undefined,
+  previous: ProjectRecord | undefined,
   now: string,
-): StepResult {
+): ProjectRecord {
   const provenance = createProvenance('ng-add', versions.cngx);
   const earlier = new Map((previous?.steps ?? []).map((step) => [step.id, step.provenance]));
   const steps: readonly InstalledStep[] = [
@@ -182,8 +224,7 @@ export function planManifest(
       provenance: earlier.get(step.id) ?? provenance,
     })),
   ];
-  const next: InstallManifest = {
-    schemaVersion: SCHEMA_VERSION,
+  return {
     cngxVersion: versions.cngx,
     mcpVersion: versions.mcp,
     eslintPluginVersion: versions.eslintPlugin,
@@ -195,31 +236,88 @@ export function planManifest(
     createdAt: previous?.createdAt ?? now,
     updatedAt: now,
   };
+}
+
+/**
+ * The install manifest as one more projection of the plan, planned after
+ * every other step: a step id the plan changed or skipped is satisfied, a
+ * note is not a step. Only this project's record is written; the others
+ * stay as they are. An unchanged install plans nothing, so `updatedAt`
+ * moves only with a real change and a second run writes no file.
+ */
+export function planManifest(
+  facts: ProjectFacts,
+  answers: OnboardingAnswers,
+  versions: Versions,
+  plan: ChangePlan,
+  previous: ProjectRecord | undefined,
+  now: string,
+): StepResult {
+  const record = nextRecord(facts, answers, versions, plan, previous, now);
   const change: WriteJson = {
     kind: 'write-json',
     id: 'manifest:install',
-    label: `Write ${INSTALL_MANIFEST_PATH}`,
+    label: `Write ${INSTALL_MANIFEST_PATH} for ${facts.project}`,
     reason: 'records this install for a re-run and ng update',
-    provenance,
+    provenance: createProvenance('ng-add', versions.cngx),
     path: INSTALL_MANIFEST_PATH,
-    entries: Object.entries(next).map(([key, value]) => [[key], value as JsonValue] as const),
+    entries: [
+      [['schemaVersion'], SCHEMA_VERSION],
+      [['projects', facts.project], jsonOf(record)],
+    ],
   };
-  if (previous !== undefined && isSameInstall(previous, next)) {
+  if (previous !== undefined && isSameInstall(previous, record)) {
     return { changes: [], skipped: [skipChange(change, `unchanged since ${previous.updatedAt}`)] };
   }
   return { changes: [change], skipped: [] };
 }
 
 /**
- * The manifest after `ng update`: the new release versions, every step a
- * migration planned recorded with its provenance, and the earlier steps as
- * they were. Only the keys that moved are written; unchanged versions and
- * steps plan no write.
+ * The manifest a run starts over when `.cngx/install.json` cannot be read:
+ * the file is kept under `copyPath`, then emptied, so the record
+ * `planManifest` writes next is the only one in it. Both are changes of the
+ * plan, so `--dry-run` lists them.
+ */
+export function planUnreadableManifest(
+  project: string,
+  versions: Versions,
+  content: Buffer,
+  copyPath: string,
+): StepResult {
+  const provenance = createProvenance('ng-add', versions.cngx);
+  const copy: CreateFile = {
+    kind: 'create-file',
+    id: 'manifest:unreadable',
+    label: 'Start a new install record',
+    reason: `${INSTALL_MANIFEST_PATH} exists but cngx cannot read it; it is kept as ${copyPath} and replaced by a record of ${project} only`,
+    provenance,
+    path: copyPath,
+    content,
+  };
+  const reset: EditFile = {
+    kind: 'edit-file',
+    id: 'manifest:reset',
+    label: `Clear ${INSTALL_MANIFEST_PATH}`,
+    reason: `its content is kept in ${copyPath}`,
+    provenance,
+    path: INSTALL_MANIFEST_PATH,
+    edit: () => '{}\n',
+    replaces: true,
+  };
+  return { changes: [copy, reset], skipped: [] };
+}
+
+/**
+ * One project's record after `ng update`: the new release versions, every
+ * step a migration planned recorded with its provenance, and the earlier
+ * steps as they were. Only the keys that moved are written; unchanged
+ * versions and steps plan no write.
  */
 export function planManifestUpdate(
-  previous: InstallManifest,
+  project: string,
   versions: Versions,
   plan: ChangePlan,
+  previous: ProjectRecord,
   now: string,
 ): StepResult {
   const planned = new Map(
@@ -232,7 +330,7 @@ export function planManifestUpdate(
   const added = [...planned]
     .filter(([id]) => !previous.steps.some((step) => step.id === id))
     .map(([id, provenance]) => ({ id, outcome: 'satisfied' as const, provenance }));
-  const next: InstallManifest = {
+  const next: ProjectRecord = {
     ...previous,
     cngxVersion: versions.cngx,
     mcpVersion: versions.mcp,
@@ -244,14 +342,14 @@ export function planManifestUpdate(
   const change: WriteJson = {
     kind: 'write-json',
     id: 'manifest:install',
-    label: `Update ${INSTALL_MANIFEST_PATH}`,
+    label: `Update ${INSTALL_MANIFEST_PATH} for ${project}`,
     reason: 'records the cngx release this app now runs',
     provenance: createProvenance('ng-update', versions.cngx),
     path: INSTALL_MANIFEST_PATH,
     // Only the keys that moved, so the rest of the file keeps its formatting.
     entries: Object.entries(next)
       .filter(([key, value]) => canonical(value) !== earlier.get(key))
-      .map(([key, value]) => [[key], value as JsonValue] as const),
+      .map(([key, value]) => [['projects', project, key], value as JsonValue] as const),
   };
   if (isSameInstall(previous, next)) {
     return { changes: [], skipped: [skipChange(change, `unchanged since ${previous.updatedAt}`)] };

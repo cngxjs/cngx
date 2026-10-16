@@ -55,6 +55,13 @@ function readPlanned(tree: Tree, change: EditFile | AddStyleImport): string {
 
 function editFile(change: EditFile): Rule {
   return (tree: Tree) => {
+    if (change.replaces === true) {
+      if (!tree.exists(change.path)) {
+        throw new SchematicsException(`${change.path} is planned for ${change.label} but does not exist.`);
+      }
+      tree.overwrite(change.path, change.edit(''));
+      return;
+    }
     const content = readPlanned(tree, change);
     const next = change.edit(content);
     if (next !== content) {

@@ -8,6 +8,8 @@ export interface PreflightInput {
   /** The `@angular/core` range @cngx/core peers on, from versions.json. */
   readonly peerRange: string;
   readonly git: GitState;
+  /** `--project` as passed; without it a workspace with several applications gets a picked project. */
+  readonly projectFlag?: string;
 }
 
 /** The app's Angular against the floor cngx supports. */
@@ -97,10 +99,30 @@ const GIT_ITEMS: Readonly<Record<GitState, PreflightItem>> = {
   },
 };
 
+// One project line, worst status first: a missing build target fails, a
+// project picked from several applications without --project warns.
+function projectItem(facts: ProjectFacts, projectFlag: string | undefined): PreflightItem {
+  const others = facts.applications.filter((name) => name !== facts.project);
+  const picked = projectFlag === undefined && others.length > 0;
+  const label = picked ? `Project ${facts.project} (picked; pass --project to choose)` : `Project ${facts.project}`;
+  if (!facts.hasBuildTarget) {
+    return {
+      label,
+      status: 'fail',
+      detail: 'no build target in angular.json; cngx wires styles and providers through it',
+    };
+  }
+  const maturity = facts.maturity === 'fresh' ? 'fresh app' : 'existing app';
+  return picked
+    ? { label, status: 'warn', detail: `${maturity}; other applications: ${others.join(', ')}` }
+    : { label, status: 'ok', detail: maturity };
+}
+
 /**
  * The checklist printed before any question: the Angular version against
  * the supported floor, the project with its maturity (only an existing app
- * is asked to confirm the plan) and the git state. An Angular version below
+ * is asked to confirm the plan; a project picked from several applications
+ * is a `warn`) and the git state. An Angular version below
  * the floor and a project without a build target are the `fail` lines; the
  * shell renders them before it refuses the run. A version it cannot read is
  * a `warn`, and the run goes on.
@@ -109,6 +131,7 @@ export function preflightItems({
   facts,
   peerRange,
   git,
+  projectFlag,
 }: PreflightInput): readonly PreflightItem[] {
   const angular = angularSupport(facts, peerRange);
   return [
@@ -117,17 +140,7 @@ export function preflightItems({
       status: angularStatus(angular.supported),
       detail: angularDetail(facts, angular.supported, angular.floor),
     },
-    facts.hasBuildTarget
-      ? {
-          label: `Project ${facts.project}`,
-          status: 'ok',
-          detail: facts.maturity === 'fresh' ? 'fresh app' : 'existing app',
-        }
-      : {
-          label: `Project ${facts.project}`,
-          status: 'fail',
-          detail: 'no build target in angular.json; cngx wires styles and providers through it',
-        },
+    projectItem(facts, projectFlag),
     GIT_ITEMS[git],
   ];
 }

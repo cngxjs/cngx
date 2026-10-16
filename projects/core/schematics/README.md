@@ -2,7 +2,9 @@
 
 `ng add` for every `@cngx/*` package. Build-time tooling: it runs in Node under
 the Angular CLI, never in an app bundle. `@cngx/core` owns the onboarding; every
-other package ships a one-line shim that delegates to it.
+other package ships a one-line shim that delegates to it. The shim pins its own
+package beside core before it delegates, and folds its lib into a given
+`--libs`, so `ng add @cngx/<lib>` always installs and records `<lib>`.
 
 ## Layout
 
@@ -26,7 +28,7 @@ projects/core/schematics/
     detect/              detectProject(tree, workspace): ProjectFacts in detect.ts,
                          composed from workspace, styles, eslint, ai-tooling, bootstrap
     steps/               pure plan<Step>(facts, answers, versions) per concern
-    shell/               questions, preflight checklist, git state, install manifest reader
+    shell/               questions, preflight checklist, git state, install manifest reader (absent / unreadable / read)
   migrations/
     migrations.json      the ng update collection, hand-written entries only
     migration.ts         createMigration: renames, codemods, manifest re-runs
@@ -104,8 +106,9 @@ breaking change adds a migration:
    files that differ from the stock app.
 
 Every migration also re-runs the install steps `.cngx/install.json` records
-(the theme once the cngx version moved, the helper README once the MCP
-version moved) and records the new release in it. It never writes back a file
+for each project (the theme once the cngx version moved, the helper README
+once the MCP version moved, planned once from the libs and steps of every
+record) and records the new release in each record. It never writes back a file
 that is gone; it names it. Every hand-written migration goes through
 `createMigration`, so it re-checks the manifest steps as well; there is no
 second path that skips them.
@@ -161,6 +164,10 @@ only when its source `package.json` declares `schematics`.
   values. `schema.json` therefore admits both forms (a list's string branch
   comes first, a boolean's boolean branch), and `parseNgAddOptions` turns
   either into `NgAddOptions` once at the ng-add entry.
+- The recorded `libs` are a floor: `withLibsFloor` (`ng-add/shell/questions.ts`)
+  adds the libs the last install recorded and every `@cngx/<lib>` the app
+  declares that is not only a peer of the others, and `libsFloorNote` says
+  what it kept. A re-run never removes a package; removal is manual.
 - The comma form is the only multi-value spelling. The CLI keeps the last
   value of a repeated flag (`--libs core --libs forms`) or a space-separated
   list (`--libs core forms`) and warns.

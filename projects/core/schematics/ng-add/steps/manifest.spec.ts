@@ -8,6 +8,10 @@ import {
   parseInstallManifest,
   planManifest,
   planManifestUpdate,
+  planUnreadableManifest,
+  type ProjectRecord,
+  recordedLibs,
+  recordedStepIds,
 } from './manifest';
 
 const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
@@ -43,15 +47,32 @@ const SECOND_PLAN: ChangePlan = createChangePlan([
   },
 ]);
 
-function written(result: StepResult): InstallManifest {
+function writtenEntries(result: StepResult): readonly JsonEntry[] {
   const change = result.changes[0];
   if (change?.kind !== 'write-json') {
     throw new Error('no manifest write planned');
   }
-  return Object.fromEntries(change.entries.map(([path, value]: JsonEntry) => [path[0], value])) as unknown as InstallManifest;
+  return change.entries;
 }
 
-function firstRun(): InstallManifest {
+// The record `planManifest` writes for the fixture project.
+function written(result: StepResult): ProjectRecord {
+  const entry = writtenEntries(result).find(([path]) => path[0] === 'projects');
+  return entry?.[1] as unknown as ProjectRecord;
+}
+
+// The keys `planManifestUpdate` writes under the project's record.
+function updated(result: StepResult): ProjectRecord {
+  return Object.fromEntries(
+    writtenEntries(result).map(([path, value]) => [path[2], value]),
+  ) as unknown as ProjectRecord;
+}
+
+function file(projects: Readonly<Record<string, ProjectRecord>>): InstallManifest {
+  return { schemaVersion: 2, projects };
+}
+
+function firstRun(): ProjectRecord {
   return written(planManifest(createFacts(), createAnswers(), VERSIONS, FIRST_PLAN, undefined, FIRST_RUN));
 }
 
@@ -60,8 +81,9 @@ describe('planManifest', () => {
     const result = planManifest(createFacts(), createAnswers(), VERSIONS, FIRST_PLAN, undefined, FIRST_RUN);
 
     expect(result.changes[0]).toMatchObject({ kind: 'write-json', id: 'manifest:install', path: '.cngx/install.json' });
+    expect(writtenEntries(result).map(([path]) => path)).toEqual([['schemaVersion'], ['projects', 'fixture-app']]);
+    expect(writtenEntries(result)[0]?.[1]).toBe(2);
     expect(written(result)).toMatchObject({
-      schemaVersion: 1,
       cngxVersion: '0.1.0',
       mcpVersion: '0.3.0',
       eslintPluginVersion: '0.2.0',
@@ -96,7 +118,7 @@ describe('planManifest', () => {
 
     expect(result.changes).toEqual([]);
     expect(result.skipped).toEqual([
-      { id: 'manifest:install', label: 'Write .cngx/install.json', reason: `unchanged since ${FIRST_RUN}` },
+      { id: 'manifest:install', label: 'Write .cngx/install.json for fixture-app', reason: `unchanged since ${FIRST_RUN}` },
     ]);
   });
 
@@ -140,7 +162,7 @@ describe('planManifest', () => {
 describe('isSameInstall', () => {
   it('ignores facts, timestamps and step order', () => {
     const a = firstRun();
-    const b: InstallManifest = {
+    const b: ProjectRecord = {
       ...a,
       facts: { maturity: 'existing' },
       updatedAt: SECOND_RUN,
@@ -158,7 +180,7 @@ describe('isSameInstall', () => {
   });
 
   it('reads an Angular patch bump as the same install and a minor bump as a new one', () => {
-    const a: InstallManifest = { ...firstRun(), angularVersion: '21.2.5' };
+    const a: ProjectRecord = { ...firstRun(), angularVersion: '21.2.5' };
 
     expect(isSameInstall(a, { ...a, angularVersion: '21.2.6' })).toBe(true);
     expect(isSameInstall(a, { ...a, angularVersion: '21.3.0' })).toBe(false);
@@ -167,28 +189,79 @@ describe('isSameInstall', () => {
 
 describe('parseInstallManifest', () => {
   it('reads a manifest cngx wrote and rejects anything else', () => {
-    expect(parseInstallManifest(JSON.stringify(firstRun()))?.createdAt).toBe(FIRST_RUN);
+    const manifest = file({ 'fixture-app': firstRun() });
+
+    expect(parseInstallManifest(JSON.stringify(manifest))).toEqual(manifest);
     expect(parseInstallManifest('{ "schemaVersion": 2, "steps": [] }')).toBeUndefined();
     expect(parseInstallManifest('not json')).toBeUndefined();
   });
 
-  it('reads a hand-edited manifest with a malformed step or field as no previous install', () => {
-    const manifest = firstRun();
+  it('reads no earlier schema', () => {
+    expect(parseInstallManifest(JSON.stringify({ schemaVersion: 1, ...firstRun() }))).toBeUndefined();
+    expect(parseInstallManifest(JSON.stringify({ ...file({ 'fixture-app': firstRun() }), schemaVersion: 1 }))).toBeUndefined();
+  });
 
-    expect(parseInstallManifest(JSON.stringify({ ...manifest, steps: [null] }))).toBeUndefined();
-    expect(parseInstallManifest(JSON.stringify({ ...manifest, steps: [{ id: 'x', outcome: 'done' }] }))).toBeUndefined();
-    expect(parseInstallManifest(JSON.stringify({ ...manifest, cngxVersion: 1 }))).toBeUndefined();
-    expect(parseInstallManifest(JSON.stringify({ ...manifest, answers: [] }))).toBeUndefined();
-    expect(parseInstallManifest(JSON.stringify(manifest))).toEqual(manifest);
+  it('reads the whole file as unreadable when one record is malformed', () => {
+    const record = firstRun();
+    const withOther = (other: unknown) => JSON.stringify({ schemaVersion: 2, projects: { 'fixture-app': record, other } });
+
+    expect(parseInstallManifest(withOther({ ...record, steps: [null] }))).toBeUndefined();
+    expect(parseInstallManifest(withOther({ ...record, steps: [{ id: 'x', outcome: 'done' }] }))).toBeUndefined();
+    expect(parseInstallManifest(withOther({ ...record, cngxVersion: 1 }))).toBeUndefined();
+    expect(parseInstallManifest(withOther({ ...record, answers: [] }))).toBeUndefined();
+    expect(parseInstallManifest(withOther('record'))).toBeUndefined();
+    expect(parseInstallManifest(withOther(record))?.projects['other']).toEqual(record);
+  });
+});
+
+describe('recordedStepIds and recordedLibs', () => {
+  it('read every project record', () => {
+    const alpha: ProjectRecord = {
+      ...firstRun(),
+      answers: { ...firstRun().answers, libs: ['ui', 'core'] },
+      steps: [{ id: 'a', outcome: 'satisfied', provenance: PROVENANCE }],
+    };
+    const beta: ProjectRecord = {
+      ...firstRun(),
+      answers: { ...firstRun().answers, libs: ['forms', 'core', 'nope'] },
+      steps: [
+        { id: 'b', outcome: 'satisfied', provenance: PROVENANCE },
+        { id: 'a', outcome: 'satisfied', provenance: PROVENANCE },
+      ],
+    };
+
+    expect(recordedStepIds(file({ alpha, beta }))).toEqual(['a', 'b']);
+    expect(recordedLibs(file({ alpha, beta }))).toEqual(['core', 'ui']);
+    expect(recordedStepIds(undefined)).toEqual([]);
+    expect(recordedLibs(undefined)).toEqual([]);
+  });
+});
+
+describe('planUnreadableManifest', () => {
+  it('keeps the file under the copy path and empties it for the new record', () => {
+    const result = planUnreadableManifest('fixture-app', VERSIONS, Buffer.from('not json'), '.cngx/install.json.unreadable-2');
+    const [copy, reset] = result.changes;
+
+    expect(copy).toMatchObject({
+      kind: 'create-file',
+      id: 'manifest:unreadable',
+      label: 'Start a new install record',
+      reason:
+        '.cngx/install.json exists but cngx cannot read it; it is kept as .cngx/install.json.unreadable-2 and replaced by a record of fixture-app only',
+      path: '.cngx/install.json.unreadable-2',
+      content: Buffer.from('not json'),
+    });
+    expect(reset).toMatchObject({ kind: 'edit-file', path: '.cngx/install.json' });
+    expect(reset?.kind === 'edit-file' ? reset.edit('not json') : undefined).toBe('{}\n');
   });
 });
 
 const NEXT = { ...VERSIONS, cngx: '0.2.0', mcp: '0.4.0' } as const;
 
-function installed(ids: readonly string[]): InstallManifest {
+function installed(ids: readonly string[]): ProjectRecord {
   return {
     ...firstRun(),
-    answers: JSON.parse(JSON.stringify(createAnswers({ aiTools: ['claude'] }))) as InstallManifest['answers'],
+    answers: JSON.parse(JSON.stringify(createAnswers({ aiTools: ['claude'] }))) as ProjectRecord['answers'],
     steps: ids.map((id) => ({ id, outcome: 'satisfied' as const, provenance: PROVENANCE })),
   };
 }
@@ -212,8 +285,12 @@ describe('planManifestUpdate', () => {
   ]);
 
   it('records the new versions, the re-run steps and the update time', () => {
-    const next = written(planManifestUpdate(installed(['helper-readme:file', 'theme:file']), NEXT, RERUN, SECOND_RUN));
+    const result = planManifestUpdate('fixture-app', NEXT, RERUN, installed(['helper-readme:file', 'theme:file']), SECOND_RUN);
+    const next = updated(result);
 
+    expect(writtenEntries(result).map(([path]) => path.slice(0, 2))).toEqual(
+      Array.from({ length: 4 }, () => ['projects', 'fixture-app']),
+    );
     expect(Object.keys(next)).toEqual(['cngxVersion', 'mcpVersion', 'steps', 'updatedAt']);
     expect(next).toMatchObject({
       cngxVersion: '0.2.0',
@@ -227,17 +304,17 @@ describe('planManifestUpdate', () => {
   });
 
   it('plans no write when versions and steps stand', () => {
-    const result = planManifestUpdate(firstRun(), VERSIONS, createChangePlan([]), SECOND_RUN);
+    const result = planManifestUpdate('fixture-app', VERSIONS, createChangePlan([]), firstRun(), SECOND_RUN);
 
     expect(result.changes).toEqual([]);
     expect(result.skipped).toEqual([
-      { id: 'manifest:install', label: 'Update .cngx/install.json', reason: `unchanged since ${FIRST_RUN}` },
+      { id: 'manifest:install', label: 'Update .cngx/install.json for fixture-app', reason: `unchanged since ${FIRST_RUN}` },
     ]);
   });
 
   it('does not mutate its inputs', () => {
     expect(() =>
-      planManifestUpdate(deepFreeze(firstRun()), deepFreeze(NEXT), deepFreeze(RERUN), SECOND_RUN),
+      planManifestUpdate('fixture-app', deepFreeze(NEXT), deepFreeze(RERUN), deepFreeze(firstRun()), SECOND_RUN),
     ).not.toThrow();
   });
 });

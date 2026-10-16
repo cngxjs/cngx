@@ -5,13 +5,14 @@ import {
   createPromptFlow,
   type MultiSelectQuestion,
   type NgAddOptions,
+  parseManifest,
   type PromptAdapter,
   type PromptChoice,
 } from '../../engine';
 import { createFacts } from '../../testing/onboarding';
 import { type ProjectFacts } from '../detect/detect';
 import { type OnboardingAnswers } from '../steps/model';
-import { askOnboarding, givenAnswers, presetChangeNote, presetDefaults } from './questions';
+import { askOnboarding, givenAnswers, libsFloorNote, presetChangeNote, presetDefaults, withLibsFloor } from './questions';
 
 const ESLINT = { path: 'eslint.config.js', module: 'cjs', editable: true, wired: false } as const;
 const MATERIAL = {
@@ -349,5 +350,58 @@ describe('presetChangeNote', () => {
   it('plans nothing on a first install or with the recorded preset', () => {
     expect(presetChangeNote({}, undefined, PROVENANCE).changes).toEqual([]);
     expect(presetChangeNote({ preset: 'full' }, recorded, PROVENANCE).changes).toEqual([]);
+  });
+});
+
+describe('withLibsFloor', () => {
+  const declaring = (...names: string[]) =>
+    createFacts({
+      manifest: parseManifest(JSON.stringify({ dependencies: Object.fromEntries(names.map((name) => [name, '0.1.0'])) })),
+    });
+
+  it('adds the recorded libs and the declared ones in package order', () => {
+    const recorded = { ...presetDefaults('recommended', createFacts()), libs: ['ui'] as const };
+
+    expect(withLibsFloor(['core'], declaring('@cngx/forms'), recorded)).toEqual(['core', 'forms', 'ui']);
+  });
+
+  it('reads a declaration from devDependencies too', () => {
+    const facts = createFacts({ manifest: parseManifest(JSON.stringify({ devDependencies: { '@cngx/forms': '0.1.0' } })) });
+
+    expect(withLibsFloor(['core'], facts, undefined)).toEqual(['core', 'forms']);
+  });
+
+  it('records no declared lib that is only a peer of the kept ones', () => {
+    expect(withLibsFloor(['forms'], declaring('@cngx/utils', '@cngx/core', '@cngx/common'), undefined)).toEqual(['forms']);
+  });
+
+  it('records no declared lib that is only a peer of another declared one', () => {
+    expect(withLibsFloor(['core'], declaring('@cngx/common', '@cngx/ui'), undefined)).toEqual(['core', 'ui']);
+  });
+
+  it('counts no @cngx package outside the libs', () => {
+    expect(withLibsFloor(['core'], declaring('@cngx/themes', '@cngx/mcp', '@cngx/eslint-plugin'), undefined)).toEqual(['core']);
+  });
+});
+
+describe('libsFloorNote', () => {
+  const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
+
+  it('names the libs the floor kept beyond the answer', () => {
+    expect(libsFloorNote(['core'], ['core', 'forms', 'ui'], 'fixture-app', PROVENANCE).changes).toEqual([
+      {
+        kind: 'note',
+        id: 'answers:libs',
+        label: 'Keep the recorded packages',
+        reason:
+          '@cngx/forms, @cngx/ui stay because the last install recorded them or package.json declares them; to remove one, delete it from package.json and from projects.fixture-app.answers.libs in .cngx/install.json',
+        provenance: PROVENANCE,
+      },
+    ]);
+  });
+
+  it('plans nothing when the answer holds every kept lib or its peers', () => {
+    expect(libsFloorNote(['core', 'forms'], ['core', 'forms'], 'fixture-app', PROVENANCE).changes).toEqual([]);
+    expect(libsFloorNote(['forms'], ['utils', 'core', 'forms'], 'fixture-app', PROVENANCE).changes).toEqual([]);
   });
 });

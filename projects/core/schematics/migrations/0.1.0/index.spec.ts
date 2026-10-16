@@ -37,7 +37,7 @@ describe('migration 0.1.0', () => {
 
     expect(logs[0]).toBe('cngx 0.1.0 migration');
     expect(logs[1]).toBe('Planned (1):');
-    expect(logs).toContain('  + Update .cngx/install.json - records the cngx release this app now runs');
+    expect(logs).toContain('  + Update .cngx/install.json for fixture-app - records the cngx release this app now runs');
     expect(logs).toContain('cngx 0.1.0 migration planned 1 change.');
     expect(logs).toContain('Next steps:');
     expect(logs.indexOf('cngx 0.1.0 migration planned 1 change.')).toBeGreaterThan(logs.indexOf('Planned (1):'));
@@ -49,7 +49,7 @@ describe('migration 0.1.0', () => {
     const { tree, logs } = await runRule(migrate(), createMemoryTree(after), ENTRY);
 
     expect(tree.actions).toEqual([]);
-    expect(logs.join('\n')).toContain('Update .cngx/install.json - unchanged since');
+    expect(logs.join('\n')).toContain('Update .cngx/install.json for fixture-app - unchanged since');
     expect(logs).toContain('cngx 0.1.0 migration found nothing to change.');
   });
 
@@ -64,10 +64,10 @@ describe('migration 0.1.0', () => {
 
   it('names a recorded project that is gone instead of failing', async () => {
     const { before } = readMigrationFixture('0.1.0');
-    const manifest = JSON.parse(before['.cngx/install.json'] ?? '{}') as { facts: Record<string, unknown> };
+    const manifest = JSON.parse(before['.cngx/install.json'] ?? '{}') as { projects: Record<string, unknown> };
     const tree = createMemoryTree({
       ...before,
-      '.cngx/install.json': JSON.stringify({ ...manifest, facts: { ...manifest.facts, project: 'gone' } }),
+      '.cngx/install.json': JSON.stringify({ ...manifest, projects: { gone: manifest.projects['fixture-app'] } }),
     });
 
     const { logs } = await runRule(migrate(), tree, ENTRY);

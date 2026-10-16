@@ -8,6 +8,7 @@ export const VERSIONS: Versions = { cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '
 export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts {
   return {
     project: 'fixture-app',
+    applications: ['fixture-app'],
     manifest: parseManifest(JSON.stringify({ dependencies: { '@angular/core': '^21.2.0' } })),
     sourceRoot: 'src',
     hasBuildTarget: true,

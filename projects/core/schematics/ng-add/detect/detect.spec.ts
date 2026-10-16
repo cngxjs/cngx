@@ -57,6 +57,7 @@ describe('detectProject', () => {
   it('reads the stock standalone app', async () => {
     expect(await detect()).toEqual({
       project: 'fixture-app',
+      applications: ['fixture-app'],
       manifest: parseManifest(createFixtureTree().readText('package.json')),
       sourceRoot: 'src',
       hasBuildTarget: true,

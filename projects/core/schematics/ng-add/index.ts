@@ -6,6 +6,7 @@ import {
   applyChangePlan,
   canPrompt,
   type ChangePlan,
+  type CngxLib,
   createChangePlan,
   createPromptFlow,
   createProvenance,
@@ -22,13 +23,13 @@ import {
 import { detectProject, type ProjectFacts } from './detect/detect';
 import { readGitState } from './shell/git-state';
 import { angularReading, angularSupport, preflightItems } from './shell/preflight';
-import { askOnboarding, givenAnswers, presetChangeNote, presetDefaults } from './shell/questions';
+import { askOnboarding, givenAnswers, libsFloorNote, presetChangeNote, presetDefaults } from './shell/questions';
 import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
 import { planHelperReadme } from './steps/helper-readme';
 import { planLint } from './steps/lint';
-import { readInstallManifest } from './shell/install-manifest';
-import { planManifest } from './steps/manifest';
+import { readInstallManifest, manifestOf, unreadableCopyPath } from './shell/install-manifest';
+import { planManifest, planUnreadableManifest, recordedLibs, recordedStepIds, unionLibs } from './steps/manifest';
 import { type Step } from './steps/model';
 import { planProviders } from './steps/providers';
 import { readRecordedAnswers } from './steps/reruns';
@@ -36,16 +37,19 @@ import { planTheme } from './steps/theme';
 
 /**
  * The plan steps in apply order; the install manifest follows them. The AI
- * tooling steps leave out what the user removed since the last install.
+ * tooling steps leave out what the user removed since the last install. The
+ * helper README is workspace-wide, so it lists the libs of every project's
+ * record, not only this run's.
  */
-function planSteps(withdrawn: ReadonlySet<string>): readonly Step[] {
+function planSteps(withdrawn: ReadonlySet<string>, workspaceLibs: readonly CngxLib[]): readonly Step[] {
   return [
     planDependencies,
     planTheme,
     planProviders,
     planLint,
     (facts, answers, versions) => planAiTools(facts, answers, versions, withdrawn),
-    (facts, answers, versions) => planHelperReadme(facts, answers, versions, withdrawn),
+    (facts, answers, versions) =>
+      planHelperReadme(facts, { ...answers, libs: unionLibs(answers.libs, workspaceLibs) }, versions, withdrawn),
   ];
 }
 
@@ -127,7 +131,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
 
     const facts = detectProject(tree, await readWorkspace(tree), options.project);
     renderer.preflight(
-      preflightItems({ facts, peerRange: versions.angular, git: readGitState(process.cwd()) }),
+      preflightItems({ facts, peerRange: versions.angular, git: readGitState(process.cwd()), projectFlag: options.project }),
     );
     assertSupportedAngular(facts, versions.angular);
     assertBuildTarget(facts);
@@ -136,13 +140,15 @@ export function ngAdd(flags: NgAddFlags): Rule {
       canPrompt: interactive && options.preset !== 'minimal',
       answers: givenAnswers(options),
     });
-    const previous = readInstallManifest(tree);
-    const installed = previous?.steps.map((step) => step.id) ?? [];
+    const stored = readInstallManifest(tree);
+    const manifest = manifestOf(stored);
+    const previous = manifest?.projects[facts.project];
+    const installed = recordedStepIds(manifest);
     const recorded =
       previous === undefined
         ? undefined
         : readRecordedAnswers(previous, (preset) => presetDefaults(preset, facts));
-    const { answers, explicitAiTools } = await askOnboarding(
+    const { answers, answeredLibs, explicitAiTools } = await askOnboarding(
       facts,
       options,
       flow,
@@ -153,13 +159,18 @@ export function ngAdd(flags: NgAddFlags): Rule {
     const provenance = createProvenance('ng-add', versions.cngx);
     const steps = createChangePlan(
       [
-        ...planSteps(withdrawn).map((step) => step(facts, answers, versions)),
+        ...planSteps(withdrawn, recordedLibs(manifest)).map((step) => step(facts, answers, versions)),
         presetChangeNote(options, recorded, provenance),
+        libsFloorNote(answeredLibs, answers.libs, facts.project, provenance),
       ],
       warning === undefined ? [] : [warning],
     );
-    const manifest = planManifest(facts, answers, versions, steps, previous, new Date().toISOString());
-    const plan = createChangePlan([steps, manifest], steps.warnings);
+    const unreadable =
+      stored.state === 'unreadable'
+        ? planUnreadableManifest(facts.project, versions, stored.content, unreadableCopyPath((path) => tree.exists(path)))
+        : { changes: [], skipped: [] };
+    const record = planManifest(facts, answers, versions, steps, previous, new Date().toISOString());
+    const plan = createChangePlan([steps, unreadable, record], steps.warnings);
 
     await renderer.todo(plan);
 

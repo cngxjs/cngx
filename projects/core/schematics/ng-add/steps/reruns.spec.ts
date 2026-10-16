@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createChangePlan, type JsonEntry, type StepResult } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
-import { type InstallManifest, planManifest } from './manifest';
+import { planManifest, type ProjectRecord } from './manifest';
 import { type ProjectFacts } from '../detect/detect';
 import { type OnboardingAnswers, type Versions } from './model';
 import { planManifestReruns, readRecordedAnswers } from './reruns';
@@ -10,17 +10,16 @@ import { planManifestReruns, readRecordedAnswers } from './reruns';
 const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
 const FIRST_RUN = '2026-10-11T10:00:00.000Z';
 
-function written(result: StepResult): InstallManifest {
+function written(result: StepResult): ProjectRecord {
   const change = result.changes[0];
   if (change?.kind !== 'write-json') {
     throw new Error('no manifest write planned');
   }
-  return Object.fromEntries(
-    change.entries.map(([path, value]: JsonEntry) => [path[0], value]),
-  ) as unknown as InstallManifest;
+  const entry = change.entries.find(([path]: JsonEntry) => path[0] === 'projects');
+  return entry?.[1] as unknown as ProjectRecord;
 }
 
-function firstRun(): InstallManifest {
+function firstRun(): ProjectRecord {
   return written(
     planManifest(
       createFacts(),
@@ -38,9 +37,13 @@ function defaultsFor(preset: OnboardingAnswers['preset']): OnboardingAnswers {
   return createAnswers({ preset, floatingFallback: preset === 'full' });
 }
 
-const read = (manifest: InstallManifest) => readRecordedAnswers(manifest, defaultsFor);
-const rerun = (facts: ProjectFacts, manifest: InstallManifest, versions: Versions) =>
-  planManifestReruns(facts, manifest, versions, defaultsFor);
+const read = (manifest: ProjectRecord) => readRecordedAnswers(manifest, defaultsFor);
+// A one-project workspace: the project carries the README with its own libs and steps.
+const rerun = (facts: ProjectFacts, manifest: ProjectRecord, versions: Versions) =>
+  planManifestReruns(facts, manifest, versions, defaultsFor, {
+    libs: [],
+    installed: manifest.steps.map((step) => step.id),
+  });
 
 describe('readRecordedAnswers', () => {
   it('reads the answers an install recorded', () => {
@@ -68,12 +71,12 @@ describe('readRecordedAnswers', () => {
 
 const NEXT = { ...VERSIONS, cngx: '0.2.0', mcp: '0.4.0' } as const;
 
-function installed(ids: readonly string[]): InstallManifest {
+function installed(ids: readonly string[]): ProjectRecord {
   return {
     ...firstRun(),
     answers: JSON.parse(
       JSON.stringify(createAnswers({ aiTools: ['claude'] })),
-    ) as InstallManifest['answers'],
+    ) as ProjectRecord['answers'],
     steps: ids.map((id) => ({ id, outcome: 'satisfied' as const, provenance: PROVENANCE })),
   };
 }
@@ -108,7 +111,7 @@ describe('planManifestReruns', () => {
     });
     const manifest = {
       ...installed(['helper-readme:file', 'ai-tools:claude', 'ai-tools:vscode']),
-      answers: JSON.parse(JSON.stringify(createAnswers({ aiTools: ['claude', 'vscode'] }))) as InstallManifest['answers'],
+      answers: JSON.parse(JSON.stringify(createAnswers({ aiTools: ['claude', 'vscode'] }))) as ProjectRecord['answers'],
     };
 
     const readme = rerun(facts, manifest, NEXT).changes.find((change) => change.id === 'helper-readme:file');
@@ -127,6 +130,37 @@ describe('planManifestReruns', () => {
       expect.objectContaining({ kind: 'note', id: 'helper-readme:file' }),
     );
     expect(result.changes.some((change) => change.kind === 'create-file')).toBe(false);
+  });
+
+  it('leaves the helper README to the project that carries it', () => {
+    const facts = createFacts({
+      helperReadme: { generated: true, fingerprint: 'old' },
+      mcpConfigs: { claude: 'wired', cursor: 'absent', vscode: 'absent' },
+    });
+
+    const result = planManifestReruns(facts, installed(['helper-readme:file']), NEXT, defaultsFor, undefined);
+
+    expect(result.changes.map((change) => change.id)).not.toContain('helper-readme:file');
+  });
+
+  it('lists the libs of every project record in the regenerated README', () => {
+    const facts = createFacts({
+      helperReadme: { generated: true, fingerprint: 'old' },
+      mcpConfigs: { claude: 'wired', cursor: 'absent', vscode: 'absent' },
+    });
+    const manifest = {
+      ...installed(['helper-readme:file']),
+      answers: JSON.parse(JSON.stringify(createAnswers({ aiTools: ['claude'], libs: ['core'] }))) as ProjectRecord['answers'],
+    };
+
+    const readme = planManifestReruns(facts, manifest, NEXT, defaultsFor, {
+      libs: ['forms'],
+      installed: ['helper-readme:file'],
+    }).changes.find((change) => change.id === 'helper-readme:file');
+
+    const content = readme?.kind === 'edit-file' ? readme.edit('') : '';
+    expect(content).toContain('`@cngx/forms@0.2.0`');
+    expect(content).toContain('`@cngx/core@0.2.0`');
   });
 
   it('leaves the helper README alone while the MCP version stands', () => {
@@ -152,14 +186,14 @@ describe('planManifestReruns', () => {
       ['note', 'theme:file'],
       ['note', 'theme:entry'],
     ]);
-    expect(result.changes[0]?.reason).toMatch(/run ng add @cngx\/core to restore it/);
+    expect(result.changes[0]?.reason).toMatch(/run ng add @cngx\/core --project fixture-app to restore it/);
   });
 
   it('names a theme step the answers ask for that was never installed', () => {
     const result = rerun(createFacts(), installed(['theme:file']), NEXT);
 
     expect(result.changes.find((change) => change.id === 'theme:stylesheet')?.reason).toMatch(
-      /never installed; run ng add @cngx\/core to add it/,
+      /never installed; run ng add @cngx\/core --project fixture-app to add it/,
     );
   });
 
@@ -195,7 +229,13 @@ describe('planManifestReruns', () => {
     const result = rerun(createFacts(), manifest, NEXT);
 
     expect(result.changes).toEqual([
-      expect.objectContaining({ kind: 'note', id: 'manifest:answers' }),
+      expect.objectContaining({
+        kind: 'note',
+        id: 'manifest:answers',
+        label: 'Re-run the recorded install steps for fixture-app',
+        reason:
+          'its record in .cngx/install.json holds answers this release cannot read and is kept as it is; run ng add @cngx/core --project fixture-app to refresh it',
+      }),
     ]);
   });
 

@@ -13,7 +13,9 @@ Run `ng add @cngx/ui` (or any other `@cngx/*` package). One run pins the package
 
 Every published `@cngx/*` package ships an `ng add` schematic. `@cngx/core`
 owns the onboarding; the other packages delegate to it, so `ng add @cngx/forms`
-and `ng add @cngx/ui` run the same flow and produce the same files.
+and `ng add @cngx/ui` run the same flow and produce the same files. The package
+you name is always installed and recorded: `ng add @cngx/forms --libs core`
+installs `core` and `forms`.
 
 ```bash
 ng add @cngx/ui
@@ -48,7 +50,11 @@ install. Nothing outside the project is written.
    (`catalog:`, `workspace:*`, a dist-tag) with nothing installed is a warn
    line, and the run goes on; the `@angular/cdk` pin then becomes a note.
    A project without a `build` target in `angular.json` fails its project
-   line and stops the run the same way. A `package.json` that does not
+   line and stops the run the same way. In a workspace with several
+   applications and no `--project`, the run takes `defaultProject`, else
+   the first application; the project line is then a warn that names the
+   pick and the other applications, and the run goes on. Pass
+   `--project <name>` to choose. A `package.json` that does not
    parse, an `angular.json` without projects, or a build style entry whose
    file is missing stops the run with one line naming the file.
 3. **Ask.** With a terminal attached it asks the open questions (below). A
@@ -276,6 +282,15 @@ as its default. A flag or an answer in the terminal still changes one. A
 re-run with another preset starts from that preset's defaults instead, and
 the plan says so in a note.
 
+A re-run never removes a package. The libs the last install recorded and
+every `@cngx/<lib>` the app's `package.json` declares are the floor: a
+narrower `--libs` adds nothing to remove, and the plan says which packages it
+keeps (`Keep the recorded packages`). A package that is only a peer of the
+others is installed through them and not recorded. `@cngx/themes`,
+`@cngx/mcp` and `@cngx/eslint-plugin` are no lib: the theme answer and the
+tooling steps decide them. To remove a package, delete it from `package.json`
+and from `projects.<name>.answers.libs` in `.cngx/install.json`.
+
 A newer cngx release comes in through `ng update @cngx/core`, not through
 `ng add` (see [Update](update.html)). `ng add @cngx/<package>@<newer>` on
 an installed app installs one package at the new release while the rest of
@@ -286,15 +301,34 @@ cross-package peers with `ERESOLVE`.
 
 ## The install manifest
 
-`.cngx/install.json` records the inputs of the last real install: the cngx,
+`.cngx/install.json` holds one record per project, under `projects`, keyed
+by the project name in `angular.json`:
+
+```json
+{
+  "schemaVersion": 2,
+  "projects": {
+    "my-app": { "cngxVersion": "...", "preset": "recommended", "answers": {}, "steps": [] }
+  }
+}
+```
+
+Each record keeps the inputs of that project's last real install: the cngx,
 `@cngx/mcp` and `@cngx/eslint-plugin` versions, the Angular version, the
 preset, every answer, and the steps that are satisfied, each with its
 provenance. A `facts` snapshot of what detection saw is kept for reading; it
-is never compared. Commit the file: `ng update` reads it to re-run the
-recorded steps (see [Update](update.html)).
+is never compared. `ng add --project <name>` writes only that project's
+record and leaves the others as they are. What is shared by the workspace,
+`package.json`, `.cngx/README.md` and the editor configs, follows every
+record: the README lists the libs of all of them. Commit the file: `ng update`
+reads it to re-run the recorded steps of every project (see
+[Update](update.html)).
 
-A manifest that was edited into a shape cngx does not recognise reads as no
-previous install, and the next run writes a fresh one.
+A file cngx cannot read (hand-edited into another shape, cut off, or from an
+earlier schema) is never taken for a missing one. `ng add` keeps it as
+`.cngx/install.json.unreadable` (`-2`, `-3` when that name is taken), starts
+the file over with a record of the current project only, and says so in the
+plan (`Start a new install record`). `ng update` names it and leaves it alone.
 
 ---
 

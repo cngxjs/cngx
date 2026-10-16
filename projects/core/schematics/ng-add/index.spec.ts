@@ -168,6 +168,54 @@ function json<T>(tree: Tree, path: string): T {
   return JSON.parse(tree.readContent(path)) as T;
 }
 
+interface RecordedInstall {
+  readonly preset: string;
+  readonly cngxVersion: string;
+  readonly answers: Record<string, unknown>;
+  readonly steps: readonly { readonly id: string }[];
+}
+
+// The install record `ng add` keeps for one project of the workspace.
+function record(tree: Tree, project = 'fixture-app'): RecordedInstall {
+  const manifest = json<{ projects: Record<string, RecordedInstall> }>(tree, '.cngx/install.json');
+  const found = manifest.projects[project];
+  if (found === undefined) {
+    throw new Error(`no install record for ${project}`);
+  }
+  return found;
+}
+
+// Two applications in one workspace: \`alpha\` standalone on CSS at the root,
+// \`beta\` an NgModule app on SCSS under projects/.
+interface FixtureProject {
+  root: string;
+  sourceRoot: string;
+  architect: { build: { options: Record<string, unknown> } };
+}
+
+function twoApplications(): Tree {
+  const workspace = JSON.parse(readFixture('standalone-app')['angular.json']) as {
+    projects: Record<string, FixtureProject>;
+  };
+  const app = workspace.projects['fixture-app'];
+  const beta = JSON.parse(JSON.stringify(app)) as FixtureProject;
+  beta.root = 'projects/beta';
+  beta.sourceRoot = 'projects/beta/src';
+  beta.architect.build.options = {
+    ...beta.architect.build.options,
+    browser: 'projects/beta/src/main.ts',
+    styles: ['projects/beta/src/styles.scss'],
+  };
+  workspace.projects = { alpha: app, beta };
+  return createFixtureTree('standalone-app', {
+    'angular.json': JSON.stringify(workspace, null, 2),
+    'projects/beta/src/main.ts': NGMODULE_MAIN,
+    'projects/beta/src/app/app-module.ts': APP_MODULE,
+    'projects/beta/src/app/app.ts': readFixture('standalone-app')['src/app/app.ts'],
+    'projects/beta/src/styles.scss': '',
+  });
+}
+
 function withWorkspace(edit: (project: Record<string, any>) => void): string {
   const workspace = JSON.parse(readFixture('standalone-app')['angular.json']) as {
     projects: Record<string, Record<string, any>>;
@@ -324,7 +372,7 @@ describe('ngAdd', () => {
       expect(run.tree.readContent('src/cngx-theme.css')).toContain('@layer cngx.theme {');
       expect(styles(run.tree)).toEqual(['src/styles.css', 'src/cngx-theme.css']);
       expect(run.tree.readContent('src/app/app.config.ts')).toContain('provideA11yPreferences(withPersistence())');
-      expect(json<{ preset: string }>(run.tree, '.cngx/install.json').preset).toBe('recommended');
+      expect(record(run.tree).preset).toBe('recommended');
       expect(run.tasks).toEqual(['node-package']);
     });
 
@@ -734,6 +782,195 @@ describe('ngAdd', () => {
     expect(second.logs).toContain(
       '  - Start from the full preset - the last install used recommended, so its answers are not reused; pass --preset=recommended to keep them',
     );
+  });
+
+  describe('a workspace with several applications', () => {
+    it('warns in the preflight when no --project picks one', async () => {
+      const run = await runRule(ngAdd({ yes: true }), twoApplications());
+
+      expect(run.logs).toContain('  ! Project alpha (picked; pass --project to choose) (fresh app; other applications: beta)');
+    });
+
+    it('does not warn when --project names one', async () => {
+      const run = await runRule(ngAdd({ project: 'beta', yes: true }), twoApplications());
+
+      expect(run.logs.some((line) => line.includes('picked; pass --project'))).toBe(false);
+    });
+
+    it('keeps one install record per project', async () => {
+      const alpha = await runRule(ngAdd({ project: 'alpha', yes: true }), twoApplications());
+      const beta = await runRule(ngAdd({ project: 'beta', yes: true }), alpha.tree);
+
+      expect(record(beta.tree, 'alpha').preset).toBe('recommended');
+      expect(record(beta.tree, 'beta').preset).toBe('recommended');
+      expect(json<{ schemaVersion: number }>(beta.tree, '.cngx/install.json').schemaVersion).toBe(2);
+      expect(beta.tree.readContent('projects/beta/src/app/app-module.ts')).toContain('provideA11yPreferences(');
+    });
+
+    it('plans nothing for a project re-run after another project was added', async () => {
+      const alpha = await runRule(ngAdd({ project: 'alpha', yes: true }), twoApplications());
+      const beta = await runRule(ngAdd({ project: 'beta', yes: true }), alpha.tree);
+      const manifest = beta.tree.readContent('.cngx/install.json');
+
+      const again = await runRule(ngAdd({ project: 'alpha', yes: true }), beta.tree);
+
+      expect(again.tree.readContent('.cngx/install.json')).toBe(manifest);
+      expect(again.logs).toContain('cngx is already set up; nothing changed.');
+      expect(again.logs.some((line) => line.includes('preset'))).toBe(false);
+    });
+  });
+
+  describe('an unreadable install manifest', () => {
+    const unreadable = {
+      'schema version 1': JSON.stringify({ schemaVersion: 1, preset: 'minimal', answers: {}, steps: [] }),
+      'a truncated file': '{ "schemaVersion": 2, "projects": {',
+      'a malformed record': JSON.stringify({ schemaVersion: 2, projects: { 'fixture-app': { preset: 'minimal' } } }),
+    };
+
+    it.each(Object.entries(unreadable))('keeps %s as a copy and starts a new record', async (_shape, content) => {
+      const run = await runRule(ngAdd({ yes: true }), createFixtureTree('standalone-app', { '.cngx/install.json': content }));
+
+      expect(run.tree.readContent('.cngx/install.json.unreadable')).toBe(content);
+      expect(record(run.tree).preset).toBe('recommended');
+      expect(run.logs).toContain(
+        '  + Start a new install record - .cngx/install.json exists but cngx cannot read it; it is kept as .cngx/install.json.unreadable and replaced by a record of fixture-app only',
+      );
+    });
+
+    it('keeps a file that is not utf-8 byte for byte', async () => {
+      const bytes = Buffer.from([0x7b, 0xff, 0xfe, 0x7d]);
+      const tree = createFixtureTree('standalone-app');
+      tree.create('.cngx/install.json', bytes);
+
+      const run = await runRule(ngAdd({ yes: true }), tree);
+
+      expect(run.tree.read('.cngx/install.json.unreadable')).toEqual(bytes);
+      expect(record(run.tree).preset).toBe('recommended');
+    });
+
+    it('lists the copy and the reset, the actions --dry-run prints, before it applies them', async () => {
+      const run = await runRule(ngAdd({ yes: true }), createFixtureTree('standalone-app', { '.cngx/install.json': 'not json' }));
+      const planned = run.logs.indexOf('  + Clear .cngx/install.json - its content is kept in .cngx/install.json.unreadable');
+
+      expect(planned).toBeGreaterThan(
+        run.logs.findIndex((line) => line.startsWith('  + Start a new install record')),
+      );
+      expect(run.tree.actions.map((action) => [action.kind, action.path])).toEqual(
+        expect.arrayContaining([
+          ['c', '/.cngx/install.json.unreadable'],
+          ['o', '/.cngx/install.json'],
+        ]),
+      );
+    });
+
+    it('plans nothing on the run after the recovery', async () => {
+      const first = await runRule(ngAdd({ yes: true }), createFixtureTree('standalone-app', { '.cngx/install.json': 'not json' }));
+
+      const again = await runRule(ngAdd({ yes: true }), first.tree);
+
+      expect(again.logs).toContain('cngx is already set up; nothing changed.');
+      expect(again.tree.readContent('.cngx/install.json.unreadable')).toBe('not json');
+      expect(again.tree.exists('.cngx/install.json.unreadable-2')).toBe(false);
+    });
+
+    it('starts over with only the project of the run in a two-project workspace', async () => {
+      const tree = twoApplications();
+      tree.create('.cngx/install.json', 'not json');
+
+      const run = await runRule(ngAdd({ project: 'beta', yes: true }), tree);
+      const { projects } = json<{ projects: Record<string, unknown> }>(run.tree, '.cngx/install.json');
+
+      expect(Object.keys(projects)).toEqual(['beta']);
+      expect(run.tree.readContent('.cngx/install.json.unreadable')).toBe('not json');
+      expect(run.logs).toContain(
+        '  + Start a new install record - .cngx/install.json exists but cngx cannot read it; it is kept as .cngx/install.json.unreadable and replaced by a record of beta only',
+      );
+    });
+
+    it('never overwrites an earlier copy', async () => {
+      const run = await runRule(
+        ngAdd({ yes: true }),
+        createFixtureTree('standalone-app', {
+          '.cngx/install.json': 'not json',
+          '.cngx/install.json.unreadable': 'first copy',
+        }),
+      );
+
+      expect(run.tree.readContent('.cngx/install.json.unreadable')).toBe('first copy');
+      expect(run.tree.readContent('.cngx/install.json.unreadable-2')).toBe('not json');
+      expect(record(run.tree).preset).toBe('recommended');
+    });
+  });
+
+  describe('the recorded libs', () => {
+    const recordedLibs = (tree: Tree): unknown => record(tree).answers['libs'];
+    const declared = (tree: Tree): Record<string, string> =>
+      json<{ dependencies: Record<string, string> }>(tree, 'package.json').dependencies;
+    const declare = (tree: Tree, name: string): void => {
+      const manifest = json<{ dependencies: Record<string, string> }>(tree, 'package.json');
+      tree.overwrite('package.json', JSON.stringify({ ...manifest, dependencies: { ...manifest.dependencies, [name]: VERSION } }, null, 2) + '\n');
+    };
+
+    it('keeps every recorded lib when a re-run asks for fewer and says so', async () => {
+      const first = await runRule(ngAdd({ yes: true }), createFixtureTree());
+
+      const second = await runRule(ngAdd({ libs: 'core', yes: true }), first.tree);
+
+      expect(recordedLibs(second.tree)).toEqual([...CNGX_LIBS]);
+      expect(second.logs).toContain(
+        '  - Keep the recorded packages - @cngx/common, @cngx/interop, @cngx/forms, @cngx/data-display, @cngx/ui stay because the last install recorded them or package.json declares them; to remove one, delete it from package.json and from projects.fixture-app.answers.libs in .cngx/install.json',
+      );
+    });
+
+    it('records a lib package.json declares that the last install did not', async () => {
+      const first = await runRule(ngAdd({ libs: 'core', yes: true }), createFixtureTree());
+      declare(first.tree, '@cngx/forms');
+
+      const second = await runRule(ngAdd({ yes: true }), first.tree);
+
+      expect(recordedLibs(second.tree)).toEqual(['core', 'forms']);
+      expect(declared(second.tree)['@cngx/forms']).toBe(VERSION);
+      expect(second.logs).toContain(
+        '  - Keep the recorded packages - @cngx/forms stays because the last install recorded it or package.json declares it; to remove it, delete it from package.json and from projects.fixture-app.answers.libs in .cngx/install.json',
+      );
+    });
+
+    it('records the package a shim pinned before it delegated', async () => {
+      const tree = createFixtureTree();
+      declare(tree, '@cngx/forms');
+
+      const run = await runRule(ngAdd({ libs: 'core', yes: true }), tree);
+
+      expect(recordedLibs(run.tree)).toEqual(['core', 'forms']);
+      expect(run.logs.some((line) => line.startsWith('  - Keep the recorded packages'))).toBe(true);
+    });
+
+    it('counts no @cngx package outside the libs as a lib', async () => {
+      const tree = createFixtureTree();
+      for (const name of ['@cngx/mcp', '@cngx/eslint-plugin', '@cngx/themes']) {
+        declare(tree, name);
+      }
+
+      const run = await runRule(ngAdd({ libs: 'core', theme: 'none', yes: true }), tree);
+
+      expect(recordedLibs(run.tree)).toEqual(['core']);
+      expect(run.logs.some((line) => line.startsWith('  - Keep the recorded packages'))).toBe(false);
+    });
+
+    it('changes nothing on a re-run after the pins cngx wrote for the peers', async () => {
+      const first = await runRule(ngAdd({ libs: 'forms', yes: true }), createFixtureTree());
+
+      const second = await runRule(ngAdd({ yes: true }), first.tree);
+
+      expect(recordedLibs(second.tree)).toEqual(['forms']);
+      expect(second.logs).toContain('cngx is already set up; nothing changed.');
+    });
+
+    it('plans no floor note on a first install that takes every lib', async () => {
+      const run = await runRule(ngAdd({ yes: true }), createFixtureTree());
+
+      expect(run.logs.some((line) => line.startsWith('  - Keep the recorded packages'))).toBe(false);
+    });
   });
 
   it('keeps a configured editor in the readme when a later run chooses another', async () => {

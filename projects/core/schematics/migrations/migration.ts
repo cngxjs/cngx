@@ -16,21 +16,31 @@ import {
   errorMessage,
   planCodemods,
   planRenames,
+  type NgAddPreset,
   type ReleaseVersions,
   type RenameTable,
   resolveVersions,
   type StepResult,
   type SummaryHeadlines,
 } from '../engine';
-import { detectProject } from '../ng-add/detect/detect';
-import { readInstallManifest } from '../ng-add/shell/install-manifest';
+import { detectProject, type ProjectFacts } from '../ng-add/detect/detect';
+import { type InstallManifestState, readInstallManifest, manifestOf } from '../ng-add/shell/install-manifest';
 import { presetDefaults } from '../ng-add/shell/questions';
 import {
   INSTALL_MANIFEST_PATH,
   type InstallManifest,
   planManifestUpdate,
+  type ProjectRecord,
+  recordedLibs,
+  recordedStepIds,
 } from '../ng-add/steps/manifest';
-import { planManifestReruns } from '../ng-add/steps/reruns';
+import {
+  ngAddCommand,
+  planManifestReruns,
+  type PresetDefaults,
+  readRecordedAnswers,
+  type WorkspaceReadme,
+} from '../ng-add/steps/reruns';
 
 /** What one release migrates: renames as data, codemods for the rest. */
 export interface Migration {
@@ -69,35 +79,61 @@ function entryVersion(context: SchematicContext): string | undefined {
     : undefined;
 }
 
+const NOTHING: StepResult = { changes: [], skipped: [] };
+
+// Only a record that reaches the README re-run may carry it: one whose
+// answers this release cannot read, or whose MCP pin did not move, would
+// otherwise use it up and leave every later record without it.
+function carriesReadme(record: ProjectRecord, defaultsFor: PresetDefaults, versions: ReleaseVersions): boolean {
+  return record.mcpVersion !== versions.mcp && readRecordedAnswers(record, defaultsFor) !== undefined;
+}
+
+/**
+ * The re-run of every recorded project, each followed by the update of its
+ * record. The first project that re-runs the helper README carries it, so
+ * the workspace-wide README is planned once from the libs and steps of
+ * every record. A recorded project gone from angular.json is named and its
+ * record left as it is.
+ */
 async function planReruns(
   tree: Tree,
-  manifest: InstallManifest | undefined,
+  stored: InstallManifestState,
   versions: ReleaseVersions,
-): Promise<StepResult> {
-  if (manifest === undefined) {
-    return note(
-      'manifest:missing',
-      'Re-run the recorded install steps',
-      `no ${INSTALL_MANIFEST_PATH} from ng add; only the renames and codemods ran`,
-      versions.cngx,
-    );
+  now: string,
+): Promise<{ readonly reruns: StepResult; readonly records: StepResult }> {
+  if (stored.state !== 'read') {
+    const reason =
+      stored.state === 'absent'
+        ? `no ${INSTALL_MANIFEST_PATH} from ng add; only the renames and codemods ran`
+        : `${INSTALL_MANIFEST_PATH} exists but cngx cannot read it and leaves it as it is; ${ngAddCommand('<name>')} keeps it as a copy and starts a new install record`;
+    // Not `manifest:unreadable`: that id is the copy ng add plans.
+    const id = stored.state === 'absent' ? 'manifest:missing' : 'manifest:unreadable-note';
+    return { reruns: note(id, 'Re-run the recorded install steps', reason, versions.cngx), records: NOTHING };
   }
-  const project = manifest.facts['project'];
-  try {
-    const facts = detectProject(
-      tree,
-      await readWorkspace(tree),
-      typeof project === 'string' ? project : undefined,
-    );
-    return planManifestReruns(facts, manifest, versions, (preset) => presetDefaults(preset, facts));
-  } catch (error) {
-    return note(
-      'manifest:project',
-      'Re-run the recorded install steps',
-      errorMessage(error),
-      versions.cngx,
-    );
+  const { manifest } = stored;
+  const workspace = await readWorkspace(tree);
+  let readme: WorkspaceReadme | undefined = { libs: recordedLibs(manifest), installed: recordedStepIds(manifest) };
+  const reruns: StepResult[] = [];
+  const records: StepResult[] = [];
+  for (const [project, record] of Object.entries(manifest.projects)) {
+    let facts: ProjectFacts;
+    try {
+      facts = detectProject(tree, workspace, project);
+    } catch (error) {
+      const reason = `${errorMessage(error)} Its record in ${INSTALL_MANIFEST_PATH} is kept as it is.`;
+      reruns.push(note('manifest:project', `Re-run the recorded install steps for ${project}`, reason, versions.cngx));
+      continue;
+    }
+    const defaultsFor = (preset: NgAddPreset) => presetDefaults(preset, facts);
+    const carrier = readme !== undefined && carriesReadme(record, defaultsFor, versions) ? readme : undefined;
+    const rerun = planManifestReruns(facts, record, versions, defaultsFor, carrier);
+    if (carrier !== undefined) {
+      readme = undefined;
+    }
+    reruns.push(rerun);
+    records.push(planManifestUpdate(project, versions, createChangePlan([rerun]), record, now));
   }
+  return { reruns: createChangePlan(reruns), records: createChangePlan(records) };
 }
 
 // The tree as it reads once the renames are applied, so codemods and
@@ -126,21 +162,12 @@ export function createMigration(migration: Migration): Rule {
     // The entry sits one folder below `schematics/`, where versions.json lives.
     const { versions, warning } = resolveVersions(join(migration.bundleDir, '..'));
     const provenance = createProvenance('ng-update', versions.cngx);
-    const manifest = readInstallManifest(tree);
+    const stored = readInstallManifest(tree);
     const renames = planRenames(migration.renames, tree, provenance);
     const renamed = previewRenames(tree, renames);
-    const reruns = await planReruns(renamed, manifest, versions);
-    const record =
-      manifest === undefined
-        ? { changes: [], skipped: [] }
-        : planManifestUpdate(
-            manifest,
-            versions,
-            createChangePlan([reruns]),
-            new Date().toISOString(),
-          );
+    const { reruns, records } = await planReruns(renamed, stored, versions, new Date().toISOString());
     const plan = createChangePlan(
-      [renames, planCodemods(migration.codemods, renamed, manifest), reruns, record],
+      [renames, planCodemods(migration.codemods, renamed, manifestOf(stored)), reruns, records],
       warning === undefined ? [] : [warning],
     );
 

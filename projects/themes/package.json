@@ -48,5 +48,17 @@
     "./material/*": "./material/*.scss",
     "./material/*.scss": "./material/*.scss"
   },
-  "schematics": "./schematics/collection.json"
+  "schematics": "./schematics/collection.json",
+  "ng-update": {
+    "packageGroup": [
+      "@cngx/utils",
+      "@cngx/core",
+      "@cngx/common",
+      "@cngx/interop",
+      "@cngx/forms",
+      "@cngx/data-display",
+      "@cngx/ui",
+      "@cngx/themes"
+    ]
+  }
 }

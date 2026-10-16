@@ -42,6 +42,7 @@
   "schematics": "./schematics/collection.json",
   "ng-update": {
     "migrations": "./schematics/migrations/migrations.json",
+    "packageGroupName": "@cngx/core",
     "packageGroup": [
       "@cngx/utils",
       "@cngx/core",

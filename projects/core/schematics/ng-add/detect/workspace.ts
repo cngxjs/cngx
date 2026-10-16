@@ -6,6 +6,13 @@ import { isInjectedStyleEntry, isRecord, parseManifest, styleEntryPath } from '.
 // File content by path, read once per detection run; `undefined` when absent.
 export type Read = (path: string) => string | undefined;
 
+/** Every application project in angular.json, in file order. */
+export function applicationsOf(workspace: workspaces.WorkspaceDefinition): readonly string[] {
+  return [...workspace.projects]
+    .filter(([, project]) => project.extensions['projectType'] === 'application')
+    .map(([name]) => name);
+}
+
 export function resolveProject(
   workspace: workspaces.WorkspaceDefinition,
   name: string | undefined,
@@ -14,7 +21,7 @@ export function resolveProject(
   const candidate =
     name ??
     (typeof defaultProject === 'string' ? defaultProject : undefined) ??
-    [...workspace.projects].find(([, project]) => project.extensions['projectType'] === 'application')?.[0] ??
+    applicationsOf(workspace)[0] ??
     [...workspace.projects.keys()][0];
   if (candidate === undefined) {
     throw new SchematicsException('angular.json lists no projects.');

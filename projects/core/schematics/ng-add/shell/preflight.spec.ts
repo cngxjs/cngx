@@ -112,6 +112,44 @@ describe('preflightItems', () => {
     ]);
   });
 
+  it('warns on the project line when it picked one of several applications', () => {
+    const [, project] = preflightItems({
+      facts: createFacts({ applications: ['fixture-app', 'admin-app', 'docs-app'] }),
+      peerRange: PEER_RANGE,
+      git: 'clean',
+    });
+
+    expect(project).toEqual({
+      label: 'Project fixture-app (picked; pass --project to choose)',
+      status: 'warn',
+      detail: 'fresh app; other applications: admin-app, docs-app',
+    });
+  });
+
+  it('keeps the project line ok when --project named it or it is the only application', () => {
+    const named = preflightItems({
+      facts: createFacts({ applications: ['fixture-app', 'admin-app'] }),
+      peerRange: PEER_RANGE,
+      git: 'clean',
+      projectFlag: 'fixture-app',
+    })[1];
+    const only = preflightItems({ facts: createFacts(), peerRange: PEER_RANGE, git: 'clean' })[1];
+
+    expect(named).toEqual({ label: 'Project fixture-app', status: 'ok', detail: 'fresh app' });
+    expect(only).toEqual(named);
+  });
+
+  it('keeps the fail of a missing build target when it also picked', () => {
+    const [, project] = preflightItems({
+      facts: createFacts({ applications: ['fixture-app', 'admin-app'], hasBuildTarget: false }),
+      peerRange: PEER_RANGE,
+      git: 'clean',
+    });
+
+    expect(project?.status).toBe('fail');
+    expect(project?.label).toBe('Project fixture-app (picked; pass --project to choose)');
+  });
+
   it('fails the Angular line for an unsupported version', () => {
     const [angular] = preflightItems({
       facts: withAngular('^20.3.0'),
