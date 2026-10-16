@@ -51,7 +51,7 @@ function setup(
   const commitMode = signal<CngxSelectCommitMode>('optimistic');
   const close = vi.fn();
   const wiring: CngxSelectSheetWiring = TestBed.runInInjectionContext(() =>
-    createSelectSheetWiring<string, string>({
+    createSelectSheetWiring({
       core,
       sheet: signal(sheet),
       popoverRef: signal(popover),
@@ -189,7 +189,38 @@ describe('createSelectSheetWiring', () => {
     expect(host.panelId()).toBe('panel-1');
     expect(host.label()).toBe('Colour');
     expect(host.searchTerm()).toBe('');
+    // No trigger input: the write is a no-op.
+    host.setSearchTerm('re');
     presentation.set('fullscreen');
     expect(host.presentation()).toBe('fullscreen');
+  });
+
+  it('writes the header term through the trigger input', () => {
+    const input = document.createElement('input');
+    const seen: string[] = [];
+    input.addEventListener('input', () => seen.push(input.value));
+    const wiring = TestBed.runInInjectionContext(() =>
+      createSelectSheetWiring({
+        core: {
+          isCommitting: signal(false),
+          resolvedPresentationRequest: signal('auto'),
+          ariaLabels: signal({}),
+        } as unknown as CngxSelectCore<string, string>,
+        sheet: signal(undefined),
+        popoverRef: signal(undefined),
+        listboxRef: signal(undefined),
+        tpl: { sheetHandle: signal(null) },
+        dismissOn: 'both',
+        showDone: true,
+        showInput: true,
+        sheetLabel: signal(undefined),
+        label: signal(''),
+        searchInput: signal({ nativeElement: input }),
+        close: vi.fn(),
+      }),
+    );
+    wiring.headerHost.setSearchTerm('gr');
+    expect(input.value).toBe('gr');
+    expect(seen).toEqual(['gr']);
   });
 });

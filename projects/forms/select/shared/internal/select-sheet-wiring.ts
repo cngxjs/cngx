@@ -1,4 +1,4 @@
-import { computed, inject, signal, type Signal } from '@angular/core';
+import { computed, inject, signal, type ElementRef, type Signal } from '@angular/core';
 import type { CngxListbox } from '@cngx/common/interactive';
 import type {
   CngxPopover,
@@ -15,9 +15,18 @@ import type { CngxSelectTemplateRegistry } from '../template-registry';
 import { createSelectSheetScope, type CngxSelectSheetScope } from './scoped-announcer';
 import type { CngxSelectCore } from './select-core';
 
+/**
+ * @internal The slice of the select core the wiring reads. Variants without
+ * a {@link CngxSelectCore} (`CngxTreeSelect`) hand in their own signals.
+ */
+export type CngxSelectSheetCore = Pick<
+  CngxSelectCore<unknown, unknown>,
+  'isCommitting' | 'resolvedPresentationRequest' | 'ariaLabels'
+>;
+
 /** @internal Inputs of {@link createSelectSheetWiring}. */
-export interface CngxSelectSheetWiringOptions<T, TCommit> {
-  readonly core: CngxSelectCore<T, TCommit>;
+export interface CngxSelectSheetWiringOptions {
+  readonly core: CngxSelectSheetCore;
   readonly sheet: Signal<CngxPopoverSheet | undefined>;
   readonly popoverRef: Signal<CngxPopover | undefined>;
   readonly listboxRef: Signal<CngxListbox | undefined>;
@@ -33,7 +42,11 @@ export interface CngxSelectSheetWiringOptions<T, TCommit> {
   readonly sheetLabel: Signal<string | undefined>;
   readonly label: Signal<string>;
   readonly searchTerm?: Signal<string>;
-  readonly setSearchTerm?: (term: string) => void;
+  /**
+   * The trigger input that owns the search term. The header input writes
+   * through it, so the trigger's `CngxSearch` stays the one source.
+   */
+  readonly searchInput?: Signal<ElementRef<HTMLInputElement> | undefined>;
   /** The variant's anchored close (focus back to the trigger, then hide). */
   readonly close: () => void;
 }
@@ -74,9 +87,7 @@ const NO_SEARCH_TERM = signal('').asReadonly();
  * `CNGX_DISMISS_HANDLER_FACTORY`, so the sheet close vectors and the
  * anchored outside click share one dismiss policy.
  */
-export function createSelectSheetWiring<T, TCommit>(
-  opts: CngxSelectSheetWiringOptions<T, TCommit>,
-): CngxSelectSheetWiring {
+export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): CngxSelectSheetWiring {
   const presentation = computed<CngxPopoverPresentation>(
     () => opts.sheet()?.presentation() ?? 'anchored',
   );
@@ -131,7 +142,14 @@ export function createSelectSheetWiring<T, TCommit>(
     ariaLabels: opts.core.ariaLabels,
     tpl: opts.tpl,
     searchTerm: opts.searchTerm ?? NO_SEARCH_TERM,
-    setSearchTerm: (term) => opts.setSearchTerm?.(term),
+    setSearchTerm: (term) => {
+      const input = opts.searchInput?.()?.nativeElement;
+      if (!input) {
+        return;
+      }
+      input.value = term;
+      input.dispatchEvent(new Event('input'));
+    },
     listboxRef: opts.listboxRef,
     panelId: computed(() => opts.popoverRef()?.id() ?? null),
     close: () => handleSheetClose('close'),

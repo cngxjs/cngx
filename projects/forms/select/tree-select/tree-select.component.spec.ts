@@ -6,6 +6,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import {
   provideSelectConfig,
   withAriaLabels,
@@ -434,4 +435,17 @@ describe('CngxTreeSelect - runtime language switch', () => {
     expect(before).toBe('Reset selection');
     expect(clear()?.getAttribute('aria-label')).toBe('Auswahl zurücksetzen');
   });
+});
+
+describeMobileSheet('CngxTreeSelect', CngxTreeSelect, 'cngx-tree-select', {
+  inputs: '[nodes]="nodes" [nodeIdFn]="idFn" [labelFn]="labelFn"',
+  optionSelector: '[role="treeitem"]',
+  fill: 'sheet',
+  showDone: true,
+  showInput: false,
+  announcesCommitError: false,
+  makeField: () => {
+    const { accessor, ref } = createMockField<string[]>({ name: 'pick', value: [] });
+    return { accessor, touched: () => ref.touched() };
+  },
 });

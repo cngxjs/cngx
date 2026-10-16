@@ -271,6 +271,18 @@ export interface CngxSelectPanelHostAdapter<T> {
 }
 
 /**
+ * @internal Sheet presentation cascade of the select family:
+ * `[presentation]` → `mobileSheet: 'off'` as `'anchored'` → `'auto'`.
+ * Shared by {@link createSelectCore} and the variants without a core.
+ */
+export function createPresentationRequest(
+  input: Signal<CngxPopoverPresentationRequest | undefined> | undefined,
+  mobileSheet: 'auto' | 'off',
+): Signal<CngxPopoverPresentationRequest> {
+  return computed(() => input?.() ?? (mobileSheet === 'off' ? 'anchored' : 'auto'));
+}
+
+/**
  * Stateless signal graph shared by every select-family component.
  *
  * Factory rather than hostDirective: hostDirective collapses generics
@@ -446,8 +458,9 @@ export function createSelectCore<T, TCommit>(
     return `${w}px`;
   });
 
-  const resolvedPresentationRequest = computed<CngxPopoverPresentationRequest>(
-    () => deps.presentationInput?.() ?? (config.mobileSheet === 'off' ? 'anchored' : 'auto'),
+  const resolvedPresentationRequest = createPresentationRequest(
+    deps.presentationInput,
+    config.mobileSheet,
   );
 
   const resolvedId = computed<string>(() => {

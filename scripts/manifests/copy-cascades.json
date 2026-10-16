@@ -378,7 +378,7 @@
     {
       "class": "CngxCombobox",
       "file": "projects/forms/select/combobox/combobox.component.ts",
-      "line": 377,
+      "line": 391,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -400,7 +400,7 @@
     {
       "class": "CngxCombobox",
       "file": "projects/forms/select/combobox/combobox.component.ts",
-      "line": 386,
+      "line": 400,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -448,7 +448,7 @@
     {
       "class": "CngxMultiSelect",
       "file": "projects/forms/select/multi-select/multi-select.component.ts",
-      "line": 280,
+      "line": 294,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -470,7 +470,7 @@
     {
       "class": "CngxMultiSelect",
       "file": "projects/forms/select/multi-select/multi-select.component.ts",
-      "line": 287,
+      "line": 301,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -546,7 +546,7 @@
     {
       "class": "CngxSelect",
       "file": "projects/forms/select/single-select/select.component.ts",
-      "line": 279,
+      "line": 282,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -568,7 +568,7 @@
     {
       "class": "CngxTreeSelect",
       "file": "projects/forms/select/tree-select/tree-select.component.ts",
-      "line": 335,
+      "line": 348,
       "member": "resolvedTwistyExpandLabel",
       "enclosing": "computed",
       "tiers": [
@@ -584,7 +584,7 @@
     {
       "class": "CngxTreeSelect",
       "file": "projects/forms/select/tree-select/tree-select.component.ts",
-      "line": 340,
+      "line": 353,
       "member": "resolvedTwistyCollapseLabel",
       "enclosing": "computed",
       "tiers": [
@@ -600,7 +600,7 @@
     {
       "class": "CngxTreeSelect",
       "file": "projects/forms/select/tree-select/tree-select.component.ts",
-      "line": 349,
+      "line": 362,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -622,7 +622,7 @@
     {
       "class": "CngxTreeSelect",
       "file": "projects/forms/select/tree-select/tree-select.component.ts",
-      "line": 356,
+      "line": 369,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -638,7 +638,7 @@
     {
       "class": "CngxTypeahead",
       "file": "projects/forms/select/typeahead/typeahead.component.ts",
-      "line": 279,
+      "line": 293,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [

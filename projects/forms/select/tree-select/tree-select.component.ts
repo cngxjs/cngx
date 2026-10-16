@@ -28,6 +28,7 @@ import {
   CngxPopover,
   CngxPopoverSheet,
   CngxPopoverTrigger,
+  type CngxPopoverPresentationRequest,
   type PopoverPlacement,
 } from '@cngx/common/popover';
 import {
@@ -43,9 +44,14 @@ import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
   CNGX_SELECT_SHEET_SCOPE,
   CngxScopedSelectAnnouncer,
-  createSelectSheetScope,
-  type CngxSelectSheetScope,
 } from '../shared/internal/scoped-announcer';
+import { createPresentationRequest } from '../shared/internal/select-core';
+import {
+  createSelectSheetWiring,
+  type CngxSelectSheetWiring,
+} from '../shared/internal/select-sheet-wiring';
+import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
+import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
 import type {
   CngxSelectAnnouncerConfig,
   CngxSelectLoadingVariant,
@@ -83,7 +89,6 @@ import {
   type CngxSelectPanelViewHost,
 } from '../shared/panel-host';
 import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controller.token';
-import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
@@ -97,6 +102,7 @@ import {
   CngxSelectLoading,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
+  CngxSelectSheetHandle,
   CngxSelectOptionLabel,
   CngxSelectOptionPending,
   CngxSelectPlaceholder,
@@ -192,6 +198,7 @@ export interface CngxTreeSelectChange<T = unknown> {
  * @slot cngxTreeSelectNode Replaces each whole treeitem row, twisty and checkbox included, so the template owns the treeitem ARIA; gets node, depth, expanded, hasChildren, selected, indeterminate, disabled, toggleExpand, handleSelect.
  * @slot cngxTreeSelectChip Replaces each chip in the trigger strip unless cngxTreeSelectTriggerLabel is projected; gets option, remove.
  * @slot cngxTreeSelectTriggerLabel Replaces the whole chip strip while at least one value is selected; gets selected, values, count.
+ * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
  */
 @Component({
   selector: 'cngx-tree-select',
@@ -199,6 +206,8 @@ export interface CngxTreeSelectChange<T = unknown> {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    CngxPopoverSheet,
+    CngxSelectSheetHeader,
     CngxChip,
     CngxClickOutside,
     CngxPopover,
@@ -208,7 +217,11 @@ export interface CngxTreeSelectChange<T = unknown> {
   ],
   providers: [
     { provide: CngxSelectAnnouncer, useClass: CngxScopedSelectAnnouncer },
-    { provide: CNGX_SELECT_SHEET_SCOPE, useFactory: () => inject(CngxTreeSelect).sheetScope },
+    { provide: CNGX_SELECT_SHEET_SCOPE, useFactory: () => inject(CngxTreeSelect).sheetWiring },
+    {
+      provide: CNGX_SELECT_SHEET_HEADER_HOST,
+      useFactory: () => inject(CngxTreeSelect).sheetWiring.headerHost,
+    },
     { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxTreeSelect },
     {
       provide: CNGX_STATEFUL,
@@ -372,6 +385,18 @@ export class CngxTreeSelect<T = unknown>
   readonly retryFn = input<(() => void) | null>(null);
   readonly commitAction = input<CngxSelectCommitAction<T[]> | null>(null);
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
+  /**
+   * Panel presentation. Unset follows `CNGX_SELECT_CONFIG.mobileSheet`:
+   * `'auto'` opens a modal bottom sheet on coarse, narrow viewports and
+   * stays anchored elsewhere. `'anchored'`, `'sheet'` and `'fullscreen'`
+   * force one presentation.
+   */
+  readonly presentation = input<CngxPopoverPresentationRequest | undefined>(undefined);
+  /**
+   * Title of the mobile sheet. Unset reads the field label once per open,
+   * then `[label]`, then `ariaLabels.fieldLabelFallback`.
+   */
+  readonly sheetLabel = input<string | undefined>(undefined);
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
@@ -412,6 +437,7 @@ export class CngxTreeSelect<T = unknown>
   private readonly optionPendingDir =
     contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
   private readonly optionErrorDir = contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
+  private readonly sheetHandleDir = contentChild(CngxSelectSheetHandle);
 
   private readonly nodeDir = contentChild<CngxTreeSelectNode<T>>(CngxTreeSelectNode);
   private readonly chipDir = contentChild<CngxTreeSelectChip<T>>(CngxTreeSelectChip);
@@ -443,6 +469,7 @@ export class CngxTreeSelect<T = unknown>
     clearButton: this.clearButtonDir,
     optionPending: this.optionPendingDir,
     optionError: this.optionErrorDir,
+    sheetHandle: this.sheetHandleDir,
   });
 
   /** @internal */
@@ -473,11 +500,6 @@ export class CngxTreeSelect<T = unknown>
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
   private readonly sheetRef = viewChild(CngxPopoverSheet);
-  /** @internal Read by the scoped select announcer. */
-  readonly sheetScope: CngxSelectSheetScope = createSelectSheetScope(
-    this.sheetRef,
-    this.popoverRef,
-  );
 
   /**
    * Tree controller. Lambdas wrap each input read so the controller
@@ -651,6 +673,10 @@ export class CngxTreeSelect<T = unknown>
   );
   /** @internal - own template only; outer popover panel width binding. */
   protected readonly panelWidthCss = computed<string | null>(() => {
+    // The sheet owns the inline size outside the anchored presentation.
+    if (this.sheetWiring.presentation() !== 'anchored') {
+      return null;
+    }
     const w = this.panelWidth();
     if (w === null || w === undefined) {
       return 'auto';
@@ -830,6 +856,31 @@ export class CngxTreeSelect<T = unknown>
   readonly isCommitting = this.commitControllerInstance.isCommitting;
   /** Read-only commit lifecycle view (bridged via `CNGX_STATEFUL`). */
   readonly commitState = this.commitControllerInstance.state;
+
+  /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
+  readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
+    core: {
+      isCommitting: this.isCommitting,
+      resolvedPresentationRequest: createPresentationRequest(
+        this.presentation,
+        this.config.mobileSheet,
+      ),
+      ariaLabels: this.config.ariaLabels,
+    },
+    sheet: this.sheetRef,
+    popoverRef: this.popoverRef,
+    listboxRef: signal(undefined),
+    tpl: this.tplRegistry,
+    commitMode: this.commitMode,
+    dismissOn: this.config.dismissOn,
+    showDone: true,
+    showInput: false,
+    sheetLabel: this.sheetLabel,
+    label: this.label,
+    close: () => this.close(),
+  });
+  /** @internal Static height fact: a content-sized sheet. */
+  protected readonly sheetFill = 'sheet';
 
   /**
    * Resolved option-like defs of the current selection. Structural
@@ -1128,10 +1179,7 @@ export class CngxTreeSelect<T = unknown>
   }
 
   /** @internal - click-outside dismissal (no action bridge on tree-select). */
-  protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
-    popoverRef: this.popoverRef,
-    dismissOn: this.config.dismissOn,
-  }).handleClickOutside;
+  protected readonly handleClickOutside = this.sheetWiring.handleClickOutside;
 
   /** @internal */
   protected handleChipRemoveClick(event: Event, opt: CngxTreeSelectedItem<T>): void {
