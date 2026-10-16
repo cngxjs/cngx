@@ -23,7 +23,8 @@ projects/core/schematics/
   ng-add/
     index.ts             the single-stage shell
     schema.json          options; x-prompt only for preset
-    detect/              detectProject(tree, workspace): ProjectFacts
+    detect/              detectProject(tree, workspace): ProjectFacts in detect.ts,
+                         composed from workspace, styles, eslint, ai-tooling, bootstrap
     steps/               pure plan<Step>(facts, answers, versions) per concern
     shell/               questions, preflight checklist, git state, install manifest reader
   migrations/
@@ -57,9 +58,11 @@ projects/<lib>/schematics/
 
 ## Adding an onboarding step
 
-1. Add the facts it needs to `detect/detect.ts` (with a fixture case in
-   `detect.spec.ts`), so the step can decide plan versus skip without reading
-   files.
+1. Add the facts it needs to `ProjectFacts` in `detect/detect.ts`, read by
+   the topical module they belong to (`workspace.ts`, `styles.ts`,
+   `eslint.ts`, `ai-tooling.ts`, `bootstrap.ts`, each with its spec) and
+   composed in `detectProject`, so the step can decide plan versus skip
+   without reading files.
 2. Write `steps/<step>.ts` as `(facts, answers, versions) => StepResult` and
    its spec against `createFacts` / `createAnswers` from `testing/onboarding.ts`.
 3. Add it to `planSteps` in `ng-add/index.ts` (apply order), extend the fixture matrix in

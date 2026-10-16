@@ -135,7 +135,7 @@ export function insertStyleImport(content: string, statement: string): string {
  * ahead of every other imported file in the bundle. `@charset`, `@use` and
  * `@forward` stay in front: Sass rejects a `@use` that follows an `@import`,
  * and hoists plain CSS imports above the module output anyway. Without an
- * `@import` it lands where {@link insertStyleImport} puts it.
+ * `@import` it lands after the whole preamble, before the first rule.
  */
 export function insertLeadingStyleImport(content: string, statement: string): string {
   if (hasStyleImport(content, statement)) {
