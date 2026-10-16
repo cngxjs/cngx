@@ -24,7 +24,7 @@ import { CngxChipInGroup } from '@cngx/common/interactive';
 </cngx-multi-chip-group>
 ```
 
-A `[cngxChipInGroup]` outside any chip-group throws `NullInjectorError` at construction. That is intentional.
+A `[cngxChipInGroup]` outside any chip-group throws `CNGX1068` (a `CngxRuntimeError`) at construction. That is intentional.
 
 ## Accessibility
 

@@ -843,6 +843,17 @@
       "files": ["projects/common/popover/popover-sheet.directive.ts"]
     },
     {
+      "code": "CNGX1068",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Group chip outside a chip group",
+      "page": "core-concepts/error-codes/cngx1068.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1068.html",
+      "status": "active",
+      "files": ["projects/common/interactive/chip-group/chip-group-host.token.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",
