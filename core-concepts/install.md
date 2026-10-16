@@ -160,7 +160,7 @@ turn the questions off the same way.
 
 |Target|When|What|
 |-|-|-|
-|`package.json`|always|Every selected `@cngx/*` package and its peers, pinned to the exact release; `@cngx/themes` when a theme is chosen; `@angular/cdk` at the app's Angular range when a package needs it; `@floating-ui/dom` for the fallback; `@cngx/eslint-plugin` as a devDependency for the lint rules, and `@angular-eslint/template-parser` on the `angular-eslint` version line when the app declares `angular-eslint` 19 or later but not the parser. `@angular/material` is never added.|
+|`package.json`|always|Every selected `@cngx/*` package and its peers, pinned to the exact release; `@cngx/themes` when a theme is chosen; `@angular/cdk` at the app's Angular range when a package needs it (behind `catalog:` or `workspace:*`, at the installed Angular's `major.minor`); `@floating-ui/dom` for the fallback; `@cngx/eslint-plugin` as a devDependency for the lint rules, and `@angular-eslint/template-parser` on the `angular-eslint` version line when the app declares `angular-eslint` 19 or later but not the parser. `@angular/material` is never added.|
 |Global styles|theme chosen|An import of `@cngx/themes/cngx.css` ahead of every cngx layer.|
 |`cngx-layers.css`|theme chosen, Tailwind v4|Next to the first global stylesheet of the build: one `@layer` statement that puts the cngx layers between Tailwind preflight and the Tailwind utilities. See [Tailwind](#tailwind).|
 |First global stylesheet|theme chosen, Tailwind v4|An import of `./cngx-layers.css` before every other `@import`.|

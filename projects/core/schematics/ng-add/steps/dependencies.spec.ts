@@ -125,6 +125,26 @@ describe('planDependencies', () => {
     ]);
   });
 
+  it('follows the declared Angular range for the CDK', () => {
+    const facts = createFacts({
+      angularVersion: '21.2.6',
+      angularSource: 'installed',
+      angularRange: '~21.2.4',
+      manifest: parseManifest(JSON.stringify({ dependencies: { '@angular/core': '~21.2.4' } })),
+    });
+    expect(added(planDependencies(facts, createAnswers(), VERSIONS))).toContain('@angular/cdk@~21.2.4');
+  });
+
+  it('pins the CDK to an installed Angular prerelease behind a specifier that is no range', () => {
+    const facts = createFacts({
+      angularVersion: '21.3.0-rc.1',
+      angularSource: 'installed',
+      angularRange: 'catalog:',
+      manifest: parseManifest(JSON.stringify({ dependencies: { '@angular/core': 'catalog:' } })),
+    });
+    expect(added(planDependencies(facts, createAnswers(), VERSIONS))).toContain('@angular/cdk@^21.3.0-rc.1');
+  });
+
   it('pins the CDK to the major and minor of the resolved Angular version', () => {
     const facts = createFacts({
       angularVersion: '21.2.5',
