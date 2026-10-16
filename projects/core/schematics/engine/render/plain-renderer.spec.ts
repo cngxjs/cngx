@@ -137,6 +137,38 @@ describe('createPlainRenderer', () => {
     expect(quiet.lines).toEqual([]);
   });
 
+  it('colours the plan the way the Angular CLI does on a coloured terminal', async () => {
+    const { lines, renderer: coloured } = renderer(false, { FORCE_COLOR: '1' }, true);
+    const color = createPalette({ FORCE_COLOR: '1' }, true);
+
+    await coloured.todo(PLAN);
+
+    expect(lines).toEqual([
+      `info ${color.bold('Planned (2):')}`,
+      `info   ${color.green('+')} Add @cngx/core@0.1.0 ${color.dim('- lockstep with @cngx/ui')}`,
+      `info   ${color.green('+')} Import cngx.css ${color.dim('- global stylesheet')}`,
+      `info ${color.bold('Notes (1):')}`,
+      `info   ${color.yellow('-')} Run npx @cngx/doctor ${color.dim('- checks the wiring')}`,
+      `info ${color.bold('Already in place (1):')}`,
+      `info   ${color.dim('=')} Add provideA11yPreferences ${color.dim('- already provided')}`,
+      `info ${color.bold('Warnings (1):')}`,
+      `info   ${color.yellow('!')} no eslint config found`,
+    ]);
+  });
+
+  it('bolds the summary section headings only', () => {
+    const { lines, renderer: coloured } = renderer(false, { FORCE_COLOR: '1' }, true);
+    const color = createPalette({ FORCE_COLOR: '1' }, true);
+
+    coloured.summary(['cngx applied 2 changes.', 'Next steps:', '  Run `npx @cngx/doctor` to check the wiring.']);
+
+    expect(lines).toEqual([
+      'info cngx applied 2 changes.',
+      `info ${color.bold('Next steps:')}`,
+      'info   Run `npx @cngx/doctor` to check the wiring.',
+    ]);
+  });
+
   it('emits only the summary when quiet', async () => {
     const { lines, renderer: plain } = renderer(true);
 

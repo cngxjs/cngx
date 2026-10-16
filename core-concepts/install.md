@@ -69,7 +69,10 @@ install. Nothing outside the project is written.
    that plan, so they cannot disagree. Notes (what a step refused or left to
    you) follow the list; they are not tasks. Before an `Apply these
    changes?` and under `--dry-run` the list prints as plain plan lines
-   instead of ticked tasks, since nothing has run yet.
+   instead of ticked tasks, since nothing has run yet. The `@cngx/*`
+   packages that move to one release read as one line (`Add 8 @cngx
+   packages at <version>`); on a coloured terminal the markers and reasons
+   take the Angular CLI's colours.
 5. **Confirm.** An app that already has components beyond the root one
    (anywhere under its source root, outside `node_modules` and `dist`), its
    own providers, a config written into `bootstrapApplication(App, {...})`,
