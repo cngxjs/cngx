@@ -233,7 +233,8 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
 
   // Capture phase: the tap must be seen before anything under it reacts.
   // The page siblings are inert, so a tap outside the panel lands on a
-  // non-inert ancestor; the popover ::backdrop does not catch taps (S7).
+  // non-inert ancestor; the popover ::backdrop does not catch taps on iOS
+  // or Android.
   private readonly outsidePointerDown = (event: PointerEvent): void => {
     this.disarmClickSwallow();
     const target = event.target;
@@ -245,7 +246,7 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
   };
 
   // Closing on pointerdown releases inert before the gesture's click lands,
-  // so that click would hit the page element under the tap (S7). Swallow the
+  // so that click would hit the page element under the tap. Swallow the
   // one click that belongs to this gesture; the next pointerdown or a short
   // timeout disarms it, so a later tap is never eaten.
   private clickSwallowTimer: ReturnType<typeof setTimeout> | null = null;

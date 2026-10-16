@@ -302,8 +302,8 @@
     transition: none;
   }
 
-  /* Only the content below the header scrolls (S5: a swipe region inside a
-   * scrolling panel never fires). */
+  /* Only the content below the header scrolls: a swipe region inside a
+   * scrolling panel never fires. */
   .cngx-popover-sheet:is([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen'])
     > * {
     flex: 1 1 auto;
