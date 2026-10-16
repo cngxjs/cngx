@@ -2,7 +2,7 @@ import { ApplicationRef, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CngxDialogOpener, provideDialog } from './dialog.service';
+import { CngxDialogOpener, CngxDialogRef, provideDialog } from './dialog.service';
 import { CngxDialogTitle } from './dialog-title.directive';
 import { CngxDialogDescription } from './dialog-description.directive';
 
@@ -35,6 +35,24 @@ class TestContent {}
   imports: [CngxDialogTitle, CngxDialogDescription],
 })
 class LabelledContent {}
+
+@Component({
+  template: `<p>never rendered</p>`,
+})
+class ThrowingContent {
+  ngOnInit(): void {
+    throw new Error('content init failed');
+  }
+}
+
+@Component({
+  template: `<p>never rendered</p>`,
+})
+class ThrowingConstructorContent {
+  constructor() {
+    throw new Error('content constructor failed');
+  }
+}
 
 function createOpener(): CngxDialogOpener {
   TestBed.configureTestingModule({ providers: [provideDialog()] });
@@ -295,5 +313,24 @@ describe('CngxDialogOpener', () => {
     TestBed.flushEffects();
 
     expect(document.body.querySelectorAll('cngx-dialog-outlet').length).toBe(0);
+  });
+
+  it.each([
+    ['on its first render', ThrowingContent, 'content init failed'],
+    ['in its constructor', ThrowingConstructorContent, 'content constructor failed'],
+  ])('leaves no outlet and no ref behind when the content throws %s', (_, content, message) => {
+    const opener = createOpener();
+
+    expect(() => opener.open(content)).toThrow(message);
+    expect(document.body.querySelector('cngx-dialog-outlet')).toBeNull();
+
+    const dismiss = vi.spyOn(CngxDialogRef.prototype, 'dismiss');
+    opener.open(TestContent);
+    opener.closeAll();
+    TestBed.flushEffects();
+
+    expect(dismiss).toHaveBeenCalledTimes(1);
+    expect(document.body.querySelector('cngx-dialog-outlet')).toBeNull();
+    dismiss.mockRestore();
   });
 });
