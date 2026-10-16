@@ -31,12 +31,6 @@ member the app depends on goes to the new release in one step, and the
 cross-package peers stay in agreement. The migrations live in `@cngx/core`
 and run whichever member you name.
 
-Preview the update without writing files:
-
-```bash
-ng update @cngx/core --dry-run
-```
-
 ---
 
 ## Migrations
