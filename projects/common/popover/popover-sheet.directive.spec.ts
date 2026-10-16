@@ -579,6 +579,20 @@ describe('CngxPopoverSheet', () => {
       expect(document.activeElement).toBe(opener);
     });
 
+    it('falls back to the anchor when the saved opener refuses focus', () => {
+      // Models the opener of a sheet chain, hidden inside an evicted sheet.
+      const gone = document.createElement('button');
+      gone.focus = () => undefined;
+      document.body.appendChild(gone);
+      const ctx = setup((h) => h.restoreTarget.set(gone));
+      const opener = ctx.q<HTMLButtonElement>('.opener');
+      ctx.host.popover().setAnchorElement(opener);
+      openFromOpener(ctx);
+      ctx.host.popover().hide();
+      expect(document.activeElement).toBe(opener);
+      gone.remove();
+    });
+
     it('restores focus without a close transition too', () => {
       const ctx = setup();
       openFromOpener(ctx);

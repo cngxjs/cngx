@@ -402,10 +402,7 @@ export class CngxPopoverSheet
     const active = this.doc.activeElement;
     const focusLost = !active || active === this.doc.body || this.host.contains(active);
     if (this.restoreFocus() && focusLost) {
-      const target = this.restoreTarget() ?? this.savedFocus;
-      if (target?.isConnected) {
-        target.focus();
-      }
+      this.focusFirstTaker([this.restoreTarget(), this.savedFocus, this.focusableAnchor()]);
     }
     this.release();
   }
@@ -436,6 +433,25 @@ export class CngxPopoverSheet
     this.armCloseWatcher();
   }
 
+  // A target can refuse focus: the opener of a sheet chain sits inside the
+  // sheet the exclusive eviction just hid. Take the first one that holds it.
+  private focusFirstTaker(candidates: readonly (HTMLElement | null | undefined)[]): void {
+    for (const target of candidates) {
+      if (!target?.isConnected) {
+        continue;
+      }
+      target.focus();
+      if (this.doc.activeElement === target) {
+        return;
+      }
+    }
+  }
+
+  private focusableAnchor(): HTMLElement | null {
+    const anchor = this.popover.anchorElement();
+    return anchor && anchor.tabIndex >= 0 ? anchor : null;
+  }
+
   // iOS Safari does not focus a button on tap (with or without VoiceOver),
   // so the pre-open snapshot is often body. Fall back to the popover's
   // anchor when it can take focus, so the close lands back on the opener.
@@ -444,8 +460,7 @@ export class CngxPopoverSheet
     if (origin && origin !== this.doc.body) {
       return origin;
     }
-    const anchor = this.popover.anchorElement();
-    return anchor && anchor.tabIndex >= 0 ? anchor : null;
+    return this.focusableAnchor();
   }
 
   // Idempotent: hide(), the native toggle, a flip back to anchored and
