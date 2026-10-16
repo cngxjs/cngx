@@ -11,7 +11,7 @@ import {
   type AfterContentInit,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { cngxDevWarn } from '@cngx/utils';
 import { filter } from 'rxjs/operators';
 
@@ -66,6 +66,9 @@ export class CngxStepperRouterSync implements AfterContentInit {
 
   private readonly host = injectStepperHost('cngxStepperRouterSync', { host: true });
   private readonly router = inject(Router, { optional: true });
+  // Router is providedIn: 'root' and resolves without provideRouter(...);
+  // ActivatedRoute does not, so it is the "router is set up" signal.
+  private readonly route = inject(ActivatedRoute, { optional: true });
 
   /**
    * Latched once the URL seed has reached a registered step, so the
@@ -81,12 +84,12 @@ export class CngxStepperRouterSync implements AfterContentInit {
   private seeded = false;
 
   constructor() {
-    if (!this.router) {
+    if (!this.router || !this.route) {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         afterNextRender(() => {
           cngxDevWarn(
             'CNGX1031',
-            '[cngxStepperRouterSync] no Router available - the URL sync is a no-op. ' +
+            '[cngxStepperRouterSync] no Router / ActivatedRoute available - the URL sync is a no-op. ' +
               'Provide @angular/router via provideRouter(...) to enable deep-linking.',
           );
         });

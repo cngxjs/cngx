@@ -16,7 +16,7 @@ describe('warnRouterAbsent', () => {
     expect(warn).toHaveBeenCalledTimes(1);
     const message = warn.mock.calls[0][0] as string;
     expect(message).toMatch(
-      /^CNGX1031: injectQueryParamSync\(\): no Router available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable /,
+      /^CNGX1031: injectQueryParamSync\(\): no Router \/ ActivatedRoute available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable /,
     );
     expect(message).toContain('provideRouter(...)');
     expect(message).toContain('deep-linking');

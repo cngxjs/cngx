@@ -9,7 +9,12 @@ import {
   type Signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { type ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
+import {
+  ActivatedRoute,
+  type ActivatedRouteSnapshot,
+  NavigationEnd,
+  Router,
+} from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { cngxDevWarn } from '@cngx/utils';
 
@@ -93,6 +98,9 @@ function crumbsEqual(
 })
 export class CngxBreadcrumbRouterSync implements CngxBreadcrumbItemsSource {
   private readonly router = inject(Router, { optional: true });
+  // Router is providedIn: 'root' and resolves without provideRouter(...);
+  // ActivatedRoute does not, so it is the "router is set up" signal.
+  private readonly route = inject(ActivatedRoute, { optional: true });
   private readonly cfg = injectBreadcrumbConfig();
 
   /**
@@ -114,12 +122,12 @@ export class CngxBreadcrumbRouterSync implements CngxBreadcrumbItemsSource {
 
   constructor() {
     const router = this.router;
-    if (!router) {
+    if (!router || !this.route) {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         afterNextRender(() => {
           cngxDevWarn(
             'CNGX3001',
-            '[cngxRouterSync] on <cngx-breadcrumb>: no Router available - directive is a no-op. ' +
+            '[cngxRouterSync] on <cngx-breadcrumb>: no Router / ActivatedRoute available - directive is a no-op. ' +
               'Provide @angular/router via provideRouter(...) to enable router-driven crumbs.',
           );
         });
