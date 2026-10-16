@@ -89,6 +89,7 @@ function stubTransition(duration: string): void {
       [autoPresentation]="autoPresentation()"
       [labelledBy]="labelledBy()"
       [restoreFocus]="restoreFocus()"
+      [restoreTarget]="restoreTarget()"
       [closeOnRequest]="closeOnRequest()"
       (closeRequested)="reasons.push($event)"
       (closing)="handleClosing()"
@@ -124,6 +125,7 @@ class SheetHost {
   readonly autoPresentation = signal<'sheet' | 'fullscreen'>('sheet');
   readonly labelledBy = signal<string | undefined>(undefined);
   readonly restoreFocus = signal(true);
+  readonly restoreTarget = signal<HTMLElement | undefined>(undefined);
   readonly closeOnRequest = signal(true);
   readonly mode = signal<PopoverMode>('manual');
   readonly closeOnEscape = signal(true);
@@ -512,6 +514,34 @@ describe('CngxPopoverSheet', () => {
       ctx.host.popover().hide();
       expect(inertInHandler).toBe(false);
       expect(document.activeElement).toBe(check);
+    });
+
+    it('restores focus and emits closing on a native close that skips hide()', () => {
+      const ctx = setup();
+      const closing = vi.fn();
+      ctx.host.closingHandler = closing;
+      openFromOpener(ctx);
+      const event = new Event('beforetoggle') as Event & { newState: string };
+      Object.defineProperty(event, 'newState', { value: 'closed' });
+      ctx.panel.dispatchEvent(event);
+
+      expect(closing).toHaveBeenCalledTimes(1);
+      expect(document.activeElement).toBe(ctx.q('.opener'));
+      expect(ctx.q('.opener').hasAttribute('inert')).toBe(false);
+    });
+
+    it('restores focus when destroyed while open', () => {
+      // The restore target lives outside the fixture, so it survives the
+      // destroy that removes the sheet.
+      const outside = document.createElement('button');
+      document.body.appendChild(outside);
+      const ctx = setup((h) => h.restoreTarget.set(outside));
+      openFromOpener(ctx);
+      expect(ctx.panel.contains(document.activeElement)).toBe(true);
+
+      ctx.fixture.destroy();
+      expect(document.activeElement).toBe(outside);
+      outside.remove();
     });
 
     it('does not emit closing for an anchored close', () => {

@@ -293,7 +293,10 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
       });
     });
 
+    // Destroyed while open: the host leaves the DOM, so focus would drop to
+    // body. Restore it like a close, without emitting from a dying directive.
     inject(DestroyRef).onDestroy(() => {
+      this.disengage(false);
       this.release();
       this.disarmClickSwallow();
     });
@@ -309,19 +312,7 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
 
   /** @internal Seam call from `CngxPopover.hide()`, before the close transition. */
   onHide(): void {
-    if (!this.engaged) {
-      return;
-    }
-    this.restoreInert();
-    this.handOffPendingAnnouncements();
-    this.closing.emit();
-    if (this.restoreFocus() && this.host.contains(this.doc.activeElement)) {
-      const target = this.restoreTarget() ?? this.savedFocus;
-      if (target?.isConnected) {
-        target.focus();
-      }
-    }
-    this.release();
+    this.disengage(true);
   }
 
   /**
@@ -365,12 +356,36 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
   }
 
   protected handleBeforeToggle(event: ToggleEvent): void {
-    // Native close paths (light dismiss, a direct hidePopover()) skip hide().
-    if (event.newState === 'closed' && this.engaged) {
-      this.restoreInert();
-      this.handOffPendingAnnouncements();
-      this.release();
+    // Native close paths (light dismiss, a direct hidePopover()) skip hide()
+    // but owe the same page release and focus return.
+    if (event.newState === 'closed') {
+      this.disengage(true);
     }
+  }
+
+  // Close order: page live again, pending messages handed over, consumers
+  // told, focus back on the opener, lock released. Idempotent through
+  // `engaged`.
+  private disengage(emitClosing: boolean): void {
+    if (!this.engaged) {
+      return;
+    }
+    this.restoreInert();
+    this.handOffPendingAnnouncements();
+    if (emitClosing) {
+      this.closing.emit();
+    }
+    // On body counts as lost: CngxPopover's own teardown blurs the panel
+    // before this one runs when both are destroyed together.
+    const active = this.doc.activeElement;
+    const focusLost = !active || active === this.doc.body || this.host.contains(active);
+    if (this.restoreFocus() && focusLost) {
+      const target = this.restoreTarget() ?? this.savedFocus;
+      if (target?.isConnected) {
+        target.focus();
+      }
+    }
+    this.release();
   }
 
   // Open order: focus, then inert, then lock. Focus first so the move
