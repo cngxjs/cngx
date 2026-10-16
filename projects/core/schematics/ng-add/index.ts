@@ -22,7 +22,7 @@ import {
 import { detectProject, type ProjectFacts } from './detect/detect';
 import { readGitState } from './shell/git-state';
 import { angularReading, angularSupport, preflightItems } from './shell/preflight';
-import { askOnboarding, givenAnswers, presetChangeNote, presetDefaults } from './shell/questions';
+import { askOnboarding, givenAnswers, libsFloorNote, presetChangeNote, presetDefaults } from './shell/questions';
 import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
 import { planHelperReadme } from './steps/helper-readme';
@@ -142,7 +142,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
       previous === undefined
         ? undefined
         : readRecordedAnswers(previous, (preset) => presetDefaults(preset, facts));
-    const { answers, explicitAiTools } = await askOnboarding(
+    const { answers, answeredLibs, explicitAiTools } = await askOnboarding(
       facts,
       options,
       flow,
@@ -155,6 +155,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
       [
         ...planSteps(withdrawn).map((step) => step(facts, answers, versions)),
         presetChangeNote(options, recorded, provenance),
+        libsFloorNote(answeredLibs, answers.libs, provenance),
       ],
       warning === undefined ? [] : [warning],
     );

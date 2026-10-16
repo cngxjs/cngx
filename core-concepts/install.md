@@ -13,7 +13,9 @@ Run `ng add @cngx/ui` (or any other `@cngx/*` package). One run pins the package
 
 Every published `@cngx/*` package ships an `ng add` schematic. `@cngx/core`
 owns the onboarding; the other packages delegate to it, so `ng add @cngx/forms`
-and `ng add @cngx/ui` run the same flow and produce the same files.
+and `ng add @cngx/ui` run the same flow and produce the same files. The package
+you name is always installed and recorded: `ng add @cngx/forms --libs core`
+installs `core` and `forms`.
 
 ```bash
 ng add @cngx/ui
@@ -275,6 +277,15 @@ the German pack or the editors you chose earlier, and a question shows them
 as its default. A flag or an answer in the terminal still changes one. A
 re-run with another preset starts from that preset's defaults instead, and
 the plan says so in a note.
+
+A re-run never removes a package. The libs the last install recorded and
+every `@cngx/<lib>` the app's `package.json` declares are the floor: a
+narrower `--libs` adds nothing to remove, and the plan says which packages it
+keeps (`Keep the recorded packages`). A package that is only a peer of the
+others is installed through them and not recorded. `@cngx/themes`,
+`@cngx/mcp` and `@cngx/eslint-plugin` are no lib: the theme answer and the
+tooling steps decide them. To remove a package, delete it from `package.json`
+and from `answers.libs` in `.cngx/install.json`.
 
 A newer cngx release comes in through `ng update @cngx/core`, not through
 `ng add` (see [Update](update.html)). `ng add @cngx/<package>@<newer>` on

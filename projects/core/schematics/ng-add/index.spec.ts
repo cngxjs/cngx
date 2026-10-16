@@ -736,6 +736,77 @@ describe('ngAdd', () => {
     );
   });
 
+  describe('the recorded libs', () => {
+    const recordedLibs = (tree: Tree): unknown => json<{ answers: { libs: unknown } }>(tree, '.cngx/install.json').answers.libs;
+    const declared = (tree: Tree): Record<string, string> =>
+      json<{ dependencies: Record<string, string> }>(tree, 'package.json').dependencies;
+    const declare = (tree: Tree, name: string): void => {
+      const manifest = json<{ dependencies: Record<string, string> }>(tree, 'package.json');
+      tree.overwrite('package.json', JSON.stringify({ ...manifest, dependencies: { ...manifest.dependencies, [name]: VERSION } }, null, 2) + '\n');
+    };
+
+    it('keeps every recorded lib when a re-run asks for fewer and says so', async () => {
+      const first = await runRule(ngAdd({ yes: true }), createFixtureTree());
+
+      const second = await runRule(ngAdd({ libs: 'core', yes: true }), first.tree);
+
+      expect(recordedLibs(second.tree)).toEqual([...CNGX_LIBS]);
+      expect(second.logs).toContain(
+        '  - Keep the recorded packages - @cngx/common, @cngx/interop, @cngx/forms, @cngx/data-display, @cngx/ui stay because the last install recorded them or package.json declares them; to remove one, delete it from package.json and from answers.libs in .cngx/install.json',
+      );
+    });
+
+    it('records a lib package.json declares that the last install did not', async () => {
+      const first = await runRule(ngAdd({ libs: 'core', yes: true }), createFixtureTree());
+      declare(first.tree, '@cngx/forms');
+
+      const second = await runRule(ngAdd({ yes: true }), first.tree);
+
+      expect(recordedLibs(second.tree)).toEqual(['core', 'forms']);
+      expect(declared(second.tree)['@cngx/forms']).toBe(VERSION);
+      expect(second.logs).toContain(
+        '  - Keep the recorded packages - @cngx/forms stays because the last install recorded it or package.json declares it; to remove it, delete it from package.json and from answers.libs in .cngx/install.json',
+      );
+    });
+
+    it('records the package a shim pinned before it delegated', async () => {
+      const tree = createFixtureTree();
+      declare(tree, '@cngx/forms');
+
+      const run = await runRule(ngAdd({ libs: 'core', yes: true }), tree);
+
+      expect(recordedLibs(run.tree)).toEqual(['core', 'forms']);
+      expect(run.logs.some((line) => line.startsWith('  - Keep the recorded packages'))).toBe(true);
+    });
+
+    it('counts no @cngx package outside the libs as a lib', async () => {
+      const tree = createFixtureTree();
+      for (const name of ['@cngx/mcp', '@cngx/eslint-plugin', '@cngx/themes']) {
+        declare(tree, name);
+      }
+
+      const run = await runRule(ngAdd({ libs: 'core', theme: 'none', yes: true }), tree);
+
+      expect(recordedLibs(run.tree)).toEqual(['core']);
+      expect(run.logs.some((line) => line.startsWith('  - Keep the recorded packages'))).toBe(false);
+    });
+
+    it('changes nothing on a re-run after the pins cngx wrote for the peers', async () => {
+      const first = await runRule(ngAdd({ libs: 'forms', yes: true }), createFixtureTree());
+
+      const second = await runRule(ngAdd({ yes: true }), first.tree);
+
+      expect(recordedLibs(second.tree)).toEqual(['forms']);
+      expect(second.logs).toContain('cngx is already set up; nothing changed.');
+    });
+
+    it('plans no floor note on a first install that takes every lib', async () => {
+      const run = await runRule(ngAdd({ yes: true }), createFixtureTree());
+
+      expect(run.logs.some((line) => line.startsWith('  - Keep the recorded packages'))).toBe(false);
+    });
+  });
+
   it('keeps a configured editor in the readme when a later run chooses another', async () => {
     const first = await runRule(ngAdd({ aiTools: ['claude'] }), createFixtureTree('standalone-app', { '.vscode/settings.json': '{}' }));
     const second = await runRule(ngAdd({ preset: 'full' }), first.tree);

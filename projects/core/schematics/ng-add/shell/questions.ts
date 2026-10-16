@@ -4,6 +4,7 @@ import {
   CNGX_LIBS,
   type CngxLib,
   createNote,
+  declaredRange,
   type Language,
   type NgAddOptions,
   type NgAddPreset,
@@ -80,9 +81,35 @@ function flag<K extends (typeof ANSWER_KEYS)[number]>(
   return options[key] ?? fallback;
 }
 
+/**
+ * The libs of a run: the answered ones plus the floor a run never drops, the
+ * libs the last install recorded and every `@cngx/<lib>` the app declares
+ * (which includes the package a shim pinned before it delegated). A declared
+ * lib that is only a peer of the others is installed through them and not
+ * recorded, so the pins cngx itself wrote do not grow the record.
+ * `@cngx/themes`, `@cngx/mcp` and `@cngx/eslint-plugin` are no lib; the theme
+ * answer and the tooling steps own them.
+ */
+export function withLibsFloor(
+  answered: readonly CngxLib[],
+  facts: ProjectFacts,
+  recorded: OnboardingAnswers | undefined,
+): readonly CngxLib[] {
+  const kept = new Set<CngxLib>([...answered, ...(recorded?.libs ?? [])]);
+  const implied = selectedLibs([...kept]);
+  for (const lib of CNGX_LIBS) {
+    if (!implied.includes(lib) && declaredRange(facts.manifest, `@cngx/${lib}`) !== undefined) {
+      kept.add(lib);
+    }
+  }
+  return CNGX_LIBS.filter((lib) => kept.has(lib));
+}
+
 /** The answers of one run and the editors the user asked for by name. */
 export interface Onboarding {
   readonly answers: OnboardingAnswers;
+  /** The libs the flag, the question or the defaults gave, before the floor. */
+  readonly answeredLibs: readonly CngxLib[];
   /**
    * The `--ai-tools` flag, else the editors picked in the question; empty
    * when the preset default answered. Only these override a removal the
@@ -119,6 +146,35 @@ export function presetChangeNote(
 }
 
 /**
+ * The note a run plans when the floor keeps libs the answer left out, so a
+ * narrower `--libs` is said to add nothing instead of silently not removing.
+ * Empty when the answer already holds every kept lib.
+ */
+export function libsFloorNote(
+  answered: readonly CngxLib[],
+  kept: readonly CngxLib[],
+  provenance: Provenance,
+): StepResult {
+  const implied = selectedLibs(answered);
+  const added = kept.filter((lib) => !implied.includes(lib)).map((lib) => `@cngx/${lib}`);
+  if (added.length === 0) {
+    return { changes: [], skipped: [] };
+  }
+  const [stay, them, it] = added.length === 1 ? ['stays', 'it', 'it'] : ['stay', 'them', 'one'];
+  return {
+    changes: [
+      createNote({
+        id: 'answers:libs',
+        label: 'Keep the recorded packages',
+        reason: `${added.join(', ')} ${stay} because the last install recorded ${them} or package.json declares ${them}; to remove ${it}, delete it from package.json and from answers.libs in .cngx/install.json`,
+        provenance,
+      }),
+    ],
+    skipped: [],
+  };
+}
+
+/**
  * Asks only what detection leaves open: the packages, the theme when Material
  * is present, the language, the lint entry when an eslint config exists, the
  * feedback providers when `@cngx/ui` is selected and the editors that get the
@@ -126,7 +182,8 @@ export function presetChangeNote(
  * the server the last install wired (`installed` holds its step ids). A flag
  * answers its question; without a terminal the default does. The defaults
  * are the `recorded` answers of the last install when this run keeps its
- * preset, else the preset's. `minimal` asks nothing.
+ * preset, else the preset's. `minimal` asks nothing. The libs never fall
+ * below the floor of `withLibsFloor`.
  */
 export async function askOnboarding(
   facts: ProjectFacts,
@@ -141,12 +198,13 @@ export async function askOnboarding(
   const rerun = recorded?.preset === preset ? recorded : undefined;
   const defaults = rerun ?? presetDefaults(preset, facts);
 
-  const libs = await flow.multiSelect<CngxLib>({
+  const answeredLibs = await flow.multiSelect<CngxLib>({
     key: 'libs',
     message: 'Which cngx packages do you want?',
     choices: CNGX_LIBS.map((lib) => ({ value: lib, name: `@cngx/${lib}` })),
     default: defaults.libs,
   });
+  const libs = withLibsFloor(answeredLibs, facts, recorded);
   const selected = selectedLibs(libs);
   const hasCore = selected.includes('core');
   const theme = facts.material.present
@@ -227,6 +285,7 @@ export async function askOnboarding(
       floatingFallback: flag(options, 'floatingFallback', defaults.floatingFallback && selected.includes('common')),
       aiTools,
     },
+    answeredLibs,
     explicitAiTools: answeredByName ? aiTools : [],
   };
 }

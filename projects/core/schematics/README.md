@@ -2,7 +2,9 @@
 
 `ng add` for every `@cngx/*` package. Build-time tooling: it runs in Node under
 the Angular CLI, never in an app bundle. `@cngx/core` owns the onboarding; every
-other package ships a one-line shim that delegates to it.
+other package ships a one-line shim that delegates to it. The shim pins its own
+package beside core before it delegates, and folds its lib into a given
+`--libs`, so `ng add @cngx/<lib>` always installs and records `<lib>`.
 
 ## Layout
 
@@ -161,6 +163,10 @@ only when its source `package.json` declares `schematics`.
   values. `schema.json` therefore admits both forms (a list's string branch
   comes first, a boolean's boolean branch), and `parseNgAddOptions` turns
   either into `NgAddOptions` once at the ng-add entry.
+- The recorded `libs` are a floor: `withLibsFloor` (`ng-add/shell/questions.ts`)
+  adds the libs the last install recorded and every `@cngx/<lib>` the app
+  declares that is not only a peer of the others, and `libsFloorNote` says
+  what it kept. A re-run never removes a package; removal is manual.
 - The comma form is the only multi-value spelling. The CLI keeps the last
   value of a repeated flag (`--libs core --libs forms`) or a space-separated
   list (`--libs core forms`) and warns.
