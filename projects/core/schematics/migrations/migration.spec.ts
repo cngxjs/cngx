@@ -47,9 +47,9 @@ function twoRecordedApplications(projects: readonly string[] = ['alpha', 'beta']
   const app = readFixture('standalone-app');
   const { before } = readMigrationFixture('0.1.0');
   const record = (JSON.parse(before['.cngx/install.json'] ?? '{}') as InstallManifest).projects['fixture-app'];
-  const workspace = JSON.parse(app['angular.json'] ?? '{}') as { projects: Record<string, Record<string, any>> };
+  const workspace = JSON.parse(app['angular.json'] ?? '{}') as { projects: Record<string, Record<string, unknown>> };
   const alpha = workspace.projects['fixture-app'];
-  const beta = { ...JSON.parse(JSON.stringify(alpha)), root: 'projects/beta', sourceRoot: 'projects/beta/src' };
+  const beta = { ...(JSON.parse(JSON.stringify(alpha)) as Record<string, unknown>), root: 'projects/beta', sourceRoot: 'projects/beta/src' };
   workspace.projects = { alpha, beta };
   const betaFiles = Object.fromEntries(
     Object.entries(app)

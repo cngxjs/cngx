@@ -6,7 +6,6 @@ import {
   applyChangePlan,
   canPrompt,
   type ChangePlan,
-  CNGX_LIBS,
   type CngxLib,
   createChangePlan,
   createPromptFlow,
@@ -29,8 +28,8 @@ import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
 import { planHelperReadme } from './steps/helper-readme';
 import { planLint } from './steps/lint';
-import { readInstallManifest, readManifestOf, unreadableCopyPath } from './shell/install-manifest';
-import { planManifest, planUnreadableManifest, recordedLibs, recordedStepIds } from './steps/manifest';
+import { readInstallManifest, manifestOf, unreadableCopyPath } from './shell/install-manifest';
+import { planManifest, planUnreadableManifest, recordedLibs, recordedStepIds, unionLibs } from './steps/manifest';
 import { type Step } from './steps/model';
 import { planProviders } from './steps/providers';
 import { readRecordedAnswers } from './steps/reruns';
@@ -52,10 +51,6 @@ function planSteps(withdrawn: ReadonlySet<string>, workspaceLibs: readonly CngxL
     (facts, answers, versions) =>
       planHelperReadme(facts, { ...answers, libs: unionLibs(answers.libs, workspaceLibs) }, versions, withdrawn),
   ];
-}
-
-function unionLibs(a: readonly CngxLib[], b: readonly CngxLib[]): readonly CngxLib[] {
-  return CNGX_LIBS.filter((lib) => a.includes(lib) || b.includes(lib));
 }
 
 // The floor is the `@angular/core` range @cngx/core peers on, stamped into
@@ -146,7 +141,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
       answers: givenAnswers(options),
     });
     const stored = readInstallManifest(tree);
-    const manifest = readManifestOf(stored);
+    const manifest = manifestOf(stored);
     const previous = manifest?.projects[facts.project];
     const installed = recordedStepIds(manifest);
     const recorded =
@@ -172,7 +167,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
     );
     const unreadable =
       stored.state === 'unreadable'
-        ? planUnreadableManifest(facts.project, stored.content, unreadableCopyPath((path) => tree.exists(path)), versions)
+        ? planUnreadableManifest(facts.project, versions, stored.content, unreadableCopyPath((path) => tree.exists(path)))
         : { changes: [], skipped: [] };
     const record = planManifest(facts, answers, versions, steps, previous, new Date().toISOString());
     const plan = createChangePlan([steps, unreadable, record], steps.warnings);

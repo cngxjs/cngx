@@ -19,7 +19,7 @@ import {
 import { type ProjectFacts } from '../detect/detect';
 import { withdrawnAiTargets } from './ai-tools';
 import { planHelperReadme } from './helper-readme';
-import { INSTALL_MANIFEST_PATH, type ProjectRecord } from './manifest';
+import { INSTALL_MANIFEST_PATH, type ProjectRecord, unionLibs } from './manifest';
 import { type OnboardingAnswers, type Versions } from './model';
 import { planTheme } from './theme';
 
@@ -42,8 +42,8 @@ function answerOr<T>(value: unknown, valid: (value: unknown) => value is T, fall
  * preset's default. `undefined` when the preset is missing or a recorded
  * answer is no longer valid.
  */
-export function readRecordedAnswers(manifest: ProjectRecord, defaultsFor: PresetDefaults): OnboardingAnswers | undefined {
-  const recorded = manifest.answers;
+export function readRecordedAnswers(record: ProjectRecord, defaultsFor: PresetDefaults): OnboardingAnswers | undefined {
+  const recorded = record.answers;
   const preset = recorded['preset'];
   if (!isOneOf(NG_ADD_PRESETS, preset)) {
     return undefined;
@@ -132,13 +132,13 @@ export interface WorkspaceReadme {
  */
 export function planManifestReruns(
   facts: ProjectFacts,
-  manifest: ProjectRecord,
+  record: ProjectRecord,
   versions: Versions,
   defaultsFor: PresetDefaults,
   readme: WorkspaceReadme | undefined,
 ): StepResult {
   const provenance = createProvenance('ng-update', versions.cngx);
-  const answers = readRecordedAnswers(manifest, defaultsFor);
+  const answers = readRecordedAnswers(record, defaultsFor);
   if (answers === undefined) {
     return {
       changes: [
@@ -152,9 +152,9 @@ export function planManifestReruns(
       skipped: [],
     };
   }
-  const recorded = new Set(manifest.steps.map((step) => step.id));
+  const recorded = new Set(record.steps.map((step) => step.id));
   const theme =
-    manifest.cngxVersion === versions.cngx
+    record.cngxVersion === versions.cngx
       ? NO_CHANGES
       : restoreNotes(
           planTheme(facts, answers, versions),
@@ -163,24 +163,24 @@ export function planManifestReruns(
           facts.project,
           provenance,
         );
-  return mergeStepResults([theme, planReadmeRerun(facts, manifest, answers, versions, readme, provenance)]);
+  return mergeStepResults([theme, planReadmeRerun(facts, record, answers, versions, readme, provenance)]);
 }
 
 function planReadmeRerun(
   facts: ProjectFacts,
-  manifest: ProjectRecord,
+  record: ProjectRecord,
   answers: OnboardingAnswers,
   versions: Versions,
   readme: WorkspaceReadme | undefined,
   provenance: Provenance,
 ): StepResult {
-  if (readme === undefined || manifest.mcpVersion === versions.mcp) {
+  if (readme === undefined || record.mcpVersion === versions.mcp) {
     return NO_CHANGES;
   }
   // ng update asks for no editor, so every removal the user made since the
   // install holds, the same way a later `ng add` respects it.
   const withdrawn = withdrawnAiTargets(facts, answers, readme.installed, []);
-  const libs = CNGX_LIBS.filter((lib) => answers.libs.includes(lib) || readme.libs.includes(lib));
+  const libs = unionLibs(answers.libs, readme.libs);
   return restoreNotes(
     planHelperReadme(facts, { ...answers, libs }, versions, withdrawn),
     (change) => change.kind === 'create-file',

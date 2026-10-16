@@ -157,17 +157,12 @@ function angularLine(version: string | null): string | null {
  * `node_modules` is too.
  */
 export function isSameInstall(a: ProjectRecord, b: ProjectRecord): boolean {
-  const key = (manifest: ProjectRecord): string =>
+  const key = (record: ProjectRecord): string =>
     canonical({
-      preset: manifest.preset,
-      answers: manifest.answers,
-      versions: [
-        manifest.cngxVersion,
-        manifest.mcpVersion,
-        manifest.eslintPluginVersion,
-        angularLine(manifest.angularVersion),
-      ],
-      steps: manifest.steps.map((step) => step.id).sort(),
+      preset: record.preset,
+      answers: record.answers,
+      versions: [record.cngxVersion, record.mcpVersion, record.eslintPluginVersion, angularLine(record.angularVersion)],
+      steps: record.steps.map((step) => step.id).sort(),
     });
   return key(a) === key(b);
 }
@@ -188,15 +183,25 @@ export function recordedStepIds(manifest: InstallManifest | undefined): readonly
   return [...new Set(ids)];
 }
 
+/** Every lib of the given lists, once each, in `CNGX_LIBS` order. */
+export function unionLibs(...lists: readonly (readonly CngxLib[])[]): readonly CngxLib[] {
+  return CNGX_LIBS.filter((lib) => lists.some((list) => list.includes(lib)));
+}
+
 /** The libs any project's record answered, in `CNGX_LIBS` order. */
 export function recordedLibs(manifest: InstallManifest | undefined): readonly CngxLib[] {
-  const libs = new Set(
-    Object.values(manifest?.projects ?? {}).flatMap((record) => {
+  return unionLibs(
+    ...Object.values(manifest?.projects ?? {}).map((record) => {
       const answered = record.answers['libs'];
       return isListOf(CNGX_LIBS, answered) ? answered : [];
     }),
   );
-  return CNGX_LIBS.filter((lib) => libs.has(lib));
+}
+
+// A record is plain JSON data; the interface only lacks the index signature
+// `JsonValue` asks for, so the round trip hands over a structural copy.
+function jsonOf(record: ProjectRecord): JsonValue {
+  return JSON.parse(JSON.stringify(record)) as JsonValue;
 }
 
 function nextRecord(
@@ -252,13 +257,13 @@ export function planManifest(
   const change: WriteJson = {
     kind: 'write-json',
     id: 'manifest:install',
-    label: `Write ${INSTALL_MANIFEST_PATH}`,
+    label: `Write ${INSTALL_MANIFEST_PATH} for ${facts.project}`,
     reason: 'records this install for a re-run and ng update',
     provenance: createProvenance('ng-add', versions.cngx),
     path: INSTALL_MANIFEST_PATH,
     entries: [
       [['schemaVersion'], SCHEMA_VERSION],
-      [['projects', facts.project], record as unknown as JsonValue],
+      [['projects', facts.project], jsonOf(record)],
     ],
   };
   if (previous !== undefined && isSameInstall(previous, record)) {
@@ -275,9 +280,9 @@ export function planManifest(
  */
 export function planUnreadableManifest(
   project: string,
+  versions: Versions,
   content: Buffer,
   copyPath: string,
-  versions: Versions,
 ): StepResult {
   const provenance = createProvenance('ng-add', versions.cngx);
   const copy: CreateFile = {
@@ -310,9 +315,9 @@ export function planUnreadableManifest(
  */
 export function planManifestUpdate(
   project: string,
-  previous: ProjectRecord,
   versions: Versions,
   plan: ChangePlan,
+  previous: ProjectRecord,
   now: string,
 ): StepResult {
   const planned = new Map(

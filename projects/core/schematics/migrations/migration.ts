@@ -24,7 +24,7 @@ import {
   type SummaryHeadlines,
 } from '../engine';
 import { detectProject, type ProjectFacts } from '../ng-add/detect/detect';
-import { type InstallManifestState, readInstallManifest, readManifestOf } from '../ng-add/shell/install-manifest';
+import { type InstallManifestState, readInstallManifest, manifestOf } from '../ng-add/shell/install-manifest';
 import { presetDefaults } from '../ng-add/shell/questions';
 import {
   INSTALL_MANIFEST_PATH,
@@ -131,7 +131,7 @@ async function planReruns(
       readme = undefined;
     }
     reruns.push(rerun);
-    records.push(planManifestUpdate(project, record, versions, createChangePlan([rerun]), now));
+    records.push(planManifestUpdate(project, versions, createChangePlan([rerun]), record, now));
   }
   return { reruns: createChangePlan(reruns), records: createChangePlan(records) };
 }
@@ -167,7 +167,7 @@ export function createMigration(migration: Migration): Rule {
     const renamed = previewRenames(tree, renames);
     const { reruns, records } = await planReruns(renamed, stored, versions, new Date().toISOString());
     const plan = createChangePlan(
-      [renames, planCodemods(migration.codemods, renamed, readManifestOf(stored)), reruns, records],
+      [renames, planCodemods(migration.codemods, renamed, manifestOf(stored)), reruns, records],
       warning === undefined ? [] : [warning],
     );
 

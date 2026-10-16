@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createMemoryTree } from '../../engine';
 import { createAnswers, createFacts, VERSIONS } from '../../testing/onboarding';
 import { planManifest } from '../steps/manifest';
-import { readInstallManifest, readManifestOf, unreadableCopyPath } from './install-manifest';
+import { readInstallManifest, manifestOf, unreadableCopyPath } from './install-manifest';
 
 function firstRun(): unknown {
   const [change] = planManifest(
@@ -55,13 +55,13 @@ describe('readInstallManifest', () => {
   });
 });
 
-describe('readManifestOf', () => {
+describe('manifestOf', () => {
   it('hands over only a read manifest', () => {
     const tree = createMemoryTree({ '.cngx/install.json': JSON.stringify(firstRun()) });
 
-    expect(readManifestOf(readInstallManifest(tree))).toEqual(firstRun());
-    expect(readManifestOf({ state: 'unreadable', content: Buffer.from('x') })).toBeUndefined();
-    expect(readManifestOf({ state: 'absent' })).toBeUndefined();
+    expect(manifestOf(readInstallManifest(tree))).toEqual(firstRun());
+    expect(manifestOf({ state: 'unreadable', content: Buffer.from('x') })).toBeUndefined();
+    expect(manifestOf({ state: 'absent' })).toBeUndefined();
   });
 });
 

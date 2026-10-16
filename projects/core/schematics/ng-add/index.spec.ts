@@ -187,16 +187,22 @@ function record(tree: Tree, project = 'fixture-app'): RecordedInstall {
 
 // Two applications in one workspace: \`alpha\` standalone on CSS at the root,
 // \`beta\` an NgModule app on SCSS under projects/.
+interface FixtureProject {
+  root: string;
+  sourceRoot: string;
+  architect: { build: { options: Record<string, unknown> } };
+}
+
 function twoApplications(): Tree {
   const workspace = JSON.parse(readFixture('standalone-app')['angular.json']) as {
-    projects: Record<string, Record<string, any>>;
+    projects: Record<string, FixtureProject>;
   };
   const app = workspace.projects['fixture-app'];
-  const beta = JSON.parse(JSON.stringify(app)) as Record<string, any>;
-  beta['root'] = 'projects/beta';
-  beta['sourceRoot'] = 'projects/beta/src';
-  beta['architect']['build']['options'] = {
-    ...beta['architect']['build']['options'],
+  const beta = JSON.parse(JSON.stringify(app)) as FixtureProject;
+  beta.root = 'projects/beta';
+  beta.sourceRoot = 'projects/beta/src';
+  beta.architect.build.options = {
+    ...beta.architect.build.options,
     browser: 'projects/beta/src/main.ts',
     styles: ['projects/beta/src/styles.scss'],
   };

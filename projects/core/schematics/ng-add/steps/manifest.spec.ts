@@ -118,7 +118,7 @@ describe('planManifest', () => {
 
     expect(result.changes).toEqual([]);
     expect(result.skipped).toEqual([
-      { id: 'manifest:install', label: 'Write .cngx/install.json', reason: `unchanged since ${FIRST_RUN}` },
+      { id: 'manifest:install', label: 'Write .cngx/install.json for fixture-app', reason: `unchanged since ${FIRST_RUN}` },
     ]);
   });
 
@@ -239,7 +239,7 @@ describe('recordedStepIds and recordedLibs', () => {
 
 describe('planUnreadableManifest', () => {
   it('keeps the file under the copy path and empties it for the new record', () => {
-    const result = planUnreadableManifest('fixture-app', Buffer.from('not json'), '.cngx/install.json.unreadable-2', VERSIONS);
+    const result = planUnreadableManifest('fixture-app', VERSIONS, Buffer.from('not json'), '.cngx/install.json.unreadable-2');
     const [copy, reset] = result.changes;
 
     expect(copy).toMatchObject({
@@ -285,7 +285,7 @@ describe('planManifestUpdate', () => {
   ]);
 
   it('records the new versions, the re-run steps and the update time', () => {
-    const result = planManifestUpdate('fixture-app', installed(['helper-readme:file', 'theme:file']), NEXT, RERUN, SECOND_RUN);
+    const result = planManifestUpdate('fixture-app', NEXT, RERUN, installed(['helper-readme:file', 'theme:file']), SECOND_RUN);
     const next = updated(result);
 
     expect(writtenEntries(result).map(([path]) => path.slice(0, 2))).toEqual(
@@ -304,7 +304,7 @@ describe('planManifestUpdate', () => {
   });
 
   it('plans no write when versions and steps stand', () => {
-    const result = planManifestUpdate('fixture-app', firstRun(), VERSIONS, createChangePlan([]), SECOND_RUN);
+    const result = planManifestUpdate('fixture-app', VERSIONS, createChangePlan([]), firstRun(), SECOND_RUN);
 
     expect(result.changes).toEqual([]);
     expect(result.skipped).toEqual([
@@ -314,7 +314,7 @@ describe('planManifestUpdate', () => {
 
   it('does not mutate its inputs', () => {
     expect(() =>
-      planManifestUpdate('fixture-app', deepFreeze(firstRun()), deepFreeze(NEXT), deepFreeze(RERUN), SECOND_RUN),
+      planManifestUpdate('fixture-app', deepFreeze(NEXT), deepFreeze(RERUN), deepFreeze(firstRun()), SECOND_RUN),
     ).not.toThrow();
   });
 });

@@ -39,7 +39,7 @@ function decodeUtf8(content: Buffer): string | undefined {
 }
 
 /** The manifest of a `read` state, `undefined` for the other two. */
-export function readManifestOf(state: InstallManifestState): InstallManifest | undefined {
+export function manifestOf(state: InstallManifestState): InstallManifest | undefined {
   return state.state === 'read' ? state.manifest : undefined;
 }
 
