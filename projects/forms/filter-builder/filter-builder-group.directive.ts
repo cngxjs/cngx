@@ -1,8 +1,8 @@
-import { computed, Directive, inject, input } from '@angular/core';
+import { computed, Directive, input } from '@angular/core';
 
 import type { FilterGroup, FilterNode } from './filter-builder.types';
 import { injectFilterBuilderI18n } from './filter-builder.config';
-import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
+import { injectFilterBuilderHost } from './filter-builder-host.token';
 import { referenceEqual } from './filter-builder-internal';
 
 /** @internal */
@@ -51,7 +51,7 @@ export class CngxFilterGroup {
    */
   protected readonly pathAttr = computed(() => this.path().join('.'));
 
-  private readonly host = inject(CNGX_FILTER_BUILDER_HOST);
+  private readonly host = injectFilterBuilderHost('cngxFilterGroup');
   private readonly i18n = injectFilterBuilderI18n();
 
   readonly node = computed<FilterGroup | null>(

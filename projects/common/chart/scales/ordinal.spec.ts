@@ -28,7 +28,7 @@ describe('createOrdinalScale', () => {
         name: 'CngxRuntimeError',
         code: 'CNGX1049',
         message: expect.stringMatching(
-          /^CNGX1049: createOrdinalScale: colors palette must not be empty/,
+          /^CNGX1049: createOrdinalScale\(\): colors palette must not be empty/,
         ),
       }),
     );

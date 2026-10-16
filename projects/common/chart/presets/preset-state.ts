@@ -72,7 +72,7 @@ export function warnIfUnnamedPreset(selector: string, hint: string, hasName: () 
     }
     cngxDevWarn(
       'CNGX1010',
-      `${selector}: role="${el.getAttribute('role') ?? 'meter'}" has no accessible name - ` +
+      `[${selector}] role="${el.getAttribute('role') ?? 'meter'}" has no accessible name - ` +
         `AT announces the value with no subject. ${hint}`,
     );
   });

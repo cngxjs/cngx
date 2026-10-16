@@ -124,7 +124,7 @@ export class CngxThreshold implements CngxChartLayer {
   readonly dashed = input<boolean>(false);
   readonly color = input<string | null>(null);
 
-  protected readonly ctx = injectChartContext('CngxThreshold');
+  protected readonly ctx = injectChartContext('cngxThreshold');
 
   protected readonly bounds = computed<{ x1: number; x2: number; y: number } | null>(
     () => {

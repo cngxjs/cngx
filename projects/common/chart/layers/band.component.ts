@@ -123,7 +123,7 @@ export class CngxBand implements CngxChartLayer {
   readonly opacity = input<number | string | null>(null);
   readonly color = input<string | null>(null);
 
-  protected readonly ctx = injectChartContext('CngxBand');
+  protected readonly ctx = injectChartContext('cngxBand');
 
   protected readonly rect = computed<{
     x: number;

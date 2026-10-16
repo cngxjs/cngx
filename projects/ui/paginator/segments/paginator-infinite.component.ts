@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
@@ -10,7 +9,7 @@ import {
 import { CngxInfiniteScroll } from '@cngx/common/layout';
 
 import { injectPaginatorAnnouncements, injectPaginatorAriaLabels } from '../paginator-config';
-import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
+import { injectPaginatorHost } from '../paginator-host.token';
 
 /**
  * Infinite-scroll segment: a bottom-of-list sentinel that auto-advances the
@@ -79,7 +78,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorInfinite {
-  protected readonly host = inject(CNGX_PAGINATOR_HOST);
+  protected readonly host = injectPaginatorHost('cngx-pgn-infinite');
   private readonly ariaLabels = injectPaginatorAriaLabels();
   private readonly announcements = injectPaginatorAnnouncements();
 

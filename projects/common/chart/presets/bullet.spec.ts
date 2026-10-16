@@ -101,7 +101,9 @@ describe('CngxBullet - unnamed-meter dev warning', () => {
       TestBed.resetTestingModule();
       const calls = warningsFor(name);
       expect(calls).toHaveLength(1);
-      expect(calls[0][0]).toMatch(/^CNGX1010: cngx-bullet: role="meter" has no accessible name - /);
+      expect(calls[0][0]).toMatch(
+        /^CNGX1010: \[cngx-bullet\] role="meter" has no accessible name - /,
+      );
     }
   });
 

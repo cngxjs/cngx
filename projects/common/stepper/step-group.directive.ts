@@ -120,8 +120,8 @@ export class CngxStepGroup implements CngxStepGroupHost, OnInit {
         'CNGX1047',
         typeof ngDevMode !== 'undefined' &&
           ngDevMode &&
-          'CngxStepGroup: no enclosing CngxStepperPresenter found. ' +
-            'Wrap the group inside an element carrying [cngxStepper].',
+          '[cngxStepGroup] must be placed inside an element with [cngxStepper], ' +
+            'such as <cngx-stepper>.',
       );
     }
   }

@@ -471,7 +471,7 @@ describe('CngxReorder dev-mode check', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(warn).toHaveBeenCalledWith(
-      expect.stringMatching(/^CNGX1028: \[CngxReorder\] 1 element\(s\) match itemSelector "\.row"/),
+      expect.stringMatching(/^CNGX1028: \[cngxReorder\] 1 element\(s\) match itemSelector "\.row"/),
     );
   });
 
@@ -484,6 +484,6 @@ describe('CngxReorder dev-mode check', () => {
     await fixture.whenStable();
     const calls = warn.mock.calls.filter(([m]) => /^CNGX1028: /.test(String(m)));
     expect(calls).toHaveLength(1);
-    expect(calls[0][0]).toMatch(/^CNGX1028: \[CngxReorder\] 2 element\(s\) match itemSelector "\.row"/);
+    expect(calls[0][0]).toMatch(/^CNGX1028: \[cngxReorder\] 2 element\(s\) match itemSelector "\.row"/);
   });
 });

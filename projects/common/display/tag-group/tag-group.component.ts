@@ -273,8 +273,9 @@ export class CngxTagGroup implements CngxTagGroupHost {
 
   constructor() {
     // Dev-mode advisory: `[label]` without `[semanticList]="true"` lands
-    // `aria-label` on a bare `<div>` - AT reads the label but won't
-    // announce "list, N items". One-shot, tree-shaken in prod.
+    // `aria-label` on a role-less host, where ARIA prohibits naming, so most
+    // AT drops the label and no "list, N items" is announced. One-shot,
+    // tree-shaken in prod.
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       afterNextRender(() => {
         const { label, semanticList } = untracked(() => ({

@@ -256,8 +256,12 @@ jobs:
       # its prebuild hook, so the production build validates against a fresh tree.
       - name: Build examples app
         run: npm run build:examples
-      # Reuses the production build above: fails when a `cngx-dev:` marker or a
-      # hand-written debugName reaches the bundle (dev-only code not stripped).
+      # Reuses the production build above: fails when dev-only code reaches the
+      # bundle - a `cngx-dev:` marker, a hand-written debugName, the code of a
+      # cngxDevWarn / cngxDevError call or of a dev-only CngxRuntimeError, or the
+      # error docs URL. Every needle must also be present in the library build,
+      # and while source constructs a code-only CngxRuntimeError, one such code
+      # must reach the bundle (liveness), so a clean scan is not vacuous.
       - name: Check production bundle for dev-only code
         run: node scripts/devtools-prod-strip-check.mjs
 

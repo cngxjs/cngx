@@ -273,7 +273,10 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
               'The brain stays inert (no aria-haspopup / aria-expanded) until one is present.',
           );
         }
-        const popover = this.resolvedPopover();
+        // Only a popover bound through the input is the consumer's to configure.
+        // A CNGX_MENU_SUBMENU_WIRING provider owns the placement policy and
+        // installs its fallbacks when it opens the submenu.
+        const popover = this.popover();
         if (popover) {
           warnMissingSubmenuFallbacks(popover.elementRef.nativeElement);
         }
@@ -316,7 +319,7 @@ function warnMissingSubmenuFallbacks(popoverEl: HTMLElement): void {
   submenuFallbackWarnedDocs.add(doc);
   cngxDevWarn(
     'CNGX1026',
-    'CngxMenuItemSubmenu: the companion popover ships without [positionTryFallbacks]. ' +
+    '[cngxMenuItemSubmenu] the companion popover ships without [positionTryFallbacks]. ' +
       'Submenus that clip the viewport edge will not flip without a try-fallback chain. ' +
       'Expose the recommended default as a component field and bind it:\n\n' +
       "  import { CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';\n" +

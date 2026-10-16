@@ -429,7 +429,7 @@ describe('CngxMenuItemSubmenu submenu try-fallbacks dev warning', () => {
         String(call[0]).includes('positionTryFallbacks'),
       );
       expect(fallbackWarn.length).toBe(1);
-      expect(fallbackWarn[0][0]).toMatch(/^CNGX1026: CngxMenuItemSubmenu: /);
+      expect(fallbackWarn[0][0]).toMatch(/^CNGX1026: \[cngxMenuItemSubmenu\] /);
       expect(fallbackWarn[0][0]).toContain('CNGX_SUBMENU_TRY_FALLBACKS');
     } finally {
       warnSpy.mockRestore();
@@ -471,7 +471,7 @@ describe('CngxMenuItemSubmenu submenu try-fallbacks dev warning', () => {
       const warnings = fallbackWarnings(warnSpy);
       expect(warnings).toHaveLength(1);
       expect(String(warnings[0][0])).toMatch(
-        /^CNGX1026: CngxMenuItemSubmenu: the companion popover ships without \[positionTryFallbacks\]/,
+        /^CNGX1026: \[cngxMenuItemSubmenu\] the companion popover ships without \[positionTryFallbacks\]/,
       );
     } finally {
       warnSpy.mockRestore();

@@ -116,7 +116,7 @@ export class CngxStatus {
         if (!this.label() && el.getAttribute('aria-hidden') !== 'true') {
           cngxDevWarn(
             'CNGX1016',
-            'cngx-status: no `label`; the status has no accessible name and reads only as a ' +
+            '[cngx-status] no `label`; the status has no accessible name and reads only as a ' +
               'coloured dot. Set [label]: the host has no role, so an aria-label or ' +
               'aria-labelledby on it is not a valid name.',
           );
@@ -124,7 +124,7 @@ export class CngxStatus {
         if (!this.glyph() && !this.label()) {
           cngxDevWarn(
             'CNGX1017',
-            'cngx-status: [glyph]="false" with no visible `label`; a bare coloured ' +
+            '[cngx-status] [glyph]="false" with no visible `label`; a bare coloured ' +
               'dot is colour-only for a sighted colour-blind reader even with an ' +
               'aria-label. Set [label] or show the glyph.',
           );

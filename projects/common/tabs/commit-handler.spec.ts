@@ -154,6 +154,23 @@ describe('createTabsCommitHandler - take-1 done-latch', () => {
     expect(ctrl.isCommitting()).toBe(false);
   });
 
+  it('stores a CNGX1059 runtime error for an EMPTY-style source', () => {
+    const ctrl = createCommitController<number>();
+    const handler = createTabsCommitHandler({ controller: ctrl });
+    const empty = new Subject<boolean>();
+    handler.beginTransition(0, 1, () => empty, () => undefined);
+    empty.complete();
+    expect(ctrl.state.error()).toEqual(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1059',
+        message: expect.stringMatching(
+          /^CNGX1059: \[cngxTabGroup\] commitAction completed without emitting true or false\./,
+        ),
+      }),
+    );
+  });
+
   it('does not double-resolve when the source emits and then completes', () => {
     const ctrl = createCommitController<number>();
     const handler = createTabsCommitHandler({ controller: ctrl });

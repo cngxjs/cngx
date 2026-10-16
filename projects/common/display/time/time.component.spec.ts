@@ -84,7 +84,7 @@ describe('CngxTime', () => {
     expect(timeEl.textContent?.trim()).toBe('');
     expect(timeEl.hasAttribute('datetime')).toBe(false);
     expect(warn).toHaveBeenCalledOnce();
-    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^CNGX1006: \[CngxTime\]/));
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^CNGX1006: \[cngx-time\]/));
     warn.mockRestore();
   });
 

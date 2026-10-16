@@ -119,7 +119,7 @@ export class CngxBreadcrumbRouterSync implements CngxBreadcrumbItemsSource {
         afterNextRender(() => {
           cngxDevWarn(
             'CNGX3001',
-            'CngxBreadcrumbRouterSync: no Router available - directive is a no-op. ' +
+            '[cngxRouterSync] on <cngx-breadcrumb>: no Router available - directive is a no-op. ' +
               'Provide @angular/router via provideRouter(...) to enable router-driven crumbs.',
           );
         });

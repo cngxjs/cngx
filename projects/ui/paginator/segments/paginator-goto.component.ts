@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 
 import { injectPaginatorAriaLabels } from '../paginator-config';
-import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
+import { injectPaginatorHost } from '../paginator-host.token';
 
 /**
  * Go-to-page segment: a native `<input type="number">`. \
@@ -41,7 +41,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorGoto {
-  protected readonly host = inject(CNGX_PAGINATOR_HOST);
+  protected readonly host = injectPaginatorHost('cngx-pgn-goto');
   protected readonly ariaLabels = injectPaginatorAriaLabels();
 
   /**

@@ -1,13 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ViewEncapsulation } from '@angular/core';
 
 import { injectPaginatorFormats } from '../paginator-config';
-import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
+import { injectPaginatorHost } from '../paginator-host.token';
 
 /**
  * Range-readout segment: renders `start-end of total` for the current page.
@@ -32,7 +26,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorRange {
-  protected readonly host = inject(CNGX_PAGINATOR_HOST);
+  protected readonly host = injectPaginatorHost('cngx-pgn-range');
   private readonly formats = injectPaginatorFormats();
 
   /** 1-based index of the first item on the current page (0 when empty). */

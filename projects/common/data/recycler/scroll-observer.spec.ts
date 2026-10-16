@@ -142,7 +142,7 @@ describe('createScrollObserver', () => {
     TestBed.flushEffects();
 
     expect(warn).toHaveBeenCalledWith(
-      expect.stringMatching(/^CNGX1013: recycler scrollElement '\.never-mounts' not found on first render; /),
+      expect.stringMatching(/^CNGX1013: injectRecycler\(\): scrollElement '\.never-mounts' not found on first render; /),
     );
   });
 

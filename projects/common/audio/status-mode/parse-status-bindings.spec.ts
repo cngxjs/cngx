@@ -44,6 +44,12 @@ describe('parseStatusBindings', () => {
     expect(unknownKeys).toEqual(['done']);
   });
 
+  it('does not resolve inherited Object.prototype keys as statuses', () => {
+    const { bindings, unknownKeys } = parseStatusBindings('constructor:tap, toString:success');
+    expect(bindings.size).toBe(0);
+    expect(unknownKeys).toEqual(['constructor', 'toString']);
+  });
+
   it('treats a missing colon as an unknown key', () => {
     const { unknownKeys } = parseStatusBindings('pending');
     expect(unknownKeys).toEqual(['pending']);

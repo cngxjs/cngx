@@ -1,8 +1,9 @@
 import { computed, Directive, inject, input, output } from '@angular/core';
 import { injectQueryParamSync } from '@cngx/common/layout';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import { injectSidenavConfig } from './config/inject-sidenav-config';
-import { CNGX_SIDENAV } from './sidenav-token';
+import { CNGX_SIDENAV, type CngxSidenavContract } from './sidenav-token';
 
 /**
  * Deep-links a sidenav's open state into a query param. Opt-in via
@@ -29,7 +30,7 @@ import { CNGX_SIDENAV } from './sidenav-token';
   standalone: true,
 })
 export class CngxSidenavRouterSync {
-  private readonly sidenav = inject(CNGX_SIDENAV, { host: true });
+  private readonly sidenav = injectRouterSyncSidenav();
   private readonly cfg = injectSidenavConfig();
 
   /**
@@ -52,4 +53,17 @@ export class CngxSidenavRouterSync {
       onSyncError: (err) => this.syncError.emit(err),
     });
   }
+}
+
+function injectRouterSyncSidenav(): CngxSidenavContract {
+  const sidenav = inject(CNGX_SIDENAV, { host: true, optional: true });
+  if (!sidenav) {
+    throw new CngxRuntimeError(
+      'CNGX3021',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngxSidenavRouterSync] must be placed on or inside <cngx-sidenav>.',
+    );
+  }
+  return sidenav;
 }

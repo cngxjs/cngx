@@ -1,4 +1,5 @@
-import { InjectionToken, type Signal } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import type {
   FilterExpression,
@@ -65,3 +66,25 @@ export interface CngxFilterBuilderHost<TValue = unknown> {
 export const CNGX_FILTER_BUILDER_HOST = new InjectionToken<CngxFilterBuilderHost>(
   'CNGX_FILTER_BUILDER_HOST',
 );
+
+/**
+ * Inject the {@link CNGX_FILTER_BUILDER_HOST} of the surrounding filter
+ * builder from a group or expression directive. Throws a `CngxRuntimeError`
+ * with code `CNGX2014` when no builder presenter is above it, in development
+ * and production alike. `selector` names the directive in the development
+ * message.
+ *
+ * @internal
+ */
+export function injectFilterBuilderHost(selector: string): CngxFilterBuilderHost {
+  const host = inject(CNGX_FILTER_BUILDER_HOST, { optional: true });
+  if (!host) {
+    throw new CngxRuntimeError(
+      'CNGX2014',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        `[${selector}] must be placed inside <cngx-filter-builder> or an element with [cngxFilterBuilderPresenter].`,
+    );
+  }
+  return host;
+}

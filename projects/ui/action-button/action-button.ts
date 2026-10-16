@@ -351,7 +351,7 @@ export class CngxActionButton {
         if (this.toastSuccess() || this.toastError()) {
           cngxDevWarn(
             'CNGX3008',
-            'CngxActionButton: [toastSuccess]/[toastError] inputs and [cngxToastOn] ' +
+            '[cngx-action-button] [toastSuccess]/[toastError] inputs and [cngxToastOn] ' +
               'on the same element will fire duplicate toasts. Use one or the other.',
           );
         }

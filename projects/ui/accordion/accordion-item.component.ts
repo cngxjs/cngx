@@ -12,10 +12,11 @@ import {
 } from '@angular/core';
 
 import { nextUid, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
+import { CngxRuntimeError } from '@cngx/utils';
 import { CNGX_ACCORDION, CngxAccordionPanel } from '@cngx/common/interactive';
 
 import type { CngxAccordionSeverity } from './config/accordion.config';
-import { CNGX_ACCORDION_GROUP } from './accordion-group.token';
+import { CNGX_ACCORDION_GROUP, type CngxAccordionGroupContext } from './accordion-group.token';
 import { CngxAccordionItemBusy } from './accordion-item-busy.directive';
 import { CngxAccordionItemContent } from './accordion-item-content.directive';
 import { CngxAccordionItemError } from './accordion-item-error.directive';
@@ -118,8 +119,8 @@ export class CngxAccordionItem {
    */
   readonly state = input<AsyncStatus | CngxAsyncState<unknown> | undefined>(undefined);
 
+  protected readonly group = injectAccordionGroup();
   private readonly accordion = inject(CNGX_ACCORDION);
-  protected readonly group = inject(CNGX_ACCORDION_GROUP);
 
   protected readonly regionId = nextUid('cngx-accordion-region-');
   protected readonly headerId = nextUid('cngx-accordion-header-');
@@ -240,4 +241,17 @@ export class CngxAccordionItem {
     source: this.expanded,
     computation: (open, prev) => open || (prev?.value ?? false),
   });
+}
+
+function injectAccordionGroup(): CngxAccordionGroupContext {
+  const group = inject(CNGX_ACCORDION_GROUP, { optional: true });
+  if (!group) {
+    throw new CngxRuntimeError(
+      'CNGX3019',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngx-accordion-item] must be placed inside <cngx-accordion-group>.',
+    );
+  }
+  return group;
 }

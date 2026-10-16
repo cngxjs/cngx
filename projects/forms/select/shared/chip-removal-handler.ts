@@ -124,7 +124,7 @@ export function createChipRemovalHandler<
         'CNGX2008',
         typeof ngDevMode !== 'undefined' &&
           ngDevMode &&
-          `[CngxChipRemovalHandler] Missing required field(s): ${missing.join(
+          `createChipRemovalHandler(): missing required field(s): ${missing.join(
             ', ',
           )}. Provide them, or pass \`removeOverride\` to bypass the standard body.`,
       );

@@ -45,8 +45,8 @@
         "code": { "type": "string", "pattern": "^CNGX\\d{4}$" },
         "lib": { "type": ["string", "null"], "description": "The lib whose range holds the code." },
         "severity": {
-          "enum": ["warn", "error", "throw", null],
-          "description": "The channel: a console helper (warn, error) or a thrown CngxRuntimeError (throw); null for a retired code."
+          "enum": ["warn", "error", "throw", "stored", null],
+          "description": "The channel: a console helper (warn, error), a thrown CngxRuntimeError (throw) or a CngxRuntimeError built and stored in an error state instead of thrown (stored); null for a retired code."
         },
         "production": {
           "enum": ["stripped", "code-only", null],

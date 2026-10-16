@@ -16,7 +16,7 @@ import { cngxDevWarn } from '@cngx/utils';
 import { filter } from 'rxjs/operators';
 
 import { injectStepperConfig } from './stepper-config';
-import { CNGX_STEPPER_HOST } from './stepper-host.token';
+import { injectStepperHost } from './stepper-host.token';
 
 /**
  * URL deep-linking for the stepper. Bidirectional sync between
@@ -64,7 +64,7 @@ export class CngxStepperRouterSync implements AfterContentInit {
   /** Emits when a `router.navigate` rejection is observed. */
   readonly syncError = output<unknown>();
 
-  private readonly host = inject(CNGX_STEPPER_HOST, { host: true });
+  private readonly host = injectStepperHost('cngxStepperRouterSync', { host: true });
   private readonly router = inject(Router, { optional: true });
 
   /**
@@ -86,7 +86,7 @@ export class CngxStepperRouterSync implements AfterContentInit {
         afterNextRender(() => {
           cngxDevWarn(
             'CNGX1031',
-            'CngxStepperRouterSync: no Router available - directive is a no-op. ' +
+            '[cngxStepperRouterSync] no Router available - directive is a no-op. ' +
               'Provide @angular/router via provideRouter(...) to enable deep-linking.',
           );
         });

@@ -147,7 +147,7 @@ export class CngxLine<T = unknown> implements CngxChartLayer {
    */
   readonly points = input<'auto' | 'always' | 'never'>('auto');
 
-  protected readonly ctx = injectChartContext('CngxLine');
+  protected readonly ctx = injectChartContext('cngxLine');
 
   private readonly builder = computed<PathBuilder<T>>(() =>
     createPathBuilder<T>({

@@ -153,7 +153,7 @@ export function createErrorAggregatorContract(
       ) {
         cngxDevWarn(
           'CNGX1020',
-          `CngxErrorAggregator: an error source with key "${entry.key}" is already ` +
+          `addSource(): an error source with key "${entry.key}" is already ` +
             'registered; the new entry replaces it (last-wins). Use unique keys per source.',
         );
       }

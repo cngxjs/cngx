@@ -246,7 +246,7 @@ export function provideCngxI18n(...features: readonly CngxI18nFeature[]): Enviro
         if (inject(EnvironmentInjector) !== inject(ApplicationRef).injector) {
           cngxDevWarn(
             'CNGX0005',
-            '[cngx/i18n] provideCngxI18n() in a child injector switches the locale and the direction but not the copy; call it in the application config.',
+            'provideCngxI18n() in a child injector switches the locale and the direction but not the copy; call it in the application config.',
           );
         }
       }),

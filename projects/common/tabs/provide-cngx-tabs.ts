@@ -37,7 +37,7 @@ function partitionFeatures(features: readonly CngxTabsFeature[]): PartitionedFea
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       cngxDevWarn(
         'CNGX1041',
-        '[provideCngxTabs] Dropped feature without a `_target` ' +
+        'provideCngxTabs(): dropped feature without a `_target` ' +
           'discriminator. Pass config through the `with*` helpers of @cngx/common/tabs ' +
           'and labels through `withTabsI18nLabels(...)`.',
       );

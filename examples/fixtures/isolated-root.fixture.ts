@@ -1,4 +1,5 @@
 import {
+  ApplicationRef,
   createEnvironmentInjector,
   DestroyRef,
   DOCUMENT,
@@ -23,13 +24,25 @@ export interface IsolatedRoot {
  * `viewProviders`) without a second app. `DOCUMENT` points at a detached
  * document, so root reflectors such as `provideDensity()` stamp that
  * document's `<html>` instead of the live examples page, which already owns
- * the real root reflectors. The injector is destroyed with the calling
+ * the real root reflectors. It also stands in for `ApplicationRef.injector`,
+ * so a root-only check sees a root. The injector is destroyed with the calling
  * component. Call it in an injection context (a field initializer).
  */
 export function createIsolatedRoot(providers: (Provider | EnvironmentProviders)[]): IsolatedRoot {
   const document = inject(DOCUMENT).implementation.createHTMLDocument('isolated root');
+  const appRef = inject(ApplicationRef);
   const injector = createEnvironmentInjector(
-    [{ provide: DOCUMENT, useValue: document }, ...providers],
+    [
+      { provide: DOCUMENT, useValue: document },
+      // Root-only checks (CNGX0005) compare against ApplicationRef.injector:
+      // this stand-in root reports itself, everything else delegates.
+      {
+        provide: ApplicationRef,
+        useFactory: (): ApplicationRef =>
+          Object.create(appRef, { injector: { value: inject(EnvironmentInjector) } }),
+      },
+      ...providers,
+    ],
     inject(EnvironmentInjector),
   );
   inject(DestroyRef).onDestroy(() => injector.destroy());

@@ -368,7 +368,9 @@ export const DEMO_FILTER_BUILDER_LABELS = computed<Partial<CngxFilterBuilderI18n
   isDe() ? FILTER_BUILDER_DE : {},
 );
 export const DEMO_TREETABLE_LABELS = computed<Partial<TreetableLabels>>(() =>
-  isDe() ? TREETABLE_DE : {},
+  isDe()
+    ? { ...TREETABLE_DE, columnLabels: { name: 'Name', role: 'Rolle', location: 'Standort' } }
+    : { columnLabels: { name: 'Name', role: 'Role', location: 'Location' } },
 );
 export const DEMO_FEEDBACK_LABELS = computed<CngxFeedbackI18nOverrides>(() =>
   isDe() ? FEEDBACK_DE : {},

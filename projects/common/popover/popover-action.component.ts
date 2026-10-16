@@ -215,7 +215,7 @@ export class CngxPopoverAction {
         if (this.role() === 'confirm' && !this.action()) {
           cngxDevWarn(
             'CNGX1035',
-            'CngxPopoverAction: role="confirm" without an [action] renders a button whose ' +
+            '[cngx-popover-action] role="confirm" without an [action] renders a button whose ' +
               'click runs nothing and leaves the popover open. Bind [action] or use role="dismiss".',
           );
         }

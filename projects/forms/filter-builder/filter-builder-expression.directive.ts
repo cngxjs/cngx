@@ -1,8 +1,8 @@
-import { computed, Directive, inject, input } from '@angular/core';
+import { computed, Directive, input } from '@angular/core';
 
 import type { FilterExpression } from './filter-builder.types';
 import { injectFilterBuilderConfig, injectFilterBuilderI18n } from './filter-builder.config';
-import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
+import { injectFilterBuilderHost } from './filter-builder-host.token';
 import { isExpressionIncomplete, referenceEqual } from './filter-builder-internal';
 import { resolveOperatorLabel } from './filter-builder-operators';
 
@@ -47,7 +47,7 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
 export class CngxFilterExpression {
   readonly path = input.required<readonly number[]>({ alias: 'cngxFilterExpression' });
 
-  private readonly host = inject(CNGX_FILTER_BUILDER_HOST);
+  private readonly host = injectFilterBuilderHost('cngxFilterExpression');
   private readonly config = injectFilterBuilderConfig();
   private readonly i18n = injectFilterBuilderI18n();
 

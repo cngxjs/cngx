@@ -18,7 +18,7 @@ import { filter } from 'rxjs/operators';
 import { CNGX_TABS_COMMIT_ACTION, type CngxTabsCommitActionSource } from './commit-action.token';
 import { cngxDefaultTabRoute, createTabRouterCommit } from './router-commit';
 import { warnTabsRouterAbsent } from './router-absent-warning';
-import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token';
+import { injectTabGroupHost, type CngxTabHandle } from './tab-group-host.token';
 import { CNGX_TAB_NAV_HOST } from './tab-nav-host.token';
 import { injectTabsConfig } from './tabs-config';
 import { CNGX_TAB_URL_MATCH_STRATEGY, type CngxTabMatchMode } from './url-match';
@@ -160,7 +160,7 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource, AfterConte
    */
   readonly match = input<CngxTabMatchMode | undefined>(undefined);
 
-  private readonly host = inject(CNGX_TAB_GROUP_HOST, { host: true });
+  private readonly host = injectTabGroupHost('cngxTabsRouteSync');
   private readonly router = inject(Router, { optional: true });
   private readonly navHost = inject(CNGX_TAB_NAV_HOST, { optional: true, host: true });
   private readonly config = injectTabsConfig();
@@ -200,7 +200,7 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource, AfterConte
   constructor() {
     if (!this.router) {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-        afterNextRender(() => warnTabsRouterAbsent('CngxTabsRouteSync', 'routed tabs'));
+        afterNextRender(() => warnTabsRouterAbsent('cngxTabsRouteSync', 'routed tabs'));
       }
       return;
     }

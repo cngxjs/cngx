@@ -405,7 +405,7 @@ describe('CngxDialog', () => {
       expect(warnSpy).toHaveBeenCalledTimes(1);
       expect(warnSpy.mock.calls[0][0]).toMatch(
         new RegExp(
-          `^CNGX1014: CngxDialog \\[${dialog.id()}\\]: a second title registered while another is live\\. .*a template-declared title wins over a registered one`,
+          `^CNGX1014: \\[cngxDialog\\] dialog "${dialog.id()}" has a second title registered while another is live\\. .*a template-declared title wins over a registered one`,
         ),
       );
 
@@ -423,7 +423,7 @@ describe('CngxDialog', () => {
       const calls = warnSpy.mock.calls.filter(([m]) => /^CNGX1015: /.test(String(m)));
       expect(calls).toHaveLength(1);
       expect(calls[0][0]).toMatch(
-        new RegExp(`^CNGX1015: CngxDialog \\[${dialog.id()}\\]: Non-modal dialog opened without a title\\. `),
+        new RegExp(`^CNGX1015: \\[cngxDialog\\] non-modal dialog "${dialog.id()}" opened without a title\\. `),
       );
     });
 

@@ -44,9 +44,11 @@ const DOM_EVENT_SET = new Set<string>(CNGX_AUDIO_STATUS_DOM_EVENTS);
 /**
  * Parse the `status:earcon` grammar (`'pending:tap, succeeded:success'`) into a
  * status map. Pure - no DOM, no `inject()`. Keys are categorised so the
- * directive can dev-error on DOM-event keys that should have used `[cngxAudio]`
- * and dev-warn on unknown keys. `succeeded`/`failed` normalise to
- * `success`/`error` so a lookup by the tracker's raw `AsyncStatus` hits.
+ * directive can dev-error on DOM-event keys that should have used `[cngxAudio]`;
+ * unknown keys are collected in `unknownKeys` and not reported by the directive.
+ * Only own keys of the alias table resolve, so `constructor` or `toString` is
+ * an unknown key. `succeeded`/`failed` normalise to `success`/`error` so a
+ * lookup by the tracker's raw `AsyncStatus` hits.
  */
 export function parseStatusBindings(spec: string): ParsedStatusBindings {
   const bindings = new Map<AsyncStatus, string>();
@@ -65,7 +67,7 @@ export function parseStatusBindings(spec: string): ParsedStatusBindings {
     }
     const key = trimmed.slice(0, colon).trim();
     const earcon = trimmed.slice(colon + 1).trim();
-    const status = STATUS_ALIASES[key];
+    const status = Object.hasOwn(STATUS_ALIASES, key) ? STATUS_ALIASES[key] : undefined;
     if (status) {
       if (earcon) {
         bindings.set(status, earcon);

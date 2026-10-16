@@ -679,7 +679,7 @@ describe('CngxActionButton', () => {
 
       const calls = warn.mock.calls.filter(([m]) => /^CNGX3008: /.test(String(m)));
       expect(calls).toHaveLength(1);
-      expect(calls[0][0]).toMatch(/^CNGX3008: CngxActionButton: \[toastSuccess\]\/\[toastError\] inputs/);
+      expect(calls[0][0]).toMatch(/^CNGX3008: \[cngx-action-button\] \[toastSuccess\]\/\[toastError\] inputs/);
     });
 
     it('stays silent for [cngxToastOn] without the button toast inputs', () => {

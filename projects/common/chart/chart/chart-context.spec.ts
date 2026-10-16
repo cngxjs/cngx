@@ -15,19 +15,19 @@ describe('injectChartContext', () => {
       providers: [{ provide: CNGX_CHART_CONTEXT, useValue: ctx }],
       parent: TestBed.inject(Injector),
     });
-    const resolved = runInInjectionContext(injector, () => injectChartContext('SpecConsumer'));
+    const resolved = runInInjectionContext(injector, () => injectChartContext('cngxSpecConsumer'));
     expect(resolved).toBe(ctx);
   });
 
   it('throws a consumer-named error outside <cngx-chart>', () => {
     expect(() =>
-      runInInjectionContext(TestBed.inject(Injector), () => injectChartContext('SpecConsumer')),
+      runInInjectionContext(TestBed.inject(Injector), () => injectChartContext('cngxSpecConsumer')),
     ).toThrow(
       expect.objectContaining({
         name: 'CngxRuntimeError',
         code: 'CNGX1048',
         message: expect.stringMatching(
-          /^CNGX1048: SpecConsumer.*CNGX_CHART_CONTEXT.*content child of <cngx-chart>/,
+          /^CNGX1048: \[cngxSpecConsumer\] must be placed inside <cngx-chart>\./,
         ),
       }),
     );

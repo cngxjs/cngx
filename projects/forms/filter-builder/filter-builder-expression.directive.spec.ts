@@ -92,7 +92,25 @@ function setup(
   return { directive: fixture.componentInstance.directive() };
 }
 
+@Component({
+  template: `<div [cngxFilterExpression]="[0]"></div>`,
+  imports: [CngxFilterExpression],
+})
+class OrphanHost {}
+
 describe('CngxFilterExpression', () => {
+  it('throws CNGX2014 outside a filter builder', () => {
+    expect(() => TestBed.createComponent(OrphanHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX2014',
+        message: expect.stringMatching(
+          /^CNGX2014: \[cngxFilterExpression\] must be placed inside <cngx-filter-builder> or an element with \[cngxFilterBuilderPresenter\]\./,
+        ),
+      }),
+    );
+  });
+
   it('reads the expression node from the host', () => {
     const tree: FilterGroup = {
       type: 'group',

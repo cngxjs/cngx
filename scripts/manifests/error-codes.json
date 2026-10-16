@@ -694,6 +694,67 @@
       "files": ["projects/common/data/async-state/operators.ts"]
     },
     {
+      "code": "CNGX1055",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Stepper or tab add-on without its presenter",
+      "page": "core-concepts/error-codes/cngx1055.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1055.html",
+      "status": "active",
+      "files": [
+        "projects/common/stepper/stepper-host.token.ts",
+        "projects/common/tabs/tab-group-host.token.ts"
+      ]
+    },
+    {
+      "code": "CNGX1056",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Stepper control without a stepper",
+      "page": "core-concepts/error-codes/cngx1056.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1056.html",
+      "status": "active",
+      "files": ["projects/common/stepper/warn-stepper-unhosted.ts"]
+    },
+    {
+      "code": "CNGX1057",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Menu radio item outside a menu group",
+      "page": "core-concepts/error-codes/cngx1057.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1057.html",
+      "status": "active",
+      "files": ["projects/common/interactive/menu/menu-item-radio.directive.ts"]
+    },
+    {
+      "code": "CNGX1058",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Menu item outside a menu",
+      "page": "core-concepts/error-codes/cngx1058.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1058.html",
+      "status": "active",
+      "files": ["projects/common/interactive/menu/menu-item-core.ts"]
+    },
+    {
+      "code": "CNGX1059",
+      "lib": "common",
+      "severity": "stored",
+      "production": "code-only",
+      "title": "Commit action completed without a decision",
+      "page": "core-concepts/error-codes/cngx1059.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1059.html",
+      "status": "active",
+      "files": [
+        "projects/common/stepper/commit-handler.ts",
+        "projects/common/tabs/commit-handler.ts"
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",
@@ -835,6 +896,33 @@
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2013.html",
       "status": "active",
       "files": ["projects/forms/filter-builder/filter-builder.helpers.ts"]
+    },
+    {
+      "code": "CNGX2014",
+      "lib": "forms",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Filter group or expression outside a filter builder",
+      "page": "core-concepts/error-codes/cngx2014.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2014.html",
+      "status": "active",
+      "files": ["projects/forms/filter-builder/filter-builder-host.token.ts"]
+    },
+    {
+      "code": "CNGX2015",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Field bridge without a form field",
+      "page": "core-concepts/error-codes/cngx2015.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2015.html",
+      "status": "active",
+      "files": [
+        "projects/forms/field/bind-field.directive.ts",
+        "projects/forms/field/listbox-field-bridge.directive.ts",
+        "projects/forms/field/range-slider-field-bridge.directive.ts",
+        "projects/forms/field/slider-field-bridge.directive.ts"
+      ]
     },
     {
       "code": "CNGX3001",
@@ -1035,6 +1123,56 @@
       "files": [
         "projects/ui/feedback/banner/banner-on.directive.ts",
         "projects/ui/feedback/banner/banner-trigger.ts"
+      ]
+    },
+    {
+      "code": "CNGX3018",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Paginator segment outside a paginator",
+      "page": "core-concepts/error-codes/cngx3018.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3018.html",
+      "status": "active",
+      "files": [
+        "projects/ui/paginator/paginator-host.token.ts",
+        "projects/ui/paginator/segments/paginator-alpha.component.ts"
+      ]
+    },
+    {
+      "code": "CNGX3019",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Accordion item outside an accordion group",
+      "page": "core-concepts/error-codes/cngx3019.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3019.html",
+      "status": "active",
+      "files": ["projects/ui/accordion/accordion-item.component.ts"]
+    },
+    {
+      "code": "CNGX3020",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Tab error directive outside a cngxMatTabs group",
+      "page": "core-concepts/error-codes/cngx3020.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3020.html",
+      "status": "active",
+      "files": ["projects/ui/mat-tabs/mat-tab-error-target.ts"]
+    },
+    {
+      "code": "CNGX3021",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Router sync outside its sidenav or table of contents",
+      "page": "core-concepts/error-codes/cngx3021.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3021.html",
+      "status": "active",
+      "files": [
+        "projects/ui/sidenav/sidenav-router-sync.directive.ts",
+        "projects/ui/toc/toc-router-sync.directive.ts"
       ]
     },
     {

@@ -1,7 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { provideStepperI18n, withStepperI18nLabels } from './i18n/stepper-i18n';
 import { CngxStepperCount, type CngxStepperCountHost } from './stepper-count';
@@ -143,3 +143,37 @@ describe('CngxStepperCount consumer format', () => {
   });
 });
 
+@Component({
+  standalone: true,
+  imports: [CngxStepperCount],
+  template: `<cngx-stepper-count />`,
+})
+class UnhostedCount {}
+
+describe('CngxStepperCount without a stepper (CNGX1056)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function setup<T>(host: new () => T): string[] {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    warnSpy.mockClear();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(host);
+    fixture.detectChanges();
+    TestBed.tick();
+    return warnSpy.mock.calls
+      .map((call) => String(call[0]))
+      .filter((message) => message.startsWith('CNGX1056: '));
+  }
+
+  it('warns when neither [host] nor an ambient stepper exists', () => {
+    const warnings = setup(UnhostedCount);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toMatch(/^CNGX1056: \[cngx-stepper-count\] has no stepper\./);
+  });
+
+  it('stays silent with a bound [host]', () => {
+    expect(setup(CountHost)).toHaveLength(0);
+  });
+});

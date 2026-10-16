@@ -387,7 +387,7 @@ function rawErrorDetailWithWarning(injector: EnvironmentInjector): CngxErrorDeta
       WARNED.add(injector);
       cngxDevWarn(
         'CNGX3004',
-        '[cngx/feedback] Showing the raw error text as the error detail. Production builds ' +
+        'injectErrorDetail(): showing the raw error text as the error detail. Production builds ' +
           'show no detail here: map errors to user-facing text with ' +
           'provideFeedback(withErrorDetail(...)).',
       );

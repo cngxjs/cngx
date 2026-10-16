@@ -1,9 +1,10 @@
 import { computed, Directive, inject, input } from '@angular/core';
 
 import { CNGX_AD_ITEM, type CngxAdItemHandle } from '@cngx/common/a11y';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import { injectMenuItemCore } from './menu-item-core';
-import { CNGX_MENU_RADIO_GROUP } from './menu-radio-controller';
+import { CNGX_MENU_RADIO_GROUP, type CngxMenuRadioGroup } from './menu-radio-controller';
 
 /**
  * Radio-style menu item (`role="menuitemradio"`). Mutual exclusion is scoped
@@ -41,13 +42,13 @@ export class CngxMenuItemRadio<T = unknown> implements CngxAdItemHandle {
   readonly disabled = input<boolean>(false);
   readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
 
-  private readonly group = inject(CNGX_MENU_RADIO_GROUP, { optional: true });
+  private readonly group = injectMenuRadioGroup();
 
   private readonly core = injectMenuItemCore<T>({
     value: this.value,
     disabled: this.disabled,
     labelInput: this.labelInput,
-    onActivate: () => this.group?.select(this.value()),
+    onActivate: () => this.group.select(this.value()),
   });
 
   readonly id = this.core.id;
@@ -55,13 +56,7 @@ export class CngxMenuItemRadio<T = unknown> implements CngxAdItemHandle {
   readonly isHighlighted = this.core.isHighlighted;
 
   /** Whether this radio is the currently selected value in its group. */
-  readonly checked = computed<boolean>(() => {
-    const group = this.group;
-    if (!group) {
-      return false;
-    }
-    return Object.is(group.selectedValue(), this.value());
-  });
+  readonly checked = computed<boolean>(() => Object.is(this.group.selectedValue(), this.value()));
 
   readonly label = (): string => this.core.label();
 
@@ -72,4 +67,17 @@ export class CngxMenuItemRadio<T = unknown> implements CngxAdItemHandle {
   protected handlePointerEnter(): void {
     this.core.handlePointerEnter();
   }
+}
+
+function injectMenuRadioGroup(): CngxMenuRadioGroup<unknown> {
+  const group = inject(CNGX_MENU_RADIO_GROUP, { optional: true });
+  if (!group) {
+    throw new CngxRuntimeError(
+      'CNGX1057',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngxMenuItemRadio] must be placed inside an element with [cngxMenuGroup].',
+    );
+  }
+  return group;
 }

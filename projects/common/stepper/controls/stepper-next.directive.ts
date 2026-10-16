@@ -14,6 +14,7 @@ import { cngxDevWarn } from '@cngx/utils';
 
 import { injectStepperI18n } from '../i18n/stepper-i18n';
 import { CNGX_STEPPER_HOST, type CngxStepperHost } from '../stepper-host.token';
+import { warnStepperControlUnhosted } from '../warn-stepper-unhosted';
 
 /**
  * Turns any clickable element into a stepper "Continue" control. Same
@@ -81,6 +82,10 @@ export class CngxStepperNext {
   });
 
   constructor() {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnStepperControlUnhosted('cngxStepperNext', this.resolvedHost);
+    }
+
     // Fallback accessible name for icon-only hosts: while the element
     // renders no text and the consumer supplied no label of their own,
     // the i18n `nextStep` phrase fills the gap. Re-checked after every
@@ -118,7 +123,7 @@ export class CngxStepperNext {
     if (typeof ngDevMode !== 'undefined' && ngDevMode && this.coPlacedAsyncClick) {
       cngxDevWarn(
         'CNGX1038',
-        'CngxStepperNext: [cngxStepperNext] and [cngxAsyncClick] on the same element ' +
+        '[cngxStepperNext] and [cngxAsyncClick] on the same element ' +
           'both gate aria-disabled. Use one or the other.',
       );
     }

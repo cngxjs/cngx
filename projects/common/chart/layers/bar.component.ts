@@ -138,7 +138,7 @@ export class CngxBar<T = unknown> implements CngxChartLayer {
   readonly data = input<readonly T[] | undefined>(undefined);
   readonly color = input<string | null>(null);
 
-  protected readonly ctx = injectChartContext('CngxBar');
+  protected readonly ctx = injectChartContext('cngxBar');
 
   private readonly resolvedData = computed<readonly T[]>(() => {
     const local = this.data();

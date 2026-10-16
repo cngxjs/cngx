@@ -126,7 +126,7 @@ describe('CngxTab', () => {
       expect.objectContaining({
         name: 'CngxRuntimeError',
         code: 'CNGX1045',
-        message: expect.stringMatching(/^CNGX1045: CngxTab: no enclosing CngxTabGroupPresenter/),
+        message: expect.stringMatching(/^CNGX1045: \[cngxTab\] must be placed inside <cngx-tab-group>/),
       }),
     );
   });

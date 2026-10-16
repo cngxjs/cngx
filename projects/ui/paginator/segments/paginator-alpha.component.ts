@@ -7,7 +7,8 @@ import {
 } from '@angular/core';
 
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
-import { CNGX_BUCKET_PAGINATE_HOST } from '@cngx/common/data';
+import { CNGX_BUCKET_PAGINATE_HOST, type CngxBucketPaginateHost } from '@cngx/common/data';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import { injectPaginatorAriaLabels } from '../paginator-config';
 
@@ -78,7 +79,7 @@ import { injectPaginatorAriaLabels } from '../paginator-config';
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorAlpha {
-  protected readonly host = inject(CNGX_BUCKET_PAGINATE_HOST);
+  protected readonly host = injectBucketPaginateHost();
   protected readonly ariaLabels = injectPaginatorAriaLabels();
 
   /**
@@ -117,4 +118,17 @@ export class CngxPaginatorAlpha {
   protected select(label: string): void {
     this.host.select(label);
   }
+}
+
+function injectBucketPaginateHost(): CngxBucketPaginateHost {
+  const host = inject(CNGX_BUCKET_PAGINATE_HOST, { optional: true });
+  if (!host) {
+    throw new CngxRuntimeError(
+      'CNGX3018',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngx-pgn-alpha] must be placed inside an element with [cngxBucketPaginate].',
+    );
+  }
+  return host;
 }

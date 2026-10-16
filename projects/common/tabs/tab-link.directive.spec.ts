@@ -214,7 +214,7 @@ describe('CngxTabLink', () => {
         name: 'CngxRuntimeError',
         code: 'CNGX1045',
         message: expect.stringMatching(
-          /^CNGX1045: CngxTabLink: no enclosing CngxTabGroupPresenter/,
+          /^CNGX1045: \[cngxTabLink\] must be placed inside <cngx-tab-nav>/,
         ),
       }),
     );

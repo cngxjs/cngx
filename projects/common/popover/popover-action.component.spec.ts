@@ -309,7 +309,7 @@ describe('CngxPopoverAction', () => {
         );
         expect(actionWarns).toHaveLength(1);
         expect(actionWarns[0][0]).toMatch(
-          /^CNGX1035: CngxPopoverAction: role="confirm" without an \[action\] renders a button/,
+          /^CNGX1035: \[cngx-popover-action\] role="confirm" without an \[action\] renders a button/,
         );
       } finally {
         warnSpy.mockRestore();

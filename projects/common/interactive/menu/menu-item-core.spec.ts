@@ -1,6 +1,6 @@
 import { ElementRef, signal, type Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 
@@ -105,5 +105,32 @@ describe('injectMenuItemCore', () => {
 
     const { core: fallbackCore } = setupCore({ text: '  Export as PDF  ' });
     expect(fallbackCore.label()).toBe('Export as PDF');
+  });
+});
+
+describe('injectMenuItemCore outside a menu (CNGX1058)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function unhostedWarnings(ad: ReturnType<typeof makeAd> | null): string[] {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    warnSpy.mockClear();
+    setupCore({ ad });
+    return warnSpy.mock.calls
+      .map((call: unknown[]) => String(call[0]))
+      .filter((message: string) => message.startsWith('CNGX1058: '));
+  }
+
+  it('warns once when no active-descendant host surrounds the item', () => {
+    const warnings = unhostedWarnings(null);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toMatch(
+      /^CNGX1058: injectMenuItemCore\(\): the menu item has no surrounding \[cngxMenu\]/,
+    );
+  });
+
+  it('stays silent inside a menu', () => {
+    expect(unhostedWarnings(makeAd([]))).toHaveLength(0);
   });
 });

@@ -194,7 +194,7 @@ export class CngxOption implements CngxAdItemHandle {
       if (typeof ngDevMode !== 'undefined' && ngDevMode && !this.label()) {
         cngxDevError(
           'CNGX1023',
-          `<cngx-option> at ${this.id} has no label and no textContent. ` +
+          `[cngxOption] option ${this.id} has no label and no textContent. ` +
             `Label is required for AT and trigger display.`,
         );
       }

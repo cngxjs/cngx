@@ -104,3 +104,27 @@ describe('CngxMenuItemRadio', () => {
     expect(radios[2].getAttribute('aria-checked')).toBe('true');
   });
 });
+
+@Component({
+  template: `
+    <ul cngxMenu [label]="'View'" tabindex="0">
+      <li cngxMenuItemRadio value="list">List</li>
+    </ul>
+  `,
+  imports: [CngxMenu, CngxMenuItemRadio],
+})
+class UngroupedRadioHost {}
+
+describe('CngxMenuItemRadio outside a group (CNGX1057)', () => {
+  it('throws CNGX1057 without a surrounding [cngxMenuGroup]', () => {
+    expect(() => TestBed.createComponent(UngroupedRadioHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1057',
+        message: expect.stringMatching(
+          /^CNGX1057: \[cngxMenuItemRadio\] must be placed inside an element with \[cngxMenuGroup\]\./,
+        ),
+      }),
+    );
+  });
+});

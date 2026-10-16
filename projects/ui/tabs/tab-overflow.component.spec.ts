@@ -1209,7 +1209,7 @@ describe('CngxTabOverflow', () => {
     const calls = warn.mock.calls.filter(([m]) => /^CNGX3012: /.test(String(m)));
     expect(calls).toHaveLength(1);
     expect(calls[0][0]).toMatch(
-      /^CNGX3012: \[CngxTabOverflow\] Strip wrapper not found after 60 attach attempts; .*a direct child of <cngx-tab-group>, or the one \[cngxMatTabs\] places/,
+      /^CNGX3012: \[cngx-tab-overflow\] strip wrapper not found after 60 attach attempts; .*a direct child of <cngx-tab-group>, or the one \[cngxMatTabs\] places/,
     );
     vi.useRealTimers();
     warn.mockRestore();

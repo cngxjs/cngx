@@ -72,7 +72,7 @@ const defaultLabelFn: LabelFn<unknown> = (value) => String(value);
  *   for data that may be re-ordered without changing identity. Ids must be
  *   unique across the whole forest: a non-injective `idFn` silently corrupts
  *   the `parentIds` chains (and with them visibility resolution), so dev
- *   mode warns on the first duplicate it sees.
+ *   mode warns on every repeat of an id already seen in the same pass.
  * @param labelFn Derives visible label. Defaults to `String(value)`.
  *
  * @category utils/tree
@@ -100,7 +100,7 @@ export function flattenTree<T>(
         if (typeof ngDevMode !== 'undefined' && ngDevMode && seenIds.has(id)) {
           cngxDevWarn(
             'CNGX0901',
-            `[cngx] flattenTree: duplicate node id "${id}". Ids must be unique across ` +
+            `flattenTree(): duplicate node id "${id}". Ids must be unique across ` +
               `the forest - a non-injective idFn corrupts parentIds chains and visibility.`,
           );
         }

@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
@@ -13,7 +12,7 @@ import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
 
 import { injectPaginatorAriaLabels, injectPaginatorConfig } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
-import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
+import { injectPaginatorHost } from '../paginator-host.token';
 
 /**
  * Items-per-page segment. A `CngxListbox` dropdown (never a native `<select>`,
@@ -71,7 +70,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorPageSize {
-  protected readonly host = inject(CNGX_PAGINATOR_HOST);
+  protected readonly host = injectPaginatorHost('cngx-pgn-page-size');
   private readonly config = injectPaginatorConfig();
   protected readonly ariaLabels = injectPaginatorAriaLabels();
   private readonly locale = injectLocale();

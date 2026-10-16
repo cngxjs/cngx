@@ -1,6 +1,7 @@
-import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
+import { inject, InjectionToken, type ModelSignal, type Signal } from '@angular/core';
 
 import type { CngxAsyncState, StatusTransition } from '@cngx/core/utils';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
@@ -165,3 +166,25 @@ export interface CngxTabGroupHost {
  * @since 0.1.0
  */
 export const CNGX_TAB_GROUP_HOST = new InjectionToken<CngxTabGroupHost>('CngxTabGroupHost');
+
+/**
+ * Inject the {@link CNGX_TAB_GROUP_HOST} for a tab add-on directive, from
+ * its own element or an ancestor in the same template. Throws a
+ * `CngxRuntimeError` with code `CNGX1055` when there is none, in development
+ * and production alike. `selector` names the add-on in the development
+ * message.
+ *
+ * @internal
+ */
+export function injectTabGroupHost(selector: string): CngxTabGroupHost {
+  const group = inject(CNGX_TAB_GROUP_HOST, { host: true, optional: true });
+  if (!group) {
+    throw new CngxRuntimeError(
+      'CNGX1055',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        `[${selector}] must be placed on or inside an element with [cngxTabGroup], such as <cngx-tab-group> or <cngx-tab-nav>.`,
+    );
+  }
+  return group;
+}

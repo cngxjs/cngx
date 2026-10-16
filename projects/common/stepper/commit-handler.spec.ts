@@ -90,6 +90,23 @@ describe('createStepperCommitHandler - complete-without-emit', () => {
     expect(controller.isCommitting()).toBe(false);
   });
 
+  it('stores a CNGX1059 runtime error for an EMPTY-style source', () => {
+    const controller = createCommitController<number>();
+    const handler = createStepperCommitHandler({ controller: controller });
+    const empty = new Subject<boolean>();
+    handler.beginTransition(0, 1, () => empty, () => undefined);
+    empty.complete();
+    expect(controller.state.error()).toEqual(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1059',
+        message: expect.stringMatching(
+          /^CNGX1059: \[cngxStepper\] commitAction completed without emitting true or false\./,
+        ),
+      }),
+    );
+  });
+
   it('does not double-resolve when the source emits and then completes', () => {
     const controller = createCommitController<number>();
     const handler = createStepperCommitHandler({ controller });

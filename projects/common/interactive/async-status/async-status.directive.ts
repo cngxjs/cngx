@@ -95,7 +95,7 @@ export class CngxAsyncStatus {
     if (typeof ngDevMode !== 'undefined' && ngDevMode && this.coPlacedAsyncClick) {
       cngxDevWarn(
         'CNGX1019',
-        'CngxAsyncStatus: [cngxAsyncStatus] and [cngxAsyncClick] on the same element ' +
+        '[cngxAsyncStatus] and [cngxAsyncClick] on the same element ' +
           'both bind aria-busy. Use one or the other.',
       );
     }

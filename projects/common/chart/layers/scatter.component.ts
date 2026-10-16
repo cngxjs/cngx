@@ -130,7 +130,7 @@ export class CngxScatter<T = unknown> implements CngxChartLayer {
   readonly data = input<readonly T[] | undefined>(undefined);
   readonly color = input<string | null>(null);
 
-  protected readonly ctx = injectChartContext('CngxScatter');
+  protected readonly ctx = injectChartContext('cngxScatter');
 
   private readonly resolvedData = computed<readonly T[]>(() => {
     const local = this.data();

@@ -2,6 +2,7 @@ import { computed, ElementRef, inject, type Signal } from '@angular/core';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { coerceSignal, nextUid } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
@@ -73,6 +74,13 @@ export function injectMenuItemCore<T = unknown>(
 ): CngxMenuItemCore {
   const elementRef = inject(ElementRef<HTMLElement>);
   const ad = inject(CngxActiveDescendant, { optional: true });
+  if (typeof ngDevMode !== 'undefined' && ngDevMode && !ad) {
+    cngxDevWarn(
+      'CNGX1058',
+      'injectMenuItemCore(): the menu item has no surrounding [cngxMenu], so a click does ' +
+        'nothing. Place the item inside an element with [cngxMenu].',
+    );
+  }
   const announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
   const ariaLabels = coerceSignal(injectMenuConfig().ariaLabels);
 

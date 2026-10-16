@@ -12,10 +12,11 @@ export const STORY: DemoSpec = {
   focus: ['integration', 'behavior'],
   apiComponents: ['CngxTreetable', 'sortTree', 'filterTree', 'nodeMatchesSearch'],
   moduleImports: [
-    "import { CngxTreetable, filterTree, nodeMatchesSearch, sortTree } from '@cngx/data-display/treetable';",
-    "import { ORG_TREE, type Employee } from '../../../../fixtures';",
+    "import { CngxTreetable, filterTree, nodeMatchesSearch, sortTree, provideTreetableAt, withTreetableLabels } from '@cngx/data-display/treetable';",
+    "import { ORG_TREE, type Employee, DEMO_TREETABLE_LABELS } from '../../../../fixtures';",
   ],
   imports: ['CngxTreetable'],
+  viewProviders: ['...provideTreetableAt(withTreetableLabels(DEMO_TREETABLE_LABELS))'],
   setup: `protected readonly search = signal('');
   protected readonly sortDirection = signal<'asc' | 'desc'>('asc');
   protected readonly employeeId = (employee: Employee): string => employee.name;

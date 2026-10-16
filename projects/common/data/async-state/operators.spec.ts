@@ -86,7 +86,7 @@ describe('tapHttpAsyncState', () => {
     expect(err).toBeInstanceOf(CngxRuntimeError);
     expect((err as CngxRuntimeError).code).toBe('CNGX1054');
     expect((err as CngxRuntimeError).message).toMatch(
-      /^CNGX1054: tapHttpAsyncState: response body is null/,
+      /^CNGX1054: tapHttpAsyncState\(\): response body is null/,
     );
   });
 

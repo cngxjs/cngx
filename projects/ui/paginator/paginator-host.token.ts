@@ -1,4 +1,5 @@
-import { InjectionToken, type Signal } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
+import { CngxRuntimeError } from '@cngx/utils';
 
 /**
  * Read-mostly state-and-navigation contract every paginator segment part
@@ -70,3 +71,25 @@ export interface CngxPaginatorHost {
  * @since 0.1.0
  */
 export const CNGX_PAGINATOR_HOST = new InjectionToken<CngxPaginatorHost>('CngxPaginatorHost');
+
+/**
+ * Inject the {@link CNGX_PAGINATOR_HOST} of the surrounding paginator from a
+ * segment part. Throws a `CngxRuntimeError` with code `CNGX3018` when the
+ * segment is not placed inside a paginator, in development and production
+ * alike. `selector` is the segment's element selector and names it in the
+ * development message.
+ *
+ * @internal
+ */
+export function injectPaginatorHost(selector: string): CngxPaginatorHost {
+  const host = inject(CNGX_PAGINATOR_HOST, { optional: true });
+  if (!host) {
+    throw new CngxRuntimeError(
+      'CNGX3018',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        `[${selector}] must be placed inside <cngx-paginator> or <cngx-incremental-list>.`,
+    );
+  }
+  return host;
+}

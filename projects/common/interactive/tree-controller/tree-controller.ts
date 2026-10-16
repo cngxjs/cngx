@@ -287,7 +287,7 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
       'CNGX1051',
       typeof ngDevMode !== 'undefined' &&
         ngDevMode &&
-        'createTreeController: `nodeIdFn` is required. Provide it via ' +
+        'createTreeController(): `nodeIdFn` is required. Provide it via ' +
           'CngxTreeControllerOptions.nodeIdFn or app-wide through ' +
           '`provideTreeConfig(withDefaultNodeIdFn(...))`.',
     );
@@ -328,7 +328,7 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
           reportedDuplicates.add(`id:${n.id}`);
           cngxDevError(
             'CNGX1029',
-            `createTreeController: duplicate node id "${n.id}" from nodeIdFn - ` +
+            `createTreeController(): duplicate node id "${n.id}" from nodeIdFn - ` +
               'the earlier node is shadowed in id lookups. Ids must be unique.',
           );
         }
@@ -337,7 +337,7 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
           reportedDuplicates.add(`key:${describeKey(key)}`);
           cngxDevError(
             'CNGX1030',
-            `createTreeController: duplicate selection key "${describeKey(key)}" from keyFn - ` +
+            `createTreeController(): duplicate selection key "${describeKey(key)}" from keyFn - ` +
               'the earlier node is shadowed in selection lookups. Keys must be unique.',
           );
         }

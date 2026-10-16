@@ -205,9 +205,8 @@ function resolveParent<T>(): ParentResolution<T> {
       'CNGX1052',
       typeof ngDevMode !== 'undefined' &&
         ngDevMode &&
-        'CngxButtonToggle: both CngxButtonToggleGroup and ' +
-          'CngxButtonMultiToggleGroup parents are present in the injector ' +
-          'tree. Exactly one is required - single + multi semantics are ' +
+        '[cngxButtonToggle] both a single and a multi toggle group are present in the ' +
+          'injector tree. Exactly one is required - single + multi semantics are ' +
           'incompatible.',
     );
   }
@@ -221,7 +220,7 @@ function resolveParent<T>(): ParentResolution<T> {
     'CNGX1053',
     typeof ngDevMode !== 'undefined' &&
       ngDevMode &&
-      'CngxButtonToggle requires a parent CngxButtonToggleGroup or ' +
-        'CngxButtonMultiToggleGroup to provide the value contract.',
+      '[cngxButtonToggle] must be placed inside <cngx-button-toggle-group> or ' +
+        '<cngx-button-multi-toggle-group>.',
   );
 }

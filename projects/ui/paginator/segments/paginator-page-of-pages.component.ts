@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -12,7 +11,7 @@ import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
 
 import { injectPaginatorAriaLabels, injectPaginatorFormats } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
-import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
+import { injectPaginatorHost } from '../paginator-host.token';
 
 /**
  * Page-of-pages segment. A `CngxListbox` dropdown of `1..totalPages`; picking
@@ -70,7 +69,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorPageOfPages {
-  protected readonly host = inject(CNGX_PAGINATOR_HOST);
+  protected readonly host = injectPaginatorHost('cngx-pgn-page-of-pages');
   protected readonly ariaLabels = injectPaginatorAriaLabels();
   private readonly locale = injectLocale();
   /** Visible page numbers and sizes, formatted for the locale (`1.000` in German). */

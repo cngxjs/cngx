@@ -59,7 +59,7 @@ function warnDoubleRegistration(
   }
   cngxDevWarn(
     'CNGX1014',
-    `CngxDialog [${id}]: a second ${kind} registered while another ` +
+    `[cngxDialog] dialog "${id}" has a second ${kind} registered while another ` +
       `is live. The dialog references one ${kind} id, and both elements render it; a ` +
       `template-declared ${kind} wins over a registered one. Remove the extra ` +
       `cngxDialog${kind === 'title' ? 'Title' : 'Description'} element.`,
@@ -79,7 +79,7 @@ function warnNonModalA11y(id: string, titleText: string): void {
   if (titleText === '') {
     cngxDevWarn(
       'CNGX1015',
-      `CngxDialog [${id}]: Non-modal dialog opened without a title. ` +
+      `[cngxDialog] non-modal dialog "${id}" opened without a title. ` +
         'A non-modal dialog leaves focus on the page and is announced only by ' +
         'reading its title into its live region; with no title text, screen reader ' +
         'users are not told it appeared. Add a [cngxDialogTitle] element with text.',

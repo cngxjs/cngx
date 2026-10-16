@@ -245,7 +245,7 @@ describe('createChipRemovalHandler', () => {
           name: 'CngxRuntimeError',
           code: 'CNGX2008',
           message: expect.stringMatching(
-            /^CNGX2008: \[CngxChipRemovalHandler\] Missing required field\(s\): values, compareWith/,
+            /^CNGX2008: createChipRemovalHandler\(\): missing required field\(s\): values, compareWith/,
           ),
         }),
       );

@@ -185,6 +185,7 @@ describe('CngxTabsRouteSync', () => {
   afterEach(() => {
     TestBed.resetTestingModule();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('is a graceful no-op that warns once when Router is not provided', async () => {
@@ -207,7 +208,7 @@ describe('CngxTabsRouteSync', () => {
     presenter.select(1);
     expect(presenter.activeIndex()).toBe(1);
     expect(warnSpy).toHaveBeenCalledTimes(1);
-    expect(warnSpy.mock.calls[0][0]).toContain('CNGX1031: CngxTabsRouteSync');
+    expect(warnSpy.mock.calls[0][0]).toContain('CNGX1031: [cngxTabsRouteSync]');
   });
 
   it('writes nothing to the console without a Router in production', async () => {
@@ -641,5 +642,28 @@ describe('CngxTabsRouteSync', () => {
       const tablist = await mountAt(SectionTabHost, '/elsewhere');
       expect(presenterOf(tablist).activeIndex()).toBe(0);
     });
+  });
+});
+
+@Component({
+  template: `<div cngxTabsRouteSync></div>`,
+  imports: [CngxTabsRouteSync],
+})
+class TabsRouteSyncOrphanHost {}
+
+describe('CngxTabsRouteSync placement (CNGX1055)', () => {
+  it('throws CNGX1055 on an element without the presenter', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    expect(() => TestBed.createComponent(TabsRouteSyncOrphanHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1055',
+        message: expect.stringMatching(
+          /^CNGX1055: \[cngxTabsRouteSync\] must be placed on or inside an element with \[cngxTabGroup\], such as <cngx-tab-group> or <cngx-tab-nav>\./,
+        ),
+      }),
+    );
   });
 });

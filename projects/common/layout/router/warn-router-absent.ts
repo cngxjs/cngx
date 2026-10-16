@@ -10,13 +10,13 @@ import { cngxDevWarn } from '@cngx/utils';
  *
  * @internal
  */
-export function warnRouterAbsent(directive: string, enables: string): void {
+export function warnRouterAbsent(enables: string): void {
   if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
     return;
   }
   cngxDevWarn(
     'CNGX1031',
-    `${directive}: no Router available - directive is a no-op. ` +
+    `injectQueryParamSync(): no Router available - the URL sync is a no-op. ` +
       `Provide @angular/router via provideRouter(...) to enable ${enables}.`,
   );
 }

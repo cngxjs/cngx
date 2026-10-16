@@ -10,13 +10,13 @@ import { cngxDevWarn } from '@cngx/utils';
  *
  * @internal
  */
-export function warnTabsRouterAbsent(directive: string, enables: string): void {
+export function warnTabsRouterAbsent(selector: string, enables: string): void {
   if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
     return;
   }
   cngxDevWarn(
     'CNGX1031',
-    `${directive}: no Router available - directive is a no-op. ` +
+    `[${selector}] no Router available - directive is a no-op. ` +
       `Provide @angular/router via provideRouter(...) to enable ${enables}.`,
   );
 }

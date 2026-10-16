@@ -35,7 +35,7 @@ describe('CngxSidenavContent', () => {
         name: 'CngxRuntimeError',
         code: 'CNGX3014',
         message: expect.stringMatching(
-          /^CNGX3014: cngx-sidenav-content must be placed inside a cngx-sidenav-layout\./,
+          /^CNGX3014: \[cngx-sidenav-content\] must be placed inside <cngx-sidenav-layout>\./,
         ),
       }),
     );

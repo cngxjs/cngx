@@ -269,7 +269,7 @@ export class CngxChipInteraction<T = unknown>
       if (ancestor !== null) {
         throw new CngxRuntimeError(
           'CNGX1044',
-          'CngxChipInteraction must NOT be used inside <cngx-chip-group> / <cngx-multi-chip-group>; use [cngxChipInGroup] instead.',
+          '[cngxChipInteraction] must not be used inside <cngx-chip-group> / <cngx-multi-chip-group>; use [cngxChipInGroup] instead.',
         );
       }
     });

@@ -1,15 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ViewEncapsulation } from '@angular/core';
 
 import { CngxRipple } from '@cngx/common/interactive';
 
 import { injectPaginatorAriaLabels, injectPaginatorFormats } from '../paginator-config';
-import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
+import { injectPaginatorHost } from '../paginator-host.token';
 
 /**
  * Load-more segment: an append-don't-replace trigger over the same brain. \
@@ -57,7 +51,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorLoadMore {
-  protected readonly host = inject(CNGX_PAGINATOR_HOST);
+  protected readonly host = injectPaginatorHost('cngx-pgn-load-more');
   private readonly ariaLabels = injectPaginatorAriaLabels();
   private readonly formats = injectPaginatorFormats();
 

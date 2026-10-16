@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   linkedSignal,
   ViewEncapsulation,
 } from '@angular/core';
@@ -11,7 +10,7 @@ import { clamp } from '@cngx/utils';
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 
 import { injectPaginatorAriaLabels } from '../paginator-config';
-import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
+import { injectPaginatorHost } from '../paginator-host.token';
 
 /** Resting size tier of a rendered dot. Edge dots shrink (iOS page-control). */
 type DotSize = 'full' | 'medium' | 'small';
@@ -147,7 +146,7 @@ function dotsEqual(a: DotModel, b: DotModel): boolean {
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorDots {
-  protected readonly host = inject(CNGX_PAGINATOR_HOST);
+  protected readonly host = injectPaginatorHost('cngx-pgn-dots');
   protected readonly ariaLabels = injectPaginatorAriaLabels();
 
   /**

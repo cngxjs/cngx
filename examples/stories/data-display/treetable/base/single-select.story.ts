@@ -12,10 +12,11 @@ export const STORY: DemoSpec = {
   focus: ['behavior'],
   apiComponents: ['CngxTreetable'],
   moduleImports: [
-    "import { CngxTreetable, type CngxTreetableFlatNode } from '@cngx/data-display/treetable';",
-    "import { ORG_TREE, type Employee } from '../../../../fixtures';",
+    "import { CngxTreetable, type CngxTreetableFlatNode, provideTreetableAt, withTreetableLabels } from '@cngx/data-display/treetable';",
+    "import { ORG_TREE, type Employee, DEMO_TREETABLE_LABELS } from '../../../../fixtures';",
   ],
   imports: ['CngxTreetable'],
+  viewProviders: ['...provideTreetableAt(withTreetableLabels(DEMO_TREETABLE_LABELS))'],
   setup: `protected readonly orgTree = ORG_TREE;
   protected readonly lastClicked = signal<string | undefined>(undefined);
 

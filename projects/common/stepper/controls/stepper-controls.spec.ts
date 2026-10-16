@@ -246,7 +246,7 @@ describe('stepper nav controls', () => {
       const fixture = TestBed.createComponent(CoPlacedHost);
       fixture.detectChanges();
       expect(warnSpy).toHaveBeenCalledTimes(1);
-      expect(warnSpy.mock.calls[0][0]).toMatch(/^CNGX1038: CngxStepperNext/);
+      expect(warnSpy.mock.calls[0][0]).toMatch(/^CNGX1038: \[cngxStepperNext\]/);
       expect(warnSpy.mock.calls[0][0]).toContain('both gate aria-disabled');
     });
 
@@ -264,8 +264,81 @@ describe('stepper nav controls', () => {
       const fixture = TestBed.createComponent(CoPlacedPrevHost);
       fixture.detectChanges();
       expect(warnSpy).toHaveBeenCalledTimes(1);
-      expect(warnSpy.mock.calls[0][0]).toMatch(/^CNGX1038: CngxStepperPrevious/);
+      expect(warnSpy.mock.calls[0][0]).toMatch(/^CNGX1038: \[cngxStepperPrevious\]/);
       expect(warnSpy.mock.calls[0][0]).toContain('both gate aria-disabled');
+    });
+  });
+
+  describe('unhosted controls (CNGX1056)', () => {
+    let warnSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      warnSpy.mockClear();
+    });
+
+    afterEach(() => {
+      warnSpy.mockRestore();
+    });
+
+    function unhostedWarnings(): string[] {
+      return warnSpy.mock.calls
+        .map((call: unknown[]) => String(call[0]))
+        .filter((message: string) => message.startsWith('CNGX1056: '));
+    }
+
+    @Component({
+      standalone: true,
+      imports: [CngxStepperPrevious, CngxStepperNext, CngxStepperComplete],
+      template: `
+        <button cngxStepperPrevious>Back</button>
+        <button cngxStepperNext>Next</button>
+        <button [cngxStepperComplete]="action">Finish</button>
+      `,
+    })
+    class UnhostedControls {
+      readonly action = (): Promise<void> => Promise.resolve();
+    }
+
+    @Component({
+      standalone: true,
+      imports: [CngxStepperPresenter, CngxStepperNext],
+      template: `
+        <div cngxStepper #s="cngxStepper"></div>
+        <button cngxStepperNext [host]="s">Next</button>
+      `,
+    })
+    class BoundHostControl {}
+
+    it('warns once per control that has neither [host] nor an ambient stepper', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(UnhostedControls);
+      fixture.detectChanges();
+      TestBed.tick();
+      const warnings = unhostedWarnings();
+      expect(warnings).toHaveLength(3);
+      expect(warnings[0]).toMatch(/^CNGX1056: \[cngxStepperPrevious\] has no stepper\./);
+      expect(warnings[1]).toMatch(/^CNGX1056: \[cngxStepperNext\] has no stepper\./);
+      expect(warnings[2]).toMatch(/^CNGX1056: \[cngxStepperComplete\] has no stepper\./);
+      fixture.detectChanges();
+      TestBed.tick();
+      expect(unhostedWarnings()).toHaveLength(3);
+    });
+
+    it('stays silent inside a stepper', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.detectChanges();
+      TestBed.tick();
+      expect(unhostedWarnings()).toHaveLength(0);
+    });
+
+    it('stays silent with a bound [host]', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(BoundHostControl);
+      fixture.detectChanges();
+      TestBed.tick();
+      expect(unhostedWarnings()).toHaveLength(0);
     });
   });
 

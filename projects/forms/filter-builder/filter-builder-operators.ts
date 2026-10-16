@@ -240,7 +240,7 @@ export function warnUnknownFilterOperatorOnce(operator: string): void {
   warnedUnknownOperators.add(operator);
   cngxDevWarn(
     'CNGX2001',
-    `[CngxFilterBuilder] unknown operator "${operator}" - the expression evaluates to false ` +
+    `evaluateExpression(): unknown operator "${operator}" - the expression evaluates to false ` +
       `for every item. Register an evaluation via withOperators({ ${operator}: { evaluate: ... } }).`,
   );
 }

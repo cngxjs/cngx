@@ -41,7 +41,7 @@ function partitionFeatures(features: readonly CngxStepperFeature[]): Partitioned
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       cngxDevWarn(
         'CNGX1041',
-        '[provideCngxStepper] Dropped feature without a `_target` ' +
+        'provideCngxStepper(): dropped feature without a `_target` ' +
           'discriminator. Pass config through the `with*` helpers of @cngx/common/stepper ' +
           'and labels through `withStepperI18nLabels(...)`.',
       );

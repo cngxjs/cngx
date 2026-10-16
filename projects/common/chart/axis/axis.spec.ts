@@ -69,7 +69,9 @@ describe('CngxAxis', () => {
       expect.objectContaining({
         name: 'CngxRuntimeError',
         code: 'CNGX1048',
-        message: expect.stringMatching(/^CNGX1048: CngxAxis: missing CNGX_CHART_CONTEXT/),
+        message: expect.stringMatching(
+          /^CNGX1048: \[cngxAxis\] must be placed inside <cngx-chart>\./,
+        ),
       }),
     );
   });

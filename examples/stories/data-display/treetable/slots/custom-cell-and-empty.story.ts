@@ -12,11 +12,12 @@ export const STORY: DemoSpec = {
   focus: ['composition'],
   apiComponents: ['CngxTreetable', 'CngxCellTpl', 'CngxEmptyTpl'],
   moduleImports: [
-    "import { CngxTreetable, CngxCellTpl, CngxEmptyTpl, type CngxTreetableFlatNode, type CngxTreetableNode } from '@cngx/data-display/treetable';",
+    "import { CngxTreetable, CngxCellTpl, CngxEmptyTpl, type CngxTreetableFlatNode, type CngxTreetableNode, provideTreetableAt, withTreetableLabels } from '@cngx/data-display/treetable';",
     "import { CngxTag, type CngxTagColor } from '@cngx/common/display';",
-    "import { ORG_TREE, type Employee } from '../../../../fixtures';",
+    "import { ORG_TREE, type Employee, DEMO_TREETABLE_LABELS } from '../../../../fixtures';",
   ],
   imports: ['CngxTreetable', 'CngxCellTpl', 'CngxEmptyTpl', 'CngxTag'],
+  viewProviders: ['...provideTreetableAt(withTreetableLabels(DEMO_TREETABLE_LABELS))'],
   setup: `protected readonly tree = signal<CngxTreetableNode<Employee>[]>([ORG_TREE]);
 
   protected tagColor(node: CngxTreetableFlatNode<Employee>): CngxTagColor {

@@ -234,7 +234,7 @@ export class CngxTooltip {
   /** Show the tooltip immediately (bypassing delay). */
   show(): void {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      warnMissingPopoverApi(this.tooltipEl!, 'CngxTooltip');
+      warnMissingPopoverApi(this.tooltipEl!, 'cngxTooltip');
     }
     if (!this.enabled() || this.stateSignal() !== 'closed') {
       return;

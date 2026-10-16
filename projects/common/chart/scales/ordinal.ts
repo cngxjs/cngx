@@ -24,7 +24,7 @@ export function createOrdinalScale<T>(
       'CNGX1049',
       typeof ngDevMode !== 'undefined' &&
         ngDevMode &&
-        'createOrdinalScale: colors palette must not be empty',
+        'createOrdinalScale(): colors palette must not be empty',
     );
   }
   const lookup = new Map<T, string>();
