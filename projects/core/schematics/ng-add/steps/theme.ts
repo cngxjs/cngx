@@ -7,6 +7,7 @@ import {
   createProvenanceStamp,
   hasProvenanceMarker,
   insertLeadingStyleImport,
+  joinNames,
   mergeStepResults,
   type Provenance,
   skipChange,
@@ -19,7 +20,7 @@ import {
   CNGX_THEME_FILES,
   type ProjectFacts,
 } from '../detect/detect';
-import { canInstallTheme, selectedLibs } from './dependencies';
+import { missingThemePeers, selectedLibs } from './dependencies';
 import { type OnboardingAnswers, type Versions } from './model';
 import { BASE_TOKENS, type BaseToken } from './theme-tokens.generated';
 
@@ -215,6 +216,17 @@ function result(planned: readonly Change[], wired: string | undefined, reason: s
   return { changes: [], skipped: planned.map((change) => skipChange(change, reason)) };
 }
 
+// A wanted theme the selected libs cannot carry: without @cngx/themes no
+// cngx CSS loads, which the app would only notice as unstyled components.
+function unwiredStylesheet(missing: readonly string[], provenance: Provenance): Change {
+  return createNote({
+    id: 'theme:stylesheet',
+    label: 'No cngx stylesheet wired',
+    reason: `@cngx/themes needs ${joinNames(missing.map((lib) => `@cngx/${lib}`))}, so nothing loads the cngx CSS`,
+    provenance,
+  });
+}
+
 /**
  * Loads `@cngx/themes/cngx.css` ahead of everything cngx and adds a theme:
  * the cngx default (every system token, commented, with what it controls)
@@ -228,10 +240,14 @@ function result(planned: readonly Change[], wired: string | undefined, reason: s
  * and its utilities; a setup it cannot order gets a note saying why.
  */
 export function planTheme(facts: ProjectFacts, answers: OnboardingAnswers, versions: Versions): StepResult {
-  if (!canInstallTheme(selectedLibs(answers.libs), answers.theme)) {
+  if (answers.theme === 'none') {
     return { changes: [], skipped: [] };
   }
   const provenance = createProvenance('ng-add', versions.cngx);
+  const missing = missingThemePeers(selectedLibs(answers.libs));
+  if (missing.length > 0) {
+    return { changes: [unwiredStylesheet(missing, provenance)], skipped: [] };
+  }
   const bridge = answers.theme === 'material' ? materialBridge(facts) : undefined;
 
   // A bridged object lives in Material's own file, which comes first in the

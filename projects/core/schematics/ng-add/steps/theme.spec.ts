@@ -56,9 +56,25 @@ describe('planTheme', () => {
     expect(byId(result, 'theme:entry')).toMatchObject({ after: '@cngx/themes/cngx.css' });
   });
 
-  it('plans nothing for theme none or when @cngx/themes cannot be installed', () => {
+  it('plans nothing for theme none', () => {
     expect(planTheme(createFacts(), createAnswers({ theme: 'none' }), VERSIONS)).toEqual({ changes: [], skipped: [] });
-    expect(planTheme(createFacts(), createAnswers({ libs: ['forms'] }), VERSIONS)).toEqual({ changes: [], skipped: [] });
+  });
+
+  it('says that no cngx stylesheet is wired when @cngx/themes cannot be installed', () => {
+    const result = planTheme(createFacts(), createAnswers({ libs: ['core', 'common'] }), VERSIONS);
+
+    expect(result.changes).toEqual([
+      {
+        kind: 'note',
+        id: 'theme:stylesheet',
+        label: 'No cngx stylesheet wired',
+        reason: '@cngx/themes needs @cngx/forms, @cngx/data-display and @cngx/ui, so nothing loads the cngx CSS',
+        provenance: { source: 'ng-add', version: VERSIONS.cngx },
+      },
+    ]);
+    expect(planTheme(createFacts(), createAnswers({ libs: ['forms'], theme: 'material' }), VERSIONS).changes).toEqual([
+      expect.objectContaining({ kind: 'note', id: 'theme:stylesheet' }),
+    ]);
   });
 
   it('skips what is already wired', () => {
