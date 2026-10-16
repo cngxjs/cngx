@@ -1448,7 +1448,20 @@
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2006.html",
       "status": "active",
       "files": ["projects/forms/input/reactive-forms-channel.ts"],
-      "messages": [{ "file": "projects/forms/input/reactive-forms-channel.ts", "text": "${...}" }]
+      "messages": [
+        {
+          "file": "projects/forms/input/input-format.directive.ts",
+          "text": "[cngxInputFormat] This formatted input uses Angular's DefaultValueAccessor, so the form control switches between raw and formatted text. For Reactive Forms, import CngxFormBridge from @cngx/forms/controls; [ngModel] is not supported, use [(value)] or Signal Forms."
+        },
+        {
+          "file": "projects/forms/input/input-mask.directive.ts",
+          "text": "[cngxInputMask] This masked input uses Angular's DefaultValueAccessor, so typed text never reaches the form control. For Reactive Forms, import CngxFormBridge from @cngx/forms/controls; [ngModel] is not supported, use [(value)] or Signal Forms."
+        },
+        {
+          "file": "projects/forms/input/numeric-input.directive.ts",
+          "text": "[cngxNumericInput] This numeric input uses Angular's DefaultValueAccessor, so the form control gets display strings instead of numbers. For Reactive Forms, import CngxFormBridge from @cngx/forms/controls; [ngModel] is not supported, use [(value)] or Signal Forms."
+        }
+      ]
     },
     {
       "code": "CNGX2007",

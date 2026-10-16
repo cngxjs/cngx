@@ -5,6 +5,8 @@
 // derivation read source through these, so they agree on what a helper call,
 // a runtime error, a guard and a dev wrapper are.
 
+import { posix } from 'node:path';
+
 import ts from 'typescript';
 
 const HELPERS = { cngxDevWarn: 'warn', cngxDevError: 'error' };
@@ -1010,11 +1012,37 @@ export function collectWrapperPlacementProblems(wrappers) {
 }
 
 /**
+ * The files a relative module specifier can name from `from`, or null for a
+ * bare or path-mapped specifier (`@cngx/...`), which this read cannot follow.
+ */
+const moduleFilesOf = (from, specifier) => {
+  if (!specifier.startsWith('.')) {
+    return null;
+  }
+  const base = posix.join(posix.dirname(from), specifier);
+  return [`${base}.ts`, `${base}/index.ts`, base];
+};
+
+/**
+ * The wrappers exported as `name` that an import from `files` can reach.
+ * When the import does not name the wrapper's own file (a barrel, a
+ * path-mapped specifier), every wrapper exported under that name is a
+ * candidate.
+ */
+const exportedWrappers = (wrappers, name, files) => {
+  const byName = wrappers.filter((w) => w.exportedAs.includes(name));
+  const inFile = files ? byName.filter((w) => files.includes(w.file)) : [];
+  return inFile.length > 0 ? inFile : byName;
+};
+
+/**
  * Direct calls of a wrapper (by name in its own file, by imported name
  * elsewhere; a method wrapper through any receiver in its own file), plus the
  * problems R4 fails: a wrapper used as a value outside a dev-mode guard (the
  * reference keeps it, the helper and the doc URL in production) and forms R4
- * cannot follow by name.
+ * cannot follow by name. Each call carries the wrappers it can reach
+ * (`wrappers`, as `{ file, name }`): the local wrapper of that name, or the
+ * exported ones its import resolves to.
  */
 export function collectWrapperUses(files, wrappers) {
   const exportedNames = new Set(wrappers.flatMap((w) => w.exportedAs));
@@ -1035,17 +1063,32 @@ export function collectWrapperUses(files, wrappers) {
     const names = new Set(local.filter((w) => w.kind === 'function').map((w) => w.name));
     const methods = new Set(local.filter((w) => w.kind === 'method').map((w) => w.name));
     const namespaces = new Set();
+    /** Local name -> the wrappers it reaches. */
+    const reach = new Map();
+    for (const w of local.filter((w) => w.kind === 'function')) {
+      reach.set(w.name, [...(reach.get(w.name) ?? []), w]);
+    }
+    const nsReach = new Map();
     for (const statement of sf.statements) {
       const bindings = ts.isImportDeclaration(statement) && statement.importClause?.namedBindings;
+      const from =
+        bindings && ts.isStringLiteral(statement.moduleSpecifier)
+          ? moduleFilesOf(path, statement.moduleSpecifier.text)
+          : null;
       if (bindings && ts.isNamedImports(bindings)) {
         for (const element of bindings.elements) {
-          if (exportedNames.has((element.propertyName ?? element.name).text)) {
+          const original = (element.propertyName ?? element.name).text;
+          if (exportedNames.has(original)) {
             names.add(element.name.text);
+            if (!reach.has(element.name.text)) {
+              reach.set(element.name.text, exportedWrappers(wrappers, original, from));
+            }
           }
         }
       }
       if (bindings && ts.isNamespaceImport(bindings)) {
         namespaces.add(bindings.name.text);
+        nsReach.set(bindings.name.text, from);
       }
       const reexports =
         ts.isExportDeclaration(statement) &&
@@ -1082,7 +1125,18 @@ export function collectWrapperUses(files, wrappers) {
           methods.has(callee.name.text) &&
           !(ts.isIdentifier(callee.expression) && callee.expression.text === 'console');
         if (byName || byMember || isNamespaceMember(callee)) {
-          calls.push({ file: path, line: lineOf(sf, node), name: callee.getText(sf), node });
+          const reached = byName
+            ? reach.get(callee.text)
+            : byMember
+              ? local.filter((w) => w.kind === 'method' && w.name === callee.name.text)
+              : exportedWrappers(wrappers, callee.name.text, nsReach.get(callee.expression.text));
+          calls.push({
+            file: path,
+            line: lineOf(sf, node),
+            name: callee.getText(sf),
+            node,
+            wrappers: reached.map((w) => ({ file: w.file, name: w.name })),
+          });
         }
       }
       const nameValue = ts.isIdentifier(node) && names.has(node.text) && isValueUse(node);
@@ -1180,28 +1234,45 @@ function guardedTail(node) {
   return current;
 }
 
-/** The parameter index `message` reads from in the dev wrapper around it, or -1. */
-function wrapperParameterIndex(message) {
+/**
+ * The function whose parameter `message` reads, and the parameter's index,
+ * or null. A callback in between that does not declare the name is passed
+ * (`afterNextRender(() => cngxDevWarn('CNGXnnnn', message))` reads the
+ * wrapper's parameter through a closure).
+ */
+function wrapperParameterOf(message) {
   const inner = unwrap(message);
   if (!ts.isIdentifier(inner)) {
-    return -1;
+    return null;
   }
   for (let fn = inner.parent; fn; fn = fn.parent) {
-    if (ts.isFunctionLike(fn) && fn.parameters) {
-      return fn.parameters.findIndex(
-        (param) => ts.isIdentifier(param.name) && param.name.text === inner.text,
-      );
+    if (!ts.isFunctionLike(fn) || !fn.parameters) {
+      continue;
+    }
+    const index = fn.parameters.findIndex(
+      (param) => ts.isIdentifier(param.name) && param.name.text === inner.text,
+    );
+    if (index >= 0) {
+      return { fn, index };
     }
   }
-  return -1;
+  return null;
 }
 
 /**
  * Every coded message the libs print, as [{ code, file, segments }]. A
- * helper call whose message is a dev wrapper's parameter is followed into
- * the wrapper's callers: the row then names the caller's file, where the
- * text is written. A code-only `CngxRuntimeError` contributes the text
- * behind its guard.
+ * helper call whose message is a dev wrapper's parameter (also read through
+ * a callback inside the wrapper) is followed into the wrapper's callers: the
+ * row then names the caller's file, where the text is written. A caller
+ * belongs to a wrapper by the wrapper's declaring file and name (an arrow or
+ * function expression is named by its variable), so same-named wrappers in
+ * two files keep their own rows. Known limit: an import through a barrel or
+ * a path-mapped specifier (`@cngx/...`) does not name the wrapper's file;
+ * such a caller reaches every exported wrapper of that name, so two
+ * exported same-named wrappers imported that way would share their rows. A
+ * wrapper with no caller found keeps its own row, with the parameter as a
+ * wildcard. A code-only `CngxRuntimeError` contributes the text behind its
+ * guard.
  *
  * @param {{ path: string; text: string }[]} files
  * @returns {{ code: string; file: string; segments: (string | symbol)[] }[]}
@@ -1218,17 +1289,16 @@ export function collectMessages(files) {
   const { calls: wrapperCalls } = collectWrapperUses(files, wrappers);
   for (const call of calls) {
     const message = call.node.arguments[1];
-    const index = message ? wrapperParameterIndex(message) : -1;
-    if (index < 0) {
+    const parameter = message ? wrapperParameterOf(message) : null;
+    if (!parameter) {
       add(call.code, call.file, message);
       continue;
     }
-    let fn = call.node.parent;
-    while (fn && !ts.isFunctionLike(fn)) {
-      fn = fn.parent;
-    }
-    const name = fn?.name && ts.isIdentifier(fn.name) ? fn.name.text : undefined;
-    const callers = wrapperCalls.filter((use) => use.name.split('.').pop() === name);
+    const { fn, index } = parameter;
+    const name = functionName(fn);
+    const callers = wrapperCalls.filter((use) =>
+      use.wrappers.some((w) => w.file === call.file && w.name === name),
+    );
     for (const use of callers) {
       add(call.code, use.file, use.node.arguments[index]);
     }
