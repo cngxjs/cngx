@@ -63,6 +63,11 @@ module.exports = defineConfig([
     expect(configOf('eslint.config.cjs', "const cngx = require('@cngx/eslint-plugin');\nmodule.exports = [];\n")?.wired).toBe(true);
   });
 
+  it('reads a dynamically imported plugin as wired', () => {
+    const config = "const cngx = (await import('@cngx/eslint-plugin')).default;\nexport default [...cngx.configs.recommended];\n";
+    expect(configOf('eslint.config.mjs', config)?.wired).toBe(true);
+  });
+
   it('prefers the project-level config over the workspace one', () => {
     const tree = createFixtureTree('standalone-app', {
       'eslint.config.js': 'module.exports = [];',
