@@ -8,7 +8,7 @@
   "additionalProperties": false,
   "properties": {
     "$schema": { "type": "string" },
-    "schemaVersion": { "const": 2 },
+    "schemaVersion": { "const": 3 },
     "docsBaseUrl": {
       "type": "string",
       "description": "Base URL of the code pages; a page is <docsBaseUrl>cngx<nnnn>.html."
@@ -38,7 +38,8 @@
         "page",
         "url",
         "status",
-        "files"
+        "files",
+        "messages"
       ],
       "additionalProperties": false,
       "properties": {
@@ -60,6 +61,26 @@
           "type": "array",
           "items": { "type": "string" },
           "description": "Repo-relative source files that emit the code; empty when retired."
+        },
+        "messages": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/message" },
+          "description": "The text each call site prints, one row per file and distinct text, sorted by file then text; empty when retired. A ${...} part, or any operand that is not literal text, is written as ${...}. No line numbers: only a changed text changes the manifest."
+        }
+      }
+    },
+    "message": {
+      "type": "object",
+      "required": ["file", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Repo-relative file the text is written in: the caller of a dev wrapper whose message is a parameter."
+        },
+        "text": {
+          "type": "string",
+          "description": "The message after the code, as written at that site."
         }
       }
     }

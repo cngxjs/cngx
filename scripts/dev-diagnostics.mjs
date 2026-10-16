@@ -1096,3 +1096,117 @@ function isValueUse(node) {
   }
   return !isNameOfDeclaration(node);
 }
+
+/** A `${...}` part, or any operand that is not literal text, in a message. */
+export const WILD = Symbol('wild');
+
+/** How `messageText` writes a WILD part. */
+export const WILD_TEXT = '${...}';
+
+function rawSegmentsOf(node) {
+  const inner = unwrap(node);
+  if (ts.isStringLiteral(inner) || ts.isNoSubstitutionTemplateLiteral(inner)) {
+    return [inner.text];
+  }
+  if (ts.isTemplateExpression(inner)) {
+    return [inner.head.text, ...inner.templateSpans.flatMap((span) => [WILD, span.literal.text])];
+  }
+  if (isPlus(inner)) {
+    return [...rawSegmentsOf(inner.left), ...rawSegmentsOf(inner.right)];
+  }
+  return [WILD];
+}
+
+/**
+ * A message expression as literal text and WILD parts, without empty
+ * literals and with adjacent WILD parts merged, so a WILD is the last
+ * segment exactly when no literal text follows it.
+ */
+export function segmentsOf(node) {
+  return rawSegmentsOf(node).reduce((out, part) => {
+    if (part === '' || (part === WILD && out.at(-1) === WILD)) {
+      return out;
+    }
+    return [...out, part];
+  }, []);
+}
+
+/** `segments` as one string, a WILD part written as `${...}`. */
+export const messageText = (segments) =>
+  segments.map((part) => (part === WILD ? WILD_TEXT : part)).join('');
+
+/** The right-most leaf of an `&&` chain: the message behind a guard. */
+function guardedTail(node) {
+  let current = unwrap(node);
+  while (isAnd(current)) {
+    current = unwrap(current.right);
+  }
+  return current;
+}
+
+/** The parameter index `message` reads from in the dev wrapper around it, or -1. */
+function wrapperParameterIndex(message) {
+  const inner = unwrap(message);
+  if (!ts.isIdentifier(inner)) {
+    return -1;
+  }
+  for (let fn = inner.parent; fn; fn = fn.parent) {
+    if (ts.isFunctionLike(fn) && fn.parameters) {
+      return fn.parameters.findIndex(
+        (param) => ts.isIdentifier(param.name) && param.name.text === inner.text,
+      );
+    }
+  }
+  return -1;
+}
+
+/**
+ * Every coded message the libs print, as [{ code, file, segments }]. A
+ * helper call whose message is a dev wrapper's parameter is followed into
+ * the wrapper's callers: the row then names the caller's file, where the
+ * text is written. A code-only `CngxRuntimeError` contributes the text
+ * behind its guard.
+ *
+ * @param {{ path: string; text: string }[]} files
+ * @returns {{ code: string; file: string; segments: (string | symbol)[] }[]}
+ */
+export function collectMessages(files) {
+  const out = [];
+  const add = (code, file, node) => {
+    if (code && node) {
+      out.push({ code, file, segments: segmentsOf(node) });
+    }
+  };
+  const calls = collectHelperCalls(files);
+  const wrappers = collectWrappers(calls);
+  const { calls: wrapperCalls } = collectWrapperUses(files, wrappers);
+  for (const call of calls) {
+    const message = call.node.arguments[1];
+    const index = message ? wrapperParameterIndex(message) : -1;
+    if (index < 0) {
+      add(call.code, call.file, message);
+      continue;
+    }
+    let fn = call.node.parent;
+    while (fn && !ts.isFunctionLike(fn)) {
+      fn = fn.parent;
+    }
+    const name = fn?.name && ts.isIdentifier(fn.name) ? fn.name.text : undefined;
+    const callers = wrapperCalls.filter((use) => use.name.split('.').pop() === name);
+    for (const use of callers) {
+      add(call.code, use.file, use.node.arguments[index]);
+    }
+    if (callers.length === 0) {
+      add(call.code, call.file, message);
+    }
+  }
+  for (const error of collectRuntimeErrors(files)) {
+    const message = error.node.arguments[1];
+    add(
+      error.code,
+      error.file,
+      message && (error.devOnly ? unwrap(message) : guardedTail(message)),
+    );
+  }
+  return out;
+}

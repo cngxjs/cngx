@@ -87,4 +87,4 @@ A code has one of four severities. The page headings say warning or error; the i
 
 One code stands for one condition. A code is never reused: when a check is removed, its page stays and says in which version the code was retired.
 
-Codes are also listed in `scripts/manifests/error-codes.json` in the repository, for tools that want the code, library, severity and source files without parsing the pages.
+Codes are also listed in `scripts/manifests/error-codes.json` in the repository, for tools that want the code, library, severity, source files and the message each call site prints (`messages`, with a `${...}` placeholder for each inserted value) without parsing the pages.

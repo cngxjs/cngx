@@ -9,8 +9,8 @@
 //     owner and is not a quote.
 // Q2  every backticked span on a page that starts with its own `CNGXnnnn: `
 //     is a prefix of a message the library prints for that code. Messages
-//     are the ones the repo's collectors extract (`collectHelperCalls`,
-//     `collectRuntimeErrors` in `scripts/dev-diagnostics.mjs`), followed
+//     are the ones `collectMessages` in `scripts/dev-diagnostics.mjs`
+//     extracts (the same rows the error-code manifest records), followed
 //     into the callers of a dev wrapper whose message is a parameter. A
 //     `${...}` part, or any operand that is not literal text, is a
 //     wildcard: it matches any text, but the literal text after it must
@@ -35,16 +35,9 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import ts from 'typescript';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import {
-  collectHelperCalls,
-  collectRuntimeErrors,
-  collectWrapperUses,
-  collectWrappers,
-  unwrap,
-} from '../dev-diagnostics.mjs';
+import { WILD, collectMessages } from '../dev-diagnostics.mjs';
 import { PAGES_DIR, readSources } from '../error-codes-manifest.mjs';
 
 /**
@@ -61,7 +54,6 @@ const QUOTE_EXEMPT = [
   },
 ];
 
-const WILD = Symbol('wild');
 const LEAD_IN = /(?:starts with|(?:message|it) reads|for example|:)\s*$/;
 /** A bare `[selector]` or `fn()`: names the owner, does not quote the message. */
 const OWNER_ONLY = /^(?:\[[^\]]+\]|[a-z][A-Za-z0-9]*\(\))$/;
@@ -70,46 +62,6 @@ const SPAN = /(`+)(?!`)([\s\S]*?[^`])\1(?!`)/g;
 
 /** The text of a code span: one leading and trailing space stripped when both are there. */
 const spanText = (raw) => (/^ .* $/s.test(raw) && raw.trim() ? raw.slice(1, -1) : raw);
-
-/** The right-most leaf of an `&&` chain: the message behind a guard. */
-function guardedTail(node) {
-  let current = unwrap(node);
-  while (
-    ts.isBinaryExpression(current) &&
-    current.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
-  ) {
-    current = unwrap(current.right);
-  }
-  return current;
-}
-
-/**
- * A message expression as literal text and WILD parts, without empty
- * literals and with adjacent WILD parts merged, so a WILD is the last
- * segment exactly when no literal text follows it.
- */
-export function segmentsOf(node) {
-  return rawSegmentsOf(node).reduce((out, part) => {
-    if (part === '' || (part === WILD && out.at(-1) === WILD)) {
-      return out;
-    }
-    return [...out, part];
-  }, []);
-}
-
-function rawSegmentsOf(node) {
-  const inner = unwrap(node);
-  if (ts.isStringLiteral(inner) || ts.isNoSubstitutionTemplateLiteral(inner)) {
-    return [inner.text];
-  }
-  if (ts.isTemplateExpression(inner)) {
-    return [inner.head.text, ...inner.templateSpans.flatMap((span) => [WILD, span.literal.text])];
-  }
-  if (ts.isBinaryExpression(inner) && inner.operatorToken.kind === ts.SyntaxKind.PlusToken) {
-    return [...rawSegmentsOf(inner.left), ...rawSegmentsOf(inner.right)];
-  }
-  return [WILD];
-}
 
 /**
  * Is `quote` the start of some text that `segments` can produce? A WILD
@@ -142,22 +94,6 @@ export function isPrefixOf(quote, segments, at = 0, index = 0) {
   return rest.startsWith(part) && isPrefixOf(quote, segments, at + part.length, index + 1);
 }
 
-/** The parameter index `message` reads from in the dev wrapper around it, or -1. */
-function wrapperParameterIndex(message) {
-  const inner = unwrap(message);
-  if (!ts.isIdentifier(inner)) {
-    return -1;
-  }
-  for (let fn = inner.parent; fn; fn = fn.parent) {
-    if (ts.isFunctionLike(fn) && fn.parameters) {
-      return fn.parameters.findIndex(
-        (param) => ts.isIdentifier(param.name) && param.name.text === inner.text,
-      );
-    }
-  }
-  return -1;
-}
-
 /**
  * Every message the library prints, by code, as segment lists.
  *
@@ -166,37 +102,8 @@ function wrapperParameterIndex(message) {
  */
 export function messagesByCode(files) {
   const out = new Map();
-  const add = (code, node) => {
-    if (code && node) {
-      out.set(code, [...(out.get(code) ?? []), segmentsOf(node)]);
-    }
-  };
-  const calls = collectHelperCalls(files);
-  const wrappers = collectWrappers(calls);
-  const { calls: wrapperCalls } = collectWrapperUses(files, wrappers);
-  for (const call of calls) {
-    const message = call.node.arguments[1];
-    const index = message ? wrapperParameterIndex(message) : -1;
-    if (index < 0) {
-      add(call.code, message);
-      continue;
-    }
-    let fn = call.node.parent;
-    while (fn && !ts.isFunctionLike(fn)) {
-      fn = fn.parent;
-    }
-    const name = fn?.name && ts.isIdentifier(fn.name) ? fn.name.text : undefined;
-    const callers = wrapperCalls.filter((use) => use.name.split('.').pop() === name);
-    for (const use of callers) {
-      add(call.code, use.node.arguments[index]);
-    }
-    if (callers.length === 0) {
-      add(call.code, message);
-    }
-  }
-  for (const error of collectRuntimeErrors(files)) {
-    const message = error.node.arguments[1];
-    add(error.code, message && (error.devOnly ? unwrap(message) : guardedTail(message)));
+  for (const { code, segments } of collectMessages(files)) {
+    out.set(code, [...(out.get(code) ?? []), segments]);
   }
   return out;
 }
@@ -315,7 +222,9 @@ describe('error-code page quotes - matcher', () => {
 
   it('compares the text after a template part', () => {
     const messages = messagesByCode([
-      file(`cngxDevWarn('CNGX1005', \`[cngxMenu] item "\${id}" has no label; bind [aria-label].\`);`),
+      file(
+        `cngxDevWarn('CNGX1005', \`[cngxMenu] item "\${id}" has no label; bind [aria-label].\`);`,
+      ),
     ]);
     const pages = [
       {
