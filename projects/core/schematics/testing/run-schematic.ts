@@ -92,20 +92,6 @@ export interface RuleRun {
 /** A collection entry as the CLI hands it to the schematic it runs. */
 export type CollectionEntry = Readonly<Record<string, unknown>>;
 
-/** The entry `key` of the source `migrations/migrations.json`, with its name. */
-export function readMigrationEntry(key: string): CollectionEntry {
-  const collection = JSON.parse(
-    readFileSync(join(__dirname, '..', 'migrations', 'migrations.json'), 'utf8'),
-  ) as {
-    readonly schematics: Readonly<Record<string, CollectionEntry>>;
-  };
-  const entry = collection.schematics[key];
-  if (entry === undefined) {
-    throw new Error(`migrations.json has no entry ${key}.`);
-  }
-  return { ...entry, name: key };
-}
-
 /**
  * Runs `rule` on `tree`; `entry` stands in for the collection entry a CLI run
  * passes, `interactive` for the execution option a programmatic caller sets.
