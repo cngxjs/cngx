@@ -400,7 +400,7 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       this.warnOnMisconfiguration();
     }
-    this.savedFocus = this.popover.focusOrigin();
+    this.savedFocus = this.openerToRestore();
     this.region.ensure();
     if (moveFocus) {
       this.focusInitial();
@@ -411,6 +411,18 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
     this.doc.addEventListener('pointerdown', this.outsidePointerDown, true);
     this.doc.addEventListener('keydown', this.escapeKeydown, true);
     this.armCloseWatcher();
+  }
+
+  // iOS Safari does not focus a button on tap (with or without VoiceOver),
+  // so the pre-open snapshot is often body. Fall back to the popover's
+  // anchor when it can take focus, so the close lands back on the opener.
+  private openerToRestore(): HTMLElement | null {
+    const origin = this.popover.focusOrigin();
+    if (origin && origin !== this.doc.body) {
+      return origin;
+    }
+    const anchor = this.popover.anchorElement();
+    return anchor && anchor.tabIndex >= 0 ? anchor : null;
   }
 
   // Idempotent: hide(), the native toggle, a flip back to anchored and

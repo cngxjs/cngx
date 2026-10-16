@@ -495,6 +495,19 @@ describe('CngxPopoverSheet', () => {
       document.removeEventListener('focusout', log);
     });
 
+    it('returns focus to the anchor when the opening tap did not focus anything', () => {
+      const ctx = setup();
+      const opener = ctx.q<HTMLButtonElement>('.opener');
+      ctx.host.popover().setAnchorElement(opener);
+      (document.activeElement as HTMLElement | null)?.blur();
+      opener.click();
+      ctx.flush();
+      expect(ctx.panel.contains(document.activeElement)).toBe(true);
+
+      ctx.host.popover().hide();
+      expect(document.activeElement).toBe(opener);
+    });
+
     it('restores focus without a close transition too', () => {
       const ctx = setup();
       openFromOpener(ctx);
