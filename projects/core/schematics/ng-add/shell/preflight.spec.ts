@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { parseManifest } from '../../engine';
 import { createFacts } from '../../testing/onboarding';
-import { angularSupport, preflightItems } from './preflight';
+import { angularReading, angularSupport, preflightItems } from './preflight';
 
 const PEER_RANGE = '^21.2.0';
 
@@ -14,6 +14,24 @@ const withAngular = (range: string | undefined, angularVersion = range?.replace(
       JSON.stringify({ dependencies: range === undefined ? {} : { '@angular/core': range } }),
     ),
   });
+
+describe('angularReading', () => {
+  it('names the declared range when the version comes from it', () => {
+    expect(angularReading(withAngular('^20.3.0'))).toBe('declares ^20.3.0');
+  });
+
+  it('names the installed version behind a specifier that carries none', () => {
+    expect(angularReading(withAngular('catalog:', '19.2.3'))).toBe('has 19.2.3 installed (declares catalog:)');
+  });
+
+  it('names the installed version when it differs from the declared range', () => {
+    expect(angularReading(withAngular('^21.1.0', '21.1.4'))).toBe('has 21.1.4 installed (declares ^21.1.0)');
+  });
+
+  it('says when no @angular/core is declared', () => {
+    expect(angularReading(withAngular(undefined, undefined))).toBe('declares no @angular/core dependency');
+  });
+});
 
 describe('angularSupport', () => {
   it.each(['^21.2.0', '~21.3.1', '22.0.0'])('supports %s against a 21.2 floor', (range) => {

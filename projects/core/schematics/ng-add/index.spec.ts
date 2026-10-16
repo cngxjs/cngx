@@ -821,7 +821,7 @@ describe('ngAdd', () => {
       'node_modules/@angular/core/package.json': JSON.stringify({ name: '@angular/core', version: '19.2.3' }),
     });
 
-    await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.2 or newer; this app declares catalog:.');
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.2 or newer; this app has 19.2.3 installed (declares catalog:).');
   });
 
   it('runs on when no Angular version can be read and pins the CDK to the installed version', async () => {

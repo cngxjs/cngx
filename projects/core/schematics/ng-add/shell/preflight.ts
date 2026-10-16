@@ -1,5 +1,6 @@
 import { type PreflightItem } from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
+import { versionOf } from '../detect/workspace';
 import { type GitState } from './git-state';
 
 /** What the preflight checklist reads, gathered once in the shell. */
@@ -35,6 +36,19 @@ export function angularSupport(facts: ProjectFacts, peerRange: string): AngularS
     floor: `${minMajor}.${minMinor}`,
     declared: facts.angularRange ?? 'no @angular/core dependency',
   };
+}
+
+/**
+ * What the app's Angular reads as, for a refusal: the installed version when it
+ * is not the one the declared range names, so a `catalog:` app is not told it
+ * declares the version that refused it.
+ */
+export function angularReading(facts: ProjectFacts): string {
+  const declared = `declares ${facts.angularRange ?? 'no @angular/core dependency'}`;
+  if (facts.angularVersion === undefined || facts.angularVersion === versionOf(facts.angularRange)) {
+    return declared;
+  }
+  return `has ${facts.angularVersion} installed (${declared})`;
 }
 
 function angularStatus(supported: boolean | undefined): PreflightItem['status'] {

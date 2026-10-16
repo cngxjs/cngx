@@ -21,7 +21,7 @@ import {
 } from '../engine';
 import { detectProject, type ProjectFacts } from './detect/detect';
 import { readGitState } from './shell/git-state';
-import { angularSupport, preflightItems } from './shell/preflight';
+import { angularReading, angularSupport, preflightItems } from './shell/preflight';
 import { askOnboarding, givenAnswers, presetChangeNote, presetDefaults } from './shell/questions';
 import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
@@ -54,10 +54,10 @@ function planSteps(withdrawn: ReadonlySet<string>): readonly Step[] {
 // Only a version read below the floor refuses; one cngx cannot read is the
 // preflight's warn line.
 function assertSupportedAngular(facts: ProjectFacts, peerRange: string): void {
-  const { supported, floor, declared } = angularSupport(facts, peerRange);
+  const { supported, floor } = angularSupport(facts, peerRange);
   if (supported === false) {
     throw new SchematicsException(
-      `cngx needs Angular ${floor} or newer; this app declares ${declared}.`,
+      `cngx needs Angular ${floor} or newer; this app ${angularReading(facts)}.`,
     );
   }
 }
