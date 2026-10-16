@@ -33,25 +33,38 @@ type Tree = ReturnType<typeof createFixtureTree>;
 // The terminal side of an interactive run: every question keeps its
 // preselection or default, the AI tooling question answers `editorPicks`.
 // The git state is fixed, so the checklist does not follow the worktree.
-const terminal = vi.hoisted(() => ({ editorPicks: [] as string[], git: 'clean' }));
+const terminal = vi.hoisted(() => ({
+  editorPicks: [] as string[],
+  git: 'clean',
+  confirms: [] as string[],
+  asked: [] as string[],
+}));
 
 vi.mock('./shell/git-state', () => ({ readGitState: () => terminal.git }));
 
 vi.mock('@inquirer/checkbox', () => ({
-  default: (question: { message: string; choices: { value: string; checked?: boolean }[] }) =>
-    Promise.resolve(
+  default: (question: { message: string; choices: { value: string; checked?: boolean }[] }) => {
+    terminal.asked.push(question.message);
+    return Promise.resolve(
       question.message.includes('MCP server')
         ? terminal.editorPicks
         : question.choices
             .filter((choice) => choice.checked === true)
             .map((choice) => choice.value),
-    ),
+    );
+  },
 }));
 vi.mock('@inquirer/select', () => ({
-  default: (question: { default: string }) => Promise.resolve(question.default),
+  default: (question: { message: string; default: string }) => {
+    terminal.asked.push(question.message);
+    return Promise.resolve(question.default);
+  },
 }));
 vi.mock('@inquirer/confirm', () => ({
-  default: (question: { default: boolean }) => Promise.resolve(question.default),
+  default: (question: { message: string; default: boolean }) => {
+    terminal.confirms.push(question.message);
+    return Promise.resolve(question.default);
+  },
 }));
 
 const MAP_API_THEME = `@use '@angular/material' as mat;
@@ -106,6 +119,21 @@ import { App } from './app';
 })
 export class AppModule { }
 `;
+
+// \`ng new\` output with the config written into the bootstrap call.
+const INLINE_MAIN = `import { provideBrowserGlobalErrorListeners } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { App } from './app/app';
+
+bootstrapApplication(App, { providers: [provideBrowserGlobalErrorListeners()] })
+  .catch((err) => console.error(err));
+`;
+
+function inlineBootstrapApp(): Tree {
+  const tree = createFixtureTree('standalone-app', { 'src/main.ts': INLINE_MAIN });
+  tree.delete('src/app/app.config.ts');
+  return tree;
+}
 
 const ESLINT_CONFIG = `// @ts-check
 const { defineConfig } = require("eslint/config");
@@ -353,7 +381,7 @@ describe('ngAdd', () => {
     const stylesheet = run.tree.readContent('src/styles.scss');
 
     expect(stylesheet).toContain(
-      "@use '@angular/material' as mat;\n@import '@cngx/themes/cngx.css';\n@use '@cngx/themes/material/theme' as cngx-material;\n",
+      "@use '@angular/material' as mat;\n@use '@cngx/themes/material/theme' as cngx-material;\n@import '@cngx/themes/cngx.css';\n",
     );
     expect(stylesheet).toContain('html {\n  @include cngx-material.theme($theme); /* cngx:theme:bridge */\n}\n');
     expect(run.tree.exists('src/cngx-theme.scss')).toBe(false);
@@ -366,6 +394,44 @@ describe('ngAdd', () => {
     );
 
     expect(run.tree.readContent('src/app/app-module.ts')).toContain('    provideA11yPreferences(withPersistence()),\n');
+  });
+
+  describe('an inline bootstrap config', () => {
+    it('provides into main.ts once over two runs and lists it in the report', async () => {
+      const first = await runRule(ngAdd({ yes: true }), inlineBootstrapApp());
+      const main = first.tree.readContent('src/main.ts');
+
+      expect(main.match(/provideA11yPreferences\(/g)).toHaveLength(1);
+      expect(first.logs).toContain('  src/main.ts');
+
+      const second = await runRule(ngAdd({ yes: true }), first.tree);
+
+      expect(second.tree.readContent('src/main.ts')).toBe(main);
+      expect(second.logs).toContain('cngx is already set up; nothing changed.');
+    });
+
+    it('asks before applying on a terminal', async () => {
+      vi.stubEnv('CI', '');
+      vi.stubEnv('NO_COLOR', '1');
+      process.stdout.isTTY = true;
+      terminal.confirms = [];
+      try {
+        await runRule(ngAdd({}), inlineBootstrapApp());
+
+        expect(terminal.confirms).toContain('Apply these changes?');
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it('creates the language file next to main.ts and imports it there', async () => {
+      const run = await runRule(ngAdd({ i18n: 'de', runtimeSwitch: true, yes: true }), inlineBootstrapApp());
+
+      expect(run.tree.exists('src/cngx-language.ts')).toBe(true);
+      expect(run.tree.exists('src/app/cngx-language.ts')).toBe(false);
+      expect(run.tree.readContent('src/main.ts')).toMatch(/import \{ cngxLanguagePack \} from '\.\/cngx-language';/);
+      expect(run.tree.readContent('src/main.ts')).toContain('provideCngxI18n(withPack(cngxLanguagePack))');
+    });
   });
 
   it('provides the rtl direction for an RTL source locale', async () => {
@@ -449,6 +515,71 @@ describe('ngAdd', () => {
         );
       } finally {
         terminal.git = 'clean';
+      }
+    });
+
+    it('asks before applying on a terminal when the components live outside src/app', async () => {
+      vi.stubEnv('CI', '');
+      vi.stubEnv('NO_COLOR', '1');
+      process.stdout.isTTY = true;
+      terminal.confirms = [];
+      try {
+        await runRule(ngAdd({}), createFixtureTree('standalone-app', { 'src/features/other.ts': SECOND_COMPONENT }));
+
+        expect(terminal.confirms).toContain('Apply these changes?');
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    describe.each([
+      ['--interactive=false', '--interactive=false'],
+      ['--no-interactive', '--no-interactive'],
+      ['--defaults', '--defaults'],
+      ['--defaults=true', '--defaults=true'],
+    ])('with %s on a terminal', (flag, named) => {
+      const argv = process.argv;
+
+      afterEach(() => {
+        process.argv = argv;
+      });
+
+      it('asks nothing and names the flag', async () => {
+        vi.stubEnv('CI', '');
+        vi.stubEnv('NO_COLOR', '1');
+        process.stdout.isTTY = true;
+        process.argv = [...argv.slice(0, 2), 'add', '@cngx/core', flag];
+        terminal.confirms = [];
+        terminal.asked = [];
+        try {
+          const run = await runRule(ngAdd({}), existing());
+
+          expect([...terminal.asked, ...terminal.confirms]).toEqual([]);
+          expect(run.logs).toContain(
+            `Prompts are off (${named}); applying the plan without a confirm. Pass --yes to apply without this line.`,
+          );
+          expect(run.tree.exists('src/cngx-theme.css')).toBe(true);
+        } finally {
+          vi.unstubAllEnvs();
+        }
+      });
+    });
+
+    it('asks nothing on a terminal when a programmatic caller runs it non-interactive', async () => {
+      vi.stubEnv('CI', '');
+      vi.stubEnv('NO_COLOR', '1');
+      process.stdout.isTTY = true;
+      terminal.confirms = [];
+      terminal.asked = [];
+      try {
+        const run = await runRule(ngAdd({}), existing(), {}, false);
+
+        expect([...terminal.asked, ...terminal.confirms]).toEqual([]);
+        expect(run.logs).toContain(
+          'Prompts are off (interactive: false); applying the plan without a confirm. Pass --yes to apply without this line.',
+        );
+      } finally {
+        vi.unstubAllEnvs();
       }
     });
 
@@ -647,6 +778,82 @@ describe('ngAdd', () => {
     const tree = createFixtureTree('standalone-app', { 'package.json': withDependencies({ '@angular/core': '^20.3.0' }) });
 
     await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.2 or newer; this app declares ^20.3.0.');
+  });
+
+  it('names a package.json that does not parse', async () => {
+    const tree = createFixtureTree('standalone-app', { 'package.json': '{ "dependencies": ' });
+
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow(/^package\.json is not valid JSON: .+\.$/);
+  });
+
+  it('names an angular.json without projects', async () => {
+    const workspace = JSON.parse(readFixture('standalone-app')['angular.json']) as Record<string, unknown>;
+    const tree = createFixtureTree('standalone-app', { 'angular.json': JSON.stringify({ ...workspace, projects: {} }) });
+
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow('angular.json lists no projects.');
+  });
+
+  it('names a listed stylesheet that is missing on disk', async () => {
+    const tree = createFixtureTree('standalone-app', {
+      'angular.json': withWorkspace((project) => {
+        project['architect']['build']['options']['styles'] = ['src/missing.css'];
+      }),
+    });
+
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow(/^src\/missing\.css is planned for .+ but does not exist\.$/);
+  });
+
+  it('refuses a project without a build target', async () => {
+    const tree = createFixtureTree('standalone-app', {
+      'angular.json': withWorkspace((project) => {
+        delete project['architect']['build'];
+      }),
+    });
+
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow(
+      'Project "fixture-app" has no build target in angular.json; cngx wires styles and providers through it.',
+    );
+  });
+
+  it('changes nothing on a second run after an Angular patch bump', async () => {
+    const installed = (version: string) => JSON.stringify({ name: '@angular/core', version });
+    const first = await runRule(
+      ngAdd({ yes: true }),
+      createFixtureTree('standalone-app', { 'node_modules/@angular/core/package.json': installed('21.2.5') }),
+    );
+    first.tree.overwrite('node_modules/@angular/core/package.json', installed('21.2.6'));
+    const record = first.tree.readContent('.cngx/install.json');
+
+    const second = await runRule(ngAdd({ yes: true }), first.tree);
+
+    expect(second.tree.readContent('.cngx/install.json')).toBe(record);
+    expect(second.logs).toContain('cngx is already set up; nothing changed.');
+  });
+
+  it('refuses an older installed Angular behind a catalog specifier', async () => {
+    const tree = createFixtureTree('standalone-app', {
+      'package.json': withDependencies({ '@angular/core': 'catalog:' }),
+      'node_modules/@angular/core/package.json': JSON.stringify({ name: '@angular/core', version: '19.2.3' }),
+    });
+
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.2 or newer; this app has 19.2.3 installed (declares catalog:).');
+  });
+
+  it('runs on when no Angular version can be read and pins the CDK to the installed version', async () => {
+    const unreadable = await runRule(
+      ngAdd({}),
+      createFixtureTree('standalone-app', { 'package.json': withDependencies({ '@angular/core': 'workspace:*' }) }),
+    );
+    expect(json<{ dependencies: Record<string, string> }>(unreadable.tree, 'package.json').dependencies['@angular/cdk']).toBeUndefined();
+
+    const installed = await runRule(
+      ngAdd({}),
+      createFixtureTree('standalone-app', {
+        'package.json': withDependencies({ '@angular/core': 'catalog:' }),
+        'node_modules/@angular/core/package.json': JSON.stringify({ name: '@angular/core', version: '21.2.5' }),
+      }),
+    );
+    expect(json<{ dependencies: Record<string, string> }>(installed.tree, 'package.json').dependencies['@angular/cdk']).toBe('^21.2.0');
   });
 
   it.each([

@@ -44,9 +44,18 @@ function createFile(change: CreateFile): Rule {
   };
 }
 
+// A planned target that vanished (a style entry listed but never created)
+// would otherwise surface as the devkit's bare "Path not found".
+function readPlanned(tree: Tree, change: EditFile | AddStyleImport): string {
+  if (!tree.exists(change.path)) {
+    throw new SchematicsException(`${change.path} is planned for ${change.label} but does not exist.`);
+  }
+  return tree.readText(change.path);
+}
+
 function editFile(change: EditFile): Rule {
   return (tree: Tree) => {
-    const content = tree.readText(change.path);
+    const content = readPlanned(tree, change);
     const next = change.edit(content);
     if (next !== content) {
       tree.overwrite(change.path, next);
@@ -127,7 +136,7 @@ function addProvider(change: AddProvider): Rule {
 
 function addStyleImport(change: AddStyleImport): Rule {
   return (tree: Tree) => {
-    const content = tree.readText(change.path);
+    const content = readPlanned(tree, change);
     const next = insertStyleImport(content, change.statement);
     if (next !== content) {
       tree.overwrite(change.path, next);

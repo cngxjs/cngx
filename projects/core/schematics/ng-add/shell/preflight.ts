@@ -1,5 +1,5 @@
 import { type PreflightItem } from '../../engine';
-import { type ProjectFacts } from '../detect/detect';
+import { ANGULAR_CORE_MANIFEST, type ProjectFacts } from '../detect/detect';
 import { type GitState } from './git-state';
 
 /** What the preflight checklist reads, gathered once in the shell. */
@@ -12,12 +12,15 @@ export interface PreflightInput {
 
 /** The app's Angular against the floor cngx supports. */
 export interface AngularSupport {
-  readonly supported: boolean;
+  /** `undefined` when no version can be read: nothing installed and a specifier that carries none. */
+  readonly supported: boolean | undefined;
   /** `major.minor` of the peer range. */
   readonly floor: string;
-  /** The app's declared `@angular/core` range, or why there is none. */
+  /** The app's declared `@angular/core` specifier, or why there is none. */
   readonly declared: string;
 }
+
+const NO_ANGULAR_DEPENDENCY = 'no @angular/core dependency';
 
 function majorMinor(version: string | undefined): readonly [number, number] | undefined {
   const match = /(\d+)\.(\d+)/.exec(version ?? '');
@@ -28,12 +31,47 @@ export function angularSupport(facts: ProjectFacts, peerRange: string): AngularS
   const [minMajor, minMinor] = majorMinor(peerRange) ?? [0, 0];
   const app = majorMinor(facts.angularVersion);
   const supported =
-    app !== undefined && (app[0] > minMajor || (app[0] === minMajor && app[1] >= minMinor));
+    app === undefined ? undefined : app[0] > minMajor || (app[0] === minMajor && app[1] >= minMinor);
   return {
     supported,
     floor: `${minMajor}.${minMinor}`,
-    declared: facts.manifest.dependencies['@angular/core'] ?? 'no @angular/core dependency',
+    declared: facts.angularRange ?? NO_ANGULAR_DEPENDENCY,
   };
+}
+
+/**
+ * What the app's Angular reads as, for a refusal: the installed version when
+ * cngx read it from the package, so a `catalog:` app is not told it declares
+ * the version that refused it.
+ */
+export function angularReading(facts: ProjectFacts): string {
+  const declared = `declares ${facts.angularRange ?? NO_ANGULAR_DEPENDENCY}`;
+  return facts.angularSource === 'installed' ? `has ${facts.angularVersion} installed (${declared})` : declared;
+}
+
+// The preflight line names what it read: the installed version beside the
+// specifier, or the specifier alone when the version comes from it.
+function angularLabel(facts: ProjectFacts, declared: string): string {
+  return facts.angularSource === 'installed'
+    ? `Angular ${facts.angularVersion} (installed, declares ${declared})`
+    : `Angular ${declared}`;
+}
+
+function angularDetail(facts: ProjectFacts, supported: boolean | undefined, floor: string): string {
+  const needs = `cngx needs ${floor} or newer`;
+  if (facts.angularSource === 'unreadable') {
+    return supported === undefined
+      ? `${ANGULAR_CORE_MANIFEST} cannot be read and the specifier carries no version; ${needs}`
+      : `read from the declared range, ${ANGULAR_CORE_MANIFEST} cannot be read; ${needs}`;
+  }
+  return supported === undefined ? `no version to read from it and no installed @angular/core; ${needs}` : needs;
+}
+
+function angularStatus(supported: boolean | undefined): PreflightItem['status'] {
+  if (supported === undefined) {
+    return 'warn';
+  }
+  return supported ? 'ok' : 'fail';
 }
 
 const GIT_ITEMS: Readonly<Record<GitState, PreflightItem>> = {
@@ -62,8 +100,10 @@ const GIT_ITEMS: Readonly<Record<GitState, PreflightItem>> = {
 /**
  * The checklist printed before any question: the Angular version against
  * the supported floor, the project with its maturity (only an existing app
- * is asked to confirm the plan) and the git state. An unsupported Angular is
- * the one `fail`; the shell renders it before it refuses the run.
+ * is asked to confirm the plan) and the git state. An Angular version below
+ * the floor and a project without a build target are the `fail` lines; the
+ * shell renders them before it refuses the run. A version it cannot read is
+ * a `warn`, and the run goes on.
  */
 export function preflightItems({
   facts,
@@ -73,15 +113,21 @@ export function preflightItems({
   const angular = angularSupport(facts, peerRange);
   return [
     {
-      label: `Angular ${angular.declared}`,
-      status: angular.supported ? 'ok' : 'fail',
-      detail: `cngx needs ${angular.floor} or newer`,
+      label: angularLabel(facts, angular.declared),
+      status: angularStatus(angular.supported),
+      detail: angularDetail(facts, angular.supported, angular.floor),
     },
-    {
-      label: `Project ${facts.project}`,
-      status: 'ok',
-      detail: facts.maturity === 'fresh' ? 'fresh app' : 'existing app',
-    },
+    facts.hasBuildTarget
+      ? {
+          label: `Project ${facts.project}`,
+          status: 'ok',
+          detail: facts.maturity === 'fresh' ? 'fresh app' : 'existing app',
+        }
+      : {
+          label: `Project ${facts.project}`,
+          status: 'fail',
+          detail: 'no build target in angular.json; cngx wires styles and providers through it',
+        },
     GIT_ITEMS[git],
   ];
 }

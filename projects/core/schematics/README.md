@@ -23,7 +23,8 @@ projects/core/schematics/
   ng-add/
     index.ts             the single-stage shell
     schema.json          options; x-prompt only for preset
-    detect/              detectProject(tree, workspace): ProjectFacts
+    detect/              detectProject(tree, workspace): ProjectFacts in detect.ts,
+                         composed from workspace, styles, eslint, ai-tooling, bootstrap
     steps/               pure plan<Step>(facts, answers, versions) per concern
     shell/               questions, preflight checklist, git state, install manifest reader
   migrations/
@@ -57,9 +58,11 @@ projects/<lib>/schematics/
 
 ## Adding an onboarding step
 
-1. Add the facts it needs to `detect/detect.ts` (with a fixture case in
-   `detect.spec.ts`), so the step can decide plan versus skip without reading
-   files.
+1. Add the facts it needs to `ProjectFacts` in `detect/detect.ts`, read by
+   the topical module they belong to (`workspace.ts`, `styles.ts`,
+   `eslint.ts`, `ai-tooling.ts`, `bootstrap.ts`, each with its spec) and
+   composed in `detectProject`, so the step can decide plan versus skip
+   without reading files.
 2. Write `steps/<step>.ts` as `(facts, answers, versions) => StepResult` and
    its spec against `createFacts` / `createAnswers` from `testing/onboarding.ts`.
 3. Add it to `planSteps` in `ng-add/index.ts` (apply order), extend the fixture matrix in
@@ -146,6 +149,11 @@ only when its source `package.json` declares `schematics`.
 - `ng add` strips `interactive`, `dryRun`, `force`, `defaults`, `registry`,
   `verbose` and `skipConfirmation` before the rule runs, so the schema uses
   none of those names. `prompts` and `yes` are the schematic's own switches.
+  The context's `interactive` stays `true` either way (the workflow never
+  passes the flag on), so the shell reads `--interactive=false`,
+  `--no-interactive` and `--defaults` from `process.argv` through the pure
+  `readPromptFlags`, and honours `interactive: false` from a programmatic
+  caller.
 - Before the package is installed, `ng add` parses the command line without
   the schema's option types. A list flag reaches the rule as one string
   (`--ai-tools claude,vscode` is `"claude,vscode"`) and `--lint=false` as the
@@ -175,7 +183,9 @@ only when its source `package.json` declares `schematics`.
   the scss global stylesheet, or into a new `src/material-theme.scss` placed
   first in the build styles of a css app. The bridge entry cngx adds follows
   the stylesheet that imports `cngx.css`, because it emits
-  `@layer cngx.components`.
+  `@layer cngx.components`. A `define-theme` or M2 object is bridged in its
+  own file instead; `insertStyleImport` places the bridge `@use` ahead of the
+  first `@import` there, the `cngx.css` `@import` after the leading block.
 
 ## Trying a build against a real app
 

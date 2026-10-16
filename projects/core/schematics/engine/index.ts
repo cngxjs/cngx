@@ -22,6 +22,7 @@ export {
   type NgAddOptions,
   type NgAddPreset,
   parseNgAddOptions,
+  readPromptFlags,
   THEME_CHOICES,
   type ThemeChoice,
 } from './options';
@@ -78,7 +79,9 @@ export {
 export {
   hasStyleImport,
   insertLeadingStyleImport,
+  isInjectedStyleEntry,
   styleEntryPath,
+  styleImportUrls,
 } from './edit/style-edit';
 export { EMPTY_RENAME_TABLE, type MemberRename, type RenameTable } from './migrate/rename-table';
 export { planRenames } from './migrate/plan-renames';

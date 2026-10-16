@@ -59,9 +59,10 @@ export interface PromptFlowOptions {
 
 /**
  * Detection-dependent questions run inside the rule, so `x-prompt` cannot
- * ask them. A terminal is the only signal: `ng add` strips `--interactive`
- * before the rule runs, and `--prompts=false` is the schematic's own switch
- * for CI under a pseudo-terminal.
+ * ask them. A terminal is the signal here, and `--prompts=false` is the
+ * schematic's own switch for CI under a pseudo-terminal; `ng add` strips
+ * `--interactive` and `--defaults` before the rule runs, so the shell reads
+ * those from the argv (`readPromptFlags`).
  */
 export function canPrompt(isTTY: boolean | undefined, prompts: boolean | undefined): boolean {
   return isTTY === true && prompts !== false;

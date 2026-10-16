@@ -28,8 +28,12 @@ const UI_COLLECTION = join(ROOT, 'dist', 'ui', 'schematics', 'collection.json');
 // string and `--lint=false` as "false". The normalize middleware keeps only
 // the last value of a repeated flag
 // (src/command-builder/utilities/normalize-options-middleware.js:25-33), so
-// the comma form is the one multi-value spelling. Verified against this CLI
-// major; a new one must be re-checked (schematics accepted debt 12).
+// the comma form is the one multi-value spelling. It also drops
+// `interactive` and `defaults` from the options (src/commands/add/cli.js,
+// `executeSchematic`) and the workflow never hands them to the rule's
+// context, so the ng-add shell reads them from `process.argv`
+// (`readPromptFlags`). Verified against this CLI major; a new one must be
+// re-checked (schematics accepted debt 12).
 const VERIFIED_CLI_MAJOR = 21;
 const BOOLEAN_FLAGS = ['runtimeSwitch', 'lint', 'a11yPreferences', 'feedback', 'floatingFallback', 'yes', 'prompts', 'quiet'];
 const PRE_INSTALL_FALSE = Object.fromEntries(BOOLEAN_FLAGS.map((flag) => [flag, 'false']));

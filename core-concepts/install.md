@@ -29,17 +29,28 @@ install. Nothing outside the project is written.
 
 1. **Detect.** The schematic reads the workspace: the Angular version, the
    build styles and whether they are CSS or Sass, the app config (standalone
-   `app.config.ts` or a root NgModule), the source locale, an Angular Material
+   `app.config.ts`, a root NgModule, or a `providers` array written straight
+   into `bootstrapApplication(App, {...})` in `main.ts`), the source locale, an Angular Material
    theme, an ESLint flat config, editor folders (`.claude`, `.cursor`,
    `.vscode`), and an earlier `.cngx/install.json`.
 2. **Preflight.** A short checklist before the cngx questions: the app's
-   Angular range against the one `@cngx/core` supports, the project and
+   Angular version against the one `@cngx/core` supports, the project and
    whether it counts as fresh or existing, and the git state. Uncommitted
    changes or a missing repository are flagged, since the cngx changes then
    have no clean `git diff` to review against. The `package.json` and
-   lockfile edits of the package install `ng add` runs first do not count. An app older than the supported Angular
-   range shows its failed line, then the run stops before anything is
-   planned.
+   lockfile edits of the package install `ng add` runs first do not count.
+   The version comes from the installed `@angular/core`, else from the
+   `@angular/core` range in `dependencies` or `devDependencies`; the line
+   names the installed version when it read one, and says so when the
+   installed `package.json` cannot be read. An app older
+   than the supported Angular shows its failed line, then the run stops
+   before anything is planned. A specifier that carries no version
+   (`catalog:`, `workspace:*`, a dist-tag) with nothing installed is a warn
+   line, and the run goes on; the `@angular/cdk` pin then becomes a note.
+   A project without a `build` target in `angular.json` fails its project
+   line and stops the run the same way. A `package.json` that does not
+   parse, an `angular.json` without projects, or a build style entry whose
+   file is missing stops the run with one line naming the file.
 3. **Ask.** With a terminal attached it asks the open questions (below). A
    flag on the command line answers its question; without a terminal the
    preset answers, or on a re-run the answers the last install recorded.
@@ -47,12 +58,14 @@ install. Nothing outside the project is written.
    the `--dry-run` output, the summary and the manifest are all read from
    that plan, so they cannot disagree. Notes (what a step refused or left to
    you) follow the list; they are not tasks.
-5. **Confirm.** An app that already has components, its own providers or
-   another UI library (Material, PrimeNG, Tailwind, Bootstrap) counts as
+5. **Confirm.** An app that already has components beyond the root one
+   (anywhere under its source root, outside `node_modules` and `dist`), its
+   own providers, a config written into `bootstrapApplication(App, {...})`,
+   or another UI library (Material, PrimeNG, Tailwind, Bootstrap) counts as
    existing and gets one `Apply these changes?` before anything is written.
    That question needs a terminal: under CI, without a terminal, or with
-   `--no-prompts`, the plan applies and one line says which of them kept
-   the question away. `--yes` skips the question and the line. A fresh app gets no
+   `--no-prompts`, `--interactive=false` or `--defaults`, the plan applies
+   and one line says which of them kept the question away. `--yes` skips the question and the line. A fresh app gets no
    confirmation.
 6. **Apply and summarise.** The summary lists the files touched, the notes
    (what a step refused or left to you), the steps already in place, and the
@@ -121,6 +134,7 @@ Every answer has a flag. A flag skips its question.
 |`--ai-tools`|`claude`, `cursor`, `vscode`, comma-separated (`--ai-tools claude,vscode`)|The editors to set up the cngx MCP server and agent instructions for. Answers the AI tooling question.|
 |`--yes`|`--yes`|Apply to an existing app without the confirmation.|
 |`--prompts`|`--prompts`, `--no-prompts`, default `true`|`--no-prompts` answers every question from flags, the recorded answers of a re-run and the preset defaults.|
+|`--interactive`, `--defaults`|`--interactive=false`, `--no-interactive`, `--defaults`|Angular CLI flags; either one also turns the schematic's questions off, like `--no-prompts`.|
 |`--quiet`|`--quiet`|Print only the summary, not the planned changes.|
 
 A boolean flag also takes `=true` or `=false` (`--lint=false`). A list flag
@@ -137,7 +151,8 @@ ng add @cngx/ui --preset=recommended --no-prompts --yes --skip-confirmation
 `--skip-confirmation` belongs to the Angular CLI (it skips the CLI's own
 install prompt); `--yes` skips the schematic's confirmation on an existing
 app. A run without a terminal never asks, so `--no-prompts` matters mostly
-under a pseudo-terminal.
+under a pseudo-terminal. The CLI's `--interactive=false` and `--defaults`
+turn the questions off the same way.
 
 ---
 
@@ -145,15 +160,15 @@ under a pseudo-terminal.
 
 |Target|When|What|
 |-|-|-|
-|`package.json`|always|Every selected `@cngx/*` package and its peers, pinned to the exact release; `@cngx/themes` when a theme is chosen; `@angular/cdk` at the app's Angular range when a package needs it; `@floating-ui/dom` for the fallback; `@cngx/eslint-plugin` as a devDependency for the lint rules, and `@angular-eslint/template-parser` on the `angular-eslint` version line when the app declares `angular-eslint` 19 or later but not the parser. `@angular/material` is never added.|
+|`package.json`|always|Every selected `@cngx/*` package and its peers, pinned to the exact release; `@cngx/themes` when a theme is chosen; `@angular/cdk` at the app's Angular range when a package needs it (behind `catalog:` or `workspace:*`, at the installed Angular's `major.minor`); `@floating-ui/dom` for the fallback; `@cngx/eslint-plugin` as a devDependency for the lint rules, and `@angular-eslint/template-parser` on the `angular-eslint` version line when the app declares `angular-eslint` 19 or later but not the parser. `@angular/material` is never added.|
 |Global styles|theme chosen|An import of `@cngx/themes/cngx.css` ahead of every cngx layer.|
 |`cngx-layers.css`|theme chosen, Tailwind v4|Next to the first global stylesheet of the build: one `@layer` statement that puts the cngx layers between Tailwind preflight and the Tailwind utilities. See [Tailwind](#tailwind).|
 |First global stylesheet|theme chosen, Tailwind v4|An import of `./cngx-layers.css` before every other `@import`.|
 |`src/cngx-theme.css`|cngx theme|Every system token, commented out at its default, with what it controls. Uncomment a token to override it.|
-|`src/cngx-theme.scss`|Material theme with a `mat.theme()` map|The bridge from the Material system tokens to the cngx tokens. A `define-theme` or M2 theme object is bridged in the file that defines it instead.|
+|`src/cngx-theme.scss`|Material theme with a `mat.theme()` map|The bridge from the Material system tokens to the cngx tokens. A `define-theme` or M2 theme object is bridged in the file that defines it instead: the bridge `@use` goes after the last leading `@use` there, ahead of every `@import`, since Sass rejects a `@use` that follows one.|
 |`angular.json`|theme chosen|The theme file added to the build styles, after the stylesheet that imports `cngx.css`.|
-|App config or root NgModule|per answer|`provideA11yPreferences(withPersistence())`, `provideDirection('rtl')` for a right-to-left source locale, `provideFeedback(withToasts(), withAlerts(), withBanners())`, `provideFloatingFallback(computePosition, [flip(), shift()])`, `provideCngxI18n(withPack(...))`.|
-|`cngx-language.ts`|German with runtime switch|Next to the app config: a `cngxLanguagePack` signal. Set it to switch every cngx string at runtime. When the app already provides `provideCngxI18n(...)` without that signal, the provider is not rewritten: the file is still created and a note names the one edit, `withPack(cngxLanguagePack)` imported from `./cngx-language`.|
+|App config, root NgModule or inline config in `main.ts`|per answer|`provideA11yPreferences(withPersistence())`, `provideDirection('rtl')` for a right-to-left source locale, `provideFeedback(withToasts(), withAlerts(), withBanners())`, `provideFloatingFallback(computePosition, [flip(), shift()])`, `provideCngxI18n(withPack(...))`.|
+|`cngx-language.ts`|German with runtime switch|Next to the file holding the root providers (`src/cngx-language.ts` for an inline config in `main.ts`): a `cngxLanguagePack` signal. Set it to switch every cngx string at runtime. When the app already provides `provideCngxI18n(...)` without that signal, the provider is not rewritten: the file is still created and a note names the one edit, `withPack(cngxLanguagePack)` imported from `./cngx-language`.|
 |ESLint flat config|lint rules|`...cngx.configs.recommended` in the exported array of `eslint.config.js`, `.mjs`, `.cjs`, `.ts`, `.mts` or `.cts`. It needs ESLint 9 or later and a TypeScript parser (`typescript-eslint`, `@typescript-eslint/parser` or `angular-eslint`): the cngx rules lint TypeScript through the app's own setup. The plugin also loads `@angular-eslint/template-parser` 19 or later; with `angular-eslint` declared it is added on that version line. Every case it cannot wire gets one note with the next command and no edit or dependency: ESLint below 9 (raise `eslint` to `^9` in devDependencies and reinstall; with `angular-eslint`, `ng update angular-eslint` moves its packages, without it `ng add angular-eslint` sets up ESLint 9), no flat config, no TypeScript parser or no template parser (`ng add angular-eslint`), a template parser line below 19 (`ng update angular-eslint`, or raise the parser itself), a legacy `.eslintrc*` config (`npx @eslint/migrate-config <file>`). Run `ng add @cngx/core` again afterwards. A config it cannot edit safely gets a note to add the entry by hand.|
 |`.cngx/install.json`|always|The install manifest (below).|
 |MCP configs, agent block, `.cngx/README.md`|editors chosen|See [AI tooling](#ai-tooling).|
