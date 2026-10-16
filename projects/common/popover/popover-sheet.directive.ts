@@ -452,6 +452,7 @@ export class CngxPopoverSheet
     this.releaseLock = null;
     this.stopSettling();
     this.engaged = false;
+    this.savedFocus = null;
     const index = engagedSheets.indexOf(this);
     if (index !== -1) {
       engagedSheets.splice(index, 1);
