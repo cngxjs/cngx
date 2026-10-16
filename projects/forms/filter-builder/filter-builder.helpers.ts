@@ -109,21 +109,40 @@ function describeLogic(logic: unknown): string {
   }
 }
 
-/** @internal */
-function throwUnknownLogic(logic: unknown): never {
+/**
+ * `where` is the public entry point that met the logic, named in the
+ * development message: the write boundary or the evaluation.
+ *
+ * @internal
+ */
+function throwUnknownLogic(
+  logic: unknown,
+  where: 'ensureFilterTreeIds' | 'toFilterPredicate',
+): never {
+  if (where === 'ensureFilterTreeIds') {
+    throw new CngxRuntimeError(
+      'CNGX2013',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        `ensureFilterTreeIds(): unknown filter logic "${describeLogic(logic)}"; a FilterGroup's ` +
+          "logic must be 'and', 'or' or 'xor'. Normalise deserialised or persisted trees before " +
+          'they reach the filter builder.',
+    );
+  }
   throw new CngxRuntimeError(
     'CNGX2013',
     typeof ngDevMode !== 'undefined' &&
       ngDevMode &&
-      `Unknown filter logic "${describeLogic(logic)}"; a FilterGroup's logic must be 'and', 'or' or 'xor'. ` +
-        'Normalise deserialised or persisted trees before they reach the filter builder.',
+      `toFilterPredicate(): unknown filter logic "${describeLogic(logic)}"; a FilterGroup's ` +
+        "logic must be 'and', 'or' or 'xor'. Normalise deserialised or persisted trees before " +
+        'they reach the filter builder.',
   );
 }
 
 /** @internal */
 function normaliseGroupIds(group: FilterGroup): FilterGroup {
   if (group.logic !== 'and' && group.logic !== 'or' && group.logic !== 'xor') {
-    throwUnknownLogic(group.logic);
+    throwUnknownLogic(group.logic, 'ensureFilterTreeIds');
   }
   const nextFilters: FilterNode[] = [];
   let childrenChanged = false;
@@ -324,7 +343,7 @@ function evaluateGroup<TItem>(
       break;
     default: {
       const _exhaustive: never = group.logic;
-      throwUnknownLogic(_exhaustive);
+      throwUnknownLogic(_exhaustive, 'toFilterPredicate');
     }
   }
 

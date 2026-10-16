@@ -113,7 +113,7 @@ export class CngxStepperPrevious {
     if (typeof ngDevMode !== 'undefined' && ngDevMode && this.coPlacedAsyncClick) {
       cngxDevWarn(
         'CNGX1038',
-        'CngxStepperPrevious: [cngxStepperPrevious] and [cngxAsyncClick] on the same element ' +
+        '[cngxStepperPrevious] and [cngxAsyncClick] on the same element ' +
           'both gate aria-disabled. Use one or the other.',
       );
     }

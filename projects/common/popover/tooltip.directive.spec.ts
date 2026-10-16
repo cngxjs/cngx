@@ -297,7 +297,7 @@ describe('CngxTooltip', () => {
       const calls = warnSpy.mock.calls.filter(([m]) => /^CNGX1036: /.test(String(m)));
       expect(calls).toHaveLength(1);
       expect(calls[0][0]).toMatch(
-        /^CNGX1036: CngxTooltip: The native Popover API is not supported in this browser\. /,
+        /^CNGX1036: \[cngxTooltip\] the native Popover API is not supported in this browser\. /,
       );
       expect(host.tooltip().state()).toBe('closed');
       expect(tooltipEl.hasAttribute('aria-hidden')).toBe(true);

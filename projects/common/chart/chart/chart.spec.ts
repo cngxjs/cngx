@@ -207,7 +207,7 @@ describe('CngxChart', () => {
     TestBed.tick();
     expect(warn).toHaveBeenCalledWith(
       expect.stringMatching(
-        /^CNGX1007: CngxChart: data is non-numeric .*Bind \[summaryAccessor\] to a stable component field/,
+        /^CNGX1007: \[cngx-chart\] data is non-numeric .*Bind \[summaryAccessor\] to a stable component field/,
       ),
     );
     warn.mockRestore();
@@ -233,7 +233,7 @@ describe('CngxChart', () => {
     fixture.detectChanges();
     TestBed.tick();
     expect(warn).toHaveBeenCalledWith(
-      expect.stringMatching(/^CNGX1009: CngxChart: multiple axes share one orientation/),
+      expect.stringMatching(/^CNGX1009: \[cngx-chart\] multiple axes share one orientation/),
     );
     warn.mockRestore();
   });
@@ -256,7 +256,7 @@ describe('CngxChart', () => {
     fixture.detectChanges();
     TestBed.tick();
     const warnedAboutChart = warn.mock.calls.some((call) =>
-      String(call[0] ?? '').includes('CngxChart: data is non-numeric'),
+      String(call[0] ?? '').includes('[cngx-chart] data is non-numeric'),
     );
     expect(warnedAboutChart).toBe(false);
     warn.mockRestore();
@@ -268,7 +268,7 @@ describe('CngxChart', () => {
     fixture.detectChanges();
     TestBed.tick();
     const warnedAboutChart = warn.mock.calls.some((call) =>
-      String(call[0] ?? '').includes('CngxChart: data is non-numeric'),
+      String(call[0] ?? '').includes('[cngx-chart] data is non-numeric'),
     );
     expect(warnedAboutChart).toBe(false);
     warn.mockRestore();
@@ -1631,7 +1631,9 @@ describe('CngxChart - overlay slot', () => {
     expect(chart.querySelectorAll('.cngx-chart__overlay-frame').length).toBe(1);
     expect(chart.textContent).toContain('first');
     expect(warn).toHaveBeenCalledWith(
-      expect.stringMatching(/^CNGX1008: CngxChart: more than one \*cngxChartOverlay projected; /),
+      expect.stringMatching(
+        /^CNGX1008: \[cngx-chart\] more than one \*cngxChartOverlay projected; /,
+      ),
     );
     warn.mockRestore();
   });

@@ -246,7 +246,7 @@ describe('stepper nav controls', () => {
       const fixture = TestBed.createComponent(CoPlacedHost);
       fixture.detectChanges();
       expect(warnSpy).toHaveBeenCalledTimes(1);
-      expect(warnSpy.mock.calls[0][0]).toMatch(/^CNGX1038: CngxStepperNext/);
+      expect(warnSpy.mock.calls[0][0]).toMatch(/^CNGX1038: \[cngxStepperNext\]/);
       expect(warnSpy.mock.calls[0][0]).toContain('both gate aria-disabled');
     });
 
@@ -264,7 +264,7 @@ describe('stepper nav controls', () => {
       const fixture = TestBed.createComponent(CoPlacedPrevHost);
       fixture.detectChanges();
       expect(warnSpy).toHaveBeenCalledTimes(1);
-      expect(warnSpy.mock.calls[0][0]).toMatch(/^CNGX1038: CngxStepperPrevious/);
+      expect(warnSpy.mock.calls[0][0]).toMatch(/^CNGX1038: \[cngxStepperPrevious\]/);
       expect(warnSpy.mock.calls[0][0]).toContain('both gate aria-disabled');
     });
   });

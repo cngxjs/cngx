@@ -49,7 +49,7 @@ export function createRingBuffer<T>(capacity: number): RingBuffer<T> {
       'CNGX1050',
       typeof ngDevMode !== 'undefined' &&
         ngDevMode &&
-        `createRingBuffer: capacity must be a positive integer, got ${capacity}`,
+        `createRingBuffer(): capacity must be a positive integer, got ${capacity}`,
     );
   }
 

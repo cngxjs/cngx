@@ -90,7 +90,7 @@ export class CngxErrorRegistry {
     if (typeof ngDevMode !== 'undefined' && ngDevMode && current.has(name)) {
       cngxDevWarn(
         'CNGX1021',
-        `CngxErrorRegistry: a scope named "${name}" is already registered. ` +
+        `registerScope(): a scope named "${name}" is already registered. ` +
           'The existing instance stays live (swap-is-noop); unregister it first for a true swap.',
       );
     }
@@ -138,7 +138,7 @@ export class CngxErrorRegistry {
     if (typeof ngDevMode !== 'undefined' && ngDevMode && current.has(name)) {
       cngxDevWarn(
         'CNGX1021',
-        `CngxErrorRegistry: an aggregator named "${name}" is already registered. ` +
+        `registerAggregator(): an aggregator named "${name}" is already registered. ` +
           'The existing instance stays live (swap-is-noop); unregister it first for a true swap.',
       );
     }

@@ -76,7 +76,7 @@ describe('CngxChipInteraction', () => {
           name: 'CngxRuntimeError',
           code: 'CNGX1044',
           message: expect.stringMatching(
-            /^CNGX1044: CngxChipInteraction must NOT be used inside <cngx-chip-group> \/ <cngx-multi-chip-group>; /,
+            /^CNGX1044: \[cngxChipInteraction\] must not be used inside <cngx-chip-group> \/ <cngx-multi-chip-group>; /,
           ),
         }),
       );

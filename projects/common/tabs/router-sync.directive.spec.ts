@@ -308,7 +308,7 @@ describe('CngxTabsFragmentSync', () => {
     fixture.detectChanges();
 
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toContain('CNGX1031: CngxTabsFragmentSync');
+    expect(warn.mock.calls[0][0]).toContain('CNGX1031: [cngxTabsFragmentSync]');
     expect(warn.mock.calls[0][0]).toContain('to enable deep-linking.');
   });
 

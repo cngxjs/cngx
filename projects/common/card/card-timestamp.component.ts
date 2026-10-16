@@ -171,7 +171,7 @@ export class CngxCardTimestamp {
         if (!this.isValidDate()) {
           cngxDevWarn(
             'CNGX1006',
-            '[CngxCardTimestamp] [date] resolved to an Invalid Date - rendering empty. ' +
+            '[cngx-card-timestamp] [date] resolved to an Invalid Date - rendering empty. ' +
               'Check the bound value (bad ISO string?).',
           );
         }

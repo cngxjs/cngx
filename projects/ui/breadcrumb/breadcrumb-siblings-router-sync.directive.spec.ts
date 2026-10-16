@@ -385,7 +385,7 @@ describe('CngxBreadcrumbSiblingsRouterSync', () => {
     const calls = warnSpy.mock.calls.filter(([m]) => /^CNGX3001: /.test(String(m)));
     expect(calls).toHaveLength(1);
     expect(calls[0][0]).toMatch(
-      /^CNGX3001: CngxBreadcrumbSiblingsRouterSync: no Router available - directive is a no-op\. /,
+      /^CNGX3001: \[cngxRouterSync\] on <cngx-breadcrumb-siblings>: no Router available - directive is a no-op\. /,
     );
     warnSpy.mockRestore();
   });

@@ -79,7 +79,7 @@ describe('filter-builder.utils', () => {
           name: 'CngxRuntimeError',
           code: 'CNGX2011',
           message: expect.stringMatching(
-            /^CNGX2011: updateAtPath: cannot descend into expression at \[0\]/,
+            /^CNGX2011: updateAtPath\(\): cannot descend into expression at \[0\]/,
           ),
         }),
       );
@@ -91,7 +91,7 @@ describe('filter-builder.utils', () => {
         expect.objectContaining({
           name: 'CngxRuntimeError',
           code: 'CNGX2010',
-          message: expect.stringMatching(/^CNGX2010: updateAtPath: invalid path \[3\]/),
+          message: expect.stringMatching(/^CNGX2010: updateAtPath\(\): invalid path \[3\]/),
         }),
       );
     });
@@ -103,7 +103,7 @@ describe('filter-builder.utils', () => {
           name: 'CngxRuntimeError',
           code: 'CNGX2009',
           message: expect.stringMatching(
-            /^CNGX2009: updateAtPath: root replacement must remain a FilterGroup/,
+            /^CNGX2009: updateAtPath\(\): root replacement must remain a FilterGroup/,
           ),
         }),
       );
@@ -138,7 +138,7 @@ describe('filter-builder.utils', () => {
         expect.objectContaining({
           name: 'CngxRuntimeError',
           code: 'CNGX2012',
-          message: expect.stringMatching(/^CNGX2012: removeAtPath: cannot remove the root/),
+          message: expect.stringMatching(/^CNGX2012: removeAtPath\(\): cannot remove the root/),
         }),
       );
     });
@@ -171,7 +171,7 @@ describe('filter-builder.utils', () => {
           name: 'CngxRuntimeError',
           code: 'CNGX2011',
           message: expect.stringMatching(
-            /^CNGX2011: appendAtPath: cannot append to non-group at \[0\]/,
+            /^CNGX2011: appendAtPath\(\): cannot append to non-group at \[0\]/,
           ),
         }),
       );

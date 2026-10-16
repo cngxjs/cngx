@@ -137,7 +137,7 @@ export function createScrollObserver(
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       cngxDevWarn(
         'CNGX1013',
-        `recycler scrollElement '${elementRef}' not found on first render; ` +
+        `injectRecycler(): scrollElement '${elementRef}' not found on first render; ` +
           'it will attach automatically once it mounts. If it never does, check the selector.',
       );
     }

@@ -419,7 +419,7 @@ describe('CngxDataGridAccordion column derivation', () => {
     // the only surface for the mistake is this warning.
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toMatch(
-      /^CNGX3009: CngxDataGridAccordion: a row projects 4 cells but the shared column template has 3 tracks - /,
+      /^CNGX3009: \[cngx-data-grid-accordion\] a row projects 4 cells but the shared column template has 3 tracks - /,
     );
     warn.mockRestore();
   });
@@ -438,7 +438,7 @@ describe('CngxDataGridAccordion column derivation', () => {
     TestBed.flushEffects();
     const calls = warn.mock.calls.filter(([m]) => /^CNGX3009: /.test(String(m)));
     expect(calls).toHaveLength(1);
-    expect(calls[0][0]).toMatch(/^CNGX3009: CngxDataGridAccordion: a row projects 3 cells but the shared column template has 2 tracks - /);
+    expect(calls[0][0]).toMatch(/^CNGX3009: \[cngx-data-grid-accordion\] a row projects 3 cells but the shared column template has 2 tracks - /);
     warn.mockRestore();
   });
 

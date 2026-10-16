@@ -8,15 +8,14 @@ describe('warnRouterAbsent', () => {
     vi.restoreAllMocks();
   });
 
-  it('warns once with the directive name and the enables clause', () => {
+  it('warns once with the function prefix and the enables clause', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
-    warnRouterAbsent('CngxSidenavRouterSync', 'deep-linking');
+    warnRouterAbsent('deep-linking');
 
     expect(warn).toHaveBeenCalledTimes(1);
     const message = warn.mock.calls[0][0] as string;
-    expect(message).toContain('CNGX1031: CngxSidenavRouterSync');
-    expect(message).toContain('no Router available');
+    expect(message).toMatch(/^CNGX1031: injectQueryParamSync\(\): no Router available/);
     expect(message).toContain('provideRouter(...)');
     expect(message).toContain('deep-linking');
   });
@@ -25,7 +24,7 @@ describe('warnRouterAbsent', () => {
     vi.stubGlobal('ngDevMode', false);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
-    warnRouterAbsent('CngxSidenavRouterSync', 'deep-linking');
+    warnRouterAbsent('deep-linking');
 
     expect(warn).not.toHaveBeenCalled();
   });

@@ -305,7 +305,7 @@ export class CngxAlertStack {
         untracked(() =>
           cngxDevWarn(
             'CNGX3003',
-            `[CngxAlertStack] The overflow aria-label "${name}" does not contain its visible ` +
+            `[cngx-alert-stack] the overflow aria-label "${name}" does not contain its visible ` +
               `label "${visible}" (WCAG 2.5.3). Make alertOverflow(count) include ` +
               'alertOverflowVisible(count).',
           ),

@@ -355,7 +355,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   if (typeof ngDevMode !== 'undefined' && ngDevMode && isGrid && config.columns == null) {
     cngxDevError(
       'CNGX1011',
-      '[CngxRecycler] layout: "grid" requires explicit `columns`. Falling back to columns=1.',
+      'injectRecycler(): layout: "grid" requires explicit `columns`. Falling back to columns=1.',
     );
   }
 
@@ -381,7 +381,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     if (count > 10_000) {
       cngxDevWarn(
         'CNGX1012',
-        `[CngxRecycler] estimateSize as a function with ${count} items has O(n) ` +
+        `injectRecycler(): estimateSize as a function with ${count} items has O(n) ` +
           `per-frame cost. Consider using a fixed estimateSize for large datasets.`,
       );
     }

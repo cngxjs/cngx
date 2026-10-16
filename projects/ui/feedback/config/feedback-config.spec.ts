@@ -75,6 +75,8 @@ describe('injectErrorDetail default', () => {
     expect(detailFor(new Error('boom'))).toBe('boom');
     expect(detailFor(new Error('boom'))).toBe('boom');
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(String(warn.mock.calls[0][0])).toMatch(/^CNGX3004: \[cngx\/feedback\]/);
+    expect(String(warn.mock.calls[0][0])).toMatch(
+      /^CNGX3004: injectErrorDetail\(\): showing the raw/,
+    );
   });
 });

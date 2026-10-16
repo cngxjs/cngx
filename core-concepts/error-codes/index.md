@@ -8,7 +8,7 @@
 Every developer diagnostic CNGX writes to the console carries a code and a link to its page:
 
 ```text
-CNGX0001: [cngx/i18n] "de_DE" is not a BCP 47 locale; reading it as English. Find more at https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0001.html
+CNGX0001: formatMessage(): "de_DE" is not a BCP 47 locale; reading it as English. Find more at https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0001.html
 ```
 
 The text after the code says what happened at that call site. The page says why CNGX checks it and how to fix it.
@@ -44,7 +44,7 @@ Some misuse cannot be worked around, for example a directive placed outside the 
 In development, when the throw site passes a message, it reads like a console diagnostic:
 
 ```text
-CNGX1044: CngxChipInteraction must NOT be used inside <cngx-chip-group> / <cngx-multi-chip-group>; use [cngxChipInGroup] instead. Find more at https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1044.html
+CNGX1044: [cngxChipInteraction] must not be used inside <cngx-chip-group> / <cngx-multi-chip-group>; use [cngxChipInGroup] instead. Find more at https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1044.html
 ```
 
 What happens in a production build depends on the check:

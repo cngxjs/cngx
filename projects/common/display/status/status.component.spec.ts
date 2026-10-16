@@ -95,7 +95,7 @@ describe('CngxStatus', () => {
     fixture.componentInstance.label.set(undefined);
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(warn.mock.calls.some((c) => /^CNGX1017: cngx-status: \[glyph\]="false"/.test(String(c[0])))).toBe(true);
+    expect(warn.mock.calls.some((c) => /^CNGX1017: \[cngx-status\] \[glyph\]="false"/.test(String(c[0])))).toBe(true);
   });
 
   it('does not warn colour-only when the glyph is hidden but a label is present', async () => {
@@ -122,7 +122,7 @@ describe('CngxStatus', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(warn).toHaveBeenCalledOnce();
-    expect(warn.mock.calls[0][0]).toMatch(/^CNGX1016: cngx-status: no `label`; /);
+    expect(warn.mock.calls[0][0]).toMatch(/^CNGX1016: \[cngx-status\] no `label`; /);
   });
 
   it('warns CNGX1016 for an aria-label on the role-less host, which is no valid name', async () => {

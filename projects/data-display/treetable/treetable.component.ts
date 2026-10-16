@@ -105,7 +105,7 @@ function warnUnlabeledColumns(
         warned.add(col);
         cngxDevWarn(
           'CNGX4001',
-          `[CngxTreetable] column "${col}" has no header label - production shows ` +
+          `[cngx-treetable] column "${col}" has no header label - production shows ` +
             `the unlabeledColumn text instead of the key. Add it to columnLabels ` +
             `(withTreetableLabels or the language pack) or project a *cngxHeader template.`,
         );

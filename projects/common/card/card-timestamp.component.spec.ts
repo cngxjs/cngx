@@ -118,7 +118,7 @@ describe('CngxCardTimestamp', () => {
     const time = el.querySelector('time')!;
     expect(time.textContent!.trim()).toBe('');
     expect(time.hasAttribute('datetime')).toBe(false);
-    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^CNGX1006: \[CngxCardTimestamp\]/));
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^CNGX1006: \[cngx-card-timestamp\]/));
     warn.mockRestore();
   });
 

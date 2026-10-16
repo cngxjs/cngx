@@ -123,10 +123,9 @@ export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>('CngxChar
 /**
  * Inject the parent chart's reactive context. Throws a `CngxRuntimeError`
  * with code `CNGX1048` when the consumer is not mounted as a content child
- * of `<cngx-chart>`, in development and production alike. The
- * `consumerName` argument is interpolated into the development message so
- * the consumer-class name surfaces at the call site rather than a generic
- * guard string.
+ * of `<cngx-chart>`, in development and production alike. The `selector`
+ * argument is the consumer's public selector without brackets (`'cngxLine'`)
+ * and names it in the development message.
  *
  * Use it from custom layer directives mounted on `<svg:g>` hosts to
  * read `plot`, the scales and `renderSvg` the same way the built-in
@@ -136,14 +135,14 @@ export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>('CngxChar
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart-context.ts
  * @since 0.1.0
  */
-export function injectChartContext(consumerName: string): CngxChartContext {
+export function injectChartContext(selector: string): CngxChartContext {
   const ctx = inject(CNGX_CHART_CONTEXT, { optional: true });
   if (!ctx) {
     throw new CngxRuntimeError(
       'CNGX1048',
       typeof ngDevMode !== 'undefined' &&
         ngDevMode &&
-        `${consumerName}: missing CNGX_CHART_CONTEXT - must be a content child of <cngx-chart>`,
+        `[${selector}] must be placed inside <cngx-chart>.`,
     );
   }
   return ctx;

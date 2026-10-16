@@ -85,7 +85,9 @@ describe('CngxLine', () => {
       expect.objectContaining({
         name: 'CngxRuntimeError',
         code: 'CNGX1048',
-        message: expect.stringMatching(/^CNGX1048: CngxLine: missing CNGX_CHART_CONTEXT/),
+        message: expect.stringMatching(
+          /^CNGX1048: \[cngxLine\] must be placed inside <cngx-chart>\./,
+        ),
       }),
     );
   });

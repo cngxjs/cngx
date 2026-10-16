@@ -208,7 +208,7 @@ describe('CngxTabsRouteSync', () => {
     presenter.select(1);
     expect(presenter.activeIndex()).toBe(1);
     expect(warnSpy).toHaveBeenCalledTimes(1);
-    expect(warnSpy.mock.calls[0][0]).toContain('CNGX1031: CngxTabsRouteSync');
+    expect(warnSpy.mock.calls[0][0]).toContain('CNGX1031: [cngxTabsRouteSync]');
   });
 
   it('writes nothing to the console without a Router in production', async () => {

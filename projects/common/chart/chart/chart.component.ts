@@ -740,7 +740,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
         }
         cngxDevWarn(
           'CNGX1007',
-          'CngxChart: data is non-numeric and no [summaryAccessor] is bound. ' +
+          '[cngx-chart] data is non-numeric and no [summaryAccessor] is bound. ' +
             'Auto-Summary and the SR data-table will silently fall back to NaN. ' +
             'Bind [summaryAccessor] to a stable component field (summaryAccessor = (d: Row) => d.value) ' +
             'or pass a numeric data array.',
@@ -750,7 +750,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
         if (this.overlaySlots().length > 1) {
           cngxDevWarn(
             'CNGX1008',
-            'CngxChart: more than one *cngxChartOverlay projected; only the first renders. ' +
+            '[cngx-chart] more than one *cngxChartOverlay projected; only the first renders. ' +
               'Compose multiple overlays inside a single overlay template.',
           );
         }
@@ -762,7 +762,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
         if (horizontal.length > 1 || vertical.length > 1) {
           cngxDevWarn(
             'CNGX1009',
-            'CngxChart: multiple axes share one orientation; only the first drives ' +
+            '[cngx-chart] multiple axes share one orientation; only the first drives ' +
               'the scale, the rest render their line and ticks but their [domain] ' +
               'is silently ignored. Mount one X and one Y axis per chart.',
           );

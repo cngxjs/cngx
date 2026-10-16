@@ -133,7 +133,7 @@ export class CngxMenu implements CngxMenuHost {
       warnedFocusHosts.add(el);
       cngxDevWarn(
         'CNGX1027',
-        'CngxMenu.focus(): host element has tabindex < 0; with tabindex="-1" focus() still lands ' +
+        '[cngxMenu] focus(): host element has tabindex < 0; with tabindex="-1" focus() still lands ' +
           'but the menu drops out of the Tab sequence, without a tabindex focus() does nothing. ' +
           'Add tabindex="0" to the cngxMenu host so the menu container receives keyboard focus.',
       );

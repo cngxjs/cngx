@@ -257,7 +257,7 @@ export class CngxTabOverflow {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         cngxDevWarn(
           'CNGX3012',
-          '[CngxTabOverflow] Strip wrapper not found after 60 attach ' +
+          '[cngx-tab-overflow] strip wrapper not found after 60 attach ' +
             'attempts; the More popover will not surface clipped tabs. ' +
             'Verify the molecule sits inside the tab strip it watches: a direct ' +
             'child of <cngx-tab-group>, or the one [cngxMatTabs] places in the Material header.',

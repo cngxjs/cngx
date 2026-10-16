@@ -92,7 +92,7 @@ export function createKeyedRegistry<T>(options?: RegistryOptions): KeyedRegistry
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         cngxDevWarn(
           'CNGX0004',
-          `${name}: "${key}" is already registered. The existing instance stays ` +
+          `createKeyedRegistry(): ${name} already holds "${key}". The existing instance stays ` +
             'live (swap-is-noop); unregister it first for a true swap.',
         );
       }

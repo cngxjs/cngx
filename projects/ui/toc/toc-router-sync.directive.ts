@@ -14,13 +14,13 @@ import { CNGX_TOC, type CngxTocContract } from './toc-token';
  *
  * @internal
  */
-function warnRouterAbsent(directive: string, enables: string): void {
+function warnRouterAbsent(selector: string, enables: string): void {
   if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
     return;
   }
   cngxDevWarn(
     'CNGX3001',
-    `${directive}: no Router / ActivatedRoute available - directive is a no-op. ` +
+    `[${selector}] no Router / ActivatedRoute available - directive is a no-op. ` +
       `Provide @angular/router via provideRouter(...) to enable ${enables}.`,
   );
 }
@@ -58,7 +58,7 @@ export class CngxTocRouterSync {
   constructor() {
     if (!this.router || !this.route) {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-        afterNextRender(() => warnRouterAbsent('CngxTocRouterSync', 'fragment deep-linking'));
+        afterNextRender(() => warnRouterAbsent('cngxTocRouterSync', 'fragment deep-linking'));
       }
       return;
     }

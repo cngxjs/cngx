@@ -128,7 +128,7 @@ export class CngxBreadcrumbSiblingsRouterSync implements CngxBreadcrumbSiblingsS
         afterNextRender(() => {
           cngxDevWarn(
             'CNGX3001',
-            'CngxBreadcrumbSiblingsRouterSync: no Router available - directive is a no-op. ' +
+            '[cngxRouterSync] on <cngx-breadcrumb-siblings>: no Router available - directive is a no-op. ' +
               'Provide @angular/router via provideRouter(...) to enable router-driven siblings.',
           );
         });

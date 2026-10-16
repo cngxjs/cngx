@@ -76,7 +76,7 @@ describe('formatMessage', () => {
     expect(formatMessage(errors, { count: 1 }, 'xx_YY_bad')).toBe('1 error');
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledWith(
-      expect.stringMatching(/^CNGX0001: \[cngx\/i18n\] "xx_YY_bad" is not a BCP 47 locale; /),
+      expect.stringMatching(/^CNGX0001: formatMessage\(\): "xx_YY_bad" is not a BCP 47 locale; /),
     );
   });
 
@@ -108,7 +108,7 @@ describe('formatMessage', () => {
     expect(formatMessage('Hello {name}', {}, 'en')).toBe('Hello {name}');
     expect(warn).toHaveBeenCalledOnce();
     expect(warn).toHaveBeenCalledWith(
-      expect.stringMatching(/^CNGX0003: \[cngx\/i18n\] no argument for \{name\} in "Hello \{name\}"/),
+      expect.stringMatching(/^CNGX0003: formatMessage\(\): no argument for \{name\} in "Hello \{name\}"/),
     );
   });
 
@@ -118,7 +118,7 @@ describe('formatMessage', () => {
     expect(warn).toHaveBeenCalledOnce();
     expect(warn).toHaveBeenCalledWith(
       expect.stringMatching(
-        /^CNGX0002: \[cngx\/i18n\] plural message without a numeric "count" argument: "many"/,
+        /^CNGX0002: formatMessage\(\): plural message without a numeric "count" argument: "many"/,
       ),
     );
   });

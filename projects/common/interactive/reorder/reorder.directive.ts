@@ -59,7 +59,7 @@ function wireDevModeCheck(hostEl: HTMLElement, itemSelector: Signal<string>): vo
     if (misconfigured > 0) {
       cngxDevWarn(
         'CNGX1028',
-        `[CngxReorder] ${misconfigured} element(s) match itemSelector ` +
+        `[cngxReorder] ${misconfigured} element(s) match itemSelector ` +
           `"${itemSelector()}" but carry no non-negative integer data-reorder-index. ` +
           'Pointer / keyboard moves targeting them will be ignored.',
       );

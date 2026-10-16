@@ -183,7 +183,7 @@ describe('CngxMiniBar - unnamed-meter dev warning', () => {
     await fixture.whenStable();
     expect(
       warn.mock.calls.some((c) =>
-        /^CNGX1010: cngx-mini-bar: role="meter" has no accessible name - /.test(String(c[0])),
+        /^CNGX1010: \[cngx-mini-bar\] role="meter" has no accessible name - /.test(String(c[0])),
       ),
     ).toBe(true);
   });
@@ -200,7 +200,7 @@ describe('CngxMiniBar - unnamed-meter dev warning', () => {
     const fixture = TestBed.createComponent(EmptyNameHost);
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(warn.mock.calls.filter((c) => /^CNGX1010: cngx-mini-bar: /.test(String(c[0])))).toHaveLength(1);
+    expect(warn.mock.calls.filter((c) => /^CNGX1010: \[cngx-mini-bar\] /.test(String(c[0])))).toHaveLength(1);
   });
 
   it('does not warn when the visible label supplies the accessible name', async () => {

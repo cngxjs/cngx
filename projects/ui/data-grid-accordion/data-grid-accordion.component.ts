@@ -377,7 +377,7 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
         if (over) {
           cngxDevWarn(
             'CNGX3009',
-            `CngxDataGridAccordion: a row projects ${over.cells().length} cells but the ` +
+            `[cngx-data-grid-accordion] a row projects ${over.cells().length} cells but the ` +
               `shared column template has ${tracks} tracks - the extra cells land in ` +
               'implicit tracks and misalign silently. Match every row to the header ' +
               '(or first-row) cell count, or to the [columns] tracks when it is set.',

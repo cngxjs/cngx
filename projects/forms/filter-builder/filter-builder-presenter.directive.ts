@@ -198,7 +198,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
         if (this.fields().length === 0) {
           cngxDevWarn(
             'CNGX2002',
-            '[CngxFilterBuilder] no fields provided - empty-state branch will always render.',
+            '[cngxFilterBuilderPresenter] no fields provided - empty-state branch will always render.',
           );
         }
         const fieldKeys = new Set(this.fields().map((f) => f.key));
@@ -207,7 +207,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
         if (unknown.size > 0) {
           cngxDevWarn(
             'CNGX2003',
-            `[CngxFilterBuilder] value() references unknown field key(s): ${[...unknown].join(', ')}`,
+            `[cngxFilterBuilderPresenter] value() references unknown field key(s): ${[...unknown].join(', ')}`,
           );
         }
       });
@@ -229,7 +229,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         cngxDevWarn(
           'CNGX2004',
-          `[CngxFilterBuilder] addGroup at depth ${path.length + 1} exceeds maxNestingDepth ` +
+          `[cngxFilterBuilderPresenter] addGroup at depth ${path.length + 1} exceeds maxNestingDepth ` +
             `${this.config.maxNestingDepth} - ignored. Raise it via withMaxNestingDepth(...).`,
         );
       }

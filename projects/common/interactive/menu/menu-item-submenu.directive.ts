@@ -316,7 +316,7 @@ function warnMissingSubmenuFallbacks(popoverEl: HTMLElement): void {
   submenuFallbackWarnedDocs.add(doc);
   cngxDevWarn(
     'CNGX1026',
-    'CngxMenuItemSubmenu: the companion popover ships without [positionTryFallbacks]. ' +
+    '[cngxMenuItemSubmenu] the companion popover ships without [positionTryFallbacks]. ' +
       'Submenus that clip the viewport edge will not flip without a try-fallback chain. ' +
       'Expose the recommended default as a component field and bind it:\n\n' +
       "  import { CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';\n" +

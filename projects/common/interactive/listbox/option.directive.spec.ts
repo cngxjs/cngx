@@ -180,7 +180,7 @@ describe('CngxOption', () => {
         fixture.detectChanges();
 
         expect(errorSpy).toHaveBeenCalledWith(
-          expect.stringMatching(/^CNGX1023: <cngx-option> at /),
+          expect.stringMatching(/^CNGX1023: \[cngxOption\] option /),
         );
       } finally {
         errorSpy.mockRestore();

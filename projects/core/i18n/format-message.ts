@@ -62,7 +62,7 @@ export const canonicalLocale = memoize(
         warnedLocaleTags.add(locale);
         cngxDevWarn(
           'CNGX0001',
-          `[cngx/i18n] "${locale}" is not a BCP 47 locale; reading it as English.`,
+          `formatMessage(): "${locale}" is not a BCP 47 locale; reading it as English.`,
         );
       }
       return FALLBACK_LOCALE;
@@ -85,7 +85,7 @@ function selectPluralForm(
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       cngxDevWarn(
         'CNGX0002',
-        `[cngx/i18n] plural message without a numeric "count" argument: "${message.other}"`,
+        `formatMessage(): plural message without a numeric "count" argument: "${message.other}"`,
       );
     }
     return message.other;
@@ -129,7 +129,7 @@ export function formatMessage(
     const value = args[name];
     if (value === undefined) {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-        cngxDevWarn('CNGX0003', `[cngx/i18n] no argument for ${placeholder} in "${template}"`);
+        cngxDevWarn('CNGX0003', `formatMessage(): no argument for ${placeholder} in "${template}"`);
       }
       return placeholder;
     }

@@ -50,7 +50,7 @@ describe('CngxStep', () => {
         name: 'CngxRuntimeError',
         code: 'CNGX1046',
         message: expect.stringMatching(
-          /^CNGX1046: CngxStep: no enclosing CngxStepperPresenter or CngxStepGroup found\. Place the step inside a stepper /,
+          /^CNGX1046: \[cngxStep\] must be placed inside an element with \[cngxStepper\], such as <cngx-stepper>, /,
         ),
       }),
     );

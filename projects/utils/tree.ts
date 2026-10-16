@@ -100,7 +100,7 @@ export function flattenTree<T>(
         if (typeof ngDevMode !== 'undefined' && ngDevMode && seenIds.has(id)) {
           cngxDevWarn(
             'CNGX0901',
-            `[cngx] flattenTree: duplicate node id "${id}". Ids must be unique across ` +
+            `flattenTree(): duplicate node id "${id}". Ids must be unique across ` +
               `the forest - a non-injective idFn corrupts parentIds chains and visibility.`,
           );
         }

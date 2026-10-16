@@ -236,7 +236,7 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
       expect.objectContaining({
         name: 'CngxRuntimeError',
         code: 'CNGX1053',
-        message: expect.stringMatching(/^CNGX1053: CngxButtonToggle requires a parent/),
+        message: expect.stringMatching(/^CNGX1053: \[cngxButtonToggle\] must be placed inside <cngx-button-toggle-group>/),
       }),
     );
   });
@@ -268,7 +268,7 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
         name: 'CngxRuntimeError',
         code: 'CNGX1052',
         message: expect.stringMatching(
-          /^CNGX1052: CngxButtonToggle: both CngxButtonToggleGroup and CngxButtonMultiToggleGroup/,
+          /^CNGX1052: \[cngxButtonToggle\] both a single and a multi toggle group/,
         ),
       }),
     );

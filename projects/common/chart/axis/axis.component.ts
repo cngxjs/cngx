@@ -298,7 +298,7 @@ export class CngxAxis implements CngxChartAxis {
    */
   readonly axisLabel = input<string | null>(null, { alias: 'label' });
 
-  private readonly ctx = injectChartContext('CngxAxis');
+  private readonly ctx = injectChartContext('cngxAxis');
   private readonly locale = injectLocale();
 
   /**

@@ -86,7 +86,7 @@ export class CngxStepperRouterSync implements AfterContentInit {
         afterNextRender(() => {
           cngxDevWarn(
             'CNGX1031',
-            'CngxStepperRouterSync: no Router available - directive is a no-op. ' +
+            '[cngxStepperRouterSync] no Router available - directive is a no-op. ' +
               'Provide @angular/router via provideRouter(...) to enable deep-linking.',
           );
         });

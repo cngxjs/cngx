@@ -108,9 +108,8 @@ export class CngxStep implements OnInit {
         'CNGX1046',
         typeof ngDevMode !== 'undefined' &&
           ngDevMode &&
-          'CngxStep: no enclosing CngxStepperPresenter or CngxStepGroup found. ' +
-            'Place the step inside a stepper (<cngx-stepper> or another element carrying ' +
-            '[cngxStepper]), directly or through a [cngxStepGroup] inside it.',
+          '[cngxStep] must be placed inside an element with [cngxStepper], such as ' +
+            '<cngx-stepper>, directly or through a [cngxStepGroup] inside it.',
       );
     }
   }

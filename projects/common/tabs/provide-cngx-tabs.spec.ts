@@ -148,7 +148,7 @@ describe('provideCngxTabs', () => {
         expect.stringContaining('without a `_target` discriminator'),
       );
       expect(warnSpy.mock.calls[0][0]).toMatch(
-        /^CNGX1041: \[provideCngxTabs\] Dropped feature without a `_target` discriminator\. /,
+        /^CNGX1041: provideCngxTabs\(\): dropped feature without a `_target` discriminator\. /,
       );
     });
 

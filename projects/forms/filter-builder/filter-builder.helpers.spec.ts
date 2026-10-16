@@ -102,7 +102,7 @@ describe('unknown filter logic (CNGX2013)', () => {
   const coded = expect.objectContaining({
     name: 'CngxRuntimeError',
     code: 'CNGX2013',
-    message: expect.stringMatching(/^CNGX2013: Unknown filter logic "AND"; /),
+    message: expect.stringMatching(/^CNGX2013: ensureFilterTreeIds\(\): unknown filter logic "AND"; /),
   });
 
   it('throws at the boundary in ensureFilterTreeIds, also for a nested group', () => {
@@ -116,14 +116,20 @@ describe('unknown filter logic (CNGX2013)', () => {
     expect(() => ensureFilterTreeIds(tree)).toThrow(
       expect.objectContaining({
         code: 'CNGX2013',
-        message: expect.stringMatching(/^CNGX2013: Unknown filter logic "\[object Object\]"; /),
+        message: expect.stringMatching(/^CNGX2013: ensureFilterTreeIds\(\): unknown filter logic "\[object Object\]"; /),
       }),
     );
   });
 
   it('throws when a tree that skipped the boundary is evaluated', () => {
     const predicate = toFilterPredicate(persisted(), FIELDS)!;
-    expect(() => predicate({ name: 'alice' })).toThrow(coded);
+    expect(() => predicate({ name: 'alice' })).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX2013',
+        message: expect.stringMatching(/^CNGX2013: toFilterPredicate\(\): unknown filter logic "AND"; /),
+      }),
+    );
   });
 });
 
@@ -237,7 +243,7 @@ describe('toFilterPredicate - logic operators', () => {
       expect.objectContaining({
         name: 'CngxRuntimeError',
         code: 'CNGX2013',
-        message: expect.stringMatching(/^CNGX2013: Unknown filter logic "rogue"; /),
+        message: expect.stringMatching(/^CNGX2013: toFilterPredicate\(\): unknown filter logic "rogue"; /),
       }),
     );
   });

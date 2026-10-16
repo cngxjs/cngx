@@ -66,7 +66,7 @@ describe('provideTreeConfig - app-wide defaults', () => {
       expect.objectContaining({
         name: 'CngxRuntimeError',
         code: 'CNGX1051',
-        message: expect.stringMatching(/^CNGX1051: createTreeController: `nodeIdFn` is required/),
+        message: expect.stringMatching(/^CNGX1051: createTreeController\(\): `nodeIdFn` is required/),
       }),
     );
   });

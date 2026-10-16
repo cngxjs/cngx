@@ -290,7 +290,7 @@ export function createTimelineGrouping<T>(
         warnedInvalidDate = true;
         cngxDevWarn(
           'CNGX1042',
-          'createTimelineGrouping: dateAccessor produced an invalid date for at least one ' +
+          'createTimelineGrouping(): dateAccessor produced an invalid date for at least one ' +
             'item. Those items cluster into a single band whose header renders ' +
             '"Invalid Date" - check the accessor and the raw values it reads.',
         );

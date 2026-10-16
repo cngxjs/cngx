@@ -141,7 +141,7 @@ export function __resetPopoverApiWarnings(doc: Document): void {
   popoverApiWarnedDocs.delete(doc);
 }
 /** @internal Shared with `CngxTooltip`, which opens its own popover element. */
-export function warnMissingPopoverApi(el: HTMLElement, owner: 'CngxPopover' | 'CngxTooltip'): void {
+export function warnMissingPopoverApi(el: HTMLElement, owner: 'cngxPopover' | 'cngxTooltip'): void {
   if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
     return;
   }
@@ -153,7 +153,7 @@ export function warnMissingPopoverApi(el: HTMLElement, owner: 'CngxPopover' | 'C
     popoverApiWarnedDocs.add(doc);
     cngxDevWarn(
       'CNGX1036',
-      `${owner}: The native Popover API is not supported in this browser. ` +
+      `[${owner}] the native Popover API is not supported in this browser. ` +
         'Install @oddbird/popover-polyfill and import it in your polyfills:\n\n' +
         '  npm install @oddbird/popover-polyfill\n' +
         '  // polyfills.ts\n' +
@@ -184,7 +184,7 @@ function warnMissingFloatingMiddleware(doc: Document): void {
   floatingMiddlewareWarnedDocs.add(doc);
   cngxDevWarn(
     'CNGX1037',
-    'CngxPopover: provideFloatingFallback(computePosition) was registered without middleware. ' +
+    '[cngxPopover] provideFloatingFallback(computePosition) was registered without middleware. ' +
       'Popovers in browsers without CSS Anchor Positioning will clip against the viewport edge ' +
       'because no flip/shift recovery is configured. Pass middleware on registration:\n\n' +
       "  import { computePosition, flip, shift } from '@floating-ui/dom';\n\n" +
@@ -620,7 +620,7 @@ export class CngxPopover {
   /** Open the popover. No-op if not `closed`. */
   show(): void {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      warnMissingPopoverApi(this.elRef.nativeElement, 'CngxPopover');
+      warnMissingPopoverApi(this.elRef.nativeElement, 'cngxPopover');
     }
     if (this.stateSignal() !== 'closed') {
       return;

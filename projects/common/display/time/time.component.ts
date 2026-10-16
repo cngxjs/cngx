@@ -139,7 +139,7 @@ export class CngxTime {
         if (!this.isValidDate()) {
           cngxDevWarn(
             'CNGX1006',
-            '[CngxTime] [date] resolved to an Invalid Date - rendering empty. ' +
+            '[cngx-time] [date] resolved to an Invalid Date - rendering empty. ' +
               'Check the bound value (bad ISO string?).',
           );
         }

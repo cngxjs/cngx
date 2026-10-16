@@ -189,7 +189,7 @@ describe('CngxAlertOn', () => {
         String(text).includes('withErrorDetail'),
       );
       expect(warnings).toHaveLength(1);
-      expect(String(warnings[0][0])).toContain('CNGX3004: [cngx/feedback]');
+      expect(String(warnings[0][0])).toContain('CNGX3004: injectErrorDetail()');
       expect(String(warnings[0][0])).toContain('Production builds show no detail');
     });
 

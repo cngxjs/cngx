@@ -200,7 +200,7 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource, AfterConte
   constructor() {
     if (!this.router) {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-        afterNextRender(() => warnTabsRouterAbsent('CngxTabsRouteSync', 'routed tabs'));
+        afterNextRender(() => warnTabsRouterAbsent('cngxTabsRouteSync', 'routed tabs'));
       }
       return;
     }

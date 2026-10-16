@@ -284,7 +284,7 @@ export class CngxMatTabs {
         if (typeof ngDevMode !== 'undefined' && ngDevMode) {
           cngxDevWarn(
             'CNGX3007',
-            `[CngxMatTabs] Could not anchor <cngx-tab-overflow> after ${anchorMaxAttempts} ` +
+            `[cngxMatTabs] could not anchor <cngx-tab-overflow> after ${anchorMaxAttempts} ` +
               'attempts - .mat-mdc-tab-header was not found inside the ' +
               'host. The More popover will fall back to a sibling-of-' +
               '<mat-tab-group> position; verify Material rendered the ' +

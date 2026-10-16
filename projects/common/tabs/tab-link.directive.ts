@@ -167,7 +167,7 @@ export class CngxTabLink implements OnInit {
         'CNGX1045',
         typeof ngDevMode !== 'undefined' &&
           ngDevMode &&
-          'CngxTabLink: no enclosing CngxTabGroupPresenter found. Wrap the link inside <cngx-tab-nav> (or an element carrying [cngxTabGroup]).',
+          '[cngxTabLink] must be placed inside <cngx-tab-nav> or an element with [cngxTabGroup].',
       );
     }
     // Mirror the direct-error message into the describedby span. DOM side

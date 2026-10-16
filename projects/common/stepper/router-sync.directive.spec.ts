@@ -146,7 +146,7 @@ describe('CngxStepperRouterSync', () => {
     fixture.detectChanges();
 
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toContain('CNGX1031: CngxStepperRouterSync');
+    expect(warn.mock.calls[0][0]).toMatch(/^CNGX1031: \[cngxStepperRouterSync\] no Router available/);
   });
 
   it('writes nothing to the console without a Router in production', () => {

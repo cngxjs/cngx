@@ -130,7 +130,7 @@ export class CngxTab implements OnInit {
         'CNGX1045',
         typeof ngDevMode !== 'undefined' &&
           ngDevMode &&
-          'CngxTab: no enclosing CngxTabGroupPresenter found. Wrap the tab inside an element carrying [cngxTabGroup] (or place it inside <cngx-tab-group>).',
+          '[cngxTab] must be placed inside <cngx-tab-group> or an element with [cngxTabGroup].',
       );
     }
   }

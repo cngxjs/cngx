@@ -47,7 +47,7 @@ export class CngxSidenavContent {
         'CNGX3014',
         typeof ngDevMode !== 'undefined' &&
           ngDevMode &&
-          'cngx-sidenav-content must be placed inside a cngx-sidenav-layout.',
+          '[cngx-sidenav-content] must be placed inside <cngx-sidenav-layout>.',
       );
     }
   }
