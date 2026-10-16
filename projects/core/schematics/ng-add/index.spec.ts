@@ -815,6 +815,21 @@ describe('ngAdd', () => {
     );
   });
 
+  it('changes nothing on a second run after an Angular patch bump', async () => {
+    const installed = (version: string) => JSON.stringify({ name: '@angular/core', version });
+    const first = await runRule(
+      ngAdd({ yes: true }),
+      createFixtureTree('standalone-app', { 'node_modules/@angular/core/package.json': installed('21.2.5') }),
+    );
+    first.tree.overwrite('node_modules/@angular/core/package.json', installed('21.2.6'));
+    const record = first.tree.readContent('.cngx/install.json');
+
+    const second = await runRule(ngAdd({ yes: true }), first.tree);
+
+    expect(second.tree.readContent('.cngx/install.json')).toBe(record);
+    expect(second.logs).toContain('cngx is already set up; nothing changed.');
+  });
+
   it('refuses an older installed Angular behind a catalog specifier', async () => {
     const tree = createFixtureTree('standalone-app', {
       'package.json': withDependencies({ '@angular/core': 'catalog:' }),

@@ -120,18 +120,30 @@ function canonical(value: unknown): string {
   return JSON.stringify(value) ?? 'null';
 }
 
+// The installed Angular moves with every patch the package manager pulls in;
+// only its `major.minor` line changes what cngx plans.
+function angularLine(version: string | null): string | null {
+  return version === null ? null : (/^\d+\.\d+/.exec(version)?.[0] ?? version);
+}
+
 /**
  * Whether two manifests record the same install: the same preset, answers,
  * versions and set of steps. `facts` and the timestamps are left out, so a
  * second run whose detection now reads `maturity: 'existing'` is the same
- * install.
+ * install, and Angular counts by its `major.minor` line, so a patch bump in
+ * `node_modules` is too.
  */
 export function isSameInstall(a: InstallManifest, b: InstallManifest): boolean {
   const key = (manifest: InstallManifest): string =>
     canonical({
       preset: manifest.preset,
       answers: manifest.answers,
-      versions: [manifest.cngxVersion, manifest.mcpVersion, manifest.eslintPluginVersion, manifest.angularVersion],
+      versions: [
+        manifest.cngxVersion,
+        manifest.mcpVersion,
+        manifest.eslintPluginVersion,
+        angularLine(manifest.angularVersion),
+      ],
       steps: manifest.steps.map((step) => step.id).sort(),
     });
   return key(a) === key(b);

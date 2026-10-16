@@ -156,6 +156,13 @@ describe('isSameInstall', () => {
     expect(isSameInstall(a, { ...a, mcpVersion: '0.4.0' })).toBe(false);
     expect(isSameInstall(a, { ...a, steps: a.steps.slice(1) })).toBe(false);
   });
+
+  it('reads an Angular patch bump as the same install and a minor bump as a new one', () => {
+    const a: InstallManifest = { ...firstRun(), angularVersion: '21.2.5' };
+
+    expect(isSameInstall(a, { ...a, angularVersion: '21.2.6' })).toBe(true);
+    expect(isSameInstall(a, { ...a, angularVersion: '21.3.0' })).toBe(false);
+  });
 });
 
 describe('parseInstallManifest', () => {
