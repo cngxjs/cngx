@@ -69,12 +69,11 @@ export function createShellRendererOptions(
 // prompts and the task list, which go to the stream straight, so its lines
 // go there too and start at the left edge like theirs.
 function streamLogger(stream: TerminalStream): RenderLogger | undefined {
-  const { write } = stream;
-  if (write === undefined) {
+  if (stream.write === undefined) {
     return undefined;
   }
   const line = (message: string): void => {
-    write.call(stream, `${message}\n`);
+    stream.write?.(`${message}\n`);
   };
   return { info: line, warn: line, error: line };
 }
