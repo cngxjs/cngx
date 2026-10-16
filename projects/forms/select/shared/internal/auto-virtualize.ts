@@ -1,7 +1,7 @@
 import { type ElementRef, type Signal, computed } from '@angular/core';
 
 import { injectRecycler } from '@cngx/common/data';
-import type { CngxPopover } from '@cngx/common/popover';
+import type { CngxPopover, CngxPopoverPresentation } from '@cngx/common/popover';
 
 import { sameArrayContents } from './compare';
 import type { CngxSelectOptionDef } from '../option.model';
@@ -27,16 +27,23 @@ export function createAutoPanelRenderer<T>(opts: {
   readonly flatOptions: Signal<readonly CngxSelectOptionDef<T>[]>;
   readonly popoverRef: Signal<CngxPopover | undefined>;
   readonly virtualization: CngxSelectVirtualizationConfig | null;
+  /** Sheet presentation; outside `'anchored'` the listbox is the scroller. */
+  readonly presentation?: Signal<CngxPopoverPresentation>;
+  readonly listboxElement?: Signal<HTMLElement | undefined>;
 }): PanelRenderer<T> {
   if (opts.virtualization === null) {
     return createIdentityPanelRenderer<T>({ flatOptions: opts.flatOptions });
   }
 
   // Popover viewChild resolves on first CD; scroll-observer retries via
-  // afterNextRender, so a null nativeElement on first call is fine.
+  // afterNextRender, so a null nativeElement on first call is fine. The
+  // observer reads the getter inside its effect, so a presentation flip
+  // re-attaches it: the popover scrolls while anchored, the listbox in a
+  // sheet (the sheet host itself does not scroll).
   const scrollElement: ElementRef<HTMLElement> = {
     get nativeElement(): HTMLElement {
-      const el = opts.popoverRef()?.elementRef.nativeElement;
+      const inSheet = (opts.presentation?.() ?? 'anchored') !== 'anchored';
+      const el = inSheet ? opts.listboxElement?.() : opts.popoverRef()?.elementRef.nativeElement;
       return (el ?? null) as unknown as HTMLElement;
     },
   };

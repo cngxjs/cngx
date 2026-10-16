@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createResizeObserverMock } from '@cngx/testing';
 
-import type { CngxPopover } from '@cngx/common/popover';
+import type { CngxPopover, CngxPopoverPresentation } from '@cngx/common/popover';
 
 import type { CngxSelectOptionDef } from '../option.model';
 import type { PanelRenderer } from '../panel-renderer';
@@ -86,5 +86,47 @@ describe('createAutoPanelRenderer - estimateSize clamp', () => {
     TestBed.flushEffects();
     // 500px viewport / 32px estimate + overscan - a small window.
     expect(renderer.renderOptions().length).toBeLessThan(100);
+  });
+});
+
+describe('createAutoPanelRenderer - scroll element follows the sheet presentation', () => {
+  beforeEach(() => {
+    createResizeObserverMock().install(window);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('scrolls the popover while anchored and the listbox in a sheet', () => {
+    const panel = document.createElement('div');
+    const listbox = document.createElement('div');
+    document.body.append(panel, listbox);
+    const panelAdd = vi.spyOn(panel, 'addEventListener');
+    const panelRemove = vi.spyOn(panel, 'removeEventListener');
+    const listboxAdd = vi.spyOn(listbox, 'addEventListener');
+    const presentation = signal<CngxPopoverPresentation>('anchored');
+    const popover = { elementRef: { nativeElement: panel } } as unknown as CngxPopover;
+
+    TestBed.runInInjectionContext(() => {
+      createAutoPanelRenderer<number>({
+        flatOptions: signal([{ value: 1, label: 'One' }]),
+        popoverRef: signal<CngxPopover | undefined>(popover),
+        virtualization: {},
+        presentation,
+        listboxElement: signal(listbox),
+      });
+    });
+    TestBed.flushEffects();
+    expect(panelAdd).toHaveBeenCalledWith('scroll', expect.any(Function), { passive: true });
+    expect(listboxAdd).not.toHaveBeenCalledWith('scroll', expect.any(Function), expect.anything());
+
+    presentation.set('sheet');
+    TestBed.flushEffects();
+    expect(panelRemove).toHaveBeenCalledWith('scroll', expect.any(Function));
+    expect(listboxAdd).toHaveBeenCalledWith('scroll', expect.any(Function), { passive: true });
+
+    panel.remove();
+    listbox.remove();
   });
 });

@@ -1,7 +1,7 @@
 <div
   class="cngx-select__root"
   cngxClickOutside
-  [enabled]="panelOpen()"
+  [enabled]="sheetWiring.clickOutsideEnabled()"
   (clickOutside)="handleClickOutside()"
 >
   <!--
@@ -124,7 +124,15 @@
     class="cngx-select__panel"
     [class]="panelClassList()"
     [style.--cngx-select-panel-min-width]="panelWidthCss()"
+    [cngxPopoverSheet]="sheetWiring.presentationRequest()"
+    [autoPresentation]="sheetFill"
+    [restoreFocus]="false"
+    [closeOnRequest]="false"
+    [closeOnEscape]="sheetWiring.escapeEnabled()"
+    (closeRequested)="sheetWiring.handleSheetClose($event)"
+    (closing)="hostFocus.refocusOwnerBeforeRemoval()"
   >
+    <cngx-select-sheet-header />
     <div
       cngxListbox
       #lb="cngxListbox"

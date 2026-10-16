@@ -985,6 +985,17 @@
       flip-block flip-inline;
   }
 
+  /* Mobile sheet: the sheet caps the height and owns the inline size, and
+     only the listbox scrolls (cngx-popover-sheet.css). Lift the anchored
+     panel cap and the virtualized width lock. */
+  .cngx-select__panel.cngx-popover-sheet:is(
+      [data-cngx-presentation='sheet'],
+      [data-cngx-presentation='fullscreen']
+    ) {
+    max-height: none;
+    width: 100%;
+  }
+
   /* A virtualized panel only ever renders a window of options, so the default
      shrink-to-fit width jitters as the window recycles through options of
      differing widths (proportional digits, variable labels). Lock the width to

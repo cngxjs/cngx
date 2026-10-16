@@ -1,7 +1,7 @@
 import { computed, effect, inject, untracked, type Signal } from '@angular/core';
 
 import type { CngxListbox } from '@cngx/common/interactive';
-import type { CngxPopover } from '@cngx/common/popover';
+import type { CngxPopover, CngxPopoverPresentation } from '@cngx/common/popover';
 
 import { createAutoPanelRenderer } from './auto-virtualize';
 import type { CngxSelectVirtualizationConfig } from '../config';
@@ -21,6 +21,8 @@ export function setupVirtualization<T, TCommit>(opts: {
   readonly popoverRef: Signal<CngxPopover | undefined>;
   readonly listboxRef: Signal<CngxListbox<unknown> | undefined>;
   readonly virtualization: CngxSelectVirtualizationConfig | null;
+  readonly presentation?: Signal<CngxPopoverPresentation>;
+  readonly listboxElement?: Signal<HTMLElement | undefined>;
 }): {
   readonly panelRenderer: PanelRenderer<T>;
   readonly virtualItemCount: Signal<number | undefined>;
@@ -37,6 +39,8 @@ export function setupVirtualization<T, TCommit>(opts: {
           flatOptions: opts.core.flatOptions,
           popoverRef: opts.popoverRef,
           virtualization: opts.virtualization,
+          presentation: opts.presentation,
+          listboxElement: opts.listboxElement,
         })
       : injected;
 

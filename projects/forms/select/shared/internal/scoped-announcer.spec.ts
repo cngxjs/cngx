@@ -7,6 +7,7 @@ import { CngxSelectAnnouncer } from '../announcer';
 import {
   CNGX_SELECT_SHEET_SCOPE,
   CngxScopedSelectAnnouncer,
+  createSelectSheetScope,
   type CngxSelectSheetScope,
 } from './scoped-announcer';
 
@@ -25,7 +26,7 @@ function setup() {
     announce: sheetAnnounce,
   } as unknown as CngxPopoverSheet);
   const popover = signal<CngxPopover | undefined>({ state } as unknown as CngxPopover);
-  const scopeFactory = vi.fn((): CngxSelectSheetScope => ({ sheet, popover }));
+  const scopeFactory = vi.fn((): CngxSelectSheetScope => createSelectSheetScope(sheet, popover));
   const injector = Injector.create({
     parent: TestBed.inject(Injector),
     providers: [

@@ -1,16 +1,36 @@
-import { inject, Injectable, InjectionToken, Injector, type Signal } from '@angular/core';
+import { computed, inject, Injectable, InjectionToken, Injector, type Signal } from '@angular/core';
 import type { CngxPopover, CngxPopoverSheet } from '@cngx/common/popover';
 
 import { CngxSelectAnnouncer } from '../announcer';
 
 /**
- * @internal What the scoped announcer reads from its variant: the panel's
- * sheet and popover. Provided per variant through a factory, so the variant
- * is fully constructed before the scope is read.
+ * @internal What the scoped announcer reads from its variant: the sheet that
+ * speaks right now, `undefined` while announcements belong to the page.
+ * Provided per variant through a factory, so the variant is fully
+ * constructed before the scope is read.
  */
 export interface CngxSelectSheetScope {
-  readonly sheet: Signal<CngxPopoverSheet | undefined>;
-  readonly popover: Signal<CngxPopover | undefined>;
+  readonly speakingSheet: Signal<CngxPopoverSheet | undefined>;
+}
+
+/**
+ * @internal The sheet speaks while it is modal and its popover is opening
+ * or open; once closing, messages go back to the page.
+ */
+export function createSelectSheetScope(
+  sheet: Signal<CngxPopoverSheet | undefined>,
+  popover: Signal<CngxPopover | undefined>,
+): CngxSelectSheetScope {
+  return {
+    speakingSheet: computed(() => {
+      const current = sheet();
+      if (!current?.modal()) {
+        return undefined;
+      }
+      const state = popover()?.state();
+      return state === 'open' || state === 'opening' ? current : undefined;
+    }),
+  };
 }
 
 /** @internal */
@@ -38,23 +58,14 @@ export class CngxScopedSelectAnnouncer {
   private scope: CngxSelectSheetScope | null | undefined;
 
   announce(message: string, politeness: 'polite' | 'assertive' = 'polite'): void {
-    const sheet = this.speakingSheet();
+    if (this.scope === undefined) {
+      this.scope = this.injector.get(CNGX_SELECT_SHEET_SCOPE, null);
+    }
+    const sheet = this.scope?.speakingSheet();
     if (sheet) {
       sheet.announce(message, politeness);
       return;
     }
     this.parent.announce(message, politeness);
-  }
-
-  private speakingSheet(): CngxPopoverSheet | undefined {
-    if (this.scope === undefined) {
-      this.scope = this.injector.get(CNGX_SELECT_SHEET_SCOPE, null);
-    }
-    const sheet = this.scope?.sheet();
-    if (!sheet?.modal()) {
-      return undefined;
-    }
-    const state = this.scope?.popover()?.state();
-    return state === 'open' || state === 'opening' ? sheet : undefined;
   }
 }

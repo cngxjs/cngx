@@ -60,6 +60,7 @@ import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
   CNGX_SELECT_SHEET_SCOPE,
   CngxScopedSelectAnnouncer,
+  createSelectSheetScope,
   type CngxSelectSheetScope,
 } from '../shared/internal/scoped-announcer';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
@@ -515,7 +516,10 @@ export class CngxSelectShell<T = unknown>
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
   private readonly sheetRef = viewChild(CngxPopoverSheet);
   /** @internal Read by the scoped select announcer. */
-  readonly sheetScope: CngxSelectSheetScope = { sheet: this.sheetRef, popover: this.popoverRef };
+  readonly sheetScope: CngxSelectSheetScope = createSelectSheetScope(
+    this.sheetRef,
+    this.popoverRef,
+  );
 
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
 

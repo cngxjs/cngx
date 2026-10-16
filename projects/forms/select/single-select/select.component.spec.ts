@@ -1,12 +1,16 @@
 import { Component, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { Subject, type Observable } from 'rxjs';
 
 import { CngxListbox } from '@cngx/common/interactive';
-import { CngxPopover } from '@cngx/common/popover';
+import {
+  CngxPopover,
+  CngxPopoverSheet,
+  type CngxPopoverPresentationRequest,
+} from '@cngx/common/popover';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
 import { CNGX_FORM_FIELD_CONTROL, CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
@@ -18,9 +22,15 @@ import { CngxSelect, type CngxSelectChange } from './select.component';
 import { injectSelectConfig, injectSelectAnnouncer } from '../shared/inject-helpers';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
+  CNGX_DISMISS_HANDLER_FACTORY,
+  createDismissHandler,
+  type DismissHandler,
+} from '../shared/dismiss-handler';
+import {
   CNGX_SELECT_CONFIG,
   provideSelectConfig,
   provideSelectConfigAt,
+  withMobileSheet,
   withOpenOn,
   withPanelWidth,
   withLoadingVariant,
@@ -271,7 +281,9 @@ describe('CngxSelect - standalone', () => {
     }
     const nodes = Array.from(option.childNodes);
     const check = option.querySelector('.cngx-select__check');
-    const labelIndex = nodes.findIndex((n) => n.nodeType === Node.TEXT_NODE && !!n.textContent?.trim());
+    const labelIndex = nodes.findIndex(
+      (n) => n.nodeType === Node.TEXT_NODE && !!n.textContent?.trim(),
+    );
     expect(option.classList).toContain('cngx-select__option--indicator-after');
     expect(check).toBeTruthy();
     expect(labelIndex).toBeGreaterThanOrEqual(0);
@@ -1452,6 +1464,258 @@ describe('CngxSelect listbox fallback label', () => {
     labels.set({ listboxFallback: 'Optionen' });
     flush(fixture);
     expect(label()).toBe('Optionen');
+  });
+});
+
+// ── mobile sheet ─────────────────────────────────────────────────────
+
+@Component({
+  template: `
+    <button type="button" class="page-btn">Page</button>
+    <cngx-form-field [field]="field">
+      <cngx-select
+        [label]="'Colour'"
+        [options]="options"
+        [presentation]="presentation()"
+        [commitAction]="commitAction"
+        [commitMode]="mode()"
+      />
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxSelect],
+})
+class SheetHost {
+  readonly options = OPTIONS;
+  readonly presentation = signal<CngxPopoverPresentationRequest | undefined>('sheet');
+  readonly mode = signal<CngxSelectCommitMode>('optimistic');
+  readonly _mock = createMockField<string>({ name: 'colour', value: 'red' });
+  readonly field = this._mock.accessor;
+  readonly ref: MockFieldRef<string> = this._mock.ref;
+  pending: Subject<string | undefined> | null = null;
+  readonly commitAction: CngxSelectCommitAction<string> = () => {
+    const subject = new Subject<string | undefined>();
+    this.pending = subject;
+    return subject.asObservable() as Observable<string | undefined>;
+  };
+}
+
+describe('CngxSelect - mobile sheet', () => {
+  let dismissSpies: {
+    handleClickOutside: Mock<() => void>;
+    handleSheetClose: Mock<(reason: string) => void>;
+  };
+
+  function setup(providers: unknown[] = []) {
+    polyfillPopover();
+    dismissSpies = { handleClickOutside: vi.fn(), handleSheetClose: vi.fn() };
+    TestBed.configureTestingModule({
+      imports: [SheetHost],
+      providers: [
+        {
+          provide: CNGX_DISMISS_HANDLER_FACTORY,
+          useValue: (opts: Parameters<typeof createDismissHandler>[0]): DismissHandler => {
+            const real = createDismissHandler(opts);
+            return {
+              handleClickOutside: () => {
+                dismissSpies.handleClickOutside();
+                real.handleClickOutside();
+              },
+              handleSheetClose: (reason) => {
+                dismissSpies.handleSheetClose(reason);
+                real.handleSheetClose?.(reason);
+              },
+            };
+          },
+        },
+        ...(providers as never[]),
+      ],
+    });
+    const fixture = TestBed.createComponent(SheetHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const selectDe = fixture.debugElement.query(By.directive(CngxSelect));
+    const el = selectDe.nativeElement as HTMLElement;
+    const select = selectDe.componentInstance as CngxSelect<string>;
+    const trigger = el.querySelector('.cngx-select__trigger') as HTMLElement;
+    const panel = el.querySelector('.cngx-select__panel') as HTMLElement;
+    const sheet = () =>
+      selectDe.query(By.directive(CngxPopoverSheet)).injector.get(CngxPopoverSheet);
+    const open = () => {
+      trigger.focus();
+      trigger.click();
+      flush(fixture);
+    };
+    const pickSecond = () => {
+      (el.querySelector('[cngxOption]:nth-of-type(2)') as HTMLElement).click();
+      flush(fixture);
+    };
+    const closeButton = () => el.querySelector('.cngx-select-sheet-header__close') as HTMLElement;
+    return {
+      fixture,
+      host: fixture.componentInstance,
+      el,
+      select,
+      trigger,
+      panel,
+      sheet,
+      open,
+      pickSecond,
+      closeButton,
+    };
+  }
+
+  it.each(['sheet', 'fullscreen'] as const)(
+    'opens as a modal %s with the internal header named by the label',
+    (presentation) => {
+      const { fixture, host, panel, open } = setup();
+      host.presentation.set(presentation);
+      flush(fixture);
+      open();
+      expect(panel.getAttribute('data-cngx-presentation')).toBe(presentation);
+      expect(panel.getAttribute('role')).toBe('dialog');
+      expect(panel.getAttribute('aria-modal')).toBe('true');
+      expect(panel.firstElementChild?.tagName.toLowerCase()).toBe('cngx-select-sheet-header');
+      const title = panel.querySelector('.cngx-select-sheet-header__title') as HTMLElement;
+      expect(panel.getAttribute('aria-labelledby')).toBe(title.id);
+      expect(title.textContent?.trim()).toBe('Colour');
+      expect(panel.style.getPropertyValue('--cngx-select-panel-min-width')).toBe('');
+    },
+  );
+
+  it('stays anchored without a request on a desktop viewport', () => {
+    const { fixture, host, panel, open } = setup();
+    host.presentation.set(undefined);
+    flush(fixture);
+    open();
+    expect(panel.getAttribute('data-cngx-presentation')).toBe('anchored');
+    expect(panel.getAttribute('aria-modal')).toBeNull();
+    expect(panel.style.getPropertyValue('--cngx-select-panel-min-width')).toBe(
+      'anchor-size(width)',
+    );
+  });
+
+  it('withMobileSheet("off") keeps the panel anchored', () => {
+    const { fixture, host, panel, open } = setup([provideSelectConfig(withMobileSheet('off'))]);
+    host.presentation.set(undefined);
+    flush(fixture);
+    open();
+    expect(panel.getAttribute('data-cngx-sheet')).toBe('anchored');
+  });
+
+  it('closes an outside tap through handleSheetClose once and never through the anchored path', () => {
+    const { fixture, el, select, open } = setup();
+    open();
+    const page = fixture.nativeElement.querySelector('.page-btn') as HTMLElement;
+    page.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    page.click();
+    flush(fixture);
+    expect(dismissSpies.handleSheetClose).toHaveBeenCalledExactlyOnceWith('backdrop');
+    expect(dismissSpies.handleClickOutside).not.toHaveBeenCalled();
+    expect(select.panelOpen()).toBe(false);
+    void el;
+  });
+
+  it('keeps the sheet open on X, swipe, back, outside tap and Escape while a pessimistic commit is pending', () => {
+    const { fixture, host, select, open, pickSecond, sheet, closeButton } = setup();
+    host.mode.set('pessimistic');
+    flush(fixture);
+    open();
+    pickSecond();
+    expect(select.isCommitting()).toBe(true);
+
+    expect(closeButton().getAttribute('aria-disabled')).toBe('true');
+    closeButton().click();
+    sheet().requestClose('swipe');
+    sheet().requestClose('back');
+    const page = fixture.nativeElement.querySelector('.page-btn') as HTMLElement;
+    page.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    flush(fixture);
+    expect(select.panelOpen()).toBe(true);
+
+    host.pending!.next('green');
+    host.pending!.complete();
+    flush(fixture);
+    expect(select.panelOpen()).toBe(false);
+  });
+
+  it('keeps desktop Escape closing during a pessimistic pending commit', () => {
+    const { fixture, host, select, open, pickSecond } = setup();
+    host.presentation.set('anchored');
+    host.mode.set('pessimistic');
+    flush(fixture);
+    open();
+    pickSecond();
+    expect(select.isCommitting()).toBe(true);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    flush(fixture);
+    expect(select.panelOpen()).toBe(false);
+  });
+
+  it('moves focus panel -> trigger on X without a body hop and without touching the field', () => {
+    const { fixture, host, trigger, panel, open, closeButton } = setup();
+    open();
+    expect(panel.contains(document.activeElement)).toBe(true);
+
+    // A focusout without a relatedTarget means focus fell to body.
+    const drops: EventTarget[] = [];
+    const log = (event: FocusEvent) => {
+      if (event.relatedTarget === null && event.target) {
+        drops.push(event.target);
+      }
+    };
+    closeButton().focus();
+    document.addEventListener('focusout', log, true);
+    closeButton().click();
+    expect(document.activeElement).toBe(trigger);
+    flush(fixture);
+    document.removeEventListener('focusout', log, true);
+
+    expect(document.activeElement).toBe(trigger);
+    expect(drops).toEqual([]);
+    expect(host.ref.touched()).toBe(false);
+  });
+
+  it('does not reopen through openOn focus when focus returns to the trigger', () => {
+    const { fixture, select, trigger, open, closeButton } = setup([
+      provideSelectConfig(withOpenOn('focus')),
+    ]);
+    open();
+    if (!select.panelOpen()) {
+      trigger.click();
+      flush(fixture);
+    }
+    expect(select.panelOpen()).toBe(true);
+    closeButton().click();
+    flush(fixture);
+    expect(document.activeElement).toBe(trigger);
+    expect(select.panelOpen()).toBe(false);
+  });
+
+  it('speaks a pick once, and a commit error assertively from the sheet region only', () => {
+    const { fixture, host, open, pickSecond, sheet } = setup();
+    const root = vi
+      .spyOn(TestBed.inject(CngxSelectAnnouncer), 'announce')
+      .mockImplementation(() => {});
+    open();
+    const inSheet = vi.spyOn(sheet(), 'announce');
+    pickSecond();
+    host.pending!.next('green');
+    host.pending!.complete();
+    flush(fixture);
+    expect(root.mock.calls.length + inSheet.mock.calls.length).toBe(1);
+
+    root.mockClear();
+    inSheet.mockClear();
+    host.mode.set('pessimistic');
+    flush(fixture);
+    open();
+    pickSecond();
+    host.pending!.error(new Error('server down'));
+    flush(fixture);
+    expect(root).not.toHaveBeenCalled();
+    expect(inSheet).toHaveBeenCalledTimes(1);
+    expect(inSheet.mock.calls[0][1]).toBe('assertive');
   });
 });
 
