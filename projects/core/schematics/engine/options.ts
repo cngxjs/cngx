@@ -199,6 +199,27 @@ export function readPromptFlags(argv: readonly string[]): string | undefined {
 }
 
 /**
+ * Whether the CLI runs the schematic as `--dry-run` (or `-d`). The CLI
+ * drops the writes itself and passes no flag to the rule, so `argv` is the
+ * only place to read it, the same as for `readPromptFlags`.
+ */
+export function readDryRunFlag(argv: readonly string[]): boolean {
+  for (const [index, arg] of argv.entries()) {
+    if (arg === '-d') {
+      return true;
+    }
+    const [name, attached] = arg.split('=', 2);
+    if (name !== '--dry-run') {
+      continue;
+    }
+    const next = argv[index + 1];
+    const value = attached ?? (next === 'true' || next === 'false' ? next : 'true');
+    return value === 'true';
+  }
+  return false;
+}
+
+/**
  * The typed answers of `raw`, validated once at the ng-add entry. A list
  * given as `undefined` or `[]` reads as not given; a programmatic caller
  * skips the schema, so every answer is checked against its vocabulary.

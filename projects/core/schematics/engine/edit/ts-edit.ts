@@ -406,6 +406,41 @@ function isImportStatement(statement: ts.Statement): boolean {
   );
 }
 
+function requiredModule(expression: ts.Expression): string | undefined {
+  if (ts.isPropertyAccessExpression(expression)) {
+    return requiredModule(expression.expression);
+  }
+  const [argument] = ts.isCallExpression(expression) && calleeName(expression) === 'require' ? expression.arguments : [];
+  return argument !== undefined && ts.isStringLiteral(argument) ? argument.text : undefined;
+}
+
+function statementModules(statement: ts.Statement): readonly string[] {
+  if (ts.isImportDeclaration(statement)) {
+    return ts.isStringLiteral(statement.moduleSpecifier) ? [statement.moduleSpecifier.text] : [];
+  }
+  if (ts.isImportEqualsDeclaration(statement)) {
+    const reference = statement.moduleReference;
+    return ts.isExternalModuleReference(reference) && ts.isStringLiteral(reference.expression)
+      ? [reference.expression.text]
+      : [];
+  }
+  if (!ts.isVariableStatement(statement)) {
+    return [];
+  }
+  return statement.declarationList.declarations.flatMap((declaration) => {
+    const module = declaration.initializer === undefined ? undefined : requiredModule(declaration.initializer);
+    return module === undefined ? [] : [module];
+  });
+}
+
+/**
+ * Whether a top-level `import`, `import x = require()` or `require()` loads
+ * `module`. Read from the syntax tree, so a commented-out line never counts.
+ */
+export function importsModule(content: string, module: string): boolean {
+  return parse(content).statements.some((statement) => statementModules(statement).includes(module));
+}
+
 function isDirective(statement: ts.Statement): boolean {
   return ts.isExpressionStatement(statement) && ts.isStringLiteral(statement.expression);
 }
@@ -485,12 +520,19 @@ export function addToArrayLiteral(content: string, selector: ArraySelector, item
     return content;
   }
   const close = array.getEnd() - 1;
+  const open = array.getStart(source);
+  const multiline = content.slice(open, close).includes('\n');
+  const newline = content.includes('\r\n') ? '\r\n' : '\n';
   if (elements.length === 0) {
-    return `${content.slice(0, close)}${item.trim()}${content.slice(close)}`;
+    if (!multiline) {
+      return `${content.slice(0, close)}${item.trim()}${content.slice(close)}`;
+    }
+    // An empty array across lines holds only whitespace; replace it, so no
+    // whitespace-only line is left above the bracket.
+    const indent = indentOf(content, close);
+    return `${content.slice(0, open + 1)}${newline}${indent}  ${item.trim()}${newline}${indent}${content.slice(close)}`;
   }
   const last = elements[elements.length - 1];
-  const multiline = content.slice(array.getStart(source), close).includes('\n');
-  const newline = content.includes('\r\n') ? '\r\n' : '\n';
   const separator = multiline ? `,${newline}${indentOf(content, last.getStart(source))}` : ', ';
   // Inserting right after the last element keeps a trailing comma behind
   // the new one.

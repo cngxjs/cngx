@@ -254,6 +254,53 @@ describe('createSourceRenamer', () => {
     ]);
   });
 
+  it('leaves a local that shadows the import alone', () => {
+    expect(
+      source(
+        lines(
+          "import { CngxOldCard } from '@cngx/common/old-card';",
+          'export const used = CngxOldCard;',
+          'function make(CngxOldCard: unknown) {',
+          '  return CngxOldCard;',
+          '}',
+          'function build() {',
+          '  const CngxOldCard = 1;',
+          '  return CngxOldCard;',
+          '}',
+          'for (const CngxOldCard of []) { void CngxOldCard; }',
+        ),
+      ),
+    ).toBe(
+      lines(
+        "import { CngxCard } from '@cngx/common/card';",
+        'export const used = CngxCard;',
+        'function make(CngxOldCard: unknown) {',
+        '  return CngxOldCard;',
+        '}',
+        'function build() {',
+        '  const CngxOldCard = 1;',
+        '  return CngxOldCard;',
+        '}',
+        'for (const CngxOldCard of []) { void CngxOldCard; }',
+      ),
+    );
+  });
+
+  it('names a renamed input or output in host, inputs or outputs metadata instead of rewriting it', () => {
+    const content = lines(
+      "@Directive({ inputs: ['heading: label'], outputs: ['rippled'], host: { '(rippled)': 'onRipple()' } })",
+      'export class A {}',
+    );
+    const result = createSourceRenamer(TABLE)(content);
+
+    expect(result.content).toBe(content);
+    expect(result.manual).toEqual([
+      'inputs names `heading`, which a cngx directive renamed; check it by hand',
+      'outputs names `rippled`, which a cngx directive renamed; check it by hand',
+      'host names `rippled`, which a cngx directive renamed; check it by hand',
+    ]);
+  });
+
   it('returns the content unchanged for the empty table', () => {
     const content = "import { CngxOldCard } from '@cngx/common/old-card';\n";
 

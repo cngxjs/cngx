@@ -34,6 +34,29 @@ async function apply(changes: readonly Change[], tree = createMemoryTree()) {
 describe('applyChangePlan', () => {
   let app: UnitTestTree;
 
+  it('reports the ids of changes that wrote nothing', async () => {
+    const unchanged: string[] = [];
+    const tree = createMemoryTree({
+      'src/styles.css': "@import '@cngx/themes/cngx.css';\n",
+      'src/notes.md': 'kept\n',
+      'src/edited.md': 'old\n',
+    });
+    const plan = createChangePlan([
+      {
+        changes: [
+          { ...BASE, kind: 'add-style-import', id: 'import', path: 'src/styles.css', statement: "@import '@cngx/themes/cngx.css';" },
+          { ...BASE, kind: 'edit-file', id: 'same', path: 'src/notes.md', edit: (content: string) => content },
+          { ...BASE, kind: 'edit-file', id: 'edit', path: 'src/edited.md', edit: () => 'new\n' },
+        ],
+        skipped: [],
+      },
+    ]);
+
+    await lastValueFrom(runner.callRule(applyChangePlan(plan, (id) => unchanged.push(id)), tree));
+
+    expect(unchanged).toEqual(['import', 'same']);
+  });
+
   beforeAll(async () => {
     app = await createApp();
   });

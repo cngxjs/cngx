@@ -5,6 +5,7 @@ import { readWorkspace } from '@schematics/angular/utility';
 import {
   applyChangePlan,
   canPrompt,
+  canReachPrompts,
   type ChangePlan,
   type CngxLib,
   createChangePlan,
@@ -17,6 +18,7 @@ import {
   isCi,
   type NgAddFlags,
   parseNgAddOptions,
+  readDryRunFlag,
   readPromptFlags,
   resolveVersions,
 } from '../engine';
@@ -76,6 +78,18 @@ function assertBuildTarget(facts: ProjectFacts): void {
   }
 }
 
+// A styles entry the build lists but the disk lacks fails the app's own
+// build too; the preflight line shows it first, and nothing is planned.
+function assertStylesheetsExist(facts: ProjectFacts): void {
+  const missing = facts.missingStyleEntries;
+  if (missing.length > 0) {
+    const verb = missing.length === 1 ? 'is' : 'are';
+    throw new SchematicsException(
+      `${missing.join(', ')} ${verb} listed under styles in angular.json but ${missing.length === 1 ? 'does' : 'do'} not exist; create ${missing.length === 1 ? 'it' : 'them'} or remove the entry.`,
+    );
+  }
+}
+
 /** Why the run cannot ask before it applies to an existing app. */
 interface ConfirmContext {
   readonly isTTY: boolean;
@@ -86,15 +100,14 @@ interface ConfirmContext {
 }
 
 // The line an existing app sees when the plan applies without a confirm;
-// `undefined` when the terminal asks. CI comes first: it also hides the
+// `undefined` when the terminal asks. CI is named when it is what hid the
 // terminal.
 function unconfirmedApplyLine({ isTTY, ci, prompts, promptsOff }: ConfirmContext): string | undefined {
   const pass = 'Pass --yes to apply without this line.';
-  if (ci) {
-    return `Running under CI; applying the plan without a confirm. ${pass}`;
-  }
   if (!isTTY) {
-    return `No terminal to confirm in; applying the plan. ${pass}`;
+    return ci
+      ? `Running under CI; applying the plan without a confirm. ${pass}`
+      : `No terminal to confirm in; applying the plan. ${pass}`;
   }
   const off = prompts === false ? '--no-prompts' : promptsOff;
   if (off !== undefined) {
@@ -126,7 +139,8 @@ export function ngAdd(flags: NgAddFlags): Rule {
     const { versions, warning } = resolveVersions(__dirname);
     const rendererOptions = createShellRendererOptions(process.env, process.stdout, context.logger, options.quiet === true);
     const promptsOff = readPromptFlags(process.argv) ?? (context.interactive === false ? 'interactive: false' : undefined);
-    const interactive = canPrompt(rendererOptions.isTTY, options.prompts) && promptsOff === undefined;
+    const reachable = canReachPrompts(process.env, rendererOptions.isTTY, process.stdin);
+    const interactive = canPrompt(reachable, options.prompts) && promptsOff === undefined;
     const renderer = createRenderer(rendererOptions);
 
     const facts = detectProject(tree, await readWorkspace(tree), options.project);
@@ -135,6 +149,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
     );
     assertSupportedAngular(facts, versions.angular);
     assertBuildTarget(facts);
+    assertStylesheetsExist(facts);
 
     const flow = createPromptFlow({
       canPrompt: interactive && options.preset !== 'minimal',
@@ -172,12 +187,13 @@ export function ngAdd(flags: NgAddFlags): Rule {
     const record = planManifest(facts, answers, versions, steps, previous, new Date().toISOString());
     const plan = createChangePlan([steps, unreadable, record], steps.warnings);
 
-    await renderer.todo(plan);
-
     const changesFiles = plan.changes.some((change) => change.kind !== 'note');
-    if (facts.maturity === 'existing' && changesFiles && options.yes !== true) {
+    const confirmAhead = facts.maturity === 'existing' && changesFiles && options.yes !== true;
+    await renderer.todo(plan, { pending: readDryRunFlag(process.argv) || (confirmAhead && interactive) });
+
+    if (confirmAhead) {
       const unconfirmed = unconfirmedApplyLine({
-        isTTY: rendererOptions.isTTY,
+        isTTY: reachable,
         ci: isCi(process.env),
         prompts: options.prompts,
         promptsOff,
@@ -193,9 +209,10 @@ export function ngAdd(flags: NgAddFlags): Rule {
       }
     }
 
+    const unchanged = new Set<string>();
     return chain([
-      applyChangePlan(plan),
-      () => renderer.summary(createSummary(createReport(plan), options.quiet !== true)),
+      applyChangePlan(plan, (id) => unchanged.add(id)),
+      () => renderer.summary(createSummary(createReport(plan, unchanged), options.quiet !== true)),
       scheduleInstall(plan),
     ]);
   };

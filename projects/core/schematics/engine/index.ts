@@ -22,6 +22,7 @@ export {
   type NgAddOptions,
   type NgAddPreset,
   parseNgAddOptions,
+  readDryRunFlag,
   readPromptFlags,
   THEME_CHOICES,
   type ThemeChoice,
@@ -73,6 +74,7 @@ export {
   addToArrayLiteral,
   type ArraySelector,
   hasArrayLiteral,
+  importsModule,
   insertAfterImports,
   type LanguagePackArgument,
   readProviderCalls,
@@ -92,6 +94,7 @@ export { delegateNgAdd } from './shim/delegate-ng-add';
 export {
   DEFAULT_ESLINT_PLUGIN_VERSION,
   DEFAULT_MCP_VERSION,
+  isUnstampedVersion,
   type ReleaseVersions,
   type ResolvedVersions,
   resolveVersions,
@@ -119,4 +122,4 @@ export {
   type RenderLogger,
 } from './render/renderer';
 export { createSummary, type SummaryHeadlines } from './render/summary';
-export { createShellRendererOptions, isCi, type TerminalStream } from './render/terminal';
+export { canReachPrompts, createShellRendererOptions, isCi, type TerminalStream } from './render/terminal';

@@ -19,13 +19,19 @@ export interface RenderLogger {
   error(message: string): void;
 }
 
+/** How the plan list reads: `pending` when nothing has run yet and may not. */
+export interface TodoOptions {
+  /** A confirm comes next or the run is a dry run: no task may read as done. */
+  readonly pending?: boolean;
+}
+
 /**
  * Every terminal projection of a run. It only renders: the plan comes from
  * `createChangePlan`, the summary lines from the caller.
  */
 export interface Renderer {
   preflight(items: readonly PreflightItem[]): void;
-  todo(plan: ChangePlan): Promise<void>;
+  todo(plan: ChangePlan, options?: TodoOptions): Promise<void>;
   summary(lines: readonly string[]): void;
   note(text: string): void;
 }

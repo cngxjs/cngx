@@ -63,14 +63,6 @@ Every change is listed before it is applied, the same way `ng add` lists its
 plan. The summary after it names the files changed, the notes (what a step
 left to you), how many steps were already in place, and the next steps.
 
-The first migration, `0.1.0`, renames nothing: the breaking changes of the
-release candidates before it are covered by the written migration guides.
-Like a `refresh` entry, it re-checks the recorded install steps and records
-the installed release in the manifest. Because the CLI compares against the
-target without its prerelease tag, an update from one 0.1.0 release
-candidate to a later one runs the `0.1.0` migration next to the later
-candidate's own entry.
-
 An update across several releases runs every hand-written migration in that
 range and the target's entry. It runs no `refresh` entry of a release in
 between: those ship only with their own release. Each entry prints its own

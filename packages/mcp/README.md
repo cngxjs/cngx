@@ -12,10 +12,12 @@ It is read-only: it never mutates any source.
 ## Usage
 
 ```bash
-npx @cngx/mcp
+npx @cngx/mcp@<version>
 ```
 
-The server speaks MCP over stdio. Register it with any MCP-capable client (see
+`<version>` is the `@cngx/mcp` release that matches your cngx packages; pin
+it, so the API snapshot the server answers from does not move under you. The
+server speaks MCP over stdio. Register it with any MCP-capable client (see
 Client setup below), then call the tools.
 
 ## Tools
@@ -90,12 +92,15 @@ data and never write code.
 
 ## Client setup
 
-The package ships the same snippet as `mcp.json`.
+In an Angular app, `ng add @cngx/core --ai-tools claude,cursor,vscode` writes
+the entry for each editor you name, with the `@cngx/mcp` version that matches
+the installed cngx release. To set a client up by hand, use the snippets
+below; the package ships the same snippet as `mcp.json`.
 
 ### Claude Code
 
 ```bash
-claude mcp add cngx -- npx -y @cngx/mcp
+claude mcp add cngx -- npx -y @cngx/mcp@<version>
 ```
 
 Or add it to your project's `.mcp.json`:
@@ -105,7 +110,7 @@ Or add it to your project's `.mcp.json`:
   "mcpServers": {
     "cngx": {
       "command": "npx",
-      "args": ["-y", "@cngx/mcp"]
+      "args": ["-y", "@cngx/mcp@<version>"]
     }
   }
 }
@@ -120,7 +125,7 @@ Add the same block to `claude_desktop_config.json`:
   "mcpServers": {
     "cngx": {
       "command": "npx",
-      "args": ["-y", "@cngx/mcp"]
+      "args": ["-y", "@cngx/mcp@<version>"]
     }
   }
 }

@@ -72,6 +72,28 @@ function finished(events: readonly ListrEvent[]): readonly string[] {
 }
 
 describe('createTtyRenderer', () => {
+  it('prints a pending plan as plain lines instead of ticked tasks', async () => {
+    const { renderer, events, lines } = tty();
+    const plan = createChangePlan([
+      {
+        changes: [change('dependency', 'Add @cngx/core'), note('lint', 'Skip the eslint entry')],
+        skipped: [{ id: 'style', label: 'Import cngx.css', reason: 'already imported' }],
+      },
+    ]);
+
+    await renderer.todo(plan, { pending: true });
+
+    expect(finished(events)).toEqual([]);
+    expect(lines).toEqual([
+      'info Planned (1):',
+      'info   + Add @cngx/core - because dependency',
+      'info Notes (1):',
+      'info   - Skip the eslint entry - because lint',
+      'info Already in place (1):',
+      'info   = Import cngx.css - already imported',
+    ]);
+  });
+
   it('renders one task per change in plan order', async () => {
     const { renderer, events } = tty();
     const plan = createChangePlan([

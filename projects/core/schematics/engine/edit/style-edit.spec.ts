@@ -77,6 +77,22 @@ html {
   });
 });
 
+describe('CRLF stylesheets', () => {
+  const crlf = "@use '@angular/material' as mat;\r\n@import 'a.css';\r\n\r\nhtml {}\r\n";
+
+  it('inserts an @import with the line ending of the sheet', () => {
+    expect(insertStyleImport(crlf, "@import '@cngx/themes/cngx.css';")).toBe(
+      "@use '@angular/material' as mat;\r\n@import 'a.css';\r\n@import '@cngx/themes/cngx.css';\r\n\r\nhtml {}\r\n",
+    );
+  });
+
+  it('inserts a @use with the line ending of the sheet', () => {
+    expect(insertStyleImport(crlf, "@use '@cngx/themes/material/theme' as cngx-material;")).toBe(
+      "@use '@angular/material' as mat;\r\n@use '@cngx/themes/material/theme' as cngx-material;\r\n@import 'a.css';\r\n\r\nhtml {}\r\n",
+    );
+  });
+});
+
 describe('insertLeadingStyleImport', () => {
   const LAYERS = "@import './cngx-layers.css';";
 

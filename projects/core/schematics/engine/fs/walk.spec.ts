@@ -34,6 +34,12 @@ describe('listFiles', () => {
     ]);
   });
 
+  it('skips a root-only directory at the root and enters it deeper down', () => {
+    const tree = createMemoryTree({ 'dist/main.js': '', 'src/app/dist/page.ts': '' });
+
+    expect(listFiles(tree, '/', { skipRootDirs: new Set(['dist']) })).toEqual(['src/app/dist/page.ts']);
+  });
+
   it('never enters a skipped directory, at any depth', () => {
     const files = listFiles(createMemoryTree(TREE), '/', { skipDirs: new Set(['node_modules']) });
 

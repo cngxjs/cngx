@@ -41,11 +41,9 @@ function readFixture(dir) {
   return files;
 }
 
-describe('migrations.json', () => {
-  it('declares at least one migration', () => {
-    expect(entries.length).toBeGreaterThan(0);
-  });
-
+// The hand-written map is empty until a release needs its own migration;
+// the rules themselves run against synthetic inputs below.
+describe.skipIf(entries.length === 0)('migrations.json entries', () => {
   it.each(entries)('%s is well formed', (key, entry) => {
     expect(keyProblems(key, entry)).toEqual([]);
   });
@@ -62,7 +60,9 @@ describe('migrations.json', () => {
 
     expect(fixtureProblems(readFixture(join(dir, 'before')), readFixture(join(dir, 'after')))).toEqual([]);
   });
+});
 
+describe('migrations.json', () => {
   // `refresh/` has no key here: publish.mjs keys it to every release that
   // ships no migration of its own, in the published collection only.
   it('has an entry for every migration folder but the refresh factory', () => {

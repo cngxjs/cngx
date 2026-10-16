@@ -50,14 +50,23 @@ function touchedFile(change: Change): string | undefined {
   }
 }
 
-export function createReport(plan: ChangePlan): Report {
-  const files = plan.changes.map(touchedFile).filter((file): file is string => file !== undefined);
-  const notes = plan.changes.filter((change) => change.kind === 'note');
+/**
+ * `unchanged` holds the ids `applyChangePlan` reported as already in place;
+ * those move from the changes to the skipped steps.
+ */
+export function createReport(plan: ChangePlan, unchanged: ReadonlySet<string> = new Set()): Report {
+  const applied = plan.changes.filter((change) => !unchanged.has(change.id));
+  const inPlace = plan.changes.filter((change) => unchanged.has(change.id));
+  const files = applied.map(touchedFile).filter((file): file is string => file !== undefined);
+  const notes = applied.filter((change) => change.kind === 'note');
   return {
-    changes: plan.changes.filter((change) => change.kind !== 'note').map((change) => change.label),
+    changes: applied.filter((change) => change.kind !== 'note').map((change) => change.label),
     notes: notes.map((note) => `${note.label} - ${note.reason}`),
     files: [...new Set(files)],
-    skipped: [...plan.skipped],
+    skipped: [
+      ...plan.skipped,
+      ...inPlace.map((change): SkippedStep => ({ id: change.id, label: change.label, reason: 'already in place' })),
+    ],
     warnings: [...plan.warnings],
     nextSteps: [DOCTOR],
     links: [DOCS],

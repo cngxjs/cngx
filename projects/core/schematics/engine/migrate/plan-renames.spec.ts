@@ -51,6 +51,15 @@ describe('planRenames', () => {
     expect(planRenames(TABLE, tree, PROVENANCE).changes).toEqual([]);
   });
 
+  it('renames a source folder that shares a build output name below the root', () => {
+    const tree = createMemoryTree({ 'src/app/coverage/report.ts': COMPONENT, 'src/app/dist/page.ts': COMPONENT });
+
+    expect(planRenames(TABLE, tree, PROVENANCE).changes.map((change) => change.id)).toEqual([
+      'rename:src/app/coverage/report.ts',
+      'rename:src/app/dist/page.ts',
+    ]);
+  });
+
   it('names a template that does not parse instead of failing', () => {
     const tree = createMemoryTree({
       'src/app/broken.html': '<cngx-old-card>@if (</cngx-old-card>',

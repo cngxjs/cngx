@@ -1,4 +1,6 @@
-import { declaredRange, hasArrayLiteral, type PackageManifest, type Tree } from '../../engine';
+import { posix } from 'node:path';
+
+import { declaredRange, hasArrayLiteral, importsModule, type PackageManifest, type Tree } from '../../engine';
 
 export interface EslintConfigFacts {
   readonly path: string;
@@ -56,13 +58,22 @@ const ESLINT_LEGACY_CONFIGS = [
 
 const TYPESCRIPT_PARSERS = ['typescript-eslint', '@typescript-eslint/parser', 'angular-eslint'];
 
-export function detectLegacyEslintConfig(tree: Tree): LegacyEslintConfigFacts | undefined {
-  const path = ESLINT_LEGACY_CONFIGS.find((candidate) => tree.exists(candidate));
+// A config in the project root wins over the workspace one, the way ESLint
+// resolves the closest config for the project's files.
+function findConfig(tree: Tree, projectRoot: string, names: readonly string[]): string | undefined {
+  const roots = projectRoot === '' ? [''] : [projectRoot, ''];
+  return roots
+    .flatMap((root) => names.map((name) => posix.join(root, name)))
+    .find((candidate) => tree.exists(candidate));
+}
+
+export function detectLegacyEslintConfig(tree: Tree, projectRoot: string): LegacyEslintConfigFacts | undefined {
+  const path = findConfig(tree, projectRoot, ESLINT_LEGACY_CONFIGS);
   return path === undefined ? undefined : { path };
 }
 
-export function detectEslintConfig(tree: Tree): EslintConfigFacts | undefined {
-  const path = ESLINT_FLAT_CONFIGS.find((candidate) => tree.exists(candidate));
+export function detectEslintConfig(tree: Tree, projectRoot: string): EslintConfigFacts | undefined {
+  const path = findConfig(tree, projectRoot, ESLINT_FLAT_CONFIGS);
   if (path === undefined) {
     return undefined;
   }
@@ -73,7 +84,7 @@ export function detectEslintConfig(tree: Tree): EslintConfigFacts | undefined {
     path,
     module: esm ? 'esm' : 'cjs',
     editable: hasArrayLiteral(content, { kind: 'default-export' }),
-    wired: content.includes('@cngx/eslint-plugin'),
+    wired: importsModule(content, '@cngx/eslint-plugin'),
   };
 }
 

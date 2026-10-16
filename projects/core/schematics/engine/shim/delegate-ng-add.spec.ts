@@ -23,6 +23,7 @@ function createRunner(): SchematicTestRunner {
 
 let shimBundle = '';
 let themesBundle = '';
+let unstampedBundle = '';
 
 interface RunOptions {
   readonly flags?: NgAddFlags;
@@ -68,10 +69,10 @@ async function run(
   return { tree, tasks, taskOptions, logs };
 }
 
-function writeShim(root: string, name: string): string {
-  mkdirSync(join(root, name, 'schematics', 'ng-add'), { recursive: true });
-  writeFileSync(join(root, name, 'package.json'), JSON.stringify({ name: `@cngx/${name}`, version: VERSION }));
-  return join(root, name, 'schematics', 'ng-add');
+function writeShim(root: string, name: string, version = VERSION, folder = name): string {
+  mkdirSync(join(root, folder, 'schematics', 'ng-add'), { recursive: true });
+  writeFileSync(join(root, folder, 'package.json'), JSON.stringify({ name: `@cngx/${name}`, version }));
+  return join(root, folder, 'schematics', 'ng-add');
 }
 
 describe('delegateNgAdd', () => {
@@ -83,6 +84,7 @@ describe('delegateNgAdd', () => {
     fakeCore = mkdtempSync(join(tmpdir(), 'cngx-fake-core-'));
     shimBundle = writeShim(fakeCore, 'forms');
     themesBundle = writeShim(fakeCore, 'themes');
+    unstampedBundle = writeShim(fakeCore, 'forms', '0.0.0-PLACEHOLDER', 'unstamped');
     writeFileSync(
       join(fakeCore, 'collection.json'),
       JSON.stringify({ schematics: { 'ng-add': { description: 'fake', factory: './index#ngAdd' } } }),
@@ -111,6 +113,23 @@ describe('delegateNgAdd', () => {
     expect(tree.readText('package.json').endsWith('}\n')).toBe(true);
     expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ preset: 'minimal' });
     expect(tasks).toEqual([]);
+  });
+
+  it('pins nothing from an unstamped local build and follows the installed core', async () => {
+    const { tree, tasks, logs } = await run(resolvingRunner(), { bundle: unstampedBundle, installed: VERSION });
+
+    expect(JSON.parse(tree.readText('package.json')).dependencies).toEqual({});
+    expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ preset: 'minimal' });
+    expect(tasks).toEqual([]);
+    expect(logs).toContain(
+      '@cngx/forms is an unstamped local build (0.0.0-PLACEHOLDER); pinning nothing and following the installed @cngx/core 0.1.0.',
+    );
+  });
+
+  it('stops an unstamped local build when no core is installed', async () => {
+    await expect(run(createRunner(), { bundle: unstampedBundle })).rejects.toThrow(
+      '@cngx/forms is an unstamped local build (0.0.0-PLACEHOLDER) and @cngx/core is not installed; pack the libs with node scripts/pack-libs.mjs and install the tarballs.',
+    );
   });
 
   it('installs core first and runs its ng-add as a follow-up task when core is not placed yet', async () => {
