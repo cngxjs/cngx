@@ -755,6 +755,17 @@
       ]
     },
     {
+      "code": "CNGX1060",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Accordion panel outside an accordion",
+      "page": "core-concepts/error-codes/cngx1060.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1060.html",
+      "status": "active",
+      "files": ["projects/common/interactive/accordion/accordion.token.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

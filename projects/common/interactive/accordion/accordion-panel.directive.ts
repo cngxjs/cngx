@@ -9,7 +9,7 @@ import {
   type OnInit,
 } from '@angular/core';
 
-import { CNGX_ACCORDION } from './accordion.token';
+import { injectAccordionHost } from './accordion.token';
 import type { CngxAccordionHeaderHandle } from './accordion-keyboard-nav';
 
 /**
@@ -59,7 +59,7 @@ export class CngxAccordionPanel implements OnInit {
    */
   readonly disabled = input<boolean>(false);
 
-  private readonly accordion = inject(CNGX_ACCORDION);
+  private readonly accordion = injectAccordionHost();
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly destroyRef = inject(DestroyRef);
 

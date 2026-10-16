@@ -346,6 +346,10 @@
                 "file": "error-codes/cngx1059.md"
             },
             {
+                "title": "CNGX1060",
+                "file": "error-codes/cngx1060.md"
+            },
+            {
                 "title": "CNGX2001",
                 "file": "error-codes/cngx2001.md"
             },

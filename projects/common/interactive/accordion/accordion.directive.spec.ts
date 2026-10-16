@@ -255,3 +255,27 @@ describe('CngxAccordion', () => {
     expect([...accordion.openIds()]).toEqual(['a', 'b']);
   });
 });
+
+@Component({
+  template: `<button cngxAccordionPanel panelId="a">A</button>`,
+  imports: [CngxAccordionPanel],
+})
+class OrphanPanelHost {}
+
+describe('CngxAccordionPanel placement (CNGX1060)', () => {
+  it('throws CNGX1060 outside an accordion', () => {
+    expect(() => TestBed.createComponent(OrphanPanelHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1060',
+        message: expect.stringMatching(
+          /^CNGX1060: \[cngxAccordionPanel\] must be placed inside an element with \[cngxAccordion\], such as <cngx-accordion-group>\./,
+        ),
+      }),
+    );
+  });
+
+  it('does not throw inside [cngxAccordion]', () => {
+    expect(() => TestBed.createComponent(Host).detectChanges()).not.toThrow();
+  });
+});
