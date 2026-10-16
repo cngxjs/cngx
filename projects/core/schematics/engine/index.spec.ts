@@ -8,9 +8,6 @@ import * as engine from './index';
 const PROJECTS = join(__dirname, '..', '..', '..');
 const ENGINE = __dirname;
 
-// D36: the G1 `cngx` CLI reads the workspace through it; no schematic does.
-const AWAITING_CLI = new Set(['createNodeTree']);
-
 function tsFiles(dir: string): readonly string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const path = join(dir, entry.name);
@@ -34,7 +31,7 @@ const OUTSIDE = readdirSync(PROJECTS, { withFileTypes: true })
   .join('\n');
 
 describe('engine barrel', () => {
-  it.each(Object.keys(engine).filter((name) => !AWAITING_CLI.has(name)))(
+  it.each(Object.keys(engine))(
     'exports %s because code outside the engine reads it',
     (name) => {
       expect(OUTSIDE).toMatch(new RegExp(`\\b${name}\\b`));
