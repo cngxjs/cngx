@@ -98,8 +98,9 @@ const pins = new WeakMap<HTMLElement, PinState>();
  * `overflow: hidden` on the root does not stop iOS Safari from scrolling a
  * page that was already scrolled, and the visual viewport drifts with it, so
  * a bottom-fixed overlay ends above the visible bottom. The first pin saves
- * the body's inline style and the scroll position, fixes the body at
- * `top: -scrollY`, and acquires {@link createScrollLock} on the root. The last
+ * the body's inline `position`, `top`, `inset-inline` and `overflow` and the
+ * scroll position, fixes the body at `top: -scrollY`, and acquires
+ * {@link createScrollLock} on the root. The last
  * release restores the body, releases the root lock and scrolls back to the
  * saved position. The returned release function is idempotent.
  *
