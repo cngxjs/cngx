@@ -837,6 +837,17 @@
       "files": ["projects/forms/filter-builder/filter-builder.helpers.ts"]
     },
     {
+      "code": "CNGX2014",
+      "lib": "forms",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Filter group or expression outside a filter builder",
+      "page": "core-concepts/error-codes/cngx2014.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2014.html",
+      "status": "active",
+      "files": ["projects/forms/filter-builder/filter-builder-host.token.ts"]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",

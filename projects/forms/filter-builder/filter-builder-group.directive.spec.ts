@@ -86,7 +86,25 @@ function setup(
   };
 }
 
+@Component({
+  template: `<div [cngxFilterGroup]="[]"></div>`,
+  imports: [CngxFilterGroup],
+})
+class OrphanHost {}
+
 describe('CngxFilterGroup', () => {
+  it('throws CNGX2014 outside a filter builder', () => {
+    expect(() => TestBed.createComponent(OrphanHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX2014',
+        message: expect.stringMatching(
+          /^CNGX2014: \[cngxFilterGroup\] must be placed inside <cngx-filter-builder> or an element with \[cngxFilterBuilderPresenter\]\./,
+        ),
+      }),
+    );
+  });
+
   it('resolves the host via the DI token', () => {
     const { directive } = setup({
       type: 'group',
