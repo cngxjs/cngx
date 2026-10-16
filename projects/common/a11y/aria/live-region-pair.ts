@@ -17,7 +17,7 @@ export interface CngxPendingAnnouncement {
 /**
  * @internal Polite + assertive live-region pair inside one container. The
  * engine behind `CngxLiveAnnouncer` (container `document.body`) and
- * `createScopedLiveRegion` (container: an overlay host).
+ * `injectScopedLiveRegion` (container: an overlay host).
  */
 export interface CngxLiveRegionPair {
   /** Clear the region of `politeness` now, write `message` one frame later. */

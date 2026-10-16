@@ -4,13 +4,10 @@
 export { CngxAriaExpanded } from './aria/aria-expanded.directive';
 export { CngxLiveRegion } from './aria/live-region.directive';
 export { CngxLiveAnnouncer, type AriaLivePoliteness } from './aria/live-announcer';
-export { createScopedLiveRegion, type CngxScopedLiveRegion } from './aria/scoped-live-region';
+export { injectScopedLiveRegion, type CngxScopedLiveRegion } from './aria/scoped-live-region';
 export type { CngxPendingAnnouncement } from './aria/live-region-pair';
 export { CngxAutofocus } from './focus/autofocus.directive';
-export {
-  CngxFocusRestore,
-  CNGX_FOCUSABLE_SELECTOR,
-} from './focus/focus-restore.directive';
+export { CngxFocusRestore, CNGX_FOCUSABLE_SELECTOR } from './focus/focus-restore.directive';
 export { CngxFocusTrap } from './focus/focus-trap.directive';
 export { CngxFocusVisible } from './focus/focus-visible.directive';
 export { CngxRovingTabindex, CngxRovingItem } from './roving/roving-tabindex.directive';

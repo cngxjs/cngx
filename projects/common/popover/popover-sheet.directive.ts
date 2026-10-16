@@ -14,7 +14,7 @@ import {
   type AriaLivePoliteness,
   CngxFocusTrap,
   CngxLiveAnnouncer,
-  createScopedLiveRegion,
+  injectScopedLiveRegion,
 } from '@cngx/common/a11y';
 import { createContainerSize, createPinnedScrollLock } from '@cngx/common/layout';
 import { injectWindow } from '@cngx/core/tokens';
@@ -102,7 +102,7 @@ type CloseWatcherCtor = new () => CloseWatcherLike;
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-sheet.directive.ts
  * @since 0.1.0
- * @relatedTo CngxPopover, CngxSwipeDismiss, CngxFocusTrap, createPinnedScrollLock, createScopedLiveRegion
+ * @relatedTo CngxPopover, CngxSwipeDismiss, CngxFocusTrap, createPinnedScrollLock, injectScopedLiveRegion
  * <example-url>http://localhost:4200/#/common/popover/sheet/bottom-sheet</example-url>
  * <example-url>http://localhost:4200/#/common/popover/sheet/fullscreen-search</example-url>
  */
@@ -220,7 +220,7 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
     this.modal() ? (this.staticTabindex ?? '-1') : this.staticTabindex,
   );
 
-  private readonly region = createScopedLiveRegion(this.host);
+  private readonly region = injectScopedLiveRegion(this.host);
 
   private engaged = false;
   private savedFocus: HTMLElement | null = null;

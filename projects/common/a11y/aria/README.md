@@ -61,10 +61,10 @@ Use `CngxLiveRegion` when the announcement content is part of your template; use
 - `aria-atomic="false"` is not recommended for mutable regions; keep it `true` (default) for clarity
 
 
-### createScopedLiveRegion
+### injectScopedLiveRegion
 
 ```typescript
-private readonly region = createScopedLiveRegion(inject(ElementRef).nativeElement);
+private readonly region = injectScopedLiveRegion(inject(ElementRef).nativeElement);
 
 protected handleSaveFailed(): void {
   this.region.announce('Save failed', 'assertive');

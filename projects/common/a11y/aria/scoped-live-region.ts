@@ -39,7 +39,7 @@ export interface CngxScopedLiveRegion {
  * is destroyed. No-op on the server.
  *
  * ```typescript
- * private readonly region = createScopedLiveRegion(inject(ElementRef).nativeElement);
+ * private readonly region = injectScopedLiveRegion(inject(ElementRef).nativeElement);
  *
  * protected handleSaveFailed(): void {
  *   this.region.announce('Save failed', 'assertive');
@@ -54,7 +54,7 @@ export interface CngxScopedLiveRegion {
  * @since 0.1.0
  * @relatedTo CngxLiveAnnouncer, CngxLiveRegion
  */
-export function createScopedLiveRegion(host: HTMLElement): CngxScopedLiveRegion {
+export function injectScopedLiveRegion(host: HTMLElement): CngxScopedLiveRegion {
   const doc = inject(DOCUMENT);
   const isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   let pair: CngxLiveRegionPair | null = null;

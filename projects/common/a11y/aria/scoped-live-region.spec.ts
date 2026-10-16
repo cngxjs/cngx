@@ -2,7 +2,7 @@ import { Component, ElementRef, inject, PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createScopedLiveRegion } from './scoped-live-region';
+import { injectScopedLiveRegion } from './scoped-live-region';
 
 const CLEAR_DELAY_MS = 16;
 
@@ -12,10 +12,10 @@ const CLEAR_DELAY_MS = 16;
 })
 class RegionHost {
   readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-  readonly region = createScopedLiveRegion(this.host);
+  readonly region = injectScopedLiveRegion(this.host);
 }
 
-describe('createScopedLiveRegion', () => {
+describe('injectScopedLiveRegion', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
