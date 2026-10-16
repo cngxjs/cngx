@@ -32,14 +32,19 @@ export function rootProvidersPath(mainPath: string, main: string, standalone: bo
   return specifier === undefined ? fallback : `${posix.join(posix.dirname(mainPath), specifier)}.ts`;
 }
 
+// Build output and installs below the source root hold no app components.
+export const SKIPPED_SOURCE_DIRS: ReadonlySet<string> = new Set(['node_modules', 'dist']);
+
 // An app is existing once it has more than the root component, another UI
-// library, or providers beyond the scaffold.
+// library, providers beyond the scaffold, or a config written into the
+// bootstrap call (`ng new` never writes one there).
 export function maturityOf(
   componentCount: number,
   manifest: PackageManifest,
   providers: readonly string[],
+  inlineConfig: boolean,
 ): 'fresh' | 'existing' {
   const hasOtherUi = OTHER_UI_LIBRARIES.some((library) => declaredRange(manifest, library) !== undefined);
   const hasOwnProviders = providers.some((provider) => !SCAFFOLD_PROVIDERS.has(provider));
-  return componentCount > 1 || hasOtherUi || hasOwnProviders ? 'existing' : 'fresh';
+  return componentCount > 1 || hasOtherUi || hasOwnProviders || inlineConfig ? 'existing' : 'fresh';
 }

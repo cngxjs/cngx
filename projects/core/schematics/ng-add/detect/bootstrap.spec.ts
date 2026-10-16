@@ -41,15 +41,23 @@ describe('rootProvidersPath', () => {
 describe('maturityOf', () => {
   it('calls an app with another UI library existing', () => {
     for (const library of ['@angular/material', 'primeng', 'tailwindcss', 'bootstrap']) {
-      expect(maturityOf(1, withPackage({ [library]: '*' }), [])).toBe('existing');
+      expect(maturityOf(1, withPackage({ [library]: '*' }), [], false)).toBe('existing');
     }
   });
 
   it('calls an app with providers beyond the scaffold existing', () => {
-    expect(maturityOf(1, STOCK, ['provideBrowserGlobalErrorListeners', 'provideHttpClient'])).toBe('existing');
+    expect(maturityOf(1, STOCK, ['provideBrowserGlobalErrorListeners', 'provideHttpClient'], false)).toBe('existing');
   });
 
   it('keeps the scaffold providers fresh', () => {
-    expect(maturityOf(1, STOCK, ['provideZoneChangeDetection'])).toBe('fresh');
+    expect(maturityOf(1, STOCK, ['provideZoneChangeDetection'], false)).toBe('fresh');
+  });
+
+  it('calls an app with its config written into the bootstrap call existing', () => {
+    expect(maturityOf(1, STOCK, ['provideBrowserGlobalErrorListeners'], true)).toBe('existing');
+  });
+
+  it('calls an app with more than the root component existing', () => {
+    expect(maturityOf(2, STOCK, [], false)).toBe('existing');
   });
 });

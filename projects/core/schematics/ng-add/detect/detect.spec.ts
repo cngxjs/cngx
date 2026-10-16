@@ -156,8 +156,17 @@ export const appConfig: ApplicationConfig = {
       expect((await detect({ 'src/app/other.ts': SECOND_COMPONENT })).maturity).toBe('existing');
     });
 
-    it('counts only components under the app folder', async () => {
-      expect((await detect({ 'src/lib/other.ts': SECOND_COMPONENT })).maturity).toBe('fresh');
+    it('counts components anywhere under the source root', async () => {
+      expect((await detect({ 'src/features/other.ts': SECOND_COMPONENT })).maturity).toBe('existing');
+    });
+
+    it('skips components in node_modules and dist folders', async () => {
+      const facts = await detect({
+        'src/node_modules/lib/other.ts': SECOND_COMPONENT,
+        'src/dist/other.ts': SECOND_COMPONENT,
+      });
+
+      expect(facts.maturity).toBe('fresh');
     });
 
     it('ignores a provider in a comment or a string', async () => {

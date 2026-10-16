@@ -33,7 +33,7 @@ type Tree = ReturnType<typeof createFixtureTree>;
 // The terminal side of an interactive run: every question keeps its
 // preselection or default, the AI tooling question answers `editorPicks`.
 // The git state is fixed, so the checklist does not follow the worktree.
-const terminal = vi.hoisted(() => ({ editorPicks: [] as string[], git: 'clean' }));
+const terminal = vi.hoisted(() => ({ editorPicks: [] as string[], git: 'clean', confirms: [] as string[] }));
 
 vi.mock('./shell/git-state', () => ({ readGitState: () => terminal.git }));
 
@@ -51,7 +51,10 @@ vi.mock('@inquirer/select', () => ({
   default: (question: { default: string }) => Promise.resolve(question.default),
 }));
 vi.mock('@inquirer/confirm', () => ({
-  default: (question: { default: boolean }) => Promise.resolve(question.default),
+  default: (question: { message: string; default: boolean }) => {
+    terminal.confirms.push(question.message);
+    return Promise.resolve(question.default);
+  },
 }));
 
 const MAP_API_THEME = `@use '@angular/material' as mat;
@@ -397,6 +400,20 @@ describe('ngAdd', () => {
       expect(second.logs).toContain('cngx is already set up; nothing changed.');
     });
 
+    it('asks before applying on a terminal', async () => {
+      vi.stubEnv('CI', '');
+      vi.stubEnv('NO_COLOR', '1');
+      process.stdout.isTTY = true;
+      terminal.confirms = [];
+      try {
+        await runRule(ngAdd({}), inlineBootstrapApp());
+
+        expect(terminal.confirms).toContain('Apply these changes?');
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
     it('creates the language file next to main.ts and imports it there', async () => {
       const run = await runRule(ngAdd({ i18n: 'de', runtimeSwitch: true, yes: true }), inlineBootstrapApp());
 
@@ -488,6 +505,20 @@ describe('ngAdd', () => {
         );
       } finally {
         terminal.git = 'clean';
+      }
+    });
+
+    it('asks before applying on a terminal when the components live outside src/app', async () => {
+      vi.stubEnv('CI', '');
+      vi.stubEnv('NO_COLOR', '1');
+      process.stdout.isTTY = true;
+      terminal.confirms = [];
+      try {
+        await runRule(ngAdd({}), createFixtureTree('standalone-app', { 'src/features/other.ts': SECOND_COMPONENT }));
+
+        expect(terminal.confirms).toContain('Apply these changes?');
+      } finally {
+        vi.unstubAllEnvs();
       }
     });
 

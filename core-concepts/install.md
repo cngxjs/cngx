@@ -48,8 +48,10 @@ install. Nothing outside the project is written.
    the `--dry-run` output, the summary and the manifest are all read from
    that plan, so they cannot disagree. Notes (what a step refused or left to
    you) follow the list; they are not tasks.
-5. **Confirm.** An app that already has components, its own providers or
-   another UI library (Material, PrimeNG, Tailwind, Bootstrap) counts as
+5. **Confirm.** An app that already has components beyond the root one
+   (anywhere under its source root, outside `node_modules` and `dist`), its
+   own providers, a config written into `bootstrapApplication(App, {...})`,
+   or another UI library (Material, PrimeNG, Tailwind, Bootstrap) counts as
    existing and gets one `Apply these changes?` before anything is written.
    That question needs a terminal: under CI, without a terminal, or with
    `--no-prompts`, the plan applies and one line says which of them kept

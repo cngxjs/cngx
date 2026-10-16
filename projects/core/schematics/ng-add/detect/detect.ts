@@ -23,7 +23,7 @@ import {
   mcpConfigsOf,
   type McpConfigState,
 } from './ai-tooling';
-import { isSourceFile, maturityOf, rootProvidersPath } from './bootstrap';
+import { isSourceFile, maturityOf, rootProvidersPath, SKIPPED_SOURCE_DIRS } from './bootstrap';
 import {
   detectEslintConfig,
   detectEslintStack,
@@ -140,8 +140,8 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const manifest = parseManifest(tree.readText('package.json'));
 
   // The component count is the only fact read from source contents, so only
-  // the app folder is read up front; the cache serves its files to later reads.
-  const appSources = listFiles(tree, posix.join(sourceRoot, 'app'), { accept: isSourceFile }).map((path) => ({
+  // the source files are read up front; the cache serves them to later reads.
+  const appSources = listFiles(tree, sourceRoot, { skipDirs: SKIPPED_SOURCE_DIRS, accept: isSourceFile }).map((path) => ({
     path,
     content: tree.readText(path),
   }));
@@ -206,6 +206,6 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     legacyEslintConfig: detectLegacyEslintConfig(tree),
     eslintStack: detectEslintStack(manifest),
     sourceLocale: sourceLocaleOf(project),
-    maturity: maturityOf(componentCount, manifest, providers),
+    maturity: maturityOf(componentCount, manifest, providers, rootProvidersFile === mainPath),
   };
 }
