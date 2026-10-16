@@ -279,6 +279,27 @@ containerState(el);                        // { type, name } - resolved containe
 
 If a root-barrel import of these helpers ever passes in jsdom, it is asserting `'' === ''` - keep them on the subpath.
 
+## Sass Subpath
+
+`@cngx/testing/sass` compiles Sass for the Material bridge specs. It is Node-only (`sass`, `node:path`), so it stays out of the root barrel that browser-flavoured specs import.
+
+```typescript
+import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
+
+const css = compileThemeEntry(`
+  @use '@angular/material' as mat;
+  @use 'material/nav-link-theme' as bridge;
+  $theme: mat.m2-define-light-theme(...);
+  .probe { @include bridge.theme($theme); }
+`);
+emittedTokenNames(css); // declared --cngx-* names, sorted, no duplicates
+```
+
+- `compileThemeEntry(entry)` compiles an entry string with `node_modules` and `projects/themes` on the load path, so `@use '@angular/material'` and `@use 'material/<bridge>'` resolve the way they do for a consumer. Dependency deprecation warnings are silenced; the output is expanded.
+- `emittedTokenNames(css)` returns every `--cngx-*` custom property the CSS declares (`--cngx-x:`), not the ones it only reads through `var()`.
+
+Load paths resolve against the runner's cwd, so run these specs from the repo root (`ng test <lib>` does).
+
 ## Testing Patterns
 
 ### Testing Signals and Effects

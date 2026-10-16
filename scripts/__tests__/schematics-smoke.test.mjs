@@ -352,8 +352,8 @@ describe('dist/ui/schematics ng-add shim', () => {
 
 // Every schematic entry ships inside a published package, so its size is
 // paid on every install. The bundled renderer and prompt libraries take about
-// 140 KB of it (listr2 alone 52 KB); the rest is the onboarding itself, with
-// room for the editor configs the AI tooling step still has to write.
+// 140 KB of it (listr2 alone 52 KB); the rest is the onboarding itself,
+// including the editor configs the AI tooling step writes.
 const MAX_MINIFIED = 256 * 1024;
 const MAX_GZIP = 90 * 1024;
 // A shim only adds core and delegates; it pulls nothing from the renderer
