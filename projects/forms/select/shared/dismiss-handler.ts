@@ -1,6 +1,6 @@
 import { InjectionToken, type Signal } from '@angular/core';
 
-import type { CngxPopover } from '@cngx/common/popover';
+import type { CngxPopover, CngxPopoverSheetCloseReason } from '@cngx/common/popover';
 
 /**
  * Config for {@link createDismissHandler}.
@@ -20,6 +20,12 @@ export interface DismissHandlerOptions {
    * without an action bridge.
    */
   readonly shouldBlockDismiss?: Signal<boolean>;
+  /**
+   * A pessimistic commit is pending. Blocks every sheet close request
+   * (select-family close-on-success rule). Undefined for variants without
+   * a `commitMode`.
+   */
+  readonly closeBlocked?: Signal<boolean>;
 }
 
 /**
@@ -33,6 +39,15 @@ export interface DismissHandler {
    * popover.hide(). Field-style closure (no `this` binding).
    */
   readonly handleClickOutside: () => void;
+  /**
+   * Close request from the mobile sheet (header swipe, outside tap, Android
+   * back, X / Done). Order: closeBlocked → shouldBlockDismiss → `'backdrop'`
+   * honours `dismissOn` like an outside click → popover.hide(). Optional so
+   * existing {@link CNGX_DISMISS_HANDLER_FACTORY} overrides keep compiling;
+   * without it the variant falls back to `handleClickOutside` for
+   * `'backdrop'` and a plain hide for the rest.
+   */
+  readonly handleSheetClose?: (reason: CngxPopoverSheetCloseReason) => void;
 }
 
 /**
@@ -43,19 +58,35 @@ export interface DismissHandler {
  * @category forms/select/controllers
  */
 export function createDismissHandler(opts: DismissHandlerOptions): DismissHandler {
-  const handleClickOutside = (): void => {
-    if (opts.shouldBlockDismiss?.()) {
-      return;
-    }
-    if (opts.dismissOn !== 'outside' && opts.dismissOn !== 'both') {
-      return;
-    }
+  const outsideAllowed = opts.dismissOn === 'outside' || opts.dismissOn === 'both';
+  const hideIfVisible = (): void => {
     const pop = opts.popoverRef();
     if (pop?.isVisible()) {
       pop.hide();
     }
   };
-  return { handleClickOutside };
+  const handleClickOutside = (): void => {
+    if (opts.shouldBlockDismiss?.()) {
+      return;
+    }
+    if (!outsideAllowed) {
+      return;
+    }
+    hideIfVisible();
+  };
+  const handleSheetClose = (reason: CngxPopoverSheetCloseReason): void => {
+    if (opts.closeBlocked?.()) {
+      return;
+    }
+    if (opts.shouldBlockDismiss?.()) {
+      return;
+    }
+    if (reason === 'backdrop' && !outsideAllowed) {
+      return;
+    }
+    hideIfVisible();
+  };
+  return { handleClickOutside, handleSheetClose };
 }
 
 /**

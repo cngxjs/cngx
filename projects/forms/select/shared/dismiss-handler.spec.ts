@@ -89,6 +89,57 @@ describe('createDismissHandler', () => {
   });
 });
 
+describe('createDismissHandler - handleSheetClose', () => {
+  it.each(['swipe', 'back', 'close', 'backdrop'] as const)('hides on %s', (reason) => {
+    const { handler, popover } = make();
+    handler.handleSheetClose?.(reason);
+    expect(popover.hideCalls).toBe(1);
+  });
+
+  it.each(['swipe', 'back', 'close'] as const)(
+    'hides on %s even when dismissOn is "escape" only',
+    (reason) => {
+      const { handler, popover } = make({ dismissOn: 'escape' });
+      handler.handleSheetClose?.(reason);
+      expect(popover.hideCalls).toBe(1);
+    },
+  );
+
+  it('honours dismissOn for an outside tap', () => {
+    const { handler, popover } = make({ dismissOn: 'escape' });
+    handler.handleSheetClose?.('backdrop');
+    expect(popover.hideCalls).toBe(0);
+  });
+
+  it.each(['swipe', 'back', 'close', 'backdrop'] as const)(
+    'keeps the sheet open on %s while a pessimistic commit is pending',
+    (reason) => {
+      const closeBlocked = signal(true);
+      const { handler, popover } = make({ closeBlocked });
+      handler.handleSheetClose?.(reason);
+      expect(popover.hideCalls).toBe(0);
+      closeBlocked.set(false);
+      handler.handleSheetClose?.(reason);
+      expect(popover.hideCalls).toBe(1);
+    },
+  );
+
+  it.each(['swipe', 'back', 'close', 'backdrop'] as const)(
+    'keeps the sheet open on %s while the action dirty guard blocks',
+    (reason) => {
+      const { handler, popover } = make({ shouldBlockDismiss: signal(true) });
+      handler.handleSheetClose?.(reason);
+      expect(popover.hideCalls).toBe(0);
+    },
+  );
+
+  it('does not hide a popover that is not visible', () => {
+    const { handler, popover } = make({}, makePopover(false));
+    handler.handleSheetClose?.('close');
+    expect(popover.hideCalls).toBe(0);
+  });
+});
+
 describe('CNGX_DISMISS_HANDLER_FACTORY', () => {
   it('defaults to createDismissHandler', () => {
     expect(TestBed.inject(CNGX_DISMISS_HANDLER_FACTORY)).toBe(createDismissHandler);
