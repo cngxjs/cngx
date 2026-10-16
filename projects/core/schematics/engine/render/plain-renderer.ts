@@ -53,7 +53,7 @@ function preflightText({ label, detail }: PreflightItem): string {
   return label.endsWith(')') ? `${label.slice(0, -1)}; ${detail})` : `${label} (${detail})`;
 }
 
-/** Line output through the logger: CI, `NO_COLOR`, `--quiet`, no terminal. */
+/** Line output for CI, `NO_COLOR`, `--quiet` and no terminal. */
 export function createPlainRenderer({ color, quiet, logger }: PlainOptions): Renderer {
 
   function preflightLine(item: PreflightItem): void {

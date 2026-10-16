@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
 
@@ -83,7 +84,11 @@ function schematicRunner(): SchematicTestRunner {
 
 export interface RuleRun {
   readonly tree: UnitTestTree;
-  /** Every message the rule logged, in order. */
+  /**
+   * Every line the rule printed, in order: through the logger, and on a
+   * terminal (`process.stdout.isTTY`) straight to stdout, as the shell
+   * renderer writes there.
+   */
   readonly logs: readonly string[];
   /** The name of every task the rule scheduled, in order. */
   readonly tasks: readonly string[];
@@ -134,6 +139,19 @@ export async function runRule(
       return context.addTask(task, dependencies);
     },
   };
-  const result = await lastValueFrom(callRule(rule, of(tree), recording));
-  return { tree: new UnitTestTree(result), logs, tasks };
+  const terminal = process.stdout.isTTY === true;
+  const write = vi.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+    if (!terminal) {
+      return true;
+    }
+    const text = typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf8');
+    logs.push(...text.replace(/\n$/, '').split('\n'));
+    return true;
+  });
+  try {
+    const result = await lastValueFrom(callRule(rule, of(tree), recording));
+    return { tree: new UnitTestTree(result), logs, tasks };
+  } finally {
+    write.mockRestore();
+  }
 }

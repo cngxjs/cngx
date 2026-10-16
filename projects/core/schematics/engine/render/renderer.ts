@@ -46,9 +46,10 @@ export interface RendererOptions {
   readonly quiet: boolean;
   readonly logger: RenderLogger;
   /**
-   * The terminal itself, for the live renderer: its lines start at the left
-   * edge next to the prompts and the task list instead of under the CLI's
-   * logger indent. `undefined` without a terminal.
+   * The terminal itself: on a TTY both renderers write there, so their lines
+   * start at the left edge next to the prompts and the task list instead of
+   * under the CLI's logger indent. `undefined` without a terminal, where the
+   * plain lines stay on the logger for CI logs.
    */
   readonly terminal?: RenderLogger;
   /** Overrides for the TTY task list; specs pass listr2's `test` renderer. */
@@ -57,12 +58,11 @@ export interface RendererOptions {
 
 /**
  * The live task list needs an interactive, coloured terminal and a run that
- * wants more than the summary. Everything else gets plain lines through the
- * logger, which is what CI logs and `NO_COLOR` users read.
+ * wants more than the summary. Everything else gets plain lines: on the
+ * terminal for `NO_COLOR` and `--quiet`, through the logger for CI logs.
  */
 export function createRenderer(options: RendererOptions): Renderer {
   const live = options.isTTY && options.color.enabled && !options.quiet;
-  return live
-    ? createTtyRenderer({ ...options, logger: options.terminal ?? options.logger })
-    : createPlainRenderer(options);
+  const writer = { ...options, logger: options.terminal ?? options.logger };
+  return live ? createTtyRenderer(writer) : createPlainRenderer(writer);
 }

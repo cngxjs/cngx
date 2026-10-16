@@ -65,9 +65,9 @@ export function createShellRendererOptions(
 }
 
 // The CLI hands a schematic an indenting child logger, so every line through
-// `context.logger` lands two levels in. The live renderer writes beside the
-// prompts and the task list, which go to the stream straight, so its lines
-// go there too and start at the left edge like theirs.
+// `context.logger` lands two levels in. On a terminal both renderers write
+// beside the prompts and the task list, which go to the stream straight, so
+// their lines go there too and start at the left edge like theirs.
 function streamLogger(stream: TerminalStream): RenderLogger | undefined {
   if (stream.write === undefined) {
     return undefined;

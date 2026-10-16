@@ -38,6 +38,7 @@ function recording(lines: string[]): RenderLogger {
   };
 }
 
+// `createShellRendererOptions` hands over the terminal only on a TTY.
 function run(isTTY: boolean, env: Readonly<Record<string, string>>, quiet: boolean) {
   const lines: string[] = [];
   const terminalLines: string[] = [];
@@ -47,7 +48,7 @@ function run(isTTY: boolean, env: Readonly<Record<string, string>>, quiet: boole
     color: createPalette(env, isTTY),
     quiet,
     logger: recording(lines),
-    terminal: recording(terminalLines),
+    terminal: isTTY ? recording(terminalLines) : undefined,
     listr: { renderer: 'test', rendererOptions: { logger: listrLogger } },
   });
   return { renderer, lines, terminalLines, listrEvents: () => listrLogger.events };
@@ -84,8 +85,20 @@ describe('createRenderer', () => {
     expect(lines).toEqual([]);
   });
 
-  it('keeps the plain lines on the CLI logger', () => {
-    const { renderer, lines, terminalLines } = run(true, { NO_COLOR: '1' }, false);
+  it.each([
+    ['NO_COLOR', { NO_COLOR: '1' }, false],
+    ['--quiet', {}, true],
+  ] as const)('writes the plain lines to the terminal too under %s', (_case, env, quiet) => {
+    const { renderer, lines, terminalLines } = run(true, env, quiet);
+
+    renderer.summary(['cngx applied 1 change.']);
+
+    expect(terminalLines).toEqual(['cngx applied 1 change.']);
+    expect(lines).toEqual([]);
+  });
+
+  it('keeps the plain lines on the CLI logger without a terminal', () => {
+    const { renderer, lines, terminalLines } = run(false, {}, false);
 
     renderer.summary(['cngx applied 1 change.']);
 
