@@ -18,7 +18,7 @@ import { injectLocale, numberFormatterFor } from '@cngx/core/utils';
 
 import { injectPaginatorAriaLabels } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
-import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
+import { injectPaginatorHost } from '../paginator-host.token';
 import { pageWindowEqual, type PageWindow } from './page-model';
 import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.token';
 
@@ -109,7 +109,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorPages {
-  protected readonly host = inject(CNGX_PAGINATOR_HOST);
+  protected readonly host = injectPaginatorHost('cngx-pgn-pages');
   protected readonly ariaLabels = injectPaginatorAriaLabels();
   private readonly locale = injectLocale();
   /** Visible page numbers and sizes, formatted for the locale (`1.000` in German). */

@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   type Signal,
   ViewEncapsulation,
 } from '@angular/core';
@@ -12,12 +11,14 @@ import { CngxRipple } from '@cngx/common/interactive';
 
 import { injectPaginatorAriaLabels, type CngxPaginatorAriaLabels } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
-import { CNGX_PAGINATOR_HOST, type CngxPaginatorHost } from '../paginator-host.token';
+import { injectPaginatorHost, type CngxPaginatorHost } from '../paginator-host.token';
 
 /** Config keys the four nav segments label their button with. */
 type NavAriaKey = keyof Pick<CngxPaginatorAriaLabels, 'first' | 'previous' | 'next' | 'last'>;
 
 interface NavCoreOptions {
+  /** The segment's element selector, named when it is placed outside a paginator. */
+  readonly selector: string;
   /** `true` when the page is at the bound this segment navigates toward. */
   readonly atBound: (host: CngxPaginatorHost) => boolean;
   /** The single host method this segment owns. */
@@ -38,7 +39,7 @@ interface NavCore {
  * template, differing only in selector, glyph, and the three options here.
  */
 function createPaginatorNavCore(options: NavCoreOptions): NavCore {
-  const host = inject(CNGX_PAGINATOR_HOST);
+  const host = injectPaginatorHost(options.selector);
   const labels = injectPaginatorAriaLabels();
   const disabled = computed(() => host.isBusy() || options.atBound(host));
   const ariaLabel = computed(() => labels()[options.ariaKey]);
@@ -98,6 +99,7 @@ const NAV_TEMPLATE = `
 export class CngxPaginatorFirst {
   protected readonly glyph = CNGX_PAGINATOR_GLYPHS.first;
   protected readonly core = createPaginatorNavCore({
+    selector: 'cngx-pgn-first',
     atBound: (host) => host.isFirst(),
     action: (host) => host.first(),
     ariaKey: 'first',
@@ -126,6 +128,7 @@ export class CngxPaginatorFirst {
 export class CngxPaginatorPrev {
   protected readonly glyph = CNGX_PAGINATOR_GLYPHS.previous;
   protected readonly core = createPaginatorNavCore({
+    selector: 'cngx-pgn-prev',
     atBound: (host) => host.isFirst(),
     action: (host) => host.previous(),
     ariaKey: 'previous',
@@ -154,6 +157,7 @@ export class CngxPaginatorPrev {
 export class CngxPaginatorNext {
   protected readonly glyph = CNGX_PAGINATOR_GLYPHS.next;
   protected readonly core = createPaginatorNavCore({
+    selector: 'cngx-pgn-next',
     atBound: (host) => host.isLast(),
     action: (host) => host.next(),
     ariaKey: 'next',
@@ -182,6 +186,7 @@ export class CngxPaginatorNext {
 export class CngxPaginatorLast {
   protected readonly glyph = CNGX_PAGINATOR_GLYPHS.last;
   protected readonly core = createPaginatorNavCore({
+    selector: 'cngx-pgn-last',
     atBound: (host) => host.isLast(),
     action: (host) => host.last(),
     ariaKey: 'last',

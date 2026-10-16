@@ -1038,6 +1038,20 @@
       ]
     },
     {
+      "code": "CNGX3018",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Paginator segment outside a paginator",
+      "page": "core-concepts/error-codes/cngx3018.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3018.html",
+      "status": "active",
+      "files": [
+        "projects/ui/paginator/paginator-host.token.ts",
+        "projects/ui/paginator/segments/paginator-alpha.component.ts"
+      ]
+    },
+    {
       "code": "CNGX4001",
       "lib": "data-display",
       "severity": "warn",
