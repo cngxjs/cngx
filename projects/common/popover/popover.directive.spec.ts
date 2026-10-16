@@ -1255,6 +1255,48 @@ describe('CngxPopover', () => {
       return { fixture, popoverEl, popover, seam: host.seam(), computePosition };
     }
 
+    it('clears the fallback position on a flip to sheet and on a later sheet open', async () => {
+      const { fixture, popover, popoverEl, seam } = floatingSeamSetup();
+      popover.show();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(popoverEl.style.top).toBe('10px');
+
+      seam.presentation.set('sheet');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(popoverEl.style.top).toBe('');
+      expect(popoverEl.style.left).toBe('');
+
+      seam.presentation.set('anchored');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      popover.hide();
+      expect(popoverEl.style.top).toBe('10px');
+      seam.presentation.set('fullscreen');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      popover.show();
+      expect(popoverEl.style.top).toBe('');
+    });
+
+    it('drops a position request that resolves after a flip to sheet', async () => {
+      let resolvePosition!: (v: { x: number; y: number; placement: string }) => void;
+      const { fixture, popover, popoverEl, seam, computePosition } = floatingSeamSetup();
+      computePosition.mockReturnValue(
+        new Promise((resolve) => {
+          resolvePosition = resolve as never;
+        }),
+      );
+      popover.show();
+      seam.presentation.set('sheet');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      resolvePosition({ x: 42, y: 42, placement: 'bottom' });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(popoverEl.style.top).toBe('');
+    });
+
     it('never starts the floating positioner while not anchored', () => {
       const { fixture, popover, seam, computePosition } = floatingSeamSetup();
       seam.presentation.set('fullscreen');

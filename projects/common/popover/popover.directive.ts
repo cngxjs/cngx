@@ -635,6 +635,7 @@ export class CngxPopover {
         }
         if (!anchored) {
           this.floatingPositioner?.stop();
+          this.clearFloatingPosition();
           return;
         }
         this.applyFloatingPosition();
@@ -714,6 +715,9 @@ export class CngxPopover {
     }
     openPopovers.add(this);
     this.stateSignal.set('opening');
+    if (!this.anchored()) {
+      this.clearFloatingPosition();
+    }
     this.elRef.nativeElement.showPopover();
     // The host binding writes aria-hidden on the next change detection; the
     // seam may move focus into the panel right now, which must not land
@@ -878,7 +882,9 @@ export class CngxPopover {
         getElement: () => this.popoverElement,
         getPlacement: () => FLOATING_PLACEMENT[this.floatingPlacement()],
         getOffset: () => this.offset(),
-        isOpen: () => this.stateSignal() !== 'closed',
+        // A position request in flight when the panel leaves the anchored
+        // layout must not land on the sheet.
+        isOpen: () => this.stateSignal() !== 'closed' && this.anchored(),
         onPositioned: () => this.updateArrowOffset(),
       })
     : null;
@@ -944,6 +950,16 @@ export class CngxPopover {
   }
 
   private arrowFrame: number | null = null;
+
+  // The floating fallback writes inline left/top, which beat any stylesheet;
+  // a sheet opened after an anchored open must not inherit them.
+  private clearFloatingPosition(): void {
+    if (!this.floatingPositioner) {
+      return;
+    }
+    this.popoverElement.style.removeProperty('left');
+    this.popoverElement.style.removeProperty('top');
+  }
 
   private cancelArrowFrame(): void {
     if (this.arrowFrame !== null) {
