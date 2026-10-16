@@ -45,6 +45,7 @@ import {
   type TailwindFacts,
 } from './styles';
 import {
+  type AngularSource,
   angularVersionOf,
   buildOptions,
   globalStylesheet,
@@ -76,6 +77,7 @@ export {
   type MaterialThemeShape,
   type TailwindFacts,
 } from './styles';
+export { ANGULAR_CORE_MANIFEST, type AngularSource } from './workspace';
 
 /** The file holding the runtime language switch signal, next to the root providers file. */
 export const CNGX_LANGUAGE_FILE = 'cngx-language.ts';
@@ -90,6 +92,8 @@ export interface ProjectFacts {
   readonly hasBuildTarget: boolean;
   /** The installed `@angular/core` version, else the lowest the declared range allows; `undefined` when neither reads. */
   readonly angularVersion: string | undefined;
+  /** Where `angularVersion` was read from. */
+  readonly angularSource: AngularSource | undefined;
   /** The `@angular/core` specifier as declared in dependencies or devDependencies, verbatim. */
   readonly angularRange: string | undefined;
   /** The global stylesheet; `undefined` when the build lists none. */
@@ -177,13 +181,15 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
 
   const mcpConfigs = mcpConfigsOf(tree);
   const angularRange = declaredRange(manifest, '@angular/core');
+  const angular = angularVersionOf(read, angularRange);
 
   return {
     project: projectName,
     manifest,
     sourceRoot,
     hasBuildTarget: hasBuildTarget(project),
-    angularVersion: angularVersionOf(read, angularRange),
+    angularVersion: angular.version,
+    angularSource: angular.source,
     angularRange,
     stylesPath,
     cngxStylesheet: importsCngxStylesheet(read, entries),

@@ -114,18 +114,25 @@ describe('angularVersionOf', () => {
     path === 'node_modules/@angular/core/package.json' ? JSON.stringify({ name: '@angular/core', version }) : undefined;
 
   it('prefers the installed @angular/core over the declared range', () => {
-    expect(angularVersionOf(installed('21.2.5'), 'catalog:')).toBe('21.2.5');
-    expect(angularVersionOf(installed('21.3.0-rc.1'), '^21.2.0')).toBe('21.3.0-rc.1');
+    expect(angularVersionOf(installed('21.2.5'), 'catalog:')).toEqual({ version: '21.2.5', source: 'installed' });
+    expect(angularVersionOf(installed('21.3.0-rc.1'), '^21.2.0')).toEqual({
+      version: '21.3.0-rc.1',
+      source: 'installed',
+    });
   });
 
   it('falls back to the declared range without an installed package', () => {
     const none = () => undefined;
-    expect(angularVersionOf(none, '~21.2.3')).toBe('21.2.3');
-    expect(angularVersionOf(none, 'workspace:*')).toBeUndefined();
+    expect(angularVersionOf(none, '~21.2.3')).toEqual({ version: '21.2.3', source: 'range' });
+    expect(angularVersionOf(none, 'workspace:*')).toEqual({ version: undefined, source: undefined });
   });
 
-  it('ignores an installed manifest it cannot read', () => {
-    expect(angularVersionOf(() => '{ not json', '^21.2.0')).toBe('21.2.0');
+  it('marks an installed manifest it cannot read and falls back to the range', () => {
+    expect(angularVersionOf(() => '{ not json', '^21.2.0')).toEqual({ version: '21.2.0', source: 'unreadable' });
+    expect(angularVersionOf(() => JSON.stringify({ name: '@angular/core' }), 'catalog:')).toEqual({
+      version: undefined,
+      source: 'unreadable',
+    });
   });
 });
 

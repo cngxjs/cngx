@@ -40,7 +40,9 @@ install. Nothing outside the project is written.
    have no clean `git diff` to review against. The `package.json` and
    lockfile edits of the package install `ng add` runs first do not count.
    The version comes from the installed `@angular/core`, else from the
-   `@angular/core` range in `dependencies` or `devDependencies`. An app older
+   `@angular/core` range in `dependencies` or `devDependencies`; the line
+   names the installed version when it read one, and says so when the
+   installed `package.json` cannot be read. An app older
    than the supported Angular shows its failed line, then the run stops
    before anything is planned. A specifier that carries no version
    (`catalog:`, `workspace:*`, a dist-tag) with nothing installed is a warn

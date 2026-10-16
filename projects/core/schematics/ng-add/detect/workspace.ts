@@ -87,10 +87,19 @@ export function versionOf(range: string | undefined): string | undefined {
 /** Where the package manager put `@angular/core`, relative to the workspace root. */
 export const ANGULAR_CORE_MANIFEST = 'node_modules/@angular/core/package.json';
 
-function installedVersion(content: string | undefined): string | undefined {
-  if (content === undefined) {
-    return undefined;
-  }
+/**
+ * Where the Angular version was read: the installed package, the declared
+ * range, or the range because the installed `package.json` is present but
+ * cannot be read; `undefined` when nothing carries a version.
+ */
+export type AngularSource = 'installed' | 'range' | 'unreadable';
+
+export interface AngularVersion {
+  readonly version: string | undefined;
+  readonly source: AngularSource | undefined;
+}
+
+function installedVersion(content: string): string | undefined {
   try {
     return versionOf(parseManifest(content).version);
   } catch {
@@ -101,8 +110,17 @@ function installedVersion(content: string | undefined): string | undefined {
 /**
  * The app's Angular version: the installed `@angular/core` first, since the
  * CLI installs packages before `ng add` runs, else the lowest version the
- * declared range allows; `undefined` when neither carries one.
+ * declared range allows.
  */
-export function angularVersionOf(read: Read, range: string | undefined): string | undefined {
-  return installedVersion(read(ANGULAR_CORE_MANIFEST)) ?? versionOf(range);
+export function angularVersionOf(read: Read, range: string | undefined): AngularVersion {
+  const content = read(ANGULAR_CORE_MANIFEST);
+  const installed = content === undefined ? undefined : installedVersion(content);
+  if (installed !== undefined) {
+    return { version: installed, source: 'installed' };
+  }
+  const version = versionOf(range);
+  if (content !== undefined) {
+    return { version, source: 'unreadable' };
+  }
+  return { version, source: version === undefined ? undefined : 'range' };
 }

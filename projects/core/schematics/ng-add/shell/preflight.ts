@@ -1,6 +1,5 @@
 import { type PreflightItem } from '../../engine';
-import { type ProjectFacts } from '../detect/detect';
-import { versionOf } from '../detect/workspace';
+import { ANGULAR_CORE_MANIFEST, type ProjectFacts } from '../detect/detect';
 import { type GitState } from './git-state';
 
 /** What the preflight checklist reads, gathered once in the shell. */
@@ -21,6 +20,8 @@ export interface AngularSupport {
   readonly declared: string;
 }
 
+const NO_ANGULAR_DEPENDENCY = 'no @angular/core dependency';
+
 function majorMinor(version: string | undefined): readonly [number, number] | undefined {
   const match = /(\d+)\.(\d+)/.exec(version ?? '');
   return match === null ? undefined : [Number(match[1]), Number(match[2])];
@@ -34,21 +35,36 @@ export function angularSupport(facts: ProjectFacts, peerRange: string): AngularS
   return {
     supported,
     floor: `${minMajor}.${minMinor}`,
-    declared: facts.angularRange ?? 'no @angular/core dependency',
+    declared: facts.angularRange ?? NO_ANGULAR_DEPENDENCY,
   };
 }
 
 /**
- * What the app's Angular reads as, for a refusal: the installed version when it
- * is not the one the declared range names, so a `catalog:` app is not told it
- * declares the version that refused it.
+ * What the app's Angular reads as, for a refusal: the installed version when
+ * cngx read it from the package, so a `catalog:` app is not told it declares
+ * the version that refused it.
  */
 export function angularReading(facts: ProjectFacts): string {
-  const declared = `declares ${facts.angularRange ?? 'no @angular/core dependency'}`;
-  if (facts.angularVersion === undefined || facts.angularVersion === versionOf(facts.angularRange)) {
-    return declared;
+  const declared = `declares ${facts.angularRange ?? NO_ANGULAR_DEPENDENCY}`;
+  return facts.angularSource === 'installed' ? `has ${facts.angularVersion} installed (${declared})` : declared;
+}
+
+// The preflight line names what it read: the installed version beside the
+// specifier, or the specifier alone when the version comes from it.
+function angularLabel(facts: ProjectFacts, declared: string): string {
+  return facts.angularSource === 'installed'
+    ? `Angular ${facts.angularVersion} (installed, declares ${declared})`
+    : `Angular ${declared}`;
+}
+
+function angularDetail(facts: ProjectFacts, supported: boolean | undefined, floor: string): string {
+  const needs = `cngx needs ${floor} or newer`;
+  if (facts.angularSource === 'unreadable') {
+    return supported === undefined
+      ? `${ANGULAR_CORE_MANIFEST} cannot be read and the specifier carries no version; ${needs}`
+      : `read from the declared range, ${ANGULAR_CORE_MANIFEST} cannot be read; ${needs}`;
   }
-  return `has ${facts.angularVersion} installed (${declared})`;
+  return supported === undefined ? `no version to read from it and no installed @angular/core; ${needs}` : needs;
 }
 
 function angularStatus(supported: boolean | undefined): PreflightItem['status'] {
@@ -97,12 +113,9 @@ export function preflightItems({
   const angular = angularSupport(facts, peerRange);
   return [
     {
-      label: `Angular ${angular.declared}`,
+      label: angularLabel(facts, angular.declared),
       status: angularStatus(angular.supported),
-      detail:
-        angular.supported === undefined
-          ? `no version to read from it and no installed @angular/core; cngx needs ${angular.floor} or newer`
-          : `cngx needs ${angular.floor} or newer`,
+      detail: angularDetail(facts, angular.supported, angular.floor),
     },
     facts.hasBuildTarget
       ? {

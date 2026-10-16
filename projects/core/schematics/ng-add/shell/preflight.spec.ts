@@ -2,13 +2,19 @@ import { describe, expect, it } from 'vitest';
 
 import { parseManifest } from '../../engine';
 import { createFacts } from '../../testing/onboarding';
+import { type ProjectFacts } from '../detect/detect';
 import { angularReading, angularSupport, preflightItems } from './preflight';
 
 const PEER_RANGE = '^21.2.0';
 
-const withAngular = (range: string | undefined, angularVersion = range?.replace(/^\D*/, '')) =>
+const withAngular = (
+  range: string | undefined,
+  angularVersion = range?.replace(/^\D*/, ''),
+  angularSource: ProjectFacts['angularSource'] = angularVersion === undefined ? undefined : 'range',
+) =>
   createFacts({
     angularVersion,
+    angularSource,
     angularRange: range,
     manifest: parseManifest(
       JSON.stringify({ dependencies: range === undefined ? {} : { '@angular/core': range } }),
@@ -21,11 +27,17 @@ describe('angularReading', () => {
   });
 
   it('names the installed version behind a specifier that carries none', () => {
-    expect(angularReading(withAngular('catalog:', '19.2.3'))).toBe('has 19.2.3 installed (declares catalog:)');
+    expect(angularReading(withAngular('catalog:', '19.2.3', 'installed'))).toBe('has 19.2.3 installed (declares catalog:)');
   });
 
   it('names the installed version when it differs from the declared range', () => {
-    expect(angularReading(withAngular('^21.1.0', '21.1.4'))).toBe('has 21.1.4 installed (declares ^21.1.0)');
+    expect(angularReading(withAngular('^21.1.0', '21.1.4', 'installed'))).toBe('has 21.1.4 installed (declares ^21.1.0)');
+  });
+
+  it('names the installed version even when the declared range names the same one', () => {
+    expect(angularReading(withAngular('^21.2.0', '21.2.0', 'installed'))).toBe(
+      'has 21.2.0 installed (declares ^21.2.0)',
+    );
   });
 
   it('says when no @angular/core is declared', () => {
@@ -125,6 +137,43 @@ describe('preflightItems', () => {
       label: 'Angular catalog:',
       status: 'warn',
       detail: 'no version to read from it and no installed @angular/core; cngx needs 21.2 or newer',
+    });
+  });
+
+  it('labels the Angular line with the installed version it read', () => {
+    const [angular] = preflightItems({
+      facts: withAngular('catalog:', '19.2.3', 'installed'),
+      peerRange: PEER_RANGE,
+      git: 'clean',
+    });
+
+    expect(angular).toEqual({
+      label: 'Angular 19.2.3 (installed, declares catalog:)',
+      status: 'fail',
+      detail: 'cngx needs 21.2 or newer',
+    });
+  });
+
+  it('says when the installed @angular/core cannot be read', () => {
+    const [unreadable, fallback] = [undefined, '21.2.0'].map(
+      (version) =>
+        preflightItems({
+          facts: withAngular(version === undefined ? 'catalog:' : '^21.2.0', version, 'unreadable'),
+          peerRange: PEER_RANGE,
+          git: 'clean',
+        })[0],
+    );
+
+    expect(unreadable).toEqual({
+      label: 'Angular catalog:',
+      status: 'warn',
+      detail:
+        'node_modules/@angular/core/package.json cannot be read and the specifier carries no version; cngx needs 21.2 or newer',
+    });
+    expect(fallback).toEqual({
+      label: 'Angular ^21.2.0',
+      status: 'ok',
+      detail: 'read from the declared range, node_modules/@angular/core/package.json cannot be read; cngx needs 21.2 or newer',
     });
   });
 

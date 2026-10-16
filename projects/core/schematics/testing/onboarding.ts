@@ -12,6 +12,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
     sourceRoot: 'src',
     hasBuildTarget: true,
     angularVersion: '21.2.0',
+    angularSource: 'range',
     angularRange: '^21.2.0',
     stylesPath: 'src/styles.css',
     cngxStylesheet: false,

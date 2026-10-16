@@ -61,6 +61,7 @@ describe('detectProject', () => {
       sourceRoot: 'src',
       hasBuildTarget: true,
       angularVersion: '21.2.0',
+      angularSource: 'range',
       angularRange: '^21.2.0',
       stylesPath: 'src/styles.css',
       cngxStylesheet: false,
@@ -99,6 +100,7 @@ describe('detectProject', () => {
 
     expect(facts.angularRange).toBe('catalog:');
     expect(facts.angularVersion).toBe('21.2.5');
+    expect(facts.angularSource).toBe('installed');
   });
 
   it('reads the existing tailwind app as an existing scss app without eslint', async () => {
