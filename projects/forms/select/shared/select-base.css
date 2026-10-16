@@ -985,14 +985,14 @@
       flip-block flip-inline;
   }
 
-  /* Mobile sheet: the sheet caps the height and owns the inline size, and
-     only the listbox scrolls (cngx-popover-sheet.css). Lift the anchored
-     panel cap and the virtualized width lock. */
+  /* Mobile sheet: the sheet caps the height (its max-block-size outranks the
+     anchored max-height above) and owns the inline size, and only the
+     listbox scrolls (cngx-popover-sheet.css). Lift the virtualized width
+     lock. */
   .cngx-select__panel.cngx-popover-sheet:is(
       [data-cngx-presentation='sheet'],
       [data-cngx-presentation='fullscreen']
     ) {
-    max-height: none;
     width: 100%;
   }
 
