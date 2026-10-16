@@ -133,6 +133,45 @@ describe('CngxSidenavRouterSync', () => {
     await flush();
     expect(directive.param()).toBe('side');
   });
+
+  it('warns CNGX1031 once and no-ops without provideRouter(...)', async () => {
+    // Router is providedIn: 'root' and still resolves here; ActivatedRoute
+    // does not, so the injectQueryParamSync kernel warns and no-ops.
+    TestBed.configureTestingModule({ providers: [] });
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    let fixture!: ComponentFixture<Host>;
+    expect(() => {
+      fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+    }).not.toThrow();
+    await flush();
+    sidenavOf(fixture).open();
+    fixture.detectChanges();
+    await flush();
+
+    const calls = warnSpy.mock.calls.filter(([m]) => /^CNGX1031: /.test(String(m)));
+    expect(calls).toHaveLength(1);
+    expect(calls[0][0]).toMatch(
+      /^CNGX1031: injectQueryParamSync\(\): no Router \/ ActivatedRoute available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable query-param URL sync\. /,
+    );
+  });
+
+  it('does not warn CNGX1031 with provideRouter([])', async () => {
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    await flush();
+    sidenavOf(fixture).open();
+    fixture.detectChanges();
+    await flush();
+
+    expect(warnSpy.mock.calls.some(([m]) => /^CNGX1031: /.test(String(m)))).toBe(false);
+  });
 });
 
 @Component({

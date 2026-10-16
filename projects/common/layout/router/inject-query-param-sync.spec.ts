@@ -142,6 +142,22 @@ describe('injectQueryParamSync', () => {
     expect(state()).toBe(false);
   });
 
+  it('does not warn CNGX1031 with provideRouter([])', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const state = signal(false);
+    expect(() =>
+      TestBed.runInInjectionContext(() => injectQueryParamSync(state, { param: 'nav' })),
+    ).not.toThrow();
+    TestBed.tick();
+    await flush();
+
+    expect(warn.mock.calls.some(([m]) => /^CNGX1031: /.test(String(m)))).toBe(false);
+  });
+
   it('writes nothing to the console without provideRouter(...) in production', async () => {
     vi.stubGlobal('ngDevMode', false);
     TestBed.configureTestingModule({

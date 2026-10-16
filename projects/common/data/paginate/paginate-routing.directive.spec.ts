@@ -48,6 +48,18 @@ describe('CngxPaginateRouting', () => {
     );
   });
 
+  test('does not warn CNGX1031 with provideRouter([])', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const fixture = TestBed.createComponent(RoutedHost);
+    fixture.detectChanges();
+
+    expect(warn.mock.calls.some(([m]) => /^CNGX1031: /.test(String(m)))).toBe(false);
+  });
+
   test('writes nothing to the console without provideRouter(...) in production', () => {
     vi.stubGlobal('ngDevMode', false);
     TestBed.configureTestingModule({

@@ -212,6 +212,25 @@ describe('CngxTabsRouteSync', () => {
     );
   });
 
+  it('does not warn CNGX1031 with provideRouter([])', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const fixture = TestBed.createComponent(RouteHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    presenter.select(1);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    expect(warnSpy.mock.calls.some(([m]) => /^CNGX1031: /.test(String(m)))).toBe(false);
+  });
+
   it('writes nothing to the console without provideRouter(...) in production', async () => {
     vi.stubGlobal('ngDevMode', false);
     TestBed.configureTestingModule({
