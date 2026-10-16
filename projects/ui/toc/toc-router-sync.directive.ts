@@ -1,9 +1,9 @@
 import { afterNextRender, Directive, inject } from '@angular/core';
 import { outputToObservable, takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { cngxDevWarn } from '@cngx/utils';
+import { CngxRuntimeError, cngxDevWarn } from '@cngx/utils';
 
-import { CNGX_TOC } from './toc-token';
+import { CNGX_TOC, type CngxTocContract } from './toc-token';
 
 /**
  * Dev-warning emitted when `@angular/router` is absent. A deliberate small
@@ -51,7 +51,7 @@ function warnRouterAbsent(directive: string, enables: string): void {
   standalone: true,
 })
 export class CngxTocRouterSync {
-  private readonly toc = inject(CNGX_TOC, { host: true });
+  private readonly toc = injectRouterSyncToc();
   private readonly router = inject(Router, { optional: true });
   private readonly route = inject(ActivatedRoute, { optional: true });
 
@@ -87,4 +87,17 @@ export class CngxTocRouterSync {
       }
     });
   }
+}
+
+function injectRouterSyncToc(): CngxTocContract {
+  const toc = inject(CNGX_TOC, { host: true, optional: true });
+  if (!toc) {
+    throw new CngxRuntimeError(
+      'CNGX3021',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngxTocRouterSync] must be placed on or inside <cngx-toc>.',
+    );
+  }
+  return toc;
 }

@@ -134,3 +134,24 @@ describe('CngxSidenavRouterSync', () => {
     expect(directive.param()).toBe('side');
   });
 });
+
+@Component({
+  template: `<nav cngxSidenavRouterSync></nav>`,
+  imports: [CngxSidenavRouterSync],
+})
+class SidenavSyncOrphanHost {}
+
+describe('CngxSidenavRouterSync placement (CNGX3021)', () => {
+  it('throws CNGX3021 outside <cngx-sidenav>', () => {
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    expect(() => TestBed.createComponent(SidenavSyncOrphanHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX3021',
+        message: expect.stringMatching(
+          /^CNGX3021: \[cngxSidenavRouterSync\] must be placed on or inside <cngx-sidenav>\./,
+        ),
+      }),
+    );
+  });
+});

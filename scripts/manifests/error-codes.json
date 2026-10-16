@@ -1099,6 +1099,20 @@
       "files": ["projects/ui/mat-tabs/mat-tab-error-target.ts"]
     },
     {
+      "code": "CNGX3021",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Router sync outside its sidenav or table of contents",
+      "page": "core-concepts/error-codes/cngx3021.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3021.html",
+      "status": "active",
+      "files": [
+        "projects/ui/sidenav/sidenav-router-sync.directive.ts",
+        "projects/ui/toc/toc-router-sync.directive.ts"
+      ]
+    },
+    {
       "code": "CNGX4001",
       "lib": "data-display",
       "severity": "warn",

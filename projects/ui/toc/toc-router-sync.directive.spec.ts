@@ -177,3 +177,24 @@ describe('CngxTocRouterSync', () => {
     expect(navigate).toHaveBeenCalledTimes(1);
   });
 });
+
+@Component({
+  template: `<nav cngxTocRouterSync></nav>`,
+  imports: [CngxTocRouterSync],
+})
+class TocSyncOrphanHost {}
+
+describe('CngxTocRouterSync placement (CNGX3021)', () => {
+  it('throws CNGX3021 outside <cngx-toc>', () => {
+    TestBed.configureTestingModule({});
+    expect(() => TestBed.createComponent(TocSyncOrphanHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX3021',
+        message: expect.stringMatching(
+          /^CNGX3021: \[cngxTocRouterSync\] must be placed on or inside <cngx-toc>\./,
+        ),
+      }),
+    );
+  });
+});
