@@ -842,6 +842,45 @@ describe('ngAdd', () => {
       expect(record(run.tree).preset).toBe('recommended');
     });
 
+    it('lists the copy and the reset, the actions --dry-run prints, before it applies them', async () => {
+      const run = await runRule(ngAdd({ yes: true }), createFixtureTree('standalone-app', { '.cngx/install.json': 'not json' }));
+      const planned = run.logs.indexOf('  + Clear .cngx/install.json - its content is kept in .cngx/install.json.unreadable');
+
+      expect(planned).toBeGreaterThan(
+        run.logs.findIndex((line) => line.startsWith('  + Start a new install record')),
+      );
+      expect(run.tree.actions.map((action) => [action.kind, action.path])).toEqual(
+        expect.arrayContaining([
+          ['c', '/.cngx/install.json.unreadable'],
+          ['o', '/.cngx/install.json'],
+        ]),
+      );
+    });
+
+    it('plans nothing on the run after the recovery', async () => {
+      const first = await runRule(ngAdd({ yes: true }), createFixtureTree('standalone-app', { '.cngx/install.json': 'not json' }));
+
+      const again = await runRule(ngAdd({ yes: true }), first.tree);
+
+      expect(again.logs).toContain('cngx is already set up; nothing changed.');
+      expect(again.tree.readContent('.cngx/install.json.unreadable')).toBe('not json');
+      expect(again.tree.exists('.cngx/install.json.unreadable-2')).toBe(false);
+    });
+
+    it('starts over with only the project of the run in a two-project workspace', async () => {
+      const tree = twoApplications();
+      tree.create('.cngx/install.json', 'not json');
+
+      const run = await runRule(ngAdd({ project: 'beta', yes: true }), tree);
+      const { projects } = json<{ projects: Record<string, unknown> }>(run.tree, '.cngx/install.json');
+
+      expect(Object.keys(projects)).toEqual(['beta']);
+      expect(run.tree.readContent('.cngx/install.json.unreadable')).toBe('not json');
+      expect(run.logs).toContain(
+        '  + Start a new install record - .cngx/install.json exists but cngx cannot read it; it is kept as .cngx/install.json.unreadable and replaced by a record of beta only',
+      );
+    });
+
     it('never overwrites an earlier copy', async () => {
       const run = await runRule(
         ngAdd({ yes: true }),
