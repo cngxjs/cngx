@@ -69,10 +69,10 @@ export const CNGX_FILTER_BUILDER_HOST = new InjectionToken<CngxFilterBuilderHost
 
 /**
  * Inject the {@link CNGX_FILTER_BUILDER_HOST} of the surrounding filter
- * builder from a group or expression directive. Throws a `CngxRuntimeError`
- * with code `CNGX2014` when no builder presenter is above it, in development
- * and production alike. `selector` names the directive in the development
- * message.
+ * builder from a group or expression directive or an expression row.
+ * Throws a `CngxRuntimeError` with code `CNGX2014` when no builder presenter
+ * is above it, in development and production alike. `selector` names the
+ * directive or component in the development message.
  *
  * @internal
  */

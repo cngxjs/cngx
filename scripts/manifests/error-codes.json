@@ -1001,7 +1001,7 @@
       "lib": "forms",
       "severity": "throw",
       "production": "code-only",
-      "title": "Filter group or expression outside a filter builder",
+      "title": "Filter group, expression or expression row outside a filter builder",
       "page": "core-concepts/error-codes/cngx2014.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2014.html",
       "status": "active",
