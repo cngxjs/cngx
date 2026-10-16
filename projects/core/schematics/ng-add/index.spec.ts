@@ -593,7 +593,7 @@ describe('ngAdd', () => {
       const preflight = run.logs.indexOf('Preflight:');
 
       expect(run.logs.slice(preflight + 1, preflight + 4)).toEqual([
-        expect.stringMatching(/^ {2}ok Angular \S+ \(cngx needs \d+\.\d+ or newer\)$/),
+        expect.stringMatching(/^ {2}ok Angular \S+ \(cngx needs \d+\.\d+\+\)$/),
         '  ok Project fixture-app (existing app)',
         '  ok Git working tree clean (review the cngx changes with git diff afterwards)',
       ]);
@@ -835,7 +835,7 @@ describe('ngAdd', () => {
     it('warns in the preflight when no --project picks one', async () => {
       const run = await runRule(ngAdd({ yes: true }), twoApplications());
 
-      expect(run.logs).toContain('  ! Project alpha (picked; pass --project to choose) (fresh app; other applications: beta)');
+      expect(run.logs).toContain('  ! Project alpha (picked; pass --project to choose; fresh app; other applications: beta)');
     });
 
     it('does not warn when --project names one', async () => {

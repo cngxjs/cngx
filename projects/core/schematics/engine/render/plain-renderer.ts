@@ -3,11 +3,20 @@ import { type PreflightItem, type Renderer, type RendererOptions } from './rende
 
 type PlainOptions = Pick<RendererOptions, 'color' | 'quiet' | 'logger'>;
 
+// One parenthetical per line: a label that already ends in one (`Angular
+// 21.2.25 (installed, declares ^21.2.0)`) takes the detail inside it.
+function preflightText({ label, detail }: PreflightItem): string {
+  if (detail === undefined) {
+    return label;
+  }
+  return label.endsWith(')') ? `${label.slice(0, -1)}; ${detail})` : `${label} (${detail})`;
+}
+
 /** Line output through the logger: CI, `NO_COLOR`, `--quiet`, no terminal. */
 export function createPlainRenderer({ color, quiet, logger }: PlainOptions): Renderer {
 
   function preflightLine(item: PreflightItem): void {
-    const text = item.detail === undefined ? item.label : `${item.label} (${item.detail})`;
+    const text = preflightText(item);
     switch (item.status) {
       case 'ok':
         logger.info(`  ${color.green('ok')} ${text}`);

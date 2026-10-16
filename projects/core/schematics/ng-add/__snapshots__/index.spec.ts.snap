@@ -3,7 +3,7 @@
 exports[`ngAdd > the existing tailwind app with the full preset > prints the described plan, then the summary 1`] = `
 [
   "Preflight:",
-  "  ok Angular ^21.2.0 (cngx needs 21.2 or newer)",
+  "  ok Angular ^21.2.0 (cngx needs 21.2+)",
   "  ok Project tailwind-app (existing app)",
   "  ok Git working tree clean (review the cngx changes with git diff afterwards)",
   "Planned (12):",
@@ -35,7 +35,7 @@ exports[`ngAdd > the existing tailwind app with the full preset > prints the des
 exports[`ngAdd > the existing tailwind app with the minimal preset > prints the described plan, then the summary 1`] = `
 [
   "Preflight:",
-  "  ok Angular ^21.2.0 (cngx needs 21.2 or newer)",
+  "  ok Angular ^21.2.0 (cngx needs 21.2+)",
   "  ok Project tailwind-app (existing app)",
   "  ok Git working tree clean (review the cngx changes with git diff afterwards)",
   "Planned (2):",
@@ -56,7 +56,7 @@ exports[`ngAdd > the existing tailwind app with the minimal preset > prints the 
 exports[`ngAdd > the existing tailwind app with the recommended preset > prints the described plan, then the summary 1`] = `
 [
   "Preflight:",
-  "  ok Angular ^21.2.0 (cngx needs 21.2 or newer)",
+  "  ok Angular ^21.2.0 (cngx needs 21.2+)",
   "  ok Project tailwind-app (existing app)",
   "  ok Git working tree clean (review the cngx changes with git diff afterwards)",
   "Planned (8):",
@@ -84,7 +84,7 @@ exports[`ngAdd > the existing tailwind app with the recommended preset > prints 
 exports[`ngAdd > the full preset > prints the described plan, then the summary 1`] = `
 [
   "Preflight:",
-  "  ok Angular ^21.2.0 (cngx needs 21.2 or newer)",
+  "  ok Angular ^21.2.0 (cngx needs 21.2+)",
   "  ok Project fixture-app (fresh app)",
   "  ok Git working tree clean (review the cngx changes with git diff afterwards)",
   "Planned (10):",
@@ -114,7 +114,7 @@ exports[`ngAdd > the full preset > prints the described plan, then the summary 1
 exports[`ngAdd > the minimal preset > prints the described plan, then the summary 1`] = `
 [
   "Preflight:",
-  "  ok Angular ^21.2.0 (cngx needs 21.2 or newer)",
+  "  ok Angular ^21.2.0 (cngx needs 21.2+)",
   "  ok Project fixture-app (fresh app)",
   "  ok Git working tree clean (review the cngx changes with git diff afterwards)",
   "Planned (2):",
@@ -135,7 +135,7 @@ exports[`ngAdd > the minimal preset > prints the described plan, then the summar
 exports[`ngAdd > the recommended preset > prints the described plan, then the summary 1`] = `
 [
   "Preflight:",
-  "  ok Angular ^21.2.0 (cngx needs 21.2 or newer)",
+  "  ok Angular ^21.2.0 (cngx needs 21.2+)",
   "  ok Project fixture-app (fresh app)",
   "  ok Git working tree clean (review the cngx changes with git diff afterwards)",
   "Planned (6):",

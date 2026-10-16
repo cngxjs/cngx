@@ -111,6 +111,21 @@ describe('createPlainRenderer', () => {
     ]);
   });
 
+  it('folds the detail into a label that already ends in a parenthesis', () => {
+    const { lines, renderer: plain } = renderer(false);
+
+    plain.preflight([
+      { label: 'Angular 21.2.25 (installed, declares ^21.2.0)', status: 'ok', detail: 'cngx needs 21.2+' },
+      { label: 'Project app (picked; pass --project to choose)', status: 'warn', detail: 'fresh app' },
+    ]);
+
+    expect(lines).toEqual([
+      'info Preflight:',
+      'info   ok Angular 21.2.25 (installed, declares ^21.2.0; cngx needs 21.2+)',
+      'warn   ! Project app (picked; pass --project to choose; fresh app)',
+    ]);
+  });
+
   it('emits only the summary when quiet', async () => {
     const { lines, renderer: plain } = renderer(true);
 
