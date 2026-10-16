@@ -249,6 +249,23 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
   // one click that belongs to this gesture; the next pointerdown or a short
   // timeout disarms it, so a later tap is never eaten.
   private clickSwallowTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // Chromium also turns an unhandled Escape keydown into a CloseWatcher close
+  // request. Escape belongs to CngxPopover (gated by closeOnEscape, topmost
+  // popover only), so a watcher close that comes from the same keypress is
+  // not a back gesture. The flag lives for the keydown task only.
+  private escapeKeyTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly escapeKeydown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape') {
+      return;
+    }
+    if (this.escapeKeyTimer !== null) {
+      clearTimeout(this.escapeKeyTimer);
+    }
+    this.escapeKeyTimer = setTimeout(() => {
+      this.escapeKeyTimer = null;
+    });
+  };
   private readonly swallowClick = (event: MouseEvent): void => {
     event.preventDefault();
     event.stopPropagation();
@@ -376,6 +393,7 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
     this.releaseLock = createPinnedScrollLock(this.doc.documentElement);
     this.startSettling();
     this.doc.addEventListener('pointerdown', this.outsidePointerDown, true);
+    this.doc.addEventListener('keydown', this.escapeKeydown, true);
     this.armCloseWatcher();
   }
 
@@ -383,6 +401,11 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
   // destroy can all reach it.
   private release(): void {
     this.doc.removeEventListener('pointerdown', this.outsidePointerDown, true);
+    this.doc.removeEventListener('keydown', this.escapeKeydown, true);
+    if (this.escapeKeyTimer !== null) {
+      clearTimeout(this.escapeKeyTimer);
+      this.escapeKeyTimer = null;
+    }
     this.disarmCloseWatcher();
     this.restoreInert();
     this.releaseLock?.();
@@ -403,6 +426,12 @@ export class CngxPopoverSheet implements CngxPopoverPresentationSeam, CngxPopove
     watcher.onclose = () => {
       if (this.closeWatcher === watcher) {
         this.closeWatcher = null;
+      }
+      if (this.escapeKeyTimer !== null) {
+        if (this.engaged) {
+          this.armCloseWatcher();
+        }
+        return;
       }
       this.requestClose('back');
       // A blocked request leaves the sheet open; the spent watcher would let

@@ -82,6 +82,7 @@ function stubTransition(duration: string): void {
       cngxPopover
       #pop="cngxPopover"
       [mode]="mode()"
+      [closeOnEscape]="closeOnEscape()"
       [positionTryFallbacks]="['flip-block']"
       [cngxPopoverSheet]="request()"
       #sheet="cngxPopoverSheet"
@@ -105,6 +106,7 @@ function stubTransition(duration: string): void {
       <ul>
         <li><button type="button" class="item">Vienna</button></li>
       </ul>
+      <div cngxPopover #inner="cngxPopover" class="inner-pop">Inner</div>
     </div>
   `,
   imports: [
@@ -124,13 +126,15 @@ class SheetHost {
   readonly restoreFocus = signal(true);
   readonly closeOnRequest = signal(true);
   readonly mode = signal<PopoverMode>('manual');
+  readonly closeOnEscape = signal(true);
   readonly withTitle = signal(true);
   readonly withInitialFocus = signal(false);
   readonly reasons: CngxPopoverSheetCloseReason[] = [];
   closingHandler: (() => void) | null = null;
   openerHandler: (() => void) | null = null;
 
-  readonly popover = viewChild.required(CngxPopover);
+  readonly popover = viewChild.required('pop', { read: CngxPopover });
+  readonly inner = viewChild.required('inner', { read: CngxPopover });
   readonly sheet = viewChild.required(CngxPopoverSheet);
   readonly swipe = viewChild.required(CngxSwipeDismiss);
 
@@ -754,6 +758,45 @@ describe('CngxPopoverSheet', () => {
       watcher.onclose?.();
       expect(ctx.host.reasons).toEqual([]);
       expect(watchers).toHaveLength(1);
+    });
+
+    it('ignores a watcher close from an Escape that closeOnEscape=false keeps out', () => {
+      const ctx = setup((h) => h.closeOnEscape.set(false));
+      openFromOpener(ctx);
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      watchers[0].onclose?.();
+
+      expect(ctx.host.popover().state()).not.toBe('closed');
+      expect(ctx.host.reasons).toEqual([]);
+      expect(watchers).toHaveLength(2);
+    });
+
+    it('closes only the nested popover on Escape, not the sheet around it', () => {
+      const ctx = setup();
+      openFromOpener(ctx);
+      const inner = ctx.host.inner();
+      const rec = inner.elementRef.nativeElement as unknown as Record<string, unknown>;
+      rec['showPopover'] = vi.fn();
+      rec['hidePopover'] = vi.fn();
+      inner.show();
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      watchers[0].onclose?.();
+
+      expect(inner.state()).toBe('closed');
+      expect(ctx.host.popover().state()).not.toBe('closed');
+      expect(ctx.host.reasons).toEqual([]);
+    });
+
+    it('treats a watcher close after the Escape task as the back gesture again', async () => {
+      const ctx = setup((h) => h.closeOnEscape.set(false));
+      openFromOpener(ctx);
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      watchers[0].onclose?.();
+      await new Promise((resolve) => setTimeout(resolve));
+
+      watchers[1].onclose?.();
+      expect(ctx.host.reasons).toEqual(['back']);
     });
 
     it('runs onHide() once for an Escape close', () => {
