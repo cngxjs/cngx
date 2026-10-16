@@ -98,9 +98,6 @@ function crumbsEqual(
 })
 export class CngxBreadcrumbRouterSync implements CngxBreadcrumbItemsSource {
   private readonly router = inject(Router, { optional: true });
-  // Router is providedIn: 'root' and resolves without provideRouter(...);
-  // ActivatedRoute does not, so it is the "router is set up" signal.
-  private readonly route = inject(ActivatedRoute, { optional: true });
   private readonly cfg = injectBreadcrumbConfig();
 
   /**
@@ -121,8 +118,11 @@ export class CngxBreadcrumbRouterSync implements CngxBreadcrumbItemsSource {
   readonly crumbs: Signal<readonly CngxBreadcrumbCrumb[]>;
 
   constructor() {
+    // Router is providedIn: 'root' and resolves without provideRouter(...);
+    // ActivatedRoute does not, so it is the "router is set up" signal.
+    const route = inject(ActivatedRoute, { optional: true });
     const router = this.router;
-    if (!router || !this.route) {
+    if (!router || !route) {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         afterNextRender(() => {
           cngxDevWarn(

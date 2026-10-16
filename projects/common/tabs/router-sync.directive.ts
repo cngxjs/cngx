@@ -93,9 +93,6 @@ export class CngxTabsFragmentSync implements AfterContentInit {
 
   private readonly host = injectTabGroupHost('cngxTabsFragmentSync');
   private readonly router = inject(Router, { optional: true });
-  // Router is providedIn: 'root' and resolves without provideRouter(...);
-  // ActivatedRoute does not, so it is the "router is set up" signal.
-  private readonly route = inject(ActivatedRoute, { optional: true });
 
   /**
    * Latched once the URL seed has reached a registered tab, so the
@@ -112,7 +109,10 @@ export class CngxTabsFragmentSync implements AfterContentInit {
   private seeded = false;
 
   constructor() {
-    if (!this.router || !this.route) {
+    // Router is providedIn: 'root' and resolves without provideRouter(...);
+    // ActivatedRoute does not, so it is the "router is set up" signal.
+    const route = inject(ActivatedRoute, { optional: true });
+    if (!this.router || !route) {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         afterNextRender(() => warnTabsRouterAbsent('cngxTabsFragmentSync', 'deep-linking'));
       }

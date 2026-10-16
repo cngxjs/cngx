@@ -66,9 +66,6 @@ export class CngxStepperRouterSync implements AfterContentInit {
 
   private readonly host = injectStepperHost('cngxStepperRouterSync', { host: true });
   private readonly router = inject(Router, { optional: true });
-  // Router is providedIn: 'root' and resolves without provideRouter(...);
-  // ActivatedRoute does not, so it is the "router is set up" signal.
-  private readonly route = inject(ActivatedRoute, { optional: true });
 
   /**
    * Latched once the URL seed has reached a registered step, so the
@@ -84,7 +81,10 @@ export class CngxStepperRouterSync implements AfterContentInit {
   private seeded = false;
 
   constructor() {
-    if (!this.router || !this.route) {
+    // Router is providedIn: 'root' and resolves without provideRouter(...);
+    // ActivatedRoute does not, so it is the "router is set up" signal.
+    const route = inject(ActivatedRoute, { optional: true });
+    if (!this.router || !route) {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         afterNextRender(() => {
           cngxDevWarn(
