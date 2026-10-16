@@ -24,7 +24,12 @@ import {
   CNGX_TREE_CONTROLLER_FACTORY,
   type CngxTreeController,
 } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
+import {
+  CngxPopover,
+  CngxPopoverSheet,
+  CngxPopoverTrigger,
+  type PopoverPlacement,
+} from '@cngx/common/popover';
 import {
   CNGX_SELECTION_CONTROLLER_FACTORY,
   CNGX_STATEFUL,
@@ -35,6 +40,11 @@ import {
 } from '@cngx/core/utils';
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectAnnouncer } from '../shared/announcer';
+import {
+  CNGX_SELECT_SHEET_SCOPE,
+  CngxScopedSelectAnnouncer,
+  type CngxSelectSheetScope,
+} from '../shared/internal/scoped-announcer';
 import type {
   CngxSelectAnnouncerConfig,
   CngxSelectLoadingVariant,
@@ -196,6 +206,8 @@ export interface CngxTreeSelectChange<T = unknown> {
     NgTemplateOutlet,
   ],
   providers: [
+    { provide: CngxSelectAnnouncer, useClass: CngxScopedSelectAnnouncer },
+    { provide: CNGX_SELECT_SHEET_SCOPE, useFactory: () => inject(CngxTreeSelect).sheetScope },
     { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxTreeSelect },
     {
       provide: CNGX_STATEFUL,
@@ -459,6 +471,9 @@ export class CngxTreeSelect<T = unknown>
 
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
+  private readonly sheetRef = viewChild(CngxPopoverSheet);
+  /** @internal Read by the scoped select announcer. */
+  readonly sheetScope: CngxSelectSheetScope = { sheet: this.sheetRef, popover: this.popoverRef };
 
   /**
    * Tree controller. Lambdas wrap each input read so the controller

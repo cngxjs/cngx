@@ -36,6 +36,7 @@ import {
 import {
   CngxPopover,
   CngxPopoverAnchor,
+  CngxPopoverSheet,
   CngxPopoverTrigger,
   type PopoverPlacement,
 } from '@cngx/common/popover';
@@ -55,6 +56,11 @@ import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
 import { CngxSelectAnnouncer } from '../shared/announcer';
+import {
+  CNGX_SELECT_SHEET_SCOPE,
+  CngxScopedSelectAnnouncer,
+  type CngxSelectSheetScope,
+} from '../shared/internal/scoped-announcer';
 import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
   type CngxCommitErrorAnnouncePolicy,
@@ -227,6 +233,11 @@ export interface CngxActionMultiSelectChange<T = unknown> {
     NgTemplateOutlet,
   ],
   providers: [
+    { provide: CngxSelectAnnouncer, useClass: CngxScopedSelectAnnouncer },
+    {
+      provide: CNGX_SELECT_SHEET_SCOPE,
+      useFactory: () => inject(CngxActionMultiSelect).sheetScope,
+    },
     { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxActionMultiSelect },
     {
       provide: CNGX_STATEFUL,
@@ -465,6 +476,9 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   private readonly searchInputRef = viewChild(CngxListboxSearch);
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
+  private readonly sheetRef = viewChild(CngxPopoverSheet);
+  /** @internal Read by the scoped select announcer. */
+  readonly sheetScope: CngxSelectSheetScope = { sheet: this.sheetRef, popover: this.popoverRef };
 
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
   readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);

@@ -24,7 +24,12 @@ import {
 } from '@cngx/core/utils';
 
 import { CngxClickOutside, CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
+import {
+  CngxPopover,
+  CngxPopoverSheet,
+  CngxPopoverTrigger,
+  type PopoverPlacement,
+} from '@cngx/common/popover';
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
@@ -45,6 +50,11 @@ import { createTypeaheadController } from '../shared/typeahead-controller';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 
 import { CngxSelectAnnouncer } from '../shared/announcer';
+import {
+  CNGX_SELECT_SHEET_SCOPE,
+  CngxScopedSelectAnnouncer,
+  type CngxSelectSheetScope,
+} from '../shared/internal/scoped-announcer';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
@@ -180,6 +190,8 @@ export interface CngxSelectChange<T = unknown> {
     NgTemplateOutlet,
   ],
   providers: [
+    { provide: CngxSelectAnnouncer, useClass: CngxScopedSelectAnnouncer },
+    { provide: CNGX_SELECT_SHEET_SCOPE, useFactory: () => inject(CngxSelect).sheetScope },
     { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxSelect },
     {
       provide: CNGX_STATEFUL,
@@ -367,6 +379,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
+  private readonly sheetRef = viewChild(CngxPopoverSheet);
+  /** @internal Read by the scoped select announcer. */
+  readonly sheetScope: CngxSelectSheetScope = { sheet: this.sheetRef, popover: this.popoverRef };
 
   /** Whether the panel is currently open. */
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);

@@ -26,7 +26,12 @@ import {
 
 import { CngxChip } from '@cngx/common/display';
 import { CngxClickOutside, CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
+import {
+  CngxPopover,
+  CngxPopoverSheet,
+  CngxPopoverTrigger,
+  type PopoverPlacement,
+} from '@cngx/common/popover';
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
@@ -41,6 +46,11 @@ import {
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
 import { CngxSelectAnnouncer } from '../shared/announcer';
+import {
+  CNGX_SELECT_SHEET_SCOPE,
+  CngxScopedSelectAnnouncer,
+  type CngxSelectSheetScope,
+} from '../shared/internal/scoped-announcer';
 import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
   type CngxCommitErrorAnnouncePolicy,
@@ -188,6 +198,8 @@ export interface CngxMultiSelectChange<T = unknown> {
     NgTemplateOutlet,
   ],
   providers: [
+    { provide: CngxSelectAnnouncer, useClass: CngxScopedSelectAnnouncer },
+    { provide: CNGX_SELECT_SHEET_SCOPE, useFactory: () => inject(CngxMultiSelect).sheetScope },
     { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxMultiSelect },
     {
       provide: CNGX_STATEFUL,
@@ -381,6 +393,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
+  private readonly sheetRef = viewChild(CngxPopoverSheet);
+  /** @internal Read by the scoped select announcer. */
+  readonly sheetScope: CngxSelectSheetScope = { sheet: this.sheetRef, popover: this.popoverRef };
 
   /** Whether the panel is currently open. */
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);

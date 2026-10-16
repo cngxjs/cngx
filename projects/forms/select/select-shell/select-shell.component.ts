@@ -40,7 +40,12 @@ import {
   type CngxOptionStatus,
   type CngxOptionStatusHost,
 } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
+import {
+  CngxPopover,
+  CngxPopoverSheet,
+  CngxPopoverTrigger,
+  type PopoverPlacement,
+} from '@cngx/common/popover';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -52,6 +57,11 @@ import {
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { CngxSelectAnnouncer } from '../shared/announcer';
+import {
+  CNGX_SELECT_SHEET_SCOPE,
+  CngxScopedSelectAnnouncer,
+  type CngxSelectSheetScope,
+} from '../shared/internal/scoped-announcer';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
@@ -201,6 +211,8 @@ export interface CngxSelectShellChange<T = unknown> {
     NgTemplateOutlet,
   ],
   providers: [
+    { provide: CngxSelectAnnouncer, useClass: CngxScopedSelectAnnouncer },
+    { provide: CNGX_SELECT_SHEET_SCOPE, useFactory: () => inject(CngxSelectShell).sheetScope },
     { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxSelectShell },
     {
       provide: CNGX_STATEFUL,
@@ -501,6 +513,9 @@ export class CngxSelectShell<T = unknown>
    *  listbox AD without ancestor injection. */
   readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
+  private readonly sheetRef = viewChild(CngxPopoverSheet);
+  /** @internal Read by the scoped select announcer. */
+  readonly sheetScope: CngxSelectSheetScope = { sheet: this.sheetRef, popover: this.popoverRef };
 
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
 
