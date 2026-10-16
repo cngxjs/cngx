@@ -1,8 +1,10 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
+
+import { factoryProblems, fixtureProblems, folderOf, keyProblems, specProblems } from '../migrations-well-formed.mjs';
 
 /**
  * Every `ng update` migration is a real factory with a spec and a fixture
@@ -18,19 +20,25 @@ const FIXTURES = join(SCHEMATICS, 'testing', 'fixtures', 'migrations');
 const collection = JSON.parse(readFileSync(join(MIGRATIONS, 'migrations.json'), 'utf8'));
 const entries = Object.entries(collection.schematics);
 
-// `migration-v<version>` for a release's first migration; a later breaking
-// change in the same release adds `migration-v<version>-<slug>`, so every
-// breaking PR brings its own key. The folder is the key without the prefix.
-const KEY = /^migration-v(\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?)(-[a-z][a-z0-9-]*)?$/;
-
 const REFRESH = 'refresh';
 
-function folderOf(key) {
-  return key.slice('migration-v'.length);
+function readOptional(path) {
+  return existsSync(path) ? readFileSync(path, 'utf8') : undefined;
 }
 
-function nonEmpty(dir) {
-  return existsSync(dir) && readdirSync(dir, { recursive: true }).length > 0;
+// Every file under a fixture folder, keyed by its path inside it.
+function readFixture(dir) {
+  if (!existsSync(dir)) {
+    return undefined;
+  }
+  const files = {};
+  for (const entry of readdirSync(dir, { recursive: true, withFileTypes: true })) {
+    if (entry.isFile()) {
+      const path = join(entry.parentPath, entry.name);
+      files[relative(dir, path)] = readFileSync(path, 'utf8');
+    }
+  }
+  return files;
 }
 
 describe('migrations.json', () => {
@@ -39,25 +47,20 @@ describe('migrations.json', () => {
   });
 
   it.each(entries)('%s is well formed', (key, entry) => {
-    const match = KEY.exec(key);
-
-    expect(match, `${key} is not migration-v<version>[-<slug>]`).not.toBeNull();
-    expect(entry.version).toBe(match?.[1]);
-    expect(entry.description).toEqual(expect.any(String));
-    expect(entry.factory).toBe(`./${folderOf(key)}/index#migrate`);
+    expect(keyProblems(key, entry)).toEqual([]);
   });
 
   it.each(entries)('%s resolves to an exported factory with a spec', (key) => {
     const dir = join(MIGRATIONS, folderOf(key));
-    const source = readFileSync(join(dir, 'index.ts'), 'utf8');
 
-    expect(source).toMatch(/export function migrate\(/);
-    expect(existsSync(join(dir, 'index.spec.ts'))).toBe(true);
+    expect(factoryProblems(readOptional(join(dir, 'index.ts')))).toEqual([]);
+    expect(specProblems(readOptional(join(dir, 'index.spec.ts')))).toEqual([]);
   });
 
   it.each(entries)('%s has a before and after fixture', (key) => {
-    expect(nonEmpty(join(FIXTURES, folderOf(key), 'before'))).toBe(true);
-    expect(nonEmpty(join(FIXTURES, folderOf(key), 'after'))).toBe(true);
+    const dir = join(FIXTURES, folderOf(key));
+
+    expect(fixtureProblems(readFixture(join(dir, 'before')), readFixture(join(dir, 'after')))).toEqual([]);
   });
 
   // `refresh/` has no key here: publish.mjs keys it to every release that
