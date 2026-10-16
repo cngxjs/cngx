@@ -82,8 +82,9 @@ describe('flattenTree duplicate-id warning', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     flattenTree(tree, () => 'same-id', labelFn);
     expect(warn).toHaveBeenCalled();
-    expect(String(warn.mock.calls[0]?.[0])).toContain('duplicate node id "same-id"');
-    expect(String(warn.mock.calls[0]?.[0])).toContain('CNGX0901');
+    expect(String(warn.mock.calls[0]?.[0])).toMatch(
+      /^CNGX0901: \[cngx\] flattenTree: duplicate node id "same-id"\. /,
+    );
     warn.mockRestore();
   });
 

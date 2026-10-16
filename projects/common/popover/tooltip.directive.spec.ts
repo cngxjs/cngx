@@ -11,6 +11,7 @@ import {
   FLOATING_PLACEMENT,
   provideFloatingFallback,
 } from './floating-fallback';
+import { __resetPopoverApiWarnings } from './popover.directive';
 import type { PopoverPlacement, PopoverPositionTryFallback } from './popover.types';
 
 // Test helpers
@@ -278,6 +279,28 @@ describe('CngxTooltip', () => {
       vi.advanceTimersByTime(50);
 
       expect(host.tooltip().state()).toBe('closed');
+    });
+  });
+
+  describe('without the Popover API', () => {
+    it('warns CNGX1036 and stays closed instead of latching in opening', () => {
+      const { fixture, triggerEl } = setup(BasicTooltipHost);
+      const host = fixture.componentInstance as BasicTooltipHost;
+      const tooltipEl = getTooltipEl(triggerEl)!;
+      (tooltipEl as unknown as Record<string, unknown>)['showPopover'] = undefined;
+      __resetPopoverApiWarnings(document);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+      host.tooltip().show();
+      host.tooltip().show();
+
+      const calls = warnSpy.mock.calls.filter(([m]) => /^CNGX1036: /.test(String(m)));
+      expect(calls).toHaveLength(1);
+      expect(calls[0][0]).toMatch(
+        /^CNGX1036: CngxTooltip: The native Popover API is not supported in this browser\. /,
+      );
+      expect(host.tooltip().state()).toBe('closed');
+      expect(tooltipEl.hasAttribute('aria-hidden')).toBe(true);
     });
   });
 

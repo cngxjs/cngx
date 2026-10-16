@@ -366,8 +366,11 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
     // One warning per group; the effect destroys itself after firing.
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       const ref = effect(() => {
-        const tracks = this.sourceCells().length;
-        if (tracks === 0) {
+        // `[columns]` wins over the derived template, so its track count is the one rows must fit.
+        const columns = this.columns();
+        const tracks =
+          columns === undefined ? this.sourceCells().length : countTemplateTracks(columns);
+        if (!tracks) {
           return;
         }
         const over = this.rows().find((row) => row.cells().length > tracks);
@@ -377,7 +380,7 @@ export class CngxDataGridAccordion implements CngxDataGridAccordionContext {
             `CngxDataGridAccordion: a row projects ${over.cells().length} cells but the ` +
               `shared column template has ${tracks} tracks - the extra cells land in ` +
               'implicit tracks and misalign silently. Match every row to the header ' +
-              '(or first-row) cell count.',
+              '(or first-row) cell count, or to the [columns] tracks when it is set.',
           );
           ref.destroy();
         }
@@ -445,6 +448,57 @@ function trackFor(track: CngxDgCellTrack | undefined, isPrimary: boolean): strin
     default:
       return isPrimary ? 'minmax(0, 1fr)' : 'auto';
   }
+}
+
+/**
+ * The number of tracks a `grid-template-columns` string defines, for the CNGX3009
+ * check: line names are skipped, `repeat(n, ...)` multiplies. `null` when the count
+ * is not static (`repeat(auto-fill, ...)`, `subgrid`, `none`), so the check skips it.
+ */
+function countTemplateTracks(template: string): number | null {
+  const tokens: string[] = [];
+  let depth = 0;
+  let current = '';
+  for (const char of template.trim()) {
+    if (char === '(' || char === '[') {
+      depth += 1;
+    } else if (char === ')' || char === ']') {
+      depth -= 1;
+    }
+    if (/\s/.test(char) && depth === 0) {
+      if (current) {
+        tokens.push(current);
+      }
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  if (current) {
+    tokens.push(current);
+  }
+  let count = 0;
+  for (const token of tokens) {
+    if (token.startsWith('[')) {
+      continue;
+    }
+    if (token === 'subgrid' || token === 'none' || token === 'masonry') {
+      return null;
+    }
+    const repeat = /^repeat\(\s*(\d+)\s*,(.*)\)$/.exec(token);
+    if (repeat) {
+      const inner = countTemplateTracks(repeat[2]);
+      if (inner === null) {
+        return null;
+      }
+      count += Number(repeat[1]) * inner;
+    } else if (token.startsWith('repeat(')) {
+      return null;
+    } else {
+      count += 1;
+    }
+  }
+  return count;
 }
 
 /**

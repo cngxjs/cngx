@@ -280,6 +280,40 @@ describe('createMatTabRejectionDecoration - aria-describedby contract (5.2)', ()
     expect(hostEl.querySelector('.cngx-mat-tab--error')).toBeNull();
   });
 
+  it('warns CNGX3005 through the default sink when no onMaxRetriesReached is bound', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const failedHandleId = signal<string | null>(null);
+    const failedIndex = signal<number | undefined>(undefined);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    warn.mockClear();
+
+    createMatTabRejectionDecoration({
+      hostEl: document.createElement('div'),
+      failedHandleId,
+      failedIndex,
+      descriptorText: signal('Reverted.'),
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+      maxRetryAttempts: 1,
+    });
+    failedHandleId.set('cngx-mat-tab-9');
+    failedIndex.set(0);
+    TestBed.flushEffects();
+
+    const calls = warn.mock.calls.filter(([m]) => /^CNGX3005: /.test(String(m)));
+    expect(calls).toHaveLength(1);
+    expect(calls[0][0]).toMatch(
+      /^CNGX3005: \[cngxMatTabs\] rejection decoration retry ceiling reached \(1 attempts\) - /,
+    );
+    warn.mockRestore();
+  });
+
   it('preserves consumer-supplied aria-describedby tokens across decorate / clear cycles', () => {
     const { host } = setupHost();
     // Tab 1 already carries a consumer descriptor (e.g. a tooltip

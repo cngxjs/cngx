@@ -240,7 +240,7 @@
       "lib": "common",
       "severity": "warn",
       "production": "stripped",
-      "title": "Non-modal dialog without a live region",
+      "title": "Non-modal dialog without a title",
       "page": "core-concepts/error-codes/cngx1015.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1015.html",
       "status": "active",
@@ -824,6 +824,17 @@
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2012.html",
       "status": "active",
       "files": ["projects/forms/filter-builder/filter-builder.utils.ts"]
+    },
+    {
+      "code": "CNGX2013",
+      "lib": "forms",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Unknown filter logic",
+      "page": "core-concepts/error-codes/cngx2013.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2013.html",
+      "status": "active",
+      "files": ["projects/forms/filter-builder/filter-builder.helpers.ts"]
     },
     {
       "code": "CNGX3001",

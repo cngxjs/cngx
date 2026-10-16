@@ -205,7 +205,11 @@ describe('CngxChart', () => {
     const fixture = TestBed.createComponent(NonNumericHost);
     fixture.detectChanges();
     TestBed.tick();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX1007: CngxChart: data is non-numeric'));
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^CNGX1007: CngxChart: data is non-numeric .*Bind \[summaryAccessor\] to a stable component field/,
+      ),
+    );
     warn.mockRestore();
   });
 
@@ -229,7 +233,7 @@ describe('CngxChart', () => {
     fixture.detectChanges();
     TestBed.tick();
     expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('CNGX1009: CngxChart: multiple axes share one orientation'),
+      expect.stringMatching(/^CNGX1009: CngxChart: multiple axes share one orientation/),
     );
     warn.mockRestore();
   });
@@ -1627,8 +1631,32 @@ describe('CngxChart - overlay slot', () => {
     expect(chart.querySelectorAll('.cngx-chart__overlay-frame').length).toBe(1);
     expect(chart.textContent).toContain('first');
     expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('CNGX1008: CngxChart: more than one *cngxChartOverlay'),
+      expect.stringMatching(/^CNGX1008: CngxChart: more than one \*cngxChartOverlay projected; /),
     );
+    warn.mockRestore();
+  });
+
+  it('counts an overlay template nested inside another element', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxChartOverlay],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+          <ng-template cngxChartOverlay><span>first</span></ng-template>
+          <ng-container>
+            <ng-template cngxChartOverlay><span>nested</span></ng-template>
+          </ng-container>
+        </cngx-chart>
+      `,
+    })
+    class NestedOverlayHost {}
+    TestBed.configureTestingModule({ imports: [NestedOverlayHost] });
+    const fixture = TestBed.createComponent(NestedOverlayHost);
+    fixture.detectChanges();
+    TestBed.tick();
+
+    expect(warn.mock.calls.filter(([m]) => /^CNGX1008: /.test(String(m)))).toHaveLength(1);
     warn.mockRestore();
   });
 

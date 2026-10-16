@@ -140,8 +140,8 @@ const popoverApiWarnedDocs = new WeakSet<Document>();
 export function __resetPopoverApiWarnings(doc: Document): void {
   popoverApiWarnedDocs.delete(doc);
 }
-/** @internal */
-function warnMissingPopoverApi(el: HTMLElement): void {
+/** @internal Shared with `CngxTooltip`, which opens its own popover element. */
+export function warnMissingPopoverApi(el: HTMLElement, owner: 'CngxPopover' | 'CngxTooltip'): void {
   if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
     return;
   }
@@ -153,7 +153,7 @@ function warnMissingPopoverApi(el: HTMLElement): void {
     popoverApiWarnedDocs.add(doc);
     cngxDevWarn(
       'CNGX1036',
-      'CngxPopover: The native Popover API is not supported in this browser. ' +
+      `${owner}: The native Popover API is not supported in this browser. ` +
         'Install @oddbird/popover-polyfill and import it in your polyfills:\n\n' +
         '  npm install @oddbird/popover-polyfill\n' +
         '  // polyfills.ts\n' +
@@ -620,7 +620,7 @@ export class CngxPopover {
   /** Open the popover. No-op if not `closed`. */
   show(): void {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      warnMissingPopoverApi(this.elRef.nativeElement);
+      warnMissingPopoverApi(this.elRef.nativeElement, 'CngxPopover');
     }
     if (this.stateSignal() !== 'closed') {
       return;

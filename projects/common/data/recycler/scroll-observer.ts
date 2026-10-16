@@ -130,6 +130,10 @@ export function createScrollObserver(
     if (typeof elementRef !== 'string' || typeof MutationObserver === 'undefined') {
       return;
     }
+    // Mounted between the first effect run and now: the bump above attaches it.
+    if (resolveElement(elementRef, doc) != null) {
+      return;
+    }
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       cngxDevWarn(
         'CNGX1013',

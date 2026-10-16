@@ -43,7 +43,9 @@ describe('CngxPaginateRouting', () => {
     fixture.detectChanges();
 
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toContain('CNGX1031: [cngxPaginateRouting]');
+    expect(warn.mock.calls[0][0]).toMatch(
+      /^CNGX1031: \[cngxPaginateRouting\]: no Router \/ ActivatedRoute available - /,
+    );
   });
 
   test('writes nothing to the console without a Router in production', () => {

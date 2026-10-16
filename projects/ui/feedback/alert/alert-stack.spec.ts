@@ -400,7 +400,7 @@ describe('CngxAlertStack', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
       expect(warn).toHaveBeenCalledTimes(1);
-      expect(String(warn.mock.calls[0][0])).toContain('CNGX3003: [CngxAlertStack]');
+      expect(String(warn.mock.calls[0][0])).toMatch(/^CNGX3003: \[CngxAlertStack\]/);
       expect(String(warn.mock.calls[0][0])).toContain('WCAG 2.5.3');
     });
   });

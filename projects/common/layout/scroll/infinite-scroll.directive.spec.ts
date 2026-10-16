@@ -227,7 +227,7 @@ describe('CngxInfiniteScroll', () => {
     TestBed.flushEffects();
 
     expect(warn).toHaveBeenCalledOnce();
-    expect(warn.mock.calls[0][0]).toContain('CNGX1032: [cngxInfiniteScroll]');
+    expect(warn.mock.calls[0][0]).toMatch(/^CNGX1032: \[cngxInfiniteScroll\]/);
     expect(warn.mock.calls[0][0]).toContain('.does-not-exist');
     warn.mockRestore();
   });

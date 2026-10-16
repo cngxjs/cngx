@@ -17,8 +17,24 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, fromEvent, map, merge, switchMap, takeUntil, tap } from 'rxjs';
 
 /**
+ * The item's `data-reorder-index` as a non-negative integer, or `-1`. The
+ * gesture handlers and the CNGX1028 check read indexes the same way.
+ */
+function parseReorderIndex(el: HTMLElement): number {
+  const raw = el.dataset['reorderIndex'];
+  if (raw == null) {
+    return -1;
+  }
+  const n = Number.parseInt(raw, 10);
+  if (!Number.isFinite(n) || n < 0) {
+    return -1;
+  }
+  return n;
+}
+
+/**
  * Dev only: after the first render, warns when elements match
- * `itemSelector` but carry no numeric `data-reorder-index`. Registers its
+ * `itemSelector` but carry no valid `data-reorder-index`. Registers its
  * own `afterNextRender`, so call it in the injection context. A module
  * function, not a method: a class keeps its methods in the bundle, and an
  * emptied method still pulls `cngxDevWarn` into the production build.
@@ -36,8 +52,7 @@ function wireDevModeCheck(hostEl: HTMLElement, itemSelector: Signal<string>): vo
     }
     let misconfigured = 0;
     items.forEach((el: Element) => {
-      const idx = (el as HTMLElement).dataset['reorderIndex'];
-      if (idx == null || !Number.isFinite(Number(idx))) {
+      if (parseReorderIndex(el as HTMLElement) < 0) {
         misconfigured += 1;
       }
     });
@@ -45,7 +60,7 @@ function wireDevModeCheck(hostEl: HTMLElement, itemSelector: Signal<string>): vo
       cngxDevWarn(
         'CNGX1028',
         `[CngxReorder] ${misconfigured} element(s) match itemSelector ` +
-          `"${itemSelector()}" but carry no numeric data-reorder-index. ` +
+          `"${itemSelector()}" but carry no non-negative integer data-reorder-index. ` +
           'Pointer / keyboard moves targeting them will be ignored.',
       );
     }
@@ -286,7 +301,7 @@ export class CngxReorder<T = unknown> {
           if (!itemEl || !this.hostEl.contains(itemEl)) {
             return null;
           }
-          const fromIndex = this.parseIndex(itemEl);
+          const fromIndex = parseReorderIndex(itemEl);
           if (fromIndex < 0) {
             return null;
           }
@@ -318,7 +333,7 @@ export class CngxReorder<T = unknown> {
               if (!itemEl || !this.hostEl.contains(itemEl)) {
                 return;
               }
-              const overIndex = this.parseIndex(itemEl);
+              const overIndex = parseReorderIndex(itemEl);
               if (overIndex < 0) {
                 return;
               }
@@ -387,7 +402,7 @@ export class CngxReorder<T = unknown> {
           if (!itemEl || !this.hostEl.contains(itemEl)) {
             return;
           }
-          const fromIndex = this.parseIndex(itemEl);
+          const fromIndex = parseReorderIndex(itemEl);
           if (fromIndex < 0) {
             return;
           }
@@ -432,18 +447,6 @@ export class CngxReorder<T = unknown> {
         takeUntilDestroyed(),
       )
       .subscribe();
-  }
-
-  private parseIndex(el: HTMLElement): number {
-    const raw = el.dataset['reorderIndex'];
-    if (raw == null) {
-      return -1;
-    }
-    const n = Number.parseInt(raw, 10);
-    if (!Number.isFinite(n) || n < 0) {
-      return -1;
-    }
-    return n;
   }
 
   private modifierMatches(event: KeyboardEvent): boolean {

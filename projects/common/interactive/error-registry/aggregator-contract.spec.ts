@@ -279,7 +279,7 @@ describe('createErrorAggregatorContract dev diagnostics', () => {
 
     expect(warn).toHaveBeenCalledOnce();
     expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('CNGX1020: CngxErrorAggregator: an error source with key "email"'),
+      expect.stringMatching(/^CNGX1020: CngxErrorAggregator: an error source with key "email"/),
     );
   });
 });

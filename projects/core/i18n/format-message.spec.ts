@@ -75,7 +75,23 @@ describe('formatMessage', () => {
     expect(formatMessage(errors, { count: 1200 }, 'xx_YY_bad')).toBe('1,200 errors');
     expect(formatMessage(errors, { count: 1 }, 'xx_YY_bad')).toBe('1 error');
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX0001'));
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(/^CNGX0001: \[cngx\/i18n\] "xx_YY_bad" is not a BCP 47 locale; /),
+    );
+  });
+
+  it('warns once per invalid tag even after the tag left the 32-entry format cache', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    warn.mockClear();
+    formatMessage('x', {}, 'evict_me_bad');
+    // Valid private-use tags: they evict the bad tag from the format cache without
+    // adding entries to the process-wide set of warned tags.
+    for (let i = 0; i < 33; i++) {
+      formatMessage('x', {}, `en-x-fill${i}`);
+    }
+    formatMessage('x', {}, 'evict_me_bad');
+    const mine = warn.mock.calls.filter(([m]) => /^CNGX0001: .*"evict_me_bad"/.test(String(m)));
+    expect(mine).toHaveLength(1);
   });
 
   it('calls a function message with the arguments and the locale', () => {
@@ -91,13 +107,19 @@ describe('formatMessage', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     expect(formatMessage('Hello {name}', {}, 'en')).toBe('Hello {name}');
     expect(warn).toHaveBeenCalledOnce();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX0003'));
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(/^CNGX0003: \[cngx\/i18n\] no argument for \{name\} in "Hello \{name\}"/),
+    );
   });
 
   it('warns and uses other when a plural message has no numeric count', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     expect(formatMessage({ one: 'one', other: 'many' }, { count: 'x' }, 'en')).toBe('many');
     expect(warn).toHaveBeenCalledOnce();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('CNGX0002'));
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^CNGX0002: \[cngx\/i18n\] plural message without a numeric "count" argument: "many"/,
+      ),
+    );
   });
 });

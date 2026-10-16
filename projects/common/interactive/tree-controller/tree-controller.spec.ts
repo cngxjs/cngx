@@ -309,9 +309,9 @@ describe('createTreeController - dev diagnostics', () => {
     ctrl.findByValue({ id: 'x', name: 'First' });
     ctrl.findByValue({ id: 'x', name: 'Second' });
 
-    const duplicateIdErrors = error.mock.calls.filter((c) => String(c[0]).startsWith('CNGX1029:'));
+    const duplicateIdErrors = error.mock.calls.filter((c) => /^CNGX1029: /.test(String(c[0])));
     expect(duplicateIdErrors).toHaveLength(1);
-    expect(duplicateIdErrors[0][0]).toContain('createTreeController: duplicate node id "x"');
+    expect(duplicateIdErrors[0][0]).toMatch(/^CNGX1029: createTreeController: duplicate node id "x" /);
   });
 
   it('errors with CNGX1030 when two nodes share a selection key', () => {
@@ -328,8 +328,28 @@ describe('createTreeController - dev diagnostics', () => {
 
     const duplicateKeyErrors = error.mock.calls.filter((c) => String(c[0]).startsWith('CNGX1030:'));
     expect(duplicateKeyErrors).toHaveLength(1);
-    expect(duplicateKeyErrors[0][0]).toContain(
-      'createTreeController: duplicate selection key "Same"',
+    expect(duplicateKeyErrors[0][0]).toMatch(
+      /^CNGX1030: createTreeController: duplicate selection key "Same" from keyFn - /,
+    );
+  });
+
+  it('reports a duplicate null-prototype key instead of throwing while describing it', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    error.mockClear();
+    const shared = Object.create(null) as object;
+    const ctrl = makeFlat(
+      [
+        { id: 'a', name: 'One' },
+        { id: 'b', name: 'Two' },
+      ],
+      () => shared,
+    );
+
+    expect(() => ctrl.findByValue({ id: 'a', name: 'One' })).not.toThrow();
+    const duplicateKeyErrors = error.mock.calls.filter((c) => /^CNGX1030: /.test(String(c[0])));
+    expect(duplicateKeyErrors).toHaveLength(1);
+    expect(duplicateKeyErrors[0][0]).toMatch(
+      /^CNGX1030: createTreeController: duplicate selection key "\[object Object\]" from keyFn - /,
     );
   });
 });

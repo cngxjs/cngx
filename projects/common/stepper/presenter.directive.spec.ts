@@ -620,7 +620,9 @@ describe('CngxStepperPresenter', () => {
       fixture.detectChanges();
       await flushMicrotasks();
       expect(warnSpy).toHaveBeenCalledTimes(1);
-      expect(warnSpy.mock.calls[0][0]).toContain('CNGX1039: [cngx-stepper] more than 6 steps');
+      expect(warnSpy.mock.calls[0][0]).toMatch(
+        /^CNGX1039: \[cngx-stepper\] more than 6 steps and none inside a \[cngxStepGroup\]; /,
+      );
     });
 
     it('does not warn when 7+ steps are wrapped in at least one CngxStepGroup', async () => {
@@ -876,7 +878,7 @@ describe('CngxStepperPresenter - back-nav supersede and rollback origin', () => 
 
       expect(presenter.busy()).toBe(true);
       expect(warn).toHaveBeenCalledTimes(1);
-      expect(warn.mock.calls[0][0]).toContain('CNGX1040: [cngxStepper]');
+      expect(warn.mock.calls[0][0]).toMatch(/^CNGX1040: \[cngxStepper\]/);
     } finally {
       warn.mockRestore();
     }

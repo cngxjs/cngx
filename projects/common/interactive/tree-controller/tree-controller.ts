@@ -217,6 +217,18 @@ const POST_DESTROY_FALSE: Signal<boolean> = signal(
     : undefined,
 ).asReadonly();
 
+/**
+ * `String(key)` for the CNGX1030 report, or the `[object X]` tag when the key
+ * cannot be converted (a null-prototype object has no `toString`).
+ */
+function describeKey(key: unknown): string {
+  try {
+    return String(key);
+  } catch {
+    return Object.prototype.toString.call(key);
+  }
+}
+
 /** @internal */
 function flatEq<T>(a: readonly FlatTreeNode<T>[], b: readonly FlatTreeNode<T>[]): boolean {
   if (a === b) {
@@ -321,11 +333,11 @@ export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): Cng
           );
         }
         const key = keyFn(n.value);
-        if (byValue.has(key) && !reportedDuplicates.has(`key:${String(key)}`)) {
-          reportedDuplicates.add(`key:${String(key)}`);
+        if (byValue.has(key) && !reportedDuplicates.has(`key:${describeKey(key)}`)) {
+          reportedDuplicates.add(`key:${describeKey(key)}`);
           cngxDevError(
             'CNGX1030',
-            `createTreeController: duplicate selection key "${String(key)}" from keyFn - ` +
+            `createTreeController: duplicate selection key "${describeKey(key)}" from keyFn - ` +
               'the earlier node is shadowed in selection lookups. Keys must be unique.',
           );
         }

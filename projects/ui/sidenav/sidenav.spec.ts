@@ -829,7 +829,7 @@ describe('CngxSidenav auto mode', () => {
     const { nav } = mount(StandaloneRailHost);
     expect(nav.effectiveMode()).toBe('over');
     expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('CNGX3010: [cngx-sidenav] auto mode needs'),
+      expect.stringMatching(/^CNGX3010: \[cngx-sidenav\] auto mode needs/),
     );
   });
 

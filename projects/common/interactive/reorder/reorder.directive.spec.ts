@@ -449,6 +449,20 @@ class MisconfiguredHost {
   readonly values = signal<readonly Item[]>(ITEMS.slice(0, 2)).asReadonly();
 }
 
+@Component({
+  template: `
+    <ul [cngxReorder]="values" itemSelector=".row">
+      <li class="row" data-reorder-index="">Alpha</li>
+      <li class="row" data-reorder-index="-1">Bravo</li>
+      <li class="row" data-reorder-index="2px">Charlie</li>
+    </ul>
+  `,
+  imports: [CngxReorder],
+})
+class ParsedIndexHost {
+  readonly values = signal<readonly Item[]>(ITEMS.slice(0, 3)).asReadonly();
+}
+
 describe('CngxReorder dev-mode check', () => {
   it('warns with CNGX1028 when matched items carry no data-reorder-index', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
@@ -457,7 +471,19 @@ describe('CngxReorder dev-mode check', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('CNGX1028: [CngxReorder] 1 element(s) match itemSelector ".row"'),
+      expect.stringMatching(/^CNGX1028: \[CngxReorder\] 1 element\(s\) match itemSelector "\.row"/),
     );
+  });
+
+  it('counts the indexes the gestures reject and accepts the ones they parse', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    warn.mockClear();
+    TestBed.configureTestingModule({ imports: [ParsedIndexHost] });
+    const fixture = TestBed.createComponent(ParsedIndexHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const calls = warn.mock.calls.filter(([m]) => /^CNGX1028: /.test(String(m)));
+    expect(calls).toHaveLength(1);
+    expect(calls[0][0]).toMatch(/^CNGX1028: \[CngxReorder\] 2 element\(s\) match itemSelector "\.row"/);
   });
 });

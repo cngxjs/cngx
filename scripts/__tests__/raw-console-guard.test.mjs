@@ -5,14 +5,32 @@
 // fold, so the message text would ship.
 //
 // R1  no reference to the global `console` outside dev-message.ts, unless the
-//     file is in RAW_CONSOLE_EXEMPT.
+//     file is in RAW_CONSOLE_EXEMPT. An ambient `declare const console` is
+//     no local binding: it only retypes the global.
 // R2  every helper call has a `CNGXnnnn` literal first argument and a lexical
 //     inline guard inside a function: a guard read at module load can run
-//     before Angular sets `ngDevMode` in a dev build (also for R4).
+//     before Angular sets `ngDevMode` in a dev build (also for R4). The
+//     message (argument 2) is a string literal, a template literal or a `+`
+//     concatenation written in place, or a dev wrapper's parameter: a local,
+//     a field or a call result can carry text built before the guard.
 // R3  the code lies in the calling file's lib range.
 // R4  every direct call and every value use of a guard-first dev wrapper is
 //     lexically guarded, and no wrapper is a class or object-literal member:
 //     a wrapper production still references ships the helper and its doc URL.
+//
+// Known limits (open bypasses, each needs more than a syntactic read):
+// `console` read off an aliased host (`const g = globalThis; g.console`), a
+// comma or nested host (`(0, globalThis).console`, `window.self.console`),
+// `parent` / `top` / `frames` / `document.defaultView`, a computed key or
+// computed destructuring, `Reflect.get(globalThis, 'console')` and
+// `new Function(...)`; a dev wrapper reached through a dynamic `import()`, a
+// destructured namespace or element access.
+// `${m}` or `'' + m` around a local built before the guard has the inline
+// shape and passes the inline-message rule: it checks the message's form,
+// not where the text in its operands was built (many operands are
+// production values, so an identifier inside the template cannot be
+// banned). A dev wrapper's parameter counts as inline; what a caller passes
+// in is checked only for its guard (R4), not for where its text was built.
 
 import { performance } from 'node:perf_hooks';
 
@@ -29,6 +47,7 @@ import {
   collectWrapperUses,
   collectWrappers,
   isLexicallyGuarded,
+  isAmbient,
   isNameOfDeclaration,
   lineOf,
   localNgDevModeLines,
@@ -100,7 +119,7 @@ export function rawConsoleLines(path, text) {
   let checker;
   const isUnresolved = (resolve) => {
     checker ??= singleFileChecker(sf);
-    return !resolve(checker)?.declarations?.length;
+    return !resolve(checker)?.declarations?.some((declaration) => !isAmbient(declaration));
   };
   const lines = [];
   const visit = (node) => {
@@ -167,6 +186,11 @@ export function checkSources(files) {
       if (!range || range.lib !== lib) {
         violations.push(`${where} R3 ${call.code} lies outside the ${lib} range`);
       }
+    }
+    if (!call.messageInline) {
+      violations.push(
+        `${where} R2 ${call.code ?? 'call'} message is not text written in place; inline the string, template or concatenation behind the guard`,
+      );
     }
     if (!isLexicallyGuarded(call.node)) {
       violations.push(`${where} R2 ${call.code ?? 'call'} is not behind an inline ngDevMode guard`);
@@ -272,6 +296,13 @@ describe('raw-console guard - R1 raw console', () => {
     expect(raw.size).toBe(0);
   });
 
+  it('counts console behind an ambient declaration as the global', () => {
+    const { raw } = fixture(
+      ['declare const console: { warn(m: string): void };', "console.warn('a');"].join('\n'),
+    );
+    expect(raw.get('projects/core/a.ts')).toBe(2);
+  });
+
   it('allows console in dev-message.ts', () => {
     const { raw } = fixture("console.warn('x');", HELPER_FILE);
     expect(raw.size).toBe(0);
@@ -330,6 +361,52 @@ describe('raw-console guard - R2/R3 helper calls', () => {
       fixture(`function f() { doWork(); if (${GUARD}) { cngxDevWarn('CNGX1001', 'm'); } }`)
         .violations,
     ).toEqual(['projects/core/a.ts:1 R3 CNGX1001 lies outside the core range']);
+  });
+});
+
+describe('raw-console guard - R2 message text', () => {
+  const messages = (text) =>
+    fixture(text).violations.filter((v) => v.includes('not text written in place'));
+
+  it('fails a message built in a local before the guard, a field and a call result', () => {
+    expect(
+      messages(
+        [
+          'function f(x: unknown) {',
+          "  const m = 'bad value ' + JSON.stringify(x);",
+          `  if (${GUARD}) { cngxDevWarn('CNGX0001', m); }`,
+          '}',
+        ].join('\n'),
+      ),
+    ).toEqual([
+      'projects/core/a.ts:3 R2 CNGX0001 message is not text written in place; inline the string, template or concatenation behind the guard',
+    ]);
+    expect(
+      messages(
+        `class C { m = 'text'; run() { if (${GUARD}) { cngxDevWarn('CNGX0001', this.m); } } }`,
+      ),
+    ).toHaveLength(1);
+    expect(
+      messages(
+        `function f(x: unknown) { if (${GUARD}) { cngxDevWarn('CNGX0001', describe(x)); } }`,
+      ),
+    ).toHaveLength(1);
+    expect(
+      messages(`function f(m: string) { if (${GUARD}) { cngxDevWarn('CNGX0001', m); } }`),
+    ).toHaveLength(1);
+  });
+
+  it('passes a literal, a template, a concatenation and a dev wrapper parameter', () => {
+    expect(
+      messages(
+        [
+          `function a(x: string) { if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } }`,
+          `function b(x: string) { if (${GUARD}) { cngxDevWarn('CNGX0001', \`bad \${x}\`); } }`,
+          `function c(x: string) { if (${GUARD}) { cngxDevWarn('CNGX0001', 'bad ' + x); } }`,
+          `function d(m: string) { if (${NEGATED}) { return; } afterNextRender(() => cngxDevWarn('CNGX0001', m)); }`,
+        ].join('\n'),
+      ),
+    ).toEqual([]);
   });
 });
 
@@ -414,7 +491,7 @@ describe('raw-console guard - R4 dev wrappers', () => {
       [
         'class R {',
         '  register(k: string) {',
-        `    if (${GUARD} && this.has(k)) { cngxDevWarn('CNGX0004', k); }`,
+        `    if (${GUARD} && this.has(k)) { cngxDevWarn('CNGX0004', \`\${k}\`); }`,
         '    this.keys.add(k);',
         '  }',
         '  run() { this.register("a"); }',
@@ -445,7 +522,7 @@ describe('raw-console guard - R4 dev wrappers', () => {
       [
         'function defaultWarn(limit: number) {',
         `  if (${NEGATED}) { return noop; }`,
-        "  return () => cngxDevWarn('CNGX0001', String(limit));",
+        "  return () => cngxDevWarn('CNGX0001', `${limit}`);",
         '}',
         `function wire() { return opt ?? (${GUARD} ? defaultWarn(3) : noop); }`,
       ].join('\n'),
@@ -592,7 +669,7 @@ describe('raw-console guard - R4 dev wrappers', () => {
     const cache = [
       'const cache = new Map<string, number>();',
       'function lookup(k: string) {',
-      `  if (cache.has(k)) { if (${GUARD}) { cngxDevWarn('CNGX0001', k); } }`,
+      `  if (cache.has(k)) { if (${GUARD}) { cngxDevWarn('CNGX0001', \`\${k}\`); } }`,
       '  cache.set(k, 1);',
       '  return cache.get(k);',
       '}',
@@ -617,7 +694,7 @@ describe('raw-console guard - R4 dev wrappers', () => {
       'projects/core/a.ts:1 R4 dev wrapper onWarn is an object-literal member; move it to module level so production tree-shakes it',
     ]);
     const devOnly = fixture(
-      `const config = { onWarn: (m: string) => { if (${GUARD}) { cngxDevWarn('CNGX0001', m); } } };`,
+      `const config = { onWarn: (m: string) => { if (${GUARD}) { cngxDevWarn('CNGX0001', \`\${m}\`); } } };`,
     );
     expect(devOnly.violations).toEqual([
       'projects/core/a.ts:1 R4 onWarn is a dev-only function that is not guard-first; open it with the negated ngDevMode early return',
@@ -725,6 +802,30 @@ describe('raw-console guard - guards evaluated at module load', () => {
     expect(shape(`static sink = ${GUARD} ? DEFAULT_SINK : undefined;`)).toHaveLength(1);
     expect(shape(`static { if (${GUARD}) { DEFAULT_SINK('x'); } }`)).toHaveLength(1);
     expect(shape(`sink = ${GUARD} ? DEFAULT_SINK : undefined;`)).toEqual([]);
+  });
+
+  it('fails a guarded helper call inside a function invoked at module scope', () => {
+    expect(
+      fixture(`(() => { if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } })();`).violations,
+    ).toEqual([`projects/core/a.ts:1 R2 CNGX0001 ${MODULE_LOAD_GUARD}`]);
+    expect(
+      fixture(`function host() { (() => { if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } })(); }`)
+        .violations,
+    ).toEqual([]);
+  });
+
+  it('fails a class, enum, namespace or import-equals named ngDevMode', () => {
+    const call = `function f() { doWork(); if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } }`;
+    for (const shadow of [
+      'class ngDevMode {}',
+      'enum ngDevMode { On }',
+      'namespace ngDevMode { export const on = true; }',
+      "import ngDevMode = require('./dev');",
+    ]) {
+      expect(fixture(`${shadow}\n${call}`).violations).toEqual([
+        'projects/core/a.ts:1 R2 a local ngDevMode shadows the global; its guards never fold in production',
+      ]);
+    }
   });
 
   it('passes the same value use read through a getter', () => {

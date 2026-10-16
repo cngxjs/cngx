@@ -20,7 +20,7 @@ function warnRouterAbsent(directive: string, enables: string): void {
   }
   cngxDevWarn(
     'CNGX3001',
-    `${directive}: no Router available - directive is a no-op. ` +
+    `${directive}: no Router / ActivatedRoute available - directive is a no-op. ` +
       `Provide @angular/router via provideRouter(...) to enable ${enables}.`,
   );
 }

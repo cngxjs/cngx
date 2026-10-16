@@ -129,7 +129,7 @@ describe('CngxMenuItemSubmenu DI wiring fallback', () => {
 
     function inertWarnings(): unknown[] {
       return warn.mock.calls.filter((call: unknown[]) =>
-        String(call[0]).includes('no popover/menu source'),
+        /^CNGX1025: \[cngxMenuItemSubmenu\] has no popover\/menu source\. /.test(String(call[0])),
       );
     }
 

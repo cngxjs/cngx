@@ -4,7 +4,9 @@
 // `typeof ngDevMode !== 'undefined' && ngDevMode`, which the production build
 // folds to `false`.
 //
-// T1  every `throw` and every `Promise.reject(...)` hands over either a
+// T1  every `throw`, every `Promise.reject(...)`, every call of a
+//     `new Promise((resolve, reject) => ...)` executor's reject parameter and
+//     every global `reportError(...)` hands over either a
 //     `new CngxRuntimeError(...)` constructed in place or the variable of an
 //     enclosing `catch` clause (a rethrow). Anything else counts as a raw
 //     site: a raw `Error`, a local holding one, a factory or method call, a
@@ -18,10 +20,28 @@
 // T3  the message is an `&&` chain starting with the guard, unless the
 //     construction itself is dev-only; a guarded construction does not run at
 //     module load, where `ngDevMode` can still be undefined in a dev build.
+//     The message text (the guarded tail) is a string literal, a template
+//     literal or a `+` concatenation written in place: a local or a call
+//     result can carry text built before the guard. A third argument is
+//     omitted or `{ cause: <enclosing catch variable> }` unless the whole
+//     construction is dev-only: a `new Error('text')` cause ships its text.
 // T4  `CngxRuntimeError` is only constructed, tested with `instanceof`,
 //     imported, exported or named in a type: an alias, a namespace or
 //     element access (`ns['CngxRuntimeError']`) or any other value use hides
 //     the construction from T2/T3, the manifest and the prod-strip check.
+//
+// Known limits (open bypasses, each needs more than a syntactic read):
+// `Promise.reject` reached through an aliased or nested host
+// (`globalThis.Promise.reject`, `const P = Promise`), by element access
+// (`Promise['reject']`) or through `.call` / `.apply`; `reportError` read off
+// a global host; `gen.throw(...)`; a catch variable reassigned or mutated
+// before its rethrow.
+// `${m}` or `'' + m` around a local built before the guard has the inline
+// shape and passes the inline-message rule: it checks the message's form,
+// not where the text in its operands was built (many operands are
+// production values, so an identifier inside the template cannot be
+// banned). A dev wrapper's parameter counts as inline; what a caller passes
+// in is checked only for its guard (R4), not for where its text was built.
 //
 // The walk is `readSources`, shared with the raw-console guard, the manifest
 // and the prod-strip check: specs, tooling roots, example folders and
@@ -36,6 +56,7 @@ import {
   MODULE_LOAD_GUARD,
   RUNTIME_ERROR,
   collectRuntimeErrors,
+  isEnclosingCatchVariable,
   lineOf,
   localNgDevModeLines,
   parse,
@@ -61,12 +82,8 @@ const RAW_THROW_EXEMPT = [
   {
     file: 'projects/forms/select/shared/__test-helpers/field-skin-host.ts',
     count: 1,
-    reason: 'spec-only harness, not reachable from any public-api.ts',
-  },
-  {
-    file: 'projects/forms/filter-builder/filter-builder.helpers.ts',
-    count: 1,
-    reason: 'never exhaustiveness check, unreachable for typed callers',
+    reason:
+      'spec-only harness; excluded-path-import-boundary.test.mjs fails any library import of a __test-helpers file',
   },
 ];
 
@@ -78,20 +95,6 @@ const isRuntimeErrorConstruction = (expr) =>
   ts.isNewExpression(expr) &&
   ts.isIdentifier(expr.expression) &&
   expr.expression.text === RUNTIME_ERROR;
-
-/** Is `id` the variable of a `catch` clause that encloses `site`? */
-const isEnclosingCatchVariable = (id, site, symbolOf) => {
-  const clause = symbolOf(id)?.declarations?.[0]?.parent;
-  if (!clause || !ts.isCatchClause(clause)) {
-    return false;
-  }
-  for (let current = site.parent; current; current = current.parent) {
-    if (current === clause) {
-      return true;
-    }
-  }
-  return false;
-};
 
 /** `Promise.reject(x)`: the rejected operand (the call itself for a bare `reject()`), else null. */
 const rejectedOperand = (node) => {
@@ -107,9 +110,41 @@ const rejectedOperand = (node) => {
   return isReject ? (node.arguments[0] ?? node) : null;
 };
 
+/** Is `param` the second parameter of an executor passed to `new Promise(...)`? */
+const isExecutorReject = (param) => {
+  const executor = param.parent;
+  const construction = executor.parent;
+  return (
+    executor.parameters?.[1] === param &&
+    ts.isNewExpression(construction) &&
+    construction.arguments?.[0] === executor &&
+    ts.isIdentifier(construction.expression) &&
+    construction.expression.text === 'Promise'
+  );
+};
+
+/**
+ * `reject(x)` inside a `new Promise` executor or a global `reportError(x)`:
+ * the reported operand (the call itself when it has none), else null.
+ */
+const reportedOperand = (node, symbolOf) => {
+  if (!ts.isCallExpression(node)) {
+    return null;
+  }
+  const callee = unwrap(node.expression);
+  if (!ts.isIdentifier(callee)) {
+    return null;
+  }
+  const declaration = symbolOf(callee)?.declarations?.[0];
+  const reports = declaration
+    ? ts.isParameter(declaration) && isExecutorReject(declaration)
+    : callee.text === 'reportError';
+  return reports ? (node.arguments[0] ?? node) : null;
+};
+
 /** Lines of every raw throw or rejection (T1) in one file. */
 export function rawThrowLines(path, text) {
-  if (!text.includes('throw') && !text.includes('Promise.reject')) {
+  if (!text.includes('throw') && !text.includes('Promise') && !text.includes('reportError')) {
     return [];
   }
   const sf = parse(path, text);
@@ -119,12 +154,14 @@ export function rawThrowLines(path, text) {
     const inner = unwrap(operand);
     return (
       isRuntimeErrorConstruction(inner) ||
-      (ts.isIdentifier(inner) && isEnclosingCatchVariable(inner, site, symbolOf))
+      (ts.isIdentifier(inner) && isEnclosingCatchVariable(inner, site, sf))
     );
   };
   const lines = [];
   const visit = (node) => {
-    const operand = ts.isThrowStatement(node) ? node.expression : rejectedOperand(node);
+    const operand = ts.isThrowStatement(node)
+      ? node.expression
+      : (rejectedOperand(node) ?? reportedOperand(node, symbolOf));
     if (operand && !isAllowed(operand, node)) {
       lines.push(lineOf(sf, node));
     }
@@ -242,6 +279,17 @@ export function checkSources(allFiles) {
           "write `typeof ngDevMode !== 'undefined' && ngDevMode && 'message'`",
       );
     }
+    if ((error.devOnly || error.messageGuarded) && !error.messageInline) {
+      violations.push(
+        `${where} T3 ${label} message is not text written in place; ` +
+          'inline the string, template or concatenation behind the guard',
+      );
+    }
+    if (!error.optionsPlain) {
+      violations.push(
+        `${where} T3 ${label} options must be omitted or { cause: <enclosing catch variable> }`,
+      );
+    }
     if ((error.devOnly || error.messageGuarded) && error.atModuleLoad) {
       violations.push(`${where} T3 ${label} ${MODULE_LOAD_GUARD}`);
     }
@@ -313,17 +361,18 @@ describe('raw-throw guard - T1 raw throws', () => {
     expect(raw.get('projects/common/a.ts')).toBe(10);
   });
 
-  it('passes CngxRuntimeError constructed in place, also with a cause and a message helper', () => {
-    const { raw } = fixture(
+  it('passes CngxRuntimeError constructed in place, also with a catch-variable cause', () => {
+    const { raw, violations } = fixture(
       [
-        'function f(e: unknown) {',
+        'function f() {',
         `  if (a) { throw new CngxRuntimeError('CNGX1001', ${GUARD} && 'm'); }`,
-        `  if (b) { throw new CngxRuntimeError('CNGX1002', ${GUARD} && describeError(e), { cause: new Error('x') }); }`,
+        `  try { work(); } catch (e) { throw new CngxRuntimeError('CNGX1002', ${GUARD} && \`m \${String(e)}\`, { cause: e }); }`,
         "  throw (new CngxRuntimeError('CNGX1003'));",
         '}',
       ].join('\n'),
     );
     expect(raw.size).toBe(0);
+    expect(violations).toEqual([]);
   });
 
   it('passes a rethrow of the enclosing catch variable, also from a closure inside the catch', () => {
@@ -360,6 +409,21 @@ describe('raw-throw guard - T1 raw throws', () => {
       ].join('\n'),
     );
     expect(raw.get('projects/common/a.ts')).toBe(2);
+  });
+
+  it('applies the same rule to a Promise executor reject and to reportError', () => {
+    const { raw } = fixture(
+      [
+        "function f() { return new Promise((resolve, rej) => rej(new Error('a'))); }",
+        'function g() { return new Promise((res, reject) => { work(); reject(); }); }',
+        "function h() { reportError(new Error('c')); }",
+        "function i() { return new Promise((res, rej) => rej(new CngxRuntimeError('CNGX1001'))); }",
+        'function j() { return new Promise((res, rej) => { try { work(); } catch (e) { rej(e); } }); }',
+        "function k(reportError: (e: unknown) => void) { reportError(new Error('local')); }",
+        "function l() { return new Promise((res) => res(new Error('value'))); }",
+      ].join('\n'),
+    );
+    expect(raw.get('projects/common/a.ts')).toBe(3);
   });
 
   it('ignores files under an examples folder', () => {
@@ -444,6 +508,70 @@ describe('raw-throw guard - T3 messages', () => {
     ]);
   });
 
+  it('fails a message built before the guard and a call result as the message', () => {
+    expect(
+      fixture(
+        [
+          'function f(x: unknown) {',
+          "  const m = 'bad value ' + JSON.stringify(x);",
+          `  throw new CngxRuntimeError('CNGX1001', ${GUARD} && m);`,
+          '}',
+        ].join('\n'),
+      ).violations,
+    ).toEqual([
+      'projects/common/a.ts:3 T3 CNGX1001 message is not text written in place; inline the string, template or concatenation behind the guard',
+    ]);
+    expect(
+      fixture(
+        `function f(e: unknown) { throw new CngxRuntimeError('CNGX1001', ${GUARD} && describeError(e)); }`,
+      ).violations,
+    ).toHaveLength(1);
+    expect(
+      fixture(
+        `const M = 'm';\nfunction f() { if (${GUARD}) { throw new CngxRuntimeError('CNGX1001', M); } }`,
+      ).violations,
+    ).toHaveLength(1);
+  });
+
+  it('passes a template, a concatenation and a dev wrapper parameter as the message', () => {
+    expect(
+      fixture(
+        [
+          `function f(x: string) { throw new CngxRuntimeError('CNGX1001', ${GUARD} && \`bad \${x}\`); }`,
+          `function g(x: string) { throw new CngxRuntimeError('CNGX1002', ${GUARD} && 'bad ' + x); }`,
+          `function h(m: string) { if (!(${GUARD})) { return; } throw new CngxRuntimeError('CNGX1003', m); }`,
+        ].join('\n'),
+      ).violations,
+    ).toEqual([]);
+  });
+
+  it('fails a cause that builds an error with text, and any other options', () => {
+    const options = (text) =>
+      fixture(text).violations.filter((v) => v.includes('options must be omitted'));
+    expect(
+      options(
+        `function f() { throw new CngxRuntimeError('CNGX1001', ${GUARD} && 'm', { cause: new Error('text') }); }`,
+      ),
+    ).toEqual([
+      'projects/common/a.ts:1 T3 CNGX1001 options must be omitted or { cause: <enclosing catch variable> }',
+    ]);
+    expect(
+      options(
+        `function f(e: unknown) { throw new CngxRuntimeError('CNGX1001', ${GUARD} && 'm', { cause: e }); }`,
+      ),
+    ).toHaveLength(1);
+    expect(
+      options(
+        `function f() { try { w(); } catch (e) { throw new CngxRuntimeError('CNGX1001', ${GUARD} && 'm', { cause: e, extra: 'text' }); } }`,
+      ),
+    ).toHaveLength(1);
+    expect(
+      options(
+        `function f() { if (${GUARD}) { throw new CngxRuntimeError('CNGX1001', 'm', { cause: new Error('dev') }); } }`,
+      ),
+    ).toEqual([]);
+  });
+
   it('fails a guard whose ngDevMode is a local binding', () => {
     expect(
       fixture(
@@ -452,6 +580,31 @@ describe('raw-throw guard - T3 messages', () => {
     ).toEqual([
       'projects/common/a.ts:1 T3 a local ngDevMode shadows the global; its guards never fold in production',
     ]);
+  });
+});
+
+describe('raw-throw guard - T3 shadows and module load', () => {
+  const construct = `throw new CngxRuntimeError('CNGX1001', ${GUARD} && 'm');`;
+
+  it('fails a class, enum, namespace or import-equals named ngDevMode', () => {
+    for (const shadow of [
+      'class ngDevMode {}',
+      'enum ngDevMode { On }',
+      'namespace ngDevMode { export const on = true; }',
+      "import ngDevMode = require('./dev');",
+    ]) {
+      expect(fixture(`${shadow}\nfunction f() { ${construct} }`).violations).toEqual([
+        'projects/common/a.ts:1 T3 a local ngDevMode shadows the global; its guards never fold in production',
+      ]);
+    }
+  });
+
+  it('fails a guarded construction inside a function invoked at module scope', () => {
+    expect(fixture(`(() => { ${construct} })();`).violations).toEqual([
+      `projects/common/a.ts:1 T3 CNGX1001 ${MODULE_LOAD_GUARD}`,
+    ]);
+    expect(fixture(`(function () { ${construct} })();`).violations).toHaveLength(1);
+    expect(fixture(`const run = () => { ${construct} };`).violations).toEqual([]);
   });
 });
 

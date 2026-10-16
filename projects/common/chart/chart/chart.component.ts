@@ -569,8 +569,9 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly overlaySlot = contentChild(CngxChartOverlay);
   // Only the first overlay renders (contentChild above). This parallel
   // query exists solely to warn in dev when a consumer projects more
-  // than one, since the extra templates drop silently otherwise.
-  private readonly overlaySlots = contentChildren(CngxChartOverlay);
+  // than one, since the extra templates drop silently otherwise. Descendants,
+  // like the contentChild above, so a nested second overlay is counted too.
+  private readonly overlaySlots = contentChildren(CngxChartOverlay, { descendants: true });
 
   /** Resolved consumer-projected loading template (null when no slot bound). */
   protected readonly loadingTpl = computed(() => this.loadingSlot()?.templateRef ?? null);
@@ -741,7 +742,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
           'CNGX1007',
           'CngxChart: data is non-numeric and no [summaryAccessor] is bound. ' +
             'Auto-Summary and the SR data-table will silently fall back to NaN. ' +
-            'Bind [summaryAccessor]="(d) => d.yourField" or pass a numeric data array.',
+            'Bind [summaryAccessor] to a stable component field (summaryAccessor = (d: Row) => d.value) ' +
+            'or pass a numeric data array.',
         );
       });
       afterNextRender(() => {

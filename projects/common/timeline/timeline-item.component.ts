@@ -319,8 +319,13 @@ export class CngxTimelineItem {
       // on projected content, and the reactive graph has no business
       // carrying it. Runs once per row, after its content exists.
       afterNextRender(() => {
-        const opposite = this.host.nativeElement.querySelector(':scope > [cngxTimelineOpposite]');
-        if (opposite?.querySelector(FOCUSABLE)) {
+        const opposites = this.host.nativeElement.querySelectorAll<HTMLElement>(
+          ':scope > [cngxTimelineOpposite]',
+        );
+        const focusable = Array.from(opposites).some(
+          (el) => el.matches(FOCUSABLE) || el.querySelector(FOCUSABLE) !== null,
+        );
+        if (focusable) {
           cngxDevWarn(
             'CNGX1043',
             '[cngx-timeline-item] focusable content inside [cngxTimelineOpposite]. ' +

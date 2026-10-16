@@ -304,14 +304,29 @@ describe('CngxPopoverAction', () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       try {
         setup(ActionlessConfirmHost);
-        const actionWarn = warnSpy.mock.calls.find((call) =>
-          String(call[0]).includes('CngxPopoverAction'),
+        const actionWarns = warnSpy.mock.calls.filter((call) =>
+          /^CNGX1035: /.test(String(call[0])),
         );
-        expect(actionWarn).toBeDefined();
-        expect(actionWarn![0]).toContain('CNGX1035: CngxPopoverAction');
+        expect(actionWarns).toHaveLength(1);
+        expect(actionWarns[0][0]).toMatch(
+          /^CNGX1035: CngxPopoverAction: role="confirm" without an \[action\] renders a button/,
+        );
       } finally {
         warnSpy.mockRestore();
       }
+    });
+
+    it('makes the click of an actionless confirm a no-op: no failed state, popover open', async () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const { fixture, popoverEl } = setup(ActionlessConfirmHost);
+      const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      button.click();
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      expect(fixture.componentInstance.action().status()).toBe('idle');
+      expect(button.textContent?.trim()).toBe('Broken');
+      expect(button.getAttribute('aria-disabled')).toBe('true');
+      expect(popoverEl.hidePopover).not.toHaveBeenCalled();
     });
 
     it('does not warn when [action] is bound', () => {

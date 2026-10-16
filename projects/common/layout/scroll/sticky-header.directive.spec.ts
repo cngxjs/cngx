@@ -135,6 +135,16 @@ describe('CngxStickyHeader', () => {
 })
 class ScrollportHost {}
 
+@Component({
+  template: `<div class="scrollport" style="overflow-y: auto">
+    <div class="clipper" style="overflow-y: clip">
+      <header cngxStickyHeader>Header</header>
+    </div>
+  </div>`,
+  imports: [CngxStickyHeader],
+})
+class ClipHost {}
+
 describe('CngxStickyHeader scrollport resolution', () => {
   let restoreLayout: (() => void) | undefined;
 
@@ -200,9 +210,27 @@ describe('CngxStickyHeader scrollport resolution', () => {
     expect(observerOptions?.root).toBe(scrollport);
     expect(dir.isSticky()).toBe(false);
     expect(warn).toHaveBeenCalled();
-    expect(warn.mock.calls[0][0]).toContain('CNGX1034: [cngxStickyHeader]');
+    expect(warn.mock.calls[0][0]).toMatch(
+      /^CNGX1034: \[cngxStickyHeader\] resolves against a scroll container that cannot scroll/,
+    );
     expect(warn.mock.calls[0][0]).toMatch(/never pin/);
     expect(warn.mock.calls[0][1]).toEqual({ host: expect.any(HTMLElement), scrollport });
+    warn.mockRestore();
+  });
+
+  it('skips an overflow: clip ancestor, which is no scroll container', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    stubLayout(100, 500);
+    TestBed.configureTestingModule({ imports: [ClipHost] });
+    const fixture = TestBed.createComponent(ClipHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const clipper = fixture.nativeElement.querySelector('.clipper') as HTMLElement;
+    expect(getComputedStyle(clipper).overflowY).toBe('clip');
+
+    expect(observerOptions?.root).toBe(fixture.nativeElement.querySelector('.scrollport'));
+    expect(warn.mock.calls.some(([m]) => /^CNGX1034: /.test(String(m)))).toBe(false);
     warn.mockRestore();
   });
 

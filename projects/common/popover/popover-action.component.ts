@@ -102,10 +102,10 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
       >
         <ng-container *ngTemplateOutlet="idle" />
       </button>
-    } @else {
+    } @else if (action(); as act) {
       <button
         type="button"
-        [cngxAsyncClick]="action()!"
+        [cngxAsyncClick]="act"
         #btn="cngxAsyncClick"
         [feedbackDuration]="feedbackDuration()"
         [autoAnnounce]="false"
@@ -143,6 +143,15 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
       <span aria-live="polite" aria-atomic="true" class="cngx-popover-action__sr-only">
         {{ btn.announcement() }}
       </span>
+    } @else {
+      <!-- confirm without [action]: CNGX1035; the click runs nothing -->
+      <button
+        type="button"
+        aria-disabled="true"
+        [class]="'cngx-popover-action cngx-popover-action--' + variant()"
+      >
+        <ng-container *ngTemplateOutlet="idle" />
+      </button>
     }
   `,
   styleUrls: ['./popover-action.component.css'],
@@ -207,7 +216,7 @@ export class CngxPopoverAction {
           cngxDevWarn(
             'CNGX1035',
             'CngxPopoverAction: role="confirm" without an [action] renders a button whose ' +
-              'click does nothing. Bind [action] or use role="dismiss".',
+              'click runs nothing and leaves the popover open. Bind [action] or use role="dismiss".',
           );
         }
       });

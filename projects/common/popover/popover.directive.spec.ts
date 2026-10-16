@@ -563,7 +563,7 @@ describe('CngxPopover', () => {
           String(call[0]).includes('Popover API is not supported'),
         );
         expect(apiWarns).toHaveLength(1);
-        expect(apiWarns[0][0]).toContain('CNGX1036: CngxPopover');
+        expect(apiWarns[0][0]).toMatch(/^CNGX1036: CngxPopover: The native Popover API/);
       } finally {
         warnSpy.mockRestore();
         __resetPopoverApiWarnings(document);
@@ -609,13 +609,17 @@ describe('CngxPopover', () => {
         const host = fixture.componentInstance as BasicHost;
         host.popover().setAnchorElement(popoverEl);
         host.popover().show();
-        const middlewareWarn = warnSpy.mock.calls.find((call) =>
-          String(call[0]).includes('provideFloatingFallback'),
+        host.popover().hide();
+        host.popover().show();
+        const middlewareWarns = warnSpy.mock.calls.filter((call) =>
+          /^CNGX1037: /.test(String(call[0])),
         );
-        expect(middlewareWarn).toBeDefined();
-        expect(middlewareWarn![0]).toContain('CNGX1037: CngxPopover');
-        expect(middlewareWarn![0]).toContain('flip()');
-        expect(middlewareWarn![0]).toContain('shift()');
+        expect(middlewareWarns).toHaveLength(1);
+        expect(middlewareWarns[0][0]).toMatch(
+          /^CNGX1037: CngxPopover: provideFloatingFallback\(computePosition\) was registered without middleware/,
+        );
+        expect(middlewareWarns[0][0]).toContain('flip()');
+        expect(middlewareWarns[0][0]).toContain('shift()');
       } finally {
         warnSpy.mockRestore();
       }

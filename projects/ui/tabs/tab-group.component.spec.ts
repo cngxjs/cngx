@@ -28,6 +28,8 @@ import {
   provideTabsConfig,
   provideTabsI18n,
   withTabErrorBadgeTemplate,
+  withTabIconTemplate,
+  type CngxTabIconContext,
   withTabsAriaLabels,
   withTabsDefaultOrientation,
   withTabsFallbackLabels,
@@ -1602,9 +1604,44 @@ describe('CngxTabGroup cngxTabIcon slot', () => {
       TestBed.tick();
       expect(
         warn.mock.calls.some((c) =>
-          String(c[0]).includes("CNGX3011: [cngx-tab-group] iconLayout='only'"),
+          /^CNGX3011: \[cngx-tab-group\] iconLayout='only' but no \*cngxTabIcon template/.test(
+            String(c[0]),
+          ),
         ),
       ).toBe(true);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('does not dev-warn when iconLayout="only" resolves an app-wide icon template', () => {
+    @Component({
+      standalone: true,
+      template: `<ng-template #cfgIcon><span class="cfg-icon">*</span></ng-template>`,
+    })
+    class IconTplFactory {
+      @ViewChild('cfgIcon', { static: true })
+      cfgIcon!: TemplateRef<unknown>;
+    }
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const tplFixture = TestBed.createComponent(IconTplFactory);
+    tplFixture.detectChanges();
+    const cfgIcon = tplFixture.componentInstance.cfgIcon;
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(withTabIconTemplate(cfgIcon as unknown as TemplateRef<CngxTabIconContext>)),
+      ],
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    warn.mockClear();
+    try {
+      const fixture = TestBed.createComponent(IconOnlyWithoutTemplateHost);
+      fixture.detectChanges();
+      TestBed.tick();
+      expect(fixture.nativeElement.querySelector('.cfg-icon')).not.toBeNull();
+      expect(warn.mock.calls.some((c) => /^CNGX3011: /.test(String(c[0])))).toBe(false);
     } finally {
       warn.mockRestore();
     }

@@ -76,6 +76,31 @@ class ModalToggleHost {
 
 @Component({
   template: `
+    <dialog cngxDialog [modal]="false" #dlg="cngxDialog">
+      <h2 cngxDialogTitle>Filters</h2>
+    </dialog>
+  `,
+  imports: [CngxDialog, CngxDialogTitle],
+})
+class TitledNonModalHost {
+  readonly dialog = viewChild.required(CngxDialog);
+}
+
+@Component({
+  template: `
+    <dialog cngxDialog [modal]="false" #dlg="cngxDialog">
+      <h2 cngxDialogTitle>{{ title() }}</h2>
+    </dialog>
+  `,
+  imports: [CngxDialog, CngxDialogTitle],
+})
+class LateTitleNonModalHost {
+  readonly title = signal('');
+  readonly dialog = viewChild.required(CngxDialog);
+}
+
+@Component({
+  template: `
     <dialog cngxDialog [closeOnBackdropClick]="false" [closeOnEscape]="false" #dlg="cngxDialog">
       <h2 cngxDialogTitle>Blocking</h2>
     </dialog>
@@ -378,32 +403,59 @@ describe('CngxDialog', () => {
       // FullDialogHost's declarative title is already registered.
       const release = dialog.registerTitle({ id: signal('rogue-title') });
       expect(warnSpy).toHaveBeenCalledTimes(1);
-      expect(warnSpy.mock.calls[0][0]).toContain('CNGX1014: CngxDialog [');
-      expect(warnSpy.mock.calls[0][0]).toContain(`[${dialog.id()}]: a second title`);
+      expect(warnSpy.mock.calls[0][0]).toMatch(
+        new RegExp(
+          `^CNGX1014: CngxDialog \\[${dialog.id()}\\]: a second title registered while another is live\\. .*a template-declared title wins over a registered one`,
+        ),
+      );
 
       release();
     });
 
-    it('warns in dev mode when a non-modal dialog opens with no aria-live region by the trigger', () => {
+    it('warns in dev mode when a non-modal dialog opens without a title', () => {
       const { fixture } = setup(ModalToggleHost);
       fixture.componentInstance.modal.set(false);
       fixture.detectChanges();
       TestBed.flushEffects();
-      const container = document.createElement('div');
-      const trigger = document.createElement('button');
-      container.appendChild(trigger);
-      document.body.appendChild(container);
-      trigger.focus();
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      try {
-        const dialog = fixture.componentInstance.dialog();
-        dialog.open();
-        expect(warnSpy).toHaveBeenCalledWith(
-          expect.stringContaining(`CNGX1015: CngxDialog [${dialog.id()}]: Non-modal dialog opened`),
-        );
-      } finally {
-        container.remove();
-      }
+      warnSpy.mockClear();
+      const dialog = openFully(fixture, fixture.nativeElement.querySelector('dialog'));
+      const calls = warnSpy.mock.calls.filter(([m]) => /^CNGX1015: /.test(String(m)));
+      expect(calls).toHaveLength(1);
+      expect(calls[0][0]).toMatch(
+        new RegExp(`^CNGX1015: CngxDialog \\[${dialog.id()}\\]: Non-modal dialog opened without a title\\. `),
+      );
+    });
+
+    it('does not warn for a titled non-modal dialog, which announces its title', () => {
+      const { fixture, dialogEl } = setup(TitledNonModalHost);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      warnSpy.mockClear();
+      openFully(fixture, dialogEl);
+      expect(warnSpy.mock.calls.some(([m]) => /^CNGX1015: /.test(String(m)))).toBe(false);
+    });
+
+    it('checks the title when the dialog reaches open, the moment the announcement reads it', () => {
+      const { fixture } = setup(LateTitleNonModalHost);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      warnSpy.mockClear();
+      const dialog = fixture.componentInstance.dialog();
+      dialog.open();
+      fixture.componentInstance.title.set('Filters');
+      fixture.detectChanges();
+      vi.advanceTimersByTime(16);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(warnSpy.mock.calls.some(([m]) => /^CNGX1015: /.test(String(m)))).toBe(false);
+    });
+
+    it('does not warn for an untitled modal dialog', () => {
+      const { fixture, dialogEl } = setup(ModalToggleHost);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      warnSpy.mockClear();
+      openFully(fixture, dialogEl);
+      expect(warnSpy.mock.calls.some(([m]) => /^CNGX1015: /.test(String(m)))).toBe(false);
     });
 
     it('does not warn when the first description registers', () => {

@@ -200,7 +200,7 @@ describe('createTimelineGrouping', () => {
       // the warning is the only surface for the mistake.
       groups();
       expect(warn).toHaveBeenCalledTimes(1);
-      expect(warn.mock.calls[0][0]).toContain('CNGX1042: createTimelineGrouping');
+      expect(warn.mock.calls[0][0]).toMatch(/^CNGX1042: createTimelineGrouping/);
       expect(warn.mock.calls[0][0]).toContain('invalid date');
 
       // Once per grouping instance: a recompute over the same data is silent.

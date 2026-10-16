@@ -144,7 +144,9 @@ describe('CngxTocRouterSync', () => {
 
     expect(() => toc.activated.emit({ id: 'intro', label: 'Intro' })).not.toThrow();
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toContain('CNGX3001: CngxTocRouterSync');
+    expect(warn.mock.calls[0][0]).toMatch(
+      /^CNGX3001: CngxTocRouterSync: no Router \/ ActivatedRoute available - directive is a no-op\. /,
+    );
   });
 
   it('writes nothing to the console without a Router in production', () => {

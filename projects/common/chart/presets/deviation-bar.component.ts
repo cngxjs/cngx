@@ -166,11 +166,7 @@ export class CngxDeviationBar {
 
   constructor() {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      warnIfUnnamedPreset(
-        'cngx-deviation-bar',
-        'Bind [aria-label].',
-        () => this.ariaLabel() !== null,
-      );
+      warnIfUnnamedPreset('cngx-deviation-bar', 'Bind [aria-label].', () => !!this.ariaLabel());
     }
   }
 

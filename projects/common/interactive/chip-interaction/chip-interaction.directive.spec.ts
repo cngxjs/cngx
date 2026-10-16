@@ -71,7 +71,15 @@ describe('CngxChipInteraction', () => {
       expect(handleError).toHaveBeenCalledTimes(1);
       const [err] = handleError.mock.calls[0] as [unknown];
       expect(err).toBeInstanceOf(CngxRuntimeError);
-      expect((err as CngxRuntimeError).code).toBe('CNGX1044');
+      expect(err).toEqual(
+        expect.objectContaining({
+          name: 'CngxRuntimeError',
+          code: 'CNGX1044',
+          message: expect.stringMatching(
+            /^CNGX1044: CngxChipInteraction must NOT be used inside <cngx-chip-group> \/ <cngx-multi-chip-group>; /,
+          ),
+        }),
+      );
     });
 
     it('skips the check when ngDevMode is off, as in a production build', async () => {
