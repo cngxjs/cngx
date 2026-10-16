@@ -80,9 +80,7 @@ test.describe('select mobile sheet on a phone', () => {
     });
   }
 
-  test('a tap above the sheet closes it without reaching the page underneath', async ({
-    page,
-  }) => {
+  test('a tap above the sheet closes it without reaching the page underneath', async ({ page }) => {
     await gotoDemo(page, ALL);
     await addProbe(page);
     const host = await openVariant(page, 'cngx-select');
