@@ -719,6 +719,28 @@
       "files": ["projects/common/stepper/warn-stepper-unhosted.ts"]
     },
     {
+      "code": "CNGX1057",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Menu radio item outside a menu group",
+      "page": "core-concepts/error-codes/cngx1057.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1057.html",
+      "status": "active",
+      "files": ["projects/common/interactive/menu/menu-item-radio.directive.ts"]
+    },
+    {
+      "code": "CNGX1058",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Menu item outside a menu",
+      "page": "core-concepts/error-codes/cngx1058.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1058.html",
+      "status": "active",
+      "files": ["projects/common/interactive/menu/menu-item-core.ts"]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",
