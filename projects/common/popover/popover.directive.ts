@@ -545,7 +545,7 @@ export class CngxPopover {
    * `cngxPopoverArrow` template use this to render their own glyph at
    * the same coordinate the default arrow ornament would.
    */
-  readonly arrowOffset = this._arrowOffset.asReadonly();
+  readonly arrowOffset = computed(() => (this.anchored() ? this._arrowOffset() : null));
 
   /** Backing state for {@link haspopup}. */
   private readonly haspopupState = signal<PopoverHaspopup | undefined>(undefined);
@@ -586,7 +586,9 @@ export class CngxPopover {
    * their own glyph to match the rendered placement.
    */
   readonly resolvedEdge = computed<ArrowEdge>(
-    () => this.resolvedEdgeSignal() ?? (this.effectivePlacement().split('-')[0] as ArrowEdge),
+    () =>
+      (this.anchored() ? this.resolvedEdgeSignal() : null) ??
+      (this.effectivePlacement().split('-')[0] as ArrowEdge),
   );
 
   protected readonly cssMargin = computed(() =>
@@ -622,8 +624,9 @@ export class CngxPopover {
       });
     }
     // A presentation flip while open: leaving the anchored layout stops the
-    // floating engine and drops the arrow geometry; coming back re-positions
-    // right away instead of waiting for the next scroll or resize.
+    // floating engine (the arrow geometry is gated in its computeds); coming
+    // back re-positions right away instead of waiting for the next scroll or
+    // resize.
     effect(() => {
       const anchored = this.anchored();
       untracked(() => {
@@ -632,14 +635,17 @@ export class CngxPopover {
         }
         if (!anchored) {
           this.floatingPositioner?.stop();
-          this._arrowOffset.set(null);
-          this.resolvedEdgeSignal.set(null);
           return;
         }
         this.applyFloatingPosition();
-        requestAnimationFrame(() => this.updateArrowOffset());
+        this.cancelArrowFrame();
+        this.arrowFrame = requestAnimationFrame(() => {
+          this.arrowFrame = null;
+          this.updateArrowOffset();
+        });
       });
     });
+    this.destroyRef.onDestroy(() => this.cancelArrowFrame());
     effect(() => {
       const desired = this.controlledOpen();
       if (desired === undefined) {
@@ -933,6 +939,15 @@ export class CngxPopover {
     const raw = triggerCentre - panelStart;
     const clamped = Math.max(radius, Math.min(raw, panelDim - radius));
     this._arrowOffset.set(`${clamped}px`);
+  }
+
+  private arrowFrame: number | null = null;
+
+  private cancelArrowFrame(): void {
+    if (this.arrowFrame !== null) {
+      cancelAnimationFrame(this.arrowFrame);
+      this.arrowFrame = null;
+    }
   }
 
   private get popoverElement(): HTMLElement {

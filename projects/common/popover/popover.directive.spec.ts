@@ -1181,6 +1181,41 @@ describe('CngxPopover', () => {
     });
   });
 
+  describe('presentation seam and the arrow geometry', () => {
+    it('reports the placement edge and no offset while not anchored', () => {
+      const { fixture, popoverEl } = setup(SeamHost);
+      const host = fixture.componentInstance as SeamHost;
+      const popover = host.popover();
+      popover.setAnchorElement(document.body);
+      vi.spyOn(popoverEl, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 300, 100, 50));
+      vi.spyOn(document.body, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 100, 40));
+      popover.show();
+      window.dispatchEvent(new Event('resize'));
+      expect(popover.arrowOffset()).not.toBeNull();
+
+      host.seam().presentation.set('sheet');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(popover.arrowOffset()).toBeNull();
+      expect(popover.resolvedEdge()).toBe('bottom');
+    });
+
+    it('cancels a pending arrow frame on destroy', () => {
+      const { fixture } = setup(SeamHost);
+      const host = fixture.componentInstance as SeamHost;
+      const cancel = vi.spyOn(globalThis, 'cancelAnimationFrame');
+      host.seam().presentation.set('sheet');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      host.popover().show();
+      host.seam().presentation.set('anchored');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.destroy();
+      expect(cancel).toHaveBeenCalled();
+    });
+  });
+
   describe('presentation seam with the floating fallback', () => {
     function floatingSeamSetup() {
       const computePosition = vi
