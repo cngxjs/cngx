@@ -741,6 +741,20 @@
       "files": ["projects/common/interactive/menu/menu-item-core.ts"]
     },
     {
+      "code": "CNGX1059",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Commit action completed without a decision",
+      "page": "core-concepts/error-codes/cngx1059.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1059.html",
+      "status": "active",
+      "files": [
+        "projects/common/stepper/commit-handler.ts",
+        "projects/common/tabs/commit-handler.ts"
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

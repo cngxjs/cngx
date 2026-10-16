@@ -2,6 +2,7 @@ import { InjectionToken, type Signal } from '@angular/core';
 import { isObservable, type Observable, type Subscription } from 'rxjs';
 
 import { type CngxCommitController, type CngxCommitHandle } from '@cngx/common/data';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import type { CngxTabsCommitAction } from './presenter.directive';
 
@@ -141,7 +142,14 @@ function runTabsAction(
         // EMPTY-style sources complete without emitting; without this arm
         // the commit stays 'pending' forever and busy() latches true.
         if (!done) {
-          safeError(new Error('Tabs commitAction completed without emitting'));
+          safeError(
+            new CngxRuntimeError(
+              'CNGX1059',
+              typeof ngDevMode !== 'undefined' &&
+                ngDevMode &&
+                '[cngxTabGroup] commitAction completed without emitting true or false.',
+            ),
+          );
         }
       },
     });

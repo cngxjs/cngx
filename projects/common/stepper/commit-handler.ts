@@ -2,6 +2,7 @@ import { InjectionToken, type Signal } from '@angular/core';
 import { isObservable, type Observable, type Subscription } from 'rxjs';
 
 import { type CngxCommitController, type CngxCommitHandle } from '@cngx/common/data';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import type { CngxStepperCommitAction } from './presenter.directive';
 
@@ -145,7 +146,14 @@ function runStepperAction(
         // EMPTY-style sources complete without emitting; without this arm
         // the commit stays 'pending' forever and busy() latches true.
         if (!done) {
-          safeError(new Error('Stepper commitAction completed without emitting'));
+          safeError(
+            new CngxRuntimeError(
+              'CNGX1059',
+              typeof ngDevMode !== 'undefined' &&
+                ngDevMode &&
+                '[cngxStepper] commitAction completed without emitting true or false.',
+            ),
+          );
         }
       },
     });
