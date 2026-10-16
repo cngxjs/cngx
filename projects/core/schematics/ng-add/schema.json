@@ -13,18 +13,8 @@
     },
     "preset": {
       "type": "string",
-      "description": "How much of the onboarding to apply.",
-      "enum": ["minimal", "recommended", "full"],
-      "default": "recommended",
-      "x-prompt": {
-        "message": "Which cngx setup do you want?",
-        "type": "list",
-        "items": [
-          { "value": "minimal", "label": "minimal - dependencies only" },
-          { "value": "recommended", "label": "recommended - dependencies, theme, a11y providers, lint" },
-          { "value": "full", "label": "full - recommended plus the German language pack, feedback, the floating fallback and the cngx MCP server for the editors it finds" }
-        ]
-      }
+      "description": "How much of the onboarding to apply. Asked first when a terminal is attached, after the preflight checklist; default recommended.",
+      "enum": ["minimal", "recommended", "full"]
     },
     "libs": {
       "description": "The @cngx packages to install, comma-separated (--libs core,forms); their @cngx peers follow. Asked when a terminal is attached, otherwise every package.",

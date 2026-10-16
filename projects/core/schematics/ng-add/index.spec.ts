@@ -13,6 +13,7 @@ import {
 } from '../engine';
 import { createFixtureTree, readFixture, readTree, runRule } from '../testing/run-schematic';
 import { ngAdd } from './index';
+import { PRESET_CHOICES } from './shell/questions';
 
 // Specs run the source rule, so the version is core's source manifest.
 const VERSION = (
@@ -289,6 +290,50 @@ describe('ngAdd', () => {
   afterEach(() => {
     process.stdout.isTTY = isTTY;
     process.stdin.isTTY = stdinIsTTY;
+  });
+
+  it('asks the preset first on a terminal, after the preflight checklist', async () => {
+    vi.stubEnv('CI', '');
+    vi.stubEnv('NO_COLOR', '1');
+    process.stdout.isTTY = true;
+    terminal.asked = [];
+    try {
+      const run = await runRule(ngAdd({ yes: true }), createFixtureTree());
+
+      expect(terminal.asked[0]).toBe('Which cngx setup do you want?');
+      expect(run.logs[0]).toBe('Preflight:');
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('asks no preset when the preflight refuses the run', async () => {
+    vi.stubEnv('CI', '');
+    vi.stubEnv('NO_COLOR', '1');
+    process.stdout.isTTY = true;
+    terminal.asked = [];
+    try {
+      const tree = createFixtureTree('standalone-app', { 'package.json': withDependencies({ '@angular/core': '^20.3.0' }) });
+
+      await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.2 or newer');
+      expect(terminal.asked).toEqual([]);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('asks no preset when --preset answers it', async () => {
+    vi.stubEnv('CI', '');
+    vi.stubEnv('NO_COLOR', '1');
+    process.stdout.isTTY = true;
+    terminal.asked = [];
+    try {
+      await runRule(ngAdd({ preset: 'minimal', yes: true }), createFixtureTree());
+
+      expect(terminal.asked).not.toContain('Which cngx setup do you want?');
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it('asks nothing on a terminal whose stdin is not interactive', async () => {
@@ -1290,10 +1335,16 @@ describe('the ng-add collection', () => {
   });
 
   it('names the MCP setup in the full preset label', () => {
-    const preset = SCHEMA.properties['preset'] as { 'x-prompt': { items: { value: string; label: string }[] } };
-    const full = preset['x-prompt'].items.find((item) => item.value === 'full');
+    const full = PRESET_CHOICES.find((choice) => choice.value === 'full');
 
-    expect(full?.label).toContain('MCP server');
+    expect(full?.name).toContain('MCP server');
+  });
+
+  it('declares the preset without an x-prompt or default, so the rule asks it after the preflight', () => {
+    const preset = SCHEMA.properties['preset'] as Record<string, unknown>;
+
+    expect(preset['x-prompt']).toBeUndefined();
+    expect(preset['default']).toBeUndefined();
   });
 
   it('declares no option the ng add command strips', () => {

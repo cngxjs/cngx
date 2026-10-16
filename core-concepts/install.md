@@ -111,8 +111,10 @@ ng add @cngx/ui --preset=minimal
 ## Questions
 
 The run asks only what detection leaves open, only with a terminal
-attached, and nothing at all for `minimal`:
+attached, and after the preflight checklist has printed:
 
+- **Preset.** Which preset to start from, unless `--preset` names one;
+  `recommended` without a terminal. `minimal` asks nothing after it.
 - **Packages.** Which `@cngx/*` packages to install. Their `@cngx` peers
   follow automatically.
 - **Theme.** Only when `@angular/material` is installed: the Material theme

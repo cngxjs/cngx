@@ -17,6 +17,7 @@ import {
   createSummary,
   isCi,
   type NgAddFlags,
+  type NgAddOptions,
   parseNgAddOptions,
   readDryRunFlag,
   readPromptFlags,
@@ -25,7 +26,7 @@ import {
 import { detectProject, type ProjectFacts } from './detect/detect';
 import { readGitState } from './shell/git-state';
 import { angularReading, angularSupport, preflightItems } from './shell/preflight';
-import { askOnboarding, givenAnswers, libsFloorNote, presetChangeNote, presetDefaults } from './shell/questions';
+import { askOnboarding, askPreset, givenAnswers, libsFloorNote, presetChangeNote, presetDefaults } from './shell/questions';
 import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
 import { planDependencies } from './steps/dependencies';
 import { planHelperReadme } from './steps/helper-readme';
@@ -135,21 +136,26 @@ function scheduleInstall(plan: ChangePlan): Rule {
  */
 export function ngAdd(flags: NgAddFlags): Rule {
   return async (tree: Tree, context: SchematicContext) => {
-    const options = parseNgAddOptions(flags);
+    const flagged = parseNgAddOptions(flags);
     const { versions, warning } = resolveVersions(__dirname);
-    const rendererOptions = createShellRendererOptions(process.env, process.stdout, context.logger, options.quiet === true);
+    const rendererOptions = createShellRendererOptions(process.env, process.stdout, context.logger, flagged.quiet === true);
     const promptsOff = readPromptFlags(process.argv) ?? (context.interactive === false ? 'interactive: false' : undefined);
     const reachable = canReachPrompts(process.env, rendererOptions.isTTY, process.stdin);
-    const interactive = canPrompt(reachable, options.prompts) && promptsOff === undefined;
+    const interactive = canPrompt(reachable, flagged.prompts) && promptsOff === undefined;
     const renderer = createRenderer(rendererOptions);
 
-    const facts = detectProject(tree, await readWorkspace(tree), options.project);
+    const facts = detectProject(tree, await readWorkspace(tree), flagged.project);
     renderer.preflight(
-      preflightItems({ facts, peerRange: versions.angular, git: readGitState(process.cwd()), projectFlag: options.project }),
+      preflightItems({ facts, peerRange: versions.angular, git: readGitState(process.cwd()), projectFlag: flagged.project }),
     );
     assertSupportedAngular(facts, versions.angular);
     assertBuildTarget(facts);
     assertStylesheetsExist(facts);
+
+    const options: NgAddOptions = {
+      ...flagged,
+      preset: await askPreset(flagged, createPromptFlow({ canPrompt: interactive })),
+    };
 
     const flow = createPromptFlow({
       canPrompt: interactive && options.preset !== 'minimal',
