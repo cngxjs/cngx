@@ -74,7 +74,7 @@ A `cngxMenu` with `cngxMenuItem` children. The menu fires `itemActivated` on Ent
 </li>
 
 <div cngxPopover #recentPop="cngxPopover" placement="right-start"
-     [positionTryFallbacks]="CNGX_SUBMENU_TRY_FALLBACKS">
+     [positionTryFallbacks]="submenuFallbacks">
   <ul cngxMenu [label]="'Recent files'" tabindex="0" #recentMenu="cngxMenu">
     <li cngxMenuItem value="plan.md">plan.md</li>
     <li cngxMenuItem value="notes.txt">notes.txt</li>
@@ -88,6 +88,9 @@ When the preferred edge clips the viewport, CSS Anchor Positioning's `position-t
 
 ```ts
 import { CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';
+
+// A template cannot read a module constant; expose it as a field.
+protected readonly submenuFallbacks = CNGX_SUBMENU_TRY_FALLBACKS;
 ```
 
 `CngxMenuItemSubmenu` emits a one-shot dev-mode warning when a submenu popover ships without `positionTryFallbacks` so the wiring stays explicit.
