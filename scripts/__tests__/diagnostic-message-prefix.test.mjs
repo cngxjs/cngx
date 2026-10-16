@@ -16,10 +16,21 @@
 //     contract token the library provides itself is internal wiring and
 //     never appears.
 //
-// Known limit: a message passed as an identifier (the parameter of a
+// P3  when the brackets wrap a parameter of the enclosing named function
+//     (`[${selector}]` in `injectPaginatorHost(selector)`), every library call
+//     of that function that passes a string literal there passes a public
+//     selector without brackets (`'cngx-pgn-pages'`, `'cngxLine'`).
+//
+// Known limits: a message passed as an identifier (the parameter of a
 // guard-first dev wrapper) is not read; its wrapper's callers are. A message
 // whose first part is a non-literal expression fails, because its start
-// cannot be checked.
+// cannot be checked. P3 follows calls in the declaring file and in files that
+// import the function by a relative path, and checks only string-literal
+// arguments: a selector handed through an object or another variable
+// (`createPaginatorNavCore({ selector })`) is not traced, nor is a call
+// through a re-export or a path alias.
+
+import { posix } from 'node:path';
 
 import ts from 'typescript';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -28,6 +39,7 @@ import { collectHelperCalls, collectRuntimeErrors, lineOf, unwrap } from '../dev
 import { readSources } from '../error-codes-manifest.mjs';
 
 const SELECTOR_PREFIX = /^\[(cngx[A-Z][A-Za-z0-9]*|cngx(?:-[a-z0-9]+)+)\]/;
+const SELECTOR_ARGUMENT = /^(cngx[A-Z][A-Za-z0-9]*|cngx(?:-[a-z0-9]+)+)$/;
 const FUNCTION_PREFIX = /^[a-z][A-Za-z0-9]*\(\)/;
 const TOKEN = /\bCNGX_[A-Z0-9_]+\b/g;
 
@@ -118,7 +130,86 @@ export function prefixProblem(node) {
 }
 
 /**
- * Every message in `files` ([{ path, text }]) that breaks P1 or P2.
+ * The function and parameter position a `[${param}]` message reads its
+ * selector from, or null when the bracketed expression is not a parameter of
+ * the enclosing named function.
+ */
+function selectorParameter(message) {
+  const first = firstPart(message);
+  if (!ts.isTemplateExpression(first) || first.head.text !== '[') {
+    return null;
+  }
+  const expression = unwrap(first.templateSpans[0].expression);
+  if (!ts.isIdentifier(expression)) {
+    return null;
+  }
+  let fn = message.parent;
+  while (fn && !ts.isFunctionDeclaration(fn)) {
+    fn = fn.parent;
+  }
+  const index = fn?.parameters.findIndex(
+    (param) => ts.isIdentifier(param.name) && param.name.text === expression.text,
+  );
+  return fn?.name && index !== undefined && index >= 0
+    ? { name: fn.name.text, index, file: message.getSourceFile().fileName }
+    : null;
+}
+
+/** Does `sf` import `name` by a relative path that lands on `target`? */
+function importsFrom(sf, name, target) {
+  return sf.statements.some((statement) => {
+    if (
+      !ts.isImportDeclaration(statement) ||
+      !ts.isStringLiteral(statement.moduleSpecifier) ||
+      !statement.moduleSpecifier.text.startsWith('.')
+    ) {
+      return false;
+    }
+    const resolved = posix.join(posix.dirname(sf.fileName), statement.moduleSpecifier.text);
+    const bindings = statement.importClause?.namedBindings;
+    return (
+      `${resolved}.ts` === target &&
+      bindings !== undefined &&
+      ts.isNamedImports(bindings) &&
+      bindings.elements.some((element) => element.name.text === name)
+    );
+  });
+}
+
+/**
+ * Every literal argument passed to `name` at `index` that is not a selector,
+ * in the file that declares it (`file`) and in files importing it from there.
+ */
+function badSelectorArguments(files, { name, index, file: declaredIn }) {
+  const out = [];
+  for (const { path, text } of files) {
+    if (!text.includes(`${name}(`)) {
+      continue;
+    }
+    const sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    if (path !== declaredIn && !importsFrom(sf, name, declaredIn)) {
+      continue;
+    }
+    const visit = (node) => {
+      if (
+        ts.isCallExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === name
+      ) {
+        const arg = node.arguments[index];
+        if (arg && ts.isStringLiteralLike(arg) && !SELECTOR_ARGUMENT.test(arg.text)) {
+          out.push(`${path}:${lineOf(sf, node)} passes "${arg.text}" to ${name}() as a selector`);
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(sf);
+  }
+  return out;
+}
+
+/**
+ * Every message in `files` ([{ path, text }]) that breaks P1, P2 or P3.
  *
  * @returns {string[]} one `path:line reason` per violation
  */
@@ -144,8 +235,12 @@ export function messagePrefixViolations(files) {
     for (const token of tokens.filter((name) => !ALLOWED_TOKENS.has(name))) {
       out.push(`${where} names the internal token ${token}`);
     }
+    const parameter = selectorParameter(message);
+    if (parameter) {
+      out.push(...badSelectorArguments(files, parameter));
+    }
   }
-  return out;
+  return [...new Set(out)];
 }
 
 const file = (text) => ({ path: 'projects/common/x/x.ts', text });
@@ -197,6 +292,39 @@ describe('diagnostic message prefix - scanner', () => {
     ];
     expect(messagePrefixViolations(files)).toEqual([
       'projects/common/x/x.ts:1 names the internal token CNGX_CHART_CONTEXT',
+    ]);
+  });
+});
+
+describe('diagnostic message prefix - selector arguments', () => {
+  const helper = `export function injectHost(selector: string) {
+    throw new CngxRuntimeError('CNGX1001', ${guard} && \`[\${selector}] must be placed inside <cngx-x>.\`);
+  }`;
+
+  const importHost = "import { injectHost } from './x';\n";
+
+  it('accepts callers that pass a public selector, and ignores a same-named function elsewhere', () => {
+    const files = [
+      file(helper),
+      {
+        path: 'projects/common/x/a.ts',
+        text: `${importHost}const a = injectHost('cngx-pgn-pages');`,
+      },
+      { path: 'projects/common/x/b.ts', text: `${importHost}const b = injectHost('cngxLine');` },
+      { path: 'projects/common/y/c.ts', text: "const c = injectHost('another function');" },
+    ];
+    expect(messagePrefixViolations(files)).toEqual([]);
+  });
+
+  it('rejects a caller that passes a class name or a bracketed selector', () => {
+    const files = [
+      file(helper),
+      { path: 'projects/common/x/a.ts', text: `${importHost}const a = injectHost('CngxLine');` },
+      { path: 'projects/common/x/b.ts', text: `${importHost}const b = injectHost('[cngxLine]');` },
+    ];
+    expect(messagePrefixViolations(files)).toEqual([
+      'projects/common/x/a.ts:2 passes "CngxLine" to injectHost() as a selector',
+      'projects/common/x/b.ts:2 passes "[cngxLine]" to injectHost() as a selector',
     ]);
   });
 });
