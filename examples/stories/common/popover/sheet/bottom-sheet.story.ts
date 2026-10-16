@@ -48,6 +48,7 @@ export const STORY: DemoSpec = {
       [cngxPopoverSheet]="presentation()"
       #sheet="cngxPopoverSheet"
       [closeOnRequest]="!blockClose()"
+      [closeOnEscape]="escapeCloses()"
       (closeRequested)="lastRequest.set($event)"
     >
       <header cngxPopoverSheetHeader cngxSwipeDismiss="down">
@@ -73,6 +74,7 @@ export const STORY: DemoSpec = {
   setupChrome: `protected readonly presentation = signal<'auto' | 'sheet' | 'fullscreen'>('auto');
   protected readonly dir = signal<'ltr' | 'rtl'>('ltr');
   protected readonly blockClose = signal(false);
+  protected readonly escapeCloses = signal(true);
   protected readonly lastRequest = signal<string | undefined>(undefined);`,
   templateChrome: `<div class="button-row" role="radiogroup" aria-label="Presentation">
     @for (mode of ['auto', 'sheet', 'fullscreen']; track mode) {
@@ -98,6 +100,10 @@ export const STORY: DemoSpec = {
     <label>
       <input type="checkbox" [checked]="blockClose()" (change)="blockClose.set(!blockClose())" />
       Block close requests
+    </label>
+    <label>
+      <input type="checkbox" [checked]="escapeCloses()" (change)="escapeCloses.set(!escapeCloses())" />
+      Escape closes
     </label>
   </div>
   <div class="event-grid" style="margin-top:12px">

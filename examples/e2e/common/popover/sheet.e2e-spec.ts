@@ -125,4 +125,37 @@ test.describe('common/popover/sheet on a desktop', () => {
     const radiogroup = page.getByRole('radiogroup', { name: 'Presentation' });
     expect(await radiogroup.evaluate((el) => el.closest('[inert]') !== null)).toBe(false);
   });
+
+  // Chromium turns an Escape nobody cancelled into a CloseWatcher close
+  // request. The sheet arms a watcher for the Android back gesture, so a
+  // real keypress proves Escape stays with CngxPopover's closeOnEscape.
+  test.describe('Escape and the close watcher', () => {
+    test.beforeEach(async ({ page }) => {
+      await gotoDemo(page, ROUTE);
+      expect(await page.evaluate(() => 'CloseWatcher' in window)).toBe(true);
+      await page.getByRole('radio', { name: 'sheet', exact: true }).check();
+    });
+
+    const lastRequest = (page: Page) =>
+      page.locator('.event-row', { hasText: 'last close request' }).locator('.event-value');
+
+    test('Escape closes once through closeOnEscape, not as a back gesture', async ({ page }) => {
+      await opener(page).click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(sheet(page)).toBeHidden();
+      await expect(lastRequest(page)).toHaveText('none');
+      await expect(opener(page)).toBeFocused();
+    });
+
+    test('closeOnEscape=false keeps the sheet open on Escape', async ({ page }) => {
+      await page.getByRole('checkbox', { name: 'Escape closes' }).uncheck();
+      await opener(page).click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.keyboard.press('Escape');
+      await page.keyboard.press('Escape');
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await expect(lastRequest(page)).toHaveText('none');
+    });
+  });
 });
