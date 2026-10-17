@@ -55,7 +55,7 @@ function angularLabel(facts: ProjectFacts, declared: string): string {
 }
 
 function angularDetail(facts: ProjectFacts, supported: boolean | undefined, floor: string): string {
-  const needs = `cngx needs ${floor} or newer`;
+  const needs = `cngx needs ${floor}+`;
   if (facts.angularSource === 'unreadable') {
     return supported === undefined
       ? `${ANGULAR_CORE_MANIFEST} cannot be read and the specifier carries no version; ${needs}`

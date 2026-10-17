@@ -56,8 +56,8 @@ describe('the ng-add answer vocabulary', () => {
     expect(schemaEnum).toEqual(values);
   });
 
-  it('defaults the preset to one it lists', () => {
-    expect(NG_ADD_PRESETS).toContain(SCHEMA.properties['preset'].default);
+  it('leaves the preset without a schema default, so the rule can tell a flag from no answer', () => {
+    expect(SCHEMA.properties['preset'].default).toBeUndefined();
   });
 
   it('keeps @cngx/themes out of the selectable packages; the theme answer brings it', () => {

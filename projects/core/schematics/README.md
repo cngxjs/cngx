@@ -27,7 +27,7 @@ projects/core/schematics/
     versions.ts          versions.json with the local-build fallback
   ng-add/
     index.ts             the single-stage shell
-    schema.json          options; x-prompt only for preset
+    schema.json          options, no x-prompt (every question runs in the rule)
     detect/              detectProject(tree, workspace): ProjectFacts in detect.ts,
                          composed from workspace, styles, eslint, ai-tooling, bootstrap
     steps/               pure plan<Step>(facts, answers, versions) per concern

@@ -64,7 +64,7 @@ function note(id: string, label: string, reason: string, version: string): StepR
 // as the whole update having changed nothing.
 function headlines(version: string): SummaryHeadlines {
   return {
-    changed: (changes) => `cngx ${version} migration planned ${changes}.`,
+    changed: (changes, outcome) => `cngx ${version} migration ${outcome} ${changes}.`,
     unchanged: `cngx ${version} migration found nothing to change.`,
   };
 }
@@ -176,12 +176,15 @@ export function createMigration(migration: Migration): Rule {
     );
 
     const release = entryVersion(context) ?? versions.cngx;
-    context.logger.info(`cngx ${release} migration`);
+    renderer.heading(`cngx ${release} migration`);
     await renderer.todo(plan);
     const unchanged = new Set<string>();
     return chain([
       applyChangePlan(plan, (id) => unchanged.add(id)),
-      () => renderer.summary(createSummary(createReport(plan, unchanged), true, headlines(release))),
+      () =>
+        renderer.summary(
+          createSummary(createReport(plan, unchanged), { planListed: true, outcome: 'applied' }, headlines(release)),
+        ),
     ]);
   };
 }

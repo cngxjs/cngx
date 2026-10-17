@@ -58,8 +58,9 @@ export interface PromptFlowOptions {
 }
 
 /**
- * Detection-dependent questions run inside the rule, so `x-prompt` cannot
- * ask them. A terminal is the signal here, and `--prompts=false` is the
+ * Every question runs inside the rule, the preset first, so the preflight
+ * checklist prints before any of them and the detection-dependent ones can
+ * read the facts; `x-prompt` could do neither. A terminal is the signal here, and `--prompts=false` is the
  * schematic's own switch for CI under a pseudo-terminal; `ng add` strips
  * `--interactive` and `--defaults` before the rule runs, so the shell reads
  * those from the argv (`readPromptFlags`).

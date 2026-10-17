@@ -133,6 +133,19 @@ describe('createTtyRenderer', () => {
     });
   });
 
+  it('folds the lockstep @cngx packages already in place into one skipped task', async () => {
+    const { renderer, events } = tty();
+    const pinned = (name: string) => ({ id: `dependency:@cngx/${name}`, label: `Add @cngx/${name}@0.1.0`, reason: 'already pinned' });
+    const plan = createChangePlan([{ changes: [], skipped: [pinned('utils'), pinned('core')] }]);
+
+    await renderer.todo(plan);
+
+    expect(finished(events)).toEqual(['SKIPPED Add 2 @cngx packages at 0.1.0']);
+    expect(events.find((entry) => entry.event === 'MESSAGE')?.data).toEqual({
+      skip: 'Add 2 @cngx packages at 0.1.0 - already pinned',
+    });
+  });
+
   it('lists notes once below the task list instead of as completed tasks', async () => {
     const { renderer, events, lines } = tty();
     const plan = createChangePlan([

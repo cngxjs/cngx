@@ -108,7 +108,7 @@ describe('angularSupport', () => {
 describe('preflightItems', () => {
   it('lists the Angular version, the project and the git state in that order', () => {
     expect(preflightItems({ facts: createFacts(), peerRange: PEER_RANGE, git: 'clean' })).toEqual([
-      { label: 'Angular ^21.2.0', status: 'ok', detail: 'cngx needs 21.2 or newer' },
+      { label: 'Angular ^21.2.0', status: 'ok', detail: 'cngx needs 21.2+' },
       { label: 'Project fixture-app', status: 'ok', detail: 'fresh app' },
       {
         label: 'Git working tree clean',
@@ -166,7 +166,7 @@ describe('preflightItems', () => {
     expect(angular).toEqual({
       label: 'Angular ^20.3.0',
       status: 'fail',
-      detail: 'cngx needs 21.2 or newer',
+      detail: 'cngx needs 21.2+',
     });
   });
 
@@ -180,7 +180,7 @@ describe('preflightItems', () => {
     expect(angular).toEqual({
       label: 'Angular catalog:',
       status: 'warn',
-      detail: 'no version to read from it and no installed @angular/core; cngx needs 21.2 or newer',
+      detail: 'no version to read from it and no installed @angular/core; cngx needs 21.2+',
     });
   });
 
@@ -194,7 +194,7 @@ describe('preflightItems', () => {
     expect(angular).toEqual({
       label: 'Angular 19.2.3 (installed, declares catalog:)',
       status: 'fail',
-      detail: 'cngx needs 21.2 or newer',
+      detail: 'cngx needs 21.2+',
     });
   });
 
@@ -212,12 +212,12 @@ describe('preflightItems', () => {
       label: 'Angular catalog:',
       status: 'warn',
       detail:
-        'node_modules/@angular/core/package.json cannot be read and the specifier carries no version; cngx needs 21.2 or newer',
+        'node_modules/@angular/core/package.json cannot be read and the specifier carries no version; cngx needs 21.2+',
     });
     expect(fallback).toEqual({
       label: 'Angular ^21.2.0',
       status: 'ok',
-      detail: 'read from the declared range, node_modules/@angular/core/package.json cannot be read; cngx needs 21.2 or newer',
+      detail: 'read from the declared range, node_modules/@angular/core/package.json cannot be read; cngx needs 21.2+',
     });
   });
 

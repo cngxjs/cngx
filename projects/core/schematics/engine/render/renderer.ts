@@ -30,6 +30,8 @@ export interface TodoOptions {
  * `createChangePlan`, the summary lines from the caller.
  */
 export interface Renderer {
+  /** A line that opens a run, such as the release a migration belongs to. */
+  heading(text: string): void;
   preflight(items: readonly PreflightItem[]): void;
   todo(plan: ChangePlan, options?: TodoOptions): Promise<void>;
   summary(lines: readonly string[]): void;
@@ -43,16 +45,24 @@ export interface RendererOptions {
   /** `--quiet`: print only the summary. */
   readonly quiet: boolean;
   readonly logger: RenderLogger;
+  /**
+   * The terminal itself: on a TTY both renderers write there, so their lines
+   * start at the left edge next to the prompts and the task list instead of
+   * under the CLI's logger indent. `undefined` without a terminal, where the
+   * plain lines stay on the logger for CI logs.
+   */
+  readonly terminal?: RenderLogger;
   /** Overrides for the TTY task list; specs pass listr2's `test` renderer. */
   readonly listr?: TtyListrOptions;
 }
 
 /**
  * The live task list needs an interactive, coloured terminal and a run that
- * wants more than the summary. Everything else gets plain lines through the
- * logger, which is what CI logs and `NO_COLOR` users read.
+ * wants more than the summary. Everything else gets plain lines: on the
+ * terminal for `NO_COLOR` and `--quiet`, through the logger for CI logs.
  */
 export function createRenderer(options: RendererOptions): Renderer {
   const live = options.isTTY && options.color.enabled && !options.quiet;
-  return live ? createTtyRenderer(options) : createPlainRenderer(options);
+  const writer = { ...options, logger: options.terminal ?? options.logger };
+  return live ? createTtyRenderer(writer) : createPlainRenderer(writer);
 }
