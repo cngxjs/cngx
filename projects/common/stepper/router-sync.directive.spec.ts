@@ -126,7 +126,7 @@ describe('CngxStepperRouterSync', () => {
     expect(extras.fragment).toMatch(/^step=cngx-step-/);
   });
 
-  it('is a graceful no-op when Router is not provided', () => {
+  it('is a graceful no-op without provideRouter(...)', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -136,9 +136,9 @@ describe('CngxStepperRouterSync', () => {
     }).not.toThrow();
   });
 
-  it('dev-warns once with CNGX1031 when Router is not provided', () => {
+  it('dev-warns once with CNGX1031 without provideRouter(...)', () => {
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+      providers: [provideZonelessChangeDetection()],
     });
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -147,14 +147,14 @@ describe('CngxStepperRouterSync', () => {
 
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toMatch(
-      /^CNGX1031: \[cngxStepperRouterSync\] no Router available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable deep-linking\. Find more at /,
+      /^CNGX1031: \[cngxStepperRouterSync\] no Router \/ ActivatedRoute available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable deep-linking\. Find more at /,
     );
   });
 
-  it('writes nothing to the console without a Router in production', () => {
+  it('writes nothing to the console without provideRouter(...) in production', () => {
     vi.stubGlobal('ngDevMode', false);
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+      providers: [provideZonelessChangeDetection()],
     });
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 

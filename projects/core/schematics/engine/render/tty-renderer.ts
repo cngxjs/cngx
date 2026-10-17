@@ -6,10 +6,9 @@ import {
   type ListrTask,
 } from 'listr2';
 
-import { type Change } from '../plan/change';
-import { type ChangePlan } from '../plan/plan';
+import { type ChangePlan, describePlanItem, planSections } from '../plan/plan';
 import { type Palette } from './palette';
-import { createPlainRenderer } from './plain-renderer';
+import { createPlainRenderer, formatPlanHeading, formatPlanItem } from './plain-renderer';
 import { type Renderer, type RendererOptions } from './renderer';
 
 /** listr2 options merged over the defaults; specs swap in the `test` renderer. */
@@ -28,27 +27,27 @@ export const TTY_LISTR_DEFAULTS = { rendererOptions: { collapseSkips: true } } a
 
 type TtyOptions = Pick<RendererOptions, 'color' | 'quiet' | 'logger' | 'listr'>;
 
-const isNote = (change: Change): boolean => change.kind === 'note';
-
-// One task per planned change in plan order, then the idempotent hits as
-// skipped tasks, so the list shows the whole plan. The tasks carry no work:
-// the tree changes run in `applyChangePlan` and the CLI commits them after
-// the rule, so the list is the plan's projection, not a progress meter. A
-// note changes nothing, so it is no task: a ticked note would read as done.
+// One task per planned line in plan order (the lockstep @cngx additions
+// fold into one), then the idempotent hits as skipped tasks, folded the
+// same way, so the list shows the whole plan. The tasks carry no work: the tree changes run in
+// `applyChangePlan` and the CLI commits them after the rule, so the list is
+// the plan's projection, not a progress meter. A note changes nothing, so it
+// is no task: a ticked note would read as done.
 function todoTasks(plan: ChangePlan, color: Palette): ListrTask[] {
+  const sections = planSections(plan);
+  const planned = sections.find((section) => section.marker === '+');
+  const inPlace = sections.find((section) => section.marker === '=');
   return [
-    ...plan.changes
-      .filter((change) => !isNote(change))
-      .map(
-        (change): ListrTask => ({
-          title: `${change.label} ${color.dim(`- ${change.reason}`)}`,
-          task: () => undefined,
-        }),
-      ),
-    ...plan.skipped.map(
-      (step): ListrTask => ({
-        title: step.label,
-        skip: () => `${step.label} - ${step.reason}`,
+    ...(planned?.items ?? []).map(
+      (item): ListrTask => ({
+        title: item.reason === undefined ? item.label : `${item.label} ${color.dim(`- ${item.reason}`)}`,
+        task: () => undefined,
+      }),
+    ),
+    ...(inPlace?.items ?? []).map(
+      (item): ListrTask => ({
+        title: item.label,
+        skip: () => describePlanItem(item),
         task: () => undefined,
       }),
     ),
@@ -66,10 +65,15 @@ export function createTtyRenderer(options: TtyOptions): Renderer {
 
   return {
     ...plain,
-    async todo(plan) {
+    async todo(plan, todoOptions) {
+      // A ticked task reads as done; before a confirm or under a dry run
+      // nothing is, so the plan prints as the plain renderer's lines.
+      if (todoOptions?.pending === true) {
+        return plain.todo(plan);
+      }
       const tasks = todoTasks(plan, color);
-      const notes = plan.changes.filter(isNote);
-      if (tasks.length === 0 && notes.length === 0) {
+      const notes = planSections(plan).find((section) => section.marker === '-');
+      if (tasks.length === 0 && notes === undefined) {
         logger.info('Nothing to change.');
       }
       if (tasks.length > 0) {
@@ -80,9 +84,9 @@ export function createTtyRenderer(options: TtyOptions): Renderer {
           exitOnError: false,
         }).run();
       }
-      if (notes.length > 0) {
-        logger.info(`Notes (${notes.length}):`);
-        notes.forEach((note) => logger.info(`  - ${note.label} ${color.dim(`- ${note.reason}`)}`));
+      if (notes !== undefined) {
+        logger.info(formatPlanHeading(notes.title, notes.count, color));
+        notes.items.forEach((item) => logger.info(formatPlanItem(notes.marker, item, color)));
       }
       plan.warnings.forEach((warning) => logger.warn(`${color.yellow('!')} ${warning}`));
     },

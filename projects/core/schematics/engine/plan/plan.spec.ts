@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Change, type StepResult } from './change';
-import { createChangePlan, describeChangePlan } from './plan';
+import { type Change, type SkippedStep, type StepResult } from './change';
+import { createChangePlan, describeChangePlan, planSections } from './plan';
 
 const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
 
@@ -100,5 +100,83 @@ describe('describeChangePlan', () => {
 
   it('says so when there is nothing to do', () => {
     expect(describeChangePlan(createChangePlan([]))).toBe('Nothing to change.');
+  });
+});
+
+describe('planSections', () => {
+  const cngx = (name: string, overrides: Partial<Change> = {}): Change =>
+    ({ ...DEPENDENCY, id: `dependency:@cngx/${name}`, label: `Add @cngx/${name}@0.1.0`, name: `@cngx/${name}`, ...overrides }) as Change;
+
+  it('folds the lockstep @cngx additions into one line where the first stood, and counts every change', () => {
+    const cdk: Change = { ...DEPENDENCY, id: 'dependency:@angular/cdk', label: 'Add @angular/cdk@^21.2.0', name: '@angular/cdk', version: '^21.2.0' };
+    const plan = createChangePlan([{ changes: [cngx('utils'), cngx('core'), cdk, cngx('ui'), PROVIDER], skipped: [] }]);
+
+    expect(planSections(plan)[0]).toEqual({
+      title: 'Planned',
+      marker: '+',
+      count: 5,
+      items: [
+        { label: 'Add 3 @cngx packages at 0.1.0', reason: 'utils, core, ui' },
+        { label: 'Add @angular/cdk@^21.2.0', reason: 'lockstep with @cngx/ui' },
+        { label: 'Add provideA11yPreferences(withPersistence())', reason: 'recommended preset' },
+      ],
+    });
+  });
+
+  it('keeps a single @cngx addition, a devDependency and one with its own reason on their own lines', () => {
+    const plan = createChangePlan([
+      {
+        changes: [
+          cngx('core'),
+          cngx('eslint-plugin', { dev: true } as Partial<Change>),
+          cngx('forms', { reason: 'replaces ^0.0.9; every @cngx package stays on one version' }),
+        ],
+        skipped: [],
+      },
+    ]);
+
+    expect(planSections(plan)[0]?.items.map((item) => item.label)).toEqual([
+      'Add @cngx/core@0.1.0',
+      'Add @cngx/eslint-plugin@0.1.0',
+      'Add @cngx/forms@0.1.0',
+    ]);
+  });
+
+  it('folds the lockstep @cngx packages already in place the same way', () => {
+    const pinned = (name: string, reason = 'already pinned'): SkippedStep => ({
+      id: `dependency:@cngx/${name}`,
+      label: `Add @cngx/${name}@0.1.0`,
+      reason,
+    });
+    const plan = createChangePlan([
+      {
+        changes: [],
+        skipped: [
+          pinned('utils'),
+          { id: 'style-import', label: 'Import cngx.css', reason: 'styles.css already imports it' },
+          pinned('core'),
+          pinned('eslint-plugin', 'already declared as ^0.2.0'),
+          { id: 'dependency:@cngx/eslint-plugin', label: 'Add @cngx/eslint-plugin@0.1.0', reason: 'already pinned' },
+        ],
+      },
+    ]);
+
+    expect(planSections(plan)[0]).toEqual({
+      title: 'Already in place',
+      marker: '=',
+      count: 5,
+      items: [
+        { label: 'Add 2 @cngx packages at 0.1.0', reason: 'already pinned' },
+        { label: 'Import cngx.css', reason: 'styles.css already imports it' },
+        { label: 'Add @cngx/eslint-plugin@0.1.0', reason: 'already declared as ^0.2.0' },
+        { label: 'Add @cngx/eslint-plugin@0.1.0', reason: 'already pinned' },
+      ],
+    });
+  });
+
+  it('prints the folded line in the plain plan text', () => {
+    const plan = createChangePlan([{ changes: [cngx('utils'), cngx('core')], skipped: [] }]);
+
+    expect(describeChangePlan(plan)).toBe(['Planned (2):', '  + Add 2 @cngx packages at 0.1.0 - utils, core'].join('\n'));
   });
 });

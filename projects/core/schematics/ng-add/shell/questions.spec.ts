@@ -4,6 +4,7 @@ import {
   type AiTool,
   createPromptFlow,
   type MultiSelectQuestion,
+  NG_ADD_PRESETS,
   type NgAddOptions,
   parseManifest,
   type PromptAdapter,
@@ -12,7 +13,7 @@ import {
 import { createFacts } from '../../testing/onboarding';
 import { type ProjectFacts } from '../detect/detect';
 import { type OnboardingAnswers } from '../steps/model';
-import { askOnboarding, givenAnswers, libsFloorNote, presetChangeNote, presetDefaults, withLibsFloor } from './questions';
+import { askOnboarding, askPreset, givenAnswers, libsFloorNote, presetChangeNote, presetDefaults, PRESET_CHOICES, withLibsFloor } from './questions';
 
 const ESLINT = { path: 'eslint.config.js', module: 'cjs', editable: true, wired: false } as const;
 const MATERIAL = {
@@ -106,6 +107,36 @@ describe('presetDefaults', () => {
     expect(
       presetDefaults('full', createFacts({ editors: { claude: true, cursor: false, vscode: true } })),
     ).toMatchObject({ i18n: 'de', feedback: true, floatingFallback: true, aiTools: ['claude', 'vscode'] });
+  });
+});
+
+describe('askPreset', () => {
+  it('offers every preset', () => {
+    expect(PRESET_CHOICES.map((choice) => choice.value)).toEqual(NG_ADD_PRESETS);
+  });
+
+  it('asks the preset on a terminal and defaults to recommended', async () => {
+    const asked: string[] = [];
+    const flow = createPromptFlow({ canPrompt: true, adapter: recordingAdapter(asked) });
+
+    expect(await askPreset({}, flow)).toBe('recommended');
+    expect(asked).toEqual(['preset']);
+  });
+
+  it('takes --preset without asking', async () => {
+    const asked: string[] = [];
+    const flow = createPromptFlow({ canPrompt: true, adapter: recordingAdapter(asked) });
+
+    expect(await askPreset({ preset: 'full' }, flow)).toBe('full');
+    expect(asked).toEqual([]);
+  });
+
+  it('falls back to recommended without a terminal', async () => {
+    const asked: string[] = [];
+    const flow = createPromptFlow({ canPrompt: false, adapter: recordingAdapter(asked) });
+
+    expect(await askPreset({}, flow)).toBe('recommended');
+    expect(asked).toEqual([]);
   });
 });
 

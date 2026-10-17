@@ -76,9 +76,10 @@ interface Pass {
 // Edits come from one parse of the original content; they never overlap,
 // so applying them back to front keeps every earlier offset valid. Two
 // nodes can report the same span (an element under `*ngIf` and its
-// template wrapper, a two-way binding's input and output); one edit stays.
+// template wrapper, a two-way binding's input and output); one edit per
+// span stays, keyed by start and end.
 function applyEdits(content: string, edits: readonly TextEdit[]): string {
-  const unique = [...new Map(edits.map((edit) => [edit.start, edit])).values()];
+  const unique = [...new Map(edits.map((edit) => [`${edit.start}:${edit.end}`, edit])).values()];
   return unique
     .sort((a, b) => b.start - a.start)
     .reduce(
@@ -399,24 +400,70 @@ function namespaceMember(node: ts.Identifier, namespaces: ReadonlySet<string>): 
   return false;
 }
 
+function bindingNames(name: ts.BindingName): readonly string[] {
+  if (ts.isIdentifier(name)) {
+    return [name.text];
+  }
+  return name.elements.flatMap((element) => (ts.isOmittedExpression(element) ? [] : bindingNames(element.name)));
+}
+
+function declarationListNames(list: ts.VariableDeclarationList): readonly string[] {
+  return list.declarations.flatMap((declaration) => bindingNames(declaration.name));
+}
+
+// The names a statement declares in the scope it sits in.
+function statementNames(statement: ts.Statement): readonly string[] {
+  if (ts.isVariableStatement(statement)) {
+    return declarationListNames(statement.declarationList);
+  }
+  if ((ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement)) && statement.name !== undefined) {
+    return [statement.name.text];
+  }
+  return [];
+}
+
+// The names a node binds for its own subtree: parameters and the body's
+// declarations of a function, a block's declarations, a loop's or catch
+// clause's variable. The source file is no scope here, since an import and
+// a top-level declaration cannot share a name.
+function scopeNames(node: ts.Node): readonly string[] {
+  if (ts.isFunctionLike(node)) {
+    const body = 'body' in node && node.body !== undefined && ts.isBlock(node.body) ? node.body.statements : [];
+    return [...node.parameters.flatMap((parameter) => bindingNames(parameter.name)), ...body.flatMap(statementNames)];
+  }
+  if (ts.isBlock(node) && !ts.isFunctionLike(node.parent)) {
+    return node.statements.flatMap(statementNames);
+  }
+  if ((ts.isForStatement(node) || ts.isForOfStatement(node) || ts.isForInStatement(node)) && node.initializer !== undefined) {
+    return ts.isVariableDeclarationList(node.initializer) ? declarationListNames(node.initializer) : [];
+  }
+  if (ts.isCatchClause(node) && node.variableDeclaration !== undefined) {
+    return bindingNames(node.variableDeclaration.name);
+  }
+  return [];
+}
+
 function referenceEdits(
   source: ts.SourceFile,
   imports: ImportPass,
   names: Readonly<Record<string, string>>,
 ): TextEdit[] {
   const edits: TextEdit[] = [];
-  const visit = (node: ts.Node): void => {
+  // A local that shadows an imported name is not a reference to the import.
+  const visit = (node: ts.Node, shadowed: ReadonlySet<string>): void => {
+    const declared = scopeNames(node).filter((name) => imports.locals.has(name));
+    const inScope = declared.length === 0 ? shadowed : new Set([...shadowed, ...declared]);
     if (ts.isIdentifier(node)) {
-      const local = imports.locals.get(node.text);
+      const local = inScope.has(node.text) ? undefined : imports.locals.get(node.text);
       const member = namespaceMember(node, imports.namespaces) ? names[node.text] : undefined;
       const to = local !== undefined && !isNameOnly(node) ? referenceText(node, local) : member;
       if (to !== undefined) {
         edits.push({ start: node.getStart(source), end: node.getEnd(), text: to });
       }
     }
-    ts.forEachChild(node, visit);
+    ts.forEachChild(node, (child) => visit(child, inScope));
   };
-  visit(source);
+  visit(source, new Set());
   return edits;
 }
 
@@ -431,18 +478,33 @@ function isDynamicCngxImport(node: ts.Node): node is ts.CallExpression {
   );
 }
 
-function hostDirectiveStrings(node: ts.Node): readonly string[] {
-  if (
-    !ts.isPropertyAssignment(node) ||
-    !ts.isIdentifier(node.name) ||
-    node.name.text !== 'hostDirectives'
-  ) {
-    return [];
+// Directive metadata that names inputs or outputs in strings: `inputs` and
+// `outputs` (`'name: alias'`), `hostDirectives` entries, and the event and
+// property keys of `host` (`'(name)'`, `'[name]'`).
+const METADATA_KEYS = ['hostDirectives', 'inputs', 'outputs', 'host'] as const;
+
+type MetadataKey = (typeof METADATA_KEYS)[number];
+
+function metadataKey(node: ts.Node): MetadataKey | undefined {
+  if (!ts.isPropertyAssignment(node) || !ts.isIdentifier(node.name)) {
+    return undefined;
   }
+  const name = node.name.text;
+  return METADATA_KEYS.find((key) => key === name);
+}
+
+function memberOf(text: string): string {
+  return text.replace(/^[[(]+|[\])]+$/g, '').split(':')[0]?.trim() ?? '';
+}
+
+function metadataStrings(node: ts.PropertyAssignment): readonly string[] {
   const strings: string[] = [];
   const visit = (child: ts.Node): void => {
     if (ts.isStringLiteralLike(child)) {
-      strings.push(child.text.split(':')[0]?.trim() ?? '');
+      strings.push(memberOf(child.text));
+    }
+    if (ts.isPropertyAssignment(child) && ts.isStringLiteralLike(child.name)) {
+      strings.push(memberOf(child.name.text));
     }
     ts.forEachChild(child, visit);
   };
@@ -452,7 +514,7 @@ function hostDirectiveStrings(node: ts.Node): readonly string[] {
 
 // What the AST passes cannot rename safely: members of a dynamic
 // `import('@cngx/...')` and input or output names written as strings in
-// `hostDirectives`. Both are named, so the user finishes them by hand.
+// directive metadata. Both are named, so the user finishes them by hand.
 function sourceManual(
   source: ts.SourceFile,
   content: string,
@@ -467,12 +529,16 @@ function sourceManual(
         `dynamic import of ${node.arguments[0]?.getText(source) ?? ''}: rename its members by hand`,
       );
     }
-    for (const value of hostDirectiveStrings(node)) {
-      if (members.has(value)) {
-        manual.push(
-          `hostDirectives names \`${value}\`, which a cngx directive renamed; check it by hand`,
-        );
+    const key = metadataKey(node);
+    if (key !== undefined && ts.isPropertyAssignment(node)) {
+      for (const value of metadataStrings(node)) {
+        if (members.has(value)) {
+          manual.push(`${key} names \`${value}\`, which a cngx directive renamed; check it by hand`);
+        }
       }
+      // The strings below are read; an `inputs` inside `hostDirectives` is
+      // part of that entry, not metadata of its own.
+      return;
     }
     ts.forEachChild(node, visit);
   };
@@ -533,8 +599,8 @@ export function createSourceRenamer(table: RenameTable): (content: string) => Re
   ];
   const members = [...table.inputs, ...table.outputs].map((rename) => rename.from);
   return (content) => {
-    const namesHostDirective = content.includes('hostDirectives') && mentionsAny(content, members);
-    if (!mentionsAny(content, mentioned) && !namesHostDirective) {
+    const namesMetadata = METADATA_KEYS.some((key) => content.includes(key)) && mentionsAny(content, members);
+    if (!mentionsAny(content, mentioned) && !namesMetadata) {
       return { content, manual: [] };
     }
     const source = ts.createSourceFile(

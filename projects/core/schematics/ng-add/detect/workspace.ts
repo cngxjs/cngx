@@ -1,7 +1,7 @@
 import { type workspaces } from '@angular-devkit/core';
 import { SchematicsException } from '@angular-devkit/schematics';
 
-import { isInjectedStyleEntry, isRecord, parseManifest, styleEntryPath } from '../../engine';
+import { isInjectedStyleEntry, isRecord, parseManifest, parseVersion, styleEntryPath } from '../../engine';
 
 // File content by path, read once per detection run; `undefined` when absent.
 export type Read = (path: string) => string | undefined;
@@ -77,18 +77,18 @@ export function sourceLocaleOf(project: workspaces.ProjectDefinition): string | 
   return isRecord(locale) && typeof locale['code'] === 'string' ? locale['code'] : undefined;
 }
 
-// A plain semver specifier (`^21.2.0`, `~21.2`, `>=21.2.0 <22`, `21.2.5`)
-// reads as its lowest version. A protocol (`catalog:`, `workspace:*`,
-// `npm:`), a dist-tag or a wildcard minor carries none.
-const PLAIN_RANGE = /^[\s^~<>=v]*(\d+)(?:\.(\d+))?(?:\.(\d+))?(-[\w.]+)?(?![.\w*])/;
-
+/**
+ * The lowest version a declared range allows (`^21.2.0`, `~21.2`,
+ * `>=21.2.0 <22`, `21.x`), read through `parseVersion`; `undefined` for a
+ * protocol (`catalog:`, `workspace:*`, `npm:`) or a dist-tag.
+ */
 export function versionOf(range: string | undefined): string | undefined {
-  const match = PLAIN_RANGE.exec(range ?? '');
-  if (match === null) {
+  const parsed = parseVersion(range);
+  if (parsed === undefined) {
     return undefined;
   }
-  const [, major, minor = '0', patch = '0', prerelease = ''] = match;
-  return `${major}.${minor}.${patch}${prerelease}`;
+  const prerelease = parsed.prerelease.length === 0 ? '' : `-${parsed.prerelease.join('.')}`;
+  return `${parsed.major}.${parsed.minor}.${parsed.patch}${prerelease}`;
 }
 
 /** Where the package manager put `@angular/core`, relative to the workspace root. */
@@ -106,7 +106,7 @@ export interface AngularVersion {
   readonly source: AngularSource | undefined;
 }
 
-function installedVersion(content: string): string | undefined {
+function manifestVersion(content: string): string | undefined {
   try {
     return versionOf(parseManifest(content).version);
   } catch {
@@ -121,7 +121,7 @@ function installedVersion(content: string): string | undefined {
  */
 export function angularVersionOf(read: Read, range: string | undefined): AngularVersion {
   const content = read(ANGULAR_CORE_MANIFEST);
-  const installed = content === undefined ? undefined : installedVersion(content);
+  const installed = content === undefined ? undefined : manifestVersion(content);
   if (installed !== undefined) {
     return { version: installed, source: 'installed' };
   }

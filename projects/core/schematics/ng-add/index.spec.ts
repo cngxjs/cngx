@@ -13,6 +13,7 @@ import {
 } from '../engine';
 import { createFixtureTree, readFixture, readTree, runRule } from '../testing/run-schematic';
 import { ngAdd } from './index';
+import { PRESET_CHOICES } from './shell/questions';
 
 // Specs run the source rule, so the version is core's source manifest.
 const VERSION = (
@@ -41,6 +42,19 @@ const terminal = vi.hoisted(() => ({
 }));
 
 vi.mock('./shell/git-state', () => ({ readGitState: () => terminal.git }));
+
+// Specs run unstamped, as a local build does; a case that checks the real
+// pins sets `stamped` to the versions a release writes into versions.json.
+const release = vi.hoisted(() => ({ stamped: undefined as { cngx: string; mcp: string; eslintPlugin: string; angular: string } | undefined }));
+
+vi.mock('../engine/versions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../engine/versions')>();
+  return {
+    ...actual,
+    resolveVersions: (...args: Parameters<typeof actual.resolveVersions>) =>
+      release.stamped === undefined ? actual.resolveVersions(...args) : { versions: release.stamped },
+  };
+});
 
 vi.mock('@inquirer/checkbox', () => ({
   default: (question: { message: string; choices: { value: string; checked?: boolean }[] }) => {
@@ -265,13 +279,78 @@ const DEFINE_THEME_SCSS_APP = {
 
 describe('ngAdd', () => {
   const isTTY = process.stdout.isTTY;
+  const stdinIsTTY = process.stdin.isTTY;
 
+  // Prompts need both ends; the cases flip stdout and keep an interactive stdin.
   beforeEach(() => {
     process.stdout.isTTY = false;
+    process.stdin.isTTY = true;
   });
 
   afterEach(() => {
     process.stdout.isTTY = isTTY;
+    process.stdin.isTTY = stdinIsTTY;
+  });
+
+  it('asks the preset first on a terminal, after the preflight checklist', async () => {
+    vi.stubEnv('CI', '');
+    vi.stubEnv('NO_COLOR', '1');
+    process.stdout.isTTY = true;
+    terminal.asked = [];
+    try {
+      const run = await runRule(ngAdd({ yes: true }), createFixtureTree());
+
+      expect(terminal.asked[0]).toBe('Which cngx setup do you want?');
+      expect(run.logs[0]).toBe('Preflight:');
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('asks no preset when the preflight refuses the run', async () => {
+    vi.stubEnv('CI', '');
+    vi.stubEnv('NO_COLOR', '1');
+    process.stdout.isTTY = true;
+    terminal.asked = [];
+    try {
+      const tree = createFixtureTree('standalone-app', { 'package.json': withDependencies({ '@angular/core': '^20.3.0' }) });
+
+      await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.2 or newer');
+      expect(terminal.asked).toEqual([]);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('asks no preset when --preset answers it', async () => {
+    vi.stubEnv('CI', '');
+    vi.stubEnv('NO_COLOR', '1');
+    process.stdout.isTTY = true;
+    terminal.asked = [];
+    try {
+      await runRule(ngAdd({ preset: 'minimal', yes: true }), createFixtureTree());
+
+      expect(terminal.asked).not.toContain('Which cngx setup do you want?');
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('asks nothing on a terminal whose stdin is not interactive', async () => {
+    vi.stubEnv('CI', '');
+    vi.stubEnv('NO_COLOR', '1');
+    process.stdout.isTTY = true;
+    process.stdin.isTTY = false;
+    terminal.confirms = [];
+    terminal.asked = [];
+    try {
+      const run = await runRule(ngAdd({}), createFixtureTree('standalone-app', { 'src/app/other.ts': SECOND_COMPONENT }));
+
+      expect([...terminal.asked, ...terminal.confirms]).toEqual([]);
+      expect(run.logs).toContain('No terminal to confirm in; applying the plan. Pass --yes to apply without this line.');
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   describe.each(['minimal', 'recommended', 'full'] as const)('the %s preset', (preset) => {
@@ -362,11 +441,15 @@ describe('ngAdd', () => {
 
   describe('a standalone css app', () => {
     it('pins the lockstep graph, imports cngx.css, adds the theme and the a11y providers', async () => {
+      release.stamped = { cngx: '0.1.0', mcp: '0.2.0', eslintPlugin: '0.2.0', angular: '^21.2.0' };
+      onTestFinished(() => {
+        release.stamped = undefined;
+      });
       const run = await runRule(ngAdd({}), createFixtureTree());
       const manifest = json<{ dependencies: Record<string, string> }>(run.tree, 'package.json');
 
-      expect(manifest.dependencies['@cngx/ui']).toBe(VERSION);
-      expect(manifest.dependencies['@cngx/themes']).toBe(VERSION);
+      expect(manifest.dependencies['@cngx/ui']).toBe('0.1.0');
+      expect(manifest.dependencies['@cngx/themes']).toBe('0.1.0');
       expect(manifest.dependencies['@angular/cdk']).toBe('^21.2.0');
       expect(run.tree.readContent('src/styles.css').startsWith("@import '@cngx/themes/cngx.css';\n")).toBe(true);
       expect(run.tree.readContent('src/cngx-theme.css')).toContain('@layer cngx.theme {');
@@ -376,11 +459,20 @@ describe('ngAdd', () => {
       expect(run.tasks).toEqual(['node-package']);
     });
 
+    it('keeps the declared @cngx versions of an unstamped local build and names pack-libs', async () => {
+      const run = await runRule(ngAdd({}), createFixtureTree());
+      const manifest = json<{ dependencies: Record<string, string> }>(run.tree, 'package.json');
+
+      expect(Object.keys(manifest.dependencies).filter((name) => name.startsWith('@cngx/'))).toEqual([]);
+      expect(run.logs.some((line) => line.includes('Keep the declared @cngx versions') && line.includes('node scripts/pack-libs.mjs'))).toBe(true);
+      expect(VERSION).toBe('0.0.0-PLACEHOLDER');
+    });
+
     it('notes the missing eslint config instead of guessing one', async () => {
       const run = await runRule(ngAdd({}), createFixtureTree());
 
       expect(run.logs).toContain(
-        '  Skip the eslint entry - no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found; set one up with `ng add angular-eslint`, then run `ng add @cngx/core` again',
+        '  - Skip the eslint entry - no eslint flat config (eslint.config.js, .mjs, .cjs, .ts, .mts or .cts) found; set one up with `ng add angular-eslint`, then run `ng add @cngx/core` again',
       );
       expect(run.tree.exists('eslint.config.js')).toBe(false);
     });
@@ -405,8 +497,8 @@ describe('ngAdd', () => {
       }),
     );
 
-    expect(run.logs.filter((line) => line.startsWith('  Skip the eslint entry'))).toEqual([
-      '  Skip the eslint entry - .eslintrc.json is a legacy config; migrate with `npx @eslint/migrate-config .eslintrc.json`, then run `ng add @cngx/core` again',
+    expect(run.logs.filter((line) => line.startsWith('  - Skip the eslint entry'))).toEqual([
+      '  - Skip the eslint entry - .eslintrc.json is a legacy config; migrate with `npx @eslint/migrate-config .eslintrc.json`, then run `ng add @cngx/core` again',
     ]);
     expect(run.tree.readContent('.eslintrc.json')).toBe('{ "root": true }\n');
     expect(run.tree.files.filter((path) => path.includes('eslint.config'))).toEqual([]);
@@ -445,8 +537,8 @@ describe('ngAdd', () => {
   });
 
   describe('an inline bootstrap config', () => {
-    it('provides into main.ts once over two runs and lists it in the report', async () => {
-      const first = await runRule(ngAdd({ yes: true }), inlineBootstrapApp());
+    it('provides into main.ts once over two runs and lists it in the quiet report', async () => {
+      const first = await runRule(ngAdd({ yes: true, quiet: true }), inlineBootstrapApp());
       const main = first.tree.readContent('src/main.ts');
 
       expect(main.match(/provideA11yPreferences\(/g)).toHaveLength(1);
@@ -546,7 +638,7 @@ describe('ngAdd', () => {
       const preflight = run.logs.indexOf('Preflight:');
 
       expect(run.logs.slice(preflight + 1, preflight + 4)).toEqual([
-        expect.stringMatching(/^ {2}ok Angular \S+ \(cngx needs \d+\.\d+ or newer\)$/),
+        expect.stringMatching(/^ {2}ok Angular \S+ \(cngx needs \d+\.\d+\+\)$/),
         '  ok Project fixture-app (existing app)',
         '  ok Git working tree clean (review the cngx changes with git diff afterwards)',
       ]);
@@ -669,7 +761,7 @@ describe('ngAdd', () => {
       it('prints only the summary for --quiet "true"', async () => {
         const run = await runRule(ngAdd({ quiet: 'true', yes: 'true' }), existing());
 
-        expect(run.logs[0]).toMatch(/^cngx planned \d+ changes\.$/);
+        expect(run.logs[0]).toMatch(/^cngx applied \d+ changes\.$/);
         expect(run.logs.some((line) => line.startsWith('Planned'))).toBe(false);
       });
     });
@@ -788,7 +880,7 @@ describe('ngAdd', () => {
     it('warns in the preflight when no --project picks one', async () => {
       const run = await runRule(ngAdd({ yes: true }), twoApplications());
 
-      expect(run.logs).toContain('  ! Project alpha (picked; pass --project to choose) (fresh app; other applications: beta)');
+      expect(run.logs).toContain('  ! Project alpha (picked; pass --project to choose; fresh app; other applications: beta)');
     });
 
     it('does not warn when --project names one', async () => {
@@ -989,7 +1081,7 @@ describe('ngAdd', () => {
     );
 
     expect(run.tree.readText('.vscode/mcp.json')).toBe('{ "servers": [] }\n');
-    expect(run.logs).toContain('  Skip .vscode/mcp.json - it has no servers object cngx can add to; add servers.cngx by hand');
+    expect(run.logs).toContain('  - Skip .vscode/mcp.json - it has no servers object cngx can add to; add servers.cngx by hand');
   });
 
   it('registers the mcp server for the editors a full run detects, next to the servers already there', async () => {
@@ -1037,7 +1129,9 @@ describe('ngAdd', () => {
       }),
     });
 
-    await expect(runRule(ngAdd({}), tree)).rejects.toThrow(/^src\/missing\.css is planned for .+ but does not exist\.$/);
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow(
+      'src/missing.css is listed under styles in angular.json but does not exist; create it or remove the entry.',
+    );
   });
 
   it('refuses a project without a build target', async () => {
@@ -1158,8 +1252,20 @@ describe('ngAdd', () => {
   it('prints only the summary when quiet', async () => {
     const run = await runRule(ngAdd({ quiet: true }), createFixtureTree());
 
-    expect(run.logs[0]).toMatch(/^cngx planned \d+ changes\.$/);
+    expect(run.logs[0]).toMatch(/^cngx applied \d+ changes\.$/);
     expect(run.logs.some((line) => line.startsWith('Planned'))).toBe(false);
+  });
+
+  it('says planned instead of applied under --dry-run', async () => {
+    const argv = process.argv;
+    process.argv = [...argv.slice(0, 2), 'add', '@cngx/core', '--dry-run'];
+    try {
+      const run = await runRule(ngAdd({ quiet: true }), createFixtureTree());
+
+      expect(run.logs[0]).toMatch(/^cngx planned \d+ changes\.$/);
+    } finally {
+      process.argv = argv;
+    }
   });
 
   it('asks nothing without a terminal, even with prompts on', async () => {
@@ -1225,6 +1331,20 @@ describe('the ng-add collection', () => {
     expect(description).toContain('project MCP config');
     expect(description).toContain('.cngx/README.md');
     expect(description).not.toContain('writes no editor config');
+    expect(description).toContain('--preset=full');
+  });
+
+  it('names the MCP setup in the full preset label', () => {
+    const full = PRESET_CHOICES.find((choice) => choice.value === 'full');
+
+    expect(full?.name).toContain('MCP server');
+  });
+
+  it('declares the preset without an x-prompt or default, so the rule asks it after the preflight', () => {
+    const preset = SCHEMA.properties['preset'] as Record<string, unknown>;
+
+    expect(preset['x-prompt']).toBeUndefined();
+    expect(preset['default']).toBeUndefined();
   });
 
   it('declares no option the ng add command strips', () => {

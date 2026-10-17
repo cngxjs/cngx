@@ -31,12 +31,6 @@ member the app depends on goes to the new release in one step, and the
 cross-package peers stay in agreement. The migrations live in `@cngx/core`
 and run whichever member you name.
 
-Preview the update without writing files:
-
-```bash
-ng update @cngx/core --dry-run
-```
-
 ---
 
 ## Migrations
@@ -60,16 +54,9 @@ three things:
 - **Install re-runs.** See below.
 
 Every change is listed before it is applied, the same way `ng add` lists its
-plan. The summary after it names the files changed, the notes (what a step
-left to you), how many steps were already in place, and the next steps.
-
-The first migration, `0.1.0`, renames nothing: the breaking changes of the
-release candidates before it are covered by the written migration guides.
-Like a `refresh` entry, it re-checks the recorded install steps and records
-the installed release in the manifest. Because the CLI compares against the
-target without its prerelease tag, an update from one 0.1.0 release
-candidate to a later one runs the `0.1.0` migration next to the later
-candidate's own entry.
+plan. The summary after it says how many changes the migration applied, how
+many steps were already in place, and the
+next steps; the plan list above it already named every change and note.
 
 An update across several releases runs every hand-written migration in that
 range and the target's entry. It runs no `refresh` entry of a release in

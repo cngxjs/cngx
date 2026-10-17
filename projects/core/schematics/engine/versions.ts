@@ -19,6 +19,18 @@ export interface ResolvedVersions {
   readonly warning?: string;
 }
 
+/**
+ * The version an unstamped local build carries. `publish` and `pack-libs`
+ * replace every occurrence of the literal in the bundles, so it is joined at
+ * runtime: a stamped bundle must still recognise the placeholder.
+ */
+export const PLACEHOLDER_VERSION = ['0.0.0', 'PLACEHOLDER'].join('-');
+
+/** Whether `version` is the placeholder of an unstamped local build, which no registry serves. */
+export function isUnstampedVersion(version: string): boolean {
+  return version === PLACEHOLDER_VERSION;
+}
+
 // The versions a local build (no `versions.json`) pins; a spec keeps them in
 // step with packages/mcp and packages/eslint-plugin.
 export const DEFAULT_MCP_VERSION = '0.2.0';

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { parseManifest } from '../../engine';
 import { createFacts } from '../../testing/onboarding';
 import { type ProjectFacts } from '../detect/detect';
+import { type GitState } from './git-state';
 import { angularReading, angularSupport, preflightItems } from './preflight';
 
 const PEER_RANGE = '^21.2.0';
@@ -107,7 +108,7 @@ describe('angularSupport', () => {
 describe('preflightItems', () => {
   it('lists the Angular version, the project and the git state in that order', () => {
     expect(preflightItems({ facts: createFacts(), peerRange: PEER_RANGE, git: 'clean' })).toEqual([
-      { label: 'Angular ^21.2.0', status: 'ok', detail: 'cngx needs 21.2 or newer' },
+      { label: 'Angular ^21.2.0', status: 'ok', detail: 'cngx needs 21.2+' },
       { label: 'Project fixture-app', status: 'ok', detail: 'fresh app' },
       {
         label: 'Git working tree clean',
@@ -165,7 +166,7 @@ describe('preflightItems', () => {
     expect(angular).toEqual({
       label: 'Angular ^20.3.0',
       status: 'fail',
-      detail: 'cngx needs 21.2 or newer',
+      detail: 'cngx needs 21.2+',
     });
   });
 
@@ -179,7 +180,7 @@ describe('preflightItems', () => {
     expect(angular).toEqual({
       label: 'Angular catalog:',
       status: 'warn',
-      detail: 'no version to read from it and no installed @angular/core; cngx needs 21.2 or newer',
+      detail: 'no version to read from it and no installed @angular/core; cngx needs 21.2+',
     });
   });
 
@@ -193,7 +194,7 @@ describe('preflightItems', () => {
     expect(angular).toEqual({
       label: 'Angular 19.2.3 (installed, declares catalog:)',
       status: 'fail',
-      detail: 'cngx needs 21.2 or newer',
+      detail: 'cngx needs 21.2+',
     });
   });
 
@@ -211,12 +212,12 @@ describe('preflightItems', () => {
       label: 'Angular catalog:',
       status: 'warn',
       detail:
-        'node_modules/@angular/core/package.json cannot be read and the specifier carries no version; cngx needs 21.2 or newer',
+        'node_modules/@angular/core/package.json cannot be read and the specifier carries no version; cngx needs 21.2+',
     });
     expect(fallback).toEqual({
       label: 'Angular ^21.2.0',
       status: 'ok',
-      detail: 'read from the declared range, node_modules/@angular/core/package.json cannot be read; cngx needs 21.2 or newer',
+      detail: 'read from the declared range, node_modules/@angular/core/package.json cannot be read; cngx needs 21.2+',
     });
   });
 
@@ -258,8 +259,20 @@ describe('preflightItems', () => {
     });
   });
 
+  it('fails on a listed stylesheet that is missing on disk and lists nothing when every one exists', () => {
+    const items = (missing: readonly string[]) =>
+      preflightItems({ facts: createFacts({ missingStyleEntries: missing }), peerRange: PEER_RANGE, git: 'clean' });
+
+    expect(items(['src/missing.css', 'src/gone.scss']).find((item) => item.label.startsWith('Stylesheet'))).toEqual({
+      label: 'Stylesheets src/missing.css, src/gone.scss',
+      status: 'fail',
+      detail: 'listed under styles in angular.json but missing on disk',
+    });
+    expect(items([]).some((item) => item.label.startsWith('Stylesheet'))).toBe(false);
+  });
+
   it('warns about uncommitted changes and a missing repository', () => {
-    const git = (state: 'dirty' | 'unknown') =>
+    const git = (state: GitState) =>
       preflightItems({ facts: createFacts(), peerRange: PEER_RANGE, git: state })[2];
 
     expect(git('dirty')).toEqual({
@@ -267,10 +280,20 @@ describe('preflightItems', () => {
       status: 'warn',
       detail: 'the cngx changes will mix with them in git diff',
     });
-    expect(git('unknown')).toEqual({
+    expect(git('no-repository')).toEqual({
       label: 'No git repository',
       status: 'warn',
       detail: 'there is no diff to review the cngx changes against',
+    });
+    expect(git('no-git')).toEqual({
+      label: 'Git is not installed',
+      status: 'warn',
+      detail: 'there is no diff to review the cngx changes against',
+    });
+    expect(git('unknown')).toEqual({
+      label: 'Git state unreadable',
+      status: 'warn',
+      detail: 'git status failed in this folder; review the cngx changes by hand',
     });
   });
 });

@@ -15,6 +15,7 @@ import {
   NG_ADD_PRESETS,
   type NgAddFlags,
   parseNgAddOptions,
+  readDryRunFlag,
   readPromptFlags,
   createRepeatedAnswerError,
   THEME_CHOICES,
@@ -55,8 +56,8 @@ describe('the ng-add answer vocabulary', () => {
     expect(schemaEnum).toEqual(values);
   });
 
-  it('defaults the preset to one it lists', () => {
-    expect(NG_ADD_PRESETS).toContain(SCHEMA.properties['preset'].default);
+  it('leaves the preset without a schema default, so the rule can tell a flag from no answer', () => {
+    expect(SCHEMA.properties['preset'].default).toBeUndefined();
   });
 
   it('keeps @cngx/themes out of the selectable packages; the theme answer brings it', () => {
@@ -187,6 +188,18 @@ describe('createEmptyEntryError', () => {
     expect(createEmptyEntryError('aiTools', AI_TOOLS).message).toBe(
       '--ai-tools has an empty entry. Separate the values with single commas, for example --ai-tools claude,cursor.',
     );
+  });
+});
+
+describe('readDryRunFlag', () => {
+  const argv = (...flags: string[]) => ['node', 'ng', 'add', '@cngx/core', ...flags];
+
+  it.each([['--dry-run'], ['-d'], ['--dry-run=true'], ['--dry-run', 'true']])('reads %s as a dry run', (...flags) => {
+    expect(readDryRunFlag(argv(...flags))).toBe(true);
+  });
+
+  it.each([[], ['--dry-run=false'], ['--dry-run', 'false'], ['--defaults']])('reads %s as a real run', (...flags) => {
+    expect(readDryRunFlag(argv(...flags))).toBe(false);
   });
 });
 

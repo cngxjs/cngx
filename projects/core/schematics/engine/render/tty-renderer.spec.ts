@@ -72,6 +72,28 @@ function finished(events: readonly ListrEvent[]): readonly string[] {
 }
 
 describe('createTtyRenderer', () => {
+  it('prints a pending plan as plain lines instead of ticked tasks', async () => {
+    const { renderer, events, lines } = tty();
+    const plan = createChangePlan([
+      {
+        changes: [change('dependency', 'Add @cngx/core'), note('lint', 'Skip the eslint entry')],
+        skipped: [{ id: 'style', label: 'Import cngx.css', reason: 'already imported' }],
+      },
+    ]);
+
+    await renderer.todo(plan, { pending: true });
+
+    expect(finished(events)).toEqual([]);
+    expect(lines).toEqual([
+      'info Planned (1):',
+      'info   + Add @cngx/core - because dependency',
+      'info Notes (1):',
+      'info   - Skip the eslint entry - because lint',
+      'info Already in place (1):',
+      'info   = Import cngx.css - already imported',
+    ]);
+  });
+
   it('renders one task per change in plan order', async () => {
     const { renderer, events } = tty();
     const plan = createChangePlan([
@@ -108,6 +130,19 @@ describe('createTtyRenderer', () => {
     ]);
     expect(events.find((entry) => entry.event === 'MESSAGE')?.data).toEqual({
       skip: 'Import cngx.css - already imported',
+    });
+  });
+
+  it('folds the lockstep @cngx packages already in place into one skipped task', async () => {
+    const { renderer, events } = tty();
+    const pinned = (name: string) => ({ id: `dependency:@cngx/${name}`, label: `Add @cngx/${name}@0.1.0`, reason: 'already pinned' });
+    const plan = createChangePlan([{ changes: [], skipped: [pinned('utils'), pinned('core')] }]);
+
+    await renderer.todo(plan);
+
+    expect(finished(events)).toEqual(['SKIPPED Add 2 @cngx packages at 0.1.0']);
+    expect(events.find((entry) => entry.event === 'MESSAGE')?.data).toEqual({
+      skip: 'Add 2 @cngx packages at 0.1.0 - already pinned',
     });
   });
 

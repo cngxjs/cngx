@@ -402,7 +402,7 @@ describe('CngxBreadcrumbRouterSync', () => {
     expect(second[0].label).toBe('X');
   });
 
-  it('is a graceful no-op (empty source) when Router is not provided', () => {
+  it('is a graceful no-op (empty source) without provideRouter(...)', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -424,11 +424,12 @@ describe('CngxBreadcrumbRouterSync', () => {
     expect(directive.crumbs()).toEqual([]);
     warnSpy.mockRestore();
   });
-  it('warns CNGX3001 when no Router can be injected', () => {
-    // Router is providedIn: 'root', so only an injector that resolves it to null
-    // reaches this branch.
+
+  it('warns CNGX3001 without provideRouter(...)', () => {
+    // Router is providedIn: 'root' and still resolves here; ActivatedRoute
+    // does not, which is what the directive checks.
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+      providers: [provideZonelessChangeDetection()],
     });
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     warnSpy.mockClear();
@@ -439,8 +440,22 @@ describe('CngxBreadcrumbRouterSync', () => {
     const calls = warnSpy.mock.calls.filter(([m]) => /^CNGX3001: /.test(String(m)));
     expect(calls).toHaveLength(1);
     expect(calls[0][0]).toMatch(
-      /^CNGX3001: \[cngxRouterSync\] on <cngx-breadcrumb>: no Router available - directive is a no-op\. /,
+      /^CNGX3001: \[cngxRouterSync\] on <cngx-breadcrumb>: no Router \/ ActivatedRoute available - directive is a no-op\. /,
     );
+    warnSpy.mockRestore();
+  });
+
+  it('does not warn CNGX3001 with provideRouter([])', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    warnSpy.mockClear();
+    const fixture = TestBed.createComponent(NoRouterHost);
+    fixture.detectChanges();
+    TestBed.tick();
+
+    expect(warnSpy.mock.calls.some(([m]) => /^CNGX3001: /.test(String(m)))).toBe(false);
     warnSpy.mockRestore();
   });
 });

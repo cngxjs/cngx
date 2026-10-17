@@ -13,18 +13,8 @@
     },
     "preset": {
       "type": "string",
-      "description": "How much of the onboarding to apply.",
-      "enum": ["minimal", "recommended", "full"],
-      "default": "recommended",
-      "x-prompt": {
-        "message": "Which cngx setup do you want?",
-        "type": "list",
-        "items": [
-          { "value": "minimal", "label": "minimal - dependencies only" },
-          { "value": "recommended", "label": "recommended - dependencies, theme, a11y providers, lint" },
-          { "value": "full", "label": "full - recommended plus the German language pack, feedback and the floating fallback" }
-        ]
-      }
+      "description": "How much of the onboarding to apply. Asked first when a terminal is attached, after the preflight checklist; default recommended.",
+      "enum": ["minimal", "recommended", "full"]
     },
     "libs": {
       "description": "The @cngx packages to install, comma-separated (--libs core,forms); their @cngx peers follow. Asked when a terminal is attached, otherwise every package.",
@@ -68,7 +58,7 @@
       "description": "Install @floating-ui/dom and provide the popover positioning fallback for browsers without CSS anchor positioning."
     },
     "aiTools": {
-      "description": "The editors to set up the cngx MCP server for, comma-separated (--ai-tools claude,vscode): the server entry in their project MCP config, a marked cngx block in the agent instructions (AGENTS.md, or CLAUDE.md for Claude Code) and .cngx/README.md. Asked when a terminal is attached, with the detected editors preselected.",
+      "description": "The editors to set up the cngx MCP server for, comma-separated (--ai-tools claude,vscode): the server entry in their project MCP config, a marked cngx block in the agent instructions (AGENTS.md, or CLAUDE.md for Claude Code) and .cngx/README.md. Asked when a terminal is attached. --preset=full preselects the detected editors (CLAUDE.md or .claude, .cursorrules or .cursor, .vscode) and sets them up without a terminal too; the other presets preselect none.",
       "oneOf": [
         { "type": "string" },
         {

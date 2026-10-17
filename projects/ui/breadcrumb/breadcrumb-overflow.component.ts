@@ -10,9 +10,16 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import { CNGX_BREADCRUMB, CngxMenu, CngxMenuItem, CngxMenuTrigger } from '@cngx/common/interactive';
+import {
+  CNGX_BREADCRUMB,
+  type CngxBreadcrumbHost,
+  CngxMenu,
+  CngxMenuItem,
+  CngxMenuTrigger,
+} from '@cngx/common/interactive';
 import { CngxPopoverPanel, CngxPopoverTrigger } from '@cngx/common/popover';
 import { createControlledSource } from '@cngx/core/utils';
+import { CngxRuntimeError } from '@cngx/utils';
 
 import {
   CngxBreadcrumbOverflowItem,
@@ -67,7 +74,7 @@ import { injectBreadcrumbAriaLabels } from './config/inject-breadcrumb-config';
 })
 export class CngxBreadcrumbOverflow {
   /** Collapse-set contract, provided by the surrounding `cngxBreadcrumb`. */
-  protected readonly breadcrumb = inject(CNGX_BREADCRUMB);
+  protected readonly breadcrumb = injectOverflowBreadcrumb();
 
   private readonly ariaLabels = injectBreadcrumbAriaLabels();
 
@@ -103,4 +110,25 @@ export class CngxBreadcrumbOverflow {
     this.itemTemplateInput,
     this.itemTemplateQuery,
   );
+}
+
+/**
+ * Inject the {@link CNGX_BREADCRUMB} of the surrounding breadcrumb for
+ * {@link CngxBreadcrumbOverflow}. Throws a `CngxRuntimeError` with code
+ * `CNGX3024` when no breadcrumb is above it, in development and production
+ * alike.
+ *
+ * @internal
+ */
+function injectOverflowBreadcrumb(): CngxBreadcrumbHost {
+  const breadcrumb = inject(CNGX_BREADCRUMB, { optional: true });
+  if (!breadcrumb) {
+    throw new CngxRuntimeError(
+      'CNGX3024',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        '[cngx-breadcrumb-overflow] must be placed inside an element with [cngxBreadcrumb].',
+    );
+  }
+  return breadcrumb;
 }

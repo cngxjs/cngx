@@ -65,6 +65,7 @@ describe('detectProject', () => {
       angularSource: 'range',
       angularRange: '^21.2.0',
       stylesPath: 'src/styles.css',
+      missingStyleEntries: [],
       cngxStylesheet: false,
       cngxThemePath: undefined,
       cngxThemeListed: false,
@@ -104,6 +105,14 @@ describe('detectProject', () => {
     expect(facts.angularSource).toBe('installed');
   });
 
+  it('lists the local styles entries that are missing on disk', async () => {
+    const facts = await detect({
+      'angular.json': withWorkspaceStyles(['src/styles.css', 'src/missing.scss', '@angular/material/prebuilt-themes/azure-blue.css']),
+    });
+
+    expect(facts.missingStyleEntries).toEqual(['src/missing.scss']);
+  });
+
   it('reads the existing tailwind app as an existing scss app without eslint', async () => {
     const tree = createFixtureTree('existing-tailwind-app');
     const facts = detectProject(tree, await readWorkspace(tree));
@@ -111,6 +120,7 @@ describe('detectProject', () => {
     expect(facts).toMatchObject({
       project: 'tailwind-app',
       stylesPath: 'src/styles.scss',
+      missingStyleEntries: [],
       tailwind: { major: 4, layered: true, orderTarget: 'src/styles.scss', orderDeclared: false, layersFile: 'absent' },
       rootProviders: [
         'provideBrowserGlobalErrorListeners',
@@ -187,6 +197,11 @@ export const appConfig: ApplicationConfig = {
       });
 
       expect(facts.maturity).toBe('fresh');
+    });
+
+    it('counts a dist folder deeper in the source as source, like the rename walk', async () => {
+      expect((await detect({ 'src/app/dist/page.ts': SECOND_COMPONENT })).maturity).toBe('existing');
+      expect((await detect({ 'src/.angular/cache/other.ts': SECOND_COMPONENT })).maturity).toBe('fresh');
     });
 
     it('ignores a provider in a comment or a string', async () => {

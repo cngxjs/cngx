@@ -5,6 +5,7 @@ import {
   type ArraySelector,
   countArrayLiterals,
   hasArrayLiteral,
+  importsModule,
   insertAfterImports,
   promoteTypeOnlyImport,
   readProviderCalls,
@@ -23,6 +24,23 @@ export default [
   js.configs.recommended,
 ];
 `;
+
+describe('importsModule', () => {
+  it('reads import, import-equals and require of the module, commented-out lines aside', () => {
+    expect(importsModule("import cngx from '@cngx/eslint-plugin';\n", '@cngx/eslint-plugin')).toBe(true);
+    expect(importsModule("import cngx = require('@cngx/eslint-plugin');\n", '@cngx/eslint-plugin')).toBe(true);
+    expect(importsModule("const { configs } = require('@cngx/eslint-plugin').default;\n", '@cngx/eslint-plugin')).toBe(true);
+    expect(importsModule("// import cngx from '@cngx/eslint-plugin';\n", '@cngx/eslint-plugin')).toBe(false);
+    expect(importsModule("const name = '@cngx/eslint-plugin';\n", '@cngx/eslint-plugin')).toBe(false);
+  });
+
+  it('reads a dynamic import, awaited and in parentheses', () => {
+    expect(importsModule("const cngx = (await import('@cngx/eslint-plugin')).default;\n", '@cngx/eslint-plugin')).toBe(true);
+    expect(importsModule("const cngx = await import('@cngx/eslint-plugin');\n", '@cngx/eslint-plugin')).toBe(true);
+    expect(importsModule("const { configs } = (require('@cngx/eslint-plugin'));\n", '@cngx/eslint-plugin')).toBe(true);
+    expect(importsModule("const cngx = (await import('@cngx/other')).default;\n", '@cngx/eslint-plugin')).toBe(false);
+  });
+});
 
 describe('addToArrayLiteral', () => {
   it('appends to a multi-line default export and keeps the trailing comma', () => {
@@ -50,6 +68,15 @@ export default [
 
   it('fills an empty array', () => {
     expect(addToArrayLiteral('module.exports = [];\n', DEFAULT, ITEM)).toBe(`module.exports = [${ITEM}];\n`);
+  });
+
+  it('fills an empty multi-line array without leaving a whitespace-only line before the bracket', () => {
+    const content = 'export default [\n    \n];\n';
+
+    expect(addToArrayLiteral(content, DEFAULT, ITEM)).toBe(`export default [\n  ${ITEM}\n];\n`);
+    expect(addToArrayLiteral(content.replace(/\n/g, '\r\n'), DEFAULT, ITEM)).toBe(
+      `export default [\r\n  ${ITEM}\r\n];\r\n`,
+    );
   });
 
   it('finds the array argument of a wrapper call', () => {

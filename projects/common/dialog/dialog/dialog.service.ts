@@ -304,6 +304,10 @@ export class CngxDialogOpener {
 
     this.openDialogs.push(dialogRef as CngxDialogRef<unknown>);
 
+    // The outlet's inputs reach the inner cngxDialog through template
+    // bindings, and open() latches [modal]. Without this pass the dialog
+    // would still see its input defaults and always open modal.
+    outletRef.changeDetectorRef.detectChanges();
     dialogInstance.open();
 
     this.cleanupEffects.set(

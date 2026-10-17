@@ -5,7 +5,7 @@ import { createFixtureTree } from '../../testing/run-schematic';
 import { detectEslintConfig, detectEslintStack, detectLegacyEslintConfig, type EslintStackFacts } from './eslint';
 
 function configOf(path: string, content: string) {
-  return detectEslintConfig(createFixtureTree('standalone-app', { [path]: content }));
+  return detectEslintConfig(createFixtureTree('standalone-app', { [path]: content }), '');
 }
 
 describe('detectEslintConfig', () => {
@@ -56,15 +56,43 @@ module.exports = defineConfig([
       wired: true,
     });
   });
+
+  it('reads a commented-out plugin as not wired and a require as wired', () => {
+    expect(configOf('eslint.config.mjs', "// import cngx from '@cngx/eslint-plugin';\nexport default [];\n")?.wired).toBe(false);
+    expect(configOf('eslint.config.mjs', "/* '@cngx/eslint-plugin' */\nexport default [];\n")?.wired).toBe(false);
+    expect(configOf('eslint.config.cjs', "const cngx = require('@cngx/eslint-plugin');\nmodule.exports = [];\n")?.wired).toBe(true);
+  });
+
+  it('reads a dynamically imported plugin as wired', () => {
+    const config = "const cngx = (await import('@cngx/eslint-plugin')).default;\nexport default [...cngx.configs.recommended];\n";
+    expect(configOf('eslint.config.mjs', config)?.wired).toBe(true);
+  });
+
+  it('prefers the project-level config over the workspace one', () => {
+    const tree = createFixtureTree('standalone-app', {
+      'eslint.config.js': 'module.exports = [];',
+      'projects/web/eslint.config.mjs': 'export default [];',
+    });
+
+    expect(detectEslintConfig(tree, 'projects/web')?.path).toBe('projects/web/eslint.config.mjs');
+    expect(detectEslintConfig(tree, 'projects/other')?.path).toBe('eslint.config.js');
+    expect(detectEslintConfig(tree, '')?.path).toBe('eslint.config.js');
+  });
+
+  it('prefers a project-level legacy config too', () => {
+    const tree = createFixtureTree('standalone-app', { 'projects/web/.eslintrc.json': '{}' });
+
+    expect(detectLegacyEslintConfig(tree, 'projects/web')?.path).toBe('projects/web/.eslintrc.json');
+  });
 });
 
 describe('detectLegacyEslintConfig', () => {
   it('finds a legacy eslintrc config in every name ESLint 8 read', () => {
     for (const path of ['.eslintrc', '.eslintrc.json', '.eslintrc.js', '.eslintrc.cjs', '.eslintrc.yaml', '.eslintrc.yml']) {
-      expect(detectLegacyEslintConfig(createFixtureTree('standalone-app', { [path]: '{}' }))).toEqual({ path });
+      expect(detectLegacyEslintConfig(createFixtureTree('standalone-app', { [path]: '{}' }), '')).toEqual({ path });
     }
     expect(
-      detectLegacyEslintConfig(createFixtureTree('standalone-app', { 'eslint.config.js': 'export default [];' })),
+      detectLegacyEslintConfig(createFixtureTree('standalone-app', { 'eslint.config.js': 'export default [];' }), ''),
     ).toBeUndefined();
   });
 });

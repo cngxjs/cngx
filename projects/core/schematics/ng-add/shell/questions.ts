@@ -9,6 +9,7 @@ import {
   type NgAddOptions,
   type NgAddPreset,
   type PromptAnswers,
+  type PromptChoice,
   type PromptFlow,
   type Provenance,
   type StepResult,
@@ -30,6 +31,33 @@ const ANSWER_KEYS = [
   'floatingFallback',
   'aiTools',
 ] as const;
+
+/** The preset question's choices, the first question of a run. */
+export const PRESET_CHOICES: readonly PromptChoice<NgAddPreset>[] = [
+  { value: 'minimal', name: 'minimal - dependencies only' },
+  { value: 'recommended', name: 'recommended - dependencies, theme, a11y providers, lint' },
+  {
+    value: 'full',
+    name: 'full - recommended plus the German language pack, feedback, the floating fallback and the cngx MCP server for the editors it finds',
+  },
+];
+
+/**
+ * The preset of a run: `--preset`, else the answer to the first question,
+ * else `recommended`. It is asked inside the rule rather than as an
+ * `x-prompt`, so the preflight checklist prints before any question.
+ */
+export async function askPreset(options: NgAddOptions, flow: PromptFlow): Promise<NgAddPreset> {
+  if (options.preset !== undefined) {
+    return options.preset;
+  }
+  return flow.select<NgAddPreset>({
+    key: 'preset',
+    message: 'Which cngx setup do you want?',
+    choices: PRESET_CHOICES,
+    default: 'recommended',
+  });
+}
 
 /** The answers a preset gives before any flag or question. */
 export function presetDefaults(preset: NgAddPreset, facts: ProjectFacts): OnboardingAnswers {

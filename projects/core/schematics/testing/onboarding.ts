@@ -12,6 +12,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
     manifest: parseManifest(JSON.stringify({ dependencies: { '@angular/core': '^21.2.0' } })),
     sourceRoot: 'src',
     hasBuildTarget: true,
+    missingStyleEntries: [],
     angularVersion: '21.2.0',
     angularSource: 'range',
     angularRange: '^21.2.0',

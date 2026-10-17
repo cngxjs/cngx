@@ -11,6 +11,7 @@ on:
   pull_request:
     paths:
       - 'projects/*/package.json'
+      - 'projects/*/schematics/**'
       - 'scripts/consumer-fixture.mjs'
       - 'scripts/pack-libs.mjs'
       - 'scripts/peer-deps-guard.mjs'

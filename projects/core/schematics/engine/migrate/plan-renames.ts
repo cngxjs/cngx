@@ -1,3 +1,4 @@
+import { BUILD_OUTPUT_DIRS, isRenameTarget, NON_SOURCE_DIRS } from '../fs/source-files';
 import { type Tree } from '../fs/tree';
 import { listFiles } from '../fs/walk';
 import { type Change, createNote, type Provenance, type StepResult } from '../plan/change';
@@ -9,21 +10,6 @@ import {
   type RenameResult,
   type RenameTable,
 } from './rename-table';
-
-// Installed packages, build output and tool state are not the app's source.
-const SKIPPED_DIRS = new Set([
-  'node_modules',
-  'dist',
-  'out-tsc',
-  'coverage',
-  '.angular',
-  '.git',
-  '.cngx',
-]);
-
-function isSourceFile(path: string): boolean {
-  return path.endsWith('.html') || (path.endsWith('.ts') && !path.endsWith('.d.ts'));
-}
 
 function filePlan(
   path: string,
@@ -82,7 +68,7 @@ export function planRenames(table: RenameTable, tree: Tree, provenance: Provenan
   }
   const inSource = createSourceRenamer(table);
   const inTemplate = createTemplateRenamer(table);
-  const files = listFiles(tree, '/', { skipDirs: SKIPPED_DIRS, accept: isSourceFile });
+  const files = listFiles(tree, '/', { skipDirs: NON_SOURCE_DIRS, skipRootDirs: BUILD_OUTPUT_DIRS, accept: isRenameTarget });
   const changes = files.flatMap((path) =>
     filePlan(path, tree.readText(path), path.endsWith('.html') ? inTemplate : inSource, provenance),
   );

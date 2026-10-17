@@ -1,14 +1,14 @@
-import { Directive, computed, inject, input } from '@angular/core';
+import { Directive, computed, input } from '@angular/core';
 import { CngxRovingItem } from '@cngx/common/a11y';
 
-import { CNGX_CHIP_GROUP_HOST, type CngxChipGroupHost } from '../chip-group/chip-group-host.token';
+import { injectChipGroupHost } from '../chip-group/chip-group-host.token';
 
 /**
  * In-group chip leaf - applies onto `<cngx-chip>` from
  * `@cngx/common/display` and wires `role="option"` semantics that
  * defer all selection mutations to the surrounding chip-group via
  * `CNGX_CHIP_GROUP_HOST`. Required parent (NOT optional): a
- * `[cngxChipInGroup]` outside any group throws `NullInjectorError`
+ * `[cngxChipInGroup]` outside any group throws `CNGX1068`
  * at construction. Standalone interactive chips use
  * `[cngxChipInteraction]` instead.
  *
@@ -105,7 +105,7 @@ import { CNGX_CHIP_GROUP_HOST, type CngxChipGroupHost } from '../chip-group/chip
   },
 })
 export class CngxChipInGroup<T = unknown> {
-  protected readonly parent = inject<CngxChipGroupHost<T>>(CNGX_CHIP_GROUP_HOST, { host: true });
+  protected readonly parent = injectChipGroupHost<T>();
 
   readonly value = input.required<T>();
   readonly disabled = input<boolean>(false);

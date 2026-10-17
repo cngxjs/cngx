@@ -154,6 +154,12 @@ describe('cngx theme wiring', () => {
     const bridged = readerOf({ 'src/styles.scss': `${DEFINE_THEME}@use '@cngx/themes/material/theme' as cngx-material;\n` });
     expect(existingCngxTheme(createFixtureTree(), bridged, 'src', ['src/styles.scss'])).toBe('src/styles.scss');
   });
+
+  it('reads a commented-out Material bridge as no cngx theme', () => {
+    const commented = readerOf({ 'src/styles.scss': `${DEFINE_THEME}// @use '@cngx/themes/material/theme' as cngx-material;\n` });
+
+    expect(existingCngxTheme(createFixtureTree(), commented, 'src', ['src/styles.scss'])).toBeUndefined();
+  });
 });
 
 describe('detectTailwind', () => {

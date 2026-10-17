@@ -27,7 +27,7 @@ projects/core/schematics/
     versions.ts          versions.json with the local-build fallback
   ng-add/
     index.ts             the single-stage shell
-    schema.json          options; x-prompt only for preset
+    schema.json          options, no x-prompt (every question runs in the rule)
     detect/              detectProject(tree, workspace): ProjectFacts in detect.ts,
                          composed from workspace, styles, eslint, ai-tooling, bootstrap
     steps/               pure plan<Step>(facts, answers, versions) per concern
@@ -113,6 +113,10 @@ breaking change adds a migration:
    and a `.gitkeep` alone is no fixture. The migration-gate reads only the
    `!` in a PR title, so a breaking change must carry it.
 
+No release uses a rename table yet; the refresh entry runs the rename engine
+with `EMPTY_RENAME_TABLE`, so `planRenames` and the codemod hooks are the
+contract for the first breaking release, not dead code.
+
 Every migration also re-runs the install steps `.cngx/install.json` records
 for each project (the theme once the cngx version moved, the helper README
 once the MCP version moved, planned once from the libs and steps of every
@@ -157,6 +161,11 @@ only when its source `package.json` declares `schematics`. Both files come
 from `stampSchematicsDist`, which `scripts/pack-libs.mjs` runs on the staged
 core as well, so a packed core carries the same `versions.json` and refresh
 entry as a published one (versions from the workspace, no registry call).
+An unstamped `dist/` (version `0.0.0-PLACEHOLDER`, e.g. through `npm link`)
+pins no `@cngx/*` version: `ng add` keeps the declared ranges and plans one
+note naming `pack-libs`, and a shim follows the installed core or stops when
+there is none. The placeholder is joined at runtime, since the stamping
+rewrites every literal of it in the bundles.
 
 ## CLI behaviour worth knowing
 

@@ -4,9 +4,12 @@ import { posix } from 'node:path';
 
 import {
   type AiTool,
+  BUILD_OUTPUT_DIRS,
   declaredRange,
+  isAppSource,
   type LanguagePackArgument,
   listFiles,
+  NON_SOURCE_DIRS,
   type PackageManifest,
   parseManifest,
   readProviderCalls,
@@ -24,7 +27,7 @@ import {
   mcpConfigsOf,
   type McpConfigState,
 } from './ai-tooling';
-import { isSourceFile, maturityOf, rootProvidersPath, SKIPPED_SOURCE_DIRS } from './bootstrap';
+import { maturityOf, rootProvidersPath } from './bootstrap';
 import {
   detectEslintConfig,
   detectEslintStack,
@@ -49,6 +52,7 @@ import {
   angularVersionOf,
   buildOptions,
   globalStylesheet,
+  isLocalStylesheet,
   hasBuildTarget,
   type Read,
   applicationsOf,
@@ -101,6 +105,8 @@ export interface ProjectFacts {
   readonly angularRange: string | undefined;
   /** The global stylesheet; `undefined` when the build lists none. */
   readonly stylesPath: string | undefined;
+  /** Local stylesheets the build lists under `styles` that do not exist; the preflight refuses on them. */
+  readonly missingStyleEntries: readonly string[];
   /** `@cngx/themes/cngx.css` is imported by a global stylesheet or listed as a style entry. */
   readonly cngxStylesheet: boolean;
   /** The file already wiring a cngx theme: a `cngx-theme.*` file or a stylesheet using the Material bridge. */
@@ -158,7 +164,11 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
 
   // The component count is the only fact read from source contents, so only
   // the source files are read up front; the cache serves them to later reads.
-  const appSources = listFiles(tree, sourceRoot, { skipDirs: SKIPPED_SOURCE_DIRS, accept: isSourceFile }).map((path) => ({
+  const appSources = listFiles(tree, sourceRoot, {
+    skipDirs: NON_SOURCE_DIRS,
+    skipRootDirs: BUILD_OUTPUT_DIRS,
+    accept: isAppSource,
+  }).map((path) => ({
     path,
     content: tree.readText(path),
   }));
@@ -196,6 +206,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     angularSource: angular.source,
     angularRange,
     stylesPath,
+    missingStyleEntries: entries.filter((entry) => isLocalStylesheet(entry) && read(entry) === undefined),
     cngxStylesheet: importsCngxStylesheet(read, entries),
     cngxThemePath: existingCngxTheme(tree, read, sourceRoot, entries),
     cngxThemeListed: Object.values(CNGX_THEME_FILES).some((name) =>
@@ -225,8 +236,8 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     agentsMd: instructionState(read, 'AGENTS.md'),
     claudeInstructions: claudeInstructionsOf(read),
     helperReadme: helperReadmeOf(read),
-    eslintConfig: detectEslintConfig(tree),
-    legacyEslintConfig: detectLegacyEslintConfig(tree),
+    eslintConfig: detectEslintConfig(tree, project.root),
+    legacyEslintConfig: detectLegacyEslintConfig(tree, project.root),
     eslintStack: detectEslintStack(manifest),
     sourceLocale: sourceLocaleOf(project),
     maturity: maturityOf(componentCount, manifest, providers, rootProvidersFile === mainPath),

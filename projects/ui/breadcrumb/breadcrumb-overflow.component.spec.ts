@@ -3,7 +3,12 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { CNGX_BREADCRUMB, type CngxBreadcrumbHost, type CngxBreadcrumbItem } from '@cngx/common/interactive';
+import {
+  CNGX_BREADCRUMB,
+  CngxBreadcrumb,
+  type CngxBreadcrumbHost,
+  type CngxBreadcrumbItem,
+} from '@cngx/common/interactive';
 
 import { CngxBreadcrumbOverflow } from './breadcrumb-overflow.component';
 import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive';
@@ -289,5 +294,42 @@ describe('CngxBreadcrumbOverflow config cascade', () => {
       .nativeElement as HTMLElement;
     const trigger = root.querySelector('button.cngx-breadcrumb__overflow-trigger') as HTMLButtonElement;
     expect(trigger.getAttribute('aria-label')).toBe('Explicit trigger');
+  });
+});
+
+@Component({
+  standalone: true,
+  selector: 'ov-nav-host',
+  imports: [CngxBreadcrumb, CngxBreadcrumbOverflow],
+  template: `
+    <nav cngxBreadcrumb aria-label="Breadcrumb">
+      <cngx-breadcrumb-overflow />
+    </nav>
+  `,
+})
+class OvNavHost {}
+
+describe('CngxBreadcrumbOverflow placement (CNGX3024)', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    stubPopoverApi();
+  });
+
+  it('throws CNGX3024 outside a breadcrumb', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    expect(() => TestBed.createComponent(OvHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX3024',
+        message: expect.stringMatching(
+          /^CNGX3024: \[cngx-breadcrumb-overflow\] must be placed inside an element with \[cngxBreadcrumb\]\./,
+        ),
+      }),
+    );
+  });
+
+  it('does not throw inside [cngxBreadcrumb]', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    expect(() => TestBed.createComponent(OvNavHost).detectChanges()).not.toThrow();
   });
 });

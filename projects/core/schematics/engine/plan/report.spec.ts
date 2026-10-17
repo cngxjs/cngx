@@ -126,6 +126,14 @@ describe('createReport', () => {
     ]);
   });
 
+  it('moves a change that wrote nothing to the steps already in place', () => {
+    const report = createReport(createChangePlan([{ changes: CHANGES, skipped: [] }]), new Set(['style-import']));
+
+    expect(report.changes).not.toContain('Import cngx.css');
+    expect(report.files).not.toContain('src/styles.css');
+    expect(report.skipped).toContainEqual({ id: 'style-import', label: 'Import cngx.css', reason: 'already in place' });
+  });
+
   it('reports an empty plan as nothing changed', () => {
     const report = createReport(createChangePlan([]));
 

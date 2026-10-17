@@ -286,7 +286,7 @@ describe('CngxTabsFragmentSync', () => {
     expect(lastExtras.fragment).toBeUndefined();
   });
 
-  it('is a graceful no-op when Router is not provided (dev-warn only)', () => {
+  it('is a graceful no-op without provideRouter(...) (dev-warn only)', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -298,9 +298,9 @@ describe('CngxTabsFragmentSync', () => {
     warnSpy.mockRestore();
   });
 
-  it('dev-warns once with CNGX1031 when Router is not provided', () => {
+  it('dev-warns once with CNGX1031 without provideRouter(...)', () => {
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+      providers: [provideZonelessChangeDetection()],
     });
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -309,15 +309,15 @@ describe('CngxTabsFragmentSync', () => {
 
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toMatch(
-      /^CNGX1031: \[cngxTabsFragmentSync\] no Router available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable deep-linking\. Find more at /,
+      /^CNGX1031: \[cngxTabsFragmentSync\] no Router \/ ActivatedRoute available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable deep-linking\. Find more at /,
     );
     expect(warn.mock.calls[0][0]).toContain('to enable deep-linking.');
   });
 
-  it('writes nothing to the console without a Router in production', () => {
+  it('writes nothing to the console without provideRouter(...) in production', () => {
     vi.stubGlobal('ngDevMode', false);
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), { provide: Router, useValue: null }],
+      providers: [provideZonelessChangeDetection()],
     });
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 

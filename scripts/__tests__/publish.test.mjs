@@ -6,8 +6,11 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { PACKED_LIBS } from '../cngx-libs.mjs';
+
 import {
   assertPinsPublished,
+  assertWholeGroup,
   assertReleaseMigration,
   checkReleaseMigrations,
   releaseMigrationKeys,
@@ -230,6 +233,18 @@ describe('publishable libs', () => {
   });
 });
 
+describe('assertWholeGroup', () => {
+  it('passes the whole lockstep group in any order', () => {
+    expect(() => assertWholeGroup([...PACKED_LIBS].reverse())).not.toThrow();
+  });
+
+  it('refuses a partial set and names the missing members', () => {
+    expect(() => assertWholeGroup(['core'])).toThrow(
+      `@cngx/* releases in lockstep; --lib core leaves out ${PACKED_LIBS.filter((lib) => lib !== 'core').join(', ')}. Publish every package, or none.`,
+    );
+  });
+});
+
 describe('findPlaceholders', () => {
   it('reports the manifest fields that still carry the placeholder', () => {
     const pkg = {
@@ -345,8 +360,10 @@ describe('assertReleaseMigration', () => {
 describe('checkReleaseMigrations', () => {
   const SOURCE = join(ROOT_DIR, 'projects', 'core', 'schematics', 'migrations', 'migrations.json');
 
-  it('passes the source collection for a release with and without its own migration', () => {
-    expect(Object.keys(checkReleaseMigrations(SOURCE, '0.1.0', '.ts').schematics)).toEqual(['migration-v0.1.0']);
+  it('keys the refresh entry to any release of the source collection, which holds no hand-written migration', () => {
+    expect(Object.keys(checkReleaseMigrations(SOURCE, '0.1.1', '.ts').schematics)).toEqual([
+      refreshMigrationKey('0.1.1'),
+    ]);
     expect(checkReleaseMigrations(SOURCE, '0.1.1', '.ts').schematics[refreshMigrationKey('0.1.1')]?.factory).toBe(
       REFRESH_FACTORY,
     );

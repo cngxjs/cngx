@@ -17,7 +17,7 @@
 
 import { build } from 'esbuild';
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -78,6 +78,20 @@ function copyInto(srcRoot, outRoot, relativePath) {
   copyFileSync(from, to);
 }
 
+// The source collections point `$schema` at the workspace's node_modules for
+// the editor; a consumer's install has no such path, so the shipped copy
+// leaves the key out.
+function copyCollection(srcRoot, outRoot, relativePath) {
+  const from = join(srcRoot, relativePath);
+  if (!existsSync(from)) {
+    return;
+  }
+  const { $schema: _schema, ...collection } = JSON.parse(readFileSync(from, 'utf8'));
+  const to = join(outRoot, relativePath);
+  mkdirSync(dirname(to), { recursive: true });
+  writeFileSync(to, `${JSON.stringify(collection, null, 2)}\n`);
+}
+
 function schemaFiles(srcRoot) {
   return readdirSync(srcRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && !NON_ENTRY_DIRS.has(entry.name))
@@ -121,7 +135,10 @@ async function buildLib(lib) {
     loader: { '.tpl': 'text' },
   });
 
-  for (const file of ['collection.json', join('migrations', 'migrations.json'), ...schemaFiles(srcRoot)]) {
+  for (const file of ['collection.json', join('migrations', 'migrations.json')]) {
+    copyCollection(srcRoot, outRoot, file);
+  }
+  for (const file of schemaFiles(srcRoot)) {
     copyInto(srcRoot, outRoot, file);
   }
   const shimSchema = join(outRoot, 'ng-add', 'schema.json');
