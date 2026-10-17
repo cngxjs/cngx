@@ -26,8 +26,10 @@
 //     fails until the list is updated.
 //
 // Known limits, exactly what is not compared:
-// - every page in UNQUOTED_PAGES: its prose about the message is not
-//   compared with the message at all;
+// - every page in UNQUOTED_PAGES (none today): its prose about the
+//   message is not compared with the message at all;
+// - the prose around a quote: a page is checked through its quotes, so a
+//   sentence that paraphrases the message is not compared;
 // - a backticked span that neither follows a Q1 lead-in in a paragraph
 //   about the message nor starts with the page's own `CNGXnnnn: `;
 // - the text a wildcard stands for, so a quote that invents the value of
@@ -62,44 +64,11 @@ const QUOTE_EXEMPT = [
 
 /**
  * Pages with no quote that starts with their own `CNGXnnnn: `: Q2 has
- * nothing to compare on them. Exact list (Q4); shrink it by quoting the
- * message start on the page.
+ * nothing to compare on them. Exact list (Q4), empty since every page
+ * quotes its message start; a new page quotes its own instead of joining.
  */
-const UNQUOTED_PAGES = [
-  'CNGX1006',
-  'CNGX1007',
-  'CNGX1008',
-  'CNGX1009',
-  'CNGX1029',
-  'CNGX1032',
-  'CNGX1044',
-  'CNGX1045',
-  'CNGX1046',
-  'CNGX1047',
-  'CNGX1048',
-  'CNGX1049',
-  'CNGX1051',
-  'CNGX1052',
-  'CNGX1053',
-  'CNGX1064',
-  'CNGX1065',
-  'CNGX2006',
-  'CNGX2007',
-  'CNGX2008',
-  'CNGX2009',
-  'CNGX2010',
-  'CNGX2012',
-  'CNGX3001',
-  'CNGX3002',
-  'CNGX3003',
-  'CNGX3005',
-  'CNGX3006',
-  'CNGX3011',
-  'CNGX3014',
-  'CNGX3015',
-  'CNGX3016',
-  'CNGX3017',
-];
+/** @type {string[]} */
+const UNQUOTED_PAGES = [];
 
 const LEAD_IN = /(?:starts with|(?:message|it) reads|for example|:)\s*$/;
 /** A bare `[selector]` or `fn()`: names the owner, does not quote the message. */
