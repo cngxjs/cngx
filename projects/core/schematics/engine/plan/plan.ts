@@ -130,12 +130,3 @@ export function planSections(plan: ChangePlan): readonly PlanSection[] {
 export function describePlanItem(item: PlanItem): string {
   return item.reason === undefined ? item.label : `${item.label} - ${item.reason}`;
 }
-
-/** Plain text of the plan for `--dry-run` output and snapshots. */
-export function describeChangePlan(plan: ChangePlan): string {
-  const lines = planSections(plan).flatMap((section) => [
-    `${section.title} (${section.count}):`,
-    ...section.items.map((item) => `  ${section.marker} ${describePlanItem(item)}`),
-  ]);
-  return lines.length === 0 ? 'Nothing to change.' : lines.join('\n');
-}

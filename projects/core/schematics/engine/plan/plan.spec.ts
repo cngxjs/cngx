@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { type Change, type SkippedStep, type StepResult } from './change';
-import { createChangePlan, describeChangePlan, planSections } from './plan';
+import { createChangePlan, planSections } from './plan';
 
 const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
 
@@ -53,53 +53,6 @@ describe('createChangePlan', () => {
 
     expect(JSON.stringify({ results, warnings })).toBe(before);
     expect(plan.warnings).not.toBe(warnings);
-  });
-});
-
-describe('describeChangePlan', () => {
-  it('lists planned changes, idempotent hits and warnings', () => {
-    const plan = createChangePlan([DEPENDENCIES, PROVIDERS], ['no eslint config found']);
-
-    expect(describeChangePlan(plan)).toBe(
-      [
-        'Planned (2):',
-        '  + Add @cngx/core@0.1.0 - lockstep with @cngx/ui',
-        '  + Add provideA11yPreferences(withPersistence()) - recommended preset',
-        'Already in place (1):',
-        '  = Import cngx.css - styles.css already imports it',
-        'Warnings (1):',
-        '  ! no eslint config found',
-      ].join('\n'),
-    );
-  });
-
-  it('lists notes apart from the planned changes', () => {
-    const plan = createChangePlan([
-      {
-        changes: [
-          {
-            kind: 'note',
-            id: 'lint:config',
-            label: 'Skip the eslint entry',
-            reason: 'no eslint flat config found',
-            provenance: { source: 'ng-add', version: '0.1.0' },
-          },
-        ],
-        skipped: [],
-      },
-    ]);
-
-    expect(describeChangePlan(plan)).toBe(['Notes (1):', '  - Skip the eslint entry - no eslint flat config found'].join('\n'));
-  });
-
-  it('omits empty sections', () => {
-    expect(describeChangePlan(createChangePlan([DEPENDENCIES]))).toBe(
-      ['Planned (1):', '  + Add @cngx/core@0.1.0 - lockstep with @cngx/ui'].join('\n'),
-    );
-  });
-
-  it('says so when there is nothing to do', () => {
-    expect(describeChangePlan(createChangePlan([]))).toBe('Nothing to change.');
   });
 });
 
@@ -172,11 +125,5 @@ describe('planSections', () => {
         { label: 'Add @cngx/eslint-plugin@0.1.0', reason: 'already pinned' },
       ],
     });
-  });
-
-  it('prints the folded line in the plain plan text', () => {
-    const plan = createChangePlan([{ changes: [cngx('utils'), cngx('core')], skipped: [] }]);
-
-    expect(describeChangePlan(plan)).toBe(['Planned (2):', '  + Add 2 @cngx packages at 0.1.0 - utils, core'].join('\n'));
   });
 });
