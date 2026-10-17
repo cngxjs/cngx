@@ -282,6 +282,28 @@ describe('CngxTreeSelect', () => {
     }
   });
 
+  for (const key of ['Enter', ' ']) {
+    it(`leaves ${JSON.stringify(key)} on a chip remove button to the button`, () => {
+      f.host.values.set([
+        { id: 'a1', name: 'Alpha-1' },
+        { id: 'a2', name: 'Alpha-2' },
+      ]);
+      f.fixture.detectChanges();
+      const chipRemove = f.root.querySelector<HTMLButtonElement>('.cngx-chip__remove')!;
+      chipRemove.focus();
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      chipRemove.dispatchEvent(event);
+      f.fixture.detectChanges();
+      expect(f.tree.panelOpen()).toBe(false);
+      expect(event.defaultPrevented).toBe(false);
+
+      // jsdom has no native button activation; click() stands in for it.
+      chipRemove.click();
+      f.fixture.detectChanges();
+      expect(f.host.values().map((v) => v.id)).toEqual(['a2']);
+    });
+  }
+
   it('Escape on the trigger closes the panel when open', () => {
     f.tree.open();
     f.fixture.detectChanges();

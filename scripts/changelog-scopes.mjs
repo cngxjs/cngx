@@ -38,6 +38,9 @@ export const LIBRARY_SCOPES = [
   'forms/input',
   'forms/select',
   'forms/filter-builder',
+  // Cross-lib: the select family plus the listbox atoms it is built on
+  // (common/interactive listbox, forms/select), for changes that span both.
+  'select-family',
   'data-display',
   'data-display/treetable',
   'interop',

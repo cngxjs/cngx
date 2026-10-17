@@ -31,8 +31,8 @@
  * on `--cngx-color-border` / `--cngx-color-primary` cascade through:
  *
  * - `--cngx-tree-select-trigger-border` -> `--cngx-color-border`
- * - `--cngx-tree-select-focus-ring` -> `--cngx-color-primary` (mixed
- *   to 80% via `color-mix()` for a softer halo)
+ * - `--cngx-tree-select-focus-ring` -> `--cngx-color-primary` (opaque,
+ *   same ring as the sibling selects)
  * - `--cngx-select-placeholder-color` -> shared family token, dark-mode
  *   handled centrally in `shared/select-base.css`
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
@@ -129,7 +129,7 @@
   @property --cngx-tree-select-focus-ring {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid oklch(0.66 0.19 50 / 0.8);
+    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
@@ -146,11 +146,10 @@
    * foundation chain. The border shorthand pins the structural part
    * (1px solid) and inherits the color via the delegating
    * border-color chain; the focus-ring shorthand pins 2px solid
-   * and inherits the primary alpha. */
+   * and inherits the primary colour. */
   :root {
     --cngx-tree-select-trigger-border: 1px solid var(--cngx-color-border);
-    --cngx-tree-select-focus-ring: 2px solid
-      color-mix(in oklch, var(--cngx-color-primary) 80%, transparent);
+    --cngx-tree-select-focus-ring: 2px solid var(--cngx-color-primary);
   }
 }
 
@@ -219,7 +218,7 @@
     .cngx-tree-select__trigger:focus-visible {
       outline: var(
         --cngx-tree-select-focus-ring,
-        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50 / 0.8))
+        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
       );
       outline-offset: 1px;
     }

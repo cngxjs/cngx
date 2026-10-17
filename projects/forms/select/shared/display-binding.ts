@@ -69,7 +69,12 @@ export function createDisplayBinding<T>(opts: DisplayBindingOptions<T>): Display
     if (el.value === next && !search.hasValue()) {
       return;
     }
-    writingFlag.set(true);
+    // Raise the flag only when clearing actually notifies the term
+    // effect, which resets it. An already-empty term does not change, the
+    // effect never runs, and a raised flag would swallow the next user term.
+    if (untracked(opts.searchTerm) !== '') {
+      writingFlag.set(true);
+    }
     search.clear();
     if (next !== '') {
       el.value = next;

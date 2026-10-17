@@ -16,6 +16,8 @@
  *   outline + offset
  * - `[aria-disabled='true']` on the trigger - `cursor: not-allowed`; the
  *   field skin fades it by colour
+ * - `[aria-invalid='true']` on the trigger - danger border + box-shadow
+ *   glow at focus-within time
  * - `:hover` on `.cngx-select-shell__clear` - full text colour
  * - `:focus-visible` on the clear button - 2px primary-tinted outline
  *
@@ -249,6 +251,16 @@
 
     .cngx-select-shell__trigger[aria-disabled='true'] {
       cursor: not-allowed;
+    }
+
+    .cngx-select-shell__trigger[aria-invalid='true'] {
+      border-color: var(--cngx-select-trigger-invalid-border-color, oklch(0.6 0.18 25));
+      border-width: var(--cngx-select-trigger-invalid-border-width, 1px);
+    }
+    .cngx-select-shell__trigger[aria-invalid='true']:focus-within {
+      outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
+      outline-offset: var(--cngx-select-focus-offset, 2px);
+      box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
     }
 
     .cngx-select-shell__label {

@@ -56,24 +56,24 @@ test.describe('CngxSelect demo', () => {
     await trigger.focus();
     await trigger.click();
 
-    const listbox = section.locator('[cngxListbox]');
+    // aria-activedescendant lives on the focused trigger (ARIA 1.2 combobox).
     // Wait 350ms+ between keys so each letter starts a fresh typeahead buffer
-    // (300ms debounce + margin) — exercises the "only works once" regression.
+    // (300ms debounce + margin) - exercises the "only works once" regression.
     // Options are Red / Green / Blue (English library defaults).
     await page.keyboard.press('g');
-    await expect(listbox).toHaveAttribute('aria-activedescendant', /cngx-option-\d+/);
-    const afterG = await listbox.getAttribute('aria-activedescendant');
+    await expect(trigger).toHaveAttribute('aria-activedescendant', /cngx-option-\d+/);
+    const afterG = await trigger.getAttribute('aria-activedescendant');
     expect(await page.locator(`#${afterG}`).textContent()).toContain('Green');
 
     await page.waitForTimeout(500);
     await page.keyboard.press('b');
-    const afterB = await listbox.getAttribute('aria-activedescendant');
+    const afterB = await trigger.getAttribute('aria-activedescendant');
     expect(afterB).not.toBe(afterG);
     expect(await page.locator(`#${afterB}`).textContent()).toContain('Blue');
 
     await page.waitForTimeout(500);
     await page.keyboard.press('r');
-    const afterR = await listbox.getAttribute('aria-activedescendant');
+    const afterR = await trigger.getAttribute('aria-activedescendant');
     expect(await page.locator(`#${afterR}`).textContent()).toContain('Red');
 
     await page.keyboard.press('Enter');
@@ -81,6 +81,7 @@ test.describe('CngxSelect demo', () => {
       section.locator('.event-row', { hasText: 'Value' }).locator('.event-value'),
     ).toHaveText('red');
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(trigger).not.toHaveAttribute('aria-activedescendant', /.*/);
   });
 
   test('click-outside closes the panel', async ({ page }) => {

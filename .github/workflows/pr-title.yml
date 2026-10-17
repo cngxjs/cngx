@@ -62,6 +62,7 @@ jobs:
             forms/input
             forms/select
             forms/filter-builder
+            select-family
             data-display
             data-display/treetable
             interop

@@ -212,6 +212,21 @@ describe('CngxTypeahead - standalone', () => {
     expect(typeahead.panelOpen()).toBe(false);
   });
 
+  it('exposes aria-activedescendant on the input only while the panel is open', () => {
+    const { fixture, typeahead, input } = setup();
+    input.focus();
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    flush(fixture);
+    expect(typeahead.panelOpen()).toBe(true);
+    const activeId = input.getAttribute('aria-activedescendant');
+    expect(activeId).toBeTruthy();
+    expect(document.getElementById(activeId!)).not.toBeNull();
+
+    typeahead.close();
+    flush(fixture);
+    expect(input.hasAttribute('aria-activedescendant')).toBe(false);
+  });
+
   it('focus() moves DOM focus onto the input', () => {
     const { typeahead, input } = setup();
     typeahead.focus();
@@ -456,6 +471,54 @@ describe('CngxTypeahead - focus moves into the sheet inside the opening call', (
     flush(fixture);
     expect(typeahead.panelOpen()).toBe(true);
     expect(document.activeElement).toBe(headerInput);
+  });
+});
+
+describe('CngxTypeahead - first search term after a value write', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [StandaloneHost] });
+  });
+
+  function typeInto(
+    fixture: ReturnType<typeof TestBed.createComponent<StandaloneHost>>,
+    term: string,
+  ): void {
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-typeahead__input',
+    ) as HTMLInputElement;
+    input.focus();
+    input.value = term;
+    input.dispatchEvent(new Event('input'));
+    vi.advanceTimersByTime(300);
+    flush(fixture);
+  }
+
+  it('emits searchTermChange for the first term typed after an initial value', () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(StandaloneHost);
+    fixture.componentInstance.value.set({ id: 2, name: 'Bob' });
+    flush(fixture);
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-typeahead__input',
+    ) as HTMLInputElement;
+    expect(input.value).toBe('Bob');
+
+    typeInto(fixture, 'ber');
+
+    expect(fixture.componentInstance.searchLog.at(-1)).toBe('ber');
+  });
+
+  it('emits searchTermChange for the first term typed after an unfocused programmatic write', () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(StandaloneHost);
+    flush(fixture);
+    fixture.componentInstance.value.set({ id: 3, name: 'Charlie' });
+    flush(fixture);
+
+    typeInto(fixture, 'ber');
+
+    expect(fixture.componentInstance.searchLog.at(-1)).toBe('ber');
   });
 });
 
