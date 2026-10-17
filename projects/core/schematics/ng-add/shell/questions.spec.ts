@@ -138,6 +138,17 @@ describe('askPreset', () => {
     expect(await askPreset({}, flow)).toBe('recommended');
     expect(asked).toEqual([]);
   });
+
+  it('defaults to the recorded preset on a re-run, asked or not', async () => {
+    const asked: string[] = [];
+    const terminal = createPromptFlow({ canPrompt: true, adapter: recordingAdapter(asked) });
+    const noTerminal = createPromptFlow({ canPrompt: false, adapter: recordingAdapter([]) });
+
+    expect(await askPreset({}, terminal, 'full')).toBe('full');
+    expect(await askPreset({}, noTerminal, 'minimal')).toBe('minimal');
+    expect(await askPreset({ preset: 'recommended' }, noTerminal, 'full')).toBe('recommended');
+    expect(asked).toEqual(['preset']);
+  });
 });
 
 describe('askOnboarding', () => {

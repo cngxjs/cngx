@@ -866,6 +866,17 @@ describe('ngAdd', () => {
     expect(second.logs).toContain('cngx is already set up; nothing changed.');
   });
 
+  it('keeps a recorded full preset on a re-run without --preset or a terminal', async () => {
+    const first = await runRule(ngAdd({ preset: 'full', yes: true }), createFixtureTree('standalone-app', { 'CLAUDE.md': '' }));
+    const files = first.tree.files.map((path) => [path, first.tree.readContent(path)]);
+
+    const second = await runRule(ngAdd({ yes: true }), first.tree);
+
+    expect(second.tree.files.map((path) => [path, second.tree.readContent(path)])).toEqual(files);
+    expect(second.logs).toContain('cngx is already set up; nothing changed.');
+    expect(second.logs.join('\n')).not.toContain('Start from the');
+  });
+
   it('names a re-run that starts from another preset than the recorded one', async () => {
     const first = await runRule(ngAdd({ yes: true }), createFixtureTree());
 

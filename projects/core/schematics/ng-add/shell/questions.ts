@@ -44,10 +44,14 @@ export const PRESET_CHOICES: readonly PromptChoice<NgAddPreset>[] = [
 
 /**
  * The preset of a run: `--preset`, else the answer to the first question,
- * else `recommended`. It is asked inside the rule rather than as an
+ * whose default is the recorded preset, else `recommended`. It is asked inside the rule rather than as an
  * `x-prompt`, so the preflight checklist prints before any question.
  */
-export async function askPreset(options: NgAddOptions, flow: PromptFlow): Promise<NgAddPreset> {
+export async function askPreset(
+  options: NgAddOptions,
+  flow: PromptFlow,
+  recorded: NgAddPreset = 'recommended',
+): Promise<NgAddPreset> {
   if (options.preset !== undefined) {
     return options.preset;
   }
@@ -55,7 +59,7 @@ export async function askPreset(options: NgAddOptions, flow: PromptFlow): Promis
     key: 'preset',
     message: 'Which cngx setup do you want?',
     choices: PRESET_CHOICES,
-    default: 'recommended',
+    default: recorded,
   });
 }
 

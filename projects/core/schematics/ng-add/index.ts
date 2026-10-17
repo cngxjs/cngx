@@ -152,15 +152,6 @@ export function ngAdd(flags: NgAddFlags): Rule {
     assertBuildTarget(facts);
     assertStylesheetsExist(facts);
 
-    const options: NgAddOptions = {
-      ...flagged,
-      preset: await askPreset(flagged, createPromptFlow({ canPrompt: interactive })),
-    };
-
-    const flow = createPromptFlow({
-      canPrompt: interactive && options.preset !== 'minimal',
-      answers: givenAnswers(options),
-    });
     const stored = readInstallManifest(tree);
     const manifest = manifestOf(stored);
     const previous = manifest?.projects[facts.project];
@@ -169,6 +160,15 @@ export function ngAdd(flags: NgAddFlags): Rule {
       previous === undefined
         ? undefined
         : readRecordedAnswers(previous, (preset) => presetDefaults(preset, facts));
+    const options: NgAddOptions = {
+      ...flagged,
+      preset: await askPreset(flagged, createPromptFlow({ canPrompt: interactive }), recorded?.preset),
+    };
+
+    const flow = createPromptFlow({
+      canPrompt: interactive && options.preset !== 'minimal',
+      answers: givenAnswers(options),
+    });
     const { answers, answeredLibs, explicitAiTools } = await askOnboarding(
       facts,
       options,
