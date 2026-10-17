@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { type Change, type SkippedStep, type StepResult } from './change';
-import { createChangePlan, planSections } from './plan';
+import { createChangePlan, LOCKSTEP_REASON, planSections } from './plan';
 
 const PROVENANCE = { source: 'ng-add', version: '0.1.0' } as const;
 
@@ -58,7 +58,7 @@ describe('createChangePlan', () => {
 
 describe('planSections', () => {
   const cngx = (name: string, overrides: Partial<Change> = {}): Change =>
-    ({ ...DEPENDENCY, id: `dependency:@cngx/${name}`, label: `Add @cngx/${name}@0.1.0`, name: `@cngx/${name}`, ...overrides }) as Change;
+    ({ ...DEPENDENCY, id: `dependency:@cngx/${name}`, label: `Add @cngx/${name}@0.1.0`, name: `@cngx/${name}`, reason: LOCKSTEP_REASON, ...overrides }) as Change;
 
   it('folds the lockstep @cngx additions into one line where the first stood, and counts every change', () => {
     const cdk: Change = { ...DEPENDENCY, id: 'dependency:@angular/cdk', label: 'Add @angular/cdk@^21.2.0', name: '@angular/cdk', version: '^21.2.0' };
@@ -74,6 +74,35 @@ describe('planSections', () => {
         { label: 'Add provideA11yPreferences(withPersistence())', reason: 'recommended preset' },
       ],
     });
+  });
+
+  it('keeps a shared reason other than the lockstep one on the folded line', () => {
+    const replaces = { reason: `replaces ^0.0.9; ${LOCKSTEP_REASON}` };
+    const plan = createChangePlan([{ changes: [cngx('utils', replaces), cngx('core', replaces)], skipped: [] }]);
+
+    expect(planSections(plan)[0].items).toEqual([
+      { label: 'Add 2 @cngx packages at 0.1.0', reason: 'utils, core; replaces ^0.0.9' },
+    ]);
+  });
+
+  it('folds only the @cngx additions that share a reason', () => {
+    const plan = createChangePlan([
+      {
+        changes: [
+          cngx('utils', { reason: `replaces ^0.0.9; ${LOCKSTEP_REASON}` }),
+          cngx('core', { reason: `replaces ^0.0.8; ${LOCKSTEP_REASON}` }),
+          cngx('forms'),
+          cngx('ui'),
+        ],
+        skipped: [],
+      },
+    ]);
+
+    expect(planSections(plan)[0].items).toEqual([
+      { label: 'Add @cngx/utils@0.1.0', reason: `replaces ^0.0.9; ${LOCKSTEP_REASON}` },
+      { label: 'Add @cngx/core@0.1.0', reason: `replaces ^0.0.8; ${LOCKSTEP_REASON}` },
+      { label: 'Add 2 @cngx packages at 0.1.0', reason: 'forms, ui' },
+    ]);
   });
 
   it('keeps a single @cngx addition, a devDependency and one with its own reason on their own lines', () => {

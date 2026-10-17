@@ -35,6 +35,9 @@ export interface PlanSection {
 
 const CNGX_SCOPE = '@cngx/';
 
+/** Why every @cngx package is pinned to one version; a folded line leaves it out. */
+export const LOCKSTEP_REASON = 'every @cngx package stays on one version';
+
 // A package on the release line: what one fold line stands for.
 interface Lockstep {
   readonly name: string;
@@ -100,8 +103,13 @@ function foldLockstep<T extends { readonly label: string; readonly reason: strin
   return items;
 }
 
-const packageNames = (group: readonly Lockstep[]): string =>
-  group.map((lockstep) => lockstep.name.slice(CNGX_SCOPE.length)).join(', ');
+// The folded line names the packages; a shared reason beyond the lockstep
+// one (`replaces ^0.0.9`) stays on it, so a re-run still says what it replaces.
+function packageNames(group: readonly Lockstep[], reason: string): string {
+  const names = group.map((lockstep) => lockstep.name.slice(CNGX_SCOPE.length)).join(', ');
+  const extra = reason === LOCKSTEP_REASON ? '' : reason.replace(`; ${LOCKSTEP_REASON}`, '');
+  return extra === '' ? names : `${names}; ${extra}`;
+}
 
 /** The plan list in print order, empty sections left out. */
 export function planSections(plan: ChangePlan): readonly PlanSection[] {

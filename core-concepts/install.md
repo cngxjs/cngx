@@ -72,6 +72,9 @@ install. Nothing outside the project is written.
    instead of ticked tasks, since nothing has run yet. The `@cngx/*`
    packages that move to one release read as one line (`Add 8 @cngx
    packages at <version>`), in the plan and in the steps already in place;
+   packages that share a reason beyond the lockstep one keep it on that line
+   (`utils, core; replaces ^0.0.9`), and packages with different reasons stay
+   on their own lines;
    on a coloured terminal the markers and reasons
    take the Angular CLI's colours.
 5. **Confirm.** An app that already has components beyond the root one

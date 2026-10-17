@@ -204,7 +204,7 @@ describe('createPlainRenderer', () => {
 
     await plain.todo(createChangePlan([{ changes: [utils, DEPENDENCY], skipped: [] }]));
 
-    expect(lines).toEqual(['info Planned (2):', 'info   + Add 2 @cngx packages at 0.1.0 - utils, core']);
+    expect(lines).toEqual(['info Planned (2):', 'info   + Add 2 @cngx packages at 0.1.0 - utils, core; lockstep with @cngx/ui']);
   });
 
   it('says so when the plan is empty', async () => {
