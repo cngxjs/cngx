@@ -36,22 +36,26 @@ describe('readInstallManifest', () => {
     expect(readInstallManifest(createMemoryTree())).toEqual({ state: 'absent' });
   });
 
-  it.each(['[]', 'not json', '{ "schemaVersion": 1 }', '{ "schemaVersion": 2, "projects": { "app": {} } }'])(
-    'reads a present file cngx cannot parse as unreadable: %s',
-    (content) => {
-      expect(readInstallManifest(createMemoryTree({ '.cngx/install.json': content }))).toEqual({
-        state: 'unreadable',
-        content: Buffer.from(content),
-      });
-    },
-  );
+  it.each([
+    ['not json', 'not-json'],
+    ['{ "schemaVersion": 2, "projects": {', 'not-json'],
+    ['[]', 'not-a-record'],
+    ['{ "schemaVersion": 1 }', 'not-a-record'],
+    ['{ "schemaVersion": 2, "projects": { "app": {} } }', 'not-a-record'],
+  ])('reads a present file cngx cannot parse as unreadable: %s', (content, cause) => {
+    expect(readInstallManifest(createMemoryTree({ '.cngx/install.json': content }))).toEqual({
+      state: 'unreadable',
+      cause,
+      content: Buffer.from(content),
+    });
+  });
 
   it('reads a file that is not utf-8 as unreadable and keeps its bytes', () => {
     const bytes = Buffer.from([0x7b, 0xff, 0xfe, 0x7d]);
     const tree = createMemoryTree();
     tree.create('.cngx/install.json', bytes);
 
-    expect(readInstallManifest(tree)).toEqual({ state: 'unreadable', content: bytes });
+    expect(readInstallManifest(tree)).toEqual({ state: 'unreadable', cause: 'not-utf8', content: bytes });
   });
 });
 
@@ -60,7 +64,7 @@ describe('manifestOf', () => {
     const tree = createMemoryTree({ '.cngx/install.json': JSON.stringify(firstRun()) });
 
     expect(manifestOf(readInstallManifest(tree))).toEqual(firstRun());
-    expect(manifestOf({ state: 'unreadable', content: Buffer.from('x') })).toBeUndefined();
+    expect(manifestOf({ state: 'unreadable', cause: 'not-json', content: Buffer.from('x') })).toBeUndefined();
     expect(manifestOf({ state: 'absent' })).toBeUndefined();
   });
 });

@@ -238,8 +238,18 @@ describe('recordedStepIds and recordedLibs', () => {
 });
 
 describe('planUnreadableManifest', () => {
+  it.each([
+    ['not-json', 'is not valid JSON'],
+    ['not-utf8', 'is not UTF-8 text'],
+    ['not-a-record', 'is not an install record this release reads'],
+  ] as const)('names why the file cannot be read: %s', (cause, says) => {
+    const [copy] = planUnreadableManifest('app', VERSIONS, { cause, content: Buffer.from('x') }, '.cngx/install.json.unreadable').changes;
+
+    expect(copy?.reason).toBe(`.cngx/install.json ${says}; it is kept as .cngx/install.json.unreadable and replaced by a record of app only`);
+  });
+
   it('keeps the file under the copy path and empties it for the new record', () => {
-    const result = planUnreadableManifest('fixture-app', VERSIONS, Buffer.from('not json'), '.cngx/install.json.unreadable-2');
+    const result = planUnreadableManifest('fixture-app', VERSIONS, { cause: 'not-json', content: Buffer.from('not json') }, '.cngx/install.json.unreadable-2');
     const [copy, reset] = result.changes;
 
     expect(copy).toMatchObject({
@@ -247,7 +257,7 @@ describe('planUnreadableManifest', () => {
       id: 'manifest:unreadable',
       label: 'Start a new install record',
       reason:
-        '.cngx/install.json exists but cngx cannot read it; it is kept as .cngx/install.json.unreadable-2 and replaced by a record of fixture-app only',
+        '.cngx/install.json is not valid JSON; it is kept as .cngx/install.json.unreadable-2 and replaced by a record of fixture-app only',
       path: '.cngx/install.json.unreadable-2',
       content: Buffer.from('not json'),
     });

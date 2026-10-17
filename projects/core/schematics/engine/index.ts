@@ -60,7 +60,7 @@ export {
   type StepResult,
   type WriteJson,
 } from './plan/change';
-export { type ChangePlan, createChangePlan } from './plan/plan';
+export { type ChangePlan, createChangePlan, LOCKSTEP_REASON } from './plan/plan';
 export { createReport, type Report, type ReportLink } from './plan/report';
 export { errorMessage, isRecord, joinNames } from './plan/text';
 export {

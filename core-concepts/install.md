@@ -72,10 +72,16 @@ install. Nothing outside the project is written.
    instead of ticked tasks, since nothing has run yet. The `@cngx/*`
    packages that move to one release read as one line (`Add 8 @cngx
    packages at <version>`), in the plan and in the steps already in place;
+   packages that share a reason beyond the lockstep one keep it on that line
+   (`utils, core; replaces ^0.0.9`), and packages with different reasons stay
+   on their own lines;
    on a coloured terminal the markers and reasons
    take the Angular CLI's colours.
 5. **Confirm.** An app that already has components beyond the root one
-   (anywhere under its source root, outside `node_modules` and `dist`), its
+   (anywhere under its source root; `node_modules`, `.angular`, `.git` and
+   `.cngx` are skipped at any depth, `dist`, `out-tsc` and `coverage` only
+   directly under the source root, and spec and declaration files never
+   count), its
    own providers, a config written into `bootstrapApplication(App, {...})`,
    or another UI library (Material, PrimeNG, Tailwind, Bootstrap) counts as
    existing and gets one `Apply these changes?` before anything is written.
@@ -89,8 +95,9 @@ install. Nothing outside the project is written.
    changes.` (`cngx planned <n> changes.` under `--dry-run`), counts the
    steps already in place and names the next steps. The plan list above it
    already named every change and note, so the summary does not repeat them;
-   under `--quiet` the summary is all that prints and lists the files touched
-   and the notes (what a step refused or left to you). A planned change that found its edit already in the file
+   under `--quiet` the summary is all that prints and lists the files touched,
+   the notes (what a step refused or left to you) and the warnings, such as
+   a local build without a usable `versions.json`. A planned change that found its edit already in the file
    when it ran (an import an earlier change wrote, say) counts as already in
    place, not as a change.
 7. **Install.** One package install at the end, for every dependency the
@@ -117,8 +124,10 @@ ng add @cngx/ui --preset=minimal
 The run asks only what detection leaves open, only with a terminal
 attached, and after the preflight checklist has printed:
 
-- **Preset.** Which preset to start from, unless `--preset` names one;
-  `recommended` without a terminal. `minimal` asks nothing after it.
+- **Preset.** Which preset to start from, unless `--preset` names one. It
+  defaults to the preset this project's install record names, else
+  `recommended`, and the same default applies without a terminal. `minimal`
+  asks nothing after it.
 - **Packages.** Which `@cngx/*` packages to install. Their `@cngx` peers
   follow automatically.
 - **Theme.** Only when `@angular/material` is installed: the Material theme
@@ -360,7 +369,9 @@ A file cngx cannot read (hand-edited into another shape, cut off, or from an
 earlier schema) is never taken for a missing one. `ng add` keeps it as
 `.cngx/install.json.unreadable` (`-2`, `-3` when that name is taken), starts
 the file over with a record of the current project only, and says so in the
-plan (`Start a new install record`). `ng update` names it and leaves it alone.
+plan (`Start a new install record`), naming the reason: not UTF-8 text, not
+valid JSON, or not an install record this release reads. `ng update` names
+it with the same reason and leaves it alone.
 
 ---
 

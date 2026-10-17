@@ -272,6 +272,26 @@ export function planManifest(
   return { changes: [change], skipped: [] };
 }
 
+/** Why a present `.cngx/install.json` cannot be read. */
+export type UnreadableCause = 'not-utf8' | 'not-json' | 'not-a-record';
+
+/** An install manifest that exists but cannot be read: why, and its bytes for the copy. */
+export interface UnreadableManifest {
+  readonly cause: UnreadableCause;
+  readonly content: Buffer;
+}
+
+const UNREADABLE_SAYS: Readonly<Record<UnreadableCause, string>> = {
+  'not-utf8': 'is not UTF-8 text',
+  'not-json': 'is not valid JSON',
+  'not-a-record': 'is not an install record this release reads',
+};
+
+/** What a note says about an unreadable manifest: `.cngx/install.json is not valid JSON`. */
+export function unreadableManifestLine(cause: UnreadableCause): string {
+  return `${INSTALL_MANIFEST_PATH} ${UNREADABLE_SAYS[cause]}`;
+}
+
 /**
  * The manifest a run starts over when `.cngx/install.json` cannot be read:
  * the file is kept under `copyPath`, then emptied, so the record
@@ -281,7 +301,7 @@ export function planManifest(
 export function planUnreadableManifest(
   project: string,
   versions: Versions,
-  content: Buffer,
+  { cause, content }: UnreadableManifest,
   copyPath: string,
 ): StepResult {
   const provenance = createProvenance('ng-add', versions.cngx);
@@ -289,7 +309,7 @@ export function planUnreadableManifest(
     kind: 'create-file',
     id: 'manifest:unreadable',
     label: 'Start a new install record',
-    reason: `${INSTALL_MANIFEST_PATH} exists but cngx cannot read it; it is kept as ${copyPath} and replaced by a record of ${project} only`,
+    reason: `${unreadableManifestLine(cause)}; it is kept as ${copyPath} and replaced by a record of ${project} only`,
     provenance,
     path: copyPath,
     content,

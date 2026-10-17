@@ -12,6 +12,8 @@ import { addLockstepDependency } from '../manifest/lockstep';
 import { compareVersions, installedVersion, readOwnName, readOwnVersion } from '../manifest/manifest';
 import { CNGX_LIBS, type CngxLib, type NgAddFlags, parseNgAddOptions } from '../options';
 import { errorMessage } from '../plan/text';
+import { type RenderLogger } from '../render/renderer';
+import { createShellRendererOptions } from '../render/terminal';
 import { isUnstampedVersion } from '../versions';
 
 const CORE = '@cngx/core';
@@ -59,6 +61,13 @@ function withOwnLib(options: NgAddFlags, ownName: string): NgAddFlags {
   return { ...options, libs: CNGX_LIBS.filter((lib) => libs.has(lib)) };
 }
 
+// The CLI indents `context.logger`; on a terminal the shim's line goes to
+// the stream at the left edge, like the output of core's renderer after it.
+function shimLogger(context: SchematicContext): RenderLogger {
+  const options = createShellRendererOptions(process.env, process.stdout, context.logger, false);
+  return options.terminal ?? options.logger;
+}
+
 function installReason(installed: string | undefined, order: number | undefined, ownName: string, version: string): string {
   if (installed === undefined) {
     return `${CORE} is not installed yet; installing it before its ng-add runs.`;
@@ -92,6 +101,7 @@ export function delegateNgAdd(options: NgAddFlags, bundleDir: string = __dirname
     const version = readOwnVersion(bundleDir);
     const ownName = readOwnName(bundleDir);
     const forwarded = withOwnLib(options, ownName);
+    const log = shimLogger(context);
     const installed = installedVersion(tree, CORE);
     const order = installed === undefined ? undefined : compareVersions(installed, version);
 
@@ -103,13 +113,13 @@ export function delegateNgAdd(options: NgAddFlags, bundleDir: string = __dirname
           `${ownName} is an unstamped local build (${version}) and ${CORE} is not installed; pack the libs with node scripts/pack-libs.mjs and install the tarballs.`,
         );
       }
-      context.logger.info(`${ownName} is an unstamped local build (${version}); pinning nothing and following the installed ${CORE} ${installed}.`);
+      log.info(`${ownName} is an unstamped local build (${version}); pinning nothing and following the installed ${CORE} ${installed}.`);
       loadCore(context);
       return externalSchematic(CORE, 'ng-add', forwarded);
     }
 
     if (order !== undefined && order > 0) {
-      context.logger.info(`${CORE} ${installed} is installed, newer than ${ownName} ${version}; following the installed core.`);
+      log.info(`${CORE} ${installed} is installed, newer than ${ownName} ${version}; following the installed core.`);
       loadCore(context);
       return externalSchematic(CORE, 'ng-add', forwarded);
     }
@@ -120,7 +130,7 @@ export function delegateNgAdd(options: NgAddFlags, bundleDir: string = __dirname
       return chain([pins, externalSchematic(CORE, 'ng-add', forwarded)]);
     }
 
-    context.logger.info(installReason(installed, order, ownName, version));
+    log.info(installReason(installed, order, ownName, version));
     return chain([
       pins,
       (_innerTree: Tree, innerContext: SchematicContext) => {

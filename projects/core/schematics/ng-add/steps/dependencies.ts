@@ -7,6 +7,7 @@ import {
   declaredRange,
   isUnstampedVersion,
   joinNames,
+  LOCKSTEP_REASON,
   mergeStepResults,
   type PackageManifest,
   planThirdPartyDependency,
@@ -71,9 +72,7 @@ function cngxDependency(manifest: PackageManifest, name: string, version: string
     id: `dependency:${name}`,
     label: `Add ${name}@${version}`,
     reason:
-      existing === undefined
-        ? 'every @cngx package stays on one version'
-        : `replaces ${existing}; every @cngx package stays on one version`,
+      existing === undefined ? LOCKSTEP_REASON : `replaces ${existing}; ${LOCKSTEP_REASON}`,
     provenance,
     name,
     version,

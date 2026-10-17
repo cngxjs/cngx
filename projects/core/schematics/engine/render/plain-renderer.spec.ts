@@ -198,6 +198,15 @@ describe('createPlainRenderer', () => {
     expect(lines.every((line) => ANSI.test(line))).toBe(true);
   });
 
+  it('prints the lockstep @cngx additions as one folded line', async () => {
+    const { lines, renderer: plain } = renderer(false);
+    const utils: Change = { ...DEPENDENCY, id: 'dependency:@cngx/utils', label: 'Add @cngx/utils@0.1.0', name: '@cngx/utils' };
+
+    await plain.todo(createChangePlan([{ changes: [utils, DEPENDENCY], skipped: [] }]));
+
+    expect(lines).toEqual(['info Planned (2):', 'info   + Add 2 @cngx packages at 0.1.0 - utils, core; lockstep with @cngx/ui']);
+  });
+
   it('says so when the plan is empty', async () => {
     const { lines, renderer: plain } = renderer(false);
 

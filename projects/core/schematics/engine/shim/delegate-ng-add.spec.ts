@@ -6,7 +6,7 @@ import { logging } from '@angular-devkit/core';
 import { callRule, type Schematic, type SchematicContext } from '@angular-devkit/schematics';
 import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
 import { lastValueFrom } from 'rxjs';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { createMemoryTree } from '../fs/memory-tree';
 import { type NgAddFlags } from '../options';
@@ -171,6 +171,24 @@ describe('delegateNgAdd', () => {
     expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ preset: 'minimal' });
     expect(tasks).toEqual([]);
     expect(logs).toContain(`@cngx/core 0.2.0 is installed, newer than @cngx/forms ${VERSION}; following the installed core.`);
+  });
+
+  it('writes its line to the terminal at the left edge instead of the indenting logger', async () => {
+    vi.stubEnv('NG_FORCE_TTY', '1');
+    const written: string[] = [];
+    const write = vi.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      written.push(String(chunk));
+      return true;
+    });
+    try {
+      const { logs } = await run(resolvingRunner(), { installed: '0.2.0' });
+
+      expect(written).toContain(`@cngx/core 0.2.0 is installed, newer than @cngx/forms ${VERSION}; following the installed core.\n`);
+      expect(logs).not.toContain(`@cngx/core 0.2.0 is installed, newer than @cngx/forms ${VERSION}; following the installed core.`);
+    } finally {
+      write.mockRestore();
+      vi.unstubAllEnvs();
+    }
   });
 
   it('reads a prerelease of the shim version as older', async () => {

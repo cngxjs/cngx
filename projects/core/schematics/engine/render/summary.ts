@@ -44,9 +44,9 @@ const NG_ADD_HEADLINES: SummaryHeadlines = {
 
 /**
  * The closing lines of a run, rendered by `renderer.summary`: the files the
- * plan touches, what a step refused or left to the user, the steps already
- * in place, the next steps with the doctor first, and the docs. When the plan
- * list ran before it, that list already named every file, note and
+ * plan touches, what a step refused or left to the user, the warnings, the
+ * steps already in place, the next steps with the doctor first, and the docs. When the plan
+ * list ran before it, that list already named every file, note, warning and
  * idempotent hit, so the summary only counts the hits; under `--quiet` the
  * summary is all there is and lists them. `headlines` name the command,
  * `ng add` by default.
@@ -64,6 +64,7 @@ export function createSummary(
     headline,
     ...(planListed ? [] : section('Files', report.files)),
     ...(planListed ? [] : section('Notes', report.notes)),
+    ...(planListed ? [] : section('Warnings', report.warnings)),
     ...skippedLines(report, planListed),
     ...section('Next steps', report.nextSteps),
     ...section(

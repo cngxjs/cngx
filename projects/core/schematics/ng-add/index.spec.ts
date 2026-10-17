@@ -866,6 +866,17 @@ describe('ngAdd', () => {
     expect(second.logs).toContain('cngx is already set up; nothing changed.');
   });
 
+  it('keeps a recorded full preset on a re-run without --preset or a terminal', async () => {
+    const first = await runRule(ngAdd({ preset: 'full', yes: true }), createFixtureTree('standalone-app', { 'CLAUDE.md': '' }));
+    const files = first.tree.files.map((path) => [path, first.tree.readContent(path)]);
+
+    const second = await runRule(ngAdd({ yes: true }), first.tree);
+
+    expect(second.tree.files.map((path) => [path, second.tree.readContent(path)])).toEqual(files);
+    expect(second.logs).toContain('cngx is already set up; nothing changed.');
+    expect(second.logs.join('\n')).not.toContain('Start from the');
+  });
+
   it('names a re-run that starts from another preset than the recorded one', async () => {
     const first = await runRule(ngAdd({ yes: true }), createFixtureTree());
 
@@ -913,19 +924,19 @@ describe('ngAdd', () => {
   });
 
   describe('an unreadable install manifest', () => {
-    const unreadable = {
-      'schema version 1': JSON.stringify({ schemaVersion: 1, preset: 'minimal', answers: {}, steps: [] }),
-      'a truncated file': '{ "schemaVersion": 2, "projects": {',
-      'a malformed record': JSON.stringify({ schemaVersion: 2, projects: { 'fixture-app': { preset: 'minimal' } } }),
-    };
+    const unreadable = [
+      ['schema version 1', JSON.stringify({ schemaVersion: 1, preset: 'minimal', answers: {}, steps: [] }), 'is not an install record this release reads'],
+      ['a truncated file', '{ "schemaVersion": 2, "projects": {', 'is not valid JSON'],
+      ['a malformed record', JSON.stringify({ schemaVersion: 2, projects: { 'fixture-app': { preset: 'minimal' } } }), 'is not an install record this release reads'],
+    ] as const;
 
-    it.each(Object.entries(unreadable))('keeps %s as a copy and starts a new record', async (_shape, content) => {
+    it.each(unreadable)('keeps %s as a copy and starts a new record', async (_shape, content, says) => {
       const run = await runRule(ngAdd({ yes: true }), createFixtureTree('standalone-app', { '.cngx/install.json': content }));
 
       expect(run.tree.readContent('.cngx/install.json.unreadable')).toBe(content);
       expect(record(run.tree).preset).toBe('recommended');
       expect(run.logs).toContain(
-        '  + Start a new install record - .cngx/install.json exists but cngx cannot read it; it is kept as .cngx/install.json.unreadable and replaced by a record of fixture-app only',
+        `  + Start a new install record - .cngx/install.json ${says}; it is kept as .cngx/install.json.unreadable and replaced by a record of fixture-app only`,
       );
     });
 
@@ -975,7 +986,7 @@ describe('ngAdd', () => {
       expect(Object.keys(projects)).toEqual(['beta']);
       expect(run.tree.readContent('.cngx/install.json.unreadable')).toBe('not json');
       expect(run.logs).toContain(
-        '  + Start a new install record - .cngx/install.json exists but cngx cannot read it; it is kept as .cngx/install.json.unreadable and replaced by a record of beta only',
+        '  + Start a new install record - .cngx/install.json is not valid JSON; it is kept as .cngx/install.json.unreadable and replaced by a record of beta only',
       );
     });
 

@@ -83,7 +83,9 @@ that depend on the release:
 A recorded project that is no longer in `angular.json` is named and its
 record left as it is. A record whose answers this release cannot read is
 named with its project and kept; `ng add @cngx/core --project <name>`
-refreshes it. A manifest cngx cannot read is named too and left alone;
+refreshes it. A manifest cngx cannot read is named too, with the reason
+(not UTF-8 text, not valid JSON, or not an install record this release
+reads), and left alone;
 `ng add @cngx/core --project <name>` keeps it as a copy and starts a new
 record.
 
