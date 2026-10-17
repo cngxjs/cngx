@@ -237,6 +237,18 @@ const EXCLUDED_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
     file: 'projects/forms/select/tree-select/tree-select.component.css',
     note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
   },
+  {
+    file: 'projects/forms/select/select-shell/select-shell.component.css',
+    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
+  },
+  {
+    file: 'projects/forms/select/action-select/action-select.component.css',
+    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
+  },
+  {
+    file: 'projects/forms/select/action-multi-select/action-multi-select.component.css',
+    note: 'the box-shadow is a decorative invalid-trigger glow halo; the invalid trigger keeps a self-healing 1px danger border and outline focus ring',
+  },
   // @cngx/ui (Phase D) - box-shadow hosts whose boundary survives WHCM another
   // way, so a re-draw would be redundant (Success-Kriterium: 0 redundant blocks).
   {
