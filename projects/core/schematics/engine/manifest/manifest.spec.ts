@@ -142,6 +142,8 @@ describe('parseVersion', () => {
     expect(parseVersion('^21.2.0')).toMatchObject({ major: 21, minor: 2, patch: 0 });
     expect(parseVersion('~21')).toMatchObject({ major: 21, minor: 0, patch: 0 });
     expect(parseVersion('0.1.0-rc.8')).toEqual({ major: 0, minor: 1, patch: 0, prerelease: ['rc', 8] });
+    expect(parseVersion('>=21.2 <22')).toMatchObject({ major: 21, minor: 2, patch: 0 });
+    expect(parseVersion('21.x')).toMatchObject({ major: 21, minor: 0, patch: 0 });
   });
 
   it.each(['catalog:', 'workspace:*', 'latest', '', undefined])('reads no version from %s', (text) => {

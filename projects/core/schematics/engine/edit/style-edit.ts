@@ -1,4 +1,4 @@
-import { isRecord } from '../plan/text';
+import { isRecord, newlineOf } from '../plan/text';
 
 const PREAMBLE_AT_RULE = /^@(use|forward|import|charset)\b/;
 const IMPORT_RULE = /^@import\b/;
@@ -144,7 +144,7 @@ export function insertLeadingStyleImport(content: string, statement: string): st
 
 // `statement` on its own line at `at`, with the line ending the sheet uses.
 function placeStatement(content: string, at: number, statement: string): string {
-  const newline = content.includes('\r\n') ? '\r\n' : '\n';
+  const newline = newlineOf(content);
   const needsNewline = at > 0 && !content.slice(0, at).endsWith('\n');
   return `${content.slice(0, at)}${needsNewline ? newline : ''}${statement.trim()}${newline}${content.slice(at)}`;
 }

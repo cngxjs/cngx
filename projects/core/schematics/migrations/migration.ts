@@ -16,7 +16,6 @@ import {
   errorMessage,
   planCodemods,
   planRenames,
-  readDryRunFlag,
   type NgAddPreset,
   type ReleaseVersions,
   type RenameTable,
@@ -178,7 +177,7 @@ export function createMigration(migration: Migration): Rule {
 
     const release = entryVersion(context) ?? versions.cngx;
     context.logger.info(`cngx ${release} migration`);
-    await renderer.todo(plan, { pending: readDryRunFlag(process.argv) });
+    await renderer.todo(plan);
     const unchanged = new Set<string>();
     return chain([
       applyChangePlan(plan, (id) => unchanged.add(id)),
