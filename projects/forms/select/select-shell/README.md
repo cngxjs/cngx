@@ -66,6 +66,10 @@ The projected `<cngx-select-search>` calls into the shell through `CNGX_SELECT_S
 
 Every variant - including the shell - provides `CNGX_STATEFUL`, so descendant `[cngxToastOn]` / `[cngxBannerOn]` / `[cngxAlertOn]` bridges auto-discover the commit state without explicit binding.
 
+## Mobile sheet
+
+On a touch screen narrower than 48rem the panel opens as a modal bottom sheet, or a fullscreen panel when a `<cngx-select-search>` leads it, named by the field label, with a close button and a decorative handle. Focus moves into the sheet and back to the trigger on close. Force a presentation with `[presentation]` (`'anchored'`, `'sheet'`, `'fullscreen'`), set the title with `[sheetLabel]`, or turn the sheet off with `withMobileSheet('off')`. Details: [Mobile sheet](../README.md#mobile-sheet).
+
 ## Template slots
 
 Same 17-slot cascade as the rest of the family. Project a slot directive as a direct child to override:

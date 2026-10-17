@@ -164,6 +164,15 @@ export interface CngxTypeaheadChange<T = unknown> {
  * no projected slot on this host). The placeholder is the input's own
  * placeholder text, so `cngxSelectPlaceholder` does not apply.
  *
+ * **Mobile sheet.** On a coarse screen narrower than 48rem the panel opens as
+ * a modal fullscreen panel with the search input in its header: a
+ * `role="dialog"` named by the field label, with a close button, Done and a
+ * decorative handle (`*cngxSelectSheetHandle`). Focus moves into the sheet on
+ * open and back to the trigger on close, the rest of the page is inert, and
+ * announcements are spoken from inside the sheet. `[presentation]` forces
+ * `'anchored'`, `'sheet'` or `'fullscreen'`; `withMobileSheet('off')` keeps
+ * every select in its scope anchored.
+ *
  * @category forms/select/typeahead
  * @docsKind primary
  * @wcag AA
@@ -173,6 +182,7 @@ export interface CngxTypeaheadChange<T = unknown> {
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-bound-to-a-typed-form-field</example-url>
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-cngxselectoptionlabel-slot-override</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCheck Replaces the selection indicator on each option row unless [hideSelectionIndicator] is set; gets $implicit/option, selected, variant (radio, checkbox or checkmark), position, and indeterminate (always false here, absent on radio).
  * @slot cngxSelectCaret Replaces the trigger caret unless [hideCaret] is set; gets $implicit/open.
  * @slot cngxSelectOptgroup Replaces the header of each option group; gets $implicit/group.

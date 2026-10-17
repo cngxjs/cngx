@@ -99,6 +99,10 @@ Every printable key while the panel is closed toggles the first matching option 
 provideCngxSelect(withTypeaheadWhileClosed(true));
 ```
 
+## Mobile sheet
+
+On a touch screen narrower than 48rem the panel opens as a modal bottom sheet, named by the field label, with a close button, Done and a decorative handle. Focus moves into the sheet and back to the trigger on close. Force a presentation with `[presentation]` (`'anchored'`, `'sheet'`, `'fullscreen'`), set the title with `[sheetLabel]`, or turn the sheet off with `withMobileSheet('off')`. Details: [Mobile sheet](../README.md#mobile-sheet).
+
 ## Template slots
 
 All [`CngxSelect` slots](../single-select/README.md#template-slots) plus:

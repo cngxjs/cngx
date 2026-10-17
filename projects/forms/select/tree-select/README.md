@@ -99,6 +99,10 @@ The projected markup owns the whole treeitem: carry `role="treeitem"`, `[attr.id
 `*cngxTreeSelectChip` overrides individual chips; `*cngxTreeSelectTriggerLabel` replaces the entire chip strip.
 Same context shape as the multi-select equivalents - see [`ARCHITECTURE.md`](../../../ARCHITECTURE.md#template-slot-system).
 
+## Mobile sheet
+
+On a touch screen narrower than 48rem the panel opens as a modal bottom sheet, named by the field label, with a close button, Done and a decorative handle. Focus moves into the sheet and back to the trigger on close. Force a presentation with `[presentation]` (`'anchored'`, `'sheet'`, `'fullscreen'`), set the title with `[sheetLabel]`, or turn the sheet off with `withMobileSheet('off')`. Details: [Mobile sheet](../README.md#mobile-sheet).
+
 ## Template slots
 
 All [`CngxMultiSelect` shared slots](../multi-select/README.md#template-slots) (placeholder / loading / error / commitError / retry / etc.) plus:

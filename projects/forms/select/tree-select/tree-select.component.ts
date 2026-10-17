@@ -176,6 +176,14 @@ export interface CngxTreeSelectChange<T = unknown> {
  * `cngxSelectOptionLabel`, `cngxSelectOptionPending` and
  * `cngxSelectOptionError` do not apply to the tree.
  *
+ * **Mobile sheet.** On a coarse screen narrower than 48rem the panel opens as
+ * a modal bottom sheet: a `role="dialog"` named by the field label, with a
+ * close button, Done and a decorative handle (`*cngxSelectSheetHandle`).
+ * Focus moves into the sheet on open and back to the trigger on close, the
+ * rest of the page is inert, and announcements are spoken from inside the
+ * sheet. `[presentation]` forces `'anchored'`, `'sheet'` or `'fullscreen'`;
+ * `withMobileSheet('off')` keeps every select in its scope anchored.
+ *
  * @category forms/select/tree-select
  * @docsKind primary
  * @wcag AA
@@ -186,6 +194,7 @@ export interface CngxTreeSelectChange<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/tree-select/basic-single-level-toggle</example-url>
  * <example-url>http://localhost:4200/#/forms/select/tree-select/cascade-children-parent-toggle-selects-the-whole-subtree</example-url>
  * <example-url>http://localhost:4200/#/forms/select/tree-select/custom-cngxtreeselectnode-template</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCaret Replaces the trigger caret unless hideCaret is set; gets open.
  * @slot cngxSelectPlaceholder Renders in the trigger while nothing is selected; gets placeholder.
  * @slot cngxSelectEmpty Replaces the panel's empty message when the tree has no nodes; searchTerm is always '' on this host.

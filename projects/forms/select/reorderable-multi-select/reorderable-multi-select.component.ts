@@ -175,6 +175,14 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * from `templates`. `templates.loadingGlyph` replaces the loading and
  * refresh glyph app-wide; this host has no projected glyph slot.
  *
+ * **Mobile sheet.** On a coarse screen narrower than 48rem the panel opens as
+ * a modal bottom sheet: a `role="dialog"` named by the field label, with a
+ * close button, Done and a decorative handle (`*cngxSelectSheetHandle`).
+ * Focus moves into the sheet on open and back to the trigger on close, the
+ * rest of the page is inert, and announcements are spoken from inside the
+ * sheet. `[presentation]` forces `'anchored'`, `'sheet'` or `'fullscreen'`;
+ * `withMobileSheet('off')` keeps every select in its scope anchored.
+ *
  * @category forms/select/reorderable-multi-select
  * @docsKind primary
  * @wcag AA
@@ -186,6 +194,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCheck Replaces the checkbox indicator on each option row unless hideSelectionIndicator is set; gets option, selected, variant, position, and indeterminate (always false here, absent under the radio variant).
  * @slot cngxSelectCaret Replaces the trigger caret unless hideCaret is set; gets open.
  * @slot cngxSelectOptgroup Replaces the header of each option group in the panel; gets group.

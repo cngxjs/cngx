@@ -123,6 +123,10 @@ Wired natively - pressing Backspace in an empty input triggers the same commit-a
 
 Both slot directives accept the same context: `{ disabled, focused, panelOpen }`.
 
+## Mobile sheet
+
+On a touch screen narrower than 48rem the panel opens as a modal fullscreen panel with the search input in its header, named by the field label, with a close button, Done and a decorative handle. Focus moves into the sheet and back to the trigger on close. Force a presentation with `[presentation]` (`'anchored'`, `'sheet'`, `'fullscreen'`), set the title with `[sheetLabel]`, or turn the sheet off with `withMobileSheet('off')`. Details: [Mobile sheet](../README.md#mobile-sheet).
+
 ## Template slots
 
 All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) plus:
