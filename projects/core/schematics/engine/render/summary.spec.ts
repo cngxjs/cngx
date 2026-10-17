@@ -56,6 +56,13 @@ describe('createSummary', () => {
     ]);
   });
 
+  it('lists the warnings when no plan list ran, and leaves them to the plan list otherwise', () => {
+    const report = { ...REPORT, warnings: ['No usable versions.json next to the schematics'] };
+
+    expect(createSummary(report, QUIET).slice(3, 5)).toEqual(['Warnings:', '  No usable versions.json next to the schematics']);
+    expect(createSummary(report, LISTED)).not.toContain('Warnings:');
+  });
+
   it('says planned under a dry run and applied otherwise', () => {
     expect(createSummary(REPORT, { planListed: true, outcome: 'planned' })[0]).toBe('cngx planned 1 change.');
     expect(createSummary(REPORT, { planListed: true, outcome: 'applied' })[0]).toBe('cngx applied 1 change.');
