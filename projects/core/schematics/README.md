@@ -113,6 +113,10 @@ breaking change adds a migration:
    and a `.gitkeep` alone is no fixture. The migration-gate reads only the
    `!` in a PR title, so a breaking change must carry it.
 
+No release uses a rename table yet; the refresh entry runs the rename engine
+with `EMPTY_RENAME_TABLE`, so `planRenames` and the codemod hooks are the
+contract for the first breaking release, not dead code.
+
 Every migration also re-runs the install steps `.cngx/install.json` records
 for each project (the theme once the cngx version moved, the helper README
 once the MCP version moved, planned once from the libs and steps of every

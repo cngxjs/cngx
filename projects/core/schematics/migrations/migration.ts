@@ -16,7 +16,6 @@ import {
   errorMessage,
   planCodemods,
   planRenames,
-  readDryRunFlag,
   type NgAddPreset,
   type ReleaseVersions,
   type RenameTable,
@@ -178,15 +177,13 @@ export function createMigration(migration: Migration): Rule {
 
     const release = entryVersion(context) ?? versions.cngx;
     renderer.heading(`cngx ${release} migration`);
-    const dryRun = readDryRunFlag(process.argv);
-    await renderer.todo(plan, { pending: dryRun });
+    await renderer.todo(plan);
     const unchanged = new Set<string>();
-    const outcome = dryRun ? 'planned' : 'applied';
     return chain([
       applyChangePlan(plan, (id) => unchanged.add(id)),
       () =>
         renderer.summary(
-          createSummary(createReport(plan, unchanged), { planListed: true, outcome }, headlines(release)),
+          createSummary(createReport(plan, unchanged), { planListed: true, outcome: 'applied' }, headlines(release)),
         ),
     ]);
   };

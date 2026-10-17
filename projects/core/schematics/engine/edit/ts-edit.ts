@@ -1,5 +1,7 @@
 import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeScript/lib/typescript';
 
+import { newlineOf } from '../plan/text';
+
 /**
  * Which array literal to edit: the default export (`export default [...]`,
  * `module.exports = [...]`, or the first array argument of a wrapper call
@@ -406,11 +408,21 @@ function isImportStatement(statement: ts.Statement): boolean {
   );
 }
 
+// `require(...)` or a dynamic `import(...)`.
+function isModuleLoad(expression: ts.Expression): expression is ts.CallExpression {
+  if (!ts.isCallExpression(expression)) {
+    return false;
+  }
+  return calleeName(expression) === 'require' || expression.expression.kind === ts.SyntaxKind.ImportKeyword;
+}
+
+// The module a declaration initializer loads, through `.x`, `await` and
+// parentheses: `require('m').x`, `(await import('m')).default`.
 function requiredModule(expression: ts.Expression): string | undefined {
-  if (ts.isPropertyAccessExpression(expression)) {
+  if (ts.isPropertyAccessExpression(expression) || ts.isAwaitExpression(expression) || ts.isParenthesizedExpression(expression)) {
     return requiredModule(expression.expression);
   }
-  const [argument] = ts.isCallExpression(expression) && calleeName(expression) === 'require' ? expression.arguments : [];
+  const [argument] = isModuleLoad(expression) ? expression.arguments : [];
   return argument !== undefined && ts.isStringLiteral(argument) ? argument.text : undefined;
 }
 
@@ -434,8 +446,9 @@ function statementModules(statement: ts.Statement): readonly string[] {
 }
 
 /**
- * Whether a top-level `import`, `import x = require()` or `require()` loads
- * `module`. Read from the syntax tree, so a commented-out line never counts.
+ * Whether a top-level `import`, `import x = require()`, `require()` or
+ * dynamic `import()` declaration loads `module`. Read from the syntax tree,
+ * so a commented-out line never counts.
  */
 export function importsModule(content: string, module: string): boolean {
   return parse(content).statements.some((statement) => statementModules(statement).includes(module));
@@ -486,7 +499,7 @@ function headerEnd(content: string, statements: readonly ts.Statement[]): Insert
  * it goes after a shebang and the directive prologue, else at the top.
  */
 export function insertAfterImports(content: string, statement: string): string {
-  const newline = content.includes('\r\n') ? '\r\n' : '\n';
+  const newline = newlineOf(content);
   const statements = parse(content).statements;
   const last = statements.filter(isImportStatement).pop();
   const point = last === undefined ? headerEnd(content, statements) : insertionPoint(content, last.getEnd());
@@ -522,7 +535,7 @@ export function addToArrayLiteral(content: string, selector: ArraySelector, item
   const close = array.getEnd() - 1;
   const open = array.getStart(source);
   const multiline = content.slice(open, close).includes('\n');
-  const newline = content.includes('\r\n') ? '\r\n' : '\n';
+  const newline = newlineOf(content);
   if (elements.length === 0) {
     if (!multiline) {
       return `${content.slice(0, close)}${item.trim()}${content.slice(close)}`;

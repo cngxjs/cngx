@@ -1,6 +1,5 @@
 import {
   EnvironmentInjector,
-  Injector,
   provideZonelessChangeDetection,
   runInInjectionContext,
   signal,
@@ -121,37 +120,37 @@ describe('injectQueryParamSync', () => {
     await flush();
   });
 
-  it('no-ops and dev-warns once when Router is absent', async () => {
+  it('no-ops and dev-warns once without provideRouter(...), instead of failing with NG0201', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
-    // The Angular test harness always provides a Router, so an explicit
-    // Router-less injector is needed to exercise the no-op path.
-    const injector = Injector.create({ providers: [{ provide: Router, useValue: null }] });
+    // Router resolves without provideRouter(...) (providedIn: 'root');
+    // ActivatedRoute does not, so a hard inject of it would throw NG0201.
     const state = signal(false);
-    runInInjectionContext(injector, () => injectQueryParamSync(state, { param: 'nav' }));
+    expect(() =>
+      TestBed.runInInjectionContext(() => injectQueryParamSync(state, { param: 'nav' })),
+    ).not.toThrow();
     TestBed.tick();
     await flush();
 
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toMatch(
-      /^CNGX1031: injectQueryParamSync\(\): no Router available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable query-param URL sync\. Find more at /,
+      /^CNGX1031: injectQueryParamSync\(\): no Router \/ ActivatedRoute available - the URL sync is a no-op\. Provide @angular\/router via provideRouter\(\.\.\.\) to enable query-param URL sync\. Find more at /,
     );
     expect(state()).toBe(false);
   });
 
-  it('writes nothing to the console without a Router in production', async () => {
+  it('writes nothing to the console without provideRouter(...) in production', async () => {
     vi.stubGlobal('ngDevMode', false);
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
-    const injector = Injector.create({ providers: [{ provide: Router, useValue: null }] });
     const state = signal(false);
-    runInInjectionContext(injector, () => injectQueryParamSync(state, { param: 'nav' }));
+    TestBed.runInInjectionContext(() => injectQueryParamSync(state, { param: 'nav' }));
     TestBed.tick();
     await flush();
 

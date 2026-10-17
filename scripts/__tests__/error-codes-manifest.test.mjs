@@ -3,7 +3,13 @@ import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { collectDocsUrls, collectHelperCalls, collectRuntimeErrors } from '../dev-diagnostics.mjs';
+import {
+  collectDocsUrls,
+  collectHelperCalls,
+  collectMessages,
+  collectRuntimeErrors,
+  messageText,
+} from '../dev-diagnostics.mjs';
 import {
   CODE_RANGES,
   DOCS_BASE_URL,
@@ -13,8 +19,10 @@ import {
   SUMMARY_NODE_TITLE,
   SUMMARY_PATH,
   buildCodes,
+  changedMessageCodes,
   generate,
   manifestOf,
+  messageRowsOf,
   parsePage,
   summaryNodeOf,
   throwCall,
@@ -77,6 +85,12 @@ const schemaViolations = (manifest) => {
     if (!codeDef.properties.status.enum.includes(entry.status)) {
       out.push(`${entry.code} status ${entry.status}`);
     }
+    const messageKeys = [...allowed(SCHEMA.$defs.message)].sort().join();
+    for (const row of entry.messages ?? []) {
+      if (Object.keys(row).sort().join() !== messageKeys) {
+        out.push(`${entry.code} message ${JSON.stringify(row)}`);
+      }
+    }
   }
   const rangeKeys = allowed(SCHEMA.$defs.range);
   for (const range of manifest.ranges) {
@@ -124,7 +138,70 @@ describe('error-code manifest generator', () => {
         url: `${DOCS_BASE_URL}cngx0001.html`,
         status: 'active',
         files: ['projects/core/a.ts', 'projects/core/b.ts'],
+        messages: [],
       },
+    ]);
+  });
+
+  it('records the text of every call site, followed into the callers of a dev wrapper', () => {
+    const files = [
+      {
+        path: 'projects/common/warn.ts',
+        text:
+          `export function warnAbsent(owner: string) { if (!(${GUARD})) { return; } ` +
+          "cngxDevWarn('CNGX1031', `[${owner}] no router - sync is a no-op.`); }",
+      },
+      {
+        path: 'projects/common/b.ts',
+        text: `function f() { if (${GUARD}) { warnAbsent('cngxB'); } }`,
+      },
+      {
+        path: 'projects/common/a.ts',
+        text: `function g() { if (${GUARD}) { cngxDevWarn('CNGX1031', '[cngxA] no router - sync is a no-op.'); } }`,
+      },
+    ];
+    const messages = collectMessages(files).map(({ code, file, segments }) => ({
+      code,
+      file,
+      text: messageText(segments),
+    }));
+    expect(messageRowsOf(messages, 'CNGX1031')).toEqual([
+      { file: 'projects/common/a.ts', text: '[cngxA] no router - sync is a no-op.' },
+      { file: 'projects/common/warn.ts', text: '[${...}] no router - sync is a no-op.' },
+    ]);
+  });
+
+  it('turns a drifted copy into a changed manifest row and names its code', () => {
+    const rows = (copy) =>
+      buildCodes(
+        [call('projects/core/a.ts', 'CNGX0001'), call('projects/core/b.ts', 'CNGX0001')],
+        [page('CNGX0001')],
+        {
+          messages: [
+            {
+              code: 'CNGX0001',
+              file: 'projects/core/a.ts',
+              text: '[cngxA] no locale - falls back.',
+            },
+            { code: 'CNGX0001', file: 'projects/core/b.ts', text: copy },
+          ],
+        },
+      ).codes;
+    const before = rows('[cngxB] no locale - falls back.');
+    const after = rows('[cngxB] no locale.');
+    expect(JSON.stringify(manifestOf(after))).not.toBe(JSON.stringify(manifestOf(before)));
+    expect(after[0].messages).toEqual([
+      { file: 'projects/core/a.ts', text: '[cngxA] no locale - falls back.' },
+      { file: 'projects/core/b.ts', text: '[cngxB] no locale.' },
+    ]);
+    expect(changedMessageCodes(before, after)).toEqual(['CNGX0001']);
+    expect(changedMessageCodes(before, before)).toEqual([]);
+  });
+
+  it('keeps one row per file and text, without line numbers', () => {
+    const row = { code: 'CNGX0001', file: 'projects/core/a.ts', text: 'm' };
+    expect(messageRowsOf([row, { ...row }, { ...row, code: 'CNGX0002' }], 'CNGX0001')).toEqual([
+      { file: 'projects/core/a.ts', text: 'm' },
     ]);
   });
 
@@ -256,6 +333,7 @@ describe('error-code manifest generator', () => {
       severity: null,
       production: null,
       files: [],
+      messages: [],
       lib: 'core',
     });
   });

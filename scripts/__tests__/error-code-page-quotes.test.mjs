@@ -9,32 +9,35 @@
 //     owner and is not a quote.
 // Q2  every backticked span on a page that starts with its own `CNGXnnnn: `
 //     is a prefix of a message the library prints for that code. Messages
-//     are the ones the repo's collectors extract (`collectHelperCalls`,
-//     `collectRuntimeErrors` in `scripts/dev-diagnostics.mjs`), followed
+//     are the ones `collectMessages` in `scripts/dev-diagnostics.mjs`
+//     extracts (the same rows the error-code manifest records), followed
 //     into the callers of a dev wrapper whose message is a parameter. A
-//     `${...}` part, or any operand that is not literal text, matches any
-//     text in the quote.
+//     `${...}` part, or any operand that is not literal text, is a
+//     wildcard: it matches any text, but the literal text after it must
+//     then match the quote, so a wildcard ends the comparison only when it
+//     is the last part of the message.
 // Q3  a quote that cannot be checked this way is listed in
 //     QUOTE_EXEMPT with a reason; a row that no longer matches a quote, or
 //     whose quote now passes, fails.
 //
-// Known limits: a quote that does not follow one of the Q1 lead-ins is only
-// checked when it already carries the prefix. A wildcard matches any text,
-// so a quote that invents the value of a `${...}` part passes.
+// Known limits, exactly what is not compared:
+// - a backticked span that neither follows a Q1 lead-in in a paragraph
+//   about the message nor starts with the page's own `CNGXnnnn: `; pages
+//   that only describe their message in prose are not checked at all;
+// - the text a wildcard stands for, so a quote that invents the value of
+//   a `${...}` part passes as long as the literal text after it matches;
+// - a quote whose end falls inside a wildcard that is not the last part
+//   fails, even when the invented value is plausible: quote up to the
+//   next literal text, or stop before the `${...}` part;
+// - a message whose first operand is not literal text is one wildcard
+//   and matches every quote.
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import ts from 'typescript';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import {
-  collectHelperCalls,
-  collectRuntimeErrors,
-  collectWrapperUses,
-  collectWrappers,
-  unwrap,
-} from '../dev-diagnostics.mjs';
+import { WILD, collectMessages } from '../dev-diagnostics.mjs';
 import { PAGES_DIR, readSources } from '../error-codes-manifest.mjs';
 
 /**
@@ -51,7 +54,6 @@ const QUOTE_EXEMPT = [
   },
 ];
 
-const WILD = Symbol('wild');
 const LEAD_IN = /(?:starts with|(?:message|it) reads|for example|:)\s*$/;
 /** A bare `[selector]` or `fn()`: names the owner, does not quote the message. */
 const OWNER_ONLY = /^(?:\[[^\]]+\]|[a-z][A-Za-z0-9]*\(\))$/;
@@ -61,34 +63,11 @@ const SPAN = /(`+)(?!`)([\s\S]*?[^`])\1(?!`)/g;
 /** The text of a code span: one leading and trailing space stripped when both are there. */
 const spanText = (raw) => (/^ .* $/s.test(raw) && raw.trim() ? raw.slice(1, -1) : raw);
 
-/** The right-most leaf of an `&&` chain: the message behind a guard. */
-function guardedTail(node) {
-  let current = unwrap(node);
-  while (
-    ts.isBinaryExpression(current) &&
-    current.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
-  ) {
-    current = unwrap(current.right);
-  }
-  return current;
-}
-
-/** A message expression as literal text and WILD parts. */
-export function segmentsOf(node) {
-  const inner = unwrap(node);
-  if (ts.isStringLiteral(inner) || ts.isNoSubstitutionTemplateLiteral(inner)) {
-    return [inner.text];
-  }
-  if (ts.isTemplateExpression(inner)) {
-    return [inner.head.text, ...inner.templateSpans.flatMap((span) => [WILD, span.literal.text])];
-  }
-  if (ts.isBinaryExpression(inner) && inner.operatorToken.kind === ts.SyntaxKind.PlusToken) {
-    return [...segmentsOf(inner.left), ...segmentsOf(inner.right)];
-  }
-  return [WILD];
-}
-
-/** Is `quote` the start of some text that `segments` can produce? */
+/**
+ * Is `quote` the start of some text that `segments` can produce? A WILD
+ * part consumes the rest of the quote only when it is the last segment;
+ * otherwise the literal text after it must match after the consumed text.
+ */
 export function isPrefixOf(quote, segments, at = 0, index = 0) {
   if (at === quote.length) {
     return true;
@@ -98,7 +77,10 @@ export function isPrefixOf(quote, segments, at = 0, index = 0) {
   }
   const part = segments[index];
   if (part === WILD) {
-    for (let next = at; next <= quote.length; next++) {
+    if (index === segments.length - 1) {
+      return true;
+    }
+    for (let next = at; next < quote.length; next++) {
       if (isPrefixOf(quote, segments, next, index + 1)) {
         return true;
       }
@@ -112,22 +94,6 @@ export function isPrefixOf(quote, segments, at = 0, index = 0) {
   return rest.startsWith(part) && isPrefixOf(quote, segments, at + part.length, index + 1);
 }
 
-/** The parameter index `message` reads from in the dev wrapper around it, or -1. */
-function wrapperParameterIndex(message) {
-  const inner = unwrap(message);
-  if (!ts.isIdentifier(inner)) {
-    return -1;
-  }
-  for (let fn = inner.parent; fn; fn = fn.parent) {
-    if (ts.isFunctionLike(fn) && fn.parameters) {
-      return fn.parameters.findIndex(
-        (param) => ts.isIdentifier(param.name) && param.name.text === inner.text,
-      );
-    }
-  }
-  return -1;
-}
-
 /**
  * Every message the library prints, by code, as segment lists.
  *
@@ -136,37 +102,8 @@ function wrapperParameterIndex(message) {
  */
 export function messagesByCode(files) {
   const out = new Map();
-  const add = (code, node) => {
-    if (code && node) {
-      out.set(code, [...(out.get(code) ?? []), segmentsOf(node)]);
-    }
-  };
-  const calls = collectHelperCalls(files);
-  const wrappers = collectWrappers(calls);
-  const { calls: wrapperCalls } = collectWrapperUses(files, wrappers);
-  for (const call of calls) {
-    const message = call.node.arguments[1];
-    const index = message ? wrapperParameterIndex(message) : -1;
-    if (index < 0) {
-      add(call.code, message);
-      continue;
-    }
-    let fn = call.node.parent;
-    while (fn && !ts.isFunctionLike(fn)) {
-      fn = fn.parent;
-    }
-    const name = fn?.name && ts.isIdentifier(fn.name) ? fn.name.text : undefined;
-    const callers = wrapperCalls.filter((use) => use.name.split('.').pop() === name);
-    for (const use of callers) {
-      add(call.code, use.node.arguments[index]);
-    }
-    if (callers.length === 0) {
-      add(call.code, message);
-    }
-  }
-  for (const error of collectRuntimeErrors(files)) {
-    const message = error.node.arguments[1];
-    add(error.code, message && (error.devOnly ? unwrap(message) : guardedTail(message)));
+  for (const { code, segments } of collectMessages(files)) {
+    out.set(code, [...(out.get(code) ?? []), segments]);
   }
   return out;
 }
@@ -280,6 +217,25 @@ describe('error-code page quotes - matcher', () => {
     expect(quoteProblems(pages, messages).map((p) => p.quote)).toEqual([
       'CNGX1004: tapHttpAsyncState: body',
       'body is null',
+    ]);
+  });
+
+  it('compares the text after a template part', () => {
+    const messages = messagesByCode([
+      file(
+        `cngxDevWarn('CNGX1005', \`[cngxMenu] item "\${id}" has no label; bind [aria-label].\`);`,
+      ),
+    ]);
+    const pages = [
+      {
+        code: 'CNGX1005',
+        text:
+          'The message starts with `CNGX1005: [cngxMenu] item "save" has no label; bind`.\n\n' +
+          'The message reads `CNGX1005: [cngxMenu] item "save" lacks a label`.',
+      },
+    ];
+    expect(quoteProblems(pages, messages).map((p) => p.quote)).toEqual([
+      'CNGX1005: [cngxMenu] item "save" lacks a label',
     ]);
   });
 

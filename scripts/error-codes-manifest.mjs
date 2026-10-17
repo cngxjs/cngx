@@ -3,7 +3,10 @@
 // `core-concepts/error-codes/cngx<nnnn>.md`; everything else is derived: the
 // codes, their lib and severity from the `cngxDevWarn` / `cngxDevError` call
 // sites and the `new CngxRuntimeError(...)` constructions, whether the code
-// survives a production build, their title from the page.
+// survives a production build, their title from the page, and the text
+// each call site prints (`messages`). A code printed from several sites keeps
+// one row per site, so a copy whose text drifts from its siblings shows up
+// as a stale manifest in CI and next to them in the diff.
 //
 //   node scripts/error-codes-manifest.mjs           write the manifest and the summary node
 //   node scripts/error-codes-manifest.mjs --check   exit 1 when either is stale
@@ -13,7 +16,12 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import * as prettier from 'prettier';
-import { collectHelperCalls, collectRuntimeErrors } from './dev-diagnostics.mjs';
+import {
+  collectHelperCalls,
+  collectMessages,
+  collectRuntimeErrors,
+  messageText,
+} from './dev-diagnostics.mjs';
 import { sourceFiles } from './devtools-prod-strip-check.mjs';
 import { DEFAULT_BASE_URL } from './llms-publish.mjs';
 import { isLibrarySource } from './__tests__/source-roots.mjs';
@@ -21,7 +29,7 @@ import { isLibrarySource } from './__tests__/source-roots.mjs';
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** Bumped together with `error-codes.schema.json` on any shape change. */
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 export const MANIFEST_PATH = resolve(REPO_ROOT, 'scripts/manifests/error-codes.json');
 export const SUMMARY_PATH = resolve(REPO_ROOT, 'core-concepts/summary.json');
@@ -122,9 +130,10 @@ export function readPages(dir = PAGES_DIR) {
  * @param {{ file: string; severity: string; code: string | null; production?: string }[]} calls
  *   console helper calls (always `stripped`) and `throwCall` rows
  * @param {ReturnType<typeof parsePage>[]} pages
- * @param {{ hasIndex?: boolean }} [options] whether `error-codes/index.md` exists
+ * @param {{ hasIndex?: boolean; messages?: { code: string; file: string; text: string }[] }} [options]
+ *   whether `error-codes/index.md` exists, and the text every call site prints
  */
-export function buildCodes(calls, pages, { hasIndex = true } = {}) {
+export function buildCodes(calls, pages, { hasIndex = true, messages = [] } = {}) {
   const errors = [];
   const byCode = new Map();
   for (const call of calls) {
@@ -211,12 +220,44 @@ export function buildCodes(calls, pages, { hasIndex = true } = {}) {
       url: `${DOCS_BASE_URL}${code.toLowerCase()}.html`,
       status: retired ? 'retired' : 'active',
       files: retired ? [] : [...entry.files].sort(),
+      messages: retired ? [] : messageRowsOf(messages, code),
     };
   });
   if (codes.length > 0 && !hasIndex) {
     errors.push('core-concepts/error-codes/index.md is missing; the Error Codes node needs it');
   }
   return { codes, errors };
+}
+
+/**
+ * The `messages` rows of `code`: one per file and distinct text, sorted by
+ * file, then text. No line numbers, so moving code does not touch the
+ * manifest; only a changed text does.
+ */
+export function messageRowsOf(messages, code) {
+  const seen = new Set();
+  return messages
+    .filter((row) => row.code === code)
+    .map(({ file, text }) => ({ file, text }))
+    .filter(({ file, text }) => {
+      const key = `${file}\n${text}`;
+      return seen.has(key) ? false : (seen.add(key), true);
+    })
+    .sort((a, b) => a.file.localeCompare(b.file) || a.text.localeCompare(b.text));
+}
+
+/**
+ * The codes whose `messages` rows differ between two manifests' codes, so a
+ * stale check can name where the text changed.
+ */
+export function changedMessageCodes(before, after) {
+  const rows = (codes) =>
+    new Map(codes.map((entry) => [entry.code, JSON.stringify(entry.messages ?? [])]));
+  const a = rows(before);
+  const b = rows(after);
+  return [...new Set([...a.keys(), ...b.keys()])]
+    .filter((code) => a.get(code) !== b.get(code))
+    .sort();
 }
 
 /** The manifest object for `codes`. */
@@ -301,8 +342,14 @@ export function readSources() {
 export async function generate() {
   const sources = readSources();
   const calls = [...collectHelperCalls(sources), ...collectRuntimeErrors(sources).map(throwCall)];
+  const messages = collectMessages(sources).map(({ code, file, segments }) => ({
+    code,
+    file,
+    text: messageText(segments),
+  }));
   const { codes, errors } = buildCodes(calls, readPages(), {
     hasIndex: existsSync(resolve(PAGES_DIR, 'index.md')),
+    messages,
   });
   const manifest = await renderManifest(codes);
   const current = JSON.parse(readFileSync(SUMMARY_PATH, 'utf8'));
@@ -328,6 +375,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         'scripts/manifests/error-codes.json or the Error Codes node of core-concepts/summary.json is stale. ' +
           'Run `npm run manifest:error-codes`.',
       );
+      const before = currentManifest ? (JSON.parse(currentManifest).codes ?? []) : [];
+      const changed = changedMessageCodes(before, codes);
+      if (changed.length > 0) {
+        console.error(
+          `  message text changed for ${changed.join(', ')}; ` +
+            'compare the changed row with the other rows of the same code before regenerating.',
+        );
+      }
       process.exit(1);
     }
   } else {

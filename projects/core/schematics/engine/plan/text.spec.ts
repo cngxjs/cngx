@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { errorMessage, isRecord, joinNames } from './text';
+import { errorMessage, isRecord, joinNames, newlineOf } from './text';
 
 describe('errorMessage', () => {
   it('reads the message of an Error and stringifies anything else', () => {
@@ -26,5 +26,13 @@ describe('joinNames', () => {
     expect(joinNames(['a'])).toBe('a');
     expect(joinNames(['a', 'b'])).toBe('a and b');
     expect(joinNames(['a', 'b', 'c'])).toBe('a, b and c');
+  });
+});
+
+describe('newlineOf', () => {
+  it('keeps the CRLF line ending of a file that has one, else LF', () => {
+    expect(newlineOf('a\r\nb\r\n')).toBe('\r\n');
+    expect(newlineOf('a\nb\n')).toBe('\n');
+    expect(newlineOf('')).toBe('\n');
   });
 });

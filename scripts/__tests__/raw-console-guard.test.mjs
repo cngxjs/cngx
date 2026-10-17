@@ -26,10 +26,15 @@
 // `parent` / `top` / `frames` / `document.defaultView`, a computed key or
 // computed destructuring, `Reflect.get(globalThis, 'console')` and
 // `new Function(...)`; a dev wrapper reached through a dynamic `import()`, a
-// destructured namespace or element access. A guard inside a callback that a
-// synchronous call runs at module load (`[1].forEach(() => ...)`) counts as
-// running later; a function invoked in place, also through `.call` /
-// `.apply`, is caught.
+// destructured namespace or element access. A function expression invoked
+// in place is caught: called directly or with `new`, through `.call` /
+// `.apply` (also `['call']` / `['apply']`), as a `.bind(...)` result called
+// right away, and with the function wrapped in parentheses, `as`, `<T>`,
+// `satisfies` or `!`. Still counted as running later: a callback that a
+// synchronous call runs at module load (`[1].forEach(() => ...)`,
+// `Reflect.apply(fn, ...)`), a function expression used as a tag
+// (`` (() => ...)`x` ``), and a function stored in a name first and called
+// at module scope (`const f = () => ...; f();`).
 // `${m}` or `'' + m` around a local built before the guard has the inline
 // shape and passes the inline-message rule: it checks the message's form,
 // not where the text in its operands was built (many operands are
@@ -836,6 +841,23 @@ describe('raw-console guard - guards evaluated at module load', () => {
       fixture(`function host() { (() => { if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } })(); }`)
         .violations,
     ).toEqual([]);
+  });
+
+  it('fails a function invoked in place through a cast, bind, new or a string member', () => {
+    const body = `if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); }`;
+    for (const shape of [
+      `((() => { ${body} }) as () => void)();`,
+      `(<() => void>(() => { ${body} }))();`,
+      `((() => { ${body} })!)();`,
+      `(function () { ${body} }).bind(null)();`,
+      `new (function () { ${body} })();`,
+      `(function () { ${body} })['call'](this);`,
+    ]) {
+      expect(fixture(shape).violations, shape).toEqual([
+        `projects/core/a.ts:1 R2 CNGX0001 ${MODULE_LOAD_GUARD}`,
+      ]);
+    }
+    expect(fixture(`const run = (function () { ${body} }).bind(null);`).violations).toEqual([]);
   });
 
   it('fails a class, enum, namespace or import-equals named ngDevMode', () => {

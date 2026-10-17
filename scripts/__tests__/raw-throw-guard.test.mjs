@@ -36,9 +36,15 @@
 // (`globalThis.Promise.reject`, `const P = Promise`), by element access
 // (`Promise['reject']`) or through `.call` / `.apply`; `reportError` read off
 // a global host; `gen.throw(...)`; a catch variable reassigned or mutated
-// before its rethrow. A guard inside a callback that a synchronous call runs
-// at module load (`[1].forEach(() => ...)`) counts as running later; a
-// function invoked in place, also through `.call` / `.apply`, is caught.
+// before its rethrow. A function expression invoked in place is caught:
+// called directly or with `new`, through `.call` / `.apply` (also
+// `['call']` / `['apply']`), as a `.bind(...)` result called right away, and
+// with the function wrapped in parentheses, `as`, `<T>`, `satisfies` or `!`.
+// Still counted as running later: a callback that a synchronous call runs at
+// module load (`[1].forEach(() => ...)`, `Reflect.apply(fn, ...)`), a
+// function expression used as a tag (`` (() => ...)`x` ``), and a function
+// stored in a name first and called at module scope
+// (`const f = () => ...; f();`).
 // `${m}` or `'' + m` around a local built before the guard has the inline
 // shape and passes the inline-message rule: it checks the message's form,
 // not where the text in its operands was built (many operands are
@@ -620,6 +626,21 @@ describe('raw-throw guard - T3 shadows and module load', () => {
     expect(fixture(`(function () { ${construct} }).call(this);`).violations).toHaveLength(1);
     expect(fixture(`(() => { ${construct} }).apply(undefined, []);`).violations).toHaveLength(1);
     expect(fixture(`const run = () => { ${construct} };`).violations).toEqual([]);
+  });
+
+  it('fails a construction in a function invoked in place through a cast, bind, new or a string member', () => {
+    for (const shape of [
+      `((() => { ${construct} }) as () => void)();`,
+      `(<() => void>(() => { ${construct} }))();`,
+      `(function () { ${construct} }).bind(null)();`,
+      `new (function () { ${construct} })();`,
+      `(function () { ${construct} })['apply'](this, []);`,
+    ]) {
+      expect(fixture(shape).violations, shape).toEqual([
+        `projects/common/a.ts:1 T3 CNGX1001 ${MODULE_LOAD_GUARD}`,
+      ]);
+    }
+    expect(fixture(`const run = (() => { ${construct} }).bind(null);`).violations).toEqual([]);
   });
 });
 

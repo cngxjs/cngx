@@ -181,13 +181,13 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource, AfterConte
 
   /**
    * Router commit-action read by the presenter via the DI fallback.
-   * `null` when no `Router` is available (graceful no-op). Rebuilt only
+   * `null` when the router is not set up (graceful no-op). Rebuilt only
    * when `routeFor` changes; the navigation gate itself is the async
    * op inside the action.
    */
   readonly action: Signal<CngxTabsCommitAction | null> = computed(() => {
     const router = this.router;
-    if (!router) {
+    if (!router || !this.activatedRoute) {
       return null;
     }
     return createTabRouterCommit({
@@ -198,7 +198,9 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource, AfterConte
   });
 
   constructor() {
-    if (!this.router) {
+    // Router is providedIn: 'root' and resolves without provideRouter(...);
+    // ActivatedRoute does not, so it is the "router is set up" signal.
+    if (!this.router || !this.activatedRoute) {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         afterNextRender(() => warnTabsRouterAbsent('cngxTabsRouteSync', 'routed tabs'));
       }

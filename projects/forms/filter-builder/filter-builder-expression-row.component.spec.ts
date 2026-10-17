@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { CngxSelect } from '@cngx/forms/select';
 
 import { CngxFilterExpressionRow } from './filter-builder-expression-row.component';
+import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
 import { CNGX_FILTER_BUILDER_HOST, type CngxFilterBuilderHost } from './filter-builder-host.token';
 import type {
   FilterExpression,
@@ -464,5 +465,52 @@ describe('CngxFilterExpressionRow - named value editors', () => {
     const input = fixture.debugElement.query(By.css('input[type="text"]'))
       .nativeElement as HTMLInputElement;
     expect(input.getAttribute('aria-label')).toBe('Name');
+  });
+});
+
+@Component({
+  template: `<cngx-filter-expression-row [path]="[0]"></cngx-filter-expression-row>`,
+  imports: [CngxFilterExpressionRow],
+})
+class OrphanRowHost {}
+
+@Component({
+  template: `
+    <div cngxFilterBuilderPresenter [fields]="fields" [value]="tree">
+      <cngx-filter-expression-row [path]="[0]"></cngx-filter-expression-row>
+    </div>
+  `,
+  imports: [CngxFilterBuilderPresenter, CngxFilterExpressionRow],
+})
+class PresenterRowHost {
+  readonly fields: readonly FilterFieldDef[] = [FIELD_NAME];
+  readonly tree: FilterGroup = {
+    type: 'group',
+    id: 'root',
+    logic: 'and',
+    negated: false,
+    filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: 'foo' }],
+  };
+}
+
+describe('CngxFilterExpressionRow placement (CNGX2014)', () => {
+  it('throws CNGX2014 outside a filter builder', () => {
+    expect(() => TestBed.createComponent(OrphanRowHost).detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX2014',
+        message: expect.stringMatching(
+          /^CNGX2014: \[cngx-filter-expression-row\] must be placed inside <cngx-filter-builder> or an element with \[cngxFilterBuilderPresenter\]\./,
+        ),
+      }),
+    );
+  });
+
+  it('does not throw inside [cngxFilterBuilderPresenter]', () => {
+    expect(() => {
+      const fixture = TestBed.createComponent(PresenterRowHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    }).not.toThrow();
   });
 });

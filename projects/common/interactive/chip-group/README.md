@@ -58,7 +58,7 @@ export interface CngxChipGroupHost<T = unknown> {
 export const CNGX_CHIP_GROUP_HOST: InjectionToken<CngxChipGroupHost>;
 ```
 
-Mode (single vs multi) is deliberately absent from the contract. The leaf does not branch on mode; either side of the split satisfies the same shape. A `[cngxChipInGroup]` outside a group throws `NullInjectorError` at construction. Standalone interactive chips with no group use `[cngxChipInteraction]`, which provides `CNGX_CONTROL_VALUE` directly and never touches this token.
+Mode (single vs multi) is deliberately absent from the contract. The leaf does not branch on mode; either side of the split satisfies the same shape. A `[cngxChipInGroup]` outside a group throws `CNGX1068` (a `CngxRuntimeError`) at construction. Standalone interactive chips with no group use `[cngxChipInteraction]`, which provides `CNGX_CONTROL_VALUE` directly and never touches this token.
 
 ## See also
 

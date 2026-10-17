@@ -136,7 +136,7 @@ describe('CngxChipInGroup', () => {
     expect(fake.toggleCalls).toEqual([]);
   });
 
-  it('throws NullInjectorError when no parent CNGX_CHIP_GROUP_HOST is present', () => {
+  it('throws CNGX1068 when no chip group is above it', () => {
     @Component({
       template: `<cngx-chip cngxChipInGroup [value]="'a'">a</cngx-chip>`,
       imports: [CngxChip, CngxChipInGroup],
@@ -145,7 +145,19 @@ describe('CngxChipInGroup', () => {
     expect(() => {
       const fixture = TestBed.createComponent(Orphan);
       fixture.detectChanges();
-    }).toThrow(/CngxChipGroupHost/);
+    }).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1068',
+        message: expect.stringMatching(
+          /^CNGX1068: \[cngxChipInGroup\] must be placed inside <cngx-chip-group> or <cngx-multi-chip-group>\./,
+        ),
+      }),
+    );
+  });
+
+  it('does not throw inside a chip group', () => {
+    expect(() => setup()).not.toThrow();
   });
 
   it('does NOT provide CNGX_CONTROL_VALUE (parent group is the field control)', () => {

@@ -3,7 +3,7 @@
 
 export type { Tree } from './fs/tree';
 export { createMemoryTree } from './fs/memory-tree';
-export { createNodeTree, type NodeTree } from './fs/node-tree';
+export { BUILD_OUTPUT_DIRS, isAppSource, NON_SOURCE_DIRS } from './fs/source-files';
 export { listFiles, type ListFilesOptions } from './fs/walk';
 
 export { addLockstepDependency } from './manifest/lockstep';

@@ -33,6 +33,13 @@ describe('importsModule', () => {
     expect(importsModule("// import cngx from '@cngx/eslint-plugin';\n", '@cngx/eslint-plugin')).toBe(false);
     expect(importsModule("const name = '@cngx/eslint-plugin';\n", '@cngx/eslint-plugin')).toBe(false);
   });
+
+  it('reads a dynamic import, awaited and in parentheses', () => {
+    expect(importsModule("const cngx = (await import('@cngx/eslint-plugin')).default;\n", '@cngx/eslint-plugin')).toBe(true);
+    expect(importsModule("const cngx = await import('@cngx/eslint-plugin');\n", '@cngx/eslint-plugin')).toBe(true);
+    expect(importsModule("const { configs } = (require('@cngx/eslint-plugin'));\n", '@cngx/eslint-plugin')).toBe(true);
+    expect(importsModule("const cngx = (await import('@cngx/other')).default;\n", '@cngx/eslint-plugin')).toBe(false);
+  });
 });
 
 describe('addToArrayLiteral', () => {

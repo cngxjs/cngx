@@ -1,6 +1,6 @@
 {
   "$schema": "./error-codes.schema.json",
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "docsBaseUrl": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/",
   "ranges": [
     { "lib": "core", "from": 1, "to": 899 },
@@ -21,7 +21,13 @@
       "page": "core-concepts/error-codes/cngx0001.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0001.html",
       "status": "active",
-      "files": ["projects/core/i18n/format-message.ts"]
+      "files": ["projects/core/i18n/format-message.ts"],
+      "messages": [
+        {
+          "file": "projects/core/i18n/format-message.ts",
+          "text": "formatMessage(): \"${...}\" is not a BCP 47 locale; reading it as English."
+        }
+      ]
     },
     {
       "code": "CNGX0002",
@@ -32,7 +38,13 @@
       "page": "core-concepts/error-codes/cngx0002.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0002.html",
       "status": "active",
-      "files": ["projects/core/i18n/format-message.ts"]
+      "files": ["projects/core/i18n/format-message.ts"],
+      "messages": [
+        {
+          "file": "projects/core/i18n/format-message.ts",
+          "text": "formatMessage(): plural message without a numeric \"count\" argument: \"${...}\""
+        }
+      ]
     },
     {
       "code": "CNGX0003",
@@ -43,7 +55,13 @@
       "page": "core-concepts/error-codes/cngx0003.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0003.html",
       "status": "active",
-      "files": ["projects/core/i18n/format-message.ts"]
+      "files": ["projects/core/i18n/format-message.ts"],
+      "messages": [
+        {
+          "file": "projects/core/i18n/format-message.ts",
+          "text": "formatMessage(): no argument for ${...} in \"${...}\""
+        }
+      ]
     },
     {
       "code": "CNGX0004",
@@ -54,7 +72,13 @@
       "page": "core-concepts/error-codes/cngx0004.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0004.html",
       "status": "active",
-      "files": ["projects/core/utils/registry.ts"]
+      "files": ["projects/core/utils/registry.ts"],
+      "messages": [
+        {
+          "file": "projects/core/utils/registry.ts",
+          "text": "createKeyedRegistry(): ${...} already holds \"${...}\". The existing instance stays live (swap-is-noop); unregister it first for a true swap."
+        }
+      ]
     },
     {
       "code": "CNGX0005",
@@ -65,7 +89,13 @@
       "page": "core-concepts/error-codes/cngx0005.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0005.html",
       "status": "active",
-      "files": ["projects/core/i18n/provide-i18n.ts"]
+      "files": ["projects/core/i18n/provide-i18n.ts"],
+      "messages": [
+        {
+          "file": "projects/core/i18n/provide-i18n.ts",
+          "text": "provideCngxI18n() in a child injector switches the locale and the direction but not the copy; call it in the application config."
+        }
+      ]
     },
     {
       "code": "CNGX0901",
@@ -76,7 +106,13 @@
       "page": "core-concepts/error-codes/cngx0901.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0901.html",
       "status": "active",
-      "files": ["projects/utils/tree.ts"]
+      "files": ["projects/utils/tree.ts"],
+      "messages": [
+        {
+          "file": "projects/utils/tree.ts",
+          "text": "flattenTree(): duplicate node id \"${...}\". Ids must be unique across the forest - a non-injective idFn corrupts parentIds chains and visibility."
+        }
+      ]
     },
     {
       "code": "CNGX1001",
@@ -87,7 +123,13 @@
       "page": "core-concepts/error-codes/cngx1001.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1001.html",
       "status": "active",
-      "files": ["projects/common/audio/engine/audio-engine.ts"]
+      "files": ["projects/common/audio/engine/audio-engine.ts"],
+      "messages": [
+        {
+          "file": "projects/common/audio/engine/audio-engine.ts",
+          "text": "[cngxAudio] Unknown earcon \"${...}\". Register it via withEarcons({...}) or engine.register(name, config)."
+        }
+      ]
     },
     {
       "code": "CNGX1002",
@@ -98,7 +140,13 @@
       "page": "core-concepts/error-codes/cngx1002.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1002.html",
       "status": "active",
-      "files": ["projects/common/audio/event-mode/audio.directive.ts"]
+      "files": ["projects/common/audio/event-mode/audio.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/audio/event-mode/audio.directive.ts",
+          "text": "[cngxAudio] Lifecycle keys \"${...}\" are not DOM events. Use [cngxAudioStatus] for lifecycle bindings."
+        }
+      ]
     },
     {
       "code": "CNGX1003",
@@ -109,7 +157,13 @@
       "page": "core-concepts/error-codes/cngx1003.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1003.html",
       "status": "active",
-      "files": ["projects/common/audio/event-mode/audio.directive.ts"]
+      "files": ["projects/common/audio/event-mode/audio.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/audio/event-mode/audio.directive.ts",
+          "text": "[cngxAudio] Unrecognised event keys \"${...}\". Expected one of: click, focus, blur, pointerenter, pointerleave, submit, change, input."
+        }
+      ]
     },
     {
       "code": "CNGX1004",
@@ -120,7 +174,13 @@
       "page": "core-concepts/error-codes/cngx1004.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1004.html",
       "status": "active",
-      "files": ["projects/common/audio/status-mode/audio-status.directive.ts"]
+      "files": ["projects/common/audio/status-mode/audio-status.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/audio/status-mode/audio-status.directive.ts",
+          "text": "[cngxAudioStatus] DOM-event keys \"${...}\" are not lifecycle statuses. Use [cngxAudio] for DOM-event bindings."
+        }
+      ]
     },
     {
       "code": "CNGX1005",
@@ -131,7 +191,13 @@
       "page": "core-concepts/error-codes/cngx1005.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1005.html",
       "status": "active",
-      "files": ["projects/common/audio/status-mode/audio-status.directive.ts"]
+      "files": ["projects/common/audio/status-mode/audio-status.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/audio/status-mode/audio-status.directive.ts",
+          "text": "[cngxAudioStatus] No state source. Bind [state]=\"state\" explicitly or place inside a component that provides CNGX_STATEFUL."
+        }
+      ]
     },
     {
       "code": "CNGX1006",
@@ -145,6 +211,16 @@
       "files": [
         "projects/common/card/card-timestamp.component.ts",
         "projects/common/display/time/time.component.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/common/card/card-timestamp.component.ts",
+          "text": "[cngx-card-timestamp] [date] resolved to an Invalid Date - rendering empty. Check the bound value (bad ISO string?)."
+        },
+        {
+          "file": "projects/common/display/time/time.component.ts",
+          "text": "[cngx-time] [date] resolved to an Invalid Date - rendering empty. Check the bound value (bad ISO string?)."
+        }
       ]
     },
     {
@@ -156,7 +232,13 @@
       "page": "core-concepts/error-codes/cngx1007.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1007.html",
       "status": "active",
-      "files": ["projects/common/chart/chart/chart.component.ts"]
+      "files": ["projects/common/chart/chart/chart.component.ts"],
+      "messages": [
+        {
+          "file": "projects/common/chart/chart/chart.component.ts",
+          "text": "[cngx-chart] data is non-numeric and no [summaryAccessor] is bound. Auto-Summary and the SR data-table will silently fall back to NaN. Bind [summaryAccessor] to a stable component field (summaryAccessor = (d: Row) => d.value) or pass a numeric data array."
+        }
+      ]
     },
     {
       "code": "CNGX1008",
@@ -167,7 +249,13 @@
       "page": "core-concepts/error-codes/cngx1008.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1008.html",
       "status": "active",
-      "files": ["projects/common/chart/chart/chart.component.ts"]
+      "files": ["projects/common/chart/chart/chart.component.ts"],
+      "messages": [
+        {
+          "file": "projects/common/chart/chart/chart.component.ts",
+          "text": "[cngx-chart] more than one *cngxChartOverlay projected; only the first renders. Compose multiple overlays inside a single overlay template."
+        }
+      ]
     },
     {
       "code": "CNGX1009",
@@ -178,7 +266,13 @@
       "page": "core-concepts/error-codes/cngx1009.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1009.html",
       "status": "active",
-      "files": ["projects/common/chart/chart/chart.component.ts"]
+      "files": ["projects/common/chart/chart/chart.component.ts"],
+      "messages": [
+        {
+          "file": "projects/common/chart/chart/chart.component.ts",
+          "text": "[cngx-chart] multiple axes share one orientation; only the first drives the scale, the rest render their line and ticks but their [domain] is silently ignored. Mount one X and one Y axis per chart."
+        }
+      ]
     },
     {
       "code": "CNGX1010",
@@ -189,7 +283,13 @@
       "page": "core-concepts/error-codes/cngx1010.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1010.html",
       "status": "active",
-      "files": ["projects/common/chart/presets/preset-state.ts"]
+      "files": ["projects/common/chart/presets/preset-state.ts"],
+      "messages": [
+        {
+          "file": "projects/common/chart/presets/preset-state.ts",
+          "text": "[${...}] role=\"${...}\" has no accessible name - AT announces the value with no subject. ${...}"
+        }
+      ]
     },
     {
       "code": "CNGX1011",
@@ -200,7 +300,13 @@
       "page": "core-concepts/error-codes/cngx1011.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1011.html",
       "status": "active",
-      "files": ["projects/common/data/recycler/recycler.ts"]
+      "files": ["projects/common/data/recycler/recycler.ts"],
+      "messages": [
+        {
+          "file": "projects/common/data/recycler/recycler.ts",
+          "text": "injectRecycler(): layout: \"grid\" requires explicit `columns`. Falling back to columns=1."
+        }
+      ]
     },
     {
       "code": "CNGX1012",
@@ -211,7 +317,13 @@
       "page": "core-concepts/error-codes/cngx1012.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1012.html",
       "status": "active",
-      "files": ["projects/common/data/recycler/recycler.ts"]
+      "files": ["projects/common/data/recycler/recycler.ts"],
+      "messages": [
+        {
+          "file": "projects/common/data/recycler/recycler.ts",
+          "text": "injectRecycler(): estimateSize as a function with ${...} items has O(n) per-frame cost. Consider using a fixed estimateSize for large datasets."
+        }
+      ]
     },
     {
       "code": "CNGX1013",
@@ -222,7 +334,13 @@
       "page": "core-concepts/error-codes/cngx1013.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1013.html",
       "status": "active",
-      "files": ["projects/common/data/recycler/scroll-observer.ts"]
+      "files": ["projects/common/data/recycler/scroll-observer.ts"],
+      "messages": [
+        {
+          "file": "projects/common/data/recycler/scroll-observer.ts",
+          "text": "injectRecycler(): scrollElement '${...}' not found on first render; it will attach automatically once it mounts. If it never does, check the selector."
+        }
+      ]
     },
     {
       "code": "CNGX1014",
@@ -233,7 +351,13 @@
       "page": "core-concepts/error-codes/cngx1014.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1014.html",
       "status": "active",
-      "files": ["projects/common/dialog/dialog/dialog.directive.ts"]
+      "files": ["projects/common/dialog/dialog/dialog.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/dialog/dialog/dialog.directive.ts",
+          "text": "[cngxDialog] dialog \"${...}\" has a second ${...} registered while another is live. The dialog references one ${...} id, and both elements render it; a template-declared ${...} wins over a registered one. Remove the extra cngxDialog${...} element."
+        }
+      ]
     },
     {
       "code": "CNGX1015",
@@ -244,7 +368,13 @@
       "page": "core-concepts/error-codes/cngx1015.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1015.html",
       "status": "active",
-      "files": ["projects/common/dialog/dialog/dialog.directive.ts"]
+      "files": ["projects/common/dialog/dialog/dialog.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/dialog/dialog/dialog.directive.ts",
+          "text": "[cngxDialog] non-modal dialog \"${...}\" opened without a title. A non-modal dialog leaves focus on the page and is announced only by reading its title into its live region; with no title text, screen reader users are not told it appeared. Add a [cngxDialogTitle] element with text."
+        }
+      ]
     },
     {
       "code": "CNGX1016",
@@ -255,7 +385,13 @@
       "page": "core-concepts/error-codes/cngx1016.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1016.html",
       "status": "active",
-      "files": ["projects/common/display/status/status.component.ts"]
+      "files": ["projects/common/display/status/status.component.ts"],
+      "messages": [
+        {
+          "file": "projects/common/display/status/status.component.ts",
+          "text": "[cngx-status] no `label`; the status has no accessible name and reads only as a coloured dot. Set [label]: the host has no role, so an aria-label or aria-labelledby on it is not a valid name."
+        }
+      ]
     },
     {
       "code": "CNGX1017",
@@ -266,7 +402,13 @@
       "page": "core-concepts/error-codes/cngx1017.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1017.html",
       "status": "active",
-      "files": ["projects/common/display/status/status.component.ts"]
+      "files": ["projects/common/display/status/status.component.ts"],
+      "messages": [
+        {
+          "file": "projects/common/display/status/status.component.ts",
+          "text": "[cngx-status] [glyph]=\"false\" with no visible `label`; a bare coloured dot is colour-only for a sighted colour-blind reader even with an aria-label. Set [label] or show the glyph."
+        }
+      ]
     },
     {
       "code": "CNGX1018",
@@ -277,7 +419,13 @@
       "page": "core-concepts/error-codes/cngx1018.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1018.html",
       "status": "active",
-      "files": ["projects/common/display/tag-group/tag-group.component.ts"]
+      "files": ["projects/common/display/tag-group/tag-group.component.ts"],
+      "messages": [
+        {
+          "file": "projects/common/display/tag-group/tag-group.component.ts",
+          "text": "[cngx-tag-group] [label] is bound without [semanticList]=\"true\"; the aria-label lands on a generic <div>. Add [semanticList]=\"true\" to expose role=\"list\" + aria-label, or remove [label]."
+        }
+      ]
     },
     {
       "code": "CNGX1019",
@@ -288,7 +436,13 @@
       "page": "core-concepts/error-codes/cngx1019.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1019.html",
       "status": "active",
-      "files": ["projects/common/interactive/async-status/async-status.directive.ts"]
+      "files": ["projects/common/interactive/async-status/async-status.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/async-status/async-status.directive.ts",
+          "text": "[cngxAsyncStatus] and [cngxAsyncClick] on the same element both bind aria-busy. Use one or the other."
+        }
+      ]
     },
     {
       "code": "CNGX1020",
@@ -299,7 +453,13 @@
       "page": "core-concepts/error-codes/cngx1020.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1020.html",
       "status": "active",
-      "files": ["projects/common/interactive/error-registry/aggregator-contract.ts"]
+      "files": ["projects/common/interactive/error-registry/aggregator-contract.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/error-registry/aggregator-contract.ts",
+          "text": "addSource(): an error source with key \"${...}\" is already registered; the new entry replaces it (last-wins). Use unique keys per source."
+        }
+      ]
     },
     {
       "code": "CNGX1021",
@@ -310,7 +470,17 @@
       "page": "core-concepts/error-codes/cngx1021.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1021.html",
       "status": "active",
-      "files": ["projects/common/interactive/error-registry/error-registry.ts"]
+      "files": ["projects/common/interactive/error-registry/error-registry.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/error-registry/error-registry.ts",
+          "text": "registerAggregator(): an aggregator named \"${...}\" is already registered. The existing instance stays live (swap-is-noop); unregister it first for a true swap."
+        },
+        {
+          "file": "projects/common/interactive/error-registry/error-registry.ts",
+          "text": "registerScope(): a scope named \"${...}\" is already registered. The existing instance stays live (swap-is-noop); unregister it first for a true swap."
+        }
+      ]
     },
     {
       "code": "CNGX1022",
@@ -321,7 +491,13 @@
       "page": "core-concepts/error-codes/cngx1022.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1022.html",
       "status": "active",
-      "files": ["projects/common/interactive/listbox/option-group.directive.ts"]
+      "files": ["projects/common/interactive/listbox/option-group.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/listbox/option-group.directive.ts",
+          "text": "[cngxOptionGroup] Nested option groups are unsupported. Use CngxTreeSelect for arbitrary tree shapes."
+        }
+      ]
     },
     {
       "code": "CNGX1023",
@@ -332,7 +508,13 @@
       "page": "core-concepts/error-codes/cngx1023.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1023.html",
       "status": "active",
-      "files": ["projects/common/interactive/listbox/option.directive.ts"]
+      "files": ["projects/common/interactive/listbox/option.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/listbox/option.directive.ts",
+          "text": "[cngxOption] option ${...} has no label and no textContent. Label is required for AT and trigger display."
+        }
+      ]
     },
     {
       "code": "CNGX1024",
@@ -343,7 +525,13 @@
       "page": "core-concepts/error-codes/cngx1024.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1024.html",
       "status": "active",
-      "files": ["projects/common/interactive/menu/menu-item-submenu.directive.ts"]
+      "files": ["projects/common/interactive/menu/menu-item-submenu.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/menu/menu-item-submenu.directive.ts",
+          "text": "[cngxMenuItemSubmenu] applied without a sibling [cngxMenuItem] on the same host element. The surrounding CngxMenuTrigger cannot route ArrowRight / activation to this submenu because CngxActiveDescendant only highlights CngxMenuItem nodes. Add [cngxMenuItem] alongside [cngxMenuItemSubmenu] on the same element."
+        }
+      ]
     },
     {
       "code": "CNGX1025",
@@ -354,7 +542,13 @@
       "page": "core-concepts/error-codes/cngx1025.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1025.html",
       "status": "active",
-      "files": ["projects/common/interactive/menu/menu-item-submenu.directive.ts"]
+      "files": ["projects/common/interactive/menu/menu-item-submenu.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/menu/menu-item-submenu.directive.ts",
+          "text": "[cngxMenuItemSubmenu] has no popover/menu source. Bind [cngxMenuItemSubmenu] and [submenuMenu], or provide CNGX_MENU_SUBMENU_WIRING from a wrapping component. The brain stays inert (no aria-haspopup / aria-expanded) until one is present."
+        }
+      ]
     },
     {
       "code": "CNGX1026",
@@ -365,7 +559,13 @@
       "page": "core-concepts/error-codes/cngx1026.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1026.html",
       "status": "active",
-      "files": ["projects/common/interactive/menu/menu-item-submenu.directive.ts"]
+      "files": ["projects/common/interactive/menu/menu-item-submenu.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/menu/menu-item-submenu.directive.ts",
+          "text": "[cngxMenuItemSubmenu] the companion popover ships without [positionTryFallbacks]. Submenus that clip the viewport edge will not flip without a try-fallback chain. Expose the recommended default as a component field and bind it:\n\n  import { CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';\n  protected readonly submenuFallbacks = CNGX_SUBMENU_TRY_FALLBACKS;\n\n  <div cngxPopover [positionTryFallbacks]=\"submenuFallbacks\">\n    <!-- submenu items -->\n  </div>\n"
+        }
+      ]
     },
     {
       "code": "CNGX1027",
@@ -376,7 +576,13 @@
       "page": "core-concepts/error-codes/cngx1027.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1027.html",
       "status": "active",
-      "files": ["projects/common/interactive/menu/menu.directive.ts"]
+      "files": ["projects/common/interactive/menu/menu.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/menu/menu.directive.ts",
+          "text": "[cngxMenu] focus(): host element has tabindex < 0; with tabindex=\"-1\" focus() still lands but the menu drops out of the Tab sequence, without a tabindex focus() does nothing. Add tabindex=\"0\" to the cngxMenu host so the menu container receives keyboard focus."
+        }
+      ]
     },
     {
       "code": "CNGX1028",
@@ -387,7 +593,13 @@
       "page": "core-concepts/error-codes/cngx1028.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1028.html",
       "status": "active",
-      "files": ["projects/common/interactive/reorder/reorder.directive.ts"]
+      "files": ["projects/common/interactive/reorder/reorder.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/reorder/reorder.directive.ts",
+          "text": "[cngxReorder] ${...} element(s) match itemSelector \"${...}\" but carry no non-negative integer data-reorder-index. Pointer / keyboard moves targeting them will be ignored."
+        }
+      ]
     },
     {
       "code": "CNGX1029",
@@ -398,7 +610,13 @@
       "page": "core-concepts/error-codes/cngx1029.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1029.html",
       "status": "active",
-      "files": ["projects/common/interactive/tree-controller/tree-controller.ts"]
+      "files": ["projects/common/interactive/tree-controller/tree-controller.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/tree-controller/tree-controller.ts",
+          "text": "createTreeController(): duplicate node id \"${...}\" from nodeIdFn - the earlier node is shadowed in id lookups. Ids must be unique."
+        }
+      ]
     },
     {
       "code": "CNGX1030",
@@ -409,14 +627,20 @@
       "page": "core-concepts/error-codes/cngx1030.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1030.html",
       "status": "active",
-      "files": ["projects/common/interactive/tree-controller/tree-controller.ts"]
+      "files": ["projects/common/interactive/tree-controller/tree-controller.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/tree-controller/tree-controller.ts",
+          "text": "createTreeController(): duplicate selection key \"${...}\" from keyFn - the earlier node is shadowed in selection lookups. Keys must be unique."
+        }
+      ]
     },
     {
       "code": "CNGX1031",
       "lib": "common",
       "severity": "warn",
       "production": "stripped",
-      "title": "No Router for a router-sync directive",
+      "title": "Router not set up for a router-sync directive",
       "page": "core-concepts/error-codes/cngx1031.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1031.html",
       "status": "active",
@@ -425,6 +649,24 @@
         "projects/common/layout/router/warn-router-absent.ts",
         "projects/common/stepper/router-sync.directive.ts",
         "projects/common/tabs/router-absent-warning.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/common/data/paginate/paginate-routing.directive.ts",
+          "text": "[cngxPaginateRouting] no Router / ActivatedRoute available - the URL sync is a no-op. Provide @angular/router via provideRouter(...) to enable URL-synced pagination."
+        },
+        {
+          "file": "projects/common/layout/router/warn-router-absent.ts",
+          "text": "injectQueryParamSync(): no Router / ActivatedRoute available - the URL sync is a no-op. Provide @angular/router via provideRouter(...) to enable ${...}."
+        },
+        {
+          "file": "projects/common/stepper/router-sync.directive.ts",
+          "text": "[cngxStepperRouterSync] no Router / ActivatedRoute available - the URL sync is a no-op. Provide @angular/router via provideRouter(...) to enable deep-linking."
+        },
+        {
+          "file": "projects/common/tabs/router-absent-warning.ts",
+          "text": "[${...}] no Router / ActivatedRoute available - the URL sync is a no-op. Provide @angular/router via provideRouter(...) to enable ${...}."
+        }
       ]
     },
     {
@@ -440,6 +682,20 @@
         "projects/common/layout/observers/intersection-observer.directive.ts",
         "projects/common/layout/scroll/infinite-scroll.directive.ts",
         "projects/common/layout/scroll/scroll-spy.directive.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/common/layout/observers/intersection-observer.directive.ts",
+          "text": "[cngxIntersectionObserver] root selector \"${...}\" matched no element - falling back to the viewport. A late-rendered root needs a re-bind of [root]."
+        },
+        {
+          "file": "projects/common/layout/scroll/infinite-scroll.directive.ts",
+          "text": "[cngxInfiniteScroll] root selector \"${...}\" matched no element - falling back to the viewport. A late-rendered root needs a re-bind of [root]."
+        },
+        {
+          "file": "projects/common/layout/scroll/scroll-spy.directive.ts",
+          "text": "[cngxScrollSpy] root selector \"${...}\" matched no element - falling back to the viewport. A late-rendered root needs a re-bind of [root]."
+        }
       ]
     },
     {
@@ -451,7 +707,13 @@
       "page": "core-concepts/error-codes/cngx1033.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1033.html",
       "status": "active",
-      "files": ["projects/common/layout/scroll/scroll-spy.directive.ts"]
+      "files": ["projects/common/layout/scroll/scroll-spy.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/layout/scroll/scroll-spy.directive.ts",
+          "text": "[cngxScrollSpy] section id(s) not found: ${...}. Late-rendered sections are not observed - re-bind [cngxScrollSpy] once they exist."
+        }
+      ]
     },
     {
       "code": "CNGX1034",
@@ -462,7 +724,13 @@
       "page": "core-concepts/error-codes/cngx1034.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1034.html",
       "status": "active",
-      "files": ["projects/common/layout/scroll/sticky-header.directive.ts"]
+      "files": ["projects/common/layout/scroll/sticky-header.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/layout/scroll/sticky-header.directive.ts",
+          "text": "[cngxStickyHeader] resolves against a scroll container that cannot scroll in the block axis (client height equals scroll height), so this header will never pin. Give the scrollport a bounded block-size, or drop cngxStickyHeader."
+        }
+      ]
     },
     {
       "code": "CNGX1035",
@@ -473,7 +741,13 @@
       "page": "core-concepts/error-codes/cngx1035.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1035.html",
       "status": "active",
-      "files": ["projects/common/popover/popover-action.component.ts"]
+      "files": ["projects/common/popover/popover-action.component.ts"],
+      "messages": [
+        {
+          "file": "projects/common/popover/popover-action.component.ts",
+          "text": "[cngx-popover-action] role=\"confirm\" without an [action] renders a button whose click runs nothing and leaves the popover open. Bind [action] or use role=\"dismiss\"."
+        }
+      ]
     },
     {
       "code": "CNGX1036",
@@ -484,7 +758,13 @@
       "page": "core-concepts/error-codes/cngx1036.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1036.html",
       "status": "active",
-      "files": ["projects/common/popover/popover.directive.ts"]
+      "files": ["projects/common/popover/popover.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/popover/popover.directive.ts",
+          "text": "[${...}] the native Popover API is not supported in this browser. Install @oddbird/popover-polyfill and import it in your polyfills:\n\n  npm install @oddbird/popover-polyfill\n  // polyfills.ts\n  import '@oddbird/popover-polyfill';\n"
+        }
+      ]
     },
     {
       "code": "CNGX1037",
@@ -495,7 +775,13 @@
       "page": "core-concepts/error-codes/cngx1037.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1037.html",
       "status": "active",
-      "files": ["projects/common/popover/popover.directive.ts"]
+      "files": ["projects/common/popover/popover.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/popover/popover.directive.ts",
+          "text": "[cngxPopover] provideFloatingFallback(computePosition) was registered without middleware. Popovers in browsers without CSS Anchor Positioning will clip against the viewport edge because no flip/shift recovery is configured. Pass middleware on registration:\n\n  import { computePosition, flip, shift } from '@floating-ui/dom';\n\n  providers: [\n    provideFloatingFallback(computePosition, [flip(), shift()]),\n  ],\n"
+        }
+      ]
     },
     {
       "code": "CNGX1038",
@@ -509,6 +795,16 @@
       "files": [
         "projects/common/stepper/controls/stepper-next.directive.ts",
         "projects/common/stepper/controls/stepper-previous.directive.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/common/stepper/controls/stepper-next.directive.ts",
+          "text": "[cngxStepperNext] and [cngxAsyncClick] on the same element both gate aria-disabled. Use one or the other."
+        },
+        {
+          "file": "projects/common/stepper/controls/stepper-previous.directive.ts",
+          "text": "[cngxStepperPrevious] and [cngxAsyncClick] on the same element both gate aria-disabled. Use one or the other."
+        }
       ]
     },
     {
@@ -520,7 +816,13 @@
       "page": "core-concepts/error-codes/cngx1039.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1039.html",
       "status": "active",
-      "files": ["projects/common/stepper/presenter.directive.ts"]
+      "files": ["projects/common/stepper/presenter.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/stepper/presenter.directive.ts",
+          "text": "[cngxStepper] more than 6 steps and none inside a [cngxStepGroup]; consider wrapping logical groups of steps in [cngxStepGroup] for better UX"
+        }
+      ]
     },
     {
       "code": "CNGX1040",
@@ -531,7 +833,13 @@
       "page": "core-concepts/error-codes/cngx1040.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1040.html",
       "status": "active",
-      "files": ["projects/common/stepper/presenter.directive.ts"]
+      "files": ["projects/common/stepper/presenter.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/stepper/presenter.directive.ts",
+          "text": "[cngxStepper] the commit controller ignored cancel({ settle: true }) - busy stays latched. Honor the settle option in your CNGX_COMMIT_CONTROLLER_FACTORY override."
+        }
+      ]
     },
     {
       "code": "CNGX1041",
@@ -545,6 +853,24 @@
       "files": [
         "projects/common/stepper/provide-cngx-stepper.ts",
         "projects/common/tabs/provide-cngx-tabs.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/common/stepper/provide-cngx-stepper.ts",
+          "text": "provideCngxStepper(): dropped feature without a `_target` discriminator. Pass config through the `with*` helpers of @cngx/common/stepper and labels through `withStepperI18nLabels(...)`."
+        },
+        {
+          "file": "projects/common/stepper/provide-cngx-stepper.ts",
+          "text": "provideCngxStepperAt(): dropped feature without a `_target` discriminator. Pass config through the `with*` helpers of @cngx/common/stepper and labels through `withStepperI18nLabels(...)`."
+        },
+        {
+          "file": "projects/common/tabs/provide-cngx-tabs.ts",
+          "text": "provideCngxTabs(): dropped feature without a `_target` discriminator. Pass config through the `with*` helpers of @cngx/common/tabs and labels through `withTabsI18nLabels(...)`."
+        },
+        {
+          "file": "projects/common/tabs/provide-cngx-tabs.ts",
+          "text": "provideCngxTabsAt(): dropped feature without a `_target` discriminator. Pass config through the `with*` helpers of @cngx/common/tabs and labels through `withTabsI18nLabels(...)`."
+        }
       ]
     },
     {
@@ -556,7 +882,13 @@
       "page": "core-concepts/error-codes/cngx1042.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1042.html",
       "status": "active",
-      "files": ["projects/common/timeline/grouping.ts"]
+      "files": ["projects/common/timeline/grouping.ts"],
+      "messages": [
+        {
+          "file": "projects/common/timeline/grouping.ts",
+          "text": "createTimelineGrouping(): dateAccessor produced an invalid date for at least one item. Those items cluster into a single band whose header renders \"Invalid Date\" - check the accessor and the raw values it reads."
+        }
+      ]
     },
     {
       "code": "CNGX1043",
@@ -567,7 +899,13 @@
       "page": "core-concepts/error-codes/cngx1043.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1043.html",
       "status": "active",
-      "files": ["projects/common/timeline/timeline-item.component.ts"]
+      "files": ["projects/common/timeline/timeline-item.component.ts"],
+      "messages": [
+        {
+          "file": "projects/common/timeline/timeline-item.component.ts",
+          "text": "[cngx-timeline-item] focusable content inside [cngxTimelineOpposite]. The slot projects ahead of the row body, so under placement=\"end\" or \"alternate\" it takes focus before the row it belongs to while painting on the far side of the rail. Keep opposite content non-interactive and put controls in the body."
+        }
+      ]
     },
     {
       "code": "CNGX1044",
@@ -578,7 +916,13 @@
       "page": "core-concepts/error-codes/cngx1044.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1044.html",
       "status": "active",
-      "files": ["projects/common/interactive/chip-interaction/chip-interaction.directive.ts"]
+      "files": ["projects/common/interactive/chip-interaction/chip-interaction.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/chip-interaction/chip-interaction.directive.ts",
+          "text": "[cngxChipInteraction] must not be used inside <cngx-chip-group> / <cngx-multi-chip-group>; use [cngxChipInGroup] instead."
+        }
+      ]
     },
     {
       "code": "CNGX1045",
@@ -592,6 +936,16 @@
       "files": [
         "projects/common/tabs/tab-link.directive.ts",
         "projects/common/tabs/tab.directive.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/common/tabs/tab-link.directive.ts",
+          "text": "[cngxTabLink] must be placed inside <cngx-tab-nav> or an element with [cngxTabGroup]."
+        },
+        {
+          "file": "projects/common/tabs/tab.directive.ts",
+          "text": "[cngxTab] must be placed inside <cngx-tab-group> or an element with [cngxTabGroup]."
+        }
       ]
     },
     {
@@ -603,7 +957,13 @@
       "page": "core-concepts/error-codes/cngx1046.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1046.html",
       "status": "active",
-      "files": ["projects/common/stepper/step.directive.ts"]
+      "files": ["projects/common/stepper/step.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/stepper/step.directive.ts",
+          "text": "[cngxStep] must be placed inside an element with [cngxStepper], such as <cngx-stepper>, directly or through a [cngxStepGroup] inside it."
+        }
+      ]
     },
     {
       "code": "CNGX1047",
@@ -614,7 +974,13 @@
       "page": "core-concepts/error-codes/cngx1047.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1047.html",
       "status": "active",
-      "files": ["projects/common/stepper/step-group.directive.ts"]
+      "files": ["projects/common/stepper/step-group.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/stepper/step-group.directive.ts",
+          "text": "[cngxStepGroup] must be placed inside an element with [cngxStepper], such as <cngx-stepper>."
+        }
+      ]
     },
     {
       "code": "CNGX1048",
@@ -625,7 +991,13 @@
       "page": "core-concepts/error-codes/cngx1048.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1048.html",
       "status": "active",
-      "files": ["projects/common/chart/chart/chart-context.ts"]
+      "files": ["projects/common/chart/chart/chart-context.ts"],
+      "messages": [
+        {
+          "file": "projects/common/chart/chart/chart-context.ts",
+          "text": "[${...}] must be placed inside <cngx-chart>."
+        }
+      ]
     },
     {
       "code": "CNGX1049",
@@ -636,7 +1008,13 @@
       "page": "core-concepts/error-codes/cngx1049.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1049.html",
       "status": "active",
-      "files": ["projects/common/chart/scales/ordinal.ts"]
+      "files": ["projects/common/chart/scales/ordinal.ts"],
+      "messages": [
+        {
+          "file": "projects/common/chart/scales/ordinal.ts",
+          "text": "createOrdinalScale(): colors palette must not be empty"
+        }
+      ]
     },
     {
       "code": "CNGX1050",
@@ -647,7 +1025,13 @@
       "page": "core-concepts/error-codes/cngx1050.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1050.html",
       "status": "active",
-      "files": ["projects/common/chart/buffer/ring-buffer.ts"]
+      "files": ["projects/common/chart/buffer/ring-buffer.ts"],
+      "messages": [
+        {
+          "file": "projects/common/chart/buffer/ring-buffer.ts",
+          "text": "createRingBuffer(): capacity must be a positive integer, got ${...}"
+        }
+      ]
     },
     {
       "code": "CNGX1051",
@@ -658,7 +1042,13 @@
       "page": "core-concepts/error-codes/cngx1051.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1051.html",
       "status": "active",
-      "files": ["projects/common/interactive/tree-controller/tree-controller.ts"]
+      "files": ["projects/common/interactive/tree-controller/tree-controller.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/tree-controller/tree-controller.ts",
+          "text": "createTreeController(): `nodeIdFn` is required. Provide it via CngxTreeControllerOptions.nodeIdFn or app-wide through `provideTreeConfig(withDefaultNodeIdFn(...))`."
+        }
+      ]
     },
     {
       "code": "CNGX1052",
@@ -669,7 +1059,13 @@
       "page": "core-concepts/error-codes/cngx1052.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1052.html",
       "status": "active",
-      "files": ["projects/common/interactive/button-toggle/button-toggle.directive.ts"]
+      "files": ["projects/common/interactive/button-toggle/button-toggle.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/button-toggle/button-toggle.directive.ts",
+          "text": "[cngxButtonToggle] both a single and a multi toggle group are present in the injector tree. Exactly one is required - single + multi semantics are incompatible."
+        }
+      ]
     },
     {
       "code": "CNGX1053",
@@ -680,7 +1076,13 @@
       "page": "core-concepts/error-codes/cngx1053.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1053.html",
       "status": "active",
-      "files": ["projects/common/interactive/button-toggle/button-toggle.directive.ts"]
+      "files": ["projects/common/interactive/button-toggle/button-toggle.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/button-toggle/button-toggle.directive.ts",
+          "text": "[cngxButtonToggle] must be placed inside <cngx-button-toggle-group> or <cngx-button-multi-toggle-group>."
+        }
+      ]
     },
     {
       "code": "CNGX1054",
@@ -691,7 +1093,13 @@
       "page": "core-concepts/error-codes/cngx1054.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1054.html",
       "status": "active",
-      "files": ["projects/common/data/async-state/operators.ts"]
+      "files": ["projects/common/data/async-state/operators.ts"],
+      "messages": [
+        {
+          "file": "projects/common/data/async-state/operators.ts",
+          "text": "tapHttpAsyncState(): response body is null"
+        }
+      ]
     },
     {
       "code": "CNGX1055",
@@ -705,6 +1113,16 @@
       "files": [
         "projects/common/stepper/stepper-host.token.ts",
         "projects/common/tabs/tab-group-host.token.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/common/stepper/stepper-host.token.ts",
+          "text": "[${...}] must be placed on or inside an element with [cngxStepper], such as <cngx-stepper>."
+        },
+        {
+          "file": "projects/common/tabs/tab-group-host.token.ts",
+          "text": "[${...}] must be placed on or inside an element with [cngxTabGroup], such as <cngx-tab-group> or <cngx-tab-nav>."
+        }
       ]
     },
     {
@@ -716,7 +1134,13 @@
       "page": "core-concepts/error-codes/cngx1056.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1056.html",
       "status": "active",
-      "files": ["projects/common/stepper/warn-stepper-unhosted.ts"]
+      "files": ["projects/common/stepper/warn-stepper-unhosted.ts"],
+      "messages": [
+        {
+          "file": "projects/common/stepper/warn-stepper-unhosted.ts",
+          "text": "[${...}] has no stepper. Place it inside a stepper, or bind [host] to the stepper's presenter when it sits outside."
+        }
+      ]
     },
     {
       "code": "CNGX1057",
@@ -727,7 +1151,13 @@
       "page": "core-concepts/error-codes/cngx1057.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1057.html",
       "status": "active",
-      "files": ["projects/common/interactive/menu/menu-item-radio.directive.ts"]
+      "files": ["projects/common/interactive/menu/menu-item-radio.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/menu/menu-item-radio.directive.ts",
+          "text": "[cngxMenuItemRadio] must be placed inside an element with [cngxMenuGroup]."
+        }
+      ]
     },
     {
       "code": "CNGX1058",
@@ -738,7 +1168,13 @@
       "page": "core-concepts/error-codes/cngx1058.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1058.html",
       "status": "active",
-      "files": ["projects/common/interactive/menu/menu-item-core.ts"]
+      "files": ["projects/common/interactive/menu/menu-item-core.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/menu/menu-item-core.ts",
+          "text": "injectMenuItemCore(): the menu item has no surrounding [cngxMenu], so a click does nothing. Place the item inside an element with [cngxMenu]."
+        }
+      ]
     },
     {
       "code": "CNGX1059",
@@ -752,6 +1188,16 @@
       "files": [
         "projects/common/stepper/commit-handler.ts",
         "projects/common/tabs/commit-handler.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/common/stepper/commit-handler.ts",
+          "text": "[cngxStepper] commitAction completed without emitting true or false."
+        },
+        {
+          "file": "projects/common/tabs/commit-handler.ts",
+          "text": "[cngxTabGroup] commitAction completed without emitting true or false."
+        }
       ]
     },
     {
@@ -763,7 +1209,13 @@
       "page": "core-concepts/error-codes/cngx1060.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1060.html",
       "status": "active",
-      "files": ["projects/common/interactive/accordion/accordion.token.ts"]
+      "files": ["projects/common/interactive/accordion/accordion.token.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/accordion/accordion.token.ts",
+          "text": "[cngxAccordionPanel] must be placed inside an element with [cngxAccordion], such as <cngx-accordion-group>."
+        }
+      ]
     },
     {
       "code": "CNGX1061",
@@ -774,7 +1226,13 @@
       "page": "core-concepts/error-codes/cngx1061.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1061.html",
       "status": "active",
-      "files": ["projects/common/interactive/breadcrumb/breadcrumb.token.ts"]
+      "files": ["projects/common/interactive/breadcrumb/breadcrumb.token.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/breadcrumb/breadcrumb.token.ts",
+          "text": "[cngxBreadcrumbItem] must be placed inside an element with [cngxBreadcrumb]."
+        }
+      ]
     },
     {
       "code": "CNGX1062",
@@ -785,7 +1243,13 @@
       "page": "core-concepts/error-codes/cngx1062.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1062.html",
       "status": "active",
-      "files": ["projects/common/interactive/slider/range-slider.token.ts"]
+      "files": ["projects/common/interactive/slider/range-slider.token.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/slider/range-slider.token.ts",
+          "text": "[cngxSliderThumb] must be placed inside an element with [cngxRangeSliderTrack], such as <cngx-range-slider>."
+        }
+      ]
     },
     {
       "code": "CNGX1063",
@@ -796,7 +1260,13 @@
       "page": "core-concepts/error-codes/cngx1063.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1063.html",
       "status": "active",
-      "files": ["projects/common/data/paginate/inject-paginate.ts"]
+      "files": ["projects/common/data/paginate/inject-paginate.ts"],
+      "messages": [
+        {
+          "file": "projects/common/data/paginate/inject-paginate.ts",
+          "text": "[${...}] must be placed on or inside an element with [cngxPaginate], such as <cngx-paginator>."
+        }
+      ]
     },
     {
       "code": "CNGX1064",
@@ -807,7 +1277,13 @@
       "page": "core-concepts/error-codes/cngx1064.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1064.html",
       "status": "active",
-      "files": ["projects/common/popover/popover-sheet.directive.ts"]
+      "files": ["projects/common/popover/popover-sheet.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/popover/popover-sheet.directive.ts",
+          "text": "[cngxPopoverSheet] opened as a modal sheet without a name. Add a cngxPopoverSheetTitle inside the panel or bind [labelledBy]."
+        }
+      ]
     },
     {
       "code": "CNGX1065",
@@ -818,7 +1294,13 @@
       "page": "core-concepts/error-codes/cngx1065.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1065.html",
       "status": "active",
-      "files": ["projects/common/popover/popover-sheet.directive.ts"]
+      "files": ["projects/common/popover/popover-sheet.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/popover/popover-sheet.directive.ts",
+          "text": "[cngxPopoverSheet] needs mode=\"manual\" on the popover, got \"${...}\". Native light dismiss and Escape bypass closeRequested in that mode."
+        }
+      ]
     },
     {
       "code": "CNGX1066",
@@ -829,7 +1311,13 @@
       "page": "core-concepts/error-codes/cngx1066.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1066.html",
       "status": "active",
-      "files": ["projects/common/popover/popover-sheet-host.ts"]
+      "files": ["projects/common/popover/popover-sheet-host.ts"],
+      "messages": [
+        {
+          "file": "projects/common/popover/popover-sheet-host.ts",
+          "text": "[${...}] must be placed inside an element with [cngxPopoverSheet]."
+        }
+      ]
     },
     {
       "code": "CNGX1067",
@@ -840,7 +1328,30 @@
       "page": "core-concepts/error-codes/cngx1067.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1067.html",
       "status": "active",
-      "files": ["projects/common/popover/popover-sheet.directive.ts"]
+      "files": ["projects/common/popover/popover-sheet.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/popover/popover-sheet.directive.ts",
+          "text": "[cngxPopoverSheet] must be placed on an element with [cngxPopover]."
+        }
+      ]
+    },
+    {
+      "code": "CNGX1068",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Group chip outside a chip group",
+      "page": "core-concepts/error-codes/cngx1068.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1068.html",
+      "status": "active",
+      "files": ["projects/common/interactive/chip-group/chip-group-host.token.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/chip-group/chip-group-host.token.ts",
+          "text": "[cngxChipInGroup] must be placed inside <cngx-chip-group> or <cngx-multi-chip-group>."
+        }
+      ]
     },
     {
       "code": "CNGX2001",
@@ -851,7 +1362,13 @@
       "page": "core-concepts/error-codes/cngx2001.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2001.html",
       "status": "active",
-      "files": ["projects/forms/filter-builder/filter-builder-operators.ts"]
+      "files": ["projects/forms/filter-builder/filter-builder-operators.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/filter-builder/filter-builder-operators.ts",
+          "text": "evaluateExpression(): unknown operator \"${...}\" - the expression evaluates to false for every item. Register an evaluation via withOperators({ ${...}: { evaluate: ... } })."
+        }
+      ]
     },
     {
       "code": "CNGX2002",
@@ -862,7 +1379,13 @@
       "page": "core-concepts/error-codes/cngx2002.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2002.html",
       "status": "active",
-      "files": ["projects/forms/filter-builder/filter-builder-presenter.directive.ts"]
+      "files": ["projects/forms/filter-builder/filter-builder-presenter.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/filter-builder/filter-builder-presenter.directive.ts",
+          "text": "[cngxFilterBuilderPresenter] no fields provided - empty-state branch will always render."
+        }
+      ]
     },
     {
       "code": "CNGX2003",
@@ -873,7 +1396,13 @@
       "page": "core-concepts/error-codes/cngx2003.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2003.html",
       "status": "active",
-      "files": ["projects/forms/filter-builder/filter-builder-presenter.directive.ts"]
+      "files": ["projects/forms/filter-builder/filter-builder-presenter.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/filter-builder/filter-builder-presenter.directive.ts",
+          "text": "[cngxFilterBuilderPresenter] value() references unknown field key(s): ${...}"
+        }
+      ]
     },
     {
       "code": "CNGX2004",
@@ -884,7 +1413,13 @@
       "page": "core-concepts/error-codes/cngx2004.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2004.html",
       "status": "active",
-      "files": ["projects/forms/filter-builder/filter-builder-presenter.directive.ts"]
+      "files": ["projects/forms/filter-builder/filter-builder-presenter.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/filter-builder/filter-builder-presenter.directive.ts",
+          "text": "[cngxFilterBuilderPresenter] addGroup at depth ${...} exceeds maxNestingDepth ${...} - ignored. Raise it via withMaxNestingDepth(...)."
+        }
+      ]
     },
     {
       "code": "CNGX2005",
@@ -895,7 +1430,13 @@
       "page": "core-concepts/error-codes/cngx2005.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2005.html",
       "status": "active",
-      "files": ["projects/forms/input/paste-transform.directive.ts"]
+      "files": ["projects/forms/input/paste-transform.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/input/paste-transform.directive.ts",
+          "text": "[cngxPasteTransform]: stacked on a cngxInputMask input - both directives cancel the native paste and insert independently, so pasted text is applied twice through uncoordinated paths. Remove cngxPasteTransform; use the mask's [transform] / customTokens for per-character cleanup."
+        }
+      ]
     },
     {
       "code": "CNGX2006",
@@ -906,7 +1447,8 @@
       "page": "core-concepts/error-codes/cngx2006.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2006.html",
       "status": "active",
-      "files": ["projects/forms/input/reactive-forms-channel.ts"]
+      "files": ["projects/forms/input/reactive-forms-channel.ts"],
+      "messages": [{ "file": "projects/forms/input/reactive-forms-channel.ts", "text": "${...}" }]
     },
     {
       "code": "CNGX2007",
@@ -917,7 +1459,13 @@
       "page": "core-concepts/error-codes/cngx2007.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2007.html",
       "status": "active",
-      "files": ["projects/forms/controls/typed-control.directive.ts"]
+      "files": ["projects/forms/controls/typed-control.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/controls/typed-control.directive.ts",
+          "text": "[cngxTypedControl] No control found with name \"${...}\" in the parent FormGroup."
+        }
+      ]
     },
     {
       "code": "CNGX2008",
@@ -928,7 +1476,13 @@
       "page": "core-concepts/error-codes/cngx2008.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2008.html",
       "status": "active",
-      "files": ["projects/forms/select/shared/chip-removal-handler.ts"]
+      "files": ["projects/forms/select/shared/chip-removal-handler.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/select/shared/chip-removal-handler.ts",
+          "text": "createChipRemovalHandler(): missing required field(s): ${...}. Provide them, or pass `removeOverride` to bypass the standard body."
+        }
+      ]
     },
     {
       "code": "CNGX2009",
@@ -939,7 +1493,13 @@
       "page": "core-concepts/error-codes/cngx2009.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2009.html",
       "status": "active",
-      "files": ["projects/forms/filter-builder/filter-builder.utils.ts"]
+      "files": ["projects/forms/filter-builder/filter-builder.utils.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/filter-builder/filter-builder.utils.ts",
+          "text": "updateAtPath(): root replacement must remain a FilterGroup"
+        }
+      ]
     },
     {
       "code": "CNGX2010",
@@ -950,7 +1510,13 @@
       "page": "core-concepts/error-codes/cngx2010.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2010.html",
       "status": "active",
-      "files": ["projects/forms/filter-builder/filter-builder.utils.ts"]
+      "files": ["projects/forms/filter-builder/filter-builder.utils.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/filter-builder/filter-builder.utils.ts",
+          "text": "updateAtPath(): invalid path ${...}"
+        }
+      ]
     },
     {
       "code": "CNGX2011",
@@ -961,7 +1527,17 @@
       "page": "core-concepts/error-codes/cngx2011.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2011.html",
       "status": "active",
-      "files": ["projects/forms/filter-builder/filter-builder.utils.ts"]
+      "files": ["projects/forms/filter-builder/filter-builder.utils.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/filter-builder/filter-builder.utils.ts",
+          "text": "appendAtPath(): cannot append to non-group at ${...}"
+        },
+        {
+          "file": "projects/forms/filter-builder/filter-builder.utils.ts",
+          "text": "updateAtPath(): cannot descend into expression at ${...}"
+        }
+      ]
     },
     {
       "code": "CNGX2012",
@@ -972,7 +1548,13 @@
       "page": "core-concepts/error-codes/cngx2012.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2012.html",
       "status": "active",
-      "files": ["projects/forms/filter-builder/filter-builder.utils.ts"]
+      "files": ["projects/forms/filter-builder/filter-builder.utils.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/filter-builder/filter-builder.utils.ts",
+          "text": "removeAtPath(): cannot remove the root"
+        }
+      ]
     },
     {
       "code": "CNGX2013",
@@ -983,18 +1565,34 @@
       "page": "core-concepts/error-codes/cngx2013.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2013.html",
       "status": "active",
-      "files": ["projects/forms/filter-builder/filter-builder.helpers.ts"]
+      "files": ["projects/forms/filter-builder/filter-builder.helpers.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/filter-builder/filter-builder.helpers.ts",
+          "text": "ensureFilterTreeIds(): unknown filter logic \"${...}\"; a FilterGroup's logic must be 'and', 'or' or 'xor'. Normalise deserialised or persisted trees before they reach the filter builder."
+        },
+        {
+          "file": "projects/forms/filter-builder/filter-builder.helpers.ts",
+          "text": "toFilterPredicate(): unknown filter logic \"${...}\"; a FilterGroup's logic must be 'and', 'or' or 'xor'. Normalise deserialised or persisted trees before they reach the filter builder."
+        }
+      ]
     },
     {
       "code": "CNGX2014",
       "lib": "forms",
       "severity": "throw",
       "production": "code-only",
-      "title": "Filter group or expression outside a filter builder",
+      "title": "Filter group, expression or expression row outside a filter builder",
       "page": "core-concepts/error-codes/cngx2014.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2014.html",
       "status": "active",
-      "files": ["projects/forms/filter-builder/filter-builder-host.token.ts"]
+      "files": ["projects/forms/filter-builder/filter-builder-host.token.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/filter-builder/filter-builder-host.token.ts",
+          "text": "[${...}] must be placed inside <cngx-filter-builder> or an element with [cngxFilterBuilderPresenter]."
+        }
+      ]
     },
     {
       "code": "CNGX2015",
@@ -1010,6 +1608,24 @@
         "projects/forms/field/listbox-field-bridge.directive.ts",
         "projects/forms/field/range-slider-field-bridge.directive.ts",
         "projects/forms/field/slider-field-bridge.directive.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/forms/field/bind-field.directive.ts",
+          "text": "[cngxBindField] has no form field to bind to, so it does nothing. Place it inside <cngx-form-field [field]=\"...\">."
+        },
+        {
+          "file": "projects/forms/field/listbox-field-bridge.directive.ts",
+          "text": "[cngxListboxFieldBridge] has no form field to bind to, so it does nothing. Place it inside <cngx-form-field [field]=\"...\">."
+        },
+        {
+          "file": "projects/forms/field/range-slider-field-bridge.directive.ts",
+          "text": "[cngxRangeSliderFieldBridge] has no form field to bind to, so it does nothing. Place it inside <cngx-form-field [field]=\"...\">."
+        },
+        {
+          "file": "projects/forms/field/slider-field-bridge.directive.ts",
+          "text": "[cngxSliderFieldBridge] has no form field to bind to, so it does nothing. Place it inside <cngx-form-field [field]=\"...\">."
+        }
       ]
     },
     {
@@ -1021,7 +1637,13 @@
       "page": "core-concepts/error-codes/cngx2016.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2016.html",
       "status": "active",
-      "files": ["projects/forms/input/otp-input.directive.ts"]
+      "files": ["projects/forms/input/otp-input.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/input/otp-input.directive.ts",
+          "text": "[cngxOtpSlot] must be placed inside an element with [cngxOtpInput]."
+        }
+      ]
     },
     {
       "code": "CNGX2017",
@@ -1035,6 +1657,16 @@
       "files": [
         "projects/forms/field/inject-form-field-presenter.ts",
         "projects/forms/input/char-count.component.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/forms/field/inject-form-field-presenter.ts",
+          "text": "[${...}] must be placed inside <cngx-form-field> or an element with [cngxFormFieldPresenter]."
+        },
+        {
+          "file": "projects/forms/input/char-count.component.ts",
+          "text": "[cngx-char-count] must be placed inside <cngx-form-field> or an element with [cngxFormFieldPresenter]."
+        }
       ]
     },
     {
@@ -1046,7 +1678,13 @@
       "page": "core-concepts/error-codes/cngx2018.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2018.html",
       "status": "active",
-      "files": ["projects/forms/select/declarative/select-search-host.ts"]
+      "files": ["projects/forms/select/declarative/select-search-host.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/select/declarative/select-search-host.ts",
+          "text": "[cngx-select-search] must be placed inside <cngx-select-shell>."
+        }
+      ]
     },
     {
       "code": "CNGX2019",
@@ -1057,14 +1695,20 @@
       "page": "core-concepts/error-codes/cngx2019.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2019.html",
       "status": "active",
-      "files": ["projects/forms/filter-builder/filter-builder-form-field-control.directive.ts"]
+      "files": ["projects/forms/filter-builder/filter-builder-form-field-control.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/filter-builder/filter-builder-form-field-control.directive.ts",
+          "text": "[cngxFilterBuilderFormFieldControl] must be placed on <cngx-filter-builder> or an element with [cngxFilterBuilderPresenter]."
+        }
+      ]
     },
     {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",
       "production": "stripped",
-      "title": "No Router for a router-sync directive",
+      "title": "Router not set up for a router-sync directive",
       "page": "core-concepts/error-codes/cngx3001.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3001.html",
       "status": "active",
@@ -1072,6 +1716,20 @@
         "projects/ui/breadcrumb/breadcrumb-router-sync.directive.ts",
         "projects/ui/breadcrumb/breadcrumb-siblings-router-sync.directive.ts",
         "projects/ui/toc/toc-router-sync.directive.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/ui/breadcrumb/breadcrumb-router-sync.directive.ts",
+          "text": "[cngxRouterSync] on <cngx-breadcrumb>: no Router / ActivatedRoute available - directive is a no-op. Provide @angular/router via provideRouter(...) to enable router-driven crumbs."
+        },
+        {
+          "file": "projects/ui/breadcrumb/breadcrumb-siblings-router-sync.directive.ts",
+          "text": "[cngxRouterSync] on <cngx-breadcrumb-siblings>: no Router / ActivatedRoute available - directive is a no-op. Provide @angular/router via provideRouter(...) to enable router-driven siblings."
+        },
+        {
+          "file": "projects/ui/toc/toc-router-sync.directive.ts",
+          "text": "[${...}] no Router / ActivatedRoute available - directive is a no-op. Provide @angular/router via provideRouter(...) to enable ${...}."
+        }
       ]
     },
     {
@@ -1087,6 +1745,20 @@
         "projects/ui/feedback/alert/alert-on.directive.ts",
         "projects/ui/feedback/banner/banner-on.directive.ts",
         "projects/ui/feedback/toast/toast-on.directive.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/ui/feedback/alert/alert-on.directive.ts",
+          "text": "[cngxAlertOn] No state source. Bind [cngxAlertOn]=\"state\" explicitly or place inside a component that provides CNGX_STATEFUL."
+        },
+        {
+          "file": "projects/ui/feedback/banner/banner-on.directive.ts",
+          "text": "[cngxBannerOn] No state source. Bind [cngxBannerOn]=\"state\" explicitly or place inside a component that provides CNGX_STATEFUL."
+        },
+        {
+          "file": "projects/ui/feedback/toast/toast-on.directive.ts",
+          "text": "[cngxToastOn] No state source. Bind [cngxToastOn]=\"state\" explicitly or place inside a component that provides CNGX_STATEFUL."
+        }
       ]
     },
     {
@@ -1098,7 +1770,13 @@
       "page": "core-concepts/error-codes/cngx3003.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3003.html",
       "status": "active",
-      "files": ["projects/ui/feedback/alert/alert-stack.ts"]
+      "files": ["projects/ui/feedback/alert/alert-stack.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/feedback/alert/alert-stack.ts",
+          "text": "[cngx-alert-stack] the overflow aria-label \"${...}\" does not contain its visible label \"${...}\" (WCAG 2.5.3). Make alertOverflow(count) include alertOverflowVisible(count)."
+        }
+      ]
     },
     {
       "code": "CNGX3004",
@@ -1109,7 +1787,13 @@
       "page": "core-concepts/error-codes/cngx3004.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3004.html",
       "status": "active",
-      "files": ["projects/ui/feedback/config/feedback-config.ts"]
+      "files": ["projects/ui/feedback/config/feedback-config.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/feedback/config/feedback-config.ts",
+          "text": "injectErrorDetail(): showing the raw error text as the error detail. Production builds show no detail here: map errors to user-facing text with provideFeedback(withErrorDetail(...))."
+        }
+      ]
     },
     {
       "code": "CNGX3005",
@@ -1120,7 +1804,13 @@
       "page": "core-concepts/error-codes/cngx3005.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3005.html",
       "status": "active",
-      "files": ["projects/ui/mat-tabs/decorations/decoration-projectors.ts"]
+      "files": ["projects/ui/mat-tabs/decorations/decoration-projectors.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/mat-tabs/decorations/decoration-projectors.ts",
+          "text": "[cngxMatTabs] ${...} decoration retry ceiling reached (${...} attempts) - MatTabHeader did not render `.mat-mdc-tab` buttons within the expected window. Likely cause: Material upgrade broke the `.mat-mdc-tab` selector contract or a consumer-side render stall. The decoration may remain visually missing until the next state change."
+        }
+      ]
     },
     {
       "code": "CNGX3006",
@@ -1131,7 +1821,13 @@
       "page": "core-concepts/error-codes/cngx3006.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3006.html",
       "status": "active",
-      "files": ["projects/ui/mat-tabs/decorations/half-wired-slot-sink.ts"]
+      "files": ["projects/ui/mat-tabs/decorations/half-wired-slot-sink.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/mat-tabs/decorations/half-wired-slot-sink.ts",
+          "text": "[cngxMatTabs] aggregator-content slot half-wired - `${...}` is missing while the other half is supplied. The decoration projector will silently fall back to the imperative `textContent` path, and the consumer-projected `*cngxMatTabAggregatorContent` template will never render. Wire both halves on the [cngxMatTabs] directive (or neither)."
+        }
+      ]
     },
     {
       "code": "CNGX3007",
@@ -1142,7 +1838,13 @@
       "page": "core-concepts/error-codes/cngx3007.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3007.html",
       "status": "active",
-      "files": ["projects/ui/mat-tabs/mat-tabs.directive.ts"]
+      "files": ["projects/ui/mat-tabs/mat-tabs.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/mat-tabs/mat-tabs.directive.ts",
+          "text": "[cngxMatTabs] could not anchor <cngx-tab-overflow> after ${...} attempts - .mat-mdc-tab-header was not found inside the host. The More popover will fall back to a sibling-of-<mat-tab-group> position; verify Material rendered the strip (e.g. consumer is not gating <mat-tab-group> behind a never-true *ngIf / @defer)."
+        }
+      ]
     },
     {
       "code": "CNGX3008",
@@ -1153,7 +1855,13 @@
       "page": "core-concepts/error-codes/cngx3008.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3008.html",
       "status": "active",
-      "files": ["projects/ui/action-button/action-button.ts"]
+      "files": ["projects/ui/action-button/action-button.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/action-button/action-button.ts",
+          "text": "[cngx-action-button] [toastSuccess]/[toastError] inputs and [cngxToastOn] on the same element will fire duplicate toasts. Use one or the other."
+        }
+      ]
     },
     {
       "code": "CNGX3009",
@@ -1164,7 +1872,13 @@
       "page": "core-concepts/error-codes/cngx3009.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3009.html",
       "status": "active",
-      "files": ["projects/ui/data-grid-accordion/data-grid-accordion.component.ts"]
+      "files": ["projects/ui/data-grid-accordion/data-grid-accordion.component.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/data-grid-accordion/data-grid-accordion.component.ts",
+          "text": "[cngx-data-grid-accordion] a row projects ${...} cells but the shared column template has ${...} tracks - the extra cells land in implicit tracks and misalign silently. Match every row to the header (or first-row) cell count, or to the [columns] tracks when it is set."
+        }
+      ]
     },
     {
       "code": "CNGX3010",
@@ -1175,7 +1889,13 @@
       "page": "core-concepts/error-codes/cngx3010.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3010.html",
       "status": "active",
-      "files": ["projects/ui/sidenav/sidenav.ts"]
+      "files": ["projects/ui/sidenav/sidenav.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/sidenav/sidenav.ts",
+          "text": "[cngx-sidenav] auto mode needs a <cngx-sidenav-layout> (or [cngxContainer]) ancestor; rendering as over."
+        }
+      ]
     },
     {
       "code": "CNGX3011",
@@ -1186,7 +1906,13 @@
       "page": "core-concepts/error-codes/cngx3011.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3011.html",
       "status": "active",
-      "files": ["projects/ui/tabs/tab-group.component.ts"]
+      "files": ["projects/ui/tabs/tab-group.component.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/tabs/tab-group.component.ts",
+          "text": "[cngx-tab-group] iconLayout='only' but no *cngxTabIcon template is provided - tabs render no icon and the label is visually hidden. Provide an <ng-template cngxTabIcon> or use 'start' / 'end' / 'top'."
+        }
+      ]
     },
     {
       "code": "CNGX3012",
@@ -1197,7 +1923,13 @@
       "page": "core-concepts/error-codes/cngx3012.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3012.html",
       "status": "active",
-      "files": ["projects/ui/tabs/tab-overflow.component.ts"]
+      "files": ["projects/ui/tabs/tab-overflow.component.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/tabs/tab-overflow.component.ts",
+          "text": "[cngx-tab-overflow] strip wrapper not found after 60 attach attempts; the More popover will not surface clipped tabs. Verify the molecule sits inside the tab strip it watches: a direct child of <cngx-tab-group>, or the one [cngxMatTabs] places in the Material header."
+        }
+      ]
     },
     {
       "code": "CNGX3013",
@@ -1208,7 +1940,13 @@
       "page": "core-concepts/error-codes/cngx3013.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3013.html",
       "status": "active",
-      "files": ["projects/ui/timeline/timeline.component.ts"]
+      "files": ["projects/ui/timeline/timeline.component.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/timeline/timeline.component.ts",
+          "text": "[cngx-timeline] placement=\"alternate\" is ignored in mode=\"activity\" - alternating a scan-feed defeats the scan, so every row renders at the start side. Use mode=\"narrative\" to alternate."
+        }
+      ]
     },
     {
       "code": "CNGX3014",
@@ -1219,7 +1957,13 @@
       "page": "core-concepts/error-codes/cngx3014.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3014.html",
       "status": "active",
-      "files": ["projects/ui/sidenav/sidenav-content.ts"]
+      "files": ["projects/ui/sidenav/sidenav-content.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/sidenav/sidenav-content.ts",
+          "text": "[cngx-sidenav-content] must be placed inside <cngx-sidenav-layout>."
+        }
+      ]
     },
     {
       "code": "CNGX3015",
@@ -1230,7 +1974,13 @@
       "page": "core-concepts/error-codes/cngx3015.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3015.html",
       "status": "active",
-      "files": ["projects/ui/feedback/alert/alert-on.directive.ts"]
+      "files": ["projects/ui/feedback/alert/alert-on.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/feedback/alert/alert-on.directive.ts",
+          "text": "[cngxAlertOn] CngxAlerter not found. Add withAlerts() to provideFeedback() or provide CngxAlerter in an ancestor component."
+        }
+      ]
     },
     {
       "code": "CNGX3016",
@@ -1244,6 +1994,16 @@
       "files": [
         "projects/ui/feedback/toast/toast-on.directive.ts",
         "projects/ui/feedback/toast/toast.component.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/ui/feedback/toast/toast-on.directive.ts",
+          "text": "[cngxToastOn] CngxToaster not found. Add withToasts() to provideFeedback() or call provideToasts() in your providers."
+        },
+        {
+          "file": "projects/ui/feedback/toast/toast.component.ts",
+          "text": "[cngx-toast] CngxToaster not found. Add withToasts() to provideFeedback() or call provideToasts() in your providers."
+        }
       ]
     },
     {
@@ -1258,6 +2018,16 @@
       "files": [
         "projects/ui/feedback/banner/banner-on.directive.ts",
         "projects/ui/feedback/banner/banner-trigger.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/ui/feedback/banner/banner-on.directive.ts",
+          "text": "[cngxBannerOn] CngxBanner not found. Add withBanners() to provideFeedback()."
+        },
+        {
+          "file": "projects/ui/feedback/banner/banner-trigger.ts",
+          "text": "[cngx-banner-trigger] CngxBanner not found. Add withBanners() to provideFeedback()."
+        }
       ]
     },
     {
@@ -1272,6 +2042,16 @@
       "files": [
         "projects/ui/paginator/paginator-host.token.ts",
         "projects/ui/paginator/segments/paginator-alpha.component.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/ui/paginator/paginator-host.token.ts",
+          "text": "[${...}] must be placed inside <cngx-paginator> or <cngx-incremental-list>."
+        },
+        {
+          "file": "projects/ui/paginator/segments/paginator-alpha.component.ts",
+          "text": "[cngx-pgn-alpha] must be placed inside an element with [cngxBucketPaginate]."
+        }
       ]
     },
     {
@@ -1283,7 +2063,13 @@
       "page": "core-concepts/error-codes/cngx3019.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3019.html",
       "status": "active",
-      "files": ["projects/ui/accordion/accordion-item.component.ts"]
+      "files": ["projects/ui/accordion/accordion-item.component.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/accordion/accordion-item.component.ts",
+          "text": "[cngx-accordion-item] must be placed inside <cngx-accordion-group>."
+        }
+      ]
     },
     {
       "code": "CNGX3020",
@@ -1294,7 +2080,13 @@
       "page": "core-concepts/error-codes/cngx3020.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3020.html",
       "status": "active",
-      "files": ["projects/ui/mat-tabs/mat-tab-error-target.ts"]
+      "files": ["projects/ui/mat-tabs/mat-tab-error-target.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/mat-tabs/mat-tab-error-target.ts",
+          "text": "[${...}] must be placed on a <mat-tab> inside <mat-tab-group cngxMatTabs>."
+        }
+      ]
     },
     {
       "code": "CNGX3021",
@@ -1308,6 +2100,16 @@
       "files": [
         "projects/ui/sidenav/sidenav-router-sync.directive.ts",
         "projects/ui/toc/toc-router-sync.directive.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/ui/sidenav/sidenav-router-sync.directive.ts",
+          "text": "[cngxSidenavRouterSync] must be placed on or inside <cngx-sidenav>."
+        },
+        {
+          "file": "projects/ui/toc/toc-router-sync.directive.ts",
+          "text": "[cngxTocRouterSync] must be placed on or inside <cngx-toc>."
+        }
       ]
     },
     {
@@ -1319,7 +2121,13 @@
       "page": "core-concepts/error-codes/cngx3022.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3022.html",
       "status": "active",
-      "files": ["projects/ui/data-grid-accordion/data-grid-accordion.token.ts"]
+      "files": ["projects/ui/data-grid-accordion/data-grid-accordion.token.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/data-grid-accordion/data-grid-accordion.token.ts",
+          "text": "[${...}] must be placed inside <cngx-data-grid-accordion>."
+        }
+      ]
     },
     {
       "code": "CNGX3023",
@@ -1330,7 +2138,30 @@
       "page": "core-concepts/error-codes/cngx3023.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3023.html",
       "status": "active",
-      "files": ["projects/ui/tabs/tab-overflow.component.ts"]
+      "files": ["projects/ui/tabs/tab-overflow.component.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/tabs/tab-overflow.component.ts",
+          "text": "[cngx-tab-overflow] must be placed inside <cngx-tab-group> or <mat-tab-group cngxMatTabs>."
+        }
+      ]
+    },
+    {
+      "code": "CNGX3024",
+      "lib": "ui",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Breadcrumb overflow menu outside a breadcrumb",
+      "page": "core-concepts/error-codes/cngx3024.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3024.html",
+      "status": "active",
+      "files": ["projects/ui/breadcrumb/breadcrumb-overflow.component.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/breadcrumb/breadcrumb-overflow.component.ts",
+          "text": "[cngx-breadcrumb-overflow] must be placed inside an element with [cngxBreadcrumb]."
+        }
+      ]
     },
     {
       "code": "CNGX4001",
@@ -1341,7 +2172,13 @@
       "page": "core-concepts/error-codes/cngx4001.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx4001.html",
       "status": "active",
-      "files": ["projects/data-display/treetable/treetable.component.ts"]
+      "files": ["projects/data-display/treetable/treetable.component.ts"],
+      "messages": [
+        {
+          "file": "projects/data-display/treetable/treetable.component.ts",
+          "text": "[cngx-treetable] column \"${...}\" has no header label - production shows the unlabeledColumn text instead of the key. Add it to columnLabels (withTreetableLabels or the language pack) or project a *cngxHeader template."
+        }
+      ]
     }
   ]
 }
