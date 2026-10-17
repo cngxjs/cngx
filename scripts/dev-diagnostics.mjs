@@ -270,16 +270,18 @@ const isStatic = (node) => node.modifiers?.some((m) => m.kind === ts.SyntaxKind.
  * a method, an accessor or an instance field initialiser runs later; a static
  * block, a static field initialiser, a function invoked in place (an IIFE)
  * and the constructor and instance field initialisers of a class expression
- * constructed in place (`new (class { ... })()`) run with the code around it.
+ * constructed in place (`new (class { ... })()`) run with the code around it,
+ * so a static member of a class declared inside a function runs when that
+ * function does.
  */
 export function runsAtModuleLoad(node) {
   for (let current = node.parent; current; current = current.parent) {
     if (ts.isClassStaticBlockDeclaration(current)) {
-      return true;
+      continue;
     }
     if (ts.isPropertyDeclaration(current)) {
       if (isStatic(current)) {
-        return true;
+        continue;
       }
       if (!isConstructedInPlace(current.parent)) {
         return false;

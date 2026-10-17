@@ -837,6 +837,18 @@ describe('raw-console guard - guards evaluated at module load', () => {
     expect(shape(`sink = ${GUARD} ? DEFAULT_SINK : undefined;`)).toEqual([]);
   });
 
+  it('passes a static field or static block of a class declared inside a function', () => {
+    const inFunction = (member) =>
+      fixture(`${SINK}
+function make() {
+  return class {
+    ${member}
+  };
+}`).violations;
+    expect(inFunction(`static sink = ${GUARD} ? DEFAULT_SINK : undefined;`)).toEqual([]);
+    expect(inFunction(`static { if (${GUARD}) { DEFAULT_SINK('x'); } }`)).toEqual([]);
+  });
+
   it('fails a guarded helper call inside a function invoked at module scope', () => {
     expect(
       fixture(`(() => { if (${GUARD}) { cngxDevWarn('CNGX0001', 'm'); } })();`).violations,

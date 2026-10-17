@@ -523,6 +523,15 @@ describe('raw-throw guard - T3 messages', () => {
     ]);
   });
 
+  it('passes a guarded construction in a static field of a class declared inside a function', () => {
+    const message = `${GUARD} && 'm'`;
+    expect(
+      fixture(
+        `function make() { return class { static e = new CngxRuntimeError('CNGX1001', ${message}); }; }`,
+      ).violations,
+    ).toEqual([]);
+  });
+
   it('fails a message built before the guard and a call result as the message', () => {
     expect(
       fixture(
