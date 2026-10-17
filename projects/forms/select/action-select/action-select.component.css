@@ -13,6 +13,8 @@
  *   outline + 2px offset
  * - `.cngx-action-select__input:disabled` - `cursor: not-allowed`;
  *   the trigger takes the field skin colour
+ * - `:has(> [role='combobox'][aria-invalid='true'])` on the trigger -
+ *   danger border + box-shadow glow at focus time
  * - `:focus-visible` on `.cngx-action-select__clear` - 2px primary
  *   outline + rounded corner
  *
@@ -154,6 +156,19 @@
     .cngx-action-select__trigger:has(:focus-visible) {
       outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
       outline-offset: var(--cngx-select-focus-offset, 2px);
+    }
+
+    /* `role="combobox"` lives on `.cngx-action-select__input` (a direct child of
+     * the wrapper); `:has()` traverses to the bordered wrapper so the danger
+     * border paints on the visible surface without a TS-side rebind. */
+    .cngx-action-select__trigger:has(> [role='combobox'][aria-invalid='true']) {
+      border-color: var(--cngx-select-trigger-invalid-border-color, oklch(0.6 0.18 25));
+      border-width: var(--cngx-select-trigger-invalid-border-width, 1px);
+    }
+    .cngx-action-select__trigger:has(> [role='combobox'][aria-invalid='true']):focus-within {
+      outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
+      outline-offset: var(--cngx-select-focus-offset, 2px);
+      box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
     }
 
     .cngx-action-select__input {
