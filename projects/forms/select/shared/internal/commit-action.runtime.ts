@@ -1,4 +1,4 @@
-import { isObservable, type Observable } from 'rxjs';
+import { isObservable, type Observable, type Subscription } from 'rxjs';
 
 import type { CngxSelectCommitAction } from '../commit-action.types';
 
@@ -51,16 +51,34 @@ export function runCommitAction<T>(
   }
 
   if (isObservable(result)) {
-    const sub = result.subscribe({
-      // First emission only - tear down so a hot source can't
-      // double-write the value signal.
+    // First emission only - tear down so a hot source can't double-write
+    // the value signal. A synchronous source (`of()`, `BehaviorSubject`,
+    // a store selector) emits inside `subscribe()` before `sub` is
+    // assigned, so `settled` gates later emissions and the teardown runs
+    // right after `subscribe()` returns.
+    let settled = false;
+    let sub: Subscription | undefined = undefined;
+    sub = result.subscribe({
       next: (value: T | undefined) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
         safeSuccess(value);
-        sub.unsubscribe();
+        sub?.unsubscribe();
       },
-      error: (err: unknown) => safeError(err),
+      error: (err: unknown) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        safeError(err);
+      },
     });
-    unsubscribe = () => sub.unsubscribe();
+    if (settled) {
+      sub.unsubscribe();
+    }
+    unsubscribe = () => sub?.unsubscribe();
   } else if (result != null && typeof (result as { then?: unknown }).then === 'function') {
     (result as Promise<T | undefined>).then(safeSuccess, safeError);
   } else {
