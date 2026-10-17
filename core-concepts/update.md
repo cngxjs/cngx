@@ -54,8 +54,8 @@ three things:
 - **Install re-runs.** See below.
 
 Every change is listed before it is applied, the same way `ng add` lists its
-plan. The summary after it says how many changes the migration applied
-(planned, under `--dry-run`), how many steps were already in place, and the
+plan. The summary after it says how many changes the migration applied, how
+many steps were already in place, and the
 next steps; the plan list above it already named every change and note.
 
 An update across several releases runs every hand-written migration in that
