@@ -174,3 +174,67 @@ describe('CngxListboxTrigger', () => {
     expect(popover.isVisible()).toBe(true);
   });
 });
+
+@Component({
+  template: `
+    <div role="combobox" tabindex="0" [cngxListboxTrigger]="lb" [popover]="pop">
+      <span>Red</span>
+      <button type="button" class="nested-remove" aria-label="Remove Red">x</button>
+    </div>
+    <div cngxPopover #pop="cngxPopover">
+      <div cngxListbox [label]="'Colors'" #lb="cngxListbox">
+        <div cngxOption value="red">Red</div>
+        <div cngxOption value="green">Green</div>
+      </div>
+    </div>
+  `,
+  imports: [CngxListbox, CngxOption, CngxListboxTrigger, CngxPopover],
+})
+class NestedButtonHost {}
+
+describe('CngxListboxTrigger - interactive descendants', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [NestedButtonHost] });
+  });
+
+  function setup(): {
+    triggerEl: HTMLElement;
+    nestedButton: HTMLButtonElement;
+    popover: CngxPopover;
+  } {
+    const fixture = TestBed.createComponent(NestedButtonHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const triggerEl = fixture.debugElement.query(By.directive(CngxListboxTrigger))
+      .nativeElement as HTMLElement;
+    return {
+      triggerEl,
+      nestedButton: triggerEl.querySelector('.nested-remove') as HTMLButtonElement,
+      popover: fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover),
+    };
+  }
+
+  for (const key of ['Enter', ' ']) {
+    it(`leaves ${JSON.stringify(key)} on a nested button to the button`, () => {
+      const { nestedButton, popover } = setup();
+      nestedButton.focus();
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      nestedButton.dispatchEvent(event);
+      TestBed.flushEffects();
+      expect(popover.isVisible()).toBe(false);
+      expect(event.defaultPrevented).toBe(false);
+    });
+  }
+
+  it('still opens on Enter dispatched on the trigger host', () => {
+    const { triggerEl, popover } = setup();
+    triggerEl.focus();
+    const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    triggerEl.dispatchEvent(event);
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(true);
+    expect(event.defaultPrevented).toBe(true);
+  });
+});

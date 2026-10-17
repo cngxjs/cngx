@@ -153,6 +153,30 @@ describe('CngxMultiSelect - skeleton', () => {
     expect(change!.removed).toEqual(['red']);
   });
 
+  for (const key of ['Enter', ' ']) {
+    it(`leaves ${JSON.stringify(key)} on a chip remove button to the button`, () => {
+      const fixture = TestBed.createComponent(Host);
+      fixture.componentInstance.values.set(['red', 'green']);
+      flush(fixture);
+      const select = fixture.debugElement.query(By.directive(CngxMultiSelect))
+        .componentInstance as CngxMultiSelect<string>;
+      const firstRemove: HTMLButtonElement = fixture.nativeElement.querySelector(
+        '.cngx-chip__remove',
+      );
+      firstRemove.focus();
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      firstRemove.dispatchEvent(event);
+      flush(fixture);
+      expect(select.panelOpen()).toBe(false);
+      expect(event.defaultPrevented).toBe(false);
+
+      // jsdom has no native button activation; click() stands in for it.
+      firstRemove.click();
+      flush(fixture);
+      expect(fixture.componentInstance.values()).toEqual(['green']);
+    });
+  }
+
   it('renders a clear-all button only when clearable and not empty', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.clearable = true;

@@ -44,6 +44,26 @@ test.describe('CngxMultiSelect demo', () => {
     await expect(chips).toHaveCount(initialCount - 1);
   });
 
+  test('keyboard: Enter and Space on a chip remove button remove the chip', async ({ page }) => {
+    await page.goto(R.basic);
+    const section = ex(page);
+    const trigger = section.locator('cngx-multi-select .cngx-multi-select__trigger').first();
+    const chips = section.locator('cngx-chip');
+    await expect(chips.first()).toBeVisible();
+    const initialCount = await chips.count();
+    expect(initialCount).toBeGreaterThan(1);
+
+    await chips.first().locator('.cngx-chip__remove').focus();
+    await page.keyboard.press('Enter');
+    await expect(chips).toHaveCount(initialCount - 1);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    await chips.first().locator('.cngx-chip__remove').focus();
+    await page.keyboard.press('Space');
+    await expect(chips).toHaveCount(initialCount - 2);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
   test('clear-all empties every selected value', async ({ page }) => {
     await page.goto(R.clearable);
     const section = ex(page);

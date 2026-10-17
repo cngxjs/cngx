@@ -94,6 +94,16 @@ export class CngxListboxTrigger<T = unknown> {
       return;
     }
 
+    // Keys from an interactive descendant (a chip remove button, a clear
+    // button) belong to that element. No preventDefault, so Enter / Space
+    // still run the native button activation instead of opening the panel.
+    const host = this.el.nativeElement;
+    const target = event.target as Element | null;
+    const interactive = target?.closest('button, a[href], input, [role="button"]');
+    if (interactive && interactive !== host && host.contains(interactive)) {
+      return;
+    }
+
     const key = event.key;
     const ad = this.listbox().ad;
 
@@ -103,7 +113,6 @@ export class CngxListboxTrigger<T = unknown> {
     // the only keydown handler on the element. Non-input triggers skip
     // this path via the co-located-search guard.
     if (key === 'Backspace' && this.search) {
-      const host = this.el.nativeElement;
       if (host instanceof HTMLInputElement && host.value === '') {
         this.backspaceOnEmpty.emit();
         // No preventDefault - the consumer's chip-remove path owns DOM impact.
