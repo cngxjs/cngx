@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxDialogOpener, CngxDialogRef, provideDialog } from './dialog.service';
+import { CngxDialogStack } from './dialog-stack';
 import { CngxDialogTitle } from './dialog-title.directive';
 import { CngxDialogDescription } from './dialog-description.directive';
 
@@ -332,5 +333,31 @@ describe('CngxDialogOpener', () => {
     expect(dismiss).toHaveBeenCalledTimes(1);
     expect(document.body.querySelector('cngx-dialog-outlet')).toBeNull();
     dismiss.mockRestore();
+  });
+
+  it.each([
+    ['in showModal()', () => vi.spyOn(HTMLDialogElement.prototype, 'showModal')],
+    ['after the scroll lock', () => vi.spyOn(CngxDialogStack.prototype, 'push')],
+  ])('releases the scroll lock and the stack when the dialog open throws %s', (_, target) => {
+    const opener = createOpener();
+    const stack = TestBed.inject(CngxDialogStack);
+    const html = document.documentElement;
+    const overflow = html.style.overflow;
+    const fail = target().mockImplementationOnce(() => {
+      throw new Error('open failed');
+    });
+
+    expect(() => opener.open(TestContent)).toThrow('open failed');
+    expect(document.body.querySelector('cngx-dialog-outlet')).toBeNull();
+    expect(stack.stack()).toEqual([]);
+    expect(html.style.overflow).toBe(overflow);
+
+    fail.mockRestore();
+    const ref = opener.open(TestContent);
+    expect(stack.stack()).toEqual([ref.id()]);
+    opener.closeAll();
+    TestBed.flushEffects();
+    expect(stack.stack()).toEqual([]);
+    expect(html.style.overflow).toBe(overflow);
   });
 });
