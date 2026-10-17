@@ -188,7 +188,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
     );
     const unreadable =
       stored.state === 'unreadable'
-        ? planUnreadableManifest(facts.project, versions, stored.content, unreadableCopyPath((path) => tree.exists(path)))
+        ? planUnreadableManifest(facts.project, versions, stored, unreadableCopyPath((path) => tree.exists(path)))
         : { changes: [], skipped: [] };
     const record = planManifest(facts, answers, versions, steps, previous, new Date().toISOString());
     const plan = createChangePlan([steps, unreadable, record], steps.warnings);

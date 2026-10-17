@@ -183,7 +183,10 @@ describe('createMigration', () => {
     expect(recordsOf(tree)['alpha']?.updatedAt).toBe('2026-10-12T12:00:00.000Z');
   });
 
-  it.each(['not json', JSON.stringify({ schemaVersion: 1 })])('says it cannot read %s and leaves it alone', async (content) => {
+  it.each([
+    ['not json', 'is not valid JSON'],
+    [JSON.stringify({ schemaVersion: 1 }), 'is not an install record this release reads'],
+  ])('says why it cannot read %s and leaves it alone', async (content, says) => {
     const { before } = readMigrationFixture('rename');
     const files = { ...before, '.cngx/install.json': content };
 
@@ -191,7 +194,7 @@ describe('createMigration', () => {
 
     expect(tree.readText('.cngx/install.json')).toBe(content);
     expect(logs).toContain(
-      '  - Re-run the recorded install steps - .cngx/install.json exists but cngx cannot read it and leaves it as it is; ng add @cngx/core --project <name> keeps it as a copy and starts a new install record',
+      `  - Re-run the recorded install steps - .cngx/install.json ${says}, so cngx leaves it as it is; ng add @cngx/core --project <name> keeps it as a copy and starts a new install record`,
     );
   });
 });

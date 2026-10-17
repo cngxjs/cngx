@@ -3,6 +3,7 @@ import {
   INSTALL_MANIFEST_PATH,
   type InstallManifest,
   parseInstallManifest,
+  type UnreadableManifest,
 } from '../steps/manifest';
 
 /**
@@ -14,7 +15,7 @@ import {
 export type InstallManifestState =
   | { readonly state: 'absent' }
   /** `content` is the file's bytes, so a copy keeps even a file that is not UTF-8. */
-  | { readonly state: 'unreadable'; readonly content: Buffer }
+  | ({ readonly state: 'unreadable' } & UnreadableManifest)
   | { readonly state: 'read'; readonly manifest: InstallManifest };
 
 /** The install manifest in the tree. Shell only: the rules read it and hand it to the pure steps. */
@@ -24,8 +25,23 @@ export function readInstallManifest(tree: Tree): InstallManifestState {
   }
   const content = tree.read(INSTALL_MANIFEST_PATH) ?? Buffer.alloc(0);
   const text = decodeUtf8(content);
-  const manifest = text === undefined ? undefined : parseInstallManifest(text);
-  return manifest === undefined ? { state: 'unreadable', content } : { state: 'read', manifest };
+  if (text === undefined) {
+    return { state: 'unreadable', cause: 'not-utf8', content };
+  }
+  if (!isJson(text)) {
+    return { state: 'unreadable', cause: 'not-json', content };
+  }
+  const manifest = parseInstallManifest(text);
+  return manifest === undefined ? { state: 'unreadable', cause: 'not-a-record', content } : { state: 'read', manifest };
+}
+
+function isJson(text: string): boolean {
+  try {
+    JSON.parse(text);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // `tree.readText` throws on bytes that are not UTF-8; such a file is

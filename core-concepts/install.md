@@ -369,7 +369,9 @@ A file cngx cannot read (hand-edited into another shape, cut off, or from an
 earlier schema) is never taken for a missing one. `ng add` keeps it as
 `.cngx/install.json.unreadable` (`-2`, `-3` when that name is taken), starts
 the file over with a record of the current project only, and says so in the
-plan (`Start a new install record`). `ng update` names it and leaves it alone.
+plan (`Start a new install record`), naming the reason: not UTF-8 text, not
+valid JSON, or not an install record this release reads. `ng update` names
+it with the same reason and leaves it alone.
 
 ---
 
