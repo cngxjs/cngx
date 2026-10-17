@@ -396,6 +396,8 @@ export const CNGX_LANGUAGE_EN = {
     commitFailedAnnouncementDetail: '{label}: Save failed - {detail}',
     searchInput: 'Search options',
     listboxFallback: 'Options',
+    sheetClose: 'Close',
+    sheetDone: 'Done',
     loading: 'Loading…',
     empty: 'No options',
     loadFailed: 'Could not load',

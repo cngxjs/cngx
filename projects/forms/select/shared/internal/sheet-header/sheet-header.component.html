@@ -1,0 +1,47 @@
+<div class="cngx-select-sheet-header__bar" cngxSwipeDismiss="down" [enabled]="sheet.modal()">
+  @if (host.tpl.sheetHandle(); as handleTpl) {
+    <div class="cngx-select-sheet-header__handle" aria-hidden="true">
+      <ng-container *ngTemplateOutlet="handleTpl; context: handleContext()" />
+    </div>
+  } @else {
+    <span cngxPopoverSheetHandle></span>
+  }
+  <span cngxPopoverSheetTitle class="cngx-select-sheet-header__title">{{ heading() }}</span>
+  @if (host.showDone()) {
+    <button
+      type="button"
+      class="cngx-select-sheet-header__done"
+      [attr.aria-disabled]="closeDisabled()"
+      (click)="handleClose()"
+    >
+      {{ host.ariaLabels().sheetDone }}
+    </button>
+  }
+  <button
+    type="button"
+    class="cngx-select-sheet-header__close"
+    [attr.aria-label]="host.ariaLabels().sheetClose"
+    [attr.aria-disabled]="closeDisabled()"
+    (click)="handleClose()"
+  >
+    <span aria-hidden="true">{{ closeGlyph }}</span>
+  </button>
+  @if (host.showInput()) {
+    <input
+      type="search"
+      class="cngx-select-sheet-header__input"
+      cngxPopoverSheetInitialFocus
+      role="combobox"
+      aria-expanded="true"
+      aria-autocomplete="list"
+      autocomplete="off"
+      [attr.aria-labelledby]="titleId()"
+      [attr.aria-controls]="host.panelId()"
+      [attr.aria-activedescendant]="activeId()"
+      [value]="host.searchTerm()"
+      (input)="handleInput($event)"
+      (keydown)="handleKeydown($event)"
+    />
+  }
+  <ng-content select="cngx-select-search" />
+</div>

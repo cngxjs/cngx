@@ -12,7 +12,7 @@ import {
   output,
   untracked,
   viewChild,
-  type ElementRef,
+  ElementRef,
   type Signal,
   type TemplateRef,
 } from '@angular/core';
@@ -34,7 +34,10 @@ import {
 import {
   CngxPopover,
   CngxPopoverAnchor,
+  CngxPopoverSheet,
   CngxPopoverTrigger,
+  type CngxPopoverPresentation,
+  type CngxPopoverPresentationRequest,
   type PopoverPlacement,
 } from '@cngx/common/popover';
 
@@ -73,7 +76,6 @@ import {
   type CngxSelectOptionDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
-import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
@@ -85,6 +87,16 @@ import {
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
+  CNGX_SELECT_SHEET_SCOPE,
+  CngxScopedSelectAnnouncer,
+} from '../shared/internal/scoped-announcer';
+import {
+  createSelectSheetWiring,
+  type CngxSelectSheetWiring,
+} from '../shared/internal/select-sheet-wiring';
+import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
+import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
+import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
   type CngxCommitErrorAnnouncePolicy,
 } from '../shared/commit-error-announcer';
@@ -95,6 +107,7 @@ import {
   cngxSelectDefaultCompare,
   createSelectCore,
   type CngxSelectCompareFn,
+  type CngxSelectCore,
 } from '../shared/internal/select-core';
 import {
   CngxSelectCaret,
@@ -109,6 +122,7 @@ import {
   CngxSelectLoading,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
+  CngxSelectSheetHandle,
   CngxSelectOptionLabel,
   CngxSelectOptionPending,
   CngxSelectPlaceholder,
@@ -174,6 +188,7 @@ export interface CngxTypeaheadChange<T = unknown> {
  * @slot cngxSelectOptionError Replaces the ! glyph on the selected row when a commit fails and commitErrorDisplay is 'inline'; gets $implicit/option, error.
  * @slot cngxSelectInputPrefix Rendered before the <input> inside the trigger; gets disabled, focused, panelOpen.
  * @slot cngxSelectInputSuffix Rendered after the <input>, before the clear button and caret; gets disabled, focused, panelOpen.
+ * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
  */
 @Component({
   selector: 'cngx-typeahead',
@@ -181,6 +196,8 @@ export interface CngxTypeaheadChange<T = unknown> {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    CngxPopoverSheet,
+    CngxSelectSheetHeader,
     CngxClickOutside,
     CngxListbox,
     CngxListboxSearch,
@@ -192,6 +209,12 @@ export interface CngxTypeaheadChange<T = unknown> {
     NgTemplateOutlet,
   ],
   providers: [
+    { provide: CngxSelectAnnouncer, useClass: CngxScopedSelectAnnouncer },
+    { provide: CNGX_SELECT_SHEET_SCOPE, useFactory: () => inject(CngxTypeahead).sheetWiring },
+    {
+      provide: CNGX_SELECT_SHEET_HEADER_HOST,
+      useFactory: () => inject(CngxTypeahead).sheetWiring.headerHost,
+    },
     { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxTypeahead },
     {
       provide: CNGX_STATEFUL,
@@ -289,6 +312,18 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly retryFn = input<(() => void) | null>(null);
   readonly commitAction = input<CngxSelectCommitAction<T> | null>(null);
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
+  /**
+   * Panel presentation. Unset follows `CNGX_SELECT_CONFIG.mobileSheet`:
+   * `'auto'` opens a modal bottom sheet on coarse, narrow viewports and
+   * stays anchored elsewhere. `'anchored'`, `'sheet'` and `'fullscreen'`
+   * force one presentation.
+   */
+  readonly presentation = input<CngxPopoverPresentationRequest | undefined>(undefined);
+  /**
+   * Title of the mobile sheet. Unset reads the field label once per open,
+   * then `[label]`, then `ariaLabels.fieldLabelFallback`.
+   */
+  readonly sheetLabel = input<string | undefined>(undefined);
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
@@ -338,6 +373,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
   private readonly optionErrorDirective =
     contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
+  private readonly sheetHandleDirective = contentChild(CngxSelectSheetHandle);
   private readonly inputPrefixDirective =
     contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
   private readonly inputSuffixDirective =
@@ -359,6 +395,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     clearButton: this.clearButtonDirective,
     optionPending: this.optionPendingDirective,
     optionError: this.optionErrorDirective,
+    sheetHandle: this.sheetHandleDirective,
   });
   /** @internal */ protected readonly inputPrefixTpl =
     computed<TemplateRef<CngxSelectInputSlotContext> | null>(
@@ -373,6 +410,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly searchInputRef = viewChild(CngxListboxSearch);
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
+  private readonly sheetRef = viewChild(CngxPopoverSheet);
+  private readonly listboxEl = viewChild<CngxListbox, ElementRef<HTMLElement>>(CngxListbox, {
+    read: ElementRef,
+  });
 
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
   readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
@@ -426,7 +467,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
   /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
 
-  private readonly core = createSelectCore<T, T>(
+  private readonly core: CngxSelectCore<T, T> = createSelectCore<T, T>(
     {
       label: this.label,
       ariaLabel: this.ariaLabel,
@@ -455,12 +496,36 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       selectionIndicatorPosition: this.selectionIndicatorPosition,
       selectionIndicatorVariant: this.selectionIndicatorVariant,
       localItems: this.localItemsBuffer.items,
+      presentationInput: this.presentation,
+      // Lazy: the wiring is built from the core right below.
+      presentation: computed<CngxPopoverPresentation>(() => this.sheetWiring.presentation()),
     },
     {
       announceChanges: this.announceChanges,
       announceTemplate: this.announceTemplate,
     },
   );
+
+  /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
+  readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
+    core: this.core,
+    sheet: this.sheetRef,
+    popoverRef: this.popoverRef,
+    listboxRef: this.listboxRef,
+    tpl: this.tpl,
+    commitMode: this.commitMode,
+    dismissOn: this.config.dismissOn,
+    shouldBlockDismiss: this.actionBridge.shouldBlockDismiss,
+    showDone: true,
+    showInput: true,
+    sheetLabel: this.sheetLabel,
+    label: this.label,
+    searchTerm: this.searchTerm,
+    searchInput: this.inputEl,
+    close: () => this.close(),
+  });
+  /** @internal Static height fact: a fullscreen panel led by the header input. */
+  protected readonly sheetFill = 'fullscreen';
 
   /**
    * Append a pre-built option to the local buffer. Renders in the next
@@ -552,6 +617,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     popoverRef: this.popoverRef,
     listboxRef: this.listboxRef,
     virtualization: this.config.virtualization,
+    presentation: this.sheetWiring.presentation,
+    listboxElement: computed(() => this.listboxEl()?.nativeElement),
   });
   /** @internal */
   readonly panelRenderer = this.virtualSetup.panelRenderer;
@@ -751,11 +818,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal - click-outside dismissal (action-dirty-guarded). */
-  protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
-    popoverRef: this.popoverRef,
-    dismissOn: this.config.dismissOn,
-    shouldBlockDismiss: this.actionBridge.shouldBlockDismiss,
-  }).handleClickOutside;
+  protected readonly handleClickOutside = this.sheetWiring.handleClickOutside;
 
   protected handleRetry(): void {
     this.hostFocus.refocusOwnerBeforeRemoval();

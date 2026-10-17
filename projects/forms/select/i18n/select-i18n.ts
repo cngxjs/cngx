@@ -105,6 +105,8 @@ export function selectCopyFrom(section: CngxSelectLanguageSection, locale: strin
           : formatMessage(section.commitFailedAnnouncement, { label }, locale),
       searchInput: section.searchInput,
       listboxFallback: section.listboxFallback,
+      sheetClose: section.sheetClose,
+      sheetDone: section.sheetDone,
     },
     fallbackLabels: {
       loading: section.loading,

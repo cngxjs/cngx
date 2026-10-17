@@ -392,6 +392,8 @@ export const CNGX_LANGUAGE_DE = {
     commitFailedAnnouncementDetail: '{label}: Speichern fehlgeschlagen - {detail}',
     searchInput: 'Optionen durchsuchen',
     listboxFallback: 'Optionen',
+    sheetClose: 'Schließen',
+    sheetDone: 'Fertig',
     loading: 'Wird geladen…',
     empty: 'Keine Optionen',
     loadFailed: 'Konnte nicht geladen werden',

@@ -1,4 +1,5 @@
 import { effect, signal } from '@angular/core';
+import type { CngxPopoverPresentation, CngxPopoverPresentationRequest } from '@cngx/common/popover';
 import { SIGNAL, type ReactiveNode } from '@angular/core/primitives/signals';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
@@ -10,6 +11,7 @@ import {
   provideSelectConfig,
   withAnnouncer,
   withAriaLabels,
+  withMobileSheet,
   type CngxSelectAnnouncerConfig,
   type CngxSelectAriaLabels,
 } from '../config';
@@ -114,5 +116,55 @@ describe('createSelectCore - dev descriptor', () => {
     expect(nameOf(core.bindCommitRetry(() => {}))).toBe('selectCore.commitErrorContext');
     expect(nameOf(core.makeErrorContext(() => {}))).toBe('selectCore.errorContext');
     expect(nameOf(core.selection)).toBe('selectCore.selection');
+  });
+});
+
+describe('createSelectCore - mobile sheet presentation', () => {
+  function coreWith(
+    extra: Partial<CngxSelectCoreDeps<string, string>>,
+    providers: unknown[] = [],
+  ) {
+    TestBed.configureTestingModule({ providers: providers as never[] });
+    return TestBed.runInInjectionContext(() =>
+      createSelectCore(
+        { ...deps(), ...extra },
+        { announceChanges: signal(null), announceTemplate: signal(null) },
+      ),
+    );
+  }
+
+  it('requests auto by default', () => {
+    expect(coreWith({}).resolvedPresentationRequest()).toBe('auto');
+  });
+
+  it('requests anchored under withMobileSheet("off")', () => {
+    const core = coreWith({}, [provideSelectConfig(withMobileSheet('off'))]);
+    expect(core.resolvedPresentationRequest()).toBe('anchored');
+  });
+
+  it('lets the per-instance input win over the config, and falls back when it is unset', () => {
+    const input = signal<CngxPopoverPresentationRequest | undefined>('sheet');
+    const core = coreWith({ presentationInput: input }, [
+      provideSelectConfig(withMobileSheet('off')),
+    ]);
+    expect(core.resolvedPresentationRequest()).toBe('sheet');
+    input.set(undefined);
+    expect(core.resolvedPresentationRequest()).toBe('anchored');
+  });
+
+  it('drops the trigger-width rule outside the anchored presentation', () => {
+    const presentation = signal<CngxPopoverPresentation>('anchored');
+    const core = coreWith({ panelWidth: signal('trigger'), presentation });
+    expect(core.panelWidthCss()).toBe('anchor-size(width)');
+    presentation.set('sheet');
+    expect(core.panelWidthCss()).toBeNull();
+    presentation.set('fullscreen');
+    expect(core.panelWidthCss()).toBeNull();
+    presentation.set('anchored');
+    expect(core.panelWidthCss()).toBe('anchor-size(width)');
+  });
+
+  it('keeps the width rule without a presentation dep', () => {
+    expect(coreWith({ panelWidth: signal(240) }).panelWidthCss()).toBe('240px');
   });
 });

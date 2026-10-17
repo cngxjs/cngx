@@ -346,7 +346,9 @@ describe('CngxFilterExpressionRow - embedded mode', () => {
       value: 'foo',
     };
     const { fixture, host } = setup(expression);
-    const button = fixture.debugElement.query(By.css('button')).nativeElement as HTMLButtonElement;
+    const button = fixture.debugElement.query(
+      By.css('.cngx-filter-builder__action-button--remove'),
+    ).nativeElement as HTMLButtonElement;
     button.click();
     expect(host.removeNodeSpy).toHaveBeenCalledWith([0]);
   });

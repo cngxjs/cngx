@@ -6,7 +6,11 @@ import { Subject, type Observable } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxListbox, type CngxOption } from '@cngx/common/interactive';
-import { CngxPopover } from '@cngx/common/popover';
+import {
+  CngxPopover,
+  CngxPopoverSheet,
+  type CngxPopoverPresentationRequest,
+} from '@cngx/common/popover';
 import { createManualState } from '@cngx/common/data';
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -29,6 +33,7 @@ import { CngxSelectShell, type CngxSelectShellChange } from './select-shell.comp
 import type { CngxSelectOptionsInput } from '../shared/option.model';
 import { CngxSelectOption } from '../declarative/option.component';
 import { CngxSelectOptgroup } from '../declarative/optgroup.component';
+import { CngxSelectSearch } from '../declarative/select-search.component';
 import {
   CngxSelectCaret,
   CngxSelectClearButton,
@@ -42,6 +47,7 @@ import type {
   CngxSelectCommitMode,
 } from '../shared/commit-action.types';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 
 // jsdom does not implement the Popover API - polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -1276,4 +1282,120 @@ describe('CngxSelectShell - closed-trigger typeahead locale', () => {
 
     expect(fixture.componentInstance.value()).toBe('ist');
   });
+});
+
+describe('CngxSelectShell - <cngx-select-search> in the mobile sheet', () => {
+  @Component({
+    template: `
+      <cngx-select-shell
+        [label]="'Colour'"
+        [presentation]="presentation()"
+        [commitAction]="commitAction"
+        [commitMode]="mode()"
+      >
+        @if (withSearch()) {
+          <cngx-select-search />
+        }
+        <cngx-option [value]="'red'">Red</cngx-option>
+        <cngx-option [value]="'green'">Green</cngx-option>
+      </cngx-select-shell>
+    `,
+    imports: [CngxSelectShell, CngxSelectOption, CngxSelectSearch],
+  })
+  class SearchSheetHost {
+    readonly presentation = signal<CngxPopoverPresentationRequest>('fullscreen');
+    readonly mode = signal<CngxSelectCommitMode>('optimistic');
+    readonly withSearch = signal(true);
+    pending: Subject<string | undefined> | null = null;
+    readonly commitAction: CngxSelectCommitAction<string> = () => {
+      const subject = new Subject<string | undefined>();
+      this.pending = subject;
+      return subject.asObservable() as Observable<string | undefined>;
+    };
+  }
+
+  function setupSearch() {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [SearchSheetHost] });
+    const fixture = TestBed.createComponent(SearchSheetHost);
+    flush(fixture);
+    const de = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const shell = de.componentInstance as CngxSelectShell<string>;
+    const el = de.nativeElement as HTMLElement;
+    const panel = el.querySelector<HTMLElement>('.cngx-select__panel')!;
+    const trigger = el.querySelector<HTMLElement>('.cngx-select-shell__trigger')!;
+    const sheet = () => de.query(By.directive(CngxPopoverSheet)).injector.get(CngxPopoverSheet);
+    const search = () => el.querySelector<HTMLInputElement>('.cngx-select-search__input')!;
+    const escapeInSearch = () => {
+      search().focus();
+      search().dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      flush(fixture);
+    };
+    return {
+      fixture,
+      host: fixture.componentInstance,
+      shell,
+      el,
+      panel,
+      trigger,
+      sheet,
+      escapeInSearch,
+    };
+  }
+
+  it('focuses the search input on open', () => {
+    const { shell, el } = setupSearch();
+    shell.open();
+    expect(document.activeElement).toBe(el.querySelector('.cngx-select-search__input'));
+  });
+
+  it('asks for fullscreen while a search leads the panel, else a sheet', () => {
+    const { fixture, host, sheet } = setupSearch();
+    expect(sheet().autoPresentation()).toBe('fullscreen');
+    host.withSearch.set(false);
+    flush(fixture);
+    expect(sheet().autoPresentation()).toBe('sheet');
+  });
+
+  it('keeps the sheet open on Escape in the search while a pessimistic commit is pending', () => {
+    const { fixture, host, shell, panel, trigger, escapeInSearch } = setupSearch();
+    host.mode.set('pessimistic');
+    flush(fixture);
+    shell.open();
+    flush(fixture);
+    panel.querySelectorAll<HTMLElement>('cngx-option')[1].click();
+    flush(fixture);
+    expect(shell.isCommitting()).toBe(true);
+    escapeInSearch();
+    expect(shell.panelOpen()).toBe(true);
+    expect(document.activeElement).not.toBe(trigger);
+  });
+
+  it('keeps desktop Escape in the search closing and focusing the trigger', () => {
+    const { fixture, host, shell, trigger, escapeInSearch } = setupSearch();
+    host.presentation.set('anchored');
+    flush(fixture);
+    shell.open();
+    flush(fixture);
+    escapeInSearch();
+    expect(shell.panelOpen()).toBe(false);
+    expect(document.activeElement).toBe(trigger);
+  });
+});
+
+describeMobileSheet('CngxSelectShell', CngxSelectShell, 'cngx-select-shell', {
+  inputs: '',
+  content: `
+    <cngx-option [value]="'red'">Red</cngx-option>
+    <cngx-option [value]="'green'">Green</cngx-option>
+  `,
+  contentImports: [CngxSelectOption],
+  optionSelector: 'cngx-option',
+  fill: 'sheet',
+  showDone: false,
+  showInput: false,
+  makeField: () => {
+    const { accessor, ref } = createMockField<string>({ name: 'pick' });
+    return { accessor, touched: () => ref.touched() };
+  },
 });

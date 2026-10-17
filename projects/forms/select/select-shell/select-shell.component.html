@@ -1,7 +1,7 @@
 <div
   class="cngx-select-shell__root"
   cngxClickOutside
-  [enabled]="panelOpen()"
+  [enabled]="sheetWiring.clickOutsideEnabled()"
   (clickOutside)="handleClickOutside()"
 >
   @let aria = triggerAria();
@@ -99,10 +99,20 @@
     class="cngx-select__panel"
     [class]="panelClassList()"
     [style.--cngx-select-panel-min-width]="panelWidthCss()"
+    [cngxPopoverSheet]="sheetWiring.presentationRequest()"
+    [autoPresentation]="sheetFill()"
+    [restoreFocus]="false"
+    [closeOnRequest]="false"
+    [closeOnEscape]="sheetWiring.escapeEnabled()"
+    (closeRequested)="sheetWiring.handleSheetClose($event)"
+    (closing)="hostFocus.refocusOwnerBeforeRemoval()"
   >
+    <cngx-select-sheet-header />
     <ng-content select="cngx-select-search" />
     <div
       cngxListbox
+      cngxPopoverSheetInitialFocus
+      [attr.tabindex]="sheetWiring.sheetModal() ? 0 : null"
       #lb="cngxListbox"
       [label]="resolvedListboxLabel()"
       [compareWith]="listboxCompareWith()"

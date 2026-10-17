@@ -42,6 +42,10 @@ export interface CngxSelectLanguageSection {
   readonly searchInput: string;
   /** Accessible name of a panel listbox whose control has no label to borrow. */
   readonly listboxFallback: string;
+  /** Close button in the header of the mobile sheet. */
+  readonly sheetClose: string;
+  /** Done button in the header of the mobile sheet. */
+  readonly sheetDone: string;
   /** Body of `loadingVariant: 'text'`. */
   readonly loading: string;
   /** The empty panel. */
@@ -112,6 +116,8 @@ export const CNGX_SELECT_LANGUAGE_EN: CngxSelectLanguageSection = {
   commitFailedAnnouncementDetail: '{label}: Save failed - {detail}',
   searchInput: 'Search options',
   listboxFallback: 'Options',
+  sheetClose: 'Close',
+  sheetDone: 'Done',
   loading: 'Loading…',
   empty: 'No options',
   loadFailed: 'Could not load',

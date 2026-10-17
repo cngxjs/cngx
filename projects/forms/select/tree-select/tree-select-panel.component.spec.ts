@@ -6,7 +6,9 @@ import {
   type Signal,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { type AsyncView } from '@cngx/common/data';
+import { CngxPopover, CngxPopoverSheet } from '@cngx/common/popover';
 import {
   createTreeController,
   type CngxTreeController,
@@ -93,6 +95,8 @@ function makeShellHost(): CngxSelectPanelHost {
       commitFailedMessage: (label: string) => `${label}: Save failed`,
       searchInput: 'Search options',
       listboxFallback: 'Options',
+      sheetClose: 'Close',
+      sheetDone: 'Done',
     }),
     resolvedListboxLabel: signal(''),
     resolvedShowSelectionIndicator: signal(true),
@@ -117,6 +121,7 @@ function makeShellHost(): CngxSelectPanelHost {
       optionPending: nullTpl,
       optionError: nullTpl,
       action: nullTpl,
+      sheetHandle: nullTpl,
     },
     commitErrorValue: signal(null),
     activeId: signal(null),
@@ -135,14 +140,16 @@ function makeShellHost(): CngxSelectPanelHost {
 }
 
 @Component({
-  imports: [CngxTreeSelectPanel, CngxTreeSelectNode],
+  imports: [CngxTreeSelectPanel, CngxTreeSelectNode, CngxPopover, CngxPopoverSheet],
   providers: [
     { provide: CNGX_SELECT_PANEL_HOST, useFactory: makeShellHost },
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useFactory: makeShellHost },
     { provide: CNGX_TREE_SELECT_PANEL_HOST, useExisting: TreeHost },
   ],
   template: `
-    <cngx-tree-select-panel />
+    <div cngxPopover cngxPopoverSheet>
+      <cngx-tree-select-panel />
+    </div>
     <ng-template cngxTreeSelectNode let-node>
       <div class="custom-slot" [attr.data-id]="node.id">
         custom: {{ node.label }}
@@ -334,7 +341,8 @@ describe('CngxTreeSelectPanel - context-cache hygiene', () => {
     fixture.componentInstance.useSlot.set(true);
     fixture.detectChanges();
     const host = fixture.componentInstance;
-    const panel = fixture.debugElement.children[0].componentInstance as CngxTreeSelectPanel<Row>;
+    const panel = fixture.debugElement.query(By.directive(CngxTreeSelectPanel))
+      .componentInstance as CngxTreeSelectPanel<Row>;
     const caches = panel as unknown as PanelCaches;
     return { fixture, host, caches };
   }
@@ -495,7 +503,8 @@ describe('CngxTreeSelectPanel - expand-to-reveal type-to-find', () => {
     ]);
     host.expandToReveal.set(true);
     fixture.detectChanges();
-    const panel = fixture.debugElement.children[0].componentInstance as CngxTreeSelectPanel<Row>;
+    const panel = fixture.debugElement.query(By.directive(CngxTreeSelectPanel))
+      .componentInstance as CngxTreeSelectPanel<Row>;
     const highlighted: unknown[] = [];
     // Collaborator stub: only the AD reads the handler consults.
     const adStub = {

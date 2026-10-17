@@ -78,6 +78,7 @@ export function resolveSelectConfig(): Required<
     restoreFocus: user.restoreFocus ?? CNGX_SELECT_DEFAULTS.restoreFocus,
     dismissOn: user.dismissOn ?? CNGX_SELECT_DEFAULTS.dismissOn,
     openOn: user.openOn ?? CNGX_SELECT_DEFAULTS.openOn,
+    mobileSheet: user.mobileSheet ?? CNGX_SELECT_DEFAULTS.mobileSheet,
     templates: {
       ...CNGX_SELECT_DEFAULTS.templates,
       ...user.templates,

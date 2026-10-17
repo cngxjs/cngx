@@ -13,7 +13,7 @@ import {
   output,
   untracked,
   viewChild,
-  type ElementRef,
+  ElementRef,
   type Signal,
   type TemplateRef,
 } from '@angular/core';
@@ -35,7 +35,15 @@ import {
   type CngxReorderEvent,
   type CngxReorderModifier,
 } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
+import {
+  CngxPopover,
+  CngxPopoverSheet,
+  CngxPopoverSheetInitialFocus,
+  CngxPopoverTrigger,
+  type CngxPopoverPresentation,
+  type CngxPopoverPresentationRequest,
+  type PopoverPlacement,
+} from '@cngx/common/popover';
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
@@ -50,6 +58,16 @@ import {
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
 import { CngxSelectAnnouncer } from '../shared/announcer';
+import {
+  CNGX_SELECT_SHEET_SCOPE,
+  CngxScopedSelectAnnouncer,
+} from '../shared/internal/scoped-announcer';
+import {
+  createSelectSheetWiring,
+  type CngxSelectSheetWiring,
+} from '../shared/internal/select-sheet-wiring';
+import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
+import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
 import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
   type CngxCommitErrorAnnouncePolicy,
@@ -81,7 +99,6 @@ import {
 import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared/option.model';
 import { CNGX_REORDER_COMMIT_HANDLER_FACTORY } from '../shared/reorder-commit-handler';
 import { resolveReorderableSelectConfig } from '../shared/reorderable-select-config';
-import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
@@ -92,6 +109,7 @@ import {
   cngxSelectDefaultCompare,
   createSelectCore,
   type CngxSelectCompareFn,
+  type CngxSelectCore,
 } from '../shared/internal/select-core';
 import {
   CngxMultiSelectChip,
@@ -109,6 +127,7 @@ import {
   CngxSelectLoading,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
+  CngxSelectSheetHandle,
   CngxSelectOptionLabel,
   CngxSelectOptionPending,
   CngxSelectPlaceholder,
@@ -184,6 +203,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * @slot cngxSelectClearButton Replaces the clear-all button, shown when clearable is set, a value is selected and the control is enabled; gets clear, disabled.
  * @slot cngxSelectOptionPending Replaces the spinner on an option row while its commit is in flight; gets option.
  * @slot cngxSelectOptionError Replaces the error mark on selected rows when a commit fails and commitErrorDisplay is 'inline'; gets option, error.
+ * @slot cngxSelectSheetHandle Replaces the decorative drag handle of the mobile sheet, inside an aria-hidden wrapper; gets $implicit/presentation, dragging.
  */
 @Component({
   selector: 'cngx-reorderable-multi-select',
@@ -191,6 +211,9 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    CngxPopoverSheet,
+    CngxPopoverSheetInitialFocus,
+    CngxSelectSheetHeader,
     CngxChip,
     CngxClickOutside,
     CngxListbox,
@@ -202,6 +225,15 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
     NgTemplateOutlet,
   ],
   providers: [
+    { provide: CngxSelectAnnouncer, useClass: CngxScopedSelectAnnouncer },
+    {
+      provide: CNGX_SELECT_SHEET_SCOPE,
+      useFactory: () => inject(CngxReorderableMultiSelect).sheetWiring,
+    },
+    {
+      provide: CNGX_SELECT_SHEET_HEADER_HOST,
+      useFactory: () => inject(CngxReorderableMultiSelect).sheetWiring.headerHost,
+    },
     { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxReorderableMultiSelect },
     {
       provide: CNGX_STATEFUL,
@@ -300,6 +332,18 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly retryFn = input<(() => void) | null>(null);
   readonly commitAction = input<CngxSelectCommitAction<T[]> | null>(null);
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
+  /**
+   * Panel presentation. Unset follows `CNGX_SELECT_CONFIG.mobileSheet`:
+   * `'auto'` opens a modal bottom sheet on coarse, narrow viewports and
+   * stays anchored elsewhere. `'anchored'`, `'sheet'` and `'fullscreen'`
+   * force one presentation.
+   */
+  readonly presentation = input<CngxPopoverPresentationRequest | undefined>(undefined);
+  /**
+   * Title of the mobile sheet. Unset reads the field label once per open,
+   * then `[label]`, then `ariaLabels.fieldLabelFallback`.
+   */
+  readonly sheetLabel = input<string | undefined>(undefined);
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
@@ -397,6 +441,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
   private readonly optionErrorDirective =
     contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
+  private readonly sheetHandleDirective = contentChild(CngxSelectSheetHandle);
 
   /** @internal */
   protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
@@ -414,6 +459,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     clearButton: this.clearButtonDirective,
     optionPending: this.optionPendingDirective,
     optionError: this.optionErrorDirective,
+    sheetHandle: this.sheetHandleDirective,
   });
 
   /** @internal */
@@ -441,6 +487,10 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
+  private readonly sheetRef = viewChild(CngxPopoverSheet);
+  private readonly listboxEl = viewChild<CngxListbox, ElementRef<HTMLElement>>(CngxListbox, {
+    read: ElementRef,
+  });
 
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
 
@@ -482,7 +532,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
 
-  private readonly core = createSelectCore<T, T[]>(
+  private readonly core: CngxSelectCore<T, T[]> = createSelectCore<T, T[]>(
     {
       label: this.label,
       ariaLabel: this.ariaLabel,
@@ -511,12 +561,34 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       selectionIndicatorPosition: this.selectionIndicatorPosition,
       selectionIndicatorVariant: this.selectionIndicatorVariant,
       localItems: this.localItemsBuffer.items,
+      presentationInput: this.presentation,
+      // Lazy: the wiring is built from the core right below.
+      presentation: computed<CngxPopoverPresentation>(() => this.sheetWiring.presentation()),
     },
     {
       announceChanges: this.announceChanges,
       announceTemplate: this.announceTemplate,
     },
   );
+
+  /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
+  readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
+    core: this.core,
+    sheet: this.sheetRef,
+    popoverRef: this.popoverRef,
+    listboxRef: this.listboxRef,
+    tpl: this.tpl,
+    commitMode: this.commitMode,
+    dismissOn: this.config.dismissOn,
+    shouldBlockDismiss: this.actionBridge.shouldBlockDismiss,
+    showDone: true,
+    showInput: false,
+    sheetLabel: this.sheetLabel,
+    label: this.label,
+    close: () => this.close(),
+  });
+  /** @internal Static height fact: a content-sized sheet. */
+  protected readonly sheetFill = 'sheet';
 
   /**
    * Append a pre-built option to the local buffer. Renders in the next
@@ -614,6 +686,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     popoverRef: this.popoverRef,
     listboxRef: this.listboxRef,
     virtualization: this.config.virtualization,
+    presentation: this.sheetWiring.presentation,
+    listboxElement: computed(() => this.listboxEl()?.nativeElement),
   });
   /** @internal */
   readonly panelRenderer = this.virtualSetup.panelRenderer;
@@ -891,11 +965,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   }
 
   /** @internal - click-outside dismissal (action-dirty-guarded). */
-  protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
-    popoverRef: this.popoverRef,
-    dismissOn: this.config.dismissOn,
-    shouldBlockDismiss: this.actionBridge.shouldBlockDismiss,
-  }).handleClickOutside;
+  protected readonly handleClickOutside = this.sheetWiring.handleClickOutside;
 
   /** @internal */
   protected handleRetry(): void {

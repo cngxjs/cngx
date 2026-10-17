@@ -232,6 +232,14 @@
 }
 
 @layer cngx.components {
+  /* In a mobile sheet only the direct child below the header scrolls
+     (cngx-popover-sheet.css); a box-less host would hand that role to
+     nothing. */
+  .cngx-popover-sheet:is([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen'])
+    > cngx-tree-select-panel {
+    display: block;
+  }
+
   @scope (cngx-tree-select-panel) {
     :scope {
       display: contents;

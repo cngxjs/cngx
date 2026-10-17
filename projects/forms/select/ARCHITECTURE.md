@@ -18,7 +18,7 @@ For day-to-day API reference (inputs, outputs, signals, CSS variables) see the c
   - [Core factory `createSelectCore`](#core-factory-createselectcore)
   - [DI factory tokens (18)](#di-factory-tokens-18)
 - [Template slot system](#template-slot-system)
-  - [The 17 public slots](#the-17-public-slots)
+  - [The 18 public slots](#the-18-public-slots)
   - [Three-stage cascade](#three-stage-cascade)
   - [Internal `CNGX_SELECT_GLYPHS` const](#internal-cngx_select_glyphs-const)
 - [Configuration cascade](#configuration-cascade)
@@ -27,6 +27,7 @@ For day-to-day API reference (inputs, outputs, signals, CSS variables) see the c
 - [A11y model](#a11y-model)
 - [Forms integration](#forms-integration)
 - [Panel-shell + panel split](#panel-shell--panel-split)
+- [Mobile sheet](#mobile-sheet)
 - [Class size and decompose strategy](#class-size-and-decompose-strategy)
 - [Tracked architectural debt](#tracked-architectural-debt)
 - [How to extend](#how-to-extend)
@@ -214,7 +215,7 @@ The override never breaks because the factory shape is captured in a `Cngx<Name>
 Every visible piece of a select panel has an override slot.
 The slot directives live in `shared/template-slots.ts` and project a typed context object so consumer markup can read live state.
 
-### The 17 public slots
+### The 18 public slots
 
 | Slot directive | Where it renders | Context |
 |-|-|-|
@@ -235,8 +236,9 @@ The slot directives live in `shared/template-slots.ts` and project a typed conte
 | `*cngxSelectOptionError`                            | Per-row commit-error glyph              | `{ option, error }`                                                    |
 | `*cngxSelectAction`                                 | Action panel slot (action-\* variants)  | `{ searchTerm, commit, close, isPending, dirty, retry, error, value }` |
 | `*cngxSelectInputPrefix` / `*cngxSelectInputSuffix` | Input adornments (combobox + typeahead) | `{ disabled, focused, panelOpen }`                                     |
+| `*cngxSelectSheetHandle` | Decorative drag handle of the mobile sheet (inside an `aria-hidden` wrapper) | `{ presentation, dragging }` |
 
-Variant-specific slots that complement the shared 17:
+Variant-specific slots that complement the shared 18:
 
 - `*cngxSelectTriggerLabel` (single only)
 - `*cngxMultiSelectChip` (multi + reorderable)
@@ -560,6 +562,24 @@ The narrower view-host contract is what the shell reads - keeps the shell value-
 Tree-select provides BOTH tokens with `useExisting: self`.
 
 ---
+
+## Mobile sheet
+
+On a coarse, narrow viewport every variant opens its panel as a modal sheet instead of an anchored popover. There is still one panel host: the variant's `cngxPopover` element carries `[cngxPopoverSheet]` from `@cngx/common/popover`, and the presentation (`anchored`, `sheet`, `fullscreen`) is a switch on that atom. The breakpoint lives once in `cngx-popover-sheet.css`; no TypeScript reads a length.
+
+**Cascade.** `[presentation]` on the variant, else `CNGX_SELECT_CONFIG.mobileSheet` (`withMobileSheet('off')` maps to `'anchored'`), else `'auto'`. `'auto'` resolves through the breakpoint to the variant's static height fact: `fullscreen` for the variants led by a text input (`CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`, `CngxActionMultiSelect`, `CngxSelectShell` with a `<cngx-select-search>`), a content-sized `sheet` for the rest. The cascade is `createPresentationRequest` in `shared/internal/select-core.ts`, shared with `CngxTreeSelect`, which has no core.
+
+**Wiring.** `createSelectSheetWiring` (`shared/internal/select-sheet-wiring.ts`) is the one bundle per variant: the presentation request, `sheetModal` / `sheetAnchored`, `closeBlocked` (a pessimistic commit is pending), the Escape gate bound to `[closeOnEscape]`, the outside-click gate bound to `cngxClickOutside [enabled]`, `handleSheetClose`, `escapeClose` for in-sheet inputs, and the value of the internal `CNGX_SELECT_SHEET_HEADER_HOST`. It also resolves the variant's dismiss handler, so the anchored outside click and the sheet close vectors share one policy.
+
+**One close path per vector.** The atom never closes itself (`[closeOnRequest]="false"`): header swipe, outside tap, Android back, X and Done all arrive at `handleSheetClose`, which runs `DismissHandler.handleSheetClose` (pending commit, then the action dirty guard, then `dismissOn` for an outside tap). While the sheet is modal the variant's own `cngxClickOutside` is off, so one tap has one path. While a pessimistic commit is pending no vector closes the sheet, Escape included; on a desktop Escape and outside click behave as before.
+
+**Header.** `<cngx-select-sheet-header>` is the panel's first child and is hidden while anchored. It shows the field label as the dialog title (read once per open from the form-field host's `labelId`; `[sheetLabel]` wins, `[label]` and `ariaLabels.fieldLabelFallback` follow), X, Done on the multi and input variants, and a header input on the input variants that writes through the trigger input, so the trigger's `CngxSearch` stays the one search term. The handle is decorative; `*cngxSelectSheetHandle` replaces it.
+
+**Focus.** Focus moves into the sheet inside `show()`: to the header input, the `<cngx-select-search>` input, or the listbox (`tabindex="0"` only while modal). On close the variant moves focus back to its trigger in the atom's synchronous `(closing)` output, before the close transition, so focus never falls to `body` and the field is not marked touched.
+
+**Announcements.** Each variant provides `CngxScopedSelectAnnouncer` in place of `CngxSelectAnnouncer`. While the sheet is modal and open it speaks only through the region inside the sheet, with the politeness each call passes; otherwise it delegates to the next `CngxSelectAnnouncer` up the tree, so an app-level override keeps working.
+
+**Scroll.** In the sheet only the listbox (or the tree panel) scrolls; the popover host does not. The virtualization scroll element follows the presentation.
 
 ## Class size and decompose strategy
 

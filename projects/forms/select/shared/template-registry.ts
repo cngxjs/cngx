@@ -19,6 +19,8 @@ import type {
   CngxSelectLoadingGlyph,
   CngxSelectRefreshing,
   CngxSelectRetryButton,
+  CngxSelectSheetHandle,
+  CngxSelectSheetHandleContext,
   CngxSelectCaretContext,
   CngxSelectCheckContext,
   CngxSelectClearButtonContext,
@@ -62,6 +64,8 @@ export interface CngxSelectTemplateRegistryQueries<T = unknown> {
   readonly optionError: Signal<CngxSelectOptionError<T> | undefined>;
   /** Optional. Action-select organisms wire it; flat variants omit. */
   readonly action?: Signal<CngxSelectAction | undefined>;
+  /** Optional. Config-level `templates.sheetHandle` still resolves via cascade. */
+  readonly sheetHandle?: Signal<CngxSelectSheetHandle | undefined>;
 }
 
 /**
@@ -87,6 +91,7 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
   readonly optionPending: Signal<TemplateRef<CngxSelectOptionPendingContext<T>> | null>;
   readonly optionError: Signal<TemplateRef<CngxSelectOptionErrorContext<T>> | null>;
   readonly action: Signal<TemplateRef<CngxSelectActionContext> | null>;
+  readonly sheetHandle: Signal<TemplateRef<CngxSelectSheetHandleContext> | null>;
 }
 
 /**
@@ -114,6 +119,8 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
 const NO_ACTION_TEMPLATE: Signal<TemplateRef<CngxSelectActionContext> | null> = signal(null);
 
 const NO_LOADING_GLYPH_DIRECTIVE: Signal<CngxSelectLoadingGlyph | undefined> = signal(undefined);
+
+const NO_SHEET_HANDLE_DIRECTIVE: Signal<CngxSelectSheetHandle | undefined> = signal(undefined);
 
 /**
  * Build a resolved {@link CngxSelectTemplateRegistry} from raw
@@ -150,6 +157,10 @@ export function createTemplateRegistry<T = unknown>(
     optionPending: injectResolvedTemplate(queries.optionPending, 'optionPending'),
     optionError: injectResolvedTemplate(queries.optionError, 'optionError'),
     action: queries.action ? injectResolvedTemplate(queries.action, 'action') : NO_ACTION_TEMPLATE,
+    sheetHandle: injectResolvedTemplate(
+      queries.sheetHandle ?? NO_SHEET_HANDLE_DIRECTIVE,
+      'sheetHandle',
+    ),
   };
 }
 

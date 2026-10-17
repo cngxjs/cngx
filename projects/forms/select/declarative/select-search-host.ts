@@ -23,6 +23,11 @@ export interface CngxSelectShellSearchHost {
   readonly listboxRef: Signal<CngxListbox | undefined>;
   close(): void;
   focus(): void;
+  /**
+   * Make `element` the initial focus of the host's mobile sheet. Returns the
+   * release. Optional: hosts without a sheet omit it.
+   */
+  registerInitialFocus?(element: HTMLElement): () => void;
 }
 
 /**

@@ -1,4 +1,5 @@
 import { Directive, TemplateRef, inject } from '@angular/core';
+import type { CngxPopoverPresentation } from '@cngx/common/popover';
 
 import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from './option.model';
 
@@ -156,6 +157,18 @@ export interface CngxMultiSelectChipContext<T = unknown> {
   readonly option: CngxSelectOptionDef<T>;
   readonly remove: () => void;
   readonly index?: number;
+}
+
+/**
+ * Context of the `*cngxSelectSheetHandle` slot. The handle is decorative
+ * (always `aria-hidden`), so the context carries visual state only.
+ */
+export interface CngxSelectSheetHandleContext {
+  readonly $implicit: CngxPopoverPresentation;
+  /** `'sheet'` or `'fullscreen'`; the header is hidden while anchored. */
+  readonly presentation: CngxPopoverPresentation;
+  /** A swipe on the header is in progress. */
+  readonly dragging: boolean;
 }
 
 /**
@@ -724,6 +737,34 @@ export class CngxMultiSelectTriggerLabel<T = unknown> {
 })
 export class CngxSelectClearButton {
   readonly templateRef = inject<TemplateRef<CngxSelectClearButtonContext>>(TemplateRef);
+}
+
+/**
+ * `*cngxSelectSheetHandle` slot - replaces the decorative drag handle at the
+ * top of the mobile sheet. Rendered inside an `aria-hidden` wrapper: swipe is
+ * a pointer gesture, screen-reader users close through X or Done.
+ *
+ * ```html
+ * <cngx-select ...>
+ *   <ng-template cngxSelectSheetHandle let-dragging="dragging">
+ *     <span class="my-grip" [class.my-grip--active]="dragging"></span>
+ *   </ng-template>
+ * </cngx-select>
+ * ```
+ *
+ * @category forms/select/templates
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo withMobileSheet, CngxPopoverSheetHandle
+ * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/custom-handle</example-url>
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectSheetHandle]',
+  standalone: true,
+  exportAs: 'cngxSelectSheetHandle',
+})
+export class CngxSelectSheetHandle {
+  readonly templateRef = inject<TemplateRef<CngxSelectSheetHandleContext>>(TemplateRef);
 }
 
 /**

@@ -13,6 +13,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import { CngxCombobox, type CngxComboboxChange } from './combobox.component';
 import { CngxComboboxChip } from '../shared/template-slots';
 import { provideSelectConfig, withOpenOn, type CngxSelectMatchFn } from '../shared/config';
@@ -1097,3 +1098,15 @@ describeCommitControllerCascade('CngxCombobox');
 describeFieldSkinHost('CngxCombobox', CngxCombobox, 'cngx-combobox', () =>
   createMockField({ name: 'pick' }).accessor,
 );
+
+describeMobileSheet('CngxCombobox', CngxCombobox, 'cngx-combobox', {
+  inputs: '[options]="options"',
+  optionSelector: '[cngxOption]',
+  fill: 'fullscreen',
+  showDone: true,
+  showInput: true,
+  makeField: () => {
+    const { accessor, ref } = createMockField<string[]>({ name: 'pick', value: [] });
+    return { accessor, touched: () => ref.touched() };
+  },
+});

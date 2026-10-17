@@ -1,13 +1,14 @@
 import { Component, signal, viewChild, type TemplateRef, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import { CngxTypeahead } from './typeahead.component';
 import type { CngxSelectOptionsInput } from '../shared/option.model';
 import type { CngxSelectCommitAction } from '../shared/commit-action.types';
@@ -409,6 +410,55 @@ describe('CngxTypeahead - openOn config integration', () => {
   });
 });
 
+describe('CngxTypeahead - focus moves into the sheet inside the opening call', () => {
+  @Component({
+    template: `<cngx-typeahead [options]="options" presentation="fullscreen" />`,
+    imports: [CngxTypeahead],
+  })
+  class SheetFocusHost {
+    readonly options: CngxSelectOptionsInput<string> = [
+      { value: 'a', label: 'Alpha' },
+      { value: 'b', label: 'Beta' },
+    ];
+  }
+
+  beforeEach(() => polyfillPopover());
+
+  function setupSheet(providers: unknown[]) {
+    TestBed.configureTestingModule({ imports: [SheetFocusHost], providers: providers as never[] });
+    const fixture = TestBed.createComponent(SheetFocusHost);
+    flush(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+    const typeahead = fixture.debugElement.query(By.directive(CngxTypeahead))
+      .componentInstance as CngxTypeahead<string>;
+    const input = el.querySelector('input.cngx-typeahead__input') as HTMLInputElement;
+    const headerInput = el.querySelector('.cngx-select-sheet-header__input') as HTMLInputElement;
+    return { fixture, typeahead, input, headerInput };
+  }
+
+  it('openOn focus: the header input holds focus when the focus handler returns', () => {
+    const { typeahead, input, headerInput } = setupSheet([
+      provideSelectConfig(withOpenOn('focus')),
+    ]);
+    input.focus();
+    input.dispatchEvent(new Event('focus'));
+    expect(typeahead.panelOpen()).toBe(true);
+    expect(document.activeElement).toBe(headerInput);
+  });
+
+  it('typing auto-open: the header input holds focus after the opening effect', () => {
+    vi.useFakeTimers();
+    const { fixture, typeahead, input, headerInput } = setupSheet([]);
+    input.focus();
+    input.value = 'a';
+    input.dispatchEvent(new Event('input'));
+    vi.advanceTimersByTime(500);
+    flush(fixture);
+    expect(typeahead.panelOpen()).toBe(true);
+    expect(document.activeElement).toBe(headerInput);
+  });
+});
+
 // ── Glyph-slot & input-prefix/suffix pattern ────────────────────────────
 
 describe('CngxTypeahead - glyph inputs + input prefix/suffix', () => {
@@ -523,3 +573,15 @@ describeCommitControllerCascade('CngxTypeahead');
 describeFieldSkinHost('CngxTypeahead', CngxTypeahead, 'cngx-typeahead', () =>
   createMockField({ name: 'pick' }).accessor,
 );
+
+describeMobileSheet('CngxTypeahead', CngxTypeahead, 'cngx-typeahead', {
+  inputs: '[options]="options"',
+  optionSelector: '[cngxOption]',
+  fill: 'fullscreen',
+  showDone: true,
+  showInput: true,
+  makeField: () => {
+    const { accessor, ref } = createMockField<string>({ name: 'pick' });
+    return { accessor, touched: () => ref.touched() };
+  },
+});
