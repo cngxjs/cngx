@@ -434,6 +434,64 @@ describe('CngxActionSelect - dismiss guard', () => {
   });
 });
 
+describe('CngxActionSelect - first search term after a value write', () => {
+  function mount(initial: Tag | undefined): {
+    fixture: ReturnType<typeof TestBed.createComponent<Host>>;
+    select: CngxActionSelect<Tag>;
+    input: HTMLInputElement;
+    searchLog: string[];
+  } {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.value.set(initial);
+    flush(fixture);
+    const selectDe = fixture.debugElement.query(By.directive(CngxActionSelect));
+    const select = selectDe.componentInstance as CngxActionSelect<Tag>;
+    const searchLog: string[] = [];
+    select.searchTermChange.subscribe((term) => searchLog.push(term));
+    return {
+      fixture,
+      select,
+      input: selectDe.nativeElement.querySelector('input') as HTMLInputElement,
+      searchLog,
+    };
+  }
+
+  function typeInto(
+    fixture: ReturnType<typeof TestBed.createComponent<Host>>,
+    input: HTMLInputElement,
+    term: string,
+  ): void {
+    input.focus();
+    input.value = term;
+    input.dispatchEvent(new Event('input'));
+    vi.advanceTimersByTime(300);
+    flush(fixture);
+  }
+
+  it('emits searchTermChange for the first term typed after an initial value', () => {
+    vi.useFakeTimers();
+    const { fixture, input, searchLog } = mount({ id: 't1', name: 'Design' });
+    expect(input.value).toBe('Design');
+
+    typeInto(fixture, input, 'ber');
+
+    expect(searchLog.at(-1)).toBe('ber');
+  });
+
+  it('emits searchTermChange for the first term typed after an unfocused programmatic write', () => {
+    vi.useFakeTimers();
+    const { fixture, input, searchLog } = mount(undefined);
+    fixture.componentInstance.value.set({ id: 't2', name: 'Dev' });
+    flush(fixture);
+
+    typeInto(fixture, input, 'ber');
+
+    expect(searchLog.at(-1)).toBe('ber');
+  });
+});
+
 describeFieldSkinHost('CngxActionSelect', CngxActionSelect, 'cngx-action-select', () =>
   createMockField({ name: 'pick' }).accessor,
 );

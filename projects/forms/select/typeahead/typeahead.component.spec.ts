@@ -459,6 +459,54 @@ describe('CngxTypeahead - focus moves into the sheet inside the opening call', (
   });
 });
 
+describe('CngxTypeahead - first search term after a value write', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [StandaloneHost] });
+  });
+
+  function typeInto(
+    fixture: ReturnType<typeof TestBed.createComponent<StandaloneHost>>,
+    term: string,
+  ): void {
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-typeahead__input',
+    ) as HTMLInputElement;
+    input.focus();
+    input.value = term;
+    input.dispatchEvent(new Event('input'));
+    vi.advanceTimersByTime(300);
+    flush(fixture);
+  }
+
+  it('emits searchTermChange for the first term typed after an initial value', () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(StandaloneHost);
+    fixture.componentInstance.value.set({ id: 2, name: 'Bob' });
+    flush(fixture);
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-typeahead__input',
+    ) as HTMLInputElement;
+    expect(input.value).toBe('Bob');
+
+    typeInto(fixture, 'ber');
+
+    expect(fixture.componentInstance.searchLog.at(-1)).toBe('ber');
+  });
+
+  it('emits searchTermChange for the first term typed after an unfocused programmatic write', () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(StandaloneHost);
+    flush(fixture);
+    fixture.componentInstance.value.set({ id: 3, name: 'Charlie' });
+    flush(fixture);
+
+    typeInto(fixture, 'ber');
+
+    expect(fixture.componentInstance.searchLog.at(-1)).toBe('ber');
+  });
+});
+
 // ── Glyph-slot & input-prefix/suffix pattern ────────────────────────────
 
 describe('CngxTypeahead - glyph inputs + input prefix/suffix', () => {
