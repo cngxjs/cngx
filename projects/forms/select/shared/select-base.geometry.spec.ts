@@ -328,6 +328,32 @@ describe('select-family field skins', () => {
     expect(computedValue(el, 'border-top-color')).toBe(expected);
   });
 
+  // `:focus-visible` never matches headless (see the header note), so the
+  // ring is read through a probe that resolves the same token the trigger's
+  // focus rule uses. The delegating `:root` value needs a theme primary, set
+  // here on the document root the way a theme would.
+  it('resolves the tree-select focus ring opaque and equal to the select ring', () => {
+    const docEl = document.documentElement;
+    docEl.style.setProperty('--cngx-color-primary', 'oklch(0.5 0.2 260)');
+    try {
+      const root = mount(AllTriggersHost);
+      const ringColour = (hostSelector: string, token: string): string => {
+        const probe = document.createElement('div');
+        probe.style.outline = `var(${token})`;
+        trigger(root, hostSelector).appendChild(probe);
+        const colour = computedValue(probe, 'outline-color');
+        probe.remove();
+        return colour;
+      };
+      const tree = ringColour('.v-tree', '--cngx-tree-select-focus-ring');
+      const select = ringColour('.v-select', '--cngx-select-focus-outline');
+      expect(select).not.toBe('rgb(0, 0, 0)');
+      expect(tree).toBe(select);
+    } finally {
+      docEl.style.removeProperty('--cngx-color-primary');
+    }
+  });
+
   it('turns the underline to the error colour when the inner combobox input is invalid', () => {
     const root = mount(StateHost);
     const valid = computedValue(trigger(root, '.valid'), 'border-bottom-color');
