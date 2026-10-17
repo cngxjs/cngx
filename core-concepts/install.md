@@ -78,7 +78,10 @@ install. Nothing outside the project is written.
    on a coloured terminal the markers and reasons
    take the Angular CLI's colours.
 5. **Confirm.** An app that already has components beyond the root one
-   (anywhere under its source root, outside `node_modules` and `dist`), its
+   (anywhere under its source root; `node_modules`, `.angular`, `.git` and
+   `.cngx` are skipped at any depth, `dist`, `out-tsc` and `coverage` only
+   directly under the source root, and spec and declaration files never
+   count), its
    own providers, a config written into `bootstrapApplication(App, {...})`,
    or another UI library (Material, PrimeNG, Tailwind, Bootstrap) counts as
    existing and gets one `Apply these changes?` before anything is written.
