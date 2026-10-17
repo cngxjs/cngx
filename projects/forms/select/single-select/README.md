@@ -134,6 +134,10 @@ protected readonly priorities: CngxSelectOptionsInput<string> = [
 <cngx-select [label]="'Priority'" [options]="priorities" [(value)]="priority" />
 ```
 
+## Mobile sheet
+
+On a touch screen narrower than 48rem the panel opens as a modal bottom sheet, named by the field label, with a close button and a decorative handle. Focus moves into the sheet and back to the trigger on close. Force a presentation with `[presentation]` (`'anchored'`, `'sheet'`, `'fullscreen'`), set the title with `[sheetLabel]`, or turn the sheet off with `withMobileSheet('off')`. Details: [Mobile sheet](../README.md#mobile-sheet).
+
 ## Template slots
 
 Drop a `<ng-template>` with one of these directives inside `<cngx-select>` to override the default visual.

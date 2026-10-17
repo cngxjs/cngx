@@ -24,6 +24,8 @@ A component that needs an attribute before it adapts is not responsive; it is co
 
 The shipped case for rule 2 is `[cngxPopoverSheet]` (`@cngx/common/popover`). `cngx-popover-sheet.css` writes `--cngx-popover-sheet-breakpoint` once, inside `@media (pointer: coarse) and (max-width: 48rem)`, and the directive reads that property to switch a popover between its anchored layout and a modal bottom sheet or fullscreen panel. It is the only viewport query the container-query guard admits, enrolled with an `overlay modality:` reason.
 
+All nine `@cngx/forms/select` composites compose it by default, with nothing bound: on a phone `CngxSelect`, `CngxMultiSelect`, `CngxTreeSelect` and `CngxReorderableMultiSelect` open as a bottom sheet, the variants led by a text input (`CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`, `CngxActionMultiSelect`, `CngxSelectShell` with a `<cngx-select-search>`) open fullscreen. Opting out works as everywhere else: `withMobileSheet('off')` keeps them anchored, and a per-instance `[presentation]` wins.
+
 ---
 
 ## The tier table

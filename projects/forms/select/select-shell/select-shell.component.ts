@@ -179,6 +179,15 @@ export interface CngxSelectShellChange<T = unknown> {
  * `templates.loadingGlyph` second. `cngxSelectTriggerLabel` is
  * directive-only here; `templates.triggerLabel` does not reach this host.
  *
+ * **Mobile sheet.** On a coarse screen narrower than 48rem the panel opens as
+ * a modal bottom sheet, or fullscreen when a `<cngx-select-search>` leads the
+ * panel: a `role="dialog"` named by the field label, with a close button and
+ * a decorative handle (`*cngxSelectSheetHandle`). Focus moves into the sheet
+ * on open and back to the trigger on close, the rest of the page is inert,
+ * and announcements are spoken from inside the sheet. `[presentation]` forces
+ * `'anchored'`, `'sheet'` or `'fullscreen'`; `withMobileSheet('off')` keeps
+ * every select in its scope anchored.
+ *
  * @category forms/select/shell
  * @docsKind primary
  * @wcag AA
@@ -192,6 +201,7 @@ export interface CngxSelectShellChange<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/select-shell/inside-cngx-form-field-reactive-forms</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/rich-content-option-plain-text-trigger</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/search-declarative-cngx-select-search</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCaret Replaces the trigger caret (inside an aria-hidden span) unless [hideCaret] is set; gets $implicit/open.
  * @slot cngxSelectPlaceholder Replaces the trigger text while nothing is selected and wins over cngxSelectTriggerLabel there; gets $implicit/placeholder.
  * @slot cngxSelectEmpty Replaces the panel's empty message when no option is projected or [state] resolves empty (a search only hides projected options, it never shows this); gets searchTerm, filtered, totalCount.

@@ -148,6 +148,14 @@ export interface CngxSelectChange<T = unknown> {
  * glyph (config only, no projected slot on this host). No slot is
  * directive-only here.
  *
+ * **Mobile sheet.** On a coarse screen narrower than 48rem the panel opens as
+ * a modal bottom sheet: a `role="dialog"` named by the field label, with a
+ * close button and a decorative handle (`*cngxSelectSheetHandle`). Focus
+ * moves into the sheet on open and back to the trigger on close, the rest of
+ * the page is inert, and announcements are spoken from inside the sheet.
+ * `[presentation]` forces `'anchored'`, `'sheet'` or `'fullscreen'`;
+ * `withMobileSheet('off')` keeps every select in its scope anchored.
+ *
  * @category forms/select/single-select
  * @docsKind primary
  * @wcag AA
@@ -167,6 +175,7 @@ export interface CngxSelectChange<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCheck Replaces the selection indicator on each option row unless [hideSelectionIndicator] is set; gets $implicit/option, selected, variant (radio, checkbox or checkmark), position, and indeterminate (always false here, absent on radio).
  * @slot cngxSelectCaret Replaces the trigger caret unless [hideCaret] is set; gets $implicit/open.
  * @slot cngxSelectOptgroup Replaces the header of each option group; gets $implicit/group.

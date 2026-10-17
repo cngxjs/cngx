@@ -195,6 +195,15 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  * this host has no projected glyph slot. The placeholder is the input's own
  * `placeholder` text, so `cngxSelectPlaceholder` does not apply here.
  *
+ * **Mobile sheet.** On a coarse screen narrower than 48rem the panel opens as
+ * a modal fullscreen panel with the search input in its header: a
+ * `role="dialog"` named by the field label, with a close button, Done and a
+ * decorative handle (`*cngxSelectSheetHandle`). Focus moves into the sheet on
+ * open and back to the trigger on close, the rest of the page is inert, and
+ * announcements are spoken from inside the sheet. `[presentation]` forces
+ * `'anchored'`, `'sheet'` or `'fullscreen'`; `withMobileSheet('off')` keeps
+ * every select in its scope anchored.
+ *
  * @category forms/select/action-multi-select
  * @docsKind primary
  * @wcag AA
@@ -203,6 +212,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  * @relatedTo CngxMultiSelect, CngxActionSelect, CngxCombobox, CngxSelectAction
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>http://localhost:4200/#/forms/select/action-multi-select/basic</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/mobile-sheet/all-variants</example-url>
  * @slot cngxSelectCheck Replaces the checkbox indicator on each option row unless hideSelectionIndicator is set; gets option, selected, variant, position, and indeterminate (always false here, absent under the radio variant).
  * @slot cngxSelectCaret Replaces the trigger caret unless hideCaret is set; gets open.
  * @slot cngxSelectOptgroup Replaces the header of each option group in the panel; gets group.
