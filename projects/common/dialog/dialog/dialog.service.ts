@@ -286,29 +286,37 @@ export class CngxDialogOpener {
       ],
     });
 
-    if (outletVcr) {
-      if (typeof content === 'function') {
-        contentRef = outletVcr.createComponent(content, {
-          injector: childInjector,
-        });
-      } else {
-        outletVcr.createEmbeddedView(
-          content,
-          { $implicit: innerDialog },
-          { injector: childInjector },
-        );
+    // Creating the content and its first render run consumer code. A throw
+    // there must leave no outlet in the body and no ref in openDialogs, so
+    // the ref is registered only after open() succeeded.
+    try {
+      if (outletVcr) {
+        if (typeof content === 'function') {
+          contentRef = outletVcr.createComponent(content, {
+            injector: childInjector,
+          });
+        } else {
+          outletVcr.createEmbeddedView(
+            content,
+            { $implicit: innerDialog },
+            { injector: childInjector },
+          );
+        }
       }
+
+      // The outlet's inputs reach the inner cngxDialog through template
+      // bindings, and open() latches [modal]. Without this pass the dialog
+      // would still see its input defaults and always open modal.
+      outletRef.changeDetectorRef.detectChanges();
+      dialogInstance.open();
+    } catch (error) {
+      this.discardOutlet(outletRef);
+      throw error;
     }
 
     const dialogRef = new CngxDialogRef<T>(innerDialog, outletRef, contentRef, this.injector);
 
     this.openDialogs.push(dialogRef as CngxDialogRef<unknown>);
-
-    // The outlet's inputs reach the inner cngxDialog through template
-    // bindings, and open() latches [modal]. Without this pass the dialog
-    // would still see its input defaults and always open modal.
-    outletRef.changeDetectorRef.detectChanges();
-    dialogInstance.open();
 
     this.cleanupEffects.set(
       dialogRef as CngxDialogRef<unknown>,
@@ -354,12 +362,18 @@ export class CngxDialogOpener {
       ref.componentRef.destroy();
     }
 
-    const outletRef = ref._outletRef;
-    if (outletRef && !outletRef.hostView.destroyed) {
-      this.appRef.detachView(outletRef.hostView);
-      (outletRef.location.nativeElement as HTMLElement).remove();
-      outletRef.destroy();
+    if (ref._outletRef) {
+      this.discardOutlet(ref._outletRef);
     }
+  }
+
+  private discardOutlet(outletRef: ComponentRef<CngxDialogOutlet>): void {
+    if (outletRef.hostView.destroyed) {
+      return;
+    }
+    this.appRef.detachView(outletRef.hostView);
+    (outletRef.location.nativeElement as HTMLElement).remove();
+    outletRef.destroy();
   }
 }
 

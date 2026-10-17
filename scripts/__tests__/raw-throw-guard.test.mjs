@@ -38,13 +38,19 @@
 // a global host; `gen.throw(...)`; a catch variable reassigned or mutated
 // before its rethrow. A function expression invoked in place is caught:
 // called directly or with `new`, through `.call` / `.apply` (also
-// `['call']` / `['apply']`), as a `.bind(...)` result called right away, and
-// with the function wrapped in parentheses, `as`, `<T>`, `satisfies` or `!`.
-// Still counted as running later: a callback that a synchronous call runs at
-// module load (`[1].forEach(() => ...)`, `Reflect.apply(fn, ...)`), a
-// function expression used as a tag (`` (() => ...)`x` ``), and a function
-// stored in a name first and called at module scope
-// (`const f = () => ...; f();`).
+// `['call']` / `['apply']`), through one `.bind(...)` whose result is called
+// right away or through `.call` / `.apply`, with the function wrapped in
+// parentheses, `as`, `<T>`, `satisfies` or `!`, or as the last operand of a
+// comma expression (`(0, fn)()`); so are the constructor and instance field
+// initialisers of a class expression constructed in place
+// (`new (class { ... })()`). Still counted as running later: a callback that
+// a synchronous call runs at module load (`[1].forEach(() => ...)`,
+// `Reflect.apply(fn, ...)`), a function expression used as a tag
+// (`` (() => ...)`x` ``), a function stored in a name first and called at
+// module scope (`const f = () => ...; f();`, also a class stored first and
+// constructed later), two chained `.bind(...)` calls, and an accessor or
+// method of a class constructed in place that runs during its construction
+// (`constructor() { this.run(); }` with the guard in `run`).
 // `${m}` or `'' + m` around a local built before the guard has the inline
 // shape and passes the inline-message rule: it checks the message's form,
 // not where the text in its operands was built (many operands are
@@ -517,6 +523,15 @@ describe('raw-throw guard - T3 messages', () => {
     ]);
   });
 
+  it('passes a guarded construction in a static field of a class declared inside a function', () => {
+    const message = `${GUARD} && 'm'`;
+    expect(
+      fixture(
+        `function make() { return class { static e = new CngxRuntimeError('CNGX1001', ${message}); }; }`,
+      ).violations,
+    ).toEqual([]);
+  });
+
   it('fails a message built before the guard and a call result as the message', () => {
     expect(
       fixture(
@@ -641,6 +656,27 @@ describe('raw-throw guard - T3 shadows and module load', () => {
       ]);
     }
     expect(fixture(`const run = (() => { ${construct} }).bind(null);`).violations).toEqual([]);
+  });
+
+  it('fails a construction invoked through a comma callee, bind then call or apply, or a class built in place', () => {
+    for (const shape of [
+      `(0, () => { ${construct} })();`,
+      `(function () { ${construct} }).bind(null).apply(this, []);`,
+      `(() => { ${construct} }).bind(null)['call'](this);`,
+      `new (class { constructor() { ${construct} } })();`,
+      `new class { constructor() { ${construct} } }();`,
+    ]) {
+      expect(fixture(shape).violations, shape).toEqual([
+        `projects/common/a.ts:1 T3 CNGX1001 ${MODULE_LOAD_GUARD}`,
+      ]);
+    }
+    for (const later of [
+      `const run = (0, () => { ${construct} });`,
+      `const C = class { constructor() { ${construct} } };`,
+      `new (class { run() { ${construct} } })();`,
+    ]) {
+      expect(fixture(later).violations, later).toEqual([]);
+    }
   });
 });
 

@@ -314,6 +314,18 @@ describe('CngxTabsFragmentSync', () => {
     expect(warn.mock.calls[0][0]).toContain('to enable deep-linking.');
   });
 
+  it('does not warn CNGX1031 with provideRouter([])', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const fixture = TestBed.createComponent(FragmentHost);
+    fixture.detectChanges();
+
+    expect(warn.mock.calls.some(([m]) => /^CNGX1031: /.test(String(m)))).toBe(false);
+  });
+
   it('writes nothing to the console without provideRouter(...) in production', () => {
     vi.stubGlobal('ngDevMode', false);
     TestBed.configureTestingModule({

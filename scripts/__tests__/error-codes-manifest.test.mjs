@@ -171,6 +171,89 @@ describe('error-code manifest generator', () => {
     ]);
   });
 
+  it('keeps the rows of two same-named dev wrappers in two files apart', () => {
+    const wrapper = (code) =>
+      `function warn(message: string) { if (!(${GUARD})) { return; } cngxDevWarn('${code}', message); }`;
+    const exported = (code) =>
+      `export ${wrapper(code)}`.replace('function warn', 'function warnIt');
+    const files = [
+      {
+        path: 'projects/common/a.ts',
+        text: `${wrapper('CNGX1001')}\nfunction f() { if (${GUARD}) { warn('[cngxA] lost.'); } }`,
+      },
+      {
+        path: 'projects/common/b.ts',
+        text: `${wrapper('CNGX1002')}\nfunction f() { if (${GUARD}) { warn('[cngxB] gone.'); } }`,
+      },
+      { path: 'projects/common/x/warn.ts', text: exported('CNGX1003') },
+      { path: 'projects/common/y/warn.ts', text: exported('CNGX1004') },
+      {
+        path: 'projects/common/x/use.ts',
+        text: `import { warnIt } from './warn';\nfunction f() { if (${GUARD}) { warnIt('[cngxX] one.'); } }`,
+      },
+      {
+        path: 'projects/common/y/use.ts',
+        text: `import { warnIt as w } from './warn';\nfunction f() { if (${GUARD}) { w('[cngxY] two.'); } }`,
+      },
+    ];
+    const messages = collectMessages(files).map(({ code, file, segments }) => ({
+      code,
+      file,
+      text: messageText(segments),
+    }));
+    expect(messageRowsOf(messages, 'CNGX1001')).toEqual([
+      { file: 'projects/common/a.ts', text: '[cngxA] lost.' },
+    ]);
+    expect(messageRowsOf(messages, 'CNGX1002')).toEqual([
+      { file: 'projects/common/b.ts', text: '[cngxB] gone.' },
+    ]);
+    expect(messageRowsOf(messages, 'CNGX1003')).toEqual([
+      { file: 'projects/common/x/use.ts', text: '[cngxX] one.' },
+    ]);
+    expect(messageRowsOf(messages, 'CNGX1004')).toEqual([
+      { file: 'projects/common/y/use.ts', text: '[cngxY] two.' },
+    ]);
+  });
+
+  it('follows an arrow-function dev wrapper into its callers', () => {
+    const files = [
+      {
+        path: 'projects/common/a.ts',
+        text:
+          `const warnArrow = (message: string) => { if (!(${GUARD})) { return; } cngxDevWarn('CNGX1005', message); };\n` +
+          `function f() { if (${GUARD}) { warnArrow('[cngxZ] three.'); } }`,
+      },
+    ];
+    const messages = collectMessages(files).map(({ code, file, segments }) => ({
+      code,
+      file,
+      text: messageText(segments),
+    }));
+    expect(messageRowsOf(messages, 'CNGX1005')).toEqual([
+      { file: 'projects/common/a.ts', text: '[cngxZ] three.' },
+    ]);
+  });
+
+  it('follows a wrapper parameter read inside a nested callback into the callers', () => {
+    const files = [
+      {
+        path: 'projects/forms/a.ts',
+        text:
+          `export function warnLater(message: string) { if (!(${GUARD})) { return; } ` +
+          "afterNextRender(() => { cngxDevWarn('CNGX2006', message); }); }\n" +
+          `function f() { if (${GUARD}) { warnLater('[cngxIn] ' + 'uses the default accessor.'); } }`,
+      },
+    ];
+    const messages = collectMessages(files).map(({ code, file, segments }) => ({
+      code,
+      file,
+      text: messageText(segments),
+    }));
+    expect(messageRowsOf(messages, 'CNGX2006')).toEqual([
+      { file: 'projects/forms/a.ts', text: '[cngxIn] uses the default accessor.' },
+    ]);
+  });
+
   it('turns a drifted copy into a changed manifest row and names its code', () => {
     const rows = (copy) =>
       buildCodes(

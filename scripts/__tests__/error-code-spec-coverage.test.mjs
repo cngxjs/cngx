@@ -8,20 +8,23 @@
 //     `^CNGXnnnn` (a regex literal or a `RegExp` source). A bare mention in a
 //     comment, a `toContain` or a spy filter that only looks for the code
 //     somewhere in the text does not count, and neither does one inside a
-//     negated assertion (`.not.`, `['not']` or `["not"]` between the last
-//     `expect(` or `;` before the mention and the mention itself, compared
-//     with all whitespace removed, so a line break inside the member chain
-//     does not hide it).
+//     negated assertion (`.not.`, `.not[`, `['not']` or `["not"]` between
+//     the last `expect(` or `;` before the mention and the mention itself,
+//     compared with all whitespace removed, so a line break inside the
+//     member chain does not hide it).
 // S2  a code that no spec can reach is listed in SPEC_COVERAGE_EXEMPT with a
 //     reason; a row whose code gained a spec, or left the manifest, fails.
 //
-// Known limits: the scan is textual, so `^CNGXnnnn` in a comment or a string
-// that never reaches an assertion also counts. It proves an author anchored
-// the code somewhere in the lib's specs, not that the assertion runs. A
-// negation it cannot see textually still counts: a matcher held in a
-// variable and used later under `.not`, a `;` or `expect(` inside a string
-// between the negation and the mention (the scan restarts there), and
-// `.not` reached by any other spelling (a computed key held in a variable).
+// Known limits, exactly what still counts although it should not: the scan
+// is textual, so `^CNGXnnnn` in a comment or a string that never reaches an
+// assertion counts. It proves an author anchored the code somewhere in the
+// lib's specs, not that the assertion runs. A negation it cannot see
+// textually: a matcher held in a variable and used later under `.not`; a
+// `;` or `expect(` inside a string between the negation and the mention
+// (the scan restarts there); `.not` reached by a template-literal key
+// (`` [`not`] ``), a key held in a variable, optional chaining (`.not?.`)
+// or a comment between `.not` and the next member; the negation in a
+// helper that receives the `expect(...)` result.
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -48,12 +51,12 @@ const SPEC_COVERAGE_EXEMPT = [
 /**
  * Is the mention at `index` part of a `.not` assertion? Whitespace is
  * dropped first, so a line break inside the member chain does not hide it,
- * and `['not']` / `["not"]` count as `.not`.
+ * and `['not']` / `["not"]` count as `.not`, followed by `.` or `[`.
  */
 function isNegated(text, index) {
   const start = Math.max(text.lastIndexOf('expect(', index), text.lastIndexOf(';', index));
   const chain = text.slice(Math.max(start, 0), index).replace(/\s+/g, '');
-  return /\.not\.|\[(['"])not\1\]/.test(chain);
+  return /\.not[.[]|\[(['"])not\1\]/.test(chain);
 }
 
 /** Does `text` assert `code` in an anchored or structured form, outside a `.not.` assertion? */
@@ -154,6 +157,21 @@ describe('error-code spec coverage - scanner', () => {
       },
     ];
     expect(uncoveredCodes(codes, specs)).toEqual(['CNGX1001', 'CNGX1002', 'CNGX1003', 'CNGX1004']);
+  });
+
+  it('rejects a matcher reached by a string key right after .not', () => {
+    const specs = [
+      {
+        path: 'projects/common/a.spec.ts',
+        text: "expect(() => f()).not['toThrow'](expect.objectContaining({ code: 'CNGX1001' }));",
+      },
+      {
+        path: 'projects/common/b.spec.ts',
+        text: 'expect(warn)\n  .not\n  ["toHaveBeenCalledWith"](expect.stringMatching(/^CNGX1002: /));',
+      },
+      { path: 'projects/common/c.spec.ts', text: 'expect(m).toMatch(/^CNGX1003: x/);' },
+    ];
+    expect(uncoveredCodes(codes, specs)).toEqual(['CNGX1001', 'CNGX1002', 'CNGX1004']);
   });
 });
 

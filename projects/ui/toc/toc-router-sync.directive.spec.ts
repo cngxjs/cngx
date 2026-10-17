@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMatchMediaMock } from '@cngx/testing';
@@ -147,6 +147,15 @@ describe('CngxTocRouterSync', () => {
     expect(warn.mock.calls[0][0]).toMatch(
       /^CNGX3001: \[cngxTocRouterSync\] no Router \/ ActivatedRoute available - directive is a no-op\. /,
     );
+  });
+
+  it('does not warn CNGX3001 with provideRouter([])', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const { toc } = setup();
+
+    expect(() => toc.activated.emit({ id: 'intro', label: 'Intro' })).not.toThrow();
+    expect(warn.mock.calls.some(([m]) => /^CNGX3001: /.test(String(m)))).toBe(false);
   });
 
   it('writes nothing to the console without a Router in production', () => {

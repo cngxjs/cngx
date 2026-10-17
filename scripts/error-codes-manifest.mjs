@@ -243,8 +243,11 @@ export function messageRowsOf(messages, code) {
       const key = `${file}\n${text}`;
       return seen.has(key) ? false : (seen.add(key), true);
     })
-    .sort((a, b) => a.file.localeCompare(b.file) || a.text.localeCompare(b.text));
+    .sort((a, b) => byCodePoint(a.file, b.file) || byCodePoint(a.text, b.text));
 }
+
+/** Plain code-unit order, the same on every machine (no ICU collation). */
+const byCodePoint = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 
 /**
  * The codes whose `messages` rows differ between two manifests' codes, so a
