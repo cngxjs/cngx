@@ -31,6 +31,23 @@ test.describe('CngxMultiSelect demo', () => {
     await expect(chips).toHaveCount(startCount + 1);
   });
 
+  test('aria-activedescendant sits on the focused trigger only while open', async ({ page }) => {
+    await page.goto(R.basic);
+    const trigger = ex(page).locator('cngx-multi-select .cngx-multi-select__trigger').first();
+    await trigger.focus();
+    await expect(trigger).not.toHaveAttribute('aria-activedescendant', /.*/);
+
+    await page.keyboard.press('ArrowDown');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(trigger).toHaveAttribute('aria-activedescendant', /.+/);
+    const activeId = await trigger.getAttribute('aria-activedescendant');
+    await expect(page.locator(`[id="${activeId}"][role="option"]`)).toHaveCount(1);
+
+    await page.keyboard.press('Escape');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(trigger).not.toHaveAttribute('aria-activedescendant', /.*/);
+  });
+
   test('chip × removes a value', async ({ page }) => {
     await page.goto(R.basic);
     const section = ex(page);

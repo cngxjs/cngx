@@ -212,6 +212,21 @@ describe('CngxTypeahead - standalone', () => {
     expect(typeahead.panelOpen()).toBe(false);
   });
 
+  it('exposes aria-activedescendant on the input only while the panel is open', () => {
+    const { fixture, typeahead, input } = setup();
+    input.focus();
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    flush(fixture);
+    expect(typeahead.panelOpen()).toBe(true);
+    const activeId = input.getAttribute('aria-activedescendant');
+    expect(activeId).toBeTruthy();
+    expect(document.getElementById(activeId!)).not.toBeNull();
+
+    typeahead.close();
+    flush(fixture);
+    expect(input.hasAttribute('aria-activedescendant')).toBe(false);
+  });
+
   it('focus() moves DOM focus onto the input', () => {
     const { typeahead, input } = setup();
     typeahead.focus();

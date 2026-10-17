@@ -32,6 +32,14 @@ interface PopoverController {
  * | open | Enter / Space | activate; close if `closeOnSelect()` |
  * | any | Escape | close and restore focus to trigger |
  *
+ * Keys from an interactive descendant of the host (a chip remove button)
+ * are left to that element.
+ *
+ * The trigger keeps DOM focus, so it carries `aria-activedescendant`: the
+ * listbox's active option id while the popover is open, no attribute while
+ * closed (ARIA 1.2 combobox). It is the only writer of the attribute on
+ * the trigger host; the listbox keeps its own for focus-in-listbox setups.
+ *
  * @category common/interactive/listbox
  * @docsKind primary
  * @wcag AA
@@ -47,6 +55,7 @@ interface PopoverController {
   host: {
     '[attr.aria-haspopup]': '"listbox"',
     '[attr.aria-expanded]': 'isOpen()',
+    '[attr.aria-activedescendant]': 'activeDescendant()',
     '(keydown)': 'handleKeydown($event)',
   },
 })
@@ -60,6 +69,11 @@ export class CngxListboxTrigger<T = unknown> {
 
   /** Mirrors `CngxPopover.isVisible()` for host binding and external read. */
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
+
+  /** Active option id while open, `null` while closed. */
+  protected readonly activeDescendant = computed<string | null>(() =>
+    this.isOpen() ? this.listbox().ad.activeId() : null,
+  );
 
   /**
    * Fires when the user presses Backspace on an empty input. Only

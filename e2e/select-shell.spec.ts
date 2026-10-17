@@ -52,6 +52,23 @@ test.describe('CngxSelectShell demo', () => {
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
+  test('aria-activedescendant sits on the focused trigger only while open', async ({ page }) => {
+    await page.goto(ROUTES.basic);
+    const trigger = triggerOf(page);
+    await trigger.focus();
+    await expect(trigger).not.toHaveAttribute('aria-activedescendant', /.*/);
+
+    await page.keyboard.press('ArrowDown');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(trigger).toHaveAttribute('aria-activedescendant', /.+/);
+    const activeId = await trigger.getAttribute('aria-activedescendant');
+    await expect(page.locator(`[id="${activeId}"][role="option"]`)).toHaveCount(1);
+
+    await page.keyboard.press('Escape');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(trigger).not.toHaveAttribute('aria-activedescendant', /.*/);
+  });
+
   test('click-outside closes the panel', async ({ page }) => {
     await page.goto(ROUTES.basic);
     const trigger = triggerOf(page);

@@ -173,6 +173,26 @@ describe('CngxListboxTrigger', () => {
     expect(ad.activeValue()).toBe('green');
     expect(popover.isVisible()).toBe(true);
   });
+
+  it('writes aria-activedescendant on the trigger only while open', () => {
+    const { fixture, popover, triggerEl, ad } = setup();
+    expect(triggerEl.hasAttribute('aria-activedescendant')).toBe(false);
+
+    popover.show();
+    TestBed.flushEffects();
+    ad.highlightByValue('green');
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const activeId = ad.activeId();
+    expect(activeId).toBeTruthy();
+    expect(triggerEl.getAttribute('aria-activedescendant')).toBe(activeId);
+    expect(fixture.nativeElement.querySelector(`#${activeId}`)).not.toBeNull();
+
+    popover.hide();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(triggerEl.hasAttribute('aria-activedescendant')).toBe(false);
+  });
 });
 
 @Component({
