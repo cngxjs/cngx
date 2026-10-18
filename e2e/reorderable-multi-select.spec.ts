@@ -61,6 +61,23 @@ async function dragChip(
 }
 
 test.describe('CngxReorderableMultiSelect demo', () => {
+  test('aria-activedescendant sits on the focused trigger only while open', async ({ page }) => {
+    await page.goto(ROUTES.basic);
+    const trigger = page.locator('cngx-reorderable-multi-select [role="combobox"]').first();
+    await trigger.focus();
+    await expect(trigger).not.toHaveAttribute('aria-activedescendant', /.*/);
+
+    await page.keyboard.press('ArrowDown');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(trigger).toHaveAttribute('aria-activedescendant', /.+/);
+    const activeId = await trigger.getAttribute('aria-activedescendant');
+    await expect(page.locator(`[id="${activeId}"][role="option"]`)).toHaveCount(1);
+
+    await page.keyboard.press('Escape');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(trigger).not.toHaveAttribute('aria-activedescendant', /.*/);
+  });
+
   test('chip strip carries role="group" + the reorder ARIA label', async ({ page }) => {
     await page.goto(ROUTES.basic);
     const strip = stripOf(page);

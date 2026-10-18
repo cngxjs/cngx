@@ -1,6 +1,7 @@
 import { Component, signal, type TemplateRef, viewChild, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import type { CngxListbox } from '@cngx/common/interactive';
+import { By } from '@angular/platform-browser';
+import { CngxSwipeDismiss, type CngxListbox } from '@cngx/common/interactive';
 import {
   CngxPopover,
   CngxPopoverSheet,
@@ -225,5 +226,31 @@ describe('CngxSelectSheetHeader', () => {
 
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(harness.host.escapeClose).not.toHaveBeenCalled();
+  });
+
+  it('requests a swipe close when the header bar emits swiped', () => {
+    const { fixture, open } = setup();
+    open();
+    const swipe = fixture.debugElement
+      .query(By.css('.cngx-select-sheet-header__bar'))
+      .injector.get(CngxSwipeDismiss);
+    const sheet = fixture.debugElement
+      .query(By.directive(CngxPopoverSheet))
+      .injector.get(CngxPopoverSheet);
+    const requestClose = vi.spyOn(sheet, 'requestClose');
+    expect(swipe.enabled()).toBe(true);
+    swipe.swiped.emit();
+    expect(requestClose).toHaveBeenCalledExactlyOnceWith('swipe');
+  });
+
+  it('disables the header swipe gesture while anchored', () => {
+    const { fixture, open } = setup();
+    fixture.componentInstance.request.set('anchored');
+    open();
+    const swipe = fixture.debugElement
+      .query(By.css('.cngx-select-sheet-header__bar'))
+      .injector.get(CngxSwipeDismiss);
+    // The gesture engine is gated on `enabled`, so no swipe emits while anchored.
+    expect(swipe.enabled()).toBe(false);
   });
 });

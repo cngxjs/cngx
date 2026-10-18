@@ -1,4 +1,9 @@
-<div class="cngx-select-sheet-header__bar" cngxSwipeDismiss="down" [enabled]="sheet.modal()">
+<div
+  class="cngx-select-sheet-header__bar"
+  cngxSwipeDismiss="down"
+  [enabled]="sheet.modal()"
+  (swiped)="sheet.requestClose('swipe')"
+>
   @if (host.tpl.sheetHandle(); as handleTpl) {
     <div class="cngx-select-sheet-header__handle" aria-hidden="true">
       <ng-container *ngTemplateOutlet="handleTpl; context: handleContext()" />

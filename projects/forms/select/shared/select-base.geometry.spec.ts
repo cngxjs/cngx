@@ -143,6 +143,69 @@ class AllTriggersHost {
   readonly nodeId = (value: unknown): string => String(value);
 }
 
+// Every variant invalid in the default (outline) skin. Each sits in a touched,
+// invalid form field so `aria-invalid` comes from the real presenter path.
+@Component({
+  selector: 'cngx-select-invalid-triggers-host',
+  standalone: true,
+  imports: [
+    CngxFormField,
+    CngxSelect,
+    CngxMultiSelect,
+    CngxCombobox,
+    CngxTypeahead,
+    CngxTreeSelect,
+    CngxActionSelect,
+    CngxActionMultiSelect,
+    CngxReorderableMultiSelect,
+    CngxSelectShell,
+    CngxSelectOption,
+  ],
+  template: `
+    <div style="display: grid; line-height: 1.5">
+      <cngx-select class="valid-select" [label]="'Colour'" [options]="options" />
+      <cngx-form-field [field]="fields[0]">
+        <cngx-select class="v-select" [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
+      <cngx-form-field [field]="fields[1]">
+        <cngx-multi-select class="v-multi" [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
+      <cngx-form-field [field]="fields[2]">
+        <cngx-combobox class="v-combobox" [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
+      <cngx-form-field [field]="fields[3]">
+        <cngx-typeahead class="v-typeahead" [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
+      <cngx-form-field [field]="fields[4]">
+        <cngx-tree-select class="v-tree" [label]="'Colour'" [nodeIdFn]="nodeId" />
+      </cngx-form-field>
+      <cngx-form-field [field]="fields[5]">
+        <cngx-action-select class="v-action" [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
+      <cngx-form-field [field]="fields[6]">
+        <cngx-action-multi-select class="v-action-multi" [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
+      <cngx-form-field [field]="fields[7]">
+        <cngx-reorderable-multi-select class="v-reorder" [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
+      <cngx-form-field [field]="fields[8]">
+        <cngx-select-shell class="v-shell" [label]="'Colour'">
+          <cngx-option [value]="'red'">Red</cngx-option>
+        </cngx-select-shell>
+      </cngx-form-field>
+    </div>
+  `,
+  styleUrls: ['../../theming/components/cngx-field-skin.css'],
+})
+class InvalidTriggersHost {
+  readonly options = OPTIONS;
+  readonly nodeId = (value: unknown): string => String(value);
+  readonly fields: CngxFieldAccessor[] = Array.from(
+    { length: 9 },
+    (_, i) => createMockField({ name: `colour${i}`, invalid: true, touched: true }).accessor,
+  );
+}
+
 const ALL_TRIGGERS = [
   '.v-select',
   '.v-multi',
@@ -250,6 +313,45 @@ describe('select-family field skins', () => {
     expect(computedValue(nested, 'min-height')).toBe('0px');
     expect(computedValue(row, 'border-bottom-width')).toBe('1px');
     expect(computedValue(row, 'border-top-color')).toBe('rgba(0, 0, 0, 0)');
+  });
+
+  // The invalid carrier is the trigger itself or its inner `[role='combobox']`
+  // input; either way the bordered trigger paints the danger border. The
+  // single select is the reference for the resolved token colour.
+  it.each(ALL_TRIGGERS)('paints the default-skin %s trigger invalid border', (hostSelector) => {
+    const root = mount(InvalidTriggersHost);
+    const el = trigger(root, hostSelector);
+    const carrier = el.matches('[aria-invalid]') ? el : el.querySelector('[role="combobox"]');
+    expect(carrier?.getAttribute('aria-invalid')).toBe('true');
+    const expected = computedValue(trigger(root, '.v-select'), 'border-top-color');
+    expect(expected).not.toBe(computedValue(trigger(root, '.valid-select'), 'border-top-color'));
+    expect(computedValue(el, 'border-top-color')).toBe(expected);
+  });
+
+  // `:focus-visible` never matches headless (see the header note), so the
+  // ring is read through a probe that resolves the same token the trigger's
+  // focus rule uses. The delegating `:root` value needs a theme primary, set
+  // here on the document root the way a theme would.
+  it('resolves the tree-select focus ring opaque and equal to the select ring', () => {
+    const docEl = document.documentElement;
+    docEl.style.setProperty('--cngx-color-primary', 'oklch(0.5 0.2 260)');
+    try {
+      const root = mount(AllTriggersHost);
+      const ringColour = (hostSelector: string, token: string): string => {
+        const probe = document.createElement('div');
+        probe.style.outline = `var(${token})`;
+        trigger(root, hostSelector).appendChild(probe);
+        const colour = computedValue(probe, 'outline-color');
+        probe.remove();
+        return colour;
+      };
+      const tree = ringColour('.v-tree', '--cngx-tree-select-focus-ring');
+      const select = ringColour('.v-select', '--cngx-select-focus-outline');
+      expect(select).not.toBe('rgb(0, 0, 0)');
+      expect(tree).toBe(select);
+    } finally {
+      docEl.style.removeProperty('--cngx-color-primary');
+    }
   });
 
   it('turns the underline to the error colour when the inner combobox input is invalid', () => {

@@ -1,6 +1,7 @@
 import { Component, signal, type Type } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { CngxSwipeDismiss } from '@cngx/common/interactive';
 import { CngxPopoverSheet, type CngxPopoverPresentationRequest } from '@cngx/common/popover';
 import { CngxFormField, type CngxFieldAccessor } from '@cngx/forms/field';
 import { Subject, type Observable } from 'rxjs';
@@ -232,6 +233,21 @@ export function describeMobileSheet(
       flush(fixture);
       expect(spies.handleSheetClose).toHaveBeenCalledExactlyOnceWith('backdrop');
       expect(spies.handleClickOutside).not.toHaveBeenCalled();
+      expect(variant.panelOpen()).toBe(false);
+    });
+
+    it('closes on a header swipe through handleSheetClose', () => {
+      const { fixture, el, variant, open } = setup();
+      open();
+      const bar = el.querySelector('.cngx-select-sheet-header__bar')!;
+      const swipe = fixture.debugElement
+        .queryAll(By.directive(CngxSwipeDismiss))
+        .find((de) => de.nativeElement === bar)!
+        .injector.get(CngxSwipeDismiss);
+      expect(swipe.enabled()).toBe(true);
+      swipe.swiped.emit();
+      flush(fixture);
+      expect(spies.handleSheetClose).toHaveBeenCalledExactlyOnceWith('swipe');
       expect(variant.panelOpen()).toBe(false);
     });
 

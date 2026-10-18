@@ -931,6 +931,14 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     if (event.ctrlKey || event.metaKey || event.altKey) {
       return;
     }
+    // Keys from a chip remove button belong to that button: no
+    // preventDefault, so Enter / Space run its native activation.
+    const host = event.currentTarget as Element | null;
+    const target = event.target as Element | null;
+    const interactive = target?.closest('button, a[href], input, [role="button"]');
+    if (interactive && interactive !== host) {
+      return;
+    }
     const lb = this.listboxRef();
     const pop = this.popoverRef();
     // Typeahead-while-closed - toggles first matching option.

@@ -137,6 +137,28 @@ test.describe('CngxTreeSelect demo', () => {
     await expect(chips).toHaveCount(3);
   });
 
+  test('keyboard: Enter and Space on a chip remove button remove the chip', async ({ page }) => {
+    await page.goto(R.cascade);
+    const section = ex(page);
+    const trigger = triggerOf(section);
+    await trigger.click();
+    await section.locator('[role="treeitem"]').filter({ hasText: 'Frontend' }).click();
+    await page.keyboard.press('Escape');
+
+    const chips = section.locator('cngx-chip');
+    await expect(chips).toHaveCount(4);
+
+    await chips.first().locator('.cngx-chip__remove').focus();
+    await page.keyboard.press('Enter');
+    await expect(chips).toHaveCount(3);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    await chips.first().locator('.cngx-chip__remove').focus();
+    await page.keyboard.press('Space');
+    await expect(chips).toHaveCount(2);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
   test('clear-all empties every selected value + emits cleared', async ({ page }) => {
     await page.goto(R.basic);
     const section = ex(page);

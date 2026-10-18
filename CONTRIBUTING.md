@@ -205,6 +205,9 @@ Scope mirrors the source path under `projects/<lib>/<area>/`. Use `<lib>` or
 - `data-display`, `data-display/treetable`
 - `ui`, `ui/stepper`, `ui/overlay`, `ui/feedback`, `ui/mat-stepper`, ...
 - `themes/material`
+- `select-family` - the one cross-lib scope: a change that spans the select
+  composites (`forms/select`) and the listbox atoms they are built on
+  (`common/interactive`)
 
 Non-library scopes - `examples`, `examples-gen`, `docs`, `ci`, `build`, `chore`,
 `testing`, `scripts`, `e2e` - are valid for commits but are excluded from the

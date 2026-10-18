@@ -7,7 +7,7 @@ import {
   type WritableSignal,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxListboxSearch } from '@cngx/common/interactive';
 
@@ -113,14 +113,47 @@ describe('createDisplayBinding', () => {
     expect(input.value).toBe('DAVE');
   });
 
-  it('isWritingFromValue flips true during a write', () => {
+  it('isWritingFromValue flips true during a write that clears a pending term', () => {
+    vi.useFakeTimers();
     const fixture = TestBed.createComponent(BindingHost);
     flush(fixture);
     const host = fixture.componentInstance;
+    typeTerm(fixture, 'zz');
+    expect(host.searchRef()?.term()).toBe('zz');
+
     host.binding.writeFromValue('eve');
     expect(host.binding.isWritingFromValue()).toBe(true);
+
+    flush(fixture);
+    expect(host.binding.isWritingFromValue()).toBe(false);
+  });
+
+  it('emits the first user term after a write that found the term already empty', () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(BindingHost);
+    flush(fixture);
+    const host = fixture.componentInstance;
+
+    host.binding.writeFromValue('eve');
+    flush(fixture);
+    expect(host.binding.isWritingFromValue()).toBe(false);
+
+    typeTerm(fixture, 'ber');
+
+    expect(host.termLog.at(-1)).toBe('ber');
   });
 });
+
+function typeTerm(
+  fixture: { nativeElement: HTMLElement; detectChanges: () => void },
+  term: string,
+): void {
+  const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+  input.value = term;
+  input.dispatchEvent(new Event('input'));
+  vi.advanceTimersByTime(300);
+  flush(fixture);
+}
 
 // ── CNGX_DISPLAY_BINDING_FACTORY DI token ──────────────────────────────
 

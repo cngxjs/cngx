@@ -31,6 +31,23 @@ test.describe('CngxMultiSelect demo', () => {
     await expect(chips).toHaveCount(startCount + 1);
   });
 
+  test('aria-activedescendant sits on the focused trigger only while open', async ({ page }) => {
+    await page.goto(R.basic);
+    const trigger = ex(page).locator('cngx-multi-select .cngx-multi-select__trigger').first();
+    await trigger.focus();
+    await expect(trigger).not.toHaveAttribute('aria-activedescendant', /.*/);
+
+    await page.keyboard.press('ArrowDown');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(trigger).toHaveAttribute('aria-activedescendant', /.+/);
+    const activeId = await trigger.getAttribute('aria-activedescendant');
+    await expect(page.locator(`[id="${activeId}"][role="option"]`)).toHaveCount(1);
+
+    await page.keyboard.press('Escape');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(trigger).not.toHaveAttribute('aria-activedescendant', /.*/);
+  });
+
   test('chip × removes a value', async ({ page }) => {
     await page.goto(R.basic);
     const section = ex(page);
@@ -42,6 +59,26 @@ test.describe('CngxMultiSelect demo', () => {
 
     await chips.first().locator('.cngx-chip__remove').click();
     await expect(chips).toHaveCount(initialCount - 1);
+  });
+
+  test('keyboard: Enter and Space on a chip remove button remove the chip', async ({ page }) => {
+    await page.goto(R.basic);
+    const section = ex(page);
+    const trigger = section.locator('cngx-multi-select .cngx-multi-select__trigger').first();
+    const chips = section.locator('cngx-chip');
+    await expect(chips.first()).toBeVisible();
+    const initialCount = await chips.count();
+    expect(initialCount).toBeGreaterThan(1);
+
+    await chips.first().locator('.cngx-chip__remove').focus();
+    await page.keyboard.press('Enter');
+    await expect(chips).toHaveCount(initialCount - 1);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    await chips.first().locator('.cngx-chip__remove').focus();
+    await page.keyboard.press('Space');
+    await expect(chips).toHaveCount(initialCount - 2);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('clear-all empties every selected value', async ({ page }) => {
