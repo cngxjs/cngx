@@ -6,14 +6,23 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { createAnswers, VERSIONS } from '../testing/onboarding';
 import { createFixtureTree, type FixtureName, readFixture, readTree, runRule } from '../testing/run-schematic';
-import { type AppShell, appShellBlockedText, type AppShellBlockedReason, detectProject, type ProjectFacts } from './detect/detect';
+import {
+  type AppShell,
+  APP_SHELL_BLOCKED_REASONS,
+  appShellBlockedText,
+  type AppShellBlockedReason,
+  detectProject,
+  type ProjectFacts,
+} from './detect/detect';
 import { ngAdd } from './index';
+import { INSTALL_MANIFEST_PATH } from './steps/manifest';
 import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell } from './steps/app-shell';
 
 // Runs `ng add --feedback` over every root component shape in CORPUS and
 // holds each to one of two outcomes: a note with a reason from the closed
-// set and no outlet written, or outlets that compile, parse, sit there once
-// and plan nothing more, raw and after Prettier.
+// set and no outlet written, or outlets that compile, parse, keep every
+// token of the user's text, sit there once and plan nothing more, raw and
+// after Prettier.
 
 vi.mock('./shell/git-state', () => ({ readGitState: () => 'clean' }));
 
@@ -97,12 +106,20 @@ interface Shape {
   readonly fixture?: FixtureName;
   readonly files?: Files;
   readonly remove?: readonly string[];
+  /**
+   * `ng add` ran on the fixture first, so the record holds the outlets
+   * step, and `files` / `remove` change the shell afterwards.
+   */
+  readonly installedFirst?: true;
   /** `placed`, or the reason cngx names with the snippet instead of editing. */
   readonly outcome: 'placed' | AppShellBlockedReason;
 }
 
 const OUTLETS_HTML = '<cngx-banner-outlet />\n<router-outlet />\n<cngx-toast-outlet />\n';
 const RE_EXPORT_MAIN = readFixture('scaffold-21')['src/main.ts'].replace("from './app/app';", "from './app/index';");
+const STOCK_HTML = readFixture('scaffold-21')['src/app/app.html'];
+const ROUTER_IN_PLACEHOLDER_HTML = STOCK_HTML.replace('\n\n\n<router-outlet />\n', '\n').replace('</main>\n', '</main>\n<router-outlet />\n');
+const BLOCKED_IMPORTS_APP = `const IMPORTS = [RouterOutlet];\n${STOCK_APP.replace('imports: [RouterOutlet]', 'imports: IMPORTS')}`;
 
 // One row per shape; a new shape is one more line.
 const CORPUS: readonly Shape[] = [
@@ -204,10 +221,37 @@ const CORPUS: readonly Shape[] = [
     },
     outcome: 'placed',
   },
+  { name: 'comma in a comment before a trailing comma, imports missing', files: app((stock) => stock.replace('  imports: [RouterOutlet],\n', '').replace("styleUrl: './app.css'", "styleUrl: './app.css' /* see a, b */,")), outcome: 'placed' },
+  { name: 'block comment across lines after a trailing comma', files: app((stock) => stock.replace('  imports: [RouterOutlet],\n', '').replace("styleUrl: './app.css'", "styleUrl: './app.css', /* a,\n    b */")), outcome: 'placed' },
+  { name: 'empty multi-line imports holding only a comment', files: withImports('  imports: [\n    // TODO: shared modules\n  ],\n'), outcome: 'placed' },
+  { name: 'empty imports holding only a block comment', files: withImports('  imports: [ /* none yet */ ],\n'), outcome: 'placed' },
+  { name: 'main.ts missing', remove: ['src/main.ts'], outcome: 'main-missing' },
+  { name: 'NgModule without a decorator', files: { ...ngModuleApp(), 'src/app/app-module.ts': 'export class AppModule {}\n' }, outcome: 'no-ngmodule-decorator' },
+  { name: 'NgModule without a bootstrap component', files: { ...ngModuleApp(), 'src/app/app-module.ts': ngModule().replace('  bootstrap: [App]\n', '') }, outcome: 'no-bootstrap-component' },
+  { name: 'template and templateUrl', files: app((stock) => stock.replace("  templateUrl: './app.html',\n", "  templateUrl: './app.html',\n  template: '',\n")), outcome: 'two-templates' },
+  { name: 'namespace named like an outlet', files: app((stock) => `${stock}\nnamespace CngxToastOutlet {\n  export const tag = 'toast';\n}\n`), outcome: 'outlet-name-bound' },
+  { name: 'interface named like an outlet', files: app((stock) => `${stock}\ninterface CngxBannerOutlet {}\n`), outcome: 'outlet-name-bound' },
+  { name: 'other feedback export aliased to an outlet name', files: app((stock) => `import { Foo as CngxToastOutlet } from '@cngx/ui/feedback';\n${stock}`), outcome: 'outlet-name-bound' },
+  { name: 'feedback namespace import named like an outlet', files: app((stock) => `import * as CngxToastOutlet from '@cngx/ui/feedback';\n${stock}`), outcome: 'outlet-name-bound' },
+  { name: 'type-only outlet import with a comment for the space', files: app((stock) => `import type/**/{ CngxToastOutlet } from '@cngx/ui/feedback';\n${stock}`), outcome: 'placed' },
+  { name: 'inline type modifier followed by a comment', files: app((stock) => `import { type /* later */ CngxToastOutlet } from '@cngx/ui/feedback';\n${stock}`), outcome: 'placed' },
+  { name: 'ambient module declaration', files: app((stock) => `${stock}\ndeclare module 'virtual:extra' {}\n`), outcome: 'placed' },
+  { name: 'numeric key in the decorator', files: app((stock) => stock.replace("  selector: 'app-root',", "  selector: 'app-root',\n  1: true,")), outcome: 'decorator-dynamic' },
+  { name: 'router outlet inside the CLI placeholder block', files: { 'src/app/app.html': ROUTER_IN_PLACEHOLDER_HTML }, outcome: 'placed' },
+  { name: 'component with a syntax error', files: app((stock) => `${stock}\nconst broken = ;\n`), outcome: 'source-parse-error' },
+  { name: 'NgModule with a syntax error', files: { ...ngModuleApp(), 'src/app/app-module.ts': `${ngModule()}\nconst broken = ;\n` }, outcome: 'source-parse-error' },
+  { name: 'aliased decorator import', files: app((stock) => stock.replace('import { Component, signal }', 'import { Component as C, signal }').replace('@Component(', '@C(')), outcome: 'no-component-decorator' },
+  { name: 'withdrawn outlets on a blocked shell', installedFirst: true, files: { 'src/app/app.html': STOCK_HTML, 'src/app/app.ts': BLOCKED_IMPORTS_APP }, outcome: 'imports-not-array' },
+  { name: 'placed outlets on a blocked shell', installedFirst: true, files: { 'src/app/app.html': OUTLETS_HTML, 'src/app/app.ts': BLOCKED_IMPORTS_APP }, outcome: 'imports-not-array' },
+  { name: 'recorded outlets on an unreadable shell', installedFirst: true, files: { 'src/app/app.ts': STOCK_APP.replace("  templateUrl: './app.html',\n", "  templateUrl: './app.html',\n  ...{},\n") }, outcome: 'decorator-dynamic' },
 ];
 
-function treeOf(shape: Shape): Tree {
-  const tree = createFixtureTree(shape.fixture ?? 'scaffold-21', shape.files ?? {});
+async function treeOf(shape: Shape): Promise<Tree> {
+  const base = createFixtureTree(shape.fixture ?? 'scaffold-21', shape.installedFirst ? {} : (shape.files ?? {}));
+  const tree = shape.installedFirst ? (await run(base)).tree : base;
+  for (const [path, content] of Object.entries(shape.installedFirst ? (shape.files ?? {}) : {})) {
+    tree.overwrite(path, content);
+  }
   for (const path of shape.remove ?? []) {
     tree.delete(path);
   }
@@ -222,26 +266,183 @@ function changed(before: Files, after: Files): readonly string[] {
   return Object.keys(after).filter((path) => before[path] !== after[path]);
 }
 
-// Syntax errors and grammar errors (codes below 2000, TS1117 a duplicate
-// property among them) of one file; unresolved names are not its concern.
+// Binding errors a single file shows without its imports resolved: a name
+// declared twice or merged across kinds that do not merge, an import that
+// clashes with a local declaration.
+const BINDING_ERRORS = new Set([2300, 2395, 2433, 2434, 2440, 2451, 2567, 2813, 2814]);
+
+// An outlet class named but bound nowhere: listed in `imports` without an import.
+const UNBOUND_NAME_ERRORS = new Set([2304, 2552]);
+
+function isEditError(diagnostic: ts.Diagnostic): boolean {
+  if (diagnostic.code < 2000 || BINDING_ERRORS.has(diagnostic.code)) {
+    return true;
+  }
+  const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+  return UNBOUND_NAME_ERRORS.has(diagnostic.code) && /CngxBannerOutlet|CngxToastOutlet/.test(message);
+}
+
+// `@cngx/ui/feedback` as the one module a checked file resolves, so an
+// import of an outlet class that clashes with a local declaration shows
+// (TS2440); every other import stays unresolved.
+const FEEDBACK_STUB = `export declare class CngxBannerOutlet {}
+export declare class CngxToastOutlet {}
+export declare function provideFeedback(...features: unknown[]): unknown;
+export declare function withBanners(): unknown;
+export declare function withToasts(): unknown;
+`;
+
+// Syntax errors, grammar errors (codes below 2000: TS1117 a duplicate
+// property, TS1361 a type-only import used as a value) and binding errors of
+// one file; names its other imports would resolve are not its concern.
 function grammarErrors(path: string, content: string): readonly string[] {
-  const source = ts.createSourceFile(path, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-  const options: ts.CompilerOptions = { noLib: true, noResolve: true, types: [], target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext };
+  const files: Readonly<Record<string, string>> = { [`/${path}`]: content, '/feedback.d.ts': FEEDBACK_STUB };
+  const options: ts.CompilerOptions = {
+    noLib: true,
+    types: [],
+    target: ts.ScriptTarget.ES2022,
+    module: ts.ModuleKind.ESNext,
+    moduleResolution: ts.ModuleResolutionKind.Bundler,
+    baseUrl: '/',
+    paths: { '@cngx/ui/feedback': ['/feedback.d.ts'] },
+  };
   const host: ts.CompilerHost = {
-    getSourceFile: (name) => (name === path ? source : undefined),
+    getSourceFile: (name) => (files[name] === undefined ? undefined : ts.createSourceFile(name, files[name], ts.ScriptTarget.Latest, true)),
     writeFile: () => undefined,
     getDefaultLibFileName: () => 'lib.d.ts',
     useCaseSensitiveFileNames: () => true,
     getCanonicalFileName: (name) => name,
     getCurrentDirectory: () => '/',
     getNewLine: () => '\n',
-    fileExists: (name) => name === path,
-    readFile: (name) => (name === path ? content : undefined),
+    fileExists: (name) => files[name] !== undefined,
+    readFile: (name) => files[name],
   };
-  const program = ts.createProgram([path], options, host);
+  const program = ts.createProgram([`/${path}`], options, host);
+  const source = program.getSourceFile(`/${path}`);
   return [...program.getSyntacticDiagnostics(source), ...program.getSemanticDiagnostics(source)]
-    .filter((diagnostic) => diagnostic.code < 2000)
+    .filter(isEditError)
     .map((diagnostic) => `TS${diagnostic.code}: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')}`);
+}
+
+function parseTs(content: string): ts.SourceFile {
+  return ts.createSourceFile('file.ts', content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+}
+
+// Every `template` string of a decorator in the file, at any depth.
+function inlineTemplates(content: string): readonly string[] {
+  const source = parseTs(content);
+  const found: string[] = [];
+  const visit = (node: ts.Node): void => {
+    if (ts.isDecorator(node) && ts.isCallExpression(node.expression)) {
+      const [argument] = node.expression.arguments;
+      const object = argument !== undefined && ts.isObjectLiteralExpression(argument) ? argument : undefined;
+      for (const property of object?.properties ?? []) {
+        const literal = ts.isPropertyAssignment(property) && propertyKey(property) === 'template' ? property.initializer : undefined;
+        if (literal !== undefined && (ts.isStringLiteral(literal) || ts.isNoSubstitutionTemplateLiteral(literal))) {
+          found.push(literal.getText(source).slice(1, -1));
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return found;
+}
+
+// Template tokens: tag punctuation, `=`, quotes and every run of other
+// non-whitespace characters, comment text included.
+function templateTokens(text: string): readonly string[] {
+  return text.match(/<!--|-->|<\/|\/>|[<>="'`]|[^\s<>="'`/]+|\//g) ?? [];
+}
+
+const OUTLET_CLASSES = new Set(['CngxBannerOutlet', 'CngxToastOutlet']);
+
+// The `type` keywords that make an outlet class a type-only import from
+// `@cngx/ui/feedback`: the one token the edit removes, since a class listed
+// in `imports` is a value.
+function outletTypeKeywords(source: ts.SourceFile): ReadonlySet<number> {
+  const starts = new Set<number>();
+  for (const statement of source.statements.filter(ts.isImportDeclaration)) {
+    const clause = statement.importClause;
+    const bindings = clause?.namedBindings;
+    const feedback = ts.isStringLiteral(statement.moduleSpecifier) && statement.moduleSpecifier.text === '@cngx/ui/feedback';
+    if (clause === undefined || bindings === undefined || !feedback || !ts.isNamedImports(bindings)) {
+      continue;
+    }
+    const outlets = bindings.elements.filter((element) => OUTLET_CLASSES.has(element.name.text));
+    if (clause.isTypeOnly && outlets.length > 0) {
+      starts.add(clause.getStart(source));
+    }
+    for (const element of outlets.filter((candidate) => candidate.isTypeOnly)) {
+      starts.add(element.getStart(source));
+    }
+  }
+  return starts;
+}
+
+// Every token and comment of a TypeScript file in source order; a backtick
+// string is split into template tokens, so an edit inside an inline
+// template is held to the same rule as an external one.
+function tsTokens(content: string): readonly string[] {
+  const source = parseTs(content);
+  const removable = outletTypeKeywords(source);
+  const tokens: string[] = [];
+  const comments = new Set<number>();
+  const visit = (node: ts.Node): void => {
+    if (ts.isJSDoc(node)) {
+      return;
+    }
+    const children = node.getChildren(source);
+    if (children.length > 0) {
+      children.forEach(visit);
+      return;
+    }
+    for (const range of ts.getLeadingCommentRanges(content, node.getFullStart()) ?? []) {
+      if (!comments.has(range.pos)) {
+        comments.add(range.pos);
+        tokens.push(content.slice(range.pos, range.end));
+      }
+    }
+    const text = node.getText(source);
+    if (node.kind === ts.SyntaxKind.TypeKeyword && removable.has(node.getStart(source))) {
+      return;
+    }
+    if (ts.isNoSubstitutionTemplateLiteral(node)) {
+      tokens.push('`', ...templateTokens(text.slice(1, -1)), '`');
+    } else if (text !== '') {
+      tokens.push(text);
+    }
+  };
+  visit(source);
+  return tokens;
+}
+
+// The first token of `original` that `result` lacks in order, or `undefined`
+// when the original token sequence is a subsequence of the result's.
+function lostToken(original: readonly string[], result: readonly string[]): string | undefined {
+  let at = 0;
+  for (const [index, token] of original.entries()) {
+    while (at < result.length && result[at] !== token) {
+      at++;
+    }
+    if (at === result.length) {
+      return `#${index} ${JSON.stringify(token)} after ${JSON.stringify(original.slice(Math.max(0, index - 3), index))}`;
+    }
+    at++;
+  }
+  return undefined;
+}
+
+function tokensOf(path: string, content: string): readonly string[] {
+  return path.endsWith('.html') ? templateTokens(content.replace(/^﻿/, '')) : tsTokens(content);
+}
+
+// Every comment and every non-whitespace token of the user's files is still
+// there, in order: the edit only adds.
+function expectPreserved(before: Files, after: Files, paths: readonly string[]): void {
+  for (const path of paths.filter((candidate) => before[candidate] !== undefined && after[candidate] !== before[candidate])) {
+    expect({ path, lost: lostToken(tokensOf(path, before[path]), tokensOf(path, after[path] ?? '')) }).toEqual({ path, lost: undefined });
+  }
 }
 
 function templateErrors(content: string): readonly string[] {
@@ -296,6 +497,7 @@ function importsOf(content: string, className: string): readonly (readonly strin
     );
 }
 
+// How often the file imports `name` under its own name, never as an alias of another export.
 function importSpecifierCount(content: string, name: string): number {
   const source = ts.createSourceFile('host.ts', content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   return source.statements
@@ -304,7 +506,7 @@ function importSpecifierCount(content: string, name: string): number {
       const bindings = statement.importClause?.namedBindings;
       return bindings !== undefined && ts.isNamedImports(bindings) ? bindings.elements : [];
     })
-    .filter((element) => element.name.text === name).length;
+    .filter((element) => element.name.text === name && (element.propertyName ?? element.name).text === name).length;
 }
 
 function followed(facts: ProjectFacts): AppShell {
@@ -367,6 +569,9 @@ function expectCompiles(before: Files, after: Files): void {
   for (const path of changed(before, after)) {
     if (path.endsWith('.ts')) {
       expect({ path, errors: grammarErrors(path, after[path]) }).toEqual({ path, errors: [] });
+      for (const template of inlineTemplates(after[path])) {
+        expect({ path, template, errors: templateErrors(template) }).toEqual({ path, template, errors: [] });
+      }
     }
     if (path.endsWith('.html')) {
       expect({ path, errors: templateErrors(after[path]) }).toEqual({ path, errors: [] });
@@ -390,6 +595,43 @@ function expectTidyOutlets(before: string, after: string): void {
   }
 }
 
+// A8: both outlets sit after the CLI's `End of Placeholder` comment, never
+// inside the block the user deletes.
+function expectOutsidePlaceholder(template: string): void {
+  const parsed = parseTemplate(template, 'template.html', { preserveWhitespaces: true, collectCommentNodes: true });
+  const end = (parsed.commentNodes ?? []).find((comment) => comment.value.includes('End of Placeholder'));
+  if (end === undefined) {
+    return;
+  }
+  const walk = (nodes: readonly unknown[]): readonly TmplAstElement[] =>
+    nodes.flatMap((node) => [...(node instanceof TmplAstElement ? [node] : []), ...walk(nested(node))]);
+  const outlets = walk(parsed.nodes).filter((node) => node.name === 'cngx-banner-outlet' || node.name === 'cngx-toast-outlet');
+  for (const outlet of outlets) {
+    expect({ outlet: outlet.name, after: outlet.sourceSpan.start.offset > end.sourceSpan.end.offset }).toEqual({ outlet: outlet.name, after: true });
+  }
+}
+
+// Every source and template file of the tree.
+function sourcePaths(files: Files): readonly string[] {
+  return Object.keys(files).filter((path) => /\.(ts|html)$/.test(path));
+}
+
+function expectUnchanged(before: Files, after: Files): void {
+  for (const path of [...new Set([...sourcePaths(before), ...sourcePaths(after)])]) {
+    expect({ path, content: after[path] }).toEqual({ path, content: before[path] });
+  }
+}
+
+function recordedSteps(files: Files, project: string): readonly string[] {
+  const manifest = JSON.parse(files[INSTALL_MANIFEST_PATH] ?? '{}') as { projects?: Record<string, { steps?: { id: string }[] }> };
+  return (manifest.projects?.[project]?.steps ?? []).map((step) => step.id);
+}
+
+// The plan lines naming the outlets or the spec outside "already in place".
+function outletLines(logs: readonly string[]): readonly string[] {
+  return logs.filter((line) => /toast and banner outlets|feedback services/.test(line) && !line.startsWith('  = '));
+}
+
 async function formatted(tree: Tree, paths: readonly string[]): Promise<void> {
   for (const path of paths.filter((candidate) => /\.(ts|html)$/.test(candidate))) {
     const parser = path.endsWith('.html') ? 'angular' : 'typescript';
@@ -399,9 +641,18 @@ async function formatted(tree: Tree, paths: readonly string[]): Promise<void> {
 
 const run = (tree: Tree) => runRule(ngAdd({ feedback: true, yes: true }), tree);
 
+// A re-run that takes its answers from the record, so `--feedback` is not explicit.
+const rerun = (tree: Tree) => runRule(ngAdd({ yes: true }), tree);
+
 describe('every planned app shell edit', () => {
+  it('names every blocked reason in at least one row', () => {
+    const named = new Set(CORPUS.map((shape) => shape.outcome));
+
+    expect(Object.keys(APP_SHELL_BLOCKED_REASONS).filter((reason) => !named.has(reason as AppShellBlockedReason))).toEqual([]);
+  });
+
   it.each(CORPUS.map((shape) => [shape.name, shape] as const))('%s', async (_name, shape) => {
-    const tree = treeOf(shape);
+    const tree = await treeOf(shape);
     const before = readTree(tree);
     const detected = await factsOf(tree);
     const shellFiles = [
@@ -411,46 +662,66 @@ describe('every planned app shell edit', () => {
       ...Object.keys(shape.files ?? {}),
     ].filter((path) => /\.(ts|html)$/.test(path) && path !== detected.rootProvidersFile && path !== 'src/main.ts');
 
-    const first = await run(tree);
+    const runShape = shape.installedFirst ? rerun : run;
+    const first = await runShape(tree);
     const after = readTree(first.tree);
     const logs = first.logs.join('\n');
+    const firstLines = outletLines(first.logs);
 
     if (shape.outcome !== 'placed') {
       const shell = detected.appShell;
       const at = shell.kind === 'unfollowed' ? shell : shell.outlets;
       expect(at).toMatchObject({ kind: shell.kind === 'unfollowed' ? 'unfollowed' : 'blocked', reason: shape.outcome });
-      if (at.kind !== 'editable') {
+      if (at.kind === 'editable') {
+        return;
+      }
+      if (shape.installedFirst) {
+        // A recorded install is never asked for again; outlets that are gone
+        // or cannot be read are named in a note, and the record keeps the step.
+        const present = at.kind === 'blocked' && at.elements?.length === 2;
+        expect(logs).not.toContain(OUTLETS_SNIPPET);
+        expect(firstLines.filter((line) => !line.startsWith('  - '))).toEqual([]);
+        expect(firstLines.length).toBe(present ? 0 : 1);
+        expect(recordedSteps(after, detected.project)).toContain(OUTLETS_ID);
+      } else {
         expect(logs).toContain(`${appShellBlockedText(at)}; ${OUTLETS_SNIPPET}`);
       }
       for (const path of shellFiles) {
         expect({ path, content: after[path] }).toEqual({ path, content: before[path] });
       }
       expectNoOutletWritten(before, after);
+      const again = await runShape(first.tree);
+      expectUnchanged(after, readTree(again.tree));
+      expect(outletLines(again.logs)).toEqual(firstLines);
+      expect(recordedSteps(readTree(again.tree), detected.project)).toEqual(recordedSteps(after, detected.project));
       return;
     }
     const shell = followed(detected);
     const originalImports = importsOf(before[shell.importsHost.file] ?? '', shell.importsHost.className)[0] ?? [];
     expect(logs).not.toContain(OUTLETS_SNIPPET);
     expectCompiles(before, after);
+    expectPreserved(before, after, [shell.componentFile, templateFileOf(shell), shell.specPath ?? '', shell.importsHost.file]);
     const placed = await factsOf(first.tree);
     expectPlacedOnce(after, placed, originalImports);
     expectTidyOutlets(templateText(before, detected), templateText(after, placed));
+    expectOutsidePlaceholder(templateText(after, placed));
 
+    // A second run writes nothing, the root providers file and the NgModule
+    // host included, and names the outlets and the spec only as in place.
     const second = await run(first.tree);
-    for (const path of shellFiles) {
-      expect({ path, content: readTree(second.tree)[path] }).toEqual({ path, content: after[path] });
-    }
-    // Only `=` (already in place) lines may name the outlets or the spec now.
-    const planned = second.logs.filter((line) => /toast and banner outlets|feedback services/.test(line) && !line.startsWith('  = '));
-    expect(planned).toEqual([]);
+    expectUnchanged(after, readTree(second.tree));
+    expect(outletLines(second.logs)).toEqual([]);
 
     await formatted(first.tree, changed(before, after));
     const reformatted = readTree(first.tree);
     const third = await run(first.tree);
     const final = readTree(third.tree);
-    for (const path of shellFiles) {
-      expect({ path, content: final[path] }).toEqual({ path, content: reformatted[path] });
-    }
+    expectUnchanged(reformatted, final);
+    expect(outletLines(third.logs)).toEqual([]);
     expectPlacedOnce(final, await factsOf(third.tree), originalImports);
   });
 });
+
+function templateFileOf(shell: AppShell): string {
+  return shell.template.kind === 'file' ? shell.template.path : shell.componentFile;
+}
