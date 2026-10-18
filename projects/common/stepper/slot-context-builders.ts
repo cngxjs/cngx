@@ -161,7 +161,8 @@ export function createStepperSlotContextBuilders(
     const failedIndex = node.flatIndex;
     const originIdx = presenter.originIndexDuringCommit();
     const originLabel = originIdx !== undefined ? stepsOnly()[originIdx]?.label() : undefined;
-    return { failedIndex, originLabel, node };
+    const reason = stateView.isRefused(node) ? 'refused' : 'failed';
+    return { failedIndex, originLabel, node, reason };
   });
 
   const stepErrorContextFor = memoizeByNode<CngxStepErrorContext>((node) => {

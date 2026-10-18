@@ -17,8 +17,8 @@ export interface CngxCommitHandle {
 }
 
 /**
- * Action runner contract. Receives the controller's success/error
- * routes and returns a cancel handle. The runner is opaque to the
+ * Action runner contract. Receives the controller's success / error /
+ * refused routes and returns a cancel handle. The runner is opaque to the
  * controller - it can wrap any async source (Observable, Promise,
  * sync value) and any cancellation primitive.
  *
@@ -27,23 +27,32 @@ export interface CngxCommitHandle {
  * runner adapts a `CngxStepperCommitAction`); the controller has no
  * knowledge of the variant-specific action shape.
  *
+ * `onRefused` is for an action that declined on purpose (a `false`
+ * answer): nothing changed, so the controller stores no error. A runner
+ * whose action shape has no refusal (the select family) never calls it.
+ *
  * @category common/data/commit
  */
 export type CngxCommitRunner<T> = (handlers: {
   readonly onSuccess: (committed: T | undefined) => void;
   readonly onError: (err: unknown) => void;
+  readonly onRefused: () => void;
 }) => CngxCommitHandle;
 
 /**
  * Outcome handlers passed to `controller.begin(...)`. The controller
- * invokes exactly one of `onSuccess` / `onError` per commit lifecycle
- * (unless the commit is superseded, in which case neither fires).
+ * invokes exactly one of `onSuccess` / `onError` / `onRefused` per
+ * commit lifecycle (unless the commit is superseded, in which case none
+ * fires). `onRefused` is optional because only families whose action can
+ * refuse (the stepper) route it; when it is omitted a refusal still
+ * settles the state slot.
  *
  * @category common/data/commit
  */
 export interface CngxCommitBeginHandlers<T> {
   readonly onSuccess: (committed: T | undefined) => void;
   readonly onError: (err: unknown, previous: T | undefined) => void;
+  readonly onRefused?: (previous: T | undefined) => void;
 }
 
 /**
@@ -57,6 +66,15 @@ export interface CngxCommitBeginHandlers<T> {
  * - begin / cancel orchestration with monotonic supersede semantics;
  * - the "intended value" signal that drives the pending-spinner on
  *   the specific row / step the user just clicked.
+ *
+ * Three outcomes settle a commit. Success stores the committed value.
+ * Failure stores the error (`'error'`). A refusal - the action answered
+ * `false` - goes back to `'idle'` through `setIdle()`: the error and the
+ * intended value are cleared, while `data`, `lastUpdated` and
+ * `isFirstLoad()` keep what the last success left, because a refusal
+ * changed nothing. A custom controller (`CNGX_COMMIT_CONTROLLER_FACTORY`)
+ * must hand the runner an `onRefused` route and forward it to
+ * `handlers.onRefused`.
  *
  * The controller is intentionally **not** an Angular service or
  * provider. It's a plain factory so it works in any injection context
@@ -87,8 +105,8 @@ export interface CngxCommitController<T> {
    * @param runner   variant-specific action runner (closes over the
    *                 action and the intended value)
    * @param intended the value the user clicked
-   * @param previous the value to roll back to on error
-   * @param handlers success/error routes - the controller only
+   * @param previous the value to roll back to on error or refusal
+   * @param handlers success/error/refused routes - the controller only
    *                 updates its own state and calls these; it does
    *                 NOT touch external value signals, panel open
    *                 state, or component outputs.
@@ -178,6 +196,16 @@ export function createCommitController<T>(): CngxCommitController<T> {
           slot.setError(err);
           active = null;
           handlers.onError(err, previous);
+        },
+        onRefused: () => {
+          if (id !== commitId) {
+            return;
+          }
+          settled = true;
+          slot.setIdle();
+          intendedState.set(undefined);
+          active = null;
+          handlers.onRefused?.(previous);
         },
       });
       active = settled ? null : handle;

@@ -30,7 +30,7 @@ The presenter is a pure-derivation host directive - every visible piece of state
 | `CNGX_STEP_PANEL_HOST` | Rendering-surface contract for organisms. Provides `flatSteps` / `activeStepIndex` / `activeStepId` Signals plus `labelTemplateFor(id)` / `contentTemplateFor(id)` template lookups. |
 | `CNGX_STEPPER_CONFIG` | App-wide stepper configuration token (defaults, ARIA labels, fallback labels, router-sync mode). |
 | `CNGX_STEPPER_I18N` | I18n bundle token, a `Signal` (default English; consumers override via `provideStepperI18n`). |
-| `CNGX_STEPPER_COMMIT_HANDLER_FACTORY` | Pluggable async-commit handler factory. Default: `createStepperCommitHandler`. Override for telemetry / retry / offline-queue without forking. |
+| `CNGX_STEPPER_COMMIT_HANDLER_FACTORY` | Pluggable async-commit handler factory. Default: `createStepperCommitHandler`. Override for telemetry / retry / offline-queue without forking. A handler calls `onResolve('accepted' \| 'refused' \| 'failed')`: `true` accepts, `false` refuses, a throw / rejection / error fails. |
 
 ### Configuration cascade
 
@@ -62,7 +62,8 @@ To translate the whole app, set a language pack with `provideCngxI18n(withPack(.
 
 | Export | Description |
 |-|-|
-| `createStepperCommitHandler({ controller })` | Factory for the async-commit state-machine adapter. Default `CNGX_STEPPER_COMMIT_HANDLER_FACTORY`. |
+| `createStepperCommitHandler({ controller })` | Factory for the async-commit state-machine adapter. Default `CNGX_STEPPER_COMMIT_HANDLER_FACTORY`. Routes a `false` answer to the controller's refusal path, so the commit state goes `'idle'` and keeps its data. |
+| `CngxStepperCommitResolution` | `'accepted' \| 'refused' \| 'failed'`, the outcome a commit handler reports. |
 
 ## Usage
 
@@ -98,7 +99,7 @@ class WizardCmp {
 | `withStepperMobileCollapse(mode)` | Choose the auto-collapse target for a narrow **container** (below `30rem` of the stepper's own width, not the viewport): `'text'` (default, renders `<cngx-text-stepper>`) / `'dots'` (renders `<cngx-dot-stepper>`) / `'off'` (keep the classic strip at every width). The threshold itself is a `@container` rule in `stepper-base.css`, overridable in consumer CSS - see the `@cngx/ui/stepper` README. The Material twin ignores this setting. |
 | `withStepperHeaderNavigation(mode)` | Set the header-navigation policy: `'none'` (inert label headers, footer-only navigation) / `'visited'` (default - focusable header buttons gated by `linear`). Per-instance `[headerNavigation]` wins. |
 | `withStepErrorTemplate(tpl)` | App-wide default for the `*cngxStepError` slot - the per-step validation message rendered in a row below the strip. Per-instance `*cngxStepError` directive wins. |
-| `withStepperI18nLabels({ statusLabels })` | Override the per-state pill labels surfaced by the `stripe-status-rich` skin: `{ done, inProgress, upNext, errored }`. Partial overrides keep unset keys at the English default. |
+| `withStepperI18nLabels({ statusLabels })` | Override the per-state status words: `{ done, inProgress, upNext, errored, refused }`. The first four are the pill labels of the `stripe-status-rich` skin; `refused` names a refused step in its accessible name and in the minimal skins' error line. Partial overrides keep unset keys at the English default. |
 | `withStepperI18nLabels({ textStepperFormat })` | Override the short format used by `CngxProgressBarStepper`'s caption and by `CngxTextStepper`. Signature: `(current: number, total: number) => string`; default `(c, t) => 'Step ' + c + ' of ' + t`. |
 
 ```ts
@@ -147,6 +148,6 @@ bootstrapApplication(AppComponent, {
 A step carries an error through two independent channels:
 
 - **Validation** - a direct `[error]` input on `cngxStep` (`true` or a message string), or an `[errorAggregator]` for genuine multi-source forms. Both fold into the step's `state` (`'error'`) with no async machine. The state shows on every skin via the indicator / badge; the reason text surfaces in a row below the strip via the `*cngxStepError` slot (or the aggregate line on the text / dot / progress variants), but only for a real message - a bare `[error]="true"` shows state only. `[error]="'message'"` wins over the first aggregator label, which wins over the i18n `errored` word.
-- **Commit / async** - a `commitAction` that rejects sets `lastFailedIndex`; the rolled-back step decorates via `*cngxStepRejection` and announces through the `CngxToastOn` / `CngxBannerOn` bridges.
+- **Commit / async** - a `commitAction` that answers `false` refuses the step change, one that throws, rejects or errors fails it. Both roll the step back, set `lastFailedIndex` and decorate the step via `*cngxStepRejection` (its context carries `reason: 'refused' | 'failed'`); `lastOutcome()` tells them apart. A failure leaves `commitState` at `'error'` and reaches the `CngxToastOn` / `CngxBannerOn` bridges. A refusal is not a failure: `commitState` goes `'idle'` and keeps its data, the bridges stay silent, and the stepper speaks `commitRefused` once. An app that wants a toast for a refusal shows it from its own `commitAction` (for example `severity: 'warning'`) before it returns `false`. The stepper keeps only the outcome of the most recent commit, not a history: `lastOutcome()` and the rejection marker describe the latest attempt, and the next attempt replaces them. When that attempt lands or refuses, the commit state leaves `'error'`, so the earlier error and its `CngxBannerOn` banner clear as well; when it fails, the new failure takes their place. `reset()` clears the outcome, `clearLastFailed()` clears only the marker. A state that must stay on a step until it is fixed is a validation error (`[error]` or an `[errorAggregator]`), which every step holds independently.
 
 The two never collide: validation owns `*cngxStepError`, commit owns `*cngxStepRejection`. The `[error]` input replaces the old `<fieldset cngxErrorAggregator><input cngxErrorSource>` boilerplate for the common "this step is invalid" case; the aggregator stays the power path. See `@cngx/ui/stepper` for the per-skin text-surface table.

@@ -155,6 +155,30 @@
   }
 
   /**
+   * Fill of a refused-commit marker (the commit action answered `false`) on
+   * the dots and the aggregate error line. A refusal is no error, so it
+   * wears the rejection amber; a failed commit keeps
+   * `--cngx-step-errored-color`. Registered without an initial value, so the
+   * amber fallback applies until a theme sets it.
+   * @group State / Refused
+   */
+  @property --cngx-step-refused-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Text color of the aggregate line when every marked step is a refused
+   * commit. Defaults to the surrounding text colour: amber text would fall
+   * under the 4.5:1 text contrast.
+   * @group State / Refused
+   */
+  @property --cngx-step-refused-text-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
    * Background of the active indicator disc. Material consumers
    * override this upstream; un-themed consumers leave it unset so the
    * downstream `--cngx-step-active-fill` cascade lands on
@@ -1063,6 +1087,17 @@
       background: var(--cngx-step-connector-errored-color);
     }
 
+    /* A refused commit is no error: amber disc with the refused glyph,
+       amber rail, and the label keeps its resting colour (amber text
+       would fall under the 4.5:1 text contrast). A failed one stays red. */
+    .cngx-stepper__step--rejected[data-reason='refused'] .cngx-stepper__label {
+      color: var(--cngx-step-refused-text-color, currentColor);
+    }
+
+    .cngx-stepper__rejection-icon[data-reason='refused'] {
+      background: var(--cngx-step-rejection-icon-bg, oklch(0.62 0.15 60));
+    }
+
     /* Success supersedes rejection: once a previously-failed step is
        completed, drop the rejection icon + outline so the wizard row
        reads cleanly. The rail color cascade naturally reverts via the
@@ -1116,6 +1151,11 @@
        failed-commit target. */
     .cngx-stepper__step + .cngx-stepper__step.cngx-stepper__step--rejected::before {
       background-color: var(--cngx-step-connector-errored-color);
+    }
+
+    .cngx-stepper__step
+      + .cngx-stepper__step.cngx-stepper__step--rejected[data-reason='refused']::before {
+      background-color: var(--cngx-step-rejection-outline-color, oklch(0.62 0.15 60));
     }
   }
 
@@ -2003,6 +2043,11 @@
   background: var(--cngx-step-errored-color, currentColor);
 }
 
+/* A refused commit marks the dot amber; a failed one keeps the red. */
+.cngx-stepper__mobile-dot[data-state='error'][data-reason='refused'] {
+  background: var(--cngx-step-refused-color, oklch(0.62 0.15 60));
+}
+
 /* Non-color error cue (WCAG 1.4.1) for the mobile dot - a glyph centred
    over the red fill so error never relies on colour alone. Mirrors the
    standalone `<cngx-dot-stepper>` treatment. */
@@ -2016,6 +2061,12 @@
   font-weight: 700;
   line-height: 1;
   color: var(--cngx-dot-step-error-glyph-color, var(--cngx-color-on-danger, white));
+}
+
+/* The refused dot carries the refused glyph, so it never differs from an
+   error by colour alone. */
+.cngx-stepper__mobile-dot--error[data-reason='refused']::after {
+  content: var(--cngx-dot-step-refused-glyph, '\2298') / '';
 }
 
 /* Error sub-line for the mobile-collapse `text` branch - the count alone
@@ -2042,6 +2093,15 @@
   font-size: 0.75em;
   font-weight: 700;
   line-height: 1;
+}
+
+/* Every marked step is a refused commit: resting text, amber glyph disc. */
+.cngx-stepper__mobile-error[data-reason='refused'] {
+  color: var(--cngx-step-refused-text-color, currentColor);
+}
+
+.cngx-stepper__mobile-error[data-reason='refused'] .cngx-stepper__mobile-error-glyph {
+  background: var(--cngx-step-refused-color, oklch(0.62 0.15 60));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2360,6 +2420,14 @@
      on the Highlight disc and on a Canvas one alike. A *cngxStepBadge slot
      inherits the opt-out either way, so its art should paint currentColor. */
   .cngx-stepper .cngx-stepper__badge {
+    forced-color-adjust: none;
+    background: CanvasText;
+    color: Canvas;
+  }
+
+  /* The rejection disc is a background fill too: paint it in system colours
+     so the refused and the failed glyph both stay readable. */
+  .cngx-stepper .cngx-stepper__rejection-icon {
     forced-color-adjust: none;
     background: CanvasText;
     color: Canvas;

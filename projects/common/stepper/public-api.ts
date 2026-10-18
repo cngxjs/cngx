@@ -204,6 +204,7 @@ export {
   type CngxStepperCommitHandler,
   type CngxStepperCommitHandlerFactory,
   type CngxStepperCommitHandlerOptions,
+  type CngxStepperCommitResolution,
   createStepperCommitHandler,
 } from './commit-handler';
 

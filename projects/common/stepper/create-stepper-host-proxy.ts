@@ -46,6 +46,7 @@ export function createStepperHostProxy(supplier: () => CngxStepperHost | null): 
     commitMode: computed(() => supplier()?.commitMode?.() ?? 'pessimistic'),
     orientation: computed(() => supplier()?.orientation() ?? 'horizontal'),
     intendedStepIndex: computed(() => supplier()?.intendedStepIndex()),
+    lastOutcome: computed(() => supplier()?.lastOutcome()),
     lastFailedIndex: computed(() => supplier()?.lastFailedIndex()),
     originIndexDuringCommit: computed(() => supplier()?.originIndexDuringCommit()),
 

@@ -2,7 +2,7 @@ import { Component, computed, signal, TemplateRef, viewChild, type Signal } from
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideDirection } from '@cngx/core';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   CngxDotStepperDot,
@@ -19,6 +19,8 @@ import {
 
 import { CngxDotStepper } from './dot-stepper.component';
 import { stripBidiIsolates } from '@cngx/testing';
+
+import { STEPPER_OUTCOME_SEAM, stepperOutcome } from './__test-helpers/stepper-outcome-seam';
 
 @Component({
   standalone: true,
@@ -536,5 +538,106 @@ describe('CngxDotStepper language switch', () => {
     fixture.componentInstance.err.set(true);
     fixture.detectChanges();
     expect(stripBidiIsolates(error.textContent?.trim())).toContain('Two: Fehler');
+  });
+});
+
+describe('CngxDotStepper commit outcome', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxDotStepper, CngxStep],
+    template: `
+      <cngx-dot-stepper>
+        <div cngxStep label="One"></div>
+        <div cngxStep label="Two"></div>
+        <div cngxStep label="Three"></div>
+      </cngx-dot-stepper>
+    `,
+  })
+  class OutcomeHost {}
+
+  afterEach(() => stepperOutcome.set(undefined));
+
+  function setup() {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    TestBed.overrideComponent(CngxDotStepper, { add: { providers: [STEPPER_OUTCOME_SEAM] } });
+    const fixture = TestBed.createComponent(OutcomeHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
+    const line = (): string =>
+      stripBidiIsolates(
+        (
+          fixture.nativeElement.querySelector('.cngx-dot-stepper__error-text') as HTMLElement | null
+        )?.textContent?.trim() ?? '',
+      );
+    return { fixture, host, line };
+  }
+
+  it('a refused step reads "Not allowed" on the error line and sets no aria-invalid', () => {
+    const { fixture, host, line } = setup();
+    stepperOutcome.set({ kind: 'refused', index: 1, sequence: 1 });
+    fixture.detectChanges();
+    expect(line()).toBe('Two: Not allowed');
+    expect(host.hasAttribute('aria-invalid')).toBe(false);
+    const region = fixture.nativeElement.querySelector('.cngx-dot-stepper__error') as HTMLElement;
+    expect(region.getAttribute('data-state')).toBe('error');
+    expect(region.getAttribute('data-reason')).toBe('refused');
+    const glyph = region.querySelector('.cngx-dot-stepper__error-glyph') as HTMLElement;
+    expect(glyph.textContent?.trim()).toBe('\u2298');
+    expect(glyph.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('a failed step reads "Errored" and sets aria-invalid', () => {
+    const { fixture, host, line } = setup();
+    stepperOutcome.set({ kind: 'failed', index: 1, sequence: 1 });
+    fixture.detectChanges();
+    expect(line()).toBe('Two: Errored');
+    expect(host.getAttribute('aria-invalid')).toBe('true');
+    const region = fixture.nativeElement.querySelector('.cngx-dot-stepper__error') as HTMLElement;
+    expect(region.hasAttribute('data-reason')).toBe(false);
+    const glyph = region.querySelector('.cngx-dot-stepper__error-glyph') as HTMLElement;
+    expect(glyph.textContent?.trim()).toBe('!');
+  });
+});
+
+describe('CngxDotStepper refused dot', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxDotStepper, CngxStep],
+    template: `
+      <cngx-dot-stepper>
+        <div cngxStep label="One"></div>
+        <div cngxStep label="Two"></div>
+      </cngx-dot-stepper>
+    `,
+  })
+  class DotHost {}
+
+  afterEach(() => stepperOutcome.set(undefined));
+
+  it('keeps the dot marker and names the refused status in its aria-label', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    TestBed.overrideComponent(CngxDotStepper, { add: { providers: [STEPPER_OUTCOME_SEAM] } });
+    const fixture = TestBed.createComponent(DotHost);
+    fixture.detectChanges();
+    stepperOutcome.set({ kind: 'refused', index: 1, sequence: 1 });
+    fixture.detectChanges();
+    const dots = fixture.nativeElement.querySelectorAll(
+      '.cngx-dot-stepper__dot',
+    ) as NodeListOf<HTMLElement>;
+    expect(dots[1].getAttribute('data-state')).toBe('error');
+    expect(dots[1].classList.contains('cngx-dot-stepper__dot--error')).toBe(true);
+    expect(dots[1].getAttribute('data-reason')).toBe('refused');
+    expect(dots[0].hasAttribute('data-reason')).toBe(false);
+    expect(stripBidiIsolates(dots[1].getAttribute('aria-label') ?? '')).toBe(
+      'Step 2 of 2: Two: Not allowed',
+    );
+    stepperOutcome.set({ kind: 'failed', index: 1, sequence: 2 });
+    fixture.detectChanges();
+    expect(stripBidiIsolates(dots[1].getAttribute('aria-label') ?? '')).toBe(
+      'Step 2 of 2: Two: Errored',
+    );
+    expect(dots[1].getAttribute('data-reason')).toBe('failed');
   });
 });

@@ -1,7 +1,7 @@
 import { Component, computed, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   CngxStep,
@@ -16,6 +16,8 @@ import {
 
 import { CngxProgressBarStepper } from './progress-bar-stepper.component';
 import { stripBidiIsolates } from '@cngx/testing';
+
+import { STEPPER_OUTCOME_SEAM, stepperOutcome } from './__test-helpers/stepper-outcome-seam';
 
 @Component({
   standalone: true,
@@ -299,5 +301,108 @@ describe('CngxProgressBarStepper language switch', () => {
     fixture.componentInstance.err.set(true);
     fixture.detectChanges();
     expect(stripBidiIsolates(error.textContent?.trim())).toContain('Two: Fehler');
+  });
+});
+
+describe('CngxProgressBarStepper commit outcome', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxProgressBarStepper, CngxStep],
+    template: `
+      <cngx-progress-bar-stepper>
+        <div cngxStep label="A"></div>
+        <div cngxStep label="B"></div>
+        <div cngxStep label="C"></div>
+      </cngx-progress-bar-stepper>
+    `,
+  })
+  class OutcomeHost {}
+
+  afterEach(() => stepperOutcome.set(undefined));
+
+  function setup() {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    TestBed.overrideComponent(CngxProgressBarStepper, {
+      add: { providers: [STEPPER_OUTCOME_SEAM] },
+    });
+    const fixture = TestBed.createComponent(OutcomeHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-progress-bar-stepper') as HTMLElement;
+    const line = (): string =>
+      stripBidiIsolates(
+        (
+          fixture.nativeElement.querySelector(
+            '.cngx-progress-bar-stepper__error-text',
+          ) as HTMLElement | null
+        )?.textContent?.trim() ?? '',
+      );
+    return { fixture, host, line };
+  }
+
+  it('a refused step reads "Not allowed" on the error line and sets no aria-invalid', () => {
+    const { fixture, host, line } = setup();
+    stepperOutcome.set({ kind: 'refused', index: 1, sequence: 1 });
+    fixture.detectChanges();
+    expect(line()).toBe('B: Not allowed');
+    expect(host.hasAttribute('aria-invalid')).toBe(false);
+    const region = fixture.nativeElement.querySelector(
+      '.cngx-progress-bar-stepper__error',
+    ) as HTMLElement;
+    expect(region.getAttribute('data-state')).toBe('error');
+    expect(region.getAttribute('data-reason')).toBe('refused');
+    const glyph = region.querySelector('.cngx-progress-bar-stepper__error-glyph') as HTMLElement;
+    expect(glyph.textContent?.trim()).toBe('\u2298');
+    expect(glyph.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('a failed step reads "Errored" and sets aria-invalid', () => {
+    const { fixture, host, line } = setup();
+    stepperOutcome.set({ kind: 'failed', index: 1, sequence: 1 });
+    fixture.detectChanges();
+    expect(line()).toBe('B: Errored');
+    expect(host.getAttribute('aria-invalid')).toBe('true');
+    const region = fixture.nativeElement.querySelector(
+      '.cngx-progress-bar-stepper__error',
+    ) as HTMLElement;
+    expect(region.hasAttribute('data-reason')).toBe(false);
+    const glyph = region.querySelector('.cngx-progress-bar-stepper__error-glyph') as HTMLElement;
+    expect(glyph.textContent?.trim()).toBe('!');
+  });
+});
+
+describe('CngxProgressBarStepper commit outcome host state', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxProgressBarStepper, CngxStep],
+    template: `
+      <cngx-progress-bar-stepper>
+        <div cngxStep label="A"></div>
+        <div cngxStep label="B"></div>
+      </cngx-progress-bar-stepper>
+    `,
+  })
+  class StateHost {}
+
+  afterEach(() => stepperOutcome.set(undefined));
+
+  it('keeps the visual data-state for a refused step while aria-invalid stays off', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    TestBed.overrideComponent(CngxProgressBarStepper, {
+      add: { providers: [STEPPER_OUTCOME_SEAM] },
+    });
+    const fixture = TestBed.createComponent(StateHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-progress-bar-stepper') as HTMLElement;
+    stepperOutcome.set({ kind: 'refused', index: 1, sequence: 1 });
+    fixture.detectChanges();
+    expect(host.getAttribute('data-state')).toBe('error');
+    expect(host.hasAttribute('aria-invalid')).toBe(false);
+    expect(host.getAttribute('data-reason')).toBe('refused');
+    stepperOutcome.set({ kind: 'failed', index: 1, sequence: 2 });
+    fixture.detectChanges();
+    expect(host.getAttribute('data-state')).toBe('error');
+    expect(host.hasAttribute('data-reason')).toBe(false);
   });
 });

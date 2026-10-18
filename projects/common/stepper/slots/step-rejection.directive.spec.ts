@@ -47,10 +47,12 @@ describe('CngxStepRejection', () => {
       failedIndex: 2,
       originLabel: 'Step One',
       node,
+      reason: 'refused',
     };
     expect(ctx.failedIndex).toBe(2);
     expect(ctx.originLabel).toBe('Step One');
     expect(ctx.node.id).toBe('a');
+    expect(ctx.reason).toBe('refused');
   });
 
   it('originLabel may be undefined when the origin index is out of range', () => {
@@ -69,6 +71,7 @@ describe('CngxStepRejection', () => {
       failedIndex: 1,
       originLabel: undefined,
       node,
+      reason: 'failed',
     };
     expect(ctx.originLabel).toBeUndefined();
   });

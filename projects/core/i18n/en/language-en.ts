@@ -453,11 +453,15 @@ export const CNGX_LANGUAGE_EN = {
     commitInFlight: 'Saving step…',
     commitRolledBackTo: 'Reverted to step "{origin}".',
     stepRolledBack: '{base} This step was rolled back.',
+    commitRefused: 'Step change not allowed - stayed on step "{origin}".',
+    commitRefusedGeneric: 'Step change not allowed.',
+    stepRefused: '{base} This step change was not allowed.',
     statusLabels: {
       done: 'Done',
       inProgress: 'In progress',
       upNext: 'Up next',
       errored: 'Errored',
+      refused: 'Not allowed',
     },
     textStepperFormat: 'Step {current} of {count}',
     groupSummaryCount: {

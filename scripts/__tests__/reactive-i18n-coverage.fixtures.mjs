@@ -880,13 +880,13 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/ui/stepper/dot-stepper.component.ts',
-    region: 'CngxDotStepper.span(errorText)',
+    region: 'CngxDotStepper.span(errorText,stateView.refusalOnly)',
     spec: 'projects/ui/stepper/dot-stepper.component.spec.ts',
     testName: 'does not re-announce on a language flip',
   },
   {
     file: 'projects/ui/stepper/progress-bar-stepper.component.ts',
-    region: 'CngxProgressBarStepper.span(errorText)',
+    region: 'CngxProgressBarStepper.span(errorText,stateView.refusalOnly)',
     spec: 'projects/ui/stepper/progress-bar-stepper.component.spec.ts',
     testName: 'does not re-announce on a language flip',
   },
@@ -898,19 +898,19 @@ export const LIVE_REGIONS = [
   },
   {
     file: 'projects/ui/stepper/stepper.component.ts',
-    region: 'CngxStepper.span(mobileErrorSummary)',
+    region: 'CngxStepper.span(mobileErrorSummary,stateView.refusalOnly)',
     spec: 'projects/ui/stepper/stepper.component.spec.ts',
     testName: 'does not re-announce on a language flip',
   },
   {
     file: 'projects/ui/stepper/stepper.component.ts',
-    region: 'CngxStepper.span(mobileErrorSummary)#2',
+    region: 'CngxStepper.span(mobileErrorSummary,stateView.refusalOnly)#2',
     spec: 'projects/ui/stepper/stepper.component.spec.ts',
     testName: 'does not re-announce on a language flip',
   },
   {
     file: 'projects/ui/stepper/text-stepper.component.ts',
-    region: 'CngxTextStepper.span(errorText)',
+    region: 'CngxTextStepper.span(errorText,stateView.refusalOnly)',
     spec: 'projects/ui/stepper/text-stepper.component.spec.ts',
     testName: 'does not re-announce on a language flip',
   },

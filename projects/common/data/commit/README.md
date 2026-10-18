@@ -2,7 +2,7 @@
 
 Generic async-commit state machine. Every cngx feature with a "user clicks, we fire an async write, we react to the outcome" flow funnels through it: the select family, the stepper, future wizards. Owns the `pending` slot, the intended-value signal, and monotonic supersede semantics. Plain factory function (no class, no `@Injectable`), so it works in any injection context including headless tests.
 
-The controller does not touch external value signals, panel open state, or component outputs. It updates its own `CngxAsyncState<T | undefined>` and calls the begin-time `onSuccess` / `onError` handlers. Routing the committed value back into the consumer's source-of-truth is the caller's job.
+The controller does not touch external value signals, panel open state, or component outputs. It updates its own `CngxAsyncState<T | undefined>` and calls the begin-time `onSuccess` / `onError` / `onRefused` handlers. Routing the committed value back into the consumer's source-of-truth is the caller's job.
 
 ## Import
 
@@ -15,6 +15,7 @@ import {
   type CngxCommitHandle,
   type CngxCommitBeginHandlers,
   type CngxCommitControllerFactory,
+  type CngxTransitionOutcome,
 } from '@cngx/common/data';
 ```
 
@@ -66,9 +67,12 @@ Two contracts to honour. The runner closes over the async source and returns wha
 | `begin(...)` | `pending` |
 | Runner calls `onSuccess` (current commit) | `success`, data is the committed value |
 | Runner calls `onError` (current commit) | `error` |
+| Runner calls `onRefused` (current commit) | `idle`; error and intended value cleared, `data`, `lastUpdated` and `isFirstLoad()` kept |
 | `begin(...)` called again before settle | previous runner's `cancel()` fires; status stays `pending`, `commitId` advances |
 | Runner of a superseded commit calls back late | ignored, no state change, no handler fires |
 | `cancel()` | runner's cancel fires, `commitId` advances, status untouched |
+
+A refusal is not a failure. It mirrors the router: a guard answering `false` produces `NavigationCancel`, only a throw is a `NavigationError`. A refused commit changed nothing, so the controller keeps what the last success stored and publishes a `pending -> idle` edge, on which the feedback bridges stay silent. It does not go to `success` either: a `pending -> success` edge is a success to every bridge.
 
 Supersede is monotonic: every `begin(...)` bumps an internal id, and outcome callbacks compare their captured id against the current one before firing. A stale callback is a no-op. That guarantee is what makes it safe to fire-and-forget commits during fast user interaction.
 
@@ -94,10 +98,11 @@ Factory. No injection context required. Allocates the writable async-state slot,
 type CngxCommitRunner<T> = (handlers: {
   readonly onSuccess: (committed: T | undefined) => void;
   readonly onError: (err: unknown) => void;
+  readonly onRefused: () => void;
 }) => CngxCommitHandle;
 ```
 
-Receives the controller's success and error routes. Returns a `CngxCommitHandle` whose `cancel()` tears the work down. The runner is opaque: Observable subscription, `AbortController`, plain flag, all work as long as `cancel()` stops further `onSuccess` / `onError` calls.
+Receives the controller's success, error and refused routes. A runner whose action shape has no refusal (the select family) never calls `onRefused`. Returns a `CngxCommitHandle` whose `cancel()` tears the work down. The runner is opaque: Observable subscription, `AbortController`, plain flag, all work as long as `cancel()` stops further `onSuccess` / `onError` calls.
 
 ### `CngxCommitBeginHandlers<T>`
 
@@ -105,10 +110,23 @@ Receives the controller's success and error routes. Returns a `CngxCommitHandle`
 interface CngxCommitBeginHandlers<T> {
   readonly onSuccess: (committed: T | undefined) => void;
   readonly onError: (err: unknown, previous: T | undefined) => void;
+  readonly onRefused?: (previous: T | undefined) => void;
 }
 ```
 
-Caller-supplied routes. Exactly one fires per commit lifecycle, never both, never twice. A superseded commit fires neither.
+Caller-supplied routes. Exactly one fires per commit lifecycle, never twice. A superseded commit fires none. `onRefused` is optional; without it a refusal still settles the state slot to `idle`.
+
+### `CngxTransitionOutcome`
+
+```ts
+interface CngxTransitionOutcome {
+  readonly kind: 'refused' | 'failed';
+  readonly index: number;
+  readonly sequence: number;
+}
+```
+
+The record a commit-gated host (the stepper) keeps of the last transition that did not land. `index` is the target the transition was refused or failed for (the position the user did not reach); `sequence` is bumped once per settled refusal or failure, so two equal outcomes in a row are still two events.
 
 ## DI override: `CNGX_COMMIT_CONTROLLER_FACTORY`
 
@@ -124,6 +142,8 @@ bootstrapApplication(App, {
   ],
 });
 ```
+
+A custom controller must hand its runner an `onRefused` route and forward it to `handlers.onRefused`; one written before the refusal outcome existed does not compile against the runner type. The select side re-exports `CngxCommitRunner` and `CngxCommitBeginHandlers` from `@cngx/forms/select`, so the same change shows there.
 
 The select-side token `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` (`@cngx/forms/select`) delegates to this one by default, so a single override here cascades into every select variant transparently.
 

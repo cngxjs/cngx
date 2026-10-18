@@ -1,6 +1,7 @@
 import { computed, signal, type WritableSignal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
+import type { CngxTransitionOutcome } from '@cngx/common/data';
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
 import { createStepperStateView, resolveStepperErrorSummary } from './stepper-state-view';
@@ -27,18 +28,38 @@ interface StubHost {
   commitStatus: WritableSignal<CngxStepStatus | 'pending' | 'idle'>;
   intendedStepIndex: WritableSignal<number | undefined>;
   lastFailedIndex: WritableSignal<number | undefined>;
+  lastOutcome: WritableSignal<CngxTransitionOutcome | undefined>;
 }
 
 function stubHost(): StubHost {
   const commitStatus = signal<CngxStepStatus | 'pending' | 'idle'>('idle');
   const intendedStepIndex = signal<number | undefined>(undefined);
   const lastFailedIndex = signal<number | undefined>(undefined);
+  const lastOutcome = signal<CngxTransitionOutcome | undefined>(undefined);
   const host = {
     commitState: { status: commitStatus },
     intendedStepIndex,
     lastFailedIndex,
+    lastOutcome,
   } as unknown as CngxStepperHost;
-  return { host, commitStatus, intendedStepIndex, lastFailedIndex };
+  return { host, commitStatus, intendedStepIndex, lastFailedIndex, lastOutcome };
+}
+
+function summaryView(
+  count: number,
+  first: number,
+  refused = false,
+  errors = refused ? 0 : count,
+  firstError = refused ? -1 : first,
+) {
+  return {
+    errorMarkerCount: signal(count),
+    firstErrorMarkerIndex: signal(first),
+    errorCount: signal(errors),
+    firstErrorIndex: signal(firstError),
+    isRefused: (node: CngxStepNode) => refused && node.flatIndex === first,
+    hasErrorBadge: () => false,
+  };
 }
 
 function aggregator(shouldShow: boolean): CngxErrorAggregatorContract {
@@ -62,19 +83,60 @@ describe('createStepperStateView', () => {
     expect(view.hasError(node)).toBe(true);
   });
 
-  it('folds commit rejection into hasError but NOT into hasErrorBadge', () => {
+  it('folds a failed commit into hasError but NOT into hasErrorBadge', () => {
     const node = stubNode({ id: 'a', flatIndex: 1 });
     const stepsOnly = signal<readonly CngxStepNode[]>([stubNode({ id: 'x', flatIndex: 0 }), node]);
-    const { host, lastFailedIndex } = stubHost();
+    const { host, lastFailedIndex, lastOutcome } = stubHost();
     const view = createStepperStateView({ presenter: host, stepsOnly });
 
     expect(view.hasError(node)).toBe(false);
+    lastOutcome.set({ kind: 'failed', index: 1, sequence: 1 });
     lastFailedIndex.set(1);
     // The classic skin keeps rejection in its own slot, so the badge
     // predicate must stay false while the unified predicate flips true.
     expect(view.hasErrorBadge(node)).toBe(false);
     expect(view.isRejected(node)).toBe(true);
+    expect(view.isRefused(node)).toBe(false);
+    expect(view.hasErrorMarker(node)).toBe(true);
     expect(view.hasError(node)).toBe(true);
+  });
+
+  it('marks a refused step without putting it in error', () => {
+    const node = stubNode({ id: 'a', flatIndex: 1 });
+    const stepsOnly = signal<readonly CngxStepNode[]>([stubNode({ id: 'x', flatIndex: 0 }), node]);
+    const { host, lastFailedIndex, lastOutcome } = stubHost();
+    const view = createStepperStateView({ presenter: host, stepsOnly });
+
+    lastOutcome.set({ kind: 'refused', index: 1, sequence: 1 });
+    lastFailedIndex.set(1);
+    expect(view.isRejected(node)).toBe(true);
+    expect(view.isRefused(node)).toBe(true);
+    expect(view.hasErrorMarker(node)).toBe(true);
+    expect(view.hasError(node)).toBe(false);
+    expect(view.errorCount()).toBe(0);
+    expect(view.hasAnyError()).toBe(false);
+    expect(view.errorMarkerCount()).toBe(1);
+    expect(view.firstErrorMarkerIndex()).toBe(1);
+    expect(view.hasAnyErrorMarker()).toBe(true);
+    expect(view.rejectionReason(node)).toBe('refused');
+    expect(view.refusalOnly()).toBe(true);
+    lastOutcome.set({ kind: 'failed', index: 1, sequence: 2 });
+    expect(view.rejectionReason(node)).toBe('failed');
+    expect(view.refusalOnly()).toBe(false);
+    lastFailedIndex.set(undefined);
+    expect(view.rejectionReason(node)).toBeNull();
+  });
+
+  it('keeps a validation error in error when its step change is also refused', () => {
+    const node = stubNode({ id: 'a', flatIndex: 0, state: () => 'error' });
+    const stepsOnly = signal<readonly CngxStepNode[]>([node]);
+    const { host, lastFailedIndex, lastOutcome } = stubHost();
+    const view = createStepperStateView({ presenter: host, stepsOnly });
+
+    lastOutcome.set({ kind: 'refused', index: 0, sequence: 1 });
+    lastFailedIndex.set(0);
+    expect(view.hasError(node)).toBe(true);
+    expect(view.errorCount()).toBe(1);
   });
 
   it('marks the in-flight step busy only when commit pending targets it', () => {
@@ -96,16 +158,34 @@ describe('createStepperStateView', () => {
     const b = stubNode({ id: 'b', flatIndex: 1, state: () => 'error' });
     const c = stubNode({ id: 'c', flatIndex: 2 });
     const stepsOnly = signal<readonly CngxStepNode[]>([a, b, c]);
-    const { host, lastFailedIndex } = stubHost();
+    const { host, lastFailedIndex, lastOutcome } = stubHost();
     const view = createStepperStateView({ presenter: host, stepsOnly });
 
     expect(view.errorCount()).toBe(1);
     expect(view.firstErrorIndex()).toBe(1);
     expect(view.hasAnyError()).toBe(true);
 
+    lastOutcome.set({ kind: 'failed', index: 2, sequence: 1 });
     lastFailedIndex.set(2);
     expect(view.errorCount()).toBe(2);
     expect(view.firstErrorIndex()).toBe(1);
+  });
+
+  it('keeps the error and marker derivations stable when the steps re-emit unchanged', () => {
+    const failed = stubNode({ id: 'a', flatIndex: 0, state: () => 'error' });
+    const clean = stubNode({ id: 'b', flatIndex: 1 });
+    const stepsOnly = signal<readonly CngxStepNode[]>([failed, clean]);
+    const view = createStepperStateView({ presenter: stubHost().host, stepsOnly });
+    let reads = 0;
+    const summary = computed(() => {
+      reads++;
+      return [view.errorCount(), view.firstErrorIndex(), view.errorMarkerCount()];
+    });
+    expect(summary()).toEqual([1, 0, 1]);
+
+    stepsOnly.set([failed, clean]);
+    expect(summary()).toEqual([1, 0, 1]);
+    expect(reads).toBe(1);
   });
 
   it('reports no error for a clean flow', () => {
@@ -117,19 +197,50 @@ describe('createStepperStateView', () => {
     expect(view.errorCount()).toBe(0);
     expect(view.firstErrorIndex()).toBe(-1);
     expect(view.hasAnyError()).toBe(false);
+    expect(view.errorMarkerCount()).toBe(0);
+    expect(view.hasAnyErrorMarker()).toBe(false);
   });
 });
 
 describe('resolveStepperErrorSummary', () => {
   const i18n = {
-    statusLabels: { errored: 'Errored' },
+    statusLabels: { errored: 'Errored', refused: 'Not allowed' },
     stepWithDetail: (step: string, detail: string) => `${step}: ${detail}`,
     stepHasErrors: (count: number) => `${count} error${count === 1 ? '' : 's'}`,
   } as unknown as CngxStepperI18n;
 
+  it('names a single refused step with the refused word', () => {
+    const stepsOnly = signal<readonly CngxStepNode[]>([
+      stubNode({ id: 'Payment', flatIndex: 0, label: () => 'Payment' }),
+    ]);
+    const view = summaryView(1, 0, true);
+    expect(resolveStepperErrorSummary(view, stepsOnly, i18n, () => undefined)).toBe(
+      'Payment: Not allowed',
+    );
+  });
+
+  it('does not count a refused step as an error beside a failed one', () => {
+    const stepsOnly = signal<readonly CngxStepNode[]>([
+      stubNode({ id: 'Profile', flatIndex: 0, label: () => 'Profile' }),
+      stubNode({ id: 'Payment', flatIndex: 1, label: () => 'Payment' }),
+    ]);
+    const view = summaryView(2, 0, true, 1, 1);
+    expect(resolveStepperErrorSummary(view, stepsOnly, i18n)).toBe('Payment: Errored');
+  });
+
+  it('counts only the failed steps when several fail beside a refusal', () => {
+    const stepsOnly = signal<readonly CngxStepNode[]>([
+      stubNode({ id: 'a', flatIndex: 0, label: () => 'A' }),
+      stubNode({ id: 'b', flatIndex: 1, label: () => 'B' }),
+      stubNode({ id: 'c', flatIndex: 2, label: () => 'C' }),
+    ]);
+    const view = summaryView(3, 0, true, 2, 1);
+    expect(resolveStepperErrorSummary(view, stepsOnly, i18n)).toBe('2 errors');
+  });
+
   it('returns empty when no step errored', () => {
     const stepsOnly = signal<readonly CngxStepNode[]>([stubNode({ id: 'a', flatIndex: 0 })]);
-    const view = { errorCount: signal(0), firstErrorIndex: signal(-1) };
+    const view = summaryView(0, -1);
     expect(resolveStepperErrorSummary(view, stepsOnly, i18n)).toBe('');
   });
 
@@ -138,7 +249,7 @@ describe('resolveStepperErrorSummary', () => {
       stubNode({ id: 'a', flatIndex: 0 }),
       stubNode({ id: 'Payment', flatIndex: 1, label: () => 'Payment' }),
     ]);
-    const view = { errorCount: signal(1), firstErrorIndex: signal(1) };
+    const view = summaryView(1, 1);
     expect(resolveStepperErrorSummary(view, stepsOnly, i18n)).toBe('Payment: Errored');
   });
 
@@ -146,7 +257,7 @@ describe('resolveStepperErrorSummary', () => {
     const stepsOnly = signal<readonly CngxStepNode[]>([
       stubNode({ id: 'Payment', flatIndex: 0, label: () => 'Payment' }),
     ]);
-    const view = { errorCount: signal(1), firstErrorIndex: signal(0) };
+    const view = summaryView(1, 0);
     const reordered = {
       ...i18n,
       stepWithDetail: (step: string, detail: string) => `${detail} - ${step}`,
@@ -156,7 +267,7 @@ describe('resolveStepperErrorSummary', () => {
 
   it('collapses multiple errors to the count phrase', () => {
     const stepsOnly = signal<readonly CngxStepNode[]>([stubNode({ id: 'a', flatIndex: 0 })]);
-    const view = { errorCount: signal(3), firstErrorIndex: signal(0) };
+    const view = summaryView(3, 0);
     expect(resolveStepperErrorSummary(view, stepsOnly, i18n)).toBe('3 errors');
   });
 
@@ -165,7 +276,7 @@ describe('resolveStepperErrorSummary', () => {
       const stepsOnly = signal<readonly CngxStepNode[]>([
         stubNode({ id: 'Payment', flatIndex: 0, label: () => 'Payment' }),
       ]);
-      const view = { errorCount: signal(1), firstErrorIndex: signal(0) };
+      const view = summaryView(1, 0);
       const summary = resolveStepperErrorSummary(view, stepsOnly, i18n, () => 'Card declined');
       expect(summary).toBe('Payment: Card declined');
     });
@@ -174,7 +285,7 @@ describe('resolveStepperErrorSummary', () => {
       const stepsOnly = signal<readonly CngxStepNode[]>([
         stubNode({ id: 'a', flatIndex: 0, label: () => '' }),
       ]);
-      const view = { errorCount: signal(1), firstErrorIndex: signal(0) };
+      const view = summaryView(1, 0);
       const summary = resolveStepperErrorSummary(view, stepsOnly, i18n, () => 'Card declined');
       expect(summary).toBe('Card declined');
     });
@@ -183,7 +294,7 @@ describe('resolveStepperErrorSummary', () => {
       const stepsOnly = signal<readonly CngxStepNode[]>([
         stubNode({ id: 'Payment', flatIndex: 0, label: () => 'Payment' }),
       ]);
-      const view = { errorCount: signal(1), firstErrorIndex: signal(0) };
+      const view = summaryView(1, 0);
       const summary = resolveStepperErrorSummary(view, stepsOnly, i18n, () => undefined);
       expect(summary).toBe('Payment: Errored');
     });
@@ -195,9 +306,9 @@ describe('resolveStepperErrorSummary', () => {
         stubNode({ id: 'a', flatIndex: 0 }),
         stubNode({ id: 'Payment', flatIndex: 1, label: () => 'Payment' }),
       ]);
-      const single = { errorCount: signal(1), firstErrorIndex: signal(1) };
-      const multi = { errorCount: signal(2), firstErrorIndex: signal(1) };
-      const none = { errorCount: signal(0), firstErrorIndex: signal(-1) };
+      const single = summaryView(1, 1);
+      const multi = summaryView(2, 1);
+      const none = summaryView(0, -1);
       expect(resolveStepperErrorSummary(single, stepsOnly, i18n)).toBe('Payment: Errored');
       expect(resolveStepperErrorSummary(multi, stepsOnly, i18n)).toBe('2 errors');
       expect(resolveStepperErrorSummary(none, stepsOnly, i18n)).toBe('');
@@ -221,7 +332,7 @@ describe('resolveStepperErrorSummary language switch', () => {
       }),
     ]);
     const errorCount = signal(1);
-    const view = { errorCount, firstErrorIndex: signal(0) };
+    const view = { ...summaryView(1, 0), errorMarkerCount: errorCount };
     const summary = computed(() => resolveStepperErrorSummary(view, stepsOnly, i18n));
     expect(summary()).toBe('Payment: Errored');
 

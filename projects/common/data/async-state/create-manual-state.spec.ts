@@ -85,6 +85,35 @@ describe('createManualState', () => {
     expect(state.isFirstLoad()).toBe(true);
   });
 
+  it('setIdle() after success keeps data, lastUpdated and the first-load flag', () => {
+    state.setSuccess(['a']);
+    const updated = state.lastUpdated();
+    state.set('pending');
+    state.setProgress(30);
+    state.setIdle();
+    expect(state.status()).toBe('idle');
+    expect(state.data()).toEqual(['a']);
+    expect(state.lastUpdated()).toBe(updated);
+    expect(state.isFirstLoad()).toBe(false);
+    expect(state.progress()).toBeUndefined();
+  });
+
+  it('setIdle() after error clears the error', () => {
+    state.setError(new Error('boom'));
+    state.setIdle();
+    expect(state.status()).toBe('idle');
+    expect(state.error()).toBeUndefined();
+  });
+
+  it('setIdle() on a first load stays a first load', () => {
+    state.set('loading');
+    state.setIdle();
+    expect(state.status()).toBe('idle');
+    expect(state.data()).toBeUndefined();
+    expect(state.lastUpdated()).toBeUndefined();
+    expect(state.isFirstLoad()).toBe(true);
+  });
+
   it('set("refreshing") after success keeps data visible', () => {
     state.setSuccess(['a']);
     state.set('refreshing');

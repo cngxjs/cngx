@@ -84,6 +84,25 @@ export interface CngxStepperI18n {
    */
   readonly stepRolledBack: (base: string) => string;
   /**
+   * Origin-aware refusal phrase. Read when the commit action answered
+   * `false` and the origin label resolves. Receives the label of the step
+   * the user stayed on, yields e.g. `Step change not allowed - stayed on
+   * step "Customer".`. A refusal is not a failure, so it never reads the
+   * failure copy ({@link commitRolledBackTo}, {@link commitFailedRetry}).
+   */
+  readonly commitRefused: (originLabel: string) => string;
+  /**
+   * Refusal phrase for an origin without a label. Twin of
+   * {@link commitFailedRetry} for the refused outcome.
+   */
+  readonly commitRefusedGeneric: string;
+  /**
+   * Per-step `aria-describedby` text while the step carries the marker
+   * of a refused change. Refused twin of {@link stepRolledBack}; same
+   * `{base}` contract.
+   */
+  readonly stepRefused: (base: string) => string;
+  /**
    * Per-state pill labels surfaced by the `stripe-status-rich` skin
    * (and any future skin / variant that paints a state pill). English
    * defaults; consumer partial overrides via
@@ -145,6 +164,9 @@ function stepperBundleFrom(section: CngxStepperLanguageSection, locale: string):
     commitInFlight: section.commitInFlight,
     commitRolledBackTo: (origin) => formatMessage(section.commitRolledBackTo, { origin }, locale),
     stepRolledBack: (base) => formatMessage(section.stepRolledBack, { base }, locale),
+    commitRefused: (origin) => formatMessage(section.commitRefused, { origin }, locale),
+    commitRefusedGeneric: section.commitRefusedGeneric,
+    stepRefused: (base) => formatMessage(section.stepRefused, { base }, locale),
     statusLabels: section.statusLabels,
     textStepperFormat: (current, count) =>
       formatMessage(section.textStepperFormat, { current, count }, locale),

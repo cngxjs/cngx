@@ -449,11 +449,15 @@ export const CNGX_LANGUAGE_DE = {
     commitInFlight: 'Schritt wird gespeichert…',
     commitRolledBackTo: 'Zurück zu Schritt „{origin}“.',
     stepRolledBack: '{base} Dieser Schritt wurde zurückgesetzt.',
+    commitRefused: 'Schrittwechsel nicht erlaubt - bleibt bei Schritt „{origin}“.',
+    commitRefusedGeneric: 'Schrittwechsel nicht erlaubt.',
+    stepRefused: '{base} Dieser Schrittwechsel war nicht erlaubt.',
     statusLabels: {
       done: 'Erledigt',
       inProgress: 'In Arbeit',
       upNext: 'Als Nächstes',
       errored: 'Fehler',
+      refused: 'Nicht erlaubt',
     },
     textStepperFormat: 'Schritt {current} von {count}',
     groupSummaryCount: {

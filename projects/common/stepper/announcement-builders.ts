@@ -1,5 +1,7 @@
 import { computed, untracked, type Signal } from '@angular/core';
 
+import { createAnnouncementPhrase } from '@cngx/core/utils';
+
 import type { CngxStepperI18n } from './i18n/stepper-i18n';
 import type { CngxStepNode, CngxStepperHost } from './stepper-host.token';
 
@@ -29,14 +31,17 @@ export interface CngxStepperAnnouncementBuilders {
   /**
    * Live-region content driven by the commit transition tracker.
    * Empty string between transitions keeps the region quiet on no-op
-   * CD ticks. Error-arm priority: `commitRolledBackTo(originLabel)` when
-   * both `lastFailedIndex` and a resolvable origin label exist; otherwise
-   * `commitFailedRetry`.
+   * CD ticks. A refusal speaks `commitRefused(originLabel)` (or
+   * `commitRefusedGeneric` without a label) once and holds it until the
+   * next commit, step move or reset. Error-arm priority:
+   * `commitRolledBackTo(originLabel)` when both `lastFailedIndex` and a
+   * resolvable origin label exist; otherwise `commitFailedRetry`.
    */
   readonly liveAnnouncement: Signal<string>;
   /**
    * SR descriptor phrase. Aggregator-announced or "Step N of M: <label>";
-   * routes the rejected row through `stepRolledBack(base)`.
+   * routes a refused row through `stepRefused(base)` and a failed row
+   * through `stepRolledBack(base)`.
    */
   readonly statusPhrase: (node: CngxStepNode) => string;
   /**
@@ -72,10 +77,48 @@ export function createStepperAnnouncementBuilders(
 ): CngxStepperAnnouncementBuilders {
   const { presenter, stepsOnly } = inputs;
 
+  // A refusal leaves the commit status at 'idle', so no status edge can
+  // voice it. The phrase arms on each new refused outcome (a new
+  // sequence) and is spent by the next commit activity, a step move or a
+  // cleared outcome (reset). Arm wins over spend in the same flush, so an
+  // optimistic rollback that moves the step still arms.
+  const refusedPhrase = createAnnouncementPhrase({
+    source: () => {
+      const outcome = presenter.lastOutcome();
+      return {
+        sequence: outcome?.sequence,
+        kind: outcome?.kind,
+        status: presenter.commitTransition.current(),
+        activeIndex: presenter.activeStepIndex(),
+      };
+    },
+    arm: (curr, prev) =>
+      curr.kind === 'refused' && curr.sequence !== prev.sequence ? untracked(refusedCopy) : null,
+    spend: (curr, prev) =>
+      curr.status !== prev.status ||
+      curr.activeIndex !== prev.activeIndex ||
+      curr.sequence === undefined,
+  });
+
+  function refusedCopy(): string {
+    const originIdx = presenter.originIndexDuringCommit();
+    const origin = originIdx !== undefined ? stepsOnly()[originIdx] : undefined;
+    const originLabel = origin?.label();
+    const i18n = inputs.i18n();
+    return originLabel ? i18n.commitRefused(originLabel) : i18n.commitRefusedGeneric;
+  }
+
   // The live region reads copy untracked: a language switch must not
   // re-speak the last phrase. The next commit transition speaks the new
   // language.
   const liveAnnouncement = computed<string>(() => {
+    // Read the refused phrase EAGERLY: linkedSignal only observes the
+    // snapshots it is read under, so a read behind the pending arm would
+    // miss the status change that spends it.
+    const refused = refusedPhrase();
+    if (refused) {
+      return refused;
+    }
     const current = presenter.commitTransition.current();
     if (current === 'pending') {
       return untracked(() => inputs.i18n().commitInFlight);
@@ -101,9 +144,10 @@ export function createStepperAnnouncementBuilders(
       return '';
     }
     if (current === 'error') {
-      // Sync commit-handler errors collapse pending -> error in one signal
-      // flush; tracker sees `previous === 'idle'`. Guard stays loose so
-      // sync-rejection (`commitAction = () => false`) still announces.
+      // Sync commit-handler failures collapse pending -> error in one signal
+      // flush; tracker sees `previous === 'idle'`. Guard stays loose so a
+      // synchronously throwing `commitAction` still announces. A `false`
+      // answer never reaches this arm: it settles to 'idle' as a refusal.
       const failedIdx = presenter.lastFailedIndex();
       const originIdx = presenter.originIndexDuringCommit();
       if (failedIdx !== undefined && originIdx !== undefined) {
@@ -131,9 +175,12 @@ export function createStepperAnnouncementBuilders(
     if (!base) {
       return '';
     }
-    return node.kind === 'step' && node.flatIndex === presenter.lastFailedIndex()
-      ? i18n.stepRolledBack(base)
-      : base;
+    if (node.kind !== 'step' || node.flatIndex !== presenter.lastFailedIndex()) {
+      return base;
+    }
+    return presenter.lastOutcome()?.kind === 'refused'
+      ? i18n.stepRefused(base)
+      : i18n.stepRolledBack(base);
   };
 
   // Converged on `statusLabels` - the same phrase map the status pill
