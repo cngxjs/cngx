@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, OutputEmitterRef, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
@@ -11,6 +11,7 @@ import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../shared/opti
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
+import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 
 type Tag = { readonly id: string; readonly name: string };
@@ -307,6 +308,28 @@ describe('CngxActionSelect - async + error flow', () => {
     expect(select.value()?.id).toBe('p');
   });
 
+  it('drops a quick-create that settles after the select is destroyed', () => {
+    const { fixture, host, select } = setup();
+    const subject = new Subject<Tag>();
+    host.quickCreateAction.set(() => subject);
+    flush(fixture);
+    select.actionCallbacks().commit({ label: 'Purple' });
+    flush(fixture);
+    const before = select.value();
+    const emit = vi.spyOn(OutputEmitterRef.prototype, 'emit');
+    fixture.destroy();
+    subject.next({ id: 'p', name: 'Purple' });
+    subject.complete();
+    // An emit on a destroyed OutputEmitterRef is what Angular reports as NG0953.
+    const lateEmits = emit.mock.contexts.filter(
+      (ref) => (ref as { readonly destroyed?: boolean }).destroyed === true,
+    );
+    emit.mockRestore();
+    expect(lateEmits).toEqual([]);
+    expect(host.createdLog).toEqual([]);
+    expect(select.value()).toEqual(before);
+  });
+
   it('surfaces errors via commitError output and preserves previous value', () => {
     const { fixture, host, select } = setup();
     const prior: Tag = { id: 't1', name: 'Design' };
@@ -519,4 +542,10 @@ describeMobileSheet('CngxActionSelect', CngxActionSelect, 'cngx-action-select', 
     const { accessor, ref } = createMockField<string>({ name: 'pick' });
     return { accessor, touched: () => ref.touched() };
   },
+});
+
+describeSelectBehaviourHost('CngxActionSelect', CngxActionSelect, 'cngx-action-select', {
+  inputs: '[options]="options"',
+  optionSelector: '[cngxOption]',
+  readValue: (cmp) => (cmp as { value: () => unknown }).value(),
 });

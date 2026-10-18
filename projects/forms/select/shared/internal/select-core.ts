@@ -307,6 +307,9 @@ export function createSelectCore<T, TCommit>(
   const commitController: CngxCommitController<TCommit> = inject(
     CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   )<TCommit>();
+  // A commit that settles after the host is gone must neither write, emit
+  // nor announce: cancel supersedes it and keeps the last status.
+  inject(DestroyRef).onDestroy(() => commitController.cancel());
   const commitState = commitController.state;
   const isCommitting = commitController.isCommitting;
   // `aria-invalid` projects both form-field validation and a

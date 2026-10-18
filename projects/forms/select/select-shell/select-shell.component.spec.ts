@@ -58,6 +58,7 @@ import type {
 } from '../shared/commit-action.types';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
+import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 
 // jsdom does not implement the Popover API - polyfill so CngxPopover can toggle.
@@ -1492,4 +1493,15 @@ describeMobileSheet('CngxSelectShell', CngxSelectShell, 'cngx-select-shell', {
     const { accessor, ref } = createMockField<string>({ name: 'pick' });
     return { accessor, touched: () => ref.touched() };
   },
+});
+
+describeSelectBehaviourHost('CngxSelectShell', CngxSelectShell, 'cngx-select-shell', {
+  inputs: '',
+  content: `
+    <cngx-option [value]="'red'">Red</cngx-option>
+    <cngx-option [value]="'green'">Green</cngx-option>
+  `,
+  contentImports: [CngxSelectOption],
+  optionSelector: 'cngx-option',
+  readValue: (cmp) => (cmp as { value: () => unknown }).value(),
 });

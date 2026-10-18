@@ -14,6 +14,7 @@ import { describeCommitControllerCascade } from '../shared/__test-helpers/commit
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
+import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import { CngxCombobox, type CngxComboboxChange } from './combobox.component';
 import { CngxComboboxChip } from '../shared/template-slots';
@@ -1122,4 +1123,10 @@ describeMobileSheet('CngxCombobox', CngxCombobox, 'cngx-combobox', {
     const { accessor, ref } = createMockField<string[]>({ name: 'pick', value: [] });
     return { accessor, touched: () => ref.touched() };
   },
+});
+
+describeSelectBehaviourHost('CngxCombobox', CngxCombobox, 'cngx-combobox', {
+  inputs: '[options]="options"',
+  optionSelector: '[cngxOption]',
+  readValue: (cmp) => (cmp as { values: () => unknown }).values(),
 });

@@ -19,6 +19,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
+import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { CngxSelect, type CngxSelectChange } from './select.component';
 import { injectSelectConfig, injectSelectAnnouncer } from '../shared/inject-helpers';
 import { CngxSelectAnnouncer } from '../shared/announcer';
@@ -1790,4 +1791,10 @@ describeFieldAriaHost('CngxSelect', CngxSelect, 'cngx-select', {
   inputs: '[options]="ctx[\'options\']"',
   initial: null,
   userWrite: (cmp) => (cmp as CngxSelect<string>).value.set('a'),
+});
+
+describeSelectBehaviourHost('CngxSelect', CngxSelect, 'cngx-select', {
+  inputs: '[options]="options"',
+  optionSelector: '[cngxOption]',
+  readValue: (cmp) => (cmp as { value: () => unknown }).value(),
 });

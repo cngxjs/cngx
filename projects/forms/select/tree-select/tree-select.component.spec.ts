@@ -8,6 +8,7 @@ import { describeCommitControllerCascade } from '../shared/__test-helpers/commit
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
+import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { stripBidiIsolates } from '@cngx/testing';
@@ -831,4 +832,10 @@ describeMobileSheet('CngxTreeSelect', CngxTreeSelect, 'cngx-tree-select', {
     const { accessor, ref } = createMockField<string[]>({ name: 'pick', value: [] });
     return { accessor, touched: () => ref.touched() };
   },
+});
+
+describeSelectBehaviourHost('CngxTreeSelect', CngxTreeSelect, 'cngx-tree-select', {
+  inputs: '[nodes]="nodes" [nodeIdFn]="idFn" [labelFn]="labelFn"',
+  optionSelector: '[role="treeitem"]',
+  readValue: (cmp) => (cmp as { values: () => unknown }).values(),
 });

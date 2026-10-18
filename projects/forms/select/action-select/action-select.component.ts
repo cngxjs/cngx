@@ -3,6 +3,7 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ViewEncapsulation,
   computed,
   contentChild,
@@ -834,6 +835,9 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   constructor() {
+    // Same teardown as the core's select controller: a create that settles
+    // after the host is destroyed is dropped.
+    inject(DestroyRef).onDestroy(() => this.createCommitController.cancel());
     afterNextRender(() => {
       if (this.autofocus()) {
         this.focus();
