@@ -258,6 +258,12 @@ function parse(content: string): ts.SourceFile {
   return ts.createSourceFile('edit.ts', content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 }
 
+/** Whether the file parses without a syntax error, so an edit that reads back also still compiles as written. */
+export function parsesCleanly(content: string): boolean {
+  const { diagnostics } = ts.transpileModule(content, { reportDiagnostics: true, fileName: 'edit.ts' });
+  return (diagnostics ?? []).length === 0;
+}
+
 export function hasArrayLiteral(content: string, selector: ArraySelector): boolean {
   return findArray(parse(content), selector) !== undefined;
 }

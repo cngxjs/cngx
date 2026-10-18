@@ -225,11 +225,13 @@ exists and was not written by cngx is never overwritten; the step plans a note a
 
 ## Outlets left to you
 
-cngx places the outlets only where it reads the whole root component the
-way the edit would change it. Everywhere else it writes nothing into the
-component, its template or its spec, and the note names the snippet and one
-of these reasons, with the class and the file it stopped at for `<Class>`
-and `<file>`:
+cngx places the outlets only where it can run the edit and read the result
+back: before it writes, it applies the exact edit to the template and the
+`imports` host in memory and checks that both outlets and both classes are
+there and every edited source still parses. Everywhere else it writes
+nothing into the component, its template or its spec, and the note names
+the snippet and one of these reasons, with the class and the file it
+stopped at for `<Class>` and `<file>`:
 
 - `<file> does not exist`: the `browser` (or `main`) entry of the build target points at no file.
 - `<file> has no bootstrapApplication(<Component>) or bootstrapModule(<NgModule>) call cngx can read`: the call is missing, commented out, or bootstraps something other than a class name.
@@ -245,9 +247,10 @@ and `<file>`:
 - `the template or templateUrl of <Class> in <file> is not a string literal`: a constant or an expression.
 - `the inline template of <Class> in <file> interpolates ${...}, which cngx does not edit as text`.
 - `<file>, the templateUrl of <Class>, does not exist`.
-- `the template of <Class> in <file> does not parse as an Angular template`.
+- `the template of <Class> in <file> does not parse as an Angular template`: also a template the outlets do not read back in after the edit.
 - `the inline template of <Class> in <file> is a quoted string, which cngx does not rewrite into a multi-line template`: a `'...'` or `"..."` template that lacks an outlet; a backtick template is edited in place.
-- `the imports of <Class> in <file> are not a plain array literal`: `imports: SHARED`, a shorthand `imports`, or `imports: [...] as const`.
+- `the imports of <Class> in <file> are not a plain array literal`: `imports: SHARED`, a shorthand `imports`, or `imports: [...] as const`; also an `imports` array the classes do not read back in after the edit.
+- `<file> does not parse as TypeScript, so cngx edits neither it nor <Class>`: the root component or the root NgModule has a syntax error; cngx reads such a file only as far as the parser recovers, so it does not write into it.
 - `<Class> in <file> is bound to something other than the <Class> class of @cngx/ui/feedback`: the file already declares (a namespace or an interface included) or imports a `CngxBannerOutlet` or `CngxToastOutlet` of its own, also another `@cngx/ui/feedback` export aliased to that name or the whole entry imported under it.
 
 Fix what the reason names and run `ng add @cngx/core --feedback` again, or

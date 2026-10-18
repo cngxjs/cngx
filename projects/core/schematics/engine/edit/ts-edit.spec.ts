@@ -11,6 +11,7 @@ import {
   hasArrayLiteral,
   importsModule,
   insertAfterImports,
+  parsesCleanly,
   promoteTypeOnlyImport,
   readBootstrapCall,
   readDecorator,
@@ -269,6 +270,14 @@ describe('reexportSources', () => {
     const content = "// export { App } from './commented';\nexport { Root as App } from './root';\n";
 
     expect(reexportSources(content, 'App')).toEqual([]);
+  });
+});
+
+describe('parsesCleanly', () => {
+  it('tells a file that parses from one with a syntax error', () => {
+    expect(parsesCleanly("import { a } from 'm';\nexport const b = [a];\n")).toBe(true);
+    expect(parsesCleanly('export const b = ;\n')).toBe(false);
+    expect(parsesCleanly('@Component({ imports: [A /* x */,, ] })\nexport class App {}\n')).toBe(true);
   });
 });
 

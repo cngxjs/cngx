@@ -15,6 +15,7 @@ import {
   FEEDBACK_SPEC_IMPORT,
   FEEDBACK_SPEC_PROVIDERS,
   inlineTemplateOf,
+  outletEdits,
 } from './app-shell';
 import { type Read } from './workspace';
 
@@ -406,6 +407,66 @@ describe('appShellOf outlets', () => {
   });
 });
 
+describe('outletEdits', () => {
+  // The files a reader sees after the outlet edits ran over them.
+  function editedReader(read: Read, shell: AppShell): Read {
+    if (shell.outlets.kind !== 'editable') {
+      throw new Error(`blocked: ${shell.outlets.reason}`);
+    }
+    const edited = new Map(outletEdits(shell, shell.outlets).map(({ path, edit }) => [path, edit(read(path) ?? '')] as const));
+    return (path) => edited.get(path) ?? read(path);
+  }
+
+  it('edits the template and the imports host apart, and an inline template in its host once', () => {
+    const standalone = shellOf(readerOf('scaffold-21'));
+    const inline = shellOf(readerOf('standalone-app', { 'src/app/app.ts': INLINE_APP }));
+    const placement = { elements: [], routerOutlet: true };
+
+    expect(outletEdits(standalone, placement).map(({ path, places, imports }) => ({ path, places, imports }))).toEqual([
+      { path: 'src/app/app.html', places: true, imports: false },
+      { path: 'src/app/app.ts', places: false, imports: true },
+    ]);
+    expect(outletEdits(inline, placement).map(({ path, places, imports }) => ({ path, places, imports }))).toEqual([
+      { path: 'src/app/app.ts', places: true, imports: true },
+    ]);
+  });
+
+  it.each([
+    ['the stock scaffold', {}],
+    ['a decorator without imports', { 'src/app/app.ts': STOCK_APP.replace('  imports: [RouterOutlet],\n', '') }],
+    ['a comma in a comment before the trailing comma', { 'src/app/app.ts': STOCK_APP.replace('  imports: [RouterOutlet],\n', '').replace("styleUrl: './app.css'", "styleUrl: './app.css' /* see a, b */,") }],
+    ['imports holding only a comment', { 'src/app/app.ts': STOCK_APP.replace('imports: [RouterOutlet],', 'imports: [\n    // later\n  ],') }],
+    ['an inline template', { 'src/app/app.ts': INLINE_APP }],
+    ['an NgModule host', { 'src/main.ts': NGMODULE_MAIN, 'src/app/app-module.ts': NGMODULE, 'src/app/app.ts': NGMODULE_APP }],
+  ])('runs on an editable shell with %s and reads back both outlets and both classes', (_name, overrides) => {
+    const read = readerOf('scaffold-21', overrides);
+    const standalone = !('src/app/app-module.ts' in overrides);
+    const after = editedReader(read, shellOf(read, standalone));
+
+    expect(shellOf(after, standalone).outlets).toMatchObject({
+      kind: 'editable',
+      elements: ['cngx-banner-outlet', 'cngx-toast-outlet'],
+      classes: ['CngxBannerOutlet', 'CngxToastOutlet'],
+    });
+  });
+
+  it('blocks a root component or NgModule with a syntax error instead of editing it', () => {
+    const broken = `${STOCK_APP}const broken = ;\n`;
+    const module = { 'src/main.ts': NGMODULE_MAIN, 'src/app/app-module.ts': `${NGMODULE}const broken = ;\n`, 'src/app/app.ts': NGMODULE_APP };
+
+    expect(shellOf(readerOf('scaffold-21', { 'src/app/app.ts': broken })).outlets).toMatchObject({
+      kind: 'blocked',
+      reason: 'source-parse-error',
+      file: 'src/app/app.ts',
+    });
+    expect(shellOf(readerOf('scaffold-21', module), false).outlets).toMatchObject({
+      kind: 'blocked',
+      reason: 'source-parse-error',
+      file: 'src/app/app-module.ts',
+    });
+  });
+});
+
 interface ReasonShape {
   readonly files?: Readonly<Record<string, string>>;
   readonly gone?: string;
@@ -449,6 +510,7 @@ const REASON_SHAPES: Readonly<Record<AppShellBlockedReason, ReasonShape>> = {
   'template-parse-error': { files: { 'src/app/app.html': '<div>@if (</div>\n' }, subject: 'App', file: 'src/app/app.html' },
   'quoted-template': { files: stockApp("templateUrl: './app.html'", "template: '<router-outlet />'"), ...AT_APP },
   'imports-not-array': { files: stockApp('imports: [RouterOutlet]', 'imports: SHARED'), ...AT_APP },
+  'source-parse-error': { files: stockApp("import { Component, signal } from '@angular/core';", "import { Component, signal } from '@angular/core';\nconst broken = ;"), ...AT_APP },
   'outlet-name-bound': { files: stockApp("import { RouterOutlet } from '@angular/router';", "import { RouterOutlet } from '@angular/router';\nimport { CngxToastOutlet } from './toasts';"), subject: 'CngxToastOutlet', file: 'src/app/app.ts' },
 };
 

@@ -81,6 +81,7 @@ export {
   insertAfterImports,
   type DecoratorReading,
   type LanguagePackArgument,
+  parsesCleanly,
   promoteTypeOnlyImport,
   readBootstrapCall,
   readDecorator,

@@ -1,32 +1,25 @@
 import {
   addToArrayLiteral,
-  appendElements,
   type Change,
   createNote,
   createProvenance,
   ensureArrayProperty,
-  hasArrayLiteral,
   insertAfterImports,
-  insertBeforeElement,
-  newlineOf,
-  promoteTypeOnlyImport,
   type Provenance,
   skipChange,
   type SkippedStep,
   type StepResult,
-  topLevelBindings,
 } from '../../engine';
 import {
   type AppShell,
   appShellBlockedText,
-  type AppShellOutlets,
   appShellSpecOf,
   type AppShellUnfollowed,
   FEEDBACK_MODULE,
   FEEDBACK_OUTLETS,
   FEEDBACK_SPEC_IMPORT,
   FEEDBACK_SPEC_PROVIDERS,
-  inlineTemplateOf,
+  outletEdits,
   type ProjectFacts,
 } from '../detect/detect';
 import { selectedLibs } from './dependencies';
@@ -50,63 +43,6 @@ export const OUTLETS_SNIPPET =
 
 const NOTHING: StepResult = { changes: [], skipped: [] };
 
-type EditableOutlets = Extract<AppShellOutlets, { readonly kind: 'editable' }>;
-
-function markup(element: string): string {
-  return `<${element} />`;
-}
-
-// Places the outlets detection found missing: the banner right above the
-// first router outlet outside the CLI's placeholder block when detection
-// found one, else at the end; the toast outlet at the end. Both land after
-// the placeholder block, which ends before `<router-outlet />` in the stock
-// template; a router outlet moved into the block takes no outlet with it. A
-// template that no longer parses is left as it is.
-function placeOutlets(template: string, outlets: EditableOutlets, newline = newlineOf(template)): string {
-  const missing = (element: string): boolean => !outlets.elements.includes(element);
-  const aboveRouter = missing(BANNER.element) && outlets.routerOutlet;
-  try {
-    const withBanner = aboveRouter ? insertBeforeElement(template, 'router-outlet', markup(BANNER.element), newline) : template;
-    const appended = [
-      ...(missing(BANNER.element) && !aboveRouter ? [markup(BANNER.element)] : []),
-      ...(missing(TOAST.element) ? [markup(TOAST.element)] : []),
-    ];
-    return appended.length === 0 ? withBanner : appendElements(withBanner, appended, newline);
-  } catch {
-    return template;
-  }
-}
-
-// Only a backtick template takes the outlets on lines of their own, with the
-// host file's newline; a quoted one is reported in detection and left as it
-// is here, also when it turned quoted between detection and apply.
-function placeInlineOutlets(content: string, className: string, outlets: EditableOutlets): string {
-  const inline = inlineTemplateOf(content, className);
-  if (inline === undefined || inline.quoted) {
-    return content;
-  }
-  return `${content.slice(0, inline.start)}${placeOutlets(inline.text, outlets, newlineOf(content))}${content.slice(inline.end)}`;
-}
-
-// Lists both outlet classes in the decorator `imports` (adding the property
-// when it is missing) and imports the ones the file does not bind yet as values.
-export function importOutlets(content: string, className: string): string {
-  const selector = { kind: 'decorator-imports', className } as const;
-  const withProperty = ensureArrayProperty(content, selector);
-  if (!hasArrayLiteral(withProperty, selector)) {
-    return content;
-  }
-  const listed = FEEDBACK_OUTLETS.reduce((text, outlet) => addToArrayLiteral(text, selector, outlet.className), withProperty);
-  // A class listed in `imports` is a value, so a type-only import of it becomes a value import.
-  const promoted = FEEDBACK_OUTLETS.reduce(
-    (text, outlet) => promoteTypeOnlyImport(text, outlet.className, FEEDBACK_MODULE),
-    listed,
-  );
-  const bindings = topLevelBindings(promoted);
-  const unbound = FEEDBACK_OUTLETS.map((outlet) => outlet.className).filter((name) => !bindings.has(name));
-  return unbound.length === 0 ? promoted : insertAfterImports(promoted, `import { ${unbound.join(', ')} } from '${FEEDBACK_MODULE}';`);
-}
-
 // The stock spec with the feedback providers; anything else stays as it is,
 // so a spec edited between detection and apply is never rewritten.
 export function provideFeedbackInSpec(content: string, project: string): string {
@@ -126,10 +62,9 @@ function templatePath(shell: AppShell): string {
   return shell.template.kind === 'file' ? shell.template.path : shell.componentFile;
 }
 
-// One change per file: the template file and the imports host, or one
-// change when the inline template sits in the host itself. Every file keeps
-// the outlets id, so a re-run records the same entries whether it places,
-// skips or withdraws them.
+// One change per file `outletEdits` names, the edits detection ran before it
+// called the shell editable. Every file keeps the outlets id, so a re-run
+// records the same entries whether it places, skips or withdraws them.
 function outletTargets(shell: AppShell, provenance: Provenance): readonly OutletTarget[] {
   const outlets = shell.outlets;
   if (outlets.kind === 'blocked') {
@@ -137,38 +72,18 @@ function outletTargets(shell: AppShell, provenance: Provenance): readonly Outlet
   }
   const placed = outlets.elements.length === FEEDBACK_OUTLETS.length;
   const imported = outlets.classes.length === FEEDBACK_OUTLETS.length;
-  const host = shell.importsHost;
-  const path = templatePath(shell);
-  const base = { kind: 'edit-file', id: OUTLETS_ID, reason: OUTLET_REASON, provenance } as const;
-  const placeEdit =
-    shell.template.kind === 'file'
-      ? (content: string) => placeOutlets(content, outlets)
-      : (content: string) => placeInlineOutlets(content, shell.className, outlets);
-  if (path === host.file) {
-    return [
-      {
-        change: {
-          ...base,
-          label: `Place the toast and banner outlets in ${path}`,
-          path,
-          edit: (content) => importOutlets(placeEdit(content), host.className),
-        },
-        done: placed && imported,
-      },
-    ];
-  }
-  return [
-    { change: { ...base, label: `Place the toast and banner outlets in ${path}`, path, edit: placeEdit }, done: placed },
-    {
-      change: {
-        ...base,
-        label: `Import the toast and banner outlets in ${host.file}`,
-        path: host.file,
-        edit: (content) => importOutlets(content, host.className),
-      },
-      done: imported,
+  return outletEdits(shell, outlets).map(({ path, places, imports, edit }) => ({
+    change: {
+      kind: 'edit-file',
+      id: OUTLETS_ID,
+      label: places ? `Place the toast and banner outlets in ${path}` : `Import the toast and banner outlets in ${path}`,
+      reason: OUTLET_REASON,
+      provenance,
+      path,
+      edit,
     },
-  ];
+    done: (!places || placed) && (!imports || imported),
+  }));
 }
 
 function snippetNote(reason: string, provenance: Provenance): StepResult {

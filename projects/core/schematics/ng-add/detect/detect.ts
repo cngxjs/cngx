@@ -86,7 +86,7 @@ export {
   FEEDBACK_OUTLETS,
   FEEDBACK_SPEC_IMPORT,
   FEEDBACK_SPEC_PROVIDERS,
-  inlineTemplateOf,
+  outletEdits,
 } from './app-shell';
 export { type EslintConfigFacts, type EslintStackFacts, type LegacyEslintConfigFacts } from './eslint';
 export {

@@ -1,6 +1,8 @@
 import { posix } from 'node:path';
 
 import {
+  addToArrayLiteral,
+  appendElements,
   type DecoratorReading,
   declaresClass,
   ensureArrayProperty,
@@ -8,6 +10,11 @@ import {
   hasArrayLiteral,
   hasElement,
   hasElementOutsidePlaceholder,
+  insertAfterImports,
+  insertBeforeElement,
+  newlineOf,
+  parsesCleanly,
+  promoteTypeOnlyImport,
   readBootstrapCall,
   readDecorator,
   reexportSources,
@@ -87,6 +94,8 @@ export const APP_SHELL_BLOCKED_REASONS = {
   'quoted-template': ({ subject, file }: BlockedAt) =>
     `the inline template of ${subject} in ${file} is a quoted string, which cngx does not rewrite into a multi-line template`,
   'imports-not-array': ({ subject, file }: BlockedAt) => `the imports of ${subject} in ${file} are not a plain array literal`,
+  'source-parse-error': ({ subject, file }: BlockedAt) =>
+    `${file} does not parse as TypeScript, so cngx edits neither it nor ${subject}`,
   'outlet-name-bound': ({ subject, file }: BlockedAt) =>
     `${subject} in ${file} is bound to something other than the ${subject} class of @cngx/ui/feedback`,
 } as const;
@@ -303,19 +312,151 @@ function unreadTemplate(decorator: DecoratorReading, className: string, file: st
   return literal ? undefined : blocked('template-not-literal', className, file);
 }
 
-// Why the imports host cannot take the outlet classes, or `undefined` when
-// it can: detection calls it editable only where the edit engine finds the
-// array or can add the property, through the same property lookup.
-function unreadImports(host: string, importsHost: AppShell['importsHost']): AppShellBlocked | undefined {
+// Why cngx does not read the decorator of the imports host, or `undefined`
+// when it does; whether its `imports` can take the classes is proven by
+// running the edit (`verifyOutletEdits`).
+function unreadImportsHost(host: string, importsHost: AppShell['importsHost']): AppShellBlocked | undefined {
   const { file, className, kind } = importsHost;
-  const decorator = readDecorator(host, className, kind === 'component' ? 'Component' : 'NgModule');
-  const unread = unreadDecorator(decorator, className, file);
-  if (unread !== undefined) {
-    return unread;
+  return unreadDecorator(readDecorator(host, className, kind === 'component' ? 'Component' : 'NgModule'), className, file);
+}
+
+/** What the outlet edits start from: the outlet elements the template holds and whether the banner goes above a router outlet. */
+export interface OutletPlacement {
+  readonly elements: readonly string[];
+  readonly routerOutlet: boolean;
+}
+
+function markup(element: string): string {
+  return `<${element} />`;
+}
+
+// Places the outlets `placement` lacks: the banner right above the first
+// router outlet outside the CLI's placeholder block when there is one, else
+// at the end; the toast outlet at the end. Both land after the placeholder
+// block, which ends before `<router-outlet />` in the stock template; a
+// router outlet moved into the block takes no outlet with it. A template
+// that no longer parses is returned as it is.
+function placeOutlets(template: string, placement: OutletPlacement, newline = newlineOf(template)): string {
+  const [banner, toast] = FEEDBACK_OUTLETS;
+  const missing = (element: string): boolean => !placement.elements.includes(element);
+  const aboveRouter = missing(banner.element) && placement.routerOutlet;
+  try {
+    const withBanner = aboveRouter ? insertBeforeElement(template, 'router-outlet', markup(banner.element), newline) : template;
+    const appended = [
+      ...(missing(banner.element) && !aboveRouter ? [markup(banner.element)] : []),
+      ...(missing(toast.element) ? [markup(toast.element)] : []),
+    ];
+    return appended.length === 0 ? withBanner : appendElements(withBanner, appended, newline);
+  } catch {
+    return template;
   }
+}
+
+// Only a backtick template takes the outlets on lines of their own, with the
+// host file's newline; a quoted one is reported in detection and left as it
+// is here, also when it turned quoted between detection and apply.
+function placeInlineOutlets(content: string, className: string, placement: OutletPlacement): string {
+  const inline = inlineTemplateOf(content, className);
+  if (inline === undefined || inline.quoted) {
+    return content;
+  }
+  return `${content.slice(0, inline.start)}${placeOutlets(inline.text, placement, newlineOf(content))}${content.slice(inline.end)}`;
+}
+
+// Lists both outlet classes in the decorator `imports` of `class
+// <className>` (adding the property when it is missing) and imports the ones
+// the file does not bind yet as values; the content stays unchanged when
+// there is no array to fill.
+function importOutlets(content: string, className: string): string {
   const selector = { kind: 'decorator-imports', className } as const;
-  const editable = hasArrayLiteral(host, selector) || ensureArrayProperty(host, selector) !== host;
-  return editable ? undefined : blocked('imports-not-array', className, file);
+  const withProperty = ensureArrayProperty(content, selector);
+  if (!hasArrayLiteral(withProperty, selector)) {
+    return content;
+  }
+  const listed = FEEDBACK_OUTLETS.reduce((text, outlet) => addToArrayLiteral(text, selector, outlet.className), withProperty);
+  // A class listed in `imports` is a value, so a type-only import of it becomes a value import.
+  const promoted = FEEDBACK_OUTLETS.reduce(
+    (text, outlet) => promoteTypeOnlyImport(text, outlet.className, FEEDBACK_MODULE),
+    listed,
+  );
+  const bindings = topLevelBindings(promoted);
+  const unbound = FEEDBACK_OUTLETS.map((outlet) => outlet.className).filter((name) => !bindings.has(name));
+  return unbound.length === 0 ? promoted : insertAfterImports(promoted, `import { ${unbound.join(', ')} } from '${FEEDBACK_MODULE}';`);
+}
+
+/** One file the outlets step edits, and whether the edit places the outlet elements, imports the classes, or both. */
+export interface OutletEdit {
+  readonly path: string;
+  readonly places: boolean;
+  readonly imports: boolean;
+  readonly edit: (content: string) => string;
+}
+
+type OutletShell = Pick<AppShell, 'componentFile' | 'className' | 'template' | 'importsHost'>;
+
+function templatePathOf(shell: OutletShell): string {
+  return shell.template.kind === 'file' ? shell.template.path : shell.componentFile;
+}
+
+/**
+ * The edits that place the outlets: one per file, the template and the
+ * imports host, or one when the inline template sits in the host itself.
+ * Detection runs exactly these edits before it calls a shell editable, and
+ * the outlets step plans them, so both agree by construction.
+ */
+export function outletEdits(shell: OutletShell, placement: OutletPlacement): readonly OutletEdit[] {
+  const host = shell.importsHost;
+  const path = templatePathOf(shell);
+  const place =
+    shell.template.kind === 'file'
+      ? (content: string) => placeOutlets(content, placement)
+      : (content: string) => placeInlineOutlets(content, shell.className, placement);
+  const importClasses = (content: string) => importOutlets(content, host.className);
+  if (path === host.file) {
+    return [{ path, places: true, imports: true, edit: (content) => importClasses(place(content)) }];
+  }
+  return [
+    { path, places: true, imports: false, edit: place },
+    { path: host.file, places: false, imports: true, edit: importClasses },
+  ];
+}
+
+// Whether the template holds `<element>`; `false` when it does not parse.
+function holdsElement(template: string, element: string): boolean {
+  try {
+    return hasElement(template, element);
+  } catch {
+    return false;
+  }
+}
+
+// Runs the outlet edits on the files they change and reads the result back
+// the way detection reads a shell: both outlet elements in the template,
+// both classes in the host `imports` and imported as values from
+// `@cngx/ui/feedback`, every edited source free of syntax errors. The reason
+// when an edit does not read back, else `undefined`.
+function verifyOutletEdits(read: Read, shell: OutletShell, placement: OutletPlacement): AppShellBlocked | undefined {
+  const edited = new Map(outletEdits(shell, placement).map(({ path, edit }) => [path, edit(read(path) ?? '')] as const));
+  const readBack = (path: string): string => edited.get(path) ?? read(path) ?? '';
+  const broken = [...edited].find(([path, content]) => path.endsWith('.ts') && !parsesCleanly(content));
+  if (broken !== undefined) {
+    return blocked('source-parse-error', shell.className, broken[0]);
+  }
+  const templatePath = templatePathOf(shell);
+  const template =
+    shell.template.kind === 'file' ? readBack(templatePath) : inlineTemplateOf(readBack(templatePath), shell.className)?.text;
+  if (template === undefined || !FEEDBACK_OUTLETS.every(({ element }) => holdsElement(template, element))) {
+    return blocked('template-parse-error', shell.className, templatePath);
+  }
+  const { file, className } = shell.importsHost;
+  const host = readBack(file);
+  const bindings = topLevelBindings(host);
+  const selector = { kind: 'decorator-imports', className } as const;
+  const imported = FEEDBACK_OUTLETS.every(
+    ({ className: name }) =>
+      hasArrayElement(host, selector, name) && importsOutlet(bindings.get(name), name) && bindings.get(name)?.typeOnly === false,
+  );
+  return imported ? undefined : blocked('imports-not-array', className, file);
 }
 
 // Whether a top-level binding is the outlet class `name` imported under its
@@ -335,6 +476,11 @@ function outletsOf(
   decorator: DecoratorReading,
 ): AppShellOutlets {
   const { componentFile, className } = shell;
+  // A source with a syntax error reads only as far as the parser recovers,
+  // so cngx edits neither it nor anything it reads from it.
+  if (!parsesCleanly(content)) {
+    return blockedOutlets(blocked('source-parse-error', className, componentFile));
+  }
   const unread = unreadDecorator(decorator, className, componentFile) ?? unreadTemplate(decorator, className, componentFile);
   if (unread !== undefined) {
     return blockedOutlets(unread);
@@ -355,9 +501,12 @@ function outletsOf(
   }
   const { file } = shell.importsHost;
   const host = read(file) ?? '';
-  const importsBlocked = unreadImports(host, shell.importsHost);
-  if (importsBlocked !== undefined) {
-    return blockedOutlets(importsBlocked);
+  if (!parsesCleanly(host)) {
+    return blockedOutlets(blocked('source-parse-error', className, file));
+  }
+  const hostBlocked = unreadImportsHost(host, shell.importsHost);
+  if (hostBlocked !== undefined) {
+    return blockedOutlets(hostBlocked);
   }
   const selector = { kind: 'decorator-imports', className: shell.importsHost.className } as const;
   const bindings = topLevelBindings(host);
@@ -366,6 +515,10 @@ function outletsOf(
   const clash = FEEDBACK_OUTLETS.find(({ className: name }) => bindings.has(name) && !importsOutlet(bindings.get(name), name));
   if (clash !== undefined) {
     return blockedOutlets(blocked('outlet-name-bound', clash.className, file));
+  }
+  const unverified = verifyOutletEdits(read, shell, { elements, routerOutlet });
+  if (unverified !== undefined) {
+    return blockedOutlets(unverified);
   }
   return {
     kind: 'editable',
