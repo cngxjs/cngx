@@ -34,7 +34,6 @@ import {
 import {
   CNGX_SELECTION_CONTROLLER_FACTORY,
   CNGX_STATEFUL,
-  nextUid,
   type AsyncStatus,
   type CngxAsyncState,
   type SelectionController,
@@ -263,7 +262,6 @@ export class CngxTreeSelect<T = unknown>
   // first - don't map onto the flat-list recycler integration. Tree-
   // recycler design tracked as follow-up; until then every node
   // renders regardless of the app-wide config entry.
-  private readonly autoId = nextUid('cngx-tree-select');
 
   /** Source tree. Flatten/visibility derive automatically. */
   readonly nodes = input<readonly CngxTreeNode<T>[]>([]);
@@ -627,15 +625,15 @@ export class CngxTreeSelect<T = unknown>
   /** @internal */ readonly showRefreshIndicator = this.core.showRefreshIndicator;
   /** @internal */ readonly showInlineError = this.core.showInlineError;
   /** @internal */ readonly skeletonIndices = this.core.skeletonIndices;
-  /** @internal */ readonly resolvedId = computed<string>(() => this.idInput() ?? this.autoId);
+  /** @internal */ readonly resolvedId = this.core.resolvedId;
+  /** @internal Accessible name of the `role="tree"` panel body. */
+  readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal - own template only; outer popover panel class binding. */
   protected readonly panelClassList = this.core.panelClassList;
   /** @internal - own template only; outer popover panel width binding. */
   protected readonly panelWidthCss = this.core.panelWidthCss;
   /** @internal */
-  readonly ariaReadonly = computed<boolean | null>(() =>
-    this.presenter?.readonly() ? true : null,
-  );
+  readonly ariaReadonly = this.core.ariaReadonly;
 
   /**
    * DI-resolved focus state. Same override surface as the rest of the
@@ -652,51 +650,15 @@ export class CngxTreeSelect<T = unknown>
     },
   });
 
-  /**
-   * Aggregated ARIA projection for the trigger. Structural-equal on
-   * every field so `@let aria = triggerAria()` doesn't churn on
-   * unrelated state changes.
-   */
-  protected readonly triggerAria = computed(
-    () => {
-      const describedBy = this.presenter?.describedBy() ?? null;
-      const errorMessage = this.errorState() ? describedBy : null;
-      return {
-        label: this.ariaLabel() ?? (this.ariaLabelledBy() ? null : this.label() || null),
-        labelledBy: this.ariaLabelledBy(),
-        describedBy,
-        errorMessage,
-        expanded: String(this.panelOpen()),
-        disabled: this.disabled() ? 'true' : null,
-        invalid: this.errorState() ? 'true' : null,
-        required: this.requiredInput() ? 'true' : null,
-        busy: this.isCommitting() || this.loading() ? 'true' : null,
-      };
-    },
-    {
-      equal: (a, b) =>
-        a.label === b.label &&
-        a.labelledBy === b.labelledBy &&
-        a.describedBy === b.describedBy &&
-        a.errorMessage === b.errorMessage &&
-        a.expanded === b.expanded &&
-        a.disabled === b.disabled &&
-        a.invalid === b.invalid &&
-        a.required === b.required &&
-        a.busy === b.busy,
-    },
-  );
+  /** @internal Trigger ARIA projection, structural-equal; from the shared core. */
+  protected readonly triggerAria = this.core.triggerAria;
 
-  /** @internal */ readonly effectiveTabIndex = computed<number>(() =>
-    this.disabled() ? -1 : this.tabIndex(),
-  );
+  /** @internal */ readonly effectiveTabIndex = this.core.effectiveTabIndex;
 
-  readonly id = computed<string>(() => this.resolvedId());
+  readonly id = computed<string>(() => this.core.resolvedId() ?? '');
   readonly focused: Signal<boolean> = this.hostFocus.focusedWithin;
   readonly empty = computed<boolean>(() => this.isEmpty());
-  readonly disabled = computed<boolean>(
-    () => this.disabledInput() || (this.presenter?.disabled() ?? false),
-  );
+  readonly disabled = this.core.disabled;
 
   /** @internal - panel-shell fallback labels (i18n). */
   readonly fallbackLabels = this.core.fallbackLabels;

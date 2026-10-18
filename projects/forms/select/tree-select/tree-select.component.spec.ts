@@ -140,7 +140,7 @@ describe('CngxTreeSelect', () => {
       new FocusEvent('blur'),
     );
     expect(f.tree.focused()).toBe(false);
-    expect(f.tree.id()).toMatch(/^cngx-tree-select-/);
+    expect(f.tree.id()).toBe(f.root.querySelector('cngx-tree-select')!.id);
   });
 
   it('handleSelect on a leaf toggles the value and emits selectionChange(toggle)', () => {
@@ -552,6 +552,15 @@ describe('CngxTreeSelect - shared core view state', () => {
     host.state.set('loading');
     fixture.detectChanges();
     expect(tree.showRefreshIndicator()).toBe(true);
+  });
+
+  it('projects aria-invalid on the trigger after a failed commit under the banner display', () => {
+    const { fixture, tree } = mount();
+    const trigger = (fixture.nativeElement as HTMLElement).querySelector('[role="combobox"]')!;
+    expect(trigger.getAttribute('aria-invalid')).toBeNull();
+    tree.handleSelect(tree.treeController.findById('b')!);
+    fixture.detectChanges();
+    expect(trigger.getAttribute('aria-invalid')).toBe('true');
   });
 
   it('hides the commit-error surface under commitErrorDisplay none', () => {

@@ -5,6 +5,7 @@
   <div
     #treeContainer
     role="tree"
+    [attr.aria-label]="host.resolvedListboxLabel()"
     cngxActiveDescendant
     cngxPopoverSheetInitialFocus
     #ad="cngxActiveDescendant"
