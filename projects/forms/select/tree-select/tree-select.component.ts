@@ -1072,7 +1072,7 @@ export class CngxTreeSelect<T = unknown>
     }
     const key = event.key;
     if (this.panelOpen()) {
-      if (key === 'Escape') {
+      if (key === 'Escape' && this.sheetWiring.escapeEnabled()) {
         event.preventDefault();
         this.close();
       }

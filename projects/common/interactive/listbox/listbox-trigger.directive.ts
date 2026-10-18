@@ -13,6 +13,11 @@ interface PopoverController {
   readonly isVisible: () => boolean;
   show(): void;
   hide(): void;
+  /**
+   * Escape policy of the popover (`CngxPopover.closeOnEscape`). When it
+   * reports `false` the trigger leaves Escape alone.
+   */
+  readonly closeOnEscape?: () => boolean;
 }
 
 /**
@@ -151,6 +156,9 @@ export class CngxListboxTrigger<T = unknown> {
 
     switch (key) {
       case 'Escape':
+        if (this.popover().closeOnEscape?.() === false) {
+          return;
+        }
         event.preventDefault();
         this.popover().hide();
         return;

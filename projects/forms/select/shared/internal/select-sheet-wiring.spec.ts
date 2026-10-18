@@ -136,6 +136,17 @@ describe('createSelectSheetWiring', () => {
     expect(wiring.escapeEnabled()).toBe(false);
   });
 
+  it("keeps Escape off on every path under dismissOn 'outside'", () => {
+    const { wiring, presentation, close, hide } = setup({ dismissOn: 'outside' });
+    expect(wiring.escapeEnabled()).toBe(false);
+    wiring.escapeClose();
+    expect(close).not.toHaveBeenCalled();
+    presentation.set('sheet');
+    expect(wiring.escapeEnabled()).toBe(false);
+    wiring.escapeClose();
+    expect(hide).not.toHaveBeenCalled();
+  });
+
   it('enables the variant outside-click path only while anchored and open', () => {
     const { wiring, presentation, visible } = setup();
     expect(wiring.clickOutsideEnabled()).toBe(true);

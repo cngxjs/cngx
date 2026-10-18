@@ -11,8 +11,11 @@ export interface DismissHandlerOptions {
   /** Variant's `viewChild(CngxPopover)`. `.hide()` only when visible. */
   readonly popoverRef: Signal<CngxPopover | undefined>;
   /**
-   * Captured once. Escape handling lives in the action-host bridge's
-   * capture-phase intercept.
+   * Captured once. `'outside'` closes on an outside click only: Escape stays
+   * off on every path (popover, trigger, in-sheet input), enforced by the
+   * select sheet wiring's `escapeEnabled`. `'escape'` closes on Escape only.
+   * The action-host bridge's capture-phase intercept still owns a dirty
+   * action slot's Escape.
    */
   readonly dismissOn: 'outside' | 'escape' | 'both';
   /**

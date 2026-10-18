@@ -1,4 +1,11 @@
-import { Component, OutputEmitterRef, signal, type Type } from '@angular/core';
+import {
+  Component,
+  OutputEmitterRef,
+  signal,
+  type Provider,
+  type EnvironmentProviders,
+  type Type,
+} from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { form, validate } from '@angular/forms/signals';
 import { By } from '@angular/platform-browser';
@@ -10,6 +17,7 @@ import { CngxFormField, CngxFormFieldPresenter } from '@cngx/forms/field';
 
 import { CngxSelectAnnouncer } from '../announcer';
 import type { CngxSelectCommitErrorDisplay, CngxSelectCommitMode } from '../commit-action.types';
+import { provideSelectConfig, withDismissOn } from '../config';
 
 /**
  * Per-variant wiring for {@link describeSelectBehaviourHost}.
@@ -43,6 +51,7 @@ interface VariantApi {
 interface MountOptions {
   /** Wraps the variant in a touched, invalid `cngx-form-field`. */
   readonly inField?: boolean;
+  readonly providers?: readonly (Provider | EnvironmentProviders)[];
 }
 
 // jsdom has no Popover API.
@@ -90,7 +99,7 @@ function flush(fixture: ComponentFixture<unknown>): void {
  * the host is destroyed neither writes, emits nor speaks; a failed commit
  * stays reachable from the trigger while the panel is closed; a select that
  * turns disabled closes and ignores activations; focus leaving the host
- * closes the anchored panel.
+ * closes the anchored panel; Escape follows `dismissOn`.
  *
  * @internal
  */
@@ -133,6 +142,9 @@ export function describeSelectBehaviourHost(
 
     function mount(mountOpts: MountOptions = {}) {
       polyfillPopover();
+      if (mountOpts.providers) {
+        TestBed.configureTestingModule({ providers: [...mountOpts.providers] });
+      }
       const variantTag = `
             <${elementSelector}
               [label]="'Colour'"
@@ -357,6 +369,20 @@ export function describeSelectBehaviourHost(
         flush(fixture);
         expect(variant.panelOpen()).toBe(true);
       });
+    });
+
+    it("keeps the panel open on Escape when it dismisses on outside clicks only", () => {
+      const { fixture, variant, trigger } = mount({
+        providers: [provideSelectConfig(withDismissOn('outside'))],
+      });
+      variant.open();
+      flush(fixture);
+      expect(variant.panelOpen()).toBe(true);
+      const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+      trigger().dispatchEvent(escape);
+      flush(fixture);
+      expect(variant.panelOpen()).toBe(true);
+      expect(escape.defaultPrevented).toBe(false);
     });
   });
 }

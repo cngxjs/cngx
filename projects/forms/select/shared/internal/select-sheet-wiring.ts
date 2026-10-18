@@ -72,7 +72,10 @@ export interface CngxSelectSheetWiring extends CngxSelectSheetScope {
   readonly sheetModal: Signal<boolean>;
   /** A pessimistic commit is pending. */
   readonly closeBlocked: Signal<boolean>;
-  /** Bound to `[closeOnEscape]`: only the modal sheet blocks Escape while a commit is pending. */
+  /**
+   * Bound to `[closeOnEscape]`: off under `dismissOn: 'outside'`, and the
+   * modal sheet blocks Escape while a pessimistic commit is pending.
+   */
   readonly escapeEnabled: Signal<boolean>;
   /** Bound to `cngxClickOutside [enabled]`: outside a sheet the atom owns the outside tap. */
   readonly clickOutsideEnabled: Signal<boolean>;
@@ -158,7 +161,14 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     opts.popoverRef()?.hide();
   };
 
+  const escapeEnabled = computed(
+    () => opts.dismissOn !== 'outside' && !(sheetModal() && closeBlocked()),
+  );
+
   const escapeClose = (): void => {
+    if (opts.dismissOn === 'outside') {
+      return;
+    }
     if (sheetModal()) {
       handleSheetClose('close');
       return;
@@ -198,7 +208,7 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     sheetAnchored,
     sheetModal,
     closeBlocked,
-    escapeEnabled: computed(() => !(sheetModal() && closeBlocked())),
+    escapeEnabled,
     clickOutsideEnabled: computed(() => panelOpen() && sheetAnchored()),
     handleClickOutside: dismiss.handleClickOutside,
     handleSheetClose,

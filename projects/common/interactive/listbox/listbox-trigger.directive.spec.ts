@@ -20,7 +20,7 @@ import { CngxOption } from './option.directive';
     >
       Select
     </button>
-    <div cngxPopover #pop="cngxPopover">
+    <div cngxPopover #pop="cngxPopover" [closeOnEscape]="escape()">
       <div cngxListbox [label]="'Colors'" tabindex="0" #lb="cngxListbox">
         <div cngxOption value="red">Red</div>
         <div cngxOption value="green">Green</div>
@@ -32,6 +32,7 @@ import { CngxOption } from './option.directive';
 })
 class TriggerHost {
   readonly dummy = signal(0);
+  readonly escape = signal(true);
 }
 
 // jsdom does not implement the Popover API - polyfill minimally so CngxPopover
@@ -139,6 +140,19 @@ describe('CngxListboxTrigger', () => {
     TestBed.flushEffects();
     expect(popover.isVisible()).toBe(true);
     expect(ad.activeValue()).toBe('blue');
+  });
+
+  it('leaves Escape alone while the popover reports closeOnEscape false', () => {
+    const { fixture, popover, triggerEl } = setup();
+    fixture.componentInstance.escape.set(false);
+    fixture.detectChanges();
+    popover.show();
+    TestBed.flushEffects();
+    const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    triggerEl.dispatchEvent(escape);
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(true);
+    expect(escape.defaultPrevented).toBe(false);
   });
 
   it('Escape closes popover', () => {
