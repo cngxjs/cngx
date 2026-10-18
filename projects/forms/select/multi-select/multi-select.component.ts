@@ -581,6 +581,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     this.core.resolvedSelectionIndicatorPosition;
   /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
   /** @internal */ protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
+  /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
   /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   /** @internal */ protected readonly externalActivation = this.core.externalActivation;

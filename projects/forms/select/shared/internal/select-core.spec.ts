@@ -228,9 +228,12 @@ describe('createSelectCore - trigger ARIA control hooks', () => {
       { onSuccess: () => undefined, onError: () => undefined },
     );
     expect(core.ariaInvalid()).toBe(true);
-    expect(core.ariaErrorMessage()).toBeNull();
+    expect(core.ariaErrorMessage()).toBe(core.commitErrorId);
+    expect(core.commitErrorText()).toContain('boom');
     display.set('none');
     expect(core.ariaInvalid()).toBeNull();
+    expect(core.ariaErrorMessage()).toBeNull();
+    expect(core.commitErrorText()).toBe('');
   });
 
   it('keeps the triggerAria reference across an unrelated change', () => {

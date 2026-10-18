@@ -11,6 +11,7 @@ import {
 import {
   CNGX_DEV_DESCRIPTORS,
   CNGX_SELECTION_CONTROLLER_FACTORY,
+  nextUid,
   type AsyncStatus,
   type CngxAsyncState,
   type SelectionController,
@@ -197,6 +198,13 @@ export interface CngxSelectCore<T, TCommit> {
   readonly ariaBusy: Signal<boolean | null>;
   readonly ariaReadonly: Signal<boolean | null>;
   readonly ariaErrorMessage: Signal<string | null>;
+  /**
+   * Id of the visually hidden commit-error node each host renders outside the
+   * popover. Referenced from the trigger only while a commit error shows.
+   */
+  readonly commitErrorId: string;
+  /** Text of the commit-error node; `''` while no commit error shows. */
+  readonly commitErrorText: Signal<string>;
   readonly effectiveTabIndex: Signal<number | null>;
   readonly triggerAria: Signal<CngxSelectTriggerAria>;
 
@@ -590,10 +598,23 @@ export function createSelectCore<T, TCommit>(
     return controllerInstance?.isIndeterminate(value)() ?? false;
   }
 
-  const describedBy = fieldAria.describedBy;
+  // The commit-error node lives outside the popover, so a closed panel still
+  // leaves the failure reachable from the trigger. The field error keeps the
+  // single-IDREF aria-errormessage; the commit error then rides on
+  // aria-describedby.
+  const commitErrorId = nextUid('cngx-select-commit-error');
+  const commitErrorText = computed<string>(() =>
+    showCommitError() ? commitErrorMessage(commitState.error()) : '',
+  );
+  const describedBy = computed<string | null>(() => {
+    const commitRef = showCommitError() ? commitErrorId : null;
+    return [fieldAria.describedBy(), commitRef].filter(Boolean).join(' ') || null;
+  });
   const ariaInvalid = fieldAria.ariaInvalid;
   const ariaReadonly = fieldAria.ariaReadonly;
-  const ariaErrorMessage = fieldAria.ariaErrorMessage;
+  const ariaErrorMessage = computed<string | null>(
+    () => fieldAria.ariaErrorMessage() ?? (showCommitError() ? commitErrorId : null),
+  );
   const ariaBusy = fieldAria.ariaBusy;
 
   const effectiveTabIndex = computed<number | null>(() => (disabled() ? -1 : deps.tabIndex()));
@@ -782,6 +803,8 @@ export function createSelectCore<T, TCommit>(
     ariaBusy,
     ariaReadonly,
     ariaErrorMessage,
+    commitErrorId,
+    commitErrorText,
     effectiveTabIndex,
     triggerAria,
     disabled,
