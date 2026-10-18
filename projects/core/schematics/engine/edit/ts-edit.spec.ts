@@ -5,6 +5,7 @@ import {
   addToArrayLiteral,
   type ArraySelector,
   countArrayLiterals,
+  declaresClass,
   ensureArrayProperty,
   hasArrayElement,
   hasArrayLiteral,
@@ -13,6 +14,7 @@ import {
   promoteTypeOnlyImport,
   readDecorator,
   readProviderCalls,
+  reexportSources,
   topLevelBindings,
 } from './ts-edit';
 
@@ -216,6 +218,43 @@ const { e, f: [g, ...h] } = source;
       ['g', declared],
       ['h', declared],
     ]);
+  });
+});
+
+describe('declaresClass', () => {
+  it('finds a top-level class declaration, exported or not', () => {
+    expect(declaresClass('export class App {}\n', 'App')).toBe(true);
+    expect(declaresClass('class App {}\n', 'App')).toBe(true);
+  });
+
+  it('ignores the word class in comments, strings and other names', () => {
+    const content = `// the class App lives elsewhere
+const note = 'class App';
+export class AppShell {}
+export interface App {}
+`;
+
+    expect(declaresClass(content, 'App')).toBe(false);
+  });
+});
+
+describe('reexportSources', () => {
+  it('prefers the named re-export over star re-exports', () => {
+    const content = "export * from './a';\nexport { App, Other } from './app';\n";
+
+    expect(reexportSources(content, 'App')).toEqual(['./app']);
+  });
+
+  it('falls back to every star re-export, skipping named ones for other names', () => {
+    const content = "export * from './a';\nexport { Other } from './other';\nexport * as ns from './ns';\nexport * from './b';\n";
+
+    expect(reexportSources(content, 'App')).toEqual(['./a', './b']);
+  });
+
+  it('ignores re-exports in comments and aliased re-exports', () => {
+    const content = "// export { App } from './commented';\nexport { Root as App } from './root';\n";
+
+    expect(reexportSources(content, 'App')).toEqual([]);
   });
 });
 

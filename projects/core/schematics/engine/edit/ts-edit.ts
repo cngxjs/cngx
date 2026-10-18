@@ -413,6 +413,38 @@ export function topLevelBindings(content: string): ReadonlyMap<string, TopLevelB
   );
 }
 
+/** Whether the file declares a top-level `class <name>`; text in comments or strings never counts. */
+export function declaresClass(content: string, name: string): boolean {
+  return parse(content).statements.some(
+    (statement) => ts.isClassDeclaration(statement) && statement.name?.text === name,
+  );
+}
+
+/**
+ * The module specifiers the file re-exports `name` from: the one of a named
+ * `export { name } from`, else those of every `export * from`. An aliased
+ * re-export (`export { Other as name }`) is not followed.
+ */
+export function reexportSources(content: string, name: string): readonly string[] {
+  const reexports = parse(content).statements.flatMap((statement) =>
+    ts.isExportDeclaration(statement) &&
+    statement.moduleSpecifier !== undefined &&
+    ts.isStringLiteral(statement.moduleSpecifier)
+      ? [{ clause: statement.exportClause, specifier: statement.moduleSpecifier.text }]
+      : [],
+  );
+  const named = reexports.find(
+    ({ clause }) =>
+      clause !== undefined &&
+      ts.isNamedExports(clause) &&
+      clause.elements.some((element) => element.name.text === name && element.propertyName === undefined),
+  );
+  if (named !== undefined) {
+    return [named.specifier];
+  }
+  return reexports.filter(({ clause }) => clause === undefined).map(({ specifier }) => specifier);
+}
+
 function typeOnlyImport(
   source: ts.SourceFile,
   symbol: string,

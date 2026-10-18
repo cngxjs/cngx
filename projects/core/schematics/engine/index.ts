@@ -73,6 +73,7 @@ export {
 export {
   addToArrayLiteral,
   type ArraySelector,
+  declaresClass,
   ensureArrayProperty,
   hasArrayElement,
   hasArrayLiteral,
@@ -82,6 +83,7 @@ export {
   type LanguagePackArgument,
   readDecorator,
   readProviderCalls,
+  reexportSources,
   topLevelBindings,
 } from './edit/ts-edit';
 export { appendElements, hasElement, insertBeforeElement } from './edit/template-edit';

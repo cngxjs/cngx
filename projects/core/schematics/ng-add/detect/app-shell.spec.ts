@@ -141,6 +141,18 @@ describe('appShellOf', () => {
     });
   });
 
+  it('follows a re-export through the AST when a comment names the class', () => {
+    const read = readerOf('standalone-app', {
+      'src/main.ts': readFixture('standalone-app')['src/main.ts'].replace("'./app/app'", "'./app'"),
+      'src/app/index.ts': "// export class App lived here before the split\n// export { App } from './old';\nexport * from './app';\n",
+    });
+
+    expect(appShellOf(read, 'src/main.ts', true, 'fixture-app')).toMatchObject({
+      componentFile: 'src/app/app.ts',
+      template: { kind: 'file', path: 'src/app/app.html' },
+    });
+  });
+
   it('gives up on a bootstrap it cannot follow', () => {
     const viaAlias = readerOf('standalone-app', {
       'src/main.ts': "import { bootstrapApplication } from '@angular/platform-browser';\nimport { App } from '@app/root';\n\nbootstrapApplication(App);\n",

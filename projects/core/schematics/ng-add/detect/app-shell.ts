@@ -2,11 +2,13 @@ import { posix } from 'node:path';
 
 import {
   type DecoratorReading,
+  declaresClass,
   ensureArrayProperty,
   hasArrayElement,
   hasArrayLiteral,
   hasElement,
   readDecorator,
+  reexportSources,
   topLevelBindings,
 } from '../../engine';
 import { SCAFFOLD_CATALOG, SCAFFOLD_NAME_PLACEHOLDER } from './scaffold-catalog.generated';
@@ -83,8 +85,8 @@ function resolveSpecifier(read: Read, from: string, specifier: string): string |
   return [`${base}.ts`, posix.join(base, 'index.ts')].find((path) => read(path) !== undefined);
 }
 
-function declaresClass(content: string, name: string): boolean {
-  return new RegExp(`\\bclass\\s+${name}\\b`).test(content);
+function isRelative(specifier: string): boolean {
+  return specifier.startsWith('.');
 }
 
 // The file declaring `name`, starting from `file` and following named and
@@ -97,9 +99,7 @@ function classFile(read: Read, file: string, name: string, hops = 0): string | u
   if (declaresClass(content, name)) {
     return file;
   }
-  const named = new RegExp(`export\\s*\\{[^}]*\\b${name}\\b[^}]*\\}\\s*from\\s*['"](\\.[^'"]+)['"]`).exec(content)?.[1];
-  const stars = [...content.matchAll(/export\s*\*\s*from\s*['"](\.[^'"]+)['"]/g)].map((match) => match[1]);
-  for (const specifier of named === undefined ? stars : [named]) {
+  for (const specifier of reexportSources(content, name).filter(isRelative)) {
     const target = resolveSpecifier(read, file, specifier);
     const found = target === undefined ? undefined : classFile(read, target, name, hops + 1);
     if (found !== undefined) {
@@ -109,14 +109,13 @@ function classFile(read: Read, file: string, name: string, hops = 0): string | u
   return undefined;
 }
 
-// Class names come from `\w+` captures, so they need no regex escaping.
 // Where `name`, used in `file`, is declared: the file itself or the target of its relative import.
 function definitionOf(read: Read, file: string, content: string, name: string): string | undefined {
   if (declaresClass(content, name)) {
     return file;
   }
-  const specifier = new RegExp(`import\\s*\\{[^}]*\\b${name}\\b[^}]*\\}\\s*from\\s*['"](\\.[^'"]+)['"]`).exec(content)?.[1];
-  const target = specifier === undefined ? undefined : resolveSpecifier(read, file, specifier);
+  const specifier = topLevelBindings(content).get(name)?.module;
+  const target = specifier === undefined || !isRelative(specifier) ? undefined : resolveSpecifier(read, file, specifier);
   return target === undefined ? undefined : classFile(read, target, name);
 }
 
