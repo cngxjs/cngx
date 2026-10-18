@@ -17,6 +17,29 @@ export interface FieldControlAriaOptions {
    */
   readonly localDisabled?: () => boolean;
   /**
+   * Control-owned id that wins over the field's `inputId` and the
+   * fallback (a select's `[id]` input). `null` or `''` defers to the field.
+   */
+  readonly idOverride?: () => string | null;
+  /**
+   * Control-owned `aria-labelledby` that wins over the field's label id
+   * (a consumer-bound `aria-labelledby`). `null` defers to the field.
+   */
+  readonly labelledByOverride?: () => string | null;
+  /** Control-local required knob OR'd with the field's required state. */
+  readonly localRequired?: () => boolean;
+  /**
+   * Control-local invalid state OR'd into `ariaInvalid` only (a failed
+   * commit). `errorState` and `ariaErrorMessage` stay the field's: the
+   * error message id names the field error, not the local one.
+   */
+  readonly localInvalid?: () => boolean;
+  /**
+   * Control-local busy state OR'd with the field's pending state (options
+   * loading, a commit in flight).
+   */
+  readonly localBusy?: () => boolean;
+  /**
    * Disabled-reason `aria-describedby` gating. The reason id is appended
    * only while the control is disabled *with* a reason. accname 1.2 §2A
    * traverses a directly-referenced hidden node, so emitting the id
@@ -36,7 +59,7 @@ export interface FieldControlAriaOptions {
  * @category forms/field
  */
 export interface FieldControlAria {
-  /** Presenter `inputId`, else the configured fallback. */
+  /** `idOverride`, else presenter `inputId`, else the configured fallback. */
   readonly id: Signal<string>;
   /** Field disabled, OR'd with `localDisabled` when configured. */
   readonly disabled: Signal<boolean>;
@@ -90,7 +113,13 @@ export function createFieldControlAria(
   const fallbackId = options.fallbackId ?? '';
   const focusedState = signal(false);
 
-  const id = computed<string>(() => presenter?.inputId() ?? fallbackId);
+  const id = computed<string>(() => {
+    const override = options.idOverride?.();
+    if (override) {
+      return override;
+    }
+    return presenter?.inputId() ?? fallbackId;
+  });
   const disabled = computed<boolean>(
     () => (options.localDisabled?.() ?? false) || (presenter?.disabled() ?? false),
   );
@@ -109,10 +138,12 @@ export function createFieldControlAria(
     errorState,
     focused: focusedState.asReadonly(),
     describedBy,
-    labelledBy: computed(() => presenter?.labelId() ?? null),
-    ariaInvalid: computed(() => (errorState() ? true : null)),
-    ariaRequired: computed(() => (presenter?.required() ? true : null)),
-    ariaBusy: computed(() => (presenter?.pending() ? true : null)),
+    labelledBy: computed(() => options.labelledByOverride?.() ?? presenter?.labelId() ?? null),
+    ariaInvalid: computed(() => (errorState() || options.localInvalid?.() ? true : null)),
+    ariaRequired: computed(() =>
+      options.localRequired?.() || presenter?.required() ? true : null,
+    ),
+    ariaBusy: computed(() => (presenter?.pending() || options.localBusy?.() ? true : null)),
     ariaErrorMessage: computed(() => (errorState() ? (presenter?.errorId() ?? null) : null)),
     ariaReadonly: computed(() => (presenter?.readonly() ? true : null)),
     ariaDisabled: computed(() => (disabled() ? true : null)),

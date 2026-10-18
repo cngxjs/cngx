@@ -1,10 +1,13 @@
-import { Component, signal, type Type } from '@angular/core';
+import { Component, signal, ViewEncapsulation, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CngxFormField, type CngxFieldAccessor } from '@cngx/forms/field';
+import { CngxFormField, CngxPrefix, type CngxFieldAccessor } from '@cngx/forms/field';
+import { CngxInput } from '@cngx/forms/input';
 import { createMockField } from '@cngx/forms/field/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
 
+import { CngxFieldBox } from '../../field/field-box.directive';
 import { CngxActionMultiSelect } from '../action-multi-select/action-multi-select.component';
 import { CngxActionSelect } from '../action-select/action-select.component';
 import { CngxCombobox } from '../combobox/combobox.component';
@@ -102,6 +105,80 @@ class StateHost {
     invalid: true,
     touched: true,
   }).accessor;
+}
+
+// A readonly fill select keeps its resting surface on hover, like a readonly
+// fill input; the editable twin proves the hover rule is live.
+@Component({
+  selector: 'cngx-select-skin-readonly-host',
+  standalone: true,
+  imports: [CngxSelect, CngxFormField],
+  template: `
+    <div style="display: grid; line-height: 1.5">
+      <cngx-select class="editable" skin="fill" [label]="'Colour'" [options]="options" />
+      <cngx-form-field [field]="readonlyField">
+        <cngx-select class="readonly" skin="fill" [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
+    </div>
+  `,
+  styleUrls: ['../../theming/components/cngx-field-skin.css'],
+})
+class ReadonlyHost {
+  readonly options = OPTIONS;
+  readonly readonlyField: CngxFieldAccessor = createMockField({
+    name: 'colour',
+    readonly: true,
+  }).accessor;
+}
+
+// A select used as an interactive affix (a currency picker). The affix block
+// stretches to the box row and takes the touch floor; the trigger must fill
+// it rather than shrink back to its value line. The full Track-B harness
+// loads so the box formula and the affix stretch are the shipped ones; the
+// touch floor is set on the fixture because headless runs a fine pointer.
+@Component({
+  selector: 'cngx-select-affix-block-host',
+  standalone: true,
+  imports: [CngxFieldBox, CngxPrefix, CngxInput, CngxSelect, CngxTreeSelect],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/reset.css',
+    '../../../core/theming/base.css',
+    '../../../core/theming/density-tokens.css',
+    '../../theming/components/cngx-field-affix.css',
+    '../../theming/components/cngx-field-skin.css',
+    './select-base.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div style="--cngx-target-min: 44px">
+      <span cngxFieldBox class="affix-row" skin="fill">
+        <cngx-select
+          class="affix-select"
+          cngxPrefix
+          cngxPrefixInteractive
+          [label]="'Currency'"
+          [options]="options"
+        />
+        <input cngxInput />
+      </span>
+      <span cngxFieldBox class="affix-tree-row" skin="fill">
+        <cngx-tree-select
+          class="affix-tree"
+          cngxPrefix
+          cngxPrefixInteractive
+          [label]="'Team'"
+          [nodeIdFn]="nodeId"
+        />
+        <input cngxInput />
+      </span>
+    </div>
+  `,
+})
+class AffixBlockHost {
+  readonly options = OPTIONS;
+  readonly nodeId = (value: unknown): string => String(value);
 }
 
 // Every variant in the default (outline) skin, so the box-sizing contract is
@@ -389,6 +466,37 @@ describe('select-family field skins', () => {
       expect(el.getBoundingClientRect().height).toBeCloseTo(boxHeight(el), 0);
     },
   );
+
+  it('keeps the resting background when a readonly fill trigger is hovered', async () => {
+    const root = mount(ReadonlyHost);
+    const editable = trigger(root, '.editable');
+    const readonly = trigger(root, '.readonly');
+    expect(root.querySelector('.readonly')?.getAttribute('aria-readonly')).toBe('true');
+    const editableRest = computedValue(editable, 'background-color');
+    const readonlyRest = computedValue(readonly, 'background-color');
+
+    await userEvent.hover(editable);
+    expect(computedValue(editable, 'background-color')).not.toBe(editableRest);
+
+    await userEvent.hover(readonly);
+    expect(computedValue(readonly, 'background-color')).toBe(readonlyRest);
+  });
+
+  // The single select stands in for the `display: contents` roots, the tree
+  // for the block roots.
+  it.each([
+    ['.affix-row', '.affix-select'],
+    ['.affix-tree-row', '.affix-tree'],
+  ])('fills the stretched affix block with the trigger of a %s select affix', (rowSel, hostSel) => {
+    const root = mount(AffixBlockHost);
+    const host = root.querySelector<HTMLElement>(hostSel)!;
+    const row = root.querySelector<HTMLElement>(rowSel)!;
+    expect(host.classList).toContain('cngx-field-affix--interactive');
+    const hostHeight = host.getBoundingClientRect().height;
+    const rowContent = row.clientHeight - px(row, 'padding-top') - px(row, 'padding-bottom');
+    expect(hostHeight).toBeCloseTo(rowContent, 0);
+    expect(trigger(root, hostSel).getBoundingClientRect().height).toBeCloseTo(hostHeight, 0);
+  });
 
   it('dashes the underline when the inner combobox input is disabled', () => {
     const el = trigger(mount(StateHost), '.off');

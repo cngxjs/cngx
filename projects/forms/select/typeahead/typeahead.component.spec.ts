@@ -8,6 +8,7 @@ import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import { CngxTypeahead } from './typeahead.component';
 import type { CngxSelectOptionsInput } from '../shared/option.model';
@@ -636,6 +637,18 @@ describeCommitControllerCascade('CngxTypeahead');
 describeFieldSkinHost('CngxTypeahead', CngxTypeahead, 'cngx-typeahead', () =>
   createMockField({ name: 'pick' }).accessor,
 );
+
+describeFieldAriaHost('CngxTypeahead', CngxTypeahead, 'cngx-typeahead', {
+  ctx: () => ({
+    options: [
+      { value: 'a', label: 'A' },
+      { value: 'b', label: 'B' },
+    ],
+  }),
+  inputs: '[options]="ctx[\'options\']"',
+  initial: null,
+  userWrite: (cmp) => (cmp as CngxTypeahead<string>).value.set('a'),
+});
 
 describeMobileSheet('CngxTypeahead', CngxTypeahead, 'cngx-typeahead', {
   inputs: '[options]="options"',

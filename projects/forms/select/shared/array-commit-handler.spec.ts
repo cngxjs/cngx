@@ -1,4 +1,5 @@
 import { signal, type WritableSignal } from '@angular/core';
+import { Subject } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createArrayCommitHandler } from './array-commit-handler';
@@ -282,6 +283,71 @@ describe('createArrayCommitHandler', () => {
     it('is a no-op when commitAction is null', () => {
       h.handler.retryLast();
       expect(h.stateLog).toEqual([]);
+    });
+
+    it('re-applies the intended array while an optimistic toggle retry is pending', () => {
+      h.values.set(['a', 'b']);
+      h.coreMock.togglingOption.set(opt('b'));
+      h.handler.beginToggle(['a', 'b'], ['a'], opt('b'), () => {
+        throw new Error('first fail');
+      });
+      expect(h.values()).toEqual(['a']);
+      const pending = new Subject<T[]>();
+      h.commitAction.set(() => pending.asObservable());
+
+      h.handler.retryLast();
+
+      expect(h.values()).toEqual(['a', 'b']);
+      pending.next(['a', 'b']);
+      pending.complete();
+      expect(h.values()).toEqual(['a', 'b']);
+    });
+
+    it('re-applies the cleared array while an optimistic clear retry is pending', () => {
+      h.values.set([]);
+      h.handler.beginClear(['a'], () => {
+        throw new Error('first fail');
+      });
+      expect(h.values()).toEqual(['a']);
+      h.lastCommitted = ['a'];
+      h.commitAction.set(() => new Subject<T[]>().asObservable());
+
+      h.handler.retryLast();
+
+      expect(h.values()).toEqual([]);
+    });
+
+    it('leaves values alone while a pessimistic toggle retry is pending', () => {
+      h.commitMode.set('pessimistic');
+      h.coreMock.togglingOption.set(opt('b'));
+      h.handler.beginToggle(['a', 'b'], ['a'], opt('b'), () => {
+        throw new Error('first fail');
+      });
+      h.commitAction.set(() => new Subject<T[]>().asObservable());
+
+      h.handler.retryLast();
+
+      expect(h.values()).toEqual(['a']);
+    });
+
+    it('never turns a toggle retry into a clear when togglingOption was reset', () => {
+      const calls: T[][] = [];
+      h.coreMock.togglingOption.set(opt('b'));
+      h.handler.beginToggle(['a', 'b'], ['a'], opt('b'), () => {
+        throw new Error('first fail');
+      });
+      h.coreMock.togglingOption.set(null);
+      h.commitAction.set((next) => {
+        calls.push([...(next ?? [])]);
+        return next;
+      });
+      h.stateLog.length = 0;
+
+      h.handler.retryLast();
+
+      expect(calls).toEqual([]);
+      expect(h.stateLog).toEqual([]);
+      expect(h.clearFinalizeLog).toEqual([]);
     });
 
     it('is a no-op when no previous commit was begun', () => {

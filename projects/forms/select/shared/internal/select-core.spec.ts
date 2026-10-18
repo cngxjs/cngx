@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CNGX_DEV_DESCRIPTORS } from '@cngx/core/utils';
+import { createManualState } from '@cngx/common/data';
 
 import {
   provideSelectConfig,
@@ -166,5 +167,77 @@ describe('createSelectCore - mobile sheet presentation', () => {
 
   it('keeps the width rule without a presentation dep', () => {
     expect(coreWith({ panelWidth: signal(240) }).panelWidthCss()).toBe('240px');
+  });
+});
+
+describe('createSelectCore - trigger ARIA control hooks', () => {
+  function coreWith(extra: Partial<CngxSelectCoreDeps<string, string>>) {
+    return TestBed.runInInjectionContext(() =>
+      createSelectCore(
+        { ...deps(), ...extra },
+        { announceChanges: signal(null), announceTemplate: signal(null) },
+      ),
+    );
+  }
+
+  it('lets the [id] input win and keeps the empty id without one', () => {
+    const idInput = signal<string | null>('own-id');
+    const core = coreWith({ idInput });
+    expect(core.resolvedId()).toBe('own-id');
+    idInput.set(null);
+    expect(core.resolvedId()).toBe('');
+  });
+
+  it('projects [required], aria-labelledby and disabled without a field', () => {
+    const core = coreWith({
+      requiredInput: signal(true),
+      ariaLabelledBy: signal('ext-label'),
+      disabledInput: signal(true),
+    });
+    expect(core.triggerAria()).toMatchObject({
+      required: true,
+      labelledBy: 'ext-label',
+      disabled: true,
+    });
+    expect(core.effectiveTabIndex()).toBe(-1);
+  });
+
+  it('marks the trigger busy while the options state loads or refreshes', () => {
+    const state = TestBed.runInInjectionContext(() =>
+      createManualState<CngxSelectOptionDef<string>[]>(),
+    );
+    const core = coreWith({ state: signal(state) });
+    expect(core.ariaBusy()).toBeNull();
+    state.set('loading');
+    expect(core.ariaBusy()).toBe(true);
+    state.setSuccess([RED]);
+    expect(core.ariaBusy()).toBeNull();
+    state.set('refreshing');
+    expect(core.ariaBusy()).toBe(true);
+  });
+
+  it('marks the trigger invalid after a failed commit unless the display is none', () => {
+    const display = signal<'banner' | 'none'>('banner');
+    const core = coreWith({ commitErrorDisplay: display });
+    core.commitController.begin(
+      () => {
+        throw new Error('boom');
+      },
+      'red',
+      undefined,
+      { onSuccess: () => undefined, onError: () => undefined },
+    );
+    expect(core.ariaInvalid()).toBe(true);
+    expect(core.ariaErrorMessage()).toBeNull();
+    display.set('none');
+    expect(core.ariaInvalid()).toBeNull();
+  });
+
+  it('keeps the triggerAria reference across an unrelated change', () => {
+    const label = signal('');
+    const core = coreWith({ label, ariaLabelledBy: signal('ext-label') });
+    const before = core.triggerAria();
+    label.set('Colour');
+    expect(core.triggerAria()).toBe(before);
   });
 });

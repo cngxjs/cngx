@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { form } from '@angular/forms/signals';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -298,5 +299,76 @@ describe('CngxListboxFieldBridge - mouse pick', () => {
     root.querySelector<HTMLElement>('button')!.focus();
     flush(fixture);
     expect(fixture.componentInstance.ref.touched()).toBe(true);
+  });
+});
+
+@Component({
+  template: `
+    <cngx-form-field [field]="f.choice">
+      <div cngxListbox cngxListboxFieldBridge [label]="'Choice'" tabindex="0">
+        <div cngxOption value="a">A</div>
+        <div cngxOption value="b">B</div>
+      </div>
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxListbox, CngxListboxFieldBridge, CngxOption],
+})
+class RealSingleHost {
+  readonly model = signal({ choice: 'a' });
+  readonly f = form(this.model);
+}
+
+@Component({
+  template: `
+    <cngx-form-field [field]="f.choices">
+      <div
+        cngxListbox
+        cngxListboxFieldBridge
+        [label]="'Choices'"
+        [multiple]="true"
+        tabindex="0"
+      >
+        <div cngxOption value="a">A</div>
+        <div cngxOption value="b">B</div>
+      </div>
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxListbox, CngxListboxFieldBridge, CngxOption],
+})
+class RealMultiHost {
+  readonly model = signal<{ choices: string[] }>({ choices: ['a'] });
+  readonly f = form(this.model);
+}
+
+describe('CngxListboxFieldBridge - real Signal Forms field', () => {
+  it('a single-select user pick marks the field dirty, the mount does not', () => {
+    const fixture = TestBed.createComponent(RealSingleHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const host = fixture.componentInstance;
+    expect(host.f.choice().dirty()).toBe(false);
+
+    fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox).select('b');
+    flush(fixture);
+
+    expect(host.model().choice).toBe('b');
+    expect(host.f.choice().dirty()).toBe(true);
+  });
+
+  it('a multi-select user toggle marks the field dirty, the mount does not', () => {
+    const fixture = TestBed.createComponent(RealMultiHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const host = fixture.componentInstance;
+    expect(host.f.choices().dirty()).toBe(false);
+
+    fixture.debugElement
+      .query(By.directive(CngxListbox))
+      .injector.get(CngxListbox)
+      .selectedValues.set(['a', 'b']);
+    flush(fixture);
+
+    expect(host.model().choices).toEqual(['a', 'b']);
+    expect(host.f.choices().dirty()).toBe(true);
   });
 });

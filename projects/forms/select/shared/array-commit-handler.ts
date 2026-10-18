@@ -63,8 +63,12 @@ export interface ArrayCommitHandler<T> {
   /** Same split as {@link beginToggle} - consumer pre-writes `values`. */
   beginClear(previous: T[], action: CngxSelectCommitAction<T[]>): void;
   /**
-   * Replay the last commit. Routes to `beginToggle`/`beginClear` based on
-   * `togglingOption()`. No-op when preconditions are unmet.
+   * Replay the last commit. Routes by the kind of the last commit this
+   * handler started: a clear replays `beginClear`, a toggle replays
+   * `beginToggle` with `togglingOption()` and is a no-op when that marker
+   * was reset (never a clear). In optimistic mode the intended array is
+   * written back before the replay, so the trigger shows it while pending.
+   * No-op when preconditions are unmet.
    */
   retryLast(): void;
 }
@@ -86,6 +90,8 @@ export function createArrayCommitHandler<T>(
 ): ArrayCommitHandler<T> {
   const commitController = opts.core.commitController;
   const togglingOption = opts.core.togglingOption;
+  // Kind of the last commit started here; `retryLast` routes by it.
+  let lastKind: 'toggle' | 'clear' | null = null;
 
   const reconcileValues = (target: readonly T[]): void => {
     if (!sameArrayContents(opts.values(), target, opts.compareWith())) {
@@ -98,6 +104,13 @@ export function createArrayCommitHandler<T>(
       return;
     }
     reconcileValues(rollbackTo ?? []);
+  };
+
+  const reapplyIfOptimistic = (intended: readonly T[]): void => {
+    if (opts.commitMode() !== 'optimistic') {
+      return;
+    }
+    reconcileValues(intended);
   };
 
   const announceOnError = (err: unknown): void => {
@@ -113,6 +126,7 @@ export function createArrayCommitHandler<T>(
     option: CngxSelectOptionDef<T>,
     action: CngxSelectCommitAction<T[]>,
   ): void => {
+    lastKind = 'toggle';
     opts.onStateChange('pending');
     commitController.begin(action, next, previous, {
       onSuccess: (committed) => {
@@ -137,6 +151,7 @@ export function createArrayCommitHandler<T>(
     // Enforce the retryLast disambiguation contract here instead of relying
     // on call-site discipline: a clear is by definition option-less.
     togglingOption.set(null);
+    lastKind = 'clear';
     opts.onStateChange('pending');
     commitController.begin(action, [], previous, {
       onSuccess: (committed) => {
@@ -163,11 +178,16 @@ export function createArrayCommitHandler<T>(
       return;
     }
     const last = opts.getLastCommitted();
-    const opt = togglingOption();
-    if (opt === null) {
+    if (lastKind === 'clear') {
+      reapplyIfOptimistic([]);
       beginClear(last, action);
       return;
     }
+    const opt = togglingOption();
+    if (lastKind !== 'toggle' || opt === null) {
+      return;
+    }
+    reapplyIfOptimistic(intendedNext);
     beginToggle(intendedNext, last, opt, action);
   };
 

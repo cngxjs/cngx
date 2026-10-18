@@ -1654,6 +1654,26 @@
       );
     }
 
+    /* Readonly is editable-looking but inert: keep the resting surface on
+       hover so the trigger does not invite a click it will not honour. The
+       host carries `aria-readonly`, as on the field skin. */
+    [aria-readonly='true'] > * > :scope.cngx-field-trigger:hover {
+      border-block-end-color: var(
+        --cngx-field-underline-color,
+        var(--cngx-color-text-muted, oklch(0.5 0.01 250))
+      );
+      background: var(
+        --cngx-field-fill-bg,
+        color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent)
+      );
+    }
+
+    /* The tinted surface eats contrast; the more-contrast axis pushes the
+       resting underline to full text colour to hold 3:1. */
+    [data-contrast='more'] :scope.cngx-field-trigger {
+      --cngx-field-underline-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    }
+
     :scope.cngx-field-trigger:is(:focus-visible, :focus-within) {
       outline: none;
       /* The resting line is the bottom border, which an inset shadow sits
@@ -1711,12 +1731,13 @@
       border: var(--cngx-field-border-width, 1px) solid transparent;
       border-radius: 0;
       background: transparent;
+      /* The ring goes inside the trigger, as on a bare input: a flush bare
+         select in a cell or toolbar would clip an outset ring. */
+      --cngx-field-ring-offset: calc(-1 * var(--cngx-field-ring-width, 2px));
     }
 
-    /* The ring goes inside the trigger, as on a bare input: a flush bare
-       select in a cell or toolbar would clip an outset ring. */
     :scope.cngx-field-trigger:is(:focus-visible, :focus-within) {
-      outline-offset: calc(-1 * var(--cngx-field-ring-width, 2px));
+      outline-offset: var(--cngx-field-ring-offset, -2px);
     }
 
     /* Bare draws no line in any state; an error tints the trigger text with
@@ -1758,7 +1779,7 @@
       ):focus-visible {
       outline: var(--cngx-field-ring-width, 2px) solid
         var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
-      outline-offset: calc(-1 * var(--cngx-field-ring-width, 2px));
+      outline-offset: var(--cngx-field-ring-offset, -2px);
     }
 
     /* Disabled reads as muted text plus a dotted baseline, never opacity. */
@@ -1825,6 +1846,17 @@
     background: transparent;
     box-shadow: none;
     color: inherit;
+  }
+
+  /* A select that is an interactive affix fills the affix block, which
+     stretches to the box row and takes the touch floor
+     (cngx-field-affix.css); the trigger must not shrink back to its value
+     line inside it. The stretched host is a definite block size for its
+     children, so the root chain resolves 100% against it; a
+     `display: contents` root skips the step on its own. */
+  .cngx-field-box[data-skin] > .cngx-field-affix--interactive[data-skin] > *,
+  .cngx-field-box[data-skin] > .cngx-field-affix--interactive[data-skin] > * > .cngx-field-trigger {
+    block-size: 100%;
   }
 
   /* The main control's ring is the box ring. A select that is an affix (a
@@ -1951,7 +1983,7 @@
     > *
     > .cngx-field-trigger:is(:focus-visible, :focus-within) {
     outline: 2px solid Highlight;
-    outline-offset: 2px;
+    outline-offset: 3px;
     box-shadow: none;
   }
 

@@ -78,8 +78,13 @@ export function createFieldSync<V>(options: FieldSyncOptions<V>): void {
     });
   });
 
+  // The first run is the mount seed; every later run is a user change. The
+  // flag is consumed even when that first run writes nothing.
+  let seeded = false;
   effect(() => {
     const next = options.componentValue();
+    const mode: FieldWriteMode = seeded ? 'user' : 'seed';
+    seeded = true;
     untracked(() => {
       const fieldRef = presenter.fieldState();
       const raw = fieldRef.value();
@@ -88,26 +93,61 @@ export function createFieldSync<V>(options: FieldSyncOptions<V>): void {
       if (!skip?.(raw) && options.valueEquals(options.coerceFromField(raw), next)) {
         return;
       }
-      writeFieldValue(fieldRef, toField(next));
+      writeFieldValue(fieldRef, toField(next), mode);
     });
   });
 }
 
 /**
- * Writes through Signal Forms' `WritableSignal`-shaped `FieldState.value`.
- * `CngxFieldRef` hides writability for API stability; narrow it here. Skips
- * readonly refs (e.g. mock fields) silently. Shared with the `model()`-based
- * field bridges via a relative import; not part of the public API.
+ * How {@link writeFieldValue} writes: `'seed'` mirrors the control's mount
+ * value into the field and leaves it pristine, `'user'` is an interaction
+ * and dirties the field.
  *
  * @internal
  */
-export function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
-  const signalLike = fieldRef.value as unknown;
-  if (
-    typeof signalLike === 'function' &&
-    'set' in signalLike &&
-    typeof (signalLike as { set: unknown }).set === 'function'
-  ) {
-    (signalLike as { set: (v: unknown) => void }).set(value);
+export type FieldWriteMode = 'seed' | 'user';
+
+/**
+ * Writes a control value into the field. A `'user'` write goes through Signal
+ * Forms' writable `FieldState.controlValue` when the ref has one (Signal Forms
+ * marks the field dirty there and honours a schema `debounce()`); a ref
+ * without it gets `value.set` plus `markAsDirty()`. A `'seed'` write uses
+ * `value.set` only. `CngxFieldRef` hides writability for API stability;
+ * narrow it here. Skips readonly refs silently. Shared with the
+ * `model()`-based field bridges via a relative import; not part of the
+ * public API.
+ *
+ * @internal
+ */
+export function writeFieldValue(
+  fieldRef: CngxFieldRef,
+  value: unknown,
+  mode: FieldWriteMode,
+): void {
+  if (mode === 'user') {
+    const controlValue = asWritable((fieldRef as { readonly controlValue?: unknown }).controlValue);
+    if (controlValue) {
+      controlValue.set(value);
+      return;
+    }
   }
+  const target = asWritable(fieldRef.value);
+  if (!target) {
+    return;
+  }
+  target.set(value);
+  if (mode === 'user') {
+    fieldRef.markAsDirty();
+  }
+}
+
+function asWritable(candidate: unknown): { set: (v: unknown) => void } | null {
+  if (
+    typeof candidate === 'function' &&
+    'set' in candidate &&
+    typeof (candidate as { set: unknown }).set === 'function'
+  ) {
+    return candidate as unknown as { set: (v: unknown) => void };
+  }
+  return null;
 }

@@ -473,7 +473,7 @@ The `commitState` signal is exposed via `CNGX_STATEFUL`, so transition bridges w
 ## A11y model
 
 Each variant follows the appropriate WAI-ARIA pattern.
-Common properties are derived from the same `triggerAria()` projection on `createSelectCore`, ensuring identical behaviour across variants.
+Common properties are derived from the same `triggerAria()` projection on `createSelectCore`, ensuring identical behaviour across variants. Its field half (id, `aria-labelledby`, `aria-describedby`, `aria-errormessage`, `aria-invalid`, `aria-required`, `aria-busy`, `aria-readonly`, disabled) comes from `createFieldControlAria` in `@cngx/forms/field`, the projection every field control shares; the select feeds its own `[id]`, `aria-labelledby`, `[required]`, failed commit and loading / committing state in as control-side hooks.
 
 | Variant | Trigger element | ARIA pattern |
 |-|-|-|
@@ -567,7 +567,7 @@ Tree-select provides BOTH tokens with `useExisting: self`.
 
 On a coarse, narrow viewport every variant opens its panel as a modal sheet instead of an anchored popover. There is still one panel host: the variant's `cngxPopover` element carries `[cngxPopoverSheet]` from `@cngx/common/popover`, and the presentation (`anchored`, `sheet`, `fullscreen`) is a switch on that atom. The breakpoint lives once in `cngx-popover-sheet.css`; no TypeScript reads a length.
 
-**Cascade.** `[presentation]` on the variant, else `CNGX_SELECT_CONFIG.mobileSheet` (`withMobileSheet('off')` maps to `'anchored'`), else `'auto'`. `'auto'` resolves through the breakpoint to the variant's static height fact: `fullscreen` for the variants led by a text input (`CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`, `CngxActionMultiSelect`, `CngxSelectShell` with a `<cngx-select-search>`), a content-sized `sheet` for the rest. The cascade is `createPresentationRequest` in `shared/internal/select-core.ts`, shared with `CngxTreeSelect`, which has no core.
+**Cascade.** `[presentation]` on the variant, else `CNGX_SELECT_CONFIG.mobileSheet` (`withMobileSheet('off')` maps to `'anchored'`), else `'auto'`. `'auto'` resolves through the breakpoint to the variant's static height fact: `fullscreen` for the variants led by a text input (`CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`, `CngxActionMultiSelect`, `CngxSelectShell` with a `<cngx-select-search>`), a content-sized `sheet` for the rest. The cascade is `createPresentationRequest` in `shared/internal/select-core.ts`, read by every variant through the core's `resolvedPresentationRequest`.
 
 **Wiring.** `createSelectSheetWiring` (`shared/internal/select-sheet-wiring.ts`) is the one bundle per variant: the presentation request, `sheetModal` / `sheetAnchored`, `closeBlocked` (a pessimistic commit is pending), the Escape gate bound to `[closeOnEscape]`, the outside-click gate bound to `cngxClickOutside [enabled]`, `handleSheetClose`, `escapeClose` for in-sheet inputs, and the value of the internal `CNGX_SELECT_SHEET_HEADER_HOST`. It also resolves the variant's dismiss handler, so the anchored outside click and the sheet close vectors share one policy.
 

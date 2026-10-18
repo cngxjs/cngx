@@ -14,6 +14,7 @@ import { CngxFormField } from '@cngx/forms/field';
 
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import { CngxMultiSelect, type CngxMultiSelectChange } from './multi-select.component';
 import type { CngxSelectOptionDef } from '../shared/option.model';
@@ -1139,6 +1140,18 @@ describeCommitControllerCascade('CngxMultiSelect');
 describeFieldSkinHost('CngxMultiSelect', CngxMultiSelect, 'cngx-multi-select', () =>
   createMockField({ name: 'pick' }).accessor,
 );
+
+describeFieldAriaHost('CngxMultiSelect', CngxMultiSelect, 'cngx-multi-select', {
+  ctx: () => ({
+    options: [
+      { value: 'a', label: 'A' },
+      { value: 'b', label: 'B' },
+    ],
+  }),
+  inputs: '[options]="ctx[\'options\']"',
+  initial: [],
+  userWrite: (cmp) => (cmp as CngxMultiSelect<string>).values.set(['a']),
+});
 
 describeMobileSheet('CngxMultiSelect', CngxMultiSelect, 'cngx-multi-select', {
   inputs: '[options]="options"',

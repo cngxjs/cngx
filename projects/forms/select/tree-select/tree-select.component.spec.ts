@@ -7,14 +7,17 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { stripBidiIsolates } from '@cngx/testing';
 import {
   provideSelectConfig,
   withAriaLabels,
+  withPanelClass,
   type CngxSelectAriaLabels,
 } from '../shared/config';
+import { createManualState } from '@cngx/common/data';
 import { CngxTreeSelect } from './tree-select.component';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
 import { CngxTreeSelectTriggerLabel } from './tree-select-trigger-label.directive';
@@ -137,11 +140,11 @@ describe('CngxTreeSelect', () => {
       new FocusEvent('blur'),
     );
     expect(f.tree.focused()).toBe(false);
-    expect(f.tree.id()).toMatch(/^cngx-tree-select-/);
+    expect(f.tree.id()).toBe(f.root.querySelector('cngx-tree-select')!.id);
   });
 
   it('handleSelect on a leaf toggles the value and emits selectionChange(toggle)', () => {
-    const leaf = f.tree.treeController.findById('a1')!;
+    const leaf = f.tree.treeController.flatNodes().find((n) => n.value.id === 'a1')!;
     f.tree.handleSelect(leaf);
     f.fixture.detectChanges();
     expect(f.host.values()).toEqual([{ id: 'a1', name: 'Alpha-1' }]);
@@ -168,7 +171,7 @@ describe('CngxTreeSelect', () => {
   it('cascade-toggle selects the parent + every descendant atomically', () => {
     f.host.cascade.set(true);
     f.fixture.detectChanges();
-    const parent = f.tree.treeController.findById('a')!;
+    const parent = f.tree.treeController.flatNodes().find((n) => n.value.id === 'a')!;
     f.tree.handleSelect(parent);
     f.fixture.detectChanges();
     expect(f.host.values().map((v) => v.id).sort()).toEqual(['a', 'a1', 'a2']);
@@ -194,7 +197,7 @@ describe('CngxTreeSelect', () => {
       { id: 'b', name: 'Bravo' },
     ]);
     f.fixture.detectChanges();
-    const parent = f.tree.treeController.findById('a')!;
+    const parent = f.tree.treeController.flatNodes().find((n) => n.value.id === 'a')!;
     f.tree.handleSelect(parent);
     f.fixture.detectChanges();
     // Bravo is untouched; a-branch is cleared.
@@ -418,7 +421,7 @@ describe('CngxTreeSelect', () => {
     const ts = de.componentInstance as CngxTreeSelect<Row>;
     const root = fx.nativeElement as HTMLElement;
 
-    const leaf = ts.treeController.findById('a1')!;
+    const leaf = ts.treeController.flatNodes().find((n) => n.value.id === 'a1')!;
     ts.handleSelect(leaf);
     fx.detectChanges();
     expect(fx.componentInstance.values()).toEqual([]);
@@ -431,6 +434,16 @@ describeCommitControllerCascade('CngxTreeSelect');
 describeFieldSkinHost('CngxTreeSelect', CngxTreeSelect, 'cngx-tree-select', () =>
   createMockField({ name: 'pick' }).accessor,
 );
+
+describeFieldAriaHost('CngxTreeSelect', CngxTreeSelect, 'cngx-tree-select', {
+  ctx: () => ({
+    nodes: [{ value: 'a' }, { value: 'b' }],
+    idFn: (v: string): string => v,
+  }),
+  inputs: '[nodes]="ctx[\'nodes\']" [nodeIdFn]="ctx[\'idFn\']"',
+  initial: [],
+  userWrite: (cmp) => (cmp as CngxTreeSelect<string>).values.set(['a']),
+});
 
 describe('CngxTreeSelect - toggle commit error announcement', () => {
   @Component({
@@ -493,6 +506,288 @@ describe('CngxTreeSelect - toggle commit error announcement', () => {
       expect(fixture.componentInstance.values()).toEqual([]);
     },
   );
+});
+
+describe('CngxTreeSelect - shared core view state', () => {
+  @Component({
+    imports: [CngxTreeSelect],
+    template: `
+      <cngx-tree-select
+        label="Teams"
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="labelFn"
+        [state]="state"
+        [commitAction]="commitAction"
+        [commitErrorDisplay]="display()"
+        [(values)]="values"
+      />
+    `,
+  })
+  class StateTreeHost {
+    readonly nodes = tree();
+    readonly values = signal<Row[]>([]);
+    readonly idFn = (v: Row): string => v.id;
+    readonly labelFn = (v: Row): string => v.name;
+    readonly state = createManualState<readonly CngxTreeNode<Row>[]>();
+    readonly display = signal<'banner' | 'none'>('banner');
+    readonly commitAction = (): Observable<Row[]> => {
+      throw new Error('boom');
+    };
+  }
+
+  beforeEach(() => polyfillPopover());
+
+  function mount() {
+    const fixture = TestBed.createComponent(StateTreeHost);
+    fixture.detectChanges();
+    const tree = fixture.debugElement.query(By.directive(CngxTreeSelect))
+      .componentInstance as CngxTreeSelect<Row>;
+    return { fixture, tree, host: fixture.componentInstance };
+  }
+
+  it('shows the refresh indicator on a reload after the first load', () => {
+    const { fixture, tree, host } = mount();
+    host.state.setSuccess(tree.treeController.flatNodes().map((n) => n.node));
+    host.state.set('loading');
+    fixture.detectChanges();
+    expect(tree.showRefreshIndicator()).toBe(true);
+  });
+
+  it('projects aria-invalid on the trigger after a failed commit under the banner display', () => {
+    const { fixture, tree } = mount();
+    const trigger = (fixture.nativeElement as HTMLElement).querySelector('[role="combobox"]')!;
+    expect(trigger.getAttribute('aria-invalid')).toBeNull();
+    tree.handleSelect(tree.treeController.flatNodes().find((n) => n.value.id === 'b')!);
+    fixture.detectChanges();
+    expect(trigger.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('hides the commit-error surface under commitErrorDisplay none', () => {
+    const { fixture, tree, host } = mount();
+    tree.handleSelect(tree.treeController.flatNodes().find((n) => n.value.id === 'b')!);
+    fixture.detectChanges();
+    expect(tree.showCommitError()).toBe(true);
+    host.display.set('none');
+    fixture.detectChanges();
+    expect(tree.showCommitError()).toBe(false);
+  });
+});
+
+describe('CngxTreeSelect - config panel class', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ providers: [provideSelectConfig(withPanelClass('app-panel'))] });
+  });
+
+  it('puts the CNGX_SELECT_CONFIG panel class on the tree panel', () => {
+    const { root } = setup();
+    expect(root.querySelector('.cngx-select__panel')?.classList).toContain('app-panel');
+  });
+});
+
+describe('CngxTreeSelect - commit error copy without a label', () => {
+  @Component({
+    imports: [CngxTreeSelect],
+    template: `
+      <cngx-tree-select
+        aria-label=""
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="labelFn"
+        [initiallyExpanded]="'all'"
+        [commitAction]="commitAction"
+        [(values)]="values"
+      />
+    `,
+  })
+  class UnlabelledTreeHost {
+    readonly nodes = tree();
+    readonly values = signal<Row[]>([]);
+    readonly idFn = (v: Row): string => v.id;
+    readonly labelFn = (v: Row): string => v.name;
+    pending: Subject<Row[]> | null = null;
+    readonly commitAction = (): Observable<Row[]> => {
+      this.pending = new Subject<Row[]>();
+      return this.pending.asObservable();
+    };
+  }
+
+  beforeEach(() => polyfillPopover());
+
+  it('names the field label fallback when aria-label is empty', () => {
+    const fixture = TestBed.createComponent(UnlabelledTreeHost);
+    fixture.detectChanges();
+    const announce = vi
+      .spyOn(TestBed.inject(CngxSelectAnnouncer), 'announce')
+      .mockImplementation(() => undefined);
+    const tree = fixture.debugElement.query(By.directive(CngxTreeSelect))
+      .componentInstance as CngxTreeSelect<Row>;
+    tree.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLElement>('[role="treeitem"]')!
+      .click();
+    fixture.detectChanges();
+    announce.mockClear();
+
+    fixture.componentInstance.pending!.error(new Error('server down'));
+    fixture.detectChanges();
+
+    const fallback = tree.ariaLabels().fieldLabelFallback;
+    expect(fallback.length).toBeGreaterThan(0);
+    const [message] = announce.mock.calls[0];
+    expect(stripBidiIsolates(message)).toBe(`${fallback}: Save failed - server down`);
+  });
+});
+
+describe('CngxTreeSelect - commit retry', () => {
+  @Component({
+    imports: [CngxTreeSelect],
+    template: `
+      <cngx-tree-select
+        label="Teams"
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="labelFn"
+        [initiallyExpanded]="'all'"
+        [commitAction]="commitAction"
+        [commitMode]="mode()"
+        [(values)]="values"
+        (cleared)="onCleared()"
+      />
+    `,
+  })
+  class RetryTreeHost {
+    readonly nodes = tree();
+    readonly values = signal<Row[]>([]);
+    readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
+    readonly idFn = (v: Row): string => v.id;
+    readonly labelFn = (v: Row): string => v.name;
+    readonly onCleared = vi.fn();
+    readonly calls: Row[][] = [];
+    readonly pending: Subject<Row[]>[] = [];
+    readonly commitAction = (intended: Row[] | undefined): Observable<Row[]> => {
+      this.calls.push([...(intended ?? [])]);
+      const subject = new Subject<Row[]>();
+      this.pending.push(subject);
+      return subject.asObservable();
+    };
+  }
+
+  beforeEach(() => polyfillPopover());
+
+  it.each(['optimistic', 'pessimistic'] as const)(
+    'replays the failed %s toggle instead of committing a clear',
+    (mode) => {
+      const fixture = TestBed.createComponent(RetryTreeHost);
+      const host = fixture.componentInstance;
+      host.mode.set(mode);
+      fixture.detectChanges();
+      const tree = fixture.debugElement.query(By.directive(CngxTreeSelect))
+        .componentInstance as CngxTreeSelect<Row>;
+      tree.open();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      (fixture.nativeElement as HTMLElement)
+        .querySelector<HTMLElement>('[role="treeitem"]')!
+        .click();
+      fixture.detectChanges();
+      host.pending[0].error(new Error('server down'));
+      fixture.detectChanges();
+      expect(host.values()).toEqual([]);
+
+      tree.commitErrorContext().retry();
+      fixture.detectChanges();
+
+      expect(host.calls.length).toBe(2);
+      expect(host.calls[1].map((r) => r.id)).toEqual(['a']);
+      if (mode === 'optimistic') {
+        expect(host.values().map((r) => r.id)).toEqual(['a']);
+      }
+      host.pending[1].next([{ id: 'a', name: 'Alpha' }]);
+      host.pending[1].complete();
+      fixture.detectChanges();
+      expect(host.values().map((r) => r.id)).toEqual(['a']);
+      expect(host.onCleared).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe('CngxTreeSelect - per-instance node ids', () => {
+  @Component({
+    imports: [CngxTreeSelect],
+    template: `
+      <cngx-tree-select
+        class="first"
+        label="First"
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="labelFn"
+        [initiallyExpanded]="['a']"
+      />
+      <cngx-tree-select
+        class="second"
+        label="Second"
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="labelFn"
+        [initiallyExpanded]="['a']"
+      />
+    `,
+  })
+  class TwoTreesHost {
+    readonly nodes = tree();
+    readonly idFn = (v: Row): string => v.id;
+    readonly labelFn = (v: Row): string => v.name;
+  }
+
+  beforeEach(() => polyfillPopover());
+
+  it('never shares a treeitem id or an aria-activedescendant target between two trees', async () => {
+    const fixture = TestBed.createComponent(TwoTreesHost);
+    const root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    try {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const trees = fixture.debugElement
+        .queryAll(By.directive(CngxTreeSelect))
+        .map((de) => de.componentInstance as CngxTreeSelect<Row>);
+      for (const t of trees) {
+        t.open();
+      }
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      const ids = Array.from(root.querySelectorAll('[role="treeitem"]')).map((el) => el.id);
+      expect(ids.length).toBe(8);
+      expect(new Set(ids).size).toBe(ids.length);
+
+      for (const host of ['.first', '.second']) {
+        const treeEl = root.querySelector<HTMLElement>(`${host} [role="tree"]`)!;
+        const target = treeEl.getAttribute('aria-activedescendant');
+        expect(target).toBeTruthy();
+        const resolved = document.getElementById(target!);
+        expect(resolved?.closest('[role="tree"]')).toBe(treeEl);
+      }
+    } finally {
+      root.remove();
+    }
+  });
+
+  it('still expands a raw nodeIdFn id passed to [initiallyExpanded]', async () => {
+    const fixture = TestBed.createComponent(TwoTreesHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const first = fixture.debugElement.queryAll(By.directive(CngxTreeSelect))[0]
+      .componentInstance as CngxTreeSelect<Row>;
+    const alpha = first.treeController.flatNodes().find((n) => n.value.id === 'a');
+    expect(alpha).toBeDefined();
+    expect(first.treeController.isExpanded(alpha!.id)()).toBe(true);
+  });
 });
 
 describe('CngxTreeSelect - runtime language switch', () => {

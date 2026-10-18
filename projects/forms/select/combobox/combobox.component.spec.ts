@@ -13,6 +13,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import { CngxCombobox, type CngxComboboxChange } from './combobox.component';
 import { CngxComboboxChip } from '../shared/template-slots';
@@ -1098,6 +1099,18 @@ describeCommitControllerCascade('CngxCombobox');
 describeFieldSkinHost('CngxCombobox', CngxCombobox, 'cngx-combobox', () =>
   createMockField({ name: 'pick' }).accessor,
 );
+
+describeFieldAriaHost('CngxCombobox', CngxCombobox, 'cngx-combobox', {
+  ctx: () => ({
+    options: [
+      { value: 'a', label: 'A' },
+      { value: 'b', label: 'B' },
+    ],
+  }),
+  inputs: '[options]="ctx[\'options\']"',
+  initial: [],
+  userWrite: (cmp) => (cmp as CngxCombobox<string>).values.set(['a']),
+});
 
 describeMobileSheet('CngxCombobox', CngxCombobox, 'cngx-combobox', {
   inputs: '[options]="options"',

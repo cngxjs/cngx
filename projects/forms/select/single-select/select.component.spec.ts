@@ -18,9 +18,11 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { CngxSelect, type CngxSelectChange } from './select.component';
 import { injectSelectConfig, injectSelectAnnouncer } from '../shared/inject-helpers';
 import { CngxSelectAnnouncer } from '../shared/announcer';
+import { stripBidiIsolates } from '@cngx/testing';
 import {
   CNGX_DISMISS_HANDLER_FACTORY,
   createDismissHandler,
@@ -1104,6 +1106,56 @@ class AnnouncerOffHost {
   readonly value = signal<string | undefined>(undefined);
 }
 
+@Component({
+  selector: 'unlabelled-commit-host',
+  template: `
+    <cngx-select
+      aria-label=""
+      [options]="options"
+      [commitAction]="commitAction"
+      [(value)]="value"
+    />
+  `,
+  imports: [CngxSelect],
+})
+class UnlabelledCommitHost {
+  readonly options = OPTIONS;
+  readonly value = signal<string | undefined>('red');
+  pending: Subject<string | undefined> | null = null;
+  readonly commitAction: CngxSelectCommitAction<string> = () => {
+    this.pending = new Subject<string | undefined>();
+    return this.pending.asObservable();
+  };
+}
+
+describe('CngxSelect - commit error copy without a label', () => {
+  beforeEach(() => polyfillPopover());
+
+  it('names the field label fallback when aria-label is empty', () => {
+    const fixture = TestBed.createComponent(UnlabelledCommitHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const selectDe = fixture.debugElement.query(By.directive(CngxSelect));
+    const select = selectDe.componentInstance as CngxSelect<string>;
+    const announce = vi
+      .spyOn(TestBed.inject(CngxSelectAnnouncer), 'announce')
+      .mockImplementation(() => undefined);
+    (selectDe.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement).click();
+    flush(fixture);
+    (selectDe.nativeElement.querySelector('[cngxOption]:nth-of-type(2)') as HTMLElement).click();
+    flush(fixture);
+    announce.mockClear();
+
+    fixture.componentInstance.pending!.error(new Error('server down'));
+    flush(fixture);
+
+    const fallback = select.ariaLabels().fieldLabelFallback;
+    expect(fallback.length).toBeGreaterThan(0);
+    const messages = announce.mock.calls.map(([m]) => stripBidiIsolates(String(m)));
+    expect(messages.some((m) => m.startsWith(`${fallback}:`))).toBe(true);
+  });
+});
+
 describe('CngxSelect - announcer', () => {
   beforeEach(() => polyfillPopover());
 
@@ -1727,3 +1779,15 @@ describeFieldSkinHost(
   'cngx-select',
   () => createMockField({ name: 'pick' }).accessor,
 );
+
+describeFieldAriaHost('CngxSelect', CngxSelect, 'cngx-select', {
+  ctx: () => ({
+    options: [
+      { value: 'a', label: 'A' },
+      { value: 'b', label: 'B' },
+    ],
+  }),
+  inputs: '[options]="ctx[\'options\']"',
+  initial: null,
+  userWrite: (cmp) => (cmp as CngxSelect<string>).value.set('a'),
+});

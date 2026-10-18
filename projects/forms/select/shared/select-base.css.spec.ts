@@ -214,7 +214,7 @@ describe('select-family field-skin rule set', () => {
     ).replace(/\s+/g, ' ');
     expect(bare).toContain('--cngx-field-bare-error-text-color, var( --cngx-color-danger-text,');
     expect(bare).toContain('outline-offset: -1px');
-    expect(bare).toContain('outline-offset: calc(-1 * var(--cngx-field-ring-width, 2px))');
+    expect(bare).toContain('outline-offset: var(--cngx-field-ring-offset, -2px)');
     const disabled = bare.slice(
       bare.indexOf(":scope.cngx-field-trigger:is([aria-disabled='true']"),
     );
@@ -270,6 +270,64 @@ describe('select-family field-skin rule set', () => {
   // not - that belongs in @cngx/themes.
   it.each(VARIANTS)('reads no Material system token in the %s stylesheet', (ns) => {
     expect(read(`${VARIANT_FILES[ns]}.component.css`)).not.toContain('var(--mat-sys-');
+  });
+
+  // Parity with the fill / bare recipe in cngx-field-skin.css: the select
+  // copy is kept (Track A vs Track B) and guarded row by row here.
+  it('keeps the resting fill surface on hover for a readonly trigger', () => {
+    const fill = scopeBlock(
+      "@scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
+    )
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\s+/g, ' ');
+    const readonly = fill.slice(
+      fill.indexOf("[aria-readonly='true'] > * > :scope.cngx-field-trigger:hover {"),
+    );
+    expect(fill).toContain("[aria-readonly='true'] > * > :scope.cngx-field-trigger:hover {");
+    const body = readonly.slice(0, readonly.indexOf('}'));
+    expect(body).toContain('border-block-end-color: var( --cngx-field-underline-color,');
+    expect(body).toContain('background: var( --cngx-field-fill-bg,');
+  });
+
+  it('pushes the resting fill underline to the text colour under more contrast', () => {
+    const fill = scopeBlock(
+      "@scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
+    )
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\s+/g, ' ');
+    expect(fill).toContain(
+      "[data-contrast='more'] :scope.cngx-field-trigger { --cngx-field-underline-color: var(--cngx-color-text, oklch(0.2 0.01 250)); }",
+    );
+  });
+
+  it('reads the bare ring offset from the field ring-offset token', () => {
+    const bare = scopeBlock(
+      "@scope ([data-skin='bare']:not(.cngx-field-box > *) > * > .cngx-field-trigger)",
+    )
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\s+/g, ' ');
+    expect(bare).toContain('--cngx-field-ring-offset: calc(-1 * var(--cngx-field-ring-width, 2px));');
+    const focus = bare.slice(bare.indexOf(':scope.cngx-field-trigger:is(:focus-visible, :focus-within) {'));
+    expect(focus.slice(0, focus.indexOf('}'))).toContain(
+      'outline-offset: var(--cngx-field-ring-offset, -2px)',
+    );
+    const invalidFocus = bare.slice(bare.indexOf("):focus-visible {"));
+    expect(invalidFocus.slice(0, invalidFocus.indexOf('}'))).toContain(
+      'outline-offset: var(--cngx-field-ring-offset, -2px)',
+    );
+  });
+
+  it('offsets the forced-colours focus outline like the field skin', () => {
+    const fieldSkin = readFileSync(
+      resolve(process.cwd(), 'projects/forms/theming/components/cngx-field-skin.css'),
+      'utf8',
+    );
+    const offsetOf = (css: string): string | undefined => {
+      const media = css.slice(css.lastIndexOf('@media (forced-colors: active)'));
+      return /outline: 2px solid Highlight;\s*outline-offset: ([^;]+);/.exec(media)?.[1];
+    };
+    expect(offsetOf(fieldSkin)).toBe('3px');
+    expect(offsetOf(SHARED)).toBe(offsetOf(fieldSkin));
   });
 
   it('reads no Material system token in the shared stylesheet', () => {

@@ -172,6 +172,7 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly dashGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
   readonly resolvedTwistyExpandLabel = signal('Expand').asReadonly();
   readonly resolvedTwistyCollapseLabel = signal('Collapse').asReadonly();
+  readonly resolvedListboxLabel = signal('Teams').asReadonly();
   close(): void {
     /* no-op in the spec harness */
   }
@@ -237,6 +238,11 @@ describe('CngxTreeSelectPanel', () => {
     // APG checkbox-tree: per-row aria-checked communicates multi-ness;
     // aria-multiselectable belongs to the aria-selected model.
     expect(tree?.hasAttribute('aria-multiselectable')).toBe(false);
+  });
+
+  it('names the role="tree" container from the host listbox label', () => {
+    const { root } = setup();
+    expect(root.querySelector('[role="tree"]')?.getAttribute('aria-label')).toBe('Teams');
   });
 
   it('renders one treeitem per visible node with W3C APG ARIA attrs', () => {

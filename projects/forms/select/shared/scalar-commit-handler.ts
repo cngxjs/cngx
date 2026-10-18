@@ -63,7 +63,11 @@ export interface ScalarCommitHandler<T> {
     option: CngxSelectOptionDef<T>,
     previousValue: T | undefined,
   ): void;
-  /** Replay last commit. No-op when preconditions unmet. */
+  /**
+   * Replay last commit. In optimistic mode the intended value is written
+   * back first, so the trigger shows it while pending. No-op when
+   * preconditions unmet.
+   */
   retryLast(): void;
 }
 
@@ -164,6 +168,11 @@ export function createScalarCommitHandler<T>(
     const action = opts.commitAction();
     if (!action || intendedNext === undefined) {
       return;
+    }
+    if (opts.commitMode() === 'optimistic') {
+      // Show the intended value again while the replay is pending.
+      reconcileValue(intendedNext as T);
+      mirrorWrite(intendedNext as T);
     }
     beginCommit(intendedNext as T, lastCommitted, action);
   };

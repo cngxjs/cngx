@@ -44,6 +44,12 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
   /** Localised aria-labels for the twisty button; follow a language switch. */
   readonly resolvedTwistyExpandLabel: Signal<string>;
   readonly resolvedTwistyCollapseLabel: Signal<string>;
+  /**
+   * Accessible name of the `role="tree"` body: `[label]`, else
+   * `aria-label`, else the placeholder, else the `listboxFallback` copy.
+   * Same cascade as the flat family's listbox name.
+   */
+  readonly resolvedListboxLabel: Signal<string>;
   /** Whether the value is selected. */
   isSelected(value: T): boolean;
   /** Whether the value is partially selected via cascade descendants. */

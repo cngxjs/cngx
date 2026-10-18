@@ -21,7 +21,11 @@ import type {
   CngxPopoverPresentationRequest,
 } from '@cngx/common/popover';
 
-import { CngxFormFieldPresenter, type CngxFormFieldControl } from '@cngx/forms/field';
+import {
+  CngxFormFieldPresenter,
+  createFieldControlAria,
+  type CngxFormFieldControl,
+} from '@cngx/forms/field';
 
 import { CngxSelectAnnouncer } from '../announcer';
 import { sameArrayContents } from './compare';
@@ -273,7 +277,7 @@ export interface CngxSelectPanelHostAdapter<T> {
 /**
  * @internal Sheet presentation cascade of the select family:
  * `[presentation]` → `mobileSheet: 'off'` as `'anchored'` → `'auto'`.
- * Shared by {@link createSelectCore} and the variants without a core.
+ * Read by {@link createSelectCore} as `resolvedPresentationRequest`.
  */
 export function createPresentationRequest(
   input: Signal<CngxPopoverPresentationRequest | undefined> | undefined,
@@ -299,9 +303,39 @@ export function createSelectCore<T, TCommit>(
   const announcer = inject(CngxSelectAnnouncer);
   const config = resolveSelectConfig();
 
-  const disabled = computed<boolean>(
-    () => deps.disabledInput() || (presenter?.disabled() ?? false),
+  // Built early so the field ARIA below can read commit state.
+  const commitController: CngxCommitController<TCommit> = inject(
+    CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
+  )<TCommit>();
+  const commitState = commitController.state;
+  const isCommitting = commitController.isCommitting;
+  // `aria-invalid` projects both form-field validation and a
+  // failed commit. The trigger surface CSS keys off this single attribute
+  // so the closed-panel error case stays visible to sighted users without
+  // duplicating the predicate in every variant.
+  const showCommitError = computed<boolean>(
+    () => commitState.status() === 'error' && deps.commitErrorDisplay() !== 'none',
   );
+
+  // Field half of the trigger ARIA: the one projection every field control
+  // shares, with the select's own id, labelledby, required, failed commit and
+  // loading / committing state fed in as control-side hooks.
+  const fieldAria = createFieldControlAria(presenter, {
+    idOverride: deps.idInput,
+    labelledByOverride: deps.ariaLabelledBy,
+    localDisabled: deps.disabledInput,
+    localRequired: deps.requiredInput,
+    localInvalid: showCommitError,
+    localBusy: () => {
+      const s = deps.state();
+      if (s && (s.isLoading() || s.isPending() || s.isRefreshing())) {
+        return true;
+      }
+      return isCommitting();
+    },
+  });
+
+  const disabled = fieldAria.disabled;
 
   // Pre-filter merge of server options + `localItems`. Flattened into
   // `unfilteredFlatOptions` so chip strips bypass the search filter.
@@ -463,17 +497,8 @@ export function createSelectCore<T, TCommit>(
     config.mobileSheet,
   );
 
-  const resolvedId = computed<string>(() => {
-    const override = deps.idInput();
-    if (override) {
-      return override;
-    }
-    return presenter?.inputId() ?? '';
-  });
-
-  const resolvedAriaLabelledBy = computed<string | null>(
-    () => deps.ariaLabelledBy() ?? presenter?.labelId() ?? null,
-  );
+  const resolvedId = fieldAria.id;
+  const resolvedAriaLabelledBy = fieldAria.labelledBy;
 
   const resolvedAriaLabel = computed<string | null>(() => {
     const explicit = deps.ariaLabel();
@@ -486,9 +511,7 @@ export function createSelectCore<T, TCommit>(
     return deps.label() || null;
   });
 
-  const resolvedAriaRequired = computed<boolean | null>(() =>
-    deps.requiredInput() || presenter?.required() ? true : null,
-  );
+  const resolvedAriaRequired = fieldAria.ariaRequired;
 
   const resolvedListboxLabel = computed<string>(() => {
     const label = deps.label();
@@ -564,42 +587,11 @@ export function createSelectCore<T, TCommit>(
     return controllerInstance?.isIndeterminate(value)() ?? false;
   }
 
-  // Built early so ariaInvalid + ariaBusy below can read commit state.
-  const commitController: CngxCommitController<TCommit> = inject(
-    CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
-  )<TCommit>();
-  const commitState = commitController.state;
-  const isCommitting = commitController.isCommitting;
-  // `aria-invalid` projects both form-field validation and a
-  // failed commit. The trigger surface CSS keys off this single attribute
-  // so the closed-panel error case stays visible to sighted users without
-  // duplicating the predicate in every variant.
-  const showCommitError = computed<boolean>(
-    () => commitState.status() === 'error' && deps.commitErrorDisplay() !== 'none',
-  );
-
-  const describedBy = computed(() => presenter?.describedBy() ?? null);
-  const ariaInvalid = computed<boolean | null>(() =>
-    deps.errorState() || showCommitError() ? true : null,
-  );
-  const ariaReadonly = computed<boolean | null>(() => (presenter?.readonly() ? true : null));
-  const ariaErrorMessage = computed<string | null>(() =>
-    deps.errorState() ? (presenter?.errorId() ?? null) : null,
-  );
-
-  const ariaBusy = computed<boolean | null>(() => {
-    if (presenter?.pending()) {
-      return true;
-    }
-    const s = deps.state();
-    if (s?.isLoading() || s?.isPending() || s?.isRefreshing()) {
-      return true;
-    }
-    if (commitController.isCommitting()) {
-      return true;
-    }
-    return null;
-  });
+  const describedBy = fieldAria.describedBy;
+  const ariaInvalid = fieldAria.ariaInvalid;
+  const ariaReadonly = fieldAria.ariaReadonly;
+  const ariaErrorMessage = fieldAria.ariaErrorMessage;
+  const ariaBusy = fieldAria.ariaBusy;
 
   const effectiveTabIndex = computed<number | null>(() => (disabled() ? -1 : deps.tabIndex()));
 
@@ -701,7 +693,13 @@ export function createSelectCore<T, TCommit>(
     const aria = deps.ariaLabel();
     const fieldFallback = config.ariaLabels().fieldLabelFallback;
     const failedMessage = config.ariaLabels().commitFailedMessage;
-    const labelText = label !== '' ? label : (aria ?? fieldFallback);
+    // An empty aria-label names nothing: same rule as `announce`.
+    let labelText = fieldFallback;
+    if (label !== '') {
+      labelText = label;
+    } else if (aria && aria.length > 0) {
+      labelText = aria;
+    }
     const detail = err instanceof Error ? err.message : undefined;
     return failedMessage(labelText, detail);
   }
