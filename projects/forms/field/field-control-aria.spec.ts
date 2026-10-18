@@ -113,6 +113,73 @@ describe('createFieldControlAria', () => {
     });
   });
 
+  describe('control-side hooks', () => {
+    it('lets idOverride win over the field id and the fallback', () => {
+      const h = makePresenter();
+      const own = signal<string | null>('own');
+      const aria = createFieldControlAria(h.presenter, { idOverride: own, fallbackId: 'fb' });
+      expect(aria.id()).toBe('own');
+      own.set(null);
+      expect(aria.id()).toBe('field-input-1');
+      own.set('');
+      expect(aria.id()).toBe('field-input-1');
+      expect(createFieldControlAria(null, { idOverride: () => 'own' }).id()).toBe('own');
+      expect(createFieldControlAria(null, { idOverride: () => null, fallbackId: 'fb' }).id()).toBe(
+        'fb',
+      );
+    });
+
+    it('lets labelledByOverride win over the field label id', () => {
+      const h = makePresenter();
+      const own = signal<string | null>('own-label');
+      const aria = createFieldControlAria(h.presenter, { labelledByOverride: own });
+      expect(aria.labelledBy()).toBe('own-label');
+      own.set(null);
+      expect(aria.labelledBy()).toBe('label-1');
+      expect(
+        createFieldControlAria(null, { labelledByOverride: () => 'own-label' }).labelledBy(),
+      ).toBe('own-label');
+    });
+
+    it("OR's localRequired with the field required state", () => {
+      const h = makePresenter();
+      const local = signal(false);
+      const aria = createFieldControlAria(h.presenter, { localRequired: local });
+      expect(aria.ariaRequired()).toBeNull();
+      local.set(true);
+      expect(aria.ariaRequired()).toBe(true);
+      local.set(false);
+      h.state.required.set(true);
+      expect(aria.ariaRequired()).toBe(true);
+      expect(createFieldControlAria(null, { localRequired: () => true }).ariaRequired()).toBe(true);
+    });
+
+    it("OR's localInvalid into aria-invalid without touching errorState or the error id", () => {
+      const h = makePresenter();
+      const local = signal(false);
+      const aria = createFieldControlAria(h.presenter, { localInvalid: local });
+      expect(aria.ariaInvalid()).toBeNull();
+      local.set(true);
+      expect(aria.ariaInvalid()).toBe(true);
+      expect(aria.errorState()).toBe(false);
+      expect(aria.ariaErrorMessage()).toBeNull();
+      expect(createFieldControlAria(null, { localInvalid: () => true }).ariaInvalid()).toBe(true);
+    });
+
+    it("OR's localBusy with the field pending state", () => {
+      const h = makePresenter();
+      const local = signal(false);
+      const aria = createFieldControlAria(h.presenter, { localBusy: local });
+      expect(aria.ariaBusy()).toBeNull();
+      local.set(true);
+      expect(aria.ariaBusy()).toBe(true);
+      local.set(false);
+      h.state.pending.set(true);
+      expect(aria.ariaBusy()).toBe(true);
+      expect(createFieldControlAria(null, { localBusy: () => true }).ariaBusy()).toBe(true);
+    });
+  });
+
   describe('disabled-reason describedBy gating', () => {
     it('appends the reason id only while disabled with a reason', () => {
       const h = makePresenter();
