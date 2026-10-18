@@ -16,8 +16,8 @@ import { createSelectSheetScope, type CngxSelectSheetScope } from './scoped-anno
 import type { CngxSelectCore } from './select-core';
 
 /**
- * @internal The slice of the select core the wiring reads. Variants without
- * a {@link CngxSelectCore} (`CngxTreeSelect`) hand in their own signals.
+ * @internal The slice of the select core the wiring reads. Every variant
+ * hands in its {@link CngxSelectCore}.
  */
 export type CngxSelectSheetCore = Pick<
   CngxSelectCore<unknown, unknown>,

@@ -14,8 +14,10 @@ import { stripBidiIsolates } from '@cngx/testing';
 import {
   provideSelectConfig,
   withAriaLabels,
+  withPanelClass,
   type CngxSelectAriaLabels,
 } from '../shared/config';
+import { createManualState } from '@cngx/common/data';
 import { CngxTreeSelect } from './tree-select.component';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
 import { CngxTreeSelectTriggerLabel } from './tree-select-trigger-label.directive';
@@ -504,6 +506,75 @@ describe('CngxTreeSelect - toggle commit error announcement', () => {
       expect(fixture.componentInstance.values()).toEqual([]);
     },
   );
+});
+
+describe('CngxTreeSelect - shared core view state', () => {
+  @Component({
+    imports: [CngxTreeSelect],
+    template: `
+      <cngx-tree-select
+        label="Teams"
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="labelFn"
+        [state]="state"
+        [commitAction]="commitAction"
+        [commitErrorDisplay]="display()"
+        [(values)]="values"
+      />
+    `,
+  })
+  class StateTreeHost {
+    readonly nodes = tree();
+    readonly values = signal<Row[]>([]);
+    readonly idFn = (v: Row): string => v.id;
+    readonly labelFn = (v: Row): string => v.name;
+    readonly state = createManualState<readonly CngxTreeNode<Row>[]>();
+    readonly display = signal<'banner' | 'none'>('banner');
+    readonly commitAction = (): Observable<Row[]> => {
+      throw new Error('boom');
+    };
+  }
+
+  beforeEach(() => polyfillPopover());
+
+  function mount() {
+    const fixture = TestBed.createComponent(StateTreeHost);
+    fixture.detectChanges();
+    const tree = fixture.debugElement.query(By.directive(CngxTreeSelect))
+      .componentInstance as CngxTreeSelect<Row>;
+    return { fixture, tree, host: fixture.componentInstance };
+  }
+
+  it('shows the refresh indicator on a reload after the first load', () => {
+    const { fixture, tree, host } = mount();
+    host.state.setSuccess(tree.treeController.flatNodes().map((n) => n.node));
+    host.state.set('loading');
+    fixture.detectChanges();
+    expect(tree.showRefreshIndicator()).toBe(true);
+  });
+
+  it('hides the commit-error surface under commitErrorDisplay none', () => {
+    const { fixture, tree, host } = mount();
+    tree.handleSelect(tree.treeController.findById('b')!);
+    fixture.detectChanges();
+    expect(tree.showCommitError()).toBe(true);
+    host.display.set('none');
+    fixture.detectChanges();
+    expect(tree.showCommitError()).toBe(false);
+  });
+});
+
+describe('CngxTreeSelect - config panel class', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ providers: [provideSelectConfig(withPanelClass('app-panel'))] });
+  });
+
+  it('puts the CNGX_SELECT_CONFIG panel class on the tree panel', () => {
+    const { root } = setup();
+    expect(root.querySelector('.cngx-select__panel')?.classList).toContain('app-panel');
+  });
 });
 
 describe('CngxTreeSelect - commit error copy without a label', () => {

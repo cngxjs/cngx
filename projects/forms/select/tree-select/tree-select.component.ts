@@ -17,7 +17,6 @@ import {
   type Signal,
   type TemplateRef,
 } from '@angular/core';
-import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 import { CngxChip } from '@cngx/common/display';
 import {
   CngxClickOutside,
@@ -28,6 +27,7 @@ import {
   CngxPopover,
   CngxPopoverSheet,
   CngxPopoverTrigger,
+  type CngxPopoverPresentation,
   type CngxPopoverPresentationRequest,
   type PopoverPlacement,
 } from '@cngx/common/popover';
@@ -45,7 +45,8 @@ import {
   CNGX_SELECT_SHEET_SCOPE,
   CngxScopedSelectAnnouncer,
 } from '../shared/internal/scoped-announcer';
-import { createPresentationRequest } from '../shared/internal/select-core';
+import { createSelectCore, type CngxSelectCore } from '../shared/internal/select-core';
+import { createOptionsStateView } from '../shared/internal/options-state-view';
 import {
   createSelectSheetWiring,
   type CngxSelectSheetWiring,
@@ -88,7 +89,6 @@ import {
   type CngxSelectPanelShellTemplates,
   type CngxSelectPanelViewHost,
 } from '../shared/panel-host';
-import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controller.token';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
@@ -104,8 +104,6 @@ import {
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
   CngxSelectRetryButton,
-  type CngxSelectCommitErrorContext,
-  type CngxSelectErrorContext,
 } from '../shared/template-slots';
 import { cngxSelectDefaultCompare, type CngxSelectCompareFn } from '../shared/internal/select-core';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
@@ -144,8 +142,9 @@ export interface CngxTreeSelectChange<T = unknown> {
 }
 
 /**
- * Tree-structured multi-select. Shares popover + commit + focus +
- * announce plumbing with the flat family; adds `CngxTreeController` +
+ * Tree-structured multi-select. Runs on `createSelectCore` like the flat
+ * family (commit, announce, panel view state, trigger ARIA), with the
+ * tree's flat node list as the option source; adds `CngxTreeController` +
  * cascade selection. Body is a W3C APG treeview in
  * `CngxTreeSelectPanel`; ArrowLeft/Right via `CngxHierarchicalNav`,
  * ArrowUp/Down + Home/End + typeahead via `CngxActiveDescendant`.
@@ -531,92 +530,66 @@ export class CngxTreeSelect<T = unknown>
    */
   private lastCommit: TreeSelectLastCommit<T> | null = null;
 
-  private readonly commitControllerInstance = inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY)<T[]>();
+  /** @internal */ readonly panelOpen = computed<boolean>(
+    () => this.popoverRef()?.isVisible() ?? false,
+  );
+  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
+
+  /**
+   * Family-shared signal graph. The tree's option source is its flat node
+   * list (a `FlatTreeNode` carries `value` / `label` / `disabled` and no
+   * `children`), `[state]` reaches it through a typed view, and the
+   * selection controller stays the tree's own `childrenFn`-seeded one (no
+   * `multiValues`). The indicator deps are inert: the tree row draws its
+   * own checkbox.
+   *
+   * @internal
+   */
+  private readonly core: CngxSelectCore<T, T[]> = createSelectCore<T, T[]>(
+    {
+      label: this.label,
+      ariaLabel: this.ariaLabel,
+      ariaLabelledBy: this.ariaLabelledBy,
+      placeholder: this.placeholder,
+      idInput: this.idInput,
+      disabledInput: this.disabledInput,
+      requiredInput: this.requiredInput,
+      tabIndex: this.tabIndex,
+      options: this.treeController.flatNodes,
+      state: createOptionsStateView<T>(this.state, this.treeController.flatNodes),
+      loading: this.loading,
+      compareWith: this.compareWith,
+      skeletonRowCount: this.skeletonRowCount,
+      panelClass: this.panelClass,
+      panelWidth: this.panelWidth,
+      hideSelectionIndicator: computed(() => false),
+      hideCaret: this.hideCaret,
+      commitErrorDisplay: this.commitErrorDisplay,
+      commitAction: this.commitAction,
+      panelOpen: this.panelOpen,
+      errorState: this.errorState,
+      multi: computed(() => true),
+      currentSelection: this.values,
+      selectionIndicatorPosition: computed(() => null),
+      selectionIndicatorVariant: computed(() => null),
+      presentationInput: this.presentation,
+      // Lazy: the wiring is built from the core further down.
+      presentation: computed<CngxPopoverPresentation>(() => this.sheetWiring.presentation()),
+    },
+    {
+      announceChanges: this.announceChanges,
+      announceTemplate: this.announceTemplate,
+    },
+  );
 
   /** Shared live-region announcer. */
   private readonly announcer = inject(CngxSelectAnnouncer);
 
-  /**
-   * Emit an action-aware message through the root live region. Gated
-   * by `[announceChanges]` → config → default `true`. Message comes
-   * from `[announceTemplate]` or the config's format function.
-   */
-  private announce(
-    item: CngxTreeSelectedItem<T> | null,
-    action: 'added' | 'removed',
-    count: number,
-  ): void {
-    // Announcing is a side effect: nothing read here may subscribe a reactive
-    // caller, so a language flip never re-runs the effect that announced.
-    untracked(() => {
-      const enabled = this.announceChanges() ?? this.config.announcer().enabled ?? true;
-      if (!enabled) {
-        return;
-      }
-      const format = this.announceTemplate() ?? this.config.announcer().format;
-      const label = this.label();
-      const aria = this.ariaLabel();
-      let fieldLabel = this.config.ariaLabels().fieldLabelFallback;
-      if (label.length > 0) {
-        fieldLabel = label;
-      } else if (aria && aria.length > 0) {
-        fieldLabel = aria;
-      }
-      const message = format({
-        selectedLabel: item?.label ?? null,
-        fieldLabel,
-        multi: true,
-        action,
-        count,
-      });
-      this.announcer.announce(message, this.config.announcer().politeness);
-    });
-  }
-
-  /**
-   * Minimal `CngxSelectCore`-shaped surface for
-   * `createArrayCommitHandler` - handler only reads `commitController`,
-   * `togglingOption`, `announce`. Tree-select drives toggle + cascade
-   * via `dispatchValueChange` directly; the handler is reused only
-   * for clear-all. `togglingOption` is typed honestly - the clear
-   * path's `.set(null)` is its only runtime use.
-   */
-  private readonly commitCore: Parameters<typeof createArrayCommitHandler<T>>[0]['core'] = {
-    commitController: this.commitControllerInstance,
-    togglingOption: signal(null),
-    announce: (_opt: unknown, action: 'added' | 'removed', count: number): void => {
-      // `beginClear` calls with `null` option + 'removed'. Forward to
-      // the tree-shaped announce helper.
-      this.announce(null, action, count);
-    },
-  } as unknown as Parameters<typeof createArrayCommitHandler<T>>[0]['core'];
-
-  /** @internal */
-  /**
-   * Mirrors `CngxSelectCore.commitErrorMessage` - tree-select composes a
-   * minimal core surface and has no shared formatter to delegate to.
-   */
-  private commitErrorMessage(err: unknown): string {
-    const label = this.label();
-    const aria = this.ariaLabel();
-    const fieldFallback = this.config.ariaLabels().fieldLabelFallback;
-    const failedMessage = this.config.ariaLabels().commitFailedMessage;
-    // An empty aria-label names nothing: same rule as `announce`.
-    let labelText = fieldFallback;
-    if (label !== '') {
-      labelText = label;
-    } else if (aria && aria.length > 0) {
-      labelText = aria;
-    }
-    const detail = err instanceof Error ? err.message : undefined;
-    return failedMessage(labelText, detail);
-  }
-
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
     deps: {
       announcer: this.announcer,
-      commitErrorMessage: (err) => this.commitErrorMessage(err),
-      softAnnounce: (_opt, action) => this.announce(null, action, this.values().length),
+      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
+      softAnnounce: (_opt, action) => this.core.announce(null, action, this.values().length, true),
     },
     policy: this.commitErrorAnnouncePolicy,
   });
@@ -625,7 +598,7 @@ export class CngxTreeSelect<T = unknown>
     values: this.values,
     compareWith: this.compareWith,
     commitMode: this.commitMode,
-    core: this.commitCore,
+    core: this.core,
     commitAction: this.commitAction,
     getLastCommitted: () => this.lastCommittedValues,
     onToggleFinalize: () => {
@@ -650,57 +623,18 @@ export class CngxTreeSelect<T = unknown>
     announceError: (err) => this.announceCommitError(err),
   });
 
-  /** @internal */
-  readonly activeView: Signal<AsyncView> = computed(() => {
-    const s = this.state();
-    if (s) {
-      return resolveAsyncView(s.status(), s.isFirstLoad(), s.isEmpty());
-    }
-    if (this.loading()) {
-      return 'skeleton';
-    }
-    return this.nodes().length === 0 ? 'empty' : 'content';
-  });
-
-  /** @internal */ readonly showRefreshIndicator = computed<boolean>(() => {
-    const s = this.state();
-    return !!s && s.status() === 'refreshing';
-  });
-  /** @internal */ readonly showInlineError = computed<boolean>(
-    () => this.activeView() === 'content+error',
-  );
-  /** @internal */ readonly skeletonIndices = computed<number[]>(
-    () => Array.from({ length: Math.max(1, this.skeletonRowCount()) }, (_, i) => i),
-    { equal: (a, b) => a.length === b.length },
-  );
-
+  /** @internal */ readonly activeView = this.core.activeView;
+  /** @internal */ readonly showRefreshIndicator = this.core.showRefreshIndicator;
+  /** @internal */ readonly showInlineError = this.core.showInlineError;
+  /** @internal */ readonly skeletonIndices = this.core.skeletonIndices;
   /** @internal */ readonly resolvedId = computed<string>(() => this.idInput() ?? this.autoId);
   /** @internal - own template only; outer popover panel class binding. */
-  protected readonly panelClassList = computed<string | readonly string[] | null>(() =>
-    this.panelClass(),
-  );
+  protected readonly panelClassList = this.core.panelClassList;
   /** @internal - own template only; outer popover panel width binding. */
-  protected readonly panelWidthCss = computed<string | null>(() => {
-    // The sheet owns the inline size outside the anchored presentation.
-    if (this.sheetWiring.presentation() !== 'anchored') {
-      return null;
-    }
-    const w = this.panelWidth();
-    if (w === null || w === undefined) {
-      return 'auto';
-    }
-    if (w === 'trigger') {
-      return 'anchor-size(width)';
-    }
-    return `${w}px`;
-  });
+  protected readonly panelWidthCss = this.core.panelWidthCss;
   /** @internal */
   readonly ariaReadonly = computed<boolean | null>(() =>
     this.presenter?.readonly() ? true : null,
-  );
-
-  /** @internal */ readonly panelOpen = computed<boolean>(
-    () => this.popoverRef()?.isVisible() ?? false,
   );
 
   /**
@@ -763,11 +697,10 @@ export class CngxTreeSelect<T = unknown>
   readonly disabled = computed<boolean>(
     () => this.disabledInput() || (this.presenter?.disabled() ?? false),
   );
-  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
   /** @internal - panel-shell fallback labels (i18n). */
-  readonly fallbackLabels = this.config.fallbackLabels;
-  readonly ariaLabels = this.config.ariaLabels;
+  readonly fallbackLabels = this.core.fallbackLabels;
+  readonly ariaLabels = this.core.ariaLabels;
 
   /**
    * Stable retry closure bound once so the `errorContext` computed
@@ -776,20 +709,7 @@ export class CngxTreeSelect<T = unknown>
   private readonly errorRetryBound: () => void = () => this.handleRetry();
 
   /** @internal */
-  readonly errorContext = computed<CngxSelectErrorContext>(
-    () => {
-      const err = this.state()?.error() ?? null;
-      return { $implicit: err, error: err, retry: this.errorRetryBound };
-    },
-    {
-      // Structural-equal on `error` + identity-check the stable retry
-      // closure - identical error reads stop thrashing the retry banner
-      // outlet. Parallel pattern to `commitErrorContext`.
-      equal: (a, b) =>
-        a === b ||
-        (Object.is(a.error, b.error) && Object.is(a.$implicit, b.$implicit) && a.retry === b.retry),
-    },
-  );
+  readonly errorContext = this.core.makeErrorContext(this.errorRetryBound);
 
   // Stable retry closure - recreating per CD cycle churns
   // `*ngTemplateOutlet` consumers of the commit-error context.
@@ -807,22 +727,7 @@ export class CngxTreeSelect<T = unknown>
   };
 
   /** @internal */
-  readonly commitErrorContext = computed<CngxSelectCommitErrorContext<T>>(
-    () => ({
-      $implicit: this.commitState.error(),
-      error: this.commitState.error(),
-      option: null,
-      retry: this.commitRetryBound,
-    }),
-    {
-      equal: (a, b) =>
-        a === b ||
-        (Object.is(a.error, b.error) &&
-          Object.is(a.$implicit, b.$implicit) &&
-          a.retry === b.retry &&
-          a.option === b.option),
-    },
-  );
+  readonly commitErrorContext = this.core.bindCommitRetry(this.commitRetryBound);
 
   /**
    * 5-slot bundle the shell reads. Tree-select has no flat option-
@@ -846,7 +751,7 @@ export class CngxTreeSelect<T = unknown>
   };
 
   /** @internal */
-  readonly showCommitError = computed<boolean>(() => this.commitState.status() === 'error');
+  readonly showCommitError = this.core.showCommitError;
 
   isSelected(value: T): boolean {
     return this.selection.isSelected(value)();
@@ -869,20 +774,13 @@ export class CngxTreeSelect<T = unknown>
   );
 
   /** `true` when a commit is in flight. */
-  readonly isCommitting = this.commitControllerInstance.isCommitting;
+  readonly isCommitting = this.core.isCommitting;
   /** Read-only commit lifecycle view (bridged via `CNGX_STATEFUL`). */
-  readonly commitState = this.commitControllerInstance.state;
+  readonly commitState = this.core.commitState;
 
   /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
   readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
-    core: {
-      isCommitting: this.isCommitting,
-      resolvedPresentationRequest: createPresentationRequest(
-        this.presentation,
-        this.config.mobileSheet,
-      ),
-      ariaLabels: this.config.ariaLabels,
-    },
+    core: this.core,
     sheet: this.sheetRef,
     popoverRef: this.popoverRef,
     listboxRef: signal(undefined),
@@ -1088,10 +986,11 @@ export class CngxTreeSelect<T = unknown>
         node: meta.node,
         action: meta.action,
       });
-      this.announce(
+      this.core.announce(
         announceLabel ? { value: meta.node.value, label: announceLabel } : null,
         announceAction,
         next.length,
+        true,
       );
       return;
     }
@@ -1110,14 +1009,15 @@ export class CngxTreeSelect<T = unknown>
         node: meta.node,
         action: meta.action,
       });
-      this.announce(
+      this.core.announce(
         announceLabel ? { value: meta.node.value, label: announceLabel } : null,
         announceAction,
         next.length,
+        true,
       );
     }
     this.stateChange.emit('pending');
-    this.commitControllerInstance.begin(action, next, previous, {
+    this.core.commitController.begin(action, next, previous, {
       onSuccess: (committed) => {
         this.stateChange.emit('success');
         const finalValues = committed ?? next;
@@ -1134,10 +1034,11 @@ export class CngxTreeSelect<T = unknown>
             node: meta.node,
             action: meta.action,
           });
-          this.announce(
+          this.core.announce(
             announceLabel ? { value: meta.node.value, label: announceLabel } : null,
             announceAction,
             finalValues.length,
+            true,
           );
         }
       },
@@ -1263,7 +1164,7 @@ export class CngxTreeSelect<T = unknown>
       node: null,
       action: 'toggle',
     });
-    this.announce({ value: opt.value, label: opt.label }, 'removed', next.length);
+    this.core.announce({ value: opt.value, label: opt.label }, 'removed', next.length, true);
   }
 
   /** @internal - exposed for the `*cngxSelectClearButton` slot. */
@@ -1293,7 +1194,7 @@ export class CngxTreeSelect<T = unknown>
       node: null,
       action: 'clear',
     });
-    this.announce(null, 'removed', 0);
+    this.core.announce(null, 'removed', 0, true);
   };
 
   /** @internal */

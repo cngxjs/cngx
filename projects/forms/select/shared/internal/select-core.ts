@@ -277,7 +277,7 @@ export interface CngxSelectPanelHostAdapter<T> {
 /**
  * @internal Sheet presentation cascade of the select family:
  * `[presentation]` → `mobileSheet: 'off'` as `'anchored'` → `'auto'`.
- * Shared by {@link createSelectCore} and the variants without a core.
+ * Read by {@link createSelectCore} as `resolvedPresentationRequest`.
  */
 export function createPresentationRequest(
   input: Signal<CngxPopoverPresentationRequest | undefined> | undefined,
