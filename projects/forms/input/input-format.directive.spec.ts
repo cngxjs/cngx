@@ -17,6 +17,19 @@ class Host {
   readonly directive = viewChild.required(CngxInputFormat);
 }
 
+@Component({
+  template: `<input [cngxInputFormat]="formatFn" [parse]="parseFn" [(value)]="amount" />`,
+  imports: [CngxInputFormat],
+})
+class NonInvertingHost {
+  // parse does not invert format: '1234' -> '$1,234.00' -> '1234.00'.
+  formatFn = (v: string) =>
+    v ? `$${Number(v).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '';
+  parseFn = (v: string) => (v ? Number(v.replace(/[$,]/g, '')).toFixed(2) : '');
+  readonly amount = signal('1234');
+  readonly directive = viewChild.required(CngxInputFormat);
+}
+
 function setup(hostMock?: CngxFormFieldHostContract) {
   TestBed.configureTestingModule({
     providers: hostMock ? [{ provide: CNGX_FORM_FIELD_HOST, useValue: hostMock }] : [],
@@ -60,6 +73,21 @@ describe('CngxInputFormat', () => {
     input.dispatchEvent(new FocusEvent('focus'));
     expect(input.value).toBe('hello');
     expect(directive.value()).toBe('hello');
+  });
+
+  it('focus shows the model value and does not write it when parse does not invert format', () => {
+    const fixture = TestBed.createComponent(NonInvertingHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    const directive = fixture.componentInstance.directive();
+    expect(input.value).toBe('$1,234.00');
+
+    input.dispatchEvent(new FocusEvent('focus'));
+
+    expect(input.value).toBe('1234');
+    expect(directive.value()).toBe('1234');
+    expect(fixture.componentInstance.amount()).toBe('1234');
   });
 
   it('should update value on input', () => {
