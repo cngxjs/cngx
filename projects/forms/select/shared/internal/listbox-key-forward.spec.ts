@@ -26,8 +26,6 @@ describe('createListboxKeyForward', () => {
   it.each([
     ['ArrowDown', 'highlightNext'],
     ['ArrowUp', 'highlightPrev'],
-    ['Home', 'highlightFirst'],
-    ['End', 'highlightLast'],
     ['Enter', 'activateCurrent'],
   ] as const)('%s calls ad.%s and prevents the default', (name, method) => {
     const { ad, handle } = setup();
@@ -43,6 +41,15 @@ describe('createListboxKeyForward', () => {
     handle(event);
     expect(escape).toHaveBeenCalledTimes(1);
     expect(event.defaultPrevented).toBe(true);
+  });
+
+  it.each(['Home', 'End'])('leaves %s to the input caret', (name) => {
+    const { ad, handle } = setup();
+    const event = key(name);
+    handle(event);
+    expect(event.defaultPrevented).toBe(false);
+    expect(ad.highlightFirst).not.toHaveBeenCalled();
+    expect(ad.highlightLast).not.toHaveBeenCalled();
   });
 
   it('leaves other keys alone', () => {

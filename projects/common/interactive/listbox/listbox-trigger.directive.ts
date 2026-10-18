@@ -37,6 +37,10 @@ interface PopoverController {
  * | open | Enter / Space | activate; close if `closeOnSelect()` |
  * | any | Escape | close and restore focus to trigger |
  *
+ * On an `<input>` host with a co-located `CngxListboxSearch` (a combobox),
+ * Space, Home and End are text-editing keys: they reach the input, open or
+ * closed. Enter still activates and the arrows still navigate.
+ *
  * Keys from an interactive descendant of the host (a chip remove button)
  * are left to that element.
  *
@@ -136,6 +140,13 @@ export class CngxListboxTrigger<T = unknown> {
         this.backspaceOnEmpty.emit();
         // No preventDefault - the consumer's chip-remove path owns DOM impact.
       }
+    }
+
+    // A combobox input keeps its text-editing keys: Space types a space,
+    // Home / End move the caret.
+    const editingKey = this.search !== null && (key === ' ' || key === 'Home' || key === 'End');
+    if (editingKey) {
+      return;
     }
 
     if (!this.isOpen()) {

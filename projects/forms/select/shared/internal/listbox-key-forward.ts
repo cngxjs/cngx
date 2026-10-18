@@ -5,9 +5,10 @@ import type { CngxListbox } from '@cngx/common/interactive';
  * @internal
  *
  * Keydown handler for a text input that drives a listbox it does not own
- * focus of: ArrowUp/Down move the highlight, Home/End jump to the ends,
- * Enter activates the highlighted option, Escape calls `escape`. Shared by
- * the declarative `<cngx-select-search>` and the sheet header input.
+ * focus of: ArrowUp/Down move the highlight, Enter activates the highlighted
+ * option, Escape calls `escape`. Home / End stay with the input caret.
+ * Shared by the declarative `<cngx-select-search>` and the sheet header
+ * input.
  */
 export function createListboxKeyForward(
   listboxRef: Signal<CngxListbox | undefined>,
@@ -27,14 +28,6 @@ export function createListboxKeyForward(
       case 'ArrowUp':
         event.preventDefault();
         ad.highlightPrev();
-        break;
-      case 'Home':
-        event.preventDefault();
-        ad.highlightFirst();
-        break;
-      case 'End':
-        event.preventDefault();
-        ad.highlightLast();
         break;
       case 'Enter':
         event.preventDefault();
