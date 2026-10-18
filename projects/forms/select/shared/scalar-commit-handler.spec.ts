@@ -1,4 +1,5 @@
 import { signal, type WritableSignal } from '@angular/core';
+import { Subject } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createScalarCommitHandler } from './scalar-commit-handler';
@@ -195,6 +196,38 @@ describe('createScalarCommitHandler', () => {
     it('is a no-op when no commit action is bound', () => {
       h.handler.retryLast();
       expect(h.stateLog).toEqual([]);
+    });
+
+    it('re-applies the intended value while an optimistic retry is pending', () => {
+      h.value.set('b');
+      h.handler.beginCommit('b', 'a', () => {
+        throw new Error('first fail');
+      });
+      expect(h.value()).toBe('a');
+      const pending = new Subject<T>();
+      h.commitAction.set(() => pending.asObservable());
+      h.valueWriteLog.length = 0;
+
+      h.handler.retryLast();
+
+      expect(h.value()).toBe('b');
+      expect(h.valueWriteLog).toEqual(['b']);
+      pending.next('b');
+      pending.complete();
+      expect(h.value()).toBe('b');
+    });
+
+    it('leaves the value alone while a pessimistic retry is pending', () => {
+      h.commitMode.set('pessimistic');
+      h.value.set('a');
+      h.handler.beginCommit('b', 'a', () => {
+        throw new Error('first fail');
+      });
+      h.commitAction.set(() => new Subject<T>().asObservable());
+
+      h.handler.retryLast();
+
+      expect(h.value()).toBe('a');
     });
   });
 });
