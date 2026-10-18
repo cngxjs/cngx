@@ -12,9 +12,7 @@
 //     site: a raw `Error`, a local holding one, a factory or method call, a
 //     non-error value. A raw site is allowed only in a file of
 //     RAW_THROW_EXEMPT. The rule is an allowlist, so no way of building the
-//     error escapes it. Out of scope, per the plan: other error
-//     channels (`throwError(...)`, `subscriber.error(...)`) and `Error`
-//     objects stored as state instead of thrown.
+//     error escapes it.
 // T2  every `new CngxRuntimeError` has a `CNGXnnnn` literal first argument in
 //     the file's lib range.
 // T3  the message is an `&&` chain starting with the guard, unless the
@@ -30,8 +28,23 @@
 //     imported, exported or named in a type: an alias, a namespace or
 //     element access (`ns['CngxRuntimeError']`) or any other value use hides
 //     the construction from T2/T3, the manifest and the prod-strip check.
+// T5  no built-in error is constructed at all, whatever channel it leaves
+//     through: `new X(...)` and `X(...)` for `Error`, `TypeError`,
+//     `RangeError`, `SyntaxError`, `ReferenceError`, `EvalError`, `URIError`,
+//     `AggregateError` and `DOMException`, and `class ... extends X`. This
+//     covers the channels T1 does not read: `onError(new Error())`,
+//     `subscriber.error(new TypeError())`, `throwError(() => new Error())`
+//     and an error stored as state. A name bound locally (a parameter, an
+//     import, a local class) shadows the global and passes, as in the T3
+//     shadow check; `projects/utils/runtime-error.ts` declares
+//     `CngxRuntimeError` and is skipped. A construction is allowed only in a
+//     file of RAW_THROW_EXEMPT, whose row states the exact `constructions`
+//     count next to the T1 `count`.
 //
 // Known limits (open bypasses, each needs more than a syntactic read):
+// T5 reads the class name only: an alias (`const E = Error; new E()`), a
+// global host (`globalThis.Error`), `Reflect.construct(Error, ...)` and
+// `Object.create(Error.prototype)` are not seen.
 // `Promise.reject` reached through an aliased or nested host
 // (`globalThis.Promise.reject`, `const P = Promise`), by element access
 // (`Promise['reject']`) or through `.call` / `.apply`; `reportError` read off
@@ -70,6 +83,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import {
   MODULE_LOAD_GUARD,
   RUNTIME_ERROR,
+  collectErrorConstructions,
   collectRuntimeErrors,
   isEnclosingCatchVariable,
   lineOf,
@@ -82,23 +96,33 @@ import { libOf, rangeOf, readSources } from '../error-codes-manifest.mjs';
 import { isLibrarySource } from './source-roots.mjs';
 
 /**
- * Files allowed to throw a raw error. Exact count: a new throw in an exempt
- * file fails, and so does a row whose throws are gone.
+ * Files allowed to throw (T1) or construct (T5) a raw error. Exact counts: a
+ * new throw or construction in an exempt file fails, and so does a row whose
+ * sites are gone or whose counts are both 0.
  *
- * @type {{ file: string; count: number; reason: string }[]}
+ * @type {{ file: string; count: number; constructions: number; reason: string }[]}
  */
 const RAW_THROW_EXEMPT = [
   {
     file: 'projects/core/testing/vitest/announcement-matchers.ts',
     count: 3,
+    constructions: 3,
     reason:
       'matcher argument validation inside a test runner; TypeError is the matcher-misuse convention and never runs in an app bundle',
   },
   {
     file: 'projects/forms/select/shared/__test-helpers/field-skin-host.ts',
     count: 1,
+    constructions: 1,
     reason:
       'spec-only harness; excluded-path-import-boundary.test.mjs fails any library import of a __test-helpers file',
+  },
+  {
+    file: 'projects/forms/select/shared/__test-helpers/mobile-sheet.ts',
+    count: 0,
+    constructions: 1,
+    reason:
+      'spec-only harness that feeds a failing commit source an Error; excluded-path-import-boundary.test.mjs fails any library import of a __test-helpers file',
   },
 ];
 
@@ -258,14 +282,22 @@ function collectRuntimeErrorMisuse(path, text) {
 }
 
 /**
- * Runs T1-T4 over `files` ([{ path, text }]).
+ * Runs T1-T5 over `files` ([{ path, text }]). `raw` counts the T1 sites per
+ * file, `constructions` the T5 sites per file; `sites` lists every T5 site
+ * as `file:line`.
  *
- * @returns {{ raw: Map<string, number>; violations: string[] }}
+ * @returns {{ raw: Map<string, number>; constructions: Map<string, number>; sites: string[]; violations: string[] }}
  */
 export function checkSources(allFiles) {
   const files = allFiles.filter(({ path }) => isLibrarySource(path));
   const raw = new Map();
   const violations = [];
+  const errorConstructions = new Map();
+  const sites = [];
+  for (const site of collectErrorConstructions(files)) {
+    errorConstructions.set(site.file, (errorConstructions.get(site.file) ?? 0) + 1);
+    sites.push(`${site.file}:${site.line} T5 ${site.kind} ${site.name}`);
+  }
   for (const { path, text } of files) {
     const lines = rawThrowLines(path, text);
     if (lines.length > 0) {
@@ -318,7 +350,7 @@ export function checkSources(allFiles) {
       );
     }
   }
-  return { raw, violations };
+  return { raw, constructions: errorConstructions, sites, violations };
 }
 
 /** The raw sites grouped per lib, for the failure message. */
@@ -330,16 +362,26 @@ export function groupPerLib(raw) {
   return out;
 }
 
-/** Exemption rows that do not match `raw` exactly or carry no reason. */
-export function exemptionProblems(raw, exempt = RAW_THROW_EXEMPT) {
+/**
+ * Exemption rows that do not match `raw` (T1) and `constructions` (T5)
+ * exactly, carry no reason, or exempt nothing.
+ */
+export function exemptionProblems(raw, constructions, exempt = RAW_THROW_EXEMPT) {
   const out = [];
   for (const row of exempt) {
     if (!row.reason?.trim()) {
       out.push(`${row.file}: exemption without a reason`);
     }
+    if (row.count === 0 && row.constructions === 0) {
+      out.push(`${row.file}: exemption with no throw and no construction`);
+    }
     const actual = raw.get(row.file) ?? 0;
     if (actual !== row.count) {
       out.push(`${row.file}: source ${actual}, exemption ${row.count}`);
+    }
+    const built = constructions.get(row.file) ?? 0;
+    if (built !== row.constructions) {
+      out.push(`${row.file}: source constructions ${built}, exemption ${row.constructions}`);
     }
   }
   return out;
@@ -736,23 +778,110 @@ describe('raw-throw guard - T4 references', () => {
 
 describe('raw-throw guard - exemptions', () => {
   const raw = new Map([['projects/core/x.ts', 2]]);
+  const built = new Map([
+    ['projects/core/x.ts', 2],
+    ['projects/core/y.ts', 1],
+  ]);
+  const row = (file, count, constructions, reason = 'why') => ({
+    file,
+    count,
+    constructions,
+    reason,
+  });
 
-  it('passes an exact row with a reason', () => {
+  it('passes exact rows with a reason, also a construction-only row', () => {
     expect(
-      exemptionProblems(raw, [{ file: 'projects/core/x.ts', count: 2, reason: 'why' }]),
+      exemptionProblems(raw, built, [
+        row('projects/core/x.ts', 2, 2),
+        row('projects/core/y.ts', 0, 1),
+      ]),
     ).toEqual([]);
   });
 
   it('fails a stale row, a wrong count and a reasonless row', () => {
+    expect(exemptionProblems(raw, built, [row('projects/core/gone.ts', 1, 0)])).toEqual([
+      'projects/core/gone.ts: source 0, exemption 1',
+    ]);
+    expect(exemptionProblems(raw, built, [row('projects/core/x.ts', 1, 2)])).toEqual([
+      'projects/core/x.ts: source 2, exemption 1',
+    ]);
+    expect(exemptionProblems(raw, built, [row('projects/core/x.ts', 2, 2, ' ')])).toEqual([
+      'projects/core/x.ts: exemption without a reason',
+    ]);
+  });
+
+  it('fails a stale constructions count and a row that exempts nothing', () => {
+    expect(exemptionProblems(raw, built, [row('projects/core/x.ts', 2, 1)])).toEqual([
+      'projects/core/x.ts: source constructions 2, exemption 1',
+    ]);
+    expect(exemptionProblems(raw, built, [row('projects/core/z.ts', 0, 0)])).toEqual([
+      'projects/core/z.ts: exemption with no throw and no construction',
+    ]);
+  });
+});
+
+describe('raw-throw guard - T5 error constructions', () => {
+  const sitesOf = (text, path = 'projects/common/a.ts') => fixture(text, path).sites;
+
+  it('fails an error handed to a callback, a subscriber, throwError and a stored error', () => {
     expect(
-      exemptionProblems(raw, [{ file: 'projects/core/gone.ts', count: 1, reason: 'why' }]),
-    ).toEqual(['projects/core/gone.ts: source 0, exemption 1']);
+      sitesOf(
+        [
+          "function a(h) { h.onError(new Error('x')); }",
+          "function b(s) { s.error(new TypeError('x')); }",
+          "const c = () => throwError(() => new Error('x'));",
+          "class D { readonly last = new RangeError('x'); }",
+        ].join('\n'),
+      ),
+    ).toEqual([
+      'projects/common/a.ts:1 T5 new Error',
+      'projects/common/a.ts:2 T5 new TypeError',
+      'projects/common/a.ts:3 T5 new Error',
+      'projects/common/a.ts:4 T5 new RangeError',
+    ]);
+  });
+
+  it('fails Error() without new, a DOMException and a subclass of a built-in error', () => {
     expect(
-      exemptionProblems(raw, [{ file: 'projects/core/x.ts', count: 1, reason: 'why' }]),
-    ).toEqual(['projects/core/x.ts: source 2, exemption 1']);
-    expect(exemptionProblems(raw, [{ file: 'projects/core/x.ts', count: 2, reason: ' ' }])).toEqual(
-      ['projects/core/x.ts: exemption without a reason'],
+      sitesOf(
+        [
+          "const a = Error('x');",
+          "const b = new DOMException('x', 'AbortError');",
+          'class E extends Error {}',
+          'const F = class extends AggregateError {};',
+        ].join('\n'),
+      ),
+    ).toEqual([
+      'projects/common/a.ts:1 T5 call Error',
+      'projects/common/a.ts:2 T5 new DOMException',
+      'projects/common/a.ts:3 T5 extends Error',
+      'projects/common/a.ts:4 T5 extends AggregateError',
+    ]);
+  });
+
+  it('passes a shadowed Error, CngxRuntimeError and the runtime-error declaration', () => {
+    expect(
+      sitesOf(
+        [
+          "import { Error } from './errors';",
+          "const a = new Error('x');",
+          "function b(TypeError) { return new TypeError('x'); }",
+          "const c = new CngxRuntimeError('CNGX1001');",
+          'const d = hasError(1);',
+        ].join('\n'),
+      ),
+    ).toEqual([]);
+    expect(
+      sitesOf('export class CngxRuntimeError extends Error {}', 'projects/utils/runtime-error.ts'),
+    ).toEqual([]);
+  });
+
+  it('counts constructions per file next to the T1 throws', () => {
+    const { raw, constructions } = fixture(
+      ["throw new Error('a');", "h.onError(new Error('b'));"].join('\n'),
     );
+    expect(raw.get('projects/common/a.ts')).toBe(1);
+    expect(constructions.get('projects/common/a.ts')).toBe(2);
   });
 });
 
@@ -774,7 +903,15 @@ describe('raw-throw guard - projects/**', () => {
   });
 
   it('matches the exemptions exactly, each with a reason', () => {
-    expect(exemptionProblems(result.raw)).toEqual([]);
+    expect(exemptionProblems(result.raw, result.constructions)).toEqual([]);
+  });
+
+  it('constructs no raw error outside the exemptions (T5)', () => {
+    const exempt = new Set(RAW_THROW_EXEMPT.map((e) => e.file));
+    expect(
+      result.sites.filter((site) => !exempt.has(site.slice(0, site.indexOf(':')))),
+      'Raw error constructions found; hand over a CngxRuntimeError instead, or model the outcome (a refusal is not an error).',
+    ).toEqual([]);
   });
 
   it('has no raw throw outside the exemptions', () => {
