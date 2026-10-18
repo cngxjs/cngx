@@ -72,6 +72,14 @@ describe('detectProject', () => {
       tailwind: undefined,
       rootProvidersFile: 'src/app/app.config.ts',
       rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
+      appShell: {
+        componentFile: 'src/app/app.ts',
+        className: 'App',
+        template: { kind: 'file', path: 'src/app/app.html' },
+        importsHost: { file: 'src/app/app.ts', kind: 'component' },
+        specPath: 'src/app/app.spec.ts',
+        spec: 'absent',
+      },
       languageFile: 'absent',
       languagePack: undefined,
       material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
@@ -87,6 +95,13 @@ describe('detectProject', () => {
       sourceLocale: undefined,
       maturity: 'fresh',
     } satisfies ProjectFacts);
+  });
+
+  it('reads the root component and its stock spec of an untouched ng new app', async () => {
+    const tree = createFixtureTree('scaffold-21');
+    const facts = detectProject(tree, await readWorkspace(tree));
+
+    expect(facts.appShell).toMatchObject({ componentFile: 'src/app/app.ts', className: 'App', spec: 'stock' });
   });
 
   it('reads the Angular version from the installed package and the range from either dependency map', async () => {

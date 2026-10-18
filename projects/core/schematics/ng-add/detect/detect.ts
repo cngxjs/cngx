@@ -27,6 +27,7 @@ import {
   mcpConfigsOf,
   type McpConfigState,
 } from './ai-tooling';
+import { type AppShell, appShellOf } from './app-shell';
 import { maturityOf, rootProvidersPath } from './bootstrap';
 import {
   detectEslintConfig,
@@ -72,6 +73,13 @@ export {
   MCP_CONFIGS,
   type McpConfigState,
 } from './ai-tooling';
+export {
+  type AppShell,
+  type AppShellSpec,
+  type AppShellTemplate,
+  FEEDBACK_SPEC_IMPORT,
+  FEEDBACK_SPEC_PROVIDERS,
+} from './app-shell';
 export { type EslintConfigFacts, type EslintStackFacts, type LegacyEslintConfigFacts } from './eslint';
 export {
   CNGX_LAYERS_FILE,
@@ -119,6 +127,8 @@ export interface ProjectFacts {
   readonly rootProvidersFile: string;
   /** Every `provide*()` call already in that file. */
   readonly rootProviders: readonly string[];
+  /** The bootstrapped root component; `undefined` when `main.ts` cannot be followed to it. */
+  readonly appShell: AppShell | undefined;
   /** `cngx-language.ts` next to `rootProvidersFile`. */
   readonly languageFile: GeneratedFileState;
   /** The pack a `provideCngxI18n(withPack(...))` there passes; `undefined` when none. */
@@ -215,6 +225,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     tailwind: detectTailwind(read, manifest, entries),
     rootProvidersFile,
     rootProviders: providers,
+    appShell: appShellOf(read, mainPath, standalone, projectName),
     languageFile: generatedFileState(read(posix.join(posix.dirname(rootProvidersFile), CNGX_LANGUAGE_FILE))),
     languagePack: providerCalls.languagePack,
     material: detectMaterial(read, manifest, entries),
