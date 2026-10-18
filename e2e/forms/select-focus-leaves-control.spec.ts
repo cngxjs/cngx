@@ -152,4 +152,51 @@ test.describe('select focus stays inside the control', () => {
     await expect(field).not.toHaveClass(/cngx-field--focused/);
     await expect(field).toHaveClass(/cngx-field--error/);
   });
+
+  /** Tabs until focus lands outside `host`; at most `max` presses. */
+  async function tabOut(page: Page, host: Locator, max = 6): Promise<void> {
+    for (let i = 0; i < max; i++) {
+      await page.keyboard.press('Tab');
+      const inside = await host.evaluate((el) => el.contains(document.activeElement));
+      if (!inside) {
+        return;
+      }
+    }
+    throw new Error('focus never left the host');
+  }
+
+  for (const variant of [
+    {
+      name: 'CngxSelect',
+      route: '/#/forms/select/single-select/standalone',
+      tag: 'cngx-select',
+      owner: '[role="combobox"]',
+    },
+    {
+      name: 'CngxCombobox',
+      route: '/#/forms/select/combobox/combobox-basic-tag-picker-with-typeahead-filter',
+      tag: 'cngx-combobox',
+      owner: 'input[role="combobox"]',
+    },
+  ]) {
+    test(`${variant.name}: Tab out of the open control closes the panel`, async ({ page }) => {
+      await page.goto(variant.route);
+      const host = page.locator(variant.tag).first();
+      const owner = host.locator(variant.owner).first();
+      const listbox = host.locator('[role="listbox"]');
+
+      await owner.click();
+      if ((await owner.getAttribute('aria-expanded')) !== 'true') {
+        await page.keyboard.press('ArrowDown');
+      }
+      await expect(owner).toHaveAttribute('aria-expanded', 'true');
+      await expect(listbox).toBeVisible();
+
+      await owner.focus();
+      await tabOut(page, host);
+
+      await expect(owner).toHaveAttribute('aria-expanded', 'false');
+      await expect(listbox).toBeHidden();
+    });
+  }
 });

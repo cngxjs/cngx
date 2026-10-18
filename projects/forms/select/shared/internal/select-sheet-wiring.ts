@@ -82,6 +82,12 @@ export interface CngxSelectSheetWiring extends CngxSelectSheetScope {
   readonly handleSheetClose: (reason: CngxPopoverSheetCloseReason) => void;
   /** The one Escape path of an in-sheet input. */
   readonly escapeClose: () => void;
+  /**
+   * Focus left the host: hides the anchored panel unless a pending commit or
+   * the variant's dismiss guard blocks it. The modal sheet traps focus and
+   * keeps its own close vectors.
+   */
+  readonly handleFocusLeave: () => void;
   readonly headerHost: CngxSelectSheetHeaderHost;
 }
 
@@ -140,6 +146,18 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     opts.popoverRef()?.hide();
   };
 
+  // Hides without the variant's close(): that one refocuses the trigger,
+  // which would pull focus back from where the user just moved it.
+  const handleFocusLeave = (): void => {
+    if (!panelOpen() || !sheetAnchored()) {
+      return;
+    }
+    if (closeBlocked() || opts.shouldBlockDismiss?.()) {
+      return;
+    }
+    opts.popoverRef()?.hide();
+  };
+
   const escapeClose = (): void => {
     if (sheetModal()) {
       handleSheetClose('close');
@@ -185,6 +203,7 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     handleClickOutside: dismiss.handleClickOutside,
     handleSheetClose,
     escapeClose,
+    handleFocusLeave,
     headerHost,
   };
 }

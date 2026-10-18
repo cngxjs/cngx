@@ -5,6 +5,7 @@ import { By } from '@angular/platform-browser';
 import { Subject, type Observable } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import type { CngxPopoverPresentationRequest } from '@cngx/common/popover';
 import { CngxFormField, CngxFormFieldPresenter } from '@cngx/forms/field';
 
 import { CngxSelectAnnouncer } from '../announcer';
@@ -88,7 +89,8 @@ function flush(fixture: ComponentFixture<unknown>): void {
  * plain host with a deferred `[commitAction]`: a commit that settles after
  * the host is destroyed neither writes, emits nor speaks; a failed commit
  * stays reachable from the trigger while the panel is closed; a select that
- * turns disabled closes and ignores activations.
+ * turns disabled closes and ignores activations; focus leaving the host
+ * closes the anchored panel.
  *
  * @internal
  */
@@ -111,6 +113,7 @@ export function describeSelectBehaviourHost(
       readonly mode = signal<CngxSelectCommitMode>('optimistic');
       readonly display = signal<CngxSelectCommitErrorDisplay>('banner');
       readonly disabled = signal(false);
+      readonly presentation = signal<CngxPopoverPresentationRequest>('anchored');
       readonly model = signal<{ pick: string | null }>({ pick: null });
       readonly f = form(this.model, (p) => {
         validate(p.pick, () => ({ kind: 'rejected' }));
@@ -134,7 +137,7 @@ export function describeSelectBehaviourHost(
             <${elementSelector}
               [label]="'Colour'"
               ${opts.inputs}
-              [presentation]="'anchored'"
+              [presentation]="presentation()"
               [commitAction]="commitAction"
               [commitMode]="mode()"
               [commitErrorDisplay]="display()"
@@ -307,6 +310,53 @@ export function describeSelectBehaviourHost(
       flush(fixture);
       expect(host.pending).toBeNull();
       expect(opts.readValue(cmp)).toEqual(before);
+    });
+
+    describe('focus leaving the host', () => {
+      function leave(target: Element, relatedTarget: EventTarget | null): void {
+        target.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget }));
+      }
+
+      function openWithFocus(presentation: CngxPopoverPresentationRequest = 'anchored') {
+        const mounted = mount();
+        mounted.host.presentation.set(presentation);
+        flush(mounted.fixture);
+        mounted.variant.open();
+        flush(mounted.fixture);
+        expect(mounted.variant.panelOpen()).toBe(true);
+        return mounted;
+      }
+
+      it('closes the anchored panel when focus moves outside', () => {
+        const { fixture, el, variant, trigger } = openWithFocus();
+        const outside = el.ownerDocument.querySelector<HTMLElement>('.outside-btn')!;
+        leave(trigger(), outside);
+        flush(fixture);
+        expect(variant.panelOpen()).toBe(false);
+        expect(trigger().getAttribute('aria-expanded')).toBe('false');
+      });
+
+      it('keeps the panel open when focus moves to another node inside the host', () => {
+        const { fixture, variant, panel, trigger } = openWithFocus();
+        leave(trigger(), panel());
+        flush(fixture);
+        expect(variant.panelOpen()).toBe(true);
+      });
+
+      it('keeps the panel open when focus goes nowhere (window switch)', () => {
+        const { fixture, variant, trigger } = openWithFocus();
+        leave(trigger(), null);
+        flush(fixture);
+        expect(variant.panelOpen()).toBe(true);
+      });
+
+      it('keeps the modal sheet open when focus moves outside', () => {
+        const { fixture, el, variant, panel } = openWithFocus('sheet');
+        const outside = el.ownerDocument.querySelector<HTMLElement>('.outside-btn')!;
+        leave(panel(), outside);
+        flush(fixture);
+        expect(variant.panelOpen()).toBe(true);
+      });
     });
   });
 }

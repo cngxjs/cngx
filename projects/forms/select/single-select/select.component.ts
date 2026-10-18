@@ -439,6 +439,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
     onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    // Closure: the sheet wiring is declared further down in field order.
+    close: () => this.sheetWiring.handleFocusLeave(),
     owner: () => this.triggerBtn()?.nativeElement,
     restoreFocus: this.config.restoreFocus,
     suppressOpenOnFocus: (active) => {
