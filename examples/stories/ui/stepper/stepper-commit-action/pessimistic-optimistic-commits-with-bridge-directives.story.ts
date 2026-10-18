@@ -2,8 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxStepper: pessimistic and optimistic commits with bridge directives',
-  subtitle: 'Toggle the mode and "simulate error" to exercise the four quadrants. The toast and banner bridges fire on commit failure without any explicit <code>[state]</code> binding - they read <code>CNGX_STATEFUL</code> from the presenter via <code>{ host: true }</code>.',
-  description: 'Async commit gating across both modes. Pessimistic keeps the user on the origin step until <code>[commitAction]</code> resolves; optimistic advances eagerly and rolls back on rejection. <code>cngx-toast-on</code> and <code>cngx-banner-on</code> compose against the presenter via DI - no <code>[state]</code> binding required.',
+  subtitle: 'Toggle the mode, "simulate error" and "simulate refusal" to compare a failed and a refused step change. The toast and banner bridges fire on a failure without any explicit <code>[state]</code> binding - they read <code>CNGX_STATEFUL</code> from the presenter via <code>{ host: true }</code>. A refusal stays out of the bridges.',
+  description: 'Async commit gating across both modes. Pessimistic keeps the user on the origin step until <code>[commitAction]</code> resolves; optimistic advances eagerly and rolls back when the commit does not land. A throw or an erroring observable is a failure: the commit state goes to <code>error</code> and the bridges report it. Answering <code>false</code> is a refusal: the step rolls back, the stepper announces it, <code>lastOutcome()</code> reads <code>refused</code> and the commit state goes back to <code>idle</code> with its data, so no bridge fires. To toast a refusal, the action shows its own warning toast before it answers <code>false</code>; the visible reason below the stepper is driven by <code>lastOutcome()</code>.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'standalone',
@@ -18,37 +18,50 @@ export const STORY: DemoSpec = {
     'import { Observable } from \'rxjs\';',
     'import { CngxStep, CngxStepContent, type CngxStepperCommitAction } from \'@cngx/common/stepper\';',
     'import { CngxStepper } from \'@cngx/ui/stepper\';',
-    'import { CngxToastOn, CngxBannerOn } from \'@cngx/ui/feedback\';',
+    'import { CngxToaster, CngxToastOn, CngxBannerOn } from \'@cngx/ui/feedback\';',
   ],
   imports: ['CngxStepper', 'CngxStep', 'CngxStepContent', 'CngxToastOn', 'CngxBannerOn'],
-  setup: `protected readonly active = signal(0);
+  setup: `private readonly toaster = inject(CngxToaster);
+  protected readonly active = signal(0);
   protected readonly mode = signal<'optimistic' | 'pessimistic'>('pessimistic');
   protected readonly shouldFail = signal(false);
+  protected readonly shouldRefuse = signal(false);
   protected readonly latencyMs = signal(800);
   protected readonly commitAction: CngxStepperCommitAction = (from, to) => {
     const ms = this.latencyMs();
     const fail = this.shouldFail();
+    const refuse = this.shouldRefuse();
     return new Observable<boolean>((sub) => {
       const handle = setTimeout(() => {
         if (fail) {
-          sub.error(new Error('Server refused step ' + from + ' -> ' + to));
-        } else {
-          sub.next(true);
-          sub.complete();
+          sub.error(new Error('Could not save step ' + from + ' -> ' + to));
+          return;
         }
+        if (refuse) {
+          // A refusal is the action's own decision: it toasts its reason
+          // itself, then answers false. The bridges stay silent.
+          this.toaster.show({ message: 'Save the profile first.', severity: 'warning' });
+          sub.next(false);
+          sub.complete();
+          return;
+        }
+        sub.next(true);
+        sub.complete();
       }, ms);
       return () => clearTimeout(handle);
     });
   };`,
   template: `  <cngx-stepper
+    #wizard="cngxStepper"
     [(activeStepIndex)]="active"
     [commitAction]="commitAction"
     [commitMode]="mode()"
     cngxToastOn
+    [toastSuccess]="'Step saved'"
     [toastError]="'Step transition failed'"
     cngxBannerOn
     bannerId="stepper:commit-error"
-    [bannerError]="'Step transition refused by the server.'"
+    [bannerError]="'The server could not save the step.'"
     aria-label="Async wizard"
   >
     <div cngxStep label="Customer">
@@ -60,7 +73,10 @@ export const STORY: DemoSpec = {
     <div cngxStep label="Confirm">
       <ng-template cngxStepContent><p>Review the order.</p></ng-template>
     </div>
-  </cngx-stepper>`,
+  </cngx-stepper>
+  @if (wizard.presenter.lastFailedIndex() !== undefined && wizard.presenter.lastOutcome()?.kind === 'refused') {
+    <p>Not allowed yet: save the profile first.</p>
+  }`,
   templateChrome: `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
     <button type="button" class="chip"
             [class.demo-chip-toggle--active]="mode() === 'optimistic'"
@@ -73,6 +89,12 @@ export const STORY: DemoSpec = {
              [checked]="shouldFail()"
              (change)="shouldFail.set($any($event.target).checked)" />
       simulate error
+    </label>
+    <label style="margin-inline-start:12px">
+      <input type="checkbox"
+             [checked]="shouldRefuse()"
+             (change)="shouldRefuse.set($any($event.target).checked)" />
+      simulate refusal
     </label>
     <label style="margin-inline-start:12px">
       latency
