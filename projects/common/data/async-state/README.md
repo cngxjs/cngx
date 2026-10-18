@@ -48,7 +48,7 @@ Create fully manual async state - no HTTP, no automatic loading. Use for:
 
 **Requires:** No injection context.
 
-**Returns:** `ManualAsyncState<T>` with methods `set()`, `setSuccess()`, `setError()`, `setProgress()`, `reset()`.
+**Returns:** `ManualAsyncState<T>` with methods `set()`, `setSuccess()`, `setError()`, `setIdle()`, `setProgress()`, `reset()`. `setIdle()` goes back to `idle` and clears error and progress but keeps data, `lastUpdated` and `isFirstLoad()`; `reset()` wipes everything.
 
 ```typescript
 readonly processState = createManualState<ProcessResult>();

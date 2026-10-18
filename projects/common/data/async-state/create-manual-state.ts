@@ -24,6 +24,17 @@ export interface ManualAsyncState<T> extends CngxAsyncState<T> {
   /** Transition to `error`. */
   setError(error: unknown): void;
 
+  /**
+   * Transition to `idle` without dropping what the state already holds.
+   *
+   * Clears `error` and `progress`; keeps `data`, `lastUpdated` and the
+   * first-load flag. Use it when an operation ends without changing
+   * anything (a commit the action refused): nothing was replaced, so
+   * nothing is dropped, and no `success` edge is published that a
+   * feedback bridge would report. `reset()` is the full wipe.
+   */
+  setIdle(): void;
+
   /** Set progress (0–100). */
   setProgress(value: number | undefined): void;
 
@@ -100,6 +111,12 @@ export function createManualState<T>(): ManualAsyncState<T> {
       errorState.set(err);
       progressState.set(undefined);
       statusState.set('error');
+    },
+
+    setIdle(): void {
+      errorState.set(undefined);
+      progressState.set(undefined);
+      statusState.set('idle');
     },
 
     setProgress(value: number | undefined): void {
