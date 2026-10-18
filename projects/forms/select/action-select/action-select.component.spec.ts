@@ -10,6 +10,7 @@ import type { CngxSelectCreateAction } from '../shared/create-action.types';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../shared/option.model';
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 
 type Tag = { readonly id: string; readonly name: string };
@@ -495,6 +496,18 @@ describe('CngxActionSelect - first search term after a value write', () => {
 describeFieldSkinHost('CngxActionSelect', CngxActionSelect, 'cngx-action-select', () =>
   createMockField({ name: 'pick' }).accessor,
 );
+
+describeFieldAriaHost('CngxActionSelect', CngxActionSelect, 'cngx-action-select', {
+  ctx: () => ({
+    options: [
+      { value: 'a', label: 'A' },
+      { value: 'b', label: 'B' },
+    ],
+  }),
+  inputs: '[options]="ctx[\'options\']"',
+  initial: null,
+  userWrite: (cmp) => (cmp as CngxActionSelect<string>).value.set('a'),
+});
 
 describeMobileSheet('CngxActionSelect', CngxActionSelect, 'cngx-action-select', {
   inputs: '[options]="options"',

@@ -1,5 +1,6 @@
 import { Component, computed, model, signal, viewChild, type ModelSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { debounce, form } from '@angular/forms/signals';
 import { createMockField } from './testing/public-api';
 import { CngxFormField } from './form-field.component';
 import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from './form-field.token';
@@ -125,5 +126,94 @@ describe('createFieldSync', () => {
     ref.value.set(3);
     TestBed.flushEffects();
     expect(fixture.componentInstance.control().value()).toBe(3);
+  });
+
+  describe('on a real Signal Forms field', () => {
+    it('marks the field dirty on a user change, never on the mount seed', () => {
+      @Component({
+        template: `
+          <cngx-form-field [field]="f.rating">
+            <test-numeric-control />
+          </cngx-form-field>
+        `,
+        imports: [CngxFormField, NumericControl],
+      })
+      class Host {
+        readonly control = viewChild.required(NumericControl);
+        readonly model = signal({ rating: 3 });
+        readonly f = form(this.model);
+      }
+
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const host = fixture.componentInstance;
+      expect(host.control().value()).toBe(3);
+      expect(host.f.rating().dirty()).toBe(false);
+
+      host.control().value.set(5);
+      TestBed.flushEffects();
+
+      expect(host.model().rating).toBe(5);
+      expect(host.f.rating().dirty()).toBe(true);
+    });
+
+    it('leaves the field pristine when a forced seed writes the control value', () => {
+      @Component({
+        template: `
+          <cngx-form-field [field]="f.volume">
+            <test-seeding-control />
+          </cngx-form-field>
+        `,
+        imports: [CngxFormField, SeedingControl],
+      })
+      class Host {
+        readonly model = signal<{ volume: number }>({ volume: Number.NaN });
+        readonly f = form(this.model);
+      }
+
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(fixture.componentInstance.model().volume).toBe(7);
+      expect(fixture.componentInstance.f.volume().dirty()).toBe(false);
+    });
+
+    it('keeps the user value on the control while a debounced field value lags', () => {
+      @Component({
+        template: `
+          <cngx-form-field [field]="f.rating">
+            <test-numeric-control />
+          </cngx-form-field>
+        `,
+        imports: [CngxFormField, NumericControl],
+      })
+      class Host {
+        readonly control = viewChild.required(NumericControl);
+        readonly model = signal({ rating: 1 });
+        readonly f = form(this.model, (p) => debounce(p.rating, 'blur'));
+      }
+
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const host = fixture.componentInstance;
+
+      host.control().value.set(4);
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      expect(host.control().value()).toBe(4);
+      expect(host.f.rating().controlValue()).toBe(4);
+      expect(host.model().rating).toBe(1);
+      expect(host.f.rating().dirty()).toBe(true);
+
+      host.f.rating().markAsTouched();
+      TestBed.flushEffects();
+
+      expect(host.model().rating).toBe(4);
+      expect(host.control().value()).toBe(4);
+    });
   });
 });

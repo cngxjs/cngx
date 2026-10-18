@@ -3,7 +3,7 @@ import { computed, Directive, effect, inject, untracked } from '@angular/core';
 import { CngxListbox } from '@cngx/common/interactive';
 import { cngxDevWarn } from '@cngx/utils';
 
-import { writeFieldValue } from './field-sync';
+import { writeFieldValue, type FieldWriteMode } from './field-sync';
 import { createFieldControlAria } from './field-control-aria';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CNGX_FORM_FIELD_CONTROL } from './form-field.token';
@@ -139,6 +139,8 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
 
     // Listbox → Field. `value` is a `WritableSignal` at runtime on both real and
     // mock fields; `CngxFieldRef` hides writability for API stability - narrow via writeFieldValue.
+    // The first run is the mount seed (field stays pristine), later runs are user writes.
+    let seeded = false;
     effect(() => {
       const presenter = this.presenter;
       if (!presenter) {
@@ -148,6 +150,8 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
       const listboxValue: unknown = this.listbox.multiple()
         ? [...this.listbox.selectedValues()]
         : this.listbox.value();
+      const mode: FieldWriteMode = seeded ? 'user' : 'seed';
+      seeded = true;
       const current: unknown = untracked(() => fieldRef.value());
       if (Object.is(current, listboxValue)) {
         return;
@@ -160,7 +164,7 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
       ) {
         return;
       }
-      writeFieldValue(fieldRef, listboxValue);
+      writeFieldValue(fieldRef, listboxValue, mode);
     });
   }
 

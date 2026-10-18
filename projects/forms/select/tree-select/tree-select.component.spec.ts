@@ -7,6 +7,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { stripBidiIsolates } from '@cngx/testing';
@@ -431,6 +432,16 @@ describeCommitControllerCascade('CngxTreeSelect');
 describeFieldSkinHost('CngxTreeSelect', CngxTreeSelect, 'cngx-tree-select', () =>
   createMockField({ name: 'pick' }).accessor,
 );
+
+describeFieldAriaHost('CngxTreeSelect', CngxTreeSelect, 'cngx-tree-select', {
+  ctx: () => ({
+    nodes: [{ value: 'a' }, { value: 'b' }],
+    idFn: (v: string): string => v,
+  }),
+  inputs: '[nodes]="ctx[\'nodes\']" [nodeIdFn]="ctx[\'idFn\']"',
+  initial: [],
+  userWrite: (cmp) => (cmp as CngxTreeSelect<string>).values.set(['a']),
+});
 
 describe('CngxTreeSelect - toggle commit error announcement', () => {
   @Component({

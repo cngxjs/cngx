@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
+import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import {
   CngxReorderableMultiSelect,
@@ -557,6 +558,18 @@ describeCommitControllerCascade('CngxReorderableMultiSelect');
 describeFieldSkinHost('CngxReorderableMultiSelect', CngxReorderableMultiSelect, 'cngx-reorderable-multi-select', () =>
   createMockField({ name: 'pick' }).accessor,
 );
+
+describeFieldAriaHost('CngxReorderableMultiSelect', CngxReorderableMultiSelect, 'cngx-reorderable-multi-select', {
+  ctx: () => ({
+    options: [
+      { value: 'a', label: 'A' },
+      { value: 'b', label: 'B' },
+    ],
+  }),
+  inputs: '[options]="ctx[\'options\']"',
+  initial: [],
+  userWrite: (cmp) => (cmp as CngxReorderableMultiSelect<string>).values.set(['a']),
+});
 
 describeMobileSheet(
   'CngxReorderableMultiSelect',
