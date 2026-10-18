@@ -253,7 +253,7 @@ A step can be flagged as in error through two independent channels. Both render 
 |Channel|How you flag it|Where the message appears|
 |-|-|-|
 |Validation|`[error]="true \| 'message'"` on `cngxStep`, or `[errorAggregator]` for multi-source forms|a row **below the strip** (every classic-style skin) via `*cngxStepError`; folded into the aggregate line on the `text` / `dot` / `progress-bar` mini variants|
-|Commit / async|a `commitAction` that rejects (sets `lastFailedIndex`)|`*cngxStepRejection` decoration; `CngxToastOn` / `CngxBannerOn` transition bridges|
+|Commit / async|a `commitAction` that refuses (`false`) or fails (throw, rejection, error); only the most recent attempt is shown, the next one replaces it|`*cngxStepRejection` decoration (amber `⊘` refused, red `!` failed); `CngxToastOn` / `CngxBannerOn` transition bridges on a failure only|
 
 The message lives on its own row **below** the step strip, not inside a step. That is deliberate: a free-text message inside a horizontal (or column) strip item widens the shrink-to-fit step and tears the row; below the strip it has full width and wraps. The strip itself only ever carries the short state cue.
 
