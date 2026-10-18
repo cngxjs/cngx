@@ -1,9 +1,12 @@
-import { Component, signal } from '@angular/core';
+import { Component, Directive, input, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CngxCheckbox, CngxCheckboxGroup } from '@cngx/common/interactive';
+import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from '@cngx/core/tokens';
 import { CngxInput } from '@cngx/forms/input';
+import { CngxFieldBox } from './field-box.directive';
+import { CngxPrefix } from './prefix.directive';
 import { CngxFormField } from './form-field.component';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CngxLabel } from './label.component';
@@ -51,6 +54,40 @@ class CheckboxHost {
 class CheckboxGroupHost {
   field = signal<CngxFieldAccessor>(createMockField({ name: 'channels' }).accessor);
   groupLabel = signal<string | undefined>(undefined);
+}
+
+@Directive({
+  selector: '[stubControl]',
+  providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: StubControl }],
+})
+class StubControl implements CngxFormFieldControl {
+  readonly stubId = input('stub');
+  readonly off = input(false);
+  readonly id = this.stubId;
+  readonly focused = signal(false);
+  readonly empty = signal(true);
+  readonly disabled = this.off;
+  readonly errorState = signal(false);
+  focus(): void {
+    /* no-op */
+  }
+}
+
+@Component({
+  template: `
+    <cngx-form-field [field]="field">
+      <label cngxLabel>Amount</label>
+      <span cngxFieldBox>
+        <span stubControl cngxPrefix stubId="affix" [off]="true"></span>
+        <span stubControl stubId="main" [off]="mainOff()"></span>
+      </span>
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxLabel, CngxFieldBox, CngxPrefix, StubControl],
+})
+class AffixFirstHost {
+  readonly field = createMockField({ name: 'amount' }).accessor;
+  readonly mainOff = signal(false);
 }
 
 // Cross-lib integration witnesses for the CNGX_FORM_FIELD_CONTROL discovery
@@ -253,6 +290,37 @@ describe('CNGX_FORM_FIELD_CONTROL discovery integration', () => {
       fixture.detectChanges();
       expect(groupEl.getAttribute('aria-label')).toBe('Notification channels');
       expect(groupEl.hasAttribute('aria-labelledby')).toBe(false);
+    });
+  });
+
+  describe('affix control before the main control', () => {
+    let fixture: ReturnType<typeof TestBed.createComponent<AffixFirstHost>>;
+    let presenter: CngxFormFieldPresenter;
+    let labelEl: HTMLLabelElement;
+
+    beforeEach(() => {
+      TestBed.configureTestingModule({ imports: [AffixFirstHost] });
+      fixture = TestBed.createComponent(AffixFirstHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      presenter = fixture.debugElement
+        .query(By.directive(CngxFormField))
+        .injector.get(CngxFormFieldPresenter);
+      labelEl = fixture.debugElement.query(By.directive(CngxLabel)).nativeElement;
+    });
+
+    it('resolves the main control, not the affix that precedes it', () => {
+      expect(presenter.control()?.id()).toBe('main');
+      expect(labelEl.getAttribute('for')).toBe('main');
+    });
+
+    it('reports controlDisabled from the main control while the affix is disabled', () => {
+      expect(presenter.controlDisabled()).toBe(false);
+
+      fixture.componentInstance.mainOff.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(presenter.controlDisabled()).toBe(true);
     });
   });
 });
