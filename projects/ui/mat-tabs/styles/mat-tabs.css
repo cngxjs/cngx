@@ -21,8 +21,11 @@
  *   error red; `[data-reason="refused"]` (the commit action answered
  *   `false`) takes the rejection amber and keeps the resting label colour
  * - `.cngx-mat-tab__rejection-icon` - `aria-hidden` glyph disc the
- *   decoration inserts into the rejected tab: `!` on a failed commit,
- *   `\2298` on a refused one, so the two never differ by colour alone
+ *   decoration appends to the rejected tab: `!` on a failed commit,
+ *   `\2298` on a refused one, so the two never differ by colour alone.
+ *   On its own it sits at the tab's trailing top corner, the spot and size
+ *   of the has-errors badge; when the tab also carries that badge it drops
+ *   back inline after the label, so the two discs never overlap
  * - `.cngx-mat-tab--error` + `.mat-mdc-tab-disabled` - no extra rule:
  *   Material paints the disabled label colour and the error outline
  *   stays, so it does not pass for a healthy disabled tab
@@ -118,9 +121,10 @@
   }
 
   /**
-   * Gap between a rejected tab's label and its rejection glyph disc,
-   * derived from the spacing scale (`--cngx-space-xs`) below. The disc
-   * itself shares `--cngx-mat-tab-has-errors-glyph-size`.
+   * Gap between a rejected tab's label and its rejection glyph disc when
+   * the disc sits inline (the tab also carries the has-errors badge, which
+   * keeps the corner), derived from the spacing scale (`--cngx-space-xs`)
+   * below. The disc itself shares `--cngx-mat-tab-has-errors-glyph-size`.
    * @group State / Error
    */
   @property --cngx-mat-tab-rejection-icon-gap {
@@ -335,14 +339,17 @@
 
   /*
    * Rejection glyph. `::before` (Material's focus indicator) and `::after`
-   * (the has-errors badge) are taken, so the decoration inserts this
-   * `aria-hidden` span next to its screen-reader descriptor.
+   * (the has-errors badge) are taken, so the decoration appends this
+   * `aria-hidden` span to the tab element itself, next to its
+   * screen-reader descriptor. Laid out inline after the label row by
+   * default; the corner rule below lifts it out when the corner is free.
    */
   .cngx-mat-tab__rejection-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
+    align-self: center;
     width: var(--cngx-mat-tab-has-errors-glyph-size, 1rem);
     height: var(--cngx-mat-tab-has-errors-glyph-size, 1rem);
     margin-inline-start: var(--cngx-mat-tab-rejection-icon-gap, 0.25rem);
@@ -357,6 +364,26 @@
 
   .cngx-mat-tab__rejection-icon[data-reason='refused'] {
     background: var(--cngx-mat-tab-refused-color, oklch(0.62 0.15 60));
+  }
+
+  /*
+   * No has-errors badge on the tab: the disc takes the badge's corner.
+   * It resolves against the tab (Material's `.mdc-tab` is
+   * `position: relative`; set here too for a bare tab link), which is why
+   * the decoration never mounts it inside `.mdc-tab__content`, itself a
+   * positioning context.
+   */
+  .mat-mdc-tab.cngx-mat-tab--error:not(.cngx-mat-tab--has-errors),
+  .mat-mdc-tab-link.cngx-mat-tab--error:not(.cngx-mat-tab--has-errors) {
+    position: relative;
+  }
+
+  .cngx-mat-tab--error:not(.cngx-mat-tab--has-errors) > .cngx-mat-tab__rejection-icon {
+    position: absolute;
+    top: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
+    inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
+    margin: 0;
+    z-index: 1;
   }
 
   /*
@@ -412,7 +439,8 @@
    * Co-occurrence: when a tab is BOTH rejected and carries form
    * errors, the rejection outline already draws focus to the edges;
    * shift the has-errors badge slightly inward so the two signals
-   * read as distinct rather than visually merging.
+   * read as distinct rather than visually merging. The rejection disc
+   * leaves the corner to the badge and sits inline after the label.
    */
   .mat-mdc-tab.cngx-mat-tab--error.cngx-mat-tab--has-errors::after,
   .mat-mdc-tab-link.cngx-mat-tab--error.cngx-mat-tab--has-errors::after {

@@ -314,10 +314,9 @@ export function createMatTabRejectionDecoration(
       cachedGlyph = glyph;
     }
     writeReason(targetEl, glyph);
-    const glyphParent =
-      targetEl.querySelector<HTMLElement>(MaterialPrivateSurfaces.MDC_TAB_CONTENT_SELECTOR) ??
-      targetEl;
-    opts.renderer.appendChild(glyphParent, glyph);
+    // On the tab itself: the disc is absolutely positioned at the tab's
+    // corner, and `.mdc-tab__content` is a positioning context of its own.
+    opts.renderer.appendChild(targetEl, glyph);
 
     const spanId = `${handleId}-${descriptorIdSuffix}`;
     let span = cachedSpan;

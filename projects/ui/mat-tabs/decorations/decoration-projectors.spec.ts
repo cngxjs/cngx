@@ -737,7 +737,7 @@ describe('createMatTabRejectionDecoration - aria-describedby contract (5.2)', ()
     expect(target.querySelector('.cngx-mat-tab__rejection-icon')).toBeNull();
   });
 
-  it('mounts the glyph in the tab label row when Material renders one', () => {
+  it('mounts the glyph on the tab itself, never in the label row', () => {
     const { host } = setupHost();
     const hostEl = buildHostWithButtons();
     const target = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab')[0];
@@ -757,7 +757,12 @@ describe('createMatTabRejectionDecoration - aria-describedby contract (5.2)', ()
       destroyRef: host.destroyRef,
     });
     TestBed.flushEffects();
-    expect(content.querySelector('.cngx-mat-tab__rejection-icon')).not.toBeNull();
+    // The label row is a positioning context of its own; the corner disc
+    // must resolve against the tab.
+    expect(content.querySelector('.cngx-mat-tab__rejection-icon')).toBeNull();
+    expect(
+      target.querySelector(':scope > .cngx-mat-tab__rejection-icon'),
+    ).not.toBeNull();
 
     failedHandleId.set(null);
     failedIndex.set(undefined);

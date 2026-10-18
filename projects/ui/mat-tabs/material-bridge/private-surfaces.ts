@@ -97,15 +97,6 @@ export namespace MaterialPrivateSurfaces {
   export const MAT_MDC_TAB_SELECTOR = '.mat-mdc-tab';
 
   /**
-   * `.mdc-tab__content` - the label row inside a rendered tab button
-   * (and a tab link). The rejection decoration mounts its glyph here so
-   * it sits next to the label; the button itself centres its children,
-   * which would park the glyph at the far edge. Falls back to the
-   * button when absent.
-   */
-  export const MDC_TAB_CONTENT_SELECTOR = '.mdc-tab__content';
-
-  /**
    * `.mat-mdc-tab-header` - the strip element rendered by
    * `MatTabHeader`. `[cngxMatTabs]` walks
    * `host.querySelector('.mat-mdc-tab-header')` to locate the mount
