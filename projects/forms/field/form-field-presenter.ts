@@ -1,6 +1,6 @@
 import {
   computed,
-  contentChild,
+  contentChildren,
   Directive,
   inject,
   input,
@@ -11,11 +11,13 @@ import {
   CNGX_FORM_FIELD_CONTROL,
   CNGX_FORM_FIELD_HOST,
   type CngxFieldSkin,
+  type CngxFormFieldControl,
   type CngxFormFieldHostContract,
 } from '@cngx/core/tokens';
 import { coerceSignal } from '@cngx/core/utils';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
 import { injectFormFieldI18n } from './i18n/form-field-i18n';
+import { CNGX_FIELD_AFFIX } from './field-box.token';
 import {
   CNGX_FORM_FIELD_CONFIG,
   CNGX_FORM_FIELD_REVEAL,
@@ -133,17 +135,30 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
     this.showError() ? `${this.hintId()} ${this.errorId()}` : this.hintId(),
   );
 
+  private readonly controls = contentChildren(CNGX_FORM_FIELD_CONTROL, { descendants: true });
+  private readonly affixControls = contentChildren(CNGX_FIELD_AFFIX, {
+    read: CNGX_FORM_FIELD_CONTROL,
+    descendants: true,
+  });
+
   /**
    * The active control discovered through the `CNGX_FORM_FIELD_CONTROL`
    * content query (`descendants: true`).
    *
-   * First provider in content order wins. Nested composites legitimately
-   * multi-provide the token (a filter-builder wrapping selects); document
-   * order guarantees the outer composite resolves before its inner
-   * controls, so no duplicate guard exists by design. `undefined` while
-   * no control sits inside the field.
+   * The first non-affix provider in content order wins, so a prefix or
+   * suffix control (a currency picker before the amount input) never takes
+   * the label `for` target or the disabled state. A field whose only
+   * control is an affix falls back to that affix. Nested composites
+   * legitimately multi-provide the token (a filter-builder wrapping
+   * selects); document order guarantees the outer composite resolves
+   * before its inner controls, so no duplicate guard exists by design.
+   * `undefined` while no control sits inside the field.
    */
-  readonly control = contentChild(CNGX_FORM_FIELD_CONTROL, { descendants: true });
+  readonly control: Signal<CngxFormFieldControl | undefined> = computed(() => {
+    const affixes = new Set<CngxFormFieldControl>(this.affixControls());
+    const all = this.controls();
+    return all.find((control) => !affixes.has(control)) ?? all[0];
+  });
 
   /**
    * Resolved `for`-target for the label: the control-reported id when

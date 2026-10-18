@@ -542,19 +542,13 @@ describe('evaluateExpression - between / in / notIn definitions', () => {
     expect(evaluateExpression(mixed, item, FIELD_AGE)).toBe(false);
   });
 
-  it('between treats a nullish bound as a half-filled no-op and a non-array value as false', () => {
+  it('between treats a nullish bound as a half-filled no-op', () => {
     expect(
       evaluateExpression(createFilterExpression('age', 'between', [null, 40]), item, FIELD_AGE),
     ).toBe(true);
     expect(
       evaluateExpression(createFilterExpression('age', 'between', [30, undefined]), item, FIELD_AGE),
     ).toBe(true);
-    expect(evaluateExpression(createFilterExpression('age', 'between', 30), item, FIELD_AGE)).toBe(
-      false,
-    );
-    expect(
-      evaluateExpression(createFilterExpression('age', 'between', [30]), item, FIELD_AGE),
-    ).toBe(false);
   });
 
   it('in matches by Object.is membership and notIn is its complement', () => {
@@ -574,13 +568,33 @@ describe('evaluateExpression - between / in / notIn definitions', () => {
     ).toBe(true);
   });
 
-  it('in / notIn evaluate false for a non-array value', () => {
-    expect(evaluateExpression(createFilterExpression('age', 'in', 36), item, FIELD_AGE)).toBe(
-      false,
-    );
-    expect(evaluateExpression(createFilterExpression('age', 'notIn', 36), item, FIELD_AGE)).toBe(
-      false,
-    );
+  // The once-per-key warning set is module state shared by every spec file
+  // (isolate: false), so each key's non-array path is exercised in this one
+  // case only.
+  it('evaluates a non-array value false and warns CNGX2023 once per operator key', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const evaluate = (operator: string, value: unknown) =>
+        evaluateExpression(createFilterExpression('age', operator, value), item, FIELD_AGE);
+
+      expect(evaluate('between', 30)).toBe(false);
+      expect(evaluate('between', [30])).toBe(false);
+      expect(evaluate('between', 30)).toBe(false);
+      expect(evaluate('in', 36)).toBe(false);
+      expect(evaluate('in', 36)).toBe(false);
+      expect(evaluate('notIn', 36)).toBe(false);
+      expect(evaluate('notIn', 36)).toBe(false);
+
+      const hits = (key: string) =>
+        warn.mock.calls.filter(
+          ([msg]) => /^CNGX2023: /.test(String(msg)) && String(msg).includes(`"${key}"`),
+        );
+      expect(hits('between')).toHaveLength(1);
+      expect(hits('in')).toHaveLength(1);
+      expect(hits('notIn')).toHaveLength(1);
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it('ships none of the three keys in the DEFAULT_OPERATORS picker lists', () => {

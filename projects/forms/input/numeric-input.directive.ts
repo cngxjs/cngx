@@ -14,6 +14,7 @@ import {
 import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interactive';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { coerceSignal, injectLocale } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 import { CNGX_INPUT_CONFIG } from './input-config';
 import { injectDefaultAccessorWarning, injectFormDisabled } from './reactive-forms-channel';
@@ -320,6 +321,24 @@ export class CngxNumericInput {
           'CngxFormBridge from @cngx/forms/controls; [ngModel] is not supported, use [(value)] ' +
           'or Signal Forms.',
       );
+
+      // Side effect only: reads the value channel and warns once, writes nothing.
+      let warnedDisplayShaped = false;
+      effect(() => {
+        const v: unknown = this.value();
+        const numeric = typeof v === 'number' && Number.isFinite(v);
+        if (warnedDisplayShaped || numeric || v == null) {
+          return;
+        }
+        warnedDisplayShaped = true;
+        cngxDevWarn(
+          'CNGX2022',
+          '[cngxNumericInput] A value written to this numeric input is not a finite number ' +
+            '(for example a display string such as "1.234,5"), so the input treats it as empty. ' +
+            'The value channel is number-only: write a number or null.',
+          this.el.nativeElement,
+        );
+      });
     }
 
     // Sync formatted value to DOM; the input event notifies co-located CngxInput / matInput.

@@ -1717,6 +1717,81 @@
       ]
     },
     {
+      "code": "CNGX2020",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "More than one main control in a field box",
+      "page": "core-concepts/error-codes/cngx2020.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2020.html",
+      "status": "active",
+      "files": ["projects/forms/field/field-box.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/field/field-box.directive.ts",
+          "text": "[cngxFieldBox] ${...} main controls in one field box; only the first one paints the box. Mark the extra control cngxPrefix or cngxSuffix, or split it into its own box."
+        }
+      ]
+    },
+    {
+      "code": "CNGX2021",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Field-box control is not a direct child",
+      "page": "core-concepts/error-codes/cngx2021.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2021.html",
+      "status": "active",
+      "files": ["projects/forms/field/field-box.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/field/field-box.directive.ts",
+          "text": "[cngxFieldBox] the form control is not a direct child of the field box, so the box paints no control state. Remove the wrapper element; a composite control is its own box and belongs directly in cngx-form-field."
+        }
+      ]
+    },
+    {
+      "code": "CNGX2022",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Display-shaped value written to a raw value channel",
+      "page": "core-concepts/error-codes/cngx2022.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2022.html",
+      "status": "active",
+      "files": [
+        "projects/forms/input/input-mask.directive.ts",
+        "projects/forms/input/numeric-input.directive.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/forms/input/input-mask.directive.ts",
+          "text": "[cngxInputMask] A value written to this masked input contains characters the mask drops (literals such as \":\" or \"-\", or characters no slot accepts). The value channel is raw-only: write the unmasked slot characters, for example \"1430\" for \"00:00\", not the display string."
+        },
+        {
+          "file": "projects/forms/input/numeric-input.directive.ts",
+          "text": "[cngxNumericInput] A value written to this numeric input is not a finite number (for example a display string such as \"1.234,5\"), so the input treats it as empty. The value channel is number-only: write a number or null."
+        }
+      ]
+    },
+    {
+      "code": "CNGX2023",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Array operator received a non-array value",
+      "page": "core-concepts/error-codes/cngx2023.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2023.html",
+      "status": "active",
+      "files": ["projects/forms/filter-builder/filter-builder-operators.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/filter-builder/filter-builder-operators.ts",
+          "text": "evaluateExpression(): operator \"${...}\" expects ${...} but received a value of another shape - the expression evaluates to false for every item. Bind a value editor that writes that shape through *cngxFilterBuilderValueEditor."
+        }
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",

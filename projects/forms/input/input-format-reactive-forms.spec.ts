@@ -85,6 +85,24 @@ class StandaloneHost {
   readonly format = formatDollar;
 }
 
+// A currency pair whose parse does not invert format: '1234' formats to
+// '$1,234.00', which parses to '1234.00'.
+const formatCurrency: FormatFn = (raw) =>
+  raw ? `$${Number(raw).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '';
+const parseCurrency: ParseFn = (display) =>
+  display ? Number(display.replace(/[$,]/g, '')).toFixed(2) : '';
+
+@Component({
+  selector: 'format-rf-host-8',
+  template: `<input [cngxInputFormat]="format" [parse]="parse" [formControl]="control" />`,
+  imports: [CngxInputFormat, ReactiveFormsModule, CngxFormBridge],
+})
+class NonInvertingHost {
+  readonly format = formatCurrency;
+  readonly parse = parseCurrency;
+  readonly control = new FormControl('1234', { nonNullable: true });
+}
+
 function flush(fixture: ComponentFixture<unknown>): void {
   fixture.detectChanges();
   TestBed.flushEffects();
@@ -151,6 +169,22 @@ describe('CngxInputFormat under Reactive Forms', () => {
 
     expect(emissions).toBe(0);
     expect(host.control.value).toBe('250');
+  });
+
+  it('A3: refocus under a non-inverting parse keeps the control value, emits nothing and stays pristine', () => {
+    const { fixture, input, host } = mount(NonInvertingHost);
+    expect(input.value).toBe('$1,234.00');
+    let emissions = 0;
+    host.control.valueChanges.subscribe(() => emissions++);
+
+    focus(input, fixture);
+    expect(input.value).toBe('1234');
+    blur(input, fixture);
+    focus(input, fixture);
+
+    expect(emissions).toBe(0);
+    expect(host.control.value).toBe('1234');
+    expect(host.control.pristine).toBe(true);
   });
 
   it('B2: renders an initial control value formatted and stays pristine', () => {

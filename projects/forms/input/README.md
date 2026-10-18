@@ -280,8 +280,9 @@ The consumer provides slot `<input>` elements inside the container.
 
 ## CngxInputFormat
 
-Display formatting on blur, raw value on focus. Applies a `format` function on blur
-and a `parse` function on focus; `parse` should invert `format`.
+Display formatting on blur, raw value on focus. Applies a `format` function on blur;
+focus shows the raw value, and `parse` maps display text the directive did not write
+back to raw. A plain focus never changes the value. `parse` should still invert `format`.
 
 Forms: Signal Forms binds `[formField]`, Reactive Forms binds `[formControl]` /
 `[formControlName]` with `CngxFormBridge` imported from `@cngx/forms/controls`. The form

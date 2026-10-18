@@ -10,6 +10,7 @@ import {
   CngxSelectEmpty,
   CngxSelectError,
   CngxSelectLoading,
+  CngxSelectLoadingGlyph,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
   CngxSelectOptionLabel,
@@ -27,7 +28,7 @@ import {
 } from './template-registry';
 import { provideSelectConfig, withTemplates } from './config';
 
-// Probe that performs all 14 contentChild queries AT class-field level
+// Probe that performs all 15 contentChild queries AT class-field level
 // (Angular's AOT-enforced constraint - see NG8110) and hands them into
 // the factory. Mirrors how every real select-family variant will wire.
 @Component({
@@ -45,6 +46,8 @@ class RegistryProbe<T> {
     contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   private readonly emptyDirective = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
+  private readonly loadingGlyphDirective =
+    contentChild<CngxSelectLoadingGlyph>(CngxSelectLoadingGlyph);
   private readonly optionLabelDirective = contentChild<CngxSelectOptionLabel<T>>(
     CngxSelectOptionLabel,
   );
@@ -74,6 +77,7 @@ class RegistryProbe<T> {
     placeholder: this.placeholderDirective,
     empty: this.emptyDirective,
     loading: this.loadingDirective,
+    loadingGlyph: this.loadingGlyphDirective,
     optionLabel: this.optionLabelDirective,
     error: this.errorDirective,
     retryButton: this.retryButtonDirective,
@@ -92,6 +96,7 @@ const SLOT_MARKUP = `
   <ng-template cngxSelectPlaceholder>placeholder-proj</ng-template>
   <ng-template cngxSelectEmpty>empty-proj</ng-template>
   <ng-template cngxSelectLoading>loading-proj</ng-template>
+  <ng-template cngxSelectLoadingGlyph>loading-glyph-proj</ng-template>
   <ng-template cngxSelectOptionLabel>option-label-proj</ng-template>
   <ng-template cngxSelectError>error-proj</ng-template>
   <ng-template cngxSelectRefreshing>refreshing-proj</ng-template>
@@ -111,6 +116,7 @@ const SLOT_MARKUP = `
     CngxSelectPlaceholder,
     CngxSelectEmpty,
     CngxSelectLoading,
+    CngxSelectLoadingGlyph,
     CngxSelectOptionLabel,
     CngxSelectError,
     CngxSelectRefreshing,
@@ -152,6 +158,7 @@ class ActionRegistryProbe<T> {
     placeholder: signal(undefined),
     empty: signal(undefined),
     loading: signal(undefined),
+    loadingGlyph: signal(undefined),
     optionLabel: signal(undefined),
     error: signal(undefined),
     retryButton: signal(undefined),
@@ -173,6 +180,36 @@ class ActionNoSlotsHost {
   readonly probe = viewChild.required<ActionRegistryProbe<string>>(ActionRegistryProbe);
 }
 
+// Mirrors a host that renders no option loop and no trigger placeholder
+// outlet: the option-loop and placeholder keys are omitted entirely.
+@Component({
+  selector: 'minimal-registry-probe',
+  standalone: true,
+  template: `<ng-content />`,
+})
+class MinimalRegistryProbe<T> {
+  readonly registry: CngxSelectTemplateRegistry<T> = createTemplateRegistry<T>({
+    caret: signal(undefined),
+    empty: signal(undefined),
+    loading: signal(undefined),
+    loadingGlyph: signal(undefined),
+    error: signal(undefined),
+    retryButton: signal(undefined),
+    refreshing: signal(undefined),
+    commitError: signal(undefined),
+    clearButton: signal(undefined),
+  });
+}
+
+@Component({
+  standalone: true,
+  imports: [MinimalRegistryProbe],
+  template: `<minimal-registry-probe />`,
+})
+class MinimalNoSlotsHost {
+  readonly probe = viewChild.required<MinimalRegistryProbe<string>>(MinimalRegistryProbe);
+}
+
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -191,6 +228,7 @@ describe('createTemplateRegistry', () => {
     expect(registry.placeholder()).toBeInstanceOf(TemplateRef);
     expect(registry.empty()).toBeInstanceOf(TemplateRef);
     expect(registry.loading()).toBeInstanceOf(TemplateRef);
+    expect(registry.loadingGlyph()).toBeInstanceOf(TemplateRef);
     expect(registry.optionLabel()).toBeInstanceOf(TemplateRef);
     expect(registry.error()).toBeInstanceOf(TemplateRef);
     expect(registry.refreshing()).toBeInstanceOf(TemplateRef);
@@ -211,6 +249,7 @@ describe('createTemplateRegistry', () => {
     expect(registry.placeholder()).toBeNull();
     expect(registry.empty()).toBeNull();
     expect(registry.loading()).toBeNull();
+    expect(registry.loadingGlyph()).toBeNull();
     expect(registry.optionLabel()).toBeNull();
     expect(registry.error()).toBeNull();
     expect(registry.refreshing()).toBeNull();
@@ -337,5 +376,46 @@ describe('createTemplateRegistry', () => {
     const actionHost = TestBed.createComponent(ActionNoSlotsHost);
     flush(actionHost);
     expect(actionHost.componentInstance.probe().registry.action()).toBe(actionTpl);
+  });
+  it('does not resolve templates.check / optgroup / optionLabel / placeholder / optionPending / optionError defaults on a host that omits the query', () => {
+    @Component({
+      standalone: true,
+      template: `<ng-template #tpl>config</ng-template>`,
+    })
+    class Factory {
+      readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
+    }
+    const factory = TestBed.createComponent(Factory);
+    factory.detectChanges();
+    const tpl = factory.componentInstance.tpl() as unknown as TemplateRef<never>;
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideSelectConfig(
+          withTemplates({
+            check: tpl,
+            optgroup: tpl,
+            optionLabel: tpl,
+            placeholder: tpl,
+            optionPending: tpl,
+            optionError: tpl,
+            empty: tpl,
+          }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(MinimalNoSlotsHost);
+    flush(fixture);
+    const registry = fixture.componentInstance.probe().registry;
+
+    expect(registry.check()).toBeNull();
+    expect(registry.optgroup()).toBeNull();
+    expect(registry.optionLabel()).toBeNull();
+    expect(registry.placeholder()).toBeNull();
+    expect(registry.optionPending()).toBeNull();
+    expect(registry.optionError()).toBeNull();
+    // A wired key still cascades to its config default.
+    expect(registry.empty()).toBe(tpl);
   });
 });

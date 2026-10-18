@@ -94,17 +94,13 @@ import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import {
   CngxSelectCaret,
-  CngxSelectCheck,
   CngxSelectClearButton,
   CngxSelectCommitError,
   CngxSelectEmpty,
   CngxSelectError,
   CngxSelectLoading,
-  CngxSelectOptgroupTemplate,
-  CngxSelectOptionError,
+  CngxSelectLoadingGlyph,
   CngxSelectSheetHandle,
-  CngxSelectOptionLabel,
-  CngxSelectOptionPending,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
   CngxSelectRetryButton,
@@ -169,12 +165,12 @@ export interface CngxTreeSelectChange<T = unknown> {
  * `cngxSelectClearButton` also take an app-wide default through
  * `CNGX_SELECT_CONFIG.templates` (`withTemplates`); `cngxTreeSelectNode`,
  * `cngxTreeSelectChip` and `cngxTreeSelectTriggerLabel` are
- * directive-only. `templates.loadingGlyph` replaces the loading and refresh
- * glyph app-wide; this host has no projected glyph slot. Rows and their
+ * directive-only. `cngxSelectLoadingGlyph` resolves from the projected
+ * directive first and `templates.loadingGlyph` second. Rows and their
  * hard-coded checkbox are replaced through `cngxTreeSelectNode`; the
- * option-level slots `cngxSelectCheck`, `cngxSelectOptgroup`,
+ * option-loop slots `cngxSelectCheck`, `cngxSelectOptgroup`,
  * `cngxSelectOptionLabel`, `cngxSelectOptionPending` and
- * `cngxSelectOptionError` do not apply to the tree.
+ * `cngxSelectOptionError` do not exist on this host.
  *
  * **Mobile sheet.** On a coarse screen narrower than 48rem the panel opens as
  * a modal bottom sheet: a `role="dialog"` named by the field label, with a
@@ -199,6 +195,7 @@ export interface CngxTreeSelectChange<T = unknown> {
  * @slot cngxSelectPlaceholder Renders in the trigger while nothing is selected; gets placeholder.
  * @slot cngxSelectEmpty Replaces the panel's empty message when the tree has no nodes; searchTerm is always '' on this host.
  * @slot cngxSelectLoading Replaces the panel's loading indicator during the first load of [state], or while [loading] is true without [state]; gets retry.
+ * @slot cngxSelectLoadingGlyph Replaces the inner glyph of the spinner or bar loading view and of the refresh indicator when no cngxSelectLoading / cngxSelectRefreshing template is set; no context.
  * @slot cngxSelectError Replaces the panel's error block on a failed load and the inline error above the tree on a failed refresh; gets error, retry.
  * @slot cngxSelectRetryButton Replaces the retry button inside the built-in load-error, inline-error and commit-error blocks; gets retry, error, disabled, label.
  * @slot cngxSelectRefreshing Replaces the refresh indicator shown above the tree while a reload runs; previousCount is always 0 on this host.
@@ -429,23 +426,17 @@ export class CngxTreeSelect<T = unknown>
   readonly commitError = output<unknown>();
   readonly stateChange = output<AsyncStatus>();
 
-  private readonly checkDir = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly placeholderDir = contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   private readonly caretDir = contentChild<CngxSelectCaret>(CngxSelectCaret);
-  private readonly optgroupDir = contentChild<CngxSelectOptgroupTemplate<T>>(
-    CngxSelectOptgroupTemplate,
-  );
   private readonly clearButtonDir = contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly emptyDir = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDir = contentChild<CngxSelectLoading>(CngxSelectLoading);
+  private readonly loadingGlyphDir =
+    contentChild<CngxSelectLoadingGlyph>(CngxSelectLoadingGlyph);
   private readonly errorDir = contentChild<CngxSelectError>(CngxSelectError);
   private readonly retryButtonDir = contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDir = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
   private readonly commitErrorDir = contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
-  private readonly optionLabelDir = contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
-  private readonly optionPendingDir =
-    contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
-  private readonly optionErrorDir = contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
   private readonly sheetHandleDir = contentChild(CngxSelectSheetHandle);
 
   private readonly nodeDir = contentChild<CngxTreeSelectNode<T>>(CngxTreeSelectNode);
@@ -455,29 +446,24 @@ export class CngxTreeSelect<T = unknown>
   );
 
   /**
-   * 13-slot template registry. Drives the `*cngxSelect*` cascade
-   * (instance contentChild → `CNGX_SELECT_CONFIG.templates.*` → null).
-   * Option-loop slots (check, optgroup, optionLabel, optionPending,
-   * optionError) are declared for contract parity but tree-select
-   * doesn't render them; projecting one is silently ignored.
+   * Template registry for the slots the tree renders. Drives the
+   * `*cngxSelect*` cascade (instance contentChild ->
+   * `CNGX_SELECT_CONFIG.templates.*` -> null). The option-loop keys are
+   * omitted, so they resolve to `null` here.
    *
    * @internal
    */
   protected readonly tplRegistry = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
-    check: this.checkDir,
     caret: this.caretDir,
-    optgroup: this.optgroupDir,
     placeholder: this.placeholderDir,
     empty: this.emptyDir,
     loading: this.loadingDir,
-    optionLabel: this.optionLabelDir,
+    loadingGlyph: this.loadingGlyphDir,
     error: this.errorDir,
     retryButton: this.retryButtonDir,
     refreshing: this.refreshingDir,
     commitError: this.commitErrorDir,
     clearButton: this.clearButtonDir,
-    optionPending: this.optionPendingDir,
-    optionError: this.optionErrorDir,
     sheetHandle: this.sheetHandleDir,
   });
 

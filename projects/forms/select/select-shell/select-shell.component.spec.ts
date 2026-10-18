@@ -1,4 +1,12 @@
-import { Component, DestroyRef, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  type TemplateRef,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -31,6 +39,8 @@ import { provideLocale } from '@cngx/core/utils';
 
 import { CngxSelectShell, type CngxSelectShellChange } from './select-shell.component';
 import type { CngxSelectOptionsInput } from '../shared/option.model';
+import { provideSelectConfig, withTemplates } from '../shared/config';
+import type { CngxSelectTriggerLabelContext } from '../shared/template-slots';
 import { CngxSelectOption } from '../declarative/option.component';
 import { CngxSelectOptgroup } from '../declarative/optgroup.component';
 import { CngxSelectSearch } from '../declarative/select-search.component';
@@ -1043,6 +1053,84 @@ describe('CngxSelectShell - trigger slot-cascade tier-1', () => {
     expect(custom).not.toBeNull();
     expect(custom!.textContent!.trim()).toBe('A!');
     expect(shellDe.nativeElement.querySelector('.cngx-select-shell__label')).toBeNull();
+  });
+
+  function configTriggerLabel(): TemplateRef<CngxSelectTriggerLabelContext> {
+    @Component({
+      template: `
+        <ng-template #tpl let-sel>
+          <span class="config-trigger-label">{{ sel ? sel.label + '?' : 'none' }}</span>
+        </ng-template>
+      `,
+    })
+    class ConfigTriggerLabelHolder {
+      readonly tpl = viewChild.required<TemplateRef<CngxSelectTriggerLabelContext>>('tpl');
+    }
+    const holder = TestBed.createComponent(ConfigTriggerLabelHolder);
+    holder.detectChanges();
+    return holder.componentInstance.tpl();
+  }
+
+  it('falls back to templates.triggerLabel from withTemplates when no directive is projected', () => {
+    const tpl = configTriggerLabel();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withTemplates({ triggerLabel: tpl }))],
+    });
+
+    @Component({
+      template: `
+        <cngx-select-shell [label]="'TL'" [(value)]="value">
+          <cngx-option [value]="'a'">A</cngx-option>
+        </cngx-select-shell>
+      `,
+      imports: [CngxSelectShell, CngxSelectOption],
+    })
+    class ConfigTriggerLabelHost {
+      readonly value = signal<string | undefined>('a');
+    }
+
+    const fixture = TestBed.createComponent(ConfigTriggerLabelHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const host: HTMLElement = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .nativeElement;
+    const custom = host.querySelector('.config-trigger-label');
+    expect(custom).not.toBeNull();
+    expect(custom!.textContent!.trim()).toBe('A?');
+  });
+
+  it('a projected *cngxSelectTriggerLabel wins over the config tier', () => {
+    const tpl = configTriggerLabel();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withTemplates({ triggerLabel: tpl }))],
+    });
+
+    @Component({
+      template: `
+        <cngx-select-shell [label]="'TL'" [(value)]="value">
+          <cngx-option [value]="'a'">A</cngx-option>
+          <ng-template cngxSelectTriggerLabel let-sel>
+            <span class="custom-trigger-label">{{ sel ? sel.label + '!' : 'none' }}</span>
+          </ng-template>
+        </cngx-select-shell>
+      `,
+      imports: [CngxSelectShell, CngxSelectOption, CngxSelectTriggerLabel],
+    })
+    class BothTriggerLabelHost {
+      readonly value = signal<string | undefined>('a');
+    }
+
+    const fixture = TestBed.createComponent(BothTriggerLabelHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const host: HTMLElement = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .nativeElement;
+    expect(host.querySelector('.custom-trigger-label')!.textContent!.trim()).toBe('A!');
+    expect(host.querySelector('.config-trigger-label')).toBeNull();
   });
 
   it('renders projected *cngxSelectPlaceholder while empty and the label once a value is picked', () => {

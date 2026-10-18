@@ -1,8 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { ApplicationRef, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxInput } from '@cngx/forms/input';
 import { CngxSelect } from '@cngx/forms/select';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { CngxFieldBox } from './field-box.directive';
 import { CngxFieldSkinHost } from './field-skin.directive';
 import { CngxFormField } from './form-field.component';
@@ -122,6 +122,26 @@ describe('CngxFieldSkinHost', () => {
       readonly boxSkin = signal<'outline' | 'fill' | 'bare' | undefined>('fill');
       readonly ownSkin = signal<'outline' | 'fill' | 'bare' | undefined>('fill');
     }
+
+    // The fixture puts two main controls in one box on purpose (.direct and
+    // .select), so CNGX2020 fires; silence it here and pin it once below.
+    let warnSpy: MockInstance<typeof console.warn>;
+
+    beforeEach(() => {
+      warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      warnSpy.mockRestore();
+    });
+
+    it('warns CNGX2020 for the two main controls in the fixture box', async () => {
+      const fixture = TestBed.createComponent(BoxHost);
+      fixture.detectChanges();
+      await TestBed.inject(ApplicationRef).whenStable();
+      const codes = warnSpy.mock.calls.filter((call) => /^CNGX2020: /.test(String(call[0])));
+      expect(codes).toHaveLength(1);
+    });
 
     function skinOf(fixture: { nativeElement: HTMLElement }, selector: string): string | null {
       return fixture.nativeElement.querySelector(selector)!.getAttribute('data-skin');

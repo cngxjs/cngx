@@ -11,7 +11,7 @@ import {
   type Signal,
   untracked,
 } from '@angular/core';
-import { clamp } from '@cngx/utils';
+import { clamp, cngxDevWarn } from '@cngx/utils';
 import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interactive';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { injectLocale } from '@cngx/core/utils';
@@ -83,6 +83,34 @@ function selectPattern(patterns: string[], rawLength: number, customTokens?: Mas
     }
   }
   return best;
+}
+
+/**
+ * Keeps the characters of `raw` that fill a slot of the pattern chosen for its
+ * length, dropping literals and characters a slot rejects. A raw value that
+ * comes back unchanged is mask-shaped.
+ * @internal
+ */
+function validateRaw(raw: string, patterns: string[], customTokens?: MaskTokenMap): string {
+  // Resolve tokens for the target raw length so multi-pattern switching is honoured.
+  const targetPattern = selectPattern(patterns, raw.length, customTokens);
+  const targetTokens = parseMask(targetPattern, customTokens);
+
+  let validated = '';
+  let ti = 0;
+  for (const ch of raw) {
+    while (ti < targetTokens.length && targetTokens[ti].kind === 'literal') {
+      ti++;
+    }
+    if (ti >= targetTokens.length) {
+      break;
+    }
+    if (targetTokens[ti].test!.test(ch)) {
+      validated += ch;
+      ti++;
+    }
+  }
+  return validated;
 }
 
 function slotCount(pattern: string, customTokens?: MaskTokenMap): number {
@@ -550,6 +578,31 @@ export class CngxInputMask {
           'text never reaches the form control. For Reactive Forms, import CngxFormBridge ' +
           'from @cngx/forms/controls; [ngModel] is not supported, use [(value)] or Signal Forms.',
       );
+
+      // Side effect only: reads the value channel and warns once, writes nothing.
+      let warnedDisplayShaped = false;
+      effect(() => {
+        const raw = this.normalizedValue();
+        const key = this.presetKey();
+        // Until a lazy preset table lands, the inline fallback pattern stands in
+        // and would flag values that are valid for the real table.
+        if (key !== null && !(key in maskPresetTables())) {
+          return;
+        }
+        const valid = validateRaw(raw, this.resolvedPatterns(), this.resolvedCustomTokens());
+        if (warnedDisplayShaped || valid === raw) {
+          return;
+        }
+        warnedDisplayShaped = true;
+        cngxDevWarn(
+          'CNGX2022',
+          '[cngxInputMask] A value written to this masked input contains characters the mask ' +
+            'drops (literals such as ":" or "-", or characters no slot accepts). The value ' +
+            'channel is raw-only: write the unmasked slot characters, for example "1430" ' +
+            'for "00:00", not the display string.',
+          this.el.nativeElement,
+        );
+      });
     }
 
     // Lazily import the preset table the current mask needs. Side effect, so it
@@ -1070,29 +1123,6 @@ export class CngxInputMask {
   }
 
   private updateRaw(newRaw: string): void {
-    // Resolve tokens for the target raw length so multi-pattern switching is honoured.
-    const targetPattern = selectPattern(
-      this.resolvedPatterns(),
-      newRaw.length,
-      this.resolvedCustomTokens(),
-    );
-    const targetTokens = parseMask(targetPattern, this.resolvedCustomTokens());
-
-    let validated = '';
-    let ti = 0;
-    for (const ch of newRaw) {
-      while (ti < targetTokens.length && targetTokens[ti].kind === 'literal') {
-        ti++;
-      }
-      if (ti >= targetTokens.length) {
-        break;
-      }
-      if (targetTokens[ti].test!.test(ch)) {
-        validated += ch;
-        ti++;
-      }
-    }
-
-    this.value.set(validated);
+    this.value.set(validateRaw(newRaw, this.resolvedPatterns(), this.resolvedCustomTokens()));
   }
 }

@@ -23,9 +23,9 @@ import { REPO_ROOT, walkSources } from './_i18n-ast.mjs';
  *   - every queried slot attr has a `@slot <attr>` tag on the host, unless the
  *     host-attr pair is listed in {@link EXEMPT};
  *   - every `@slot <attr>` tag names an attr the host queries;
- *   - {@link EXEMPT} holds exactly the twelve queried-but-unrendered pairs in
- *     three groups, every row is still a real query, and no exempted pair carries a
- *     `@slot` tag (rendering the slot means deleting its row);
+ *   - {@link EXEMPT} is empty: no host queries a slot it does not render. A
+ *     future row must still be a real query without a `@slot` tag (rendering
+ *     the slot means deleting its row);
  *   - the scan found more than 100 slot directives and more than 200 host-slot
  *     pairs, so a scan that silently finds nothing fails.
  *
@@ -38,43 +38,12 @@ import { REPO_ROOT, walkSources } from './_i18n-ast.mjs';
  * silent addition.
  */
 
-const TREE_OPTION_LOOP_REASON =
-  'tree rows render through cngxTreeSelectNode with a built-in checkbox; option-loop slots are queried for template-registry parity only';
-const TREE_OPTION_LOOP_SOURCE = 'select family accepted debt: tree-select option-loop slots';
-const INPUT_PLACEHOLDER_REASON =
-  'the placeholder renders as the <input placeholder> attribute, which no template can fill; the slot is queried for template-registry parity only';
-const INPUT_PLACEHOLDER_SOURCE = 'select family accepted debt: placeholder slot on input variants';
-const SHELL_OPTION_LOOP_REASON =
-  'the shell renders projected <cngx-option> / <cngx-optgroup> markup instead of the shared option panel; option-loop slots are queried for template-registry parity only';
-const SHELL_OPTION_LOOP_SOURCE = 'select family accepted debt: select-shell option-loop slots';
-
-/** Queried but unrendered host-slot pairs. Exact, shrink-only. */
-export const EXEMPT = [
-  ...[
-    'cngxSelectCheck',
-    'cngxSelectOptgroup',
-    'cngxSelectOptionLabel',
-    'cngxSelectOptionPending',
-    'cngxSelectOptionError',
-  ].map((attr) => ({
-    host: 'CngxTreeSelect',
-    attr,
-    reason: TREE_OPTION_LOOP_REASON,
-    source: TREE_OPTION_LOOP_SOURCE,
-  })),
-  ...['CngxTypeahead', 'CngxCombobox', 'CngxActionSelect', 'CngxActionMultiSelect'].map((host) => ({
-    host,
-    attr: 'cngxSelectPlaceholder',
-    reason: INPUT_PLACEHOLDER_REASON,
-    source: INPUT_PLACEHOLDER_SOURCE,
-  })),
-  ...['cngxSelectCheck', 'cngxSelectOptgroup', 'cngxSelectOptionLabel'].map((attr) => ({
-    host: 'CngxSelectShell',
-    attr,
-    reason: SHELL_OPTION_LOOP_REASON,
-    source: SHELL_OPTION_LOOP_SOURCE,
-  })),
-];
+/**
+ * Queried but unrendered host-slot pairs. Exact, shrink-only; empty since the
+ * select hosts stopped querying the slots they never render.
+ * Row shape: `{ host, attr, reason, source }`.
+ */
+export const EXEMPT = [];
 
 const QUERY_FNS = new Set(['contentChild', 'contentChildren']);
 const SLOT_SELECTOR = /ng-template\[([\w-]+)\]/g;
@@ -293,14 +262,8 @@ describe('slot JSDoc coverage (repo)', () => {
     ).toEqual([]);
   });
 
-  it('keeps the exemption list at exactly the twelve unrendered pairs in three groups', () => {
-    expect(EXEMPT).toHaveLength(12);
-    expect(new Set(EXEMPT.map((row) => row.reason)).size).toBe(3);
-    for (const row of EXEMPT) {
-      expect(row.reason).not.toMatch(/\.internal|\.md\b/);
-      expect(row.source).not.toMatch(/\.internal|\.md\b/);
-    }
-    expect(new Set(EXEMPT.map((row) => pairKey(row.host, row.attr))).size).toBe(12);
+  it('keeps the exemption list empty', () => {
+    expect(EXEMPT).toHaveLength(0);
   });
 
   it('matches every exemption row to a real query without a @slot line', () => {

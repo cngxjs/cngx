@@ -106,6 +106,7 @@ import {
   CngxSelectError,
   CngxSelectRetryButton,
   CngxSelectLoading,
+  CngxSelectLoadingGlyph,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
   CngxSelectOptionLabel,
@@ -143,10 +144,8 @@ export interface CngxSelectChange<T = unknown> {
  * Every slot below also takes an app-wide default through
  * `CNGX_SELECT_CONFIG.templates` (`withTemplates`); a projected template
  * wins. `cngxSelectTriggerLabel` resolves its own `templates.triggerLabel`
- * default, the other fifteen go through the shared template registry,
- * which also applies `templates.loadingGlyph` to the loading and refresh
- * glyph (config only, no projected slot on this host). No slot is
- * directive-only here.
+ * default, the other sixteen go through the shared template registry,
+ * `cngxSelectLoadingGlyph` included. No slot is directive-only here.
  *
  * **Mobile sheet.** On a coarse screen narrower than 48rem the panel opens as
  * a modal bottom sheet: a `role="dialog"` named by the field label, with a
@@ -182,6 +181,7 @@ export interface CngxSelectChange<T = unknown> {
  * @slot cngxSelectPlaceholder Replaces the placeholder text in the trigger while nothing is selected; gets $implicit/placeholder.
  * @slot cngxSelectEmpty Replaces the panel's empty message when there are no options; gets searchTerm (always ''), filtered (always false) and totalCount (always 0) on this host.
  * @slot cngxSelectLoading Replaces the whole loading view during the first load of [state], or while [loading] is true without [state]; gets retry and progress (always undefined).
+ * @slot cngxSelectLoadingGlyph Replaces the inner glyph of the spinner or bar loading view and of the refresh indicator when no cngxSelectLoading / cngxSelectRefreshing template is set; no context.
  * @slot cngxSelectTriggerLabel Replaces the selected option's text in the trigger once a value is selected; gets $implicit/selected, disabled, panelOpen, focused.
  * @slot cngxSelectOptionLabel Replaces the label text of each option row; gets $implicit/option, selected, highlighted.
  * @slot cngxSelectError Replaces the load-error block, full panel on a failed first load and inline above the options on a failed refresh; gets $implicit/error, retry.
@@ -346,6 +346,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   private readonly emptyDirective = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
+  private readonly loadingGlyphDirective =
+    contentChild<CngxSelectLoadingGlyph>(CngxSelectLoadingGlyph);
   private readonly triggerLabelDirective =
     contentChild<CngxSelectTriggerLabel<T>>(CngxSelectTriggerLabel);
   private readonly optionLabelDirective =
@@ -372,6 +374,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     placeholder: this.placeholderDirective,
     empty: this.emptyDirective,
     loading: this.loadingDirective,
+    loadingGlyph: this.loadingGlyphDirective,
     optionLabel: this.optionLabelDirective,
     error: this.errorDirective,
     retryButton: this.retryButtonDirective,

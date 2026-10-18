@@ -32,11 +32,13 @@ export type ParseFn = (display: string) => string;
 /**
  * Display formatting on blur, raw value on focus.
  *
- * Applies a `format` function when the input loses focus and a `parse` function
- * when it gains focus. The directive's `value` model carries the raw
- * (unformatted) value, and so does a bound form: bind it via `[(value)]`, via
- * `[formField]` for Signal Forms, or via `[formControl]` / `formControlName` with
- * `CngxFormBridge` imported for Reactive Forms. `parse` should invert `format`.
+ * Applies a `format` function when the input loses focus; focus shows the raw
+ * value, and `parse` maps display text the directive did not write (a
+ * programmatic `el.value` write) back to raw. A plain focus never changes the
+ * value. The directive's `value` model carries the raw (unformatted) value, and
+ * so does a bound form: bind it via `[(value)]`, via `[formField]` for Signal
+ * Forms, or via `[formControl]` / `formControlName` with `CngxFormBridge`
+ * imported for Reactive Forms. `parse` should still invert `format`.
  *
  * ```html
  * <!-- Currency formatting -->
@@ -162,12 +164,18 @@ export class CngxInputFormat {
   /** @internal */
   protected handleFocus(): void {
     const el = this.el.nativeElement;
-    const parseFn = this.parse();
-    const raw = parseFn(el.value);
-    this.writeRaw(raw);
-    if (raw !== el.value) {
-      el.value = raw;
-      this.lastEffectWrite = raw;
+    const raw = this.normalizedValue();
+    // While unfocused the effect keeps `el.value === format(model)`, so text
+    // the directive wrote is shown as the model itself; only foreign display
+    // text goes through `parse` and into the model.
+    const ours = el.value === this.format()(raw);
+    const next = ours ? raw : this.parse()(el.value);
+    if (!ours) {
+      this.writeRaw(next);
+    }
+    if (next !== el.value) {
+      el.value = next;
+      this.lastEffectWrite = next;
       el.dispatchEvent(new Event('input', { bubbles: true }));
     }
     queueMicrotask(() => {

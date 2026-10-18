@@ -120,12 +120,12 @@ import {
   CngxSelectInputPrefix,
   CngxSelectInputSuffix,
   CngxSelectLoading,
+  CngxSelectLoadingGlyph,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
   CngxSelectSheetHandle,
   CngxSelectOptionLabel,
   CngxSelectOptionPending,
-  CngxSelectPlaceholder,
   CngxSelectRefreshing,
   type CngxSelectInputSlotContext,
 } from '../shared/template-slots';
@@ -159,10 +159,9 @@ export interface CngxTypeaheadChange<T = unknown> {
  * Every slot below except `cngxSelectInputPrefix` and
  * `cngxSelectInputSuffix` (directive-only) also takes an app-wide default
  * through `CNGX_SELECT_CONFIG.templates` (`withTemplates`) via the shared
- * template registry; a projected template wins. The registry also applies
- * `templates.loadingGlyph` to the loading and refresh glyph (config only,
- * no projected slot on this host). The placeholder is the input's own
- * placeholder text, so `cngxSelectPlaceholder` does not apply.
+ * template registry; a projected template wins, `cngxSelectLoadingGlyph`
+ * included. The `placeholder` input is the input's own placeholder text;
+ * there is no placeholder slot.
  *
  * **Mobile sheet.** On a coarse screen narrower than 48rem the panel opens as
  * a modal fullscreen panel with the search input in its header: a
@@ -188,6 +187,7 @@ export interface CngxTypeaheadChange<T = unknown> {
  * @slot cngxSelectOptgroup Replaces the header of each option group; gets $implicit/group.
  * @slot cngxSelectEmpty Replaces the panel's empty message when there are no options or none matches the typed term; gets searchTerm, filtered and totalCount (always 0 on this host).
  * @slot cngxSelectLoading Replaces the whole loading view during the first load of [state], or while [loading] is true without [state]; gets retry and progress (always undefined).
+ * @slot cngxSelectLoadingGlyph Replaces the inner glyph of the spinner or bar loading view and of the refresh indicator when no cngxSelectLoading / cngxSelectRefreshing template is set; no context.
  * @slot cngxSelectOptionLabel Replaces the label text of each option row; gets $implicit/option, selected, highlighted.
  * @slot cngxSelectError Replaces the load-error block, full panel on a failed first load and inline above the options on a failed refresh; gets $implicit/error, retry.
  * @slot cngxSelectRetryButton Replaces the retry button inside the default load-error and commit-error blocks; gets $implicit/retry, error, disabled, label.
@@ -365,10 +365,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly optgroupDirective = contentChild<CngxSelectOptgroupTemplate<T>>(
     CngxSelectOptgroupTemplate,
   );
-  private readonly placeholderDirective =
-    contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   private readonly emptyDirective = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
+  private readonly loadingGlyphDirective =
+    contentChild<CngxSelectLoadingGlyph>(CngxSelectLoadingGlyph);
   private readonly optionLabelDirective =
     contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
@@ -394,9 +394,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     check: this.checkDirective,
     caret: this.caretDirective,
     optgroup: this.optgroupDirective,
-    placeholder: this.placeholderDirective,
     empty: this.emptyDirective,
     loading: this.loadingDirective,
+    loadingGlyph: this.loadingGlyphDirective,
     optionLabel: this.optionLabelDirective,
     error: this.errorDirective,
     retryButton: this.retryButtonDirective,
