@@ -5,14 +5,22 @@ import { newlineOf } from '../plan/text';
 /**
  * Which array literal to edit: the default export (`export default [...]`,
  * `module.exports = [...]`, or the first array argument of a wrapper call
- * such as `defineConfig([...])`), the initializer of a named variable, or
- * the `providers` array of a root config: an object typed `ApplicationConfig`,
- * the `@NgModule` argument, or the inline config of `bootstrapApplication`.
+ * such as `defineConfig([...])`), the initializer of a named variable, the
+ * `providers` array of a root config (an object typed `ApplicationConfig`,
+ * the `@NgModule` argument, or the inline config of `bootstrapApplication`),
+ * the `imports` array of the `@Component` or `@NgModule` decorator on a
+ * class, or the `providers` array of the object passed to
+ * `TestBed.configureTestingModule`.
  */
 export type ArraySelector =
   | { readonly kind: 'default-export' }
   | { readonly kind: 'variable'; readonly name: string }
-  | { readonly kind: 'root-providers' };
+  | { readonly kind: 'root-providers' }
+  | { readonly kind: 'decorator-imports'; readonly className: string }
+  | { readonly kind: 'testbed-providers' };
+
+/** The selectors that name a property of one object literal, which `ensureArrayProperty` can add. */
+export type PropertyArraySelector = Extract<ArraySelector, { readonly kind: 'decorator-imports' | 'testbed-providers' }>;
 
 function unwrap(expression: ts.Expression): ts.ArrayLiteralExpression | undefined {
   if (ts.isArrayLiteralExpression(expression)) {
@@ -126,9 +134,71 @@ function rootProvidersArrays(source: ts.SourceFile): readonly ts.ArrayLiteralExp
   );
 }
 
+const ANGULAR_DECORATORS = new Set(['Component', 'NgModule']);
+
+// The argument of the `@Component` / `@NgModule` decorator on `class <name>`.
+function decoratorObject(source: ts.SourceFile, className: string): ts.ObjectLiteralExpression | undefined {
+  const declaration = source.statements.find(
+    (statement): statement is ts.ClassDeclaration => ts.isClassDeclaration(statement) && statement.name?.text === className,
+  );
+  const decorators = declaration === undefined ? [] : (ts.getDecorators(declaration) ?? []);
+  for (const decorator of decorators) {
+    const call = decorator.expression;
+    const argument = ts.isCallExpression(call) && ANGULAR_DECORATORS.has(calleeName(call) ?? '') ? call.arguments[0] : undefined;
+    if (argument !== undefined && ts.isObjectLiteralExpression(argument)) {
+      return argument;
+    }
+  }
+  return undefined;
+}
+
+function isConfigureTestingModule(node: ts.Node): node is ts.CallExpression {
+  return (
+    ts.isCallExpression(node) &&
+    ts.isPropertyAccessExpression(node.expression) &&
+    ts.isIdentifier(node.expression.expression) &&
+    node.expression.expression.text === 'TestBed' &&
+    node.expression.name.text === 'configureTestingModule'
+  );
+}
+
+// The object passed to the first `TestBed.configureTestingModule(...)`.
+function testBedObject(node: ts.Node): ts.ObjectLiteralExpression | undefined {
+  if (isConfigureTestingModule(node)) {
+    const [argument] = node.arguments;
+    return argument !== undefined && ts.isObjectLiteralExpression(argument) ? argument : undefined;
+  }
+  return ts.forEachChild(node, testBedObject);
+}
+
+function propertyObject(source: ts.SourceFile, selector: PropertyArraySelector): ts.ObjectLiteralExpression | undefined {
+  return selector.kind === 'decorator-imports' ? decoratorObject(source, selector.className) : testBedObject(source);
+}
+
+function propertyName(selector: PropertyArraySelector): string {
+  return selector.kind === 'decorator-imports' ? 'imports' : 'providers';
+}
+
+function namedProperty(object: ts.ObjectLiteralExpression, name: string): ts.ObjectLiteralElementLike | undefined {
+  return object.properties.find(
+    (property) => property.name !== undefined && ts.isIdentifier(property.name) && property.name.text === name,
+  );
+}
+
+function propertyArray(source: ts.SourceFile, selector: PropertyArraySelector): ts.ArrayLiteralExpression | undefined {
+  const object = propertyObject(source, selector);
+  const property = object === undefined ? undefined : namedProperty(object, propertyName(selector));
+  return property !== undefined && ts.isPropertyAssignment(property) && ts.isArrayLiteralExpression(property.initializer)
+    ? property.initializer
+    : undefined;
+}
+
 function findArray(source: ts.SourceFile, selector: ArraySelector): ts.ArrayLiteralExpression | undefined {
   if (selector.kind === 'root-providers') {
     return rootProvidersArrays(source)[0];
+  }
+  if (selector.kind === 'decorator-imports' || selector.kind === 'testbed-providers') {
+    return propertyArray(source, selector);
   }
   for (const statement of source.statements) {
     const expression =
@@ -147,6 +217,53 @@ function parse(content: string): ts.SourceFile {
 
 export function hasArrayLiteral(content: string, selector: ArraySelector): boolean {
   return findArray(parse(content), selector) !== undefined;
+}
+
+/**
+ * Whether `name` is an element of the selected array literal: an identifier
+ * or an expression with exactly that text. `false` when there is no array.
+ */
+export function hasArrayElement(content: string, selector: ArraySelector, name: string): boolean {
+  const source = parse(content);
+  const array = findArray(source, selector);
+  return array?.elements.some((element) => element.getText(source) === name.trim()) ?? false;
+}
+
+/**
+ * Adds an empty `imports` (decorator) or `providers` (TestBed) array to the
+ * selected object literal when the property is missing, so
+ * `addToArrayLiteral` has an array to fill. The content is returned
+ * unchanged when the property exists, also as something other than an array
+ * literal (`hasArrayLiteral` then stays false and the caller reports it), or
+ * when there is no such object. The new property goes after the last one, on
+ * its own line in a multi-line object, keeping a trailing comma style.
+ */
+export function ensureArrayProperty(content: string, selector: PropertyArraySelector): string {
+  const source = parse(content);
+  const object = propertyObject(source, selector);
+  const name = propertyName(selector);
+  if (object === undefined || namedProperty(object, name) !== undefined) {
+    return content;
+  }
+  const property = `${name}: []`;
+  const last = object.properties[object.properties.length - 1];
+  if (last === undefined) {
+    const open = object.getStart(source) + 1;
+    return `${content.slice(0, open)} ${property} ${content.slice(object.getEnd() - 1)}`;
+  }
+  const close = object.getEnd() - 1;
+  const multiline = content.slice(object.getStart(source), close).includes('\n');
+  const trailingComma = object.properties.hasTrailingComma;
+  if (!multiline) {
+    return `${content.slice(0, last.getEnd())}, ${property}${content.slice(last.getEnd())}`;
+  }
+  const newline = newlineOf(content);
+  const indent = indentOf(content, last.getStart(source));
+  if (trailingComma) {
+    const comma = content.indexOf(',', last.getEnd()) + 1;
+    return `${content.slice(0, comma)}${newline}${indent}${property},${content.slice(comma)}`;
+  }
+  return `${content.slice(0, last.getEnd())},${newline}${indent}${property}${content.slice(last.getEnd())}`;
 }
 
 /** How many array literals the selector matches; more than one makes it ambiguous. */

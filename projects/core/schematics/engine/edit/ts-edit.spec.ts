@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import { readFixture } from '../../testing/run-schematic';
 import {
   addToArrayLiteral,
   type ArraySelector,
   countArrayLiterals,
+  ensureArrayProperty,
+  hasArrayElement,
   hasArrayLiteral,
   importsModule,
   insertAfterImports,
@@ -412,5 +415,115 @@ export const providers = [i18n(pack(lang.cngxLanguagePack))];
     expect(readProviderCalls('const p = [provideRouter(routes)];').languagePack).toBeUndefined();
     expect(readProviderCalls('const p = [provideCngxI18n()];').languagePack).toBeUndefined();
     expect(readProviderCalls('const p = [provideOther(withPack(X))]; // provideCngxI18n(withPack(Y))').languagePack).toBeUndefined();
+  });
+});
+
+const APP: ArraySelector = { kind: 'decorator-imports', className: 'App' };
+const TESTBED: ArraySelector = { kind: 'testbed-providers' };
+
+const NGMODULE = `import { NgModule } from '@angular/core';
+
+@NgModule({
+  declarations: [
+    App
+  ],
+  imports: [
+    BrowserModule
+  ],
+  bootstrap: [App]
+})
+export class AppModule { }
+`;
+
+const NO_IMPORTS = `import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.html'
+})
+export class App {}
+`;
+
+describe('decorator imports', () => {
+  const stockApp = readFixture('scaffold-21')['src/app/app.ts'];
+
+  it('adds to the imports of the @Component on the named class only', () => {
+    const content = `${stockApp}\n@Component({ selector: 'app-other', imports: [] })\nexport class Other {}\n`;
+    const edited = addToArrayLiteral(content, APP, 'CngxToastOutlet');
+
+    expect(edited).toContain('imports: [RouterOutlet, CngxToastOutlet],');
+    expect(edited).toContain("@Component({ selector: 'app-other', imports: [] })");
+  });
+
+  it('adds to the imports of an @NgModule, keeping its multi-line layout', () => {
+    expect(addToArrayLiteral(NGMODULE, { kind: 'decorator-imports', className: 'AppModule' }, 'CngxToastOutlet')).toContain(
+      '  imports: [\n    BrowserModule,\n    CngxToastOutlet\n  ],',
+    );
+  });
+
+  it('reads an element of the array, not only the array', () => {
+    expect(hasArrayLiteral(stockApp, APP)).toBe(true);
+    expect(hasArrayElement(stockApp, APP, 'RouterOutlet')).toBe(true);
+    expect(hasArrayElement(stockApp, APP, 'CngxToastOutlet')).toBe(false);
+    expect(hasArrayElement(stockApp, { kind: 'decorator-imports', className: 'Missing' }, 'RouterOutlet')).toBe(false);
+  });
+
+  it('adds a missing imports property after the last one', () => {
+    const edited = ensureArrayProperty(NO_IMPORTS, APP);
+
+    expect(edited).toContain("  templateUrl: './app.html',\n  imports: []\n})");
+    expect(addToArrayLiteral(edited, APP, 'CngxToastOutlet')).toContain('  imports: [CngxToastOutlet]\n');
+  });
+
+  it('adds a missing imports property to a one-line and an empty decorator object', () => {
+    expect(ensureArrayProperty("@Component({ selector: 'app-root' })\nexport class App {}\n", APP)).toContain(
+      "@Component({ selector: 'app-root', imports: [] })",
+    );
+    expect(ensureArrayProperty('@Component({})\nexport class App {}\n', APP)).toContain('@Component({ imports: [] })');
+  });
+
+  it('leaves an existing imports property alone, also one that is not an array literal', () => {
+    const shared = NO_IMPORTS.replace("templateUrl: './app.html'", "templateUrl: './app.html',\n  imports: SHARED");
+
+    expect(ensureArrayProperty(stockApp, APP)).toBe(stockApp);
+    expect(ensureArrayProperty(shared, APP)).toBe(shared);
+    expect(hasArrayLiteral(shared, APP)).toBe(false);
+  });
+});
+
+describe('TestBed providers', () => {
+  const stockSpec = readFixture('scaffold-21')['src/app/app.spec.ts'];
+
+  it('adds a providers array after the imports of the stock spec, keeping its trailing comma', () => {
+    const edited = ensureArrayProperty(stockSpec, TESTBED);
+
+    expect(edited).toContain('      imports: [App],\n      providers: [],\n    }).compileComponents();');
+    expect(addToArrayLiteral(edited, TESTBED, 'provideFeedback(withToasts(), withBanners())')).toContain(
+      '      providers: [provideFeedback(withToasts(), withBanners())],\n',
+    );
+  });
+
+  it('fills providers that are already there', () => {
+    const content = 'TestBed.configureTestingModule({ imports: [App], providers: [provideRouter([])] });\n';
+
+    expect(ensureArrayProperty(content, TESTBED)).toBe(content);
+    expect(hasArrayElement(content, TESTBED, 'provideRouter([])')).toBe(true);
+    expect(addToArrayLiteral(content, TESTBED, 'provideX()')).toContain('providers: [provideRouter([]), provideX()]');
+  });
+
+  it('reports providers that are not an array literal and a spec without configureTestingModule', () => {
+    const shared = 'TestBed.configureTestingModule({ providers: SHARED });\n';
+    const none = "describe('x', () => {});\n";
+
+    expect(hasArrayLiteral(shared, TESTBED)).toBe(false);
+    expect(ensureArrayProperty(shared, TESTBED)).toBe(shared);
+    expect(ensureArrayProperty(none, TESTBED)).toBe(none);
+    expect(hasArrayLiteral(none, TESTBED)).toBe(false);
+  });
+
+  it('keeps CRLF line endings when it adds the property', () => {
+    const crlf = stockSpec.replace(/\n/g, '\r\n');
+
+    expect(ensureArrayProperty(crlf, TESTBED)).toContain('      imports: [App],\r\n      providers: [],\r\n');
   });
 });
