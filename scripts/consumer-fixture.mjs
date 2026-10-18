@@ -17,6 +17,7 @@
 //   node scripts/consumer-fixture.mjs --angular 22 --ignore-peers   # does the code run beyond the declared range?
 //   node scripts/consumer-fixture.mjs --angular 21 --variant schematics
 //   node scripts/consumer-fixture.mjs --angular 21 --variant schematics --stale-core previous
+//   node scripts/consumer-fixture.mjs --angular 21 --variant schematics --preset full
 //
 // Variants:
 //   full        zoneless app with Material, floating-ui and ngrx installed
@@ -31,7 +32,9 @@
 //               adds a second sandbox where an older core is installed and
 //               `ng add @cngx/forms` must replace it in the same run;
 //               `previous` packs the newest registry release below the
-//               tarballs.
+//               tarballs. `--preset <name>` picks the ng add preset
+//               (default `recommended`); `full` also runs `ng test` on the
+//               onboarded app and checks both feedback outlets in the DOM.
 //
 // The schematics variant serves the tarballs from a local registry for the
 // @cngx scope (other @cngx packages are proxied to the public registry), so
@@ -49,6 +52,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const VARIANTS = ['full', 'zone', 'ssr', 'minimal', 'schematics'];
 const MARKER = 'cngx-consumer-ok';
+
+/** The ng add presets the schematics variant can run; `recommended` is what ng add picks without one. */
+export const PRESETS = ['minimal', 'recommended', 'full'];
+const DEFAULT_PRESET = 'recommended';
 
 /** `21` / `22.1` are ranges for `ng new`; `21.2.0` is an exact pin. */
 export function parseAngularSpec(spec) {
@@ -76,9 +83,29 @@ export function variantPlan(variant) {
 export function usageText() {
   return [
     'Usage: node scripts/consumer-fixture.mjs --angular <21 | 22 | 21.2.0> [--variant <variant>]',
-    `       [--ignore-peers] [--stale-core <tgz | previous>] [--tarballs <dir>] [--work <dir>]`,
+    `       [--ignore-peers] [--stale-core <tgz | previous>] [--preset <${PRESETS.join(' | ')}>]`,
+    '       [--tarballs <dir>] [--work <dir>]',
     `Variants: ${VARIANTS.join(', ')}`,
   ].join('\n');
+}
+
+/**
+ * What the schematics variant checks beyond the build for a preset: only
+ * `full` provides feedback, so only it runs `ng test` over the stock spec
+ * and expects the outlets in the DOM; the default path gets no extra step.
+ */
+export function presetPlan(preset = DEFAULT_PRESET) {
+  if (!PRESETS.includes(preset)) {
+    throw new Error(`Unknown preset "${preset}". Available: ${PRESETS.join(', ')}`);
+  }
+  const full = preset === 'full';
+  return { preset, ngTest: full, outlets: full ? ['cngx-banner-outlet', 'cngx-toast-outlet'] : [] };
+}
+
+// The default preset passes no flag, so the default path runs the exact
+// command it always ran.
+function presetFlags(preset) {
+  return preset === DEFAULT_PRESET ? [] : ['--preset', preset];
 }
 
 // The flags every non-interactive cngx `ng add` in the fixture passes; the
@@ -101,12 +128,13 @@ export function missingRecordedLibs(installManifest, project, expected) {
  * the step's output must contain; `clean` asks for an empty
  * `git status --porcelain` after it; `commit` records the tree after it.
  */
-export function schematicsSteps(version) {
+export function schematicsSteps(version, preset = DEFAULT_PRESET) {
+  const core = ['ng', 'add', `@cngx/core@${version}`, ...NG_ADD_FLAGS, ...presetFlags(preset)];
   return [
-    { label: 'ng add @cngx/core', args: ['ng', 'add', `@cngx/core@${version}`, ...NG_ADD_FLAGS], commit: true },
+    { label: 'ng add @cngx/core', args: core, commit: true },
     {
       label: 'ng add @cngx/core again',
-      args: ['ng', 'add', `@cngx/core@${version}`, ...NG_ADD_FLAGS],
+      args: core,
       expect: 'cngx is already set up; nothing changed.',
       clean: true,
     },
@@ -229,6 +257,7 @@ function parseArgs(argv) {
     // Outside the repo: the Angular CLI refuses `ng new` inside a workspace.
     ignorePeers: false,
     staleCore: null,
+    preset: null,
     work: join(tmpdir(), 'cngx-consumer-compat'),
   };
   for (let i = 0; i < argv.length; i++) {
@@ -239,6 +268,7 @@ function parseArgs(argv) {
       case '--ignore-peers': args.ignorePeers = true; break;
       case '--work': args.work = resolve(argv[++i]); break;
       case '--stale-core': args.staleCore = argv[++i]; break;
+      case '--preset': args.preset = argv[++i]; break;
       default:
         console.error(`Unknown argument: ${argv[i]}\n${usageText()}`);
         process.exit(1);
@@ -252,7 +282,15 @@ function parseArgs(argv) {
     console.error('--stale-core needs --variant schematics');
     process.exit(1);
   }
-  return args;
+  if (args.preset !== null && args.variant !== 'schematics') {
+    console.error('--preset needs --variant schematics');
+    process.exit(1);
+  }
+  if (args.preset !== null && !PRESETS.includes(args.preset)) {
+    console.error(`Unknown --preset "${args.preset}". Available: ${PRESETS.join(', ')}`);
+    process.exit(1);
+  }
+  return { ...args, preset: args.preset ?? DEFAULT_PRESET };
 }
 
 function angularVersionsInTree(appDir) {
@@ -276,7 +314,7 @@ function angularVersionsInTree(appDir) {
   return [...versions];
 }
 
-async function smoke(appDir, plan) {
+async function smoke(appDir, plan, outlets = []) {
   const { chromium } = await import('@playwright/test');
   const webRoot = join(appDir, 'dist', 'fixture', 'browser');
   const port = 4300 + Math.floor(Math.random() * 500);
@@ -294,6 +332,12 @@ async function smoke(appDir, plan) {
     // The onboarded app keeps the root component `ng new` wrote.
     if (plan.schematics) {
       await page.waitForSelector('app-root', { timeout: 15_000 });
+      // An outlet renders nothing until a toast or banner shows; it only has to be there.
+      for (const outlet of outlets) {
+        if ((await page.locator(outlet).count()) !== 1) {
+          errors.push(`expected one <${outlet}> in the DOM`);
+        }
+      }
     } else {
       await page.waitForSelector(`#${MARKER}`, { timeout: 15_000 });
       const text = await page.textContent(`#${MARKER}`);
@@ -392,10 +436,10 @@ function useLocalRegistry(appDir, registryUrl) {
   writeFileSync(join(appDir, '.npmrc'), `@cngx:registry=${registryUrl}\n`);
 }
 
-async function runSchematicsSteps(appDir, version) {
+async function runSchematicsSteps(appDir, version, preset) {
   git(appDir, ['init', '-q']);
   commitAll(appDir, 'fixture');
-  for (const step of schematicsSteps(version)) {
+  for (const step of schematicsSteps(version, preset)) {
     console.log(`\n[schematics] ${step.label}`);
     const output = await runAsync('npx', step.args, { cwd: appDir });
     if (step.expect && !output.includes(step.expect)) {
@@ -441,12 +485,17 @@ function resolveStaleCore(spec, version, sandbox) {
   return join(sandbox, packed.filename);
 }
 
+/** The `ng add` of the stale core leg; the preset of the run is passed on, so both legs install the same one. */
+export function staleCoreAddArgs(version, preset = DEFAULT_PRESET) {
+  return ['ng', 'add', `@cngx/forms@${version}`, ...NG_ADD_FLAGS, ...presetFlags(preset)];
+}
+
 /**
  * An app with an older core installed: `ng add @cngx/forms` must install
  * the packed core and run its ng-add in the same command, which records the
  * packed release for the project.
  */
-async function runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryUrl, staleCore }) {
+async function runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryUrl, staleCore, preset }) {
   const sandbox = mkdtempSync(join(work, 'stale-core-'));
   const appDir = join(sandbox, 'fixture');
   const staleTarball = resolveStaleCore(staleCore, version, sandbox);
@@ -459,7 +508,7 @@ async function runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryU
   // stale state is what `ng add` repairs, so npm is told to accept it.
   run('npm', ['install', '--legacy-peer-deps', staleTarball, ...others], { cwd: appDir });
   useLocalRegistry(appDir, registryUrl);
-  const output = await runAsync('npx', ['ng', 'add', `@cngx/forms@${version}`, ...NG_ADD_FLAGS], { cwd: appDir });
+  const output = await runAsync('npx', staleCoreAddArgs(version, preset), { cwd: appDir });
   const manifest = JSON.parse(readFileSync(join(appDir, '.cngx', 'install.json'), 'utf8'));
   const recorded = manifest.projects?.fixture?.cngxVersion;
   if (recorded !== version) {
@@ -472,9 +521,10 @@ async function runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryU
 }
 
 async function main() {
-  const { angular, variant, tarballs, work, ignorePeers, staleCore } = parseArgs(process.argv.slice(2));
+  const { angular, variant, tarballs, work, ignorePeers, staleCore, preset } = parseArgs(process.argv.slice(2));
   const { cliSpec, exact } = parseAngularSpec(angular);
   const plan = variantPlan(variant);
+  const checks = presetPlan(preset);
 
   const tarballFiles = existsSync(tarballs)
     ? readdirSync(tarballs).filter((file) => file.endsWith('.tgz')).map((file) => join(tarballs, file))
@@ -487,7 +537,8 @@ async function main() {
   mkdirSync(work, { recursive: true });
   const sandbox = mkdtempSync(join(work, `angular-${angular}-${variant}-`));
   const appDir = join(sandbox, 'fixture');
-  console.log(`\nFixture: Angular ${angular}, variant ${variant}\nSandbox: ${sandbox}\n`);
+  const presetLine = plan.schematics ? `, preset ${preset}` : '';
+  console.log(`\nFixture: Angular ${angular}, variant ${variant}${presetLine}\nSandbox: ${sandbox}\n`);
 
   const newArgs = [
     '-y', `@angular/cli@${cliSpec}`, 'new', 'fixture', '--defaults', '--skip-git', '--skip-install',
@@ -527,13 +578,16 @@ async function main() {
   }
   try {
     if (plan.schematics) {
-      await runSchematicsSteps(appDir, version);
+      await runSchematicsSteps(appDir, version, preset);
     } else {
       writeFileSync(join(appDir, 'src', 'app', 'app.ts'), renderAppSource(plan));
     }
     run('npx', ['ng', 'build'], { cwd: appDir });
+    if (plan.schematics && checks.ngTest) {
+      run('npx', ['ng', 'test', '--watch=false'], { cwd: appDir });
+    }
     if (plan.schematics && staleCore !== null) {
-      await runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryUrl: registry.url, staleCore });
+      await runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryUrl: registry.url, staleCore, preset });
     } else if (plan.schematics) {
       console.log('\nStale core leg: skipped (pass --stale-core <tgz | previous> to run it)');
     }
@@ -542,7 +596,7 @@ async function main() {
   }
 
   if (plan.smoke) {
-    const errors = await smoke(appDir, plan);
+    const errors = await smoke(appDir, plan, plan.schematics ? checks.outlets : []);
     if (errors.length > 0) {
       throw new Error(`Browser smoke failed:\n  ${errors.join('\n  ')}`);
     }

@@ -59,9 +59,11 @@ jobs:
           - { angular: '21', variant: zone }
           - { angular: '21', variant: ssr }
           # The required schematics-consumer job runs this variant without a
-          # registry download; nightly adds the leg where an older published
-          # core must be replaced by the packed one in the same ng add.
-          - { angular: '21', variant: schematics, args: '--stale-core previous' }
+          # registry download on the recommended preset; nightly adds the leg
+          # where an older published core must be replaced by the packed one
+          # in the same ng add, and runs both legs on the full preset, which
+          # places the feedback outlets and adds ng test.
+          - { angular: '21', variant: schematics, args: '--stale-core previous --preset full' }
     name: angular-${{ matrix.angular }}-${{ matrix.variant }}
     steps:
       - uses: actions/checkout@v4
