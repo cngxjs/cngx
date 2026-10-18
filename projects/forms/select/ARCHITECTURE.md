@@ -473,7 +473,7 @@ The `commitState` signal is exposed via `CNGX_STATEFUL`, so transition bridges w
 ## A11y model
 
 Each variant follows the appropriate WAI-ARIA pattern.
-Common properties are derived from the same `triggerAria()` projection on `createSelectCore`, ensuring identical behaviour across variants.
+Common properties are derived from the same `triggerAria()` projection on `createSelectCore`, ensuring identical behaviour across variants. Its field half (id, `aria-labelledby`, `aria-describedby`, `aria-errormessage`, `aria-invalid`, `aria-required`, `aria-busy`, `aria-readonly`, disabled) comes from `createFieldControlAria` in `@cngx/forms/field`, the projection every field control shares; the select feeds its own `[id]`, `aria-labelledby`, `[required]`, failed commit and loading / committing state in as control-side hooks.
 
 | Variant | Trigger element | ARIA pattern |
 |-|-|-|
