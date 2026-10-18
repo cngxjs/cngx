@@ -38,6 +38,8 @@ const TOAST = FEEDBACK_OUTLETS[1];
 const OUTLET_REASON = 'CngxToaster and CngxBanner render nowhere without them';
 const WITHDRAWN_REASON = 'the outlets were removed after cngx placed them; pass --feedback to place them again';
 const UNFOLLOWED_REASON = 'cngx could not follow main.ts to the root component';
+const RECORDED_REASON = 'an earlier install placed them, so cngx does not ask for them again; pass --feedback to see how to place them';
+const SNIPPET_LABEL = 'Place the toast and banner outlets in the root component';
 const TESTBED = { kind: 'testbed-providers' } as const;
 
 /** What to paste when cngx cannot place the outlets itself. */
@@ -172,7 +174,7 @@ function snippetNote(reason: string, provenance: Provenance): StepResult {
     changes: [
       createNote({
         id: OUTLETS_ID,
-        label: 'Place the toast and banner outlets in the root component',
+        label: SNIPPET_LABEL,
         reason: `${reason}; ${OUTLETS_SNIPPET}`,
         provenance,
       }),
@@ -181,9 +183,12 @@ function snippetNote(reason: string, provenance: Provenance): StepResult {
   };
 }
 
-function specChange(facts: ProjectFacts, shell: AppShell, provenance: Provenance): StepResult {
+// The spec goes with the outlets: the stock spec is provided once, and a
+// custom one is named only on the run that places an outlet, so a placed
+// shell plans nothing more.
+function specChange(facts: ProjectFacts, shell: AppShell, provenance: Provenance, placing: boolean): StepResult {
   const path = shell.specPath;
-  if (path === undefined || shell.spec === 'absent') {
+  if (path === undefined || shell.spec === 'absent' || (shell.spec === 'custom' && !placing)) {
     return NOTHING;
   }
   const change: Change = {
@@ -241,6 +246,13 @@ export function planAppShell(
   }
   const provenance = createProvenance('ng-add', versions.cngx);
   const shell = facts.appShell;
+  const withdrawable = recorded.includes(OUTLETS_ID) && !explicitFeedback;
+  // The record is checked before the shell: outlets an earlier install placed
+  // are never asked for again, also where cngx can no longer edit the shell.
+  // The skip keeps the step id in the record.
+  if (withdrawable && (shell === undefined || shell.outlets.kind === 'blocked')) {
+    return { changes: [], skipped: [{ id: OUTLETS_ID, label: SNIPPET_LABEL, reason: RECORDED_REASON }] };
+  }
   if (shell === undefined) {
     return snippetNote(UNFOLLOWED_REASON, provenance);
   }
@@ -249,7 +261,7 @@ export function planAppShell(
   }
   const targets = outletTargets(shell, provenance);
   const removed = shell.outlets.elements.length < FEEDBACK_OUTLETS.length;
-  if (removed && recorded.includes(OUTLETS_ID) && !explicitFeedback) {
+  if (removed && withdrawable) {
     return {
       changes: [
         createNote({
@@ -266,23 +278,25 @@ export function planAppShell(
   const skipped: readonly SkippedStep[] = targets
     .filter(({ done }) => done)
     .map(({ change }) => skipChange(change, 'already placed'));
-  const spec = specChange(facts, shell, provenance);
+  const spec = specChange(facts, shell, provenance, changes.length > 0);
   return { changes: [...changes, ...spec.changes], skipped: [...skipped, ...spec.skipped] };
 }
 
 // Why `ng update` reports the outlets: the shell cannot be followed or
-// edited, or an outlet is missing that this project's record never placed.
-// One the record placed and that is gone now was withdrawn (A11) and is not
-// asked for again.
+// edited, or an outlet is missing, and this project's record never placed
+// them. Outlets the record placed are there or were withdrawn (A11), so they
+// are not asked for again, whatever the shell looks like now.
 function missingOutletsReason(shell: AppShell | undefined, recorded: readonly string[]): string | undefined {
+  if (recorded.includes(OUTLETS_ID)) {
+    return undefined;
+  }
   if (shell === undefined) {
     return UNFOLLOWED_REASON;
   }
   if (shell.outlets.kind === 'blocked') {
     return shell.outlets.reason;
   }
-  const missing = shell.outlets.elements.length < FEEDBACK_OUTLETS.length;
-  if (!missing || recorded.includes(OUTLETS_ID)) {
+  if (shell.outlets.elements.length === FEEDBACK_OUTLETS.length) {
     return undefined;
   }
   return 'the recorded install provides feedback but the root template lacks an outlet';

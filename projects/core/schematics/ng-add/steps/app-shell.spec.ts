@@ -378,6 +378,33 @@ describe('planAppShell', () => {
     expect(applied(explicit, removed.files)['src/app/app.html']).toContain('<cngx-banner-outlet />');
   });
 
+  it('asks for no outlet a recorded install placed once the shell is blocked or cannot be followed, unless --feedback asks', async () => {
+    const { facts, files } = await factsOf('scaffold-21', { 'src/app/app.ts': INLINE_APP });
+    const once = applied(plan(facts), files);
+    const quoted = await factsOf('scaffold-21', {
+      'src/app/app.ts': once['src/app/app.ts'].replace(/template: `[\s\S]*?`/, "template: '<router-outlet />'"),
+    });
+    const recorded = [OUTLETS_ID, SPEC_ID];
+
+    expect(quoted.facts.appShell?.outlets.kind).toBe('blocked');
+    for (const shellFacts of [quoted.facts, createFacts({ appShell: undefined })]) {
+      const result = plan(shellFacts, recorded);
+      expect(result.changes).toEqual([]);
+      expect(result.skipped.map((step) => step.id)).toEqual([OUTLETS_ID]);
+    }
+    expect(plan(quoted.facts, recorded, true).changes).toMatchObject([{ kind: 'note', id: OUTLETS_ID }]);
+    expect(plan(quoted.facts, recorded, true).changes[0].reason).toContain(OUTLETS_SNIPPET);
+  });
+
+  it('names a custom spec only on the run that places an outlet', async () => {
+    const custom = readFixture('scaffold-21')['src/app/app.spec.ts'].replace('should create', 'creates');
+    const { facts, files } = await factsOf('scaffold-21', { 'src/app/app.spec.ts': custom });
+    const { facts: placed } = await factsOf('scaffold-21', applied(plan(facts), files));
+
+    expect(plan(facts).changes.map((change) => change.id)).toContain(SPEC_ID);
+    expect(plan(placed, [OUTLETS_ID]).changes).toEqual([]);
+  });
+
   it('places the outlets of a project whose own record holds no outlets step', async () => {
     const { facts } = await factsOf('scaffold-21');
 
@@ -420,7 +447,7 @@ describe('planAppShellRerun', () => {
     expect(planAppShellRerun(createFacts({ appShell: undefined }), FEEDBACK, [], UPDATE).changes).toMatchObject([
       { kind: 'note', id: OUTLETS_ID, reason: `cngx could not follow main.ts to the root component; ${OUTLETS_SNIPPET}` },
     ]);
-    expect(planAppShellRerun(shared.facts, FEEDBACK, [OUTLETS_ID], UPDATE).changes).toMatchObject([
+    expect(planAppShellRerun(shared.facts, FEEDBACK, [], UPDATE).changes).toMatchObject([
       { kind: 'note', id: OUTLETS_ID, reason: `the imports of App in src/app/app.ts are not a plain array literal; ${OUTLETS_SNIPPET}` },
     ]);
   });
@@ -435,6 +462,16 @@ describe('planAppShellRerun', () => {
 
     expect(planAppShellRerun(removed.facts, FEEDBACK, [OUTLETS_ID, OUTLETS_ID, SPEC_ID], UPDATE)).toEqual({ changes: [], skipped: [] });
     expect(planAppShellRerun(removed.facts, FEEDBACK, [SPEC_ID], UPDATE).changes).toHaveLength(1);
+  });
+
+  it('asks for no outlet the record placed, also when the shell is blocked now or cannot be followed', async () => {
+    const quoted = await factsOf('scaffold-21', {
+      'src/app/app.ts': INLINE_APP.replace(/template: `[\s\S]*?`/, "template: '<router-outlet />'"),
+    });
+
+    expect(quoted.facts.appShell?.outlets.kind).toBe('blocked');
+    expect(planAppShellRerun(quoted.facts, FEEDBACK, [OUTLETS_ID], UPDATE)).toEqual({ changes: [], skipped: [] });
+    expect(planAppShellRerun(createFacts({ appShell: undefined }), FEEDBACK, [OUTLETS_ID], UPDATE)).toEqual({ changes: [], skipped: [] });
   });
 
   it('plans nothing when both outlets are there or feedback is off', async () => {

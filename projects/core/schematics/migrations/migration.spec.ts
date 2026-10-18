@@ -174,6 +174,16 @@ describe('createMigration', () => {
     expect(tree.readText('src/app/app.html')).toBe(files['src/app/app.html']);
   });
 
+  it('asks for no outlet the record placed once the root template turned into a quoted inline one', async () => {
+    const files = feedbackRecord(['app-shell:outlets']);
+    const app = files['src/app/app.ts'].replace("templateUrl: './app.html',", "template: '<router-outlet />',");
+
+    const { tree, logs } = await runRule(migration(), createMemoryTree({ ...files, 'src/app/app.ts': app }), ENTRY);
+
+    expect(logs.join('\n')).not.toContain('toast and banner outlets');
+    expect(tree.readText('src/app/app.ts')).toBe(app);
+  });
+
   it('re-runs every recorded project and updates each record', async () => {
     const { tree } = await runRule(migration(), createMemoryTree(twoRecordedApplications()), ENTRY);
     const records = recordsOf(tree);
