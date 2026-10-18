@@ -21,20 +21,18 @@ Async commit gating across both modes. Pessimistic keeps the user on the origin 
 private readonly toaster = inject(CngxToaster);
 protected readonly active = signal(0);
 protected readonly mode = signal<'optimistic' | 'pessimistic'>('pessimistic');
-protected readonly shouldFail = signal(false);
-protected readonly shouldRefuse = signal(false);
+protected readonly outcome = signal<'accept' | 'error' | 'refusal'>('accept');
 protected readonly latencyMs = signal(800);
 protected readonly commitAction: CngxStepperCommitAction = (from, to) => {
   const ms = this.latencyMs();
-  const fail = this.shouldFail();
-  const refuse = this.shouldRefuse();
+  const outcome = this.outcome();
   return new Observable<boolean>((sub) => {
     const handle = setTimeout(() => {
-      if (fail) {
+      if (outcome === 'error') {
         sub.error(new Error('Could not save step ' + from + ' -> ' + to));
         return;
       }
-      if (refuse) {
+      if (outcome === 'refusal') {
         // A refusal is the action's own decision: it toasts its reason
         // itself, then answers false. The bridges stay silent.
         this.toaster.show({ message: 'Save the profile first.', severity: 'warning' });

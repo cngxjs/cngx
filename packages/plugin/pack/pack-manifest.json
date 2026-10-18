@@ -174,7 +174,7 @@
     {
       "artifact": "pack/recipes/ui-stepper-stepper-commit-action.md",
       "source": "examples/stories/ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives.story.ts",
-      "contentHash": "sha256:efe0f199d4b1990e91300d0e5cb112dfef4f69ea94e0e44b09a0066cdc96b3fe"
+      "contentHash": "sha256:b21dbed73b0fcd64bce618464f6204a712c387ed308fbcd0f930d000d9074595"
     },
     {
       "artifact": "pack/recipes/ui-tabs-tab-commit-action.md",

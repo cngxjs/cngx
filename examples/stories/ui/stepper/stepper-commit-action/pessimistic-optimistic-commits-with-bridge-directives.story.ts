@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxStepper: pessimistic and optimistic commits with bridge directives',
-  subtitle: 'Toggle the mode, "simulate error" and "simulate refusal" to compare a failed and a refused step change. The toast and banner bridges fire on a failure without any explicit <code>[state]</code> binding - they read <code>CNGX_STATEFUL</code> from the presenter via <code>{ host: true }</code>. A refusal stays out of the bridges.',
+  subtitle: 'Toggle the mode and pick "accept", "simulate error" or "simulate refusal" to compare a failed and a refused step change. The toast and banner bridges fire on a failure without any explicit <code>[state]</code> binding - they read <code>CNGX_STATEFUL</code> from the presenter via <code>{ host: true }</code>. A refusal stays out of the bridges.',
   description: 'Async commit gating across both modes. Pessimistic keeps the user on the origin step until <code>[commitAction]</code> resolves; optimistic advances eagerly and rolls back when the commit does not land. A throw or an erroring observable is a failure: the commit state goes to <code>error</code> and the bridges report it. Answering <code>false</code> is a refusal: the step rolls back, the stepper announces it, <code>lastOutcome()</code> reads <code>refused</code> and the commit state goes back to <code>idle</code> with its data, so no bridge fires. To toast a refusal, the action shows its own warning toast before it answers <code>false</code>; the visible reason below the stepper is driven by <code>lastOutcome()</code>.',
   level: 'organism',
   audience: ['dev'],
@@ -24,20 +24,18 @@ export const STORY: DemoSpec = {
   setup: `private readonly toaster = inject(CngxToaster);
   protected readonly active = signal(0);
   protected readonly mode = signal<'optimistic' | 'pessimistic'>('pessimistic');
-  protected readonly shouldFail = signal(false);
-  protected readonly shouldRefuse = signal(false);
+  protected readonly outcome = signal<'accept' | 'error' | 'refusal'>('accept');
   protected readonly latencyMs = signal(800);
   protected readonly commitAction: CngxStepperCommitAction = (from, to) => {
     const ms = this.latencyMs();
-    const fail = this.shouldFail();
-    const refuse = this.shouldRefuse();
+    const outcome = this.outcome();
     return new Observable<boolean>((sub) => {
       const handle = setTimeout(() => {
-        if (fail) {
+        if (outcome === 'error') {
           sub.error(new Error('Could not save step ' + from + ' -> ' + to));
           return;
         }
-        if (refuse) {
+        if (outcome === 'refusal') {
           // A refusal is the action's own decision: it toasts its reason
           // itself, then answers false. The bridges stay silent.
           this.toaster.show({ message: 'Save the profile first.', severity: 'warning' });
@@ -84,18 +82,26 @@ export const STORY: DemoSpec = {
     <button type="button" class="chip"
             [class.demo-chip-toggle--active]="mode() === 'pessimistic'"
             (click)="mode.set('pessimistic')">pessimistic</button>
-    <label style="margin-inline-start:12px">
-      <input type="checkbox"
-             [checked]="shouldFail()"
-             (change)="shouldFail.set($any($event.target).checked)" />
-      simulate error
-    </label>
-    <label style="margin-inline-start:12px">
-      <input type="checkbox"
-             [checked]="shouldRefuse()"
-             (change)="shouldRefuse.set($any($event.target).checked)" />
-      simulate refusal
-    </label>
+    <div role="radiogroup" aria-label="Commit outcome" style="display:inline-flex;gap:12px;margin-inline-start:12px">
+      <label style="display:inline-flex;gap:4px;align-items:center">
+        <input type="radio" name="cngx-stepper-commit-outcome"
+               [checked]="outcome() === 'accept'"
+               (change)="outcome.set('accept')" />
+        accept
+      </label>
+      <label style="display:inline-flex;gap:4px;align-items:center">
+        <input type="radio" name="cngx-stepper-commit-outcome"
+               [checked]="outcome() === 'error'"
+               (change)="outcome.set('error')" />
+        simulate error
+      </label>
+      <label style="display:inline-flex;gap:4px;align-items:center">
+        <input type="radio" name="cngx-stepper-commit-outcome"
+               [checked]="outcome() === 'refusal'"
+               (change)="outcome.set('refusal')" />
+        simulate refusal
+      </label>
+    </div>
     <label style="margin-inline-start:12px">
       latency
       <input type="range" min="100" max="2000" step="100"
