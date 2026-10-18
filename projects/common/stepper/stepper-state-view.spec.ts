@@ -163,6 +163,23 @@ describe('createStepperStateView', () => {
     expect(view.firstErrorIndex()).toBe(1);
   });
 
+  it('keeps the error and marker derivations stable when the steps re-emit unchanged', () => {
+    const failed = stubNode({ id: 'a', flatIndex: 0, state: () => 'error' });
+    const clean = stubNode({ id: 'b', flatIndex: 1 });
+    const stepsOnly = signal<readonly CngxStepNode[]>([failed, clean]);
+    const view = createStepperStateView({ presenter: stubHost().host, stepsOnly });
+    let reads = 0;
+    const summary = computed(() => {
+      reads++;
+      return [view.errorCount(), view.firstErrorIndex(), view.errorMarkerCount()];
+    });
+    expect(summary()).toEqual([1, 0, 1]);
+
+    stepsOnly.set([failed, clean]);
+    expect(summary()).toEqual([1, 0, 1]);
+    expect(reads).toBe(1);
+  });
+
   it('reports no error for a clean flow', () => {
     const stepsOnly = signal<readonly CngxStepNode[]>([
       stubNode({ id: 'a', flatIndex: 0 }),

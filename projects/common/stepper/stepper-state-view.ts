@@ -1,4 +1,5 @@
 import { computed, untracked, type Signal } from '@angular/core';
+import { arrayEqual } from '@cngx/utils';
 
 import type { CngxStepperI18n } from './i18n/stepper-i18n';
 import type { CngxStepNode, CngxStepperHost, CngxStepStatus } from './stepper-host.token';
@@ -152,8 +153,9 @@ export function createStepperStateView(inputs: {
   const hasError = (node: CngxStepNode): boolean =>
     hasErrorBadge(node) || (isRejected(node) && !isRefused(node));
 
-  const erroredSteps = computed<readonly CngxStepNode[]>(() =>
-    stepsOnly().filter((node) => hasError(node)),
+  const erroredSteps = computed<readonly CngxStepNode[]>(
+    () => stepsOnly().filter((node) => hasError(node)),
+    { equal: arrayEqual },
   );
 
   const errorCount = computed<number>(() => erroredSteps().length);
@@ -162,8 +164,9 @@ export function createStepperStateView(inputs: {
 
   const hasAnyError = computed<boolean>(() => errorCount() > 0);
 
-  const markedSteps = computed<readonly CngxStepNode[]>(() =>
-    stepsOnly().filter((node) => hasErrorMarker(node)),
+  const markedSteps = computed<readonly CngxStepNode[]>(
+    () => stepsOnly().filter((node) => hasErrorMarker(node)),
+    { equal: arrayEqual },
   );
 
   const errorMarkerCount = computed<number>(() => markedSteps().length);
