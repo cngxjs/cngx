@@ -319,6 +319,23 @@ describe('CngxListboxTrigger - co-located search input', () => {
     return { input, popover, listbox, press };
   }
 
+  it('ignores an auto-repeated Backspace on the empty input', () => {
+    const fixture = TestBed.createComponent(SearchInputHost);
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxListboxTrigger));
+    const trigger = de.injector.get(CngxListboxTrigger);
+    const input = de.nativeElement as HTMLInputElement;
+    let emitted = 0;
+    trigger.backspaceOnEmpty.subscribe(() => emitted++);
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true }));
+    for (let i = 0; i < 3; i++) {
+      input.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, repeat: true }),
+      );
+    }
+    expect(emitted).toBe(1);
+  });
+
   it('lets Space reach the closed input without opening the panel', () => {
     const { popover, press } = setup();
     const event = press(' ');

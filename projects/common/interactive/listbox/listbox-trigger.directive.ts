@@ -135,7 +135,8 @@ export class CngxListboxTrigger<T = unknown> {
     // to delete the trailing chip. Consolidated here so the trigger owns
     // the only keydown handler on the element. Non-input triggers skip
     // this path via the co-located-search guard.
-    if (key === 'Backspace' && this.search) {
+    // A held key repeats: only the first press may strip a chip.
+    if (key === 'Backspace' && this.search && !event.repeat) {
       if (host instanceof HTMLInputElement && host.value === '') {
         this.backspaceOnEmpty.emit();
         // No preventDefault - the consumer's chip-remove path owns DOM impact.
