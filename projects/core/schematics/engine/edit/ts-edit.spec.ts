@@ -270,6 +270,14 @@ describe('promoteTypeOnlyImport', () => {
     );
   });
 
+  it('removes only the type keyword, keeping a comment written after it', () => {
+    expect(promoteTypeOnlyImport("import type/**/{ a } from 'm';\n", 'a', 'm')).toBe("import /**/{ a } from 'm';\n");
+    expect(promoteTypeOnlyImport("import { type /* later */ a } from 'm';\n", 'a', 'm')).toBe(
+      "import { /* later */ a } from 'm';\n",
+    );
+    expect(promoteTypeOnlyImport("import type\n  { a } from 'm';\n", 'a', 'm')).toBe("import { a } from 'm';\n");
+  });
+
   it('leaves a value import, another module and a missing name alone', () => {
     const content = "import { b } from 'm';\nimport type { c } from 'n';\n";
 
@@ -609,6 +617,23 @@ describe('decorator imports', () => {
 
     expect(edited).toContain("  templateUrl: './app.html',\n  imports: []\n})");
     expect(addToArrayLiteral(edited, APP, 'CngxToastOutlet')).toContain('  imports: [CngxToastOutlet]\n');
+  });
+
+  it('takes the trailing comma from the syntax tree, never a comma in a comment before it', () => {
+    const commented = NO_IMPORTS.replace("templateUrl: './app.html'", "templateUrl: './app.html' /* see a, b */,");
+
+    expect(ensureArrayProperty(commented, APP)).toContain("  templateUrl: './app.html' /* see a, b */,\n  imports: [],\n})");
+    expect(hasArrayLiteral(ensureArrayProperty(commented, APP), APP)).toBe(true);
+  });
+
+  it('puts the new property below a comment that trails the last one', () => {
+    const lineComment = NO_IMPORTS.replace("templateUrl: './app.html'", "templateUrl: './app.html', // the shell");
+    const noComma = NO_IMPORTS.replace("templateUrl: './app.html'", "templateUrl: './app.html' // the shell");
+    const blockAcross = NO_IMPORTS.replace("templateUrl: './app.html'", "templateUrl: './app.html', /* a,\n    b */");
+
+    expect(ensureArrayProperty(lineComment, APP)).toContain("  templateUrl: './app.html', // the shell\n  imports: [],\n})");
+    expect(ensureArrayProperty(noComma, APP)).toContain("  templateUrl: './app.html', // the shell\n  imports: []\n})");
+    expect(ensureArrayProperty(blockAcross, APP)).toContain("  templateUrl: './app.html', /* a,\n    b */\n  imports: [],\n})");
   });
 
   it('adds a missing imports property to a one-line and an empty decorator object', () => {

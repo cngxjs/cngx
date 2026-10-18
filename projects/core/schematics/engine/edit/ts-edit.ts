@@ -300,13 +300,55 @@ export function ensureArrayProperty(content: string, selector: PropertyArraySele
   if (!multiline) {
     return `${content.slice(0, last.getEnd())}, ${property}${content.slice(last.getEnd())}`;
   }
-  const newline = newlineOf(content);
-  const indent = indentOf(content, last.getStart(source));
-  if (trailingComma) {
-    const comma = content.indexOf(',', last.getEnd()) + 1;
-    return `${content.slice(0, comma)}${newline}${indent}${property},${content.slice(comma)}`;
+  // The trailing comma is read as a token, so a comma in a comment between
+  // the last property and it is never taken for it.
+  const comma = trailingComma ? tokenAt(content, last.getEnd()) : undefined;
+  if (comma !== undefined && comma.kind !== ts.SyntaxKind.CommaToken) {
+    return content;
   }
-  return `${content.slice(0, last.getEnd())},${newline}${indent}${property}${content.slice(last.getEnd())}`;
+  const lineEnd = afterTrailingComments(content, comma?.end ?? last.getEnd());
+  const head = trailingComma
+    ? content.slice(0, lineEnd)
+    : `${content.slice(0, last.getEnd())},${content.slice(last.getEnd(), lineEnd)}`;
+  const line = `${newlineOf(content)}${indentOf(content, last.getStart(source))}${property}${trailingComma ? ',' : ''}`;
+  return `${head}${line}${content.slice(lineEnd)}`;
+}
+
+/** A token as the scanner reads it: its kind and where it ends. */
+interface ScannedToken {
+  readonly kind: ts.SyntaxKind;
+  readonly end: number;
+}
+
+// The first token from `position` on, comments and whitespace skipped.
+function tokenAt(content: string, position: number): ScannedToken {
+  const scanner = ts.createScanner(ts.ScriptTarget.Latest, true, ts.LanguageVariant.Standard, content);
+  scanner.resetTokenState(position);
+  const kind = scanner.scan();
+  return { kind, end: scanner.getTokenEnd() };
+}
+
+// Past the comments that trail `position` on its line, so a line inserted
+// there never takes a comment that belongs to the line above.
+function afterTrailingComments(content: string, position: number): number {
+  const trailing = ts.getTrailingCommentRanges(content, position) ?? [];
+  return trailing.length === 0 ? position : trailing[trailing.length - 1].end;
+}
+
+// The `type` keyword starting at `start` and the whitespace after it, as the
+// scanner reads them; a comment after the keyword stays. `undefined` when no
+// `type` keyword starts there.
+function typeKeywordRange(content: string, start: number): readonly [number, number] | undefined {
+  const scanner = ts.createScanner(ts.ScriptTarget.Latest, false, ts.LanguageVariant.Standard, content);
+  scanner.resetTokenState(start);
+  if (scanner.scan() !== ts.SyntaxKind.TypeKeyword) {
+    return undefined;
+  }
+  let end = scanner.getTokenEnd();
+  for (let kind = scanner.scan(); kind === ts.SyntaxKind.WhitespaceTrivia || kind === ts.SyntaxKind.NewLineTrivia; kind = scanner.scan()) {
+    end = scanner.getTokenEnd();
+  }
+  return [start, end];
 }
 
 /** How many array literals the selector matches; more than one makes it ambiguous. */
@@ -530,21 +572,19 @@ export function promoteTypeOnlyImport(content: string, symbol: string, module: s
     return content;
   }
   const { clause, elements } = found;
-  const edits: (readonly [number, number, string])[] = [];
+  const keywords = [
+    ...elements.filter((element) => element.name.text === symbol && element.isTypeOnly),
+    ...(clause.isTypeOnly ? [clause] : []),
+  ].map((node) => typeKeywordRange(content, node.getStart(source)));
+  const edits: (readonly [number, number, string])[] = keywords.flatMap((range) => (range === undefined ? [] : [[...range, ''] as const]));
+  if (edits.length < keywords.length) {
+    return content;
+  }
   for (const element of elements) {
-    const start = element.getStart(source);
-    if (element.name.text === symbol && element.isTypeOnly) {
-      const keyword = /^type\s+/.exec(content.slice(start))?.[0] ?? '';
-      edits.push([start, start + keyword.length, '']);
-    }
     if (element.name.text !== symbol && clause.isTypeOnly && !element.isTypeOnly) {
+      const start = element.getStart(source);
       edits.push([start, start, 'type ']);
     }
-  }
-  if (clause.isTypeOnly) {
-    const start = clause.getStart(source);
-    const keyword = /^type\s+/.exec(content.slice(start))?.[0] ?? '';
-    edits.push([start, start + keyword.length, '']);
   }
   return edits
     .sort(([a], [b]) => b - a)
