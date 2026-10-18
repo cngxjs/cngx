@@ -45,11 +45,19 @@ function stubHost(): StubHost {
   return { host, commitStatus, intendedStepIndex, lastFailedIndex, lastOutcome };
 }
 
-function summaryView(count: number, first: number, refused = false) {
+function summaryView(
+  count: number,
+  first: number,
+  refused = false,
+  errors = refused ? 0 : count,
+  firstError = refused ? -1 : first,
+) {
   return {
     errorMarkerCount: signal(count),
     firstErrorMarkerIndex: signal(first),
-    isRefused: () => refused,
+    errorCount: signal(errors),
+    firstErrorIndex: signal(firstError),
+    isRefused: (node: CngxStepNode) => refused && node.flatIndex === first,
     hasErrorBadge: () => false,
   };
 }
@@ -209,6 +217,25 @@ describe('resolveStepperErrorSummary', () => {
     expect(resolveStepperErrorSummary(view, stepsOnly, i18n, () => undefined)).toBe(
       'Payment: Not allowed',
     );
+  });
+
+  it('does not count a refused step as an error beside a failed one', () => {
+    const stepsOnly = signal<readonly CngxStepNode[]>([
+      stubNode({ id: 'Profile', flatIndex: 0, label: () => 'Profile' }),
+      stubNode({ id: 'Payment', flatIndex: 1, label: () => 'Payment' }),
+    ]);
+    const view = summaryView(2, 0, true, 1, 1);
+    expect(resolveStepperErrorSummary(view, stepsOnly, i18n)).toBe('Payment: Errored');
+  });
+
+  it('counts only the failed steps when several fail beside a refusal', () => {
+    const stepsOnly = signal<readonly CngxStepNode[]>([
+      stubNode({ id: 'a', flatIndex: 0, label: () => 'A' }),
+      stubNode({ id: 'b', flatIndex: 1, label: () => 'B' }),
+      stubNode({ id: 'c', flatIndex: 2, label: () => 'C' }),
+    ]);
+    const view = summaryView(3, 0, true, 2, 1);
+    expect(resolveStepperErrorSummary(view, stepsOnly, i18n)).toBe('2 errors');
   });
 
   it('returns empty when no step errored', () => {

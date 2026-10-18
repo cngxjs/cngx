@@ -202,7 +202,8 @@ export function createStepperStateView(inputs: {
  * ({@link CngxStepperStateView.hasErrorMarker}). A single marked step names
  * itself with the word of its kind: `"Payment: Errored"` (or the custom
  * reason) for an error, `"Payment: Not allowed"` for a refused step change;
- * several collapse to the i18n count phrase (`"2 errors"`). Returns `''`
+ * several failed steps collapse to the i18n count phrase (`"2 errors"`),
+ * which never counts a refusal. Returns `''`
  * when no step is marked, so the error line stays quiet.
  *
  * The optional `messageOf` resolver lets callers surface a per-step
@@ -227,7 +228,12 @@ export function createStepperStateView(inputs: {
 export function resolveStepperErrorSummary(
   view: Pick<
     CngxStepperStateView,
-    'errorMarkerCount' | 'firstErrorMarkerIndex' | 'isRefused' | 'hasErrorBadge'
+    | 'errorMarkerCount'
+    | 'firstErrorMarkerIndex'
+    | 'errorCount'
+    | 'firstErrorIndex'
+    | 'isRefused'
+    | 'hasErrorBadge'
   >,
   stepsOnly: Signal<readonly CngxStepNode[]>,
   i18n: CngxStepperI18n,
@@ -238,12 +244,29 @@ export function resolveStepperErrorSummary(
     return '';
   }
   if (count === 1) {
-    const node = stepsOnly()[view.firstErrorMarkerIndex()];
-    const detail = node ? summaryDetail(view, node, i18n, messageOf) : i18n.statusLabels.errored;
-    const label = node ? untracked(node.label) : undefined;
-    return label ? i18n.stepWithDetail(label, detail) : detail;
+    return singleStepPhrase(view, stepsOnly()[view.firstErrorMarkerIndex()], i18n, messageOf);
   }
-  return i18n.stepHasErrors(count);
+  // A refusal is not an error: the count phrase counts failed steps only. One
+  // error beside a refused step names that error; the refusal keeps its own
+  // marker and announcement.
+  const errors = view.errorCount();
+  if (errors > 1) {
+    return i18n.stepHasErrors(errors);
+  }
+  const index = errors === 1 ? view.firstErrorIndex() : view.firstErrorMarkerIndex();
+  return singleStepPhrase(view, stepsOnly()[index], i18n, messageOf);
+}
+
+/** @internal `"<label>: <detail>"` for one marked step. */
+function singleStepPhrase(
+  view: Pick<CngxStepperStateView, 'isRefused' | 'hasErrorBadge'>,
+  node: CngxStepNode | undefined,
+  i18n: CngxStepperI18n,
+  messageOf?: (node: CngxStepNode) => string | undefined,
+): string {
+  const detail = node ? summaryDetail(view, node, i18n, messageOf) : i18n.statusLabels.errored;
+  const label = node ? untracked(node.label) : undefined;
+  return label ? i18n.stepWithDetail(label, detail) : detail;
 }
 
 /**
