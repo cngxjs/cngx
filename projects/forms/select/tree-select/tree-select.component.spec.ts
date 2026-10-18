@@ -495,6 +495,62 @@ describe('CngxTreeSelect - toggle commit error announcement', () => {
   );
 });
 
+describe('CngxTreeSelect - commit error copy without a label', () => {
+  @Component({
+    imports: [CngxTreeSelect],
+    template: `
+      <cngx-tree-select
+        aria-label=""
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="labelFn"
+        [initiallyExpanded]="'all'"
+        [commitAction]="commitAction"
+        [(values)]="values"
+      />
+    `,
+  })
+  class UnlabelledTreeHost {
+    readonly nodes = tree();
+    readonly values = signal<Row[]>([]);
+    readonly idFn = (v: Row): string => v.id;
+    readonly labelFn = (v: Row): string => v.name;
+    pending: Subject<Row[]> | null = null;
+    readonly commitAction = (): Observable<Row[]> => {
+      this.pending = new Subject<Row[]>();
+      return this.pending.asObservable();
+    };
+  }
+
+  beforeEach(() => polyfillPopover());
+
+  it('names the field label fallback when aria-label is empty', () => {
+    const fixture = TestBed.createComponent(UnlabelledTreeHost);
+    fixture.detectChanges();
+    const announce = vi
+      .spyOn(TestBed.inject(CngxSelectAnnouncer), 'announce')
+      .mockImplementation(() => undefined);
+    const tree = fixture.debugElement.query(By.directive(CngxTreeSelect))
+      .componentInstance as CngxTreeSelect<Row>;
+    tree.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLElement>('[role="treeitem"]')!
+      .click();
+    fixture.detectChanges();
+    announce.mockClear();
+
+    fixture.componentInstance.pending!.error(new Error('server down'));
+    fixture.detectChanges();
+
+    const fallback = tree.ariaLabels().fieldLabelFallback;
+    expect(fallback.length).toBeGreaterThan(0);
+    const [message] = announce.mock.calls[0];
+    expect(stripBidiIsolates(message)).toBe(`${fallback}: Save failed - server down`);
+  });
+});
+
 describe('CngxTreeSelect - commit retry', () => {
   @Component({
     imports: [CngxTreeSelect],

@@ -601,7 +601,13 @@ export class CngxTreeSelect<T = unknown>
     const aria = this.ariaLabel();
     const fieldFallback = this.config.ariaLabels().fieldLabelFallback;
     const failedMessage = this.config.ariaLabels().commitFailedMessage;
-    const labelText = label !== '' ? label : (aria ?? fieldFallback);
+    // An empty aria-label names nothing: same rule as `announce`.
+    let labelText = fieldFallback;
+    if (label !== '') {
+      labelText = label;
+    } else if (aria && aria.length > 0) {
+      labelText = aria;
+    }
     const detail = err instanceof Error ? err.message : undefined;
     return failedMessage(labelText, detail);
   }
