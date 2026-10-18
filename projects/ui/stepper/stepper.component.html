@@ -5,7 +5,12 @@
   }
 } @else if (displayMode() === 'text') {
   <cngx-stepper-count class="cngx-stepper__mobile-text" [live]="false" />
-  <span cngxStepperErrorLine block="cngx-stepper__mobile-error" [text]="mobileErrorSummary()"></span>
+  <span
+    cngxStepperErrorLine
+    block="cngx-stepper__mobile-error"
+    [text]="mobileErrorSummary()"
+    [reason]="stateView.refusalOnly() ? 'refused' : null"
+  ></span>
 
   <ng-container *ngTemplateOutlet="stepPanels"></ng-container>
 } @else if (displayMode() === 'dots') {
@@ -29,6 +34,7 @@
           [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
           [attr.aria-label]="mobileDotAriaLabel(node, i)"
           [attr.data-state]="mobileDotState(node)"
+          [attr.data-reason]="stateView.rejectionReason(node)"
         ></span>
       } @else {
         <button
@@ -43,6 +49,7 @@
           [attr.aria-controls]="stepPanelId(node)"
           [attr.aria-label]="mobileDotAriaLabel(node, i)"
           [attr.data-state]="mobileDotState(node)"
+          [attr.data-reason]="stateView.rejectionReason(node)"
           [attr.aria-disabled]="headerAriaDisabled(node)"
           [cngxRovingItemDisabled]="node.disabled()"
           (click)="handleHeaderClick(node)"
@@ -50,7 +57,12 @@
       }
     }
   </div>
-  <span cngxStepperErrorLine block="cngx-stepper__mobile-error" [text]="mobileErrorSummary()"></span>
+  <span
+    cngxStepperErrorLine
+    block="cngx-stepper__mobile-error"
+    [text]="mobileErrorSummary()"
+    [reason]="stateView.refusalOnly() ? 'refused' : null"
+  ></span>
   @if (showStepCount()) {
     <cngx-stepper-count class="cngx-stepper__mobile-text cngx-stepper__mobile-text--caption" [live]="false" />
   }
@@ -112,6 +124,7 @@
           class="cngx-stepper__step cngx-stepper__step--static"
           role="listitem"
           [class.cngx-stepper__step--rejected]="slotContext.showRejection(node)"
+          [attr.data-reason]="stateView.rejectionReason(node)"
           [style.--cngx-step-distance]="isDensityAuto() ? stepDistanceOf(node) : null"
           [id]="stepHeaderId(node)"
           [attr.data-step-depth]="node.depth"
@@ -129,6 +142,7 @@
           cngxRovingItem
           class="cngx-stepper__step"
           [class.cngx-stepper__step--rejected]="slotContext.showRejection(node)"
+          [attr.data-reason]="stateView.rejectionReason(node)"
           [style.--cngx-step-distance]="isDensityAuto() ? stepDistanceOf(node) : null"
           [id]="stepHeaderId(node)"
           [attr.tabindex]="slotContext.isActive(node) ? '0' : '-1'"
@@ -268,7 +282,11 @@
   </span>
   <span class="cngx-stepper__status-pill" aria-hidden="true">{{ statusLabelFor(node) }}</span>
   @if (slotContext.showRejection(node)) {
-    <span class="cngx-stepper__rejection-icon" aria-hidden="true">
+    <span
+      class="cngx-stepper__rejection-icon"
+      aria-hidden="true"
+      [attr.data-reason]="stateView.rejectionReason(node)"
+    >
       <ng-container
         *ngTemplateOutlet="
           templates.rejection() ?? defaultRejection;
@@ -295,7 +313,9 @@
 </ng-template>
 <ng-template #defaultBadge>{{ glyphs.errorBadge }}</ng-template>
 <ng-template #defaultBusySpinner></ng-template>
-<ng-template #defaultRejection>{{ glyphs.rejectionIcon }}</ng-template>
+<ng-template #defaultRejection let-reason="reason">{{
+  reason === 'refused' ? glyphs.refusedIcon : glyphs.rejectionIcon
+}}</ng-template>
 <ng-template #defaultGroupHeader let-group="group">
   <span class="cngx-stepper__group-label">{{ group.label() }}</span>
 </ng-template>

@@ -14,4 +14,9 @@
   }
 }
 <!-- Outside the zero-step gate: the status region must pre-exist its content to announce. -->
-<span cngxStepperErrorLine block="cngx-progress-bar-stepper__error" [text]="errorText()"></span>
+<span
+  cngxStepperErrorLine
+  block="cngx-progress-bar-stepper__error"
+  [text]="errorText()"
+  [reason]="stateView.refusalOnly() ? 'refused' : null"
+></span>

@@ -14,7 +14,9 @@
  * - `[aria-disabled="true"]` - cursor + the disabled field colour (38%
  *   of `--cngx-color-text`), never opacity; GrayText under forced colors
  * - `:focus-visible` - outline ring via `--cngx-step-focus-ring`
- * - `--rejected` - persistent-rejection outline + tinted background
+ * - `--rejected` - persistent commit-rejection outline + tinted background;
+ *   `[data-reason="refused"]` wears the rejection amber, `[data-reason="failed"]`
+ *   the errored red (a failed commit is an error)
  *
  * **Orientation variants**
  *
@@ -37,7 +39,8 @@
  * - `.cngx-stepper__group-header` - group label row
  * - `.cngx-stepper__badge` - inline error-count disc
  *   (`--cngx-step-error-badge-color` + glyph)
- * - `.cngx-stepper__rejection-icon` - `!` disc on rejected steps
+ * - `.cngx-stepper__rejection-icon` - `\2298` disc on a refused step (amber),
+ *   `!` disc on a failed one (errored red); `data-reason` names the kind
  *
  * All transitions short-circuit under `prefers-reduced-motion`.
  * <hr>
@@ -217,7 +220,8 @@
   }
 
   /**
-   * Outline color of the persistent-rejection decoration.
+   * Outline color of a refused step (the commit action answered `false`).
+   * A failed commit takes `--cngx-step-errored-color` instead.
    * @group State / Rejected
    */
   @property --cngx-step-rejection-outline-color {
@@ -247,7 +251,8 @@
   }
 
   /**
-   * Hit-target diameter of the persistent-rejection icon (`!` glyph).
+   * Hit-target diameter of the persistent-rejection icon (`\2298` refused,
+   * `!` failed).
    * @group State / Rejected
    */
   @property --cngx-step-rejection-icon-size {
@@ -257,7 +262,8 @@
   }
 
   /**
-   * Background of the rejection icon disc.
+   * Background of the rejection icon disc on a refused step. A failed
+   * commit takes `--cngx-step-errored-color` instead.
    * @group State / Rejected
    */
   @property --cngx-step-rejection-icon-bg {
@@ -717,6 +723,13 @@
     background: var(--cngx-step-rejection-bg, transparent);
   }
 
+  /* A failed commit is a real error: its rejection decoration takes the
+     errored red, the amber stays with a refused one. The glyph (`!` versus
+     the refused circle) keeps the two apart without colour (WCAG 1.4.1). */
+  .cngx-stepper__step--rejected[data-reason='failed'] {
+    outline-color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+  }
+
   /* Status pill - hidden by default; opted in by the
      `stripe-status-rich` skin via `.cngx-stepper[data-skin] .cngx-
      stepper__status-pill { display: inline-flex; ... }`. */
@@ -737,6 +750,10 @@
     font-weight: var(--cngx-step-rejection-icon-font-weight, 700);
     flex: 0 0 auto;
     margin-inline-start: var(--cngx-step-gap, 0.5rem);
+  }
+
+  .cngx-stepper__rejection-icon[data-reason='failed'] {
+    background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
   }
 
   .cngx-sr-only {

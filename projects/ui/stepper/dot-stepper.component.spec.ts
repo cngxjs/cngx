@@ -581,6 +581,10 @@ describe('CngxDotStepper commit outcome', () => {
     expect(host.hasAttribute('aria-invalid')).toBe(false);
     const region = fixture.nativeElement.querySelector('.cngx-dot-stepper__error') as HTMLElement;
     expect(region.getAttribute('data-state')).toBe('error');
+    expect(region.getAttribute('data-reason')).toBe('refused');
+    const glyph = region.querySelector('.cngx-dot-stepper__error-glyph') as HTMLElement;
+    expect(glyph.textContent?.trim()).toBe('\u2298');
+    expect(glyph.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('a failed step reads "Errored" and sets aria-invalid', () => {
@@ -589,6 +593,10 @@ describe('CngxDotStepper commit outcome', () => {
     fixture.detectChanges();
     expect(line()).toBe('Two: Errored');
     expect(host.getAttribute('aria-invalid')).toBe('true');
+    const region = fixture.nativeElement.querySelector('.cngx-dot-stepper__error') as HTMLElement;
+    expect(region.hasAttribute('data-reason')).toBe(false);
+    const glyph = region.querySelector('.cngx-dot-stepper__error-glyph') as HTMLElement;
+    expect(glyph.textContent?.trim()).toBe('!');
   });
 });
 
@@ -620,6 +628,8 @@ describe('CngxDotStepper refused dot', () => {
     ) as NodeListOf<HTMLElement>;
     expect(dots[1].getAttribute('data-state')).toBe('error');
     expect(dots[1].classList.contains('cngx-dot-stepper__dot--error')).toBe(true);
+    expect(dots[1].getAttribute('data-reason')).toBe('refused');
+    expect(dots[0].hasAttribute('data-reason')).toBe(false);
     expect(stripBidiIsolates(dots[1].getAttribute('aria-label') ?? '')).toBe(
       'Step 2 of 2: Two: Not allowed',
     );
@@ -628,5 +638,6 @@ describe('CngxDotStepper refused dot', () => {
     expect(stripBidiIsolates(dots[1].getAttribute('aria-label') ?? '')).toBe(
       'Step 2 of 2: Two: Errored',
     );
+    expect(dots[1].getAttribute('data-reason')).toBe('failed');
   });
 });

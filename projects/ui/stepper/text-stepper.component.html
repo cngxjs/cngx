@@ -16,4 +16,9 @@
     <ng-container *ngTemplateOutlet="emptyTpl"></ng-container>
   }
 }
-<span cngxStepperErrorLine block="cngx-text-stepper__error" [text]="errorText()"></span>
+<span
+  cngxStepperErrorLine
+  block="cngx-text-stepper__error"
+  [text]="errorText()"
+  [reason]="stateView.refusalOnly() ? 'refused' : null"
+></span>

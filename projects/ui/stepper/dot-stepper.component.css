@@ -11,6 +11,28 @@
 
 @layer cngx.tokens {
   /**
+   * Fill of a refused-commit marker (the commit action answered `false`).
+   * A refusal is no error, so it wears the rejection amber; a failed commit
+   * keeps `--cngx-step-errored-color`. Registered without an initial value,
+   * so the amber fallback applies until a theme sets it.
+   * @group State / Refused
+   */
+  @property --cngx-step-refused-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Text color of the aggregate line when every marked step is a refused
+   * commit. Defaults to the surrounding text colour: amber text would fall
+   * under the 4.5:1 text contrast.
+   * @group State / Refused
+   */
+  @property --cngx-step-refused-text-color {
+    syntax: '*';
+    inherits: true;
+  }
+  /**
    * Diameter of each dot.
    * @group Layout
    */
@@ -142,6 +164,13 @@
   background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
 }
 
+/* A refused commit marks the dot amber; a failed one keeps the red. A
+   validation error on the same step outranks it (no data-reason without a
+   commit rejection, red stays for the error badge). */
+.cngx-dot-stepper__dot[data-state='error'][data-reason='refused'] {
+  background: var(--cngx-step-refused-color, oklch(0.62 0.15 60));
+}
+
 /* Non-color error cue (WCAG 1.4.1): a glyph centred over the errored dot,
    so the error never relies on the red fill alone. A pseudo-element keeps
    the dot `:empty`, so the consumer-slot chrome-strip rule below and the
@@ -156,6 +185,12 @@
   font-weight: 700;
   line-height: 1;
   color: var(--cngx-dot-step-error-glyph-color, var(--cngx-color-on-danger, white));
+}
+
+/* The refused dot carries its own glyph, so it never differs from an error
+   by colour alone (WCAG 1.4.1). */
+.cngx-dot-stepper__dot--error[data-reason='refused']::after {
+  content: var(--cngx-dot-step-refused-glyph, '\2298') / '';
 }
 
 /* Consumer-owned dot body via `*cngxDotStepperDot` slot - the span shell
@@ -200,6 +235,15 @@
   color: var(--cngx-dot-stepper-error-glyph-color, var(--cngx-color-on-danger, white));
   font-size: 0.75em;
   font-weight: 700;
+}
+
+/* Every marked step is a refused commit: resting text, amber glyph disc. */
+.cngx-dot-stepper__error[data-reason='refused'] {
+  color: var(--cngx-step-refused-text-color, currentColor);
+}
+
+.cngx-dot-stepper__error[data-reason='refused'] .cngx-dot-stepper__error-glyph {
+  background: var(--cngx-step-refused-color, oklch(0.62 0.15 60));
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -350,6 +350,10 @@ describe('CngxProgressBarStepper commit outcome', () => {
       '.cngx-progress-bar-stepper__error',
     ) as HTMLElement;
     expect(region.getAttribute('data-state')).toBe('error');
+    expect(region.getAttribute('data-reason')).toBe('refused');
+    const glyph = region.querySelector('.cngx-progress-bar-stepper__error-glyph') as HTMLElement;
+    expect(glyph.textContent?.trim()).toBe('\u2298');
+    expect(glyph.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('a failed step reads "Errored" and sets aria-invalid', () => {
@@ -358,6 +362,12 @@ describe('CngxProgressBarStepper commit outcome', () => {
     fixture.detectChanges();
     expect(line()).toBe('B: Errored');
     expect(host.getAttribute('aria-invalid')).toBe('true');
+    const region = fixture.nativeElement.querySelector(
+      '.cngx-progress-bar-stepper__error',
+    ) as HTMLElement;
+    expect(region.hasAttribute('data-reason')).toBe(false);
+    const glyph = region.querySelector('.cngx-progress-bar-stepper__error-glyph') as HTMLElement;
+    expect(glyph.textContent?.trim()).toBe('!');
   });
 });
 
@@ -389,5 +399,10 @@ describe('CngxProgressBarStepper commit outcome host state', () => {
     fixture.detectChanges();
     expect(host.getAttribute('data-state')).toBe('error');
     expect(host.hasAttribute('aria-invalid')).toBe(false);
+    expect(host.getAttribute('data-reason')).toBe('refused');
+    stepperOutcome.set({ kind: 'failed', index: 1, sequence: 2 });
+    fixture.detectChanges();
+    expect(host.getAttribute('data-state')).toBe('error');
+    expect(host.hasAttribute('data-reason')).toBe(false);
   });
 });

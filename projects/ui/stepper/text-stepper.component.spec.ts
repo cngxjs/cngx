@@ -360,6 +360,10 @@ describe('CngxTextStepper commit outcome', () => {
     expect(host.hasAttribute('aria-invalid')).toBe(false);
     const region = fixture.nativeElement.querySelector('.cngx-text-stepper__error') as HTMLElement;
     expect(region.getAttribute('data-state')).toBe('error');
+    expect(region.getAttribute('data-reason')).toBe('refused');
+    const glyph = region.querySelector('.cngx-text-stepper__error-glyph') as HTMLElement;
+    expect(glyph.textContent?.trim()).toBe('\u2298');
+    expect(glyph.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('a failed step reads "Errored" and sets aria-invalid', () => {
@@ -368,5 +372,9 @@ describe('CngxTextStepper commit outcome', () => {
     fixture.detectChanges();
     expect(line()).toBe('Payment: Errored');
     expect(host.getAttribute('aria-invalid')).toBe('true');
+    const region = fixture.nativeElement.querySelector('.cngx-text-stepper__error') as HTMLElement;
+    expect(region.hasAttribute('data-reason')).toBe(false);
+    const glyph = region.querySelector('.cngx-text-stepper__error-glyph') as HTMLElement;
+    expect(glyph.textContent?.trim()).toBe('!');
   });
 });

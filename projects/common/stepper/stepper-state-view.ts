@@ -50,6 +50,13 @@ export interface CngxStepperStateView {
   readonly hasErrorBadge: (node: CngxStepNode) => boolean;
 
   /**
+   * Why the step carries a commit-rejection marker, for the `data-reason`
+   * styling hook: `'refused'` or `'failed'` while {@link isRejected} holds,
+   * `null` otherwise. Independent of a validation error on the same step.
+   */
+  readonly rejectionReason: (node: CngxStepNode) => 'refused' | 'failed' | null;
+
+  /**
    * Visual marker predicate - the hook the minimal skins (dot / text /
    * progress-bar) and the mobile dots paint (`data-state="error"`,
    * `--error`). `true` when {@link hasErrorBadge} fires OR the step carries
@@ -86,6 +93,13 @@ export interface CngxStepperStateView {
    * (`data-state="error"`); `aria-invalid` stays on {@link hasAnyError}.
    */
   readonly hasAnyErrorMarker: Signal<boolean>;
+
+  /**
+   * `true` when steps are marked but none is in error: every marker is a
+   * refused commit. Drives the refused tone of skin-level hooks (the
+   * aggregate error line, the progress bar) that stand for all steps.
+   */
+  readonly refusalOnly: Signal<boolean>;
 }
 
 /**
@@ -126,6 +140,13 @@ export function createStepperStateView(inputs: {
   const isRefused = (node: CngxStepNode): boolean =>
     isRejected(node) && presenter.lastOutcome()?.kind === 'refused';
 
+  const rejectionReason = (node: CngxStepNode): 'refused' | 'failed' | null => {
+    if (!isRejected(node)) {
+      return null;
+    }
+    return isRefused(node) ? 'refused' : 'failed';
+  };
+
   const hasErrorMarker = (node: CngxStepNode): boolean => hasErrorBadge(node) || isRejected(node);
 
   const hasError = (node: CngxStepNode): boolean =>
@@ -151,11 +172,14 @@ export function createStepperStateView(inputs: {
 
   const hasAnyErrorMarker = computed<boolean>(() => errorMarkerCount() > 0);
 
+  const refusalOnly = computed<boolean>(() => hasAnyErrorMarker() && !hasAnyError());
+
   return {
     statusOf,
     isBusy,
     isRejected,
     isRefused,
+    rejectionReason,
     hasErrorBadge,
     hasErrorMarker,
     hasError,
@@ -165,6 +189,7 @@ export function createStepperStateView(inputs: {
     errorMarkerCount,
     firstErrorMarkerIndex,
     hasAnyErrorMarker,
+    refusalOnly,
   };
 }
 

@@ -110,6 +110,13 @@ describe('createStepperStateView', () => {
     expect(view.errorMarkerCount()).toBe(1);
     expect(view.firstErrorMarkerIndex()).toBe(1);
     expect(view.hasAnyErrorMarker()).toBe(true);
+    expect(view.rejectionReason(node)).toBe('refused');
+    expect(view.refusalOnly()).toBe(true);
+    lastOutcome.set({ kind: 'failed', index: 1, sequence: 2 });
+    expect(view.rejectionReason(node)).toBe('failed');
+    expect(view.refusalOnly()).toBe(false);
+    lastFailedIndex.set(undefined);
+    expect(view.rejectionReason(node)).toBeNull();
   });
 
   it('keeps a validation error in error when its step change is also refused', () => {

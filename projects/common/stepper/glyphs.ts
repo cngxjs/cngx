@@ -17,6 +17,12 @@
 export const CNGX_STEPPER_GLYPHS = {
   /** Default visual for `*cngxStepBadge` when no override is bound. */
   errorBadge: '!',
-  /** Default visual for `*cngxStepRejection` when no override is bound. */
+  /** Default visual for `*cngxStepRejection` on a failed commit when no override is bound. */
   rejectionIcon: '!',
+  /**
+   * Default visual for `*cngxStepRejection` on a refused commit (the action
+   * answered `false`). A distinct glyph, so a refusal never differs from a
+   * failure by colour alone (WCAG 1.4.1).
+   */
+  refusedIcon: '\u2298',
 } as const;

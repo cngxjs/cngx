@@ -76,6 +76,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.data-state]': 'stateView.hasAnyErrorMarker() ? "error" : null',
+    '[attr.data-reason]': 'stateView.refusalOnly() ? "refused" : null',
     '[attr.aria-invalid]': 'stateView.hasAnyError() ? "true" : null',
   },
 })

@@ -159,6 +159,7 @@ exports[`Material stepper-theme mixin baseline > v0 light: resolved --cngx-step-
   "--cngx-step-errored-color": "#f44336",
   "--cngx-step-indicator-active-color": "oklch(1 0 0)",
   "--cngx-step-pending-color": "#3f51b5",
+  "--cngx-step-refused-color": "#e91e63",
   "--cngx-step-rejection-icon-bg": "#e91e63",
   "--cngx-step-rejection-outline-color": "#e91e63",
 }
@@ -178,6 +179,7 @@ exports[`Material stepper-theme mixin baseline > v1 dark: resolved --cngx-step-*
   "--cngx-step-indicator-color": "var(--mat-sys-on-surface)",
   "--cngx-step-indicator-disabled-bg": "color-mix( in srgb, var(--mat-sys-on-surface) 12%, transparent )",
   "--cngx-step-pending-color": "var(--mat-sys-primary)",
+  "--cngx-step-refused-color": "var(--mat-sys-tertiary)",
   "--cngx-step-rejection-icon-bg": "var(--mat-sys-tertiary)",
   "--cngx-step-rejection-icon-color": "var(--mat-sys-on-tertiary)",
   "--cngx-step-rejection-outline-color": "var(--mat-sys-tertiary)",
@@ -198,6 +200,7 @@ exports[`Material stepper-theme mixin baseline > v1 light: resolved --cngx-step-
   "--cngx-step-indicator-color": "var(--mat-sys-on-surface)",
   "--cngx-step-indicator-disabled-bg": "color-mix( in srgb, var(--mat-sys-on-surface) 12%, transparent )",
   "--cngx-step-pending-color": "var(--mat-sys-primary)",
+  "--cngx-step-refused-color": "var(--mat-sys-tertiary)",
   "--cngx-step-rejection-icon-bg": "var(--mat-sys-tertiary)",
   "--cngx-step-rejection-icon-color": "var(--mat-sys-on-tertiary)",
   "--cngx-step-rejection-outline-color": "var(--mat-sys-tertiary)",

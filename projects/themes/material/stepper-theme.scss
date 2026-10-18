@@ -53,9 +53,13 @@
     --cngx-step-error-badge-color: var(--mat-sys-error);
     --cngx-step-error-badge-text-color: var(--mat-sys-on-error);
 
+    // Commit rejections: a refused commit wears tertiary (the rejection
+    // decoration and the refused dot / line marker), a failed one is an
+    // error and reads --cngx-step-errored-color (mapped to the error role).
     --cngx-step-rejection-outline-color: var(--mat-sys-tertiary);
     --cngx-step-rejection-icon-bg: var(--mat-sys-tertiary);
     --cngx-step-rejection-icon-color: var(--mat-sys-on-tertiary);
+    --cngx-step-refused-color: var(--mat-sys-tertiary);
 
     // Skin: linear-minimal
     --cngx-step-linear-dot-fill: var(--mat-sys-primary);
@@ -125,6 +129,7 @@
     --cngx-step-error-badge-color: #{mat.get-theme-color($theme, warn)};
     --cngx-step-rejection-outline-color: #{mat.get-theme-color($theme, accent)};
     --cngx-step-rejection-icon-bg: #{mat.get-theme-color($theme, accent)};
+    --cngx-step-refused-color: #{mat.get-theme-color($theme, accent)};
 
     // Skin: linear-minimal
     --cngx-step-linear-dot-fill: #{mat.get-theme-color($theme, primary)};

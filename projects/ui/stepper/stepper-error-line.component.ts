@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  input,
+} from '@angular/core';
 
 import { CNGX_STEPPER_GLYPHS } from '@cngx/common/stepper';
 
@@ -28,7 +34,7 @@ import { CNGX_STEPPER_GLYPHS } from '@cngx/common/stepper';
   encapsulation: ViewEncapsulation.None,
   template: `
     @if (text()) {
-      <span [class]="block() + '-glyph'" aria-hidden="true">{{ glyph }}</span>
+      <span [class]="block() + '-glyph'" aria-hidden="true">{{ glyph() }}</span>
       <span [class]="block() + '-text'">{{ text() }}</span>
     }
   `,
@@ -48,6 +54,7 @@ import { CNGX_STEPPER_GLYPHS } from '@cngx/common/stepper';
   host: {
     role: 'status',
     '[attr.data-state]': "text() ? 'error' : null",
+    '[attr.data-reason]': "text() && reason() === 'refused' ? 'refused' : null",
     '[class]': 'block()',
   },
 })
@@ -58,5 +65,14 @@ export class CngxStepperErrorLine {
   /** Resolved aggregate error phrase; empty string keeps the region quiet. */
   readonly text = input.required<string>();
 
-  protected readonly glyph = CNGX_STEPPER_GLYPHS.errorBadge;
+  /**
+   * `'refused'` when every marked step is a refused commit: the line then
+   * wears the refused glyph and the `data-reason="refused"` hook. Any error
+   * keeps the error glyph.
+   */
+  readonly reason = input<'refused' | null>(null);
+
+  protected readonly glyph = computed(() =>
+    this.reason() === 'refused' ? CNGX_STEPPER_GLYPHS.refusedIcon : CNGX_STEPPER_GLYPHS.errorBadge,
+  );
 }
