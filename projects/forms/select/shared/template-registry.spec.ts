@@ -180,6 +180,36 @@ class ActionNoSlotsHost {
   readonly probe = viewChild.required<ActionRegistryProbe<string>>(ActionRegistryProbe);
 }
 
+// Mirrors a host that renders no option loop and no trigger placeholder
+// outlet: the option-loop and placeholder keys are omitted entirely.
+@Component({
+  selector: 'minimal-registry-probe',
+  standalone: true,
+  template: `<ng-content />`,
+})
+class MinimalRegistryProbe<T> {
+  readonly registry: CngxSelectTemplateRegistry<T> = createTemplateRegistry<T>({
+    caret: signal(undefined),
+    empty: signal(undefined),
+    loading: signal(undefined),
+    loadingGlyph: signal(undefined),
+    error: signal(undefined),
+    retryButton: signal(undefined),
+    refreshing: signal(undefined),
+    commitError: signal(undefined),
+    clearButton: signal(undefined),
+  });
+}
+
+@Component({
+  standalone: true,
+  imports: [MinimalRegistryProbe],
+  template: `<minimal-registry-probe />`,
+})
+class MinimalNoSlotsHost {
+  readonly probe = viewChild.required<MinimalRegistryProbe<string>>(MinimalRegistryProbe);
+}
+
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -346,5 +376,46 @@ describe('createTemplateRegistry', () => {
     const actionHost = TestBed.createComponent(ActionNoSlotsHost);
     flush(actionHost);
     expect(actionHost.componentInstance.probe().registry.action()).toBe(actionTpl);
+  });
+  it('does not resolve templates.check / optgroup / optionLabel / placeholder / optionPending / optionError defaults on a host that omits the query', () => {
+    @Component({
+      standalone: true,
+      template: `<ng-template #tpl>config</ng-template>`,
+    })
+    class Factory {
+      readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
+    }
+    const factory = TestBed.createComponent(Factory);
+    factory.detectChanges();
+    const tpl = factory.componentInstance.tpl() as unknown as TemplateRef<never>;
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideSelectConfig(
+          withTemplates({
+            check: tpl,
+            optgroup: tpl,
+            optionLabel: tpl,
+            placeholder: tpl,
+            optionPending: tpl,
+            optionError: tpl,
+            empty: tpl,
+          }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(MinimalNoSlotsHost);
+    flush(fixture);
+    const registry = fixture.componentInstance.probe().registry;
+
+    expect(registry.check()).toBeNull();
+    expect(registry.optgroup()).toBeNull();
+    expect(registry.optionLabel()).toBeNull();
+    expect(registry.placeholder()).toBeNull();
+    expect(registry.optionPending()).toBeNull();
+    expect(registry.optionError()).toBeNull();
+    // A wired key still cascades to its config default.
+    expect(registry.empty()).toBe(tpl);
   });
 });

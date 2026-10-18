@@ -46,21 +46,27 @@ import type {
  * @category forms/select/templates
  */
 export interface CngxSelectTemplateRegistryQueries<T = unknown> {
-  readonly check: Signal<CngxSelectCheck<T> | undefined>;
+  /** Optional. Omit on hosts that render no option loop; resolves to `null`. */
+  readonly check?: Signal<CngxSelectCheck<T> | undefined>;
   readonly caret: Signal<CngxSelectCaret | undefined>;
-  readonly optgroup: Signal<CngxSelectOptgroupTemplate<T> | undefined>;
-  readonly placeholder: Signal<CngxSelectPlaceholder | undefined>;
+  /** Optional. Omit on hosts that render no option loop; resolves to `null`. */
+  readonly optgroup?: Signal<CngxSelectOptgroupTemplate<T> | undefined>;
+  /** Optional. Omit on hosts without a trigger placeholder outlet; resolves to `null`. */
+  readonly placeholder?: Signal<CngxSelectPlaceholder | undefined>;
   readonly empty: Signal<CngxSelectEmpty | undefined>;
   readonly loading: Signal<CngxSelectLoading | undefined>;
-  readonly optionLabel: Signal<CngxSelectOptionLabel<T> | undefined>;
+  /** Optional. Omit on hosts that render no option loop; resolves to `null`. */
+  readonly optionLabel?: Signal<CngxSelectOptionLabel<T> | undefined>;
   readonly error: Signal<CngxSelectError | undefined>;
   readonly retryButton: Signal<CngxSelectRetryButton | undefined>;
   readonly loadingGlyph: Signal<CngxSelectLoadingGlyph | undefined>;
   readonly refreshing: Signal<CngxSelectRefreshing | undefined>;
   readonly commitError: Signal<CngxSelectCommitError<T> | undefined>;
   readonly clearButton: Signal<CngxSelectClearButton | undefined>;
-  readonly optionPending: Signal<CngxSelectOptionPending<T> | undefined>;
-  readonly optionError: Signal<CngxSelectOptionError<T> | undefined>;
+  /** Optional. Omit on hosts that render no option loop; resolves to `null`. */
+  readonly optionPending?: Signal<CngxSelectOptionPending<T> | undefined>;
+  /** Optional. Omit on hosts that render no option loop; resolves to `null`. */
+  readonly optionError?: Signal<CngxSelectOptionError<T> | undefined>;
   /** Optional. Action-select organisms wire it; flat variants omit. */
   readonly action?: Signal<CngxSelectAction | undefined>;
   /** Optional. Config-level `templates.sheetHandle` still resolves via cascade. */
@@ -111,11 +117,13 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
  * ```
  */
 /**
- * Flat variants wire no action query, so `templates.action` must not reach
- * them: resolving it through the cascade would render an app-wide action
- * default at the bottom of every flat panel.
+ * Resolution of an omitted optional query. A host without the outlet must
+ * not resolve the `templates.<slot>` config default either: flat variants
+ * wire no action query, so an app-wide `templates.action` would otherwise
+ * render at the bottom of every flat panel, and the same holds for the
+ * option-loop and placeholder slots on hosts that never render them.
  */
-const NO_ACTION_TEMPLATE: Signal<TemplateRef<CngxSelectActionContext> | null> = signal(null);
+const NO_TEMPLATE: Signal<null> = signal(null);
 
 const NO_SHEET_HANDLE_DIRECTIVE: Signal<CngxSelectSheetHandle | undefined> = signal(undefined);
 
@@ -135,22 +143,30 @@ export function createTemplateRegistry<T = unknown>(
   queries: CngxSelectTemplateRegistryQueries<T>,
 ): CngxSelectTemplateRegistry<T> {
   return {
-    check: injectResolvedTemplate(queries.check, 'check'),
+    check: queries.check ? injectResolvedTemplate(queries.check, 'check') : NO_TEMPLATE,
     caret: injectResolvedTemplate(queries.caret, 'caret'),
-    optgroup: injectResolvedTemplate(queries.optgroup, 'optgroup'),
-    placeholder: injectResolvedTemplate(queries.placeholder, 'placeholder'),
+    optgroup: queries.optgroup ? injectResolvedTemplate(queries.optgroup, 'optgroup') : NO_TEMPLATE,
+    placeholder: queries.placeholder
+      ? injectResolvedTemplate(queries.placeholder, 'placeholder')
+      : NO_TEMPLATE,
     empty: injectResolvedTemplate(queries.empty, 'empty'),
     loading: injectResolvedTemplate(queries.loading, 'loading'),
-    optionLabel: injectResolvedTemplate(queries.optionLabel, 'optionLabel'),
+    optionLabel: queries.optionLabel
+      ? injectResolvedTemplate(queries.optionLabel, 'optionLabel')
+      : NO_TEMPLATE,
     error: injectResolvedTemplate(queries.error, 'error'),
     retryButton: injectResolvedTemplate(queries.retryButton, 'retryButton'),
     loadingGlyph: injectResolvedTemplate(queries.loadingGlyph, 'loadingGlyph'),
     refreshing: injectResolvedTemplate(queries.refreshing, 'refreshing'),
     commitError: injectResolvedTemplate(queries.commitError, 'commitError'),
     clearButton: injectResolvedTemplate(queries.clearButton, 'clearButton'),
-    optionPending: injectResolvedTemplate(queries.optionPending, 'optionPending'),
-    optionError: injectResolvedTemplate(queries.optionError, 'optionError'),
-    action: queries.action ? injectResolvedTemplate(queries.action, 'action') : NO_ACTION_TEMPLATE,
+    optionPending: queries.optionPending
+      ? injectResolvedTemplate(queries.optionPending, 'optionPending')
+      : NO_TEMPLATE,
+    optionError: queries.optionError
+      ? injectResolvedTemplate(queries.optionError, 'optionError')
+      : NO_TEMPLATE,
+    action: queries.action ? injectResolvedTemplate(queries.action, 'action') : NO_TEMPLATE,
     sheetHandle: injectResolvedTemplate(
       queries.sheetHandle ?? NO_SHEET_HANDLE_DIRECTIVE,
       'sheetHandle',

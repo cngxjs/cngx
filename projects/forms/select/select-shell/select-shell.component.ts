@@ -118,17 +118,14 @@ import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { injectResolvedTemplate } from '../shared/internal/resolve-template';
 import {
   CngxSelectCaret,
-  CngxSelectCheck,
   CngxSelectClearButton,
   CngxSelectCommitError,
   CngxSelectEmpty,
   CngxSelectError,
   CngxSelectLoading,
   CngxSelectLoadingGlyph,
-  CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
   CngxSelectSheetHandle,
-  CngxSelectOptionLabel,
   CngxSelectOptionPending,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
@@ -169,9 +166,9 @@ export interface CngxSelectShellChange<T = unknown> {
  * markup.
  *
  * Option rows and group headers are the projected `<cngx-option>` /
- * `<cngx-optgroup>` markup itself, so `cngxSelectCheck`,
- * `cngxSelectOptgroup` and `cngxSelectOptionLabel` are queried for
- * registry parity but render nothing on this host.
+ * `<cngx-optgroup>` markup itself; the option-loop slots
+ * `cngxSelectCheck`, `cngxSelectOptgroup` and `cngxSelectOptionLabel` do
+ * not exist on this host.
  *
  * Every slot below also takes an app-wide default through
  * `CNGX_SELECT_CONFIG.templates` (`withTemplates`); a projected template
@@ -435,11 +432,7 @@ export class CngxSelectShell<T = unknown>
   protected readonly visibleProjectedOptions = this.projectedOptionModel.visibleProjectedOptions;
   protected readonly adItems = this.projectedOptionModel.adItems;
 
-  private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly caretDirective = contentChild<CngxSelectCaret>(CngxSelectCaret);
-  private readonly optgroupDirective = contentChild<CngxSelectOptgroupTemplate<T>>(
-    CngxSelectOptgroupTemplate,
-  );
   private readonly placeholderDirective =
     contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   private readonly emptyDirective = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
@@ -448,8 +441,6 @@ export class CngxSelectShell<T = unknown>
     contentChild<CngxSelectLoadingGlyph>(CngxSelectLoadingGlyph);
   private readonly triggerLabelDirective =
     contentChild<CngxSelectTriggerLabel<T>>(CngxSelectTriggerLabel);
-  private readonly optionLabelDirective =
-    contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
   private readonly retryButtonDirective =
     contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
@@ -466,14 +457,11 @@ export class CngxSelectShell<T = unknown>
   private readonly searchChild = contentChild(CngxSelectSearch);
 
   protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
-    check: this.checkDirective,
     caret: this.caretDirective,
-    optgroup: this.optgroupDirective,
     placeholder: this.placeholderDirective,
     empty: this.emptyDirective,
     loading: this.loadingDirective,
     loadingGlyph: this.loadingGlyphDirective,
-    optionLabel: this.optionLabelDirective,
     error: this.errorDirective,
     retryButton: this.retryButtonDirective,
     refreshing: this.refreshingDirective,

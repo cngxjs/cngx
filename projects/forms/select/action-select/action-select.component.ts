@@ -135,7 +135,6 @@ import {
   CngxSelectSheetHandle,
   CngxSelectOptionLabel,
   CngxSelectOptionPending,
-  CngxSelectPlaceholder,
   CngxSelectRefreshing,
   type CngxSelectInputSlotContext,
 } from '../shared/template-slots';
@@ -177,8 +176,8 @@ export interface CngxActionSelectChange<T = unknown> {
  * through `CNGX_SELECT_CONFIG.templates` (`withTemplates`) via the shared
  * template registry, `cngxSelectAction` included (`templates.action`); a
  * projected template wins, `cngxSelectLoadingGlyph` included. The
- * placeholder is the input's own
- * placeholder text, so `cngxSelectPlaceholder` does not apply.
+ * `placeholder` input is the input's own placeholder text; there is no
+ * placeholder slot.
  *
  * **Mobile sheet.** On a coarse screen narrower than 48rem the panel opens as
  * a modal fullscreen panel with the search input in its header: a
@@ -411,8 +410,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   private readonly optgroupDirective = contentChild<CngxSelectOptgroupTemplate<T>>(
     CngxSelectOptgroupTemplate,
   );
-  private readonly placeholderDirective =
-    contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   private readonly emptyDirective = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
   private readonly loadingGlyphDirective =
@@ -443,7 +440,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     check: this.checkDirective,
     caret: this.caretDirective,
     optgroup: this.optgroupDirective,
-    placeholder: this.placeholderDirective,
     empty: this.emptyDirective,
     loading: this.loadingDirective,
     loadingGlyph: this.loadingGlyphDirective,

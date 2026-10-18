@@ -94,18 +94,13 @@ import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import {
   CngxSelectCaret,
-  CngxSelectCheck,
   CngxSelectClearButton,
   CngxSelectCommitError,
   CngxSelectEmpty,
   CngxSelectError,
   CngxSelectLoading,
   CngxSelectLoadingGlyph,
-  CngxSelectOptgroupTemplate,
-  CngxSelectOptionError,
   CngxSelectSheetHandle,
-  CngxSelectOptionLabel,
-  CngxSelectOptionPending,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
   CngxSelectRetryButton,
@@ -173,9 +168,9 @@ export interface CngxTreeSelectChange<T = unknown> {
  * directive-only. `cngxSelectLoadingGlyph` resolves from the projected
  * directive first and `templates.loadingGlyph` second. Rows and their
  * hard-coded checkbox are replaced through `cngxTreeSelectNode`; the
- * option-level slots `cngxSelectCheck`, `cngxSelectOptgroup`,
+ * option-loop slots `cngxSelectCheck`, `cngxSelectOptgroup`,
  * `cngxSelectOptionLabel`, `cngxSelectOptionPending` and
- * `cngxSelectOptionError` do not apply to the tree.
+ * `cngxSelectOptionError` do not exist on this host.
  *
  * **Mobile sheet.** On a coarse screen narrower than 48rem the panel opens as
  * a modal bottom sheet: a `role="dialog"` named by the field label, with a
@@ -431,12 +426,8 @@ export class CngxTreeSelect<T = unknown>
   readonly commitError = output<unknown>();
   readonly stateChange = output<AsyncStatus>();
 
-  private readonly checkDir = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly placeholderDir = contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   private readonly caretDir = contentChild<CngxSelectCaret>(CngxSelectCaret);
-  private readonly optgroupDir = contentChild<CngxSelectOptgroupTemplate<T>>(
-    CngxSelectOptgroupTemplate,
-  );
   private readonly clearButtonDir = contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly emptyDir = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDir = contentChild<CngxSelectLoading>(CngxSelectLoading);
@@ -446,10 +437,6 @@ export class CngxTreeSelect<T = unknown>
   private readonly retryButtonDir = contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDir = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
   private readonly commitErrorDir = contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
-  private readonly optionLabelDir = contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
-  private readonly optionPendingDir =
-    contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
-  private readonly optionErrorDir = contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
   private readonly sheetHandleDir = contentChild(CngxSelectSheetHandle);
 
   private readonly nodeDir = contentChild<CngxTreeSelectNode<T>>(CngxTreeSelectNode);
@@ -459,30 +446,24 @@ export class CngxTreeSelect<T = unknown>
   );
 
   /**
-   * 13-slot template registry. Drives the `*cngxSelect*` cascade
-   * (instance contentChild → `CNGX_SELECT_CONFIG.templates.*` → null).
-   * Option-loop slots (check, optgroup, optionLabel, optionPending,
-   * optionError) are declared for contract parity but tree-select
-   * doesn't render them; projecting one is silently ignored.
+   * Template registry for the slots the tree renders. Drives the
+   * `*cngxSelect*` cascade (instance contentChild ->
+   * `CNGX_SELECT_CONFIG.templates.*` -> null). The option-loop keys are
+   * omitted, so they resolve to `null` here.
    *
    * @internal
    */
   protected readonly tplRegistry = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
-    check: this.checkDir,
     caret: this.caretDir,
-    optgroup: this.optgroupDir,
     placeholder: this.placeholderDir,
     empty: this.emptyDir,
     loading: this.loadingDir,
     loadingGlyph: this.loadingGlyphDir,
-    optionLabel: this.optionLabelDir,
     error: this.errorDir,
     retryButton: this.retryButtonDir,
     refreshing: this.refreshingDir,
     commitError: this.commitErrorDir,
     clearButton: this.clearButtonDir,
-    optionPending: this.optionPendingDir,
-    optionError: this.optionErrorDir,
     sheetHandle: this.sheetHandleDir,
   });
 
