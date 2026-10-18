@@ -4,6 +4,7 @@ import { CngxFormField, type CngxFieldAccessor } from '@cngx/forms/field';
 import { createMockField } from '@cngx/forms/field/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
 
 import { CngxActionMultiSelect } from '../action-multi-select/action-multi-select.component';
 import { CngxActionSelect } from '../action-select/action-select.component';
@@ -101,6 +102,30 @@ class StateHost {
     name: 'shade',
     invalid: true,
     touched: true,
+  }).accessor;
+}
+
+// A readonly fill select keeps its resting surface on hover, like a readonly
+// fill input; the editable twin proves the hover rule is live.
+@Component({
+  selector: 'cngx-select-skin-readonly-host',
+  standalone: true,
+  imports: [CngxSelect, CngxFormField],
+  template: `
+    <div style="display: grid; line-height: 1.5">
+      <cngx-select class="editable" skin="fill" [label]="'Colour'" [options]="options" />
+      <cngx-form-field [field]="readonlyField">
+        <cngx-select class="readonly" skin="fill" [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
+    </div>
+  `,
+  styleUrls: ['../../theming/components/cngx-field-skin.css'],
+})
+class ReadonlyHost {
+  readonly options = OPTIONS;
+  readonly readonlyField: CngxFieldAccessor = createMockField({
+    name: 'colour',
+    readonly: true,
   }).accessor;
 }
 
@@ -389,6 +414,21 @@ describe('select-family field skins', () => {
       expect(el.getBoundingClientRect().height).toBeCloseTo(boxHeight(el), 0);
     },
   );
+
+  it('keeps the resting background when a readonly fill trigger is hovered', async () => {
+    const root = mount(ReadonlyHost);
+    const editable = trigger(root, '.editable');
+    const readonly = trigger(root, '.readonly');
+    expect(root.querySelector('.readonly')?.getAttribute('aria-readonly')).toBe('true');
+    const editableRest = computedValue(editable, 'background-color');
+    const readonlyRest = computedValue(readonly, 'background-color');
+
+    await userEvent.hover(editable);
+    expect(computedValue(editable, 'background-color')).not.toBe(editableRest);
+
+    await userEvent.hover(readonly);
+    expect(computedValue(readonly, 'background-color')).toBe(readonlyRest);
+  });
 
   it('dashes the underline when the inner combobox input is disabled', () => {
     const el = trigger(mount(StateHost), '.off');
