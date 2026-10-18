@@ -345,6 +345,7 @@ describe('appShellOf outlets', () => {
   it.each([
     ['a spread', '  ...BASE,\n', 'decorator-dynamic'],
     ['a computed key', "  ['imports']: [RouterOutlet],\n", 'decorator-dynamic'],
+    ['a numeric key', '  imports: [RouterOutlet],\n  1: true,\n', 'decorator-dynamic'],
     ['imports written twice', '  imports: [RouterOutlet],\n  imports: [],\n', 'duplicate-property'],
     ['a shorthand imports', '  imports,\n', 'imports-not-array'],
     ['an identifier imports', '  imports: IMPORTS,\n', 'imports-not-array'],

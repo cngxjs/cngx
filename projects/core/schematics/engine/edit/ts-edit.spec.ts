@@ -705,6 +705,7 @@ describe('decorator properties, one lookup for readers and editors', () => {
   it.each([
     ['a spread', '  ...BASE,\n'],
     ['a computed key', "  ['imports']: [RouterOutlet],\n"],
+    ['a numeric key', '  imports: [RouterOutlet],\n  1: true,\n'],
     ['a shorthand imports', '  imports,\n'],
     ['an identifier imports', '  imports: IMPORTS,\n'],
     ['imports written twice', '  imports: [RouterOutlet],\n  imports: [],\n'],

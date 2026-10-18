@@ -238,7 +238,7 @@ and `<file>`:
 - `the @NgModule decorator of <Class> in <file> lists no bootstrap component`: `bootstrap: [App]` is missing or not an array literal.
 - `<Class> in <file> has no @Component decorator`: the root component carries no `@Component(...)`, for example one called through a namespace (`@core.Component`).
 - `the decorator of <Class> in <file> takes no object literal`: the decorator takes a variable or a call.
-- `the decorator of <Class> in <file> holds a spread or a computed key, so cngx cannot tell what it sets`: `...shared` or `['imports']` in the decorator object.
+- `the decorator of <Class> in <file> holds a spread, a computed key or a numeric key, so cngx cannot tell what it sets`: `...shared`, `['imports']` or `1: true` in the decorator object.
 - `the decorator of <Class> in <file> is written twice or sets a property more than once`: two `@Component` or `@NgModule` decorators, or a key such as `imports` written twice.
 - `the @Component decorator of <Class> in <file> sets neither template nor templateUrl`.
 - `the @Component decorator of <Class> in <file> sets both template and templateUrl`.

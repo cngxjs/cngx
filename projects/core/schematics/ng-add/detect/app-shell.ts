@@ -70,7 +70,7 @@ export const APP_SHELL_BLOCKED_REASONS = {
   'no-component-decorator': ({ subject, file }: BlockedAt) => `${subject} in ${file} has no @Component decorator`,
   'decorator-not-object': ({ subject, file }: BlockedAt) => `the decorator of ${subject} in ${file} takes no object literal`,
   'decorator-dynamic': ({ subject, file }: BlockedAt) =>
-    `the decorator of ${subject} in ${file} holds a spread or a computed key, so cngx cannot tell what it sets`,
+    `the decorator of ${subject} in ${file} holds a spread, a computed key or a numeric key, so cngx cannot tell what it sets`,
   'duplicate-property': ({ subject, file }: BlockedAt) =>
     `the decorator of ${subject} in ${file} is written twice or sets a property more than once`,
   'no-template': ({ subject, file }: BlockedAt) =>

@@ -193,15 +193,16 @@ function propertyName(selector: PropertyArraySelector): string {
 
 // What an object literal holds under one name, read the same way by every
 // reader and editor here: a key is an identifier or a string literal. A
-// spread or a computed key hides what the object sets, and a key written
-// twice leaves which one counts to the compiler, so both make the object
+// spread or a computed key hides what the object sets, a numeric key is
+// spelled in more than one way (`1`, `1.0`, `0x1`), and a key written twice
+// leaves which one counts to the compiler, so each makes the object
 // unreadable and nothing reads or writes it.
 type PropertyLookup =
   | { readonly kind: 'missing' }
   | { readonly kind: 'found'; readonly property: ts.ObjectLiteralElementLike }
   | { readonly kind: 'unreadable'; readonly cause: UnreadableCause };
 
-/** Why cngx does not read an object literal: a spread or computed key, or a key written twice. */
+/** Why cngx does not read an object literal: a spread, a computed or numeric key, or a key written twice. */
 export type UnreadableCause = 'dynamic' | 'duplicate';
 
 function staticKey(property: ts.ObjectLiteralElementLike): string | undefined {
@@ -277,9 +278,10 @@ export function hasArrayElement(content: string, selector: ArraySelector, name: 
  * `addToArrayLiteral` has an array to fill. The content is returned
  * unchanged when the property exists, also as something other than an array
  * literal (`hasArrayLiteral` then stays false and the caller reports it),
- * when the object holds a spread, a computed key or a key written twice, or
- * when there is no such object. The new property goes after the last one, on
- * its own line in a multi-line object, keeping a trailing comma style.
+ * when the object holds a spread, a computed or numeric key or a key
+ * written twice, or when there is no such object. The new property goes
+ * after the last one, on its own line in a multi-line object, keeping a
+ * trailing comma style.
  */
 export function ensureArrayProperty(content: string, selector: PropertyArraySelector): string {
   const source = parse(content);
@@ -378,9 +380,10 @@ export type DecoratorValue =
  * The `@<decorator>(...)` on the top-level `class <className>`: `absent`
  * without that class or decorator, `no-object` when its argument is not an
  * object literal, `unreadable` when the class carries more than one of
- * `@Component` / `@NgModule` or the object holds a spread, a computed key or
- * a key written twice, else the object's properties by name (identifier
- * and string-literal keys alike, a shorthand or method property as `other`).
+ * `@Component` / `@NgModule` or the object holds a spread, a computed or
+ * numeric key or a key written twice, else the object's properties by name
+ * (identifier and string-literal keys alike, a shorthand or method property
+ * as `other`).
  */
 export type DecoratorReading =
   | { readonly kind: 'absent' }
