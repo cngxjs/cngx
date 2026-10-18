@@ -55,7 +55,7 @@ per-instance or globally via `--cngx-mat-tab-error-*`:
 |-|-|-|
 | `--cngx-mat-tab-error-color`          | `var(--mat-sys-error, #c62828)` | Foreground / outline colour      |
 | `--cngx-mat-tab-error-outline`        | `2px solid currentColor`        | Full `outline` shorthand         |
-| `--cngx-mat-tab-error-outline-offset` | `1px`                           | Gap between outline and tab edge |
+| `--cngx-mat-tab-error-outline-offset` | `-2px`                          | Outline inset; negative so the clipped label container keeps every edge |
 | `--cngx-mat-tab-error-font-weight`    | `600`                           | Label-glyph weight bump          |
 
 Three-tier fallback: consumer override → Material design token →
