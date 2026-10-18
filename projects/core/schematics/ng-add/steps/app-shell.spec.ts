@@ -336,18 +336,53 @@ describe('planAppShell', () => {
 });
 
 describe('planAppShellCheck', () => {
+  const UPDATE = createProvenance('ng-update', '0.1.0');
+
   it('notes a missing outlet of a recorded feedback install and writes nothing', async () => {
     const { facts } = await factsOf('scaffold-21');
-    const result = planAppShellCheck(facts, FEEDBACK, createProvenance('ng-update', '0.1.0'));
+    const result = planAppShellCheck(facts, FEEDBACK, [], UPDATE);
 
-    expect(result.changes).toMatchObject([{ kind: 'note', id: OUTLETS_ID, label: 'Place the toast and banner outlets (not in place)' }]);
+    expect(result.changes).toMatchObject([
+      {
+        kind: 'note',
+        id: OUTLETS_ID,
+        label: 'Place the toast and banner outlets (not in place)',
+        reason: `the recorded install provides feedback but the root template lacks an outlet; ${OUTLETS_SNIPPET}`,
+      },
+    ]);
+  });
+
+  it('names why the shell cannot be followed or edited', async () => {
+    const shared = await factsOf('scaffold-21', {
+      'src/app/app.ts': readFixture('scaffold-21')['src/app/app.ts'].replace('imports: [RouterOutlet],', 'imports: SHARED,'),
+    });
+
+    expect(planAppShellCheck(createFacts({ appShell: undefined }), FEEDBACK, [], UPDATE).changes).toMatchObject([
+      { kind: 'note', id: OUTLETS_ID, reason: `cngx could not follow main.ts to the root component; ${OUTLETS_SNIPPET}` },
+    ]);
+    expect(planAppShellCheck(shared.facts, FEEDBACK, [OUTLETS_ID], UPDATE).changes).toMatchObject([
+      { kind: 'note', id: OUTLETS_ID, reason: `the imports of App in src/app/app.ts are not an array literal; ${OUTLETS_SNIPPET}` },
+    ]);
+  });
+
+  it('asks for no outlet this project placed and the user removed since', async () => {
+    const { facts, files } = await factsOf('scaffold-21');
+    const once = applied(plan(facts), files);
+    const removed = await factsOf('scaffold-21', {
+      ...once,
+      'src/app/app.html': once['src/app/app.html'].replace('<cngx-toast-outlet />\n', ''),
+    });
+
+    expect(planAppShellCheck(removed.facts, FEEDBACK, [OUTLETS_ID, OUTLETS_ID, SPEC_ID], UPDATE)).toEqual({ changes: [], skipped: [] });
+    expect(planAppShellCheck(removed.facts, FEEDBACK, [SPEC_ID], UPDATE).changes).toHaveLength(1);
   });
 
   it('plans nothing when both outlets are there or feedback is off', async () => {
     const { facts, files } = await factsOf('scaffold-21');
     const { facts: placed } = await factsOf('scaffold-21', applied(plan(facts), files));
 
-    expect(planAppShellCheck(placed, FEEDBACK, PROVENANCE)).toEqual({ changes: [], skipped: [] });
-    expect(planAppShellCheck(facts, createAnswers(), PROVENANCE)).toEqual({ changes: [], skipped: [] });
+    expect(planAppShellCheck(placed, FEEDBACK, [], UPDATE)).toEqual({ changes: [], skipped: [] });
+    expect(planAppShellCheck(facts, createAnswers(), [], UPDATE)).toEqual({ changes: [], skipped: [] });
+    expect(planAppShellCheck(createFacts({ appShell: undefined }), createAnswers(), [], UPDATE)).toEqual({ changes: [], skipped: [] });
   });
 });

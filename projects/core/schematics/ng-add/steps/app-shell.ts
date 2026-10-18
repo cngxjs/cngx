@@ -35,6 +35,7 @@ const BANNER = FEEDBACK_OUTLETS[0];
 const TOAST = FEEDBACK_OUTLETS[1];
 const OUTLET_REASON = 'CngxToaster and CngxBanner render nowhere without them';
 const WITHDRAWN_REASON = 'the outlets were removed after cngx placed them; pass --feedback to place them again';
+const UNFOLLOWED_REASON = 'cngx could not follow main.ts to the root component';
 const TESTBED = { kind: 'testbed-providers' } as const;
 
 /** What to paste when cngx cannot place the outlets itself. */
@@ -228,7 +229,7 @@ export function planAppShell(
   }
   const shell = facts.appShell;
   if (shell === undefined) {
-    return snippetNote('cngx could not follow main.ts to the root component', provenance);
+    return snippetNote(UNFOLLOWED_REASON, provenance);
   }
   if (shell.outlets.kind === 'blocked') {
     return snippetNote(shell.outlets.reason, provenance);
@@ -256,18 +257,42 @@ export function planAppShell(
   return { changes: [...changes, ...spec.changes], skipped: [...skipped, ...spec.skipped] };
 }
 
+// Why `ng update` reports the outlets: the shell cannot be followed or
+// edited, or an outlet is missing that this project's record never placed.
+// One the record placed and that is gone now was withdrawn (A11) and is not
+// asked for again.
+function missingOutletsReason(shell: AppShell | undefined, recorded: readonly string[]): string | undefined {
+  if (shell === undefined) {
+    return UNFOLLOWED_REASON;
+  }
+  if (shell.outlets.kind === 'blocked') {
+    return shell.outlets.reason;
+  }
+  const missing = shell.outlets.elements.length < FEEDBACK_OUTLETS.length;
+  if (!missing || recorded.includes(OUTLETS_ID)) {
+    return undefined;
+  }
+  return 'the recorded install provides feedback but the root template lacks an outlet';
+}
+
 /**
  * What `ng update` does with the outlets of a recorded feedback install: a
- * note with the snippet when one is missing, never a write, the same policy
- * as every other step it re-checks.
+ * note with the snippet and the reason when an outlet is missing or the
+ * shell cannot be edited, never a write, the same policy as every other step
+ * it re-checks. `recorded` holds the step ids of this project's record; an
+ * outlet it placed that is gone now was removed on purpose and gets no note.
  */
-export function planAppShellCheck(facts: ProjectFacts, answers: OnboardingAnswers, provenance: Provenance): StepResult {
-  const outlets = facts.appShell?.outlets;
-  if (!answers.feedback || !selectedLibs(answers.libs).includes('ui') || outlets === undefined) {
+export function planAppShellCheck(
+  facts: ProjectFacts,
+  answers: OnboardingAnswers,
+  recorded: readonly string[],
+  provenance: Provenance,
+): StepResult {
+  if (!answers.feedback || !selectedLibs(answers.libs).includes('ui')) {
     return NOTHING;
   }
-  const missing = outlets.kind === 'blocked' || outlets.elements.length < FEEDBACK_OUTLETS.length;
-  if (!missing) {
+  const reason = missingOutletsReason(facts.appShell, recorded);
+  if (reason === undefined) {
     return NOTHING;
   }
   return {
@@ -275,7 +300,7 @@ export function planAppShellCheck(facts: ProjectFacts, answers: OnboardingAnswer
       createNote({
         id: OUTLETS_ID,
         label: 'Place the toast and banner outlets (not in place)',
-        reason: `the recorded install provides feedback but the root template lacks an outlet; ${OUTLETS_SNIPPET}`,
+        reason: `${reason}; ${OUTLETS_SNIPPET}`,
         provenance,
       }),
     ],
