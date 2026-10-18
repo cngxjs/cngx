@@ -28,12 +28,29 @@ export const STORY: DemoSpec = {
     { id: 'follow-up', label: 'Follow-up' },
     { id: 'on-hold', label: 'On hold' },
   ];
+  protected readonly tasks: readonly unknown[] = [
+    { title: 'Fix login timeout', tags: ['urgent', 'blocker'] },
+    { title: 'Proofread release notes', tags: ['review'] },
+    { title: 'Update API docs', tags: ['follow-up'] },
+    { title: 'Migrate CI runners', tags: ['on-hold', 'blocker'] },
+    { title: 'Plan Q4 roadmap', tags: ['follow-up', 'on-hold'] },
+  ];
   protected readonly tagLabel = (t: unknown): string =>
     (t as { readonly label: string }).label;
   protected readonly tagId = (t: unknown): string =>
     (t as { readonly id: string }).id;
-  protected readonly visibleTags = (predicate: ((t: unknown) => boolean) | null): readonly unknown[] =>
-    predicate === null ? this.tagItems : this.tagItems.filter(predicate);`,
+  // The list is shaped unlike the chip options: a task carries several tag ids,
+  // and it matches when any of them is selected.
+  protected readonly taskTags = (task: unknown): readonly string[] =>
+    (task as { readonly tags: readonly string[] }).tags;
+  protected readonly taskTitle = (task: unknown): string =>
+    (task as { readonly title: string }).title;
+  protected readonly tagLabels = (task: unknown): string =>
+    this.taskTags(task)
+      .map((id) => this.tagLabel(this.tagItems.find((t) => this.tagId(t) === id)))
+      .join(', ');
+  protected readonly visibleTasks = (predicate: ((t: unknown) => boolean) | null): readonly unknown[] =>
+    predicate === null ? this.tasks : this.tasks.filter(predicate);`,
   template: `
   <ng-container [cngxFilter]="null" #filter="cngxFilter">
     <cngx-filter-chips
@@ -41,17 +58,18 @@ export const STORY: DemoSpec = {
       [options]="tagItems"
       [optionLabel]="tagLabel"
       [optionValue]="tagId"
+      [itemValue]="taskTags"
       [filterRef]="filter"
       filterKey="tags"
     />
     <p role="status" aria-live="polite">
-      Showing {{ visibleTags(filter.predicate()).length }} of {{ tagItems.length }} tags
+      Showing {{ visibleTasks(filter.predicate()).length }} of {{ tasks.length }} tasks
     </p>
     <ul aria-label="Tagged items">
-      @for (item of visibleTags(filter.predicate()); track tagId(item)) {
+      @for (task of visibleTasks(filter.predicate()); track taskTitle(task)) {
         <li>
-          <strong>{{ tagLabel(item) }}</strong>
-          (id: <code>{{ tagId(item) }}</code>)
+          <strong>{{ taskTitle(task) }}</strong>
+          ({{ tagLabels(task) }})
         </li>
       }
     </ul>

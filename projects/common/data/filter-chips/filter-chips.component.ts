@@ -191,12 +191,24 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
     </cngx-multi-chip-group>
   `,
 })
-export class CngxFilterChips<TItem = unknown, TValue = unknown> {
+export class CngxFilterChips<TItem = unknown, TValue = unknown, TListItem = TItem> {
   readonly label = input.required<string>();
   readonly options = input.required<readonly TItem[]>();
   readonly optionLabel = input.required<(item: TItem) => string>();
   readonly optionValue = input.required<(item: TItem) => TValue>();
-  readonly filterRef = input.required<CngxFilter<TItem>>();
+  readonly filterRef = input.required<CngxFilter<TListItem>>();
+
+  /**
+   * Extracts the comparable value from a filtered list item, when the list
+   * is shaped unlike the chip options: role options `{ id, label }` filtering
+   * an employee list by `employee.roleId`. Return an array for an item that
+   * carries several values (`employee.tags`); it matches when any of them is
+   * selected. Unbound, the predicate applies `optionValue` to the list items,
+   * which fits a list shaped like the options.
+   */
+  readonly itemValue = input<((item: TListItem) => TValue | readonly TValue[]) | undefined>(
+    undefined,
+  );
   readonly filterKey = input.required<string>();
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
@@ -239,14 +251,14 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown> {
   /**
    * Build the slot context for a given chip option. `optionValue` is
    * invoked here per option for the chip rendering pass; the predicate
-   * closure invokes it again per LIST item for membership filtering.
-   * Both invocations are necessary because option items (the chip
-   * pool) and filtered list items (the consumer's filtered data) are
-   * separate data paths - they happen to share a shape under the
-   * Phase-5 single-shape limitation, but the bridge cannot memoise
-   * across the two paths without conflating them. Consumers should
-   * keep `optionValue` cheap (typically a property lookup); a future
-   * `[itemValue]` input will separate the two extractors.
+   * closure invokes it again per LIST item for membership filtering
+   * while `[itemValue]` is unbound. Both invocations are necessary
+   * because option items (the chip pool) and filtered list items (the
+   * consumer's filtered data) are separate data paths - they share a
+   * shape only when `[itemValue]` is unbound, and the bridge cannot
+   * memoise across the two paths without conflating them. Consumers
+   * should keep `optionValue` cheap (typically a property lookup); bind
+   * `[itemValue]` when the list is shaped unlike the options.
    */
   protected readonly chipContext = (option: TItem): CngxFilterChipContext<TItem, TValue> => {
     const value = this.optionValue()(option);
@@ -268,14 +280,24 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown> {
   readonly selectedValues = model<TValue[]>([]);
 
   constructor() {
-    const predicateFn = (item: TItem): boolean => {
+    const predicateFn = (item: TListItem): boolean => {
       const values = this.selectedValues();
       if (values.length === 0) {
         return true;
       }
       const extract = this.keyFn();
-      const key = extract(this.optionValue()(item));
-      return values.some((v) => Object.is(extract(v), key));
+      // Without [itemValue] the list is shaped like the options, which is
+      // what the `TListItem = TItem` default expresses.
+      const extractItem =
+        this.itemValue() ?? (this.optionValue() as unknown as (item: TListItem) => TValue);
+      const itemValues = extractItem(item);
+      const keys = Array.isArray(itemValues)
+        ? (itemValues as readonly TValue[]).map(extract)
+        : [extract(itemValues as TValue)];
+      return values.some((v) => {
+        const selected = extract(v);
+        return keys.some((key) => Object.is(selected, key));
+      });
     };
 
     // Binding effect: tracks only filterRef/filterKey, so a rebind moves the

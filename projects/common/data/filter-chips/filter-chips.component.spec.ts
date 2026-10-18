@@ -405,4 +405,93 @@ describe('CngxFilterChips', () => {
     const otherRefreshed: OptionRow = { tag: { id: 'b', label: 'B' } };
     expect(pred!(otherRefreshed)).toBe(false);
   });
+
+  describe('[itemValue] - a filtered list shaped unlike the options', () => {
+    interface Role {
+      readonly id: string;
+      readonly label: string;
+    }
+    interface Employee {
+      readonly name: string;
+      readonly roleId: string;
+      readonly tags: readonly string[];
+    }
+    const ROLES: readonly Role[] = [
+      { id: 'dev', label: 'Developer' },
+      { id: 'ops', label: 'Operations' },
+    ];
+    const ADA: Employee = { name: 'Ada', roleId: 'dev', tags: ['dev', 'lead'] };
+    const BOB: Employee = { name: 'Bob', roleId: 'ops', tags: ['ops'] };
+    const CY: Employee = { name: 'Cy', roleId: 'ops', tags: ['dev', 'ops'] };
+
+    @Component({
+      template: `
+        <ng-container [cngxFilter]="null" #filter="cngxFilter">
+          <cngx-filter-chips
+            label="Roles"
+            [options]="roles"
+            [optionLabel]="byLabel"
+            [optionValue]="byId"
+            [itemValue]="itemValue"
+            [filterRef]="filter"
+            filterKey="roles"
+          />
+        </ng-container>
+      `,
+      imports: [CngxFilter, CngxFilterChips],
+    })
+    class ItemValueHost {
+      readonly roles: readonly unknown[] = ROLES;
+      readonly byLabel = (r: unknown): string => (r as Role).label;
+      readonly byId = (r: unknown): string => (r as Role).id;
+      itemValue: (e: unknown) => string | readonly string[] = (e) => (e as Employee).roleId;
+      @ViewChild('filter', { static: true }) filterRef!: CngxFilter<unknown>;
+    }
+
+    async function mountItemValue(
+      itemValue?: (e: unknown) => string | readonly string[],
+    ): Promise<{ bridge: CngxFilterChips<unknown, string>; filter: CngxFilter<unknown> }> {
+      const fixture = TestBed.createComponent(ItemValueHost);
+      if (itemValue) {
+        fixture.componentInstance.itemValue = itemValue;
+      }
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const bridge = fixture.debugElement
+        .query(By.directive(CngxFilterChips))
+        .injector.get(CngxFilterChips) as CngxFilterChips<unknown, string>;
+      return { bridge, filter: fixture.componentInstance.filterRef };
+    }
+
+    it('filters a list shaped unlike the options through [itemValue]', async () => {
+      const { bridge, filter } = await mountItemValue();
+      bridge.selectedValues.set(['dev']);
+
+      const pred = filter.predicate()!;
+      expect(pred(ADA)).toBe(true);
+      expect(pred(BOB)).toBe(false);
+      expect(pred(CY)).toBe(false);
+    });
+
+    it('matches any-of when itemValue returns an array', async () => {
+      const { bridge, filter } = await mountItemValue((e) => (e as Employee).tags);
+      bridge.selectedValues.set(['dev']);
+
+      const pred = filter.predicate()!;
+      expect(pred(ADA)).toBe(true);
+      expect(pred(BOB)).toBe(false);
+      expect(pred(CY)).toBe(true);
+    });
+  });
+
+  it('without [itemValue] the predicate uses optionValue', async () => {
+    const { fixture, bridge, filter } = await setup();
+    bridge.selectedValues.set(['green']);
+    fixture.detectChanges();
+
+    const pred = filter.predicate()!;
+    expect(pred(TAGS[1])).toBe(true);
+    expect(pred(TAGS[0])).toBe(false);
+  });
 });
