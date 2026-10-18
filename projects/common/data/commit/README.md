@@ -126,7 +126,7 @@ interface CngxTransitionOutcome {
 }
 ```
 
-The record a commit-gated host (stepper, tabs) keeps of the last transition that did not land. `index` is the position it rolled back to; `sequence` is bumped once per settled refusal or failure, so two equal outcomes in a row are still two events.
+The record a commit-gated host (the stepper) keeps of the last transition that did not land. `index` is the target the transition was refused or failed for (the position the user did not reach); `sequence` is bumped once per settled refusal or failure, so two equal outcomes in a row are still two events.
 
 ## DI override: `CNGX_COMMIT_CONTROLLER_FACTORY`
 

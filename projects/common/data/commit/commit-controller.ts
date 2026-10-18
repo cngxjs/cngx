@@ -44,7 +44,7 @@ export type CngxCommitRunner<T> = (handlers: {
  * invokes exactly one of `onSuccess` / `onError` / `onRefused` per
  * commit lifecycle (unless the commit is superseded, in which case none
  * fires). `onRefused` is optional because only families whose action can
- * refuse (stepper, tabs) route it; when it is omitted a refusal still
+ * refuse (the stepper) route it; when it is omitted a refusal still
  * settles the state slot.
  *
  * @category common/data/commit
