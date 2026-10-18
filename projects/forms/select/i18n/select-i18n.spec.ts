@@ -67,6 +67,12 @@ describe('select language section', () => {
     expect(stripBidiIsolates(aria.commitFailedMessage('Colours', undefined))).toBe(
       'Colours: Save failed',
     );
+    expect(stripBidiIsolates(aria.createFailedMessage('Colours', 'Teal', 'server down'))).toBe(
+      'Colours: Could not create Teal - server down',
+    );
+    expect(stripBidiIsolates(aria.createFailedMessage('Colours', 'Teal', undefined))).toBe(
+      'Colours: Could not create Teal',
+    );
 
     const fallback = config.fallbackLabels();
     expect(fallback.loading).toBe('Loading…');

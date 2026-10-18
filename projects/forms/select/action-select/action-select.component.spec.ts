@@ -5,6 +5,8 @@ import { Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CngxSelectAction } from '../shared/template-slots';
+import { CngxSelectAnnouncer } from '../shared/announcer';
+import { stripBidiIsolates } from '@cngx/testing';
 import { CngxActionSelect, type CngxActionSelectChange } from './action-select.component';
 import type { CngxSelectCreateAction } from '../shared/create-action.types';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../shared/option.model';
@@ -306,6 +308,40 @@ describe('CngxActionSelect - async + error flow', () => {
     flush(fixture);
     expect(host.stateLog).toEqual(['pending', 'success']);
     expect(select.value()?.id).toBe('p');
+  });
+
+  it('announces a failed quick-create, marks the trigger invalid and describes it', () => {
+    const { fixture, host, select } = setup();
+    const announce = vi
+      .spyOn(TestBed.inject(CngxSelectAnnouncer), 'announce')
+      .mockImplementation(() => undefined);
+    host.quickCreateAction.set(() => {
+      throw new Error('server down');
+    });
+    flush(fixture);
+    select.actionCallbacks().commit({ label: 'Purple' });
+    flush(fixture);
+    fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('[role="combobox"]') as HTMLElement;
+    expect(announce.mock.calls.map(([m, p]) => [stripBidiIsolates(m), p])).toContainEqual([
+      'Tag: Could not create Purple - server down',
+      'assertive',
+    ]);
+    expect(trigger.getAttribute('aria-invalid')).toBe('true');
+    const ref = trigger.getAttribute('aria-errormessage');
+    expect(ref).not.toBeNull();
+    expect(stripBidiIsolates(document.getElementById(ref!)?.textContent ?? '')).toContain(
+      'Could not create Purple',
+    );
+
+    host.quickCreateAction.set(() => ({ id: 'p', name: 'Purple' }));
+    flush(fixture);
+    select.actionCallbacks().commit({ label: 'Purple' });
+    flush(fixture);
+    fixture.detectChanges();
+    expect(trigger.getAttribute('aria-invalid')).toBeNull();
+    expect(trigger.getAttribute('aria-errormessage')).toBeNull();
+    announce.mockRestore();
   });
 
   it('drops a quick-create that settles after the select is destroyed', () => {

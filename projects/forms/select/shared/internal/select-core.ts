@@ -136,6 +136,14 @@ export interface CngxSelectCoreDeps<T, TCommit> {
 
   /** Resolved sheet presentation. The trigger-width rule only applies while `'anchored'`. */
   readonly presentation?: Signal<CngxPopoverPresentation>;
+
+  /**
+   * Message of a failed quick-create (action variants), `null` while none
+   * shows. Marks the trigger invalid and fills the commit-error node, but
+   * never drives `showCommitError`: the banner's Retry replays the select
+   * commit, not the create.
+   */
+  readonly createErrorMessage?: Signal<string | null>;
 }
 
 /**
@@ -248,6 +256,8 @@ export interface CngxSelectCore<T, TCommit> {
   isCommittingOption(opt: CngxSelectOptionDef<T>): boolean;
   findOption(value: T): CngxSelectOptionDef<T> | null;
   commitErrorMessage(err: unknown): string;
+  /** Failed quick-create sentence for the draft label `option`. */
+  createFailedMessage(option: string, err: unknown): string;
   /**
    * Bound `isGroup`/`isSelected`/`isIndeterminate`/`isCommittingOption`
    * for spreading into a variant's `CngxSelectPanelHost`. Stable
@@ -336,7 +346,7 @@ export function createSelectCore<T, TCommit>(
     labelledByOverride: deps.ariaLabelledBy,
     localDisabled: deps.disabledInput,
     localRequired: deps.requiredInput,
-    localInvalid: showCommitError,
+    localInvalid: () => showCommitError() || (deps.createErrorMessage?.() ?? null) !== null,
     localBusy: () => {
       const s = deps.state();
       if (s && (s.isLoading() || s.isPending() || s.isRefreshing())) {
@@ -603,17 +613,19 @@ export function createSelectCore<T, TCommit>(
   // single-IDREF aria-errormessage; the commit error then rides on
   // aria-describedby.
   const commitErrorId = nextUid('cngx-select-commit-error');
-  const commitErrorText = computed<string>(() =>
-    showCommitError() ? commitErrorMessage(commitState.error()) : '',
-  );
+  const commitErrorText = computed<string>(() => {
+    const select = showCommitError() ? commitErrorMessage(commitState.error()) : null;
+    return [select, deps.createErrorMessage?.() ?? null].filter(Boolean).join(' ');
+  });
+  const commitErrorShown = computed<boolean>(() => commitErrorText() !== '');
   const describedBy = computed<string | null>(() => {
-    const commitRef = showCommitError() ? commitErrorId : null;
+    const commitRef = commitErrorShown() ? commitErrorId : null;
     return [fieldAria.describedBy(), commitRef].filter(Boolean).join(' ') || null;
   });
   const ariaInvalid = fieldAria.ariaInvalid;
   const ariaReadonly = fieldAria.ariaReadonly;
   const ariaErrorMessage = computed<string | null>(
-    () => fieldAria.ariaErrorMessage() ?? (showCommitError() ? commitErrorId : null),
+    () => fieldAria.ariaErrorMessage() ?? (commitErrorShown() ? commitErrorId : null),
   );
   const ariaBusy = fieldAria.ariaBusy;
 
@@ -713,19 +725,26 @@ export function createSelectCore<T, TCommit>(
   // Read untracked by the commit-error announcer, so a language flip never
   // re-runs the effect that announced it.
   function commitErrorMessage(err: unknown): string {
-    const label = deps.label();
-    const aria = deps.ariaLabel();
-    const fieldFallback = config.ariaLabels().fieldLabelFallback;
-    const failedMessage = config.ariaLabels().commitFailedMessage;
-    // An empty aria-label names nothing: same rule as `announce`.
-    let labelText = fieldFallback;
-    if (label !== '') {
-      labelText = label;
-    } else if (aria && aria.length > 0) {
-      labelText = aria;
-    }
     const detail = err instanceof Error ? err.message : undefined;
-    return failedMessage(labelText, detail);
+    return config.ariaLabels().commitFailedMessage(failureLabelText(), detail);
+  }
+
+  function createFailedMessage(option: string, err: unknown): string {
+    const detail = err instanceof Error ? err.message : undefined;
+    return config.ariaLabels().createFailedMessage(failureLabelText(), option, detail);
+  }
+
+  // An empty aria-label names nothing: same rule as `announce`.
+  function failureLabelText(): string {
+    const label = deps.label();
+    if (label !== '') {
+      return label;
+    }
+    const aria = deps.ariaLabel();
+    if (aria && aria.length > 0) {
+      return aria;
+    }
+    return config.ariaLabels().fieldLabelFallback;
   }
 
   // Stable identities for the core's lifetime. Adapter unwraps
@@ -824,6 +843,7 @@ export function createSelectCore<T, TCommit>(
     isCommittingOption,
     findOption,
     commitErrorMessage,
+    createFailedMessage,
     announce,
     panelHostAdapter,
   };

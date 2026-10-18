@@ -574,6 +574,18 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
    */
   private readonly createCommitController = inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY)<T>();
 
+  /** Draft label of the last dispatched quick-create; names it in the failure copy. */
+  private readonly lastCreateLabel = signal('');
+
+  /** Failure sentence of the last quick-create while it is in error, else `null`. */
+  private readonly createErrorMessage = computed<string | null>(() => {
+    const state = this.createCommitController.state;
+    if (state.status() !== 'error') {
+      return null;
+    }
+    return this.core.createFailedMessage(this.lastCreateLabel(), state.error());
+  });
+
   /** @internal */
   private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
     close: () => this.close(),
@@ -639,6 +651,8 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       presentationInput: this.presentation,
       // Lazy: the wiring is built from the core right below.
       presentation: computed<CngxPopoverPresentation>(() => this.sheetWiring.presentation()),
+      // Lazy: the create controller is built below the core.
+      createErrorMessage: computed<string | null>(() => this.createErrorMessage()),
     },
     {
       announceChanges: this.announceChanges,
@@ -854,6 +868,21 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   private readonly hasEmittedInitial = signal(false);
 
   private readonly commitErrorAnnouncer = inject(CngxSelectAnnouncer);
+  /** A rejected quick-create is spoken assertively, whatever the select's own policy. */
+  private readonly announceCreateError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
+    deps: {
+      announcer: this.commitErrorAnnouncer,
+      commitErrorMessage: (err) => this.core.createFailedMessage(this.lastCreateLabel(), err),
+      softAnnounce: (opt, action) =>
+        this.core.announce(
+          opt as CngxSelectOptionDef<T> | null,
+          action,
+          this.values().length,
+          true,
+        ),
+    },
+    policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'verbose', severity: 'assertive' }),
+  });
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
     deps: {
       announcer: this.commitErrorAnnouncer,
@@ -933,7 +962,10 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       this.core.announce(option, 'created', this.values().length, true);
     },
     onStateChange: (status) => this.stateChange.emit(status),
-    onError: (err) => this.commitError.emit(err),
+    onError: (err) => {
+      this.announceCreateError(err);
+      this.commitError.emit(err);
+    },
     onClose: () => this.close(),
     onResetDirty: () => this.actionBridge.reset(),
   });
@@ -1078,7 +1110,10 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     liveInputFallback: this.liveInputFallback,
     hasQuickCreateAction: () => this.quickCreateAction() !== null,
     snapshotPrevious: () => [...this.values()],
-    dispatch: (draft, term, previous) => this.createHandler.dispatch(draft, term, previous),
+    dispatch: (draft, term, previous) => {
+      this.lastCreateLabel.set(draft.label);
+      this.createHandler.dispatch(draft, term, previous);
+    },
   });
 
   /** @internal - Enter-to-quick-create, tag-input UX: type, Enter, chip appears. */

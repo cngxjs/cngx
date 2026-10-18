@@ -103,6 +103,10 @@ export function selectCopyFrom(section: CngxSelectLanguageSection, locale: strin
         detail
           ? formatMessage(section.commitFailedAnnouncementDetail, { label, detail }, locale)
           : formatMessage(section.commitFailedAnnouncement, { label }, locale),
+      createFailedMessage: (label, option, detail) =>
+        detail
+          ? formatMessage(section.createFailedAnnouncementDetail, { label, option, detail }, locale)
+          : formatMessage(section.createFailedAnnouncement, { label, option }, locale),
       searchInput: section.searchInput,
       listboxFallback: section.listboxFallback,
       sheetClose: section.sheetClose,

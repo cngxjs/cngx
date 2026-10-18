@@ -11,6 +11,7 @@ import {
   input,
   model,
   output,
+  signal,
   untracked,
   viewChild,
   ElementRef,
@@ -592,6 +593,8 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       presentationInput: this.presentation,
       // Lazy: the wiring is built from the core right below.
       presentation: computed<CngxPopoverPresentation>(() => this.sheetWiring.presentation()),
+      // Lazy: the create controller is built below the core.
+      createErrorMessage: computed<string | null>(() => this.createErrorMessage()),
     },
     {
       announceChanges: this.announceChanges,
@@ -706,6 +709,18 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    */
   private readonly createCommitController = inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY)<T>();
 
+  /** Draft label of the last dispatched quick-create; names it in the failure copy. */
+  private readonly lastCreateLabel = signal('');
+
+  /** Failure sentence of the last quick-create while it is in error, else `null`. */
+  private readonly createErrorMessage = computed<string | null>(() => {
+    const state = this.createCommitController.state;
+    if (state.status() !== 'error') {
+      return null;
+    }
+    return this.core.createFailedMessage(this.lastCreateLabel(), state.error());
+  });
+
   /**
    * Select surface with the quick-create machine overlaid: create
    * pending/error win while active, so `CNGX_STATEFUL` consumers see a
@@ -774,6 +789,16 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   );
 
   private readonly announcer = inject(CngxSelectAnnouncer);
+  /** A rejected quick-create is spoken assertively, whatever the select's own policy. */
+  private readonly announceCreateError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
+    deps: {
+      announcer: this.announcer,
+      commitErrorMessage: (err) => this.core.createFailedMessage(this.lastCreateLabel(), err),
+      softAnnounce: (opt, action, count, multi) =>
+        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
+    },
+    policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'verbose', severity: 'assertive' }),
+  });
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
     deps: {
       announcer: this.announcer,
@@ -818,7 +843,10 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       this.core.announce(option, 'created', 1, false);
     },
     onStateChange: (status) => this.stateChange.emit(status),
-    onError: (err) => this.commitError.emit(err),
+    onError: (err) => {
+      this.announceCreateError(err);
+      this.commitError.emit(err);
+    },
     onClose: () => this.close(),
     onResetDirty: () => this.actionBridge.reset(),
   });
@@ -913,7 +941,10 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     liveInputFallback: this.liveInputFallback,
     hasQuickCreateAction: () => this.quickCreateAction() !== null,
     snapshotPrevious: () => this.value(),
-    dispatch: (draft, term, previous) => this.createHandler.dispatch(draft, term, previous),
+    dispatch: (draft, term, previous) => {
+      this.lastCreateLabel.set(draft.label);
+      this.createHandler.dispatch(draft, term, previous);
+    },
   });
 
   /** @internal - Enter-to-quick-create (see createActionTriggerInput). */
