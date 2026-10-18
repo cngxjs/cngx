@@ -43,6 +43,14 @@ describe('CngxStepperI18n', () => {
     expect(stripBidiIsolates(i18n.stepRolledBack('Step 2 of 3: Shipping'))).toBe(
       'Step 2 of 3: Shipping This step was rolled back.',
     );
+    expect(stripBidiIsolates(i18n.commitRefused('Customer'))).toBe(
+      'Step change not allowed - stayed on step "Customer".',
+    );
+    expect(i18n.commitRefusedGeneric).toBe('Step change not allowed.');
+    expect(stripBidiIsolates(i18n.stepRefused('Step 2 of 3: Shipping'))).toBe(
+      'Step 2 of 3: Shipping This step change was not allowed.',
+    );
+    expect(i18n.statusLabels.refused).toBe('Not allowed');
     expect(i18n.textStepperFormat(2, 5)).toBe('Step 2 of 5');
     expect(i18n.groupSummaryCount(4)).toBe('4 steps');
     expect(i18n.groupSummaryProgress(1, 4)).toBe('1 of 4 steps complete');
@@ -84,6 +92,7 @@ describe('CngxStepperI18n', () => {
           inProgress: 'Läuft',
           upNext: 'Als Nächstes',
           errored: 'Fehler',
+          refused: 'Nicht erlaubt',
         },
       },
     });
@@ -92,6 +101,7 @@ describe('CngxStepperI18n', () => {
     expect(stripBidiIsolates(german.selectedStep('Kunde', 1, 3))).toBe('Schritt 1 von 3: Kunde');
     expect(german.groupSummaryCount(1)).toBe('1 Schritt');
     expect(german.statusLabels.errored).toBe('Fehler');
+    expect(german.statusLabels.refused).toBe('Nicht erlaubt');
     expect(german.previousStep).toBe('Previous step');
   });
 
@@ -147,6 +157,7 @@ describe('CngxStepperI18n', () => {
                 inProgress: 'Läuft',
                 upNext: 'Als Nächstes',
                 errored: 'Fehler',
+                refused: 'Nicht erlaubt',
               },
             },
           }),
@@ -387,6 +398,7 @@ describe('CngxStepperI18n', () => {
         inProgress: 'In progress',
         upNext: 'Up next',
         errored: 'Errored',
+        refused: 'Not allowed',
       });
     });
   });

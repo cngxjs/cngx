@@ -128,10 +128,10 @@ export class CngxTextStepper {
   });
 
   /**
-   * Aggregate error sub-line text. A single errored step names itself
-   * (`"Payment: Errored"`), several collapse to the i18n count phrase
-   * (`"2 errors"`). Empty when no step errored - the template gates on
-   * `stateView.hasAnyError()`, so this is only read when non-empty.
+   * Aggregate error sub-line text. A single marked step names itself
+   * (`"Payment: Errored"`, or `"Payment: Not allowed"` for a refused step
+   * change), several collapse to the i18n count phrase (`"2 errors"`).
+   * Empty when no step is marked, which keeps the error line quiet.
    */
   protected readonly errorText = computed<string>(() =>
     resolveStepperErrorSummary(

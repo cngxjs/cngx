@@ -954,6 +954,127 @@ describe('CngxStepper organism', () => {
       mode: 'optimistic' | 'pessimistic' = 'pessimistic';
     }
 
+    const failing: CngxStepperCommitAction = () => {
+      throw new Error('save failed');
+    };
+
+    function refusedFixture() {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      const region = fixture.nativeElement.querySelector(
+        '.cngx-stepper__live-region',
+      ) as HTMLElement;
+      const stepper = fixture.debugElement.query(By.directive(CngxStepper))
+        .componentInstance as CngxStepper;
+      return { fixture, buttons, region, stepper };
+    }
+
+    it('a refusal speaks the refused phrase, rolls back and keeps the commit state idle', () => {
+      const { buttons, region, stepper } = refusedFixture();
+      expect(stripBidiIsolates(region.textContent?.trim())).toBe(
+        'Step change not allowed - stayed on step "A".',
+      );
+      expect(buttons[0].getAttribute('aria-current')).toBe('step');
+      const presenter = stepper['presenter'];
+      expect(presenter.commitState.status()).toBe('idle');
+      expect(presenter.commitState.error()).toBeUndefined();
+      expect(presenter.lastOutcome()?.kind).toBe('refused');
+    });
+
+    it('a refused step reads stepRefused in its descriptor and keeps its rejection marker', () => {
+      const { fixture, buttons } = refusedFixture();
+      const descId = buttons[1].getAttribute('aria-describedby')!;
+      const desc = fixture.nativeElement.querySelector(`#${descId}`) as HTMLElement;
+      expect(stripBidiIsolates(desc.textContent?.trim())).toBe(
+        'Step 2 of 3: B This step change was not allowed.',
+      );
+      expect(buttons[1].classList.contains('cngx-stepper__step--rejected')).toBe(true);
+    });
+
+    it('a refused mobile dot keeps its marker and says the refused word, not errored', () => {
+      const { stepper } = refusedFixture();
+      const steps = stepper['stepsOnly']();
+      expect(stepper['mobileDotState'](steps[1])).toBe('error');
+      expect(stripBidiIsolates(stepper['mobileDotAriaLabel'](steps[1], 1))).toBe(
+        'Step 2 of 3: B: Not allowed',
+      );
+      expect(stripBidiIsolates(stepper['mobileErrorSummary']())).toBe('B: Not allowed');
+      expect(stepper['stateView'].errorCount()).toBe(0);
+      expect(stepper['stateView'].hasAnyError()).toBe(false);
+    });
+
+    it('a failed mobile dot says errored', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = failing;
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      const stepper = fixture.debugElement.query(By.directive(CngxStepper))
+        .componentInstance as CngxStepper;
+      const steps = stepper['stepsOnly']();
+      expect(stripBidiIsolates(stepper['mobileDotAriaLabel'](steps[1], 1))).toBe(
+        'Step 2 of 3: B: Errored',
+      );
+      expect(stepper['stateView'].errorCount()).toBe(1);
+    });
+
+    it('clearLastFailed in a microtask after a refusal clears the marker and keeps the phrase', async () => {
+      const { fixture, buttons, region, stepper } = refusedFixture();
+      await Promise.resolve();
+      stepper.clearLastFailed();
+      fixture.detectChanges();
+      expect(buttons[1].classList.contains('cngx-stepper__step--rejected')).toBe(false);
+      expect(stripBidiIsolates(region.textContent?.trim())).toBe(
+        'Step change not allowed - stayed on step "A".',
+      );
+    });
+
+    it('a step move without a commit after a refusal spends the phrase', () => {
+      const { fixture, region, stepper } = refusedFixture();
+      fixture.componentInstance.action = null;
+      fixture.componentRef.changeDetectorRef.markForCheck();
+      fixture.detectChanges();
+      stepper['presenter'].select(2);
+      fixture.detectChanges();
+      expect(region.textContent?.trim()).toBe('');
+    });
+
+    it('reset() after a refusal spends the phrase', () => {
+      const { fixture, region, stepper } = refusedFixture();
+      stepper['presenter'].reset();
+      fixture.detectChanges();
+      expect(region.textContent?.trim()).toBe('');
+    });
+
+    it('a sync accept after a refusal spends the phrase and announces no landing', () => {
+      const { fixture, buttons, region } = refusedFixture();
+      fixture.componentInstance.action = () => true;
+      fixture.componentRef.changeDetectorRef.markForCheck();
+      fixture.detectChanges();
+      buttons[2].click();
+      fixture.detectChanges();
+      expect(region.textContent?.trim()).toBe('');
+    });
+
     it('mounts a polite live-region span (role=status, aria-live=polite, empty when idle)', () => {
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
@@ -1052,7 +1173,7 @@ describe('CngxStepper organism', () => {
       });
       const fixture = TestBed.createComponent(CommitHost);
       fixture.componentInstance.mode = 'optimistic';
-      fixture.componentInstance.action = () => false;
+      fixture.componentInstance.action = failing;
       fixture.detectChanges();
       const buttons = fixture.nativeElement.querySelectorAll(
         'button.cngx-stepper__step',
@@ -1072,7 +1193,7 @@ describe('CngxStepper organism', () => {
       });
       const fixture = TestBed.createComponent(CommitHost);
       fixture.componentInstance.mode = 'optimistic';
-      fixture.componentInstance.action = () => false;
+      fixture.componentInstance.action = failing;
       fixture.detectChanges();
       const buttons = fixture.nativeElement.querySelectorAll(
         'button.cngx-stepper__step',
@@ -1133,7 +1254,7 @@ describe('CngxStepper organism', () => {
       });
       const fixture = TestBed.createComponent(CommitHost);
       fixture.componentInstance.mode = 'optimistic';
-      fixture.componentInstance.action = () => false;
+      fixture.componentInstance.action = failing;
       fixture.detectChanges();
       const buttons = fixture.nativeElement.querySelectorAll(
         'button.cngx-stepper__step',
@@ -1164,7 +1285,7 @@ describe('CngxStepper organism', () => {
       });
       const fixture = TestBed.createComponent(CommitHost);
       fixture.componentInstance.mode = 'optimistic';
-      fixture.componentInstance.action = () => false;
+      fixture.componentInstance.action = failing;
       fixture.detectChanges();
       const buttons = fixture.nativeElement.querySelectorAll(
         'button.cngx-stepper__step',
@@ -1842,6 +1963,7 @@ describe('CngxStepper language switch', () => {
         ? {
             commitInFlight: 'Speichere Schritt',
             commitRolledBackTo: (label) => `Zurueck zu "${label}".`,
+            commitRefused: (label) => `Nicht erlaubt, bleibt bei "${label}".`,
             statusLabels: { errored: 'Fehler' },
           }
         : {},
@@ -1862,9 +1984,11 @@ describe('CngxStepper language switch', () => {
   class SwitchHost {
     err = signal<boolean>(false);
     resolveCommit: (accepted: boolean) => void = () => undefined;
+    rejectCommit: (err: unknown) => void = () => undefined;
     readonly action: CngxStepperCommitAction = () =>
-      new Promise<boolean>((resolve) => {
+      new Promise<boolean>((resolve, reject) => {
         this.resolveCommit = resolve;
+        this.rejectCommit = reject;
       });
   }
 
@@ -1890,10 +2014,35 @@ describe('CngxStepper language switch', () => {
     fixture.detectChanges();
     expect(region.textContent?.trim()).toBe('Saving step…');
 
-    fixture.componentInstance.resolveCommit(false);
+    fixture.componentInstance.rejectCommit(new Error('save failed'));
     await fixture.whenStable();
     fixture.detectChanges();
     expect(region.textContent?.trim()).toBe('Zurueck zu "A".');
+  });
+
+  it('speaks a refusal after a language flip in the new language', async () => {
+    const { lang, overrides } = languageSwitch();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperI18n(withStepperI18nLabels(overrides)),
+      ],
+    });
+    const fixture = TestBed.createComponent(SwitchHost);
+    fixture.detectChanges();
+    const buttons = fixture.nativeElement.querySelectorAll(
+      'button.cngx-stepper__step',
+    ) as NodeListOf<HTMLButtonElement>;
+    buttons[1].click();
+    fixture.detectChanges();
+    const region = fixture.nativeElement.querySelector('.cngx-stepper__live-region') as HTMLElement;
+    lang.set('de');
+    fixture.detectChanges();
+
+    fixture.componentInstance.resolveCommit(false);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(region.textContent?.trim()).toBe('Nicht erlaubt, bleibt bei "A".');
   });
 
   it('does not re-announce on a language flip (collapsed error summary)', () => {

@@ -9,7 +9,11 @@ import {
   type Signal,
 } from '@angular/core';
 
-import { CNGX_COMMIT_CONTROLLER_FACTORY, type CngxCommitController } from '@cngx/common/data';
+import {
+  CNGX_COMMIT_CONTROLLER_FACTORY,
+  type CngxCommitController,
+  type CngxTransitionOutcome,
+} from '@cngx/common/data';
 import { resolveStepFrom } from '@cngx/core';
 import {
   CNGX_STATEFUL,
@@ -131,9 +135,16 @@ export class CngxStepperPresenter implements CngxStepperHost {
     this.commitController.state.status(),
   );
 
-  // Persistence-of-error surface - see CngxStepperHost.lastFailedIndex
-  // / originIndexDuringCommit for the contract.
-  private readonly lastFailedIndexState = signal<number | undefined>(undefined);
+  // Persistence-of-rejection surface - see CngxStepperHost.lastOutcome /
+  // lastFailedIndex / originIndexDuringCommit for the contract. Two
+  // event sources, never synced: the settle record and the sequence whose
+  // visual marker was cleared. lastFailedIndex derives from both, so
+  // clearing the marker never touches the announcement record.
+  private readonly lastOutcomeState = signal<CngxTransitionOutcome | undefined>(undefined);
+  private readonly clearedSequenceState = signal<number | undefined>(undefined);
+  // Bumped once per settled refusal or failure. Plain field - only read
+  // inside the resolve handler.
+  private outcomeSequence = 0;
 
   // Last index a commit actually landed on (or a sync/back move settled
   // on). Rollback + origin resolution use this instead of the per-call
@@ -143,8 +154,14 @@ export class CngxStepperPresenter implements CngxStepperHost {
   // read only inside handlers, never rendered.
   private lastCommittedIndex: number | undefined;
   private readonly originIndexDuringCommitState = signal<number | undefined>(undefined);
+  /** {@inheritDoc CngxStepperHost.lastOutcome} */
+  readonly lastOutcome: Signal<CngxTransitionOutcome | undefined> =
+    this.lastOutcomeState.asReadonly();
   /** {@inheritDoc CngxStepperHost.lastFailedIndex} */
-  readonly lastFailedIndex: Signal<number | undefined> = this.lastFailedIndexState.asReadonly();
+  readonly lastFailedIndex: Signal<number | undefined> = computed(() => {
+    const outcome = this.lastOutcomeState();
+    return outcome && outcome.sequence !== this.clearedSequenceState() ? outcome.index : undefined;
+  });
   /** {@inheritDoc CngxStepperHost.originIndexDuringCommit} */
   readonly originIndexDuringCommit: Signal<number | undefined> =
     this.originIndexDuringCommitState.asReadonly();
@@ -419,7 +436,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
 
   /** {@inheritDoc CngxStepperHost.clearLastFailed} */
   clearLastFailed(): void {
-    this.lastFailedIndexState.set(undefined);
+    this.clearedSequenceState.set(this.lastOutcomeState()?.sequence);
   }
 
   /**
@@ -482,8 +499,8 @@ export class CngxStepperPresenter implements CngxStepperHost {
       // flag if the user re-picked a previously-failed target.
       this.activeStepIndex.set(target);
       this.lastCommittedIndex = target;
-      if (this.lastFailedIndexState() === target) {
-        this.lastFailedIndexState.set(undefined);
+      if (this.lastFailedIndex() === target) {
+        this.clearLastFailed();
       }
       return;
     }
@@ -508,27 +525,31 @@ export class CngxStepperPresenter implements CngxStepperHost {
     if (mode === 'optimistic') {
       this.activeStepIndex.set(target);
     }
-    this.commitHandler.beginTransition(previous, target, action, (accept) => {
-      if (accept) {
+    this.commitHandler.beginTransition(previous, target, action, (outcome) => {
+      if (outcome === 'accepted') {
         // Success - origin no longer needed; clear the rejection
-        // flag if the user re-picked the failed target.
+        // marker if the user re-picked the rejected target.
         this.lastCommittedIndex = target;
         this.originIndexDuringCommitState.set(undefined);
-        if (this.lastFailedIndexState() === target) {
-          this.lastFailedIndexState.set(undefined);
+        if (this.lastFailedIndex() === target) {
+          this.clearLastFailed();
         }
         if (mode === 'pessimistic') {
           this.activeStepIndex.set(target);
         }
-      } else {
-        // Reject - flag the target; RETAIN the origin so
-        // `liveAnnouncement` can resolve the origin label for the
-        // rich rollback phrase. Optimistic rolls back to the last
-        // truly-committed index; pessimistic never moved off it.
-        this.lastFailedIndexState.set(target);
-        if (mode === 'optimistic') {
-          this.activeStepIndex.set(origin);
-        }
+        return;
+      }
+      // Refused or failed - record the outcome on the target; RETAIN the
+      // origin so `liveAnnouncement` can resolve the origin label for
+      // the rich phrase. Both kinds roll back: optimistic returns to the
+      // last truly-committed index, pessimistic never moved off it.
+      this.lastOutcomeState.set({
+        kind: outcome,
+        index: target,
+        sequence: ++this.outcomeSequence,
+      });
+      if (mode === 'optimistic') {
+        this.activeStepIndex.set(origin);
       }
     });
   }
@@ -568,7 +589,8 @@ export class CngxStepperPresenter implements CngxStepperHost {
     this.activeStepIndex.set(0);
     this.lastCommittedIndex = 0;
     this.originIndexDuringCommitState.set(undefined);
-    this.lastFailedIndexState.set(undefined);
+    this.lastOutcomeState.set(undefined);
+    this.clearedSequenceState.set(undefined);
     // Settle mid-commit resets to idle - the surface lives on, so a
     // dangling 'pending' would latch busy() forever.
     this.cancelAndSettleCommit();

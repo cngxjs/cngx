@@ -34,6 +34,7 @@ describe('createStepperHostProxy', () => {
       expect(proxy.commitState.lastUpdated()).toBeUndefined();
       expect(proxy.commitTransition.current()).toBe('idle');
       expect(proxy.commitTransition.previous()).toBe('idle');
+      expect(proxy.lastOutcome()).toBeUndefined();
     });
 
     it('no-ops every method', () => {
@@ -64,6 +65,7 @@ describe('createStepperHostProxy', () => {
         busy: signal(false),
         nextStepLabel: signal<string | undefined>('Two'),
         stepCount: signal(3),
+        lastOutcome: signal({ kind: 'refused', index: 2, sequence: 4 }),
         selectNext,
         canNavigateTo,
       } as unknown as CngxStepperHost;
@@ -81,6 +83,7 @@ describe('createStepperHostProxy', () => {
       expect(proxy.canGoNext()).toBe(true);
       expect(proxy.nextStepLabel()).toBe('Two');
       expect(proxy.stepCount()).toBe(3);
+      expect(proxy.lastOutcome()).toEqual({ kind: 'refused', index: 2, sequence: 4 });
       expect(proxy.canNavigateTo(1)).toBe(true);
       expect(proxy.canNavigateTo(0)).toBe(false);
 

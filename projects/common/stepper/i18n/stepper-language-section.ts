@@ -11,6 +11,8 @@ export interface CngxStepperStatusLanguage {
   readonly inProgress: string;
   readonly upNext: string;
   readonly errored: string;
+  /** The status word of a step whose change the commit action refused. */
+  readonly refused: string;
 }
 
 /**
@@ -50,6 +52,12 @@ export interface CngxStepperLanguageSection {
   readonly commitRolledBackTo: CngxMessage;
   /** `{base}`: the description of a rolled-back step, `{base}` being its name. */
   readonly stepRolledBack: CngxMessage;
+  /** `{origin}`: announced when the commit action refuses a step change. */
+  readonly commitRefused: CngxMessage;
+  /** Announced when the commit action refuses a step change from an unlabelled step. */
+  readonly commitRefusedGeneric: string;
+  /** `{base}`: the description of a step whose change was refused, `{base}` being its name. */
+  readonly stepRefused: CngxMessage;
   readonly statusLabels: CngxStepperStatusLanguage;
   /** `{current}`, `{count}`: the short progress caption. */
   readonly textStepperFormat: CngxMessage;
@@ -88,11 +96,15 @@ export const CNGX_STEPPER_LANGUAGE_EN: CngxStepperLanguageSection = {
   commitInFlight: 'Saving step…',
   commitRolledBackTo: 'Reverted to step "{origin}".',
   stepRolledBack: '{base} This step was rolled back.',
+  commitRefused: 'Step change not allowed - stayed on step "{origin}".',
+  commitRefusedGeneric: 'Step change not allowed.',
+  stepRefused: '{base} This step change was not allowed.',
   statusLabels: {
     done: 'Done',
     inProgress: 'In progress',
     upNext: 'Up next',
     errored: 'Errored',
+    refused: 'Not allowed',
   },
   textStepperFormat: 'Step {current} of {count}',
   groupSummaryCount: { one: '{count} step', other: '{count} steps' },

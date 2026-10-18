@@ -66,6 +66,7 @@ import {
   type CngxStepNode,
   type CngxStepPanelHost,
   type CngxStepperI18n,
+  type CngxStepperStateView,
 } from '@cngx/common/stepper';
 import {
   CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
@@ -341,15 +342,18 @@ export class CngxStepper implements CngxStepPanelHost {
   protected statusLabelFor = (node: CngxStepNode): string =>
     resolveStepperStatusLabel(node, this.i18n(), this.slotContext.isActive(node));
 
-  /** Mobile-dot `data-state`: unified error (rejection + aggregator) over the raw status. */
+  /** Mobile-dot `data-state`: the error marker (rejection + aggregator) over the raw status. */
   protected mobileDotState(node: CngxStepNode): string {
-    return this.stateView.hasError(node) ? 'error' : node.state();
+    return this.stateView.hasErrorMarker(node) ? 'error' : node.state();
   }
 
-  /** Mobile-dot `aria-label`, appending the errored status when the dot has an error. */
+  /**
+   * Mobile-dot `aria-label`, appending the errored status when the dot has
+   * an error, or the refused status when its step change was refused.
+   */
   protected mobileDotAriaLabel(node: CngxStepNode, index: number): string {
     const base = this.i18n().selectedStep(node.label(), index + 1, this.stepsOnly().length);
-    return this.stateView.hasError(node) ? withErroredStatus(base, this.i18n()) : base;
+    return withMarkerStatus(this.stateView, node, this.i18n(), base);
   }
   protected readonly groupRoleDescription = computed<string>(
     () => this.fallbackLabels()?.groupRoleDescription ?? this.i18n().groupRoleDescription,
@@ -587,7 +591,19 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 }
 
-/** @internal `"<base>: Errored"`, joined through the `stepWithDetail` message. */
-function withErroredStatus(base: string, i18n: CngxStepperI18n): string {
-  return i18n.stepWithDetail(base, i18n.statusLabels.errored);
+/**
+ * @internal `"<base>: Errored"` for an error, `"<base>: Not allowed"` for a
+ * refused step change, joined through the `stepWithDetail` message; `base`
+ * unchanged for an unmarked step.
+ */
+function withMarkerStatus(
+  view: CngxStepperStateView,
+  node: CngxStepNode,
+  i18n: CngxStepperI18n,
+  base: string,
+): string {
+  if (view.hasError(node)) {
+    return i18n.stepWithDetail(base, i18n.statusLabels.errored);
+  }
+  return view.isRefused(node) ? i18n.stepWithDetail(base, i18n.statusLabels.refused) : base;
 }

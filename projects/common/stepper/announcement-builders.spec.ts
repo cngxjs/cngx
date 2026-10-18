@@ -1,6 +1,8 @@
 import { computed, signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
+import type { CngxTransitionOutcome } from '@cngx/common/data';
+
 import { createStepperAnnouncementBuilders } from './announcement-builders';
 import type { CngxStepperI18n } from './i18n/stepper-i18n';
 import type { CngxStepNode, CngxStepperHost } from './stepper-host.token';
@@ -17,6 +19,11 @@ function i18nFor(lang: 'en' | 'de'): CngxStepperI18n {
     commitRolledBackTo: (label: string) =>
       lang === 'de' ? `Zurueck zu "${label}".` : `Reverted to "${label}".`,
     commitFailedRetry: lang === 'de' ? 'Fehlgeschlagen' : 'Failed',
+    commitRefused: (label: string) =>
+      lang === 'de'
+        ? `Nicht erlaubt, bleibt bei "${label}".`
+        : `Not allowed, stayed on "${label}".`,
+    commitRefusedGeneric: lang === 'de' ? 'Nicht erlaubt.' : 'Not allowed.',
   } as unknown as CngxStepperI18n;
 }
 
@@ -39,11 +46,13 @@ function setup() {
   const previous = signal<CommitStatus>('idle');
   const activeStepIndex = signal(0);
   const lastFailedIndex = signal<number | undefined>(undefined);
+  const lastOutcome = signal<CngxTransitionOutcome | undefined>(undefined);
   const originIndexDuringCommit = signal<number | undefined>(undefined);
   const presenter = {
     stepsOnly,
     activeStepIndex,
     lastFailedIndex,
+    lastOutcome,
     originIndexDuringCommit,
     commitMode: signal('pessimistic'),
     commitTransition: { current: current.asReadonly(), previous: previous.asReadonly() },
@@ -56,9 +65,113 @@ function setup() {
     previous,
     activeStepIndex,
     lastFailedIndex,
+    lastOutcome,
     originIndexDuringCommit,
+    steps,
   };
 }
+
+describe('createStepperAnnouncementBuilders refused phrase', () => {
+  function refuse(
+    ctx: ReturnType<typeof setup>,
+    sequence: number,
+    target = 1,
+    origin: number | null = 0,
+  ): void {
+    // The live region renders (and so reads the phrase) before any
+    // commit; a phrase first read after the refusal seeds silent.
+    ctx.builders.liveAnnouncement();
+    ctx.originIndexDuringCommit.set(origin ?? undefined);
+    ctx.lastOutcome.set({ kind: 'refused', index: target, sequence });
+    ctx.lastFailedIndex.set(target);
+  }
+
+  it('speaks the refused phrase once for a sync refusal and no landing phrase', () => {
+    const ctx = setup();
+    expect(ctx.builders.liveAnnouncement()).toBe('');
+    refuse(ctx, 1);
+    expect(ctx.builders.liveAnnouncement()).toBe('Not allowed, stayed on "Step a".');
+  });
+
+  it('arms after a pending window that settles to idle with an optimistic rollback', () => {
+    const ctx = setup();
+    ctx.current.set('pending');
+    ctx.activeStepIndex.set(1);
+    expect(ctx.builders.liveAnnouncement()).toBe('Committing');
+    ctx.previous.set('pending');
+    ctx.current.set('idle');
+    ctx.activeStepIndex.set(0);
+    refuse(ctx, 1);
+    expect(ctx.builders.liveAnnouncement()).toBe('Not allowed, stayed on "Step a".');
+  });
+
+  it('speaks the generic refused phrase for an origin without a label', () => {
+    const ctx = setup();
+    refuse(ctx, 1, 1, null);
+    expect(ctx.builders.liveAnnouncement()).toBe('Not allowed.');
+  });
+
+  it('a following sync accept spends the phrase and stays silent', () => {
+    const ctx = setup();
+    refuse(ctx, 1);
+    expect(ctx.builders.liveAnnouncement()).not.toBe('');
+    ctx.activeStepIndex.set(1);
+    ctx.current.set('success');
+    expect(ctx.builders.liveAnnouncement()).toBe('');
+  });
+
+  it('a step move without a commit spends the phrase', () => {
+    const ctx = setup();
+    refuse(ctx, 1);
+    expect(ctx.builders.liveAnnouncement()).not.toBe('');
+    ctx.activeStepIndex.set(1);
+    expect(ctx.builders.liveAnnouncement()).toBe('');
+  });
+
+  it('a cleared outcome (reset) spends the phrase', () => {
+    const ctx = setup();
+    refuse(ctx, 1);
+    expect(ctx.builders.liveAnnouncement()).not.toBe('');
+    ctx.lastOutcome.set(undefined);
+    expect(ctx.builders.liveAnnouncement()).toBe('');
+  });
+
+  it('a cleared marker keeps the phrase', () => {
+    const ctx = setup();
+    refuse(ctx, 1);
+    ctx.lastFailedIndex.set(undefined);
+    expect(ctx.builders.liveAnnouncement()).toBe('Not allowed, stayed on "Step a".');
+  });
+
+  it('a new commit spends the phrase in favour of the in-flight phrase', () => {
+    const ctx = setup();
+    refuse(ctx, 1);
+    expect(ctx.builders.liveAnnouncement()).toBe('Not allowed, stayed on "Step a".');
+    ctx.current.set('pending');
+    expect(ctx.builders.liveAnnouncement()).toBe('Committing');
+    ctx.previous.set('pending');
+    ctx.current.set('error');
+    ctx.lastOutcome.set({ kind: 'failed', index: 1, sequence: 2 });
+    expect(ctx.builders.liveAnnouncement()).toBe('Reverted to "Step a".');
+  });
+
+  it('does not re-speak on a language flip', () => {
+    const ctx = setup();
+    refuse(ctx, 1);
+    expect(ctx.builders.liveAnnouncement()).toBe('Not allowed, stayed on "Step a".');
+    ctx.lang.set('de');
+    expect(ctx.builders.liveAnnouncement()).toBe('Not allowed, stayed on "Step a".');
+  });
+
+  it('a failure never speaks the refused phrase', () => {
+    const ctx = setup();
+    ctx.originIndexDuringCommit.set(0);
+    ctx.lastOutcome.set({ kind: 'failed', index: 1, sequence: 1 });
+    ctx.lastFailedIndex.set(1);
+    ctx.current.set('error');
+    expect(ctx.builders.liveAnnouncement()).toBe('Reverted to "Step a".');
+  });
+});
 
 describe('createStepperAnnouncementBuilders language switch', () => {
   it('does not re-announce on a language flip when the landed step label derives from copy', () => {
@@ -97,7 +210,8 @@ describe('createStepperAnnouncementBuilders headerStatusPhrase', () => {
       selectedStep: (label: string, position: number, count: number) =>
         `Step ${position} of ${count}: ${label}`,
       stepWithDetail: (step: string, detail: string) => `${step} (${detail})`,
-      stepRolledBack: (base: string) => base,
+      stepRolledBack: (base: string) => `${base} rolled back`,
+      stepRefused: (base: string) => `${base} not allowed`,
       statusLabels: {
         done: 'Done',
         errored: 'Errored',
@@ -113,15 +227,28 @@ describe('createStepperAnnouncementBuilders headerStatusPhrase', () => {
       state: signal(state),
     } as unknown as CngxStepNode;
     const stepsOnly = signal<readonly CngxStepNode[]>([node]);
+    const lastFailedIndex = signal<number | undefined>(undefined);
+    const lastOutcome = signal<CngxTransitionOutcome | undefined>(undefined);
     const presenter = {
       stepsOnly,
-      lastFailedIndex: signal(undefined),
+      activeStepIndex: signal(0),
+      lastFailedIndex,
+      lastOutcome,
       originIndexDuringCommit: signal(undefined),
       commitTransition: { current: signal('idle'), previous: signal('idle') },
     } as unknown as CngxStepperHost;
     const builders = createStepperAnnouncementBuilders({ presenter, stepsOnly, i18n });
-    return { builders, node };
+    return { builders, node, lastFailedIndex, lastOutcome };
   }
+
+  it('describes a refused row with stepRefused and a failed row with stepRolledBack', () => {
+    const { builders, node, lastFailedIndex, lastOutcome } = buildersFor('idle');
+    lastFailedIndex.set(0);
+    lastOutcome.set({ kind: 'refused', index: 0, sequence: 1 });
+    expect(builders.statusPhrase(node)).toBe('Step 1 of 1: Account not allowed');
+    lastOutcome.set({ kind: 'failed', index: 0, sequence: 2 });
+    expect(builders.statusPhrase(node)).toBe('Step 1 of 1: Account rolled back');
+  });
 
   function builderFor(state: string): string {
     const { builders, node } = buildersFor(state);

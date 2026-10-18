@@ -10,8 +10,8 @@
  * `'failed'`. Both roll the transition back; only `'failed'` leaves the
  * commit state at `'error'`.
  *
- * `index` is the position the transition was rolled back to (the origin
- * the user stayed on). `sequence` is a per-host counter bumped exactly
+ * `index` is the target the transition was refused or failed for (the
+ * position the user did not reach). `sequence` is a per-host counter bumped exactly
  * once per settled refusal or failure, so two identical outcomes in a row
  * are still two events; a host that only moves the index (a closed tab
  * before the origin) copies the sequence instead of bumping it, so

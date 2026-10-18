@@ -18,7 +18,7 @@
         role="img"
         [class.cngx-dot-stepper__dot--active]="isActive(node, i)"
         [class.cngx-dot-stepper__dot--completed]="i < activeIndex()"
-        [class.cngx-dot-stepper__dot--error]="stateView.hasError(node)"
+        [class.cngx-dot-stepper__dot--error]="stateView.hasErrorMarker(node)"
         [attr.aria-current]="isActive(node, i) ? 'step' : null"
         [attr.aria-label]="ariaLabelFor(node, i)"
         [attr.data-state]="dotState(node)"

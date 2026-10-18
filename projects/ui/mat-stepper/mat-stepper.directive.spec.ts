@@ -313,6 +313,38 @@ describe('CngxMatStepper instrumentation directive', () => {
     expect(matStepper.selectedIndex).toBe(0);
   });
 
+  test('axis 6b: optimistic refusal - a false answer reverts Material and stores no error', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    fixture.componentInstance['mode'] = 'optimistic';
+    fixture.componentInstance['commit'] = () => Promise.resolve(false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatStepper,
+    );
+    const matStepper = matEl.componentInstance as MatStepper;
+    const presenter = matEl.injector.get(CngxStepperPresenter);
+
+    presenter.select(2);
+    fixture.detectChanges();
+    expect(matStepper.selectedIndex).toBe(2);
+
+    // Same deterministic drain as axis 6.
+    await Promise.resolve();
+    TestBed.flushEffects();
+    await Promise.resolve();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await Promise.resolve();
+    expect(matStepper.selectedIndex).toBe(0);
+    expect(presenter.commitState.status()).toBe('idle');
+    expect(presenter.commitState.error()).toBeUndefined();
+    expect(presenter.lastOutcome()?.kind).toBe('refused');
+  });
+
   test('axis 7: untracked() discipline - coalesce synchronous double-set on final value', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],

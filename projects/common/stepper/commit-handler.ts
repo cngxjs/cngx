@@ -7,6 +7,15 @@ import { CngxRuntimeError } from '@cngx/utils';
 import type { CngxStepperCommitAction } from './presenter.directive';
 
 /**
+ * How a commit-gated step change settled. `'refused'` is a `false` answer
+ * from `commitAction` (the action declined on purpose, nothing failed);
+ * `'failed'` is a throw, a rejected promise or an erroring observable.
+ *
+ * @category common/stepper
+ */
+export type CngxStepperCommitResolution = 'accepted' | 'refused' | 'failed';
+
+/**
  * Adapter between the lifted commit-controller and the stepper's
  * action shape. The presenter delegates to `beginTransition` on
  * every step change driven by `commitAction`.
@@ -18,14 +27,15 @@ export interface CngxStepperCommitHandler {
    * Start a transition commit. Returns synchronously; the controller's
    * `state` signal reports the in-flight status.
    *
-   * @param onResolve fires `true` on accept, `false` on rejection;
-   *                  skipped on supersede.
+   * @param onResolve fires `'accepted'` when the action answers `true`,
+   *                  `'refused'` when it answers `false`, `'failed'` when
+   *                  it throws, rejects or errors; skipped on supersede.
    */
   beginTransition(
     fromIndex: number,
     toIndex: number,
     action: CngxStepperCommitAction,
-    onResolve: (accept: boolean) => void,
+    onResolve: (outcome: CngxStepperCommitResolution) => void,
   ): void;
 
   /** Cancel the in-flight transition without firing callbacks. */
@@ -47,7 +57,8 @@ export interface CngxStepperCommitHandlerOptions {
 /**
  * Build a stepper commit handler over an existing {@link CngxCommitController}.
  * Resolves `Observable<boolean>` / `Promise<boolean>` / `boolean` returns into
- * a unified `accept: boolean` outcome.
+ * one {@link CngxStepperCommitResolution}: `true` accepts, `false` refuses
+ * (the controller settles to `'idle'` and stores no error), a throw fails.
  *
  * @category common/stepper
  */
@@ -64,8 +75,9 @@ export function createStepperCommitHandler(
         toIndex,
         fromIndex,
         {
-          onSuccess: () => onResolve(true),
-          onError: () => onResolve(false),
+          onSuccess: () => onResolve('accepted'),
+          onError: () => onResolve('failed'),
+          onRefused: () => onResolve('refused'),
         },
       );
     },
@@ -84,6 +96,7 @@ function runStepperAction(
   handlers: {
     readonly onSuccess: (committed: number | undefined) => void;
     readonly onError: (err: unknown) => void;
+    readonly onRefused: () => void;
   },
 ): CngxCommitHandle {
   let cancelled = false;
@@ -96,7 +109,7 @@ function runStepperAction(
     if (accept) {
       handlers.onSuccess(toIndex);
     } else {
-      handlers.onError(new Error('Stepper transition refused by commitAction'));
+      handlers.onRefused();
     }
   };
   const safeError = (err: unknown): void => {

@@ -8,6 +8,10 @@ import type { CngxStepNode } from '../stepper-host.token';
  * the tabs `cngxTabRejectionIcon` slot. Renders only when
  * `presenter.lastFailedIndex()` matches the step's flat-index.
  *
+ * `reason` tells the two commit outcomes apart: `'refused'` when the
+ * commit action answered `false`, `'failed'` when it threw, rejected or
+ * errored. Both render the slot; pick a glyph or copy per reason.
+ *
  * `originLabel` is the safe-harbour step's label, derived from
  * `presenter.originIndexDuringCommit()`. May be `undefined` when the
  * origin index is out of range (synchronous-rejection edge case);
@@ -22,6 +26,8 @@ export interface CngxStepRejectionContext {
   readonly originLabel: string | undefined;
   /** The rejected step node carrying id / label / state signals. */
   readonly node: CngxStepNode;
+  /** Why the commit did not land (`presenter.lastOutcome().kind`). */
+  readonly reason: 'refused' | 'failed';
 }
 
 /**

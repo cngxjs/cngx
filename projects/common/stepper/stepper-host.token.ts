@@ -1,5 +1,6 @@
 import { inject, InjectionToken, type Signal } from '@angular/core';
 
+import type { CngxTransitionOutcome } from '@cngx/common/data';
 import type { CngxAsyncState, StatusTransition } from '@cngx/core/utils';
 import { CngxRuntimeError } from '@cngx/utils';
 
@@ -191,11 +192,23 @@ export interface CngxStepperHost {
   readonly commitTransition: StatusTransition;
 
   /**
-   * Index of the most recently refused commit target, or `undefined`
-   * when no rejection is pending. Set by the rejection arm of
-   * `select()`; cleared by a successful re-pick of the same target
-   * or via {@link clearLastFailed}. Drives strip rejection decoration
-   * and the `commitRolledBackTo` chain in `liveAnnouncement`.
+   * Settle record of the most recent commit that did not land:
+   * `kind: 'refused'` when `commitAction` answered `false`, `'failed'`
+   * when it threw, rejected or errored; `index` is the rejected target,
+   * `sequence` is bumped once per settled refusal or failure. Kept
+   * through {@link clearLastFailed} (which only hides the marker), so the
+   * announcement record survives a cleared decoration; dropped by
+   * `reset()`. A refusal leaves `commitState` at `'idle'` with its data
+   * intact, so this is the only place a refusal is visible as such.
+   */
+  readonly lastOutcome: Signal<CngxTransitionOutcome | undefined>;
+
+  /**
+   * Index of the most recently rejected (refused or failed) commit
+   * target, or `undefined` when no rejection marker is shown. Derived
+   * from {@link lastOutcome}; cleared by a successful re-pick of the
+   * same target or via {@link clearLastFailed}. Drives strip rejection
+   * decoration and the `commitRolledBackTo` chain in `liveAnnouncement`.
    */
   readonly lastFailedIndex: Signal<number | undefined>;
 
@@ -223,8 +236,9 @@ export interface CngxStepperHost {
   reset(): void;
 
   /**
-   * Drop the persisted {@link lastFailedIndex} flag. Idempotent;
-   * safe to wire to a Dismiss button or aggregator-cleared.
+   * Drop the persisted {@link lastFailedIndex} marker. Idempotent;
+   * safe to wire to a Dismiss button or aggregator-cleared. Leaves
+   * {@link lastOutcome} untouched.
    */
   clearLastFailed(): void;
 

@@ -75,7 +75,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
     '[attr.aria-roledescription]': 'stepperRoleDescription()',
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
-    '[attr.data-state]': 'stateView.hasAnyError() ? "error" : null',
+    '[attr.data-state]': 'stateView.hasAnyErrorMarker() ? "error" : null',
     '[attr.aria-invalid]': 'stateView.hasAnyError() ? "true" : null',
   },
 })
@@ -153,9 +153,10 @@ export class CngxProgressBarStepper {
   );
 
   /**
-   * Aggregate error caption. A single errored step names itself
-   * (`"Payment: Errored"`), several collapse to the i18n count phrase.
-   * Read only when `stateView.hasAnyError()` gates the template.
+   * Aggregate error caption. A single marked step names itself
+   * (`"Payment: Errored"`, or `"Payment: Not allowed"` for a refused step
+   * change), several collapse to the i18n count phrase. Empty when no step
+   * is marked, which keeps the error line quiet.
    */
   protected readonly errorText = computed<string>(() =>
     resolveStepperErrorSummary(

@@ -1,7 +1,7 @@
 import { Component, computed, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   CngxStep,
@@ -13,6 +13,8 @@ import {
 
 import { CngxTextStepper } from './text-stepper.component';
 import { stripBidiIsolates } from '@cngx/testing';
+
+import { STEPPER_OUTCOME_SEAM, stepperOutcome } from './__test-helpers/stepper-outcome-seam';
 
 @Component({
   standalone: true,
@@ -313,5 +315,58 @@ describe('CngxTextStepper consumer-translated step label', () => {
     fixture.componentInstance.active.set(1);
     fixture.detectChanges();
     expect(stripBidiIsolates(text.textContent?.trim())).toBe('Step 2 of 2: Zahlung');
+  });
+});
+
+describe('CngxTextStepper commit outcome', () => {
+  @Component({
+    standalone: true,
+    imports: [CngxTextStepper, CngxStep],
+    template: `
+      <cngx-text-stepper>
+        <div cngxStep label="Customer"></div>
+        <div cngxStep label="Payment"></div>
+        <div cngxStep label="Review"></div>
+      </cngx-text-stepper>
+    `,
+  })
+  class OutcomeHost {}
+
+  afterEach(() => stepperOutcome.set(undefined));
+
+  function setup() {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    TestBed.overrideComponent(CngxTextStepper, { add: { providers: [STEPPER_OUTCOME_SEAM] } });
+    const fixture = TestBed.createComponent(OutcomeHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-text-stepper') as HTMLElement;
+    const line = (): string =>
+      stripBidiIsolates(
+        (
+          fixture.nativeElement.querySelector(
+            '.cngx-text-stepper__error-text',
+          ) as HTMLElement | null
+        )?.textContent?.trim() ?? '',
+      );
+    return { fixture, host, line };
+  }
+
+  it('a refused step reads "Not allowed" on the error line and sets no aria-invalid', () => {
+    const { fixture, host, line } = setup();
+    stepperOutcome.set({ kind: 'refused', index: 1, sequence: 1 });
+    fixture.detectChanges();
+    expect(line()).toBe('Payment: Not allowed');
+    expect(host.hasAttribute('aria-invalid')).toBe(false);
+    const region = fixture.nativeElement.querySelector('.cngx-text-stepper__error') as HTMLElement;
+    expect(region.getAttribute('data-state')).toBe('error');
+  });
+
+  it('a failed step reads "Errored" and sets aria-invalid', () => {
+    const { fixture, host, line } = setup();
+    stepperOutcome.set({ kind: 'failed', index: 1, sequence: 1 });
+    fixture.detectChanges();
+    expect(line()).toBe('Payment: Errored');
+    expect(host.getAttribute('aria-invalid')).toBe('true');
   });
 });

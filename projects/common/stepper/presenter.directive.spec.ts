@@ -487,10 +487,57 @@ describe('CngxStepperPresenter', () => {
       expect(presenter.commitTransition.current()).toBe('success');
     });
 
-    it('commitTransition tracks pending → error on rejected commit', () => {
-      const { presenter } = commitFixture('optimistic', () => false);
+    it('commitTransition tracks pending → error on a failed commit', () => {
+      const { presenter } = commitFixture('optimistic', () => {
+        throw new Error('boom');
+      });
       presenter.select(2);
       expect(presenter.commitTransition.current()).toBe('error');
+      expect(presenter.lastOutcome()).toEqual({ kind: 'failed', index: 2, sequence: 1 });
+    });
+
+    it('a refused commit settles to idle, keeps prior data and stores no error', () => {
+      let attempt = 0;
+      const { presenter } = commitFixture('optimistic', () => {
+        attempt++;
+        return attempt === 1;
+      });
+      presenter.select(1);
+      expect(presenter.commitState.status()).toBe('success');
+      expect(presenter.commitState.data()).toBe(1);
+      presenter.select(2);
+      expect(presenter.commitState.status()).toBe('idle');
+      expect(presenter.commitState.data()).toBe(1);
+      expect(presenter.commitState.error()).toBeUndefined();
+      expect(presenter.commitState.isFirstLoad()).toBe(false);
+      expect(presenter.commitTransition.current()).toBe('idle');
+      expect(presenter.lastOutcome()).toEqual({ kind: 'refused', index: 2, sequence: 1 });
+      expect(presenter.activeStepIndex()).toBe(1);
+    });
+
+    it('a refused promise and a refused observable both report refused', async () => {
+      let attempt = 0;
+      const { presenter } = commitFixture('pessimistic', () => {
+        attempt++;
+        return attempt === 1 ? Promise.resolve(false) : of(false);
+      });
+      presenter.select(2);
+      await Promise.resolve();
+      expect(presenter.lastOutcome()?.kind).toBe('refused');
+      expect(presenter.commitState.status()).toBe('idle');
+      presenter.select(1);
+      expect(presenter.lastOutcome()).toEqual({ kind: 'refused', index: 1, sequence: 2 });
+      expect(presenter.activeStepIndex()).toBe(0);
+    });
+
+    it('reset() clears the outcome and the marker', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      presenter.clearLastFailed();
+      presenter.reset();
+      expect(presenter.lastOutcome()).toBeUndefined();
+      presenter.select(1);
+      expect(presenter.lastFailedIndex()).toBe(1);
     });
 
     it('lastFailedIndex flags the refused target on rejection', () => {
@@ -531,6 +578,17 @@ describe('CngxStepperPresenter', () => {
       expect(presenter.lastFailedIndex()).toBeUndefined();
       // Origin slot is independent - clearLastFailed does not touch it.
       expect(presenter.originIndexDuringCommit()).toBe(originBefore);
+      // The settle record survives: only the visual marker is cleared.
+      expect(presenter.lastOutcome()).toEqual({ kind: 'refused', index: 2, sequence: 1 });
+    });
+
+    it('a refusal after a cleared marker shows the marker again', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      presenter.clearLastFailed();
+      presenter.select(2);
+      expect(presenter.lastFailedIndex()).toBe(2);
+      expect(presenter.lastOutcome()?.sequence).toBe(2);
     });
 
     it('successful re-pick of the failed target clears lastFailedIndex', () => {

@@ -174,20 +174,25 @@ export class CngxDotStepper {
   }
 
   /**
-   * Resolved `data-state` for the dot: `'error'` whenever the unified error
-   * view fires (covers commit rejection and the error aggregator, not just a
-   * literal `state === 'error'`), otherwise the raw step status.
+   * Resolved `data-state` for the dot: `'error'` whenever the error marker
+   * fires (covers a commit rejection of either kind and the error
+   * aggregator, not just a literal `state === 'error'`), otherwise the raw
+   * step status.
    */
   protected dotState(node: CngxStepNode): string {
-    return this.stateView.hasError(node) ? 'error' : node.state();
+    return this.stateView.hasErrorMarker(node) ? 'error' : node.state();
   }
 
   protected ariaLabelFor(node: CngxStepNode, index: number): string {
     const i18n = this.i18n();
     const base = i18n.selectedStep(node.label(), index + 1, this.stepNodes().length);
-    return this.stateView.hasError(node)
-      ? i18n.stepWithDetail(base, i18n.statusLabels.errored)
-      : base;
+    if (this.stateView.hasError(node)) {
+      return i18n.stepWithDetail(base, i18n.statusLabels.errored);
+    }
+    if (this.stateView.isRefused(node)) {
+      return i18n.stepWithDetail(base, i18n.statusLabels.refused);
+    }
+    return base;
   }
 
   /** Build the slot context for `*cngxDotStepperDot`. */

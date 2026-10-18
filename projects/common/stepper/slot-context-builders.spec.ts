@@ -1,6 +1,8 @@
 import { signal, type Signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
+import type { CngxTransitionOutcome } from '@cngx/common/data';
+
 import type { CngxStepperI18n } from './i18n/stepper-i18n';
 import { createStepperSlotContextBuilders } from './slot-context-builders';
 import type { CngxStepNode, CngxStepperHost } from './stepper-host.token';
@@ -28,9 +30,38 @@ function stubHost(activeStepId: string | null = null): CngxStepperHost {
     commitState: { status: signal('idle') },
     intendedStepIndex: signal(undefined),
     lastFailedIndex: signal(undefined),
+    lastOutcome: signal(undefined),
     originIndexDuringCommit: signal(undefined),
   } as unknown as CngxStepperHost;
 }
+
+describe('createStepperSlotContextBuilders rejection context', () => {
+  it('names the reason of the rejection', () => {
+    const node = stubNode({ id: 'b', flatIndex: 1 });
+    const stepsOnly = signal<readonly CngxStepNode[]>([stubNode({ id: 'a', flatIndex: 0 }), node]);
+    const lastFailedIndex = signal<number | undefined>(1);
+    const lastOutcome = signal<CngxTransitionOutcome | undefined>({
+      kind: 'refused',
+      index: 1,
+      sequence: 1,
+    });
+    const host = {
+      ...stubHost(),
+      lastFailedIndex,
+      lastOutcome,
+      originIndexDuringCommit: signal(0),
+    } as unknown as CngxStepperHost;
+    const builders = createStepperSlotContextBuilders({ presenter: host, stepsOnly, i18n: stubI18n() });
+
+    const refused = builders.rejectionContextFor(node);
+    expect(refused.reason).toBe('refused');
+    expect(refused.originLabel).toBe('a');
+    expect(builders.rejectionContextFor(node)).toBe(refused);
+
+    lastOutcome.set({ kind: 'failed', index: 1, sequence: 2 });
+    expect(builders.rejectionContextFor(node).reason).toBe('failed');
+  });
+});
 
 describe('createStepperSlotContextBuilders memoization', () => {
   it('returns the same indicator-context reference when source signals are unchanged', () => {

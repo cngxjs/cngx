@@ -28,10 +28,18 @@ export interface CngxStepperStateView {
 
   /**
    * `true` when this step is the one a commit just rejected
-   * (`flatIndex === lastFailedIndex`). The commit-rejection arm your
-   * pessimistic / optimistic flows hit.
+   * (`flatIndex === lastFailedIndex`), refused or failed alike. The
+   * commit-rejection marker your pessimistic / optimistic flows hit.
    */
   readonly isRejected: (node: CngxStepNode) => boolean;
+
+  /**
+   * `true` when this step carries the rejection marker AND the commit
+   * action refused it (`lastOutcome().kind === 'refused'`). A refusal is
+   * not an error: it marks the step but never sets `aria-invalid` or
+   * counts towards {@link errorCount}.
+   */
+  readonly isRefused: (node: CngxStepNode) => boolean;
 
   /**
    * Badge-level error: per-step `state === 'error'` OR the bound error
@@ -42,11 +50,19 @@ export interface CngxStepperStateView {
   readonly hasErrorBadge: (node: CngxStepNode) => boolean;
 
   /**
-   * Unified error predicate - the contract the minimal skins (dot / text /
-   * progress-bar) read. `true` when ANY of the three error sources fires:
-   * {@link hasErrorBadge} OR a commit rejection ({@link isRejected}). Those
-   * skins have no separate rejection slot, so they treat every error source
-   * as one "errored" state.
+   * Visual marker predicate - the hook the minimal skins (dot / text /
+   * progress-bar) and the mobile dots paint (`data-state="error"`,
+   * `--error`). `true` when {@link hasErrorBadge} fires OR the step carries
+   * a commit rejection of either kind ({@link isRejected}). Those skins have
+   * no separate rejection slot, so every marker shares one visual state.
+   */
+  readonly hasErrorMarker: (node: CngxStepNode) => boolean;
+
+  /**
+   * Semantic error predicate - what `aria-invalid`, the errored status word
+   * and {@link errorCount} read. `true` when {@link hasErrorBadge} fires OR
+   * a commit failed on this step. A refused step is marked
+   * ({@link hasErrorMarker}) but not in error.
    */
   readonly hasError: (node: CngxStepNode) => boolean;
 
@@ -58,6 +74,18 @@ export interface CngxStepperStateView {
 
   /** `true` when `errorCount() > 0`. Drives skin-level `aria-invalid`. */
   readonly hasAnyError: Signal<boolean>;
+
+  /** Count of step-only nodes where {@link hasErrorMarker} is `true`. */
+  readonly errorMarkerCount: Signal<number>;
+
+  /** Flat index of the first marked step, or `-1` when none. */
+  readonly firstErrorMarkerIndex: Signal<number>;
+
+  /**
+   * `true` when `errorMarkerCount() > 0`. Drives skin-level visual hooks
+   * (`data-state="error"`); `aria-invalid` stays on {@link hasAnyError}.
+   */
+  readonly hasAnyErrorMarker: Signal<boolean>;
 }
 
 /**
@@ -95,7 +123,13 @@ export function createStepperStateView(inputs: {
     return !!node.errorAggregator?.()?.shouldShow?.();
   };
 
-  const hasError = (node: CngxStepNode): boolean => hasErrorBadge(node) || isRejected(node);
+  const isRefused = (node: CngxStepNode): boolean =>
+    isRejected(node) && presenter.lastOutcome()?.kind === 'refused';
+
+  const hasErrorMarker = (node: CngxStepNode): boolean => hasErrorBadge(node) || isRejected(node);
+
+  const hasError = (node: CngxStepNode): boolean =>
+    hasErrorBadge(node) || (isRejected(node) && !isRefused(node));
 
   const erroredSteps = computed<readonly CngxStepNode[]>(() =>
     stepsOnly().filter((node) => hasError(node)),
@@ -107,24 +141,41 @@ export function createStepperStateView(inputs: {
 
   const hasAnyError = computed<boolean>(() => errorCount() > 0);
 
+  const markedSteps = computed<readonly CngxStepNode[]>(() =>
+    stepsOnly().filter((node) => hasErrorMarker(node)),
+  );
+
+  const errorMarkerCount = computed<number>(() => markedSteps().length);
+
+  const firstErrorMarkerIndex = computed<number>(() => markedSteps()[0]?.flatIndex ?? -1);
+
+  const hasAnyErrorMarker = computed<boolean>(() => errorMarkerCount() > 0);
+
   return {
     statusOf,
     isBusy,
     isRejected,
+    isRefused,
     hasErrorBadge,
+    hasErrorMarker,
     hasError,
     errorCount,
     firstErrorIndex,
     hasAnyError,
+    errorMarkerCount,
+    firstErrorMarkerIndex,
+    hasAnyErrorMarker,
   };
 }
 
 /**
  * Aggregate error phrase shared by the minimal skins (text / progress-bar)
- * and the classic mobile-collapse text branch. A single errored step names
- * itself (`"Payment: Errored"`); several collapse to the i18n count phrase
- * (`"2 errors"`). Returns `''` when no step errored - callers gate on
- * `view.hasAnyError()` so the empty string never reaches the DOM.
+ * and the classic mobile-collapse text branch. Walks the marked steps
+ * ({@link CngxStepperStateView.hasErrorMarker}). A single marked step names
+ * itself with the word of its kind: `"Payment: Errored"` (or the custom
+ * reason) for an error, `"Payment: Not allowed"` for a refused step change;
+ * several collapse to the i18n count phrase (`"2 errors"`). Returns `''`
+ * when no step is marked, so the error line stays quiet.
  *
  * The optional `messageOf` resolver lets callers surface a per-step
  * reason (a direct `[error]` string or the first aggregator label) in the
@@ -146,21 +197,41 @@ export function createStepperStateView(inputs: {
  * @since 0.1.0
  */
 export function resolveStepperErrorSummary(
-  view: Pick<CngxStepperStateView, 'errorCount' | 'firstErrorIndex'>,
+  view: Pick<
+    CngxStepperStateView,
+    'errorMarkerCount' | 'firstErrorMarkerIndex' | 'isRefused' | 'hasErrorBadge'
+  >,
   stepsOnly: Signal<readonly CngxStepNode[]>,
   i18n: CngxStepperI18n,
   messageOf?: (node: CngxStepNode) => string | undefined,
 ): string {
-  const count = view.errorCount();
+  const count = view.errorMarkerCount();
   if (count === 0) {
     return '';
   }
   if (count === 1) {
-    const node = stepsOnly()[view.firstErrorIndex()];
-    const custom = node ? messageOf?.(node) : undefined;
-    const detail = custom !== undefined && custom !== '' ? custom : i18n.statusLabels.errored;
+    const node = stepsOnly()[view.firstErrorMarkerIndex()];
+    const detail = node ? summaryDetail(view, node, i18n, messageOf) : i18n.statusLabels.errored;
     const label = node ? untracked(node.label) : undefined;
     return label ? i18n.stepWithDetail(label, detail) : detail;
   }
   return i18n.stepHasErrors(count);
+}
+
+/**
+ * @internal The word for one marked step: a validation error keeps its
+ * reason, a refused-only step reads the refused word.
+ */
+function summaryDetail(
+  view: Pick<CngxStepperStateView, 'isRefused' | 'hasErrorBadge'>,
+  node: CngxStepNode,
+  i18n: CngxStepperI18n,
+  messageOf?: (node: CngxStepNode) => string | undefined,
+): string {
+  const refusedOnly = view.isRefused(node) && !view.hasErrorBadge(node);
+  if (refusedOnly) {
+    return i18n.statusLabels.refused;
+  }
+  const custom = messageOf?.(node);
+  return custom !== undefined && custom !== '' ? custom : i18n.statusLabels.errored;
 }
