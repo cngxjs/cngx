@@ -135,4 +135,10 @@ describe('appendElements', () => {
   it('uses the newline it is given for a template without one', () => {
     expect(appendElements('<p></p>', ['<x-a />'], '\r\n')).toBe('<p></p>\r\n<x-a />\r\n');
   });
+
+  it('takes the indent of the template and keeps the indent before a closing backtick last', () => {
+    expect(appendElements('\n    <main></main>\n  ', ['<x-a />', '<x-b />'])).toBe('\n    <main></main>\n    <x-a />\n    <x-b />\n  ');
+    expect(appendElements('\r\n    <main></main>\r\n  ', ['<x-a />'])).toBe('\r\n    <main></main>\r\n    <x-a />\r\n  ');
+    expect(appendElements('  <main>\n    <p></p>\n  </main>\n', ['<x-a />'])).toBe('  <main>\n    <p></p>\n  </main>\n  <x-a />\n');
+  });
 });

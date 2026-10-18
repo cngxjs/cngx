@@ -321,11 +321,12 @@ export function countArrayLiterals(content: string, selector: ArraySelector): nu
 /**
  * A property of a decorator object as a reader sees it: a string (a quoted
  * string or a backtick string without `${...}`) with the offsets of its raw
- * text between the quotes, an array literal with the source text of each
- * element, or anything else.
+ * text between the quotes, a backtick string that interpolates, an array
+ * literal with the source text of each element, or anything else.
  */
 export type DecoratorValue =
   | { readonly kind: 'string'; readonly start: number; readonly end: number; readonly text: string; readonly quoted: boolean }
+  | { readonly kind: 'interpolated' }
   | { readonly kind: 'array'; readonly elements: readonly string[] }
   | { readonly kind: 'other' };
 
@@ -352,6 +353,9 @@ function decoratorValue(source: ts.SourceFile, property: ts.ObjectLiteralElement
     const start = initializer.getStart(source) + 1;
     const end = initializer.getEnd() - 1;
     return { kind: 'string', start, end, text: source.text.slice(start, end), quoted: ts.isStringLiteral(initializer) };
+  }
+  if (ts.isTemplateExpression(initializer)) {
+    return { kind: 'interpolated' };
   }
   if (ts.isArrayLiteralExpression(initializer)) {
     return { kind: 'array', elements: initializer.elements.map((element) => element.getText(source)) };

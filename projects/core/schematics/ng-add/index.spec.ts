@@ -896,7 +896,7 @@ describe('ngAdd', () => {
 
       expect(run.tree.readText('src/app/app.ts')).toBe(app);
       expect(run.logs.join('\n')).toContain(
-        'the inline template of App is a quoted string, which cngx does not rewrite into a multi-line template',
+        'the inline template of App in src/app/app.ts is a quoted string, which cngx does not rewrite into a multi-line template',
       );
     });
 

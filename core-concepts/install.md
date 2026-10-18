@@ -210,7 +210,7 @@ turn the questions off the same way.
 |`src/cngx-theme.scss`|Material theme with a `mat.theme()` map|The bridge from the Material system tokens to the cngx tokens. A `define-theme` or M2 theme object is bridged in the file that defines it instead: the bridge `@use` goes after the last leading `@use` there, ahead of every `@import`, since Sass rejects a `@use` that follows one.|
 |`angular.json`|theme chosen|The theme file added to the build styles, after the stylesheet that imports `cngx.css`.|
 |App config, root NgModule or inline config in `main.ts`|per answer|`provideA11yPreferences(withPersistence())`, `provideDirection('rtl')` for a right-to-left source locale, `provideFeedback(withToasts(), withAlerts(), withBanners())`, `provideFloatingFallback(computePosition, [flip(), shift()])`, `provideCngxI18n(withPack(...))`.|
-|Root component template and its `imports`|feedback|`<cngx-banner-outlet />` right above `<router-outlet>` (else at the end) and `<cngx-toast-outlet />` at the end, both after the `ng new` placeholder block, so deleting the placeholder keeps them; `CngxBannerOutlet` and `CngxToastOutlet` from `@cngx/ui/feedback` in the component `imports`, or in the root NgModule `imports` of an NgModule app. Placed once; an outlet you remove after the install stays out until you pass `--feedback` again. A template that does not parse, an `imports` that is not an array literal or a root component cngx cannot find from `main.ts` gets a note with the snippet instead. Alert stacks are not placed: they are scoped, so they go where the alerts belong. `ng update` only notes a missing outlet.|
+|Root component template and its `imports`|feedback|`<cngx-banner-outlet />` right above `<router-outlet>` (else at the end) and `<cngx-toast-outlet />` at the end, both after the `ng new` placeholder block, so deleting the placeholder keeps them; `CngxBannerOutlet` and `CngxToastOutlet` from `@cngx/ui/feedback` in the component `imports`, or in the root NgModule `imports` of an NgModule app. Placed once; an outlet you remove after the install stays out until you pass `--feedback` again, and once an install placed them cngx does not ask for them again, also when it can no longer edit the root component. A root component cngx cannot follow from `main.ts` or cannot edit safely gets a note with the snippet and the reason instead, see [Outlets left to you](#outlets-left-to-you). Alert stacks are not placed: they are scoped, so they go where the alerts belong. `ng update` only notes a missing outlet.|
 |`app.spec.ts` of the root component|feedback, unedited `ng new` spec|`providers: [provideFeedback(withToasts(), withBanners())]` in its `TestBed.configureTestingModule`, so the stock spec still renders `App` with the outlets in it. Any other spec gets a note with that snippet.|
 |`cngx-language.ts`|German with runtime switch|Next to the file holding the root providers (`src/cngx-language.ts` for an inline config in `main.ts`): a `cngxLanguagePack` signal. Set it to switch every cngx string at runtime. When the app already provides `provideCngxI18n(...)` without that signal, the provider is not rewritten: the file is still created and a note names the one edit, `withPack(cngxLanguagePack)` imported from `./cngx-language`.|
 |ESLint flat config|lint rules|`...cngx.configs.recommended` in the exported array of `eslint.config.js`, `.mjs`, `.cjs`, `.ts`, `.mts` or `.cts`, the one in the project root first, else the workspace one. A commented-out plugin import does not count as wired. It needs ESLint 9 or later and a TypeScript parser (`typescript-eslint`, `@typescript-eslint/parser` or `angular-eslint`): the cngx rules lint TypeScript through the app's own setup. The plugin also loads `@angular-eslint/template-parser` 19 or later; with `angular-eslint` declared it is added on that version line. Every case it cannot wire gets one note with the next command and no edit or dependency: ESLint below 9 (raise `eslint` to `^9` in devDependencies and reinstall; with `angular-eslint`, `ng update angular-eslint` moves its packages, without it `ng add angular-eslint` sets up ESLint 9), no flat config, no TypeScript parser or no template parser (`ng add angular-eslint`), a template parser line below 19 (`ng update angular-eslint`, or raise the parser itself), a legacy `.eslintrc*` config (`npx @eslint/migrate-config <file>`). Run `ng add @cngx/core` again afterwards. A config it cannot edit safely gets a note to add the entry by hand.|
@@ -220,6 +220,38 @@ turn the questions off the same way.
 Every generated source, style and Markdown file carries a provenance stamp
 naming the step and the cngx release that wrote it. A file that already
 exists and was not written by cngx is never overwritten; the step plans a note and leaves it to you.
+
+---
+
+## Outlets left to you
+
+cngx places the outlets only where it reads the whole root component the
+way the edit would change it. Everywhere else it writes nothing into the
+component, its template or its spec, and the note names the snippet and one
+of these reasons, with the class and the file it stopped at for `<Class>`
+and `<file>`:
+
+- `<file> does not exist`: the `browser` (or `main`) entry of the build target points at no file.
+- `<file> has no bootstrapApplication(<Component>) or bootstrapModule(<NgModule>) call cngx can read`: the call is missing or bootstraps something other than a class name.
+- `<Class>, bootstrapped from <file>, is declared neither there nor in a file a relative import leads to`: the class comes from a package or a path alias, or a re-export cngx does not follow (an aliased one, or more than four hops).
+- `<Class> in <file> has no @NgModule decorator`: the root NgModule carries no `@NgModule(...)` cngx can read.
+- `the @NgModule decorator of <Class> in <file> lists no bootstrap component`: `bootstrap: [App]` is missing or not an array literal.
+- `<Class> in <file> has no @Component decorator`: the root component carries no `@Component(...)`, for example one called through a namespace (`@core.Component`).
+- `the decorator of <Class> in <file> takes no object literal`: the decorator takes a variable or a call.
+- `the decorator of <Class> in <file> holds a spread or a computed key, so cngx cannot tell what it sets`: `...shared` or `['imports']` in the decorator object.
+- `the decorator of <Class> in <file> is written twice or sets a property more than once`: two `@Component` or `@NgModule` decorators, or a key such as `imports` written twice.
+- `the @Component decorator of <Class> in <file> sets neither template nor templateUrl`.
+- `the @Component decorator of <Class> in <file> sets both template and templateUrl`.
+- `the template or templateUrl of <Class> in <file> is not a string literal`: a constant or an expression.
+- `the inline template of <Class> in <file> interpolates ${...}, which cngx does not edit as text`.
+- `<file>, the templateUrl of <Class>, does not exist`.
+- `the template of <Class> in <file> does not parse as an Angular template`.
+- `the inline template of <Class> in <file> is a quoted string, which cngx does not rewrite into a multi-line template`: a `'...'` or `"..."` template that lacks an outlet; a backtick template is edited in place.
+- `the imports of <Class> in <file> are not a plain array literal`: `imports: SHARED`, a shorthand `imports`, or `imports: [...] as const`.
+- `<Class> in <file> is bound to something other than @cngx/ui/feedback`: the file already declares or imports a `CngxBannerOutlet` or `CngxToastOutlet` of its own.
+
+Fix what the reason names and run `ng add @cngx/core --feedback` again, or
+paste the snippet yourself.
 
 ---
 

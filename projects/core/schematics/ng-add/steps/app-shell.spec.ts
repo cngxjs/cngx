@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { createProvenance, type StepResult } from '../../engine';
 import { createAnswers, createFacts, VERSIONS } from '../../testing/onboarding';
 import { createFixtureTree, type FixtureName, readFixture } from '../../testing/run-schematic';
-import { appShellSpecOf, detectProject, type ProjectFacts } from '../detect/detect';
+import { type AppShell, appShellSpecOf, type AppShellUnfollowed, detectProject, type ProjectFacts } from '../detect/detect';
 import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell, planAppShellRerun, provideFeedbackInSpec, SPEC_ID } from './app-shell';
 
 const FEEDBACK = createAnswers({ feedback: true });
@@ -32,6 +32,16 @@ function applied(result: StepResult, files: Readonly<Files>): Files {
 function syntaxErrors(content: string): readonly string[] {
   const { diagnostics = [] } = ts.transpileModule(content, { reportDiagnostics: true, fileName: 'app.ts' });
   return diagnostics.map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
+}
+
+const UNFOLLOWED: AppShellUnfollowed = { kind: 'unfollowed', reason: 'no-bootstrap-call', subject: '', file: 'src/main.ts' };
+const UNFOLLOWED_TEXT = 'src/main.ts has no bootstrapApplication(<Component>) or bootstrapModule(<NgModule>) call cngx can read';
+
+function followed(facts: ProjectFacts): AppShell {
+  if (facts.appShell.kind !== 'followed') {
+    throw new Error('main.ts not followed');
+  }
+  return facts.appShell;
 }
 
 function plan(facts: ProjectFacts, recorded: readonly string[] = [], explicit = false): StepResult {
@@ -122,7 +132,7 @@ describe('planAppShell', () => {
 
     expect(result.changes.map((change) => change.label)).toEqual(['Place the toast and banner outlets in src/app/app.ts']);
     expect(next['src/app/app.ts']).toContain('      <cngx-banner-outlet />\n      <router-outlet />\n');
-    expect(next['src/app/app.ts']).toContain('<cngx-toast-outlet />\n`,');
+    expect(next['src/app/app.ts']).toContain('    </main>\n    <cngx-toast-outlet />\n  `,');
     expect(next['src/app/app.ts']).toContain('imports: [RouterOutlet, CngxBannerOutlet, CngxToastOutlet],');
   });
 
@@ -136,7 +146,7 @@ describe('planAppShell', () => {
         {
           kind: 'note',
           id: OUTLETS_ID,
-          reason: `the inline template of App is a quoted string, which cngx does not rewrite into a multi-line template; ${OUTLETS_SNIPPET}`,
+          reason: `the inline template of App in src/app/app.ts is a quoted string, which cngx does not rewrite into a multi-line template; ${OUTLETS_SNIPPET}`,
         },
       ]);
       expect(applied(result, files)['src/app/app.ts']).toBe(app);
@@ -171,9 +181,9 @@ describe('planAppShell', () => {
 
   it('places the banner from the detected router outlet fact, not from a second read of the template', async () => {
     const { facts, files } = await factsOf('scaffold-21');
-    const shell = facts.appShell;
-    const outlets = shell?.outlets.kind === 'editable' ? { ...shell.outlets, routerOutlet: false } : undefined;
-    const next = applied(plan({ ...facts, appShell: shell && outlets && { ...shell, outlets } }), files);
+    const shell = followed(facts);
+    const outlets = shell.outlets.kind === 'editable' ? { ...shell.outlets, routerOutlet: false } : shell.outlets;
+    const next = applied(plan({ ...facts, appShell: { ...shell, outlets } }), files);
 
     expect(next['src/app/app.html'].endsWith('\n<router-outlet />\n<cngx-banner-outlet />\n<cngx-toast-outlet />\n')).toBe(true);
   });
@@ -247,7 +257,7 @@ describe('planAppShell', () => {
     const { facts, files } = await factsOf('scaffold-21', { 'src/app/app.ts': app });
     const next = applied(plan(facts), files);
 
-    expect(facts.appShell?.outlets).toMatchObject({ kind: 'editable', classes: ['CngxToastOutlet'] });
+    expect(followed(facts).outlets).toMatchObject({ kind: 'editable', classes: ['CngxToastOutlet'] });
     expect(next['src/app/app.ts']).toContain('imports: [RouterOutlet, CngxToastOutlet, CngxBannerOutlet],');
     expect(next['src/app/app.ts']).toContain("import { CngxBannerOutlet } from '@cngx/ui/feedback';");
   });
@@ -308,15 +318,15 @@ describe('planAppShell', () => {
       expect(result.changes.some((change) => change.kind === 'edit-file')).toBe(false);
       expect(result.changes[0].reason).toContain(OUTLETS_SNIPPET);
     }
-    expect(plan(broken.facts).changes[0].reason).toMatch(/^src\/app\/app\.html does not parse as an Angular template; /);
+    expect(plan(broken.facts).changes[0].reason).toMatch(/^the template of App in src\/app\/app\.html does not parse as an Angular template; /);
     expect(plan(shared.facts).changes[0].reason).toMatch(/^the imports of App in src\/app\/app\.ts are not a plain array literal; /);
   });
 
   it('names the snippet when main.ts cannot be followed to the root component', () => {
-    const result = plan(createFacts({ appShell: undefined }));
+    const result = plan(createFacts({ appShell: UNFOLLOWED }));
 
     expect(result.changes).toMatchObject([
-      { kind: 'note', id: OUTLETS_ID, reason: `cngx could not follow main.ts to the root component; ${OUTLETS_SNIPPET}` },
+      { kind: 'note', id: OUTLETS_ID, reason: `${UNFOLLOWED_TEXT}; ${OUTLETS_SNIPPET}` },
     ]);
   });
 
@@ -386,8 +396,8 @@ describe('planAppShell', () => {
     });
     const recorded = [OUTLETS_ID, SPEC_ID];
 
-    expect(quoted.facts.appShell?.outlets.kind).toBe('blocked');
-    for (const shellFacts of [quoted.facts, createFacts({ appShell: undefined })]) {
+    expect(followed(quoted.facts).outlets.kind).toBe('blocked');
+    for (const shellFacts of [quoted.facts, createFacts({ appShell: UNFOLLOWED })]) {
       const result = plan(shellFacts, recorded);
       expect(result.changes).toEqual([]);
       expect(result.skipped.map((step) => step.id)).toEqual([OUTLETS_ID]);
@@ -444,8 +454,8 @@ describe('planAppShellRerun', () => {
       'src/app/app.ts': readFixture('scaffold-21')['src/app/app.ts'].replace('imports: [RouterOutlet],', 'imports: SHARED,'),
     });
 
-    expect(planAppShellRerun(createFacts({ appShell: undefined }), FEEDBACK, [], UPDATE).changes).toMatchObject([
-      { kind: 'note', id: OUTLETS_ID, reason: `cngx could not follow main.ts to the root component; ${OUTLETS_SNIPPET}` },
+    expect(planAppShellRerun(createFacts({ appShell: UNFOLLOWED }), FEEDBACK, [], UPDATE).changes).toMatchObject([
+      { kind: 'note', id: OUTLETS_ID, reason: `${UNFOLLOWED_TEXT}; ${OUTLETS_SNIPPET}` },
     ]);
     expect(planAppShellRerun(shared.facts, FEEDBACK, [], UPDATE).changes).toMatchObject([
       { kind: 'note', id: OUTLETS_ID, reason: `the imports of App in src/app/app.ts are not a plain array literal; ${OUTLETS_SNIPPET}` },
@@ -469,9 +479,9 @@ describe('planAppShellRerun', () => {
       'src/app/app.ts': INLINE_APP.replace(/template: `[\s\S]*?`/, "template: '<router-outlet />'"),
     });
 
-    expect(quoted.facts.appShell?.outlets.kind).toBe('blocked');
+    expect(followed(quoted.facts).outlets.kind).toBe('blocked');
     expect(planAppShellRerun(quoted.facts, FEEDBACK, [OUTLETS_ID], UPDATE)).toEqual({ changes: [], skipped: [] });
-    expect(planAppShellRerun(createFacts({ appShell: undefined }), FEEDBACK, [OUTLETS_ID], UPDATE)).toEqual({ changes: [], skipped: [] });
+    expect(planAppShellRerun(createFacts({ appShell: UNFOLLOWED }), FEEDBACK, [OUTLETS_ID], UPDATE)).toEqual({ changes: [], skipped: [] });
   });
 
   it('plans nothing when both outlets are there or feedback is off', async () => {
@@ -480,6 +490,6 @@ describe('planAppShellRerun', () => {
 
     expect(planAppShellRerun(placed, FEEDBACK, [], UPDATE)).toEqual({ changes: [], skipped: [] });
     expect(planAppShellRerun(facts, createAnswers(), [], UPDATE)).toEqual({ changes: [], skipped: [] });
-    expect(planAppShellRerun(createFacts({ appShell: undefined }), createAnswers(), [], UPDATE)).toEqual({ changes: [], skipped: [] });
+    expect(planAppShellRerun(createFacts({ appShell: UNFOLLOWED }), createAnswers(), [], UPDATE)).toEqual({ changes: [], skipped: [] });
   });
 });

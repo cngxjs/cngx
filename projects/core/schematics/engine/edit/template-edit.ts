@@ -76,11 +76,19 @@ export function insertBeforeElement(
 /**
  * Appends each of `markup` on a line of its own at the end of the template,
  * after whatever ends it (a trailing comment included), so deleting a block
- * above never deletes them. The existing content stays byte for byte; only a
+ * above never deletes them. Each line takes the indent of the template's
+ * first line, and a whitespace-only last line (the indent before the closing
+ * backtick of an inline template) stays last, so no whitespace-only line is
+ * left above the new ones. The existing content stays byte for byte; only a
  * missing final newline is added. `newline` defaults to the one the content
  * uses; an inline template passes the one of its host file.
  */
 export function appendElements(content: string, markup: readonly string[], newline = newlineOf(content)): string {
-  const head = content === '' || content.endsWith('\n') ? content : `${content}${newline}`;
-  return `${head}${markup.map((line) => `${line}${newline}`).join('')}`;
+  const tail = content.slice(content.lastIndexOf('\n') + 1);
+  const closing = tail.trim() === '' ? tail : '';
+  const body = content.slice(0, content.length - closing.length);
+  const head = body === '' || body.endsWith('\n') ? body : `${body}${newline}`;
+  const firstLine = content.split('\n').find((line) => line.trim() !== '') ?? '';
+  const indent = /^[ \t]*/.exec(firstLine)?.[0] ?? '';
+  return `${head}${markup.map((line) => `${indent}${line}${newline}`).join('')}${closing}`;
 }

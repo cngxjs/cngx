@@ -18,8 +18,10 @@ import {
 } from '../../engine';
 import {
   type AppShell,
+  appShellBlockedText,
   type AppShellOutlets,
   appShellSpecOf,
+  type AppShellUnfollowed,
   FEEDBACK_MODULE,
   FEEDBACK_OUTLETS,
   FEEDBACK_SPEC_IMPORT,
@@ -37,7 +39,6 @@ const BANNER = FEEDBACK_OUTLETS[0];
 const TOAST = FEEDBACK_OUTLETS[1];
 const OUTLET_REASON = 'CngxToaster and CngxBanner render nowhere without them';
 const WITHDRAWN_REASON = 'the outlets were removed after cngx placed them; pass --feedback to place them again';
-const UNFOLLOWED_REASON = 'cngx could not follow main.ts to the root component';
 const RECORDED_REASON = 'an earlier install placed them, so cngx does not ask for them again; pass --feedback to see how to place them';
 const SNIPPET_LABEL = 'Place the toast and banner outlets in the root component';
 const TESTBED = { kind: 'testbed-providers' } as const;
@@ -250,14 +251,14 @@ export function planAppShell(
   // The record is checked before the shell: outlets an earlier install placed
   // are never asked for again, also where cngx can no longer edit the shell.
   // The skip keeps the step id in the record.
-  if (withdrawable && (shell === undefined || shell.outlets.kind === 'blocked')) {
+  if (withdrawable && (shell.kind === 'unfollowed' || shell.outlets.kind === 'blocked')) {
     return { changes: [], skipped: [{ id: OUTLETS_ID, label: SNIPPET_LABEL, reason: RECORDED_REASON }] };
   }
-  if (shell === undefined) {
-    return snippetNote(UNFOLLOWED_REASON, provenance);
+  if (shell.kind === 'unfollowed') {
+    return snippetNote(appShellBlockedText(shell), provenance);
   }
   if (shell.outlets.kind === 'blocked') {
-    return snippetNote(shell.outlets.reason, provenance);
+    return snippetNote(appShellBlockedText(shell.outlets), provenance);
   }
   const targets = outletTargets(shell, provenance);
   const removed = shell.outlets.elements.length < FEEDBACK_OUTLETS.length;
@@ -286,15 +287,15 @@ export function planAppShell(
 // edited, or an outlet is missing, and this project's record never placed
 // them. Outlets the record placed are there or were withdrawn (A11), so they
 // are not asked for again, whatever the shell looks like now.
-function missingOutletsReason(shell: AppShell | undefined, recorded: readonly string[]): string | undefined {
+function missingOutletsReason(shell: AppShell | AppShellUnfollowed, recorded: readonly string[]): string | undefined {
   if (recorded.includes(OUTLETS_ID)) {
     return undefined;
   }
-  if (shell === undefined) {
-    return UNFOLLOWED_REASON;
+  if (shell.kind === 'unfollowed') {
+    return appShellBlockedText(shell);
   }
   if (shell.outlets.kind === 'blocked') {
-    return shell.outlets.reason;
+    return appShellBlockedText(shell.outlets);
   }
   if (shell.outlets.elements.length === FEEDBACK_OUTLETS.length) {
     return undefined;

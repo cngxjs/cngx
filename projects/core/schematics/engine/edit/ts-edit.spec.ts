@@ -515,7 +515,7 @@ export class App {}
     const interpolating = readDecorator('@Component({ template: `${X}` })\nexport class App {}\n', 'App', 'Component');
 
     expect(plain.kind === 'object' && plain.properties.get('template')).toMatchObject({ kind: 'string', quoted: false });
-    expect(interpolating.kind === 'object' && interpolating.properties.get('template')).toEqual({ kind: 'other' });
+    expect(interpolating.kind === 'object' && interpolating.properties.get('template')).toEqual({ kind: 'interpolated' });
   });
 
   it('reads a decorator without an object literal, another decorator and a missing class apart', () => {

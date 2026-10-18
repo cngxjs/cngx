@@ -1,8 +1,15 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { format } from 'prettier';
 import { describe, expect, it } from 'vitest';
 
 import { createFixtureTree, type FixtureName, readFixture } from '../../testing/run-schematic';
 import {
+  APP_SHELL_BLOCKED_REASONS,
+  type AppShell,
+  appShellBlockedText,
+  type AppShellBlockedReason,
   appShellOf,
   appShellSpecOf,
   FEEDBACK_SPEC_IMPORT,
@@ -14,6 +21,15 @@ import { type Read } from './workspace';
 function readerOf(name: FixtureName, overrides: Readonly<Record<string, string>> = {}): Read {
   const tree = createFixtureTree(name, overrides);
   return (path) => (tree.exists(path) ? tree.readText(path) : undefined);
+}
+
+// The followed shell; fails the spec with the reason when cngx stops on the way.
+function shellOf(read: Read, standalone = true, project = 'fixture-app'): AppShell {
+  const shell = appShellOf(read, 'src/main.ts', standalone, project);
+  if (shell.kind !== 'followed') {
+    throw new Error(appShellBlockedText(shell));
+  }
+  return shell;
 }
 
 const NGMODULE_MAIN = `import { platformBrowser } from '@angular/platform-browser';
@@ -80,6 +96,7 @@ function providedSpec(stock: string): string {
 describe('appShellOf', () => {
   it('follows bootstrapApplication to the root component of the standalone app', () => {
     expect(appShellOf(readerOf('standalone-app'), 'src/main.ts', true, 'fixture-app')).toEqual({
+      kind: 'followed',
       componentFile: 'src/app/app.ts',
       className: 'App',
       template: { kind: 'file', path: 'src/app/app.html' },
@@ -108,7 +125,7 @@ describe('appShellOf', () => {
   it('reads an inline template', () => {
     const read = readerOf('standalone-app', { 'src/app/app.ts': INLINE_APP });
 
-    expect(appShellOf(read, 'src/main.ts', true, 'fixture-app')?.template).toEqual({ kind: 'inline' });
+    expect(shellOf(read).template).toEqual({ kind: 'inline' });
   });
 
   it('resolves a templateUrl relative to the component file', () => {
@@ -117,7 +134,7 @@ describe('appShellOf', () => {
       'src/views/root.html': '<router-outlet />\n',
     });
 
-    expect(appShellOf(read, 'src/main.ts', true, 'fixture-app')?.template).toEqual({
+    expect(shellOf(read).template).toEqual({
       kind: 'file',
       path: 'src/views/root.html',
     });
@@ -161,11 +178,16 @@ describe('appShellOf', () => {
       'src/main.ts': "import { bootstrapApplication } from '@angular/platform-browser';\n\nbootstrapApplication(rootComponent());\n",
     });
 
-    expect(appShellOf(viaAlias, 'src/main.ts', true, 'fixture-app')).toBeUndefined();
-    expect(appShellOf(viaCall, 'src/main.ts', true, 'fixture-app')).toBeUndefined();
+    expect(appShellOf(viaAlias, 'src/main.ts', true, 'fixture-app')).toEqual({
+      kind: 'unfollowed',
+      reason: 'class-not-followed',
+      subject: 'App',
+      file: 'src/main.ts',
+    });
+    expect(appShellOf(viaCall, 'src/main.ts', true, 'fixture-app')).toMatchObject({ kind: 'unfollowed', reason: 'class-not-followed' });
   });
 
-  it('gives up on a missing template file or a component without a template', () => {
+  it('blocks the outlets of a missing template file and of a component without a template', () => {
     const missing = readerOf('standalone-app', {
       'src/app/app.ts': readFixture('standalone-app')['src/app/app.ts'].replace("'./app.html'", "'./gone.html'"),
     });
@@ -173,8 +195,8 @@ describe('appShellOf', () => {
       'src/app/app.ts': "import { Component } from '@angular/core';\n\n@Component({ selector: 'app-root' })\nexport class App {}\n",
     });
 
-    expect(appShellOf(missing, 'src/main.ts', true, 'fixture-app')).toBeUndefined();
-    expect(appShellOf(none, 'src/main.ts', true, 'fixture-app')).toBeUndefined();
+    expect(shellOf(missing).outlets).toEqual({ kind: 'blocked', reason: 'template-file-missing', subject: 'App', file: 'src/app/gone.html' });
+    expect(shellOf(none).outlets).toEqual({ kind: 'blocked', reason: 'no-template', subject: 'App', file: 'src/app/app.ts' });
   });
 
   it('finds the decorator through the AST when a template or a comment says class', () => {
@@ -202,20 +224,20 @@ describe('appShellOf', () => {
 
     expect(appShellOf(read, 'src/main.ts', true, 'fixture-app')).toMatchObject({
       template: { kind: 'unread' },
-      outlets: { kind: 'blocked', reason: 'the decorator of App in src/app/app.ts takes no object literal' },
+      outlets: { kind: 'blocked', reason: 'decorator-not-object', subject: 'App', file: 'src/app/app.ts' },
     });
   });
 
   it('reads the stock spec of the zoneless and the zone scaffold', () => {
     for (const name of ['scaffold-21', 'scaffold-21-zone'] as const) {
-      expect(appShellOf(readerOf(name), 'src/main.ts', true, 'fixture-app')?.spec).toBe('stock');
+      expect(shellOf(readerOf(name)).spec).toBe('stock');
     }
   });
 });
 
 describe('appShellOf outlets', () => {
   function outletsOf(overrides: Readonly<Record<string, string>>) {
-    return appShellOf(readerOf('scaffold-21', overrides), 'src/main.ts', true, 'fixture-app')?.outlets;
+    return shellOf(readerOf('scaffold-21', overrides)).outlets;
   }
 
   it('reads the outlets in the template and the outlet classes imported into the component', () => {
@@ -242,15 +264,19 @@ describe('appShellOf outlets', () => {
 
     expect(outletsOf({ 'src/app/app.html': '<div>@if (</div>\n' })).toEqual({
       kind: 'blocked',
-      reason: 'src/app/app.html does not parse as an Angular template',
+      reason: 'template-parse-error',
+      subject: 'App',
+      file: 'src/app/app.html',
     });
     expect(outletsOf({ 'src/app/app.ts': stock.replace('imports: [RouterOutlet],', 'imports: SHARED,') })).toEqual({
       kind: 'blocked',
-      reason: 'the imports of App in src/app/app.ts are not a plain array literal',
+      reason: 'imports-not-array',
+      subject: 'App',
+      file: 'src/app/app.ts',
     });
     expect(
       outletsOf({ 'src/app/app.ts': `import { CngxToastOutlet } from './toasts';\n${stock}` }),
-    ).toEqual({ kind: 'blocked', reason: 'CngxToastOutlet in src/app/app.ts is bound to something other than @cngx/ui/feedback' });
+    ).toEqual({ kind: 'blocked', reason: 'outlet-name-bound', subject: 'CngxToastOutlet', file: 'src/app/app.ts' });
   });
 
   it.each(["'imports'", '"imports"'])('reads a %s key of the component and the NgModule as their imports', (key) => {
@@ -264,23 +290,23 @@ describe('appShellOf outlets', () => {
     });
 
     expect(outletsOf({ 'src/app/app.ts': app })).toMatchObject({ kind: 'editable', classes: ['CngxToastOutlet'] });
-    expect(appShellOf(ngModule, 'src/main.ts', false, 'fixture-app')?.outlets).toMatchObject({ kind: 'editable', classes: [] });
+    expect(shellOf(ngModule, false).outlets).toMatchObject({ kind: 'editable', classes: [] });
   });
 
   it.each([
-    ['a spread', '  ...BASE,\n', 'the decorator of App in src/app/app.ts holds a spread or a computed key, so cngx cannot tell what it sets'],
-    ['a computed key', "  ['imports']: [RouterOutlet],\n", 'the decorator of App in src/app/app.ts holds a spread or a computed key, so cngx cannot tell what it sets'],
-    ['imports written twice', '  imports: [RouterOutlet],\n  imports: [],\n', 'the decorator of App in src/app/app.ts is written twice or sets a property more than once'],
-    ['a shorthand imports', '  imports,\n', 'the imports of App in src/app/app.ts are not a plain array literal'],
-    ['an identifier imports', '  imports: IMPORTS,\n', 'the imports of App in src/app/app.ts are not a plain array literal'],
+    ['a spread', '  ...BASE,\n', 'decorator-dynamic'],
+    ['a computed key', "  ['imports']: [RouterOutlet],\n", 'decorator-dynamic'],
+    ['imports written twice', '  imports: [RouterOutlet],\n  imports: [],\n', 'duplicate-property'],
+    ['a shorthand imports', '  imports,\n', 'imports-not-array'],
+    ['an identifier imports', '  imports: IMPORTS,\n', 'imports-not-array'],
   ])('blocks a component decorator with %s', (_name, imports, reason) => {
     const app = readFixture('scaffold-21')['src/app/app.ts'].replace('  imports: [RouterOutlet],\n', imports);
 
-    expect(outletsOf({ 'src/app/app.ts': app })).toEqual({ kind: 'blocked', reason });
+    expect(outletsOf({ 'src/app/app.ts': app })).toEqual({ kind: 'blocked', reason, subject: 'App', file: 'src/app/app.ts' });
   });
 
   it('blocks an NgModule whose imports cngx cannot write safely', () => {
-    const outlets = (imports: string) =>
+    const shell = (imports: string) =>
       appShellOf(
         readerOf('scaffold-21', {
           'src/main.ts': NGMODULE_MAIN,
@@ -290,15 +316,13 @@ describe('appShellOf outlets', () => {
         'src/main.ts',
         false,
         'fixture-app',
-      )?.outlets;
+      );
+    const at = { subject: 'AppModule', file: 'src/app/app-module.ts' };
 
     // The NgModule decorator also names the bootstrap component, so one cngx cannot read is not followed.
-    expect(outlets('  ...SHARED,')).toBeUndefined();
-    expect(outlets("  imports: [BrowserModule],\n  'imports': [],")).toBeUndefined();
-    expect(outlets('  imports: MODULES,')).toEqual({
-      kind: 'blocked',
-      reason: 'the imports of AppModule in src/app/app-module.ts are not a plain array literal',
-    });
+    expect(shell('  ...SHARED,')).toEqual({ kind: 'unfollowed', reason: 'decorator-dynamic', ...at });
+    expect(shell("  imports: [BrowserModule],\n  'imports': [],")).toEqual({ kind: 'unfollowed', reason: 'duplicate-property', ...at });
+    expect(shell('  imports: MODULES,')).toMatchObject({ outlets: { kind: 'blocked', reason: 'imports-not-array', ...at } });
   });
 
   it('reads an outlet class imported type-only as missing', () => {
@@ -312,21 +336,88 @@ describe('appShellOf outlets', () => {
   it('blocks an inline template that interpolates', () => {
     const read = readerOf('standalone-app', { 'src/app/app.ts': INLINE_APP.replace('<router-outlet />', '${OUTLET}') });
 
-    expect(appShellOf(read, 'src/main.ts', true, 'fixture-app')?.outlets).toMatchObject({ kind: 'blocked' });
+    expect(shellOf(read).outlets).toEqual({ kind: 'blocked', reason: 'template-interpolated', subject: 'App', file: 'src/app/app.ts' });
   });
 
   it('blocks a quoted inline template that lacks an outlet, but not one that holds both', () => {
     const quoted = INLINE_APP.replace('`<router-outlet />`', "'<router-outlet />'");
     const placed = INLINE_APP.replace('`<router-outlet />`', '"<cngx-banner-outlet /><router-outlet /><cngx-toast-outlet />"');
 
-    expect(appShellOf(readerOf('standalone-app', { 'src/app/app.ts': quoted }), 'src/main.ts', true, 'fixture-app')?.outlets).toEqual({
+    expect(shellOf(readerOf('standalone-app', { 'src/app/app.ts': quoted })).outlets).toEqual({
       kind: 'blocked',
-      reason: 'the inline template of App is a quoted string, which cngx does not rewrite into a multi-line template',
+      reason: 'quoted-template',
+      subject: 'App',
+      file: 'src/app/app.ts',
     });
-    expect(appShellOf(readerOf('standalone-app', { 'src/app/app.ts': placed }), 'src/main.ts', true, 'fixture-app')?.outlets).toMatchObject({
+    expect(shellOf(readerOf('standalone-app', { 'src/app/app.ts': placed })).outlets).toMatchObject({
       kind: 'editable',
       elements: ['cngx-banner-outlet', 'cngx-toast-outlet'],
     });
+  });
+});
+
+interface ReasonShape {
+  readonly files?: Readonly<Record<string, string>>;
+  readonly gone?: string;
+  readonly ngModule?: boolean;
+  readonly subject: string;
+  readonly file: string;
+}
+
+const STOCK_APP = readFixture('scaffold-21')['src/app/app.ts'];
+const AT_APP = { subject: 'App', file: 'src/app/app.ts' };
+const AT_MODULE = { subject: 'AppModule', file: 'src/app/app-module.ts' };
+
+function stockApp(from: string | RegExp, to: string): Readonly<Record<string, string>> {
+  return { 'src/app/app.ts': STOCK_APP.replace(from, to) };
+}
+
+function moduleApp(module: string): Readonly<Record<string, string>> {
+  return { 'src/main.ts': NGMODULE_MAIN, 'src/app/app-module.ts': module, 'src/app/app.ts': NGMODULE_APP };
+}
+
+// One shape per reason; the record type fails the build when a reason has none.
+const REASON_SHAPES: Readonly<Record<AppShellBlockedReason, ReasonShape>> = {
+  'main-missing': { gone: 'src/main.ts', subject: '', file: 'src/main.ts' },
+  'no-bootstrap-call': { files: { 'src/main.ts': "import { App } from './app/app';\n" }, subject: '', file: 'src/main.ts' },
+  'class-not-followed': {
+    files: { 'src/main.ts': "import { bootstrapApplication } from '@angular/platform-browser';\nimport { App } from '@acme/shell';\n\nbootstrapApplication(App);\n" },
+    subject: 'App',
+    file: 'src/main.ts',
+  },
+  'no-ngmodule-decorator': { files: moduleApp('export class AppModule {}\n'), ngModule: true, ...AT_MODULE },
+  'no-bootstrap-component': { files: moduleApp(NGMODULE.replace(',\n  bootstrap: [App]', '')), ngModule: true, ...AT_MODULE },
+  'no-component-decorator': { files: { 'src/app/app.ts': 'export class App {}\n' }, ...AT_APP },
+  'decorator-not-object': { files: stockApp(/@Component\(\{[\s\S]*?\}\)/, '@Component(CONFIG)'), ...AT_APP },
+  'decorator-dynamic': { files: stockApp('  imports: [RouterOutlet],\n', '  ...BASE,\n'), ...AT_APP },
+  'duplicate-property': { files: stockApp('  imports: [RouterOutlet],\n', '  imports: [RouterOutlet],\n  imports: [],\n'), ...AT_APP },
+  'no-template': { files: stockApp("  templateUrl: './app.html',\n", ''), ...AT_APP },
+  'two-templates': { files: stockApp("  templateUrl: './app.html',\n", "  templateUrl: './app.html',\n  template: '',\n"), ...AT_APP },
+  'template-not-literal': { files: stockApp("templateUrl: './app.html'", 'templateUrl: URL'), ...AT_APP },
+  'template-interpolated': { files: stockApp("templateUrl: './app.html'", 'template: `${X}`'), ...AT_APP },
+  'template-file-missing': { gone: 'src/app/app.html', subject: 'App', file: 'src/app/app.html' },
+  'template-parse-error': { files: { 'src/app/app.html': '<div>@if (</div>\n' }, subject: 'App', file: 'src/app/app.html' },
+  'quoted-template': { files: stockApp("templateUrl: './app.html'", "template: '<router-outlet />'"), ...AT_APP },
+  'imports-not-array': { files: stockApp('imports: [RouterOutlet]', 'imports: SHARED'), ...AT_APP },
+  'outlet-name-bound': { files: stockApp("import { RouterOutlet } from '@angular/router';", "import { RouterOutlet } from '@angular/router';\nimport { CngxToastOutlet } from './toasts';"), subject: 'CngxToastOutlet', file: 'src/app/app.ts' },
+};
+
+const INSTALL_DOC = readFileSync(join(__dirname, '..', '..', '..', '..', '..', 'core-concepts', 'install.md'), 'utf8');
+
+describe('the blocked app shell reasons', () => {
+  it.each(Object.entries(REASON_SHAPES))('names %s with the class and the file it stopped at', (reason, shape) => {
+    const tree = createFixtureTree('scaffold-21', shape.files ?? {});
+    if (shape.gone !== undefined) {
+      tree.delete(shape.gone);
+    }
+    const shell = appShellOf((path) => (tree.exists(path) ? tree.readText(path) : undefined), 'src/main.ts', shape.ngModule !== true, 'fixture-app');
+    const at = shell.kind === 'unfollowed' ? shell : shell.outlets;
+
+    expect(at).toMatchObject({ reason, subject: shape.subject, file: shape.file });
+  });
+
+  it.each(Object.keys(APP_SHELL_BLOCKED_REASONS) as AppShellBlockedReason[])('documents %s in core-concepts/install.md', (reason) => {
+    expect(INSTALL_DOC).toContain(appShellBlockedText({ reason, subject: '<Class>', file: '<file>' }));
   });
 });
 

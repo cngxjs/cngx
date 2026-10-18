@@ -27,7 +27,7 @@ import {
   mcpConfigsOf,
   type McpConfigState,
 } from './ai-tooling';
-import { type AppShell, appShellOf } from './app-shell';
+import { type AppShell, appShellOf, type AppShellUnfollowed } from './app-shell';
 import { maturityOf, rootProvidersPath } from './bootstrap';
 import {
   detectEslintConfig,
@@ -74,9 +74,13 @@ export {
   type McpConfigState,
 } from './ai-tooling';
 export {
+  APP_SHELL_BLOCKED_REASONS,
   type AppShell,
+  appShellBlockedText,
+  type AppShellBlockedReason,
   type AppShellOutlets,
   appShellSpecOf,
+  type AppShellUnfollowed,
   FEEDBACK_MODULE,
   FEEDBACK_OUTLETS,
   FEEDBACK_SPEC_IMPORT,
@@ -130,8 +134,8 @@ export interface ProjectFacts {
   readonly rootProvidersFile: string;
   /** Every `provide*()` call already in that file. */
   readonly rootProviders: readonly string[];
-  /** The bootstrapped root component; `undefined` when `main.ts` cannot be followed to it. */
-  readonly appShell: AppShell | undefined;
+  /** The bootstrapped root component, or why `main.ts` cannot be followed to it. */
+  readonly appShell: AppShell | AppShellUnfollowed;
   /** `cngx-language.ts` next to `rootProvidersFile`. */
   readonly languageFile: GeneratedFileState;
   /** The pack a `provideCngxI18n(withPack(...))` there passes; `undefined` when none. */

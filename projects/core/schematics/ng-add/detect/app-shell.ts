@@ -16,8 +16,8 @@ import { type Read } from './workspace';
 
 /**
  * Where the root component's template lives: a file next to it, inline in
- * the decorator, or `unread` when the decorator takes no object literal, so
- * cngx cannot tell (the outlets are then blocked).
+ * the decorator, or `unread` when the decorator does not tell (the outlets
+ * are then blocked with the reason).
  */
 export type AppShellTemplate =
   | { readonly kind: 'file'; readonly path: string }
@@ -32,6 +32,7 @@ export type AppShellSpec = 'stock' | 'provided' | 'custom' | 'absent';
 
 /** The component `main.ts` bootstraps, and where its outlets and their imports go. */
 export interface AppShell {
+  readonly kind: 'followed';
   readonly componentFile: string;
   readonly className: string;
   readonly template: AppShellTemplate;
@@ -41,6 +42,68 @@ export interface AppShell {
   readonly specPath: string | undefined;
   readonly spec: AppShellSpec;
   readonly outlets: AppShellOutlets;
+}
+
+interface BlockedAt {
+  /** The class (or outlet class) the reason names; empty where it names none. */
+  readonly subject: string;
+  readonly file: string;
+}
+
+/**
+ * Every reason cngx leaves the outlets to the user, one per way detection
+ * stops, with its text; `core-concepts/install.md` lists each text with
+ * `<Class>` and `<file>` for the subject and the file (a spec guards it).
+ */
+export const APP_SHELL_BLOCKED_REASONS = {
+  'main-missing': ({ file }: BlockedAt) => `${file} does not exist`,
+  'no-bootstrap-call': ({ file }: BlockedAt) =>
+    `${file} has no bootstrapApplication(<Component>) or bootstrapModule(<NgModule>) call cngx can read`,
+  'class-not-followed': ({ subject, file }: BlockedAt) =>
+    `${subject}, bootstrapped from ${file}, is declared neither there nor in a file a relative import leads to`,
+  'no-ngmodule-decorator': ({ subject, file }: BlockedAt) => `${subject} in ${file} has no @NgModule decorator`,
+  'no-bootstrap-component': ({ subject, file }: BlockedAt) =>
+    `the @NgModule decorator of ${subject} in ${file} lists no bootstrap component`,
+  'no-component-decorator': ({ subject, file }: BlockedAt) => `${subject} in ${file} has no @Component decorator`,
+  'decorator-not-object': ({ subject, file }: BlockedAt) => `the decorator of ${subject} in ${file} takes no object literal`,
+  'decorator-dynamic': ({ subject, file }: BlockedAt) =>
+    `the decorator of ${subject} in ${file} holds a spread or a computed key, so cngx cannot tell what it sets`,
+  'duplicate-property': ({ subject, file }: BlockedAt) =>
+    `the decorator of ${subject} in ${file} is written twice or sets a property more than once`,
+  'no-template': ({ subject, file }: BlockedAt) =>
+    `the @Component decorator of ${subject} in ${file} sets neither template nor templateUrl`,
+  'two-templates': ({ subject, file }: BlockedAt) =>
+    `the @Component decorator of ${subject} in ${file} sets both template and templateUrl`,
+  'template-not-literal': ({ subject, file }: BlockedAt) =>
+    `the template or templateUrl of ${subject} in ${file} is not a string literal`,
+  'template-interpolated': ({ subject, file }: BlockedAt) =>
+    `the inline template of ${subject} in ${file} interpolates \${...}, which cngx does not edit as text`,
+  'template-file-missing': ({ subject, file }: BlockedAt) => `${file}, the templateUrl of ${subject}, does not exist`,
+  'template-parse-error': ({ subject, file }: BlockedAt) =>
+    `the template of ${subject} in ${file} does not parse as an Angular template`,
+  'quoted-template': ({ subject, file }: BlockedAt) =>
+    `the inline template of ${subject} in ${file} is a quoted string, which cngx does not rewrite into a multi-line template`,
+  'imports-not-array': ({ subject, file }: BlockedAt) => `the imports of ${subject} in ${file} are not a plain array literal`,
+  'outlet-name-bound': ({ subject, file }: BlockedAt) =>
+    `${subject} in ${file} is bound to something other than @cngx/ui/feedback`,
+} as const;
+
+/** Why cngx leaves the outlets to the user: a key of `APP_SHELL_BLOCKED_REASONS`. */
+export type AppShellBlockedReason = keyof typeof APP_SHELL_BLOCKED_REASONS;
+
+/** A reason with the class and the file it names. */
+export interface AppShellBlocked extends BlockedAt {
+  readonly reason: AppShellBlockedReason;
+}
+
+/** The text a note gives for a blocked or unfollowed app shell. */
+export function appShellBlockedText(blocked: AppShellBlocked): string {
+  return APP_SHELL_BLOCKED_REASONS[blocked.reason](blocked);
+}
+
+/** `main.ts` not followed to a root component, and why. */
+export interface AppShellUnfollowed extends AppShellBlocked {
+  readonly kind: 'unfollowed';
 }
 
 /** The outlets the feedback services render into, in the order the outlets step places them. */
@@ -66,7 +129,7 @@ export type AppShellOutlets =
       /** The template holds a `<router-outlet>`; the banner outlet goes right above it. */
       readonly routerOutlet: boolean;
     }
-  | { readonly kind: 'blocked'; readonly reason: string };
+  | ({ readonly kind: 'blocked' } & AppShellBlocked);
 
 /** The import the feedback providers in the root component's spec need. */
 export const FEEDBACK_SPEC_IMPORT = "import { provideFeedback, withBanners, withToasts } from '@cngx/ui/feedback';";
@@ -119,19 +182,13 @@ function definitionOf(read: Read, file: string, content: string, name: string): 
   return target === undefined ? undefined : classFile(read, target, name);
 }
 
-function templateOf(read: Read, componentFile: string, decorator: DecoratorReading): AppShellTemplate | undefined {
-  if (decorator.kind === 'absent') {
-    return undefined;
-  }
-  if (decorator.kind === 'no-object' || decorator.kind === 'unreadable') {
-    return { kind: 'unread' };
-  }
-  const url = decorator.properties.get('templateUrl');
+function templateOf(componentFile: string, decorator: DecoratorReading): AppShellTemplate {
+  const properties = decorator.kind === 'object' ? decorator.properties : new Map<string, never>();
+  const url = properties.get('templateUrl');
   if (url?.kind === 'string') {
-    const path = posix.join(posix.dirname(componentFile), url.text);
-    return read(path) === undefined ? undefined : { kind: 'file', path };
+    return { kind: 'file', path: posix.join(posix.dirname(componentFile), url.text) };
   }
-  return decorator.properties.has('template') ? { kind: 'inline' } : undefined;
+  return properties.has('template') && url === undefined ? { kind: 'inline' } : { kind: 'unread' };
 }
 
 function normalize(content: string): string {
@@ -208,29 +265,53 @@ function routerOutletIn(template: string): boolean | undefined {
   }
 }
 
+function blocked(reason: AppShellBlockedReason, subject: string, file: string): AppShellBlocked {
+  return { reason, subject, file };
+}
+
 // Why cngx does not read a decorator, or `undefined` when it does.
-function unreadDecoratorReason(decorator: DecoratorReading, className: string, file: string): string | undefined {
+function unreadDecorator(decorator: DecoratorReading, className: string, file: string): AppShellBlocked | undefined {
   if (decorator.kind === 'unreadable') {
-    return decorator.cause === 'dynamic'
-      ? `the decorator of ${className} in ${file} holds a spread or a computed key, so cngx cannot tell what it sets`
-      : `the decorator of ${className} in ${file} is written twice or sets a property more than once`;
+    return blocked(decorator.cause === 'dynamic' ? 'decorator-dynamic' : 'duplicate-property', className, file);
   }
-  return decorator.kind === 'object' ? undefined : `the decorator of ${className} in ${file} takes no object literal`;
+  return decorator.kind === 'object' ? undefined : blocked('decorator-not-object', className, file);
+}
+
+// Why the decorator names no template cngx can edit, or `undefined` when it does.
+function unreadTemplate(decorator: DecoratorReading, className: string, file: string): AppShellBlocked | undefined {
+  const properties = decorator.kind === 'object' ? decorator.properties : new Map<string, never>();
+  const url = properties.get('templateUrl');
+  const inline = properties.get('template');
+  if (url !== undefined && inline !== undefined) {
+    return blocked('two-templates', className, file);
+  }
+  if (url === undefined && inline === undefined) {
+    return blocked('no-template', className, file);
+  }
+  if (inline?.kind === 'interpolated') {
+    return blocked('template-interpolated', className, file);
+  }
+  const literal = (url ?? inline)?.kind === 'string';
+  return literal ? undefined : blocked('template-not-literal', className, file);
 }
 
 // Why the imports host cannot take the outlet classes, or `undefined` when
 // it can: detection calls it editable only where the edit engine finds the
 // array or can add the property, through the same property lookup.
-function importsBlockedReason(host: string, importsHost: AppShell['importsHost']): string | undefined {
+function unreadImports(host: string, importsHost: AppShell['importsHost']): AppShellBlocked | undefined {
   const { file, className, kind } = importsHost;
   const decorator = readDecorator(host, className, kind === 'component' ? 'Component' : 'NgModule');
-  const unread = unreadDecoratorReason(decorator, className, file);
+  const unread = unreadDecorator(decorator, className, file);
   if (unread !== undefined) {
     return unread;
   }
   const selector = { kind: 'decorator-imports', className } as const;
   const editable = hasArrayLiteral(host, selector) || ensureArrayProperty(host, selector) !== host;
-  return editable ? undefined : `the imports of ${className} in ${file} are not a plain array literal`;
+  return editable ? undefined : blocked('imports-not-array', className, file);
+}
+
+function blockedOutlets(at: AppShellBlocked): AppShellOutlets {
+  return { kind: 'blocked', ...at };
 }
 
 function outletsOf(
@@ -239,35 +320,39 @@ function outletsOf(
   content: string,
   decorator: DecoratorReading,
 ): AppShellOutlets {
-  const unread = unreadDecoratorReason(decorator, shell.className, shell.componentFile);
+  const { componentFile, className } = shell;
+  const unread = unreadDecorator(decorator, className, componentFile) ?? unreadTemplate(decorator, className, componentFile);
   if (unread !== undefined) {
-    return { kind: 'blocked', reason: unread };
+    return blockedOutlets(unread);
   }
-  const where = shell.template.kind === 'file' ? shell.template.path : `the inline template of ${shell.className}`;
-  const inline = shell.template.kind === 'inline' ? inlineTemplateOf(content, shell.className) : undefined;
+  const templateFile = shell.template.kind === 'file' ? shell.template.path : componentFile;
+  const inline = shell.template.kind === 'inline' ? inlineTemplateOf(content, className) : undefined;
   const template = shell.template.kind === 'file' ? read(shell.template.path) : inline?.text;
-  const routerOutlet = template === undefined ? undefined : routerOutletIn(template);
-  if (template === undefined || routerOutlet === undefined) {
-    return { kind: 'blocked', reason: `${where} does not parse as an Angular template` };
+  if (template === undefined) {
+    return blockedOutlets(blocked('template-file-missing', className, templateFile));
+  }
+  const routerOutlet = routerOutletIn(template);
+  if (routerOutlet === undefined) {
+    return blockedOutlets(blocked('template-parse-error', className, templateFile));
   }
   const elements = FEEDBACK_OUTLETS.filter(({ element }) => hasElement(template, element)).map(({ element }) => element);
   if (inline?.quoted === true && elements.length < FEEDBACK_OUTLETS.length) {
-    return { kind: 'blocked', reason: `${where} is a quoted string, which cngx does not rewrite into a multi-line template` };
+    return blockedOutlets(blocked('quoted-template', className, componentFile));
   }
-  const { file, className } = shell.importsHost;
+  const { file } = shell.importsHost;
   const host = read(file) ?? '';
-  const importsBlocked = importsBlockedReason(host, shell.importsHost);
+  const importsBlocked = unreadImports(host, shell.importsHost);
   if (importsBlocked !== undefined) {
-    return { kind: 'blocked', reason: importsBlocked };
+    return blockedOutlets(importsBlocked);
   }
-  const selector = { kind: 'decorator-imports', className } as const;
+  const selector = { kind: 'decorator-imports', className: shell.importsHost.className } as const;
   const bindings = topLevelBindings(host);
   const clash = FEEDBACK_OUTLETS.find(({ className: name }) => {
     const binding = bindings.get(name);
     return binding !== undefined && binding.module !== FEEDBACK_MODULE;
   });
   if (clash !== undefined) {
-    return { kind: 'blocked', reason: `${clash.className} in ${file} is bound to something other than ${FEEDBACK_MODULE}` };
+    return blockedOutlets(blocked('outlet-name-bound', clash.className, file));
   }
   return {
     kind: 'editable',
@@ -286,55 +371,79 @@ interface Bootstrapped {
   readonly importsHost: AppShell['importsHost'];
 }
 
-function standaloneRoot(read: Read, mainPath: string, main: string): Bootstrapped | undefined {
+function standaloneRoot(read: Read, mainPath: string, main: string): Bootstrapped | AppShellBlocked {
   const className = /bootstrapApplication\s*\(\s*(\w+)/.exec(main)?.[1];
-  const componentFile = className === undefined ? undefined : definitionOf(read, mainPath, main, className);
-  if (className === undefined || componentFile === undefined) {
-    return undefined;
+  if (className === undefined) {
+    return blocked('no-bootstrap-call', '', mainPath);
+  }
+  const componentFile = definitionOf(read, mainPath, main, className);
+  if (componentFile === undefined) {
+    return blocked('class-not-followed', className, mainPath);
   }
   return { componentFile, className, importsHost: { file: componentFile, kind: 'component', className } };
 }
 
-function moduleRoot(read: Read, mainPath: string, main: string): Bootstrapped | undefined {
+function moduleRoot(read: Read, mainPath: string, main: string): Bootstrapped | AppShellBlocked {
   const moduleName = /bootstrapModule\s*\(\s*(\w+)/.exec(main)?.[1];
-  const moduleFile = moduleName === undefined ? undefined : definitionOf(read, mainPath, main, moduleName);
+  if (moduleName === undefined) {
+    return blocked('no-bootstrap-call', '', mainPath);
+  }
+  const moduleFile = definitionOf(read, mainPath, main, moduleName);
   const moduleContent = moduleFile === undefined ? undefined : read(moduleFile);
-  if (moduleName === undefined || moduleFile === undefined || moduleContent === undefined) {
-    return undefined;
+  if (moduleFile === undefined || moduleContent === undefined) {
+    return blocked('class-not-followed', moduleName, mainPath);
   }
   const decorator = readDecorator(moduleContent, moduleName, 'NgModule');
+  if (decorator.kind === 'absent') {
+    return blocked('no-ngmodule-decorator', moduleName, moduleFile);
+  }
+  const unread = unreadDecorator(decorator, moduleName, moduleFile);
+  if (unread !== undefined) {
+    return unread;
+  }
   const bootstrap = decorator.kind === 'object' ? decorator.properties.get('bootstrap') : undefined;
   const className = bootstrap?.kind === 'array' ? bootstrap.elements[0] : undefined;
-  const componentFile = className === undefined ? undefined : definitionOf(read, moduleFile, moduleContent, className);
-  if (className === undefined || componentFile === undefined) {
-    return undefined;
+  if (className === undefined) {
+    return blocked('no-bootstrap-component', moduleName, moduleFile);
+  }
+  const componentFile = definitionOf(read, moduleFile, moduleContent, className);
+  if (componentFile === undefined) {
+    return blocked('class-not-followed', className, moduleFile);
   }
   return { componentFile, className, importsHost: { file: moduleFile, kind: 'ng-module', className: moduleName } };
+}
+
+function isBlocked(root: Bootstrapped | AppShellBlocked): root is AppShellBlocked {
+  return 'reason' in root;
 }
 
 /**
  * Follows `bootstrapApplication(<Class>, ...)` or `bootstrapModule(<Module>)`
  * in `main.ts` to the root component, the same call shapes
- * `rootProvidersPath` follows. `undefined` when a step of the way does not
- * read: no such call, a non-relative import, no decorator, or a template
- * file that is missing; the outlets step then names the snippet instead. A
- * `@Component` that takes no object literal is a shell with blocked outlets.
+ * `rootProvidersPath` follows. `unfollowed` with the reason when a step of
+ * the way does not read: no such call, a non-relative import, no decorator;
+ * the outlets step then names the snippet instead. A shell cngx follows but
+ * cannot edit safely has blocked outlets with the reason.
  */
-export function appShellOf(read: Read, mainPath: string, standalone: boolean, project: string): AppShell | undefined {
+export function appShellOf(read: Read, mainPath: string, standalone: boolean, project: string): AppShell | AppShellUnfollowed {
   const main = read(mainPath);
   if (main === undefined) {
-    return undefined;
+    return { kind: 'unfollowed', ...blocked('main-missing', '', mainPath) };
   }
   const root = standalone ? standaloneRoot(read, mainPath, main) : moduleRoot(read, mainPath, main);
-  const content = root === undefined ? undefined : read(root.componentFile);
-  const decorator = root === undefined || content === undefined ? undefined : readDecorator(content, root.className, 'Component');
-  const template = root === undefined || decorator === undefined ? undefined : templateOf(read, root.componentFile, decorator);
-  if (root === undefined || template === undefined) {
-    return undefined;
+  if (isBlocked(root)) {
+    return { kind: 'unfollowed', ...root };
   }
-  const outlets = outletsOf(read, { ...root, template }, content ?? '', decorator ?? { kind: 'absent' });
+  const content = read(root.componentFile) ?? '';
+  const decorator = readDecorator(content, root.className, 'Component');
+  if (decorator.kind === 'absent') {
+    return { kind: 'unfollowed', ...blocked('no-component-decorator', root.className, root.componentFile) };
+  }
+  const template = templateOf(root.componentFile, decorator);
+  const outlets = outletsOf(read, { ...root, template }, content, decorator);
   const specPath = root.componentFile.endsWith('.ts') ? root.componentFile.replace(/\.ts$/, '.spec.ts') : undefined;
   return {
+    kind: 'followed',
     ...root,
     template,
     specPath,

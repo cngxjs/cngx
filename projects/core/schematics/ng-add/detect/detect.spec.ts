@@ -73,6 +73,7 @@ describe('detectProject', () => {
       rootProvidersFile: 'src/app/app.config.ts',
       rootProviders: ['provideBrowserGlobalErrorListeners', 'provideRouter'],
       appShell: {
+        kind: 'followed',
         componentFile: 'src/app/app.ts',
         className: 'App',
         template: { kind: 'file', path: 'src/app/app.html' },
