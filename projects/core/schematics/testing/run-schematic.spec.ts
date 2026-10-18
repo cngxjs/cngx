@@ -33,6 +33,46 @@ describe('readFixture', () => {
       'tsconfig.json',
     ]);
   });
+
+  it('reads the untouched ng new 21 scaffold with its stock spec and welcome page', () => {
+    const files = readFixture('scaffold-21');
+
+    expect(Object.keys(files).sort()).toEqual([
+      '.prettierrc',
+      'angular.json',
+      'package.json',
+      'src/app/app.config.ts',
+      'src/app/app.css',
+      'src/app/app.html',
+      'src/app/app.routes.ts',
+      'src/app/app.spec.ts',
+      'src/app/app.ts',
+      'src/main.ts',
+      'src/styles.css',
+    ]);
+    expect(files['src/app/app.html']).toContain('End of Placeholder');
+    expect(files['src/app/app.html']).toMatch(/<router-outlet \/>\n$/);
+    expect(files['src/app/app.spec.ts']).toContain('await fixture.whenStable();');
+    expect(files['src/app/app.css']).toBe('');
+  });
+
+  it('reads each scaffold variant with only its own difference', () => {
+    const stock = readFixture('scaffold-21');
+    const routingOff = readFixture('scaffold-21-routing-off');
+    const zone = readFixture('scaffold-21-zone');
+    const scss = readFixture('scaffold-21-scss');
+
+    expect(routingOff['src/app/app.ts']).toContain('imports: [],');
+    expect(routingOff['src/app/app.html']).not.toContain('<router-outlet');
+    expect(routingOff['src/app/app.routes.ts']).toBeUndefined();
+    expect(zone['src/app/app.spec.ts']).toContain('fixture.detectChanges();');
+    expect(zone['src/app/app.spec.ts']).not.toContain('whenStable');
+    expect(zone['angular.json']).toContain('"zone.js"');
+    expect(zone['src/app/app.ts']).toBe(stock['src/app/app.ts']);
+    expect(scss['src/app/app.ts']).toContain("styleUrl: './app.scss'");
+    expect(scss['src/app/app.scss']).toBe('');
+    expect(scss['src/app/app.css']).toBeUndefined();
+  });
 });
 
 describe('createFixtureTree', () => {
@@ -46,6 +86,14 @@ describe('createFixtureTree', () => {
     const workspace = await readWorkspace(createFixtureTree('existing-tailwind-app'));
 
     expect([...workspace.projects.keys()]).toEqual(['tailwind-app']);
+  });
+
+  it('reads every scaffold variant as a workspace', async () => {
+    for (const name of ['scaffold-21', 'scaffold-21-routing-off', 'scaffold-21-zone', 'scaffold-21-scss'] as const) {
+      const workspace = await readWorkspace(createFixtureTree(name));
+
+      expect([...workspace.projects.keys()]).toEqual(['fixture-app']);
+    }
   });
 
   it('applies overrides on top of the stock files', () => {

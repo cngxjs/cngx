@@ -3,7 +3,8 @@ import { defineConfig } from 'vitest/config';
 
 // The schematics run in Node under the Angular CLI, not in a browser build,
 // so their specs live outside `ng test core` (angular.json excludes the
-// folder there).
+// folder there). The fixture apps hold the stock `ng new` `app.spec.ts`,
+// which is data for the specs, not a spec.
 // The esbuild build loads a `.tpl` template as text; the specs do the same.
 const templateText = {
   name: 'cngx-template-text',
@@ -18,7 +19,7 @@ export default defineConfig({
   test: {
     root: fileURLToPath(new URL('.', import.meta.url)),
     include: ['**/*.spec.ts'],
-    exclude: ['**/node_modules/**', '**/dist/**'],
+    exclude: ['**/node_modules/**', '**/dist/**', 'testing/fixtures/**'],
     environment: 'node',
   },
 });
