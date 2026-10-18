@@ -3,7 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { TmplAstElement, TmplAstTemplate } from '@angular/compiler';
 
 import { readFixture } from '../../testing/run-schematic';
-import { appendElements, hasElement, insertBeforeElement, parseTemplateContent, walkNodes } from './template-edit';
+import {
+  appendElements,
+  hasElement,
+  hasElementOutsidePlaceholder,
+  insertBeforeElement,
+  parseTemplateContent,
+  walkNodes,
+} from './template-edit';
 
 const TEMPLATE = `<section>
   <button type="button">Save</button>
@@ -94,6 +101,26 @@ describe('insertBeforeElement', () => {
 
     expect(edited.indexOf('<cngx-banner-outlet />')).toBeGreaterThan(edited.indexOf('End of Placeholder'));
     expect(edited.endsWith('<cngx-banner-outlet />\n<router-outlet />\n')).toBe(true);
+  });
+
+  it('passes over an element inside the CLI placeholder block the user deletes', () => {
+    const stock = readFixture('scaffold-21')['src/app/app.html'];
+    const inside = stock.replace('\n\n\n<router-outlet />\n', '\n').replace('</main>\n', '</main>\n<router-outlet />\n');
+    const both = `${inside}<router-outlet />\n`;
+
+    expect(hasElement(inside, 'router-outlet')).toBe(true);
+    expect(hasElementOutsidePlaceholder(inside, 'router-outlet')).toBe(false);
+    expect(insertBeforeElement(inside, 'router-outlet', '<x-a />')).toBe(inside);
+    expect(hasElementOutsidePlaceholder(both, 'router-outlet')).toBe(true);
+    expect(insertBeforeElement(both, 'router-outlet', '<x-a />').endsWith('<x-a />\n<router-outlet />\n')).toBe(true);
+  });
+
+  it('reads an element above the placeholder block and a template without one as outside', () => {
+    const above = '<router-outlet />\n<!-- The content below -->\n<p></p>\n<!-- End of Placeholder -->\n';
+
+    expect(hasElementOutsidePlaceholder(above, 'router-outlet')).toBe(true);
+    expect(hasElementOutsidePlaceholder('<main><router-outlet /></main>\n', 'router-outlet')).toBe(true);
+    expect(hasElementOutsidePlaceholder('<!-- End of Placeholder -->\n', 'router-outlet')).toBe(false);
   });
 
   it('keeps CRLF line endings', () => {

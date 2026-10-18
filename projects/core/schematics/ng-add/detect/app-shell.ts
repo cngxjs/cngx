@@ -7,6 +7,7 @@ import {
   hasArrayElement,
   hasArrayLiteral,
   hasElement,
+  hasElementOutsidePlaceholder,
   readBootstrapCall,
   readDecorator,
   reexportSources,
@@ -127,7 +128,10 @@ export type AppShellOutlets =
       readonly kind: 'editable';
       readonly elements: readonly string[];
       readonly classes: readonly string[];
-      /** The template holds a `<router-outlet>`; the banner outlet goes right above it. */
+      /**
+       * The template holds a `<router-outlet>` outside the CLI placeholder
+       * block; the banner outlet goes right above it, else at the end.
+       */
       readonly routerOutlet: boolean;
     }
   | ({ readonly kind: 'blocked' } & AppShellBlocked);
@@ -257,10 +261,12 @@ export function inlineTemplateOf(content: string, className: string): InlineTemp
   return { start, end, text, quoted };
 }
 
-// Whether the template holds a `<router-outlet>`; `undefined` when it does not parse.
+// Whether the template holds a `<router-outlet>` the banner outlet can go
+// above, one outside the CLI placeholder block the user deletes; `undefined`
+// when the template does not parse.
 function routerOutletIn(template: string): boolean | undefined {
   try {
-    return hasElement(template, 'router-outlet');
+    return hasElementOutsidePlaceholder(template, 'router-outlet');
   } catch {
     return undefined;
   }

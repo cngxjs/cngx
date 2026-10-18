@@ -88,7 +88,7 @@ export {
   reexportSources,
   topLevelBindings,
 } from './edit/ts-edit';
-export { appendElements, hasElement, insertBeforeElement } from './edit/template-edit';
+export { appendElements, hasElement, hasElementOutsidePlaceholder, insertBeforeElement } from './edit/template-edit';
 export {
   hasStyleImport,
   insertLeadingStyleImport,

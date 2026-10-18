@@ -47,9 +47,51 @@ export function hasElement(content: string, selector: string): boolean {
   return firstElement(content, selector) !== undefined;
 }
 
+// The comments `ng new` puts around the placeholder content it tells the
+// user to delete: one opens the block, the last one closes it.
+const PLACEHOLDER_START = 'The content below';
+const PLACEHOLDER_END = 'End of Placeholder';
+
+// Where the CLI placeholder block runs, read from the template's comment
+// nodes: from its opening comment (else the start) to the end of its closing
+// comment. `undefined` without a closing comment.
+function placeholderBlock(content: string): { readonly start: number; readonly end: number } | undefined {
+  const comments = parseTemplate(content, 'template.html', { preserveWhitespaces: true, collectCommentNodes: true }).commentNodes ?? [];
+  const close = [...comments].reverse().find((comment) => comment.value.includes(PLACEHOLDER_END));
+  if (close === undefined) {
+    return undefined;
+  }
+  const open = comments.find(
+    (comment) => comment.value.includes(PLACEHOLDER_START) && comment.sourceSpan.end.offset <= close.sourceSpan.start.offset,
+  );
+  return { start: open?.sourceSpan.start.offset ?? 0, end: close.sourceSpan.end.offset };
+}
+
+// The first `<selector>` element outside the CLI placeholder block.
+function firstElementOutsidePlaceholder(content: string, selector: string): TmplAstElement | undefined {
+  const block = placeholderBlock(content);
+  return walkNodes(parseTemplateContent(content)).find(
+    (node): node is TmplAstElement =>
+      node instanceof TmplAstElement &&
+      node.name === selector &&
+      (block === undefined || node.sourceSpan.start.offset < block.start || node.sourceSpan.start.offset >= block.end),
+  );
+}
+
 /**
- * Inserts `markup` in front of the first `<selector>` element: on a line of
- * its own with the element's indent when the element starts its line, else
+ * Whether the template holds a `<selector>` element outside the placeholder
+ * block of an `ng new` template, which the user is told to delete: the
+ * elements `insertBeforeElement` places markup in front of. Throws when the
+ * template does not parse.
+ */
+export function hasElementOutsidePlaceholder(content: string, selector: string): boolean {
+  return firstElementOutsidePlaceholder(content, selector) !== undefined;
+}
+
+/**
+ * Inserts `markup` in front of the first `<selector>` element outside the
+ * CLI placeholder block (`hasElementOutsidePlaceholder`): on a line of its
+ * own with the element's indent when the element starts its line, else
  * right before it. Returns the content unchanged without such an element;
  * throws when the template does not parse. `newline` defaults to the one the
  * content uses; an inline template passes the one of its host file.
@@ -60,7 +102,7 @@ export function insertBeforeElement(
   markup: string,
   newline = newlineOf(content),
 ): string {
-  const element = firstElement(content, selector);
+  const element = firstElementOutsidePlaceholder(content, selector);
   if (element === undefined) {
     return content;
   }

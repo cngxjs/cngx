@@ -107,6 +107,17 @@ describe('appShellOf', () => {
     });
   });
 
+  it('reads a router outlet inside the CLI placeholder block as no place for the banner outlet', () => {
+    const stock = readFixture('scaffold-21')['src/app/app.html'];
+    const inside = stock.replace('\n\n\n<router-outlet />\n', '\n').replace('</main>\n', '</main>\n<router-outlet />\n');
+
+    expect(shellOf(readerOf('scaffold-21')).outlets).toMatchObject({ kind: 'editable', routerOutlet: true });
+    expect(shellOf(readerOf('scaffold-21', { 'src/app/app.html': inside })).outlets).toMatchObject({
+      kind: 'editable',
+      routerOutlet: false,
+    });
+  });
+
   it('follows bootstrapModule to the bootstrap component and takes the NgModule as the imports host', () => {
     const read = readerOf('standalone-app', {
       'src/main.ts': NGMODULE_MAIN,

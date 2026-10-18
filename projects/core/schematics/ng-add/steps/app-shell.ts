@@ -57,10 +57,11 @@ function markup(element: string): string {
 }
 
 // Places the outlets detection found missing: the banner right above the
-// router outlet when detection found one, else at the end; the toast outlet
-// at the end. Both land after the CLI's placeholder block, which ends before
-// `<router-outlet />` in the stock template. A template that no longer
-// parses is left as it is.
+// first router outlet outside the CLI's placeholder block when detection
+// found one, else at the end; the toast outlet at the end. Both land after
+// the placeholder block, which ends before `<router-outlet />` in the stock
+// template; a router outlet moved into the block takes no outlet with it. A
+// template that no longer parses is left as it is.
 function placeOutlets(template: string, outlets: EditableOutlets, newline = newlineOf(template)): string {
   const missing = (element: string): boolean => !outlets.elements.includes(element);
   const aboveRouter = missing(BANNER.element) && outlets.routerOutlet;
