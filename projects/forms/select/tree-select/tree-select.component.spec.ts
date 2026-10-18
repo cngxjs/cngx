@@ -495,6 +495,79 @@ describe('CngxTreeSelect - toggle commit error announcement', () => {
   );
 });
 
+describe('CngxTreeSelect - commit retry', () => {
+  @Component({
+    imports: [CngxTreeSelect],
+    template: `
+      <cngx-tree-select
+        label="Teams"
+        [nodes]="nodes"
+        [nodeIdFn]="idFn"
+        [labelFn]="labelFn"
+        [initiallyExpanded]="'all'"
+        [commitAction]="commitAction"
+        [commitMode]="mode()"
+        [(values)]="values"
+        (cleared)="onCleared()"
+      />
+    `,
+  })
+  class RetryTreeHost {
+    readonly nodes = tree();
+    readonly values = signal<Row[]>([]);
+    readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
+    readonly idFn = (v: Row): string => v.id;
+    readonly labelFn = (v: Row): string => v.name;
+    readonly onCleared = vi.fn();
+    readonly calls: Row[][] = [];
+    readonly pending: Subject<Row[]>[] = [];
+    readonly commitAction = (intended: Row[] | undefined): Observable<Row[]> => {
+      this.calls.push([...(intended ?? [])]);
+      const subject = new Subject<Row[]>();
+      this.pending.push(subject);
+      return subject.asObservable();
+    };
+  }
+
+  beforeEach(() => polyfillPopover());
+
+  it.each(['optimistic', 'pessimistic'] as const)(
+    'replays the failed %s toggle instead of committing a clear',
+    (mode) => {
+      const fixture = TestBed.createComponent(RetryTreeHost);
+      const host = fixture.componentInstance;
+      host.mode.set(mode);
+      fixture.detectChanges();
+      const tree = fixture.debugElement.query(By.directive(CngxTreeSelect))
+        .componentInstance as CngxTreeSelect<Row>;
+      tree.open();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      (fixture.nativeElement as HTMLElement)
+        .querySelector<HTMLElement>('[role="treeitem"]')!
+        .click();
+      fixture.detectChanges();
+      host.pending[0].error(new Error('server down'));
+      fixture.detectChanges();
+      expect(host.values()).toEqual([]);
+
+      tree.commitErrorContext().retry();
+      fixture.detectChanges();
+
+      expect(host.calls.length).toBe(2);
+      expect(host.calls[1].map((r) => r.id)).toEqual(['a']);
+      if (mode === 'optimistic') {
+        expect(host.values().map((r) => r.id)).toEqual(['a']);
+      }
+      host.pending[1].next([{ id: 'a', name: 'Alpha' }]);
+      host.pending[1].complete();
+      fixture.detectChanges();
+      expect(host.values().map((r) => r.id)).toEqual(['a']);
+      expect(host.onCleared).not.toHaveBeenCalled();
+    },
+  );
+});
+
 describe('CngxTreeSelect - runtime language switch', () => {
   beforeAll(() => polyfillPopover());
 

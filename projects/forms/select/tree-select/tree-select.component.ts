@@ -524,6 +524,13 @@ export class CngxTreeSelect<T = unknown>
   /** Rollback target for a commit in flight. */
   private lastCommittedValues: T[] = untracked(() => [...this.values()]);
 
+  /**
+   * Last commit this tree started, replayed by the commit-error Retry. A
+   * toggle replays through `dispatchValueChange` (cascade meta included);
+   * a clear goes back to the array handler, which owns that path.
+   */
+  private lastCommit: TreeSelectLastCommit<T> | null = null;
+
   private readonly commitControllerInstance = inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY)<T[]>();
 
   /** Shared live-region announcer. */
@@ -782,7 +789,15 @@ export class CngxTreeSelect<T = unknown>
   // `*ngTemplateOutlet` consumers of the commit-error context.
   private readonly commitRetryBound: () => void = () => {
     this.hostFocus.refocusOwnerBeforeRemoval();
-    this.commitHandler.retryLast();
+    const last = this.lastCommit;
+    if (!last) {
+      return;
+    }
+    if (last.kind === 'clear') {
+      this.commitHandler.retryLast();
+      return;
+    }
+    this.dispatchValueChange(last.next, last.previous, last.meta);
   };
 
   /** @internal */
@@ -1049,12 +1064,7 @@ export class CngxTreeSelect<T = unknown>
   private dispatchValueChange(
     next: T[],
     previous: T[],
-    meta: {
-      readonly added: readonly T[];
-      readonly removed: readonly T[];
-      readonly node: FlatTreeNode<T>;
-      readonly action: 'toggle' | 'cascade-toggle';
-    },
+    meta: TreeSelectToggleMeta<T>,
   ): void {
     const action = this.commitAction();
     // Announce: single-toggle reports the node's label + direction;
@@ -1081,6 +1091,7 @@ export class CngxTreeSelect<T = unknown>
     }
 
     this.lastCommittedValues = previous;
+    this.lastCommit = { kind: 'toggle', next, previous, meta };
     if (this.commitMode() === 'optimistic') {
       this.values.set(next);
       // Emit the intent immediately so `(selectionChange)` consumers
@@ -1259,6 +1270,7 @@ export class CngxTreeSelect<T = unknown>
     const action = this.commitAction();
     if (action) {
       this.lastCommittedValues = previous;
+      this.lastCommit = { kind: 'clear' };
       if (this.commitMode() === 'optimistic') {
         this.values.set([]);
       }
@@ -1324,6 +1336,24 @@ export class CngxTreeSelect<T = unknown>
     this.selectionChange.emit({ ...change, source: this });
   }
 }
+
+/** Change meta of one toggle or cascade-toggle dispatch. */
+interface TreeSelectToggleMeta<T> {
+  readonly added: readonly T[];
+  readonly removed: readonly T[];
+  readonly node: FlatTreeNode<T>;
+  readonly action: 'toggle' | 'cascade-toggle';
+}
+
+/** The commit a tree-select Retry replays. */
+type TreeSelectLastCommit<T> =
+  | {
+      readonly kind: 'toggle';
+      readonly next: T[];
+      readonly previous: T[];
+      readonly meta: TreeSelectToggleMeta<T>;
+    }
+  | { readonly kind: 'clear' };
 
 function dedup<T>(arr: readonly T[], eq: (a: T, b: T) => boolean): T[] {
   const out: T[] = [];
