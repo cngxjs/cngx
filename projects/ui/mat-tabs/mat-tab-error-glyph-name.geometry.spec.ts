@@ -62,9 +62,46 @@ class MatTabErrorGlyphHost {}
 })
 class MatTabErrorGlyphFocusHost {}
 
+// The commit-rejection glyph rides an `aria-hidden` span the decoration
+// projector inserts (both pseudo-elements are taken). Static markup in the
+// shape the projector writes.
+@Component({
+  selector: 'cngx-mat-tab-rejection-glyph-host',
+  standalone: true,
+  styleUrls: ['../../core/theming/system-tokens.css', './styles/mat-tabs.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div role="tablist">
+      <button
+        type="button"
+        role="tab"
+        class="mat-mdc-tab cngx-mat-tab--error tab-refused"
+        data-reason="refused"
+      >
+        Billing<span class="cngx-mat-tab__rejection-icon" aria-hidden="true" data-reason="refused"
+          >⊘</span
+        >
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="mat-mdc-tab cngx-mat-tab--error tab-failed"
+        data-reason="failed"
+      >
+        Profile<span class="cngx-mat-tab__rejection-icon" aria-hidden="true" data-reason="failed"
+          >!</span
+        >
+      </button>
+    </div>
+  `,
+})
+class MatTabRejectionGlyphHost {}
+
 let mountedRoot: HTMLElement | null = null;
 
-function mount(host: typeof MatTabErrorGlyphHost = MatTabErrorGlyphHost): HTMLElement {
+function mount(
+  host: typeof MatTabErrorGlyphHost | typeof MatTabRejectionGlyphHost = MatTabErrorGlyphHost,
+): HTMLElement {
   const fixture = TestBed.createComponent(host);
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
@@ -102,5 +139,37 @@ describe('mat-tab has-errors glyph', () => {
   it('stays out of the tab name', async () => {
     mount();
     expect(await accessibleName('.tab-flagged')).toBe('Billing');
+  });
+});
+
+describe('mat-tab commit-rejection glyph', () => {
+  // oklch(0.62 0.15 60) and oklch(0.45 0.15 25) as Chromium serialises them.
+  const disc = (root: HTMLElement, sel: string) =>
+    getComputedStyle(root.querySelector(`${sel} .cngx-mat-tab__rejection-icon`)!).backgroundColor;
+
+  it('paints a refused tab amber and a failed tab red', () => {
+    const root = mount(MatTabRejectionGlyphHost);
+    expect(disc(root, '.tab-refused')).toBe('oklch(0.62 0.15 60)');
+    expect(disc(root, '.tab-failed')).toBe('oklch(0.45 0.15 25)');
+    expect(getComputedStyle(root.querySelector('.tab-refused')!).outlineColor).toBe(
+      'oklch(0.62 0.15 60)',
+    );
+    expect(getComputedStyle(root.querySelector('.tab-failed')!).outlineColor).toBe(
+      'oklch(0.45 0.15 25)',
+    );
+  });
+
+  it('keeps a refused tab at its resting text colour', () => {
+    const root = mount(MatTabRejectionGlyphHost);
+    const tablist = root.querySelector('[role="tablist"]')!;
+    expect(getComputedStyle(root.querySelector('.tab-refused')!).color).toBe(
+      getComputedStyle(tablist).color,
+    );
+  });
+
+  it('stays out of the tab name', async () => {
+    mount(MatTabRejectionGlyphHost);
+    expect(await accessibleName('.tab-refused')).toBe('Billing');
+    expect(await accessibleName('.tab-failed')).toBe('Profile');
   });
 });

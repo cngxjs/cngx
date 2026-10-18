@@ -1,5 +1,7 @@
 <div class="cngx-tabs__strip-wrapper">
 @let failedIdx = presenter.lastFailedIndex();
+<!-- Kind behind the rejection marker ('refused' | 'failed'): the data-reason hook and the default glyph. -->
+@let rejectionKind = presenter.lastOutcome()?.kind;
 <div
   class="cngx-tabs__strip"
   role="tablist"
@@ -11,6 +13,7 @@
       type="button"
       class="cngx-tabs__tab"
       [class.cngx-tab--rejected]="failedIdx === i"
+      [attr.data-reason]="failedIdx === i ? rejectionKind : null"
       [class.cngx-tabs__tab--closable]="dismiss.isTabClosable(tab)"
       role="tab"
       [id]="tabHeaderId(tab)"
@@ -79,9 +82,11 @@
             "
           ></ng-container>
         } @else {
-          <span class="cngx-tabs__rejection-icon" aria-hidden="true">{{
-            glyphs.rejectionIcon
-          }}</span>
+          <span
+            class="cngx-tabs__rejection-icon"
+            aria-hidden="true"
+            [attr.data-reason]="rejectionKind"
+          >{{ rejectionKind === 'refused' ? glyphs.refusedIcon : glyphs.rejectionIcon }}</span>
         }
       }
       @if (isTabBusy(tab)) {

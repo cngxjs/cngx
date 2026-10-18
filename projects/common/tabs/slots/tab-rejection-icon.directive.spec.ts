@@ -7,6 +7,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
+import { CNGX_TABS_GLYPHS } from '../glyphs';
 import {
   CngxTabRejectionIcon,
   type CngxTabRejectionIconContext,
@@ -54,6 +55,12 @@ describe('CngxTabRejectionIcon', () => {
     expect(ctx.failedIndex).toBe(2);
     expect(ctx.originLabel).toBe('Tab One');
     expect(ctx.reason).toBe('refused');
+  });
+
+  it('ships a distinct default glyph per reason (never colour alone, WCAG 1.4.1)', () => {
+    expect(CNGX_TABS_GLYPHS.rejectionIcon).toBe('!');
+    expect(CNGX_TABS_GLYPHS.refusedIcon).toBe('\u2298');
+    expect(CNGX_TABS_GLYPHS.refusedIcon).not.toBe(CNGX_TABS_GLYPHS.rejectionIcon);
   });
 
   it('originLabel may be undefined when the origin index is out of range', () => {

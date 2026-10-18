@@ -687,6 +687,103 @@ describe('createMatTabRejectionDecoration - aria-describedby contract (5.2)', ()
       'cngx-mat-tab-1-rejected',
     );
   });
+
+  it('hooks data-reason and an aria-hidden glyph per kind, follows a kind change in place, and clears both', () => {
+    const { host } = setupHost();
+    const hostEl = buildHostWithButtons();
+    const failedHandleId = signal<string | null>('cngx-mat-tab-1');
+    const failedIndex = signal<number | undefined>(1);
+    const descriptorText = signal<string>('Tab switch not allowed.');
+    const reason = signal<'refused' | 'failed' | undefined>('refused');
+
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId,
+      failedIndex,
+      descriptorText,
+      reason,
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+    });
+    TestBed.flushEffects();
+
+    const buttons = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab');
+    const target = buttons[1];
+    const glyph = target.querySelector<HTMLElement>('.cngx-mat-tab__rejection-icon');
+    expect(target.getAttribute('data-reason')).toBe('refused');
+    expect(glyph?.getAttribute('data-reason')).toBe('refused');
+    expect(glyph?.getAttribute('aria-hidden')).toBe('true');
+    expect(glyph?.textContent).toBe('\u2298');
+    // The shipped class stays for both kinds.
+    expect(target.classList.contains('cngx-mat-tab--error')).toBe(true);
+    // The glyph never joins the description: the descriptor span is separate.
+    expect(target.querySelector('span.cngx-sr-only')?.textContent).toBe(
+      'Tab switch not allowed.',
+    );
+
+    // A failure on the same tab keeps the handle id: updated in place.
+    reason.set('failed');
+    TestBed.flushEffects();
+    expect(target.querySelector('.cngx-mat-tab__rejection-icon')).toBe(glyph);
+    expect(target.getAttribute('data-reason')).toBe('failed');
+    expect(glyph?.getAttribute('data-reason')).toBe('failed');
+    expect(glyph?.textContent).toBe('!');
+
+    failedHandleId.set(null);
+    failedIndex.set(undefined);
+    TestBed.flushEffects();
+    expect(target.getAttribute('data-reason')).toBeNull();
+    expect(target.querySelector('.cngx-mat-tab__rejection-icon')).toBeNull();
+  });
+
+  it('mounts the glyph in the tab label row when Material renders one', () => {
+    const { host } = setupHost();
+    const hostEl = buildHostWithButtons();
+    const target = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab')[0];
+    const content = document.createElement('span');
+    content.classList.add('mdc-tab__content');
+    target.appendChild(content);
+    const failedHandleId = signal<string | null>('cngx-mat-tab-0');
+    const failedIndex = signal<number | undefined>(0);
+
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId,
+      failedIndex,
+      descriptorText: signal<string>('Reverted.'),
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+    });
+    TestBed.flushEffects();
+    expect(content.querySelector('.cngx-mat-tab__rejection-icon')).not.toBeNull();
+
+    failedHandleId.set(null);
+    failedIndex.set(undefined);
+    TestBed.flushEffects();
+    expect(target.querySelector('.cngx-mat-tab__rejection-icon')).toBeNull();
+  });
+
+  it('defaults to the failed kind when no reason signal is bound', () => {
+    const { host } = setupHost();
+    const hostEl = buildHostWithButtons();
+
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId: signal<string | null>('cngx-mat-tab-0'),
+      failedIndex: signal<number | undefined>(0),
+      descriptorText: signal<string>('Reverted.'),
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+    });
+    TestBed.flushEffects();
+
+    const target = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab')[0];
+    expect(target.getAttribute('data-reason')).toBe('failed');
+    expect(target.querySelector('.cngx-mat-tab__rejection-icon')?.textContent).toBe('!');
+  });
 });
 
 describe('createMatTabRejectionDecoration - *cngxMatTabRejectionContent slot cascade (4.1)', () => {

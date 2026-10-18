@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatTab, MatTabsModule, MatTabGroup } from '@angular/material/tabs';
+import { readFileSync } from 'node:fs';
 import { describe, expect, test, vi } from 'vitest';
 
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
@@ -584,6 +585,64 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(matTabEls[0].getAttribute('aria-invalid')).toBeNull();
     expect(matTabEls[0].querySelector('span.cngx-sr-only')).toBeNull();
     expect(matTabEls[1].classList.contains('cngx-mat-tab--error')).toBe(false);
+    // A refusal: the hook and the aria-hidden refused glyph ride the tab.
+    expect(matTabEls[2].getAttribute('data-reason')).toBe('refused');
+    const glyph = matTabEls[2].querySelector<HTMLElement>('.cngx-mat-tab__rejection-icon');
+    expect(glyph?.getAttribute('aria-hidden')).toBe('true');
+    expect(glyph?.getAttribute('data-reason')).toBe('refused');
+    expect(glyph?.textContent).toBe('\u2298');
+    expect(matTabEls[0].querySelector('.cngx-mat-tab__rejection-icon')).toBeNull();
+    expect(matTabEls[0].getAttribute('data-reason')).toBeNull();
+  });
+
+  test('axis 11b: a failed switch keeps cngx-mat-tab--error and carries data-reason="failed" with the `!` glyph', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    fixture.componentInstance['mode'] = 'optimistic';
+    fixture.componentInstance['commit'] = (() => {
+      throw new Error('boom');
+    }) as CngxTabsCommitAction;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    presenter.select(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matTabEls = fixture.nativeElement.querySelectorAll(
+      '.mat-mdc-tab',
+    ) as NodeListOf<HTMLElement>;
+    expect(presenter.lastOutcome()?.kind).toBe('failed');
+    expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(true);
+    expect(matTabEls[2].getAttribute('data-reason')).toBe('failed');
+    const glyph = matTabEls[2].querySelector<HTMLElement>('.cngx-mat-tab__rejection-icon');
+    expect(glyph?.getAttribute('aria-hidden')).toBe('true');
+    expect(glyph?.getAttribute('data-reason')).toBe('failed');
+    expect(glyph?.textContent).toBe('!');
+  });
+
+  test('axis 11c: the skin paints a failed tab and a validation flag red and a refused tab amber', () => {
+    // happy-dom cannot compute the external CSS; assert the rules in source.
+    const css = readFileSync(`${process.cwd()}/projects/ui/mat-tabs/styles/mat-tabs.css`, 'utf8');
+    expect(css).toContain('color: var(--cngx-mat-tab-error-color, oklch(0.45 0.15 25));');
+    expect(css).toContain(
+      'background: var(--cngx-mat-tab-has-errors-color, oklch(0.45 0.15 25));',
+    );
+    expect(css).toMatch(
+      /\.cngx-mat-tab--error\[data-reason='refused'\]\s*\{\s*color: var\(--cngx-mat-tab-refused-text-color, currentColor\);\s*outline-color: var\(--cngx-mat-tab-refused-color, oklch\(0\.62 0\.15 60\)\);/,
+    );
+    expect(css).toMatch(
+      /\.cngx-mat-tab__rejection-icon\[data-reason='refused'\]\s*\{\s*background: var\(--cngx-mat-tab-refused-color, oklch\(0\.62 0\.15 60\)\);/,
+    );
+    expect(css).toMatch(
+      /@media \(forced-colors: active\)\s*\{\s*\.cngx-mat-tab__rejection-icon\s*\{\s*forced-color-adjust: none;/,
+    );
   });
 
   test('axis 12: rejection decoration cleared - successful re-pick of the failed tab strips the class, removes the descriptor span, and restores aria-describedby', async () => {

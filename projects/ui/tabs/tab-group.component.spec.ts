@@ -834,6 +834,102 @@ describe('CngxTabGroup organism', () => {
       expect(tabs[0].querySelector('.cngx-tabs__rejection-icon')).toBeNull();
     });
 
+    it('hooks data-reason and the glyph per kind on the rejected tab and its icon', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      let fail = false;
+      fixture.componentInstance.action = () => {
+        if (fail) {
+          throw new Error('boom');
+        }
+        return false;
+      };
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      tabs[1].click();
+      fixture.detectChanges();
+      const refusedIcon = tabs[1].querySelector('.cngx-tabs__rejection-icon') as HTMLElement;
+      expect(tabs[1].getAttribute('data-reason')).toBe('refused');
+      expect(refusedIcon.getAttribute('data-reason')).toBe('refused');
+      expect(refusedIcon.getAttribute('aria-hidden')).toBe('true');
+      expect(refusedIcon.textContent?.trim()).toBe('\u2298');
+      // Untouched tabs carry no hook.
+      expect(tabs[0].getAttribute('data-reason')).toBeNull();
+      expect(tabs[2].getAttribute('data-reason')).toBeNull();
+
+      fail = true;
+      tabs[2].click();
+      fixture.detectChanges();
+      const failedIcon = tabs[2].querySelector('.cngx-tabs__rejection-icon') as HTMLElement;
+      // Every shipped class stays; only the hook tells the kinds apart.
+      expect(tabs[2].classList.contains('cngx-tab--rejected')).toBe(true);
+      expect(tabs[2].getAttribute('data-reason')).toBe('failed');
+      expect(failedIcon.getAttribute('data-reason')).toBe('failed');
+      expect(failedIcon.textContent?.trim()).toBe('!');
+      expect(tabs[1].getAttribute('data-reason')).toBeNull();
+
+      const host = fixture.debugElement.children[0].injector.get(CNGX_TAB_GROUP_HOST);
+      host.clearLastFailed();
+      fixture.detectChanges();
+      expect(tabs[2].getAttribute('data-reason')).toBeNull();
+    });
+
+    it('paints a refused tab amber, keeps a failed tab and the validation badge red', () => {
+      // happy-dom cannot compute the external CSS; assert the rules in source.
+      const base = readFileSync(
+        `${process.cwd()}/projects/common/tabs/styles/tabs-base.css`,
+        'utf8',
+      );
+      // The failed default keeps the danger red on the disc, the accent and the wash.
+      expect(base).toContain(
+        'background: var(--cngx-tab-rejection-icon-color, oklch(0.45 0.15 25));',
+      );
+      expect(base).toContain(
+        'background: var(--cngx-tab-rejected-bg, oklch(0.45 0.15 25 / 0.1));',
+      );
+      expect(base).toMatch(/@property --cngx-tab-error-badge-color\s*\{[^}]*oklch\(0\.45 0\.15 25\)/);
+      // The refused twin reads the refused token with the amber fallback.
+      expect(base).toMatch(
+        /\.cngx-tabs__rejection-icon\[data-reason='refused'\]\s*\{\s*background: var\(--cngx-tab-refused-color, oklch\(0\.62 0\.15 60\)\);/,
+      );
+      expect(base).toMatch(
+        /\.cngx-tab--rejected\[data-reason='refused'\]\s*\{[^}]*--cngx-tab-rejected-bg: color-mix\([^;]*--cngx-tab-refused-color, oklch\(0\.62 0\.15 60\)/,
+      );
+      // Amber text would miss 4.5:1, so the label keeps its resting colour.
+      expect(base).toMatch(
+        /\[data-reason='refused'\] \.cngx-tabs__label\s*\{\s*color: var\(--cngx-tab-refused-text-color, currentColor\);/,
+      );
+      // Registered without an initial value, so the amber fallback fires.
+      expect(base).toMatch(
+        /@property --cngx-tab-refused-color\s*\{\s*syntax: '\*';\s*inherits: true;\s*\}/,
+      );
+      expect(base).toMatch(
+        /@property --cngx-tab-refused-text-color\s*\{\s*syntax: '\*';\s*inherits: true;\s*\}/,
+      );
+      // The keyframe keeps its shipped name.
+      expect(base).toContain('@keyframes cngx-tab-pulse-error');
+    });
+
+    it('keeps the rejection disc and a contour under forced colours', () => {
+      const base = readFileSync(
+        `${process.cwd()}/projects/common/tabs/styles/tabs-base.css`,
+        'utf8',
+      );
+      const forced = base.slice(base.indexOf('@media (forced-colors: active)'));
+      expect(forced).toMatch(
+        /\.cngx-tabs__rejection-icon\s*\{\s*forced-color-adjust: none;\s*background: CanvasText;\s*color: Canvas;/,
+      );
+      expect(forced).toMatch(/\.cngx-tab--rejected:not\(\[aria-selected='true'\]\)\s*\{[^}]*dashed CanvasText/);
+    });
+
     it('liveAnnouncement falls back to commitFailedRetry when lastFailedIndex is unset', () => {
       // Idempotent case: a sync rejection on `select(target === activeIndex)`
       // is filtered upstream by the no-op guard. To force the
