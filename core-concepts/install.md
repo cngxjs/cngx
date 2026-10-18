@@ -232,7 +232,7 @@ of these reasons, with the class and the file it stopped at for `<Class>`
 and `<file>`:
 
 - `<file> does not exist`: the `browser` (or `main`) entry of the build target points at no file.
-- `<file> has no bootstrapApplication(<Component>) or bootstrapModule(<NgModule>) call cngx can read`: the call is missing or bootstraps something other than a class name.
+- `<file> has no bootstrapApplication(<Component>) or bootstrapModule(<NgModule>) call cngx can read`: the call is missing, commented out, or bootstraps something other than a class name.
 - `<Class>, bootstrapped from <file>, is declared neither there nor in a file a relative import leads to`: the class comes from a package or a path alias, or a re-export cngx does not follow (an aliased one, or more than four hops).
 - `<Class> in <file> has no @NgModule decorator`: the root NgModule carries no `@NgModule(...)` cngx can read.
 - `the @NgModule decorator of <Class> in <file> lists no bootstrap component`: `bootstrap: [App]` is missing or not an array literal.

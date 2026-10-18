@@ -652,6 +652,45 @@ export function readProviderCalls(content: string): ProviderCalls {
   };
 }
 
+/**
+ * The root `main.ts` bootstraps: `bootstrapApplication(<Class>, <config>)`
+ * (bare, aliased or namespaced) or `<platform>.bootstrapModule(<Module>)`.
+ * A name is `undefined` when that argument is not an identifier.
+ */
+export type BootstrapCall =
+  | { readonly kind: 'application'; readonly className: string | undefined; readonly configName: string | undefined }
+  | { readonly kind: 'module'; readonly moduleName: string | undefined };
+
+function identifierText(expression: ts.Expression | undefined): string | undefined {
+  return expression !== undefined && ts.isIdentifier(expression) ? expression.text : undefined;
+}
+
+function bootstrapCallOf(source: ts.SourceFile, call: ts.CallExpression): BootstrapCall | undefined {
+  const [first, second] = call.arguments;
+  if (ts.isPropertyAccessExpression(call.expression) && call.expression.name.text === 'bootstrapModule') {
+    return { kind: 'module', moduleName: identifierText(first) };
+  }
+  if (referenceOf(source, call.expression).name === 'bootstrapApplication') {
+    return { kind: 'application', className: identifierText(first), configName: identifierText(second) };
+  }
+  return undefined;
+}
+
+/**
+ * Reads the first bootstrap call of a `main.ts` from its syntax tree, so a
+ * call in a comment or a string never counts; `undefined` without one.
+ */
+export function readBootstrapCall(content: string): BootstrapCall | undefined {
+  const source = parse(content);
+  for (const call of collectCalls(source, [])) {
+    const found = bootstrapCallOf(source, call);
+    if (found !== undefined) {
+      return found;
+    }
+  }
+  return undefined;
+}
+
 function isRequireCall(expression: ts.Expression): boolean {
   if (ts.isPropertyAccessExpression(expression)) {
     return isRequireCall(expression.expression);

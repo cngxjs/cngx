@@ -82,6 +82,7 @@ export {
   type DecoratorReading,
   type LanguagePackArgument,
   promoteTypeOnlyImport,
+  readBootstrapCall,
   readDecorator,
   readProviderCalls,
   reexportSources,

@@ -12,6 +12,7 @@ import {
   NON_SOURCE_DIRS,
   type PackageManifest,
   parseManifest,
+  readBootstrapCall,
   readProviderCalls,
   type Tree,
 } from '../../engine';
@@ -200,7 +201,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const mainOption = options['browser'] ?? options['main'];
   const mainPath = typeof mainOption === 'string' ? mainOption : posix.join(sourceRoot, 'main.ts');
   const main = read(mainPath) ?? '';
-  const standalone = !/bootstrapModule\s*\(/.test(main);
+  const standalone = readBootstrapCall(main)?.kind !== 'module';
   const rootProvidersFile = rootProvidersPath(mainPath, main, standalone, sourceRoot);
   const providerCalls = readProviderCalls(read(rootProvidersFile) ?? '');
   const providers = providerCalls.names;

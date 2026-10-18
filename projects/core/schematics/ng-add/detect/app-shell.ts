@@ -7,6 +7,7 @@ import {
   hasArrayElement,
   hasArrayLiteral,
   hasElement,
+  readBootstrapCall,
   readDecorator,
   reexportSources,
   topLevelBindings,
@@ -372,7 +373,8 @@ interface Bootstrapped {
 }
 
 function standaloneRoot(read: Read, mainPath: string, main: string): Bootstrapped | AppShellBlocked {
-  const className = /bootstrapApplication\s*\(\s*(\w+)/.exec(main)?.[1];
+  const call = readBootstrapCall(main);
+  const className = call?.kind === 'application' ? call.className : undefined;
   if (className === undefined) {
     return blocked('no-bootstrap-call', '', mainPath);
   }
@@ -384,7 +386,8 @@ function standaloneRoot(read: Read, mainPath: string, main: string): Bootstrappe
 }
 
 function moduleRoot(read: Read, mainPath: string, main: string): Bootstrapped | AppShellBlocked {
-  const moduleName = /bootstrapModule\s*\(\s*(\w+)/.exec(main)?.[1];
+  const call = readBootstrapCall(main);
+  const moduleName = call?.kind === 'module' ? call.moduleName : undefined;
   if (moduleName === undefined) {
     return blocked('no-bootstrap-call', '', mainPath);
   }
@@ -419,8 +422,9 @@ function isBlocked(root: Bootstrapped | AppShellBlocked): root is AppShellBlocke
 
 /**
  * Follows `bootstrapApplication(<Class>, ...)` or `bootstrapModule(<Module>)`
- * in `main.ts` to the root component, the same call shapes
- * `rootProvidersPath` follows. `unfollowed` with the reason when a step of
+ * in `main.ts` to the root component, read through the syntax tree by the
+ * same `readBootstrapCall` as `rootProvidersPath`, so a commented-out call
+ * never counts. `unfollowed` with the reason when a step of
  * the way does not read: no such call, a non-relative import, no decorator;
  * the outlets step then names the snippet instead. A shell cngx follows but
  * cannot edit safely has blocked outlets with the reason.

@@ -12,6 +12,7 @@ import {
   importsModule,
   insertAfterImports,
   promoteTypeOnlyImport,
+  readBootstrapCall,
   readDecorator,
   readProviderCalls,
   reexportSources,
@@ -483,6 +484,42 @@ const NO_IMPORTS = `import { Component } from '@angular/core';
 })
 export class App {}
 `;
+
+describe('readBootstrapCall', () => {
+  it('reads bootstrapApplication bare, aliased and namespaced, and bootstrapModule on a platform', () => {
+    expect(readBootstrapCall('bootstrapApplication(App, appConfig).catch(console.error);\n')).toEqual({
+      kind: 'application',
+      className: 'App',
+      configName: 'appConfig',
+    });
+    expect(
+      readBootstrapCall("import { bootstrapApplication as boot } from '@angular/platform-browser';\nboot(App);\n"),
+    ).toEqual({ kind: 'application', className: 'App', configName: undefined });
+    expect(readBootstrapCall("import * as pb from '@angular/platform-browser';\npb.bootstrapApplication(App, { providers: [] });\n")).toEqual({
+      kind: 'application',
+      className: 'App',
+      configName: undefined,
+    });
+    expect(readBootstrapCall('platformBrowser().bootstrapModule(AppModule, {})\n  .catch((err) => console.error(err));\n')).toEqual({
+      kind: 'module',
+      moduleName: 'AppModule',
+    });
+  });
+
+  it('never reads a call in a comment or a string, and names no class for an argument that is not an identifier', () => {
+    expect(readBootstrapCall("// bootstrapApplication(Other);\nconst x = 'bootstrapModule(M)';\nbootstrapApplication(App);\n")).toEqual({
+      kind: 'application',
+      className: 'App',
+      configName: undefined,
+    });
+    expect(readBootstrapCall('/* platformBrowser().bootstrapModule(AppModule) */\n')).toBeUndefined();
+    expect(readBootstrapCall('bootstrapApplication(rootComponent());\n')).toEqual({
+      kind: 'application',
+      className: undefined,
+      configName: undefined,
+    });
+  });
+});
 
 describe('readDecorator', () => {
   const APP = `import { Component } from '@angular/core';

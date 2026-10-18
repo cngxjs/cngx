@@ -184,7 +184,23 @@ describe('appShellOf', () => {
       subject: 'App',
       file: 'src/main.ts',
     });
-    expect(appShellOf(viaCall, 'src/main.ts', true, 'fixture-app')).toMatchObject({ kind: 'unfollowed', reason: 'class-not-followed' });
+    expect(appShellOf(viaCall, 'src/main.ts', true, 'fixture-app')).toMatchObject({ kind: 'unfollowed', reason: 'no-bootstrap-call' });
+  });
+
+  it('reads the bootstrap call through the AST, so a commented-out call never counts', () => {
+    const main = readFixture('standalone-app')['src/main.ts'];
+    const commentedFirst = readerOf('standalone-app', {
+      'src/main.ts': `// bootstrapApplication(Other, otherConfig);\n/* platformBrowser().bootstrapModule(OtherModule) */\n${main}`,
+    });
+    const commentedOnly = readerOf('standalone-app', { 'src/main.ts': main.replace('bootstrapApplication(App', '// bootstrapApplication(App') });
+
+    expect(shellOf(commentedFirst)).toMatchObject({ componentFile: 'src/app/app.ts', className: 'App' });
+    expect(appShellOf(commentedOnly, 'src/main.ts', true, 'fixture-app')).toEqual({
+      kind: 'unfollowed',
+      reason: 'no-bootstrap-call',
+      subject: '',
+      file: 'src/main.ts',
+    });
   });
 
   it('blocks the outlets of a missing template file and of a component without a template', () => {
