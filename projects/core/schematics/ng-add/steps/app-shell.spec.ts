@@ -388,22 +388,52 @@ describe('planAppShell', () => {
     expect(applied(explicit, removed.files)['src/app/app.html']).toContain('<cngx-banner-outlet />');
   });
 
-  it('asks for no outlet a recorded install placed once the shell is blocked or cannot be followed, unless --feedback asks', async () => {
+  it('notes outlets a recorded install placed and the user removed once the shell is blocked, like on an editable shell', async () => {
     const { facts, files } = await factsOf('scaffold-21', { 'src/app/app.ts': INLINE_APP });
     const once = applied(plan(facts), files);
     const quoted = await factsOf('scaffold-21', {
       'src/app/app.ts': once['src/app/app.ts'].replace(/template: `[\s\S]*?`/, "template: '<router-outlet />'"),
     });
     const recorded = [OUTLETS_ID, SPEC_ID];
+    const result = plan(quoted.facts, recorded);
 
-    expect(followed(quoted.facts).outlets.kind).toBe('blocked');
-    for (const shellFacts of [quoted.facts, createFacts({ appShell: UNFOLLOWED })]) {
-      const result = plan(shellFacts, recorded);
-      expect(result.changes).toEqual([]);
-      expect(result.skipped.map((step) => step.id)).toEqual([OUTLETS_ID]);
-    }
+    expect(followed(quoted.facts).outlets).toMatchObject({ kind: 'blocked', elements: [] });
+    expect(result.changes).toEqual([
+      expect.objectContaining({
+        kind: 'note',
+        id: OUTLETS_ID,
+        label: 'Leave out the toast and banner outlets in src/app/app.ts',
+        reason: 'the outlets were removed after cngx placed them; pass --feedback to place them again',
+      }),
+    ]);
+    expect(result.skipped.map((step) => step.id)).toEqual([OUTLETS_ID]);
     expect(plan(quoted.facts, recorded, true).changes).toMatchObject([{ kind: 'note', id: OUTLETS_ID }]);
     expect(plan(quoted.facts, recorded, true).changes[0].reason).toContain(OUTLETS_SNIPPET);
+  });
+
+  it('notes recorded outlets cngx cannot read any more with the reason, and skips outlets still there', async () => {
+    const { facts, files } = await factsOf('scaffold-21');
+    const once = applied(plan(facts), files);
+    const shared = await factsOf('scaffold-21', {
+      ...once,
+      'src/app/app.ts': once['src/app/app.ts'].replace(/imports: \[[^\]]*\]/, 'imports: SHARED'),
+    });
+    const recorded = [OUTLETS_ID, OUTLETS_ID, SPEC_ID];
+    const unread = plan(createFacts({ appShell: UNFOLLOWED }), recorded);
+
+    expect(unread.changes).toEqual([
+      expect.objectContaining({
+        kind: 'note',
+        id: OUTLETS_ID,
+        reason: `an earlier install placed the outlets and ${UNFOLLOWED_TEXT}, so cngx cannot tell whether they are still there; pass --feedback to see how to place them`,
+      }),
+    ]);
+    expect(unread.skipped.map((step) => step.id)).toEqual([OUTLETS_ID]);
+    expect(followed(shared.facts).outlets).toMatchObject({ kind: 'blocked', elements: ['cngx-banner-outlet', 'cngx-toast-outlet'] });
+    expect(plan(shared.facts, recorded)).toEqual({
+      changes: [],
+      skipped: [{ id: OUTLETS_ID, label: 'Place the toast and banner outlets in src/app/app.html', reason: 'already placed' }],
+    });
   });
 
   it('names a custom spec only on the run that places an outlet', async () => {

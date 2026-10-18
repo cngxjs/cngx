@@ -32,7 +32,6 @@ const BANNER = FEEDBACK_OUTLETS[0];
 const TOAST = FEEDBACK_OUTLETS[1];
 const OUTLET_REASON = 'CngxToaster and CngxBanner render nowhere without them';
 const WITHDRAWN_REASON = 'the outlets were removed after cngx placed them; pass --feedback to place them again';
-const RECORDED_REASON = 'an earlier install placed them, so cngx does not ask for them again; pass --feedback to see how to place them';
 const SNIPPET_LABEL = 'Place the toast and banner outlets in the root component';
 const TESTBED = { kind: 'testbed-providers' } as const;
 
@@ -166,9 +165,8 @@ export function planAppShell(
   const withdrawable = recorded.includes(OUTLETS_ID) && !explicitFeedback;
   // The record is checked before the shell: outlets an earlier install placed
   // are never asked for again, also where cngx can no longer edit the shell.
-  // The skip keeps the step id in the record.
   if (withdrawable && (shell.kind === 'unfollowed' || shell.outlets.kind === 'blocked')) {
-    return { changes: [], skipped: [{ id: OUTLETS_ID, label: SNIPPET_LABEL, reason: RECORDED_REASON }] };
+    return recordedOnBlockedShell(shell, provenance);
   }
   if (shell.kind === 'unfollowed') {
     return snippetNote(appShellBlockedText(shell), provenance);
@@ -179,17 +177,7 @@ export function planAppShell(
   const targets = outletTargets(shell, provenance);
   const removed = shell.outlets.elements.length < FEEDBACK_OUTLETS.length;
   if (removed && withdrawable) {
-    return {
-      changes: [
-        createNote({
-          id: OUTLETS_ID,
-          label: `Leave out the toast and banner outlets in ${templatePath(shell)}`,
-          reason: WITHDRAWN_REASON,
-          provenance,
-        }),
-      ],
-      skipped: targets.map(({ change }) => skipChange(change, WITHDRAWN_REASON)),
-    };
+    return withdrawnNote(templatePath(shell), WITHDRAWN_REASON, provenance, targets.map(({ change }) => skipChange(change, WITHDRAWN_REASON)));
   }
   const changes = targets.filter(({ done }) => !done).map(({ change }) => change);
   const skipped: readonly SkippedStep[] = targets
@@ -197,6 +185,36 @@ export function planAppShell(
     .map(({ change }) => skipChange(change, 'already placed'));
   const spec = specChange(facts, shell, provenance, changes.length > 0);
   return { changes: [...changes, ...spec.changes], skipped: [...skipped, ...spec.skipped] };
+}
+
+// Outlets the record placed and the user removed, or that cngx cannot see
+// any more: a note that says so, and skips with the same reason that keep
+// the step id in the record, so later runs still know the outlets were
+// placed once. A note is not a write, so the run stays idempotent.
+function withdrawnNote(where: string, reason: string, provenance: Provenance, skipped: readonly SkippedStep[]): StepResult {
+  return {
+    changes: [createNote({ id: OUTLETS_ID, label: `Leave out the toast and banner outlets in ${where}`, reason, provenance })],
+    skipped,
+  };
+}
+
+// A recorded install on a shell cngx cannot edit now: outlets still in the
+// template are in place; outlets that are gone are withdrawn, exactly as on
+// an editable shell; outlets in a template cngx did not read are named with
+// the reason it stopped.
+function recordedOnBlockedShell(shell: AppShell | AppShellUnfollowed, provenance: Provenance): StepResult {
+  const at = shell.kind === 'unfollowed' ? shell : shell.outlets;
+  const elements = at.kind === 'blocked' ? at.elements : undefined;
+  const where = shell.kind === 'followed' ? templatePath(shell) : 'the root component';
+  const label = `Place the toast and banner outlets in ${where}`;
+  if (elements?.length === FEEDBACK_OUTLETS.length) {
+    return { changes: [], skipped: [{ id: OUTLETS_ID, label, reason: 'already placed' }] };
+  }
+  const reason =
+    elements === undefined && at.kind !== 'editable'
+      ? `an earlier install placed the outlets and ${appShellBlockedText(at)}, so cngx cannot tell whether they are still there; pass --feedback to see how to place them`
+      : WITHDRAWN_REASON;
+  return withdrawnNote(where, reason, provenance, [{ id: OUTLETS_ID, label, reason }]);
 }
 
 // Why `ng update` reports the outlets: the shell cannot be followed or

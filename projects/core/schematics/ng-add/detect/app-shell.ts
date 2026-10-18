@@ -144,7 +144,11 @@ export type AppShellOutlets =
        */
       readonly routerOutlet: boolean;
     }
-  | ({ readonly kind: 'blocked' } & AppShellBlocked);
+  | ({
+      readonly kind: 'blocked';
+      /** The outlet elements the template holds; absent when cngx stopped before it read the template. */
+      readonly elements?: readonly string[];
+    } & AppShellBlocked);
 
 /** The import the feedback providers in the root component's spec need. */
 export const FEEDBACK_SPEC_IMPORT = "import { provideFeedback, withBanners, withToasts } from '@cngx/ui/feedback';";
@@ -465,8 +469,9 @@ function importsOutlet(binding: TopLevelBinding | undefined, name: string): bool
   return binding?.module === FEEDBACK_MODULE && binding.imported === name;
 }
 
-function blockedOutlets(at: AppShellBlocked): AppShellOutlets {
-  return { kind: 'blocked', ...at };
+// `elements`: the outlet elements of a template cngx read before it stopped.
+function blockedOutlets(at: AppShellBlocked, elements?: readonly string[]): AppShellOutlets {
+  return elements === undefined ? { kind: 'blocked', ...at } : { kind: 'blocked', ...at, elements };
 }
 
 function outletsOf(
@@ -497,16 +502,16 @@ function outletsOf(
   }
   const elements = FEEDBACK_OUTLETS.filter(({ element }) => hasElement(template, element)).map(({ element }) => element);
   if (inline?.quoted === true && elements.length < FEEDBACK_OUTLETS.length) {
-    return blockedOutlets(blocked('quoted-template', className, componentFile));
+    return blockedOutlets(blocked('quoted-template', className, componentFile), elements);
   }
   const { file } = shell.importsHost;
   const host = read(file) ?? '';
   if (!parsesCleanly(host)) {
-    return blockedOutlets(blocked('source-parse-error', className, file));
+    return blockedOutlets(blocked('source-parse-error', className, file), elements);
   }
   const hostBlocked = unreadImportsHost(host, shell.importsHost);
   if (hostBlocked !== undefined) {
-    return blockedOutlets(hostBlocked);
+    return blockedOutlets(hostBlocked, elements);
   }
   const selector = { kind: 'decorator-imports', className: shell.importsHost.className } as const;
   const bindings = topLevelBindings(host);
@@ -514,11 +519,11 @@ function outletsOf(
   // feedback export or the feedback namespace included.
   const clash = FEEDBACK_OUTLETS.find(({ className: name }) => bindings.has(name) && !importsOutlet(bindings.get(name), name));
   if (clash !== undefined) {
-    return blockedOutlets(blocked('outlet-name-bound', clash.className, file));
+    return blockedOutlets(blocked('outlet-name-bound', clash.className, file), elements);
   }
   const unverified = verifyOutletEdits(read, shell, { elements, routerOutlet });
   if (unverified !== undefined) {
-    return blockedOutlets(unverified);
+    return blockedOutlets(unverified, elements);
   }
   return {
     kind: 'editable',

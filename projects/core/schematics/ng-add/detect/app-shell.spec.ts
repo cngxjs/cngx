@@ -301,10 +301,22 @@ describe('appShellOf outlets', () => {
       reason: 'imports-not-array',
       subject: 'App',
       file: 'src/app/app.ts',
+      elements: [],
     });
     expect(
       outletsOf({ 'src/app/app.ts': `import { CngxToastOutlet } from './toasts';\n${stock}` }),
-    ).toEqual({ kind: 'blocked', reason: 'outlet-name-bound', subject: 'CngxToastOutlet', file: 'src/app/app.ts' });
+    ).toEqual({ kind: 'blocked', reason: 'outlet-name-bound', subject: 'CngxToastOutlet', file: 'src/app/app.ts', elements: [] });
+  });
+
+  it('names the outlets a blocked shell holds once cngx read its template, and none before', () => {
+    const stock = readFixture('scaffold-21')['src/app/app.ts'];
+    const shared = stock.replace('imports: [RouterOutlet],', 'imports: SHARED,');
+
+    expect(outletsOf({ 'src/app/app.ts': shared, 'src/app/app.html': '<cngx-banner-outlet />\n<router-outlet />\n' })).toMatchObject({
+      reason: 'imports-not-array',
+      elements: ['cngx-banner-outlet'],
+    });
+    expect(outletsOf({ 'src/app/app.html': '<div>@if (</div>\n' })).not.toHaveProperty('elements');
   });
 
   it.each([
@@ -348,12 +360,13 @@ describe('appShellOf outlets', () => {
     ['a computed key', "  ['imports']: [RouterOutlet],\n", 'decorator-dynamic'],
     ['a numeric key', '  imports: [RouterOutlet],\n  1: true,\n', 'decorator-dynamic'],
     ['imports written twice', '  imports: [RouterOutlet],\n  imports: [],\n', 'duplicate-property'],
-    ['a shorthand imports', '  imports,\n', 'imports-not-array'],
-    ['an identifier imports', '  imports: IMPORTS,\n', 'imports-not-array'],
-  ])('blocks a component decorator with %s', (_name, imports, reason) => {
+    ['a shorthand imports', '  imports,\n', 'imports-not-array', []],
+    ['an identifier imports', '  imports: IMPORTS,\n', 'imports-not-array', []],
+  ])('blocks a component decorator with %s', (_name, imports, reason, elements?: readonly string[]) => {
     const app = readFixture('scaffold-21')['src/app/app.ts'].replace('  imports: [RouterOutlet],\n', imports);
+    const read = elements === undefined ? {} : { elements };
 
-    expect(outletsOf({ 'src/app/app.ts': app })).toEqual({ kind: 'blocked', reason, subject: 'App', file: 'src/app/app.ts' });
+    expect(outletsOf({ 'src/app/app.ts': app })).toEqual({ kind: 'blocked', reason, subject: 'App', file: 'src/app/app.ts', ...read });
   });
 
   it('blocks an NgModule whose imports cngx cannot write safely', () => {
@@ -399,6 +412,7 @@ describe('appShellOf outlets', () => {
       reason: 'quoted-template',
       subject: 'App',
       file: 'src/app/app.ts',
+      elements: [],
     });
     expect(shellOf(readerOf('standalone-app', { 'src/app/app.ts': placed })).outlets).toMatchObject({
       kind: 'editable',
