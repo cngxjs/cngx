@@ -286,14 +286,7 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown, TListItem = TIte
         return true;
       }
       const extract = this.keyFn();
-      // Without [itemValue] the list is shaped like the options, which is
-      // what the `TListItem = TItem` default expresses.
-      const extractItem =
-        this.itemValue() ?? (this.optionValue() as unknown as (item: TListItem) => TValue);
-      const itemValues = extractItem(item);
-      const keys = Array.isArray(itemValues)
-        ? (itemValues as readonly TValue[]).map(extract)
-        : [extract(itemValues as TValue)];
+      const keys = this.itemKeys(item, extract);
       return values.some((v) => {
         const selected = extract(v);
         return keys.some((key) => Object.is(selected, key));
@@ -339,5 +332,19 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown, TListItem = TIte
         untracked(() => this.selectedValues.set(pruned));
       }
     });
+  }
+
+  private itemKeys(item: TListItem, extract: (value: TValue) => unknown): readonly unknown[] {
+    const itemValue = this.itemValue();
+    if (!itemValue) {
+      // Without [itemValue] the list is shaped like the options (the
+      // `TListItem = TItem` default), and an array-valued option stays one value.
+      const optionValue = this.optionValue() as unknown as (item: TListItem) => TValue;
+      return [extract(optionValue(item))];
+    }
+    const values = itemValue(item);
+    return Array.isArray(values)
+      ? (values as readonly TValue[]).map(extract)
+      : [extract(values as TValue)];
   }
 }

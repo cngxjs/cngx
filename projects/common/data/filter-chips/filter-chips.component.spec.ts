@@ -494,4 +494,53 @@ describe('CngxFilterChips', () => {
     expect(pred(TAGS[1])).toBe(true);
     expect(pred(TAGS[0])).toBe(false);
   });
+
+  it('without [itemValue] an array-valued option compares as one value through keyFn', async () => {
+    interface Range {
+      readonly label: string;
+      readonly span: readonly [number, number];
+    }
+    const RANGES: readonly Range[] = [
+      { label: 'Low', span: [0, 10] },
+      { label: 'High', span: [10, 20] },
+    ];
+
+    @Component({
+      template: `
+        <ng-container [cngxFilter]="null" #filter="cngxFilter">
+          <cngx-filter-chips
+            label="Ranges"
+            [options]="ranges"
+            [optionLabel]="byLabel"
+            [optionValue]="bySpan"
+            [keyFn]="byKey"
+            [filterRef]="filter"
+            filterKey="ranges"
+          />
+        </ng-container>
+      `,
+      imports: [CngxFilter, CngxFilterChips],
+    })
+    class RangeHost {
+      readonly ranges: readonly unknown[] = RANGES;
+      readonly byLabel = (r: unknown): string => (r as Range).label;
+      readonly bySpan = (r: unknown): readonly [number, number] => (r as Range).span;
+      readonly byKey = (v: unknown): string => (v as readonly number[]).join('-');
+      @ViewChild('filter', { static: true }) filterRef!: CngxFilter<unknown>;
+    }
+
+    const fixture = TestBed.createComponent(RangeHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const bridge = fixture.debugElement
+      .query(By.directive(CngxFilterChips))
+      .injector.get(CngxFilterChips) as CngxFilterChips<unknown, readonly [number, number]>;
+    bridge.selectedValues.set([[0, 10]]);
+    fixture.detectChanges();
+
+    const pred = fixture.componentInstance.filterRef.predicate()!;
+    expect(pred({ label: 'Low copy', span: [0, 10] })).toBe(true);
+    expect(pred(RANGES[1])).toBe(false);
+  });
 });
