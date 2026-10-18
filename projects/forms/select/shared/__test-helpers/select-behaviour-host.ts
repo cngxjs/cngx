@@ -87,7 +87,8 @@ function flush(fixture: ComponentFixture<unknown>): void {
  * Shared behaviour rows for a select-family composite, mounted anchored on a
  * plain host with a deferred `[commitAction]`: a commit that settles after
  * the host is destroyed neither writes, emits nor speaks; a failed commit
- * stays reachable from the trigger while the panel is closed.
+ * stays reachable from the trigger while the panel is closed; a select that
+ * turns disabled closes and ignores activations.
  *
  * @internal
  */
@@ -109,6 +110,7 @@ export function describeSelectBehaviourHost(
       readonly labelFn = (v: unknown): string => String(v);
       readonly mode = signal<CngxSelectCommitMode>('optimistic');
       readonly display = signal<CngxSelectCommitErrorDisplay>('banner');
+      readonly disabled = signal(false);
       readonly model = signal<{ pick: string | null }>({ pick: null });
       readonly f = form(this.model, (p) => {
         validate(p.pick, () => ({ kind: 'rejected' }));
@@ -136,6 +138,7 @@ export function describeSelectBehaviourHost(
               [commitAction]="commitAction"
               [commitMode]="mode()"
               [commitErrorDisplay]="display()"
+              [disabled]="disabled()"
             >${opts.content ?? ''}</${elementSelector}>`;
       const body = mountOpts.inField
         ? `<cngx-form-field [field]="f.pick">${variantTag}</cngx-form-field>`
@@ -288,6 +291,22 @@ export function describeSelectBehaviourHost(
       const presenter = de.injector.get(CngxFormFieldPresenter);
       expect(trigger().getAttribute('aria-errormessage')).toBe(presenter.errorId());
       expect(textOfRefs(trigger(), 'aria-describedby').join(' ')).toContain('Save failed');
+    });
+
+    it('closes the panel and drops activations once disabled', () => {
+      const { fixture, host, cmp, variant, panel, trigger } = mount();
+      variant.open();
+      flush(fixture);
+      expect(variant.panelOpen()).toBe(true);
+      host.disabled.set(true);
+      flush(fixture);
+      expect(variant.panelOpen()).toBe(false);
+      expect(trigger().getAttribute('aria-expanded')).toBe('false');
+      const before = opts.readValue(cmp);
+      panel().querySelectorAll<HTMLElement>(opts.optionSelector)[1].click();
+      flush(fixture);
+      expect(host.pending).toBeNull();
+      expect(opts.readValue(cmp)).toEqual(before);
     });
   });
 }

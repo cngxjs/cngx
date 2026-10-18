@@ -164,6 +164,7 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly indeterminateIds = signal<Set<string>>(new Set());
   readonly useSlot = signal(false);
   readonly panelOpen = signal(true).asReadonly();
+  readonly disabled = signal(false);
   readonly expandToReveal = signal(false);
   // Glyph overrides + i18n labels - null / default literals keep the
   // harness on the built-in node-row visuals.
@@ -232,6 +233,19 @@ function setup() {
 }
 
 describe('CngxTreeSelectPanel', () => {
+  it('drops a keyboard activation while the select is disabled', () => {
+    const { fixture, host, root } = setup();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const tree = root.querySelector<HTMLElement>('[role="tree"]')!;
+    host.disabled.set(true);
+    tree.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(host.lastSelected()).toBeNull();
+    host.disabled.set(false);
+    tree.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(host.lastSelected()).not.toBeNull();
+  });
+
   it('renders a role="tree" container without the aria-selected-model attributes', () => {
     const { root } = setup();
     const tree = root.querySelector('[role="tree"]');

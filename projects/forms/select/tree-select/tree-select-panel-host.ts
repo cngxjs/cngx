@@ -25,6 +25,8 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
    * closed.
    */
   readonly panelOpen: Signal<boolean>;
+  /** A disabled select drops every activation. */
+  readonly disabled: Signal<boolean>;
   /**
    * Opt-in expand-to-reveal type-to-find. When `true` the panel
    * resolves typeahead misses against the full flat tree (reveal +

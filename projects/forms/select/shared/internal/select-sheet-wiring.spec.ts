@@ -42,11 +42,13 @@ function setup(
     id: signal('panel-1'),
   } as unknown as CngxPopover;
   const isCommitting = signal(false);
+  const disabled = signal(false);
   const request = signal<CngxPopoverPresentationRequest>('auto');
   const core = {
     isCommitting,
     resolvedPresentationRequest: request,
     ariaLabels: signal({}),
+    disabled,
   } as unknown as CngxSelectCore<string, string>;
   const commitMode = signal<CngxSelectCommitMode>('optimistic');
   const close = vi.fn();
@@ -82,6 +84,7 @@ function setup(
     close,
     pend,
     request,
+    disabled,
   };
 }
 
@@ -98,6 +101,21 @@ describe('createSelectSheetWiring', () => {
     presentation.set('sheet');
     expect(wiring.sheetAnchored()).toBe(false);
     expect(wiring.sheetModal()).toBe(true);
+  });
+
+  it('hides an open panel once the select turns disabled', () => {
+    const { disabled, hide, visible } = setup();
+    TestBed.flushEffects();
+    expect(hide).not.toHaveBeenCalled();
+    disabled.set(true);
+    TestBed.flushEffects();
+    expect(hide).toHaveBeenCalledTimes(1);
+    expect(visible()).toBe(false);
+    disabled.set(false);
+    TestBed.flushEffects();
+    disabled.set(true);
+    TestBed.flushEffects();
+    expect(hide).toHaveBeenCalledTimes(1);
   });
 
   it('blocks a close only while a pessimistic commit is pending', () => {

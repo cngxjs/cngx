@@ -1,4 +1,12 @@
-import { computed, inject, signal, type ElementRef, type Signal } from '@angular/core';
+import {
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+  type ElementRef,
+  type Signal,
+} from '@angular/core';
 import type { CngxListbox } from '@cngx/common/interactive';
 import type {
   CngxPopover,
@@ -21,7 +29,7 @@ import type { CngxSelectCore } from './select-core';
  */
 export type CngxSelectSheetCore = Pick<
   CngxSelectCore<unknown, unknown>,
-  'isCommitting' | 'resolvedPresentationRequest' | 'ariaLabels'
+  'isCommitting' | 'resolvedPresentationRequest' | 'ariaLabels' | 'disabled'
 >;
 
 /** @internal Inputs of {@link createSelectSheetWiring}. */
@@ -97,6 +105,15 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     () => opts.commitMode?.() === 'pessimistic' && opts.core.isCommitting(),
   );
   const panelOpen = computed(() => opts.popoverRef()?.isVisible() ?? false);
+
+  // The open state follows `disabled`: a select that turns disabled while
+  // open closes, so no variant keeps a panel it can no longer act on.
+  effect(() => {
+    if (!opts.core.disabled() || !panelOpen()) {
+      return;
+    }
+    untracked(() => opts.popoverRef()?.hide());
+  });
 
   const dismiss = inject(CNGX_DISMISS_HANDLER_FACTORY)({
     popoverRef: opts.popoverRef,

@@ -29,10 +29,14 @@ function makeListbox(): { lb: CngxListbox<unknown>; activated: Subject<unknown> 
   return { lb: mock as unknown as CngxListbox<unknown>, activated };
 }
 
-function makeCore(options: readonly CngxSelectOptionDef<Value>[]): CngxSelectCore<Value, unknown> {
+function makeCore(
+  options: readonly CngxSelectOptionDef<Value>[],
+  disabled: Signal<boolean> = signal(false),
+): CngxSelectCore<Value, unknown> {
   const map = new Map(options.map((o) => [o.value, o]));
   return {
     findOption: (value: Value) => map.get(value) ?? null,
+    disabled,
   } as unknown as CngxSelectCore<Value, unknown>;
 }
 
@@ -124,6 +128,29 @@ describe('createADActivationDispatcher', () => {
     TestBed.flushEffects();
     activated.next('a');
     expect(onActivateCalls).toEqual([['a', optA]]);
+  });
+
+  it('drops activations while the select is disabled', () => {
+    const { lb, activated } = makeListbox();
+    const disabled = signal(true);
+    installProbe({
+      listboxRef,
+      commitAction,
+      core: makeCore([optA, optB], disabled),
+      closeOnSelect: false,
+      onCommit: (v, o) => onCommitCalls.push([v, o]),
+      onActivate: (v, o) => onActivateCalls.push([v, o]),
+    });
+    listboxRef.set(lb);
+    TestBed.flushEffects();
+
+    activated.next('b');
+    expect(onActivateCalls).toEqual([]);
+    expect(onCommitCalls).toEqual([]);
+
+    disabled.set(false);
+    activated.next('b');
+    expect(onActivateCalls).toEqual([['b', optB]]);
   });
 
   it('calls onActivate with value + option when commitAction is null', () => {
