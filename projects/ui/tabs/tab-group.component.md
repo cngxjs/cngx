@@ -95,7 +95,7 @@ same surface.
 |Channel|What went wrong|Surface|
 |-|-|-|
 |Validation|The tab's own content is invalid (a required field, a bad value)|An error badge on the tab header plus an SR descriptor; bind `[error]` directly or wire `[errorAggregator]` for multi-source forms|
-|Commit / async|The *switch* was rejected (a guard or a server said no on activate)|The rolled-back tab is decorated via `*cngxTabRejectionIcon` and the reason is announced through a toast / banner|
+|Commit / async|The *switch* did not land: the `commitAction` refused it (answered `false`) or failed (threw, rejected, errored)|The rolled-back tab is decorated via `*cngxTabRejectionIcon` (its context carries `reason`) and the live region names the outcome. A failure also reaches the toast / banner bridges; a refusal does not, so an app that wants a toast shows a warning toast from its own `commitAction` before it answers `false`|
 
 The badge and the rejection icon are visual cues, never the only channel: the error message
 rides the tab's `aria-describedby` descriptor, and the rejection is announced through a live

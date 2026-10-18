@@ -23,6 +23,7 @@ import type {
 
 import { CngxMatTabNav } from './mat-tab-nav.directive';
 import { CngxMatTabLink } from './mat-tab-link.directive';
+import { stripBidiIsolates } from '@cngx/testing';
 
 interface StubAggregator {
   contract: CngxErrorAggregatorContract;
@@ -332,6 +333,11 @@ describe('CngxMatTabNav native nav-bar bridge', () => {
     expect(links[2].getAttribute('aria-describedby') ?? '').toContain('c-rejected');
     expect(links[2].querySelector('span.cngx-sr-only#c-rejected')).not.toBeNull();
     expect(links[0].classList.contains('cngx-mat-tab--error')).toBe(false);
+    // A refusal is described as a refusal, never with the rolled-back copy.
+    expect(presenter.lastOutcome()?.kind).toBe('refused');
+    expect(
+      stripBidiIsolates(links[2].querySelector('span.cngx-sr-only#c-rejected')?.textContent),
+    ).toBe('Tab switch not allowed - stayed on "A".');
   });
 
   it('reflects the route-active link onto activeIndex via composed [cngxTabsRouteSync]', async () => {

@@ -704,7 +704,7 @@ describe('CngxTabGroup organism', () => {
       expect(tabs[2].getAttribute('aria-busy')).toBeNull();
     });
 
-    it('error transition surfaces commitRolledBackTo on the live region with the origin tab label', () => {
+    it('a refused switch speaks commitRefused with the origin label, never the failure copy', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
@@ -712,6 +712,83 @@ describe('CngxTabGroup organism', () => {
       const fixture = TestBed.createComponent(CommitHost);
       fixture.componentInstance.mode = 'optimistic';
       fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      const region = fixture.nativeElement.querySelector(
+        '.cngx-tabs__live-region',
+      ) as HTMLElement;
+      tabs[1].click();
+      fixture.detectChanges();
+      expect(stripBidiIsolates(region.textContent?.trim())).toBe(
+        'Tab switch not allowed - stayed on "A".',
+      );
+      // The marker still shows; clearing it keeps the phrase.
+      expect(tabs[1].classList.contains('cngx-tab--rejected')).toBe(true);
+      const host = fixture.debugElement.children[0].injector.get(CNGX_TAB_GROUP_HOST);
+      expect(host.commitState.status()).toBe('idle');
+      host.clearLastFailed();
+      fixture.detectChanges();
+      expect(tabs[1].classList.contains('cngx-tab--rejected')).toBe(false);
+      expect(stripBidiIsolates(region.textContent?.trim())).toBe(
+        'Tab switch not allowed - stayed on "A".',
+      );
+    });
+
+    it('the rejection-icon context carries the reason of the outcome', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        imports: [CngxTabGroup, CngxTab, CngxTabRejectionIcon],
+        template: `
+          <cngx-tab-group aria-label="X" [commitAction]="action" commitMode="optimistic">
+            <ng-template cngxTabRejectionIcon let-reason="reason">
+              <span data-testid="reason">{{ reason }}</span>
+            </ng-template>
+            <div cngxTab [label]="'A'"></div>
+            <div cngxTab [label]="'B'"></div>
+            <div cngxTab [label]="'C'"></div>
+          </cngx-tab-group>
+        `,
+      })
+      class ReasonHost {
+        answer: () => boolean = () => false;
+        action: CngxTabsCommitAction = () => this.answer();
+      }
+      const fixture = TestBed.createComponent(ReasonHost);
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      tabs[1].click();
+      fixture.detectChanges();
+      expect(tabs[1].querySelector('[data-testid="reason"]')?.textContent?.trim()).toBe('refused');
+      fixture.componentInstance.answer = () => {
+        throw new Error('boom');
+      };
+      tabs[2].click();
+      fixture.detectChanges();
+      expect(tabs[2].querySelector('[data-testid="reason"]')?.textContent?.trim()).toBe('failed');
+    });
+
+    it('error transition surfaces commitRolledBackTo on the live region with the origin tab label', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => {
+        throw new Error('boom');
+      };
       fixture.detectChanges();
       const tabs = Array.from(
         fixture.nativeElement.querySelectorAll(
@@ -770,7 +847,9 @@ describe('CngxTabGroup organism', () => {
       });
       const fixture = TestBed.createComponent(CommitHost);
       fixture.componentInstance.mode = 'optimistic';
-      fixture.componentInstance.action = () => false;
+      fixture.componentInstance.action = () => {
+        throw new Error('boom');
+      };
       fixture.detectChanges();
       const tabs = Array.from(
         fixture.nativeElement.querySelectorAll(
@@ -782,7 +861,7 @@ describe('CngxTabGroup organism', () => {
       ) as HTMLElement;
       tabs[1].click();
       fixture.detectChanges();
-      // First reject - rich phrase fires.
+      // First failure - rich phrase fires.
       expect(stripBidiIsolates(region.textContent?.trim())).toBe(
         'Could not save changes - reverted to "A".',
       );

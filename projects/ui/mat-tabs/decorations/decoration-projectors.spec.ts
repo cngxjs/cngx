@@ -1,5 +1,6 @@
 import {
   Component,
+  computed,
   DestroyRef,
   Injector,
   afterNextRender,
@@ -713,11 +714,12 @@ describe('createMatTabRejectionDecoration - *cngxMatTabRejectionContent slot cas
         let-failedHandleId="failedHandleId"
         let-originLabel="originLabel"
         let-fallbackText="fallbackText"
+        let-reason="reason"
       >
         <span data-testid="rejection-slot"
           >slot {{ failedHandleId }}/{{ originLabel ?? '∅' }}/{{
             fallbackText
-          }}</span
+          }}/{{ reason }}</span
         >
       </ng-template>
     `,
@@ -812,8 +814,45 @@ describe('createMatTabRejectionDecoration - *cngxMatTabRejectionContent slot cas
     );
     expect(slotChild).not.toBeNull();
     expect(slotChild?.textContent).toBe(
-      'slot cngx-mat-tab-1/Profile/Reverted to "Profile".',
+      'slot cngx-mat-tab-1/Profile/Reverted to "Profile"./failed',
     );
+  });
+
+  it('slot context carries the outcome reason and remounts when it changes', () => {
+    const { host, hostEl } = setupRejectionHost();
+    const failedHandleId = signal<string | null>(null);
+    const failedIndex = signal<number | undefined>(undefined);
+    const reason = signal<'refused' | 'failed' | undefined>(undefined);
+    const descriptorText = computed(() =>
+      reason() === 'refused' ? 'Not allowed - stayed on "Profile".' : 'Reverted to "Profile".',
+    );
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId,
+      failedIndex,
+      descriptorText,
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+      contentTemplate: signal(host.rejectionTpl),
+      viewContainerRef: host.vcr,
+      originLabel: signal('Profile'),
+      reason,
+    });
+
+    reason.set('refused');
+    failedHandleId.set('cngx-mat-tab-1');
+    failedIndex.set(1);
+    TestBed.flushEffects();
+    const slot = (): string | null | undefined =>
+      hostEl
+        .querySelectorAll<HTMLElement>('.mat-mdc-tab')[1]
+        .querySelector('[data-testid="rejection-slot"]')?.textContent;
+    expect(slot()).toBe('slot cngx-mat-tab-1/Profile/Not allowed - stayed on "Profile"./refused');
+
+    reason.set('failed');
+    TestBed.flushEffects();
+    expect(slot()).toBe('slot cngx-mat-tab-1/Profile/Reverted to "Profile"./failed');
   });
 
   it('half-wired slot - contentTemplate without viewContainerRef falls back to the imperative path silently', () => {
@@ -878,7 +917,7 @@ describe('createMatTabRejectionDecoration - *cngxMatTabRejectionContent slot cas
       '[data-testid="rejection-slot"]',
     );
     expect(slotChild?.textContent).toBe(
-      'slot cngx-mat-tab-2/∅/Tab change refused - retry?',
+      'slot cngx-mat-tab-2/∅/Tab change refused - retry?/failed',
     );
 
     descriptorText.set('Reverted to "Settings".');
@@ -889,7 +928,7 @@ describe('createMatTabRejectionDecoration - *cngxMatTabRejectionContent slot cas
       '[data-testid="rejection-slot"]',
     );
     expect(slotChild?.textContent).toBe(
-      'slot cngx-mat-tab-2/Settings/Reverted to "Settings".',
+      'slot cngx-mat-tab-2/Settings/Reverted to "Settings"./failed',
     );
   });
 });

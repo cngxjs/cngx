@@ -62,8 +62,9 @@ export interface CngxTabsI18n {
   /**
    * @deprecated Superseded by {@link commitRolledBackTo}. Retained as
    * the defensive fallback in `liveAnnouncement` when the origin
-   * label is unresolvable - fires for unlabeled tabs or programmatic
-   * `commitState` writes that bypass `select()`. See
+   * label is unresolvable - fires for a failed commit from an unlabeled
+   * tab or programmatic `commitState` writes that bypass `select()`,
+   * never for a refusal ({@link commitRefusedGeneric}). See
    * `tabs-accepted-debt §4`.
    */
   readonly commitFailedRetry: string;
@@ -75,6 +76,19 @@ export interface CngxTabsI18n {
    * `originIndexDuringCommit` are set.
    */
   readonly commitRolledBackTo: (originLabel: string) => string;
+  /**
+   * Origin-aware refusal phrase. Read when the commit action answered
+   * `false` and the origin label resolves. Receives the label of the tab
+   * the user stayed on, yields e.g. `Tab switch not allowed - stayed on
+   * "Profile".`. A refusal is not a failure, so it never reads the
+   * failure copy ({@link commitRolledBackTo}, {@link commitFailedRetry}).
+   */
+  readonly commitRefused: (originLabel: string) => string;
+  /**
+   * Refusal phrase for an origin without a label. Twin of
+   * {@link commitFailedRetry} for the refused outcome.
+   */
+  readonly commitRefusedGeneric: string;
 }
 
 /**
@@ -103,6 +117,8 @@ function tabsBundleFrom(section: CngxTabsLanguageSection, locale: string): CngxT
     commitFailedRetry: section.commitFailedRetry,
     commitInFlight: section.commitInFlight,
     commitRolledBackTo: (origin) => formatMessage(section.commitRolledBackTo, { origin }, locale),
+    commitRefused: (origin) => formatMessage(section.commitRefused, { origin }, locale),
+    commitRefusedGeneric: section.commitRefusedGeneric,
   };
 }
 

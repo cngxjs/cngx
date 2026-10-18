@@ -117,6 +117,7 @@ export class CngxMatTabNav {
       injector: this.injector,
       destroyRef: this.destroyRef,
       originLabel: this.rejectionState.originLabel,
+      reason: this.rejectionState.reason,
       buttonSelector: '.mat-mdc-tab-link',
     });
 

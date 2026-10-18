@@ -49,15 +49,18 @@ describe('CngxTabRejectionIcon', () => {
     const ctx: CngxTabRejectionIconContext = {
       failedIndex: 2,
       originLabel: 'Tab One',
+      reason: 'refused',
     };
     expect(ctx.failedIndex).toBe(2);
     expect(ctx.originLabel).toBe('Tab One');
+    expect(ctx.reason).toBe('refused');
   });
 
   it('originLabel may be undefined when the origin index is out of range', () => {
     const ctx: CngxTabRejectionIconContext = {
       failedIndex: 1,
       originLabel: undefined,
+      reason: 'failed',
     };
     expect(ctx.originLabel).toBeUndefined();
   });

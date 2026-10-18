@@ -2,6 +2,7 @@ import { computed, provideZonelessChangeDetection, signal, type Signal } from '@
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import type { CngxTransitionOutcome } from '@cngx/common/data';
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
 import {
@@ -60,6 +61,7 @@ function makeCommitPresenter(): {
     activeIndex: signal(0),
     tabs: signal([] as readonly CngxTabHandle[]),
     lastFailedIndex: signal<number | undefined>(undefined),
+    lastOutcome: signal<CngxTransitionOutcome | undefined>(undefined),
     originIndexDuringCommit: signal<number | undefined>(undefined),
     commitTransition: { current: current.asReadonly(), previous: previous.asReadonly() },
   } as unknown as CngxTabGroupHost;
@@ -390,5 +392,134 @@ describe('createTabGroupAnnouncements - direction formatters', () => {
     previous.set('pending');
     current.set('success');
     expect(stripBidiIsolates(bundle.liveAnnouncement())).toBe('Tab 2 of 2: Account (weiter)');
+  });
+});
+
+describe('createTabGroupAnnouncements - refused commit', () => {
+  function refusalSetup(labels: readonly (string | undefined)[] = ['Profile', 'Account', 'Billing']) {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const i18n = TestBed.inject(CNGX_TABS_I18N);
+    const { presenter, current, previous } = makeCommitPresenter();
+    const tabs = presenter.tabs as ReturnType<typeof signal<readonly CngxTabHandle[]>>;
+    tabs.set(
+      labels.map((label, i) => ({ ...makeHandle(), id: `t${i}`, label: signal(label) })),
+    );
+    const closed = signal('');
+    const bundle = createTabGroupAnnouncements({
+      presenter,
+      i18n,
+      config: {},
+      ariaLabel: signal<string | undefined>(undefined),
+      ariaLabelledBy: signal<string | undefined>(undefined),
+      closedAnnouncement: closed.asReadonly(),
+    });
+    const host = presenter as unknown as {
+      activeIndex: ReturnType<typeof signal<number>>;
+      lastFailedIndex: ReturnType<typeof signal<number | undefined>>;
+      lastOutcome: ReturnType<typeof signal<CngxTransitionOutcome | undefined>>;
+      originIndexDuringCommit: ReturnType<typeof signal<number | undefined>>;
+    };
+    let sequence = 0;
+    const settle = (kind: 'refused' | 'failed', index: number, origin: number): void => {
+      host.originIndexDuringCommit.set(origin);
+      host.lastOutcome.set({ kind, index, sequence: ++sequence });
+      host.lastFailedIndex.set(index);
+      if (kind === 'failed') {
+        current.set('error');
+      }
+    };
+    const live = (): string => stripBidiIsolates(bundle.liveAnnouncement());
+    // The organism's live region reads the phrase at first render, before
+    // any commit settles; mirror that so the phrase has a prior snapshot.
+    live();
+    return { i18n, bundle, current, previous, host, closed, settle, live };
+  }
+
+  it('speaks commitRefused with the origin label once, not the failure copy', () => {
+    const { settle, live } = refusalSetup();
+    settle('refused', 1, 0);
+    expect(live()).toBe('Tab switch not allowed - stayed on "Profile".');
+    // Holds until something spends it - no flicker on a re-read.
+    expect(live()).toBe('Tab switch not allowed - stayed on "Profile".');
+  });
+
+  it('speaks commitRefusedGeneric when the origin tab has no label', () => {
+    const { settle, live } = refusalSetup([undefined, 'Account']);
+    settle('refused', 1, 0);
+    expect(live()).toBe('Tab switch not allowed.');
+  });
+
+  it('a failed outcome keeps the failure arm and never the refused phrase', () => {
+    const { settle, live } = refusalSetup();
+    settle('failed', 1, 0);
+    expect(live()).toBe('Could not save changes - reverted to "Profile".');
+  });
+
+  it('the next commit spends the refused phrase', () => {
+    const { settle, live, current, i18n } = refusalSetup();
+    settle('refused', 1, 0);
+    expect(live()).not.toBe('');
+    current.set('pending');
+    expect(live()).toBe(i18n().commitInFlight);
+    current.set('idle');
+    expect(live()).toBe('');
+  });
+
+  it('an active-index move spends the refused phrase', () => {
+    const { settle, live, host } = refusalSetup();
+    settle('refused', 1, 0);
+    expect(live()).not.toBe('');
+    host.activeIndex.set(2);
+    expect(live()).toBe('');
+  });
+
+  it('a cleared outcome (the refused tab itself closed) spends the refused phrase', () => {
+    const { settle, live, host } = refusalSetup();
+    settle('refused', 1, 0);
+    host.lastOutcome.set(undefined);
+    host.lastFailedIndex.set(undefined);
+    expect(live()).toBe('');
+  });
+
+  it('a second refusal with a new sequence arms again', () => {
+    const { settle, live, current } = refusalSetup();
+    settle('refused', 1, 0);
+    current.set('pending');
+    live();
+    current.set('idle');
+    expect(live()).toBe('');
+    settle('refused', 2, 0);
+    expect(live()).toBe('Tab switch not allowed - stayed on "Profile".');
+  });
+
+  it('the close shift (index moved, sequence copied) does not re-announce', () => {
+    const { settle, live, host, current } = refusalSetup();
+    settle('refused', 2, 1);
+    current.set('pending');
+    live();
+    current.set('idle');
+    expect(live()).toBe('');
+    const outcome = host.lastOutcome() as CngxTransitionOutcome;
+    host.lastOutcome.set({ ...outcome, index: 1 });
+    expect(live()).toBe('');
+  });
+
+  it('closing another tab after a refusal speaks the close phrase', () => {
+    const { settle, live, closed } = refusalSetup();
+    settle('refused', 1, 0);
+    expect(live()).toBe('Tab switch not allowed - stayed on "Profile".');
+    closed.set('Closed "Billing"');
+    expect(live()).toBe('Closed "Billing"');
+  });
+
+  it('a stale close phrase does not resurface once a refusal supersedes it', () => {
+    const { settle, live, closed, host } = refusalSetup();
+    closed.set('Closed "Billing"');
+    expect(live()).toBe('Closed "Billing"');
+    settle('refused', 1, 0);
+    expect(live()).toBe('Tab switch not allowed - stayed on "Profile".');
+    host.activeIndex.set(2);
+    expect(live()).toBe('');
   });
 });

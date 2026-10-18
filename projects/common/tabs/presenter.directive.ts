@@ -10,7 +10,11 @@ import {
   type Signal,
 } from '@angular/core';
 
-import { CNGX_COMMIT_CONTROLLER_FACTORY, type CngxCommitController } from '@cngx/common/data';
+import {
+  CNGX_COMMIT_CONTROLLER_FACTORY,
+  type CngxCommitController,
+  type CngxTransitionOutcome,
+} from '@cngx/common/data';
 import {
   CNGX_STATEFUL,
   createTransitionTracker,
@@ -202,12 +206,25 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     this.commitController.state.status(),
   );
 
-  // Persistence-of-error surface - see `CngxTabGroupHost.lastFailedIndex`
-  // and `originIndexDuringCommit` for the contract.
-  private readonly lastFailedIndexState = signal<number | undefined>(undefined);
+  // Persistence-of-rejection surface - see `CngxTabGroupHost.lastOutcome`,
+  // `lastFailedIndex` and `originIndexDuringCommit` for the contract. Two
+  // event sources, never synced: the settle record and the sequence whose
+  // visual marker was cleared. `lastFailedIndex` derives from both, so
+  // clearing the marker never touches the announcement record.
+  private readonly lastOutcomeState = signal<CngxTransitionOutcome | undefined>(undefined);
+  private readonly clearedSequenceState = signal<number | undefined>(undefined);
+  // Bumped once per settled refusal or failure. Plain field - only read
+  // inside the resolve handler.
+  private outcomeSequence = 0;
   private readonly originIndexDuringCommitState = signal<number | undefined>(undefined);
+  /** {@inheritDoc CngxTabGroupHost.lastOutcome} */
+  readonly lastOutcome: Signal<CngxTransitionOutcome | undefined> =
+    this.lastOutcomeState.asReadonly();
   /** {@inheritDoc CngxTabGroupHost.lastFailedIndex} */
-  readonly lastFailedIndex: Signal<number | undefined> = this.lastFailedIndexState.asReadonly();
+  readonly lastFailedIndex: Signal<number | undefined> = computed(() => {
+    const outcome = this.lastOutcomeState();
+    return outcome && outcome.sequence !== this.clearedSequenceState() ? outcome.index : undefined;
+  });
   /** {@inheritDoc CngxTabGroupHost.originIndexDuringCommit} */
   readonly originIndexDuringCommit: Signal<number | undefined> =
     this.originIndexDuringCommitState.asReadonly();
@@ -258,7 +275,7 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
 
   /** {@inheritDoc CngxTabGroupHost.clearLastFailed} */
   clearLastFailed(): void {
-    this.lastFailedIndexState.set(undefined);
+    this.clearedSequenceState.set(this.lastOutcomeState()?.sequence);
   }
 
   select(index: number): void {
@@ -281,8 +298,8 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
       // untouched, so a stale origin can never leak into the
       // live-region announcement.
       this.activeIndex.set(target);
-      if (this.lastFailedIndexState() === target) {
-        this.lastFailedIndexState.set(undefined);
+      if (this.lastFailedIndex() === target) {
+        this.clearLastFailed();
       }
       return;
     }
@@ -294,27 +311,31 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     if (mode === 'optimistic') {
       this.activeIndex.set(target);
     }
-    this.commitHandler.beginTransition(previous, target, action, (accept) => {
-      if (accept) {
+    this.commitHandler.beginTransition(previous, target, action, (outcome) => {
+      if (outcome === 'accepted') {
         // Window closes on success - origin label no longer needed;
-        // clear the rejection flag if the user re-picked the failed
-        // target successfully.
+        // clear the rejection marker if the user re-picked the
+        // rejected target successfully.
         this.originIndexDuringCommitState.set(undefined);
-        if (this.lastFailedIndexState() === target) {
-          this.lastFailedIndexState.set(undefined);
+        if (this.lastFailedIndex() === target) {
+          this.clearLastFailed();
         }
         if (mode === 'pessimistic') {
           this.activeIndex.set(target);
         }
-      } else {
-        // Reject - flag the refused target; RETAIN the origin so
-        // the organism's `liveAnnouncement` computed can resolve
-        // the origin label for the rich rollback phrase. Optimistic
-        // rolls back; pessimistic never moved.
-        this.lastFailedIndexState.set(target);
-        if (mode === 'optimistic') {
-          this.activeIndex.set(previous);
-        }
+        return;
+      }
+      // Refused or failed - record the outcome on the target; RETAIN the
+      // origin so the announcements can resolve the origin label for the
+      // rich phrase. Both kinds roll back: optimistic returns to the
+      // origin, pessimistic never moved.
+      this.lastOutcomeState.set({
+        kind: outcome,
+        index: target,
+        sequence: ++this.outcomeSequence,
+      });
+      if (mode === 'optimistic') {
+        this.activeIndex.set(previous);
       }
     });
   }
@@ -400,9 +421,10 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     // The rejection markers are flat indices into the same registry, so a
     // close before them drifts the decoration onto the wrong tab (reachable
     // only via the dismissable affordance the organism layers on top). Shift
-    // them the same way `activeIndex` shifts, and drop the marker outright
-    // when its own tab is the one closed.
-    this.lastFailedIndexState.update((failed) => shiftIndexOnClose(failed, index));
+    // them the same way `activeIndex` shifts, and drop the outcome outright
+    // when its own tab is the one closed. A shift copies the sequence, so
+    // nothing downstream treats it as a new outcome.
+    this.lastOutcomeState.update((outcome) => shiftOutcomeOnClose(outcome, index));
     this.originIndexDuringCommitState.update((origin) =>
       shiftIndexOnClose(origin, index),
     );
@@ -431,6 +453,27 @@ export function shiftIndexOnClose(
     return undefined;
   }
   return removed < stored ? stored - 1 : stored;
+}
+
+/**
+ * {@link shiftIndexOnClose} for a settle record: the same object when the
+ * index stays put (no re-emission), a copy with the shifted index and the
+ * SAME sequence when it moves, `undefined` when its own tab is closed.
+ *
+ * @internal
+ */
+function shiftOutcomeOnClose(
+  outcome: CngxTransitionOutcome | undefined,
+  removed: number,
+): CngxTransitionOutcome | undefined {
+  if (outcome === undefined) {
+    return undefined;
+  }
+  const index = shiftIndexOnClose(outcome.index, removed);
+  if (index === undefined) {
+    return undefined;
+  }
+  return index === outcome.index ? outcome : { ...outcome, index };
 }
 
 /**

@@ -144,6 +144,13 @@ export interface CngxMatTabRejectionDecorationOptions {
    * value is always read at fire time.
    */
   readonly originLabel?: Signal<string | undefined>;
+  /**
+   * Reactive outcome kind feeding the slot context's `reason`. Read at
+   * fire time like {@link originLabel}; a kind change also changes
+   * `descriptorText`, so the view remounts with the new value. Omitted,
+   * the context reports `'failed'`.
+   */
+  readonly reason?: Signal<'refused' | 'failed' | undefined>;
 }
 
 /**
@@ -222,6 +229,7 @@ export function createMatTabRejectionDecoration(
         failedHandleId: handleId,
         originLabel: opts.originLabel?.(),
         fallbackText: text,
+        reason: opts.reason?.() ?? 'failed',
       };
       const view = vcr.createEmbeddedView(tpl, context, {
         injector: opts.injector,

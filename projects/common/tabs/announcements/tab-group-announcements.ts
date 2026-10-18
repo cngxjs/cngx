@@ -69,6 +69,10 @@ export interface CngxTabGroupAnnouncements {
    * `announce()`. Empty between transitions so the region stays
    * quiet on no-op ticks.
    *
+   * Refusal: `commitRefused(originLabel)` (or `commitRefusedGeneric`
+   * without a label) once, held until the next commit, an active-index
+   * move, a cleared outcome or a new close phrase.
+   *
    * Error arm: `commitRolledBackTo(originLabel)` when origin
    * resolves; otherwise `commitFailedRetry`.
    *
@@ -169,35 +173,78 @@ export function createTabGroupAnnouncements(
   // Close phrase with commit-activity expiry: a NEW phrase (re)arms; a
   // commit status change while armed spends the phrase, so a later
   // return to idle re-renders '' instead of re-announcing the stale
-  // close. Mount seeds with the current phrase (never empty-coerced).
+  // close. A new refused or failed outcome spends it too: a synchronous
+  // refusal never changes the status, and the close phrase must not
+  // resurface once the refused phrase is spent. Mount seeds with the
+  // current phrase (never empty-coerced).
   const closedPhrase = createAnnouncementPhrase({
     source: () => ({
       phrase: closedAnnouncement(),
       status: presenter.commitTransition.current(),
+      sequence: presenter.lastOutcome()?.sequence,
     }),
     arm: (curr, prev) => (curr.phrase !== prev.phrase ? curr.phrase : null),
-    spend: (curr, prev) => curr.status !== prev.status,
+    spend: (curr, prev) => curr.status !== prev.status || curr.sequence !== prev.sequence,
     seed: (src) => src.phrase,
   });
+
+  // A refusal leaves the commit status at 'idle', so no status edge can
+  // voice it. The phrase arms on each new refused outcome (a new
+  // sequence) and is spent by the next commit activity, an active-index
+  // move, a cleared outcome (its own tab closed) or a new close phrase,
+  // so closing another tab after a refusal is announced. Arm wins over
+  // spend in the same flush, so an optimistic rollback still arms.
+  const refusedPhrase = createAnnouncementPhrase({
+    source: () => {
+      const outcome = presenter.lastOutcome();
+      return {
+        sequence: outcome?.sequence,
+        kind: outcome?.kind,
+        status: presenter.commitTransition.current(),
+        activeIndex: presenter.activeIndex(),
+        closePhrase: closedAnnouncement(),
+      };
+    },
+    arm: (curr, prev) =>
+      curr.kind === 'refused' && curr.sequence !== prev.sequence ? untracked(refusedCopy) : null,
+    spend: (curr, prev) =>
+      curr.status !== prev.status ||
+      curr.activeIndex !== prev.activeIndex ||
+      curr.sequence === undefined ||
+      curr.closePhrase !== prev.closePhrase,
+  });
+
+  function refusedCopy(): string {
+    const originIdx = presenter.originIndexDuringCommit();
+    const origin = originIdx !== undefined ? presenter.tabs()[originIdx] : undefined;
+    const originLabel = origin?.label();
+    const copy = i18n();
+    return originLabel ? copy.commitRefused(originLabel) : copy.commitRefusedGeneric;
+  }
 
   // Copy and tab labels (which a consumer may translate) are read untracked
   // in the live region: a language switch must not re-speak the last phrase;
   // the next transition speaks the new language.
   const liveAnnouncement = computed<string>(() => {
-    // Read the close phrase EAGERLY: linkedSignal only observes status
-    // snapshots it is actually read under, so a lazy read at the idle
-    // arm would skip the intermediate 'pending' and never spend the
-    // phrase.
+    // Read both phrases EAGERLY: linkedSignal only observes snapshots it
+    // is actually read under, so a lazy read behind an earlier arm would
+    // skip the intermediate 'pending' and never spend the phrase.
+    const refused = refusedPhrase();
     const closeConfirmation = closedPhrase();
+    if (refused) {
+      return refused;
+    }
     const current = presenter.commitTransition.current();
     if (current === 'pending') {
       return untracked(() => i18n().commitInFlight);
     }
     if (current === 'error') {
-      // No `previous === 'pending'` guard - sync rejections collapse
+      // No `previous === 'pending'` guard - sync failures collapse
       // pending → error in one flush, so the tracker captures
       // `previous = 'idle'` and an unguarded read keeps the
-      // announcement reachable for `commitAction = () => false`.
+      // announcement reachable for a synchronously throwing
+      // `commitAction`. A `false` answer never reaches this arm: it
+      // settles to 'idle' as a refusal.
       const failedIdx = presenter.lastFailedIndex();
       const originIdx = presenter.originIndexDuringCommit();
       if (failedIdx !== undefined && originIdx !== undefined) {

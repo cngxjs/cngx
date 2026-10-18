@@ -67,16 +67,22 @@ surface inherit the rejection skin automatically.
 `[cngxMatTabs]` projects the `presenter.lastFailedIndex()` signal onto
 the matching `.mat-mdc-tab` button via `Renderer2`:
 
-- **Set** on commit reject (both optimistic and pessimistic modes).
+- **Set** when a commit does not land (both optimistic and pessimistic
+  modes): a refusal (`commitAction` answered `false`) or a failure
+  (it threw, rejected or errored). `presenter.lastOutcome()` tells the
+  two apart; the descriptor reads the refused copy for a refusal and
+  the rolled-back copy for a failure, and the
+  `*cngxMatTabRejectionContent` context carries `reason`.
 - **Cleared** on the next successful re-pick of the same tab.
 - **Cleared** on programmatic `presenter.clearLastFailed()` call.
 
-The decoration adds `class="cngx-mat-tab--error"` and
-`aria-invalid="true"` - consumers using AT pick up the standard ARIA
-signal automatically. For a richer announcement phrase, compose
+The decoration adds `class="cngx-mat-tab--error"` and an SR-only
+descriptor span referenced from the tab's `aria-describedby` (no
+`aria-invalid`: it is form-field vocabulary, not a tab state). For a richer announcement phrase, compose
 `<cngx-toast-on />` next to `[cngxMatTabs]` on the `<mat-tab-group>`
 element; the bridge reads the same `CNGX_STATEFUL` source as the
-decoration.
+decoration and reacts to failures only (a refusal leaves the commit
+state at `'idle'`).
 
 ## Per-tab error aggregation
 

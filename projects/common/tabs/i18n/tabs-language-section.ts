@@ -46,6 +46,10 @@ export interface CngxTabsLanguageSection {
   readonly commitInFlight: string;
   /** `{origin}`: announced when a failed commit reverts to the origin tab. */
   readonly commitRolledBackTo: CngxMessage;
+  /** `{origin}`: announced when the commit action refuses a tab switch. */
+  readonly commitRefused: CngxMessage;
+  /** Announced when the commit action refuses a tab switch from an unlabelled tab. */
+  readonly commitRefusedGeneric: string;
 }
 
 /**
@@ -75,6 +79,8 @@ export const CNGX_TABS_LANGUAGE_EN: CngxTabsLanguageSection = {
   commitFailedRetry: 'Could not switch tab - retry?',
   commitInFlight: 'Switching tab…',
   commitRolledBackTo: 'Could not save changes - reverted to "{origin}".',
+  commitRefused: 'Tab switch not allowed - stayed on "{origin}".',
+  commitRefusedGeneric: 'Tab switch not allowed.',
 };
 
 declare module '@cngx/core/i18n' {

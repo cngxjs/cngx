@@ -231,7 +231,7 @@ describe('CngxTabGroupPresenter', () => {
     expect(presenter.commitTransition.previous()).toBe('idle');
   });
 
-  it('commitTransition reflects pending → error after a sync-rejecting commit', () => {
+  it('commitTransition stays idle after a sync-refused commit and reaches error after a sync failure', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
@@ -248,7 +248,8 @@ describe('CngxTabGroupPresenter', () => {
     })
     class TransitionHost {}
     const fixture = TestBed.createComponent(TransitionHost);
-    fixture.componentRef.setInput('commitAction', () => false);
+    let answer: () => boolean = () => false;
+    fixture.componentRef.setInput('commitAction', () => answer());
     fixture.componentRef.setInput('commitMode', 'optimistic');
     fixture.detectChanges();
     const p = fixture.debugElement.injector.get(CngxTabGroupPresenter);
@@ -256,7 +257,14 @@ describe('CngxTabGroupPresenter', () => {
     p.register(handle('b'));
     expect(p.commitTransition.current()).toBe('idle');
     p.select(1);
-    // Sync-reject collapses idle → pending → error in one tick;
+    // A refusal settles to 'idle': nothing failed, no error stored.
+    expect(p.commitTransition.current()).toBe('idle');
+    expect(p.commitState.error()).toBeUndefined();
+    answer = () => {
+      throw new Error('boom');
+    };
+    p.select(1);
+    // Sync failure collapses idle → pending → error in one tick;
     // the tracker captures the latest status.
     expect(p.commitTransition.current()).toBe('error');
   });
@@ -508,6 +516,92 @@ describe('CngxTabGroupPresenter', () => {
       expect(presenter.lastFailedIndex()).toBe(1);
       presenter.requestClose('c');
       expect(presenter.lastFailedIndex()).toBe(1);
+    });
+
+    it('a sync refusal records a refused outcome, goes idle and keeps the committed data', () => {
+      let answer = true;
+      const { presenter } = commitFixture('optimistic', () => answer);
+      presenter.select(1);
+      expect(presenter.commitState.data()).toBe(1);
+      answer = false;
+      presenter.select(2);
+      expect(presenter.activeIndex()).toBe(1);
+      expect(presenter.commitState.status()).toBe('idle');
+      expect(presenter.commitState.error()).toBeUndefined();
+      expect(presenter.commitState.data()).toBe(1);
+      expect(presenter.lastOutcome()).toEqual({ kind: 'refused', index: 2, sequence: 1 });
+      expect(presenter.lastFailedIndex()).toBe(2);
+    });
+
+    it('a Promise<false> and an Observable<false> refuse like a sync false', async () => {
+      const { presenter } = commitFixture('pessimistic', (_from, to) =>
+        to === 1 ? Promise.resolve(false) : of(false),
+      );
+      presenter.select(2);
+      expect(presenter.lastOutcome()).toEqual({ kind: 'refused', index: 2, sequence: 1 });
+      presenter.select(1);
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(presenter.lastOutcome()).toEqual({ kind: 'refused', index: 1, sequence: 2 });
+      expect(presenter.commitState.status()).toBe('idle');
+      expect(presenter.activeIndex()).toBe(0);
+    });
+
+    it('a throwing action records a failed outcome and leaves the state at error', () => {
+      const { presenter } = commitFixture('optimistic', () =>
+        throwError(() => new Error('boom')),
+      );
+      presenter.select(2);
+      expect(presenter.activeIndex()).toBe(0);
+      expect(presenter.commitState.status()).toBe('error');
+      expect(presenter.lastOutcome()).toEqual({ kind: 'failed', index: 2, sequence: 1 });
+    });
+
+    it('bumps the sequence once per settled refusal or failure, also for the same target', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      presenter.select(2);
+      expect(presenter.lastOutcome()?.sequence).toBe(2);
+    });
+
+    it('clearLastFailed() hides the marker but keeps the outcome record', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      const outcome = presenter.lastOutcome();
+      presenter.clearLastFailed();
+      expect(presenter.lastFailedIndex()).toBeUndefined();
+      expect(presenter.lastOutcome()).toBe(outcome);
+      // A new rejection shows the marker again.
+      presenter.select(1);
+      expect(presenter.lastFailedIndex()).toBe(1);
+    });
+
+    it('the close shift copies the sequence; closing the rejected tab drops the outcome', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      const before = presenter.lastOutcome();
+      presenter.requestClose('a');
+      expect(presenter.lastOutcome()).toEqual({ kind: 'refused', index: 1, sequence: before?.sequence });
+      // The consumer removes the closed tab from its data.
+      presenter.unregister('a');
+      // A close after the target keeps the very same record (no re-emission).
+      const shifted = presenter.lastOutcome();
+      presenter.register(handle('d'));
+      presenter.requestClose('d');
+      presenter.unregister('d');
+      expect(presenter.lastOutcome()).toBe(shifted);
+      presenter.requestClose('c');
+      expect(presenter.lastOutcome()).toBeUndefined();
+      expect(presenter.lastFailedIndex()).toBeUndefined();
+    });
+
+    it('a cleared marker stays cleared across the close shift', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      presenter.clearLastFailed();
+      presenter.requestClose('a');
+      expect(presenter.lastOutcome()?.index).toBe(1);
+      expect(presenter.lastFailedIndex()).toBeUndefined();
     });
 
     it('close before both markers shifts lastFailedIndex and originIndexDuringCommit down together', () => {

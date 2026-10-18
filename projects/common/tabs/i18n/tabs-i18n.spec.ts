@@ -38,6 +38,10 @@ describe('CngxTabsI18n', () => {
     expect(plain(i18n.commitRolledBackTo('Profile'))).toBe(
       'Could not save changes - reverted to "Profile".',
     );
+    expect(plain(i18n.commitRefused('Profile'))).toBe(
+      'Tab switch not allowed - stayed on "Profile".',
+    );
+    expect(i18n.commitRefusedGeneric).toBe('Tab switch not allowed.');
     expect(plain(i18n.selectedTab('Settings', 2, 5))).toBe('Tab 2 of 5: Settings');
     expect(plain(i18n.tabLabelWithDetail('Bookmarks', '45'))).toBe('Bookmarks, 45');
     expect(i18n.tabHasErrors(1)).toBe('1 error');
