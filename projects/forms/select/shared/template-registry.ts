@@ -55,8 +55,7 @@ export interface CngxSelectTemplateRegistryQueries<T = unknown> {
   readonly optionLabel: Signal<CngxSelectOptionLabel<T> | undefined>;
   readonly error: Signal<CngxSelectError | undefined>;
   readonly retryButton: Signal<CngxSelectRetryButton | undefined>;
-  /** Optional. Config-level `templates.loadingGlyph` still resolves via cascade. */
-  readonly loadingGlyph?: Signal<CngxSelectLoadingGlyph | undefined>;
+  readonly loadingGlyph: Signal<CngxSelectLoadingGlyph | undefined>;
   readonly refreshing: Signal<CngxSelectRefreshing | undefined>;
   readonly commitError: Signal<CngxSelectCommitError<T> | undefined>;
   readonly clearButton: Signal<CngxSelectClearButton | undefined>;
@@ -118,8 +117,6 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
  */
 const NO_ACTION_TEMPLATE: Signal<TemplateRef<CngxSelectActionContext> | null> = signal(null);
 
-const NO_LOADING_GLYPH_DIRECTIVE: Signal<CngxSelectLoadingGlyph | undefined> = signal(undefined);
-
 const NO_SHEET_HANDLE_DIRECTIVE: Signal<CngxSelectSheetHandle | undefined> = signal(undefined);
 
 /**
@@ -147,10 +144,7 @@ export function createTemplateRegistry<T = unknown>(
     optionLabel: injectResolvedTemplate(queries.optionLabel, 'optionLabel'),
     error: injectResolvedTemplate(queries.error, 'error'),
     retryButton: injectResolvedTemplate(queries.retryButton, 'retryButton'),
-    loadingGlyph: injectResolvedTemplate(
-      queries.loadingGlyph ?? NO_LOADING_GLYPH_DIRECTIVE,
-      'loadingGlyph',
-    ),
+    loadingGlyph: injectResolvedTemplate(queries.loadingGlyph, 'loadingGlyph'),
     refreshing: injectResolvedTemplate(queries.refreshing, 'refreshing'),
     commitError: injectResolvedTemplate(queries.commitError, 'commitError'),
     clearButton: injectResolvedTemplate(queries.clearButton, 'clearButton'),

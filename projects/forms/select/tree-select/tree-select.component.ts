@@ -100,6 +100,7 @@ import {
   CngxSelectEmpty,
   CngxSelectError,
   CngxSelectLoading,
+  CngxSelectLoadingGlyph,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
   CngxSelectSheetHandle,
@@ -169,8 +170,8 @@ export interface CngxTreeSelectChange<T = unknown> {
  * `cngxSelectClearButton` also take an app-wide default through
  * `CNGX_SELECT_CONFIG.templates` (`withTemplates`); `cngxTreeSelectNode`,
  * `cngxTreeSelectChip` and `cngxTreeSelectTriggerLabel` are
- * directive-only. `templates.loadingGlyph` replaces the loading and refresh
- * glyph app-wide; this host has no projected glyph slot. Rows and their
+ * directive-only. `cngxSelectLoadingGlyph` resolves from the projected
+ * directive first and `templates.loadingGlyph` second. Rows and their
  * hard-coded checkbox are replaced through `cngxTreeSelectNode`; the
  * option-level slots `cngxSelectCheck`, `cngxSelectOptgroup`,
  * `cngxSelectOptionLabel`, `cngxSelectOptionPending` and
@@ -199,6 +200,7 @@ export interface CngxTreeSelectChange<T = unknown> {
  * @slot cngxSelectPlaceholder Renders in the trigger while nothing is selected; gets placeholder.
  * @slot cngxSelectEmpty Replaces the panel's empty message when the tree has no nodes; searchTerm is always '' on this host.
  * @slot cngxSelectLoading Replaces the panel's loading indicator during the first load of [state], or while [loading] is true without [state]; gets retry.
+ * @slot cngxSelectLoadingGlyph Replaces the inner glyph of the spinner or bar loading view and of the refresh indicator when no cngxSelectLoading / cngxSelectRefreshing template is set; no context.
  * @slot cngxSelectError Replaces the panel's error block on a failed load and the inline error above the tree on a failed refresh; gets error, retry.
  * @slot cngxSelectRetryButton Replaces the retry button inside the built-in load-error, inline-error and commit-error blocks; gets retry, error, disabled, label.
  * @slot cngxSelectRefreshing Replaces the refresh indicator shown above the tree while a reload runs; previousCount is always 0 on this host.
@@ -438,6 +440,8 @@ export class CngxTreeSelect<T = unknown>
   private readonly clearButtonDir = contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly emptyDir = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDir = contentChild<CngxSelectLoading>(CngxSelectLoading);
+  private readonly loadingGlyphDir =
+    contentChild<CngxSelectLoadingGlyph>(CngxSelectLoadingGlyph);
   private readonly errorDir = contentChild<CngxSelectError>(CngxSelectError);
   private readonly retryButtonDir = contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDir = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
@@ -470,6 +474,7 @@ export class CngxTreeSelect<T = unknown>
     placeholder: this.placeholderDir,
     empty: this.emptyDir,
     loading: this.loadingDir,
+    loadingGlyph: this.loadingGlyphDir,
     optionLabel: this.optionLabelDir,
     error: this.errorDir,
     retryButton: this.retryButtonDir,

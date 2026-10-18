@@ -10,6 +10,7 @@ import {
   CngxSelectEmpty,
   CngxSelectError,
   CngxSelectLoading,
+  CngxSelectLoadingGlyph,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
   CngxSelectOptionLabel,
@@ -27,7 +28,7 @@ import {
 } from './template-registry';
 import { provideSelectConfig, withTemplates } from './config';
 
-// Probe that performs all 14 contentChild queries AT class-field level
+// Probe that performs all 15 contentChild queries AT class-field level
 // (Angular's AOT-enforced constraint - see NG8110) and hands them into
 // the factory. Mirrors how every real select-family variant will wire.
 @Component({
@@ -45,6 +46,8 @@ class RegistryProbe<T> {
     contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   private readonly emptyDirective = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
+  private readonly loadingGlyphDirective =
+    contentChild<CngxSelectLoadingGlyph>(CngxSelectLoadingGlyph);
   private readonly optionLabelDirective = contentChild<CngxSelectOptionLabel<T>>(
     CngxSelectOptionLabel,
   );
@@ -74,6 +77,7 @@ class RegistryProbe<T> {
     placeholder: this.placeholderDirective,
     empty: this.emptyDirective,
     loading: this.loadingDirective,
+    loadingGlyph: this.loadingGlyphDirective,
     optionLabel: this.optionLabelDirective,
     error: this.errorDirective,
     retryButton: this.retryButtonDirective,
@@ -92,6 +96,7 @@ const SLOT_MARKUP = `
   <ng-template cngxSelectPlaceholder>placeholder-proj</ng-template>
   <ng-template cngxSelectEmpty>empty-proj</ng-template>
   <ng-template cngxSelectLoading>loading-proj</ng-template>
+  <ng-template cngxSelectLoadingGlyph>loading-glyph-proj</ng-template>
   <ng-template cngxSelectOptionLabel>option-label-proj</ng-template>
   <ng-template cngxSelectError>error-proj</ng-template>
   <ng-template cngxSelectRefreshing>refreshing-proj</ng-template>
@@ -111,6 +116,7 @@ const SLOT_MARKUP = `
     CngxSelectPlaceholder,
     CngxSelectEmpty,
     CngxSelectLoading,
+    CngxSelectLoadingGlyph,
     CngxSelectOptionLabel,
     CngxSelectError,
     CngxSelectRefreshing,
@@ -152,6 +158,7 @@ class ActionRegistryProbe<T> {
     placeholder: signal(undefined),
     empty: signal(undefined),
     loading: signal(undefined),
+    loadingGlyph: signal(undefined),
     optionLabel: signal(undefined),
     error: signal(undefined),
     retryButton: signal(undefined),
@@ -191,6 +198,7 @@ describe('createTemplateRegistry', () => {
     expect(registry.placeholder()).toBeInstanceOf(TemplateRef);
     expect(registry.empty()).toBeInstanceOf(TemplateRef);
     expect(registry.loading()).toBeInstanceOf(TemplateRef);
+    expect(registry.loadingGlyph()).toBeInstanceOf(TemplateRef);
     expect(registry.optionLabel()).toBeInstanceOf(TemplateRef);
     expect(registry.error()).toBeInstanceOf(TemplateRef);
     expect(registry.refreshing()).toBeInstanceOf(TemplateRef);
@@ -211,6 +219,7 @@ describe('createTemplateRegistry', () => {
     expect(registry.placeholder()).toBeNull();
     expect(registry.empty()).toBeNull();
     expect(registry.loading()).toBeNull();
+    expect(registry.loadingGlyph()).toBeNull();
     expect(registry.optionLabel()).toBeNull();
     expect(registry.error()).toBeNull();
     expect(registry.refreshing()).toBeNull();

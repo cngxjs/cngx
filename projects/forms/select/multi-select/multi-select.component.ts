@@ -117,6 +117,7 @@ import {
   CngxSelectError,
   CngxSelectRetryButton,
   CngxSelectLoading,
+  CngxSelectLoadingGlyph,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
   CngxSelectSheetHandle,
@@ -159,8 +160,8 @@ export interface CngxMultiSelectChange<T = unknown> {
  * app-wide default through `CNGX_SELECT_CONFIG.templates` (`withTemplates`);
  * `cngxMultiSelectTriggerLabel`, `cngxMultiSelectChip` and
  * `cngxSelectChipOverflow` are directive-only.
- * `templates.loadingGlyph` replaces the loading and refresh glyph app-wide;
- * this host has no projected glyph slot.
+ * `cngxSelectLoadingGlyph` resolves from the projected directive first and
+ * `templates.loadingGlyph` second.
  *
  * **Mobile sheet.** On a coarse screen narrower than 48rem the panel opens as
  * a modal bottom sheet: a `role="dialog"` named by the field label, with a
@@ -188,6 +189,7 @@ export interface CngxMultiSelectChange<T = unknown> {
  * @slot cngxSelectPlaceholder Renders in the trigger while nothing is selected; gets placeholder.
  * @slot cngxSelectEmpty Replaces the panel's empty message when there are no options; searchTerm is always '' on this host.
  * @slot cngxSelectLoading Replaces the panel's loading indicator during the first load of [state], or while [loading] is true without [state]; gets retry.
+ * @slot cngxSelectLoadingGlyph Replaces the inner glyph of the spinner or bar loading view and of the refresh indicator when no cngxSelectLoading / cngxSelectRefreshing template is set; no context.
  * @slot cngxMultiSelectTriggerLabel Replaces the whole chip strip while at least one value is selected; gets selected, values, count.
  * @slot cngxSelectOptionLabel Replaces the label content of each option row; gets option, selected, highlighted.
  * @slot cngxSelectError Replaces the panel's error block on a failed load and the inline error above the options on a failed refresh; gets error, retry.
@@ -377,6 +379,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   private readonly emptyDirective = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
+  private readonly loadingGlyphDirective =
+    contentChild<CngxSelectLoadingGlyph>(CngxSelectLoadingGlyph);
   private readonly triggerLabelDirective = contentChild<CngxMultiSelectTriggerLabel<T>>(
     CngxMultiSelectTriggerLabel,
   );
@@ -407,6 +411,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     placeholder: this.placeholderDirective,
     empty: this.emptyDirective,
     loading: this.loadingDirective,
+    loadingGlyph: this.loadingGlyphDirective,
     optionLabel: this.optionLabelDirective,
     error: this.errorDirective,
     retryButton: this.retryButtonDirective,
