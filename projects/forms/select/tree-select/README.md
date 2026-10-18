@@ -92,7 +92,20 @@ Chip-remove always stays single-deselect even with `cascadeChildren=true`
 ```
 
 Context: `{ node, depth, expanded, hasChildren, selected, indeterminate, disabled, toggleExpand, handleSelect }`.
-The projected markup owns the whole treeitem: carry `role="treeitem"`, `[attr.id]`, aria-level / posinset / setsize, and mirror `aria-checked` from the context's `selected` / `indeterminate` flags (`'mixed'` when indeterminate - APG checkbox-tree).
+The projected markup owns the whole treeitem: carry `role="treeitem"`, `[attr.id]="node.id"` (already unique per instance, see below), aria-level / posinset / setsize, and mirror `aria-checked` from the context's `selected` / `indeterminate` flags (`'mixed'` when indeterminate - APG checkbox-tree).
+
+### Node ids
+
+Every node id is prefixed per instance: `node.id`, `node.parentIds`, the `selectionChange` node and every `treeController` id read `<instance prefix>-<nodeIdFn result>`, so two trees on one page never share a treeitem id or an `aria-activedescendant` target. Pass ids read from those surfaces back unchanged. `[initiallyExpanded]` still takes raw `nodeIdFn` ids.
+
+Migrating from raw ids: code that called `treeController.expand` / `collapse` / `toggle` / `isExpanded` / `findById` / `reveal` with a raw `nodeIdFn` id looks the node up by value instead:
+
+```ts
+const id = tree.treeController.findByValue(value)?.id;
+if (id) {
+  tree.treeController.expand(id);
+}
+```
 
 ### Custom chip / trigger summary
 

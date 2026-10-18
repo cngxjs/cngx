@@ -126,10 +126,8 @@ export function describeFieldAriaHost(
         root,
         combobox: () => {
           const el = host.querySelector<HTMLElement>('[role="combobox"]');
-          if (!el) {
-            throw new Error(`${elementSelector} renders no role="combobox" element`);
-          }
-          return el;
+          expect(el, `${elementSelector} renders no role="combobox" element`).not.toBeNull();
+          return el!;
         },
       };
     }

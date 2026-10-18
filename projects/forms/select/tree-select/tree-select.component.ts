@@ -34,6 +34,7 @@ import {
 import {
   CNGX_SELECTION_CONTROLLER_FACTORY,
   CNGX_STATEFUL,
+  nextUid,
   type AsyncStatus,
   type CngxAsyncState,
   type SelectionController,
@@ -126,7 +127,9 @@ import type {
  * matches `CngxMultiSelectChange` / `CngxComboboxChange` for shared
  * `(selectionChange)` handlers; `option` carries a `FlatTreeNode<T>`
  * (not a `CngxSelectOptionDef`). `'cascade-toggle'` fires once per
- * parent-toggle that propagated to descendants.
+ * parent-toggle that propagated to descendants. `node.id` and
+ * `node.parentIds` carry the per-instance prefix
+ * (`<instance prefix>-<nodeIdFn result>`).
  *
  * @category forms/select/tree-select
  */
@@ -263,11 +266,24 @@ export class CngxTreeSelect<T = unknown>
   // recycler design tracked as follow-up; until then every node
   // renders regardless of the app-wide config entry.
 
+  /**
+   * Per-instance prefix on every node id, so two trees on one page never
+   * share a treeitem DOM id or an `aria-activedescendant` target.
+   */
+  private readonly nodeIdPrefix = nextUid('cngx-tree-select');
+
   /** Source tree. Flatten/visibility derive automatically. */
   readonly nodes = input<readonly CngxTreeNode<T>[]>([]);
   /** Multi-value model - the selected subset of T. */
   readonly values = model<T[]>([]);
-  /** Stable id per node. See `CngxTreeControllerOptions.nodeIdFn`. */
+  /**
+   * Stable id per node. See `CngxTreeControllerOptions.nodeIdFn`. The tree
+   * prefixes it per instance: `node.id`, `node.parentIds` and every
+   * `treeController` id read `<instance prefix>-<nodeIdFn result>`. Pass
+   * those ids back unchanged; look a node up by value
+   * (`treeController.findByValue`) instead of rebuilding its id.
+   * `[initiallyExpanded]` keeps taking raw `nodeIdFn` ids.
+   */
   readonly nodeIdFn = input.required<(value: T, path: readonly number[]) => string>();
   /** Display label per node. Falls back to `node.label ?? String(value)`. */
   readonly labelFn = input<((value: T) => string) | undefined>(undefined);
@@ -500,7 +516,7 @@ export class CngxTreeSelect<T = unknown>
    */
   readonly treeController: CngxTreeController<T> = inject(CNGX_TREE_CONTROLLER_FACTORY)<T>({
     nodes: this.nodes,
-    nodeIdFn: (v, path) => this.nodeIdFn()(v, path),
+    nodeIdFn: (v, path) => `${this.nodeIdPrefix}-${this.nodeIdFn()(v, path)}`,
     labelFn: (v) => (this.labelFn() ?? ((x: T) => String(x)))(v),
     keyFn: (v) => (this.keyFn() ?? ((x: T) => x as unknown))(v),
   });
@@ -822,8 +838,9 @@ export class CngxTreeSelect<T = unknown>
       if (init === 'all') {
         this.treeController.expandAll();
       } else if (Array.isArray(init)) {
+        // Raw nodeIdFn ids in, instance-prefixed controller ids out.
         for (const id of init as readonly string[]) {
-          this.treeController.expand(id);
+          this.treeController.expand(`${this.nodeIdPrefix}-${id}`);
         }
       }
     });

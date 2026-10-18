@@ -220,7 +220,7 @@ test.describe('CngxTreeSelect demo', () => {
     await expect(backend).toHaveAttribute('aria-expanded', 'false');
     await tree.press('p');
     await expect(backend).toHaveAttribute('aria-expanded', 'true');
-    await expect(tree).toHaveAttribute('aria-activedescendant', 'postgres');
+    await expect(tree).toHaveAttribute('aria-activedescendant', /-postgres$/);
   });
 
   test('expandToReveal off: a hidden-only match is a no-op', async ({ page }) => {
@@ -237,7 +237,7 @@ test.describe('CngxTreeSelect demo', () => {
     await tree.press('p');
     // The highlight stays where autoHighlightFirst put it and nothing expands.
     await expect(backend).toHaveAttribute('aria-expanded', 'false');
-    await expect(tree).toHaveAttribute('aria-activedescendant', 'frontend');
+    await expect(tree).toHaveAttribute('aria-activedescendant', /-frontend$/);
   });
 
   test('partial cascade selection surfaces aria-checked="mixed" on the parent', async ({ page }) => {
