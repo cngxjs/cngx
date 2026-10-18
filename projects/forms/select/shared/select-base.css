@@ -1848,6 +1848,17 @@
     color: inherit;
   }
 
+  /* A select that is an interactive affix fills the affix block, which
+     stretches to the box row and takes the touch floor
+     (cngx-field-affix.css); the trigger must not shrink back to its value
+     line inside it. The stretched host is a definite block size for its
+     children, so the root chain resolves 100% against it; a
+     `display: contents` root skips the step on its own. */
+  .cngx-field-box[data-skin] > .cngx-field-affix--interactive[data-skin] > *,
+  .cngx-field-box[data-skin] > .cngx-field-affix--interactive[data-skin] > * > .cngx-field-trigger {
+    block-size: 100%;
+  }
+
   /* The main control's ring is the box ring. A select that is an affix (a
      currency picker) keeps its own trigger ring, because the box does not
      ring for focus inside an affix. */
