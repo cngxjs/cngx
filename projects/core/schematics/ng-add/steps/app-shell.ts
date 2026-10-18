@@ -8,6 +8,7 @@ import {
   hasElement,
   insertAfterImports,
   insertBeforeElement,
+  newlineOf,
   type Provenance,
   skipChange,
   type SkippedStep,
@@ -51,27 +52,30 @@ function markup(element: string): string {
 // outlet at the end. Both land after the CLI's placeholder block, which ends
 // before `<router-outlet />` in the stock template. A template that no longer
 // parses is left as it is.
-export function placeOutlets(template: string): string {
+export function placeOutlets(template: string, newline = newlineOf(template)): string {
   try {
     const hasBanner = hasElement(template, BANNER.element);
     const aboveRouter = !hasBanner && hasElement(template, 'router-outlet');
-    const withBanner = aboveRouter ? insertBeforeElement(template, 'router-outlet', markup(BANNER.element)) : template;
+    const withBanner = aboveRouter ? insertBeforeElement(template, 'router-outlet', markup(BANNER.element), newline) : template;
     const appended = [
       ...(hasBanner || aboveRouter ? [] : [markup(BANNER.element)]),
       ...(hasElement(template, TOAST.element) ? [] : [markup(TOAST.element)]),
     ];
-    return appended.length === 0 ? withBanner : appendElements(withBanner, appended);
+    return appended.length === 0 ? withBanner : appendElements(withBanner, appended, newline);
   } catch {
     return template;
   }
 }
 
+// Only a backtick template takes the outlets on lines of their own, with the
+// host file's newline; a quoted one is reported in detection and left as it
+// is here, also when it turned quoted between detection and apply.
 function placeInlineOutlets(content: string, className: string): string {
   const inline = inlineTemplateOf(content, className);
-  if (inline === undefined) {
+  if (inline === undefined || inline.quoted) {
     return content;
   }
-  return `${content.slice(0, inline.start)}${placeOutlets(inline.text)}${content.slice(inline.end)}`;
+  return `${content.slice(0, inline.start)}${placeOutlets(inline.text, newlineOf(content))}${content.slice(inline.end)}`;
 }
 
 // Lists both outlet classes in the decorator `imports` (adding the property

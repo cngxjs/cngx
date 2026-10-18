@@ -62,7 +62,7 @@ export {
 } from './plan/change';
 export { type ChangePlan, createChangePlan, LOCKSTEP_REASON } from './plan/plan';
 export { createReport, type Report, type ReportLink } from './plan/report';
-export { errorMessage, isRecord, joinNames } from './plan/text';
+export { errorMessage, isRecord, joinNames, newlineOf } from './plan/text';
 export {
   contentFingerprint,
   createProvenanceStamp,

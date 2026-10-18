@@ -51,9 +51,15 @@ export function hasElement(content: string, selector: string): boolean {
  * Inserts `markup` in front of the first `<selector>` element: on a line of
  * its own with the element's indent when the element starts its line, else
  * right before it. Returns the content unchanged without such an element;
- * throws when the template does not parse.
+ * throws when the template does not parse. `newline` defaults to the one the
+ * content uses; an inline template passes the one of its host file.
  */
-export function insertBeforeElement(content: string, selector: string, markup: string): string {
+export function insertBeforeElement(
+  content: string,
+  selector: string,
+  markup: string,
+  newline = newlineOf(content),
+): string {
   const element = firstElement(content, selector);
   if (element === undefined) {
     return content;
@@ -64,17 +70,17 @@ export function insertBeforeElement(content: string, selector: string, markup: s
   if (indent.trim() !== '') {
     return `${content.slice(0, start)}${markup} ${content.slice(start)}`;
   }
-  return `${content.slice(0, lineStart)}${indent}${markup}${newlineOf(content)}${content.slice(lineStart)}`;
+  return `${content.slice(0, lineStart)}${indent}${markup}${newline}${content.slice(lineStart)}`;
 }
 
 /**
  * Appends each of `markup` on a line of its own at the end of the template,
  * after whatever ends it (a trailing comment included), so deleting a block
  * above never deletes them. The existing content stays byte for byte; only a
- * missing final newline is added.
+ * missing final newline is added. `newline` defaults to the one the content
+ * uses; an inline template passes the one of its host file.
  */
-export function appendElements(content: string, markup: readonly string[]): string {
-  const newline = newlineOf(content);
+export function appendElements(content: string, markup: readonly string[], newline = newlineOf(content)): string {
   const head = content === '' || content.endsWith('\n') ? content : `${content}${newline}`;
   return `${head}${markup.map((line) => `${line}${newline}`).join('')}`;
 }

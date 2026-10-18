@@ -102,6 +102,10 @@ describe('insertBeforeElement', () => {
     );
   });
 
+  it('uses the newline it is given for a template without one', () => {
+    expect(insertBeforeElement('<router-outlet />', 'router-outlet', '<x-a />', '\r\n')).toBe('<x-a />\r\n<router-outlet />');
+  });
+
   it('leaves a template without the element unchanged', () => {
     expect(insertBeforeElement('<p></p>\n', 'router-outlet', '<x-a />')).toBe('<p></p>\n');
   });
@@ -126,5 +130,9 @@ describe('appendElements', () => {
 
   it('keeps CRLF line endings', () => {
     expect(appendElements('<p></p>\r\n', ['<x-a />'])).toBe('<p></p>\r\n<x-a />\r\n');
+  });
+
+  it('uses the newline it is given for a template without one', () => {
+    expect(appendElements('<p></p>', ['<x-a />'], '\r\n')).toBe('<p></p>\r\n<x-a />\r\n');
   });
 });

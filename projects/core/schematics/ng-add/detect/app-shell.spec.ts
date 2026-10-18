@@ -217,14 +217,28 @@ describe('appShellOf outlets', () => {
 
     expect(appShellOf(read, 'src/main.ts', true, 'fixture-app')?.outlets).toMatchObject({ kind: 'blocked' });
   });
+
+  it('blocks a quoted inline template that lacks an outlet, but not one that holds both', () => {
+    const quoted = INLINE_APP.replace('`<router-outlet />`', "'<router-outlet />'");
+    const placed = INLINE_APP.replace('`<router-outlet />`', '"<cngx-banner-outlet /><router-outlet /><cngx-toast-outlet />"');
+
+    expect(appShellOf(readerOf('standalone-app', { 'src/app/app.ts': quoted }), 'src/main.ts', true, 'fixture-app')?.outlets).toEqual({
+      kind: 'blocked',
+      reason: 'the inline template of App is a quoted string, which cngx does not rewrite into a multi-line template',
+    });
+    expect(appShellOf(readerOf('standalone-app', { 'src/app/app.ts': placed }), 'src/main.ts', true, 'fixture-app')?.outlets).toMatchObject({
+      kind: 'editable',
+      elements: ['cngx-banner-outlet', 'cngx-toast-outlet'],
+    });
+  });
 });
 
 describe('inlineTemplateOf', () => {
   it('finds the text of a backtick or quoted inline template', () => {
     const quoted = "@Component({ selector: 'x', template: '<p>it\\'s</p>' })\nexport class App {}\n";
 
-    expect(inlineTemplateOf(INLINE_APP, 'App')?.text).toBe('<router-outlet />');
-    expect(inlineTemplateOf(quoted, 'App')?.text).toBe("<p>it\\'s</p>");
+    expect(inlineTemplateOf(INLINE_APP, 'App')).toMatchObject({ text: '<router-outlet />', quoted: false });
+    expect(inlineTemplateOf(quoted, 'App')).toMatchObject({ text: "<p>it\\'s</p>", quoted: true });
     expect(inlineTemplateOf(readFixture('scaffold-21')['src/app/app.ts'], 'App')).toBeUndefined();
   });
 });

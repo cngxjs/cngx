@@ -890,6 +890,16 @@ describe('ngAdd', () => {
       expect(minimal.tree.readText('src/app/app.spec.ts')).toBe(readFixture('scaffold-21')['src/app/app.spec.ts']);
     });
 
+    it('leaves a single-quoted inline template as it is and names the snippet', async () => {
+      const app = readFixture('scaffold-21')['src/app/app.ts'].replace("templateUrl: './app.html',", "template: '<router-outlet />',");
+      const run = await runRule(ngAdd({ feedback: true, yes: true }), createFixtureTree('scaffold-21', { 'src/app/app.ts': app }));
+
+      expect(run.tree.readText('src/app/app.ts')).toBe(app);
+      expect(run.logs.join('\n')).toContain(
+        'the inline template of App is a quoted string, which cngx does not rewrite into a multi-line template',
+      );
+    });
+
     it('leaves an outlet removed after the install out until --feedback asks for it again', async () => {
       const first = await runRule(ngAdd({ preset: 'full', yes: true }), createFixtureTree('scaffold-21'));
       const removed = first.tree.readText('src/app/app.html').replace('<cngx-toast-outlet />\n', '');

@@ -179,6 +179,8 @@ export interface InlineTemplate {
   readonly start: number;
   readonly end: number;
   readonly text: string;
+  /** A `'...'` or `"..."` string, which cannot take a raw newline. */
+  readonly quoted: boolean;
 }
 
 /**
@@ -201,11 +203,7 @@ export function inlineTemplateOf(content: string, className: string): InlineTemp
     end += content[end] === '\\' ? 2 : 1;
   }
   const text = content.slice(start, end);
-  return end >= content.length || (quote === '`' && text.includes('${')) ? undefined : { start, end, text };
-}
-
-function templateText(read: Read, shell: Pick<AppShell, 'componentFile' | 'className' | 'template'>, content: string): string | undefined {
-  return shell.template.kind === 'file' ? read(shell.template.path) : inlineTemplateOf(content, shell.className)?.text;
+  return end >= content.length || (quote === '`' && text.includes('${')) ? undefined : { start, end, text, quoted: quote !== '`' };
 }
 
 // Whether the template holds a `<router-outlet>`; `undefined` when it does not parse.
@@ -223,10 +221,15 @@ function outletsOf(
   content: string,
 ): AppShellOutlets {
   const where = shell.template.kind === 'file' ? shell.template.path : `the inline template of ${shell.className}`;
-  const template = templateText(read, shell, content);
+  const inline = shell.template.kind === 'inline' ? inlineTemplateOf(content, shell.className) : undefined;
+  const template = shell.template.kind === 'file' ? read(shell.template.path) : inline?.text;
   const routerOutlet = template === undefined ? undefined : routerOutletIn(template);
   if (template === undefined || routerOutlet === undefined) {
     return { kind: 'blocked', reason: `${where} does not parse as an Angular template` };
+  }
+  const elements = FEEDBACK_OUTLETS.filter(({ element }) => hasElement(template, element)).map(({ element }) => element);
+  if (inline?.quoted === true && elements.length < FEEDBACK_OUTLETS.length) {
+    return { kind: 'blocked', reason: `${where} is a quoted string, which cngx does not rewrite into a multi-line template` };
   }
   const { file, className } = shell.importsHost;
   const host = read(file) ?? '';
@@ -245,7 +248,7 @@ function outletsOf(
   }
   return {
     kind: 'editable',
-    elements: FEEDBACK_OUTLETS.filter(({ element }) => hasElement(template, element)).map(({ element }) => element),
+    elements,
     classes: FEEDBACK_OUTLETS.filter(
       ({ className: name }) => hasArrayElement(host, selector, name) && bindings.get(name)?.module === FEEDBACK_MODULE,
     ).map(({ className: name }) => name),

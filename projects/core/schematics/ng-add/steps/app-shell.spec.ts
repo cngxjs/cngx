@@ -1,3 +1,4 @@
+import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeScript/lib/typescript';
 import { readWorkspace } from '@schematics/angular/utility';
 import { describe, expect, it } from 'vitest';
 
@@ -26,6 +27,12 @@ function applied(result: StepResult, files: Readonly<Files>): Files {
     }
   }
   return next;
+}
+
+// The syntax errors TypeScript reports for a file, as messages.
+function syntaxErrors(content: string): readonly string[] {
+  const { diagnostics = [] } = ts.transpileModule(content, { reportDiagnostics: true, fileName: 'app.ts' });
+  return diagnostics.map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
 }
 
 function plan(facts: ProjectFacts, recorded: readonly string[] = [], explicit = false): StepResult {
@@ -118,6 +125,49 @@ describe('planAppShell', () => {
     expect(next['src/app/app.ts']).toContain('      <cngx-banner-outlet />\n      <router-outlet />\n');
     expect(next['src/app/app.ts']).toContain('<cngx-toast-outlet />\n`,');
     expect(next['src/app/app.ts']).toContain('imports: [RouterOutlet, CngxBannerOutlet, CngxToastOutlet],');
+  });
+
+  it('names the snippet instead of writing into a single- or double-quoted inline template', async () => {
+    for (const quoted of ["'<main><router-outlet /></main>'", '"<main><router-outlet /></main>"']) {
+      const app = INLINE_APP.replace(/`\n    <main>\n      <router-outlet \/>\n    <\/main>\n  `/, quoted);
+      const { facts, files } = await factsOf('standalone-app', { 'src/app/app.ts': app });
+      const result = plan(facts);
+
+      expect(result.changes).toMatchObject([
+        {
+          kind: 'note',
+          id: OUTLETS_ID,
+          reason: `the inline template of App is a quoted string, which cngx does not rewrite into a multi-line template; ${OUTLETS_SNIPPET}`,
+        },
+      ]);
+      expect(applied(result, files)['src/app/app.ts']).toBe(app);
+    }
+  });
+
+  it('only imports the outlets of a quoted inline template that already holds both, and the file still parses', async () => {
+    const app = INLINE_APP.replace(
+      /`\n    <main>\n      <router-outlet \/>\n    <\/main>\n  `/,
+      "'<cngx-banner-outlet /><router-outlet /><cngx-toast-outlet />'",
+    );
+    const { facts, files } = await factsOf('standalone-app', { 'src/app/app.ts': app });
+    const next = applied(plan(facts), files)['src/app/app.ts'];
+
+    expect(next).toContain("template: '<cngx-banner-outlet /><router-outlet /><cngx-toast-outlet />',");
+    expect(next).toContain('imports: [RouterOutlet, CngxBannerOutlet, CngxToastOutlet],');
+    expect(syntaxErrors(next)).toEqual([]);
+  });
+
+  it('writes the newline of a CRLF host file into a one-line inline template', async () => {
+    const app = INLINE_APP.replace(/`\n    <main>\n      <router-outlet \/>\n    <\/main>\n  `/, '`<router-outlet />`').replace(
+      /\n/g,
+      '\r\n',
+    );
+    const { facts, files } = await factsOf('standalone-app', { 'src/app/app.ts': app });
+    const next = applied(plan(facts), files)['src/app/app.ts'];
+
+    expect(next).toContain('template: `<cngx-banner-outlet />\r\n<router-outlet />\r\n<cngx-toast-outlet />\r\n`,');
+    expect(next).not.toMatch(/[^\r]\n/);
+    expect(syntaxErrors(next)).toEqual([]);
   });
 
   it('imports the outlets into the root NgModule of an NgModule app', async () => {
