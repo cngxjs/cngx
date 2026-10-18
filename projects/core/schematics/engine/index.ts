@@ -73,12 +73,16 @@ export {
 export {
   addToArrayLiteral,
   type ArraySelector,
+  ensureArrayProperty,
+  hasArrayElement,
   hasArrayLiteral,
   importsModule,
   insertAfterImports,
   type LanguagePackArgument,
   readProviderCalls,
+  topLevelBindings,
 } from './edit/ts-edit';
+export { appendElements, hasElement, insertBeforeElement } from './edit/template-edit';
 export {
   hasStyleImport,
   insertLeadingStyleImport,

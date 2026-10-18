@@ -150,6 +150,12 @@ export interface Onboarding {
    * last install recorded (`withdrawnAiTargets`).
    */
   readonly explicitAiTools: readonly AiTool[];
+  /**
+   * `--feedback` was passed and feedback is on; a preset default or a prompt
+   * answer is not explicit. Only this places outlets again that the user
+   * removed after the last install placed them (`planAppShell`).
+   */
+  readonly explicitFeedback: boolean;
 }
 
 /**
@@ -322,5 +328,6 @@ export async function askOnboarding(
     },
     answeredLibs,
     explicitAiTools: answeredByName ? aiTools : [],
+    explicitFeedback: options.feedback === true && feedback,
   };
 }

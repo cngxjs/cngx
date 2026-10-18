@@ -28,6 +28,7 @@ import { readGitState } from './shell/git-state';
 import { angularReading, angularSupport, preflightItems } from './shell/preflight';
 import { askOnboarding, askPreset, givenAnswers, libsFloorNote, presetChangeNote, presetDefaults } from './shell/questions';
 import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
+import { planAppShell } from './steps/app-shell';
 import { planDependencies } from './steps/dependencies';
 import { planHelperReadme } from './steps/helper-readme';
 import { planLint } from './steps/lint';
@@ -38,17 +39,32 @@ import { planProviders } from './steps/providers';
 import { readRecordedAnswers } from './steps/reruns';
 import { planTheme } from './steps/theme';
 
+/** What a run knows from the last install and the flags, beyond facts and answers. */
+interface StepContext {
+  /** The AI tooling targets the user removed since the last install. */
+  readonly withdrawn: ReadonlySet<string>;
+  /** The libs of every project's record. */
+  readonly workspaceLibs: readonly CngxLib[];
+  /** The step ids of this project's previous record; empty on a first install. */
+  readonly projectSteps: readonly string[];
+  /** `--feedback` was passed, so outlets the user removed are placed again. */
+  readonly explicitFeedback: boolean;
+}
+
 /**
  * The plan steps in apply order; the install manifest follows them. The AI
- * tooling steps leave out what the user removed since the last install. The
+ * tooling steps leave out what the user removed since the last install, the
+ * app shell step the outlets this project's record placed that are gone. The
  * helper README is workspace-wide, so it lists the libs of every project's
  * record, not only this run's.
  */
-function planSteps(withdrawn: ReadonlySet<string>, workspaceLibs: readonly CngxLib[]): readonly Step[] {
+function planSteps({ withdrawn, workspaceLibs, projectSteps, explicitFeedback }: StepContext): readonly Step[] {
   return [
     planDependencies,
     planTheme,
     planProviders,
+    (facts, answers, versions) =>
+      planAppShell(facts, answers, createProvenance('ng-add', versions.cngx), projectSteps, explicitFeedback),
     planLint,
     (facts, answers, versions) => planAiTools(facts, answers, versions, withdrawn),
     (facts, answers, versions) =>
@@ -169,7 +185,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
       canPrompt: interactive && options.preset !== 'minimal',
       answers: givenAnswers(options),
     });
-    const { answers, answeredLibs, explicitAiTools } = await askOnboarding(
+    const { answers, answeredLibs, explicitAiTools, explicitFeedback } = await askOnboarding(
       facts,
       options,
       flow,
@@ -180,7 +196,12 @@ export function ngAdd(flags: NgAddFlags): Rule {
     const provenance = createProvenance('ng-add', versions.cngx);
     const steps = createChangePlan(
       [
-        ...planSteps(withdrawn, recordedLibs(manifest)).map((step) => step(facts, answers, versions)),
+        ...planSteps({
+          withdrawn,
+          workspaceLibs: recordedLibs(manifest),
+          projectSteps: previous?.steps.map((step) => step.id) ?? [],
+          explicitFeedback,
+        }).map((step) => step(facts, answers, versions)),
         presetChangeNote(options, recorded, provenance),
         libsFloorNote(answeredLibs, answers.libs, facts.project, provenance),
       ],

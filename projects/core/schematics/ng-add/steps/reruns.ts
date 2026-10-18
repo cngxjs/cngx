@@ -18,6 +18,7 @@ import {
 } from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
 import { withdrawnAiTargets } from './ai-tools';
+import { planAppShellCheck } from './app-shell';
 import { planHelperReadme } from './helper-readme';
 import { INSTALL_MANIFEST_PATH, type ProjectRecord, unionLibs } from './manifest';
 import { type OnboardingAnswers, type Versions } from './model';
@@ -124,7 +125,9 @@ export interface WorkspaceReadme {
 }
 
 /**
- * The steps `ng update` re-runs from one project's recorded answers. The
+ * The steps `ng update` re-runs from one project's recorded answers. A
+ * recorded feedback install gets a note when an outlet is missing from the
+ * root template; the template and the spec are never written. The
  * theme steps are checked once the cngx version moved and only reported;
  * the helper README, which pins the MCP version, is regenerated once that
  * version moved, and only for the project handed `readme`. Neither brings
@@ -163,7 +166,11 @@ export function planManifestReruns(
           facts.project,
           provenance,
         );
-  return mergeStepResults([theme, planReadmeRerun(facts, record, answers, versions, readme, provenance)]);
+  return mergeStepResults([
+    theme,
+    planAppShellCheck(facts, answers, provenance),
+    planReadmeRerun(facts, record, answers, versions, readme, provenance),
+  ]);
 }
 
 function planReadmeRerun(

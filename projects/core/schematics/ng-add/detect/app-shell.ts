@@ -1,5 +1,12 @@
 import { posix } from 'node:path';
 
+import {
+  ensureArrayProperty,
+  hasArrayElement,
+  hasArrayLiteral,
+  hasElement,
+  topLevelBindings,
+} from '../../engine';
 import { SCAFFOLD_CATALOG, SCAFFOLD_NAME_PLACEHOLDER } from './scaffold-catalog.generated';
 import { type Read } from './workspace';
 
@@ -18,11 +25,37 @@ export interface AppShell {
   readonly className: string;
   readonly template: AppShellTemplate;
   /** The decorator whose `imports` takes the outlets: the component, or the root NgModule. */
-  readonly importsHost: { readonly file: string; readonly kind: 'component' | 'ng-module' };
+  readonly importsHost: { readonly file: string; readonly kind: 'component' | 'ng-module'; readonly className: string };
   /** `<component>.spec.ts`; `undefined` when the component file has no `.ts` name. */
   readonly specPath: string | undefined;
   readonly spec: AppShellSpec;
+  readonly outlets: AppShellOutlets;
 }
+
+/** The outlets the feedback services render into, in the order the outlets step places them. */
+export const FEEDBACK_OUTLETS = [
+  { element: 'cngx-banner-outlet', className: 'CngxBannerOutlet' },
+  { element: 'cngx-toast-outlet', className: 'CngxToastOutlet' },
+] as const;
+
+/** The entry both outlets come from. */
+export const FEEDBACK_MODULE = '@cngx/ui/feedback';
+
+/**
+ * What the shell holds of the outlets: the outlet elements in the template
+ * and the outlet classes the imports host both lists in its `imports` and
+ * imports from `@cngx/ui/feedback`; `blocked` with the reason when cngx
+ * cannot edit it safely.
+ */
+export type AppShellOutlets =
+  | {
+      readonly kind: 'editable';
+      readonly elements: readonly string[];
+      readonly classes: readonly string[];
+      /** The template holds a `<router-outlet>`; the banner outlet goes right above it. */
+      readonly routerOutlet: boolean;
+    }
+  | { readonly kind: 'blocked'; readonly reason: string };
 
 /** The import the feedback providers in the root component's spec need. */
 export const FEEDBACK_SPEC_IMPORT = "import { provideFeedback, withBanners, withToasts } from '@cngx/ui/feedback';";
@@ -141,6 +174,85 @@ export function appShellSpecOf(content: string | undefined, project: string): Ap
   return stripped !== undefined && isStockSpec(stripped, project) ? 'provided' : 'custom';
 }
 
+/** Where an inline template's text sits in the component file: between `start` and `end`. */
+export interface InlineTemplate {
+  readonly start: number;
+  readonly end: number;
+  readonly text: string;
+}
+
+/**
+ * The text of the inline `template` of `class <className>`: a quoted or
+ * backtick string. `undefined` without one, and for a backtick string that
+ * interpolates (`${...}`), which is not a template cngx can edit as text.
+ */
+export function inlineTemplateOf(content: string, className: string): InlineTemplate | undefined {
+  const declared = new RegExp(`\\bclass\\s+${className}\\b`).exec(content);
+  const decorator = declared === null ? undefined : decoratorOf(content, className, 'Component');
+  const offset = declared === null || decorator === undefined ? 0 : declared.index - decorator.length;
+  const property = decorator === undefined ? null : /\btemplate\s*:\s*([`'"])/.exec(decorator);
+  if (property === null) {
+    return undefined;
+  }
+  const quote = property[1];
+  const start = offset + property.index + property[0].length;
+  let end = start;
+  while (end < content.length && content[end] !== quote) {
+    end += content[end] === '\\' ? 2 : 1;
+  }
+  const text = content.slice(start, end);
+  return end >= content.length || (quote === '`' && text.includes('${')) ? undefined : { start, end, text };
+}
+
+function templateText(read: Read, shell: Pick<AppShell, 'componentFile' | 'className' | 'template'>, content: string): string | undefined {
+  return shell.template.kind === 'file' ? read(shell.template.path) : inlineTemplateOf(content, shell.className)?.text;
+}
+
+// Whether the template holds a `<router-outlet>`; `undefined` when it does not parse.
+function routerOutletIn(template: string): boolean | undefined {
+  try {
+    return hasElement(template, 'router-outlet');
+  } catch {
+    return undefined;
+  }
+}
+
+function outletsOf(
+  read: Read,
+  shell: Pick<AppShell, 'componentFile' | 'className' | 'template' | 'importsHost'>,
+  content: string,
+): AppShellOutlets {
+  const where = shell.template.kind === 'file' ? shell.template.path : `the inline template of ${shell.className}`;
+  const template = templateText(read, shell, content);
+  const routerOutlet = template === undefined ? undefined : routerOutletIn(template);
+  if (template === undefined || routerOutlet === undefined) {
+    return { kind: 'blocked', reason: `${where} does not parse as an Angular template` };
+  }
+  const { file, className } = shell.importsHost;
+  const host = read(file) ?? '';
+  const selector = { kind: 'decorator-imports', className } as const;
+  const missingProperty = !hasArrayLiteral(host, selector) && ensureArrayProperty(host, selector) !== host;
+  if (!hasArrayLiteral(host, selector) && !missingProperty) {
+    return { kind: 'blocked', reason: `the imports of ${className} in ${file} are not an array literal` };
+  }
+  const bindings = topLevelBindings(host);
+  const clash = FEEDBACK_OUTLETS.find(({ className: name }) => {
+    const binding = bindings.get(name);
+    return binding !== undefined && binding.module !== FEEDBACK_MODULE;
+  });
+  if (clash !== undefined) {
+    return { kind: 'blocked', reason: `${clash.className} in ${file} is bound to something other than ${FEEDBACK_MODULE}` };
+  }
+  return {
+    kind: 'editable',
+    elements: FEEDBACK_OUTLETS.filter(({ element }) => hasElement(template, element)).map(({ element }) => element),
+    classes: FEEDBACK_OUTLETS.filter(
+      ({ className: name }) => hasArrayElement(host, selector, name) && bindings.get(name)?.module === FEEDBACK_MODULE,
+    ).map(({ className: name }) => name),
+    routerOutlet,
+  };
+}
+
 interface Bootstrapped {
   readonly componentFile: string;
   readonly className: string;
@@ -153,7 +265,7 @@ function standaloneRoot(read: Read, mainPath: string, main: string): Bootstrappe
   if (className === undefined || componentFile === undefined) {
     return undefined;
   }
-  return { componentFile, className, importsHost: { file: componentFile, kind: 'component' } };
+  return { componentFile, className, importsHost: { file: componentFile, kind: 'component', className } };
 }
 
 function moduleRoot(read: Read, mainPath: string, main: string): Bootstrapped | undefined {
@@ -169,7 +281,7 @@ function moduleRoot(read: Read, mainPath: string, main: string): Bootstrapped | 
   if (className === undefined || componentFile === undefined) {
     return undefined;
   }
-  return { componentFile, className, importsHost: { file: moduleFile, kind: 'ng-module' } };
+  return { componentFile, className, importsHost: { file: moduleFile, kind: 'ng-module', className: moduleName } };
 }
 
 /**
@@ -191,11 +303,13 @@ export function appShellOf(read: Read, mainPath: string, standalone: boolean, pr
   if (root === undefined || template === undefined) {
     return undefined;
   }
+  const outlets = outletsOf(read, { ...root, template }, content ?? '');
   const specPath = root.componentFile.endsWith('.ts') ? root.componentFile.replace(/\.ts$/, '.spec.ts') : undefined;
   return {
     ...root,
     template,
     specPath,
     spec: specPath === undefined ? 'absent' : appShellSpecOf(read(specPath), project),
+    outlets,
   };
 }

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { format } from 'prettier';
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 
 import {
@@ -378,7 +379,13 @@ describe('ngAdd', () => {
       expect(changed).toEqual(
         preset === 'minimal'
           ? ['package.json']
-          : ['angular.json', 'package.json', 'src/app/app.config.ts', 'src/styles.scss'],
+          : [
+              'angular.json',
+              'package.json',
+              'src/app/app.config.ts',
+              ...(preset === 'full' ? ['src/app/app.html', 'src/app/app.ts'] : []),
+              'src/styles.scss',
+            ],
       );
       const styles = run.tree.readContent('src/styles.scss');
       expect(
@@ -842,6 +849,63 @@ describe('ngAdd', () => {
     });
   });
 
+  describe('the app shell outlets', () => {
+    const PRETTIERRC = JSON.parse(readFixture('scaffold-21')['.prettierrc']) as Record<string, unknown>;
+
+    it('places both outlets after the placeholder, imports them and provides feedback in the stock spec', async () => {
+      const run = await runRule(ngAdd({ feedback: true, yes: true }), createFixtureTree('scaffold-21'));
+      const template = run.tree.readText('src/app/app.html');
+
+      expect(template.indexOf('<cngx-banner-outlet />')).toBeGreaterThan(template.indexOf('End of Placeholder'));
+      expect(template.endsWith('<cngx-banner-outlet />\n<router-outlet />\n<cngx-toast-outlet />\n')).toBe(true);
+      expect(run.tree.readText('src/app/app.ts')).toContain('imports: [RouterOutlet, CngxBannerOutlet, CngxToastOutlet],');
+      expect(run.tree.readText('src/app/app.ts')).toContain("import { CngxBannerOutlet, CngxToastOutlet } from '@cngx/ui/feedback';");
+      expect(run.tree.readText('src/app/app.spec.ts')).toContain('      providers: [provideFeedback(withToasts(), withBanners())],\n');
+      expect(run.tree.readText('src/app/app.spec.ts')).toContain(
+        "import { provideFeedback, withBanners, withToasts } from '@cngx/ui/feedback';",
+      );
+    });
+
+    it('plans nothing on a second run, also after the app formatter rewrote every file', async () => {
+      const first = await runRule(ngAdd({ feedback: true, yes: true }), createFixtureTree('scaffold-21'));
+      const second = await runRule(ngAdd({ feedback: true, yes: true }), first.tree);
+
+      expect(second.logs).toContain('cngx is already set up; nothing changed.');
+
+      for (const path of ['src/app/app.html', 'src/app/app.ts', 'src/app/app.spec.ts']) {
+        first.tree.overwrite(path, await format(first.tree.readText(path), { ...PRETTIERRC, filepath: path }));
+      }
+      const formatted = await runRule(ngAdd({ feedback: true, yes: true }), first.tree);
+
+      expect(formatted.logs).toContain('cngx is already set up; nothing changed.');
+    });
+
+    it('places the outlets with the full preset and leaves the shell alone with minimal', async () => {
+      const full = await runRule(ngAdd({ preset: 'full', yes: true }), createFixtureTree('scaffold-21-zone'));
+      const minimal = await runRule(ngAdd({ preset: 'minimal', yes: true }), createFixtureTree('scaffold-21'));
+
+      expect(full.tree.readText('src/app/app.html')).toContain('<cngx-toast-outlet />');
+      expect(full.tree.readText('src/app/app.spec.ts')).toContain('provideFeedback(withToasts(), withBanners())');
+      expect(minimal.tree.readText('src/app/app.html')).toBe(readFixture('scaffold-21')['src/app/app.html']);
+      expect(minimal.tree.readText('src/app/app.spec.ts')).toBe(readFixture('scaffold-21')['src/app/app.spec.ts']);
+    });
+
+    it('leaves an outlet removed after the install out until --feedback asks for it again', async () => {
+      const first = await runRule(ngAdd({ preset: 'full', yes: true }), createFixtureTree('scaffold-21'));
+      const removed = first.tree.readText('src/app/app.html').replace('<cngx-toast-outlet />\n', '');
+      first.tree.overwrite('src/app/app.html', removed);
+
+      const second = await runRule(ngAdd({ preset: 'full', yes: true }), first.tree);
+
+      expect(second.tree.readText('src/app/app.html')).toBe(removed);
+      expect(second.logs.join('\n')).toContain('the outlets were removed after cngx placed them; pass --feedback to place them again');
+
+      const third = await runRule(ngAdd({ preset: 'full', feedback: true, yes: true }), second.tree);
+
+      expect(third.tree.readText('src/app/app.html')).toContain('<cngx-toast-outlet />');
+    });
+  });
+
   it('plans nothing for a current readme the app formatter rewrote', async () => {
     const first = await runRule(ngAdd({ preset: 'full' }), createFixtureTree('standalone-app', { 'CLAUDE.md': '' }));
     const formatted = first.tree.readText('.cngx/README.md').replace('|-|-|-|', '| ---- | --------------- | ---------- |');
@@ -908,6 +972,20 @@ describe('ngAdd', () => {
       expect(record(beta.tree, 'beta').preset).toBe('recommended');
       expect(json<{ schemaVersion: number }>(beta.tree, '.cngx/install.json').schemaVersion).toBe(2);
       expect(beta.tree.readContent('projects/beta/src/app/app-module.ts')).toContain('provideA11yPreferences(');
+    });
+
+    it('places the outlets of a project whose own record holds none, though another project recorded them', async () => {
+      const tree = twoApplications();
+      tree.create('projects/beta/src/app/app.html', '<router-outlet />\n');
+      const alpha = await runRule(ngAdd({ project: 'alpha', feedback: true, yes: true }), tree);
+      // The preset default is not an explicit --feedback, so only beta's own record could withdraw them.
+      const beta = await runRule(ngAdd({ project: 'beta', preset: 'full', yes: true }), alpha.tree);
+
+      expect(record(alpha.tree, 'alpha').steps.map((step) => step.id)).toContain('app-shell:outlets');
+      expect(beta.tree.readContent('projects/beta/src/app/app.html')).toBe(
+        '<cngx-banner-outlet />\n<router-outlet />\n<cngx-toast-outlet />\n',
+      );
+      expect(beta.tree.readContent('projects/beta/src/app/app-module.ts')).toContain('CngxBannerOutlet');
     });
 
     it('plans nothing for a project re-run after another project was added', async () => {

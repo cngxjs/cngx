@@ -135,6 +135,28 @@ describe('createMigration', () => {
     expect(tree.actions).toEqual([]);
   });
 
+  it('notes a missing outlet of a recorded feedback install and writes neither the template nor the spec', async () => {
+    const { before } = readMigrationFixture('refresh');
+    const manifest = JSON.parse(before['.cngx/install.json'] ?? '{}') as InstallManifest;
+    const record = manifest.projects['fixture-app'];
+    const files: Record<string, string> = {
+      ...before,
+      ...readFixture('scaffold-21'),
+      '.cngx/install.json': JSON.stringify({
+        ...manifest,
+        projects: {
+          'fixture-app': { ...record, answers: { ...record.answers, feedback: true }, steps: [...record.steps, { ...record.steps[0], id: 'app-shell:outlets' }] },
+        },
+      }),
+    };
+
+    const { tree, logs } = await runRule(migration(), createMemoryTree(files), ENTRY);
+
+    expect(logs.join('\n')).toContain('Place the toast and banner outlets (not in place)');
+    expect(tree.readText('src/app/app.html')).toBe(files['src/app/app.html']);
+    expect(tree.readText('src/app/app.spec.ts')).toBe(files['src/app/app.spec.ts']);
+  });
+
   it('re-runs every recorded project and updates each record', async () => {
     const { tree } = await runRule(migration(), createMemoryTree(twoRecordedApplications()), ENTRY);
     const records = recordsOf(tree);

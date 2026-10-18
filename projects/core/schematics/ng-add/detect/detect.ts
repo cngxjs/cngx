@@ -75,10 +75,15 @@ export {
 } from './ai-tooling';
 export {
   type AppShell,
+  type AppShellOutlets,
   type AppShellSpec,
+  appShellSpecOf,
   type AppShellTemplate,
+  FEEDBACK_MODULE,
+  FEEDBACK_OUTLETS,
   FEEDBACK_SPEC_IMPORT,
   FEEDBACK_SPEC_PROVIDERS,
+  inlineTemplateOf,
 } from './app-shell';
 export { type EslintConfigFacts, type EslintStackFacts, type LegacyEslintConfigFacts } from './eslint';
 export {

@@ -2,7 +2,13 @@ import { format } from 'prettier';
 import { describe, expect, it } from 'vitest';
 
 import { createFixtureTree, type FixtureName, readFixture } from '../../testing/run-schematic';
-import { appShellOf, appShellSpecOf, FEEDBACK_SPEC_IMPORT, FEEDBACK_SPEC_PROVIDERS } from './app-shell';
+import {
+  appShellOf,
+  appShellSpecOf,
+  FEEDBACK_SPEC_IMPORT,
+  FEEDBACK_SPEC_PROVIDERS,
+  inlineTemplateOf,
+} from './app-shell';
 import { type Read } from './workspace';
 
 function readerOf(name: FixtureName, overrides: Readonly<Record<string, string>> = {}): Read {
@@ -77,9 +83,10 @@ describe('appShellOf', () => {
       componentFile: 'src/app/app.ts',
       className: 'App',
       template: { kind: 'file', path: 'src/app/app.html' },
-      importsHost: { file: 'src/app/app.ts', kind: 'component' },
+      importsHost: { file: 'src/app/app.ts', kind: 'component', className: 'App' },
       specPath: 'src/app/app.spec.ts',
       spec: 'absent',
+      outlets: { kind: 'editable', elements: [], classes: [], routerOutlet: true },
     });
   });
 
@@ -94,7 +101,7 @@ describe('appShellOf', () => {
       componentFile: 'src/app/app.ts',
       className: 'App',
       template: { kind: 'file', path: 'src/app/app.html' },
-      importsHost: { file: 'src/app/app-module.ts', kind: 'ng-module' },
+      importsHost: { file: 'src/app/app-module.ts', kind: 'ng-module', className: 'AppModule' },
     });
   });
 
@@ -162,6 +169,63 @@ describe('appShellOf', () => {
     for (const name of ['scaffold-21', 'scaffold-21-zone'] as const) {
       expect(appShellOf(readerOf(name), 'src/main.ts', true, 'fixture-app')?.spec).toBe('stock');
     }
+  });
+});
+
+describe('appShellOf outlets', () => {
+  function outletsOf(overrides: Readonly<Record<string, string>>) {
+    return appShellOf(readerOf('scaffold-21', overrides), 'src/main.ts', true, 'fixture-app')?.outlets;
+  }
+
+  it('reads the outlets in the template and the outlet classes imported into the component', () => {
+    const app = readFixture('scaffold-21')['src/app/app.ts']
+      .replace("import { RouterOutlet } from '@angular/router';", "import { RouterOutlet } from '@angular/router';\nimport { CngxToastOutlet } from '@cngx/ui/feedback';")
+      .replace('imports: [RouterOutlet],', 'imports: [RouterOutlet, CngxToastOutlet, CngxBannerOutlet],');
+
+    expect(outletsOf({ 'src/app/app.ts': app, 'src/app/app.html': '@if (on) { <cngx-banner-outlet /> }\n<router-outlet />\n' })).toEqual({
+      kind: 'editable',
+      elements: ['cngx-banner-outlet'],
+      classes: ['CngxToastOutlet'],
+      routerOutlet: true,
+    });
+  });
+
+  it('reads a component without an imports property as editable', () => {
+    const app = readFixture('scaffold-21')['src/app/app.ts'].replace('  imports: [RouterOutlet],\n', '');
+
+    expect(outletsOf({ 'src/app/app.ts': app })).toMatchObject({ kind: 'editable', classes: [] });
+  });
+
+  it('blocks a template that does not parse, imports that are not a literal and an outlet name bound elsewhere', () => {
+    const stock = readFixture('scaffold-21')['src/app/app.ts'];
+
+    expect(outletsOf({ 'src/app/app.html': '<div>@if (</div>\n' })).toEqual({
+      kind: 'blocked',
+      reason: 'src/app/app.html does not parse as an Angular template',
+    });
+    expect(outletsOf({ 'src/app/app.ts': stock.replace('imports: [RouterOutlet],', 'imports: SHARED,') })).toEqual({
+      kind: 'blocked',
+      reason: 'the imports of App in src/app/app.ts are not an array literal',
+    });
+    expect(
+      outletsOf({ 'src/app/app.ts': `import { CngxToastOutlet } from './toasts';\n${stock}` }),
+    ).toEqual({ kind: 'blocked', reason: 'CngxToastOutlet in src/app/app.ts is bound to something other than @cngx/ui/feedback' });
+  });
+
+  it('blocks an inline template that interpolates', () => {
+    const read = readerOf('standalone-app', { 'src/app/app.ts': INLINE_APP.replace('<router-outlet />', '${OUTLET}') });
+
+    expect(appShellOf(read, 'src/main.ts', true, 'fixture-app')?.outlets).toMatchObject({ kind: 'blocked' });
+  });
+});
+
+describe('inlineTemplateOf', () => {
+  it('finds the text of a backtick or quoted inline template', () => {
+    const quoted = "@Component({ selector: 'x', template: '<p>it\\'s</p>' })\nexport class App {}\n";
+
+    expect(inlineTemplateOf(INLINE_APP, 'App')?.text).toBe('<router-outlet />');
+    expect(inlineTemplateOf(quoted, 'App')?.text).toBe("<p>it\\'s</p>");
+    expect(inlineTemplateOf(readFixture('scaffold-21')['src/app/app.ts'], 'App')).toBeUndefined();
   });
 });
 
