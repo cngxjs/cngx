@@ -643,6 +643,27 @@ describe('decorator imports', () => {
     expect(ensureArrayProperty('@Component({})\nexport class App {}\n', APP)).toContain('@Component({ imports: [] })');
   });
 
+  it('keeps a comment that is all an empty imports array holds', () => {
+    const lineComment = stockApp.replace('imports: [RouterOutlet],', 'imports: [\n    // TODO: shared modules\n  ],');
+    const blockComment = stockApp.replace('imports: [RouterOutlet],', 'imports: [ /* none yet */ ],');
+    const once = addToArrayLiteral(lineComment, APP, 'CngxBannerOutlet');
+
+    expect(once).toContain('  imports: [\n    // TODO: shared modules\n    CngxBannerOutlet\n  ],');
+    expect(addToArrayLiteral(once, APP, 'CngxToastOutlet')).toContain(
+      '  imports: [\n    // TODO: shared modules\n    CngxBannerOutlet,\n    CngxToastOutlet\n  ],',
+    );
+    expect(addToArrayLiteral(blockComment, APP, 'CngxBannerOutlet')).toContain('imports: [ /* none yet */ CngxBannerOutlet],');
+  });
+
+  it('keeps a comment that is all an empty decorator object holds', () => {
+    expect(ensureArrayProperty('@Component({ /* later */ })\nexport class App {}\n', APP)).toContain(
+      '@Component({ /* later */ imports: [] })',
+    );
+    expect(ensureArrayProperty('@Component({\n  // later\n})\nexport class App {}\n', APP)).toContain(
+      '@Component({\n  // later\n  imports: []\n})',
+    );
+  });
+
   it('leaves an existing imports property alone, also one that is not an array literal', () => {
     const shared = NO_IMPORTS.replace("templateUrl: './app.html'", "templateUrl: './app.html',\n  imports: SHARED");
 

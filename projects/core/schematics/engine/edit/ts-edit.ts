@@ -290,11 +290,13 @@ export function ensureArrayProperty(content: string, selector: PropertyArraySele
   }
   const property = `${name}: []`;
   const last = object.properties[object.properties.length - 1];
+  const close = object.getEnd() - 1;
   if (last === undefined) {
     const open = object.getStart(source) + 1;
-    return `${content.slice(0, open)} ${property} ${content.slice(object.getEnd() - 1)}`;
+    return content.slice(open, close).trim() === ''
+      ? `${content.slice(0, open)} ${property} ${content.slice(close)}`
+      : insertBeforeBracket(content, close, property, ' ');
   }
-  const close = object.getEnd() - 1;
   const multiline = content.slice(object.getStart(source), close).includes('\n');
   const trailingComma = object.properties.hasTrailingComma;
   if (!multiline) {
@@ -853,6 +855,19 @@ export function insertAfterImports(content: string, statement: string): string {
   return `${content.slice(0, point.at)}${newline}${statement}${after}`;
 }
 
+// Puts `item` right before the bracket at `close` of a list that holds only
+// comments, which all stay: on a line of its own when the bracket starts its
+// line, else on the bracket's line, followed by `after`.
+function insertBeforeBracket(content: string, close: number, item: string, after: string): string {
+  const lineStart = content.lastIndexOf('\n', close - 1) + 1;
+  const indent = content.slice(lineStart, close);
+  if (indent.trim() === '') {
+    return `${content.slice(0, lineStart)}${indent}  ${item}${newlineOf(content)}${content.slice(lineStart)}`;
+  }
+  const space = /\s/.test(content[close - 1] ?? '') ? '' : ' ';
+  return `${content.slice(0, close)}${space}${item}${after}${content.slice(close)}`;
+}
+
 function indentOf(content: string, position: number): string {
   const lineStart = content.lastIndexOf('\n', position - 1) + 1;
   return /^[ \t]*/.exec(content.slice(lineStart))?.[0] ?? '';
@@ -878,12 +893,15 @@ export function addToArrayLiteral(content: string, selector: ArraySelector, item
   const open = array.getStart(source);
   const multiline = content.slice(open, close).includes('\n');
   const newline = newlineOf(content);
+  if (elements.length === 0 && !multiline) {
+    return `${content.slice(0, close)}${item.trim()}${content.slice(close)}`;
+  }
+  if (elements.length === 0 && content.slice(open + 1, close).trim() !== '') {
+    return insertBeforeBracket(content, close, item.trim(), '');
+  }
   if (elements.length === 0) {
-    if (!multiline) {
-      return `${content.slice(0, close)}${item.trim()}${content.slice(close)}`;
-    }
-    // An empty array across lines holds only whitespace; replace it, so no
-    // whitespace-only line is left above the bracket.
+    // An empty array across lines that holds only whitespace is rebuilt, so
+    // no whitespace-only line is left above the bracket.
     const indent = indentOf(content, close);
     return `${content.slice(0, open + 1)}${newline}${indent}  ${item.trim()}${newline}${indent}${content.slice(close)}`;
   }
