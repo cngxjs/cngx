@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'cngxMatTabs: a sticky-error commit lifecycle with toast + banner bridges',
   subtitle:
-    'One <code>cngxMatTabs</code> attribute upgrades a vanilla <code>&lt;mat-tab-group&gt;</code> with the async commit lifecycle. <code>[commitAction]</code> runs an <code>Observable</code> between tab switches; <code>optimistic</code> advances then rolls back on rejection, <code>pessimistic</code> holds on the origin. A refused switch decorates the target tab (<code>.cngx-mat-tab--error</code> + an SR descriptor referenced through <code>aria-describedby</code>; <code>aria-invalid</code> is form-field vocabulary and stays off a tab button) and the co-located <code>cngxToastOn</code> / <code>cngxBannerOn</code> bridges surface it - both self-wire off <code>CNGX_STATEFUL</code>, no <code>inject()</code> in the consumer. Per-tab <code>[cngxMatTabError]</code> badges read the forms’ <code>statusChanges</code>, and a second group shows the smart-overflow "More" affordance the directive mounts automatically.',
+    'One <code>cngxMatTabs</code> attribute upgrades a vanilla <code>&lt;mat-tab-group&gt;</code> with the async commit lifecycle. <code>[commitAction]</code> runs an <code>Observable</code> between tab switches; <code>optimistic</code> advances then rolls back when the commit does not land, <code>pessimistic</code> holds on the origin. Either way the target tab is decorated (<code>.cngx-mat-tab--error</code> + an SR descriptor referenced through <code>aria-describedby</code>; <code>aria-invalid</code> is form-field vocabulary and stays off a tab button). A throw or an erroring observable is a failure: the commit state goes to <code>error</code> and the co-located <code>cngxToastOn</code> / <code>cngxBannerOn</code> bridges report it - both self-wire off <code>CNGX_STATEFUL</code>, no <code>inject()</code> in the consumer. Answering <code>false</code> is a refusal: the descriptor reads the refused phrase, <code>lastOutcome()</code> reads <code>refused</code>, the commit state goes back to <code>idle</code> and no bridge fires; the action shows its own warning toast and the visible reason below the group is driven by <code>lastOutcome()</code>. Per-tab <code>[cngxMatTabError]</code> badges read the forms’ <code>statusChanges</code>, and a second group shows the smart-overflow "More" affordance the directive mounts automatically.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -16,9 +16,9 @@ export const STORY: DemoSpec = {
     "import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';",
     "import { MatTabsModule } from '@angular/material/tabs';",
     "import { injectErrorAggregator } from '@cngx/common/interactive';",
-    "import { type CngxTabsCommitAction } from '@cngx/common/tabs';",
+    "import { CngxTabGroupPresenter, type CngxTabsCommitAction } from '@cngx/common/tabs';",
     "import { CngxMatTabs, CngxMatTabError } from '@cngx/ui/mat-tabs';",
-    "import { CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';",
+    "import { CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';",
   ],
   imports: [
     'MatTabsModule',
@@ -28,24 +28,39 @@ export const STORY: DemoSpec = {
     'CngxToastOn',
     'CngxBannerOn',
   ],
-  setup: `protected readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
-  protected readonly simulateError = signal(false);
+  setup: `private readonly toaster = inject(CngxToaster);
+  protected readonly presenter = viewChild(CngxTabGroupPresenter);
+  protected readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly outcome = signal<'accept' | 'error' | 'refusal'>('accept');
+  protected readonly refused = computed(() => {
+    const presenter = this.presenter();
+    return presenter?.lastFailedIndex() !== undefined && presenter?.lastOutcome()?.kind === 'refused';
+  });
 
-  // One async gate drives every tab switch. When "Simulate error" is on it
-  // rejects with a business-message Error, so the rejection decoration and
-  // both feedback bridges fire off a single source (Pillar 2).
-  protected readonly commitAction: CngxTabsCommitAction = (from, to) =>
-    new Observable<boolean>((sub) => {
+  // One async gate drives every tab switch. A failure errors the observable,
+  // so the decoration and both feedback bridges fire off a single source.
+  // A refusal answers false: the decoration still lands, the bridges stay
+  // silent and the action toasts its own reason.
+  protected readonly commitAction: CngxTabsCommitAction = (from, to) => {
+    const outcome = this.outcome();
+    return new Observable<boolean>((sub) => {
       const handle = setTimeout(() => {
-        if (this.simulateError()) {
-          sub.error(new Error('Tab ' + from + ' -> ' + to + ' refused by the server'));
-        } else {
-          sub.next(true);
-          sub.complete();
+        if (outcome === 'error') {
+          sub.error(new Error('Could not save tab ' + from + ' -> ' + to));
+          return;
         }
+        if (outcome === 'refusal') {
+          this.toaster.show({ message: 'Fix the profile first.', severity: 'warning' });
+          sub.next(false);
+          sub.complete();
+          return;
+        }
+        sub.next(true);
+        sub.complete();
       }, 600);
       return () => clearTimeout(handle);
     });
+  };
 
   // Two Reactive forms that START invalid, so the [cngxMatTabError] badge is
   // visible at load; typing a valid value clears it live through statusChanges.
@@ -98,7 +113,7 @@ export const STORY: DemoSpec = {
       [toastErrorDetail]="true"
       cngxBannerOn
       bannerId="mat-tabs:commit-error"
-      [bannerError]="'Tab transition refused by the server'"
+      [bannerError]="'The server could not switch the tab.'"
       aria-label="Account settings"
     >
       <mat-tab label="Profile" [cngxMatTabError]="profileErrors">
@@ -131,6 +146,9 @@ export const STORY: DemoSpec = {
         <p style="padding:12px">No aggregator bound - this tab never gains the error badge.</p>
       </mat-tab>
     </mat-tab-group>
+    @if (refused()) {
+      <p>Not allowed yet: fix the profile first.</p>
+    }
   </section>
 
   <section aria-label="Smart overflow" style="max-width:600px;margin-top:24px">
@@ -143,8 +161,9 @@ export const STORY: DemoSpec = {
     </mat-tab-group>
   </section>`,
   templateChromeBefore: `<p style="margin-bottom:12px">
-    Toggle the commit mode and flip <kbd>Simulate error</kbd>, then click a tab: on a rejection the
-    target tab is decorated, a toast and a banner fire, and Material rolls the selection back.
+    Toggle the commit mode and pick an outcome, then click a tab. A failure decorates the target
+    tab, fires a toast and a banner, and Material rolls the selection back. A refusal decorates the
+    tab and rolls back too, but only the action's own warning toast appears.
   </p>`,
   templateChrome: `<div class="event-grid" style="margin-top:16px;gap:8px">
     <div class="event-row" style="gap:8px">
@@ -163,24 +182,36 @@ export const STORY: DemoSpec = {
       </span>
     </div>
     <div class="event-row" style="gap:8px">
-      <span class="event-label">
-        <label style="display:inline-flex;align-items:center;gap:6px">
-          <input
-            #se
-            type="checkbox"
-            [checked]="simulateError()"
-            (change)="simulateError.set(se.checked)"
-          />
-          Simulate error
+      <span class="event-label">Outcome</span>
+      <span class="event-value" role="radiogroup" aria-label="Commit outcome" style="display:flex;gap:12px">
+        <label style="display:inline-flex;align-items:center;gap:4px">
+          <input type="radio" name="cngx-mat-tabs-commit-outcome"
+                 [checked]="outcome() === 'accept'"
+                 (change)="outcome.set('accept')" />
+          accept
+        </label>
+        <label style="display:inline-flex;align-items:center;gap:4px">
+          <input type="radio" name="cngx-mat-tabs-commit-outcome"
+                 [checked]="outcome() === 'error'"
+                 (change)="outcome.set('error')" />
+          simulate error
+        </label>
+        <label style="display:inline-flex;align-items:center;gap:4px">
+          <input type="radio" name="cngx-mat-tabs-commit-outcome"
+                 [checked]="outcome() === 'refusal'"
+                 (change)="outcome.set('refusal')" />
+          simulate refusal
         </label>
       </span>
+    </div>
+    <div class="event-row" style="gap:8px">
       <span class="event-value">
         <button type="button" (click)="mt.clearLastFailed()">Clear last failed</button>
       </span>
     </div>
     <div class="event-row">
       <span class="event-label">State</span>
-      <span class="event-value">mode {{ mode() }} / simulate {{ simulateError() ? 'on' : 'off' }}</span>
+      <span class="event-value">mode {{ mode() }} / outcome {{ outcome() }}</span>
     </div>
   </div>`,
 };

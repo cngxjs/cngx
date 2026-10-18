@@ -75,17 +75,15 @@ function bannerCards(page: Page): Locator {
 }
 
 async function enableSimulateError(page: Page): Promise<void> {
-  const checkbox = page.getByLabel('simulate error');
-  if (!(await checkbox.isChecked())) {
-    await checkbox.click();
-  }
+  await page.getByLabel('simulate error', { exact: true }).check();
 }
 
 async function disableSimulateError(page: Page): Promise<void> {
-  const checkbox = page.getByLabel('simulate error');
-  if (await checkbox.isChecked()) {
-    await checkbox.click();
-  }
+  await page.getByLabel('accept', { exact: true }).check();
+}
+
+async function enableSimulateRefusal(page: Page): Promise<void> {
+  await page.getByLabel('simulate refusal', { exact: true }).check();
 }
 
 test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () => {
@@ -167,8 +165,33 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
     await matTabButtons(page).nth(1).click();
     await expect(bannerCards(page).first()).toBeVisible({ timeout: 5000 });
     await expect(bannerCards(page).first()).toContainText(
-      'Tab transition refused by the server',
+      'The server could not switch the tab.',
     );
+  });
+
+  test('(d2) refusal: the header snaps back, the target tab reads the refused phrase, only the action toast appears and no bridge fires', async ({
+    page,
+  }) => {
+    await page.goto(ROUTE);
+    await enableSimulateRefusal(page);
+    const buttons = matTabButtons(page);
+    await buttons.nth(2).click();
+
+    await expect(toastCards(page).filter({ hasText: 'Fix the profile first.' })).toHaveCount(1, {
+      timeout: 4000,
+    });
+    await expect(buttons.nth(0)).toHaveClass(/mdc-tab--active/, { timeout: 4000 });
+    await expect(buttons.nth(2)).toHaveClass(/cngx-mat-tab--error/);
+    await expect(buttons.nth(2)).toHaveAttribute('aria-describedby', /-rejected\b/);
+    // The message formatter wraps the interpolated label in bidi isolates.
+    await expect(buttons.nth(2).locator('span.cngx-sr-only[id$="-rejected"]')).toHaveText(
+      'Tab switch not allowed - stayed on "\u2068Profile\u2069".',
+    );
+    await expect(
+      page.getByText('Not allowed yet: fix the profile first.', { exact: true }),
+    ).toBeVisible();
+    await expect(toastCards(page).filter({ hasText: 'Tab transition failed' })).toHaveCount(0);
+    await expect(bannerCards(page)).toHaveCount(0);
   });
 
   test('(e) decoration persists across the rollback transition (Material ink-bar slide does NOT swallow the cngx class)', async ({

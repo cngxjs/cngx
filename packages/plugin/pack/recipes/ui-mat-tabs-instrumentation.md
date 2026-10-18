@@ -1,12 +1,12 @@
 ---
 title: "cngxMatTabs: a sticky-error commit lifecycle with toast + banner bridges"
-whenToUse: "One cngxMatTabs attribute upgrades a vanilla &lt;mat-tab-group&gt; with the async commit lifecycle. [commitAction] runs an Observable between tab switches; optimistic advances then rolls back on rejection, pessimistic holds on the origin. A refused switch decorates the target tab (.cngx-mat-tab--error + an SR descriptor referenced through aria-describedby; aria-invalid is form-field vocabulary and stays off a tab button) and the co-located cngxToastOn / cngxBannerOn bridges surface it - both self-wire off CNGX_STATEFUL, no inject() in the consumer. Per-tab [cngxMatTabError] badges read the forms’ statusChanges, and a second group shows the smart-overflow \"More\" affordance the directive mounts automatically."
+whenToUse: "One cngxMatTabs attribute upgrades a vanilla &lt;mat-tab-group&gt; with the async commit lifecycle. [commitAction] runs an Observable between tab switches; optimistic advances then rolls back when the commit does not land, pessimistic holds on the origin. Either way the target tab is decorated (.cngx-mat-tab--error + an SR descriptor referenced through aria-describedby; aria-invalid is form-field vocabulary and stays off a tab button). A throw or an erroring observable is a failure: the commit state goes to error and the co-located cngxToastOn / cngxBannerOn bridges report it - both self-wire off CNGX_STATEFUL, no inject() in the consumer. Answering false is a refusal: the descriptor reads the refused phrase, lastOutcome() reads refused, the commit state goes back to idle and no bridge fires; the action shows its own warning toast and the visible reason below the group is driven by lastOutcome(). Per-tab [cngxMatTabError] badges read the forms’ statusChanges, and a second group shows the smart-overflow \"More\" affordance the directive mounts automatically."
 symbols: [CngxMatTabs, CngxMatTabError]
 ---
 
 # cngxMatTabs: a sticky-error commit lifecycle with toast + banner bridges
 
-One cngxMatTabs attribute upgrades a vanilla &lt;mat-tab-group&gt; with the async commit lifecycle. [commitAction] runs an Observable between tab switches; optimistic advances then rolls back on rejection, pessimistic holds on the origin. A refused switch decorates the target tab (.cngx-mat-tab--error + an SR descriptor referenced through aria-describedby; aria-invalid is form-field vocabulary and stays off a tab button) and the co-located cngxToastOn / cngxBannerOn bridges surface it - both self-wire off CNGX_STATEFUL, no inject() in the consumer. Per-tab [cngxMatTabError] badges read the forms’ statusChanges, and a second group shows the smart-overflow "More" affordance the directive mounts automatically.
+One cngxMatTabs attribute upgrades a vanilla &lt;mat-tab-group&gt; with the async commit lifecycle. [commitAction] runs an Observable between tab switches; optimistic advances then rolls back when the commit does not land, pessimistic holds on the origin. Either way the target tab is decorated (.cngx-mat-tab--error + an SR descriptor referenced through aria-describedby; aria-invalid is form-field vocabulary and stays off a tab button). A throw or an erroring observable is a failure: the commit state goes to error and the co-located cngxToastOn / cngxBannerOn bridges report it - both self-wire off CNGX_STATEFUL, no inject() in the consumer. Answering false is a refusal: the descriptor reads the refused phrase, lastOutcome() reads refused, the commit state goes back to idle and no bridge fires; the action shows its own warning toast and the visible reason below the group is driven by lastOutcome(). Per-tab [cngxMatTabError] badges read the forms’ statusChanges, and a second group shows the smart-overflow "More" affordance the directive mounts automatically.
 
 ## Symbols
 
@@ -16,24 +16,39 @@ One cngxMatTabs attribute upgrades a vanilla &lt;mat-tab-group&gt; with the asyn
 ## Setup
 
 ```ts
+private readonly toaster = inject(CngxToaster);
+protected readonly presenter = viewChild(CngxTabGroupPresenter);
 protected readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
-protected readonly simulateError = signal(false);
+protected readonly outcome = signal<'accept' | 'error' | 'refusal'>('accept');
+protected readonly refused = computed(() => {
+  const presenter = this.presenter();
+  return presenter?.lastFailedIndex() !== undefined && presenter?.lastOutcome()?.kind === 'refused';
+});
 
-// One async gate drives every tab switch. When "Simulate error" is on it
-// rejects with a business-message Error, so the rejection decoration and
-// both feedback bridges fire off a single source (Pillar 2).
-protected readonly commitAction: CngxTabsCommitAction = (from, to) =>
-  new Observable<boolean>((sub) => {
+// One async gate drives every tab switch. A failure errors the observable,
+// so the decoration and both feedback bridges fire off a single source.
+// A refusal answers false: the decoration still lands, the bridges stay
+// silent and the action toasts its own reason.
+protected readonly commitAction: CngxTabsCommitAction = (from, to) => {
+  const outcome = this.outcome();
+  return new Observable<boolean>((sub) => {
     const handle = setTimeout(() => {
-      if (this.simulateError()) {
-        sub.error(new Error('Tab ' + from + ' -> ' + to + ' refused by the server'));
-      } else {
-        sub.next(true);
-        sub.complete();
+      if (outcome === 'error') {
+        sub.error(new Error('Could not save tab ' + from + ' -> ' + to));
+        return;
       }
+      if (outcome === 'refusal') {
+        this.toaster.show({ message: 'Fix the profile first.', severity: 'warning' });
+        sub.next(false);
+        sub.complete();
+        return;
+      }
+      sub.next(true);
+      sub.complete();
     }, 600);
     return () => clearTimeout(handle);
   });
+};
 
 // Two Reactive forms that START invalid, so the [cngxMatTabError] badge is
 // visible at load; typing a valid value clears it live through statusChanges.
@@ -91,7 +106,7 @@ protected readonly overflowTabs = Array.from({ length: 10 }, (_, i) => 'Section 
     [toastErrorDetail]="true"
     cngxBannerOn
     bannerId="mat-tabs:commit-error"
-    [bannerError]="'Tab transition refused by the server'"
+    [bannerError]="'The server could not switch the tab.'"
     aria-label="Account settings"
   >
     <mat-tab label="Profile" [cngxMatTabError]="profileErrors">
@@ -124,6 +139,9 @@ protected readonly overflowTabs = Array.from({ length: 10 }, (_, i) => 'Section 
       <p style="padding:12px">No aggregator bound - this tab never gains the error badge.</p>
     </mat-tab>
   </mat-tab-group>
+  @if (refused()) {
+    <p>Not allowed yet: fix the profile first.</p>
+  }
 </section>
 
 <section aria-label="Smart overflow" style="max-width:600px;margin-top:24px">

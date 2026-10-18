@@ -149,7 +149,7 @@
     {
       "artifact": "pack/recipes/ui-mat-tabs-instrumentation.md",
       "source": "examples/stories/ui/mat-tabs/instrumentation/sticky-error-commit-action-with-bridges.story.ts",
-      "contentHash": "sha256:6c5f0d696f9302f58f8472750d3439df0305dab90057dc4acc71ba2aa75b7877"
+      "contentHash": "sha256:ae69044c5ded3f45bf70e107b8a7c74894571a5304bda05e33fb519d3aa71317"
     },
     {
       "artifact": "pack/recipes/ui-paginator-paginator-modes.md",
