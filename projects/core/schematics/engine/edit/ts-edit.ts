@@ -136,20 +136,32 @@ function rootProvidersArrays(source: ts.SourceFile): readonly ts.ArrayLiteralExp
 
 const ANGULAR_DECORATORS = new Set(['Component', 'NgModule']);
 
-// The argument of the `@Component` / `@NgModule` decorator on `class <name>`.
-function decoratorObject(source: ts.SourceFile, className: string): ts.ObjectLiteralExpression | undefined {
+// The `@Component` / `@NgModule` calls on the top-level `class <name>`, or
+// only those named in `names`.
+function decoratorCalls(
+  source: ts.SourceFile,
+  className: string,
+  names: ReadonlySet<string> = ANGULAR_DECORATORS,
+): readonly ts.CallExpression[] {
   const declaration = source.statements.find(
     (statement): statement is ts.ClassDeclaration => ts.isClassDeclaration(statement) && statement.name?.text === className,
   );
   const decorators = declaration === undefined ? [] : (ts.getDecorators(declaration) ?? []);
-  for (const decorator of decorators) {
-    const call = decorator.expression;
-    const argument = ts.isCallExpression(call) && ANGULAR_DECORATORS.has(calleeName(call) ?? '') ? call.arguments[0] : undefined;
-    if (argument !== undefined && ts.isObjectLiteralExpression(argument)) {
-      return argument;
-    }
-  }
-  return undefined;
+  return decorators
+    .map((decorator) => decorator.expression)
+    .filter((call): call is ts.CallExpression => ts.isCallExpression(call) && names.has(calleeName(call) ?? ''));
+}
+
+function objectArgument(call: ts.CallExpression): ts.ObjectLiteralExpression | undefined {
+  const [argument] = call.arguments;
+  return argument !== undefined && ts.isObjectLiteralExpression(argument) ? argument : undefined;
+}
+
+// The argument of the `@Component` / `@NgModule` decorator on `class <name>`.
+function decoratorObject(source: ts.SourceFile, className: string): ts.ObjectLiteralExpression | undefined {
+  return decoratorCalls(source, className)
+    .map(objectArgument)
+    .find((object) => object !== undefined);
 }
 
 function isConfigureTestingModule(node: ts.Node): node is ts.CallExpression {
@@ -273,6 +285,58 @@ export function countArrayLiterals(content: string, selector: ArraySelector): nu
     return rootProvidersArrays(source).length;
   }
   return findArray(source, selector) === undefined ? 0 : 1;
+}
+
+/**
+ * A property of a decorator object as a reader sees it: a string (a quoted
+ * string or a backtick string without `${...}`) with the offsets of its raw
+ * text between the quotes, an array literal with the source text of each
+ * element, or anything else.
+ */
+export type DecoratorValue =
+  | { readonly kind: 'string'; readonly start: number; readonly end: number; readonly text: string; readonly quoted: boolean }
+  | { readonly kind: 'array'; readonly elements: readonly string[] }
+  | { readonly kind: 'other' };
+
+/**
+ * The `@<decorator>(...)` on the top-level `class <className>`: `absent`
+ * without that class or decorator, `no-object` when its argument is not an
+ * object literal, else the object's properties by name.
+ */
+export type DecoratorReading =
+  | { readonly kind: 'absent' }
+  | { readonly kind: 'no-object' }
+  | { readonly kind: 'object'; readonly properties: ReadonlyMap<string, DecoratorValue> };
+
+function decoratorValue(source: ts.SourceFile, initializer: ts.Expression): DecoratorValue {
+  if (ts.isStringLiteral(initializer) || ts.isNoSubstitutionTemplateLiteral(initializer)) {
+    const start = initializer.getStart(source) + 1;
+    const end = initializer.getEnd() - 1;
+    return { kind: 'string', start, end, text: source.text.slice(start, end), quoted: ts.isStringLiteral(initializer) };
+  }
+  if (ts.isArrayLiteralExpression(initializer)) {
+    return { kind: 'array', elements: initializer.elements.map((element) => element.getText(source)) };
+  }
+  return { kind: 'other' };
+}
+
+/** Reads the `@Component` or `@NgModule` decorator of a top-level class through the TypeScript AST. */
+export function readDecorator(content: string, className: string, decorator: 'Component' | 'NgModule'): DecoratorReading {
+  const source = parse(content);
+  const [call] = decoratorCalls(source, className, new Set([decorator]));
+  if (call === undefined) {
+    return { kind: 'absent' };
+  }
+  const object = objectArgument(call);
+  if (object === undefined) {
+    return { kind: 'no-object' };
+  }
+  const properties = object.properties.flatMap((property): readonly (readonly [string, DecoratorValue])[] =>
+    ts.isPropertyAssignment(property) && (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name))
+      ? [[property.name.text, decoratorValue(source, property.initializer)]]
+      : [],
+  );
+  return { kind: 'object', properties: new Map(properties) };
 }
 
 function boundNames(name: ts.BindingName): readonly string[] {

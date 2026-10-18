@@ -78,7 +78,9 @@ export {
   hasArrayLiteral,
   importsModule,
   insertAfterImports,
+  type DecoratorReading,
   type LanguagePackArgument,
+  readDecorator,
   readProviderCalls,
   topLevelBindings,
 } from './edit/ts-edit';

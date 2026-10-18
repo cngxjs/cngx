@@ -165,6 +165,35 @@ describe('appShellOf', () => {
     expect(appShellOf(none, 'src/main.ts', true, 'fixture-app')).toBeUndefined();
   });
 
+  it('finds the decorator through the AST when a template or a comment says class', () => {
+    const inTemplate = readerOf('standalone-app', {
+      'src/app/app.ts': INLINE_APP.replace('`<router-outlet />`', '`<p>The class list</p><router-outlet />`'),
+    });
+    const inComment = readerOf('standalone-app', {
+      'src/app/app.ts': INLINE_APP.replace('export class App {}', '// the class App below is the root\nexport class App {}'),
+    });
+
+    expect(appShellOf(inTemplate, 'src/main.ts', true, 'fixture-app')).toMatchObject({
+      template: { kind: 'inline' },
+      outlets: { kind: 'editable', routerOutlet: true },
+    });
+    expect(appShellOf(inComment, 'src/main.ts', true, 'fixture-app')).toMatchObject({
+      template: { kind: 'inline' },
+      outlets: { kind: 'editable', routerOutlet: true },
+    });
+  });
+
+  it('blocks the outlets of a component decorator that takes no object literal', () => {
+    const read = readerOf('standalone-app', {
+      'src/app/app.ts': "import { Component } from '@angular/core';\nimport { ROOT } from './root';\n\n@Component(ROOT)\nexport class App {}\n",
+    });
+
+    expect(appShellOf(read, 'src/main.ts', true, 'fixture-app')).toMatchObject({
+      template: { kind: 'unread' },
+      outlets: { kind: 'blocked', reason: 'the @Component decorator of App in src/app/app.ts takes no object literal' },
+    });
+  });
+
   it('reads the stock spec of the zoneless and the zone scaffold', () => {
     for (const name of ['scaffold-21', 'scaffold-21-zone'] as const) {
       expect(appShellOf(readerOf(name), 'src/main.ts', true, 'fixture-app')?.spec).toBe('stock');

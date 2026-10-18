@@ -11,6 +11,7 @@ import {
   importsModule,
   insertAfterImports,
   promoteTypeOnlyImport,
+  readDecorator,
   readProviderCalls,
   topLevelBindings,
 } from './ts-edit';
@@ -443,6 +444,47 @@ const NO_IMPORTS = `import { Component } from '@angular/core';
 })
 export class App {}
 `;
+
+describe('readDecorator', () => {
+  const APP = `import { Component } from '@angular/core';
+
+/** The class App, with a template that says class too. */
+@Component({
+  selector: 'app-root',
+  'templateUrl': './app.html',
+  template: '<p>it\\'s the class list</p>',
+  imports: [RouterOutlet, ...SHARED],
+  host: HOST,
+})
+export class App {}
+`;
+
+  it('reads the properties of the decorator object, whatever the text around it says', () => {
+    const reading = readDecorator(APP, 'App', 'Component');
+    const properties = reading.kind === 'object' ? reading.properties : new Map();
+    const template = properties.get('template');
+
+    expect(properties.get('templateUrl')).toMatchObject({ kind: 'string', text: './app.html', quoted: true });
+    expect(template).toMatchObject({ kind: 'string', text: "<p>it\\'s the class list</p>", quoted: true });
+    expect(APP.slice(template.start, template.end)).toBe("<p>it\\'s the class list</p>");
+    expect(properties.get('imports')).toEqual({ kind: 'array', elements: ['RouterOutlet', '...SHARED'] });
+    expect(properties.get('host')).toEqual({ kind: 'other' });
+  });
+
+  it('tells a backtick string from an interpolating one', () => {
+    const plain = readDecorator("@Component({ template: `<p></p>` })\nexport class App {}\n", 'App', 'Component');
+    const interpolating = readDecorator('@Component({ template: `${X}` })\nexport class App {}\n', 'App', 'Component');
+
+    expect(plain.kind === 'object' && plain.properties.get('template')).toMatchObject({ kind: 'string', quoted: false });
+    expect(interpolating.kind === 'object' && interpolating.properties.get('template')).toEqual({ kind: 'other' });
+  });
+
+  it('reads a decorator without an object literal, another decorator and a missing class apart', () => {
+    expect(readDecorator('@Component(ROOT)\nexport class App {}\n', 'App', 'Component')).toEqual({ kind: 'no-object' });
+    expect(readDecorator('@NgModule({})\nexport class App {}\n', 'App', 'Component')).toEqual({ kind: 'absent' });
+    expect(readDecorator("// class App\nconst x = '@Component({}) class App';\n", 'App', 'Component')).toEqual({ kind: 'absent' });
+  });
+});
 
 describe('decorator imports', () => {
   const stockApp = readFixture('scaffold-21')['src/app/app.ts'];

@@ -1,17 +1,26 @@
 import { posix } from 'node:path';
 
 import {
+  type DecoratorReading,
   ensureArrayProperty,
   hasArrayElement,
   hasArrayLiteral,
   hasElement,
+  readDecorator,
   topLevelBindings,
 } from '../../engine';
 import { SCAFFOLD_CATALOG, SCAFFOLD_NAME_PLACEHOLDER } from './scaffold-catalog.generated';
 import { type Read } from './workspace';
 
-/** Where the root component's template lives: a file next to it, or inline in the decorator. */
-export type AppShellTemplate = { readonly kind: 'file'; readonly path: string } | { readonly kind: 'inline' };
+/**
+ * Where the root component's template lives: a file next to it, inline in
+ * the decorator, or `unread` when the decorator takes no object literal, so
+ * cngx cannot tell (the outlets are then blocked).
+ */
+export type AppShellTemplate =
+  | { readonly kind: 'file'; readonly path: string }
+  | { readonly kind: 'inline' }
+  | { readonly kind: 'unread' };
 
 /**
  * The spec next to the root component: the untouched `ng new` spec, that
@@ -111,26 +120,19 @@ function definitionOf(read: Read, file: string, content: string, name: string): 
   return target === undefined ? undefined : classFile(read, target, name);
 }
 
-// The `@<decorator>(...)` text right in front of `class <name>`; another
-// class between them means the decorator belongs to that one.
-function decoratorOf(content: string, name: string, decorator: 'Component' | 'NgModule'): string | undefined {
-  const declared = new RegExp(`\\bclass\\s+${name}\\b`).exec(content);
-  if (declared === null) {
+function templateOf(read: Read, componentFile: string, decorator: DecoratorReading): AppShellTemplate | undefined {
+  if (decorator.kind === 'absent') {
     return undefined;
   }
-  const before = content.slice(0, declared.index);
-  const start = before.lastIndexOf(`@${decorator}(`);
-  const text = start === -1 ? undefined : before.slice(start);
-  return text === undefined || /\bclass\s/.test(text) ? undefined : text;
-}
-
-function templateOf(read: Read, componentFile: string, decorator: string): AppShellTemplate | undefined {
-  const url = /\btemplateUrl\s*:\s*['"]([^'"]+)['"]/.exec(decorator)?.[1];
-  if (url !== undefined) {
-    const path = posix.join(posix.dirname(componentFile), url);
+  if (decorator.kind === 'no-object') {
+    return { kind: 'unread' };
+  }
+  const url = decorator.properties.get('templateUrl');
+  if (url?.kind === 'string') {
+    const path = posix.join(posix.dirname(componentFile), url.text);
     return read(path) === undefined ? undefined : { kind: 'file', path };
   }
-  return /\btemplate\s*:/.test(decorator) ? { kind: 'inline' } : undefined;
+  return decorator.properties.has('template') ? { kind: 'inline' } : undefined;
 }
 
 function normalize(content: string): string {
@@ -189,21 +191,13 @@ export interface InlineTemplate {
  * interpolates (`${...}`), which is not a template cngx can edit as text.
  */
 export function inlineTemplateOf(content: string, className: string): InlineTemplate | undefined {
-  const declared = new RegExp(`\\bclass\\s+${className}\\b`).exec(content);
-  const decorator = declared === null ? undefined : decoratorOf(content, className, 'Component');
-  const offset = declared === null || decorator === undefined ? 0 : declared.index - decorator.length;
-  const property = decorator === undefined ? null : /\btemplate\s*:\s*([`'"])/.exec(decorator);
-  if (property === null) {
+  const decorator = readDecorator(content, className, 'Component');
+  const template = decorator.kind === 'object' ? decorator.properties.get('template') : undefined;
+  if (template?.kind !== 'string') {
     return undefined;
   }
-  const quote = property[1];
-  const start = offset + property.index + property[0].length;
-  let end = start;
-  while (end < content.length && content[end] !== quote) {
-    end += content[end] === '\\' ? 2 : 1;
-  }
-  const text = content.slice(start, end);
-  return end >= content.length || (quote === '`' && text.includes('${')) ? undefined : { start, end, text, quoted: quote !== '`' };
+  const { start, end, text, quoted } = template;
+  return { start, end, text, quoted };
 }
 
 // Whether the template holds a `<router-outlet>`; `undefined` when it does not parse.
@@ -220,6 +214,9 @@ function outletsOf(
   shell: Pick<AppShell, 'componentFile' | 'className' | 'template' | 'importsHost'>,
   content: string,
 ): AppShellOutlets {
+  if (shell.template.kind === 'unread') {
+    return { kind: 'blocked', reason: `the @Component decorator of ${shell.className} in ${shell.componentFile} takes no object literal` };
+  }
   const where = shell.template.kind === 'file' ? shell.template.path : `the inline template of ${shell.className}`;
   const inline = shell.template.kind === 'inline' ? inlineTemplateOf(content, shell.className) : undefined;
   const template = shell.template.kind === 'file' ? read(shell.template.path) : inline?.text;
@@ -278,8 +275,9 @@ function moduleRoot(read: Read, mainPath: string, main: string): Bootstrapped | 
   if (moduleName === undefined || moduleFile === undefined || moduleContent === undefined) {
     return undefined;
   }
-  const decorator = decoratorOf(moduleContent, moduleName, 'NgModule');
-  const className = decorator === undefined ? undefined : /\bbootstrap\s*:\s*\[\s*(\w+)/.exec(decorator)?.[1];
+  const decorator = readDecorator(moduleContent, moduleName, 'NgModule');
+  const bootstrap = decorator.kind === 'object' ? decorator.properties.get('bootstrap') : undefined;
+  const className = bootstrap?.kind === 'array' ? bootstrap.elements[0] : undefined;
   const componentFile = className === undefined ? undefined : definitionOf(read, moduleFile, moduleContent, className);
   if (className === undefined || componentFile === undefined) {
     return undefined;
@@ -292,7 +290,8 @@ function moduleRoot(read: Read, mainPath: string, main: string): Bootstrapped | 
  * in `main.ts` to the root component, the same call shapes
  * `rootProvidersPath` follows. `undefined` when a step of the way does not
  * read: no such call, a non-relative import, no decorator, or a template
- * file that is missing; the outlets step then names the snippet instead.
+ * file that is missing; the outlets step then names the snippet instead. A
+ * `@Component` that takes no object literal is a shell with blocked outlets.
  */
 export function appShellOf(read: Read, mainPath: string, standalone: boolean, project: string): AppShell | undefined {
   const main = read(mainPath);
@@ -301,7 +300,7 @@ export function appShellOf(read: Read, mainPath: string, standalone: boolean, pr
   }
   const root = standalone ? standaloneRoot(read, mainPath, main) : moduleRoot(read, mainPath, main);
   const content = root === undefined ? undefined : read(root.componentFile);
-  const decorator = root === undefined || content === undefined ? undefined : decoratorOf(content, root.className, 'Component');
+  const decorator = root === undefined || content === undefined ? undefined : readDecorator(content, root.className, 'Component');
   const template = root === undefined || decorator === undefined ? undefined : templateOf(read, root.componentFile, decorator);
   if (root === undefined || template === undefined) {
     return undefined;
