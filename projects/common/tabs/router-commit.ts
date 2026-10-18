@@ -40,9 +40,17 @@ export const cngxDefaultTabRoute = (handle: CngxTabHandle): unknown[] => [handle
  * resolves on this navigation's own `navigate()` promise:
  *
  * - resolved `true` (`NavigationEnd`) → `true` (commit the switch)
+ * - resolved `null` (a skipped same-URL navigation, the route is
+ *   already active) → `true`
  * - resolved `false` (`NavigationCancel` - a `CanDeactivate` guard
- *   blocked, or a newer navigation superseded this one) → `false`
- * - rejected (`NavigationError` - guard/resolver threw) → `false`
+ *   blocked, or a newer navigation superseded this one) → `false`, a
+ *   refused switch: nothing failed, the commit state stores no error
+ * - rejected (`NavigationError` - a guard or resolver threw) → the
+ *   observable errors with the router's original error, a failed
+ *   switch: the commit state goes to `'error'` and keeps that error
+ *
+ * This is the router's own model: a guard answering `false` cancels,
+ * only a throw is an error.
  *
  * Routed tabs reuse the presenter's commit lifecycle verbatim - the
  * router navigation is simply the async op. \
@@ -80,9 +88,11 @@ export function createTabRouterCommit(opts: CngxTabRouterCommitOptions): CngxTab
           subscriber.next(result !== false);
           subscriber.complete();
         },
-        () => {
-          subscriber.next(false);
-          subscriber.complete();
+        (err: unknown) => {
+          // A guard or resolver threw (`NavigationError`): a failure,
+          // not a refusal. Hand the router's own error on so the commit
+          // state stores what actually went wrong.
+          subscriber.error(err);
         },
       );
     });
