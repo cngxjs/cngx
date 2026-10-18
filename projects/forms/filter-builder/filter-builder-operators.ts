@@ -138,6 +138,9 @@ export const CNGX_FILTER_BUILTIN_OPERATOR_DEFS: ReadonlyMap<string, CngxFilterOp
         // guard that cannot see inside arrays.
         evaluate: (itemValue, exprValue) => {
           if (!Array.isArray(exprValue) || exprValue.length !== 2) {
+            if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+              warnArrayOperatorValueOnce('between', '[min, max]');
+            }
             return false;
           }
           const [min, max] = exprValue as [unknown, unknown];
@@ -156,6 +159,9 @@ export const CNGX_FILTER_BUILTIN_OPERATOR_DEFS: ReadonlyMap<string, CngxFilterOp
         // unfilled-row contract itself (mirrors the between bound guard).
         evaluate: (itemValue, exprValue) => {
           if (!Array.isArray(exprValue)) {
+            if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+              warnArrayOperatorValueOnce('in', 'an array of values');
+            }
             return false;
           }
           if (exprValue.length === 0) {
@@ -170,6 +176,9 @@ export const CNGX_FILTER_BUILTIN_OPERATOR_DEFS: ReadonlyMap<string, CngxFilterOp
       {
         evaluate: (itemValue, exprValue) => {
           if (!Array.isArray(exprValue)) {
+            if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+              warnArrayOperatorValueOnce('notIn', 'an array of values');
+            }
             return false;
           }
           if (exprValue.length === 0) {
@@ -242,5 +251,30 @@ export function warnUnknownFilterOperatorOnce(operator: string): void {
     'CNGX2001',
     `evaluateExpression(): unknown operator "${operator}" - the expression evaluates to false ` +
       `for every item. Register an evaluation via withOperators({ ${operator}: { evaluate: ... } }).`,
+  );
+}
+
+/** @internal One warning per array operator key per application lifetime. */
+const warnedArrayOperatorValues = new Set<string>();
+
+/**
+ * @internal Dev-mode guard for an array operator (`between`, `in`, `notIn`)
+ * that received a non-array value, typically from a scalar value editor.
+ * Warns exactly once per operator key so a large filtered list does not
+ * flood the console; the evaluation result stays `false` either way.
+ */
+export function warnArrayOperatorValueOnce(operator: string, expected: string): void {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return;
+  }
+  if (warnedArrayOperatorValues.has(operator)) {
+    return;
+  }
+  warnedArrayOperatorValues.add(operator);
+  cngxDevWarn(
+    'CNGX2023',
+    `evaluateExpression(): operator "${operator}" expects ${expected} but received a value of ` +
+      'another shape - the expression evaluates to false for every item. Bind a value editor ' +
+      'that writes that shape through *cngxFilterBuilderValueEditor.',
   );
 }

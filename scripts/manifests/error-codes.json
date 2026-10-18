@@ -1775,6 +1775,23 @@
       ]
     },
     {
+      "code": "CNGX2023",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Array operator received a non-array value",
+      "page": "core-concepts/error-codes/cngx2023.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2023.html",
+      "status": "active",
+      "files": ["projects/forms/filter-builder/filter-builder-operators.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/filter-builder/filter-builder-operators.ts",
+          "text": "evaluateExpression(): operator \"${...}\" expects ${...} but received a value of another shape - the expression evaluates to false for every item. Bind a value editor that writes that shape through *cngxFilterBuilderValueEditor."
+        }
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",
