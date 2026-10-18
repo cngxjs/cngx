@@ -157,11 +157,11 @@ function objectArgument(call: ts.CallExpression): ts.ObjectLiteralExpression | u
   return argument !== undefined && ts.isObjectLiteralExpression(argument) ? argument : undefined;
 }
 
-// The argument of the `@Component` / `@NgModule` decorator on `class <name>`.
+// The argument of the one `@Component` / `@NgModule` decorator on `class
+// <name>`; none when there are several, as `readDecorator` reads it.
 function decoratorObject(source: ts.SourceFile, className: string): ts.ObjectLiteralExpression | undefined {
-  return decoratorCalls(source, className)
-    .map(objectArgument)
-    .find((object) => object !== undefined);
+  const calls = decoratorCalls(source, className);
+  return calls.length === 1 ? objectArgument(calls[0]) : undefined;
 }
 
 function isConfigureTestingModule(node: ts.Node): node is ts.CallExpression {
@@ -191,15 +191,45 @@ function propertyName(selector: PropertyArraySelector): string {
   return selector.kind === 'decorator-imports' ? 'imports' : 'providers';
 }
 
-function namedProperty(object: ts.ObjectLiteralExpression, name: string): ts.ObjectLiteralElementLike | undefined {
-  return object.properties.find(
-    (property) => property.name !== undefined && ts.isIdentifier(property.name) && property.name.text === name,
-  );
+// What an object literal holds under one name, read the same way by every
+// reader and editor here: a key is an identifier or a string literal. A
+// spread or a computed key hides what the object sets, and a key written
+// twice leaves which one counts to the compiler, so both make the object
+// unreadable and nothing reads or writes it.
+type PropertyLookup =
+  | { readonly kind: 'missing' }
+  | { readonly kind: 'found'; readonly property: ts.ObjectLiteralElementLike }
+  | { readonly kind: 'unreadable'; readonly cause: UnreadableCause };
+
+/** Why cngx does not read an object literal: a spread or computed key, or a key written twice. */
+export type UnreadableCause = 'dynamic' | 'duplicate';
+
+function staticKey(property: ts.ObjectLiteralElementLike): string | undefined {
+  const name = property.name;
+  return name !== undefined && (ts.isIdentifier(name) || ts.isStringLiteral(name)) ? name.text : undefined;
+}
+
+function unreadableCause(object: ts.ObjectLiteralExpression): UnreadableCause | undefined {
+  const keys = object.properties.map(staticKey);
+  if (keys.some((key) => key === undefined)) {
+    return 'dynamic';
+  }
+  return new Set(keys).size === keys.length ? undefined : 'duplicate';
+}
+
+function lookupProperty(object: ts.ObjectLiteralExpression, name: string): PropertyLookup {
+  const cause = unreadableCause(object);
+  if (cause !== undefined) {
+    return { kind: 'unreadable', cause };
+  }
+  const property = object.properties.find((candidate) => staticKey(candidate) === name);
+  return property === undefined ? { kind: 'missing' } : { kind: 'found', property };
 }
 
 function propertyArray(source: ts.SourceFile, selector: PropertyArraySelector): ts.ArrayLiteralExpression | undefined {
   const object = propertyObject(source, selector);
-  const property = object === undefined ? undefined : namedProperty(object, propertyName(selector));
+  const lookup = object === undefined ? undefined : lookupProperty(object, propertyName(selector));
+  const property = lookup?.kind === 'found' ? lookup.property : undefined;
   return property !== undefined && ts.isPropertyAssignment(property) && ts.isArrayLiteralExpression(property.initializer)
     ? property.initializer
     : undefined;
@@ -246,7 +276,8 @@ export function hasArrayElement(content: string, selector: ArraySelector, name: 
  * selected object literal when the property is missing, so
  * `addToArrayLiteral` has an array to fill. The content is returned
  * unchanged when the property exists, also as something other than an array
- * literal (`hasArrayLiteral` then stays false and the caller reports it), or
+ * literal (`hasArrayLiteral` then stays false and the caller reports it),
+ * when the object holds a spread, a computed key or a key written twice, or
  * when there is no such object. The new property goes after the last one, on
  * its own line in a multi-line object, keeping a trailing comma style.
  */
@@ -254,7 +285,7 @@ export function ensureArrayProperty(content: string, selector: PropertyArraySele
   const source = parse(content);
   const object = propertyObject(source, selector);
   const name = propertyName(selector);
-  if (object === undefined || namedProperty(object, name) !== undefined) {
+  if (object === undefined || lookupProperty(object, name).kind !== 'missing') {
     return content;
   }
   const property = `${name}: []`;
@@ -301,14 +332,22 @@ export type DecoratorValue =
 /**
  * The `@<decorator>(...)` on the top-level `class <className>`: `absent`
  * without that class or decorator, `no-object` when its argument is not an
- * object literal, else the object's properties by name.
+ * object literal, `unreadable` when the class carries more than one of
+ * `@Component` / `@NgModule` or the object holds a spread, a computed key or
+ * a key written twice, else the object's properties by name (identifier
+ * and string-literal keys alike, a shorthand or method property as `other`).
  */
 export type DecoratorReading =
   | { readonly kind: 'absent' }
   | { readonly kind: 'no-object' }
+  | { readonly kind: 'unreadable'; readonly cause: UnreadableCause }
   | { readonly kind: 'object'; readonly properties: ReadonlyMap<string, DecoratorValue> };
 
-function decoratorValue(source: ts.SourceFile, initializer: ts.Expression): DecoratorValue {
+function decoratorValue(source: ts.SourceFile, property: ts.ObjectLiteralElementLike): DecoratorValue {
+  const initializer = ts.isPropertyAssignment(property) ? property.initializer : undefined;
+  if (initializer === undefined) {
+    return { kind: 'other' };
+  }
   if (ts.isStringLiteral(initializer) || ts.isNoSubstitutionTemplateLiteral(initializer)) {
     const start = initializer.getStart(source) + 1;
     const end = initializer.getEnd() - 1;
@@ -323,19 +362,26 @@ function decoratorValue(source: ts.SourceFile, initializer: ts.Expression): Deco
 /** Reads the `@Component` or `@NgModule` decorator of a top-level class through the TypeScript AST. */
 export function readDecorator(content: string, className: string, decorator: 'Component' | 'NgModule'): DecoratorReading {
   const source = parse(content);
-  const [call] = decoratorCalls(source, className, new Set([decorator]));
+  const calls = decoratorCalls(source, className);
+  const [call] = calls.filter((candidate) => calleeName(candidate) === decorator);
   if (call === undefined) {
     return { kind: 'absent' };
+  }
+  if (calls.length > 1) {
+    return { kind: 'unreadable', cause: 'duplicate' };
   }
   const object = objectArgument(call);
   if (object === undefined) {
     return { kind: 'no-object' };
   }
-  const properties = object.properties.flatMap((property): readonly (readonly [string, DecoratorValue])[] =>
-    ts.isPropertyAssignment(property) && (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name))
-      ? [[property.name.text, decoratorValue(source, property.initializer)]]
-      : [],
-  );
+  const cause = unreadableCause(object);
+  if (cause !== undefined) {
+    return { kind: 'unreadable', cause };
+  }
+  const properties = object.properties.flatMap((property): readonly (readonly [string, DecoratorValue])[] => {
+    const key = staticKey(property);
+    return key === undefined ? [] : [[key, decoratorValue(source, property)]];
+  });
   return { kind: 'object', properties: new Map(properties) };
 }
 

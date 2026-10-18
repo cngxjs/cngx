@@ -123,7 +123,7 @@ function templateOf(read: Read, componentFile: string, decorator: DecoratorReadi
   if (decorator.kind === 'absent') {
     return undefined;
   }
-  if (decorator.kind === 'no-object') {
+  if (decorator.kind === 'no-object' || decorator.kind === 'unreadable') {
     return { kind: 'unread' };
   }
   const url = decorator.properties.get('templateUrl');
@@ -208,13 +208,40 @@ function routerOutletIn(template: string): boolean | undefined {
   }
 }
 
+// Why cngx does not read a decorator, or `undefined` when it does.
+function unreadDecoratorReason(decorator: DecoratorReading, className: string, file: string): string | undefined {
+  if (decorator.kind === 'unreadable') {
+    return decorator.cause === 'dynamic'
+      ? `the decorator of ${className} in ${file} holds a spread or a computed key, so cngx cannot tell what it sets`
+      : `the decorator of ${className} in ${file} is written twice or sets a property more than once`;
+  }
+  return decorator.kind === 'object' ? undefined : `the decorator of ${className} in ${file} takes no object literal`;
+}
+
+// Why the imports host cannot take the outlet classes, or `undefined` when
+// it can: detection calls it editable only where the edit engine finds the
+// array or can add the property, through the same property lookup.
+function importsBlockedReason(host: string, importsHost: AppShell['importsHost']): string | undefined {
+  const { file, className, kind } = importsHost;
+  const decorator = readDecorator(host, className, kind === 'component' ? 'Component' : 'NgModule');
+  const unread = unreadDecoratorReason(decorator, className, file);
+  if (unread !== undefined) {
+    return unread;
+  }
+  const selector = { kind: 'decorator-imports', className } as const;
+  const editable = hasArrayLiteral(host, selector) || ensureArrayProperty(host, selector) !== host;
+  return editable ? undefined : `the imports of ${className} in ${file} are not a plain array literal`;
+}
+
 function outletsOf(
   read: Read,
   shell: Pick<AppShell, 'componentFile' | 'className' | 'template' | 'importsHost'>,
   content: string,
+  decorator: DecoratorReading,
 ): AppShellOutlets {
-  if (shell.template.kind === 'unread') {
-    return { kind: 'blocked', reason: `the @Component decorator of ${shell.className} in ${shell.componentFile} takes no object literal` };
+  const unread = unreadDecoratorReason(decorator, shell.className, shell.componentFile);
+  if (unread !== undefined) {
+    return { kind: 'blocked', reason: unread };
   }
   const where = shell.template.kind === 'file' ? shell.template.path : `the inline template of ${shell.className}`;
   const inline = shell.template.kind === 'inline' ? inlineTemplateOf(content, shell.className) : undefined;
@@ -229,11 +256,11 @@ function outletsOf(
   }
   const { file, className } = shell.importsHost;
   const host = read(file) ?? '';
-  const selector = { kind: 'decorator-imports', className } as const;
-  const missingProperty = !hasArrayLiteral(host, selector) && ensureArrayProperty(host, selector) !== host;
-  if (!hasArrayLiteral(host, selector) && !missingProperty) {
-    return { kind: 'blocked', reason: `the imports of ${className} in ${file} are not an array literal` };
+  const importsBlocked = importsBlockedReason(host, shell.importsHost);
+  if (importsBlocked !== undefined) {
+    return { kind: 'blocked', reason: importsBlocked };
   }
+  const selector = { kind: 'decorator-imports', className } as const;
   const bindings = topLevelBindings(host);
   const clash = FEEDBACK_OUTLETS.find(({ className: name }) => {
     const binding = bindings.get(name);
@@ -246,7 +273,8 @@ function outletsOf(
     kind: 'editable',
     elements,
     classes: FEEDBACK_OUTLETS.filter(
-      ({ className: name }) => hasArrayElement(host, selector, name) && bindings.get(name)?.module === FEEDBACK_MODULE,
+      ({ className: name }) =>
+        hasArrayElement(host, selector, name) && bindings.get(name)?.module === FEEDBACK_MODULE && bindings.get(name)?.typeOnly === false,
     ).map(({ className: name }) => name),
     routerOutlet,
   };
@@ -304,7 +332,7 @@ export function appShellOf(read: Read, mainPath: string, standalone: boolean, pr
   if (root === undefined || template === undefined) {
     return undefined;
   }
-  const outlets = outletsOf(read, { ...root, template }, content ?? '');
+  const outlets = outletsOf(read, { ...root, template }, content ?? '', decorator ?? { kind: 'absent' });
   const specPath = root.componentFile.endsWith('.ts') ? root.componentFile.replace(/\.ts$/, '.spec.ts') : undefined;
   return {
     ...root,

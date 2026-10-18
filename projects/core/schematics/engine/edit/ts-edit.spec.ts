@@ -523,6 +523,24 @@ export class App {}
     expect(readDecorator('@NgModule({})\nexport class App {}\n', 'App', 'Component')).toEqual({ kind: 'absent' });
     expect(readDecorator("// class App\nconst x = '@Component({}) class App';\n", 'App', 'Component')).toEqual({ kind: 'absent' });
   });
+
+  it('reads identifier and string-literal keys alike and a shorthand property as other', () => {
+    const reading = readDecorator('@Component({ "imports": [A], selector, \'template\': `<p></p>` })\nexport class App {}\n', 'App', 'Component');
+    const properties = reading.kind === 'object' ? reading.properties : undefined;
+
+    expect(properties?.get('imports')).toEqual({ kind: 'array', elements: ['A'] });
+    expect(properties?.get('template')).toMatchObject({ kind: 'string', quoted: false });
+    expect(properties?.get('selector')).toEqual({ kind: 'other' });
+  });
+
+  it('reads an object with a spread, a computed key or a key written twice, and a doubled decorator, as unreadable', () => {
+    const read = (decorators: string) => readDecorator(`${decorators}\nexport class App {}\n`, 'App', 'Component');
+
+    expect(read('@Component({ ...BASE, imports: [] })')).toEqual({ kind: 'unreadable', cause: 'dynamic' });
+    expect(read("@Component({ ['imports']: [] })")).toEqual({ kind: 'unreadable', cause: 'dynamic' });
+    expect(read("@Component({ imports: [], 'imports': [A] })")).toEqual({ kind: 'unreadable', cause: 'duplicate' });
+    expect(read('@Component({ imports: [] })\n@Component({ imports: [] })')).toEqual({ kind: 'unreadable', cause: 'duplicate' });
+  });
 });
 
 describe('decorator imports', () => {
@@ -569,6 +587,50 @@ describe('decorator imports', () => {
     expect(ensureArrayProperty(stockApp, APP)).toBe(stockApp);
     expect(ensureArrayProperty(shared, APP)).toBe(shared);
     expect(hasArrayLiteral(shared, APP)).toBe(false);
+  });
+});
+
+describe('decorator properties, one lookup for readers and editors', () => {
+  const stockApp = readFixture('scaffold-21')['src/app/app.ts'];
+  const NGMODULE_HOST: ArraySelector = { kind: 'decorator-imports', className: 'AppModule' };
+
+  it.each(["'imports'", '"imports"'])('reads and fills a %s key of a component and an NgModule', (key) => {
+    const component = stockApp.replace('imports:', `${key}:`);
+    const ngModule = NGMODULE.replace('imports:', `${key}:`);
+
+    expect(hasArrayLiteral(component, APP)).toBe(true);
+    expect(hasArrayElement(component, APP, 'RouterOutlet')).toBe(true);
+    expect(ensureArrayProperty(component, APP)).toBe(component);
+    expect(addToArrayLiteral(component, APP, 'CngxToastOutlet')).toContain(`${key}: [RouterOutlet, CngxToastOutlet],`);
+    expect(hasArrayElement(ngModule, NGMODULE_HOST, 'BrowserModule')).toBe(true);
+    expect(ensureArrayProperty(ngModule, NGMODULE_HOST)).toBe(ngModule);
+  });
+
+  it.each([
+    ['a spread', '  ...BASE,\n'],
+    ['a computed key', "  ['imports']: [RouterOutlet],\n"],
+    ['a shorthand imports', '  imports,\n'],
+    ['an identifier imports', '  imports: IMPORTS,\n'],
+    ['imports written twice', '  imports: [RouterOutlet],\n  imports: [],\n'],
+  ])('never reads or writes a decorator object with %s', (_name, imports) => {
+    const content = stockApp.replace('  imports: [RouterOutlet],\n', imports);
+
+    expect(hasArrayLiteral(content, APP)).toBe(false);
+    expect(hasArrayElement(content, APP, 'RouterOutlet')).toBe(false);
+    expect(ensureArrayProperty(content, APP)).toBe(content);
+    expect(() => addToArrayLiteral(content, APP, 'CngxToastOutlet')).toThrow();
+  });
+
+  it('never writes into a TestBed object with a spread or providers written twice', () => {
+    const spread = 'TestBed.configureTestingModule({ ...BASE, imports: [App] });\n';
+    const twice = "TestBed.configureTestingModule({ providers: [], 'providers': [] });\n";
+    const quoted = "TestBed.configureTestingModule({ imports: [App], 'providers': [] });\n";
+
+    expect(ensureArrayProperty(spread, TESTBED)).toBe(spread);
+    expect(hasArrayLiteral(twice, TESTBED)).toBe(false);
+    expect(ensureArrayProperty(twice, TESTBED)).toBe(twice);
+    expect(ensureArrayProperty(quoted, TESTBED)).toBe(quoted);
+    expect(addToArrayLiteral(quoted, TESTBED, 'provideX()')).toContain("'providers': [provideX()]");
   });
 });
 

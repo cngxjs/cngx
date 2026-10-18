@@ -252,6 +252,50 @@ describe('planAppShell', () => {
     expect(next['src/app/app.ts']).toContain("import { CngxBannerOutlet } from '@cngx/ui/feedback';");
   });
 
+  it.each(["'imports'", '"imports"'])('fills a %s key of the component and the NgModule instead of adding a second imports', async (key) => {
+    const component = await factsOf('scaffold-21', {
+      'src/app/app.ts': readFixture('scaffold-21')['src/app/app.ts'].replace('imports:', `${key}:`),
+    });
+    const ngModule = await factsOf('scaffold-21', {
+      'src/main.ts': NGMODULE_MAIN,
+      'src/app/app-module.ts': NGMODULE.replace('imports:', `${key}:`),
+      'src/app/app.ts': NGMODULE_APP,
+    });
+    const app = applied(plan(component.facts), component.files)['src/app/app.ts'];
+    const module = applied(plan(ngModule.facts), ngModule.files)['src/app/app-module.ts'];
+
+    expect(app).toContain(`${key}: [RouterOutlet, CngxBannerOutlet, CngxToastOutlet],`);
+    expect(app.match(/imports/g)).toHaveLength(1);
+    expect(module).toContain(`${key}: [\n    BrowserModule,\n    CngxBannerOutlet,\n    CngxToastOutlet\n  ],`);
+    expect(syntaxErrors(app)).toEqual([]);
+    expect(syntaxErrors(module)).toEqual([]);
+  });
+
+  it('names the snippet and writes nothing for a decorator with a spread, a computed key or imports written twice', async () => {
+    for (const imports of ['  ...BASE,\n', "  ['imports']: [RouterOutlet],\n", '  imports: [RouterOutlet],\n  imports: [],\n', '  imports,\n']) {
+      const { facts } = await factsOf('scaffold-21', {
+        'src/app/app.ts': readFixture('scaffold-21')['src/app/app.ts'].replace('  imports: [RouterOutlet],\n', imports),
+      });
+      const result = plan(facts);
+
+      expect(result.changes.map((change) => change.kind)).toEqual(['note']);
+      expect(result.changes[0].reason).toContain(OUTLETS_SNIPPET);
+    }
+  });
+
+  it('turns a type-only import of an outlet class into a value import', async () => {
+    const app = readFixture('scaffold-21')['src/app/app.ts'].replace(
+      "import { RouterOutlet } from '@angular/router';",
+      "import { RouterOutlet } from '@angular/router';\nimport type { CngxToastOutlet } from '@cngx/ui/feedback';",
+    );
+    const { facts, files } = await factsOf('scaffold-21', { 'src/app/app.ts': app });
+    const next = applied(plan(facts), files)['src/app/app.ts'];
+
+    expect(next).toContain("import { CngxToastOutlet } from '@cngx/ui/feedback';");
+    expect(next).toContain("import { CngxBannerOutlet } from '@cngx/ui/feedback';");
+    expect(next).not.toContain('import type');
+  });
+
   it('names the snippet instead of editing a template that does not parse or imports that are not a literal', async () => {
     const broken = await factsOf('scaffold-21', { 'src/app/app.html': '<div>@if (</div>\n' });
     const shared = await factsOf('scaffold-21', {
@@ -265,7 +309,7 @@ describe('planAppShell', () => {
       expect(result.changes[0].reason).toContain(OUTLETS_SNIPPET);
     }
     expect(plan(broken.facts).changes[0].reason).toMatch(/^src\/app\/app\.html does not parse as an Angular template; /);
-    expect(plan(shared.facts).changes[0].reason).toMatch(/^the imports of App in src\/app\/app\.ts are not an array literal; /);
+    expect(plan(shared.facts).changes[0].reason).toMatch(/^the imports of App in src\/app\/app\.ts are not a plain array literal; /);
   });
 
   it('names the snippet when main.ts cannot be followed to the root component', () => {
@@ -377,7 +421,7 @@ describe('planAppShellRerun', () => {
       { kind: 'note', id: OUTLETS_ID, reason: `cngx could not follow main.ts to the root component; ${OUTLETS_SNIPPET}` },
     ]);
     expect(planAppShellRerun(shared.facts, FEEDBACK, [OUTLETS_ID], UPDATE).changes).toMatchObject([
-      { kind: 'note', id: OUTLETS_ID, reason: `the imports of App in src/app/app.ts are not an array literal; ${OUTLETS_SNIPPET}` },
+      { kind: 'note', id: OUTLETS_ID, reason: `the imports of App in src/app/app.ts are not a plain array literal; ${OUTLETS_SNIPPET}` },
     ]);
   });
 

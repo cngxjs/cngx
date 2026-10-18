@@ -202,7 +202,7 @@ describe('appShellOf', () => {
 
     expect(appShellOf(read, 'src/main.ts', true, 'fixture-app')).toMatchObject({
       template: { kind: 'unread' },
-      outlets: { kind: 'blocked', reason: 'the @Component decorator of App in src/app/app.ts takes no object literal' },
+      outlets: { kind: 'blocked', reason: 'the decorator of App in src/app/app.ts takes no object literal' },
     });
   });
 
@@ -246,11 +246,67 @@ describe('appShellOf outlets', () => {
     });
     expect(outletsOf({ 'src/app/app.ts': stock.replace('imports: [RouterOutlet],', 'imports: SHARED,') })).toEqual({
       kind: 'blocked',
-      reason: 'the imports of App in src/app/app.ts are not an array literal',
+      reason: 'the imports of App in src/app/app.ts are not a plain array literal',
     });
     expect(
       outletsOf({ 'src/app/app.ts': `import { CngxToastOutlet } from './toasts';\n${stock}` }),
     ).toEqual({ kind: 'blocked', reason: 'CngxToastOutlet in src/app/app.ts is bound to something other than @cngx/ui/feedback' });
+  });
+
+  it.each(["'imports'", '"imports"'])('reads a %s key of the component and the NgModule as their imports', (key) => {
+    const app = readFixture('scaffold-21')['src/app/app.ts']
+      .replace("import { RouterOutlet } from '@angular/router';", "import { RouterOutlet } from '@angular/router';\nimport { CngxToastOutlet } from '@cngx/ui/feedback';")
+      .replace('imports: [RouterOutlet],', `${key}: [RouterOutlet, CngxToastOutlet],`);
+    const ngModule = readerOf('scaffold-21', {
+      'src/main.ts': NGMODULE_MAIN,
+      'src/app/app-module.ts': NGMODULE.replace('imports:', `${key}:`),
+      'src/app/app.ts': NGMODULE_APP,
+    });
+
+    expect(outletsOf({ 'src/app/app.ts': app })).toMatchObject({ kind: 'editable', classes: ['CngxToastOutlet'] });
+    expect(appShellOf(ngModule, 'src/main.ts', false, 'fixture-app')?.outlets).toMatchObject({ kind: 'editable', classes: [] });
+  });
+
+  it.each([
+    ['a spread', '  ...BASE,\n', 'the decorator of App in src/app/app.ts holds a spread or a computed key, so cngx cannot tell what it sets'],
+    ['a computed key', "  ['imports']: [RouterOutlet],\n", 'the decorator of App in src/app/app.ts holds a spread or a computed key, so cngx cannot tell what it sets'],
+    ['imports written twice', '  imports: [RouterOutlet],\n  imports: [],\n', 'the decorator of App in src/app/app.ts is written twice or sets a property more than once'],
+    ['a shorthand imports', '  imports,\n', 'the imports of App in src/app/app.ts are not a plain array literal'],
+    ['an identifier imports', '  imports: IMPORTS,\n', 'the imports of App in src/app/app.ts are not a plain array literal'],
+  ])('blocks a component decorator with %s', (_name, imports, reason) => {
+    const app = readFixture('scaffold-21')['src/app/app.ts'].replace('  imports: [RouterOutlet],\n', imports);
+
+    expect(outletsOf({ 'src/app/app.ts': app })).toEqual({ kind: 'blocked', reason });
+  });
+
+  it('blocks an NgModule whose imports cngx cannot write safely', () => {
+    const outlets = (imports: string) =>
+      appShellOf(
+        readerOf('scaffold-21', {
+          'src/main.ts': NGMODULE_MAIN,
+          'src/app/app-module.ts': NGMODULE.replace('  imports: [\n    BrowserModule\n  ],', imports),
+          'src/app/app.ts': NGMODULE_APP,
+        }),
+        'src/main.ts',
+        false,
+        'fixture-app',
+      )?.outlets;
+
+    // The NgModule decorator also names the bootstrap component, so one cngx cannot read is not followed.
+    expect(outlets('  ...SHARED,')).toBeUndefined();
+    expect(outlets("  imports: [BrowserModule],\n  'imports': [],")).toBeUndefined();
+    expect(outlets('  imports: MODULES,')).toEqual({
+      kind: 'blocked',
+      reason: 'the imports of AppModule in src/app/app-module.ts are not a plain array literal',
+    });
+  });
+
+  it('reads an outlet class imported type-only as missing', () => {
+    const app = readFixture('scaffold-21')['src/app/app.ts']
+      .replace("import { RouterOutlet } from '@angular/router';", "import { RouterOutlet } from '@angular/router';\nimport type { CngxToastOutlet } from '@cngx/ui/feedback';")
+      .replace('imports: [RouterOutlet],', 'imports: [RouterOutlet, CngxToastOutlet],');
+
+    expect(outletsOf({ 'src/app/app.ts': app })).toMatchObject({ kind: 'editable', classes: [] });
   });
 
   it('blocks an inline template that interpolates', () => {

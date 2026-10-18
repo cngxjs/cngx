@@ -9,6 +9,7 @@ import {
   insertAfterImports,
   insertBeforeElement,
   newlineOf,
+  promoteTypeOnlyImport,
   type Provenance,
   skipChange,
   type SkippedStep,
@@ -84,7 +85,7 @@ function placeInlineOutlets(content: string, className: string, outlets: Editabl
 }
 
 // Lists both outlet classes in the decorator `imports` (adding the property
-// when it is missing) and imports the ones the file does not bind yet.
+// when it is missing) and imports the ones the file does not bind yet as values.
 export function importOutlets(content: string, className: string): string {
   const selector = { kind: 'decorator-imports', className } as const;
   const withProperty = ensureArrayProperty(content, selector);
@@ -92,9 +93,14 @@ export function importOutlets(content: string, className: string): string {
     return content;
   }
   const listed = FEEDBACK_OUTLETS.reduce((text, outlet) => addToArrayLiteral(text, selector, outlet.className), withProperty);
-  const bindings = topLevelBindings(listed);
+  // A class listed in `imports` is a value, so a type-only import of it becomes a value import.
+  const promoted = FEEDBACK_OUTLETS.reduce(
+    (text, outlet) => promoteTypeOnlyImport(text, outlet.className, FEEDBACK_MODULE),
+    listed,
+  );
+  const bindings = topLevelBindings(promoted);
   const unbound = FEEDBACK_OUTLETS.map((outlet) => outlet.className).filter((name) => !bindings.has(name));
-  return unbound.length === 0 ? listed : insertAfterImports(listed, `import { ${unbound.join(', ')} } from '${FEEDBACK_MODULE}';`);
+  return unbound.length === 0 ? promoted : insertAfterImports(promoted, `import { ${unbound.join(', ')} } from '${FEEDBACK_MODULE}';`);
 }
 
 // The stock spec with the feedback providers; anything else stays as it is,
