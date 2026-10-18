@@ -334,4 +334,92 @@ describe('createCommitController - signal names', () => {
 
     expect(nameOf(ctrl.isCommitting)).toBe('commitController.isCommitting');
   });
+  test('a refusal settles to idle, keeps the last committed data and clears the error', () => {
+    const ctrl = createCommitController<number>();
+    ctrl.begin((h) => { h.onSuccess(1); return noopHandle(); }, 1, 0, {
+      onSuccess: () => {},
+      onError: () => {},
+    });
+    ctrl.begin((h) => { h.onError(new Error('x')); return noopHandle(); }, 2, 1, {
+      onSuccess: () => {},
+      onError: () => {},
+    });
+    const updated = ctrl.state.lastUpdated();
+
+    let refusedPrev: number | undefined = -1;
+    let otherFired = false;
+    let refuse: (() => void) | null = null;
+    ctrl.begin(
+      (h) => {
+        refuse = h.onRefused;
+        return noopHandle();
+      },
+      3,
+      1,
+      {
+        onSuccess: () => { otherFired = true; },
+        onError: () => { otherFired = true; },
+        onRefused: (previous) => { refusedPrev = previous; },
+      },
+    );
+    expect(ctrl.intendedValue()).toBe(3);
+
+    refuse!();
+    expect(ctrl.state.status()).toBe('idle');
+    expect(ctrl.state.error()).toBeUndefined();
+    expect(ctrl.state.data()).toBe(1);
+    expect(ctrl.state.lastUpdated()).toBe(updated);
+    expect(ctrl.state.isFirstLoad()).toBe(false);
+    expect(ctrl.intendedValue()).toBeUndefined();
+    expect(ctrl.isCommitting()).toBe(false);
+    expect(refusedPrev).toBe(1);
+    expect(otherFired).toBe(false);
+  });
+
+  test('a refusal without an onRefused handler still settles the slot', () => {
+    const ctrl = createCommitController<number>();
+    ctrl.begin((h) => { h.onRefused(); return noopHandle(); }, 1, 0, {
+      onSuccess: () => {},
+      onError: () => {},
+    });
+    expect(ctrl.state.status()).toBe('idle');
+    expect(ctrl.state.isFirstLoad()).toBe(true);
+  });
+
+  test('a superseded refusal is ignored', () => {
+    const ctrl = createCommitController<number>();
+    let lateRefuse: (() => void) | null = null;
+    let refused = false;
+    ctrl.begin(
+      (h) => {
+        lateRefuse = h.onRefused;
+        return noopHandle();
+      },
+      1,
+      0,
+      { onSuccess: () => {}, onError: () => {}, onRefused: () => { refused = true; } },
+    );
+    ctrl.begin(() => noopHandle(), 2, 1, { onSuccess: () => {}, onError: () => {} });
+
+    lateRefuse!();
+    expect(refused).toBe(false);
+    expect(ctrl.state.status()).toBe('pending');
+    expect(ctrl.intendedValue()).toBe(2);
+  });
+
+  test('a runner that refuses synchronously never has its handle cancelled later', () => {
+    const ctrl = createCommitController<number>();
+    let staleCancel = false;
+    ctrl.begin(
+      (h) => {
+        h.onRefused();
+        return { cancel: () => { staleCancel = true; } };
+      },
+      1,
+      0,
+      { onSuccess: () => {}, onError: () => {} },
+    );
+    ctrl.begin(() => noopHandle(), 2, 1, { onSuccess: () => {}, onError: () => {} });
+    expect(staleCancel).toBe(false);
+  });
 });

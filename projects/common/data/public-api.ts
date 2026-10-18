@@ -108,6 +108,7 @@ export {
   type CngxCommitBeginHandlers,
   type CngxCommitHandle,
   type CngxCommitRunner,
+  type CngxTransitionOutcome,
   CNGX_COMMIT_CONTROLLER_FACTORY,
   type CngxCommitControllerFactory,
 } from './commit';
