@@ -11,6 +11,7 @@ import {
   readBootstrapCall,
   readDecorator,
   reexportSources,
+  type TopLevelBinding,
   topLevelBindings,
 } from '../../engine';
 import { SCAFFOLD_CATALOG, SCAFFOLD_NAME_PLACEHOLDER } from './scaffold-catalog.generated';
@@ -87,7 +88,7 @@ export const APP_SHELL_BLOCKED_REASONS = {
     `the inline template of ${subject} in ${file} is a quoted string, which cngx does not rewrite into a multi-line template`,
   'imports-not-array': ({ subject, file }: BlockedAt) => `the imports of ${subject} in ${file} are not a plain array literal`,
   'outlet-name-bound': ({ subject, file }: BlockedAt) =>
-    `${subject} in ${file} is bound to something other than @cngx/ui/feedback`,
+    `${subject} in ${file} is bound to something other than the ${subject} class of @cngx/ui/feedback`,
 } as const;
 
 /** Why cngx leaves the outlets to the user: a key of `APP_SHELL_BLOCKED_REASONS`. */
@@ -317,6 +318,12 @@ function unreadImports(host: string, importsHost: AppShell['importsHost']): AppS
   return editable ? undefined : blocked('imports-not-array', className, file);
 }
 
+// Whether a top-level binding is the outlet class `name` imported under its
+// own name from `@cngx/ui/feedback`.
+function importsOutlet(binding: TopLevelBinding | undefined, name: string): boolean {
+  return binding?.module === FEEDBACK_MODULE && binding.imported === name;
+}
+
 function blockedOutlets(at: AppShellBlocked): AppShellOutlets {
   return { kind: 'blocked', ...at };
 }
@@ -354,10 +361,9 @@ function outletsOf(
   }
   const selector = { kind: 'decorator-imports', className: shell.importsHost.className } as const;
   const bindings = topLevelBindings(host);
-  const clash = FEEDBACK_OUTLETS.find(({ className: name }) => {
-    const binding = bindings.get(name);
-    return binding !== undefined && binding.module !== FEEDBACK_MODULE;
-  });
+  // Bound to anything but the outlet class itself, an alias of another
+  // feedback export or the feedback namespace included.
+  const clash = FEEDBACK_OUTLETS.find(({ className: name }) => bindings.has(name) && !importsOutlet(bindings.get(name), name));
   if (clash !== undefined) {
     return blockedOutlets(blocked('outlet-name-bound', clash.className, file));
   }
@@ -366,7 +372,7 @@ function outletsOf(
     elements,
     classes: FEEDBACK_OUTLETS.filter(
       ({ className: name }) =>
-        hasArrayElement(host, selector, name) && bindings.get(name)?.module === FEEDBACK_MODULE && bindings.get(name)?.typeOnly === false,
+        hasArrayElement(host, selector, name) && importsOutlet(bindings.get(name), name) && bindings.get(name)?.typeOnly === false,
     ).map(({ className: name }) => name),
     routerOutlet,
   };

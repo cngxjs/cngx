@@ -306,6 +306,28 @@ describe('appShellOf outlets', () => {
     ).toEqual({ kind: 'blocked', reason: 'outlet-name-bound', subject: 'CngxToastOutlet', file: 'src/app/app.ts' });
   });
 
+  it.each([
+    ['a namespace', 'namespace CngxToastOutlet {}\n'],
+    ['another feedback export aliased to it', "import { Foo as CngxToastOutlet } from '@cngx/ui/feedback';\n"],
+    ['the feedback namespace', "import * as CngxToastOutlet from '@cngx/ui/feedback';\n"],
+    ['a default import from feedback', "import CngxToastOutlet from '@cngx/ui/feedback';\n"],
+  ])('blocks an outlet name bound by %s', (_name, binding) => {
+    const stock = readFixture('scaffold-21')['src/app/app.ts'];
+
+    expect(outletsOf({ 'src/app/app.ts': `${binding}${stock}` })).toMatchObject({
+      kind: 'blocked',
+      reason: 'outlet-name-bound',
+      subject: 'CngxToastOutlet',
+    });
+  });
+
+  it('reads the outlet class imported under its own name as the outlet', () => {
+    const stock = readFixture('scaffold-21')['src/app/app.ts'];
+    const own = `import { CngxToastOutlet as CngxToastOutlet } from '@cngx/ui/feedback';\n${stock.replace('[RouterOutlet]', '[RouterOutlet, CngxToastOutlet]')}`;
+
+    expect(outletsOf({ 'src/app/app.ts': own })).toMatchObject({ kind: 'editable', classes: ['CngxToastOutlet'] });
+  });
+
   it.each(["'imports'", '"imports"'])('reads a %s key of the component and the NgModule as their imports', (key) => {
     const app = readFixture('scaffold-21')['src/app/app.ts']
       .replace("import { RouterOutlet } from '@angular/router';", "import { RouterOutlet } from '@angular/router';\nimport { CngxToastOutlet } from '@cngx/ui/feedback';")

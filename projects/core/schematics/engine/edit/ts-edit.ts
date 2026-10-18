@@ -447,6 +447,12 @@ function declaredNames(statement: ts.Statement): readonly string[] {
   if (ts.isImportEqualsDeclaration(statement)) {
     return [statement.name.text];
   }
+  // A namespace (`namespace X {}`) binds its name too; an ambient module
+  // (`declare module 'x' {}`) and `declare global {}` bind none.
+  if (ts.isModuleDeclaration(statement)) {
+    const global = (statement.flags & ts.NodeFlags.GlobalAugmentation) !== 0;
+    return ts.isIdentifier(statement.name) && !global ? [statement.name.text] : [];
+  }
   const named =
     ts.isClassDeclaration(statement) ||
     ts.isFunctionDeclaration(statement) ||
@@ -458,6 +464,7 @@ function declaredNames(statement: ts.Statement): readonly string[] {
 
 interface ImportedName {
   readonly name: string;
+  readonly imported: string;
   readonly typeOnly: boolean;
 }
 
@@ -466,9 +473,13 @@ function namedBindings(bindings: ts.NamedImportBindings | undefined): readonly I
     return [];
   }
   if (ts.isNamespaceImport(bindings)) {
-    return [{ name: bindings.name.text, typeOnly: false }];
+    return [{ name: bindings.name.text, imported: '*', typeOnly: false }];
   }
-  return bindings.elements.map((element) => ({ name: element.name.text, typeOnly: element.isTypeOnly }));
+  return bindings.elements.map((element) => ({
+    name: element.name.text,
+    imported: (element.propertyName ?? element.name).text,
+    typeOnly: element.isTypeOnly,
+  }));
 }
 
 function importedNames(statement: ts.ImportDeclaration): readonly (readonly [string, TopLevelBinding])[] {
@@ -478,24 +489,31 @@ function importedNames(statement: ts.ImportDeclaration): readonly (readonly [str
     return [];
   }
   const names = [
-    ...(clause.name ? [{ name: clause.name.text, typeOnly: false }] : []),
+    ...(clause.name ? [{ name: clause.name.text, imported: 'default', typeOnly: false }] : []),
     ...namedBindings(clause.namedBindings),
   ];
-  return names.map(({ name, typeOnly }) => [name, { module, typeOnly: clause.isTypeOnly || typeOnly }] as const);
+  return names.map(
+    ({ name, imported, typeOnly }) => [name, { module, imported, typeOnly: clause.isTypeOnly || typeOnly }] as const,
+  );
 }
 
-/** How a top-level name is bound: imported from `module`, or declared in the file (`module` undefined). */
+/**
+ * How a top-level name is bound: imported from `module` under the name the
+ * module exports (`default` for a default import, `*` for a namespace
+ * import), or declared in the file (`module` and `imported` undefined).
+ */
 export interface TopLevelBinding {
   readonly module: string | undefined;
+  readonly imported: string | undefined;
   readonly typeOnly: boolean;
 }
 
-const DECLARED: TopLevelBinding = { module: undefined, typeOnly: false };
+const DECLARED: TopLevelBinding = { module: undefined, imported: undefined, typeOnly: false };
 
 /**
  * Every top-level name of the file. A caller adding `import { x } from 'm'`
- * checks that `x` is unbound or imported from `m`; a type-only import from
- * `m` needs `promoteTypeOnlyImport` first.
+ * checks that `x` is unbound or imported as `x` from `m`; a type-only import
+ * from `m` needs `promoteTypeOnlyImport` first.
  */
 export function topLevelBindings(content: string): ReadonlyMap<string, TopLevelBinding> {
   return new Map(

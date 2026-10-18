@@ -86,6 +86,7 @@ export {
   readDecorator,
   readProviderCalls,
   reexportSources,
+  type TopLevelBinding,
   topLevelBindings,
 } from './edit/ts-edit';
 export { appendElements, hasElement, hasElementOutsidePlaceholder, insertBeforeElement } from './edit/template-edit';

@@ -177,10 +177,10 @@ export const appConfig: ApplicationConfig = { providers: [{ provide: X, useValue
 });
 
 describe('topLevelBindings', () => {
-  const declared = { module: undefined, typeOnly: false };
-  const from = (module: string, typeOnly = false) => ({ module, typeOnly });
+  const declared = { module: undefined, imported: undefined, typeOnly: false };
+  const from = (module: string, imported: string, typeOnly = false) => ({ module, imported, typeOnly });
 
-  it('maps imported names to their module and declared names to no module', () => {
+  it('maps imported names to their module and the name it exports, and declared names to no module', () => {
     const content = `import def, { a, b as c } from 'm';
 import * as ns from 'n';
 import 'side-effect';
@@ -191,10 +191,10 @@ export interface I {}
 `;
 
     expect([...topLevelBindings(content)]).toEqual([
-      ['def', from('m')],
-      ['a', from('m')],
-      ['c', from('m')],
-      ['ns', from('n')],
+      ['def', from('m', 'default')],
+      ['a', from('m', 'a')],
+      ['c', from('m', 'b')],
+      ['ns', from('n', '*')],
       ['K', declared],
       ['f', declared],
       ['v', declared],
@@ -211,13 +211,26 @@ const { e, f: [g, ...h] } = source;
 `;
 
     expect([...topLevelBindings(content)]).toEqual([
-      ['A', from('m', true)],
-      ['B', from('m', true)],
-      ['C', from('m')],
+      ['A', from('m', 'A', true)],
+      ['B', from('m', 'B', true)],
+      ['C', from('m', 'C')],
       ['D', declared],
       ['e', declared],
       ['g', declared],
       ['h', declared],
+    ]);
+  });
+
+  it('reads a namespace as a declared name and an ambient module as none', () => {
+    const content = `namespace N {}
+declare namespace Q.R {}
+declare module 'virtual:x' {}
+declare global {}
+`;
+
+    expect([...topLevelBindings(content)]).toEqual([
+      ['N', declared],
+      ['Q', declared],
     ]);
   });
 });

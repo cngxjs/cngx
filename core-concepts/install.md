@@ -248,7 +248,7 @@ and `<file>`:
 - `the template of <Class> in <file> does not parse as an Angular template`.
 - `the inline template of <Class> in <file> is a quoted string, which cngx does not rewrite into a multi-line template`: a `'...'` or `"..."` template that lacks an outlet; a backtick template is edited in place.
 - `the imports of <Class> in <file> are not a plain array literal`: `imports: SHARED`, a shorthand `imports`, or `imports: [...] as const`.
-- `<Class> in <file> is bound to something other than @cngx/ui/feedback`: the file already declares or imports a `CngxBannerOutlet` or `CngxToastOutlet` of its own.
+- `<Class> in <file> is bound to something other than the <Class> class of @cngx/ui/feedback`: the file already declares (a namespace or an interface included) or imports a `CngxBannerOutlet` or `CngxToastOutlet` of its own, also another `@cngx/ui/feedback` export aliased to that name or the whole entry imported under it.
 
 Fix what the reason names and run `ng add @cngx/core --feedback` again, or
 paste the snippet yourself.
