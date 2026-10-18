@@ -179,7 +179,7 @@
     {
       "artifact": "pack/recipes/ui-tabs-tab-commit-action.md",
       "source": "examples/stories/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives.story.ts",
-      "contentHash": "sha256:87530ae635942b776fec494a91814d8535791bab011ab85eba23c2312b259ae4"
+      "contentHash": "sha256:33b68ba68eaf119b52da907708878542d3bfe6a0d15b96b27b18637e9cda1821"
     },
     {
       "artifact": "pack/recipes/ui-timeline-async.md",
