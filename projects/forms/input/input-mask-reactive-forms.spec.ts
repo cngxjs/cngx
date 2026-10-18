@@ -12,6 +12,7 @@ import { FormField, form } from '@angular/forms/signals';
 import { CngxFormBridge } from '@cngx/forms/controls';
 import { describe, expect, it, vi } from 'vitest';
 import { CngxInputMask } from './input-mask.directive';
+import { ensureMaskPreset, resetMaskPresetsForTesting } from './mask-presets/registry';
 
 @Component({
   selector: 'mask-rf-host-1',
@@ -97,6 +98,17 @@ class UnbridgedHost {
   imports: [CngxInputMask],
 })
 class StandaloneHost {}
+
+@Component({
+  selector: 'mask-rf-host-10',
+  template: `<input cngxInputMask="iban:GB" [formControl]="control" />`,
+  imports: [CngxInputMask, ReactiveFormsModule, CngxFormBridge],
+})
+class LazyPresetHost {
+  // Valid under the GB table, but not under the inline IBAN fallback that
+  // stands in while the table is still loading.
+  readonly control = new FormControl('GB82WEST12345698765432', { nonNullable: true });
+}
 
 function flush(fixture: ComponentFixture<unknown>): void {
   fixture.detectChanges();
@@ -277,5 +289,56 @@ describe('CngxInputMask dev-mode accessor check', () => {
 
   it('stays silent on a standalone mask', () => {
     expect(warnings(StandaloneHost)).toBe(0);
+  });
+});
+
+describe('CngxInputMask dev-mode display-shaped write check', () => {
+  function displayWarnings(spy: { mock: { calls: unknown[][] } }): number {
+    return spy.mock.calls.filter(([msg]) => /^CNGX2022: \[cngxInputMask\]/.test(String(msg)))
+      .length;
+  }
+
+  it('warns CNGX2022 once for a display-shaped setValue', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const { fixture, host } = mount(RfHost);
+      host.control.setValue('14:30');
+      flush(fixture);
+      host.control.setValue('15:45');
+      flush(fixture);
+
+      expect(displayWarnings(warn)).toBe(1);
+      expect(String(warn.mock.calls[0][0])).not.toContain('14:30');
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('stays silent for a raw setValue', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const { fixture, host } = mount(RfHost);
+      host.control.setValue('1430');
+      flush(fixture);
+
+      expect(displayWarnings(warn)).toBe(0);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('stays silent for an initial value on a lazy preset before and after its table loads', async () => {
+    resetMaskPresetsForTesting();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const { fixture } = mount(LazyPresetHost);
+      expect(displayWarnings(warn)).toBe(0);
+
+      await ensureMaskPreset('iban');
+      flush(fixture);
+      expect(displayWarnings(warn)).toBe(0);
+    } finally {
+      warn.mockRestore();
+    }
   });
 });

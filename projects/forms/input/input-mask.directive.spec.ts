@@ -19,6 +19,14 @@ import { loadAllMaskPresets } from './mask-presets/registry';
 // ── Test host ───────────────────────────────────────────────────────
 
 @Component({
+  template: `<input cngxInputMask="00:00" [(value)]="time" />`,
+  imports: [CngxInputMask],
+})
+class DisplayValueHost {
+  readonly time = signal('14:30');
+}
+
+@Component({
   template: `<input
     [cngxInputMask]="mask()"
     [placeholder]="ph()"
@@ -1031,5 +1039,24 @@ describe('CngxInputMask composed with cngxInput', () => {
     };
     expect(hostsOf(CngxInput)).toContain(CngxFieldSkinHost);
     expect(hostsOf(CngxInputMask)).not.toContain(CngxFieldSkinHost);
+  });
+});
+
+describe('CngxInputMask display-shaped [(value)] write', () => {
+  it('warns CNGX2022 once when [(value)] carries the display string', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const fixture = TestBed.createComponent(DisplayValueHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.componentInstance.time.set('09:15');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const hits = warn.mock.calls.filter(([msg]) => /^CNGX2022: /.test(String(msg)));
+      expect(hits).toHaveLength(1);
+    } finally {
+      warn.mockRestore();
+    }
   });
 });

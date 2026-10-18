@@ -466,6 +466,10 @@
                 "file": "error-codes/cngx2021.md"
             },
             {
+                "title": "CNGX2022",
+                "file": "error-codes/cngx2022.md"
+            },
+            {
                 "title": "CNGX3001",
                 "file": "error-codes/cngx3001.md"
             },

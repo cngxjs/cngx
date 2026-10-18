@@ -320,3 +320,40 @@ describe('CngxNumericInput dev-mode accessor check', () => {
     expect(warnings(StandaloneHost)).toBe(0);
   });
 });
+
+describe('CngxNumericInput dev-mode display-shaped write check', () => {
+  it('warns CNGX2022 once for a string write', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const { fixture, host } = mount(RfHost);
+      // An untyped caller writing the display string instead of a number.
+      host.control.setValue('1.234,5' as unknown as number);
+      flush(fixture);
+      host.control.setValue('99' as unknown as number);
+      flush(fixture);
+
+      const hits = warn.mock.calls.filter(([msg]) =>
+        /^CNGX2022: \[cngxNumericInput\]/.test(String(msg)),
+      );
+      expect(hits).toHaveLength(1);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('stays silent for number and null writes', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const { fixture, host } = mount(RfHost);
+      host.control.setValue(1234.5);
+      flush(fixture);
+      host.control.setValue(null);
+      flush(fixture);
+
+      const hits = warn.mock.calls.filter(([msg]) => /^CNGX2022: /.test(String(msg)));
+      expect(hits).toHaveLength(0);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});
