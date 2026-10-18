@@ -1717,6 +1717,40 @@
       ]
     },
     {
+      "code": "CNGX2020",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "More than one main control in a field box",
+      "page": "core-concepts/error-codes/cngx2020.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2020.html",
+      "status": "active",
+      "files": ["projects/forms/field/field-box.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/field/field-box.directive.ts",
+          "text": "[cngxFieldBox] ${...} main controls in one field box; only the first one paints the box. Mark the extra control cngxPrefix or cngxSuffix, or split it into its own box."
+        }
+      ]
+    },
+    {
+      "code": "CNGX2021",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Field-box control is not a direct child",
+      "page": "core-concepts/error-codes/cngx2021.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2021.html",
+      "status": "active",
+      "files": ["projects/forms/field/field-box.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/field/field-box.directive.ts",
+          "text": "[cngxFieldBox] the form control is not a direct child of the field box, so the box paints no control state. Remove the wrapper element; a composite control is its own box and belongs directly in cngx-form-field."
+        }
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",

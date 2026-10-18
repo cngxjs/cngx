@@ -1,4 +1,4 @@
-import { Component, Directive, input, signal } from '@angular/core';
+import { ApplicationRef, Component, Directive, input, signal } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -6,7 +6,7 @@ import {
   type CngxFormFieldControl,
   type CngxFormFieldHostContract,
 } from '@cngx/core/tokens';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { CngxInput } from '@cngx/forms/input';
 import { CngxAffixRow, CngxFieldBox } from './field-box.directive';
 import { CNGX_FIELD_BOX } from './field-box.token';
@@ -257,6 +257,98 @@ describe('CngxFieldBox', () => {
       fixture.detectChanges();
       (fixture.nativeElement.querySelector('.affix') as HTMLElement).click();
       expect(controls(fixture).main.focusCalls).toBe(0);
+    });
+  });
+
+  describe('dev diagnostics', () => {
+    let warnSpy: MockInstance<typeof console.warn>;
+
+    beforeEach(() => {
+      warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      warnSpy.mockRestore();
+    });
+
+    function calls(pattern: RegExp): unknown[][] {
+      return warnSpy.mock.calls.filter(([msg]) => pattern.test(String(msg)));
+    }
+
+    async function render(host: new () => unknown): Promise<ComponentFixture<unknown>> {
+      const fixture = TestBed.createComponent(host);
+      fixture.detectChanges();
+      await TestBed.inject(ApplicationRef).whenStable();
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('warns CNGX2020 once when the box has two main controls', async () => {
+      @Component({
+        template: `<span cngxFieldBox><span stubControl></span><span stubControl></span></span>`,
+        imports: [CngxFieldBox, StubControl],
+      })
+      class Host {}
+      const fixture = await render(Host);
+      fixture.detectChanges();
+      await TestBed.inject(ApplicationRef).whenStable();
+
+      expect(calls(/^CNGX2020: /)).toHaveLength(1);
+      expect(calls(/^CNGX2020: /)[0][1]).toBe(box(fixture));
+      expect(calls(/^CNGX2021: /)).toHaveLength(0);
+    });
+
+    it('warns CNGX2021 when the only control sits behind a wrapper element', async () => {
+      @Component({
+        template: `<span cngxFieldBox><div><span stubControl></span></div></span>`,
+        imports: [CngxFieldBox, StubControl],
+      })
+      class Host {}
+      const fixture = await render(Host);
+
+      expect(calls(/^CNGX2021: /)).toHaveLength(1);
+      expect(calls(/^CNGX2021: /)[0][1]).toBe(box(fixture));
+      expect(calls(/^CNGX2020: /)).toHaveLength(0);
+    });
+
+    it('stays silent for a main control plus an affix control', async () => {
+      @Component({
+        template: `<span cngxFieldBox
+          ><span stubControl cngxPrefix></span><span stubControl></span
+        ></span>`,
+        imports: [CngxFieldBox, CngxPrefix, StubControl],
+      })
+      class Host {}
+      await render(Host);
+
+      expect(calls(/^CNGX2020: /)).toHaveLength(0);
+      expect(calls(/^CNGX2021: /)).toHaveLength(0);
+    });
+
+    it('stays silent for a main control plus a wrapped control inside cngxSuffix', async () => {
+      @Component({
+        template: `<span cngxFieldBox
+          ><span stubControl></span><span cngxSuffix><span stubControl></span></span
+        ></span>`,
+        imports: [CngxFieldBox, CngxSuffix, StubControl],
+      })
+      class Host {}
+      await render(Host);
+
+      expect(calls(/^CNGX2020: /)).toHaveLength(0);
+      expect(calls(/^CNGX2021: /)).toHaveLength(0);
+    });
+
+    it('stays silent for a box whose only control is a direct-child affix', async () => {
+      @Component({
+        template: `<span cngxFieldBox><span stubControl cngxSuffix></span></span>`,
+        imports: [CngxFieldBox, CngxSuffix, StubControl],
+      })
+      class Host {}
+      await render(Host);
+
+      expect(calls(/^CNGX2020: /)).toHaveLength(0);
+      expect(calls(/^CNGX2021: /)).toHaveLength(0);
     });
   });
 });

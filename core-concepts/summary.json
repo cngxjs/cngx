@@ -458,6 +458,14 @@
                 "file": "error-codes/cngx2019.md"
             },
             {
+                "title": "CNGX2020",
+                "file": "error-codes/cngx2020.md"
+            },
+            {
+                "title": "CNGX2021",
+                "file": "error-codes/cngx2021.md"
+            },
+            {
                 "title": "CNGX3001",
                 "file": "error-codes/cngx3001.md"
             },

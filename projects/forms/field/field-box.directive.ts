@@ -1,9 +1,17 @@
-import { computed, contentChildren, Directive, ElementRef, inject } from '@angular/core';
+import {
+  afterNextRender,
+  computed,
+  contentChildren,
+  Directive,
+  ElementRef,
+  inject,
+} from '@angular/core';
 import {
   CNGX_FORM_FIELD_CONTROL,
   CNGX_FORM_FIELD_HOST,
   type CngxFormFieldControl,
 } from '@cngx/core/tokens';
+import { cngxDevWarn } from '@cngx/utils';
 import { CNGX_FIELD_AFFIX, CNGX_FIELD_BOX, type CngxFieldBoxContract } from './field-box.token';
 import { CngxFieldSkinHost } from './field-skin.directive';
 
@@ -37,7 +45,9 @@ import { CngxFieldSkinHost } from './field-skin.directive';
  * row.
  * One main control per box; a second non-affix control is ignored. A click
  * on the box padding focuses the main control, so the whole box is its hit
- * area.
+ * area. In dev mode the box warns once after its first render when it has
+ * two main controls (CNGX2020) or no direct-child control but a nested one
+ * (CNGX2021).
  *
  * **Label inside the box.** Besides the control and its affixes, the box
  * takes a {@link CngxLabel} as a direct child: placed there, it renders as an
@@ -91,12 +101,17 @@ export class CngxFieldBox implements CngxFieldBoxContract {
   private readonly affixControls = contentChildren(CNGX_FIELD_AFFIX, {
     read: CNGX_FORM_FIELD_CONTROL,
   });
+  /** Every nested control, for the dev-only direct-child diagnostic. */
+  private readonly descendantControls = contentChildren(CNGX_FORM_FIELD_CONTROL, {
+    descendants: true,
+  });
   private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
 
-  private readonly mainControl = computed(() => {
+  private readonly mainControls = computed(() => {
     const affixes = new Set<CngxFormFieldControl>(this.affixControls());
-    return this.controls().find((control) => !affixes.has(control));
+    return this.controls().filter((control) => !affixes.has(control));
   });
+  private readonly mainControl = computed(() => this.mainControls()[0]);
 
   protected readonly dataInvalid = computed(() => (this.mainControl()?.errorState() ? '' : null));
   protected readonly dataDisabled = computed(() => (this.mainControl()?.disabled() ? '' : null));
@@ -107,6 +122,34 @@ export class CngxFieldBox implements CngxFieldBoxContract {
   });
 
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+
+  constructor() {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      afterNextRender(() => {
+        const mains = this.mainControls().length;
+        if (mains > 1) {
+          cngxDevWarn(
+            'CNGX2020',
+            `[cngxFieldBox] ${mains} main controls in one field box; only the first one paints the box. ` +
+              'Mark the extra control cngxPrefix or cngxSuffix, or split it into its own box.',
+            this.element,
+          );
+          return;
+        }
+        const direct = new Set<CngxFormFieldControl>(this.controls());
+        const nested = this.descendantControls().filter((control) => !direct.has(control));
+        if (mains === 0 && nested.length > 0) {
+          cngxDevWarn(
+            'CNGX2021',
+            '[cngxFieldBox] the form control is not a direct child of the field box, so the box ' +
+              'paints no control state. Remove the wrapper element; a composite control is its ' +
+              'own box and belongs directly in cngx-form-field.',
+            this.element,
+          );
+        }
+      });
+    }
+  }
 
   /**
    * A click on the box itself - its padding, not a child - focuses the main
