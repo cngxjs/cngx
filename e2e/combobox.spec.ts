@@ -23,6 +23,17 @@ test.describe('CngxCombobox demo', () => {
     await expect(nested).toHaveCount(0);
   });
 
+  test('the focusable input carries the name, the group does not', async ({ page }) => {
+    await page.goto(R.basic);
+    const section = ex(page);
+    const input = section.locator('input.cngx-combobox__input').first();
+    const wrapper = section.locator('.cngx-combobox__trigger').first();
+    const name = (await input.getAttribute('aria-label')) ?? (await input.getAttribute('aria-labelledby'));
+    expect(name ?? '').not.toBe('');
+    await expect(wrapper).not.toHaveAttribute('aria-label', /.+/);
+    await expect(wrapper).not.toHaveAttribute('aria-labelledby', /.+/);
+  });
+
   test('typing filters options and toggles aria-expanded', async ({ page }) => {
     await page.goto(R.basic);
     const section = ex(page);

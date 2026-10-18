@@ -165,17 +165,39 @@ export function describeFieldAriaHost(
       expect(host.f.pick().dirty()).toBe(true);
     });
 
-    // A div combobox is named through aria-labelledby; an input combobox is
-    // labelable and named by the label's `for`.
+    // Every combobox, div or input, carries aria-labelledby to the field
+    // label; an input is labelable too, so the label's `for` agrees with it.
     it('projects aria-required and aria-invalid and is named by the field label', () => {
-      const { combobox, presenter, root } = mountTouched();
+      const { combobox, presenter } = mountTouched();
       const el = combobox();
       expect(el.getAttribute('aria-required')).toBe('true');
       expect(el.getAttribute('aria-invalid')).toBe('true');
-      const label = root.querySelector<HTMLLabelElement>('label[cngxLabel]')!;
-      const byLabelledBy = el.getAttribute('aria-labelledby') === presenter.labelId();
-      const byFor = el.id !== '' && label.htmlFor === el.id;
-      expect(byLabelledBy || byFor).toBe(true);
+      expect(el.getAttribute('aria-labelledby')).toBe(presenter.labelId());
+    });
+
+    it('names the role="combobox" element from [label] outside a field', () => {
+      TestBed.overrideComponent(FieldAriaHost, {
+        set: {
+          template: `<${elementSelector} [label]="'Pick'" ${opts.inputs ?? ''} />`,
+          imports: [component],
+        },
+      });
+      const fixture = TestBed.createComponent(FieldAriaHost);
+      const root = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(root);
+      mountedRoots.push(root);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      const el = root.querySelector<HTMLElement>('[role="combobox"]')!;
+      const labelledBy = el.getAttribute('aria-labelledby');
+      const name = labelledBy
+        ? labelledBy
+            .split(/\s+/)
+            .map((id) => document.getElementById(id)?.textContent ?? '')
+            .join(' ')
+        : (el.getAttribute('aria-label') ?? '');
+      expect(name.trim()).toBe('Pick');
     });
 
     it('points aria-errormessage at the field error id alone', () => {

@@ -14,8 +14,6 @@
     class="cngx-action-multi-select__trigger cngx-field-trigger"
     [cngxPopoverAnchor]="pop"
     role="group"
-    [attr.aria-label]="aria.label"
-    [attr.aria-labelledby]="aria.labelledBy"
     [attr.aria-disabled]="aria.disabled"
     (click)="handleWrapperClick($event)"
   >
@@ -106,6 +104,8 @@
       [attr.aria-expanded]="aria.expanded"
       [attr.aria-controls]="pop.id()"
       [attr.aria-autocomplete]="'list'"
+      [attr.aria-label]="aria.label"
+      [attr.aria-labelledby]="aria.labelledBy"
       [attr.aria-describedby]="aria.describedBy"
       [attr.aria-errormessage]="aria.errorMessage"
       [attr.aria-invalid]="aria.invalid"
