@@ -3,9 +3,9 @@ import {
   appendElements,
   type Change,
   createNote,
+  createProvenance,
   ensureArrayProperty,
   hasArrayLiteral,
-  hasElement,
   insertAfterImports,
   insertBeforeElement,
   newlineOf,
@@ -17,6 +17,7 @@ import {
 } from '../../engine';
 import {
   type AppShell,
+  type AppShellOutlets,
   appShellSpecOf,
   FEEDBACK_MODULE,
   FEEDBACK_OUTLETS,
@@ -26,7 +27,7 @@ import {
   type ProjectFacts,
 } from '../detect/detect';
 import { selectedLibs } from './dependencies';
-import { type OnboardingAnswers } from './model';
+import { type OnboardingAnswers, type Versions } from './model';
 
 export const OUTLETS_ID = 'app-shell:outlets';
 export const SPEC_ID = 'app-shell:spec';
@@ -45,22 +46,25 @@ export const OUTLETS_SNIPPET =
 
 const NOTHING: StepResult = { changes: [], skipped: [] };
 
+type EditableOutlets = Extract<AppShellOutlets, { readonly kind: 'editable' }>;
+
 function markup(element: string): string {
   return `<${element} />`;
 }
 
-// The banner goes right above the router outlet, else at the end; the toast
-// outlet at the end. Both land after the CLI's placeholder block, which ends
-// before `<router-outlet />` in the stock template. A template that no longer
+// Places the outlets detection found missing: the banner right above the
+// router outlet when detection found one, else at the end; the toast outlet
+// at the end. Both land after the CLI's placeholder block, which ends before
+// `<router-outlet />` in the stock template. A template that no longer
 // parses is left as it is.
-export function placeOutlets(template: string, newline = newlineOf(template)): string {
+function placeOutlets(template: string, outlets: EditableOutlets, newline = newlineOf(template)): string {
+  const missing = (element: string): boolean => !outlets.elements.includes(element);
+  const aboveRouter = missing(BANNER.element) && outlets.routerOutlet;
   try {
-    const hasBanner = hasElement(template, BANNER.element);
-    const aboveRouter = !hasBanner && hasElement(template, 'router-outlet');
     const withBanner = aboveRouter ? insertBeforeElement(template, 'router-outlet', markup(BANNER.element), newline) : template;
     const appended = [
-      ...(hasBanner || aboveRouter ? [] : [markup(BANNER.element)]),
-      ...(hasElement(template, TOAST.element) ? [] : [markup(TOAST.element)]),
+      ...(missing(BANNER.element) && !aboveRouter ? [markup(BANNER.element)] : []),
+      ...(missing(TOAST.element) ? [markup(TOAST.element)] : []),
     ];
     return appended.length === 0 ? withBanner : appendElements(withBanner, appended, newline);
   } catch {
@@ -71,12 +75,12 @@ export function placeOutlets(template: string, newline = newlineOf(template)): s
 // Only a backtick template takes the outlets on lines of their own, with the
 // host file's newline; a quoted one is reported in detection and left as it
 // is here, also when it turned quoted between detection and apply.
-function placeInlineOutlets(content: string, className: string): string {
+function placeInlineOutlets(content: string, className: string, outlets: EditableOutlets): string {
   const inline = inlineTemplateOf(content, className);
   if (inline === undefined || inline.quoted) {
     return content;
   }
-  return `${content.slice(0, inline.start)}${placeOutlets(inline.text, newlineOf(content))}${content.slice(inline.end)}`;
+  return `${content.slice(0, inline.start)}${placeOutlets(inline.text, outlets, newlineOf(content))}${content.slice(inline.end)}`;
 }
 
 // Lists both outlet classes in the decorator `imports` (adding the property
@@ -127,7 +131,9 @@ function outletTargets(shell: AppShell, provenance: Provenance): readonly Outlet
   const path = templatePath(shell);
   const base = { kind: 'edit-file', id: OUTLETS_ID, reason: OUTLET_REASON, provenance } as const;
   const placeEdit =
-    shell.template.kind === 'file' ? placeOutlets : (content: string) => placeInlineOutlets(content, shell.className);
+    shell.template.kind === 'file'
+      ? (content: string) => placeOutlets(content, outlets)
+      : (content: string) => placeInlineOutlets(content, shell.className, outlets);
   if (path === host.file) {
     return [
       {
@@ -220,13 +226,14 @@ function specChange(facts: ProjectFacts, shell: AppShell, provenance: Provenance
 export function planAppShell(
   facts: ProjectFacts,
   answers: OnboardingAnswers,
-  provenance: Provenance,
+  versions: Versions,
   recorded: readonly string[],
   explicitFeedback: boolean,
 ): StepResult {
   if (!answers.feedback || !selectedLibs(answers.libs).includes('ui')) {
     return NOTHING;
   }
+  const provenance = createProvenance('ng-add', versions.cngx);
   const shell = facts.appShell;
   if (shell === undefined) {
     return snippetNote(UNFOLLOWED_REASON, provenance);
@@ -282,7 +289,7 @@ function missingOutletsReason(shell: AppShell | undefined, recorded: readonly st
  * it re-checks. `recorded` holds the step ids of this project's record; an
  * outlet it placed that is gone now was removed on purpose and gets no note.
  */
-export function planAppShellCheck(
+export function planAppShellRerun(
   facts: ProjectFacts,
   answers: OnboardingAnswers,
   recorded: readonly string[],

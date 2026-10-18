@@ -461,14 +461,14 @@ export class App {}
 
   it('reads the properties of the decorator object, whatever the text around it says', () => {
     const reading = readDecorator(APP, 'App', 'Component');
-    const properties = reading.kind === 'object' ? reading.properties : new Map();
-    const template = properties.get('template');
+    const properties = reading.kind === 'object' ? reading.properties : undefined;
+    const template = properties?.get('template');
 
-    expect(properties.get('templateUrl')).toMatchObject({ kind: 'string', text: './app.html', quoted: true });
+    expect(properties?.get('templateUrl')).toMatchObject({ kind: 'string', text: './app.html', quoted: true });
     expect(template).toMatchObject({ kind: 'string', text: "<p>it\\'s the class list</p>", quoted: true });
-    expect(APP.slice(template.start, template.end)).toBe("<p>it\\'s the class list</p>");
-    expect(properties.get('imports')).toEqual({ kind: 'array', elements: ['RouterOutlet', '...SHARED'] });
-    expect(properties.get('host')).toEqual({ kind: 'other' });
+    expect(template?.kind === 'string' && APP.slice(template.start, template.end)).toBe("<p>it\\'s the class list</p>");
+    expect(properties?.get('imports')).toEqual({ kind: 'array', elements: ['RouterOutlet', '...SHARED'] });
+    expect(properties?.get('host')).toEqual({ kind: 'other' });
   });
 
   it('tells a backtick string from an interpolating one', () => {

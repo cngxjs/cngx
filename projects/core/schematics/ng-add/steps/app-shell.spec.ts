@@ -3,12 +3,11 @@ import { readWorkspace } from '@schematics/angular/utility';
 import { describe, expect, it } from 'vitest';
 
 import { createProvenance, type StepResult } from '../../engine';
-import { createAnswers, createFacts } from '../../testing/onboarding';
+import { createAnswers, createFacts, VERSIONS } from '../../testing/onboarding';
 import { createFixtureTree, type FixtureName, readFixture } from '../../testing/run-schematic';
 import { appShellSpecOf, detectProject, type ProjectFacts } from '../detect/detect';
-import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell, planAppShellCheck, provideFeedbackInSpec, SPEC_ID } from './app-shell';
+import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell, planAppShellRerun, provideFeedbackInSpec, SPEC_ID } from './app-shell';
 
-const PROVENANCE = createProvenance('ng-add', '0.1.0');
 const FEEDBACK = createAnswers({ feedback: true });
 
 type Files = Record<string, string>;
@@ -36,7 +35,7 @@ function syntaxErrors(content: string): readonly string[] {
 }
 
 function plan(facts: ProjectFacts, recorded: readonly string[] = [], explicit = false): StepResult {
-  return planAppShell(facts, FEEDBACK, PROVENANCE, recorded, explicit);
+  return planAppShell(facts, FEEDBACK, VERSIONS, recorded, explicit);
 }
 
 const INLINE_APP = `import { Component } from '@angular/core';
@@ -168,6 +167,23 @@ describe('planAppShell', () => {
     expect(next).toContain('template: `<cngx-banner-outlet />\r\n<router-outlet />\r\n<cngx-toast-outlet />\r\n`,');
     expect(next).not.toMatch(/[^\r]\n/);
     expect(syntaxErrors(next)).toEqual([]);
+  });
+
+  it('places the banner from the detected router outlet fact, not from a second read of the template', async () => {
+    const { facts, files } = await factsOf('scaffold-21');
+    const shell = facts.appShell;
+    const outlets = shell?.outlets.kind === 'editable' ? { ...shell.outlets, routerOutlet: false } : undefined;
+    const next = applied(plan({ ...facts, appShell: shell && outlets && { ...shell, outlets } }), files);
+
+    expect(next['src/app/app.html'].endsWith('\n<router-outlet />\n<cngx-banner-outlet />\n<cngx-toast-outlet />\n')).toBe(true);
+  });
+
+  it('stamps the cngx version of the run on every change', async () => {
+    const { facts } = await factsOf('scaffold-21');
+
+    expect(plan(facts).changes.every((change) => change.provenance.source === 'ng-add' && change.provenance.version === VERSIONS.cngx)).toBe(
+      true,
+    );
   });
 
   it('imports the outlets into the root NgModule of an NgModule app', async () => {
@@ -327,20 +343,20 @@ describe('planAppShell', () => {
   it('plans nothing with feedback off or without @cngx/ui', async () => {
     const { facts } = await factsOf('scaffold-21');
 
-    expect(planAppShell(facts, createAnswers({ feedback: false }), PROVENANCE, [], false)).toEqual({ changes: [], skipped: [] });
-    expect(planAppShell(facts, createAnswers({ feedback: true, libs: ['core'] }), PROVENANCE, [], false)).toEqual({
+    expect(planAppShell(facts, createAnswers({ feedback: false }), VERSIONS, [], false)).toEqual({ changes: [], skipped: [] });
+    expect(planAppShell(facts, createAnswers({ feedback: true, libs: ['core'] }), VERSIONS, [], false)).toEqual({
       changes: [],
       skipped: [],
     });
   });
 });
 
-describe('planAppShellCheck', () => {
+describe('planAppShellRerun', () => {
   const UPDATE = createProvenance('ng-update', '0.1.0');
 
   it('notes a missing outlet of a recorded feedback install and writes nothing', async () => {
     const { facts } = await factsOf('scaffold-21');
-    const result = planAppShellCheck(facts, FEEDBACK, [], UPDATE);
+    const result = planAppShellRerun(facts, FEEDBACK, [], UPDATE);
 
     expect(result.changes).toMatchObject([
       {
@@ -357,10 +373,10 @@ describe('planAppShellCheck', () => {
       'src/app/app.ts': readFixture('scaffold-21')['src/app/app.ts'].replace('imports: [RouterOutlet],', 'imports: SHARED,'),
     });
 
-    expect(planAppShellCheck(createFacts({ appShell: undefined }), FEEDBACK, [], UPDATE).changes).toMatchObject([
+    expect(planAppShellRerun(createFacts({ appShell: undefined }), FEEDBACK, [], UPDATE).changes).toMatchObject([
       { kind: 'note', id: OUTLETS_ID, reason: `cngx could not follow main.ts to the root component; ${OUTLETS_SNIPPET}` },
     ]);
-    expect(planAppShellCheck(shared.facts, FEEDBACK, [OUTLETS_ID], UPDATE).changes).toMatchObject([
+    expect(planAppShellRerun(shared.facts, FEEDBACK, [OUTLETS_ID], UPDATE).changes).toMatchObject([
       { kind: 'note', id: OUTLETS_ID, reason: `the imports of App in src/app/app.ts are not an array literal; ${OUTLETS_SNIPPET}` },
     ]);
   });
@@ -373,16 +389,16 @@ describe('planAppShellCheck', () => {
       'src/app/app.html': once['src/app/app.html'].replace('<cngx-toast-outlet />\n', ''),
     });
 
-    expect(planAppShellCheck(removed.facts, FEEDBACK, [OUTLETS_ID, OUTLETS_ID, SPEC_ID], UPDATE)).toEqual({ changes: [], skipped: [] });
-    expect(planAppShellCheck(removed.facts, FEEDBACK, [SPEC_ID], UPDATE).changes).toHaveLength(1);
+    expect(planAppShellRerun(removed.facts, FEEDBACK, [OUTLETS_ID, OUTLETS_ID, SPEC_ID], UPDATE)).toEqual({ changes: [], skipped: [] });
+    expect(planAppShellRerun(removed.facts, FEEDBACK, [SPEC_ID], UPDATE).changes).toHaveLength(1);
   });
 
   it('plans nothing when both outlets are there or feedback is off', async () => {
     const { facts, files } = await factsOf('scaffold-21');
     const { facts: placed } = await factsOf('scaffold-21', applied(plan(facts), files));
 
-    expect(planAppShellCheck(placed, FEEDBACK, [], UPDATE)).toEqual({ changes: [], skipped: [] });
-    expect(planAppShellCheck(facts, createAnswers(), [], UPDATE)).toEqual({ changes: [], skipped: [] });
-    expect(planAppShellCheck(createFacts({ appShell: undefined }), createAnswers(), [], UPDATE)).toEqual({ changes: [], skipped: [] });
+    expect(planAppShellRerun(placed, FEEDBACK, [], UPDATE)).toEqual({ changes: [], skipped: [] });
+    expect(planAppShellRerun(facts, createAnswers(), [], UPDATE)).toEqual({ changes: [], skipped: [] });
+    expect(planAppShellRerun(createFacts({ appShell: undefined }), createAnswers(), [], UPDATE)).toEqual({ changes: [], skipped: [] });
   });
 });

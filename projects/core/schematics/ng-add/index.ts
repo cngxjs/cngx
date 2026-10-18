@@ -63,8 +63,7 @@ function planSteps({ withdrawn, workspaceLibs, projectSteps, explicitFeedback }:
     planDependencies,
     planTheme,
     planProviders,
-    (facts, answers, versions) =>
-      planAppShell(facts, answers, createProvenance('ng-add', versions.cngx), projectSteps, explicitFeedback),
+    (facts, answers, versions) => planAppShell(facts, answers, versions, projectSteps, explicitFeedback),
     planLint,
     (facts, answers, versions) => planAiTools(facts, answers, versions, withdrawn),
     (facts, answers, versions) =>

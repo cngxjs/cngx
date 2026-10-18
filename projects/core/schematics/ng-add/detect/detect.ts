@@ -76,9 +76,7 @@ export {
 export {
   type AppShell,
   type AppShellOutlets,
-  type AppShellSpec,
   appShellSpecOf,
-  type AppShellTemplate,
   FEEDBACK_MODULE,
   FEEDBACK_OUTLETS,
   FEEDBACK_SPEC_IMPORT,

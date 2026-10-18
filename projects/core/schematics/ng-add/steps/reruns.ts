@@ -18,7 +18,7 @@ import {
 } from '../../engine';
 import { type ProjectFacts } from '../detect/detect';
 import { withdrawnAiTargets } from './ai-tools';
-import { planAppShellCheck } from './app-shell';
+import { planAppShellRerun } from './app-shell';
 import { planHelperReadme } from './helper-readme';
 import { INSTALL_MANIFEST_PATH, type ProjectRecord, unionLibs } from './manifest';
 import { type OnboardingAnswers, type Versions } from './model';
@@ -169,7 +169,7 @@ export function planManifestReruns(
         );
   return mergeStepResults([
     theme,
-    planAppShellCheck(facts, answers, [...recorded], provenance),
+    planAppShellRerun(facts, answers, [...recorded], provenance),
     planReadmeRerun(facts, record, answers, versions, readme, provenance),
   ]);
 }
