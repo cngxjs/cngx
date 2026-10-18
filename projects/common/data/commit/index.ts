@@ -6,6 +6,7 @@ export {
   type CngxCommitRunner,
 } from './commit-controller';
 export { type CngxTransitionOutcome } from './transition-outcome';
+export { createRefusedPhrase, type CngxRefusedPhraseOptions } from './refused-phrase';
 export {
   CNGX_COMMIT_CONTROLLER_FACTORY,
   type CngxCommitControllerFactory,

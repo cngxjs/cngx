@@ -16,6 +16,8 @@ import {
   type CngxCommitBeginHandlers,
   type CngxCommitControllerFactory,
   type CngxTransitionOutcome,
+  createRefusedPhrase,
+  type CngxRefusedPhraseOptions,
 } from '@cngx/common/data';
 ```
 
@@ -127,6 +129,19 @@ interface CngxTransitionOutcome {
 ```
 
 The record a commit-gated host (the stepper) keeps of the last transition that did not land. `index` is the target the transition was refused or failed for (the position the user did not reach); `sequence` is bumped once per settled refusal or failure, so two equal outcomes in a row are still two events.
+
+### `createRefusedPhrase(options): Signal<string>`
+
+Live-region phrase for a refused transition, shared by the stepper and tab hosts. A refusal settles the status back to `idle`, so no status edge can voice it: the phrase arms on each new refused `sequence` (copy read untracked) and is spent by a status change, an active-index move, a cleared outcome, or a changed `extraSpend` value when one is given. A failed outcome never arms it; arm wins over spend in the same flush.
+
+```ts
+const refusedPhrase = createRefusedPhrase({
+  outcome: () => presenter.lastOutcome(),
+  status: () => presenter.commitTransition.current(),
+  activeIndex: () => presenter.activeIndex(),
+  copy: () => i18n().commitRefusedGeneric,
+});
+```
 
 ## DI override: `CNGX_COMMIT_CONTROLLER_FACTORY`
 

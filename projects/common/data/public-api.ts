@@ -109,6 +109,8 @@ export {
   type CngxCommitHandle,
   type CngxCommitRunner,
   type CngxTransitionOutcome,
+  createRefusedPhrase,
+  type CngxRefusedPhraseOptions,
   CNGX_COMMIT_CONTROLLER_FACTORY,
   type CngxCommitControllerFactory,
 } from './commit';

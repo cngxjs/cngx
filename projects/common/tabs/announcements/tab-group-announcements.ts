@@ -2,6 +2,7 @@
 // (`createTabGroupTemplateBindings` and `CngxMatTabAggregatorContent`).
 // Re-eval on second consumer or sibling debt closure.
 import { computed, linkedSignal, untracked, type Signal } from '@angular/core';
+import { createRefusedPhrase } from '@cngx/common/data';
 import { coerceSignal, createAnnouncementPhrase } from '@cngx/core/utils';
 
 import { TABS_CONFIG_DEFAULTS, type CngxTabsConfig } from '../tabs-config';
@@ -194,24 +195,12 @@ export function createTabGroupAnnouncements(
   // move, a cleared outcome (its own tab closed) or a new close phrase,
   // so closing another tab after a refusal is announced. Arm wins over
   // spend in the same flush, so an optimistic rollback still arms.
-  const refusedPhrase = createAnnouncementPhrase({
-    source: () => {
-      const outcome = presenter.lastOutcome();
-      return {
-        sequence: outcome?.sequence,
-        kind: outcome?.kind,
-        status: presenter.commitTransition.current(),
-        activeIndex: presenter.activeIndex(),
-        closePhrase: closedAnnouncement(),
-      };
-    },
-    arm: (curr, prev) =>
-      curr.kind === 'refused' && curr.sequence !== prev.sequence ? untracked(refusedCopy) : null,
-    spend: (curr, prev) =>
-      curr.status !== prev.status ||
-      curr.activeIndex !== prev.activeIndex ||
-      curr.sequence === undefined ||
-      curr.closePhrase !== prev.closePhrase,
+  const refusedPhrase = createRefusedPhrase({
+    outcome: () => presenter.lastOutcome(),
+    status: () => presenter.commitTransition.current(),
+    activeIndex: () => presenter.activeIndex(),
+    copy: refusedCopy,
+    extraSpend: () => closedAnnouncement(),
   });
 
   function refusedCopy(): string {

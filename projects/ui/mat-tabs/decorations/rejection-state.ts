@@ -1,7 +1,7 @@
 import { computed, untracked, type Signal } from '@angular/core';
 
+import { createRefusedPhrase } from '@cngx/common/data';
 import type { CngxTabGroupHost, injectTabsI18n } from '@cngx/common/tabs';
-import { createAnnouncementPhrase } from '@cngx/core/utils';
 
 /**
  * Reactive rejection-state derivation shared by the descriptor-text
@@ -126,22 +126,11 @@ export function createRejectionState(
   // voice it. Same lifecycle as the `<cngx-tab-group>` phrase: armed by a
   // new refused sequence, spent by the next commit activity, an
   // active-index move or a cleared outcome.
-  const refusedPhrase = createAnnouncementPhrase({
-    source: () => {
-      const outcome = presenter.lastOutcome();
-      return {
-        sequence: outcome?.sequence,
-        kind: outcome?.kind,
-        status: presenter.commitTransition.current(),
-        activeIndex: presenter.activeIndex(),
-      };
-    },
-    arm: (curr, prev) =>
-      curr.kind === 'refused' && curr.sequence !== prev.sequence ? untracked(refusedCopy) : null,
-    spend: (curr, prev) =>
-      curr.status !== prev.status ||
-      curr.activeIndex !== prev.activeIndex ||
-      curr.sequence === undefined,
+  const refusedPhrase = createRefusedPhrase({
+    outcome: () => presenter.lastOutcome(),
+    status: () => presenter.commitTransition.current(),
+    activeIndex: () => presenter.activeIndex(),
+    copy: refusedCopy,
   });
 
   function refusedCopy(): string {

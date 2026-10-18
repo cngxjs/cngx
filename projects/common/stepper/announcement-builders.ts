@@ -1,6 +1,6 @@
 import { computed, untracked, type Signal } from '@angular/core';
 
-import { createAnnouncementPhrase } from '@cngx/core/utils';
+import { createRefusedPhrase } from '@cngx/common/data';
 
 import type { CngxStepperI18n } from './i18n/stepper-i18n';
 import type { CngxStepNode, CngxStepperHost } from './stepper-host.token';
@@ -82,22 +82,11 @@ export function createStepperAnnouncementBuilders(
   // sequence) and is spent by the next commit activity, a step move or a
   // cleared outcome (reset). Arm wins over spend in the same flush, so an
   // optimistic rollback that moves the step still arms.
-  const refusedPhrase = createAnnouncementPhrase({
-    source: () => {
-      const outcome = presenter.lastOutcome();
-      return {
-        sequence: outcome?.sequence,
-        kind: outcome?.kind,
-        status: presenter.commitTransition.current(),
-        activeIndex: presenter.activeStepIndex(),
-      };
-    },
-    arm: (curr, prev) =>
-      curr.kind === 'refused' && curr.sequence !== prev.sequence ? untracked(refusedCopy) : null,
-    spend: (curr, prev) =>
-      curr.status !== prev.status ||
-      curr.activeIndex !== prev.activeIndex ||
-      curr.sequence === undefined,
+  const refusedPhrase = createRefusedPhrase({
+    outcome: () => presenter.lastOutcome(),
+    status: () => presenter.commitTransition.current(),
+    activeIndex: () => presenter.activeStepIndex(),
+    copy: refusedCopy,
   });
 
   function refusedCopy(): string {
