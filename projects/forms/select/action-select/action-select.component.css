@@ -50,6 +50,8 @@
  * A later change moves the trigger tokens of the Material bridges to the
  * theme root, after which an ancestor value reaches the trigger under the
  * bridge too.
+ * By design, a family value set on an ancestor also reaches every select
+ * nested below it, including one inside another select's panel.
  *
  * **Pair with**
  *
