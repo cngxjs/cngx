@@ -46,6 +46,12 @@
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
  *   `--cngx-color-danger`
  *
+ * The trigger layout tokens (`-min-width`, `-min-height`, `-gap`,
+ * `-padding`, `-radius`) follow the same chain and are registered the same
+ * way, so a family or variant value set on an ancestor reaches the trigger.
+ * Gap and padding fall back to the spacing scale (`--cngx-space-*`), so a
+ * root `[data-density]` still compacts the trigger.
+ *
  * **Pair with**
  *
  * - `tree-select-panel.component.css` - the body skin sibling
