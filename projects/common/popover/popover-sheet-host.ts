@@ -1,5 +1,5 @@
 import { inject, InjectionToken, type Signal } from '@angular/core';
-import type { SlotRegistry } from '@cngx/core/utils';
+import type { KeyedRegistry, SlotRegistry } from '@cngx/core/utils';
 import { CngxRuntimeError } from '@cngx/utils';
 
 /**
@@ -18,6 +18,8 @@ export interface CngxPopoverSheetTitleHandle {
 /** @internal Handle a `CngxPopoverSheetInitialFocus` registers. */
 export interface CngxPopoverSheetFocusHandle {
   readonly element: HTMLElement;
+  /** Whether the element takes part in the next open. Absent means it does. */
+  readonly enabled?: Signal<boolean>;
 }
 
 /**
@@ -27,7 +29,8 @@ export interface CngxPopoverSheetFocusHandle {
  */
 export interface CngxPopoverSheetPartsHost {
   readonly titleRegistry: SlotRegistry<CngxPopoverSheetTitleHandle>;
-  readonly initialFocusRegistry: SlotRegistry<CngxPopoverSheetFocusHandle>;
+  /** Keyed by a per-handle uid; the first enabled handle in document order wins. */
+  readonly initialFocusRegistry: KeyedRegistry<CngxPopoverSheetFocusHandle>;
   /** `true` while the sheet lays the panel out as sheet or fullscreen. */
   readonly modal: Signal<boolean>;
   requestClose(reason: CngxPopoverSheetCloseReason): void;

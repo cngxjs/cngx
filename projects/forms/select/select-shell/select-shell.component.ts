@@ -22,6 +22,7 @@ import {
 import {
   CNGX_STATEFUL,
   injectLocale,
+  nextUid,
   type AsyncStatus,
   type CngxAsyncState,
 } from '@cngx/core/utils';
@@ -69,6 +70,7 @@ import {
   type CngxSelectSheetWiring,
 } from '../shared/internal/select-sheet-wiring';
 import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
+import { CngxSelectSheetTrigger } from '../shared/internal/sheet-trigger.directive';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import {
@@ -222,6 +224,7 @@ export interface CngxSelectShellChange<T = unknown> {
   imports: [
     CngxPopoverSheet,
     CngxPopoverSheetInitialFocus,
+    CngxSelectSheetTrigger,
     CngxSelectSheetHeader,
     CngxClickOutside,
     CngxListbox,
@@ -1132,17 +1135,20 @@ export class CngxSelectShell<T = unknown>
   }
 
   /**
-   * @internal A projected `<cngx-select-search>` leads the sheet. Called once
-   * it has rendered, so it lands after the listbox in the last-wins registry.
+   * @internal A projected `<cngx-select-search>` leads the sheet when the
+   * open came from the keyboard: it sits before the listbox, and the sheet
+   * focuses the first enabled marker in document order. A tap opens on the
+   * listbox. Called once the search has rendered.
    */
   registerSheetInitialFocus(element: HTMLElement): () => void {
     const registry = this.sheetRef()?.initialFocusRegistry;
     if (!registry) {
       return () => undefined;
     }
-    const handle = { element };
-    registry.register(handle);
-    return () => registry.unregister(handle);
+    const key = nextUid('cngx-select-shell-search-focus');
+    const handle = { element, enabled: this.sheetWiring.searchLeads };
+    registry.register(key, handle);
+    return () => registry.unregister(key, handle);
   }
 
   /** @internal - click-outside dismissal. */
@@ -1183,8 +1189,7 @@ export class CngxSelectShell<T = unknown>
 
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus =
-      this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
     if (openOnFocus && !this.suppressOpenOnFocus) {
       this.open();
     }

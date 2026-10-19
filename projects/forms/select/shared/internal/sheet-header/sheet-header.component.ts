@@ -13,7 +13,6 @@ import {
   CngxPopoverSheet,
   CngxPopoverSheetHandle,
   CngxPopoverSheetHeader,
-  CngxPopoverSheetInitialFocus,
   CngxPopoverSheetTitle,
 } from '@cngx/common/popover';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
@@ -22,6 +21,7 @@ import { CNGX_SELECT_SHEET_HEADER_HOST } from '../../sheet-header-host';
 import type { CngxSelectSheetHandleContext } from '../../template-slots';
 import { CNGX_SELECT_GLYPHS } from '../glyphs';
 import { createListboxKeyForward } from '../listbox-key-forward';
+import { CngxSelectSheetSearchFocus } from './sheet-search-focus.directive';
 
 /**
  * @internal
@@ -41,8 +41,8 @@ import { createListboxKeyForward } from '../listbox-key-forward';
     NgTemplateOutlet,
     CngxSwipeDismiss,
     CngxPopoverSheetHandle,
-    CngxPopoverSheetInitialFocus,
     CngxPopoverSheetTitle,
+    CngxSelectSheetSearchFocus,
   ],
   hostDirectives: [CngxPopoverSheetHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,

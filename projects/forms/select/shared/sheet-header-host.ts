@@ -20,6 +20,8 @@ export interface CngxSelectSheetHeaderHost {
   readonly showDone: Signal<boolean>;
   /** Static per variant: Combobox, Typeahead and the action variants carry a header input. */
   readonly showInput: Signal<boolean>;
+  /** The header input takes focus on open only when the open came from the keyboard. */
+  readonly searchLeads: Signal<boolean>;
   /** Per-instance `[sheetLabel]`, wins over the field label. */
   readonly sheetLabel: Signal<string | undefined>;
   /** The variant's `[label]` input, used when no field label exists. */

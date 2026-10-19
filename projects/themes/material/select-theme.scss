@@ -25,39 +25,15 @@
     --cngx-select-panel-radius: 4px;
     --cngx-select-panel-shadow: var(--mat-sys-level2, 0 4px 12px oklch(0 0 0 / 0.12));
 
-    // Trigger surfaces - every variant defines its own --cngx-<name>-bg /
-    // -color / -border with hard-coded light defaults that shadow any
-    // system-bridge cascade. Map each variant onto Material's outlined-
-    // input surface so the trigger sits transparently on the Material
-    // background.
+    // Trigger surfaces - Material's outlined-input surface. Every variant
+    // -bg, -color and -border token falls back to its family token, so the
+    // bridge sets only the --cngx-select-* ones and leaves the variant
+    // tokens unset: it broadcasts onto every descendant, so a variant
+    // assignment would sit on the trigger, cut the chain, and a consumer
+    // family token would no longer reach that variant.
     --cngx-select-bg: transparent;
     --cngx-select-color: var(--mat-sys-on-surface);
     --cngx-select-border: 1px solid var(--mat-sys-outline);
-
-    --cngx-multi-select-bg: transparent;
-    --cngx-multi-select-color: var(--mat-sys-on-surface);
-    --cngx-multi-select-border: 1px solid var(--mat-sys-outline);
-
-    --cngx-combobox-bg: transparent;
-    --cngx-combobox-color: var(--mat-sys-on-surface);
-    --cngx-combobox-border: 1px solid var(--mat-sys-outline);
-
-    --cngx-typeahead-bg: transparent;
-    --cngx-typeahead-border: 1px solid var(--mat-sys-outline);
-
-    --cngx-action-select-bg: transparent;
-    --cngx-action-select-border: 1px solid var(--mat-sys-outline);
-
-    --cngx-action-multi-select-bg: transparent;
-    --cngx-action-multi-select-color: var(--mat-sys-on-surface);
-    --cngx-action-multi-select-border: 1px solid var(--mat-sys-outline);
-
-    --cngx-reorderable-multi-select-bg: transparent;
-    --cngx-reorderable-multi-select-color: var(--mat-sys-on-surface);
-    --cngx-reorderable-multi-select-border: 1px solid var(--mat-sys-outline);
-
-    --cngx-select-shell-bg: transparent;
-    --cngx-select-shell-color: var(--mat-sys-on-surface);
 
     --cngx-select-caret-color: var(--mat-sys-on-surface-variant);
     --cngx-select-clear-color: var(--mat-sys-on-surface-variant);
@@ -103,10 +79,9 @@
     // Shell focus ring
     --cngx-select-shell-focus-ring: var(--mat-sys-primary);
     // Material outlined inputs thicken the border on focus with no offset gap;
-    // drop the cngx 2px ring offset so the focus ring sits on the border. This
-    // is the base token every variant trigger falls back to
-    // (--cngx-<variant>-focus-offset -> --cngx-select-focus-offset), so zeroing
-    // it here flattens the trigger outline and the inner chip/retry rings alike.
+    // drop the cngx 2px ring offset so the focus ring sits on the border.
+    // Every variant trigger and the inner chip/retry rings read this one
+    // token, so zeroing it here flattens them alike.
     --cngx-select-focus-offset: 0px;
 
     // Tree-select node states
@@ -121,10 +96,6 @@
     --cngx-select-panel-color: #{mat.get-theme-color($theme, foreground, text)};
 
     --cngx-select-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-multi-select-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-combobox-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-action-multi-select-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-reorderable-multi-select-color: #{mat.get-theme-color($theme, foreground, text)};
 
     --cngx-select-check-color: #{mat.get-theme-color($theme, primary)};
     --cngx-select-error-color: #{mat.get-theme-color($theme, warn)};
@@ -246,12 +217,12 @@
   // Token map covers two surfaces simultaneously:
   //   - the popover panel (.cngx-select__panel) plus the tree-select host
   //   - the per-variant triggers (cngx-select, cngx-multi-select, …) and
-  //     every descendant via ` *` so tokens registered as inherits:false
-  //     (which most --cngx-<variant>-bg / -color / -border are) actually
-  //     land on the inner trigger / __root / __trigger element where the
-  //     CSS rule reads them. Setting only on the host tag had no effect
-  //     because non-inheriting custom properties resolve to initial-value
-  //     when read on a child.
+  //     every descendant via ` *` so the inherits:false density tokens
+  //     (padding, radius, min-height) land on the inner trigger element
+  //     where the CSS rule reads them. Non-inheriting custom properties
+  //     resolve to their initial value when read on a child. The trigger
+  //     surface tokens inherit and fall back to the family tokens, which is
+  //     why the color block sets only the family ones.
   @include bridge.on(
     '.cngx-select__panel',
     cngx-tree-select-panel,

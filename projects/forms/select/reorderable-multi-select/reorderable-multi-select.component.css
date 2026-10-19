@@ -38,14 +38,24 @@
  *
  * - `--cngx-reorderable-multi-select-*` -> `--cngx-multi-select-*` ->
  *   `--cngx-select-*` -> hardcoded
- * - `--cngx-reorderable-multi-select-border` -> `--cngx-color-border`
+ * - `--cngx-reorderable-multi-select-bg` -> `--cngx-multi-select-bg` ->
+ *   `--cngx-select-bg` -> `transparent`; all three are registered without
+ *   an initial value and inherit, so any of them set on an ancestor
+ *   reaches the trigger
+ * - `--cngx-reorderable-multi-select-color` -> `--cngx-multi-select-color`
+ *   -> `--cngx-select-color` -> `inherit`, registered the same way
+ * - `--cngx-reorderable-multi-select-border` -> `--cngx-multi-select-border` ->
+ *   `--cngx-select-border` -> `--cngx-color-border`, registered like the
+ *   background token
  * - `--cngx-reorderable-multi-select-focus-outline` ->
- *   `--cngx-color-primary`
+ *   `--cngx-multi-select-focus-outline` -> `--cngx-select-focus-outline` ->
+ *   `--cngx-color-primary`, registered like the background token
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
  *   `--cngx-color-danger`
  *
- * Registered `@property` values shadow the inner var() steps; system
- * tokens (`--cngx-color-*`) are the brand-wide override path.
+ * For every other token, registered `@property` initial values shadow the
+ * inner var() steps; system tokens (`--cngx-color-*`) are the brand-wide
+ * override path.
  *
  * **Pair with**
  *
@@ -87,13 +97,16 @@
   }
 
   /**
-   * Border shorthand of the trigger.
+   * Border shorthand of the trigger. Falls back to
+   * `--cngx-multi-select-border`, then `--cngx-select-border`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-multi-select-border, var(--cngx-select-border, 1px solid var(--cngx-color-border)))
+   * @see [[--cngx-color-border]]
    */
   @property --cngx-reorderable-multi-select-border {
     syntax: '*';
     inherits: true;
-    initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
   /**
@@ -107,23 +120,27 @@
   }
 
   /**
-   * Background of the trigger.
+   * Background of the trigger. Falls back to `--cngx-multi-select-bg`, then
+   * `--cngx-select-bg`; see {@link --cngx-select-bg} for why no
+   * `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-multi-select-bg, var(--cngx-select-bg, transparent))
    */
   @property --cngx-reorderable-multi-select-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
+    syntax: '*';
+    inherits: true;
   }
 
   /**
-   * Text color of the trigger.
+   * Text color of the trigger. Falls back to `--cngx-multi-select-color`, then
+   * `--cngx-select-color`; see {@link --cngx-select-bg} for why no
+   * `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-multi-select-color, var(--cngx-select-color, inherit))
    */
   @property --cngx-reorderable-multi-select-color {
     syntax: '*';
     inherits: true;
-    initial-value: currentColor;
   }
 
   /**
@@ -137,22 +154,16 @@
   }
 
   /**
-   * Focus-ring outline shorthand. Falls back to `--cngx-color-primary`.
+   * Focus-ring outline shorthand of the trigger. Falls back to
+   * `--cngx-multi-select-focus-outline`, then `--cngx-select-focus-outline`;
+   * see {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group State / Focus
+   * @default var(--cngx-multi-select-focus-outline, var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary)))
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-reorderable-multi-select-focus-outline {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid oklch(0.66 0.19 50);
-  }
-
-  /* Delegating tokens - trigger border + focus-ring track the
-   * foundation chain. Shorthands pin their structural part and
-   * inherit the color via the delegating foundation token. */
-  :root {
-    --cngx-reorderable-multi-select-border: 1px solid var(--cngx-color-border);
-    --cngx-reorderable-multi-select-focus-outline: 2px solid var(--cngx-color-primary);
   }
 }
 

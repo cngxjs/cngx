@@ -27,11 +27,11 @@ import type { CngxSelectOptionDef } from './option.model';
 // Two variants stand in for the two trigger shapes (single row and chip
 // strip); the remaining seven reuse the same CSS paths.
 //
-// Focus-state rules are NOT asserted here. The headless page has no document
-// focus, so `:focus-visible` / `:focus-within` never match even when
-// `document.activeElement` is the trigger - an assertion on them would either
-// fail or pass vacuously. `select-base.css.spec.ts` guards those rules as
-// source text across all nine stylesheets instead.
+// Focus-state rules are not asserted here. `select-base.css.spec.ts` guards
+// them as source text across all nine stylesheets, and
+// `select-touch-floor.geometry.spec.ts` reads the painted trigger rings: a
+// programmatic `focus()` matches `:focus-visible` in this runner, and those
+// assertions fail rather than pass if it ever stops matching.
 
 const OPTIONS: CngxSelectOptionDef<string>[] = [
   { value: 'red', label: 'Red' },
@@ -405,25 +405,25 @@ describe('select-family field skins', () => {
     expect(computedValue(el, 'border-top-color')).toBe(expected);
   });
 
-  // `:focus-visible` never matches headless (see the header note), so the
-  // ring is read through a probe that resolves the same token the trigger's
-  // focus rule uses. The delegating `:root` value needs a theme primary, set
-  // here on the document root the way a theme would.
+  // The ring is read through a probe that resolves the same chain the
+  // trigger's focus rule uses, so the colour compare needs no focus. Neither token is set by default; the chain falls back to
+  // the theme primary, set here on the document root the way a theme would.
   it('resolves the tree-select focus ring opaque and equal to the select ring', () => {
     const docEl = document.documentElement;
     docEl.style.setProperty('--cngx-color-primary', 'oklch(0.5 0.2 260)');
     try {
       const root = mount(AllTriggersHost);
-      const ringColour = (hostSelector: string, token: string): string => {
+      const ringColour = (hostSelector: string, chain: string): string => {
         const probe = document.createElement('div');
-        probe.style.outline = `var(${token})`;
+        probe.style.outline = chain;
         trigger(root, hostSelector).appendChild(probe);
         const colour = computedValue(probe, 'outline-color');
         probe.remove();
         return colour;
       };
-      const tree = ringColour('.v-tree', '--cngx-tree-select-focus-ring');
-      const select = ringColour('.v-select', '--cngx-select-focus-outline');
+      const selectRing = 'var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary))';
+      const tree = ringColour('.v-tree', `var(--cngx-tree-select-focus-ring, ${selectRing})`);
+      const select = ringColour('.v-select', selectRing);
       expect(select).not.toBe('rgb(0, 0, 0)');
       expect(tree).toBe(select);
     } finally {

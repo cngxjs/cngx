@@ -13,6 +13,7 @@
   <div
     class="cngx-action-multi-select__trigger cngx-field-trigger"
     [cngxPopoverAnchor]="pop"
+    [cngxSelectSheetTrigger]="sheetWiring.trigger"
     role="group"
     [attr.aria-disabled]="aria.disabled"
     (click)="handleWrapperClick($event)"
@@ -88,7 +89,7 @@
       autocapitalize="off"
       autocorrect="off"
       spellcheck="false"
-      [attr.inputmode]="inputMode()"
+      [attr.inputmode]="sheetWiring.triggerInputMode()"
       [attr.enterkeyhint]="enterKeyHint()"
       [matchFn]="listboxMatchFn()"
       [debounceMs]="searchDebounceMs()"
@@ -187,6 +188,8 @@
     <div
       cngxListbox
       [attr.id]="listboxId"
+      cngxPopoverSheetInitialFocus
+      [attr.tabindex]="sheetWiring.sheetModal() ? 0 : null"
       #lb="cngxListbox"
       [label]="resolvedListboxLabel()"
       [multiple]="true"

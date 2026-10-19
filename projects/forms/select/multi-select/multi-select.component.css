@@ -32,14 +32,21 @@
  * Trigger tokens delegate up the family chain:
  *
  * - `--cngx-multi-select-*` -> `--cngx-select-*` -> hardcoded
- * - `--cngx-multi-select-border` -> `--cngx-color-border`
- * - `--cngx-multi-select-focus-outline` -> `--cngx-color-primary`
+ * - `--cngx-multi-select-bg` -> `--cngx-select-bg` -> `transparent`; both
+ *   are registered without an initial value and inherit, so either one set
+ *   on an ancestor reaches the trigger
+ * - `--cngx-multi-select-color` -> `--cngx-select-color` -> `inherit`,
+ *   registered the same way
+ * - `--cngx-multi-select-border` -> `--cngx-select-border` ->
+ *   `--cngx-color-border`, registered like the background token
+ * - `--cngx-multi-select-focus-outline` -> `--cngx-select-focus-outline` ->
+ *   `--cngx-color-primary`, registered like the background token
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
  *   `--cngx-color-danger`
  *
- * Once registered via `@property` the inner var() steps are
- * documentation-only; system tokens (`--cngx-color-*`) are the
- * brand-wide override path.
+ * For every other token, once registered via `@property` with an initial
+ * value the inner var() steps are documentation-only; system tokens
+ * (`--cngx-color-*`) are the brand-wide override path.
  *
  * **Pair with**
  *
@@ -81,13 +88,15 @@
   }
 
   /**
-   * Border shorthand of the trigger.
+   * Border shorthand of the trigger. Falls back to `--cngx-select-border`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-border, 1px solid var(--cngx-color-border))
+   * @see [[--cngx-color-border]]
    */
   @property --cngx-multi-select-border {
     syntax: '*';
     inherits: true;
-    initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
   /**
@@ -101,23 +110,25 @@
   }
 
   /**
-   * Background of the trigger.
+   * Background of the trigger. Falls back to `--cngx-select-bg`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-bg, transparent)
    */
   @property --cngx-multi-select-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
+    syntax: '*';
+    inherits: true;
   }
 
   /**
-   * Text color of the trigger.
+   * Text color of the trigger. Falls back to `--cngx-select-color`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-color, inherit)
    */
   @property --cngx-multi-select-color {
     syntax: '*';
     inherits: true;
-    initial-value: currentColor;
   }
 
   /**
@@ -131,22 +142,16 @@
   }
 
   /**
-   * Focus-ring outline shorthand. Falls back to `--cngx-color-primary`.
+   * Focus-ring outline shorthand of the trigger. Falls back to
+   * `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no
+   * `initial-value` is declared.
    * @group State / Focus
+   * @default var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary))
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-multi-select-focus-outline {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid oklch(0.66 0.19 50);
-  }
-
-  /* Delegating tokens - trigger border + focus-ring track the
-   * foundation chain. Shorthands pin their structural part and
-   * inherit the color via the delegating foundation token. */
-  :root {
-    --cngx-multi-select-border: 1px solid var(--cngx-color-border);
-    --cngx-multi-select-focus-outline: 2px solid var(--cngx-color-primary);
   }
 }
 

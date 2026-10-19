@@ -163,7 +163,7 @@ Add `cngxPopoverSheet` to a `[cngxPopover]` and the popover opens as a modal bot
 | `(closeRequested)` | `'swipe'`, `'backdrop'`, `'back'` or `'close'` |
 | `(closing)` | Synchronous, inside `hide()`, with the page already live; move focus here when you restore it yourself |
 
-**Parts.** `cngxPopoverSheetHeader` stays fixed while the rest of the panel scrolls; with `cngxSwipeDismiss="down"` a downward swipe requests a close. `cngxPopoverSheetTitle` names the dialog (put it on the heading, not on the header that also holds buttons). `cngxPopoverSheetHandle` is decorative and always `aria-hidden`; screen-reader users close through the close control because their swipes drive navigation. `cngxPopoverSheetInitialFocus` marks the element that receives focus on open.
+**Parts.** `cngxPopoverSheetHeader` stays fixed while the rest of the panel scrolls; with `cngxSwipeDismiss="down"` a downward swipe requests a close. `cngxPopoverSheetTitle` names the dialog (put it on the heading, not on the header that also holds buttons). `cngxPopoverSheetHandle` is decorative and always `aria-hidden`; screen-reader users close through the close control because their swipes drive navigation. `cngxPopoverSheetInitialFocus` marks the element that receives focus on open; with several marks the first enabled one in document order wins, and `[cngxPopoverSheetInitialFocus]="false"` takes a mark out of the next open.
 
 **Modality.** Sheet and fullscreen are both modal: `role="dialog"` + `aria-modal="true"`, a focus trap, `inert` on every page sibling (live regions stay live), and a pinned scroll lock (`createPinnedScrollLock`). VoiceOver and TalkBack both read content behind a top-layer popover by touch exploration, so `aria-modal` alone does not contain them; `inert` does.
 

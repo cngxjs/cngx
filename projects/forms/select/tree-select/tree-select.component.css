@@ -9,7 +9,7 @@
  * **State modifiers**
  *
  * - `:focus-visible` on `.cngx-tree-select__trigger` - focus-ring
- *   outline + 1px offset
+ *   outline + offset (`--cngx-select-focus-offset`, 1px by default)
  * - `[aria-disabled='true']` on the trigger - `cursor: not-allowed`; the
  *   field skin fades it by colour
  * - `[aria-invalid='true']` on the trigger - danger border + box-shadow
@@ -30,9 +30,17 @@
  * Trigger border + focus ring delegate to the foundation so brand swaps
  * on `--cngx-color-border` / `--cngx-color-primary` cascade through:
  *
- * - `--cngx-tree-select-trigger-border` -> `--cngx-color-border`
- * - `--cngx-tree-select-focus-ring` -> `--cngx-color-primary` (opaque,
- *   same ring as the sibling selects)
+ * - `--cngx-tree-select-trigger-bg` -> `--cngx-select-bg` -> `transparent`,
+ *   like the rest of the select family; both are registered without an
+ *   initial value and inherit, so either one set on an ancestor reaches the
+ *   trigger
+ * - the trigger text reads `--cngx-select-color` -> `inherit`, the family
+ *   color token
+ * - `--cngx-tree-select-trigger-border` -> `--cngx-select-border` ->
+ *   `--cngx-color-border`, registered like the background token
+ * - `--cngx-tree-select-focus-ring` -> `--cngx-select-focus-outline` ->
+ *   `--cngx-color-primary` (opaque, same ring as the sibling selects),
+ *   registered like the background token
  * - `--cngx-select-placeholder-color` -> shared family token, dark-mode
  *   handled centrally in `shared/select-base.css`
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
@@ -89,14 +97,15 @@
   }
 
   /**
-   * Border shorthand of the trigger. `inherits: true` so the :root
-   * delegating value reaches the trigger host.
+   * Border shorthand of the trigger. Falls back to `--cngx-select-border`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-border, 1px solid var(--cngx-color-border))
+   * @see [[--cngx-color-border]]
    */
   @property --cngx-tree-select-trigger-border {
     syntax: '*';
     inherits: true;
-    initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
   /**
@@ -110,26 +119,27 @@
   }
 
   /**
-   * Background of the trigger.
+   * Background of the trigger. Falls back to `--cngx-select-bg`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-bg, transparent)
    */
   @property --cngx-tree-select-trigger-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
+    syntax: '*';
+    inherits: true;
   }
 
   /**
-   * Focus-ring outline shorthand. Falls back to `--cngx-color-primary`.
-   * `inherits: true` so the :root delegating value reaches the
-   * trigger host.
+   * Focus-ring outline shorthand of the trigger (opaque, same ring as the
+   * sibling selects). Falls back to `--cngx-select-focus-outline`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group State / Focus
+   * @default var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary))
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-tree-select-focus-ring {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
@@ -140,16 +150,6 @@
     syntax: '*';
     inherits: false;
     initial-value: 1.25rem;
-  }
-
-  /* Delegating tokens - trigger border + focus-ring track the
-   * foundation chain. The border shorthand pins the structural part
-   * (1px solid) and inherits the color via the delegating
-   * border-color chain; the focus-ring shorthand pins 2px solid
-   * and inherits the primary colour. */
-  :root {
-    --cngx-tree-select-trigger-border: 1px solid var(--cngx-color-border);
-    --cngx-tree-select-focus-ring: 2px solid var(--cngx-color-primary);
   }
 }
 
@@ -207,10 +207,11 @@
       padding: var(--cngx-tree-select-trigger-padding, 0.25rem 0.5rem);
       border: var(
         --cngx-tree-select-trigger-border,
-        1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
+        var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))
       );
       border-radius: var(--cngx-tree-select-trigger-radius, 0.25rem);
-      background: var(--cngx-tree-select-trigger-bg, transparent);
+      background: var(--cngx-tree-select-trigger-bg, var(--cngx-select-bg, transparent));
+      color: var(--cngx-select-color, inherit);
       cursor: pointer;
       outline: none;
     }
@@ -218,9 +219,9 @@
     .cngx-tree-select__trigger:focus-visible {
       outline: var(
         --cngx-tree-select-focus-ring,
-        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+        var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50)))
       );
-      outline-offset: 1px;
+      outline-offset: var(--cngx-select-focus-offset, 1px);
     }
 
     .cngx-tree-select__trigger[aria-disabled='true'] {

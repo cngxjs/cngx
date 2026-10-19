@@ -1438,8 +1438,15 @@ describe('CngxSelectShell - <cngx-select-search> in the mobile sheet', () => {
     };
   }
 
-  it('focuses the search input on open', () => {
+  it('focuses the listbox on a pointer or programmatic open', () => {
     const { shell, el } = setupSearch();
+    shell.open();
+    expect(document.activeElement).toBe(el.querySelector('[role="listbox"]'));
+  });
+
+  it('focuses the search input when a key on the trigger opened the sheet', () => {
+    const { shell, el, trigger } = setupSearch();
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift', bubbles: true }));
     shell.open();
     expect(document.activeElement).toBe(el.querySelector('.cngx-select-search__input'));
   });

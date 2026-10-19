@@ -22,7 +22,7 @@ import {
 } from '@cngx/common/a11y';
 import { createPinnedScrollLock } from '@cngx/common/layout';
 import { injectWindow } from '@cngx/core/tokens';
-import { createSlotRegistry, createTransitionTracker } from '@cngx/core/utils';
+import { createKeyedRegistry, createSlotRegistry, createTransitionTracker } from '@cngx/core/utils';
 import { cngxDevWarn, CngxRuntimeError } from '@cngx/utils';
 
 import { CngxPopover } from './popover.directive';
@@ -101,8 +101,9 @@ function injectSheetPopover(): CngxPopover {
  *
  * Both non-anchored presentations are modal: the host becomes
  * `role="dialog"` + `aria-modal="true"`, named by its
- * `CngxPopoverSheetTitle`; focus moves into the panel inside `show()` (so a
- * tap-opened sheet keeps the iOS keyboard), Tab is trapped, every page
+ * `CngxPopoverSheetTitle`; focus moves into the panel inside `show()`, onto
+ * the first enabled `CngxPopoverSheetInitialFocus` (a marked search input
+ * focused there keeps the iOS keyboard of a tap open), Tab is trapped, every page
  * sibling is `inert`, the page is pinned, and announcements go through
  * {@link announce} into a live region inside the panel, the only region
  * VoiceOver speaks under `aria-modal`. On close the page is live again and
@@ -241,7 +242,9 @@ export class CngxPopoverSheet
   /** @internal */
   readonly titleRegistry = createSlotRegistry<CngxPopoverSheetTitleHandle>();
   /** @internal */
-  readonly initialFocusRegistry = createSlotRegistry<CngxPopoverSheetFocusHandle>();
+  readonly initialFocusRegistry = createKeyedRegistry<CngxPopoverSheetFocusHandle>({
+    name: 'CngxPopoverSheet',
+  });
 
   protected readonly roleAttr = computed(() => (this.modal() ? 'dialog' : this.staticRole));
   protected readonly ariaModal = computed(() => (this.modal() ? 'true' : null));
@@ -385,11 +388,12 @@ export class CngxPopoverSheet
   }
 
   /**
-   * Move focus to the registered `CngxPopoverSheetInitialFocus`, else the
-   * first tabbable element, else the host. Runs on every modal open.
+   * Move focus to the first enabled `CngxPopoverSheetInitialFocus` in
+   * document order, else the first tabbable element, else the host. Runs on
+   * every modal open.
    */
   focusInitial(): void {
-    const target = this.initialFocusRegistry.current()?.element;
+    const target = this.initialFocusTarget();
     if (target) {
       target.focus();
       return;
@@ -397,6 +401,20 @@ export class CngxPopoverSheet
     if (!this.trap.focusFirstNow()) {
       this.host.focus();
     }
+  }
+
+  private initialFocusTarget(): HTMLElement | null {
+    let first: HTMLElement | null = null;
+    for (const handle of this.initialFocusRegistry.values()) {
+      const enabled = handle.enabled?.() ?? true;
+      const precedes =
+        first === null ||
+        (first.compareDocumentPosition(handle.element) & first.DOCUMENT_POSITION_PRECEDING) !== 0;
+      if (enabled && precedes) {
+        first = handle.element;
+      }
+    }
+    return first;
   }
 
   protected handleBeforeToggle(event: ToggleEvent): void {

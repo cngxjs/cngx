@@ -23,7 +23,7 @@ export interface MobileSheetSpecOptions {
   readonly content?: string;
   /** Standalone imports the projected content needs. */
   readonly contentImports?: readonly Type<unknown>[];
-  /** Where focus lands on open; defaults to the header input, else the listbox. */
+  /** Where focus lands on a pointer or programmatic open; defaults to the listbox. */
   readonly initialFocusSelector?: string;
   /** Selector of one pickable row inside the panel. */
   readonly optionSelector: string;
@@ -226,11 +226,9 @@ export function describeMobileSheet(
       expect(trigger.getAttribute('aria-haspopup')).toBe(opts.popupRole ?? 'listbox');
     });
 
-    it('moves focus to the initial focus target inside the opening call', () => {
+    it('moves focus to the list inside the opening call, not to a search input', () => {
       const { variant, panel } = setup();
-      const selector =
-        opts.initialFocusSelector ??
-        (opts.showInput ? '.cngx-select-sheet-header__input' : '[role="listbox"]');
+      const selector = opts.initialFocusSelector ?? '[role="listbox"]';
       variant.open();
       expect(document.activeElement).toBe(panel.querySelector(selector));
     });
@@ -386,6 +384,16 @@ export function describeMobileSheet(
         expect(variant.panelOpen()).toBe(false);
         expect(spies.handleSheetClose).toHaveBeenCalledExactlyOnceWith('close');
         expect(closed).toHaveBeenCalledTimes(1);
+      });
+
+      it('moves focus to the header input when a key on the trigger opened the sheet', () => {
+        const { el, variant, panel } = setup();
+        const trigger = el.querySelector<HTMLElement>('[role="combobox"]')!;
+        trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift', bubbles: true }));
+        variant.open();
+        expect(document.activeElement).toBe(
+          panel.querySelector('.cngx-select-sheet-header__input'),
+        );
       });
 
       it('writes the header term through the trigger input', () => {

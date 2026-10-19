@@ -38,14 +38,21 @@
  * Trigger tokens delegate up the family chain:
  *
  * - `--cngx-combobox-*` -> `--cngx-select-*` -> hardcoded
- * - `--cngx-combobox-border` -> `--cngx-color-border`
- * - `--cngx-combobox-focus-outline` -> `--cngx-color-primary`
+ * - `--cngx-combobox-bg` -> `--cngx-select-bg` -> `transparent`; both are
+ *   registered without an initial value and inherit, so either one set on
+ *   an ancestor reaches the trigger
+ * - `--cngx-combobox-color` -> `--cngx-select-color` -> `inherit`,
+ *   registered the same way
+ * - `--cngx-combobox-border` -> `--cngx-select-border` ->
+ *   `--cngx-color-border`, registered like the background token
+ * - `--cngx-combobox-focus-outline` -> `--cngx-select-focus-outline` ->
+ *   `--cngx-color-primary`, registered like the background token
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
  *   `--cngx-color-danger`
  *
- * Once registered via `@property` the inner var() steps are
- * documentation-only; system tokens (`--cngx-color-*`) are the
- * brand-wide override path.
+ * For every other token, once registered via `@property` with an initial
+ * value the inner var() steps are documentation-only; system tokens
+ * (`--cngx-color-*`) are the brand-wide override path.
  *
  * **Pair with**
  *
@@ -87,13 +94,15 @@
   }
 
   /**
-   * Border shorthand of the trigger.
+   * Border shorthand of the trigger. Falls back to `--cngx-select-border`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-border, 1px solid var(--cngx-color-border))
+   * @see [[--cngx-color-border]]
    */
   @property --cngx-combobox-border {
     syntax: '*';
     inherits: true;
-    initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
   /**
@@ -107,23 +116,25 @@
   }
 
   /**
-   * Background of the trigger.
+   * Background of the trigger. Falls back to `--cngx-select-bg`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-bg, transparent)
    */
   @property --cngx-combobox-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
+    syntax: '*';
+    inherits: true;
   }
 
   /**
-   * Text color of the trigger.
+   * Text color of the trigger. Falls back to `--cngx-select-color`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-color, inherit)
    */
   @property --cngx-combobox-color {
     syntax: '*';
     inherits: true;
-    initial-value: currentColor;
   }
 
   /**
@@ -137,15 +148,16 @@
   }
 
   /**
-   * Focus-ring outline shorthand applied on `:focus-within`. Falls
-   * back to `--cngx-color-primary`.
+   * Focus-ring outline shorthand of the trigger. Falls back to
+   * `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no
+   * `initial-value` is declared.
    * @group State / Focus
+   * @default var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary))
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-combobox-focus-outline {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
@@ -168,14 +180,6 @@
     syntax: '*';
     inherits: false;
     initial-value: 4rem;
-  }
-
-  /* Delegating tokens - trigger border + focus-ring track the
-   * foundation chain. Shorthands pin their structural part and
-   * inherit the color via the delegating foundation token. */
-  :root {
-    --cngx-combobox-border: 1px solid var(--cngx-color-border);
-    --cngx-combobox-focus-outline: 2px solid var(--cngx-color-primary);
   }
 }
 
@@ -271,6 +275,9 @@
     .cngx-combobox__input {
       flex: 1 1 var(--cngx-combobox-input-flex-basis, 4rem);
       min-width: var(--cngx-combobox-input-min-width, 4rem);
+      /* The row carries the touch floor; the bare-input floor from base.css
+       * would stack the row padding on top of it under a coarse pointer. */
+      min-height: 0;
       appearance: none;
       border: 0;
       outline: 0;

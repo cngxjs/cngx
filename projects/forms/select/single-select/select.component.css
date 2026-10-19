@@ -34,8 +34,20 @@
  * swaps on `--cngx-color-border` / `--cngx-color-primary` cascade
  * through the trigger host:
  *
- * - `--cngx-select-border` -> `--cngx-color-border`
- * - `--cngx-select-focus-outline` -> `--cngx-color-primary`
+ * - `--cngx-select-border` -> `1px solid var(--cngx-color-border)`;
+ *   registered like `--cngx-select-bg` and resolved on the trigger, so a
+ *   scoped `--cngx-color-border` swap reaches it. Every variant's border
+ *   token falls back to it
+ * - `--cngx-select-focus-outline` -> `2px solid var(--cngx-color-primary)`;
+ *   registered like `--cngx-select-bg`. Every variant's focus ring falls
+ *   back to it
+ * - `--cngx-select-bg` -> `transparent`; registered without an initial
+ *   value and inheriting, so a value set on an ancestor reaches the trigger.
+ *   Every variant's background token falls back to it
+ * - `--cngx-select-focus-offset` -> `2px` (tree select: `1px`); registered
+ *   the same way, so an ancestor value reaches every variant's focus rings
+ * - `--cngx-select-color` -> `inherit`; registered the same way, and every
+ *   variant's color token falls back to it
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
  *   `--cngx-color-danger`
  *
@@ -96,13 +108,19 @@
   }
 
   /**
-   * Border shorthand of the trigger.
+   * Border shorthand of the trigger, and the family fallback every variant's
+   * border token resolves through. No `initial-value`, like
+   * {@link --cngx-select-bg}: the use-site fallback
+   * `1px solid var(--cngx-color-border)` resolves on the trigger, so a
+   * scoped `--cngx-color-border` swap reaches it, and a value set on an
+   * ancestor reaches the trigger.
    * @group Surface
+   * @default 1px solid var(--cngx-color-border)
+   * @see [[--cngx-color-border]]
    */
   @property --cngx-select-border {
     syntax: '*';
     inherits: true;
-    initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
   /**
@@ -116,54 +134,60 @@
   }
 
   /**
-   * Background of the trigger.
+   * Background of the trigger, and the family fallback every variant's
+   * background token resolves through. No `initial-value`: the universal
+   * syntax keeps the property guaranteed-invalid until set, so the use-site
+   * `var()` fallback to `transparent` survives. `inherits: true`, so a
+   * value set on an ancestor (or by the Material bridge on `html`) reaches
+   * the trigger.
    * @group Surface
+   * @default transparent
    */
   @property --cngx-select-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
+    syntax: '*';
+    inherits: true;
   }
 
   /**
-   * Text color of the trigger.
+   * Text color of the trigger, and the family fallback every variant's
+   * color token resolves through. No `initial-value`, like
+   * {@link --cngx-select-bg}, so the use-site fallback to `inherit` survives
+   * and a value set on an ancestor reaches the trigger.
    * @group Surface
+   * @default inherit
    */
   @property --cngx-select-color {
     syntax: '*';
     inherits: true;
-    initial-value: currentColor;
   }
 
   /**
-   * Focus-ring outline shorthand. Falls back to `--cngx-color-primary`.
+   * Focus-ring outline shorthand of the trigger, and the family fallback
+   * every variant's focus token resolves through. No `initial-value`, like
+   * {@link --cngx-select-bg}: the use-site fallback
+   * `2px solid var(--cngx-color-primary)` resolves on the trigger, and a
+   * value set on an ancestor reaches the trigger.
    * @group State / Focus
+   * @default 2px solid var(--cngx-color-primary)
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-select-focus-outline {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
-   * Outline offset of the focus ring.
+   * Outline offset of the focus ring, read by every variant's trigger and
+   * inner rings. No `initial-value`, like {@link --cngx-select-bg}: the
+   * use-site `var()` fallback to `2px` survives, and `inherits: true` lets a
+   * value set on an ancestor (or by the Material bridge on `html`) reach the
+   * trigger.
    * @group State / Focus
+   * @default 2px
    */
   @property --cngx-select-focus-offset {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 2px;
-  }
-
-  /* Delegating tokens - trigger border + focus-ring track the
-   * foundation chain so a dark-mode swap on `--cngx-color-border` /
-   * `--cngx-color-primary` cascades through the trigger host.
-   * Shorthands pin their structural part (1px solid / 2px solid)
-   * and inherit only the color. */
-  :root {
-    --cngx-select-border: 1px solid var(--cngx-color-border);
-    --cngx-select-focus-outline: 2px solid var(--cngx-color-primary);
+    syntax: '*';
+    inherits: true;
   }
 }
 

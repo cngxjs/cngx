@@ -37,6 +37,7 @@ import {
   CngxPopover,
   CngxPopoverAnchor,
   CngxPopoverSheet,
+  CngxPopoverSheetInitialFocus,
   CngxPopoverTrigger,
   type CngxPopoverPresentation,
   type CngxPopoverPresentationRequest,
@@ -70,6 +71,7 @@ import {
   type CngxSelectSheetWiring,
 } from '../shared/internal/select-sheet-wiring';
 import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
+import { CngxSelectSheetTrigger } from '../shared/internal/sheet-trigger.directive';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
 import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
@@ -230,7 +232,9 @@ export interface CngxComboboxChange<T = unknown> {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CngxPopoverSheet,
+    CngxPopoverSheetInitialFocus,
     CngxSelectSheetHeader,
+    CngxSelectSheetTrigger,
     CngxChip,
     CngxClickOutside,
     CngxListbox,
@@ -595,6 +599,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     restoreFocus: this.config.restoreFocus,
     suppressOpenOnFocus: (active) => {
       this.suppressOpenOnFocus = active;
+      this.sheetWiring.handleTriggerRefocus(active);
     },
   });
   /** @internal */ readonly focused = this.hostFocus.focusedWithin;
@@ -703,6 +708,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     label: this.label,
     searchTerm: this.searchTerm,
     searchInput: this.inputEl,
+    inputMode: this.inputMode,
     close: () => this.close(),
   });
   /** @internal Static height fact: a fullscreen panel led by the header input. */
@@ -1030,6 +1036,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       closed: this.closed,
       restoringFocus: (active) => {
         this.suppressOpenOnFocus = active;
+        this.sheetWiring.handleTriggerRefocus(active);
       },
     });
 

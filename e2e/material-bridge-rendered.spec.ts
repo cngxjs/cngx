@@ -83,7 +83,11 @@ test.describe('material-bridge rendered values: timeline', () => {
     // The bridge block (@layer cngx.components, on the host) must beat the
     // registered @property initial-value AND the :root chain from the tokens
     // stylesheet (@layer cngx.tokens).
-    const token = await computedValue(page, '#connector-default', '--cngx-timeline-connector-color');
+    const token = await computedValue(
+      page,
+      '#connector-default',
+      '--cngx-timeline-connector-color',
+    );
     expect(token).toBe(matSys('outline-variant'));
   });
 
@@ -189,9 +193,9 @@ html { @include cngx-density.density($theme); }
     // A bridged density fork would never land here (the :scope SET rule
     // out-specifies :where in the same layer), which is why the bridge
     // ships none.
-    expect(
-      await computedValue(page, '#toggle-idle', '--cngx-button-toggle-padding-block'),
-    ).toBe('6px');
+    expect(await computedValue(page, '#toggle-idle', '--cngx-button-toggle-padding-block')).toBe(
+      '6px',
+    );
     expect(await computedValue(page, '#toggle-idle', 'padding-top')).toBe('6px');
     expect(await computedValue(page, '#toggle-idle', 'padding-left')).toBe('12px');
   });
@@ -513,5 +517,107 @@ test.describe('material-bridge rendered values: command-palette', () => {
     expect(backdrop).toBe(expected);
     // and not the un-themed fallback
     expect(backdrop).not.toBe('rgba(0, 0, 0, 0.4)');
+  });
+});
+
+test.describe('material-bridge rendered values: select family trigger chain', () => {
+  // Every trigger background, color and border token falls back to its family
+  // token (--cngx-select-bg, --cngx-select-color, --cngx-select-border;
+  // action-multi / reorderable
+  // through their parent variant first). The bridge themes the trigger
+  // through the family tokens alone: it broadcasts onto every descendant, so
+  // a variant assignment would sit on the read element and cut the chain,
+  // and a consumer family token would skip that variant.
+  const VARIANTS = [
+    ['cngx-select', 'single-select/select'],
+    ['cngx-multi-select', 'multi-select/multi-select'],
+    ['cngx-combobox', 'combobox/combobox'],
+    ['cngx-typeahead', 'typeahead/typeahead'],
+    ['cngx-tree-select', 'tree-select/tree-select'],
+    ['cngx-reorderable-multi-select', 'reorderable-multi-select/reorderable-multi-select'],
+    ['cngx-action-select', 'action-select/action-select'],
+    ['cngx-action-multi-select', 'action-multi-select/action-multi-select'],
+    ['cngx-select-shell', 'select-shell/select-shell'],
+  ] as const;
+  const SELECT_CSS = VARIANTS.map(([, file]) => `projects/forms/select/${file}.component.css`);
+  const BRIDGE_CSS = compileBridge('select-theme');
+  const SELECT_HTML = `
+<div class="consumer-surface">
+  ${VARIANTS.map(
+    ([tag]) =>
+      `<${tag} class="${tag}"><div id="${tag}-trigger" class="${tag}__trigger"></div></${tag}>`,
+  ).join('\n  ')}
+</div>`;
+  const CONSUMER_BG = 'rgb(9, 8, 7)';
+  const CONSUMER_COLOR = 'rgb(7, 8, 9)';
+  const CONSUMER_BORDER = 'rgb(6, 5, 4)';
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: SELECT_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: SELECT_HTML,
+    });
+  });
+
+  test('every trigger stays transparent under the bridge alone', async ({ page }) => {
+    for (const [tag] of VARIANTS) {
+      expect(await computedValue(page, `#${tag}-trigger`, 'background-color'), tag).toBe(
+        'rgba(0, 0, 0, 0)',
+      );
+    }
+  });
+
+  test('a consumer --cngx-select-bg paints every variant trigger', async ({ page }) => {
+    await page.addStyleTag({
+      content: `.consumer-surface, .consumer-surface * { --cngx-select-bg: ${CONSUMER_BG}; }`,
+    });
+    for (const [tag] of VARIANTS) {
+      expect(await computedValue(page, `#${tag}-trigger`, 'background-color'), tag).toBe(
+        CONSUMER_BG,
+      );
+    }
+  });
+
+  test('every trigger text paints on-surface under the bridge alone', async ({ page }) => {
+    for (const [tag] of VARIANTS) {
+      expect(await computedValue(page, `#${tag}-trigger`, 'color'), tag).toBe(matSys('on-surface'));
+    }
+  });
+
+  test('a consumer --cngx-select-color paints every variant trigger', async ({ page }) => {
+    await page.addStyleTag({
+      content: `.consumer-surface, .consumer-surface * { --cngx-select-color: ${CONSUMER_COLOR}; }`,
+    });
+    for (const [tag] of VARIANTS) {
+      expect(await computedValue(page, `#${tag}-trigger`, 'color'), tag).toBe(CONSUMER_COLOR);
+    }
+  });
+
+  test('every trigger border paints outline under the bridge alone', async ({ page }) => {
+    for (const [tag] of VARIANTS) {
+      expect(await computedValue(page, `#${tag}-trigger`, 'border-top-color'), tag).toBe(
+        matSys('outline'),
+      );
+    }
+  });
+
+  test('a consumer --cngx-select-border paints every variant trigger', async ({ page }) => {
+    await page.addStyleTag({
+      content: `.consumer-surface, .consumer-surface * { --cngx-select-border: 1px solid ${CONSUMER_BORDER}; }`,
+    });
+    for (const [tag] of VARIANTS) {
+      expect(await computedValue(page, `#${tag}-trigger`, 'border-top-color'), tag).toBe(
+        CONSUMER_BORDER,
+      );
+    }
+  });
+
+  test('the bridge focus offset reaches every variant trigger', async ({ page }) => {
+    for (const [tag] of VARIANTS) {
+      expect(await computedValue(page, `#${tag}-trigger`, '--cngx-select-focus-offset'), tag).toBe(
+        '0px',
+      );
+    }
   });
 });

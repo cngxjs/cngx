@@ -35,12 +35,22 @@
  *
  * - `--cngx-action-multi-select-*` -> `--cngx-combobox-*` ->
  *   `--cngx-select-*` -> hardcoded
- * - `--cngx-action-multi-select-border` -> `--cngx-color-border`
- * - `--cngx-action-multi-select-focus-outline` -> `--cngx-color-primary`
+ * - `--cngx-action-multi-select-bg` -> `--cngx-combobox-bg` ->
+ *   `--cngx-select-bg` -> `transparent`; all three are registered without
+ *   an initial value and inherit, so any of them set on an ancestor
+ *   reaches the trigger
+ * - `--cngx-action-multi-select-color` -> `--cngx-combobox-color` ->
+ *   `--cngx-select-color` -> `inherit`, registered the same way
+ * - `--cngx-action-multi-select-border` -> `--cngx-combobox-border` ->
+ *   `--cngx-select-border` -> `--cngx-color-border`, registered like the
+ *   background token
+ * - `--cngx-action-multi-select-focus-outline` ->
+ *   `--cngx-combobox-focus-outline` -> `--cngx-select-focus-outline` ->
+ *   `--cngx-color-primary`, registered like the background token
  *
- * Once registered via `@property` the inner var() steps are
- * documentation-only; system tokens (`--cngx-color-*`) are the
- * brand-wide override path.
+ * For every other token, once registered via `@property` with an initial
+ * value the inner var() steps are documentation-only; system tokens
+ * (`--cngx-color-*`) are the brand-wide override path.
  *
  * **Pair with**
  *
@@ -82,13 +92,16 @@
   }
 
   /**
-   * Border shorthand of the trigger.
+   * Border shorthand of the trigger. Falls back to `--cngx-combobox-border`,
+   * then `--cngx-select-border`; see {@link --cngx-select-bg} for why no
+   * `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-combobox-border, var(--cngx-select-border, 1px solid var(--cngx-color-border)))
+   * @see [[--cngx-color-border]]
    */
   @property --cngx-action-multi-select-border {
     syntax: '*';
     inherits: true;
-    initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
   /**
@@ -102,23 +115,27 @@
   }
 
   /**
-   * Background of the trigger.
+   * Background of the trigger. Falls back to `--cngx-combobox-bg`, then
+   * `--cngx-select-bg`; see {@link --cngx-select-bg} for why no
+   * `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-combobox-bg, var(--cngx-select-bg, transparent))
    */
   @property --cngx-action-multi-select-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
+    syntax: '*';
+    inherits: true;
   }
 
   /**
-   * Text color of the trigger.
+   * Text color of the trigger. Falls back to `--cngx-combobox-color`, then
+   * `--cngx-select-color`; see {@link --cngx-select-bg} for why no
+   * `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-combobox-color, var(--cngx-select-color, inherit))
    */
   @property --cngx-action-multi-select-color {
     syntax: '*';
     inherits: true;
-    initial-value: currentColor;
   }
 
   /**
@@ -132,15 +149,16 @@
   }
 
   /**
-   * Focus-ring outline shorthand applied on `:focus-within`. Falls
-   * back to `--cngx-color-primary`.
+   * Focus-ring outline shorthand of the trigger. Falls back to
+   * `--cngx-combobox-focus-outline`, then `--cngx-select-focus-outline`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group State / Focus
+   * @default var(--cngx-combobox-focus-outline, var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary)))
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-action-multi-select-focus-outline {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
@@ -161,14 +179,6 @@
     syntax: '*';
     inherits: false;
     initial-value: 4rem;
-  }
-
-  /* Delegating tokens - trigger border + focus-ring track the
-   * foundation chain. Shorthands pin their structural part and
-   * inherit the color via the delegating foundation token. */
-  :root {
-    --cngx-action-multi-select-border: 1px solid var(--cngx-color-border);
-    --cngx-action-multi-select-focus-outline: 2px solid var(--cngx-color-primary);
   }
 }
 
@@ -291,6 +301,9 @@
     .cngx-action-multi-select__input {
       flex: 1 1 var(--cngx-action-multi-select-input-flex-basis, 4rem);
       min-width: var(--cngx-action-multi-select-input-min-width, 4rem);
+      /* The row carries the touch floor; the bare-input floor from base.css
+       * would stack the row padding on top of it under a coarse pointer. */
+      min-height: 0;
       appearance: none;
       border: 0;
       outline: 0;
