@@ -520,12 +520,13 @@ test.describe('material-bridge rendered values: command-palette', () => {
   });
 });
 
-test.describe('material-bridge rendered values: select family trigger background', () => {
-  // Every trigger background token falls back to --cngx-select-bg (and
-  // action-multi / reorderable through their parent variant first). The
-  // bridge keeps the family trigger transparent through --cngx-select-bg
-  // alone: a variant -bg assignment would sit on the read element and cut
-  // the chain, so a consumer --cngx-select-bg would skip that variant.
+test.describe('material-bridge rendered values: select family trigger chain', () => {
+  // Every trigger background and color token falls back to its family token
+  // (--cngx-select-bg, --cngx-select-color; action-multi / reorderable
+  // through their parent variant first). The bridge themes the trigger
+  // through the family tokens alone: it broadcasts onto every descendant, so
+  // a variant assignment would sit on the read element and cut the chain,
+  // and a consumer family token would skip that variant.
   const VARIANTS = [
     ['cngx-select', 'single-select/select'],
     ['cngx-multi-select', 'multi-select/multi-select'],
@@ -547,6 +548,7 @@ test.describe('material-bridge rendered values: select family trigger background
   ).join('\n  ')}
 </div>`;
   const CONSUMER_BG = 'rgb(9, 8, 7)';
+  const CONSUMER_COLOR = 'rgb(7, 8, 9)';
 
   test.beforeEach(async ({ page }) => {
     await renderFixture(page, {
@@ -571,6 +573,29 @@ test.describe('material-bridge rendered values: select family trigger background
     for (const [tag] of VARIANTS) {
       expect(await computedValue(page, `#${tag}-trigger`, 'background-color'), tag).toBe(
         CONSUMER_BG,
+      );
+    }
+  });
+
+  test('every trigger text paints on-surface under the bridge alone', async ({ page }) => {
+    for (const [tag] of VARIANTS) {
+      expect(await computedValue(page, `#${tag}-trigger`, 'color'), tag).toBe(matSys('on-surface'));
+    }
+  });
+
+  test('a consumer --cngx-select-color paints every variant trigger', async ({ page }) => {
+    await page.addStyleTag({
+      content: `.consumer-surface, .consumer-surface * { --cngx-select-color: ${CONSUMER_COLOR}; }`,
+    });
+    for (const [tag] of VARIANTS) {
+      expect(await computedValue(page, `#${tag}-trigger`, 'color'), tag).toBe(CONSUMER_COLOR);
+    }
+  });
+
+  test('the bridge focus offset reaches every variant trigger', async ({ page }) => {
+    for (const [tag] of VARIANTS) {
+      expect(await computedValue(page, `#${tag}-trigger`, '--cngx-select-focus-offset'), tag).toBe(
+        '0px',
       );
     }
   });
