@@ -32,6 +32,7 @@
     "schematics:scaffold": "node scripts/generate-scaffold-catalog.mjs",
     "test:e2e:examples": "playwright test --config=examples/playwright.config.ts",
     "test:e2e:examples:update": "playwright test --config=examples/playwright.config.ts --update-snapshots",
+    "test:e2e:sweep": "playwright test --config=examples/playwright.console-sweep.config.ts",
     "examples:generate": "node scripts/examples-gen/index.mjs",
     "examples:backport-urls": "node scripts/backport-example-urls.mjs",
     "test": "ng test utils --watch=false && ng test core --watch=false && ng test forms --watch=false && ng test ui --watch=false && ng test common --watch=false && ng test data-display --watch=false && ng test interop --watch=false && npm run test:schematics",
