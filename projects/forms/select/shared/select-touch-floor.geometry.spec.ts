@@ -186,6 +186,145 @@ const LITERAL_ENDS: Readonly<Record<string, readonly [string, string, string]>> 
   'cngx-select-shell': ['8px', '8px', '12px'],
 };
 
+// Every clearable variant with a value, once with the clear button and once
+// without, under the forced touch floor.
+@Component({
+  selector: 'cngx-select-clearable-host',
+  standalone: true,
+  imports: [
+    CngxSelect,
+    CngxMultiSelect,
+    CngxCombobox,
+    CngxTypeahead,
+    CngxTreeSelect,
+    CngxReorderableMultiSelect,
+    CngxActionSelect,
+    CngxActionMultiSelect,
+    CngxSelectShell,
+    CngxSelectOption,
+  ],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/reset.css',
+    '../../../core/theming/base.css',
+    '../../theming/components/cngx-field-affix.css',
+    '../../theming/components/cngx-field-skin.css',
+    './select-base.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div data-touch="on" style="display: block; width: 20rem; margin: 1rem">
+      <div class="with-clear">
+        <cngx-select [label]="'C'" [options]="options" [clearable]="true" [value]="'red'" />
+        <cngx-multi-select
+          [label]="'C'"
+          [options]="options"
+          [clearable]="true"
+          [values]="['red']"
+        />
+        <cngx-combobox [label]="'C'" [options]="options" [clearable]="true" [values]="['red']" />
+        <cngx-typeahead [label]="'C'" [options]="options" [clearable]="true" [value]="'red'" />
+        <cngx-tree-select
+          [label]="'C'"
+          [nodes]="options"
+          [nodeIdFn]="nodeId"
+          [clearable]="true"
+          [values]="['red']"
+        />
+        <cngx-reorderable-multi-select
+          [label]="'C'"
+          [options]="options"
+          [clearable]="true"
+          [values]="['red']"
+        />
+        <cngx-action-select [label]="'C'" [options]="options" [clearable]="true" [value]="'red'" />
+        <cngx-action-multi-select
+          [label]="'C'"
+          [options]="options"
+          [clearable]="true"
+          [values]="['red']"
+        />
+        <cngx-select-shell [label]="'C'" [clearable]="true" [value]="'red'">
+          <cngx-option [value]="'red'">Red</cngx-option>
+        </cngx-select-shell>
+      </div>
+      <div class="without-clear">
+        <cngx-select [label]="'C'" [options]="options" [clearable]="false" [value]="'red'" />
+        <cngx-multi-select
+          [label]="'C'"
+          [options]="options"
+          [clearable]="false"
+          [values]="['red']"
+        />
+        <cngx-combobox [label]="'C'" [options]="options" [clearable]="false" [values]="['red']" />
+        <cngx-typeahead [label]="'C'" [options]="options" [clearable]="false" [value]="'red'" />
+        <cngx-tree-select
+          [label]="'C'"
+          [nodes]="options"
+          [nodeIdFn]="nodeId"
+          [clearable]="false"
+          [values]="['red']"
+        />
+        <cngx-reorderable-multi-select
+          [label]="'C'"
+          [options]="options"
+          [clearable]="false"
+          [values]="['red']"
+        />
+        <cngx-action-select [label]="'C'" [options]="options" [clearable]="false" [value]="'red'" />
+        <cngx-action-multi-select
+          [label]="'C'"
+          [options]="options"
+          [clearable]="false"
+          [values]="['red']"
+        />
+        <cngx-select-shell [label]="'C'" [clearable]="false" [value]="'red'">
+          <cngx-option [value]="'red'">Red</cngx-option>
+        </cngx-select-shell>
+      </div>
+    </div>
+  `,
+})
+class ClearableHost {
+  readonly options = [
+    { value: 'red', label: 'Red' },
+    { value: 'green', label: 'Green' },
+  ];
+  readonly nodeId = (value: unknown): string => String(value);
+}
+
+const CLEAR_BUTTONS: Readonly<Record<string, string>> = {
+  'cngx-select': '.cngx-select__clear',
+  'cngx-multi-select': '.cngx-multi-select__clear-all',
+  'cngx-combobox': '.cngx-combobox__clear-all',
+  'cngx-typeahead': '.cngx-typeahead__clear',
+  'cngx-tree-select': '.cngx-tree-select__clear-all',
+  'cngx-reorderable-multi-select': '.cngx-reorderable-multi-select__clear-all',
+  'cngx-action-select': '.cngx-action-select__clear',
+  'cngx-action-multi-select': '.cngx-action-multi-select__clear-all',
+  'cngx-select-shell': '.cngx-select-shell__clear',
+};
+
+function mountClearable(): HTMLElement {
+  const fixture = TestBed.createComponent(ClearableHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  fixture.detectChanges();
+  return mountedRoot;
+}
+
+function rowHeights(group: HTMLElement): Record<string, number> {
+  return Object.fromEntries(
+    Array.from(group.querySelectorAll<HTMLElement>('.cngx-field-trigger')).map((row) => [
+      hostTag(row) ?? '',
+      Math.round(row.getBoundingClientRect().height),
+    ]),
+  );
+}
+
 interface InnerToken {
   readonly token: string;
   readonly value: string;
@@ -609,5 +748,37 @@ describe('tree-select clear-all touch floor', () => {
   it('lifts the button to the 44px floor under the touch floor', () => {
     const rect = clearAll(true);
     expect([Math.round(rect.width), Math.round(rect.height)]).toEqual([44, 44]);
+  });
+});
+
+describe('select clear button touch hit area', () => {
+  it('every clear button is a >= 44x44 hit area under the touch floor', () => {
+    const root = mountClearable();
+    const group = root.querySelector<HTMLElement>('.with-clear')!;
+    for (const [host, selector] of Object.entries(CLEAR_BUTTONS)) {
+      const button = group.querySelector<HTMLElement>(`${host} ${selector}`);
+      expect(button, host).not.toBeNull();
+      const rect = button!.getBoundingClientRect();
+      expect(Math.round(rect.width) >= 44 && Math.round(rect.height) >= 44, host).toBe(true);
+      // The whole box takes the tap: probe 1px inside each edge midpoint.
+      const midX = rect.left + rect.width / 2;
+      const midY = rect.top + rect.height / 2;
+      for (const [x, y] of [
+        [midX, rect.top + 1],
+        [midX, rect.bottom - 1],
+        [rect.left + 1, midY],
+        [rect.right - 1, midY],
+      ]) {
+        const hit = document.elementFromPoint(x, y);
+        expect(hit !== null && button!.contains(hit), `${host} at ${x},${y}`).toBe(true);
+      }
+    }
+  });
+
+  it('the clear button leaves every trigger row at its height without one', () => {
+    const root = mountClearable();
+    expect(rowHeights(root.querySelector<HTMLElement>('.with-clear')!)).toEqual(
+      rowHeights(root.querySelector<HTMLElement>('.without-clear')!),
+    );
   });
 });

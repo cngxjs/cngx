@@ -167,8 +167,9 @@
   }
 
   /**
-   * Hit-target diameter of the clear-all button; the touch floor lifts it to
-   * `--cngx-target-min`. No `initial-value`, like
+   * Hit-target diameter of the clear-all button; the touch floor enlarges
+   * its hit area to `--cngx-target-min` (see `select-base.css`). No
+   * `initial-value`, like
    * {@link --cngx-tree-select-trigger-bg}: the use-site fallback survives, and a
    * value set on the host or an ancestor reaches the button.
    * @group State / Clear
@@ -278,9 +279,6 @@
       justify-content: center;
       inline-size: var(--cngx-tree-select-clear-size, 1.25rem);
       block-size: var(--cngx-tree-select-clear-size, 1.25rem);
-      /* Touch-target floor, as on the twisty; inert at 0px on a fine pointer. */
-      min-inline-size: var(--cngx-target-min, 0px);
-      min-block-size: var(--cngx-target-min, 0px);
       padding: 0;
       border: none;
       background: transparent;
