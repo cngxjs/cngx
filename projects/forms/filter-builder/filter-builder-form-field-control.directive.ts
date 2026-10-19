@@ -42,8 +42,14 @@ import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive
     { provide: CNGX_SELECT_DISABLE_FIELD_SYNC, useValue: true },
   ],
   host: {
-    // The field label's `for` points at the control id.
+    // The field's control id; focusFirstError and the summary links resolve it.
     '[attr.id]': 'presenter.id()',
+    // The host is not labelable, so a label `for` names nothing: the field's
+    // label, hint, error and invalid state reach the builder as a named group.
+    '[attr.role]': 'field ? "group" : null',
+    '[attr.aria-labelledby]': 'field?.labelId() ?? null',
+    '[attr.aria-describedby]': 'field?.describedBy() ?? null',
+    '[attr.aria-invalid]': 'field?.showError() ? "true" : null',
     '(focusin)': 'handleFocusIn()',
     '(focusout)': 'handleFocusOut($event)',
   },
@@ -53,7 +59,7 @@ export class CngxFilterBuilderFormFieldControl {
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   // The surrounding field; the builder's inner pickers see a null presenter
   // (CngxFilterBuilder viewProviders), so the builder alone marks it touched.
-  private readonly field = inject(CngxFormFieldPresenter, { optional: true });
+  protected readonly field = inject(CngxFormFieldPresenter, { optional: true });
 
   protected handleFocusIn(): void {
     this.presenter.setFocused(true);

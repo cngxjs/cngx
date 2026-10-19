@@ -309,6 +309,26 @@ describe('CngxFilterBuilder - form-field bridge', () => {
       expect(document.getElementById(outer.controlId())).toBe(builder);
       fixture.nativeElement.remove();
     });
+
+    it('names the builder as a group by the field label, hint and error', () => {
+      const { fixture, builder, outer } = mountPopulated();
+      expect(builder.getAttribute('role')).toBe('group');
+      expect(builder.getAttribute('aria-labelledby')).toBe(outer.labelId());
+      expect(builder.getAttribute('aria-describedby')).toBe(outer.hintId());
+      expect(builder.getAttribute('aria-invalid')).toBeNull();
+
+      fixture.componentInstance.ref.touched.set(true);
+      fixture.componentInstance.ref.invalid.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      expect(outer.showError()).toBe(true);
+      expect(builder.getAttribute('aria-describedby')).toBe(
+        `${outer.hintId()} ${outer.errorId()}`,
+      );
+      expect(builder.getAttribute('aria-invalid')).toBe('true');
+      fixture.nativeElement.remove();
+    });
   });
 
   it('errorState() AND-gates incomplete expressions with the form-field touched flag', () => {
