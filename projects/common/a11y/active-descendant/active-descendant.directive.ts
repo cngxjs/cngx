@@ -231,6 +231,48 @@ export class CngxActiveDescendant {
       queueMicrotask(() => this.scrollActiveIntoView());
     });
 
+    // The highlight follows its value, not its index: when the item list
+    // changes, the previously active value is looked up again. Gone from a
+    // plain list means no highlight; in a virtual window a value merely
+    // scrolled out keeps its absolute index. The index recorded before the
+    // change is used, so a clamp in the same flush cannot pick the wrong
+    // previous value.
+    let seenItems: readonly ActiveDescendantItem[] | null = null;
+    let seenIndex = -1;
+    let seenOffset = 0;
+    effect(() => {
+      const items = this.resolvedItems();
+      const index = this.activeIndexState();
+      untracked(() => {
+        const previousItems = seenItems;
+        const previousIndex = seenIndex;
+        const previousOffset = seenOffset;
+        seenItems = items;
+        seenOffset = this.windowOffset();
+        seenIndex = index;
+        if (previousItems === null || previousItems === items || previousIndex < 0) {
+          return;
+        }
+        const previous = previousItems[previousIndex - previousOffset];
+        if (!previous) {
+          return;
+        }
+        const match = items.findIndex((it) => Object.is(it.value, previous.value));
+        if (match >= 0) {
+          seenIndex = match + seenOffset;
+          this.activeIndexState.set(seenIndex);
+          return;
+        }
+        if (this.virtualCount() != null) {
+          seenIndex = previousIndex;
+          this.activeIndexState.set(previousIndex);
+          return;
+        }
+        seenIndex = -1;
+        this.activeIndexState.set(-1);
+      });
+    });
+
     // Clamp the active STATE, not just the derived display, when the item
     // space shrinks below it - otherwise the next arrow press navigates
     // relative to a ghost index.

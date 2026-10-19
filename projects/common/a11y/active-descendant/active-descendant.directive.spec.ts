@@ -630,6 +630,21 @@ describe('CngxActiveDescendant - virtual window offset', () => {
     expect(dir.activeId()).toBe('opt-47');
   });
 
+  it('keeps the absolute index when the window scrolls the active item out', () => {
+    const { fixture, dir } = setupWindow();
+    dir.highlightByIndex(45);
+    TestBed.flushEffects();
+    fixture.componentInstance.start.set(60);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(dir.activeIndex()).toBe(45);
+    fixture.componentInstance.start.set(41);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(dir.activeIndex()).toBe(45);
+    expect(dir.activeId()).toBe('opt-45');
+  });
+
   it('End targets virtualCount - 1 beyond the rendered window', () => {
     const { dir } = setupWindow();
     dir.highlightLast();
@@ -819,6 +834,62 @@ describe('CngxActiveDescendant - items input', () => {
     expect(dir.activeId()).toBe('y-1');
     expect(dir.activeItem()?.label).toBe('Yankee');
   });
+
+  function setupItems() {
+    const fixture = TestBed.createComponent(InputItemsHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const dir = fixture.debugElement
+      .query(By.directive(CngxActiveDescendant))
+      .injector.get(CngxActiveDescendant);
+    return { fixture, host: fixture.componentInstance, dir };
+  }
+
+  it('keeps the highlight on its value when the items reorder', () => {
+    const { host, dir } = setupItems();
+    dir.highlightByValue('y');
+    TestBed.flushEffects();
+    host.dynamicItems.set([
+      { id: 'y-1', value: 'y', label: 'Yankee' },
+      { id: 'z-1', value: 'z', label: 'Zulu' },
+      { id: 'x-1', value: 'x', label: 'Xray' },
+    ]);
+    TestBed.flushEffects();
+    expect(dir.activeValue()).toBe('y');
+    expect(dir.activeIndex()).toBe(0);
+  });
+
+  it('never moves the highlight to another value when the items swap', () => {
+    const { host, dir } = setupItems();
+    dir.highlightByValue('y');
+    TestBed.flushEffects();
+    host.dynamicItems.set([
+      { id: 'a-1', value: 'a', label: 'Alpha' },
+      { id: 'b-1', value: 'b', label: 'Bravo' },
+    ]);
+    TestBed.flushEffects();
+    expect(dir.activeValue()).toBeNull();
+    expect(dir.activeIndex()).toBe(-1);
+  });
+
+  it('keeps the value when a shrink would clamp the index onto another item', () => {
+    const { host, dir } = setupItems();
+    host.dynamicItems.set([
+      { id: 'x-1', value: 'x', label: 'Xray' },
+      { id: 'y-1', value: 'y', label: 'Yankee' },
+      { id: 'z-1', value: 'z', label: 'Zulu' },
+    ]);
+    TestBed.flushEffects();
+    dir.highlightByValue('z');
+    TestBed.flushEffects();
+    host.dynamicItems.set([
+      { id: 'z-1', value: 'z', label: 'Zulu' },
+      { id: 'x-1', value: 'x', label: 'Xray' },
+    ]);
+    TestBed.flushEffects();
+    expect(dir.activeValue()).toBe('z');
+  });
 });
 
 /* --- Keyboard hygiene: modifiers, RTL, state clamp ------------------------ */
@@ -852,7 +923,7 @@ describe('CngxActiveDescendant - keyboard hygiene', () => {
     expect(event.defaultPrevented).toBe(false);
   });
 
-  it('clamps the active state, not just the display, when the list shrinks', () => {
+  it('drops the active state, not just the display, when its item leaves the list', () => {
     const { fixture, dir, key } = setup();
     dir.highlightByIndex(2);
     TestBed.flushEffects();
@@ -862,10 +933,10 @@ describe('CngxActiveDescendant - keyboard hygiene', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     fixture.detectChanges();
-    // State clamped to the last remaining item - not a ghost index.
-    expect(dir.activeIndex()).toBe(0);
-    expect(dir.activeItem()?.value).toBe('a');
-    // Navigation anchors at the clamped state.
+    // The highlight never lands on another value and no ghost index remains.
+    expect(dir.activeIndex()).toBe(-1);
+    expect(dir.activeItem()).toBeNull();
+    // Navigation starts fresh from the remaining items.
     key('ArrowDown');
     expect(dir.activeItem()?.value).toBe('a');
   });

@@ -1798,3 +1798,44 @@ describeSelectBehaviourHost('CngxSelect', CngxSelect, 'cngx-select', {
   optionSelector: '[cngxOption]',
   readValue: (cmp) => (cmp as { value: () => unknown }).value(),
 });
+
+describe('CngxSelect - highlight across an options swap', () => {
+  @Component({
+    template: `<cngx-select [label]="'Colour'" [options]="options()" [presentation]="'anchored'" />`,
+    imports: [CngxSelect],
+  })
+  class SwapHost {
+    readonly options = signal([
+      { value: 'red', label: 'Red' },
+      { value: 'green', label: 'Green' },
+      { value: 'blue', label: 'Blue' },
+    ]);
+  }
+
+  it('keeps the highlight on its value or drops it, never on another option', () => {
+    polyfillPopover();
+    const fixture = TestBed.createComponent(SwapHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const de = fixture.debugElement.query(By.directive(CngxSelect));
+    (de.componentInstance as CngxSelect<string>).open();
+    flush(fixture);
+    const ad = de.query(By.directive(CngxListbox)).injector.get(CngxListbox).ad;
+    ad.highlightByValue('green');
+    flush(fixture);
+
+    fixture.componentInstance.options.set([
+      { value: 'green', label: 'Green' },
+      { value: 'red', label: 'Red' },
+    ]);
+    flush(fixture);
+    expect(ad.activeValue()).toBe('green');
+
+    fixture.componentInstance.options.set([
+      { value: 'teal', label: 'Teal' },
+      { value: 'navy', label: 'Navy' },
+    ]);
+    flush(fixture);
+    expect([null, 'green']).toContain(ad.activeValue());
+  });
+});
