@@ -80,9 +80,8 @@
     --cngx-select-shell-focus-ring: var(--mat-sys-primary);
     // Material outlined inputs thicken the border on focus with no offset gap;
     // drop the cngx 2px ring offset so the focus ring sits on the border.
-    // Every variant trigger (tree-select aside, which keeps its 1px) and the
-    // inner chip/retry rings read this one token, so zeroing it here flattens
-    // them alike.
+    // Every variant trigger and the inner chip/retry rings read this one
+    // token, so zeroing it here flattens them alike.
     --cngx-select-focus-offset: 0px;
 
     // Tree-select node states
