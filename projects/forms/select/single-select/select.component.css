@@ -44,8 +44,8 @@
  * - `--cngx-select-bg` -> `transparent`; registered without an initial
  *   value and inheriting, so a value set on an ancestor reaches the trigger.
  *   Every variant's background token falls back to it
- * - `--cngx-select-focus-offset` -> `2px`; registered the same way, so an
- *   ancestor value reaches every variant's focus rings
+ * - `--cngx-select-focus-offset` -> `2px` (tree select: `1px`); registered
+ *   the same way, so an ancestor value reaches every variant's focus rings
  * - `--cngx-select-color` -> `inherit`; registered the same way, and every
  *   variant's color token falls back to it
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->

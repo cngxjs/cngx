@@ -224,14 +224,11 @@ describe('select touch floor geometry', () => {
     }
   });
 
-  // Tree-select keeps its own 1px ring offset and does not read the token.
-  it('--cngx-select-focus-offset set on an ancestor moves every focus ring but the tree', () => {
+  it('--cngx-select-focus-offset set on an ancestor moves every focus ring', () => {
     const rows = mountRows();
     setOnAncestor('--cngx-select-focus-offset', '5px');
-    const offsets = paints(rows, { property: 'outlineOffset', focus: true });
-    offsets.forEach((offset, i) => {
-      const host = hostTag(rows[i]);
-      expect(offset, `${host} trigger row`).toBe(host === 'cngx-tree-select' ? '1px' : '5px');
+    paints(rows, { property: 'outlineOffset', focus: true }).forEach((offset, i) => {
+      expect(offset, `${hostTag(rows[i])} trigger row`).toBe('5px');
     });
   });
 
