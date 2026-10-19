@@ -25,7 +25,9 @@ import { CngxTypeahead } from '../typeahead/typeahead.component';
 // on an ancestor repaints only the rows that read it: its own variant, plus
 // the variant that chains through it (action-multi-select through the
 // combobox token, reorderable-multi-select through the multi-select token).
-// Tree-select's variant tokens carry a `trigger-` infix.
+// Tree-select's variant tokens carry a `trigger-` infix. The layout chains
+// follow the same shape; their values stay above the 44px floor so the floor
+// does not mask them.
 
 @Component({
   selector: 'cngx-select-touch-floor-host',
@@ -80,11 +82,13 @@ const SET_COLOR = 'rgb(1, 2, 3)';
 
 interface TokenChain {
   /** Computed style property painted on the trigger row. */
-  readonly property: 'backgroundColor' | 'color' | 'borderTopColor' | 'outlineColor';
+  readonly property: 'backgroundColor' | 'color' | 'borderTopColor' | 'outlineColor' | 'minHeight';
   /** The row only paints `property` while its combobox has focus. */
   readonly focus?: boolean;
-  /** Value the tokens are set to; it paints `SET_COLOR` on `property`. */
+  /** Value the tokens are set to; it paints `expected` on `property`. */
   readonly value: string;
+  /** Computed value `value` paints on `property`; `SET_COLOR` when omitted. */
+  readonly expected?: string;
   readonly family: string;
   /** Each variant token and the hosts whose trigger row reads it. */
   readonly variants: readonly (readonly [string, readonly string[]])[];
@@ -145,6 +149,22 @@ const CHAINS: readonly TokenChain[] = [
       ['--cngx-reorderable-multi-select-focus-outline', ['cngx-reorderable-multi-select']],
       ['--cngx-action-multi-select-focus-outline', ['cngx-action-multi-select']],
       ['--cngx-select-shell-focus-outline', ['cngx-select-shell']],
+    ],
+  },
+  {
+    property: 'minHeight',
+    value: '51px',
+    expected: '51px',
+    family: '--cngx-select-min-height',
+    variants: [
+      ['--cngx-multi-select-min-height', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
+      ['--cngx-combobox-min-height', ['cngx-combobox', 'cngx-action-multi-select']],
+      ['--cngx-typeahead-min-height', ['cngx-typeahead']],
+      ['--cngx-tree-select-trigger-height', ['cngx-tree-select']],
+      ['--cngx-reorderable-multi-select-min-height', ['cngx-reorderable-multi-select']],
+      ['--cngx-action-select-min-height', ['cngx-action-select']],
+      ['--cngx-action-multi-select-min-height', ['cngx-action-multi-select']],
+      ['--cngx-select-shell-min-height', ['cngx-select-shell']],
     ],
   },
 ];
@@ -234,11 +254,12 @@ describe('select touch floor geometry', () => {
 
   for (const chain of CHAINS) {
     const { value, family, variants } = chain;
+    const set = chain.expected ?? SET_COLOR;
     it(`${family} set on an ancestor reaches every trigger row`, () => {
       const rows = mountRows();
       setOnAncestor(family, value);
       paints(rows, chain).forEach((painted, i) => {
-        expect(painted, `${hostTag(rows[i])} trigger row`).toBe(SET_COLOR);
+        expect(painted, `${hostTag(rows[i])} trigger row`).toBe(set);
       });
     });
 
@@ -249,7 +270,7 @@ describe('select touch floor geometry', () => {
         setOnAncestor(token, value);
         paints(rows, chain).forEach((after, i) => {
           const host = hostTag(rows[i]) ?? '';
-          const expected = painted.includes(host) ? SET_COLOR : before[i];
+          const expected = painted.includes(host) ? set : before[i];
           expect(after, `${host} trigger row`).toBe(expected);
         });
       });

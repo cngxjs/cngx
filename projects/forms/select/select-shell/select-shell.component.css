@@ -72,14 +72,16 @@
   }
 
   /**
-   * Minimum block size of the trigger. Shared family default so the shell
-   * trigger matches the other variants instead of sizing to content.
+   * Minimum block size of the trigger.
+   * Falls back to `--cngx-select-min-height`; see
+   * {@link --cngx-select-min-height} for why no `initial-value` is declared.
+   * The touch floor still lifts the trigger to `--cngx-target-min`.
    * @group Layout
+   * @default var(--cngx-select-min-height, 2.125rem)
    */
   @property --cngx-select-shell-min-height {
     syntax: '*';
-    inherits: false;
-    initial-value: 2.125rem;
+    inherits: true;
   }
 
   /**
