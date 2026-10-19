@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { manifestFileRefs, missingRefs, missingRuntimeFiles, stampStagedSchematics } from '../pack-libs.mjs';
+import { commonjsMarkerProblem, manifestFileRefs, missingRefs, missingRuntimeFiles, stampStagedSchematics } from '../pack-libs.mjs';
 import { readPackageVersion, refreshMigrationKey } from '../publish.mjs';
 
 const pkg = {
@@ -46,6 +46,28 @@ describe('missingRuntimeFiles', () => {
     expect(missingRuntimeFiles(stage, ['package.json', 'schematics/ng-add/files/starter/app.ts.tpl'])).toEqual([
       'schematics/ng-add/files/starter/favicon.svg',
     ]);
+  });
+});
+
+describe('commonjsMarkerProblem', () => {
+  const packed = ['package.json', 'schematics/collection.json', 'schematics/package.json'];
+
+  it('accepts a packed marker that pins the schematics folder to commonjs', () => {
+    expect(commonjsMarkerProblem('{ "type": "commonjs" }', packed)).toBeUndefined();
+  });
+
+  it('names a marker the tarball lacks', () => {
+    expect(commonjsMarkerProblem('{ "type": "commonjs" }', ['package.json', 'schematics/collection.json'])).toBe(
+      'schematics/package.json is missing from the tarball',
+    );
+  });
+
+  it('names a marker with the wrong or no module type', () => {
+    expect(commonjsMarkerProblem('{ "type": "module" }', packed)).toBe(
+      'schematics/package.json declares type "module", expected "commonjs"',
+    );
+    expect(commonjsMarkerProblem('{}', packed)).toBe('schematics/package.json declares type undefined, expected "commonjs"');
+    expect(commonjsMarkerProblem('not json', packed)).toBe('schematics/package.json is not valid JSON');
   });
 });
 

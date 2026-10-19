@@ -82,6 +82,20 @@ function assertExternalRequires(lib, outRoot) {
   }
 }
 
+// ng-packagr's .npmignore drops every nested package.json (`**/package.json`,
+// the secondary entries' manifests). The schematics marker must ship.
+const SCHEMATICS_MANIFEST_RULE = '!schematics/package.json';
+
+function keepSchematicsManifestPacked(distRoot) {
+  const npmignore = join(distRoot, '.npmignore');
+  const current = existsSync(npmignore) ? readFileSync(npmignore, 'utf8') : '';
+  if (current.split(/\r?\n/).includes(SCHEMATICS_MANIFEST_RULE)) {
+    return;
+  }
+  const separator = current === '' || current.endsWith('\n') ? '' : '\n';
+  writeFileSync(npmignore, `${current}${separator}${SCHEMATICS_MANIFEST_RULE}\n`);
+}
+
 function indexFiles(dir) {
   return readdirSync(dir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && !NON_ENTRY_DIRS.has(entry.name))
@@ -196,6 +210,11 @@ async function buildLib(lib) {
   for (const dir of runtimeFileDirs(srcRoot)) {
     cpSync(join(srcRoot, dir), join(outRoot, dir), { recursive: true });
   }
+  // ng-packagr 22 writes "type": "module" into dist/<lib>/package.json, which
+  // would load these CommonJS .js bundles as ESM. The nearest package.json
+  // wins, so the schematics folder pins its own module type.
+  writeFileSync(join(outRoot, 'package.json'), `${JSON.stringify({ type: 'commonjs' }, null, 2)}\n`);
+  keepSchematicsManifestPacked(distRoot);
   const shimSchema = join(outRoot, 'ng-add', 'schema.json');
   if (lib !== 'core' && existsSync(join(outRoot, 'ng-add')) && !existsSync(shimSchema)) {
     copyFileSync(CORE_NG_ADD_SCHEMA, shimSchema);

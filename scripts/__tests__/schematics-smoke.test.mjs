@@ -326,6 +326,31 @@ describe('the shipped schematics bundles', () => {
     expect(bundles.length).toBeGreaterThan(0);
     expect(privateRequires).toEqual([]);
   });
+
+  it.each(PACKED_LIBS)('of @cngx/%s pin themselves to commonjs', (lib) => {
+    const marker = requireDist(join(ROOT, 'dist', lib, 'schematics', 'package.json'));
+
+    expect(JSON.parse(readFileSync(marker, 'utf8'))).toEqual({ type: 'commonjs' });
+  });
+
+  // ng-packagr 22 writes "type": "module" into the package root; the nested
+  // marker keeps the CommonJS bundles loadable. The copy sits under dist/ so
+  // the bundles still resolve their externals from the workspace.
+  it('load the core ng-add under a package root with "type": "module"', () => {
+    const modules = join(ROOT, 'dist', '.smoke-esm-root');
+    const pkgDir = join(modules, 'node_modules', '@cngx', 'core');
+    rmSync(modules, { recursive: true, force: true });
+    try {
+      cpSync(requireDist(join(ROOT, 'dist', 'core', 'schematics')), join(pkgDir, 'schematics'), { recursive: true });
+      const manifest = JSON.parse(readFileSync(join(ROOT, 'dist', 'core', 'package.json'), 'utf8'));
+      writeFileSync(join(pkgDir, 'package.json'), JSON.stringify({ ...manifest, type: 'module' }, null, 2));
+      const engine = new SchematicEngine(new NodeModulesEngineHost([modules]));
+
+      expect(() => engine.createCollection('@cngx/core').createSchematic('ng-add')).not.toThrow();
+    } finally {
+      rmSync(modules, { recursive: true, force: true });
+    }
+  });
 });
 
 const SHIM_LIBS = PACKED_LIBS.filter((lib) => lib !== 'core');
