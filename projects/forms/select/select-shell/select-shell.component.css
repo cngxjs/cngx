@@ -208,10 +208,6 @@
       font: inherit;
       min-width: 0;
       max-inline-size: 100%;
-      /* Resolved on the host, where the inheriting min-width chain lands,
-         and handed to the ::before through an unregistered private
-         property. */
-      --_cngx-select-floor: var(--cngx-select-shell-min-width, var(--cngx-select-min-width, 10rem));
     }
 
     /* The floor is a preferred width, like the intrinsic size of an input:
@@ -223,7 +219,8 @@
     :scope::before {
       content: '';
       display: block;
-      inline-size: var(--_cngx-select-floor);
+      /* The min-width chain inherits into the pseudo-element. */
+      inline-size: var(--cngx-select-shell-min-width, var(--cngx-select-min-width, 10rem));
       max-inline-size: 100%;
     }
 
