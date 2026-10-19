@@ -643,6 +643,12 @@ export class CngxTreeSelect<T = unknown>
   /** @internal */ readonly resolvedId = this.core.resolvedId;
   /** @internal Accessible name of the `role="tree"` panel body. */
   readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal The tree's active descendant matches values like the selection does. */
+  readonly adCompareWith = computed<(a: T, b: T) => boolean>(() => {
+    const keyFn = this.keyFn();
+    const eq = this.compareWith();
+    return keyFn ? (a: T, b: T) => keyFn(a) === keyFn(b) : (a: T, b: T) => eq(a, b);
+  });
   /** @internal - own template only; outer popover panel class binding. */
   protected readonly panelClassList = this.core.panelClassList;
   /** @internal - own template only; outer popover panel width binding. */

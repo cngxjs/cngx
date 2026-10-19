@@ -54,6 +54,11 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
    * Same cascade as the flat family's listbox name.
    */
   readonly resolvedListboxLabel: Signal<string>;
+  /**
+   * Value equality the tree's active descendant uses to find the highlighted
+   * node again after the nodes change (`keyFn`, else `compareWith`).
+   */
+  readonly adCompareWith: Signal<(a: T, b: T) => boolean>;
   /** Whether the value is selected. */
   isSelected(value: T): boolean;
   /** Whether the value is partially selected via cascade descendants. */

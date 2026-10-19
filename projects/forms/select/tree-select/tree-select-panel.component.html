@@ -11,6 +11,7 @@
     cngxPopoverSheetInitialFocus
     #ad="cngxActiveDescendant"
     [items]="adItems()"
+    [compareWith]="host.adCompareWith()"
     [autoHighlightFirst]="true"
     [cngxHierarchicalNav]="host.treeController"
     (keydown.enter)="handleActivate($event, ad)"
