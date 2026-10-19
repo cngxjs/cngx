@@ -172,8 +172,16 @@ function mountRows(): HTMLElement[] {
 }
 
 // Reads `property` off every row; a focus chain focuses each row's combobox
-// first, so the row's focus rule applies while it is read.
-function paints(rows: readonly HTMLElement[], chain: TokenChain): string[] {
+// first, so the row's focus rule applies while it is read. Programmatic
+// focus matches `:focus-visible` here; if it ever stopped matching, the
+// family assertions fail rather than pass, since an unfocused row paints no
+// ring.
+function paints(
+  rows: readonly HTMLElement[],
+  chain: Pick<TokenChain, 'focus'> & {
+    readonly property: TokenChain['property'] | 'outlineOffset';
+  },
+): string[] {
   return rows.map((row) => {
     if (!chain.focus) {
       return getComputedStyle(row)[chain.property];
@@ -216,15 +224,15 @@ describe('select touch floor geometry', () => {
     }
   });
 
-  it('--cngx-select-focus-offset set on an ancestor reaches every trigger row', () => {
+  // Tree-select keeps its own 1px ring offset and does not read the token.
+  it('--cngx-select-focus-offset set on an ancestor moves every focus ring but the tree', () => {
     const rows = mountRows();
     setOnAncestor('--cngx-select-focus-offset', '5px');
-    for (const row of rows) {
-      expect(
-        getComputedStyle(row).getPropertyValue('--cngx-select-focus-offset').trim(),
-        `${hostTag(row)} trigger row`,
-      ).toBe('5px');
-    }
+    const offsets = paints(rows, { property: 'outlineOffset', focus: true });
+    offsets.forEach((offset, i) => {
+      const host = hostTag(rows[i]);
+      expect(offset, `${host} trigger row`).toBe(host === 'cngx-tree-select' ? '1px' : '5px');
+    });
   });
 
   for (const chain of CHAINS) {
