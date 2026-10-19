@@ -584,3 +584,30 @@ describe('select trigger spacing without the spacing scale', () => {
     expect(painted).toEqual(LITERAL_ENDS);
   });
 });
+
+describe('tree-select clear-all touch floor', () => {
+  function clearAll(touch: boolean): DOMRect {
+    const fixture = TestBed.createComponent(InnerTokensHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    if (touch) {
+      mountedRoot.querySelector<HTMLElement>('div')!.setAttribute('data-touch', 'on');
+    }
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const button = mountedRoot.querySelector<HTMLElement>('.cngx-tree-select__clear-all');
+    expect(button).not.toBeNull();
+    return button!.getBoundingClientRect();
+  }
+
+  it('keeps the 20px button on a fine pointer', () => {
+    const rect = clearAll(false);
+    expect([Math.round(rect.width), Math.round(rect.height)]).toEqual([20, 20]);
+  });
+
+  it('lifts the button to the 44px floor under the touch floor', () => {
+    const rect = clearAll(true);
+    expect([Math.round(rect.width), Math.round(rect.height)]).toEqual([44, 44]);
+  });
+});
