@@ -233,6 +233,9 @@ jobs:
   console-sweep:
     needs: build
     runs-on: ubuntu-latest
+    # 8.5 minutes locally for every route; the cap stops a hung server or page
+    # long before the 6-hour default.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
