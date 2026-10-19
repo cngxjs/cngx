@@ -1,11 +1,13 @@
 import { DOCUMENT } from '@angular/common';
 import {
+  afterNextRender,
   computed,
   DestroyRef,
   Directive,
   effect,
   ElementRef,
   inject,
+  Injector,
   input,
   output,
   untracked,
@@ -163,6 +165,7 @@ export class CngxPopoverSheet
   private readonly trap = inject(CngxFocusTrap, { self: true });
   private readonly announcer = inject(CngxLiveAnnouncer);
   private readonly doc = inject(DOCUMENT);
+  private readonly injector = inject(Injector);
   private readonly win = injectWindow();
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
@@ -325,7 +328,11 @@ export class CngxPopoverSheet
           this.engage(!this.host.contains(this.doc.activeElement));
         }
         if (!now && previous && this.engaged) {
+          const opener = this.savedFocus;
           this.release();
+          if (this.popover.isVisible()) {
+            this.rehomeFocusAfterFlip(opener);
+          }
         }
       });
     });
@@ -446,6 +453,22 @@ export class CngxPopoverSheet
     this.doc.addEventListener('pointerdown', this.outsidePointerDown, true);
     this.doc.addEventListener('keydown', this.escapeKeydown, true);
     this.armCloseWatcher();
+  }
+
+  // A flip back to anchored while open strips the modal focus targets (the
+  // listbox loses its tabindex), so focus would drop to body. Independent of
+  // `restoreFocus`, which governs a close, not a flip.
+  private rehomeFocusAfterFlip(opener: HTMLElement | null): void {
+    afterNextRender(
+      () => {
+        const active = this.doc.activeElement;
+        const lost = !active || active === this.doc.body || this.host.contains(active);
+        if (lost) {
+          this.focusFirstTaker([this.focusableAnchor(), opener]);
+        }
+      },
+      { injector: this.injector },
+    );
   }
 
   // A target can refuse focus: the opener of a sheet chain sits inside the

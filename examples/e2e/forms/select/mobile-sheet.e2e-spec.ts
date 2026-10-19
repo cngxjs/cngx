@@ -81,6 +81,23 @@ test.describe('select mobile sheet on a phone', () => {
     });
   }
 
+  for (const selector of ['cngx-select', 'cngx-combobox']) {
+    test(`${selector}: rotating with the sheet open keeps focus in the control`, async ({
+      page,
+    }) => {
+      await gotoDemo(page, ALL);
+      const host = await openVariant(page, selector);
+      expect(await host.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+
+      await page.setViewportSize({ width: 844, height: 390 });
+      await expect(panelOf(host)).not.toHaveAttribute('aria-modal', 'true');
+      await expect
+        .poll(() => page.evaluate(() => document.activeElement === document.body))
+        .toBe(false);
+      expect(await host.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+    });
+  }
+
   test('a tap above the sheet closes it without reaching the page underneath', async ({ page }) => {
     await gotoDemo(page, ALL);
     await addProbe(page);
