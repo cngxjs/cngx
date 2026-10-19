@@ -20,20 +20,61 @@ export interface AngularSupport {
   readonly floor: string;
   /** The app's declared `@angular/core` specifier, or why there is none. */
   readonly declared: string;
+  /**
+   * The app's Angular major is above the highest major the peer range names:
+   * the run goes on, but cngx has not been verified on it.
+   */
+  readonly aboveRange: boolean;
 }
 
 const NO_ANGULAR_DEPENDENCY = 'no @angular/core dependency';
+
+/**
+ * The highest major a peer range names (`^21.2.0 || ^22.0.0` reads 22), or
+ * `undefined` when one of its parts has no upper bound (`>=21`, `*`) or does
+ * not parse, so nothing is ever above it.
+ */
+export function verifiedMajor(peerRange: string): number | undefined {
+  const majors: number[] = [];
+  for (const part of peerRange.split('||').map((text) => text.trim())) {
+    const upper = part.includes(' - ') ? part.slice(part.lastIndexOf(' - ') + 3) : part;
+    const version = /^(>|\*|x$)/i.test(upper) ? undefined : parseVersion(upper);
+    if (version === undefined) {
+      return undefined;
+    }
+    majors.push(version.major);
+  }
+  return majors.length === 0 ? undefined : Math.max(...majors);
+}
 
 export function angularSupport(facts: ProjectFacts, peerRange: string): AngularSupport {
   const { major: minMajor, minor: minMinor } = parseVersion(peerRange) ?? { major: 0, minor: 0 };
   const app = parseVersion(facts.angularVersion);
   const supported =
     app === undefined ? undefined : app.major > minMajor || (app.major === minMajor && app.minor >= minMinor);
+  const ceiling = verifiedMajor(peerRange);
   return {
     supported,
     floor: `${minMajor}.${minMinor}`,
     declared: facts.angularRange ?? NO_ANGULAR_DEPENDENCY,
+    aboveRange: app !== undefined && ceiling !== undefined && app.major > ceiling,
   };
+}
+
+// A warn line, never a refusal: the app may run fine, but the user learns
+// that cngx was not verified on its Angular major.
+function aboveRangeItems(facts: ProjectFacts, aboveRange: boolean, peerRange: string): readonly PreflightItem[] {
+  const major = parseVersion(facts.angularVersion)?.major;
+  if (!aboveRange || major === undefined) {
+    return [];
+  }
+  return [
+    {
+      label: `Angular ${major} is newer than the Angular cngx is verified on`,
+      status: 'warn',
+      detail: `@cngx/core peers on @angular/core ${peerRange}; the run goes on, but Angular ${major} is untested`,
+    },
+  ];
 }
 
 /**
@@ -144,7 +185,7 @@ function stylesheetsItem(missing: readonly string[]): readonly PreflightItem[] {
  * Angular version below the floor, a project without a build target and a
  * missing stylesheet are the `fail` lines; the
  * shell renders them before it refuses the run. A version it cannot read is
- * a `warn`, and the run goes on.
+ * a `warn`, and the run goes on; so is a major above the peer range.
  */
 export function preflightItems({
   facts,
@@ -159,6 +200,7 @@ export function preflightItems({
       status: angularStatus(angular.supported),
       detail: angularDetail(facts, angular.supported, angular.floor),
     },
+    ...aboveRangeItems(facts, angular.aboveRange, peerRange),
     projectItem(facts, projectFlag),
     ...stylesheetsItem(facts.missingStyleEntries),
     GIT_ITEMS[git],

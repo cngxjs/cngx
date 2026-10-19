@@ -160,10 +160,18 @@ publish:dry` runs both checks and prints the entry it would add.
 `build-schematics.mjs` type-checks, then bundles each entry with esbuild (cjs,
 minified). `@angular-devkit/*`, `@schematics/angular`, `typescript` and
 `@angular/compiler` stay external: they come from the consumer's CLI install.
+Import TypeScript as `typescript`, never through
+`@schematics/angular/third_party/...`: that vendored copy is gone in CLI 22,
+and the build fails on any bundle `require` that is neither a Node builtin nor
+one of those externals. Each `dist/<lib>/schematics/` carries a
+`package.json` with `"type": "commonjs"` (and an `!schematics/package.json`
+line in the ng-packagr `.npmignore`, so it is packed), which keeps the
+bundles CommonJS under a package root with `"type": "module"`.
 Budgets: 256 KB minified / 90 KB gzip per entry, 20 KB per shim.
 `scripts/publish.mjs` writes `dist/core/schematics/versions.json` (the cngx,
 `@cngx/mcp` and `@cngx/eslint-plugin` pins, plus the `@angular/core` range
-`@cngx/core` peers on, which `ng add` refuses an older app against), stamps the
+`@cngx/core` peers on, which `ng add` refuses an older app against and warns
+an app above its highest major about), stamps the
 `refresh` entry into the dist migrations collection, and ships a lib's bundle
 only when its source `package.json` declares `schematics`. Both files come
 from `stampSchematicsDist`, which `scripts/pack-libs.mjs` runs on the staged
