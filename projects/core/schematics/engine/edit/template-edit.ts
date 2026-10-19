@@ -52,9 +52,26 @@ export function hasElement(content: string, selector: string): boolean {
 const PLACEHOLDER_START = 'The content below';
 const PLACEHOLDER_END = 'End of Placeholder';
 
+type TemplateComment = NonNullable<ReturnType<typeof parseTemplate>['commentNodes']>[number];
+
+// Where the opening comment's block starts: the comments right above it with
+// only whitespace between belong to it, the frame of `* * *` lines `ng new`
+// draws around the notice.
+function openingStart(content: string, comments: readonly TemplateComment[], open: TemplateComment): number {
+  return [...comments]
+    .reverse()
+    .reduce(
+      (start, comment) =>
+        comment.sourceSpan.end.offset <= start && content.slice(comment.sourceSpan.end.offset, start).trim() === ''
+          ? comment.sourceSpan.start.offset
+          : start,
+      open.sourceSpan.start.offset,
+    );
+}
+
 // Where the CLI placeholder block runs, read from the template's comment
-// nodes: from its opening comment (else the start) to the end of its closing
-// comment. `undefined` without a closing comment.
+// nodes: from its opening comment and the frame above it (else the start)
+// to the end of its closing comment. `undefined` without a closing comment.
 function placeholderBlock(content: string): { readonly start: number; readonly end: number } | undefined {
   const comments = parseTemplate(content, 'template.html', { preserveWhitespaces: true, collectCommentNodes: true }).commentNodes ?? [];
   const close = [...comments].reverse().find((comment) => comment.value.includes(PLACEHOLDER_END));
@@ -64,7 +81,7 @@ function placeholderBlock(content: string): { readonly start: number; readonly e
   const open = comments.find(
     (comment) => comment.value.includes(PLACEHOLDER_START) && comment.sourceSpan.end.offset <= close.sourceSpan.start.offset,
   );
-  return { start: open?.sourceSpan.start.offset ?? 0, end: close.sourceSpan.end.offset };
+  return { start: open === undefined ? 0 : openingStart(content, comments, open), end: close.sourceSpan.end.offset };
 }
 
 // The first `<selector>` element outside the CLI placeholder block.
@@ -88,6 +105,22 @@ export function hasElementOutsidePlaceholder(content: string, selector: string):
   return firstElementOutsidePlaceholder(content, selector) !== undefined;
 }
 
+/** Whether the template holds the placeholder block of an `ng new` template, read from its comment nodes. */
+export function hasPlaceholderBlock(content: string): boolean {
+  return placeholderBlock(content) !== undefined;
+}
+
+// `markup` in front of the node at `start`: on a line of its own with the
+// node's indent when the node starts its line, else right before it.
+function insertAt(content: string, start: number, markup: string, newline: string): string {
+  const lineStart = content.lastIndexOf('\n', start - 1) + 1;
+  const indent = content.slice(lineStart, start);
+  if (indent.trim() !== '') {
+    return `${content.slice(0, start)}${markup} ${content.slice(start)}`;
+  }
+  return `${content.slice(0, lineStart)}${indent}${markup}${newline}${content.slice(lineStart)}`;
+}
+
 /**
  * Inserts `markup` in front of the first `<selector>` element outside the
  * CLI placeholder block (`hasElementOutsidePlaceholder`): on a line of its
@@ -106,13 +139,23 @@ export function insertBeforeElement(
   if (element === undefined) {
     return content;
   }
-  const start = element.sourceSpan.start.offset;
-  const lineStart = content.lastIndexOf('\n', start - 1) + 1;
-  const indent = content.slice(lineStart, start);
-  if (indent.trim() !== '') {
-    return `${content.slice(0, start)}${markup} ${content.slice(start)}`;
+  return insertAt(content, element.sourceSpan.start.offset, markup, newline);
+}
+
+/**
+ * Inserts `markup` in front of the first node of the CLI placeholder block
+ * (`hasPlaceholderBlock`), its opening comment, the same way
+ * `insertBeforeElement` does, so deleting the block below the comment keeps
+ * it. Returns the content unchanged without such a block. `newline`
+ * defaults to the one the content uses; an inline template passes the one of
+ * its host file.
+ */
+export function insertBeforePlaceholder(content: string, markup: string, newline = newlineOf(content)): string {
+  const block = placeholderBlock(content);
+  if (block === undefined) {
+    return content;
   }
-  return `${content.slice(0, lineStart)}${indent}${markup}${newline}${content.slice(lineStart)}`;
+  return insertAt(content, block.start, markup, newline);
 }
 
 /**

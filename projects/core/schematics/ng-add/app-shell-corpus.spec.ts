@@ -111,6 +111,8 @@ interface Shape {
    * step, and `files` / `remove` change the shell afterwards.
    */
   readonly installedFirst?: true;
+  /** The root component and its template went through Prettier before `ng add`. */
+  readonly prettierFirst?: true;
   /** `placed`, or the reason cngx names with the snippet instead of editing. */
   readonly outcome: 'placed' | AppShellBlockedReason;
 }
@@ -238,6 +240,10 @@ const CORPUS: readonly Shape[] = [
   { name: 'ambient module declaration', files: app((stock) => `${stock}\ndeclare module 'virtual:extra' {}\n`), outcome: 'placed' },
   { name: 'numeric key in the decorator', files: app((stock) => stock.replace("  selector: 'app-root',", "  selector: 'app-root',\n  1: true,")), outcome: 'decorator-dynamic' },
   { name: 'router outlet inside the CLI placeholder block', files: { 'src/app/app.html': ROUTER_IN_PLACEHOLDER_HTML }, outcome: 'placed' },
+  { name: 'placeholder block followed by user content', files: { 'src/app/app.html': STOCK_HTML.replace('<router-outlet />\n', '<header>mine</header>\n<router-outlet />\n<footer>mine</footer>\n') }, outcome: 'placed' },
+  { name: 'user content above the placeholder block', files: { 'src/app/app.html': `<header>mine</header>\n${STOCK_HTML}` }, outcome: 'placed' },
+  { name: 'no placeholder block, router outlet between user content', files: { 'src/app/app.html': '<header>mine</header>\n<router-outlet />\n<footer>mine</footer>\n' }, outcome: 'placed' },
+  { name: 'Prettier-formatted scaffold-21', fixture: 'scaffold-21', prettierFirst: true, outcome: 'placed' },
   { name: 'component with a syntax error', files: app((stock) => `${stock}\nconst broken = ;\n`), outcome: 'source-parse-error' },
   { name: 'NgModule with a syntax error', files: { ...ngModuleApp(), 'src/app/app-module.ts': `${ngModule()}\nconst broken = ;\n` }, outcome: 'source-parse-error' },
   { name: 'aliased decorator import', files: app((stock) => stock.replace('import { Component, signal }', 'import { Component as C, signal }').replace('@Component(', '@C(')), outcome: 'no-component-decorator' },
@@ -254,6 +260,9 @@ async function treeOf(shape: Shape): Promise<Tree> {
   }
   for (const path of shape.remove ?? []) {
     tree.delete(path);
+  }
+  if (shape.prettierFirst) {
+    await formatted(tree, ['src/app/app.ts', 'src/app/app.html']);
   }
   return tree;
 }
@@ -595,20 +604,35 @@ function expectTidyOutlets(before: string, after: string): void {
   }
 }
 
-// A8: both outlets sit after the CLI's `End of Placeholder` comment, never
-// inside the block the user deletes.
-function expectOutsidePlaceholder(template: string): void {
+// Neither outlet sits inside the CLI placeholder block the user deletes: a
+// banner cngx placed goes right above the block's opening comment, so it
+// shows above the welcome page; the toast goes after `End of Placeholder`.
+function expectOutsidePlaceholder(before: string, template: string): void {
   const parsed = parseTemplate(template, 'template.html', { preserveWhitespaces: true, collectCommentNodes: true });
-  const end = (parsed.commentNodes ?? []).find((comment) => comment.value.includes('End of Placeholder'));
+  const comments = parsed.commentNodes ?? [];
+  const end = comments.find((comment) => comment.value.includes('End of Placeholder'));
   if (end === undefined) {
     return;
   }
+  const open = comments.find((comment) => comment.value.includes('The content below') && comment.sourceSpan.end.offset <= end.sourceSpan.start.offset);
   const walk = (nodes: readonly unknown[]): readonly TmplAstElement[] =>
     nodes.flatMap((node) => [...(node instanceof TmplAstElement ? [node] : []), ...walk(nested(node))]);
-  const outlets = walk(parsed.nodes).filter((node) => node.name === 'cngx-banner-outlet' || node.name === 'cngx-toast-outlet');
-  for (const outlet of outlets) {
-    expect({ outlet: outlet.name, after: outlet.sourceSpan.start.offset > end.sourceSpan.end.offset }).toEqual({ outlet: outlet.name, after: true });
+  const outlets = walk(parsed.nodes);
+  for (const toast of outlets.filter((node) => node.name === 'cngx-toast-outlet')) {
+    expect({ outlet: toast.name, after: toast.sourceSpan.start.offset > end.sourceSpan.end.offset }).toEqual({ outlet: toast.name, after: true });
   }
+  const banner = outlets.find((node) => node.name === 'cngx-banner-outlet');
+  if (banner === undefined || before.includes('<cngx-banner-outlet')) {
+    return;
+  }
+  // Only comments may sit between: the `* * *` frame above the opening comment.
+  const blockStart = (open ?? end).sourceSpan.start.offset;
+  const frame = comments.filter((comment) => comment.sourceSpan.start.offset >= banner.sourceSpan.end.offset && comment.sourceSpan.end.offset <= blockStart);
+  const between = frame.reduce((text, comment) => text.replace(comment.sourceSpan.toString(), ''), template.slice(banner.sourceSpan.end.offset, blockStart));
+  expect({ between: between.trim(), above: banner.sourceSpan.end.offset <= blockStart }).toEqual({
+    between: '',
+    above: true,
+  });
 }
 
 // Every source and template file of the tree.
@@ -704,7 +728,7 @@ describe('every planned app shell edit', () => {
     const placed = await factsOf(first.tree);
     expectPlacedOnce(after, placed, originalImports);
     expectTidyOutlets(templateText(before, detected), templateText(after, placed));
-    expectOutsidePlaceholder(templateText(after, placed));
+    expectOutsidePlaceholder(templateText(before, detected), templateText(after, placed));
 
     // A second run writes nothing, the root providers file and the NgModule
     // host included, and names the outlets and the spec only as in place.

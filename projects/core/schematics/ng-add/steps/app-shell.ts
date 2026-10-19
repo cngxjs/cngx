@@ -37,7 +37,7 @@ const TESTBED = { kind: 'testbed-providers' } as const;
 
 /** What to paste when cngx cannot place the outlets itself. */
 export const OUTLETS_SNIPPET =
-  `place <${BANNER.element} /> right above <router-outlet> (else at the end) and <${TOAST.element} /> at the end of the root template, ` +
+  `place <${BANNER.element} /> above the ng new placeholder block (else right above <router-outlet>, else at the end) and <${TOAST.element} /> at the end of the root template, ` +
   `and add ${BANNER.className} and ${TOAST.className} from '${FEEDBACK_MODULE}' to the root component's imports`;
 
 const NOTHING: StepResult = { changes: [], skipped: [] };
@@ -138,8 +138,8 @@ function specChange(facts: ProjectFacts, shell: AppShell, provenance: Provenance
 /**
  * Places `<cngx-banner-outlet />` and `<cngx-toast-outlet />` in the root
  * component once feedback is on, so `CngxToaster` and `CngxBanner` have a
- * render target: the banner right above `<router-outlet>` (else at the end),
- * the toast at the end, both after the CLI's placeholder block; both classes
+ * render target: the banner above the CLI's placeholder block, else right
+ * above `<router-outlet>`, else at the end; the toast at the end; both classes
  * go into the component `imports` (standalone) or the root NgModule
  * `imports`. An outlet or class already there is not added again. An
  * unedited stock `app.spec.ts` gets the feedback providers, any other spec a

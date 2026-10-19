@@ -10,8 +10,10 @@ import {
   hasArrayLiteral,
   hasElement,
   hasElementOutsidePlaceholder,
+  hasPlaceholderBlock,
   insertAfterImports,
   insertBeforeElement,
+  insertBeforePlaceholder,
   newlineOf,
   parsesCleanly,
   promoteTypeOnlyImport,
@@ -140,7 +142,8 @@ export type AppShellOutlets =
       readonly classes: readonly string[];
       /**
        * The template holds a `<router-outlet>` outside the CLI placeholder
-       * block; the banner outlet goes right above it, else at the end.
+       * block; without that block the banner outlet goes right above it,
+       * else at the end.
        */
       readonly routerOutlet: boolean;
     }
@@ -334,20 +337,28 @@ function markup(element: string): string {
   return `<${element} />`;
 }
 
-// Places the outlets `placement` lacks: the banner right above the first
-// router outlet outside the CLI's placeholder block when there is one, else
-// at the end; the toast outlet at the end. Both land after the placeholder
-// block, which ends before `<router-outlet />` in the stock template; a
-// router outlet moved into the block takes no outlet with it. A template
-// that no longer parses is returned as it is.
+// The banner goes where it shows: above the CLI's placeholder block when
+// there is one, since `ng new` puts the router outlet below a welcome page a
+// full viewport tall; else right above the first router outlet, else at the
+// end. The toast outlet goes at the end, after the block. Deleting the block
+// below its opening comment keeps both. A template that no longer parses is
+// returned as it is.
+function placeBanner(template: string, placement: OutletPlacement, newline: string): string | undefined {
+  const banner = markup(FEEDBACK_OUTLETS[0].element);
+  if (hasPlaceholderBlock(template)) {
+    return insertBeforePlaceholder(template, banner, newline);
+  }
+  return placement.routerOutlet ? insertBeforeElement(template, 'router-outlet', banner, newline) : undefined;
+}
+
 function placeOutlets(template: string, placement: OutletPlacement, newline = newlineOf(template)): string {
   const [banner, toast] = FEEDBACK_OUTLETS;
   const missing = (element: string): boolean => !placement.elements.includes(element);
-  const aboveRouter = missing(banner.element) && placement.routerOutlet;
   try {
-    const withBanner = aboveRouter ? insertBeforeElement(template, 'router-outlet', markup(banner.element), newline) : template;
+    const placed = missing(banner.element) ? placeBanner(template, placement, newline) : undefined;
+    const withBanner = placed ?? template;
     const appended = [
-      ...(missing(banner.element) && !aboveRouter ? [markup(banner.element)] : []),
+      ...(missing(banner.element) && placed === undefined ? [markup(banner.element)] : []),
       ...(missing(toast.element) ? [markup(toast.element)] : []),
     ];
     return appended.length === 0 ? withBanner : appendElements(withBanner, appended, newline);

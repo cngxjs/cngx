@@ -205,7 +205,9 @@ rewrites every literal of it in the bundles.
   `RunSchematicTask`; prompts render the same way there.
 - With feedback on, the `app-shell` step places `<cngx-banner-outlet />` and
   `<cngx-toast-outlet />` in the root component that `main.ts` bootstraps
-  (after the `ng new` placeholder block) and both classes in the component
+  (the banner above the `ng new` placeholder block, so it shows above the
+  welcome page, else right above `<router-outlet>`, else at the end; the
+  toast at the end) and both classes in the component
   or root NgModule `imports`; alert stacks are scoped and never placed. An
   unedited stock `app.spec.ts` (an exact match against the scaffold catalog)
   gets the feedback providers. An outlet this project's record placed that

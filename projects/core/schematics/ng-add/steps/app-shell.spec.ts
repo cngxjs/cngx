@@ -109,19 +109,18 @@ describe('planAppShell', () => {
       [SPEC_ID, 'Provide the feedback services in src/app/app.spec.ts'],
     ]);
     expect(result.changes[0].reason).toBe('CngxToaster and CngxBanner render nowhere without them');
-    expect(next['src/app/app.html'].endsWith('\n<cngx-banner-outlet />\n<router-outlet />\n<cngx-toast-outlet />\n')).toBe(true);
+    expect(next['src/app/app.html']).toBe(`<cngx-banner-outlet />\n${files['src/app/app.html']}<cngx-toast-outlet />\n`);
     expect(next['src/app/app.ts']).toContain('imports: [RouterOutlet, CngxBannerOutlet, CngxToastOutlet],');
     expect(next['src/app/app.ts']).toContain(
       "import { RouterOutlet } from '@angular/router';\nimport { CngxBannerOutlet, CngxToastOutlet } from '@cngx/ui/feedback';\n",
     );
   });
 
-  it('appends both outlets after the placeholder when there is no router outlet', async () => {
+  it('puts the banner above the placeholder and the toast at the end when there is no router outlet', async () => {
     const { facts, files } = await factsOf('scaffold-21-routing-off');
     const next = applied(plan(facts), files);
 
-    expect(next['src/app/app.html'].startsWith(files['src/app/app.html'])).toBe(true);
-    expect(next['src/app/app.html'].endsWith('\n<cngx-banner-outlet />\n<cngx-toast-outlet />\n')).toBe(true);
+    expect(next['src/app/app.html']).toBe(`<cngx-banner-outlet />\n${files['src/app/app.html']}<cngx-toast-outlet />\n`);
     expect(next['src/app/app.ts']).toContain('imports: [CngxBannerOutlet, CngxToastOutlet],');
   });
 
@@ -180,12 +179,21 @@ describe('planAppShell', () => {
   });
 
   it('places the banner from the detected router outlet fact, not from a second read of the template', async () => {
-    const { facts, files } = await factsOf('scaffold-21');
+    const { facts, files } = await factsOf('scaffold-21', { 'src/app/app.html': '<p></p>\n<router-outlet />\n' });
     const shell = followed(facts);
     const outlets = shell.outlets.kind === 'editable' ? { ...shell.outlets, routerOutlet: false } : shell.outlets;
     const next = applied(plan({ ...facts, appShell: { ...shell, outlets } }), files);
 
-    expect(next['src/app/app.html'].endsWith('\n<router-outlet />\n<cngx-banner-outlet />\n<cngx-toast-outlet />\n')).toBe(true);
+    expect(next['src/app/app.html']).toBe('<p></p>\n<router-outlet />\n<cngx-banner-outlet />\n<cngx-toast-outlet />\n');
+  });
+
+  it('puts the banner above the placeholder block before user content that follows it', async () => {
+    const stock = readFixture('scaffold-21')['src/app/app.html'];
+    const html = stock.replace('<router-outlet />\n', '<header>mine</header>\n<router-outlet />\n');
+    const { facts, files } = await factsOf('scaffold-21', { 'src/app/app.html': html });
+    const next = applied(plan(facts), files);
+
+    expect(next['src/app/app.html']).toBe(`<cngx-banner-outlet />\n${html}<cngx-toast-outlet />\n`);
   });
 
   it('stamps the cngx version of the run on every change', async () => {

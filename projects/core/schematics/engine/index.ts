@@ -90,7 +90,14 @@ export {
   type TopLevelBinding,
   topLevelBindings,
 } from './edit/ts-edit';
-export { appendElements, hasElement, hasElementOutsidePlaceholder, insertBeforeElement } from './edit/template-edit';
+export {
+  appendElements,
+  hasElement,
+  hasElementOutsidePlaceholder,
+  hasPlaceholderBlock,
+  insertBeforeElement,
+  insertBeforePlaceholder,
+} from './edit/template-edit';
 export {
   hasStyleImport,
   insertLeadingStyleImport,

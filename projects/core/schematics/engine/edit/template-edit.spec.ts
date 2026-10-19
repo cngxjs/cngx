@@ -7,7 +7,9 @@ import {
   appendElements,
   hasElement,
   hasElementOutsidePlaceholder,
+  hasPlaceholderBlock,
   insertBeforeElement,
+  insertBeforePlaceholder,
   parseTemplateContent,
   walkNodes,
 } from './template-edit';
@@ -135,6 +137,41 @@ describe('insertBeforeElement', () => {
 
   it('leaves a template without the element unchanged', () => {
     expect(insertBeforeElement('<p></p>\n', 'router-outlet', '<x-a />')).toBe('<p></p>\n');
+  });
+});
+
+describe('insertBeforePlaceholder', () => {
+  it('puts the markup above the opening comment of the stock placeholder block, as the first line', () => {
+    const stock = readFixture('scaffold-21')['src/app/app.html'];
+    const edited = insertBeforePlaceholder(stock, '<cngx-banner-outlet />');
+
+    expect(hasPlaceholderBlock(stock)).toBe(true);
+    expect(edited).toBe(`<cngx-banner-outlet />\n${stock}`);
+  });
+
+  it('lands above the opening comment, after content that precedes the block, with the comment indent', () => {
+    const template = '<header></header>\n  <!-- The content below -->\n  <p></p>\n  <!-- End of Placeholder -->\n<router-outlet />\n';
+
+    expect(insertBeforePlaceholder(template, '<x-a />')).toBe(
+      '<header></header>\n  <x-a />\n  <!-- The content below -->\n  <p></p>\n  <!-- End of Placeholder -->\n<router-outlet />\n',
+    );
+  });
+
+  it('starts the block at the top when only the closing comment is left', () => {
+    expect(insertBeforePlaceholder('<p></p>\n<!-- End of Placeholder -->\n', '<x-a />')).toBe(
+      '<x-a />\n<p></p>\n<!-- End of Placeholder -->\n',
+    );
+  });
+
+  it('keeps CRLF line endings', () => {
+    expect(insertBeforePlaceholder('<!-- The content below -->\r\n<!-- End of Placeholder -->\r\n', '<x-a />')).toBe(
+      '<x-a />\r\n<!-- The content below -->\r\n<!-- End of Placeholder -->\r\n',
+    );
+  });
+
+  it('leaves a template without the block unchanged', () => {
+    expect(hasPlaceholderBlock('<!-- The content below -->\n<router-outlet />\n')).toBe(false);
+    expect(insertBeforePlaceholder('<router-outlet />\n', '<x-a />')).toBe('<router-outlet />\n');
   });
 });
 

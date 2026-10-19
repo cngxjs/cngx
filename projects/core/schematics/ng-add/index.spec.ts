@@ -852,12 +852,11 @@ describe('ngAdd', () => {
   describe('the app shell outlets', () => {
     const PRETTIERRC = JSON.parse(readFixture('scaffold-21')['.prettierrc']) as Record<string, unknown>;
 
-    it('places both outlets after the placeholder, imports them and provides feedback in the stock spec', async () => {
+    it('places the banner above the placeholder and the toast at the end, imports them and provides feedback in the stock spec', async () => {
       const run = await runRule(ngAdd({ feedback: true, yes: true }), createFixtureTree('scaffold-21'));
       const template = run.tree.readText('src/app/app.html');
 
-      expect(template.indexOf('<cngx-banner-outlet />')).toBeGreaterThan(template.indexOf('End of Placeholder'));
-      expect(template.endsWith('<cngx-banner-outlet />\n<router-outlet />\n<cngx-toast-outlet />\n')).toBe(true);
+      expect(template).toBe(`<cngx-banner-outlet />\n${readFixture('scaffold-21')['src/app/app.html']}<cngx-toast-outlet />\n`);
       expect(run.tree.readText('src/app/app.ts')).toContain('imports: [RouterOutlet, CngxBannerOutlet, CngxToastOutlet],');
       expect(run.tree.readText('src/app/app.ts')).toContain("import { CngxBannerOutlet, CngxToastOutlet } from '@cngx/ui/feedback';");
       expect(run.tree.readText('src/app/app.spec.ts')).toContain('      providers: [provideFeedback(withToasts(), withBanners())],\n');
