@@ -187,12 +187,17 @@ describe('renderStarterBodies', () => {
     expect(off).toContain('<a class="cta cta--solid" href="https://cngxjs.github.io/cngx/"');
   });
 
-  it('drops the chips, the try section and its nav link when nothing was installed to try', () => {
+  it('drops the chips and the try section when nothing was installed to try', () => {
     const { template } = renderStarterBodies(STARTER_TEMPLATES, ALL_BLOCKS[0], TARGET);
 
     expect(template).not.toContain('class="chips"');
     expect(template).not.toContain('id="try"');
-    expect(template).not.toContain('href="#try"');
+  });
+
+  it('links no in-page anchor from the top bar', () => {
+    for (const answers of ALL_BLOCKS) {
+      expect(renderStarterBodies(STARTER_TEMPLATES, answers, TARGET).template).not.toContain('href="#');
+    }
   });
 
   it('reads the brand gradient token with a local fallback', () => {

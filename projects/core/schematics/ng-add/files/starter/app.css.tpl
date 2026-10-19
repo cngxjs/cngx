@@ -163,7 +163,7 @@ a:focus-visible {
   outline-offset: 3px;
 }
 
-/* Try it */
+/* Try section */
 .try {
   max-inline-size: 72rem;
   margin-inline: auto;

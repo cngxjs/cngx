@@ -11,9 +11,6 @@
       <nav class="top__nav" aria-label="cngx">
         <a href="https://cngxjs.github.io/cngx/" target="_blank" rel="noopener">Docs</a>
         <a href="https://cngxjs.github.io/cngx/examples/" target="_blank" rel="noopener">Examples</a>
-{{#try}}
-        <a href="#try">Try it</a>
-{{/try}}
       </nav>
       <div class="top__icons">
         <a class="icon-btn" href="https://github.com/cngxjs/cngx" target="_blank" rel="noopener" aria-label="cngx on GitHub">
