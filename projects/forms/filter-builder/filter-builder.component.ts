@@ -5,6 +5,7 @@ import {
   computed,
   contentChild,
   inject,
+  Injector,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -18,6 +19,9 @@ import {
   CngxFilterBuilderNegationToggle,
   CngxFilterBuilderRemoveButton,
 } from './filter-builder-slots';
+import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
+import { CngxFormFieldPresenter } from '@cngx/forms/field';
+
 import { injectFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
 import { CngxFilterBuilderValueEditor } from './filter-builder-value-editor.slot';
@@ -53,6 +57,11 @@ import { CNGX_FILTER_BUILDER_BODY_HOST } from './filter-builder-body.host';
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-json/builder-json</example-url>
  * <example-url>http://localhost:4200/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
  */
+const DETACHED_FIELD_PROVIDERS = [
+  { provide: CngxFormFieldPresenter, useValue: null },
+  { provide: CNGX_FORM_FIELD_HOST, useValue: null },
+];
+
 @Component({
   selector: 'cngx-filter-builder',
   exportAs: 'cngxFilterBuilder',
@@ -68,6 +77,11 @@ import { CNGX_FILTER_BUILDER_BODY_HOST } from './filter-builder-body.host';
   host: {
     '[attr.aria-disabled]': 'ariaDisabled()',
   },
+  // The inner pickers are plain pickers, not controls of a surrounding
+  // cngx-form-field: no field id, label, ARIA or touched writes from them.
+  // The host (and its presenter / form-field-control directive) keeps the
+  // real presenter through the element injector.
+  viewProviders: DETACHED_FIELD_PROVIDERS,
   imports: [NgComponentOutlet],
   templateUrl: './filter-builder.component.html',
   styleUrls: ['./filter-builder.component.css'],
@@ -76,6 +90,15 @@ import { CNGX_FILTER_BUILDER_BODY_HOST } from './filter-builder-body.host';
 export class CngxFilterBuilder {
   protected readonly presenter = inject(CngxFilterBuilderPresenter);
   protected readonly bodyType = inject(CNGX_FILTER_BUILDER_BODY_HOST);
+  /**
+   * The body is created through `NgComponentOutlet`, whose dynamic component
+   * does not reliably see this component's viewProviders: hand it the same
+   * detached field providers explicitly.
+   */
+  protected readonly bodyInjector = Injector.create({
+    providers: DETACHED_FIELD_PROVIDERS,
+    parent: inject(Injector),
+  });
 
   protected readonly ariaDisabled = computed<'true' | null>(() =>
     this.presenter.disabled() ? 'true' : null,
