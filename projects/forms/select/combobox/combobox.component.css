@@ -45,7 +45,8 @@
  *   registered the same way
  * - `--cngx-combobox-border` -> `--cngx-select-border` ->
  *   `--cngx-color-border`, registered like the background token
- * - `--cngx-combobox-focus-outline` -> `--cngx-color-primary`
+ * - `--cngx-combobox-focus-outline` -> `--cngx-select-focus-outline` ->
+ *   `--cngx-color-primary`, registered like the background token
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
  *   `--cngx-color-danger`
  *
@@ -147,15 +148,16 @@
   }
 
   /**
-   * Focus-ring outline shorthand applied on `:focus-within`. Falls
-   * back to `--cngx-color-primary`.
+   * Focus-ring outline shorthand of the trigger. Falls back to
+   * `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no
+   * `initial-value` is declared.
    * @group State / Focus
+   * @default var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary))
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-combobox-focus-outline {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
@@ -178,12 +180,6 @@
     syntax: '*';
     inherits: false;
     initial-value: 4rem;
-  }
-
-  /* Delegating token - the focus ring tracks `--cngx-color-primary`. The
-   * shorthand pins its structural part (2px solid). */
-  :root {
-    --cngx-combobox-focus-outline: 2px solid var(--cngx-color-primary);
   }
 }
 

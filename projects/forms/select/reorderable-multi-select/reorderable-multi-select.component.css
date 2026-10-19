@@ -48,7 +48,8 @@
  *   `--cngx-select-border` -> `--cngx-color-border`, registered like the
  *   background token
  * - `--cngx-reorderable-multi-select-focus-outline` ->
- *   `--cngx-color-primary`
+ *   `--cngx-multi-select-focus-outline` -> `--cngx-select-focus-outline` ->
+ *   `--cngx-color-primary`, registered like the background token
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
  *   `--cngx-color-danger`
  *
@@ -96,7 +97,8 @@
   }
 
   /**
-   * Border shorthand of the trigger. Falls back to `--cngx-multi-select-border`, then `--cngx-select-border`; see
+   * Border shorthand of the trigger. Falls back to
+   * `--cngx-multi-select-border`, then `--cngx-select-border`; see
    * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
    * @default var(--cngx-multi-select-border, var(--cngx-select-border, 1px solid var(--cngx-color-border)))
@@ -130,8 +132,9 @@
   }
 
   /**
-   * Text color of the trigger. Falls back to `--cngx-multi-select-color`, then `--cngx-select-color`; see
-   * {@link --cngx-select-bg} for why no `initial-value` is declared.
+   * Text color of the trigger. Falls back to `--cngx-multi-select-color`, then
+   * `--cngx-select-color`; see {@link --cngx-select-bg} for why no
+   * `initial-value` is declared.
    * @group Surface
    * @default var(--cngx-multi-select-color, var(--cngx-select-color, inherit))
    */
@@ -151,20 +154,16 @@
   }
 
   /**
-   * Focus-ring outline shorthand. Falls back to `--cngx-color-primary`.
+   * Focus-ring outline shorthand of the trigger. Falls back to
+   * `--cngx-multi-select-focus-outline`, then `--cngx-select-focus-outline`;
+   * see {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group State / Focus
+   * @default var(--cngx-multi-select-focus-outline, var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary)))
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-reorderable-multi-select-focus-outline {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid oklch(0.66 0.19 50);
-  }
-
-  /* Delegating token - the focus ring tracks `--cngx-color-primary`. The
-   * shorthand pins its structural part (2px solid). */
-  :root {
-    --cngx-reorderable-multi-select-focus-outline: 2px solid var(--cngx-color-primary);
   }
 }
 

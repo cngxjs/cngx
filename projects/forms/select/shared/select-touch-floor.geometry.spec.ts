@@ -80,7 +80,9 @@ const SET_COLOR = 'rgb(1, 2, 3)';
 
 interface TokenChain {
   /** Computed style property painted on the trigger row. */
-  readonly property: 'backgroundColor' | 'color' | 'borderTopColor';
+  readonly property: 'backgroundColor' | 'color' | 'borderTopColor' | 'outlineColor';
+  /** The row only paints `property` while its combobox has focus. */
+  readonly focus?: boolean;
   /** Value the tokens are set to; it paints `SET_COLOR` on `property`. */
   readonly value: string;
   readonly family: string;
@@ -131,6 +133,20 @@ const CHAINS: readonly TokenChain[] = [
       ['--cngx-select-shell-border', ['cngx-select-shell']],
     ],
   },
+  {
+    property: 'outlineColor',
+    focus: true,
+    value: `2px solid ${SET_COLOR}`,
+    family: '--cngx-select-focus-outline',
+    variants: [
+      ['--cngx-multi-select-focus-outline', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
+      ['--cngx-combobox-focus-outline', ['cngx-combobox', 'cngx-action-multi-select']],
+      ['--cngx-tree-select-focus-ring', ['cngx-tree-select']],
+      ['--cngx-reorderable-multi-select-focus-outline', ['cngx-reorderable-multi-select']],
+      ['--cngx-action-multi-select-focus-outline', ['cngx-action-multi-select']],
+      ['--cngx-select-shell-focus-outline', ['cngx-select-shell']],
+    ],
+  },
 ];
 
 let mountedRoot: HTMLElement | null = null;
@@ -153,6 +169,23 @@ function mountRows(): HTMLElement[] {
   const rows = Array.from(mountedRoot.querySelectorAll<HTMLElement>('.cngx-field-trigger'));
   expect(rows).toHaveLength(9);
   return rows;
+}
+
+// Reads `property` off every row; a focus chain focuses each row's combobox
+// first, so the row's focus rule applies while it is read.
+function paints(rows: readonly HTMLElement[], chain: TokenChain): string[] {
+  return rows.map((row) => {
+    if (!chain.focus) {
+      return getComputedStyle(row)[chain.property];
+    }
+    const combobox = row.matches('[role="combobox"]')
+      ? row
+      : row.querySelector<HTMLElement>('[role="combobox"]')!;
+    combobox.focus();
+    const value = getComputedStyle(row)[chain.property];
+    combobox.blur();
+    return value;
+  });
 }
 
 function setOnAncestor(token: string, value: string): void {
@@ -194,24 +227,25 @@ describe('select touch floor geometry', () => {
     }
   });
 
-  for (const { property, value, family, variants } of CHAINS) {
+  for (const chain of CHAINS) {
+    const { value, family, variants } = chain;
     it(`${family} set on an ancestor reaches every trigger row`, () => {
       const rows = mountRows();
       setOnAncestor(family, value);
-      for (const row of rows) {
-        expect(getComputedStyle(row)[property], `${hostTag(row)} trigger row`).toBe(SET_COLOR);
-      }
+      paints(rows, chain).forEach((painted, i) => {
+        expect(painted, `${hostTag(rows[i])} trigger row`).toBe(SET_COLOR);
+      });
     });
 
     for (const [token, painted] of variants) {
       it(`${token} set on an ancestor repaints only ${painted.join(' + ')}`, () => {
         const rows = mountRows();
-        const before = rows.map((row) => getComputedStyle(row)[property]);
+        const before = paints(rows, chain);
         setOnAncestor(token, value);
-        rows.forEach((row, i) => {
-          const host = hostTag(row) ?? '';
+        paints(rows, chain).forEach((after, i) => {
+          const host = hostTag(rows[i]) ?? '';
           const expected = painted.includes(host) ? SET_COLOR : before[i];
-          expect(getComputedStyle(row)[property], `${host} trigger row`).toBe(expected);
+          expect(after, `${host} trigger row`).toBe(expected);
         });
       });
     }

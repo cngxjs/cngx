@@ -38,7 +38,9 @@
  *   registered like `--cngx-select-bg` and resolved on the trigger, so a
  *   scoped `--cngx-color-border` swap reaches it. Every variant's border
  *   token falls back to it
- * - `--cngx-select-focus-outline` -> `--cngx-color-primary`
+ * - `--cngx-select-focus-outline` -> `2px solid var(--cngx-color-primary)`;
+ *   registered like `--cngx-select-bg`. Every variant's focus ring falls
+ *   back to it
  * - `--cngx-select-bg` -> `transparent`; registered without an initial
  *   value and inheriting, so a value set on an ancestor reaches the trigger.
  *   Every variant's background token falls back to it
@@ -160,14 +162,18 @@
   }
 
   /**
-   * Focus-ring outline shorthand. Falls back to `--cngx-color-primary`.
+   * Focus-ring outline shorthand of the trigger, and the family fallback
+   * every variant's focus token resolves through. No `initial-value`, like
+   * {@link --cngx-select-bg}: the use-site fallback
+   * `2px solid var(--cngx-color-primary)` resolves on the trigger, and a
+   * value set on an ancestor reaches the trigger.
    * @group State / Focus
+   * @default 2px solid var(--cngx-color-primary)
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-select-focus-outline {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
@@ -182,12 +188,6 @@
   @property --cngx-select-focus-offset {
     syntax: '*';
     inherits: true;
-  }
-
-  /* Delegating token - the focus ring tracks `--cngx-color-primary`. The
-   * shorthand pins its structural part (2px solid). */
-  :root {
-    --cngx-select-focus-outline: 2px solid var(--cngx-color-primary);
   }
 }
 

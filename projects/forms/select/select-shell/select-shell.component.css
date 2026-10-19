@@ -44,7 +44,8 @@
  *   registered the same way
  * - `--cngx-select-shell-border` -> `--cngx-select-border` ->
  *   `--cngx-color-border`, registered like the background token
- * - `--cngx-select-shell-focus-outline` -> `--cngx-color-primary`
+ * - `--cngx-select-shell-focus-outline` -> `--cngx-select-focus-outline` ->
+ *   `--cngx-color-primary`, registered like the background token
  * - `--cngx-select-shell-focus-ring` -> `--cngx-color-primary`
  *
  * For every other token, once registered via `@property` with an initial
@@ -146,14 +147,16 @@
   }
 
   /**
-   * Focus-ring outline shorthand. Falls back to `--cngx-color-primary`.
+   * Focus-ring outline shorthand of the trigger. Falls back to
+   * `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no
+   * `initial-value` is declared.
    * @group State / Focus
+   * @default var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary))
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-select-shell-focus-outline {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
@@ -176,10 +179,9 @@
     initial-value: 0.375rem;
   }
 
-  /* Delegating token - the focus ring tracks `--cngx-color-primary`. The
-   * shorthand pins its structural part (2px solid). */
+  /* Delegating token - the clear button ring tracks
+   * `--cngx-color-primary`. */
   :root {
-    --cngx-select-shell-focus-outline: 2px solid var(--cngx-color-primary);
     --cngx-select-shell-focus-ring: var(--cngx-color-primary);
   }
 }

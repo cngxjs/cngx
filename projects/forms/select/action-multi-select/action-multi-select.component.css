@@ -44,7 +44,9 @@
  * - `--cngx-action-multi-select-border` -> `--cngx-combobox-border` ->
  *   `--cngx-select-border` -> `--cngx-color-border`, registered like the
  *   background token
- * - `--cngx-action-multi-select-focus-outline` -> `--cngx-color-primary`
+ * - `--cngx-action-multi-select-focus-outline` ->
+ *   `--cngx-combobox-focus-outline` -> `--cngx-select-focus-outline` ->
+ *   `--cngx-color-primary`, registered like the background token
  *
  * For every other token, once registered via `@property` with an initial
  * value the inner var() steps are documentation-only; system tokens
@@ -90,8 +92,9 @@
   }
 
   /**
-   * Border shorthand of the trigger. Falls back to `--cngx-combobox-border`, then `--cngx-select-border`; see
-   * {@link --cngx-select-bg} for why no `initial-value` is declared.
+   * Border shorthand of the trigger. Falls back to `--cngx-combobox-border`,
+   * then `--cngx-select-border`; see {@link --cngx-select-bg} for why no
+   * `initial-value` is declared.
    * @group Surface
    * @default var(--cngx-combobox-border, var(--cngx-select-border, 1px solid var(--cngx-color-border)))
    * @see [[--cngx-color-border]]
@@ -124,8 +127,9 @@
   }
 
   /**
-   * Text color of the trigger. Falls back to `--cngx-combobox-color`, then `--cngx-select-color`; see
-   * {@link --cngx-select-bg} for why no `initial-value` is declared.
+   * Text color of the trigger. Falls back to `--cngx-combobox-color`, then
+   * `--cngx-select-color`; see {@link --cngx-select-bg} for why no
+   * `initial-value` is declared.
    * @group Surface
    * @default var(--cngx-combobox-color, var(--cngx-select-color, inherit))
    */
@@ -145,15 +149,16 @@
   }
 
   /**
-   * Focus-ring outline shorthand applied on `:focus-within`. Falls
-   * back to `--cngx-color-primary`.
+   * Focus-ring outline shorthand of the trigger. Falls back to
+   * `--cngx-combobox-focus-outline`, then `--cngx-select-focus-outline`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group State / Focus
+   * @default var(--cngx-combobox-focus-outline, var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary)))
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-action-multi-select-focus-outline {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
@@ -174,12 +179,6 @@
     syntax: '*';
     inherits: false;
     initial-value: 4rem;
-  }
-
-  /* Delegating token - the focus ring tracks `--cngx-color-primary`. The
-   * shorthand pins its structural part (2px solid). */
-  :root {
-    --cngx-action-multi-select-focus-outline: 2px solid var(--cngx-color-primary);
   }
 }
 

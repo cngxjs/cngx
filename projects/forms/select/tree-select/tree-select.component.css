@@ -38,8 +38,9 @@
  *   color token
  * - `--cngx-tree-select-trigger-border` -> `--cngx-select-border` ->
  *   `--cngx-color-border`, registered like the background token
- * - `--cngx-tree-select-focus-ring` -> `--cngx-color-primary` (opaque,
- *   same ring as the sibling selects)
+ * - `--cngx-tree-select-focus-ring` -> `--cngx-select-focus-outline` ->
+ *   `--cngx-color-primary` (opaque, same ring as the sibling selects),
+ *   registered like the background token
  * - `--cngx-select-placeholder-color` -> shared family token, dark-mode
  *   handled centrally in `shared/select-base.css`
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
@@ -129,16 +130,16 @@
   }
 
   /**
-   * Focus-ring outline shorthand. Falls back to `--cngx-color-primary`.
-   * `inherits: true` so the :root delegating value reaches the
-   * trigger host.
+   * Focus-ring outline shorthand of the trigger (opaque, same ring as the
+   * sibling selects). Falls back to `--cngx-select-focus-outline`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group State / Focus
+   * @default var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary))
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-tree-select-focus-ring {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
@@ -149,12 +150,6 @@
     syntax: '*';
     inherits: false;
     initial-value: 1.25rem;
-  }
-
-  /* Delegating token - the focus ring tracks `--cngx-color-primary`. The
-   * shorthand pins its structural part (2px solid). */
-  :root {
-    --cngx-tree-select-focus-ring: 2px solid var(--cngx-color-primary);
   }
 }
 
@@ -224,7 +219,7 @@
     .cngx-tree-select__trigger:focus-visible {
       outline: var(
         --cngx-tree-select-focus-ring,
-        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+        var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50)))
       );
       outline-offset: 1px;
     }
