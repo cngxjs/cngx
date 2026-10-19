@@ -39,6 +39,8 @@
  *   `--cngx-select-bg` -> `transparent`; all three are registered without
  *   an initial value and inherit, so any of them set on an ancestor
  *   reaches the trigger
+ * - `--cngx-action-multi-select-color` -> `--cngx-combobox-color` ->
+ *   `--cngx-select-color` -> `inherit`, registered the same way
  * - `--cngx-action-multi-select-border` -> `--cngx-color-border`
  * - `--cngx-action-multi-select-focus-outline` -> `--cngx-color-primary`
  *
@@ -118,13 +120,14 @@
   }
 
   /**
-   * Text color of the trigger.
+   * Text color of the trigger. Falls back to `--cngx-combobox-color`, then `--cngx-select-color`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-combobox-color, var(--cngx-select-color, inherit))
    */
   @property --cngx-action-multi-select-color {
     syntax: '*';
     inherits: true;
-    initial-value: currentColor;
   }
 
   /**

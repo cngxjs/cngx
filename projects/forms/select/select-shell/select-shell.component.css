@@ -40,6 +40,8 @@
  * - `--cngx-select-shell-bg` -> `--cngx-select-bg` -> `transparent`; both
  *   are registered without an initial value and inherit, so either one set
  *   on an ancestor reaches the trigger
+ * - `--cngx-select-shell-color` -> `--cngx-select-color` -> `inherit`,
+ *   registered the same way
  * - `--cngx-select-shell-border` -> `--cngx-color-border`
  * - `--cngx-select-shell-focus-outline` -> `--cngx-color-primary`
  * - `--cngx-select-shell-focus-ring` -> `--cngx-color-primary`
@@ -130,13 +132,14 @@
   }
 
   /**
-   * Text color of the trigger.
+   * Text color of the trigger. Falls back to `--cngx-select-color`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-color, inherit)
    */
   @property --cngx-select-shell-color {
     syntax: '*';
     inherits: true;
-    initial-value: currentColor;
   }
 
   /**

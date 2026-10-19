@@ -36,6 +36,8 @@
  * - `--cngx-typeahead-bg` -> `--cngx-select-bg` -> `transparent`, like the
  *   rest of the select family; both are registered without an initial
  *   value and inherit, so either one set on an ancestor reaches the trigger
+ * - the trigger text reads `--cngx-select-color` -> `inherit`, the family
+ *   color token
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
  *   `--cngx-color-danger`
  *
@@ -154,6 +156,7 @@
       );
       border-radius: var(--cngx-typeahead-radius, 0.25rem);
       background: var(--cngx-typeahead-bg, var(--cngx-select-bg, transparent));
+      color: var(--cngx-select-color, inherit);
       cursor: text;
     }
 

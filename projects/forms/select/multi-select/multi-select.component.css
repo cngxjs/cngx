@@ -35,6 +35,8 @@
  * - `--cngx-multi-select-bg` -> `--cngx-select-bg` -> `transparent`; both
  *   are registered without an initial value and inherit, so either one set
  *   on an ancestor reaches the trigger
+ * - `--cngx-multi-select-color` -> `--cngx-select-color` -> `inherit`,
+ *   registered the same way
  * - `--cngx-multi-select-border` -> `--cngx-color-border`
  * - `--cngx-multi-select-focus-outline` -> `--cngx-color-primary`
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
@@ -115,13 +117,14 @@
   }
 
   /**
-   * Text color of the trigger.
+   * Text color of the trigger. Falls back to `--cngx-select-color`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-color, inherit)
    */
   @property --cngx-multi-select-color {
     syntax: '*';
     inherits: true;
-    initial-value: currentColor;
   }
 
   /**
