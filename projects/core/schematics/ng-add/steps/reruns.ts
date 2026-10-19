@@ -60,9 +60,12 @@ export function readRecordedAnswers(record: ProjectRecord, defaultsFor: PresetDe
     a11yPreferences: answerOr(recorded['a11yPreferences'], isBoolean, defaults.a11yPreferences),
     feedback: answerOr(recorded['feedback'], isBoolean, defaults.feedback),
     floatingFallback: answerOr(recorded['floatingFallback'], isBoolean, defaults.floatingFallback),
+    // Not the preset default: a full install recorded before the starter
+    // existed never gets one from a re-run.
+    starter: answerOr(recorded['starter'], isBoolean, false),
     aiTools: answerOr(recorded['aiTools'], (value) => isListOf(AI_TOOLS, value), defaults.aiTools),
   };
-  const { libs, theme, i18n, runtimeSwitch, lint, a11yPreferences, feedback, floatingFallback, aiTools } = answers;
+  const { libs, theme, i18n, runtimeSwitch, lint, a11yPreferences, feedback, floatingFallback, starter, aiTools } = answers;
   if (
     libs === undefined ||
     theme === undefined ||
@@ -72,11 +75,12 @@ export function readRecordedAnswers(record: ProjectRecord, defaultsFor: PresetDe
     a11yPreferences === undefined ||
     feedback === undefined ||
     floatingFallback === undefined ||
+    starter === undefined ||
     aiTools === undefined
   ) {
     return undefined;
   }
-  return { preset, libs, theme, i18n, runtimeSwitch, lint, a11yPreferences, feedback, floatingFallback, aiTools };
+  return { preset, libs, theme, i18n, runtimeSwitch, lint, a11yPreferences, feedback, floatingFallback, starter, aiTools };
 }
 
 const NO_CHANGES: StepResult = { changes: [], skipped: [] };

@@ -63,7 +63,7 @@ afterAll(() => {
 // (`readPromptFlags`). Verified against this CLI major; a new one must be
 // re-checked (schematics accepted debt 12).
 const VERIFIED_CLI_MAJOR = 21;
-const BOOLEAN_FLAGS = ['runtimeSwitch', 'lint', 'a11yPreferences', 'feedback', 'floatingFallback', 'yes', 'prompts', 'quiet'];
+const BOOLEAN_FLAGS = ['runtimeSwitch', 'lint', 'a11yPreferences', 'feedback', 'floatingFallback', 'starter', 'yes', 'prompts', 'quiet'];
 const PRE_INSTALL_FALSE = Object.fromEntries(BOOLEAN_FLAGS.map((flag) => [flag, 'false']));
 
 function requireDist(file) {
@@ -187,6 +187,7 @@ describe('dist/core/schematics', () => {
         a11yPreferences: false,
         feedback: false,
         floatingFallback: false,
+        starter: false,
       });
     });
 

@@ -213,6 +213,10 @@ rewrites every literal of it in the bundles.
   gets the feedback providers. An outlet this project's record placed that
   is gone stays out unless `--feedback` is passed; `ng update` only notes a
   missing one.
+- `starter` is an answer no question asks: `--preset=full` turns it on,
+  `--no-starter` (or `--starter=false`) off, any other preset leaves it off.
+  A record without it reads as off, so `ng update` and a re-run of an older
+  `full` install never write a starter.
 - A provider goes on its own line of the root providers array (an object
   typed `ApplicationConfig`, the `@NgModule` argument or the inline
   `bootstrapApplication` config) when the planned file holds exactly one and

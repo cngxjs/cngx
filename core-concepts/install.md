@@ -111,7 +111,7 @@ install. Nothing outside the project is written.
 |-|-|
 |`minimal`|The packages only. No theme, no lint rules, and no providers apart from `provideDirection('rtl')` for a right-to-left source locale. Asks none of the questions below; flags and the preset answer them.|
 |`recommended` (default)|The packages, the theme, the accessibility preference providers and the lint rules.|
-|`full`|`recommended` plus the German language pack, the root feedback services (toasts, alerts, banners), the popover positioning fallback, and the MCP setup for every editor folder found in the project.|
+|`full`|`recommended` plus the root feedback services (toasts, alerts, banners), the popover positioning fallback, the cngx starter page in place of the Angular welcome page, and the MCP setup for every editor folder found in the project. English throughout; `--i18n de` adds the German pack.|
 
 ```bash
 ng add @cngx/ui --preset=minimal
@@ -170,6 +170,7 @@ Every answer has a flag. A flag skips its question.
 |`--a11y-preferences`|`--a11y-preferences`, `--no-a11y-preferences`|Provide the density, text scale, motion and contrast axes with persistence.|
 |`--feedback`|`--feedback`, `--no-feedback`|Provide toasts, alerts and banners at the root (needs `@cngx/ui`).|
 |`--floating-fallback`|`--floating-fallback`, `--no-floating-fallback`|Install `@floating-ui/dom` and provide the popover positioning fallback (needs `@cngx/common`).|
+|`--starter`|`--starter`, `--no-starter`|Replace the Angular welcome page of an untouched `ng new` standalone app with the cngx starter page. On by default with `--preset=full` only, never asked.|
 |`--ai-tools`|`claude`, `cursor`, `vscode`, comma-separated (`--ai-tools claude,vscode`)|The editors to set up the cngx MCP server and agent instructions for. Answers the AI tooling question.|
 |`--yes`|`--yes`|Apply to an existing app without the confirmation.|
 |`--prompts`|`--prompts`, `--no-prompts`, default `true`|`--no-prompts` answers every question from flags, the recorded answers of a re-run and the preset defaults.|

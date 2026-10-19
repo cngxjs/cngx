@@ -29,6 +29,7 @@ const ANSWER_KEYS = [
   'a11yPreferences',
   'feedback',
   'floatingFallback',
+  'starter',
   'aiTools',
 ] as const;
 
@@ -38,7 +39,7 @@ export const PRESET_CHOICES: readonly PromptChoice<NgAddPreset>[] = [
   { value: 'recommended', name: 'recommended - dependencies, theme, a11y providers, lint' },
   {
     value: 'full',
-    name: 'full - recommended plus the German language pack, feedback, the floating fallback and the cngx MCP server for the editors it finds',
+    name: 'full - recommended plus feedback, the floating fallback, a cngx starter page in place of the Angular welcome page and the cngx MCP server for the editors it finds',
   },
 ];
 
@@ -76,17 +77,20 @@ export function presetDefaults(preset: NgAddPreset, facts: ProjectFacts): Onboar
     a11yPreferences: true,
     feedback: false,
     floatingFallback: false,
+    starter: false,
     aiTools: [],
   };
   if (preset === 'minimal') {
     return { ...recommended, theme: 'none', lint: false, a11yPreferences: false };
   }
   if (preset === 'full') {
+    // English, so the starter page and every cngx string speak one
+    // language; `--i18n de` adds the German pack.
     return {
       ...recommended,
-      i18n: 'de',
       feedback: true,
       floatingFallback: true,
+      starter: true,
       aiTools: AI_TOOLS.filter((tool) => facts.editors[tool]),
     };
   }
@@ -324,6 +328,9 @@ export async function askOnboarding(
       feedback,
       a11yPreferences: flag(options, 'a11yPreferences', defaults.a11yPreferences && hasCore),
       floatingFallback: flag(options, 'floatingFallback', defaults.floatingFallback && selected.includes('common')),
+      // Decided by the preset and the flag, never asked: the starter step
+      // writes only over the untouched scaffold and says why otherwise.
+      starter: flag(options, 'starter', defaults.starter),
       aiTools,
     },
     answeredLibs,

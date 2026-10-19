@@ -1468,6 +1468,7 @@ describe('the ng-add collection', () => {
       'a11yPreferences',
       'feedback',
       'floatingFallback',
+      'starter',
       'aiTools',
       'yes',
       'prompts',

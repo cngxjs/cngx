@@ -149,6 +149,16 @@ describe('parseNgAddOptions', () => {
     });
   });
 
+  it('reads the starter flag in its pre-install and installed forms', () => {
+    expect(parseNgAddOptions({ starter: 'false' }).starter).toBe(false);
+    expect(parseNgAddOptions({ starter: 'true' }).starter).toBe(true);
+    expect(parseNgAddOptions({ starter: false }).starter).toBe(false);
+    expect(parseNgAddOptions({}).starter).toBeUndefined();
+    expect(() => parseNgAddOptions({ starter: 'off' } as unknown as NgAddFlags)).toThrow(
+      '"off" is not a valid answer for --starter. Expected one of: true, false.',
+    );
+  });
+
   it('rejects a boolean flag that reads like neither', () => {
     expect(() => parseNgAddOptions({ lint: 'no' } as unknown as NgAddFlags)).toThrow(
       '"no" is not a valid answer for --lint. Expected one of: true, false.',

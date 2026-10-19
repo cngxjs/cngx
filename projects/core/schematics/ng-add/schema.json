@@ -57,6 +57,10 @@
       "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["true", "false"] }],
       "description": "Install @floating-ui/dom and provide the popover positioning fallback for browsers without CSS anchor positioning."
     },
+    "starter": {
+      "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["true", "false"] }],
+      "description": "Replace the Angular welcome page of an untouched ng new standalone app with a cngx starter page that shows what was installed. Default true for --preset=full, false otherwise; --no-starter keeps the welcome page."
+    },
     "aiTools": {
       "description": "The editors to set up the cngx MCP server for, comma-separated (--ai-tools claude,vscode): the server entry in their project MCP config, a marked cngx block in the agent instructions (AGENTS.md, or CLAUDE.md for Claude Code) and .cngx/README.md. Asked when a terminal is attached. --preset=full preselects the detected editors (CLAUDE.md or .claude, .cursorrules or .cursor, .vscode) and sets them up without a terminal too; the other presets preselect none.",
       "oneOf": [

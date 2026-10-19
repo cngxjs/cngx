@@ -65,6 +65,7 @@ export function createAnswers(overrides: Partial<OnboardingAnswers> = {}): Onboa
     a11yPreferences: true,
     feedback: false,
     floatingFallback: false,
+    starter: false,
     aiTools: [],
     ...overrides,
   };
