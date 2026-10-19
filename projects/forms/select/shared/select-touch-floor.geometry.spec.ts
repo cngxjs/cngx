@@ -82,7 +82,13 @@ const SET_COLOR = 'rgb(1, 2, 3)';
 
 interface TokenChain {
   /** Computed style property painted on the trigger row. */
-  readonly property: 'backgroundColor' | 'color' | 'borderTopColor' | 'outlineColor' | 'minHeight';
+  readonly property:
+    | 'backgroundColor'
+    | 'color'
+    | 'borderTopColor'
+    | 'outlineColor'
+    | 'minHeight'
+    | 'borderTopLeftRadius';
   /** The row only paints `property` while its combobox has focus. */
   readonly focus?: boolean;
   /** Value the tokens are set to; it paints `expected` on `property`. */
@@ -165,6 +171,22 @@ const CHAINS: readonly TokenChain[] = [
       ['--cngx-action-select-min-height', ['cngx-action-select']],
       ['--cngx-action-multi-select-min-height', ['cngx-action-multi-select']],
       ['--cngx-select-shell-min-height', ['cngx-select-shell']],
+    ],
+  },
+  {
+    property: 'borderTopLeftRadius',
+    value: '7px',
+    expected: '7px',
+    family: '--cngx-select-radius',
+    variants: [
+      ['--cngx-multi-select-radius', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
+      ['--cngx-combobox-radius', ['cngx-combobox', 'cngx-action-multi-select']],
+      ['--cngx-typeahead-radius', ['cngx-typeahead']],
+      ['--cngx-tree-select-trigger-radius', ['cngx-tree-select']],
+      ['--cngx-reorderable-multi-select-radius', ['cngx-reorderable-multi-select']],
+      ['--cngx-action-select-radius', ['cngx-action-select']],
+      ['--cngx-action-multi-select-radius', ['cngx-action-multi-select']],
+      ['--cngx-select-shell-radius', ['cngx-select-shell']],
     ],
   },
 ];

@@ -100,13 +100,14 @@
   }
 
   /**
-   * Corner radius of the trigger.
+   * Corner radius of the trigger. Falls back to `--cngx-select-radius`; see
+   * {@link --cngx-select-radius} for why no `initial-value` is declared.
    * @group Layout
+   * @default var(--cngx-select-radius, 0.25rem)
    */
   @property --cngx-multi-select-radius {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.25rem;
+    inherits: true;
   }
 
   /**

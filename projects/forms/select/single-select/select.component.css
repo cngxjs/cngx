@@ -124,13 +124,16 @@
   }
 
   /**
-   * Corner radius of the trigger.
+   * Corner radius of the trigger, and the family fallback every variant's
+   * radius token resolves through. No `initial-value`, like
+   * {@link --cngx-select-bg}: the use-site fallback survives, and a value set
+   * on the host or an ancestor reaches the trigger.
    * @group Layout
+   * @default 0.25rem
    */
   @property --cngx-select-radius {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.25rem;
+    inherits: true;
   }
 
   /**
