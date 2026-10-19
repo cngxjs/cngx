@@ -44,7 +44,9 @@
  *   reaches the trigger
  * - `--cngx-reorderable-multi-select-color` -> `--cngx-multi-select-color`
  *   -> `--cngx-select-color` -> `inherit`, registered the same way
- * - `--cngx-reorderable-multi-select-border` -> `--cngx-color-border`
+ * - `--cngx-reorderable-multi-select-border` -> `--cngx-multi-select-border` ->
+ *   `--cngx-select-border` -> `--cngx-color-border`, registered like the
+ *   background token
  * - `--cngx-reorderable-multi-select-focus-outline` ->
  *   `--cngx-color-primary`
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
@@ -94,13 +96,15 @@
   }
 
   /**
-   * Border shorthand of the trigger.
+   * Border shorthand of the trigger. Falls back to `--cngx-multi-select-border`, then `--cngx-select-border`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-multi-select-border, var(--cngx-select-border, 1px solid var(--cngx-color-border)))
+   * @see [[--cngx-color-border]]
    */
   @property --cngx-reorderable-multi-select-border {
     syntax: '*';
     inherits: true;
-    initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
   /**
@@ -157,11 +161,9 @@
     initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
-  /* Delegating tokens - trigger border + focus-ring track the
-   * foundation chain. Shorthands pin their structural part and
-   * inherit the color via the delegating foundation token. */
+  /* Delegating token - the focus ring tracks `--cngx-color-primary`. The
+   * shorthand pins its structural part (2px solid). */
   :root {
-    --cngx-reorderable-multi-select-border: 1px solid var(--cngx-color-border);
     --cngx-reorderable-multi-select-focus-outline: 2px solid var(--cngx-color-primary);
   }
 }

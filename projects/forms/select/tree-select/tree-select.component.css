@@ -36,7 +36,8 @@
  *   trigger
  * - the trigger text reads `--cngx-select-color` -> `inherit`, the family
  *   color token
- * - `--cngx-tree-select-trigger-border` -> `--cngx-color-border`
+ * - `--cngx-tree-select-trigger-border` -> `--cngx-select-border` ->
+ *   `--cngx-color-border`, registered like the background token
  * - `--cngx-tree-select-focus-ring` -> `--cngx-color-primary` (opaque,
  *   same ring as the sibling selects)
  * - `--cngx-select-placeholder-color` -> shared family token, dark-mode
@@ -95,14 +96,15 @@
   }
 
   /**
-   * Border shorthand of the trigger. `inherits: true` so the :root
-   * delegating value reaches the trigger host.
+   * Border shorthand of the trigger. Falls back to `--cngx-select-border`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-border, 1px solid var(--cngx-color-border))
+   * @see [[--cngx-color-border]]
    */
   @property --cngx-tree-select-trigger-border {
     syntax: '*';
     inherits: true;
-    initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
   /**
@@ -149,13 +151,9 @@
     initial-value: 1.25rem;
   }
 
-  /* Delegating tokens - trigger border + focus-ring track the
-   * foundation chain. The border shorthand pins the structural part
-   * (1px solid) and inherits the color via the delegating
-   * border-color chain; the focus-ring shorthand pins 2px solid
-   * and inherits the primary colour. */
+  /* Delegating token - the focus ring tracks `--cngx-color-primary`. The
+   * shorthand pins its structural part (2px solid). */
   :root {
-    --cngx-tree-select-trigger-border: 1px solid var(--cngx-color-border);
     --cngx-tree-select-focus-ring: 2px solid var(--cngx-color-primary);
   }
 }
@@ -214,7 +212,7 @@
       padding: var(--cngx-tree-select-trigger-padding, 0.25rem 0.5rem);
       border: var(
         --cngx-tree-select-trigger-border,
-        1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
+        var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))
       );
       border-radius: var(--cngx-tree-select-trigger-radius, 0.25rem);
       background: var(--cngx-tree-select-trigger-bg, var(--cngx-select-bg, transparent));

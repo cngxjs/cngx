@@ -41,7 +41,9 @@
  *   reaches the trigger
  * - `--cngx-action-multi-select-color` -> `--cngx-combobox-color` ->
  *   `--cngx-select-color` -> `inherit`, registered the same way
- * - `--cngx-action-multi-select-border` -> `--cngx-color-border`
+ * - `--cngx-action-multi-select-border` -> `--cngx-combobox-border` ->
+ *   `--cngx-select-border` -> `--cngx-color-border`, registered like the
+ *   background token
  * - `--cngx-action-multi-select-focus-outline` -> `--cngx-color-primary`
  *
  * For every other token, once registered via `@property` with an initial
@@ -88,13 +90,15 @@
   }
 
   /**
-   * Border shorthand of the trigger.
+   * Border shorthand of the trigger. Falls back to `--cngx-combobox-border`, then `--cngx-select-border`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-combobox-border, var(--cngx-select-border, 1px solid var(--cngx-color-border)))
+   * @see [[--cngx-color-border]]
    */
   @property --cngx-action-multi-select-border {
     syntax: '*';
     inherits: true;
-    initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
   /**
@@ -172,11 +176,9 @@
     initial-value: 4rem;
   }
 
-  /* Delegating tokens - trigger border + focus-ring track the
-   * foundation chain. Shorthands pin their structural part and
-   * inherit the color via the delegating foundation token. */
+  /* Delegating token - the focus ring tracks `--cngx-color-primary`. The
+   * shorthand pins its structural part (2px solid). */
   :root {
-    --cngx-action-multi-select-border: 1px solid var(--cngx-color-border);
     --cngx-action-multi-select-focus-outline: 2px solid var(--cngx-color-primary);
   }
 }

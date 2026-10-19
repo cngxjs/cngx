@@ -80,7 +80,9 @@ const SET_COLOR = 'rgb(1, 2, 3)';
 
 interface TokenChain {
   /** Computed style property painted on the trigger row. */
-  readonly property: 'backgroundColor' | 'color';
+  readonly property: 'backgroundColor' | 'color' | 'borderTopColor';
+  /** Value the tokens are set to; it paints `SET_COLOR` on `property`. */
+  readonly value: string;
   readonly family: string;
   /** Each variant token and the hosts whose trigger row reads it. */
   readonly variants: readonly (readonly [string, readonly string[]])[];
@@ -89,6 +91,7 @@ interface TokenChain {
 const CHAINS: readonly TokenChain[] = [
   {
     property: 'backgroundColor',
+    value: SET_COLOR,
     family: '--cngx-select-bg',
     variants: [
       ['--cngx-multi-select-bg', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
@@ -103,6 +106,7 @@ const CHAINS: readonly TokenChain[] = [
   },
   {
     property: 'color',
+    value: SET_COLOR,
     family: '--cngx-select-color',
     variants: [
       ['--cngx-multi-select-color', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
@@ -110,6 +114,21 @@ const CHAINS: readonly TokenChain[] = [
       ['--cngx-reorderable-multi-select-color', ['cngx-reorderable-multi-select']],
       ['--cngx-action-multi-select-color', ['cngx-action-multi-select']],
       ['--cngx-select-shell-color', ['cngx-select-shell']],
+    ],
+  },
+  {
+    property: 'borderTopColor',
+    value: `1px solid ${SET_COLOR}`,
+    family: '--cngx-select-border',
+    variants: [
+      ['--cngx-multi-select-border', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
+      ['--cngx-combobox-border', ['cngx-combobox', 'cngx-action-multi-select']],
+      ['--cngx-typeahead-border', ['cngx-typeahead']],
+      ['--cngx-tree-select-trigger-border', ['cngx-tree-select']],
+      ['--cngx-reorderable-multi-select-border', ['cngx-reorderable-multi-select']],
+      ['--cngx-action-select-border', ['cngx-action-select']],
+      ['--cngx-action-multi-select-border', ['cngx-action-multi-select']],
+      ['--cngx-select-shell-border', ['cngx-select-shell']],
     ],
   },
 ];
@@ -175,10 +194,10 @@ describe('select touch floor geometry', () => {
     }
   });
 
-  for (const { property, family, variants } of CHAINS) {
+  for (const { property, value, family, variants } of CHAINS) {
     it(`${family} set on an ancestor reaches every trigger row`, () => {
       const rows = mountRows();
-      setOnAncestor(family, SET_COLOR);
+      setOnAncestor(family, value);
       for (const row of rows) {
         expect(getComputedStyle(row)[property], `${hostTag(row)} trigger row`).toBe(SET_COLOR);
       }
@@ -188,7 +207,7 @@ describe('select touch floor geometry', () => {
       it(`${token} set on an ancestor repaints only ${painted.join(' + ')}`, () => {
         const rows = mountRows();
         const before = rows.map((row) => getComputedStyle(row)[property]);
-        setOnAncestor(token, SET_COLOR);
+        setOnAncestor(token, value);
         rows.forEach((row, i) => {
           const host = hostTag(row) ?? '';
           const expected = painted.includes(host) ? SET_COLOR : before[i];

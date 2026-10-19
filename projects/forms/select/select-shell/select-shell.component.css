@@ -42,7 +42,8 @@
  *   on an ancestor reaches the trigger
  * - `--cngx-select-shell-color` -> `--cngx-select-color` -> `inherit`,
  *   registered the same way
- * - `--cngx-select-shell-border` -> `--cngx-color-border`
+ * - `--cngx-select-shell-border` -> `--cngx-select-border` ->
+ *   `--cngx-color-border`, registered like the background token
  * - `--cngx-select-shell-focus-outline` -> `--cngx-color-primary`
  * - `--cngx-select-shell-focus-ring` -> `--cngx-color-primary`
  *
@@ -101,13 +102,15 @@
   }
 
   /**
-   * Border shorthand of the trigger.
+   * Border shorthand of the trigger. Falls back to `--cngx-select-border`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-border, 1px solid var(--cngx-color-border))
+   * @see [[--cngx-color-border]]
    */
   @property --cngx-select-shell-border {
     syntax: '*';
     inherits: true;
-    initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
   /**
@@ -173,10 +176,9 @@
     initial-value: 0.375rem;
   }
 
-  /* Delegating tokens - trigger border + focus-ring color + focus
-   * outline all track the foundation chain. */
+  /* Delegating token - the focus ring tracks `--cngx-color-primary`. The
+   * shorthand pins its structural part (2px solid). */
   :root {
-    --cngx-select-shell-border: 1px solid var(--cngx-color-border);
     --cngx-select-shell-focus-outline: 2px solid var(--cngx-color-primary);
     --cngx-select-shell-focus-ring: var(--cngx-color-primary);
   }

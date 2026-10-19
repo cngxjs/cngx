@@ -31,7 +31,8 @@
  * Trigger surface tokens delegate to the foundation so brand swaps on
  * border / surface propagate without per-component theming:
  *
- * - `--cngx-action-select-border` -> `--cngx-color-border`
+ * - `--cngx-action-select-border` -> `--cngx-select-border` ->
+ *   `--cngx-color-border`, registered like the background token
  * - `--cngx-action-select-bg` -> `--cngx-select-bg` -> `transparent`, like the
  *   rest of the select family; both are registered without an initial
  *   value and inherit, so either one set on an ancestor reaches the trigger
@@ -76,13 +77,15 @@
   }
 
   /**
-   * Border shorthand of the trigger.
+   * Border shorthand of the trigger. Falls back to `--cngx-select-border`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-border, 1px solid var(--cngx-color-border))
+   * @see [[--cngx-color-border]]
    */
   @property --cngx-action-select-border {
     syntax: '*';
     inherits: true;
-    initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
   /**
@@ -104,13 +107,6 @@
   @property --cngx-action-select-bg {
     syntax: '*';
     inherits: true;
-  }
-
-  /* Delegating token - the trigger border tracks the foundation chain
-   * so a dark-mode swap on `--cngx-color-border` cascades through the
-   * trigger host. */
-  :root {
-    --cngx-action-select-border: 1px solid var(--cngx-color-border);
   }
 }
 
@@ -149,7 +145,7 @@
       padding: var(--cngx-action-select-padding, 0 0.75rem);
       border: var(
         --cngx-action-select-border,
-        1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
+        var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))
       );
       border-radius: var(--cngx-action-select-radius, 0.25rem);
       background: var(--cngx-action-select-bg, var(--cngx-select-bg, transparent));

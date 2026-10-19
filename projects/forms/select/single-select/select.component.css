@@ -34,7 +34,10 @@
  * swaps on `--cngx-color-border` / `--cngx-color-primary` cascade
  * through the trigger host:
  *
- * - `--cngx-select-border` -> `--cngx-color-border`
+ * - `--cngx-select-border` -> `1px solid var(--cngx-color-border)`;
+ *   registered like `--cngx-select-bg` and resolved on the trigger, so a
+ *   scoped `--cngx-color-border` swap reaches it. Every variant's border
+ *   token falls back to it
  * - `--cngx-select-focus-outline` -> `--cngx-color-primary`
  * - `--cngx-select-bg` -> `transparent`; registered without an initial
  *   value and inheriting, so a value set on an ancestor reaches the trigger.
@@ -103,13 +106,19 @@
   }
 
   /**
-   * Border shorthand of the trigger.
+   * Border shorthand of the trigger, and the family fallback every variant's
+   * border token resolves through. No `initial-value`, like
+   * {@link --cngx-select-bg}: the use-site fallback
+   * `1px solid var(--cngx-color-border)` resolves on the trigger, so a
+   * scoped `--cngx-color-border` swap reaches it, and a value set on an
+   * ancestor reaches the trigger.
    * @group Surface
+   * @default 1px solid var(--cngx-color-border)
+   * @see [[--cngx-color-border]]
    */
   @property --cngx-select-border {
     syntax: '*';
     inherits: true;
-    initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
   /**
@@ -175,13 +184,9 @@
     inherits: true;
   }
 
-  /* Delegating tokens - trigger border + focus-ring track the
-   * foundation chain so a dark-mode swap on `--cngx-color-border` /
-   * `--cngx-color-primary` cascades through the trigger host.
-   * Shorthands pin their structural part (1px solid / 2px solid)
-   * and inherit only the color. */
+  /* Delegating token - the focus ring tracks `--cngx-color-primary`. The
+   * shorthand pins its structural part (2px solid). */
   :root {
-    --cngx-select-border: 1px solid var(--cngx-color-border);
     --cngx-select-focus-outline: 2px solid var(--cngx-color-primary);
   }
 }
