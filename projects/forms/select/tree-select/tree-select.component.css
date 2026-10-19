@@ -153,13 +153,15 @@
   }
 
   /**
-   * Hit-target diameter of the clear-all button.
+   * Hit-target diameter of the clear-all button. No `initial-value`, like
+   * {@link --cngx-tree-select-trigger-bg}: the use-site fallback survives, and a
+   * value set on the host or an ancestor reaches the button.
    * @group State / Clear
+   * @default 1.25rem
    */
   @property --cngx-tree-select-clear-size {
     syntax: '*';
-    inherits: false;
-    initial-value: 1.25rem;
+    inherits: true;
   }
 }
 

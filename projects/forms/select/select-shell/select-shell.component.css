@@ -179,13 +179,16 @@
   }
 
   /**
-   * Gap inside the label slot (between glyph and text).
+   * Gap inside the label slot (between glyph and text). No `initial-value`,
+   * like {@link --cngx-select-bg}: the use-site fallback to the spacing scale
+   * survives, so a root `[data-density]` compacts it, and a value set on the
+   * host or an ancestor reaches the label.
    * @group Layout
+   * @default var(--cngx-space-xs)
    */
   @property --cngx-select-shell-label-gap {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.375rem;
+    inherits: true;
   }
 
   /* Delegating token - the clear button ring tracks
@@ -287,15 +290,15 @@
     }
 
     .cngx-select-shell__label {
-      /* label-gap 0.375 -> xs (tie xs/sm -> xs). */
-      --cngx-select-shell-label-gap: var(--cngx-space-xs, 0.25rem);
+      /* label-gap 0.375 -> xs (tie xs/sm -> xs), derived in the gap fallback
+         below; the token stays unset so an ancestor value cascades in. */
       flex: 1 1 auto;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
-      gap: var(--cngx-select-shell-label-gap, 0.375rem);
+      gap: var(--cngx-select-shell-label-gap, var(--cngx-space-xs, 0.25rem));
     }
 
     .cngx-select-shell__label--placeholder {

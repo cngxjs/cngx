@@ -78,6 +78,107 @@ class TouchFloorHost {
   readonly nodeId = (value: unknown): string => String(value);
 }
 
+// Hosts for the tokens read below the trigger row: the shell label slot, the
+// inline input of the two input-led multi variants, and the tree-select
+// clear-all button (rendered once clearable and a value is selected).
+@Component({
+  selector: 'cngx-select-inner-tokens-host',
+  standalone: true,
+  imports: [CngxCombobox, CngxTreeSelect, CngxActionMultiSelect, CngxSelectShell, CngxSelectOption],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/reset.css',
+    '../../../core/theming/base.css',
+    '../../theming/components/cngx-field-affix.css',
+    '../../theming/components/cngx-field-skin.css',
+    './select-base.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div style="display: block; width: 20rem; margin: 1rem">
+      <cngx-combobox [label]="'C'" [options]="options" />
+      <cngx-action-multi-select [label]="'C'" [options]="options" />
+      <cngx-tree-select
+        [label]="'C'"
+        [nodes]="options"
+        [nodeIdFn]="nodeId"
+        [clearable]="true"
+        [values]="['red']"
+      />
+      <cngx-select-shell [label]="'C'">
+        <cngx-option [value]="'red'">Red</cngx-option>
+      </cngx-select-shell>
+    </div>
+  `,
+})
+class InnerTokensHost {
+  readonly options = [
+    { value: 'red', label: 'Red' },
+    { value: 'green', label: 'Green' },
+  ];
+  readonly nodeId = (value: unknown): string => String(value);
+}
+
+interface InnerToken {
+  readonly token: string;
+  readonly value: string;
+  readonly property: 'columnGap' | 'minWidth' | 'flexBasis' | 'inlineSize';
+  /** Every element whose `property` the group reads. */
+  readonly sites: readonly string[];
+  /** The sites `token` repaints. */
+  readonly reaches: readonly string[];
+}
+
+const COMBOBOX_INPUT = '.cngx-combobox__input';
+const ACTION_MULTI_INPUT = '.cngx-action-multi-select__input';
+const INPUTS = [COMBOBOX_INPUT, ACTION_MULTI_INPUT];
+
+const INNER_TOKENS: readonly InnerToken[] = [
+  {
+    token: '--cngx-select-shell-label-gap',
+    value: '7px',
+    property: 'columnGap',
+    sites: ['.cngx-select-shell__label'],
+    reaches: ['.cngx-select-shell__label'],
+  },
+  {
+    token: '--cngx-combobox-input-min-width',
+    value: '70px',
+    property: 'minWidth',
+    sites: INPUTS,
+    reaches: INPUTS,
+  },
+  {
+    token: '--cngx-action-multi-select-input-min-width',
+    value: '70px',
+    property: 'minWidth',
+    sites: INPUTS,
+    reaches: [ACTION_MULTI_INPUT],
+  },
+  {
+    token: '--cngx-combobox-input-flex-basis',
+    value: '70px',
+    property: 'flexBasis',
+    sites: INPUTS,
+    reaches: INPUTS,
+  },
+  {
+    token: '--cngx-action-multi-select-input-flex-basis',
+    value: '70px',
+    property: 'flexBasis',
+    sites: INPUTS,
+    reaches: [ACTION_MULTI_INPUT],
+  },
+  {
+    token: '--cngx-tree-select-clear-size',
+    value: '30px',
+    property: 'inlineSize',
+    sites: ['.cngx-tree-select__clear-all'],
+    reaches: ['.cngx-tree-select__clear-all'],
+  },
+];
+
 const SET_COLOR = 'rgb(1, 2, 3)';
 
 interface TokenChain {
@@ -371,5 +472,29 @@ describe('select touch floor geometry', () => {
         });
       });
     }
+  }
+});
+
+describe('select inner layout tokens', () => {
+  for (const { token, value, property, sites, reaches } of INNER_TOKENS) {
+    it(`${token} set on an ancestor reaches only ${reaches.join(' + ')}`, () => {
+      const fixture = TestBed.createComponent(InnerTokensHost);
+      mountedRoot = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(mountedRoot);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      const read = (): string[] =>
+        sites.map((sel) => {
+          const el = mountedRoot!.querySelector<HTMLElement>(sel);
+          expect(el, sel).not.toBeNull();
+          return getComputedStyle(el!)[property];
+        });
+      const before = read();
+      mountedRoot.querySelector<HTMLElement>('div')!.style.setProperty(token, value);
+      read().forEach((after, i) => {
+        expect(after, sites[i]).toBe(reaches.includes(sites[i]) ? value : before[i]);
+      });
+    });
   }
 });

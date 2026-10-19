@@ -172,24 +172,28 @@
 
   /**
    * Flex basis of the inline input - sets the preferred starting
-   * width before the input grows or shrinks.
+   * width before the input grows or shrinks. No `initial-value`, like
+   * {@link --cngx-select-bg}: the use-site fallback survives, and a value set
+   * on the host or an ancestor reaches the input.
    * @group Layout
+   * @default 4rem
    */
   @property --cngx-combobox-input-flex-basis {
     syntax: '*';
-    inherits: false;
-    initial-value: 4rem;
+    inherits: true;
   }
 
   /**
    * Minimum inline size of the inline input - keeps the input
-   * tappable even when chips dominate the trigger row.
+   * tappable even when chips dominate the trigger row. No `initial-value`,
+   * like {@link --cngx-select-bg}: the use-site fallback survives, and a value
+   * set on the host or an ancestor reaches the input.
    * @group Layout
+   * @default 4rem
    */
   @property --cngx-combobox-input-min-width {
     syntax: '*';
-    inherits: false;
-    initial-value: 4rem;
+    inherits: true;
   }
 }
 
