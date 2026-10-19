@@ -20,6 +20,8 @@ export interface OnboardingAnswers {
   readonly a11yPreferences: boolean;
   readonly feedback: boolean;
   readonly floatingFallback: boolean;
+  /** Replace the untouched `ng new` App component with the cngx starter. */
+  readonly starter: boolean;
   readonly aiTools: readonly AiTool[];
 }
 

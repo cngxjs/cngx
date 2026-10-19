@@ -20,6 +20,7 @@ describe('fillTemplate', () => {
 
   it('refuses a placeholder without a value', () => {
     expect(() => fillTemplate('{{missing}}', {})).toThrow('helper-readme.md.tpl uses {{missing}}, which has no value.');
+    expect(() => fillTemplate('{{missing}}', {}, 'starter-app.ts.tpl')).toThrow('starter-app.ts.tpl uses {{missing}}, which has no value.');
   });
 });
 

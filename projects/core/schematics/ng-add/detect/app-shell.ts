@@ -219,7 +219,7 @@ function normalize(content: string): string {
 
 function isStockSpec(content: string, project: string): boolean {
   return SCAFFOLD_CATALOG.some(
-    (entry) => entry.file === 'app.spec.ts' && entry.body.split(SCAFFOLD_NAME_PLACEHOLDER).join(project) === content,
+    (entry) => entry.file === 'app.spec.ts' && entry.body?.split(SCAFFOLD_NAME_PLACEHOLDER).join(project) === content,
   );
 }
 

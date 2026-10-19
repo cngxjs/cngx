@@ -7,6 +7,7 @@ import {
   BUILD_OUTPUT_DIRS,
   declaredRange,
   isAppSource,
+  isRecord,
   type LanguagePackArgument,
   listFiles,
   NON_SOURCE_DIRS,
@@ -30,6 +31,17 @@ import {
 } from './ai-tooling';
 import { type AppShell, appShellOf, type AppShellUnfollowed } from './app-shell';
 import { maturityOf, rootProvidersPath } from './bootstrap';
+import {
+  type AppScaffold,
+  type FaviconFacts,
+  faviconOf,
+  globalStylesOf,
+  type GlobalStylesFacts,
+  indexHtmlStateOf,
+  type IndexHtmlFacts,
+  scaffoldOf,
+  type ScaffoldNames,
+} from './scaffold';
 import {
   detectEslintConfig,
   detectEslintStack,
@@ -88,6 +100,23 @@ export {
   FEEDBACK_SPEC_PROVIDERS,
   outletEdits,
 } from './app-shell';
+export {
+  type AppScaffold,
+  type FaviconFacts,
+  type GlobalStylesFacts,
+  type GlobalStylesState,
+  type IndexHtmlFacts,
+  type IndexHtmlState,
+  isUntouchedGlobalStyles,
+  matchesScaffoldEntry,
+  scaffoldEntries,
+  type ScaffoldEntryKey,
+  type ScaffoldFiles,
+  type ScaffoldNames,
+  starterFingerprintLine,
+  starterFingerprintOf,
+  withStarterFavicon,
+} from './scaffold';
 export { type EslintConfigFacts, type EslintStackFacts, type LegacyEslintConfigFacts } from './eslint';
 export {
   CNGX_LAYERS_FILE,
@@ -137,6 +166,14 @@ export interface ProjectFacts {
   readonly rootProviders: readonly string[];
   /** The bootstrapped root component, or why `main.ts` cannot be followed to it. */
   readonly appShell: AppShell | AppShellUnfollowed;
+  /** Whether the root component's files are the untouched `ng new` scaffold, a cngx starter, or anything else. */
+  readonly scaffold: AppScaffold;
+  /** The build's `index.html` and whether it is the untouched `ng new` file. */
+  readonly indexHtml: IndexHtmlFacts;
+  /** `favicon.svg` in the folder the build serves as is; `undefined` when it serves none. */
+  readonly favicon: FaviconFacts | undefined;
+  /** `stylesPath` and whether it is the untouched `ng new` file or holds the starter's page styles; `undefined` without one. */
+  readonly globalStyles: GlobalStylesFacts | undefined;
   /** `cngx-language.ts` next to `rootProvidersFile`. */
   readonly languageFile: GeneratedFileState;
   /** The pack a `provideCngxI18n(withPack(...))` there passes; `undefined` when none. */
@@ -164,6 +201,17 @@ export interface ProjectFacts {
   readonly eslintStack: EslintStackFacts;
   readonly sourceLocale: string | undefined;
   readonly maturity: 'fresh' | 'existing';
+}
+
+// The page the build serves: the `index` option as a path or as
+// `{ input }`, else `<sourceRoot>/index.html`, the application builder's default.
+function indexPathOf(options: Readonly<Record<string, unknown>>, sourceRoot: string): string {
+  const index = options['index'];
+  if (typeof index === 'string') {
+    return index;
+  }
+  const input = isRecord(index) ? index['input'] : undefined;
+  return typeof input === 'string' ? input : posix.join(sourceRoot, 'index.html');
 }
 
 /**
@@ -210,6 +258,13 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const stylesPath = globalStylesheet(entries);
   const componentCount = appSources.filter(({ content }) => /@Component\s*\(/.test(content)).length;
 
+  const appShell = appShellOf(read, mainPath, standalone, projectName);
+  const names: ScaffoldNames = {
+    project: projectName,
+    selector: project.prefix === undefined ? undefined : `${project.prefix}-root`,
+  };
+  const indexPath = indexPathOf(options, sourceRoot);
+
   const mcpConfigs = mcpConfigsOf(tree);
   const angularRange = declaredRange(manifest, '@angular/core');
   const angular = angularVersionOf(read, angularRange);
@@ -233,7 +288,11 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     tailwind: detectTailwind(read, manifest, entries),
     rootProvidersFile,
     rootProviders: providers,
-    appShell: appShellOf(read, mainPath, standalone, projectName),
+    appShell,
+    scaffold: scaffoldOf(read, appShell, names),
+    indexHtml: { path: indexPath, state: indexHtmlStateOf(read(indexPath), names) },
+    favicon: faviconOf(read, options),
+    globalStyles: globalStylesOf(read, stylesPath),
     languageFile: generatedFileState(read(posix.join(posix.dirname(rootProvidersFile), CNGX_LANGUAGE_FILE))),
     languagePack: providerCalls.languagePack,
     material: detectMaterial(read, manifest, entries),

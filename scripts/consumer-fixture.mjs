@@ -34,14 +34,15 @@
 //               `previous` packs the newest registry release below the
 //               tarballs. `--preset <name>` picks the ng add preset
 //               (default `recommended`); `full` also runs `ng test` on the
-//               onboarded app and checks both feedback outlets in the DOM.
+//               onboarded app, checks both feedback outlets in the DOM and
+//               clicks the starter's toast and banner buttons.
 //
 // The schematics variant serves the tarballs from a local registry for the
 // @cngx scope (other @cngx packages are proxied to the public registry), so
 // the exact pins `ng add` writes install the packed release, not a published
 // one of the same version.
 
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
@@ -90,16 +91,77 @@ export function usageText() {
 }
 
 /**
+ * The cngx starter `--preset full` writes over the untouched `ng new` app:
+ * the heading the stock spec asserts, a button per feedback surface and the
+ * message it shows in its outlet, and the icon link.
+ */
+export const STARTER_SMOKE = {
+  heading: 'Hello, fixture.',
+  shows: [
+    { button: 'Toast', outlet: 'cngx-toast-outlet', message: 'Saved. This toast came through the toast outlet.' },
+    { button: 'Banner', outlet: 'cngx-banner-outlet', message: 'A banner stays until someone closes it.' },
+  ],
+  icon: 'favicon.svg',
+};
+
+/**
  * What the schematics variant checks beyond the build for a preset: only
- * `full` provides feedback, so only it runs `ng test` over the stock spec
- * and expects the outlets in the DOM; the default path gets no extra step.
+ * `full` provides feedback and writes the starter, so only it runs `ng test`
+ * over the stock spec, expects the outlets in the DOM and clicks the
+ * starter's toast and banner buttons; the default path gets no extra step.
  */
 export function presetPlan(preset = DEFAULT_PRESET) {
   if (!PRESETS.includes(preset)) {
     throw new Error(`Unknown preset "${preset}". Available: ${PRESETS.join(', ')}`);
   }
   const full = preset === 'full';
-  return { preset, ngTest: full, outlets: full ? ['cngx-banner-outlet', 'cngx-toast-outlet'] : [] };
+  return {
+    preset,
+    ngTest: full,
+    outlets: full ? ['cngx-banner-outlet', 'cngx-toast-outlet'] : [],
+    starter: full ? STARTER_SMOKE : undefined,
+    // The starter keeps its component stylesheet inside the `ng new` budgets.
+    noBudgetWarnings: full,
+  };
+}
+
+/** The budget warnings `ng build` printed in `output`, one line each. */
+export function budgetWarnings(output) {
+  return output.split(/\r?\n/).filter((line) => /exceeded maximum budget/.test(line));
+}
+
+// Runs a command, echoes its output and returns stdout and stderr together.
+function runEchoed(cmd, args, options = {}) {
+  console.log(`  $ ${cmd} ${args.join(' ')}`);
+  const result = spawnSync(cmd, args, { encoding: 'utf8', ...options });
+  process.stdout.write(result.stdout ?? '');
+  process.stderr.write(result.stderr ?? '');
+  if (result.status !== 0) {
+    throw new Error(`${cmd} ${args.join(' ')} exited with ${result.status ?? result.signal}`);
+  }
+  return `${result.stdout ?? ''}${result.stderr ?? ''}`;
+}
+
+// The starter in the browser: its heading, each button's message in its
+// outlet, and the icon link pointing at a favicon the server delivers.
+async function smokeStarter(page, starter, errors) {
+  const heading = (await page.textContent('h1'))?.trim();
+  if (heading !== starter.heading) {
+    errors.push(`expected the starter heading "${starter.heading}", found "${heading}"`);
+  }
+  for (const { button, outlet, message } of starter.shows) {
+    await page.getByRole('button', { name: button, exact: true }).click();
+    try {
+      await page.locator(outlet).getByText(message).waitFor({ timeout: 5_000 });
+    } catch {
+      errors.push(`clicking "${button}" showed no "${message}" in <${outlet}>`);
+    }
+  }
+  const icon = await page.getAttribute('link[rel="icon"]', 'href');
+  const served = icon === null ? undefined : await page.request.get(new URL(icon, page.url()).href);
+  if (icon !== starter.icon || served?.ok() !== true) {
+    errors.push(`expected the icon link at a served ${starter.icon}, found ${icon ?? 'none'}`);
+  }
 }
 
 // The default preset passes no flag, so the default path runs the exact
@@ -314,7 +376,7 @@ function angularVersionsInTree(appDir) {
   return [...versions];
 }
 
-async function smoke(appDir, plan, outlets = []) {
+async function smoke(appDir, plan, { outlets = [], starter } = {}) {
   const { chromium } = await import('@playwright/test');
   const webRoot = join(appDir, 'dist', 'fixture', 'browser');
   const port = 4300 + Math.floor(Math.random() * 500);
@@ -337,6 +399,9 @@ async function smoke(appDir, plan, outlets = []) {
         if ((await page.locator(outlet).count()) !== 1) {
           errors.push(`expected one <${outlet}> in the DOM`);
         }
+      }
+      if (starter !== undefined) {
+        await smokeStarter(page, starter, errors);
       }
     } else {
       await page.waitForSelector(`#${MARKER}`, { timeout: 15_000 });
@@ -582,7 +647,14 @@ async function main() {
     } else {
       writeFileSync(join(appDir, 'src', 'app', 'app.ts'), renderAppSource(plan));
     }
-    run('npx', ['ng', 'build'], { cwd: appDir });
+    if (plan.schematics && checks.noBudgetWarnings) {
+      const warnings = budgetWarnings(runEchoed('npx', ['ng', 'build'], { cwd: appDir }));
+      if (warnings.length > 0) {
+        throw new Error(`ng build exceeded a budget:\n  ${warnings.join('\n  ')}`);
+      }
+    } else {
+      run('npx', ['ng', 'build'], { cwd: appDir });
+    }
     if (plan.schematics && checks.ngTest) {
       run('npx', ['ng', 'test', '--watch=false'], { cwd: appDir });
     }
@@ -596,7 +668,7 @@ async function main() {
   }
 
   if (plan.smoke) {
-    const errors = await smoke(appDir, plan, plan.schematics ? checks.outlets : []);
+    const errors = await smoke(appDir, plan, plan.schematics ? checks : {});
     if (errors.length > 0) {
       throw new Error(`Browser smoke failed:\n  ${errors.join('\n  ')}`);
     }

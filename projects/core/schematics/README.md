@@ -31,8 +31,13 @@ projects/core/schematics/
     detect/              detectProject(tree, workspace): ProjectFacts in detect.ts,
                          composed from workspace, styles, eslint, ai-tooling, bootstrap,
                          app-shell (root component, outlets, stock spec against
-                         scaffold-catalog.generated.ts)
+                         scaffold-catalog.generated.ts), scaffold (untouched ng new
+                         App, starter fingerprints, index.html, favicon)
     steps/               pure plan<Step>(facts, answers, versions) per concern
+    templates/           .tpl text bundled by the esbuild text loader: the helper README
+    files/starter/       the starter's app.ts, app.html, stylesheet and favicon; shipped
+                         as files next to the bundle (build-schematics copies every
+                         <schematic>/files folder) and read by the shell at run time
     shell/               questions, preflight checklist, git state, install manifest reader (absent / unreadable / read)
   migrations/
     migrations.json      the ng update collection, hand-written entries only
@@ -213,6 +218,22 @@ rewrites every literal of it in the bundles.
   gets the feedback providers. An outlet this project's record placed that
   is gone stays out unless `--feedback` is passed; `ng update` only notes a
   missing one.
+- `starter` is an answer no question asks: `--preset=full` turns it on,
+  `--no-starter` (or `--starter=false`) off, any other preset leaves it off.
+  A record without it reads as off, so `ng update` and a re-run of an older
+  `full` install never write a starter.
+- With the starter on, the `starter` step runs before `app-shell`: over an
+  untouched standalone scaffold (an exact match against the scaffold
+  catalog, per file and variant) it replaces `app.ts`, `app.html` and the
+  stylesheet as whole files, each an `edit-file` whose `edit` re-checks the
+  catalog entry at apply time, appends `body { margin: 0 }` to the global
+  styles and, over an untouched `index.html`, writes `public/favicon.svg`
+  and points the icon link at it. Each starter file records a
+  `cngx:fingerprint` of its render; a re-run whose render matches skips it,
+  one with other answers names it in a note. The outlets step then skips
+  the outlets the starter carries and still provides the stock spec.
+  `scripts/__tests__/starter-compile.test.mjs` compiles the starter the
+  built ng-add writes with `strictTemplates` against `dist/`.
 - A provider goes on its own line of the root providers array (an object
   typed `ApplicationConfig`, the `@NgModule` argument or the inline
   `bootstrapApplication` config) when the planned file holds exactly one and

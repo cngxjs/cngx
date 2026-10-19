@@ -32,6 +32,7 @@ const BANNER = FEEDBACK_OUTLETS[0];
 const TOAST = FEEDBACK_OUTLETS[1];
 const OUTLET_REASON = 'CngxToaster and CngxBanner render nowhere without them';
 const WITHDRAWN_REASON = 'the outlets were removed after cngx placed them; pass --feedback to place them again';
+const STARTER_REASON = 'provided by the starter';
 const SNIPPET_LABEL = 'Place the toast and banner outlets in the root component';
 const TESTBED = { kind: 'testbed-providers' } as const;
 
@@ -148,7 +149,9 @@ function specChange(facts: ProjectFacts, shell: AppShell, provenance: Provenance
  * project's previous record: outlets it placed that are gone now were
  * removed on purpose and stay out, unless `explicitFeedback` (`--feedback`)
  * asks for them again. Without `@cngx/ui` selected there is nothing to place;
- * the providers step already says why feedback is skipped.
+ * the providers step already says why feedback is skipped. When this run
+ * writes the starter (`starter`), the starter template carries both outlets,
+ * so the outlet edits are skipped and only the spec is provided.
  */
 export function planAppShell(
   facts: ProjectFacts,
@@ -156,12 +159,18 @@ export function planAppShell(
   versions: Versions,
   recorded: readonly string[],
   explicitFeedback: boolean,
+  starter = false,
 ): StepResult {
   if (!answers.feedback || !selectedLibs(answers.libs).includes('ui')) {
     return NOTHING;
   }
   const provenance = createProvenance('ng-add', versions.cngx);
   const shell = facts.appShell;
+  if (starter && shell.kind === 'followed' && shell.outlets.kind === 'editable') {
+    const spec = specChange(facts, shell, provenance, true);
+    const skipped = outletTargets(shell, provenance).map(({ change }) => skipChange(change, STARTER_REASON));
+    return { changes: spec.changes, skipped: [...skipped, ...spec.skipped] };
+  }
   const withdrawable = recorded.includes(OUTLETS_ID) && !explicitFeedback;
   // The record is checked before the shell: outlets an earlier install placed
   // are never asked for again, also where cngx can no longer edit the shell.

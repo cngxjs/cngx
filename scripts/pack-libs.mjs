@@ -12,7 +12,7 @@
 // Requires `npm run build:libs` first.
 
 import { execFileSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -74,6 +74,23 @@ export function missingRefs(pkg, tarFiles) {
     }
     const pattern = new RegExp(`^${ref.split('*').map(escapeRegExp).join('.*')}$`);
     return !tarFiles.some((file) => pattern.test(file));
+  });
+}
+
+/**
+ * The files the schematics read at run time (every `schematics/<name>/files/`
+ * folder, such as the ng-add starter's page files) that the tarball lacks.
+ * `stageFiles` lists the staged package, posix paths relative to its root.
+ */
+export function missingRuntimeFiles(stageFiles, tarFiles) {
+  const packed = new Set(tarFiles);
+  return stageFiles.filter((file) => /^schematics\/[^/]+\/files\//.test(file) && !packed.has(file));
+}
+
+function listStage(stage, dir = '') {
+  return readdirSync(join(stage, dir), { withFileTypes: true }).flatMap((entry) => {
+    const path = dir === '' ? entry.name : `${dir}/${entry.name}`;
+    return entry.isDirectory() ? listStage(stage, path) : [path];
   });
 }
 
@@ -156,6 +173,10 @@ async function checkPacked({ lib, pkg, stage, tarball, files }) {
   const missing = missingRefs(pkg, files);
   if (missing.length > 0) {
     problems.push(`manifest points at files missing from the tarball: ${missing.join(', ')}`);
+  }
+  const runtime = existsSync(join(stage, 'schematics')) ? missingRuntimeFiles(listStage(stage), files) : [];
+  if (runtime.length > 0) {
+    problems.push(`schematic run-time files missing from the tarball: ${runtime.join(', ')}`);
   }
   for (const message of await lintWithPublint(stage)) {
     problems.push(`publint ${message.code}: ${formatMessage(message, pkg)}`);

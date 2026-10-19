@@ -1,6 +1,7 @@
 import { chain, noop, type Rule, type SchematicContext, SchematicsException, type Tree } from '@angular-devkit/schematics';
 import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
 import { readWorkspace } from '@schematics/angular/utility';
+import { join } from 'node:path';
 
 import {
   applyChangePlan,
@@ -36,6 +37,8 @@ import { readInstallManifest, manifestOf, unreadableCopyPath } from './shell/ins
 import { planManifest, planUnreadableManifest, recordedLibs, recordedStepIds, unionLibs } from './steps/manifest';
 import { type Step } from './steps/model';
 import { planProviders } from './steps/providers';
+import { readStarterTemplates } from './shell/starter-templates';
+import { planStarter, type StarterTemplates, writesStarter } from './steps/starter';
 import { readRecordedAnswers } from './steps/reruns';
 import { planTheme } from './steps/theme';
 
@@ -49,21 +52,27 @@ interface StepContext {
   readonly projectSteps: readonly string[];
   /** `--feedback` was passed, so outlets the user removed are placed again. */
   readonly explicitFeedback: boolean;
+  /** The starter's files, read from next to this entry. */
+  readonly starterTemplates: StarterTemplates;
 }
 
 /**
  * The plan steps in apply order; the install manifest follows them. The AI
  * tooling steps leave out what the user removed since the last install, the
- * app shell step the outlets this project's record placed that are gone. The
+ * app shell step the outlets this project's record placed that are gone, and
+ * the starter step a starter it wrote that was replaced since. The starter
+ * runs before the outlets, which it brings along when it is written. The
  * helper README is workspace-wide, so it lists the libs of every project's
  * record, not only this run's.
  */
-function planSteps({ withdrawn, workspaceLibs, projectSteps, explicitFeedback }: StepContext): readonly Step[] {
+function planSteps({ withdrawn, workspaceLibs, projectSteps, explicitFeedback, starterTemplates }: StepContext): readonly Step[] {
   return [
     planDependencies,
     planTheme,
     planProviders,
-    (facts, answers, versions) => planAppShell(facts, answers, versions, projectSteps, explicitFeedback),
+    (facts, answers, versions) => planStarter(facts, answers, versions, projectSteps, starterTemplates),
+    (facts, answers, versions) =>
+      planAppShell(facts, answers, versions, projectSteps, explicitFeedback, writesStarter(facts, answers)),
     planLint,
     (facts, answers, versions) => planAiTools(facts, answers, versions, withdrawn),
     (facts, answers, versions) =>
@@ -200,6 +209,8 @@ export function ngAdd(flags: NgAddFlags): Rule {
           workspaceLibs: recordedLibs(manifest),
           projectSteps: previous?.steps.map((step) => step.id) ?? [],
           explicitFeedback,
+          // Next to this entry in the sources and in the bundle alike.
+          starterTemplates: readStarterTemplates(join(__dirname, 'files', 'starter')),
         }).map((step) => step(facts, answers, versions)),
         presetChangeNote(options, recorded, provenance),
         libsFloorNote(answeredLibs, answers.libs, facts.project, provenance),

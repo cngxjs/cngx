@@ -14,6 +14,8 @@ import {
   pinAngularDeps,
   renderAppSource,
   presetPlan,
+  budgetWarnings,
+  STARTER_SMOKE,
   PRESETS,
   schematicsSteps,
   staleCoreAddArgs,
@@ -166,9 +168,37 @@ describe('schematicsSteps with a preset', () => {
 
 describe('presetPlan', () => {
   it('runs ng test and expects both outlets only with the full preset', () => {
-    expect(presetPlan('full')).toEqual({ preset: 'full', ngTest: true, outlets: ['cngx-banner-outlet', 'cngx-toast-outlet'] });
-    expect(presetPlan()).toEqual({ preset: 'recommended', ngTest: false, outlets: [] });
-    expect(presetPlan('minimal')).toEqual({ preset: 'minimal', ngTest: false, outlets: [] });
+    expect(presetPlan('full')).toEqual({
+      preset: 'full',
+      ngTest: true,
+      outlets: ['cngx-banner-outlet', 'cngx-toast-outlet'],
+      starter: STARTER_SMOKE,
+      noBudgetWarnings: true,
+    });
+    expect(presetPlan()).toEqual({ preset: 'recommended', ngTest: false, outlets: [], starter: undefined, noBudgetWarnings: false });
+    expect(presetPlan('minimal')).toEqual({ preset: 'minimal', ngTest: false, outlets: [], starter: undefined, noBudgetWarnings: false });
+  });
+
+  it('reads the budget warnings ng build prints', () => {
+    const output = [
+      'Application bundle generation complete.',
+      '▲ [WARNING] src/app/app.css exceeded maximum budget. Budget 4.00 kB was not met by 1.52 kB with a total of 5.52 kB.',
+      'Output location: dist/fixture',
+    ].join('\n');
+
+    expect(budgetWarnings(output)).toEqual([
+      '▲ [WARNING] src/app/app.css exceeded maximum budget. Budget 4.00 kB was not met by 1.52 kB with a total of 5.52 kB.',
+    ]);
+    expect(budgetWarnings('Application bundle generation complete.')).toEqual([]);
+  });
+
+  it('smokes the starter heading, the toast and banner it shows and its icon link', () => {
+    expect(STARTER_SMOKE.heading).toBe('Hello, fixture.');
+    expect(STARTER_SMOKE.shows.map(({ button, outlet }) => [button, outlet])).toEqual([
+      ['Toast', 'cngx-toast-outlet'],
+      ['Banner', 'cngx-banner-outlet'],
+    ]);
+    expect(STARTER_SMOKE.icon).toBe('favicon.svg');
   });
 
   it('rejects an unknown preset', () => {

@@ -4,20 +4,31 @@
 /** Stands in for the project name in every body; detection substitutes it before comparing. */
 export const SCAFFOLD_NAME_PLACEHOLDER = '__cngx_scaffold_name__';
 
+/** Stands in for the root selector (`<prefix>-root`) in every body. */
+export const SCAFFOLD_SELECTOR_PLACEHOLDER = 'cngx-scaffold-selector';
+
+/** Stands in for the class-cased project name, the `<title>` of `index.html`. */
+export const SCAFFOLD_TITLE_PLACEHOLDER = '__cngx_scaffold_title__';
+
 /** One `ng new` file as @schematics/angular renders it for one variant. */
 export interface ScaffoldEntry {
   /** The Angular CLI major the templates belong to. */
   readonly major: number;
-  /** The file name in `src/app`. */
+  /** The file name in `src/app`; `index.html` is the one in `src`. */
   readonly file: string;
   readonly variant: string;
   /** `raw` as rendered, `prettier` as formatted with the `ng new` `.prettierrc`. */
   readonly form: 'raw' | 'prettier';
   /** The template path inside @schematics/angular. */
   readonly template: string;
+  /** `sha256:<hex>` of the body with LF line endings. */
   readonly fingerprint: string;
-  /** The body with LF line endings and the project name as the placeholder. */
-  readonly body: string;
+  /**
+   * The body with LF line endings and the project name, title and selector
+   * as placeholders; absent when it holds none, then the fingerprint alone
+   * is compared.
+   */
+  readonly body?: string;
 }
 
 export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
@@ -38,5 +49,159 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
     template: 'application/files/standalone-files/src/app/app__suffix__.spec.ts.template',
     fingerprint: 'sha256:37dbdf09488c7a674b384324d260c32fb432ad13856000b299c3018c65a7871a',
     body: "import { TestBed } from '@angular/core/testing';\nimport { App } from './app';\n\ndescribe('App', () => {\n  beforeEach(async () => {\n    await TestBed.configureTestingModule({\n      imports: [App],\n    }).compileComponents();\n  });\n\n  it('should create the app', () => {\n    const fixture = TestBed.createComponent(App);\n    const app = fixture.componentInstance;\n    expect(app).toBeTruthy();\n  });\n\n  it('should render title', () => {\n    const fixture = TestBed.createComponent(App);\n    fixture.detectChanges();\n    const compiled = fixture.nativeElement as HTMLElement;\n    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, __cngx_scaffold_name__');\n  });\n});\n",
+  },
+  {
+    major: 21,
+    file: 'app.ts',
+    variant: 'routing-css',
+    form: 'raw',
+    template: 'application/files/standalone-files/src/app/app__suffix__.ts.template',
+    fingerprint: 'sha256:9e059cd00b21a41b5d435d5f473562be47f972e5e0fc8429b224f6d6bc5b7118',
+    body: "import { Component, signal } from '@angular/core';\nimport { RouterOutlet } from '@angular/router';\n\n@Component({\n  selector: 'cngx-scaffold-selector',\n  imports: [RouterOutlet],\n  templateUrl: './app.html',\n  styleUrl: './app.css'\n})\nexport class App {\n  protected readonly title = signal('__cngx_scaffold_name__');\n}\n",
+  },
+  {
+    major: 21,
+    file: 'app.ts',
+    variant: 'routing-css',
+    form: 'prettier',
+    template: 'application/files/standalone-files/src/app/app__suffix__.ts.template',
+    fingerprint: 'sha256:d958c01fe93107fa56e5f24be00d96dc999dcac5f5593952d417b7982b9b28ba',
+    body: "import { Component, signal } from '@angular/core';\nimport { RouterOutlet } from '@angular/router';\n\n@Component({\n  selector: 'cngx-scaffold-selector',\n  imports: [RouterOutlet],\n  templateUrl: './app.html',\n  styleUrl: './app.css',\n})\nexport class App {\n  protected readonly title = signal('__cngx_scaffold_name__');\n}\n",
+  },
+  {
+    major: 21,
+    file: 'app.ts',
+    variant: 'routing-scss',
+    form: 'raw',
+    template: 'application/files/standalone-files/src/app/app__suffix__.ts.template',
+    fingerprint: 'sha256:7e38af50ec5382e925a518bb145337f8b9da10bcfe62210f5efdb0e731bed341',
+    body: "import { Component, signal } from '@angular/core';\nimport { RouterOutlet } from '@angular/router';\n\n@Component({\n  selector: 'cngx-scaffold-selector',\n  imports: [RouterOutlet],\n  templateUrl: './app.html',\n  styleUrl: './app.scss'\n})\nexport class App {\n  protected readonly title = signal('__cngx_scaffold_name__');\n}\n",
+  },
+  {
+    major: 21,
+    file: 'app.ts',
+    variant: 'routing-scss',
+    form: 'prettier',
+    template: 'application/files/standalone-files/src/app/app__suffix__.ts.template',
+    fingerprint: 'sha256:1ceead90cfdd73d8fef20d57f820035d109bb9e7328b48ee2faef4685ac04413',
+    body: "import { Component, signal } from '@angular/core';\nimport { RouterOutlet } from '@angular/router';\n\n@Component({\n  selector: 'cngx-scaffold-selector',\n  imports: [RouterOutlet],\n  templateUrl: './app.html',\n  styleUrl: './app.scss',\n})\nexport class App {\n  protected readonly title = signal('__cngx_scaffold_name__');\n}\n",
+  },
+  {
+    major: 21,
+    file: 'app.ts',
+    variant: 'no-routing-css',
+    form: 'raw',
+    template: 'application/files/standalone-files/src/app/app__suffix__.ts.template',
+    fingerprint: 'sha256:7f9eceeebd6484cc3cb7579b4d1b7304d7b58bfe8b7f343f15ec471753718ff2',
+    body: "import { Component, signal } from '@angular/core';\n\n@Component({\n  selector: 'cngx-scaffold-selector',\n  imports: [],\n  templateUrl: './app.html',\n  styleUrl: './app.css'\n})\nexport class App {\n  protected readonly title = signal('__cngx_scaffold_name__');\n}\n",
+  },
+  {
+    major: 21,
+    file: 'app.ts',
+    variant: 'no-routing-css',
+    form: 'prettier',
+    template: 'application/files/standalone-files/src/app/app__suffix__.ts.template',
+    fingerprint: 'sha256:13dced49095c8f0b58f3784bb50587af08e64df6cc6b92feee3a8635e905bd25',
+    body: "import { Component, signal } from '@angular/core';\n\n@Component({\n  selector: 'cngx-scaffold-selector',\n  imports: [],\n  templateUrl: './app.html',\n  styleUrl: './app.css',\n})\nexport class App {\n  protected readonly title = signal('__cngx_scaffold_name__');\n}\n",
+  },
+  {
+    major: 21,
+    file: 'app.ts',
+    variant: 'no-routing-scss',
+    form: 'raw',
+    template: 'application/files/standalone-files/src/app/app__suffix__.ts.template',
+    fingerprint: 'sha256:8182bed3433cb6b9d7776ee882a16e7bf2d3c585892e154047aac6023195b0ad',
+    body: "import { Component, signal } from '@angular/core';\n\n@Component({\n  selector: 'cngx-scaffold-selector',\n  imports: [],\n  templateUrl: './app.html',\n  styleUrl: './app.scss'\n})\nexport class App {\n  protected readonly title = signal('__cngx_scaffold_name__');\n}\n",
+  },
+  {
+    major: 21,
+    file: 'app.ts',
+    variant: 'no-routing-scss',
+    form: 'prettier',
+    template: 'application/files/standalone-files/src/app/app__suffix__.ts.template',
+    fingerprint: 'sha256:57495f3078e9273d2262b5e379e9ddba85f934f3ddda7b9cf7e15397b402af8c',
+    body: "import { Component, signal } from '@angular/core';\n\n@Component({\n  selector: 'cngx-scaffold-selector',\n  imports: [],\n  templateUrl: './app.html',\n  styleUrl: './app.scss',\n})\nexport class App {\n  protected readonly title = signal('__cngx_scaffold_name__');\n}\n",
+  },
+  {
+    major: 21,
+    file: 'app.html',
+    variant: 'routing',
+    form: 'raw',
+    template: 'application/files/common-files/src/app/app__suffix__.html.template',
+    fingerprint: 'sha256:4d90c16abd4ac0ea5c45e5b3a2835d966ac5c2e4cc6b60131003452e6e4fc328',
+  },
+  {
+    major: 21,
+    file: 'app.html',
+    variant: 'routing',
+    form: 'prettier',
+    template: 'application/files/common-files/src/app/app__suffix__.html.template',
+    fingerprint: 'sha256:644161eea4083d1b4db1bf30752ee2d4ecf088799298774e58d90a2634102a15',
+  },
+  {
+    major: 21,
+    file: 'app.html',
+    variant: 'no-routing',
+    form: 'raw',
+    template: 'application/files/common-files/src/app/app__suffix__.html.template',
+    fingerprint: 'sha256:063bef5ae4ce64e5b3e7a64c670b2052f4bdb6b8c3d660d59fc694942f2b3224',
+  },
+  {
+    major: 21,
+    file: 'app.html',
+    variant: 'no-routing',
+    form: 'prettier',
+    template: 'application/files/common-files/src/app/app__suffix__.html.template',
+    fingerprint: 'sha256:0ebb9ae030b0cdc186a732c0cd85fc2fc0804614733c01197cc4b154a5f481e1',
+  },
+  {
+    major: 21,
+    file: 'app.css',
+    variant: 'css',
+    form: 'raw',
+    template: 'component/files/__name@dasherize@if-flat__/__name@dasherize__.__type@dasherize__.__style__.template',
+    fingerprint: 'sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+  },
+  {
+    major: 21,
+    file: 'app.scss',
+    variant: 'scss',
+    form: 'raw',
+    template: 'component/files/__name@dasherize@if-flat__/__name@dasherize__.__type@dasherize__.__style__.template',
+    fingerprint: 'sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+  },
+  {
+    major: 21,
+    file: 'styles.css',
+    variant: 'css',
+    form: 'raw',
+    template: 'application/files/common-files/src/styles.__style__.template',
+    fingerprint: 'sha256:c7295b915b6a250b910d30ff3b9d1991b6f43c9474d3afafc6cba59eee44383e',
+  },
+  {
+    major: 21,
+    file: 'styles.scss',
+    variant: 'scss',
+    form: 'raw',
+    template: 'application/files/common-files/src/styles.__style__.template',
+    fingerprint: 'sha256:c7295b915b6a250b910d30ff3b9d1991b6f43c9474d3afafc6cba59eee44383e',
+  },
+  {
+    major: 21,
+    file: 'index.html',
+    variant: 'default',
+    form: 'raw',
+    template: 'application/files/common-files/src/index.html.template',
+    fingerprint: 'sha256:46f0b5b4c6d1388ea035f11be52ddfe2945b5f9e3be8332ee7c78d99d020da0b',
+    body: "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <title>__cngx_scaffold_title__</title>\n  <base href=\"/\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <link rel=\"icon\" type=\"image/x-icon\" href=\"favicon.ico\">\n</head>\n<body>\n  <cngx-scaffold-selector></cngx-scaffold-selector>\n</body>\n</html>\n",
+  },
+  {
+    major: 21,
+    file: 'index.html',
+    variant: 'default',
+    form: 'prettier',
+    template: 'application/files/common-files/src/index.html.template',
+    fingerprint: 'sha256:57deaf044443fdaf74cf7f0ed06faa4b805b25ca3980d8e23479e4f02d5cfb1e',
+    body: "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <title>__cngx_scaffold_title__</title>\n    <base href=\"/\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <link rel=\"icon\" type=\"image/x-icon\" href=\"favicon.ico\" />\n  </head>\n  <body>\n    <cngx-scaffold-selector></cngx-scaffold-selector>\n  </body>\n</html>\n",
   },
 ];

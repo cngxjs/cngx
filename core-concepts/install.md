@@ -111,7 +111,7 @@ install. Nothing outside the project is written.
 |-|-|
 |`minimal`|The packages only. No theme, no lint rules, and no providers apart from `provideDirection('rtl')` for a right-to-left source locale. Asks none of the questions below; flags and the preset answer them.|
 |`recommended` (default)|The packages, the theme, the accessibility preference providers and the lint rules.|
-|`full`|`recommended` plus the German language pack, the root feedback services (toasts, alerts, banners), the popover positioning fallback, and the MCP setup for every editor folder found in the project.|
+|`full`|`recommended` plus the root feedback services (toasts, alerts, banners), the popover positioning fallback, the cngx starter page in place of the Angular welcome page, and the MCP setup for every editor folder found in the project. English throughout; `--i18n de` adds the German pack.|
 
 ```bash
 ng add @cngx/ui --preset=minimal
@@ -170,6 +170,7 @@ Every answer has a flag. A flag skips its question.
 |`--a11y-preferences`|`--a11y-preferences`, `--no-a11y-preferences`|Provide the density, text scale, motion and contrast axes with persistence.|
 |`--feedback`|`--feedback`, `--no-feedback`|Provide toasts, alerts and banners at the root (needs `@cngx/ui`).|
 |`--floating-fallback`|`--floating-fallback`, `--no-floating-fallback`|Install `@floating-ui/dom` and provide the popover positioning fallback (needs `@cngx/common`).|
+|`--starter`|`--starter`, `--no-starter`|Replace the Angular welcome page of an untouched `ng new` standalone app with the cngx starter page. On by default with `--preset=full` only, never asked.|
 |`--ai-tools`|`claude`, `cursor`, `vscode`, comma-separated (`--ai-tools claude,vscode`)|The editors to set up the cngx MCP server and agent instructions for. Answers the AI tooling question.|
 |`--yes`|`--yes`|Apply to an existing app without the confirmation.|
 |`--prompts`|`--prompts`, `--no-prompts`, default `true`|`--no-prompts` answers every question from flags, the recorded answers of a re-run and the preset defaults.|
@@ -211,6 +212,9 @@ turn the questions off the same way.
 |`angular.json`|theme chosen|The theme file added to the build styles, after the stylesheet that imports `cngx.css`.|
 |App config, root NgModule or inline config in `main.ts`|per answer|`provideA11yPreferences(withPersistence())`, `provideDirection('rtl')` for a right-to-left source locale, `provideFeedback(withToasts(), withAlerts(), withBanners())`, `provideFloatingFallback(computePosition, [flip(), shift()])`, `provideCngxI18n(withPack(...))`.|
 |Root component template and its `imports`|feedback|`<cngx-banner-outlet />` as the first line above the `ng new` placeholder block, so it shows above the welcome page instead of below it, and `<cngx-toast-outlet />` at the end after the block, so deleting the placeholder below its opening comment keeps both; without that block the banner outlet goes right above `<router-outlet>`, else at the end; `CngxBannerOutlet` and `CngxToastOutlet` from `@cngx/ui/feedback` in the component `imports`, or in the root NgModule `imports` of an NgModule app. Placed once; an outlet you remove after the install stays out until you pass `--feedback` again, and once an install placed them cngx does not ask for them again, also when it can no longer edit the root component; a note then says that they were removed, or, where it cannot read the template any more, why it cannot tell. A root component cngx cannot follow from `main.ts` or cannot edit safely gets a note with the snippet and the reason instead, see [Outlets left to you](#outlets-left-to-you). Alert stacks are not placed: they are scoped, so they go where the alerts belong. `ng update` only notes a missing outlet.|
+|`src/app/app.ts`, `app.html`, `app.css` or `app.scss`|`full` (or `--starter`), untouched `ng new` standalone app|The cngx starter page in place of the Angular welcome page: the `Hello, <name>` heading and `title` signal the stock spec asserts, a card for each thing the answers installed to try (toasts, banners and an alert with feedback, the accessibility panel with the a11y preferences, an English and German toggle with the runtime language switch), the toast and banner outlets with feedback, and `<router-outlet />` with routing. Written only over the exact `ng new` scaffold, see [The starter page](#the-starter-page).|
+|Global styles|starter written|The starter's page styles at the end, after a `cngx:fingerprint` line: `body { margin: 0 }`, the headings, the top bar and the footer, every rule scoped under `<root selector> > .shell`. They live here so the component stylesheet stays inside the 4 kB component style budget of `ng new`.|
+|`public/favicon.svg`, `src/index.html`|starter written, `index.html` untouched, no `favicon.svg` yet|The cngx mark as the app icon, and the icon link pointed at it instead of `favicon.ico`, which stays on disk.|
 |`app.spec.ts` of the root component|feedback, unedited `ng new` spec|`providers: [provideFeedback(withToasts(), withBanners())]` in its `TestBed.configureTestingModule`, so the stock spec still renders `App` with the outlets in it. Any other spec gets a note with that snippet.|
 |`cngx-language.ts`|German with runtime switch|Next to the file holding the root providers (`src/cngx-language.ts` for an inline config in `main.ts`): a `cngxLanguagePack` signal. Set it to switch every cngx string at runtime. When the app already provides `provideCngxI18n(...)` without that signal, the provider is not rewritten: the file is still created and a note names the one edit, `withPack(cngxLanguagePack)` imported from `./cngx-language`.|
 |ESLint flat config|lint rules|`...cngx.configs.recommended` in the exported array of `eslint.config.js`, `.mjs`, `.cjs`, `.ts`, `.mts` or `.cts`, the one in the project root first, else the workspace one. A commented-out plugin import does not count as wired. It needs ESLint 9 or later and a TypeScript parser (`typescript-eslint`, `@typescript-eslint/parser` or `angular-eslint`): the cngx rules lint TypeScript through the app's own setup. The plugin also loads `@angular-eslint/template-parser` 19 or later; with `angular-eslint` declared it is added on that version line. Every case it cannot wire gets one note with the next command and no edit or dependency: ESLint below 9 (raise `eslint` to `^9` in devDependencies and reinstall; with `angular-eslint`, `ng update angular-eslint` moves its packages, without it `ng add angular-eslint` sets up ESLint 9), no flat config, no TypeScript parser or no template parser (`ng add angular-eslint`), a template parser line below 19 (`ng update angular-eslint`, or raise the parser itself), a legacy `.eslintrc*` config (`npx @eslint/migrate-config <file>`). Run `ng add @cngx/core` again afterwards. A config it cannot edit safely gets a note to add the entry by hand.|
@@ -220,6 +224,35 @@ turn the questions off the same way.
 Every generated source, style and Markdown file carries a provenance stamp
 naming the step and the cngx release that wrote it. A file that already
 exists and was not written by cngx is never overwritten; the step plans a note and leaves it to you.
+
+---
+
+## The starter page
+
+`--preset=full` replaces the Angular welcome page with a cngx starter page
+that shows what the run installed, working. It writes it only when all of
+these hold, and leaves the app as `ng new` wrote it otherwise:
+
+- The app is standalone. An NgModule app gets the outlets only.
+- `src/app/app.ts`, `app.html` and the stylesheet are exactly what `ng new`
+  wrote (routing on or off, CSS or SCSS), compared after the project name
+  and selector are put in and line endings normalised; a Prettier pass over
+  them is fine, one changed character is not. An inline template, inline
+  styles, Sass or Less never match. The files are checked again right
+  before they are written.
+- The global stylesheet is what `ng new` wrote (CSS or SCSS), the cngx
+  theme import aside, so a `recommended` install before still counts.
+- `@cngx/common` and `@cngx/ui` are selected.
+- `--starter=false` (or `--no-starter`) is not passed. The other presets
+  leave the starter off unless `--starter` is passed.
+
+The page is English. It is yours to edit: each file records a
+`cngx:fingerprint` line, so a re-run recognises its own starter, also after
+your formatter rewrote it, and never writes it again. A starter you replaced
+stays replaced, and `ng update` never writes or restores one. When the
+starter is written, the outlets come with it; the stock `app.spec.ts` still
+gets the feedback providers. Every other case is in
+[Starter left out](#starter-left-out).
 
 ---
 
@@ -255,6 +288,27 @@ stopped at for `<Class>` and `<file>`:
 
 Fix what the reason names and run `ng add @cngx/core --feedback` again, or
 paste the snippet yourself.
+
+---
+
+## Starter left out
+
+The starter is written only over the untouched `ng new` scaffold. Where it
+is not, cngx writes nothing into the App component, its template, its
+stylesheet, `index.html` or the public folder, and a note names one of
+these reasons, with the file for `<file>`:
+
+- `the starter composes @cngx/common and @cngx/ui; select both to get it`: `--libs` left one of them out.
+- `<file>, its template or its stylesheet is not the untouched ng new scaffold, so the starter is not written over it`: one character differs from what `ng new` wrote, the template or the styles are inline, or the stylesheet is Sass or Less.
+- `<file> is not the untouched ng new global stylesheet, so the starter, whose page styles go there, is not written`: the global stylesheet holds more than what `ng new` wrote and the cngx theme import.
+- `the build lists no global stylesheet, so the starter, whose page styles go there, is not written`.
+- `<file> holds the cngx starter of an earlier run with other answers; cngx does not rewrite it`: a re-run with other answers (feedback, a11y preferences, the runtime language switch) keeps the starter it finds.
+- `<file> is not the untouched ng new file, so the starter leaves its icon link and favicon.svg alone`: the starter is written, the icon stays Angular's.
+- `<file> exists and is not the cngx favicon, so the starter leaves it and the icon link alone`: the public folder already holds a `favicon.svg`.
+- `the build copies no public folder, so the starter leaves the icon link and favicon.svg alone`: the build `assets` list no folder copied as a whole.
+
+A starter an earlier install wrote and you replaced since is skipped
+without a note.
 
 ---
 

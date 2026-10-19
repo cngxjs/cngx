@@ -75,12 +75,19 @@ function row(cells: readonly string[]): string {
   return `|${cells.map(cell).join('|')}|`;
 }
 
-/** Fills every `{{name}}`; a placeholder without a value is a template bug, not output. */
-export function fillTemplate(template: string, values: Readonly<Record<string, string>>): string {
+/**
+ * Fills every `{{name}}`; a placeholder without a value is a template bug,
+ * not output. `file` names the template in that error.
+ */
+export function fillTemplate(
+  template: string,
+  values: Readonly<Record<string, string>>,
+  file = 'helper-readme.md.tpl',
+): string {
   return template.replace(/\{\{(\w+)\}\}/g, (_match, name: string) => {
     const value = values[name];
     if (value === undefined) {
-      throw new Error(`helper-readme.md.tpl uses {{${name}}}, which has no value.`);
+      throw new Error(`${file} uses {{${name}}}, which has no value.`);
     }
     return value;
   });

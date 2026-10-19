@@ -34,7 +34,7 @@ function firstRun(): ProjectRecord {
 
 // What a preset answers before any flag; the shell passes `presetDefaults`.
 function defaultsFor(preset: OnboardingAnswers['preset']): OnboardingAnswers {
-  return createAnswers({ preset, floatingFallback: preset === 'full' });
+  return createAnswers({ preset, floatingFallback: preset === 'full', starter: preset === 'full' });
 }
 
 const read = (manifest: ProjectRecord) => readRecordedAnswers(manifest, defaultsFor);
@@ -56,6 +56,13 @@ describe('readRecordedAnswers', () => {
     expect(read({ ...firstRun(), answers: { ...older, preset: 'full' } })).toEqual(
       createAnswers({ preset: 'full', floatingFallback: true, aiTools: [] }),
     );
+  });
+
+  it('reads a record without the starter answer as no starter, the full preset included', () => {
+    const { starter: _dropped, ...older } = firstRun().answers;
+
+    expect(read({ ...firstRun(), answers: { ...older, preset: 'full' } })?.starter).toBe(false);
+    expect(read({ ...firstRun(), answers: { ...older, preset: 'full', starter: true } })?.starter).toBe(true);
   });
 
   it('reads no answers when the preset is missing or a recorded answer is outside the vocabulary', () => {

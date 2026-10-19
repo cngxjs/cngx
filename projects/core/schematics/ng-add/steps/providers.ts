@@ -46,6 +46,24 @@ function isLanguageSignal(pack: LanguagePackArgument | undefined): boolean {
   );
 }
 
+/**
+ * The runtime switch is wired through cngx's own `cngx-language.ts`: the
+ * answers ask for it, and the file is cngx's (or this run creates it) and
+ * the language provider passes its signal (or this run adds it). The same
+ * on a first run and on a re-run, so the starter's language toggle does not
+ * flip between them.
+ */
+export function switchesLanguageAtRuntime(facts: ProjectFacts, answers: OnboardingAnswers): boolean {
+  const provided = facts.rootProviders.includes('provideCngxI18n');
+  return (
+    answers.runtimeSwitch &&
+    answers.i18n === 'de' &&
+    selectedLibs(answers.libs).includes('core') &&
+    facts.languageFile !== 'foreign' &&
+    (!provided || isLanguageSignal(facts.languagePack))
+  );
+}
+
 function isRtl(locale: string | undefined): boolean {
   const language = locale?.split(/[-_]/)[0]?.toLowerCase();
   return language !== undefined && RTL_LANGUAGES.has(language);

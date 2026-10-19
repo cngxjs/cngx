@@ -103,10 +103,15 @@ describe('presetDefaults', () => {
     expect(presetDefaults('recommended', createFacts({ material: MATERIAL })).theme).toBe('material');
   });
 
-  it('adds the German pack, feedback, the floating fallback and the detected editors for full', () => {
+  it('adds feedback, the floating fallback, the starter and the detected editors for full, in English', () => {
     expect(
       presetDefaults('full', createFacts({ editors: { claude: true, cursor: false, vscode: true } })),
-    ).toMatchObject({ i18n: 'de', feedback: true, floatingFallback: true, aiTools: ['claude', 'vscode'] });
+    ).toMatchObject({ i18n: 'en', feedback: true, floatingFallback: true, starter: true, aiTools: ['claude', 'vscode'] });
+  });
+
+  it('leaves the starter off for every other preset', () => {
+    expect(presetDefaults('recommended', createFacts()).starter).toBe(false);
+    expect(presetDefaults('minimal', createFacts()).starter).toBe(false);
   });
 });
 
@@ -195,7 +200,22 @@ describe('askOnboarding', () => {
   it('answers with the preset defaults without a terminal', async () => {
     const { asked, answers } = await ask(createFacts({ eslintConfig: ESLINT }), { preset: 'full' }, false);
     expect(asked).toEqual([]);
-    expect(answers).toMatchObject({ preset: 'full', i18n: 'de', runtimeSwitch: false, lint: true, feedback: true });
+    expect(answers).toMatchObject({ preset: 'full', i18n: 'en', runtimeSwitch: false, lint: true, feedback: true, starter: true });
+  });
+
+  it('never asks about the starter; the flag and the preset decide it', async () => {
+    const terminal = await ask(createFacts(), { preset: 'full', starter: false });
+    const flagged = await ask(createFacts(), { starter: true }, false);
+
+    expect(terminal.asked).not.toContain('starter');
+    expect(terminal.answers.starter).toBe(false);
+    expect(flagged.answers).toMatchObject({ preset: 'recommended', starter: true });
+  });
+
+  it('adds the German pack to the full preset with --i18n de', async () => {
+    const { answers } = await ask(createFacts(), { preset: 'full', i18n: 'de' }, false);
+
+    expect(answers).toMatchObject({ preset: 'full', i18n: 'de', starter: true });
   });
 
   it('selects every package and the detected editors when no list flag is given', async () => {
@@ -344,7 +364,7 @@ describe('askOnboarding', () => {
       recorded,
     );
 
-    expect(answers).toMatchObject({ preset: 'full', i18n: 'de', feedback: true });
+    expect(answers).toMatchObject({ preset: 'full', i18n: 'en', feedback: true, starter: true });
   });
 
   it('preselects the recorded editors on a re-run instead of every detected one', async () => {

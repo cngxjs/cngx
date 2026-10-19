@@ -915,6 +915,46 @@ describe('ngAdd', () => {
     });
   });
 
+  describe('the full starter', () => {
+    const SCAFFOLD = readFixture('scaffold-21');
+
+    it('replaces the untouched App component and provides feedback in the stock spec, nothing more', async () => {
+      const run = await runRule(ngAdd({ preset: 'full', yes: true }), createFixtureTree('scaffold-21'));
+      const spec = run.tree.readText('src/app/app.spec.ts');
+
+      expect(run.tree.readText('src/app/app.ts')).toMatch(/^\/\* cngx:fingerprint [0-9a-f]{8} \*\/\n/);
+      expect(run.tree.readText('src/app/app.html')).toMatch(/^<!-- cngx:fingerprint [0-9a-f]{8} -->\n<cngx-banner-outlet \/>\n/);
+      expect(run.tree.readText('src/app/app.css')).toMatch(/^\/\* cngx:fingerprint [0-9a-f]{8} \*\/\n:host \{/);
+      expect(spec).toBe(
+        SCAFFOLD['src/app/app.spec.ts']
+          .replace("import { App } from './app';\n", "import { App } from './app';\nimport { provideFeedback, withBanners, withToasts } from '@cngx/ui/feedback';\n")
+          .replace('      imports: [App],\n', '      imports: [App],\n      providers: [provideFeedback(withToasts(), withBanners())],\n'),
+      );
+      expect(spec).toContain("toContain('Hello, fixture-app')");
+      expect(run.tree.readText('src/index.html')).toBe(
+        SCAFFOLD['src/index.html'].replace('<link rel="icon" type="image/x-icon" href="favicon.ico">', '<link rel="icon" type="image/svg+xml" href="favicon.svg">'),
+      );
+      expect(run.tree.readText('public/favicon.svg')).toContain('<title>cngx</title>');
+      const styles = run.tree.readText('src/styles.css');
+      expect(styles.startsWith(`@import '@cngx/themes/cngx.css';\n${SCAFFOLD['src/styles.css']}\n/* cngx:fingerprint `)).toBe(true);
+      expect(styles).toContain('\nbody {\n  margin: 0;\n}\n');
+      expect(styles).toContain('app-root > .shell > .top {');
+      expect(run.tree.readText('src/app/app.css')).not.toContain('.top {');
+    });
+
+    it('leaves the scaffold to recommended and to full with --no-starter', async () => {
+      const recommended = await runRule(ngAdd({ yes: true }), createFixtureTree('scaffold-21'));
+      const optedOut = await runRule(ngAdd({ preset: 'full', starter: false, yes: true }), createFixtureTree('scaffold-21'));
+
+      for (const path of ['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/index.html']) {
+        expect({ path, content: recommended.tree.readText(path) }).toEqual({ path, content: SCAFFOLD[path] });
+      }
+      expect(optedOut.tree.readText('src/app/app.html')).toBe(`<cngx-banner-outlet />\n${SCAFFOLD['src/app/app.html']}<cngx-toast-outlet />\n`);
+      expect(optedOut.tree.readText('src/index.html')).toBe(SCAFFOLD['src/index.html']);
+      expect(optedOut.tree.exists('public/favicon.svg')).toBe(false);
+    });
+  });
+
   it('plans nothing for a current readme the app formatter rewrote', async () => {
     const first = await runRule(ngAdd({ preset: 'full' }), createFixtureTree('standalone-app', { 'CLAUDE.md': '' }));
     const formatted = first.tree.readText('.cngx/README.md').replace('|-|-|-|', '| ---- | --------------- | ---------- |');
@@ -1468,6 +1508,7 @@ describe('the ng-add collection', () => {
       'a11yPreferences',
       'feedback',
       'floatingFallback',
+      'starter',
       'aiTools',
       'yes',
       'prompts',

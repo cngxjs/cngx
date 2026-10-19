@@ -76,6 +76,8 @@ export interface NgAddOptions {
   readonly a11yPreferences?: boolean;
   readonly feedback?: boolean;
   readonly floatingFallback?: boolean;
+  /** Replace the untouched `ng new` App component with the cngx starter; `full` defaults it on. */
+  readonly starter?: boolean;
   readonly aiTools?: readonly AiTool[];
   /** Skip the confirmation an existing app gets before apply. */
   readonly yes?: boolean;
@@ -106,6 +108,7 @@ export interface NgAddFlags {
   readonly a11yPreferences?: BooleanFlag;
   readonly feedback?: BooleanFlag;
   readonly floatingFallback?: BooleanFlag;
+  readonly starter?: BooleanFlag;
   readonly aiTools?: string | readonly string[];
   readonly yes?: BooleanFlag;
   readonly prompts?: BooleanFlag;
@@ -236,6 +239,7 @@ export function parseNgAddOptions(raw: NgAddFlags): NgAddOptions {
     a11yPreferences: parseBoolean('a11yPreferences', raw.a11yPreferences),
     feedback: parseBoolean('feedback', raw.feedback),
     floatingFallback: parseBoolean('floatingFallback', raw.floatingFallback),
+    starter: parseBoolean('starter', raw.starter),
     aiTools: parseList('aiTools', AI_TOOLS, raw.aiTools),
     yes: parseBoolean('yes', raw.yes),
     prompts: parseBoolean('prompts', raw.prompts),

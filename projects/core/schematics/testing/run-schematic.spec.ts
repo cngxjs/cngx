@@ -47,10 +47,12 @@ describe('readFixture', () => {
       'src/app/app.routes.ts',
       'src/app/app.spec.ts',
       'src/app/app.ts',
+      'src/index.html',
       'src/main.ts',
       'src/styles.css',
     ]);
     expect(files['src/app/app.html']).toContain('End of Placeholder');
+    expect(files['src/index.html']).toContain('<link rel="icon" type="image/x-icon" href="favicon.ico">');
     expect(files['src/app/app.html']).toMatch(/<router-outlet \/>\n$/);
     expect(files['src/app/app.spec.ts']).toContain('await fixture.whenStable();');
     expect(files['src/app/app.css']).toBe('');
@@ -72,6 +74,9 @@ describe('readFixture', () => {
     expect(scss['src/app/app.ts']).toContain("styleUrl: './app.scss'");
     expect(scss['src/app/app.scss']).toBe('');
     expect(scss['src/app/app.css']).toBeUndefined();
+    for (const variant of [routingOff, zone, scss]) {
+      expect(variant['src/index.html']).toBe(stock['src/index.html']);
+    }
   });
 });
 

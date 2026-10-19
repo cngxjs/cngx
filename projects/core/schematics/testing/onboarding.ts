@@ -1,6 +1,13 @@
+import { join } from 'node:path';
+
 import { CNGX_LIBS, parseManifest } from '../engine';
 import { type ProjectFacts } from '../ng-add/detect/detect';
+import { readStarterTemplates } from '../ng-add/shell/starter-templates';
 import { type OnboardingAnswers, type Versions } from '../ng-add/steps/model';
+import { type StarterTemplates } from '../ng-add/steps/starter';
+
+/** The starter's files as the sources hold them, read the way the ng-add shell reads them. */
+export const STARTER_TEMPLATES: StarterTemplates = readStarterTemplates(join(__dirname, '..', 'ng-add', 'files', 'starter'));
 
 export const VERSIONS: Versions = { cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.0', angular: '^21.2.0' };
 
@@ -33,6 +40,10 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
       spec: 'absent',
       outlets: { kind: 'editable', elements: [], classes: [], routerOutlet: true },
     },
+    scaffold: { kind: 'custom' },
+    indexHtml: { path: 'src/index.html', state: 'untouched' },
+    favicon: undefined,
+    globalStyles: { path: 'src/styles.css', state: 'untouched', fingerprint: undefined },
     languageFile: 'absent',
     languagePack: undefined,
     material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
@@ -63,6 +74,7 @@ export function createAnswers(overrides: Partial<OnboardingAnswers> = {}): Onboa
     a11yPreferences: true,
     feedback: false,
     floatingFallback: false,
+    starter: false,
     aiTools: [],
     ...overrides,
   };
