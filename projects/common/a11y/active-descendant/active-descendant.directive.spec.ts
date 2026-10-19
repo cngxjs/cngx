@@ -920,6 +920,8 @@ const byId = (a: Row, b: Row): boolean => a?.id === b?.id;
       cngxActiveDescendant
       [items]="rows()"
       [compareWith]="compare()"
+      #ad="cngxActiveDescendant"
+      (activated)="take(ad)"
       tabindex="0"
     ></div>
   `,
@@ -927,6 +929,11 @@ const byId = (a: Row, b: Row): boolean => a?.id === b?.id;
 })
 class CompareWithHost {
   readonly compare = signal<(a: Row, b: Row) => boolean>(Object.is);
+  // A typed comparator must not narrow the ref: it still passes as a plain
+  // CngxActiveDescendant (template type check).
+  take(ad: CngxActiveDescendant): CngxActiveDescendant {
+    return ad;
+  }
   readonly rows = signal<ActiveDescendantItem[]>(rowItems());
 }
 

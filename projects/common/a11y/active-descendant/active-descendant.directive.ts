@@ -74,7 +74,7 @@ import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from '
     '(keydown)': 'handleKeydown($event)',
   },
 })
-export class CngxActiveDescendant<T = unknown> {
+export class CngxActiveDescendant {
   /**
    * Optional explicit item list. When provided, takes precedence over items
    * registered via `CNGX_AD_ITEM`. Useful for combobox-style consumers that
@@ -113,9 +113,11 @@ export class CngxActiveDescendant<T = unknown> {
    * Equality used to find the previously active value again after the item
    * list changes. Defaults to `Object.is`; pass the same comparator as the
    * surrounding listbox / select when options are re-fetched as new objects
-   * with equal identity, or the highlight drops on every refresh.
+   * with equal identity, or the highlight drops on every refresh. The
+   * parameters are typed `never` so a comparator over any value type binds
+   * while the directive itself stays non-generic.
    */
-  readonly compareWith = input<(a: T, b: T) => boolean>(Object.is as (a: T, b: T) => boolean);
+  readonly compareWith = input<(a: never, b: never) => boolean>(Object.is);
 
   /** Emitted when `activateCurrent()` is called with an active item. */
   readonly activated = output<unknown>();
