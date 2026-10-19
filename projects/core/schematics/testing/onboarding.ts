@@ -33,6 +33,8 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
       spec: 'absent',
       outlets: { kind: 'editable', elements: [], classes: [], routerOutlet: true },
     },
+    scaffold: { kind: 'custom' },
+    indexHtml: { path: 'src/index.html', state: 'untouched' },
     languageFile: 'absent',
     languagePack: undefined,
     material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },

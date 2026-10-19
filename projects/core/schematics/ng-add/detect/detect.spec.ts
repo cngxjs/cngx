@@ -82,6 +82,8 @@ describe('detectProject', () => {
         spec: 'absent',
         outlets: { kind: 'editable', elements: [], classes: [], routerOutlet: true },
       },
+      scaffold: { kind: 'custom' },
+      indexHtml: { path: 'src/index.html', state: 'untouched' },
       languageFile: 'absent',
       languagePack: undefined,
       material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
@@ -104,6 +106,22 @@ describe('detectProject', () => {
     const facts = detectProject(tree, await readWorkspace(tree));
 
     expect(facts.appShell).toMatchObject({ componentFile: 'src/app/app.ts', className: 'App', spec: 'stock' });
+    expect(facts.scaffold).toEqual({
+      kind: 'untouched',
+      files: { component: 'src/app/app.ts', template: 'src/app/app.html', stylesheet: 'src/app/app.css' },
+      routing: true,
+    });
+    expect(facts.indexHtml).toEqual({ path: 'src/index.html', state: 'untouched' });
+  });
+
+  it('reads the index.html the build names', async () => {
+    const tree = createFixtureTree('scaffold-21');
+    const workspace = JSON.parse(tree.readText('angular.json')) as { projects: Record<string, { architect: { build: { options: Record<string, unknown> } } }> };
+    workspace.projects['fixture-app'].architect.build.options['index'] = { input: 'src/main.html' };
+    tree.overwrite('angular.json', JSON.stringify(workspace));
+    tree.create('src/main.html', tree.readText('src/index.html'));
+
+    expect(detectProject(tree, await readWorkspace(tree)).indexHtml).toEqual({ path: 'src/main.html', state: 'untouched' });
   });
 
   it('reads the Angular version from the installed package and the range from either dependency map', async () => {

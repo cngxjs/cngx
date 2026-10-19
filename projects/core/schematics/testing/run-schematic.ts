@@ -15,7 +15,7 @@ const FIXTURES = join(__dirname, 'fixtures');
  * `standalone-app` and `existing-tailwind-app` are trimmed apps; the
  * `scaffold-21*` apps are untouched `ng new` output of `@schematics/angular`
  * 21.2.2, one folder per variant (zoneless with routing, routing off, zone,
- * SCSS), the stock `app.html` and `app.spec.ts` included.
+ * SCSS), the stock `app.html`, `app.spec.ts` and `src/index.html` included.
  */
 export type FixtureName =
   | 'standalone-app'
