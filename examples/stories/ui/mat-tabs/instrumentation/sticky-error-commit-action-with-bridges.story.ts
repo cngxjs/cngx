@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'cngxMatTabs: a sticky-error commit lifecycle with toast + banner bridges',
   subtitle:
-    'One <code>cngxMatTabs</code> attribute upgrades a vanilla <code>&lt;mat-tab-group&gt;</code> with the async commit lifecycle. <code>[commitAction]</code> runs an <code>Observable</code> between tab switches; <code>optimistic</code> advances then rolls back when the commit does not land, <code>pessimistic</code> holds on the origin. Either way the target tab is decorated (<code>.cngx-mat-tab--error</code> + an SR descriptor referenced through <code>aria-describedby</code>; <code>aria-invalid</code> is form-field vocabulary and stays off a tab button). A throw or an erroring observable is a failure: the commit state goes to <code>error</code> and the co-located <code>cngxToastOn</code> / <code>cngxBannerOn</code> bridges report it - both self-wire off <code>CNGX_STATEFUL</code>, no <code>inject()</code> in the consumer. Answering <code>false</code> is a refusal: the descriptor reads the refused phrase, <code>lastOutcome()</code> reads <code>refused</code>, the commit state goes back to <code>idle</code> and no bridge fires; the action shows its own warning toast and the visible reason below the group is driven by <code>lastOutcome()</code>. Per-tab <code>[cngxMatTabError]</code> badges read the forms’ <code>statusChanges</code>, and a second group shows the smart-overflow "More" affordance the directive mounts automatically.',
+    'One <code>cngxMatTabs</code> attribute upgrades a vanilla <code>&lt;mat-tab-group&gt;</code> with the async commit lifecycle. <code>[commitAction]</code> runs an <code>Observable</code> between tab switches; <code>optimistic</code> advances then rolls back when the commit does not land, <code>pessimistic</code> holds on the origin. Either way the target tab is decorated (<code>.cngx-mat-tab--error</code> + an SR descriptor referenced through <code>aria-describedby</code>; <code>aria-invalid</code> is form-field vocabulary and stays off a tab button). A throw or an erroring observable is a failure: the commit state goes to <code>error</code> and the co-located <code>cngxToastOn</code> / <code>cngxBannerOn</code> bridges report it - both self-wire off <code>CNGX_STATEFUL</code>, no <code>inject()</code> in the consumer. Answering <code>false</code> is a refusal: the descriptor reads the refused phrase, <code>lastOutcome()</code> reads <code>refused</code>, the commit state goes back to <code>idle</code> and no bridge fires; the action shows its own warning toast and the visible reason below the group is driven by <code>lastOutcome()</code>. Per-tab <code>[cngxMatTabError]</code> badges read the forms’ <code>statusChanges</code>, and a second group runs the same commit action under the smart-overflow "More" affordance the directive mounts automatically.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -12,6 +12,7 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { Observable } from 'rxjs';",
     "import { startWith } from 'rxjs/operators';",
+    "import { viewChildren } from '@angular/core';",
     "import { toSignal } from '@angular/core/rxjs-interop';",
     "import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';",
     "import { MatTabsModule } from '@angular/material/tabs';",
@@ -29,13 +30,17 @@ export const STORY: DemoSpec = {
     'CngxBannerOn',
   ],
   setup: `private readonly toaster = inject(CngxToaster);
-  protected readonly presenter = viewChild(CngxTabGroupPresenter);
+  // One presenter per mat-tab-group, in template order: the account
+  // settings group first, the smart-overflow group second.
+  private readonly presenters = viewChildren(CngxTabGroupPresenter);
   protected readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
   protected readonly outcome = signal<'accept' | 'error' | 'refusal'>('accept');
-  protected readonly refused = computed(() => {
-    const presenter = this.presenter();
+  protected readonly refused = computed(() => this.isRefused(this.presenters()[0]));
+  protected readonly overflowRefused = computed(() => this.isRefused(this.presenters()[1]));
+
+  private isRefused(presenter: CngxTabGroupPresenter | undefined): boolean {
     return presenter?.lastFailedIndex() !== undefined && presenter?.lastOutcome()?.kind === 'refused';
-  });
+  }
 
   // One async gate drives every tab switch. A failure errors the observable,
   // so the decoration and both feedback bridges fire off a single source.
@@ -152,13 +157,27 @@ export const STORY: DemoSpec = {
   </section>
 
   <section aria-label="Smart overflow" style="max-width:600px;margin-top:24px">
-    <mat-tab-group cngxMatTabs aria-label="Workspace sections">
+    <mat-tab-group
+      cngxMatTabs
+      [commitAction]="commitAction"
+      [commitMode]="mode()"
+      cngxToastOn
+      [toastError]="'Tab transition failed'"
+      [toastErrorDetail]="true"
+      cngxBannerOn
+      bannerId="mat-tabs:overflow-commit-error"
+      [bannerError]="'The server could not switch the section.'"
+      aria-label="Workspace sections"
+    >
       @for (label of overflowTabs; track label) {
         <mat-tab [label]="label">
           <p style="padding:12px">{{ label }} content.</p>
         </mat-tab>
       }
     </mat-tab-group>
+    @if (overflowRefused()) {
+      <p>Not allowed yet: fix the profile first.</p>
+    }
   </section>`,
   templateChromeBefore: `<p style="margin-bottom:12px">
     Toggle the commit mode and pick an outcome, then click a tab. A failure decorates the target
