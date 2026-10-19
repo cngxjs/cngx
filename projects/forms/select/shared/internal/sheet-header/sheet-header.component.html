@@ -34,8 +34,8 @@
   @if (host.showInput()) {
     <input
       type="search"
-      #searchInput
       class="cngx-select-sheet-header__input"
+      [cngxSelectSheetSearchFocus]="host.searchLeads"
       role="combobox"
       aria-expanded="true"
       aria-autocomplete="list"
