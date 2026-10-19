@@ -8,9 +8,9 @@ import {
   ElementRef,
   inject,
   input,
+  linkedSignal,
   output,
   signal,
-  untracked,
 } from '@angular/core';
 import {
   injectDirection,
@@ -134,8 +134,6 @@ export class CngxActiveDescendant {
   /** Guards host attribute writes until after first render. */
   private readonly initialized = signal(false);
 
-  /** -1 means "no active item". Range is [0, resolvedItems().length). */
-  private readonly activeIndexState = signal<number>(-1);
 
   /** Index of an item that should be highlighted but is not in the DOM. */
   private readonly pendingHighlightState = signal<number | null>(null);
@@ -151,6 +149,31 @@ export class CngxActiveDescendant {
       return explicit;
     }
     return this.registered().map(handleToItem);
+  });
+
+  /**
+   * -1 means "no active item". Range is `[0, totalCount())`.
+   *
+   * Navigation writes the index; a change of the item space re-derives it.
+   * The highlight follows its value, not its index: after the item list
+   * changes, the previously active value is looked up again. Gone from a
+   * plain list means no highlight; in a virtual window a value that merely
+   * scrolled out keeps its absolute index. The result is clamped to the new
+   * item space, so the next arrow press never starts from a ghost index.
+   */
+  private readonly activeIndexState = linkedSignal<ActiveIndexSource, number>({
+    source: () => ({
+      items: this.resolvedItems(),
+      total: this.totalCount(),
+      offset: this.windowOffset(),
+      virtual: this.virtualCount() != null,
+    }),
+    computation: (source, previous) => {
+      if (!previous) {
+        return -1;
+      }
+      return clampIndex(reResolveIndex(source, previous.source, previous.value), source.total);
+    },
   });
 
   /** Current active index. `-1` when no item is highlighted. */
@@ -229,59 +252,6 @@ export class CngxActiveDescendant {
         this.pendingHighlightState.set(null);
       }
       queueMicrotask(() => this.scrollActiveIntoView());
-    });
-
-    // The highlight follows its value, not its index: when the item list
-    // changes, the previously active value is looked up again. Gone from a
-    // plain list means no highlight; in a virtual window a value merely
-    // scrolled out keeps its absolute index. The index recorded before the
-    // change is used, so a clamp in the same flush cannot pick the wrong
-    // previous value.
-    let seenItems: readonly ActiveDescendantItem[] | null = null;
-    let seenIndex = -1;
-    let seenOffset = 0;
-    effect(() => {
-      const items = this.resolvedItems();
-      const index = this.activeIndexState();
-      untracked(() => {
-        const previousItems = seenItems;
-        const previousIndex = seenIndex;
-        const previousOffset = seenOffset;
-        seenItems = items;
-        seenOffset = this.windowOffset();
-        seenIndex = index;
-        if (previousItems === null || previousItems === items || previousIndex < 0) {
-          return;
-        }
-        const previous = previousItems[previousIndex - previousOffset];
-        if (!previous) {
-          return;
-        }
-        const match = items.findIndex((it) => Object.is(it.value, previous.value));
-        if (match >= 0) {
-          seenIndex = match + seenOffset;
-          this.activeIndexState.set(seenIndex);
-          return;
-        }
-        if (this.virtualCount() != null) {
-          seenIndex = previousIndex;
-          this.activeIndexState.set(previousIndex);
-          return;
-        }
-        seenIndex = -1;
-        this.activeIndexState.set(-1);
-      });
-    });
-
-    // Clamp the active STATE, not just the derived display, when the item
-    // space shrinks below it - otherwise the next arrow press navigates
-    // relative to a ghost index.
-    effect(() => {
-      const total = this.totalCount();
-      const idx = this.activeIndexState();
-      if (idx >= total) {
-        untracked(() => this.activeIndexState.set(total > 0 ? total - 1 : -1));
-      }
     });
 
     inject(DestroyRef).onDestroy(() => {
@@ -589,6 +559,47 @@ export class CngxActiveDescendant {
       el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
   }
+}
+
+/** @internal Item space the active index is derived against. */
+interface ActiveIndexSource {
+  readonly items: readonly ActiveDescendantItem[];
+  readonly total: number;
+  readonly offset: number;
+  readonly virtual: boolean;
+}
+
+/**
+ * @internal
+ * Looks the previously active value up in the new item list. Unchanged items,
+ * no previous highlight, or a previous index outside the old rendered window
+ * keep the index as it is.
+ */
+function reResolveIndex(
+  source: ActiveIndexSource,
+  previousSource: ActiveIndexSource,
+  previousIndex: number,
+): number {
+  if (previousSource.items === source.items || previousIndex < 0) {
+    return previousIndex;
+  }
+  const previous = previousSource.items[previousIndex - previousSource.offset];
+  if (!previous) {
+    return previousIndex;
+  }
+  const match = source.items.findIndex((it) => Object.is(it.value, previous.value));
+  if (match >= 0) {
+    return match + source.offset;
+  }
+  return source.virtual ? previousIndex : -1;
+}
+
+/** @internal Pulls an index that ran past the item space back onto its last item. */
+function clampIndex(index: number, total: number): number {
+  if (index < total) {
+    return index;
+  }
+  return total > 0 ? total - 1 : -1;
 }
 
 /** @internal */

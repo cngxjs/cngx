@@ -860,6 +860,20 @@ describe('CngxActiveDescendant - items input', () => {
     expect(dir.activeIndex()).toBe(0);
   });
 
+  it('derives the re-resolved index on read, without waiting for an effect flush', () => {
+    const { fixture, host, dir } = setupItems();
+    dir.highlightByValue('y');
+    host.dynamicItems.set([
+      { id: 'y-1', value: 'y', label: 'Yankee' },
+      { id: 'z-1', value: 'z', label: 'Zulu' },
+      { id: 'x-1', value: 'x', label: 'Xray' },
+    ]);
+    fixture.componentRef.changeDetectorRef.detectChanges();
+    expect(dir.activeIndex()).toBe(0);
+    dir.highlightNext();
+    expect(dir.activeValue()).toBe('z');
+  });
+
   it('never moves the highlight to another value when the items swap', () => {
     const { host, dir } = setupItems();
     dir.highlightByValue('y');
