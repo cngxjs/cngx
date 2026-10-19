@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import type { ActiveDescendantItem } from '@cngx/common/a11y';
+
 import { CngxListbox } from './listbox.directive';
 import { CngxOption } from './option.directive';
 
@@ -239,5 +241,45 @@ describe('CngxListbox', () => {
     const bHost = optionEls[1].nativeElement as HTMLElement;
     expect(bHost.getAttribute('aria-selected')).toBe('true');
     expect(bHost.classList.contains('cngx-option--selected')).toBe(true);
+  });
+});
+
+interface Row {
+  readonly id: number;
+}
+
+@Component({
+  template: `
+    <div cngxListbox [label]="'Rows'" [items]="rows()" [compareWith]="byId" tabindex="0"></div>
+  `,
+  imports: [CngxListbox],
+})
+class CompareWithListboxHost {
+  readonly byId = (a: Row, b: Row): boolean => a?.id === b?.id;
+  readonly rows = signal<ActiveDescendantItem[]>(rowItems());
+}
+
+function rowItems(): ActiveDescendantItem[] {
+  return [1, 2, 3].map((id) => ({ id: `row-${id}`, value: { id } as Row, label: `Row ${id}` }));
+}
+
+describe('CngxListbox - compareWith reaches the active descendant', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [CompareWithListboxHost] });
+  });
+
+  it('keeps the highlight when the items are re-fetched as new objects', () => {
+    const fixture = TestBed.createComponent(CompareWithListboxHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const lb = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
+    expect(lb.compareWith()({ id: 1 }, { id: 1 })).toBe(true);
+    lb.ad.highlightByIndex(0);
+    TestBed.flushEffects();
+    fixture.componentInstance.rows.set([...rowItems()].reverse());
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect((lb.ad.activeValue() as Row | null)?.id).toBe(1);
+    expect(lb.ad.activeIndex()).toBe(2);
   });
 });
