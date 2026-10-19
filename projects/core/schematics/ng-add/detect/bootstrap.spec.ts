@@ -33,6 +33,13 @@ describe('rootProvidersPath', () => {
     expect(rootProvidersPath('src/main.ts', main, true, 'src')).toBe('src/main.ts');
   });
 
+  it('never follows a commented-out bootstrap call', () => {
+    const main = `// bootstrapApplication(App, otherConfig);\n// platformBrowser().bootstrapModule(OtherModule);\nimport { otherConfig } from './other/other.config';\nimport { appConfig } from './app/app.config';\n\nbootstrapApplication(App, appConfig);\n`;
+
+    expect(rootProvidersPath('src/main.ts', main, true, 'src')).toBe('src/app/app.config.ts');
+    expect(rootProvidersPath('src/main.ts', `// ${NGMODULE_MAIN.replace(/\n/g, '\n// ')}`, false, 'src')).toBe('src/app/app.config.ts');
+  });
+
   it('falls back to the scaffold path when main.ts names no config', () => {
     expect(rootProvidersPath('src/main.ts', 'bootstrapApplication(App);\n', true, 'src')).toBe('src/app/app.config.ts');
   });

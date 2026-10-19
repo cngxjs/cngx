@@ -5,14 +5,22 @@ import { newlineOf } from '../plan/text';
 /**
  * Which array literal to edit: the default export (`export default [...]`,
  * `module.exports = [...]`, or the first array argument of a wrapper call
- * such as `defineConfig([...])`), the initializer of a named variable, or
- * the `providers` array of a root config: an object typed `ApplicationConfig`,
- * the `@NgModule` argument, or the inline config of `bootstrapApplication`.
+ * such as `defineConfig([...])`), the initializer of a named variable, the
+ * `providers` array of a root config (an object typed `ApplicationConfig`,
+ * the `@NgModule` argument, or the inline config of `bootstrapApplication`),
+ * the `imports` array of the `@Component` or `@NgModule` decorator on a
+ * class, or the `providers` array of the object passed to
+ * `TestBed.configureTestingModule`.
  */
 export type ArraySelector =
   | { readonly kind: 'default-export' }
   | { readonly kind: 'variable'; readonly name: string }
-  | { readonly kind: 'root-providers' };
+  | { readonly kind: 'root-providers' }
+  | { readonly kind: 'decorator-imports'; readonly className: string }
+  | { readonly kind: 'testbed-providers' };
+
+/** The selectors that name a property of one object literal, which `ensureArrayProperty` can add. */
+export type PropertyArraySelector = Extract<ArraySelector, { readonly kind: 'decorator-imports' | 'testbed-providers' }>;
 
 function unwrap(expression: ts.Expression): ts.ArrayLiteralExpression | undefined {
   if (ts.isArrayLiteralExpression(expression)) {
@@ -126,9 +134,114 @@ function rootProvidersArrays(source: ts.SourceFile): readonly ts.ArrayLiteralExp
   );
 }
 
+const ANGULAR_DECORATORS = new Set(['Component', 'NgModule']);
+
+// The `@Component` / `@NgModule` calls on the top-level `class <name>`, or
+// only those named in `names`.
+function decoratorCalls(
+  source: ts.SourceFile,
+  className: string,
+  names: ReadonlySet<string> = ANGULAR_DECORATORS,
+): readonly ts.CallExpression[] {
+  const declaration = source.statements.find(
+    (statement): statement is ts.ClassDeclaration => ts.isClassDeclaration(statement) && statement.name?.text === className,
+  );
+  const decorators = declaration === undefined ? [] : (ts.getDecorators(declaration) ?? []);
+  return decorators
+    .map((decorator) => decorator.expression)
+    .filter((call): call is ts.CallExpression => ts.isCallExpression(call) && names.has(calleeName(call) ?? ''));
+}
+
+function objectArgument(call: ts.CallExpression): ts.ObjectLiteralExpression | undefined {
+  const [argument] = call.arguments;
+  return argument !== undefined && ts.isObjectLiteralExpression(argument) ? argument : undefined;
+}
+
+// The argument of the one `@Component` / `@NgModule` decorator on `class
+// <name>`; none when there are several, as `readDecorator` reads it.
+function decoratorObject(source: ts.SourceFile, className: string): ts.ObjectLiteralExpression | undefined {
+  const calls = decoratorCalls(source, className);
+  return calls.length === 1 ? objectArgument(calls[0]) : undefined;
+}
+
+function isConfigureTestingModule(node: ts.Node): node is ts.CallExpression {
+  return (
+    ts.isCallExpression(node) &&
+    ts.isPropertyAccessExpression(node.expression) &&
+    ts.isIdentifier(node.expression.expression) &&
+    node.expression.expression.text === 'TestBed' &&
+    node.expression.name.text === 'configureTestingModule'
+  );
+}
+
+// The object passed to the first `TestBed.configureTestingModule(...)`.
+function testBedObject(node: ts.Node): ts.ObjectLiteralExpression | undefined {
+  if (isConfigureTestingModule(node)) {
+    const [argument] = node.arguments;
+    return argument !== undefined && ts.isObjectLiteralExpression(argument) ? argument : undefined;
+  }
+  return ts.forEachChild(node, testBedObject);
+}
+
+function propertyObject(source: ts.SourceFile, selector: PropertyArraySelector): ts.ObjectLiteralExpression | undefined {
+  return selector.kind === 'decorator-imports' ? decoratorObject(source, selector.className) : testBedObject(source);
+}
+
+function propertyName(selector: PropertyArraySelector): string {
+  return selector.kind === 'decorator-imports' ? 'imports' : 'providers';
+}
+
+// What an object literal holds under one name, read the same way by every
+// reader and editor here: a key is an identifier or a string literal. A
+// spread or a computed key hides what the object sets, a numeric key is
+// spelled in more than one way (`1`, `1.0`, `0x1`), and a key written twice
+// leaves which one counts to the compiler, so each makes the object
+// unreadable and nothing reads or writes it.
+type PropertyLookup =
+  | { readonly kind: 'missing' }
+  | { readonly kind: 'found'; readonly property: ts.ObjectLiteralElementLike }
+  | { readonly kind: 'unreadable'; readonly cause: UnreadableCause };
+
+/** Why cngx does not read an object literal: a spread, a computed or numeric key, or a key written twice. */
+export type UnreadableCause = 'dynamic' | 'duplicate';
+
+function staticKey(property: ts.ObjectLiteralElementLike): string | undefined {
+  const name = property.name;
+  return name !== undefined && (ts.isIdentifier(name) || ts.isStringLiteral(name)) ? name.text : undefined;
+}
+
+function unreadableCause(object: ts.ObjectLiteralExpression): UnreadableCause | undefined {
+  const keys = object.properties.map(staticKey);
+  if (keys.some((key) => key === undefined)) {
+    return 'dynamic';
+  }
+  return new Set(keys).size === keys.length ? undefined : 'duplicate';
+}
+
+function lookupProperty(object: ts.ObjectLiteralExpression, name: string): PropertyLookup {
+  const cause = unreadableCause(object);
+  if (cause !== undefined) {
+    return { kind: 'unreadable', cause };
+  }
+  const property = object.properties.find((candidate) => staticKey(candidate) === name);
+  return property === undefined ? { kind: 'missing' } : { kind: 'found', property };
+}
+
+function propertyArray(source: ts.SourceFile, selector: PropertyArraySelector): ts.ArrayLiteralExpression | undefined {
+  const object = propertyObject(source, selector);
+  const lookup = object === undefined ? undefined : lookupProperty(object, propertyName(selector));
+  const property = lookup?.kind === 'found' ? lookup.property : undefined;
+  return property !== undefined && ts.isPropertyAssignment(property) && ts.isArrayLiteralExpression(property.initializer)
+    ? property.initializer
+    : undefined;
+}
+
 function findArray(source: ts.SourceFile, selector: ArraySelector): ts.ArrayLiteralExpression | undefined {
   if (selector.kind === 'root-providers') {
     return rootProvidersArrays(source)[0];
+  }
+  if (selector.kind === 'decorator-imports' || selector.kind === 'testbed-providers') {
+    return propertyArray(source, selector);
   }
   for (const statement of source.statements) {
     const expression =
@@ -145,8 +258,107 @@ function parse(content: string): ts.SourceFile {
   return ts.createSourceFile('edit.ts', content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 }
 
+/** Whether the file parses without a syntax error, so an edit that reads back also still compiles as written. */
+export function parsesCleanly(content: string): boolean {
+  const { diagnostics } = ts.transpileModule(content, { reportDiagnostics: true, fileName: 'edit.ts' });
+  return (diagnostics ?? []).length === 0;
+}
+
 export function hasArrayLiteral(content: string, selector: ArraySelector): boolean {
   return findArray(parse(content), selector) !== undefined;
+}
+
+/**
+ * Whether `name` is an element of the selected array literal: an identifier
+ * or an expression with exactly that text. `false` when there is no array.
+ */
+export function hasArrayElement(content: string, selector: ArraySelector, name: string): boolean {
+  const source = parse(content);
+  const array = findArray(source, selector);
+  return array?.elements.some((element) => element.getText(source) === name.trim()) ?? false;
+}
+
+/**
+ * Adds an empty `imports` (decorator) or `providers` (TestBed) array to the
+ * selected object literal when the property is missing, so
+ * `addToArrayLiteral` has an array to fill. The content is returned
+ * unchanged when the property exists, also as something other than an array
+ * literal (`hasArrayLiteral` then stays false and the caller reports it),
+ * when the object holds a spread, a computed or numeric key or a key
+ * written twice, or when there is no such object. The new property goes
+ * after the last one, on its own line in a multi-line object, keeping a
+ * trailing comma style.
+ */
+export function ensureArrayProperty(content: string, selector: PropertyArraySelector): string {
+  const source = parse(content);
+  const object = propertyObject(source, selector);
+  const name = propertyName(selector);
+  if (object === undefined || lookupProperty(object, name).kind !== 'missing') {
+    return content;
+  }
+  const property = `${name}: []`;
+  const last = object.properties[object.properties.length - 1];
+  const close = object.getEnd() - 1;
+  if (last === undefined) {
+    const open = object.getStart(source) + 1;
+    return content.slice(open, close).trim() === ''
+      ? `${content.slice(0, open)} ${property} ${content.slice(close)}`
+      : insertBeforeBracket(content, close, property, ' ');
+  }
+  const multiline = content.slice(object.getStart(source), close).includes('\n');
+  const trailingComma = object.properties.hasTrailingComma;
+  if (!multiline) {
+    return `${content.slice(0, last.getEnd())}, ${property}${content.slice(last.getEnd())}`;
+  }
+  // The trailing comma is read as a token, so a comma in a comment between
+  // the last property and it is never taken for it.
+  const comma = trailingComma ? tokenAt(content, last.getEnd()) : undefined;
+  if (comma !== undefined && comma.kind !== ts.SyntaxKind.CommaToken) {
+    return content;
+  }
+  const lineEnd = afterTrailingComments(content, comma?.end ?? last.getEnd());
+  const head = trailingComma
+    ? content.slice(0, lineEnd)
+    : `${content.slice(0, last.getEnd())},${content.slice(last.getEnd(), lineEnd)}`;
+  const line = `${newlineOf(content)}${indentOf(content, last.getStart(source))}${property}${trailingComma ? ',' : ''}`;
+  return `${head}${line}${content.slice(lineEnd)}`;
+}
+
+/** A token as the scanner reads it: its kind and where it ends. */
+interface ScannedToken {
+  readonly kind: ts.SyntaxKind;
+  readonly end: number;
+}
+
+// The first token from `position` on, comments and whitespace skipped.
+function tokenAt(content: string, position: number): ScannedToken {
+  const scanner = ts.createScanner(ts.ScriptTarget.Latest, true, ts.LanguageVariant.Standard, content);
+  scanner.resetTokenState(position);
+  const kind = scanner.scan();
+  return { kind, end: scanner.getTokenEnd() };
+}
+
+// Past the comments that trail `position` on its line, so a line inserted
+// there never takes a comment that belongs to the line above.
+function afterTrailingComments(content: string, position: number): number {
+  const trailing = ts.getTrailingCommentRanges(content, position) ?? [];
+  return trailing.length === 0 ? position : trailing[trailing.length - 1].end;
+}
+
+// The `type` keyword starting at `start` and the whitespace after it, as the
+// scanner reads them; a comment after the keyword stays. `undefined` when no
+// `type` keyword starts there.
+function typeKeywordRange(content: string, start: number): readonly [number, number] | undefined {
+  const scanner = ts.createScanner(ts.ScriptTarget.Latest, false, ts.LanguageVariant.Standard, content);
+  scanner.resetTokenState(start);
+  if (scanner.scan() !== ts.SyntaxKind.TypeKeyword) {
+    return undefined;
+  }
+  let end = scanner.getTokenEnd();
+  for (let kind = scanner.scan(); kind === ts.SyntaxKind.WhitespaceTrivia || kind === ts.SyntaxKind.NewLineTrivia; kind = scanner.scan()) {
+    end = scanner.getTokenEnd();
+  }
+  return [start, end];
 }
 
 /** How many array literals the selector matches; more than one makes it ambiguous. */
@@ -156,6 +368,78 @@ export function countArrayLiterals(content: string, selector: ArraySelector): nu
     return rootProvidersArrays(source).length;
   }
   return findArray(source, selector) === undefined ? 0 : 1;
+}
+
+/**
+ * A property of a decorator object as a reader sees it: a string (a quoted
+ * string or a backtick string without `${...}`) with the offsets of its raw
+ * text between the quotes, a backtick string that interpolates, an array
+ * literal with the source text of each element, or anything else.
+ */
+export type DecoratorValue =
+  | { readonly kind: 'string'; readonly start: number; readonly end: number; readonly text: string; readonly quoted: boolean }
+  | { readonly kind: 'interpolated' }
+  | { readonly kind: 'array'; readonly elements: readonly string[] }
+  | { readonly kind: 'other' };
+
+/**
+ * The `@<decorator>(...)` on the top-level `class <className>`: `absent`
+ * without that class or decorator, `no-object` when its argument is not an
+ * object literal, `unreadable` when the class carries more than one of
+ * `@Component` / `@NgModule` or the object holds a spread, a computed or
+ * numeric key or a key written twice, else the object's properties by name
+ * (identifier and string-literal keys alike, a shorthand or method property
+ * as `other`).
+ */
+export type DecoratorReading =
+  | { readonly kind: 'absent' }
+  | { readonly kind: 'no-object' }
+  | { readonly kind: 'unreadable'; readonly cause: UnreadableCause }
+  | { readonly kind: 'object'; readonly properties: ReadonlyMap<string, DecoratorValue> };
+
+function decoratorValue(source: ts.SourceFile, property: ts.ObjectLiteralElementLike): DecoratorValue {
+  const initializer = ts.isPropertyAssignment(property) ? property.initializer : undefined;
+  if (initializer === undefined) {
+    return { kind: 'other' };
+  }
+  if (ts.isStringLiteral(initializer) || ts.isNoSubstitutionTemplateLiteral(initializer)) {
+    const start = initializer.getStart(source) + 1;
+    const end = initializer.getEnd() - 1;
+    return { kind: 'string', start, end, text: source.text.slice(start, end), quoted: ts.isStringLiteral(initializer) };
+  }
+  if (ts.isTemplateExpression(initializer)) {
+    return { kind: 'interpolated' };
+  }
+  if (ts.isArrayLiteralExpression(initializer)) {
+    return { kind: 'array', elements: initializer.elements.map((element) => element.getText(source)) };
+  }
+  return { kind: 'other' };
+}
+
+/** Reads the `@Component` or `@NgModule` decorator of a top-level class through the TypeScript AST. */
+export function readDecorator(content: string, className: string, decorator: 'Component' | 'NgModule'): DecoratorReading {
+  const source = parse(content);
+  const calls = decoratorCalls(source, className);
+  const [call] = calls.filter((candidate) => calleeName(candidate) === decorator);
+  if (call === undefined) {
+    return { kind: 'absent' };
+  }
+  if (calls.length > 1) {
+    return { kind: 'unreadable', cause: 'duplicate' };
+  }
+  const object = objectArgument(call);
+  if (object === undefined) {
+    return { kind: 'no-object' };
+  }
+  const cause = unreadableCause(object);
+  if (cause !== undefined) {
+    return { kind: 'unreadable', cause };
+  }
+  const properties = object.properties.flatMap((property): readonly (readonly [string, DecoratorValue])[] => {
+    const key = staticKey(property);
+    return key === undefined ? [] : [[key, decoratorValue(source, property)]];
+  });
+  return { kind: 'object', properties: new Map(properties) };
 }
 
 function boundNames(name: ts.BindingName): readonly string[] {
@@ -172,6 +456,12 @@ function declaredNames(statement: ts.Statement): readonly string[] {
   if (ts.isImportEqualsDeclaration(statement)) {
     return [statement.name.text];
   }
+  // A namespace (`namespace X {}`) binds its name too; an ambient module
+  // (`declare module 'x' {}`) and `declare global {}` bind none.
+  if (ts.isModuleDeclaration(statement)) {
+    const global = (statement.flags & ts.NodeFlags.GlobalAugmentation) !== 0;
+    return ts.isIdentifier(statement.name) && !global ? [statement.name.text] : [];
+  }
   const named =
     ts.isClassDeclaration(statement) ||
     ts.isFunctionDeclaration(statement) ||
@@ -183,6 +473,7 @@ function declaredNames(statement: ts.Statement): readonly string[] {
 
 interface ImportedName {
   readonly name: string;
+  readonly imported: string;
   readonly typeOnly: boolean;
 }
 
@@ -191,9 +482,13 @@ function namedBindings(bindings: ts.NamedImportBindings | undefined): readonly I
     return [];
   }
   if (ts.isNamespaceImport(bindings)) {
-    return [{ name: bindings.name.text, typeOnly: false }];
+    return [{ name: bindings.name.text, imported: '*', typeOnly: false }];
   }
-  return bindings.elements.map((element) => ({ name: element.name.text, typeOnly: element.isTypeOnly }));
+  return bindings.elements.map((element) => ({
+    name: element.name.text,
+    imported: (element.propertyName ?? element.name).text,
+    typeOnly: element.isTypeOnly,
+  }));
 }
 
 function importedNames(statement: ts.ImportDeclaration): readonly (readonly [string, TopLevelBinding])[] {
@@ -203,24 +498,31 @@ function importedNames(statement: ts.ImportDeclaration): readonly (readonly [str
     return [];
   }
   const names = [
-    ...(clause.name ? [{ name: clause.name.text, typeOnly: false }] : []),
+    ...(clause.name ? [{ name: clause.name.text, imported: 'default', typeOnly: false }] : []),
     ...namedBindings(clause.namedBindings),
   ];
-  return names.map(({ name, typeOnly }) => [name, { module, typeOnly: clause.isTypeOnly || typeOnly }] as const);
+  return names.map(
+    ({ name, imported, typeOnly }) => [name, { module, imported, typeOnly: clause.isTypeOnly || typeOnly }] as const,
+  );
 }
 
-/** How a top-level name is bound: imported from `module`, or declared in the file (`module` undefined). */
+/**
+ * How a top-level name is bound: imported from `module` under the name the
+ * module exports (`default` for a default import, `*` for a namespace
+ * import), or declared in the file (`module` and `imported` undefined).
+ */
 export interface TopLevelBinding {
   readonly module: string | undefined;
+  readonly imported: string | undefined;
   readonly typeOnly: boolean;
 }
 
-const DECLARED: TopLevelBinding = { module: undefined, typeOnly: false };
+const DECLARED: TopLevelBinding = { module: undefined, imported: undefined, typeOnly: false };
 
 /**
  * Every top-level name of the file. A caller adding `import { x } from 'm'`
- * checks that `x` is unbound or imported from `m`; a type-only import from
- * `m` needs `promoteTypeOnlyImport` first.
+ * checks that `x` is unbound or imported as `x` from `m`; a type-only import
+ * from `m` needs `promoteTypeOnlyImport` first.
  */
 export function topLevelBindings(content: string): ReadonlyMap<string, TopLevelBinding> {
   return new Map(
@@ -230,6 +532,38 @@ export function topLevelBindings(content: string): ReadonlyMap<string, TopLevelB
         : declaredNames(statement).map((name) => [name, DECLARED] as const),
     ),
   );
+}
+
+/** Whether the file declares a top-level `class <name>`; text in comments or strings never counts. */
+export function declaresClass(content: string, name: string): boolean {
+  return parse(content).statements.some(
+    (statement) => ts.isClassDeclaration(statement) && statement.name?.text === name,
+  );
+}
+
+/**
+ * The module specifiers the file re-exports `name` from: the one of a named
+ * `export { name } from`, else those of every `export * from`. An aliased
+ * re-export (`export { Other as name }`) is not followed.
+ */
+export function reexportSources(content: string, name: string): readonly string[] {
+  const reexports = parse(content).statements.flatMap((statement) =>
+    ts.isExportDeclaration(statement) &&
+    statement.moduleSpecifier !== undefined &&
+    ts.isStringLiteral(statement.moduleSpecifier)
+      ? [{ clause: statement.exportClause, specifier: statement.moduleSpecifier.text }]
+      : [],
+  );
+  const named = reexports.find(
+    ({ clause }) =>
+      clause !== undefined &&
+      ts.isNamedExports(clause) &&
+      clause.elements.some((element) => element.name.text === name && element.propertyName === undefined),
+  );
+  if (named !== undefined) {
+    return [named.specifier];
+  }
+  return reexports.filter(({ clause }) => clause === undefined).map(({ specifier }) => specifier);
 }
 
 function typeOnlyImport(
@@ -267,21 +601,19 @@ export function promoteTypeOnlyImport(content: string, symbol: string, module: s
     return content;
   }
   const { clause, elements } = found;
-  const edits: (readonly [number, number, string])[] = [];
+  const keywords = [
+    ...elements.filter((element) => element.name.text === symbol && element.isTypeOnly),
+    ...(clause.isTypeOnly ? [clause] : []),
+  ].map((node) => typeKeywordRange(content, node.getStart(source)));
+  const edits: (readonly [number, number, string])[] = keywords.flatMap((range) => (range === undefined ? [] : [[...range, ''] as const]));
+  if (edits.length < keywords.length) {
+    return content;
+  }
   for (const element of elements) {
-    const start = element.getStart(source);
-    if (element.name.text === symbol && element.isTypeOnly) {
-      const keyword = /^type\s+/.exec(content.slice(start))?.[0] ?? '';
-      edits.push([start, start + keyword.length, '']);
-    }
     if (element.name.text !== symbol && clause.isTypeOnly && !element.isTypeOnly) {
+      const start = element.getStart(source);
       edits.push([start, start, 'type ']);
     }
-  }
-  if (clause.isTypeOnly) {
-    const start = clause.getStart(source);
-    const keyword = /^type\s+/.exec(content.slice(start))?.[0] ?? '';
-    edits.push([start, start + keyword.length, '']);
   }
   return edits
     .sort(([a], [b]) => b - a)
@@ -387,6 +719,45 @@ export function readProviderCalls(content: string): ProviderCalls {
     names: named.flatMap(({ name }) => (/^provide\w/.test(name) ? [name] : [])),
     languagePack: pack === undefined ? undefined : { text: pack.getText(source), ...referenceOf(source, pack) },
   };
+}
+
+/**
+ * The root `main.ts` bootstraps: `bootstrapApplication(<Class>, <config>)`
+ * (bare, aliased or namespaced) or `<platform>.bootstrapModule(<Module>)`.
+ * A name is `undefined` when that argument is not an identifier.
+ */
+export type BootstrapCall =
+  | { readonly kind: 'application'; readonly className: string | undefined; readonly configName: string | undefined }
+  | { readonly kind: 'module'; readonly moduleName: string | undefined };
+
+function identifierText(expression: ts.Expression | undefined): string | undefined {
+  return expression !== undefined && ts.isIdentifier(expression) ? expression.text : undefined;
+}
+
+function bootstrapCallOf(source: ts.SourceFile, call: ts.CallExpression): BootstrapCall | undefined {
+  const [first, second] = call.arguments;
+  if (ts.isPropertyAccessExpression(call.expression) && call.expression.name.text === 'bootstrapModule') {
+    return { kind: 'module', moduleName: identifierText(first) };
+  }
+  if (referenceOf(source, call.expression).name === 'bootstrapApplication') {
+    return { kind: 'application', className: identifierText(first), configName: identifierText(second) };
+  }
+  return undefined;
+}
+
+/**
+ * Reads the first bootstrap call of a `main.ts` from its syntax tree, so a
+ * call in a comment or a string never counts; `undefined` without one.
+ */
+export function readBootstrapCall(content: string): BootstrapCall | undefined {
+  const source = parse(content);
+  for (const call of collectCalls(source, [])) {
+    const found = bootstrapCallOf(source, call);
+    if (found !== undefined) {
+      return found;
+    }
+  }
+  return undefined;
 }
 
 function isRequireCall(expression: ts.Expression): boolean {
@@ -511,6 +882,19 @@ export function insertAfterImports(content: string, statement: string): string {
   return `${content.slice(0, point.at)}${newline}${statement}${after}`;
 }
 
+// Puts `item` right before the bracket at `close` of a list that holds only
+// comments, which all stay: on a line of its own when the bracket starts its
+// line, else on the bracket's line, followed by `after`.
+function insertBeforeBracket(content: string, close: number, item: string, after: string): string {
+  const lineStart = content.lastIndexOf('\n', close - 1) + 1;
+  const indent = content.slice(lineStart, close);
+  if (indent.trim() === '') {
+    return `${content.slice(0, lineStart)}${indent}  ${item}${newlineOf(content)}${content.slice(lineStart)}`;
+  }
+  const space = /\s/.test(content[close - 1] ?? '') ? '' : ' ';
+  return `${content.slice(0, close)}${space}${item}${after}${content.slice(close)}`;
+}
+
 function indentOf(content: string, position: number): string {
   const lineStart = content.lastIndexOf('\n', position - 1) + 1;
   return /^[ \t]*/.exec(content.slice(lineStart))?.[0] ?? '';
@@ -536,12 +920,15 @@ export function addToArrayLiteral(content: string, selector: ArraySelector, item
   const open = array.getStart(source);
   const multiline = content.slice(open, close).includes('\n');
   const newline = newlineOf(content);
+  if (elements.length === 0 && !multiline) {
+    return `${content.slice(0, close)}${item.trim()}${content.slice(close)}`;
+  }
+  if (elements.length === 0 && content.slice(open + 1, close).trim() !== '') {
+    return insertBeforeBracket(content, close, item.trim(), '');
+  }
   if (elements.length === 0) {
-    if (!multiline) {
-      return `${content.slice(0, close)}${item.trim()}${content.slice(close)}`;
-    }
-    // An empty array across lines holds only whitespace; replace it, so no
-    // whitespace-only line is left above the bracket.
+    // An empty array across lines that holds only whitespace is rebuilt, so
+    // no whitespace-only line is left above the bracket.
     const indent = indentOf(content, close);
     return `${content.slice(0, open + 1)}${newline}${indent}  ${item.trim()}${newline}${indent}${content.slice(close)}`;
   }

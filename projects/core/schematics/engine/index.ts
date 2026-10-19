@@ -62,7 +62,7 @@ export {
 } from './plan/change';
 export { type ChangePlan, createChangePlan, LOCKSTEP_REASON } from './plan/plan';
 export { createReport, type Report, type ReportLink } from './plan/report';
-export { errorMessage, isRecord, joinNames } from './plan/text';
+export { errorMessage, isRecord, joinNames, newlineOf } from './plan/text';
 export {
   contentFingerprint,
   createProvenanceStamp,
@@ -73,12 +73,31 @@ export {
 export {
   addToArrayLiteral,
   type ArraySelector,
+  declaresClass,
+  ensureArrayProperty,
+  hasArrayElement,
   hasArrayLiteral,
   importsModule,
   insertAfterImports,
+  type DecoratorReading,
   type LanguagePackArgument,
+  parsesCleanly,
+  promoteTypeOnlyImport,
+  readBootstrapCall,
+  readDecorator,
   readProviderCalls,
+  reexportSources,
+  type TopLevelBinding,
+  topLevelBindings,
 } from './edit/ts-edit';
+export {
+  appendElements,
+  hasElement,
+  hasElementOutsidePlaceholder,
+  hasPlaceholderBlock,
+  insertBeforeElement,
+  insertBeforePlaceholder,
+} from './edit/template-edit';
 export {
   hasStyleImport,
   insertLeadingStyleImport,

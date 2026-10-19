@@ -29,6 +29,7 @@
     "manifest:error-codes": "node scripts/error-codes-manifest.mjs",
     "schematics:tokens": "node scripts/schematics-token-comments.mjs",
     "schematics:mcp": "node scripts/schematics-mcp-capabilities.mjs",
+    "schematics:scaffold": "node scripts/generate-scaffold-catalog.mjs",
     "test:e2e:examples": "playwright test --config=examples/playwright.config.ts",
     "test:e2e:examples:update": "playwright test --config=examples/playwright.config.ts --update-snapshots",
     "examples:generate": "node scripts/examples-gen/index.mjs",

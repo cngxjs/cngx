@@ -12,6 +12,7 @@ import {
   NON_SOURCE_DIRS,
   type PackageManifest,
   parseManifest,
+  readBootstrapCall,
   readProviderCalls,
   type Tree,
 } from '../../engine';
@@ -27,6 +28,7 @@ import {
   mcpConfigsOf,
   type McpConfigState,
 } from './ai-tooling';
+import { type AppShell, appShellOf, type AppShellUnfollowed } from './app-shell';
 import { maturityOf, rootProvidersPath } from './bootstrap';
 import {
   detectEslintConfig,
@@ -72,6 +74,20 @@ export {
   MCP_CONFIGS,
   type McpConfigState,
 } from './ai-tooling';
+export {
+  APP_SHELL_BLOCKED_REASONS,
+  type AppShell,
+  appShellBlockedText,
+  type AppShellBlockedReason,
+  type AppShellOutlets,
+  appShellSpecOf,
+  type AppShellUnfollowed,
+  FEEDBACK_MODULE,
+  FEEDBACK_OUTLETS,
+  FEEDBACK_SPEC_IMPORT,
+  FEEDBACK_SPEC_PROVIDERS,
+  outletEdits,
+} from './app-shell';
 export { type EslintConfigFacts, type EslintStackFacts, type LegacyEslintConfigFacts } from './eslint';
 export {
   CNGX_LAYERS_FILE,
@@ -119,6 +135,8 @@ export interface ProjectFacts {
   readonly rootProvidersFile: string;
   /** Every `provide*()` call already in that file. */
   readonly rootProviders: readonly string[];
+  /** The bootstrapped root component, or why `main.ts` cannot be followed to it. */
+  readonly appShell: AppShell | AppShellUnfollowed;
   /** `cngx-language.ts` next to `rootProvidersFile`. */
   readonly languageFile: GeneratedFileState;
   /** The pack a `provideCngxI18n(withPack(...))` there passes; `undefined` when none. */
@@ -183,7 +201,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const mainOption = options['browser'] ?? options['main'];
   const mainPath = typeof mainOption === 'string' ? mainOption : posix.join(sourceRoot, 'main.ts');
   const main = read(mainPath) ?? '';
-  const standalone = !/bootstrapModule\s*\(/.test(main);
+  const standalone = readBootstrapCall(main)?.kind !== 'module';
   const rootProvidersFile = rootProvidersPath(mainPath, main, standalone, sourceRoot);
   const providerCalls = readProviderCalls(read(rootProvidersFile) ?? '');
   const providers = providerCalls.names;
@@ -215,6 +233,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     tailwind: detectTailwind(read, manifest, entries),
     rootProvidersFile,
     rootProviders: providers,
+    appShell: appShellOf(read, mainPath, standalone, projectName),
     languageFile: generatedFileState(read(posix.join(posix.dirname(rootProvidersFile), CNGX_LANGUAGE_FILE))),
     languagePack: providerCalls.languagePack,
     material: detectMaterial(read, manifest, entries),

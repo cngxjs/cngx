@@ -13,3 +13,4 @@ projects/*/schematics/testing/fixtures/
 # Generated, drift-guarded against its generator output byte for byte
 projects/core/schematics/ng-add/steps/theme-tokens.generated.ts
 projects/core/schematics/ng-add/steps/mcp-capabilities.generated.ts
+projects/core/schematics/ng-add/detect/scaffold-catalog.generated.ts

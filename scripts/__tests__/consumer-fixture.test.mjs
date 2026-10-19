@@ -13,7 +13,10 @@ import {
   peerInstallSpecs,
   pinAngularDeps,
   renderAppSource,
+  presetPlan,
+  PRESETS,
   schematicsSteps,
+  staleCoreAddArgs,
   usageText,
   VARIANTS,
   variantPlan,
@@ -97,11 +100,12 @@ describe('renderAppSource', () => {
 });
 
 describe('usageText', () => {
-  it('names --angular, --stale-core and every variant', () => {
+  it('names --angular, --stale-core, --preset and every variant', () => {
     const text = usageText();
 
     expect(text).toContain('--angular');
     expect(text).toContain('--stale-core');
+    expect(text).toContain('--preset <minimal | recommended | full>');
     for (const variant of VARIANTS) {
       expect(text).toContain(variant);
     }
@@ -142,6 +146,41 @@ describe('schematicsSteps', () => {
 
   it('migrates from below every release up to the packed one', () => {
     expect(steps[3].args).toEqual(expect.arrayContaining(['--migrate-only', '--from', '0.0.1', '--to', '0.2.0']));
+  });
+});
+
+describe('schematicsSteps with a preset', () => {
+  it('passes no preset flag on the default path, so its commands stay as they were', () => {
+    expect(schematicsSteps('0.2.0', 'recommended')).toEqual(schematicsSteps('0.2.0'));
+    expect(schematicsSteps('0.2.0').flatMap((step) => step.args)).not.toContain('--preset');
+  });
+
+  it('passes the preset to both core ng add runs and leaves the shim on the recorded one', () => {
+    const steps = schematicsSteps('0.2.0', 'full');
+
+    expect(steps[0].args.slice(-2)).toEqual(['--preset', 'full']);
+    expect(steps[1].args.slice(-2)).toEqual(['--preset', 'full']);
+    expect(steps[2].args).not.toContain('--preset');
+  });
+});
+
+describe('presetPlan', () => {
+  it('runs ng test and expects both outlets only with the full preset', () => {
+    expect(presetPlan('full')).toEqual({ preset: 'full', ngTest: true, outlets: ['cngx-banner-outlet', 'cngx-toast-outlet'] });
+    expect(presetPlan()).toEqual({ preset: 'recommended', ngTest: false, outlets: [] });
+    expect(presetPlan('minimal')).toEqual({ preset: 'minimal', ngTest: false, outlets: [] });
+  });
+
+  it('rejects an unknown preset', () => {
+    expect(PRESETS).toEqual(['minimal', 'recommended', 'full']);
+    expect(() => presetPlan('everything')).toThrow('Unknown preset "everything"');
+  });
+});
+
+describe('staleCoreAddArgs', () => {
+  it('passes the preset of the run on to the stale core leg', () => {
+    expect(staleCoreAddArgs('0.2.0', 'full')).toEqual(expect.arrayContaining(['ng', 'add', '@cngx/forms@0.2.0', '--preset', 'full']));
+    expect(staleCoreAddArgs('0.2.0')).not.toContain('--preset');
   });
 });
 
@@ -191,7 +230,13 @@ describe('the consumer-compat workflow', () => {
     expect(paths).toContain("- 'projects/*/schematics/**'");
   });
 
-  it('runs the stale-core leg in its schematics row', () => {
-    expect(workflow).toMatch(/variant: schematics, args: '--stale-core previous'/);
+  it('runs the stale-core leg on the full preset in its schematics row', () => {
+    expect(workflow).toMatch(/variant: schematics, args: '--stale-core previous --preset full'/);
+  });
+
+  it('keeps the required schematics-consumer job on the default preset', () => {
+    const required = readFileSync(join(root, '.github', 'workflows', 'schematics-consumer.yml'), 'utf8');
+
+    expect(required).not.toContain('--preset');
   });
 });

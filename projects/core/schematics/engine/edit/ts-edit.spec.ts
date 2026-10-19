@@ -1,14 +1,22 @@
 import { describe, expect, it } from 'vitest';
 
+import { readFixture } from '../../testing/run-schematic';
 import {
   addToArrayLiteral,
   type ArraySelector,
   countArrayLiterals,
+  declaresClass,
+  ensureArrayProperty,
+  hasArrayElement,
   hasArrayLiteral,
   importsModule,
   insertAfterImports,
+  parsesCleanly,
   promoteTypeOnlyImport,
+  readBootstrapCall,
+  readDecorator,
   readProviderCalls,
+  reexportSources,
   topLevelBindings,
 } from './ts-edit';
 
@@ -170,10 +178,10 @@ export const appConfig: ApplicationConfig = { providers: [{ provide: X, useValue
 });
 
 describe('topLevelBindings', () => {
-  const declared = { module: undefined, typeOnly: false };
-  const from = (module: string, typeOnly = false) => ({ module, typeOnly });
+  const declared = { module: undefined, imported: undefined, typeOnly: false };
+  const from = (module: string, imported: string, typeOnly = false) => ({ module, imported, typeOnly });
 
-  it('maps imported names to their module and declared names to no module', () => {
+  it('maps imported names to their module and the name it exports, and declared names to no module', () => {
     const content = `import def, { a, b as c } from 'm';
 import * as ns from 'n';
 import 'side-effect';
@@ -184,10 +192,10 @@ export interface I {}
 `;
 
     expect([...topLevelBindings(content)]).toEqual([
-      ['def', from('m')],
-      ['a', from('m')],
-      ['c', from('m')],
-      ['ns', from('n')],
+      ['def', from('m', 'default')],
+      ['a', from('m', 'a')],
+      ['c', from('m', 'b')],
+      ['ns', from('n', '*')],
       ['K', declared],
       ['f', declared],
       ['v', declared],
@@ -204,14 +212,72 @@ const { e, f: [g, ...h] } = source;
 `;
 
     expect([...topLevelBindings(content)]).toEqual([
-      ['A', from('m', true)],
-      ['B', from('m', true)],
-      ['C', from('m')],
+      ['A', from('m', 'A', true)],
+      ['B', from('m', 'B', true)],
+      ['C', from('m', 'C')],
       ['D', declared],
       ['e', declared],
       ['g', declared],
       ['h', declared],
     ]);
+  });
+
+  it('reads a namespace as a declared name and an ambient module as none', () => {
+    const content = `namespace N {}
+declare namespace Q.R {}
+declare module 'virtual:x' {}
+declare global {}
+`;
+
+    expect([...topLevelBindings(content)]).toEqual([
+      ['N', declared],
+      ['Q', declared],
+    ]);
+  });
+});
+
+describe('declaresClass', () => {
+  it('finds a top-level class declaration, exported or not', () => {
+    expect(declaresClass('export class App {}\n', 'App')).toBe(true);
+    expect(declaresClass('class App {}\n', 'App')).toBe(true);
+  });
+
+  it('ignores the word class in comments, strings and other names', () => {
+    const content = `// the class App lives elsewhere
+const note = 'class App';
+export class AppShell {}
+export interface App {}
+`;
+
+    expect(declaresClass(content, 'App')).toBe(false);
+  });
+});
+
+describe('reexportSources', () => {
+  it('prefers the named re-export over star re-exports', () => {
+    const content = "export * from './a';\nexport { App, Other } from './app';\n";
+
+    expect(reexportSources(content, 'App')).toEqual(['./app']);
+  });
+
+  it('falls back to every star re-export, skipping named ones for other names', () => {
+    const content = "export * from './a';\nexport { Other } from './other';\nexport * as ns from './ns';\nexport * from './b';\n";
+
+    expect(reexportSources(content, 'App')).toEqual(['./a', './b']);
+  });
+
+  it('ignores re-exports in comments and aliased re-exports', () => {
+    const content = "// export { App } from './commented';\nexport { Root as App } from './root';\n";
+
+    expect(reexportSources(content, 'App')).toEqual([]);
+  });
+});
+
+describe('parsesCleanly', () => {
+  it('tells a file that parses from one with a syntax error', () => {
+    expect(parsesCleanly("import { a } from 'm';\nexport const b = [a];\n")).toBe(true);
+    expect(parsesCleanly('export const b = ;\n')).toBe(false);
+    expect(parsesCleanly('@Component({ imports: [A /* x */,, ] })\nexport class App {}\n')).toBe(true);
   });
 });
 
@@ -224,6 +290,14 @@ describe('promoteTypeOnlyImport', () => {
     expect(promoteTypeOnlyImport("import type { A, b } from 'm';\n", 'b', 'm')).toBe(
       "import { type A, b } from 'm';\n",
     );
+  });
+
+  it('removes only the type keyword, keeping a comment written after it', () => {
+    expect(promoteTypeOnlyImport("import type/**/{ a } from 'm';\n", 'a', 'm')).toBe("import /**/{ a } from 'm';\n");
+    expect(promoteTypeOnlyImport("import { type /* later */ a } from 'm';\n", 'a', 'm')).toBe(
+      "import { /* later */ a } from 'm';\n",
+    );
+    expect(promoteTypeOnlyImport("import type\n  { a } from 'm';\n", 'a', 'm')).toBe("import { a } from 'm';\n");
   });
 
   it('leaves a value import, another module and a missing name alone', () => {
@@ -412,5 +486,293 @@ export const providers = [i18n(pack(lang.cngxLanguagePack))];
     expect(readProviderCalls('const p = [provideRouter(routes)];').languagePack).toBeUndefined();
     expect(readProviderCalls('const p = [provideCngxI18n()];').languagePack).toBeUndefined();
     expect(readProviderCalls('const p = [provideOther(withPack(X))]; // provideCngxI18n(withPack(Y))').languagePack).toBeUndefined();
+  });
+});
+
+const APP: ArraySelector = { kind: 'decorator-imports', className: 'App' };
+const TESTBED: ArraySelector = { kind: 'testbed-providers' };
+
+const NGMODULE = `import { NgModule } from '@angular/core';
+
+@NgModule({
+  declarations: [
+    App
+  ],
+  imports: [
+    BrowserModule
+  ],
+  bootstrap: [App]
+})
+export class AppModule { }
+`;
+
+const NO_IMPORTS = `import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.html'
+})
+export class App {}
+`;
+
+describe('readBootstrapCall', () => {
+  it('reads bootstrapApplication bare, aliased and namespaced, and bootstrapModule on a platform', () => {
+    expect(readBootstrapCall('bootstrapApplication(App, appConfig).catch(console.error);\n')).toEqual({
+      kind: 'application',
+      className: 'App',
+      configName: 'appConfig',
+    });
+    expect(
+      readBootstrapCall("import { bootstrapApplication as boot } from '@angular/platform-browser';\nboot(App);\n"),
+    ).toEqual({ kind: 'application', className: 'App', configName: undefined });
+    expect(readBootstrapCall("import * as pb from '@angular/platform-browser';\npb.bootstrapApplication(App, { providers: [] });\n")).toEqual({
+      kind: 'application',
+      className: 'App',
+      configName: undefined,
+    });
+    expect(readBootstrapCall('platformBrowser().bootstrapModule(AppModule, {})\n  .catch((err) => console.error(err));\n')).toEqual({
+      kind: 'module',
+      moduleName: 'AppModule',
+    });
+  });
+
+  it('never reads a call in a comment or a string, and names no class for an argument that is not an identifier', () => {
+    expect(readBootstrapCall("// bootstrapApplication(Other);\nconst x = 'bootstrapModule(M)';\nbootstrapApplication(App);\n")).toEqual({
+      kind: 'application',
+      className: 'App',
+      configName: undefined,
+    });
+    expect(readBootstrapCall('/* platformBrowser().bootstrapModule(AppModule) */\n')).toBeUndefined();
+    expect(readBootstrapCall('bootstrapApplication(rootComponent());\n')).toEqual({
+      kind: 'application',
+      className: undefined,
+      configName: undefined,
+    });
+  });
+});
+
+describe('readDecorator', () => {
+  const APP = `import { Component } from '@angular/core';
+
+/** The class App, with a template that says class too. */
+@Component({
+  selector: 'app-root',
+  'templateUrl': './app.html',
+  template: '<p>it\\'s the class list</p>',
+  imports: [RouterOutlet, ...SHARED],
+  host: HOST,
+})
+export class App {}
+`;
+
+  it('reads the properties of the decorator object, whatever the text around it says', () => {
+    const reading = readDecorator(APP, 'App', 'Component');
+    const properties = reading.kind === 'object' ? reading.properties : undefined;
+    const template = properties?.get('template');
+
+    expect(properties?.get('templateUrl')).toMatchObject({ kind: 'string', text: './app.html', quoted: true });
+    expect(template).toMatchObject({ kind: 'string', text: "<p>it\\'s the class list</p>", quoted: true });
+    expect(template?.kind === 'string' && APP.slice(template.start, template.end)).toBe("<p>it\\'s the class list</p>");
+    expect(properties?.get('imports')).toEqual({ kind: 'array', elements: ['RouterOutlet', '...SHARED'] });
+    expect(properties?.get('host')).toEqual({ kind: 'other' });
+  });
+
+  it('tells a backtick string from an interpolating one', () => {
+    const plain = readDecorator("@Component({ template: `<p></p>` })\nexport class App {}\n", 'App', 'Component');
+    const interpolating = readDecorator('@Component({ template: `${X}` })\nexport class App {}\n', 'App', 'Component');
+
+    expect(plain.kind === 'object' && plain.properties.get('template')).toMatchObject({ kind: 'string', quoted: false });
+    expect(interpolating.kind === 'object' && interpolating.properties.get('template')).toEqual({ kind: 'interpolated' });
+  });
+
+  it('reads a decorator without an object literal, another decorator and a missing class apart', () => {
+    expect(readDecorator('@Component(ROOT)\nexport class App {}\n', 'App', 'Component')).toEqual({ kind: 'no-object' });
+    expect(readDecorator('@NgModule({})\nexport class App {}\n', 'App', 'Component')).toEqual({ kind: 'absent' });
+    expect(readDecorator("// class App\nconst x = '@Component({}) class App';\n", 'App', 'Component')).toEqual({ kind: 'absent' });
+  });
+
+  it('reads identifier and string-literal keys alike and a shorthand property as other', () => {
+    const reading = readDecorator('@Component({ "imports": [A], selector, \'template\': `<p></p>` })\nexport class App {}\n', 'App', 'Component');
+    const properties = reading.kind === 'object' ? reading.properties : undefined;
+
+    expect(properties?.get('imports')).toEqual({ kind: 'array', elements: ['A'] });
+    expect(properties?.get('template')).toMatchObject({ kind: 'string', quoted: false });
+    expect(properties?.get('selector')).toEqual({ kind: 'other' });
+  });
+
+  it('reads an object with a spread, a computed key or a key written twice, and a doubled decorator, as unreadable', () => {
+    const read = (decorators: string) => readDecorator(`${decorators}\nexport class App {}\n`, 'App', 'Component');
+
+    expect(read('@Component({ ...BASE, imports: [] })')).toEqual({ kind: 'unreadable', cause: 'dynamic' });
+    expect(read("@Component({ ['imports']: [] })")).toEqual({ kind: 'unreadable', cause: 'dynamic' });
+    expect(read("@Component({ imports: [], 'imports': [A] })")).toEqual({ kind: 'unreadable', cause: 'duplicate' });
+    expect(read('@Component({ imports: [] })\n@Component({ imports: [] })')).toEqual({ kind: 'unreadable', cause: 'duplicate' });
+  });
+});
+
+describe('decorator imports', () => {
+  const stockApp = readFixture('scaffold-21')['src/app/app.ts'];
+
+  it('adds to the imports of the @Component on the named class only', () => {
+    const content = `${stockApp}\n@Component({ selector: 'app-other', imports: [] })\nexport class Other {}\n`;
+    const edited = addToArrayLiteral(content, APP, 'CngxToastOutlet');
+
+    expect(edited).toContain('imports: [RouterOutlet, CngxToastOutlet],');
+    expect(edited).toContain("@Component({ selector: 'app-other', imports: [] })");
+  });
+
+  it('adds to the imports of an @NgModule, keeping its multi-line layout', () => {
+    expect(addToArrayLiteral(NGMODULE, { kind: 'decorator-imports', className: 'AppModule' }, 'CngxToastOutlet')).toContain(
+      '  imports: [\n    BrowserModule,\n    CngxToastOutlet\n  ],',
+    );
+  });
+
+  it('reads an element of the array, not only the array', () => {
+    expect(hasArrayLiteral(stockApp, APP)).toBe(true);
+    expect(hasArrayElement(stockApp, APP, 'RouterOutlet')).toBe(true);
+    expect(hasArrayElement(stockApp, APP, 'CngxToastOutlet')).toBe(false);
+    expect(hasArrayElement(stockApp, { kind: 'decorator-imports', className: 'Missing' }, 'RouterOutlet')).toBe(false);
+  });
+
+  it('adds a missing imports property after the last one', () => {
+    const edited = ensureArrayProperty(NO_IMPORTS, APP);
+
+    expect(edited).toContain("  templateUrl: './app.html',\n  imports: []\n})");
+    expect(addToArrayLiteral(edited, APP, 'CngxToastOutlet')).toContain('  imports: [CngxToastOutlet]\n');
+  });
+
+  it('takes the trailing comma from the syntax tree, never a comma in a comment before it', () => {
+    const commented = NO_IMPORTS.replace("templateUrl: './app.html'", "templateUrl: './app.html' /* see a, b */,");
+
+    expect(ensureArrayProperty(commented, APP)).toContain("  templateUrl: './app.html' /* see a, b */,\n  imports: [],\n})");
+    expect(hasArrayLiteral(ensureArrayProperty(commented, APP), APP)).toBe(true);
+  });
+
+  it('puts the new property below a comment that trails the last one', () => {
+    const lineComment = NO_IMPORTS.replace("templateUrl: './app.html'", "templateUrl: './app.html', // the shell");
+    const noComma = NO_IMPORTS.replace("templateUrl: './app.html'", "templateUrl: './app.html' // the shell");
+    const blockAcross = NO_IMPORTS.replace("templateUrl: './app.html'", "templateUrl: './app.html', /* a,\n    b */");
+
+    expect(ensureArrayProperty(lineComment, APP)).toContain("  templateUrl: './app.html', // the shell\n  imports: [],\n})");
+    expect(ensureArrayProperty(noComma, APP)).toContain("  templateUrl: './app.html', // the shell\n  imports: []\n})");
+    expect(ensureArrayProperty(blockAcross, APP)).toContain("  templateUrl: './app.html', /* a,\n    b */\n  imports: [],\n})");
+  });
+
+  it('adds a missing imports property to a one-line and an empty decorator object', () => {
+    expect(ensureArrayProperty("@Component({ selector: 'app-root' })\nexport class App {}\n", APP)).toContain(
+      "@Component({ selector: 'app-root', imports: [] })",
+    );
+    expect(ensureArrayProperty('@Component({})\nexport class App {}\n', APP)).toContain('@Component({ imports: [] })');
+  });
+
+  it('keeps a comment that is all an empty imports array holds', () => {
+    const lineComment = stockApp.replace('imports: [RouterOutlet],', 'imports: [\n    // TODO: shared modules\n  ],');
+    const blockComment = stockApp.replace('imports: [RouterOutlet],', 'imports: [ /* none yet */ ],');
+    const once = addToArrayLiteral(lineComment, APP, 'CngxBannerOutlet');
+
+    expect(once).toContain('  imports: [\n    // TODO: shared modules\n    CngxBannerOutlet\n  ],');
+    expect(addToArrayLiteral(once, APP, 'CngxToastOutlet')).toContain(
+      '  imports: [\n    // TODO: shared modules\n    CngxBannerOutlet,\n    CngxToastOutlet\n  ],',
+    );
+    expect(addToArrayLiteral(blockComment, APP, 'CngxBannerOutlet')).toContain('imports: [ /* none yet */ CngxBannerOutlet],');
+  });
+
+  it('keeps a comment that is all an empty decorator object holds', () => {
+    expect(ensureArrayProperty('@Component({ /* later */ })\nexport class App {}\n', APP)).toContain(
+      '@Component({ /* later */ imports: [] })',
+    );
+    expect(ensureArrayProperty('@Component({\n  // later\n})\nexport class App {}\n', APP)).toContain(
+      '@Component({\n  // later\n  imports: []\n})',
+    );
+  });
+
+  it('leaves an existing imports property alone, also one that is not an array literal', () => {
+    const shared = NO_IMPORTS.replace("templateUrl: './app.html'", "templateUrl: './app.html',\n  imports: SHARED");
+
+    expect(ensureArrayProperty(stockApp, APP)).toBe(stockApp);
+    expect(ensureArrayProperty(shared, APP)).toBe(shared);
+    expect(hasArrayLiteral(shared, APP)).toBe(false);
+  });
+});
+
+describe('decorator properties, one lookup for readers and editors', () => {
+  const stockApp = readFixture('scaffold-21')['src/app/app.ts'];
+  const NGMODULE_HOST: ArraySelector = { kind: 'decorator-imports', className: 'AppModule' };
+
+  it.each(["'imports'", '"imports"'])('reads and fills a %s key of a component and an NgModule', (key) => {
+    const component = stockApp.replace('imports:', `${key}:`);
+    const ngModule = NGMODULE.replace('imports:', `${key}:`);
+
+    expect(hasArrayLiteral(component, APP)).toBe(true);
+    expect(hasArrayElement(component, APP, 'RouterOutlet')).toBe(true);
+    expect(ensureArrayProperty(component, APP)).toBe(component);
+    expect(addToArrayLiteral(component, APP, 'CngxToastOutlet')).toContain(`${key}: [RouterOutlet, CngxToastOutlet],`);
+    expect(hasArrayElement(ngModule, NGMODULE_HOST, 'BrowserModule')).toBe(true);
+    expect(ensureArrayProperty(ngModule, NGMODULE_HOST)).toBe(ngModule);
+  });
+
+  it.each([
+    ['a spread', '  ...BASE,\n'],
+    ['a computed key', "  ['imports']: [RouterOutlet],\n"],
+    ['a numeric key', '  imports: [RouterOutlet],\n  1: true,\n'],
+    ['a shorthand imports', '  imports,\n'],
+    ['an identifier imports', '  imports: IMPORTS,\n'],
+    ['imports written twice', '  imports: [RouterOutlet],\n  imports: [],\n'],
+  ])('never reads or writes a decorator object with %s', (_name, imports) => {
+    const content = stockApp.replace('  imports: [RouterOutlet],\n', imports);
+
+    expect(hasArrayLiteral(content, APP)).toBe(false);
+    expect(hasArrayElement(content, APP, 'RouterOutlet')).toBe(false);
+    expect(ensureArrayProperty(content, APP)).toBe(content);
+    expect(() => addToArrayLiteral(content, APP, 'CngxToastOutlet')).toThrow();
+  });
+
+  it('never writes into a TestBed object with a spread or providers written twice', () => {
+    const spread = 'TestBed.configureTestingModule({ ...BASE, imports: [App] });\n';
+    const twice = "TestBed.configureTestingModule({ providers: [], 'providers': [] });\n";
+    const quoted = "TestBed.configureTestingModule({ imports: [App], 'providers': [] });\n";
+
+    expect(ensureArrayProperty(spread, TESTBED)).toBe(spread);
+    expect(hasArrayLiteral(twice, TESTBED)).toBe(false);
+    expect(ensureArrayProperty(twice, TESTBED)).toBe(twice);
+    expect(ensureArrayProperty(quoted, TESTBED)).toBe(quoted);
+    expect(addToArrayLiteral(quoted, TESTBED, 'provideX()')).toContain("'providers': [provideX()]");
+  });
+});
+
+describe('TestBed providers', () => {
+  const stockSpec = readFixture('scaffold-21')['src/app/app.spec.ts'];
+
+  it('adds a providers array after the imports of the stock spec, keeping its trailing comma', () => {
+    const edited = ensureArrayProperty(stockSpec, TESTBED);
+
+    expect(edited).toContain('      imports: [App],\n      providers: [],\n    }).compileComponents();');
+    expect(addToArrayLiteral(edited, TESTBED, 'provideFeedback(withToasts(), withBanners())')).toContain(
+      '      providers: [provideFeedback(withToasts(), withBanners())],\n',
+    );
+  });
+
+  it('fills providers that are already there', () => {
+    const content = 'TestBed.configureTestingModule({ imports: [App], providers: [provideRouter([])] });\n';
+
+    expect(ensureArrayProperty(content, TESTBED)).toBe(content);
+    expect(hasArrayElement(content, TESTBED, 'provideRouter([])')).toBe(true);
+    expect(addToArrayLiteral(content, TESTBED, 'provideX()')).toContain('providers: [provideRouter([]), provideX()]');
+  });
+
+  it('reports providers that are not an array literal and a spec without configureTestingModule', () => {
+    const shared = 'TestBed.configureTestingModule({ providers: SHARED });\n';
+    const none = "describe('x', () => {});\n";
+
+    expect(hasArrayLiteral(shared, TESTBED)).toBe(false);
+    expect(ensureArrayProperty(shared, TESTBED)).toBe(shared);
+    expect(ensureArrayProperty(none, TESTBED)).toBe(none);
+    expect(hasArrayLiteral(none, TESTBED)).toBe(false);
+  });
+
+  it('keeps CRLF line endings when it adds the property', () => {
+    const crlf = stockSpec.replace(/\n/g, '\r\n');
+
+    expect(ensureArrayProperty(crlf, TESTBED)).toContain('      imports: [App],\r\n      providers: [],\r\n');
   });
 });

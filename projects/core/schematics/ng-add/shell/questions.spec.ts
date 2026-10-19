@@ -56,14 +56,14 @@ async function ask(
     answers: givenAnswers(options),
     adapter: adapter ?? recordingAdapter(asked),
   });
-  const { answers, explicitAiTools } = await askOnboarding(
+  const { answers, explicitAiTools, explicitFeedback } = await askOnboarding(
     facts,
     options,
     flow,
     installed,
     recorded,
   );
-  return { answers, explicitAiTools, asked };
+  return { answers, explicitAiTools, explicitFeedback, asked };
 }
 
 // Records the AI tooling choices and answers them with `picks`.
@@ -293,6 +293,18 @@ describe('askOnboarding', () => {
 
     expect(answers.aiTools).toEqual(['claude']);
     expect(explicitAiTools).toEqual([]);
+  });
+
+  it('counts only the --feedback flag as explicit feedback, never a preset default or a prompt answer', async () => {
+    const yes: PromptAdapter = {
+      select: (question) => Promise.resolve(question.default),
+      multiSelect: (question) => Promise.resolve(question.default),
+      confirm: (question) => Promise.resolve(question.key === 'feedback' ? true : question.default),
+    };
+
+    expect((await ask(createFacts(), { feedback: true }, false)).explicitFeedback).toBe(true);
+    expect((await ask(createFacts(), { preset: 'full' }, false)).explicitFeedback).toBe(false);
+    expect((await ask(createFacts(), {}, true, [], yes)).explicitFeedback).toBe(false);
   });
 
   it('starts a re-run with the recorded preset from the recorded answers', async () => {

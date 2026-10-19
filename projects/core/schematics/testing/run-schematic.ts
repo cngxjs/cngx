@@ -11,7 +11,19 @@ import { createMemoryTree, listFiles } from '../engine';
 
 const FIXTURES = join(__dirname, 'fixtures');
 
-export type FixtureName = 'standalone-app' | 'existing-tailwind-app';
+/**
+ * `standalone-app` and `existing-tailwind-app` are trimmed apps; the
+ * `scaffold-21*` apps are untouched `ng new` output of `@schematics/angular`
+ * 21.2.2, one folder per variant (zoneless with routing, routing off, zone,
+ * SCSS), the stock `app.html` and `app.spec.ts` included.
+ */
+export type FixtureName =
+  | 'standalone-app'
+  | 'existing-tailwind-app'
+  | 'scaffold-21'
+  | 'scaffold-21-routing-off'
+  | 'scaffold-21-zone'
+  | 'scaffold-21-scss';
 
 function walk(dir: string): readonly string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

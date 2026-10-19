@@ -135,6 +135,55 @@ describe('createMigration', () => {
     expect(tree.actions).toEqual([]);
   });
 
+  // The refresh fixture recorded with feedback on over the untouched scaffold;
+  // `steps` adds to the recorded step ids.
+  function feedbackRecord(steps: readonly string[]): Record<string, string> {
+    const { before } = readMigrationFixture('refresh');
+    const manifest = JSON.parse(before['.cngx/install.json'] ?? '{}') as InstallManifest;
+    const record = manifest.projects['fixture-app'];
+    const added = steps.map((id) => ({ ...record.steps[0], id }));
+    return {
+      ...before,
+      ...readFixture('scaffold-21'),
+      '.cngx/install.json': JSON.stringify({
+        ...manifest,
+        projects: {
+          'fixture-app': { ...record, answers: { ...record.answers, feedback: true }, steps: [...record.steps, ...added] },
+        },
+      }),
+    };
+  }
+
+  it('notes a missing outlet of a recorded feedback install and writes neither the template nor the spec', async () => {
+    const files = feedbackRecord([]);
+
+    const { tree, logs } = await runRule(migration(), createMemoryTree(files), ENTRY);
+
+    expect(logs.join('\n')).toContain('Place the toast and banner outlets (not in place)');
+    expect(logs.join('\n')).toContain('the recorded install provides feedback but the root template lacks an outlet');
+    expect(tree.readText('src/app/app.html')).toBe(files['src/app/app.html']);
+    expect(tree.readText('src/app/app.spec.ts')).toBe(files['src/app/app.spec.ts']);
+  });
+
+  it('asks for no outlet the record placed and the user removed since', async () => {
+    const files = feedbackRecord(['app-shell:outlets', 'app-shell:outlets']);
+
+    const { tree, logs } = await runRule(migration(), createMemoryTree(files), ENTRY);
+
+    expect(logs.join('\n')).not.toContain('toast and banner outlets');
+    expect(tree.readText('src/app/app.html')).toBe(files['src/app/app.html']);
+  });
+
+  it('asks for no outlet the record placed once the root template turned into a quoted inline one', async () => {
+    const files = feedbackRecord(['app-shell:outlets']);
+    const app = files['src/app/app.ts'].replace("templateUrl: './app.html',", "template: '<router-outlet />',");
+
+    const { tree, logs } = await runRule(migration(), createMemoryTree({ ...files, 'src/app/app.ts': app }), ENTRY);
+
+    expect(logs.join('\n')).not.toContain('toast and banner outlets');
+    expect(tree.readText('src/app/app.ts')).toBe(app);
+  });
+
   it('re-runs every recorded project and updates each record', async () => {
     const { tree } = await runRule(migration(), createMemoryTree(twoRecordedApplications()), ENTRY);
     const records = recordsOf(tree);

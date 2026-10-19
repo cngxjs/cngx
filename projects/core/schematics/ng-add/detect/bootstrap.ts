@@ -1,6 +1,6 @@
 import { posix } from 'node:path';
 
-import { declaredRange, hasArrayLiteral, type PackageManifest } from '../../engine';
+import { declaredRange, hasArrayLiteral, type PackageManifest, readBootstrapCall, topLevelBindings } from '../../engine';
 
 const OTHER_UI_LIBRARIES = ['@angular/material', 'primeng', 'tailwindcss', 'bootstrap'];
 
@@ -16,16 +16,18 @@ const SCAFFOLD_PROVIDERS = new Set([
 
 // Follows the import of the second `bootstrapApplication` argument or the
 // `bootstrapModule` argument; a providers array written into the bootstrap
-// call keeps main.ts, anything else falls back to the scaffold path.
+// call keeps main.ts, anything else falls back to the scaffold path. The call
+// is read from the syntax tree, so a commented-out one never counts.
 export function rootProvidersPath(mainPath: string, main: string, standalone: boolean, sourceRoot: string): string {
   const fallback = posix.join(sourceRoot, 'app', 'app.config.ts');
-  const call = standalone ? /bootstrapApplication\s*\(\s*\w+\s*,\s*(\w+)/ : /bootstrapModule\s*\(\s*(\w+)/;
-  const identifier = call.exec(main)?.[1];
+  const call = readBootstrapCall(main);
+  const application = call?.kind === 'application' ? call.configName : undefined;
+  const identifier = standalone ? application : call?.kind === 'module' ? call.moduleName : undefined;
   if (identifier === undefined) {
     return hasArrayLiteral(main, { kind: 'root-providers' }) ? mainPath : fallback;
   }
-  const specifier = new RegExp(`import\\s*\\{[^}]*\\b${identifier}\\b[^}]*\\}\\s*from\\s*['"](\\.[^'"]+)['"]`).exec(main)?.[1];
-  return specifier === undefined ? fallback : `${posix.join(posix.dirname(mainPath), specifier)}.ts`;
+  const specifier = topLevelBindings(main).get(identifier)?.module;
+  return specifier?.startsWith('.') === true ? `${posix.join(posix.dirname(mainPath), specifier)}.ts` : fallback;
 }
 
 // An app is existing once it has more than the root component, another UI

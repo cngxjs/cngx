@@ -29,7 +29,9 @@ projects/core/schematics/
     index.ts             the single-stage shell
     schema.json          options, no x-prompt (every question runs in the rule)
     detect/              detectProject(tree, workspace): ProjectFacts in detect.ts,
-                         composed from workspace, styles, eslint, ai-tooling, bootstrap
+                         composed from workspace, styles, eslint, ai-tooling, bootstrap,
+                         app-shell (root component, outlets, stock spec against
+                         scaffold-catalog.generated.ts)
     steps/               pure plan<Step>(facts, answers, versions) per concern
     shell/               questions, preflight checklist, git state, install manifest reader (absent / unreadable / read)
   migrations/
@@ -147,6 +149,7 @@ publish:dry` runs both checks and prints the entry it would add.
 |`npm run build:<lib>`|`ng build <lib>` then `scripts/build-schematics.mjs <lib>`|
 |`npm run schematics:tokens`|regenerate `steps/theme-tokens.generated.ts` from `system-tokens.css`|
 |`npm run schematics:mcp`|regenerate `steps/mcp-capabilities.generated.ts` (the helper README capability table) from the `@cngx/mcp` registrations|
+|`npm run schematics:scaffold`|regenerate `detect/scaffold-catalog.generated.ts` (the `ng new` files an app is compared against exactly) from the installed `@schematics/angular` templates|
 |`npm run test:scripts`|dist smoke run, bundle budgets, token drift, publish gate|
 
 `build-schematics.mjs` type-checks, then bundles each entry with esbuild (cjs,
@@ -200,6 +203,16 @@ rewrites every literal of it in the bundles.
   and collapse to one answer line each. The shim fallback (core not placed by
   the package manager yet) installs core and runs its ng-add as a
   `RunSchematicTask`; prompts render the same way there.
+- With feedback on, the `app-shell` step places `<cngx-banner-outlet />` and
+  `<cngx-toast-outlet />` in the root component that `main.ts` bootstraps
+  (the banner above the `ng new` placeholder block, so it shows above the
+  welcome page, else right above `<router-outlet>`, else at the end; the
+  toast at the end) and both classes in the component
+  or root NgModule `imports`; alert stacks are scoped and never placed. An
+  unedited stock `app.spec.ts` (an exact match against the scaffold catalog)
+  gets the feedback providers. An outlet this project's record placed that
+  is gone stays out unless `--feedback` is passed; `ng update` only notes a
+  missing one.
 - A provider goes on its own line of the root providers array (an object
   typed `ApplicationConfig`, the `@NgModule` argument or the inline
   `bootstrapApplication` config) when the planned file holds exactly one and
