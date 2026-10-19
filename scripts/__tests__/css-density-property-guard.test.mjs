@@ -159,11 +159,13 @@ const SPACING_TOKEN_REF = /--cngx-[a-z0-9-]+/g;
 // suffix, and review catches it if it does.
 const IS_SPACING = /-(gap|padding)(-|$)/;
 const SCALE_SET = /--[a-z][a-z0-9-]*\s*:\s*[^;{}]*var\(\s*--cngx-space-/g;
-// A gap / padding / margin declaration that reads a spacing token and falls
-// back to the scale: the token stays unset by default so an ancestor value can
-// cascade, and the fallback carries the density derivation.
+// A gap / padding / margin declaration that reads a spacing token whose own
+// fallback arm is a chain of var() steps ending in the scale: the token stays
+// unset by default so an ancestor value can cascade, and the fallback carries
+// the density derivation. A literal fallback with a scale var() elsewhere in
+// the declaration does not count.
 const SCALE_READ =
-  /(?<![\w-])(?:gap|row-gap|column-gap|padding(?:-[a-z-]+)?|margin(?:-[a-z-]+)?)\s*:\s*var\(\s*--cngx-[a-z0-9-]*-(?:gap|padding)\b[^;{}]*var\(\s*--cngx-space-/g;
+  /(?<![\w-])(?:gap|row-gap|column-gap|padding(?:-[a-z-]+)?|margin(?:-[a-z-]+)?)\s*:\s*var\(\s*--cngx-[a-z0-9-]*-(?:gap|padding)\s*,\s*(?:var\(\s*--cngx-[a-z0-9-]+\s*,\s*)*var\(\s*--cngx-space-/g;
 
 function referencesSpacingToken(css) {
   SPACING_TOKEN_REF.lastIndex = 0;
@@ -251,6 +253,20 @@ describe('density derivation detection', () => {
         '.a { padding: var(--cngx-a-padding, var(--cngx-b-padding, var(--cngx-space-sm) 0)); }',
       ),
     ).toBe(true);
+  });
+
+  it('rejects a scale var() outside the token fallback arm', () => {
+    expect(
+      hasNonSkinGatedScaleSet('.a { padding: var(--cngx-a-padding, 2px) var(--cngx-space-sm); }'),
+    ).toBe(false);
+  });
+
+  it('rejects a scale read site that only survives inside a comment', () => {
+    expect(
+      hasNonSkinGatedScaleSet(
+        stripComments('.a { /* gap: var(--cngx-a-gap, var(--cngx-space-sm)); */ gap: 1px; }'),
+      ),
+    ).toBe(false);
   });
 
   it('rejects a read site with a literal fallback', () => {
