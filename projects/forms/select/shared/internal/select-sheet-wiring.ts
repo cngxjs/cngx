@@ -29,7 +29,7 @@ import type { CngxSelectCore } from './select-core';
  */
 export type CngxSelectSheetCore = Pick<
   CngxSelectCore<unknown, unknown>,
-  'isCommitting' | 'resolvedPresentationRequest' | 'ariaLabels' | 'disabled'
+  'isCommitting' | 'resolvedPresentationRequest' | 'ariaLabels' | 'disabled' | 'listboxId'
 >;
 
 /** @internal Inputs of {@link createSelectSheetWiring}. */
@@ -77,6 +77,11 @@ export interface CngxSelectSheetWiring extends CngxSelectSheetScope {
    * the variant's popup role while anchored.
    */
   readonly triggerHaspopup: Signal<'dialog' | 'listbox' | 'tree'>;
+  /**
+   * Bound to the trigger's `[controls]`: the listbox / tree id while
+   * anchored, `null` while modal so the popover trigger names the sheet.
+   */
+  readonly triggerControls: Signal<string | null>;
   /** A pessimistic commit is pending. */
   readonly closeBlocked: Signal<boolean>;
   /**
@@ -215,6 +220,7 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     sheetAnchored,
     sheetModal,
     triggerHaspopup: computed(() => (sheetModal() ? 'dialog' : opts.popupRole)),
+    triggerControls: computed(() => (sheetModal() ? null : opts.core.listboxId)),
     closeBlocked,
     escapeEnabled,
     clickOutsideEnabled: computed(() => panelOpen() && sheetAnchored()),

@@ -482,8 +482,7 @@ Common properties are derived from the same `triggerAria()` projection on `creat
 
 The `<div role="combobox">` choice on the chip-carrying variants is deliberate: WAI-ARIA 1.2 forbids interactive children inside `<button>` (chip remove buttons would nest), so a `div` with a click handler fronts the combobox semantic.
 
-**Live ARIA on the trigger** (sourced from `core.triggerAria`):
-`aria-expanded`, `aria-controls`, `aria-disabled`, `aria-invalid`, `aria-required`, `aria-busy`, `aria-describedby`, `aria-errormessage`.
+**Live ARIA on the trigger**: `aria-disabled`, `aria-invalid`, `aria-required`, `aria-busy`, `aria-describedby`, `aria-errormessage` come from `core.triggerAria`. `aria-expanded`, `aria-haspopup` and `aria-controls` have one writer, `CngxPopoverTrigger`: the template binds `[haspopup]="sheetWiring.triggerHaspopup()"` and `[controls]="sheetWiring.triggerControls()"` (the listbox / tree id while anchored, `'dialog'` and the sheet id while modal).
 All are reactive computeds - they always reflect the current state, never go stale.
 
 **TreeSelect's tree panel** uses `CngxActiveDescendant` (vertical nav)

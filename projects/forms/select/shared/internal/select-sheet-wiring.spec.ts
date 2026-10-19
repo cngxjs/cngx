@@ -49,6 +49,7 @@ function setup(
     resolvedPresentationRequest: request,
     ariaLabels: signal({}),
     disabled,
+    listboxId: 'listbox-1',
   } as unknown as CngxSelectCore<string, string>;
   const commitMode = signal<CngxSelectCommitMode>('optimistic');
   const close = vi.fn();
@@ -124,6 +125,13 @@ describe('createSelectSheetWiring', () => {
     expect(wiring.triggerHaspopup()).toBe('listbox');
     presentation.set('sheet');
     expect(wiring.triggerHaspopup()).toBe('dialog');
+  });
+
+  it('points the trigger at the listbox while anchored and at nothing while modal', () => {
+    const { wiring, presentation } = setup();
+    expect(wiring.triggerControls()).toBe('listbox-1');
+    presentation.set('sheet');
+    expect(wiring.triggerControls()).toBeNull();
   });
 
   it('blocks a close only while a pessimistic commit is pending', () => {
