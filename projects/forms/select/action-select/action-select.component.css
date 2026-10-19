@@ -48,12 +48,14 @@
 @layer cngx.tokens {
   /**
    * Gap between the input, clear button, and caret.
+   * Falls back to `--cngx-select-gap`; see {@link --cngx-select-gap}
+   * for why no `initial-value` is declared.
    * @group Layout
+   * @default var(--cngx-select-gap, var(--cngx-space-sm, 0.5rem))
    */
   @property --cngx-action-select-gap {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.5rem;
+    inherits: true;
   }
 
   /**
@@ -71,12 +73,14 @@
 
   /**
    * Padding shorthand of the trigger.
+   * Falls back to `--cngx-select-padding`; see {@link --cngx-select-padding}
+   * for why no `initial-value` is declared.
    * @group Layout
+   * @default var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem))
    */
   @property --cngx-action-select-padding {
     syntax: '*';
-    inherits: false;
-    initial-value: 0 0.75rem;
+    inherits: true;
   }
 
   /**
@@ -128,20 +132,20 @@
     }
 
     .cngx-action-select__trigger {
-      /* Derive trigger spacing from the global scale (SET-from-scale rule; read
-         on the trigger host). gap 0.5 -> sm. Block padding is sm so the inline-
-         input trigger scales with density and measures the same as a bare input
-         / text select (42/34/50) instead of pinning flat to the min-height
-         floor. inline md, the shared box inline padding, so the value starts at
-         the same x as in an input. */
-      --cngx-action-select-gap: var(--cngx-space-sm);
-      --cngx-action-select-padding: var(--cngx-space-sm) var(--cngx-space-md);
+      /* Trigger spacing derives from the global scale in the gap and padding
+         fallbacks below, so a root [data-density] compacts it. The tokens
+         themselves stay unset: a SET here would shadow a value set on the host
+         or an ancestor. gap 0.5 -> sm. Block padding is sm so the inline- input
+         trigger scales with density and measures the same as a bare input / text
+         select (42/34/50) instead of pinning flat to the min-height floor.
+         inline md, the shared box inline padding, so the value starts at the
+         same x as in an input. */
       /* Self-contained sizing: without this the min-height contract depends
          on a global border-box reset the consumer may not load. */
       box-sizing: border-box;
       display: flex;
       align-items: center;
-      gap: var(--cngx-action-select-gap, 0.5rem);
+      gap: var(--cngx-action-select-gap, var(--cngx-select-gap, var(--cngx-space-sm, 0.5rem)));
       width: 100%;
       /* Touch-target floor - lift the trigger tap target to the pointer-
          derived minimum; inert at 0px on a fine pointer. */
@@ -149,7 +153,10 @@
         var(--cngx-action-select-min-height, var(--cngx-select-min-height, 2.125rem)),
         var(--cngx-target-min, 0px)
       );
-      padding: var(--cngx-action-select-padding, 0 0.75rem);
+      padding: var(
+        --cngx-action-select-padding,
+        var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem))
+      );
       border: var(
         --cngx-action-select-border,
         var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))

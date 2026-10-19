@@ -70,12 +70,14 @@
 
   /**
    * Gap between the value summary, clear button, and caret.
+   * Falls back to `--cngx-select-gap`; see {@link --cngx-select-gap}
+   * for why no `initial-value` is declared.
    * @group Layout
+   * @default var(--cngx-select-gap, var(--cngx-space-sm, 0.5rem))
    */
   @property --cngx-tree-select-trigger-gap {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.5rem;
+    inherits: true;
   }
 
   /**
@@ -93,12 +95,14 @@
 
   /**
    * Padding shorthand of the trigger.
+   * Falls back to `--cngx-select-padding`; see {@link --cngx-select-padding}
+   * for why no `initial-value` is declared.
    * @group Layout
+   * @default var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem))
    */
   @property --cngx-tree-select-trigger-padding {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.25rem 0.5rem;
+    inherits: true;
   }
 
   /**
@@ -190,27 +194,33 @@
     }
 
     .cngx-tree-select__trigger {
-      /* Derive trigger spacing from the global scale (SET-from-scale rule; read
-         on the trigger host). trigger-gap 0.5 -> sm. Block padding is sm to
-         match the text-control baseline so a single-line tree-chip row measures
-         the same as a bare input / text select; the chip strip caps each chip
-         to one line (see select-base). inline md, the shared box inline
-         padding, so the value starts at the same x as in an input. */
-      --cngx-tree-select-trigger-gap: var(--cngx-space-sm);
-      --cngx-tree-select-trigger-padding: var(--cngx-space-sm) var(--cngx-space-md);
+      /* Trigger spacing derives from the global scale in the gap and padding
+         fallbacks below, so a root [data-density] compacts it. The tokens
+         themselves stay unset: a SET here would shadow a value set on the host
+         or an ancestor. trigger-gap 0.5 -> sm. Block padding is sm to match the
+         text-control baseline so a single-line tree-chip row measures the same
+         as a bare input / text select; the chip strip caps each chip to one line
+         (see select-base). inline md, the shared box inline padding, so the
+         value starts at the same x as in an input. */
       /* Self-contained sizing: without this the min-height contract depends
          on a global border-box reset the consumer may not load. */
       box-sizing: border-box;
       display: flex;
       align-items: center;
-      gap: var(--cngx-tree-select-trigger-gap, 0.5rem);
+      gap: var(
+        --cngx-tree-select-trigger-gap,
+        var(--cngx-select-gap, var(--cngx-space-sm, 0.5rem))
+      );
       /* Touch-target floor - lift the trigger tap target to the pointer-
          derived minimum; inert at 0px on a fine pointer. */
       min-height: max(
         var(--cngx-tree-select-trigger-height, var(--cngx-select-min-height, 2.125rem)),
         var(--cngx-target-min, 0px)
       );
-      padding: var(--cngx-tree-select-trigger-padding, 0.25rem 0.5rem);
+      padding: var(
+        --cngx-tree-select-trigger-padding,
+        var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem))
+      );
       border: var(
         --cngx-tree-select-trigger-border,
         var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))

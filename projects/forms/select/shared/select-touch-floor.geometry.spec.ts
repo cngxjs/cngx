@@ -89,7 +89,9 @@ interface TokenChain {
     | 'outlineColor'
     | 'minHeight'
     | 'borderTopLeftRadius'
-    | 'inlineSize';
+    | 'inlineSize'
+    | 'columnGap'
+    | 'paddingTop';
   /** The row only paints `property` while its combobox has focus. */
   readonly focus?: boolean;
   /** Read `property` off the host's `::before` floor box, not the row. */
@@ -217,6 +219,38 @@ const CHAINS: readonly TokenChain[] = [
       ['--cngx-reorderable-multi-select-min-width', ['cngx-reorderable-multi-select']],
       ['--cngx-action-multi-select-min-width', ['cngx-action-multi-select']],
       ['--cngx-select-shell-min-width', ['cngx-select-shell']],
+    ],
+  },
+  {
+    property: 'columnGap',
+    value: '7px',
+    expected: '7px',
+    family: '--cngx-select-gap',
+    variants: [
+      ['--cngx-multi-select-gap', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
+      ['--cngx-combobox-gap', ['cngx-combobox', 'cngx-action-multi-select']],
+      ['--cngx-typeahead-gap', ['cngx-typeahead']],
+      ['--cngx-tree-select-trigger-gap', ['cngx-tree-select']],
+      ['--cngx-reorderable-multi-select-gap', ['cngx-reorderable-multi-select']],
+      ['--cngx-action-select-gap', ['cngx-action-select']],
+      ['--cngx-action-multi-select-gap', ['cngx-action-multi-select']],
+      ['--cngx-select-shell-gap', ['cngx-select-shell']],
+    ],
+  },
+  {
+    property: 'paddingTop',
+    value: '7px 9px',
+    expected: '7px',
+    family: '--cngx-select-padding',
+    variants: [
+      ['--cngx-multi-select-padding', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
+      ['--cngx-combobox-padding', ['cngx-combobox', 'cngx-action-multi-select']],
+      ['--cngx-typeahead-padding', ['cngx-typeahead']],
+      ['--cngx-tree-select-trigger-padding', ['cngx-tree-select']],
+      ['--cngx-reorderable-multi-select-padding', ['cngx-reorderable-multi-select']],
+      ['--cngx-action-select-padding', ['cngx-action-select']],
+      ['--cngx-action-multi-select-padding', ['cngx-action-multi-select']],
+      ['--cngx-select-shell-padding', ['cngx-select-shell']],
     ],
   },
 ];
