@@ -64,4 +64,5 @@ Disabled items are skipped when `skipDisabled()` is `true` (default). `loop()` c
 
 - **`@angular/cdk/overlay` / `CngxPopoverTrigger`** - The trigger implements its own keymap and calls `highlightFirst/Last/Next/Prev` + `activateCurrent` on the AD hostDirective. AD does not implement open/close.
 - **`CngxRovingTabindex`** - Do not nest an AD inside a roving group. They model different focus strategies.
+- **Re-fetched items** - When the item list changes, the active value is looked up again with `compareWith` (default `Object.is`), so a reorder keeps the highlight and a vanished value drops it. Pass the listbox / select comparator when refreshed options arrive as new objects.
 - **Recycler / virtual scroll** - With `virtualCount`, out-of-range targets surface as `pendingHighlight`. Consumers scroll the index into view, then call `clearPendingHighlight()`.

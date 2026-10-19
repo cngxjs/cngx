@@ -74,7 +74,7 @@ import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from '
     '(keydown)': 'handleKeydown($event)',
   },
 })
-export class CngxActiveDescendant {
+export class CngxActiveDescendant<T = unknown> {
   /**
    * Optional explicit item list. When provided, takes precedence over items
    * registered via `CNGX_AD_ITEM`. Useful for combobox-style consumers that
@@ -109,6 +109,13 @@ export class CngxActiveDescendant {
    * Ignored when `virtualCount` is unset.
    */
   readonly windowStart = input<number>(0);
+  /**
+   * Equality used to find the previously active value again after the item
+   * list changes. Defaults to `Object.is`; pass the same comparator as the
+   * surrounding listbox / select when options are re-fetched as new objects
+   * with equal identity, or the highlight drops on every refresh.
+   */
+  readonly compareWith = input<(a: T, b: T) => boolean>(Object.is as (a: T, b: T) => boolean);
 
   /** Emitted when `activateCurrent()` is called with an active item. */
   readonly activated = output<unknown>();
@@ -156,9 +163,9 @@ export class CngxActiveDescendant {
    *
    * Navigation writes the index; a change of the item space re-derives it.
    * The highlight follows its value, not its index: after the item list
-   * changes, the previously active value is looked up again. Gone from a
-   * plain list means no highlight; in a virtual window a value that merely
-   * scrolled out keeps its absolute index. The result is clamped to the new
+   * changes, the previously active value is looked up again with
+   * `compareWith`. Gone from a plain list means no highlight; in a virtual
+   * window a value that merely scrolled out keeps its absolute index. The result is clamped to the new
    * item space, so the next arrow press never starts from a ghost index.
    */
   private readonly activeIndexState = linkedSignal<ActiveIndexSource, number>({
@@ -167,6 +174,7 @@ export class CngxActiveDescendant {
       total: this.totalCount(),
       offset: this.windowOffset(),
       virtual: this.virtualCount() != null,
+      compareWith: this.compareWith() as (a: unknown, b: unknown) => boolean,
     }),
     computation: (source, previous) => {
       if (!previous) {
@@ -567,6 +575,7 @@ interface ActiveIndexSource {
   readonly total: number;
   readonly offset: number;
   readonly virtual: boolean;
+  readonly compareWith: (a: unknown, b: unknown) => boolean;
 }
 
 /**
@@ -587,7 +596,7 @@ function reResolveIndex(
   if (!previous) {
     return previousIndex;
   }
-  const match = source.items.findIndex((it) => Object.is(it.value, previous.value));
+  const match = source.items.findIndex((it) => source.compareWith(it.value, previous.value));
   if (match >= 0) {
     return match + source.offset;
   }

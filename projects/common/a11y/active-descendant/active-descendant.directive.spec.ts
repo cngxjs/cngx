@@ -906,6 +906,77 @@ describe('CngxActiveDescendant - items input', () => {
   });
 });
 
+/* --- compareWith on an items swap ---------------------------------------- */
+
+interface Row {
+  readonly id: number;
+}
+
+const byId = (a: Row, b: Row): boolean => a?.id === b?.id;
+
+@Component({
+  template: `
+    <div
+      cngxActiveDescendant
+      [items]="rows()"
+      [compareWith]="compare()"
+      tabindex="0"
+    ></div>
+  `,
+  imports: [CngxActiveDescendant],
+})
+class CompareWithHost {
+  readonly compare = signal<(a: Row, b: Row) => boolean>(Object.is);
+  readonly rows = signal<ActiveDescendantItem[]>(rowItems());
+}
+
+function rowItems(): ActiveDescendantItem[] {
+  return [1, 2, 3].map((id) => ({ id: `row-${id}`, value: { id } as Row, label: `Row ${id}` }));
+}
+
+describe('CngxActiveDescendant - compareWith', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [CompareWithHost] });
+  });
+
+  function setupRows(compare?: (a: Row, b: Row) => boolean) {
+    const fixture = TestBed.createComponent(CompareWithHost);
+    if (compare) {
+      fixture.componentInstance.compare.set(compare);
+    }
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const dir = fixture.debugElement
+      .query(By.directive(CngxActiveDescendant))
+      .injector.get(CngxActiveDescendant);
+    return { fixture, dir };
+  }
+
+  function swapForNewIdentities(fixture: ReturnType<typeof setupRows>['fixture']): void {
+    fixture.componentInstance.rows.set([...rowItems()].reverse());
+    fixture.detectChanges();
+    TestBed.flushEffects();
+  }
+
+  it('keeps the highlight on an equal value re-fetched as a new object', () => {
+    const { fixture, dir } = setupRows(byId);
+    dir.highlightByIndex(0);
+    TestBed.flushEffects();
+    swapForNewIdentities(fixture);
+    expect((dir.activeValue() as Row | null)?.id).toBe(1);
+    expect(dir.activeIndex()).toBe(2);
+  });
+
+  it('drops the highlight under the default Object.is', () => {
+    const { fixture, dir } = setupRows();
+    dir.highlightByIndex(0);
+    TestBed.flushEffects();
+    swapForNewIdentities(fixture);
+    expect(dir.activeValue()).toBeNull();
+    expect(dir.activeIndex()).toBe(-1);
+  });
+});
+
 /* --- Keyboard hygiene: modifiers, RTL, state clamp ------------------------ */
 
 describe('CngxActiveDescendant - keyboard hygiene', () => {
