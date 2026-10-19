@@ -4,8 +4,21 @@
 // tab shows only the launch button - the source snippet is redundant when
 // the runnable StackBlitz manifest carries the same code.
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+
+// compodocx copies `customFavicon` to images/favicon.ico but every page links
+// images/favicon.svg, so the brand favicon lands under the name the pages use.
+await copyFile(
+  resolve(process.cwd(), 'brand/favicon.svg'),
+  resolve(process.cwd(), 'docs/images/favicon.svg'),
+);
+
+// The overview page renders the root README, whose logo points at brand/.
+await mkdir(resolve(process.cwd(), 'docs/brand'), { recursive: true });
+for (const file of ['cngx-lockup-full-on-light.svg', 'cngx-lockup-full-on-dark.svg']) {
+  await copyFile(resolve(process.cwd(), 'brand', file), resolve(process.cwd(), 'docs/brand', file));
+}
 
 const target = resolve(process.cwd(), 'docs/styles/compodocx.css');
 const marker = '/* cngx:playground-snippet-override */';
