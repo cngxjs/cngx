@@ -103,4 +103,11 @@ describe('browser-native default', () => {
       .filter((path) => READ.test(readFileSync(join(PROJECTS, path), 'utf-8')));
     expect(readers).toEqual([]);
   });
+
+  // The accent is the gradient's second stop, not a second signal colour:
+  // demo state styling (focus rings, progress, flashes) stays on primary.
+  it('the demo stylesheet never reads the accent on its own', () => {
+    const demoStyles = readFileSync(resolve(REPO_ROOT, 'examples/src/styles.scss'), 'utf-8');
+    expect(demoStyles).not.toMatch(/--cngx-color-accent(?![\w-])/);
+  });
 });

@@ -43,7 +43,7 @@ Two system tokens derive from the primary colour, so they follow a brand overrid
 - `--cngx-color-accent` - the primary at the same lightness and chroma with the hue turned -70: `oklch(from var(--cngx-color-primary) l c calc(h - 70))`. Ember orange becomes pink. Override it in `cngx.theme` for a hand-picked second colour.
 - `--cngx-gradient-brand` - `linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent))`.
 
-No cngx component reads either token. The default theme stays browser-native; both exist for your own surfaces:
+No cngx component reads either token. The default theme stays browser-native; both exist for your own surfaces. Use the accent only as part of the gradient, never as a colour of its own for UI state: focus rings, progress, selection and other state signals stay on `--cngx-color-primary`, so there is one signal colour.
 
 ```css
 .hero {
