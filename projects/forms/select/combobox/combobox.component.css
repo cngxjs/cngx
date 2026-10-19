@@ -271,6 +271,9 @@
     .cngx-combobox__input {
       flex: 1 1 var(--cngx-combobox-input-flex-basis, 4rem);
       min-width: var(--cngx-combobox-input-min-width, 4rem);
+      /* The row carries the touch floor; the bare-input floor from base.css
+       * would stack the row padding on top of it under a coarse pointer. */
+      min-height: 0;
       appearance: none;
       border: 0;
       outline: 0;

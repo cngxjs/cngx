@@ -177,6 +177,9 @@
     .cngx-typeahead__input {
       flex: 1 1 auto;
       min-width: 0;
+      /* The row carries the touch floor; the bare-input floor from base.css
+       * would stack the row padding on top of it under a coarse pointer. */
+      min-height: 0;
       border: 0;
       background: transparent;
       outline: none;
