@@ -39,7 +39,11 @@
  *   family across modes. Three derived rungs sit next to them:
  *   `--cngx-color-primary-strong` (an accent on a tinted surface),
  *   `--cngx-color-primary-text` and `--cngx-color-danger-text` (primary and
- *   danger as readable text, unregistered).
+ *   danger as readable text, unregistered). Two opt-in brand tokens derive
+ *   from primary as well: `--cngx-color-accent` (primary with the hue turned
+ *   -70, Ember orange to pink) and `--cngx-gradient-brand` (primary to
+ *   accent). No component reads them; the default theme stays
+ *   browser-native, so they exist for consumer surfaces only.
  * - **Typography** - `--cngx-font-size-{sm|md|lg}` plus `--cngx-
  *   line-height-base`. Font sizes use `syntax: '*'` because
  *   `@property` `<length>` forbids `rem`.
@@ -376,6 +380,14 @@
    * text in the neutral text colour and leave the accent on the marker.
    * Unregistered for the same reason as --cngx-color-danger-text below. */
 
+  /* --cngx-color-accent / --cngx-gradient-brand - opt-in brand rungs for
+   * consumer surfaces; no cngx component reads them. Unregistered: a
+   * registered initial-value would pin a literal and beat the derivation from
+   * a consumer's primary, and a gradient is an <image>, not a registrable
+   * colour. A var() resolves where it is declared, so both are assigned in
+   * every scheme block next to --cngx-color-primary; a subtree that re-themes
+   * primary outside those blocks re-declares them too. */
+
   /**
    * Semantic danger color - red. Drives error states, destructive
    * actions, validation errors.
@@ -540,6 +552,23 @@
     --cngx-color-primary: oklch(0.66 0.19 50);
     --cngx-color-primary-strong: oklch(0.58 0.19 50);
     --cngx-color-primary-text: color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text));
+    /**
+     * Brand accent - the primary at the same lightness and chroma with the hue
+     * turned -70 (Ember orange to pink). Opt-in: no cngx component reads it.
+     * Override it in `@layer cngx.theme` for a hand-picked second brand colour.
+     * @type <color>
+     * @default oklch(from var(--cngx-color-primary) l c calc(h - 70))
+     * @group Surface
+     */
+    --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
+    /**
+     * Brand gradient from primary to accent, for consumer surfaces such as a
+     * hero band or gradient headline text. Opt-in: no cngx component reads it.
+     * @type <image>
+     * @default linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent))
+     * @group Surface
+     */
+    --cngx-gradient-brand: linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent));
     --cngx-color-danger: oklch(0.6 0.18 25);
     --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
     --cngx-color-success: oklch(0.6 0.15 145);
@@ -564,6 +593,8 @@
       --cngx-color-primary: oklch(0.72 0.18 50);
       --cngx-color-primary-strong: oklch(0.72 0.18 50);
       --cngx-color-primary-text: color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text));
+      --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
+      --cngx-gradient-brand: linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent));
       --cngx-color-danger: oklch(0.68 0.17 25);
       --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
       --cngx-color-success: oklch(0.68 0.14 145);
@@ -590,6 +621,8 @@
     --cngx-color-primary: oklch(0.72 0.18 50);
     --cngx-color-primary-strong: oklch(0.72 0.18 50);
     --cngx-color-primary-text: color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text));
+    --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
+    --cngx-gradient-brand: linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent));
     --cngx-color-danger: oklch(0.68 0.17 25);
     --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
     --cngx-color-success: oklch(0.68 0.14 145);
@@ -613,6 +646,8 @@
     --cngx-color-primary: oklch(0.66 0.19 50);
     --cngx-color-primary-strong: oklch(0.58 0.19 50);
     --cngx-color-primary-text: color-mix(in oklab, var(--cngx-color-primary) 70%, var(--cngx-color-text));
+    --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
+    --cngx-gradient-brand: linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent));
     --cngx-color-danger: oklch(0.6 0.18 25);
     --cngx-color-danger-text: color-mix(in oklab, var(--cngx-color-danger) 75%, var(--cngx-color-text));
     --cngx-color-success: oklch(0.6 0.15 145);

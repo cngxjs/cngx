@@ -36,6 +36,38 @@ Override tokens in the `cngx.theme` layer - never restyle component internals:
 
 `example-brand.css` shows the full token surface in use. Every component also documents its own `--cngx-*` properties on its Theming tab.
 
+### Brand accent and gradient
+
+Two system tokens derive from the primary colour, so they follow a brand override without further work:
+
+- `--cngx-color-accent` - the primary at the same lightness and chroma with the hue turned -70: `oklch(from var(--cngx-color-primary) l c calc(h - 70))`. Ember orange becomes pink. Override it in `cngx.theme` for a hand-picked second colour.
+- `--cngx-gradient-brand` - `linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent))`.
+
+No cngx component reads either token. The default theme stays browser-native; both exist for your own surfaces:
+
+```css
+.hero {
+  background: var(--cngx-gradient-brand);
+  color: oklch(1 0 0);
+}
+
+.headline {
+  background: var(--cngx-gradient-brand);
+  background-clip: text;
+  color: transparent;
+}
+```
+
+Both are recomputed in every colour-scheme block (light, OS dark, `data-color-scheme` / `.dark` / `.light` islands) and by the Material system bridge. A custom property resolves its `var()` where it is declared, so a subtree that sets its own `--cngx-color-primary` outside those blocks re-declares the two tokens next to it:
+
+```css
+.campaign {
+  --cngx-color-primary: oklch(0.6 0.2 260);
+  --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
+  --cngx-gradient-brand: linear-gradient(100deg, var(--cngx-color-primary), var(--cngx-color-accent));
+}
+```
+
 ## Material bridge
 
 If the app runs Angular Material, one include themes every cngx component from the Material theme:
