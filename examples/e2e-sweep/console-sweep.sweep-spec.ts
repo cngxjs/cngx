@@ -63,7 +63,10 @@ async function collectConsoleLines(page: Page, path: string): Promise<ConsoleLin
     .waitForLoadState('networkidle', { timeout: NETWORK_IDLE_CAP_MS })
     .catch(() => undefined);
   await page.waitForTimeout(SETTLE_MS);
-  expect(new URL(page.url()).hash, `${path} navigated away while settling`).toBe(`#/${path}`);
+  // Router-synced demos write query params or a fragment after the route path
+  // (`#/<route>?step=2`); only the path decides whether the route held.
+  const routePath = new URL(page.url()).hash.slice(1).split(/[?#]/, 1)[0];
+  expect(routePath, `${path} navigated away while settling`).toBe(`/${path}`);
   return lines;
 }
 
