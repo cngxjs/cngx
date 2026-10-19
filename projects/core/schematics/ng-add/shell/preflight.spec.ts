@@ -4,7 +4,7 @@ import { parseManifest } from '../../engine';
 import { createFacts } from '../../testing/onboarding';
 import { type ProjectFacts } from '../detect/detect';
 import { type GitState } from './git-state';
-import { angularReading, angularSupport, preflightItems, verifiedMajor } from './preflight';
+import { angularReading, angularSupport, preflightItems, rangeFloor, verifiedMajor } from './preflight';
 
 const PEER_RANGE = '^21.2.0';
 
@@ -73,6 +73,13 @@ describe('angularSupport', () => {
     expect(angularSupport(withAngular('^20.3.0'), union)).toMatchObject({ supported: false, aboveRange: false });
   });
 
+  it('reads the floor of a union whatever order it is written in', () => {
+    for (const union of ['^21.2.0 || ^22.0.0', '^22.0.0 || ^21.2.0']) {
+      expect(angularSupport(withAngular('^21.2.0'), union)).toMatchObject({ supported: true, floor: '21.2' });
+      expect(angularSupport(withAngular('^21.1.0'), union)).toMatchObject({ supported: false, floor: '21.2' });
+    }
+  });
+
   it('refuses an older minor and names what the app declares', () => {
     expect(angularSupport(withAngular('^21.1.0'), PEER_RANGE)).toEqual({
       supported: false,
@@ -139,8 +146,35 @@ describe('verifiedMajor', () => {
     expect(verifiedMajor(range)).toBe(major);
   });
 
+  it.each([
+    ['<22.0.0', 21],
+    ['<22', 21],
+    ['<22.1.0', 22],
+    ['<=22.0.0', 22],
+    ['>=21.2.0 <23.0.0', 22],
+  ])('reads the upper bound %s as verified up to Angular %i', (range, major) => {
+    expect(verifiedMajor(range)).toBe(major);
+  });
+
   it.each(['>=21.2.0', '^21.2.0 || >=22', '*', 'latest', ''])('names no ceiling for %j', (range) => {
     expect(verifiedMajor(range)).toBeUndefined();
+  });
+});
+
+describe('rangeFloor', () => {
+  it.each([
+    ['^21.2.0', 21, 2],
+    ['^21.2.0 || ^22.0.0', 21, 2],
+    ['^22.0.0 || ^21.2.0', 21, 2],
+    ['21.2.0 - 22.4.0', 21, 2],
+    ['>=21.3.0', 21, 3],
+    ['>=21.2.0 <23.0.0', 21, 2],
+    ['<23.0.0 >= 21.2.0', 21, 2],
+    ['<22.0.0', 0, 0],
+    ['*', 0, 0],
+    ['latest', 0, 0],
+  ])('reads the floor of %s as %i.%i', (range, major, minor) => {
+    expect(rangeFloor(range)).toEqual({ major, minor });
   });
 });
 
