@@ -18,7 +18,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxTreetable', 'CngxEmptyTpl', 'CngxErrorTpl'],
   viewProviders: [
-    "...provideTreetableAt(withTreetableLabels({ columnLabels: { name: 'Name', role: 'Role', location: 'Location' } }))",
+    "...provideTreetableAt(withTreetableLabels({ columnLabels: { name: 'Employee', role: 'Job title', location: 'Office' } }))",
   ],
   setup: `protected readonly loadState = createManualState<Node<Employee>[]>();
   protected readonly tree = computed(() => this.loadState.data() ?? []);

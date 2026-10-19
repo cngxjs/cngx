@@ -4,7 +4,9 @@ import { collectConsoleMessages, gotoDemo } from '../../_helpers';
 import { routesIn } from '../../_routes';
 
 // The story labels its three columns through withTreetableLabels; without them
-// the treetable warns CNGX4001 per column and shows the unlabeled-column text.
+// the treetable warns CNGX4001 per column. A dev build falls back to the
+// capitalised key ("Name"), so the labels differ from their keys to keep the
+// header assertion meaningful on its own.
 
 const ROUTE = 'data-display/treetable/async/async-state-lifecycle';
 
@@ -17,7 +19,7 @@ test.describe('data-display/treetable/async/async-state-lifecycle', () => {
 
     // The leading expander column has no visible text by design.
     const headers = page.getByRole('columnheader').filter({ hasText: /\S/ });
-    await expect(headers).toHaveText(['Name', 'Role', 'Location']);
+    await expect(headers).toHaveText(['Employee', 'Job title', 'Office']);
     expect(warnings).toEqual([]);
   });
 });
