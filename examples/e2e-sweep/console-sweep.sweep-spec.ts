@@ -15,7 +15,8 @@ import {
 
 const NETWORK_IDLE_CAP_MS = 5_000;
 // Measured probe: late effects (afterNextRender checks, deferred dev warnings)
-// land within this window after network idle.
+// land within this window after network idle. A demo timer that fires later
+// is out of reach, like an interaction.
 const SETTLE_MS = 1_500;
 
 const routes = allRoutes();
@@ -54,10 +55,15 @@ async function collectConsoleLines(page: Page, path: string): Promise<ConsoleLin
   });
 
   await gotoDemo(page, path);
+  // Every generated demo opens with this header and the home page has none, so
+  // it is both the ready signal and the proof the route did not fall through
+  // the `**` redirect to home.
+  await expect(page.locator('header.cngx-ex-intro'), `${path} did not render`).toBeVisible();
   await page
     .waitForLoadState('networkidle', { timeout: NETWORK_IDLE_CAP_MS })
     .catch(() => undefined);
   await page.waitForTimeout(SETTLE_MS);
+  expect(new URL(page.url()).hash, `${path} navigated away while settling`).toBe(`#/${path}`);
   return lines;
 }
 

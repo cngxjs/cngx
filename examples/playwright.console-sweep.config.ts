@@ -16,6 +16,8 @@ export default defineConfig({
   fullyParallel: true,
 
   forbidOnly: !!process.env['CI'],
+  // No retry: a line that fires on one run and not the next is an
+  // intermittent warning, and a retry would hide it.
   retries: 0,
   workers: 4,
 
