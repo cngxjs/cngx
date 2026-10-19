@@ -243,7 +243,7 @@ export class CngxPopoverSheet
   readonly titleRegistry = createSlotRegistry<CngxPopoverSheetTitleHandle>();
   /** @internal */
   readonly initialFocusRegistry = createKeyedRegistry<CngxPopoverSheetFocusHandle>({
-    name: 'CngxPopoverSheet initial focus',
+    name: 'CngxPopoverSheet',
   });
 
   protected readonly roleAttr = computed(() => (this.modal() ? 'dialog' : this.staticRole));
