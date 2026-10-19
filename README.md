@@ -1,4 +1,9 @@
-# CNGX
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/cngx-lockup-full-on-dark.svg">
+    <img src="brand/cngx-lockup-full-on-light.svg" alt="cngx, Composable Angular Experience" width="420">
+  </picture>
+</h1>
 
 [![Docs](https://img.shields.io/badge/docs-reference-blue)](https://cngxjs.github.io/cngx/)
 [![Examples](https://img.shields.io/badge/examples-iframe%20demos-orange)](https://cngxjs.github.io/cngx/examples/)

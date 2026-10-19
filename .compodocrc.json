@@ -3,6 +3,7 @@
     "tsconfig": "./tsconfig.doc.json",
     "output": "./docs",
     "theme": "./cngx-compodocx-theme.css",
+    "customFavicon": "./brand/favicon.svg",
     "shikiTheme": "github-light:github-dark",
     "multiVersion": false,
     "includes": "core-concepts",
