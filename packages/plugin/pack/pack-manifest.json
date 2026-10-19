@@ -194,7 +194,7 @@
     {
       "artifact": "pack/recipes/data-display-treetable-async.md",
       "source": "examples/stories/data-display/treetable/async/async-state-lifecycle.story.ts",
-      "contentHash": "sha256:bf19fa213bc47a76a898be889e4a8fc540d5c1a64b69f8843a754a893d203a53"
+      "contentHash": "sha256:a45e7f3454429fb25971cf268d4137f865bbad6cd0cb4ddb4a0fb2446ba2c449"
     },
     {
       "artifact": "pack/recipes/interop-query-from-query.md",
