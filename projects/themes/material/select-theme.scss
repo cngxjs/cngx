@@ -190,7 +190,10 @@
   //   - the per-variant triggers (cngx-select, cngx-multi-select, …) and
   //     every descendant via ` *`. The trigger surface and layout tokens
   //     inherit and fall back to the family tokens, which is why the color
-  //     and density blocks set only the family ones.
+  //     and density blocks set only the family ones. The broadcast puts the
+  //     family values on the trigger itself, so a consumer override of a
+  //     family token targets the select and its descendants, not only an
+  //     ancestor.
   @include bridge.on(
     '.cngx-select__panel',
     cngx-tree-select-panel,
