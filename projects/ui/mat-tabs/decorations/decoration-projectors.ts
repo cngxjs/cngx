@@ -11,6 +11,7 @@ import {
   untracked,
   type ViewContainerRef,
 } from '@angular/core';
+import { CNGX_TABS_GLYPHS } from '@cngx/common/tabs';
 import { cngxDevWarn } from '@cngx/utils';
 
 import { CNGX_DEFAULT_HALF_WIRED_SLOT_SINK } from './half-wired-slot-sink';
@@ -23,7 +24,8 @@ import { MaterialPrivateSurfaces } from '../material-bridge/private-surfaces';
  *
  * - {@link createMatTabRejectionDecoration} - mirrors
  *   `presenter.lastFailedIndex` onto the matching `.mat-mdc-tab` as a
- *   class flag plus a hidden `cngx-sr-only` descriptor span linked via
+ *   class flag, a `data-reason` attribute, an `aria-hidden` glyph span
+ *   and a hidden `cngx-sr-only` descriptor span linked via
  *   `aria-describedby`. `aria-invalid` is intentionally absent: ARIA
  *   1.2 scopes it to form-field vocabulary, not `role="tab"`.
  * - {@link createMatTabAggregatorDecoration} - projects each handle's
@@ -108,6 +110,8 @@ export interface CngxMatTabRejectionDecorationOptions {
   readonly className?: string;
   /** Default: `cngx-sr-only`. */
   readonly srOnlyClassName?: string;
+  /** Default: `cngx-mat-tab__rejection-icon`. */
+  readonly glyphClassName?: string;
   /**
    * Suffix appended to `failedHandleId` for the descriptor span's
    * DOM id. Default `'rejected'` - distinct from the aggregator
@@ -144,6 +148,16 @@ export interface CngxMatTabRejectionDecorationOptions {
    * value is always read at fire time.
    */
   readonly originLabel?: Signal<string | undefined>;
+  /**
+   * Reactive outcome kind feeding the slot context's `reason`. Read at
+   * fire time like {@link originLabel}; a kind change also changes
+   * `descriptorText`, so the view remounts with the new value. Also
+   * drives `data-reason` on the decorated tab and its glyph span, and
+   * the glyph itself (`refusedIcon` or `rejectionIcon`), updated in place
+   * when the kind changes on the same tab. Omitted, every consumer reads
+   * `'failed'`.
+   */
+  readonly reason?: Signal<'refused' | 'failed' | undefined>;
 }
 
 /**
@@ -174,6 +188,7 @@ export function createMatTabRejectionDecoration(
     opts.buttonSelector ?? MaterialPrivateSurfaces.MAT_MDC_TAB_SELECTOR;
   const className = opts.className ?? 'cngx-mat-tab--error';
   const srOnlyClassName = opts.srOnlyClassName ?? 'cngx-sr-only';
+  const glyphClassName = opts.glyphClassName ?? 'cngx-mat-tab__rejection-icon';
   const descriptorIdSuffix = opts.descriptorIdSuffix ?? 'rejected';
   const maxRetryAttempts = opts.maxRetryAttempts ?? 5;
   let pendingRetry = false;
@@ -186,6 +201,9 @@ export function createMatTabRejectionDecoration(
   // Cached across the projector's lifetime - reusing the same node
   // keeps AT-reader / observer references live across A→B→A flips.
   let cachedSpan: HTMLElement | null = null;
+  // The visible glyph rides its own `aria-hidden` span: `::before` is
+  // Material's focus indicator, `::after` the has-errors badge.
+  let cachedGlyph: HTMLElement | null = null;
   let priorAriaDescribedby: string | null = null;
   // Pillar 1 - short-circuits structurally-identical re-emissions of
   // `failedHandleId` so a `tabs()` re-eval doesn't clobber the AT
@@ -222,6 +240,7 @@ export function createMatTabRejectionDecoration(
         failedHandleId: handleId,
         originLabel: opts.originLabel?.(),
         fallbackText: text,
+        reason: opts.reason?.() ?? 'failed',
       };
       const view = vcr.createEmbeddedView(tpl, context, {
         injector: opts.injector,
@@ -242,6 +261,19 @@ export function createMatTabRejectionDecoration(
     opts.renderer.setProperty(span, 'textContent', text);
   };
 
+  const currentReason = (): 'refused' | 'failed' => opts.reason?.() ?? 'failed';
+
+  const writeReason = (target: HTMLElement, glyph: HTMLElement): void => {
+    const reason = currentReason();
+    opts.renderer.setAttribute(target, 'data-reason', reason);
+    opts.renderer.setAttribute(glyph, 'data-reason', reason);
+    opts.renderer.setProperty(
+      glyph,
+      'textContent',
+      reason === 'refused' ? CNGX_TABS_GLYPHS.refusedIcon : CNGX_TABS_GLYPHS.rejectionIcon,
+    );
+  };
+
   const clearDecoration = (): void => {
     if (!decoratedEl || !cachedSpan) {
       return;
@@ -249,6 +281,10 @@ export function createMatTabRejectionDecoration(
     const ownTokenId = cachedSpan.id;
     destroyEmbeddedView();
     opts.renderer.removeClass(decoratedEl, className);
+    opts.renderer.removeAttribute(decoratedEl, 'data-reason');
+    if (cachedGlyph?.parentNode) {
+      opts.renderer.removeChild(cachedGlyph.parentNode, cachedGlyph);
+    }
     opts.renderer.removeChild(decoratedEl, cachedSpan);
     // `cachedSpan` deliberately retained - reused on the next apply.
     restoreAriaDescribedbyExceptToken(
@@ -269,6 +305,18 @@ export function createMatTabRejectionDecoration(
       return false;
     }
     opts.renderer.addClass(targetEl, className);
+
+    let glyph = cachedGlyph;
+    if (!glyph) {
+      glyph = opts.renderer.createElement('span') as HTMLElement;
+      opts.renderer.addClass(glyph, glyphClassName);
+      opts.renderer.setAttribute(glyph, 'aria-hidden', 'true');
+      cachedGlyph = glyph;
+    }
+    writeReason(targetEl, glyph);
+    // On the tab itself: the disc is absolutely positioned at the tab's
+    // corner, and `.mdc-tab__content` is a positioning context of its own.
+    opts.renderer.appendChild(targetEl, glyph);
 
     const spanId = `${handleId}-${descriptorIdSuffix}`;
     let span = cachedSpan;
@@ -355,6 +403,19 @@ export function createMatTabRejectionDecoration(
           return;
         }
         applyOrScheduleRetry(id);
+      });
+    });
+
+    // Reason effect - a refusal and a failure can follow each other on
+    // the same tab (same handle id, so the mount effect short-circuits);
+    // the attribute and the glyph follow the kind in place.
+    effect(() => {
+      currentReason();
+      untracked(() => {
+        if (decoratedEl === null || cachedGlyph === null) {
+          return;
+        }
+        writeReason(decoratedEl, cachedGlyph);
       });
     });
 

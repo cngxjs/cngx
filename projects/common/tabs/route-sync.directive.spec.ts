@@ -336,6 +336,10 @@ describe('CngxTabsRouteSync', () => {
 
     expect(presenter.activeIndex()).toBe(0);
     expect(presenter.lastFailedIndex()).toBe(1);
+    // A cancelled navigation is a refusal, not a failure.
+    expect(presenter.lastOutcome()?.kind).toBe('refused');
+    expect(presenter.commitState.status()).toBe('idle');
+    expect(presenter.commitState.error()).toBeUndefined();
   });
 
   it('advances the active tab when the routed switch resolves', async () => {

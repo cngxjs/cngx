@@ -115,6 +115,7 @@ export {
   type CngxTabsCommitHandler,
   type CngxTabsCommitHandlerFactory,
   type CngxTabsCommitHandlerOptions,
+  type CngxTabsCommitResolution,
 } from './commit-handler';
 export {
   CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,

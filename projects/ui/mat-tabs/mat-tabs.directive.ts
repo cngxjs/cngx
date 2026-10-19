@@ -239,6 +239,7 @@ export class CngxMatTabs {
       contentTemplate: this.rejectionContentTemplate,
       viewContainerRef: this.viewContainerRef,
       originLabel: this.rejectionState.originLabel,
+      reason: this.rejectionState.reason,
     });
 
     createMatTabAggregatorDecoration({
@@ -311,14 +312,21 @@ export class CngxMatTabs {
 
     // Routed (pessimistic) gate: a rejected switch holds `activeIndex` at
     // origin, so the presenter to Material mirror never fires and Material
-    // stays eager-advanced on the refused tab. Snap it back when the
-    // commit settles into an error. `status()` always transitions through
-    // `pending` first, so the `error` edge is observed even when the
-    // router cancels a microtask after `navigate()`.
+    // stays eager-advanced on the rejected tab. Snap it back when the
+    // commit settles as refused or failed. Keyed on the outcome sequence,
+    // not the status: a refusal settles to 'idle' and never reaches
+    // 'error', while every failure through `select()` records a failed
+    // outcome with a fresh sequence in the same flush as the 'error'
+    // status, so the sequence edge covers both. One reconcile per settle:
+    // a second write of the same index leaves a self-echo that Material
+    // never emits and that would swallow the user's next pick of that
+    // tab. A number compares with `Object.is`, so the close shift (index
+    // moved, sequence copied) never re-runs it; `undefined` is ignored.
+    const outcomeSequence = computed(() => this.presenter.lastOutcome()?.sequence);
     effect(() => {
-      const status = this.presenter.commitState.status();
+      const sequence = outcomeSequence();
       untracked(() => {
-        if (status === 'error') {
+        if (sequence !== undefined) {
           sync.reconcile();
         }
       });

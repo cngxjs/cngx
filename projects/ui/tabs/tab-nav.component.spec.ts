@@ -1,6 +1,7 @@
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxTabLink, type CngxTabsSkin } from '@cngx/common/tabs';
@@ -170,6 +171,17 @@ describe('CngxTabNav', () => {
     fixture.detectChanges();
     expect(anchor(1).getAttribute('aria-invalid')).toBe('true');
     expect(anchor(1).classList.contains('cngx-tab-nav__link--error')).toBe(true);
+    // A validation error is no commit rejection: no refusal hook on the link.
+    expect(anchor(1).getAttribute('data-reason')).toBeNull();
+  });
+
+  it('keeps the validation-error link in the error red, never the refused amber', () => {
+    // happy-dom cannot compute the external CSS; assert the rule in source.
+    const css = readFileSync(`${process.cwd()}/projects/ui/tabs/tab-nav.component.css`, 'utf8');
+    expect(css).toMatch(
+      /\.cngx-tab-nav__link--error\s*\{\s*color: var\(--cngx-tab-error-badge-color\);/,
+    );
+    expect(css).not.toContain('--cngx-tab-refused-color');
   });
 });
 

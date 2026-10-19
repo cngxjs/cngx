@@ -493,15 +493,17 @@ export class CngxTabGroup implements CngxTabPanelHost {
 
   /**
    * Context for `*cngxTabRejectionIcon`. `originLabel` matches the
-   * `liveAnnouncement` priority chain so visual + SR phrasing align.
-   * Allocates fresh per CD for the same reason as
+   * `liveAnnouncement` priority chain so visual + SR phrasing align;
+   * `reason` is the kind of the outcome that set the marker (a refusal
+   * or a failure). Allocates fresh per CD for the same reason as
    * {@link busySpinnerContextFor}.
    */
   protected rejectionIconContextFor(failedIndex: number): CngxTabRejectionIconContext {
     const originIdx = this.presenter.originIndexDuringCommit();
     const originLabel =
       originIdx !== undefined ? this.presenter.tabs()[originIdx]?.label() : undefined;
-    return { failedIndex, originLabel };
+    const reason = this.presenter.lastOutcome()?.kind === 'refused' ? 'refused' : 'failed';
+    return { failedIndex, originLabel, reason };
   }
 
   protected handleHeaderClick(tab: CngxTabHandle): void {

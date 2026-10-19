@@ -13,8 +13,14 @@
 export const CNGX_TABS_GLYPHS = {
   /** Default visual for `*cngxTabErrorBadge` when no override is bound. */
   errorBadge: '!',
-  /** Default visual for `*cngxTabRejectionIcon` when no override is bound. */
+  /** Default visual for `*cngxTabRejectionIcon` on a failed commit when no override is bound. */
   rejectionIcon: '!',
+  /**
+   * Default visual for `*cngxTabRejectionIcon` on a refused commit (the
+   * action answered `false`). A distinct glyph, so a refusal never differs
+   * from a failure by colour alone (WCAG 1.4.1).
+   */
+  refusedIcon: '\u2298',
   /** Default visual for a tab's close button when no override is bound. */
   closeIcon: '×',
   /** Default visual for the add-tab button when no override is bound. */

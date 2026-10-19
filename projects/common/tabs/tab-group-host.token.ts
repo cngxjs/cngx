@@ -1,5 +1,6 @@
 import { inject, InjectionToken, type ModelSignal, type Signal } from '@angular/core';
 
+import type { CngxTransitionOutcome } from '@cngx/common/data';
 import type { CngxAsyncState, StatusTransition } from '@cngx/core/utils';
 import { CngxRuntimeError } from '@cngx/utils';
 
@@ -89,10 +90,26 @@ export interface CngxTabGroupHost {
   readonly commitTransition: StatusTransition;
 
   /**
-   * Tab index of the last refused commit (both optimistic and
-   * pessimistic modes). Cleared on next successful re-pick of the
-   * same index or via {@link clearLastFailed}. Drives the persistent
-   * rejection-icon decoration.
+   * Settle record of the most recent commit that did not land:
+   * `kind: 'refused'` when `commitAction` answered `false`, `'failed'`
+   * when it threw, rejected or errored; `index` is the rejected target,
+   * `sequence` is bumped once per settled refusal or failure. Kept
+   * through {@link clearLastFailed} (which only hides the marker), so the
+   * announcement record survives a cleared decoration. Closing a tab
+   * before the target shifts `index` and keeps `sequence`; closing the
+   * target itself drops the record. A refusal leaves `commitState` at
+   * `'idle'` with its data intact, so this is the only place a refusal
+   * is visible as such.
+   */
+  readonly lastOutcome: Signal<CngxTransitionOutcome | undefined>;
+
+  /**
+   * Tab index of the most recently rejected (refused or failed) commit
+   * target, both optimistic and pessimistic modes, or `undefined` when no
+   * rejection marker is shown. Derived from {@link lastOutcome}; cleared
+   * on the next successful re-pick of the same index or via
+   * {@link clearLastFailed}. Drives the persistent rejection-icon
+   * decoration.
    *
    * @remarks
    * The `pending → error` pulse keyframe (`cngx-tab-pulse-error`)
@@ -106,7 +123,7 @@ export interface CngxTabGroupHost {
   /**
    * Safe-harbour origin index captured at the start of an active
    * commit window. Written when `select()` opens a transition under
-   * `commitAction`; retained on `error` so the live-region phrase
+   * `commitAction`; retained on a refusal or failure so the live-region phrase
    * can resolve the origin label; cleared on `success`. Outside the
    * commit window the slot may carry a stale value - consumers must
    * gate reads by joining with `lastFailedIndex`. The origin is
@@ -145,10 +162,11 @@ export interface CngxTabGroupHost {
   requestAdd(): void;
 
   /**
-   * Clear {@link lastFailedIndex} without unwinding
+   * Clear the {@link lastFailedIndex} marker without unwinding
    * {@link originIndexDuringCommit} (consumers gate reads on
-   * `lastFailedIndex` anyway). Call when the bound data source
-   * changes and the rollback marker is no longer meaningful.
+   * `lastFailedIndex` anyway) and without touching {@link lastOutcome}.
+   * Call when the bound data source changes and the rollback marker is
+   * no longer meaningful.
    */
   clearLastFailed(): void;
 }

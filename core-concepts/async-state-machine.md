@@ -326,6 +326,22 @@ The select family (all seven controls + the shared `select-shell`), the tabs pre
 
 Resolution order: state input -> `CNGX_STATEFUL` from DI -> `afterNextRender` dev-mode error if neither resolves.
 
+### A refused commit is not a status
+
+The stepper and the tab group gate a step or tab change through `[commitAction]`, and an action can end in three ways. `true` lands the change (`success`). A throw, a rejected `Promise` or an erroring Observable is a failure (`error`, with the error stored). Answering `false` is a refusal: the action declined on purpose and nothing failed, so the commit state goes back to `idle`, clears any stale error and keeps its data, `lastUpdated` and `isFirstLoad()`. There is no `refused` value in `AsyncStatus`; the refusal is visible only where it arises, on the presenter's `lastOutcome()` (`kind: 'refused' | 'failed'`), its announcement and its rejection marker. It is the router's model: a guard answering `false` cancels a navigation, only a throw is a `NavigationError`.
+
+So the bridges stay silent on a refusal: a `pending -> idle` edge raises no toast and no alert, and `[cngxBannerOn]` dismisses a stale error banner. An app that wants a toast for a refusal shows it from its own action before it answers `false`, with the warning severity:
+
+```typescript
+protected readonly commitAction: CngxTabsCommitAction = () => {
+  if (this.form.dirty()) {
+    this.toaster.show({ message: 'Save the profile first.', severity: 'warning' });
+    return false;
+  }
+  return true;
+};
+```
+
 <aside class="cc-note">
 
 **Note.** `CngxActionButton` and `dialog[cngxDialog]` expose a public `state` property and accept `[state]` as input but do **not** provide `CNGX_STATEFUL` via DI. Bind explicitly: `[cngxToastOn]="btn.state"`.

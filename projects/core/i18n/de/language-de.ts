@@ -494,6 +494,8 @@ export const CNGX_LANGUAGE_DE = {
     commitFailedRetry: 'Tabwechsel abgelehnt - erneut versuchen?',
     commitInFlight: 'Tab wird gewechselt…',
     commitRolledBackTo: 'Änderungen nicht gespeichert - zurück zu „{origin}“.',
+    commitRefused: 'Tabwechsel nicht erlaubt - bleibt bei „{origin}“.',
+    commitRefusedGeneric: 'Tabwechsel nicht erlaubt.',
   },
   timeline: {
     timelineRegion: 'Zeitleiste',

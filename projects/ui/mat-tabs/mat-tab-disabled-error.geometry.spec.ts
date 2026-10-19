@@ -88,7 +88,7 @@ describe.each(SCHEMES)('disabled rejected mat tab, %s', (scheme) => {
     const root = mount();
     const tab = at(root, '.tab-error-off');
     expect(effectiveOpacity(tab)).toBe(1);
-    expect(outline(tab)).toBe('solid 2px 1px');
+    expect(outline(tab)).toBe('solid 2px -2px');
     expect(outline(tab)).toBe(outline(at(root, '.tab-error')));
   });
 
@@ -107,6 +107,6 @@ describe.each(SCHEMES)('disabled rejected mat tab, %s', (scheme) => {
     );
     const tab = at(root, '.tab-error-off');
     expect(effectiveOpacity(tab)).toBe(1);
-    expect(outline(tab)).toBe('solid 2px 1px');
+    expect(outline(tab)).toBe('solid 2px -2px');
   });
 });

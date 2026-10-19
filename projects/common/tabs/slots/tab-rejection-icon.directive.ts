@@ -8,6 +8,10 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * for the synchronous-rejection edge case. Sibling shape to
  * `CngxStepRejectionContext`.
  *
+ * `reason` tells the two commit outcomes apart: `'refused'` when the
+ * commit action answered `false`, `'failed'` when it threw, rejected or
+ * errored. Both render the slot; pick a glyph or copy per reason.
+ *
  * @category common/tabs/slots
  */
 export interface CngxTabRejectionIconContext {
@@ -15,13 +19,16 @@ export interface CngxTabRejectionIconContext {
   readonly failedIndex: number;
   /** Resolved label of the safe-harbour tab, when derivable. */
   readonly originLabel: string | undefined;
+  /** Why the commit did not land (`presenter.lastOutcome().kind`). */
+  readonly reason: 'refused' | 'failed';
 }
 
 /**
  * Structural slot for the rejection-decoration template. 3-stage
  * cascade: per-instance directive >
  * `CNGX_TABS_CONFIG.templates.rejectionIcon` >
- * `CNGX_TABS_GLYPHS.rejectionIcon`.
+ * `CNGX_TABS_GLYPHS.rejectionIcon` (a failed commit) or
+ * `CNGX_TABS_GLYPHS.refusedIcon` (a refused one).
  *
  * ```html
  * <cngx-tab-group>

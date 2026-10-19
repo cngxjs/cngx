@@ -149,7 +149,7 @@
     {
       "artifact": "pack/recipes/ui-mat-tabs-instrumentation.md",
       "source": "examples/stories/ui/mat-tabs/instrumentation/sticky-error-commit-action-with-bridges.story.ts",
-      "contentHash": "sha256:6c5f0d696f9302f58f8472750d3439df0305dab90057dc4acc71ba2aa75b7877"
+      "contentHash": "sha256:b3befe0e03ab3ad9e630588336b8c89f5d72cd26f7163e6719d48664b00dfce7"
     },
     {
       "artifact": "pack/recipes/ui-paginator-paginator-modes.md",
@@ -179,7 +179,7 @@
     {
       "artifact": "pack/recipes/ui-tabs-tab-commit-action.md",
       "source": "examples/stories/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives.story.ts",
-      "contentHash": "sha256:87530ae635942b776fec494a91814d8535791bab011ab85eba23c2312b259ae4"
+      "contentHash": "sha256:33b68ba68eaf119b52da907708878542d3bfe6a0d15b96b27b18637e9cda1821"
     },
     {
       "artifact": "pack/recipes/ui-timeline-async.md",

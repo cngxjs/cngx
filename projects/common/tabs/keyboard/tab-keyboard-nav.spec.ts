@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
-import { signal } from '@angular/core';
+import { Injector, provideZonelessChangeDetection, signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
+
+import type { CngxTransitionOutcome } from '@cngx/common/data';
 
 import { createTabKeyboardNav } from './tab-keyboard-nav';
 import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
@@ -209,5 +212,61 @@ describe('createTabKeyboardNav under dir=rtl', () => {
     });
     nav.handleKeydown(press('ArrowDown'));
     expect(select).toHaveBeenCalledWith(1);
+  });
+});
+
+describe('createTabKeyboardNav focus release after a rejected commit', () => {
+  function releaseSetup() {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const handles = [handle('a'), handle('b'), handle('c')];
+    const { host } = makeHost(handles);
+    const lastOutcome = signal<CngxTransitionOutcome | undefined>(undefined);
+    (host as unknown as { lastOutcome: typeof lastOutcome }).lastOutcome = lastOutcome;
+    const { el, buttons } = makeDom(3);
+    createTabKeyboardNav({
+      host,
+      hostElement: el,
+      direction: signal<'ltr' | 'rtl'>('ltr'),
+      injector: TestBed.inject(Injector),
+    });
+    TestBed.tick();
+    return { lastOutcome, buttons };
+  }
+
+  it('returns focus to the active tab after a refusal (status stays idle)', () => {
+    const { lastOutcome, buttons } = releaseSetup();
+    buttons[2].focus();
+    lastOutcome.set({ kind: 'refused', index: 2, sequence: 1 });
+    TestBed.tick();
+    expect(document.activeElement).toBe(buttons[0]);
+  });
+
+  it('returns focus to the active tab after a failure', () => {
+    const { lastOutcome, buttons } = releaseSetup();
+    buttons[1].focus();
+    lastOutcome.set({ kind: 'failed', index: 1, sequence: 1 });
+    TestBed.tick();
+    expect(document.activeElement).toBe(buttons[0]);
+  });
+
+  it('does not re-focus on the close shift (index moved, sequence copied)', () => {
+    const { lastOutcome, buttons } = releaseSetup();
+    lastOutcome.set({ kind: 'refused', index: 2, sequence: 1 });
+    TestBed.tick();
+    buttons[2].focus();
+    lastOutcome.set({ kind: 'refused', index: 1, sequence: 1 });
+    TestBed.tick();
+    expect(document.activeElement).toBe(buttons[2]);
+  });
+
+  it('ignores a cleared outcome', () => {
+    const { lastOutcome, buttons } = releaseSetup();
+    lastOutcome.set({ kind: 'refused', index: 2, sequence: 1 });
+    TestBed.tick();
+    buttons[1].focus();
+    lastOutcome.set(undefined);
+    TestBed.tick();
+    expect(document.activeElement).toBe(buttons[1]);
   });
 });

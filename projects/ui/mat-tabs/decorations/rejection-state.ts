@@ -1,5 +1,6 @@
 import { computed, untracked, type Signal } from '@angular/core';
 
+import { createRefusedPhrase } from '@cngx/common/data';
 import type { CngxTabGroupHost, injectTabsI18n } from '@cngx/common/tabs';
 
 /**
@@ -29,9 +30,18 @@ export interface CngxMatTabRejectionState {
    */
   readonly originLabel: Signal<string | undefined>;
   /**
-   * Reactive descriptor phrase - the `commitRolledBackTo(originLabel)`
-   * variant when an origin label resolves, falling back to
-   * `commitFailedRetry` otherwise. Empty string between rejections
+   * Kind of the outcome behind the pinned marker - `'refused'` when the
+   * commit action answered `false`, `'failed'` when it threw, rejected or
+   * errored; `undefined` when no rejection is pinned. Feeds the
+   * `*cngxMatTabRejectionContent` slot context.
+   */
+  readonly reason: Signal<'refused' | 'failed' | undefined>;
+  /**
+   * Reactive descriptor phrase. A failed tab reads
+   * `commitRolledBackTo(originLabel)` when an origin label resolves,
+   * `commitFailedRetry` otherwise; a refused tab reads
+   * `commitRefused(originLabel)` or `commitRefusedGeneric`, never the
+   * failure copy. Empty string between rejections
    * (the projector clears the decoration entirely on
    * `failedHandleId === null`, so consumers only consult this while
    * a rejection is pinned).
@@ -43,6 +53,9 @@ export interface CngxMatTabRejectionState {
    * arm so AT users on Material `<mat-tab-group>` get the same
    * commit-transition narrative as cngx-native:
    *
+   *   0. a new refusal → `commitRefused(originLabel)` (or
+   *      `commitRefusedGeneric`) once, until the next commit, an
+   *      active-index move or a cleared outcome
    *   1. `'pending'` → `i18n.commitInFlight`
    *   2. `'error'` → `commitRolledBackTo(originLabel)` when an
    *      origin label resolves, `commitFailedRetry` otherwise
@@ -89,19 +102,56 @@ export function createRejectionState(
     return presenter.tabs()[originIdx]?.label() ?? undefined;
   });
 
-  const descriptorText: Signal<string> = computed(() => {
+  const reason: Signal<'refused' | 'failed' | undefined> = computed(() => {
     if (presenter.lastFailedIndex() === undefined) {
+      return undefined;
+    }
+    return presenter.lastOutcome()?.kind === 'refused' ? 'refused' : 'failed';
+  });
+
+  const descriptorText: Signal<string> = computed(() => {
+    const kind = reason();
+    if (kind === undefined) {
       return '';
     }
     const label = originLabel();
     const copy = i18n();
+    if (kind === 'refused') {
+      return label ? copy.commitRefused(label) : copy.commitRefusedGeneric;
+    }
     return label ? copy.commitRolledBackTo(label) : copy.commitFailedRetry;
   });
+
+  // A refusal leaves the commit status at 'idle', so no status edge can
+  // voice it. Same lifecycle as the `<cngx-tab-group>` phrase: armed by a
+  // new refused sequence, spent by the next commit activity, an
+  // active-index move or a cleared outcome.
+  const refusedPhrase = createRefusedPhrase({
+    outcome: () => presenter.lastOutcome(),
+    status: () => presenter.commitTransition.current(),
+    activeIndex: () => presenter.activeIndex(),
+    copy: refusedCopy,
+  });
+
+  function refusedCopy(): string {
+    const originIdx = presenter.originIndexDuringCommit();
+    const origin = originIdx !== undefined ? presenter.tabs()[originIdx] : undefined;
+    const label = origin?.label();
+    const copy = i18n();
+    return label ? copy.commitRefused(label) : copy.commitRefusedGeneric;
+  }
 
   // Feeds the live announcer: copy and the origin tab label (which a
   // consumer may translate) are read untracked so a language switch does
   // not re-announce; the next transition speaks the new language.
   const liveAnnouncement: Signal<string> = computed(() => {
+    // Read the refused phrase EAGERLY: linkedSignal only observes the
+    // snapshots it is read under, so a read behind the pending arm would
+    // miss the status change that spends it.
+    const refused = refusedPhrase();
+    if (refused) {
+      return refused;
+    }
     const current = presenter.commitTransition.current();
     if (current === 'pending') {
       return untracked(() => i18n().commitInFlight);
@@ -119,5 +169,5 @@ export function createRejectionState(
     return '';
   });
 
-  return { failedHandleId, originLabel, descriptorText, liveAnnouncement };
+  return { failedHandleId, originLabel, reason, descriptorText, liveAnnouncement };
 }

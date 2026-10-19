@@ -590,6 +590,78 @@ export function localNgDevModeLines(sf) {
   return lines;
 }
 
+/** The built-in error classes whose construction counts as a raw error. */
+export const ERROR_CLASSES = new Set([
+  'Error',
+  'TypeError',
+  'RangeError',
+  'SyntaxError',
+  'ReferenceError',
+  'EvalError',
+  'URIError',
+  'AggregateError',
+  'DOMException',
+]);
+
+/** The file that declares `CngxRuntimeError`; its `extends Error` is the one allowed subclass. */
+const RUNTIME_ERROR_DECLARATION = 'projects/utils/runtime-error.ts';
+
+const ERROR_CLASS_HINT = new RegExp(`\\b(?:${[...ERROR_CLASSES].join('|')})\\b`);
+
+/**
+ * Every raw error construction in `files` ([{ path, text }]), whatever
+ * channel it leaves through: `new X(...)` and `X(...)` for a built-in error
+ * class of {@link ERROR_CLASSES}, and `class ... extends X`. A name that
+ * resolves to a local binding (a parameter, an import, a local class) shadows
+ * the global and is skipped, as is `projects/utils/runtime-error.ts`, which
+ * declares `CngxRuntimeError`. Syntactic: an alias (`const E = Error`), a
+ * global host (`globalThis.Error`), `Reflect.construct(Error, ...)` and
+ * `Object.create(Error.prototype)` are not seen.
+ *
+ * @returns {{ file: string; line: number; name: string; kind: 'new' | 'call' | 'extends' }[]}
+ */
+export function collectErrorConstructions(files) {
+  const out = [];
+  for (const { path, text } of files) {
+    if (path === RUNTIME_ERROR_DECLARATION || !ERROR_CLASS_HINT.test(text)) {
+      continue;
+    }
+    const sf = parse(path, text);
+    let checker;
+    const isGlobal = (id) =>
+      !(checker ??= singleFileChecker(sf)).getSymbolAtLocation(id)?.declarations?.length;
+    const isErrorClass = (expr) => {
+      const inner = expr && unwrap(expr);
+      return Boolean(
+        inner && ts.isIdentifier(inner) && ERROR_CLASSES.has(inner.text) && isGlobal(inner),
+      );
+    };
+    const visit = (node) => {
+      let kind = null;
+      let name = null;
+      if (ts.isNewExpression(node) && isErrorClass(node.expression)) {
+        kind = 'new';
+        name = unwrap(node.expression).text;
+      } else if (ts.isCallExpression(node) && isErrorClass(node.expression)) {
+        kind = 'call';
+        name = unwrap(node.expression).text;
+      } else if (ts.isHeritageClause(node) && node.token === ts.SyntaxKind.ExtendsKeyword) {
+        const base = node.types[0]?.expression;
+        if (ts.isClassLike(node.parent) && isErrorClass(base)) {
+          kind = 'extends';
+          name = unwrap(base).text;
+        }
+      }
+      if (kind) {
+        out.push({ file: path, line: lineOf(sf, node), name, kind });
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(sf);
+  }
+  return out;
+}
+
 /**
  * The string value of every `const CNGX_ERROR_DOCS_URL = '...'` declaration
  * in `files`. Read from the AST, so a commented-out declaration never counts.

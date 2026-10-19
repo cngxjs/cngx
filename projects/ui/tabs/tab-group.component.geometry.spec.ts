@@ -87,6 +87,30 @@ class TabBadgeHost {
   agg = stubAggregator();
 }
 
+// A refused switch (the commit action answered `false`) and a failed one,
+// side by side, in the shape the organism renders them.
+@Component({
+  selector: 'cngx-tab-rejection-geometry-host',
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group aria-label="Settings" [commitAction]="action" commitMode="optimistic">
+      <div cngxTab [label]="'A'"></div>
+      <div cngxTab [label]="'B'"></div>
+      <div cngxTab [label]="'C'"></div>
+    </cngx-tab-group>
+  `,
+})
+class TabRejectionHost {
+  fail = false;
+  action = (): boolean => {
+    if (this.fail) {
+      throw new Error('boom');
+    }
+    return false;
+  };
+}
+
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
@@ -125,5 +149,28 @@ describe('CngxTabGroup geometry', () => {
     // Single self-contained error count; isolate fences the bidi boundary
     // without forcing a direction (metric bucket-A).
     expect(computedValue(badge, 'unicode-bidi')).toBe('isolate');
+  });
+
+  it('paints a refused tab amber at its resting label colour and a failed tab red', () => {
+    const fixture = TestBed.createComponent(TabRejectionHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const tabs = Array.from(mountedRoot.querySelectorAll<HTMLElement>('.cngx-tabs__tab'));
+
+    tabs[1].click();
+    fixture.detectChanges();
+    const refusedIcon = query(tabs[1], '.cngx-tabs__rejection-icon');
+    // oklch(0.62 0.15 60) as Chromium serialises it.
+    expect(computedValue(refusedIcon, 'background-color')).toBe('oklch(0.62 0.15 60)');
+    expect(computedValue(query(tabs[1], '.cngx-tabs__label'), 'color')).toBe(
+      computedValue(query(tabs[2], '.cngx-tabs__label'), 'color'),
+    );
+
+    fixture.componentInstance.fail = true;
+    tabs[2].click();
+    fixture.detectChanges();
+    const failedIcon = query(tabs[2], '.cngx-tabs__rejection-icon');
+    expect(computedValue(failedIcon, 'background-color')).toBe('oklch(0.45 0.15 25)');
   });
 });

@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatTab, MatTabsModule, MatTabGroup } from '@angular/material/tabs';
+import { readFileSync } from 'node:fs';
 import { describe, expect, test, vi } from 'vitest';
 
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
@@ -584,6 +585,64 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(matTabEls[0].getAttribute('aria-invalid')).toBeNull();
     expect(matTabEls[0].querySelector('span.cngx-sr-only')).toBeNull();
     expect(matTabEls[1].classList.contains('cngx-mat-tab--error')).toBe(false);
+    // A refusal: the hook and the aria-hidden refused glyph ride the tab.
+    expect(matTabEls[2].getAttribute('data-reason')).toBe('refused');
+    const glyph = matTabEls[2].querySelector<HTMLElement>('.cngx-mat-tab__rejection-icon');
+    expect(glyph?.getAttribute('aria-hidden')).toBe('true');
+    expect(glyph?.getAttribute('data-reason')).toBe('refused');
+    expect(glyph?.textContent).toBe('\u2298');
+    expect(matTabEls[0].querySelector('.cngx-mat-tab__rejection-icon')).toBeNull();
+    expect(matTabEls[0].getAttribute('data-reason')).toBeNull();
+  });
+
+  test('axis 11b: a failed switch keeps cngx-mat-tab--error and carries data-reason="failed" with the `!` glyph', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    fixture.componentInstance['mode'] = 'optimistic';
+    fixture.componentInstance['commit'] = (() => {
+      throw new Error('boom');
+    }) as CngxTabsCommitAction;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    presenter.select(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matTabEls = fixture.nativeElement.querySelectorAll(
+      '.mat-mdc-tab',
+    ) as NodeListOf<HTMLElement>;
+    expect(presenter.lastOutcome()?.kind).toBe('failed');
+    expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(true);
+    expect(matTabEls[2].getAttribute('data-reason')).toBe('failed');
+    const glyph = matTabEls[2].querySelector<HTMLElement>('.cngx-mat-tab__rejection-icon');
+    expect(glyph?.getAttribute('aria-hidden')).toBe('true');
+    expect(glyph?.getAttribute('data-reason')).toBe('failed');
+    expect(glyph?.textContent).toBe('!');
+  });
+
+  test('axis 11c: the skin paints a failed tab and a validation flag red and a refused tab amber', () => {
+    // happy-dom cannot compute the external CSS; assert the rules in source.
+    const css = readFileSync(`${process.cwd()}/projects/ui/mat-tabs/styles/mat-tabs.css`, 'utf8');
+    expect(css).toContain('color: var(--cngx-mat-tab-error-color, oklch(0.45 0.15 25));');
+    expect(css).toContain(
+      'background: var(--cngx-mat-tab-has-errors-color, oklch(0.45 0.15 25));',
+    );
+    expect(css).toMatch(
+      /\.cngx-mat-tab--error\[data-reason='refused'\]\s*\{\s*color: var\(--cngx-mat-tab-refused-text-color, currentColor\);\s*outline-color: var\(--cngx-mat-tab-refused-color, oklch\(0\.62 0\.15 60\)\);/,
+    );
+    expect(css).toMatch(
+      /\.cngx-mat-tab__rejection-icon\[data-reason='refused'\]\s*\{\s*background: var\(--cngx-mat-tab-refused-color, oklch\(0\.62 0\.15 60\)\);/,
+    );
+    expect(css).toMatch(
+      /@media \(forced-colors: active\)\s*\{\s*\.cngx-mat-tab__rejection-icon\s*\{\s*forced-color-adjust: none;/,
+    );
   });
 
   test('axis 12: rejection decoration cleared - successful re-pick of the failed tab strips the class, removes the descriptor span, and restores aria-describedby', async () => {
@@ -1396,16 +1455,18 @@ describe('CngxMatTabs instrumentation directive', () => {
     }
   });
 
-  test('axis 34: live-region announces commitRolledBackTo(originLabel) when an optimistic commit rejects', async () => {
+  test('axis 34: live-region announces commitRolledBackTo(originLabel) when an optimistic commit fails', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
     const fixture = TestBed.createComponent(CommitHostCmp);
-    // Synchronous-rejection commit so the error arm fires inside the
+    // Synchronously throwing commit so the error arm fires inside the
     // single CD pass following the click - no need to flush a real
     // async timer.
     fixture.componentInstance['mode'] = 'optimistic';
-    fixture.componentInstance['commit'] = (() => false) as CngxTabsCommitAction;
+    fixture.componentInstance['commit'] = (() => {
+      throw new Error('boom');
+    }) as CngxTabsCommitAction;
     fixture.detectChanges();
     await fixture.whenStable();
     const matEl = fixture.debugElement.query(
@@ -1429,6 +1490,50 @@ describe('CngxMatTabs instrumentation directive', () => {
     try {
       expect(stripBidiIsolates(politeRegions[politeRegions.length - 1]?.textContent)).toBe(
         'Could not save changes - reverted to "One".',
+      );
+    } finally {
+      TestBed.inject(CngxLiveAnnouncer).ngOnDestroy();
+    }
+  });
+
+  test('axis 34b: a refused switch announces commitRefused, keeps the error class and describes the tab with the refused copy', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    fixture.componentInstance['mode'] = 'optimistic';
+    fixture.componentInstance['commit'] = (() => false) as CngxTabsCommitAction;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+
+    presenter.select(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(presenter.lastOutcome()?.kind).toBe('refused');
+    expect(presenter.commitState.status()).toBe('idle');
+
+    const matTabEls = fixture.nativeElement.querySelectorAll(
+      '.mat-mdc-tab',
+    ) as NodeListOf<HTMLElement>;
+    // The shipped class stays on a refused tab (e2e asserts it).
+    expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(true);
+    const handleId = presenter.tabs()[2].id;
+    const descriptor = matTabEls[2].querySelector(`span.cngx-sr-only#${handleId}-rejected`);
+    expect(stripBidiIsolates(descriptor?.textContent)).toBe(
+      'Tab switch not allowed - stayed on "One".',
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 24));
+    const politeRegions = document.body.querySelectorAll<HTMLElement>(
+      'span[aria-live="polite"].cngx-sr-only',
+    );
+    try {
+      expect(stripBidiIsolates(politeRegions[politeRegions.length - 1]?.textContent)).toBe(
+        'Tab switch not allowed - stayed on "One".',
       );
     } finally {
       TestBed.inject(CngxLiveAnnouncer).ngOnDestroy();
@@ -1563,6 +1668,54 @@ describe('CngxMatTabs instrumentation directive', () => {
 
     expect(presenter.lastFailedIndex()).toBe(1);
     expect(presenter.activeIndex()).toBe(0);
+    expect(matTabGroup.selectedIndex).toBe(0);
+  });
+
+  test('axis 38b: a pessimistic refusal after a Material click snaps the eager-advanced header back to the origin', async () => {
+    // Material eager-advances to the clicked tab; the presenter holds at
+    // origin. A refusal settles to 'idle', never 'error', so the bridge
+    // must reconcile on the new outcome, not on the status.
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    let resolveCommit: ((value: boolean) => void) | null = null;
+    fixture.componentInstance['mode'] = 'pessimistic';
+    fixture.componentInstance['commit'] = () =>
+      new Promise<boolean>((res) => {
+        resolveCommit = res;
+      });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const matTabGroup = matEl.componentInstance as MatTabGroup;
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    const buttons = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>(
+      '.mat-mdc-tab',
+    );
+    buttons[1].click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(presenter.commitState.status()).toBe('pending');
+    expect(presenter.activeIndex()).toBe(0);
+    expect(matTabGroup.selectedIndex).toBe(1);
+
+    (resolveCommit as ((value: boolean) => void) | null)?.(false);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(presenter.commitState.status()).toBe('idle');
+    expect(presenter.lastOutcome()?.kind).toBe('refused');
     expect(matTabGroup.selectedIndex).toBe(0);
   });
 

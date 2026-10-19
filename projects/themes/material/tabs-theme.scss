@@ -59,6 +59,11 @@
     --cngx-tab-error-badge-text-color: var(--mat-sys-on-error);
     --cngx-tab-rejection-icon-color: var(--mat-sys-error);
     --cngx-tab-rejection-icon-text: var(--mat-sys-on-error);
+
+    // Commit rejections: a refused switch wears tertiary (its disc, accent,
+    // and the wash mixed from it), a failed one is an error and keeps the
+    // error role above.
+    --cngx-tab-refused-color: var(--mat-sys-tertiary);
   } @else {
     --cngx-color-primary: #{mat.get-theme-color($theme, primary)};
     --cngx-color-surface: #{mat.get-theme-color($theme, background, card)};
@@ -71,6 +76,7 @@
     --cngx-tab-error-badge-text-color: oklch(1 0 0);
     --cngx-tab-rejection-icon-color: #{mat.get-theme-color($theme, warn)};
     --cngx-tab-rejection-icon-text: oklch(1 0 0);
+    --cngx-tab-refused-color: #{mat.get-theme-color($theme, accent)};
   }
 }
 
@@ -209,11 +215,13 @@
 @mixin _mat-color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-mat-tab-error-color: var(--mat-sys-error);
+    --cngx-mat-tab-refused-color: var(--mat-sys-tertiary);
     --cngx-mat-tab-has-errors-color: var(--mat-sys-error);
     --cngx-mat-tab-has-errors-glyph-color: var(--mat-sys-on-error);
     --cngx-mat-tabs-more-bg: var(--mat-sys-surface);
   } @else {
     --cngx-mat-tab-error-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-mat-tab-refused-color: #{mat.get-theme-color($theme, accent)};
     --cngx-mat-tab-has-errors-color: #{mat.get-theme-color($theme, warn)};
   }
 }

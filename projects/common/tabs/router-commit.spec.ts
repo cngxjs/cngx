@@ -4,6 +4,9 @@ import { NavigationEnd, provideRouter, Router } from '@angular/router';
 import type { Observable } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { createCommitController } from '@cngx/common/data';
+
+import { createTabsCommitHandler, type CngxTabsCommitResolution } from './commit-handler';
 import { createTabRouterCommit } from './router-commit';
 import type { CngxTabHandle } from './tab-group-host.token';
 
@@ -60,13 +63,41 @@ describe('createTabRouterCommit', () => {
     expect(seen).toEqual([false]);
   });
 
-  it('resolves false when the navigation errors (guard/resolver threw)', async () => {
-    vi.spyOn(router, 'navigate').mockRejectedValue(new Error('resolver threw'));
+  it('errors with the router error when the navigation errors (guard/resolver threw)', async () => {
+    const routerError = new Error('resolver threw');
+    vi.spyOn(router, 'navigate').mockRejectedValue(routerError);
     const action = createTabRouterCommit({ router, tabs: () => tabs });
     const seen: boolean[] = [];
-    (action(0, 2) as Observable<boolean>).subscribe((v) => seen.push(v));
+    const errors: unknown[] = [];
+    (action(0, 2) as Observable<boolean>).subscribe({
+      next: (v) => seen.push(v),
+      error: (err: unknown) => errors.push(err),
+    });
     await flushMicrotasks();
-    expect(seen).toEqual([false]);
+    expect(seen).toEqual([]);
+    expect(errors).toEqual([routerError]);
+  });
+
+  it('a cancelled navigation refuses and a rejected one fails through the commit handler', async () => {
+    const controller = createCommitController<number>();
+    const handler = createTabsCommitHandler({ controller });
+    const outcomes: CngxTabsCommitResolution[] = [];
+
+    vi.spyOn(router, 'navigate').mockResolvedValue(false);
+    const action = createTabRouterCommit({ router, tabs: () => tabs });
+    handler.beginTransition(0, 1, action, (outcome) => outcomes.push(outcome));
+    await flushMicrotasks();
+    expect(outcomes).toEqual(['refused']);
+    expect(controller.state.status()).toBe('idle');
+    expect(controller.state.error()).toBeUndefined();
+
+    const routerError = new Error('guard threw');
+    vi.spyOn(router, 'navigate').mockRejectedValue(routerError);
+    handler.beginTransition(0, 2, action, (outcome) => outcomes.push(outcome));
+    await flushMicrotasks();
+    expect(outcomes).toEqual(['refused', 'failed']);
+    expect(controller.state.status()).toBe('error');
+    expect(controller.state.error()).toBe(routerError);
   });
 
   it('resolves true for a skipped same-URL navigation (promise resolves null)', async () => {

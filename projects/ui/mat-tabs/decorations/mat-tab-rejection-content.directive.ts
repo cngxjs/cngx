@@ -19,8 +19,10 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * resolves to a handle with a non-empty label) - `undefined` when
  * no labelled rollback origin is resolvable; `fallbackText` is the
  * built-in i18n phrase the imperative fallback path would write
- * verbatim (typically `commitRolledBackTo(originLabel)` when the
- * origin is resolvable, `commitFailedRetry` otherwise).
+ * verbatim (for a failure typically `commitRolledBackTo(originLabel)`
+ * when the origin is resolvable, `commitFailedRetry` otherwise; for a
+ * refusal `commitRefused(originLabel)` or `commitRefusedGeneric`);
+ * `reason` is the kind of the outcome.
  *
  * **Re-instantiation warning.** The decoration projector destroys
  * the embedded view and creates a fresh one on every `descriptorText`
@@ -52,6 +54,12 @@ export interface CngxMatTabRejectionContentContext {
    * decoration (icon, branded prefix, retry CTA).
    */
   readonly fallbackText: string;
+  /**
+   * Why the commit did not land: `'refused'` when the commit action
+   * answered `false`, `'failed'` when it threw, rejected or errored.
+   * Pick copy or an icon per reason; `fallbackText` already follows it.
+   */
+  readonly reason: 'refused' | 'failed';
 }
 
 /**

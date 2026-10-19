@@ -139,7 +139,7 @@ The bidirectional sync lives in `@cngx/common/data` (`createMaterialBidirectiona
 2. A Material -> presenter `selectionChange$` subscription (via `takeUntilDestroyed`) that forwards into `presenter.select(idx)`, equality-guarded against `presenterIndex()` so a re-entrant emission drops.
 3. A Material-eager-advance reconciliation: Material's MDC click handler advances `selectedIndex` *synchronously* before the subscription fires.
 
-    When the presenter holds its index (pessimistic-commit reject, or any future contract that refuses a select), the post-callback divergence is detected and Material is force-written back to the presenter's authoritative index.
+    When the presenter holds its index (a pessimistic commit that was refused or failed, or any future contract that refuses a select), the post-callback divergence is detected and Material is force-written back to the presenter's authoritative index. The bridge keys this on the presenter's `lastOutcome()`, not on the `error` status: a `commitAction` answering `false` is a refusal and leaves the commit state at `idle`.
 
 ### 3. The Consumer Story: "The Trojan Horse"
 
@@ -153,7 +153,7 @@ The developer does not rewrite their template. They upgrade existing Material ma
 </mat-stepper>
 ```
 
-Because the presenter provides `CNGX_STATEFUL`, transition bridges compose as siblings of `<mat-stepper>` without an explicit `[state]` binding:
+Because the presenter provides `CNGX_STATEFUL`, transition bridges compose as siblings of `<mat-stepper>` without an explicit `[state]` binding. They report a failed commit; a refused one (`saveStep` answered `false`) is not an `AsyncStatus` and stays out of them, so an app that wants a toast for it shows a warning toast from `saveStep` before it answers `false`:
 
 ```html
 <mat-stepper cngxMatStepper [commitAction]="saveStep">...</mat-stepper>

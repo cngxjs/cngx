@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Routed tabs are a <code>[commitAction]</code> over <code>@angular/router</code>. In production you add <code>[cngxTabsRouteSync]</code> to the group and let <code>createTabRouterCommit()</code> navigate to each tab\'s child route, with a <code>CanDeactivate</code> guard gating the leave. This sandbox renders one page without child routes, so the guard decision is simulated locally with a dirty-form signal - the user-visible gate is identical.',
   description:
-    'Pessimistic mode pins the active tab to the resolved route: while the editor form is dirty the guard refuses the switch, so the active tab never moves. The editor binds <code>[error]</code> to a flag set only when a leave is actually blocked, so unsaved text alone does not raise an error - the badge appears on a refused switch and clears on save. The unsaved editor is the problem, so the demo flags it and clears cngx\'s generic rejection marker from the tab you tried to reach (a leave-guard fault belongs on the source, not the target). Production wiring lives in the route config and the directive: <code>&lt;cngx-tab-group cngxTabsRouteSync&gt;</code> supplies the router commit-action via the <code>CNGX_TABS_COMMIT_ACTION</code> DI fallback and pins pessimistic mode, while each child route carries <code>canDeactivate: [unsavedChangesGuard]</code>. The presenter\'s commit lifecycle is the gate - <code>createTabRouterCommit()</code> resolves <code>true</code> on <code>NavigationEnd</code> and <code>false</code> on <code>NavigationCancel</code> / <code>NavigationError</code>.',
+    'Pessimistic mode pins the active tab to the resolved route: while the editor form is dirty the guard refuses the switch, so the active tab never moves. The editor binds <code>[error]</code> to a flag set only when a leave is actually blocked, so unsaved text alone does not raise an error - the badge appears on a refused switch and clears on save. The unsaved editor is the problem, so the demo flags it and clears cngx\'s generic rejection marker from the tab you tried to reach (a leave-guard fault belongs on the source, not the target). Production wiring lives in the route config and the directive: <code>&lt;cngx-tab-group cngxTabsRouteSync&gt;</code> supplies the router commit-action via the <code>CNGX_TABS_COMMIT_ACTION</code> DI fallback and pins pessimistic mode, while each child route carries <code>canDeactivate: [unsavedChangesGuard]</code>. The presenter\'s commit lifecycle is the gate - <code>createTabRouterCommit()</code> resolves <code>true</code> on <code>NavigationEnd</code>, <code>false</code> on <code>NavigationCancel</code> (a refused switch: the guard said no, nothing failed) and errors with the router\'s own error on <code>NavigationError</code> (a failed switch: a guard or resolver threw).',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -38,7 +38,8 @@ export const STORY: DemoSpec = {
   /**
    * Stands in for the route's CanDeactivate guard. In production the
    * guard runs inside the router and createTabRouterCommit() maps its
-   * NavigationCancel into a refused commit; here it gates the leave of
+   * NavigationCancel into a refused commit (a guard that throws ends in
+   * NavigationError, a failed commit); here it gates the leave of
    * the editor tab while the form is dirty. Pessimistic mode keeps the
    * active tab on the resolved route, so a refusal never flashes the
    * target.

@@ -498,6 +498,8 @@ export const CNGX_LANGUAGE_EN = {
     commitFailedRetry: 'Could not switch tab - retry?',
     commitInFlight: 'Switching tab…',
     commitRolledBackTo: 'Could not save changes - reverted to "{origin}".',
+    commitRefused: 'Tab switch not allowed - stayed on "{origin}".',
+    commitRefusedGeneric: 'Tab switch not allowed.',
   },
   timeline: {
     timelineRegion: 'Timeline',

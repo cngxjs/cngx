@@ -7,6 +7,15 @@ import { CngxRuntimeError } from '@cngx/utils';
 import type { CngxTabsCommitAction } from './presenter.directive';
 
 /**
+ * How a commit-gated tab switch settled. `'refused'` is a `false` answer
+ * from `commitAction` (the action declined on purpose, nothing failed);
+ * `'failed'` is a throw, a rejected promise or an erroring observable.
+ *
+ * @category common/tabs
+ */
+export type CngxTabsCommitResolution = 'accepted' | 'refused' | 'failed';
+
+/**
  * Adapts the shared commit-controller to the tabs action shape. \
  * The presenter delegates to {@link beginTransition} when `commitAction`
  * is bound.
@@ -18,14 +27,15 @@ export interface CngxTabsCommitHandler {
    * Start a tab-transition commit. \
    * Returns synchronously - read the
    * controller's `state` signal for in-flight status. `onResolve`
-   * fires once with `accept = true` on success or `false` on
-   * rejection; skipped on supersede.
+   * fires once: `'accepted'` when the action answers `true`,
+   * `'refused'` when it answers `false`, `'failed'` when it throws,
+   * rejects or errors; skipped on supersede.
    */
   beginTransition(
     fromIndex: number,
     toIndex: number,
     action: CngxTabsCommitAction,
-    onResolve: (accept: boolean) => void,
+    onResolve: (outcome: CngxTabsCommitResolution) => void,
   ): void;
 
   /** Cancel the in-flight transition without firing callbacks. */
@@ -46,8 +56,10 @@ export interface CngxTabsCommitHandlerOptions {
 
 /**
  * Wraps a {@link CngxCommitController} with the action-shape adapter
- * that collapses `Observable<boolean>` / `Promise<boolean>` /
- * `boolean` returns into a single `accept: boolean` outcome.
+ * that resolves `Observable<boolean>` / `Promise<boolean>` / `boolean`
+ * returns into one {@link CngxTabsCommitResolution}: `true` accepts,
+ * `false` refuses (the controller settles to `'idle'` and stores no
+ * error), a throw fails.
  *
  * @category common/tabs
  */
@@ -62,8 +74,9 @@ export function createTabsCommitHandler(opts: CngxTabsCommitHandlerOptions): Cng
         toIndex,
         fromIndex,
         {
-          onSuccess: () => onResolve(true),
-          onError: () => onResolve(false),
+          onSuccess: () => onResolve('accepted'),
+          onError: () => onResolve('failed'),
+          onRefused: () => onResolve('refused'),
         },
       );
     },
@@ -81,6 +94,7 @@ function runTabsAction(
   handlers: {
     readonly onSuccess: (committed: number | undefined) => void;
     readonly onError: (err: unknown) => void;
+    readonly onRefused: () => void;
   },
 ): CngxCommitHandle {
   let cancelled = false;
@@ -93,7 +107,7 @@ function runTabsAction(
     if (accept) {
       handlers.onSuccess(toIndex);
     } else {
-      handlers.onError(new Error('Tab transition refused by commitAction'));
+      handlers.onRefused();
     }
   };
   const safeError = (err: unknown): void => {

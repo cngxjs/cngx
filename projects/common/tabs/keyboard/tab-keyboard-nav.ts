@@ -1,4 +1,4 @@
-import { effect, untracked, type Injector, type Signal } from '@angular/core';
+import { computed, effect, untracked, type Injector, type Signal } from '@angular/core';
 import { resolveInlineStep, type CngxDirection } from '@cngx/core';
 
 import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
@@ -22,7 +22,7 @@ export interface CngxTabKeyboardNavOptions {
   /**
    * Enables the rejection focus-release effect. Under a pessimistic
    * commit, focus follows the intended target while the action is in
-   * flight; a rejection keeps the roving stop on the origin, so
+   * flight; a refusal or failure keeps the roving stop on the origin, so
    * without the release the user is stranded on a `tabindex="-1"`
    * button. Omitted, the effect is skipped (headless usage).
    */
@@ -153,9 +153,14 @@ export function createTabKeyboardNav(
   };
 
   if (opts.injector) {
+    // Keyed on the outcome sequence, not the commit status: a refusal
+    // settles to 'idle' and never reaches 'error'. A number compares with
+    // `Object.is`, so the close shift (index moved, sequence copied) never
+    // re-runs the release, and a cleared outcome (`undefined`) is ignored.
+    const outcomeSequence = computed(() => opts.host.lastOutcome()?.sequence);
     effect(
       () => {
-        if (opts.host.commitTransition.current() !== 'error') {
+        if (outcomeSequence() === undefined) {
           return;
         }
         untracked(() => {
