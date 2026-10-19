@@ -233,6 +233,35 @@ for (const device of ['iPhone 13', 'Pixel 7'] as const) {
         expect(await focusFacts(host)).toMatchObject({ role: 'listbox', inPanel: true });
       });
 
+      if (triggerInput) {
+        test(`${selector}: the close refocuses the trigger with the keyboard held down`, async ({
+          page,
+        }) => {
+          await gotoDemo(page, ALL);
+          const host = await openVariant(page, selector);
+          const panel = panelOf(host);
+          const trigger = triggerOf(host);
+          // The soft keyboard is decided when focus lands, so record the mode
+          // the trigger carries at that moment, not only afterwards.
+          await trigger.evaluate((el) =>
+            el.addEventListener('focus', () => {
+              el.setAttribute('data-e2e-mode-at-focus', el.getAttribute('inputmode') ?? '');
+            }),
+          );
+          await panel.getByRole('option', { name: 'Athens' }).tap();
+          if (multi) {
+            await panel.locator('.cngx-select-sheet-header__done').tap();
+          }
+          await expect(panel).toBeHidden();
+          await expect.poll(() => focusFacts(host)).toMatchObject({ isTrigger: true });
+          await expect(trigger).toHaveAttribute('data-e2e-mode-at-focus', 'none');
+          await expect(trigger).toHaveAttribute('inputmode', 'none');
+
+          await trigger.tap();
+          await expect(trigger).toHaveAttribute('inputmode', 'search');
+        });
+      }
+
       test(`${selector}: an open by typing keeps the search field focused`, async ({ page }) => {
         await gotoDemo(page, ALL);
         const host = page.locator(selector).first();

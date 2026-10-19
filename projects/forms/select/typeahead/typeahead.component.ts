@@ -444,6 +444,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     restoreFocus: this.config.restoreFocus,
     suppressOpenOnFocus: (active) => {
       this.suppressOpenOnFocus = active;
+      this.sheetWiring.handleTriggerRefocus(active);
     },
   });
   /** @internal */ readonly focused = this.hostFocus.focusedWithin;
@@ -538,6 +539,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     label: this.label,
     searchTerm: this.searchTerm,
     searchInput: this.inputEl,
+    inputMode: this.inputMode,
     close: () => this.close(),
   });
   /** @internal Static height fact: a fullscreen panel led by the header input. */
@@ -789,6 +791,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       closed: this.closed,
       restoringFocus: (active) => {
         this.suppressOpenOnFocus = active;
+        this.sheetWiring.handleTriggerRefocus(active);
       },
     });
 

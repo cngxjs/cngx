@@ -310,4 +310,85 @@ describe('createSelectSheetWiring', () => {
       expect(wiring.searchLeads()).toBe(true);
     });
   });
+  describe('keyboard hold', () => {
+    function setupHold(presentation: CngxPopoverPresentation) {
+      const input = document.createElement('input');
+      const inputMode = signal('search');
+      const sheetPresentation = signal(presentation);
+      const sheet = { presentation: sheetPresentation } as unknown as CngxPopoverSheet;
+      const wiring = TestBed.runInInjectionContext(() =>
+        createSelectSheetWiring({
+          core: {
+            isCommitting: signal(false),
+            resolvedPresentationRequest: signal('auto'),
+            ariaLabels: signal({}),
+            disabled: signal(false),
+          } as unknown as CngxSelectCore<string, string>,
+          sheet: signal(sheet),
+          popoverRef: signal(undefined),
+          listboxRef: signal(undefined),
+          tpl: { sheetHandle: signal(null) },
+          dismissOn: 'both',
+          showDone: true,
+          showInput: true,
+          sheetLabel: signal(undefined),
+          label: signal(''),
+          searchInput: signal({ nativeElement: input }),
+          inputMode,
+          close: vi.fn(),
+          popupRole: 'listbox',
+        }),
+      );
+      const blur = (target: EventTarget) => {
+        const event = new FocusEvent('focusout');
+        Object.defineProperty(event, 'target', { value: target });
+        wiring.trigger.handleFocusOut(event, true);
+      };
+      return { wiring, input, inputMode, blur };
+    }
+
+    it("binds the variant's input mode outside the hold", () => {
+      const { wiring, inputMode } = setupHold('fullscreen');
+      expect(wiring.triggerInputMode()).toBe('search');
+      inputMode.set('text');
+      expect(wiring.triggerInputMode()).toBe('text');
+    });
+
+    it('holds the keyboard down before a refocus on the modal sheet path', () => {
+      const { wiring, input } = setupHold('fullscreen');
+      wiring.handleTriggerRefocus(true);
+      // On the element before the focus call: change detection runs later.
+      expect(input.getAttribute('inputmode')).toBe('none');
+      expect(wiring.triggerInputMode()).toBe('none');
+      // The closing half of the bracket keeps the hold.
+      wiring.handleTriggerRefocus(false);
+      expect(wiring.triggerInputMode()).toBe('none');
+    });
+
+    it('never holds on the anchored panel', () => {
+      const { wiring, input } = setupHold('anchored');
+      wiring.handleTriggerRefocus(true);
+      expect(input.hasAttribute('inputmode')).toBe(false);
+      expect(wiring.triggerInputMode()).toBe('search');
+    });
+
+    it.each([
+      ['a pointer down', (w: CngxSelectSheetWiring) => w.trigger.handlePointerDown()],
+      ['a key', (w: CngxSelectSheetWiring) => w.trigger.handleKey()],
+    ])('releases the hold on %s on the trigger', (_name, act) => {
+      const { wiring } = setupHold('fullscreen');
+      wiring.handleTriggerRefocus(true);
+      act(wiring);
+      expect(wiring.triggerInputMode()).toBe('search');
+    });
+
+    it('releases the hold when the trigger input blurs, not when another control does', () => {
+      const { wiring, input, blur } = setupHold('fullscreen');
+      wiring.handleTriggerRefocus(true);
+      blur(document.createElement('button'));
+      expect(wiring.triggerInputMode()).toBe('none');
+      blur(input);
+      expect(wiring.triggerInputMode()).toBe('search');
+    });
+  });
 });

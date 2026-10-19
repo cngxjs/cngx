@@ -540,6 +540,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     close: () => this.sheetWiring.handleFocusLeave(),
     owner: () => this.inputEl()?.nativeElement,
     restoreFocus: this.config.restoreFocus,
+    suppressOpenOnFocus: (active) => this.sheetWiring.handleTriggerRefocus(active),
   });
   /** @internal */ readonly focused = this.hostFocus.focusedWithin;
   readonly empty = computed<boolean>(() => this.isEmpty());
@@ -692,6 +693,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     label: this.label,
     searchTerm: this.searchTerm,
     searchInput: this.inputEl,
+    inputMode: this.inputMode,
     close: () => this.close(),
   });
   /** @internal Static height fact: a fullscreen panel led by the header input. */
@@ -1079,6 +1081,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       openedChange: this.openedChange,
       opened: this.opened,
       closed: this.closed,
+      restoringFocus: (active) => this.sheetWiring.handleTriggerRefocus(active),
     });
 
     createFieldSync<T[]>({

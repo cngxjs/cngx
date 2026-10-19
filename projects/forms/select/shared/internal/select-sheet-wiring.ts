@@ -55,6 +55,8 @@ export interface CngxSelectSheetWiringOptions {
    * through it, so the trigger's `CngxSearch` stays the one source.
    */
   readonly searchInput?: Signal<ElementRef<HTMLInputElement> | undefined>;
+  /** The variant's `[inputMode]`; the trigger input's mode outside the keyboard hold. */
+  readonly inputMode?: Signal<string>;
   /** The variant's anchored close (focus back to the trigger, then hide). */
   readonly close: () => void;
   /** Static per variant: the popup role the trigger announces while anchored. */
@@ -127,6 +129,19 @@ export interface CngxSelectSheetWiring extends CngxSelectSheetScope {
   readonly searchLeads: Signal<boolean>;
   /** Bound to `[cngxSelectSheetTrigger]` on the trigger. */
   readonly trigger: CngxSelectSheetTriggerEvents;
+  /**
+   * Bound to the trigger input's `[attr.inputmode]`: `'none'` while the
+   * keyboard hold is on, else the variant's `[inputMode]`.
+   */
+  readonly triggerInputMode: Signal<string | null>;
+  /**
+   * Called around every programmatic refocus of the trigger input (the
+   * host-focus and lifecycle-emitter brackets). On the modal sheet path it
+   * starts the keyboard hold before the focus call, so the refocus after a
+   * close does not raise the soft keyboard; the next pointer down, key or
+   * blur on the trigger input ends it.
+   */
+  readonly handleTriggerRefocus: (active: boolean) => void;
   readonly headerHost: CngxSelectSheetHeaderHost;
 }
 
@@ -212,6 +227,24 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     opts.close();
   };
 
+  // The keyboard hold. The refocus runs synchronously inside the closing
+  // tap, before change detection applies the binding, and the soft keyboard
+  // is decided at focus time, so the hold writes the bound value once ahead
+  // of the binding; the binding then carries it and restores the mode.
+  const keyboardHeld = signal(false);
+  const triggerInputMode = computed(() => (keyboardHeld() ? 'none' : (opts.inputMode?.() ?? null)));
+  const releaseKeyboard = (): void => {
+    keyboardHeld.set(false);
+  };
+  const handleTriggerRefocus = (active: boolean): void => {
+    const input = opts.searchInput?.()?.nativeElement;
+    if (!active || !input || !sheetModal()) {
+      return;
+    }
+    keyboardHeld.set(true);
+    input.setAttribute('inputmode', 'none');
+  };
+
   // Which input reached the trigger last. A focus counts as the keyboard
   // unless a pointer went down on the trigger since focus last left it, so
   // a Tab in (openOn: 'focus') leads with the search and a tap does not.
@@ -221,18 +254,23 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     handlePointerDown: () => {
       pointerSinceFocusLeft = true;
       keyboardLast.set(false);
+      releaseKeyboard();
     },
     handleKey: () => {
       keyboardLast.set(true);
+      releaseKeyboard();
     },
     handleFocus: () => {
       if (!pointerSinceFocusLeft) {
         keyboardLast.set(true);
       }
     },
-    handleFocusOut: (_event, leftTrigger) => {
+    handleFocusOut: (event, leftTrigger) => {
       if (leftTrigger) {
         pointerSinceFocusLeft = false;
+      }
+      if (event.target === opts.searchInput?.()?.nativeElement) {
+        releaseKeyboard();
       }
     },
   };
@@ -281,6 +319,8 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     handleFocusLeave,
     searchLeads,
     trigger,
+    triggerInputMode,
+    handleTriggerRefocus,
     headerHost,
   };
 }
