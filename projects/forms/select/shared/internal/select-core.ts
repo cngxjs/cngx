@@ -213,6 +213,11 @@ export interface CngxSelectCore<T, TCommit> {
   readonly commitErrorId: string;
   /** Text of the commit-error node; `''` while no commit error shows. */
   readonly commitErrorText: Signal<string>;
+  /**
+   * Id of the element carrying the popup role (`role="listbox"` or
+   * `role="tree"`); the trigger's `aria-controls` names it while anchored.
+   */
+  readonly listboxId: string;
   readonly effectiveTabIndex: Signal<number | null>;
   readonly triggerAria: Signal<CngxSelectTriggerAria>;
 
@@ -613,6 +618,7 @@ export function createSelectCore<T, TCommit>(
   // single-IDREF aria-errormessage; the commit error then rides on
   // aria-describedby.
   const commitErrorId = nextUid('cngx-select-commit-error');
+  const listboxId = nextUid('cngx-select-listbox');
   const commitErrorText = computed<string>(() => {
     const select = showCommitError() ? commitErrorMessage(commitState.error()) : null;
     return [select, deps.createErrorMessage?.() ?? null].filter(Boolean).join(' ');
@@ -824,6 +830,7 @@ export function createSelectCore<T, TCommit>(
     ariaErrorMessage,
     commitErrorId,
     commitErrorText,
+    listboxId,
     effectiveTabIndex,
     triggerAria,
     disabled,

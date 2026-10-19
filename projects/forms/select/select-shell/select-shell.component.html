@@ -11,6 +11,7 @@
     role="combobox"
     [cngxPopoverTrigger]="pop"
     [haspopup]="sheetWiring.triggerHaspopup()"
+    [controls]="sheetWiring.sheetModal() ? null : listboxId"
     [cngxListboxTrigger]="lb"
     [popover]="pop"
     [closeOnSelect]="true"
@@ -110,6 +111,7 @@
     <ng-content select="cngx-select-search" />
     <div
       cngxListbox
+      [attr.id]="listboxId"
       cngxPopoverSheetInitialFocus
       [attr.tabindex]="sheetWiring.sheetModal() ? 0 : null"
       #lb="cngxListbox"

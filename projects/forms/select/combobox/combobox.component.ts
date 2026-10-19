@@ -762,6 +762,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly triggerAria = this.core.triggerAria;
   /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
+  /** @internal */ protected readonly listboxId = this.core.listboxId;
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   /** @internal */
   protected readonly ariaReadonly = this.core.ariaReadonly;

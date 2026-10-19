@@ -99,7 +99,8 @@ function flush(fixture: ComponentFixture<unknown>): void {
  * the host is destroyed neither writes, emits nor speaks; a failed commit
  * stays reachable from the trigger while the panel is closed; a select that
  * turns disabled closes and ignores activations; focus leaving the host
- * closes the anchored panel; Escape follows `dismissOn`.
+ * closes the anchored panel; Escape follows `dismissOn`; `aria-controls`
+ * names the element with the popup role.
  *
  * @internal
  */
@@ -383,6 +384,16 @@ export function describeSelectBehaviourHost(
       flush(fixture);
       expect(variant.panelOpen()).toBe(true);
       expect(escape.defaultPrevented).toBe(false);
+    });
+
+    it('points aria-controls at the listbox or tree while anchored', () => {
+      const { fixture, variant, trigger } = mount();
+      variant.open();
+      flush(fixture);
+      const ref = trigger().getAttribute('aria-controls');
+      expect(ref).not.toBeNull();
+      const role = document.getElementById(ref!)?.getAttribute('role');
+      expect(['listbox', 'tree']).toContain(role);
     });
   });
 }

@@ -94,6 +94,7 @@
       [debounceMs]="searchDebounceMs()"
       [cngxPopoverTrigger]="pop"
       [haspopup]="sheetWiring.triggerHaspopup()"
+      [controls]="sheetWiring.sheetModal() ? null : listboxId"
       [cngxListboxTrigger]="lb"
       [popover]="pop"
       [closeOnSelect]="false"
@@ -101,7 +102,6 @@
       [placeholder]="effectivePlaceholder()"
       [attr.id]="resolvedId() || null"
       [attr.tabindex]="effectiveTabIndex()"
-      [attr.aria-controls]="pop.id()"
       [attr.aria-autocomplete]="'list'"
       [attr.aria-label]="aria.label"
       [attr.aria-labelledby]="aria.labelledBy"
@@ -186,6 +186,7 @@
     <cngx-select-sheet-header />
     <div
       cngxListbox
+      [attr.id]="listboxId"
       #lb="cngxListbox"
       [label]="resolvedListboxLabel()"
       [multiple]="true"

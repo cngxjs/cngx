@@ -27,6 +27,8 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
   readonly panelOpen: Signal<boolean>;
   /** A disabled select drops every activation. */
   readonly disabled: Signal<boolean>;
+  /** Id of the `role="tree"` container; the trigger's `aria-controls` names it. */
+  readonly listboxId: string;
   /**
    * Opt-in expand-to-reveal type-to-find. When `true` the panel
    * resolves typeahead misses against the full flat tree (reveal +

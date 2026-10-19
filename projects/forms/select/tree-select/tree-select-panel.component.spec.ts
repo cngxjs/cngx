@@ -165,6 +165,7 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly useSlot = signal(false);
   readonly panelOpen = signal(true).asReadonly();
   readonly disabled = signal(false);
+  readonly listboxId = 'tree-1';
   readonly expandToReveal = signal(false);
   // Glyph overrides + i18n labels - null / default literals keep the
   // harness on the built-in node-row visuals.

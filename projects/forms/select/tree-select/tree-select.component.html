@@ -16,6 +16,7 @@
     role="combobox"
     [cngxPopoverTrigger]="pop"
     [haspopup]="sheetWiring.triggerHaspopup()"
+    [controls]="sheetWiring.sheetModal() ? null : listboxId"
     [attr.tabindex]="effectiveTabIndex()"
     [attr.aria-label]="aria.label"
     [attr.aria-labelledby]="aria.labelledBy"
