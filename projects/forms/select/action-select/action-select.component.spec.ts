@@ -1,6 +1,7 @@
 import { Component, OutputEmitterRef, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { CngxListbox } from '@cngx/common/interactive';
 import { Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -342,6 +343,37 @@ describe('CngxActionSelect - async + error flow', () => {
     expect(trigger.getAttribute('aria-invalid')).toBeNull();
     expect(trigger.getAttribute('aria-errormessage')).toBeNull();
     announce.mockRestore();
+  });
+
+  it('clears a failed quick-create once the user picks an option instead', () => {
+    const { fixture, host, select } = setup();
+    host.quickCreateAction.set(() => {
+      throw new Error('server down');
+    });
+    flush(fixture);
+    select.actionCallbacks().commit({ label: 'Purple' });
+    flush(fixture);
+    fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('[role="combobox"]') as HTMLElement;
+    expect(trigger.getAttribute('aria-invalid')).toBe('true');
+    const ref = trigger.getAttribute('aria-errormessage')!;
+    expect(stripBidiIsolates(document.getElementById(ref)?.textContent ?? '')).toContain(
+      'Could not create Purple',
+    );
+
+    select.open();
+    flush(fixture);
+    const lb = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
+    lb.ad.highlightFirst();
+    lb.ad.activateCurrent();
+    flush(fixture);
+    fixture.detectChanges();
+    expect(select.value()).toBeDefined();
+    expect(trigger.getAttribute('aria-invalid')).toBeNull();
+    expect(trigger.getAttribute('aria-errormessage')).toBeNull();
+    expect(stripBidiIsolates(document.getElementById(ref)?.textContent ?? '')).not.toContain(
+      'Could not create Purple',
+    );
   });
 
   it('drops a quick-create that settles after the select is destroyed', () => {

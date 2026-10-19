@@ -9,6 +9,7 @@ import {
   contentChild,
   inject,
   input,
+  linkedSignal,
   model,
   output,
   signal,
@@ -579,10 +580,19 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** Draft label of the last dispatched quick-create; names it in the failure copy. */
   private readonly lastCreateLabel = signal('');
 
+  /**
+   * A pick after a failed quick-create clears its error: the user moved on.
+   * Every new create status starts uncleared again.
+   */
+  private readonly createErrorCleared = linkedSignal<AsyncStatus, boolean>({
+    source: this.createCommitController.state.status,
+    computation: () => false,
+  });
+
   /** Failure sentence of the last quick-create while it is in error, else `null`. */
   private readonly createErrorMessage = computed<string | null>(() => {
     const state = this.createCommitController.state;
-    if (state.status() !== 'error') {
+    if (state.status() !== 'error' || this.createErrorCleared()) {
       return null;
     }
     return this.core.createFailedMessage(this.lastCreateLabel(), state.error());
@@ -653,7 +663,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       // Lazy: the wiring is built from the core right below.
       presentation: computed<CngxPopoverPresentation>(() => this.sheetWiring.presentation()),
       // Lazy: the create controller is built below the core.
-      createErrorMessage: computed<string | null>(() => this.createErrorMessage()),
+      createErrorMessage: this.createErrorMessage,
     },
     {
       announceChanges: this.announceChanges,
@@ -1216,6 +1226,9 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     isNowSelected: boolean,
     previousValues: readonly T[] = [],
   ): void {
+    if (isNowSelected) {
+      this.createErrorCleared.set(true);
+    }
     this.optionToggled.emit({ option: opt, added: isNowSelected });
     this.selectionChange.emit({
       source: this,
