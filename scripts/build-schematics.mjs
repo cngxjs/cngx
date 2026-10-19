@@ -17,7 +17,7 @@
 
 import { build } from 'esbuild';
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -92,6 +92,19 @@ function copyCollection(srcRoot, outRoot, relativePath) {
   writeFileSync(to, `${JSON.stringify(collection, null, 2)}\n`);
 }
 
+/**
+ * The `files/` folder of every schematic, the Angular convention for the
+ * template files a schematic reads at run time. They ship next to the
+ * bundle instead of inside it (the ng-add starter's page files), so the
+ * bundle stays inside its size budget.
+ */
+function runtimeFileDirs(srcRoot) {
+  return readdirSync(srcRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !NON_ENTRY_DIRS.has(entry.name))
+    .map((entry) => join(entry.name, 'files'))
+    .filter((dir) => existsSync(join(srcRoot, dir)));
+}
+
 function schemaFiles(srcRoot) {
   return readdirSync(srcRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && !NON_ENTRY_DIRS.has(entry.name))
@@ -140,6 +153,9 @@ async function buildLib(lib) {
   }
   for (const file of schemaFiles(srcRoot)) {
     copyInto(srcRoot, outRoot, file);
+  }
+  for (const dir of runtimeFileDirs(srcRoot)) {
+    cpSync(join(srcRoot, dir), join(outRoot, dir), { recursive: true });
   }
   const shimSchema = join(outRoot, 'ng-add', 'schema.json');
   if (lib !== 'core' && existsSync(join(outRoot, 'ng-add')) && !existsSync(shimSchema)) {

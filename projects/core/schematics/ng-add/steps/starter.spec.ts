@@ -6,7 +6,7 @@ import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeSc
 import { describe, expect, it } from 'vitest';
 
 import { contentFingerprint, type EditFile, type StepResult } from '../../engine';
-import { createAnswers, createFacts, deepFreeze, VERSIONS } from '../../testing/onboarding';
+import { createAnswers, createFacts, deepFreeze, STARTER_TEMPLATES, VERSIONS } from '../../testing/onboarding';
 import { createFixtureTree, type FixtureName, readFixture } from '../../testing/run-schematic';
 import { type AppScaffold, detectProject, type ProjectFacts, starterFingerprintOf } from '../detect/detect';
 import { type OnboardingAnswers } from './model';
@@ -16,8 +16,7 @@ import {
   renderStarter,
   renderStarterBodies,
   STARTER_BODY_RULE,
-  STARTER_FAVICON,
-  STARTER_ID,
+    STARTER_ID,
   STARTER_LEFT_OUT_REASONS,
   type StarterBlocks,
   starterFingerprints,
@@ -103,7 +102,7 @@ function blocksName(blocks: StarterBlocks): string {
 
 describe('renderStarterBodies', () => {
   it.each(ALL_BLOCKS.map((blocks) => [blocksName(blocks), blocks] as const))('%s imports exactly what it uses', (_name, blocks) => {
-    const { component, template } = renderStarterBodies(blocks, TARGET);
+    const { component, template } = renderStarterBodies(STARTER_TEMPLATES, blocks, TARGET);
     const source = ts.createSourceFile('app.ts', component, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
     const listed = decoratorImports(component);
 
@@ -132,7 +131,7 @@ describe('renderStarterBodies', () => {
 
   it('keeps the heading and the title signal the stock spec asserts', () => {
     for (const blocks of ALL_BLOCKS) {
-      const { component, template } = renderStarterBodies(blocks, TARGET);
+      const { component, template } = renderStarterBodies(STARTER_TEMPLATES, blocks, TARGET);
 
       expect(component).toContain("protected readonly title = signal('fixture-app');");
       expect(template).toContain('<h1 id="hero-title">Hello, <span class="hero__name">{{ title() }}</span>.</h1>');
@@ -140,8 +139,8 @@ describe('renderStarterBodies', () => {
   });
 
   it('places the outlets with feedback only: the banner first, the toast last', () => {
-    const on = renderStarterBodies({ ...ALL_BLOCKS[0], feedback: true }, TARGET).template;
-    const off = renderStarterBodies({ ...ALL_BLOCKS[0], feedback: false }, TARGET).template;
+    const on = renderStarterBodies(STARTER_TEMPLATES, { ...ALL_BLOCKS[0], feedback: true }, TARGET).template;
+    const off = renderStarterBodies(STARTER_TEMPLATES, { ...ALL_BLOCKS[0], feedback: false }, TARGET).template;
 
     expect(on.startsWith('<cngx-banner-outlet />\n')).toBe(true);
     expect(on.endsWith('<cngx-toast-outlet />\n')).toBe(true);
@@ -149,12 +148,12 @@ describe('renderStarterBodies', () => {
   });
 
   it('renders the router outlet only with routing', () => {
-    expect(renderStarterBodies({ ...ALL_BLOCKS[0], routing: true }, TARGET).template).toContain('<router-outlet />');
-    expect(renderStarterBodies({ ...ALL_BLOCKS[0], routing: false }, TARGET).template).not.toContain('router-outlet');
+    expect(renderStarterBodies(STARTER_TEMPLATES, { ...ALL_BLOCKS[0], routing: true }, TARGET).template).toContain('<router-outlet />');
+    expect(renderStarterBodies(STARTER_TEMPLATES, { ...ALL_BLOCKS[0], routing: false }, TARGET).template).not.toContain('router-outlet');
   });
 
   it('labels the language toggle and marks the German choice as German', () => {
-    const { template, component } = renderStarterBodies({ ...ALL_BLOCKS[0], language: true }, TARGET);
+    const { template, component } = renderStarterBodies(STARTER_TEMPLATES, { ...ALL_BLOCKS[0], language: true }, TARGET);
 
     expect(template).toContain('<cngx-button-toggle-group label="Language"');
     expect(template).toContain('<button cngxButtonToggle value="de" lang="de">Deutsch</button>');
@@ -162,7 +161,7 @@ describe('renderStarterBodies', () => {
   });
 
   it('imports the language file relative to the component', () => {
-    const { component } = renderStarterBodies(
+    const { component } = renderStarterBodies(STARTER_TEMPLATES, 
       { ...ALL_BLOCKS[0], language: true },
       { ...TARGET, files: { ...FILES, component: 'src/app/shell/app.ts' } },
     );
@@ -171,15 +170,15 @@ describe('renderStarterBodies', () => {
   });
 
   it('names the template the user edits and keeps the doctor command out of Angular interpolation', () => {
-    const { template } = renderStarterBodies(ALL_BLOCKS[0], TARGET);
+    const { template } = renderStarterBodies(STARTER_TEMPLATES, ALL_BLOCKS[0], TARGET);
 
     expect(template).toContain('This page lives in <code>src/app/app.html</code>.');
     expect(template).toContain('<code>npx &#64;cngx/doctor</code>');
   });
 
   it('shows the toast button as the solid call to action with feedback, the docs link without it', () => {
-    const on = renderStarterBodies({ ...ALL_BLOCKS[0], feedback: true }, TARGET).template;
-    const off = renderStarterBodies({ ...ALL_BLOCKS[0], feedback: false }, TARGET).template;
+    const on = renderStarterBodies(STARTER_TEMPLATES, { ...ALL_BLOCKS[0], feedback: true }, TARGET).template;
+    const off = renderStarterBodies(STARTER_TEMPLATES, { ...ALL_BLOCKS[0], feedback: false }, TARGET).template;
 
     expect(on).toContain('<button type="button" class="cta cta--solid" (click)="showToast()">Show a toast');
     expect(on).toContain('<a class="cta cta--ghost" href="https://cngxjs.github.io/cngx/"');
@@ -187,7 +186,7 @@ describe('renderStarterBodies', () => {
   });
 
   it('drops the chips, the try section and its nav link when nothing was installed to try', () => {
-    const { template } = renderStarterBodies(ALL_BLOCKS[0], TARGET);
+    const { template } = renderStarterBodies(STARTER_TEMPLATES, ALL_BLOCKS[0], TARGET);
 
     expect(template).not.toContain('class="chips"');
     expect(template).not.toContain('id="try"');
@@ -195,7 +194,7 @@ describe('renderStarterBodies', () => {
   });
 
   it('reads the brand gradient token with a local fallback', () => {
-    expect(renderStarterBodies(ALL_BLOCKS[0], TARGET).stylesheet).toContain(
+    expect(renderStarterBodies(STARTER_TEMPLATES, ALL_BLOCKS[0], TARGET).stylesheet).toContain(
       '--brand: var(--cngx-gradient-brand, linear-gradient(100deg, var(--accent), var(--accent-2)));',
     );
   });
@@ -203,10 +202,10 @@ describe('renderStarterBodies', () => {
 
 describe('renderStarter', () => {
   it('records the fingerprint of each body on its first line, stable across renders', () => {
-    const bodies = renderStarterBodies(ALL_BLOCKS[31], TARGET);
+    const bodies = renderStarterBodies(STARTER_TEMPLATES, ALL_BLOCKS[31], TARGET);
     const written = renderStarter(bodies);
 
-    expect(renderStarter(renderStarterBodies(ALL_BLOCKS[31], TARGET))).toEqual(written);
+    expect(renderStarter(renderStarterBodies(STARTER_TEMPLATES, ALL_BLOCKS[31], TARGET))).toEqual(written);
     expect(starterFingerprintOf(written.component)).toBe(contentFingerprint(bodies.component));
     expect(written.component.split('\n')[0]).toBe(`/* cngx:fingerprint ${contentFingerprint(bodies.component)} */`);
     expect(written.template.split('\n')[0]).toBe(`<!-- cngx:fingerprint ${contentFingerprint(bodies.template)} -->`);
@@ -238,7 +237,7 @@ describe('withStarterBodyRule', () => {
 
 describe('planStarter', () => {
   it('writes the three files, the body rule, the favicon and the icon link over the untouched scaffold', () => {
-    const result = planStarter(untouchedFacts(), FULL, VERSIONS, []);
+    const result = planStarter(untouchedFacts(), FULL, VERSIONS, [], STARTER_TEMPLATES);
 
     expect(result.changes.map((change) => [change.kind, change.id, 'path' in change ? change.path : ''])).toEqual([
       ['edit-file', STARTER_ID, 'src/app/app.ts'],
@@ -248,12 +247,12 @@ describe('planStarter', () => {
       ['create-file', STARTER_ID, 'public/favicon.svg'],
       ['edit-file', STARTER_ID, 'src/index.html'],
     ]);
-    expect(result.changes.find((change) => change.kind === 'create-file')).toMatchObject({ content: STARTER_FAVICON });
+    expect(result.changes.find((change) => change.kind === 'create-file')).toMatchObject({ content: STARTER_TEMPLATES.favicon });
     expect(writesStarter(untouchedFacts(), FULL)).toBe(true);
   });
 
   it('re-checks each file at apply time and leaves one that changed since detection as it is', () => {
-    const result = planStarter(untouchedFacts(), FULL, VERSIONS, []);
+    const result = planStarter(untouchedFacts(), FULL, VERSIONS, [], STARTER_TEMPLATES);
     const changedApp = `${STOCK['src/app/app.ts']}// mine\n`;
 
     expect(edited(result, 'src/app/app.ts', STOCK['src/app/app.ts'])).toContain('/* cngx:fingerprint ');
@@ -271,14 +270,14 @@ describe('planStarter', () => {
     });
     const unfollowed = createFacts({ appShell: { kind: 'unfollowed', reason: 'main-missing', subject: '', file: 'src/main.ts' } });
 
-    expect(planStarter(untouchedFacts(), { ...FULL, starter: false }, VERSIONS, [])).toEqual({ changes: [], skipped: [] });
-    expect(planStarter(ngModule, FULL, VERSIONS, [])).toEqual({ changes: [], skipped: [] });
-    expect(planStarter(unfollowed, FULL, VERSIONS, [])).toEqual({ changes: [], skipped: [] });
+    expect(planStarter(untouchedFacts(), { ...FULL, starter: false }, VERSIONS, [], STARTER_TEMPLATES)).toEqual({ changes: [], skipped: [] });
+    expect(planStarter(ngModule, FULL, VERSIONS, [], STARTER_TEMPLATES)).toEqual({ changes: [], skipped: [] });
+    expect(planStarter(unfollowed, FULL, VERSIONS, [], STARTER_TEMPLATES)).toEqual({ changes: [], skipped: [] });
     expect(writesStarter(ngModule, FULL)).toBe(false);
   });
 
   it('names a component that is not the untouched scaffold instead of writing over it', () => {
-    const result = planStarter(createFacts({ scaffold: { kind: 'custom' } }), FULL, VERSIONS, []);
+    const result = planStarter(createFacts({ scaffold: { kind: 'custom' } }), FULL, VERSIONS, [], STARTER_TEMPLATES);
 
     expect(result.changes).toEqual([
       expect.objectContaining({ kind: 'note', id: STARTER_ID, reason: starterLeftOutText('not-untouched', 'src/app/app.ts') }),
@@ -286,7 +285,7 @@ describe('planStarter', () => {
   });
 
   it('skips a starter its record wrote that was replaced since, without a note', () => {
-    const result = planStarter(createFacts({ scaffold: { kind: 'custom' } }), FULL, VERSIONS, [STARTER_ID]);
+    const result = planStarter(createFacts({ scaffold: { kind: 'custom' } }), FULL, VERSIONS, [STARTER_ID], STARTER_TEMPLATES);
 
     expect(result).toEqual({
       changes: [],
@@ -295,7 +294,7 @@ describe('planStarter', () => {
   });
 
   it('names the libs the starter composes when one is not selected', () => {
-    const result = planStarter(untouchedFacts(), { ...FULL, libs: ['forms'] }, VERSIONS, []);
+    const result = planStarter(untouchedFacts(), { ...FULL, libs: ['forms'] }, VERSIONS, [], STARTER_TEMPLATES);
 
     expect(result.changes).toEqual([expect.objectContaining({ kind: 'note', reason: starterLeftOutText('libs-missing') })]);
     expect(writesStarter(untouchedFacts(), { ...FULL, libs: ['forms'] })).toBe(false);
@@ -306,30 +305,30 @@ describe('planStarter', () => {
     ['a favicon.svg that is already there', { favicon: { path: 'public/favicon.svg', fingerprint: '00000000' } }, starterLeftOutText('favicon-taken', 'public/favicon.svg')],
     ['no public folder', { favicon: undefined }, starterLeftOutText('no-public-folder')],
   ] as const)('writes the starter but leaves the icon to %s with a note', (_name, overrides, reason) => {
-    const result = planStarter(untouchedFacts(overrides as Partial<ProjectFacts>), FULL, VERSIONS, []);
+    const result = planStarter(untouchedFacts(overrides as Partial<ProjectFacts>), FULL, VERSIONS, [], STARTER_TEMPLATES);
 
     expect(edits(result).map((change) => change.path)).toEqual(['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/styles.css']);
     expect(result.changes.filter((change) => change.kind === 'note')).toEqual([expect.objectContaining({ reason })]);
   });
 
   it('leaves the icon alone without a word when there is no index.html', () => {
-    const result = planStarter(untouchedFacts({ indexHtml: { path: 'src/index.html', state: 'absent' } }), FULL, VERSIONS, []);
+    const result = planStarter(untouchedFacts({ indexHtml: { path: 'src/index.html', state: 'absent' } }), FULL, VERSIONS, [], STARTER_TEMPLATES);
 
     expect(result.changes.filter((change) => change.kind !== 'edit-file')).toEqual([]);
   });
 
   it('skips a starter cngx wrote for these answers, once per change the writing run planned', () => {
-    const bodies = renderStarterBodies(
+    const bodies = renderStarterBodies(STARTER_TEMPLATES, 
       { routing: true, theme: true, a11y: true, feedback: true, language: false },
       TARGET,
     );
     const facts = untouchedFacts({
       scaffold: { kind: 'starter', files: FILES, fingerprints: starterFingerprints(bodies), selector: 'app-root' },
       indexHtml: { path: 'src/index.html', state: 'starter' },
-      favicon: { path: 'public/favicon.svg', fingerprint: contentFingerprint(STARTER_FAVICON) },
+      favicon: { path: 'public/favicon.svg', fingerprint: contentFingerprint(STARTER_TEMPLATES.favicon) },
     });
-    const first = planStarter(untouchedFacts(), FULL, VERSIONS, []);
-    const again = planStarter(facts, FULL, VERSIONS, [STARTER_ID]);
+    const first = planStarter(untouchedFacts(), FULL, VERSIONS, [], STARTER_TEMPLATES);
+    const again = planStarter(facts, FULL, VERSIONS, [STARTER_ID], STARTER_TEMPLATES);
 
     expect(again.changes).toEqual([]);
     expect(again.skipped.map((step) => step.label)).toEqual(first.changes.map((change) => change.label));
@@ -337,21 +336,21 @@ describe('planStarter', () => {
   });
 
   it('recognises a starter written without routing as current too', () => {
-    const bodies = renderStarterBodies({ routing: false, theme: true, a11y: true, feedback: true, language: false }, TARGET);
+    const bodies = renderStarterBodies(STARTER_TEMPLATES, { routing: false, theme: true, a11y: true, feedback: true, language: false }, TARGET);
     const facts = untouchedFacts({
       scaffold: { kind: 'starter', files: FILES, fingerprints: starterFingerprints(bodies), selector: 'app-root' },
     });
 
-    expect(planStarter(facts, FULL, VERSIONS, []).changes).toEqual([]);
+    expect(planStarter(facts, FULL, VERSIONS, [], STARTER_TEMPLATES).changes).toEqual([]);
   });
 
   it('names a starter cngx wrote for other answers and leaves it as it is', () => {
-    const bodies = renderStarterBodies({ routing: true, theme: true, a11y: false, feedback: false, language: false }, TARGET);
+    const bodies = renderStarterBodies(STARTER_TEMPLATES, { routing: true, theme: true, a11y: false, feedback: false, language: false }, TARGET);
     const facts = untouchedFacts({
       scaffold: { kind: 'starter', files: FILES, fingerprints: starterFingerprints(bodies), selector: 'app-root' },
     });
 
-    expect(planStarter(facts, FULL, VERSIONS, [STARTER_ID])).toEqual({
+    expect(planStarter(facts, FULL, VERSIONS, [STARTER_ID], STARTER_TEMPLATES)).toEqual({
       changes: [expect.objectContaining({ kind: 'note', reason: starterLeftOutText('other-answers', 'src/app/app.ts') })],
       skipped: [],
     });
@@ -364,7 +363,7 @@ describe('planStarter', () => {
     ['scaffold-21-scss', 'src/app/app.scss', true],
   ] as const)('writes the starter over %s', async (fixture, stylesheet, routing) => {
     const facts = await factsOf(fixture);
-    const result = planStarter(facts, FULL, VERSIONS, []);
+    const result = planStarter(facts, FULL, VERSIONS, [], STARTER_TEMPLATES);
     const files = readFixture(fixture);
     const component = edited(result, 'src/app/app.ts', files['src/app/app.ts']);
 
@@ -383,7 +382,7 @@ describe('planStarter', () => {
   it('renders the language toggle only when the runtime switch is wired through cngx-language.ts', () => {
     const german = { ...FULL, i18n: 'de', runtimeSwitch: true } as const;
     const component = (facts: ProjectFacts, answers: OnboardingAnswers) =>
-      edited(planStarter(facts, answers, VERSIONS, []), 'src/app/app.ts', STOCK['src/app/app.ts']);
+      edited(planStarter(facts, answers, VERSIONS, [], STARTER_TEMPLATES), 'src/app/app.ts', STOCK['src/app/app.ts']);
 
     expect(component(untouchedFacts(), german)).toContain('cngxLanguagePack.set(');
     expect(component(untouchedFacts(), FULL)).not.toContain('cngxLanguagePack');
@@ -394,7 +393,7 @@ describe('planStarter', () => {
   });
 
   it('does not mutate its inputs', () => {
-    expect(() => planStarter(deepFreeze(untouchedFacts()), deepFreeze(FULL), VERSIONS, deepFreeze([]))).not.toThrow();
+    expect(() => planStarter(deepFreeze(untouchedFacts()), deepFreeze(FULL), VERSIONS, deepFreeze([]), STARTER_TEMPLATES)).not.toThrow();
   });
 });
 

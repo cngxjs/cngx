@@ -4,7 +4,7 @@ import { readWorkspace } from '@schematics/angular/utility';
 import { format } from 'prettier';
 import { describe, expect, it, vi } from 'vitest';
 
-import { createAnswers, VERSIONS } from '../testing/onboarding';
+import { createAnswers, STARTER_TEMPLATES, VERSIONS } from '../testing/onboarding';
 import { createFixtureTree, type FixtureName, readFixture, readTree, runRule } from '../testing/run-schematic';
 import {
   type AppShell,
@@ -17,7 +17,7 @@ import {
 import { ngAdd } from './index';
 import { INSTALL_MANIFEST_PATH } from './steps/manifest';
 import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell } from './steps/app-shell';
-import { STARTER_FAVICON, STARTER_ID, starterLeftOutText } from './steps/starter';
+import { STARTER_ID, starterLeftOutText } from './steps/starter';
 
 // Runs `ng add --feedback` over every root component shape in CORPUS and
 // holds each to one of two outcomes: a note with a reason from the closed
@@ -863,7 +863,7 @@ function expectStarterWritten(before: Files, after: Files, facts: ProjectFacts, 
     return;
   }
   expect(facts.indexHtml.state).toBe('starter');
-  expect(after['public/favicon.svg']).toBe(STARTER_FAVICON);
+  expect(after['public/favicon.svg']).toBe(STARTER_TEMPLATES.favicon);
 }
 
 function expectStarterLeftOut(before: Files, after: Files, shape: StarterShape, logs: string): void {

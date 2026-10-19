@@ -1,6 +1,13 @@
+import { join } from 'node:path';
+
 import { CNGX_LIBS, parseManifest } from '../engine';
 import { type ProjectFacts } from '../ng-add/detect/detect';
+import { readStarterTemplates } from '../ng-add/shell/starter-templates';
 import { type OnboardingAnswers, type Versions } from '../ng-add/steps/model';
+import { type StarterTemplates } from '../ng-add/steps/starter';
+
+/** The starter's files as the sources hold them, read the way the ng-add shell reads them. */
+export const STARTER_TEMPLATES: StarterTemplates = readStarterTemplates(join(__dirname, '..', 'ng-add', 'files', 'starter'));
 
 export const VERSIONS: Versions = { cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.0', angular: '^21.2.0' };
 

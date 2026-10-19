@@ -34,8 +34,10 @@ projects/core/schematics/
                          scaffold-catalog.generated.ts), scaffold (untouched ng new
                          App, starter fingerprints, index.html, favicon)
     steps/               pure plan<Step>(facts, answers, versions) per concern
-    templates/           .tpl text (esbuild text loader): the helper README and the
-                         starter's app.ts, app.html, stylesheet and favicon
+    templates/           .tpl text bundled by the esbuild text loader: the helper README
+    files/starter/       the starter's app.ts, app.html, stylesheet and favicon; shipped
+                         as files next to the bundle (build-schematics copies every
+                         <schematic>/files folder) and read by the shell at run time
     shell/               questions, preflight checklist, git state, install manifest reader (absent / unreadable / read)
   migrations/
     migrations.json      the ng update collection, hand-written entries only

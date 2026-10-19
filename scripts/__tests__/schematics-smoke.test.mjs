@@ -436,9 +436,15 @@ describe('dist/ui/schematics ng-add shim', () => {
 // Every schematic entry ships inside a published package, so its size is
 // paid on every install. The bundled renderer and prompt libraries take about
 // 140 KB of it (listr2 alone 52 KB); the rest is the onboarding itself,
-// including the editor configs the AI tooling step writes.
-const MAX_MINIFIED = 256 * 1024;
-const MAX_GZIP = 90 * 1024;
+// including the editor configs the AI tooling step writes. The full-preset
+// starter step (scaffold detection against the generated catalog, the
+// starter plan, its re-run checks) added about 22 KB minified and 3 KB gzip
+// to ng-add, which was at 255 KB before it: ng-add measured 277,658 B
+// minified and 88,268 B gzip when the budget moved from 256 / 90 KB. The
+// starter's page files ship next to the bundle (`ng-add/files/starter`),
+// not inside it, so they do not count here.
+const MAX_MINIFIED = 288 * 1024;
+const MAX_GZIP = 96 * 1024;
 // A shim only adds core and delegates; it pulls nothing from the renderer
 // or the prompts, which `sideEffects: false` on the source package lets
 // esbuild drop.
@@ -494,7 +500,17 @@ describe('schematic bundle budget', () => {
     expect(schematicEntries().filter((file) => !existsSync(join(ROOT, 'dist', file)))).toEqual([]);
   });
 
-  it.each(schematicEntries())('keeps dist/%s under 256 KB minified and 90 KB gzip', (file) => {
+  it('ships the files ng-add reads at run time next to its bundle', () => {
+    const dir = join(ROOT, 'dist', 'core', 'schematics', 'ng-add', 'files', 'starter');
+    const source = join(ROOT, 'projects', 'core', 'schematics', 'ng-add', 'files', 'starter');
+
+    expect(readdirSync(dir).sort()).toEqual(readdirSync(source).sort());
+    for (const file of readdirSync(source)) {
+      expect({ file, same: readFileSync(join(dir, file), 'utf8') === readFileSync(join(source, file), 'utf8') }).toEqual({ file, same: true });
+    }
+  });
+
+  it.each(schematicEntries())('keeps dist/%s under 288 KB minified and 96 KB gzip', (file) => {
     const content = readFileSync(join(ROOT, 'dist', file));
 
     expect(content.length).toBeLessThanOrEqual(MAX_MINIFIED);

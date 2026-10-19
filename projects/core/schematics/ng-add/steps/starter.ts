@@ -20,16 +20,6 @@ import {
   starterFingerprintLine,
   withStarterFavicon,
 } from '../detect/detect';
-// Sheriff resolves TypeScript modules only; the templates are text, bundled
-// by the esbuild text loader, so there is no module boundary to check.
-// eslint-disable-next-line @softarc/sheriff/dependency-rule, @softarc/sheriff/encapsulation
-import STYLESHEET from '../templates/starter-app.css.tpl';
-// eslint-disable-next-line @softarc/sheriff/dependency-rule, @softarc/sheriff/encapsulation
-import TEMPLATE from '../templates/starter-app.html.tpl';
-// eslint-disable-next-line @softarc/sheriff/dependency-rule, @softarc/sheriff/encapsulation
-import COMPONENT from '../templates/starter-app.ts.tpl';
-// eslint-disable-next-line @softarc/sheriff/dependency-rule, @softarc/sheriff/encapsulation
-import FAVICON from '../templates/starter-favicon.svg.tpl';
 import { canInstallTheme, selectedLibs } from './dependencies';
 import { fillTemplate } from './helper-readme';
 import { type OnboardingAnswers, type Versions } from './model';
@@ -94,20 +84,6 @@ export function starterBlocks(facts: ProjectFacts, answers: OnboardingAnswers, r
     language: switchesLanguageAtRuntime(facts, answers) && libs.includes('common'),
   };
 }
-
-// The cngx mark, one line: three arcs in the brand colours and the ring in
-// the text colour, so it follows the theme.
-const MARK =
-  '<svg class="brand__mark" viewBox="12 12 76 76" aria-hidden="true" focusable="false"><path d="M66.32 32.60A26 26 0 0 0 38.97 25.27" stroke="#ff8a1f" stroke-width="12" fill="none"/><path d="M30.99 29.51A26 26 0 0 0 30.99 70.49" stroke="#f2546b" stroke-width="12" fill="none"/><path d="M38.97 74.73A26 26 0 0 0 66.32 67.40" stroke="#d9429a" stroke-width="12" fill="none"/><circle cx="73" cy="50" r="8" fill="none" stroke="currentColor" stroke-width="6.5"/></svg>';
-
-const ICONS = [
-  '        <a class="icon-btn" href="https://github.com/cngxjs/cngx" target="_blank" rel="noopener" aria-label="cngx on GitHub">',
-  '          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>',
-  '        </a>',
-  '        <a class="icon-btn" href="https://www.npmjs.com/package/@cngx/core" target="_blank" rel="noopener" aria-label="@cngx/core on npm">',
-  '          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z"/></svg>',
-  '        </a>',
-].join('\n');
 
 const SECTION = /^\{\{#(\w+)\}\}\n([\s\S]*?)^\{\{\/\1\}\}\n/gm;
 
@@ -186,6 +162,18 @@ function componentImports(blocks: StarterBlocks): readonly string[] {
   ];
 }
 
+/**
+ * The starter's template files, read by the shell from `ng-add/files/starter`
+ * next to the ng-add bundle (`readStarterTemplates`), so their text stays out
+ * of the bundle.
+ */
+export interface StarterTemplates {
+  readonly component: string;
+  readonly template: string;
+  readonly stylesheet: string;
+  readonly favicon: string;
+}
+
 /** The three rendered bodies, without their fingerprint lines. */
 export type StarterBodies = Readonly<Record<keyof ScaffoldFiles, string>>;
 
@@ -198,11 +186,11 @@ export interface StarterTarget {
 }
 
 /** The starter's `app.ts`, `app.html` and stylesheet for `blocks`, before their fingerprint lines. */
-export function renderStarterBodies(blocks: StarterBlocks, target: StarterTarget): StarterBodies {
+export function renderStarterBodies(templates: StarterTemplates, blocks: StarterBlocks, target: StarterTarget): StarterBodies {
   const on = sections(blocks);
   const { files } = target;
   const component = fillTemplate(
-    renderSections(COMPONENT, on, 'starter-app.ts.tpl'),
+    renderSections(templates.component, on, 'app.ts.tpl'),
     {
       imports: importLines(blocks, languageModule(files.component, target.rootProvidersFile)).join('\n'),
       selector: quoted(target.selector),
@@ -211,14 +199,14 @@ export function renderStarterBodies(blocks: StarterBlocks, target: StarterTarget
       stylesheetFile: posix.relative(posix.dirname(files.component), files.stylesheet),
       project: quoted(target.project),
     },
-    'starter-app.ts.tpl',
+    'app.ts.tpl',
   );
   const template = fillTemplate(
-    renderSections(TEMPLATE, on, 'starter-app.html.tpl'),
-    { mark: MARK, icons: ICONS, templatePath: files.template },
-    'starter-app.html.tpl',
+    renderSections(templates.template, on, 'app.html.tpl'),
+    { templatePath: files.template },
+    'app.html.tpl',
   );
-  return { component, template, stylesheet: STYLESHEET };
+  return { component, template, stylesheet: templates.stylesheet };
 }
 
 /** Each body with the line recording its fingerprint on top, as written. */
@@ -239,9 +227,6 @@ export function starterFingerprints(bodies: StarterBodies): Readonly<Record<keyo
     stylesheet: contentFingerprint(bodies.stylesheet),
   };
 }
-
-/** The favicon the starter writes, the cngx mark whose ring follows the colour scheme. */
-export const STARTER_FAVICON = FAVICON;
 
 /** The stylesheet with the body rule appended once. */
 export function withStarterBodyRule(content: string): string {
@@ -312,7 +297,7 @@ function iconLabel(index: IndexHtmlFacts): string {
 
 // The favicon and the icon link go together: both when `index.html` is the
 // untouched file and no `favicon.svg` is there, neither otherwise.
-function favicon(facts: ProjectFacts, scaffold: Untouched, provenance: Provenance): StepResult {
+function favicon(facts: ProjectFacts, scaffold: Untouched, svg: string, provenance: Provenance): StepResult {
   const { indexHtml: index, favicon: icon } = facts;
   const label = iconLabel(index);
   if (icon === undefined) {
@@ -335,7 +320,7 @@ function favicon(facts: ProjectFacts, scaffold: Untouched, provenance: Provenanc
         reason: 'the cngx mark as the app icon',
         provenance,
         path: icon.path,
-        content: STARTER_FAVICON,
+        content: svg,
       },
       {
         kind: 'edit-file',
@@ -366,14 +351,22 @@ function target(facts: ProjectFacts, files: ScaffoldFiles, selector: string): St
   return { project: facts.project, selector, files, rootProvidersFile: facts.rootProvidersFile };
 }
 
-function rendered(facts: ProjectFacts, answers: OnboardingAnswers, files: ScaffoldFiles, routing: boolean, selector: string): StarterBodies {
-  return renderStarterBodies(starterBlocks(facts, answers, routing), target(facts, files, selector));
+function rendered(
+  templates: StarterTemplates,
+  facts: ProjectFacts,
+  answers: OnboardingAnswers,
+  files: ScaffoldFiles,
+  routing: boolean,
+  selector: string,
+): StarterBodies {
+  return renderStarterBodies(templates, starterBlocks(facts, answers, routing), target(facts, files, selector));
 }
 
 // A starter cngx wrote: in place when its fingerprints match this run's
 // render (with routing on or off, which the starter itself does not record),
 // else written for other answers and left as it is.
 function planWrittenStarter(
+  templates: StarterTemplates,
   facts: ProjectFacts,
   answers: OnboardingAnswers,
   scaffold: Extract<AppScaffold, { kind: 'starter' }>,
@@ -385,7 +378,7 @@ function planWrittenStarter(
     if (selector === undefined) {
       return false;
     }
-    const fingerprints = starterFingerprints(rendered(facts, answers, scaffold.files, routing, selector));
+    const fingerprints = starterFingerprints(rendered(templates, facts, answers, scaffold.files, routing, selector));
     return (Object.keys(fingerprints) as (keyof ScaffoldFiles)[]).every((key) => fingerprints[key] === scaffold.fingerprints[key]);
   });
   if (!current) {
@@ -420,6 +413,7 @@ export function planStarter(
   answers: OnboardingAnswers,
   versions: Versions,
   recorded: readonly string[],
+  templates: StarterTemplates,
 ): StepResult {
   if (!answers.starter) {
     return NOTHING;
@@ -436,15 +430,15 @@ export function planStarter(
   }
   const scaffold = facts.scaffold;
   if (scaffold.kind === 'starter') {
-    return planWrittenStarter(facts, answers, scaffold, provenance);
+    return planWrittenStarter(templates, facts, answers, scaffold, provenance);
   }
   if (scaffold.kind === 'custom') {
     return recorded.includes(STARTER_ID)
       ? { changes: [], skipped: [{ id: STARTER_ID, label, reason: 'the starter was replaced after cngx wrote it' }] }
       : { changes: [note(label, starterLeftOutText('not-untouched', shell.componentFile), provenance)], skipped: [] };
   }
-  const written = renderStarter(rendered(facts, answers, scaffold.files, scaffold.routing, scaffold.names.selector));
-  const icon = favicon(facts, scaffold, provenance);
+  const written = renderStarter(rendered(templates, facts, answers, scaffold.files, scaffold.routing, scaffold.names.selector));
+  const icon = favicon(facts, scaffold, templates.favicon, provenance);
   return {
     changes: [...fileWrites(scaffold, written, provenance), ...bodyRule(facts, provenance), ...icon.changes],
     skipped: icon.skipped,

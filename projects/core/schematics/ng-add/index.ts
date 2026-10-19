@@ -1,6 +1,7 @@
 import { chain, noop, type Rule, type SchematicContext, SchematicsException, type Tree } from '@angular-devkit/schematics';
 import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
 import { readWorkspace } from '@schematics/angular/utility';
+import { join } from 'node:path';
 
 import {
   applyChangePlan,
@@ -36,7 +37,8 @@ import { readInstallManifest, manifestOf, unreadableCopyPath } from './shell/ins
 import { planManifest, planUnreadableManifest, recordedLibs, recordedStepIds, unionLibs } from './steps/manifest';
 import { type Step } from './steps/model';
 import { planProviders } from './steps/providers';
-import { planStarter, writesStarter } from './steps/starter';
+import { readStarterTemplates } from './shell/starter-templates';
+import { planStarter, type StarterTemplates, writesStarter } from './steps/starter';
 import { readRecordedAnswers } from './steps/reruns';
 import { planTheme } from './steps/theme';
 
@@ -50,6 +52,8 @@ interface StepContext {
   readonly projectSteps: readonly string[];
   /** `--feedback` was passed, so outlets the user removed are placed again. */
   readonly explicitFeedback: boolean;
+  /** The starter's files, read from next to this entry. */
+  readonly starterTemplates: StarterTemplates;
 }
 
 /**
@@ -61,12 +65,12 @@ interface StepContext {
  * helper README is workspace-wide, so it lists the libs of every project's
  * record, not only this run's.
  */
-function planSteps({ withdrawn, workspaceLibs, projectSteps, explicitFeedback }: StepContext): readonly Step[] {
+function planSteps({ withdrawn, workspaceLibs, projectSteps, explicitFeedback, starterTemplates }: StepContext): readonly Step[] {
   return [
     planDependencies,
     planTheme,
     planProviders,
-    (facts, answers, versions) => planStarter(facts, answers, versions, projectSteps),
+    (facts, answers, versions) => planStarter(facts, answers, versions, projectSteps, starterTemplates),
     (facts, answers, versions) =>
       planAppShell(facts, answers, versions, projectSteps, explicitFeedback, writesStarter(facts, answers)),
     planLint,
@@ -205,6 +209,8 @@ export function ngAdd(flags: NgAddFlags): Rule {
           workspaceLibs: recordedLibs(manifest),
           projectSteps: previous?.steps.map((step) => step.id) ?? [],
           explicitFeedback,
+          // Next to this entry in the sources and in the bundle alike.
+          starterTemplates: readStarterTemplates(join(__dirname, 'files', 'starter')),
         }).map((step) => step(facts, answers, versions)),
         presetChangeNote(options, recorded, provenance),
         libsFloorNote(answeredLibs, answers.libs, facts.project, provenance),

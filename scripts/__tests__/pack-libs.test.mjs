@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { manifestFileRefs, missingRefs, stampStagedSchematics } from '../pack-libs.mjs';
+import { manifestFileRefs, missingRefs, missingRuntimeFiles, stampStagedSchematics } from '../pack-libs.mjs';
 import { readPackageVersion, refreshMigrationKey } from '../publish.mjs';
 
 const pkg = {
@@ -26,6 +26,25 @@ describe('manifestFileRefs', () => {
       'schematics/collection.json',
       'theming/*.css',
       'types/cngx-core.d.ts',
+    ]);
+  });
+});
+
+describe('missingRuntimeFiles', () => {
+  const stage = [
+    'package.json',
+    'schematics/ng-add/index.js',
+    'schematics/ng-add/files/starter/app.ts.tpl',
+    'schematics/ng-add/files/starter/favicon.svg',
+  ];
+
+  it('is empty when the tarball carries every file a schematic reads at run time', () => {
+    expect(missingRuntimeFiles(stage, stage)).toEqual([]);
+  });
+
+  it('names a run-time file the tarball lacks and ignores everything else', () => {
+    expect(missingRuntimeFiles(stage, ['package.json', 'schematics/ng-add/files/starter/app.ts.tpl'])).toEqual([
+      'schematics/ng-add/files/starter/favicon.svg',
     ]);
   });
 });
