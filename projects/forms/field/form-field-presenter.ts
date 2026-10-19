@@ -2,6 +2,7 @@ import {
   computed,
   contentChildren,
   Directive,
+  effect,
   inject,
   input,
   type Signal,
@@ -18,6 +19,7 @@ import { coerceSignal } from '@cngx/core/utils';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
 import { injectFormFieldI18n } from './i18n/form-field-i18n';
 import { CNGX_FIELD_AFFIX } from './field-box.token';
+import { registerFieldControl } from './field-control-registry';
 import {
   CNGX_FORM_FIELD_CONFIG,
   CNGX_FORM_FIELD_REVEAL,
@@ -93,6 +95,19 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
   private readonly hintFormatters = coerceSignal(this.config.constraintHints);
   private readonly i18n = injectFormFieldI18n();
   private readonly fieldReveal = inject(CNGX_FORM_FIELD_REVEAL, { optional: true });
+
+  constructor() {
+    // focusFirstError reaches a control bound without [formField] through
+    // this registration; the cleanup drops it when the control or the field
+    // changes.
+    effect((onCleanup) => {
+      const control = this.control();
+      if (!control) {
+        return;
+      }
+      onCleanup(registerFieldControl(this.fieldState(), control));
+    });
+  }
 
   /**
    * The Signal Forms field accessor - a callable that returns `FieldState`.

@@ -2,7 +2,11 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormField, form, min, required, schema, type FieldTree } from '@angular/forms/signals';
 import { describe, expect, it } from 'vitest';
+import { CngxSelect } from '@cngx/forms/select';
+
 import { focusFirstError } from './focus-first-error';
+import { CngxFormField } from './form-field.component';
+import { CngxLabel } from './label.component';
 
 interface Booking {
   fullName: string;
@@ -70,5 +74,40 @@ describe('focusFirstError', () => {
     host.model.set({ fullName: 'Ada', email: 'ada@example.com', seats: 2 });
     TestBed.tick();
     expect(host.focusFirst()).toBe(false);
+  });
+});
+
+@Component({
+  selector: 'focus-first-error-select-host',
+  template: `
+    <cngx-form-field [field]="f.colour">
+      <label cngxLabel>Colour</label>
+      <cngx-select [options]="options" />
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxLabel, CngxSelect],
+})
+class SelectHost {
+  readonly options = [
+    { value: 'red', label: 'Red' },
+    { value: 'green', label: 'Green' },
+  ];
+  readonly model = signal<{ colour: string | null }>({ colour: null });
+  readonly f = form(this.model, (p) => {
+    required(p.colour);
+  });
+}
+
+describe('focusFirstError - control bound without [formField]', () => {
+  it('focuses the role="combobox" element of a select inside cngx-form-field', () => {
+    const fixture = TestBed.createComponent(SelectHost);
+    const root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(focusFirstError(fixture.componentInstance.f)).toBe(true);
+    expect(document.activeElement).toBe(root.querySelector('[role="combobox"]'));
+    root.remove();
   });
 });
