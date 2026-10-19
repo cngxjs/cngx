@@ -58,6 +58,9 @@
  * bridge assigns the family tokens on the select host and every descendant,
  * so under the bridge a value set only on an ancestor stops at the bridge
  * value; set it on the select and its descendants (`.x, .x *`) instead.
+ * A later change moves the trigger tokens of the Material bridges to the
+ * theme root, after which an ancestor value reaches the trigger under the
+ * bridge too.
  *
  * **Pair with**
  *
