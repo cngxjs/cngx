@@ -13,6 +13,7 @@ import {
   type AppScaffold,
   CNGX_LANGUAGE_FILE,
   type IndexHtmlFacts,
+  isUntouchedGlobalStyles,
   matchesScaffoldEntry,
   type ProjectFacts,
   scaffoldEntries,
@@ -26,9 +27,6 @@ import { type OnboardingAnswers, type Versions } from './model';
 import { switchesLanguageAtRuntime } from './providers';
 
 export const STARTER_ID = 'app-shell:starter';
-
-/** The rule the starter adds to the global stylesheet, so the page meets the window edge. */
-export const STARTER_BODY_RULE = 'body {\n  margin: 0;\n}\n';
 
 interface StarterAt {
   /** The file the reason names. */
@@ -50,6 +48,10 @@ export const STARTER_LEFT_OUT_REASONS = {
     `${file} is not the untouched ng new file, so the starter leaves its icon link and favicon.svg alone`,
   'favicon-taken': ({ file }: StarterAt) =>
     `${file} exists and is not the cngx favicon, so the starter leaves it and the icon link alone`,
+  'styles-custom': ({ file }: StarterAt) =>
+    `${file} is not the untouched ng new global stylesheet, so the starter, whose page styles go there, is not written`,
+  'no-global-styles': () =>
+    'the build lists no global stylesheet, so the starter, whose page styles go there, is not written',
   'no-public-folder': () =>
     'the build copies no public folder, so the starter leaves the icon link and favicon.svg alone',
 } as const;
@@ -171,11 +173,27 @@ export interface StarterTemplates {
   readonly component: string;
   readonly template: string;
   readonly stylesheet: string;
+  /**
+   * The page styles that go into the global stylesheet (body margin,
+   * headings, top bar, footer), scoped to the root selector, so the
+   * component stylesheet stays inside the `ng new` component style budget.
+   */
+  readonly globalStyles: string;
   readonly favicon: string;
 }
 
 /** The three rendered bodies, without their fingerprint lines. */
 export type StarterBodies = Readonly<Record<keyof ScaffoldFiles, string>>;
+
+/** The page styles for the global stylesheet, scoped to `selector`, before their fingerprint line. */
+export function renderStarterGlobalStyles(templates: StarterTemplates, selector: string): string {
+  return fillTemplate(templates.globalStyles, { selector }, 'styles.css.tpl');
+}
+
+/** The page styles with their fingerprint line, as appended to the global stylesheet. */
+export function stampedGlobalStyles(body: string): string {
+  return `${starterFingerprintLine(contentFingerprint(body), 'block')}\n${body}`;
+}
 
 /** What a render needs beyond the blocks: the project, the selector and where the files sit. */
 export interface StarterTarget {
@@ -228,15 +246,19 @@ export function starterFingerprints(bodies: StarterBodies): Readonly<Record<keyo
   };
 }
 
-/** The stylesheet with the body rule appended once. */
-export function withStarterBodyRule(content: string): string {
-  if (content.replace(/\r\n/g, '\n').includes(STARTER_BODY_RULE)) {
+/**
+ * The global stylesheet with the starter's page styles appended after a
+ * blank line, in the file's newline; any other stylesheet as it is (the
+ * apply-time re-check of the untouched file, cngx's theme import aside).
+ */
+export function withStarterGlobalStyles(content: string, path: string, block: string): string {
+  if (!isUntouchedGlobalStyles(content, path)) {
     return content;
   }
   const newline = content.includes('\r\n') ? '\r\n' : '\n';
   const ended = content === '' || content.endsWith('\n') ? content : `${content}${newline}`;
   const gap = ended === '' ? '' : newline;
-  return `${ended}${gap}${STARTER_BODY_RULE.replace(/\n/g, newline)}`;
+  return `${ended}${gap}${block.replace(/\n/g, newline)}`;
 }
 
 function note(label: string, reason: string, provenance: Provenance): Change {
@@ -251,8 +273,8 @@ function fileLabel(path: string): string {
   return `Replace ${path} with the cngx starter`;
 }
 
-function bodyRuleLabel(path: string): string {
-  return `Let the starter page meet the window edge in ${path}`;
+function globalStylesLabel(path: string): string {
+  return `Add the starter page styles to ${path}`;
 }
 
 function faviconLabel(path: string): string {
@@ -274,21 +296,16 @@ function fileWrites(scaffold: Untouched, written: StarterBodies, provenance: Pro
   }));
 }
 
-function bodyRule(facts: ProjectFacts, provenance: Provenance): readonly Change[] {
-  const path = facts.stylesPath;
-  return path === undefined
-    ? []
-    : [
-        {
-          kind: 'edit-file',
-          id: STARTER_ID,
-          label: bodyRuleLabel(path),
-          reason: 'body { margin: 0 } in the global styles',
-          provenance,
-          path,
-          edit: withStarterBodyRule,
-        },
-      ];
+function globalStylesWrite(path: string, block: string, provenance: Provenance): Change {
+  return {
+    kind: 'edit-file',
+    id: STARTER_ID,
+    label: globalStylesLabel(path),
+    reason: 'body { margin: 0 }, the headings, the top bar and the footer, scoped to the starter',
+    provenance,
+    path,
+    edit: (content) => withStarterGlobalStyles(content, path, block),
+  };
 }
 
 function iconLabel(index: IndexHtmlFacts): string {
@@ -344,7 +361,13 @@ function indexMatches(content: string, scaffold: Untouched): boolean {
 /** Whether this run writes the starter: asked for, the libs it composes selected, the untouched scaffold. */
 export function writesStarter(facts: ProjectFacts, answers: OnboardingAnswers): boolean {
   const libs = selectedLibs(answers.libs);
-  return answers.starter && libs.includes('common') && libs.includes('ui') && facts.scaffold.kind === 'untouched';
+  return (
+    answers.starter &&
+    libs.includes('common') &&
+    libs.includes('ui') &&
+    facts.scaffold.kind === 'untouched' &&
+    facts.globalStyles?.state === 'untouched'
+  );
 }
 
 function target(facts: ProjectFacts, files: ScaffoldFiles, selector: string): StarterTarget {
@@ -389,7 +412,7 @@ function planWrittenStarter(
   const icon = facts.favicon;
   const labels = [
     ...FILE_KEYS.map((key) => fileLabel(scaffold.files[key])),
-    ...(facts.stylesPath === undefined ? [] : [bodyRuleLabel(facts.stylesPath)]),
+    ...(facts.globalStyles?.state === 'starter' ? [globalStylesLabel(facts.globalStyles.path)] : []),
     ...(facts.indexHtml.state === 'starter' && icon !== undefined ? [faviconLabel(icon.path), iconLabel(facts.indexHtml)] : []),
   ];
   const skipped: readonly SkippedStep[] = labels.map((text) => ({ id: STARTER_ID, label: text, reason: 'already generated' }));
@@ -399,8 +422,8 @@ function planWrittenStarter(
 /**
  * Replaces the App component of an untouched `ng new` standalone app with
  * the cngx starter when the `starter` answer is on (`--preset=full`): three
- * whole files, each re-checked against the scaffold at apply time, the body
- * rule in the global styles, and, when `index.html` is untouched too and the
+ * whole files, each re-checked against the scaffold at apply time, the page
+ * styles appended to the untouched global stylesheet, and, when `index.html` is untouched too and the
  * public folder holds no `favicon.svg`, the cngx favicon and the icon link.
  * A starter cngx wrote is skipped; one rendered for other answers, and a
  * component that is not the untouched scaffold, get a note and no write. A
@@ -437,10 +460,18 @@ export function planStarter(
       ? { changes: [], skipped: [{ id: STARTER_ID, label, reason: 'the starter was replaced after cngx wrote it' }] }
       : { changes: [note(label, starterLeftOutText('not-untouched', shell.componentFile), provenance)], skipped: [] };
   }
+  const styles = facts.globalStyles;
+  if (styles === undefined) {
+    return { changes: [note(label, starterLeftOutText('no-global-styles'), provenance)], skipped: [] };
+  }
+  if (styles.state !== 'untouched') {
+    return { changes: [note(label, starterLeftOutText('styles-custom', styles.path), provenance)], skipped: [] };
+  }
   const written = renderStarter(rendered(templates, facts, answers, scaffold.files, scaffold.routing, scaffold.names.selector));
+  const block = stampedGlobalStyles(renderStarterGlobalStyles(templates, scaffold.names.selector));
   const icon = favicon(facts, scaffold, templates.favicon, provenance);
   return {
-    changes: [...fileWrites(scaffold, written, provenance), ...bodyRule(facts, provenance), ...icon.changes],
+    changes: [...fileWrites(scaffold, written, provenance), globalStylesWrite(styles.path, block, provenance), ...icon.changes],
     skipped: icon.skipped,
   };
 }

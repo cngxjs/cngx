@@ -935,7 +935,11 @@ describe('ngAdd', () => {
         SCAFFOLD['src/index.html'].replace('<link rel="icon" type="image/x-icon" href="favicon.ico">', '<link rel="icon" type="image/svg+xml" href="favicon.svg">'),
       );
       expect(run.tree.readText('public/favicon.svg')).toContain('<title>cngx</title>');
-      expect(run.tree.readText('src/styles.css').endsWith('\n\nbody {\n  margin: 0;\n}\n')).toBe(true);
+      const styles = run.tree.readText('src/styles.css');
+      expect(styles.startsWith(`@import '@cngx/themes/cngx.css';\n${SCAFFOLD['src/styles.css']}\n/* cngx:fingerprint `)).toBe(true);
+      expect(styles).toContain('\nbody {\n  margin: 0;\n}\n');
+      expect(styles).toContain('app-root > .shell > .top {');
+      expect(run.tree.readText('src/app/app.css')).not.toContain('.top {');
     });
 
     it('leaves the scaffold to recommended and to full with --no-starter', async () => {

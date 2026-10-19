@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 import { readWorkspace } from '@schematics/angular/utility';
 import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeScript/lib/typescript';
+import { transformSync } from 'esbuild';
 import { describe, expect, it } from 'vitest';
 
 import { contentFingerprint, type EditFile, type StepResult } from '../../engine';
@@ -15,13 +16,14 @@ import {
   renderSections,
   renderStarter,
   renderStarterBodies,
-  STARTER_BODY_RULE,
     STARTER_ID,
   STARTER_LEFT_OUT_REASONS,
   type StarterBlocks,
   starterFingerprints,
   starterLeftOutText,
-  withStarterBodyRule,
+  renderStarterGlobalStyles,
+  stampedGlobalStyles,
+  withStarterGlobalStyles,
   writesStarter,
 } from './starter';
 
@@ -224,14 +226,45 @@ describe('renderSections', () => {
   });
 });
 
-describe('withStarterBodyRule', () => {
-  it('appends the rule once, after a blank line, in the file newline', () => {
-    const once = withStarterBodyRule("@import 'a.css';\n");
+describe('the starter component stylesheet', () => {
+  it('stays inside the 4 kB anyComponentStyle warning budget of ng new once minified', () => {
+    const minified = transformSync(STARTER_TEMPLATES.stylesheet, { loader: 'css', minify: true }).code;
 
-    expect(once).toBe(`@import 'a.css';\n\n${STARTER_BODY_RULE}`);
-    expect(withStarterBodyRule(once)).toBe(once);
-    expect(withStarterBodyRule('a {}\r\n')).toBe('a {}\r\n\r\nbody {\r\n  margin: 0;\r\n}\r\n');
-    expect(withStarterBodyRule('')).toBe(STARTER_BODY_RULE);
+    expect(minified.length).toBeLessThan(4000);
+  });
+});
+
+describe('withStarterGlobalStyles', () => {
+  const STOCK_STYLES = STOCK['src/styles.css'];
+  const block = stampedGlobalStyles(renderStarterGlobalStyles(STARTER_TEMPLATES, 'app-root'));
+
+  it('appends the page styles after a blank line to the untouched stylesheet, the cngx theme import included', () => {
+    const themed = `@import '@cngx/themes/cngx.css';\n${STOCK_STYLES}`;
+
+    expect(withStarterGlobalStyles(STOCK_STYLES, 'src/styles.css', block)).toBe(`${STOCK_STYLES}\n${block}`);
+    expect(withStarterGlobalStyles(themed, 'src/styles.css', block)).toBe(`${themed}\n${block}`);
+    expect(withStarterGlobalStyles(STOCK_STYLES.replace(/\n/g, '\r\n'), 'src/styles.css', block)).toBe(
+      `${STOCK_STYLES}\n${block}`.replace(/\n/g, '\r\n'),
+    );
+  });
+
+  it('leaves any other stylesheet as it is, the one it already wrote included', () => {
+    const written = `${STOCK_STYLES}\n${block}`;
+
+    expect(withStarterGlobalStyles(written, 'src/styles.css', block)).toBe(written);
+    expect(withStarterGlobalStyles(`${STOCK_STYLES}p {}\n`, 'src/styles.css', block)).toBe(`${STOCK_STYLES}p {}\n`);
+    expect(withStarterGlobalStyles(STOCK_STYLES, 'src/styles.less', block)).toBe(STOCK_STYLES);
+  });
+
+  it('scopes every rule but the body margin to the starter shell under the root selector', () => {
+    const rules = renderStarterGlobalStyles(STARTER_TEMPLATES, 'app-root')
+      .split('\n')
+      .filter((line) => line.endsWith('{') && !line.startsWith('@media'))
+      .flatMap((line) => line.replace(/ \{$/, '').split(','))
+      .map((selector) => selector.trim());
+
+    expect(rules[0]).toBe('body');
+    expect(rules.slice(1).filter((selector) => !selector.startsWith('app-root > .shell > '))).toEqual([]);
   });
 });
 
@@ -311,6 +344,19 @@ describe('planStarter', () => {
     expect(result.changes.filter((change) => change.kind === 'note')).toEqual([expect.objectContaining({ reason })]);
   });
 
+  it.each([
+    ['a global stylesheet that is not untouched', { globalStyles: { path: 'src/styles.css', state: 'custom', fingerprint: undefined } }, starterLeftOutText('styles-custom', 'src/styles.css')],
+    ['no global stylesheet', { globalStyles: undefined }, starterLeftOutText('no-global-styles')],
+  ] as const)('names %s and writes nothing', (_name, overrides, reason) => {
+    const facts = untouchedFacts(overrides as Partial<ProjectFacts>);
+
+    expect(planStarter(facts, FULL, VERSIONS, [], STARTER_TEMPLATES)).toEqual({
+      changes: [expect.objectContaining({ kind: 'note', id: STARTER_ID, reason })],
+      skipped: [],
+    });
+    expect(writesStarter(facts, FULL)).toBe(false);
+  });
+
   it('leaves the icon alone without a word when there is no index.html', () => {
     const result = planStarter(untouchedFacts({ indexHtml: { path: 'src/index.html', state: 'absent' } }), FULL, VERSIONS, [], STARTER_TEMPLATES);
 
@@ -326,6 +372,7 @@ describe('planStarter', () => {
       scaffold: { kind: 'starter', files: FILES, fingerprints: starterFingerprints(bodies), selector: 'app-root' },
       indexHtml: { path: 'src/index.html', state: 'starter' },
       favicon: { path: 'public/favicon.svg', fingerprint: contentFingerprint(STARTER_TEMPLATES.favicon) },
+      globalStyles: { path: 'src/styles.css', state: 'starter', fingerprint: '00000000' },
     });
     const first = planStarter(untouchedFacts(), FULL, VERSIONS, [], STARTER_TEMPLATES);
     const again = planStarter(facts, FULL, VERSIONS, [STARTER_ID], STARTER_TEMPLATES);

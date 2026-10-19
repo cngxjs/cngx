@@ -172,6 +172,22 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   },
   {
     major: 21,
+    file: 'styles.css',
+    variant: 'css',
+    form: 'raw',
+    template: 'application/files/common-files/src/styles.__style__.template',
+    fingerprint: 'sha256:c7295b915b6a250b910d30ff3b9d1991b6f43c9474d3afafc6cba59eee44383e',
+  },
+  {
+    major: 21,
+    file: 'styles.scss',
+    variant: 'scss',
+    form: 'raw',
+    template: 'application/files/common-files/src/styles.__style__.template',
+    fingerprint: 'sha256:c7295b915b6a250b910d30ff3b9d1991b6f43c9474d3afafc6cba59eee44383e',
+  },
+  {
+    major: 21,
     file: 'index.html',
     variant: 'default',
     form: 'raw',

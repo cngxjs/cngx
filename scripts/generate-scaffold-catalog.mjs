@@ -82,6 +82,12 @@ export const TEMPLATES = [
     template: 'component/files/__name@dasherize@if-flat__/__name@dasherize__.__type@dasherize__.__style__.template',
     variants: [{ variant: style, options: { ...COMPONENT, style } }],
   })),
+  ...STYLES.map((style) => ({
+    file: `styles.${style}`,
+    dir: 'src',
+    template: 'application/files/common-files/src/styles.__style__.template',
+    variants: [{ variant: style, options: { style } }],
+  })),
   {
     file: 'index.html',
     dir: 'src',

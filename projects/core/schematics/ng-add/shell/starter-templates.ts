@@ -9,6 +9,7 @@ export const STARTER_TEMPLATE_FILES: Readonly<Record<keyof StarterTemplates, str
   component: 'app.ts.tpl',
   template: 'app.html.tpl',
   stylesheet: 'app.css.tpl',
+  globalStyles: 'styles.css.tpl',
   favicon: 'favicon.svg',
 };
 
@@ -29,6 +30,7 @@ export function readStarterTemplates(dir: string): StarterTemplates {
     component: read(STARTER_TEMPLATE_FILES.component),
     template: read(STARTER_TEMPLATE_FILES.template),
     stylesheet: read(STARTER_TEMPLATE_FILES.stylesheet),
+    globalStyles: read(STARTER_TEMPLATE_FILES.globalStyles),
     favicon: read(STARTER_TEMPLATE_FILES.favicon),
   };
 }

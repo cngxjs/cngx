@@ -85,6 +85,7 @@ describe('detectProject', () => {
       scaffold: { kind: 'custom' },
       indexHtml: { path: 'src/index.html', state: 'untouched' },
       favicon: { path: 'public/favicon.svg', fingerprint: undefined },
+      globalStyles: { path: 'src/styles.css', state: 'untouched', fingerprint: undefined },
       languageFile: 'absent',
       languagePack: undefined,
       material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },

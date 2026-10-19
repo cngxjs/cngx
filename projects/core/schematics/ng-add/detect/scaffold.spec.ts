@@ -198,3 +198,37 @@ describe('faviconOf', () => {
     expect((await factsOf('scaffold-21', { 'angular.json': angular })).favicon).toBeUndefined();
   });
 });
+
+describe('globalStylesOf', () => {
+  const styles = STOCK['src/styles.css'];
+
+  it.each([
+    ['the stock file', styles, 'untouched'],
+    ['the stock file with the cngx theme import', `@import '@cngx/themes/cngx.css';\n${styles}`, 'untouched'],
+    ['the stock file with the cngx theme import twice', `@import '@cngx/themes/cngx.css';\n@import '@cngx/themes/cngx.css';\n${styles}`, 'custom'],
+    ['CRLF', styles.replace(/\n/g, '\r\n'), 'untouched'],
+    ['one changed character', styles.replace('global', 'globel'), 'custom'],
+    ['another import', `@import 'other.css';\n${styles}`, 'custom'],
+  ] as const)('reads %s', async (_name, content, state) => {
+    expect((await factsOf('scaffold-21', { 'src/styles.css': content })).globalStyles).toEqual({ path: 'src/styles.css', state, fingerprint: undefined });
+  });
+
+  it('reads the stock file after Prettier and the SCSS one as untouched', async () => {
+    const pretty = await formatted(styles, 'src/styles.css');
+
+    expect((await factsOf('scaffold-21', { 'src/styles.css': pretty })).globalStyles?.state).toBe('untouched');
+    expect((await factsOf('scaffold-21-scss')).globalStyles).toEqual({ path: 'src/styles.scss', state: 'untouched', fingerprint: undefined });
+  });
+
+  it('reads a stylesheet holding a starter fingerprint line as the starter', async () => {
+    const facts = await factsOf('scaffold-21', { 'src/styles.css': `${styles}\n/* cngx:fingerprint 0000000d */\nbody {}\n` });
+
+    expect(facts.globalStyles).toEqual({ path: 'src/styles.css', state: 'starter', fingerprint: '0000000d' });
+  });
+
+  it('reads no stylesheet when the build lists none', async () => {
+    const angular = STOCK['angular.json'].replace('"src/styles.css"', '');
+
+    expect((await factsOf('scaffold-21', { 'angular.json': angular.replace(/"styles": \[\s*\]/, '"styles": []') })).globalStyles).toBeUndefined();
+  });
+});

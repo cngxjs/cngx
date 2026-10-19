@@ -285,3 +285,56 @@ export function faviconOf(read: Read, options: Readonly<Record<string, unknown>>
   const content = read(path);
   return { path, fingerprint: content === undefined ? undefined : contentFingerprint(content) };
 }
+
+/** The import cngx's theme step puts into the global stylesheet. */
+const CNGX_THEME_IMPORT = "@import '@cngx/themes/cngx.css';";
+
+/**
+ * The global stylesheet: the untouched `ng new` file (its one cngx theme
+ * import aside, which an earlier cngx run or this run's theme step writes),
+ * a stylesheet holding the starter's page styles (a starter fingerprint
+ * line), or anything else.
+ */
+export type GlobalStylesState = 'untouched' | 'starter' | 'custom';
+
+export interface GlobalStylesFacts {
+  readonly path: string;
+  readonly state: GlobalStylesState;
+  /** The fingerprint the starter's block records; `undefined` unless the state is `starter`. */
+  readonly fingerprint: string | undefined;
+}
+
+// The content without the one line holding the cngx theme import; the
+// content as it is when there is none or more than one.
+function withoutThemeImport(content: string): string {
+  const lines = content.split('\n');
+  const at = lines.filter((line) => line.trimEnd() === CNGX_THEME_IMPORT);
+  return at.length === 1 ? lines.filter((line) => line.trimEnd() !== CNGX_THEME_IMPORT).join('\n') : content;
+}
+
+/**
+ * Whether `content` is the `ng new` global stylesheet for its extension,
+ * exactly, once a single cngx theme import line is left out; the check
+ * detection and the apply-time re-check share.
+ */
+export function isUntouchedGlobalStyles(content: string, path: string): boolean {
+  const extension = posix.extname(path).slice(1);
+  if (extension !== 'css' && extension !== 'scss') {
+    return false;
+  }
+  const stock = withoutThemeImport(normalize(content));
+  return matchesScaffoldEntry(stock, { file: `styles.${extension}`, variant: extension }, { project: '', selector: '' });
+}
+
+/** The global stylesheet's state; `undefined` when the build lists none or it is missing. */
+export function globalStylesOf(read: Read, path: string | undefined): GlobalStylesFacts | undefined {
+  const content = path === undefined ? undefined : read(path);
+  if (path === undefined || content === undefined) {
+    return undefined;
+  }
+  const fingerprint = starterFingerprintOf(content);
+  if (fingerprint !== undefined) {
+    return { path, state: 'starter', fingerprint };
+  }
+  return { path, state: isUntouchedGlobalStyles(content, path) ? 'untouched' : 'custom', fingerprint: undefined };
+}

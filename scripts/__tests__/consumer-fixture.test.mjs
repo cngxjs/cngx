@@ -14,6 +14,7 @@ import {
   pinAngularDeps,
   renderAppSource,
   presetPlan,
+  budgetWarnings,
   STARTER_SMOKE,
   PRESETS,
   schematicsSteps,
@@ -172,9 +173,23 @@ describe('presetPlan', () => {
       ngTest: true,
       outlets: ['cngx-banner-outlet', 'cngx-toast-outlet'],
       starter: STARTER_SMOKE,
+      noBudgetWarnings: true,
     });
-    expect(presetPlan()).toEqual({ preset: 'recommended', ngTest: false, outlets: [], starter: undefined });
-    expect(presetPlan('minimal')).toEqual({ preset: 'minimal', ngTest: false, outlets: [], starter: undefined });
+    expect(presetPlan()).toEqual({ preset: 'recommended', ngTest: false, outlets: [], starter: undefined, noBudgetWarnings: false });
+    expect(presetPlan('minimal')).toEqual({ preset: 'minimal', ngTest: false, outlets: [], starter: undefined, noBudgetWarnings: false });
+  });
+
+  it('reads the budget warnings ng build prints', () => {
+    const output = [
+      'Application bundle generation complete.',
+      '▲ [WARNING] src/app/app.css exceeded maximum budget. Budget 4.00 kB was not met by 1.52 kB with a total of 5.52 kB.',
+      'Output location: dist/fixture',
+    ].join('\n');
+
+    expect(budgetWarnings(output)).toEqual([
+      '▲ [WARNING] src/app/app.css exceeded maximum budget. Budget 4.00 kB was not met by 1.52 kB with a total of 5.52 kB.',
+    ]);
+    expect(budgetWarnings('Application bundle generation complete.')).toEqual([]);
   });
 
   it('smokes the starter heading, the toast and banner it shows and its icon link', () => {

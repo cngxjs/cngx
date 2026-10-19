@@ -60,6 +60,8 @@ describe('scaffold catalog', () => {
     ['scaffold-21', 'src/app/app.css', 'app.css', 'css'],
     ['scaffold-21-scss', 'src/app/app.scss', 'app.scss', 'scss'],
     ['scaffold-21', 'src/index.html', 'index.html', 'default'],
+    ['scaffold-21', 'src/styles.css', 'styles.css', 'css'],
+    ['scaffold-21-scss', 'src/styles.scss', 'styles.scss', 'scss'],
   ])('renders %s %s byte for byte as ng new wrote it', async (name, path, file, variant) => {
     const entries = await collectEntries();
     const raw = entries.find((entry) => entry.file === file && entry.variant === variant && entry.form === 'raw');

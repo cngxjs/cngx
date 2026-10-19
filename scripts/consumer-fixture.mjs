@@ -42,7 +42,7 @@
 // the exact pins `ng add` writes install the packed release, not a published
 // one of the same version.
 
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
@@ -120,7 +120,26 @@ export function presetPlan(preset = DEFAULT_PRESET) {
     ngTest: full,
     outlets: full ? ['cngx-banner-outlet', 'cngx-toast-outlet'] : [],
     starter: full ? STARTER_SMOKE : undefined,
+    // The starter keeps its component stylesheet inside the `ng new` budgets.
+    noBudgetWarnings: full,
   };
+}
+
+/** The budget warnings `ng build` printed in `output`, one line each. */
+export function budgetWarnings(output) {
+  return output.split(/\r?\n/).filter((line) => /exceeded maximum budget/.test(line));
+}
+
+// Runs a command, echoes its output and returns stdout and stderr together.
+function runEchoed(cmd, args, options = {}) {
+  console.log(`  $ ${cmd} ${args.join(' ')}`);
+  const result = spawnSync(cmd, args, { encoding: 'utf8', ...options });
+  process.stdout.write(result.stdout ?? '');
+  process.stderr.write(result.stderr ?? '');
+  if (result.status !== 0) {
+    throw new Error(`${cmd} ${args.join(' ')} exited with ${result.status ?? result.signal}`);
+  }
+  return `${result.stdout ?? ''}${result.stderr ?? ''}`;
 }
 
 // The starter in the browser: its heading, each button's message in its
@@ -628,7 +647,14 @@ async function main() {
     } else {
       writeFileSync(join(appDir, 'src', 'app', 'app.ts'), renderAppSource(plan));
     }
-    run('npx', ['ng', 'build'], { cwd: appDir });
+    if (plan.schematics && checks.noBudgetWarnings) {
+      const warnings = budgetWarnings(runEchoed('npx', ['ng', 'build'], { cwd: appDir }));
+      if (warnings.length > 0) {
+        throw new Error(`ng build exceeded a budget:\n  ${warnings.join('\n  ')}`);
+      }
+    } else {
+      run('npx', ['ng', 'build'], { cwd: appDir });
+    }
     if (plan.schematics && checks.ngTest) {
       run('npx', ['ng', 'test', '--watch=false'], { cwd: appDir });
     }

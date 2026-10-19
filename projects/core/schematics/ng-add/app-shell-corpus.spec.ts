@@ -767,12 +767,13 @@ interface StarterShape {
   /** `ng add --preset full` ran first, then `files` changed the tree. */
   readonly installedFirst?: true;
   readonly flags?: Parameters<typeof ngAdd>[0];
-  readonly outcome: 'written' | 'icon-left' | 'not-untouched' | 'other-answers' | 'replaced' | 'nothing';
+  readonly outcome: 'written' | 'icon-left' | 'not-untouched' | 'styles-custom' | 'other-answers' | 'replaced' | 'nothing';
 }
 
 const STARTER_FILES = ['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/app/app.scss'];
 const SCAFFOLD_FILES = [...STARTER_FILES, 'src/index.html'];
 const STOCK_INDEX = readFixture('scaffold-21')['src/index.html'];
+const STOCK_STYLES = readFixture('scaffold-21')['src/styles.css'];
 
 function oneChanged(content: string): string {
   const at = Math.floor(content.length / 2);
@@ -784,9 +785,9 @@ const STARTER_CORPUS: readonly StarterShape[] = [
   { name: 'scaffold-21 routing off', fixture: 'scaffold-21-routing-off', outcome: 'written' },
   { name: 'scaffold-21 zone', fixture: 'scaffold-21-zone', outcome: 'written' },
   { name: 'scaffold-21 scss', fixture: 'scaffold-21-scss', outcome: 'written' },
-  { name: 'Prettier-formatted scaffold-21', fixture: 'scaffold-21', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/index.html'], outcome: 'written' },
+  { name: 'Prettier-formatted scaffold-21', fixture: 'scaffold-21', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/index.html', 'src/styles.css'], outcome: 'written' },
   { name: 'Prettier-formatted scaffold-21 routing off', fixture: 'scaffold-21-routing-off', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/index.html'], outcome: 'written' },
-  { name: 'Prettier-formatted scaffold-21 scss', fixture: 'scaffold-21-scss', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.scss', 'src/index.html'], outcome: 'written' },
+  { name: 'Prettier-formatted scaffold-21 scss', fixture: 'scaffold-21-scss', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.scss', 'src/index.html', 'src/styles.scss'], outcome: 'written' },
   { name: 'CRLF scaffold-21', files: crlf({ 'src/app/app.ts': STOCK_APP, 'src/app/app.html': STOCK_HTML, 'src/index.html': STOCK_INDEX }), outcome: 'written' },
   { name: 'feedback off', fixture: 'scaffold-21', flags: { feedback: false }, outcome: 'written' },
   { name: 'a11y preferences off', fixture: 'scaffold-21', flags: { a11yPreferences: false }, outcome: 'written' },
@@ -796,6 +797,9 @@ const STARTER_CORPUS: readonly StarterShape[] = [
   { name: 'one changed character in app.ts', files: { 'src/app/app.ts': oneChanged(STOCK_APP) }, outcome: 'not-untouched' },
   { name: 'one changed character in the welcome page', files: { 'src/app/app.html': oneChanged(STOCK_HTML) }, outcome: 'not-untouched' },
   { name: 'one changed character in app.css', files: { 'src/app/app.css': ' ' }, outcome: 'not-untouched' },
+  { name: 'one changed character in styles.css', files: { 'src/styles.css': oneChanged(STOCK_STYLES) }, outcome: 'styles-custom' },
+  { name: 'cngx theme import already in styles.css', files: { 'src/styles.css': `@import '@cngx/themes/cngx.css';\n${STOCK_STYLES}` }, outcome: 'written' },
+  { name: 'CRLF styles.css', files: crlf({ 'src/styles.css': STOCK_STYLES }), outcome: 'written' },
   { name: 'one changed character in index.html', files: { 'src/index.html': oneChanged(STOCK_INDEX) }, outcome: 'icon-left' },
   { name: 'favicon.svg already there', files: { 'public/favicon.svg': '<svg xmlns="http://www.w3.org/2000/svg"/>\n' }, outcome: 'icon-left' },
   { name: 'missing index.html', remove: ['src/index.html'], outcome: 'written' },
@@ -845,6 +849,12 @@ function expectStarterWritten(before: Files, after: Files, facts: ProjectFacts, 
   expect(elementCount(after['src/app/app.html'], 'cngx-toast-outlet')).toBe(feedback ? 1 : 0);
   expect(after['src/app/app.html']).toContain('Hello, <span class="hero__name">{{ title() }}</span>.');
   expect(after['src/app/app.ts']).toContain("signal('fixture-app')");
+  // The page styles sit once in the global stylesheet, after what was there.
+  expect(facts.globalStyles?.state).toBe('starter');
+  const stylesPath = facts.globalStyles?.path ?? '';
+  expect(after[stylesPath].split('cngx:fingerprint').length - 1).toBe(1);
+  const themed = before[stylesPath].includes('cngx.css') ? after[stylesPath] : after[stylesPath].replace(/@import '@cngx\/themes\/cngx\.css';\r?\n/, '');
+  expect(themed.startsWith(before[stylesPath].replace(/\r?\n$/, ''))).toBe(true);
   const spec = after['src/app/app.spec.ts'];
   if (spec !== undefined) {
     expect(spec.includes('provideFeedback(withToasts(), withBanners())')).toBe(feedback);
@@ -876,8 +886,12 @@ function expectStarterLeftOut(before: Files, after: Files, shape: StarterShape, 
     index: before['src/index.html'],
     favicon: before['public/favicon.svg'],
   });
+  for (const path of ['src/styles.css', 'src/styles.scss'].filter((candidate) => before[candidate] !== undefined)) {
+    expect({ path, starter: /cngx:fingerprint/.test(after[path]) }).toEqual({ path, starter: /cngx:fingerprint/.test(before[path]) });
+  }
   const reasons: Partial<Record<StarterShape['outcome'], string>> = {
     'not-untouched': starterLeftOutText('not-untouched', 'src/app/app.ts'),
+    'styles-custom': starterLeftOutText('styles-custom', 'src/styles.css'),
     'other-answers': starterLeftOutText('other-answers', 'src/app/app.ts'),
   };
   const reason = reasons[shape.outcome];
@@ -915,8 +929,18 @@ describe('every starter case', () => {
     // A second run writes nothing and names the starter only as in place; a
     // note about the icon is said once, on the run that writes the starter,
     // a starter left out is named on every run.
-    const repeated = shape.outcome === 'not-untouched' || shape.outcome === 'other-answers';
-    const notes = repeated ? starterLines(first.logs).filter((line) => line.startsWith('  - ')) : [];
+    const repeated = shape.outcome === 'not-untouched' || shape.outcome === 'styles-custom' || shape.outcome === 'other-answers';
+    // With the global stylesheet left out, the first run places the outlets
+    // in the welcome page, so later runs name the component instead.
+    const notes = repeated
+      ? starterLines(first.logs)
+          .filter((line) => line.startsWith('  - '))
+          .map((line) =>
+            shape.outcome === 'styles-custom'
+              ? line.replace(starterLeftOutText('styles-custom', 'src/styles.css'), starterLeftOutText('not-untouched', 'src/app/app.ts'))
+              : line,
+          )
+      : [];
     const second = await runFull(first.tree, shape.flags);
     expectUnchanged(after, readTree(second.tree));
     expect(readTree(second.tree)[INSTALL_MANIFEST_PATH]).toBe(after[INSTALL_MANIFEST_PATH]);
@@ -936,6 +960,6 @@ describe('every starter case', () => {
   it('records the starter only where it wrote one', () => {
     const outcomes = new Set(STARTER_CORPUS.map((shape) => shape.outcome));
 
-    expect([...outcomes].sort()).toEqual(['icon-left', 'not-untouched', 'nothing', 'other-answers', 'replaced', 'written']);
+    expect([...outcomes].sort()).toEqual(['icon-left', 'not-untouched', 'nothing', 'other-answers', 'replaced', 'styles-custom', 'written']);
   });
 });

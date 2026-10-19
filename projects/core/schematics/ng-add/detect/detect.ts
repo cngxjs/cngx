@@ -35,6 +35,8 @@ import {
   type AppScaffold,
   type FaviconFacts,
   faviconOf,
+  globalStylesOf,
+  type GlobalStylesFacts,
   indexHtmlStateOf,
   type IndexHtmlFacts,
   scaffoldOf,
@@ -101,8 +103,11 @@ export {
 export {
   type AppScaffold,
   type FaviconFacts,
+  type GlobalStylesFacts,
+  type GlobalStylesState,
   type IndexHtmlFacts,
   type IndexHtmlState,
+  isUntouchedGlobalStyles,
   matchesScaffoldEntry,
   scaffoldEntries,
   type ScaffoldEntryKey,
@@ -167,6 +172,8 @@ export interface ProjectFacts {
   readonly indexHtml: IndexHtmlFacts;
   /** `favicon.svg` in the folder the build serves as is; `undefined` when it serves none. */
   readonly favicon: FaviconFacts | undefined;
+  /** `stylesPath` and whether it is the untouched `ng new` file or holds the starter's page styles; `undefined` without one. */
+  readonly globalStyles: GlobalStylesFacts | undefined;
   /** `cngx-language.ts` next to `rootProvidersFile`. */
   readonly languageFile: GeneratedFileState;
   /** The pack a `provideCngxI18n(withPack(...))` there passes; `undefined` when none. */
@@ -285,6 +292,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     scaffold: scaffoldOf(read, appShell, names),
     indexHtml: { path: indexPath, state: indexHtmlStateOf(read(indexPath), names) },
     favicon: faviconOf(read, options),
+    globalStyles: globalStylesOf(read, stylesPath),
     languageFile: generatedFileState(read(posix.join(posix.dirname(rootProvidersFile), CNGX_LANGUAGE_FILE))),
     languagePack: providerCalls.languagePack,
     material: detectMaterial(read, manifest, entries),
