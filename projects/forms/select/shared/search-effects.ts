@@ -25,6 +25,12 @@ export interface SearchEffectsOptions {
    */
   readonly autoOpenGate?: () => boolean;
   /**
+   * Focus of the input that owns the term. When given, auto-open needs it:
+   * a term whose debounce settles after the input lost focus never reopens
+   * the panel.
+   */
+  readonly focused?: Signal<boolean>;
+  /**
    * Optional `searchTermChange` forward. Display-binding variants
    * route through `onUserSearchTerm` and leave this undefined.
    */
@@ -67,6 +73,7 @@ export function createSearchEffects(opts: SearchEffectsOptions): void {
         term !== '' &&
         !opts.panelOpen() &&
         !opts.disabled() &&
+        (opts.focused?.() ?? true) &&
         autoOpenGate()
       ) {
         opts.open();

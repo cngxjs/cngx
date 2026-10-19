@@ -496,6 +496,32 @@ describe('CngxTypeahead - first search term after a value write', () => {
     flush(fixture);
   }
 
+  it('does not open when the input lost focus before the debounce settled', () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(StandaloneHost);
+    flush(fixture);
+    const typeahead = fixture.debugElement.query(By.directive(CngxTypeahead))
+      .componentInstance as CngxTypeahead<unknown>;
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-typeahead__input',
+    ) as HTMLInputElement;
+    input.focus();
+    input.value = 'al';
+    input.dispatchEvent(new Event('input'));
+    input.blur();
+    vi.advanceTimersByTime(300);
+    flush(fixture);
+    expect(typeahead.panelOpen()).toBe(false);
+
+    // Control: with focus kept, the same term does open.
+    input.focus();
+    input.value = 'bo';
+    input.dispatchEvent(new Event('input'));
+    vi.advanceTimersByTime(300);
+    flush(fixture);
+    expect(typeahead.panelOpen()).toBe(true);
+  });
+
   it('emits searchTermChange for the first term typed after an initial value', () => {
     vi.useFakeTimers();
     const fixture = TestBed.createComponent(StandaloneHost);

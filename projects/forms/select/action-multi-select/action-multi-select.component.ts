@@ -1079,6 +1079,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,
       disabled: this.disabled,
+      focused: this.focusState.focused,
       open: () => this.open(),
       emit: {
         hasEmittedInitial: this.hasEmittedInitial,
