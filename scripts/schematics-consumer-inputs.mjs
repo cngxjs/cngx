@@ -22,6 +22,7 @@ export const INPUTS = [
   { include: 'projects/*/package.json' },
   { include: 'projects/themes/**' },
   { include: 'scripts/build-schematics.mjs' },
+  { include: 'scripts/schematics-externals.mjs' },
   { include: 'scripts/pack-libs.mjs' },
   { include: 'scripts/consumer-fixture.mjs' },
   { include: 'scripts/publish.mjs' },

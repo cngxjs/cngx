@@ -11,6 +11,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { PACKED_LIBS } from '../cngx-libs.mjs';
 import { checkReleaseMigrations, declaresSchematics, replaceVersionInDist, stampManifest } from '../publish.mjs';
+import { externalRequireViolations } from '../schematics-externals.mjs';
 
 /**
  * Smoke guard for the bundled schematics under dist/. Runs the built
@@ -312,19 +313,18 @@ describe('every published package as the CLI resolves it', () => {
 });
 
 describe('the shipped schematics bundles', () => {
-  // @schematics/angular 22 no longer vendors TypeScript; a require into its
-  // third_party folder crashes ng add at load time on that CLI.
-  it.each(PACKED_LIBS)('of @cngx/%s require no private path of @schematics/angular', (lib) => {
+  // Every require left in a shipped bundle resolves from the consumer's CLI
+  // install; @schematics/angular 22 no longer vendors TypeScript, so a require
+  // into its third_party folder crashes ng add at load time on that CLI.
+  it.each(PACKED_LIBS)('of @cngx/%s require only Node builtins and the declared externals', (lib) => {
     const root = requireDist(join(ROOT, 'dist', lib, 'schematics'));
     const bundles = readdirSync(root, { recursive: true }).filter((file) => String(file).endsWith('.js'));
-    const privateRequires = bundles.flatMap((file) =>
-      [...readFileSync(join(root, file), 'utf8').matchAll(/\brequire\("(@schematics\/angular\/third_party\/[^"]+)"\)/g)].map(
-        ([, specifier]) => `${file}: ${specifier}`,
-      ),
+    const violations = bundles.flatMap((file) =>
+      externalRequireViolations(readFileSync(join(root, file), 'utf8')).map((specifier) => `${file}: ${specifier}`),
     );
 
     expect(bundles.length).toBeGreaterThan(0);
-    expect(privateRequires).toEqual([]);
+    expect(violations).toEqual([]);
   });
 
   it.each(PACKED_LIBS)('of @cngx/%s pin themselves to commonjs', (lib) => {
