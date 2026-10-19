@@ -1,7 +1,7 @@
 import { strings } from '@angular-devkit/core';
 import { posix } from 'node:path';
 
-import { readDecorator } from '../../engine';
+import { contentFingerprint, isRecord, readDecorator } from '../../engine';
 import { type AppShell, type AppShellUnfollowed } from './app-shell';
 import {
   SCAFFOLD_CATALOG,
@@ -35,9 +35,48 @@ export interface ScaffoldFiles {
  * anything else.
  */
 export type AppScaffold =
-  | { readonly kind: 'untouched'; readonly files: ScaffoldFiles; readonly routing: boolean }
-  | { readonly kind: 'starter'; readonly files: ScaffoldFiles; readonly fingerprints: Readonly<Record<keyof ScaffoldFiles, string>> }
+  | {
+      readonly kind: 'untouched';
+      readonly files: ScaffoldFiles;
+      readonly routing: boolean;
+      /** The `app.ts` catalog variant the component matched; an apply-time re-check compares against the same variant. */
+      readonly variant: string;
+      /** The names the match substituted, the selector included. */
+      readonly names: ScaffoldNames & { readonly selector: string };
+    }
+  | {
+      readonly kind: 'starter';
+      readonly files: ScaffoldFiles;
+      readonly fingerprints: Readonly<Record<keyof ScaffoldFiles, string>>;
+      /** The root selector `ng new` gave the app, which the starter keeps; `undefined` without a prefix. */
+      readonly selector: string | undefined;
+    }
   | { readonly kind: 'custom' };
+
+/** Which catalog entry a starter file replaces: the file name and the variant. */
+export interface ScaffoldEntryKey {
+  readonly file: string;
+  readonly variant: string;
+}
+
+/** The catalog entries the three files of an untouched scaffold matched. */
+export function scaffoldEntries(scaffold: Extract<AppScaffold, { kind: 'untouched' }>): Readonly<Record<keyof ScaffoldFiles, ScaffoldEntryKey>> {
+  const style = scaffold.variant.slice(scaffold.variant.lastIndexOf('-') + 1);
+  return {
+    component: { file: 'app.ts', variant: scaffold.variant },
+    template: { file: 'app.html', variant: scaffold.routing ? 'routing' : 'no-routing' },
+    stylesheet: { file: `app.${style}`, variant: style },
+  };
+}
+
+/**
+ * Whether `content` is exactly the catalog entry `key` with `names`
+ * substituted, line endings normalised; the apply-time re-check of a file
+ * detection read as untouched.
+ */
+export function matchesScaffoldEntry(content: string, key: ScaffoldEntryKey, names: ScaffoldNames): boolean {
+  return matchingVariants(content, key.file, names).includes(key.variant);
+}
 
 /** `src/index.html`: missing, the untouched `ng new` file, that file with the starter favicon link, or anything else. */
 export type IndexHtmlState = 'absent' | 'untouched' | 'starter' | 'custom';
@@ -130,21 +169,29 @@ function untouched(read: Read, files: ScaffoldFiles, names: ScaffoldNames): AppS
   if (variant === undefined) {
     return undefined;
   }
-  const routing = variant.startsWith('routing-');
-  const style = variant.slice(variant.lastIndexOf('-') + 1);
-  const template = matchingVariants(read(files.template), 'app.html', names).includes(routing ? 'routing' : 'no-routing');
-  const stylesheet = matchingVariants(read(files.stylesheet), `app.${style}`, names).includes(style);
-  return template && stylesheet ? { kind: 'untouched', files, routing } : undefined;
+  const { selector } = names;
+  if (selector === undefined) {
+    return undefined;
+  }
+  const scaffold = { kind: 'untouched', files, routing: variant.startsWith('routing-'), variant, names: { ...names, selector } } as const;
+  const entries = scaffoldEntries(scaffold);
+  const matches = (path: string, key: ScaffoldEntryKey): boolean => {
+    const content = read(path);
+    return content !== undefined && matchesScaffoldEntry(content, key, names);
+  };
+  const template = matches(files.template, entries.template);
+  const stylesheet = matches(files.stylesheet, entries.stylesheet);
+  return template && stylesheet ? scaffold : undefined;
 }
 
-function starter(read: Read, files: ScaffoldFiles): AppScaffold | undefined {
+function starter(read: Read, files: ScaffoldFiles, selector: string | undefined): AppScaffold | undefined {
   const component = starterFingerprintOf(read(files.component) ?? '');
   const template = starterFingerprintOf(read(files.template) ?? '');
   const stylesheet = starterFingerprintOf(read(files.stylesheet) ?? '');
   if (component === undefined || template === undefined || stylesheet === undefined) {
     return undefined;
   }
-  return { kind: 'starter', files, fingerprints: { component, template, stylesheet } };
+  return { kind: 'starter', files, fingerprints: { component, template, stylesheet }, selector };
 }
 
 /**
@@ -163,7 +210,7 @@ export function scaffoldOf(read: Read, shell: AppShell | AppShellUnfollowed, nam
   if (files === undefined) {
     return { kind: 'custom' };
   }
-  return untouched(read, files, names) ?? starter(read, files) ?? { kind: 'custom' };
+  return untouched(read, files, names) ?? starter(read, files, names.selector) ?? { kind: 'custom' };
 }
 
 // The content with one icon link of `from` swapped for the one of `to` in
@@ -197,4 +244,32 @@ export function indexHtmlStateOf(content: string | undefined, names: ScaffoldNam
   }
   const stock = swapLink(normalized, STARTER_FAVICON_LINKS, STOCK_FAVICON_LINKS);
   return stock !== undefined && matchingVariants(stock, 'index.html', names).length > 0 ? 'starter' : 'custom';
+}
+
+/**
+ * The favicon file the starter writes into the folder the build copies as
+ * a whole (an assets entry with the glob of every file and an `input`
+ * folder, as `ng new` writes for `public`), and the fingerprint of what is
+ * there; `undefined` when the build copies no such folder.
+ */
+export interface FaviconFacts {
+  readonly path: string;
+  /** `contentFingerprint` of the file; `undefined` when it is missing. */
+  readonly fingerprint: string | undefined;
+}
+
+/** `favicon.svg` in the public folder the build options list, read through `read`. */
+export function faviconOf(read: Read, options: Readonly<Record<string, unknown>>): FaviconFacts | undefined {
+  const assets: readonly unknown[] = Array.isArray(options['assets']) ? options['assets'] : [];
+  const input = assets
+    .filter(isRecord)
+    .filter((asset) => asset['glob'] === '**/*' && [undefined, '', '/'].includes(asset['output'] as string | undefined))
+    .map((asset) => asset['input'])
+    .find((candidate): candidate is string => typeof candidate === 'string');
+  if (input === undefined) {
+    return undefined;
+  }
+  const path = posix.join(input, 'favicon.svg');
+  const content = read(path);
+  return { path, fingerprint: content === undefined ? undefined : contentFingerprint(content) };
 }

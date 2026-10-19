@@ -184,6 +184,25 @@ describe('createMigration', () => {
     expect(tree.readText('src/app/app.ts')).toBe(app);
   });
 
+  it('writes no starter for a full record without the starter answer over the untouched scaffold', async () => {
+    const files = feedbackRecord([]);
+    const manifest = JSON.parse(files['.cngx/install.json']) as InstallManifest;
+    const record = manifest.projects['fixture-app'];
+    const answers = Object.fromEntries(Object.entries({ ...record.answers, preset: 'full' }).filter(([key]) => key !== 'starter'));
+    const full: Record<string, string> = {
+      ...files,
+      '.cngx/install.json': JSON.stringify({ ...manifest, projects: { 'fixture-app': { ...record, preset: 'full', answers } } }),
+    };
+
+    const { tree, logs } = await runRule(migration(), createMemoryTree(full), ENTRY);
+
+    for (const path of ['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/index.html']) {
+      expect({ path, content: tree.readText(path) }).toEqual({ path, content: full[path] });
+    }
+    expect(tree.exists('public/favicon.svg')).toBe(false);
+    expect(logs.join('\n')).not.toContain('cngx starter');
+  });
+
   it('re-runs every recorded project and updates each record', async () => {
     const { tree } = await runRule(migration(), createMemoryTree(twoRecordedApplications()), ENTRY);
     const records = recordsOf(tree);

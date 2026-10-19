@@ -84,6 +84,7 @@ describe('detectProject', () => {
       },
       scaffold: { kind: 'custom' },
       indexHtml: { path: 'src/index.html', state: 'untouched' },
+      favicon: { path: 'public/favicon.svg', fingerprint: undefined },
       languageFile: 'absent',
       languagePack: undefined,
       material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
@@ -110,7 +111,10 @@ describe('detectProject', () => {
       kind: 'untouched',
       files: { component: 'src/app/app.ts', template: 'src/app/app.html', stylesheet: 'src/app/app.css' },
       routing: true,
+      variant: 'routing-css',
+      names: { project: 'fixture-app', selector: 'app-root' },
     });
+    expect(facts.favicon).toEqual({ path: 'public/favicon.svg', fingerprint: undefined });
     expect(facts.indexHtml).toEqual({ path: 'src/index.html', state: 'untouched' });
   });
 

@@ -17,6 +17,7 @@ import {
 import { ngAdd } from './index';
 import { INSTALL_MANIFEST_PATH } from './steps/manifest';
 import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell } from './steps/app-shell';
+import { STARTER_FAVICON, STARTER_ID, starterLeftOutText } from './steps/starter';
 
 // Runs `ng add --feedback` over every root component shape in CORPUS and
 // holds each to one of two outcomes: a note with a reason from the closed
@@ -656,10 +657,9 @@ function outletLines(logs: readonly string[]): readonly string[] {
   return logs.filter((line) => /toast and banner outlets|feedback services/.test(line) && !line.startsWith('  = '));
 }
 
-async function formatted(tree: Tree, paths: readonly string[]): Promise<void> {
-  for (const path of paths.filter((candidate) => /\.(ts|html)$/.test(candidate))) {
-    const parser = path.endsWith('.html') ? 'angular' : 'typescript';
-    tree.overwrite(path, await format(tree.readText(path), { ...PRETTIERRC, parser }));
+async function formatted(tree: Tree, paths: readonly string[], kinds = /\.(ts|html)$/): Promise<void> {
+  for (const path of paths.filter((candidate) => kinds.test(candidate))) {
+    tree.overwrite(path, await format(tree.readText(path), { ...PRETTIERRC, filepath: path }));
   }
 }
 
@@ -749,3 +749,193 @@ describe('every planned app shell edit', () => {
 function templateFileOf(shell: AppShell): string {
   return shell.template.kind === 'file' ? shell.template.path : shell.componentFile;
 }
+
+// Runs `ng add --preset full` over every scaffold shape in STARTER_CORPUS and
+// holds each to one outcome: the starter written over the untouched
+// scaffold, compiling, parsing, carrying the outlets once and planning
+// nothing more, raw and after Prettier; or the starter left out with a note
+// (or, for a starter the record wrote, silently) and no file of the App
+// component rewritten.
+
+interface StarterShape {
+  readonly name: string;
+  readonly fixture?: FixtureName;
+  readonly files?: Files;
+  readonly remove?: readonly string[];
+  /** Files that went through Prettier before `ng add`, as after an earlier CLI run. */
+  readonly prettierFirst?: readonly string[];
+  /** `ng add --preset full` ran first, then `files` changed the tree. */
+  readonly installedFirst?: true;
+  readonly flags?: Parameters<typeof ngAdd>[0];
+  readonly outcome: 'written' | 'icon-left' | 'not-untouched' | 'other-answers' | 'replaced' | 'nothing';
+}
+
+const STARTER_FILES = ['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/app/app.scss'];
+const SCAFFOLD_FILES = [...STARTER_FILES, 'src/index.html'];
+const STOCK_INDEX = readFixture('scaffold-21')['src/index.html'];
+
+function oneChanged(content: string): string {
+  const at = Math.floor(content.length / 2);
+  return `${content.slice(0, at)}${content[at] === 'x' ? 'y' : 'x'}${content.slice(at + 1)}`;
+}
+
+const STARTER_CORPUS: readonly StarterShape[] = [
+  { name: 'scaffold-21', fixture: 'scaffold-21', outcome: 'written' },
+  { name: 'scaffold-21 routing off', fixture: 'scaffold-21-routing-off', outcome: 'written' },
+  { name: 'scaffold-21 zone', fixture: 'scaffold-21-zone', outcome: 'written' },
+  { name: 'scaffold-21 scss', fixture: 'scaffold-21-scss', outcome: 'written' },
+  { name: 'Prettier-formatted scaffold-21', fixture: 'scaffold-21', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/index.html'], outcome: 'written' },
+  { name: 'Prettier-formatted scaffold-21 routing off', fixture: 'scaffold-21-routing-off', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/index.html'], outcome: 'written' },
+  { name: 'Prettier-formatted scaffold-21 scss', fixture: 'scaffold-21-scss', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.scss', 'src/index.html'], outcome: 'written' },
+  { name: 'CRLF scaffold-21', files: crlf({ 'src/app/app.ts': STOCK_APP, 'src/app/app.html': STOCK_HTML, 'src/index.html': STOCK_INDEX }), outcome: 'written' },
+  { name: 'feedback off', fixture: 'scaffold-21', flags: { feedback: false }, outcome: 'written' },
+  { name: 'a11y preferences off', fixture: 'scaffold-21', flags: { a11yPreferences: false }, outcome: 'written' },
+  { name: 'theme none', fixture: 'scaffold-21', flags: { theme: 'none' }, outcome: 'written' },
+  { name: 'runtime language switch', fixture: 'scaffold-21', flags: { i18n: 'de', runtimeSwitch: true }, outcome: 'written' },
+  { name: 'German without the switch', fixture: 'scaffold-21', flags: { i18n: 'de' }, outcome: 'written' },
+  { name: 'one changed character in app.ts', files: { 'src/app/app.ts': oneChanged(STOCK_APP) }, outcome: 'not-untouched' },
+  { name: 'one changed character in the welcome page', files: { 'src/app/app.html': oneChanged(STOCK_HTML) }, outcome: 'not-untouched' },
+  { name: 'one changed character in app.css', files: { 'src/app/app.css': ' ' }, outcome: 'not-untouched' },
+  { name: 'one changed character in index.html', files: { 'src/index.html': oneChanged(STOCK_INDEX) }, outcome: 'icon-left' },
+  { name: 'favicon.svg already there', files: { 'public/favicon.svg': '<svg xmlns="http://www.w3.org/2000/svg"/>\n' }, outcome: 'icon-left' },
+  { name: 'missing index.html', remove: ['src/index.html'], outcome: 'written' },
+  { name: 'inline template', files: inline('`<router-outlet />`'), outcome: 'not-untouched' },
+  { name: 'trimmed standalone-app', fixture: 'standalone-app', outcome: 'not-untouched' },
+  { name: 'NgModule app', files: ngModuleApp(), remove: ['src/app/app.spec.ts'], outcome: 'nothing' },
+  { name: 'starter of a run with other answers', installedFirst: true, flags: { a11yPreferences: false }, outcome: 'other-answers' },
+  { name: 'starter replaced after the install', installedFirst: true, files: { 'src/app/app.html': '<main>mine</main>\n' }, outcome: 'replaced' },
+];
+
+const runFull = (tree: Tree, flags: Parameters<typeof ngAdd>[0] = {}) => runRule(ngAdd({ preset: 'full', yes: true, ...flags }), tree);
+
+async function starterTreeOf(shape: StarterShape): Promise<Tree> {
+  const base = createFixtureTree(shape.fixture ?? 'scaffold-21', shape.installedFirst ? {} : (shape.files ?? {}));
+  const tree = shape.installedFirst ? (await runFull(base)).tree : base;
+  for (const [path, content] of Object.entries(shape.installedFirst ? (shape.files ?? {}) : {})) {
+    tree.overwrite(path, content);
+  }
+  for (const path of shape.remove ?? []) {
+    tree.delete(path);
+  }
+  await formatted(tree, shape.prettierFirst ?? [], /./);
+  return tree;
+}
+
+// The plan lines naming the starter outside "already in place".
+function starterLines(logs: readonly string[]): readonly string[] {
+  return logs.filter((line) => /cngx starter|cngx favicon|favicon\.svg|window edge/.test(line) && !line.startsWith('  = '));
+}
+
+function starterFiles(files: Files): readonly string[] {
+  return STARTER_FILES.filter((path) => files[path] !== undefined);
+}
+
+function expectStarterWritten(before: Files, after: Files, facts: ProjectFacts, shape: StarterShape): void {
+  expect(facts.scaffold.kind).toBe('starter');
+  for (const path of starterFiles(after)) {
+    expect({ path, fingerprint: /^(\/\* cngx:fingerprint [0-9a-f]{8} \*\/|<!-- cngx:fingerprint [0-9a-f]{8} -->)\r?\n/.test(after[path]) }).toEqual({
+      path,
+      fingerprint: true,
+    });
+  }
+  expect({ path: 'src/app/app.ts', errors: grammarErrors('src/app/app.ts', after['src/app/app.ts']) }).toEqual({ path: 'src/app/app.ts', errors: [] });
+  expect(templateErrors(after['src/app/app.html'])).toEqual([]);
+  const feedback = shape.flags?.feedback !== false;
+  expect(elementCount(after['src/app/app.html'], 'cngx-banner-outlet')).toBe(feedback ? 1 : 0);
+  expect(elementCount(after['src/app/app.html'], 'cngx-toast-outlet')).toBe(feedback ? 1 : 0);
+  expect(after['src/app/app.html']).toContain('Hello, <span class="hero__name">{{ title() }}</span>.');
+  expect(after['src/app/app.ts']).toContain("signal('fixture-app')");
+  const spec = after['src/app/app.spec.ts'];
+  if (spec !== undefined) {
+    expect(spec.includes('provideFeedback(withToasts(), withBanners())')).toBe(feedback);
+    expect(spec).toContain("toContain('Hello, fixture-app')");
+  }
+  if (shape.outcome === 'icon-left') {
+    expect({ index: after['src/index.html'], favicon: after['public/favicon.svg'] }).toEqual({
+      index: before['src/index.html'],
+      favicon: before['public/favicon.svg'],
+    });
+    return;
+  }
+  if (before['src/index.html'] === undefined) {
+    expect(after['src/index.html']).toBeUndefined();
+    expect(after['public/favicon.svg']).toBeUndefined();
+    return;
+  }
+  expect(facts.indexHtml.state).toBe('starter');
+  expect(after['public/favicon.svg']).toBe(STARTER_FAVICON);
+}
+
+function expectStarterLeftOut(before: Files, after: Files, shape: StarterShape, logs: string): void {
+  // The outlets step may still place the outlets; nothing else of the
+  // starter reaches the component, the index or the public folder.
+  for (const path of starterFiles(before)) {
+    expect({ path, starter: /cngx:fingerprint/.test(after[path] ?? '') }).toEqual({ path, starter: /cngx:fingerprint/.test(before[path]) });
+  }
+  expect({ index: after['src/index.html'], favicon: after['public/favicon.svg'] }).toEqual({
+    index: before['src/index.html'],
+    favicon: before['public/favicon.svg'],
+  });
+  const reasons: Partial<Record<StarterShape['outcome'], string>> = {
+    'not-untouched': starterLeftOutText('not-untouched', 'src/app/app.ts'),
+    'other-answers': starterLeftOutText('other-answers', 'src/app/app.ts'),
+  };
+  const reason = reasons[shape.outcome];
+  if (reason !== undefined) {
+    expect(logs).toContain(reason);
+  }
+  if (shape.outcome === 'replaced' || shape.outcome === 'other-answers') {
+    for (const path of SCAFFOLD_FILES.filter((candidate) => before[candidate] !== undefined)) {
+      expect({ path, content: after[path] }).toEqual({ path, content: before[path] });
+    }
+  }
+  if (shape.outcome === 'replaced' || shape.outcome === 'nothing') {
+    expect(starterLines(logs.split('\n'))).toEqual([]);
+  }
+}
+
+describe('every starter case', () => {
+  it.each(STARTER_CORPUS.map((shape) => [shape.name, shape] as const))('%s', async (_name, shape) => {
+    const tree = await starterTreeOf(shape);
+    const before = readTree(tree);
+    const first = await runFull(tree, shape.flags);
+    const after = readTree(first.tree);
+    const logs = first.logs.join('\n');
+    const facts = await factsOf(first.tree);
+
+    if (shape.outcome === 'written' || shape.outcome === 'icon-left') {
+      expectStarterWritten(before, after, facts, shape);
+    } else {
+      expectStarterLeftOut(before, after, shape, logs);
+    }
+    if (shape.outcome === 'written' || shape.outcome === 'icon-left' || shape.outcome === 'replaced') {
+      expect(recordedSteps(after, 'fixture-app')).toContain(STARTER_ID);
+    }
+
+    // A second run writes nothing and names the starter only as in place; a
+    // note about the icon is said once, on the run that writes the starter,
+    // a starter left out is named on every run.
+    const repeated = shape.outcome === 'not-untouched' || shape.outcome === 'other-answers';
+    const notes = repeated ? starterLines(first.logs).filter((line) => line.startsWith('  - ')) : [];
+    const second = await runFull(first.tree, shape.flags);
+    expectUnchanged(after, readTree(second.tree));
+    expect(readTree(second.tree)[INSTALL_MANIFEST_PATH]).toBe(after[INSTALL_MANIFEST_PATH]);
+    expect(starterLines(second.logs)).toEqual(notes);
+
+    // The same after the CLI Prettier pass over every file the run wrote.
+    await formatted(first.tree, changed(before, after), /\.(ts|html|css|scss)$/);
+    const reformatted = readTree(first.tree);
+    const third = await runFull(first.tree, shape.flags);
+    expectUnchanged(reformatted, readTree(third.tree));
+    expect(starterLines(third.logs)).toEqual(notes);
+    if (shape.outcome === 'written' || shape.outcome === 'icon-left') {
+      expect(third.logs).toContain('cngx is already set up; nothing changed.');
+    }
+  });
+
+  it('records the starter only where it wrote one', () => {
+    const outcomes = new Set(STARTER_CORPUS.map((shape) => shape.outcome));
+
+    expect([...outcomes].sort()).toEqual(['icon-left', 'not-untouched', 'nothing', 'other-answers', 'replaced', 'written']);
+  });
+});

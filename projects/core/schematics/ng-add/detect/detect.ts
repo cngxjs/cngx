@@ -31,7 +31,15 @@ import {
 } from './ai-tooling';
 import { type AppShell, appShellOf, type AppShellUnfollowed } from './app-shell';
 import { maturityOf, rootProvidersPath } from './bootstrap';
-import { type AppScaffold, indexHtmlStateOf, type IndexHtmlFacts, scaffoldOf, type ScaffoldNames } from './scaffold';
+import {
+  type AppScaffold,
+  type FaviconFacts,
+  faviconOf,
+  indexHtmlStateOf,
+  type IndexHtmlFacts,
+  scaffoldOf,
+  type ScaffoldNames,
+} from './scaffold';
 import {
   detectEslintConfig,
   detectEslintStack,
@@ -92,9 +100,14 @@ export {
 } from './app-shell';
 export {
   type AppScaffold,
+  type FaviconFacts,
   type IndexHtmlFacts,
   type IndexHtmlState,
+  matchesScaffoldEntry,
+  scaffoldEntries,
+  type ScaffoldEntryKey,
   type ScaffoldFiles,
+  type ScaffoldNames,
   starterFingerprintLine,
   starterFingerprintOf,
   withStarterFavicon,
@@ -152,6 +165,8 @@ export interface ProjectFacts {
   readonly scaffold: AppScaffold;
   /** The build's `index.html` and whether it is the untouched `ng new` file. */
   readonly indexHtml: IndexHtmlFacts;
+  /** `favicon.svg` in the folder the build serves as is; `undefined` when it serves none. */
+  readonly favicon: FaviconFacts | undefined;
   /** `cngx-language.ts` next to `rootProvidersFile`. */
   readonly languageFile: GeneratedFileState;
   /** The pack a `provideCngxI18n(withPack(...))` there passes; `undefined` when none. */
@@ -269,6 +284,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     appShell,
     scaffold: scaffoldOf(read, appShell, names),
     indexHtml: { path: indexPath, state: indexHtmlStateOf(read(indexPath), names) },
+    favicon: faviconOf(read, options),
     languageFile: generatedFileState(read(posix.join(posix.dirname(rootProvidersFile), CNGX_LANGUAGE_FILE))),
     languagePack: providerCalls.languagePack,
     material: detectMaterial(read, manifest, entries),

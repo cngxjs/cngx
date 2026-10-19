@@ -259,6 +259,25 @@ paste the snippet yourself.
 
 ---
 
+## Starter left out
+
+The starter is written only over the untouched `ng new` scaffold. Where it
+is not, cngx writes nothing into the App component, its template, its
+stylesheet, `index.html` or the public folder, and a note names one of
+these reasons, with the file for `<file>`:
+
+- `the starter composes @cngx/common and @cngx/ui; select both to get it`: `--libs` left one of them out.
+- `<file>, its template or its stylesheet is not the untouched ng new scaffold, so the starter is not written over it`: one character differs from what `ng new` wrote, the template or the styles are inline, or the stylesheet is Sass or Less.
+- `<file> holds the cngx starter of an earlier run with other answers; cngx does not rewrite it`: a re-run with other answers (feedback, a11y preferences, the runtime language switch) keeps the starter it finds.
+- `<file> is not the untouched ng new file, so the starter leaves its icon link and favicon.svg alone`: the starter is written, the icon stays Angular's.
+- `<file> exists and is not the cngx favicon, so the starter leaves it and the icon link alone`: the public folder already holds a `favicon.svg`.
+- `the build copies no public folder, so the starter leaves the icon link and favicon.svg alone`: the build `assets` list no folder copied as a whole.
+
+A starter an earlier install wrote and you replaced since is skipped
+without a note.
+
+---
+
 ## Tailwind
 
 Tailwind v4 puts its rules in the cascade layers `theme`, `base`,

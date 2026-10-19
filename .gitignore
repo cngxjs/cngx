@@ -45,6 +45,9 @@ Thumbs.db
 
 .angular
 
+# The starter compile test writes its app here and removes it afterwards.
+/.starter-compile
+
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
 test-output

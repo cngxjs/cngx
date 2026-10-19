@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createFixtureTree, type FixtureName, readFixture } from '../../testing/run-schematic';
 import { detectProject } from './detect';
-import { starterFingerprintLine, starterFingerprintOf, withStarterFavicon } from './scaffold';
+import { matchesScaffoldEntry, starterFingerprintLine, starterFingerprintOf, withStarterFavicon } from './scaffold';
 
 type Files = Readonly<Record<string, string>>;
 
@@ -33,14 +33,20 @@ const CSS_FILES = { component: 'src/app/app.ts', template: 'src/app/app.html', s
 
 describe('scaffoldOf', () => {
   it.each([
-    ['scaffold-21', true, 'src/app/app.css'],
-    ['scaffold-21-routing-off', false, 'src/app/app.css'],
-    ['scaffold-21-zone', true, 'src/app/app.css'],
-    ['scaffold-21-scss', true, 'src/app/app.scss'],
-  ] as const)('reads %s as the untouched scaffold', async (fixture, routing, stylesheet) => {
+    ['scaffold-21', true, 'src/app/app.css', 'routing-css'],
+    ['scaffold-21-routing-off', false, 'src/app/app.css', 'no-routing-css'],
+    ['scaffold-21-zone', true, 'src/app/app.css', 'routing-css'],
+    ['scaffold-21-scss', true, 'src/app/app.scss', 'routing-scss'],
+  ] as const)('reads %s as the untouched scaffold', async (fixture, routing, stylesheet, variant) => {
     const facts = await factsOf(fixture);
 
-    expect(facts.scaffold).toEqual({ kind: 'untouched', files: { ...CSS_FILES, stylesheet }, routing });
+    expect(facts.scaffold).toEqual({
+      kind: 'untouched',
+      files: { ...CSS_FILES, stylesheet },
+      routing,
+      variant,
+      names: { project: 'fixture-app', selector: 'app-root' },
+    });
   });
 
   it.each(['scaffold-21', 'scaffold-21-routing-off', 'scaffold-21-scss'] as const)(
@@ -117,6 +123,7 @@ describe('scaffoldOf', () => {
         kind: 'starter',
         files: CSS_FILES,
         fingerprints: { component: '0000000a', template: '0000000b', stylesheet: '0000000c' },
+        selector: 'app-root',
       });
     }
   });
@@ -163,5 +170,31 @@ describe('indexHtmlStateOf', () => {
 
   it('reads a missing index.html as absent', async () => {
     expect((await factsOf('scaffold-21', {}, ['src/index.html'])).indexHtml).toEqual({ path: 'src/index.html', state: 'absent' });
+  });
+});
+
+describe('matchesScaffoldEntry', () => {
+  const names = { project: 'fixture-app', selector: 'app-root' };
+
+  it('matches a file only against the catalog entry of its own variant', () => {
+    const routingOff = readFixture('scaffold-21-routing-off')['src/app/app.html'];
+
+    expect(matchesScaffoldEntry(STOCK['src/app/app.html'], { file: 'app.html', variant: 'routing' }, names)).toBe(true);
+    expect(matchesScaffoldEntry(routingOff, { file: 'app.html', variant: 'routing' }, names)).toBe(false);
+    expect(matchesScaffoldEntry(STOCK['src/index.html'], { file: 'index.html', variant: 'default' }, names)).toBe(true);
+    expect(matchesScaffoldEntry(STOCK['src/index.html'], { file: 'index.html', variant: 'default' }, { ...names, project: 'other' })).toBe(false);
+  });
+});
+
+describe('faviconOf', () => {
+  it('names favicon.svg in the public folder ng new lists and fingerprints what is there', async () => {
+    expect((await factsOf('scaffold-21')).favicon).toEqual({ path: 'public/favicon.svg', fingerprint: undefined });
+    expect((await factsOf('scaffold-21', { 'public/favicon.svg': '<svg/>' })).favicon?.fingerprint).toMatch(/^[0-9a-f]{8}$/);
+  });
+
+  it('names none when the build copies no public folder as a whole', async () => {
+    const angular = STOCK['angular.json'].replace('"glob": "**/*"', '"glob": "*.ico"');
+
+    expect((await factsOf('scaffold-21', { 'angular.json': angular })).favicon).toBeUndefined();
   });
 });

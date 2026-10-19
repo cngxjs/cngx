@@ -36,6 +36,7 @@ import { readInstallManifest, manifestOf, unreadableCopyPath } from './shell/ins
 import { planManifest, planUnreadableManifest, recordedLibs, recordedStepIds, unionLibs } from './steps/manifest';
 import { type Step } from './steps/model';
 import { planProviders } from './steps/providers';
+import { planStarter, writesStarter } from './steps/starter';
 import { readRecordedAnswers } from './steps/reruns';
 import { planTheme } from './steps/theme';
 
@@ -54,7 +55,9 @@ interface StepContext {
 /**
  * The plan steps in apply order; the install manifest follows them. The AI
  * tooling steps leave out what the user removed since the last install, the
- * app shell step the outlets this project's record placed that are gone. The
+ * app shell step the outlets this project's record placed that are gone, and
+ * the starter step a starter it wrote that was replaced since. The starter
+ * runs before the outlets, which it brings along when it is written. The
  * helper README is workspace-wide, so it lists the libs of every project's
  * record, not only this run's.
  */
@@ -63,7 +66,9 @@ function planSteps({ withdrawn, workspaceLibs, projectSteps, explicitFeedback }:
     planDependencies,
     planTheme,
     planProviders,
-    (facts, answers, versions) => planAppShell(facts, answers, versions, projectSteps, explicitFeedback),
+    (facts, answers, versions) => planStarter(facts, answers, versions, projectSteps),
+    (facts, answers, versions) =>
+      planAppShell(facts, answers, versions, projectSteps, explicitFeedback, writesStarter(facts, answers)),
     planLint,
     (facts, answers, versions) => planAiTools(facts, answers, versions, withdrawn),
     (facts, answers, versions) =>

@@ -470,6 +470,27 @@ describe('planAppShell', () => {
   });
 });
 
+describe('planAppShell next to the starter', () => {
+  it('skips the outlet edits the starter brings along and still provides the stock spec', () => {
+    const facts = createFacts({ appShell: { ...(createFacts().appShell as AppShell), spec: 'stock' } });
+    const result = planAppShell(facts, createAnswers({ feedback: true }), VERSIONS, [], false, true);
+
+    expect(result.changes.map((change) => change.id)).toEqual([SPEC_ID]);
+    // One skip per file the outlet edits touch, as a placing run records them.
+    expect(result.skipped).toEqual([
+      expect.objectContaining({ id: OUTLETS_ID, label: 'Place the toast and banner outlets in src/app/app.html', reason: 'provided by the starter' }),
+      expect.objectContaining({ id: OUTLETS_ID, label: 'Import the toast and banner outlets in src/app/app.ts', reason: 'provided by the starter' }),
+    ]);
+  });
+
+  it('names a custom spec on the run the starter places the outlets', () => {
+    const facts = createFacts({ appShell: { ...(createFacts().appShell as AppShell), spec: 'custom' } });
+    const result = planAppShell(facts, createAnswers({ feedback: true }), VERSIONS, [], false, true);
+
+    expect(result.changes).toEqual([expect.objectContaining({ kind: 'note', id: SPEC_ID })]);
+  });
+});
+
 describe('planAppShellRerun', () => {
   const UPDATE = createProvenance('ng-update', '0.1.0');
 

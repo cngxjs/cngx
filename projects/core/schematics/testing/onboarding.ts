@@ -35,6 +35,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
     },
     scaffold: { kind: 'custom' },
     indexHtml: { path: 'src/index.html', state: 'untouched' },
+    favicon: undefined,
     languageFile: 'absent',
     languagePack: undefined,
     material: { present: false, themeShape: 'none', themePath: undefined, themeVariable: undefined, density: 0 },
