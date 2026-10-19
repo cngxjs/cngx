@@ -82,3 +82,11 @@ export function routesUnder(...segments: string[]): readonly DemoRoute[] {
     segments.every((segment, i) => meta.pathSegments[i] === segment),
   );
 }
+
+/**
+ * Every route in the manifest, named by its full path. Used by the console
+ * sweep, which loads each example once.
+ */
+export function allRoutes(): readonly DemoRoute[] {
+  return select('allRoutes()', [], () => true);
+}

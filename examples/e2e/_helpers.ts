@@ -21,6 +21,21 @@ export async function gotoDemoLang(page: Page, routePath: string, lang: string):
 }
 
 /**
+ * Collect every console message whose text contains `needle`, from now on.
+ * Call before `gotoDemo` so load-time diagnostics are caught; the returned
+ * array fills as messages arrive.
+ */
+export function collectConsoleMessages(page: Page, needle: string): readonly string[] {
+  const messages: string[] = [];
+  page.on('console', (msg) => {
+    if (msg.text().includes(needle)) {
+      messages.push(msg.text());
+    }
+  });
+  return messages;
+}
+
+/**
  * Assert the *computed* CSS display of a node. Catches the class of bug
  * where a component is functionally wired but the consumer-side layout
  * stylesheet is missing — e.g. cngx-card-grid hosting `.cngx-card-grid`

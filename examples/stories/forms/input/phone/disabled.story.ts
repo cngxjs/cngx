@@ -11,7 +11,7 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['a11y-pattern'],
   apiComponents: ['CngxPhoneInput'],
-  moduleImports: ["import { CngxPhoneInput } from '@cngx/forms/input';"],
+  moduleImports: ["import { CngxPhoneInput, type Country } from '@cngx/forms/input';"],
   imports: ['CngxPhoneInput'],
   references: [
     {
@@ -19,10 +19,12 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-disabled',
     },
   ],
+  setup: `protected readonly austria: Country = { region: 'AT', dialCode: '+43', label: 'Austria' };`,
   template: `
   <cngx-phone-input
     ariaLabel="Contact number"
-    value="664 1234567"
+    [country]="austria"
+    value="436641234567"
     [disabled]="true"
     disabledReason="The contact number is managed by your administrator"
   />`,

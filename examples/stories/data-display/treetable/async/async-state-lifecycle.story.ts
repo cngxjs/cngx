@@ -12,11 +12,14 @@ export const STORY: DemoSpec = {
   focus: ['async-state', 'error-handling'],
   apiComponents: ['CngxTreetable', 'CngxErrorTpl', 'CngxEmptyTpl'],
   moduleImports: [
-    "import { CngxTreetable, CngxEmptyTpl, CngxErrorTpl, type Node } from '@cngx/data-display/treetable';",
+    "import { CngxTreetable, CngxEmptyTpl, CngxErrorTpl, provideTreetableAt, withTreetableLabels, type Node } from '@cngx/data-display/treetable';",
     "import { createManualState } from '@cngx/common/data';",
     "import { ORG_TREE, type Employee } from '../../../../fixtures';",
   ],
   imports: ['CngxTreetable', 'CngxEmptyTpl', 'CngxErrorTpl'],
+  viewProviders: [
+    "...provideTreetableAt(withTreetableLabels({ columnLabels: { name: 'Employee', role: 'Job title', location: 'Office' } }))",
+  ],
   setup: `protected readonly loadState = createManualState<Node<Employee>[]>();
   protected readonly tree = computed(() => this.loadState.data() ?? []);
   protected readonly failNextLoad = signal(false);
