@@ -105,7 +105,7 @@
    * Falls back to `--cngx-select-padding`; see {@link --cngx-select-padding}
    * for why no `initial-value` is declared.
    * @group Layout
-   * @default var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem))
+   * @default var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 0.75rem))
    */
   @property --cngx-select-shell-padding {
     syntax: '*';
@@ -253,7 +253,7 @@
       );
       padding: var(
         --cngx-select-shell-padding,
-        var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem))
+        var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 0.75rem))
       );
       border: var(
         --cngx-select-shell-border,
@@ -300,7 +300,7 @@
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
-      gap: var(--cngx-select-shell-label-gap, var(--cngx-space-xs, 0.25rem));
+      gap: var(--cngx-select-shell-label-gap, var(--cngx-space-xs, 0.375rem));
     }
 
     .cngx-select-shell__label--placeholder {

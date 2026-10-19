@@ -120,6 +120,72 @@ class InnerTokensHost {
   readonly nodeId = (value: unknown): string => String(value);
 }
 
+// The same nine without system-tokens.css: the spacing scale is unregistered
+// and unset, so each trigger falls back to the literal end of its gap and
+// padding chain. Those ends reproduce what the triggers painted before the
+// tokens cascaded, when the unresolvable scale SET left each trigger on the
+// next registered initial value in its chain.
+@Component({
+  selector: 'cngx-select-no-scale-host',
+  standalone: true,
+  imports: [
+    CngxSelect,
+    CngxMultiSelect,
+    CngxCombobox,
+    CngxTypeahead,
+    CngxTreeSelect,
+    CngxReorderableMultiSelect,
+    CngxActionSelect,
+    CngxActionMultiSelect,
+    CngxSelectShell,
+    CngxSelectOption,
+  ],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/reset.css',
+    '../../../core/theming/base.css',
+    '../../theming/components/cngx-field-affix.css',
+    '../../theming/components/cngx-field-skin.css',
+    './select-base.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div style="display: block; width: 20rem; margin: 1rem">
+      <cngx-select [label]="'C'" [options]="options" />
+      <cngx-multi-select [label]="'C'" [options]="options" />
+      <cngx-combobox [label]="'C'" [options]="options" />
+      <cngx-typeahead [label]="'C'" [options]="options" />
+      <cngx-tree-select [label]="'C'" [nodes]="options" [nodeIdFn]="nodeId" />
+      <cngx-reorderable-multi-select [label]="'C'" [options]="options" />
+      <cngx-action-select [label]="'C'" [options]="options" />
+      <cngx-action-multi-select [label]="'C'" [options]="options" />
+      <cngx-select-shell [label]="'C'">
+        <cngx-option [value]="'red'">Red</cngx-option>
+      </cngx-select-shell>
+    </div>
+  `,
+})
+class NoScaleHost {
+  readonly options = [
+    { value: 'red', label: 'Red' },
+    { value: 'green', label: 'Green' },
+  ];
+  readonly nodeId = (value: unknown): string => String(value);
+}
+
+/** Literal gap / padding ends per host: [column-gap, padding-top, padding-left]. */
+const LITERAL_ENDS: Readonly<Record<string, readonly [string, string, string]>> = {
+  'cngx-select': ['8px', '8px', '12px'],
+  'cngx-multi-select': ['8px', '8px', '12px'],
+  'cngx-combobox': ['8px', '8px', '12px'],
+  'cngx-typeahead': ['8px', '0px', '12px'],
+  'cngx-tree-select': ['8px', '4px', '8px'],
+  'cngx-reorderable-multi-select': ['8px', '6px', '8px'],
+  'cngx-action-select': ['8px', '0px', '12px'],
+  'cngx-action-multi-select': ['6px', '4px', '6px'],
+  'cngx-select-shell': ['8px', '8px', '12px'],
+};
+
 interface InnerToken {
   readonly token: string;
   readonly value: string;
@@ -497,4 +563,24 @@ describe('select inner layout tokens', () => {
       });
     });
   }
+});
+
+describe('select trigger spacing without the spacing scale', () => {
+  it('every trigger row falls back to the literal end of its gap and padding chain', () => {
+    const fixture = TestBed.createComponent(NoScaleHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const rows = Array.from(mountedRoot.querySelectorAll<HTMLElement>('.cngx-field-trigger'));
+    expect(rows).toHaveLength(9);
+    const painted = Object.fromEntries(
+      rows.map((row) => {
+        const style = getComputedStyle(row);
+        return [hostTag(row) ?? '', [style.columnGap, style.paddingTop, style.paddingLeft]];
+      }),
+    );
+    expect(painted).toEqual(LITERAL_ENDS);
+  });
 });

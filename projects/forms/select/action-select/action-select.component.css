@@ -82,7 +82,7 @@
    * Falls back to `--cngx-select-padding`; see {@link --cngx-select-padding}
    * for why no `initial-value` is declared.
    * @group Layout
-   * @default var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem))
+   * @default var(--cngx-select-padding, var(--cngx-space-sm, 0) var(--cngx-space-md, 0.75rem))
    */
   @property --cngx-action-select-padding {
     syntax: '*';
@@ -161,7 +161,7 @@
       );
       padding: var(
         --cngx-action-select-padding,
-        var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem))
+        var(--cngx-select-padding, var(--cngx-space-sm, 0) var(--cngx-space-md, 0.75rem))
       );
       border: var(
         --cngx-action-select-border,

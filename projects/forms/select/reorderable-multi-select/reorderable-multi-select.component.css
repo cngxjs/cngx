@@ -100,7 +100,7 @@
    * `--cngx-select-padding`; see {@link --cngx-select-padding} for why no
    * `initial-value` is declared.
    * @group Layout
-   * @default var(--cngx-multi-select-padding, var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem)))
+   * @default var(--cngx-multi-select-padding, var(--cngx-select-padding, var(--cngx-space-sm, 0.375rem) var(--cngx-space-md, 0.5rem)))
    */
   @property --cngx-reorderable-multi-select-padding {
     syntax: '*';
@@ -241,7 +241,7 @@
         --cngx-reorderable-multi-select-padding,
         var(
           --cngx-multi-select-padding,
-          var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem))
+          var(--cngx-select-padding, var(--cngx-space-sm, 0.375rem) var(--cngx-space-md, 0.5rem))
         )
       );
       border: var(

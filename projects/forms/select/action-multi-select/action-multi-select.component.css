@@ -82,7 +82,7 @@
    * `--cngx-select-gap`; see {@link --cngx-select-gap} for why no
    * `initial-value` is declared.
    * @group Layout
-   * @default var(--cngx-combobox-gap, var(--cngx-select-gap, var(--cngx-space-xs, 0.25rem)))
+   * @default var(--cngx-combobox-gap, var(--cngx-select-gap, var(--cngx-space-xs, 0.375rem)))
    */
   @property --cngx-action-multi-select-gap {
     syntax: '*';
@@ -95,7 +95,7 @@
    * `--cngx-select-padding`; see {@link --cngx-select-padding} for why no
    * `initial-value` is declared.
    * @group Layout
-   * @default var(--cngx-combobox-padding, var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem)))
+   * @default var(--cngx-combobox-padding, var(--cngx-select-padding, var(--cngx-space-sm, 0.25rem) var(--cngx-space-md, 0.375rem)))
    */
   @property --cngx-action-multi-select-padding {
     syntax: '*';
@@ -255,14 +255,14 @@
       align-items: center;
       gap: var(
         --cngx-action-multi-select-gap,
-        var(--cngx-combobox-gap, var(--cngx-select-gap, var(--cngx-space-xs, 0.25rem)))
+        var(--cngx-combobox-gap, var(--cngx-select-gap, var(--cngx-space-xs, 0.375rem)))
       );
       width: 100%;
       padding: var(
         --cngx-action-multi-select-padding,
         var(
           --cngx-combobox-padding,
-          var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem))
+          var(--cngx-select-padding, var(--cngx-space-sm, 0.25rem) var(--cngx-space-md, 0.375rem))
         )
       );
       border: var(
