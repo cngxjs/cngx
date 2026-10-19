@@ -124,6 +124,13 @@ const RAW_THROW_EXEMPT = [
     reason:
       'spec-only harness that feeds a failing commit source an Error; excluded-path-import-boundary.test.mjs fails any library import of a __test-helpers file',
   },
+  {
+    file: 'projects/forms/select/shared/__test-helpers/select-behaviour-host.ts',
+    count: 0,
+    constructions: 4,
+    reason:
+      'spec-only harness that fails a pending commit source with an Error; excluded-path-import-boundary.test.mjs fails any library import of a __test-helpers file',
+  },
 ];
 
 /** The file that declares the class; its own declaration is no value use. */
