@@ -55,7 +55,7 @@ import {
 </div>
 ```
 
-`value` and `selectedValues` are `model()` signals - one-way `[value]`, output `(valueChange)`, and two-way `[(value)]` all work. Selection wins via `compareWith` (default `Object.is`).
+`value` and `selectedValues` are `model()` signals - one-way `[value]`, output `(valueChange)`, and two-way `[(value)]` all work. Selection wins via `compareWith` (default `Object.is`); the same comparator reaches the host `CngxActiveDescendant`, so re-fetched options keep the highlight.
 
 ## Composable parts
 

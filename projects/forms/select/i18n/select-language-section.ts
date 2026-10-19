@@ -38,6 +38,10 @@ export interface CngxSelectLanguageSection {
   readonly commitFailedAnnouncement: CngxMessage;
   /** `{label}`, `{detail}`: announced when a `[commitAction]` rejects with an `Error`. */
   readonly commitFailedAnnouncementDetail: CngxMessage;
+  /** `{label}`, `{option}`: announced when a quick-create rejects without an error message. */
+  readonly createFailedAnnouncement: CngxMessage;
+  /** `{label}`, `{option}`, `{detail}`: announced when a quick-create rejects with an `Error`. */
+  readonly createFailedAnnouncementDetail: CngxMessage;
   /** Accessible name of the `<cngx-select-search>` input. */
   readonly searchInput: string;
   /** Accessible name of a panel listbox whose control has no label to borrow. */
@@ -114,6 +118,8 @@ export const CNGX_SELECT_LANGUAGE_EN: CngxSelectLanguageSection = {
   fieldLabelFallback: 'Selection',
   commitFailedAnnouncement: '{label}: Save failed',
   commitFailedAnnouncementDetail: '{label}: Save failed - {detail}',
+  createFailedAnnouncement: '{label}: Could not create {option}',
+  createFailedAnnouncementDetail: '{label}: Could not create {option} - {detail}',
   searchInput: 'Search options',
   listboxFallback: 'Options',
   sheetClose: 'Close',

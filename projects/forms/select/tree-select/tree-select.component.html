@@ -15,13 +15,13 @@
     class="cngx-tree-select__trigger cngx-field-trigger"
     role="combobox"
     [cngxPopoverTrigger]="pop"
-    [haspopup]="'tree'"
+    [haspopup]="sheetWiring.triggerHaspopup()"
+    [controls]="sheetWiring.triggerControls()"
     [attr.tabindex]="effectiveTabIndex()"
     [attr.aria-label]="aria.label"
     [attr.aria-labelledby]="aria.labelledBy"
     [attr.aria-describedby]="aria.describedBy"
     [attr.aria-errormessage]="aria.errorMessage"
-    [attr.aria-expanded]="aria.expanded"
     [attr.aria-disabled]="aria.disabled"
     [attr.aria-invalid]="aria.invalid"
     [attr.aria-required]="aria.required"
@@ -154,4 +154,5 @@
     <cngx-select-sheet-header />
     <cngx-tree-select-panel />
   </div>
+  <span class="cngx-sr-only" [id]="commitErrorId">{{ commitErrorText() }}</span>
 </div>

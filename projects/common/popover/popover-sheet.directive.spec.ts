@@ -365,6 +365,18 @@ describe('CngxPopoverSheet', () => {
       expect(q('.page-check').hasAttribute('inert')).toBe(false);
       expect(document.body.style.position).toBe('');
     });
+
+    it('re-homes focus from the panel to the opener when an open sheet flips to anchored', () => {
+      const ctx = setup();
+      const { host, flush, q, panel } = ctx;
+      openFromOpener(ctx);
+      expect(panel.contains(document.activeElement)).toBe(true);
+
+      host.request.set('anchored');
+      flush();
+      expect(document.activeElement).not.toBe(document.body);
+      expect(document.activeElement).toBe(q('.opener'));
+    });
   });
 
   describe('misplaced parts', () => {

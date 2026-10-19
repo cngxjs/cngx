@@ -73,6 +73,9 @@ import { CngxOption } from './option.directive';
         'autoHighlightFirst',
         'virtualCount',
         'windowStart',
+        // Same name as the listbox input: one binding feeds selection matching
+        // and the AD's value lookup after an items change.
+        'compareWith',
       ],
       // `activated` fires on EVERY pick (click / Enter / Space), including a
       // re-pick of the already-selected value - unlike `valueChange`, which

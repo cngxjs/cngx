@@ -25,6 +25,10 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
    * closed.
    */
   readonly panelOpen: Signal<boolean>;
+  /** A disabled select drops every activation. */
+  readonly disabled: Signal<boolean>;
+  /** Id of the `role="tree"` container; the trigger's `aria-controls` names it. */
+  readonly listboxId: string;
   /**
    * Opt-in expand-to-reveal type-to-find. When `true` the panel
    * resolves typeahead misses against the full flat tree (reveal +
@@ -50,6 +54,11 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
    * Same cascade as the flat family's listbox name.
    */
   readonly resolvedListboxLabel: Signal<string>;
+  /**
+   * Value equality the tree's active descendant uses to find the highlighted
+   * node again after the nodes change (`keyFn`, else `compareWith`).
+   */
+  readonly adCompareWith: Signal<(a: T, b: T) => boolean>;
   /** Whether the value is selected. */
   isSelected(value: T): boolean;
   /** Whether the value is partially selected via cascade descendants. */

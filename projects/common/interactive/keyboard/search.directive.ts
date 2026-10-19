@@ -10,7 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { fromEvent, map, switchMap, timer } from 'rxjs';
+import { EMPTY, fromEvent, map, merge, Subject, switchMap, timer } from 'rxjs';
 
 /**
  * Debounced search term tracker for `<input>` elements.
@@ -52,12 +52,18 @@ export class CngxSearch {
   private readonly el = inject(ElementRef<HTMLInputElement>);
   private readonly renderer = inject(Renderer2);
   private readonly destroyRef = inject(DestroyRef);
+  /** `clear()` notifier: switches the pipeline away from a pending debounce. */
+  private readonly cleared = new Subject<void>();
 
   constructor() {
-    fromEvent<InputEvent>(this.el.nativeElement as HTMLInputElement, 'input')
+    const typed = fromEvent<InputEvent>(this.el.nativeElement as HTMLInputElement, 'input').pipe(
+      map((e) => (e.target as HTMLInputElement).value),
+    );
+    merge(typed, this.cleared.pipe(map(() => null)))
       .pipe(
-        map((e) => (e.target as HTMLInputElement).value),
-        switchMap((value) => timer(this.debounceMs()).pipe(map(() => value))),
+        switchMap((value) =>
+          value === null ? EMPTY : timer(this.debounceMs()).pipe(map(() => value)),
+        ),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((term) => {
@@ -68,6 +74,7 @@ export class CngxSearch {
 
   /** Clears the search term and resets the input element value. */
   clear(): void {
+    this.cleared.next();
     this.termState.set('');
     this.renderer.setProperty(this.el.nativeElement, 'value', '');
     this.searchChange.emit('');

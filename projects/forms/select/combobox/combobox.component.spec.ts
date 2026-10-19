@@ -14,6 +14,7 @@ import { describeCommitControllerCascade } from '../shared/__test-helpers/commit
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
+import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import { CngxCombobox, type CngxComboboxChange } from './combobox.component';
 import { CngxComboboxChip } from '../shared/template-slots';
@@ -565,7 +566,8 @@ describe('CngxCombobox - search + filter', () => {
     );
     flush(fixture);
     expect(popover.isVisible()).toBe(false);
-    // Typing re-opens.
+    // Typing (into the focused input) re-opens.
+    input.focus();
     setInputValue(input, 'ro');
     vi.advanceTimersByTime(350);
     flush(fixture);
@@ -681,6 +683,26 @@ describe('CngxCombobox - commit action producer', () => {
       },
     };
   }
+
+  it('does not open when the input lost focus before the debounce settled', () => {
+    vi.useFakeTimers();
+    const { fixture, combo, input } = setup();
+    input.focus();
+    input.value = 're';
+    input.dispatchEvent(new Event('input'));
+    input.blur();
+    vi.advanceTimersByTime(1000);
+    flush(fixture);
+    expect(combo.panelOpen()).toBe(false);
+
+    // Control: with focus kept, the same term does open.
+    input.focus();
+    input.value = 'gr';
+    input.dispatchEvent(new Event('input'));
+    vi.advanceTimersByTime(1000);
+    flush(fixture);
+    expect(combo.panelOpen()).toBe(true);
+  });
 
   it('optimistic success: values updated immediately, selectionChange on success', () => {
     const { fixture, host, combo, optionAt } = setup();
@@ -1122,4 +1144,10 @@ describeMobileSheet('CngxCombobox', CngxCombobox, 'cngx-combobox', {
     const { accessor, ref } = createMockField<string[]>({ name: 'pick', value: [] });
     return { accessor, touched: () => ref.touched() };
   },
+});
+
+describeSelectBehaviourHost('CngxCombobox', CngxCombobox, 'cngx-combobox', {
+  inputs: '[options]="options"',
+  optionSelector: '[cngxOption]',
+  readValue: (cmp) => (cmp as { values: () => unknown }).values(),
 });

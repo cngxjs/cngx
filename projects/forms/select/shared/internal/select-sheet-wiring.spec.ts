@@ -42,11 +42,14 @@ function setup(
     id: signal('panel-1'),
   } as unknown as CngxPopover;
   const isCommitting = signal(false);
+  const disabled = signal(false);
   const request = signal<CngxPopoverPresentationRequest>('auto');
   const core = {
     isCommitting,
     resolvedPresentationRequest: request,
     ariaLabels: signal({}),
+    disabled,
+    listboxId: 'listbox-1',
   } as unknown as CngxSelectCore<string, string>;
   const commitMode = signal<CngxSelectCommitMode>('optimistic');
   const close = vi.fn();
@@ -64,6 +67,7 @@ function setup(
       sheetLabel: signal(undefined),
       label: signal('Colour'),
       close,
+      popupRole: 'listbox',
     }),
   );
   const pend = () => {
@@ -82,6 +86,7 @@ function setup(
     close,
     pend,
     request,
+    disabled,
   };
 }
 
@@ -100,6 +105,35 @@ describe('createSelectSheetWiring', () => {
     expect(wiring.sheetModal()).toBe(true);
   });
 
+  it('hides an open panel once the select turns disabled', () => {
+    const { disabled, hide, visible } = setup();
+    TestBed.flushEffects();
+    expect(hide).not.toHaveBeenCalled();
+    disabled.set(true);
+    TestBed.flushEffects();
+    expect(hide).toHaveBeenCalledTimes(1);
+    expect(visible()).toBe(false);
+    disabled.set(false);
+    TestBed.flushEffects();
+    disabled.set(true);
+    TestBed.flushEffects();
+    expect(hide).toHaveBeenCalledTimes(1);
+  });
+
+  it("announces 'dialog' while the sheet is modal and the popup role while anchored", () => {
+    const { wiring, presentation } = setup();
+    expect(wiring.triggerHaspopup()).toBe('listbox');
+    presentation.set('sheet');
+    expect(wiring.triggerHaspopup()).toBe('dialog');
+  });
+
+  it('points the trigger at the listbox while anchored and at nothing while modal', () => {
+    const { wiring, presentation } = setup();
+    expect(wiring.triggerControls()).toBe('listbox-1');
+    presentation.set('sheet');
+    expect(wiring.triggerControls()).toBeNull();
+  });
+
   it('blocks a close only while a pessimistic commit is pending', () => {
     const { wiring, isCommitting, commitMode } = setup();
     isCommitting.set(true);
@@ -116,6 +150,17 @@ describe('createSelectSheetWiring', () => {
     expect(wiring.escapeEnabled()).toBe(true);
     presentation.set('sheet');
     expect(wiring.escapeEnabled()).toBe(false);
+  });
+
+  it("keeps Escape off on every path under dismissOn 'outside'", () => {
+    const { wiring, presentation, close, hide } = setup({ dismissOn: 'outside' });
+    expect(wiring.escapeEnabled()).toBe(false);
+    wiring.escapeClose();
+    expect(close).not.toHaveBeenCalled();
+    presentation.set('sheet');
+    expect(wiring.escapeEnabled()).toBe(false);
+    wiring.escapeClose();
+    expect(hide).not.toHaveBeenCalled();
   });
 
   it('enables the variant outside-click path only while anchored and open', () => {
@@ -205,6 +250,7 @@ describe('createSelectSheetWiring', () => {
           isCommitting: signal(false),
           resolvedPresentationRequest: signal('auto'),
           ariaLabels: signal({}),
+          disabled: signal(false),
         } as unknown as CngxSelectCore<string, string>,
         sheet: signal(undefined),
         popoverRef: signal(undefined),
@@ -217,6 +263,7 @@ describe('createSelectSheetWiring', () => {
         label: signal(''),
         searchInput: signal({ nativeElement: input }),
         close: vi.fn(),
+        popupRole: 'listbox',
       }),
     );
     wiring.headerHost.setSearchTerm('gr');

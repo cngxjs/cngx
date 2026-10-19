@@ -455,6 +455,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
     onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    // Closure: the sheet wiring is declared further down in field order.
+    close: () => this.sheetWiring.handleFocusLeave(),
     owner: () => this.triggerBtn()?.nativeElement,
     restoreFocus: this.config.restoreFocus,
     suppressOpenOnFocus: (active) => {
@@ -508,7 +510,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      panelOpen: this.panelOpen,
       errorState: this.errorState,
       multi: computed(() => true),
       currentSelection: this.values,
@@ -528,6 +529,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
   readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
+    popupRole: 'listbox',
     core: this.core,
     sheet: this.sheetRef,
     popoverRef: this.popoverRef,
@@ -581,6 +583,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     this.core.resolvedSelectionIndicatorPosition;
   /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
   /** @internal */ protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
+  /** @internal */ protected readonly listboxId = this.core.listboxId;
+  /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
   /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   /** @internal */ protected readonly externalActivation = this.core.externalActivation;

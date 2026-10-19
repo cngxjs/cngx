@@ -13,6 +13,11 @@ interface PopoverController {
   readonly isVisible: () => boolean;
   show(): void;
   hide(): void;
+  /**
+   * Escape policy of the popover (`CngxPopover.closeOnEscape`). When it
+   * reports `false` the trigger leaves Escape alone.
+   */
+  readonly closeOnEscape?: () => boolean;
 }
 
 /**
@@ -32,8 +37,16 @@ interface PopoverController {
  * | open | Enter / Space | activate; close if `closeOnSelect()` |
  * | any | Escape | close and restore focus to trigger |
  *
+ * On an `<input>` host with a co-located `CngxListboxSearch` (a combobox),
+ * Space, Home and End are text-editing keys: they reach the input, open or
+ * closed. Enter still activates and the arrows still navigate.
+ *
  * Keys from an interactive descendant of the host (a chip remove button)
  * are left to that element.
+ *
+ * Pair it with `CngxPopoverTrigger` on the same element: that directive is
+ * the one writer of `aria-haspopup`, `aria-expanded` and `aria-controls`.
+ * This trigger writes none of them.
  *
  * The trigger keeps DOM focus, so it carries `aria-activedescendant`: the
  * listbox's active option id while the popover is open, no attribute while
@@ -53,8 +66,6 @@ interface PopoverController {
   exportAs: 'cngxListboxTrigger',
   standalone: true,
   host: {
-    '[attr.aria-haspopup]': '"listbox"',
-    '[attr.aria-expanded]': 'isOpen()',
     '[attr.aria-activedescendant]': 'activeDescendant()',
     '(keydown)': 'handleKeydown($event)',
   },
@@ -67,7 +78,7 @@ export class CngxListboxTrigger<T = unknown> {
   /** Whether activating an option closes the popover. */
   readonly closeOnSelect = input<boolean>(true);
 
-  /** Mirrors `CngxPopover.isVisible()` for host binding and external read. */
+  /** Mirrors `CngxPopover.isVisible()` for external read. */
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
 
   /** Active option id while open, `null` while closed. */
@@ -126,11 +137,19 @@ export class CngxListboxTrigger<T = unknown> {
     // to delete the trailing chip. Consolidated here so the trigger owns
     // the only keydown handler on the element. Non-input triggers skip
     // this path via the co-located-search guard.
-    if (key === 'Backspace' && this.search) {
+    // A held key repeats: only the first press may strip a chip.
+    if (key === 'Backspace' && this.search && !event.repeat) {
       if (host instanceof HTMLInputElement && host.value === '') {
         this.backspaceOnEmpty.emit();
         // No preventDefault - the consumer's chip-remove path owns DOM impact.
       }
+    }
+
+    // A combobox input keeps its text-editing keys: Space types a space,
+    // Home / End move the caret.
+    const editingKey = this.search !== null && (key === ' ' || key === 'Home' || key === 'End');
+    if (editingKey) {
+      return;
     }
 
     if (!this.isOpen()) {
@@ -151,6 +170,9 @@ export class CngxListboxTrigger<T = unknown> {
 
     switch (key) {
       case 'Escape':
+        if (this.popover().closeOnEscape?.() === false) {
+          return;
+        }
         event.preventDefault();
         this.popover().hide();
         return;

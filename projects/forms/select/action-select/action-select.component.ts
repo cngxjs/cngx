@@ -3,13 +3,16 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ViewEncapsulation,
   computed,
   contentChild,
   inject,
   input,
+  linkedSignal,
   model,
   output,
+  signal,
   untracked,
   viewChild,
   ElementRef,
@@ -481,6 +484,8 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
     onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    // Closure: the sheet wiring is declared further down in field order.
+    close: () => this.sheetWiring.handleFocusLeave(),
     owner: () => this.inputEl()?.nativeElement,
     restoreFocus: this.config.restoreFocus,
   });
@@ -580,7 +585,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      panelOpen: this.panelOpen,
       errorState: this.errorState,
       filter: this.filter,
       multi: computed(() => false),
@@ -591,6 +595,8 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       presentationInput: this.presentation,
       // Lazy: the wiring is built from the core right below.
       presentation: computed<CngxPopoverPresentation>(() => this.sheetWiring.presentation()),
+      // Lazy: the create controller is built below the core.
+      createErrorMessage: computed<string | null>(() => this.createErrorMessage()),
     },
     {
       announceChanges: this.announceChanges,
@@ -600,6 +606,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
   readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
+    popupRole: 'listbox',
     core: this.core,
     sheet: this.sheetRef,
     popoverRef: this.popoverRef,
@@ -671,6 +678,9 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
   /** @internal */
   protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
+  /** @internal */ protected readonly listboxId = this.core.listboxId;
+  /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   /** @internal */
   protected readonly ariaReadonly = this.core.ariaReadonly;
   /** @internal */
@@ -702,6 +712,27 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    * @internal
    */
   private readonly createCommitController = inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY)<T>();
+
+  /** Draft label of the last dispatched quick-create; names it in the failure copy. */
+  private readonly lastCreateLabel = signal('');
+
+  /**
+   * A pick after a failed quick-create clears its error: the user moved on.
+   * Every new create status starts uncleared again.
+   */
+  private readonly createErrorCleared = linkedSignal<AsyncStatus, boolean>({
+    source: this.createCommitController.state.status,
+    computation: () => false,
+  });
+
+  /** Failure sentence of the last quick-create while it is in error, else `null`. */
+  private readonly createErrorMessage = computed<string | null>(() => {
+    const state = this.createCommitController.state;
+    if (state.status() !== 'error' || this.createErrorCleared()) {
+      return null;
+    }
+    return this.core.createFailedMessage(this.lastCreateLabel(), state.error());
+  });
 
   /**
    * Select surface with the quick-create machine overlaid: create
@@ -771,6 +802,16 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   );
 
   private readonly announcer = inject(CngxSelectAnnouncer);
+  /** A rejected quick-create is spoken assertively, whatever the select's own policy. */
+  private readonly announceCreateError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
+    deps: {
+      announcer: this.announcer,
+      commitErrorMessage: (err) => this.core.createFailedMessage(this.lastCreateLabel(), err),
+      softAnnounce: (opt, action, count, multi) =>
+        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
+    },
+    policy: signal<CngxCommitErrorAnnouncePolicy>({ kind: 'verbose', severity: 'assertive' }),
+  });
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
     deps: {
       announcer: this.announcer,
@@ -815,7 +856,10 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       this.core.announce(option, 'created', 1, false);
     },
     onStateChange: (status) => this.stateChange.emit(status),
-    onError: (err) => this.commitError.emit(err),
+    onError: (err) => {
+      this.announceCreateError(err);
+      this.commitError.emit(err);
+    },
     onClose: () => this.close(),
     onResetDirty: () => this.actionBridge.reset(),
   });
@@ -834,6 +878,9 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   constructor() {
+    // Same teardown as the core's select controller: a create that settles
+    // after the host is destroyed is dropped.
+    inject(DestroyRef).onDestroy(() => this.createCommitController.cancel());
     afterNextRender(() => {
       if (this.autofocus()) {
         this.focus();
@@ -876,6 +923,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,
       disabled: this.disabled,
+      focused: this.focusState.focused,
       open: () => this.open(),
       autoOpenGate: () => !this.display.isWritingFromValue(),
     });
@@ -907,7 +955,10 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     liveInputFallback: this.liveInputFallback,
     hasQuickCreateAction: () => this.quickCreateAction() !== null,
     snapshotPrevious: () => this.value(),
-    dispatch: (draft, term, previous) => this.createHandler.dispatch(draft, term, previous),
+    dispatch: (draft, term, previous) => {
+      this.lastCreateLabel.set(draft.label);
+      this.createHandler.dispatch(draft, term, previous);
+    },
   });
 
   /** @internal - Enter-to-quick-create (see createActionTriggerInput). */
@@ -1019,6 +1070,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     core: this.core,
     commitAction: this.commitAction,
     onCommitFinalize: (option, finalValue, previousValue) => {
+      this.createErrorCleared.set(true);
       this.selectionChange.emit({
         source: this,
         value: finalValue,

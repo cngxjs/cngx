@@ -13,6 +13,12 @@ export interface HostFocusWithinOptions {
    * panel - the same window the lifecycle emitter's close restore opens.
    */
   readonly suppressOpenOnFocus?: (active: boolean) => void;
+  /**
+   * Runs after `onLeave` when focus moved to a node outside the host. A
+   * `null` target (window switch, click on a non-focusable area) is left to
+   * the click-outside path.
+   */
+  readonly close?: () => void;
 }
 
 /** @internal */
@@ -86,6 +92,9 @@ export function createHostFocusWithin(opts: HostFocusWithinOptions): HostFocusWi
       }
       focused.set(false);
       opts.onLeave();
+      if (next instanceof Node) {
+        opts.close?.();
+      }
     },
     refocusOwnerBeforeRemoval,
     refocusOwnerBeforeClose: () => {

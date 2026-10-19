@@ -7,6 +7,7 @@ import { describeCommitControllerCascade } from '../shared/__test-helpers/commit
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
+import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import {
   CngxReorderableMultiSelect,
@@ -587,3 +588,9 @@ describeMobileSheet(
     },
   },
 );
+
+describeSelectBehaviourHost('CngxReorderableMultiSelect', CngxReorderableMultiSelect, 'cngx-reorderable-multi-select', {
+  inputs: '[options]="options"',
+  optionSelector: '[cngxOption]',
+  readValue: (cmp) => (cmp as { values: () => unknown }).values(),
+});

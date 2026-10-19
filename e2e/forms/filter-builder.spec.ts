@@ -272,3 +272,25 @@ test.describe('CngxFilterBuilder — form-field bridge browser flow', () => {
     await expect(badges.filter({ hasText: 'presenter.disabled: true' })).toHaveCount(1);
   });
 });
+
+test.describe('CngxFilterBuilder form-field bridge - detached inner pickers', () => {
+  test('every id on the page is unique once conditions are added', async ({ page }) => {
+    await page.goto('/#/forms/filter-builder/form-field-bridge/signal-and-reactive-forms-disabled-touched');
+    for (const title of ['Signal Forms', 'Reactive Forms']) {
+      const addFilter = card(page, title).getByRole('button', { name: /add filter/i }).first();
+      await addFilter.click();
+      await addFilter.click();
+    }
+    const duplicates = await page.evaluate(() => {
+      const seen = new Map<string, number>();
+      for (const el of Array.from(document.querySelectorAll('[id]'))) {
+        if (el.id === '') {
+          continue;
+        }
+        seen.set(el.id, (seen.get(el.id) ?? 0) + 1);
+      }
+      return Array.from(seen).filter(([, n]) => n > 1).map(([id]) => id);
+    });
+    expect(duplicates).toEqual([]);
+  });
+});

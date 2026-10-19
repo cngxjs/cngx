@@ -434,6 +434,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
     onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    // Closure: the sheet wiring is declared further down in field order.
+    close: () => this.sheetWiring.handleFocusLeave(),
     owner: () => this.inputEl()?.nativeElement,
     restoreFocus: this.config.restoreFocus,
     suppressOpenOnFocus: (active) => {
@@ -498,7 +500,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      panelOpen: this.panelOpen,
       errorState: this.errorState,
       filter: this.filter,
       multi: computed(() => false),
@@ -518,6 +519,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
   readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
+    popupRole: 'listbox',
     core: this.core,
     sheet: this.sheetRef,
     popoverRef: this.popoverRef,
@@ -589,6 +591,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
   /** @internal */
   protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
+  /** @internal */ protected readonly listboxId = this.core.listboxId;
+  /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   /** @internal */
   protected readonly ariaReadonly = this.core.ariaReadonly;
   /** @internal */
@@ -798,6 +803,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,
       disabled: this.disabled,
+      focused: this.focusState.focused,
       open: () => this.open(),
       autoOpenGate: () => !this.display.isWritingFromValue(),
     });

@@ -7,6 +7,7 @@ import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { CngxPopover } from '@cngx/common/popover';
 
 import { CngxListboxTrigger } from './listbox-trigger.directive';
+import { CngxListboxSearch } from './listbox-search.directive';
 import { CngxListbox } from './listbox.directive';
 import { CngxOption } from './option.directive';
 
@@ -20,7 +21,7 @@ import { CngxOption } from './option.directive';
     >
       Select
     </button>
-    <div cngxPopover #pop="cngxPopover">
+    <div cngxPopover #pop="cngxPopover" [closeOnEscape]="escape()">
       <div cngxListbox [label]="'Colors'" tabindex="0" #lb="cngxListbox">
         <div cngxOption value="red">Red</div>
         <div cngxOption value="green">Green</div>
@@ -32,6 +33,7 @@ import { CngxOption } from './option.directive';
 })
 class TriggerHost {
   readonly dummy = signal(0);
+  readonly escape = signal(true);
 }
 
 // jsdom does not implement the Popover API - polyfill minimally so CngxPopover
@@ -94,9 +96,13 @@ describe('CngxListboxTrigger', () => {
     };
   }
 
-  it('sets aria-haspopup="listbox" on the trigger', () => {
-    const { triggerEl } = setup();
-    expect(triggerEl.getAttribute('aria-haspopup')).toBe('listbox');
+  it('writes neither aria-haspopup nor aria-expanded: CngxPopoverTrigger owns both', () => {
+    const { triggerEl, popover } = setup();
+    expect(triggerEl.hasAttribute('aria-haspopup')).toBe(false);
+    expect(triggerEl.hasAttribute('aria-expanded')).toBe(false);
+    popover.show();
+    TestBed.flushEffects();
+    expect(triggerEl.hasAttribute('aria-expanded')).toBe(false);
   });
 
   it('ignores keys with ctrl/meta/alt held (browser shortcuts pass through)', () => {
@@ -139,6 +145,19 @@ describe('CngxListboxTrigger', () => {
     TestBed.flushEffects();
     expect(popover.isVisible()).toBe(true);
     expect(ad.activeValue()).toBe('blue');
+  });
+
+  it('leaves Escape alone while the popover reports closeOnEscape false', () => {
+    const { fixture, popover, triggerEl } = setup();
+    fixture.componentInstance.escape.set(false);
+    fixture.detectChanges();
+    popover.show();
+    TestBed.flushEffects();
+    const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    triggerEl.dispatchEvent(escape);
+    TestBed.flushEffects();
+    expect(popover.isVisible()).toBe(true);
+    expect(escape.defaultPrevented).toBe(false);
   });
 
   it('Escape closes popover', () => {
@@ -256,5 +275,93 @@ describe('CngxListboxTrigger - interactive descendants', () => {
     TestBed.flushEffects();
     expect(popover.isVisible()).toBe(true);
     expect(event.defaultPrevented).toBe(true);
+  });
+});
+
+@Component({
+  template: `
+    <input
+      role="combobox"
+      cngxListboxSearch
+      [debounceMs]="0"
+      [cngxListboxTrigger]="lb"
+      [popover]="pop"
+      [closeOnSelect]="false"
+    />
+    <div cngxPopover #pop="cngxPopover">
+      <div cngxListbox [label]="'Colors'" #lb="cngxListbox">
+        <div cngxOption value="red">Red</div>
+        <div cngxOption value="green">Green</div>
+      </div>
+    </div>
+  `,
+  imports: [CngxListbox, CngxOption, CngxListboxTrigger, CngxListboxSearch, CngxPopover],
+})
+class SearchInputHost {}
+
+describe('CngxListboxTrigger - co-located search input', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [SearchInputHost] });
+  });
+
+  function setup() {
+    const fixture = TestBed.createComponent(SearchInputHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const input = fixture.debugElement.query(By.directive(CngxListboxTrigger))
+      .nativeElement as HTMLInputElement;
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
+    const listbox = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
+    const press = (key: string): KeyboardEvent => {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      input.dispatchEvent(event);
+      TestBed.flushEffects();
+      return event;
+    };
+    return { input, popover, listbox, press };
+  }
+
+  it('ignores an auto-repeated Backspace on the empty input', () => {
+    const fixture = TestBed.createComponent(SearchInputHost);
+    fixture.detectChanges();
+    const de = fixture.debugElement.query(By.directive(CngxListboxTrigger));
+    const trigger = de.injector.get(CngxListboxTrigger);
+    const input = de.nativeElement as HTMLInputElement;
+    let emitted = 0;
+    trigger.backspaceOnEmpty.subscribe(() => emitted++);
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true }));
+    for (let i = 0; i < 3; i++) {
+      input.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, repeat: true }),
+      );
+    }
+    expect(emitted).toBe(1);
+  });
+
+  it('lets Space reach the closed input without opening the panel', () => {
+    const { popover, press } = setup();
+    const event = press(' ');
+    expect(event.defaultPrevented).toBe(false);
+    expect(popover.isVisible()).toBe(false);
+  });
+
+  it('lets Space, Home and End reach the open input without an activation', () => {
+    const { popover, listbox, press } = setup();
+    press('ArrowDown');
+    expect(popover.isVisible()).toBe(true);
+    const active = listbox.ad.activeValue();
+    expect(active).not.toBeNull();
+    const activated: unknown[] = [];
+    const sub = listbox.ad.activated.subscribe((v: unknown) => activated.push(v));
+    for (const key of [' ', 'Home', 'End']) {
+      expect(press(key).defaultPrevented, key).toBe(false);
+    }
+    expect(activated).toEqual([]);
+    expect(listbox.ad.activeValue()).toBe(active);
+    expect(press('Enter').defaultPrevented).toBe(true);
+    expect(activated).toEqual([active]);
+    sub.unsubscribe();
   });
 });

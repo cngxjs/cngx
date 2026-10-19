@@ -1,16 +1,20 @@
-import { Component, signal } from '@angular/core';
+import { Component, OutputEmitterRef, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { CngxListbox } from '@cngx/common/interactive';
 import { Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CngxSelectAction } from '../shared/template-slots';
+import { CngxSelectAnnouncer } from '../shared/announcer';
+import { stripBidiIsolates } from '@cngx/testing';
 import { CngxActionSelect, type CngxActionSelectChange } from './action-select.component';
 import type { CngxSelectCreateAction } from '../shared/create-action.types';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../shared/option.model';
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
+import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 
 type Tag = { readonly id: string; readonly name: string };
@@ -307,6 +311,93 @@ describe('CngxActionSelect - async + error flow', () => {
     expect(select.value()?.id).toBe('p');
   });
 
+  it('announces a failed quick-create, marks the trigger invalid and describes it', () => {
+    const { fixture, host, select } = setup();
+    const announce = vi
+      .spyOn(TestBed.inject(CngxSelectAnnouncer), 'announce')
+      .mockImplementation(() => undefined);
+    host.quickCreateAction.set(() => {
+      throw new Error('server down');
+    });
+    flush(fixture);
+    select.actionCallbacks().commit({ label: 'Purple' });
+    flush(fixture);
+    fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('[role="combobox"]') as HTMLElement;
+    expect(announce.mock.calls.map(([m, p]) => [stripBidiIsolates(m), p])).toContainEqual([
+      'Tag: Could not create Purple - server down',
+      'assertive',
+    ]);
+    expect(trigger.getAttribute('aria-invalid')).toBe('true');
+    const ref = trigger.getAttribute('aria-errormessage');
+    expect(ref).not.toBeNull();
+    expect(stripBidiIsolates(document.getElementById(ref!)?.textContent ?? '')).toContain(
+      'Could not create Purple',
+    );
+
+    host.quickCreateAction.set(() => ({ id: 'p', name: 'Purple' }));
+    flush(fixture);
+    select.actionCallbacks().commit({ label: 'Purple' });
+    flush(fixture);
+    fixture.detectChanges();
+    expect(trigger.getAttribute('aria-invalid')).toBeNull();
+    expect(trigger.getAttribute('aria-errormessage')).toBeNull();
+    announce.mockRestore();
+  });
+
+  it('clears a failed quick-create once the user picks an option instead', () => {
+    const { fixture, host, select } = setup();
+    host.quickCreateAction.set(() => {
+      throw new Error('server down');
+    });
+    flush(fixture);
+    select.actionCallbacks().commit({ label: 'Purple' });
+    flush(fixture);
+    fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('[role="combobox"]') as HTMLElement;
+    expect(trigger.getAttribute('aria-invalid')).toBe('true');
+    const ref = trigger.getAttribute('aria-errormessage')!;
+    expect(stripBidiIsolates(document.getElementById(ref)?.textContent ?? '')).toContain(
+      'Could not create Purple',
+    );
+
+    select.open();
+    flush(fixture);
+    const lb = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
+    lb.ad.highlightFirst();
+    lb.ad.activateCurrent();
+    flush(fixture);
+    fixture.detectChanges();
+    expect(select.value()).toBeDefined();
+    expect(trigger.getAttribute('aria-invalid')).toBeNull();
+    expect(trigger.getAttribute('aria-errormessage')).toBeNull();
+    expect(stripBidiIsolates(document.getElementById(ref)?.textContent ?? '')).not.toContain(
+      'Could not create Purple',
+    );
+  });
+
+  it('drops a quick-create that settles after the select is destroyed', () => {
+    const { fixture, host, select } = setup();
+    const subject = new Subject<Tag>();
+    host.quickCreateAction.set(() => subject);
+    flush(fixture);
+    select.actionCallbacks().commit({ label: 'Purple' });
+    flush(fixture);
+    const before = select.value();
+    const emit = vi.spyOn(OutputEmitterRef.prototype, 'emit');
+    fixture.destroy();
+    subject.next({ id: 'p', name: 'Purple' });
+    subject.complete();
+    // An emit on a destroyed OutputEmitterRef is what Angular reports as NG0953.
+    const lateEmits = emit.mock.contexts.filter(
+      (ref) => (ref as { readonly destroyed?: boolean }).destroyed === true,
+    );
+    emit.mockRestore();
+    expect(lateEmits).toEqual([]);
+    expect(host.createdLog).toEqual([]);
+    expect(select.value()).toEqual(before);
+  });
+
   it('surfaces errors via commitError output and preserves previous value', () => {
     const { fixture, host, select } = setup();
     const prior: Tag = { id: 't1', name: 'Design' };
@@ -519,4 +610,10 @@ describeMobileSheet('CngxActionSelect', CngxActionSelect, 'cngx-action-select', 
     const { accessor, ref } = createMockField<string>({ name: 'pick' });
     return { accessor, touched: () => ref.touched() };
   },
+});
+
+describeSelectBehaviourHost('CngxActionSelect', CngxActionSelect, 'cngx-action-select', {
+  inputs: '[options]="options"',
+  optionSelector: '[cngxOption]',
+  readValue: (cmp) => (cmp as { value: () => unknown }).value(),
 });

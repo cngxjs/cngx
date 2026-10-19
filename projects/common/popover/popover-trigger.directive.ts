@@ -56,7 +56,7 @@ import type { PopoverHaspopup } from './popover.types';
   standalone: true,
   host: {
     '[attr.aria-expanded]': 'popoverRef().isVisible()',
-    '[attr.aria-controls]': 'popoverRef().id()',
+    '[attr.aria-controls]': 'controls()',
     '[attr.aria-haspopup]': 'haspopup()',
     '[style.anchor-name]': 'cssAnchorName()',
   },
@@ -88,6 +88,16 @@ export class CngxPopoverTrigger {
   });
 
   /**
+   * ARIA controls override. When set, `aria-controls` names this id instead
+   * of the popover element - correct when the popup role sits on an element
+   * inside the popover (a `role="listbox"` or `role="tree"` panel). `null`
+   * or unset falls back to `popoverRef().id()`.
+   */
+  readonly controlsInput = input<string | null | undefined>(undefined, {
+    alias: 'controls',
+  });
+
+  /**
    * When `true`, remembers the popover's pre-open focus target (the
    * popover snapshots `document.activeElement` synchronously inside
    * `show()`, before content autofocus can land in the panel) and
@@ -108,6 +118,11 @@ export class CngxPopoverTrigger {
     const resolved = this.haspopupInput() ?? this.popoverRef().haspopup() ?? 'true';
     return resolved === 'none' ? null : resolved;
   });
+
+  /** Resolved `aria-controls`: the consumer override, else the popover id. */
+  protected readonly controls = computed<string>(
+    () => this.controlsInput() ?? this.popoverRef().id(),
+  );
 
   /**
    * CSS anchor name, yielded (`null`) while a `CngxPopoverAnchor` holds

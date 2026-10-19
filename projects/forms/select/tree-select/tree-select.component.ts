@@ -580,7 +580,6 @@ export class CngxTreeSelect<T = unknown>
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      panelOpen: this.panelOpen,
       errorState: this.errorState,
       multi: computed(() => true),
       currentSelection: this.values,
@@ -644,6 +643,12 @@ export class CngxTreeSelect<T = unknown>
   /** @internal */ readonly resolvedId = this.core.resolvedId;
   /** @internal Accessible name of the `role="tree"` panel body. */
   readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal The tree's active descendant matches values like the selection does. */
+  readonly adCompareWith = computed<(a: T, b: T) => boolean>(() => {
+    const keyFn = this.keyFn();
+    const eq = this.compareWith();
+    return keyFn ? (a: T, b: T) => keyFn(a) === keyFn(b) : (a: T, b: T) => eq(a, b);
+  });
   /** @internal - own template only; outer popover panel class binding. */
   protected readonly panelClassList = this.core.panelClassList;
   /** @internal - own template only; outer popover panel width binding. */
@@ -659,6 +664,8 @@ export class CngxTreeSelect<T = unknown>
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
     onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    // Closure: the sheet wiring is declared further down in field order.
+    close: () => this.sheetWiring.handleFocusLeave(),
     owner: () => this.triggerBtn()?.nativeElement,
     restoreFocus: this.config.restoreFocus,
     suppressOpenOnFocus: (active) => {
@@ -668,6 +675,9 @@ export class CngxTreeSelect<T = unknown>
 
   /** @internal Trigger ARIA projection, structural-equal; from the shared core. */
   protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
+  /** @internal */ readonly listboxId = this.core.listboxId;
+  /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
 
   /** @internal */ readonly effectiveTabIndex = this.core.effectiveTabIndex;
 
@@ -758,6 +768,7 @@ export class CngxTreeSelect<T = unknown>
 
   /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
   readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
+    popupRole: 'tree',
     core: this.core,
     sheet: this.sheetRef,
     popoverRef: this.popoverRef,
@@ -1068,7 +1079,7 @@ export class CngxTreeSelect<T = unknown>
     }
     const key = event.key;
     if (this.panelOpen()) {
-      if (key === 'Escape') {
+      if (key === 'Escape' && this.sheetWiring.escapeEnabled()) {
         event.preventDefault();
         this.close();
       }

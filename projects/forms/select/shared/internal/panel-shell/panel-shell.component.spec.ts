@@ -66,6 +66,7 @@ const EN_ARIA: CngxResolvedSelectAriaLabels = {
   statusRefreshing: 'Refreshing options',
   fieldLabelFallback: 'Selection',
   commitFailedMessage: (label: string) => `${label}: Save failed`,
+  createFailedMessage: (label: string, option: string) => `${label}: Could not create ${option}`,
   searchInput: 'Search options',
   listboxFallback: 'Options',
   sheetClose: 'Close',

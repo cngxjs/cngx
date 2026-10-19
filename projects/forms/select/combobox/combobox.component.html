@@ -15,8 +15,6 @@
     class="cngx-combobox__trigger cngx-field-trigger"
     [cngxPopoverAnchor]="pop"
     role="group"
-    [attr.aria-label]="aria.label"
-    [attr.aria-labelledby]="aria.labelledBy"
     [attr.aria-disabled]="aria.disabled"
     (click)="handleWrapperClick($event)"
   >
@@ -101,7 +99,8 @@
       [matchFn]="listboxMatchFn()"
       [debounceMs]="searchDebounceMs()"
       [cngxPopoverTrigger]="pop"
-      [haspopup]="'listbox'"
+      [haspopup]="sheetWiring.triggerHaspopup()"
+      [controls]="sheetWiring.triggerControls()"
       [cngxListboxTrigger]="lb"
       [popover]="pop"
       [closeOnSelect]="closeOnSelect()"
@@ -109,9 +108,9 @@
       [placeholder]="effectivePlaceholder()"
       [attr.id]="resolvedId() || null"
       [attr.tabindex]="effectiveTabIndex()"
-      [attr.aria-expanded]="aria.expanded"
-      [attr.aria-controls]="pop.id()"
       [attr.aria-autocomplete]="'list'"
+      [attr.aria-label]="aria.label"
+      [attr.aria-labelledby]="aria.labelledBy"
       [attr.aria-describedby]="aria.describedBy"
       [attr.aria-errormessage]="aria.errorMessage"
       [attr.aria-invalid]="aria.invalid"
@@ -192,6 +191,7 @@
     <cngx-select-sheet-header />
     <div
       cngxListbox
+      [attr.id]="listboxId"
       #lb="cngxListbox"
       [label]="resolvedListboxLabel()"
       [multiple]="true"
@@ -206,4 +206,5 @@
       <cngx-select-panel #panelRef="cngxSelectPanel" />
     </div>
   </div>
+  <span class="cngx-sr-only" [id]="commitErrorId">{{ commitErrorText() }}</span>
 </div>

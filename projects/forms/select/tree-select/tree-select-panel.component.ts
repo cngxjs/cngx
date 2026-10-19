@@ -231,7 +231,7 @@ export class CngxTreeSelectPanel<T = unknown> {
 
   protected handleActivate(event: Event, ad: CngxActiveDescendant): void {
     const item = ad.activeItem();
-    if (!item) {
+    if (!item || this.host.disabled()) {
       return;
     }
     event.preventDefault();

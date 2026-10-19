@@ -11,6 +11,7 @@ import {
 import {
   CNGX_DEV_DESCRIPTORS,
   CNGX_SELECTION_CONTROLLER_FACTORY,
+  nextUid,
   type AsyncStatus,
   type CngxAsyncState,
   type SelectionController,
@@ -68,7 +69,6 @@ export interface CngxSelectTriggerAria {
   readonly labelledBy: string | null;
   readonly describedBy: string | null;
   readonly errorMessage: string | null;
-  readonly expanded: boolean;
   readonly disabled: boolean | null;
   readonly invalid: boolean | null;
   readonly required: boolean | null;
@@ -99,8 +99,6 @@ export interface CngxSelectCoreDeps<T, TCommit> {
   readonly hideCaret: Signal<boolean>;
   readonly commitErrorDisplay: Signal<CngxSelectCommitErrorDisplay>;
   readonly commitAction: Signal<CngxSelectCommitAction<TCommit> | null>;
-  /** `popoverRef()?.isVisible() ?? false`. */
-  readonly panelOpen: Signal<boolean>;
   /** `presenter?.showError() ?? false`. */
   readonly errorState: Signal<boolean>;
   /** Combobox uses this for inline search filtering. */
@@ -135,6 +133,14 @@ export interface CngxSelectCoreDeps<T, TCommit> {
 
   /** Resolved sheet presentation. The trigger-width rule only applies while `'anchored'`. */
   readonly presentation?: Signal<CngxPopoverPresentation>;
+
+  /**
+   * Message of a failed quick-create (action variants), `null` while none
+   * shows. Marks the trigger invalid and fills the commit-error node, but
+   * never drives `showCommitError`: the banner's Retry replays the select
+   * commit, not the create.
+   */
+  readonly createErrorMessage?: Signal<string | null>;
 }
 
 /**
@@ -197,6 +203,18 @@ export interface CngxSelectCore<T, TCommit> {
   readonly ariaBusy: Signal<boolean | null>;
   readonly ariaReadonly: Signal<boolean | null>;
   readonly ariaErrorMessage: Signal<string | null>;
+  /**
+   * Id of the visually hidden commit-error node each host renders outside the
+   * popover. Referenced from the trigger only while a commit error shows.
+   */
+  readonly commitErrorId: string;
+  /** Text of the commit-error node; `''` while no commit error shows. */
+  readonly commitErrorText: Signal<string>;
+  /**
+   * Id of the element carrying the popup role (`role="listbox"` or
+   * `role="tree"`); the trigger's `aria-controls` names it while anchored.
+   */
+  readonly listboxId: string;
   readonly effectiveTabIndex: Signal<number | null>;
   readonly triggerAria: Signal<CngxSelectTriggerAria>;
 
@@ -240,6 +258,8 @@ export interface CngxSelectCore<T, TCommit> {
   isCommittingOption(opt: CngxSelectOptionDef<T>): boolean;
   findOption(value: T): CngxSelectOptionDef<T> | null;
   commitErrorMessage(err: unknown): string;
+  /** Failed quick-create sentence for the draft label `option`. */
+  createFailedMessage(option: string, err: unknown): string;
   /**
    * Bound `isGroup`/`isSelected`/`isIndeterminate`/`isCommittingOption`
    * for spreading into a variant's `CngxSelectPanelHost`. Stable
@@ -307,6 +327,9 @@ export function createSelectCore<T, TCommit>(
   const commitController: CngxCommitController<TCommit> = inject(
     CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   )<TCommit>();
+  // A commit that settles after the host is gone must neither write, emit
+  // nor announce: cancel supersedes it and keeps the last status.
+  inject(DestroyRef).onDestroy(() => commitController.cancel());
   const commitState = commitController.state;
   const isCommitting = commitController.isCommitting;
   // `aria-invalid` projects both form-field validation and a
@@ -325,7 +348,7 @@ export function createSelectCore<T, TCommit>(
     labelledByOverride: deps.ariaLabelledBy,
     localDisabled: deps.disabledInput,
     localRequired: deps.requiredInput,
-    localInvalid: showCommitError,
+    localInvalid: () => showCommitError() || (deps.createErrorMessage?.() ?? null) !== null,
     localBusy: () => {
       const s = deps.state();
       if (s && (s.isLoading() || s.isPending() || s.isRefreshing())) {
@@ -587,10 +610,26 @@ export function createSelectCore<T, TCommit>(
     return controllerInstance?.isIndeterminate(value)() ?? false;
   }
 
-  const describedBy = fieldAria.describedBy;
+  // The commit-error node lives outside the popover, so a closed panel still
+  // leaves the failure reachable from the trigger. The field error keeps the
+  // single-IDREF aria-errormessage; the commit error then rides on
+  // aria-describedby.
+  const commitErrorId = nextUid('cngx-select-commit-error');
+  const listboxId = nextUid('cngx-select-listbox');
+  const commitErrorText = computed<string>(() => {
+    const select = showCommitError() ? commitErrorMessage(commitState.error()) : null;
+    return [select, deps.createErrorMessage?.() ?? null].filter(Boolean).join(' ');
+  });
+  const commitErrorShown = computed<boolean>(() => commitErrorText() !== '');
+  const describedBy = computed<string | null>(() => {
+    const commitRef = commitErrorShown() ? commitErrorId : null;
+    return [fieldAria.describedBy(), commitRef].filter(Boolean).join(' ') || null;
+  });
   const ariaInvalid = fieldAria.ariaInvalid;
   const ariaReadonly = fieldAria.ariaReadonly;
-  const ariaErrorMessage = fieldAria.ariaErrorMessage;
+  const ariaErrorMessage = computed<string | null>(
+    () => fieldAria.ariaErrorMessage() ?? (commitErrorShown() ? commitErrorId : null),
+  );
   const ariaBusy = fieldAria.ariaBusy;
 
   const effectiveTabIndex = computed<number | null>(() => (disabled() ? -1 : deps.tabIndex()));
@@ -601,7 +640,6 @@ export function createSelectCore<T, TCommit>(
       labelledBy: resolvedAriaLabelledBy(),
       describedBy: describedBy(),
       errorMessage: ariaErrorMessage(),
-      expanded: deps.panelOpen(),
       disabled: disabled() || null,
       invalid: ariaInvalid(),
       required: resolvedAriaRequired(),
@@ -613,7 +651,6 @@ export function createSelectCore<T, TCommit>(
         a.labelledBy === b.labelledBy &&
         a.describedBy === b.describedBy &&
         a.errorMessage === b.errorMessage &&
-        a.expanded === b.expanded &&
         a.disabled === b.disabled &&
         a.invalid === b.invalid &&
         a.required === b.required &&
@@ -689,19 +726,26 @@ export function createSelectCore<T, TCommit>(
   // Read untracked by the commit-error announcer, so a language flip never
   // re-runs the effect that announced it.
   function commitErrorMessage(err: unknown): string {
-    const label = deps.label();
-    const aria = deps.ariaLabel();
-    const fieldFallback = config.ariaLabels().fieldLabelFallback;
-    const failedMessage = config.ariaLabels().commitFailedMessage;
-    // An empty aria-label names nothing: same rule as `announce`.
-    let labelText = fieldFallback;
-    if (label !== '') {
-      labelText = label;
-    } else if (aria && aria.length > 0) {
-      labelText = aria;
-    }
     const detail = err instanceof Error ? err.message : undefined;
-    return failedMessage(labelText, detail);
+    return config.ariaLabels().commitFailedMessage(failureLabelText(), detail);
+  }
+
+  function createFailedMessage(option: string, err: unknown): string {
+    const detail = err instanceof Error ? err.message : undefined;
+    return config.ariaLabels().createFailedMessage(failureLabelText(), option, detail);
+  }
+
+  // An empty aria-label names nothing: same rule as `announce`.
+  function failureLabelText(): string {
+    const label = deps.label();
+    if (label !== '') {
+      return label;
+    }
+    const aria = deps.ariaLabel();
+    if (aria && aria.length > 0) {
+      return aria;
+    }
+    return config.ariaLabels().fieldLabelFallback;
   }
 
   // Stable identities for the core's lifetime. Adapter unwraps
@@ -779,6 +823,9 @@ export function createSelectCore<T, TCommit>(
     ariaBusy,
     ariaReadonly,
     ariaErrorMessage,
+    commitErrorId,
+    commitErrorText,
+    listboxId,
     effectiveTabIndex,
     triggerAria,
     disabled,
@@ -798,6 +845,7 @@ export function createSelectCore<T, TCommit>(
     isCommittingOption,
     findOption,
     commitErrorMessage,
+    createFailedMessage,
     announce,
     panelHostAdapter,
   };

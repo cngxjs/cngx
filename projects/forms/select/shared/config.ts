@@ -155,6 +155,19 @@ export interface CngxSelectAriaLabels {
    * `'{label}: Save failed'` when there is no detail.
    */
   readonly commitFailedMessage?: (label: string, detail: string | undefined) => string;
+  /**
+   * Assertive announcement and trigger description when a quick-create
+   * (`[quickCreateAction]`) rejects. Receives the field label (or
+   * `fieldLabelFallback`), the draft label of the option and the rejection's
+   * `Error.message` (`undefined` when the rejection is not an `Error`).
+   * Default `'{label}: Could not create {option} - {detail}'`,
+   * `'{label}: Could not create {option}'` when there is no detail.
+   */
+  readonly createFailedMessage?: (
+    label: string,
+    option: string,
+    detail: string | undefined,
+  ) => string;
   /** `<cngx-select-search>` input. Default `'Search options'`. */
   readonly searchInput?: string;
   /**

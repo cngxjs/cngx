@@ -580,6 +580,8 @@ export class CngxSelectShell<T = unknown>
   /** @internal Field-facing focus and touched: focus inside the host, panel included. */
   protected readonly hostFocus = createHostFocusWithin({
     onLeave: () => this.presenter?.fieldState().markAsTouched(),
+    // Closure: the sheet wiring is declared further down in field order.
+    close: () => this.sheetWiring.handleFocusLeave(),
     owner: () => this.triggerBtn()?.nativeElement,
     restoreFocus: this.config.restoreFocus,
     suppressOpenOnFocus: (active) => {
@@ -625,7 +627,6 @@ export class CngxSelectShell<T = unknown>
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      panelOpen: this.panelOpen,
       errorState: this.errorState,
       multi: computed(() => false),
       currentSelection: this.value,
@@ -644,6 +645,7 @@ export class CngxSelectShell<T = unknown>
 
   /** @internal Mobile sheet presentation; also the scoped announcer's scope. */
   readonly sheetWiring: CngxSelectSheetWiring = createSelectSheetWiring({
+    popupRole: 'listbox',
     core: this.core,
     sheet: this.sheetRef,
     popoverRef: this.popoverRef,
@@ -684,6 +686,9 @@ export class CngxSelectShell<T = unknown>
     this.core.resolvedSelectionIndicatorPosition;
   protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
   protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
+  /** @internal */ protected readonly listboxId = this.core.listboxId;
+  /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   protected readonly ariaReadonly = this.core.ariaReadonly;
   protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   protected readonly externalActivation = this.core.externalActivation;

@@ -15,6 +15,7 @@ import { CngxFormField } from '@cngx/forms/field';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
+import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import { CngxMultiSelect, type CngxMultiSelectChange } from './multi-select.component';
 import type { CngxSelectOptionDef } from '../shared/option.model';
@@ -1163,4 +1164,10 @@ describeMobileSheet('CngxMultiSelect', CngxMultiSelect, 'cngx-multi-select', {
     const { accessor, ref } = createMockField<string[]>({ name: 'pick', value: [] });
     return { accessor, touched: () => ref.touched() };
   },
+});
+
+describeSelectBehaviourHost('CngxMultiSelect', CngxMultiSelect, 'cngx-multi-select', {
+  inputs: '[options]="options"',
+  optionSelector: '[cngxOption]',
+  readValue: (cmp) => (cmp as { values: () => unknown }).values(),
 });

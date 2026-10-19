@@ -58,4 +58,21 @@ describe('CngxSearch', () => {
     expect(dir.term()).toBe('');
     expect(spy).toHaveBeenCalledWith('');
   });
+
+  it('clear cancels a pending debounce', () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.debounce = 300;
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.css('input'));
+    const dir = el.injector.get(CngxSearch);
+    const spy = vi.fn();
+    dir.searchChange.subscribe(spy);
+    el.nativeElement.value = 'stale';
+    el.nativeElement.dispatchEvent(new Event('input'));
+    dir.clear();
+    vi.advanceTimersByTime(300);
+    expect(dir.term()).toBe('');
+    expect(spy.mock.calls).toEqual([['']]);
+  });
 });

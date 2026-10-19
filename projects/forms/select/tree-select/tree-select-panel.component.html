@@ -5,11 +5,13 @@
   <div
     #treeContainer
     role="tree"
+    [attr.id]="host.listboxId"
     [attr.aria-label]="host.resolvedListboxLabel()"
     cngxActiveDescendant
     cngxPopoverSheetInitialFocus
     #ad="cngxActiveDescendant"
     [items]="adItems()"
+    [compareWith]="host.adCompareWith()"
     [autoHighlightFirst]="true"
     [cngxHierarchicalNav]="host.treeController"
     (keydown.enter)="handleActivate($event, ad)"

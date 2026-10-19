@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { type AsyncView } from '@cngx/common/data';
 import { CngxPopover, CngxPopoverSheet } from '@cngx/common/popover';
 import {
@@ -93,6 +94,7 @@ function makeShellHost(): CngxSelectPanelHost {
       statusRefreshing: 'Refreshing options',
       fieldLabelFallback: 'Selection',
       commitFailedMessage: (label: string) => `${label}: Save failed`,
+      createFailedMessage: (label: string, option: string) => `${label}: Could not create ${option}`,
       searchInput: 'Search options',
       listboxFallback: 'Options',
       sheetClose: 'Close',
@@ -163,6 +165,8 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly indeterminateIds = signal<Set<string>>(new Set());
   readonly useSlot = signal(false);
   readonly panelOpen = signal(true).asReadonly();
+  readonly disabled = signal(false);
+  readonly listboxId = 'tree-1';
   readonly expandToReveal = signal(false);
   // Glyph overrides + i18n labels - null / default literals keep the
   // harness on the built-in node-row visuals.
@@ -173,6 +177,8 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly resolvedTwistyExpandLabel = signal('Expand').asReadonly();
   readonly resolvedTwistyCollapseLabel = signal('Collapse').asReadonly();
   readonly resolvedListboxLabel = signal('Teams').asReadonly();
+  readonly adCompare = signal<(a: Row, b: Row) => boolean>(Object.is);
+  readonly adCompareWith = this.adCompare.asReadonly();
   close(): void {
     /* no-op in the spec harness */
   }
@@ -231,6 +237,19 @@ function setup() {
 }
 
 describe('CngxTreeSelectPanel', () => {
+  it('drops a keyboard activation while the select is disabled', () => {
+    const { fixture, host, root } = setup();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const tree = root.querySelector<HTMLElement>('[role="tree"]')!;
+    host.disabled.set(true);
+    tree.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(host.lastSelected()).toBeNull();
+    host.disabled.set(false);
+    tree.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(host.lastSelected()).not.toBeNull();
+  });
+
   it('renders a role="tree" container without the aria-selected-model attributes', () => {
     const { root } = setup();
     const tree = root.querySelector('[role="tree"]');
@@ -548,5 +567,42 @@ describe('CngxTreeSelectPanel - expand-to-reveal type-to-find', () => {
     type('x');
     expect(host.treeController.expandedIds().size).toBe(0);
     expect(tree.getAttribute('aria-activedescendant')).toBe('ap');
+  });
+});
+
+describe('CngxTreeSelectPanel - highlight across a nodes refresh', () => {
+  function refreshed(): CngxTreeNode<Row>[] {
+    return makeTree().map((n) => ({ ...n, value: { ...n.value } }));
+  }
+
+  function highlightBravoThenRefresh(compare?: (a: Row, b: Row) => boolean) {
+    const fixture = TestBed.createComponent(TreeHost);
+    if (compare) {
+      fixture.componentInstance.adCompare.set(compare);
+    }
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const ad = fixture.debugElement
+      .query(By.directive(CngxActiveDescendant))
+      .injector.get(CngxActiveDescendant);
+    ad.highlightByIndex(1);
+    TestBed.flushEffects();
+    expect((ad.activeValue() as Row).id).toBe('b');
+    fixture.componentInstance.nodes.set(refreshed());
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    return ad;
+  }
+
+  it('keeps the highlighted node when the nodes are re-fetched as new objects', () => {
+    const ad = highlightBravoThenRefresh((a, b) => a?.id === b?.id);
+    expect((ad.activeValue() as Row).id).toBe('b');
+  });
+
+  it('loses the highlighted node under identity equality', () => {
+    const ad = highlightBravoThenRefresh();
+    expect((ad.activeValue() as Row | null)?.id).not.toBe('b');
   });
 });

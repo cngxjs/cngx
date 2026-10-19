@@ -1,12 +1,16 @@
 import type { FieldTree } from '@angular/forms/signals';
 
+import { fieldControlFor } from './field-control-registry';
+
 /**
  * Focuses the first invalid leaf field's bound control after form submission.
  *
  * Uses `errorSummary()` from the root FieldState to find all descendant errors,
  * then iterates to find the first one with a bound UI control and calls
- * `focusBoundControl()` on it. Skips group-level validators that have no
- * bound control (where `focusBoundControl()` would be a no-op).
+ * `focusBoundControl()` on it; a control a `cngx-form-field` discovered for
+ * the field without `[formField]` (a select) gets its own `focus()`. Skips
+ * group-level validators that have no bound control (where
+ * `focusBoundControl()` would be a no-op).
  *
  * Call after `submit()` fails or after manually touching all fields.
  *
@@ -38,6 +42,13 @@ export function focusFirstError<TModel>(tree: FieldTree<TModel>): boolean {
     const bindings = fieldState.formFieldBindings?.();
     if (bindings && bindings.length > 0) {
       fieldState.focusBoundControl({ preventScroll: false });
+      return true;
+    }
+    // A control projected into a cngx-form-field without [formField] (a
+    // select-family composite) is reached through the field's registration.
+    const control = fieldControlFor(fieldState);
+    if (control?.focus) {
+      control.focus();
       return true;
     }
   }

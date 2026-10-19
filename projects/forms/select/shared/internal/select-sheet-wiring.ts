@@ -1,4 +1,12 @@
-import { computed, inject, signal, type ElementRef, type Signal } from '@angular/core';
+import {
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+  type ElementRef,
+  type Signal,
+} from '@angular/core';
 import type { CngxListbox } from '@cngx/common/interactive';
 import type {
   CngxPopover,
@@ -21,7 +29,7 @@ import type { CngxSelectCore } from './select-core';
  */
 export type CngxSelectSheetCore = Pick<
   CngxSelectCore<unknown, unknown>,
-  'isCommitting' | 'resolvedPresentationRequest' | 'ariaLabels'
+  'isCommitting' | 'resolvedPresentationRequest' | 'ariaLabels' | 'disabled' | 'listboxId'
 >;
 
 /** @internal Inputs of {@link createSelectSheetWiring}. */
@@ -49,6 +57,8 @@ export interface CngxSelectSheetWiringOptions {
   readonly searchInput?: Signal<ElementRef<HTMLInputElement> | undefined>;
   /** The variant's anchored close (focus back to the trigger, then hide). */
   readonly close: () => void;
+  /** Static per variant: the popup role the trigger announces while anchored. */
+  readonly popupRole: 'listbox' | 'tree';
 }
 
 /**
@@ -62,9 +72,22 @@ export interface CngxSelectSheetWiring extends CngxSelectSheetScope {
   readonly presentation: Signal<CngxPopoverPresentation>;
   readonly sheetAnchored: Signal<boolean>;
   readonly sheetModal: Signal<boolean>;
+  /**
+   * Bound to the trigger's `[haspopup]`: `'dialog'` while the sheet is modal,
+   * the variant's popup role while anchored.
+   */
+  readonly triggerHaspopup: Signal<'dialog' | 'listbox' | 'tree'>;
+  /**
+   * Bound to the trigger's `[controls]`: the listbox / tree id while
+   * anchored, `null` while modal so the popover trigger names the sheet.
+   */
+  readonly triggerControls: Signal<string | null>;
   /** A pessimistic commit is pending. */
   readonly closeBlocked: Signal<boolean>;
-  /** Bound to `[closeOnEscape]`: only the modal sheet blocks Escape while a commit is pending. */
+  /**
+   * Bound to `[closeOnEscape]`: off under `dismissOn: 'outside'`, and the
+   * modal sheet blocks Escape while a pessimistic commit is pending.
+   */
   readonly escapeEnabled: Signal<boolean>;
   /** Bound to `cngxClickOutside [enabled]`: outside a sheet the atom owns the outside tap. */
   readonly clickOutsideEnabled: Signal<boolean>;
@@ -74,6 +97,12 @@ export interface CngxSelectSheetWiring extends CngxSelectSheetScope {
   readonly handleSheetClose: (reason: CngxPopoverSheetCloseReason) => void;
   /** The one Escape path of an in-sheet input. */
   readonly escapeClose: () => void;
+  /**
+   * Focus left the host: hides the anchored panel unless a pending commit or
+   * the variant's dismiss guard blocks it. The modal sheet traps focus and
+   * keeps its own close vectors.
+   */
+  readonly handleFocusLeave: () => void;
   readonly headerHost: CngxSelectSheetHeaderHost;
 }
 
@@ -97,6 +126,15 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     () => opts.commitMode?.() === 'pessimistic' && opts.core.isCommitting(),
   );
   const panelOpen = computed(() => opts.popoverRef()?.isVisible() ?? false);
+
+  // The open state follows `disabled`: a select that turns disabled while
+  // open closes, so no variant keeps a panel it can no longer act on.
+  effect(() => {
+    if (!opts.core.disabled() || !panelOpen()) {
+      return;
+    }
+    untracked(() => opts.popoverRef()?.hide());
+  });
 
   const dismiss = inject(CNGX_DISMISS_HANDLER_FACTORY)({
     popoverRef: opts.popoverRef,
@@ -123,7 +161,26 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     opts.popoverRef()?.hide();
   };
 
+  // Hides without the variant's close(): that one refocuses the trigger,
+  // which would pull focus back from where the user just moved it.
+  const handleFocusLeave = (): void => {
+    if (!panelOpen() || !sheetAnchored()) {
+      return;
+    }
+    if (closeBlocked() || opts.shouldBlockDismiss?.()) {
+      return;
+    }
+    opts.popoverRef()?.hide();
+  };
+
+  const escapeEnabled = computed(
+    () => opts.dismissOn !== 'outside' && !(sheetModal() && closeBlocked()),
+  );
+
   const escapeClose = (): void => {
+    if (opts.dismissOn === 'outside') {
+      return;
+    }
     if (sheetModal()) {
       handleSheetClose('close');
       return;
@@ -162,12 +219,15 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     presentation,
     sheetAnchored,
     sheetModal,
+    triggerHaspopup: computed(() => (sheetModal() ? 'dialog' : opts.popupRole)),
+    triggerControls: computed(() => (sheetModal() ? null : opts.core.listboxId)),
     closeBlocked,
-    escapeEnabled: computed(() => !(sheetModal() && closeBlocked())),
+    escapeEnabled,
     clickOutsideEnabled: computed(() => panelOpen() && sheetAnchored()),
     handleClickOutside: dismiss.handleClickOutside,
     handleSheetClose,
     escapeClose,
+    handleFocusLeave,
     headerHost,
   };
 }

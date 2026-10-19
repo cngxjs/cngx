@@ -63,6 +63,7 @@ test.describe('select mobile sheet on a phone', () => {
       const panel = panelOf(host);
       await expect(panel).toHaveAttribute('data-cngx-presentation', fill);
       await expect(panel).toHaveAttribute('role', 'dialog');
+      await expect(triggerOf(host)).toHaveAttribute('aria-haspopup', 'dialog');
       expect(await panel.evaluate((el) => el.contains(document.activeElement))).toBe(true);
       const radiogroup = page.getByRole('radiogroup', { name: 'Presentation' });
       expect(await radiogroup.evaluate((el) => el.closest('[inert]') !== null)).toBe(true);
@@ -77,6 +78,23 @@ test.describe('select mobile sheet on a phone', () => {
         ),
       ).toBe(true);
       expect(await radiogroup.evaluate((el) => el.closest('[inert]') !== null)).toBe(false);
+    });
+  }
+
+  for (const selector of ['cngx-select', 'cngx-combobox']) {
+    test(`${selector}: rotating with the sheet open keeps focus in the control`, async ({
+      page,
+    }) => {
+      await gotoDemo(page, ALL);
+      const host = await openVariant(page, selector);
+      expect(await host.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+
+      await page.setViewportSize({ width: 844, height: 390 });
+      await expect(panelOf(host)).not.toHaveAttribute('aria-modal', 'true');
+      await expect
+        .poll(() => page.evaluate(() => document.activeElement === document.body))
+        .toBe(false);
+      expect(await host.evaluate((el) => el.contains(document.activeElement))).toBe(true);
     });
   }
 

@@ -89,6 +89,20 @@ describe('createDismissHandler', () => {
   });
 });
 
+describe("createDismissHandler - dismissOn 'outside'", () => {
+  // Roadmap spec: 'outside' keeps Escape off. Escape is not a vector of this
+  // handler (the sheet wiring's escapeEnabled gates it); the outside path
+  // still closes and no Escape-shaped reason sneaks a hide past the policy.
+  it('closes on an outside click and an outside tap only', () => {
+    const { handler, popover } = make({ dismissOn: 'outside' });
+    handler.handleClickOutside();
+    expect(popover.hideCalls).toBe(1);
+    const sheet = make({ dismissOn: 'outside' });
+    sheet.handler.handleSheetClose?.('backdrop');
+    expect(sheet.popover.hideCalls).toBe(1);
+  });
+});
+
 describe('createDismissHandler - handleSheetClose', () => {
   it.each(['swipe', 'back', 'close', 'backdrop'] as const)('hides on %s', (reason) => {
     const { handler, popover } = make();

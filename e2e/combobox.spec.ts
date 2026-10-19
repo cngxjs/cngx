@@ -23,6 +23,17 @@ test.describe('CngxCombobox demo', () => {
     await expect(nested).toHaveCount(0);
   });
 
+  test('the focusable input carries the name, the group does not', async ({ page }) => {
+    await page.goto(R.basic);
+    const section = ex(page);
+    const input = section.locator('input.cngx-combobox__input').first();
+    const wrapper = section.locator('.cngx-combobox__trigger').first();
+    const name = (await input.getAttribute('aria-label')) ?? (await input.getAttribute('aria-labelledby'));
+    expect(name ?? '').not.toBe('');
+    await expect(wrapper).not.toHaveAttribute('aria-label', /.+/);
+    await expect(wrapper).not.toHaveAttribute('aria-labelledby', /.+/);
+  });
+
   test('typing filters options and toggles aria-expanded', async ({ page }) => {
     await page.goto(R.basic);
     const section = ex(page);
@@ -65,6 +76,25 @@ test.describe('CngxCombobox demo', () => {
     expect(chipsBefore).toBeGreaterThan(0);
     await input.press('Backspace');
     await expect(section.locator('cngx-chip')).toHaveCount(chipsBefore - 1);
+  });
+
+  test('Space and Home edit the input instead of picking or jumping', async ({ page }) => {
+    await page.goto(R.basic);
+    const section = ex(page);
+    const wrapper = section.locator('.cngx-combobox__trigger').first();
+    const input = section.locator('input.cngx-combobox__input').first();
+    await wrapper.click();
+    await input.fill('');
+    const chipsBefore = await section.locator('cngx-chip').count();
+
+    await input.press('a');
+    await input.press('ArrowDown');
+    await input.press(' ');
+    await expect(input).toHaveValue('a ');
+    await expect(section.locator('cngx-chip')).toHaveCount(chipsBefore);
+
+    await input.press('Home');
+    expect(await input.evaluate((el) => (el as HTMLInputElement).selectionStart)).toBe(0);
   });
 
   test('click outside the trigger closes the panel', async ({ page }) => {
