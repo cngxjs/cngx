@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
 // Story: CngxMiniBar is a single-value bounded indicator rendered in pure

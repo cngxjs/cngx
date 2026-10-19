@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
 // Story: CngxLoadingIndicator renders a spinner or bar while `loading` is

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
 // Story: CngxTabNav is a role="navigation" landmark of real <a> links -

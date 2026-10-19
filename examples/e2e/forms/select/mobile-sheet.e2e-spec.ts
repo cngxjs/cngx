@@ -1,4 +1,5 @@
-import { devices, expect, test, type Locator, type Page } from '@playwright/test';
+import { devices, type Locator, type Page } from '@playwright/test';
+import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
 // Stories: forms/select/mobile-sheet/*. The breakpoint is a `(pointer:

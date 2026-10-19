@@ -1,4 +1,5 @@
-import { expect, test, type Locator } from '@playwright/test';
+import type { Locator } from '@playwright/test';
+import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
 // The classic strip's `density: 'auto'` ladder is driven by the strip's

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './_test';
 
 test.describe('framework smoke', () => {
   test('examples app responds and renders <app-root>', async ({ page }) => {

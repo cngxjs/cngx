@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from '../_test';
 import { gotoDemo } from '../_helpers';
 
 // Behavioural proof that wave-1 components derive their spacing from

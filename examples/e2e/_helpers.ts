@@ -24,6 +24,11 @@ export async function gotoDemoLang(page: Page, routePath: string, lang: string):
  * Collect every console message whose text contains `needle`, from now on.
  * Call before `gotoDemo` so load-time diagnostics are caught; the returned
  * array fills as messages arrive.
+ *
+ * The general negative check is the console guard in `./_test.ts`: any
+ * unlisted warning or error already fails the test. Use this helper to pin one
+ * code by name (a regression spec for a fixed diagnostic, or a debug-level
+ * line the guard does not watch).
  */
 export function collectConsoleMessages(page: Page, needle: string): readonly string[] {
   const messages: string[] = [];
