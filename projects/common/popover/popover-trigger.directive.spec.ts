@@ -47,6 +47,18 @@ class MenuTriggerHost {
 
 @Component({
   template: `
+    <button [cngxPopoverTrigger]="pop" [controls]="controls()" id="trigger">Open</button>
+    <div cngxPopover #pop="cngxPopover"><div role="listbox" id="inner-list"></div></div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger],
+})
+class ControlsTriggerHost {
+  readonly popover = viewChild.required(CngxPopover);
+  readonly controls = signal<string | null | undefined>('inner-list');
+}
+
+@Component({
+  template: `
     <button [cngxPopoverTrigger]="pop" haspopup="none" id="trigger">Disclose</button>
     <div cngxPopover #pop="cngxPopover">Link list</div>
   `,
@@ -135,6 +147,18 @@ describe('CngxPopoverTrigger', () => {
     it('should set aria-controls to the popover id', () => {
       const { fixture, triggerEl } = setup(BasicTriggerHost);
       const host = fixture.componentInstance as BasicTriggerHost;
+      expect(triggerEl.getAttribute('aria-controls')).toBe(host.popover().id());
+    });
+
+    it('lets a controls override name the popup element, null or unset fall back', () => {
+      const { fixture, triggerEl } = setup(ControlsTriggerHost);
+      const host = fixture.componentInstance as ControlsTriggerHost;
+      expect(triggerEl.getAttribute('aria-controls')).toBe('inner-list');
+      host.controls.set(null);
+      fixture.detectChanges();
+      expect(triggerEl.getAttribute('aria-controls')).toBe(host.popover().id());
+      host.controls.set(undefined);
+      fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-controls')).toBe(host.popover().id());
     });
 
