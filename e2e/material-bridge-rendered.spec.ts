@@ -521,8 +521,9 @@ test.describe('material-bridge rendered values: command-palette', () => {
 });
 
 test.describe('material-bridge rendered values: select family trigger chain', () => {
-  // Every trigger background and color token falls back to its family token
-  // (--cngx-select-bg, --cngx-select-color; action-multi / reorderable
+  // Every trigger background, color and border token falls back to its family
+  // token (--cngx-select-bg, --cngx-select-color, --cngx-select-border;
+  // action-multi / reorderable
   // through their parent variant first). The bridge themes the trigger
   // through the family tokens alone: it broadcasts onto every descendant, so
   // a variant assignment would sit on the read element and cut the chain,
@@ -549,6 +550,7 @@ test.describe('material-bridge rendered values: select family trigger chain', ()
 </div>`;
   const CONSUMER_BG = 'rgb(9, 8, 7)';
   const CONSUMER_COLOR = 'rgb(7, 8, 9)';
+  const CONSUMER_BORDER = 'rgb(6, 5, 4)';
 
   test.beforeEach(async ({ page }) => {
     await renderFixture(page, {
@@ -589,6 +591,25 @@ test.describe('material-bridge rendered values: select family trigger chain', ()
     });
     for (const [tag] of VARIANTS) {
       expect(await computedValue(page, `#${tag}-trigger`, 'color'), tag).toBe(CONSUMER_COLOR);
+    }
+  });
+
+  test('every trigger border paints outline under the bridge alone', async ({ page }) => {
+    for (const [tag] of VARIANTS) {
+      expect(await computedValue(page, `#${tag}-trigger`, 'border-top-color'), tag).toBe(
+        matSys('outline'),
+      );
+    }
+  });
+
+  test('a consumer --cngx-select-border paints every variant trigger', async ({ page }) => {
+    await page.addStyleTag({
+      content: `.consumer-surface, .consumer-surface * { --cngx-select-border: 1px solid ${CONSUMER_BORDER}; }`,
+    });
+    for (const [tag] of VARIANTS) {
+      expect(await computedValue(page, `#${tag}-trigger`, 'border-top-color'), tag).toBe(
+        CONSUMER_BORDER,
+      );
     }
   });
 

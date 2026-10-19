@@ -26,21 +26,14 @@
     --cngx-select-panel-shadow: var(--mat-sys-level2, 0 4px 12px oklch(0 0 0 / 0.12));
 
     // Trigger surfaces - Material's outlined-input surface. Every variant
-    // -bg and -color token falls back to its family token, so the bridge
-    // sets only --cngx-select-bg / --cngx-select-color and leaves the
-    // variant tokens unset: it broadcasts onto every descendant, so a
-    // variant assignment would sit on the trigger, cut the chain, and a
-    // consumer family token would no longer reach that variant.
+    // -bg, -color and -border token falls back to its family token, so the
+    // bridge sets only the --cngx-select-* ones and leaves the variant
+    // tokens unset: it broadcasts onto every descendant, so a variant
+    // assignment would sit on the trigger, cut the chain, and a consumer
+    // family token would no longer reach that variant.
     --cngx-select-bg: transparent;
     --cngx-select-color: var(--mat-sys-on-surface);
     --cngx-select-border: 1px solid var(--mat-sys-outline);
-
-    --cngx-multi-select-border: 1px solid var(--mat-sys-outline);
-    --cngx-combobox-border: 1px solid var(--mat-sys-outline);
-    --cngx-typeahead-border: 1px solid var(--mat-sys-outline);
-    --cngx-action-select-border: 1px solid var(--mat-sys-outline);
-    --cngx-action-multi-select-border: 1px solid var(--mat-sys-outline);
-    --cngx-reorderable-multi-select-border: 1px solid var(--mat-sys-outline);
 
     --cngx-select-caret-color: var(--mat-sys-on-surface-variant);
     --cngx-select-clear-color: var(--mat-sys-on-surface-variant);
