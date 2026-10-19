@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { gotoDemo } from '../../_helpers';
+import { collectConsoleMessages, gotoDemo } from '../../_helpers';
 import { routesIn } from '../../_routes';
 
 // The story labels its three columns through withTreetableLabels; without them
@@ -11,12 +11,7 @@ const ROUTE = 'data-display/treetable/async/async-state-lifecycle';
 test.describe('data-display/treetable/async/async-state-lifecycle', () => {
   test('labels every column header and logs no CNGX4001', async ({ page }) => {
     expect(routesIn('data-display', 'treetable', 'async').map((r) => r.path)).toContain(ROUTE);
-    const warnings: string[] = [];
-    page.on('console', (msg) => {
-      if (msg.text().includes('CNGX4001')) {
-        warnings.push(msg.text());
-      }
-    });
+    const warnings = collectConsoleMessages(page, 'CNGX4001');
 
     await gotoDemo(page, ROUTE);
 

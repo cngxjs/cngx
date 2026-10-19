@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { gotoDemo } from '../../_helpers';
+import { collectConsoleMessages, gotoDemo } from '../../_helpers';
 import { routesIn } from '../../_routes';
 
 // CngxPhoneInput.value is raw (dial code + national digits). A display string
@@ -11,12 +11,7 @@ const ROUTE = 'forms/input/phone/disabled';
 test.describe('forms/input/phone/disabled', () => {
   test('renders the raw value through the mask and logs no CNGX2022', async ({ page }) => {
     expect(routesIn('forms', 'input', 'phone').map((r) => r.path)).toContain(ROUTE);
-    const warnings: string[] = [];
-    page.on('console', (msg) => {
-      if (msg.text().includes('CNGX2022')) {
-        warnings.push(msg.text());
-      }
-    });
+    const warnings = collectConsoleMessages(page, 'CNGX2022');
 
     await gotoDemo(page, ROUTE);
 

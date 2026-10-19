@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { gotoDemo, gotoDemoLang } from '../../_helpers';
+import { collectConsoleMessages, gotoDemo, gotoDemoLang } from '../../_helpers';
 import { routesIn } from '../../_routes';
 
 // Proves every cngx i18n surface switches EN -> DE without a reload over one
@@ -268,12 +268,7 @@ test.describe('live language switch', () => {
     const route = 'core/i18n/language-pack/live-switch-ui-b';
     expect(routesIn('core', 'i18n', 'language-pack').map((r) => r.path)).toContain(route);
     // Crumbs are tracked by href; two crumbs sharing one href log NG0955.
-    const duplicateKeys: string[] = [];
-    page.on('console', (msg) => {
-      if (msg.text().includes('NG0955')) {
-        duplicateKeys.push(msg.text());
-      }
-    });
+    const duplicateKeys = collectConsoleMessages(page, 'NG0955');
     await gotoDemo(page, route);
 
     const trail = page.locator('cngx-breadcrumb nav');
