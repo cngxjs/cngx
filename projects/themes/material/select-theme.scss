@@ -193,7 +193,8 @@
   //     and density blocks set only the family ones. The broadcast puts the
   //     family values on the trigger itself, so a consumer override of a
   //     family token targets the select and its descendants, not only an
-  //     ancestor.
+  //     ancestor. A later change moves the trigger tokens of every Material
+  //     bridge to the theme root, so an ancestor value reaches the trigger.
   @include bridge.on(
     '.cngx-select__panel',
     cngx-tree-select-panel,
