@@ -230,6 +230,44 @@ jobs:
       - name: examples-e2e suite
         run: npm run test:e2e:examples
 
+  console-sweep:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Cache Angular build cache
+        uses: actions/cache@v4
+        with:
+          path: .angular/cache
+          key: ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-${{ github.ref_name }}
+          restore-keys: |
+            ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+      - name: Install dependencies
+        run: npm ci
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+      # Loads every route in examples/src/app/_routes-meta.ts once and fails on a
+      # console warning, console error or page error not on the capped allowlist
+      # in examples/e2e-sweep/console-allowlist.ts. Shard with --shard when the
+      # job runs over 10 minutes.
+      - name: console sweep
+        run: npm run test:e2e:sweep
+
   build-examples:
     needs: build
     runs-on: ubuntu-latest
