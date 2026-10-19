@@ -43,7 +43,10 @@
  * `-radius`) follow the same chain and are registered the same
  * way, so a family or variant value set on an ancestor reaches the trigger.
  * Gap and padding fall back to the spacing scale (`--cngx-space-*`), so a
- * root `[data-density]` still compacts the trigger.
+ * root `[data-density]` still compacts the trigger. The Material select
+ * bridge assigns the family tokens on the select host and every descendant,
+ * so under the bridge a value set only on an ancestor stops at the bridge
+ * value; set it on the select and its descendants (`.x, .x *`) instead.
  *
  * **Pair with**
  *
