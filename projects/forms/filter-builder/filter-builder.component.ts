@@ -27,6 +27,12 @@ import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive
 import { CngxFilterBuilderValueEditor } from './filter-builder-value-editor.slot';
 import { CNGX_FILTER_BUILDER_BODY_HOST } from './filter-builder-body.host';
 
+/** Nulls the surrounding field for the builder's view and its body outlet. */
+const DETACHED_FIELD_PROVIDERS = [
+  { provide: CngxFormFieldPresenter, useValue: null },
+  { provide: CNGX_FORM_FIELD_HOST, useValue: null },
+];
+
 /**
  * Recursive query-builder component. Brain lives entirely in
  * `CngxFilterBuilderPresenter` (host directive). This component is the
@@ -57,11 +63,6 @@ import { CNGX_FILTER_BUILDER_BODY_HOST } from './filter-builder-body.host';
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-json/builder-json</example-url>
  * <example-url>http://localhost:4200/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
  */
-const DETACHED_FIELD_PROVIDERS = [
-  { provide: CngxFormFieldPresenter, useValue: null },
-  { provide: CNGX_FORM_FIELD_HOST, useValue: null },
-];
-
 @Component({
   selector: 'cngx-filter-builder',
   exportAs: 'cngxFilterBuilder',
