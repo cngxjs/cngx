@@ -15,7 +15,7 @@ test.describe('forms/input/phone/disabled', () => {
 
     await gotoDemo(page, ROUTE);
 
-    await expect(page.locator('cngx-phone-input input')).toHaveValue('+1 202 555 0123');
+    await expect(page.locator('cngx-phone-input input')).toHaveValue('+43 664 1234567');
     expect(warnings).toEqual([]);
   });
 });
