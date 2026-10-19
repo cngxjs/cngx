@@ -1131,7 +1131,7 @@ button.chip {
   transition: box-shadow 150ms ease;
 }
 .cngx-ex-keyboard-ring.cngx-focus-visible {
-  box-shadow: 0 0 0 2px var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
+  box-shadow: 0 0 0 2px var(--cngx-color-primary, #f5a623);
 }
 
 // Demo-only surface for live-region stories. The flash variant exists so
@@ -1148,8 +1148,8 @@ button.chip {
     border-color 300ms ease;
 }
 .cngx-ex-live-region--flash {
-  background: var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
-  border-color: var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
+  background: var(--cngx-color-primary, #f5a623);
+  border-color: var(--cngx-color-primary, #f5a623);
   color: var(--cngx-color-on-accent, #000);
 }
 
@@ -1230,7 +1230,7 @@ button.chip[aria-pressed='true'],
   height: 60px;
   border-radius: 50%;
   border: 6px solid var(--cngx-ex-surface-alt);
-  border-top-color: var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
+  border-top-color: var(--cngx-color-primary, #f5a623);
   flex-shrink: 0;
   box-sizing: border-box;
   animation: cngx-ex-demo-spin 2s linear infinite;
@@ -1246,7 +1246,7 @@ button.chip[aria-pressed='true'],
   width: 40%;
   height: 100%;
   border-radius: 4px;
-  background: var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
+  background: var(--cngx-color-primary, #f5a623);
   animation: cngx-ex-demo-progress 1.5s ease-in-out infinite;
 }
 .cngx-reduced-motion .cngx-ex-demo-spinner,
@@ -3741,7 +3741,7 @@ cngx-radio-group .cngx-radio + .cngx-radio {
 
 .demo-speak-card--accent {
   border: 0;
-  border-left: 4px solid var(--cngx-color-accent, #f5a623);
+  border-left: 4px solid var(--cngx-color-primary, #f5a623);
   border-radius: 8px;
 }
 

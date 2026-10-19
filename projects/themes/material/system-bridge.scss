@@ -43,6 +43,15 @@
   --cngx-color-primary: var(--mat-sys-primary);
   --cngx-color-primary-strong: var(--mat-sys-primary);
   --cngx-color-primary-text: var(--mat-sys-primary);
+  // Re-derived, not mapped to tertiary: the core rung resolves against the
+  // core primary where it is declared, so a bridge host that is not :root
+  // would otherwise keep an Ember-derived accent next to a Material primary.
+  --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
+  --cngx-gradient-brand: linear-gradient(
+    100deg,
+    var(--cngx-color-primary),
+    var(--cngx-color-accent)
+  );
   --cngx-color-danger: var(--mat-sys-error);
   --cngx-color-danger-text: var(--mat-sys-error);
   --cngx-color-info: var(--mat-sys-primary);
@@ -86,6 +95,12 @@
   --cngx-color-primary: #{$primary};
   --cngx-color-primary-strong: #{$primary};
   --cngx-color-primary-text: #{bridge.m2-primary-text($theme)};
+  --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
+  --cngx-gradient-brand: linear-gradient(
+    100deg,
+    var(--cngx-color-primary),
+    var(--cngx-color-accent)
+  );
   // danger stays the raw warn (a fill colour); the text rung is derived
   --cngx-color-danger: #{$warn};
   --cngx-color-danger-text: #{bridge.m2-warn-text($theme)};
