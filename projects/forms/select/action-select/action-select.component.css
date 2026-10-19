@@ -32,7 +32,8 @@
  * border / surface propagate without per-component theming:
  *
  * - `--cngx-action-select-border` -> `--cngx-color-border`
- * - `--cngx-action-select-bg` -> `--cngx-color-surface`
+ * - `--cngx-action-select-bg` -> `--cngx-select-bg` -> `transparent`, like the
+ *   rest of the select family
  *
  * **Pair with**
  *
@@ -92,22 +93,20 @@
   }
 
   /**
-   * Background of the trigger. Falls back through `--cngx-color-surface`.
+   * Background of the trigger.
    * @group Surface
-   * @see [[--cngx-color-surface]]
    */
   @property --cngx-action-select-bg {
     syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(1 0 0);
+    inherits: false;
+    initial-value: transparent;
   }
 
-  /* Delegating tokens - trigger border + bg track the foundation
-   * chain so a dark-mode swap on `--cngx-color-border` /
-   * `--cngx-color-surface` cascades through the trigger host. */
+  /* Delegating token - the trigger border tracks the foundation chain
+   * so a dark-mode swap on `--cngx-color-border` cascades through the
+   * trigger host. */
   :root {
     --cngx-action-select-border: 1px solid var(--cngx-color-border);
-    --cngx-action-select-bg: var(--cngx-color-surface);
   }
 }
 
@@ -149,7 +148,7 @@
         1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
       );
       border-radius: var(--cngx-action-select-radius, 0.25rem);
-      background: var(--cngx-action-select-bg, var(--cngx-color-surface, oklch(1 0 0)));
+      background: var(--cngx-action-select-bg, var(--cngx-select-bg, transparent));
       cursor: text;
     }
 

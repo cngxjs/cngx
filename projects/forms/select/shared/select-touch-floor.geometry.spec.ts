@@ -17,7 +17,9 @@ import { CngxTypeahead } from '../typeahead/typeahead.component';
 // (`data-touch="on"`, the same 44px a coarse pointer sets) every empty select
 // trigger row has one height. The four input variants embed a bare <input>
 // that `base.css` lifts to the floor on its own; the row already carries the
-// floor, so the inner input must not add the row padding on top of it.
+// floor, so the inner input must not add the row padding on top of it. The
+// same harness locks one trigger surface: every row resolves its background
+// through `--cngx-select-bg`, transparent by default.
 
 @Component({
   selector: 'cngx-select-touch-floor-host',
@@ -102,6 +104,23 @@ describe('select touch floor geometry', () => {
     expect(rows).toHaveLength(9);
     for (const row of rows) {
       expect(row, `${row.host} trigger row`).toEqual({ host: row.host, height: 44 });
+    }
+  });
+
+  it('every empty trigger row paints the same family background', () => {
+    const fixture = TestBed.createComponent(TouchFloorHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    const rows = Array.from(mountedRoot.querySelectorAll<HTMLElement>('.cngx-field-trigger'));
+    expect(rows).toHaveLength(9);
+    for (const row of rows) {
+      expect(getComputedStyle(row).backgroundColor, `${hostTag(row)} trigger row`).toBe(
+        'rgba(0, 0, 0, 0)',
+      );
     }
   });
 });
