@@ -2,10 +2,15 @@ import { expect, test, type Page } from '@playwright/test';
 
 import { gotoDemo } from '../e2e/_helpers';
 import { allRoutes } from '../e2e/_routes';
-import { CONSOLE_ALLOWLIST, CONSOLE_ALLOWLIST_CAP } from './console-allowlist';
+import {
+  CONSOLE_ALLOWLIST,
+  CONSOLE_ALLOWLIST_CAP,
+  type ConsoleAllowRow,
+  type ConsoleLineType,
+} from './console-allowlist';
 
-// One fresh load per example route. A console warning, console error or page
-// error fails the route unless an allowlist row names it. Warnings that only
+// One fresh load per example route. A console warning, console error, failed
+// console.assert or page error fails the route unless an allowlist row names it. Warnings that only
 // fire after an interaction are out of reach here; the feature specs own them.
 
 const NETWORK_IDLE_CAP_MS = 5_000;
@@ -14,6 +19,18 @@ const NETWORK_IDLE_CAP_MS = 5_000;
 const SETTLE_MS = 1_500;
 
 const routes = allRoutes();
+
+interface ConsoleLine {
+  readonly type: ConsoleLineType;
+  readonly text: string;
+}
+
+const CONSOLE_TYPES: ReadonlySet<string> = new Set<ConsoleLineType>(['warning', 'error', 'assert']);
+const isSweptConsoleType = (type: string): type is ConsoleLineType => CONSOLE_TYPES.has(type);
+
+const format = (line: ConsoleLine) => `[${line.type}] ${line.text}`;
+const matches = (line: ConsoleLine, row: ConsoleAllowRow) =>
+  line.type === row.type && line.text.startsWith(row.startsWith);
 
 /**
  * First line only, without the trailing `Find more at <url>` and whatever
@@ -24,16 +41,16 @@ function normalise(text: string): string {
   return firstLine.replace(/\s*Find more at \S+.*$/, '').trim();
 }
 
-async function collectConsoleLines(page: Page, path: string): Promise<string[]> {
-  const lines: string[] = [];
+async function collectConsoleLines(page: Page, path: string): Promise<ConsoleLine[]> {
+  const lines: ConsoleLine[] = [];
   page.on('console', (msg) => {
     const type = msg.type();
-    if (type === 'warning' || type === 'error') {
-      lines.push(`[${type}] ${normalise(msg.text())}`);
+    if (isSweptConsoleType(type)) {
+      lines.push({ type, text: normalise(msg.text()) });
     }
   });
   page.on('pageerror', (err) => {
-    lines.push(`[pageerror] ${normalise(`${err.name}: ${err.message}`)}`);
+    lines.push({ type: 'pageerror', text: normalise(`${err.name}: ${err.message}`) });
   });
 
   await gotoDemo(page, path);
@@ -49,10 +66,12 @@ test.describe('console allowlist', () => {
     expect(CONSOLE_ALLOWLIST.length).toBeLessThanOrEqual(CONSOLE_ALLOWLIST_CAP);
   });
 
-  test('names only existing routes and gives every row a reason', () => {
+  test('names only existing routes and gives every row a prefix and a reason', () => {
     const known = new Set(routes.map((r) => r.path));
     for (const row of CONSOLE_ALLOWLIST) {
       expect(known.has(row.route), `stale allowlist row: unknown route ${row.route}`).toBe(true);
+      // An empty prefix would mute every line on the route's channel.
+      expect(row.startsWith.trim(), `allowlist row for ${row.route} has no prefix`).not.toBe('');
       expect(row.reason.trim(), `allowlist row for ${row.route} has no reason`).not.toBe('');
     }
   });
@@ -63,15 +82,16 @@ test.describe('console sweep', () => {
     test(route.path, async ({ page }) => {
       const lines = await collectConsoleLines(page, route.path);
       const rows = CONSOLE_ALLOWLIST.filter((row) => row.route === route.path);
-      const matches = (line: string, startsWith: string) =>
-        line.replace(/^\[\w+\] /, '').startsWith(startsWith);
 
-      const unlisted = lines.filter((line) => !rows.some((row) => matches(line, row.startsWith)));
-      const stale = rows.filter((row) => !lines.some((line) => matches(line, row.startsWith)));
+      const unlisted = lines.filter((line) => !rows.some((row) => matches(line, row)));
+      const stale = rows.filter((row) => !lines.some((line) => matches(line, row)));
 
-      expect(unlisted, `unlisted console lines on ${route.path} (${route.title})`).toEqual([]);
       expect(
-        stale.map((row) => row.startsWith),
+        unlisted.map(format),
+        `unlisted console lines on ${route.path} (${route.title})`,
+      ).toEqual([]);
+      expect(
+        stale.map((row) => `[${row.type}] ${row.startsWith}`),
         `stale allowlist rows on ${route.path}: the line no longer fires`,
       ).toEqual([]);
     });
