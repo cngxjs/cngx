@@ -366,6 +366,29 @@ module.exports = tseslint.config(
         },
     },
 
+    // Feature e2e specs take `test` from examples/e2e/_test.ts, whose auto
+    // fixture fails a test on any unlisted console warning or error. The bare
+    // Playwright `test` would run the spec without that guard.
+    {
+        files: ['examples/e2e/**/*.e2e-spec.ts'],
+        rules: {
+            '@typescript-eslint/no-restricted-imports': [
+                'error',
+                {
+                    paths: [
+                        {
+                            name: '@playwright/test',
+                            importNames: ['test'],
+                            allowTypeImports: true,
+                            message:
+                                'Import test from examples/e2e/_test.ts: it runs the spec under the console guard.',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+
     // Examples generator — plain ESM, no Angular / no TypeScript. Light
     // hygiene rules so the script stays linted alongside the rest of the
     // codebase. Add new files under scripts/examples-gen/ to extend coverage.
