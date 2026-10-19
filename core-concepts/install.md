@@ -212,6 +212,9 @@ turn the questions off the same way.
 |`angular.json`|theme chosen|The theme file added to the build styles, after the stylesheet that imports `cngx.css`.|
 |App config, root NgModule or inline config in `main.ts`|per answer|`provideA11yPreferences(withPersistence())`, `provideDirection('rtl')` for a right-to-left source locale, `provideFeedback(withToasts(), withAlerts(), withBanners())`, `provideFloatingFallback(computePosition, [flip(), shift()])`, `provideCngxI18n(withPack(...))`.|
 |Root component template and its `imports`|feedback|`<cngx-banner-outlet />` as the first line above the `ng new` placeholder block, so it shows above the welcome page instead of below it, and `<cngx-toast-outlet />` at the end after the block, so deleting the placeholder below its opening comment keeps both; without that block the banner outlet goes right above `<router-outlet>`, else at the end; `CngxBannerOutlet` and `CngxToastOutlet` from `@cngx/ui/feedback` in the component `imports`, or in the root NgModule `imports` of an NgModule app. Placed once; an outlet you remove after the install stays out until you pass `--feedback` again, and once an install placed them cngx does not ask for them again, also when it can no longer edit the root component; a note then says that they were removed, or, where it cannot read the template any more, why it cannot tell. A root component cngx cannot follow from `main.ts` or cannot edit safely gets a note with the snippet and the reason instead, see [Outlets left to you](#outlets-left-to-you). Alert stacks are not placed: they are scoped, so they go where the alerts belong. `ng update` only notes a missing outlet.|
+|`src/app/app.ts`, `app.html`, `app.css` or `app.scss`|`full` (or `--starter`), untouched `ng new` standalone app|The cngx starter page in place of the Angular welcome page: the `Hello, <name>` heading and `title` signal the stock spec asserts, a card for each thing the answers installed to try (toasts, banners and an alert with feedback, the accessibility panel with the a11y preferences, an English and German toggle with the runtime language switch), the toast and banner outlets with feedback, and `<router-outlet />` with routing. Written only over the exact `ng new` scaffold, see [The starter page](#the-starter-page).|
+|Global styles|starter written|`body { margin: 0 }` at the end, so the page meets the window edge.|
+|`public/favicon.svg`, `src/index.html`|starter written, `index.html` untouched, no `favicon.svg` yet|The cngx mark as the app icon, and the icon link pointed at it instead of `favicon.ico`, which stays on disk.|
 |`app.spec.ts` of the root component|feedback, unedited `ng new` spec|`providers: [provideFeedback(withToasts(), withBanners())]` in its `TestBed.configureTestingModule`, so the stock spec still renders `App` with the outlets in it. Any other spec gets a note with that snippet.|
 |`cngx-language.ts`|German with runtime switch|Next to the file holding the root providers (`src/cngx-language.ts` for an inline config in `main.ts`): a `cngxLanguagePack` signal. Set it to switch every cngx string at runtime. When the app already provides `provideCngxI18n(...)` without that signal, the provider is not rewritten: the file is still created and a note names the one edit, `withPack(cngxLanguagePack)` imported from `./cngx-language`.|
 |ESLint flat config|lint rules|`...cngx.configs.recommended` in the exported array of `eslint.config.js`, `.mjs`, `.cjs`, `.ts`, `.mts` or `.cts`, the one in the project root first, else the workspace one. A commented-out plugin import does not count as wired. It needs ESLint 9 or later and a TypeScript parser (`typescript-eslint`, `@typescript-eslint/parser` or `angular-eslint`): the cngx rules lint TypeScript through the app's own setup. The plugin also loads `@angular-eslint/template-parser` 19 or later; with `angular-eslint` declared it is added on that version line. Every case it cannot wire gets one note with the next command and no edit or dependency: ESLint below 9 (raise `eslint` to `^9` in devDependencies and reinstall; with `angular-eslint`, `ng update angular-eslint` moves its packages, without it `ng add angular-eslint` sets up ESLint 9), no flat config, no TypeScript parser or no template parser (`ng add angular-eslint`), a template parser line below 19 (`ng update angular-eslint`, or raise the parser itself), a legacy `.eslintrc*` config (`npx @eslint/migrate-config <file>`). Run `ng add @cngx/core` again afterwards. A config it cannot edit safely gets a note to add the entry by hand.|
@@ -221,6 +224,33 @@ turn the questions off the same way.
 Every generated source, style and Markdown file carries a provenance stamp
 naming the step and the cngx release that wrote it. A file that already
 exists and was not written by cngx is never overwritten; the step plans a note and leaves it to you.
+
+---
+
+## The starter page
+
+`--preset=full` replaces the Angular welcome page with a cngx starter page
+that shows what the run installed, working. It writes it only when all of
+these hold, and leaves the app as `ng new` wrote it otherwise:
+
+- The app is standalone. An NgModule app gets the outlets only.
+- `src/app/app.ts`, `app.html` and the stylesheet are exactly what `ng new`
+  wrote (routing on or off, CSS or SCSS), compared after the project name
+  and selector are put in and line endings normalised; a Prettier pass over
+  them is fine, one changed character is not. An inline template, inline
+  styles, Sass or Less never match. The files are checked again right
+  before they are written.
+- `@cngx/common` and `@cngx/ui` are selected.
+- `--starter=false` (or `--no-starter`) is not passed. The other presets
+  leave the starter off unless `--starter` is passed.
+
+The page is English. It is yours to edit: each file records a
+`cngx:fingerprint` line, so a re-run recognises its own starter, also after
+your formatter rewrote it, and never writes it again. A starter you replaced
+stays replaced, and `ng update` never writes or restores one. When the
+starter is written, the outlets come with it; the stock `app.spec.ts` still
+gets the feedback providers. Every other case is in
+[Starter left out](#starter-left-out).
 
 ---
 
