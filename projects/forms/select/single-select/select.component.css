@@ -65,12 +65,15 @@
    * Preferred minimum inline size of the select. A standalone or toolbar
    * select is at least this wide; a narrower cell shrinks it, as it does an
    * input.
+   * It is also the family fallback every variant's min-width token resolves
+   * through. No `initial-value`, like {@link --cngx-select-bg}: the use-site
+   * fallback survives, and a value set on an ancestor reaches the host.
    * @group Layout
+   * @default 10rem
    */
   @property --cngx-select-min-width {
     syntax: '*';
-    inherits: false;
-    initial-value: 10rem;
+    inherits: true;
   }
 
   /**
@@ -202,9 +205,9 @@
       font: inherit;
       min-width: 0;
       max-inline-size: 100%;
-      /* Resolved on the host, where a consumer sets the non-inheriting
-         min-width token, and handed to the ::before through an unregistered
-         (inheriting) private property. */
+      /* Resolved on the host, where the inheriting min-width chain lands,
+         and handed to the ::before through an unregistered private
+         property. */
       --_cngx-select-floor: var(--cngx-select-min-width, 10rem);
     }
 

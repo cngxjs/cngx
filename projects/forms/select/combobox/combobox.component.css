@@ -65,12 +65,14 @@
    * Preferred minimum inline size of the select. A standalone or toolbar
    * select is at least this wide; a narrower cell shrinks it, as it does an
    * input.
+   * Falls back to `--cngx-select-min-width`; see {@link --cngx-select-min-width}
+   * for why no `initial-value` is declared.
    * @group Layout
+   * @default var(--cngx-select-min-width, 12rem)
    */
   @property --cngx-combobox-min-width {
     syntax: '*';
-    inherits: false;
-    initial-value: 12rem;
+    inherits: true;
   }
 
   /**
@@ -195,9 +197,9 @@
       font: inherit;
       min-width: 0;
       max-inline-size: 100%;
-      /* Resolved on the host, where a consumer sets the non-inheriting
-         min-width token, and handed to the ::before through an unregistered
-         (inheriting) private property. */
+      /* Resolved on the host, where the inheriting min-width chain lands,
+         and handed to the ::before through an unregistered private
+         property. */
       --_cngx-select-floor: var(--cngx-combobox-min-width, var(--cngx-select-min-width, 12rem));
     }
 

@@ -88,9 +88,14 @@ interface TokenChain {
     | 'borderTopColor'
     | 'outlineColor'
     | 'minHeight'
-    | 'borderTopLeftRadius';
+    | 'borderTopLeftRadius'
+    | 'inlineSize';
   /** The row only paints `property` while its combobox has focus. */
   readonly focus?: boolean;
+  /** Read `property` off the host's `::before` floor box, not the row. */
+  readonly floor?: boolean;
+  /** Hosts the family token reaches; all nine when omitted. */
+  readonly familyHosts?: readonly string[];
   /** Value the tokens are set to; it paints `expected` on `property`. */
   readonly value: string;
   /** Computed value `value` paints on `property`; `SET_COLOR` when omitted. */
@@ -189,16 +194,45 @@ const CHAINS: readonly TokenChain[] = [
       ['--cngx-select-shell-radius', ['cngx-select-shell']],
     ],
   },
+  {
+    // Typeahead and action select fill their container and carry no floor.
+    property: 'inlineSize',
+    floor: true,
+    value: '170px',
+    expected: '170px',
+    family: '--cngx-select-min-width',
+    familyHosts: [
+      'cngx-select',
+      'cngx-multi-select',
+      'cngx-combobox',
+      'cngx-tree-select',
+      'cngx-reorderable-multi-select',
+      'cngx-action-multi-select',
+      'cngx-select-shell',
+    ],
+    variants: [
+      ['--cngx-multi-select-min-width', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
+      ['--cngx-combobox-min-width', ['cngx-combobox', 'cngx-action-multi-select']],
+      ['--cngx-tree-select-min-width', ['cngx-tree-select']],
+      ['--cngx-reorderable-multi-select-min-width', ['cngx-reorderable-multi-select']],
+      ['--cngx-action-multi-select-min-width', ['cngx-action-multi-select']],
+      ['--cngx-select-shell-min-width', ['cngx-select-shell']],
+    ],
+  },
 ];
 
 let mountedRoot: HTMLElement | null = null;
 
-function hostTag(row: HTMLElement): string | undefined {
+function hostOf(row: HTMLElement): HTMLElement | null {
   let el: HTMLElement | null = row.parentElement;
   while (el && !el.tagName.startsWith('CNGX-')) {
     el = el.parentElement;
   }
-  return el?.tagName.toLowerCase();
+  return el;
+}
+
+function hostTag(row: HTMLElement): string | undefined {
+  return hostOf(row)?.tagName.toLowerCase();
 }
 
 function mountRows(): HTMLElement[] {
@@ -220,11 +254,14 @@ function mountRows(): HTMLElement[] {
 // ring.
 function paints(
   rows: readonly HTMLElement[],
-  chain: Pick<TokenChain, 'focus'> & {
+  chain: Pick<TokenChain, 'focus' | 'floor'> & {
     readonly property: TokenChain['property'] | 'outlineOffset';
   },
 ): string[] {
   return rows.map((row) => {
+    if (chain.floor) {
+      return getComputedStyle(hostOf(row)!, '::before')[chain.property];
+    }
     if (!chain.focus) {
       return getComputedStyle(row)[chain.property];
     }
@@ -279,9 +316,12 @@ describe('select touch floor geometry', () => {
     const set = chain.expected ?? SET_COLOR;
     it(`${family} set on an ancestor reaches every trigger row`, () => {
       const rows = mountRows();
+      const before = paints(rows, chain);
       setOnAncestor(family, value);
       paints(rows, chain).forEach((painted, i) => {
-        expect(painted, `${hostTag(rows[i])} trigger row`).toBe(set);
+        const host = hostTag(rows[i]) ?? '';
+        const reached = chain.familyHosts?.includes(host) ?? true;
+        expect(painted, `${host} trigger row`).toBe(reached ? set : before[i]);
       });
     });
 
