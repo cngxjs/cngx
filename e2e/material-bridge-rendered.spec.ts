@@ -521,8 +521,8 @@ test.describe('material-bridge rendered values: command-palette', () => {
 });
 
 test.describe('material-bridge rendered values: select family trigger chain', () => {
-  // Every trigger background, color and border token falls back to its family
-  // token (--cngx-select-bg, --cngx-select-color, --cngx-select-border;
+  // Every trigger background, color, border and layout token falls back to its
+  // family token (--cngx-select-bg, --cngx-select-color, --cngx-select-border;
   // action-multi / reorderable
   // through their parent variant first). The bridge themes the trigger
   // through the family tokens alone: it broadcasts onto every descendant, so
@@ -610,6 +610,37 @@ test.describe('material-bridge rendered values: select family trigger chain', ()
       expect(await computedValue(page, `#${tag}-trigger`, 'border-top-color'), tag).toBe(
         CONSUMER_BORDER,
       );
+    }
+  });
+
+  // The trigger layout tokens (min-height, padding, radius) chain the same
+  // way, so the bridge's outlined-input metrics ride on the family tokens too.
+  test('every trigger takes the outlined-input metrics under the bridge alone', async ({
+    page,
+  }) => {
+    for (const [tag] of VARIANTS) {
+      const trigger = `#${tag}-trigger`;
+      expect(await computedValue(page, trigger, 'min-height'), tag).toBe('56px');
+      expect(await computedValue(page, trigger, 'padding-top'), tag).toBe('0px');
+      expect(await computedValue(page, trigger, 'padding-left'), tag).toBe('16px');
+      expect(await computedValue(page, trigger, 'border-top-left-radius'), tag).toBe('4px');
+    }
+  });
+
+  test('consumer family layout tokens reach every variant trigger', async ({ page }) => {
+    await page.addStyleTag({
+      content: `.consumer-surface, .consumer-surface * {
+        --cngx-select-min-height: 61px;
+        --cngx-select-padding: 3px 5px;
+        --cngx-select-radius: 7px;
+      }`,
+    });
+    for (const [tag] of VARIANTS) {
+      const trigger = `#${tag}-trigger`;
+      expect(await computedValue(page, trigger, 'min-height'), tag).toBe('61px');
+      expect(await computedValue(page, trigger, 'padding-top'), tag).toBe('3px');
+      expect(await computedValue(page, trigger, 'padding-left'), tag).toBe('5px');
+      expect(await computedValue(page, trigger, 'border-top-left-radius'), tag).toBe('7px');
     }
   });
 
