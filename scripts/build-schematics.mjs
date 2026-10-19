@@ -18,7 +18,7 @@
 import { build } from 'esbuild';
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
+import { builtinModules, createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -36,12 +36,50 @@ const EXTERNAL = [
   '@angular/compiler',
 ];
 
+// The vendored TypeScript of @schematics/angular 21 is gone in 22, which
+// depends on `typescript` instead; a bundle that reaches into it crashes
+// `ng add` at load time on the newer CLI. Import `typescript` directly, the
+// way @angular/cdk and @angular/material schematics do.
+const FORBIDDEN_EXTERNAL = /^@schematics\/angular\/third_party\//;
+
 // Folders that are bundled into the entries, never entries themselves.
 const NON_ENTRY_DIRS = new Set(['engine', 'testing', 'node_modules']);
 
 function fail(message) {
   console.error(`build-schematics: ${message}`);
   process.exit(1);
+}
+
+function isNodeBuiltin(specifier) {
+  return specifier.startsWith('node:') || builtinModules.includes(specifier);
+}
+
+function isDeclaredExternal(specifier) {
+  return EXTERNAL.some((pattern) =>
+    pattern.endsWith('/*') ? specifier.startsWith(pattern.slice(0, -1)) : specifier === pattern,
+  );
+}
+
+// Every require left in a bundle is resolved from the consumer's install, so
+// it must be a Node builtin or a declared external, never a private path of
+// one.
+function assertExternalRequires(lib, outRoot) {
+  const offenders = [];
+  const bundles = readdirSync(outRoot, { recursive: true }).filter((file) => String(file).endsWith('.js'));
+  for (const file of bundles) {
+    const code = readFileSync(join(outRoot, file), 'utf8');
+    for (const [, specifier] of code.matchAll(/\brequire\("([^"]+)"\)/g)) {
+      if (specifier.startsWith('.') || isNodeBuiltin(specifier)) {
+        continue;
+      }
+      if (FORBIDDEN_EXTERNAL.test(specifier) || !isDeclaredExternal(specifier)) {
+        offenders.push(`dist/${lib}/schematics/${file}: require("${specifier}")`);
+      }
+    }
+  }
+  if (offenders.length > 0) {
+    fail(`bundles require modules the consumer's CLI install does not provide:\n  ${offenders.join('\n  ')}`);
+  }
 }
 
 function indexFiles(dir) {
@@ -147,6 +185,7 @@ async function buildLib(lib) {
     legalComments: 'none',
     loader: { '.tpl': 'text' },
   });
+  assertExternalRequires(lib, outRoot);
 
   for (const file of ['collection.json', join('migrations', 'migrations.json')]) {
     copyCollection(srcRoot, outRoot, file);

@@ -1,5 +1,5 @@
 import { TmplAstElement, TmplAstTemplate } from '@angular/compiler';
-import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeScript/lib/typescript';
+import * as ts from 'typescript';
 
 import { parseTemplateContent, walkNodes } from '../edit/template-edit';
 

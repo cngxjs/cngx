@@ -311,6 +311,23 @@ describe('every published package as the CLI resolves it', () => {
   });
 });
 
+describe('the shipped schematics bundles', () => {
+  // @schematics/angular 22 no longer vendors TypeScript; a require into its
+  // third_party folder crashes ng add at load time on that CLI.
+  it.each(PACKED_LIBS)('of @cngx/%s require no private path of @schematics/angular', (lib) => {
+    const root = requireDist(join(ROOT, 'dist', lib, 'schematics'));
+    const bundles = readdirSync(root, { recursive: true }).filter((file) => String(file).endsWith('.js'));
+    const privateRequires = bundles.flatMap((file) =>
+      [...readFileSync(join(root, file), 'utf8').matchAll(/\brequire\("(@schematics\/angular\/third_party\/[^"]+)"\)/g)].map(
+        ([, specifier]) => `${file}: ${specifier}`,
+      ),
+    );
+
+    expect(bundles.length).toBeGreaterThan(0);
+    expect(privateRequires).toEqual([]);
+  });
+});
+
 const SHIM_LIBS = PACKED_LIBS.filter((lib) => lib !== 'core');
 
 describe.each(SHIM_LIBS)('dist/%s/schematics ng-add shim', (lib) => {
