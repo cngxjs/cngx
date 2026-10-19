@@ -33,7 +33,8 @@
  *
  * - `--cngx-action-select-border` -> `--cngx-color-border`
  * - `--cngx-action-select-bg` -> `--cngx-select-bg` -> `transparent`, like the
- *   rest of the select family
+ *   rest of the select family; both are registered without an initial
+ *   value and inherit, so either one set on an ancestor reaches the trigger
  *
  * **Pair with**
  *
@@ -93,13 +94,14 @@
   }
 
   /**
-   * Background of the trigger.
+   * Background of the trigger. Falls back to `--cngx-select-bg`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-bg, transparent)
    */
   @property --cngx-action-select-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
+    syntax: '*';
+    inherits: true;
   }
 
   /* Delegating token - the trigger border tracks the foundation chain

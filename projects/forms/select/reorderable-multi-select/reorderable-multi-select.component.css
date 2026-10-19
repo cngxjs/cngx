@@ -38,14 +38,19 @@
  *
  * - `--cngx-reorderable-multi-select-*` -> `--cngx-multi-select-*` ->
  *   `--cngx-select-*` -> hardcoded
+ * - `--cngx-reorderable-multi-select-bg` -> `--cngx-multi-select-bg` ->
+ *   `--cngx-select-bg` -> `transparent`; all three are registered without
+ *   an initial value and inherit, so any of them set on an ancestor
+ *   reaches the trigger
  * - `--cngx-reorderable-multi-select-border` -> `--cngx-color-border`
  * - `--cngx-reorderable-multi-select-focus-outline` ->
  *   `--cngx-color-primary`
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
  *   `--cngx-color-danger`
  *
- * Registered `@property` values shadow the inner var() steps; system
- * tokens (`--cngx-color-*`) are the brand-wide override path.
+ * For every other token, registered `@property` initial values shadow the
+ * inner var() steps; system tokens (`--cngx-color-*`) are the brand-wide
+ * override path.
  *
  * **Pair with**
  *
@@ -107,13 +112,15 @@
   }
 
   /**
-   * Background of the trigger.
+   * Background of the trigger. Falls back to `--cngx-multi-select-bg`, then
+   * `--cngx-select-bg`; see {@link --cngx-select-bg} for why no
+   * `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-multi-select-bg, var(--cngx-select-bg, transparent))
    */
   @property --cngx-reorderable-multi-select-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
+    syntax: '*';
+    inherits: true;
   }
 
   /**

@@ -35,12 +35,16 @@
  *
  * - `--cngx-action-multi-select-*` -> `--cngx-combobox-*` ->
  *   `--cngx-select-*` -> hardcoded
+ * - `--cngx-action-multi-select-bg` -> `--cngx-combobox-bg` ->
+ *   `--cngx-select-bg` -> `transparent`; all three are registered without
+ *   an initial value and inherit, so any of them set on an ancestor
+ *   reaches the trigger
  * - `--cngx-action-multi-select-border` -> `--cngx-color-border`
  * - `--cngx-action-multi-select-focus-outline` -> `--cngx-color-primary`
  *
- * Once registered via `@property` the inner var() steps are
- * documentation-only; system tokens (`--cngx-color-*`) are the
- * brand-wide override path.
+ * For every other token, once registered via `@property` with an initial
+ * value the inner var() steps are documentation-only; system tokens
+ * (`--cngx-color-*`) are the brand-wide override path.
  *
  * **Pair with**
  *
@@ -102,13 +106,15 @@
   }
 
   /**
-   * Background of the trigger.
+   * Background of the trigger. Falls back to `--cngx-combobox-bg`, then
+   * `--cngx-select-bg`; see {@link --cngx-select-bg} for why no
+   * `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-combobox-bg, var(--cngx-select-bg, transparent))
    */
   @property --cngx-action-multi-select-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
+    syntax: '*';
+    inherits: true;
   }
 
   /**

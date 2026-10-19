@@ -36,6 +36,9 @@
  *
  * - `--cngx-select-border` -> `--cngx-color-border`
  * - `--cngx-select-focus-outline` -> `--cngx-color-primary`
+ * - `--cngx-select-bg` -> `transparent`; registered without an initial
+ *   value and inheriting, so a value set on an ancestor reaches the trigger.
+ *   Every variant's background token falls back to it
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
  *   `--cngx-color-danger`
  *
@@ -116,13 +119,18 @@
   }
 
   /**
-   * Background of the trigger.
+   * Background of the trigger, and the family fallback every variant's
+   * background token resolves through. No `initial-value`: the universal
+   * syntax keeps the property guaranteed-invalid until set, so the use-site
+   * `var()` fallback to `transparent` survives. `inherits: true`, so a
+   * value set on an ancestor (or by the Material bridge on `html`) reaches
+   * the trigger.
    * @group Surface
+   * @default transparent
    */
   @property --cngx-select-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
+    syntax: '*';
+    inherits: true;
   }
 
   /**

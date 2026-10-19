@@ -32,14 +32,17 @@
  * Trigger tokens delegate up the family chain:
  *
  * - `--cngx-multi-select-*` -> `--cngx-select-*` -> hardcoded
+ * - `--cngx-multi-select-bg` -> `--cngx-select-bg` -> `transparent`; both
+ *   are registered without an initial value and inherit, so either one set
+ *   on an ancestor reaches the trigger
  * - `--cngx-multi-select-border` -> `--cngx-color-border`
  * - `--cngx-multi-select-focus-outline` -> `--cngx-color-primary`
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
  *   `--cngx-color-danger`
  *
- * Once registered via `@property` the inner var() steps are
- * documentation-only; system tokens (`--cngx-color-*`) are the
- * brand-wide override path.
+ * For every other token, once registered via `@property` with an initial
+ * value the inner var() steps are documentation-only; system tokens
+ * (`--cngx-color-*`) are the brand-wide override path.
  *
  * **Pair with**
  *
@@ -101,13 +104,14 @@
   }
 
   /**
-   * Background of the trigger.
+   * Background of the trigger. Falls back to `--cngx-select-bg`; see
+   * {@link --cngx-select-bg} for why no `initial-value` is declared.
    * @group Surface
+   * @default var(--cngx-select-bg, transparent)
    */
   @property --cngx-multi-select-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
+    syntax: '*';
+    inherits: true;
   }
 
   /**

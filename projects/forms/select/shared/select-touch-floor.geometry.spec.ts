@@ -17,9 +17,15 @@ import { CngxTypeahead } from '../typeahead/typeahead.component';
 // (`data-touch="on"`, the same 44px a coarse pointer sets) every empty select
 // trigger row has one height. The four input variants embed a bare <input>
 // that `base.css` lifts to the floor on its own; the row already carries the
-// floor, so the inner input must not add the row padding on top of it. The
-// same harness locks one trigger surface: every row resolves its background
-// through `--cngx-select-bg`, transparent by default.
+// floor, so the inner input must not add the row padding on top of it.
+//
+// The same harness locks the trigger background chain. With no token set,
+// every row paints transparent. `--cngx-select-bg` set on an ancestor reaches
+// all nine rows. A variant token set on an ancestor repaints only the rows
+// that read it: its own variant, plus the variant that chains through it
+// (action-multi-select through `--cngx-combobox-bg`, reorderable-multi-select
+// through `--cngx-multi-select-bg`). Tree-select's variant token is
+// `--cngx-tree-select-trigger-bg`.
 
 @Component({
   selector: 'cngx-select-touch-floor-host',
@@ -69,6 +75,20 @@ class TouchFloorHost {
   ];
   readonly nodeId = (value: unknown): string => String(value);
 }
+
+const SET_COLOR = 'rgb(1, 2, 3)';
+
+// Each variant token and the hosts whose trigger row reads it.
+const VARIANT_TOKENS: readonly (readonly [string, readonly string[]])[] = [
+  ['--cngx-multi-select-bg', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
+  ['--cngx-combobox-bg', ['cngx-combobox', 'cngx-action-multi-select']],
+  ['--cngx-typeahead-bg', ['cngx-typeahead']],
+  ['--cngx-tree-select-trigger-bg', ['cngx-tree-select']],
+  ['--cngx-reorderable-multi-select-bg', ['cngx-reorderable-multi-select']],
+  ['--cngx-action-select-bg', ['cngx-action-select']],
+  ['--cngx-action-multi-select-bg', ['cngx-action-multi-select']],
+  ['--cngx-select-shell-bg', ['cngx-select-shell']],
+];
 
 let mountedRoot: HTMLElement | null = null;
 
@@ -123,4 +143,47 @@ describe('select touch floor geometry', () => {
       );
     }
   });
+
+  it('--cngx-select-bg set on an ancestor reaches every trigger row', () => {
+    const fixture = TestBed.createComponent(TouchFloorHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    mountedRoot.querySelector<HTMLElement>('[data-touch]')!.style.setProperty(
+      '--cngx-select-bg',
+      SET_COLOR,
+    );
+
+    const rows = Array.from(mountedRoot.querySelectorAll<HTMLElement>('.cngx-field-trigger'));
+    expect(rows).toHaveLength(9);
+    for (const row of rows) {
+      expect(getComputedStyle(row).backgroundColor, `${hostTag(row)} trigger row`).toBe(
+        SET_COLOR,
+      );
+    }
+  });
+
+  for (const [token, painted] of VARIANT_TOKENS) {
+    it(`${token} set on an ancestor repaints only ${painted.join(' + ')}`, () => {
+      const fixture = TestBed.createComponent(TouchFloorHost);
+      mountedRoot = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(mountedRoot);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      mountedRoot.querySelector<HTMLElement>('[data-touch]')!.style.setProperty(token, SET_COLOR);
+
+      const rows = Array.from(mountedRoot.querySelectorAll<HTMLElement>('.cngx-field-trigger'));
+      expect(rows).toHaveLength(9);
+      for (const row of rows) {
+        const host = hostTag(row) ?? '';
+        const expected = painted.includes(host) ? SET_COLOR : 'rgba(0, 0, 0, 0)';
+        expect(getComputedStyle(row).backgroundColor, `${host} trigger row`).toBe(expected);
+      }
+    });
+  }
 });
