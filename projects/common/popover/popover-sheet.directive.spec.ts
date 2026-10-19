@@ -105,7 +105,10 @@ function stubTransition(duration: string): void {
         <button type="button" class="close">Close</button>
       </header>
       @if (withInitialFocus()) {
-        <input class="search" cngxPopoverSheetInitialFocus aria-label="Search" />
+        <input class="search" [cngxPopoverSheetInitialFocus]="searchLeads()" aria-label="Search" />
+      }
+      @if (withListFocus()) {
+        <div class="list" tabindex="-1" cngxPopoverSheetInitialFocus>List</div>
       }
       <ul>
         <li><button type="button" class="item">Vienna</button></li>
@@ -134,6 +137,8 @@ class SheetHost {
   readonly closeOnEscape = signal(true);
   readonly withTitle = signal(true);
   readonly withInitialFocus = signal(false);
+  readonly searchLeads = signal<boolean | undefined>(undefined);
+  readonly withListFocus = signal(false);
   readonly reasons: CngxPopoverSheetCloseReason[] = [];
   closingHandler: (() => void) | null = null;
   openerHandler: (() => void) | null = null;
@@ -498,6 +503,40 @@ describe('CngxPopoverSheet', () => {
       trigger.set(true);
       TestBed.flushEffects();
       expect(focusedInEffect).toBe(ctx.q('.search'));
+    });
+
+    it('skips a disabled initial-focus part for the next enabled one', () => {
+      const ctx = setup((h) => {
+        h.withInitialFocus.set(true);
+        h.withListFocus.set(true);
+        h.searchLeads.set(false);
+      });
+      openFromOpener(ctx);
+      expect(document.activeElement).toBe(ctx.q('.list'));
+    });
+
+    it('gives focus to the first enabled part in document order, not the last registered', () => {
+      const ctx = setup((h) => h.withInitialFocus.set(true));
+      ctx.host.withListFocus.set(true);
+      ctx.flush();
+      openFromOpener(ctx);
+      expect(document.activeElement).toBe(ctx.q('.search'));
+    });
+
+    it('reads the enabled condition on every open', () => {
+      const ctx = setup((h) => {
+        h.withInitialFocus.set(true);
+        h.withListFocus.set(true);
+        h.searchLeads.set(false);
+      });
+      openFromOpener(ctx);
+      expect(document.activeElement).toBe(ctx.q('.list'));
+      ctx.host.popover().hide();
+      ctx.flush();
+      ctx.host.searchLeads.set(true);
+      ctx.flush();
+      openFromOpener(ctx);
+      expect(document.activeElement).toBe(ctx.q('.search'));
     });
 
     it('falls back to the first tabbable element without an initial-focus part', () => {

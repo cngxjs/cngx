@@ -22,6 +22,7 @@ import {
 import {
   CNGX_STATEFUL,
   injectLocale,
+  nextUid,
   type AsyncStatus,
   type CngxAsyncState,
 } from '@cngx/core/utils';
@@ -1132,17 +1133,19 @@ export class CngxSelectShell<T = unknown>
   }
 
   /**
-   * @internal A projected `<cngx-select-search>` leads the sheet. Called once
-   * it has rendered, so it lands after the listbox in the last-wins registry.
+   * @internal A projected `<cngx-select-search>` leads the sheet: it sits
+   * before the listbox, and the sheet focuses the first enabled marker in
+   * document order. Called once the search has rendered.
    */
   registerSheetInitialFocus(element: HTMLElement): () => void {
     const registry = this.sheetRef()?.initialFocusRegistry;
     if (!registry) {
       return () => undefined;
     }
+    const key = nextUid('cngx-select-shell-search-focus');
     const handle = { element };
-    registry.register(handle);
-    return () => registry.unregister(handle);
+    registry.register(key, handle);
+    return () => registry.unregister(key, handle);
   }
 
   /** @internal - click-outside dismissal. */
@@ -1183,8 +1186,7 @@ export class CngxSelectShell<T = unknown>
 
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus =
-      this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
+    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
     if (openOnFocus && !this.suppressOpenOnFocus) {
       this.open();
     }
