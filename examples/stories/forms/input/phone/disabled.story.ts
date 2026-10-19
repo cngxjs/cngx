@@ -22,7 +22,7 @@ export const STORY: DemoSpec = {
   template: `
   <cngx-phone-input
     ariaLabel="Contact number"
-    value="664 1234567"
+    value="12025550123"
     [disabled]="true"
     disabledReason="The contact number is managed by your administrator"
   />`,
