@@ -25,38 +25,33 @@
     --cngx-select-panel-radius: 4px;
     --cngx-select-panel-shadow: var(--mat-sys-level2, 0 4px 12px oklch(0 0 0 / 0.12));
 
-    // Trigger surfaces - every variant defines its own --cngx-<name>-bg /
-    // -color / -border with hard-coded light defaults that shadow any
-    // system-bridge cascade. Map each variant onto Material's outlined-
-    // input surface so the trigger sits transparently on the Material
-    // background.
+    // Trigger surfaces - every variant defines its own --cngx-<name>-color /
+    // -border with hard-coded light defaults that shadow any system-bridge
+    // cascade. Map each variant onto Material's outlined-input surface. The
+    // background is the exception: every variant -bg token falls back to
+    // --cngx-select-bg, so the bridge sets only that one and leaves the
+    // variant tokens unset - assigning them here would cut the chain and a
+    // consumer --cngx-select-bg would no longer reach the variants.
     --cngx-select-bg: transparent;
     --cngx-select-color: var(--mat-sys-on-surface);
     --cngx-select-border: 1px solid var(--mat-sys-outline);
 
-    --cngx-multi-select-bg: transparent;
     --cngx-multi-select-color: var(--mat-sys-on-surface);
     --cngx-multi-select-border: 1px solid var(--mat-sys-outline);
 
-    --cngx-combobox-bg: transparent;
     --cngx-combobox-color: var(--mat-sys-on-surface);
     --cngx-combobox-border: 1px solid var(--mat-sys-outline);
 
-    --cngx-typeahead-bg: transparent;
     --cngx-typeahead-border: 1px solid var(--mat-sys-outline);
 
-    --cngx-action-select-bg: transparent;
     --cngx-action-select-border: 1px solid var(--mat-sys-outline);
 
-    --cngx-action-multi-select-bg: transparent;
     --cngx-action-multi-select-color: var(--mat-sys-on-surface);
     --cngx-action-multi-select-border: 1px solid var(--mat-sys-outline);
 
-    --cngx-reorderable-multi-select-bg: transparent;
     --cngx-reorderable-multi-select-color: var(--mat-sys-on-surface);
     --cngx-reorderable-multi-select-border: 1px solid var(--mat-sys-outline);
 
-    --cngx-select-shell-bg: transparent;
     --cngx-select-shell-color: var(--mat-sys-on-surface);
 
     --cngx-select-caret-color: var(--mat-sys-on-surface-variant);
