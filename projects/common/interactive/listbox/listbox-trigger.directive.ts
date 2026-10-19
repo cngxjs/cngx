@@ -44,6 +44,10 @@ interface PopoverController {
  * Keys from an interactive descendant of the host (a chip remove button)
  * are left to that element.
  *
+ * Pair it with `CngxPopoverTrigger` on the same element: that directive is
+ * the one writer of `aria-haspopup`, `aria-expanded` and `aria-controls`.
+ * This trigger writes none of them.
+ *
  * The trigger keeps DOM focus, so it carries `aria-activedescendant`: the
  * listbox's active option id while the popover is open, no attribute while
  * closed (ARIA 1.2 combobox). It is the only writer of the attribute on
@@ -62,8 +66,6 @@ interface PopoverController {
   exportAs: 'cngxListboxTrigger',
   standalone: true,
   host: {
-    '[attr.aria-haspopup]': '"listbox"',
-    '[attr.aria-expanded]': 'isOpen()',
     '[attr.aria-activedescendant]': 'activeDescendant()',
     '(keydown)': 'handleKeydown($event)',
   },
@@ -76,7 +78,7 @@ export class CngxListboxTrigger<T = unknown> {
   /** Whether activating an option closes the popover. */
   readonly closeOnSelect = input<boolean>(true);
 
-  /** Mirrors `CngxPopover.isVisible()` for host binding and external read. */
+  /** Mirrors `CngxPopover.isVisible()` for external read. */
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
 
   /** Active option id while open, `null` while closed. */

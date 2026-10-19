@@ -96,9 +96,13 @@ describe('CngxListboxTrigger', () => {
     };
   }
 
-  it('sets aria-haspopup="listbox" on the trigger', () => {
-    const { triggerEl } = setup();
-    expect(triggerEl.getAttribute('aria-haspopup')).toBe('listbox');
+  it('writes neither aria-haspopup nor aria-expanded: CngxPopoverTrigger owns both', () => {
+    const { triggerEl, popover } = setup();
+    expect(triggerEl.hasAttribute('aria-haspopup')).toBe(false);
+    expect(triggerEl.hasAttribute('aria-expanded')).toBe(false);
+    popover.show();
+    TestBed.flushEffects();
+    expect(triggerEl.hasAttribute('aria-expanded')).toBe(false);
   });
 
   it('ignores keys with ctrl/meta/alt held (browser shortcuts pass through)', () => {

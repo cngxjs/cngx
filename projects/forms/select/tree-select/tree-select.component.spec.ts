@@ -828,6 +828,7 @@ describeMobileSheet('CngxTreeSelect', CngxTreeSelect, 'cngx-tree-select', {
   showDone: true,
   showInput: false,
   initialFocusSelector: '[role="tree"]',
+  popupRole: 'tree',
   makeField: () => {
     const { accessor, ref } = createMockField<string[]>({ name: 'pick', value: [] });
     return { accessor, touched: () => ref.touched() };

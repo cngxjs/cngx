@@ -66,6 +66,7 @@ function setup(
       sheetLabel: signal(undefined),
       label: signal('Colour'),
       close,
+      popupRole: 'listbox',
     }),
   );
   const pend = () => {
@@ -116,6 +117,13 @@ describe('createSelectSheetWiring', () => {
     disabled.set(true);
     TestBed.flushEffects();
     expect(hide).toHaveBeenCalledTimes(1);
+  });
+
+  it("announces 'dialog' while the sheet is modal and the popup role while anchored", () => {
+    const { wiring, presentation } = setup();
+    expect(wiring.triggerHaspopup()).toBe('listbox');
+    presentation.set('sheet');
+    expect(wiring.triggerHaspopup()).toBe('dialog');
   });
 
   it('blocks a close only while a pessimistic commit is pending', () => {
@@ -234,6 +242,7 @@ describe('createSelectSheetWiring', () => {
           isCommitting: signal(false),
           resolvedPresentationRequest: signal('auto'),
           ariaLabels: signal({}),
+          disabled: signal(false),
         } as unknown as CngxSelectCore<string, string>,
         sheet: signal(undefined),
         popoverRef: signal(undefined),
@@ -246,6 +255,7 @@ describe('createSelectSheetWiring', () => {
         label: signal(''),
         searchInput: signal({ nativeElement: input }),
         close: vi.fn(),
+        popupRole: 'listbox',
       }),
     );
     wiring.headerHost.setSearchTerm('gr');

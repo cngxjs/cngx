@@ -57,6 +57,8 @@ export interface CngxSelectSheetWiringOptions {
   readonly searchInput?: Signal<ElementRef<HTMLInputElement> | undefined>;
   /** The variant's anchored close (focus back to the trigger, then hide). */
   readonly close: () => void;
+  /** Static per variant: the popup role the trigger announces while anchored. */
+  readonly popupRole: 'listbox' | 'tree';
 }
 
 /**
@@ -70,6 +72,11 @@ export interface CngxSelectSheetWiring extends CngxSelectSheetScope {
   readonly presentation: Signal<CngxPopoverPresentation>;
   readonly sheetAnchored: Signal<boolean>;
   readonly sheetModal: Signal<boolean>;
+  /**
+   * Bound to the trigger's `[haspopup]`: `'dialog'` while the sheet is modal,
+   * the variant's popup role while anchored.
+   */
+  readonly triggerHaspopup: Signal<'dialog' | 'listbox' | 'tree'>;
   /** A pessimistic commit is pending. */
   readonly closeBlocked: Signal<boolean>;
   /**
@@ -207,6 +214,7 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     presentation,
     sheetAnchored,
     sheetModal,
+    triggerHaspopup: computed(() => (sheetModal() ? 'dialog' : opts.popupRole)),
     closeBlocked,
     escapeEnabled,
     clickOutsideEnabled: computed(() => panelOpen() && sheetAnchored()),

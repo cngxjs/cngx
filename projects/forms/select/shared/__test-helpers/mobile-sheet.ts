@@ -30,6 +30,8 @@ export interface MobileSheetSpecOptions {
   readonly fill: 'sheet' | 'fullscreen';
   readonly showDone: boolean;
   readonly showInput: boolean;
+  /** Popup role the trigger announces while anchored. Default `'listbox'`. */
+  readonly popupRole?: 'listbox' | 'tree';
   /** Field factory; `@cngx/forms/field/testing` is a spec-only alias. */
   readonly makeField: () => {
     readonly accessor: CngxFieldAccessor;
@@ -39,6 +41,7 @@ export interface MobileSheetSpecOptions {
 
 interface VariantApi {
   open(): void;
+  close(): void;
   readonly panelOpen: () => boolean;
   readonly isCommitting: () => boolean;
   readonly closed: { subscribe(fn: () => void): unknown };
@@ -206,6 +209,21 @@ export function describeMobileSheet(
       expect(!!panel.querySelector('.cngx-select-sheet-header__done')).toBe(opts.showDone);
       expect(!!panel.querySelector('.cngx-select-sheet-header__input')).toBe(opts.showInput);
       expect(panel.style.getPropertyValue('--cngx-select-panel-min-width')).toBe('');
+    });
+
+    it("announces a 'dialog' popup while modal and its own role while anchored", () => {
+      const { fixture, el, host, variant, open } = setup();
+      const trigger = el.querySelector<HTMLElement>('[role="combobox"]')!;
+      expect(trigger.getAttribute('aria-haspopup')).toBe('dialog');
+      expect(trigger.getAttribute('aria-expanded')).toBe('false');
+      open();
+      expect(trigger.getAttribute('aria-expanded')).toBe('true');
+      variant.close();
+      flush(fixture);
+      expect(trigger.getAttribute('aria-expanded')).toBe('false');
+      host.presentation.set('anchored');
+      flush(fixture);
+      expect(trigger.getAttribute('aria-haspopup')).toBe(opts.popupRole ?? 'listbox');
     });
 
     it('moves focus to the initial focus target inside the opening call', () => {

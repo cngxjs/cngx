@@ -63,6 +63,7 @@ test.describe('select mobile sheet on a phone', () => {
       const panel = panelOf(host);
       await expect(panel).toHaveAttribute('data-cngx-presentation', fill);
       await expect(panel).toHaveAttribute('role', 'dialog');
+      await expect(triggerOf(host)).toHaveAttribute('aria-haspopup', 'dialog');
       expect(await panel.evaluate((el) => el.contains(document.activeElement))).toBe(true);
       const radiogroup = page.getByRole('radiogroup', { name: 'Presentation' });
       expect(await radiogroup.evaluate((el) => el.closest('[inert]') !== null)).toBe(true);
