@@ -146,6 +146,13 @@ export async function collectEntries(root = schematicsRoot()) {
 
 const quote = (text) => `'${text.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 
+/** A body detection has to substitute names into before it compares; every other body is compared by fingerprint. */
+export function holdsPlaceholder(body) {
+  return [NAME_PLACEHOLDER, SELECTOR_PLACEHOLDER, TITLE_PLACEHOLDER].some((placeholder) => body.includes(placeholder));
+}
+
+// The welcome page holds no name, so its four bodies (20 KB each) stay out
+// of the bundle and are compared by fingerprint alone.
 function entry({ major, file, variant, form, template, body, fingerprint: print }) {
   return [
     '  {',
@@ -155,7 +162,7 @@ function entry({ major, file, variant, form, template, body, fingerprint: print 
     `    form: ${quote(form)},`,
     `    template: ${quote(template)},`,
     `    fingerprint: ${quote(print)},`,
-    `    body: ${JSON.stringify(body)},`,
+    ...(holdsPlaceholder(body) ? [`    body: ${JSON.stringify(body)},`] : []),
     '  },',
   ].join('\n');
 }
@@ -187,9 +194,14 @@ export async function renderCatalogModule(root = schematicsRoot()) {
     "  readonly form: 'raw' | 'prettier';",
     '  /** The template path inside @schematics/angular. */',
     '  readonly template: string;',
+    '  /** `sha256:<hex>` of the body with LF line endings. */',
     '  readonly fingerprint: string;',
-    '  /** The body with LF line endings and the project name, title and selector as placeholders. */',
-    '  readonly body: string;',
+    '  /**',
+    '   * The body with LF line endings and the project name, title and selector',
+    '   * as placeholders; absent when it holds none, then the fingerprint alone',
+    '   * is compared.',
+    '   */',
+    '  readonly body?: string;',
     '}',
     '',
     'export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [',

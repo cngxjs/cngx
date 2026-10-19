@@ -1,4 +1,5 @@
 import { strings } from '@angular-devkit/core';
+import { createHash } from 'node:crypto';
 import { posix } from 'node:path';
 
 import { contentFingerprint, isRecord, readDecorator } from '../../engine';
@@ -8,6 +9,7 @@ import {
   SCAFFOLD_NAME_PLACEHOLDER,
   SCAFFOLD_SELECTOR_PLACEHOLDER,
   SCAFFOLD_TITLE_PLACEHOLDER,
+  type ScaffoldEntry,
 } from './scaffold-catalog.generated';
 import { type Read } from './workspace';
 
@@ -131,6 +133,16 @@ function substitute(body: string, names: ScaffoldNames, selector: string): strin
     .join(selector);
 }
 
+function sha256(content: string): string {
+  return `sha256:${createHash('sha256').update(content).digest('hex')}`;
+}
+
+// Exact either way: a body with names is compared after they are put in, a
+// body without one (the welcome page) by the fingerprint of its text.
+function isEntry(entry: ScaffoldEntry, normalized: string, names: ScaffoldNames, selector: string): boolean {
+  return entry.body === undefined ? entry.fingerprint === sha256(normalized) : substitute(entry.body, names, selector) === normalized;
+}
+
 // The catalog variants of `file` whose body is exactly `content`, CLI 21
 // only; raw and Prettier-formatted bodies alike.
 function matchingVariants(content: string | undefined, file: string, names: ScaffoldNames): readonly string[] {
@@ -139,9 +151,9 @@ function matchingVariants(content: string | undefined, file: string, names: Scaf
     return [];
   }
   const normalized = normalize(content);
-  return SCAFFOLD_CATALOG.filter(
-    (entry) => entry.major === 21 && entry.file === file && substitute(entry.body, names, selector) === normalized,
-  ).map((entry) => entry.variant);
+  return SCAFFOLD_CATALOG.filter((entry) => entry.major === 21 && entry.file === file && isEntry(entry, normalized, names, selector)).map(
+    (entry) => entry.variant,
+  );
 }
 
 // The files the decorator of a standalone root component names through

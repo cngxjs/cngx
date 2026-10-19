@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   collectEntries,
+  holdsPlaceholder,
   NAME_PLACEHOLDER,
   OUT,
   renderCatalogModule,
@@ -86,6 +87,16 @@ describe('scaffold catalog', () => {
       const own = entries.filter((entry) => entry.file === file);
       expect({ file, unique: new Set(own.map((entry) => entry.fingerprint)).size }).toEqual({ file, unique: own.length });
     }
+  });
+
+  it('ships a body only where a name has to be put in, the welcome page by fingerprint alone', async () => {
+    const module = readFileSync(resolve(ROOT, OUT), 'utf8');
+    const entries = await collectEntries();
+    const kept = (file) => entries.filter((entry) => entry.file === file).every((entry) => holdsPlaceholder(entry.body));
+
+    expect(kept('app.spec.ts') && kept('app.ts') && kept('index.html')).toBe(true);
+    expect(entries.filter((entry) => entry.file === 'app.html').some((entry) => holdsPlaceholder(entry.body))).toBe(false);
+    expect(module).not.toContain('End of Placeholder');
   });
 
   it('stores bodies with LF line endings and placeholders instead of the names', async () => {
