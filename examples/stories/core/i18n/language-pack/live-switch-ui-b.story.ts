@@ -22,8 +22,8 @@ export const STORY: DemoSpec = {
     '...provideBreadcrumbConfigAt(withBreadcrumbAriaLabels(DEMO_BREADCRUMB_ARIA_LABELS))',
   ],
   setup: `protected readonly trail: readonly CngxBreadcrumbCrumb[] = [
-    { label: 'Home', href: '#' },
-    { label: 'Settings', href: '#' },
+    { label: 'Home', href: '#/' },
+    { label: 'Settings', href: '#/settings' },
     { label: 'Billing' },
   ];
   protected readonly invoices = signal<'error' | 'success'>('error');`,
