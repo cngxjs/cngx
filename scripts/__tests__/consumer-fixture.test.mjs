@@ -14,6 +14,7 @@ import {
   pinAngularDeps,
   renderAppSource,
   presetPlan,
+  STARTER_SMOKE,
   PRESETS,
   schematicsSteps,
   staleCoreAddArgs,
@@ -166,9 +167,23 @@ describe('schematicsSteps with a preset', () => {
 
 describe('presetPlan', () => {
   it('runs ng test and expects both outlets only with the full preset', () => {
-    expect(presetPlan('full')).toEqual({ preset: 'full', ngTest: true, outlets: ['cngx-banner-outlet', 'cngx-toast-outlet'] });
-    expect(presetPlan()).toEqual({ preset: 'recommended', ngTest: false, outlets: [] });
-    expect(presetPlan('minimal')).toEqual({ preset: 'minimal', ngTest: false, outlets: [] });
+    expect(presetPlan('full')).toEqual({
+      preset: 'full',
+      ngTest: true,
+      outlets: ['cngx-banner-outlet', 'cngx-toast-outlet'],
+      starter: STARTER_SMOKE,
+    });
+    expect(presetPlan()).toEqual({ preset: 'recommended', ngTest: false, outlets: [], starter: undefined });
+    expect(presetPlan('minimal')).toEqual({ preset: 'minimal', ngTest: false, outlets: [], starter: undefined });
+  });
+
+  it('smokes the starter heading, the toast and banner it shows and its icon link', () => {
+    expect(STARTER_SMOKE.heading).toBe('Hello, fixture.');
+    expect(STARTER_SMOKE.shows.map(({ button, outlet }) => [button, outlet])).toEqual([
+      ['Toast', 'cngx-toast-outlet'],
+      ['Banner', 'cngx-banner-outlet'],
+    ]);
+    expect(STARTER_SMOKE.icon).toBe('favicon.svg');
   });
 
   it('rejects an unknown preset', () => {
