@@ -8,8 +8,9 @@ import { fieldControlFor } from './field-control-registry';
  * Uses `errorSummary()` from the root FieldState to find all descendant errors,
  * then iterates to find the first one with a bound UI control and calls
  * `focusBoundControl()` on it; a control a `cngx-form-field` discovered for
- * the field without `[formField]` (a select) gets its own `focus()`. Skips group-level validators that have no
- * bound control (where `focusBoundControl()` would be a no-op).
+ * the field without `[formField]` (a select) gets its own `focus()`. Skips
+ * group-level validators that have no bound control (where
+ * `focusBoundControl()` would be a no-op).
  *
  * Call after `submit()` fails or after manually touching all fields.
  *

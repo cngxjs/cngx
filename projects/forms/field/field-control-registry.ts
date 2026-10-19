@@ -5,6 +5,11 @@ import type { CngxFormFieldControl } from '@cngx/core/tokens';
  * the state object itself, so an entry dies with its form. Lets
  * `focusFirstError` reach a control that is not bound through `[formField]`
  * (a select-family composite projected into the field).
+ *
+ * Not `createKeyedRegistry`: that registry is string-keyed and signal-backed,
+ * while this lookup needs an object key that does not keep its form alive and
+ * is read imperatively, never tracked. The unregister below carries the same
+ * guard (only its own entry is removed).
  */
 const CONTROLS = new WeakMap<object, CngxFormFieldControl>();
 
