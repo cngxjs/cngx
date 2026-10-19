@@ -3,6 +3,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
+  type ElementRef,
   inject,
   untracked,
   viewChild,
@@ -13,10 +15,10 @@ import {
   CngxPopoverSheet,
   CngxPopoverSheetHandle,
   CngxPopoverSheetHeader,
-  CngxPopoverSheetInitialFocus,
   CngxPopoverSheetTitle,
 } from '@cngx/common/popover';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
+import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../../sheet-header-host';
 import type { CngxSelectSheetHandleContext } from '../../template-slots';
@@ -37,13 +39,7 @@ import { createListboxKeyForward } from '../listbox-key-forward';
 @Component({
   selector: 'cngx-select-sheet-header',
   standalone: true,
-  imports: [
-    NgTemplateOutlet,
-    CngxSwipeDismiss,
-    CngxPopoverSheetHandle,
-    CngxPopoverSheetInitialFocus,
-    CngxPopoverSheetTitle,
-  ],
+  imports: [NgTemplateOutlet, CngxSwipeDismiss, CngxPopoverSheetHandle, CngxPopoverSheetTitle],
   hostDirectives: [CngxPopoverSheetHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -59,6 +55,7 @@ export class CngxSelectSheetHeader {
 
   private readonly swipe = viewChild(CngxSwipeDismiss);
   private readonly title = viewChild.required(CngxPopoverSheetTitle);
+  private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
   protected readonly closeGlyph = CNGX_SELECT_GLYPHS.clear;
 
@@ -97,6 +94,24 @@ export class CngxSelectSheetHeader {
   protected readonly handleKeydown = createListboxKeyForward(this.host.listboxRef, () =>
     this.host.escapeClose(),
   );
+
+  constructor() {
+    // The header input leads the sheet only when the open came from the
+    // keyboard; a tap opens on the listbox below it. The condition is a
+    // signal on the handle rather than a bound input: the keydown that opens
+    // the panel and the sheet's focus choice run before change detection.
+    effect((onCleanup) => {
+      const element = this.searchInput()?.nativeElement;
+      if (!element) {
+        return;
+      }
+      const registry = this.sheet.initialFocusRegistry;
+      const key = nextUid('cngx-select-sheet-search-focus');
+      const handle = { element, enabled: this.host.searchLeads };
+      untracked(() => registry.register(key, handle));
+      onCleanup(() => registry.unregister(key, handle));
+    });
+  }
 
   protected handleInput(event: Event): void {
     this.host.setSearchTerm((event.target as HTMLInputElement).value);

@@ -62,6 +62,22 @@ export interface CngxSelectSheetWiringOptions {
 }
 
 /**
+ * @internal Input events of the trigger that the wiring reads, forwarded by
+ * `CngxSelectSheetTrigger` in the capture phase so they land before the
+ * trigger's own handlers open the panel.
+ */
+export interface CngxSelectSheetTriggerEvents {
+  /** A pointer went down anywhere on the trigger. */
+  handlePointerDown(): void;
+  /** A key went down or text was entered on the trigger. */
+  handleKey(): void;
+  /** Focus landed on the trigger or one of its controls. */
+  handleFocus(): void;
+  /** Focus left a trigger control; `leftTrigger` when it left the trigger entirely. */
+  handleFocusOut(event: FocusEvent, leftTrigger: boolean): void;
+}
+
+/**
  * @internal One bundle per variant: everything the template and the sheet
  * header need to present the panel as a mobile sheet. Doubles as the
  * scoped announcer's {@link CngxSelectSheetScope}.
@@ -103,6 +119,14 @@ export interface CngxSelectSheetWiring extends CngxSelectSheetScope {
    * keeps its own close vectors.
    */
   readonly handleFocusLeave: () => void;
+  /**
+   * The open came from the keyboard: a key or typed text on the trigger, or
+   * focus that arrived without a pointer. The sheet search leads such an
+   * open; a tap opens on the listbox, so it raises no soft keyboard.
+   */
+  readonly searchLeads: Signal<boolean>;
+  /** Bound to `[cngxSelectSheetTrigger]` on the trigger. */
+  readonly trigger: CngxSelectSheetTriggerEvents;
   readonly headerHost: CngxSelectSheetHeaderHost;
 }
 
@@ -188,12 +212,39 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     opts.close();
   };
 
+  // Which input reached the trigger last. A focus counts as the keyboard
+  // unless a pointer went down on the trigger since focus last left it, so
+  // a Tab in (openOn: 'focus') leads with the search and a tap does not.
+  const keyboardLast = signal(false);
+  let pointerSinceFocusLeft = false;
+  const trigger: CngxSelectSheetTriggerEvents = {
+    handlePointerDown: () => {
+      pointerSinceFocusLeft = true;
+      keyboardLast.set(false);
+    },
+    handleKey: () => {
+      keyboardLast.set(true);
+    },
+    handleFocus: () => {
+      if (!pointerSinceFocusLeft) {
+        keyboardLast.set(true);
+      }
+    },
+    handleFocusOut: (_event, leftTrigger) => {
+      if (leftTrigger) {
+        pointerSinceFocusLeft = false;
+      }
+    },
+  };
+  const searchLeads = keyboardLast.asReadonly();
+
   const headerHost: CngxSelectSheetHeaderHost = {
     panelVisible: panelOpen,
     presentation,
     closeBlocked,
     showDone: signal(opts.showDone).asReadonly(),
     showInput: signal(opts.showInput).asReadonly(),
+    searchLeads,
     sheetLabel: opts.sheetLabel,
     label: opts.label,
     ariaLabels: opts.core.ariaLabels,
@@ -228,6 +279,8 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     handleSheetClose,
     escapeClose,
     handleFocusLeave,
+    searchLeads,
+    trigger,
     headerHost,
   };
 }

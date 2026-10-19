@@ -43,7 +43,7 @@ Every variant ships full WAI-ARIA 1.2:
 
 ## Mobile sheet
 
-On a touch screen narrower than 48rem every variant opens its panel as a modal sheet: a content-sized bottom sheet, or fullscreen for the variants led by a text input. The sheet is a named `role="dialog"` with `aria-modal`; focus moves in on open and back to the trigger on close, the rest of the page is inert, and announcements are spoken from inside the sheet. The header shows the field label, a close button and, on multi and input variants, Done. Swipe the header down, tap outside or use the Android back gesture to close; while a pessimistic `[commitAction]` is pending the sheet stays open.
+On a touch screen narrower than 48rem every variant opens its panel as a modal sheet: a content-sized bottom sheet, or fullscreen for the variants led by a text input. The sheet is a named `role="dialog"` with `aria-modal`; focus moves in on open (onto the list, or onto the search input when the open came from the keyboard, so a tap raises no soft keyboard) and back to the trigger on close, the rest of the page is inert, and announcements are spoken from inside the sheet. The header shows the field label, a close button and, on multi and input variants, Done. Swipe the header down, tap outside or use the Android back gesture to close; while a pessimistic `[commitAction]` is pending the sheet stays open.
 
 - `withMobileSheet('off')` keeps every select in its scope anchored, on phones too.
 - `[presentation]` on a variant forces `'anchored'`, `'sheet'` or `'fullscreen'` and wins over the config.

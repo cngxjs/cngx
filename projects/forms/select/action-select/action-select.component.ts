@@ -38,6 +38,7 @@ import {
   CngxPopover,
   CngxPopoverAnchor,
   CngxPopoverSheet,
+  CngxPopoverSheetInitialFocus,
   CngxPopoverTrigger,
   type CngxPopoverPresentation,
   type CngxPopoverPresentationRequest,
@@ -67,6 +68,7 @@ import {
   type CngxSelectSheetWiring,
 } from '../shared/internal/select-sheet-wiring';
 import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
+import { CngxSelectSheetTrigger } from '../shared/internal/sheet-trigger.directive';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
 import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
@@ -227,7 +229,9 @@ export interface CngxActionSelectChange<T = unknown> {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CngxPopoverSheet,
+    CngxPopoverSheetInitialFocus,
     CngxSelectSheetHeader,
+    CngxSelectSheetTrigger,
     CngxClickOutside,
     CngxListbox,
     CngxListboxSearch,

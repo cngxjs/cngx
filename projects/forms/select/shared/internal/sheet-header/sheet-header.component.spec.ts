@@ -24,6 +24,7 @@ interface Harness {
   readonly closeBlocked: WritableSignal<boolean>;
   readonly showDone: WritableSignal<boolean>;
   readonly showInput: WritableSignal<boolean>;
+  readonly searchLeads: WritableSignal<boolean>;
   readonly sheetLabel: WritableSignal<string | undefined>;
   readonly label: WritableSignal<string>;
   readonly handleTpl: WritableSignal<TemplateRef<CngxSelectSheetHandleContext> | null>;
@@ -36,6 +37,7 @@ function createHarness(): Harness {
   const closeBlocked = signal(false);
   const showDone = signal(true);
   const showInput = signal(false);
+  const searchLeads = signal(false);
   const sheetLabel = signal<string | undefined>(undefined);
   const label = signal('');
   const handleTpl = signal<TemplateRef<CngxSelectSheetHandleContext> | null>(null);
@@ -46,6 +48,7 @@ function createHarness(): Harness {
     closeBlocked,
     showDone,
     showInput,
+    searchLeads,
     sheetLabel,
     label,
     ariaLabels: signal({
@@ -66,6 +69,7 @@ function createHarness(): Harness {
     closeBlocked,
     showDone,
     showInput,
+    searchLeads,
     sheetLabel,
     label,
     handleTpl,
@@ -226,6 +230,29 @@ describe('CngxSelectSheetHeader', () => {
 
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(harness.host.escapeClose).not.toHaveBeenCalled();
+  });
+
+  it('offers the header input as the sheet focus target only while the search leads', () => {
+    const { harness, fixture, el } = setup();
+    const sheet = fixture.debugElement
+      .query(By.directive(CngxPopoverSheet))
+      .injector.get(CngxPopoverSheet);
+    expect(sheet.initialFocusRegistry.values()).toEqual([]);
+
+    harness.showInput.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const input = el.querySelector('.cngx-select-sheet-header__input');
+    const [handle] = sheet.initialFocusRegistry.values();
+    expect(handle.element).toBe(input);
+    expect(handle.enabled?.()).toBe(false);
+    harness.searchLeads.set(true);
+    expect(handle.enabled?.()).toBe(true);
+
+    harness.showInput.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(sheet.initialFocusRegistry.values()).toEqual([]);
   });
 
   it('requests a swipe close when the header bar emits swiped', () => {

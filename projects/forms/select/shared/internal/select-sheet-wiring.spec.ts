@@ -270,4 +270,44 @@ describe('createSelectSheetWiring', () => {
     expect(input.value).toBe('gr');
     expect(seen).toEqual(['gr']);
   });
+  describe('search lead', () => {
+    const leave = new FocusEvent('focusout');
+
+    it('starts on the listbox and leads with the search after a key on the trigger', () => {
+      const { wiring } = setup();
+      expect(wiring.searchLeads()).toBe(false);
+      expect(wiring.headerHost.searchLeads()).toBe(false);
+      wiring.trigger.handleKey();
+      expect(wiring.searchLeads()).toBe(true);
+      expect(wiring.headerHost.searchLeads()).toBe(true);
+    });
+
+    it('hands the lead back to the listbox on a pointer down', () => {
+      const { wiring } = setup();
+      wiring.trigger.handleKey();
+      wiring.trigger.handlePointerDown();
+      expect(wiring.searchLeads()).toBe(false);
+    });
+
+    it('counts a focus without a pointer down as the keyboard', () => {
+      const { wiring } = setup();
+      wiring.trigger.handleFocus();
+      expect(wiring.searchLeads()).toBe(true);
+    });
+
+    it('keeps a tap focus on the pointer until focus leaves the trigger', () => {
+      const { wiring } = setup();
+      wiring.trigger.handlePointerDown();
+      wiring.trigger.handleFocus();
+      expect(wiring.searchLeads()).toBe(false);
+      // Focus moves between controls inside the trigger: still the tap.
+      wiring.trigger.handleFocusOut(leave, false);
+      wiring.trigger.handleFocus();
+      expect(wiring.searchLeads()).toBe(false);
+      // Focus left the trigger; the next focus without a pointer is the keyboard.
+      wiring.trigger.handleFocusOut(leave, true);
+      wiring.trigger.handleFocus();
+      expect(wiring.searchLeads()).toBe(true);
+    });
+  });
 });

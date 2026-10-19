@@ -14,6 +14,7 @@
   <div
     class="cngx-combobox__trigger cngx-field-trigger"
     [cngxPopoverAnchor]="pop"
+    [cngxSelectSheetTrigger]="sheetWiring.trigger"
     role="group"
     [attr.aria-disabled]="aria.disabled"
     (click)="handleWrapperClick($event)"
@@ -192,6 +193,8 @@
     <div
       cngxListbox
       [attr.id]="listboxId"
+      cngxPopoverSheetInitialFocus
+      [attr.tabindex]="sheetWiring.sheetModal() ? 0 : null"
       #lb="cngxListbox"
       [label]="resolvedListboxLabel()"
       [multiple]="true"

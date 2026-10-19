@@ -70,6 +70,7 @@ import {
   type CngxSelectSheetWiring,
 } from '../shared/internal/select-sheet-wiring';
 import { CngxSelectSheetHeader } from '../shared/internal/sheet-header/sheet-header.component';
+import { CngxSelectSheetTrigger } from '../shared/internal/sheet-trigger.directive';
 import { CNGX_SELECT_SHEET_HEADER_HOST } from '../shared/sheet-header-host';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import {
@@ -223,6 +224,7 @@ export interface CngxSelectShellChange<T = unknown> {
   imports: [
     CngxPopoverSheet,
     CngxPopoverSheetInitialFocus,
+    CngxSelectSheetTrigger,
     CngxSelectSheetHeader,
     CngxClickOutside,
     CngxListbox,
@@ -1133,9 +1135,10 @@ export class CngxSelectShell<T = unknown>
   }
 
   /**
-   * @internal A projected `<cngx-select-search>` leads the sheet: it sits
-   * before the listbox, and the sheet focuses the first enabled marker in
-   * document order. Called once the search has rendered.
+   * @internal A projected `<cngx-select-search>` leads the sheet when the
+   * open came from the keyboard: it sits before the listbox, and the sheet
+   * focuses the first enabled marker in document order. A tap opens on the
+   * listbox. Called once the search has rendered.
    */
   registerSheetInitialFocus(element: HTMLElement): () => void {
     const registry = this.sheetRef()?.initialFocusRegistry;
@@ -1143,7 +1146,7 @@ export class CngxSelectShell<T = unknown>
       return () => undefined;
     }
     const key = nextUid('cngx-select-shell-search-focus');
-    const handle = { element };
+    const handle = { element, enabled: this.sheetWiring.searchLeads };
     registry.register(key, handle);
     return () => registry.unregister(key, handle);
   }

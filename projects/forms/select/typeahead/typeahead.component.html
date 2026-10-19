@@ -8,6 +8,7 @@
   <div
     class="cngx-typeahead__trigger cngx-field-trigger"
     [cngxPopoverAnchor]="pop"
+    [cngxSelectSheetTrigger]="sheetWiring.trigger"
     (click)="handleWrapperClick()"
   >
     @if (inputPrefixTpl(); as prefixTpl) {
@@ -119,6 +120,8 @@
     <div
       cngxListbox
       [attr.id]="listboxId"
+      cngxPopoverSheetInitialFocus
+      [attr.tabindex]="sheetWiring.sheetModal() ? 0 : null"
       #lb="cngxListbox"
       [label]="resolvedListboxLabel()"
       [compareWith]="listboxCompareWith()"

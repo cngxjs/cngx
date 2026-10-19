@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { devices, expect, test, type Locator, type Page } from '@playwright/test';
 import { gotoDemo } from '../../_helpers';
 
 // Stories: forms/select/mobile-sheet/*. The breakpoint is a `(pointer:
@@ -166,3 +166,89 @@ test.describe('select mobile sheet on a desktop', () => {
     }
   });
 });
+
+// The input-led variants open on the listbox, so a tap never raises the soft
+// keyboard; only an open that came from typing hands the search field focus.
+// On close focus returns to the trigger input under inputmode="none" until
+// the next tap, key or blur there. Device profiles run in the configured
+// Chromium project: only their viewport, touch and user agent apply.
+const KEYBOARD_VARIANTS: readonly { host: string; multi: boolean; triggerInput: boolean }[] = [
+  { host: 'cngx-combobox', multi: true, triggerInput: true },
+  { host: 'cngx-typeahead', multi: false, triggerInput: true },
+  { host: 'cngx-action-select', multi: false, triggerInput: true },
+  { host: 'cngx-action-multi-select', multi: true, triggerInput: true },
+  { host: 'cngx-select-shell', multi: false, triggerInput: false },
+];
+
+interface FocusFacts {
+  role: string | null;
+  tag: string | null;
+  inPanel: boolean;
+  isTrigger: boolean;
+}
+
+function focusFacts(host: Locator): Promise<FocusFacts> {
+  return host.evaluate((el) => {
+    const active = document.activeElement;
+    const panel = el.querySelector('.cngx-select__panel');
+    const trigger = el.querySelector('[role="combobox"]');
+    return {
+      role: active?.getAttribute('role') ?? null,
+      tag: active?.tagName.toLowerCase() ?? null,
+      inPanel: !!active && !!panel?.contains(active),
+      isTrigger: active === trigger,
+    };
+  });
+}
+
+const searchFieldOf = (host: Locator) =>
+  host.locator('.cngx-select-sheet-header__input, cngx-select-search input').first();
+
+for (const device of ['iPhone 13', 'Pixel 7'] as const) {
+  test.describe(`select sheet keyboard on ${device}`, () => {
+    const { defaultBrowserType: _browser, ...profile } = devices[device];
+    test.use(profile);
+
+    test.beforeEach(({ browserName }) => {
+      test.skip(browserName === 'firefox', 'isMobile context is unsupported in Firefox');
+    });
+
+    for (const { host: selector, multi, triggerInput } of KEYBOARD_VARIANTS) {
+      test(`${selector}: a tap opens on the listbox and a pick keeps focus there`, async ({
+        page,
+      }) => {
+        await gotoDemo(page, ALL);
+        const host = await openVariant(page, selector);
+        const panel = panelOf(host);
+        await expect.poll(() => focusFacts(host)).toMatchObject({ role: 'listbox', inPanel: true });
+        expect(await focusFacts(host)).not.toMatchObject({ tag: 'input' });
+
+        await panel.getByRole('option', { name: 'Athens' }).tap();
+        if (!multi) {
+          await expect(panel).toBeHidden();
+          await expect.poll(() => focusFacts(host)).toMatchObject({ isTrigger: true });
+          return;
+        }
+        await expect(panel).toBeVisible();
+        expect(await focusFacts(host)).toMatchObject({ role: 'listbox', inPanel: true });
+      });
+
+      test(`${selector}: an open by typing keeps the search field focused`, async ({ page }) => {
+        await gotoDemo(page, ALL);
+        const host = page.locator(selector).first();
+        const trigger = triggerOf(host);
+        await trigger.scrollIntoViewIfNeeded();
+        await trigger.focus();
+        if (triggerInput) {
+          await page.keyboard.type('Ro');
+        } else {
+          await page.keyboard.press('ArrowDown');
+        }
+        await expect(panelOf(host)).toHaveAttribute('aria-modal', 'true');
+        await expect
+          .poll(() => searchFieldOf(host).evaluate((el) => el === document.activeElement))
+          .toBe(true);
+      });
+    }
+  });
+}
