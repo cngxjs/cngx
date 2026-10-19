@@ -206,8 +206,8 @@ const searchFieldOf = (host: Locator) =>
 
 for (const device of ['iPhone 13', 'Pixel 7'] as const) {
   test.describe(`select sheet keyboard on ${device}`, () => {
-    const { defaultBrowserType: _browser, ...profile } = devices[device];
-    test.use(profile);
+    const { viewport, userAgent, deviceScaleFactor, isMobile, hasTouch } = devices[device];
+    test.use({ viewport, userAgent, deviceScaleFactor, isMobile, hasTouch });
 
     test.beforeEach(({ browserName }) => {
       test.skip(browserName === 'firefox', 'isMobile context is unsupported in Firefox');
