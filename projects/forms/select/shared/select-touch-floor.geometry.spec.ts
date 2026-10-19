@@ -114,12 +114,12 @@ describe('select touch floor geometry', () => {
     TestBed.flushEffects();
     fixture.detectChanges();
 
-    const rows = Array.from(
-      mountedRoot.querySelectorAll<HTMLElement>('.cngx-field-trigger'),
-    ).map((row) => ({
-      host: hostTag(row),
-      height: Math.round(row.getBoundingClientRect().height),
-    }));
+    const rows = Array.from(mountedRoot.querySelectorAll<HTMLElement>('.cngx-field-trigger')).map(
+      (row) => ({
+        host: hostTag(row),
+        height: Math.round(row.getBoundingClientRect().height),
+      }),
+    );
 
     expect(rows).toHaveLength(9);
     for (const row of rows) {
@@ -152,17 +152,36 @@ describe('select touch floor geometry', () => {
     TestBed.flushEffects();
     fixture.detectChanges();
 
-    mountedRoot.querySelector<HTMLElement>('[data-touch]')!.style.setProperty(
-      '--cngx-select-bg',
-      SET_COLOR,
-    );
+    mountedRoot
+      .querySelector<HTMLElement>('[data-touch]')!
+      .style.setProperty('--cngx-select-bg', SET_COLOR);
 
     const rows = Array.from(mountedRoot.querySelectorAll<HTMLElement>('.cngx-field-trigger'));
     expect(rows).toHaveLength(9);
     for (const row of rows) {
-      expect(getComputedStyle(row).backgroundColor, `${hostTag(row)} trigger row`).toBe(
-        SET_COLOR,
-      );
+      expect(getComputedStyle(row).backgroundColor, `${hostTag(row)} trigger row`).toBe(SET_COLOR);
+    }
+  });
+
+  it('--cngx-select-focus-offset set on an ancestor reaches every trigger row', () => {
+    const fixture = TestBed.createComponent(TouchFloorHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    mountedRoot
+      .querySelector<HTMLElement>('[data-touch]')!
+      .style.setProperty('--cngx-select-focus-offset', '5px');
+
+    const rows = Array.from(mountedRoot.querySelectorAll<HTMLElement>('.cngx-field-trigger'));
+    expect(rows).toHaveLength(9);
+    for (const row of rows) {
+      expect(
+        getComputedStyle(row).getPropertyValue('--cngx-select-focus-offset').trim(),
+        `${hostTag(row)} trigger row`,
+      ).toBe('5px');
     }
   });
 

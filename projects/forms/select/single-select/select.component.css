@@ -39,6 +39,8 @@
  * - `--cngx-select-bg` -> `transparent`; registered without an initial
  *   value and inheriting, so a value set on an ancestor reaches the trigger.
  *   Every variant's background token falls back to it
+ * - `--cngx-select-focus-offset` -> `2px`; registered the same way, so an
+ *   ancestor value reaches every variant's focus rings
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
  *   `--cngx-color-danger`
  *
@@ -155,13 +157,17 @@
   }
 
   /**
-   * Outline offset of the focus ring.
+   * Outline offset of the focus ring, read by every variant's trigger and
+   * inner rings. No `initial-value`, like {@link --cngx-select-bg}: the
+   * use-site `var()` fallback to `2px` survives, and `inherits: true` lets a
+   * value set on an ancestor (or by the Material bridge on `html`) reach the
+   * trigger.
    * @group State / Focus
+   * @default 2px
    */
   @property --cngx-select-focus-offset {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 2px;
+    syntax: '*';
+    inherits: true;
   }
 
   /* Delegating tokens - trigger border + focus-ring track the
