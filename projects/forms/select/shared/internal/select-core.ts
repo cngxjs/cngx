@@ -69,7 +69,6 @@ export interface CngxSelectTriggerAria {
   readonly labelledBy: string | null;
   readonly describedBy: string | null;
   readonly errorMessage: string | null;
-  readonly expanded: boolean;
   readonly disabled: boolean | null;
   readonly invalid: boolean | null;
   readonly required: boolean | null;
@@ -100,8 +99,6 @@ export interface CngxSelectCoreDeps<T, TCommit> {
   readonly hideCaret: Signal<boolean>;
   readonly commitErrorDisplay: Signal<CngxSelectCommitErrorDisplay>;
   readonly commitAction: Signal<CngxSelectCommitAction<TCommit> | null>;
-  /** `popoverRef()?.isVisible() ?? false`. */
-  readonly panelOpen: Signal<boolean>;
   /** `presenter?.showError() ?? false`. */
   readonly errorState: Signal<boolean>;
   /** Combobox uses this for inline search filtering. */
@@ -643,7 +640,6 @@ export function createSelectCore<T, TCommit>(
       labelledBy: resolvedAriaLabelledBy(),
       describedBy: describedBy(),
       errorMessage: ariaErrorMessage(),
-      expanded: deps.panelOpen(),
       disabled: disabled() || null,
       invalid: ariaInvalid(),
       required: resolvedAriaRequired(),
@@ -655,7 +651,6 @@ export function createSelectCore<T, TCommit>(
         a.labelledBy === b.labelledBy &&
         a.describedBy === b.describedBy &&
         a.errorMessage === b.errorMessage &&
-        a.expanded === b.expanded &&
         a.disabled === b.disabled &&
         a.invalid === b.invalid &&
         a.required === b.required &&

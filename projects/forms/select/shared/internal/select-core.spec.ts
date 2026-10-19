@@ -42,7 +42,6 @@ function deps(): CngxSelectCoreDeps<string, string> {
     hideCaret: signal(false),
     commitErrorDisplay: signal('banner'),
     commitAction: signal(null),
-    panelOpen: signal(false),
     errorState: signal(false),
     multi: signal(false),
     currentSelection: signal(undefined),

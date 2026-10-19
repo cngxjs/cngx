@@ -580,7 +580,6 @@ export class CngxTreeSelect<T = unknown>
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      panelOpen: this.panelOpen,
       errorState: this.errorState,
       multi: computed(() => true),
       currentSelection: this.values,

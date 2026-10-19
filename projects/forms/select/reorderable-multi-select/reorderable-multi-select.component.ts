@@ -569,7 +569,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      panelOpen: this.panelOpen,
       errorState: this.errorState,
       multi: computed(() => true),
       currentSelection: this.values,

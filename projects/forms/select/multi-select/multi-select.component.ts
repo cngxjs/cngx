@@ -510,7 +510,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       hideCaret: this.hideCaret,
       commitErrorDisplay: this.commitErrorDisplay,
       commitAction: this.commitAction,
-      panelOpen: this.panelOpen,
       errorState: this.errorState,
       multi: computed(() => true),
       currentSelection: this.values,
