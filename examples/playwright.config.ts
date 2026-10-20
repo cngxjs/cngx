@@ -14,6 +14,9 @@ export default defineConfig({
 
   forbidOnly: !!process.env['CI'],
   retries: process.env['CI'] ? 1 : 0,
+  // The retry stays as a flake diagnostic, but a pass on retry still fails the
+  // job: otherwise an intermittent console-guard hit would go green as flaky.
+  failOnFlakyTests: !!process.env['CI'],
   workers: process.env['CI'] ? 1 : undefined,
 
   reporter: [
