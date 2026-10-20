@@ -276,9 +276,9 @@ export function peerInstallSpecs(plan, angularVersion, exactPin = null) {
  * inside cngx-form-field. Ids and texts are shared with `renderAppSource`.
  */
 export const INTERACTIVE_SMOKE = {
-  shell: { search: 'ber', option: 'Berlin', term: 'term:ber', value: 'city:Berlin' },
-  combobox: { search: 'ang', option: 'Angular', picked: 'picked:angular' },
-  seats: { tooMany: '20', error: 'At most 10 seats', fine: '5', valid: 'seats-valid:true' },
+  shell: { name: 'City', searchPlaceholder: 'Filter cities', search: 'ber', option: 'Berlin', term: 'term:ber', value: 'city:Berlin' },
+  combobox: { name: 'Frameworks', search: 'ang', option: 'Angular', picked: 'picked:angular' },
+  seats: { name: 'Seats', tooMany: '20', error: 'At most 10 seats', fine: '5', valid: 'seats-valid:true' },
 };
 
 /**
@@ -332,8 +332,8 @@ const probes: readonly unknown[] = [clamp, WINDOW, requiredTrue, CngxTreetable, 
     <p id="${MARKER}" cngxLiveRegion>${MARKER} {{ probeCount }} {{ clamped }}</p>
     <cngx-empty-state title="Nothing here" />
 
-    <cngx-select-shell [label]="'City'" [(value)]="city" [(searchTerm)]="term" placeholder="Pick a city">
-      <cngx-select-search [placeholder]="'Filter cities'" />
+    <cngx-select-shell [label]="'${INTERACTIVE_SMOKE.shell.name}'" [(value)]="city" [(searchTerm)]="term" placeholder="Pick a city">
+      <cngx-select-search [placeholder]="'${INTERACTIVE_SMOKE.shell.searchPlaceholder}'" />
       @for (name of cities; track name) {
         <cngx-option [value]="name">{{ name }}</cngx-option>
       }
@@ -341,11 +341,11 @@ const probes: readonly unknown[] = [clamp, WINDOW, requiredTrue, CngxTreetable, 
     <p id="fx-term">term:{{ term() }}</p>
     <p id="fx-city">city:{{ city() ?? '' }}</p>
 
-    <cngx-combobox [label]="'Frameworks'" [options]="frameworks" [(values)]="picked" placeholder="Search frameworks" />
+    <cngx-combobox [label]="'${INTERACTIVE_SMOKE.combobox.name}'" [options]="frameworks" [(values)]="picked" placeholder="Search frameworks" />
     <p id="fx-picked">picked:{{ picked().join(',') }}</p>
 
     <cngx-form-field [field]="booking.seats">
-      <label cngxLabel>Seats</label>
+      <label cngxLabel>${INTERACTIVE_SMOKE.seats.name}</label>
       <input cngxInput type="number" [formField]="booking.seats" />
       <cngx-field-errors />
     </cngx-form-field>
@@ -390,20 +390,29 @@ async function smokeInteractive(page, errors) {
     }
   };
 
-  await page.locator('cngx-select-shell .cngx-select-shell__trigger').click();
-  await page.locator('cngx-select-search input').fill(shell.search);
+  // Every control is found by its role and accessible name, so a missing or
+  // wrong name fails the smoke instead of hiding behind a class selector.
+  const byRole = async (role, name, what) => {
+    const locator = page.getByRole(role, { name, exact: true });
+    const count = await locator.count();
+    if (count !== 1) {
+      errors.push(`${what}: expected one ${role} named "${name}", found ${count}`);
+    }
+    return locator.first();
+  };
+
+  await (await byRole('combobox', shell.name, 'select shell trigger')).click();
+  await page.getByPlaceholder(shell.searchPlaceholder, { exact: true }).fill(shell.search);
   await expectText('#fx-term', shell.term, 'select shell search term');
-  await page.locator('cngx-select-shell cngx-option', { hasText: shell.option }).click();
+  await (await byRole('option', shell.option, 'select shell option')).click();
   await expectText('#fx-city', shell.value, 'select shell value');
 
-  await page.locator('cngx-combobox .cngx-combobox__trigger').click();
-  await page.locator('cngx-combobox input.cngx-combobox__input').fill(combobox.search);
-  await page.locator('[cngxOption]', { hasText: combobox.option }).first().click();
+  await (await byRole('combobox', combobox.name, 'combobox input')).fill(combobox.search);
+  await (await byRole('option', combobox.option, 'combobox option')).click();
   await expectText('#fx-picked', combobox.picked, 'combobox values');
   await page.keyboard.press('Escape');
 
-  // cngxInput owns the id of its input, so the field is found by its host.
-  const input = page.locator('cngx-form-field input[type="number"]');
+  const input = await byRole('spinbutton', seats.name, 'seats input');
   await input.fill(seats.tooMany);
   await input.blur();
   await expectText('cngx-form-field', seats.error, 'max error through cngx-field-errors');
