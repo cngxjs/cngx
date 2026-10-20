@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from '../_test';
 
 // Behavioural proof for the density foundation. The examples app imports
 // projects/themes/cngx.css from source, so the `--cngx-space-*`

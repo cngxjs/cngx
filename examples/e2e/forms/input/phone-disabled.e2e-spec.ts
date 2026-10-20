@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../_test';
 
 import { collectConsoleMessages, gotoDemo } from '../../_helpers';
 import { routesIn } from '../../_routes';

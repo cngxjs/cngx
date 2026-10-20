@@ -2,12 +2,15 @@ import { expect, test, type Page } from '@playwright/test';
 
 import { gotoDemo } from '../e2e/_helpers';
 import { allRoutes } from '../e2e/_routes';
+import { CONSOLE_ALLOWLIST, CONSOLE_ALLOWLIST_CAP } from './console-allowlist';
 import {
-  CONSOLE_ALLOWLIST,
-  CONSOLE_ALLOWLIST_CAP,
-  type ConsoleAllowRow,
-  type ConsoleLineType,
-} from './console-allowlist';
+  formatConsoleLine,
+  isSweptConsoleType,
+  matchesAllowRow,
+  normaliseConsoleText,
+  routeOfUrl,
+  type ConsoleLine,
+} from './console-lines';
 
 // One fresh load per example route. A console warning, console error, failed
 // console.assert or page error fails the route unless an allowlist row names it. Warnings that only
@@ -21,37 +24,16 @@ const SETTLE_MS = 1_500;
 
 const routes = allRoutes();
 
-interface ConsoleLine {
-  readonly type: ConsoleLineType;
-  readonly text: string;
-}
-
-const CONSOLE_TYPES: ReadonlySet<string> = new Set<ConsoleLineType>(['warning', 'error', 'assert']);
-const isSweptConsoleType = (type: string): type is ConsoleLineType => CONSOLE_TYPES.has(type);
-
-const format = (line: ConsoleLine) => `[${line.type}] ${line.text}`;
-const matches = (line: ConsoleLine, row: ConsoleAllowRow) =>
-  line.type === row.type && line.text.startsWith(row.startsWith);
-
-/**
- * First line only, without the trailing `Find more at <url>` and whatever
- * context arguments follow it (`JSHandle@node` for a logged element).
- */
-function normalise(text: string): string {
-  const firstLine = text.split('\n', 1)[0] ?? '';
-  return firstLine.replace(/\s*Find more at \S+.*$/, '').trim();
-}
-
 async function collectConsoleLines(page: Page, path: string): Promise<ConsoleLine[]> {
   const lines: ConsoleLine[] = [];
   page.on('console', (msg) => {
     const type = msg.type();
     if (isSweptConsoleType(type)) {
-      lines.push({ type, text: normalise(msg.text()) });
+      lines.push({ type, text: normaliseConsoleText(msg.text()) });
     }
   });
   page.on('pageerror', (err) => {
-    lines.push({ type: 'pageerror', text: normalise(`${err.name}: ${err.message}`) });
+    lines.push({ type: 'pageerror', text: normaliseConsoleText(`${err.name}: ${err.message}`) });
   });
 
   await gotoDemo(page, path);
@@ -63,10 +45,7 @@ async function collectConsoleLines(page: Page, path: string): Promise<ConsoleLin
     .waitForLoadState('networkidle', { timeout: NETWORK_IDLE_CAP_MS })
     .catch(() => undefined);
   await page.waitForTimeout(SETTLE_MS);
-  // Router-synced demos write query params or a fragment after the route path
-  // (`#/<route>?step=2`); only the path decides whether the route held.
-  const routePath = new URL(page.url()).hash.slice(1).split(/[?#]/, 1)[0];
-  expect(routePath, `${path} navigated away while settling`).toBe(`/${path}`);
+  expect(routeOfUrl(page.url()), `${path} navigated away while settling`).toBe(path);
   return lines;
 }
 
@@ -92,11 +71,11 @@ test.describe('console sweep', () => {
       const lines = await collectConsoleLines(page, route.path);
       const rows = CONSOLE_ALLOWLIST.filter((row) => row.route === route.path);
 
-      const unlisted = lines.filter((line) => !rows.some((row) => matches(line, row)));
-      const stale = rows.filter((row) => !lines.some((line) => matches(line, row)));
+      const unlisted = lines.filter((line) => !rows.some((row) => matchesAllowRow(line, row)));
+      const stale = rows.filter((row) => !lines.some((line) => matchesAllowRow(line, row)));
 
       expect(
-        unlisted.map(format),
+        unlisted.map(formatConsoleLine),
         `unlisted console lines on ${route.path} (${route.title})`,
       ).toEqual([]);
       expect(
