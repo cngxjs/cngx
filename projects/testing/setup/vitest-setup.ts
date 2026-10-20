@@ -38,6 +38,11 @@
  * (`cngxAnnouncementMatchers`) on every suite - see the note above
  * `expect.extend` below.
  *
+ * The suite is zoneless. The Angular 22 unit-test builder loads zone.js for a
+ * library test target whenever the package resolves, so the workspace keeps
+ * zone.js out of its dependency tree;
+ * `scripts/__tests__/zone-unresolvable.test.mjs` guards that.
+ *
  * A spec needing more teardown than this does it itself. File-local hooks run
  * first - vitest's default `sequence.hooks: 'stack'` runs "after" hooks in
  * reverse registration order - so a teardown that still needs the fake clock or
