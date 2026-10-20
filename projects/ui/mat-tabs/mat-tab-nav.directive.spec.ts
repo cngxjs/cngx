@@ -243,6 +243,24 @@ class RejectionTemplateFactory {
   rejection!: TemplateRef<CngxMatTabRejectionContentContext>;
 }
 
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabNav, CngxMatTabLink],
+  template: `
+    <nav mat-tab-nav-bar cngxMatTabNav [tabPanel]="panel" aria-label="Sections">
+      <a mat-tab-link cngxMatTabLink id="a" label="A" [active]="true">A</a>
+      <a mat-tab-link cngxMatTabLink id="b" label="B" [active]="false" [disabled]="bDisabled()"
+        >B</a
+      >
+      <a mat-tab-link cngxMatTabLink id="c" label="C" [active]="false" disabled>C</a>
+    </nav>
+    <mat-tab-nav-panel #panel>panel</mat-tab-nav-panel>
+  `,
+})
+class DisabledNavHostCmp {
+  readonly bDisabled = signal(false);
+}
+
 function navPresenter(
   fixture: ReturnType<typeof TestBed.createComponent>,
 ): CngxTabGroupPresenter {
@@ -477,6 +495,36 @@ describe('CngxMatTabNav native nav-bar bridge', () => {
 
     const slot = tabLinks(fixture)[1].querySelector('[data-testid="config-rejection"]');
     expect(slot?.textContent?.trim()).toBe('config refused');
+  });
+
+  it('tracks a [disabled] binding toggled after init', async () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(DisabledNavHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const presenter = navPresenter(fixture);
+    const links = tabLinks(fixture);
+    expect(presenter.tabs()[1].disabled()).toBe(false);
+
+    fixture.componentInstance.bDisabled.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(presenter.tabs()[1].disabled()).toBe(true);
+    expect(links[1].getAttribute('aria-disabled')).toBe('true');
+
+    fixture.componentInstance.bDisabled.set(false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(presenter.tabs()[1].disabled()).toBe(false);
+    expect(links[1].getAttribute('aria-disabled')).toBe('false');
+  });
+
+  it('registers a static disabled link as disabled at init', async () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(DisabledNavHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(navPresenter(fixture).tabs()[2].disabled()).toBe(true);
   });
 
   it('reflects the route-active link onto activeIndex via composed [cngxTabsRouteSync]', async () => {
