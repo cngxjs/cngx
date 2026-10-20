@@ -78,6 +78,26 @@ describe('readFixture', () => {
       expect(variant['src/index.html']).toBe(stock['src/index.html']);
     }
   });
+
+  it('reads the ng new 22 scaffold: sorted decorator keys, a split spec chain, every other shell file as on 21', () => {
+    const variants = [
+      ['scaffold-21', 'scaffold-22'],
+      ['scaffold-21-routing-off', 'scaffold-22-routing-off'],
+      ['scaffold-21-zone', 'scaffold-22-zone'],
+      ['scaffold-21-scss', 'scaffold-22-scss'],
+    ] as const;
+
+    for (const [old, name] of variants) {
+      const before = readFixture(old);
+      const files = readFixture(name);
+      expect({ name, files: Object.keys(files).sort() }).toEqual({ name, files: Object.keys(before).sort() });
+      expect(files['src/app/app.ts']).toMatch(/@Component\(\{\n {2}imports: .*\n {2}selector: 'app-root',\n {2}styleUrl: .*\n {2}templateUrl: '\.\/app\.html',\n\}\)/);
+      expect(files['src/app/app.spec.ts']).toContain('    })\n      .compileComponents();\n');
+      for (const path of ['src/app/app.html', 'src/index.html', '.prettierrc', 'angular.json', 'src/main.ts']) {
+        expect({ name, path, same: files[path] === before[path] }).toEqual({ name, path, same: true });
+      }
+    }
+  });
 });
 
 describe('createFixtureTree', () => {
@@ -94,7 +114,7 @@ describe('createFixtureTree', () => {
   });
 
   it('reads every scaffold variant as a workspace', async () => {
-    for (const name of ['scaffold-21', 'scaffold-21-routing-off', 'scaffold-21-zone', 'scaffold-21-scss'] as const) {
+    for (const name of ['scaffold-21', 'scaffold-21-routing-off', 'scaffold-21-zone', 'scaffold-21-scss', 'scaffold-22', 'scaffold-22-routing-off', 'scaffold-22-zone', 'scaffold-22-scss'] as const) {
       const workspace = await readWorkspace(createFixtureTree(name));
 
       expect([...workspace.projects.keys()]).toEqual(['fixture-app']);
