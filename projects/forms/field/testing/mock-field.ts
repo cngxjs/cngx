@@ -111,7 +111,9 @@ export function createMockField<T = string>(
 }
 
 /**
- * Creates a mock `CngxFieldValidationError` for testing.
+ * Creates a mock `CngxFieldValidationError` for testing. Its field is inert:
+ * `focusBoundControl` does nothing and no `[formField]` control is bound, so
+ * `focusFirstError` over mocked errors runs without a real form.
  *
  * @category forms/field/testing
  */
@@ -123,7 +125,7 @@ export function mockValidationError(
   return {
     kind,
     message,
-    fieldTree: (() => ({})) as never,
+    fieldTree: () => ({ focusBoundControl: () => undefined }),
     ...extra,
   } as CngxFieldValidationError;
 }
