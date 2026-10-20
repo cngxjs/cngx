@@ -301,8 +301,16 @@ describe('the consumer-compat workflow', () => {
   const workflow = readFileSync(join(root, '.github', 'workflows', 'consumer-compat.yml'), 'utf8');
 
   it('runs on a pull request that touches the schematics', () => {
-    const paths = /pull_request:\s*\n\s*paths:\n((?:\s*- .+\n)+)/.exec(workflow)?.[1] ?? '';
-    expect(paths).toContain("- 'projects/*/schematics/**'");
+    const pattern = /pattern='([^']+)'/.exec(workflow)?.[1] ?? '';
+    expect(new RegExp(pattern).test('projects/core/schematics/ng-add/index.ts')).toBe(true);
+    expect(new RegExp(pattern).test('projects/forms/select/select.component.css')).toBe(false);
+  });
+
+  // The fixture rows are required checks: a path filter on the trigger, or a
+  // skipped matrix job, would leave them pending on an unrelated pull request.
+  it('reports every fixture row on every pull request', () => {
+    expect(workflow).not.toMatch(/pull_request:\s*\n\s*paths:/);
+    expect(workflow).toContain("needs.pack.result != 'failure'");
   });
 
   it('runs every row strictly against the declared peers', () => {
