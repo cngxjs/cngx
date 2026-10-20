@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Moves a disposable checkout of this workspace onto another Angular major,
-// so the libs can be built and unit tested there with the same sources. The
+// Moves a disposable checkout of this workspace onto another Angular major
+// (or an exact Angular release, e.g. the 21.0.0 floor of the peer range), so
+// the libs can be built and unit tested there with the same sources. The
 // repo itself keeps building and publishing with the toolchain in
 // package.json; this script is for compatibility runs only (the
 // angular-22-libs CI job and local probes).
@@ -13,6 +14,12 @@
 //
 // Usage:
 //   node scripts/toolchain-overlay.mjs --angular 22 [--force] [--no-install] [--dry-run]
+//   node scripts/toolchain-overlay.mjs --angular 21.0.0 --force
+//
+// A major moves every package to its newest release of that major. An exact
+// version pins every package that published it (the framework packages) and
+// moves the rest (tools on their own patch cadence) to the newest release of
+// that minor, pinned too.
 //
 // Refuses to run outside CI (CI=true) unless --force is passed, and refuses on
 // a dirty tree: the rewrite is not meant to be committed.
@@ -51,11 +58,26 @@ export function overlayTargets(manifest) {
 }
 
 /**
- * The manifest with each target set to its resolved version. An exact pin
- * stays exact, any other range becomes `^version`. `typescript` is set to the
- * range given as `typescriptRange`.
+ * What `--angular` asks for: a major (`22`) or an exact release (`21.0.0`).
+ * `range` is the npm range each package is resolved in.
  */
-export function overlayManifest(manifest, versions, typescriptRange) {
+export function parseAngularTarget(spec) {
+  if (/^\d+$/.test(spec ?? '')) {
+    return { exact: undefined, range: spec };
+  }
+  const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(spec ?? '');
+  if (match) {
+    return { exact: spec, range: `~${match[1]}.${match[2]}.0` };
+  }
+  throw new Error('toolchain-overlay: pass a major (--angular 22) or an exact release (--angular 21.0.0)');
+}
+
+/**
+ * The manifest with each target set to its resolved version. An exact pin
+ * stays exact, any other range becomes `^version`; with `pinAll` every target
+ * is pinned. `typescript` is set to the range given as `typescriptRange`.
+ */
+export function overlayManifest(manifest, versions, typescriptRange, pinAll = false) {
   const next = structuredClone(manifest);
   for (const field of ['dependencies', 'devDependencies']) {
     const deps = next[field];
@@ -65,7 +87,7 @@ export function overlayManifest(manifest, versions, typescriptRange) {
     for (const name of Object.keys(deps)) {
       const version = versions[name];
       if (version) {
-        deps[name] = /^\d/.test(deps[name]) ? version : `^${version}`;
+        deps[name] = pinAll || /^\d/.test(deps[name]) ? version : `^${version}`;
       }
     }
     if (typescriptRange && deps['typescript']) {
@@ -121,10 +143,7 @@ function parseArgs(argv) {
       throw new Error(`toolchain-overlay: unknown argument ${arg}`);
     }
   }
-  if (!args.angular || !/^\d+$/.test(args.angular)) {
-    throw new Error('toolchain-overlay: pass the target Angular major, e.g. --angular 22');
-  }
-  return args;
+  return { ...args, target: parseAngularTarget(args.angular) };
 }
 
 function npmView(spec, field) {
@@ -132,15 +151,17 @@ function npmView(spec, field) {
   return out ? JSON.parse(out) : undefined;
 }
 
-/** Highest published version within one major, ignoring prereleases. */
-function latestInMajor(name, major) {
-  const result = npmView(`${name}@${major}`, 'version');
-  const list = Array.isArray(result) ? result : [result];
-  const stable = list.filter((v) => typeof v === 'string' && !v.includes('-'));
-  if (stable.length === 0) {
-    throw new Error(`toolchain-overlay: ${name} has no stable ${major}.x release`);
+/** The version to install: the exact release when the package published it, else the newest stable one in range. */
+function resolveVersion(name, { exact, range }) {
+  const result = npmView(`${name}@${range}`, 'version');
+  const list = (Array.isArray(result) ? result : [result]).filter((v) => typeof v === 'string' && !v.includes('-'));
+  if (exact && list.includes(exact)) {
+    return exact;
   }
-  return stable[stable.length - 1];
+  if (list.length === 0) {
+    throw new Error(`toolchain-overlay: ${name} has no stable release in ${range}`);
+  }
+  return list[list.length - 1];
 }
 
 function dirtyFiles() {
@@ -161,7 +182,7 @@ function main() {
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
   const versions = {};
   for (const name of overlayTargets(manifest)) {
-    versions[name] = latestInMajor(name, args.angular);
+    versions[name] = resolveVersion(name, args.target);
   }
   const compilerCli = versions['@angular/compiler-cli'];
   const tsRange = typescriptRangeFromPeer(npmView(`@angular/compiler-cli@${compilerCli}`, 'peerDependencies.typescript'));
@@ -174,7 +195,7 @@ function main() {
     return;
   }
 
-  writeFileSync(manifestPath, `${JSON.stringify(overlayManifest(manifest, versions, tsRange), null, 2)}\n`);
+  writeFileSync(manifestPath, `${JSON.stringify(overlayManifest(manifest, versions, tsRange, args.target.exact !== undefined), null, 2)}\n`);
   if ((typescriptMajor(tsRange) ?? 0) >= 6) {
     const tsconfigPath = join(ROOT, 'tsconfig.base.json');
     writeFileSync(tsconfigPath, patchTsconfigForTs6(readFileSync(tsconfigPath, 'utf8')));

@@ -8,6 +8,7 @@ import {
   followsAngularMajor,
   overlayManifest,
   overlayTargets,
+  parseAngularTarget,
   patchTsconfigForTs6,
   typescriptMajor,
   typescriptRangeFromPeer,
@@ -68,6 +69,31 @@ describe('overlayManifest', () => {
 
   it('does not mutate the input manifest', () => {
     expect(manifest.dependencies['@angular/core']).not.toBe('^22.2.3');
+  });
+});
+
+describe('parseAngularTarget', () => {
+  it('reads a major as a range', () => {
+    expect(parseAngularTarget('22')).toEqual({ exact: undefined, range: '22' });
+  });
+
+  it('reads an exact release as that version within its minor', () => {
+    expect(parseAngularTarget('21.0.0')).toEqual({ exact: '21.0.0', range: '~21.0.0' });
+  });
+
+  it('refuses anything else', () => {
+    for (const spec of [undefined, '', '21.2', '^21.0.0', 'latest']) {
+      expect(() => parseAngularTarget(spec), String(spec)).toThrow(/pass a major/);
+    }
+  });
+});
+
+describe('overlayManifest pinning every target', () => {
+  it('writes bare versions for an exact release', () => {
+    const versions = Object.fromEntries(overlayTargets(manifest).map((name) => [name, '21.0.0']));
+    const next = overlayManifest(manifest, versions, '>=5.9 <6.0', true);
+    expect(next.dependencies['@angular/core']).toBe('21.0.0');
+    expect(next.devDependencies['ng-packagr']).toBe('21.0.0');
   });
 });
 
