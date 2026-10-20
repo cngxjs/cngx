@@ -30,7 +30,9 @@ export interface TimeValidatorOptions {
  * @category forms/validators
  * @since 0.1.0
  */
-export interface TimeRangeValidationError extends ValidationError.WithoutFieldTree {
+export interface TimeRangeValidationError extends ValidationError {
+  /** A validator result names no field; Signal Forms binds it to the validated one. */
+  readonly fieldTree?: never;
   readonly kind: 'timeRange';
   readonly cycle: 12 | 24;
 }

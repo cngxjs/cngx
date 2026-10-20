@@ -28,10 +28,20 @@ function applied(result: StepResult, files: Readonly<Files>): Files {
   return next;
 }
 
-// The syntax errors TypeScript reports for a file, as messages.
+// The syntax errors TypeScript reports for a file, as messages. Parse only:
+// TypeScript 6 crashes inside transpileModule's emit for some of these files,
+// and a syntax check needs no emitter.
 function syntaxErrors(content: string): readonly string[] {
-  const { diagnostics = [] } = ts.transpileModule(content, { reportDiagnostics: true, fileName: 'app.ts' });
-  return diagnostics.map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
+  const fileName = 'app.ts';
+  const source = ts.createSourceFile(fileName, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const host: ts.CompilerHost = {
+    ...ts.createCompilerHost({}),
+    getSourceFile: (name) => (name === fileName ? source : undefined),
+  };
+  const program = ts.createProgram({ rootNames: [fileName], options: { noLib: true, noResolve: true }, host });
+  return program
+    .getSyntacticDiagnostics(source)
+    .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
 }
 
 const UNFOLLOWED: AppShellUnfollowed = { kind: 'unfollowed', reason: 'no-bootstrap-call', subject: '', file: 'src/main.ts' };

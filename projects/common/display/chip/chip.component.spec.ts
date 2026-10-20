@@ -10,7 +10,7 @@ import { CngxChip } from './chip.component';
       [removable]="removable()"
       [removeAriaLabel]="ariaLabel"
       [id]="chipId"
-      (remove)="removeCount.update((c) => c + 1)"
+      (remove)="removeCount.set(removeCount() + 1)"
     >
       Rot
     </cngx-chip>

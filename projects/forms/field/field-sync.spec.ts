@@ -1,10 +1,17 @@
-import { Component, computed, model, signal, viewChild, type ModelSignal } from '@angular/core';
+import { Component, computed, model, signal, VERSION, viewChild, type ModelSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { debounce, form } from '@angular/forms/signals';
 import { createMockField } from './testing/public-api';
 import { CngxFormField } from './form-field.component';
 import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from './form-field.token';
 import { createFieldSync } from './field-sync';
+
+// `debounce(path, 'blur')` arrives in Signal Forms 21.2; 21.1 debounces by
+// milliseconds only. The lagging-value row needs a field value that waits for
+// blur, so it runs only where Signal Forms can express that.
+const SIGNAL_FORMS_HAS_BLUR_DEBOUNCE = Number(VERSION.major) > 21 || Number(VERSION.minor) >= 2;
+// Typed for 21.1 too, whose `debounce` only takes milliseconds.
+const ON_BLUR = 'blur' as never;
 
 /** Minimal numeric control that wires its `value` model to the field. */
 @Component({
@@ -180,7 +187,7 @@ describe('createFieldSync', () => {
       expect(fixture.componentInstance.f.volume().dirty()).toBe(false);
     });
 
-    it('keeps the user value on the control while a debounced field value lags', () => {
+    it.runIf(SIGNAL_FORMS_HAS_BLUR_DEBOUNCE)('keeps the user value on the control while a debounced field value lags', () => {
       @Component({
         template: `
           <cngx-form-field [field]="f.rating">
@@ -192,7 +199,7 @@ describe('createFieldSync', () => {
       class Host {
         readonly control = viewChild.required(NumericControl);
         readonly model = signal({ rating: 1 });
-        readonly f = form(this.model, (p) => debounce(p.rating, 'blur'));
+        readonly f = form(this.model, (p) => debounce(p.rating, ON_BLUR));
       }
 
       const fixture = TestBed.createComponent(Host);

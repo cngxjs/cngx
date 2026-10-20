@@ -316,7 +316,7 @@ describe('ngAdd', () => {
     try {
       const tree = createFixtureTree('standalone-app', { 'package.json': withDependencies({ '@angular/core': '^20.3.0' }) });
 
-      await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.2 or newer');
+      await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.1 or newer');
       expect(terminal.asked).toEqual([]);
     } finally {
       vi.unstubAllEnvs();
@@ -1241,10 +1241,16 @@ describe('ngAdd', () => {
     expect(run.tree.readText('.cngx/README.md')).toContain('## Claude Code plugin');
   });
 
-  it('refuses an Angular version below 21.2', async () => {
+  it('refuses an Angular version below 21.1', async () => {
     const tree = createFixtureTree('standalone-app', { 'package.json': withDependencies({ '@angular/core': '^20.3.0' }) });
 
-    await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.2 or newer; this app declares ^20.3.0.');
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.1 or newer; this app declares ^20.3.0.');
+  });
+
+  it('refuses an Angular 21.0 app, below the floor of the peer range', async () => {
+    const tree = createFixtureTree('standalone-app', { 'package.json': withDependencies({ '@angular/core': '~21.0.6' }) });
+
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.1 or newer; this app declares ~21.0.6.');
   });
 
   it('names a package.json that does not parse', async () => {
@@ -1305,7 +1311,7 @@ describe('ngAdd', () => {
       'node_modules/@angular/core/package.json': JSON.stringify({ name: '@angular/core', version: '19.2.3' }),
     });
 
-    await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.2 or newer; this app has 19.2.3 installed (declares catalog:).');
+    await expect(runRule(ngAdd({}), tree)).rejects.toThrow('cngx needs Angular 21.1 or newer; this app has 19.2.3 installed (declares catalog:).');
   });
 
   it('runs on when no Angular version can be read and pins the CDK to the installed version', async () => {

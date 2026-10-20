@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CngxCardHeader } from './card-header.directive';
@@ -66,12 +66,12 @@ describe('Card slot directives', () => {
     expect(media.getAttribute('loading')).toBe('lazy');
 
     fixture.componentInstance.mediaLoading = 'eager';
-    fixture.changeDetectorRef.markForCheck();
+    fixture.componentRef.injector.get(ChangeDetectorRef).markForCheck();
     fixture.detectChanges();
     expect(media.getAttribute('loading')).toBe('eager');
 
     fixture.componentInstance.mediaLoading = null;
-    fixture.changeDetectorRef.markForCheck();
+    fixture.componentRef.injector.get(ChangeDetectorRef).markForCheck();
     fixture.detectChanges();
     expect(media.hasAttribute('loading')).toBe(false);
   });

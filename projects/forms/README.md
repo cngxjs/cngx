@@ -1,6 +1,6 @@
 # @cngx/forms
 
-Signal Forms-native form utilities for Angular 21+ - typed controls,
+Signal Forms-native form utilities for Angular 21.1 through 22 - typed controls,
 validators, ARIA-coordinated form field, and input directives.
 Opinionated about ARIA, agnostic about styling. Reactive Forms supported
 via a one-shot `adaptFormControl` adapter.

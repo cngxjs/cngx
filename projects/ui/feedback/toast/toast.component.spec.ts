@@ -50,6 +50,11 @@ function setup<T>(host: new () => T) {
 }
 
 describe('CngxToast', () => {
+  it('declares OnPush, so the strategy is the same on every Angular major', () => {
+    const def = (CngxToast as unknown as { ɵcmp: { onPush: boolean } }).ɵcmp;
+    expect(def.onPush).toBe(true);
+  });
+
   it('shows nothing while [when] is false', () => {
     const { toaster } = setup(MessageHost);
     expect(toaster.toasts().length).toBe(0);

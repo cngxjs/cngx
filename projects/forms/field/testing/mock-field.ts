@@ -1,6 +1,5 @@
 import { signal, type WritableSignal } from '@angular/core';
-import type { ValidationError } from '@angular/forms/signals';
-import type { CngxFieldAccessor, CngxFieldRef } from '@cngx/forms/field';
+import type { CngxFieldAccessor, CngxFieldRef, CngxFieldValidationError } from '@cngx/forms/field';
 
 /**
  * A writable mock of `CngxFieldRef` for testing.
@@ -11,7 +10,7 @@ import type { CngxFieldAccessor, CngxFieldRef } from '@cngx/forms/field';
 export interface MockFieldRef<T = unknown> extends CngxFieldRef<T> {
   readonly name: WritableSignal<string>;
   readonly value: WritableSignal<T>;
-  readonly errors: WritableSignal<ValidationError.WithFieldTree[]>;
+  readonly errors: WritableSignal<CngxFieldValidationError[]>;
   readonly touched: WritableSignal<boolean>;
   readonly dirty: WritableSignal<boolean>;
   readonly invalid: WritableSignal<boolean>;
@@ -27,7 +26,7 @@ export interface MockFieldRef<T = unknown> extends CngxFieldRef<T> {
   readonly min: WritableSignal<unknown>;
   readonly max: WritableSignal<unknown>;
   readonly pattern: WritableSignal<readonly RegExp[]>;
-  readonly errorSummary: WritableSignal<ValidationError.WithFieldTree[]>;
+  readonly errorSummary: WritableSignal<CngxFieldValidationError[]>;
   readonly submitting: WritableSignal<boolean>;
 }
 
@@ -47,7 +46,7 @@ export interface MockFieldOptions<T = unknown> {
   pending?: boolean;
   hidden?: boolean;
   readonly?: boolean;
-  errors?: ValidationError.WithFieldTree[];
+  errors?: CngxFieldValidationError[];
   minLength?: number;
   maxLength?: number;
   /** Any bound type: Signal Forms 22 reads the field's own value type. */
@@ -112,7 +111,9 @@ export function createMockField<T = string>(
 }
 
 /**
- * Creates a mock `ValidationError.WithFieldTree` for testing.
+ * Creates a mock `CngxFieldValidationError` for testing. Its field is inert:
+ * `focusBoundControl` does nothing and no `[formField]` control is bound, so
+ * `focusFirstError` over mocked errors runs without a real form.
  *
  * @category forms/field/testing
  */
@@ -120,11 +121,11 @@ export function mockValidationError(
   kind: string,
   message?: string,
   extra?: Record<string, unknown>,
-): ValidationError.WithFieldTree {
+): CngxFieldValidationError {
   return {
     kind,
     message,
-    fieldTree: (() => ({})) as never,
+    fieldTree: () => ({ focusBoundControl: () => undefined }),
     ...extra,
-  } as ValidationError.WithFieldTree;
+  } as CngxFieldValidationError;
 }

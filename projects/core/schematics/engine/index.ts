@@ -6,6 +6,7 @@ export { createMemoryTree } from './fs/memory-tree';
 export { BUILD_OUTPUT_DIRS, isAppSource, NON_SOURCE_DIRS } from './fs/source-files';
 export { listFiles, type ListFilesOptions } from './fs/walk';
 
+export { companionRange } from './manifest/companion';
 export { addLockstepDependency } from './manifest/lockstep';
 export {
   AI_TOOLS,

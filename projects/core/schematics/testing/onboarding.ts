@@ -9,7 +9,7 @@ import { type StarterTemplates } from '../ng-add/steps/starter';
 /** The starter's files as the sources hold them, read the way the ng-add shell reads them. */
 export const STARTER_TEMPLATES: StarterTemplates = readStarterTemplates(join(__dirname, '..', 'ng-add', 'files', 'starter'));
 
-export const VERSIONS: Versions = { cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.0', angular: '^21.2.0' };
+export const VERSIONS: Versions = { cngx: '0.1.0', mcp: '0.3.0', eslintPlugin: '0.2.0', angular: '>=21.1.0 <23.0.0' };
 
 /** The stock standalone fixture app as facts, so a step spec states only what differs. */
 export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts {

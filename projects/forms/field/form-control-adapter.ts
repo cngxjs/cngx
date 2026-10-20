@@ -7,8 +7,7 @@ import {
   TouchedChangeEvent,
   type ValidationErrors,
 } from '@angular/forms';
-import type { FieldTree, ValidationError } from '@angular/forms/signals';
-import type { CngxFieldAccessor, CngxFieldRef } from './models';
+import type { CngxErrorFieldState, CngxFieldAccessor, CngxFieldRef, CngxFieldValidationError } from './models';
 
 /**
  * Adapts an Angular Reactive Forms `AbstractControl` (FormControl, FormGroup, FormArray)
@@ -52,7 +51,7 @@ export function adaptFormControl(
   const requiredSignal = signal(hasRequiredValidator(control));
   const disabledSignal = signal(control.disabled);
   const pendingSignal = signal(control.pending);
-  const errorsSignal = signal<ValidationError.WithFieldTree[]>(adaptErrors(control.errors));
+  const errorsSignal = signal<CngxFieldValidationError[]>(adaptErrors(control.errors));
   const readonlySignal = signal(false);
   const hiddenSignal = signal(false);
   const submittingSignal = signal(false);
@@ -140,14 +139,14 @@ export function adaptFormControl(
 }
 
 /** Inert stand-in - Reactive Forms errors carry no Signal Forms field tree. @internal */
-const EMPTY_FIELD_TREE = (() => ({})) as unknown as FieldTree<unknown>;
+const EMPTY_FIELD_TREE = (): CngxErrorFieldState => ({ focusBoundControl: () => undefined });
 
 /**
  * Convert Reactive Forms `ValidationErrors` to Signal Forms'
- * `ValidationError.WithFieldTree` shape.
+ * `CngxFieldValidationError` shape.
  * @internal
  */
-function adaptErrors(errors: ValidationErrors | null): ValidationError.WithFieldTree[] {
+function adaptErrors(errors: ValidationErrors | null): CngxFieldValidationError[] {
   if (!errors) {
     return [];
   }
@@ -161,7 +160,7 @@ function adaptErrors(errors: ValidationErrors | null): ValidationError.WithField
       message: typeof value === 'string' ? value : undefined,
       fieldTree: EMPTY_FIELD_TREE,
       ...extra,
-    } as ValidationError.WithFieldTree;
+    } as CngxFieldValidationError;
   });
 }
 

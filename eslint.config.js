@@ -75,6 +75,17 @@ module.exports = tseslint.config(
             'no-console': ['error', {}],
         },
     },
+
+    // Library components declare their change detection strategy: Angular 22
+    // makes OnPush the default, so an undeclared one would flip silently
+    // between the majors the peer range spans. Test hosts are exempt.
+    {
+        files: ['projects/**/*.ts'],
+        ignores: ['projects/**/*.spec.ts', 'projects/**/__test-helpers/**', 'projects/*/schematics/**', 'projects/testing/**'],
+        rules: {
+            '@angular-eslint/prefer-on-push-component-change-detection': 'error',
+        },
+    },
     {
         files: ['projects/utils/dev-message.ts'],
         rules: {

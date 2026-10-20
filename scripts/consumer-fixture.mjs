@@ -11,7 +11,7 @@
 // Usage:
 //   npm run build:libs && npm run pack:libs
 //   node scripts/consumer-fixture.mjs --angular 21            # newest 21.x
-//   node scripts/consumer-fixture.mjs --angular 21.2.0        # exact: the lowest the peer range allows
+//   node scripts/consumer-fixture.mjs --angular 21.1.0        # exact: the lowest the peer range allows
 //   node scripts/consumer-fixture.mjs --angular 22 --variant ssr
 //   node scripts/consumer-fixture.mjs --angular 21 --variant minimal
 //   node scripts/consumer-fixture.mjs --angular 22 --ignore-peers   # does the code run beyond the declared range?
@@ -24,6 +24,11 @@
 //   zone        zone.js app, same installs
 //   ssr         zoneless app with SSR and hydration (the build prerenders)
 //   minimal     no optional peers installed: the build must not need them
+//   onboarding  the documented path on a fresh app with nothing installed:
+//               one `ng add @cngx/core` through the local registry, then the
+//               CDK it installed must be on the app's Angular major (npm
+//               would otherwise fetch the newest CDK the peers allow); the
+//               app builds and loads. Takes --preset like schematics.
 //   schematics  a real `ng add` and `ng update` against the tarballs: two
 //               ng add runs (the second changes nothing), ng add of a package
 //               shim (which keeps every lib the first run recorded), two ng
@@ -51,17 +56,17 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-export const VARIANTS = ['full', 'zone', 'ssr', 'minimal', 'schematics'];
+export const VARIANTS = ['full', 'zone', 'ssr', 'minimal', 'schematics', 'onboarding'];
 const MARKER = 'cngx-consumer-ok';
 
 /** The ng add presets the schematics variant can run; `recommended` is what ng add picks without one. */
 export const PRESETS = ['minimal', 'recommended', 'full'];
 const DEFAULT_PRESET = 'recommended';
 
-/** `21` / `22.1` are ranges for `ng new`; `21.2.0` is an exact pin. */
+/** `21` / `22.1` are ranges for `ng new`; `21.1.0` is an exact pin. */
 export function parseAngularSpec(spec) {
   if (!/^\d+(\.\d+){0,2}$/.test(spec)) {
-    throw new Error(`Unsupported --angular "${spec}": use 21, 21.2 or 21.2.0`);
+    throw new Error(`Unsupported --angular "${spec}": use 21, 21.1 or 21.1.0`);
   }
   return { cliSpec: spec, exact: spec.split('.').length === 3 };
 }
@@ -70,20 +75,27 @@ export function variantPlan(variant) {
   if (!VARIANTS.includes(variant)) {
     throw new Error(`Unknown variant "${variant}". Available: ${VARIANTS.join(', ')}`);
   }
-  const lean = variant === 'minimal' || variant === 'schematics';
+  const onboarding = variant === 'onboarding';
+  const lean = variant === 'minimal' || variant === 'schematics' || onboarding;
   return {
     variant,
     zoneless: variant !== 'zone',
     ssr: variant === 'ssr',
     optionalPeers: !lean,
     smoke: variant !== 'ssr',
-    schematics: variant === 'schematics',
+    schematics: variant === 'schematics' || onboarding,
+    // A fresh app, nothing installed beforehand: `ng add @cngx/core` alone
+    // must bring every package and the CDK at the app's own Angular major.
+    onboarding,
+    // `ng test` with the cngx Vitest matchers, against the Vitest major the
+    // app's own CLI installs (4 on Angular 21, 5 on Angular 22).
+    matcherSpec: variant === 'full',
   };
 }
 
 export function usageText() {
   return [
-    'Usage: node scripts/consumer-fixture.mjs --angular <21 | 22 | 21.2.0> [--variant <variant>]',
+    'Usage: node scripts/consumer-fixture.mjs --angular <21 | 22 | 21.1.0> [--variant <variant>]',
     `       [--ignore-peers] [--stale-core <tgz | previous>] [--preset <${PRESETS.join(' | ')}>]`,
     '       [--tarballs <dir>] [--work <dir>]',
     `Variants: ${VARIANTS.join(', ')}`,
@@ -270,13 +282,39 @@ export function peerInstallSpecs(plan, angularVersion, exactPin = null) {
   return specs;
 }
 
-/** The root component: one probe per lib, optional-peer imports only when the plan installed them. */
+/**
+ * What the browser smoke drives on the root component: the select shell with
+ * its search, the combobox, and a Signal Forms number field with min/max
+ * inside cngx-form-field. Ids and texts are shared with `renderAppSource`.
+ */
+export const INTERACTIVE_SMOKE = {
+  shell: { name: 'City', searchPlaceholder: 'Filter cities', search: 'ber', option: 'Berlin', term: 'term:ber', value: 'city:Berlin' },
+  combobox: { name: 'Frameworks', search: 'ang', option: 'Angular', picked: 'picked:angular' },
+  seats: { name: 'Seats', tooMany: '20', error: 'At most 10 seats', fine: '5', valid: 'seats-valid:true' },
+};
+
+/**
+ * The root component: one probe per lib, optional-peer imports only when the
+ * plan installed them, plus the parts of @cngx/forms that depend most on the
+ * Angular version (select shell and combobox models, a Signal Forms field
+ * with min/max bound through cngx-form-field).
+ */
 export function renderAppSource(plan) {
   const full = plan.optionalPeers;
-  return `import { ChangeDetectionStrategy, Component } from '@angular/core';
+  return `import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { form, FormField, max, min, schema } from '@angular/forms/signals';
 import { CngxLiveRegion } from '@cngx/common/a11y';
 import { WINDOW } from '@cngx/core/tokens';
 import { CngxTreetable } from '@cngx/data-display/treetable';
+import { CngxFieldErrors, CngxFormField, CngxLabel } from '@cngx/forms/field';
+import { CngxInput } from '@cngx/forms/input';
+import {
+  CngxCombobox,
+  CngxSelectOption,
+  CngxSelectSearch,
+  CngxSelectShell,
+  type CngxSelectOptionDef,
+} from '@cngx/forms/select';
 import { requiredTrue } from '@cngx/forms/validators';
 import { fromQuery } from '@cngx/interop/query';
 ${full ? "import { withCngxAsyncState } from '@cngx/interop/signals';\n" : ''}import { CngxEmptyState } from '@cngx/ui/empty-state';
@@ -288,17 +326,148 @@ const probes: readonly unknown[] = [clamp, WINDOW, requiredTrue, CngxTreetable, 
 
 @Component({
   selector: 'app-root',
-  imports: [CngxEmptyState, CngxLiveRegion],
+  imports: [
+    CngxEmptyState,
+    CngxLiveRegion,
+    CngxSelectShell,
+    CngxSelectOption,
+    CngxSelectSearch,
+    CngxCombobox,
+    CngxFormField,
+    CngxLabel,
+    CngxInput,
+    CngxFieldErrors,
+    FormField,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: \`
     <p id="${MARKER}" cngxLiveRegion>${MARKER} {{ probeCount }} {{ clamped }}</p>
     <cngx-empty-state title="Nothing here" />
+
+    <cngx-select-shell [label]="'${INTERACTIVE_SMOKE.shell.name}'" [(value)]="city" [(searchTerm)]="term" placeholder="Pick a city">
+      <cngx-select-search [placeholder]="'${INTERACTIVE_SMOKE.shell.searchPlaceholder}'" />
+      @for (name of cities; track name) {
+        <cngx-option [value]="name">{{ name }}</cngx-option>
+      }
+    </cngx-select-shell>
+    <p id="fx-term">term:{{ term() }}</p>
+    <p id="fx-city">city:{{ city() ?? '' }}</p>
+
+    <cngx-combobox [label]="'${INTERACTIVE_SMOKE.combobox.name}'" [options]="frameworks" [(values)]="picked" placeholder="Search frameworks" />
+    <p id="fx-picked">picked:{{ picked().join(',') }}</p>
+
+    <cngx-form-field [field]="booking.seats">
+      <label cngxLabel>${INTERACTIVE_SMOKE.seats.name}</label>
+      <input cngxInput type="number" [formField]="booking.seats" />
+      <cngx-field-errors />
+    </cngx-form-field>
+    <p id="fx-seats-valid">seats-valid:{{ booking.seats().valid() }}</p>
   \`,
 })
 export class App {
   protected readonly probeCount = probes.length;
   protected readonly clamped = clamp(15, 0, 10);
+
+  protected readonly cities = ['Amsterdam', 'Berlin', 'Vienna', 'Zurich'];
+  protected readonly city = signal<string | undefined>(undefined);
+  protected readonly term = signal('');
+
+  protected readonly frameworks: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'svelte', label: 'Svelte' },
+    { value: 'solid', label: 'Solid' },
+  ];
+  protected readonly picked = signal<string[]>([]);
+
+  private readonly model = signal({ seats: 2 });
+  protected readonly booking = form(
+    this.model,
+    schema<{ seats: number }>((root) => {
+      min(root.seats, 1, { message: 'At least 1 seat' });
+      max(root.seats, 10, { message: '${INTERACTIVE_SMOKE.seats.error}' });
+    }),
+  );
 }
+`;
+}
+
+// Drives the forms parts of the root component and records what did not react.
+async function smokeInteractive(page, errors) {
+  const { shell, combobox, seats } = INTERACTIVE_SMOKE;
+  const expectText = async (selector, text, what) => {
+    try {
+      await page.locator(selector).filter({ hasText: text }).waitFor({ timeout: 5_000 });
+    } catch {
+      errors.push(`${what}: expected "${text}" in ${selector}, found "${(await page.textContent(selector))?.trim()}"`);
+    }
+  };
+
+  // Every control is found by its role and accessible name, so a missing or
+  // wrong name fails the smoke instead of hiding behind a class selector.
+  const byRole = async (role, name, what) => {
+    const locator = page.getByRole(role, { name, exact: true });
+    // A panel opens after the input event; wait for the first match before counting.
+    await locator.first().waitFor({ state: 'visible', timeout: 5_000 }).catch(() => undefined);
+    const count = await locator.count();
+    if (count !== 1) {
+      errors.push(`${what}: expected one ${role} named "${name}", found ${count}`);
+    }
+    return locator.first();
+  };
+
+  await (await byRole('combobox', shell.name, 'select shell trigger')).click();
+  await page.getByPlaceholder(shell.searchPlaceholder, { exact: true }).fill(shell.search);
+  await expectText('#fx-term', shell.term, 'select shell search term');
+  await (await byRole('option', shell.option, 'select shell option')).click();
+  await expectText('#fx-city', shell.value, 'select shell value');
+
+  await (await byRole('combobox', combobox.name, 'combobox input')).fill(combobox.search);
+  await (await byRole('option', combobox.option, 'combobox option')).click();
+  await expectText('#fx-picked', combobox.picked, 'combobox values');
+  await page.keyboard.press('Escape');
+
+  const input = await byRole('spinbutton', seats.name, 'seats input');
+  await input.fill(seats.tooMany);
+  await input.blur();
+  await expectText('cngx-form-field', seats.error, 'max error through cngx-field-errors');
+  if ((await input.getAttribute('aria-invalid')) !== 'true') {
+    errors.push(`seats input: expected aria-invalid="true" at ${seats.tooMany}`);
+  }
+  await input.fill(seats.fine);
+  await input.blur();
+  await expectText('#fx-seats-valid', seats.valid, 'seats validity');
+  if ((await input.getAttribute('aria-invalid')) === 'true') {
+    errors.push(`seats input: still aria-invalid at ${seats.fine}`);
+  }
+}
+
+/**
+ * The unit spec the `full` variant writes over the stock app spec: it
+ * registers the cngx announcement matchers from `@cngx/core/testing/vitest`
+ * and asserts through them, so `ng test` proves the optional vitest peer
+ * against the Vitest the app was generated with.
+ */
+export function renderMatcherSpec() {
+  return `import { expect, it } from 'vitest';
+import { createAnnouncementCapture } from '@cngx/core/testing';
+import { cngxAnnouncementMatchers } from '@cngx/core/testing/vitest';
+
+expect.extend(cngxAnnouncementMatchers);
+
+it('hears a polite live region through the cngx matchers', async () => {
+  const host = document.createElement('section');
+  document.body.append(host);
+  const capture = createAnnouncementCapture({ root: host });
+  const region = document.createElement('div');
+  region.setAttribute('aria-live', 'polite');
+  host.append(region);
+  region.textContent = 'Saved';
+  await Promise.resolve();
+
+  expect(capture).toHaveHeard('Saved');
+  expect(capture).not.toHaveHeard('Upload failed');
+  capture.stop();
+});
 `;
 }
 
@@ -344,8 +513,8 @@ function parseArgs(argv) {
     console.error('--stale-core needs --variant schematics');
     process.exit(1);
   }
-  if (args.preset !== null && args.variant !== 'schematics') {
-    console.error('--preset needs --variant schematics');
+  if (args.preset !== null && args.variant !== 'schematics' && args.variant !== 'onboarding') {
+    console.error('--preset needs --variant schematics or onboarding');
     process.exit(1);
   }
   if (args.preset !== null && !PRESETS.includes(args.preset)) {
@@ -409,6 +578,7 @@ async function smoke(appDir, plan, { outlets = [], starter } = {}) {
       if (!text?.includes('10')) {
         errors.push(`probe text unexpected: "${text}"`);
       }
+      await smokeInteractive(page, errors);
     }
   } finally {
     await browser.close();
@@ -550,6 +720,30 @@ function resolveStaleCore(spec, version, sandbox) {
   return join(sandbox, packed.filename);
 }
 
+/** The single `ng add` of the onboarding variant. */
+export function onboardingAddArgs(version, preset = DEFAULT_PRESET) {
+  return ['ng', 'add', `@cngx/core@${version}`, ...NG_ADD_FLAGS, ...presetFlags(preset)];
+}
+
+/** Why the installed CDK does not fit the app's Angular, or undefined when its major matches. */
+export function companionMismatch(angularVersion, cdkVersion) {
+  if (cdkVersion === undefined) {
+    return `no @angular/cdk was installed next to @angular/core ${angularVersion}`;
+  }
+  const major = (version) => version.split('.')[0];
+  return major(cdkVersion) === major(angularVersion)
+    ? undefined
+    : `@angular/cdk ${cdkVersion} is installed for @angular/core ${angularVersion}`;
+}
+
+function installedPackageVersion(appDir, name) {
+  try {
+    return JSON.parse(readFileSync(join(appDir, 'node_modules', name, 'package.json'), 'utf8')).version;
+  } catch {
+    return undefined;
+  }
+}
+
 /** The `ng add` of the stale core leg; the preset of the run is passed on, so both legs install the same one. */
 export function staleCoreAddArgs(version, preset = DEFAULT_PRESET) {
   return ['ng', 'add', `@cngx/forms@${version}`, ...NG_ADD_FLAGS, ...presetFlags(preset)];
@@ -568,6 +762,10 @@ async function runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryU
   console.log(`\nStale core leg: @cngx/core ${stale} installed, packed ${version}\nSandbox: ${sandbox}\n`);
   run('npx', ['-y', `@angular/cli@${cliSpec}`, 'new', 'fixture', '--defaults', '--skip-git', '--skip-install', '--style=css', '--routing=false', '--ssr=false', '--zoneless=true'], { cwd: sandbox });
   run('npm', ['install'], { cwd: appDir });
+  // An app that had an older cngx already has its peers, the CDK among them,
+  // at its own Angular; installed the same way as the main leg.
+  const angularVersion = installedPackageVersion(appDir, '@angular/core');
+  run('npm', ['install', ...peerInstallSpecs(variantPlan('schematics'), angularVersion)], { cwd: appDir });
   const others = tarballFiles.filter((file) => tarballManifest(file).name !== '@cngx/core');
   // The older core peers on its own release of the other packages; the
   // stale state is what `ng add` repairs, so npm is told to accept it.
@@ -621,17 +819,19 @@ async function main() {
   const installedAngular = JSON.parse(readFileSync(join(appDir, 'node_modules/@angular/core/package.json'), 'utf8')).version;
   console.log(`\nInstalled @angular/core ${installedAngular}`);
 
-  // Peers first: npm resolves a peer requested in the same command as a file
-  // tarball to "undefined" and reports a false ERESOLVE.
-  run('npm', ['install', ...peerInstallSpecs(plan, installedAngular, exact ? angular : null)], { cwd: appDir });
-  if (ignorePeers) {
-    console.log('\nNOT a consumer-realistic row: --ignore-peers installs with --legacy-peer-deps to test code compatibility beyond the declared peer range.');
-  }
-  run('npm', ['install', ...(ignorePeers ? ['--legacy-peer-deps'] : []), ...tarballFiles], { cwd: appDir });
+  if (!plan.onboarding) {
+    // Peers first: npm resolves a peer requested in the same command as a file
+    // tarball to "undefined" and reports a false ERESOLVE.
+    run('npm', ['install', ...peerInstallSpecs(plan, installedAngular, exact ? angular : null)], { cwd: appDir });
+    if (ignorePeers) {
+      console.log('\nNOT a consumer-realistic row: --ignore-peers installs with --legacy-peer-deps to test code compatibility beyond the declared peer range.');
+    }
+    run('npm', ['install', ...(ignorePeers ? ['--legacy-peer-deps'] : []), ...tarballFiles], { cwd: appDir });
 
-  const versions = angularVersionsInTree(appDir);
-  if (versions.length !== 1) {
-    throw new Error(`Expected one @angular/core in the tree, found ${versions.join(', ')}`);
+    const versions = angularVersionsInTree(appDir);
+    if (versions.length !== 1) {
+      throw new Error(`Expected one @angular/core in the tree, found ${versions.join(', ')}`);
+    }
   }
 
   let registry = null;
@@ -642,10 +842,24 @@ async function main() {
     useLocalRegistry(appDir, registry.url);
   }
   try {
-    if (plan.schematics) {
+    if (plan.onboarding) {
+      await runAsync('npx', onboardingAddArgs(version, preset), { cwd: appDir });
+      const mismatch = companionMismatch(installedAngular, installedPackageVersion(appDir, '@angular/cdk'));
+      if (mismatch !== undefined) {
+        throw new Error(`onboarding: ${mismatch}`);
+      }
+      const versions = angularVersionsInTree(appDir);
+      if (versions.length !== 1) {
+        throw new Error(`Expected one @angular/core in the tree, found ${versions.join(', ')}`);
+      }
+      console.log(`\nOnboarding: @angular/cdk ${installedPackageVersion(appDir, '@angular/cdk')} next to @angular/core ${installedAngular}`);
+    } else if (plan.schematics) {
       await runSchematicsSteps(appDir, version, preset);
     } else {
       writeFileSync(join(appDir, 'src', 'app', 'app.ts'), renderAppSource(plan));
+      if (plan.matcherSpec) {
+        writeFileSync(join(appDir, 'src', 'app', 'app.spec.ts'), renderMatcherSpec());
+      }
     }
     if (plan.schematics && checks.noBudgetWarnings) {
       const warnings = budgetWarnings(runEchoed('npx', ['ng', 'build'], { cwd: appDir }));
@@ -655,7 +869,7 @@ async function main() {
     } else {
       run('npx', ['ng', 'build'], { cwd: appDir });
     }
-    if (plan.schematics && checks.ngTest) {
+    if ((plan.schematics && checks.ngTest) || plan.matcherSpec) {
       run('npx', ['ng', 'test', '--watch=false'], { cwd: appDir });
     }
     if (plan.schematics && staleCore !== null) {

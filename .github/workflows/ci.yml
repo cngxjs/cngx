@@ -306,6 +306,77 @@ jobs:
       - name: Check production bundle for dev-only code
         run: node scripts/devtools-prod-strip-check.mjs
 
+  # The libs peer on Angular >=21.1.0 <23.0.0, but the workspace builds and
+  # publishes with one Angular 21. These rows move a throwaway copy of the
+  # workspace onto the edges of that range with scripts/toolchain-overlay.mjs,
+  # then build every lib and run every lib's unit tests there, so the same
+  # sources are proven on each edge:
+  # - 22: the whole toolchain on exactly Angular 22.2.3 (TypeScript 6,
+  #   ng-packagr 22); tools on their own version line and TypeScript take
+  #   their newest release published by @angular/core 22.2.3, so the run never
+  #   drifts on its own. Move the version on purpose to pick up a newer 22.
+  # - 21.1: the framework pinned to exactly 21.1.0, the peer range floor, with
+  #   the workspace's own build tooling from the lockfile.
+  # The overlay installs itself (no npm ci first). Node 22: Angular 22 needs
+  # ^22.22.3. Each lib is its own step, so one red lib does not hide the next.
+  angular-libs:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { label: '22', overlay: '--angular 22.2.3' }
+          - { label: '21.1', overlay: '--angular 21.1.0 --framework-only' }
+    name: angular-${{ matrix.label }}-libs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - name: Move the workspace onto Angular ${{ matrix.label }}
+        run: node scripts/toolchain-overlay.mjs ${{ matrix.overlay }}
+      - name: Record the resolved dependency tree
+        if: ${{ !cancelled() }}
+        run: npm ls --all > npm-ls.txt || true
+      - name: Upload the resolved dependency tree
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: angular-${{ matrix.label }}-dependency-tree
+          path: |
+            npm-ls.txt
+            package.json
+            package-lock.json
+          retention-days: 14
+      - name: zone.js stays unresolvable
+        run: npx vitest run --config scripts/vitest.config.mjs scripts/__tests__/zone-unresolvable.test.mjs
+      - name: Build all libraries
+        run: npm run build:libs
+      - name: Test utils
+        run: npx ng test utils --watch=false
+      - name: Test core
+        if: ${{ !cancelled() }}
+        run: npx ng test core --watch=false
+      - name: Test forms
+        if: ${{ !cancelled() }}
+        run: npx ng test forms --watch=false
+      - name: Test ui
+        if: ${{ !cancelled() }}
+        run: npx ng test ui --watch=false
+      - name: Test common
+        if: ${{ !cancelled() }}
+        run: npx ng test common --watch=false
+      - name: Test data-display
+        if: ${{ !cancelled() }}
+        run: npx ng test data-display --watch=false
+      - name: Test interop
+        if: ${{ !cancelled() }}
+        run: npx ng test interop --watch=false
+      - name: Test schematics
+        if: ${{ !cancelled() }}
+        run: npm run test:schematics
+
   # The standalone @cngx/eslint-plugin package lives under packages/ (no npm
   # workspace), so it carries its own package-lock and needs its own install
   # in addition to the root one. It does not consume the Angular build output,

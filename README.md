@@ -15,7 +15,7 @@ CDK and Material are opt-in primitives, not foundations.
 
 > **State is derived, not managed. Communication is architecture, not an afterthought.**
 
-Angular 21+, Signal-native, no NgModules. Eight packages, 57 surgical secondary entry points, `sideEffects: false`. Five-level dependency hierarchy enforced by Sheriff.
+Angular 21.1 through 22, Signal-native, no NgModules. Eight packages, 57 surgical secondary entry points, `sideEffects: false`. Five-level dependency hierarchy enforced by Sheriff.
 
 ---
 
@@ -27,10 +27,11 @@ ng add @cngx/ui
 
 One run pins the `@cngx/*` packages, adds the theme, wires the root providers and the lint rules, and records the install in `.cngx/install.json`. Every package ships the same `ng add`; `--preset=minimal|recommended|full` sets how much it does. `ng update @cngx/core` moves all packages to the next release and runs its migrations. See [Install](./core-concepts/install.md) and [Update](./core-concepts/update.md).
 
-Manual install:
+Manual install, with the CDK (and Material, if used) on your Angular major first, because npm would otherwise pick the newest CDK the cngx peers allow, which may need a newer Angular:
 
 ```bash
-npm install @cngx/ui @cngx/themes @angular/cdk
+npm install @angular/cdk@^21     # your Angular major: ^21 or ^22
+npm install @cngx/ui @cngx/themes
 ```
 
 Install only what your code imports. Cross-package dependencies are declared as peers, so transitive resolution does the right thing. Add `@angular/material` only if you import one of the four `mat-*` entries.

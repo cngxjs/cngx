@@ -1,6 +1,7 @@
 import type { FieldTree } from '@angular/forms/signals';
 
 import { fieldControlFor } from './field-control-registry';
+import type { CngxFieldValidationError } from './models';
 
 /**
  * Focuses the first invalid leaf field's bound control after form submission.
@@ -33,7 +34,9 @@ import { fieldControlFor } from './field-control-registry';
  */
 export function focusFirstError<TModel>(tree: FieldTree<TModel>): boolean {
   const state = tree();
-  const errors = state.errorSummary();
+  // Read through the structural type: Signal Forms 21.1 names the error type
+  // and types focusBoundControl differently from 21.2 and 22.
+  const errors: readonly CngxFieldValidationError[] = state.errorSummary();
 
   for (const error of errors) {
     const fieldState = error.fieldTree();

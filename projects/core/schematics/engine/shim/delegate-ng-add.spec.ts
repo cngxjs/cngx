@@ -23,6 +23,7 @@ function createRunner(): SchematicTestRunner {
 
 let shimBundle = '';
 let themesBundle = '';
+let utilsBundle = '';
 let unstampedBundle = '';
 
 interface RunOptions {
@@ -31,11 +32,15 @@ interface RunOptions {
   readonly contextOverrides?: Partial<SchematicContext>;
   /** The @cngx/core version the package manager placed; none when omitted. */
   readonly installed?: string;
+  /** The app's package.json; no dependencies when omitted. */
+  readonly manifest?: string;
+  /** Extra files, e.g. an installed `node_modules/@angular/core/package.json`. */
+  readonly files?: Readonly<Record<string, string>>;
 }
 
 async function run(
   runner: SchematicTestRunner,
-  { flags = { preset: 'minimal' }, bundle = shimBundle, contextOverrides = {}, installed }: RunOptions = {},
+  { flags = { preset: 'minimal' }, bundle = shimBundle, contextOverrides = {}, installed, manifest, files = {} }: RunOptions = {},
 ) {
   const logs: string[] = [];
   const logger = new logging.Logger('delegate-spec');
@@ -58,7 +63,8 @@ async function run(
     callRule(
       delegateNgAdd(flags, bundle),
       createMemoryTree({
-        'package.json': '{ "dependencies": {} }\n',
+        'package.json': manifest ?? '{ "dependencies": {} }\n',
+        ...files,
         ...(installed === undefined
           ? {}
           : { 'node_modules/@cngx/core/package.json': JSON.stringify({ name: '@cngx/core', version: installed }) }),
@@ -84,6 +90,7 @@ describe('delegateNgAdd', () => {
     fakeCore = mkdtempSync(join(tmpdir(), 'cngx-fake-core-'));
     shimBundle = writeShim(fakeCore, 'forms');
     themesBundle = writeShim(fakeCore, 'themes');
+    utilsBundle = writeShim(fakeCore, 'utils');
     unstampedBundle = writeShim(fakeCore, 'forms', '0.0.0-PLACEHOLDER', 'unstamped');
     writeFileSync(
       join(fakeCore, 'collection.json'),
@@ -218,6 +225,62 @@ describe('delegateNgAdd', () => {
     const { tree } = await run(resolvingRunner(), { installed: VERSION, flags: { libs } });
 
     expect(JSON.parse(tree.readText('delegated.json'))).toEqual({ libs: ['core', 'forms'] });
+  });
+
+  describe('the CDK its packages peer on', () => {
+    const app = (deps: Record<string, string>) => `${JSON.stringify({ dependencies: deps })}\n`;
+    const dependencies = (tree: { readText(path: string): string }) =>
+      JSON.parse(tree.readText('package.json')).dependencies as Record<string, string>;
+
+    it.each([
+      ['an Angular 21 app', '^21.2.0'],
+      ['an Angular 22 app', '^22.1.0'],
+    ])('declares the CDK at the range of %s before its install', async (_label, angular) => {
+      const { tree, tasks, logs } = await run(createRunner(), { manifest: app({ '@angular/core': angular }) });
+
+      expect(dependencies(tree)['@angular/cdk']).toBe(angular);
+      expect(tasks).toEqual(['node-package', 'run-schematic']);
+      expect(logs).toContain(
+        `Adding @angular/cdk@${angular} to match @angular/core, so the install does not pick the @angular/cdk of a newer Angular.`,
+      );
+    });
+
+    it('keeps a CDK the app already declares at any range', async () => {
+      const { tree, logs } = await run(createRunner(), {
+        manifest: app({ '@angular/core': '^21.2.0', '@angular/cdk': '~21.1.4' }),
+      });
+
+      expect(dependencies(tree)['@angular/cdk']).toBe('~21.1.4');
+      expect(logs.some((line) => line.startsWith('Adding @angular/cdk'))).toBe(false);
+    });
+
+    it('matches the installed Angular behind a specifier that carries no version', async () => {
+      const { tree } = await run(createRunner(), {
+        manifest: app({ '@angular/core': 'catalog:' }),
+        files: { 'node_modules/@angular/core/package.json': JSON.stringify({ name: '@angular/core', version: '22.2.3' }) },
+      });
+
+      expect(dependencies(tree)['@angular/cdk']).toBe('^22.2.0');
+    });
+
+    it('says what to add when no Angular version can be read', async () => {
+      const { tree, logs } = await run(createRunner(), { manifest: app({ '@angular/core': 'workspace:*' }) });
+
+      expect(dependencies(tree)['@angular/cdk']).toBeUndefined();
+      expect(logs).toContain('Add @angular/cdk matching your @angular/core yourself; cngx cannot read an Angular version to match it to.');
+    });
+
+    it('adds no CDK for @cngx/utils, which does not peer on it', async () => {
+      const { tree } = await run(createRunner(), { bundle: utilsBundle, manifest: app({ '@angular/core': '^21.2.0' }) });
+
+      expect(dependencies(tree)['@angular/cdk']).toBeUndefined();
+    });
+
+    it('leaves the CDK to core when it delegates in the same run', async () => {
+      const { tree } = await run(resolvingRunner(), { installed: VERSION, manifest: app({ '@angular/core': '^21.2.0' }) });
+
+      expect(dependencies(tree)['@angular/cdk']).toBeUndefined();
+    });
   });
 
   it('keeps the libs in package order and names each once', async () => {

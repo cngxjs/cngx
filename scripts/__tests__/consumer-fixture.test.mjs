@@ -13,6 +13,10 @@ import {
   peerInstallSpecs,
   pinAngularDeps,
   renderAppSource,
+  renderMatcherSpec,
+  onboardingAddArgs,
+  companionMismatch,
+  INTERACTIVE_SMOKE,
   presetPlan,
   budgetWarnings,
   STARTER_SMOKE,
@@ -44,6 +48,28 @@ describe('variantPlan', () => {
     expect(variantPlan('ssr')).toMatchObject({ ssr: true, smoke: false });
     expect(variantPlan('minimal')).toMatchObject({ optionalPeers: false, schematics: false });
     expect(variantPlan('schematics')).toMatchObject({ zoneless: true, ssr: false, optionalPeers: false, smoke: true, schematics: true });
+  });
+
+  it('runs ng test with the cngx Vitest matchers on the full variant only', () => {
+    expect(VARIANTS.filter((variant) => variantPlan(variant).matcherSpec)).toEqual(['full']);
+    const spec = renderMatcherSpec();
+    expect(spec).toContain("from '@cngx/core/testing/vitest'");
+    expect(spec).toContain('expect.extend(cngxAnnouncementMatchers)');
+    expect(spec).toContain("toHaveHeard('Saved')");
+  });
+
+  it('runs the onboarding variant on a fresh app through ng add alone', () => {
+    expect(variantPlan('onboarding')).toMatchObject({ onboarding: true, schematics: true, optionalPeers: false, smoke: true });
+    expect(variantPlan('schematics').onboarding).toBe(false);
+    expect(onboardingAddArgs('0.1.0', 'full').slice(0, 3)).toEqual(['ng', 'add', '@cngx/core@0.1.0']);
+    expect(onboardingAddArgs('0.1.0', 'full')).toContain('full');
+  });
+
+  it('accepts a CDK only on the major of the app Angular', () => {
+    expect(companionMismatch('21.2.25', '21.2.14')).toBeUndefined();
+    expect(companionMismatch('22.2.3', '22.2.3')).toBeUndefined();
+    expect(companionMismatch('21.2.25', '22.2.3')).toBe('@angular/cdk 22.2.3 is installed for @angular/core 21.2.25');
+    expect(companionMismatch('21.2.25', undefined)).toBe('no @angular/cdk was installed next to @angular/core 21.2.25');
   });
 
   it('rejects an unknown variant', () => {
@@ -98,6 +124,25 @@ describe('renderAppSource', () => {
     for (const lib of ['utils', 'core', 'common', 'forms', 'data-display', 'ui', 'interop']) {
       expect(source).toContain(`@cngx/${lib === 'utils' ? 'utils' : `${lib}/`}`);
     }
+  });
+
+  it('renders the select shell, the combobox and a signal forms field with min and max on every variant', () => {
+    for (const variant of ['full', 'zone', 'ssr', 'minimal']) {
+      const source = renderAppSource(variantPlan(variant));
+      expect(source).toContain('<cngx-select-shell');
+      expect(source).toContain('<cngx-select-search');
+      expect(source).toContain('<cngx-combobox');
+      expect(source).toContain('<cngx-form-field [field]="booking.seats">');
+      expect(source).toContain('[formField]="booking.seats"');
+      expect(source).toMatch(/min\(root\.seats, 1/);
+      expect(source).toContain(`max(root.seats, 10, { message: '${INTERACTIVE_SMOKE.seats.error}' })`);
+    }
+  });
+
+  it('lists the options the smoke picks', () => {
+    const source = renderAppSource(variantPlan('minimal'));
+    expect(source).toContain(`'${INTERACTIVE_SMOKE.shell.option}'`);
+    expect(source).toContain(`label: '${INTERACTIVE_SMOKE.combobox.option}'`);
   });
 });
 
@@ -258,6 +303,27 @@ describe('the consumer-compat workflow', () => {
   it('runs on a pull request that touches the schematics', () => {
     const paths = /pull_request:\s*\n\s*paths:\n((?:\s*- .+\n)+)/.exec(workflow)?.[1] ?? '';
     expect(paths).toContain("- 'projects/*/schematics/**'");
+  });
+
+  it('runs every row strictly against the declared peers', () => {
+    expect(workflow).not.toContain('--ignore-peers');
+    expect(workflow).not.toContain('continue-on-error');
+  });
+
+  it('covers the floor and the highest major of the peer range the libs declare', () => {
+    const core = JSON.parse(readFileSync(join(root, 'projects', 'core', 'package.json'), 'utf8'));
+    const [, floor, ceiling] = /^>=(\d+\.\d+\.\d+) <(\d+)\.0\.0$/.exec(core.peerDependencies['@angular/core']) ?? [];
+    const highest = String(Number(ceiling) - 1);
+
+    expect(workflow).toContain(`- { angular: '${floor}', variant: minimal }`);
+    for (const variant of ['full', 'minimal']) {
+      expect(workflow).toContain(`- { angular: '${highest}', variant: ${variant} }`);
+    }
+  });
+
+  it('proves the fresh-app onboarding on both majors', () => {
+    expect(workflow).toContain("- { angular: '21', variant: onboarding, args: '--preset full' }");
+    expect(workflow).toContain("- { angular: '22', variant: onboarding }");
   });
 
   it('runs the stale-core leg on the full preset in its schematics row', () => {

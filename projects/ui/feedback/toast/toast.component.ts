@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   DestroyRef,
@@ -64,6 +65,7 @@ import { CngxToaster, type ToastRef } from './toast.service';
 @Component({
   selector: 'cngx-toast',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   // Deferred projection: the ng-content only materializes where the captured
   // template is instantiated (probe or outlet), never at the host position.
   template: `<ng-template #projectedContent><ng-content /></ng-template>`,

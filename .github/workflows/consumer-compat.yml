@@ -53,17 +53,28 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Lowest version the peer range allows, without any optional peer.
-          - { angular: '21.2.0', variant: minimal }
+          # Lowest version the peer range (>=21.1.0 <23.0.0) allows, without
+          # any optional peer.
+          - { angular: '21.1.0', variant: minimal }
           - { angular: '21', variant: full }
           - { angular: '21', variant: zone }
           - { angular: '21', variant: ssr }
+          # Highest major the peer range allows.
+          - { angular: '22', variant: full }
+          - { angular: '22', variant: minimal }
           # The required schematics-consumer job runs this variant without a
           # registry download on the recommended preset; nightly adds the leg
           # where an older published core must be replaced by the packed one
           # in the same ng add, and runs both legs on the full preset, which
           # places the feedback outlets and adds ng test.
           - { angular: '21', variant: schematics, args: '--stale-core previous --preset full' }
+          # The documented path on a fresh app with no @angular/cdk: one
+          # ng add @cngx/core must install the CDK on the app's own major
+          # (npm alone would fetch the newest CDK the peers allow). 22 runs
+          # the default preset: the CLI 22 scaffold is not in the starter's
+          # catalog yet, so the full preset's starter and spec edits skip it.
+          - { angular: '21', variant: onboarding, args: '--preset full' }
+          - { angular: '22', variant: onboarding }
     name: angular-${{ matrix.angular }}-${{ matrix.variant }}
     steps:
       - uses: actions/checkout@v4
@@ -86,38 +97,3 @@ jobs:
           path: .consumer-compat/tarballs
       - name: Build the fixture app
         run: node scripts/consumer-fixture.mjs --angular ${{ matrix.angular }} --variant ${{ matrix.variant }} ${{ matrix.args }}
-
-  # The peer ranges name Angular 21 only. This row installs the same tarballs
-  # into Angular 22 ignoring the declared peers, to show whether the code runs
-  # there. Informational until the ranges are widened; then it moves into the
-  # strict matrix above without --ignore-peers.
-  forward-compat:
-    needs: pack
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    strategy:
-      fail-fast: false
-      matrix:
-        variant: [full, minimal]
-    name: angular-22-${{ matrix.variant }}-ignoring-peers
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
-      # npm 10.9 (bundled with Node 22) crashes with "reading 'edgesOut'" on a
-      # plain install of a fresh Angular 21 app; npm 11 installs it cleanly.
-      - name: Use npm 11 for the fixture install
-        run: npm install -g npm@11
-      - name: Install Playwright chromium
-        run: npx playwright install --with-deps chromium
-      - name: Download tarballs
-        uses: actions/download-artifact@v4
-        with:
-          name: tarballs
-          path: .consumer-compat/tarballs
-      - name: Build the fixture app
-        run: node scripts/consumer-fixture.mjs --angular 22 --variant ${{ matrix.variant }} --ignore-peers

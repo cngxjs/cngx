@@ -65,8 +65,10 @@ export {
 export { CngxErrorScopeFieldBridge } from './error-scope-field-bridge.directive';
 export { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from './value-transformer.token';
 export type {
+  CngxErrorFieldState,
   CngxFieldRef,
   CngxFieldAccessor,
+  CngxFieldValidationError,
   CngxFormFieldControl,
   ErrorMessageFn,
   ErrorMessageMap,

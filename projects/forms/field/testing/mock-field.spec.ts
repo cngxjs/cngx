@@ -1,5 +1,7 @@
+import type { FieldTree } from '@angular/forms/signals';
 import { describe, expect, it } from 'vitest';
 
+import { focusFirstError } from '@cngx/forms/field';
 import { createMockField, mockValidationError } from '@cngx/forms/field/testing';
 
 describe('createMockField', () => {
@@ -78,5 +80,14 @@ describe('mockValidationError', () => {
     const err = mockValidationError('range', 'Out of range', { min: 1, max: 9 });
     expect((err as unknown as { min: number }).min).toBe(1);
     expect((err as unknown as { max: number }).max).toBe(9);
+  });
+
+  it('carries an inert field, so focusFirstError over mocked errors does not throw', () => {
+    const err = mockValidationError('required');
+    expect(() => err.fieldTree().focusBoundControl()).not.toThrow();
+
+    const tree = (() => ({ errorSummary: () => [err] })) as unknown as FieldTree<unknown>;
+    expect(() => focusFirstError(tree)).not.toThrow();
+    expect(focusFirstError(tree)).toBe(true);
   });
 });

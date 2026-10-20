@@ -8,6 +8,7 @@ import {
 } from '@angular-devkit/schematics';
 import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schematics/tasks';
 
+import { addAngularCompanion } from '../manifest/companion';
 import { addLockstepDependency } from '../manifest/lockstep';
 import { compareVersions, installedVersion, readOwnName, readOwnVersion } from '../manifest/manifest';
 import { CNGX_LIBS, type CngxLib, type NgAddFlags, parseNgAddOptions } from '../options';
@@ -17,6 +18,12 @@ import { createShellRendererOptions } from '../render/terminal';
 import { isUnstampedVersion } from '../versions';
 
 const CORE = '@cngx/core';
+const CDK = '@angular/cdk';
+
+// Every @cngx package but utils peers on @cngx/common, which peers on the CDK.
+function needsCdk(ownName: string): boolean {
+  return ownName !== '@cngx/utils';
+}
 
 /**
  * Matched by name, not `instanceof`: the CLI and the app can each carry their
@@ -131,8 +138,12 @@ export function delegateNgAdd(options: NgAddFlags, bundleDir: string = __dirname
     }
 
     log.info(installReason(installed, order, ownName, version));
+    // The shim's own install runs before core plans anything, so the CDK the
+    // packages peer on is declared at the app's Angular first; npm would
+    // otherwise fetch the newest CDK the peer range allows.
     return chain([
       pins,
+      ...(needsCdk(ownName) ? [addAngularCompanion(CDK, log)] : []),
       (_innerTree: Tree, innerContext: SchematicContext) => {
         const installTask = innerContext.addTask(new NodePackageInstallTask());
         innerContext.addTask(new RunSchematicTask(CORE, 'ng-add', { ...forwarded }), [installTask]);

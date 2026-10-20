@@ -11,6 +11,39 @@ import type { ValidationError } from '@angular/forms/signals';
 export type { CngxFormFieldControl } from '@cngx/core/tokens';
 
 /**
+ * What the field of a validation error resolves to, as far as cngx reads it:
+ * the focus hook and, from Signal Forms 21.1 on, the `[formField]` bindings.
+ *
+ * @category forms/field
+ * @since 0.1.0
+ */
+export interface CngxErrorFieldState {
+  /** The `[formField]` controls bound to the field; empty for a group-level error. */
+  readonly formFieldBindings?: Signal<readonly unknown[]>;
+  /** Focuses the first bound control. Signal Forms 21.1 takes no options and ignores them. */
+  focusBoundControl(options?: FocusOptions): void;
+}
+
+/**
+ * A Signal Forms validation error bound to its field, as the form field
+ * system reads it.
+ *
+ * Structural on purpose: Signal Forms names this type
+ * `ValidationError.WithField` in 21.1 and `ValidationError.WithFieldTree`
+ * from 21.2 on (with `WithField` left as a deprecated alias), and 22 makes the
+ * field tree read-only. Every one of them is assignable to this shape, so the
+ * `[field]` binding type-checks on every Angular version cngx supports without
+ * naming a version-specific or deprecated type.
+ *
+ * @category forms/field
+ * @since 0.1.0
+ */
+export interface CngxFieldValidationError extends ValidationError {
+  /** The field the error belongs to. */
+  readonly fieldTree: () => CngxErrorFieldState;
+}
+
+/**
  * Abstraction over Angular Signal Forms' `FieldState`.
  *
  * Consumers pass `Field<T>` (a callable that returns `FieldState<T>`) to `CngxFormField`.
@@ -22,7 +55,7 @@ export type { CngxFormFieldControl } from '@cngx/core/tokens';
 export interface CngxFieldRef<T = unknown> {
   readonly name: Signal<string>;
   readonly value: Signal<T>;
-  readonly errors: Signal<ValidationError.WithFieldTree[]>;
+  readonly errors: Signal<CngxFieldValidationError[]>;
   readonly touched: Signal<boolean>;
   readonly dirty: Signal<boolean>;
   readonly invalid: Signal<boolean>;
@@ -44,7 +77,7 @@ export interface CngxFieldRef<T = unknown> {
   /** See {@link CngxFieldRef.min}. */
   readonly max?: Signal<unknown>;
   readonly pattern: Signal<readonly RegExp[]>;
-  readonly errorSummary: Signal<ValidationError.WithFieldTree[]>;
+  readonly errorSummary: Signal<CngxFieldValidationError[]>;
   readonly submitting: Signal<boolean>;
 
   markAsTouched(): void;
@@ -75,7 +108,7 @@ export type CngxFieldAccessor<T = unknown> = () => CngxFieldRef<T>;
  *
  * @category forms/field
  */
-export type ErrorMessageFn = (error: ValidationError.WithFieldTree) => string;
+export type ErrorMessageFn = (error: CngxFieldValidationError) => string;
 
 /**
  * A map of validation error `kind` strings to their message rendering functions.
