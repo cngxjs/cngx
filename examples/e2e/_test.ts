@@ -1,4 +1,4 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect, type Page } from '@playwright/test';
 
 import { CONSOLE_ALLOWLIST } from '../e2e-sweep/console-allowlist';
 import {
@@ -19,6 +19,29 @@ interface RoutedConsoleLine extends ConsoleLine {
 
 const isListed = (line: RoutedConsoleLine) =>
   CONSOLE_ALLOWLIST.some((row) => row.route === line.route && matchesAllowRow(line, row));
+
+const DRAIN_CAP_MS = 500;
+
+/**
+ * Lets a line the last action scheduled (an afterNextRender check, a deferred
+ * effect, a zero-delay timer) reach the console before the guard asserts. One
+ * frame plus one task, capped because a background page may never paint.
+ * Playwright delivers the console events of that window before the evaluate
+ * result, so no fixed settle is needed.
+ */
+async function drainConsole(page: Page): Promise<void> {
+  await page
+    .evaluate(
+      (capMs) =>
+        new Promise<void>((resolve) => {
+          requestAnimationFrame(() => setTimeout(resolve));
+          setTimeout(resolve, capMs);
+        }),
+      DRAIN_CAP_MS,
+    )
+    // A page the test closed or left mid-navigation has nothing to drain.
+    .catch(() => undefined);
+}
 
 /**
  * The feature e2e `test`. Every spec imports it instead of the bare
@@ -52,6 +75,7 @@ export const test = base.extend<{ consoleGuard: void }>({
       });
 
       await use();
+      await Promise.all(context.pages().map(drainConsole));
 
       const unlisted = lines.filter((line) => !isListed(line));
       expect(

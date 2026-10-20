@@ -23,6 +23,14 @@ test.describe('console guard', () => {
     await page.waitForTimeout(100);
   });
 
+  test('fails a test whose last action logs a warning one task later', async ({ page }) => {
+    test.fail();
+    await page.setContent('<p>planted</p>');
+    await page.evaluate(() => {
+      setTimeout(() => console.warn('CNGX0000: planted late by the console guard self-check'));
+    });
+  });
+
   test('passes a test whose page logs nothing on the guarded channels', async ({ page }) => {
     await page.setContent('<p>clean</p>');
     await page.evaluate(() => console.info('info is not a guarded channel'));
