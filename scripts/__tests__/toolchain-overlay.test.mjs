@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import { PUBLISHED_LIBS } from '../cngx-libs.mjs';
+
 import {
   followsAngularMajor,
   isFrameworkPackage,
@@ -133,5 +135,24 @@ describe('patchTsconfigForTs6', () => {
 
   it('refuses a tsconfig without compilerOptions', () => {
     expect(() => patchTsconfigForTs6('{}')).toThrow(/no compilerOptions/);
+  });
+});
+
+describe('the angular-22-libs CI job', () => {
+  const ci = readFileSync(join(ROOT, '.github', 'workflows', 'ci.yml'), 'utf8');
+  const job = ci.slice(ci.indexOf('  angular-22-libs:'));
+  const steps = job.slice(0, job.search(/\n {2}[a-z-]+:\n/) === -1 ? undefined : job.search(/\n {2}[a-z-]+:\n/));
+
+  it('overlays Angular 22 on Node 22 before building', () => {
+    expect(steps).toContain('node-version: 22');
+    expect(steps.indexOf('toolchain-overlay.mjs --angular 22')).toBeGreaterThan(-1);
+    expect(steps.indexOf('toolchain-overlay.mjs --angular 22')).toBeLessThan(steps.indexOf('npm run build:libs'));
+  });
+
+  it('unit tests every published lib and the schematics', () => {
+    for (const lib of PUBLISHED_LIBS) {
+      expect(steps, lib).toContain(`ng test ${lib} --watch=false`);
+    }
+    expect(steps).toContain('npm run test:schematics');
   });
 });
