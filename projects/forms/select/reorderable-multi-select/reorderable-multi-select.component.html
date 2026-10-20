@@ -142,7 +142,7 @@
       } @else {
         <button
           type="button"
-          class="cngx-reorderable-multi-select__clear-all"
+          class="cngx-select__clear-target cngx-reorderable-multi-select__clear-all"
           [attr.aria-label]="resolvedClearButtonAriaLabel()"
           (click)="handleClearAllClick($event)"
           (keydown.enter)="$event.stopPropagation()"
