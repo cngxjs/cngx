@@ -714,7 +714,13 @@ export class CngxMultiSelectTriggerLabel<T = unknown> {
 
 /**
  * `*cngxSelectClearButton` slot - replaces the `✕` button. Consumer owns
- * the element and invokes `clear()`.
+ * the element and invokes `clear()`. Keep the slot content within the
+ * trigger's line height, or the row grows as soon as the slot appears.
+ * The consumer also owns the tap target: the default button floors its hit
+ * area to `--cngx-target-min` (44px under a coarse pointer, 0px otherwise)
+ * on both axes and hands the extra block size back with a negative margin,
+ * and slot content should do the same to stay a WCAG 2.5.5 target without
+ * growing the row.
  *
  * ```html
  * <cngx-multi-select ...>

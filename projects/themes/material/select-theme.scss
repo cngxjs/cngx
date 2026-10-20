@@ -157,9 +157,12 @@
   --cngx-select-caret-size: 1.5rem;
 
   // Trigger metrics - Material 3 outlined-input scale (56 / 52 / 48 / 44 / 40).
-  // Every Select-family variant exposes its own min-height / padding /
-  // radius tokens; this map drives them all in lock-step so the trigger
-  // surface reads like an <mat-form-field appearance='outline'> input.
+  // Every Select-family variant's min-height / padding / radius token falls
+  // back to its family token, so the bridge sets only the --cngx-select-*
+  // ones and the trigger surface reads like an <mat-form-field
+  // appearance='outline'> input across all nine. A variant assignment would
+  // sit on the trigger (the bridge broadcasts onto every descendant), cut the
+  // chain, and a consumer family token would no longer reach that variant.
   $trig-min-heights: (
     0: 56px,
     -1: 52px,
@@ -179,50 +182,19 @@
   --cngx-select-min-height: #{map.get($trig-min-heights, $scale)};
   --cngx-select-padding: #{map.get($trig-paddings, $scale)};
   --cngx-select-radius: #{$trig-radius};
-
-  --cngx-multi-select-min-height: #{map.get($trig-min-heights, $scale)};
-  --cngx-multi-select-padding: #{map.get($trig-paddings, $scale)};
-  --cngx-multi-select-radius: #{$trig-radius};
-
-  --cngx-combobox-min-height: #{map.get($trig-min-heights, $scale)};
-  --cngx-combobox-padding: #{map.get($trig-paddings, $scale)};
-  --cngx-combobox-radius: #{$trig-radius};
-
-  --cngx-typeahead-min-height: #{map.get($trig-min-heights, $scale)};
-  --cngx-typeahead-padding: #{map.get($trig-paddings, $scale)};
-  --cngx-typeahead-radius: #{$trig-radius};
-
-  --cngx-action-select-min-height: #{map.get($trig-min-heights, $scale)};
-  --cngx-action-select-padding: #{map.get($trig-paddings, $scale)};
-  --cngx-action-select-radius: #{$trig-radius};
-
-  --cngx-action-multi-select-min-height: #{map.get($trig-min-heights, $scale)};
-  --cngx-action-multi-select-padding: #{map.get($trig-paddings, $scale)};
-  --cngx-action-multi-select-radius: #{$trig-radius};
-
-  --cngx-reorderable-multi-select-min-height: #{map.get($trig-min-heights, $scale)};
-  --cngx-reorderable-multi-select-padding: #{map.get($trig-paddings, $scale)};
-  --cngx-reorderable-multi-select-radius: #{$trig-radius};
-
-  --cngx-tree-select-trigger-height: #{map.get($trig-min-heights, $scale)};
-  --cngx-tree-select-trigger-padding: #{map.get($trig-paddings, $scale)};
-  --cngx-tree-select-trigger-radius: #{$trig-radius};
-
-  --cngx-select-shell-min-height: #{map.get($trig-min-heights, $scale)};
-  --cngx-select-shell-padding: #{map.get($trig-paddings, $scale)};
-  --cngx-select-shell-radius: #{$trig-radius};
 }
 
 @mixin theme($theme) {
   // Token map covers two surfaces simultaneously:
   //   - the popover panel (.cngx-select__panel) plus the tree-select host
   //   - the per-variant triggers (cngx-select, cngx-multi-select, …) and
-  //     every descendant via ` *` so the inherits:false density tokens
-  //     (padding, radius, min-height) land on the inner trigger element
-  //     where the CSS rule reads them. Non-inheriting custom properties
-  //     resolve to their initial value when read on a child. The trigger
-  //     surface tokens inherit and fall back to the family tokens, which is
-  //     why the color block sets only the family ones.
+  //     every descendant via ` *`. The trigger surface and layout tokens
+  //     inherit and fall back to the family tokens, which is why the color
+  //     and density blocks set only the family ones. The broadcast puts the
+  //     family values on the trigger itself, so a consumer override of a
+  //     family token targets the select and its descendants, not only an
+  //     ancestor. A later change moves the trigger tokens of every Material
+  //     bridge to the theme root, so an ancestor value reaches the trigger.
   @include bridge.on(
     '.cngx-select__panel',
     cngx-tree-select-panel,

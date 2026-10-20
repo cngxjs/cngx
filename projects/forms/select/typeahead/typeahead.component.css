@@ -42,6 +42,20 @@
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
  *   `--cngx-color-danger`
  *
+ * The trigger layout tokens (`-min-height`, `-gap`, `-padding`,
+ * `-radius`) follow the same chain and are registered the same
+ * way, so a family or variant value set on an ancestor reaches the trigger.
+ * Gap and padding fall back to the spacing scale (`--cngx-space-*`), so a
+ * root `[data-density]` still compacts the trigger. The Material select
+ * bridge assigns the family tokens on the select host and every descendant,
+ * so under the bridge a value set only on an ancestor stops at the bridge
+ * value; set it on the select and its descendants (`.x, .x *`) instead.
+ * A later change moves the trigger tokens of the Material bridges to the
+ * theme root, after which an ancestor value reaches the trigger under the
+ * bridge too.
+ * By design, a family value set on an ancestor also reaches every select
+ * nested below it, including one inside another select's panel.
+ *
  * **Pair with**
  *
  * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
@@ -51,32 +65,39 @@
 @layer cngx.tokens {
   /**
    * Gap between the input, clear button, and caret.
+   * Falls back to `--cngx-select-gap`; see {@link --cngx-select-gap}
+   * for why no `initial-value` is declared.
    * @group Layout
+   * @default var(--cngx-select-gap, var(--cngx-space-sm, 0.5rem))
    */
   @property --cngx-typeahead-gap {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.5rem;
+    inherits: true;
   }
 
   /**
    * Minimum block size of the trigger.
+   * Falls back to `--cngx-select-min-height`; see
+   * {@link --cngx-select-min-height} for why no `initial-value` is declared.
+   * The touch floor still lifts the trigger to `--cngx-target-min`.
    * @group Layout
+   * @default var(--cngx-select-min-height, 2.125rem)
    */
   @property --cngx-typeahead-min-height {
     syntax: '*';
-    inherits: false;
-    initial-value: 2.125rem;
+    inherits: true;
   }
 
   /**
    * Padding shorthand of the trigger.
+   * Falls back to `--cngx-select-padding`; see {@link --cngx-select-padding}
+   * for why no `initial-value` is declared.
    * @group Layout
+   * @default var(--cngx-select-padding, var(--cngx-space-sm, 0) var(--cngx-space-md, 0.75rem))
    */
   @property --cngx-typeahead-padding {
     syntax: '*';
-    inherits: false;
-    initial-value: 0 0.75rem;
+    inherits: true;
   }
 
   /**
@@ -92,13 +113,14 @@
   }
 
   /**
-   * Corner radius of the trigger.
+   * Corner radius of the trigger. Falls back to `--cngx-select-radius`; see
+   * {@link --cngx-select-radius} for why no `initial-value` is declared.
    * @group Layout
+   * @default var(--cngx-select-radius, 0.25rem)
    */
   @property --cngx-typeahead-radius {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.25rem;
+    inherits: true;
   }
 
   /**
@@ -127,30 +149,39 @@
     }
 
     .cngx-typeahead__trigger {
-      /* Derive trigger spacing from the global scale (SET-from-scale rule; read
-         on the trigger host). gap 0.5 -> sm. Block padding is sm so the inline-
-         input trigger scales with density and measures the same as a bare input
-         / text select (42/34/50) instead of pinning flat to the min-height
-         floor. inline md, the shared box inline padding, so the value starts at
-         the same x as in an input. */
-      --cngx-typeahead-gap: var(--cngx-space-sm);
-      --cngx-typeahead-padding: var(--cngx-space-sm) var(--cngx-space-md);
+      /* Trigger spacing derives from the global scale in the gap and padding
+         fallbacks below, so a root [data-density] compacts it. The tokens
+         themselves stay unset: a SET here would shadow a value set on the host
+         or an ancestor. gap 0.5 -> sm. Block padding is sm so the inline- input
+         trigger scales with density and measures the same as a bare input / text
+         select (42/34/50) instead of pinning flat to the min-height floor.
+         inline md, the shared box inline padding, so the value starts at the
+         same x as in an input. */
       /* Self-contained sizing: without this the min-height contract depends
          on a global border-box reset the consumer may not load. */
       box-sizing: border-box;
       display: flex;
       align-items: center;
-      gap: var(--cngx-typeahead-gap, 0.5rem);
+      gap: var(--cngx-typeahead-gap, var(--cngx-select-gap, var(--cngx-space-sm, 0.5rem)));
       width: 100%;
       /* Touch-target floor - lift the trigger tap target to the pointer-
          derived minimum; inert at 0px on a fine pointer. */
-      min-height: max(var(--cngx-typeahead-min-height, 2.125rem), var(--cngx-target-min, 0px));
-      padding: var(--cngx-typeahead-padding, 0 0.75rem);
+      min-height: max(
+        var(--cngx-typeahead-min-height, var(--cngx-select-min-height, 2.125rem)),
+        var(--cngx-target-min, 0px)
+      );
+      /* The literal ends differ from the scale rung on purpose: they reproduce
+         this trigger's spacing from before the cascade when system-tokens.css is
+         not loaded (pinned by select-touch-floor.geometry.spec.ts). */
+      padding: var(
+        --cngx-typeahead-padding,
+        var(--cngx-select-padding, var(--cngx-space-sm, 0) var(--cngx-space-md, 0.75rem))
+      );
       border: var(
         --cngx-typeahead-border,
         var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))
       );
-      border-radius: var(--cngx-typeahead-radius, 0.25rem);
+      border-radius: var(--cngx-typeahead-radius, var(--cngx-select-radius, 0.25rem));
       background: var(--cngx-typeahead-bg, var(--cngx-select-bg, transparent));
       color: var(--cngx-select-color, inherit);
       cursor: text;

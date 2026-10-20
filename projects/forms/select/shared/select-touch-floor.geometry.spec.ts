@@ -25,7 +25,9 @@ import { CngxTypeahead } from '../typeahead/typeahead.component';
 // on an ancestor repaints only the rows that read it: its own variant, plus
 // the variant that chains through it (action-multi-select through the
 // combobox token, reorderable-multi-select through the multi-select token).
-// Tree-select's variant tokens carry a `trigger-` infix.
+// Tree-select's variant tokens carry a `trigger-` infix. The layout chains
+// follow the same shape; their values stay above the 44px floor so the floor
+// does not mask them.
 
 @Component({
   selector: 'cngx-select-touch-floor-host',
@@ -76,15 +78,336 @@ class TouchFloorHost {
   readonly nodeId = (value: unknown): string => String(value);
 }
 
+// Hosts for the tokens read below the trigger row: the shell label slot, the
+// inline input of the two input-led multi variants, and the tree-select
+// clear-all button (rendered once clearable and a value is selected).
+@Component({
+  selector: 'cngx-select-inner-tokens-host',
+  standalone: true,
+  imports: [CngxCombobox, CngxTreeSelect, CngxActionMultiSelect, CngxSelectShell, CngxSelectOption],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/reset.css',
+    '../../../core/theming/base.css',
+    '../../theming/components/cngx-field-affix.css',
+    '../../theming/components/cngx-field-skin.css',
+    './select-base.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div style="display: block; width: 20rem; margin: 1rem">
+      <cngx-combobox [label]="'C'" [options]="options" />
+      <cngx-action-multi-select [label]="'C'" [options]="options" />
+      <cngx-tree-select
+        [label]="'C'"
+        [nodes]="options"
+        [nodeIdFn]="nodeId"
+        [clearable]="true"
+        [values]="['red']"
+      />
+      <cngx-select-shell [label]="'C'">
+        <cngx-option [value]="'red'">Red</cngx-option>
+      </cngx-select-shell>
+    </div>
+  `,
+})
+class InnerTokensHost {
+  readonly options = [
+    { value: 'red', label: 'Red' },
+    { value: 'green', label: 'Green' },
+  ];
+  readonly nodeId = (value: unknown): string => String(value);
+}
+
+// The same nine without system-tokens.css: the spacing scale is unregistered
+// and unset, so each trigger falls back to the literal end of its gap and
+// padding chain. Those ends reproduce what the triggers painted before the
+// tokens cascaded, when the unresolvable scale SET left each trigger on the
+// next registered initial value in its chain.
+@Component({
+  selector: 'cngx-select-no-scale-host',
+  standalone: true,
+  imports: [
+    CngxSelect,
+    CngxMultiSelect,
+    CngxCombobox,
+    CngxTypeahead,
+    CngxTreeSelect,
+    CngxReorderableMultiSelect,
+    CngxActionSelect,
+    CngxActionMultiSelect,
+    CngxSelectShell,
+    CngxSelectOption,
+  ],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/reset.css',
+    '../../../core/theming/base.css',
+    '../../theming/components/cngx-field-affix.css',
+    '../../theming/components/cngx-field-skin.css',
+    './select-base.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div style="display: block; width: 20rem; margin: 1rem">
+      <cngx-select [label]="'C'" [options]="options" />
+      <cngx-multi-select [label]="'C'" [options]="options" />
+      <cngx-combobox [label]="'C'" [options]="options" />
+      <cngx-typeahead [label]="'C'" [options]="options" />
+      <cngx-tree-select [label]="'C'" [nodes]="options" [nodeIdFn]="nodeId" />
+      <cngx-reorderable-multi-select [label]="'C'" [options]="options" />
+      <cngx-action-select [label]="'C'" [options]="options" />
+      <cngx-action-multi-select [label]="'C'" [options]="options" />
+      <cngx-select-shell [label]="'C'">
+        <cngx-option [value]="'red'">Red</cngx-option>
+      </cngx-select-shell>
+    </div>
+  `,
+})
+class NoScaleHost {
+  readonly options = [
+    { value: 'red', label: 'Red' },
+    { value: 'green', label: 'Green' },
+  ];
+  readonly nodeId = (value: unknown): string => String(value);
+}
+
+/** Literal gap / padding ends per host: [column-gap, padding-top, padding-left]. */
+const LITERAL_ENDS: Readonly<Record<string, readonly [string, string, string]>> = {
+  'cngx-select': ['8px', '8px', '12px'],
+  'cngx-multi-select': ['8px', '8px', '12px'],
+  'cngx-combobox': ['8px', '8px', '12px'],
+  'cngx-typeahead': ['8px', '0px', '12px'],
+  'cngx-tree-select': ['8px', '4px', '8px'],
+  'cngx-reorderable-multi-select': ['8px', '6px', '8px'],
+  'cngx-action-select': ['8px', '0px', '12px'],
+  'cngx-action-multi-select': ['6px', '4px', '6px'],
+  'cngx-select-shell': ['8px', '8px', '12px'],
+};
+
+// Every clearable variant with a value, once with the clear button and once
+// without, under the forced touch floor.
+@Component({
+  selector: 'cngx-select-clearable-host',
+  standalone: true,
+  imports: [
+    CngxSelect,
+    CngxMultiSelect,
+    CngxCombobox,
+    CngxTypeahead,
+    CngxTreeSelect,
+    CngxReorderableMultiSelect,
+    CngxActionSelect,
+    CngxActionMultiSelect,
+    CngxSelectShell,
+    CngxSelectOption,
+  ],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../../core/theming/reset.css',
+    '../../../core/theming/base.css',
+    '../../theming/components/cngx-field-affix.css',
+    '../../theming/components/cngx-field-skin.css',
+    './select-base.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div data-touch="on" style="display: block; width: 20rem; margin: 1rem">
+      <div class="with-clear">
+        <cngx-select [label]="'C'" [options]="options" [clearable]="true" [value]="'red'" />
+        <cngx-multi-select
+          [label]="'C'"
+          [options]="options"
+          [clearable]="true"
+          [values]="['red']"
+        />
+        <cngx-combobox [label]="'C'" [options]="options" [clearable]="true" [values]="['red']" />
+        <cngx-typeahead [label]="'C'" [options]="options" [clearable]="true" [value]="'red'" />
+        <cngx-tree-select
+          [label]="'C'"
+          [nodes]="options"
+          [nodeIdFn]="nodeId"
+          [clearable]="true"
+          [values]="['red']"
+        />
+        <cngx-reorderable-multi-select
+          [label]="'C'"
+          [options]="options"
+          [clearable]="true"
+          [values]="['red']"
+        />
+        <cngx-action-select [label]="'C'" [options]="options" [clearable]="true" [value]="'red'" />
+        <cngx-action-multi-select
+          [label]="'C'"
+          [options]="options"
+          [clearable]="true"
+          [values]="['red']"
+        />
+        <cngx-select-shell [label]="'C'" [clearable]="true" [value]="'red'">
+          <cngx-option [value]="'red'">Red</cngx-option>
+        </cngx-select-shell>
+      </div>
+      <div class="without-clear">
+        <cngx-select [label]="'C'" [options]="options" [clearable]="false" [value]="'red'" />
+        <cngx-multi-select
+          [label]="'C'"
+          [options]="options"
+          [clearable]="false"
+          [values]="['red']"
+        />
+        <cngx-combobox [label]="'C'" [options]="options" [clearable]="false" [values]="['red']" />
+        <cngx-typeahead [label]="'C'" [options]="options" [clearable]="false" [value]="'red'" />
+        <cngx-tree-select
+          [label]="'C'"
+          [nodes]="options"
+          [nodeIdFn]="nodeId"
+          [clearable]="false"
+          [values]="['red']"
+        />
+        <cngx-reorderable-multi-select
+          [label]="'C'"
+          [options]="options"
+          [clearable]="false"
+          [values]="['red']"
+        />
+        <cngx-action-select [label]="'C'" [options]="options" [clearable]="false" [value]="'red'" />
+        <cngx-action-multi-select
+          [label]="'C'"
+          [options]="options"
+          [clearable]="false"
+          [values]="['red']"
+        />
+        <cngx-select-shell [label]="'C'" [clearable]="false" [value]="'red'">
+          <cngx-option [value]="'red'">Red</cngx-option>
+        </cngx-select-shell>
+      </div>
+    </div>
+  `,
+})
+class ClearableHost {
+  readonly options = [
+    { value: 'red', label: 'Red' },
+    { value: 'green', label: 'Green' },
+  ];
+  readonly nodeId = (value: unknown): string => String(value);
+}
+
+const CLEAR_BUTTONS: Readonly<Record<string, string>> = {
+  'cngx-select': '.cngx-select__clear',
+  'cngx-multi-select': '.cngx-multi-select__clear-all',
+  'cngx-combobox': '.cngx-combobox__clear-all',
+  'cngx-typeahead': '.cngx-typeahead__clear',
+  'cngx-tree-select': '.cngx-tree-select__clear-all',
+  'cngx-reorderable-multi-select': '.cngx-reorderable-multi-select__clear-all',
+  'cngx-action-select': '.cngx-action-select__clear',
+  'cngx-action-multi-select': '.cngx-action-multi-select__clear-all',
+  'cngx-select-shell': '.cngx-select-shell__clear',
+};
+
+function mountClearable(): HTMLElement {
+  const fixture = TestBed.createComponent(ClearableHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  fixture.detectChanges();
+  return mountedRoot;
+}
+
+function rowHeights(group: HTMLElement): Record<string, number> {
+  return Object.fromEntries(
+    Array.from(group.querySelectorAll<HTMLElement>('.cngx-field-trigger')).map((row) => [
+      hostTag(row) ?? '',
+      Math.round(row.getBoundingClientRect().height),
+    ]),
+  );
+}
+
+interface InnerToken {
+  readonly token: string;
+  readonly value: string;
+  readonly property: 'columnGap' | 'minWidth' | 'flexBasis' | 'inlineSize';
+  /** Every element whose `property` the group reads. */
+  readonly sites: readonly string[];
+  /** The sites `token` repaints. */
+  readonly reaches: readonly string[];
+}
+
+const COMBOBOX_INPUT = '.cngx-combobox__input';
+const ACTION_MULTI_INPUT = '.cngx-action-multi-select__input';
+const INPUTS = [COMBOBOX_INPUT, ACTION_MULTI_INPUT];
+
+const INNER_TOKENS: readonly InnerToken[] = [
+  {
+    token: '--cngx-select-shell-label-gap',
+    value: '7px',
+    property: 'columnGap',
+    sites: ['.cngx-select-shell__label'],
+    reaches: ['.cngx-select-shell__label'],
+  },
+  {
+    token: '--cngx-combobox-input-min-width',
+    value: '70px',
+    property: 'minWidth',
+    sites: INPUTS,
+    reaches: INPUTS,
+  },
+  {
+    token: '--cngx-action-multi-select-input-min-width',
+    value: '70px',
+    property: 'minWidth',
+    sites: INPUTS,
+    reaches: [ACTION_MULTI_INPUT],
+  },
+  {
+    token: '--cngx-combobox-input-flex-basis',
+    value: '70px',
+    property: 'flexBasis',
+    sites: INPUTS,
+    reaches: INPUTS,
+  },
+  {
+    token: '--cngx-action-multi-select-input-flex-basis',
+    value: '70px',
+    property: 'flexBasis',
+    sites: INPUTS,
+    reaches: [ACTION_MULTI_INPUT],
+  },
+  {
+    token: '--cngx-tree-select-clear-size',
+    value: '30px',
+    property: 'inlineSize',
+    sites: ['.cngx-tree-select__clear-all'],
+    reaches: ['.cngx-tree-select__clear-all'],
+  },
+];
+
 const SET_COLOR = 'rgb(1, 2, 3)';
 
 interface TokenChain {
   /** Computed style property painted on the trigger row. */
-  readonly property: 'backgroundColor' | 'color' | 'borderTopColor' | 'outlineColor';
+  readonly property:
+    | 'backgroundColor'
+    | 'color'
+    | 'borderTopColor'
+    | 'outlineColor'
+    | 'minHeight'
+    | 'borderTopLeftRadius'
+    | 'inlineSize'
+    | 'columnGap'
+    | 'paddingTop';
   /** The row only paints `property` while its combobox has focus. */
   readonly focus?: boolean;
-  /** Value the tokens are set to; it paints `SET_COLOR` on `property`. */
+  /** Read `property` off the host's `::before` floor box, not the row. */
+  readonly floor?: boolean;
+  /** Hosts the family token reaches; all nine when omitted. */
+  readonly familyHosts?: readonly string[];
+  /** Value the tokens are set to; it paints `expected` on `property`. */
   readonly value: string;
+  /** Computed value `value` paints on `property`; `SET_COLOR` when omitted. */
+  readonly expected?: string;
   readonly family: string;
   /** Each variant token and the hosts whose trigger row reads it. */
   readonly variants: readonly (readonly [string, readonly string[]])[];
@@ -147,16 +470,109 @@ const CHAINS: readonly TokenChain[] = [
       ['--cngx-select-shell-focus-outline', ['cngx-select-shell']],
     ],
   },
+  {
+    property: 'minHeight',
+    value: '51px',
+    expected: '51px',
+    family: '--cngx-select-min-height',
+    variants: [
+      ['--cngx-multi-select-min-height', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
+      ['--cngx-combobox-min-height', ['cngx-combobox', 'cngx-action-multi-select']],
+      ['--cngx-typeahead-min-height', ['cngx-typeahead']],
+      ['--cngx-tree-select-trigger-height', ['cngx-tree-select']],
+      ['--cngx-reorderable-multi-select-min-height', ['cngx-reorderable-multi-select']],
+      ['--cngx-action-select-min-height', ['cngx-action-select']],
+      ['--cngx-action-multi-select-min-height', ['cngx-action-multi-select']],
+      ['--cngx-select-shell-min-height', ['cngx-select-shell']],
+    ],
+  },
+  {
+    property: 'borderTopLeftRadius',
+    value: '7px',
+    expected: '7px',
+    family: '--cngx-select-radius',
+    variants: [
+      ['--cngx-multi-select-radius', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
+      ['--cngx-combobox-radius', ['cngx-combobox', 'cngx-action-multi-select']],
+      ['--cngx-typeahead-radius', ['cngx-typeahead']],
+      ['--cngx-tree-select-trigger-radius', ['cngx-tree-select']],
+      ['--cngx-reorderable-multi-select-radius', ['cngx-reorderable-multi-select']],
+      ['--cngx-action-select-radius', ['cngx-action-select']],
+      ['--cngx-action-multi-select-radius', ['cngx-action-multi-select']],
+      ['--cngx-select-shell-radius', ['cngx-select-shell']],
+    ],
+  },
+  {
+    // Typeahead and action select fill their container and carry no floor.
+    property: 'inlineSize',
+    floor: true,
+    value: '170px',
+    expected: '170px',
+    family: '--cngx-select-min-width',
+    familyHosts: [
+      'cngx-select',
+      'cngx-multi-select',
+      'cngx-combobox',
+      'cngx-tree-select',
+      'cngx-reorderable-multi-select',
+      'cngx-action-multi-select',
+      'cngx-select-shell',
+    ],
+    variants: [
+      ['--cngx-multi-select-min-width', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
+      ['--cngx-combobox-min-width', ['cngx-combobox', 'cngx-action-multi-select']],
+      ['--cngx-tree-select-min-width', ['cngx-tree-select']],
+      ['--cngx-reorderable-multi-select-min-width', ['cngx-reorderable-multi-select']],
+      ['--cngx-action-multi-select-min-width', ['cngx-action-multi-select']],
+      ['--cngx-select-shell-min-width', ['cngx-select-shell']],
+    ],
+  },
+  {
+    property: 'columnGap',
+    value: '7px',
+    expected: '7px',
+    family: '--cngx-select-gap',
+    variants: [
+      ['--cngx-multi-select-gap', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
+      ['--cngx-combobox-gap', ['cngx-combobox', 'cngx-action-multi-select']],
+      ['--cngx-typeahead-gap', ['cngx-typeahead']],
+      ['--cngx-tree-select-trigger-gap', ['cngx-tree-select']],
+      ['--cngx-reorderable-multi-select-gap', ['cngx-reorderable-multi-select']],
+      ['--cngx-action-select-gap', ['cngx-action-select']],
+      ['--cngx-action-multi-select-gap', ['cngx-action-multi-select']],
+      ['--cngx-select-shell-gap', ['cngx-select-shell']],
+    ],
+  },
+  {
+    property: 'paddingTop',
+    value: '7px 9px',
+    expected: '7px',
+    family: '--cngx-select-padding',
+    variants: [
+      ['--cngx-multi-select-padding', ['cngx-multi-select', 'cngx-reorderable-multi-select']],
+      ['--cngx-combobox-padding', ['cngx-combobox', 'cngx-action-multi-select']],
+      ['--cngx-typeahead-padding', ['cngx-typeahead']],
+      ['--cngx-tree-select-trigger-padding', ['cngx-tree-select']],
+      ['--cngx-reorderable-multi-select-padding', ['cngx-reorderable-multi-select']],
+      ['--cngx-action-select-padding', ['cngx-action-select']],
+      ['--cngx-action-multi-select-padding', ['cngx-action-multi-select']],
+      ['--cngx-select-shell-padding', ['cngx-select-shell']],
+    ],
+  },
 ];
 
 let mountedRoot: HTMLElement | null = null;
 
-function hostTag(row: HTMLElement): string | undefined {
+function hostOf(row: HTMLElement): HTMLElement | null {
   let el: HTMLElement | null = row.parentElement;
   while (el && !el.tagName.startsWith('CNGX-')) {
     el = el.parentElement;
   }
-  return el?.tagName.toLowerCase();
+  return el;
+}
+
+function hostTag(row: HTMLElement): string | undefined {
+  return hostOf(row)?.tagName.toLowerCase();
 }
 
 function mountRows(): HTMLElement[] {
@@ -178,11 +594,14 @@ function mountRows(): HTMLElement[] {
 // ring.
 function paints(
   rows: readonly HTMLElement[],
-  chain: Pick<TokenChain, 'focus'> & {
+  chain: Pick<TokenChain, 'focus' | 'floor'> & {
     readonly property: TokenChain['property'] | 'outlineOffset';
   },
 ): string[] {
   return rows.map((row) => {
+    if (chain.floor) {
+      return getComputedStyle(hostOf(row)!, '::before')[chain.property];
+    }
     if (!chain.focus) {
       return getComputedStyle(row)[chain.property];
     }
@@ -234,11 +653,15 @@ describe('select touch floor geometry', () => {
 
   for (const chain of CHAINS) {
     const { value, family, variants } = chain;
+    const set = chain.expected ?? SET_COLOR;
     it(`${family} set on an ancestor reaches every trigger row`, () => {
       const rows = mountRows();
+      const before = paints(rows, chain);
       setOnAncestor(family, value);
       paints(rows, chain).forEach((painted, i) => {
-        expect(painted, `${hostTag(rows[i])} trigger row`).toBe(SET_COLOR);
+        const host = hostTag(rows[i]) ?? '';
+        const reached = chain.familyHosts?.includes(host) ?? true;
+        expect(painted, `${host} trigger row`).toBe(reached ? set : before[i]);
       });
     });
 
@@ -249,10 +672,113 @@ describe('select touch floor geometry', () => {
         setOnAncestor(token, value);
         paints(rows, chain).forEach((after, i) => {
           const host = hostTag(rows[i]) ?? '';
-          const expected = painted.includes(host) ? SET_COLOR : before[i];
+          const expected = painted.includes(host) ? set : before[i];
           expect(after, `${host} trigger row`).toBe(expected);
         });
       });
     }
   }
+});
+
+describe('select inner layout tokens', () => {
+  for (const { token, value, property, sites, reaches } of INNER_TOKENS) {
+    it(`${token} set on an ancestor reaches only ${reaches.join(' + ')}`, () => {
+      const fixture = TestBed.createComponent(InnerTokensHost);
+      mountedRoot = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(mountedRoot);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      const read = (): string[] =>
+        sites.map((sel) => {
+          const el = mountedRoot!.querySelector<HTMLElement>(sel);
+          expect(el, sel).not.toBeNull();
+          return getComputedStyle(el!)[property];
+        });
+      const before = read();
+      mountedRoot.querySelector<HTMLElement>('div')!.style.setProperty(token, value);
+      read().forEach((after, i) => {
+        expect(after, sites[i]).toBe(reaches.includes(sites[i]) ? value : before[i]);
+      });
+    });
+  }
+});
+
+describe('select trigger spacing without the spacing scale', () => {
+  it('every trigger row falls back to the literal end of its gap and padding chain', () => {
+    const fixture = TestBed.createComponent(NoScaleHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const rows = Array.from(mountedRoot.querySelectorAll<HTMLElement>('.cngx-field-trigger'));
+    expect(rows).toHaveLength(9);
+    const painted = Object.fromEntries(
+      rows.map((row) => {
+        const style = getComputedStyle(row);
+        return [hostTag(row) ?? '', [style.columnGap, style.paddingTop, style.paddingLeft]];
+      }),
+    );
+    expect(painted).toEqual(LITERAL_ENDS);
+  });
+});
+
+describe('tree-select clear-all touch floor', () => {
+  function clearAll(touch: boolean): DOMRect {
+    const fixture = TestBed.createComponent(InnerTokensHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    if (touch) {
+      mountedRoot.querySelector<HTMLElement>('div')!.setAttribute('data-touch', 'on');
+    }
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const button = mountedRoot.querySelector<HTMLElement>('.cngx-tree-select__clear-all');
+    expect(button).not.toBeNull();
+    return button!.getBoundingClientRect();
+  }
+
+  it('keeps the 20px button on a fine pointer', () => {
+    const rect = clearAll(false);
+    expect([Math.round(rect.width), Math.round(rect.height)]).toEqual([20, 20]);
+  });
+
+  it('lifts the button to the 44px floor under the touch floor', () => {
+    const rect = clearAll(true);
+    expect([Math.round(rect.width), Math.round(rect.height)]).toEqual([44, 44]);
+  });
+});
+
+describe('select clear button touch hit area', () => {
+  it('every clear button is a >= 44x44 hit area under the touch floor', () => {
+    const root = mountClearable();
+    const group = root.querySelector<HTMLElement>('.with-clear')!;
+    for (const [host, selector] of Object.entries(CLEAR_BUTTONS)) {
+      const button = group.querySelector<HTMLElement>(`${host} ${selector}`);
+      expect(button, host).not.toBeNull();
+      const rect = button!.getBoundingClientRect();
+      expect(Math.round(rect.width) >= 44 && Math.round(rect.height) >= 44, host).toBe(true);
+      // The whole box takes the tap: probe 1px inside each edge midpoint.
+      const midX = rect.left + rect.width / 2;
+      const midY = rect.top + rect.height / 2;
+      for (const [x, y] of [
+        [midX, rect.top + 1],
+        [midX, rect.bottom - 1],
+        [rect.left + 1, midY],
+        [rect.right - 1, midY],
+      ]) {
+        const hit = document.elementFromPoint(x, y);
+        expect(hit !== null && button!.contains(hit), `${host} at ${x},${y}`).toBe(true);
+      }
+    }
+  });
+
+  it('the clear button leaves every trigger row at its height without one', () => {
+    const root = mountClearable();
+    expect(rowHeights(root.querySelector<HTMLElement>('.with-clear')!)).toEqual(
+      rowHeights(root.querySelector<HTMLElement>('.without-clear')!),
+    );
+  });
 });

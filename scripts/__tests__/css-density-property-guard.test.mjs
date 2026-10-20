@@ -22,6 +22,11 @@ import { describe, expect, it } from 'vitest';
  *     and genuine pre-existing gaps live in DENSITY_ALLOWLIST with a one-clause
  *     reason. Skin stylesheets (`*-skins.css`) are skin-gated by design and
  *     never host the default SET, so they are exempt.
+ *     A spacing READ SITE whose fallback chain ends in the scale counts too:
+ *     `gap: var(--cngx-x-gap, var(--cngx-space-sm))` re-scales with
+ *     `[data-density]` exactly like a SET, and it is the form a token takes
+ *     when it must cascade from an ancestor (a SET on the host or the read
+ *     element would shadow every inherited value).
  *
  * (b) `@property` validity: a registered typed-dimension token
  *     (`<length>` / `<length-percentage>` / `<angle>` / `<time>` / ...) must
@@ -154,6 +159,13 @@ const SPACING_TOKEN_REF = /--cngx-[a-z0-9-]+/g;
 // suffix, and review catches it if it does.
 const IS_SPACING = /-(gap|padding)(-|$)/;
 const SCALE_SET = /--[a-z][a-z0-9-]*\s*:\s*[^;{}]*var\(\s*--cngx-space-/g;
+// A gap / padding / margin declaration that reads a spacing token whose own
+// fallback arm is a chain of var() steps ending in the scale: the token stays
+// unset by default so an ancestor value can cascade, and the fallback carries
+// the density derivation. A literal fallback with a scale var() elsewhere in
+// the declaration does not count.
+const SCALE_READ =
+  /(?<![\w-])(?:gap|row-gap|column-gap|padding(?:-[a-z-]+)?|margin(?:-[a-z-]+)?)\s*:\s*var\(\s*--cngx-[a-z0-9-]*-(?:gap|padding)\s*,\s*(?:var\(\s*--cngx-[a-z0-9-]+\s*,\s*)*var\(\s*--cngx-space-/g;
 
 function referencesSpacingToken(css) {
   SPACING_TOKEN_REF.lastIndex = 0;
@@ -168,12 +180,15 @@ function referencesSpacingToken(css) {
 
 function hasNonSkinGatedScaleSet(css) {
   const gated = skinGatedRanges(css);
-  SCALE_SET.lastIndex = 0;
-  let m;
-  while ((m = SCALE_SET.exec(css)) !== null) {
-    const inGate = gated.some(([s, e]) => m.index >= s && m.index < e);
-    if (!inGate) {
-      return true;
+  for (const pattern of [SCALE_SET, SCALE_READ]) {
+    pattern.lastIndex = 0;
+    let m;
+    while ((m = pattern.exec(css)) !== null) {
+      const at = m.index;
+      const inGate = gated.some(([s, e]) => at >= s && at < e);
+      if (!inGate) {
+        return true;
+      }
     }
   }
   return false;
@@ -226,6 +241,46 @@ const CSS_FILES = walkCss(PROJECTS).map((f) => ({
   full: f,
   rel: '/' + relative(REPO_ROOT, f).replaceAll('\\', '/'),
 }));
+
+describe('density derivation detection', () => {
+  it('accepts a SET from the scale', () => {
+    expect(hasNonSkinGatedScaleSet('.a { --cngx-a-gap: var(--cngx-space-sm); }')).toBe(true);
+  });
+
+  it('accepts a spacing read site whose fallback chain ends in the scale', () => {
+    expect(
+      hasNonSkinGatedScaleSet(
+        '.a { padding: var(--cngx-a-padding, var(--cngx-b-padding, var(--cngx-space-sm) 0)); }',
+      ),
+    ).toBe(true);
+  });
+
+  it('rejects a scale var() outside the token fallback arm', () => {
+    expect(
+      hasNonSkinGatedScaleSet('.a { padding: var(--cngx-a-padding, 2px) var(--cngx-space-sm); }'),
+    ).toBe(false);
+  });
+
+  it('rejects a scale read site that only survives inside a comment', () => {
+    expect(
+      hasNonSkinGatedScaleSet(
+        stripComments('.a { /* gap: var(--cngx-a-gap, var(--cngx-space-sm)); */ gap: 1px; }'),
+      ),
+    ).toBe(false);
+  });
+
+  it('rejects a read site with a literal fallback', () => {
+    expect(hasNonSkinGatedScaleSet('.a { gap: var(--cngx-a-gap, 0.5rem); }')).toBe(false);
+  });
+
+  it('rejects a scale read site inside a skin-gated block', () => {
+    expect(
+      hasNonSkinGatedScaleSet(
+        "[data-skin='x'] .a { gap: var(--cngx-a-gap, var(--cngx-space-sm)); }",
+      ),
+    ).toBe(false);
+  });
+});
 
 describe('css density + @property regression guard', () => {
   it('every component stylesheet referencing a spacing token derives it from the scale at a non-skin-gated host', () => {

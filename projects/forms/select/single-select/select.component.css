@@ -54,6 +54,20 @@
  * Shorthand tokens pin their structural part (1px solid / 2px solid)
  * and inherit only the colour through the delegating chain.
  *
+ * The trigger layout tokens (`-min-width`, `-min-height`, `-gap`,
+ * `-padding`, `-radius`) follow the same chain and are registered the same
+ * way, so a family or variant value set on an ancestor reaches the trigger.
+ * Gap and padding fall back to the spacing scale (`--cngx-space-*`), so a
+ * root `[data-density]` still compacts the trigger. The Material select
+ * bridge assigns the family tokens on the select host and every descendant,
+ * so under the bridge a value set only on an ancestor stops at the bridge
+ * value; set it on the select and its descendants (`.x, .x *`) instead.
+ * A later change moves the trigger tokens of the Material bridges to the
+ * theme root, after which an ancestor value reaches the trigger under the
+ * bridge too.
+ * By design, a family value set on an ancestor also reaches every select
+ * nested below it, including one inside another select's panel.
+ *
  * **Pair with**
  *
  * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
@@ -65,46 +79,59 @@
    * Preferred minimum inline size of the select. A standalone or toolbar
    * select is at least this wide; a narrower cell shrinks it, as it does an
    * input.
+   * It is also the family fallback every variant's min-width token resolves
+   * through. No `initial-value`, like {@link --cngx-select-bg}: the use-site
+   * fallback survives, and a value set on an ancestor reaches the host.
    * @group Layout
+   * @default 10rem
    */
   @property --cngx-select-min-width {
     syntax: '*';
-    inherits: false;
-    initial-value: 10rem;
+    inherits: true;
   }
 
   /**
-   * Minimum block size of the trigger. Read at the trigger element (a
-   * host descendant), so `inherits: true` is load-bearing: with
-   * `inherits: false` the registered initial would always win at the
-   * trigger and setting the token on the host or an ancestor would be
-   * a silent no-op (the inherits:false trap).
+   * Minimum block size of the trigger, and the family fallback every
+   * variant's min-height token resolves through. No `initial-value`, like
+   * {@link --cngx-select-bg}: the use-site fallback survives, and a value set
+   * on the host or an ancestor reaches the trigger, a host descendant. The
+   * touch floor still lifts the trigger to `--cngx-target-min`.
    * @group Layout
+   * @default 2.125rem
    */
   @property --cngx-select-min-height {
     syntax: '*';
     inherits: true;
-    initial-value: 2.125rem;
   }
 
   /**
    * Gap between the label, caret, and clear button.
+   * It is also the family fallback every variant's gap token resolves
+   * through. No `initial-value`, like {@link --cngx-select-bg}: the use-site
+   * fallback to the spacing scale survives, so a root `[data-density]`
+   * compacts it, and a value set on the host or an ancestor reaches the
+   * trigger.
    * @group Layout
+   * @default var(--cngx-space-sm, 0.5rem)
    */
   @property --cngx-select-gap {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.5rem;
+    inherits: true;
   }
 
   /**
    * Padding shorthand of the trigger.
+   * It is also the family fallback every variant's padding token resolves
+   * through. No `initial-value`, like {@link --cngx-select-bg}: the use-site
+   * fallback to the spacing scale survives, so a root `[data-density]`
+   * compacts it, and a value set on the host or an ancestor reaches the
+   * trigger.
    * @group Layout
+   * @default var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 0.75rem)
    */
   @property --cngx-select-padding {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.5rem 0.75rem;
+    inherits: true;
   }
 
   /**
@@ -124,13 +151,16 @@
   }
 
   /**
-   * Corner radius of the trigger.
+   * Corner radius of the trigger, and the family fallback every variant's
+   * radius token resolves through. No `initial-value`, like
+   * {@link --cngx-select-bg}: the use-site fallback survives, and a value set
+   * on the host or an ancestor reaches the trigger.
    * @group Layout
+   * @default 0.25rem
    */
   @property --cngx-select-radius {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.25rem;
+    inherits: true;
   }
 
   /**
@@ -199,10 +229,6 @@
       font: inherit;
       min-width: 0;
       max-inline-size: 100%;
-      /* Resolved on the host, where a consumer sets the non-inheriting
-         min-width token, and handed to the ::before through an unregistered
-         (inheriting) private property. */
-      --_cngx-select-floor: var(--cngx-select-min-width, 10rem);
     }
 
     /* The floor is a preferred width, like the intrinsic size of an input:
@@ -214,7 +240,8 @@
     :scope::before {
       content: '';
       display: block;
-      inline-size: var(--_cngx-select-floor);
+      /* The min-width chain inherits into the pseudo-element. */
+      inline-size: var(--cngx-select-min-width, 10rem);
       max-inline-size: 100%;
     }
 
@@ -223,23 +250,26 @@
     }
 
     .cngx-select__trigger {
-      /* Derive trigger spacing from the global scale so a root [data-density]
-         compacts it (SET-from-scale rule; read on the trigger host). gap 0.5 ->
-         sm; padding 0.5/0.75 -> sm/md; inline md, the shared box inline
-         padding, so the value starts at the same x as in an input. */
-      --cngx-select-gap: var(--cngx-space-sm);
-      --cngx-select-padding: var(--cngx-space-sm) var(--cngx-space-md);
+      /* Trigger spacing derives from the global scale in the gap and padding
+         fallbacks below, so a root [data-density] compacts it. The tokens
+         themselves stay unset: a SET here would shadow a value set on the host
+         or an ancestor. gap 0.5 -> sm; padding 0.5/0.75 -> sm/md; inline md, the
+         shared box inline padding, so the value starts at the same x as in an
+         input. */
       /* Self-contained sizing: without this the min-height contract depends
          on a global border-box reset the consumer may not load. */
       box-sizing: border-box;
       display: inline-flex;
       align-items: center;
-      gap: var(--cngx-select-gap, 0.5rem);
+      gap: var(--cngx-select-gap, var(--cngx-space-sm, 0.5rem));
       width: 100%;
       /* Touch-target floor - lift the trigger tap target to the pointer-
          derived minimum; inert at 0px on a fine pointer. */
       min-height: max(var(--cngx-select-min-height, 2.125rem), var(--cngx-target-min, 0px));
-      padding: var(--cngx-select-padding, 0.5rem 0.75rem);
+      padding: var(
+        --cngx-select-padding,
+        var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 0.75rem)
+      );
       border: var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)));
       border-radius: var(--cngx-select-radius, 0.25rem);
       background: var(--cngx-select-bg, transparent);

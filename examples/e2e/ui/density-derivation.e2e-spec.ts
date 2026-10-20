@@ -631,18 +631,19 @@ test.describe('forms/select — combobox trigger gap derives from the density sc
     page,
   }) => {
     // The combobox trigger rule is @scope (.cngx-combobox)-wrapped, so the probe
-    // sits under a .cngx-combobox host. The trigger SETs --cngx-combobox-gap from
-    // --cngx-space-xs: comfortable reads 4 (the shifted xs, NOT the old 6px),
-    // compact reads 2 — catching a mis-ranked shift, not just an exact rung.
+    // sits under a .cngx-combobox host. The gap token stays unset so an ancestor
+    // value can cascade in, and the gap reads --cngx-space-xs in its fallback:
+    // comfortable reads 4 (the shifted xs, NOT the old 6px), compact reads 2 -
+    // catching a mis-ranked shift, not just an exact rung.
     await gotoDemo(page, 'forms/select/combobox/combobox-basic-tag-picker-with-typeahead-filter');
     await page.locator('.cngx-combobox__trigger').first().waitFor({ state: 'attached' });
     expect(
-      await resolveVar(page, 'cngx-combobox__trigger', '--cngx-combobox-gap', {
+      await resolveVar(page, 'cngx-combobox__trigger', 'column-gap', {
         hostClass: 'cngx-combobox',
       }),
     ).toBe('4px');
     expect(
-      await resolveVar(page, 'cngx-combobox__trigger', '--cngx-combobox-gap', {
+      await resolveVar(page, 'cngx-combobox__trigger', 'column-gap', {
         hostClass: 'cngx-combobox',
         density: 'compact',
       }),

@@ -48,9 +48,19 @@
  *   `--cngx-color-primary`, registered like the background token
  * - `--cngx-select-shell-focus-ring` -> `--cngx-color-primary`
  *
- * For every other token, once registered via `@property` with an initial
- * value the inner var() steps are documentation-only; system tokens
- * (`--cngx-color-*`) are the brand-wide override path.
+ * The trigger layout tokens (`-min-width`, `-min-height`, `-gap`,
+ * `-padding`, `-radius`) follow the same chain and are registered the same
+ * way, so a family or variant value set on an ancestor reaches the trigger.
+ * Gap and padding fall back to the spacing scale (`--cngx-space-*`), so a
+ * root `[data-density]` still compacts the trigger. The Material select
+ * bridge assigns the family tokens on the select host and every descendant,
+ * so under the bridge a value set only on an ancestor stops at the bridge
+ * value; set it on the select and its descendants (`.x, .x *`) instead.
+ * A later change moves the trigger tokens of the Material bridges to the
+ * theme root, after which an ancestor value reaches the trigger under the
+ * bridge too.
+ * By design, a family value set on an ancestor also reaches every select
+ * nested below it, including one inside another select's panel.
  *
  * **Pair with**
  *
@@ -63,43 +73,51 @@
    * Preferred minimum inline size of the select. A standalone or toolbar
    * select is at least this wide; a narrower cell shrinks it, as it does an
    * input.
+   * Falls back to `--cngx-select-min-width`; see {@link --cngx-select-min-width}
+   * for why no `initial-value` is declared.
    * @group Layout
+   * @default var(--cngx-select-min-width, 10rem)
    */
   @property --cngx-select-shell-min-width {
     syntax: '*';
-    inherits: false;
-    initial-value: 10rem;
+    inherits: true;
   }
 
   /**
-   * Minimum block size of the trigger. Shared family default so the shell
-   * trigger matches the other variants instead of sizing to content.
+   * Minimum block size of the trigger.
+   * Falls back to `--cngx-select-min-height`; see
+   * {@link --cngx-select-min-height} for why no `initial-value` is declared.
+   * The touch floor still lifts the trigger to `--cngx-target-min`.
    * @group Layout
+   * @default var(--cngx-select-min-height, 2.125rem)
    */
   @property --cngx-select-shell-min-height {
     syntax: '*';
-    inherits: false;
-    initial-value: 2.125rem;
+    inherits: true;
   }
 
   /**
    * Gap between the label, caret, and clear button.
+   * Falls back to `--cngx-select-gap`; see {@link --cngx-select-gap}
+   * for why no `initial-value` is declared.
    * @group Layout
+   * @default var(--cngx-select-gap, var(--cngx-space-sm, 0.5rem))
    */
   @property --cngx-select-shell-gap {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.5rem;
+    inherits: true;
   }
 
   /**
    * Padding shorthand of the trigger.
+   * Falls back to `--cngx-select-padding`; see {@link --cngx-select-padding}
+   * for why no `initial-value` is declared.
    * @group Layout
+   * @default var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 0.75rem))
    */
   @property --cngx-select-shell-padding {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.5rem 0.75rem;
+    inherits: true;
   }
 
   /**
@@ -115,13 +133,14 @@
   }
 
   /**
-   * Corner radius of the trigger.
+   * Corner radius of the trigger. Falls back to `--cngx-select-radius`; see
+   * {@link --cngx-select-radius} for why no `initial-value` is declared.
    * @group Layout
+   * @default var(--cngx-select-radius, 0.25rem)
    */
   @property --cngx-select-shell-radius {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.25rem;
+    inherits: true;
   }
 
   /**
@@ -170,13 +189,16 @@
   }
 
   /**
-   * Gap inside the label slot (between glyph and text).
+   * Gap inside the label slot (between glyph and text). No `initial-value`,
+   * like {@link --cngx-select-bg}: the use-site fallback to the spacing scale
+   * survives, so a root `[data-density]` compacts it, and a value set on the
+   * host or an ancestor reaches the label.
    * @group Layout
+   * @default var(--cngx-space-xs)
    */
   @property --cngx-select-shell-label-gap {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.375rem;
+    inherits: true;
   }
 
   /* Delegating token - the clear button ring tracks
@@ -194,10 +216,6 @@
       font: inherit;
       min-width: 0;
       max-inline-size: 100%;
-      /* Resolved on the host, where a consumer sets the non-inheriting
-         min-width token, and handed to the ::before through an unregistered
-         (inheriting) private property. */
-      --_cngx-select-floor: var(--cngx-select-shell-min-width, var(--cngx-select-min-width, 10rem));
     }
 
     /* The floor is a preferred width, like the intrinsic size of an input:
@@ -209,7 +227,8 @@
     :scope::before {
       content: '';
       display: block;
-      inline-size: var(--_cngx-select-floor);
+      /* The min-width chain inherits into the pseudo-element. */
+      inline-size: var(--cngx-select-shell-min-width, var(--cngx-select-min-width, 10rem));
       max-inline-size: 100%;
     }
 
@@ -218,18 +237,18 @@
     }
 
     .cngx-select-shell__trigger {
-      /* Derive trigger spacing from the global scale (SET-from-scale rule; read
-         on the trigger host). gap 0.5 -> sm; padding 0.5/0.75 -> sm/md; inline
-         md, the shared box inline padding, so the value starts at the same x as
-         in an input. */
-      --cngx-select-shell-gap: var(--cngx-space-sm);
-      --cngx-select-shell-padding: var(--cngx-space-sm) var(--cngx-space-md);
+      /* Trigger spacing derives from the global scale in the gap and padding
+         fallbacks below, so a root [data-density] compacts it. The tokens
+         themselves stay unset: a SET here would shadow a value set on the host
+         or an ancestor. gap 0.5 -> sm; padding 0.5/0.75 -> sm/md; inline md, the
+         shared box inline padding, so the value starts at the same x as in an
+         input. */
       /* Self-contained sizing: without this the min-height contract depends
          on a global border-box reset the consumer may not load. */
       box-sizing: border-box;
       display: inline-flex;
       align-items: center;
-      gap: var(--cngx-select-shell-gap, var(--cngx-select-gap, 0.5rem));
+      gap: var(--cngx-select-shell-gap, var(--cngx-select-gap, var(--cngx-space-sm, 0.5rem)));
       width: 100%;
       /* Touch-target floor - lift the trigger tap target to the pointer-
          derived minimum; inert at 0px on a fine pointer. */
@@ -237,7 +256,10 @@
         var(--cngx-select-shell-min-height, var(--cngx-select-min-height, 2.125rem)),
         var(--cngx-target-min, 0px)
       );
-      padding: var(--cngx-select-shell-padding, var(--cngx-select-padding, 0.5rem 0.75rem));
+      padding: var(
+        --cngx-select-shell-padding,
+        var(--cngx-select-padding, var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 0.75rem))
+      );
       border: var(
         --cngx-select-shell-border,
         var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))
@@ -275,15 +297,18 @@
     }
 
     .cngx-select-shell__label {
-      /* label-gap 0.375 -> xs (tie xs/sm -> xs). */
-      --cngx-select-shell-label-gap: var(--cngx-space-xs);
+      /* label-gap 0.375 -> xs (tie xs/sm -> xs), derived in the gap fallback
+         below; the token stays unset so an ancestor value cascades in. */
       flex: 1 1 auto;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
-      gap: var(--cngx-select-shell-label-gap, 0.375rem);
+      /* The literal end differs from the scale rung on purpose: it keeps the
+         label gap from before the cascade when system-tokens.css is not
+         loaded. */
+      gap: var(--cngx-select-shell-label-gap, var(--cngx-space-xs, 0.375rem));
     }
 
     .cngx-select-shell__label--placeholder {
