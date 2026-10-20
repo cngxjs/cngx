@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   followsAngularMajor,
+  isFrameworkPackage,
   overlayManifest,
   overlayTargets,
   parseAngularTarget,
@@ -84,6 +85,19 @@ describe('parseAngularTarget', () => {
   it('refuses anything else', () => {
     for (const spec of [undefined, '', '21.2', '^21.0.0', 'latest']) {
       expect(() => parseAngularTarget(spec), String(spec)).toThrow(/pass a major/);
+    }
+  });
+});
+
+describe('overlayTargets for an exact release', () => {
+  it('moves only the framework and keeps the build tooling', () => {
+    const targets = overlayTargets(manifest, true);
+    expect(targets).toContain('@angular/core');
+    expect(targets).toContain('@angular/compiler-cli');
+    expect(targets).toContain('@ngrx/signals');
+    for (const tool of ['@angular/build', '@angular/cli', '@angular-devkit/schematics', 'ng-packagr', '@schematics/angular']) {
+      expect(targets, tool).not.toContain(tool);
+      expect(isFrameworkPackage(tool), tool).toBe(false);
     }
   });
 });

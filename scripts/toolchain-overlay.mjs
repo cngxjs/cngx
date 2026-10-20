@@ -17,9 +17,10 @@
 //   node scripts/toolchain-overlay.mjs --angular 21.0.0 --force
 //
 // A major moves every package to its newest release of that major. An exact
-// version pins every package that published it (the framework packages) and
-// moves the rest (tools on their own patch cadence) to the newest release of
-// that minor, pinned too.
+// release pins only the framework (the @angular/* runtime and compiler
+// packages and @ngrx/signals) and keeps the workspace's own build tooling:
+// the floor run is about the Angular a consumer runs, and older unit-test
+// builders lack features the test setup relies on.
 //
 // Refuses to run outside CI (CI=true) unless --force is passed, and refuses on
 // a dirty tree: the rewrite is not meant to be committed.
@@ -44,12 +45,18 @@ export function followsAngularMajor(name) {
   );
 }
 
-/** Every dependency name in the manifest that the overlay moves, sorted. */
-export function overlayTargets(manifest) {
+/** The framework part of the Angular family: what an app runs and compiles with, not the CLI tooling. */
+export function isFrameworkPackage(name) {
+  return (name.startsWith('@angular/') && name !== '@angular/build' && name !== '@angular/cli') || name === '@ngrx/signals';
+}
+
+/** Every dependency name in the manifest that the overlay moves, sorted; `frameworkOnly` for an exact release. */
+export function overlayTargets(manifest, frameworkOnly = false) {
   const names = new Set();
+  const moves = frameworkOnly ? isFrameworkPackage : followsAngularMajor;
   for (const field of ['dependencies', 'devDependencies']) {
     for (const name of Object.keys(manifest[field] ?? {})) {
-      if (followsAngularMajor(name)) {
+      if (moves(name)) {
         names.add(name);
       }
     }
@@ -181,7 +188,7 @@ function main() {
   const manifestPath = join(ROOT, 'package.json');
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
   const versions = {};
-  for (const name of overlayTargets(manifest)) {
+  for (const name of overlayTargets(manifest, args.target.exact !== undefined)) {
     versions[name] = resolveVersion(name, args.target);
   }
   const compilerCli = versions['@angular/compiler-cli'];
