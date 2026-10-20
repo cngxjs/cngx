@@ -78,6 +78,7 @@
     "pack:check": "node scripts/pack-libs.mjs --check",
     "test:consumer": "node scripts/consumer-fixture.mjs",
     "check:peers": "node scripts/peer-deps-guard.mjs",
+    "compat:overlay": "node scripts/toolchain-overlay.mjs",
     "e2e": "playwright test"
   },
   "private": true,
