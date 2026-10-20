@@ -129,6 +129,9 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
   /** @internal Claim the current open for `owner`. See {@link CngxContextMenuPanel.claimOpen}. */
   claimOpen(owner: unknown): void {
     this.openOwnerState.set(owner);
+    // A trigger open makes this a root: activation routes to the trigger,
+    // never to the panel a previous openAsSubmenu came from.
+    this.openedFrom = null;
     // A trigger claim is always a ROOT open: it must not inherit the sticky
     // submenu policy (non-exclusive, right-start + flip chain) a previous
     // openAsSubmenu installed on this panel. Clearing here - in the open
@@ -154,7 +157,8 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
    * reaching into the popover's `@internal` override setters - the ejected item
    * skin stays off `CngxPopover` internals (decompose).
    */
-  openAsSubmenu(context: T | null): void {
+  openAsSubmenu(context: T | null, parent?: CngxContextMenuPanel<T>): void {
+    this.openedFrom = parent ?? null;
     this.popover.setExclusiveOverride(false);
     this.popover.setPlacementOverride('right-start');
     this.popover.setPositionTryFallbacksOverride(CNGX_SUBMENU_TRY_FALLBACKS);
@@ -168,6 +172,13 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
   private activationHandler: (() => void) | null = null;
   /** Push-only submenu-note forwarder registered by the trigger; `null` while none bound. */
   private submenuNoteHandler: (() => void) | null = null;
+  /**
+   * The panel whose item opened this one as a submenu, `null` for a trigger
+   * open. An imperative link for routing, not state: activation, keydown and
+   * the submenu note climb it to the root, whose trigger core resolves the
+   * deepest open menu itself.
+   */
+  private openedFrom: CngxContextMenuPanel<T> | null = null;
 
   constructor() {
     // Open moves focus into the menu container, so the container's
@@ -177,7 +188,16 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
     // decides, on both keyboard activation and pointer click.
     outputToObservable(this.menuHost.ad.activated)
       .pipe(takeUntilDestroyed())
-      .subscribe(() => this.activationHandler?.());
+      .subscribe(() => this.handleActivated());
+  }
+
+  /** @internal Route an activation to the trigger, else up the parent chain. */
+  handleActivated(): void {
+    if (this.activationHandler) {
+      this.activationHandler();
+      return;
+    }
+    this.openedFrom?.handleActivated?.();
   }
 
   /**
@@ -208,10 +228,23 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
    * ran, so the trigger's focus stack records an externally opened submenu
    * (idempotent no-op for stack-driven hover/click opens). */
   noteActiveSubmenuOpened(): void {
-    this.submenuNoteHandler?.();
+    if (this.submenuNoteHandler) {
+      this.submenuNoteHandler();
+      return;
+    }
+    this.openedFrom?.noteActiveSubmenuOpened?.();
+  }
+
+  /** @internal Route a keydown to the trigger, else up the parent chain. */
+  routeKeydown(event: KeyboardEvent): void {
+    if (this.keydownHandler) {
+      this.keydownHandler(event);
+      return;
+    }
+    this.openedFrom?.routeKeydown?.(event);
   }
 
   protected handleKeydown(event: KeyboardEvent): void {
-    this.keydownHandler?.(event);
+    this.routeKeydown(event);
   }
 }

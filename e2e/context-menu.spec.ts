@@ -37,7 +37,10 @@ test.describe('CngxContextMenuTrigger demo', () => {
     await zone.click({ button: 'right' });
     await expect(page.locator('[role="menu"]')).toBeVisible();
 
-    await page.locator('h1, body').first().click({ position: { x: 5, y: 5 } });
+    await page
+      .locator('h1, body')
+      .first()
+      .click({ position: { x: 5, y: 5 } });
     await expect(page.locator('[role="menu"]')).toBeHidden();
   });
 
@@ -56,7 +59,10 @@ test.describe('CngxContextMenuTrigger demo', () => {
     const trigger = page.getByRole('button', { name: 'Actions menu' });
     await trigger.click();
     await expect(page.locator('[role="menu"]')).toBeVisible();
-    await page.locator('h1, body').first().click({ position: { x: 5, y: 5 } });
+    await page
+      .locator('h1, body')
+      .first()
+      .click({ position: { x: 5, y: 5 } });
     await expect(page.locator('[role="menu"]')).toBeHidden();
   });
 
@@ -97,5 +103,66 @@ test.describe('CngxContextMenuTrigger demo', () => {
 
     const lastAction = page.locator('.event-row', { hasText: 'Last action' });
     await expect(lastAction.locator('.event-value')).toHaveText('delete');
+  });
+});
+
+test.describe('CngxContextMenu three-level submenu', () => {
+  const THREE_LEVEL = '/#/ui/context-menu/submenu/three-level-menu';
+
+  test('click opens two submenu levels, parents stay open, the third panel highlights its first item', async ({
+    page,
+  }) => {
+    await page.goto(THREE_LEVEL);
+    await page.locator('.demo-ctx-zone').click({ button: 'right' });
+    const root = page.getByRole('menu', { name: 'Document actions' });
+    await expect(root).toBeVisible();
+
+    await root.getByRole('menuitem', { name: 'Export as' }).click();
+    const exportMenu = page.getByRole('menu', { name: 'Export format' });
+    await expect(exportMenu).toBeVisible();
+
+    await exportMenu.getByRole('menuitem', { name: 'Image' }).click();
+    const imageMenu = page.getByRole('menu', { name: 'Image format' });
+    await expect(imageMenu).toBeVisible();
+    await expect(root).toBeVisible();
+    await expect(exportMenu).toBeVisible();
+    // The third panel highlights its first item through its own
+    // aria-activedescendant.
+    const png = imageMenu.getByRole('menuitem', { name: 'PNG' });
+    await expect(imageMenu).toHaveAttribute(
+      'aria-activedescendant',
+      (await png.getAttribute('id'))!,
+    );
+  });
+
+  test('Enter opens two submenu levels, parents stay open, the third panel highlights its first item', async ({
+    page,
+  }) => {
+    await page.goto(THREE_LEVEL);
+    const zone = page.locator('.demo-ctx-zone');
+    await zone.focus();
+    await page.keyboard.press('Shift+F10');
+    const root = page.getByRole('menu', { name: 'Document actions' });
+    await expect(root).toBeVisible();
+
+    // The first item of each panel is the submenu parent and opens highlighted.
+    await page.keyboard.press('Enter');
+    const exportMenu = page.getByRole('menu', { name: 'Export format' });
+    await expect(exportMenu).toBeVisible();
+
+    await page.keyboard.press('Enter');
+    const imageMenu = page.getByRole('menu', { name: 'Image format' });
+    await expect(imageMenu).toBeVisible();
+    await expect(root).toBeVisible();
+    await expect(exportMenu).toBeVisible();
+    const png = imageMenu.getByRole('menuitem', { name: 'PNG' });
+    await expect(imageMenu).toHaveAttribute(
+      'aria-activedescendant',
+      (await png.getAttribute('id'))!,
+    );
+
+    await page.keyboard.press('ArrowLeft');
+    await expect(imageMenu).toBeHidden();
+    await expect(exportMenu).toBeVisible();
   });
 });
