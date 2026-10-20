@@ -3,12 +3,14 @@
 //   npm run schematics:scaffold   # rewrite the generated module
 //
 // Renders the `ng new` application templates of every installed
-// @schematics/angular, the toolchain's own and each `@schematics/angular-<major>`
-// npm alias in package.json, for every supported variant and writes their
-// bodies, keyed by the CLI major, into the catalog ng add compares an app
-// against. A new CLI major is one alias devDependency and one regenerate. A file counts as the
-// untouched scaffold only on an exact match with an entry, never on a
-// heuristic, so the templates are the single source and
+// @schematics/angular (the toolchain's own and each
+// `@schematics/angular-<major>` npm alias in package.json) for every
+// supported variant and writes their bodies, keyed by the CLI major, into
+// the catalog ng add compares an app against. A new CLI major is one alias
+// devDependency and one regenerate. Each major keeps its full set, also the
+// bodies another major shares, so dropping a major drops nothing else. A
+// file counts as the untouched scaffold only on an exact match with an
+// entry, never on a heuristic, so the templates are the single source and
 // `scripts/__tests__/scaffold-catalog.test.mjs` fails when an installed
 // @schematics/angular release changes one until the catalog is regenerated
 // and reviewed.
@@ -111,19 +113,19 @@ function schematicsRoot(name = TOOLCHAIN_PACKAGE) {
 /**
  * The template packages the catalog renders: the toolchain's own first, then
  * every alias devDependency in package.json, in the order listed. A major
- * an earlier package already renders is left out, so a toolchain moved onto
- * an alias's major (the 22 overlay) renders it once.
+ * an earlier package already renders is left out, so a toolchain that
+ * `scripts/toolchain-overlay.mjs` moved onto an alias's major renders it once.
  */
 export function schematicsRoots() {
   const { devDependencies = {} } = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8'));
   const names = [TOOLCHAIN_PACKAGE, ...Object.keys(devDependencies).filter((name) => ALIAS.test(name))];
-  const seen = new Set();
-  return names
-    .map((name) => schematicsRoot(name))
-    .filter((root) => {
-      const major = majorOf(root);
-      return !seen.has(major) && seen.add(major);
-    });
+  const roots = [];
+  for (const root of names.map((name) => schematicsRoot(name))) {
+    if (!roots.some((kept) => majorOf(kept) === majorOf(root))) {
+      roots.push(root);
+    }
+  }
+  return roots;
 }
 
 /** The installed @schematics/angular version, read from its own package.json. */

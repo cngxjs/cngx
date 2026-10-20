@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
@@ -54,6 +55,16 @@ describe('scaffold catalog', () => {
 
     expect(version('@angular-devkit/core')).toBe(version('@schematics/angular'));
     expect(version('typescript').split('.').slice(0, 2).join('.')).toBe(devDependencies.typescript.replace(/^~/, '').split('.').slice(0, 2).join('.'));
+  });
+
+  it('lets only the catalog generator reach the alias packages and what they pull in', () => {
+    const tracked = execFileSync('git', ['ls-files', '*.ts', '*.mjs', '*.js', '*.cjs'], { cwd: ROOT, encoding: 'utf8' }).split('\n').filter(Boolean);
+    const reaching = tracked.filter((file) => {
+      const text = readFileSync(resolve(ROOT, file), 'utf8');
+      return /['"`](?:@schematics\/angular-\d+|oxc-parser)['"`/]/.test(text);
+    });
+
+    expect(reaching).toEqual([]);
   });
 
   it.each(MAJORS)('renders the CLI %i spec templates byte for byte as ng new wrote the fixtures', async (major) => {
