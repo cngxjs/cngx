@@ -24,6 +24,11 @@ function setup() {
 }
 
 describe('CngxBannerTrigger', () => {
+  it('declares OnPush, so the strategy is the same on every Angular major', () => {
+    const def = (CngxBannerTrigger as unknown as { ɵcmp: { onPush: boolean } }).ɵcmp;
+    expect(def.onPush).toBe(true);
+  });
+
   it('shows the banner on true and dismisses it on false', () => {
     const { banner, fixture } = setup();
     expect(banner.banners().length).toBe(0);

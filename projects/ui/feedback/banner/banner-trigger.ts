@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   DestroyRef,
   effect,
@@ -49,6 +50,7 @@ import { CngxBanner } from './banner.service';
 @Component({
   selector: 'cngx-banner-trigger',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: '',
   host: { style: 'display: none' },
 })
