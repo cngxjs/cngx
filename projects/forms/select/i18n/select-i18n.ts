@@ -1,6 +1,7 @@
 import { computed, inject, InjectionToken, type Signal } from '@angular/core';
 
 import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
+import { memoize } from '@cngx/core/utils';
 
 import type {
   CngxSelectAnnouncerConfig,
@@ -40,6 +41,11 @@ export interface CngxSelectCopy {
   /** Default accessible name of the reorderable-select reorder hint. */
   readonly reorderHint: string;
 }
+
+/** @internal One conjunction list format per locale for the selection summary. */
+const selectionListFormatFor = memoize(
+  (locale: string): Intl.ListFormat => new Intl.ListFormat(locale, { type: 'conjunction' }),
+);
 
 /** @internal Builds the default announcer formatter from the section's messages. */
 function announceFormatFrom(
@@ -94,6 +100,12 @@ export function selectCopyFrom(section: CngxSelectLanguageSection, locale: strin
       chipRemove: section.chipRemove,
       chipRemoveFor: (action, label) =>
         formatMessage(section.chipRemoveFor, { action, label }, locale),
+      selectionSummary: (labels) =>
+        formatMessage(
+          section.selectionSummary,
+          { count: labels.length, list: selectionListFormatFor(locale).format(labels) },
+          locale,
+        ),
       treeExpand: section.treeExpand,
       treeCollapse: section.treeCollapse,
       statusLoading: section.statusLoading,

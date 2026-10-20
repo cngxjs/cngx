@@ -71,6 +71,7 @@ const EN_ARIA: CngxResolvedSelectAriaLabels = {
   listboxFallback: 'Options',
   sheetClose: 'Close',
   sheetDone: 'Done',
+  selectionSummary: (labels: readonly string[]) => labels.join(', '),
 };
 
 function createMockHost(): {
@@ -598,7 +599,9 @@ describe('CngxSelectPanelShell - action slot', () => {
     expect(top).toBeTruthy();
     expect(bottom).toBeNull();
     // Order: action-top precedes the projected body in DOM order.
-    const children = Array.from(root.querySelectorAll('.cngx-select__action--top, .projected-body'));
+    const children = Array.from(
+      root.querySelectorAll('.cngx-select__action--top, .projected-body'),
+    );
     expect(children[0]?.classList.contains('cngx-select__action--top')).toBe(true);
     expect(children[1]?.classList.contains('projected-body')).toBe(true);
   });
@@ -609,7 +612,9 @@ describe('CngxSelectPanelShell - action slot', () => {
     const root = fixture.nativeElement as HTMLElement;
     expect(root.querySelector('.cngx-select__action--top')).toBeNull();
     expect(root.querySelector('.cngx-select__action--bottom')).toBeTruthy();
-    const children = Array.from(root.querySelectorAll('.cngx-select__action--bottom, .projected-body'));
+    const children = Array.from(
+      root.querySelectorAll('.cngx-select__action--bottom, .projected-body'),
+    );
     expect(children[0]?.classList.contains('projected-body')).toBe(true);
     expect(children[1]?.classList.contains('cngx-select__action--bottom')).toBe(true);
   });
@@ -657,9 +662,7 @@ describe('CngxSelectPanelShell - action slot', () => {
 
   it('forwards actionFocusTrapEnabled to the CngxFocusTrap host directive', async () => {
     const { fixture } = setupAction();
-    const shellEl = fixture.nativeElement.querySelector(
-      'cngx-select-panel-shell',
-    ) as HTMLElement;
+    const shellEl = fixture.nativeElement.querySelector('cngx-select-panel-shell') as HTMLElement;
     // Directive attribute is applied via hostDirectives. The presence of the
     // cngx-focus-trap class/selector is implicit; we verify the binding
     // round-trips by flipping the input and checking the directive's
@@ -693,12 +696,7 @@ describe('CngxSelectPanelShell - action slot', () => {
       <div class="projected-body">projected</div>
     </cngx-select-panel-shell>
     <ng-template #retryTpl let-retry let-label="label" let-disabled="disabled">
-      <button
-        class="my-retry"
-        type="button"
-        [attr.data-disabled]="disabled"
-        (click)="retry()"
-      >
+      <button class="my-retry" type="button" [attr.data-disabled]="disabled" (click)="retry()">
         {{ label }}
       </button>
     </ng-template>
