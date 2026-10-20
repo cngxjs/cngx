@@ -39,6 +39,16 @@ for Angular 22.
 The preflight refuses an app below 21.1 and warns, without stopping, on an
 Angular major above 22.
 
+The `@angular/cdk` peer spans both majors, and npm installs a missing peer at
+the newest version its range allows, which on an Angular 21 app is a CDK that
+needs Angular 22. `ng add @cngx/core` declares the CDK at your app's Angular
+range in the same install as the cngx packages. On an app without the CDK,
+start with `ng add @cngx/core`, or install `@angular/cdk` at your Angular major
+first (see [Manual install](#manual-install)): the CLI installs any other
+`@cngx/*` package before its `ng add` runs, the same way a plain
+`npm install` would, and that install would fetch the newer CDK. `@angular/material` is
+never installed for you; the bridge only themes an app that already has it.
+
 ---
 
 ## What a run does
@@ -522,11 +532,16 @@ ng add @cngx/core --ai-tools claude,vscode
 
 ## Manual install
 
-Without the schematic, install what your code imports and its peers:
+Without the schematic, install the CDK (and Material, if you use a `mat-*`
+entry) at your Angular major first, then what your code imports:
 
 ```bash
-npm install @cngx/ui @cngx/themes @angular/cdk
+npm install @angular/cdk@^21     # your Angular major: ^21 or ^22
+npm install @cngx/ui @cngx/themes
 ```
+
+In one command, npm would resolve the CDK the cngx packages peer on to the
+newest release their range allows, which may need a newer Angular than yours.
 
 Import the default theme once in the global stylesheet:
 
