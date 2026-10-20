@@ -28,8 +28,9 @@ install. Nothing outside the project is written.
 ## Supported Angular versions
 
 Every `@cngx/*` package peers on Angular `>=21.1.0 <23.0.0`: Angular 21.1
-through 22.x, with `@angular/cdk`, `@angular/material` and `@ngrx/signals` on
-the same range. 21.1 is the floor because Signal Forms only binds controls
+through 22.x, with `@angular/cdk` and `@angular/material` on the same range.
+The optional `@ngrx/signals` peer of `@cngx/interop` takes NgRx 21 or 22
+(`^21.0.0 || ^22.0.0`): NgRx minors do not follow Angular's. 21.1 is the floor because Signal Forms only binds controls
 through `[formField]` and focuses them through `focusBoundControl()` from 21.1
 on, and `cngx-form-field` builds on both. Use the Node version your Angular
 asks for: `^20.19 || ^22.12 || >=24` for Angular 21, `^22.22.3 || ^24.15 || >=26`
