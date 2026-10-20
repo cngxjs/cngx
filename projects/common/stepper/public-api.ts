@@ -75,7 +75,6 @@ export {
   type CngxStepperConfig,
   type CngxStepperConfigFeature,
   type CngxStepperDensity,
-  type CngxStepperDensityBreakpoints,
   type CngxStepperFallbackLabels,
   type CngxStepperGroupCollapse,
   type CngxStepperGroupSummary,
@@ -87,7 +86,6 @@ export {
   injectStepperConfig,
   provideStepperConfig,
   provideStepperConfigAt,
-  STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
   withStepperDefaultOrientation,
   withStepperDensity,
   withStepperAriaLabels,
@@ -131,12 +129,6 @@ export {
 export { resolveStepperStatusLabel } from './status-label';
 
 export { createStepperDisplayMode, injectStepperCollapse } from './display-mode';
-
-export {
-  createStripDensity,
-  type CngxStripDensity,
-  type CngxStripDensityOptions,
-} from './strip-density';
 
 export {
   createStepperGroupSummary,

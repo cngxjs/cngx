@@ -499,29 +499,24 @@ describe('CngxStepper organism', () => {
       return fixture;
     }
 
-    it('degrades [data-strip-density] full -> compact -> minimal on container width', () => {
+    it('keeps [data-density-auto] and writes no strip-density rung at any width', () => {
       const fixture = autoFixture();
       const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
-      expect(host.getAttribute('data-strip-density')).toBe('full'); // width 0 before first measure
-      emitWidth(3 * 130); // 130 px/step -> full
-      fixture.detectChanges();
-      expect(host.getAttribute('data-strip-density')).toBe('full');
-      emitWidth(3 * 100); // 100 px/step -> compact
-      fixture.detectChanges();
-      expect(host.getAttribute('data-strip-density')).toBe('compact');
-      emitWidth(3 * 40); // 40 px/step -> minimal
-      fixture.detectChanges();
-      expect(host.getAttribute('data-strip-density')).toBe('minimal');
+      for (const w of [3 * 130, 3 * 100, 3 * 40]) {
+        emitWidth(w);
+        fixture.detectChanges();
+        expect(host.hasAttribute('data-density-auto')).toBe(true);
+        expect(host.hasAttribute('data-strip-density')).toBe(false);
+      }
     });
 
-    it('keeps the configured horizontal orientation at the minimal rung (no auto-vertical flip)', () => {
+    it('keeps the configured horizontal orientation on a narrow strip (no auto-vertical flip)', () => {
       const fixture = autoFixture();
       const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
       emitWidth(3 * 40);
       fixture.detectChanges();
-      expect(host.getAttribute('data-strip-density')).toBe('minimal');
-      // A horizontal stepper stays horizontal - minimal degrades to an
-      // indicators-only row, it does not stack vertically.
+      // A horizontal stepper stays horizontal - the labels shrink in flow,
+      // the strip does not stack vertically.
       expect(host.getAttribute('aria-orientation')).toBe('horizontal');
       expect(host.getAttribute('data-orientation')).toBe('horizontal');
     });
@@ -567,7 +562,7 @@ describe('CngxStepper organism', () => {
       expect(labels.every((l) => (l.textContent ?? '').trim().length > 0)).toBe(true);
     });
 
-    it("'comfortable' (default) keeps data-strip-density full at any width and sets no [data-density-auto]", () => {
+    it("'comfortable' (default) sets no [data-density-auto] at any width", () => {
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
       });
@@ -576,7 +571,6 @@ describe('CngxStepper organism', () => {
       const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
       emitWidth(3 * 10);
       fixture.detectChanges();
-      expect(host.getAttribute('data-strip-density')).toBe('full');
       expect(host.getAttribute('aria-orientation')).toBe('horizontal');
       // No-scrollbar shrink CSS is scoped to [data-density-auto]; off here.
       expect(host.hasAttribute('data-density-auto')).toBe(false);
@@ -1852,7 +1846,7 @@ describe('CngxStepper organism', () => {
     // ships none, and the property stays '' until the first entry), and
     // getComputedStyle, which resolves no custom properties in jsdom. The
     // observer fires on observe() so every consumer in the component - the
-    // container and the strip-density probe - gets its first entry.
+    // container query probe - gets its first entry.
     beforeEach(() => {
       vi.stubGlobal(
         'ResizeObserver',

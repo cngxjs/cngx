@@ -79,7 +79,6 @@ export const COPY_TOKENS = [
       'groupCollapse',
       'groupCollapseSummary',
       'density',
-      'densityBreakpoints',
       'connectors',
       'mobileCollapse',
       'mobileIndicatorPosition',

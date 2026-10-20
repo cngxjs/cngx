@@ -6,7 +6,6 @@ import {
   computed,
   contentChild,
   contentChildren,
-  DestroyRef,
   ElementRef,
   inject,
   Injector,
@@ -29,10 +28,8 @@ import {
   createStepperDisplayMode,
   createStepperGroupSummary,
   createStepperGroupNavigation,
-  createStripDensity,
   injectStepperCollapse,
   CngxStep,
-  STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
   CngxStepBadge,
   CngxStepBusySpinner,
   type CngxStepContentContext,
@@ -160,7 +157,6 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
     '[attr.aria-roledescription]': 'stepperRoleDescription()',
     '[attr.aria-orientation]': 'presenter.orientation()',
     '[attr.data-orientation]': 'presenter.orientation()',
-    '[attr.data-strip-density]': 'stripDensity()',
     '[attr.data-density-auto]': "isDensityAuto() ? '' : null",
     '[attr.data-skin]': 'hostAttrs.resolvedSkin()',
     '[attr.data-connectors]': "hostAttrs.resolvedConnectors() ? 'true' : null",
@@ -244,21 +240,6 @@ export class CngxStepper implements CngxStepPanelHost {
     injectStepperCollapse(this.hostElement),
     () => this.config.mobileCollapse,
   );
-
-  /**
-   * Space-driven density rung for the classic strip, measured off the
-   * host element's own width via {@link createStripDensity}. `'full'`
-   * under the `'comfortable'` default. Drives `[data-strip-density]` (the
-   * strip-overflow rung, distinct from the global `[data-density]` spacing
-   * swap so strip degradation never re-scales component spacing).
-   */
-  protected readonly stripDensity = createStripDensity({
-    element: this.hostElement,
-    stepCount: () => this.presenter.stepCount(),
-    density: () => this.config.density,
-    breakpoints: () => this.config.densityBreakpoints ?? STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
-    destroyRef: inject(DestroyRef),
-  });
 
   /**
    * `true` when `density: 'auto'` is active. Drives `[data-density-auto]`,

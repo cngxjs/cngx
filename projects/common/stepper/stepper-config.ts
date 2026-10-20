@@ -148,19 +148,6 @@ export type CngxStepperGroupSummary = 'progress' | 'count' | 'status' | 'off';
 export type CngxStepperDensity = 'comfortable' | 'auto';
 
 /**
- * Per-step px thresholds the `density: 'auto'` ladder reacts to.
- * `compact` is the minimum px per step that keeps full labels; below
- * `minimal` px per step the strip drops to indicators-only. `compact`
- * must exceed `minimal`.
- *
- * @category common/stepper
- */
-export interface CngxStepperDensityBreakpoints {
-  readonly compact: number;
-  readonly minimal: number;
-}
-
-/**
  * Where the mobile auto-collapse indicator (text caption or dot row)
  * sits relative to the active step's panel content under narrow
  * viewports. `'top'` (default) keeps the indicator above the panel;
@@ -171,19 +158,6 @@ export interface CngxStepperDensityBreakpoints {
  * @category common/stepper
  */
 export type CngxStepperMobileIndicatorPosition = 'top' | 'bottom';
-
-/**
- * Default per-step px thresholds for the `density: 'auto'` ladder. The
- * literal lives on a single exported const so the runtime resolver, the
- * config default, and any JSDoc cross-references stay in lockstep.
- * Consumers override via {@link withStepperDensity}'s second argument.
- *
- * @category common/stepper
- */
-export const STEPPER_DEFAULT_DENSITY_BREAKPOINTS: CngxStepperDensityBreakpoints = {
-  compact: 120,
-  minimal: 64,
-};
 
 /**
  * Stepper config surface. Resolution priority: per-instance Input
@@ -223,17 +197,12 @@ export interface CngxStepperConfig {
   readonly groupCollapseSummary?: CngxStepperGroupSummary;
   /**
    * Space-driven density policy for the classic strip. `'auto'`
-   * degrades labels on the strip's own container width; `'comfortable'`
+   * shrinks the labels in flow (a cqi budget under `[data-density-auto]`)
+   * instead of overflowing the strip; `'comfortable'`
    * (default) keeps full labels. Orthogonal to `mobileCollapse`. Apply
    * app-wide via {@link withStepperDensity}.
    */
   readonly density?: CngxStepperDensity;
-  /**
-   * Per-step px thresholds for the `density: 'auto'` ladder. Default
-   * {@link STEPPER_DEFAULT_DENSITY_BREAKPOINTS}. Override via
-   * {@link withStepperDensity}'s second argument.
-   */
-  readonly densityBreakpoints?: CngxStepperDensityBreakpoints;
   /**
    * Opt-in connector rail between adjacent step indicators on the
    * classic skin. Off by default. The rule is double-scoped on
@@ -283,7 +252,6 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   groupCollapse: 'off',
   groupCollapseSummary: 'progress',
   density: 'comfortable',
-  densityBreakpoints: STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
   connectors: false,
   mobileCollapse: 'text',
   mobileIndicatorPosition: 'top',
@@ -517,24 +485,17 @@ export function withStepperGroupCollapseSummary(
 
 /**
  * Set the app-wide space-driven density policy for the classic
- * `<cngx-stepper>` strip. `'auto'` degrades labels on the strip's own
- * container width (full -> compact -> minimal); `'comfortable'`
- * (library default) keeps full labels at every width. The optional
- * second argument overrides the per-step px thresholds (default
- * {@link STEPPER_DEFAULT_DENSITY_BREAKPOINTS}). Orthogonal to the
- * `mobileCollapse` axis; the Material twin ignores this setting.
+ * `<cngx-stepper>` strip. `'auto'` sets `[data-density-auto]`, under
+ * which the labels shrink in flow within a cqi budget (the step furthest
+ * from the active one gives way first) instead of overflowing the strip;
+ * `'comfortable'` (library default) keeps full labels at every width.
+ * Orthogonal to the `mobileCollapse` axis; the Material twin ignores this
+ * setting.
  *
  * @category common/stepper
  */
-export function withStepperDensity(
-  mode: CngxStepperDensity,
-  breakpoints?: CngxStepperDensityBreakpoints,
-): CngxStepperConfigFeature {
-  return defineStepperConfigFeature((cfg) => ({
-    ...cfg,
-    density: mode,
-    ...(breakpoints ? { densityBreakpoints: breakpoints } : {}),
-  }));
+export function withStepperDensity(mode: CngxStepperDensity): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, density: mode }));
 }
 
 /**
