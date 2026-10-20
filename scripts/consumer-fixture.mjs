@@ -674,7 +674,7 @@ function useLocalRegistry(appDir, registryUrl) {
 
 // Runs `steps` in a fresh git repository of the app, checking each as
 // `schematicsSteps` describes.
-async function runSteps(appDir, steps, tag) {
+async function runSteps(appDir, version, steps, tag) {
   git(appDir, ['init', '-q']);
   commitAll(appDir, 'fixture');
   for (const step of steps) {
@@ -855,7 +855,7 @@ async function main() {
   }
   try {
     if (plan.onboarding) {
-      await runSteps(appDir, onboardingSteps(version, preset), 'onboarding');
+      await runSteps(appDir, version, onboardingSteps(version, preset), 'onboarding');
       const mismatch = companionMismatch(installedAngular, installedPackageVersion(appDir, '@angular/cdk'));
       if (mismatch !== undefined) {
         throw new Error(`onboarding: ${mismatch}`);
@@ -866,7 +866,7 @@ async function main() {
       }
       console.log(`\nOnboarding: @angular/cdk ${installedPackageVersion(appDir, '@angular/cdk')} next to @angular/core ${installedAngular}`);
     } else if (plan.schematics) {
-      await runSteps(appDir, schematicsSteps(version, preset), 'schematics');
+      await runSteps(appDir, version, schematicsSteps(version, preset), 'schematics');
     } else {
       writeFileSync(join(appDir, 'src', 'app', 'app.ts'), renderAppSource(plan));
       if (plan.matcherSpec) {
