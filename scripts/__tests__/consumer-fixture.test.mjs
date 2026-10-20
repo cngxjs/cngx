@@ -15,6 +15,7 @@ import {
   renderAppSource,
   renderMatcherSpec,
   onboardingAddArgs,
+  onboardingSteps,
   companionMismatch,
   INTERACTIVE_SMOKE,
   presetPlan,
@@ -63,6 +64,18 @@ describe('variantPlan', () => {
     expect(variantPlan('schematics').onboarding).toBe(false);
     expect(onboardingAddArgs('0.1.0', 'full').slice(0, 3)).toEqual(['ng', 'add', '@cngx/core@0.1.0']);
     expect(onboardingAddArgs('0.1.0', 'full')).toContain('full');
+  });
+
+  it('runs the onboarding ng add twice, the second changing nothing', () => {
+    const [first, again] = onboardingSteps('0.1.0', 'full');
+
+    expect(first).toEqual({ label: 'ng add @cngx/core', args: onboardingAddArgs('0.1.0', 'full'), commit: true });
+    expect(again).toEqual({
+      label: 'ng add @cngx/core again',
+      args: onboardingAddArgs('0.1.0', 'full'),
+      expect: 'cngx is already set up; nothing changed.',
+      clean: true,
+    });
   });
 
   it('accepts a CDK only on the major of the app Angular', () => {
@@ -329,9 +342,9 @@ describe('the consumer-compat workflow', () => {
     }
   });
 
-  it('proves the fresh-app onboarding on both majors', () => {
+  it('proves the fresh-app onboarding on both majors on the full preset', () => {
     expect(workflow).toContain("- { angular: '21', variant: onboarding, args: '--preset full' }");
-    expect(workflow).toContain("- { angular: '22', variant: onboarding }");
+    expect(workflow).toContain("- { angular: '22', variant: onboarding, args: '--preset full' }");
   });
 
   it('runs the stale-core leg on the full preset in its schematics row', () => {

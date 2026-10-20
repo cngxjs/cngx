@@ -143,17 +143,16 @@ function isEntry(entry: ScaffoldEntry, normalized: string, names: ScaffoldNames,
   return entry.body === undefined ? entry.fingerprint === sha256(normalized) : substitute(entry.body, names, selector) === normalized;
 }
 
-// The catalog variants of `file` whose body is exactly `content`, CLI 21
-// only; raw and Prettier-formatted bodies alike.
+// The catalog variants of `file` whose body is exactly `content`, of any
+// CLI major the catalog holds (an app created on 21 and updated to 22 keeps
+// its 21 files); raw and Prettier-formatted bodies alike.
 function matchingVariants(content: string | undefined, file: string, names: ScaffoldNames): readonly string[] {
   const { selector } = names;
   if (content === undefined || selector === undefined) {
     return [];
   }
   const normalized = normalize(content);
-  return SCAFFOLD_CATALOG.filter((entry) => entry.major === 21 && entry.file === file && isEntry(entry, normalized, names, selector)).map(
-    (entry) => entry.variant,
-  );
+  return SCAFFOLD_CATALOG.filter((entry) => entry.file === file && isEntry(entry, normalized, names, selector)).map((entry) => entry.variant);
 }
 
 // The files the decorator of a standalone root component names through

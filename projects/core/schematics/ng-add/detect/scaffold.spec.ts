@@ -37,6 +37,10 @@ describe('scaffoldOf', () => {
     ['scaffold-21-routing-off', false, 'src/app/app.css', 'no-routing-css'],
     ['scaffold-21-zone', true, 'src/app/app.css', 'routing-css'],
     ['scaffold-21-scss', true, 'src/app/app.scss', 'routing-scss'],
+    ['scaffold-22', true, 'src/app/app.css', 'routing-css'],
+    ['scaffold-22-routing-off', false, 'src/app/app.css', 'no-routing-css'],
+    ['scaffold-22-zone', true, 'src/app/app.css', 'routing-css'],
+    ['scaffold-22-scss', true, 'src/app/app.scss', 'routing-scss'],
   ] as const)('reads %s as the untouched scaffold', async (fixture, routing, stylesheet, variant) => {
     const facts = await factsOf(fixture);
 
@@ -49,11 +53,11 @@ describe('scaffoldOf', () => {
     });
   });
 
-  it.each(['scaffold-21', 'scaffold-21-routing-off', 'scaffold-21-scss'] as const)(
+  it.each(['scaffold-21', 'scaffold-21-routing-off', 'scaffold-21-scss', 'scaffold-22', 'scaffold-22-routing-off', 'scaffold-22-scss'] as const)(
     'reads %s as untouched after the CLI Prettier pass',
     async (fixture) => {
       const files = readFixture(fixture);
-      const stylesheet = fixture === 'scaffold-21-scss' ? 'src/app/app.scss' : 'src/app/app.css';
+      const stylesheet = fixture.endsWith('-scss') ? 'src/app/app.scss' : 'src/app/app.css';
       const facts = await factsOf(fixture, {
         'src/app/app.ts': await formatted(files['src/app/app.ts'], 'src/app/app.ts'),
         'src/app/app.html': await formatted(files['src/app/app.html'], 'src/app/app.html'),

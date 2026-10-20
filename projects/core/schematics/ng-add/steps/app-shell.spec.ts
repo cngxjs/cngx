@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import * as ts from 'typescript';
 import { readWorkspace } from '@schematics/angular/utility';
 import { describe, expect, it } from 'vitest';
@@ -6,7 +8,8 @@ import { createProvenance, type StepResult } from '../../engine';
 import { createAnswers, createFacts, VERSIONS } from '../../testing/onboarding';
 import { createFixtureTree, type FixtureName, readFixture } from '../../testing/run-schematic';
 import { type AppShell, appShellSpecOf, type AppShellUnfollowed, detectProject, type ProjectFacts } from '../detect/detect';
-import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell, planAppShellRerun, provideFeedbackInSpec, SPEC_ID } from './app-shell';
+import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell, planAppShellRerun, provideFeedbackInSpec, SPEC_ID, specCustomReason, specCustomText } from './app-shell';
+import { writesStarter } from './starter';
 
 const FEEDBACK = createAnswers({ feedback: true });
 
@@ -348,8 +351,8 @@ describe('planAppShell', () => {
     ]);
   });
 
-  it('provides feedback in the stock zoneless and zone spec once', async () => {
-    for (const name of ['scaffold-21', 'scaffold-21-zone'] as const) {
+  it('provides feedback in the stock zoneless and zone spec of both CLI majors once', async () => {
+    for (const name of ['scaffold-21', 'scaffold-21-zone', 'scaffold-22', 'scaffold-22-zone'] as const) {
       const stock = readFixture(name)['src/app/app.spec.ts'];
       const provided = provideFeedbackInSpec(stock, 'fixture-app');
 
@@ -359,7 +362,7 @@ describe('planAppShell', () => {
     }
   });
 
-  it('leaves a provided spec alone and names the providers for a custom one', async () => {
+  it('leaves a provided spec alone and leaves the outlets out in front of a custom one', async () => {
     const provided = await factsOf('scaffold-21', {
       'src/app/app.spec.ts': provideFeedbackInSpec(readFixture('scaffold-21')['src/app/app.spec.ts'], 'fixture-app'),
     });
@@ -369,11 +372,14 @@ describe('planAppShell', () => {
 
     expect(plan(provided.facts).skipped.filter((step) => step.id === SPEC_ID).map((step) => step.reason)).toEqual(['already provided']);
     expect(plan(provided.facts).changes.some((change) => change.id === SPEC_ID)).toBe(false);
-    expect(plan(custom.facts).changes.filter((change) => change.id === SPEC_ID)).toMatchObject([
+    expect(plan(custom.facts).changes).toMatchObject([
       {
         kind: 'note',
+        id: OUTLETS_ID,
         reason:
-          "the outlets inject CngxToaster and CngxBanner; a TestBed that renders App needs `providers: [provideFeedback(withToasts(), withBanners())]` with import { provideFeedback, withBanners, withToasts } from '@cngx/ui/feedback'",
+          `src/app/app.spec.ts is not the untouched standalone ng new spec, so cngx places no outlet a TestBed there may lack; ${OUTLETS_SNIPPET}, ` +
+          "and give a TestBed that renders App `providers: [provideFeedback(withToasts(), withBanners())]` with import { provideFeedback, withBanners, withToasts } from '@cngx/ui/feedback' " +
+          '(a TestBed that declares App also imports CngxBannerOutlet and CngxToastOutlet)',
       },
     ]);
   });
@@ -454,12 +460,26 @@ describe('planAppShell', () => {
     });
   });
 
-  it('names a custom spec only on the run that places an outlet', async () => {
+  it('places no outlet in front of a custom spec and names outlets and providers in one note', async () => {
     const custom = readFixture('scaffold-21')['src/app/app.spec.ts'].replace('should create', 'creates');
-    const { facts, files } = await factsOf('scaffold-21', { 'src/app/app.spec.ts': custom });
-    const { facts: placed } = await factsOf('scaffold-21', applied(plan(facts), files));
+    const { facts } = await factsOf('scaffold-21', { 'src/app/app.spec.ts': custom });
 
-    expect(plan(facts).changes.map((change) => change.id)).toContain(SPEC_ID);
+    expect(plan(facts)).toEqual({
+      changes: [
+        expect.objectContaining({ kind: 'note', id: OUTLETS_ID, reason: specCustomText('src/app/app.spec.ts', 'App') }),
+      ],
+      skipped: [],
+    });
+    expect(specCustomText('src/app/app.spec.ts', 'App')).toContain(OUTLETS_SNIPPET);
+    expect(readFileSync(join(__dirname, '../../../../../core-concepts/install.md'), 'utf8')).toContain(specCustomReason('<file>'));
+    expect(specCustomText('src/app/app.spec.ts', 'App')).toContain('providers: [provideFeedback(withToasts(), withBanners())]');
+  });
+
+  it('plans nothing more next to a custom spec once both outlets are in place', async () => {
+    const { facts, files } = await factsOf('scaffold-21');
+    const custom = readFixture('scaffold-21')['src/app/app.spec.ts'].replace('should create', 'creates');
+    const { facts: placed } = await factsOf('scaffold-21', { ...applied(plan(facts), files), 'src/app/app.spec.ts': custom });
+
     expect(plan(placed, [OUTLETS_ID]).changes).toEqual([]);
   });
 
@@ -493,11 +513,12 @@ describe('planAppShell next to the starter', () => {
     ]);
   });
 
-  it('names a custom spec on the run the starter places the outlets', () => {
+  it('places no outlet in front of a custom spec, where the starter is never written either', () => {
     const facts = createFacts({ appShell: { ...(createFacts().appShell as AppShell), spec: 'custom' } });
-    const result = planAppShell(facts, createAnswers({ feedback: true }), VERSIONS, [], false, true);
+    const answers = createAnswers({ feedback: true, starter: true });
+    const result = planAppShell(facts, answers, VERSIONS, [], false, writesStarter(facts, answers));
 
-    expect(result.changes).toEqual([expect.objectContaining({ kind: 'note', id: SPEC_ID })]);
+    expect(result).toEqual({ changes: [expect.objectContaining({ kind: 'note', id: OUTLETS_ID })], skipped: [] });
   });
 });
 

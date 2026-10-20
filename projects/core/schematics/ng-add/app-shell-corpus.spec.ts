@@ -16,7 +16,7 @@ import {
 } from './detect/detect';
 import { ngAdd } from './index';
 import { INSTALL_MANIFEST_PATH } from './steps/manifest';
-import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell } from './steps/app-shell';
+import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell, specCustomText } from './steps/app-shell';
 import { STARTER_ID, starterLeftOutText } from './steps/starter';
 
 // Runs `ng add --feedback` over every root component shape in CORPUS and
@@ -32,6 +32,15 @@ type Tree = ReturnType<typeof createFixtureTree>;
 
 const STOCK_APP = readFixture('scaffold-21')['src/app/app.ts'];
 const STOCK_SPEC = readFixture('scaffold-21')['src/app/app.spec.ts'];
+const STOCK_SPEC_22 = readFixture('scaffold-22')['src/app/app.spec.ts'];
+const STOCK_APP_22 = readFixture('scaffold-22')['src/app/app.ts'];
+
+// The content with the character in its middle replaced: the smallest edit
+// that makes a scaffold file no longer the untouched one.
+function oneChanged(content: string): string {
+  const at = Math.floor(content.length / 2);
+  return `${content.slice(0, at)}${content[at] === 'x' ? 'y' : 'x'}${content.slice(at + 1)}`;
+}
 const PRETTIERRC = JSON.parse(readFixture('scaffold-21')['.prettierrc']) as Record<string, unknown>;
 
 const NGMODULE_MAIN = `import { platformBrowser } from '@angular/platform-browser';
@@ -112,10 +121,14 @@ interface Shape {
    * step, and `files` / `remove` change the shell afterwards.
    */
   readonly installedFirst?: true;
-  /** The root component and its template went through Prettier before `ng add`. */
+  /** The root component, its template and its spec went through Prettier before `ng add`. */
   readonly prettierFirst?: true;
-  /** `placed`, or the reason cngx names with the snippet instead of editing. */
-  readonly outcome: 'placed' | AppShellBlockedReason;
+  /**
+   * `placed`; the reason cngx names with the snippet instead of editing; or
+   * `spec-custom`, the outlets left out in front of a spec cngx cannot
+   * provide (fail-closed, so `ng test` never turns red).
+   */
+  readonly outcome: 'placed' | AppShellBlockedReason | 'spec-custom';
 }
 
 const OUTLETS_HTML = '<cngx-banner-outlet />\n<router-outlet />\n<cngx-toast-outlet />\n';
@@ -130,9 +143,19 @@ const CORPUS: readonly Shape[] = [
   { name: 'scaffold-21 routing off', fixture: 'scaffold-21-routing-off', outcome: 'placed' },
   { name: 'scaffold-21 zone', fixture: 'scaffold-21-zone', outcome: 'placed' },
   { name: 'scaffold-21 scss', fixture: 'scaffold-21-scss', outcome: 'placed' },
+  { name: 'scaffold-22', fixture: 'scaffold-22', outcome: 'placed' },
+  { name: 'scaffold-22 routing off', fixture: 'scaffold-22-routing-off', outcome: 'placed' },
+  { name: 'scaffold-22 zone', fixture: 'scaffold-22-zone', outcome: 'placed' },
+  { name: 'scaffold-22 scss', fixture: 'scaffold-22-scss', outcome: 'placed' },
+  { name: 'Prettier-formatted scaffold-22', fixture: 'scaffold-22', prettierFirst: true, outcome: 'placed' },
+  { name: 'one changed character in the scaffold-22 spec', fixture: 'scaffold-22', files: { 'src/app/app.spec.ts': oneChanged(STOCK_SPEC_22) }, outcome: 'spec-custom' },
+  { name: 'one changed character in the scaffold-22 zone spec', fixture: 'scaffold-22-zone', files: { 'src/app/app.spec.ts': oneChanged(readFixture('scaffold-22-zone')['src/app/app.spec.ts']) }, outcome: 'spec-custom' },
   { name: 'standalone-app', fixture: 'standalone-app', outcome: 'placed' },
   { name: 'existing-tailwind-app', fixture: 'existing-tailwind-app', outcome: 'placed' },
   { name: 'NgModule app', files: ngModuleApp(), remove: ['src/app/app.spec.ts'], outcome: 'placed' },
+  { name: 'ng new NgModule app 21 with its spec', fixture: 'scaffold-21-ngmodule', outcome: 'spec-custom' },
+  { name: 'ng new NgModule app 22 with its spec', fixture: 'scaffold-22-ngmodule', outcome: 'spec-custom' },
+  { name: 'ng new NgModule app 22 without its spec', fixture: 'scaffold-22-ngmodule', remove: ['src/app/app.spec.ts'], outcome: 'placed' },
   { name: "NgModule 'imports' key", files: ngModuleApp(`'imports': [\n    BrowserModule\n  ],`), outcome: 'placed' },
   { name: 'NgModule without imports', files: ngModuleApp(''), outcome: 'placed' },
   { name: 'NgModule identifier imports', files: ngModuleApp('imports: MODULES,'), outcome: 'imports-not-array' },
@@ -213,7 +236,8 @@ const CORPUS: readonly Shape[] = [
   { name: 'outlet class imported but not listed', files: withImports('  imports: [RouterOutlet],\n', "import { CngxBannerOutlet } from '@cngx/ui/feedback';\n"), outcome: 'placed' },
   { name: 'stock spec', fixture: 'scaffold-21', outcome: 'placed' },
   { name: 'provided spec', files: { 'src/app/app.spec.ts': STOCK_SPEC.replace("import { App } from './app';\n", "import { App } from './app';\nimport { provideFeedback, withBanners, withToasts } from '@cngx/ui/feedback';\n").replace('      imports: [App],\n', '      imports: [App],\n      providers: [provideFeedback(withToasts(), withBanners())],\n') }, outcome: 'placed' },
-  { name: 'custom spec', files: { 'src/app/app.spec.ts': `${STOCK_SPEC}// mine\n` }, outcome: 'placed' },
+  { name: 'custom spec', files: { 'src/app/app.spec.ts': `${STOCK_SPEC}// mine\n` }, outcome: 'spec-custom' },
+  { name: 'custom spec with both outlets already placed', files: { 'src/app/app.spec.ts': `${STOCK_SPEC}// mine\n`, 'src/app/app.html': OUTLETS_HTML, ...app((stock) => stock.replace('imports: [RouterOutlet]', 'imports: [RouterOutlet, CngxBannerOutlet, CngxToastOutlet]').replace("import { RouterOutlet } from '@angular/router';\n", "import { RouterOutlet } from '@angular/router';\nimport { CngxBannerOutlet, CngxToastOutlet } from '@cngx/ui/feedback';\n")) }, outcome: 'placed' },
   { name: 'absent spec', remove: ['src/app/app.spec.ts'], outcome: 'placed' },
   { name: 'banner outlet already present', files: { 'src/app/app.html': '<cngx-banner-outlet />\n<router-outlet />\n' }, outcome: 'placed' },
   {
@@ -263,7 +287,7 @@ async function treeOf(shape: Shape): Promise<Tree> {
     tree.delete(path);
   }
   if (shape.prettierFirst) {
-    await formatted(tree, ['src/app/app.ts', 'src/app/app.html']);
+    await formatted(tree, ['src/app/app.ts', 'src/app/app.html', 'src/app/app.spec.ts']);
   }
   return tree;
 }
@@ -692,6 +716,19 @@ describe('every planned app shell edit', () => {
     const logs = first.logs.join('\n');
     const firstLines = outletLines(first.logs);
 
+    if (shape.outcome === 'spec-custom') {
+      const shell = followed(detected);
+      expect(shell.spec).toBe('custom');
+      expect(logs).toContain(specCustomText(shell.specPath ?? '', shell.className));
+      for (const path of shellFiles) {
+        expect({ path, content: after[path] }).toEqual({ path, content: before[path] });
+      }
+      expectNoOutletWritten(before, after);
+      const again = await runShape(first.tree);
+      expectUnchanged(after, readTree(again.tree));
+      expect(outletLines(again.logs)).toEqual(firstLines);
+      return;
+    }
     if (shape.outcome !== 'placed') {
       const shell = detected.appShell;
       const at = shell.kind === 'unfollowed' ? shell : shell.outlets;
@@ -767,18 +804,13 @@ interface StarterShape {
   /** `ng add --preset full` ran first, then `files` changed the tree. */
   readonly installedFirst?: true;
   readonly flags?: Parameters<typeof ngAdd>[0];
-  readonly outcome: 'written' | 'icon-left' | 'not-untouched' | 'styles-custom' | 'other-answers' | 'replaced' | 'nothing';
+  readonly outcome: 'written' | 'icon-left' | 'not-untouched' | 'styles-custom' | 'spec-custom' | 'other-answers' | 'replaced' | 'nothing';
 }
 
 const STARTER_FILES = ['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/app/app.scss'];
 const SCAFFOLD_FILES = [...STARTER_FILES, 'src/index.html'];
 const STOCK_INDEX = readFixture('scaffold-21')['src/index.html'];
 const STOCK_STYLES = readFixture('scaffold-21')['src/styles.css'];
-
-function oneChanged(content: string): string {
-  const at = Math.floor(content.length / 2);
-  return `${content.slice(0, at)}${content[at] === 'x' ? 'y' : 'x'}${content.slice(at + 1)}`;
-}
 
 const STARTER_CORPUS: readonly StarterShape[] = [
   { name: 'scaffold-21', fixture: 'scaffold-21', outcome: 'written' },
@@ -788,6 +820,25 @@ const STARTER_CORPUS: readonly StarterShape[] = [
   { name: 'Prettier-formatted scaffold-21', fixture: 'scaffold-21', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/index.html', 'src/styles.css'], outcome: 'written' },
   { name: 'Prettier-formatted scaffold-21 routing off', fixture: 'scaffold-21-routing-off', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/index.html'], outcome: 'written' },
   { name: 'Prettier-formatted scaffold-21 scss', fixture: 'scaffold-21-scss', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.scss', 'src/index.html', 'src/styles.scss'], outcome: 'written' },
+  { name: 'scaffold-22', fixture: 'scaffold-22', outcome: 'written' },
+  { name: 'scaffold-22 routing off', fixture: 'scaffold-22-routing-off', outcome: 'written' },
+  { name: 'scaffold-22 zone', fixture: 'scaffold-22-zone', outcome: 'written' },
+  { name: 'scaffold-22 scss', fixture: 'scaffold-22-scss', outcome: 'written' },
+  { name: 'Prettier-formatted scaffold-22', fixture: 'scaffold-22', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/app/app.spec.ts', 'src/index.html', 'src/styles.css'], outcome: 'written' },
+  { name: 'Prettier-formatted scaffold-22 routing off', fixture: 'scaffold-22-routing-off', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.spec.ts', 'src/index.html'], outcome: 'written' },
+  { name: 'Prettier-formatted scaffold-22 zone', fixture: 'scaffold-22-zone', prettierFirst: ['src/app/app.spec.ts'], outcome: 'written' },
+  { name: 'Prettier-formatted scaffold-22 scss', fixture: 'scaffold-22-scss', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.scss', 'src/app/app.spec.ts', 'src/index.html', 'src/styles.scss'], outcome: 'written' },
+  { name: 'CRLF scaffold-22', fixture: 'scaffold-22', files: crlf({ 'src/app/app.ts': STOCK_APP_22, 'src/app/app.spec.ts': STOCK_SPEC_22, 'src/app/app.html': STOCK_HTML, 'src/index.html': STOCK_INDEX }), outcome: 'written' },
+  { name: 'scaffold-22 feedback off', fixture: 'scaffold-22', flags: { feedback: false }, outcome: 'written' },
+  { name: 'scaffold-21 files kept in an app updated to CLI 22', fixture: 'scaffold-22', files: { 'src/app/app.ts': STOCK_APP, 'src/app/app.spec.ts': STOCK_SPEC }, outcome: 'written' },
+  { name: 'one changed character in the scaffold-22 app.ts', fixture: 'scaffold-22', files: { 'src/app/app.ts': oneChanged(STOCK_APP_22) }, outcome: 'not-untouched' },
+  { name: 'one changed character in the scaffold-22 welcome page', fixture: 'scaffold-22', files: { 'src/app/app.html': oneChanged(STOCK_HTML) }, outcome: 'not-untouched' },
+  { name: 'one changed character in the scaffold-22 app.css', fixture: 'scaffold-22', files: { 'src/app/app.css': ' ' }, outcome: 'not-untouched' },
+  { name: 'one changed character in the scaffold-22 app.scss', fixture: 'scaffold-22-scss', files: { 'src/app/app.scss': ' ' }, outcome: 'not-untouched' },
+  { name: 'one changed character in the scaffold-22 spec', fixture: 'scaffold-22', files: { 'src/app/app.spec.ts': oneChanged(STOCK_SPEC_22) }, outcome: 'spec-custom' },
+  { name: 'one changed character in the scaffold-22 styles.css', fixture: 'scaffold-22', files: { 'src/styles.css': oneChanged(STOCK_STYLES) }, outcome: 'styles-custom' },
+  { name: 'one changed character in the scaffold-22 index.html', fixture: 'scaffold-22', files: { 'src/index.html': oneChanged(STOCK_INDEX) }, outcome: 'icon-left' },
+  { name: 'scaffold-22 starter of a run with other answers', fixture: 'scaffold-22', installedFirst: true, flags: { a11yPreferences: false }, outcome: 'other-answers' },
   { name: 'CRLF scaffold-21', files: crlf({ 'src/app/app.ts': STOCK_APP, 'src/app/app.html': STOCK_HTML, 'src/index.html': STOCK_INDEX }), outcome: 'written' },
   { name: 'feedback off', fixture: 'scaffold-21', flags: { feedback: false }, outcome: 'written' },
   { name: 'a11y preferences off', fixture: 'scaffold-21', flags: { a11yPreferences: false }, outcome: 'written' },
@@ -798,6 +849,8 @@ const STARTER_CORPUS: readonly StarterShape[] = [
   { name: 'one changed character in the welcome page', files: { 'src/app/app.html': oneChanged(STOCK_HTML) }, outcome: 'not-untouched' },
   { name: 'one changed character in app.css', files: { 'src/app/app.css': ' ' }, outcome: 'not-untouched' },
   { name: 'one changed character in styles.css', files: { 'src/styles.css': oneChanged(STOCK_STYLES) }, outcome: 'styles-custom' },
+  { name: 'one changed character in app.spec.ts', files: { 'src/app/app.spec.ts': oneChanged(STOCK_SPEC) }, outcome: 'spec-custom' },
+  { name: 'missing app.spec.ts', remove: ['src/app/app.spec.ts'], outcome: 'written' },
   { name: 'cngx theme import already in styles.css', files: { 'src/styles.css': `@import '@cngx/themes/cngx.css';\n${STOCK_STYLES}` }, outcome: 'written' },
   { name: 'CRLF styles.css', files: crlf({ 'src/styles.css': STOCK_STYLES }), outcome: 'written' },
   { name: 'one changed character in index.html', files: { 'src/index.html': oneChanged(STOCK_INDEX) }, outcome: 'icon-left' },
@@ -806,6 +859,7 @@ const STARTER_CORPUS: readonly StarterShape[] = [
   { name: 'inline template', files: inline('`<router-outlet />`'), outcome: 'not-untouched' },
   { name: 'trimmed standalone-app', fixture: 'standalone-app', outcome: 'not-untouched' },
   { name: 'NgModule app', files: ngModuleApp(), remove: ['src/app/app.spec.ts'], outcome: 'nothing' },
+  { name: 'ng new NgModule app 22', fixture: 'scaffold-22-ngmodule', outcome: 'nothing' },
   { name: 'starter of a run with other answers', installedFirst: true, flags: { a11yPreferences: false }, outcome: 'other-answers' },
   { name: 'starter replaced after the install', installedFirst: true, files: { 'src/app/app.html': '<main>mine</main>\n' }, outcome: 'replaced' },
 ];
@@ -892,6 +946,7 @@ function expectStarterLeftOut(before: Files, after: Files, shape: StarterShape, 
   const reasons: Partial<Record<StarterShape['outcome'], string>> = {
     'not-untouched': starterLeftOutText('not-untouched', 'src/app/app.ts'),
     'styles-custom': starterLeftOutText('styles-custom', 'src/styles.css'),
+    'spec-custom': starterLeftOutText('spec-custom', 'src/app/app.spec.ts'),
     'other-answers': starterLeftOutText('other-answers', 'src/app/app.ts'),
   };
   const reason = reasons[shape.outcome];
@@ -929,7 +984,7 @@ describe('every starter case', () => {
     // A second run writes nothing and names the starter only as in place; a
     // note about the icon is said once, on the run that writes the starter,
     // a starter left out is named on every run.
-    const repeated = shape.outcome === 'not-untouched' || shape.outcome === 'styles-custom' || shape.outcome === 'other-answers';
+    const repeated = ['not-untouched', 'styles-custom', 'spec-custom', 'other-answers'].includes(shape.outcome);
     // With the global stylesheet left out, the first run places the outlets
     // in the welcome page, so later runs name the component instead.
     const notes = repeated
@@ -960,6 +1015,6 @@ describe('every starter case', () => {
   it('records the starter only where it wrote one', () => {
     const outcomes = new Set(STARTER_CORPUS.map((shape) => shape.outcome));
 
-    expect([...outcomes].sort()).toEqual(['icon-left', 'not-untouched', 'nothing', 'other-answers', 'replaced', 'styles-custom', 'written']);
+    expect([...outcomes].sort()).toEqual(['icon-left', 'not-untouched', 'nothing', 'other-answers', 'replaced', 'spec-custom', 'styles-custom', 'written']);
   });
 });
