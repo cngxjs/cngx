@@ -154,7 +154,7 @@ publish:dry` runs both checks and prints the entry it would add.
 |`npm run build:<lib>`|`ng build <lib>` then `scripts/build-schematics.mjs <lib>`|
 |`npm run schematics:tokens`|regenerate `steps/theme-tokens.generated.ts` from `system-tokens.css`|
 |`npm run schematics:mcp`|regenerate `steps/mcp-capabilities.generated.ts` (the helper README capability table) from the `@cngx/mcp` registrations|
-|`npm run schematics:scaffold`|regenerate `detect/scaffold-catalog.generated.ts` (the `ng new` files an app is compared against exactly) from the installed `@schematics/angular` templates|
+|`npm run schematics:scaffold`|regenerate `detect/scaffold-catalog.generated.ts` (the `ng new` files an app is compared against exactly) from the installed `@schematics/angular` templates: the toolchain's own (CLI 21) and each `@schematics/angular-<major>` npm alias devDependency (CLI 22); a new CLI major is one alias, one `scaffold-<major>*` fixture set and one regenerate|
 |`npm run test:scripts`|dist smoke run, bundle budgets, token drift, publish gate|
 
 `build-schematics.mjs` type-checks, then bundles each entry with esbuild (cjs,
@@ -223,7 +223,9 @@ rewrites every literal of it in the bundles.
   toast at the end) and both classes in the component
   or root NgModule `imports`; alert stacks are scoped and never placed. An
   unedited stock `app.spec.ts` (an exact match against the scaffold catalog)
-  gets the feedback providers. An outlet this project's record placed that
+  gets the feedback providers; next to any other spec no outlet is placed
+  and one note names the outlets and the providers, so `ng add` never
+  leaves a red `ng test`. An outlet this project's record placed that
   is gone stays out unless `--feedback` is passed; `ng update` only notes a
   missing one.
 - `starter` is an answer no question asks: `--preset=full` turns it on,
@@ -232,7 +234,8 @@ rewrites every literal of it in the bundles.
   `full` install never write a starter.
 - With the starter on, the `starter` step runs before `app-shell`: over an
   untouched standalone scaffold (an exact match against the scaffold
-  catalog, per file and variant) it replaces `app.ts`, `app.html` and the
+  catalog, per file and variant, of any CLI major it holds) next to a
+  stock or missing spec it replaces `app.ts`, `app.html` and the
   stylesheet as whole files, each an `edit-file` whose `edit` re-checks the
   catalog entry at apply time, appends `body { margin: 0 }` to the global
   styles and, over an untouched `index.html`, writes `public/favicon.svg`

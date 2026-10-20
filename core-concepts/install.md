@@ -262,11 +262,14 @@ these hold, and leaves the app as `ng new` wrote it otherwise:
 
 - The app is standalone. An NgModule app gets the outlets only.
 - `src/app/app.ts`, `app.html` and the stylesheet are exactly what `ng new`
-  wrote (routing on or off, CSS or SCSS), compared after the project name
-  and selector are put in and line endings normalised; a Prettier pass over
-  them is fine, one changed character is not. An inline template, inline
-  styles, Sass or Less never match. The files are checked again right
-  before they are written.
+  wrote with Angular CLI 21 or 22 (routing on or off, CSS or SCSS), compared
+  after the project name and selector are put in and line endings
+  normalised; a Prettier pass over them is fine, one changed character is
+  not. An app created on CLI 21 and updated to 22 keeps its 21 files, and
+  those count too. An inline template, inline styles, Sass or Less never
+  match. The files are checked again right before they are written.
+- `src/app/app.spec.ts` is the spec `ng new` wrote with either CLI, or
+  missing; any other spec keeps the welcome page it tests.
 - The global stylesheet is what `ng new` wrote (CSS or SCSS), the cngx
   theme import aside, so a `recommended` install before still counts.
 - `@cngx/common` and `@cngx/ui` are selected.
