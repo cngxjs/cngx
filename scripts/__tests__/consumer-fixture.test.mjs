@@ -280,6 +280,22 @@ describe('the consumer-compat workflow', () => {
     expect(paths).toContain("- 'projects/*/schematics/**'");
   });
 
+  it('runs every row strictly against the declared peers', () => {
+    expect(workflow).not.toContain('--ignore-peers');
+    expect(workflow).not.toContain('continue-on-error');
+  });
+
+  it('covers the floor and the highest major of the peer range the libs declare', () => {
+    const core = JSON.parse(readFileSync(join(root, 'projects', 'core', 'package.json'), 'utf8'));
+    const [, floor, ceiling] = /^>=(\d+\.\d+\.\d+) <(\d+)\.0\.0$/.exec(core.peerDependencies['@angular/core']) ?? [];
+    const highest = String(Number(ceiling) - 1);
+
+    expect(workflow).toContain(`- { angular: '${floor}', variant: minimal }`);
+    for (const variant of ['full', 'minimal']) {
+      expect(workflow).toContain(`- { angular: '${highest}', variant: ${variant} }`);
+    }
+  });
+
   it('runs the stale-core leg on the full preset in its schematics row', () => {
     expect(workflow).toMatch(/variant: schematics, args: '--stale-core previous --preset full'/);
   });

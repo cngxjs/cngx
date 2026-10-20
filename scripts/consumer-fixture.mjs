@@ -11,7 +11,7 @@
 // Usage:
 //   npm run build:libs && npm run pack:libs
 //   node scripts/consumer-fixture.mjs --angular 21            # newest 21.x
-//   node scripts/consumer-fixture.mjs --angular 21.2.0        # exact: the lowest the peer range allows
+//   node scripts/consumer-fixture.mjs --angular 21.1.0        # exact: the lowest the peer range allows
 //   node scripts/consumer-fixture.mjs --angular 22 --variant ssr
 //   node scripts/consumer-fixture.mjs --angular 21 --variant minimal
 //   node scripts/consumer-fixture.mjs --angular 22 --ignore-peers   # does the code run beyond the declared range?
@@ -58,10 +58,10 @@ const MARKER = 'cngx-consumer-ok';
 export const PRESETS = ['minimal', 'recommended', 'full'];
 const DEFAULT_PRESET = 'recommended';
 
-/** `21` / `22.1` are ranges for `ng new`; `21.2.0` is an exact pin. */
+/** `21` / `22.1` are ranges for `ng new`; `21.1.0` is an exact pin. */
 export function parseAngularSpec(spec) {
   if (!/^\d+(\.\d+){0,2}$/.test(spec)) {
-    throw new Error(`Unsupported --angular "${spec}": use 21, 21.2 or 21.2.0`);
+    throw new Error(`Unsupported --angular "${spec}": use 21, 21.1 or 21.1.0`);
   }
   return { cliSpec: spec, exact: spec.split('.').length === 3 };
 }
@@ -83,7 +83,7 @@ export function variantPlan(variant) {
 
 export function usageText() {
   return [
-    'Usage: node scripts/consumer-fixture.mjs --angular <21 | 22 | 21.2.0> [--variant <variant>]',
+    'Usage: node scripts/consumer-fixture.mjs --angular <21 | 22 | 21.1.0> [--variant <variant>]',
     `       [--ignore-peers] [--stale-core <tgz | previous>] [--preset <${PRESETS.join(' | ')}>]`,
     '       [--tarballs <dir>] [--work <dir>]',
     `Variants: ${VARIANTS.join(', ')}`,
