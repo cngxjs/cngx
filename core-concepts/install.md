@@ -25,6 +25,19 @@ The run reads the app first, asks only what it cannot detect, lists the
 planned changes, applies them, prints a summary, and starts one package
 install. Nothing outside the project is written.
 
+## Supported Angular versions
+
+Every `@cngx/*` package peers on Angular `>=21.1.0 <23.0.0`: Angular 21.1
+through 22.x, with `@angular/cdk`, `@angular/material` and `@ngrx/signals` on
+the same range. 21.1 is the floor because Signal Forms only binds controls
+through `[formField]` and focuses them through `focusBoundControl()` from 21.1
+on, and `cngx-form-field` builds on both. Use the Node version your Angular
+asks for: `^20.19 || ^22.12 || >=24` for Angular 21, `^22.22.3 || ^24.15 || >=26`
+for Angular 22.
+
+The preflight refuses an app below 21.1 and warns, without stopping, on an
+Angular major above 22.
+
 ---
 
 ## What a run does
