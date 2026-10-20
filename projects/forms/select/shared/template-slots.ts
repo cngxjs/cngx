@@ -714,7 +714,8 @@ export class CngxMultiSelectTriggerLabel<T = unknown> {
 
 /**
  * `*cngxSelectClearButton` slot - replaces the `✕` button. Consumer owns
- * the element and invokes `clear()`.
+ * the element and invokes `clear()`. Keep the slot content within the
+ * trigger's line height, or the row grows as soon as the slot appears.
  *
  * ```html
  * <cngx-multi-select ...>
