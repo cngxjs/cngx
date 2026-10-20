@@ -153,6 +153,21 @@ describe('planDependencies', () => {
     expect(added(planDependencies(facts, createAnswers(), VERSIONS))).toContain('@angular/cdk@~21.2.4');
   });
 
+  // The @cngx peers span Angular 21.1 through 22, so npm left alone would
+  // fetch the newest CDK in that range; the CDK follows the app's own major.
+  it.each([
+    ['21.1.0', '^21.1.0'],
+    ['22.2.3', '^22.2.0'],
+  ])('declares the CDK at the Angular of an app on %s, never the newest one the peers allow', (installed, declared) => {
+    const facts = createFacts({
+      angularVersion: installed,
+      angularSource: 'installed',
+      angularRange: declared,
+      manifest: parseManifest(JSON.stringify({ dependencies: { '@angular/core': declared } })),
+    });
+    expect(added(planDependencies(facts, createAnswers(), VERSIONS))).toContain(`@angular/cdk@${declared}`);
+  });
+
   it('pins the CDK to an installed Angular prerelease behind a specifier that is no range', () => {
     const facts = createFacts({
       angularVersion: '21.3.0-rc.1',

@@ -1,6 +1,7 @@
 import {
   type Change,
   CNGX_LIBS,
+  companionRange,
   type CngxLib,
   createNote,
   createProvenance,
@@ -121,26 +122,9 @@ function themeRefusal(missing: readonly CngxLib[], provenance: Provenance): Step
   };
 }
 
-// A specifier the CDK range can copy: plain semver, no protocol
-// (`catalog:`, `workspace:*`, `npm:`) and no dist-tag.
-const PLAIN_SEMVER_RANGE = /^[\s\d.^~<>=|xX*v-]+$/;
-
-/**
- * The CDK range for the app's Angular: the declared range verbatim when it is
- * plain semver, so a tilde or exact pin stays one; else, behind a protocol or
- * dist-tag, `^<major>.<minor>.0` of the resolved version, or `^<version>` for a
- * prerelease, which no stable `^x.y.0` range would match; else `undefined`.
- */
+/** The CDK range for the app's Angular; see `companionRange`. */
 function cdkRange(facts: ProjectFacts): string | undefined {
-  const declared = facts.angularRange;
-  if (declared !== undefined && PLAIN_SEMVER_RANGE.test(declared) && /\d/.test(declared)) {
-    return declared;
-  }
-  const version = /^(\d+)\.(\d+)\.\d+(-.+)?/.exec(facts.angularVersion ?? '');
-  if (version === null) {
-    return undefined;
-  }
-  return version[3] === undefined ? `^${version[1]}.${version[2]}.0` : `^${facts.angularVersion}`;
+  return companionRange(facts.angularRange, facts.angularVersion);
 }
 
 function cdkDependency(facts: ProjectFacts, provenance: Provenance): StepResult {
