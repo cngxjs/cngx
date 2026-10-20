@@ -1089,7 +1089,7 @@ button.chip {
 // row keeps its height whether the slot shows or not.
 button.chip.chip--compact {
   padding-block: 0;
-  padding-inline: 8px;
+  padding-inline: var(--cngx-space-sm, 0.5rem);
   line-height: 1.25rem;
 }
 
