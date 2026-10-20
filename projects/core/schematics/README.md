@@ -223,7 +223,8 @@ rewrites every literal of it in the bundles.
   toast at the end) and both classes in the component
   or root NgModule `imports`; alert stacks are scoped and never placed. An
   unedited stock `app.spec.ts` (an exact match against the scaffold catalog)
-  gets the feedback providers; next to any other spec no outlet is placed
+  gets the feedback providers; next to any other spec (the `ng new`
+  NgModule spec, which declares `App` in its own TestBed, included) no outlet is placed
   and one note names the outlets and the providers, so `ng add` never
   leaves a red `ng test`. An outlet this project's record placed that
   is gone stays out unless `--feedback` is passed; `ng update` only notes a
@@ -235,7 +236,7 @@ rewrites every literal of it in the bundles.
 - With the starter on, the `starter` step runs before `app-shell`: over an
   untouched standalone scaffold (an exact match against the scaffold
   catalog, per file and variant, of any CLI major it holds) next to a
-  stock or missing spec it replaces `app.ts`, `app.html` and the
+  stock, provided or missing spec it replaces `app.ts`, `app.html` and the
   stylesheet as whole files, each an `edit-file` whose `edit` re-checks the
   catalog entry at apply time, appends `body { margin: 0 }` to the global
   styles and, over an untouched `index.html`, writes `public/favicon.svg`

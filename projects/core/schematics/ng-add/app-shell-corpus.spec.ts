@@ -153,6 +153,9 @@ const CORPUS: readonly Shape[] = [
   { name: 'standalone-app', fixture: 'standalone-app', outcome: 'placed' },
   { name: 'existing-tailwind-app', fixture: 'existing-tailwind-app', outcome: 'placed' },
   { name: 'NgModule app', files: ngModuleApp(), remove: ['src/app/app.spec.ts'], outcome: 'placed' },
+  { name: 'ng new NgModule app 21 with its spec', fixture: 'scaffold-21-ngmodule', outcome: 'spec-custom' },
+  { name: 'ng new NgModule app 22 with its spec', fixture: 'scaffold-22-ngmodule', outcome: 'spec-custom' },
+  { name: 'ng new NgModule app 22 without its spec', fixture: 'scaffold-22-ngmodule', remove: ['src/app/app.spec.ts'], outcome: 'placed' },
   { name: "NgModule 'imports' key", files: ngModuleApp(`'imports': [\n    BrowserModule\n  ],`), outcome: 'placed' },
   { name: 'NgModule without imports', files: ngModuleApp(''), outcome: 'placed' },
   { name: 'NgModule identifier imports', files: ngModuleApp('imports: MODULES,'), outcome: 'imports-not-array' },
@@ -856,6 +859,7 @@ const STARTER_CORPUS: readonly StarterShape[] = [
   { name: 'inline template', files: inline('`<router-outlet />`'), outcome: 'not-untouched' },
   { name: 'trimmed standalone-app', fixture: 'standalone-app', outcome: 'not-untouched' },
   { name: 'NgModule app', files: ngModuleApp(), remove: ['src/app/app.spec.ts'], outcome: 'nothing' },
+  { name: 'ng new NgModule app 22', fixture: 'scaffold-22-ngmodule', outcome: 'nothing' },
   { name: 'starter of a run with other answers', installedFirst: true, flags: { a11yPreferences: false }, outcome: 'other-answers' },
   { name: 'starter replaced after the install', installedFirst: true, files: { 'src/app/app.html': '<main>mine</main>\n' }, outcome: 'replaced' },
 ];

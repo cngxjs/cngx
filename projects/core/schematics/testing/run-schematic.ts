@@ -15,8 +15,8 @@ const FIXTURES = join(__dirname, 'fixtures');
  * `standalone-app` and `existing-tailwind-app` are trimmed apps; the
  * `scaffold-21*` and `scaffold-22*` apps are untouched `ng new` output of
  * `@angular/cli` 21.2.2 and 22.2.3, one folder per variant (zoneless with
- * routing, routing off, zone, SCSS), the stock `app.html`, `app.spec.ts` and
- * `src/index.html` included.
+ * routing, routing off, zone, SCSS, and `--standalone=false` as `-ngmodule`),
+ * the stock `app.html`, `app.spec.ts` and `src/index.html` included.
  */
 export type FixtureName =
   | 'standalone-app'
@@ -28,7 +28,9 @@ export type FixtureName =
   | 'scaffold-22'
   | 'scaffold-22-routing-off'
   | 'scaffold-22-zone'
-  | 'scaffold-22-scss';
+  | 'scaffold-22-scss'
+  | 'scaffold-21-ngmodule'
+  | 'scaffold-22-ngmodule';
 
 function walk(dir: string): readonly string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

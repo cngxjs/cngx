@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import * as ts from 'typescript';
 import { readWorkspace } from '@schematics/angular/utility';
 import { describe, expect, it } from 'vitest';
@@ -6,7 +8,8 @@ import { createProvenance, type StepResult } from '../../engine';
 import { createAnswers, createFacts, VERSIONS } from '../../testing/onboarding';
 import { createFixtureTree, type FixtureName, readFixture } from '../../testing/run-schematic';
 import { type AppShell, appShellSpecOf, type AppShellUnfollowed, detectProject, type ProjectFacts } from '../detect/detect';
-import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell, planAppShellRerun, provideFeedbackInSpec, SPEC_ID, specCustomText } from './app-shell';
+import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell, planAppShellRerun, provideFeedbackInSpec, SPEC_ID, specCustomReason, specCustomText } from './app-shell';
+import { writesStarter } from './starter';
 
 const FEEDBACK = createAnswers({ feedback: true });
 
@@ -374,8 +377,9 @@ describe('planAppShell', () => {
         kind: 'note',
         id: OUTLETS_ID,
         reason:
-          `src/app/app.spec.ts is not the untouched ng new spec, so cngx places no outlet the TestBed there would lack providers for; ${OUTLETS_SNIPPET}, ` +
-          "and give a TestBed that renders App `providers: [provideFeedback(withToasts(), withBanners())]` with import { provideFeedback, withBanners, withToasts } from '@cngx/ui/feedback'",
+          `src/app/app.spec.ts is not the untouched standalone ng new spec, so cngx places no outlet a TestBed there may lack; ${OUTLETS_SNIPPET}, ` +
+          "and give a TestBed that renders App `providers: [provideFeedback(withToasts(), withBanners())]` with import { provideFeedback, withBanners, withToasts } from '@cngx/ui/feedback' " +
+          '(a TestBed that declares App also imports CngxBannerOutlet and CngxToastOutlet)',
       },
     ]);
   });
@@ -467,6 +471,7 @@ describe('planAppShell', () => {
       skipped: [],
     });
     expect(specCustomText('src/app/app.spec.ts', 'App')).toContain(OUTLETS_SNIPPET);
+    expect(readFileSync(join(__dirname, '../../../../../core-concepts/install.md'), 'utf8')).toContain(specCustomReason('<file>'));
     expect(specCustomText('src/app/app.spec.ts', 'App')).toContain('providers: [provideFeedback(withToasts(), withBanners())]');
   });
 
@@ -508,9 +513,10 @@ describe('planAppShell next to the starter', () => {
     ]);
   });
 
-  it('places no outlet in front of a custom spec, starter or not', () => {
+  it('places no outlet in front of a custom spec, where the starter is never written either', () => {
     const facts = createFacts({ appShell: { ...(createFacts().appShell as AppShell), spec: 'custom' } });
-    const result = planAppShell(facts, createAnswers({ feedback: true }), VERSIONS, [], false, true);
+    const answers = createAnswers({ feedback: true, starter: true });
+    const result = planAppShell(facts, answers, VERSIONS, [], false, writesStarter(facts, answers));
 
     expect(result).toEqual({ changes: [expect.objectContaining({ kind: 'note', id: OUTLETS_ID })], skipped: [] });
   });

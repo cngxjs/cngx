@@ -101,15 +101,23 @@ function snippetNote(reason: string, provenance: Provenance): StepResult {
 }
 
 /**
- * Why cngx places no outlet in front of a spec it cannot provide: the
- * outlets inject `CngxToaster` and `CngxBanner`, and a spec that is not the
- * untouched `ng new` one may render the root component without them, so
- * placing them would turn `ng test` red.
+ * Why cngx places no outlet next to a spec it cannot keep green; `<file>`
+ * stands for the spec. Only the untouched standalone `ng new` spec gets the
+ * providers: any other spec may render the root component without them, and
+ * the `ng new` NgModule spec declares it in a TestBed that would also need
+ * the outlet classes. `core-concepts/install.md` lists the text (a spec
+ * guards it).
  */
+export function specCustomReason(file: string): string {
+  return `${file} is not the untouched standalone ng new spec, so cngx places no outlet a TestBed there may lack`;
+}
+
+/** The note for a spec cngx cannot keep green: the reason, the outlets snippet and what the spec needs. */
 export function specCustomText(path: string, className: string): string {
   return (
-    `${path} is not the untouched ng new spec, so cngx places no outlet the TestBed there would lack providers for; ` +
-    `${OUTLETS_SNIPPET}, and give a TestBed that renders ${className} \`providers: [${FEEDBACK_SPEC_PROVIDERS}]\` with ${FEEDBACK_SPEC_IMPORT.replace(/;$/, '')}`
+    `${specCustomReason(path)}; ${OUTLETS_SNIPPET}, and give a TestBed that renders ${className} ` +
+    `\`providers: [${FEEDBACK_SPEC_PROVIDERS}]\` with ${FEEDBACK_SPEC_IMPORT.replace(/;$/, '')} ` +
+    `(a TestBed that declares ${className} also imports ${BANNER.className} and ${TOAST.className})`
   );
 }
 
@@ -144,10 +152,12 @@ function specChange(facts: ProjectFacts, shell: AppShell, provenance: Provenance
  * above `<router-outlet>`, else at the end; the toast at the end; both classes
  * go into the component `imports` (standalone) or the root NgModule
  * `imports`. An outlet or class already there is not added again. An
- * unedited stock `app.spec.ts` gets the feedback providers; in front of any
- * other spec cngx places no outlet at all (fail-closed: a red `ng test` is
- * never the result) and one note names the outlets and the providers the
- * spec needs. A shell cngx cannot edit safely gets a note with the
+ * unedited stock standalone `app.spec.ts` gets the feedback providers; next
+ * to any other spec, the `ng new` NgModule spec included, cngx places no
+ * outlet at all (fail-closed: a red `ng test` is never the result) and one
+ * note names the outlets and what the spec needs. The starter is never
+ * written next to such a spec (`writesStarter`), so its branch here only
+ * sees a stock, provided or missing one. A shell cngx cannot edit safely gets a note with the
  * snippet instead of a guess. `recorded` holds the step ids of this
  * project's previous record: outlets it placed that are gone now were
  * removed on purpose and stay out, unless `explicitFeedback` (`--feedback`)
@@ -169,7 +179,7 @@ export function planAppShell(
   }
   const provenance = createProvenance('ng-add', versions.cngx);
   const shell = facts.appShell;
-  if (starter && shell.kind === 'followed' && shell.outlets.kind === 'editable' && shell.spec !== 'custom') {
+  if (starter && shell.kind === 'followed' && shell.outlets.kind === 'editable') {
     const spec = specChange(facts, shell, provenance);
     const skipped = outletTargets(shell, provenance).map(({ change }) => skipChange(change, STARTER_REASON));
     return { changes: spec.changes, skipped: [...skipped, ...spec.skipped] };
@@ -192,9 +202,10 @@ export function planAppShell(
     return withdrawnNote(templatePath(shell), WITHDRAWN_REASON, provenance, targets.map(({ change }) => skipChange(change, WITHDRAWN_REASON)));
   }
   const changes = targets.filter(({ done }) => !done).map(({ change }) => change);
-  if (changes.length > 0 && shell.spec === 'custom' && shell.specPath !== undefined) {
+  const customSpec = shell.spec === 'custom' ? shell.specPath : undefined;
+  if (changes.length > 0 && customSpec !== undefined) {
     return {
-      changes: [createNote({ id: OUTLETS_ID, label: SNIPPET_LABEL, reason: specCustomText(shell.specPath, shell.className), provenance })],
+      changes: [createNote({ id: OUTLETS_ID, label: SNIPPET_LABEL, reason: specCustomText(customSpec, shell.className), provenance })],
       skipped: [],
     };
   }

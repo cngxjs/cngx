@@ -238,7 +238,7 @@ turn the questions off the same way.
 |`src/cngx-theme.scss`|Material theme with a `mat.theme()` map|The bridge from the Material system tokens to the cngx tokens. A `define-theme` or M2 theme object is bridged in the file that defines it instead: the bridge `@use` goes after the last leading `@use` there, ahead of every `@import`, since Sass rejects a `@use` that follows one.|
 |`angular.json`|theme chosen|The theme file added to the build styles, after the stylesheet that imports `cngx.css`.|
 |App config, root NgModule or inline config in `main.ts`|per answer|`provideA11yPreferences(withPersistence())`, `provideDirection('rtl')` for a right-to-left source locale, `provideFeedback(withToasts(), withAlerts(), withBanners())`, `provideFloatingFallback(computePosition, [flip(), shift()])`, `provideCngxI18n(withPack(...))`.|
-|Root component template and its `imports`|feedback|`<cngx-banner-outlet />` as the first line above the `ng new` placeholder block, so it shows above the welcome page instead of below it, and `<cngx-toast-outlet />` at the end after the block, so deleting the placeholder below its opening comment keeps both; without that block the banner outlet goes right above `<router-outlet>`, else at the end; `CngxBannerOutlet` and `CngxToastOutlet` from `@cngx/ui/feedback` in the component `imports`, or in the root NgModule `imports` of an NgModule app. Placed once; an outlet you remove after the install stays out until you pass `--feedback` again, and once an install placed them cngx does not ask for them again, also when it can no longer edit the root component; a note then says that they were removed, or, where it cannot read the template any more, why it cannot tell. A root component cngx cannot follow from `main.ts` or cannot edit safely gets a note with the snippet and the reason instead, see [Outlets left to you](#outlets-left-to-you). Alert stacks are not placed: they are scoped, so they go where the alerts belong. `ng update` only notes a missing outlet.|
+|Root component template and its `imports`|feedback|`<cngx-banner-outlet />` as the first line above the `ng new` placeholder block, so it shows above the welcome page instead of below it, and `<cngx-toast-outlet />` at the end after the block, so deleting the placeholder below its opening comment keeps both; without that block the banner outlet goes right above `<router-outlet>`, else at the end; `CngxBannerOutlet` and `CngxToastOutlet` from `@cngx/ui/feedback` in the component `imports`, or in the root NgModule `imports` of an NgModule app. Only where the spec next to the root component stays green: none, or the untouched standalone `ng new` spec; next to any other spec, the `ng new --standalone=false` one included, cngx leaves both outlets out with a note. Placed once; an outlet you remove after the install stays out until you pass `--feedback` again, and once an install placed them cngx does not ask for them again, also when it can no longer edit the root component; a note then says that they were removed, or, where it cannot read the template any more, why it cannot tell. A root component cngx cannot follow from `main.ts` or cannot edit safely gets a note with the snippet and the reason instead, see [Outlets left to you](#outlets-left-to-you). Alert stacks are not placed: they are scoped, so they go where the alerts belong. `ng update` only notes a missing outlet.|
 |`src/app/app.ts`, `app.html`, `app.css` or `app.scss`|`full` (or `--starter`), untouched `ng new` standalone app|The cngx starter page in place of the Angular welcome page: the `Hello, <name>` heading and `title` signal the stock spec asserts, a card for each thing the answers installed to try (toasts, banners and an alert with feedback, the accessibility panel with the a11y preferences, an English and German toggle with the runtime language switch), the toast and banner outlets with feedback, and `<router-outlet />` with routing. Written only over the exact `ng new` scaffold, see [The starter page](#the-starter-page).|
 |Global styles|starter written|The starter's page styles at the end, after a `cngx:fingerprint` line: `body { margin: 0 }`, the headings, the top bar and the footer, every rule scoped under `<root selector> > .shell`. They live here so the component stylesheet stays inside the 4 kB component style budget of `ng new`.|
 |`public/favicon.svg`, `src/index.html`|starter written, `index.html` untouched, no `favicon.svg` yet|The cngx mark as the app icon, and the icon link pointed at it instead of `favicon.ico`, which stays on disk.|
@@ -260,7 +260,8 @@ exists and was not written by cngx is never overwritten; the step plans a note a
 that shows what the run installed, working. It writes it only when all of
 these hold, and leaves the app as `ng new` wrote it otherwise:
 
-- The app is standalone. An NgModule app gets the outlets only.
+- The app is standalone. An NgModule app gets the outlets only, and only
+  without a spec next to its root component.
 - `src/app/app.ts`, `app.html` and the stylesheet are exactly what `ng new`
   wrote with Angular CLI 21 or 22 (routing on or off, CSS or SCSS), compared
   after the project name and selector are put in and line endings
@@ -268,8 +269,9 @@ these hold, and leaves the app as `ng new` wrote it otherwise:
   not. An app created on CLI 21 and updated to 22 keeps its 21 files, and
   those count too. An inline template, inline styles, Sass or Less never
   match. The files are checked again right before they are written.
-- `src/app/app.spec.ts` is the spec `ng new` wrote with either CLI, or
-  missing; any other spec keeps the welcome page it tests.
+- `src/app/app.spec.ts` is the spec `ng new` wrote with either CLI, that
+  spec with the feedback providers cngx adds, or missing; any other spec
+  keeps the welcome page it tests.
 - The global stylesheet is what `ng new` wrote (CSS or SCSS), the cngx
   theme import aside, so a `recommended` install before still counts.
 - `@cngx/common` and `@cngx/ui` are selected.
@@ -317,13 +319,15 @@ stopped at for `<Class>` and `<file>`:
 - `<Class> in <file> is bound to something other than the <Class> class of @cngx/ui/feedback`: the file already declares (a namespace or an interface included) or imports a `CngxBannerOutlet` or `CngxToastOutlet` of its own, also another `@cngx/ui/feedback` export aliased to that name or the whole entry imported under it.
 
 The spec next to the root component counts too. When it exists and is
-neither the untouched `ng new` spec nor that spec with the feedback
-providers cngx adds, cngx places no outlet and edits no spec, since the
-outlets would inject `CngxToaster` and `CngxBanner` into a TestBed that does
-not provide them and `ng test` would fail. The note then reads
-`<file> is not the untouched ng new spec, so cngx places no outlet the TestBed there would lack providers for`,
-followed by the outlets snippet and the providers the spec needs. A missing
-spec is no reason to stop.
+neither the untouched standalone `ng new` spec nor that spec with the
+feedback providers cngx adds, cngx places no outlet and edits no spec, since
+the outlets would inject `CngxToaster` and `CngxBanner` into a TestBed that
+may not provide them and `ng test` would fail. That includes the spec
+`ng new --standalone=false` writes: it declares `App` in its own TestBed,
+which would need the outlet classes as well as the providers. The note then
+reads `<file> is not the untouched standalone ng new spec, so cngx places no outlet a TestBed there may lack`,
+followed by the outlets snippet and what the spec needs. A missing spec is
+no reason to stop.
 
 Fix what the reason names and run `ng add @cngx/core --feedback` again, or
 paste the snippet yourself.

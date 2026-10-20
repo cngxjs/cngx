@@ -100,6 +100,17 @@ describe('readFixture', () => {
   });
 });
 
+describe('readFixture ng new --standalone=false', () => {
+  it('reads the NgModule scaffold of both CLI majors: an AppModule, and a spec that declares App in its own TestBed', () => {
+    for (const name of ['scaffold-21-ngmodule', 'scaffold-22-ngmodule'] as const) {
+      const files = readFixture(name);
+      expect({ name, module: files['src/app/app-module.ts']?.includes('bootstrap: [App]') }).toEqual({ name, module: true });
+      expect({ name, declares: files['src/app/app.spec.ts'].includes('declarations: [\n        App\n      ],') }).toEqual({ name, declares: true });
+      expect({ name, config: files['src/app/app.config.ts'] }).toEqual({ name, config: undefined });
+    }
+  });
+});
+
 describe('createFixtureTree', () => {
   it('is a workspace the @schematics/angular utilities can read', async () => {
     const workspace = await readWorkspace(createFixtureTree());
@@ -114,7 +125,7 @@ describe('createFixtureTree', () => {
   });
 
   it('reads every scaffold variant as a workspace', async () => {
-    for (const name of ['scaffold-21', 'scaffold-21-routing-off', 'scaffold-21-zone', 'scaffold-21-scss', 'scaffold-22', 'scaffold-22-routing-off', 'scaffold-22-zone', 'scaffold-22-scss'] as const) {
+    for (const name of ['scaffold-21', 'scaffold-21-routing-off', 'scaffold-21-zone', 'scaffold-21-scss', 'scaffold-22', 'scaffold-22-routing-off', 'scaffold-22-zone', 'scaffold-22-scss', 'scaffold-21-ngmodule', 'scaffold-22-ngmodule'] as const) {
       const workspace = await readWorkspace(createFixtureTree(name));
 
       expect([...workspace.projects.keys()]).toEqual(['fixture-app']);
