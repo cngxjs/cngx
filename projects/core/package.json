@@ -25,7 +25,7 @@
     "@cngx/utils": "0.0.0-PLACEHOLDER",
     "@angular/common": ">=21.1.0 <23.0.0",
     "@angular/core": ">=21.1.0 <23.0.0",
-    "vitest": "^4.0.0"
+    "vitest": "^4.0.0 || ^5.0.0"
   },
   "peerDependenciesMeta": {
     "vitest": {
