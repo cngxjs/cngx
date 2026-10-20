@@ -78,6 +78,26 @@ class HostCmp {}
 })
 class VerticalHost {}
 
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab, CngxTabLabel],
+  template: `
+    <cngx-tab-group aria-label="Naming">
+      <div cngxTab>
+        <ng-template cngxTabLabel>Profile from template</ng-template>
+      </div>
+      <div cngxTab [subLabel]="'3'">
+        <ng-template cngxTabLabel>Tasks from template</ng-template>
+      </div>
+      <div cngxTab [label]="'Billing'">
+        <ng-template cngxTabLabel>Billing from template</ng-template>
+      </div>
+      <div cngxTab></div>
+    </cngx-tab-group>
+  `,
+})
+class TemplateLabelHost {}
+
 describe('CngxTabGroup organism', () => {
   it('host carries role="group" + aria-orientation="horizontal" + data-orientation', () => {
     TestBed.configureTestingModule({
@@ -141,6 +161,60 @@ describe('CngxTabGroup organism', () => {
     expect(stripBidiIsolates(tabs[0].getAttribute('aria-label'))).toBe('Tab 1 of 3: A');
     expect(stripBidiIsolates(tabs[1].getAttribute('aria-label'))).toBe('Tab 2 of 3: B');
     expect(stripBidiIsolates(tabs[2].getAttribute('aria-label'))).toBe('Tab 3 of 3: C');
+  });
+
+  describe('name source of a tab without a [label] string', () => {
+    function mountNaming(): HTMLButtonElement[] {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(TemplateLabelHost);
+      fixture.detectChanges();
+      return Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+    }
+
+    function textOfIds(button: HTMLButtonElement, ids: string): string {
+      return ids
+        .split(' ')
+        .map((id) => button.ownerDocument.getElementById(id)?.textContent?.trim() ?? '')
+        .join(' ');
+    }
+
+    it('names a template-only tab from its rendered *cngxTabLabel', () => {
+      const tabs = mountNaming();
+      expect(tabs[0].getAttribute('aria-label')).toBeNull();
+      expect(tabs[0].getAttribute('aria-labelledby')).toBe(`${tabs[0].dataset['tabId']}-label`);
+      expect(textOfIds(tabs[0], tabs[0].getAttribute('aria-labelledby') ?? '')).toBe(
+        'Profile from template',
+      );
+    });
+
+    it('adds the sub-label element to the name of a template-only tab', () => {
+      const tabs = mountNaming();
+      const id = tabs[1].dataset['tabId'];
+      expect(tabs[1].getAttribute('aria-label')).toBeNull();
+      expect(tabs[1].getAttribute('aria-labelledby')).toBe(`${id}-label ${id}-sublabel`);
+      expect(textOfIds(tabs[1], tabs[1].getAttribute('aria-labelledby') ?? '')).toBe(
+        'Tasks from template 3',
+      );
+    });
+
+    it('keeps the [label] aria-label when a template is also projected', () => {
+      const tabs = mountNaming();
+      expect(stripBidiIsolates(tabs[2].getAttribute('aria-label'))).toBe('Tab 3 of 4: Billing');
+      expect(tabs[2].getAttribute('aria-labelledby')).toBeNull();
+    });
+
+    it('names a tab without label and template by its position', () => {
+      const tabs = mountNaming();
+      expect(stripBidiIsolates(tabs[3].getAttribute('aria-label'))).toBe('Tab 4');
+      expect(tabs[3].getAttribute('aria-labelledby')).toBeNull();
+    });
   });
 
   it('first tab is aria-selected="true", others "false"', () => {
