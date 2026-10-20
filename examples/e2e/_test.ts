@@ -3,7 +3,7 @@ import { test as base, expect, type Page } from '@playwright/test';
 import { CONSOLE_ALLOWLIST } from '../e2e-sweep/console-allowlist';
 import {
   formatConsoleLine,
-  isSweptConsoleType,
+  isWatchedConsoleType,
   matchesAllowRow,
   normaliseConsoleText,
   routeOfUrl,
@@ -57,7 +57,7 @@ export const test = base.extend<{ consoleGuard: void }>({
       const lines: RoutedConsoleLine[] = [];
       context.on('console', (msg) => {
         const type = msg.type();
-        if (isSweptConsoleType(type)) {
+        if (isWatchedConsoleType(type)) {
           lines.push({
             type,
             text: normaliseConsoleText(msg.text()),

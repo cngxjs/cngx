@@ -10,7 +10,7 @@ export interface ConsoleLine {
 
 const CONSOLE_TYPES: ReadonlySet<string> = new Set<ConsoleLineType>(['warning', 'error', 'assert']);
 
-export const isSweptConsoleType = (type: string): type is ConsoleLineType =>
+export const isWatchedConsoleType = (type: string): type is ConsoleLineType =>
   CONSOLE_TYPES.has(type);
 
 export const formatConsoleLine = (line: ConsoleLine) => `[${line.type}] ${line.text}`;
