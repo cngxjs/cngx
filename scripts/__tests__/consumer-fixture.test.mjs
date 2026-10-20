@@ -13,6 +13,7 @@ import {
   peerInstallSpecs,
   pinAngularDeps,
   renderAppSource,
+  renderMatcherSpec,
   INTERACTIVE_SMOKE,
   presetPlan,
   budgetWarnings,
@@ -45,6 +46,14 @@ describe('variantPlan', () => {
     expect(variantPlan('ssr')).toMatchObject({ ssr: true, smoke: false });
     expect(variantPlan('minimal')).toMatchObject({ optionalPeers: false, schematics: false });
     expect(variantPlan('schematics')).toMatchObject({ zoneless: true, ssr: false, optionalPeers: false, smoke: true, schematics: true });
+  });
+
+  it('runs ng test with the cngx Vitest matchers on the full variant only', () => {
+    expect(VARIANTS.filter((variant) => variantPlan(variant).matcherSpec)).toEqual(['full']);
+    const spec = renderMatcherSpec();
+    expect(spec).toContain("from '@cngx/core/testing/vitest'");
+    expect(spec).toContain('expect.extend(cngxAnnouncementMatchers)');
+    expect(spec).toContain("toHaveHeard('Saved')");
   });
 
   it('rejects an unknown variant', () => {

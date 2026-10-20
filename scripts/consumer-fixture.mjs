@@ -78,6 +78,9 @@ export function variantPlan(variant) {
     optionalPeers: !lean,
     smoke: variant !== 'ssr',
     schematics: variant === 'schematics',
+    // `ng test` with the cngx Vitest matchers, against the Vitest major the
+    // app's own CLI installs (4 on Angular 21, 5 on Angular 22).
+    matcherSpec: variant === 'full',
   };
 }
 
@@ -394,6 +397,8 @@ async function smokeInteractive(page, errors) {
   // wrong name fails the smoke instead of hiding behind a class selector.
   const byRole = async (role, name, what) => {
     const locator = page.getByRole(role, { name, exact: true });
+    // A panel opens after the input event; wait for the first match before counting.
+    await locator.first().waitFor({ state: 'visible', timeout: 5_000 }).catch(() => undefined);
     const count = await locator.count();
     if (count !== 1) {
       errors.push(`${what}: expected one ${role} named "${name}", found ${count}`);
@@ -425,6 +430,36 @@ async function smokeInteractive(page, errors) {
   if ((await input.getAttribute('aria-invalid')) === 'true') {
     errors.push(`seats input: still aria-invalid at ${seats.fine}`);
   }
+}
+
+/**
+ * The unit spec the `full` variant writes over the stock app spec: it
+ * registers the cngx announcement matchers from `@cngx/core/testing/vitest`
+ * and asserts through them, so `ng test` proves the optional vitest peer
+ * against the Vitest the app was generated with.
+ */
+export function renderMatcherSpec() {
+  return `import { expect, it } from 'vitest';
+import { createAnnouncementCapture } from '@cngx/core/testing';
+import { cngxAnnouncementMatchers } from '@cngx/core/testing/vitest';
+
+expect.extend(cngxAnnouncementMatchers);
+
+it('hears a polite live region through the cngx matchers', async () => {
+  const host = document.createElement('section');
+  document.body.append(host);
+  const capture = createAnnouncementCapture({ root: host });
+  const region = document.createElement('div');
+  region.setAttribute('aria-live', 'polite');
+  host.append(region);
+  region.textContent = 'Saved';
+  await Promise.resolve();
+
+  expect(capture).toHaveHeard('Saved');
+  expect(capture).not.toHaveHeard('Upload failed');
+  capture.stop();
+});
+`;
 }
 
 function run(cmd, args, options = {}) {
@@ -772,6 +807,9 @@ async function main() {
       await runSchematicsSteps(appDir, version, preset);
     } else {
       writeFileSync(join(appDir, 'src', 'app', 'app.ts'), renderAppSource(plan));
+      if (plan.matcherSpec) {
+        writeFileSync(join(appDir, 'src', 'app', 'app.spec.ts'), renderMatcherSpec());
+      }
     }
     if (plan.schematics && checks.noBudgetWarnings) {
       const warnings = budgetWarnings(runEchoed('npx', ['ng', 'build'], { cwd: appDir }));
@@ -781,7 +819,7 @@ async function main() {
     } else {
       run('npx', ['ng', 'build'], { cwd: appDir });
     }
-    if (plan.schematics && checks.ngTest) {
+    if ((plan.schematics && checks.ngTest) || plan.matcherSpec) {
       run('npx', ['ng', 'test', '--watch=false'], { cwd: appDir });
     }
     if (plan.schematics && staleCore !== null) {
