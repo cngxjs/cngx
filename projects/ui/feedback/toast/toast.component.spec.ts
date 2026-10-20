@@ -137,7 +137,7 @@ describe('CngxToast', () => {
     expect(toaster.toasts().length).toBe(0);
   });
 
-  // ââ Projected content ââââââââââââââââââââââââââââââââââââ
+  // ── Projected content ────────────────────────────────────
 
   it('captures projected content and renders it in the outlet', () => {
     const { toaster, fixture } = setup(ProjectedHost);
