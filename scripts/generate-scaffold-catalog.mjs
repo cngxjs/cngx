@@ -2,12 +2,14 @@
 // Usage:
 //   npm run schematics:scaffold   # rewrite the generated module
 //
-// Renders the `ng new` application templates of the installed
-// @schematics/angular for every supported variant and writes their bodies
-// into the catalog ng add compares an app against. A file counts as the
+// Renders the `ng new` application templates of every installed
+// @schematics/angular, the toolchain's own and each `@schematics/angular-<major>`
+// npm alias in package.json, for every supported variant and writes their
+// bodies, keyed by the CLI major, into the catalog ng add compares an app
+// against. A new CLI major is one alias devDependency and one regenerate. A file counts as the
 // untouched scaffold only on an exact match with an entry, never on a
 // heuristic, so the templates are the single source and
-// `scripts/__tests__/scaffold-catalog.test.mjs` fails when a new
+// `scripts/__tests__/scaffold-catalog.test.mjs` fails when an installed
 // @schematics/angular release changes one until the catalog is regenerated
 // and reviewed.
 //
@@ -96,13 +98,41 @@ export const TEMPLATES = [
   },
 ];
 
-function schematicsRoot() {
-  return dirname(require.resolve('@schematics/angular/package.json'));
+/** The toolchain's own templates; their major is the workspace CLI major. */
+export const TOOLCHAIN_PACKAGE = '@schematics/angular';
+
+/** An npm alias of @schematics/angular that holds the templates of another CLI major. */
+const ALIAS = /^@schematics\/angular-\d+$/;
+
+function schematicsRoot(name = TOOLCHAIN_PACKAGE) {
+  return dirname(require.resolve(`${name}/package.json`));
+}
+
+/**
+ * The template packages the catalog renders: the toolchain's own first, then
+ * every alias devDependency in package.json, in the order listed. A major
+ * an earlier package already renders is left out, so a toolchain moved onto
+ * an alias's major (the 22 overlay) renders it once.
+ */
+export function schematicsRoots() {
+  const { devDependencies = {} } = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8'));
+  const names = [TOOLCHAIN_PACKAGE, ...Object.keys(devDependencies).filter((name) => ALIAS.test(name))];
+  const seen = new Set();
+  return names
+    .map((name) => schematicsRoot(name))
+    .filter((root) => {
+      const major = majorOf(root);
+      return !seen.has(major) && seen.add(major);
+    });
 }
 
 /** The installed @schematics/angular version, read from its own package.json. */
 export function schematicsVersion(root = schematicsRoot()) {
   return JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version;
+}
+
+function majorOf(root) {
+  return Number(schematicsVersion(root).split('.')[0]);
 }
 
 function normalize(text) {
@@ -113,11 +143,13 @@ function fingerprint(body) {
   return `sha256:${createHash('sha256').update(body).digest('hex')}`;
 }
 
-// The renderer @schematics/angular applies its own templates with. `utils`
-// stands in for `strings` of @angular-devkit/core: `classify` turns the name
-// into the title placeholder, so detection substitutes the classified name.
-function render(text, options) {
-  const { template } = require('@angular-devkit/core');
+// The renderer @schematics/angular applies its own templates with, the
+// @angular-devkit/core that package resolves (an alias brings its own).
+// `utils` stands in for `strings` of @angular-devkit/core: `classify` turns
+// the name into the title placeholder, so detection substitutes the
+// classified name.
+function render(text, options, root) {
+  const { template } = createRequire(resolve(root, 'package.json'))('@angular-devkit/core');
   const utils = { classify: (name) => (name === NAME_PLACEHOLDER ? TITLE_PLACEHOLDER : name) };
   return template(text, {})({ suffix: '', name: NAME_PLACEHOLDER, selector: SELECTOR_PLACEHOLDER, utils, ...options });
 }
@@ -128,18 +160,18 @@ async function format(body, path, prettierrc) {
 }
 
 /**
- * Every catalog entry for the installed templates: one per file and
- * variant, raw first; the formatted body is a second entry only when
- * Prettier changes the raw one.
+ * Every catalog entry for the templates of one @schematics/angular package:
+ * one per file and variant, raw first; the formatted body is a second entry
+ * only when Prettier changes the raw one.
  */
 export async function collectEntries(root = schematicsRoot()) {
-  const major = Number(schematicsVersion(root).split('.')[0]);
+  const major = majorOf(root);
   const prettierrc = JSON.parse(readFileSync(resolve(root, PRETTIERRC), 'utf8'));
   const entries = [];
   for (const { file, dir = 'src/app', template, variants } of TEMPLATES) {
     const text = readFileSync(resolve(root, template), 'utf8');
     for (const { variant, options } of variants) {
-      const raw = normalize(render(text, options));
+      const raw = normalize(render(text, options, root));
       const formatted = normalize(await format(raw, posix.join(dir, file), prettierrc));
       const bodies = formatted === raw ? [['raw', raw]] : [['raw', raw], ['prettier', formatted]];
       for (const [form, body] of bodies) {
@@ -173,11 +205,21 @@ function entry({ major, file, variant, form, template, body, fingerprint: print 
   ].join('\n');
 }
 
-/** The generated module for the installed templates. */
-export async function renderCatalogModule(root = schematicsRoot()) {
-  const entries = await collectEntries(root);
+/** Every catalog entry for every template package `schematicsRoots` names, by major. */
+export async function collectAllEntries(roots = schematicsRoots()) {
+  const entries = [];
+  for (const root of roots) {
+    entries.push(...(await collectEntries(root)));
+  }
+  return entries;
+}
+
+/** The generated module for the installed templates of every CLI major. */
+export async function renderCatalogModule(roots = schematicsRoots()) {
+  const entries = await collectAllEntries(roots);
+  const versions = roots.map((root) => schematicsVersion(root)).join(', ');
   return [
-    `// Generated by scripts/generate-scaffold-catalog.mjs from @schematics/angular ${schematicsVersion(root)}.`,
+    `// Generated by scripts/generate-scaffold-catalog.mjs from @schematics/angular ${versions}.`,
     '// Do not edit; run `npm run schematics:scaffold`.',
     '',
     '/** Stands in for the project name in every body; detection substitutes it before comparing. */',
@@ -220,7 +262,7 @@ export async function renderCatalogModule(root = schematicsRoot()) {
 async function main() {
   const module = await renderCatalogModule();
   writeFileSync(resolve(ROOT, OUT), module);
-  const count = (await collectEntries()).length;
+  const count = (await collectAllEntries()).length;
   process.stdout.write(`${OUT}: ${count} entries\n`);
 }
 

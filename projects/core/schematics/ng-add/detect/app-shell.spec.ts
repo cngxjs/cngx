@@ -257,7 +257,7 @@ describe('appShellOf', () => {
   });
 
   it('reads the stock spec of the zoneless and the zone scaffold', () => {
-    for (const name of ['scaffold-21', 'scaffold-21-zone'] as const) {
+    for (const name of ['scaffold-21', 'scaffold-21-zone', 'scaffold-22', 'scaffold-22-zone'] as const) {
       expect(shellOf(readerOf(name)).spec).toBe('stock');
     }
   });
@@ -560,6 +560,8 @@ describe('inlineTemplateOf', () => {
 describe('appShellSpecOf', () => {
   const zoneless = readFixture('scaffold-21')['src/app/app.spec.ts'];
   const zone = readFixture('scaffold-21-zone')['src/app/app.spec.ts'];
+  const zoneless22 = readFixture('scaffold-22')['src/app/app.spec.ts'];
+  const zone22 = readFixture('scaffold-22-zone')['src/app/app.spec.ts'];
 
   it('reads the stock spec for its own project name only', () => {
     expect(appShellSpecOf(zoneless, 'fixture-app')).toBe('stock');
@@ -572,7 +574,7 @@ describe('appShellSpecOf', () => {
   });
 
   it('reads the stock spec with the feedback providers as provided, raw and formatted', async () => {
-    for (const stock of [zoneless, zone]) {
+    for (const stock of [zoneless, zone, zoneless22, zone22]) {
       const provided = providedSpec(stock);
       const formatted = await format(provided, { ...PRETTIERRC, filepath: 'src/app/app.spec.ts' });
 
@@ -581,8 +583,16 @@ describe('appShellSpecOf', () => {
     }
   });
 
+  it('reads the CLI 22 stock spec, raw and formatted, as stock', async () => {
+    for (const stock of [zoneless22, zone22]) {
+      expect(appShellSpecOf(stock, 'fixture-app')).toBe('stock');
+      expect(appShellSpecOf(await format(stock, { ...PRETTIERRC, filepath: 'src/app/app.spec.ts' }), 'fixture-app')).toBe('stock');
+    }
+  });
+
   it('reads one changed character as custom', () => {
     expect(appShellSpecOf(zoneless.replace('should create the app', 'should create the App'), 'fixture-app')).toBe('custom');
+    expect(appShellSpecOf(zoneless22.replace('should create the app', 'should create the App'), 'fixture-app')).toBe('custom');
     expect(appShellSpecOf(providedSpec(zoneless).replace('withBanners())', 'withBanners() )'), 'fixture-app')).toBe(
       'custom',
     );

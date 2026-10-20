@@ -348,8 +348,8 @@ describe('planAppShell', () => {
     ]);
   });
 
-  it('provides feedback in the stock zoneless and zone spec once', async () => {
-    for (const name of ['scaffold-21', 'scaffold-21-zone'] as const) {
+  it('provides feedback in the stock zoneless and zone spec of both CLI majors once', async () => {
+    for (const name of ['scaffold-21', 'scaffold-21-zone', 'scaffold-22', 'scaffold-22-zone'] as const) {
       const stock = readFixture(name)['src/app/app.spec.ts'];
       const provided = provideFeedbackInSpec(stock, 'fixture-app');
 

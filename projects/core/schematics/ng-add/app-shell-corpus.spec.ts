@@ -32,6 +32,15 @@ type Tree = ReturnType<typeof createFixtureTree>;
 
 const STOCK_APP = readFixture('scaffold-21')['src/app/app.ts'];
 const STOCK_SPEC = readFixture('scaffold-21')['src/app/app.spec.ts'];
+const STOCK_SPEC_22 = readFixture('scaffold-22')['src/app/app.spec.ts'];
+const STOCK_APP_22 = readFixture('scaffold-22')['src/app/app.ts'];
+
+// The content with the character in its middle replaced: the smallest edit
+// that makes a scaffold file no longer the untouched one.
+function oneChanged(content: string): string {
+  const at = Math.floor(content.length / 2);
+  return `${content.slice(0, at)}${content[at] === 'x' ? 'y' : 'x'}${content.slice(at + 1)}`;
+}
 const PRETTIERRC = JSON.parse(readFixture('scaffold-21')['.prettierrc']) as Record<string, unknown>;
 
 const NGMODULE_MAIN = `import { platformBrowser } from '@angular/platform-browser';
@@ -112,7 +121,7 @@ interface Shape {
    * step, and `files` / `remove` change the shell afterwards.
    */
   readonly installedFirst?: true;
-  /** The root component and its template went through Prettier before `ng add`. */
+  /** The root component, its template and its spec went through Prettier before `ng add`. */
   readonly prettierFirst?: true;
   /**
    * `placed`; the reason cngx names with the snippet instead of editing; or
@@ -134,6 +143,13 @@ const CORPUS: readonly Shape[] = [
   { name: 'scaffold-21 routing off', fixture: 'scaffold-21-routing-off', outcome: 'placed' },
   { name: 'scaffold-21 zone', fixture: 'scaffold-21-zone', outcome: 'placed' },
   { name: 'scaffold-21 scss', fixture: 'scaffold-21-scss', outcome: 'placed' },
+  { name: 'scaffold-22', fixture: 'scaffold-22', outcome: 'placed' },
+  { name: 'scaffold-22 routing off', fixture: 'scaffold-22-routing-off', outcome: 'placed' },
+  { name: 'scaffold-22 zone', fixture: 'scaffold-22-zone', outcome: 'placed' },
+  { name: 'scaffold-22 scss', fixture: 'scaffold-22-scss', outcome: 'placed' },
+  { name: 'Prettier-formatted scaffold-22', fixture: 'scaffold-22', prettierFirst: true, outcome: 'placed' },
+  { name: 'one changed character in the scaffold-22 spec', fixture: 'scaffold-22', files: { 'src/app/app.spec.ts': oneChanged(STOCK_SPEC_22) }, outcome: 'spec-custom' },
+  { name: 'one changed character in the scaffold-22 zone spec', fixture: 'scaffold-22-zone', files: { 'src/app/app.spec.ts': oneChanged(readFixture('scaffold-22-zone')['src/app/app.spec.ts']) }, outcome: 'spec-custom' },
   { name: 'standalone-app', fixture: 'standalone-app', outcome: 'placed' },
   { name: 'existing-tailwind-app', fixture: 'existing-tailwind-app', outcome: 'placed' },
   { name: 'NgModule app', files: ngModuleApp(), remove: ['src/app/app.spec.ts'], outcome: 'placed' },
@@ -268,7 +284,7 @@ async function treeOf(shape: Shape): Promise<Tree> {
     tree.delete(path);
   }
   if (shape.prettierFirst) {
-    await formatted(tree, ['src/app/app.ts', 'src/app/app.html']);
+    await formatted(tree, ['src/app/app.ts', 'src/app/app.html', 'src/app/app.spec.ts']);
   }
   return tree;
 }
@@ -793,11 +809,6 @@ const SCAFFOLD_FILES = [...STARTER_FILES, 'src/index.html'];
 const STOCK_INDEX = readFixture('scaffold-21')['src/index.html'];
 const STOCK_STYLES = readFixture('scaffold-21')['src/styles.css'];
 
-function oneChanged(content: string): string {
-  const at = Math.floor(content.length / 2);
-  return `${content.slice(0, at)}${content[at] === 'x' ? 'y' : 'x'}${content.slice(at + 1)}`;
-}
-
 const STARTER_CORPUS: readonly StarterShape[] = [
   { name: 'scaffold-21', fixture: 'scaffold-21', outcome: 'written' },
   { name: 'scaffold-21 routing off', fixture: 'scaffold-21-routing-off', outcome: 'written' },
@@ -806,6 +817,25 @@ const STARTER_CORPUS: readonly StarterShape[] = [
   { name: 'Prettier-formatted scaffold-21', fixture: 'scaffold-21', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/index.html', 'src/styles.css'], outcome: 'written' },
   { name: 'Prettier-formatted scaffold-21 routing off', fixture: 'scaffold-21-routing-off', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/index.html'], outcome: 'written' },
   { name: 'Prettier-formatted scaffold-21 scss', fixture: 'scaffold-21-scss', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.scss', 'src/index.html', 'src/styles.scss'], outcome: 'written' },
+  { name: 'scaffold-22', fixture: 'scaffold-22', outcome: 'written' },
+  { name: 'scaffold-22 routing off', fixture: 'scaffold-22-routing-off', outcome: 'written' },
+  { name: 'scaffold-22 zone', fixture: 'scaffold-22-zone', outcome: 'written' },
+  { name: 'scaffold-22 scss', fixture: 'scaffold-22-scss', outcome: 'written' },
+  { name: 'Prettier-formatted scaffold-22', fixture: 'scaffold-22', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/app/app.spec.ts', 'src/index.html', 'src/styles.css'], outcome: 'written' },
+  { name: 'Prettier-formatted scaffold-22 routing off', fixture: 'scaffold-22-routing-off', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.spec.ts', 'src/index.html'], outcome: 'written' },
+  { name: 'Prettier-formatted scaffold-22 zone', fixture: 'scaffold-22-zone', prettierFirst: ['src/app/app.spec.ts'], outcome: 'written' },
+  { name: 'Prettier-formatted scaffold-22 scss', fixture: 'scaffold-22-scss', prettierFirst: ['src/app/app.ts', 'src/app/app.html', 'src/app/app.scss', 'src/app/app.spec.ts', 'src/index.html', 'src/styles.scss'], outcome: 'written' },
+  { name: 'CRLF scaffold-22', fixture: 'scaffold-22', files: crlf({ 'src/app/app.ts': STOCK_APP_22, 'src/app/app.spec.ts': STOCK_SPEC_22, 'src/app/app.html': STOCK_HTML, 'src/index.html': STOCK_INDEX }), outcome: 'written' },
+  { name: 'scaffold-22 feedback off', fixture: 'scaffold-22', flags: { feedback: false }, outcome: 'written' },
+  { name: 'scaffold-21 files kept in an app updated to CLI 22', fixture: 'scaffold-22', files: { 'src/app/app.ts': STOCK_APP, 'src/app/app.spec.ts': STOCK_SPEC }, outcome: 'written' },
+  { name: 'one changed character in the scaffold-22 app.ts', fixture: 'scaffold-22', files: { 'src/app/app.ts': oneChanged(STOCK_APP_22) }, outcome: 'not-untouched' },
+  { name: 'one changed character in the scaffold-22 welcome page', fixture: 'scaffold-22', files: { 'src/app/app.html': oneChanged(STOCK_HTML) }, outcome: 'not-untouched' },
+  { name: 'one changed character in the scaffold-22 app.css', fixture: 'scaffold-22', files: { 'src/app/app.css': ' ' }, outcome: 'not-untouched' },
+  { name: 'one changed character in the scaffold-22 app.scss', fixture: 'scaffold-22-scss', files: { 'src/app/app.scss': ' ' }, outcome: 'not-untouched' },
+  { name: 'one changed character in the scaffold-22 spec', fixture: 'scaffold-22', files: { 'src/app/app.spec.ts': oneChanged(STOCK_SPEC_22) }, outcome: 'spec-custom' },
+  { name: 'one changed character in the scaffold-22 styles.css', fixture: 'scaffold-22', files: { 'src/styles.css': oneChanged(STOCK_STYLES) }, outcome: 'styles-custom' },
+  { name: 'one changed character in the scaffold-22 index.html', fixture: 'scaffold-22', files: { 'src/index.html': oneChanged(STOCK_INDEX) }, outcome: 'icon-left' },
+  { name: 'scaffold-22 starter of a run with other answers', fixture: 'scaffold-22', installedFirst: true, flags: { a11yPreferences: false }, outcome: 'other-answers' },
   { name: 'CRLF scaffold-21', files: crlf({ 'src/app/app.ts': STOCK_APP, 'src/app/app.html': STOCK_HTML, 'src/index.html': STOCK_INDEX }), outcome: 'written' },
   { name: 'feedback off', fixture: 'scaffold-21', flags: { feedback: false }, outcome: 'written' },
   { name: 'a11y preferences off', fixture: 'scaffold-21', flags: { a11yPreferences: false }, outcome: 'written' },
