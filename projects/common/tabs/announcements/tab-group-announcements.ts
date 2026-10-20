@@ -208,7 +208,13 @@ export function createTabGroupAnnouncements(
     const origin = originIdx !== undefined ? presenter.tabs()[originIdx] : undefined;
     const originLabel = origin?.label();
     const copy = i18n();
-    return originLabel ? copy.commitRefused(originLabel) : copy.commitRefusedGeneric;
+    if (originLabel) {
+      return copy.commitRefused(originLabel);
+    }
+    if (originIdx !== undefined) {
+      return copy.commitRefused(copy.unlabeledTab(originIdx + 1));
+    }
+    return copy.commitRefusedGeneric;
   }
 
   // Copy and tab labels (which a consumer may translate) are read untracked
@@ -242,6 +248,7 @@ export function createTabGroupAnnouncements(
         if (originLabel) {
           return untracked(() => i18n().commitRolledBackTo(originLabel));
         }
+        return untracked(() => i18n().commitRolledBackTo(i18n().unlabeledTab(originIdx + 1)));
       }
       return untracked(() => i18n().commitFailedRetry);
     }
@@ -257,7 +264,9 @@ export function createTabGroupAnnouncements(
       const prevIdx = priorActiveIndex();
       return untracked(() => {
         const copy = i18n();
-        const positionPhrase = copy.selectedTab(label, idx + 1, count);
+        const positionPhrase = label
+          ? copy.selectedTab(label, idx + 1, count)
+          : copy.unlabeledTab(idx + 1);
         if (idx > prevIdx) {
           return copy.nextTab(positionPhrase);
         }
@@ -290,9 +299,13 @@ export function createTabGroupAnnouncements(
 
   function tabAriaLabel(tab: CngxTabHandle, position: number): string {
     const tabs = presenter.tabs();
-    const label = tab.label() ?? '';
+    const label = tab.label();
     const detail = tab.subLabel();
     const copy = i18n();
+    if (!label) {
+      const positionName = copy.unlabeledTab(position);
+      return detail ? copy.tabLabelWithDetail(positionName, detail) : positionName;
+    }
     const labelPart = detail ? copy.tabLabelWithDetail(label, detail) : label;
     return copy.selectedTab(labelPart, position, tabs.length);
   }
