@@ -5,7 +5,7 @@ import { allRoutes } from '../e2e/_routes';
 import { CONSOLE_ALLOWLIST, CONSOLE_ALLOWLIST_CAP } from './console-allowlist';
 import {
   formatConsoleLine,
-  isSweptConsoleType,
+  isWatchedConsoleType,
   matchesAllowRow,
   normaliseConsoleText,
   routeOfUrl,
@@ -28,7 +28,7 @@ async function collectConsoleLines(page: Page, path: string): Promise<ConsoleLin
   const lines: ConsoleLine[] = [];
   page.on('console', (msg) => {
     const type = msg.type();
-    if (isSweptConsoleType(type)) {
+    if (isWatchedConsoleType(type)) {
       lines.push({ type, text: normaliseConsoleText(msg.text()) });
     }
   });

@@ -1,4 +1,4 @@
-/** The channels the sweep listens to; `pageerror` is an uncaught exception. */
+/** The channels both console watchers listen to; `pageerror` is an uncaught exception. */
 export type ConsoleLineType = 'warning' | 'error' | 'assert' | 'pageerror';
 
 /**

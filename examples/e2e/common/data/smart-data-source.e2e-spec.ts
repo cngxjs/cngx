@@ -9,12 +9,10 @@ import { routesIn } from '../../_routes';
 
 test.describe('common/data/smart-data-source', () => {
   for (const { name, path } of routesIn('common', 'data', 'smart-data-source')) {
+    // A DI error surfaces as a page error, which the console guard fails on.
     test(`${name}: page mounts without DI errors`, async ({ page }) => {
-      const errors: string[] = [];
-      page.on('pageerror', (e) => errors.push(String(e)));
       await gotoDemo(page, path);
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
-      expect(errors).toEqual([]);
     });
   }
 });
