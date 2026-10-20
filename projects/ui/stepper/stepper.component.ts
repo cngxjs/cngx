@@ -39,6 +39,7 @@ import {
   CngxStepIndicator,
   type CngxStepLabelContext,
   CngxStepperEmpty,
+  CngxDotStepperDot,
   CngxStepperPresenter,
   type CngxStepperHeaderNavigation,
   type CngxStepperMobileIndicatorPosition,
@@ -93,6 +94,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  * @slot cngxStepRejection Renders the reason a rolled-back step was refused.
  * @slot cngxStepGroupHeader Replaces the header a step group renders above its steps.
  * @slot cngxStepperEmpty Renders when no step is projected at all.
+ * @slot cngxDotStepperDot Replaces the body of each dot in the dots mobile-collapse branch.
  * @playground Material theme coverage across all skins ./examples/material-theme-coverage/skins-coverage.component.ts
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-horizontal/three-step-wizard</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-vertical/vertical-sidebar-layout</example-url>
@@ -216,6 +218,7 @@ export class CngxStepper implements CngxStepPanelHost {
   private readonly errorSlot = contentChild(CngxStepError);
   private readonly groupHeaderSlot = contentChild(CngxStepGroupHeader);
   private readonly emptySlot = contentChild(CngxStepperEmpty);
+  private readonly dotSlot = contentChild(CngxDotStepperDot);
 
   /** Default-template glyph source - read by `#defaultBadge` / `#defaultRejection` outlets. */
   protected readonly glyphs = CNGX_STEPPER_GLYPHS;
@@ -233,6 +236,7 @@ export class CngxStepper implements CngxStepPanelHost {
     errorSlot: this.errorSlot,
     groupHeaderSlot: this.groupHeaderSlot,
     emptySlot: this.emptySlot,
+    dotSlot: this.dotSlot,
     config: this.config,
   });
 

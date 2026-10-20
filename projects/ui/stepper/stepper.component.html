@@ -35,7 +35,11 @@
           [attr.aria-label]="mobileDotAriaLabel(node, i)"
           [attr.data-state]="mobileDotState(node)"
           [attr.data-reason]="stateView.rejectionReason(node)"
-        ></span>
+        >
+          @if (templates.dot(); as dotTpl) {
+            <ng-container *ngTemplateOutlet="dotTpl; context: slotContext.dotContextFor(node)" />
+          }
+        </span>
       } @else {
         <button
           type="button"
@@ -53,7 +57,11 @@
           [attr.aria-disabled]="headerAriaDisabled(node)"
           [cngxRovingItemDisabled]="node.disabled()"
           (click)="handleHeaderClick(node)"
-        ></button>
+        >
+          @if (templates.dot(); as dotTpl) {
+            <ng-container *ngTemplateOutlet="dotTpl; context: slotContext.dotContextFor(node)" />
+          }
+        </button>
       }
     }
   </div>

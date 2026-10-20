@@ -637,10 +637,11 @@ export function withStepperEmptyTemplate(template: TemplateRef<void>): CngxStepp
 }
 
 /**
- * Override the default `*cngxDotStepperDot` template app-wide. The
- * `<cngx-dot-stepper>` variant resolves the cascade per dot:
- * per-instance directive > this feature > built-in empty body
- * (the dot fill is painted by `.cngx-dot-stepper__dot` regardless).
+ * Override the default `*cngxDotStepperDot` template app-wide. Both dot
+ * hosts resolve the cascade per dot - `<cngx-dot-stepper>` and the dots
+ * mobile-collapse branch of `<cngx-stepper>`: per-instance directive >
+ * this feature > built-in empty body (the dot fill is painted by the dot
+ * element's CSS regardless).
  *
  * @category common/stepper
  */
