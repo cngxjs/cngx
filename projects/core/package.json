@@ -23,8 +23,8 @@
   },
   "peerDependencies": {
     "@cngx/utils": "0.0.0-PLACEHOLDER",
-    "@angular/common": "^21.2.0",
-    "@angular/core": "^21.2.0",
+    "@angular/common": ">=21.1.0 <23.0.0",
+    "@angular/core": ">=21.1.0 <23.0.0",
     "vitest": "^4.0.0"
   },
   "peerDependenciesMeta": {

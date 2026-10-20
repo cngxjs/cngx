@@ -80,6 +80,15 @@ describe('angularSupport', () => {
     }
   });
 
+  it('reads the range the libs peer on as 21.1 through 22', () => {
+    const shipped = '>=21.1.0 <23.0.0';
+
+    expect(angularSupport(withAngular('^21.1.0'), shipped)).toMatchObject({ supported: true, floor: '21.1', aboveRange: false });
+    expect(angularSupport(withAngular('^22.2.0'), shipped)).toMatchObject({ supported: true, aboveRange: false });
+    expect(angularSupport(withAngular('~21.0.6'), shipped)).toMatchObject({ supported: false, floor: '21.1' });
+    expect(angularSupport(withAngular('^23.0.0'), shipped)).toMatchObject({ supported: true, aboveRange: true });
+  });
+
   it('refuses an older minor and names what the app declares', () => {
     expect(angularSupport(withAngular('^21.1.0'), PEER_RANGE)).toEqual({
       supported: false,
@@ -152,6 +161,8 @@ describe('verifiedMajor', () => {
     ['<22.1.0', 22],
     ['<=22.0.0', 22],
     ['>=21.2.0 <23.0.0', 22],
+    // The range every @cngx lib peers on.
+    ['>=21.1.0 <23.0.0', 22],
   ])('reads the upper bound %s as verified up to Angular %i', (range, major) => {
     expect(verifiedMajor(range)).toBe(major);
   });
@@ -169,6 +180,7 @@ describe('rangeFloor', () => {
     ['21.2.0 - 22.4.0', 21, 2],
     ['>=21.3.0', 21, 3],
     ['>=21.2.0 <23.0.0', 21, 2],
+    ['>=21.1.0 <23.0.0', 21, 1],
     ['<23.0.0 >= 21.2.0', 21, 2],
     ['<22.0.0', 0, 0],
     ['*', 0, 0],
