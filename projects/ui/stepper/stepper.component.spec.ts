@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
@@ -1053,7 +1053,7 @@ describe('CngxStepper organism', () => {
     it('a step move without a commit after a refusal spends the phrase', () => {
       const { fixture, region, stepper } = refusedFixture();
       fixture.componentInstance.action = null;
-      fixture.componentRef.changeDetectorRef.markForCheck();
+      fixture.componentRef.injector.get(ChangeDetectorRef).markForCheck();
       fixture.detectChanges();
       stepper['presenter'].select(2);
       fixture.detectChanges();
@@ -1070,7 +1070,7 @@ describe('CngxStepper organism', () => {
     it('a sync accept after a refusal spends the phrase and announces no landing', () => {
       const { fixture, buttons, region } = refusedFixture();
       fixture.componentInstance.action = () => true;
-      fixture.componentRef.changeDetectorRef.markForCheck();
+      fixture.componentRef.injector.get(ChangeDetectorRef).markForCheck();
       fixture.detectChanges();
       buttons[2].click();
       fixture.detectChanges();
