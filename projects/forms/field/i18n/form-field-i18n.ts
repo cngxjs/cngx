@@ -1,9 +1,8 @@
 import { inject, InjectionToken, type Provider, type Signal } from '@angular/core';
 import { createLanguageSection, createSectionBundle, formatMessage } from '@cngx/core/i18n';
 import { createNestedOverrideMerge, type CngxNestedOverrides } from '@cngx/core/utils';
-import type { ValidationError } from '@angular/forms/signals';
 
-import type { ErrorMessageFn, ErrorMessageMap } from '../models';
+import type { CngxFieldValidationError, ErrorMessageFn, ErrorMessageMap } from '../models';
 import {
   CNGX_FORM_FIELD_LANGUAGE_EN,
   type CngxFormFieldLanguageSection,
@@ -73,7 +72,7 @@ export type CngxFormFieldI18nOverrides = CngxNestedOverrides<
 type NumberKey = 'min' | 'max' | 'minLength' | 'maxLength';
 
 /** @internal The numeric payload of a built-in error, or `undefined`. */
-function numberOf(error: ValidationError.WithFieldTree, key: NumberKey): number | undefined {
+function numberOf(error: CngxFieldValidationError, key: NumberKey): number | undefined {
   const value = (error as unknown as Partial<Record<NumberKey, unknown>>)[key];
   return typeof value === 'number' ? value : undefined;
 }
@@ -236,7 +235,7 @@ export function injectFormFieldI18n(): Signal<CngxFormFieldI18n> {
  * generic `invalid`. Never the raw kind.
  */
 export function resolveErrorMessage(
-  error: ValidationError.WithFieldTree,
+  error: CngxFieldValidationError,
   registry: ErrorMessageMap,
   i18n: CngxFormFieldI18n,
 ): string {
