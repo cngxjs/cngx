@@ -31,7 +31,10 @@
     (blur)="handleBlur()"
     (keydown)="handleTriggerKeydown($event)"
   >
-    <span class="cngx-select__chip-list">
+    <span
+      class="cngx-select__chip-list"
+      [attr.data-overflow]="summary.active() ? 'truncate' : null"
+    >
       @if (isEmpty()) {
         @if (placeholderTpl(); as tpl) {
           <ng-container
@@ -56,6 +59,13 @@
               count: selected().length,
             }
           "
+        />
+      } @else if (summary.active()) {
+        <cngx-select-summary
+          exposeValue
+          [label]="summary.first()?.label ?? ''"
+          [badge]="summary.badgeText()"
+          [fullText]="summary.fullText()"
         />
       } @else {
         @for (opt of selected(); track keyFnInternal()(opt.value)) {

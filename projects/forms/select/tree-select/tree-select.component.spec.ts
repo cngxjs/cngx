@@ -3,13 +3,14 @@ import { Subject, type Observable } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import type { CngxTreeNode } from '@cngx/utils';
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { createMockField } from '@cngx/forms/field/testing';
 import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host';
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
+import { stubTouchFloor } from '../shared/__test-helpers/touch-floor';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { stripBidiIsolates } from '@cngx/testing';
 import {
@@ -818,6 +819,137 @@ describe('CngxTreeSelect - runtime language switch', () => {
     fixture.detectChanges();
     expect(before).toBe('Reset selection');
     expect(clear()?.getAttribute('aria-label')).toBe('Auswahl zurücksetzen');
+  });
+});
+
+// ── Summary trigger under the touch floor ───────────────────────────
+
+@Component({
+  imports: [CngxTreeSelect, CngxTreeSelectTriggerLabel],
+  template: `
+    <cngx-tree-select
+      [label]="'Teams'"
+      [nodes]="nodes"
+      [nodeIdFn]="idFn"
+      [labelFn]="labelFn"
+      [keyFn]="keyFn"
+      [(values)]="values"
+      [cascadeChildren]="true"
+      [initiallyExpanded]="'all'"
+    >
+      @if (withTriggerLabel()) {
+        <ng-template cngxTreeSelectTriggerLabel let-count="count">
+          <span class="trigger-summary">{{ count }} teams</span>
+        </ng-template>
+      }
+    </cngx-tree-select>
+  `,
+})
+class TreeSummaryHost {
+  readonly nodes = tree();
+  readonly values = signal<Row[]>([
+    { id: 'a1', name: 'Alpha-1' },
+    { id: 'a2', name: 'Alpha-2' },
+    { id: 'b', name: 'Bravo' },
+  ]);
+  readonly withTriggerLabel = signal(false);
+  readonly idFn = (v: Row): string => v.id;
+  readonly labelFn = (v: Row): string => v.name;
+  readonly keyFn = (v: Row): unknown => v.id;
+}
+
+describe('CngxTreeSelect - summary trigger under the touch floor', () => {
+  let restore: (() => void) | null = null;
+
+  beforeAll(() => polyfillPopover());
+
+  afterEach(() => {
+    restore?.();
+    restore = null;
+  });
+
+  function render(touch: boolean) {
+    if (touch) {
+      restore = stubTouchFloor();
+    }
+    const fixture = TestBed.createComponent(TreeSummaryHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const tree = fixture.debugElement.query(By.directive(CngxTreeSelect))
+      .componentInstance as CngxTreeSelect<Row>;
+    return { fixture, tree, el: fixture.nativeElement as HTMLElement };
+  }
+
+  it('shows the first label plus the +N badge instead of chips', () => {
+    const { el } = render(true);
+    expect(el.querySelectorAll('cngx-chip').length).toBe(0);
+    expect(el.querySelector('.cngx-select-summary__label')?.textContent?.trim()).toBe('Alpha-1');
+    expect(el.querySelector('.cngx-select__chip-overflow-badge')?.textContent?.trim()).toBe('+2');
+    expect(el.querySelector('.cngx-select__chip-list')?.getAttribute('data-overflow')).toBe(
+      'truncate',
+    );
+  });
+
+  it('exposes the whole selection as the trigger value for AT', () => {
+    const { el } = render(true);
+    const trigger = el.querySelector('[role="combobox"]')!;
+    const sr = trigger.querySelector('cngx-select-summary .cngx-sr-only');
+    expect(stripBidiIsolates(sr?.textContent?.trim() ?? '')).toBe(
+      '3 selected: Alpha-1, Alpha-2, and Bravo',
+    );
+    expect(trigger.querySelector('.cngx-select-summary__label')?.getAttribute('aria-hidden')).toBe(
+      'true',
+    );
+  });
+
+  it('counts a cascaded selection the way the chips did', () => {
+    const { fixture, tree, el } = render(true);
+    fixture.componentInstance.values.set([]);
+    fixture.detectChanges();
+    const parent = tree.treeController.flatNodes().find((n) => n.value.id === 'a')!;
+    tree.handleSelect(parent);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.values()).toHaveLength(3);
+    expect(el.querySelector('.cngx-select-summary__label')?.textContent?.trim()).toBe('Alpha');
+    expect(el.querySelector('.cngx-select__chip-overflow-badge')?.textContent?.trim()).toBe('+2');
+    expect(
+      stripBidiIsolates(
+        el.querySelector('cngx-select-summary .cngx-sr-only')?.textContent?.trim() ?? '',
+      ),
+    ).toBe('3 selected: Alpha, Alpha-1, and Alpha-2');
+  });
+
+  it('speaks a single value as its label and shows the placeholder for none', () => {
+    const { fixture, el } = render(true);
+    fixture.componentInstance.values.set([{ id: 'b', name: 'Bravo' }]);
+    fixture.detectChanges();
+    expect(el.querySelector('.cngx-select-summary__label')?.textContent?.trim()).toBe('Bravo');
+    expect(el.querySelector('.cngx-select__chip-overflow-badge')).toBeNull();
+    expect(el.querySelector('cngx-select-summary .cngx-sr-only')?.textContent?.trim()).toBe(
+      'Bravo',
+    );
+    fixture.componentInstance.values.set([]);
+    fixture.detectChanges();
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+    expect(el.querySelector('.cngx-tree-select__placeholder')).not.toBeNull();
+  });
+
+  it('lets a projected trigger-label template win over the summary', () => {
+    const { fixture, el } = render(true);
+    fixture.componentInstance.withTriggerLabel.set(true);
+    fixture.detectChanges();
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+    expect(el.querySelector('.trigger-summary')?.textContent?.trim()).toBe('3 teams');
+  });
+
+  it('keeps the chips on a fine pointer', () => {
+    const { el } = render(false);
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+    expect(el.querySelectorAll('cngx-chip').length).toBe(3);
+    expect(el.querySelector('.cngx-select__chip-list')?.hasAttribute('data-overflow')).toBe(false);
   });
 });
 

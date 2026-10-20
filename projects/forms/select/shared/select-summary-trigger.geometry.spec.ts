@@ -1,8 +1,9 @@
-import { Component, signal, ViewEncapsulation } from '@angular/core';
+import { Component, computed, signal, ViewEncapsulation } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxMultiSelect } from '../multi-select/multi-select.component';
+import { CngxTreeSelect } from '../tree-select/tree-select.component';
 
 // Runs in a real Chromium (the `test-geometry` target). Under the touch floor
 // (`data-touch="on"`, the same 44px a coarse pointer sets) the multi-value
@@ -22,7 +23,7 @@ function optionsWith(firstLabel: string): { value: string; label: string }[] {
 @Component({
   selector: 'cngx-select-summary-trigger-host',
   standalone: true,
-  imports: [CngxMultiSelect],
+  imports: [CngxMultiSelect, CngxTreeSelect],
   styleUrls: [
     '../../../core/theming/layers.css',
     '../../../core/theming/system-tokens.css',
@@ -36,16 +37,27 @@ function optionsWith(firstLabel: string): { value: string; label: string }[] {
   template: `
     <div data-touch="on" style="display: block; width: 20rem; margin: 1rem">
       <cngx-multi-select [label]="'C'" [options]="options()" [values]="values()" />
+      <cngx-tree-select
+        [label]="'T'"
+        [nodes]="treeNodes()"
+        [nodeIdFn]="treeId"
+        [labelFn]="treeLabel"
+        [values]="values()"
+      />
     </div>
   `,
 })
 class SummaryTriggerHost {
   readonly options = signal(optionsWith('Red'));
   readonly values = signal<string[]>([]);
+  readonly treeNodes = computed(() => this.options().map((o) => ({ value: o.value })));
+  readonly treeId = (v: string): string => v;
+  readonly treeLabel = (v: string): string =>
+    this.options().find((o) => o.value === v)?.label ?? v;
 }
 
 /** Every summary variant: its host tag. */
-const VARIANTS = ['cngx-multi-select'] as const;
+const VARIANTS = ['cngx-multi-select', 'cngx-tree-select'] as const;
 
 let mountedRoot: HTMLElement | null = null;
 
