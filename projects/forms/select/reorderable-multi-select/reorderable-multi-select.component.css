@@ -242,6 +242,9 @@
         var(--cngx-multi-select-gap, var(--cngx-select-gap, var(--cngx-space-sm, 0.5rem)))
       );
       width: 100%;
+      /* The literal ends differ from the scale rung on purpose: they reproduce
+         this trigger's spacing from before the cascade when system-tokens.css is
+         not loaded (pinned by select-touch-floor.geometry.spec.ts). */
       padding: var(
         --cngx-reorderable-multi-select-padding,
         var(

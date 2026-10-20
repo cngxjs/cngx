@@ -170,6 +170,9 @@
         var(--cngx-typeahead-min-height, var(--cngx-select-min-height, 2.125rem)),
         var(--cngx-target-min, 0px)
       );
+      /* The literal ends differ from the scale rung on purpose: they reproduce
+         this trigger's spacing from before the cascade when system-tokens.css is
+         not loaded (pinned by select-touch-floor.geometry.spec.ts). */
       padding: var(
         --cngx-typeahead-padding,
         var(--cngx-select-padding, var(--cngx-space-sm, 0) var(--cngx-space-md, 0.75rem))

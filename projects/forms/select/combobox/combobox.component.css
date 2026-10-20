@@ -249,6 +249,9 @@
       box-sizing: border-box;
       display: flex;
       align-items: center;
+      /* The literal ends differ from the scale rung on purpose: they reproduce
+         this trigger's spacing from before the cascade when system-tokens.css is
+         not loaded (pinned by select-touch-floor.geometry.spec.ts). */
       gap: var(--cngx-combobox-gap, var(--cngx-select-gap, var(--cngx-space-xs, 0.5rem)));
       width: 100%;
       padding: var(

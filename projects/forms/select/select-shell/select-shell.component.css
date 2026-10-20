@@ -305,6 +305,9 @@
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
+      /* The literal end differs from the scale rung on purpose: it keeps the
+         label gap from before the cascade when system-tokens.css is not
+         loaded. */
       gap: var(--cngx-select-shell-label-gap, var(--cngx-space-xs, 0.375rem));
     }
 
