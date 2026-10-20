@@ -1,4 +1,16 @@
-import { DestroyRef, Directive, ElementRef, inject, Injector, Renderer2 } from '@angular/core';
+import {
+  computed,
+  contentChild,
+  DestroyRef,
+  Directive,
+  ElementRef,
+  inject,
+  Injector,
+  Renderer2,
+  ViewContainerRef,
+  type Signal,
+  type TemplateRef,
+} from '@angular/core';
 
 import {
   CNGX_TAB_GROUP_HOST,
@@ -14,6 +26,15 @@ import {
   createMatTabRejectionDecoration,
 } from './decorations/decoration-projectors';
 import { createAggregatedErrorTabs } from './decorations/aggregated-error-tabs';
+import {
+  CngxMatTabAggregatorContent,
+  type CngxMatTabAggregatorContentContext,
+} from './decorations/mat-tab-aggregator-content.directive';
+import {
+  CngxMatTabRejectionContent,
+  type CngxMatTabRejectionContentContext,
+} from './decorations/mat-tab-rejection-content.directive';
+import { injectMatTabsConfig } from './mat-tabs-config';
 import { mountLiveRegionAnnouncer } from './material-bridge/live-region';
 import { createRejectionState } from './decorations/rejection-state';
 
@@ -49,10 +70,12 @@ import { createRejectionState } from './decorations/rejection-state';
  * the live-region announcer come for free, identical to the cngx
  * organism (Pillar 2 - same communication across skins).
  *
- * Decoration content-template slots (`*cngxMatTabRejectionContent` /
- * `*cngxMatTabAggregatorContent`) are not forwarded on this bridge yet -
- * the projectors render their built-in `cngx-sr-only` spans. The slot
- * inputs that `[cngxMatTabs]` exposes are a deferred follow-up.
+ * Decoration content-template slots resolve as on `[cngxMatTabs]`:
+ * a projected `*cngxMatTabRejectionContent` wins over
+ * `provideMatTabsConfig(withMatTabRejectionTemplate(...))`, and a
+ * projected `*cngxMatTabAggregatorContent` replaces the aggregated error
+ * summary; without either, the projectors render their built-in
+ * `cngx-sr-only` text.
  *
  * @playground Native router tabs with a CanDeactivate guard ./examples/router-nav/router-nav.component.ts
  *
@@ -62,6 +85,8 @@ import { createRejectionState } from './decorations/rejection-state';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tab-nav.directive.ts
  * @since 0.1.0
  * @relatedTo CngxMatTabLink, CngxMatTabs, CngxTabsRouteSync
+ * @slot cngxMatTabAggregatorContent Replaces the aggregated error summary projected into a Material tab.
+ * @slot cngxMatTabRejectionContent Replaces the rejection notice on a rolled-back Material tab.
  */
 @Directive({
   selector: '[cngxMatTabNav]',
@@ -84,7 +109,19 @@ export class CngxMatTabNav {
   private readonly injector = inject(Injector);
   private readonly renderer = inject(Renderer2);
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly viewContainerRef = inject(ViewContainerRef);
+  private readonly matTabsConfig = injectMatTabsConfig();
   private readonly i18n = injectTabsI18n();
+
+  private readonly aggregatorContentSlot = contentChild(CngxMatTabAggregatorContent);
+  private readonly aggregatorContentTemplate: Signal<TemplateRef<CngxMatTabAggregatorContentContext> | null> =
+    computed(() => this.aggregatorContentSlot()?.templateRef ?? null);
+  private readonly rejectionContentSlot = contentChild(CngxMatTabRejectionContent);
+  private readonly rejectionContentTemplate: Signal<TemplateRef<CngxMatTabRejectionContentContext> | null> =
+    computed(
+      () =>
+        this.rejectionContentSlot()?.templateRef ?? this.matTabsConfig.templates.rejection ?? null,
+    );
 
   private readonly rejectionState = createRejectionState(this.presenter, this.i18n);
   private readonly aggregatedErrorTabs = createAggregatedErrorTabs(this.presenter, this.i18n);
@@ -116,6 +153,8 @@ export class CngxMatTabNav {
       renderer: this.renderer,
       injector: this.injector,
       destroyRef: this.destroyRef,
+      contentTemplate: this.rejectionContentTemplate,
+      viewContainerRef: this.viewContainerRef,
       originLabel: this.rejectionState.originLabel,
       reason: this.rejectionState.reason,
       buttonSelector: '.mat-mdc-tab-link',
@@ -127,6 +166,9 @@ export class CngxMatTabNav {
       renderer: this.renderer,
       injector: this.injector,
       destroyRef: this.destroyRef,
+      contentTemplate: this.aggregatorContentTemplate,
+      viewContainerRef: this.viewContainerRef,
+      onHalfWiredSlot: this.matTabsConfig.halfWiredSlotSink,
       buttonSelector: '.mat-mdc-tab-link',
     });
   }
