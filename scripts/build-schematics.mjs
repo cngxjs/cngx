@@ -23,18 +23,11 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { PACKED_LIBS } from './cngx-libs.mjs';
+import { EXTERNAL, externalRequireViolations } from './schematics-externals.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const TSC = createRequire(import.meta.url).resolve('typescript/bin/tsc');
 const CORE_NG_ADD_SCHEMA = join(ROOT, 'projects', 'core', 'schematics', 'ng-add', 'schema.json');
-
-const EXTERNAL = [
-  '@angular-devkit/*',
-  '@schematics/angular',
-  '@schematics/angular/*',
-  'typescript',
-  '@angular/compiler',
-];
 
 // Folders that are bundled into the entries, never entries themselves.
 const NON_ENTRY_DIRS = new Set(['engine', 'testing', 'node_modules']);
@@ -42,6 +35,36 @@ const NON_ENTRY_DIRS = new Set(['engine', 'testing', 'node_modules']);
 function fail(message) {
   console.error(`build-schematics: ${message}`);
   process.exit(1);
+}
+
+// Every require left in a bundle is resolved from the consumer's install, so
+// it must be a Node builtin or a declared external, never a private path of
+// one.
+function assertExternalRequires(lib, outRoot) {
+  const offenders = [];
+  const bundles = readdirSync(outRoot, { recursive: true }).filter((file) => String(file).endsWith('.js'));
+  for (const file of bundles) {
+    for (const specifier of externalRequireViolations(readFileSync(join(outRoot, file), 'utf8'))) {
+      offenders.push(`dist/${lib}/schematics/${file}: require("${specifier}")`);
+    }
+  }
+  if (offenders.length > 0) {
+    fail(`bundles require modules the consumer's CLI install does not provide:\n  ${offenders.join('\n  ')}`);
+  }
+}
+
+// ng-packagr's .npmignore drops every nested package.json (`**/package.json`,
+// the secondary entries' manifests). The schematics marker must ship.
+const SCHEMATICS_MANIFEST_RULE = '!schematics/package.json';
+
+function keepSchematicsManifestPacked(distRoot) {
+  const npmignore = join(distRoot, '.npmignore');
+  const current = existsSync(npmignore) ? readFileSync(npmignore, 'utf8') : '';
+  if (current.split(/\r?\n/).includes(SCHEMATICS_MANIFEST_RULE)) {
+    return;
+  }
+  const separator = current === '' || current.endsWith('\n') ? '' : '\n';
+  writeFileSync(npmignore, `${current}${separator}${SCHEMATICS_MANIFEST_RULE}\n`);
 }
 
 function indexFiles(dir) {
@@ -147,6 +170,7 @@ async function buildLib(lib) {
     legalComments: 'none',
     loader: { '.tpl': 'text' },
   });
+  assertExternalRequires(lib, outRoot);
 
   for (const file of ['collection.json', join('migrations', 'migrations.json')]) {
     copyCollection(srcRoot, outRoot, file);
@@ -157,6 +181,11 @@ async function buildLib(lib) {
   for (const dir of runtimeFileDirs(srcRoot)) {
     cpSync(join(srcRoot, dir), join(outRoot, dir), { recursive: true });
   }
+  // ng-packagr 22 writes "type": "module" into dist/<lib>/package.json, which
+  // would load these CommonJS .js bundles as ESM. The nearest package.json
+  // wins, so the schematics folder pins its own module type.
+  writeFileSync(join(outRoot, 'package.json'), `${JSON.stringify({ type: 'commonjs' }, null, 2)}\n`);
+  keepSchematicsManifestPacked(distRoot);
   const shimSchema = join(outRoot, 'ng-add', 'schema.json');
   if (lib !== 'core' && existsSync(join(outRoot, 'ng-add')) && !existsSync(shimSchema)) {
     copyFileSync(CORE_NG_ADD_SCHEMA, shimSchema);

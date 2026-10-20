@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { readWorkspace } from '@schematics/angular/utility';
-import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeScript/lib/typescript';
+import * as ts from 'typescript';
 import { transformSync } from 'esbuild';
 import { describe, expect, it } from 'vitest';
 

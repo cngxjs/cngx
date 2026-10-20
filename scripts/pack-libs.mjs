@@ -35,8 +35,8 @@ export const ATTW_IGNORED_RULES = ['false-cjs', 'internal-resolution-error'];
 // fails the check until someone decides on it.
 export const ACCEPTED_PUBLINT_CODES = {
   EXPORTS_TYPES_INVALID_FORMAT:
-    'dist manifests carry no "type": "module" (ng-packagr output, and the CommonJS schematics bundle forbids it), so node16 resolution reads the .d.ts as CJS; Angular consumers resolve with "bundler"',
-  USE_TYPE: 'same reason: a "type" field would flip the schematics bundle to ESM',
+    'dist manifests carry no "type": "module" (ng-packagr 21 output, the publishing toolchain), so node16 resolution reads the .d.ts as CJS; Angular consumers resolve with "bundler"',
+  USE_TYPE: 'same reason: ng-packagr 21 writes no "type" field; the schematics folder pins its own with a nested package.json',
   USE_FILES: 'dist/<lib> is already the package root; there is nothing to exclude',
 };
 
@@ -85,6 +85,25 @@ export function missingRefs(pkg, tarFiles) {
 export function missingRuntimeFiles(stageFiles, tarFiles) {
   const packed = new Set(tarFiles);
   return stageFiles.filter((file) => /^schematics\/[^/]+\/files\//.test(file) && !packed.has(file));
+}
+
+/**
+ * The schematics bundles are CommonJS `.js` files, so the folder carries its
+ * own `package.json` with `"type": "commonjs"`; without it a package root
+ * with `"type": "module"` (ng-packagr 22 writes one) loads them as ESM.
+ * Returns the problem, or `undefined` when the marker is packed and correct.
+ */
+export function commonjsMarkerProblem(markerJson, tarFiles) {
+  if (!tarFiles.includes('schematics/package.json')) {
+    return 'schematics/package.json is missing from the tarball';
+  }
+  let marker;
+  try {
+    marker = JSON.parse(markerJson ?? '');
+  } catch {
+    return 'schematics/package.json is not valid JSON';
+  }
+  return marker?.type === 'commonjs' ? undefined : `schematics/package.json declares type ${JSON.stringify(marker?.type)}, expected "commonjs"`;
 }
 
 function listStage(stage, dir = '') {
@@ -177,6 +196,13 @@ async function checkPacked({ lib, pkg, stage, tarball, files }) {
   const runtime = existsSync(join(stage, 'schematics')) ? missingRuntimeFiles(listStage(stage), files) : [];
   if (runtime.length > 0) {
     problems.push(`schematic run-time files missing from the tarball: ${runtime.join(', ')}`);
+  }
+  if (existsSync(join(stage, 'schematics'))) {
+    const markerPath = join(stage, 'schematics', 'package.json');
+    const marker = commonjsMarkerProblem(existsSync(markerPath) ? readFileSync(markerPath, 'utf8') : undefined, files);
+    if (marker) {
+      problems.push(marker);
+    }
   }
   for (const message of await lintWithPublint(stage)) {
     problems.push(`publint ${message.code}: ${formatMessage(message, pkg)}`);

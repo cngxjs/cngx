@@ -20,20 +20,94 @@ export interface AngularSupport {
   readonly floor: string;
   /** The app's declared `@angular/core` specifier, or why there is none. */
   readonly declared: string;
+  /**
+   * The app's Angular major is above the highest major the peer range names:
+   * the run goes on, but cngx has not been verified on it.
+   */
+  readonly aboveRange: boolean;
 }
 
 const NO_ANGULAR_DEPENDENCY = 'no @angular/core dependency';
 
+function rangeParts(peerRange: string): readonly string[] {
+  return peerRange.split('||').map((text) => text.trim());
+}
+
+// `>=21.2.0 <23.0.0` is one part of two comparators; `>= 21.2.0` keeps its
+// operator glued to the version.
+function comparators(part: string): readonly string[] {
+  return part.replace(/([<>]=?|=)\s+/g, '$1').split(/\s+/).filter((text) => text !== '');
+}
+
+/**
+ * The lowest `major.minor` any part of a peer range accepts, whatever order
+ * the union is written in (`^22.0.0 || ^21.2.0` reads 21.2). A part with no
+ * lower bound (`<22`, `*`) floors the range at 0.0.
+ */
+export function rangeFloor(peerRange: string): { readonly major: number; readonly minor: number } {
+  let floor: { major: number; minor: number } | undefined;
+  for (const part of rangeParts(peerRange)) {
+    const lower = part.includes(' - ') ? part.slice(0, part.indexOf(' - ')) : (comparators(part).find((text) => !text.startsWith('<')) ?? part);
+    const version = /^(<|\*|x$)/i.test(lower) ? { major: 0, minor: 0 } : parseVersion(lower);
+    if (version === undefined) {
+      continue;
+    }
+    if (floor === undefined || version.major < floor.major || (version.major === floor.major && version.minor < floor.minor)) {
+      floor = { major: version.major, minor: version.minor };
+    }
+  }
+  return floor ?? { major: 0, minor: 0 };
+}
+
+/**
+ * The highest major a peer range names (`^21.2.0 || ^22.0.0` reads 22), or
+ * `undefined` when one of its parts has no upper bound (`>=21`, `*`) or does
+ * not parse, so nothing is ever above it. An exclusive `<22.0.0` stops at 21.
+ */
+export function verifiedMajor(peerRange: string): number | undefined {
+  const majors: number[] = [];
+  for (const part of rangeParts(peerRange)) {
+    const upper = part.includes(' - ')
+      ? part.slice(part.lastIndexOf(' - ') + 3)
+      : (comparators(part).find((text) => text.startsWith('<')) ?? part);
+    const version = /^(>|\*|x$)/i.test(upper) ? undefined : parseVersion(upper);
+    if (version === undefined) {
+      return undefined;
+    }
+    const exclusive = /^<(?!=)/.test(upper) && version.minor === 0 && version.patch === 0;
+    majors.push(exclusive ? version.major - 1 : version.major);
+  }
+  return majors.length === 0 ? undefined : Math.max(...majors);
+}
+
 export function angularSupport(facts: ProjectFacts, peerRange: string): AngularSupport {
-  const { major: minMajor, minor: minMinor } = parseVersion(peerRange) ?? { major: 0, minor: 0 };
+  const { major: minMajor, minor: minMinor } = rangeFloor(peerRange);
   const app = parseVersion(facts.angularVersion);
   const supported =
     app === undefined ? undefined : app.major > minMajor || (app.major === minMajor && app.minor >= minMinor);
+  const ceiling = verifiedMajor(peerRange);
   return {
     supported,
     floor: `${minMajor}.${minMinor}`,
     declared: facts.angularRange ?? NO_ANGULAR_DEPENDENCY,
+    aboveRange: app !== undefined && ceiling !== undefined && app.major > ceiling,
   };
+}
+
+// A warn line, never a refusal: the app may run fine, but the user learns
+// that cngx was not verified on its Angular major.
+function aboveRangeItems(facts: ProjectFacts, aboveRange: boolean, peerRange: string): readonly PreflightItem[] {
+  const major = parseVersion(facts.angularVersion)?.major;
+  if (!aboveRange || major === undefined) {
+    return [];
+  }
+  return [
+    {
+      label: `Angular ${major} is newer than the Angular cngx is verified on`,
+      status: 'warn',
+      detail: `@cngx/core peers on @angular/core ${peerRange}; the run goes on, but Angular ${major} is untested`,
+    },
+  ];
 }
 
 /**
@@ -144,7 +218,7 @@ function stylesheetsItem(missing: readonly string[]): readonly PreflightItem[] {
  * Angular version below the floor, a project without a build target and a
  * missing stylesheet are the `fail` lines; the
  * shell renders them before it refuses the run. A version it cannot read is
- * a `warn`, and the run goes on.
+ * a `warn`, and the run goes on; so is a major above the peer range.
  */
 export function preflightItems({
   facts,
@@ -159,6 +233,7 @@ export function preflightItems({
       status: angularStatus(angular.supported),
       detail: angularDetail(facts, angular.supported, angular.floor),
     },
+    ...aboveRangeItems(facts, angular.aboveRange, peerRange),
     projectItem(facts, projectFlag),
     ...stylesheetsItem(facts.missingStyleEntries),
     GIT_ITEMS[git],

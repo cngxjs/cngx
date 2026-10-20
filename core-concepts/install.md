@@ -51,6 +51,9 @@ install. Nothing outside the project is written.
    before anything is planned. A specifier that carries no version
    (`catalog:`, `workspace:*`, a dist-tag) with nothing installed is a warn
    line, and the run goes on; the `@angular/cdk` pin then becomes a note.
+   An app on an Angular major above the highest one the `@cngx/core` peer
+   range names gets a warn line right below the Angular line: the run goes
+   on, but cngx has not been verified on that major.
    A project without a `build` target in `angular.json` fails its project
    line and stops the run the same way. In a workspace with several
    applications and no `--project`, the run takes `defaultProject`, else

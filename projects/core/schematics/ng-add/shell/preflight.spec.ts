@@ -4,7 +4,7 @@ import { parseManifest } from '../../engine';
 import { createFacts } from '../../testing/onboarding';
 import { type ProjectFacts } from '../detect/detect';
 import { type GitState } from './git-state';
-import { angularReading, angularSupport, preflightItems } from './preflight';
+import { angularReading, angularSupport, preflightItems, rangeFloor, verifiedMajor } from './preflight';
 
 const PEER_RANGE = '^21.2.0';
 
@@ -47,12 +47,37 @@ describe('angularReading', () => {
 });
 
 describe('angularSupport', () => {
-  it.each(['^21.2.0', '~21.3.1', '22.0.0'])('supports %s against a 21.2 floor', (range) => {
+  it.each(['^21.2.0', '~21.3.1'])('supports %s against a 21.2 floor', (range) => {
     expect(angularSupport(withAngular(range), PEER_RANGE)).toEqual({
       supported: true,
       floor: '21.2',
       declared: range,
+      aboveRange: false,
     });
+  });
+
+  it('supports a major above the range and marks it as above the verified range', () => {
+    expect(angularSupport(withAngular('22.0.0'), PEER_RANGE)).toEqual({
+      supported: true,
+      floor: '21.2',
+      declared: '22.0.0',
+      aboveRange: true,
+    });
+  });
+
+  it('reads a union of majors as verified up to its highest major', () => {
+    const union = '^21.2.0 || ^22.0.0';
+
+    expect(angularSupport(withAngular('^22.1.0'), union)).toMatchObject({ supported: true, floor: '21.2', aboveRange: false });
+    expect(angularSupport(withAngular('^23.0.0'), union)).toMatchObject({ supported: true, aboveRange: true });
+    expect(angularSupport(withAngular('^20.3.0'), union)).toMatchObject({ supported: false, aboveRange: false });
+  });
+
+  it('reads the floor of a union whatever order it is written in', () => {
+    for (const union of ['^21.2.0 || ^22.0.0', '^22.0.0 || ^21.2.0']) {
+      expect(angularSupport(withAngular('^21.2.0'), union)).toMatchObject({ supported: true, floor: '21.2' });
+      expect(angularSupport(withAngular('^21.1.0'), union)).toMatchObject({ supported: false, floor: '21.2' });
+    }
   });
 
   it('refuses an older minor and names what the app declares', () => {
@@ -60,6 +85,7 @@ describe('angularSupport', () => {
       supported: false,
       floor: '21.2',
       declared: '^21.1.0',
+      aboveRange: false,
     });
   });
 
@@ -77,6 +103,7 @@ describe('angularSupport', () => {
       supported: true,
       floor: '21.2',
       declared: 'catalog:',
+      aboveRange: false,
     });
   });
 
@@ -93,6 +120,7 @@ describe('angularSupport', () => {
       supported: undefined,
       floor: '21.2',
       declared: range,
+      aboveRange: false,
     });
   });
 
@@ -101,7 +129,52 @@ describe('angularSupport', () => {
       supported: undefined,
       floor: '21.2',
       declared: 'no @angular/core dependency',
+      aboveRange: false,
     });
+  });
+});
+
+describe('verifiedMajor', () => {
+  it.each([
+    ['^21.2.0', 21],
+    ['~21.3.1', 21],
+    ['21.2.0', 21],
+    ['^21.2.0 || ^22.0.0', 22],
+    ['^22.0.0 || ^21.2.0', 22],
+    ['21.2.0 - 22.4.0', 22],
+  ])('reads %s as verified up to Angular %i', (range, major) => {
+    expect(verifiedMajor(range)).toBe(major);
+  });
+
+  it.each([
+    ['<22.0.0', 21],
+    ['<22', 21],
+    ['<22.1.0', 22],
+    ['<=22.0.0', 22],
+    ['>=21.2.0 <23.0.0', 22],
+  ])('reads the upper bound %s as verified up to Angular %i', (range, major) => {
+    expect(verifiedMajor(range)).toBe(major);
+  });
+
+  it.each(['>=21.2.0', '^21.2.0 || >=22', '*', 'latest', ''])('names no ceiling for %j', (range) => {
+    expect(verifiedMajor(range)).toBeUndefined();
+  });
+});
+
+describe('rangeFloor', () => {
+  it.each([
+    ['^21.2.0', 21, 2],
+    ['^21.2.0 || ^22.0.0', 21, 2],
+    ['^22.0.0 || ^21.2.0', 21, 2],
+    ['21.2.0 - 22.4.0', 21, 2],
+    ['>=21.3.0', 21, 3],
+    ['>=21.2.0 <23.0.0', 21, 2],
+    ['<23.0.0 >= 21.2.0', 21, 2],
+    ['<22.0.0', 0, 0],
+    ['*', 0, 0],
+    ['latest', 0, 0],
+  ])('reads the floor of %s as %i.%i', (range, major, minor) => {
+    expect(rangeFloor(range)).toEqual({ major, minor });
   });
 });
 
@@ -154,6 +227,29 @@ describe('preflightItems', () => {
 
     expect(project?.status).toBe('fail');
     expect(project?.label).toBe('Project fixture-app (picked; pass --project to choose)');
+  });
+
+  it('adds a warn line right after the Angular line for a major above the peer range', () => {
+    const items = preflightItems({ facts: withAngular('^22.0.0', '22.2.3', 'installed'), peerRange: PEER_RANGE, git: 'clean' });
+
+    expect(items[0]).toEqual({ label: 'Angular 22.2.3 (installed, declares ^22.0.0)', status: 'ok', detail: 'cngx needs 21.2+' });
+    expect(items[1]).toEqual({
+      label: 'Angular 22 is newer than the Angular cngx is verified on',
+      status: 'warn',
+      detail: '@cngx/core peers on @angular/core ^21.2.0; the run goes on, but Angular 22 is untested',
+    });
+    expect(items[2]?.label).toBe('Project fixture-app');
+  });
+
+  it('adds no above-range line inside the range, below the floor or without a version', () => {
+    for (const facts of [withAngular('^21.2.0'), withAngular('^20.3.0'), withAngular('catalog:', undefined)]) {
+      expect(preflightItems({ facts, peerRange: PEER_RANGE, git: 'clean' }).map((item) => item.label)).not.toContainEqual(
+        expect.stringContaining('newer than the Angular cngx is verified on'),
+      );
+    }
+    expect(
+      preflightItems({ facts: withAngular('^22.1.0'), peerRange: '^21.2.0 || ^22.0.0', git: 'clean' }),
+    ).toHaveLength(3);
   });
 
   it('fails the Angular line for an unsupported version', () => {

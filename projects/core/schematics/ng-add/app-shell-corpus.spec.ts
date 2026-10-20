@@ -1,5 +1,5 @@
 import { parseTemplate, TmplAstElement } from '@angular/compiler';
-import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeScript/lib/typescript';
+import * as ts from 'typescript';
 import { readWorkspace } from '@schematics/angular/utility';
 import { format } from 'prettier';
 import { describe, expect, it, vi } from 'vitest';
