@@ -1084,6 +1084,15 @@ button.chip {
   transition: background 150ms ease;
 }
 
+// Compact variant for a button projected into a select trigger slot
+// (*cngxSelectClearButton): it fits the trigger's control line box, so the
+// row keeps its height whether the slot shows or not.
+button.chip.chip--compact {
+  padding-block: 0;
+  padding-inline: 8px;
+  line-height: 1.25rem;
+}
+
 // Demo-only overlay chrome for focus-trap stories. Real consumer code
 // would source its own design system surfaces; these classes exist so
 // the trap behaviour is the lesson, not the surface CSS.

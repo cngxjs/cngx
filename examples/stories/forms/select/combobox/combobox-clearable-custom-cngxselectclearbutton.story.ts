@@ -32,7 +32,7 @@ export const STORY: DemoSpec = {
     placeholder="Search topics…"
   >
     <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
-      <button type="button" class="chip" [disabled]="disabled" (click)="clear()">
+      <button type="button" class="chip chip--compact" [disabled]="disabled" (click)="clear()">
         Reset all
       </button>
     </ng-template>
