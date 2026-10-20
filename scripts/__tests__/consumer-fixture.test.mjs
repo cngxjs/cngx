@@ -13,6 +13,7 @@ import {
   peerInstallSpecs,
   pinAngularDeps,
   renderAppSource,
+  INTERACTIVE_SMOKE,
   presetPlan,
   budgetWarnings,
   STARTER_SMOKE,
@@ -98,6 +99,25 @@ describe('renderAppSource', () => {
     for (const lib of ['utils', 'core', 'common', 'forms', 'data-display', 'ui', 'interop']) {
       expect(source).toContain(`@cngx/${lib === 'utils' ? 'utils' : `${lib}/`}`);
     }
+  });
+
+  it('renders the select shell, the combobox and a signal forms field with min and max on every variant', () => {
+    for (const variant of ['full', 'zone', 'ssr', 'minimal']) {
+      const source = renderAppSource(variantPlan(variant));
+      expect(source).toContain('<cngx-select-shell');
+      expect(source).toContain('<cngx-select-search');
+      expect(source).toContain('<cngx-combobox');
+      expect(source).toContain('<cngx-form-field [field]="booking.seats">');
+      expect(source).toContain('[formField]="booking.seats"');
+      expect(source).toMatch(/min\(root\.seats, 1/);
+      expect(source).toContain(`max(root.seats, 10, { message: '${INTERACTIVE_SMOKE.seats.error}' })`);
+    }
+  });
+
+  it('lists the options the smoke picks', () => {
+    const source = renderAppSource(variantPlan('minimal'));
+    expect(source).toContain(`'${INTERACTIVE_SMOKE.shell.option}'`);
+    expect(source).toContain(`label: '${INTERACTIVE_SMOKE.combobox.option}'`);
   });
 });
 

@@ -270,13 +270,39 @@ export function peerInstallSpecs(plan, angularVersion, exactPin = null) {
   return specs;
 }
 
-/** The root component: one probe per lib, optional-peer imports only when the plan installed them. */
+/**
+ * What the browser smoke drives on the root component: the select shell with
+ * its search, the combobox, and a Signal Forms number field with min/max
+ * inside cngx-form-field. Ids and texts are shared with `renderAppSource`.
+ */
+export const INTERACTIVE_SMOKE = {
+  shell: { search: 'ber', option: 'Berlin', term: 'term:ber', value: 'city:Berlin' },
+  combobox: { search: 'ang', option: 'Angular', picked: 'picked:angular' },
+  seats: { tooMany: '20', error: 'At most 10 seats', fine: '5', valid: 'seats-valid:true' },
+};
+
+/**
+ * The root component: one probe per lib, optional-peer imports only when the
+ * plan installed them, plus the parts of @cngx/forms that depend most on the
+ * Angular version (select shell and combobox models, a Signal Forms field
+ * with min/max bound through cngx-form-field).
+ */
 export function renderAppSource(plan) {
   const full = plan.optionalPeers;
-  return `import { ChangeDetectionStrategy, Component } from '@angular/core';
+  return `import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { form, FormField, max, min, schema } from '@angular/forms/signals';
 import { CngxLiveRegion } from '@cngx/common/a11y';
 import { WINDOW } from '@cngx/core/tokens';
 import { CngxTreetable } from '@cngx/data-display/treetable';
+import { CngxFieldErrors, CngxFormField, CngxLabel } from '@cngx/forms/field';
+import { CngxInput } from '@cngx/forms/input';
+import {
+  CngxCombobox,
+  CngxSelectOption,
+  CngxSelectSearch,
+  CngxSelectShell,
+  type CngxSelectOptionDef,
+} from '@cngx/forms/select';
 import { requiredTrue } from '@cngx/forms/validators';
 import { fromQuery } from '@cngx/interop/query';
 ${full ? "import { withCngxAsyncState } from '@cngx/interop/signals';\n" : ''}import { CngxEmptyState } from '@cngx/ui/empty-state';
@@ -288,18 +314,108 @@ const probes: readonly unknown[] = [clamp, WINDOW, requiredTrue, CngxTreetable, 
 
 @Component({
   selector: 'app-root',
-  imports: [CngxEmptyState, CngxLiveRegion],
+  imports: [
+    CngxEmptyState,
+    CngxLiveRegion,
+    CngxSelectShell,
+    CngxSelectOption,
+    CngxSelectSearch,
+    CngxCombobox,
+    CngxFormField,
+    CngxLabel,
+    CngxInput,
+    CngxFieldErrors,
+    FormField,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: \`
     <p id="${MARKER}" cngxLiveRegion>${MARKER} {{ probeCount }} {{ clamped }}</p>
     <cngx-empty-state title="Nothing here" />
+
+    <cngx-select-shell [label]="'City'" [(value)]="city" [(searchTerm)]="term" placeholder="Pick a city">
+      <cngx-select-search [placeholder]="'Filter cities'" />
+      @for (name of cities; track name) {
+        <cngx-option [value]="name">{{ name }}</cngx-option>
+      }
+    </cngx-select-shell>
+    <p id="fx-term">term:{{ term() }}</p>
+    <p id="fx-city">city:{{ city() ?? '' }}</p>
+
+    <cngx-combobox [label]="'Frameworks'" [options]="frameworks" [(values)]="picked" placeholder="Search frameworks" />
+    <p id="fx-picked">picked:{{ picked().join(',') }}</p>
+
+    <cngx-form-field [field]="booking.seats">
+      <label cngxLabel>Seats</label>
+      <input cngxInput type="number" [formField]="booking.seats" />
+      <cngx-field-errors />
+    </cngx-form-field>
+    <p id="fx-seats-valid">seats-valid:{{ booking.seats().valid() }}</p>
   \`,
 })
 export class App {
   protected readonly probeCount = probes.length;
   protected readonly clamped = clamp(15, 0, 10);
+
+  protected readonly cities = ['Amsterdam', 'Berlin', 'Vienna', 'Zurich'];
+  protected readonly city = signal<string | undefined>(undefined);
+  protected readonly term = signal('');
+
+  protected readonly frameworks: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'svelte', label: 'Svelte' },
+    { value: 'solid', label: 'Solid' },
+  ];
+  protected readonly picked = signal<string[]>([]);
+
+  private readonly model = signal({ seats: 2 });
+  protected readonly booking = form(
+    this.model,
+    schema<{ seats: number }>((root) => {
+      min(root.seats, 1, { message: 'At least 1 seat' });
+      max(root.seats, 10, { message: '${INTERACTIVE_SMOKE.seats.error}' });
+    }),
+  );
 }
 `;
+}
+
+// Drives the forms parts of the root component and records what did not react.
+async function smokeInteractive(page, errors) {
+  const { shell, combobox, seats } = INTERACTIVE_SMOKE;
+  const expectText = async (selector, text, what) => {
+    try {
+      await page.locator(selector).filter({ hasText: text }).waitFor({ timeout: 5_000 });
+    } catch {
+      errors.push(`${what}: expected "${text}" in ${selector}, found "${(await page.textContent(selector))?.trim()}"`);
+    }
+  };
+
+  await page.locator('cngx-select-shell .cngx-select-shell__trigger').click();
+  await page.locator('cngx-select-search input').fill(shell.search);
+  await expectText('#fx-term', shell.term, 'select shell search term');
+  await page.locator('cngx-select-shell cngx-option', { hasText: shell.option }).click();
+  await expectText('#fx-city', shell.value, 'select shell value');
+
+  await page.locator('cngx-combobox .cngx-combobox__trigger').click();
+  await page.locator('cngx-combobox input.cngx-combobox__input').fill(combobox.search);
+  await page.locator('[cngxOption]', { hasText: combobox.option }).first().click();
+  await expectText('#fx-picked', combobox.picked, 'combobox values');
+  await page.keyboard.press('Escape');
+
+  // cngxInput owns the id of its input, so the field is found by its host.
+  const input = page.locator('cngx-form-field input[type="number"]');
+  await input.fill(seats.tooMany);
+  await input.blur();
+  await expectText('cngx-form-field', seats.error, 'max error through cngx-field-errors');
+  if ((await input.getAttribute('aria-invalid')) !== 'true') {
+    errors.push(`seats input: expected aria-invalid="true" at ${seats.tooMany}`);
+  }
+  await input.fill(seats.fine);
+  await input.blur();
+  await expectText('#fx-seats-valid', seats.valid, 'seats validity');
+  if ((await input.getAttribute('aria-invalid')) === 'true') {
+    errors.push(`seats input: still aria-invalid at ${seats.fine}`);
+  }
 }
 
 function run(cmd, args, options = {}) {
@@ -409,6 +525,7 @@ async function smoke(appDir, plan, { outlets = [], starter } = {}) {
       if (!text?.includes('10')) {
         errors.push(`probe text unexpected: "${text}"`);
       }
+      await smokeInteractive(page, errors);
     }
   } finally {
     await browser.close();
