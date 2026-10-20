@@ -27,8 +27,9 @@
 //   onboarding  the documented path on a fresh app with nothing installed:
 //               one `ng add @cngx/core` through the local registry, then the
 //               CDK it installed must be on the app's Angular major (npm
-//               would otherwise fetch the newest CDK the peers allow); the
-//               app builds and loads. Takes --preset like schematics.
+//               would otherwise fetch the newest CDK the peers allow); a
+//               second `ng add` changes nothing; the app builds and loads.
+//               Takes --preset like schematics.
 //   schematics  a real `ng add` and `ng update` against the tarballs: two
 //               ng add runs (the second changes nothing), ng add of a package
 //               shim (which keeps every lib the first run recorded), two ng
@@ -671,11 +672,13 @@ function useLocalRegistry(appDir, registryUrl) {
   writeFileSync(join(appDir, '.npmrc'), `@cngx:registry=${registryUrl}\n`);
 }
 
-async function runSchematicsSteps(appDir, version, preset) {
+// Runs `steps` in a fresh git repository of the app, checking each as
+// `schematicsSteps` describes.
+async function runSteps(appDir, steps, tag) {
   git(appDir, ['init', '-q']);
   commitAll(appDir, 'fixture');
-  for (const step of schematicsSteps(version, preset)) {
-    console.log(`\n[schematics] ${step.label}`);
+  for (const step of steps) {
+    console.log(`\n[${tag}] ${step.label}`);
     const output = await runAsync('npx', step.args, { cwd: appDir });
     if (step.expect && !output.includes(step.expect)) {
       throw new Error(`${step.label}: expected "${step.expect}" in the output`);
@@ -720,9 +723,18 @@ function resolveStaleCore(spec, version, sandbox) {
   return join(sandbox, packed.filename);
 }
 
-/** The single `ng add` of the onboarding variant. */
+/** The `ng add` of the onboarding variant. */
 export function onboardingAddArgs(version, preset = DEFAULT_PRESET) {
   return ['ng', 'add', `@cngx/core@${version}`, ...NG_ADD_FLAGS, ...presetFlags(preset)];
+}
+
+/** The onboarding `ng add`, then the same command again, which must change nothing. */
+export function onboardingSteps(version, preset = DEFAULT_PRESET) {
+  const args = onboardingAddArgs(version, preset);
+  return [
+    { label: 'ng add @cngx/core', args, commit: true },
+    { label: 'ng add @cngx/core again', args, expect: 'cngx is already set up; nothing changed.', clean: true },
+  ];
 }
 
 /** Why the installed CDK does not fit the app's Angular, or undefined when its major matches. */
@@ -843,7 +855,7 @@ async function main() {
   }
   try {
     if (plan.onboarding) {
-      await runAsync('npx', onboardingAddArgs(version, preset), { cwd: appDir });
+      await runSteps(appDir, onboardingSteps(version, preset), 'onboarding');
       const mismatch = companionMismatch(installedAngular, installedPackageVersion(appDir, '@angular/cdk'));
       if (mismatch !== undefined) {
         throw new Error(`onboarding: ${mismatch}`);
@@ -854,7 +866,7 @@ async function main() {
       }
       console.log(`\nOnboarding: @angular/cdk ${installedPackageVersion(appDir, '@angular/cdk')} next to @angular/core ${installedAngular}`);
     } else if (plan.schematics) {
-      await runSchematicsSteps(appDir, version, preset);
+      await runSteps(appDir, schematicsSteps(version, preset), 'schematics');
     } else {
       writeFileSync(join(appDir, 'src', 'app', 'app.ts'), renderAppSource(plan));
       if (plan.matcherSpec) {
