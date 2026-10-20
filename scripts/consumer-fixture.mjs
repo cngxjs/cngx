@@ -24,6 +24,11 @@
 //   zone        zone.js app, same installs
 //   ssr         zoneless app with SSR and hydration (the build prerenders)
 //   minimal     no optional peers installed: the build must not need them
+//   onboarding  the documented path on a fresh app with nothing installed:
+//               one `ng add @cngx/core` through the local registry, then the
+//               CDK it installed must be on the app's Angular major (npm
+//               would otherwise fetch the newest CDK the peers allow); the
+//               app builds and loads. Takes --preset like schematics.
 //   schematics  a real `ng add` and `ng update` against the tarballs: two
 //               ng add runs (the second changes nothing), ng add of a package
 //               shim (which keeps every lib the first run recorded), two ng
@@ -51,7 +56,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-export const VARIANTS = ['full', 'zone', 'ssr', 'minimal', 'schematics'];
+export const VARIANTS = ['full', 'zone', 'ssr', 'minimal', 'schematics', 'onboarding'];
 const MARKER = 'cngx-consumer-ok';
 
 /** The ng add presets the schematics variant can run; `recommended` is what ng add picks without one. */
@@ -70,14 +75,18 @@ export function variantPlan(variant) {
   if (!VARIANTS.includes(variant)) {
     throw new Error(`Unknown variant "${variant}". Available: ${VARIANTS.join(', ')}`);
   }
-  const lean = variant === 'minimal' || variant === 'schematics';
+  const onboarding = variant === 'onboarding';
+  const lean = variant === 'minimal' || variant === 'schematics' || onboarding;
   return {
     variant,
     zoneless: variant !== 'zone',
     ssr: variant === 'ssr',
     optionalPeers: !lean,
     smoke: variant !== 'ssr',
-    schematics: variant === 'schematics',
+    schematics: variant === 'schematics' || onboarding,
+    // A fresh app, nothing installed beforehand: `ng add @cngx/core` alone
+    // must bring every package and the CDK at the app's own Angular major.
+    onboarding,
     // `ng test` with the cngx Vitest matchers, against the Vitest major the
     // app's own CLI installs (4 on Angular 21, 5 on Angular 22).
     matcherSpec: variant === 'full',
@@ -504,8 +513,8 @@ function parseArgs(argv) {
     console.error('--stale-core needs --variant schematics');
     process.exit(1);
   }
-  if (args.preset !== null && args.variant !== 'schematics') {
-    console.error('--preset needs --variant schematics');
+  if (args.preset !== null && args.variant !== 'schematics' && args.variant !== 'onboarding') {
+    console.error('--preset needs --variant schematics or onboarding');
     process.exit(1);
   }
   if (args.preset !== null && !PRESETS.includes(args.preset)) {
@@ -711,6 +720,30 @@ function resolveStaleCore(spec, version, sandbox) {
   return join(sandbox, packed.filename);
 }
 
+/** The single `ng add` of the onboarding variant. */
+export function onboardingAddArgs(version, preset = DEFAULT_PRESET) {
+  return ['ng', 'add', `@cngx/core@${version}`, ...NG_ADD_FLAGS, ...presetFlags(preset)];
+}
+
+/** Why the installed CDK does not fit the app's Angular, or undefined when its major matches. */
+export function companionMismatch(angularVersion, cdkVersion) {
+  if (cdkVersion === undefined) {
+    return `no @angular/cdk was installed next to @angular/core ${angularVersion}`;
+  }
+  const major = (version) => version.split('.')[0];
+  return major(cdkVersion) === major(angularVersion)
+    ? undefined
+    : `@angular/cdk ${cdkVersion} is installed for @angular/core ${angularVersion}`;
+}
+
+function installedPackageVersion(appDir, name) {
+  try {
+    return JSON.parse(readFileSync(join(appDir, 'node_modules', name, 'package.json'), 'utf8')).version;
+  } catch {
+    return undefined;
+  }
+}
+
 /** The `ng add` of the stale core leg; the preset of the run is passed on, so both legs install the same one. */
 export function staleCoreAddArgs(version, preset = DEFAULT_PRESET) {
   return ['ng', 'add', `@cngx/forms@${version}`, ...NG_ADD_FLAGS, ...presetFlags(preset)];
@@ -729,6 +762,10 @@ async function runStaleCoreLeg({ cliSpec, work, tarballFiles, version, registryU
   console.log(`\nStale core leg: @cngx/core ${stale} installed, packed ${version}\nSandbox: ${sandbox}\n`);
   run('npx', ['-y', `@angular/cli@${cliSpec}`, 'new', 'fixture', '--defaults', '--skip-git', '--skip-install', '--style=css', '--routing=false', '--ssr=false', '--zoneless=true'], { cwd: sandbox });
   run('npm', ['install'], { cwd: appDir });
+  // An app that had an older cngx already has its peers, the CDK among them,
+  // at its own Angular; installed the same way as the main leg.
+  const angularVersion = installedPackageVersion(appDir, '@angular/core');
+  run('npm', ['install', ...peerInstallSpecs(variantPlan('schematics'), angularVersion)], { cwd: appDir });
   const others = tarballFiles.filter((file) => tarballManifest(file).name !== '@cngx/core');
   // The older core peers on its own release of the other packages; the
   // stale state is what `ng add` repairs, so npm is told to accept it.
@@ -782,17 +819,19 @@ async function main() {
   const installedAngular = JSON.parse(readFileSync(join(appDir, 'node_modules/@angular/core/package.json'), 'utf8')).version;
   console.log(`\nInstalled @angular/core ${installedAngular}`);
 
-  // Peers first: npm resolves a peer requested in the same command as a file
-  // tarball to "undefined" and reports a false ERESOLVE.
-  run('npm', ['install', ...peerInstallSpecs(plan, installedAngular, exact ? angular : null)], { cwd: appDir });
-  if (ignorePeers) {
-    console.log('\nNOT a consumer-realistic row: --ignore-peers installs with --legacy-peer-deps to test code compatibility beyond the declared peer range.');
-  }
-  run('npm', ['install', ...(ignorePeers ? ['--legacy-peer-deps'] : []), ...tarballFiles], { cwd: appDir });
+  if (!plan.onboarding) {
+    // Peers first: npm resolves a peer requested in the same command as a file
+    // tarball to "undefined" and reports a false ERESOLVE.
+    run('npm', ['install', ...peerInstallSpecs(plan, installedAngular, exact ? angular : null)], { cwd: appDir });
+    if (ignorePeers) {
+      console.log('\nNOT a consumer-realistic row: --ignore-peers installs with --legacy-peer-deps to test code compatibility beyond the declared peer range.');
+    }
+    run('npm', ['install', ...(ignorePeers ? ['--legacy-peer-deps'] : []), ...tarballFiles], { cwd: appDir });
 
-  const versions = angularVersionsInTree(appDir);
-  if (versions.length !== 1) {
-    throw new Error(`Expected one @angular/core in the tree, found ${versions.join(', ')}`);
+    const versions = angularVersionsInTree(appDir);
+    if (versions.length !== 1) {
+      throw new Error(`Expected one @angular/core in the tree, found ${versions.join(', ')}`);
+    }
   }
 
   let registry = null;
@@ -803,7 +842,18 @@ async function main() {
     useLocalRegistry(appDir, registry.url);
   }
   try {
-    if (plan.schematics) {
+    if (plan.onboarding) {
+      await runAsync('npx', onboardingAddArgs(version, preset), { cwd: appDir });
+      const mismatch = companionMismatch(installedAngular, installedPackageVersion(appDir, '@angular/cdk'));
+      if (mismatch !== undefined) {
+        throw new Error(`onboarding: ${mismatch}`);
+      }
+      const versions = angularVersionsInTree(appDir);
+      if (versions.length !== 1) {
+        throw new Error(`Expected one @angular/core in the tree, found ${versions.join(', ')}`);
+      }
+      console.log(`\nOnboarding: @angular/cdk ${installedPackageVersion(appDir, '@angular/cdk')} next to @angular/core ${installedAngular}`);
+    } else if (plan.schematics) {
       await runSchematicsSteps(appDir, version, preset);
     } else {
       writeFileSync(join(appDir, 'src', 'app', 'app.ts'), renderAppSource(plan));

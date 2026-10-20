@@ -14,6 +14,8 @@ import {
   pinAngularDeps,
   renderAppSource,
   renderMatcherSpec,
+  onboardingAddArgs,
+  companionMismatch,
   INTERACTIVE_SMOKE,
   presetPlan,
   budgetWarnings,
@@ -54,6 +56,20 @@ describe('variantPlan', () => {
     expect(spec).toContain("from '@cngx/core/testing/vitest'");
     expect(spec).toContain('expect.extend(cngxAnnouncementMatchers)');
     expect(spec).toContain("toHaveHeard('Saved')");
+  });
+
+  it('runs the onboarding variant on a fresh app through ng add alone', () => {
+    expect(variantPlan('onboarding')).toMatchObject({ onboarding: true, schematics: true, optionalPeers: false, smoke: true });
+    expect(variantPlan('schematics').onboarding).toBe(false);
+    expect(onboardingAddArgs('0.1.0', 'full').slice(0, 3)).toEqual(['ng', 'add', '@cngx/core@0.1.0']);
+    expect(onboardingAddArgs('0.1.0', 'full')).toContain('full');
+  });
+
+  it('accepts a CDK only on the major of the app Angular', () => {
+    expect(companionMismatch('21.2.25', '21.2.14')).toBeUndefined();
+    expect(companionMismatch('22.2.3', '22.2.3')).toBeUndefined();
+    expect(companionMismatch('21.2.25', '22.2.3')).toBe('@angular/cdk 22.2.3 is installed for @angular/core 21.2.25');
+    expect(companionMismatch('21.2.25', undefined)).toBe('no @angular/cdk was installed next to @angular/core 21.2.25');
   });
 
   it('rejects an unknown variant', () => {
@@ -303,6 +319,11 @@ describe('the consumer-compat workflow', () => {
     for (const variant of ['full', 'minimal']) {
       expect(workflow).toContain(`- { angular: '${highest}', variant: ${variant} }`);
     }
+  });
+
+  it('proves the fresh-app onboarding on both majors', () => {
+    expect(workflow).toContain("- { angular: '21', variant: onboarding, args: '--preset full' }");
+    expect(workflow).toContain("- { angular: '22', variant: onboarding }");
   });
 
   it('runs the stale-core leg on the full preset in its schematics row', () => {

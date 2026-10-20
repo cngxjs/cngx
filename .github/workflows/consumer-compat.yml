@@ -68,6 +68,13 @@ jobs:
           # in the same ng add, and runs both legs on the full preset, which
           # places the feedback outlets and adds ng test.
           - { angular: '21', variant: schematics, args: '--stale-core previous --preset full' }
+          # The documented path on a fresh app with no @angular/cdk: one
+          # ng add @cngx/core must install the CDK on the app's own major
+          # (npm alone would fetch the newest CDK the peers allow). 22 runs
+          # the default preset: the CLI 22 scaffold is not in the starter's
+          # catalog yet, so the full preset's starter and spec edits skip it.
+          - { angular: '21', variant: onboarding, args: '--preset full' }
+          - { angular: '22', variant: onboarding }
     name: angular-${{ matrix.angular }}-${{ matrix.variant }}
     steps:
       - uses: actions/checkout@v4
