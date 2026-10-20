@@ -1,0 +1,49 @@
+/**
+ * @overview
+ * One-line summary of a multi-value select trigger under the touch floor:
+ * the first selected label, cut with an ellipsis, plus the shared
+ * `.cngx-select__chip-overflow-badge`. The row never wraps, so the trigger
+ * keeps the 44px family height at every selection count.
+ */
+
+@layer cngx.components {
+  /* The chip strip that hosts the summary stays on one line. */
+  .cngx-select__chip-list--summary {
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .cngx-select-summary {
+    display: inline-flex;
+    flex: 0 1 auto;
+    align-items: center;
+    gap: var(--cngx-select-chip-gap, 0.25rem);
+    min-inline-size: 0;
+    max-inline-size: 100%;
+  }
+
+  .cngx-select-summary__label {
+    flex: 0 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .cngx-select-summary > .cngx-select__chip-overflow-badge {
+    flex: none;
+  }
+
+  /* Self-contained copy of the canonical utility (core/theming/utilities.css). */
+  .cngx-select-summary .cngx-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
