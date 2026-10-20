@@ -96,6 +96,7 @@ const EXPECTED_DEV_WRAPPERS = [
   'projects/ui/toc/toc-router-sync.directive.ts#warnRouterAbsent',
   'projects/ui/mat-tabs/decorations/decoration-projectors.ts#defaultRetryCeilingWarn',
   'projects/ui/mat-tabs/decorations/half-wired-slot-sink.ts#CNGX_DEFAULT_HALF_WIRED_SLOT_SINK',
+  'projects/ui/tabs/tab-group-dev-checks.ts#installTabGroupDevChecks',
   'projects/common/chart/presets/preset-state.ts#warnIfUnnamedPreset',
   'projects/common/dialog/dialog/dialog.directive.ts#warnDoubleRegistration',
   'projects/common/dialog/dialog/dialog.directive.ts#warnNonModalA11y',
