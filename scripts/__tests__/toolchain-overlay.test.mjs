@@ -13,7 +13,11 @@ import {
   overlayTargets,
   parseAngularTarget,
   patchTsconfigForTs6,
-  typescriptMajor,
+  typescriptMajorOf,
+  parseArgs,
+  parseBefore,
+  OVERLAID_FILES,
+  RESTORE_HINT,
   typescriptRangeFromPeer,
 } from '../toolchain-overlay.mjs';
 
@@ -113,15 +117,44 @@ describe('overlayManifest pinning every target', () => {
   });
 });
 
-describe('typescriptRangeFromPeer / typescriptMajor', () => {
+describe('typescriptRangeFromPeer / typescriptMajorOf', () => {
   it('takes the compiler-cli peer as the range and reads its major', () => {
     expect(typescriptRangeFromPeer(' >=6.0 <6.1 ')).toBe('>=6.0 <6.1');
-    expect(typescriptMajor('>=6.0 <6.1')).toBe(6);
-    expect(typescriptMajor('~5.9.2')).toBe(5);
+    expect(typescriptMajorOf('6.0.3')).toBe(6);
+    expect(typescriptMajorOf('5.9.3')).toBe(5);
+    expect(typescriptMajorOf(undefined)).toBeUndefined();
   });
 
   it('refuses a compiler-cli without a typescript peer', () => {
     expect(() => typescriptRangeFromPeer(undefined)).toThrow(/names no typescript peer/);
+  });
+});
+
+describe('parseArgs', () => {
+  it('takes a dated resolution for deterministic CI runs', () => {
+    expect(parseArgs(['--angular', '22', '--before', '2026-10-20'])).toMatchObject({
+      before: '2026-10-20',
+      target: { exact: undefined, range: '22' },
+    });
+  });
+
+  it('refuses a --before that is not a calendar date', () => {
+    expect(() => parseBefore('yesterday')).toThrow(/takes a date/);
+    expect(() => parseArgs(['--angular', '22', '--before'])).toThrow(/takes a date/);
+  });
+
+  it('needs no target for --restore', () => {
+    expect(parseArgs(['--restore'])).toMatchObject({ restore: true, target: undefined });
+  });
+});
+
+describe('RESTORE_HINT', () => {
+  it('names the restore mode and every file the overlay rewrites', () => {
+    expect(RESTORE_HINT).toContain('--restore');
+    for (const file of OVERLAID_FILES) {
+      expect(RESTORE_HINT).toContain(file);
+    }
+    expect(RESTORE_HINT).toContain('npm ci');
   });
 });
 
@@ -138,21 +171,32 @@ describe('patchTsconfigForTs6', () => {
   });
 });
 
-describe('the angular-22-libs CI job', () => {
+describe('the angular-libs CI job', () => {
   const ci = readFileSync(join(ROOT, '.github', 'workflows', 'ci.yml'), 'utf8');
-  const job = ci.slice(ci.indexOf('  angular-22-libs:'));
-  const steps = job.slice(0, job.search(/\n {2}[a-z-]+:\n/) === -1 ? undefined : job.search(/\n {2}[a-z-]+:\n/));
+  const start = ci.indexOf('  angular-libs:');
+  const rest = ci.slice(start + 1);
+  const next = rest.search(/\n {2}[a-z-]+:\n/);
+  const job = next === -1 ? rest : rest.slice(0, next);
 
-  it('overlays Angular 22 on Node 22 before building', () => {
-    expect(steps).toContain('node-version: 22');
-    expect(steps.indexOf('toolchain-overlay.mjs --angular 22')).toBeGreaterThan(-1);
-    expect(steps.indexOf('toolchain-overlay.mjs --angular 22')).toBeLessThan(steps.indexOf('npm run build:libs'));
+  it('runs a dated Angular 22 row and an exact 21.1.0 floor row on Node 22', () => {
+    expect(start).toBeGreaterThan(-1);
+    expect(job).toContain('node-version: 22');
+    expect(job).toMatch(/overlay: '--angular 22 --before \d{4}-\d{2}-\d{2}'/);
+    expect(job).toContain("overlay: '--angular 21.1.0'");
+    expect(job).toContain('name: angular-${{ matrix.label }}-libs');
+  });
+
+  it('overlays before it builds, without a separate npm ci, and keeps the resolved tree', () => {
+    expect(job).not.toContain('npm ci');
+    expect(job.indexOf('toolchain-overlay.mjs')).toBeLessThan(job.indexOf('npm run build:libs'));
+    expect(job).toContain('npm ls --all > npm-ls.txt');
+    expect(job).toContain('package-lock.json');
   });
 
   it('unit tests every published lib and the schematics', () => {
     for (const lib of PUBLISHED_LIBS) {
-      expect(steps, lib).toContain(`ng test ${lib} --watch=false`);
+      expect(job, lib).toContain(`ng test ${lib} --watch=false`);
     }
-    expect(steps).toContain('npm run test:schematics');
+    expect(job).toContain('npm run test:schematics');
   });
 });

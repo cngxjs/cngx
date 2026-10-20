@@ -9,12 +9,17 @@
 // It rewrites the root package.json (every Angular package, the devkit, the
 // CLI schematics, angular-eslint, ng-packagr, @ngrx/signals,
 // playwright-ng-schematics and TypeScript, the latter to the range the target
-// @angular/compiler-cli peers on), lets TypeScript 6 accept the deprecated
-// `baseUrl` in tsconfig.base.json, and runs the install.
+// @angular/compiler-cli peers on), lets an installed TypeScript 6 accept the
+// deprecated `baseUrl` in tsconfig.base.json, and runs the install.
 //
 // Usage:
-//   node scripts/toolchain-overlay.mjs --angular 22 [--force] [--no-install] [--dry-run]
-//   node scripts/toolchain-overlay.mjs --angular 21.0.0 --force
+//   node scripts/toolchain-overlay.mjs --angular 22 [--before 2026-10-20] [--force] [--no-install] [--dry-run]
+//   node scripts/toolchain-overlay.mjs --angular 21.1.0 --force
+//   node scripts/toolchain-overlay.mjs --restore        # back to the committed toolchain
+//
+// `--before` resolves every version as the registry stood on that date, so a
+// CI run is the same every day until the date is moved on purpose. It needs
+// no installed node_modules, so CI runs it instead of `npm ci`.
 //
 // A major moves every package to its newest release of that major. An exact
 // release pins only the framework (the @angular/* runtime and compiler
@@ -23,7 +28,8 @@
 // builders lack features the test setup relies on.
 //
 // Refuses to run outside CI (CI=true) unless --force is passed, and refuses on
-// a dirty tree: the rewrite is not meant to be committed.
+// a dirty tree: the rewrite is not meant to be committed. It never restores a
+// checkout on its own; it prints the command (`--restore`) after every run.
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -112,12 +118,6 @@ export function typescriptRangeFromPeer(peerRange) {
   return peerRange.trim();
 }
 
-/** The lowest TypeScript major a range names, or undefined when it names none. */
-export function typescriptMajor(range) {
-  const match = /(\d+)\./.exec(range);
-  return match ? Number(match[1]) : undefined;
-}
-
 /**
  * tsconfig.base.json text with `ignoreDeprecations: "6.0"` in compilerOptions,
  * so TypeScript 6 accepts the `baseUrl` that 5.9 still needs. Text in, text
@@ -134,8 +134,30 @@ export function patchTsconfigForTs6(text) {
   return text.replace(anchor, (match) => `${match}\n    "ignoreDeprecations": "6.0",`);
 }
 
-function parseArgs(argv) {
-  const args = { angular: undefined, force: false, install: true, dryRun: false };
+/** The files the overlay rewrites; `--restore` checks them out again. */
+export const OVERLAID_FILES = ['package.json', 'package-lock.json', 'tsconfig.base.json'];
+
+/** How to put a developer checkout back after an overlay run. */
+export const RESTORE_HINT =
+  `Restore the checkout with: node scripts/toolchain-overlay.mjs --restore ` +
+  `(git checkout -- ${OVERLAID_FILES.join(' ')} && npm ci)`;
+
+/** The major of an installed TypeScript version string, or undefined. */
+export function typescriptMajorOf(version) {
+  const match = /^(\d+)\./.exec(version ?? '');
+  return match ? Number(match[1]) : undefined;
+}
+
+/** `--before` as npm takes it: a calendar date, so the resolution is the same on every run. */
+export function parseBefore(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value ?? '')) {
+    throw new Error('toolchain-overlay: --before takes a date, e.g. --before 2026-10-20');
+  }
+  return value;
+}
+
+export function parseArgs(argv) {
+  const args = { angular: undefined, force: false, install: true, dryRun: false, restore: false, before: undefined };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--angular') {
@@ -146,21 +168,32 @@ function parseArgs(argv) {
       args.install = false;
     } else if (arg === '--dry-run') {
       args.dryRun = true;
+    } else if (arg === '--restore') {
+      args.restore = true;
+    } else if (arg === '--before') {
+      args.before = parseBefore(argv[++i]);
     } else {
       throw new Error(`toolchain-overlay: unknown argument ${arg}`);
     }
   }
+  if (args.restore) {
+    return { ...args, target: undefined };
+  }
   return { ...args, target: parseAngularTarget(args.angular) };
 }
 
-function npmView(spec, field) {
-  const out = execFileSync('npm', ['view', spec, field, '--json'], { encoding: 'utf8' }).trim();
+function beforeFlag(before) {
+  return before ? [`--before=${before}`] : [];
+}
+
+function npmView(spec, field, before) {
+  const out = execFileSync('npm', ['view', spec, field, '--json', ...beforeFlag(before)], { encoding: 'utf8' }).trim();
   return out ? JSON.parse(out) : undefined;
 }
 
 /** The version to install: the exact release when the package published it, else the newest stable one in range. */
-function resolveVersion(name, { exact, range }) {
-  const result = npmView(`${name}@${range}`, 'version');
+function resolveVersion(name, { exact, range }, before) {
+  const result = npmView(`${name}@${range}`, 'version', before);
   const list = (Array.isArray(result) ? result : [result]).filter((v) => typeof v === 'string' && !v.includes('-'));
   if (exact && list.includes(exact)) {
     return exact;
@@ -175,24 +208,34 @@ function dirtyFiles() {
   return execFileSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' }).trim();
 }
 
-function main() {
-  const args = parseArgs(process.argv.slice(2));
-  if (process.env.CI !== 'true' && !args.force) {
-    throw new Error('toolchain-overlay: rewrites package.json for a throwaway run; pass --force outside CI');
+function installedTypescriptVersion() {
+  try {
+    return JSON.parse(readFileSync(join(ROOT, 'node_modules', 'typescript', 'package.json'), 'utf8')).version;
+  } catch {
+    return undefined;
   }
-  const dirty = dirtyFiles();
-  if (dirty && !args.dryRun) {
-    throw new Error(`toolchain-overlay: the working tree is dirty, run it on a clean checkout:\n${dirty}`);
-  }
+}
 
+function restore(install) {
+  execFileSync('git', ['checkout', '--', ...OVERLAID_FILES], { cwd: ROOT, stdio: 'inherit' });
+  if (install) {
+    execFileSync('npm', ['ci', '--no-audit', '--no-fund'], { cwd: ROOT, stdio: 'inherit' });
+  }
+  console.log(`Restored ${OVERLAID_FILES.join(', ')}${install ? ' and node_modules' : ''}.`);
+}
+
+function overlay(args) {
   const manifestPath = join(ROOT, 'package.json');
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  const exact = args.target.exact !== undefined;
   const versions = {};
-  for (const name of overlayTargets(manifest, args.target.exact !== undefined)) {
-    versions[name] = resolveVersion(name, args.target);
+  for (const name of overlayTargets(manifest, exact)) {
+    versions[name] = resolveVersion(name, args.target, args.before);
   }
   const compilerCli = versions['@angular/compiler-cli'];
-  const tsRange = typescriptRangeFromPeer(npmView(`@angular/compiler-cli@${compilerCli}`, 'peerDependencies.typescript'));
+  const tsRange = typescriptRangeFromPeer(
+    npmView(`@angular/compiler-cli@${compilerCli}`, 'peerDependencies.typescript', args.before),
+  );
 
   for (const [name, version] of Object.entries(versions)) {
     console.log(`  ${name} -> ${version}`);
@@ -202,22 +245,56 @@ function main() {
     return;
   }
 
-  writeFileSync(manifestPath, `${JSON.stringify(overlayManifest(manifest, versions, tsRange, args.target.exact !== undefined), null, 2)}\n`);
-  if ((typescriptMajor(tsRange) ?? 0) >= 6) {
+  writeFileSync(manifestPath, `${JSON.stringify(overlayManifest(manifest, versions, tsRange, exact), null, 2)}\n`);
+  if (!args.install) {
+    console.log('  --no-install: tsconfig.base.json is left alone; the installed TypeScript decides it on the install run.');
+    return;
+  }
+  // The repo's own peers still name the old major until the overlay is
+  // promoted, and tools like typescript-eslint lag a TypeScript major.
+  execFileSync(
+    'npm',
+    ['install', '--legacy-peer-deps', '--ignore-scripts', '--no-audit', '--no-fund', ...beforeFlag(args.before)],
+    { cwd: ROOT, stdio: 'inherit' },
+  );
+  const typescript = installedTypescriptVersion();
+  if ((typescriptMajorOf(typescript) ?? 0) >= 6) {
     const tsconfigPath = join(ROOT, 'tsconfig.base.json');
     writeFileSync(tsconfigPath, patchTsconfigForTs6(readFileSync(tsconfigPath, 'utf8')));
+    console.log(`  TypeScript ${typescript}: tsconfig.base.json accepts the deprecated baseUrl (ignoreDeprecations 6.0)`);
   }
-  if (args.install) {
-    // The repo's own peers still name the old major until the overlay is
-    // promoted, and tools like typescript-eslint lag a TypeScript major.
-    execFileSync('npm', ['install', '--legacy-peer-deps', '--ignore-scripts', '--no-audit', '--no-fund'], {
-      cwd: ROOT,
-      stdio: 'inherit',
-    });
-    execFileSync('npm', ['ls', '@angular/core', '@angular/build', 'ng-packagr', 'typescript', '--depth=0'], {
-      cwd: ROOT,
-      stdio: 'inherit',
-    });
+  execFileSync('npm', ['ls', '@angular/core', '@angular/build', 'ng-packagr', 'typescript', '--depth=0'], {
+    cwd: ROOT,
+    stdio: 'inherit',
+  });
+}
+
+function main() {
+  const args = parseArgs(process.argv.slice(2));
+  if (args.restore) {
+    restore(args.install);
+    return;
+  }
+  if (process.env.CI !== 'true' && !args.force) {
+    throw new Error(
+      `toolchain-overlay: rewrites ${OVERLAID_FILES.join(', ')} and node_modules for a throwaway run; ` +
+        `pass --force outside CI. ${RESTORE_HINT}`,
+    );
+  }
+  const dirty = dirtyFiles();
+  if (dirty && !args.dryRun) {
+    throw new Error(`toolchain-overlay: the working tree is dirty, run it on a clean checkout:\n${dirty}`);
+  }
+  try {
+    overlay(args);
+  } catch (error) {
+    if (!args.dryRun) {
+      console.error(RESTORE_HINT);
+    }
+    throw error;
+  }
+  if (!args.dryRun) {
+    console.log(`\nThe checkout now runs a different Angular. ${RESTORE_HINT}`);
   }
 }
 

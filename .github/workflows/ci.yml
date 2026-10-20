@@ -306,25 +306,48 @@ jobs:
       - name: Check production bundle for dev-only code
         run: node scripts/devtools-prod-strip-check.mjs
 
-  # The libs peer on Angular 21 and 22, but the workspace builds and publishes
-  # with Angular 21. This job moves a throwaway copy of the workspace onto the
-  # newest Angular 22 (TypeScript 6, ng-packagr 22) with
-  # scripts/toolchain-overlay.mjs, then builds every lib and runs every lib's
-  # unit tests there, so the same sources are proven on both majors. Node 22:
-  # Angular 22 needs ^22.22.3. Each lib is its own step, so one red lib does
-  # not hide the next.
-  angular-22-libs:
+  # The libs peer on Angular >=21.1.0 <23.0.0, but the workspace builds and
+  # publishes with one Angular 21. These rows move a throwaway copy of the
+  # workspace onto the edges of that range with scripts/toolchain-overlay.mjs,
+  # then build every lib and run every lib's unit tests there, so the same
+  # sources are proven on each edge:
+  # - 22: the whole toolchain on the newest Angular 22 (TypeScript 6,
+  #   ng-packagr 22) as the registry stood on the --before date. Move the date
+  #   on purpose to pick up a newer 22; the run never drifts on its own.
+  # - 21.1: the framework pinned to exactly 21.1.0, the peer range floor, with
+  #   the workspace's own build tooling from the lockfile.
+  # The overlay installs itself (no npm ci first). Node 22: Angular 22 needs
+  # ^22.22.3. Each lib is its own step, so one red lib does not hide the next.
+  angular-libs:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { label: '22', overlay: '--angular 22 --before 2026-10-20' }
+          - { label: '21.1', overlay: '--angular 21.1.0' }
+    name: angular-${{ matrix.label }}-libs
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
-      - name: Move the workspace onto Angular 22
-        run: node scripts/toolchain-overlay.mjs --angular 22
+      - name: Move the workspace onto Angular ${{ matrix.label }}
+        run: node scripts/toolchain-overlay.mjs ${{ matrix.overlay }}
+      - name: Record the resolved dependency tree
+        if: ${{ !cancelled() }}
+        run: npm ls --all > npm-ls.txt || true
+      - name: Upload the resolved dependency tree
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: angular-${{ matrix.label }}-dependency-tree
+          path: |
+            npm-ls.txt
+            package.json
+            package-lock.json
+          retention-days: 14
       - name: zone.js stays unresolvable
         run: npx vitest run --config scripts/vitest.config.mjs scripts/__tests__/zone-unresolvable.test.mjs
       - name: Build all libraries
