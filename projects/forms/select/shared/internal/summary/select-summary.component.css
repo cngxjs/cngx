@@ -2,22 +2,17 @@
  * @overview
  * One-line summary of a multi-value select trigger under the touch floor:
  * the first selected label, cut with an ellipsis, plus the shared
- * `.cngx-select__chip-overflow-badge`. The row never wraps, so the trigger
- * keeps the 44px family height at every selection count.
+ * `.cngx-select__chip-overflow-badge`. The hosting chip strip runs as
+ * `data-overflow="truncate"` (one line, clipped), so the trigger keeps the
+ * 44px family height at every selection count.
  */
 
 @layer cngx.components {
-  /* The chip strip that hosts the summary stays on one line. */
-  .cngx-select__chip-list--summary {
-    flex-wrap: nowrap;
-    overflow: hidden;
-  }
-
   .cngx-select-summary {
     display: inline-flex;
     flex: 0 1 auto;
     align-items: center;
-    gap: var(--cngx-select-chip-gap, 0.25rem);
+    gap: var(--cngx-space-xs, 0.25rem);
     min-inline-size: 0;
     max-inline-size: 100%;
   }

@@ -1,4 +1,5 @@
-import { computed, type DestroyRef, type Signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { computed, DestroyRef, ElementRef, inject, type Signal } from '@angular/core';
 
 import { createResizeSignal, type ResizeObserverHost } from '@cngx/common/layout';
 import { createMediaQuerySignal, type MediaQueryHost } from '@cngx/core/utils';
@@ -60,4 +61,18 @@ export function createTouchFloorSignal(
     );
     return Number.isFinite(floor) && floor > 0;
   });
+}
+
+/**
+ * {@link createTouchFloorSignal} over the injecting component's host element.
+ * Injection context required.
+ *
+ * @internal
+ */
+export function injectTouchFloorSignal(): Signal<boolean> {
+  return createTouchFloorSignal(
+    inject(ElementRef).nativeElement as Element,
+    inject(DestroyRef),
+    inject(DOCUMENT).defaultView,
+  );
 }

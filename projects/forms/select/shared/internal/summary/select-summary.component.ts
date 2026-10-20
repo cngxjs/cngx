@@ -1,5 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   input,
@@ -56,5 +57,5 @@ export class CngxSelectSummary {
   /** The whole selection as one string, read by AT. */
   readonly fullText = input<string>('');
   /** Renders {@link fullText} as visually hidden content of the trigger. */
-  readonly exposeValue = input<boolean>(false);
+  readonly exposeValue = input<boolean, boolean | string>(false, { transform: booleanAttribute });
 }

@@ -448,7 +448,7 @@
     {
       "class": "CngxMultiSelect",
       "file": "projects/forms/select/multi-select/multi-select.component.ts",
-      "line": 307,
+      "line": 310,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -470,7 +470,7 @@
     {
       "class": "CngxMultiSelect",
       "file": "projects/forms/select/multi-select/multi-select.component.ts",
-      "line": 314,
+      "line": 317,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [

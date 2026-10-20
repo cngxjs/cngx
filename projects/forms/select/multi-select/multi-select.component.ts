@@ -68,7 +68,9 @@ import {
   type CngxChipRemovalHandler,
 } from '../shared/chip-removal-handler';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
-import { createChipOverflow } from '../shared/internal/chip-overflow';
+import { CngxSelectSummary } from '../shared/internal/summary/select-summary.component';
+import { createSelectSummary } from '../shared/internal/summary/select-summary';
+import { injectTouchFloorSignal } from '../shared/internal/touch-floor';
 import { sameArrayContents } from '../shared/internal/compare';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
@@ -219,6 +221,7 @@ export interface CngxMultiSelectChange<T = unknown> {
     CngxPopover,
     CngxPopoverTrigger,
     CngxSelectPanel,
+    CngxSelectSummary,
     NgTemplateOutlet,
   ],
   providers: [
@@ -702,11 +705,19 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     },
   );
 
-  private readonly chipStrip = createChipOverflow<T>({
+  /**
+   * @internal - one-line summary instead of chips under the touch floor. The
+   * chip strip below is its truncated-at-one derivation while it is active.
+   */
+  protected readonly summary = createSelectSummary<T>({
     selectedOptions: this.selectedOptions,
+    active: injectTouchFloorSignal(),
     chipOverflow: this.chipOverflow,
     maxVisibleChips: this.maxVisibleChips,
+    ariaLabels: this.config.ariaLabels,
+    fallbackLabels: this.config.fallbackLabels,
   });
+  private readonly chipStrip = this.summary.strip;
   /** @internal - chip subset + overflow badge count (see createChipOverflow). */
   protected readonly visibleSelected = this.chipStrip.visibleSelected;
   /** @internal */
