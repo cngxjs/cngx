@@ -311,9 +311,10 @@ jobs:
   # workspace onto the edges of that range with scripts/toolchain-overlay.mjs,
   # then build every lib and run every lib's unit tests there, so the same
   # sources are proven on each edge:
-  # - 22: the whole toolchain on the newest Angular 22 (TypeScript 6,
-  #   ng-packagr 22) as the registry stood on the --before date. Move the date
-  #   on purpose to pick up a newer 22; the run never drifts on its own.
+  # - 22: the whole toolchain on exactly Angular 22.2.3 (TypeScript 6,
+  #   ng-packagr 22); tools on their own version line and TypeScript take
+  #   their newest release published by @angular/core 22.2.3, so the run never
+  #   drifts on its own. Move the version on purpose to pick up a newer 22.
   # - 21.1: the framework pinned to exactly 21.1.0, the peer range floor, with
   #   the workspace's own build tooling from the lockfile.
   # The overlay installs itself (no npm ci first). Node 22: Angular 22 needs
@@ -324,8 +325,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { label: '22', overlay: '--angular 22 --before 2026-10-20' }
-          - { label: '21.1', overlay: '--angular 21.1.0' }
+          - { label: '22', overlay: '--angular 22.2.3' }
+          - { label: '21.1', overlay: '--angular 21.1.0 --framework-only' }
     name: angular-${{ matrix.label }}-libs
     steps:
       - uses: actions/checkout@v4

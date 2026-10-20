@@ -15,9 +15,13 @@ import {
   patchTsconfigForTs6,
   typescriptMajorOf,
   parseArgs,
-  parseBefore,
+  compareVersions,
+  hashOf,
+  pickVersion,
+  restorePlan,
   OVERLAID_FILES,
   RESTORE_HINT,
+  STATE_FILE,
   typescriptRangeFromPeer,
 } from '../toolchain-overlay.mjs';
 
@@ -84,17 +88,53 @@ describe('parseAngularTarget', () => {
     expect(parseAngularTarget('22')).toEqual({ exact: undefined, range: '22' });
   });
 
-  it('reads an exact release as that version within its minor', () => {
-    expect(parseAngularTarget('21.0.0')).toEqual({ exact: '21.0.0', range: '~21.0.0' });
+  it('reads an exact release and lists its packages within its major', () => {
+    expect(parseAngularTarget('22.2.3')).toEqual({ exact: '22.2.3', range: '22' });
   });
 
   it('refuses anything else', () => {
     for (const spec of [undefined, '', '21.2', '^21.0.0', 'latest']) {
-      expect(() => parseAngularTarget(spec), String(spec)).toThrow(/pass a major/);
+      expect(() => parseAngularTarget(spec), String(spec)).toThrow(/pass an exact release/);
     }
   });
 });
 
+describe('pickVersion', () => {
+  const versions = ['22.6.0', '22.0.1', '22.7.0', '22.7.1-alpha.0', '22.10.0'];
+  const times = {
+    '22.0.1': '2026-06-01T00:00:00.000Z',
+    '22.6.0': '2026-09-30T00:00:00.000Z',
+    '22.7.0': '2026-10-15T00:00:00.000Z',
+    '22.10.0': '2026-11-01T00:00:00.000Z',
+  };
+
+  it('takes the exact release when the package published it', () => {
+    expect(pickVersion({ name: 'x', versions: ['22.2.3', '22.2.4'], exact: '22.2.3' })).toBe('22.2.3');
+  });
+
+  it('takes the newest stable release published by the anchor, so a later release changes nothing', () => {
+    expect(pickVersion({ name: 'x', versions, times, exact: '22.2.3', anchor: '2026-10-14T23:41:35.703Z' })).toBe('22.6.0');
+    expect(
+      pickVersion({ name: 'x', versions: [...versions, '22.6.1'], times: { ...times, '22.6.1': '2027-01-01T00:00:00.000Z' }, anchor: '2026-10-14T23:41:35.703Z' }),
+    ).toBe('22.6.0');
+  });
+
+  it('takes the numerically newest stable release without an anchor', () => {
+    expect(pickVersion({ name: 'x', versions })).toBe('22.10.0');
+  });
+
+  it('refuses when nothing was published by the anchor', () => {
+    expect(() => pickVersion({ name: 'tool', versions, times, anchor: '2026-01-01T00:00:00.000Z' })).toThrow(
+      /tool has no stable release published by 2026-01-01/,
+    );
+  });
+});
+
+describe('compareVersions', () => {
+  it('orders by number, not by text', () => {
+    expect(['22.10.0', '22.9.1', '22.2.3'].sort(compareVersions)).toEqual(['22.2.3', '22.9.1', '22.10.0']);
+  });
+});
 describe('overlayTargets for an exact release', () => {
   it('moves only the framework and keeps the build tooling', () => {
     const targets = overlayTargets(manifest, true);
@@ -131,25 +171,53 @@ describe('typescriptRangeFromPeer / typescriptMajorOf', () => {
 });
 
 describe('parseArgs', () => {
-  it('takes a dated resolution for deterministic CI runs', () => {
-    expect(parseArgs(['--angular', '22', '--before', '2026-10-20'])).toMatchObject({
-      before: '2026-10-20',
-      target: { exact: undefined, range: '22' },
+  it('reads an exact framework-only floor run', () => {
+    expect(parseArgs(['--angular', '21.1.0', '--framework-only'])).toMatchObject({
+      frameworkOnly: true,
+      target: { exact: '21.1.0', range: '21' },
     });
   });
 
-  it('refuses a --before that is not a calendar date', () => {
-    expect(() => parseBefore('yesterday')).toThrow(/takes a date/);
-    expect(() => parseArgs(['--angular', '22', '--before'])).toThrow(/takes a date/);
+  it('needs no target for --restore and takes --discard-local-edits only with it', () => {
+    expect(parseArgs(['--restore', '--discard-local-edits'])).toMatchObject({ restore: true, discardLocalEdits: true, target: undefined });
+    expect(() => parseArgs(['--angular', '22', '--discard-local-edits'])).toThrow(/only goes with --restore/);
   });
 
-  it('needs no target for --restore', () => {
-    expect(parseArgs(['--restore'])).toMatchObject({ restore: true, target: undefined });
+  it('no longer takes --before, which npm view does not honour', () => {
+    expect(() => parseArgs(['--angular', '22', '--before', '2026-10-20'])).toThrow(/unknown argument --before/);
   });
 });
 
+describe('restorePlan', () => {
+  const state = { files: { 'package.json': hashOf('overlaid manifest'), 'package-lock.json': hashOf('overlaid lock') } };
+
+  it('restores a file still as the overlay left it', () => {
+    expect(restorePlan(state, { 'package.json': hashOf('overlaid manifest'), 'package-lock.json': hashOf('overlaid lock') })).toEqual({
+      restore: ['package.json', 'package-lock.json'],
+      edited: [],
+    });
+  });
+
+  it('names a file edited after the overlay instead of restoring it', () => {
+    expect(restorePlan(state, { 'package.json': hashOf('my own edit'), 'package-lock.json': hashOf('overlaid lock') })).toEqual({
+      restore: ['package-lock.json'],
+      edited: ['package.json'],
+    });
+  });
+
+  it('touches nothing the overlay did not write', () => {
+    expect(restorePlan(state, { 'tsconfig.base.json': hashOf('anything') }).restore).not.toContain('tsconfig.base.json');
+    expect(restorePlan(undefined, {})).toEqual({ restore: [], edited: [] });
+  });
+});
+
+describe('the overlay state file', () => {
+  it('lives where git never sees it and npm ci clears it', () => {
+    expect(STATE_FILE.startsWith('node_modules')).toBe(true);
+  });
+});
 describe('RESTORE_HINT', () => {
-  it('names the restore mode and every file the overlay rewrites', () => {
+  it('names the restore mode and every file the overlay may rewrite', () => {
     expect(RESTORE_HINT).toContain('--restore');
     for (const file of OVERLAID_FILES) {
       expect(RESTORE_HINT).toContain(file);
@@ -157,7 +225,6 @@ describe('RESTORE_HINT', () => {
     expect(RESTORE_HINT).toContain('npm ci');
   });
 });
-
 describe('patchTsconfigForTs6', () => {
   it('adds ignoreDeprecations to the repo tsconfig once', () => {
     const text = readFileSync(join(ROOT, 'tsconfig.base.json'), 'utf8');
@@ -178,11 +245,12 @@ describe('the angular-libs CI job', () => {
   const next = rest.search(/\n {2}[a-z-]+:\n/);
   const job = next === -1 ? rest : rest.slice(0, next);
 
-  it('runs a dated Angular 22 row and an exact 21.1.0 floor row on Node 22', () => {
+  it('runs an exact Angular 22 row and an exact framework-only 21.1.0 floor row on Node 22', () => {
     expect(start).toBeGreaterThan(-1);
     expect(job).toContain('node-version: 22');
-    expect(job).toMatch(/overlay: '--angular 22 --before \d{4}-\d{2}-\d{2}'/);
-    expect(job).toContain("overlay: '--angular 21.1.0'");
+    expect(job).toMatch(/overlay: '--angular 22\.\d+\.\d+'/);
+    expect(job).toContain("overlay: '--angular 21.1.0 --framework-only'");
+    expect(job).not.toContain('--before');
     expect(job).toContain('name: angular-${{ matrix.label }}-libs');
   });
 
