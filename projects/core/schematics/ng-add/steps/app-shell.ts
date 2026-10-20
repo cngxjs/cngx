@@ -100,12 +100,26 @@ function snippetNote(reason: string, provenance: Provenance): StepResult {
   };
 }
 
-// The spec goes with the outlets: the stock spec is provided once, and a
-// custom one is named only on the run that places an outlet, so a placed
-// shell plans nothing more.
-function specChange(facts: ProjectFacts, shell: AppShell, provenance: Provenance, placing: boolean): StepResult {
+/**
+ * Why cngx places no outlet in front of a spec it cannot provide: the
+ * outlets inject `CngxToaster` and `CngxBanner`, and a spec that is not the
+ * untouched `ng new` one may render the root component without them, so
+ * placing them would turn `ng test` red.
+ */
+export function specCustomText(path: string, className: string): string {
+  return (
+    `${path} is not the untouched ng new spec, so cngx places no outlet the TestBed there would lack providers for; ` +
+    `${OUTLETS_SNIPPET}, and give a TestBed that renders ${className} \`providers: [${FEEDBACK_SPEC_PROVIDERS}]\` with ${FEEDBACK_SPEC_IMPORT.replace(/;$/, '')}`
+  );
+}
+
+// The spec goes with the outlets: the stock spec is provided once on the
+// run that places them; a custom spec never gets here with an outlet to
+// place (the outlets stay out, see `planAppShell`), so a placed shell plans
+// nothing more.
+function specChange(facts: ProjectFacts, shell: AppShell, provenance: Provenance): StepResult {
   const path = shell.specPath;
-  if (path === undefined || shell.spec === 'absent' || (shell.spec === 'custom' && !placing)) {
+  if (path === undefined || shell.spec === 'absent' || shell.spec === 'custom') {
     return NOTHING;
   }
   const change: Change = {
@@ -120,19 +134,6 @@ function specChange(facts: ProjectFacts, shell: AppShell, provenance: Provenance
   if (shell.spec === 'provided') {
     return { changes: [], skipped: [skipChange(change, 'already provided')] };
   }
-  if (shell.spec === 'custom') {
-    return {
-      changes: [
-        createNote({
-          id: SPEC_ID,
-          label: `Provide the feedback services in ${path}`,
-          reason: `the outlets inject CngxToaster and CngxBanner; a TestBed that renders ${shell.className} needs \`providers: [${FEEDBACK_SPEC_PROVIDERS}]\` with ${FEEDBACK_SPEC_IMPORT.replace(/;$/, '')}`,
-          provenance,
-        }),
-      ],
-      skipped: [],
-    };
-  }
   return { changes: [change], skipped: [] };
 }
 
@@ -143,8 +144,10 @@ function specChange(facts: ProjectFacts, shell: AppShell, provenance: Provenance
  * above `<router-outlet>`, else at the end; the toast at the end; both classes
  * go into the component `imports` (standalone) or the root NgModule
  * `imports`. An outlet or class already there is not added again. An
- * unedited stock `app.spec.ts` gets the feedback providers, any other spec a
- * note with the snippet. A shell cngx cannot edit safely gets a note with the
+ * unedited stock `app.spec.ts` gets the feedback providers; in front of any
+ * other spec cngx places no outlet at all (fail-closed: a red `ng test` is
+ * never the result) and one note names the outlets and the providers the
+ * spec needs. A shell cngx cannot edit safely gets a note with the
  * snippet instead of a guess. `recorded` holds the step ids of this
  * project's previous record: outlets it placed that are gone now were
  * removed on purpose and stay out, unless `explicitFeedback` (`--feedback`)
@@ -166,8 +169,8 @@ export function planAppShell(
   }
   const provenance = createProvenance('ng-add', versions.cngx);
   const shell = facts.appShell;
-  if (starter && shell.kind === 'followed' && shell.outlets.kind === 'editable') {
-    const spec = specChange(facts, shell, provenance, true);
+  if (starter && shell.kind === 'followed' && shell.outlets.kind === 'editable' && shell.spec !== 'custom') {
+    const spec = specChange(facts, shell, provenance);
     const skipped = outletTargets(shell, provenance).map(({ change }) => skipChange(change, STARTER_REASON));
     return { changes: spec.changes, skipped: [...skipped, ...spec.skipped] };
   }
@@ -189,10 +192,16 @@ export function planAppShell(
     return withdrawnNote(templatePath(shell), WITHDRAWN_REASON, provenance, targets.map(({ change }) => skipChange(change, WITHDRAWN_REASON)));
   }
   const changes = targets.filter(({ done }) => !done).map(({ change }) => change);
+  if (changes.length > 0 && shell.spec === 'custom' && shell.specPath !== undefined) {
+    return {
+      changes: [createNote({ id: OUTLETS_ID, label: SNIPPET_LABEL, reason: specCustomText(shell.specPath, shell.className), provenance })],
+      skipped: [],
+    };
+  }
   const skipped: readonly SkippedStep[] = targets
     .filter(({ done }) => done)
     .map(({ change }) => skipChange(change, 'already placed'));
-  const spec = specChange(facts, shell, provenance, changes.length > 0);
+  const spec = specChange(facts, shell, provenance);
   return { changes: [...changes, ...spec.changes], skipped: [...skipped, ...spec.skipped] };
 }
 

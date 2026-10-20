@@ -242,7 +242,7 @@ turn the questions off the same way.
 |`src/app/app.ts`, `app.html`, `app.css` or `app.scss`|`full` (or `--starter`), untouched `ng new` standalone app|The cngx starter page in place of the Angular welcome page: the `Hello, <name>` heading and `title` signal the stock spec asserts, a card for each thing the answers installed to try (toasts, banners and an alert with feedback, the accessibility panel with the a11y preferences, an English and German toggle with the runtime language switch), the toast and banner outlets with feedback, and `<router-outlet />` with routing. Written only over the exact `ng new` scaffold, see [The starter page](#the-starter-page).|
 |Global styles|starter written|The starter's page styles at the end, after a `cngx:fingerprint` line: `body { margin: 0 }`, the headings, the top bar and the footer, every rule scoped under `<root selector> > .shell`. They live here so the component stylesheet stays inside the 4 kB component style budget of `ng new`.|
 |`public/favicon.svg`, `src/index.html`|starter written, `index.html` untouched, no `favicon.svg` yet|The cngx mark as the app icon, and the icon link pointed at it instead of `favicon.ico`, which stays on disk.|
-|`app.spec.ts` of the root component|feedback, unedited `ng new` spec|`providers: [provideFeedback(withToasts(), withBanners())]` in its `TestBed.configureTestingModule`, so the stock spec still renders `App` with the outlets in it. Any other spec gets a note with that snippet.|
+|`app.spec.ts` of the root component|feedback, unedited `ng new` spec|`providers: [provideFeedback(withToasts(), withBanners())]` in its `TestBed.configureTestingModule`, so the stock spec still renders `App` with the outlets in it. Next to any other spec cngx places no outlet, see [Outlets left to you](#outlets-left-to-you).|
 |`cngx-language.ts`|German with runtime switch|Next to the file holding the root providers (`src/cngx-language.ts` for an inline config in `main.ts`): a `cngxLanguagePack` signal. Set it to switch every cngx string at runtime. When the app already provides `provideCngxI18n(...)` without that signal, the provider is not rewritten: the file is still created and a note names the one edit, `withPack(cngxLanguagePack)` imported from `./cngx-language`.|
 |ESLint flat config|lint rules|`...cngx.configs.recommended` in the exported array of `eslint.config.js`, `.mjs`, `.cjs`, `.ts`, `.mts` or `.cts`, the one in the project root first, else the workspace one. A commented-out plugin import does not count as wired. It needs ESLint 9 or later and a TypeScript parser (`typescript-eslint`, `@typescript-eslint/parser` or `angular-eslint`): the cngx rules lint TypeScript through the app's own setup. The plugin also loads `@angular-eslint/template-parser` 19 or later; with `angular-eslint` declared it is added on that version line. Every case it cannot wire gets one note with the next command and no edit or dependency: ESLint below 9 (raise `eslint` to `^9` in devDependencies and reinstall; with `angular-eslint`, `ng update angular-eslint` moves its packages, without it `ng add angular-eslint` sets up ESLint 9), no flat config, no TypeScript parser or no template parser (`ng add angular-eslint`), a template parser line below 19 (`ng update angular-eslint`, or raise the parser itself), a legacy `.eslintrc*` config (`npx @eslint/migrate-config <file>`). Run `ng add @cngx/core` again afterwards. A config it cannot edit safely gets a note to add the entry by hand.|
 |`.cngx/install.json`|always|The install manifest (below).|
@@ -313,6 +313,15 @@ stopped at for `<Class>` and `<file>`:
 - `<file> does not parse as TypeScript, so cngx edits neither it nor <Class>`: the root component or the root NgModule has a syntax error; cngx reads such a file only as far as the parser recovers, so it does not write into it.
 - `<Class> in <file> is bound to something other than the <Class> class of @cngx/ui/feedback`: the file already declares (a namespace or an interface included) or imports a `CngxBannerOutlet` or `CngxToastOutlet` of its own, also another `@cngx/ui/feedback` export aliased to that name or the whole entry imported under it.
 
+The spec next to the root component counts too. When it exists and is
+neither the untouched `ng new` spec nor that spec with the feedback
+providers cngx adds, cngx places no outlet and edits no spec, since the
+outlets would inject `CngxToaster` and `CngxBanner` into a TestBed that does
+not provide them and `ng test` would fail. The note then reads
+`<file> is not the untouched ng new spec, so cngx places no outlet the TestBed there would lack providers for`,
+followed by the outlets snippet and the providers the spec needs. A missing
+spec is no reason to stop.
+
 Fix what the reason names and run `ng add @cngx/core --feedback` again, or
 paste the snippet yourself.
 
@@ -329,6 +338,7 @@ these reasons, with the file for `<file>`:
 - `<file>, its template or its stylesheet is not the untouched ng new scaffold, so the starter is not written over it`: one character differs from what `ng new` wrote, the template or the styles are inline, or the stylesheet is Sass or Less.
 - `<file> is not the untouched ng new global stylesheet, so the starter, whose page styles go there, is not written`: the global stylesheet holds more than what `ng new` wrote and the cngx theme import.
 - `the build lists no global stylesheet, so the starter, whose page styles go there, is not written`.
+- `<file> is not the untouched ng new spec, so the starter, which replaces the page that spec renders, is not written`: the spec next to the root component differs from what `ng new` wrote (the feedback providers cngx adds aside).
 - `<file> holds the cngx starter of an earlier run with other answers; cngx does not rewrite it`: a re-run with other answers (feedback, a11y preferences, the runtime language switch) keeps the starter it finds.
 - `<file> is not the untouched ng new file, so the starter leaves its icon link and favicon.svg alone`: the starter is written, the icon stays Angular's.
 - `<file> exists and is not the cngx favicon, so the starter leaves it and the icon link alone`: the public folder already holds a `favicon.svg`.

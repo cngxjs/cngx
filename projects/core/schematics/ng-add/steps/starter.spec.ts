@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import { contentFingerprint, type EditFile, type StepResult } from '../../engine';
 import { createAnswers, createFacts, deepFreeze, STARTER_TEMPLATES, VERSIONS } from '../../testing/onboarding';
 import { createFixtureTree, type FixtureName, readFixture } from '../../testing/run-schematic';
-import { type AppScaffold, detectProject, type ProjectFacts, starterFingerprintOf } from '../detect/detect';
+import { type AppScaffold, type AppShell, detectProject, type ProjectFacts, starterFingerprintOf } from '../detect/detect';
 import { type OnboardingAnswers } from './model';
 import {
   planStarter,
@@ -352,6 +352,7 @@ describe('planStarter', () => {
   it.each([
     ['a global stylesheet that is not untouched', { globalStyles: { path: 'src/styles.css', state: 'custom', fingerprint: undefined } }, starterLeftOutText('styles-custom', 'src/styles.css')],
     ['no global stylesheet', { globalStyles: undefined }, starterLeftOutText('no-global-styles')],
+    ['a spec that is not the untouched ng new spec', { appShell: { ...(createFacts().appShell as AppShell), spec: 'custom' } }, starterLeftOutText('spec-custom', 'src/app/app.spec.ts')],
   ] as const)('names %s and writes nothing', (_name, overrides, reason) => {
     const facts = untouchedFacts(overrides as Partial<ProjectFacts>);
 

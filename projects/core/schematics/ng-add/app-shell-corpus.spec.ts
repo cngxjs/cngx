@@ -16,7 +16,7 @@ import {
 } from './detect/detect';
 import { ngAdd } from './index';
 import { INSTALL_MANIFEST_PATH } from './steps/manifest';
-import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell } from './steps/app-shell';
+import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell, specCustomText } from './steps/app-shell';
 import { STARTER_ID, starterLeftOutText } from './steps/starter';
 
 // Runs `ng add --feedback` over every root component shape in CORPUS and
@@ -114,8 +114,12 @@ interface Shape {
   readonly installedFirst?: true;
   /** The root component and its template went through Prettier before `ng add`. */
   readonly prettierFirst?: true;
-  /** `placed`, or the reason cngx names with the snippet instead of editing. */
-  readonly outcome: 'placed' | AppShellBlockedReason;
+  /**
+   * `placed`; the reason cngx names with the snippet instead of editing; or
+   * `spec-custom`, the outlets left out in front of a spec cngx cannot
+   * provide (fail-closed, so `ng test` never turns red).
+   */
+  readonly outcome: 'placed' | AppShellBlockedReason | 'spec-custom';
 }
 
 const OUTLETS_HTML = '<cngx-banner-outlet />\n<router-outlet />\n<cngx-toast-outlet />\n';
@@ -213,7 +217,8 @@ const CORPUS: readonly Shape[] = [
   { name: 'outlet class imported but not listed', files: withImports('  imports: [RouterOutlet],\n', "import { CngxBannerOutlet } from '@cngx/ui/feedback';\n"), outcome: 'placed' },
   { name: 'stock spec', fixture: 'scaffold-21', outcome: 'placed' },
   { name: 'provided spec', files: { 'src/app/app.spec.ts': STOCK_SPEC.replace("import { App } from './app';\n", "import { App } from './app';\nimport { provideFeedback, withBanners, withToasts } from '@cngx/ui/feedback';\n").replace('      imports: [App],\n', '      imports: [App],\n      providers: [provideFeedback(withToasts(), withBanners())],\n') }, outcome: 'placed' },
-  { name: 'custom spec', files: { 'src/app/app.spec.ts': `${STOCK_SPEC}// mine\n` }, outcome: 'placed' },
+  { name: 'custom spec', files: { 'src/app/app.spec.ts': `${STOCK_SPEC}// mine\n` }, outcome: 'spec-custom' },
+  { name: 'custom spec with both outlets already placed', files: { 'src/app/app.spec.ts': `${STOCK_SPEC}// mine\n`, 'src/app/app.html': OUTLETS_HTML, ...app((stock) => stock.replace('imports: [RouterOutlet]', 'imports: [RouterOutlet, CngxBannerOutlet, CngxToastOutlet]').replace("import { RouterOutlet } from '@angular/router';\n", "import { RouterOutlet } from '@angular/router';\nimport { CngxBannerOutlet, CngxToastOutlet } from '@cngx/ui/feedback';\n")) }, outcome: 'placed' },
   { name: 'absent spec', remove: ['src/app/app.spec.ts'], outcome: 'placed' },
   { name: 'banner outlet already present', files: { 'src/app/app.html': '<cngx-banner-outlet />\n<router-outlet />\n' }, outcome: 'placed' },
   {
@@ -692,6 +697,19 @@ describe('every planned app shell edit', () => {
     const logs = first.logs.join('\n');
     const firstLines = outletLines(first.logs);
 
+    if (shape.outcome === 'spec-custom') {
+      const shell = followed(detected);
+      expect(shell.spec).toBe('custom');
+      expect(logs).toContain(specCustomText(shell.specPath ?? '', shell.className));
+      for (const path of shellFiles) {
+        expect({ path, content: after[path] }).toEqual({ path, content: before[path] });
+      }
+      expectNoOutletWritten(before, after);
+      const again = await runShape(first.tree);
+      expectUnchanged(after, readTree(again.tree));
+      expect(outletLines(again.logs)).toEqual(firstLines);
+      return;
+    }
     if (shape.outcome !== 'placed') {
       const shell = detected.appShell;
       const at = shell.kind === 'unfollowed' ? shell : shell.outlets;
@@ -767,7 +785,7 @@ interface StarterShape {
   /** `ng add --preset full` ran first, then `files` changed the tree. */
   readonly installedFirst?: true;
   readonly flags?: Parameters<typeof ngAdd>[0];
-  readonly outcome: 'written' | 'icon-left' | 'not-untouched' | 'styles-custom' | 'other-answers' | 'replaced' | 'nothing';
+  readonly outcome: 'written' | 'icon-left' | 'not-untouched' | 'styles-custom' | 'spec-custom' | 'other-answers' | 'replaced' | 'nothing';
 }
 
 const STARTER_FILES = ['src/app/app.ts', 'src/app/app.html', 'src/app/app.css', 'src/app/app.scss'];
@@ -798,6 +816,8 @@ const STARTER_CORPUS: readonly StarterShape[] = [
   { name: 'one changed character in the welcome page', files: { 'src/app/app.html': oneChanged(STOCK_HTML) }, outcome: 'not-untouched' },
   { name: 'one changed character in app.css', files: { 'src/app/app.css': ' ' }, outcome: 'not-untouched' },
   { name: 'one changed character in styles.css', files: { 'src/styles.css': oneChanged(STOCK_STYLES) }, outcome: 'styles-custom' },
+  { name: 'one changed character in app.spec.ts', files: { 'src/app/app.spec.ts': oneChanged(STOCK_SPEC) }, outcome: 'spec-custom' },
+  { name: 'missing app.spec.ts', remove: ['src/app/app.spec.ts'], outcome: 'written' },
   { name: 'cngx theme import already in styles.css', files: { 'src/styles.css': `@import '@cngx/themes/cngx.css';\n${STOCK_STYLES}` }, outcome: 'written' },
   { name: 'CRLF styles.css', files: crlf({ 'src/styles.css': STOCK_STYLES }), outcome: 'written' },
   { name: 'one changed character in index.html', files: { 'src/index.html': oneChanged(STOCK_INDEX) }, outcome: 'icon-left' },
@@ -892,6 +912,7 @@ function expectStarterLeftOut(before: Files, after: Files, shape: StarterShape, 
   const reasons: Partial<Record<StarterShape['outcome'], string>> = {
     'not-untouched': starterLeftOutText('not-untouched', 'src/app/app.ts'),
     'styles-custom': starterLeftOutText('styles-custom', 'src/styles.css'),
+    'spec-custom': starterLeftOutText('spec-custom', 'src/app/app.spec.ts'),
     'other-answers': starterLeftOutText('other-answers', 'src/app/app.ts'),
   };
   const reason = reasons[shape.outcome];
@@ -929,7 +950,7 @@ describe('every starter case', () => {
     // A second run writes nothing and names the starter only as in place; a
     // note about the icon is said once, on the run that writes the starter,
     // a starter left out is named on every run.
-    const repeated = shape.outcome === 'not-untouched' || shape.outcome === 'styles-custom' || shape.outcome === 'other-answers';
+    const repeated = ['not-untouched', 'styles-custom', 'spec-custom', 'other-answers'].includes(shape.outcome);
     // With the global stylesheet left out, the first run places the outlets
     // in the welcome page, so later runs name the component instead.
     const notes = repeated
@@ -960,6 +981,6 @@ describe('every starter case', () => {
   it('records the starter only where it wrote one', () => {
     const outcomes = new Set(STARTER_CORPUS.map((shape) => shape.outcome));
 
-    expect([...outcomes].sort()).toEqual(['icon-left', 'not-untouched', 'nothing', 'other-answers', 'replaced', 'styles-custom', 'written']);
+    expect([...outcomes].sort()).toEqual(['icon-left', 'not-untouched', 'nothing', 'other-answers', 'replaced', 'spec-custom', 'styles-custom', 'written']);
   });
 });

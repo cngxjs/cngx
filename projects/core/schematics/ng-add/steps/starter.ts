@@ -42,6 +42,8 @@ export const STARTER_LEFT_OUT_REASONS = {
   'libs-missing': () => 'the starter composes @cngx/common and @cngx/ui; select both to get it',
   'not-untouched': ({ file }: StarterAt) =>
     `${file}, its template or its stylesheet is not the untouched ng new scaffold, so the starter is not written over it`,
+  'spec-custom': ({ file }: StarterAt) =>
+    `${file} is not the untouched ng new spec, so the starter, which replaces the page that spec renders, is not written`,
   'other-answers': ({ file }: StarterAt) =>
     `${file} holds the cngx starter of an earlier run with other answers; cngx does not rewrite it`,
   'index-custom': ({ file }: StarterAt) =>
@@ -358,7 +360,15 @@ function indexMatches(content: string, scaffold: Untouched): boolean {
   return matchesScaffoldEntry(content, { file: 'index.html', variant: 'default' }, scaffold.names);
 }
 
-/** Whether this run writes the starter: asked for, the libs it composes selected, the untouched scaffold. */
+// A spec next to the root component that is neither the untouched `ng new`
+// spec nor that spec with the feedback providers: it may assert on the
+// welcome page or render the outlets unprovided, so the starter stays out.
+function customSpecOf(facts: ProjectFacts): string | undefined {
+  const shell = facts.appShell;
+  return shell.kind === 'followed' && shell.spec === 'custom' ? shell.specPath : undefined;
+}
+
+/** Whether this run writes the starter: asked for, the libs it composes selected, the untouched scaffold and no custom spec. */
 export function writesStarter(facts: ProjectFacts, answers: OnboardingAnswers): boolean {
   const libs = selectedLibs(answers.libs);
   return (
@@ -366,7 +376,8 @@ export function writesStarter(facts: ProjectFacts, answers: OnboardingAnswers): 
     libs.includes('common') &&
     libs.includes('ui') &&
     facts.scaffold.kind === 'untouched' &&
-    facts.globalStyles?.state === 'untouched'
+    facts.globalStyles?.state === 'untouched' &&
+    customSpecOf(facts) === undefined
   );
 }
 
@@ -426,7 +437,8 @@ function planWrittenStarter(
  * styles appended to the untouched global stylesheet, and, when `index.html` is untouched too and the
  * public folder holds no `favicon.svg`, the cngx favicon and the icon link.
  * A starter cngx wrote is skipped; one rendered for other answers, and a
- * component that is not the untouched scaffold, get a note and no write. A
+ * component that is not the untouched scaffold or sits next to a custom
+ * spec, get a note and no write. A
  * starter this project's record wrote that is gone now was replaced on
  * purpose and is skipped. NgModule apps and a root cngx cannot follow get
  * nothing; the outlets step covers them.
@@ -459,6 +471,10 @@ export function planStarter(
     return recorded.includes(STARTER_ID)
       ? { changes: [], skipped: [{ id: STARTER_ID, label, reason: 'the starter was replaced after cngx wrote it' }] }
       : { changes: [note(label, starterLeftOutText('not-untouched', shell.componentFile), provenance)], skipped: [] };
+  }
+  const spec = customSpecOf(facts);
+  if (spec !== undefined) {
+    return { changes: [note(label, starterLeftOutText('spec-custom', spec), provenance)], skipped: [] };
   }
   const styles = facts.globalStyles;
   if (styles === undefined) {
