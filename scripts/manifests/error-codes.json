@@ -2252,6 +2252,23 @@
       ]
     },
     {
+      "code": "CNGX3025",
+      "lib": "ui",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Tab without a label string",
+      "page": "core-concepts/error-codes/cngx3025.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3025.html",
+      "status": "active",
+      "files": ["projects/ui/tabs/tab-group-dev-checks.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/tabs/tab-group-dev-checks.ts",
+          "text": "[cngx-tab-group] tab(s) without a [label] string at position ${...}. Announcements, the close button and the overflow list call such a tab \"Tab N\". Bind [label] on every cngxTab, also when a *cngxTabLabel template renders it."
+        }
+      ]
+    },
+    {
       "code": "CNGX4001",
       "lib": "data-display",
       "severity": "warn",
