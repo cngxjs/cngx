@@ -33,48 +33,70 @@
           "
         />
       </span>
-    } @else if (!isEmpty()) {
-      <span class="cngx-select__chip-list" [attr.data-overflow]="chipOverflow()">
-        @for (opt of visibleSelected(); track opt.value; let i = $index) {
-          @if (chipTpl(); as chipT) {
-            <ng-container
-              *ngTemplateOutlet="
-                chipT;
-                context: {
-                  $implicit: opt,
-                  option: opt,
-                  remove: chipRemoveFor(opt),
-                  index: i,
-                }
-              "
+    } @else if (!isEmpty() || summary.active()) {
+      <!-- Under the touch floor the strip stays in the row without a value as
+           well, so the trigger keeps one width at every selection count. -->
+      <span
+        class="cngx-select__chip-list"
+        [class.cngx-combobox__summary]="summary.active()"
+        [attr.data-overflow]="summary.active() ? 'truncate' : chipOverflow()"
+      >
+        @if (summary.active()) {
+          @if (!isEmpty()) {
+            <cngx-select-summary
+              [label]="summary.first()?.label ?? ''"
+              [badge]="summary.badgeText()"
+              [badgeTpl]="chipOverflowTpl()"
+              [badgeContext]="{
+                $implicit: summary.badgeCount(),
+                count: summary.badgeCount(),
+                label: summary.badgeText(),
+                hidden: summary.hidden(),
+              }"
             />
-          } @else {
-            <cngx-chip
-              [removable]="!disabled()"
-              [removeAriaLabel]="chipRemoveLabelFor()(opt.label)"
-              (remove)="handleChipRemoveClick($event, opt)"
-            >
-              {{ opt.label }}
-            </cngx-chip>
           }
-        }
-        @if (overflowBadgeCount() > 0) {
-          @if (chipOverflowTpl(); as overflowT) {
-            <ng-container
-              *ngTemplateOutlet="
-                overflowT;
-                context: {
-                  $implicit: overflowBadgeCount(),
-                  count: overflowBadgeCount(),
-                  label: overflowBadgeText(),
-                  hidden: hiddenSelected(),
-                }
-              "
-            />
-          } @else {
-            <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
-              {{ overflowBadgeText() }}
-            </span>
+        } @else {
+          @for (opt of visibleSelected(); track opt.value; let i = $index) {
+            @if (chipTpl(); as chipT) {
+              <ng-container
+                *ngTemplateOutlet="
+                  chipT;
+                  context: {
+                    $implicit: opt,
+                    option: opt,
+                    remove: chipRemoveFor(opt),
+                    index: i,
+                  }
+                "
+              />
+            } @else {
+              <cngx-chip
+                [removable]="!disabled()"
+                [removeAriaLabel]="chipRemoveLabelFor()(opt.label)"
+                (remove)="handleChipRemoveClick($event, opt)"
+              >
+                {{ opt.label }}
+              </cngx-chip>
+            }
+          }
+          @if (overflowBadgeCount() > 0) {
+            @if (chipOverflowTpl(); as overflowT) {
+              <ng-container
+                *ngTemplateOutlet="
+                  overflowT;
+                  context: {
+                    $implicit: overflowBadgeCount(),
+                    count: overflowBadgeCount(),
+                    label: overflowBadgeText(),
+                    hidden: hiddenSelected(),
+                  }
+                "
+              />
+            } @else {
+              <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
+                {{ overflowBadgeText() }}
+              </span>
+            }
           }
         }
       </span>
@@ -210,4 +232,5 @@
     </div>
   </div>
   <span class="cngx-sr-only" [id]="commitErrorId">{{ commitErrorText() }}</span>
+  <span class="cngx-sr-only" [id]="summaryDescriptionId">{{ summary.fullText() }}</span>
 </div>
