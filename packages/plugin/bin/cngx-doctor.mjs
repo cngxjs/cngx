@@ -12,7 +12,7 @@
  * error-gates/warn-reports split a lint run gives.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { runChecks } from './doctor/checks.mjs';
 import { scan } from './doctor/scan.mjs';
@@ -114,6 +114,26 @@ function main() {
   process.exitCode = exitCode;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+// npx and an installed bin start the CLI through the `node_modules/.bin`
+// symlink, while `import.meta.url` is the resolved file, so the path node was
+// given is resolved before the two are compared.
+function isEntry() {
+  const given = process.argv[1];
+  if (!given) {
+    return false;
+  }
+  // The unresolved path first: it matches a direct start and
+  // `--preserve-symlinks-main`, and stays the answer when resolving fails.
+  if (import.meta.url === pathToFileURL(given).href) {
+    return true;
+  }
+  try {
+    return import.meta.url === pathToFileURL(realpathSync(given)).href;
+  } catch {
+    return false;
+  }
+}
+
+if (isEntry()) {
   main();
 }

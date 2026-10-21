@@ -1,9 +1,12 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import { buildContext } from './session-start.mjs';
 
+const HOOK = fileURLToPath(new URL('./session-start.mjs', import.meta.url));
 const created = [];
 
 // Build a throwaway workspace on disk rather than committing a node_modules
@@ -68,5 +71,20 @@ describe('buildContext', () => {
     expect(out).toContain('No @cngx/* packages');
     expect(out).toContain('@cngx/forms');
     expect(out).toContain('https://cngxjs.github.io/cngx/llms.txt');
+  });
+});
+
+describe('session-start hook', () => {
+  it('runs when the plugin root sits behind a symlink', () => {
+    const dir = workspace({ installed: { forms: '0.1.0-rc.0' } });
+    const root = join(mkdtempSync(join(tmpdir(), 'cngx-plugin-link-')), 'plugin');
+    created.push(dirname(root));
+    symlinkSync(dirname(dirname(HOOK)), root);
+
+    const out = execFileSync(process.execPath, [join(root, 'hooks', 'session-start.mjs')], {
+      input: JSON.stringify({ cwd: dir }),
+      encoding: 'utf8',
+    });
+    expect(JSON.parse(out).hookSpecificOutput.additionalContext).toContain('@cngx/forms@0.1.0-rc.0');
   });
 });

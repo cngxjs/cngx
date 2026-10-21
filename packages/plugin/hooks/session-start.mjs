@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -108,6 +108,26 @@ function main() {
   );
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+// The plugin root can sit behind a symlink (a linked local plugin), while
+// `import.meta.url` is the resolved file, so the path node was given is
+// resolved before the two are compared.
+function isEntry() {
+  const given = process.argv[1];
+  if (!given) {
+    return false;
+  }
+  // The unresolved path first: it matches a direct start and
+  // `--preserve-symlinks-main`, and stays the answer when resolving fails.
+  if (import.meta.url === pathToFileURL(given).href) {
+    return true;
+  }
+  try {
+    return import.meta.url === pathToFileURL(realpathSync(given)).href;
+  } catch {
+    return false;
+  }
+}
+
+if (isEntry()) {
   main();
 }

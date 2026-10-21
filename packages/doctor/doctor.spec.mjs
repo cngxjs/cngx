@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -49,6 +49,17 @@ afterEach(() => {
 });
 
 describe('cngx-doctor CLI', () => {
+  it('runs when started through a bin symlink, the way npx and an installed bin start it', () => {
+    const dir = project({});
+    const bin = join(mkdtempSync(join(tmpdir(), 'cngx-doctor-bin-')), 'cngx-doctor');
+    created.push(dirname(bin));
+    symlinkSync(CLI, bin);
+
+    const stdout = execFileSync(process.execPath, [bin, dir], { encoding: 'utf8' });
+    expect(stdout).toBe(runCli(dir).stdout);
+    expect(stdout).not.toBe('');
+  });
+
   it('a clean project produces no findings and exits 0 (JSON is [])', () => {
     const dir = project({
       pkg: { name: 'clean', dependencies: { '@cngx/forms': '0.1.0-rc.0' } },
