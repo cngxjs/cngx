@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxContextMenu } from './context-menu.component';
 import { CngxContextMenuContent } from './context-menu-content.directive';
@@ -49,6 +49,33 @@ function polyfillPopover(): void {
 class ActivationHost {
   readonly parentSelects = signal(0);
   readonly leafSelects = signal(0);
+}
+
+/**
+ * The jsdom popover polyfill fires no `beforetoggle`. Give one element the
+ * native ordering: a synchronous `beforetoggle` carrying `newState` before the
+ * state flips.
+ */
+function emitBeforeToggle(el: HTMLElement): void {
+  const proto = HTMLElement.prototype as unknown as {
+    showPopover: (this: HTMLElement) => void;
+    hidePopover: (this: HTMLElement) => void;
+  };
+  const fire = (newState: 'open' | 'closed'): void => {
+    const event = new Event('beforetoggle');
+    Object.defineProperty(event, 'newState', { value: newState });
+    el.dispatchEvent(event);
+  };
+  Object.assign(el, {
+    showPopover: () => {
+      fire('open');
+      proto.showPopover.call(el);
+    },
+    hidePopover: () => {
+      fire('closed');
+      proto.hidePopover.call(el);
+    },
+  });
 }
 
 function rightClick(el: HTMLElement): void {
@@ -268,6 +295,26 @@ describe('CngxContextMenuItem submenu activation at depth 2', () => {
 
     expect(panels[2].popover.isVisible()).toBe(false);
     expect(panels[1].popover.isVisible()).toBe(true);
+  });
+
+  it('a closed submenu reopened directly does not forward activation to its old parent', () => {
+    emitBeforeToggle(panelEl(1));
+    openTwoLevels();
+    panels[1].popover.hide();
+    settle();
+    expect(panels[1].popover.isVisible()).toBe(false);
+
+    panels[1].popover.show();
+    settle();
+    expect(panels[1].popover.isVisible()).toBe(true);
+
+    const forwarded = vi.spyOn(panels[0], 'handleActivated');
+    const forwardedKey = vi.spyOn(panels[0], 'routeKeydown');
+    panels[1].handleActivated();
+    panels[1].routeKeydown(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+
+    expect(forwarded).not.toHaveBeenCalled();
+    expect(forwardedKey).not.toHaveBeenCalled();
   });
 
   it('a panel reopened by its own trigger does not forward activation to its old parent', () => {

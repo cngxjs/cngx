@@ -73,6 +73,7 @@ import { CNGX_CONTEXT_MENU_PANEL, type CngxContextMenuPanel } from './context-me
   providers: [{ provide: CNGX_CONTEXT_MENU_PANEL, useExisting: CngxContextMenu }],
   host: {
     '(keydown)': 'handleKeydown($event)',
+    '(beforetoggle)': 'handleBeforeToggle($event)',
   },
   hostDirectives: [
     { directive: CngxPopover, inputs: ['offset', 'closeOnEscape'] },
@@ -176,7 +177,8 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
    * The panel whose item opened this one as a submenu, `null` for a trigger
    * open. An imperative link for routing, not state: activation, keydown and
    * the submenu note climb it to the root, whose trigger core resolves the
-   * deepest open menu itself.
+   * deepest open menu itself. Lives for one open only: dropped on close, so a
+   * later direct `popover.show()` routes as a root.
    */
   private openedFrom: CngxContextMenuPanel<T> | null = null;
 
@@ -246,5 +248,17 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
 
   protected handleKeydown(event: KeyboardEvent): void {
     this.routeKeydown(event);
+  }
+
+  /**
+   * Drop the parent link when the panel closes. `beforetoggle` fires
+   * synchronously inside `hidePopover()`, so the link is gone before any
+   * reopen in the same task; the queued, coalesced `toggle` event would let a
+   * direct `popover.show()` right after a close inherit the stale parent.
+   */
+  protected handleBeforeToggle(event: Event): void {
+    if ((event as ToggleEvent).newState === 'closed') {
+      this.openedFrom = null;
+    }
   }
 }
