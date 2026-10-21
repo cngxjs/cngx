@@ -25,7 +25,7 @@ import {
   topLevelBindings,
 } from '../../engine';
 import { SCAFFOLD_CATALOG, SCAFFOLD_NAME_PLACEHOLDER } from './scaffold-catalog.generated';
-import { type Read } from './workspace';
+import { type AngularVersion, type Read } from './workspace';
 
 /**
  * Where the root component's template lives: a file next to it, inline in
@@ -41,18 +41,9 @@ export type AppShellTemplate =
  * The spec next to the root component: the untouched standalone `ng new`
  * spec or that spec with the feedback providers cngx adds; the untouched
  * `ng new --standalone=false` spec or that spec with the outlet classes and
- * the providers (`module-`); `module-unscoped`, the untouched NgModule spec
- * where the test build may compile the root component without its NgModule,
- * so no TestBed edit keeps an outlet green; anything else; or none.
+ * the providers (`module-`); anything else; or none.
  */
-export type AppShellSpec =
-  | 'stock'
-  | 'provided'
-  | 'module-stock'
-  | 'module-provided'
-  | 'module-unscoped'
-  | 'custom'
-  | 'absent';
+export type AppShellSpec = 'stock' | 'provided' | 'module-stock' | 'module-provided' | 'custom' | 'absent';
 
 /** The component `main.ts` bootstraps, and where its outlets and their imports go. */
 export interface AppShell {
@@ -65,6 +56,12 @@ export interface AppShell {
   /** `<component>.spec.ts`; `undefined` when the component file has no `.ts` name. */
   readonly specPath: string | undefined;
   readonly spec: AppShellSpec;
+  /**
+   * Whether the app's unit-test build compiles the root NgModule with the
+   * specs (`testsCompileModule`), so a TestBed that declares the root
+   * component can take the outlets; only an NgModule shell reads it.
+   */
+  readonly testsCompileModule: boolean;
   readonly outlets: AppShellOutlets;
 }
 
@@ -232,15 +229,11 @@ function normalize(content: string): string {
   return content.replace(/\r\n/g, '\n');
 }
 
-// The catalog marks the spec `ng new --standalone=false` writes with this
-// variant prefix; every other `app.spec.ts` entry is the standalone spec.
-const NGMODULE_SPEC_VARIANT = 'ngmodule-';
-
 function isStockSpec(content: string, project: string): boolean {
   return SCAFFOLD_CATALOG.some(
     (entry) =>
       entry.file === 'app.spec.ts' &&
-      !entry.variant.startsWith(NGMODULE_SPEC_VARIANT) &&
+      entry.app === undefined &&
       entry.body?.split(SCAFFOLD_NAME_PLACEHOLDER).join(project) === content,
   );
 }
@@ -270,7 +263,7 @@ const TESTBED_PROVIDERS = { kind: 'testbed-providers' } as const;
  * runs it only on a spec that still reads `module-stock`, and detection runs
  * it on the catalog bodies to know the provided form exactly.
  */
-export function provideFeedbackInModuleSpec(content: string): string {
+export function moduleSpecWithFeedback(content: string): string {
   const imported = FEEDBACK_OUTLETS.reduce(
     (text, outlet) => addToArrayLiteral(text, TESTBED_IMPORTS, outlet.className),
     ensureArrayProperty(content, TESTBED_IMPORTS),
@@ -279,21 +272,38 @@ export function provideFeedbackInModuleSpec(content: string): string {
   return insertAfterImports(insertAfterImports(provided, FEEDBACK_SPEC_OUTLETS_IMPORT), FEEDBACK_SPEC_IMPORT);
 }
 
-function moduleStockBodies(project: string): readonly string[] {
-  return SCAFFOLD_CATALOG.filter((entry) => entry.file === 'app.spec.ts' && entry.variant.startsWith(NGMODULE_SPEC_VARIANT)).flatMap(
-    (entry) => (entry.body === undefined ? [] : [entry.body.split(SCAFFOLD_NAME_PLACEHOLDER).join(project)]),
+interface ModuleSpecForms {
+  readonly stock: ReadonlySet<string>;
+  readonly provided: ReadonlySet<string>;
+}
+
+// The NgModule spec bodies of the catalog with the project name put in, and
+// their provided form; built once per project name, since the edit parses
+// each body several times and one ng add reads the spec more than once.
+const moduleSpecForms = new Map<string, ModuleSpecForms>();
+
+function moduleSpecFormsOf(project: string): ModuleSpecForms {
+  const known = moduleSpecForms.get(project);
+  if (known !== undefined) {
+    return known;
+  }
+  const stock = SCAFFOLD_CATALOG.filter((entry) => entry.file === 'app.spec.ts' && entry.app === 'ng-module').flatMap((entry) =>
+    entry.body === undefined ? [] : [entry.body.split(SCAFFOLD_NAME_PLACEHOLDER).join(project)],
   );
+  const forms = { stock: new Set(stock), provided: new Set(stock.map(moduleSpecWithFeedback)) };
+  moduleSpecForms.set(project, forms);
+  return forms;
 }
 
 // The NgModule spec read against the catalog bodies and their provided
 // form, both exact; the CLI's Prettier pass over the provided raw body
 // gives the provided Prettier body, so both forms are read.
 function moduleSpecOf(content: string, project: string): AppShellSpec {
-  const bodies = moduleStockBodies(project);
-  if (bodies.includes(content)) {
+  const { stock, provided } = moduleSpecFormsOf(project);
+  if (stock.has(content)) {
     return 'module-stock';
   }
-  return bodies.some((body) => provideFeedbackInModuleSpec(body) === content) ? 'module-provided' : 'custom';
+  return provided.has(content) ? 'module-provided' : 'custom';
 }
 
 /**
@@ -303,7 +313,7 @@ function moduleSpecOf(content: string, project: string): AppShellSpec {
  * the project name substituted, line endings normalised; exact, never a
  * heuristic, so one changed character makes it `custom`, and so does a spec
  * of the other kind. Whether the test build can run the NgModule spec with
- * the outlets is not read here (`appShellOf` holds it back).
+ * the outlets is not read here (`testsCompileModule`).
  */
 export function appShellSpecOf(
   content: string | undefined,
@@ -671,17 +681,29 @@ function isBlocked(root: Bootstrapped | AppShellBlocked): root is AppShellBlocke
   return 'reason' in root;
 }
 
-// The @angular/build major whose unit-test builder compiles the NgModule
-// spec with the root NgModule. From 22.2 it compiles only what the specs
-// import, so the root component of the stock spec compiles without its
-// NgModule and every outlet is an unknown element (angular/angular-cli#34231).
+// The @angular/build major whose unit-test builder compiles the root
+// NgModule with the specs. From 22.2 it compiles only what the specs import,
+// so the root component of the stock spec compiles without its NgModule and
+// every outlet is an unknown element (angular/angular-cli#34231). The fix
+// ships with 22.3; it opens only once cngx has run the 22.3 NgModule app.
 const SCOPED_TEST_BUILD_MAJOR = 21;
 
-// The stock NgModule spec, held back where @angular/build is on another
-// major or cngx cannot read its version; the provided form stays as it is.
-function testableSpec(spec: AppShellSpec, buildVersion: string | undefined): AppShellSpec {
-  const scoped = parseVersion(buildVersion)?.major === SCOPED_TEST_BUILD_MAJOR;
-  return spec === 'module-stock' && !scoped ? 'module-unscoped' : spec;
+// A declared range that admits only that major: `21`, `^21.2.0`, `~21.2.3`,
+// `21.2.3`, a prerelease of one of them.
+const SCOPED_RANGE = /^[~^]?21(\.\d+){0,2}(-[0-9A-Za-z.-]+)?$/;
+
+/**
+ * Whether the app's unit-test build compiles the root NgModule with the
+ * specs: an installed @angular/build on major 21, or, with none installed,
+ * a declared range that admits only major 21. An installed manifest cngx
+ * cannot read, a range that spans majors, a tag or nothing at all count as
+ * no (fail-closed).
+ */
+export function testsCompileModule(build: AngularVersion, range: string | undefined): boolean {
+  if (build.source === 'installed') {
+    return parseVersion(build.version)?.major === SCOPED_TEST_BUILD_MAJOR;
+  }
+  return build.source === 'range' && range !== undefined && SCOPED_RANGE.test(range.trim());
 }
 
 /**
@@ -691,16 +713,16 @@ function testableSpec(spec: AppShellSpec, buildVersion: string | undefined): App
  * never counts. `unfollowed` with the reason when a step of
  * the way does not read: no such call, a non-relative import, no decorator;
  * the outlets step then names the snippet instead. A shell cngx follows but
- * cannot edit safely has blocked outlets with the reason. `buildVersion`
- * is the app's @angular/build version, which decides whether the stock
- * NgModule spec can take the outlets.
+ * cannot edit safely has blocked outlets with the reason.
+ * `compilesModule` is `testsCompileModule` for the app; without it an
+ * NgModule spec never takes the outlets.
  */
 export function appShellOf(
   read: Read,
   mainPath: string,
   standalone: boolean,
   project: string,
-  buildVersion?: string,
+  compilesModule = false,
 ): AppShell | AppShellUnfollowed {
   const main = read(mainPath);
   if (main === undefined) {
@@ -723,7 +745,8 @@ export function appShellOf(
     ...root,
     template,
     specPath,
-    spec: specPath === undefined ? 'absent' : testableSpec(appShellSpecOf(read(specPath), project, root.importsHost.kind), buildVersion),
+    spec: specPath === undefined ? 'absent' : appShellSpecOf(read(specPath), project, root.importsHost.kind),
+    testsCompileModule: compilesModule,
     outlets,
   };
 }

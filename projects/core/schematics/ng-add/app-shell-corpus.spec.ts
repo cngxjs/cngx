@@ -45,6 +45,13 @@ function ngModuleShell(fixture: FixtureName): Files {
   );
 }
 
+const BUILD_MANIFEST = 'node_modules/@angular/build/package.json';
+
+// The installed @angular/build manifest at `version`.
+function buildManifest(version: string): string {
+  return JSON.stringify({ name: '@angular/build', version });
+}
+
 // The fixture's package.json with @angular/build on CLI 22.
 function onBuild22(fixture: FixtureName): Files {
   return { 'package.json': readFixture(fixture)['package.json'].replace(/"@angular\/build": "[^"]+"/, '"@angular/build": "^22.2.3"') };
@@ -143,8 +150,8 @@ interface Shape {
    * `placed`; the reason cngx names with the snippet instead of editing; or
    * `spec-custom`, the outlets left out in front of a spec cngx cannot
    * provide (fail-closed, so `ng test` never turns red); or
-   * `spec-unscoped`, the outlets left out in front of the stock NgModule
-   * spec where @angular/build is not on major 21.
+   * `spec-unscoped`, the outlets left out in front of an NgModule spec
+   * where @angular/build 21 is not installed.
    */
   readonly outcome: 'placed' | AppShellBlockedReason | 'spec-custom' | 'spec-unscoped';
 }
@@ -188,6 +195,9 @@ const CORPUS: readonly Shape[] = [
   { name: 'ng new NgModule app 22 routing off with its spec', fixture: 'scaffold-22-ngmodule-routing-off', outcome: 'spec-unscoped' },
   { name: 'ng new NgModule app 22 routing off zone with its spec', fixture: 'scaffold-22-ngmodule-routing-off-zone', outcome: 'spec-unscoped' },
   { name: 'Prettier-formatted ng new NgModule app 22', fixture: 'scaffold-22-ngmodule', prettierFirst: true, outcome: 'spec-unscoped' },
+  { name: 'ng new NgModule app 22 with a custom spec', fixture: 'scaffold-22-ngmodule', files: { 'src/app/app.spec.ts': `${readFixture('scaffold-22-ngmodule')['src/app/app.spec.ts']}// mine\n` }, outcome: 'spec-unscoped' },
+  { name: 'ng new NgModule app 21 with @angular/build 22 installed', fixture: 'scaffold-21-ngmodule', files: { [BUILD_MANIFEST]: buildManifest('22.2.3') }, outcome: 'spec-unscoped' },
+  { name: 'ng new NgModule app 22 with @angular/build 21 installed', fixture: 'scaffold-22-ngmodule', files: { 'src/app/app.spec.ts': NGMODULE_SPEC, [BUILD_MANIFEST]: buildManifest('21.2.27') }, outcome: 'placed' },
   { name: 'ng new NgModule app 22 without its spec', fixture: 'scaffold-22-ngmodule', remove: ['src/app/app.spec.ts'], outcome: 'placed' },
   { name: "NgModule 'imports' key", files: ngModuleApp(`'imports': [\n    BrowserModule\n  ],`), outcome: 'placed' },
   { name: 'NgModule without imports', files: ngModuleApp(''), outcome: 'placed' },
@@ -753,7 +763,7 @@ describe('every planned app shell edit', () => {
     if (shape.outcome === 'spec-custom' || shape.outcome === 'spec-unscoped') {
       const shell = followed(detected);
       const unscoped = shape.outcome === 'spec-unscoped';
-      expect(shell.spec).toBe(unscoped ? 'module-unscoped' : 'custom');
+      expect(unscoped ? [shell.importsHost.kind, shell.testsCompileModule] : [shell.spec]).toEqual(unscoped ? ['ng-module', false] : ['custom']);
       expect(logs).toContain(
         unscoped
           ? specUnscopedText(shell.specPath ?? '', shell.className, shell.importsHost.file)

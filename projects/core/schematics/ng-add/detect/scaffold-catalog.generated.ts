@@ -16,6 +16,8 @@ export interface ScaffoldEntry {
   readonly major: number;
   /** The file name in `src/app`; `index.html` is the one in `src`. */
   readonly file: string;
+  /** `ng-module` on a file of the `ng new --standalone=false` app; absent on the standalone scaffold. */
+  readonly app?: 'ng-module';
   readonly variant: string;
   /** `raw` as rendered, `prettier` as formatted with the `ng new` `.prettierrc`. */
   readonly form: 'raw' | 'prettier';
@@ -53,6 +55,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 21,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-routing-zoneless',
     form: 'raw',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -62,6 +65,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 21,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-routing-zoneless',
     form: 'prettier',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -71,6 +75,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 21,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-routing-zone',
     form: 'raw',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -80,6 +85,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 21,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-routing-zone',
     form: 'prettier',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -89,6 +95,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 21,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-no-routing-zoneless',
     form: 'raw',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -98,6 +105,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 21,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-no-routing-zoneless',
     form: 'prettier',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -107,6 +115,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 21,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-no-routing-zone',
     form: 'raw',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -116,6 +125,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 21,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-no-routing-zone',
     form: 'prettier',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -315,6 +325,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 22,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-routing-zoneless',
     form: 'raw',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -324,6 +335,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 22,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-routing-zoneless',
     form: 'prettier',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -333,6 +345,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 22,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-routing-zone',
     form: 'raw',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -342,6 +355,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 22,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-routing-zone',
     form: 'prettier',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -351,6 +365,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 22,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-no-routing-zoneless',
     form: 'raw',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -360,6 +375,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 22,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-no-routing-zoneless',
     form: 'prettier',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -369,6 +385,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 22,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-no-routing-zone',
     form: 'raw',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
@@ -378,6 +395,7 @@ export const SCAFFOLD_CATALOG: readonly ScaffoldEntry[] = [
   {
     major: 22,
     file: 'app.spec.ts',
+    app: 'ng-module',
     variant: 'ngmodule-no-routing-zone',
     form: 'prettier',
     template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',

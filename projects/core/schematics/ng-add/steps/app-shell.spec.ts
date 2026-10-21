@@ -13,7 +13,7 @@ import {
   type AppShellUnfollowed,
   detectProject,
   type ProjectFacts,
-  provideFeedbackInModuleSpec,
+  moduleSpecWithFeedback,
 } from '../detect/detect';
 import {
   OUTLETS_ID,
@@ -522,6 +522,7 @@ describe('planAppShell', () => {
 
 describe('planAppShell next to the ng new NgModule spec', () => {
   const stock21 = readFixture('scaffold-21-ngmodule')['src/app/app.spec.ts'];
+  const BUILD_MANIFEST = 'node_modules/@angular/build/package.json';
   const on22 = (manifest: string) => manifest.replace(/"@angular\/build": "[^"]+"/, '"@angular/build": "^22.2.3"');
 
   it('places both outlets in the NgModule and gives its TestBed the outlet classes and the providers on @angular/build 21', async () => {
@@ -535,7 +536,7 @@ describe('planAppShell next to the ng new NgModule spec', () => {
       [OUTLETS_ID, 'edit-file'],
       [SPEC_ID, 'edit-file'],
     ]);
-    expect(spec).toBe(provideFeedbackInModuleSpec(stock21));
+    expect(spec).toBe(moduleSpecWithFeedback(stock21));
     expect(spec).toContain('      imports: [\n        RouterModule.forRoot([]),\n        CngxBannerOutlet,\n        CngxToastOutlet\n      ],\n');
     expect(spec).toContain('      providers: [provideFeedback(withToasts(), withBanners())],\n');
     expect(spec).toContain(
@@ -546,14 +547,15 @@ describe('planAppShell next to the ng new NgModule spec', () => {
     expect(provideFeedbackInNgModuleSpec(spec, 'fixture-app')).toBe(spec);
   });
 
-  it('holds the NgModule spec back, with its own reason, where @angular/build is not on major 21', async () => {
+  it('holds the NgModule spec back, with its own reason, where @angular/build 21 is not installed', async () => {
     for (const [name, overrides] of [
       ['scaffold-22-ngmodule', {}],
       ['scaffold-21-ngmodule', { 'package.json': on22(readFixture('scaffold-21-ngmodule')['package.json']) }],
+      ['scaffold-21-ngmodule', { [BUILD_MANIFEST]: JSON.stringify({ name: '@angular/build', version: '22.2.3' }) }],
     ] as const) {
       const { facts } = await factsOf(name, overrides);
 
-      expect(followed(facts).spec).toBe('module-unscoped');
+      expect([followed(facts).spec, followed(facts).testsCompileModule]).toEqual(['module-stock', false]);
       expect(plan(facts)).toEqual({
         changes: [
           expect.objectContaining({
@@ -568,7 +570,7 @@ describe('planAppShell next to the ng new NgModule spec', () => {
     const text = specUnscopedText('src/app/app.spec.ts', 'App', 'src/app/app-module.ts');
     expect(text).toContain(OUTLETS_SNIPPET);
     expect(text).toContain("import { CngxBannerOutlet, CngxToastOutlet } from '@cngx/ui/feedback'");
-    expect(text).toContain('and import src/app/app-module.ts in src/app/app.spec.ts');
+    expect(text).toContain("and add `import './app-module';` to src/app/app.spec.ts");
     expect(readFileSync(join(__dirname, '../../../../../core-concepts/install.md'), 'utf8')).toContain(specUnscopedReason('<file>'));
   });
 
@@ -577,12 +579,27 @@ describe('planAppShell next to the ng new NgModule spec', () => {
     delete manifest.devDependencies['@angular/build'];
     const { facts } = await factsOf('scaffold-21-ngmodule', { 'package.json': JSON.stringify(manifest, null, 2) });
 
-    expect(followed(facts).spec).toBe('module-unscoped');
+    expect(followed(facts).testsCompileModule).toBe(false);
+  });
+
+  it('gives a custom NgModule spec on @angular/build 22 the module import with the rest', async () => {
+    const custom = `${readFixture('scaffold-22-ngmodule')['src/app/app.spec.ts']}// mine\n`;
+    const { facts } = await factsOf('scaffold-22-ngmodule', { 'src/app/app.spec.ts': custom });
+
+    expect(plan(facts).changes.map((change) => change.reason)).toEqual([specUnscopedText('src/app/app.spec.ts', 'App', 'src/app/app-module.ts')]);
+  });
+
+  it('labels the NgModule spec edit with the outlets it adds', async () => {
+    const { facts } = await factsOf('scaffold-21-ngmodule');
+
+    expect(plan(facts).changes.find((change) => change.id === SPEC_ID)?.label).toBe(
+      'Give the TestBed in src/app/app.spec.ts the outlets and the feedback services',
+    );
   });
 
   it('keeps a provided NgModule spec as it is on a later @angular/build major', async () => {
     const { facts } = await factsOf('scaffold-22-ngmodule', {
-      'src/app/app.spec.ts': provideFeedbackInModuleSpec(readFixture('scaffold-22-ngmodule')['src/app/app.spec.ts']),
+      'src/app/app.spec.ts': moduleSpecWithFeedback(readFixture('scaffold-22-ngmodule')['src/app/app.spec.ts']),
     });
 
     expect(followed(facts).spec).toBe('module-provided');

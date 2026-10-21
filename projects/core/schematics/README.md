@@ -225,9 +225,10 @@ rewrites every literal of it in the bundles.
   unedited stock `app.spec.ts` (an exact match against the scaffold catalog)
   gets the feedback providers; the unedited `ng new --standalone=false`
   spec, which declares `App` in its own TestBed, also gets both outlet
-  classes in the TestBed `imports`, only while `@angular/build` is on major
-  21 (from 22.2 its unit-test builder compiles `App` without `AppModule`).
-  Next to any other spec, and next to that NgModule spec on 22, no outlet
+  classes in the TestBed `imports`, only where `@angular/build` 21 is
+  installed or a range admitting only major 21 is declared (from 22.2 its
+  unit-test builder compiles `App` without `AppModule`). Next to any other
+  spec, and next to any NgModule spec without that build, no outlet
   is placed and one note names the outlets and what the spec needs, so
   `ng add` never leaves a red `ng test`. An outlet this project's record placed that
   is gone stays out unless `--feedback` is passed; `ng update` only notes a

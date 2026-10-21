@@ -29,7 +29,7 @@ import {
   mcpConfigsOf,
   type McpConfigState,
 } from './ai-tooling';
-import { type AppShell, appShellOf, type AppShellUnfollowed } from './app-shell';
+import { type AppShell, appShellOf, type AppShellUnfollowed, testsCompileModule } from './app-shell';
 import { maturityOf, rootProvidersPath } from './bootstrap';
 import {
   type AppScaffold,
@@ -69,6 +69,7 @@ import {
   globalStylesheet,
   isLocalStylesheet,
   hasBuildTarget,
+  packageVersionOf,
   type Read,
   applicationsOf,
   resolveProject,
@@ -100,8 +101,9 @@ export {
   FEEDBACK_SPEC_IMPORT,
   FEEDBACK_SPEC_OUTLETS_IMPORT,
   FEEDBACK_SPEC_PROVIDERS,
+  moduleSpecWithFeedback,
   outletEdits,
-  provideFeedbackInModuleSpec,
+  testsCompileModule,
 } from './app-shell';
 export {
   type AppScaffold,
@@ -261,8 +263,9 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const stylesPath = globalStylesheet(entries);
   const componentCount = appSources.filter(({ content }) => /@Component\s*\(/.test(content)).length;
 
-  const testBuild = angularVersionOf(read, declaredRange(manifest, '@angular/build'), ANGULAR_BUILD_MANIFEST);
-  const appShell = appShellOf(read, mainPath, standalone, projectName, testBuild.version);
+  const buildRange = declaredRange(manifest, '@angular/build');
+  const testBuild = packageVersionOf(read, buildRange, ANGULAR_BUILD_MANIFEST);
+  const appShell = appShellOf(read, mainPath, standalone, projectName, testsCompileModule(testBuild, buildRange));
   const names: ScaffoldNames = {
     project: projectName,
     selector: project.prefix === undefined ? undefined : `${project.prefix}-root`,

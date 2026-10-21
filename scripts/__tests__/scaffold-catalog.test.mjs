@@ -137,6 +137,14 @@ describe('scaffold catalog', () => {
     expect(entries.map((entry) => entry.file).filter((file) => /\.(sass|less)$/.test(file))).toEqual([]);
   });
 
+  it('marks exactly the NgModule spec entries as the ng-module app', async () => {
+    const entries = await collectAllEntries();
+
+    expect(entries.filter((entry) => entry.app === 'ng-module').every((entry) => entry.file === 'app.spec.ts' && entry.variant.startsWith('ngmodule-'))).toBe(true);
+    expect(entries.filter((entry) => entry.variant.startsWith('ngmodule-')).every((entry) => entry.app === 'ng-module')).toBe(true);
+    expect(entries.filter((entry) => entry.app === 'ng-module')).toHaveLength(16);
+  });
+
   it('keys every entry by its CLI major and fingerprints its body once per major', async () => {
     const entries = await collectAllEntries();
 
