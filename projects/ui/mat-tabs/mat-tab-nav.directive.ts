@@ -1,5 +1,4 @@
 import {
-  computed,
   contentChild,
   DestroyRef,
   Directive,
@@ -8,8 +7,6 @@ import {
   Injector,
   Renderer2,
   ViewContainerRef,
-  type Signal,
-  type TemplateRef,
 } from '@angular/core';
 
 import {
@@ -26,14 +23,9 @@ import {
   createMatTabRejectionDecoration,
 } from './decorations/decoration-projectors';
 import { createAggregatedErrorTabs } from './decorations/aggregated-error-tabs';
-import {
-  CngxMatTabAggregatorContent,
-  type CngxMatTabAggregatorContentContext,
-} from './decorations/mat-tab-aggregator-content.directive';
-import {
-  CngxMatTabRejectionContent,
-  type CngxMatTabRejectionContentContext,
-} from './decorations/mat-tab-rejection-content.directive';
+import { createDecorationTemplates } from './decorations/decoration-templates';
+import { CngxMatTabAggregatorContent } from './decorations/mat-tab-aggregator-content.directive';
+import { CngxMatTabRejectionContent } from './decorations/mat-tab-rejection-content.directive';
 import { injectMatTabsConfig } from './mat-tabs-config';
 import { mountLiveRegionAnnouncer } from './material-bridge/live-region';
 import { createRejectionState } from './decorations/rejection-state';
@@ -114,14 +106,12 @@ export class CngxMatTabNav {
   private readonly i18n = injectTabsI18n();
 
   private readonly aggregatorContentSlot = contentChild(CngxMatTabAggregatorContent);
-  private readonly aggregatorContentTemplate: Signal<TemplateRef<CngxMatTabAggregatorContentContext> | null> =
-    computed(() => this.aggregatorContentSlot()?.templateRef ?? null);
   private readonly rejectionContentSlot = contentChild(CngxMatTabRejectionContent);
-  private readonly rejectionContentTemplate: Signal<TemplateRef<CngxMatTabRejectionContentContext> | null> =
-    computed(
-      () =>
-        this.rejectionContentSlot()?.templateRef ?? this.matTabsConfig.templates.rejection ?? null,
-    );
+  private readonly decorationTemplates = createDecorationTemplates(
+    this.aggregatorContentSlot,
+    this.rejectionContentSlot,
+    this.matTabsConfig,
+  );
 
   private readonly rejectionState = createRejectionState(this.presenter, this.i18n);
   private readonly aggregatedErrorTabs = createAggregatedErrorTabs(this.presenter, this.i18n);
@@ -153,7 +143,7 @@ export class CngxMatTabNav {
       renderer: this.renderer,
       injector: this.injector,
       destroyRef: this.destroyRef,
-      contentTemplate: this.rejectionContentTemplate,
+      contentTemplate: this.decorationTemplates.rejection,
       viewContainerRef: this.viewContainerRef,
       originLabel: this.rejectionState.originLabel,
       reason: this.rejectionState.reason,
@@ -166,7 +156,7 @@ export class CngxMatTabNav {
       renderer: this.renderer,
       injector: this.injector,
       destroyRef: this.destroyRef,
-      contentTemplate: this.aggregatorContentTemplate,
+      contentTemplate: this.decorationTemplates.aggregator,
       viewContainerRef: this.viewContainerRef,
       onHalfWiredSlot: this.matTabsConfig.halfWiredSlotSink,
       buttonSelector: '.mat-mdc-tab-link',
