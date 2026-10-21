@@ -8,6 +8,9 @@ import { CngxLiveAnnouncer } from './live-announcer';
 // literal here (the const is not exported) so the 16ms flush stays a pinned,
 // tested value rather than an asserted-but-unverified "sub-perceptual" claim.
 const CLEAR_DELAY_MS = 16;
+// Mirrors FIRST_MODAL_WRITE_DELAY_MS: the first write into a freshly created
+// modal pair waits until its regions have settled in the DOM.
+const FIRST_MODAL_WRITE_DELAY_MS = 100;
 
 function politeEl(): HTMLElement | null {
   return document.body.querySelector('span[aria-live="polite"]');
@@ -101,6 +104,234 @@ describe('CngxLiveAnnouncer', () => {
     // The pending writes were cancelled: flushing must not resurrect content.
     vi.advanceTimersByTime(CLEAR_DELAY_MS);
     expect(document.body.querySelector('span[aria-live]')).toBeNull();
+  });
+});
+
+describe('CngxLiveAnnouncer - scope', () => {
+  let announcer: CngxLiveAnnouncer;
+  let modal: HTMLElement;
+  let inner: HTMLElement;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    announcer = TestBed.inject(CngxLiveAnnouncer);
+    modal = document.createElement('div');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    inner = document.createElement('section');
+    modal.appendChild(inner);
+    document.body.appendChild(modal);
+  });
+
+  afterEach(() => {
+    announcer.ngOnDestroy();
+    modal.remove();
+    vi.useRealTimers();
+  });
+
+  function bodyRegion(politeness: 'polite' | 'assertive'): HTMLElement | null {
+    return document.body.querySelector(`:scope > span[aria-live="${politeness}"]`);
+  }
+
+  function modalRegion(politeness: 'polite' | 'assertive'): HTMLElement | null {
+    return modal.querySelector(`span[aria-live="${politeness}"]`);
+  }
+
+  it('writes a scoped message into a region inside the enclosing aria-modal container', () => {
+    announcer.announce('Dismissed', 'polite', inner);
+    vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+
+    expect(modalRegion('polite')?.textContent).toBe('Dismissed');
+    expect(bodyRegion('polite')?.textContent ?? '').toBe('');
+  });
+
+  it('inserts both modal regions on the first scoped call and writes after they settle', () => {
+    announcer.announce('Dismissed', 'polite', inner);
+
+    expect(modalRegion('polite')).not.toBeNull();
+    expect(modalRegion('assertive')).not.toBeNull();
+    // Not in the frame after the insertion: a screen reader can miss that one.
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+    expect(modalRegion('polite')?.textContent).toBe('');
+    vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS - CLEAR_DELAY_MS);
+    expect(modalRegion('polite')?.textContent).toBe('Dismissed');
+  });
+
+  it('falls back to the body region when the scope has no modal ancestor', () => {
+    const outside = document.createElement('div');
+    document.body.appendChild(outside);
+    announcer.announce('Saved', 'polite', outside);
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+
+    expect(bodyRegion('polite')?.textContent).toBe('Saved');
+    expect(modalRegion('polite')).toBeNull();
+    outside.remove();
+  });
+
+  it('re-announces an identical scoped repeat through the same modal region', () => {
+    announcer.announce('Dismissed', 'polite', inner);
+    vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+    const region = modalRegion('polite');
+
+    announcer.announce('Dismissed', 'polite', inner);
+    expect(region?.textContent).toBe('');
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+    expect(region?.textContent).toBe('Dismissed');
+    expect(modal.querySelectorAll('span[aria-live="polite"]').length).toBe(1);
+  });
+
+  it('lands a modal write and a body write of the same frame both', () => {
+    announcer.announce('In the dialog', 'polite', inner);
+    announcer.announce('Behind the dialog');
+    vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+
+    expect(modalRegion('polite')?.textContent).toBe('In the dialog');
+    expect(bodyRegion('polite')?.textContent).toBe('Behind the dialog');
+  });
+
+  it('moves a pending message to the body region when the modal closes mid-announcement', () => {
+    announcer.announce('Dismissed', 'polite', inner);
+    modal.removeAttribute('aria-modal');
+    vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+
+    expect(bodyRegion('polite')?.textContent).toBe('Dismissed');
+    expect(modalRegion('polite')).toBeNull();
+  });
+
+  it('moves a pending message to the body region when the modal leaves the DOM', () => {
+    announcer.announce('Dismissed', 'assertive', inner);
+    modal.remove();
+    vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+
+    expect(bodyRegion('assertive')?.textContent).toBe('Dismissed');
+  });
+
+  it('drops the regions of a closed modal on the next announcement', () => {
+    announcer.announce('Dismissed', 'polite', inner);
+    vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+    modal.removeAttribute('aria-modal');
+
+    announcer.announce('Saved');
+    expect(modalRegion('polite')).toBeNull();
+    expect(modalRegion('assertive')).toBeNull();
+  });
+
+  it('removes modal regions and cancels their pending writes on destroy', () => {
+    announcer.announce('Dismissed', 'polite', inner);
+    announcer.ngOnDestroy();
+
+    expect(modalRegion('polite')).toBeNull();
+    expect(modalRegion('assertive')).toBeNull();
+    vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+    expect(document.body.querySelector('span[aria-live]')).toBeNull();
+  });
+
+  describe('nested modals', () => {
+    let nested: HTMLElement;
+
+    beforeEach(() => {
+      nested = document.createElement('div');
+      nested.setAttribute('role', 'dialog');
+      nested.setAttribute('aria-modal', 'true');
+      modal.appendChild(nested);
+    });
+
+    function nestedRegion(politeness: 'polite' | 'assertive'): HTMLElement | null {
+      return nested.querySelector(`span[aria-live="${politeness}"]`);
+    }
+
+    it('speaks into the innermost open modal while the enclosing one is inert', () => {
+      announcer.announce('Dismissed', 'polite', inner);
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+
+      expect(nestedRegion('polite')?.textContent).toBe('Dismissed');
+      expect(modal.querySelector(':scope > span[aria-live]')).toBeNull();
+    });
+
+    it('moves a pending message to the enclosing modal when the nested one closes', () => {
+      announcer.announce('Dismissed', 'polite', inner);
+      nested.removeAttribute('aria-modal');
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+
+      expect(modal.querySelector(':scope > span[aria-live="polite"]')?.textContent).toBe(
+        'Dismissed',
+      );
+      expect(bodyRegion('polite')?.textContent ?? '').toBe('');
+    });
+  });
+
+  // CngxDialog appends every dialog host to document.body, so a dialog opened
+  // from inside another one is a sibling of it, not a descendant.
+  describe('stacked sibling modals', () => {
+    let upper: HTMLElement;
+
+    beforeEach(() => {
+      upper = document.createElement('div');
+      upper.setAttribute('role', 'dialog');
+      upper.setAttribute('aria-modal', 'true');
+      document.body.appendChild(upper);
+    });
+
+    afterEach(() => {
+      upper.remove();
+    });
+
+    function upperRegion(politeness: 'polite' | 'assertive'): HTMLElement | null {
+      return upper.querySelector(`span[aria-live="${politeness}"]`);
+    }
+
+    it('speaks into the upper modal while it covers the scope modal', () => {
+      announcer.announce('Dismissed', 'polite', inner);
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+
+      expect(upperRegion('polite')?.textContent).toBe('Dismissed');
+      expect(modalRegion('polite')).toBeNull();
+      expect(bodyRegion('polite')?.textContent ?? '').toBe('');
+    });
+
+    it('skips an open modal inside an inert subtree', () => {
+      upper.setAttribute('inert', '');
+      announcer.announce('Dismissed', 'polite', inner);
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+
+      expect(modalRegion('polite')?.textContent).toBe('Dismissed');
+      expect(upperRegion('polite')).toBeNull();
+    });
+
+    it('moves a pending message to the scope modal when the upper one closes', () => {
+      announcer.announce('Dismissed', 'polite', inner);
+      expect(upperRegion('polite')).not.toBeNull();
+      upper.removeAttribute('aria-modal');
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+
+      expect(modalRegion('polite')?.textContent).toBe('Dismissed');
+      expect(upperRegion('polite')).toBeNull();
+      expect(bodyRegion('polite')?.textContent ?? '').toBe('');
+    });
+
+    it('moves a pending message to the scope modal when the upper one leaves the DOM', () => {
+      announcer.announce('Dismissed', 'assertive', inner);
+      expect(upperRegion('assertive')).not.toBeNull();
+      upper.remove();
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+
+      expect(modalRegion('assertive')?.textContent).toBe('Dismissed');
+      expect(bodyRegion('assertive')?.textContent ?? '').toBe('');
+    });
+
+    it('keeps an unscoped announcement on the body regions while modals are open', () => {
+      announcer.announce('Saved');
+      vi.advanceTimersByTime(CLEAR_DELAY_MS);
+
+      expect(bodyRegion('polite')?.textContent).toBe('Saved');
+      expect(upperRegion('polite')).toBeNull();
+      expect(modalRegion('polite')).toBeNull();
+    });
   });
 });
 

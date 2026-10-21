@@ -8,6 +8,9 @@
   [attr.aria-orientation]="presenter.orientation()"
 >
   @for (tab of tabs(); track tab.id; let i = $index) {
+    @let labelTpl = labelTemplateFor(tab.id);
+    @let subLabelTpl = subLabelTemplateFor(tab.id);
+    @let labelledBy = announcements.tabLabelledBy(tab, !!labelTpl, !!subLabelTpl);
     <div class="cngx-tabs__tab-wrapper" role="presentation">
     <button
       type="button"
@@ -19,7 +22,8 @@
       [id]="tabHeaderId(tab)"
       [attr.data-tab-id]="tab.id"
       [attr.tabindex]="tabTabindex(tab)"
-      [attr.aria-label]="announcements.tabAriaLabel(tab, i + 1)"
+      [attr.aria-label]="labelledBy ? null : announcements.tabAriaLabel(tab, i + 1)"
+      [attr.aria-labelledby]="labelledBy"
       [attr.aria-selected]="isSelected(tab) ? 'true' : 'false'"
       [attr.aria-controls]="tabPanelId(tab)"
       [attr.aria-disabled]="tab.disabled() ? 'true' : null"
@@ -38,17 +42,15 @@
         </span>
       }
       <span class="cngx-tabs__text">
-        <span class="cngx-tabs__label">
-          @let labelTpl = labelTemplateFor(tab.id);
+        <span class="cngx-tabs__label" [id]="announcements.tabLabelId(tab)">
           @if (labelTpl) {
             <ng-container *ngTemplateOutlet="labelTpl"></ng-container>
           } @else {
             {{ tab.label() }}
           }
         </span>
-        @let subLabelTpl = subLabelTemplateFor(tab.id);
         @if (subLabelTpl || tab.subLabel()) {
-          <span class="cngx-tabs__sublabel">
+          <span class="cngx-tabs__sublabel" [id]="announcements.tabSubLabelId(tab)">
             @if (subLabelTpl) {
               <ng-container *ngTemplateOutlet="subLabelTpl"></ng-container>
             } @else {

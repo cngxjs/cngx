@@ -1,4 +1,5 @@
 import {
+  booleanAttribute,
   computed,
   DestroyRef,
   Directive,
@@ -8,8 +9,6 @@ import {
   type Signal,
   signal,
 } from '@angular/core';
-import { MatTabLink } from '@angular/material/tabs';
-
 import { CNGX_TAB_GROUP_HOST, type CngxTabGroupHost, type CngxTabHandle } from '@cngx/common/tabs';
 import { nextUid } from '@cngx/core/utils';
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
@@ -46,7 +45,6 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
   standalone: true,
 })
 export class CngxMatTabLink implements OnInit {
-  private readonly matLink = inject(MatTabLink, { self: true });
   private readonly host = inject<CngxTabGroupHost>(CNGX_TAB_GROUP_HOST);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -67,6 +65,14 @@ export class CngxMatTabLink implements OnInit {
   readonly error = input<string | boolean>(false);
   /** Optional rich error aggregator for the link. */
   readonly errorAggregator = input<CngxErrorAggregatorContract | undefined>(undefined);
+  /**
+   * Disabled state of the link. Angular binds `[disabled]` to every
+   * directive on the element that declares the input, so `MatTabLink`
+   * and this directive read one template binding and the handle tracks
+   * it live. An imperative write to the `MatTabLink` instance is not
+   * seen; the template binding is the contract.
+   */
+  readonly disabled = input(false, { transform: booleanAttribute });
 
   private readonly errorMessage: Signal<string | undefined> = computed(() => {
     const value = this.error();
@@ -84,19 +90,12 @@ export class CngxMatTabLink implements OnInit {
     { equal: Object.is },
   );
 
-  // Material's MatTabLink.disabled is a plain property, not a signal;
-  // nav links rarely toggle disabled at runtime, so snapshot it onto a
-  // signal at registration. A live binding would need a Material
-  // reactive surface MatTabLink does not expose.
-  private readonly disabledState = signal<boolean>(false);
-
   ngOnInit(): void {
-    this.disabledState.set(this.matLink.disabled);
     const handle: CngxTabHandle = {
       id: this.id(),
       label: this.label,
       subLabel: signal(undefined),
-      disabled: this.disabledState.asReadonly(),
+      disabled: this.disabled,
       errorAggregator: this.errorAggregator,
       hasError: this.hasError,
       errorMessage: this.errorMessage,

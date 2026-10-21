@@ -9,7 +9,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { readFileSync } from 'node:fs';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
@@ -78,6 +78,26 @@ class HostCmp {}
 })
 class VerticalHost {}
 
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab, CngxTabLabel],
+  template: `
+    <cngx-tab-group aria-label="Naming">
+      <div cngxTab>
+        <ng-template cngxTabLabel>Profile from template</ng-template>
+      </div>
+      <div cngxTab [subLabel]="'3'">
+        <ng-template cngxTabLabel>Tasks from template</ng-template>
+      </div>
+      <div cngxTab [label]="'Billing'">
+        <ng-template cngxTabLabel>Billing from template</ng-template>
+      </div>
+      <div cngxTab></div>
+    </cngx-tab-group>
+  `,
+})
+class TemplateLabelHost {}
+
 describe('CngxTabGroup organism', () => {
   it('host carries role="group" + aria-orientation="horizontal" + data-orientation', () => {
     TestBed.configureTestingModule({
@@ -141,6 +161,70 @@ describe('CngxTabGroup organism', () => {
     expect(stripBidiIsolates(tabs[0].getAttribute('aria-label'))).toBe('Tab 1 of 3: A');
     expect(stripBidiIsolates(tabs[1].getAttribute('aria-label'))).toBe('Tab 2 of 3: B');
     expect(stripBidiIsolates(tabs[2].getAttribute('aria-label'))).toBe('Tab 3 of 3: C');
+  });
+
+  describe('name source of a tab without a [label] string', () => {
+    // Deliberately unlabelled fixture: pin CNGX3025 instead of printing it.
+    let warn: MockInstance<typeof console.warn>;
+    beforeEach(() => {
+      warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    });
+    afterEach(() => {
+      expect(warn.mock.calls.filter((c) => /^CNGX3025: /.test(String(c[0])))).toHaveLength(1);
+      warn.mockRestore();
+    });
+
+    function mountNaming(): HTMLButtonElement[] {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(TemplateLabelHost);
+      fixture.detectChanges();
+      return Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+    }
+
+    function textOfIds(button: HTMLButtonElement, ids: string): string {
+      return ids
+        .split(' ')
+        .map((id) => button.ownerDocument.getElementById(id)?.textContent?.trim() ?? '')
+        .join(' ');
+    }
+
+    it('names a template-only tab from its rendered *cngxTabLabel', () => {
+      const tabs = mountNaming();
+      expect(tabs[0].getAttribute('aria-label')).toBeNull();
+      expect(tabs[0].getAttribute('aria-labelledby')).toBe(`${tabs[0].dataset['tabId']}-label`);
+      expect(textOfIds(tabs[0], tabs[0].getAttribute('aria-labelledby') ?? '')).toBe(
+        'Profile from template',
+      );
+    });
+
+    it('adds the sub-label element to the name of a template-only tab', () => {
+      const tabs = mountNaming();
+      const id = tabs[1].dataset['tabId'];
+      expect(tabs[1].getAttribute('aria-label')).toBeNull();
+      expect(tabs[1].getAttribute('aria-labelledby')).toBe(`${id}-label ${id}-sublabel`);
+      expect(textOfIds(tabs[1], tabs[1].getAttribute('aria-labelledby') ?? '')).toBe(
+        'Tasks from template 3',
+      );
+    });
+
+    it('keeps the [label] aria-label when a template is also projected', () => {
+      const tabs = mountNaming();
+      expect(stripBidiIsolates(tabs[2].getAttribute('aria-label'))).toBe('Tab 3 of 4: Billing');
+      expect(tabs[2].getAttribute('aria-labelledby')).toBeNull();
+    });
+
+    it('names a tab without label and template by its position', () => {
+      const tabs = mountNaming();
+      expect(stripBidiIsolates(tabs[3].getAttribute('aria-label'))).toBe('Tab 4 of 4');
+      expect(tabs[3].getAttribute('aria-labelledby')).toBeNull();
+    });
   });
 
   it('first tab is aria-selected="true", others "false"', () => {
@@ -1777,13 +1861,14 @@ describe('CngxTabGroup cngxTabIcon slot', () => {
       // off the reactive graph). TestBed.tick flushes render hooks
       // synchronously - no fake-timer / whenStable hang vector.
       TestBed.tick();
-      expect(
-        warn.mock.calls.some((c) =>
-          /^CNGX3011: \[cngx-tab-group\] iconLayout='only' but no \*cngxTabIcon template/.test(
-            String(c[0]),
-          ),
+      const call = warn.mock.calls.find((c) =>
+        /^CNGX3011: \[cngx-tab-group\] iconLayout='only' but no \*cngxTabIcon template/.test(
+          String(c[0]),
         ),
-      ).toBe(true);
+      );
+      expect(call).toBeDefined();
+      // The offending group rides along, so the console links straight to it.
+      expect(call?.[1]).toBe(fixture.nativeElement.querySelector('cngx-tab-group'));
     } finally {
       warn.mockRestore();
     }
@@ -1838,6 +1923,48 @@ describe('CngxTabGroup cngxTabIcon slot', () => {
     } finally {
       warn.mockRestore();
     }
+  });
+});
+
+describe('CngxTabGroup CNGX3025 (tab without a [label] string)', () => {
+  function mountAndWarn<T>(host: new () => T): { calls: string[] } {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(host);
+      fixture.detectChanges();
+      TestBed.tick();
+      return {
+        calls: warn.mock.calls
+          .map((c) => String(c[0]))
+          .filter((m) => /^CNGX3025: /.test(m)),
+      };
+    } finally {
+      warn.mockRestore();
+    }
+  }
+
+  it('warns once per group listing the 1-based positions of label-less tabs', () => {
+    const { calls } = mountAndWarn(UnlabelledDismissableHost);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatch(/^CNGX3025: \[cngx-tab-group\] .*\b2 \(no name source\)/);
+    expect(calls[0]).not.toMatch(/\b1 \(/);
+  });
+
+  it('names the template case when a *cngxTabLabel template names the tab', () => {
+    const { calls } = mountAndWarn(TemplateLabelHost);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatch(/^CNGX3025: /);
+    expect(calls[0]).toContain('1 (named by its *cngxTabLabel template)');
+    expect(calls[0]).toContain('2 (named by its *cngxTabLabel template)');
+    expect(calls[0]).toContain('4 (no name source)');
+    expect(calls[0]).not.toContain('3 (');
+  });
+
+  it('stays silent when every tab binds a [label] string', () => {
+    const { calls } = mountAndWarn(HostCmp);
+    expect(calls).toHaveLength(0);
   });
 });
 
@@ -2185,16 +2312,21 @@ describe('CngxTabGroup dismissable + addable', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const fixture = TestBed.createComponent(UnlabelledDismissableHost);
     fixture.detectChanges();
     const buttons = closeButtons(fixture);
     expect(stripBidiIsolates(buttons[1].getAttribute('aria-label'))).toBe('Close "Tab 2"');
+    TestBed.tick();
+    expect(warn.mock.calls.filter((c) => /^CNGX3025: /.test(String(c[0])))).toHaveLength(1);
+    warn.mockRestore();
   });
 
   it('renames the unlabelled close button when a tab before it goes away', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const fixture = TestBed.createComponent(GrowingUnlabelledHost);
     fixture.detectChanges();
     const last = (): string | null => closeButtons(fixture).at(-1)!.getAttribute('aria-label');
@@ -2202,6 +2334,9 @@ describe('CngxTabGroup dismissable + addable', () => {
     fixture.componentInstance.labels.set(['Home', '']);
     fixture.detectChanges();
     expect(stripBidiIsolates(last())).toBe('Close "Tab 2"');
+    TestBed.tick();
+    expect(warn.mock.calls.filter((c) => /^CNGX3025: /.test(String(c[0])))).toHaveLength(1);
+    warn.mockRestore();
   });
 
   it('clicking a close button emits tabClose with id + index', () => {

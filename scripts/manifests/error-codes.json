@@ -1994,10 +1994,10 @@
       "page": "core-concepts/error-codes/cngx3011.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3011.html",
       "status": "active",
-      "files": ["projects/ui/tabs/tab-group.component.ts"],
+      "files": ["projects/ui/tabs/tab-group-dev-checks.ts"],
       "messages": [
         {
-          "file": "projects/ui/tabs/tab-group.component.ts",
+          "file": "projects/ui/tabs/tab-group-dev-checks.ts",
           "text": "[cngx-tab-group] iconLayout='only' but no *cngxTabIcon template is provided - tabs render no icon and the label is visually hidden. Provide an <ng-template cngxTabIcon> or use 'start' / 'end' / 'top'."
         }
       ]
@@ -2248,6 +2248,23 @@
         {
           "file": "projects/ui/breadcrumb/breadcrumb-overflow.component.ts",
           "text": "[cngx-breadcrumb-overflow] must be placed inside an element with [cngxBreadcrumb]."
+        }
+      ]
+    },
+    {
+      "code": "CNGX3025",
+      "lib": "ui",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Tab without a label string",
+      "page": "core-concepts/error-codes/cngx3025.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3025.html",
+      "status": "active",
+      "files": ["projects/ui/tabs/tab-group-dev-checks.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/tabs/tab-group-dev-checks.ts",
+          "text": "[cngx-tab-group] tab(s) without a [label] string at position ${...}. Announcements, the close button and the overflow list call such a tab \"Tab N\". Bind [label] on every cngxTab, also when a *cngxTabLabel template renders it."
         }
       ]
     },

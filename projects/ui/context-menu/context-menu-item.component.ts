@@ -183,7 +183,7 @@ export class CngxContextMenuItem implements CngxMenuSubmenuWiring {
     // non-exclusive open, parent-datum mirror - to the panel. The item drives
     // one seam instead of reaching into the popover's override signals, so an
     // ejected item skin never carries CngxPopover internals (decompose).
-    target.openAsSubmenu(this.parentPanel?.context() ?? null);
+    target.openAsSubmenu(this.parentPanel?.context() ?? null, this.parentPanel ?? undefined);
     // openAsSubmenu is the terminal for every open path (hover, keyboard,
     // click all funnel here through the trigger's focus stack). The note is
     // the safety net for opens the stack did not perform itself

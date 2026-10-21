@@ -2,6 +2,8 @@ import {
   Component,
   provideZonelessChangeDetection,
   signal,
+  TemplateRef,
+  ViewChild,
   type Signal,
   type WritableSignal,
 } from '@angular/core';
@@ -23,6 +25,12 @@ import type {
 
 import { CngxMatTabNav } from './mat-tab-nav.directive';
 import { CngxMatTabLink } from './mat-tab-link.directive';
+import { CngxMatTabAggregatorContent } from './decorations/mat-tab-aggregator-content.directive';
+import {
+  CngxMatTabRejectionContent,
+  type CngxMatTabRejectionContentContext,
+} from './decorations/mat-tab-rejection-content.directive';
+import { provideMatTabsConfig, withMatTabRejectionTemplate } from './mat-tabs-config';
 import { stripBidiIsolates } from '@cngx/testing';
 
 interface StubAggregator {
@@ -165,6 +173,92 @@ class TwoWayNavHostCmp {
 })
 class DirectErrorNavHostCmp {
   readonly errB = signal<string | boolean>(false);
+}
+
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabNav, CngxMatTabLink, CngxMatTabAggregatorContent],
+  template: `
+    <nav mat-tab-nav-bar cngxMatTabNav [tabPanel]="panel" aria-label="Sections">
+      <ng-template cngxMatTabAggregatorContent let-count="count" let-label="label">
+        <span data-testid="agg-slot">{{ label }}=={{ count }}</span>
+      </ng-template>
+      <a mat-tab-link cngxMatTabLink id="a" label="A" [active]="true">A</a>
+      <a mat-tab-link cngxMatTabLink id="b" label="B" [active]="false" [errorAggregator]="aggB"
+        >B</a
+      >
+    </nav>
+    <mat-tab-nav-panel #panel>panel</mat-tab-nav-panel>
+  `,
+})
+class AggregatorSlotNavHostCmp {
+  readonly aggBHandle = makeStubAggregator();
+  protected aggB = this.aggBHandle.contract;
+}
+
+const REFUSING_COMMIT = {
+  provide: CNGX_TABS_COMMIT_ACTION,
+  useValue: { action: signal(() => false), mode: signal('pessimistic') },
+};
+
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabNav, CngxMatTabLink, CngxMatTabRejectionContent],
+  providers: [REFUSING_COMMIT],
+  template: `
+    <nav mat-tab-nav-bar cngxMatTabNav [tabPanel]="panel" aria-label="Sections">
+      <ng-template cngxMatTabRejectionContent let-reason="reason" let-origin="originLabel">
+        <span data-testid="rejection-slot">{{ reason }} from {{ origin }}</span>
+      </ng-template>
+      <a mat-tab-link cngxMatTabLink id="a" label="A" [active]="true">A</a>
+      <a mat-tab-link cngxMatTabLink id="b" label="B" [active]="false">B</a>
+    </nav>
+    <mat-tab-nav-panel #panel>panel</mat-tab-nav-panel>
+  `,
+})
+class RejectionSlotNavHostCmp {}
+
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabNav, CngxMatTabLink],
+  providers: [REFUSING_COMMIT],
+  template: `
+    <nav mat-tab-nav-bar cngxMatTabNav [tabPanel]="panel" aria-label="Sections">
+      <a mat-tab-link cngxMatTabLink id="a" label="A" [active]="true">A</a>
+      <a mat-tab-link cngxMatTabLink id="b" label="B" [active]="false">B</a>
+    </nav>
+    <mat-tab-nav-panel #panel>panel</mat-tab-nav-panel>
+  `,
+})
+class PlainRejectionNavHostCmp {}
+
+@Component({
+  standalone: true,
+  template: `<ng-template #rejection let-reason="reason"
+    ><span data-testid="config-rejection">config {{ reason }}</span></ng-template
+  >`,
+})
+class RejectionTemplateFactory {
+  @ViewChild('rejection', { static: true })
+  rejection!: TemplateRef<CngxMatTabRejectionContentContext>;
+}
+
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabNav, CngxMatTabLink],
+  template: `
+    <nav mat-tab-nav-bar cngxMatTabNav [tabPanel]="panel" aria-label="Sections">
+      <a mat-tab-link cngxMatTabLink id="a" label="A" [active]="true">A</a>
+      <a mat-tab-link cngxMatTabLink id="b" label="B" [active]="false" [disabled]="bDisabled()"
+        >B</a
+      >
+      <a mat-tab-link cngxMatTabLink id="c" label="C" [active]="false" disabled>C</a>
+    </nav>
+    <mat-tab-nav-panel #panel>panel</mat-tab-nav-panel>
+  `,
+})
+class DisabledNavHostCmp {
+  readonly bDisabled = signal(false);
 }
 
 function navPresenter(
@@ -338,6 +432,99 @@ describe('CngxMatTabNav native nav-bar bridge', () => {
     expect(
       stripBidiIsolates(links[2].querySelector('span.cngx-sr-only#c-rejected')?.textContent),
     ).toBe('Tab switch not allowed - stayed on "A".');
+  });
+
+  it('renders projected *cngxMatTabAggregatorContent on the matching link', async () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(AggregatorSlotNavHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    fixture.componentInstance.aggBHandle.count.set(2);
+    fixture.componentInstance.aggBHandle.announcement.set('B has 2 errors');
+    fixture.componentInstance.aggBHandle.show.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const links = tabLinks(fixture);
+    const slot = links[1].querySelector('span.cngx-sr-only [data-testid="agg-slot"]');
+    expect(slot?.textContent?.trim()).toBe('B==2');
+    expect(links[0].querySelector('[data-testid="agg-slot"]')).toBeNull();
+  });
+
+  it('renders projected *cngxMatTabRejectionContent on the rejected link', async () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(RejectionSlotNavHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    navPresenter(fixture).select(1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const links = tabLinks(fixture);
+    const slot = links[1].querySelector('span.cngx-sr-only [data-testid="rejection-slot"]');
+    expect(stripBidiIsolates(slot?.textContent?.trim())).toBe('refused from A');
+  });
+
+  it('applies the provideMatTabsConfig rejection template without a per-instance slot', async () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const tplFixture = TestBed.createComponent(RejectionTemplateFactory);
+    tplFixture.detectChanges();
+    const rejection = tplFixture.componentInstance.rejection;
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideMatTabsConfig(withMatTabRejectionTemplate(rejection)),
+      ],
+    });
+    const fixture = TestBed.createComponent(PlainRejectionNavHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    navPresenter(fixture).select(1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const slot = tabLinks(fixture)[1].querySelector('[data-testid="config-rejection"]');
+    expect(slot?.textContent?.trim()).toBe('config refused');
+  });
+
+  it('tracks a [disabled] binding toggled after init', async () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(DisabledNavHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const presenter = navPresenter(fixture);
+    const links = tabLinks(fixture);
+    expect(presenter.tabs()[1].disabled()).toBe(false);
+
+    fixture.componentInstance.bDisabled.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(presenter.tabs()[1].disabled()).toBe(true);
+    expect(links[1].getAttribute('aria-disabled')).toBe('true');
+
+    fixture.componentInstance.bDisabled.set(false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(presenter.tabs()[1].disabled()).toBe(false);
+    expect(links[1].getAttribute('aria-disabled')).toBe('false');
+  });
+
+  it('registers a static disabled link as disabled at init', async () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(DisabledNavHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(navPresenter(fixture).tabs()[2].disabled()).toBe(true);
   });
 
   it('reflects the route-active link onto activeIndex via composed [cngxTabsRouteSync]', async () => {

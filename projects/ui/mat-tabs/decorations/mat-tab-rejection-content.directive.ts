@@ -19,9 +19,10 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * resolves to a handle with a non-empty label) - `undefined` when
  * no labelled rollback origin is resolvable; `fallbackText` is the
  * built-in i18n phrase the imperative fallback path would write
- * verbatim (for a failure typically `commitRolledBackTo(originLabel)`
+ * verbatim (for a failure typically `commitRolledBackTo(origin)`
  * when the origin is resolvable, `commitFailedRetry` otherwise; for a
- * refusal `commitRefused(originLabel)` or `commitRefusedGeneric`);
+ * refusal `commitRefused(origin)` or `commitRefusedGeneric`; a
+ * label-less origin is named `unlabeledTab(position)`);
  * `reason` is the kind of the outcome.
  *
  * **Re-instantiation warning.** The decoration projector destroys

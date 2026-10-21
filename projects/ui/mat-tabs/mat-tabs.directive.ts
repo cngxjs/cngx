@@ -10,7 +10,6 @@ import {
   inject,
   Injector,
   Renderer2,
-  type Signal,
   type TemplateRef,
   untracked,
   ViewContainerRef,
@@ -38,14 +37,9 @@ import {
 } from './decorations/decoration-projectors';
 import { createAggregatedErrorTabs } from './decorations/aggregated-error-tabs';
 import { injectMatTabsConfig } from './mat-tabs-config';
-import {
-  CngxMatTabAggregatorContent,
-  type CngxMatTabAggregatorContentContext,
-} from './decorations/mat-tab-aggregator-content.directive';
-import {
-  CngxMatTabRejectionContent,
-  type CngxMatTabRejectionContentContext,
-} from './decorations/mat-tab-rejection-content.directive';
+import { createDecorationTemplates } from './decorations/decoration-templates';
+import { CngxMatTabAggregatorContent } from './decorations/mat-tab-aggregator-content.directive';
+import { CngxMatTabRejectionContent } from './decorations/mat-tab-rejection-content.directive';
 import { mountLiveRegionAnnouncer } from './material-bridge/live-region';
 import { createRejectionState } from './decorations/rejection-state';
 import { CngxMatTabsRegistry } from './mat-tabs-registry.directive';
@@ -192,17 +186,14 @@ export class CngxMatTabs {
     });
 
   private readonly aggregatorContentSlot = contentChild(CngxMatTabAggregatorContent);
-  private readonly aggregatorContentTemplate: Signal<TemplateRef<CngxMatTabAggregatorContentContext> | null> =
-    computed(() => this.aggregatorContentSlot()?.templateRef ?? null);
   private readonly matTabsConfig = injectMatTabsConfig();
   private readonly rejectionContentSlot = contentChild(CngxMatTabRejectionContent);
-  private readonly rejectionContentTemplate: Signal<TemplateRef<CngxMatTabRejectionContentContext> | null> =
-    computed(
-      () =>
-        this.rejectionContentSlot()?.templateRef ??
-        this.matTabsConfig.templates.rejection ??
-        null,
-    );
+  // Shared with `[cngxMatTabNav]`: one slot resolution order for both hosts.
+  private readonly decorationTemplates = createDecorationTemplates(
+    this.aggregatorContentSlot,
+    this.rejectionContentSlot,
+    this.matTabsConfig,
+  );
   private readonly i18n = injectTabsI18n();
 
   // Bundle shares one source-walk across failedHandleId /
@@ -236,7 +227,7 @@ export class CngxMatTabs {
       renderer: this.renderer,
       injector: this.injector,
       destroyRef: this.destroyRef,
-      contentTemplate: this.rejectionContentTemplate,
+      contentTemplate: this.decorationTemplates.rejection,
       viewContainerRef: this.viewContainerRef,
       originLabel: this.rejectionState.originLabel,
       reason: this.rejectionState.reason,
@@ -248,7 +239,7 @@ export class CngxMatTabs {
       renderer: this.renderer,
       injector: this.injector,
       destroyRef: this.destroyRef,
-      contentTemplate: this.aggregatorContentTemplate,
+      contentTemplate: this.decorationTemplates.aggregator,
       viewContainerRef: this.viewContainerRef,
       onHalfWiredSlot: matTabsConfig.halfWiredSlotSink,
     });

@@ -1,12 +1,13 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxContextMenu } from './context-menu.component';
 import { CngxContextMenuContent } from './context-menu-content.directive';
 import { CngxContextMenuFor } from './context-menu-for.directive';
 import { CngxContextMenuItem } from './context-menu-item.component';
+import type { CngxContextMenuPanel } from './context-menu-panel';
 
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
@@ -168,5 +169,193 @@ describe('CngxContextMenuItem submenu activation', () => {
 
     expect(sub.popover.isVisible()).toBe(false);
     expect(parent.popover.isVisible()).toBe(true);
+  });
+});
+
+@Component({
+  template: `
+    <div class="target" tabindex="0" [cngxContextMenuFor]="root">Right-click</div>
+    <div class="target-sub" tabindex="0" [cngxContextMenuFor]="sub">Right-click sub</div>
+
+    <cngx-context-menu ariaLabel="Actions" #root="cngxContextMenu">
+      <cngx-context-menu-item value="export" [submenu]="sub">Export</cngx-context-menu-item>
+    </cngx-context-menu>
+
+    <cngx-context-menu ariaLabel="Export as" #sub="cngxContextMenu">
+      <cngx-context-menu-item value="image" [submenu]="leaf" (select)="midSelects.set(midSelects() + 1)">
+        Image
+      </cngx-context-menu-item>
+      <cngx-context-menu-item value="pdf">PDF</cngx-context-menu-item>
+    </cngx-context-menu>
+
+    <cngx-context-menu ariaLabel="Image format" #leaf="cngxContextMenu">
+      <cngx-context-menu-item value="png">PNG</cngx-context-menu-item>
+    </cngx-context-menu>
+  `,
+  imports: [CngxContextMenu, CngxContextMenuFor, CngxContextMenuItem],
+})
+class ThreeLevelHost {
+  readonly midSelects = signal(0);
+}
+
+describe('CngxContextMenuItem submenu activation at depth 2', () => {
+  let fixture: ReturnType<typeof TestBed.createComponent<ThreeLevelHost>>;
+  let panels: CngxContextMenu[];
+
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [ThreeLevelHost] });
+    fixture = TestBed.createComponent(ThreeLevelHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    panels = fixture.debugElement
+      .queryAll(By.directive(CngxContextMenu))
+      .map((d) => d.componentInstance as CngxContextMenu);
+  });
+
+  afterEach(() => {
+    document.body
+      .querySelectorAll('.cngx-context-menu-anchor, .cngx-menu-announcer')
+      .forEach((el) => el.remove());
+  });
+
+  function panelEl(i: number): HTMLElement {
+    return fixture.debugElement.queryAll(By.directive(CngxContextMenu))[i].nativeElement;
+  }
+
+  function settle(): void {
+    TestBed.flushEffects();
+    fixture.detectChanges();
+  }
+
+  function openTwoLevels(): void {
+    rightClick(fixture.nativeElement.querySelector('.target'));
+    settle();
+    key(panelEl(0), 'Enter');
+    settle();
+    expect(panels[1].popover.isVisible()).toBe(true);
+  }
+
+  it('click on a depth-2 submenu parent opens depth 3 and emits no select', () => {
+    openTwoLevels();
+    const image = panelEl(1).querySelector('[role="menuitem"]') as HTMLElement;
+    image.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    settle();
+
+    expect(panels[2].popover.isVisible()).toBe(true);
+    expect(panels[1].popover.isVisible()).toBe(true);
+    expect(panels[0].popover.isVisible()).toBe(true);
+    expect(fixture.componentInstance.midSelects()).toBe(0);
+  });
+
+  it('Enter on a depth-2 submenu parent opens depth 3', () => {
+    openTwoLevels();
+    key(panelEl(1), 'Enter');
+    settle();
+
+    expect(panels[2].popover.isVisible()).toBe(true);
+    expect(fixture.componentInstance.midSelects()).toBe(0);
+  });
+
+  it('ArrowLeft from depth 3 pops back to depth 2', () => {
+    openTwoLevels();
+    key(panelEl(1), 'Enter');
+    settle();
+    expect(panels[2].popover.isVisible()).toBe(true);
+
+    key(panelEl(2), 'ArrowLeft');
+    settle();
+
+    expect(panels[2].popover.isVisible()).toBe(false);
+    expect(panels[1].popover.isVisible()).toBe(true);
+  });
+
+  it('a panel reopened by its own trigger does not forward activation to its old parent', () => {
+    openTwoLevels();
+    panels[1].popover.hide();
+    panels[0].popover.hide();
+    settle();
+
+    rightClick(fixture.nativeElement.querySelector('.target-sub'));
+    settle();
+    expect(panels[1].popover.isVisible()).toBe(true);
+    expect(panels[0].popover.isVisible()).toBe(false);
+
+    key(panelEl(1), 'Enter');
+    settle();
+
+    expect(panels[2].popover.isVisible()).toBe(true);
+    expect(panels[0].popover.isVisible()).toBe(false);
+  });
+});
+
+@Component({
+  template: `
+    <cngx-context-menu ariaLabel="First" #first="cngxContextMenu">
+      <cngx-context-menu-item value="a">A</cngx-context-menu-item>
+    </cngx-context-menu>
+    <cngx-context-menu ariaLabel="Second" #second="cngxContextMenu">
+      <cngx-context-menu-item value="b">B</cngx-context-menu-item>
+    </cngx-context-menu>
+  `,
+  imports: [CngxContextMenu, CngxContextMenuItem],
+})
+class BarePanelsHost {}
+
+describe('CngxContextMenu parent link', () => {
+  let fixture: ReturnType<typeof TestBed.createComponent<BarePanelsHost>>;
+  let first: CngxContextMenu;
+  let second: CngxContextMenu;
+
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [BarePanelsHost] });
+    fixture = TestBed.createComponent(BarePanelsHost);
+    fixture.detectChanges();
+    [first, second] = fixture.debugElement
+      .queryAll(By.directive(CngxContextMenu))
+      .map((d) => d.componentInstance as CngxContextMenu);
+  });
+
+  function settle(): void {
+    TestBed.flushEffects();
+    fixture.detectChanges();
+  }
+
+  function spyParent(): { panel: CngxContextMenuPanel; activated: ReturnType<typeof vi.fn> } {
+    const activated = vi.fn();
+    const panel = { handleActivated: activated } as unknown as CngxContextMenuPanel;
+    return { panel, activated };
+  }
+
+  it('stops routing to the parent once the submenu closes', () => {
+    const parent = spyParent();
+    second.openAsSubmenu(null, parent.panel);
+    settle();
+    second.handleActivated();
+    expect(parent.activated).toHaveBeenCalledTimes(1);
+
+    second.popover.hide();
+    settle();
+    expect(second.popover.isVisible()).toBe(false);
+
+    // A direct reopen (no trigger, no parent item) must not reach the old parent.
+    second.popover.show();
+    settle();
+    second.handleActivated();
+    expect(parent.activated).toHaveBeenCalledTimes(1);
+  });
+
+  it('ends a submenu cycle instead of recursing without end', () => {
+    first.openAsSubmenu(null, second);
+    second.openAsSubmenu(null, first);
+    settle();
+
+    expect(() => first.handleActivated()).not.toThrow();
+    expect(() =>
+      first.routeKeydown(new KeyboardEvent('keydown', { key: 'ArrowLeft' })),
+    ).not.toThrow();
+    expect(() => first.noteActiveSubmenuOpened()).not.toThrow();
   });
 });

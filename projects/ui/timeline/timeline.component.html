@@ -14,20 +14,17 @@
          activeView() already made it - so the flag is true by construction
          and the container is left owning only show-delay and min-dwell. -->
     <cngx-skeleton class="cngx-timeline__skeleton" [loading]="true" [count]="skeletonRowCount()">
-      <!-- let-index: the container has passed index/count/first/last into
-           this template all along, the timeline just never read it. The
-           built-in placeholder needs the per-row index to land on the same
-           sides the content will, so the swap does not reflow under
-           placement="end" / "alternate". A consumer-supplied
-           *cngxTimelineSkeleton is still outletted without context, which is
-           unchanged and tracked. -->
-      <ng-template cngxSkeletonPlaceholder let-index="index">
+      <!-- The container passes index/count into this template. Both the
+           built-in placeholder and a consumer *cngxTimelineSkeleton need the
+           per-row index to land on the same sides the content will, so the
+           swap does not reflow under placement="end" / "alternate". -->
+      <ng-template cngxSkeletonPlaceholder let-index="index" let-count="count">
         <!-- aria-hidden on the wrapper, not on the branches: whatever a
              consumer supplies is decoration too, and the load is announced
              through the live region at the bottom of this template. -->
         <div aria-hidden="true">
           @if (skeletonTpl(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl" />
+            <ng-container *ngTemplateOutlet="tpl; context: skeletonContext(index, count)" />
           } @else {
             <!-- Own classes, not the row's. `CngxTimelineItem` is never
                  imported here, so on a cold first load its Track-A stylesheet

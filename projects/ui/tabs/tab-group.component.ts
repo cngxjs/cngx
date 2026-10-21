@@ -1,6 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
-  afterNextRender,
   afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
@@ -56,7 +55,8 @@ import {
   type CngxTabsPanelMode,
   type CngxTabsSkin,
 } from '@cngx/common/tabs';
-import { cngxDevWarn } from '@cngx/utils';
+
+import { installTabGroupDevChecks } from './tab-group-dev-checks';
 
 /**
  * CNGX tab-group organism. \
@@ -307,18 +307,12 @@ export class CngxTabGroup implements CngxTabPanelHost {
     });
 
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      // One-shot post-mount check: icon-only hides the label, so a
-      // missing *cngxTabIcon template leaves the tab visually empty.
-      // afterNextRender runs once, off the reactive graph.
-      afterNextRender(() => {
-        if (this.hostAttrs.resolvedIconLayout() === 'only' && !this.templates.icon()) {
-          cngxDevWarn(
-            'CNGX3011',
-            "[cngx-tab-group] iconLayout='only' but no *cngxTabIcon template " +
-              'is provided - tabs render no icon and the label is visually ' +
-              "hidden. Provide an <ng-template cngxTabIcon> or use 'start' / 'end' / 'top'.",
-          );
-        }
+      installTabGroupDevChecks({
+        iconLayout: this.hostAttrs.resolvedIconLayout,
+        iconTemplate: this.templates.icon,
+        tabs: this.presenter.tabs,
+        hasLabelTemplate: (id) => this.labelTemplateFor(id) !== null,
+        host: this.hostElement,
       });
     }
   }

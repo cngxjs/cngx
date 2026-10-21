@@ -199,6 +199,8 @@ describe('CngxTabOverflow', () => {
       `,
     })
     class UnlabelledHost {}
+    // Deliberately unlabelled: pin CNGX3025 instead of printing it.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { instances } = installMockIntersectionObserver();
     const fixture = TestBed.createComponent(UnlabelledHost);
     fixture.detectChanges();
@@ -219,6 +221,8 @@ describe('CngxTabOverflow', () => {
     const item = fixture.nativeElement.querySelector('.cngx-tab-overflow__item') as HTMLElement;
     expect(item.textContent?.trim()).toBe('Tab 3');
     expect(item.textContent).not.toContain(item.getAttribute('data-tab-id') ?? '');
+    expect(warn.mock.calls.filter((c) => /^CNGX3025: /.test(String(c[0])))).toHaveLength(1);
+    warn.mockRestore();
   });
 
   it('opens the popover via mouse click with no pre-selected highlight (mouse-only users see a clean list)', async () => {

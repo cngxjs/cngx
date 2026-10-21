@@ -10,6 +10,7 @@ import type { CngxStepGroupHeader } from './step-group-header.directive';
 import type { CngxStepIndicator } from './step-indicator.directive';
 import type { CngxStepRejection } from './step-rejection.directive';
 import type { CngxStepperEmpty } from './stepper-empty.directive';
+import type { CngxDotStepperDot } from './dot-stepper-dot.directive';
 
 @Component({
   standalone: true,
@@ -120,5 +121,50 @@ describe('createStepperTemplateBindings - 3-stage cascade', () => {
     expect(bindings.rejection()).toBe(host.instanceTpl);
     expect(bindings.groupHeader()).toBe(host.instanceTpl);
     expect(bindings.empty()).toBe(host.instanceTpl);
+  });
+});
+
+describe('createStepperTemplateBindings - dot slot', () => {
+  function bindingsFor(
+    config: CngxStepperConfig,
+    dotSlot?: ReturnType<typeof signal<CngxDotStepperDot | undefined>>,
+  ) {
+    return createStepperTemplateBindings({
+      indicatorSlot: signal<CngxStepIndicator | undefined>(undefined),
+      badgeSlot: signal<CngxStepBadge | undefined>(undefined),
+      busySpinnerSlot: signal<CngxStepBusySpinner | undefined>(undefined),
+      rejectionSlot: signal<CngxStepRejection | undefined>(undefined),
+      groupHeaderSlot: signal<CngxStepGroupHeader | undefined>(undefined),
+      emptySlot: signal<CngxStepperEmpty | undefined>(undefined),
+      dotSlot,
+      config,
+    });
+  }
+
+  it('resolves the per-instance slot over the config template', () => {
+    const host = makeHost();
+    const slot = signal<CngxDotStepperDot | undefined>({
+      templateRef: host.instanceTpl,
+    } as unknown as CngxDotStepperDot);
+    const bindings = bindingsFor(
+      { templates: { dotStepperDot: host.configTpl as TemplateRef<never> } },
+      slot,
+    );
+    expect(bindings.dot()).toBe(host.instanceTpl);
+    slot.set(undefined);
+    expect(bindings.dot()).toBe(host.configTpl);
+  });
+
+  it('falls back to null without a slot or config template', () => {
+    expect(bindingsFor({}, signal<CngxDotStepperDot | undefined>(undefined)).dot()).toBeNull();
+  });
+
+  it('reads the config template when the caller passes no dot slot', () => {
+    const host = makeHost();
+    const bindings = bindingsFor({
+      templates: { dotStepperDot: host.configTpl as TemplateRef<never> },
+    });
+    expect(bindings.dot()).toBe(host.configTpl);
+    expect(bindingsFor({}).dot()).toBeNull();
   });
 });

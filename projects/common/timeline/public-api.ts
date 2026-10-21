@@ -45,6 +45,7 @@ export {
   type CngxTimelineItemContext,
   type CngxTimelineMarkerContext,
   type CngxTimelineRetryButtonContext,
+  type CngxTimelineSkeletonContext,
 } from './template-slots';
 export {
   CNGX_TIMELINE_CONFIG,

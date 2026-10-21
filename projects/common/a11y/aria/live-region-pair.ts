@@ -20,8 +20,11 @@ export interface CngxPendingAnnouncement {
  * `injectScopedLiveRegion` (container: an overlay host).
  */
 export interface CngxLiveRegionPair {
-  /** Clear the region of `politeness` now, write `message` one frame later. */
-  announce(message: string, politeness: AriaLivePoliteness): void;
+  /**
+   * Clear the region of `politeness` now, write `message` `delayMs` later
+   * (default one frame).
+   */
+  announce(message: string, politeness: AriaLivePoliteness, delayMs?: number): void;
   /** Create both regions up front so they are in the DOM before any message. */
   ensure(): void;
   /** Cancel every write that has not landed and return what it would have said. */
@@ -42,8 +45,16 @@ interface PendingWrite {
  * visually hidden `aria-live` + `aria-atomic="true"` span (the attribute
  * contract of `CngxLiveRegion`), created lazily on the first announce of its
  * politeness or by `ensure()`.
+ *
+ * `redirect` is asked when a write is due: returning `true` means the caller
+ * took the message elsewhere (its container stopped being readable while the
+ * write was pending), so nothing is written here.
  */
-export function createLiveRegionPair(container: HTMLElement, doc: Document): CngxLiveRegionPair {
+export function createLiveRegionPair(
+  container: HTMLElement,
+  doc: Document,
+  redirect?: (announcement: CngxPendingAnnouncement) => boolean,
+): CngxLiveRegionPair {
   const regions: Record<AriaLivePoliteness, HTMLElement | null> = {
     polite: null,
     assertive: null,
@@ -86,7 +97,7 @@ export function createLiveRegionPair(container: HTMLElement, doc: Document): Cng
   };
 
   return {
-    announce(message, politeness) {
+    announce(message, politeness, delayMs = CLEAR_DELAY_MS) {
       const region = ensureRegion(politeness);
       // Clear first, then write one frame later so repeating the same string
       // still registers as a content change for the SR. Polite and assertive
@@ -96,9 +107,12 @@ export function createLiveRegionPair(container: HTMLElement, doc: Document): Cng
       pending[politeness] = {
         message,
         timer: setTimeout(() => {
-          region.textContent = message;
           pending[politeness] = null;
-        }, CLEAR_DELAY_MS),
+          if (redirect?.({ message, politeness })) {
+            return;
+          }
+          region.textContent = message;
+        }, delayMs),
       };
     },
     ensure() {

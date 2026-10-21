@@ -1,4 +1,11 @@
-import { ChangeDetectorRef, Component, computed, signal } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  computed,
+  signal,
+  type TemplateRef,
+  ViewChild,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
@@ -9,6 +16,8 @@ import { createResizeObserverMock, stripBidiIsolates } from '@cngx/testing';
 import {
   CngxStep,
   CngxStepGroup,
+  CngxDotStepperDot,
+  type CngxDotStepperDotContext,
   type CngxStepperCommitAction,
   CNGX_STEPPER_GLYPHS,
   provideStepperConfig,
@@ -17,6 +26,7 @@ import {
   withStepperFallbackLabels,
   CngxStepError,
   withStepperDensity,
+  withDotStepperDotTemplate,
   withStepperGroupCollapse,
   withStepperGroupCollapseSummary,
   withStepperHeaderNavigation,
@@ -41,6 +51,30 @@ import { CngxStepper } from './stepper.component';
   `,
 })
 class HostCmp {}
+
+@Component({
+  standalone: true,
+  imports: [CngxStepper, CngxStep, CngxDotStepperDot],
+  template: `
+    <cngx-stepper aria-label="Wizard">
+      <ng-template cngxDotStepperDot let-index let-active="active">
+        <span class="dot-body" [attr.data-active]="active">{{ index }}</span>
+      </ng-template>
+      <div cngxStep label="A"></div>
+      <div cngxStep label="B"></div>
+      <div cngxStep label="C"></div>
+    </cngx-stepper>
+  `,
+})
+class DotSlotHost {}
+
+@Component({
+  standalone: true,
+  template: `<ng-template #dot let-index><i class="config-dot">{{ index }}</i></ng-template>`,
+})
+class DotTemplateFactory {
+  @ViewChild('dot', { static: true }) dot!: TemplateRef<CngxDotStepperDotContext>;
+}
 
 @Component({
   standalone: true,
@@ -499,29 +533,24 @@ describe('CngxStepper organism', () => {
       return fixture;
     }
 
-    it('degrades [data-strip-density] full -> compact -> minimal on container width', () => {
+    it('keeps [data-density-auto] and writes no strip-density rung at any width', () => {
       const fixture = autoFixture();
       const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
-      expect(host.getAttribute('data-strip-density')).toBe('full'); // width 0 before first measure
-      emitWidth(3 * 130); // 130 px/step -> full
-      fixture.detectChanges();
-      expect(host.getAttribute('data-strip-density')).toBe('full');
-      emitWidth(3 * 100); // 100 px/step -> compact
-      fixture.detectChanges();
-      expect(host.getAttribute('data-strip-density')).toBe('compact');
-      emitWidth(3 * 40); // 40 px/step -> minimal
-      fixture.detectChanges();
-      expect(host.getAttribute('data-strip-density')).toBe('minimal');
+      for (const w of [3 * 130, 3 * 100, 3 * 40]) {
+        emitWidth(w);
+        fixture.detectChanges();
+        expect(host.hasAttribute('data-density-auto')).toBe(true);
+        expect(host.hasAttribute('data-strip-density')).toBe(false);
+      }
     });
 
-    it('keeps the configured horizontal orientation at the minimal rung (no auto-vertical flip)', () => {
+    it('keeps the configured horizontal orientation on a narrow strip (no auto-vertical flip)', () => {
       const fixture = autoFixture();
       const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
       emitWidth(3 * 40);
       fixture.detectChanges();
-      expect(host.getAttribute('data-strip-density')).toBe('minimal');
-      // A horizontal stepper stays horizontal - minimal degrades to an
-      // indicators-only row, it does not stack vertically.
+      // A horizontal stepper stays horizontal - the labels shrink in flow,
+      // the strip does not stack vertically.
       expect(host.getAttribute('aria-orientation')).toBe('horizontal');
       expect(host.getAttribute('data-orientation')).toBe('horizontal');
     });
@@ -567,7 +596,7 @@ describe('CngxStepper organism', () => {
       expect(labels.every((l) => (l.textContent ?? '').trim().length > 0)).toBe(true);
     });
 
-    it("'comfortable' (default) keeps data-strip-density full at any width and sets no [data-density-auto]", () => {
+    it("'comfortable' (default) sets no [data-density-auto] at any width", () => {
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
       });
@@ -576,7 +605,6 @@ describe('CngxStepper organism', () => {
       const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
       emitWidth(3 * 10);
       fixture.detectChanges();
-      expect(host.getAttribute('data-strip-density')).toBe('full');
       expect(host.getAttribute('aria-orientation')).toBe('horizontal');
       // No-scrollbar shrink CSS is scoped to [data-density-auto]; off here.
       expect(host.hasAttribute('data-density-auto')).toBe(false);
@@ -1852,7 +1880,7 @@ describe('CngxStepper organism', () => {
     // ships none, and the property stays '' until the first entry), and
     // getComputedStyle, which resolves no custom properties in jsdom. The
     // observer fires on observe() so every consumer in the component - the
-    // container and the strip-density probe - gets its first entry.
+    // container query probe - gets its first entry.
     beforeEach(() => {
       vi.stubGlobal(
         'ResizeObserver',
@@ -1967,6 +1995,90 @@ describe('CngxStepper organism', () => {
         expect(descriptor).not.toBeNull();
         expect(descriptor!.textContent).not.toBe('');
       }
+    });
+
+    it('dots mode: a projected *cngxDotStepperDot renders in every dot with its index context', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperMobileCollapse('dots')),
+        ],
+      });
+      const fixture = TestBed.createComponent(DotSlotHost);
+      fixture.detectChanges();
+      const dots = Array.from(
+        fixture.nativeElement.querySelectorAll('button.cngx-stepper__mobile-dot'),
+      ) as HTMLButtonElement[];
+      expect(dots.length).toBe(3);
+      expect(dots.map((d) => d.querySelector('.dot-body')?.textContent?.trim())).toEqual([
+        '0',
+        '1',
+        '2',
+      ]);
+      expect(dots.map((d) => d.querySelector('.dot-body')?.getAttribute('data-active'))).toEqual([
+        'true',
+        'false',
+        'false',
+      ]);
+      expect(stripBidiIsolates(dots[0].getAttribute('aria-label'))).toContain('A');
+    });
+
+    it('dots mode: a projected dot body sits in an aria-hidden wrapper on both dot shells', () => {
+      for (const navigation of ['visited', 'none'] as const) {
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          providers: [
+            provideZonelessChangeDetection(),
+            provideStepperConfig(
+              withStepperMobileCollapse('dots'),
+              withStepperHeaderNavigation(navigation),
+            ),
+          ],
+        });
+        const fixture = TestBed.createComponent(DotSlotHost);
+        fixture.detectChanges();
+        const dots = Array.from(
+          fixture.nativeElement.querySelectorAll('.cngx-stepper__mobile-dot'),
+        ) as HTMLElement[];
+        expect(dots.length).toBe(3);
+        dots.forEach((dot, i) => {
+          const body = dot.querySelector('.dot-body') as HTMLElement;
+          const wrapper = body.parentElement as HTMLElement;
+          expect(wrapper).not.toBe(dot);
+          expect(wrapper.parentElement).toBe(dot);
+          expect(wrapper.getAttribute('aria-hidden')).toBe('true');
+          expect(stripBidiIsolates(dot.getAttribute('aria-label'))).toContain(['A', 'B', 'C'][i]);
+          expect(dot.getAttribute('aria-current')).toBe(i === 0 ? 'step' : null);
+        });
+      }
+    });
+
+    it('dots mode: the config dot template renders without a per-instance slot', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const tplFixture = TestBed.createComponent(DotTemplateFactory);
+      tplFixture.detectChanges();
+      const dot = tplFixture.componentInstance.dot;
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(
+            withStepperMobileCollapse('dots'),
+            withStepperHeaderNavigation('none'),
+            withDotStepperDotTemplate(dot),
+          ),
+        ],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      const dots = Array.from(
+        fixture.nativeElement.querySelectorAll('span.cngx-stepper__mobile-dot--static'),
+      ) as HTMLElement[];
+      expect(dots.map((d) => d.querySelector('.config-dot')?.textContent?.trim())).toEqual([
+        '0',
+        '1',
+        '2',
+      ]);
     });
 
     it('dots mode + headerNavigation "none": static listitem dots carry the header id, no aria-controls', () => {

@@ -17,6 +17,7 @@ function i18nFor(lang: 'en' | 'de'): CngxTabsI18n {
     commitRefused: (label: string) =>
       lang === 'de' ? `Nicht erlaubt, bleibt bei "${label}".` : `Not allowed, stayed on "${label}".`,
     commitRefusedGeneric: lang === 'de' ? 'Nicht erlaubt' : 'Not allowed',
+    unlabeledTab: (position: number) => (lang === 'de' ? `Reiter ${position}` : `Tab ${position}`),
   } as unknown as CngxTabsI18n;
 }
 
@@ -101,11 +102,48 @@ describe('createRejectionState refused commit', () => {
     expect(state.reason()).toBe('refused');
   });
 
-  it('reads commitRefusedGeneric for an unlabelled origin', () => {
+  it('names an unlabelled origin by its position in the refused phrase', () => {
     const { state, refuse } = setup({ en: '', de: '' });
     refuse(1, 0);
+    expect(state.liveAnnouncement()).toBe('Not allowed, stayed on "Tab 1".');
+    expect(state.descriptorText()).toBe('Not allowed, stayed on "Tab 1".');
+  });
+
+  it('names an unlabelled origin by its position in the rolled-back phrase', () => {
+    const { state, current, lastFailedIndex, lastOutcome, originIndexDuringCommit } = setup({
+      en: '',
+      de: '',
+    });
+    originIndexDuringCommit.set(0);
+    lastOutcome.set({ kind: 'failed', index: 1, sequence: 1 });
+    lastFailedIndex.set(1);
+    current.set('error');
+    expect(state.liveAnnouncement()).toBe('Reverted to "Tab 1".');
+    expect(state.descriptorText()).toBe('Reverted to "Tab 1".');
+  });
+
+  it('keeps the generic copy when the origin index points at a removed tab', () => {
+    const { state, refuse, current, lastFailedIndex, lastOutcome } = setup({ en: '', de: '' });
+    refuse(1, 7);
     expect(state.liveAnnouncement()).toBe('Not allowed');
     expect(state.descriptorText()).toBe('Not allowed');
+    lastOutcome.set({ kind: 'failed', index: 1, sequence: 99 });
+    lastFailedIndex.set(1);
+    current.set('error');
+    expect(state.liveAnnouncement()).toBe('Refused');
+    expect(state.descriptorText()).toBe('Refused');
+  });
+
+  it('keeps the generic copy when no origin index resolves', () => {
+    const { state, current, lastFailedIndex, lastOutcome } = setup({ en: '', de: '' });
+    lastOutcome.set({ kind: 'refused', index: 1, sequence: 1 });
+    lastFailedIndex.set(1);
+    expect(state.liveAnnouncement()).toBe('Not allowed');
+    expect(state.descriptorText()).toBe('Not allowed');
+    lastOutcome.set({ kind: 'failed', index: 1, sequence: 2 });
+    current.set('error');
+    expect(state.liveAnnouncement()).toBe('Refused');
+    expect(state.descriptorText()).toBe('Refused');
   });
 
   it('spends the refused phrase on the next commit and on an active-index move', () => {

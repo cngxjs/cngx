@@ -7,6 +7,7 @@ import {
   DestroyRef,
   Directive,
   effect,
+  ElementRef,
   inject,
   input,
   output,
@@ -188,6 +189,7 @@ export class CngxAlert {
   private readonly i18n = injectFeedbackI18n();
   private readonly destroyRef = inject(DestroyRef);
   private readonly announcer = inject(CngxLiveAnnouncer);
+  private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   /** Alert severity - determines visual style, default icon, and ARIA role. */
   readonly severity = input<AlertSeverity>('info');
@@ -454,7 +456,14 @@ export class CngxAlert {
     this.manualDismissed.set(true);
     this.autoDismissTimer.clear();
     this.collapseTimer.clear();
-    this.announcer.announce(untracked(() => this.i18n().announcements.alertDismissed));
+    // Scoped to the host: inside a modal dialog the body region is hidden from
+    // AT. The modal lookup runs here, before a destroy-on-dismiss consumer
+    // removes the host on `dismissed`.
+    this.announcer.announce(
+      untracked(() => this.i18n().announcements.alertDismissed),
+      'polite',
+      this.hostElement,
+    );
     this.dismissed.emit();
   }
 

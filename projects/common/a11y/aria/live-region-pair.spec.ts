@@ -73,4 +73,32 @@ describe('createLiveRegionPair', () => {
     expect(container.children).toHaveLength(0);
     expect(polite?.textContent).toBe('');
   });
+
+  it('writes after a caller-given delay', () => {
+    const pair = createLiveRegionPair(container, document);
+    pair.announce('Settled', 'polite', 100);
+    vi.advanceTimersByTime(99);
+    expect(region('polite')?.textContent).toBe('');
+    vi.advanceTimersByTime(1);
+    expect(region('polite')?.textContent).toBe('Settled');
+  });
+
+  it('hands a due write to redirect and writes nothing when redirect takes it', () => {
+    const taken: string[] = [];
+    let redirecting = true;
+    const pair = createLiveRegionPair(container, document, (due) => {
+      taken.push(`${due.politeness}:${due.message}`);
+      return redirecting;
+    });
+    pair.announce('Moved', 'assertive');
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+    expect(taken).toEqual(['assertive:Moved']);
+    expect(region('assertive')?.textContent).toBe('');
+    expect(pair.takePending()).toEqual([]);
+
+    redirecting = false;
+    pair.announce('Stays', 'assertive');
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+    expect(region('assertive')?.textContent).toBe('Stays');
+  });
 });

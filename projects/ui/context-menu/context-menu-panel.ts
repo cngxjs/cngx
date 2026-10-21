@@ -51,10 +51,13 @@ export interface CngxContextMenuPanel<T = unknown> {
    * inline-end (`right-start` + the submenu flip chain), open non-exclusively so
    * the parent panel survives, and mirror the parent's per-open datum. Owns the
    * submenu placement policy so a projected item drives one seam instead of
-   * reaching into the popover's override signals. Optional: an ejected panel
-   * skin may omit it and drive its own popover directly.
+   * reaching into the popover's override signals. `parent` is the panel the
+   * opening item sits in; the submenu forwards activation to it, so a
+   * submenu parent at any depth opens by click or Enter through the root
+   * trigger. Optional: an ejected panel skin may omit it and drive its own
+   * popover directly.
    */
-  openAsSubmenu?(context: T | null): void;
+  openAsSubmenu?(context: T | null, parent?: CngxContextMenuPanel<T>): void;
   /**
    * @internal Register the trigger core's keydown handler so the panel can
    * forward ArrowRight/ArrowLeft/Escape submenu routing to it. The core owns
@@ -73,6 +76,22 @@ export interface CngxContextMenuPanel<T = unknown> {
    * Optional: an ejected panel skin may omit it.
    */
   setActivationHandler?(handler: (() => void) | null): void;
+  /**
+   * @internal Run the activation routing for an `activated` event of this
+   * panel or of a submenu opened from it: the trigger's activation handler
+   * when this panel was opened by a trigger, else the parent panel's. Optional:
+   * an ejected panel skin may omit it, in which case activation inside its
+   * submenus is not routed.
+   */
+  handleActivated?(): void;
+  /**
+   * @internal Route a keydown of this panel or of a submenu opened from it:
+   * the trigger's keydown handler when this panel was opened by a trigger,
+   * else the parent panel's, so ArrowLeft / ArrowRight / Escape reach the
+   * root trigger core from any depth. Optional alongside
+   * {@link handleActivated}.
+   */
+  routeKeydown?(event: KeyboardEvent): void;
   /**
    * @internal Register the trigger core's push-only "submenu opened" handler.
    * A projected item calls {@link noteActiveSubmenuOpened} after its

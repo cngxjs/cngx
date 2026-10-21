@@ -2,13 +2,12 @@ import type { Locator } from '@playwright/test';
 import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
-// The classic strip's `density: 'auto'` ladder is driven by the strip's
-// own container width (ResizeObserver), not the viewport. The width is
-// forced via an injected stylesheet (same technique as
-// stepper-container-responsive) so the rung transitions are deterministic
-// regardless of the runner's viewport. The demo tunes the thresholds to
-// { compact: 145, minimal: 120 } px per step across 4 steps:
-//   >= 580px -> full, >= 480px -> compact, < 480px -> minimal.
+// The classic strip's `density: 'auto'` shrinks its labels in flow within a
+// cqi budget of the strip's own container width, not the viewport. The width
+// is forced via an injected stylesheet (same technique as
+// stepper-container-responsive) so the result is deterministic regardless of
+// the runner's viewport. Below 30rem the stepper collapses and renders no
+// strip, so every width here stays above it.
 
 const ROUTE = 'ui/stepper/stepper-density/flat-steps-auto-density';
 
@@ -17,7 +16,7 @@ async function horizontalOverflow(stepper: Locator): Promise<number> {
 }
 
 test.describe('ui/stepper/stepper-density', () => {
-  test('degrades full -> compact -> minimal on container width, no scrollbar at any rung', async ({
+  test('no horizontal scrollbar at 620 / 560 / 500 px, orientation stays horizontal', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
@@ -25,29 +24,20 @@ test.describe('ui/stepper/stepper-density', () => {
 
     const stepper = page.locator('cngx-stepper').first();
     await expect(stepper).toBeVisible();
+    await expect(stepper).toHaveAttribute('data-density-auto', '');
 
-    await page.addStyleTag({
-      content: 'cngx-stepper { width: 620px !important; display: block; }',
-    });
-    await expect(stepper).toHaveAttribute('data-strip-density', 'full');
-    expect(await horizontalOverflow(stepper)).toBeLessThanOrEqual(1);
-
-    await page.addStyleTag({
-      content: 'cngx-stepper { width: 560px !important; display: block; }',
-    });
-    await expect(stepper).toHaveAttribute('data-strip-density', 'compact');
-    // The user-reported failure was a horizontal scrollbar here - the
-    // compact rung must fit its container.
-    expect(await horizontalOverflow(stepper)).toBeLessThanOrEqual(1);
-
-    await page.addStyleTag({
-      content: 'cngx-stepper { width: 500px !important; display: block; }',
-    });
-    await expect(stepper).toHaveAttribute('data-strip-density', 'minimal');
-    // A horizontal stepper stays horizontal at minimal - it degrades to an
-    // indicators-only row, never an auto-vertical stack.
-    await expect(stepper).toHaveAttribute('aria-orientation', 'horizontal');
-    expect(await horizontalOverflow(stepper)).toBeLessThanOrEqual(1);
+    for (const width of [620, 560, 500]) {
+      await page.addStyleTag({
+        content: `cngx-stepper { width: ${width}px !important; display: block; }`,
+      });
+      // The user-reported failure was a horizontal scrollbar on a narrow
+      // strip - the labels must shrink to fit their container instead.
+      await expect
+        .poll(() => horizontalOverflow(stepper), { message: `overflow at ${width}px` })
+        .toBeLessThanOrEqual(1);
+      // A horizontal stepper stays horizontal - never an auto-vertical stack.
+      await expect(stepper).toHaveAttribute('aria-orientation', 'horizontal');
+    }
   });
 
   test('never grows a horizontal scrollbar across the whole width range', async ({ page }) => {
@@ -70,7 +60,7 @@ test.describe('ui/stepper/stepper-density', () => {
     }
   });
 
-  test('the active step keeps its visible label at the minimal rung', async ({ page }) => {
+  test('the active step keeps its visible label on a narrow strip', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await gotoDemo(page, ROUTE);
 
@@ -78,7 +68,6 @@ test.describe('ui/stepper/stepper-density', () => {
     await page.addStyleTag({
       content: 'cngx-stepper { width: 500px !important; display: block; }',
     });
-    await expect(stepper).toHaveAttribute('data-strip-density', 'minimal');
 
     // The active (first) step's label is rendered, not sr-only-clipped.
     const activeLabel = stepper

@@ -16,7 +16,6 @@ import {
   injectStepperConfig,
   provideStepperConfig,
   provideStepperConfigAt,
-  STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
   withStepperDefaultOrientation,
   withStepperDensity,
   withStepperAriaLabels,
@@ -284,19 +283,19 @@ describe('CngxStepperConfig', () => {
   });
 
   describe('withStepperDensity', () => {
-    it("library default resolves to 'comfortable' + default breakpoints", () => {
+    it("library default resolves to 'comfortable'", () => {
       // Runtime guard for the Required<Omit<...>> build-trap: fails if a
-      // future edit adds density/densityBreakpoints to CngxStepperConfig
-      // but omits the STEPPER_CONFIG_DEFAULTS entry.
+      // future edit adds a density field to CngxStepperConfig but omits
+      // the STEPPER_CONFIG_DEFAULTS entry.
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
       });
       const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
       expect(cfg.density).toBe('comfortable');
-      expect(cfg.densityBreakpoints).toEqual(STEPPER_DEFAULT_DENSITY_BREAKPOINTS);
+      expect('densityBreakpoints' in cfg).toBe(false);
     });
 
-    it("provideStepperConfig(withStepperDensity('auto')) overrides density, keeps default breakpoints", () => {
+    it("provideStepperConfig(withStepperDensity('auto')) overrides density", () => {
       TestBed.configureTestingModule({
         providers: [
           provideZonelessChangeDetection(),
@@ -305,18 +304,6 @@ describe('CngxStepperConfig', () => {
       });
       const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
       expect(cfg.density).toBe('auto');
-      expect(cfg.densityBreakpoints).toEqual(STEPPER_DEFAULT_DENSITY_BREAKPOINTS);
-    });
-
-    it('the second argument overrides the per-step breakpoints', () => {
-      TestBed.configureTestingModule({
-        providers: [
-          provideZonelessChangeDetection(),
-          provideStepperConfig(withStepperDensity('auto', { compact: 200, minimal: 100 })),
-        ],
-      });
-      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
-      expect(cfg.densityBreakpoints).toEqual({ compact: 200, minimal: 100 });
     });
 
     it('carries the _target=config discriminator', () => {

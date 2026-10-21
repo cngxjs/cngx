@@ -11,6 +11,8 @@ import {
   CngxTimelineLoadingTail,
   CngxTimelineMarkerTpl,
   CngxTimelineRetryButton,
+  CngxTimelineSkeleton,
+  type CngxTimelineSkeletonContext,
 } from './template-slots';
 import {
   injectTimelineConfig,
@@ -251,5 +253,20 @@ describe('timeline template slots', () => {
       expect(lbl(config).emptyFallback).toBe('No events yet');
       expect(config.templates?.loadingTail).toBe(tailTpl);
     });
+  });
+});
+
+describe('CngxTimelineSkeleton context', () => {
+  it('narrows the template context to index, count and side', () => {
+    const ctx: CngxTimelineSkeletonContext = { $implicit: 2, index: 2, count: 4, side: 'end' };
+    const guarded: unknown = ctx;
+    expect(CngxTimelineSkeleton.ngTemplateContextGuard({} as CngxTimelineSkeleton, guarded)).toBe(
+      true,
+    );
+    if (CngxTimelineSkeleton.ngTemplateContextGuard({} as CngxTimelineSkeleton, guarded)) {
+      const side: 'start' | 'end' = guarded.side;
+      expect(side).toBe('end');
+      expect(guarded.count).toBe(4);
+    }
   });
 });

@@ -1,8 +1,9 @@
-import type { Signal } from '@angular/core';
+import { computed, type Signal } from '@angular/core';
 
 import type { CngxStepperI18n } from './i18n/stepper-i18n';
 import type { CngxStepBadgeContext } from './slots/step-badge.directive';
 import type { CngxStepBusySpinnerContext } from './slots/step-busy-spinner.directive';
+import type { CngxDotStepperDotContext } from './slots/dot-stepper-dot.directive';
 import type { CngxStepErrorContext } from './slots/step-error.directive';
 import type { CngxStepGroupHeaderContext } from './slots/step-group-header.directive';
 import type { CngxStepIndicatorContext } from './slots/step-indicator.directive';
@@ -53,6 +54,8 @@ export interface CngxStepperSlotContextBuilders {
   readonly groupHeaderContextFor: (node: CngxStepNode) => CngxStepGroupHeaderContext;
   readonly stepLabelContextFor: (node: CngxStepNode) => CngxStepLabelContext;
   readonly stepContentContextFor: (node: CngxStepNode) => CngxStepContentContext;
+  /** Context of the `*cngxDotStepperDot` body in the dots mobile-collapse branch. */
+  readonly dotContextFor: (node: CngxStepNode) => CngxDotStepperDotContext;
 }
 
 /**
@@ -203,6 +206,25 @@ export function createStepperSlotContextBuilders(
     disabled: node.disabled(),
   }));
 
+  // One pass per step-list change, so a dot reads its index in O(1)
+  // instead of scanning the list on every change-detection pass.
+  const stepIndexByNode = computed(
+    () => new Map(stepsOnly().map((node, index) => [node, index] as const)),
+  );
+
+  // Same fields as <cngx-dot-stepper>: index in the step-only projection,
+  // completed = before the active step.
+  const dotContextFor = memoizeByNode<CngxDotStepperDotContext>((node) => {
+    const index = stepIndexByNode().get(node) ?? -1;
+    return {
+      $implicit: index,
+      index,
+      node,
+      active: isActive(node),
+      completed: index < presenter.activeStepIndex(),
+    };
+  });
+
   return {
     isActive,
     isStepBusy,
@@ -217,5 +239,6 @@ export function createStepperSlotContextBuilders(
     groupHeaderContextFor,
     stepLabelContextFor,
     stepContentContextFor,
+    dotContextFor,
   };
 }
