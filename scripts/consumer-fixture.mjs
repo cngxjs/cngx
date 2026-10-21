@@ -131,9 +131,9 @@ export const STARTER_SMOKE = {
  * `full` provides feedback and writes the starter, so only it runs `ng test`
  * over the stock spec, expects the outlets in the DOM and clicks the
  * starter's toast and banner buttons; the default path gets no extra step.
- * An NgModule app (`standalone` false) gets the outlets but no starter.
+ * An NgModule app (`{ standalone: false }`) gets the outlets but no starter.
  */
-export function presetPlan(preset = DEFAULT_PRESET, standalone = true) {
+export function presetPlan(preset = DEFAULT_PRESET, { standalone = true } = {}) {
   if (!PRESETS.includes(preset)) {
     throw new Error(`Unknown preset "${preset}". Available: ${PRESETS.join(', ')}`);
   }
@@ -809,7 +809,7 @@ async function main() {
   const { angular, variant, tarballs, work, ignorePeers, staleCore, preset } = parseArgs(process.argv.slice(2));
   const { cliSpec, exact } = parseAngularSpec(angular);
   const plan = variantPlan(variant);
-  const checks = presetPlan(preset, plan.standalone);
+  const checks = presetPlan(preset, { standalone: plan.standalone });
 
   const tarballFiles = existsSync(tarballs)
     ? readdirSync(tarballs).filter((file) => file.endsWith('.tgz')).map((file) => join(tarballs, file))

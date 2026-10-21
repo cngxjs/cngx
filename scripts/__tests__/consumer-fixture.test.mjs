@@ -249,7 +249,7 @@ describe('presetPlan', () => {
       noBudgetWarnings: true,
     });
     expect(presetPlan()).toEqual({ preset: 'recommended', ngTest: false, outlets: [], starter: undefined, noBudgetWarnings: false });
-    expect(presetPlan('full', false)).toEqual({ ...presetPlan('full'), starter: undefined });
+    expect(presetPlan('full', { standalone: false })).toEqual({ ...presetPlan('full'), starter: undefined });
     expect(presetPlan('minimal')).toEqual({ preset: 'minimal', ngTest: false, outlets: [], starter: undefined, noBudgetWarnings: false });
   });
 
