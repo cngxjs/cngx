@@ -98,6 +98,23 @@
       ]
     },
     {
+      "code": "CNGX0006",
+      "lib": "core",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Invalid `dir` on the document root",
+      "page": "core-concepts/error-codes/cngx0006.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0006.html",
+      "status": "active",
+      "files": ["projects/core/bidi/direction.ts"],
+      "messages": [
+        {
+          "file": "projects/core/bidi/direction.ts",
+          "text": "injectDirection() ignores <html dir=\"${...}\">; only \"ltr\", \"rtl\" and \"auto\" are valid, so the direction reads 'ltr'."
+        }
+      ]
+    },
+    {
       "code": "CNGX0901",
       "lib": "utils",
       "severity": "warn",

@@ -1,7 +1,7 @@
 import { Component, DestroyRef, PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CNGX_DIRECTION, injectDirection, provideDirection, provideDirectionAt } from './direction';
 
 const rootDir = () => document.documentElement.getAttribute('dir');
@@ -66,10 +66,126 @@ describe('injectDirection / CNGX_DIRECTION reader', () => {
     expect(direction()).toBe('rtl');
   });
 
-  it("normalises dir=\"auto\" to 'ltr'", () => {
-    document.documentElement.dir = 'auto';
-    const direction = TestBed.runInInjectionContext(() => injectDirection());
-    expect(direction()).toBe('ltr');
+  describe('dir="auto" and invalid values', () => {
+    // The browser's auto rule takes the first strong character in tree
+    // order, <head> included, so the page <title> is set aside for each case.
+    // Specs share one document (isolate: false); every node added is removed.
+    let title: HTMLTitleElement | null = null;
+    let added: Element[] = [];
+
+    const prependText = (parent: Element, text: string): void => {
+      const node = document.createElement('div');
+      node.textContent = text;
+      parent.prepend(node);
+      added.push(node);
+    };
+
+    beforeEach(() => {
+      title = document.head.querySelector('title');
+      title?.remove();
+    });
+
+    afterEach(() => {
+      added.forEach((node) => node.remove());
+      added = [];
+      if (title) {
+        document.head.prepend(title);
+      }
+    });
+
+    it("resolves dir=\"auto\" with Hebrew body text to 'rtl'", () => {
+      prependText(document.body, 'שלום עולם');
+      document.documentElement.dir = 'auto';
+      const direction = TestBed.runInInjectionContext(() => injectDirection());
+      expect(direction()).toBe('rtl');
+    });
+
+    it("resolves dir=\"auto\" with Latin body text to 'ltr'", () => {
+      prependText(document.body, 'Hello world');
+      document.documentElement.dir = 'auto';
+      const direction = TestBed.runInInjectionContext(() => injectDirection());
+      expect(direction()).toBe('ltr');
+    });
+
+    it("lets a Latin <title> decide dir=\"auto\" ahead of Hebrew body text", () => {
+      prependText(document.body, 'שלום עולם');
+      prependText(document.head, 'Latin title');
+      document.documentElement.dir = 'auto';
+      const direction = TestBed.runInInjectionContext(() => injectDirection());
+      expect(direction()).toBe('ltr');
+    });
+
+    it('re-reads dir="auto" after the first render of a client-rendered app', () => {
+      document.documentElement.dir = 'auto';
+      const direction = TestBed.runInInjectionContext(() => injectDirection());
+      expect(direction()).toBe('ltr');
+
+      prependText(document.body, 'שלום עולם');
+      TestBed.tick();
+
+      expect(direction()).toBe('rtl');
+    });
+
+    it("resolves dir=\"auto\" to 'ltr' on the server without touching selector APIs", () => {
+      const matchesSpy = vi.spyOn(Element.prototype, 'matches');
+      prependText(document.body, 'שלום עולם');
+      TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
+      document.documentElement.dir = 'auto';
+
+      const direction = TestBed.runInInjectionContext(() => injectDirection());
+
+      expect(direction()).toBe('ltr');
+      expect(matchesSpy).not.toHaveBeenCalled();
+    });
+
+    it("reads dir=\"RTL\" case-insensitively as 'rtl' without a warning", () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      document.documentElement.setAttribute('dir', 'RTL');
+      const direction = TestBed.runInInjectionContext(() => injectDirection());
+      expect(direction()).toBe('rtl');
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it("reports an invalid dir as 'ltr' and warns CNGX0006 once per distinct value", async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      document.documentElement.setAttribute('dir', 'rlt');
+      const direction = TestBed.runInInjectionContext(() => injectDirection());
+
+      expect(direction()).toBe('ltr');
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringMatching(/^CNGX0006: injectDirection\(\) ignores <html dir="rlt">/),
+      );
+
+      // Same garbage value again: the observer re-reads, the warning stays silent.
+      document.documentElement.setAttribute('dir', 'RLT');
+      await flushObserver();
+      expect(warn).toHaveBeenCalledTimes(1);
+
+      // A valid read resets the dedupe, so the value warns again afterwards.
+      document.documentElement.setAttribute('dir', 'rtl');
+      await flushObserver();
+      expect(direction()).toBe('rtl');
+      document.documentElement.setAttribute('dir', 'rlt');
+      await flushObserver();
+      expect(direction()).toBe('ltr');
+      expect(warn).toHaveBeenCalledTimes(2);
+    });
+
+    it('treats a padded dir value as invalid, like the browser', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      document.documentElement.setAttribute('dir', ' rtl');
+      const direction = TestBed.runInInjectionContext(() => injectDirection());
+      expect(direction()).toBe('ltr');
+      expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^CNGX0006: /));
+    });
+
+    it('does not warn when dir is absent', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const direction = TestBed.runInInjectionContext(() => injectDirection());
+      expect(direction()).toBe('ltr');
+      expect(warn).not.toHaveBeenCalled();
+    });
   });
 
   it("provideDirection('rtl') overrides the reported value without touching documentElement.dir", () => {
