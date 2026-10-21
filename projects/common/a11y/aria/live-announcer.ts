@@ -1,7 +1,26 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { inject, Injectable, type OnDestroy, PLATFORM_ID } from '@angular/core';
 
-import { createLiveRegionPair, type CngxLiveRegionPair } from './live-region-pair';
+import {
+  createLiveRegionPair,
+  type CngxLiveRegionPair,
+  type CngxPendingAnnouncement,
+} from './live-region-pair';
+
+// A screen reader commonly misses a change to a live region that entered the
+// DOM a frame earlier. A modal pair is created on the announcement that needs
+// it, so its first write waits until the regions have settled.
+const FIRST_MODAL_WRITE_DELAY_MS = 100;
+
+const MODAL_SELECTOR = '[aria-modal="true"]';
+
+/** A modal container a screen reader currently reads. */
+function isOpenModal(el: HTMLElement): boolean {
+  if (!el.isConnected || el.getAttribute('aria-modal') !== 'true') {
+    return false;
+  }
+  return !(el instanceof HTMLDialogElement) || el.open;
+}
 
 /**
  * Politeness channel for {@link CngxLiveAnnouncer.announce}: `'polite'` queues
@@ -31,10 +50,14 @@ export type AriaLivePoliteness = 'polite' | 'assertive';
  * A modal dialog hides everything outside it from assistive technology, so a
  * body region is silent while one is open. Pass the announcing element as the
  * third argument and the message goes to a region pair inside its enclosing
- * `[aria-modal="true"]` container instead (created on first use, removed with
- * the container); without a modal ancestor it goes to the body regions as
- * before. The scope is opt-in per call - an unscoped announcement never
- * guesses a modal. {@link injectScopedLiveRegion} is the injection-time
+ * `[aria-modal="true"]` container instead; without a modal ancestor it goes to
+ * the body regions as before. When a second modal is open inside that one,
+ * the innermost open modal receives it, since everything else in the outer
+ * modal is inert. The pair is created with both regions on first use and its
+ * first write waits until the regions have settled in the DOM. A message still
+ * pending when its modal closes moves to the next enclosing open modal or to
+ * the body regions, and the pair is removed. The scope is opt-in per call - an
+ * unscoped announcement never guesses a modal. {@link injectScopedLiveRegion} is the injection-time
  * alternative when the caller knows its overlay host up front.
  *
  * SSR-safe: all DOM access is guarded by `isPlatformBrowser`; on the server
@@ -59,8 +82,15 @@ export class CngxLiveAnnouncer implements OnDestroy {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   private regions: CngxLiveRegionPair | null = null;
-  /** One pair per `aria-modal` container; dies with the container. */
-  private readonly modalRegions = new WeakMap<Element, CngxLiveRegionPair>();
+  /**
+   * One pair per open `aria-modal` container, released once it closes.
+   * `outer` is the container's parent at creation, the route for its unwritten
+   * messages when it is removed from the DOM.
+   */
+  private readonly modalRegions = new Map<
+    HTMLElement,
+    { readonly pair: CngxLiveRegionPair; readonly outer: Element | null }
+  >();
 
   /**
    * Announces `message` through the fixed-politeness live region.
@@ -82,25 +112,100 @@ export class CngxLiveAnnouncer implements OnDestroy {
     if (!this.isBrowser) {
       return;
     }
-    this.pairFor(scope).announce(message, politeness);
-  }
-
-  private pairFor(scope: Element | null | undefined): CngxLiveRegionPair {
-    const modal = scope?.closest('[aria-modal="true"]');
-    if (!(modal instanceof HTMLElement)) {
-      this.regions ??= createLiveRegionPair(this.doc.body, this.doc);
-      return this.regions;
-    }
-    let pair = this.modalRegions.get(modal);
-    if (!pair) {
-      pair = createLiveRegionPair(modal, this.doc);
-      this.modalRegions.set(modal, pair);
-    }
-    return pair;
+    this.releaseClosedModals();
+    this.route(scope, { message, politeness });
   }
 
   ngOnDestroy(): void {
     this.regions?.destroy();
     this.regions = null;
+    for (const { pair } of this.modalRegions.values()) {
+      pair.destroy();
+    }
+    this.modalRegions.clear();
+  }
+
+  private route(scope: Element | null | undefined, announcement: CngxPendingAnnouncement): void {
+    const modal = this.targetModal(scope);
+    if (!modal) {
+      this.regions ??= createLiveRegionPair(this.doc.body, this.doc);
+      this.regions.announce(announcement.message, announcement.politeness);
+      return;
+    }
+    const existing = this.modalRegions.get(modal);
+    if (existing) {
+      existing.pair.announce(announcement.message, announcement.politeness);
+      return;
+    }
+    const pair = createLiveRegionPair(modal, this.doc, (due) => this.redirectIfClosed(modal, due));
+    pair.ensure();
+    this.modalRegions.set(modal, { pair, outer: modal.parentElement });
+    pair.announce(announcement.message, announcement.politeness, FIRST_MODAL_WRITE_DELAY_MS);
+  }
+
+  /**
+   * The open modal that encloses `scope`, or the innermost open modal nested
+   * inside it: while that one is open the rest of the enclosing modal is inert.
+   */
+  private targetModal(scope: Element | null | undefined): HTMLElement | null {
+    const own = this.enclosingOpenModal(scope);
+    if (!own) {
+      return null;
+    }
+    let target = own;
+    for (const nested of Array.from(own.querySelectorAll<HTMLElement>(MODAL_SELECTOR))) {
+      if (isOpenModal(nested)) {
+        target = nested;
+      }
+    }
+    return target;
+  }
+
+  private enclosingOpenModal(scope: Element | null | undefined): HTMLElement | null {
+    let candidate = scope?.closest(MODAL_SELECTOR) ?? null;
+    while (candidate) {
+      if (candidate instanceof HTMLElement && isOpenModal(candidate)) {
+        return candidate;
+      }
+      candidate = candidate.parentElement?.closest(MODAL_SELECTOR) ?? null;
+    }
+    return null;
+  }
+
+  private redirectIfClosed(modal: HTMLElement, due: CngxPendingAnnouncement): boolean {
+    if (isOpenModal(modal)) {
+      return false;
+    }
+    const outer = this.outerOf(modal);
+    this.release(modal);
+    this.route(outer, due);
+    return true;
+  }
+
+  private releaseClosedModals(): void {
+    for (const modal of Array.from(this.modalRegions.keys())) {
+      if (!isOpenModal(modal)) {
+        this.release(modal);
+      }
+    }
+  }
+
+  /** Drop the pair of a closed modal; its unwritten messages move outward. */
+  private release(modal: HTMLElement): void {
+    const entry = this.modalRegions.get(modal);
+    if (!entry) {
+      return;
+    }
+    const outer = this.outerOf(modal);
+    this.modalRegions.delete(modal);
+    const unwritten = entry.pair.takePending();
+    entry.pair.destroy();
+    for (const announcement of unwritten) {
+      this.route(outer, announcement);
+    }
+  }
+
+  private outerOf(modal: HTMLElement): Element | null {
+    return modal.parentElement ?? this.modalRegions.get(modal)?.outer ?? null;
   }
 }

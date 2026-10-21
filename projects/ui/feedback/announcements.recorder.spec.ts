@@ -306,6 +306,10 @@ describe('announcement recorder over ui/feedback', () => {
       startRecording();
 
       await dismiss(fixture);
+      // The modal pair is created by this dismissal; its first write waits
+      // 100 ms so the regions have settled before they change.
+      vi.advanceTimersByTime(100);
+      await observed();
 
       expect(recorder.entries().map(summary)).toEqual([{ ...dismissedEntry, suppressedBy: null }]);
     });
