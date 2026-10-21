@@ -1861,13 +1861,14 @@ describe('CngxTabGroup cngxTabIcon slot', () => {
       // off the reactive graph). TestBed.tick flushes render hooks
       // synchronously - no fake-timer / whenStable hang vector.
       TestBed.tick();
-      expect(
-        warn.mock.calls.some((c) =>
-          /^CNGX3011: \[cngx-tab-group\] iconLayout='only' but no \*cngxTabIcon template/.test(
-            String(c[0]),
-          ),
+      const call = warn.mock.calls.find((c) =>
+        /^CNGX3011: \[cngx-tab-group\] iconLayout='only' but no \*cngxTabIcon template/.test(
+          String(c[0]),
         ),
-      ).toBe(true);
+      );
+      expect(call).toBeDefined();
+      // The offending group rides along, so the console links straight to it.
+      expect(call?.[1]).toBe(fixture.nativeElement.querySelector('cngx-tab-group'));
     } finally {
       warn.mockRestore();
     }
