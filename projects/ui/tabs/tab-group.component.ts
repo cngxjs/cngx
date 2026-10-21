@@ -310,6 +310,9 @@ export class CngxTabGroup implements CngxTabPanelHost {
       installTabGroupDevChecks({
         iconLayout: this.hostAttrs.resolvedIconLayout,
         iconTemplate: this.templates.icon,
+        tabs: this.presenter.tabs,
+        hasLabelTemplate: (id) => this.labelTemplateFor(id) !== null,
+        host: this.hostElement,
       });
     }
   }

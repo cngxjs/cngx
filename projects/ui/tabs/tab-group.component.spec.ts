@@ -9,7 +9,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { readFileSync } from 'node:fs';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
@@ -164,6 +164,16 @@ describe('CngxTabGroup organism', () => {
   });
 
   describe('name source of a tab without a [label] string', () => {
+    // Deliberately unlabelled fixture: pin CNGX3025 instead of printing it.
+    let warn: MockInstance<typeof console.warn>;
+    beforeEach(() => {
+      warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    });
+    afterEach(() => {
+      expect(warn.mock.calls.filter((c) => /^CNGX3025: /.test(String(c[0])))).toHaveLength(1);
+      warn.mockRestore();
+    });
+
     function mountNaming(): HTMLButtonElement[] {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
@@ -1915,6 +1925,48 @@ describe('CngxTabGroup cngxTabIcon slot', () => {
   });
 });
 
+describe('CngxTabGroup CNGX3025 (tab without a [label] string)', () => {
+  function mountAndWarn<T>(host: new () => T): { calls: string[] } {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(host);
+      fixture.detectChanges();
+      TestBed.tick();
+      return {
+        calls: warn.mock.calls
+          .map((c) => String(c[0]))
+          .filter((m) => /^CNGX3025: /.test(m)),
+      };
+    } finally {
+      warn.mockRestore();
+    }
+  }
+
+  it('warns once per group listing the 1-based positions of label-less tabs', () => {
+    const { calls } = mountAndWarn(UnlabelledDismissableHost);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatch(/^CNGX3025: \[cngx-tab-group\] .*\b2 \(no name source\)/);
+    expect(calls[0]).not.toMatch(/\b1 \(/);
+  });
+
+  it('names the template case when a *cngxTabLabel template names the tab', () => {
+    const { calls } = mountAndWarn(TemplateLabelHost);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatch(/^CNGX3025: /);
+    expect(calls[0]).toContain('1 (named by its *cngxTabLabel template)');
+    expect(calls[0]).toContain('2 (named by its *cngxTabLabel template)');
+    expect(calls[0]).toContain('4 (no name source)');
+    expect(calls[0]).not.toContain('3 (');
+  });
+
+  it('stays silent when every tab binds a [label] string', () => {
+    const { calls } = mountAndWarn(HostCmp);
+    expect(calls).toHaveLength(0);
+  });
+});
+
 describe('CngxTabGroup tab panel container-query context', () => {
   it('the tab panel declares a container-query context (source-CSS assert; happy-dom cannot compute container-type)', () => {
     // Resolve from the runner cwd (repo root) - `import.meta.url` is a
@@ -2259,16 +2311,21 @@ describe('CngxTabGroup dismissable + addable', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const fixture = TestBed.createComponent(UnlabelledDismissableHost);
     fixture.detectChanges();
     const buttons = closeButtons(fixture);
     expect(stripBidiIsolates(buttons[1].getAttribute('aria-label'))).toBe('Close "Tab 2"');
+    TestBed.tick();
+    expect(warn.mock.calls.filter((c) => /^CNGX3025: /.test(String(c[0])))).toHaveLength(1);
+    warn.mockRestore();
   });
 
   it('renames the unlabelled close button when a tab before it goes away', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const fixture = TestBed.createComponent(GrowingUnlabelledHost);
     fixture.detectChanges();
     const last = (): string | null => closeButtons(fixture).at(-1)!.getAttribute('aria-label');
@@ -2276,6 +2333,9 @@ describe('CngxTabGroup dismissable + addable', () => {
     fixture.componentInstance.labels.set(['Home', '']);
     fixture.detectChanges();
     expect(stripBidiIsolates(last())).toBe('Close "Tab 2"');
+    TestBed.tick();
+    expect(warn.mock.calls.filter((c) => /^CNGX3025: /.test(String(c[0])))).toHaveLength(1);
+    warn.mockRestore();
   });
 
   it('clicking a close button emits tabClose with id + index', () => {
