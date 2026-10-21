@@ -318,16 +318,27 @@ stopped at for `<Class>` and `<file>`:
 - `<file> does not parse as TypeScript, so cngx edits neither it nor <Class>`: the root component or the root NgModule has a syntax error; cngx reads such a file only as far as the parser recovers, so it does not write into it.
 - `<Class> in <file> is bound to something other than the <Class> class of @cngx/ui/feedback`: the file already declares (a namespace or an interface included) or imports a `CngxBannerOutlet` or `CngxToastOutlet` of its own, also another `@cngx/ui/feedback` export aliased to that name or the whole entry imported under it.
 
-The spec next to the root component counts too. When it exists and is
-neither the untouched standalone `ng new` spec nor that spec with the
-feedback providers cngx adds, cngx places no outlet and edits no spec, since
-the outlets would inject `CngxToaster` and `CngxBanner` into a TestBed that
-may not provide them and `ng test` would fail. That includes the spec
-`ng new --standalone=false` writes: it declares `App` in its own TestBed,
-which would need the outlet classes as well as the providers. The note then
-reads `<file> is not the untouched standalone ng new spec, so cngx places no outlet a TestBed there may lack`,
+The spec next to the root component counts too. cngx edits two specs: the
+untouched standalone `ng new` spec gets the feedback providers, and the
+untouched `ng new --standalone=false` spec, which declares `App` in its own
+TestBed, also gets `CngxBannerOutlet` and `CngxToastOutlet` in that
+TestBed's `imports`. When the spec is neither of them nor one of them as
+cngx left it, cngx places no outlet and edits no spec, since the outlets
+would inject `CngxToaster` and `CngxBanner` into a TestBed that may not
+provide them and `ng test` would fail. The note then reads
+`<file> is not an untouched ng new spec, so cngx places no outlet a TestBed there may lack`,
 followed by the outlets snippet and what the spec needs. A missing spec is
 no reason to stop.
+
+The untouched NgModule spec is edited only when the app's `@angular/build`
+is on major 21. From 22.2 its unit-test builder compiles only the specs and
+what they import, so `App` compiles without `AppModule` and every element
+from it, `<router-outlet>` and the outlets alike, is unknown
+([angular/angular-cli#34231](https://github.com/angular/angular-cli/issues/34231),
+fixed for 22.3). On any other or unreadable version the note reads
+`<file> is the ng new NgModule spec and @angular/build is not on major 21; from 22.2 its unit-test builder compiles the root component there without its NgModule (angular/angular-cli#34231), so cngx places no outlet`,
+followed by the snippet, what the TestBed needs and an import of the root
+NgModule file in the spec, which lets the test build compile `App` with it.
 
 Fix what the reason names and run `ng add @cngx/core --feedback` again, or
 paste the snippet yourself.

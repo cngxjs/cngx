@@ -7,8 +7,27 @@ import { describe, expect, it } from 'vitest';
 import { createProvenance, type StepResult } from '../../engine';
 import { createAnswers, createFacts, VERSIONS } from '../../testing/onboarding';
 import { createFixtureTree, type FixtureName, readFixture } from '../../testing/run-schematic';
-import { type AppShell, appShellSpecOf, type AppShellUnfollowed, detectProject, type ProjectFacts } from '../detect/detect';
-import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell, planAppShellRerun, provideFeedbackInSpec, SPEC_ID, specCustomReason, specCustomText } from './app-shell';
+import {
+  type AppShell,
+  appShellSpecOf,
+  type AppShellUnfollowed,
+  detectProject,
+  type ProjectFacts,
+  provideFeedbackInModuleSpec,
+} from '../detect/detect';
+import {
+  OUTLETS_ID,
+  OUTLETS_SNIPPET,
+  planAppShell,
+  planAppShellRerun,
+  provideFeedbackInNgModuleSpec,
+  provideFeedbackInSpec,
+  SPEC_ID,
+  specCustomReason,
+  specCustomText,
+  specUnscopedReason,
+  specUnscopedText,
+} from './app-shell';
 import { writesStarter } from './starter';
 
 const FEEDBACK = createAnswers({ feedback: true });
@@ -291,6 +310,7 @@ describe('planAppShell', () => {
       'src/main.ts': NGMODULE_MAIN,
       'src/app/app-module.ts': NGMODULE.replace('imports:', `${key}:`),
       'src/app/app.ts': NGMODULE_APP,
+      'src/app/app.spec.ts': readFixture('scaffold-21-ngmodule')['src/app/app.spec.ts'],
     });
     const app = applied(plan(component.facts), component.files)['src/app/app.ts'];
     const module = applied(plan(ngModule.facts), ngModule.files)['src/app/app-module.ts'];
@@ -377,7 +397,7 @@ describe('planAppShell', () => {
         kind: 'note',
         id: OUTLETS_ID,
         reason:
-          `src/app/app.spec.ts is not the untouched standalone ng new spec, so cngx places no outlet a TestBed there may lack; ${OUTLETS_SNIPPET}, ` +
+          `src/app/app.spec.ts is not an untouched ng new spec, so cngx places no outlet a TestBed there may lack; ${OUTLETS_SNIPPET}, ` +
           "and give a TestBed that renders App `providers: [provideFeedback(withToasts(), withBanners())]` with import { provideFeedback, withBanners, withToasts } from '@cngx/ui/feedback' " +
           '(a TestBed that declares App also imports CngxBannerOutlet and CngxToastOutlet)',
       },
@@ -497,6 +517,92 @@ describe('planAppShell', () => {
       changes: [],
       skipped: [],
     });
+  });
+});
+
+describe('planAppShell next to the ng new NgModule spec', () => {
+  const stock21 = readFixture('scaffold-21-ngmodule')['src/app/app.spec.ts'];
+  const on22 = (manifest: string) => manifest.replace(/"@angular\/build": "[^"]+"/, '"@angular/build": "^22.2.3"');
+
+  it('places both outlets in the NgModule and gives its TestBed the outlet classes and the providers on @angular/build 21', async () => {
+    const { facts, files } = await factsOf('scaffold-21-ngmodule');
+    const after = applied(plan(facts), files);
+    const spec = after['src/app/app.spec.ts'];
+
+    expect(followed(facts).spec).toBe('module-stock');
+    expect(plan(facts).changes.map((change) => [change.id, change.kind])).toEqual([
+      [OUTLETS_ID, 'edit-file'],
+      [OUTLETS_ID, 'edit-file'],
+      [SPEC_ID, 'edit-file'],
+    ]);
+    expect(spec).toBe(provideFeedbackInModuleSpec(stock21));
+    expect(spec).toContain('      imports: [\n        RouterModule.forRoot([]),\n        CngxBannerOutlet,\n        CngxToastOutlet\n      ],\n');
+    expect(spec).toContain('      providers: [provideFeedback(withToasts(), withBanners())],\n');
+    expect(spec).toContain(
+      "import { App } from './app';\nimport { CngxBannerOutlet, CngxToastOutlet } from '@cngx/ui/feedback';\nimport { provideFeedback, withBanners, withToasts } from '@cngx/ui/feedback';\n",
+    );
+    expect(syntaxErrors(spec)).toEqual([]);
+    expect(appShellSpecOf(spec, 'fixture-app', 'ng-module')).toBe('module-provided');
+    expect(provideFeedbackInNgModuleSpec(spec, 'fixture-app')).toBe(spec);
+  });
+
+  it('holds the NgModule spec back, with its own reason, where @angular/build is not on major 21', async () => {
+    for (const [name, overrides] of [
+      ['scaffold-22-ngmodule', {}],
+      ['scaffold-21-ngmodule', { 'package.json': on22(readFixture('scaffold-21-ngmodule')['package.json']) }],
+    ] as const) {
+      const { facts } = await factsOf(name, overrides);
+
+      expect(followed(facts).spec).toBe('module-unscoped');
+      expect(plan(facts)).toEqual({
+        changes: [
+          expect.objectContaining({
+            kind: 'note',
+            id: OUTLETS_ID,
+            reason: specUnscopedText('src/app/app.spec.ts', 'App', 'src/app/app-module.ts'),
+          }),
+        ],
+        skipped: [],
+      });
+    }
+    const text = specUnscopedText('src/app/app.spec.ts', 'App', 'src/app/app-module.ts');
+    expect(text).toContain(OUTLETS_SNIPPET);
+    expect(text).toContain("import { CngxBannerOutlet, CngxToastOutlet } from '@cngx/ui/feedback'");
+    expect(text).toContain('and import src/app/app-module.ts in src/app/app.spec.ts');
+    expect(readFileSync(join(__dirname, '../../../../../core-concepts/install.md'), 'utf8')).toContain(specUnscopedReason('<file>'));
+  });
+
+  it('holds the NgModule spec back where cngx cannot read the @angular/build version', async () => {
+    const manifest = JSON.parse(readFixture('scaffold-21-ngmodule')['package.json']) as { devDependencies: Record<string, string> };
+    delete manifest.devDependencies['@angular/build'];
+    const { facts } = await factsOf('scaffold-21-ngmodule', { 'package.json': JSON.stringify(manifest, null, 2) });
+
+    expect(followed(facts).spec).toBe('module-unscoped');
+  });
+
+  it('keeps a provided NgModule spec as it is on a later @angular/build major', async () => {
+    const { facts } = await factsOf('scaffold-22-ngmodule', {
+      'src/app/app.spec.ts': provideFeedbackInModuleSpec(readFixture('scaffold-22-ngmodule')['src/app/app.spec.ts']),
+    });
+
+    expect(followed(facts).spec).toBe('module-provided');
+  });
+
+  it('reads a spec of the other kind of app as custom', async () => {
+    const standaloneSpec = await factsOf('scaffold-21-ngmodule', { 'src/app/app.spec.ts': readFixture('scaffold-21')['src/app/app.spec.ts'] });
+    const moduleSpec = await factsOf('scaffold-21', { 'src/app/app.spec.ts': stock21 });
+
+    expect(followed(standaloneSpec.facts).spec).toBe('custom');
+    expect(followed(moduleSpec.facts).spec).toBe('custom');
+  });
+
+  it('never edits an NgModule spec that changed between detection and apply', () => {
+    const changed = stock21.replace('should create', 'creates');
+
+    expect(provideFeedbackInNgModuleSpec(changed, 'fixture-app')).toBe(changed);
+    expect(provideFeedbackInNgModuleSpec(readFixture('scaffold-21')['src/app/app.spec.ts'], 'fixture-app')).toBe(
+      readFixture('scaffold-21')['src/app/app.spec.ts'],
+    );
   });
 });
 

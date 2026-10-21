@@ -63,6 +63,7 @@ import {
 } from './styles';
 import {
   type AngularSource,
+  ANGULAR_BUILD_MANIFEST,
   angularVersionOf,
   buildOptions,
   globalStylesheet,
@@ -97,8 +98,10 @@ export {
   FEEDBACK_MODULE,
   FEEDBACK_OUTLETS,
   FEEDBACK_SPEC_IMPORT,
+  FEEDBACK_SPEC_OUTLETS_IMPORT,
   FEEDBACK_SPEC_PROVIDERS,
   outletEdits,
+  provideFeedbackInModuleSpec,
 } from './app-shell';
 export {
   type AppScaffold,
@@ -258,7 +261,8 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
   const stylesPath = globalStylesheet(entries);
   const componentCount = appSources.filter(({ content }) => /@Component\s*\(/.test(content)).length;
 
-  const appShell = appShellOf(read, mainPath, standalone, projectName);
+  const testBuild = angularVersionOf(read, declaredRange(manifest, '@angular/build'), ANGULAR_BUILD_MANIFEST);
+  const appShell = appShellOf(read, mainPath, standalone, projectName, testBuild.version);
   const names: ScaffoldNames = {
     project: projectName,
     selector: project.prefix === undefined ? undefined : `${project.prefix}-root`,

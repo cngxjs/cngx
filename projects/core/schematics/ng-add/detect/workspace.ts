@@ -114,13 +114,17 @@ function manifestVersion(content: string): string | undefined {
   }
 }
 
+/** The installed `@angular/build`, whose unit-test builder runs the app's specs. */
+export const ANGULAR_BUILD_MANIFEST = 'node_modules/@angular/build/package.json';
+
 /**
  * The app's Angular version: the installed `@angular/core` first, since the
  * CLI installs packages before `ng add` runs, else the lowest version the
- * declared range allows.
+ * declared range allows. `manifestPath` reads another Angular package the
+ * same way (`ANGULAR_BUILD_MANIFEST` with its range).
  */
-export function angularVersionOf(read: Read, range: string | undefined): AngularVersion {
-  const content = read(ANGULAR_CORE_MANIFEST);
+export function angularVersionOf(read: Read, range: string | undefined, manifestPath = ANGULAR_CORE_MANIFEST): AngularVersion {
+  const content = read(manifestPath);
   const installed = content === undefined ? undefined : manifestVersion(content);
   if (installed !== undefined) {
     return { version: installed, source: 'installed' };
