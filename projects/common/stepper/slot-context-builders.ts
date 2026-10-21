@@ -1,4 +1,4 @@
-import type { Signal } from '@angular/core';
+import { computed, type Signal } from '@angular/core';
 
 import type { CngxStepperI18n } from './i18n/stepper-i18n';
 import type { CngxStepBadgeContext } from './slots/step-badge.directive';
@@ -206,10 +206,16 @@ export function createStepperSlotContextBuilders(
     disabled: node.disabled(),
   }));
 
+  // One pass per step-list change, so a dot reads its index in O(1)
+  // instead of scanning the list on every change-detection pass.
+  const stepIndexByNode = computed(
+    () => new Map(stepsOnly().map((node, index) => [node, index] as const)),
+  );
+
   // Same fields as <cngx-dot-stepper>: index in the step-only projection,
   // completed = before the active step.
   const dotContextFor = memoizeByNode<CngxDotStepperDotContext>((node) => {
-    const index = stepsOnly().indexOf(node);
+    const index = stepIndexByNode().get(node) ?? -1;
     return {
       $implicit: index,
       index,

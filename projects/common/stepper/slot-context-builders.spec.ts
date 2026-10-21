@@ -1,5 +1,5 @@
 import { signal, type Signal } from '@angular/core';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { CngxTransitionOutcome } from '@cngx/common/data';
 
@@ -185,7 +185,7 @@ describe('createStepperSlotContextBuilders dot context', () => {
     const activeStepIndex = signal(1);
     const host = { ...stubHost(), activeStepId, activeStepIndex } as unknown as CngxStepperHost;
     const builders = createStepperSlotContextBuilders({ presenter: host, stepsOnly, i18n: stubI18n() });
-    return { nodes, builders, activeStepId, activeStepIndex };
+    return { nodes, builders, stepsOnly, activeStepId, activeStepIndex };
   }
 
   it('carries index, active and completed in the step-only projection', () => {
@@ -210,5 +210,26 @@ describe('createStepperSlotContextBuilders dot context', () => {
     const moved = builders.dotContextFor(nodes[2]);
     expect(moved).not.toBe(first);
     expect(moved.active).toBe(true);
+  });
+
+  it('follows a reordered step list', () => {
+    const { nodes, builders, stepsOnly } = dotSetup();
+    expect(builders.dotContextFor(nodes[2]).index).toBe(2);
+    stepsOnly.set([nodes[2], nodes[0], nodes[1]]);
+    expect(builders.dotContextFor(nodes[2]).index).toBe(0);
+    expect(builders.dotContextFor(nodes[1]).index).toBe(2);
+  });
+
+  it('indexes the step list once per change instead of scanning it per dot', () => {
+    const { nodes, builders, stepsOnly } = dotSetup();
+    const list = [...nodes];
+    const scan = vi.spyOn(list, 'indexOf');
+    stepsOnly.set(list);
+    for (let pass = 0; pass < 3; pass++) {
+      for (const node of nodes) {
+        builders.dotContextFor(node);
+      }
+    }
+    expect(scan).not.toHaveBeenCalled();
   });
 });
