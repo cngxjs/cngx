@@ -8,6 +8,9 @@ import { CngxLiveAnnouncer } from './live-announcer';
 // literal here (the const is not exported) so the 16ms flush stays a pinned,
 // tested value rather than an asserted-but-unverified "sub-perceptual" claim.
 const CLEAR_DELAY_MS = 16;
+// A freshly inserted modal region stays empty this long, so it has been in the
+// tree for at least one full frame before the first message lands.
+const MODAL_SETTLE_MS = 2 * CLEAR_DELAY_MS;
 
 function politeEl(): HTMLElement | null {
   return document.body.querySelector('span[aria-live="polite"]');
@@ -136,7 +139,7 @@ describe('CngxLiveAnnouncer - scope', () => {
 
   it('writes a scoped message into a region inside the enclosing aria-modal container', () => {
     announcer.announce('Dismissed', 'polite', inner);
-    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+    vi.advanceTimersByTime(MODAL_SETTLE_MS);
 
     expect(modalRegion('polite')?.textContent).toBe('Dismissed');
     expect(bodyRegion('polite')?.textContent ?? '').toBe('');
@@ -155,7 +158,7 @@ describe('CngxLiveAnnouncer - scope', () => {
 
   it('re-announces an identical scoped repeat through the same modal region', () => {
     announcer.announce('Dismissed', 'polite', inner);
-    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+    vi.advanceTimersByTime(MODAL_SETTLE_MS);
     const region = modalRegion('polite');
 
     announcer.announce('Dismissed', 'polite', inner);
@@ -168,10 +171,121 @@ describe('CngxLiveAnnouncer - scope', () => {
   it('lands a modal write and a body write of the same frame both', () => {
     announcer.announce('In the dialog', 'polite', inner);
     announcer.announce('Behind the dialog');
-    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+    vi.advanceTimersByTime(MODAL_SETTLE_MS);
 
     expect(modalRegion('polite')?.textContent).toBe('In the dialog');
     expect(bodyRegion('polite')?.textContent).toBe('Behind the dialog');
+  });
+
+  it('keeps a freshly created modal region empty for a full frame before the first message', () => {
+    announcer.announce('Dismissed', 'polite', inner);
+    const region = modalRegion('polite');
+    // Inserted synchronously, so the region is in the tree before any content.
+    expect(region).not.toBeNull();
+
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+    expect(region?.textContent).toBe('');
+    vi.advanceTimersByTime(MODAL_SETTLE_MS - CLEAR_DELAY_MS);
+    expect(region?.textContent).toBe('Dismissed');
+  });
+
+  it('keeps the settle window when a second message replaces the first before it lands', () => {
+    announcer.announce('First', 'polite', inner);
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+    announcer.announce('Second', 'polite', inner);
+    const region = modalRegion('polite');
+
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+    expect(region?.textContent).toBe('Second');
+  });
+
+  it('re-routes a pending write to the body region when the modal is removed mid-flight', () => {
+    announcer.announce('Dismissed', 'polite', inner);
+    announcer.announce('Failed', 'assertive', inner);
+    modal.remove();
+    vi.advanceTimersByTime(MODAL_SETTLE_MS + CLEAR_DELAY_MS);
+
+    expect(bodyRegion('polite')?.textContent).toBe('Dismissed');
+    expect(bodyRegion('assertive')?.textContent).toBe('Failed');
+  });
+
+  it('creates a fresh pair when a removed modal container is attached again', () => {
+    announcer.announce('Gone', 'polite', inner);
+    modal.remove();
+    vi.advanceTimersByTime(MODAL_SETTLE_MS + CLEAR_DELAY_MS);
+
+    document.body.appendChild(modal);
+    announcer.announce('Back', 'polite', inner);
+    vi.advanceTimersByTime(MODAL_SETTLE_MS);
+    expect(modalRegion('polite')?.textContent).toBe('Back');
+  });
+
+  it('re-routes the pending write of a detached modal when another modal pair is created', () => {
+    announcer.announce('Pending', 'polite', inner);
+    modal.remove();
+    const next = document.createElement('div');
+    next.setAttribute('aria-modal', 'true');
+    const nextInner = document.createElement('p');
+    next.appendChild(nextInner);
+    document.body.appendChild(next);
+
+    announcer.announce('Next', 'polite', nextInner);
+    vi.advanceTimersByTime(MODAL_SETTLE_MS);
+
+    expect(bodyRegion('polite')?.textContent).toBe('Pending');
+    expect(next.querySelector('span[aria-live="polite"]')?.textContent).toBe('Next');
+    next.remove();
+  });
+
+  it('routes into the open nested modal, not the outer one it covers', () => {
+    const nested = document.createElement('div');
+    nested.setAttribute('role', 'dialog');
+    nested.setAttribute('aria-modal', 'true');
+    modal.appendChild(nested);
+
+    announcer.announce('Saved', 'polite', inner);
+    vi.advanceTimersByTime(MODAL_SETTLE_MS);
+
+    expect(nested.querySelector('span[aria-live="polite"]')?.textContent).toBe('Saved');
+    expect(modal.querySelector(':scope > span[aria-live="polite"]')).toBeNull();
+  });
+
+  it('routes into the topmost open modal when the scope sits in an inert one', () => {
+    modal.setAttribute('inert', '');
+    const top = document.createElement('div');
+    top.setAttribute('role', 'dialog');
+    top.setAttribute('aria-modal', 'true');
+    document.body.appendChild(top);
+
+    announcer.announce('Saved', 'polite', inner);
+    vi.advanceTimersByTime(MODAL_SETTLE_MS);
+
+    expect(top.querySelector('span[aria-live="polite"]')?.textContent).toBe('Saved');
+    expect(modalRegion('polite')).toBeNull();
+    top.remove();
+  });
+
+  it('skips a closed dialog when picking the topmost modal', () => {
+    const closed = document.createElement('dialog');
+    closed.setAttribute('aria-modal', 'true');
+    document.body.appendChild(closed);
+
+    announcer.announce('Saved', 'polite', inner);
+    vi.advanceTimersByTime(MODAL_SETTLE_MS);
+
+    expect(modalRegion('polite')?.textContent).toBe('Saved');
+    expect(closed.querySelector('span[aria-live]')).toBeNull();
+    closed.remove();
+  });
+
+  it('cancels pending modal writes and removes the modal regions on destroy', () => {
+    announcer.announce('Late', 'polite', inner);
+    const region = modalRegion('polite');
+    announcer.ngOnDestroy();
+    vi.advanceTimersByTime(MODAL_SETTLE_MS);
+
+    expect(region?.textContent).toBe('');
+    expect(modal.querySelector('span[aria-live]')).toBeNull();
   });
 });
 

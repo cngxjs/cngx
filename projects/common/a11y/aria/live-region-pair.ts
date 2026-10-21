@@ -2,7 +2,7 @@ import type { AriaLivePoliteness } from './live-announcer';
 
 // One frame. Clear the region this long before writing so an intentionally
 // repeated identical string still registers as a content change for the SR.
-const CLEAR_DELAY_MS = 16;
+export const CLEAR_DELAY_MS = 16;
 
 /**
  * A message whose write into its live region has not landed yet.
@@ -20,7 +20,10 @@ export interface CngxPendingAnnouncement {
  * `injectScopedLiveRegion` (container: an overlay host).
  */
 export interface CngxLiveRegionPair {
-  /** Clear the region of `politeness` now, write `message` one frame later. */
+  /**
+   * Clear the region of `politeness` now, write `message` one frame later, or
+   * later still while a freshly inserted region is inside its settle window.
+   */
   announce(message: string, politeness: AriaLivePoliteness): void;
   /** Create both regions up front so they are in the DOM before any message. */
   ensure(): void;
@@ -28,6 +31,23 @@ export interface CngxLiveRegionPair {
   takePending(): readonly CngxPendingAnnouncement[];
   /** Cancel pending writes and remove both regions. */
   destroy(): void;
+}
+
+/**
+ * @internal Per-pair options for {@link createLiveRegionPair}.
+ */
+export interface CngxLiveRegionPairOptions {
+  /**
+   * Minimum time a freshly inserted region stays empty before its first
+   * message lands. Defaults to the clear-then-write delay, so a pair without
+   * the option behaves exactly as before.
+   */
+  readonly settleMs?: number;
+  /**
+   * Called instead of the write when the container left the document while
+   * the write was pending, so the owner can speak the message elsewhere.
+   */
+  readonly onDetached?: (announcement: CngxPendingAnnouncement) => void;
 }
 
 const POLITENESS: readonly AriaLivePoliteness[] = ['polite', 'assertive'];
@@ -43,7 +63,12 @@ interface PendingWrite {
  * contract of `CngxLiveRegion`), created lazily on the first announce of its
  * politeness or by `ensure()`.
  */
-export function createLiveRegionPair(container: HTMLElement, doc: Document): CngxLiveRegionPair {
+export function createLiveRegionPair(
+  container: HTMLElement,
+  doc: Document,
+  options: CngxLiveRegionPairOptions = {},
+): CngxLiveRegionPair {
+  const settleMs = options.settleMs ?? CLEAR_DELAY_MS;
   const regions: Record<AriaLivePoliteness, HTMLElement | null> = {
     polite: null,
     assertive: null,
@@ -52,6 +77,9 @@ export function createLiveRegionPair(container: HTMLElement, doc: Document): Cng
     polite: null,
     assertive: null,
   };
+  // Earliest Date.now() at which each region may receive content: its
+  // insertion time plus settleMs.
+  const readyAt: Record<AriaLivePoliteness, number> = { polite: 0, assertive: 0 };
 
   const ensureRegion = (politeness: AriaLivePoliteness): HTMLElement => {
     const existing = regions[politeness];
@@ -73,6 +101,7 @@ export function createLiveRegionPair(container: HTMLElement, doc: Document): Cng
     span.style.border = '0';
     container.appendChild(span);
     regions[politeness] = span;
+    readyAt[politeness] = Date.now() + settleMs;
     return span;
   };
 
@@ -93,12 +122,17 @@ export function createLiveRegionPair(container: HTMLElement, doc: Document): Cng
       // keep independent timers so one politeness never cancels the other.
       region.textContent = '';
       cancel(politeness);
+      const delay = Math.max(CLEAR_DELAY_MS, readyAt[politeness] - Date.now());
       pending[politeness] = {
         message,
         timer: setTimeout(() => {
-          region.textContent = message;
           pending[politeness] = null;
-        }, CLEAR_DELAY_MS),
+          if (options.onDetached && !container.isConnected) {
+            options.onDetached({ message, politeness });
+            return;
+          }
+          region.textContent = message;
+        }, delay),
       };
     },
     ensure() {

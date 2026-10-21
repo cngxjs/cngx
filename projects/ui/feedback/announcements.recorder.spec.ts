@@ -306,6 +306,10 @@ describe('announcement recorder over ui/feedback', () => {
       startRecording();
 
       await dismiss(fixture);
+      // The modal region is created by this announce and stays empty for a
+      // second clear frame before its first message lands.
+      vi.advanceTimersByTime(16);
+      await observed();
 
       expect(recorder.entries().map(summary)).toEqual([{ ...dismissedEntry, suppressedBy: null }]);
     });
