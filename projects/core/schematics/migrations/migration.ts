@@ -105,7 +105,7 @@ async function planReruns(
   if (stored.state !== 'read') {
     const reason =
       stored.state === 'absent'
-        ? `no ${INSTALL_MANIFEST_PATH} from ng add; only the renames and codemods ran`
+        ? `no ${INSTALL_MANIFEST_PATH} from ng add; only the renames and codemods ran; ${ngAddCommand('<name>')} records the install, so later updates re-check it`
         : `${unreadableManifestLine(stored.cause)}, so cngx leaves it as it is; ${ngAddCommand('<name>')} keeps it as a copy and starts a new install record`;
     // Not `manifest:unreadable`: that id is the copy ng add plans.
     const id = stored.state === 'absent' ? 'manifest:missing' : 'manifest:unreadable-note';

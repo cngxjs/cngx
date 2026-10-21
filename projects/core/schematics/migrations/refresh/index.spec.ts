@@ -126,11 +126,13 @@ describe('refresh migration', () => {
     const { tree, logs } = await runRule(migrate(), createMemoryTree(app));
 
     expect(readTree(tree)).toEqual(app);
-    expect(
-      logs.filter((line) =>
-        line.startsWith('  - Re-run the recorded install steps - no .cngx/install.json'),
-      ),
-    ).toHaveLength(1);
+    const notes = logs.filter((line) =>
+      line.startsWith('  - Re-run the recorded install steps - no .cngx/install.json'),
+    );
+    expect(notes).toHaveLength(1);
+    expect(notes[0]).toContain(
+      'ng add @cngx/core --project <name> records the install, so later updates re-check it',
+    );
     expect(logs).toContain('Next steps:');
   });
 });
