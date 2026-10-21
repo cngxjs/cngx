@@ -3,6 +3,16 @@
 Hand-maintained, per package version. The root CHANGELOG.md tracks the cngx
 library releases; this file tracks the doctor package.
 
+## 0.2.1 - 2026-10-21
+
+### Fixed
+
+- `npx @cngx/doctor` and an installed `cngx-doctor` bin run the scan again.
+  Both start the CLI through the `node_modules/.bin` symlink, and the entry
+  check compared that path unresolved with the resolved module URL, so 0.2.0
+  exited `0` without scanning or printing anything under npx. A start with
+  `node --preserve-symlinks-main` keeps working.
+
 ## 0.2.0 - 2026-08-27
 
 ### Breaking
