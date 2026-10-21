@@ -2,6 +2,7 @@ import { Component, computed, signal, ViewEncapsulation } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { CngxActionMultiSelect } from '../action-multi-select/action-multi-select.component';
 import { CngxCombobox } from '../combobox/combobox.component';
 import { CngxMultiSelect } from '../multi-select/multi-select.component';
 import { CngxTreeSelect } from '../tree-select/tree-select.component';
@@ -24,7 +25,7 @@ function optionsWith(firstLabel: string): { value: string; label: string }[] {
 @Component({
   selector: 'cngx-select-summary-trigger-host',
   standalone: true,
-  imports: [CngxMultiSelect, CngxTreeSelect, CngxCombobox],
+  imports: [CngxMultiSelect, CngxTreeSelect, CngxCombobox, CngxActionMultiSelect],
   styleUrls: [
     '../../../core/theming/layers.css',
     '../../../core/theming/system-tokens.css',
@@ -46,11 +47,18 @@ function optionsWith(firstLabel: string): { value: string; label: string }[] {
         [values]="values()"
       />
       <cngx-combobox [label]="'B'" [options]="options()" [values]="values()" />
+      <cngx-action-multi-select [label]="'A'" [options]="options()" [values]="values()" />
     </div>
     <div data-touch="on" class="input-row" style="display: block; width: 390px; margin: 1rem">
       <cngx-combobox
         style="display: block"
         [label]="'B'"
+        [options]="options()"
+        [values]="values()"
+      />
+      <cngx-action-multi-select
+        style="display: block"
+        [label]="'A'"
         [options]="options()"
         [values]="values()"
       />
@@ -66,10 +74,15 @@ class SummaryTriggerHost {
 }
 
 /** Every summary variant: its host tag. */
-const VARIANTS = ['cngx-multi-select', 'cngx-tree-select', 'cngx-combobox'] as const;
+const VARIANTS = [
+  'cngx-multi-select',
+  'cngx-tree-select',
+  'cngx-combobox',
+  'cngx-action-multi-select',
+] as const;
 
 /** The variants whose trigger keeps a search input next to the summary. */
-const INPUT_VARIANTS = ['cngx-combobox'] as const;
+const INPUT_VARIANTS = ['cngx-combobox', 'cngx-action-multi-select'] as const;
 
 let mountedRoot: HTMLElement | null = null;
 
