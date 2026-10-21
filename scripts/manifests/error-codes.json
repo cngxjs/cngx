@@ -1994,10 +1994,10 @@
       "page": "core-concepts/error-codes/cngx3011.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3011.html",
       "status": "active",
-      "files": ["projects/ui/tabs/tab-group.component.ts"],
+      "files": ["projects/ui/tabs/tab-group-dev-checks.ts"],
       "messages": [
         {
-          "file": "projects/ui/tabs/tab-group.component.ts",
+          "file": "projects/ui/tabs/tab-group-dev-checks.ts",
           "text": "[cngx-tab-group] iconLayout='only' but no *cngxTabIcon template is provided - tabs render no icon and the label is visually hidden. Provide an <ng-template cngxTabIcon> or use 'start' / 'end' / 'top'."
         }
       ]
