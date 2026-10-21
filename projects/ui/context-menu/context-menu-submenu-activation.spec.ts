@@ -335,3 +335,55 @@ describe('CngxContextMenuItem submenu activation at depth 2', () => {
     expect(panels[0].popover.isVisible()).toBe(false);
   });
 });
+
+@Component({
+  template: `
+    <cngx-context-menu ariaLabel="A">
+      <cngx-context-menu-item value="a">A</cngx-context-menu-item>
+    </cngx-context-menu>
+    <cngx-context-menu ariaLabel="B">
+      <cngx-context-menu-item value="b">B</cngx-context-menu-item>
+    </cngx-context-menu>
+  `,
+  imports: [CngxContextMenu, CngxContextMenuItem],
+})
+class CycleHost {}
+
+describe('CngxContextMenu parent-link cycle', () => {
+  let a: CngxContextMenu;
+  let b: CngxContextMenu;
+
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [CycleHost] });
+    const fixture = TestBed.createComponent(CycleHost);
+    fixture.detectChanges();
+    const panels = fixture.debugElement.queryAll(By.directive(CngxContextMenu));
+    a = panels[0].componentInstance as CngxContextMenu;
+    b = panels[1].componentInstance as CngxContextMenu;
+    // A opened from B and B opened from A: neither has a trigger handler, so
+    // every climb loops through the pair.
+    a.openAsSubmenu(null, b);
+    b.openAsSubmenu(null, a);
+  });
+
+  it('terminates an activation that climbs a cycle', () => {
+    expect(() => a.handleActivated()).not.toThrow();
+  });
+
+  it('terminates a submenu note that climbs a cycle', () => {
+    expect(() => a.noteActiveSubmenuOpened()).not.toThrow();
+  });
+
+  it('terminates a keydown that climbs a cycle', () => {
+    const event = new KeyboardEvent('keydown', { key: 'ArrowLeft' });
+    expect(() => a.routeKeydown(event)).not.toThrow();
+  });
+
+  it('still reaches a handler once the walk crosses into a panel that has one', () => {
+    const handler = vi.fn();
+    b.setActivationHandler(handler);
+    a.handleActivated();
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+});

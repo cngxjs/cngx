@@ -181,6 +181,12 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
    * later direct `popover.show()` routes as a root.
    */
   private openedFrom: CngxContextMenuPanel<T> | null = null;
+  /**
+   * Climbs of each kind currently passing through this panel. A climb that
+   * comes back to a panel already on its way up has hit a cycle in the
+   * parent links and stops there instead of recursing forever.
+   */
+  private readonly climbing = new Set<'activate' | 'note' | 'keydown'>();
 
   constructor() {
     // Open moves focus into the menu container, so the container's
@@ -199,7 +205,7 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
       this.activationHandler();
       return;
     }
-    this.openedFrom?.handleActivated?.();
+    this.climb('activate', (parent) => parent.handleActivated?.());
   }
 
   /**
@@ -234,7 +240,7 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
       this.submenuNoteHandler();
       return;
     }
-    this.openedFrom?.noteActiveSubmenuOpened?.();
+    this.climb('note', (parent) => parent.noteActiveSubmenuOpened?.());
   }
 
   /** @internal Route a keydown to the trigger, else up the parent chain. */
@@ -243,7 +249,24 @@ export class CngxContextMenu<T = unknown> implements CngxContextMenuPanel<T> {
       this.keydownHandler(event);
       return;
     }
-    this.openedFrom?.routeKeydown?.(event);
+    this.climb('keydown', (parent) => parent.routeKeydown?.(event));
+  }
+
+  /** Forward one climb of `kind` to the parent panel unless it already passed here. */
+  private climb(
+    kind: 'activate' | 'note' | 'keydown',
+    forward: (parent: CngxContextMenuPanel<T>) => void,
+  ): void {
+    const parent = this.openedFrom;
+    if (!parent || this.climbing.has(kind)) {
+      return;
+    }
+    this.climbing.add(kind);
+    try {
+      forward(parent);
+    } finally {
+      this.climbing.delete(kind);
+    }
   }
 
   protected handleKeydown(event: KeyboardEvent): void {
