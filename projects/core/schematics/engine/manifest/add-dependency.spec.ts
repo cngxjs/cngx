@@ -24,6 +24,12 @@ describe('addDependency', () => {
     expect(await add('{\n  "devDependencies": {}\n}\n')).toBe('{\n  "devDependencies": {\n    "@cngx/eslint-plugin": "0.2.0"\n  }\n}\n');
   });
 
+  it('keeps the CRLF line endings of package.json', async () => {
+    expect(await add('{\r\n  "devDependencies": {}\r\n}\r\n')).toBe(
+      '{\r\n  "devDependencies": {\r\n    "@cngx/eslint-plugin": "0.2.0"\r\n  }\r\n}\r\n',
+    );
+  });
+
   it('adds no newline the file did not have', async () => {
     expect(await add('{\n  "devDependencies": {}\n}')).toBe('{\n  "devDependencies": {\n    "@cngx/eslint-plugin": "0.2.0"\n  }\n}');
   });
