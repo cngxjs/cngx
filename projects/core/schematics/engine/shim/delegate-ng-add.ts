@@ -131,7 +131,7 @@ export function delegateNgAdd(options: NgAddFlags, bundleDir: string = __dirname
       return externalSchematic(CORE, 'ng-add', forwarded);
     }
 
-    const pins = chain([addLockstepDependency(CORE, version), addLockstepDependency(ownName, version)]);
+    const pins = chain([addLockstepDependency(CORE, version, true), addLockstepDependency(ownName, version, true)]);
     if (order === 0) {
       loadCore(context);
       return chain([pins, externalSchematic(CORE, 'ng-add', forwarded)]);

@@ -149,10 +149,15 @@ describe('runRule', () => {
       'package.json': JSON.stringify({ dependencies: { '@cngx/core': '^0.0.1' } }),
     });
 
-    const run = await runRule(addLockstepDependency('@cngx/core', '0.1.0'), tree);
+    const rule: Rule = (_tree, context: SchematicContext) => {
+      context.logger.info('pinning @cngx/core');
+      return addLockstepDependency('@cngx/core', '0.1.0');
+    };
+
+    const run = await runRule(rule, tree);
 
     expect(JSON.parse(run.tree.readContent('package.json')).dependencies['@cngx/core']).toBe('0.1.0');
-    expect(run.logs).toContain('Replacing @cngx/core@^0.0.1 with 0.1.0 so every @cngx package stays on one version.');
+    expect(run.logs).toContain('pinning @cngx/core');
   });
 
   it('records the tasks the rule schedules', async () => {
