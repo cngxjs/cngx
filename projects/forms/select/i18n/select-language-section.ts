@@ -29,10 +29,6 @@ export interface CngxSelectLanguageSection {
    * more values. `{list}` is the labels joined for the reading locale.
    */
   readonly selectionSummary: CngxMessage;
-  /** Tree-select twisty of a collapsed node. */
-  readonly treeExpand: string;
-  /** Tree-select twisty of an expanded node. */
-  readonly treeCollapse: string;
   /** Status region while the options load. */
   readonly statusLoading: string;
   /** Overlay while loaded options refresh. */
@@ -117,8 +113,6 @@ export const CNGX_SELECT_LANGUAGE_EN: CngxSelectLanguageSection = {
   chipRemoveFor: '{action}: {label}',
   chipOverflowBadge: '+{count}',
   selectionSummary: '{count} selected: {list}',
-  treeExpand: 'Expand node',
-  treeCollapse: 'Collapse node',
   statusLoading: 'Loading options',
   statusRefreshing: 'Refreshing options',
   fieldLabelFallback: 'Selection',

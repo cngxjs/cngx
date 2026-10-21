@@ -79,8 +79,6 @@ function makeShellHost(): CngxSelectPanelHost {
     ariaLabels: signal({
       chipRemove: 'Remove',
       chipRemoveFor: (action: string, label: string) => `${action}: ${label}`,
-      treeExpand: 'Expand node',
-      treeCollapse: 'Collapse node',
       statusLoading: 'Loading options',
       statusRefreshing: 'Refreshing options',
       fieldLabelFallback: 'Selection',
@@ -165,8 +163,6 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly twistyOpenGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
   readonly checkGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
   readonly dashGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
-  readonly resolvedTwistyExpandLabel = signal('Expand').asReadonly();
-  readonly resolvedTwistyCollapseLabel = signal('Collapse').asReadonly();
   readonly resolvedListboxLabel = signal('Teams').asReadonly();
   readonly adCompare = signal<(a: Row, b: Row) => boolean>(Object.is);
   readonly adCompareWith = this.adCompare.asReadonly();

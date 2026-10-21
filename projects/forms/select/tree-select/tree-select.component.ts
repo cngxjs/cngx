@@ -360,22 +360,6 @@ export class CngxTreeSelect<T = unknown>
   readonly checkGlyph = input<TemplateRef<void> | null>(null);
   /** Forwarded to `<cngx-checkbox-indicator [dashGlyph]>`. */
   readonly dashGlyph = input<TemplateRef<void> | null>(null);
-  /**
-   * Expand / collapse copy for the twisty. The default row does not
-   * render it: its twisty is `aria-hidden` and the treeitem is named by
-   * the node label alone, with `aria-expanded` carrying the state.
-   * Ignored when `*cngxTreeSelectNode` is projected.
-   */
-  readonly twistyExpandLabel = input<string | undefined>(undefined);
-  /** @internal Bound value, else the config copy; panel-host contract. */
-  readonly resolvedTwistyExpandLabel = computed<string>(
-    () => this.twistyExpandLabel() ?? this.config.ariaLabels().treeExpand,
-  );
-  readonly twistyCollapseLabel = input<string | undefined>(undefined);
-  /** @internal Bound value, else the config copy; panel-host contract. */
-  readonly resolvedTwistyCollapseLabel = computed<string>(
-    () => this.twistyCollapseLabel() ?? this.config.ariaLabels().treeCollapse,
-  );
   readonly clearable = input<boolean>(false);
   /** @internal The select section at this reading site; per-variant defaults. */
   private readonly selectCopy = injectSelectCopy();

@@ -106,8 +106,6 @@ export function selectCopyFrom(section: CngxSelectLanguageSection, locale: strin
           { count: labels.length, list: selectionListFormatFor(locale).format(labels) },
           locale,
         ),
-      treeExpand: section.treeExpand,
-      treeCollapse: section.treeCollapse,
       statusLoading: section.statusLoading,
       statusRefreshing: section.statusRefreshing,
       fieldLabelFallback: section.fieldLabelFallback,

@@ -359,8 +359,6 @@ provideCngxSelect(
     fieldLabelFallback: 'Auswahl',
     commitFailedMessage: (label, detail) =>
       detail ? `${label}: Speichern fehlgeschlagen - ${detail}` : `${label}: Speichern fehlgeschlagen`,
-    treeExpand: 'Knoten erweitern',
-    treeCollapse: 'Knoten reduzieren',
   }),
   withFallbackLabels({
     refreshFailed: 'Aktualisieren fehlgeschlagen',

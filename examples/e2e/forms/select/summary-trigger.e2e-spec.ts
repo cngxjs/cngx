@@ -59,9 +59,8 @@ function boxOf(trigger: Locator): Promise<Box> {
 }
 
 /**
- * A panel row by its visible label. A parent treeitem's accessible name also
- * carries its twisty's "Expand node" label, so the tree rows match on the
- * label span instead of the role name.
+ * A panel row by its visible label. Tree rows match on the label span rather
+ * than the treeitem role name.
  */
 function rowOf(panel: Locator, variant: Variant, name: string): Locator {
   if (variant.role === 'option') {

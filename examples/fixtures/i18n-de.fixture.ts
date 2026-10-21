@@ -148,8 +148,6 @@ export const TABS_FALLBACK_DE: CngxTabsFallbackLabels = {
 export const SELECT_ARIA_DE: CngxSelectAriaLabels = {
   clearButton: 'Auswahl zurücksetzen',
   chipRemove: 'Entfernen',
-  treeExpand: 'Knoten aufklappen',
-  treeCollapse: 'Knoten zuklappen',
   statusLoading: 'Optionen werden geladen',
   statusRefreshing: 'Optionen werden aktualisiert',
   fieldLabelFallback: 'Auswahl',

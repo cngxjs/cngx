@@ -145,10 +145,6 @@ export interface CngxSelectAriaLabels {
    * joined for the reading locale.
    */
   readonly selectionSummary?: (labels: readonly string[]) => string;
-  /** Tree-select twisty (collapsed). Default `'Expand node'`. */
-  readonly treeExpand?: string;
-  /** Tree-select twisty (expanded). Default `'Collapse node'`. */
-  readonly treeCollapse?: string;
   /** Panel-shell loading status region. Default `'Loading options'`. */
   readonly statusLoading?: string;
   /** Panel-shell refreshing overlay. Default `'Refreshing options'`. */

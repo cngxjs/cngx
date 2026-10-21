@@ -55,8 +55,6 @@ describe('select language section', () => {
     expect(aria.clearButton).toBeUndefined();
     expect(aria.chipRemove).toBe('Remove');
     expect(stripBidiIsolates(aria.chipRemoveFor('Remove', 'Red'))).toBe('Remove: Red');
-    expect(aria.treeExpand).toBe('Expand node');
-    expect(aria.treeCollapse).toBe('Collapse node');
     expect(aria.statusLoading).toBe('Loading options');
     expect(aria.statusRefreshing).toBe('Refreshing options');
     expect(aria.fieldLabelFallback).toBe('Selection');
@@ -243,11 +241,11 @@ describe('select language section', () => {
     const labels = config.ariaLabels();
     const announce = config.announcer();
     expect(labels.chipRemove).toBe('Drop');
-    aria.set({ chipRemove: 'Drop', treeExpand: undefined });
+    aria.set({ chipRemove: 'Drop', statusRefreshing: undefined });
     announcer.set({ politeness: 'assertive', format: undefined });
     expect(Object.is(config.ariaLabels(), labels)).toBe(true);
     expect(Object.is(config.announcer(), announce)).toBe(true);
-    expect(config.ariaLabels().treeExpand).toBe('Expand node');
+    expect(config.ariaLabels().statusRefreshing).toBe('Refreshing options');
     aria.set({ chipRemove: 'Remove chip' });
     expect(config.ariaLabels().chipRemove).toBe('Remove chip');
   });

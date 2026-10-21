@@ -46,13 +46,6 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
   readonly checkGlyph: Signal<TemplateRef<void> | null>;
   readonly dashGlyph: Signal<TemplateRef<void> | null>;
   /**
-   * Localised twisty copy; follows a language switch. The default row no
-   * longer renders it: its twisty is `aria-hidden` so the treeitem name stays
-   * the node label.
-   */
-  readonly resolvedTwistyExpandLabel: Signal<string>;
-  readonly resolvedTwistyCollapseLabel: Signal<string>;
-  /**
    * Accessible name of the `role="tree"` body: `[label]`, else
    * `aria-label`, else the placeholder, else the `listboxFallback` copy.
    * Same cascade as the flat family's listbox name.

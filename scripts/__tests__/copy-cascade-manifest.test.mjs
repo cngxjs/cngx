@@ -25,7 +25,7 @@ import { RULE_FIXTURES } from './reactive-i18n-coverage.fixtures.mjs';
  * both directions: a new cascade updates this number in the same PR, so every
  * new copy seam is a visible, reviewed change.
  */
-const CASCADE_COUNT = 67;
+const CASCADE_COUNT = 65;
 
 // One site per inventory shape:
 //   A      input over a bundle key
