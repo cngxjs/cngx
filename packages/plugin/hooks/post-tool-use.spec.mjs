@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -54,6 +54,22 @@ afterEach(() => {
 });
 
 describe('post-tool-use hook', () => {
+  it('runs when the plugin root sits behind a symlink', () => {
+    const dir = project({
+      sources: { 'src/app.ts': "import { CngxToaster } from '@cngx/ui/feedback';\n" },
+    });
+    const root = join(mkdtempSync(join(tmpdir(), 'cngx-plugin-link-')), 'plugin');
+    created.push(dirname(root));
+    symlinkSync(dirname(dirname(HOOK)), root);
+
+    const out = execFileSync(process.execPath, [join(root, 'hooks', 'post-tool-use.mjs')], {
+      input: JSON.stringify(editPayload(dir, 'src/app.ts')),
+      encoding: 'utf8',
+      env: { ...process.env, CNGX_DOCTOR_CACHE_DIR: join(dir, '.cache') },
+    });
+    expect(JSON.parse(out).hookSpecificOutput.additionalContext).toContain('toaster-without-withtoasts');
+  });
+
   it('emits PostToolUse feedback for a @cngx edit over a tripping project', () => {
     const dir = project({
       sources: { 'src/app.ts': "import { CngxToaster } from '@cngx/ui/feedback';\n" },
