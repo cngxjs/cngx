@@ -217,9 +217,16 @@ function normalize(content: string): string {
   return content.replace(/\r\n/g, '\n');
 }
 
+// The catalog marks the spec `ng new --standalone=false` writes with this
+// variant prefix; every other `app.spec.ts` entry is the standalone spec.
+const NGMODULE_SPEC_VARIANT = 'ngmodule-';
+
 function isStockSpec(content: string, project: string): boolean {
   return SCAFFOLD_CATALOG.some(
-    (entry) => entry.file === 'app.spec.ts' && entry.body?.split(SCAFFOLD_NAME_PLACEHOLDER).join(project) === content,
+    (entry) =>
+      entry.file === 'app.spec.ts' &&
+      !entry.variant.startsWith(NGMODULE_SPEC_VARIANT) &&
+      entry.body?.split(SCAFFOLD_NAME_PLACEHOLDER).join(project) === content,
   );
 }
 

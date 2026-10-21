@@ -52,22 +52,33 @@ const PRETTIERRC = 'workspace/files/.prettierrc.template';
 // the component files are the `ng new` standalone defaults (`templateUrl`,
 // `styleUrl`, no `displayBlock`), with routing on or off and a CSS or SCSS
 // stylesheet. Inline templates, inline styles, Sass and Less have no entry,
-// so such an app is never the untouched scaffold.
+// so such an app is never the untouched scaffold. Of an NgModule app only
+// the spec is kept: the outlets step reads it, the starter never runs there.
 const COMPONENT = { inlineTemplate: false, inlineStyle: false, displayBlock: false };
 const STYLES = ['css', 'scss'];
 const ROUTING = [
   { routing: true, name: 'routing' },
   { routing: false, name: 'no-routing' },
 ];
+const ZONES = [
+  { zoneless: true, zone: 'zoneless' },
+  { zoneless: false, zone: 'zone' },
+];
 
 export const TEMPLATES = [
   {
     file: 'app.spec.ts',
     template: 'application/files/standalone-files/src/app/app__suffix__.spec.ts.template',
-    variants: [
-      { variant: 'zoneless', options: { zoneless: true } },
-      { variant: 'zone', options: { zoneless: false } },
-    ],
+    variants: ZONES.map(({ zoneless, zone }) => ({ variant: zone, options: { zoneless } })),
+  },
+  // The spec `ng new --standalone=false` writes; its variants carry the
+  // `ngmodule-` prefix, so detection never reads one as the standalone spec.
+  {
+    file: 'app.spec.ts',
+    template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
+    variants: ROUTING.flatMap(({ routing, name }) =>
+      ZONES.map(({ zoneless, zone }) => ({ variant: `ngmodule-${name}-${zone}`, options: { routing, zoneless } })),
+    ),
   },
   {
     file: 'app.ts',

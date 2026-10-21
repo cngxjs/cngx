@@ -30,7 +30,13 @@ export type FixtureName =
   | 'scaffold-22-zone'
   | 'scaffold-22-scss'
   | 'scaffold-21-ngmodule'
-  | 'scaffold-22-ngmodule';
+  | 'scaffold-21-ngmodule-routing-off'
+  | 'scaffold-21-ngmodule-zone'
+  | 'scaffold-21-ngmodule-routing-off-zone'
+  | 'scaffold-22-ngmodule'
+  | 'scaffold-22-ngmodule-routing-off'
+  | 'scaffold-22-ngmodule-zone'
+  | 'scaffold-22-ngmodule-routing-off-zone';
 
 function walk(dir: string): readonly string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
