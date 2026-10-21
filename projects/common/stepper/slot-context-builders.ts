@@ -54,24 +54,30 @@ export interface CngxStepperSlotContextBuilders {
   readonly groupHeaderContextFor: (node: CngxStepNode) => CngxStepGroupHeaderContext;
   readonly stepLabelContextFor: (node: CngxStepNode) => CngxStepLabelContext;
   readonly stepContentContextFor: (node: CngxStepNode) => CngxStepContentContext;
-  /** Context of the `*cngxDotStepperDot` body in the dots mobile-collapse branch. */
-  readonly dotContextFor: (node: CngxStepNode) => CngxDotStepperDotContext;
+  /**
+   * Context of the `*cngxDotStepperDot` body in the dots mobile-collapse
+   * branch. `index` is the `@for` loop index over the step-only projection.
+   */
+  readonly dotContextFor: (node: CngxStepNode, index: number) => CngxDotStepperDotContext;
 }
 
 /**
- * Wrap a `(node) => TContext` builder so identical results return the
- * same reference. Keyed by the node object via `WeakMap`, so step-list
+ * Wrap a `(node, ...args) => TContext` builder so identical results return
+ * the same reference. Keyed by the node object via `WeakMap`, so step-list
  * re-emits drop stale entries automatically. The structural comparison
- * is shallow because every context shape is a flat object.
+ * is shallow because every context shape is a flat object. The builder
+ * runs on every call and the cached entry is reused only when it is
+ * shallow-equal, so an argument the context carries (a loop index) can
+ * never come back stale after a reorder.
  *
  * @internal
  */
-function memoizeByNode<TContext extends object>(
-  build: (node: CngxStepNode) => TContext,
-): (node: CngxStepNode) => TContext {
+function memoizeByNode<TContext extends object, TArgs extends unknown[] = []>(
+  build: (node: CngxStepNode, ...args: TArgs) => TContext,
+): (node: CngxStepNode, ...args: TArgs) => TContext {
   const cache = new WeakMap<CngxStepNode, TContext>();
-  return (node) => {
-    const next = build(node);
+  return (node, ...args) => {
+    const next = build(node, ...args);
     const prev = cache.get(node);
     if (prev !== undefined && shallowEqual(prev, next)) {
       return prev;
@@ -207,9 +213,9 @@ export function createStepperSlotContextBuilders(
   }));
 
   // Same fields as <cngx-dot-stepper>: index in the step-only projection,
-  // completed = before the active step.
-  const dotContextFor = memoizeByNode<CngxDotStepperDotContext>((node) => {
-    const index = stepsOnly().indexOf(node);
+  // taken from the template loop like the dot stepper does, completed =
+  // before the active step.
+  const dotContextFor = memoizeByNode<CngxDotStepperDotContext, [index: number]>((node, index) => {
     return {
       $implicit: index,
       index,

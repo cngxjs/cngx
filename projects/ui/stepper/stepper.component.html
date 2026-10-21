@@ -40,7 +40,7 @@
         >
           @if (templates.dot(); as dotTpl) {
             <span aria-hidden="true">
-              <ng-container *ngTemplateOutlet="dotTpl; context: slotContext.dotContextFor(node)" />
+              <ng-container *ngTemplateOutlet="dotTpl; context: slotContext.dotContextFor(node, i)" />
             </span>
           }
         </span>
@@ -64,7 +64,7 @@
         >
           @if (templates.dot(); as dotTpl) {
             <span aria-hidden="true">
-              <ng-container *ngTemplateOutlet="dotTpl; context: slotContext.dotContextFor(node)" />
+              <ng-container *ngTemplateOutlet="dotTpl; context: slotContext.dotContextFor(node, i)" />
             </span>
           }
         </button>

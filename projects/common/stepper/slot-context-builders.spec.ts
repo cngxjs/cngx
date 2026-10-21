@@ -185,30 +185,42 @@ describe('createStepperSlotContextBuilders dot context', () => {
     const activeStepIndex = signal(1);
     const host = { ...stubHost(), activeStepId, activeStepIndex } as unknown as CngxStepperHost;
     const builders = createStepperSlotContextBuilders({ presenter: host, stepsOnly, i18n: stubI18n() });
-    return { nodes, builders, activeStepId, activeStepIndex };
+    return { nodes, builders, stepsOnly, activeStepId, activeStepIndex };
   }
 
   it('carries index, active and completed in the step-only projection', () => {
     const { nodes, builders } = dotSetup();
-    expect(builders.dotContextFor(nodes[0])).toEqual({
+    expect(builders.dotContextFor(nodes[0], 0)).toEqual({
       $implicit: 0,
       index: 0,
       node: nodes[0],
       active: false,
       completed: true,
     });
-    expect(builders.dotContextFor(nodes[1])).toMatchObject({ index: 1, active: true, completed: false });
-    expect(builders.dotContextFor(nodes[2])).toMatchObject({ index: 2, active: false, completed: false });
+    expect(builders.dotContextFor(nodes[1], 1)).toMatchObject({ index: 1, active: true, completed: false });
+    expect(builders.dotContextFor(nodes[2], 2)).toMatchObject({ index: 2, active: false, completed: false });
   });
 
   it('returns the same reference while nothing changed and rebuilds on an active move', () => {
     const { nodes, builders, activeStepId, activeStepIndex } = dotSetup();
-    const first = builders.dotContextFor(nodes[2]);
-    expect(builders.dotContextFor(nodes[2])).toBe(first);
+    const first = builders.dotContextFor(nodes[2], 2);
+    expect(builders.dotContextFor(nodes[2], 2)).toBe(first);
     activeStepId.set('c');
     activeStepIndex.set(2);
-    const moved = builders.dotContextFor(nodes[2]);
+    const moved = builders.dotContextFor(nodes[2], 2);
     expect(moved).not.toBe(first);
     expect(moved.active).toBe(true);
+  });
+
+  it('takes the index from the caller and follows a reorder instead of a cached index', () => {
+    const { nodes, builders, stepsOnly } = dotSetup();
+    const before = builders.dotContextFor(nodes[0], 0);
+    expect(before.index).toBe(0);
+
+    stepsOnly.set([nodes[1], nodes[2], nodes[0]]);
+    const after = builders.dotContextFor(nodes[0], 2);
+    expect(after).not.toBe(before);
+    expect(after).toMatchObject({ $implicit: 2, index: 2, completed: false });
+    expect(builders.dotContextFor(nodes[0], 2)).toBe(after);
   });
 });
