@@ -241,7 +241,7 @@ a border inside `@media (forced-colors: active)`.
 
 - A passive `scroll` listener, one `observeResize` on the scrollport and on each direct element child, and a `childList` `MutationObserver` that keeps the child set current all schedule one read per animation frame.
 - The read lands in one snapshot signal with a structural `equal`; the four signals only notify when an edge flips. A distance of 1px or less counts as the edge.
-- RTL needs no direction lookup: `Math.abs(scrollLeft)` is the distance from the inline-start edge in both directions, so a `dir="rtl"` subtree inside an LTR page reports correctly.
+- RTL needs no direction lookup: `Math.abs(scrollLeft)` is the distance from the inline-start edge in both directions, so a `dir="rtl"` subtree inside an LTR page reports correctly. Under `writing-mode: vertical-rl` / `vertical-lr` the block edges sit on the horizontal axis and the inline edges on the vertical one; the writing mode is read once, on the first frame, so a later `writing-mode` change on the same scrollport is not picked up.
 - Only direct children are resize-observed. Wrap a long item list in one content element; growth deep inside a fixed-size child is picked up on the next scroll.
 - `createScrollEdges(element, destroyRef, host)` is the pure factory behind the directive for code that owns its own scrollport. A `null` host (SSR) wires nothing and keeps every edge `false`.
 - The attributes map 1:1 onto CSS `scroll-state(scrollable: ...)` container queries, so the CSS can swap once those are Baseline.

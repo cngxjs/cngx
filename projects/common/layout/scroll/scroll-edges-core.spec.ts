@@ -234,6 +234,88 @@ describe('createScrollEdges', () => {
     }
   });
 
+  describe('writing mode', () => {
+    function withWritingMode(writingMode: string) {
+      const fake = makeHost();
+      const getComputedStyle = vi.fn(() => ({ writingMode }) as CSSStyleDeclaration);
+      return { fake, getComputedStyle, host: { ...fake.host, getComputedStyle } };
+    }
+
+    it('keeps the horizontal mapping on a host without getComputedStyle', () => {
+      const fake = makeHost();
+      const element = makeScrollport({
+        scrollHeight: 400,
+        clientHeight: 100,
+        scrollWidth: 300,
+        clientWidth: 100,
+        scrollTop: 150,
+      });
+      const state = createScrollEdges(element, makeDestroyRef().destroyRef, fake.host);
+      fake.flushFrames();
+      expect(edgesOf(state)).toEqual({
+        blockStart: true,
+        blockEnd: true,
+        inlineStart: false,
+        inlineEnd: true,
+      });
+    });
+
+    it('maps scrollLeft to the block axis and scrollTop to the inline axis under vertical-rl', () => {
+      const { fake, host } = withWritingMode('vertical-rl');
+      // Block-end lies to the left, so scrolling toward it drives scrollLeft negative.
+      const element = makeScrollport({
+        scrollWidth: 400,
+        clientWidth: 100,
+        scrollHeight: 300,
+        clientHeight: 100,
+      });
+      const state = createScrollEdges(element, makeDestroyRef().destroyRef, host);
+      fake.flushFrames();
+      expect(edgesOf(state)).toEqual({
+        blockStart: false,
+        blockEnd: true,
+        inlineStart: false,
+        inlineEnd: true,
+      });
+
+      element.scrollLeft = -300;
+      element.scrollTop = 200;
+      element.dispatchEvent(new Event('scroll'));
+      fake.flushFrames();
+      expect(edgesOf(state)).toEqual({
+        blockStart: true,
+        blockEnd: false,
+        inlineStart: true,
+        inlineEnd: false,
+      });
+    });
+
+    it('maps a positive scrollLeft to the block axis under vertical-lr', () => {
+      const { fake, host } = withWritingMode('vertical-lr');
+      const element = makeScrollport({ scrollWidth: 400, clientWidth: 100, scrollLeft: 150 });
+      const state = createScrollEdges(element, makeDestroyRef().destroyRef, host);
+      fake.flushFrames();
+      expect(edgesOf(state)).toEqual({
+        blockStart: true,
+        blockEnd: true,
+        inlineStart: false,
+        inlineEnd: false,
+      });
+    });
+
+    it('reads the writing mode once, on the first frame, not at creation', () => {
+      const { fake, getComputedStyle, host } = withWritingMode('vertical-rl');
+      const element = makeScrollport({ scrollWidth: 400, clientWidth: 100 });
+      createScrollEdges(element, makeDestroyRef().destroyRef, host);
+      expect(getComputedStyle).not.toHaveBeenCalled();
+
+      fake.flushFrames();
+      element.dispatchEvent(new Event('scroll'));
+      fake.flushFrames();
+      expect(getComputedStyle).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it('flips canScrollBlockEnd when a child resize grows the content', () => {
     const fake = makeHost();
     const element = makeScrollport();

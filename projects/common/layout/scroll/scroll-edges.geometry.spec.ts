@@ -47,6 +47,7 @@ const EDGE_ATTRIBUTES = [
       class="edges-box"
       [class.edges-box--tight]="tight()"
       [attr.dir]="dir()"
+      [style.writing-mode]="writingMode()"
     >
       <div class="edges-content"></div>
     </div>
@@ -55,6 +56,7 @@ const EDGE_ATTRIBUTES = [
 class GeometryHost {
   readonly dir = signal<'ltr' | 'rtl'>('ltr');
   readonly tight = signal(false);
+  readonly writingMode = signal<'horizontal-tb' | 'vertical-rl' | 'vertical-lr'>('horizontal-tb');
 }
 
 /** Enough frames for the scroll / resize event, the coalesced read and a spare. */
@@ -72,10 +74,15 @@ describe('CngxScrollEdges geometry', () => {
     fixture = null;
   });
 
-  async function mount(dir: 'ltr' | 'rtl', tight = false) {
+  async function mount(
+    dir: 'ltr' | 'rtl',
+    tight = false,
+    writingMode: 'horizontal-tb' | 'vertical-rl' | 'vertical-lr' = 'horizontal-tb',
+  ) {
     fixture = TestBed.createComponent(GeometryHost);
     fixture.componentInstance.dir.set(dir);
     fixture.componentInstance.tight.set(tight);
+    fixture.componentInstance.writingMode.set(writingMode);
     fixture.autoDetectChanges();
     await fixture.whenStable();
     await frames();
@@ -160,5 +167,52 @@ describe('CngxScrollEdges geometry', () => {
     const { box, edges } = await mount('ltr', true);
     expect(box.scrollHeight - box.clientHeight).toBe(1);
     expect(await edges()).toEqual([]);
+  });
+
+  // The box is 200px inline by 100px block, so in a vertical writing mode it is
+  // 100px wide and 200px tall; the 600 x 400 content overflows 300px on the
+  // horizontal block axis and 400px on the vertical inline axis.
+  it('maps the block axis to scrollLeft under writing-mode: vertical-rl', async () => {
+    const { box, edges, scrollTo } = await mount('ltr', false, 'vertical-rl');
+    const maxLeft = box.scrollWidth - box.clientWidth;
+    const maxTop = box.scrollHeight - box.clientHeight;
+    expect(maxLeft).toBe(300);
+    expect(maxTop).toBe(400);
+
+    expect(await edges()).toEqual(['data-scroll-block-end', 'data-scroll-inline-end']);
+
+    // Block-end is the left edge: scrolling there drives scrollLeft negative.
+    expect(await scrollTo(-maxLeft, 0)).toEqual([
+      'data-scroll-block-start',
+      'data-scroll-inline-end',
+    ]);
+    expect(box.scrollLeft).toBe(-maxLeft);
+
+    expect(await scrollTo(-maxLeft, maxTop)).toEqual([
+      'data-scroll-block-start',
+      'data-scroll-inline-start',
+    ]);
+    expect(await scrollTo(0, 0)).toEqual(['data-scroll-block-end', 'data-scroll-inline-end']);
+  });
+
+  it('maps the block axis to a positive scrollLeft under writing-mode: vertical-lr', async () => {
+    const { box, edges, scrollTo } = await mount('ltr', false, 'vertical-lr');
+    const maxLeft = box.scrollWidth - box.clientWidth;
+    const maxTop = box.scrollHeight - box.clientHeight;
+    expect(maxLeft).toBe(300);
+    expect(maxTop).toBe(400);
+
+    expect(await edges()).toEqual(['data-scroll-block-end', 'data-scroll-inline-end']);
+    // One axis only: block-end is the right edge, so scrollLeft alone moves the block axis.
+    expect(await scrollTo(maxLeft, 0)).toEqual([
+      'data-scroll-block-start',
+      'data-scroll-inline-end',
+    ]);
+    expect(box.scrollLeft).toBe(maxLeft);
+    expect(await scrollTo(maxLeft / 2, maxTop / 2)).toEqual([...EDGE_ATTRIBUTES]);
+    expect(await scrollTo(maxLeft, maxTop)).toEqual([
+      'data-scroll-block-start',
+      'data-scroll-inline-start',
+    ]);
   });
 });
