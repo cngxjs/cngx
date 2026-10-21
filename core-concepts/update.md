@@ -100,6 +100,9 @@ just nothing to re-check. The run names the missing record once:
 `ng add @cngx/core --project <name>` records the install, so later updates
 re-check it.
 
+The providers `ng add` wrote are not re-checked. One you removed stays
+removed, without a note; `npx @cngx/doctor` checks the wiring.
+
 The `@cngx/mcp` pin in the editor MCP configs is not moved by `ng update`. A
 later `ng add` names a pin that differs from the current release; update the
 entry by hand.
