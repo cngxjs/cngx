@@ -290,7 +290,7 @@ export function planTheme(facts: ProjectFacts, answers: OnboardingAnswers, versi
       : [];
 
   const after = facts.stylesPath ?? CNGX_STYLESHEET;
-  const wiredReason = `already wired in ${facts.cngxThemePath ?? ''}`;
+  const wiredReason = `a cngx theme is already wired in ${facts.cngxThemePath ?? ''}`;
   const themeSteps: StepResult =
     bridge?.kind === 'object'
       ? result(
@@ -364,9 +364,22 @@ function themeFile(
     path,
     after,
   };
+  const listedReason = `${path} is already in the build styles`;
   // A theme file that is gone may still be listed: the entry is in place.
   if (facts.cngxThemePath === undefined && facts.cngxThemeListed) {
-    return { changes: [file], skipped: [skipChange(entry, `${path} is already in the build styles`)] };
+    return { changes: [file], skipped: [skipChange(entry, listedReason)] };
   }
-  return result([file, entry], facts.cngxThemePath, wiredReason);
+  if (facts.cngxThemePath === undefined) {
+    return { changes: [file, entry], skipped: [] };
+  }
+  // Each skip names its own place: the file this step would create, the build
+  // entry, or the other file that already wires a theme.
+  const ownFile = facts.cngxThemePath === path;
+  return {
+    changes: [],
+    skipped: [
+      skipChange(file, ownFile ? 'already generated' : wiredReason),
+      skipChange(entry, ownFile && facts.cngxThemeListed ? listedReason : wiredReason),
+    ],
+  };
 }
