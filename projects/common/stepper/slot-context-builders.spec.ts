@@ -172,3 +172,43 @@ describe('createStepperSlotContextBuilders stepError context', () => {
     expect(builders.showStepError(idleNode)).toBe(false);
   });
 });
+
+describe('createStepperSlotContextBuilders dot context', () => {
+  function dotSetup() {
+    const nodes = [
+      stubNode({ id: 'a', flatIndex: 0 }),
+      stubNode({ id: 'b', flatIndex: 1 }),
+      stubNode({ id: 'c', flatIndex: 2 }),
+    ];
+    const stepsOnly = signal<readonly CngxStepNode[]>(nodes);
+    const activeStepId = signal<string | null>('b');
+    const activeStepIndex = signal(1);
+    const host = { ...stubHost(), activeStepId, activeStepIndex } as unknown as CngxStepperHost;
+    const builders = createStepperSlotContextBuilders({ presenter: host, stepsOnly, i18n: stubI18n() });
+    return { nodes, builders, activeStepId, activeStepIndex };
+  }
+
+  it('carries index, active and completed in the step-only projection', () => {
+    const { nodes, builders } = dotSetup();
+    expect(builders.dotContextFor(nodes[0])).toEqual({
+      $implicit: 0,
+      index: 0,
+      node: nodes[0],
+      active: false,
+      completed: true,
+    });
+    expect(builders.dotContextFor(nodes[1])).toMatchObject({ index: 1, active: true, completed: false });
+    expect(builders.dotContextFor(nodes[2])).toMatchObject({ index: 2, active: false, completed: false });
+  });
+
+  it('returns the same reference while nothing changed and rebuilds on an active move', () => {
+    const { nodes, builders, activeStepId, activeStepIndex } = dotSetup();
+    const first = builders.dotContextFor(nodes[2]);
+    expect(builders.dotContextFor(nodes[2])).toBe(first);
+    activeStepId.set('c');
+    activeStepIndex.set(2);
+    const moved = builders.dotContextFor(nodes[2]);
+    expect(moved).not.toBe(first);
+    expect(moved.active).toBe(true);
+  });
+});

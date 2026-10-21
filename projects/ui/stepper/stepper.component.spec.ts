@@ -1,4 +1,11 @@
-import { ChangeDetectorRef, Component, computed, signal } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  computed,
+  signal,
+  type TemplateRef,
+  ViewChild,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
@@ -9,6 +16,8 @@ import { createResizeObserverMock, stripBidiIsolates } from '@cngx/testing';
 import {
   CngxStep,
   CngxStepGroup,
+  CngxDotStepperDot,
+  type CngxDotStepperDotContext,
   type CngxStepperCommitAction,
   CNGX_STEPPER_GLYPHS,
   provideStepperConfig,
@@ -17,6 +26,7 @@ import {
   withStepperFallbackLabels,
   CngxStepError,
   withStepperDensity,
+  withDotStepperDotTemplate,
   withStepperGroupCollapse,
   withStepperGroupCollapseSummary,
   withStepperHeaderNavigation,
@@ -41,6 +51,30 @@ import { CngxStepper } from './stepper.component';
   `,
 })
 class HostCmp {}
+
+@Component({
+  standalone: true,
+  imports: [CngxStepper, CngxStep, CngxDotStepperDot],
+  template: `
+    <cngx-stepper aria-label="Wizard">
+      <ng-template cngxDotStepperDot let-index let-active="active">
+        <span class="dot-body" [attr.data-active]="active">{{ index }}</span>
+      </ng-template>
+      <div cngxStep label="A"></div>
+      <div cngxStep label="B"></div>
+      <div cngxStep label="C"></div>
+    </cngx-stepper>
+  `,
+})
+class DotSlotHost {}
+
+@Component({
+  standalone: true,
+  template: `<ng-template #dot let-index><i class="config-dot">{{ index }}</i></ng-template>`,
+})
+class DotTemplateFactory {
+  @ViewChild('dot', { static: true }) dot!: TemplateRef<CngxDotStepperDotContext>;
+}
 
 @Component({
   standalone: true,
@@ -1961,6 +1995,60 @@ describe('CngxStepper organism', () => {
         expect(descriptor).not.toBeNull();
         expect(descriptor!.textContent).not.toBe('');
       }
+    });
+
+    it('dots mode: a projected *cngxDotStepperDot renders in every dot with its index context', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperMobileCollapse('dots')),
+        ],
+      });
+      const fixture = TestBed.createComponent(DotSlotHost);
+      fixture.detectChanges();
+      const dots = Array.from(
+        fixture.nativeElement.querySelectorAll('button.cngx-stepper__mobile-dot'),
+      ) as HTMLButtonElement[];
+      expect(dots.length).toBe(3);
+      expect(dots.map((d) => d.querySelector('.dot-body')?.textContent?.trim())).toEqual([
+        '0',
+        '1',
+        '2',
+      ]);
+      expect(dots.map((d) => d.querySelector('.dot-body')?.getAttribute('data-active'))).toEqual([
+        'true',
+        'false',
+        'false',
+      ]);
+      expect(stripBidiIsolates(dots[0].getAttribute('aria-label'))).toContain('A');
+    });
+
+    it('dots mode: the config dot template renders without a per-instance slot', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const tplFixture = TestBed.createComponent(DotTemplateFactory);
+      tplFixture.detectChanges();
+      const dot = tplFixture.componentInstance.dot;
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(
+            withStepperMobileCollapse('dots'),
+            withStepperHeaderNavigation('none'),
+            withDotStepperDotTemplate(dot),
+          ),
+        ],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      const dots = Array.from(
+        fixture.nativeElement.querySelectorAll('span.cngx-stepper__mobile-dot--static'),
+      ) as HTMLElement[];
+      expect(dots.map((d) => d.querySelector('.config-dot')?.textContent?.trim())).toEqual([
+        '0',
+        '1',
+        '2',
+      ]);
     });
 
     it('dots mode + headerNavigation "none": static listitem dots carry the header id, no aria-controls', () => {

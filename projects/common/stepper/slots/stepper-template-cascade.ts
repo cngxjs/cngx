@@ -26,6 +26,10 @@ import type {
   CngxStepRejectionContext,
 } from './step-rejection.directive';
 import type { CngxStepperEmpty } from './stepper-empty.directive';
+import type {
+  CngxDotStepperDot,
+  CngxDotStepperDotContext,
+} from './dot-stepper-dot.directive';
 
 /**
  * Inputs to {@link createStepperTemplateBindings}. The organism owns
@@ -44,6 +48,8 @@ export interface CngxStepperTemplateBindingsOptions {
   readonly errorSlot?: Signal<CngxStepError | undefined>;
   readonly groupHeaderSlot: Signal<CngxStepGroupHeader | undefined>;
   readonly emptySlot: Signal<CngxStepperEmpty | undefined>;
+  /** Optional - only hosts with a dots branch query `*cngxDotStepperDot`; without it the config template still applies. */
+  readonly dotSlot?: Signal<CngxDotStepperDot | undefined>;
   readonly config: CngxStepperConfig;
 }
 
@@ -62,6 +68,7 @@ export interface CngxStepperTemplateBindings {
   readonly stepError: Signal<TemplateRef<CngxStepErrorContext> | null>;
   readonly groupHeader: Signal<TemplateRef<CngxStepGroupHeaderContext> | null>;
   readonly empty: Signal<TemplateRef<void> | null>;
+  readonly dot: Signal<TemplateRef<CngxDotStepperDotContext> | null>;
 }
 
 /**
@@ -122,6 +129,12 @@ export function createStepperTemplateBindings(
       () =>
         opts.emptySlot()?.templateRef ??
         opts.config.templates?.empty ??
+        null,
+    ),
+    dot: computed<TemplateRef<CngxDotStepperDotContext> | null>(
+      () =>
+        opts.dotSlot?.()?.templateRef ??
+        opts.config.templates?.dotStepperDot ??
         null,
     ),
   };

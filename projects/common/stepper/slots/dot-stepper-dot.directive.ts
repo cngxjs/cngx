@@ -4,9 +4,9 @@ import type { CngxStepNode } from '../stepper-host.token';
 
 /**
  * Context passed to the `*cngxDotStepperDot` template. Drives the dot
- * body inside `<cngx-dot-stepper>`. The `<span class="cngx-dot-stepper__dot">`
- * shell - `role="img"`, `aria-current`, `aria-label`, class
- * modifiers - stays library-owned; only the dot body content becomes
+ * body inside `<cngx-dot-stepper>` and inside the dots mobile-collapse
+ * branch of `<cngx-stepper>`. The dot shell - role, `aria-current`,
+ * `aria-label`, class modifiers - stays library-owned; only the dot body content becomes
  * overrideable so consumers can swap the default empty body for an
  * icon, glyph, or branded indicator.
  *
@@ -30,7 +30,8 @@ export interface CngxDotStepperDotContext {
 }
 
 /**
- * Slot directive for the dot-body template on `<cngx-dot-stepper>`.
+ * Slot directive for the dot-body template on `<cngx-dot-stepper>` and on
+ * `<cngx-stepper>` (dots mobile-collapse branch, `mobileCollapse: 'dots'`).
  * Discovered via `contentChild`; cascades through
  * `CNGX_STEPPER_CONFIG.templates.dotStepperDot` before falling back to
  * the built-in empty body (the span itself paints the dot fill via CSS).
