@@ -170,3 +170,121 @@ describe('CngxContextMenuItem submenu activation', () => {
     expect(parent.popover.isVisible()).toBe(true);
   });
 });
+
+@Component({
+  template: `
+    <div class="target" tabindex="0" [cngxContextMenuFor]="root">Right-click</div>
+    <div class="target-sub" tabindex="0" [cngxContextMenuFor]="sub">Right-click sub</div>
+
+    <cngx-context-menu ariaLabel="Actions" #root="cngxContextMenu">
+      <cngx-context-menu-item value="export" [submenu]="sub">Export</cngx-context-menu-item>
+    </cngx-context-menu>
+
+    <cngx-context-menu ariaLabel="Export as" #sub="cngxContextMenu">
+      <cngx-context-menu-item value="image" [submenu]="leaf" (select)="midSelects.set(midSelects() + 1)">
+        Image
+      </cngx-context-menu-item>
+      <cngx-context-menu-item value="pdf">PDF</cngx-context-menu-item>
+    </cngx-context-menu>
+
+    <cngx-context-menu ariaLabel="Image format" #leaf="cngxContextMenu">
+      <cngx-context-menu-item value="png">PNG</cngx-context-menu-item>
+    </cngx-context-menu>
+  `,
+  imports: [CngxContextMenu, CngxContextMenuFor, CngxContextMenuItem],
+})
+class ThreeLevelHost {
+  readonly midSelects = signal(0);
+}
+
+describe('CngxContextMenuItem submenu activation at depth 2', () => {
+  let fixture: ReturnType<typeof TestBed.createComponent<ThreeLevelHost>>;
+  let panels: CngxContextMenu[];
+
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [ThreeLevelHost] });
+    fixture = TestBed.createComponent(ThreeLevelHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    panels = fixture.debugElement
+      .queryAll(By.directive(CngxContextMenu))
+      .map((d) => d.componentInstance as CngxContextMenu);
+  });
+
+  afterEach(() => {
+    document.body
+      .querySelectorAll('.cngx-context-menu-anchor, .cngx-menu-announcer')
+      .forEach((el) => el.remove());
+  });
+
+  function panelEl(i: number): HTMLElement {
+    return fixture.debugElement.queryAll(By.directive(CngxContextMenu))[i].nativeElement;
+  }
+
+  function settle(): void {
+    TestBed.flushEffects();
+    fixture.detectChanges();
+  }
+
+  function openTwoLevels(): void {
+    rightClick(fixture.nativeElement.querySelector('.target'));
+    settle();
+    key(panelEl(0), 'Enter');
+    settle();
+    expect(panels[1].popover.isVisible()).toBe(true);
+  }
+
+  it('click on a depth-2 submenu parent opens depth 3 and emits no select', () => {
+    openTwoLevels();
+    const image = panelEl(1).querySelector('[role="menuitem"]') as HTMLElement;
+    image.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    settle();
+
+    expect(panels[2].popover.isVisible()).toBe(true);
+    expect(panels[1].popover.isVisible()).toBe(true);
+    expect(panels[0].popover.isVisible()).toBe(true);
+    expect(fixture.componentInstance.midSelects()).toBe(0);
+  });
+
+  it('Enter on a depth-2 submenu parent opens depth 3', () => {
+    openTwoLevels();
+    key(panelEl(1), 'Enter');
+    settle();
+
+    expect(panels[2].popover.isVisible()).toBe(true);
+    expect(fixture.componentInstance.midSelects()).toBe(0);
+  });
+
+  it('ArrowLeft from depth 3 pops back to depth 2', () => {
+    openTwoLevels();
+    key(panelEl(1), 'Enter');
+    settle();
+    expect(panels[2].popover.isVisible()).toBe(true);
+
+    key(panelEl(2), 'ArrowLeft');
+    settle();
+
+    expect(panels[2].popover.isVisible()).toBe(false);
+    expect(panels[1].popover.isVisible()).toBe(true);
+  });
+
+  it('a panel reopened by its own trigger does not forward activation to its old parent', () => {
+    openTwoLevels();
+    panels[1].popover.hide();
+    panels[0].popover.hide();
+    settle();
+
+    rightClick(fixture.nativeElement.querySelector('.target-sub'));
+    settle();
+    expect(panels[1].popover.isVisible()).toBe(true);
+    expect(panels[0].popover.isVisible()).toBe(false);
+
+    key(panelEl(1), 'Enter');
+    settle();
+
+    expect(panels[2].popover.isVisible()).toBe(true);
+    expect(panels[0].popover.isVisible()).toBe(false);
+  });
+});
