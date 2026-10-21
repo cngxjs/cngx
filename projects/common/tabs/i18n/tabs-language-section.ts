@@ -28,7 +28,11 @@ export interface CngxTabsLanguageSection {
   readonly tabHasErrors: CngxMessage;
   /** Plural on `{count}`: the overflow trigger label. */
   readonly moreTabsLabel: CngxMessage;
-  /** `{position}`: the name of a tab without a label, e.g. in the overflow list. */
+  /**
+   * `{position}`: the name of a tab without a label - its button name, its
+   * overflow row and the tab named in the live phrase after a move, a
+   * rollback or a refusal.
+   */
   readonly unlabeledTab: CngxMessage;
   /** `{tab}`: announced after a move to an earlier tab, `{tab}` being its name. */
   readonly previousTab: CngxMessage;
@@ -41,6 +45,11 @@ export interface CngxTabsLanguageSection {
   readonly closedTab: CngxMessage;
   /** Announced once a tab without a label is removed. */
   readonly closedUnlabeledTab: string;
+  /**
+   * Announced when a tab commit fails and no origin tab resolves (a
+   * programmatic commit-state write); a resolvable origin speaks
+   * `commitRolledBackTo` instead.
+   */
   readonly commitFailedRetry: string;
   /** Announced while a tab commit is in flight. */
   readonly commitInFlight: string;
@@ -48,7 +57,10 @@ export interface CngxTabsLanguageSection {
   readonly commitRolledBackTo: CngxMessage;
   /** `{origin}`: announced when the commit action refuses a tab switch. */
   readonly commitRefused: CngxMessage;
-  /** Announced when the commit action refuses a tab switch from an unlabelled tab. */
+  /**
+   * Announced when the commit action refuses a tab switch and the origin tab
+   * is unknown; a label-less origin is named by `unlabeledTab`.
+   */
   readonly commitRefusedGeneric: string;
 }
 

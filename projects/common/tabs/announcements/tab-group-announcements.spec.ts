@@ -444,10 +444,10 @@ describe('createTabGroupAnnouncements - refused commit', () => {
     expect(live()).toBe('Tab switch not allowed - stayed on "Profile".');
   });
 
-  it('speaks commitRefusedGeneric when the origin tab has no label', () => {
+  it('speaks commitRefused with the position when the origin tab has no label', () => {
     const { settle, live } = refusalSetup([undefined, 'Account']);
     settle('refused', 1, 0);
-    expect(live()).toBe('Tab switch not allowed.');
+    expect(live()).toBe('Tab switch not allowed - stayed on "Tab 1".');
   });
 
   it('a failed outcome keeps the failure arm and never the refused phrase', () => {
@@ -521,5 +521,87 @@ describe('createTabGroupAnnouncements - refused commit', () => {
     expect(live()).toBe('Tab switch not allowed - stayed on "Profile".');
     host.activeIndex.set(2);
     expect(live()).toBe('');
+  });
+});
+
+describe('createTabGroupAnnouncements - label-less tabs', () => {
+  function unlabelledSetup(labels: readonly (string | undefined)[]) {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const { presenter, current, previous } = makeCommitPresenter();
+    const tabs = presenter.tabs as ReturnType<typeof signal<readonly CngxTabHandle[]>>;
+    const handles = labels.map((label, i) => ({
+      ...makeHandle(),
+      id: `t${i}`,
+      label: signal(label),
+    }));
+    tabs.set(handles);
+    const bundle = createTabGroupAnnouncements({
+      presenter,
+      i18n: TestBed.inject(CNGX_TABS_I18N),
+      config: {},
+      ariaLabel: signal<string | undefined>(undefined),
+      ariaLabelledBy: signal<string | undefined>(undefined),
+    });
+    const host = presenter as unknown as {
+      activeIndex: ReturnType<typeof signal<number>>;
+      lastFailedIndex: ReturnType<typeof signal<number | undefined>>;
+      lastOutcome: ReturnType<typeof signal<CngxTransitionOutcome | undefined>>;
+      originIndexDuringCommit: ReturnType<typeof signal<number | undefined>>;
+    };
+    const live = (): string => stripBidiIsolates(bundle.liveAnnouncement());
+    live();
+    return { bundle, handles, current, previous, host, live };
+  }
+
+  it('names a label-less tab button by its position', () => {
+    const { bundle, handles } = unlabelledSetup(['Profile', undefined, 'Billing']);
+    expect(stripBidiIsolates(bundle.tabAriaLabel(handles[1], 2))).toBe('Tab 2');
+  });
+
+  it('keeps the sub-label next to the position name', () => {
+    const { bundle } = unlabelledSetup(['Profile', undefined, 'Billing']);
+    const handle: CngxTabHandle = {
+      ...makeHandle(),
+      id: 't1',
+      label: signal<string | undefined>(undefined),
+      subLabel: signal<string | undefined>('45'),
+    };
+    expect(stripBidiIsolates(bundle.tabAriaLabel(handle, 2))).toBe('Tab 2, 45');
+  });
+
+  it('keeps the labelled name unchanged', () => {
+    const { bundle, handles } = unlabelledSetup(['Profile', undefined, 'Billing']);
+    expect(stripBidiIsolates(bundle.tabAriaLabel(handles[0], 1))).toBe('Tab 1 of 3: Profile');
+  });
+
+  it('speaks the position of a label-less tab after a successful move', () => {
+    const { host, current, previous, live } = unlabelledSetup(['Profile', undefined, 'Billing']);
+    host.activeIndex.set(1);
+    previous.set('pending');
+    current.set('success');
+    expect(live()).toBe('Next tab: Tab 2');
+  });
+
+  it('speaks the rollback to a label-less origin by its position', () => {
+    const { host, current, live } = unlabelledSetup([undefined, 'Account']);
+    host.originIndexDuringCommit.set(0);
+    host.lastFailedIndex.set(1);
+    current.set('error');
+    expect(live()).toBe('Could not save changes - reverted to "Tab 1".');
+  });
+
+  it('keeps the retry copy when no origin tab resolves', () => {
+    const { host, current, live } = unlabelledSetup([undefined, 'Account']);
+    host.lastFailedIndex.set(1);
+    current.set('error');
+    expect(live()).toBe('Could not switch tab - retry?');
+  });
+
+  it('keeps the generic refusal copy when the origin is unknown', () => {
+    const { host, live } = unlabelledSetup([undefined, 'Account']);
+    host.lastOutcome.set({ kind: 'refused', index: 1, sequence: 1 });
+    host.lastFailedIndex.set(1);
+    expect(live()).toBe('Tab switch not allowed.');
   });
 });
