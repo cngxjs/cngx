@@ -262,6 +262,77 @@ describe('CngxLiveAnnouncer - scope', () => {
       expect(bodyRegion('polite')?.textContent ?? '').toBe('');
     });
   });
+
+  // CngxDialog appends every dialog host to document.body, so a dialog opened
+  // from inside another one is a sibling of it, not a descendant.
+  describe('stacked sibling modals', () => {
+    let upper: HTMLElement;
+
+    beforeEach(() => {
+      upper = document.createElement('div');
+      upper.setAttribute('role', 'dialog');
+      upper.setAttribute('aria-modal', 'true');
+      document.body.appendChild(upper);
+    });
+
+    afterEach(() => {
+      upper.remove();
+    });
+
+    function upperRegion(politeness: 'polite' | 'assertive'): HTMLElement | null {
+      return upper.querySelector(`span[aria-live="${politeness}"]`);
+    }
+
+    it('speaks into the upper modal while it covers the scope modal', () => {
+      announcer.announce('Dismissed', 'polite', inner);
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+
+      expect(upperRegion('polite')?.textContent).toBe('Dismissed');
+      expect(modalRegion('polite')).toBeNull();
+      expect(bodyRegion('polite')?.textContent ?? '').toBe('');
+    });
+
+    it('skips an open modal inside an inert subtree', () => {
+      upper.setAttribute('inert', '');
+      announcer.announce('Dismissed', 'polite', inner);
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+
+      expect(modalRegion('polite')?.textContent).toBe('Dismissed');
+      expect(upperRegion('polite')).toBeNull();
+    });
+
+    it('moves a pending message to the scope modal when the upper one closes', () => {
+      announcer.announce('Dismissed', 'polite', inner);
+      expect(upperRegion('polite')).not.toBeNull();
+      upper.removeAttribute('aria-modal');
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+
+      expect(modalRegion('polite')?.textContent).toBe('Dismissed');
+      expect(upperRegion('polite')).toBeNull();
+      expect(bodyRegion('polite')?.textContent ?? '').toBe('');
+    });
+
+    it('moves a pending message to the scope modal when the upper one leaves the DOM', () => {
+      announcer.announce('Dismissed', 'assertive', inner);
+      expect(upperRegion('assertive')).not.toBeNull();
+      upper.remove();
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+      vi.advanceTimersByTime(FIRST_MODAL_WRITE_DELAY_MS);
+
+      expect(modalRegion('assertive')?.textContent).toBe('Dismissed');
+      expect(bodyRegion('assertive')?.textContent ?? '').toBe('');
+    });
+
+    it('keeps an unscoped announcement on the body regions while modals are open', () => {
+      announcer.announce('Saved');
+      vi.advanceTimersByTime(CLEAR_DELAY_MS);
+
+      expect(bodyRegion('polite')?.textContent).toBe('Saved');
+      expect(upperRegion('polite')).toBeNull();
+      expect(modalRegion('polite')).toBeNull();
+    });
+  });
 });
 
 describe('CngxLiveAnnouncer - SSR', () => {

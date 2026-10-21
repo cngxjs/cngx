@@ -22,6 +22,16 @@ function isOpenModal(el: HTMLElement): boolean {
   return !(el instanceof HTMLDialogElement) || el.open;
 }
 
+// Overlays such as CngxDialog are appended to the body, and a nested modal
+// follows its container, so document order is stacking order: the last open
+// modal outside an inert subtree is the one a screen reader still reads.
+function topmostOpenModal(doc: Document): HTMLElement | null {
+  const open = Array.from(doc.querySelectorAll<HTMLElement>(MODAL_SELECTOR)).filter(
+    (el) => isOpenModal(el) && !el.closest('[inert]'),
+  );
+  return open.at(-1) ?? null;
+}
+
 /**
  * Politeness channel for {@link CngxLiveAnnouncer.announce}: `'polite'` queues
  * after the current utterance, `'assertive'` interrupts it immediately.
@@ -51,13 +61,18 @@ export type AriaLivePoliteness = 'polite' | 'assertive';
  * body region is silent while one is open. Pass the announcing element as the
  * third argument and the message goes to a region pair inside its enclosing
  * `[aria-modal="true"]` container instead; without a modal ancestor it goes to
- * the body regions as before. When a second modal is open inside that one,
- * the innermost open modal receives it, since everything else in the outer
- * modal is inert. The pair is created with both regions on first use and its
- * first write waits until the regions have settled in the DOM. A message still
- * pending when its modal closes moves to the next enclosing open modal or to
- * the body regions, and the pair is removed. The scope is opt-in per call - an
- * unscoped announcement never guesses a modal. {@link injectScopedLiveRegion} is the injection-time
+ * the body regions as before. When another modal covers that one, the topmost
+ * open modal receives it: the last `[aria-modal="true"]` element in document
+ * order that is open and not inside an `[inert]` subtree. That covers a modal
+ * nested inside the scope's own one as well as a sibling stacked on top of it,
+ * which is how `CngxDialog` stacks dialogs (every host is appended to
+ * `document.body`); a covered modal is hidden from assistive technology, so
+ * its region would be silent. The pair is created with both regions on first
+ * use and its first write waits until the regions have settled in the DOM. A
+ * message still pending when its modal closes moves to the next enclosing open
+ * modal, else to the topmost modal still open, else to the body regions, and
+ * the pair is removed. The scope is opt-in per call - an unscoped announcement
+ * never guesses a modal. {@link injectScopedLiveRegion} is the injection-time
  * alternative when the caller knows its overlay host up front.
  *
  * SSR-safe: all DOM access is guarded by `isPlatformBrowser`; on the server
@@ -101,8 +116,9 @@ export class CngxLiveAnnouncer implements OnDestroy {
    *   own region, so the two never overwrite each other.
    * @param scope The announcing element. When it sits inside an
    *   `[aria-modal="true"]` container, the message is written into a region
-   *   inside that container, which a screen reader still reads while the
-   *   modal hides the rest of the page. `null` / omitted: the body regions.
+   *   inside the topmost open modal (that container unless another modal
+   *   covers it), which a screen reader still reads while the modal hides the
+   *   rest of the page. `null` / omitted: the body regions.
    */
   announce(
     message: string,
@@ -125,8 +141,17 @@ export class CngxLiveAnnouncer implements OnDestroy {
     this.modalRegions.clear();
   }
 
-  private route(scope: Element | null | undefined, announcement: CngxPendingAnnouncement): void {
-    const modal = this.targetModal(scope);
+  /**
+   * `fromModal` marks a message that was already scoped to a modal which has
+   * since closed: with no open modal around its new scope it still goes to the
+   * topmost open modal rather than to the silent body regions.
+   */
+  private route(
+    scope: Element | null | undefined,
+    announcement: CngxPendingAnnouncement,
+    fromModal = false,
+  ): void {
+    const modal = this.targetModal(scope, fromModal);
     if (!modal) {
       this.regions ??= createLiveRegionPair(this.doc.body, this.doc);
       this.regions.announce(announcement.message, announcement.politeness);
@@ -144,21 +169,16 @@ export class CngxLiveAnnouncer implements OnDestroy {
   }
 
   /**
-   * The open modal that encloses `scope`, or the innermost open modal nested
-   * inside it: while that one is open the rest of the enclosing modal is inert.
+   * The topmost open modal when `scope` sits in an open modal (or the message
+   * comes from a closed one), else `null` for the body regions. Falls back to
+   * the scope's own modal when no candidate outside an inert subtree is open.
    */
-  private targetModal(scope: Element | null | undefined): HTMLElement | null {
+  private targetModal(scope: Element | null | undefined, fromModal: boolean): HTMLElement | null {
     const own = this.enclosingOpenModal(scope);
-    if (!own) {
+    if (!own && !fromModal) {
       return null;
     }
-    let target = own;
-    for (const nested of Array.from(own.querySelectorAll<HTMLElement>(MODAL_SELECTOR))) {
-      if (isOpenModal(nested)) {
-        target = nested;
-      }
-    }
-    return target;
+    return topmostOpenModal(this.doc) ?? own;
   }
 
   private enclosingOpenModal(scope: Element | null | undefined): HTMLElement | null {
@@ -178,7 +198,7 @@ export class CngxLiveAnnouncer implements OnDestroy {
     }
     const outer = this.outerOf(modal);
     this.release(modal);
-    this.route(outer, due);
+    this.route(outer, due, true);
     return true;
   }
 
@@ -201,7 +221,7 @@ export class CngxLiveAnnouncer implements OnDestroy {
     const unwritten = entry.pair.takePending();
     entry.pair.destroy();
     for (const announcement of unwritten) {
-      this.route(outer, announcement);
+      this.route(outer, announcement, true);
     }
   }
 
