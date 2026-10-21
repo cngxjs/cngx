@@ -122,6 +122,18 @@ describe('createRejectionState refused commit', () => {
     expect(state.descriptorText()).toBe('Reverted to "Tab 1".');
   });
 
+  it('keeps the generic copy when the origin index points at a removed tab', () => {
+    const { state, refuse, current, lastFailedIndex, lastOutcome } = setup({ en: '', de: '' });
+    refuse(1, 7);
+    expect(state.liveAnnouncement()).toBe('Not allowed');
+    expect(state.descriptorText()).toBe('Not allowed');
+    lastOutcome.set({ kind: 'failed', index: 1, sequence: 99 });
+    lastFailedIndex.set(1);
+    current.set('error');
+    expect(state.liveAnnouncement()).toBe('Refused');
+    expect(state.descriptorText()).toBe('Refused');
+  });
+
   it('keeps the generic copy when no origin index resolves', () => {
     const { state, current, lastFailedIndex, lastOutcome } = setup({ en: '', de: '' });
     lastOutcome.set({ kind: 'refused', index: 1, sequence: 1 });

@@ -42,7 +42,8 @@ export interface CngxMatTabRejectionState {
    * `commitFailedRetry` otherwise; a refused tab reads
    * `commitRefused(origin)` or `commitRefusedGeneric`, never the
    * failure copy. The origin is its label, or `unlabeledTab(position)`
-   * for a label-less origin tab. Empty string between rejections
+   * for a label-less origin tab; the generic copy when the origin tab was
+   * removed meanwhile. Empty string between rejections
    * (the projector clears the decoration entirely on
    * `failedHandleId === null`, so consumers only consult this while
    * a rejection is pinned).
@@ -85,17 +86,19 @@ export function createRejectionState(
   i18n: ReturnType<typeof injectTabsI18n>,
 ): CngxMatTabRejectionState {
   // A label-less origin is named by its position, as on <cngx-tab-group>;
-  // undefined only when no origin index resolves (the generic copy).
+  // undefined when no origin tab resolves - no origin index, or one past the
+  // end because the origin tab was removed meanwhile (the generic copy).
   function originName(
-    label: string | undefined,
     originIdx: number | undefined,
     copy: ReturnType<typeof i18n>,
   ): string | undefined {
+    const origin = originIdx === undefined ? undefined : presenter.tabs()[originIdx];
+    if (!origin || originIdx === undefined) {
+      return undefined;
+    }
+    const label = origin.label();
     if (label) {
       return label;
-    }
-    if (originIdx === undefined) {
-      return undefined;
     }
     return copy.unlabeledTab(originIdx + 1);
   }
@@ -133,7 +136,7 @@ export function createRejectionState(
       return '';
     }
     const copy = i18n();
-    const name = originName(originLabel(), presenter.originIndexDuringCommit(), copy);
+    const name = originName(presenter.originIndexDuringCommit(), copy);
     if (kind === 'refused') {
       return name ? copy.commitRefused(name) : copy.commitRefusedGeneric;
     }
@@ -152,10 +155,8 @@ export function createRejectionState(
   });
 
   function refusedCopy(): string {
-    const originIdx = presenter.originIndexDuringCommit();
-    const origin = originIdx !== undefined ? presenter.tabs()[originIdx] : undefined;
     const copy = i18n();
-    const name = originName(origin?.label(), originIdx, copy);
+    const name = originName(presenter.originIndexDuringCommit(), copy);
     return name ? copy.commitRefused(name) : copy.commitRefusedGeneric;
   }
 
@@ -176,12 +177,12 @@ export function createRejectionState(
     }
     if (current === 'error') {
       const failedIdx = presenter.lastFailedIndex();
-      const originIdx = presenter.originIndexDuringCommit();
-      const hasOrigin = failedIdx !== undefined && originIdx !== undefined;
-      const origin = hasOrigin ? presenter.tabs()[originIdx] : undefined;
+      const originIdx = failedIdx === undefined ? undefined : presenter.originIndexDuringCommit();
+      // The indices and the tab list stay tracked; the label is read untracked.
+      const hasOrigin = originIdx !== undefined && presenter.tabs()[originIdx] !== undefined;
       return untracked(() => {
         const copy = i18n();
-        const name = hasOrigin ? originName(origin?.label(), originIdx, copy) : undefined;
+        const name = hasOrigin ? originName(originIdx, copy) : undefined;
         return name ? copy.commitRolledBackTo(name) : copy.commitFailedRetry;
       });
     }
