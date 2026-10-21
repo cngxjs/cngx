@@ -43,6 +43,25 @@ npm start
 
 Runs on `http://localhost:4200`. The `prestart` hook regenerates the docs JSON and the examples components first.
 
+#### Testing on a phone
+
+iPhone (or any phone on the same Wi-Fi):
+
+```bash
+npm run start:examples:lan
+```
+
+Serves the examples app on `0.0.0.0` and prints the machine's LAN addresses. Open `http://<lan-ip>:4200` on the phone. While it runs, every device on the network can reach the dev server, so use a trusted network only.
+
+Android over USB (USB debugging on, the phone authorised for this machine):
+
+```bash
+npm start
+npm run devices:android
+```
+
+`devices:android` runs `adb reverse` for ports 4200 and 8080, so the phone opens the examples at `http://localhost:4200` and the docs (`npm run docs:serve`) at `http://localhost:8080`. It resolves adb from `$ANDROID_HOME/platform-tools`, the default macOS SDK location, then `PATH`, and exits non-zero when adb is missing or no authorised device is attached.
+
 ### Documentation
 
 Generate and serve the compodocx API documentation:
