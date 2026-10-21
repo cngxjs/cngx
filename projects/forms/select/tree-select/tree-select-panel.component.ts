@@ -214,7 +214,8 @@ export class CngxTreeSelectPanel<T = unknown> {
   /**
    * A press anywhere in the tree (row, twisty, slot content) keeps focus on
    * the container: `CngxActiveDescendant` reads keys only while the container
-   * has focus, and the `tabindex="-1"` twisty would take focus on a click.
+   * has focus, and a focusable control in a projected node row would take
+   * focus on a click.
    */
   protected handleTreeMouseDown(event: MouseEvent): void {
     event.preventDefault();

@@ -45,7 +45,11 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
   readonly twistyOpenGlyph: Signal<TemplateRef<void> | null>;
   readonly checkGlyph: Signal<TemplateRef<void> | null>;
   readonly dashGlyph: Signal<TemplateRef<void> | null>;
-  /** Localised aria-labels for the twisty button; follow a language switch. */
+  /**
+   * Localised twisty copy; follows a language switch. The default row no
+   * longer renders it: its twisty is `aria-hidden` so the treeitem name stays
+   * the node label.
+   */
   readonly resolvedTwistyExpandLabel: Signal<string>;
   readonly resolvedTwistyCollapseLabel: Signal<string>;
   /**

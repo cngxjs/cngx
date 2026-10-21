@@ -361,9 +361,10 @@ export class CngxTreeSelect<T = unknown>
   /** Forwarded to `<cngx-checkbox-indicator [dashGlyph]>`. */
   readonly dashGlyph = input<TemplateRef<void> | null>(null);
   /**
-   * Localised aria-labels for the twisty button in the default row.
-   * Falls back to English. Ignored when `*cngxTreeSelectNode` is
-   * projected.
+   * Expand / collapse copy for the twisty. The default row does not
+   * render it: its twisty is `aria-hidden` and the treeitem is named by
+   * the node label alone, with `aria-expanded` carrying the state.
+   * Ignored when `*cngxTreeSelectNode` is projected.
    */
   readonly twistyExpandLabel = input<string | undefined>(undefined);
   /** @internal Bound value, else the config copy; panel-host contract. */

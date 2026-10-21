@@ -44,12 +44,14 @@
         >
           @if (node.hasChildren) {
             @let isOpen = host.treeController.isExpanded(node.id)();
-            <button
-              type="button"
+            <!-- Pointer-only affordance: the treeitem's name is its label and
+                 aria-expanded carries the state (APG tree), so the twisty is
+                 hidden from AT and is no focus stop; keys toggle via
+                 cngxHierarchicalNav. -->
+            <span
+              aria-hidden="true"
               class="cngx-tree-select__twisty"
               [class.cngx-tree-select__twisty--open]="isOpen"
-              tabindex="-1"
-              [attr.aria-label]="isOpen ? host.resolvedTwistyCollapseLabel() : host.resolvedTwistyExpandLabel()"
               (click)="toggleExpand($event, node)"
             >
               @if (isOpen) {
@@ -67,7 +69,7 @@
                   <span aria-hidden="true">▸</span>
                 }
               }
-            </button>
+            </span>
           } @else {
             <span aria-hidden="true" class="cngx-tree-select__twisty-spacer"></span>
           }
