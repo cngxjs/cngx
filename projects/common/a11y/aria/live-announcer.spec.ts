@@ -104,6 +104,77 @@ describe('CngxLiveAnnouncer', () => {
   });
 });
 
+describe('CngxLiveAnnouncer - scope', () => {
+  let announcer: CngxLiveAnnouncer;
+  let modal: HTMLElement;
+  let inner: HTMLElement;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    announcer = TestBed.inject(CngxLiveAnnouncer);
+    modal = document.createElement('div');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    inner = document.createElement('section');
+    modal.appendChild(inner);
+    document.body.appendChild(modal);
+  });
+
+  afterEach(() => {
+    announcer.ngOnDestroy();
+    modal.remove();
+    vi.useRealTimers();
+  });
+
+  function bodyRegion(politeness: 'polite' | 'assertive'): HTMLElement | null {
+    return document.body.querySelector(`:scope > span[aria-live="${politeness}"]`);
+  }
+
+  function modalRegion(politeness: 'polite' | 'assertive'): HTMLElement | null {
+    return modal.querySelector(`span[aria-live="${politeness}"]`);
+  }
+
+  it('writes a scoped message into a region inside the enclosing aria-modal container', () => {
+    announcer.announce('Dismissed', 'polite', inner);
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+
+    expect(modalRegion('polite')?.textContent).toBe('Dismissed');
+    expect(bodyRegion('polite')?.textContent ?? '').toBe('');
+  });
+
+  it('falls back to the body region when the scope has no modal ancestor', () => {
+    const outside = document.createElement('div');
+    document.body.appendChild(outside);
+    announcer.announce('Saved', 'polite', outside);
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+
+    expect(bodyRegion('polite')?.textContent).toBe('Saved');
+    expect(modalRegion('polite')).toBeNull();
+    outside.remove();
+  });
+
+  it('re-announces an identical scoped repeat through the same modal region', () => {
+    announcer.announce('Dismissed', 'polite', inner);
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+    const region = modalRegion('polite');
+
+    announcer.announce('Dismissed', 'polite', inner);
+    expect(region?.textContent).toBe('');
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+    expect(region?.textContent).toBe('Dismissed');
+    expect(modal.querySelectorAll('span[aria-live="polite"]').length).toBe(1);
+  });
+
+  it('lands a modal write and a body write of the same frame both', () => {
+    announcer.announce('In the dialog', 'polite', inner);
+    announcer.announce('Behind the dialog');
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+
+    expect(modalRegion('polite')?.textContent).toBe('In the dialog');
+    expect(bodyRegion('polite')?.textContent).toBe('Behind the dialog');
+  });
+});
+
 describe('CngxLiveAnnouncer - SSR', () => {
   afterEach(() => {
     TestBed.resetTestingModule();
