@@ -105,6 +105,30 @@ export interface CngxTabGroupAnnouncements {
    * keeps the bare label.
    */
   tabAriaLabel(tab: CngxTabHandle, position: number): string;
+
+  /**
+   * Tab-button `aria-labelledby`, or `null` when {@link tabAriaLabel}
+   * names the button. A tab without a `[label]` string whose
+   * `*cngxTabLabel` template renders is named by that rendered content:
+   * the ids of its label node ({@link tabLabelId}) and, when a sub-label
+   * renders, its sub-label node ({@link tabSubLabelId}). Name-from-content
+   * is ruled out by the sr-only descriptor inside the button, so the
+   * reference is explicit. Bind `aria-label` only while this is `null`.
+   *
+   * @param hasLabelTemplate A `*cngxTabLabel` template renders for `tab`.
+   * @param hasSubLabelTemplate A `*cngxTabSubLabel` template renders for `tab`.
+   */
+  tabLabelledBy(
+    tab: CngxTabHandle,
+    hasLabelTemplate: boolean,
+    hasSubLabelTemplate: boolean,
+  ): string | null;
+
+  /** Id of the node that renders a tab's label, the target of {@link tabLabelledBy}. */
+  tabLabelId(tab: CngxTabHandle): string;
+
+  /** Id of the node that renders a tab's sub-label, the target of {@link tabLabelledBy}. */
+  tabSubLabelId(tab: CngxTabHandle): string;
 }
 
 /**
@@ -321,6 +345,28 @@ export function createTabGroupAnnouncements(
     return copy.selectedTab(labelPart, position, tabs.length);
   }
 
+  function tabLabelId(tab: CngxTabHandle): string {
+    return `${tab.id}-label`;
+  }
+
+  function tabSubLabelId(tab: CngxTabHandle): string {
+    return `${tab.id}-sublabel`;
+  }
+
+  function tabLabelledBy(
+    tab: CngxTabHandle,
+    hasLabelTemplate: boolean,
+    hasSubLabelTemplate: boolean,
+  ): string | null {
+    if (tab.label() || !hasLabelTemplate) {
+      return null;
+    }
+    if (hasSubLabelTemplate || tab.subLabel()) {
+      return `${tabLabelId(tab)} ${tabSubLabelId(tab)}`;
+    }
+    return tabLabelId(tab);
+  }
+
   // Eager seed - `linkedSignal` is lazy and the success arm doesn't
   // touch the tracker at construction (commitTransition is `idle`),
   // so without this read `prev?.source` is undefined on the first
@@ -334,5 +380,8 @@ export function createTabGroupAnnouncements(
     liveAnnouncement,
     statusPhrase,
     tabAriaLabel,
+    tabLabelledBy,
+    tabLabelId,
+    tabSubLabelId,
   };
 }

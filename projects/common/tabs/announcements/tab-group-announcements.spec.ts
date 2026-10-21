@@ -576,6 +576,27 @@ describe('createTabGroupAnnouncements - label-less tabs', () => {
     expect(stripBidiIsolates(bundle.tabAriaLabel(handle, 2))).toBe('Tab 2 of 3, 45');
   });
 
+  it('names a template-labelled tab by its rendered label node, never with a labelled tab', () => {
+    const { bundle, handles } = unlabelledSetup(['Profile', undefined, 'Billing']);
+    expect(bundle.tabLabelledBy(handles[1], true, false)).toBe('t1-label');
+    expect(bundle.tabLabelledBy(handles[1], true, true)).toBe('t1-label t1-sublabel');
+    expect(bundle.tabLabelledBy(handles[1], false, true)).toBeNull();
+    expect(bundle.tabLabelledBy(handles[0], true, true)).toBeNull();
+    expect(bundle.tabLabelId(handles[1])).toBe('t1-label');
+    expect(bundle.tabSubLabelId(handles[1])).toBe('t1-sublabel');
+  });
+
+  it('adds the sub-label node when a string sub-label renders', () => {
+    const { bundle } = unlabelledSetup(['Profile', undefined, 'Billing']);
+    const handle: CngxTabHandle = {
+      ...makeHandle(),
+      id: 't1',
+      label: signal<string | undefined>(undefined),
+      subLabel: signal<string | undefined>('45'),
+    };
+    expect(bundle.tabLabelledBy(handle, true, false)).toBe('t1-label t1-sublabel');
+  });
+
   it('keeps the labelled name unchanged', () => {
     const { bundle, handles } = unlabelledSetup(['Profile', undefined, 'Billing']);
     expect(stripBidiIsolates(bundle.tabAriaLabel(handles[0], 1))).toBe('Tab 1 of 3: Profile');

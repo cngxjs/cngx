@@ -285,7 +285,7 @@
     {
       "class": null,
       "file": "projects/common/tabs/announcements/tab-group-announcements.ts",
-      "line": 166,
+      "line": 190,
       "member": "createTabGroupAnnouncements.resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [
