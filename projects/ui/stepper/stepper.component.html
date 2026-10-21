@@ -16,7 +16,9 @@
 } @else if (displayMode() === 'dots') {
   <!--
     In 'none' mode the dots are inert list-item indicators (footer-only
-    navigation); otherwise they are roving-tabindex buttons.
+    navigation); otherwise they are roving-tabindex buttons. The dot body
+    is decoration: the shell's aria-label names the step, so the projected
+    template renders inside an aria-hidden wrapper.
   -->
   <div
     class="cngx-stepper__mobile-dots"
@@ -37,7 +39,9 @@
           [attr.data-reason]="stateView.rejectionReason(node)"
         >
           @if (templates.dot(); as dotTpl) {
-            <ng-container *ngTemplateOutlet="dotTpl; context: slotContext.dotContextFor(node)" />
+            <span aria-hidden="true">
+              <ng-container *ngTemplateOutlet="dotTpl; context: slotContext.dotContextFor(node)" />
+            </span>
           }
         </span>
       } @else {
@@ -59,7 +63,9 @@
           (click)="handleHeaderClick(node)"
         >
           @if (templates.dot(); as dotTpl) {
-            <ng-container *ngTemplateOutlet="dotTpl; context: slotContext.dotContextFor(node)" />
+            <span aria-hidden="true">
+              <ng-container *ngTemplateOutlet="dotTpl; context: slotContext.dotContextFor(node)" />
+            </span>
           }
         </button>
       }

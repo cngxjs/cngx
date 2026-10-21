@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     "A <code>*cngxDotStepperDot</code> template projected into <code>&lt;cngx-stepper&gt;</code> replaces the body of each dot once the strip collapses to dots. The frame is narrower than 30rem, so the dot row is on screen from the start.",
   description:
-    "The dot slot resolves the same cascade on both dot hosts: a projected <code>*cngxDotStepperDot</code> wins over <code>withDotStepperDotTemplate(...)</code>, and without either the dot keeps its empty body. The context carries <code>index</code>, <code>active</code>, <code>completed</code> and the step <code>node</code>. The dot button stays library-owned - its <code>aria-label</code>, <code>aria-current</code> and roving tabindex do not change - so the template is decoration and marks its glyphs <code>aria-hidden</code>.",
+    "The dot slot resolves the same cascade on both dot hosts: a projected <code>*cngxDotStepperDot</code> wins over <code>withDotStepperDotTemplate(...)</code>, and without either the dot keeps its empty body. The context carries <code>index</code>, <code>active</code>, <code>completed</code> and the step <code>node</code>. The dot button stays library-owned - its <code>aria-label</code>, <code>aria-current</code> and roving tabindex do not change - so the template is decoration: the stepper renders it inside an <code>aria-hidden</code> wrapper.",
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
