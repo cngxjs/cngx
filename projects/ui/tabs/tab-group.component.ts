@@ -252,6 +252,8 @@ export class CngxTabGroup implements CngxTabPanelHost {
     ariaLabel: this.ariaLabel,
     ariaLabelledBy: this.ariaLabelledBy,
     closedAnnouncement: this.dismiss.closedAnnouncement,
+    hasLabelTemplate: (id: string) => this.labelTemplateFor(id) !== null,
+    hasSubLabelTemplate: (id: string) => this.subLabelTemplateFor(id) !== null,
   });
 
   /**

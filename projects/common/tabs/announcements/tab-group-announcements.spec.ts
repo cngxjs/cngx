@@ -605,3 +605,61 @@ describe('createTabGroupAnnouncements - label-less tabs', () => {
     expect(live()).toBe('Tab switch not allowed.');
   });
 });
+
+describe('createTabGroupAnnouncements - tab name source', () => {
+  function nameSetup(slots: { label?: readonly string[]; subLabel?: readonly string[] }) {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const presenter = makePresenter();
+    const bundle = createTabGroupAnnouncements({
+      presenter,
+      i18n: TestBed.inject(CNGX_TABS_I18N),
+      config: {},
+      ariaLabel: signal<string | undefined>(undefined),
+      ariaLabelledBy: signal<string | undefined>(undefined),
+      hasLabelTemplate: (id) => slots.label?.includes(id) ?? false,
+      hasSubLabelTemplate: (id) => slots.subLabel?.includes(id) ?? false,
+    });
+    return bundle;
+  }
+
+  function handle(label: string | undefined, subLabel?: string): CngxTabHandle {
+    return {
+      ...makeHandle(),
+      id: 't1',
+      label: signal(label),
+      subLabel: signal(subLabel),
+    };
+  }
+
+  it('names a label-less tab from its label slot instead of an aria-label', () => {
+    const bundle = nameSetup({ label: ['t1'] });
+    const tab = handle(undefined);
+    expect(bundle.tabAriaLabelledBy(tab)).toBe('t1-label');
+    expect(bundle.tabAriaLabel(tab, 2)).toBeNull();
+  });
+
+  it('adds the sub-label id when a sub-label string is set', () => {
+    const bundle = nameSetup({ label: ['t1'] });
+    expect(bundle.tabAriaLabelledBy(handle(undefined, '45'))).toBe('t1-label t1-sublabel');
+  });
+
+  it('adds the sub-label id when a sub-label slot is projected', () => {
+    const bundle = nameSetup({ label: ['t1'], subLabel: ['t1'] });
+    expect(bundle.tabAriaLabelledBy(handle(undefined))).toBe('t1-label t1-sublabel');
+  });
+
+  it('keeps the aria-label when the tab has a label string, slot or not', () => {
+    const bundle = nameSetup({ label: ['t1'] });
+    const tab = handle('Profile');
+    expect(bundle.tabAriaLabelledBy(tab)).toBeNull();
+    expect(stripBidiIsolates(bundle.tabAriaLabel(tab, 1) ?? '')).toContain('Profile');
+  });
+
+  it('keeps the position aria-label when the tab has neither label nor slot', () => {
+    const bundle = nameSetup({});
+    const tab = handle(undefined);
+    expect(bundle.tabAriaLabelledBy(tab)).toBeNull();
+    expect(stripBidiIsolates(bundle.tabAriaLabel(tab, 2) ?? '')).toBe('Tab 2');
+  });
+});

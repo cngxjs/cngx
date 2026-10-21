@@ -10,8 +10,6 @@
   @for (tab of tabs(); track tab.id; let i = $index) {
     @let labelTpl = labelTemplateFor(tab.id);
     @let subLabelTpl = subLabelTemplateFor(tab.id);
-    <!-- Without a [label] string a projected *cngxTabLabel names the tab; the sr-only descriptor rules out name-from-content. -->
-    @let nameFromSlot = !tab.label() && !!labelTpl;
     <div class="cngx-tabs__tab-wrapper" role="presentation">
     <button
       type="button"
@@ -23,8 +21,8 @@
       [id]="tabHeaderId(tab)"
       [attr.data-tab-id]="tab.id"
       [attr.tabindex]="tabTabindex(tab)"
-      [attr.aria-label]="nameFromSlot ? null : announcements.tabAriaLabel(tab, i + 1)"
-      [attr.aria-labelledby]="nameFromSlot ? tab.id + '-label' + ((subLabelTpl || tab.subLabel()) ? ' ' + tab.id + '-sublabel' : '') : null"
+      [attr.aria-label]="announcements.tabAriaLabel(tab, i + 1)"
+      [attr.aria-labelledby]="announcements.tabAriaLabelledBy(tab)"
       [attr.aria-selected]="isSelected(tab) ? 'true' : 'false'"
       [attr.aria-controls]="tabPanelId(tab)"
       [attr.aria-disabled]="tab.disabled() ? 'true' : null"

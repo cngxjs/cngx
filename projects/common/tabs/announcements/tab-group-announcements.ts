@@ -33,6 +33,14 @@ export interface CngxTabGroupAnnouncementsOptions {
    * re-enter (and re-announce through) the live region.
    */
   readonly closedAnnouncement?: Signal<string>;
+  /**
+   * Whether the tab with this id projects a `*cngxTabLabel` slot. Feeds
+   * {@link CngxTabGroupAnnouncements.tabAriaLabelledBy}; omitted means no
+   * tab has one, so every tab is named by `tabAriaLabel`.
+   */
+  readonly hasLabelTemplate?: (tabId: string) => boolean;
+  /** Whether the tab with this id projects a `*cngxTabSubLabel` slot. */
+  readonly hasSubLabelTemplate?: (tabId: string) => boolean;
 }
 
 /**
@@ -98,9 +106,19 @@ export interface CngxTabGroupAnnouncements {
    * Verbose tab-button `aria-label` - `selectedTab(label, position,
    * count)` so AT hears "Tab 2 of 5: Settings" instead of inferring
    * position from tablist enumeration. The visual span keeps the
-   * bare label.
+   * bare label. `null` when {@link tabAriaLabelledBy} names the tab.
    */
-  tabAriaLabel(tab: CngxTabHandle, position: number): string;
+  tabAriaLabel(tab: CngxTabHandle, position: number): string | null;
+
+  /**
+   * Tab-button `aria-labelledby` id list, or `null` when `tabAriaLabel`
+   * names the tab (the two are mutually exclusive). Applies only to a tab
+   * without a `[label]` string that projects a `*cngxTabLabel` slot: the
+   * slot content is the name, referenced as `<tab.id>-label`, plus
+   * `<tab.id>-sublabel` when a sub-label string or slot is rendered. The
+   * skin renders the label and sub-label spans with exactly these ids.
+   */
+  tabAriaLabelledBy(tab: CngxTabHandle): string | null;
 }
 
 /**
@@ -139,6 +157,8 @@ export function createTabGroupAnnouncements(
 ): CngxTabGroupAnnouncements {
   const { presenter, i18n, config, ariaLabel, ariaLabelledBy } = options;
   const closedAnnouncement = options.closedAnnouncement ?? ((): string => '');
+  const hasLabelTemplate = options.hasLabelTemplate ?? ((): boolean => false);
+  const hasSubLabelTemplate = options.hasSubLabelTemplate ?? ((): boolean => false);
 
   const fallbackLabels = coerceSignal(config.fallbackLabels);
   const defaultFallbackLabels = coerceSignal(TABS_CONFIG_DEFAULTS.fallbackLabels);
@@ -297,7 +317,22 @@ export function createTabGroupAnnouncements(
     return i18n().tabHasErrors(aggregator?.errorCount() ?? 1);
   }
 
-  function tabAriaLabel(tab: CngxTabHandle, position: number): string {
+  // Without a [label] string a projected *cngxTabLabel names the tab; the
+  // sr-only descriptor rules out name-from-content, so the name is an
+  // explicit labelledby reference to the rendered slot.
+  function tabAriaLabelledBy(tab: CngxTabHandle): string | null {
+    if (tab.label() || !hasLabelTemplate(tab.id)) {
+      return null;
+    }
+    const labelId = `${tab.id}-label`;
+    const hasSubLabel = hasSubLabelTemplate(tab.id) || !!tab.subLabel();
+    return hasSubLabel ? `${labelId} ${tab.id}-sublabel` : labelId;
+  }
+
+  function tabAriaLabel(tab: CngxTabHandle, position: number): string | null {
+    if (tabAriaLabelledBy(tab) !== null) {
+      return null;
+    }
     const tabs = presenter.tabs();
     const label = tab.label();
     const detail = tab.subLabel();
@@ -323,5 +358,6 @@ export function createTabGroupAnnouncements(
     liveAnnouncement,
     statusPhrase,
     tabAriaLabel,
+    tabAriaLabelledBy,
   };
 }
