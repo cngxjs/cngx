@@ -1371,6 +1371,23 @@
       ]
     },
     {
+      "code": "CNGX1069",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Empty pitch domain",
+      "page": "core-concepts/error-codes/cngx1069.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1069.html",
+      "status": "active",
+      "files": ["projects/common/audio/pitch-mode/audio-pitch.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/audio/pitch-mode/audio-pitch.directive.ts",
+          "text": "[cngxAudioPitch] [pitchDomain] [${...}, ${...}] is empty; every value plays ${...} Hz, the low end of [pitchRange]."
+        }
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

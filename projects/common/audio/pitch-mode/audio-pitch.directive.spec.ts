@@ -26,7 +26,7 @@ function createMockHandle(): CngxAudioHandle {
   imports: [CngxAudioPitch],
   template: `<div
     [cngxAudioPitch]="value()"
-    [pitchDomain]="domain"
+    [pitchDomain]="domain()"
     [pitchRange]="range"
     [pitchThrottleMs]="throttle()"
     [audioVolume]="vol"
@@ -38,7 +38,7 @@ function createMockHandle(): CngxAudioHandle {
 class Host {
   readonly value = signal(50);
   readonly throttle = signal(1000);
-  domain: [number, number] = [0, 100];
+  readonly domain = signal<[number, number]>([0, 100]);
   range: [number, number] = [200, 400];
   vol: number | undefined = undefined;
   disabled = false;
@@ -61,7 +61,7 @@ function setup(config?: PitchConfig, handle: CngxAudioHandle = createMockHandle(
   const fixture = TestBed.createComponent(Host);
   const host = fixture.componentInstance;
   if (config?.domain) {
-    host.domain = config.domain;
+    host.domain.set(config.domain);
   }
   if (config?.range) {
     host.range = config.range;
@@ -123,6 +123,77 @@ describe('CngxAudioPitch directive', () => {
     const { host, fixture, handle } = setup({ value: 50, domain: [0, 100], range: [200, 400] });
     sweep(host, fixture, 999);
     expect(lastToneFreq(handle)).toBe(400);
+  });
+
+  it('maps an inverted domain', () => {
+    const { host, fixture, handle } = setup({ value: 50, domain: [100, 0], range: [220, 880] });
+    sweep(host, fixture, 100);
+    expect(lastToneFreq(handle)).toBe(220);
+    host.throttle.set(0);
+    sweep(host, fixture, 0);
+    expect(lastToneFreq(handle)).toBe(880);
+  });
+
+  it('clamps against an inverted domain', () => {
+    const { host, fixture, handle } = setup({
+      value: 50,
+      domain: [100, 0],
+      range: [220, 880],
+      throttle: 0,
+    });
+    sweep(host, fixture, 150);
+    expect(lastToneFreq(handle)).toBe(220);
+    sweep(host, fixture, -50);
+    expect(lastToneFreq(handle)).toBe(880);
+  });
+
+  describe('empty domain', () => {
+    const CNGX1069 = /^CNGX1069: \[cngxAudioPitch\]/;
+
+    function warnSpy() {
+      return vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    }
+
+    function warnCount(warn: ReturnType<typeof warnSpy>): number {
+      return warn.mock.calls.filter(([msg]) => CNGX1069.test(String(msg))).length;
+    }
+
+    function setDomain(host: Host, fixture: ReturnType<typeof TestBed.createComponent>, d: [number, number]) {
+      host.domain.set(d);
+      fixture.detectChanges();
+    }
+
+    it('warns CNGX1069 when the domain becomes empty and plays range low', () => {
+      const warn = warnSpy();
+      const { host, fixture, handle } = setup({ value: 0, domain: [0, 100], range: [220, 880] });
+      expect(warnCount(warn)).toBe(0);
+
+      setDomain(host, fixture, [5, 5]);
+      expect(warnCount(warn)).toBe(1);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringMatching(/^CNGX1069: \[cngxAudioPitch\] \[pitchDomain\] \[5, 5\] is empty; every value plays 220 Hz/),
+      );
+
+      sweep(host, fixture, 70);
+      expect(lastToneFreq(handle)).toBe(220);
+    });
+
+    it('stays silent for a re-bound identical empty tuple', () => {
+      const warn = warnSpy();
+      const { host, fixture } = setup({ value: 0, domain: [5, 5] });
+      expect(warnCount(warn)).toBe(1);
+
+      setDomain(host, fixture, [5, 5]);
+      expect(warnCount(warn)).toBe(1);
+    });
+
+    it('warns again after the domain left the empty state and re-entered the identical empty tuple', () => {
+      const warn = warnSpy();
+      const { host, fixture } = setup({ value: 0, domain: [5, 5] });
+      setDomain(host, fixture, [0, 10]);
+      setDomain(host, fixture, [5, 5]);
+      expect(warnCount(warn)).toBe(2);
+    });
   });
 
   it('passes the configured tone duration', () => {
