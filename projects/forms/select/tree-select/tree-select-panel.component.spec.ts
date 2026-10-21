@@ -1,19 +1,10 @@
-import {
-  Component,
-  signal,
-  TemplateRef,
-  viewChild,
-  type Signal,
-} from '@angular/core';
+import { Component, signal, TemplateRef, viewChild, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { type AsyncView } from '@cngx/common/data';
 import { CngxPopover, CngxPopoverSheet } from '@cngx/common/popover';
-import {
-  createTreeController,
-  type CngxTreeController,
-} from '@cngx/common/interactive';
+import { createTreeController, type CngxTreeController } from '@cngx/common/interactive';
 import { provideLocale } from '@cngx/core/utils';
 import type { CngxTreeNode, FlatTreeNode } from '@cngx/utils';
 import { describe, expect, it, vi } from 'vitest';
@@ -94,11 +85,13 @@ function makeShellHost(): CngxSelectPanelHost {
       statusRefreshing: 'Refreshing options',
       fieldLabelFallback: 'Selection',
       commitFailedMessage: (label: string) => `${label}: Save failed`,
-      createFailedMessage: (label: string, option: string) => `${label}: Could not create ${option}`,
+      createFailedMessage: (label: string, option: string) =>
+        `${label}: Could not create ${option}`,
       searchInput: 'Search options',
       listboxFallback: 'Options',
       sheetClose: 'Close',
       sheetDone: 'Done',
+      selectionSummary: (labels: readonly string[]) => labels.join(', '),
     }),
     resolvedListboxLabel: signal(''),
     resolvedShowSelectionIndicator: signal(true),
@@ -153,9 +146,7 @@ function makeShellHost(): CngxSelectPanelHost {
       <cngx-tree-select-panel />
     </div>
     <ng-template cngxTreeSelectNode let-node>
-      <div class="custom-slot" [attr.data-id]="node.id">
-        custom: {{ node.label }}
-      </div>
+      <div class="custom-slot" [attr.data-id]="node.id">custom: {{ node.label }}</div>
     </ng-template>
   `,
 })
@@ -183,26 +174,24 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
     /* no-op in the spec harness */
   }
 
-  readonly treeController: CngxTreeController<Row> = TestBed.runInInjectionContext(
-    () =>
-      createTreeController<Row>({
-        nodes: this.nodes,
-        nodeIdFn: (v) => v.id,
-        labelFn: (v) => v.name,
-      }),
+  readonly treeController: CngxTreeController<Row> = TestBed.runInInjectionContext(() =>
+    createTreeController<Row>({
+      nodes: this.nodes,
+      nodeIdFn: (v) => v.id,
+      labelFn: (v) => v.name,
+    }),
   );
 
   readonly slotDirective = viewChild(CngxTreeSelectNode<Row>);
 
-  readonly nodeTpl: Signal<TemplateRef<CngxTreeSelectNodeContext<Row>> | null> =
-    (() => {
-      const use = this.useSlot;
-      const slot = this.slotDirective;
-      return (() => {
-        const imported = slot();
-        return use() && imported ? imported.templateRef : null;
-      }) as unknown as Signal<TemplateRef<CngxTreeSelectNodeContext<Row>> | null>;
-    })();
+  readonly nodeTpl: Signal<TemplateRef<CngxTreeSelectNodeContext<Row>> | null> = (() => {
+    const use = this.useSlot;
+    const slot = this.slotDirective;
+    return (() => {
+      const imported = slot();
+      return use() && imported ? imported.templateRef : null;
+    }) as unknown as Signal<TemplateRef<CngxTreeSelectNodeContext<Row>> | null>;
+  })();
 
   readonly lastSelected = signal<FlatTreeNode<Row> | null>(null);
 
@@ -419,10 +408,7 @@ describe('CngxTreeSelectPanel - expand-to-reveal type-to-find', () => {
       { value: { id: 'ap', name: 'Apple' } },
       {
         value: { id: 'f', name: 'Fruits' },
-        children: [
-          { value: { id: 'c', name: 'Cherry' } },
-          { value: { id: 'g', name: 'Grape' } },
-        ],
+        children: [{ value: { id: 'c', name: 'Cherry' } }, { value: { id: 'g', name: 'Grape' } }],
       },
       { value: { id: 'z', name: 'Zebra' } },
     ];
@@ -537,10 +523,9 @@ describe('CngxTreeSelectPanel - expand-to-reveal type-to-find', () => {
       activeItem: () => null,
       highlightByValue: (v: unknown) => highlighted.push(v),
     };
-    (panel as unknown as { handleTypeaheadMiss(term: string, ad: unknown): void }).handleTypeaheadMiss(
-      'c',
-      adStub,
-    );
+    (
+      panel as unknown as { handleTypeaheadMiss(term: string, ad: unknown): void }
+    ).handleTypeaheadMiss('c', adStub);
     expect(host.treeController.isExpanded('f')()).toBe(true);
     fixture.detectChanges();
     expect(highlighted).toEqual([{ id: 'c', name: 'Cherry', disabled: true }]);

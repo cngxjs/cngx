@@ -24,6 +24,11 @@ export interface CngxSelectLanguageSection {
   readonly chipRemoveFor: CngxMessage;
   /** `{count}`: the visible badge for the chips hidden by `chipOverflow: 'truncate'`. */
   readonly chipOverflowBadge: CngxMessage;
+  /**
+   * `{count}`, `{list}`: the spoken value of a summary trigger holding two or
+   * more values. `{list}` is the labels joined for the reading locale.
+   */
+  readonly selectionSummary: CngxMessage;
   /** Tree-select twisty of a collapsed node. */
   readonly treeExpand: string;
   /** Tree-select twisty of an expanded node. */
@@ -111,6 +116,7 @@ export const CNGX_SELECT_LANGUAGE_EN: CngxSelectLanguageSection = {
   chipRemove: 'Remove',
   chipRemoveFor: '{action}: {label}',
   chipOverflowBadge: '+{count}',
+  selectionSummary: '{count} selected: {list}',
   treeExpand: 'Expand node',
   treeCollapse: 'Collapse node',
   statusLoading: 'Loading options',

@@ -83,6 +83,9 @@ import {
   type CngxSelectCommitMode,
 } from '../shared/commit-action.types';
 import { sameArrayContents } from '../shared/internal/compare';
+import { CngxSelectSummary } from '../shared/internal/summary/select-summary.component';
+import { createSelectSummary } from '../shared/internal/summary/select-summary';
+import { injectTouchFloorSignal } from '../shared/internal/touch-floor';
 import { createFieldSync } from '../shared/field-sync';
 import {
   CNGX_SELECT_PANEL_VIEW_HOST,
@@ -219,6 +222,7 @@ export interface CngxTreeSelectChange<T = unknown> {
     CngxClickOutside,
     CngxPopover,
     CngxPopoverTrigger,
+    CngxSelectSummary,
     CngxTreeSelectPanel,
     NgTemplateOutlet,
   ],
@@ -822,6 +826,17 @@ export class CngxTreeSelect<T = unknown>
       },
     },
   );
+
+  /**
+   * @internal - one-line summary instead of chips under the touch floor,
+   * counted over the same `selected()` the chips render.
+   */
+  protected readonly summary = createSelectSummary<T>({
+    selectedOptions: computed(() => [...this.selected()]),
+    active: injectTouchFloorSignal(),
+    ariaLabels: this.config.ariaLabels,
+    fallbackLabels: this.config.fallbackLabels,
+  });
 
   open(): void {
     this.popoverRef()?.show();

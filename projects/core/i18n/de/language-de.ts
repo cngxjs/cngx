@@ -383,6 +383,7 @@ export const CNGX_LANGUAGE_DE = {
     chipRemove: 'Entfernen',
     chipRemoveFor: '{action}: {label}',
     chipOverflowBadge: '+{count}',
+    selectionSummary: '{count} ausgewählt: {list}',
     treeExpand: 'Knoten aufklappen',
     treeCollapse: 'Knoten zuklappen',
     statusLoading: 'Optionen werden geladen',

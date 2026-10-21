@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Subject, type Observable } from 'rxjs';
 
@@ -17,12 +17,10 @@ import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host'
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
+import { stubTouchFloor } from '../shared/__test-helpers/touch-floor';
 import { CngxMultiSelect, type CngxMultiSelectChange } from './multi-select.component';
 import type { CngxSelectOptionDef } from '../shared/option.model';
-import type {
-  CngxSelectCommitAction,
-  CngxSelectCommitMode,
-} from '../shared/commit-action.types';
+import type { CngxSelectCommitAction, CngxSelectCommitMode } from '../shared/commit-action.types';
 import { provideSelectConfig, withAriaLabels } from '../shared/config';
 import {
   CngxMultiSelectChip,
@@ -116,9 +114,7 @@ describe('CngxMultiSelect - skeleton', () => {
     flush(fixture);
     // Open the panel so the listbox is rendered.
     fixture.componentInstance.values.set([]);
-    const trigger: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__trigger',
-    );
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
     trigger.click();
     flush(fixture);
     const listbox = fixture.debugElement.query(By.directive(CngxListbox));
@@ -129,9 +125,7 @@ describe('CngxMultiSelect - skeleton', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.values.set(['red', 'green']);
     flush(fixture);
-    const chips: HTMLElement[] = Array.from(
-      fixture.nativeElement.querySelectorAll('cngx-chip'),
-    );
+    const chips: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('cngx-chip'));
     expect(chips.length).toBe(2);
     expect(chips[0].textContent).toContain('Rot');
     expect(chips[1].textContent).toContain('Grün');
@@ -143,9 +137,7 @@ describe('CngxMultiSelect - skeleton', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.values.set(['red', 'green']);
     flush(fixture);
-    const firstRemove: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-chip__remove',
-    );
+    const firstRemove: HTMLElement = fixture.nativeElement.querySelector('.cngx-chip__remove');
     firstRemove.click();
     flush(fixture);
     expect(fixture.componentInstance.values()).toEqual(['green']);
@@ -162,9 +154,8 @@ describe('CngxMultiSelect - skeleton', () => {
       flush(fixture);
       const select = fixture.debugElement.query(By.directive(CngxMultiSelect))
         .componentInstance as CngxMultiSelect<string>;
-      const firstRemove: HTMLButtonElement = fixture.nativeElement.querySelector(
-        '.cngx-chip__remove',
-      );
+      const firstRemove: HTMLButtonElement =
+        fixture.nativeElement.querySelector('.cngx-chip__remove');
       firstRemove.focus();
       const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
       firstRemove.dispatchEvent(event);
@@ -195,9 +186,7 @@ describe('CngxMultiSelect - skeleton', () => {
     fixture.componentInstance.clearable = true;
     fixture.componentInstance.values.set(['red', 'green']);
     flush(fixture);
-    const clear: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__clear-all',
-    );
+    const clear: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__clear-all');
     clear.click();
     flush(fixture);
     expect(fixture.componentInstance.values()).toEqual([]);
@@ -213,14 +202,10 @@ describe('CngxMultiSelect - skeleton', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.values.set(['red']);
     flush(fixture);
-    const trigger: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__trigger',
-    );
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
     trigger.click();
     flush(fixture);
-    const listbox = fixture.debugElement
-      .query(By.directive(CngxListbox))
-      .injector.get(CngxListbox);
+    const listbox = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
     expect(listbox.selectedValues()).toEqual(['red']);
   });
 
@@ -229,9 +214,7 @@ describe('CngxMultiSelect - skeleton', () => {
     flush(fixture);
     const multi = fixture.debugElement.query(By.directive(CngxMultiSelect))
       .componentInstance as CngxMultiSelect<string>;
-    const popover = fixture.debugElement
-      .query(By.directive(CngxPopover))
-      .injector.get(CngxPopover);
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
     multi.open();
     flush(fixture);
     expect(popover.isVisible()).toBe(true);
@@ -247,14 +230,10 @@ describe('CngxMultiSelect - skeleton', () => {
       .componentInstance as CngxMultiSelect<string>;
     multi.open();
     flush(fixture);
-    const trigger: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__trigger',
-    );
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
     trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     flush(fixture);
-    const popover = fixture.debugElement
-      .query(By.directive(CngxPopover))
-      .injector.get(CngxPopover);
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
     expect(popover.isVisible()).toBe(false);
   });
 
@@ -273,9 +252,7 @@ describe('CngxMultiSelect - skeleton', () => {
   it('clicking a disabled option does not toggle the value', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
-    const trigger: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__trigger',
-    );
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
     trigger.click();
     flush(fixture);
     // Third option (index 2) is 'blue' with disabled: true.
@@ -288,9 +265,7 @@ describe('CngxMultiSelect - skeleton', () => {
   it('typeahead-while-closed toggles the matched option without opening the panel', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
-    const trigger: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__trigger',
-    );
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
     trigger.focus();
     trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'r', bubbles: true }));
     flush(fixture);
@@ -307,16 +282,10 @@ describe('CngxMultiSelect - skeleton', () => {
   it('PageDown from closed opens the panel and highlights an enabled option', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
-    const trigger: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__trigger',
-    );
-    trigger.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true }),
-    );
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true }));
     flush(fixture);
-    const lb = fixture.debugElement
-      .query(By.directive(CngxListbox))
-      .injector.get(CngxListbox);
+    const lb = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
     const options = lb.options();
     const activeId = lb.ad.activeId();
     const active = options.find((o) => o.id === activeId);
@@ -327,13 +296,9 @@ describe('CngxMultiSelect - skeleton', () => {
   it('modified keys pass through the closed trigger untouched (Cmd+R, Ctrl+PageDown)', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
-    const trigger: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__trigger',
-    );
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
     // Without the guard, Cmd+R would typeahead-toggle 'red' while closed.
-    trigger.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'r', metaKey: true, bubbles: true }),
-    );
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'r', metaKey: true, bubbles: true }));
     flush(fixture);
     expect(fixture.componentInstance.values()).toEqual([]);
 
@@ -355,12 +320,8 @@ describe('CngxMultiSelect - skeleton', () => {
     fixture.componentInstance.clearable = true;
     fixture.componentInstance.values.set(['red']);
     flush(fixture);
-    const trigger: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__trigger',
-    );
-    const clear: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__clear-all',
-    );
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
+    const clear: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__clear-all');
 
     const enterEv = new KeyboardEvent('keydown', {
       key: 'Enter',
@@ -446,9 +407,7 @@ describe('CngxMultiSelect - commit action producer', () => {
       fixture,
       multi: multiDe.componentInstance as CngxMultiSelect<string>,
       host: fixture.componentInstance,
-      triggerBtn: multiDe.nativeElement.querySelector(
-        '.cngx-multi-select__trigger',
-      ) as HTMLElement,
+      triggerBtn: multiDe.nativeElement.querySelector('.cngx-multi-select__trigger') as HTMLElement,
       optionAt: (idx) => {
         const options = multiDe.nativeElement.querySelectorAll('[cngxOption]');
         return options[idx] as HTMLElement;
@@ -628,9 +587,7 @@ describe('CngxMultiSelect - commit action producer', () => {
     host.values.set(['red', 'green']);
     flush(fixture);
 
-    const firstRemove: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-chip__remove',
-    );
+    const firstRemove: HTMLElement = fixture.nativeElement.querySelector('.cngx-chip__remove');
     firstRemove.click();
     flush(fixture);
 
@@ -649,9 +606,7 @@ describe('CngxMultiSelect - commit action producer', () => {
     host.values.set(['red', 'green']);
     flush(fixture);
 
-    const clear: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__clear-all',
-    );
+    const clear: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__clear-all');
     clear.click();
     flush(fixture);
 
@@ -673,9 +628,7 @@ describe('CngxMultiSelect - commit action producer', () => {
     host.values.set(['red', 'green']);
     flush(fixture);
 
-    const clear: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__clear-all',
-    );
+    const clear: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__clear-all');
     clear.click();
     flush(fixture);
     expect(host.values()).toEqual([]);
@@ -725,8 +678,7 @@ describe('CngxMultiSelect - chip template + announcer', () => {
   it('chip template remove() callback removes the value', () => {
     const fixture = TestBed.createComponent(ChipTemplateHost);
     flush(fixture);
-    const firstClose: HTMLElement =
-      fixture.nativeElement.querySelector('.my-tag__close');
+    const firstClose: HTMLElement = fixture.nativeElement.querySelector('.my-tag__close');
     firstClose.click();
     flush(fixture);
     expect(fixture.componentInstance.values()).toEqual(['green']);
@@ -748,9 +700,7 @@ describe('CngxMultiSelect - chip template + announcer', () => {
       flush(fixture);
 
       // Click the chip × to trigger the removal path which invokes the announcer.
-      const firstRemove: HTMLElement = fixture.nativeElement.querySelector(
-        '.cngx-chip__remove',
-      );
+      const firstRemove: HTMLElement = fixture.nativeElement.querySelector('.cngx-chip__remove');
       firstRemove.click();
       flush(fixture);
 
@@ -768,11 +718,7 @@ describe('CngxMultiSelect - chip template + announcer', () => {
 
 @Component({
   template: `
-    <cngx-multi-select
-      [label]="'Themen'"
-      [options]="options"
-      [(values)]="values"
-    >
+    <cngx-multi-select [label]="'Themen'" [options]="options" [(values)]="values">
       <ng-template cngxMultiSelectTriggerLabel let-opts let-count="count">
         <span class="trigger-summary">{{ count }} ausgewählt: {{ opts.length }} items</span>
       </ng-template>
@@ -808,9 +754,107 @@ describe('CngxMultiSelect - trigger label slot', () => {
     // Empty-state placeholder wins over the trigger-label template so
     // consumers don't have to branch on count=0 inside their template.
     expect(fixture.nativeElement.querySelector('.trigger-summary')).toBeNull();
-    expect(
-      fixture.nativeElement.querySelector('.cngx-multi-select__placeholder'),
-    ).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.cngx-multi-select__placeholder')).not.toBeNull();
+  });
+});
+
+// ── Summary trigger under the touch floor ───────────────────────────
+
+const SUMMARY_OPTIONS: CngxSelectOptionDef<string>[] = [
+  { value: 'a', label: 'A' },
+  { value: 'b', label: 'B' },
+  { value: 'c', label: 'C' },
+];
+
+@Component({
+  template: `
+    <cngx-multi-select [label]="'Letters'" [options]="options" [(values)]="values">
+      @if (withTriggerLabel()) {
+        <ng-template cngxMultiSelectTriggerLabel let-count="count">
+          <span class="trigger-summary">{{ count }} letters</span>
+        </ng-template>
+      }
+    </cngx-multi-select>
+  `,
+  imports: [CngxMultiSelect, CngxMultiSelectTriggerLabel],
+})
+class SummaryHost {
+  readonly options = SUMMARY_OPTIONS;
+  readonly values = signal<string[]>(['a', 'b', 'c']);
+  readonly withTriggerLabel = signal(false);
+}
+
+describe('CngxMultiSelect - summary trigger under the touch floor', () => {
+  let restore: (() => void) | null = null;
+
+  beforeEach(() => {
+    polyfillPopover();
+  });
+
+  afterEach(() => {
+    restore?.();
+    restore = null;
+  });
+
+  function render(touch: boolean) {
+    if (touch) {
+      restore = stubTouchFloor();
+    }
+    const fixture = TestBed.createComponent(SummaryHost);
+    flush(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+    return { fixture, el };
+  }
+
+  it('shows the first label plus the +N badge instead of chips', () => {
+    const { el } = render(true);
+    expect(el.querySelectorAll('cngx-chip').length).toBe(0);
+    expect(el.querySelector('.cngx-select-summary__label')?.textContent?.trim()).toBe('A');
+    expect(el.querySelector('.cngx-select__chip-overflow-badge')?.textContent?.trim()).toBe('+2');
+    expect(el.querySelector('.cngx-select__chip-list')?.getAttribute('data-overflow')).toBe(
+      'truncate',
+    );
+  });
+
+  it('exposes the whole selection as the trigger value for AT', () => {
+    const { el } = render(true);
+    const trigger = el.querySelector('[role="combobox"]')!;
+    const sr = trigger.querySelector('cngx-select-summary .cngx-sr-only');
+    expect(stripBidiIsolates(sr?.textContent?.trim() ?? '')).toBe('3 selected: A, B, and C');
+    expect(trigger.querySelector('.cngx-select-summary__label')?.getAttribute('aria-hidden')).toBe(
+      'true',
+    );
+  });
+
+  it('speaks a single value as its label and follows the selection', () => {
+    const { fixture, el } = render(true);
+    fixture.componentInstance.values.set(['b']);
+    flush(fixture);
+    expect(el.querySelector('.cngx-select-summary__label')?.textContent?.trim()).toBe('B');
+    expect(el.querySelector('.cngx-select__chip-overflow-badge')).toBeNull();
+    expect(el.querySelector('cngx-select-summary .cngx-sr-only')?.textContent?.trim()).toBe('B');
+  });
+
+  it('shows the placeholder for no value', () => {
+    const { fixture, el } = render(true);
+    fixture.componentInstance.values.set([]);
+    flush(fixture);
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+    expect(el.querySelector('.cngx-multi-select__placeholder')).not.toBeNull();
+  });
+
+  it('lets a projected trigger-label template win over the summary', () => {
+    const { fixture, el } = render(true);
+    fixture.componentInstance.withTriggerLabel.set(true);
+    flush(fixture);
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+    expect(el.querySelector('.trigger-summary')?.textContent?.trim()).toBe('3 letters');
+  });
+
+  it('keeps the chips on a fine pointer', () => {
+    const { el } = render(false);
+    expect(el.querySelector('cngx-select-summary')).toBeNull();
+    expect(el.querySelectorAll('cngx-chip').length).toBe(3);
   });
 });
 
@@ -887,17 +931,14 @@ describe('CngxMultiSelect - clear-button / option-pending / option-error slots',
     fixture.detectChanges();
     flush(fixture);
     // Open + click first option - pessimistic commit, spinner slot shows.
-    const trigger: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__trigger',
-    );
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
     trigger.click();
     flush(fixture);
     const options = fixture.nativeElement.querySelectorAll('[cngxOption]');
     (options[0] as HTMLElement).click();
     flush(fixture);
-    const customSpinner: HTMLElement | null = fixture.nativeElement.querySelector(
-      '.custom-spinner',
-    );
+    const customSpinner: HTMLElement | null =
+      fixture.nativeElement.querySelector('.custom-spinner');
     expect(customSpinner).not.toBeNull();
     expect(customSpinner!.textContent).toContain('loading: Rot');
     // Default spinner glyph gone.
@@ -936,9 +977,7 @@ describe('CngxMultiSelect - clear-button / option-pending / option-error slots',
     const fixture = TestBed.createComponent(Host3);
     fixture.detectChanges();
     flush(fixture);
-    const trigger: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__trigger',
-    );
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
     trigger.click();
     flush(fixture);
     const options = fixture.nativeElement.querySelectorAll('[cngxOption]');
@@ -1010,9 +1049,7 @@ describe('CngxMultiSelect - form-field integration', () => {
     const fixture = TestBed.createComponent(MultiFormFieldHost);
     fixture.detectChanges();
     flush(fixture);
-    const trigger: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__trigger',
-    );
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.cngx-multi-select__trigger');
     trigger.click();
     flush(fixture);
     const options = fixture.nativeElement.querySelectorAll('[cngxOption]');
@@ -1053,9 +1090,7 @@ describe('CngxMultiSelect - withAriaLabels config override', () => {
       '.cngx-multi-select__clear-all',
     ) as HTMLElement;
     expect(clearBtn.getAttribute('aria-label')).toBe('Reset selection');
-    const chipRemove = fixture.nativeElement.querySelector(
-      '.cngx-chip__remove',
-    ) as HTMLElement;
+    const chipRemove = fixture.nativeElement.querySelector('.cngx-chip__remove') as HTMLElement;
     // The `chipRemoveFor` message places the config action and the label.
     expect(stripBidiIsolates(chipRemove.getAttribute('aria-label'))).toMatch(/^Remove:/);
   });
@@ -1078,18 +1113,14 @@ describe('CngxMultiSelect - withAriaLabels config override', () => {
       '.cngx-multi-select__clear-all',
     ) as HTMLElement;
     expect(clearBtn.getAttribute('aria-label')).toBe('Clear selection');
-    const chipRemove = fixture.nativeElement.querySelector(
-      '.cngx-chip__remove',
-    ) as HTMLElement;
+    const chipRemove = fixture.nativeElement.querySelector('.cngx-chip__remove') as HTMLElement;
     expect(stripBidiIsolates(chipRemove.getAttribute('aria-label'))).toMatch(/^Remove:/);
   });
 
   it('partial override preserves the non-overridden English default', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [
-        provideSelectConfig(withAriaLabels({ chipRemove: 'Delete' })),
-      ],
+      providers: [provideSelectConfig(withAriaLabels({ chipRemove: 'Delete' }))],
     });
     const fixture = TestBed.createComponent(LabelHost);
     flush(fixture);
@@ -1098,9 +1129,7 @@ describe('CngxMultiSelect - withAriaLabels config override', () => {
     ) as HTMLElement;
     // clearButton not overridden → variant fallback kicks in.
     expect(clearBtn.getAttribute('aria-label')).toBe('Reset selection');
-    const chipRemove = fixture.nativeElement.querySelector(
-      '.cngx-chip__remove',
-    ) as HTMLElement;
+    const chipRemove = fixture.nativeElement.querySelector('.cngx-chip__remove') as HTMLElement;
     expect(stripBidiIsolates(chipRemove.getAttribute('aria-label'))).toMatch(/^Delete:/);
   });
 
@@ -1123,9 +1152,7 @@ describe('CngxMultiSelect - withAriaLabels config override', () => {
     }
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [
-        provideSelectConfig(withAriaLabels({ clearButton: 'Config-level label' })),
-      ],
+      providers: [provideSelectConfig(withAriaLabels({ clearButton: 'Config-level label' }))],
     });
     const fixture = TestBed.createComponent(InstanceOverrideHost);
     flush(fixture);
@@ -1138,8 +1165,11 @@ describe('CngxMultiSelect - withAriaLabels config override', () => {
 
 describeCommitControllerCascade('CngxMultiSelect');
 
-describeFieldSkinHost('CngxMultiSelect', CngxMultiSelect, 'cngx-multi-select', () =>
-  createMockField({ name: 'pick' }).accessor,
+describeFieldSkinHost(
+  'CngxMultiSelect',
+  CngxMultiSelect,
+  'cngx-multi-select',
+  () => createMockField({ name: 'pick' }).accessor,
 );
 
 describeFieldAriaHost('CngxMultiSelect', CngxMultiSelect, 'cngx-multi-select', {

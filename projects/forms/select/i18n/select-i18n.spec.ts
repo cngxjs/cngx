@@ -8,6 +8,7 @@ import {
   type CngxActiveLanguagePack,
   type CngxLanguagePack,
 } from '@cngx/core/i18n';
+import { CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';
 import { provideLocale, provideLocaleAt } from '@cngx/core/utils';
 import { runInSubtree, stripBidiIsolates } from '@cngx/testing';
 
@@ -366,6 +367,44 @@ describe('injectSelectConfig copy', () => {
     );
     expect(scoped.fallbackLabels().empty).toBe('Nichts gefunden');
     expect(scoped.fallbackLabels().loading).toBe(CNGX_SELECT_LANGUAGE_EN.loading);
+  });
+
+  it('speaks the selection summary with the labels joined for the reading locale', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideLocale('en')],
+    });
+    const root = TestBed.runInInjectionContext(() => injectSelectConfig());
+    const summary = (labels: readonly string[]): string =>
+      stripBidiIsolates(root.ariaLabels().selectionSummary(labels));
+    expect(summary(['Red', 'Green'])).toBe('2 selected: Red and Green');
+    expect(summary(['Red', 'Green', 'Blue'])).toBe('3 selected: Red, Green, and Blue');
+    expect(CNGX_SELECT_LANGUAGE_EN.selectionSummary).toBe('{count} selected: {list}');
+  });
+
+  it('speaks the German selection summary from the German pack', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(CNGX_LANGUAGE_DE), withDocumentLanguage('off')),
+      ],
+    });
+    const german = TestBed.runInInjectionContext(() => injectSelectConfig());
+    const summary = (labels: readonly string[]): string =>
+      stripBidiIsolates(german.ariaLabels().selectionSummary(labels));
+    expect(summary(['Rot', 'Grün'])).toBe('2 ausgewählt: Rot und Grün');
+    expect(summary(['Rot', 'Grün', 'Blau'])).toBe('3 ausgewählt: Rot, Grün und Blau');
+  });
+
+  it('lets withAriaLabels replace the selection summary', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideSelectConfig(
+          withAriaLabels({ selectionSummary: (labels) => `${labels.length} items` }),
+        ),
+      ],
+    });
+    expect(resolve().ariaLabels().selectionSummary(['a', 'b'])).toBe('2 items');
   });
 });
 

@@ -137,6 +137,14 @@ export interface CngxSelectAriaLabels {
    * and returns the whole name. Default `'{action}: {label}'` (`Remove: Red`).
    */
   readonly chipRemoveFor?: (action: string, label: string) => string;
+  /**
+   * Spoken value of a summary trigger (the touch-floor trigger of the
+   * multi-value selects) holding two or more values. Receives the selected
+   * labels in order and returns the whole text. Default
+   * `'{count} selected: {list}'` (`3 selected: Red, Green, and Blue`), the list
+   * joined for the reading locale.
+   */
+  readonly selectionSummary?: (labels: readonly string[]) => string;
   /** Tree-select twisty (collapsed). Default `'Expand node'`. */
   readonly treeExpand?: string;
   /** Tree-select twisty (expanded). Default `'Collapse node'`. */
