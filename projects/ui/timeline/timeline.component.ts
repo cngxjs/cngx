@@ -484,8 +484,26 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
     return index % 2 === 0 ? 'start' : 'end';
   }
 
+  /**
+   * One context per skeleton row, rebuilt only when the row count or the
+   * side rule changes, so the slot outlet sees a stable object per pass.
+   */
+  private readonly skeletonContexts = computed<readonly CngxTimelineSkeletonContext[]>(() => {
+    const count = this.skeletonRowCount();
+    return Array.from({ length: count }, (_, index) => ({
+      $implicit: index,
+      index,
+      count,
+      side: this.rowSide(index),
+    }));
+  });
+
   /** @internal Context of a consumer `*cngxTimelineSkeleton` row. */
   protected skeletonContext(index: number, count: number): CngxTimelineSkeletonContext {
+    const cached = this.skeletonContexts()[index];
+    if (cached?.count === count) {
+      return cached;
+    }
     return { $implicit: index, index, count, side: this.rowSide(index) };
   }
 
