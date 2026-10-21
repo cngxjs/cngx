@@ -598,6 +598,22 @@ describe('createTabGroupAnnouncements - label-less tabs', () => {
     expect(live()).toBe('Could not switch tab - retry?');
   });
 
+  it('keeps the retry copy when the origin tab was removed mid-commit', () => {
+    const { host, current, live } = unlabelledSetup([undefined, 'Account']);
+    host.originIndexDuringCommit.set(4);
+    host.lastFailedIndex.set(1);
+    current.set('error');
+    expect(live()).toBe('Could not switch tab - retry?');
+  });
+
+  it('keeps the generic refusal copy when the origin tab was removed mid-commit', () => {
+    const { host, live } = unlabelledSetup([undefined, 'Account']);
+    host.originIndexDuringCommit.set(4);
+    host.lastOutcome.set({ kind: 'refused', index: 1, sequence: 1 });
+    host.lastFailedIndex.set(1);
+    expect(live()).toBe('Tab switch not allowed.');
+  });
+
   it('keeps the generic refusal copy when the origin is unknown', () => {
     const { host, live } = unlabelledSetup([undefined, 'Account']);
     host.lastOutcome.set({ kind: 'refused', index: 1, sequence: 1 });

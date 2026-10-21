@@ -78,12 +78,14 @@ export interface CngxTabGroupAnnouncements {
    * `announce()`. Empty between transitions so the region stays
    * quiet on no-op ticks.
    *
-   * Refusal: `commitRefused(originLabel)` (or `commitRefusedGeneric`
-   * without a label) once, held until the next commit, an active-index
+   * Refusal: `commitRefused(originLabel)` (the position name for a
+   * label-less origin; `commitRefusedGeneric` when no origin tab resolves,
+   * e.g. it was removed mid-commit) once, held until the next commit, an active-index
    * move, a cleared outcome or a new close phrase.
    *
-   * Error arm: `commitRolledBackTo(originLabel)` when origin
-   * resolves; otherwise `commitFailedRetry`.
+   * Error arm: `commitRolledBackTo(originLabel)` when the origin index
+   * still resolves to a tab; otherwise (unknown or removed origin)
+   * `commitFailedRetry`.
    *
    * Success arm: `previousTab|nextTab(selectedTab(...))` when
    * the index moved; bare `selectedTab(...)` when it didn't (initial
@@ -225,16 +227,18 @@ export function createTabGroupAnnouncements(
 
   function refusedCopy(): string {
     const originIdx = presenter.originIndexDuringCommit();
+    // An origin index that no longer resolves (its tab was removed while the
+    // commit ran) names nothing, so it falls back to the generic copy.
     const origin = originIdx !== undefined ? presenter.tabs()[originIdx] : undefined;
-    const originLabel = origin?.label();
     const copy = i18n();
+    if (!origin || originIdx === undefined) {
+      return copy.commitRefusedGeneric;
+    }
+    const originLabel = origin.label();
     if (originLabel) {
       return copy.commitRefused(originLabel);
     }
-    if (originIdx !== undefined) {
-      return copy.commitRefused(copy.unlabeledTab(originIdx + 1));
-    }
-    return copy.commitRefusedGeneric;
+    return copy.commitRefused(copy.unlabeledTab(originIdx + 1));
   }
 
   // Copy and tab labels (which a consumer may translate) are read untracked
@@ -262,9 +266,9 @@ export function createTabGroupAnnouncements(
       // settles to 'idle' as a refusal.
       const failedIdx = presenter.lastFailedIndex();
       const originIdx = presenter.originIndexDuringCommit();
-      if (failedIdx !== undefined && originIdx !== undefined) {
-        const origin = presenter.tabs()[originIdx];
-        const originLabel = origin ? untracked(origin.label) : undefined;
+      const origin = originIdx !== undefined ? presenter.tabs()[originIdx] : undefined;
+      if (failedIdx !== undefined && originIdx !== undefined && origin) {
+        const originLabel = untracked(origin.label);
         if (originLabel) {
           return untracked(() => i18n().commitRolledBackTo(originLabel));
         }
