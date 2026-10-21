@@ -491,6 +491,7 @@ export const CNGX_LANGUAGE_EN = {
     },
     moreTabsLabel: '{count} more',
     unlabeledTab: 'Tab {position}',
+    unlabeledTabOfCount: 'Tab {position} of {count}',
     previousTab: 'Previous tab: {tab}',
     nextTab: 'Next tab: {tab}',
     closeTab: 'Close "{label}"',

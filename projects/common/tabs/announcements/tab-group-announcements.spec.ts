@@ -450,6 +450,12 @@ describe('createTabGroupAnnouncements - refused commit', () => {
     expect(live()).toBe('Tab switch not allowed - stayed on "Tab 1".');
   });
 
+  it('speaks the generic refusal when the origin index points at a removed tab', () => {
+    const { settle, live } = refusalSetup([undefined, 'Account']);
+    settle('refused', 1, 4);
+    expect(live()).toBe('Tab switch not allowed.');
+  });
+
   it('a failed outcome keeps the failure arm and never the refused phrase', () => {
     const { settle, live } = refusalSetup();
     settle('failed', 1, 0);
@@ -556,7 +562,7 @@ describe('createTabGroupAnnouncements - label-less tabs', () => {
 
   it('names a label-less tab button by its position', () => {
     const { bundle, handles } = unlabelledSetup(['Profile', undefined, 'Billing']);
-    expect(stripBidiIsolates(bundle.tabAriaLabel(handles[1], 2))).toBe('Tab 2');
+    expect(stripBidiIsolates(bundle.tabAriaLabel(handles[1], 2))).toBe('Tab 2 of 3');
   });
 
   it('keeps the sub-label next to the position name', () => {
@@ -567,7 +573,7 @@ describe('createTabGroupAnnouncements - label-less tabs', () => {
       label: signal<string | undefined>(undefined),
       subLabel: signal<string | undefined>('45'),
     };
-    expect(stripBidiIsolates(bundle.tabAriaLabel(handle, 2))).toBe('Tab 2, 45');
+    expect(stripBidiIsolates(bundle.tabAriaLabel(handle, 2))).toBe('Tab 2 of 3, 45');
   });
 
   it('keeps the labelled name unchanged', () => {
@@ -580,7 +586,7 @@ describe('createTabGroupAnnouncements - label-less tabs', () => {
     host.activeIndex.set(1);
     previous.set('pending');
     current.set('success');
-    expect(live()).toBe('Next tab: Tab 2');
+    expect(live()).toBe('Next tab: Tab 2 of 3');
   });
 
   it('speaks the rollback to a label-less origin by its position', () => {
@@ -589,6 +595,14 @@ describe('createTabGroupAnnouncements - label-less tabs', () => {
     host.lastFailedIndex.set(1);
     current.set('error');
     expect(live()).toBe('Could not save changes - reverted to "Tab 1".');
+  });
+
+  it('keeps the retry copy when the origin index points at a removed tab', () => {
+    const { host, current, live } = unlabelledSetup([undefined, 'Account']);
+    host.originIndexDuringCommit.set(5);
+    host.lastFailedIndex.set(1);
+    current.set('error');
+    expect(live()).toBe('Could not switch tab - retry?');
   });
 
   it('keeps the retry copy when no origin tab resolves', () => {

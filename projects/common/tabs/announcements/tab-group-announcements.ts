@@ -70,16 +70,19 @@ export interface CngxTabGroupAnnouncements {
    * `announce()`. Empty between transitions so the region stays
    * quiet on no-op ticks.
    *
-   * Refusal: `commitRefused(originLabel)` (or `commitRefusedGeneric`
-   * without a label) once, held until the next commit, an active-index
-   * move, a cleared outcome or a new close phrase.
+   * Refusal: `commitRefused(origin)` once, held until the next commit,
+   * an active-index move, a cleared outcome or a new close phrase. The
+   * origin is its label, or `unlabeledTab(position)` without one;
+   * `commitRefusedGeneric` when no origin tab resolves (none recorded,
+   * or removed meanwhile).
    *
-   * Error arm: `commitRolledBackTo(originLabel)` when origin
-   * resolves; otherwise `commitFailedRetry`.
+   * Error arm: `commitRolledBackTo(origin)` when the origin tab
+   * resolves, named the same way; otherwise `commitFailedRetry`.
    *
    * Success arm: `previousTab|nextTab(selectedTab(...))` when
    * the index moved; bare `selectedTab(...)` when it didn't (initial
-   * mount, or commit-success that lands on the same tab).
+   * mount, or commit-success that lands on the same tab). A label-less
+   * tab reads `unlabeledTabOfCount(...)` in place of `selectedTab`.
    */
   readonly liveAnnouncement: Signal<string>;
 
@@ -97,8 +100,9 @@ export interface CngxTabGroupAnnouncements {
   /**
    * Verbose tab-button `aria-label` - `selectedTab(label, position,
    * count)` so AT hears "Tab 2 of 5: Settings" instead of inferring
-   * position from tablist enumeration. The visual span keeps the
-   * bare label.
+   * position from tablist enumeration; `unlabeledTabOfCount(position,
+   * count)` ("Tab 2 of 5") for a tab without a label. The visual span
+   * keeps the bare label.
    */
   tabAriaLabel(tab: CngxTabHandle, position: number): string;
 }
@@ -206,15 +210,21 @@ export function createTabGroupAnnouncements(
   function refusedCopy(): string {
     const originIdx = presenter.originIndexDuringCommit();
     const origin = originIdx !== undefined ? presenter.tabs()[originIdx] : undefined;
-    const originLabel = origin?.label();
     const copy = i18n();
-    if (originLabel) {
-      return copy.commitRefused(originLabel);
+    // An origin index past the end names a removed tab: the generic copy.
+    if (!origin || originIdx === undefined) {
+      return copy.commitRefusedGeneric;
     }
-    if (originIdx !== undefined) {
-      return copy.commitRefused(copy.unlabeledTab(originIdx + 1));
+    return copy.commitRefused(originName(origin, originIdx, copy));
+  }
+
+  // A label-less origin is named by its position.
+  function originName(origin: CngxTabHandle, originIdx: number, copy: CngxTabsI18n): string {
+    const label = origin.label();
+    if (label) {
+      return label;
     }
-    return copy.commitRefusedGeneric;
+    return copy.unlabeledTab(originIdx + 1);
   }
 
   // Copy and tab labels (which a consumer may translate) are read untracked
@@ -242,15 +252,16 @@ export function createTabGroupAnnouncements(
       // settles to 'idle' as a refusal.
       const failedIdx = presenter.lastFailedIndex();
       const originIdx = presenter.originIndexDuringCommit();
-      if (failedIdx !== undefined && originIdx !== undefined) {
-        const origin = presenter.tabs()[originIdx];
-        const originLabel = origin ? untracked(origin.label) : undefined;
-        if (originLabel) {
-          return untracked(() => i18n().commitRolledBackTo(originLabel));
-        }
-        return untracked(() => i18n().commitRolledBackTo(i18n().unlabeledTab(originIdx + 1)));
+      const origin =
+        failedIdx !== undefined && originIdx !== undefined ? presenter.tabs()[originIdx] : undefined;
+      // No origin, or an origin index past the end (a removed tab): retry copy.
+      if (!origin || originIdx === undefined) {
+        return untracked(() => i18n().commitFailedRetry);
       }
-      return untracked(() => i18n().commitFailedRetry);
+      return untracked(() => {
+        const copy = i18n();
+        return copy.commitRolledBackTo(originName(origin, originIdx, copy));
+      });
     }
     if (current === 'success') {
       const tabs = presenter.tabs();
@@ -266,7 +277,7 @@ export function createTabGroupAnnouncements(
         const copy = i18n();
         const positionPhrase = label
           ? copy.selectedTab(label, idx + 1, count)
-          : copy.unlabeledTab(idx + 1);
+          : copy.unlabeledTabOfCount(idx + 1, count);
         if (idx > prevIdx) {
           return copy.nextTab(positionPhrase);
         }
@@ -303,7 +314,7 @@ export function createTabGroupAnnouncements(
     const detail = tab.subLabel();
     const copy = i18n();
     if (!label) {
-      const positionName = copy.unlabeledTab(position);
+      const positionName = copy.unlabeledTabOfCount(position, tabs.length);
       return detail ? copy.tabLabelWithDetail(positionName, detail) : positionName;
     }
     const labelPart = detail ? copy.tabLabelWithDetail(label, detail) : label;

@@ -222,7 +222,7 @@ describe('CngxTabGroup organism', () => {
 
     it('names a tab without label and template by its position', () => {
       const tabs = mountNaming();
-      expect(stripBidiIsolates(tabs[3].getAttribute('aria-label'))).toBe('Tab 4');
+      expect(stripBidiIsolates(tabs[3].getAttribute('aria-label'))).toBe('Tab 4 of 4');
       expect(tabs[3].getAttribute('aria-labelledby')).toBeNull();
     });
   });

@@ -35,6 +35,12 @@ export interface CngxTabsI18n {
    */
   readonly unlabeledTab: (position: number) => string;
   /**
+   * Accessible name of a tab without a label, with its position in the group:
+   * the label-less twin of {@link selectedTab}. Receives the 1-based position
+   * and the tab count; English `Tab 2 of 5`.
+   */
+  readonly unlabeledTabOfCount: (position: number, count: number) => string;
+  /**
    * Commit-success announcement after a move to an earlier tab. Receives
    * the position phrase from {@link selectedTab} and owns the whole
    * sentence, so a locale can reorder it or drop the separator, e.g.
@@ -108,6 +114,8 @@ function tabsBundleFrom(section: CngxTabsLanguageSection, locale: string): CngxT
     tabHasErrors: (count) => formatMessage(section.tabHasErrors, { count }, locale),
     moreTabsLabel: (count) => formatMessage(section.moreTabsLabel, { count }, locale),
     unlabeledTab: (position) => formatMessage(section.unlabeledTab, { position }, locale),
+    unlabeledTabOfCount: (position, count) =>
+      formatMessage(section.unlabeledTabOfCount, { position, count }, locale),
     previousTab: (tab) => formatMessage(section.previousTab, { tab }, locale),
     nextTab: (tab) => formatMessage(section.nextTab, { tab }, locale),
     closeTab: (label) => formatMessage(section.closeTab, { label }, locale),

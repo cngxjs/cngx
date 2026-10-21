@@ -52,6 +52,7 @@ describe('CngxTabsI18n', () => {
     expect(plain(i18n.closedTab('Profile'))).toBe('Closed "Profile"');
     expect(i18n.closedTab('')).toBe('Tab closed');
     expect(i18n.unlabeledTab(3)).toBe('Tab 3');
+    expect(i18n.unlabeledTabOfCount(2, 5)).toBe('Tab 2 of 5');
   });
 
   it('reads the tabs section of the active pack, with English for what it leaves out', () => {

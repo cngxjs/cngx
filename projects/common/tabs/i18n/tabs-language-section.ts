@@ -29,11 +29,16 @@ export interface CngxTabsLanguageSection {
   /** Plural on `{count}`: the overflow trigger label. */
   readonly moreTabsLabel: CngxMessage;
   /**
-   * `{position}`: the name of a tab without a label - its button name, its
-   * overflow row and the tab named in the live phrase after a move, a
-   * rollback or a refusal.
+   * `{position}`: the name of a tab without a label - its overflow row, its
+   * close button and the origin tab named after a rollback or a refusal.
    */
   readonly unlabeledTab: CngxMessage;
+  /**
+   * `{position}`, `{count}`: the accessible name of a tab without a label and
+   * the tab named in the live phrase after a move to it - the label-less
+   * twin of `selectedTab`.
+   */
+  readonly unlabeledTabOfCount: CngxMessage;
   /** `{tab}`: announced after a move to an earlier tab, `{tab}` being its name. */
   readonly previousTab: CngxMessage;
   /** `{tab}`: announced after a move to a later tab. */
@@ -47,8 +52,8 @@ export interface CngxTabsLanguageSection {
   readonly closedUnlabeledTab: string;
   /**
    * Announced when a tab commit fails and no origin tab resolves (a
-   * programmatic commit-state write); a resolvable origin speaks
-   * `commitRolledBackTo` instead.
+   * programmatic commit-state write, or an origin tab removed meanwhile); a
+   * resolvable origin speaks `commitRolledBackTo` instead.
    */
   readonly commitFailedRetry: string;
   /** Announced while a tab commit is in flight. */
@@ -59,7 +64,8 @@ export interface CngxTabsLanguageSection {
   readonly commitRefused: CngxMessage;
   /**
    * Announced when the commit action refuses a tab switch and the origin tab
-   * is unknown; a label-less origin is named by `unlabeledTab`.
+   * is unknown or was removed meanwhile; a label-less origin is named by
+   * `unlabeledTab`.
    */
   readonly commitRefusedGeneric: string;
 }
@@ -82,6 +88,7 @@ export const CNGX_TABS_LANGUAGE_EN: CngxTabsLanguageSection = {
   tabHasErrors: { one: '{count} error', other: '{count} errors' },
   moreTabsLabel: '{count} more',
   unlabeledTab: 'Tab {position}',
+  unlabeledTabOfCount: 'Tab {position} of {count}',
   previousTab: 'Previous tab: {tab}',
   nextTab: 'Next tab: {tab}',
   closeTab: 'Close "{label}"',
