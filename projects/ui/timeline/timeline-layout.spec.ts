@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { createManualState } from '@cngx/common/data';
-import { CngxTimelineItemTpl } from '@cngx/common/timeline';
+import { CngxTimelineItemTpl, CngxTimelineSkeleton } from '@cngx/common/timeline';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -64,6 +64,39 @@ class LayoutHost {
   readonly placement = signal<CngxTimelinePlacement>('start');
   readonly rail = signal<CngxTimelineRail>('segmented');
   readonly orientation = signal<CngxTimelineOrientation>('vertical');
+  readonly state = signal<ReturnType<typeof createManualState<readonly Event[]>> | undefined>(
+    undefined,
+  );
+  readonly at = (event: Event): Date => event.at;
+  readonly byId = (event: Event): number => event.id;
+}
+
+@Component({
+  selector: 'cngx-timeline-skeleton-host',
+  standalone: true,
+  imports: [CngxTimeline, CngxTimelineItemTpl, CngxTimelineSkeleton],
+  template: `
+    <cngx-timeline
+      [items]="[]"
+      [dateAccessor]="at"
+      [idAccessor]="byId"
+      [placement]="placement()"
+      [state]="state()"
+      [skeletonRowCount]="4"
+    >
+      <ng-template cngxTimelineSkeleton let-index let-count="count" let-side="side">
+        <span
+          class="consumer-skeleton"
+          [attr.data-index]="index"
+          [attr.data-count]="count"
+          [attr.data-side]="side"
+        ></span>
+      </ng-template>
+    </cngx-timeline>
+  `,
+})
+class SkeletonSlotHost {
+  readonly placement = signal<CngxTimelinePlacement>('alternate');
   readonly state = signal<ReturnType<typeof createManualState<readonly Event[]>> | undefined>(
     undefined,
   );
@@ -478,6 +511,36 @@ describe('CngxTimeline layout', () => {
 
       // Same rowSide() the content rows use, so the two cannot disagree.
       expect(placeholderSides(mounted.el)).toEqual(['start', 'start', 'start', 'start']);
+    });
+
+    function consumerSkeletons(placement: CngxTimelinePlacement): HTMLElement[] {
+      TestBed.configureTestingModule({ imports: [SkeletonSlotHost] });
+      const fixture = TestBed.createComponent(SkeletonSlotHost);
+      fixture.componentInstance.placement.set(placement);
+      const state = createManualState<readonly Event[]>();
+      fixture.componentInstance.state.set(state);
+      state.set('loading');
+      for (let pass = 0; pass < 2; pass++) {
+        vi.advanceTimersByTime(1000);
+        fixture.detectChanges();
+      }
+      return Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('.consumer-skeleton'),
+      );
+    }
+
+    it('hands index, count and side to a consumer *cngxTimelineSkeleton', () => {
+      const rows = consumerSkeletons('alternate');
+
+      expect(rows.map((r) => r.dataset['index'])).toEqual(['0', '1', '2', '3']);
+      expect(rows.map((r) => r.dataset['count'])).toEqual(['4', '4', '4', '4']);
+      expect(rows.map((r) => r.dataset['side'])).toEqual(['start', 'end', 'start', 'end']);
+    });
+
+    it('gives a consumer skeleton the end side under placement="end"', () => {
+      const rows = consumerSkeletons('end');
+
+      expect(rows.map((r) => r.dataset['side'])).toEqual(['end', 'end', 'end', 'end']);
     });
   });
 });
