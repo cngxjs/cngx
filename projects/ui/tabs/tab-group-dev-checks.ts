@@ -35,11 +35,11 @@ export function installTabGroupDevChecks(opts: CngxTabGroupDevCheckOptions): voi
           "hidden. Provide an <ng-template cngxTabIcon> or use 'start' / 'end' / 'top'.",
       );
     }
-    const unlabelled = unlabelledTabPositions(opts);
-    if (unlabelled.length > 0) {
+    const unlabeled = unlabeledTabPositions(opts);
+    if (unlabeled.length > 0) {
       cngxDevWarn(
         'CNGX3025',
-        `[cngx-tab-group] tab(s) without a [label] string at position ${unlabelled.join(', ')}. ` +
+        `[cngx-tab-group] tab(s) without a [label] string at position ${unlabeled.join(', ')}. ` +
           'Announcements, the close button and the overflow list call such a tab "Tab N". ' +
           'Bind [label] on every cngxTab, also when a *cngxTabLabel template renders it.',
         opts.host,
@@ -50,7 +50,7 @@ export function installTabGroupDevChecks(opts: CngxTabGroupDevCheckOptions): voi
 
 // The announcements, the close button and the overflow row need a label
 // string; a *cngxTabLabel template only names the tab button.
-function unlabelledTabPositions(opts: CngxTabGroupDevCheckOptions): string[] {
+function unlabeledTabPositions(opts: CngxTabGroupDevCheckOptions): string[] {
   return opts.tabs().flatMap((tab, i) => {
     if (tab.label()) {
       return [];
