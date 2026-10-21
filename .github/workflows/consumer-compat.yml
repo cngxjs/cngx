@@ -105,6 +105,12 @@ jobs:
           # plan nothing on a second ng add.
           - { angular: '21', variant: onboarding, args: '--preset full' }
           - { angular: '22', variant: onboarding, args: '--preset full' }
+          # The same path on an ng new --standalone=false app with routing:
+          # the outlets go into the root NgModule and the stock spec gets
+          # the outlet classes and the providers, so ng test still passes.
+          # CLI 21 only: from 22.2 the stock NgModule app fails ng test on
+          # its own, and ng add leaves the outlets out there.
+          - { angular: '21', variant: ngmodule, args: '--preset full' }
     name: angular-${{ matrix.angular }}-${{ matrix.variant }}
     steps:
       - name: Skip, no consumer-facing path changed
