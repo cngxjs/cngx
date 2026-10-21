@@ -6,6 +6,7 @@ import type {
   CngxTimelineItemContext,
   CngxTimelineMarkerContext,
   CngxTimelineRetryButtonContext,
+  CngxTimelineSkeletonContext,
   CngxTimelineTemplates,
 } from '@cngx/common/timeline';
 
@@ -63,7 +64,7 @@ export interface CngxTimelineSlotQueries<T> {
   readonly error: Signal<CngxTimelineSlotSource<CngxTimelineErrorContext> | undefined>;
   readonly retryButton: Signal<CngxTimelineSlotSource<CngxTimelineRetryButtonContext> | undefined>;
   readonly loadingTail: Signal<CngxTimelineSlotSource<void> | undefined>;
-  readonly skeleton: Signal<CngxTimelineSlotSource<void> | undefined>;
+  readonly skeleton: Signal<CngxTimelineSlotSource<CngxTimelineSkeletonContext> | undefined>;
 }
 
 /**
@@ -80,7 +81,7 @@ export interface CngxTimelineSlots<T> {
   readonly error: Signal<TemplateRef<CngxTimelineErrorContext> | null>;
   readonly retryButton: Signal<TemplateRef<CngxTimelineRetryButtonContext> | null>;
   readonly loadingTail: Signal<TemplateRef<void> | null>;
-  readonly skeleton: Signal<TemplateRef<void> | null>;
+  readonly skeleton: Signal<TemplateRef<CngxTimelineSkeletonContext> | null>;
 }
 
 /**

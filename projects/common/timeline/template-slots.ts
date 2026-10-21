@@ -358,13 +358,33 @@ export class CngxTimelineLoadingTail {
 }
 
 /**
+ * Context of one `*cngxTimelineSkeleton` placeholder row. A placeholder has
+ * no data, only a position: the same index, row count and side the built-in
+ * placeholder uses, so a custom shape lands where the content row will.
+ *
+ * @category common/timeline
+ * @since 0.1.0
+ */
+export interface CngxTimelineSkeletonContext {
+  /** Same as `index`, for `let-index` shorthand. */
+  readonly $implicit: number;
+  /** 0-based position of the placeholder row. */
+  readonly index: number;
+  /** Number of placeholder rows (`[skeletonRowCount]`). */
+  readonly count: number;
+  /** Side the content row at this index will sit on, from `placement` and `mode`. */
+  readonly side: 'start' | 'end';
+}
+
+/**
  * One placeholder row in the first-load body, replacing the built-in
  * marker-rail-and-two-bars shape. Rendered `[skeletonRowCount]` times.
  *
- * Contextless, and deliberately so: a placeholder stands in for a row whose
- * data has not arrived, so there is nothing to hand it. Bind this when the
- * real rows are taller or busier than the default shape and the swap to
- * content would otherwise reflow the page.
+ * The context carries the row's position only ({@link CngxTimelineSkeletonContext}):
+ * `index`, `count` and the `side` the content row will sit on, so a custom
+ * shape follows `placement="end"` / `"alternate"` and the swap to content
+ * does not reflow. Bind this when the real rows are taller or busier than
+ * the default shape.
  *
  * Whatever renders here sits inside an `aria-hidden` wrapper - the load is
  * announced through the timeline's live region, not through the placeholder.
@@ -380,5 +400,12 @@ export class CngxTimelineLoadingTail {
   exportAs: 'cngxTimelineSkeleton',
 })
 export class CngxTimelineSkeleton {
-  readonly templateRef = inject<TemplateRef<void>>(TemplateRef);
+  readonly templateRef = inject<TemplateRef<CngxTimelineSkeletonContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxTimelineSkeleton,
+    ctx: unknown,
+  ): ctx is CngxTimelineSkeletonContext {
+    return true;
+  }
 }

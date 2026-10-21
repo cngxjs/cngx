@@ -27,6 +27,7 @@ import type {
   CngxTimelineItemContext,
   CngxTimelineMarkerContext,
   CngxTimelineRetryButtonContext,
+  CngxTimelineSkeletonContext,
 } from './template-slots';
 
 /**
@@ -138,7 +139,7 @@ export interface CngxTimelineTemplates {
   /** Default refreshing tail (`*cngxTimelineLoadingTail`). */
   readonly loadingTail?: TemplateRef<void>;
   /** Default placeholder row for the first-load body (`*cngxTimelineSkeleton`). */
-  readonly skeleton?: TemplateRef<void>;
+  readonly skeleton?: TemplateRef<CngxTimelineSkeletonContext>;
 }
 
 /**

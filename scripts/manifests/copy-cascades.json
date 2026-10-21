@@ -1084,7 +1084,7 @@
     {
       "class": "CngxTimeline",
       "file": "projects/ui/timeline/timeline.component.ts",
-      "line": 440,
+      "line": 441,
       "member": "listLabel",
       "enclosing": "computed",
       "tiers": [

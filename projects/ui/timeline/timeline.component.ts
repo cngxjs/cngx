@@ -27,6 +27,7 @@ import {
   injectTimelineConfig,
   type CngxTimelineItemContext,
   type CngxTimelineMarkerHost,
+  type CngxTimelineSkeletonContext,
   type TimelineDateAccessor,
   type TimelineDirection,
   type TimelineGroup,
@@ -481,6 +482,11 @@ export class CngxTimeline<T = unknown> implements CngxTimelineMarkerHost {
       return 'start';
     }
     return index % 2 === 0 ? 'start' : 'end';
+  }
+
+  /** @internal Context of a consumer `*cngxTimelineSkeleton` row. */
+  protected skeletonContext(index: number, count: number): CngxTimelineSkeletonContext {
+    return { $implicit: index, index, count, side: this.rowSide(index) };
   }
 
   /** @internal Track by consumer identity when given, else by reference. */
