@@ -2023,6 +2023,36 @@ describe('CngxStepper organism', () => {
       expect(stripBidiIsolates(dots[0].getAttribute('aria-label'))).toContain('A');
     });
 
+    it('dots mode: a projected dot body sits in an aria-hidden wrapper on both dot shells', () => {
+      for (const navigation of ['visited', 'none'] as const) {
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          providers: [
+            provideZonelessChangeDetection(),
+            provideStepperConfig(
+              withStepperMobileCollapse('dots'),
+              withStepperHeaderNavigation(navigation),
+            ),
+          ],
+        });
+        const fixture = TestBed.createComponent(DotSlotHost);
+        fixture.detectChanges();
+        const dots = Array.from(
+          fixture.nativeElement.querySelectorAll('.cngx-stepper__mobile-dot'),
+        ) as HTMLElement[];
+        expect(dots.length).toBe(3);
+        dots.forEach((dot, i) => {
+          const body = dot.querySelector('.dot-body') as HTMLElement;
+          const wrapper = body.parentElement as HTMLElement;
+          expect(wrapper).not.toBe(dot);
+          expect(wrapper.parentElement).toBe(dot);
+          expect(wrapper.getAttribute('aria-hidden')).toBe('true');
+          expect(stripBidiIsolates(dot.getAttribute('aria-label'))).toContain(['A', 'B', 'C'][i]);
+          expect(dot.getAttribute('aria-current')).toBe(i === 0 ? 'step' : null);
+        });
+      }
+    });
+
     it('dots mode: the config dot template renders without a per-instance slot', () => {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const tplFixture = TestBed.createComponent(DotTemplateFactory);
