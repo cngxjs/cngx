@@ -30,8 +30,10 @@ export interface CngxTabsLanguageSection {
   readonly moreTabsLabel: CngxMessage;
   /**
    * `{position}`: the name of a tab without a label - its button name, its
-   * overflow row and the tab named in the live phrase after a move, a
-   * rollback or a refusal.
+   * overflow row and, in `<cngx-tab-group>`, the tab named in the live
+   * phrase after a move, a rollback or a refusal. The `@cngx/ui/mat-tabs`
+   * bridge does not name a label-less origin; it speaks
+   * `commitFailedRetry` / `commitRefusedGeneric` instead.
    */
   readonly unlabeledTab: CngxMessage;
   /** `{tab}`: announced after a move to an earlier tab, `{tab}` being its name. */
@@ -47,7 +49,8 @@ export interface CngxTabsLanguageSection {
   readonly closedUnlabeledTab: string;
   /**
    * Announced when a tab commit fails and no origin tab resolves (a
-   * programmatic commit-state write); a resolvable origin speaks
+   * programmatic commit-state write), and in the `@cngx/ui/mat-tabs` bridge
+   * also when the origin tab has no label; a labeled origin speaks
    * `commitRolledBackTo` instead.
    */
   readonly commitFailedRetry: string;
@@ -59,7 +62,8 @@ export interface CngxTabsLanguageSection {
   readonly commitRefused: CngxMessage;
   /**
    * Announced when the commit action refuses a tab switch and the origin tab
-   * is unknown; a label-less origin is named by `unlabeledTab`.
+   * is unknown. `<cngx-tab-group>` names a label-less origin by
+   * `unlabeledTab`; the `@cngx/ui/mat-tabs` bridge speaks this phrase for it.
    */
   readonly commitRefusedGeneric: string;
 }
