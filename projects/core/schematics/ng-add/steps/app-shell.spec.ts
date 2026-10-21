@@ -299,7 +299,8 @@ describe('planAppShell', () => {
 
     expect(followed(facts).outlets).toMatchObject({ kind: 'editable', classes: ['CngxToastOutlet'] });
     expect(next['src/app/app.ts']).toContain('imports: [RouterOutlet, CngxToastOutlet, CngxBannerOutlet],');
-    expect(next['src/app/app.ts']).toContain("import { CngxBannerOutlet } from '@cngx/ui/feedback';");
+    expect(next['src/app/app.ts']).toContain("import { CngxToastOutlet, CngxBannerOutlet } from '@cngx/ui/feedback';");
+    expect(next['src/app/app.ts'].match(/from '@cngx\/ui\/feedback'/g)).toHaveLength(1);
   });
 
   it.each(["'imports'", '"imports"'])('fills a %s key of the component and the NgModule instead of adding a second imports', async (key) => {
@@ -342,8 +343,7 @@ describe('planAppShell', () => {
     const { facts, files } = await factsOf('scaffold-21', { 'src/app/app.ts': app });
     const next = applied(plan(facts), files)['src/app/app.ts'];
 
-    expect(next).toContain("import { CngxToastOutlet } from '@cngx/ui/feedback';");
-    expect(next).toContain("import { CngxBannerOutlet } from '@cngx/ui/feedback';");
+    expect(next).toContain("import { CngxToastOutlet, CngxBannerOutlet } from '@cngx/ui/feedback';");
     expect(next).not.toContain('import type');
   });
 
@@ -540,7 +540,7 @@ describe('planAppShell next to the ng new NgModule spec', () => {
     expect(spec).toContain('      imports: [\n        RouterModule.forRoot([]),\n        CngxBannerOutlet,\n        CngxToastOutlet\n      ],\n');
     expect(spec).toContain('      providers: [provideFeedback(withToasts(), withBanners())],\n');
     expect(spec).toContain(
-      "import { App } from './app';\nimport { CngxBannerOutlet, CngxToastOutlet } from '@cngx/ui/feedback';\nimport { provideFeedback, withBanners, withToasts } from '@cngx/ui/feedback';\n",
+      "import { App } from './app';\nimport {\n  CngxBannerOutlet,\n  CngxToastOutlet,\n  provideFeedback,\n  withBanners,\n  withToasts,\n} from '@cngx/ui/feedback';\n",
     );
     expect(syntaxErrors(spec)).toEqual([]);
     expect(appShellSpecOf(spec, 'fixture-app', 'ng-module')).toBe('module-provided');

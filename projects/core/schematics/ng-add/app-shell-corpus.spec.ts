@@ -633,6 +633,18 @@ function expectPlacedOnce(files: Files, facts: ProjectFacts, originalImports: re
   }
 }
 
+// The import declarations of `@cngx/ui/feedback` in a file: the outlet
+// classes and the feedback providers share one, so a lint rule against
+// duplicate imports stays quiet.
+function feedbackImportCount(content: string): number {
+  return parseTs(content).statements.filter(
+    (statement) =>
+      ts.isImportDeclaration(statement) &&
+      ts.isStringLiteral(statement.moduleSpecifier) &&
+      statement.moduleSpecifier.text === '@cngx/ui/feedback',
+  ).length;
+}
+
 const OUTLET_NAMES = /CngxBannerOutlet|CngxToastOutlet|cngx-banner-outlet|cngx-toast-outlet/g;
 
 // No source or template the run changed gains an outlet element or class.
@@ -813,6 +825,9 @@ describe('every planned app shell edit', () => {
     expectPreserved(before, after, [shell.componentFile, templateFileOf(shell), shell.specPath ?? '', shell.importsHost.file]);
     const placed = await factsOf(first.tree);
     expectPlacedOnce(after, placed, originalImports);
+    for (const path of [shell.importsHost.file, shell.specPath ?? '']) {
+      expect({ path, declarations: feedbackImportCount(after[path] ?? '') }).toEqual({ path, declarations: Math.min(1, feedbackImportCount(after[path] ?? '')) });
+    }
     expect(followed(placed).spec).toBe(PROVIDED_SPEC[shell.spec]);
     expectTidyOutlets(templateText(before, detected), templateText(after, placed));
     expectOutsidePlaceholder(templateText(before, detected), templateText(after, placed));

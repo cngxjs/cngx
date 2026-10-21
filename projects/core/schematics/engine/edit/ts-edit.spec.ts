@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { readFixture } from '../../testing/run-schematic';
 import {
+  addNamedImports,
   addToArrayLiteral,
   type ArraySelector,
   countArrayLiterals,
@@ -306,6 +307,32 @@ describe('promoteTypeOnlyImport', () => {
     expect(promoteTypeOnlyImport(content, 'b', 'm')).toBe(content);
     expect(promoteTypeOnlyImport(content, 'c', 'm')).toBe(content);
     expect(promoteTypeOnlyImport(content, 'x', 'm')).toBe(content);
+  });
+});
+
+describe('addNamedImports', () => {
+  it('adds the names to the value import of the module the file already has', () => {
+    const content = "import { a } from 'm';\nimport { x } from 'other';\n";
+
+    expect(addNamedImports(content, ['b', 'c'], 'm')).toBe("import { a, b, c } from 'm';\nimport { x } from 'other';\n");
+  });
+
+  it('leaves out the names that import already binds and changes nothing when none is left', () => {
+    const content = "import { a, b } from 'm';\n";
+
+    expect(addNamedImports(content, ['b', 'c'], 'm')).toBe("import { a, b, c } from 'm';\n");
+    expect(addNamedImports(content, ['a', 'b'], 'm')).toBe(content);
+  });
+
+  it('fills an empty named import and keeps a trailing comma of a multi-line one', () => {
+    expect(addNamedImports("import {} from 'm';\n", ['a'], 'm')).toBe("import { a } from 'm';\n");
+    expect(addNamedImports("import {\n  a,\n} from 'm';\n", ['b'], 'm')).toBe("import {\n  a, b,\n} from 'm';\n");
+  });
+
+  it('adds a statement when the module is imported only as a type, a namespace or not at all', () => {
+    for (const existing of ["import type { a } from 'm';", "import * as m from 'm';", "import { x } from 'other';"]) {
+      expect(addNamedImports(`${existing}\n`, ['b'], 'm')).toBe(`${existing}\nimport { b } from 'm';\n`);
+    }
   });
 });
 

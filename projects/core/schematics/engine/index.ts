@@ -72,6 +72,7 @@ export {
   withProvenanceMarker,
 } from './plan/provenance';
 export {
+  addNamedImports,
   addToArrayLiteral,
   type ArraySelector,
   declaresClass,

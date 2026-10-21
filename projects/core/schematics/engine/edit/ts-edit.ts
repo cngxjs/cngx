@@ -886,6 +886,43 @@ export function insertAfterImports(content: string, statement: string): string {
   return `${content.slice(0, point.at)}${newline}${statement}${after}`;
 }
 
+/**
+ * Imports `names` from `module` as values: added to the first value import of
+ * `module` with named bindings when the file has one, so the file keeps one
+ * declaration per module, else as a new statement after the imports. Names
+ * already in that import are left out; the content is unchanged when none is
+ * left.
+ */
+export function addNamedImports(content: string, names: readonly string[], module: string): string {
+  const source = parse(content);
+  const existing = source.statements.find(
+    (statement): statement is ts.ImportDeclaration & { importClause: ts.ImportClause & { namedBindings: ts.NamedImports } } =>
+      ts.isImportDeclaration(statement) &&
+      ts.isStringLiteral(statement.moduleSpecifier) &&
+      statement.moduleSpecifier.text === module &&
+      statement.importClause !== undefined &&
+      !statement.importClause.isTypeOnly &&
+      statement.importClause.namedBindings !== undefined &&
+      ts.isNamedImports(statement.importClause.namedBindings),
+  );
+  if (existing === undefined) {
+    return names.length === 0 ? content : insertAfterImports(content, `import { ${names.join(', ')} } from '${module}';`);
+  }
+  const elements = existing.importClause.namedBindings.elements;
+  const bound = new Set(elements.filter((element) => !element.isTypeOnly).map((element) => element.name.text));
+  const missing = names.filter((name) => !bound.has(name));
+  if (missing.length === 0) {
+    return content;
+  }
+  const last = elements[elements.length - 1];
+  if (last === undefined) {
+    const open = existing.importClause.namedBindings.getStart(source) + 1;
+    return `${content.slice(0, open)} ${missing.join(', ')} ${content.slice(open).replace(/^\s*/, '')}`;
+  }
+  const at = last.getEnd();
+  return `${content.slice(0, at)}, ${missing.join(', ')}${content.slice(at)}`;
+}
+
 // Puts `item` right before the bracket at `close` of a list that holds only
 // comments, which all stay: on a line of its own when the bracket starts its
 // line, else on the bracket's line, followed by `after`.
