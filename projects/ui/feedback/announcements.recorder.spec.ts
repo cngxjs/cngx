@@ -294,7 +294,7 @@ describe('announcement recorder over ui/feedback', () => {
       ).toEqual([dismissedEntry, dismissedEntry]);
     });
 
-    it('records a dismissal inside an open modal CngxDialog as suppressed by aria-modal', async () => {
+    it('speaks a dismissal inside an open modal CngxDialog through a region in the modal', async () => {
       const fixture = TestBed.createComponent(ModalAlertHost);
       fixture.detectChanges();
       TestBed.flushEffects();
@@ -307,9 +307,7 @@ describe('announcement recorder over ui/feedback', () => {
 
       await dismiss(fixture);
 
-      expect(recorder.entries().map(summary)).toEqual([
-        { ...dismissedEntry, suppressedBy: 'aria-modal' },
-      ]);
+      expect(recorder.entries().map(summary)).toEqual([{ ...dismissedEntry, suppressedBy: null }]);
     });
 
     it('announces the dismissal after a destroy-on-dismiss host removes the alert', async () => {
