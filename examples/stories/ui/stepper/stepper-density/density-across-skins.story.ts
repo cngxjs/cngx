@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxStepper', 'CngxStep', 'CngxStepContent'],
   viewProviders: [
-    "provideStepperConfigAt(withStepperDensity('auto', { compact: 145, minimal: 120 }))",
+    "provideStepperConfigAt(withStepperDensity('auto'))",
   ],
   setup: `protected readonly active = signal(0);
   protected readonly skin = signal<CngxStepperSkin>('classic');
