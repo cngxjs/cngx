@@ -235,6 +235,33 @@ describe('createSelectCore - trigger ARIA control hooks', () => {
     expect(core.commitErrorText()).toBe('');
   });
 
+  it('leaves aria-describedby untouched without a summary description', () => {
+    expect(coreWith({}).triggerAria().describedBy).toBeNull();
+  });
+
+  it('references the summary description only while it is set', () => {
+    const summary = signal<string | null>(null);
+    const core = coreWith({ summaryDescribedBy: summary });
+    expect(core.triggerAria().describedBy).toBeNull();
+    summary.set('sum-1');
+    expect(core.triggerAria().describedBy).toBe('sum-1');
+    summary.set(null);
+    expect(core.triggerAria().describedBy).toBeNull();
+  });
+
+  it('appends the summary description after the commit-error reference', () => {
+    const core = coreWith({ summaryDescribedBy: signal('sum-1') });
+    core.commitController.begin(
+      () => {
+        throw new Error('boom');
+      },
+      'red',
+      undefined,
+      { onSuccess: () => undefined, onError: () => undefined },
+    );
+    expect(core.triggerAria().describedBy).toBe(`${core.commitErrorId} sum-1`);
+  });
+
   it('keeps the triggerAria reference across an unrelated change', () => {
     const label = signal('');
     const core = coreWith({ label, ariaLabelledBy: signal('ext-label') });
