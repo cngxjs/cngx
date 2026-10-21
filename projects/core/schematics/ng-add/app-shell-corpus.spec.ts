@@ -16,7 +16,7 @@ import {
 } from './detect/detect';
 import { ngAdd } from './index';
 import { INSTALL_MANIFEST_PATH } from './steps/manifest';
-import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell, specCustomText } from './steps/app-shell';
+import { OUTLETS_ID, OUTLETS_SNIPPET, planAppShell, specCustomText, specUnscopedText } from './steps/app-shell';
 import { STARTER_ID, starterLeftOutText } from './steps/starter';
 
 // Runs `ng add --feedback` over every root component shape in CORPUS and
@@ -34,6 +34,28 @@ const STOCK_APP = readFixture('scaffold-21')['src/app/app.ts'];
 const STOCK_SPEC = readFixture('scaffold-21')['src/app/app.spec.ts'];
 const STOCK_SPEC_22 = readFixture('scaffold-22')['src/app/app.spec.ts'];
 const STOCK_APP_22 = readFixture('scaffold-22')['src/app/app.ts'];
+const NGMODULE_SPEC = readFixture('scaffold-21-ngmodule')['src/app/app.spec.ts'];
+
+// Every file of the `ng new --standalone=false` fixture the outlets step
+// reads or edits, so a row can change them all at once (CRLF).
+function ngModuleShell(fixture: FixtureName): Files {
+  const files = readFixture(fixture);
+  return Object.fromEntries(
+    ['src/main.ts', 'src/app/app-module.ts', 'src/app/app.ts', 'src/app/app.html', 'src/app/app.spec.ts'].map((path) => [path, files[path]]),
+  );
+}
+
+const BUILD_MANIFEST = 'node_modules/@angular/build/package.json';
+
+// The installed @angular/build manifest at `version`.
+function buildManifest(version: string): string {
+  return JSON.stringify({ name: '@angular/build', version });
+}
+
+// The fixture's package.json with @angular/build on CLI 22.
+function onBuild22(fixture: FixtureName): Files {
+  return { 'package.json': readFixture(fixture)['package.json'].replace(/"@angular\/build": "[^"]+"/, '"@angular/build": "^22.2.3"') };
+}
 
 // The content with the character in its middle replaced: the smallest edit
 // that makes a scaffold file no longer the untouched one.
@@ -104,6 +126,7 @@ function ngModuleApp(imports?: string): Files {
     'src/main.ts': NGMODULE_MAIN,
     'src/app/app-module.ts': ngModule(imports),
     'src/app/app.ts': NGMODULE_APP,
+    'src/app/app.spec.ts': NGMODULE_SPEC,
   };
 }
 
@@ -126,9 +149,11 @@ interface Shape {
   /**
    * `placed`; the reason cngx names with the snippet instead of editing; or
    * `spec-custom`, the outlets left out in front of a spec cngx cannot
-   * provide (fail-closed, so `ng test` never turns red).
+   * provide (fail-closed, so `ng test` never turns red); or
+   * `spec-unscoped`, the outlets left out in front of an NgModule spec
+   * where @angular/build 21 is not installed.
    */
-  readonly outcome: 'placed' | AppShellBlockedReason | 'spec-custom';
+  readonly outcome: 'placed' | AppShellBlockedReason | 'spec-custom' | 'spec-unscoped';
 }
 
 const OUTLETS_HTML = '<cngx-banner-outlet />\n<router-outlet />\n<cngx-toast-outlet />\n';
@@ -153,8 +178,26 @@ const CORPUS: readonly Shape[] = [
   { name: 'standalone-app', fixture: 'standalone-app', outcome: 'placed' },
   { name: 'existing-tailwind-app', fixture: 'existing-tailwind-app', outcome: 'placed' },
   { name: 'NgModule app', files: ngModuleApp(), remove: ['src/app/app.spec.ts'], outcome: 'placed' },
-  { name: 'ng new NgModule app 21 with its spec', fixture: 'scaffold-21-ngmodule', outcome: 'spec-custom' },
-  { name: 'ng new NgModule app 22 with its spec', fixture: 'scaffold-22-ngmodule', outcome: 'spec-custom' },
+  { name: 'ng new NgModule app 21 with its spec', fixture: 'scaffold-21-ngmodule', outcome: 'placed' },
+  { name: 'ng new NgModule app 21 zone with its spec', fixture: 'scaffold-21-ngmodule-zone', outcome: 'placed' },
+  { name: 'ng new NgModule app 21 routing off with its spec', fixture: 'scaffold-21-ngmodule-routing-off', outcome: 'placed' },
+  { name: 'ng new NgModule app 21 routing off zone with its spec', fixture: 'scaffold-21-ngmodule-routing-off-zone', outcome: 'placed' },
+  { name: 'Prettier-formatted ng new NgModule app 21', fixture: 'scaffold-21-ngmodule', prettierFirst: true, outcome: 'placed' },
+  { name: 'Prettier-formatted ng new NgModule app 21 routing off zone', fixture: 'scaffold-21-ngmodule-routing-off-zone', prettierFirst: true, outcome: 'placed' },
+  { name: 'CRLF ng new NgModule app 21', fixture: 'scaffold-21-ngmodule', files: crlf(ngModuleShell('scaffold-21-ngmodule')), outcome: 'placed' },
+  { name: 'CRLF ng new NgModule app 21 routing off', fixture: 'scaffold-21-ngmodule-routing-off', files: crlf(ngModuleShell('scaffold-21-ngmodule-routing-off')), outcome: 'placed' },
+  { name: 'one changed character in the ng new NgModule 21 spec', fixture: 'scaffold-21-ngmodule', files: { 'src/app/app.spec.ts': oneChanged(NGMODULE_SPEC) }, outcome: 'spec-custom' },
+  { name: 'ng new NgModule app 21 with a custom spec', fixture: 'scaffold-21-ngmodule', files: { 'src/app/app.spec.ts': `${NGMODULE_SPEC}// mine\n` }, outcome: 'spec-custom' },
+  { name: 'ng new NgModule app 21 with the standalone spec', fixture: 'scaffold-21-ngmodule', files: { 'src/app/app.spec.ts': STOCK_SPEC }, outcome: 'spec-custom' },
+  { name: 'ng new NgModule app 21 on @angular/build 22', fixture: 'scaffold-21-ngmodule', files: onBuild22('scaffold-21-ngmodule'), outcome: 'spec-unscoped' },
+  { name: 'ng new NgModule app 22 with its spec', fixture: 'scaffold-22-ngmodule', outcome: 'spec-unscoped' },
+  { name: 'ng new NgModule app 22 zone with its spec', fixture: 'scaffold-22-ngmodule-zone', outcome: 'spec-unscoped' },
+  { name: 'ng new NgModule app 22 routing off with its spec', fixture: 'scaffold-22-ngmodule-routing-off', outcome: 'spec-unscoped' },
+  { name: 'ng new NgModule app 22 routing off zone with its spec', fixture: 'scaffold-22-ngmodule-routing-off-zone', outcome: 'spec-unscoped' },
+  { name: 'Prettier-formatted ng new NgModule app 22', fixture: 'scaffold-22-ngmodule', prettierFirst: true, outcome: 'spec-unscoped' },
+  { name: 'ng new NgModule app 22 with a custom spec', fixture: 'scaffold-22-ngmodule', files: { 'src/app/app.spec.ts': `${readFixture('scaffold-22-ngmodule')['src/app/app.spec.ts']}// mine\n` }, outcome: 'spec-unscoped' },
+  { name: 'ng new NgModule app 21 with @angular/build 22 installed', fixture: 'scaffold-21-ngmodule', files: { [BUILD_MANIFEST]: buildManifest('22.2.3') }, outcome: 'spec-unscoped' },
+  { name: 'ng new NgModule app 22 with @angular/build 21 installed', fixture: 'scaffold-22-ngmodule', files: { 'src/app/app.spec.ts': NGMODULE_SPEC, [BUILD_MANIFEST]: buildManifest('21.2.27') }, outcome: 'placed' },
   { name: 'ng new NgModule app 22 without its spec', fixture: 'scaffold-22-ngmodule', remove: ['src/app/app.spec.ts'], outcome: 'placed' },
   { name: "NgModule 'imports' key", files: ngModuleApp(`'imports': [\n    BrowserModule\n  ],`), outcome: 'placed' },
   { name: 'NgModule without imports', files: ngModuleApp(''), outcome: 'placed' },
@@ -226,6 +269,7 @@ const CORPUS: readonly Shape[] = [
     files: {
       'src/main.ts': NGMODULE_MAIN.replace("'./app/app-module'", "'./app/app'"),
       'src/app/app.ts': `${NGMODULE_APP.replace("templateUrl: './app.html'", 'template: `\n    <router-outlet />\n  `')}\n${ngModule().replace(/^[\s\S]*?@NgModule/, "import { NgModule } from '@angular/core';\nimport { BrowserModule } from '@angular/platform-browser';\n\n@NgModule")}`,
+      'src/app/app.spec.ts': NGMODULE_SPEC,
     },
     outcome: 'placed',
   },
@@ -716,10 +760,15 @@ describe('every planned app shell edit', () => {
     const logs = first.logs.join('\n');
     const firstLines = outletLines(first.logs);
 
-    if (shape.outcome === 'spec-custom') {
+    if (shape.outcome === 'spec-custom' || shape.outcome === 'spec-unscoped') {
       const shell = followed(detected);
-      expect(shell.spec).toBe('custom');
-      expect(logs).toContain(specCustomText(shell.specPath ?? '', shell.className));
+      const unscoped = shape.outcome === 'spec-unscoped';
+      expect(unscoped ? [shell.importsHost.kind, shell.testsCompileModule] : [shell.spec]).toEqual(unscoped ? ['ng-module', false] : ['custom']);
+      expect(logs).toContain(
+        unscoped
+          ? specUnscopedText(shell.specPath ?? '', shell.className, shell.importsHost.file)
+          : specCustomText(shell.specPath ?? '', shell.className),
+      );
       for (const path of shellFiles) {
         expect({ path, content: after[path] }).toEqual({ path, content: before[path] });
       }
@@ -764,6 +813,7 @@ describe('every planned app shell edit', () => {
     expectPreserved(before, after, [shell.componentFile, templateFileOf(shell), shell.specPath ?? '', shell.importsHost.file]);
     const placed = await factsOf(first.tree);
     expectPlacedOnce(after, placed, originalImports);
+    expect(followed(placed).spec).toBe(PROVIDED_SPEC[shell.spec]);
     expectTidyOutlets(templateText(before, detected), templateText(after, placed));
     expectOutsidePlaceholder(templateText(before, detected), templateText(after, placed));
 
@@ -779,9 +829,24 @@ describe('every planned app shell edit', () => {
     const final = readTree(third.tree);
     expectUnchanged(reformatted, final);
     expect(outletLines(third.logs)).toEqual([]);
-    expectPlacedOnce(final, await factsOf(third.tree), originalImports);
+    const thirdFacts = await factsOf(third.tree);
+    expectPlacedOnce(final, thirdFacts, originalImports);
+    // The CLI's Prettier pass over the edited spec still reads as provided.
+    expect(followed(thirdFacts).spec).toBe(PROVIDED_SPEC[shell.spec]);
   });
 });
+
+// What a placed run leaves the spec as: the stock spec provided; a
+// provided or missing one, or a custom one next to outlets already in
+// place, as it was.
+const PROVIDED_SPEC: Readonly<Partial<Record<AppShell['spec'], AppShell['spec']>>> = {
+  custom: 'custom',
+  stock: 'provided',
+  provided: 'provided',
+  'module-stock': 'module-provided',
+  'module-provided': 'module-provided',
+  absent: 'absent',
+};
 
 function templateFileOf(shell: AppShell): string {
   return shell.template.kind === 'file' ? shell.template.path : shell.componentFile;
@@ -859,6 +924,7 @@ const STARTER_CORPUS: readonly StarterShape[] = [
   { name: 'inline template', files: inline('`<router-outlet />`'), outcome: 'not-untouched' },
   { name: 'trimmed standalone-app', fixture: 'standalone-app', outcome: 'not-untouched' },
   { name: 'NgModule app', files: ngModuleApp(), remove: ['src/app/app.spec.ts'], outcome: 'nothing' },
+  { name: 'ng new NgModule app 21', fixture: 'scaffold-21-ngmodule', outcome: 'nothing' },
   { name: 'ng new NgModule app 22', fixture: 'scaffold-22-ngmodule', outcome: 'nothing' },
   { name: 'starter of a run with other answers', installedFirst: true, flags: { a11yPreferences: false }, outcome: 'other-answers' },
   { name: 'starter replaced after the install', installedFirst: true, files: { 'src/app/app.html': '<main>mine</main>\n' }, outcome: 'replaced' },

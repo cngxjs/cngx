@@ -52,22 +52,34 @@ const PRETTIERRC = 'workspace/files/.prettierrc.template';
 // the component files are the `ng new` standalone defaults (`templateUrl`,
 // `styleUrl`, no `displayBlock`), with routing on or off and a CSS or SCSS
 // stylesheet. Inline templates, inline styles, Sass and Less have no entry,
-// so such an app is never the untouched scaffold.
+// so such an app is never the untouched scaffold. Of an NgModule app only
+// the spec is kept: the outlets step reads it, the starter never runs there.
 const COMPONENT = { inlineTemplate: false, inlineStyle: false, displayBlock: false };
 const STYLES = ['css', 'scss'];
 const ROUTING = [
   { routing: true, name: 'routing' },
   { routing: false, name: 'no-routing' },
 ];
+const ZONES = [
+  { zoneless: true, zone: 'zoneless' },
+  { zoneless: false, zone: 'zone' },
+];
 
 export const TEMPLATES = [
   {
     file: 'app.spec.ts',
     template: 'application/files/standalone-files/src/app/app__suffix__.spec.ts.template',
-    variants: [
-      { variant: 'zoneless', options: { zoneless: true } },
-      { variant: 'zone', options: { zoneless: false } },
-    ],
+    variants: ZONES.map(({ zoneless, zone }) => ({ variant: zone, options: { zoneless } })),
+  },
+  // The spec `ng new --standalone=false` writes, marked `app: 'ng-module'`
+  // so detection never reads one as the standalone spec.
+  {
+    file: 'app.spec.ts',
+    app: 'ng-module',
+    template: 'application/files/module-files/src/app/app__suffix__.spec.ts.template',
+    variants: ROUTING.flatMap(({ routing, name }) =>
+      ZONES.map(({ zoneless, zone }) => ({ variant: `ngmodule-${name}-${zone}`, options: { routing, zoneless } })),
+    ),
   },
   {
     file: 'app.ts',
@@ -170,14 +182,14 @@ export async function collectEntries(root = schematicsRoot()) {
   const major = majorOf(root);
   const prettierrc = JSON.parse(readFileSync(resolve(root, PRETTIERRC), 'utf8'));
   const entries = [];
-  for (const { file, dir = 'src/app', template, variants } of TEMPLATES) {
+  for (const { file, dir = 'src/app', app, template, variants } of TEMPLATES) {
     const text = readFileSync(resolve(root, template), 'utf8');
     for (const { variant, options } of variants) {
       const raw = normalize(render(text, options, root));
       const formatted = normalize(await format(raw, posix.join(dir, file), prettierrc));
       const bodies = formatted === raw ? [['raw', raw]] : [['raw', raw], ['prettier', formatted]];
       for (const [form, body] of bodies) {
-        entries.push({ major, file, variant, form, template, body, fingerprint: fingerprint(body) });
+        entries.push({ major, file, ...(app === undefined ? {} : { app }), variant, form, template, body, fingerprint: fingerprint(body) });
       }
     }
   }
@@ -193,11 +205,12 @@ export function holdsPlaceholder(body) {
 
 // The welcome page holds no name, so its four bodies (20 KB each) stay out
 // of the bundle and are compared by fingerprint alone.
-function entry({ major, file, variant, form, template, body, fingerprint: print }) {
+function entry({ major, file, app, variant, form, template, body, fingerprint: print }) {
   return [
     '  {',
     `    major: ${major},`,
     `    file: ${quote(file)},`,
+    ...(app === undefined ? [] : [`    app: ${quote(app)},`]),
     `    variant: ${quote(variant)},`,
     `    form: ${quote(form)},`,
     `    template: ${quote(template)},`,
@@ -239,6 +252,8 @@ export async function renderCatalogModule(roots = schematicsRoots()) {
     '  readonly major: number;',
     '  /** The file name in `src/app`; `index.html` is the one in `src`. */',
     '  readonly file: string;',
+    "  /** `ng-module` on a file of the `ng new --standalone=false` app; absent on the standalone scaffold. */",
+    "  readonly app?: 'ng-module';",
     '  readonly variant: string;',
     '  /** `raw` as rendered, `prettier` as formatted with the `ng new` `.prettierrc`. */',
     "  readonly form: 'raw' | 'prettier';",

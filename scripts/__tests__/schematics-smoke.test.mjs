@@ -484,8 +484,12 @@ describe('dist/ui/schematics ng-add shim', () => {
 // to ng-add, which was at 255 KB before it: ng-add measured 277,658 B
 // minified and 88,268 B gzip when the budget moved from 256 / 90 KB. The
 // starter's page files ship next to the bundle (`ng-add/files/starter`),
-// not inside it, so they do not count here.
-const MAX_MINIFIED = 288 * 1024;
+// not inside it, so they do not count here. The `ng new --standalone=false`
+// spec bodies of both CLI majors, raw and Prettier-formatted, which the
+// outlets step compares an NgModule spec against exactly, took the catalog
+// from 21 to 39 KB: ng-add measured 308,306 B minified and 92,328 B gzip
+// when the minified budget moved from 288 KB.
+const MAX_MINIFIED = 320 * 1024;
 const MAX_GZIP = 96 * 1024;
 // A shim only adds core and delegates; it pulls nothing from the renderer
 // or the prompts, which `sideEffects: false` on the source package lets
@@ -552,7 +556,7 @@ describe('schematic bundle budget', () => {
     }
   });
 
-  it.each(schematicEntries())('keeps dist/%s under 288 KB minified and 96 KB gzip', (file) => {
+  it.each(schematicEntries())('keeps dist/%s under 320 KB minified and 96 KB gzip', (file) => {
     const content = readFileSync(join(ROOT, 'dist', file));
 
     expect(content.length).toBeLessThanOrEqual(MAX_MINIFIED);

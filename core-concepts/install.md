@@ -238,11 +238,11 @@ turn the questions off the same way.
 |`src/cngx-theme.scss`|Material theme with a `mat.theme()` map|The bridge from the Material system tokens to the cngx tokens. A `define-theme` or M2 theme object is bridged in the file that defines it instead: the bridge `@use` goes after the last leading `@use` there, ahead of every `@import`, since Sass rejects a `@use` that follows one.|
 |`angular.json`|theme chosen|The theme file added to the build styles, after the stylesheet that imports `cngx.css`.|
 |App config, root NgModule or inline config in `main.ts`|per answer|`provideA11yPreferences(withPersistence())`, `provideDirection('rtl')` for a right-to-left source locale, `provideFeedback(withToasts(), withAlerts(), withBanners())`, `provideFloatingFallback(computePosition, [flip(), shift()])`, `provideCngxI18n(withPack(...))`.|
-|Root component template and its `imports`|feedback|`<cngx-banner-outlet />` as the first line above the `ng new` placeholder block, so it shows above the welcome page instead of below it, and `<cngx-toast-outlet />` at the end after the block, so deleting the placeholder below its opening comment keeps both; without that block the banner outlet goes right above `<router-outlet>`, else at the end; `CngxBannerOutlet` and `CngxToastOutlet` from `@cngx/ui/feedback` in the component `imports`, or in the root NgModule `imports` of an NgModule app. Only where the spec next to the root component stays green: none, or the untouched standalone `ng new` spec; next to any other spec, the `ng new --standalone=false` one included, cngx leaves both outlets out with a note. Placed once; an outlet you remove after the install stays out until you pass `--feedback` again, and once an install placed them cngx does not ask for them again, also when it can no longer edit the root component; a note then says that they were removed, or, where it cannot read the template any more, why it cannot tell. A root component cngx cannot follow from `main.ts` or cannot edit safely gets a note with the snippet and the reason instead, see [Outlets left to you](#outlets-left-to-you). Alert stacks are not placed: they are scoped, so they go where the alerts belong. `ng update` only notes a missing outlet.|
+|Root component template and its `imports`|feedback|`<cngx-banner-outlet />` as the first line above the `ng new` placeholder block, so it shows above the welcome page instead of below it, and `<cngx-toast-outlet />` at the end after the block, so deleting the placeholder below its opening comment keeps both; without that block the banner outlet goes right above `<router-outlet>`, else at the end; `CngxBannerOutlet` and `CngxToastOutlet` from `@cngx/ui/feedback` in the component `imports`, or in the root NgModule `imports` of an NgModule app. Only where the spec next to the root component stays green: none, the untouched standalone `ng new` spec, or the untouched `ng new --standalone=false` spec with `@angular/build` 21; next to any other spec, and next to any NgModule spec without that build, cngx leaves both outlets out with a note. Placed once; an outlet you remove after the install stays out until you pass `--feedback` again, and once an install placed them cngx does not ask for them again, also when it can no longer edit the root component; a note then says that they were removed, or, where it cannot read the template any more, why it cannot tell. A root component cngx cannot follow from `main.ts` or cannot edit safely gets a note with the snippet and the reason instead, see [Outlets left to you](#outlets-left-to-you). Alert stacks are not placed: they are scoped, so they go where the alerts belong. `ng update` only notes a missing outlet.|
 |`src/app/app.ts`, `app.html`, `app.css` or `app.scss`|`full` (or `--starter`), untouched `ng new` standalone app|The cngx starter page in place of the Angular welcome page: the `Hello, <name>` heading and `title` signal the stock spec asserts, a card for each thing the answers installed to try (toasts, banners and an alert with feedback, the accessibility panel with the a11y preferences, an English and German toggle with the runtime language switch), the toast and banner outlets with feedback, and `<router-outlet />` with routing. Written only over the exact `ng new` scaffold, see [The starter page](#the-starter-page).|
 |Global styles|starter written|The starter's page styles at the end, after a `cngx:fingerprint` line: `body { margin: 0 }`, the headings, the top bar and the footer, every rule scoped under `<root selector> > .shell`. They live here so the component stylesheet stays inside the 4 kB component style budget of `ng new`.|
 |`public/favicon.svg`, `src/index.html`|starter written, `index.html` untouched, no `favicon.svg` yet|The cngx mark as the app icon, and the icon link pointed at it instead of `favicon.ico`, which stays on disk.|
-|`app.spec.ts` of the root component|feedback, unedited `ng new` spec|`providers: [provideFeedback(withToasts(), withBanners())]` in its `TestBed.configureTestingModule`, so the stock spec still renders `App` with the outlets in it. Next to any other spec cngx places no outlet, see [Outlets left to you](#outlets-left-to-you).|
+|`app.spec.ts` of the root component|feedback, unedited `ng new` spec|`providers: [provideFeedback(withToasts(), withBanners())]` in its `TestBed.configureTestingModule`, so the stock spec still renders `App` with the outlets in it. The `ng new --standalone=false` spec declares `App` in that TestBed, so it also gets `CngxBannerOutlet` and `CngxToastOutlet` in the TestBed `imports`, and both import lines; only with `@angular/build` 21. Next to any other spec cngx places no outlet, see [Outlets left to you](#outlets-left-to-you).|
 |`cngx-language.ts`|German with runtime switch|Next to the file holding the root providers (`src/cngx-language.ts` for an inline config in `main.ts`): a `cngxLanguagePack` signal. Set it to switch every cngx string at runtime. When the app already provides `provideCngxI18n(...)` without that signal, the provider is not rewritten: the file is still created and a note names the one edit, `withPack(cngxLanguagePack)` imported from `./cngx-language`.|
 |ESLint flat config|lint rules|`...cngx.configs.recommended` in the exported array of `eslint.config.js`, `.mjs`, `.cjs`, `.ts`, `.mts` or `.cts`, the one in the project root first, else the workspace one. A commented-out plugin import does not count as wired. It needs ESLint 9 or later and a TypeScript parser (`typescript-eslint`, `@typescript-eslint/parser` or `angular-eslint`): the cngx rules lint TypeScript through the app's own setup. The plugin also loads `@angular-eslint/template-parser` 19 or later; with `angular-eslint` declared it is added on that version line. Every case it cannot wire gets one note with the next command and no edit or dependency: ESLint below 9 (raise `eslint` to `^9` in devDependencies and reinstall; with `angular-eslint`, `ng update angular-eslint` moves its packages, without it `ng add angular-eslint` sets up ESLint 9), no flat config, no TypeScript parser or no template parser (`ng add angular-eslint`), a template parser line below 19 (`ng update angular-eslint`, or raise the parser itself), a legacy `.eslintrc*` config (`npx @eslint/migrate-config <file>`). Run `ng add @cngx/core` again afterwards. A config it cannot edit safely gets a note to add the entry by hand.|
 |`.cngx/install.json`|always|The install manifest (below).|
@@ -260,8 +260,9 @@ exists and was not written by cngx is never overwritten; the step plans a note a
 that shows what the run installed, working. It writes it only when all of
 these hold, and leaves the app as `ng new` wrote it otherwise:
 
-- The app is standalone. An NgModule app gets the outlets only, and only
-  without a spec next to its root component.
+- The app is standalone. An NgModule app gets the outlets only, without a
+  spec next to its root component or next to the untouched
+  `ng new --standalone=false` spec on `@angular/build` 21.
 - `src/app/app.ts`, `app.html` and the stylesheet are exactly what `ng new`
   wrote with Angular CLI 21 or 22 (routing on or off, CSS or SCSS), compared
   after the project name and selector are put in and line endings
@@ -318,16 +319,33 @@ stopped at for `<Class>` and `<file>`:
 - `<file> does not parse as TypeScript, so cngx edits neither it nor <Class>`: the root component or the root NgModule has a syntax error; cngx reads such a file only as far as the parser recovers, so it does not write into it.
 - `<Class> in <file> is bound to something other than the <Class> class of @cngx/ui/feedback`: the file already declares (a namespace or an interface included) or imports a `CngxBannerOutlet` or `CngxToastOutlet` of its own, also another `@cngx/ui/feedback` export aliased to that name or the whole entry imported under it.
 
-The spec next to the root component counts too. When it exists and is
-neither the untouched standalone `ng new` spec nor that spec with the
-feedback providers cngx adds, cngx places no outlet and edits no spec, since
-the outlets would inject `CngxToaster` and `CngxBanner` into a TestBed that
-may not provide them and `ng test` would fail. That includes the spec
-`ng new --standalone=false` writes: it declares `App` in its own TestBed,
-which would need the outlet classes as well as the providers. The note then
-reads `<file> is not the untouched standalone ng new spec, so cngx places no outlet a TestBed there may lack`,
+The spec next to the root component counts too. cngx edits two specs: the
+untouched standalone `ng new` spec gets the feedback providers, and the
+untouched `ng new --standalone=false` spec, which declares `App` in its own
+TestBed, also gets `CngxBannerOutlet` and `CngxToastOutlet` in that
+TestBed's `imports`. When the spec is neither of them nor one of them as
+cngx left it, cngx places no outlet and edits no spec, since the outlets
+would inject `CngxToaster` and `CngxBanner` into a TestBed that may not
+provide them and `ng test` would fail. The note then reads
+`<file> is not an untouched ng new spec, so cngx places no outlet a TestBed there may lack`,
 followed by the outlets snippet and what the spec needs. A missing spec is
 no reason to stop.
+
+The NgModule spec is edited only where `@angular/build` 21 is installed,
+or, before the install, where `package.json` declares a range that admits
+major 21 alone (`^21.2.0`, `~21.2.3`, `21.2.3`). From 22.2 its unit-test
+builder compiles only the specs and what they import, so `App` compiles
+without `AppModule` and every element from it, `<router-outlet>` and the
+outlets alike, is unknown
+([angular/angular-cli#34231](https://github.com/angular/angular-cli/issues/34231)).
+The fix is set for 22.3; cngx keeps 22 closed until it has run that
+release. Anywhere else, an installed manifest it cannot read and a range
+that spans majors included, the NgModule spec gets no outlet, a custom one
+too, and the note reads
+`<file> belongs to an NgModule app without @angular/build 21 installed; from 22.2 its unit-test builder compiles the root component there without its NgModule (angular/angular-cli#34231), so cngx places no outlet`,
+followed by the snippet, what the TestBed needs and the import of the root
+NgModule to add to the spec (`import './app-module';`), which lets the test
+build compile `App` with it.
 
 Fix what the reason names and run `ng add @cngx/core --feedback` again, or
 paste the snippet yourself.

@@ -30,6 +30,10 @@
 //               would otherwise fetch the newest CDK the peers allow); a
 //               second `ng add` changes nothing; the app builds and loads.
 //               Takes --preset like schematics.
+//   ngmodule    onboarding on an `ng new --standalone=false` app with
+//               routing: the outlets go into the root NgModule and the stock
+//               spec, no starter is written; with --preset full `ng test`
+//               runs and both outlets must be in the DOM.
 //   schematics  a real `ng add` and `ng update` against the tarballs: two
 //               ng add runs (the second changes nothing), ng add of a package
 //               shim (which keeps every lib the first run recorded), two ng
@@ -57,7 +61,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-export const VARIANTS = ['full', 'zone', 'ssr', 'minimal', 'schematics', 'onboarding'];
+export const VARIANTS = ['full', 'zone', 'ssr', 'minimal', 'schematics', 'onboarding', 'ngmodule'];
 const MARKER = 'cngx-consumer-ok';
 
 /** The ng add presets the schematics variant can run; `recommended` is what ng add picks without one. */
@@ -76,10 +80,15 @@ export function variantPlan(variant) {
   if (!VARIANTS.includes(variant)) {
     throw new Error(`Unknown variant "${variant}". Available: ${VARIANTS.join(', ')}`);
   }
-  const onboarding = variant === 'onboarding';
+  const ngModule = variant === 'ngmodule';
+  const onboarding = variant === 'onboarding' || ngModule;
   const lean = variant === 'minimal' || variant === 'schematics' || onboarding;
   return {
     variant,
+    // `ng new --standalone=false` with routing, the NgModule spec that
+    // imports RouterModule in its own TestBed.
+    standalone: !ngModule,
+    routing: ngModule,
     zoneless: variant !== 'zone',
     ssr: variant === 'ssr',
     optionalPeers: !lean,
@@ -122,8 +131,9 @@ export const STARTER_SMOKE = {
  * `full` provides feedback and writes the starter, so only it runs `ng test`
  * over the stock spec, expects the outlets in the DOM and clicks the
  * starter's toast and banner buttons; the default path gets no extra step.
+ * An NgModule app (`{ standalone: false }`) gets the outlets but no starter.
  */
-export function presetPlan(preset = DEFAULT_PRESET) {
+export function presetPlan(preset = DEFAULT_PRESET, { standalone = true } = {}) {
   if (!PRESETS.includes(preset)) {
     throw new Error(`Unknown preset "${preset}". Available: ${PRESETS.join(', ')}`);
   }
@@ -132,7 +142,7 @@ export function presetPlan(preset = DEFAULT_PRESET) {
     preset,
     ngTest: full,
     outlets: full ? ['cngx-banner-outlet', 'cngx-toast-outlet'] : [],
-    starter: full ? STARTER_SMOKE : undefined,
+    starter: full && standalone ? STARTER_SMOKE : undefined,
     // The starter keeps its component stylesheet inside the `ng new` budgets.
     noBudgetWarnings: full,
   };
@@ -514,8 +524,8 @@ function parseArgs(argv) {
     console.error('--stale-core needs --variant schematics');
     process.exit(1);
   }
-  if (args.preset !== null && args.variant !== 'schematics' && args.variant !== 'onboarding') {
-    console.error('--preset needs --variant schematics or onboarding');
+  if (args.preset !== null && !['schematics', 'onboarding', 'ngmodule'].includes(args.variant)) {
+    console.error('--preset needs --variant schematics, onboarding or ngmodule');
     process.exit(1);
   }
   if (args.preset !== null && !PRESETS.includes(args.preset)) {
@@ -799,7 +809,7 @@ async function main() {
   const { angular, variant, tarballs, work, ignorePeers, staleCore, preset } = parseArgs(process.argv.slice(2));
   const { cliSpec, exact } = parseAngularSpec(angular);
   const plan = variantPlan(variant);
-  const checks = presetPlan(preset);
+  const checks = presetPlan(preset, { standalone: plan.standalone });
 
   const tarballFiles = existsSync(tarballs)
     ? readdirSync(tarballs).filter((file) => file.endsWith('.tgz')).map((file) => join(tarballs, file))
@@ -817,7 +827,7 @@ async function main() {
 
   const newArgs = [
     '-y', `@angular/cli@${cliSpec}`, 'new', 'fixture', '--defaults', '--skip-git', '--skip-install',
-    '--style=css', '--routing=false', `--ssr=${plan.ssr}`, `--zoneless=${plan.zoneless}`,
+    '--style=css', `--routing=${plan.routing}`, `--standalone=${plan.standalone}`, `--ssr=${plan.ssr}`, `--zoneless=${plan.zoneless}`,
   ];
   run('npx', newArgs, { cwd: sandbox });
 

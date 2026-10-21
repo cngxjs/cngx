@@ -9,7 +9,7 @@ import { newlineOf } from '../plan/text';
  * `providers` array of a root config (an object typed `ApplicationConfig`,
  * the `@NgModule` argument, or the inline config of `bootstrapApplication`),
  * the `imports` array of the `@Component` or `@NgModule` decorator on a
- * class, or the `providers` array of the object passed to
+ * class, or the `providers` or `imports` array of the object passed to
  * `TestBed.configureTestingModule`.
  */
 export type ArraySelector =
@@ -17,10 +17,14 @@ export type ArraySelector =
   | { readonly kind: 'variable'; readonly name: string }
   | { readonly kind: 'root-providers' }
   | { readonly kind: 'decorator-imports'; readonly className: string }
-  | { readonly kind: 'testbed-providers' };
+  | { readonly kind: 'testbed-providers' }
+  | { readonly kind: 'testbed-imports' };
 
 /** The selectors that name a property of one object literal, which `ensureArrayProperty` can add. */
-export type PropertyArraySelector = Extract<ArraySelector, { readonly kind: 'decorator-imports' | 'testbed-providers' }>;
+export type PropertyArraySelector = Extract<
+  ArraySelector,
+  { readonly kind: 'decorator-imports' | 'testbed-providers' | 'testbed-imports' }
+>;
 
 function unwrap(expression: ts.Expression): ts.ArrayLiteralExpression | undefined {
   if (ts.isArrayLiteralExpression(expression)) {
@@ -188,7 +192,7 @@ function propertyObject(source: ts.SourceFile, selector: PropertyArraySelector):
 }
 
 function propertyName(selector: PropertyArraySelector): string {
-  return selector.kind === 'decorator-imports' ? 'imports' : 'providers';
+  return selector.kind === 'testbed-providers' ? 'providers' : 'imports';
 }
 
 // What an object literal holds under one name, read the same way by every
@@ -240,7 +244,7 @@ function findArray(source: ts.SourceFile, selector: ArraySelector): ts.ArrayLite
   if (selector.kind === 'root-providers') {
     return rootProvidersArrays(source)[0];
   }
-  if (selector.kind === 'decorator-imports' || selector.kind === 'testbed-providers') {
+  if (selector.kind === 'decorator-imports' || selector.kind === 'testbed-providers' || selector.kind === 'testbed-imports') {
     return propertyArray(source, selector);
   }
   for (const statement of source.statements) {
@@ -279,7 +283,7 @@ export function hasArrayElement(content: string, selector: ArraySelector, name: 
 }
 
 /**
- * Adds an empty `imports` (decorator) or `providers` (TestBed) array to the
+ * Adds an empty `imports` (decorator or TestBed) or `providers` (TestBed) array to the
  * selected object literal when the property is missing, so
  * `addToArrayLiteral` has an array to fill. The content is returned
  * unchanged when the property exists, also as something other than an array

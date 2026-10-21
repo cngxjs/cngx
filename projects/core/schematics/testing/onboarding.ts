@@ -38,6 +38,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
       importsHost: { file: 'src/app/app.ts', kind: 'component', className: 'App' },
       specPath: 'src/app/app.spec.ts',
       spec: 'absent',
+      testsCompileModule: true,
       outlets: { kind: 'editable', elements: [], classes: [], routerOutlet: true },
     },
     scaffold: { kind: 'custom' },

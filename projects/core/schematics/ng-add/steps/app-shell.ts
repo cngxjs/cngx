@@ -1,3 +1,5 @@
+import { posix } from 'node:path';
+
 import {
   addToArrayLiteral,
   type Change,
@@ -18,8 +20,10 @@ import {
   FEEDBACK_MODULE,
   FEEDBACK_OUTLETS,
   FEEDBACK_SPEC_IMPORT,
+  FEEDBACK_SPEC_OUTLETS_IMPORT,
   FEEDBACK_SPEC_PROVIDERS,
   outletEdits,
+  moduleSpecWithFeedback,
   type ProjectFacts,
 } from '../detect/detect';
 import { selectedLibs } from './dependencies';
@@ -51,6 +55,12 @@ export function provideFeedbackInSpec(content: string, project: string): string 
   }
   const withProviders = addToArrayLiteral(ensureArrayProperty(content, TESTBED), TESTBED, FEEDBACK_SPEC_PROVIDERS);
   return insertAfterImports(withProviders, FEEDBACK_SPEC_IMPORT);
+}
+
+// The stock NgModule spec with the outlet classes and the providers; the
+// same re-check, so an NgModule spec edited since detection stays as it is.
+export function provideFeedbackInNgModuleSpec(content: string, project: string): string {
+  return appShellSpecOf(content, project, 'ng-module') === 'module-stock' ? moduleSpecWithFeedback(content) : content;
 }
 
 interface OutletTarget {
@@ -102,14 +112,59 @@ function snippetNote(reason: string, provenance: Provenance): StepResult {
 
 /**
  * Why cngx places no outlet next to a spec it cannot keep green; `<file>`
- * stands for the spec. Only the untouched standalone `ng new` spec gets the
- * providers: any other spec may render the root component without them, and
- * the `ng new` NgModule spec declares it in a TestBed that would also need
- * the outlet classes. `core-concepts/install.md` lists the text (a spec
- * guards it).
+ * stands for the spec. Only an untouched `ng new` spec gets what the outlets
+ * need, the providers (standalone) or the outlet classes and the providers
+ * (NgModule): any other spec may render the root component without them.
+ * `core-concepts/install.md` lists the text (a spec guards it).
  */
 export function specCustomReason(file: string): string {
-  return `${file} is not the untouched standalone ng new spec, so cngx places no outlet a TestBed there may lack`;
+  return `${file} is not an untouched ng new spec, so cngx places no outlet a TestBed there may lack`;
+}
+
+/**
+ * Why cngx places no outlet next to the spec of an NgModule app whose test
+ * build does not compile the root NgModule (`testsCompileModule`); `<file>`
+ * stands for the spec. `core-concepts/install.md` lists the text (a spec
+ * guards it).
+ */
+export function specUnscopedReason(file: string): string {
+  return (
+    `${file} belongs to an NgModule app without @angular/build 21 installed; from 22.2 its unit-test builder ` +
+    'compiles the root component there without its NgModule (angular/angular-cli#34231), so cngx places no outlet'
+  );
+}
+
+// `./app-module` for `src/app/app-module.ts` next to `src/app/app.spec.ts`.
+function importSpecifier(from: string, file: string): string {
+  const relative = posix.relative(posix.dirname(from), file).replace(/\.ts$/, '');
+  return relative.startsWith('.') ? relative : `./${relative}`;
+}
+
+/** The note for the spec of an NgModule app the test build cannot run with the outlets: the reason, the snippet and what the spec needs. */
+export function specUnscopedText(path: string, className: string, moduleFile: string): string {
+  return (
+    `${specUnscopedReason(path)}; ${OUTLETS_SNIPPET}, give the TestBed that declares ${className} ` +
+    `${BANNER.className} and ${TOAST.className} in its imports with ${FEEDBACK_SPEC_OUTLETS_IMPORT.replace(/;$/, '')} ` +
+    `and \`providers: [${FEEDBACK_SPEC_PROVIDERS}]\` with ${FEEDBACK_SPEC_IMPORT.replace(/;$/, '')}, ` +
+    `and add \`import '${importSpecifier(path, moduleFile)}';\` to ${path} so the test build compiles ${className} with its NgModule`
+  );
+}
+
+// The note for a spec the outlets would turn red, or `undefined` when they
+// keep it green. In an NgModule app whose test build does not compile the
+// root NgModule, any spec that does not hold the outlets yet is held back
+// with that reason, a custom one included, since its fix needs the module
+// import too.
+function heldSpecText(shell: AppShell): string | undefined {
+  const path = shell.specPath;
+  if (path === undefined || shell.spec === 'absent') {
+    return undefined;
+  }
+  const unscoped = shell.importsHost.kind === 'ng-module' && !shell.testsCompileModule && shell.spec !== 'module-provided';
+  if (unscoped) {
+    return specUnscopedText(path, shell.className, shell.importsHost.file);
+  }
+  return shell.spec === 'custom' ? specCustomText(path, shell.className) : undefined;
 }
 
 /** The note for a spec cngx cannot keep green: the reason, the outlets snippet and what the spec needs. */
@@ -121,25 +176,33 @@ export function specCustomText(path: string, className: string): string {
   );
 }
 
+const STANDALONE_SPEC_REASON = 'the outlets inject CngxToaster and CngxBanner, which the stock spec does not provide';
+const MODULE_SPEC_REASON =
+  'the stock spec declares the root component in a TestBed without the outlet classes or the CngxToaster and CngxBanner they inject';
+
 // The spec goes with the outlets: the stock spec is provided once on the
-// run that places them; a custom spec never gets here with an outlet to
-// place (the outlets stay out, see `planAppShell`), so a placed shell plans
-// nothing more.
+// run that places them; a spec the outlets would turn red never gets here
+// with an outlet to place (the outlets stay out, see `planAppShell`), so a
+// placed shell plans nothing more.
 function specChange(facts: ProjectFacts, shell: AppShell, provenance: Provenance): StepResult {
   const path = shell.specPath;
-  if (path === undefined || shell.spec === 'absent' || shell.spec === 'custom') {
+  const held = shell.spec === 'module-stock' && !shell.testsCompileModule;
+  if (path === undefined || shell.spec === 'absent' || shell.spec === 'custom' || held) {
     return NOTHING;
   }
+  const module = shell.spec === 'module-stock' || shell.spec === 'module-provided';
   const change: Change = {
     kind: 'edit-file',
     id: SPEC_ID,
-    label: `Provide the feedback services in ${path}`,
-    reason: 'the outlets inject CngxToaster and CngxBanner, which the stock spec does not provide',
+    label: module ? `Give the TestBed in ${path} the outlets and the feedback services` : `Provide the feedback services in ${path}`,
+    reason: module ? MODULE_SPEC_REASON : STANDALONE_SPEC_REASON,
     provenance,
     path,
-    edit: (content) => provideFeedbackInSpec(content, facts.project),
+    edit: module
+      ? (content) => provideFeedbackInNgModuleSpec(content, facts.project)
+      : (content) => provideFeedbackInSpec(content, facts.project),
   };
-  if (shell.spec === 'provided') {
+  if (shell.spec === 'provided' || shell.spec === 'module-provided') {
     return { changes: [], skipped: [skipChange(change, 'already provided')] };
   }
   return { changes: [change], skipped: [] };
@@ -152,10 +215,12 @@ function specChange(facts: ProjectFacts, shell: AppShell, provenance: Provenance
  * above `<router-outlet>`, else at the end; the toast at the end; both classes
  * go into the component `imports` (standalone) or the root NgModule
  * `imports`. An outlet or class already there is not added again. An
- * unedited stock standalone `app.spec.ts` gets the feedback providers; next
- * to any other spec, the `ng new` NgModule spec included, cngx places no
- * outlet at all (fail-closed: a red `ng test` is never the result) and one
- * note names the outlets and what the spec needs. The starter is never
+ * unedited stock standalone `app.spec.ts` gets the feedback providers, the
+ * unedited `ng new --standalone=false` spec also the outlet classes in its
+ * TestBed `imports`; next to any other spec, and next to that NgModule spec
+ * where @angular/build is not on major 21, cngx places no outlet at all
+ * (fail-closed: a red `ng test` is never the result) and one note names the
+ * outlets and what the spec needs. The starter is never
  * written next to such a spec (`writesStarter`), so its branch here only
  * sees a stock, provided or missing one. A shell cngx cannot edit safely gets a note with the
  * snippet instead of a guess. `recorded` holds the step ids of this
@@ -202,10 +267,10 @@ export function planAppShell(
     return withdrawnNote(templatePath(shell), WITHDRAWN_REASON, provenance, targets.map(({ change }) => skipChange(change, WITHDRAWN_REASON)));
   }
   const changes = targets.filter(({ done }) => !done).map(({ change }) => change);
-  const customSpec = shell.spec === 'custom' ? shell.specPath : undefined;
-  if (changes.length > 0 && customSpec !== undefined) {
+  const heldSpec = heldSpecText(shell);
+  if (changes.length > 0 && heldSpec !== undefined) {
     return {
-      changes: [createNote({ id: OUTLETS_ID, label: SNIPPET_LABEL, reason: specCustomText(customSpec, shell.className), provenance })],
+      changes: [createNote({ id: OUTLETS_ID, label: SNIPPET_LABEL, reason: heldSpec, provenance })],
       skipped: [],
     };
   }

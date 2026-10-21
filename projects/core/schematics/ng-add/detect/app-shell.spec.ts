@@ -16,6 +16,7 @@ import {
   FEEDBACK_SPEC_PROVIDERS,
   inlineTemplateOf,
   outletEdits,
+  testsCompileModule,
 } from './app-shell';
 import { type Read } from './workspace';
 
@@ -104,6 +105,7 @@ describe('appShellOf', () => {
       importsHost: { file: 'src/app/app.ts', kind: 'component', className: 'App' },
       specPath: 'src/app/app.spec.ts',
       spec: 'absent',
+      testsCompileModule: false,
       outlets: { kind: 'editable', elements: [], classes: [], routerOutlet: true },
     });
   });
@@ -554,6 +556,32 @@ describe('inlineTemplateOf', () => {
     expect(inlineTemplateOf(INLINE_APP, 'App')).toMatchObject({ text: '<router-outlet />', quoted: false });
     expect(inlineTemplateOf(quoted, 'App')).toMatchObject({ text: "<p>it\\'s</p>", quoted: true });
     expect(inlineTemplateOf(readFixture('scaffold-21')['src/app/app.ts'], 'App')).toBeUndefined();
+  });
+});
+
+describe('testsCompileModule', () => {
+  const installed = (version: string) => ({ version, source: 'installed' }) as const;
+  const range = (value: string) => ({ version: value.replace(/^[~^]/, ''), source: 'range' }) as const;
+
+  it('reads an installed @angular/build by its major, prereleases included', () => {
+    expect(testsCompileModule(installed('21.2.27'), '^22.2.3')).toBe(true);
+    expect(testsCompileModule(installed('21.0.0-rc.1'), undefined)).toBe(true);
+    expect(testsCompileModule(installed('22.2.3'), '^21.2.2')).toBe(false);
+    expect(testsCompileModule(installed('22.3.0-next.2'), undefined)).toBe(false);
+  });
+
+  it('reads a declared range only when it admits major 21 alone', () => {
+    for (const declared of ['^21.2.2', '~21.2.3', '21.2.3', '21', '^21.0.0-rc.0']) {
+      expect({ declared, scoped: testsCompileModule(range(declared), declared) }).toEqual({ declared, scoped: true });
+    }
+    for (const declared of ['>=21.0.0 <23.0.0', '^21 || ^22', '21.x', '*', 'latest', '^22.2.3', '^210.0.0']) {
+      expect({ declared, scoped: testsCompileModule(range(declared), declared) }).toEqual({ declared, scoped: false });
+    }
+  });
+
+  it('fails closed on an installed manifest it cannot read and on no version at all', () => {
+    expect(testsCompileModule({ version: '21.2.2', source: 'unreadable' }, '^21.2.2')).toBe(false);
+    expect(testsCompileModule({ version: undefined, source: undefined }, undefined)).toBe(false);
   });
 });
 

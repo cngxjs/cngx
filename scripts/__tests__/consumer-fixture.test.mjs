@@ -66,6 +66,21 @@ describe('variantPlan', () => {
     expect(onboardingAddArgs('0.1.0', 'full')).toContain('full');
   });
 
+  it('onboards an ng new NgModule app with routing, every other variant standalone without routing', () => {
+    expect(variantPlan('ngmodule')).toMatchObject({
+      standalone: false,
+      routing: true,
+      zoneless: true,
+      onboarding: true,
+      schematics: true,
+      optionalPeers: false,
+      smoke: true,
+      matcherSpec: false,
+    });
+    expect(VARIANTS.filter((variant) => !variantPlan(variant).standalone)).toEqual(['ngmodule']);
+    expect(VARIANTS.filter((variant) => variantPlan(variant).routing)).toEqual(['ngmodule']);
+  });
+
   it('runs the onboarding ng add twice, the second changing nothing', () => {
     const [first, again] = onboardingSteps('0.1.0', 'full');
 
@@ -234,6 +249,7 @@ describe('presetPlan', () => {
       noBudgetWarnings: true,
     });
     expect(presetPlan()).toEqual({ preset: 'recommended', ngTest: false, outlets: [], starter: undefined, noBudgetWarnings: false });
+    expect(presetPlan('full', { standalone: false })).toEqual({ ...presetPlan('full'), starter: undefined });
     expect(presetPlan('minimal')).toEqual({ preset: 'minimal', ngTest: false, outlets: [], starter: undefined, noBudgetWarnings: false });
   });
 

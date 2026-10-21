@@ -491,6 +491,7 @@ export const providers = [i18n(pack(lang.cngxLanguagePack))];
 
 const APP: ArraySelector = { kind: 'decorator-imports', className: 'App' };
 const TESTBED: ArraySelector = { kind: 'testbed-providers' };
+const TESTBED_IMPORTS: ArraySelector = { kind: 'testbed-imports' };
 
 const NGMODULE = `import { NgModule } from '@angular/core';
 
@@ -774,5 +775,41 @@ describe('TestBed providers', () => {
     const crlf = stockSpec.replace(/\n/g, '\r\n');
 
     expect(ensureArrayProperty(crlf, TESTBED)).toContain('      imports: [App],\r\n      providers: [],\r\n');
+  });
+});
+
+describe('TestBed imports', () => {
+  const routingSpec = readFixture('scaffold-21-ngmodule')['src/app/app.spec.ts'];
+  const plainSpec = readFixture('scaffold-21-ngmodule-routing-off')['src/app/app.spec.ts'];
+
+  it('fills the multi-line imports of the NgModule spec on lines of their own', () => {
+    expect(ensureArrayProperty(routingSpec, TESTBED_IMPORTS)).toBe(routingSpec);
+    expect(addToArrayLiteral(routingSpec, TESTBED_IMPORTS, 'CngxToastOutlet')).toContain(
+      '      imports: [\n        RouterModule.forRoot([]),\n        CngxToastOutlet\n      ],\n',
+    );
+  });
+
+  it('adds an imports array after the declarations of the NgModule spec without routing', () => {
+    const edited = ensureArrayProperty(plainSpec, TESTBED_IMPORTS);
+
+    expect(edited).toContain('      declarations: [\n        App\n      ],\n      imports: [],\n    }).compileComponents();');
+    expect(addToArrayLiteral(edited, TESTBED_IMPORTS, 'CngxToastOutlet')).toContain('      imports: [CngxToastOutlet],\n');
+  });
+
+  it('reads the TestBed imports apart from its providers and from a decorator', () => {
+    const content = '@Component({ imports: [A] })\nclass App {}\nTestBed.configureTestingModule({ imports: [B], providers: [C] });\n';
+
+    expect(hasArrayElement(content, TESTBED_IMPORTS, 'B')).toBe(true);
+    expect(hasArrayElement(content, TESTBED_IMPORTS, 'A')).toBe(false);
+    expect(hasArrayElement(content, TESTBED_IMPORTS, 'C')).toBe(false);
+  });
+
+  it('never writes into TestBed imports that are not an array literal or written twice', () => {
+    const shared = 'TestBed.configureTestingModule({ imports: SHARED });\n';
+    const twice = "TestBed.configureTestingModule({ imports: [], 'imports': [] });\n";
+
+    expect(hasArrayLiteral(shared, TESTBED_IMPORTS)).toBe(false);
+    expect(ensureArrayProperty(shared, TESTBED_IMPORTS)).toBe(shared);
+    expect(ensureArrayProperty(twice, TESTBED_IMPORTS)).toBe(twice);
   });
 });

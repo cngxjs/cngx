@@ -80,6 +80,24 @@ describe('scaffold catalog', () => {
     );
   });
 
+  it.each(MAJORS)('renders the CLI %i NgModule spec templates byte for byte as ng new --standalone=false wrote the fixtures', async (major) => {
+    const entries = await collectAllEntries();
+    const raw = (variant) =>
+      entries.find((entry) => entry.major === major && entry.file === 'app.spec.ts' && entry.variant === variant && entry.form === 'raw');
+
+    for (const [suffix, variant] of [
+      ['', 'ngmodule-routing-zoneless'],
+      ['-zone', 'ngmodule-routing-zone'],
+      ['-routing-off', 'ngmodule-no-routing-zoneless'],
+      ['-routing-off-zone', 'ngmodule-no-routing-zone'],
+    ]) {
+      expect({ variant, body: named(raw(variant).body) }).toEqual({
+        variant,
+        body: fixture(`scaffold-${major}-ngmodule${suffix}`, 'src/app/app.spec.ts'),
+      });
+    }
+  });
+
   it.each(
     MAJORS.flatMap((major) =>
       [
@@ -108,8 +126,23 @@ describe('scaffold catalog', () => {
 
     expect(variants('app.ts')).toEqual(['routing-css', 'routing-scss', 'no-routing-css', 'no-routing-scss']);
     expect(variants('app.html')).toEqual(['routing', 'no-routing']);
-    expect(variants('app.spec.ts')).toEqual(['zoneless', 'zone']);
+    expect(variants('app.spec.ts')).toEqual([
+      'zoneless',
+      'zone',
+      'ngmodule-routing-zoneless',
+      'ngmodule-routing-zone',
+      'ngmodule-no-routing-zoneless',
+      'ngmodule-no-routing-zone',
+    ]);
     expect(entries.map((entry) => entry.file).filter((file) => /\.(sass|less)$/.test(file))).toEqual([]);
+  });
+
+  it('marks exactly the NgModule spec entries as the ng-module app', async () => {
+    const entries = await collectAllEntries();
+
+    expect(entries.filter((entry) => entry.app === 'ng-module').every((entry) => entry.file === 'app.spec.ts' && entry.variant.startsWith('ngmodule-'))).toBe(true);
+    expect(entries.filter((entry) => entry.variant.startsWith('ngmodule-')).every((entry) => entry.app === 'ng-module')).toBe(true);
+    expect(entries.filter((entry) => entry.app === 'ng-module')).toHaveLength(16);
   });
 
   it('keys every entry by its CLI major and fingerprints its body once per major', async () => {
