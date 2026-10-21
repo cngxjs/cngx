@@ -118,11 +118,17 @@ function main() {
 // symlink, while `import.meta.url` is the resolved file, so the path node was
 // given is resolved before the two are compared.
 function isEntry() {
-  if (!process.argv[1]) {
+  const given = process.argv[1];
+  if (!given) {
     return false;
   }
+  // The unresolved path first: it matches a direct start and
+  // `--preserve-symlinks-main`, and stays the answer when resolving fails.
+  if (import.meta.url === pathToFileURL(given).href) {
+    return true;
+  }
   try {
-    return import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+    return import.meta.url === pathToFileURL(realpathSync(given)).href;
   } catch {
     return false;
   }
