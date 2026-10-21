@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'provideCommands: scoped sources inject commands',
   subtitle:
-    "Two <code>provideCommands(...)</code> calls in one component's <code>viewProviders</code> contribute to the same <code>CNGX_COMMAND_SOURCE</code> multi-token: a static file list and a plugin's <code>Signal</code> source. <code>injectCommands()</code> merges both into one reactive <code>Signal</code>, and a <code>CNGX_COMMAND_MATCH_FACTORY</code> matcher ranks it for a hand-built list. No palette, no dialog: the registry draws nothing.",
+    "Two <code>provideCommands(...)</code> calls in one component's <code>viewProviders</code> contribute to the same registry: a static file list and a plugin's <code>Signal</code> source. A source that lives in a service registers as a factory, <code>provideCommands(() => inject(Store).commands)</code>. <code>injectCommands()</code> merges both into one reactive <code>Signal</code>, and a <code>CNGX_COMMAND_MATCH_FACTORY</code> matcher ranks it for a hand-built list. No palette, no dialog: the registry draws nothing.",
   description:
     'Toggle the plugin to write to its signal source; the merged list and the result count follow without any re-registration. Type to filter (label and keyword ranking) or pick a scope, which the default matcher compares against <code>command.group</code>. Running a command calls its <code>run()</code>; this surface owns that call, so it records the last run below.',
   level: 'molecule',

@@ -3,6 +3,7 @@ import {
   EnvironmentInjector,
   inject,
   InjectionToken,
+  isSignal,
   type Provider,
   type Signal,
 } from '@angular/core';
@@ -20,22 +21,24 @@ import type { CngxCommand } from './command';
 export type CngxCommandSource = Signal<readonly CngxCommand[]> | readonly CngxCommand[];
 
 /**
- * Multi-token every `provideCommands` call contributes to. App parts register
- * command sets against it without a central list, mirroring `provideCngxMenu`.
- * The generic is the collected array (as with Angular's `HTTP_INTERCEPTORS`),
- * so `inject(CNGX_COMMAND_SOURCE)` returns the sources of the nearest level
- * that provides it.
- *
- * This is the low-level form. Register through `provideCommands`, which also
- * carries a level's sources into every scope below it. A raw multi-provider on
- * this token is carried down only from a level that also calls
- * `provideCommands`; on any other level it is read only when that level is the
- * one `injectCommands` resolves as nearest.
+ * A source that needs injection. `provideCommands` runs it once, as a provider
+ * factory in the injection context of the level it is registered at, so it can
+ * call `inject()`. It is not a `computed`: a factory returning a plain array is
+ * frozen at that first call. Return a `Signal` to stay reactive.
  *
  * @category common/command
  * @since 0.1.0
  */
-export const CNGX_COMMAND_SOURCE = new InjectionToken<readonly CngxCommandSource[]>(
+export type CngxCommandSourceFactory = () => CngxCommandSource;
+
+/**
+ * @internal Multi-token every `provideCommands` call contributes to. The
+ * generic is the collected array (as with Angular's `HTTP_INTERCEPTORS`), so
+ * `inject(CNGX_COMMAND_SOURCE)` returns the sources of the nearest level that
+ * provides it. Not part of the public API: a raw multi-provider would bypass
+ * the registry that carries a level's sources into the scopes below it.
+ */
+const CNGX_COMMAND_SOURCE = new InjectionToken<readonly CngxCommandSource[]>(
   'CNGX_COMMAND_SOURCE',
 );
 
@@ -49,14 +52,24 @@ const CNGX_COMMAND_REGISTRY = new InjectionToken<readonly CngxCommandSource[]>(
 );
 
 /**
- * Registers one or more command sources. Each source becomes a `multi` entry
- * on {@link CNGX_COMMAND_SOURCE}; call `provideCommands` from several app parts
- * and `injectCommands` merges all of them.
+ * Registers one or more command sources. Call `provideCommands` from several
+ * app parts and `injectCommands` merges all of them, without a central list.
  *
  * Returns `Provider[]` (not `EnvironmentProviders`), so it registers at any
  * injector scope - app root, a lazy route, or a component's `providers` /
  * `viewProviders` - letting a route or component contribute a scoped command
- * set without reaching for the raw {@link CNGX_COMMAND_SOURCE} multi-provider.
+ * set.
+ *
+ * A source is a static list, a `Signal` of commands, or a
+ * {@link CngxCommandSourceFactory} for a source that needs injection. The
+ * factory runs once in the injection context of the level it is registered
+ * at. Return a `Signal` from it to stay reactive: a factory returning a plain
+ * array (`() => store.items()`) is read at that first call and never again.
+ *
+ * ```ts
+ * // a source owned by a service
+ * { path: 'editor', providers: [provideCommands(() => inject(EditorStore).commands)] }
+ * ```
  *
  * A scoped call adds to the sets above it and never hides them, across route
  * and component scopes: root and route scopes come first (outer to inner), then
@@ -77,13 +90,19 @@ const CNGX_COMMAND_REGISTRY = new InjectionToken<readonly CngxCommandSource[]>(
  * @category common/command
  * @since 0.1.0
  */
-export function provideCommands(...sources: CngxCommandSource[]): Provider[] {
+export function provideCommands(
+  ...sources: (CngxCommandSource | CngxCommandSourceFactory)[]
+): Provider[] {
   // Empty call: the parent registry flows through untouched.
   if (sources.length === 0) {
     return [];
   }
   return [
-    ...sources.map((source) => ({ provide: CNGX_COMMAND_SOURCE, useValue: source, multi: true })),
+    ...sources.map((source) =>
+      isSourceValue(source)
+        ? { provide: CNGX_COMMAND_SOURCE, useValue: source, multi: true }
+        : { provide: CNGX_COMMAND_SOURCE, useFactory: source, multi: true },
+    ),
     {
       provide: CNGX_COMMAND_REGISTRY,
       // The nearest CNGX_COMMAND_SOURCE is this level's own multi list, so the
@@ -138,6 +157,16 @@ function dedupeById(commands: readonly CngxCommand[]): readonly CngxCommand[] {
 /** @internal Concatenates in argument order and drops repeated source references. */
 function mergeSources(...lists: (readonly CngxCommandSource[])[]): readonly CngxCommandSource[] {
   return [...new Set(lists.flat())];
+}
+
+/**
+ * @internal A `Signal` is callable too, so `isSignal` must decide before any
+ * function is taken for a factory.
+ */
+function isSourceValue(
+  source: CngxCommandSource | CngxCommandSourceFactory,
+): source is CngxCommandSource {
+  return isSignal(source) || Array.isArray(source);
 }
 
 /** @internal Reads a source, unwrapping a signal or passing an array through. */

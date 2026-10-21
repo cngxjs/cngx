@@ -3,6 +3,8 @@ import {
   createComponent,
   createEnvironmentInjector,
   EnvironmentInjector,
+  inject,
+  InjectionToken,
   runInInjectionContext,
   signal,
   type Signal,
@@ -13,7 +15,7 @@ import { provideRouter, Router, RouterOutlet } from '@angular/router';
 import { describe, expect, it } from 'vitest';
 
 import type { CngxCommand } from './command';
-import { CNGX_COMMAND_SOURCE, injectCommands, provideCommands } from './provide-commands';
+import { injectCommands, provideCommands } from './provide-commands';
 
 function cmd(id: string, overrides: Partial<CngxCommand> = {}): CngxCommand {
   return { id, label: id, run: () => {}, ...overrides };
@@ -280,14 +282,6 @@ describe('provideCommands / injectCommands scope inheritance', () => {
       expect(ids(fixture.componentInstance.commands)).toEqual(['a']);
     });
 
-    it('a raw CNGX_COMMAND_SOURCE multi-provider is read on its own', () => {
-      TestBed.configureTestingModule({
-        providers: [{ provide: CNGX_COMMAND_SOURCE, useValue: [cmd('x')], multi: true }],
-      });
-
-      expect(ids(merged())).toEqual(['x']);
-    });
-
     it('the same source reference registered at root and at a nested level appears once', () => {
       const shared: readonly CngxCommand[] = [cmd('a')];
       @Component({ template: '', viewProviders: [provideCommands(shared)] })
@@ -374,36 +368,89 @@ describe('provideCommands / injectCommands id dedupe', () => {
   });
 });
 
-describe('provideCommands / injectCommands raw token and content visibility', () => {
-  it('a raw source on a level that also calls provideCommands is carried into nested scopes', () => {
-    @Component({ template: '', viewProviders: [provideCommands([cmd('b')])] })
+describe('provideCommands / injectCommands factory sources', () => {
+  const STORE_COMMANDS = new InjectionToken<readonly CngxCommand[]>('STORE_COMMANDS');
+
+  it('runs a factory source in the injection context of its level', () => {
+    @Component({
+      template: '',
+      providers: [{ provide: STORE_COMMANDS, useValue: [cmd('scoped-store')] }],
+      viewProviders: [provideCommands(() => inject(STORE_COMMANDS))],
+    })
     class Host {
       readonly commands = injectCommands();
     }
     TestBed.configureTestingModule({
+      providers: [{ provide: STORE_COMMANDS, useValue: [cmd('root-store')] }],
+    });
+
+    const fixture = TestBed.createComponent(Host);
+    expect(ids(fixture.componentInstance.commands)).toEqual(['scoped-store']);
+  });
+
+  it('carries a factory source at an intermediate level into a nested scope', () => {
+    @Component({
+      selector: 'cngx-test-inner',
+      template: '',
+      viewProviders: [provideCommands([cmd('b')])],
+    })
+    class Inner {
+      readonly commands = injectCommands();
+    }
+    @Component({
+      imports: [Inner],
+      template: '<cngx-test-inner />',
+      providers: [provideCommands(() => [cmd('r')])],
+    })
+    class Middle {}
+    TestBed.configureTestingModule({ providers: [provideCommands([cmd('a')])] });
+
+    const fixture = TestBed.createComponent(Middle);
+    fixture.detectChanges();
+    const inner = fixture.debugElement.query(By.directive(Inner)).componentInstance as Inner;
+    expect(ids(inner.commands)).toEqual(['a', 'r', 'b']);
+  });
+
+  it('keeps a factory source that returns a signal live', () => {
+    const source = signal<readonly CngxCommand[]>([cmd('a')]);
+    TestBed.configureTestingModule({ providers: [provideCommands(() => source)] });
+    const commands = merged();
+
+    expect(ids(commands)).toEqual(['a']);
+    source.set([cmd('a'), cmd('b')]);
+    expect(ids(commands)).toEqual(['a', 'b']);
+  });
+
+  it('runs a factory source that returns an array once per level', () => {
+    let calls = 0;
+    TestBed.configureTestingModule({
       providers: [
-        provideCommands([cmd('a')]),
-        { provide: CNGX_COMMAND_SOURCE, useValue: [cmd('r')], multi: true },
+        provideCommands(() => {
+          calls++;
+          return [cmd('a')];
+        }),
       ],
     });
 
-    const fixture = TestBed.createComponent(Host);
-    expect(ids(fixture.componentInstance.commands)).toEqual(['a', 'r', 'b']);
+    expect(ids(merged())).toEqual(['a']);
+    expect(ids(merged())).toEqual(['a']);
+    expect(calls).toBe(1);
   });
 
-  it('a raw source on a level without provideCommands is not carried into a nested provideCommands scope', () => {
-    @Component({ template: '', viewProviders: [provideCommands([cmd('b')])] })
-    class Host {
-      readonly commands = injectCommands();
-    }
-    TestBed.configureTestingModule({
-      providers: [{ provide: CNGX_COMMAND_SOURCE, useValue: [cmd('r')], multi: true }],
-    });
+  it('freezes a getter-style factory that returns a plain array at its first call', () => {
+    // Documented behaviour: a factory is a provider factory, not a computed.
+    // Reactivity is the factory returning the Signal itself.
+    const items = signal<readonly CngxCommand[]>([cmd('a')]);
+    TestBed.configureTestingModule({ providers: [provideCommands(() => items())] });
+    const commands = merged();
 
-    const fixture = TestBed.createComponent(Host);
-    expect(ids(fixture.componentInstance.commands)).toEqual(['b']);
+    expect(ids(commands)).toEqual(['a']);
+    items.set([cmd('a'), cmd('b')]);
+    expect(ids(commands)).toEqual(['a']);
   });
+});
 
+describe('provideCommands / injectCommands content visibility', () => {
   it('projected content sees a providers set', () => {
     @Component({ selector: 'cngx-test-content-child', template: '' })
     class ContentChild {

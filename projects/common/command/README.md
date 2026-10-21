@@ -65,12 +65,6 @@ on one level, the later registration) wins, and the entry keeps the position of
 the first occurrence. Reuse an id on purpose to swap a global command for a
 scoped version; give unrelated commands distinct ids.
 
-Register through `provideCommands`. A raw `CNGX_COMMAND_SOURCE` multi-provider
-is carried into deeper scopes only from a level that also calls
-`provideCommands`. On any other level it is read only when that level is the
-nearest one `injectCommands()` resolves, and a nested `provideCommands` scope
-does not see it.
-
 A source is either a static list or a reactive `Signal` - a signal source lets a
 contributor add, remove, or disable commands live:
 
@@ -81,6 +75,17 @@ provideCommands(commands); // injectCommands() tracks it
 // later, from anywhere:
 commands.update((list) => [...list, publishCmd]);
 ```
+
+When the source lives in a service, pass a factory. It runs once, in the
+injection context of the level it is registered at, so it can call `inject()`:
+
+```typescript
+{ path: 'editor', providers: [provideCommands(() => inject(EditorStore).commands)] }
+```
+
+Return the `Signal` itself to stay reactive. A factory that reads the signal
+(`() => inject(EditorStore).commands()`) returns a plain array, and that array
+is frozen at the first call.
 
 ## Read Them
 
@@ -176,9 +181,9 @@ slot overrides. See the live demos at `/ui/command-palette/basic` and
 | `CngxCommand` | interface | the command model |
 | `CommandGroup` | interface | a named cluster of commands |
 | `CngxCommandSource` | type | a static list or a `Signal` of commands |
-| `provideCommands(...sources)` | `Provider[]` | register sources at any injector scope |
+| `CngxCommandSourceFactory` | type | `() => CngxCommandSource`, run once in the level's injection context |
+| `provideCommands(...sources)` | `Provider[]` | register sources or source factories at any injector scope |
 | `injectCommands()` | `Signal<readonly CngxCommand[]>` | merged, `equal`-guarded registry |
-| `CNGX_COMMAND_SOURCE` | multi token | what `provideCommands` contributes to |
 | `createDefaultCommandMatcher()` | factory | the pure label/keyword ranker |
 | `CngxCommandMatcher` | type | `(commands, term, scope?) => RankedCommand[]` |
 | `RankedCommand` | interface | `{ command, score }` |
