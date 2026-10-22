@@ -339,6 +339,12 @@
       transition: transform var(--cngx-duration-fast, 150ms) ease;
     }
 
+    /* A disabled row is already faded to the field recipe; the muted chevron
+       mix would fade its twisty a second time. */
+    .cngx-tree-select__node[aria-disabled='true'] .cngx-tree-select__twisty {
+      color: inherit;
+    }
+
     .cngx-tree-select__twisty--open {
       transform: rotate(90deg);
     }
