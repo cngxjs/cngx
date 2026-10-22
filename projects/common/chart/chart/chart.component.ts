@@ -554,6 +554,16 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly axes = contentChildren(CNGX_CHART_AXIS, { descendants: true });
   private readonly thresholds = contentChildren(CngxThreshold, { descendants: true });
   private readonly layers = contentChildren(CNGX_CHART_LAYER, { descendants: true });
+  // Same predicate and order as `layers`: element i hosts layer i. The
+  // Canvas backend resolves per-layer tokens against these elements.
+  private readonly layerHosts = contentChildren(CNGX_CHART_LAYER, {
+    descendants: true,
+    read: ElementRef,
+  });
+  private readonly layerElements = computed<readonly Element[]>(
+    () => this.layerHosts().map((r) => r.nativeElement as Element),
+    { equal: sameItemsArr },
+  );
   protected readonly i18n = injectChartI18n();
   protected readonly dataTableId = nextUid('cngx-chart-data-table');
   protected readonly hatchId = nextUid('cngx-chart-hatch');
@@ -722,6 +732,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
       ctx: this,
       mode: this.renderMode,
       geometries: this.geometries,
+      layerElements: this.layerElements,
       factory: this.rendererFactory,
       destroyRef: this.destroyRef,
     });

@@ -305,3 +305,89 @@ describe('createCanvasRenderer', () => {
     expect(removeEventListener).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('createCanvasRenderer - per-layer tokens', () => {
+  const POINT_LINE: LayerGeometry = {
+    ...LINE_GEOM,
+    points: [{ cx: 5, cy: 5 }],
+  } as LayerGeometry;
+
+  function mountWithLayer(layerStyle: string): {
+    renderer: ReturnType<typeof createCanvasRenderer>;
+    layer: Element;
+    host: HTMLElement;
+  } {
+    const host = document.createElement('div');
+    host.style.setProperty('--cngx-line-point-radius', '3px');
+    host.style.setProperty('--cngx-line-color', 'rgb(0, 0, 255)');
+    host.style.setProperty('--cngx-line-stroke-width', '1px');
+    const layer = document.createElement('span');
+    layer.setAttribute('style', layerStyle);
+    host.appendChild(layer);
+    document.body.appendChild(host);
+    const renderer = createCanvasRenderer(deps());
+    renderer.mount(host, deps().ctx);
+    return { renderer, layer, host };
+  }
+
+  afterEach(() => {
+    document.body.replaceChildren();
+  });
+
+  it('paints a marker at the radius the layer element sets, not the host', () => {
+    const { renderer, layer } = mountWithLayer('--cngx-line-point-radius: 6px');
+    renderer.paint([POINT_LINE], [layer]);
+    expect(ctx2d.arc).toHaveBeenCalledWith(5, 5, 6, 0, Math.PI * 2);
+  });
+
+  it('strokes with the colour and width the layer element sets', () => {
+    const { renderer, layer } = mountWithLayer(
+      '--cngx-line-color: rgb(255, 0, 0); --cngx-line-stroke-width: 4px',
+    );
+    renderer.paint([LINE_GEOM], [layer]);
+    expect(ctx2d.strokeStyle).toBe('rgb(255, 0, 0)');
+    expect(ctx2d.lineWidth).toBe(4);
+  });
+
+  it('reads the chart host when no layer elements are passed', () => {
+    const { renderer } = mountWithLayer('--cngx-line-point-radius: 6px');
+    renderer.paint([POINT_LINE]);
+    expect(ctx2d.arc).toHaveBeenCalledWith(5, 5, 3, 0, Math.PI * 2);
+  });
+
+  it('reads each layer element once per invalidation, never per paint', () => {
+    const { renderer, layer } = mountWithLayer('--cngx-line-point-radius: 6px');
+    const gcs = vi.spyOn(window, 'getComputedStyle');
+    renderer.paint([POINT_LINE], [layer]);
+    const afterFirst = gcs.mock.calls.length;
+    expect(afterFirst).toBeGreaterThan(0);
+    expect(gcs.mock.calls.every(([el]) => el === layer)).toBe(true);
+
+    renderer.paint([POINT_LINE], [layer]);
+    expect(gcs.mock.calls.length).toBe(afterFirst);
+
+    renderer.invalidateColorCache?.();
+    renderer.paint([POINT_LINE], [layer]);
+    expect(gcs.mock.calls.length).toBe(afterFirst * 2);
+  });
+
+  it('keeps the layer elements for a DPR-only repaint', () => {
+    const listeners: Array<() => void> = [];
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({
+        addEventListener: (_: string, cb: () => void) => listeners.push(cb),
+        removeEventListener: vi.fn(),
+      })),
+    );
+    vi.stubGlobal('devicePixelRatio', 1);
+    const { renderer, layer } = mountWithLayer('--cngx-line-point-radius: 6px');
+    renderer.paint([POINT_LINE], [layer]);
+    renderer.invalidateColorCache?.();
+    ctx2d.arc.mockClear();
+
+    vi.stubGlobal('devicePixelRatio', 2);
+    listeners[listeners.length - 1]();
+    expect(ctx2d.arc).toHaveBeenCalledWith(5, 5, 6, 0, Math.PI * 2);
+  });
+});

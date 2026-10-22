@@ -45,8 +45,13 @@ const SOLID_DASH: number[] = [];
  * its 2D context: `Path2D` stroke/fill for line/area, per-mark loops for
  * bar/scatter, `moveTo`/`lineTo` for threshold, `fillRect` for band.
  *
- * Colors resolve through a closure-local cache: the first `paint()` reads
- * each CSS custom property once via `getComputedStyle(host)`; subsequent
+ * Colors and the numeric tokens (stroke width, opacities, point radius)
+ * resolve through a closure-local cache keyed by layer element: the first
+ * `paint()` reads each CSS custom property once per layer via
+ * `getComputedStyle(layerHost)`, so a per-layer override (`style` on the
+ * `<svg:g cngxLine>`) reaches the canvas exactly as it reaches the SVG marks,
+ * and custom properties inherit, so a layer that sets nothing reads the chart
+ * host's value. Without layer elements the chart host is read. Subsequent
  * paints hit the cache, so the paint hot path performs zero synchronous
  * DOM reads. {@link CngxChartRenderer.invalidateColorCache} clears it -
  * the renderer controller calls it on a `dimensions()` change (a proxy
@@ -93,9 +98,12 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   let lastW = -1;
   let lastH = -1;
   let lastGeometries: readonly LayerGeometry[] = [];
+  let lastElements: readonly Element[] | undefined;
   let dprCleanup: (() => void) | null = null;
-  const colorCache = new Map<string, string>();
-  const numberCache = new Map<string, number>();
+  // Keyed by the element the vars were read from (layer host, or the chart
+  // host as fallback); replaced wholesale on invalidation.
+  let colorCache = new WeakMap<Element, Map<string, string>>();
+  let numberCache = new WeakMap<Element, Map<string, number>>();
   // Snapshot of deps.forcedColors, taken once per paint() so the per-mark
   // colour lookups do not re-read the signal.
   let forcedNow = false;
@@ -106,8 +114,17 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   let hatches: ForcedHatches | null = null;
   let hatchDpr = -1;
 
-  function readVar(name: string): string {
-    return hostEl ? getComputedStyle(hostEl).getPropertyValue(name).trim() : '';
+  function readVar(name: string, el: Element | null): string {
+    return el ? getComputedStyle(el).getPropertyValue(name).trim() : '';
+  }
+
+  function cacheOf<V>(cache: WeakMap<Element, Map<string, V>>, el: Element): Map<string, V> {
+    let entries = cache.get(el);
+    if (!entries) {
+      entries = new Map<string, V>();
+      cache.set(el, entries);
+    }
+    return entries;
   }
 
   /**
@@ -115,15 +132,19 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
    * `--cngx-line-stroke-width`), cached like colors so the paint hot path
    * stays free of synchronous DOM reads. Falls back when unset / unparseable.
    */
-  function resolveNumberVar(name: string, fallback: number): number {
-    const cached = numberCache.get(name);
+  function resolveNumberVar(name: string, fallback: number, el: Element | null): number {
+    if (!el) {
+      return fallback;
+    }
+    const entries = cacheOf(numberCache, el);
+    const cached = entries.get(name);
     if (cached !== undefined) {
       return cached;
     }
-    const raw = readVar(name);
+    const raw = readVar(name, el);
     const parsed = raw ? parseFloat(raw) : NaN;
     const value = Number.isFinite(parsed) ? parsed : fallback;
-    numberCache.set(name, value);
+    entries.set(name, value);
     return value;
   }
 
@@ -171,7 +192,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     }
   }
 
-  function colorOf(color: string | null, kind: LayerGeometry['kind']): string {
+  function colorOf(color: string | null, kind: LayerGeometry['kind'], el: Element | null): string {
     // Forced colors: every mark paints CanvasText, ignoring the [color]
     // literal and the var chain (parity with the layers' !important rules).
     if (forcedNow) {
@@ -182,33 +203,37 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     if (color !== null && !color.startsWith('--')) {
       return color;
     }
+    if (!el) {
+      return 'currentColor';
+    }
+    const entries = cacheOf(colorCache, el);
     const key = color ?? `@${kind}`;
-    const cached = colorCache.get(key);
+    const cached = entries.get(key);
     if (cached !== undefined) {
       return cached;
     }
     let resolved = 'currentColor';
     if (color !== null) {
-      resolved = readVar(color) || 'currentColor';
+      resolved = readVar(color, el) || 'currentColor';
     } else {
       // Walk the per-atom -> family fallback chain, first hit wins.
       for (const name of KIND_VARS[kind]) {
-        const value = readVar(name);
+        const value = readVar(name, el);
         if (value) {
           resolved = value;
           break;
         }
       }
     }
-    colorCache.set(key, resolved);
+    entries.set(key, resolved);
     return resolved;
   }
 
-  function strokeWidthOf(sw: number | string | null): number {
+  function strokeWidthOf(sw: number | string | null, el: Element | null): number {
     // Unset -> the same `--cngx-line-stroke-width` var the SVG line reads,
     // so per-atom stroke width survives the SVG->Canvas crossover.
     if (sw === null) {
-      return resolveNumberVar('--cngx-line-stroke-width', DEFAULT_STROKE_WIDTH);
+      return resolveNumberVar('--cngx-line-stroke-width', DEFAULT_STROKE_WIDTH, el);
     }
     const n = typeof sw === 'number' ? sw : parseFloat(sw);
     return Number.isFinite(n) ? n : DEFAULT_STROKE_WIDTH;
@@ -225,12 +250,13 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     color: string | null,
     kind: LayerGeometry['kind'],
     radiusVar: string,
+    el: Element | null,
   ): void {
     if (!points || points.length === 0) {
       return;
     }
-    const r = resolveNumberVar(radiusVar, DEFAULT_POINT_RADIUS);
-    c.fillStyle = colorOf(color, kind);
+    const r = resolveNumberVar(radiusVar, DEFAULT_POINT_RADIUS, el);
+    c.fillStyle = colorOf(color, kind, el);
     for (const p of points) {
       c.beginPath();
       c.arc(p.cx, p.cy, r, 0, Math.PI * 2);
@@ -277,7 +303,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     const onChange = (): void => {
       dprCleanup?.();
       dprCleanup = null;
-      paint(lastGeometries);
+      paint(lastGeometries, lastElements);
       watchDpr();
     };
     mql.addEventListener('change', onChange, { once: true });
@@ -303,8 +329,9 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     // pile up one never-unregistered closure per svg<->canvas flip.
   }
 
-  function paint(geometries: readonly LayerGeometry[]): void {
+  function paint(geometries: readonly LayerGeometry[], elements?: readonly Element[]): void {
     lastGeometries = geometries;
+    lastElements = elements;
     const c = ctx2d;
     if (!canvas || !c) {
       return;
@@ -315,7 +342,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     c.clearRect(0, 0, width, height);
     const steps = forcedNow ? forcedSeriesSteps(geometries) : null;
     for (let i = 0; i < geometries.length; i++) {
-      paintOne(c, geometries[i], steps?.[i] ?? null);
+      paintOne(c, geometries[i], steps?.[i] ?? null, elements?.[i] ?? hostEl);
     }
   }
 
@@ -323,11 +350,12 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     c: CanvasRenderingContext2D,
     g: LayerGeometry,
     step: ForcedSeriesStep | null,
+    el: Element | null,
   ): void {
     switch (g.kind) {
       case 'line': {
-        c.strokeStyle = colorOf(g.color, 'line');
-        c.lineWidth = strokeWidthOf(g.strokeWidth);
+        c.strokeStyle = colorOf(g.color, 'line', el);
+        c.lineWidth = strokeWidthOf(g.strokeWidth, el);
         c.lineJoin = 'round';
         c.lineCap = 'round';
         // Forced colors: the legend's dash for this series step (round caps
@@ -339,15 +367,16 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
         if (step !== null) {
           c.setLineDash(SOLID_DASH);
         }
-        drawPointMarks(c, g.points, g.color, 'line', '--cngx-line-point-radius');
+        drawPointMarks(c, g.points, g.color, 'line', '--cngx-line-point-radius', el);
         break;
       }
       case 'area': {
-        c.fillStyle = colorOf(g.color, 'area');
-        c.globalAlpha = g.opacity ?? resolveNumberVar('--cngx-area-opacity', DEFAULT_AREA_OPACITY);
+        c.fillStyle = colorOf(g.color, 'area', el);
+        c.globalAlpha =
+          g.opacity ?? resolveNumberVar('--cngx-area-opacity', DEFAULT_AREA_OPACITY, el);
         c.fill(new Path2D(g.d));
         c.globalAlpha = 1;
-        drawPointMarks(c, g.points, g.color, 'area', '--cngx-area-point-radius');
+        drawPointMarks(c, g.points, g.color, 'area', '--cngx-area-point-radius', el);
         break;
       }
       case 'bar': {
@@ -358,7 +387,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
         }
         for (const r of g.rects) {
           if (step === null) {
-            c.fillStyle = colorOf(r.color, 'bar');
+            c.fillStyle = colorOf(r.color, 'bar', el);
           }
           c.fillRect(r.x, r.y, r.w, r.h);
           if (ring > 0) {
@@ -375,7 +404,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
         }
         for (const m of g.marks) {
           if (step === null) {
-            c.fillStyle = colorOf(m.color, 'scatter');
+            c.fillStyle = colorOf(m.color, 'scatter', el);
           }
           c.beginPath();
           c.arc(m.cx, m.cy, m.r, 0, Math.PI * 2);
@@ -387,7 +416,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
         break;
       }
       case 'threshold': {
-        c.strokeStyle = colorOf(g.color, 'threshold');
+        c.strokeStyle = colorOf(g.color, 'threshold', el);
         c.lineWidth = 1;
         c.setLineDash(g.dashed ? [4, 3] : []);
         c.beginPath();
@@ -398,8 +427,9 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
         break;
       }
       case 'band': {
-        c.fillStyle = colorOf(g.color, 'band');
-        c.globalAlpha = g.opacity ?? resolveNumberVar('--cngx-band-opacity', DEFAULT_BAND_OPACITY);
+        c.fillStyle = colorOf(g.color, 'band', el);
+        c.globalAlpha =
+          g.opacity ?? resolveNumberVar('--cngx-band-opacity', DEFAULT_BAND_OPACITY, el);
         c.fillRect(g.x, g.y, g.w, g.h);
         c.globalAlpha = 1;
         break;
@@ -408,8 +438,8 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
   }
 
   function invalidateColorCache(): void {
-    colorCache.clear();
-    numberCache.clear();
+    colorCache = new WeakMap();
+    numberCache = new WeakMap();
     sysColors = null;
     hatches = null;
   }
@@ -418,6 +448,7 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     dprCleanup?.();
     dprCleanup = null;
     lastGeometries = [];
+    lastElements = undefined;
     canvas?.remove();
     canvas = null;
     probe?.remove();
@@ -426,8 +457,8 @@ export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer
     hostEl = null;
     lastW = -1;
     lastH = -1;
-    colorCache.clear();
-    numberCache.clear();
+    colorCache = new WeakMap();
+    numberCache = new WeakMap();
     sysColors = null;
     hatches = null;
   }
