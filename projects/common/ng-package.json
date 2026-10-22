@@ -5,6 +5,7 @@
     "entryFile": "public-api.ts"
   },
   "assets": [
-    { "input": "theming", "glob": "**/*.css", "output": "theming" }
+    { "input": "theming", "glob": "**/*.css", "output": "theming" },
+    { "input": "popover", "glob": "tooltip-indicator.scss", "output": "popover" }
   ]
 }

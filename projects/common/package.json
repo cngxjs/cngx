@@ -45,7 +45,8 @@
   },
   "sideEffects": false,
   "exports": {
-    "./theming/*.css": "./theming/*.css"
+    "./theming/*.css": "./theming/*.css",
+    "./popover/*.scss": "./popover/*.scss"
   },
   "schematics": "./schematics/collection.json",
   "ng-update": {
