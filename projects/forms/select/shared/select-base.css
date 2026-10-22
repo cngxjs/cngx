@@ -1015,6 +1015,15 @@
     )
     > cngx-select-reorder-list {
     flex: none;
+    /**
+     * Height cap of the sortable list of selected values that a
+     * reorderable select shows in its sheet under the touch floor. A
+     * longer selection scrolls inside the list, so the options below
+     * stay reachable.
+     * @cssprop {<length>} [--cngx-select-reorder-list-max-block-size=40dvh]
+     * @default 40dvh
+     * @group Layout
+     */
     max-block-size: var(--cngx-select-reorder-list-max-block-size, 40dvh);
     overflow: auto;
   }
