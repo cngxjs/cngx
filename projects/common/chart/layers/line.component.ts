@@ -126,13 +126,13 @@ import {
         .cngx-line__point {
           fill: CanvasText !important;
         }
-        [data-cngx-series-step="1"] > .cngx-line {
+        [data-cngx-series-step='1'] > .cngx-line {
           stroke-dasharray: 6 3;
         }
-        [data-cngx-series-step="2"] > .cngx-line {
+        [data-cngx-series-step='2'] > .cngx-line {
           stroke-dasharray: 0.1 4;
         }
-        [data-cngx-series-step="3"] > .cngx-line {
+        [data-cngx-series-step='3'] > .cngx-line {
           stroke-dasharray: 8 3 0.1 3;
         }
       }

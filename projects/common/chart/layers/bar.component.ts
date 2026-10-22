@@ -115,17 +115,17 @@ const FALLBACK_BASELINE = 0;
         .cngx-bar {
           fill: CanvasText !important;
         }
-        [data-cngx-series-step="1"] > .cngx-bar {
+        [data-cngx-series-step='1'] > .cngx-bar {
           fill: var(--_cngx-chart-hatch-diagonal, CanvasText) !important;
           stroke: CanvasText;
           stroke-width: 1px;
         }
-        [data-cngx-series-step="2"] > .cngx-bar {
+        [data-cngx-series-step='2'] > .cngx-bar {
           fill: Canvas !important;
           stroke: CanvasText;
           stroke-width: 1.5px;
         }
-        [data-cngx-series-step="3"] > .cngx-bar {
+        [data-cngx-series-step='3'] > .cngx-bar {
           fill: var(--_cngx-chart-hatch-horizontal, CanvasText) !important;
           stroke: CanvasText;
           stroke-width: 1px;

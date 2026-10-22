@@ -107,17 +107,17 @@ interface ScatterCircle {
         .cngx-scatter {
           fill: CanvasText !important;
         }
-        [data-cngx-series-step="1"] > .cngx-scatter {
+        [data-cngx-series-step='1'] > .cngx-scatter {
           fill: var(--_cngx-chart-hatch-diagonal, CanvasText) !important;
           stroke: CanvasText;
           stroke-width: 1px;
         }
-        [data-cngx-series-step="2"] > .cngx-scatter {
+        [data-cngx-series-step='2'] > .cngx-scatter {
           fill: Canvas !important;
           stroke: CanvasText;
           stroke-width: 1.5px;
         }
-        [data-cngx-series-step="3"] > .cngx-scatter {
+        [data-cngx-series-step='3'] > .cngx-scatter {
           fill: var(--_cngx-chart-hatch-horizontal, CanvasText) !important;
           stroke: CanvasText;
           stroke-width: 1px;
