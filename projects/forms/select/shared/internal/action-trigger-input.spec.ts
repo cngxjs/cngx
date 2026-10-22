@@ -31,6 +31,7 @@ function makeHarness(): Harness {
   h.trigger = createActionTriggerInput<string | undefined>({
     listbox: () => ({ ad: { activeItem: () => h.activeItem } }) as unknown as CngxListbox,
     popover: () => undefined,
+    flatOptions: () => [],
     input: () =>
       ({ nativeElement: { value: h.inputValue } }) as unknown as ElementRef<HTMLInputElement>,
     searchTerm,

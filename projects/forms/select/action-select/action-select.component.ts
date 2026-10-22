@@ -957,6 +957,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   private readonly triggerInput = createActionTriggerInput<T | undefined>({
     listbox: this.listboxRef,
     popover: this.popoverRef,
+    flatOptions: () => this.core.flatOptions(),
     input: this.inputEl,
     searchTerm: this.searchTerm,
     liveInputFallback: this.liveInputFallback,

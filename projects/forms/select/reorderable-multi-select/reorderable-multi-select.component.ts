@@ -77,6 +77,7 @@ import {
   type CngxChipRemovalHandler,
 } from '../shared/chip-removal-handler';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
+import { resolvePageJumpSpace } from '../shared/internal/page-jump-handler';
 import { sameArrayContents } from '../shared/internal/compare';
 import { CngxSelectReorderList } from '../shared/internal/reorder-list/reorder-list.component';
 import { CngxSelectSummary } from '../shared/internal/summary/select-summary.component';
@@ -1101,10 +1102,10 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       if (!pop.isVisible()) {
         pop.show();
       }
-      const items = lb.options();
-      const ad = lb.ad;
-      const currentId = ad.activeId();
-      const currentListboxIndex = items.findIndex((o) => o.id === currentId);
+      const { items, currentIndex: currentListboxIndex } = resolvePageJumpSpace(
+        lb,
+        this.flatOptions,
+      );
       const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
       const action = this.flatNavStrategy.onPageJump(
         {
@@ -1119,7 +1120,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
         direction,
       );
       if (action.kind === 'highlight') {
-        ad.highlightByIndex(action.index);
+        lb.ad.highlightByIndex(action.index);
       }
     }
   }

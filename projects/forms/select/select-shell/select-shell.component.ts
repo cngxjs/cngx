@@ -105,6 +105,7 @@ import {
 } from '../declarative/select-search-host';
 import { CngxSelectSearch } from '../declarative/select-search.component';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { resolvePageJumpSpace } from '../shared/internal/page-jump-handler';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
   type ScalarCommitHandler,
@@ -1104,10 +1105,10 @@ export class CngxSelectShell<T = unknown>
       if (!pop.isVisible()) {
         pop.show();
       }
-      const items = lb.options();
-      const ad = lb.ad;
-      const currentId = ad.activeId();
-      const currentListboxIndex = items.findIndex((o) => o.id === currentId);
+      const { items, currentIndex: currentListboxIndex } = resolvePageJumpSpace(
+        lb,
+        this.visibleProjectedOptions,
+      );
       const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
       const action = this.flatNavStrategy.onPageJump(
         {
@@ -1122,7 +1123,7 @@ export class CngxSelectShell<T = unknown>
         direction,
       );
       if (action.kind === 'highlight') {
-        ad.highlightByIndex(action.index);
+        lb.ad.highlightByIndex(action.index);
       }
     }
   }

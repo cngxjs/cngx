@@ -121,4 +121,23 @@ test.describe('CngxSelect — virtualized panel', () => {
       panel.locator('.cngx-select__option').first(),
     ).toHaveAttribute('aria-setsize', '20');
   });
+
+  test('PageUp from the end jumps in the absolute index space of the window', async ({ page }) => {
+    await page.goto(ROUTE);
+    const section = card(page, '10,000 options - CngxSelect');
+    const trigger = triggerOf(section);
+    await trigger.click();
+    const panel = panelOf(section);
+    await expect(panel.locator('.cngx-select__option').first()).toBeVisible();
+
+    const activePosinset = async (): Promise<string | null> => {
+      const active = panel.locator('.cngx-option--highlighted');
+      return (await active.count()) === 1 ? active.getAttribute('aria-posinset') : null;
+    };
+
+    await trigger.press('End');
+    await expect.poll(activePosinset).toBe('10000');
+    await trigger.press('PageUp');
+    await expect.poll(activePosinset).toBe('9990');
+  });
 });

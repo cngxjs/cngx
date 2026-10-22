@@ -1,10 +1,32 @@
 import type { CngxListbox } from '@cngx/common/interactive';
 import type { CngxPopover } from '@cngx/common/popover';
 
-import type { CngxFlatNavStrategy } from '../flat-nav-strategy';
+import type { CngxFlatNavListboxItem, CngxFlatNavStrategy } from '../flat-nav-strategy';
 import { isOptionDisabled, type CngxSelectOptionDef } from '../option.model';
 import { resolvePageJumpTarget, type TypeaheadController } from '../typeahead-controller';
 import type { CngxSelectCompareFn } from './select-core';
+
+/**
+ * Item list and current index a page jump resolves in, in the index space
+ * `ad.highlightByIndex` addresses. A virtual panel renders only a window,
+ * so `listbox.options()` and the active id would yield a window-relative
+ * index; there the full flat list and `ad.activeIndex()` (absolute) are
+ * used instead. Without virtualisation the rendered options are the space.
+ *
+ * @internal
+ */
+export function resolvePageJumpSpace(
+  listbox: CngxListbox<unknown>,
+  flatOptions: (() => readonly CngxFlatNavListboxItem[]) | undefined,
+): { readonly items: readonly CngxFlatNavListboxItem[]; readonly currentIndex: number } {
+  const ad = listbox.ad;
+  if (flatOptions && ad.virtualCount() != null) {
+    return { items: flatOptions(), currentIndex: ad.activeIndex() };
+  }
+  const items = listbox.options();
+  const currentId = ad.activeId();
+  return { items, currentIndex: items.findIndex((o) => o.id === currentId) };
+}
 
 /**
  * PageUp/PageDown handler for flat-panel select variants. Opens the
@@ -19,6 +41,11 @@ export function handlePageJumpKey(
   opts: {
     readonly listbox: CngxListbox<unknown> | undefined;
     readonly popover: CngxPopover | undefined;
+    /**
+     * Full flat option list in AD order. Read only when the panel is
+     * virtual, where it is the absolute index space of the AD.
+     */
+    readonly flatOptions?: () => readonly CngxFlatNavListboxItem[];
   },
 ): boolean {
   if (event.key !== 'PageDown' && event.key !== 'PageUp') {
@@ -38,14 +65,11 @@ export function handlePageJumpKey(
   if (!popover.isVisible()) {
     popover.show();
   }
-  const options = listbox.options();
-  const ad = listbox.ad;
-  const currentId = ad.activeId();
-  const currentIdx = options.findIndex((o) => o.id === currentId);
+  const { items, currentIndex } = resolvePageJumpSpace(listbox, opts.flatOptions);
   const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
-  const target = resolvePageJumpTarget(options, currentIdx, direction, (o) => isOptionDisabled(o));
+  const target = resolvePageJumpTarget(items, currentIndex, direction, (o) => isOptionDisabled(o));
   if (target !== null) {
-    ad.highlightByIndex(target);
+    listbox.ad.highlightByIndex(target);
   }
   return true;
 }
@@ -97,10 +121,7 @@ export function handleFlatNavPageJumpKey<T>(
   if (!pop.isVisible()) {
     pop.show();
   }
-  const items = lb.options();
-  const ad = lb.ad;
-  const currentId = ad.activeId();
-  const currentListboxIndex = items.findIndex((o) => o.id === currentId);
+  const { items, currentIndex: currentListboxIndex } = resolvePageJumpSpace(lb, deps.flatOptions);
   const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
   const action = deps.strategy.onPageJump(
     {
@@ -115,7 +136,7 @@ export function handleFlatNavPageJumpKey<T>(
     direction,
   );
   if (action.kind === 'highlight') {
-    ad.highlightByIndex(action.index);
+    lb.ad.highlightByIndex(action.index);
   }
   return true;
 }

@@ -1152,6 +1152,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   private readonly triggerInput = createActionTriggerInput<readonly T[]>({
     listbox: this.listboxRef,
     popover: this.popoverRef,
+    flatOptions: () => this.core.flatOptions(),
     input: this.inputEl,
     searchTerm: this.searchTerm,
     liveInputFallback: this.liveInputFallback,
