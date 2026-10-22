@@ -30,7 +30,7 @@ import { CngxThreshold } from '../layers/threshold.component';
 import { CngxBand } from '../layers/band.component';
 import { CngxArea } from '../layers/area.component';
 import { CngxScatter } from '../layers/scatter.component';
-import { type LayerGeometry } from '../layers/chart-layer';
+import { CNGX_CHART_LAYER, type LayerGeometry } from '../layers/chart-layer';
 import { type CngxChartRendererFactory } from '../renderer/chart-renderer';
 import { createCanvasRenderer } from '../renderer/canvas-renderer';
 import {
@@ -1939,5 +1939,60 @@ describe('CngxChart - forced-colors series step', () => {
       s['line-2'],
       s['line-3'],
     ]).toEqual(['0', '1', '2', '3', '0', '1']);
+  });
+});
+
+@Directive({
+  selector: '[testCommentLayer]',
+  standalone: true,
+  providers: [{ provide: CNGX_CHART_LAYER, useExisting: CommentLayer }],
+})
+class CommentLayer {
+  readonly geometry = computed<LayerGeometry>(() => ({
+    kind: 'line',
+    d: 'M 0 0 L 1 1',
+    color: null,
+    strokeWidth: null,
+    fill: 'none',
+  }));
+}
+
+@Component({
+  standalone: true,
+  imports: [CngxChart, CngxLine, CommentLayer],
+  template: `
+    <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100" data-testid="chart">
+      <svg:g cngxLine data-testid="line"></svg:g>
+      <ng-container testCommentLayer></ng-container>
+    </cngx-chart>
+  `,
+})
+class CommentLayerHost {}
+
+describe('CngxChart - layer elements handed to the renderer', () => {
+  beforeEach(() => createResizeObserverMock().install(window));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('passes each layer host element, and the chart host for a layer on <ng-container>', () => {
+    const painted: (readonly Element[] | undefined)[] = [];
+    const spy: CngxChartRendererFactory = () => ({
+      mode: 'canvas',
+      mount: () => undefined,
+      paint: (_g, elements) => painted.push(elements),
+      destroy: () => undefined,
+    });
+    TestBed.configureTestingModule({
+      imports: [CommentLayerHost],
+      providers: [provideChartRenderer(withChartRendererFactory(spy))],
+    });
+    const fixture = TestBed.createComponent(CommentLayerHost);
+    fixture.detectChanges();
+    TestBed.tick();
+    const root = fixture.nativeElement as HTMLElement;
+    const elements = painted.at(-1);
+    expect(elements).toEqual([
+      root.querySelector('[data-testid="line"]'),
+      root.querySelector('[data-testid="chart"]'),
+    ]);
   });
 });

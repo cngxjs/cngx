@@ -59,6 +59,8 @@ import { forcedSeriesSteps } from '../renderer/forced-series';
 import { CNGX_CHART_RENDERER_FACTORY } from '../renderer/renderer-factory';
 import { CNGX_CHART_RENDERER_THRESHOLD } from '../renderer/renderer-threshold';
 
+/** @internal `Node.ELEMENT_NODE`, without reaching for the DOM global on the server. */
+const ELEMENT_NODE = 1;
 /** @internal */
 const NOOP_SCALE: ScaleFn<XScaleInput> = () => 0;
 /** @internal */
@@ -554,14 +556,20 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly axes = contentChildren(CNGX_CHART_AXIS, { descendants: true });
   private readonly thresholds = contentChildren(CngxThreshold, { descendants: true });
   private readonly layers = contentChildren(CNGX_CHART_LAYER, { descendants: true });
-  // Same predicate and order as `layers`: element i hosts layer i. The
-  // Canvas backend resolves per-layer tokens against these elements.
+  // Same predicate and order as `layers`: node i hosts layer i. The
+  // Canvas backend resolves per-layer tokens against these elements. A
+  // custom layer on an `<ng-container>` has a comment node as its host,
+  // which has no computed style, so it reads the chart host instead.
   private readonly layerHosts = contentChildren(CNGX_CHART_LAYER, {
     descendants: true,
     read: ElementRef,
   });
   private readonly layerElements = computed<readonly Element[]>(
-    () => this.layerHosts().map((r) => r.nativeElement as Element),
+    () =>
+      this.layerHosts().map((r) => {
+        const node = r.nativeElement as Node;
+        return node.nodeType === ELEMENT_NODE ? (node as Element) : this.hostEl.nativeElement;
+      }),
     { equal: sameItemsArr },
   );
   protected readonly i18n = injectChartI18n();
@@ -980,7 +988,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     equal: sameItemsArr,
   });
 
-  /** @internal See {@link CngxChartContext.seriesStepOf}. */
+  /** See {@link CngxChartContext.seriesStepOf}. */
   seriesStepOf(layer: CngxChartLayer): number | null {
     const index = this.layers().indexOf(layer);
     return index < 0 ? null : (this.seriesSteps()[index] ?? null);
