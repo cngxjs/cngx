@@ -54,20 +54,26 @@
               [class.cngx-tree-select__twisty--open]="isOpen"
               (click)="toggleExpand($event, node)"
             >
-              @if (isOpen) {
-                @if (host.twistyOpenGlyph(); as glyph) {
-                  <ng-container *ngTemplateOutlet="glyph" />
-                } @else if (host.twistyGlyph(); as glyph) {
-                  <ng-container *ngTemplateOutlet="glyph" />
-                } @else {
-                  <span aria-hidden="true">▸</span>
-                }
+              @let glyph =
+                isOpen ? (host.twistyOpenGlyph() ?? host.twistyGlyph()) : host.twistyGlyph();
+              @if (glyph) {
+                <ng-container *ngTemplateOutlet="glyph" />
               } @else {
-                @if (host.twistyGlyph(); as glyph) {
-                  <ng-container *ngTemplateOutlet="glyph" />
-                } @else {
-                  <span aria-hidden="true">▸</span>
-                }
+                <!-- Chevron pointing inline-end; the --open rotate turns it
+                     down, the RTL rule mirrors the closed state. -->
+                <svg
+                  viewBox="0 0 16 16"
+                  width="1em"
+                  height="1em"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  focusable="false"
+                >
+                  <path d="M6 3.5 10.5 8 6 12.5" />
+                </svg>
               }
             </span>
           } @else {

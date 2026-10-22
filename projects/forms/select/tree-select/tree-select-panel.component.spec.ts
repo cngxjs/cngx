@@ -149,6 +149,7 @@ function makeShellHost(): CngxSelectPanelHost {
     <ng-template cngxTreeSelectNode let-node>
       <div class="custom-slot" [attr.data-id]="node.id">custom: {{ node.label }}</div>
     </ng-template>
+    <ng-template #customTwisty><span class="custom-twisty">+</span></ng-template>
   `,
 })
 class TreeHost implements CngxTreeSelectPanelHost<Row> {
@@ -162,10 +163,12 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly expandToReveal = signal(false);
   // Glyph overrides + i18n labels - null / default literals keep the
   // harness on the built-in node-row visuals.
-  readonly twistyGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
+  readonly twistyGlyphState = signal<TemplateRef<void> | null>(null);
+  readonly twistyGlyph = this.twistyGlyphState.asReadonly();
   readonly twistyOpenGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
   readonly checkGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
   readonly dashGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
+  readonly customTwisty = viewChild.required<TemplateRef<void>>('customTwisty');
   readonly resolvedListboxLabel = signal('Teams').asReadonly();
   readonly adCompare = signal<(a: Row, b: Row) => boolean>(Object.is);
   readonly adCompareWith = this.adCompare.asReadonly();
@@ -344,6 +347,38 @@ describe('CngxTreeSelectPanel', () => {
     twisty!.click();
     fixture.detectChanges();
     expect(host.treeController.isExpanded('a')()).toBe(false);
+  });
+
+  it('draws the default twisty as an AT-hidden chevron SVG, open and closed', () => {
+    const { fixture, host, root } = setup();
+    const twisty = (): HTMLElement =>
+      root.querySelector<HTMLElement>('[role="treeitem"][id="a"] .cngx-tree-select__twisty')!;
+
+    const closed = twisty().querySelector('svg');
+    expect(closed).toBeTruthy();
+    expect(closed!.getAttribute('focusable')).toBe('false');
+    expect(closed!.getAttribute('fill')).toBe('none');
+    expect(closed!.getAttribute('stroke')).toBe('currentColor');
+    expect(twisty().textContent?.trim()).toBe('');
+    expect(twisty().getAttribute('aria-hidden')).toBe('true');
+    expect(twisty().classList.contains('cngx-tree-select__twisty--open')).toBe(false);
+
+    host.treeController.expand('a');
+    fixture.detectChanges();
+    expect(twisty().classList.contains('cngx-tree-select__twisty--open')).toBe(true);
+    expect(twisty().querySelector('svg')).toBeTruthy();
+    expect(twisty().textContent?.trim()).toBe('');
+  });
+
+  it('lets a projected twistyGlyph win over the default chevron', () => {
+    const { fixture, host, root } = setup();
+    host.twistyGlyphState.set(host.customTwisty());
+    fixture.detectChanges();
+    const twisty = root.querySelector<HTMLElement>(
+      '[role="treeitem"][id="a"] .cngx-tree-select__twisty',
+    )!;
+    expect(twisty.querySelector('.custom-twisty')).toBeTruthy();
+    expect(twisty.querySelector('svg')).toBeNull();
   });
 
   it('names a parent treeitem by its label alone, the twisty stays out of the name', () => {

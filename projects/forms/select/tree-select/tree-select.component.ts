@@ -342,14 +342,14 @@ export class CngxTreeSelect<T = unknown>
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   /**
-   * Replaces the default `▸` twisty glyph in the default node row.
+   * Replaces the default chevron twisty in the default node row.
    * Applied to both states unless `twistyOpenGlyph` is set. Ignored
    * when `*cngxTreeSelectNode` is projected.
    */
   readonly twistyGlyph = input<TemplateRef<void> | null>(null);
   /**
    * Override for the expanded-state twisty glyph. Falls back to
-   * `twistyGlyph` then to `▸` (rotated via CSS). Use when expand and
+   * `twistyGlyph` then to the chevron (rotated via CSS). Use when expand and
    * collapse glyphs are semantically different shapes.
    */
   readonly twistyOpenGlyph = input<TemplateRef<void> | null>(null);

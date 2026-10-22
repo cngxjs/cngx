@@ -103,7 +103,7 @@ describe('CngxTreeSelect geometry', () => {
   });
 });
 
-// The collapsed panel twisty `▸` is directional and must point inline-end (left
+// The collapsed panel twisty chevron is directional and must point inline-end (left
 // under RTL) at the node it discloses. The `:not(--open)` gate mirrors only the
 // collapsed twisty; the open twisty (rotated 90deg to a neutral down-caret)
 // keeps its rotate. jsdom reports `transform: ''`, so this reads the browser

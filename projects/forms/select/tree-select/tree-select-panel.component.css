@@ -191,23 +191,23 @@
   }
 
   /**
-   * Color of the twisty glyph.
+   * Color of the twisty chevron. Unset, the twisty mutes the row colour to
+   * 70% so the chevron reads as an affordance, not as content.
    * @group Surface
    */
   @property --cngx-tree-select-twisty-color {
     syntax: '*';
     inherits: true;
-    initial-value: currentColor;
   }
 
   /**
-   * Font-size of the twisty glyph.
+   * Font-size of the twisty glyph; the default chevron is sized `1em`.
    * @group Typography
    */
   @property --cngx-tree-select-twisty-font-size {
     syntax: '*';
     inherits: false;
-    initial-value: 0.75rem;
+    initial-value: 1rem;
   }
 
   /* Dark-mode component-local swap - alpha-on-black hover/selected
@@ -319,8 +319,11 @@
       padding: 0;
       border: none;
       background: transparent;
-      color: var(--cngx-tree-select-twisty-color, inherit);
-      font-size: var(--cngx-tree-select-twisty-font-size, 0.75rem);
+      color: var(
+        --cngx-tree-select-twisty-color,
+        color-mix(in oklab, currentColor 70%, transparent)
+      );
+      font-size: var(--cngx-tree-select-twisty-font-size, 1rem);
       cursor: pointer;
       transition: transform var(--cngx-duration-fast, 150ms) ease;
     }
@@ -329,13 +332,13 @@
       transform: rotate(90deg);
     }
 
-    /* The collapsed twisty `▸` is directional: it points inline-end at the node
+    /* The collapsed chevron is directional: it points inline-end at the node
        it discloses (left under RTL). Mirror it inline under RTL. Gated with
        `:not(--open)` so the open twisty - rotated 90deg to a neutral down-caret
        - is excluded and keeps its rotate. `:where()` keeps zero specificity so
        the `--open` rotate still wins by source order (context-menu precedent
        context-menu-item.component.css). scaleX is safe: the twisty holds
-       only the glyph span, no label text a mirror reverses. */
+       only the glyph, no label text a mirror reverses. */
     .cngx-tree-select__twisty:not(.cngx-tree-select__twisty--open):where(:dir(rtl)) {
       transform: scaleX(-1);
     }
